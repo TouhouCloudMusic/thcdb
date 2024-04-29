@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+	@apply bg-zinc-200;
+	white-space: break-spaces;
+	width: auto;
+}
+
+main {
+	min-width: 64rem;
+	width: 64rem;
+	max-width: 96vw;
+}
+
+:focus {
+	outline: none;
+}
+
+:focus-visible {
+	/* @apply outline-zinc-400;
+	outline: 1px solid; */
+	/* border: 0cap; */
+	outline: 0.1rem solid;
+	border-radius: 0.1rem;
+}
+
+#app {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+}
+
+h1 {
+	@apply text-3xl;
+}
+
+h2 {
+	@apply text-2xl;
+}
+
+h3 {
+	@apply text-xl;
+}
+
+a {
+	@apply text-blue-600/90 hover:text-blue-500/80;
+}
+
+.gray-link {
+	@apply text-gray-600 hover:text-gray-600/80;
+}
+
+.border-sm {
+	border-width: 1.5px;
+}

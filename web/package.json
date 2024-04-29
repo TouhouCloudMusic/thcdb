@@ -1,0 +1,50 @@
+{
+	"name": "example-basic",
+	"type": "module",
+	"scripts": {
+		"dev": "vinxi dev",
+		"build": "vinxi build",
+		"start": "vinxi start",
+		"version": "vinxi version"
+	},
+	"dependencies": {
+		"@ark-ui/solid": "^2.2.0",
+		"@babel/eslint-parser": "^7.24.1",
+		"@floating-ui/dom": "^1.6.3",
+		"@sinclair/typebox": "^0.32.26",
+		"@solidjs/meta": "^0.29.3",
+		"@solidjs/router": "^0.13.2",
+		"@solidjs/start": "1.0.0-rc.0",
+		"lucide-solid": "^0.373.0",
+		"ramda": "^0.29.1",
+		"solid-floating-ui": "^0.3.1",
+		"solid-js": "^1.8.17",
+		"solid-popper": "^0.3.0",
+		"vinxi": "^0.3.11"
+	},
+	"devDependencies": {
+		"@types/ramda": "^0.29.12",
+		"@typescript-eslint/eslint-plugin": "^7.7.1",
+		"@typescript-eslint/parser": "^7.7.1",
+		"autoprefixer": "^10.4.19",
+		"babel-preset-solid": "^1.8.17",
+		"commitizen": "^4.3.0",
+		"cz-conventional-changelog": "^3.3.0",
+		"daisyui": "^4.10.2",
+		"eslint": "^8.57.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-solid": "^0.13.2",
+		"mocha": "^10.4.0",
+		"postcss": "^8.4.38",
+		"prettier": "3.2.4",
+		"prettier-plugin-tailwindcss": "^0.5.14",
+		"solid-labels": "^0.16.0",
+		"tailwindcss": "^3.4.3",
+		"typescript": "^5.4.5",
+		"typescript-eslint": "^7.7.1",
+		"vite-tsconfig-paths": "^4.3.2"
+	},
+	"engines": {
+		"node": ">=18"
+	}
+}

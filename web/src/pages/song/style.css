@@ -1,0 +1,32 @@
+:root {
+	--altVerWrapperRad: 0.25rem;
+}
+
+.altVerWrapper {
+	border-radius: var(--altVerWrapperRad);
+}
+
+.altVerBottomButton {
+	border-bottom-left-radius: var(--altVerWrapperRad);
+	border-bottom-right-radius: var(--altVerWrapperRad);
+}
+
+.altVerItem {
+	border-radius: max(
+		calc(var(--altVerWrapperRad) - calc(0.5rem * 0.5)),
+		0.125rem
+	);
+}
+.ratingItem:focus-visible {
+	outline: 0.1rem solid;
+	border-radius: 0.1rem;
+}
+
+.ratingItem:focus {
+	outline: transparent;
+	border-radius: 0.1rem;
+}
+
+main {
+	@apply flex flex-col justify-center bg-white px-4 py-1;
+}
