@@ -1,5 +1,4 @@
 import { Title } from "@solidjs/meta";
-import "./style.css";
 import { EditComp } from "./comps/EditComp";
 import { UserActionComp } from "./comps/UserActionComp";
 import { AltVerComp } from "./comps/AltVerComp";
@@ -8,10 +7,9 @@ import { SongInfo } from "./comps/SongInfo";
 import { CreditComp } from "./comps/CreditComp";
 import { SongStateProvider, useSongState } from "./state";
 import { testSongData } from "./testDatas";
-import { createMemo, onMount } from "solid-js";
-import { createStore } from "solid-js/store";
+//
+import "./style.css";
 
-// const [altVers] = createSignal(altVersTest);
 const divideClass = "divide-y-2 divide-zinc-400 w-full";
 
 function SongPage() {
