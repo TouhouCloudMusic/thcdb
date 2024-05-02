@@ -8,48 +8,21 @@ const infoSubItemClass = "grid grid-cols-3 gap-1";
 export function SongInfo() {
 	const [anchor, anchorRef] = createSignal<HTMLElement>();
 	const [voteTab, voteTabRef] = createSignal<HTMLElement>();
-	const [show, setShow] = createSignal(true);
+	const [show, setShow] = createSignal(false);
 	const position = useFloating(anchor, voteTab, {
 		placement: "bottom",
 		whileElementsMounted: autoUpdate,
 		middleware: [
 			offset({
-				mainAxis: -150,
+				mainAxis: -150
 			}),
-			shift({ crossAxis: true, mainAxis: true }),
-		],
+			shift({ crossAxis: true, mainAxis: true })
+		]
 	});
-	// const position = useFloating(
-	// 	() => ({
-	// 		getBoundingClientRect() {
-	// 			return {
-	// 				x: 0,
-	// 				y: 0,
-	// 				top: 100,
-	// 				left: 950,
-	// 				bottom: 0,
-	// 				right: 0,
-	// 				width: 0,
-	// 				height: 0,
-	// 			};
-	// 		},
-	// 		// contextElement: trigger(),
-	// 	}),
-	// 	voteTab,
-	// 	{
-	// 		// whileElementsMounted: autoUpdate,
-	// 		middleware: [
-	// 			// offset({
-	// 			// 	mainAxis: -150,
-	// 			// }),
-	// 			shift({ crossAxis: true, mainAxis: true }),
-	// 		],
-	// 	}
-	// );
 	const voteTabAttributes = {
 		voteTabRef: voteTabRef,
 		position: position,
-		setShow: setShow,
+		setShow: setShow
 	};
 	return (
 		<div

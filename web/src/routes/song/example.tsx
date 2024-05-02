@@ -1,2 +1,2 @@
-import SongPage from "pages/song/_Main";
+import SongPage from "pages/song/view";
 export default SongPage;

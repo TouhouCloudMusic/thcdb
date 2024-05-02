@@ -1,7 +1,9 @@
 import { For, Index } from "solid-js";
-import { RatingStatic } from "~/components/RatingStatic";
+import { RatingStatic } from "components/RatingStatic";
+import { useSongState } from "../state";
 
 export function ReviewComp() {
+	const { reviews } = useSongState();
 	return (
 		<div class="w-full">
 			<h3>Reviews</h3>
@@ -15,8 +17,8 @@ export function ReviewComp() {
 				</ul>
 			</div>
 			<ul class="my-1.5">
-				<For each={new Array(3)}>
-					{() => (
+				<For each={reviews()}>
+					{(review, index) => (
 						<li>
 							<article>
 								<div class="flex justify-between rounded-md bg-zinc-200/75">
@@ -27,13 +29,13 @@ export function ReviewComp() {
 											</div>
 										</div>
 										<p>
-											<a class="mx-2">UserName</a>
+											<a class="mx-2">{review.author}</a>
 										</p>
-										<p>
+										<p class="mx-2">
 											<time
-												class="mx-2"
-												datetime="2020-01-01">
-												2020-01-01
+												class="text-sm font-medium italic text-gray-600"
+												datetime={review.date}>
+												{review.date}
 											</time>
 										</p>
 									</div>
@@ -41,17 +43,14 @@ export function ReviewComp() {
 										<div class="mx-2">+</div>
 										<div class="mx-2">-</div>
 										<div class="mx-2">
-											<RatingStatic rating={4} />
+											<RatingStatic
+												rating={review.rating}
+											/>
 										</div>
 									</div>
 								</div>
 								<p class="my-2 pl-4 text-gray-600">
-									Lorem ipsum dolor sit amet consectetur
-									adipisicing elit. Error quod iusto quasi
-									eaque tenetur, fugiat voluptate earum
-									voluptates. Quos pariatur esse maiores
-									doloremque ad ea voluptatibus perspiciatis
-									illo quisquam sit.
+									{review.content}
 								</p>
 							</article>
 						</li>

@@ -1,6 +1,7 @@
 import { autoUpdate, offset } from "@floating-ui/dom";
 import { UseFloatingResult, useFloating } from "solid-floating-ui";
 import { For, Index, Setter, Show, createSignal } from "solid-js";
+import { $Signal } from "~/utils/$Signal";
 
 export function VoteGenreTab(props: {
 	voteTabRef: Setter<HTMLElement | undefined>;
@@ -8,17 +9,17 @@ export function VoteGenreTab(props: {
 	setShow: Setter<boolean>;
 }) {
 	const [inputEl, inputElRef] = createSignal<HTMLInputElement>();
-	const [resultDropdown, resultDropdownRef] = createSignal<HTMLElement>();
+	const resultDropdown = $Signal<HTMLElement>();
 	const [dropdownShow, setDropdownShow] = createSignal(false);
 	const [genreResult, setGenreResult] = createSignal([
 		"Test Genre 0",
 		"Test Genre 1",
-		"Test Genre 2",
+		"Test Genre 2"
 	]);
 	const dropdownPosition = useFloating(inputEl, resultDropdown, {
 		placement: "bottom-start",
 		whileElementsMounted: autoUpdate,
-		middleware: [offset(5)],
+		middleware: [offset(5)]
 	});
 	return (
 		<div
@@ -28,7 +29,7 @@ export function VoteGenreTab(props: {
 				position: props.position.strategy,
 				top: 0,
 				left: 0,
-				transform: `translate3d(${props.position.x ?? 0}px,${props.position.y ?? 0}px,0)`,
+				transform: `translate3d(${props.position.x ?? 0}px,${props.position.y ?? 0}px,0)`
 			}}>
 			<div class="flex w-full flex-row-reverse">
 				<button
@@ -48,16 +49,15 @@ export function VoteGenreTab(props: {
 				/>
 				<Show when={dropdownShow()}>
 					<ul
-						ref={resultDropdownRef}
+						ref={resultDropdown}
 						class=" w-max items-center divide-y divide-zinc-200
 						border border-zinc-300
-						bg-white p-2
-						"
+						bg-white p-2"
 						style={{
 							position: dropdownPosition.strategy,
 							top: 0,
 							left: 0,
-							transform: `translate3d(${dropdownPosition.x ?? 0}px,${dropdownPosition.y ?? 0}px,0)`,
+							transform: `translate3d(${dropdownPosition.x ?? 0}px,${dropdownPosition.y ?? 0}px,0)`
 						}}>
 						<Index each={genreResult()}>
 							{(item) => (
@@ -82,7 +82,6 @@ export function VoteGenreTab(props: {
 					</ul>
 				</Show>
 			</div>
-
 			<For each={new Array(5)}>
 				{(item, index) => (
 					<div class="my-2 divide-y-2 divide-zinc-300 border bg-white px-2 py-1 shadow">
