@@ -1,10 +1,11 @@
 import { defineConfig } from "@solidjs/start/config";
+import viteConfigPaths from "vite-tsconfig-paths";
+import path from "path";
 export default defineConfig({
 	vite: {
-		resolve: {
-			alias: {
-				pages: "/src/pages",
-			},
+		build: {
+			minify: false
 		},
-	},
+		plugins: [viteConfigPaths()]
+	}
 });
