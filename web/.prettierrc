@@ -1,5 +1,4 @@
 {
-	"printWidth": 80,
 	"arrowParens": "always",
 	"bracketSameLine": true,
 	"bracketSpacing": true,
@@ -8,16 +7,25 @@
 	"htmlWhitespaceSensitivity": "css",
 	"insertPragma": false,
 	"jsxSingleQuote": false,
+	"overrides": [
+		{
+			"files": ["*.json"],
+			"options": {
+				"trailingComma": "none"
+			}
+		}
+	],
 	"plugins": ["prettier-plugin-tailwindcss"],
+	"printWidth": 80,
 	"proseWrap": "preserve",
 	"quoteProps": "as-needed",
 	"rangeStart": 0,
 	"requirePragma": false,
-	"semi": true,
+	"semi": false,
 	"singleAttributePerLine": true,
 	"singleQuote": false,
-	"trailingComma": "none",
-	"useTabs": true,
 	"tabWidth": 4,
+	"trailingComma": "es5",
+	"useTabs": true,
 	"vueIndentScriptAndStyle": false
 }

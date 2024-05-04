@@ -30,8 +30,8 @@
 	},
 	"plugins": ["@typescript-eslint", "solid"],
 	"rules": {
-		"@typescript-eslint/consistent-type-definitions": "off",
-		"no-unused-vars": "warn",
-		"@typescript-eslint/no-unused-vars": "warn"
+		// "@typescript-eslint/consistent-type-definitions": "off",
+		"@typescript-eslint/no-unused-vars": "warn",
+		"@typescript-eslint/array-type": "off"
 	}
 }
