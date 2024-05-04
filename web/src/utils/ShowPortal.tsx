@@ -1,5 +1,5 @@
-import { Accessor, JSX } from "solid-js";
-import { Portal, Show } from "solid-js/web";
+import { Accessor, JSX, Show } from "solid-js";
+import { Portal } from "solid-js/web";
 
 type RequiredParameter<T> = T extends () => unknown ? never : T;
 export function ShowPortal<
@@ -21,7 +21,8 @@ export function ShowPortal<
 					? {
 							readonly shadowRoot: ShadowRoot;
 						}
-					: {}) &
+					: // 原文： {}
+						Record<string, never>) &
 					(S extends true ? SVGGElement : HTMLDivElement)
 		  ) => void);
 }): JSX.Element {
