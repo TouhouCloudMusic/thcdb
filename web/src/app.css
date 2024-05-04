@@ -3,13 +3,14 @@
 @tailwind utilities;
 
 body {
-	@apply bg-zinc-200;
+	@apply bg-zinc-200/75;
 	white-space: break-spaces;
-	width: auto;
+	/* min-height: 100vh; */
+	/* height: minmax(100vh); */
 }
 
 main {
-	min-width: 64rem;
+	/* min-width: 64rem; */
 	width: 64rem;
 	max-width: 96vw;
 }
@@ -19,17 +20,16 @@ main {
 }
 
 :focus-visible {
-	/* @apply outline-zinc-400;
-	outline: 1px solid; */
-	/* border: 0cap; */
 	outline: 0.1rem solid;
 	border-radius: 0.1rem;
 }
 
 #app {
-	display: flex;
-	justify-content: center;
+	/* @apply h-full ; */
 	width: 100%;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
 }
 
 h1 {
@@ -48,10 +48,14 @@ a {
 	@apply text-blue-600/90 hover:text-blue-500/80;
 }
 
+.border-sm {
+	border-width: 1.5px;
+}
+
 .gray-link {
 	@apply text-gray-600 hover:text-gray-600/80;
 }
 
-.border-sm {
-	border-width: 1.5px;
+.gray-link-sm {
+	@apply text-sm text-gray-600 hover:text-gray-600/80;
 }
