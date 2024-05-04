@@ -1,0 +1,42 @@
+header {
+	@apply z-[1] box-border flex w-full justify-center shadow;
+	background-color: white;
+}
+
+nav {
+	@apply mx-auto;
+	display: flex;
+	flex-wrap: wrap
+}
+
+nav > div {
+	@apply mx-2;
+	display: flex;
+	align-items: center;
+}
+
+.logo {
+	@apply mx-4;
+	display: flex;
+	a {
+		color: black !important;
+		font-size: 1.5rem;
+	}
+}
+
+
+
+.search_input {
+	@apply mx-2 h-8 min-w-48 border-gray-200 bg-gray-200 pl-2.5 text-gray-500
+	outline-none ring-1 ring-transparent hover:ring-gray-400 focus:min-w-64 focus:border-gray-700/95 focus:ring-gray-700/95;
+	transition-duration: 100ms;
+	border-radius: 0.1rem;
+}
+
+.avatarWrapper {
+	@apply ml-2 w-[6rem] justify-center my-1;
+}
+
+.avatar {
+	@apply mx-2 h-9 w-9 place-content-center rounded-full bg-gray-400 text-center;
+}
