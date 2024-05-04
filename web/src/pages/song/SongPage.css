@@ -2,6 +2,10 @@
 	--altVerWrapperRad: 0.25rem;
 }
 
+main {
+	@apply bg-white px-4 py-1;
+}
+
 .altVerWrapper {
 	border-radius: var(--altVerWrapperRad);
 }
@@ -27,6 +31,15 @@
 	border-radius: 0.1rem;
 }
 
-main {
-	@apply flex flex-col justify-center bg-white px-4 py-1;
+.infoRow {
+	@apply grid grid-cols-3 gap-1;
+	ul {
+		@apply flex auto-rows-auto flex-wrap text-nowrap;
+	}
+}
+
+.vote {
+	@apply text-zinc-400;
+	@apply hover:text-zinc-500;
+	justify-self: center;
 }

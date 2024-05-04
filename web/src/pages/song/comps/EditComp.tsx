@@ -1,15 +1,6 @@
-import { HoverCard } from "@ark-ui/solid";
 import { autoUpdate } from "@floating-ui/dom";
-import { UseFloatingResult, useFloating } from "solid-floating-ui";
-import {
-	Show,
-	createEffect,
-	createSignal,
-	on,
-	onCleanup,
-	onMount
-} from "solid-js";
-import { Portal } from "solid-js/web";
+import { useFloating } from "solid-floating-ui";
+import { createEffect, on, onCleanup } from "solid-js";
 import { $Signal } from "~/utils/$Signal";
 import { ShowPortal } from "~/utils/ShowPortal";
 import { createClickOutsize } from "~/utils/createClickOutside";
@@ -22,50 +13,27 @@ export function EditComp() {
 		placement: "bottom-end",
 		whileElementsMounted: autoUpdate
 	});
-	// function clickOutside(e: Event) {
-	// 	const target = e.target as HTMLElement;
-	// 	if (dropdown()?.contains(target) || anchor()?.contains(target)) return;
-	// 	open(false);
-	// }
 	const clickOutside = createClickOutsize([dropdown, anchor], open);
 	createEffect(
 		on(open, () => {
 			if (open()) document.addEventListener("click", clickOutside);
 			else document.removeEventListener("click", clickOutside);
+			onCleanup(() =>
+				document.removeEventListener("click", clickOutside)
+			);
 		})
 	);
-
+	// onCleanup(() => document.removeEventListener("click", clickOutside));
 	return (
 		<>
 			<div
 				class="text-sm text-gray-600 hover:text-gray-600/70"
 				ref={anchor}
-				onClick={(e) => {
+				onClick={() => {
 					open(!open());
 				}}>
 				Edit
 			</div>
-			{/* <Portal>
-				<Show when={open()}>
-					<ul
-						class="flex flex-col divide-y-[0.125rem] rounded-[0.125rem] border-[0.1rem] border-zinc-200 bg-white"
-						ref={dropdown}
-						style={{
-							position: position.strategy,
-							top: 0,
-							left: 0,
-							transform: `translate3d(${position.x ?? 0}px,${position.y ?? 0}px,0`
-						}}>
-						<li class={itemClass}>
-							<a class="text-nowrap">Edit This Page</a>
-						</li>
-						<li class={itemClass}>
-							<a>History</a>
-						</li>
-					</ul>
-				</Show>
-			</Portal> */}
-
 			<ShowPortal when={open()}>
 				<ul
 					class="flex flex-col divide-y-[0.125rem] rounded-[0.125rem] border-[0.1rem] border-zinc-200 bg-white"

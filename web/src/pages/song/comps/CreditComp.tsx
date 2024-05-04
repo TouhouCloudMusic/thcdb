@@ -1,9 +1,9 @@
-import { Index } from "solid-js";
-import { useSongState } from "../state";
+import { Index } from "solid-js"
+import { useSongState } from "../song.state"
 
-const roleListClass = "flex flex-wrap my-0.5 text-sm";
+const roleListClass = "flex flex-wrap my-0.5 text-sm"
 export function CreditComp() {
-	const { credits } = useSongState();
+	const { credits } = useSongState()
 	return (
 		<>
 			<h3>Credits</h3>
@@ -33,5 +33,5 @@ export function CreditComp() {
 				</Index>
 			</ul>
 		</>
-	);
+	)
 }

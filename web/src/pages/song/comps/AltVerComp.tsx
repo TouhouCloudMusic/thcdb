@@ -1,7 +1,7 @@
-import { useSongState } from "../state";
+import { useSongState } from "../song.state"
 
 export function AltVerComp() {
-	const { altVers } = useSongState();
+	const { altVers } = useSongState()
 
 	const AltVerList = () =>
 		altVers().map((version) => {
@@ -16,8 +16,8 @@ export function AltVerComp() {
 						<p class="text-gray-500">{version.type}</p>
 					</li>
 				</>
-			);
-		});
+			)
+		})
 
 	return (
 		<div class="w-full">
@@ -32,5 +32,5 @@ export function AltVerComp() {
 				</div>
 			</ul>
 		</div>
-	);
+	)
 }

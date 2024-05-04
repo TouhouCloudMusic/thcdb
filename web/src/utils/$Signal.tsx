@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Accessor, Setter, SignalOptions, createSignal } from "solid-js";
 
-export interface $Signal<T> {
-	(): T;
-	(value: T): void;
-}
+export type $Signal<T> = (
+	...args: [] | [Exclude<T, Function> | ((prev: T) => T)]
+) => T;
+
 export function $Signal<T>(): $Signal<T | undefined>;
 export function $Signal<T>(
 	initValue: T,
@@ -11,16 +12,18 @@ export function $Signal<T>(
 ): $Signal<T>;
 export function $Signal<T>(
 	initValue?: T,
-	options?: SignalOptions<T | undefined>
+	options: SignalOptions<T | undefined> = { equals: Object.is }
 ): $Signal<T | undefined> {
 	const [get, set] = createSignal(initValue, options);
-	function signal(): T;
-	function signal(upValue: T): void;
-	function signal(upValue?: T): T | void {
-		if (upValue === undefined) {
+	function signal(
+		...args:
+			| []
+			| [Exclude<T, Function> | ((prev: T | undefined) => T | undefined)]
+	): T | undefined {
+		if (args.length === 0) {
 			return get();
 		}
-		set(upValue);
+		set(args[0]);
 	}
 	return signal as $Signal<T | undefined>;
 }

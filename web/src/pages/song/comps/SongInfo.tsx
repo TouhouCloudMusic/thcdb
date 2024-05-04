@@ -1,92 +1,99 @@
-import { autoUpdate, offset, shift } from "@floating-ui/dom";
-import { useFloating } from "solid-floating-ui";
-import { Show, createSignal } from "solid-js";
-import { VoteGenreTab } from "./VoteGenreTab";
-
-const infoSubItemClass = "grid grid-cols-3 gap-1";
+import { autoUpdate, offset, shift } from "@floating-ui/dom"
+import { useFloating } from "solid-floating-ui"
+import { Index, createSignal } from "solid-js"
+import { VoteGenreTab } from "./VoteGenreTab"
+import { useSongState } from "../song.state"
+import { ShowPortal } from "~/utils/ShowPortal"
 
 export function SongInfo() {
-	const [anchor, anchorRef] = createSignal<HTMLElement>();
-	const [voteTab, voteTabRef] = createSignal<HTMLElement>();
-	const [show, setShow] = createSignal(false);
+	const { artist, duration, originalSong, ratings, rank, genres } =
+		useSongState()
+	const [anchor, anchorRef] = createSignal<HTMLElement>()
+	const [voteTab, voteTabRef] = createSignal<HTMLElement>()
+	const [show, setShow] = createSignal(false)
 	const position = useFloating(anchor, voteTab, {
 		placement: "bottom",
 		whileElementsMounted: autoUpdate,
 		middleware: [
 			offset({
-				mainAxis: -150
+				mainAxis: -150,
 			}),
-			shift({ crossAxis: true, mainAxis: true })
-		]
-	});
+			shift({ crossAxis: true, mainAxis: true }),
+		],
+	})
 	const voteTabAttributes = {
 		voteTabRef: voteTabRef,
 		position: position,
-		setShow: setShow
-	};
+		setShow: setShow,
+	}
 	return (
 		<div
 			ref={anchorRef}
 			class={"my-1 grid grid-flow-row gap-1 px-1.5 pt-1 text-zinc-900 "}>
-			<Show when={show()}>
+			<ShowPortal when={show()}>
 				<VoteGenreTab {...voteTabAttributes} />
-			</Show>
-			<div class={infoSubItemClass}>
+			</ShowPortal>
+			<div class="infoRow">
 				<p class="">Artist</p>
 				<p>
-					<a href="">Song Artist</a>
+					<a href="">{artist()}ShowPortal</a>
 				</p>
 			</div>
-			<div class={infoSubItemClass}>
+			<div class="infoRow">
 				<p class="">Duration</p>
-				<p>23:33</p>
+				<p>{duration()}</p>
 			</div>
-			<div class={infoSubItemClass}>
+			<div class="infoRow">
 				<p class="">Original Song</p>
-				<ul class="flex">
-					<li>
-						<p>
-							<a href="">Song A</a>,{" "}
-						</p>
-					</li>
-					<li>
-						<a href="">Song B</a>,{" "}
-					</li>
-					<li>
-						<a href="">Song C</a>
-					</li>
+				<ul class="">
+					<Index each={originalSong()}>
+						{(song, index) => (
+							<li>
+								<p>
+									<a href="">{song()}</a>
+									{index !== originalSong().length - 1
+										? ", "
+										: ""}
+								</p>
+							</li>
+						)}
+					</Index>
 				</ul>
 			</div>
-			<div class={infoSubItemClass}>
+			<div class="infoRow">
 				<p>Ratings</p>
-				<p>4.00 / 5.00 from 114 ratings</p>
-			</div>
-			<div class={infoSubItemClass}>
-				<p>Ranked</p>
 				<p>
-					#1 for <a href="">2024</a>, #1 <a href="">overall</a>
+					{ratings.value()} / 5.00 from {ratings.count()} ratings
 				</p>
 			</div>
-			<div class={infoSubItemClass}>
+			<div class="infoRow">
+				<p>Ranked</p>
+				<p>
+					#{rank.thisYear()} for <a href="">2024</a>, #
+					{rank.overAll()} <a href="">overall</a>
+				</p>
+			</div>
+			<div class="infoRow">
 				<p>Genres</p>
 				<ul class="flex">
-					<li class="">
-						<a href="">Genre A</a>
-						{", "}
-					</li>
-					<li>
-						<a href="">Genre B</a>
-					</li>
+					<Index each={genres()}>
+						{(genre, index) => (
+							<li class="">
+								<a href="">{genre()}</a>
+								{index !== genres().length - 1 ? ", " : ""}
+							</li>
+						)}
+					</Index>
 				</ul>
 				<p>
 					<button
 						onClick={() => setShow(true)}
-						class="text-zinc-400">
+						class="vote">
 						vote
 					</button>
 				</p>
 			</div>
-			<div class={infoSubItemClass}>
+			<div class="infoRow">
 				<p>Descriptors</p>
 				<ul class="flex">
 					<li class="">
@@ -97,8 +104,14 @@ export function SongInfo() {
 						<a href="">Descriptor B</a>
 					</li>
 				</ul>
-				<a>vote</a>
+				<p>
+					<button
+						onClick={() => setShow(true)}
+						class="vote">
+						vote
+					</button>
+				</p>
 			</div>
 		</div>
-	);
+	)
 }

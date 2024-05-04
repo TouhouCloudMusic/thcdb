@@ -1,9 +1,9 @@
-import { For, Index } from "solid-js";
-import { RatingStatic } from "components/RatingStatic";
-import { useSongState } from "../state";
+import { For, Index } from "solid-js"
+import { RatingStatic } from "components/RatingStatic"
+import { useSongState } from "../song.state"
 
 export function ReviewComp() {
-	const { reviews } = useSongState();
+	const { reviews } = useSongState()
 	return (
 		<div class="w-full">
 			<h3>Reviews</h3>
@@ -58,5 +58,5 @@ export function ReviewComp() {
 				</For>
 			</ul>
 		</div>
-	);
+	)
 }
