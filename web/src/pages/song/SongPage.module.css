@@ -3,7 +3,7 @@
 }
 
 main {
-	@apply bg-white px-4 py-1;
+	@apply px-4 py-1;
 }
 
 .altVerWrapper {

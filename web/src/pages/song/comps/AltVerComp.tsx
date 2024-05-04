@@ -1,13 +1,17 @@
-import { useSongState } from "../song.state"
-
+import { useSongData } from "../song.state"
+import style from "../SongPage.module.css"
 export function AltVerComp() {
-	const { altVers } = useSongState()
+	const { altVers } = useSongData()
 
 	const AltVerList = () =>
 		altVers().map((version) => {
 			return (
 				<>
-					<li class="altVerItem mx-2 my-1 flex justify-between bg-white p-2 py-3">
+					<li
+						class={
+							style.altVerItem +
+							" mx-2 my-1 flex justify-between bg-white p-2 py-3"
+						}>
 						<div>
 							<a href="">{version.title} </a>in{" "}
 							<a href="">{version.album}</a> -{" "}
@@ -25,9 +29,13 @@ export function AltVerComp() {
 				<h3>Alternative Version</h3>
 				<p class="gray-link-sm">view main song</p>
 			</div>
-			<ul class="altVerWrapper flex w-auto flex-col flex-nowrap bg-zinc-200 pt-1">
+			<ul
+				class={`${style.altVerWrapper}
+						flex w-auto flex-col flex-nowrap bg-zinc-200 pt-1`}>
 				<AltVerList />
-				<div class="altVerBottomButton mt-1.5 items-center bg-blue-500 p-0 text-center hover:bg-blue-600">
+				<div
+					class={`${style.altVerBottomButton}
+						mt-1.5 items-center bg-blue-500 p-0 text-center hover:bg-blue-600`}>
 					<button class="my-1 text-white">Show All</button>
 				</div>
 			</ul>
