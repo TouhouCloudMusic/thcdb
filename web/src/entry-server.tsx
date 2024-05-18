@@ -1,6 +1,5 @@
 // @refresh reload
 import { createHandler, StartServer } from "@solidjs/start/server";
-import { renderToStream } from "solid-js/web";
 export default createHandler(() => (
 	<StartServer
 		document={({ assets, children, scripts }) => (
