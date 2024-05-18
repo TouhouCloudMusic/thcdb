@@ -1,11 +1,8 @@
-import { defineConfig } from "@solidjs/start/config";
-import viteConfigPaths from "vite-tsconfig-paths";
-import path from "path";
+import { defineConfig } from "@solidjs/start/config"
+import viteConfigPaths from "vite-tsconfig-paths"
 export default defineConfig({
 	vite: {
-		build: {
-			minify: false
-		},
-		plugins: [viteConfigPaths()]
-	}
-});
+		plugins: [viteConfigPaths()],
+	},
+	routeDir: "./route",
+})
