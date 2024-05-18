@@ -11,6 +11,8 @@ body {
 
 main {
 	/* min-width: 64rem; */
+	@apply px-4 py-1;
+	background-color: white ;
 	width: 64rem;
 	max-width: 96vw;
 }
@@ -44,7 +46,7 @@ h3 {
 	@apply text-xl;
 }
 
-a {
+.blue_link {
 	@apply text-blue-600/90 hover:text-blue-500/80;
 }
 
