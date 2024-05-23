@@ -29,7 +29,7 @@ export function SongInfo() {
 	return (
 		<div
 			ref={anchorRef}
-			class={"my-1 grid grid-flow-row gap-1 px-1.5 pt-1 text-zinc-900"}>
+			class={"my-1 grid grid-flow-row gap-1 px-1.5 pt-1 text-gray-900"}>
 			<ShowPortal when={show()}>
 				<VoteGenreTab {...voteTabAttributes} />
 			</ShowPortal>
@@ -81,7 +81,7 @@ export function SongInfo() {
 				<ul class="flex content-center">
 					<Show
 						when={false}
-						fallback={<p class="text-sm text-zinc-400">null</p>}>
+						fallback={<p class="text-sm text-gray-400">null</p>}>
 						<Index each={genres()}>
 							{(genre, index) => (
 								<li class="">

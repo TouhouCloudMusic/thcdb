@@ -1,9 +1,9 @@
 export default function Login() {
-	const inputClass = "border-zinc-200 border-2 rounded-sm	pl-1.5 bg-zinc-100";
+	const inputClass = "border-gray-200 border-2 rounded-sm	pl-1.5 bg-gray-100"
 	// const btnClass =
-	// "border-zinc-200 w-16 h-8 rounded-md border-2 text-zinc-500";
-	const submitBtnClass = "bg-green-500 text-white w-16 h-8 rounded-md ";
-	const linkClass = "text-blue-500";
+	// "border-gray-200 w-16 h-8 rounded-md border-2 text-gray-500";
+	const submitBtnClass = "bg-green-500 text-white w-16 h-8 rounded-md "
+	const linkClass = "text-blue-500"
 	return (
 		<>
 			<main class="flex justify-center">
@@ -90,5 +90,5 @@ export default function Login() {
 				</div>
 			</main>
 		</>
-	);
+	)
 }

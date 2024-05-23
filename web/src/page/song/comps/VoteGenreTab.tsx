@@ -1,7 +1,7 @@
 import { autoUpdate, offset } from "@floating-ui/dom"
 import { UseFloatingResult, useFloating } from "solid-floating-ui"
 import { For, Index, Setter, Show, createSignal } from "solid-js"
-import { Atom } from "~/util/createAtom"
+import { createAtom } from "~/util/createAtom"
 import { useSongData } from "../song.state"
 export function VoteGenreTab(props: {
 	voteTabRef: Setter<HTMLElement | undefined>
@@ -33,7 +33,7 @@ export function VoteGenreTab(props: {
 				transform: `translate3d(${props.position.x ?? 0}px,${props.position.y ?? 0}px,0)`,
 				transition: "transform 0s",
 			}}>
-			<div class=" min-h-fit w-[40vw] border border-zinc-300 bg-zinc-100/95 p-4 shadow-md shadow-zinc-300">
+			<div class=" min-h-fit w-[40vw] border border-gray-300 bg-gray-100/95 p-4 shadow-md shadow-gray-300">
 				<div class="flex w-full flex-row-reverse">
 					<button
 						class=" text-gray-500"
@@ -45,7 +45,7 @@ export function VoteGenreTab(props: {
 					<input
 						type="text"
 						ref={inputElRef}
-						class=" w-52 rounded border border-zinc-300 bg-white pl-2"
+						class=" w-52 rounded border border-gray-300 bg-white pl-2"
 						placeholder="Search Genres"
 						onFocusIn={() => setDropdownShow(true)}
 						onFocusOut={() => setDropdownShow(false)}
@@ -53,8 +53,8 @@ export function VoteGenreTab(props: {
 					<Show when={dropdownShow()}>
 						<ul
 							ref={resultDropdown}
-							class=" w-max items-center divide-y divide-zinc-200
-						border border-zinc-300
+							class=" w-max items-center divide-y divide-gray-200
+						border border-gray-300
 						bg-white p-2"
 							style={{
 								position: dropdownPosition.strategy,
@@ -87,7 +87,7 @@ export function VoteGenreTab(props: {
 				</div>
 				<For each={genres()}>
 					{(genre, index) => (
-						<div class="my-2 divide-y-2 divide-zinc-300 border bg-white px-2 py-1 shadow">
+						<div class="my-2 divide-y-2 divide-gray-300 border bg-white px-2 py-1 shadow">
 							<div class="flex items-center justify-between">
 								<p>{genre}</p>
 								<div class="grid grid-cols-4 items-center">

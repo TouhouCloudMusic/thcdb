@@ -1,6 +1,5 @@
 header {
-	@apply z-[1] box-border flex w-full justify-center shadow;
-	background-color: white;
+	@apply z-[1] box-border flex w-full justify-center shadow text-gray-1000;
 }
 
 nav {
@@ -19,32 +18,39 @@ nav > ul > li {
 	align-items: center;
 }
 
-.navLink {
-	@apply rounded px-2 py-1 text-zinc-600;
-}
-
-.navLink:hover {
-	@apply bg-zinc-200/55 text-zinc-600;
-}
-
 .logo {
 	@apply mx-4;
 	display: flex;
-	a {
-		color: black !important;
+	a > strong {
+		color: hsl(var(--fg-pri));
 		font-size: 1.5rem;
 	}
 }
 
 .search_input {
-	@apply mx-2 h-8 min-w-48 border-gray-200 bg-gray-200 pl-2.5 text-gray-500
-	outline-none ring-1 ring-transparent hover:ring-gray-400 focus:min-w-64 focus:border-gray-700/95 focus:ring-gray-700/95;
+	@apply mx-2 h-8 pl-2 ;
+	outline-color: hsl(var(--fg-sec) / .5);
+	box-sizing: border-box;
+	border-width: 0.1rem;
+	border-color: transparent;
 	transition-duration: 100ms;
-	border-radius: 0.1rem;
+	border-radius: 0.125rem;
+}
+.search_input:hover {
+	--tw-ring-color: hsl(var(--fg-sec) / 0.25);
+	@apply ring-2;
+}
+.search_input:focus,
+.search_input:focus-visible {
+	--tw-ring-color: hsl(var(--fg-sec) / .5);
+	@apply ring-2;
+	/* box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); */
+	/* border-color: hsl(var(--fg-sec) / .5); */
 }
 
+
 .avatarWrapper {
-	@apply my-1 ml-2 w-[6rem] justify-center;
+	@apply justify-center ml-2;
 }
 
 .avatar {

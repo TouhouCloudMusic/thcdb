@@ -23,6 +23,9 @@ export function createProviderF<T extends object, U>(
 	return [Provider, () => useContext(Context)!]
 }
 
+/**
+ * @deprecated 基于类的Controller不能Split，故而放弃
+ *  */
 export function createProviderC<T extends object, U>(
 	controllerClass: new (store: T, setStore: SetStoreFunction<T>) => U
 ): [Provider<T>, () => U] {

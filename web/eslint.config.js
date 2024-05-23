@@ -20,6 +20,18 @@ export default [
 		rules: {
 			"@typescript-eslint/no-unused-vars": "warn",
 			"@typescript-eslint/array-type": "off",
+			"solid/self-closing-comp": [
+				"warn",
+				{
+					// which Solid components should be self-closing when possible
+					component: "all", // "all" | "none"
+					// which native elements should be self-closing when possible
+					html: "void", // "all" | "void" | "none"
+				},
+			],
 		},
+	},
+	{
+		ignores: [".cz-config.cjs", ".output/", ".vinxi/"],
 	},
 ]

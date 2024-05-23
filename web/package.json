@@ -1,51 +1,65 @@
 {
-	"name": "example-basic",
-	"type": "module",
-	"scripts": {
-		"dev": "vinxi dev",
-		"build": "vinxi build",
-		"start": "vinxi start",
-		"version": "vinxi version"
-	},
-	"dependencies": {
-		"@ark-ui/solid": "^2.2.0",
-		"@eslint/js": "^9.3.0",
-		"@floating-ui/dom": "^1.6.5",
-		"@sinclair/typebox": "^0.32.30",
-		"@solidjs/meta": "^0.29.4",
-		"@solidjs/router": "^0.13.3",
-		"@solidjs/start": "1.0.0-rc.0",
-		"globals": "^15.2.0",
-		"lucide-solid": "^0.373.0",
-		"ramda": "^0.29.1",
-		"solid-floating-ui": "^0.3.1",
-		"solid-js": "^1.8.17",
-		"solid-popper": "^0.3.0",
-		"vinxi": "^0.3.11"
-	},
-	"devDependencies": {
-		"@babel/eslint-parser": "^7.24.5",
-		"@types/ramda": "^0.29.12",
-		"@typescript-eslint/eslint-plugin": "^7.9.0",
-		"@typescript-eslint/parser": "^7.9.0",
-		"autoprefixer": "^10.4.19",
-		"babel-preset-solid": "^1.8.17",
-		"commitizen": "^4.3.0",
-		"cz-conventional-changelog": "^3.3.0",
-		"daisyui": "^4.11.1",
-		"eslint": "^8.57.0",
-		"eslint-config-prettier": "^9.1.0",
-		"eslint-plugin-solid": "^0.13.2",
-		"mocha": "^10.4.0",
-		"postcss": "^8.4.38",
-		"prettier": "3.2.4",
-		"prettier-plugin-tailwindcss": "^0.5.14",
-		"tailwindcss": "^3.4.3",
-		"typescript": "5.5.0-dev.20240517",
-		"typescript-eslint": "^7.9.0",
-		"vite-tsconfig-paths": "^4.3.2"
-	},
-	"engines": {
-		"node": ">=18"
-	}
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-customizable"
+    },
+    "cz-customizable": {
+      "config": ".cz-config.cjs"
+    }
+  },
+  "dependencies": {
+    "@ark-ui/solid": "^2.2.0",
+    "@eslint/js": "^9.3.0",
+    "@floating-ui/dom": "^1.6.5",
+    "@radix-ui/colors": "^3.0.0",
+    "@sinclair/typebox": "^0.32.30",
+    "@solid-primitives/destructure": "^0.1.17",
+    "@solidjs/meta": "^0.29.4",
+    "@solidjs/router": "^0.13.3",
+    "@solidjs/start": "1.0.0",
+    "cz-customizable": "^7.0.0",
+    "globals": "^15.3.0",
+    "lucide-solid": "^0.373.0",
+    "ramda": "^0.29.1",
+    "solid-floating-ui": "^0.3.1",
+    "solid-js": "^1.8.17",
+    "solid-popper": "^0.3.0",
+    "solid-radix-icons": "^1.0.0",
+    "ts-pattern": "^5.1.1",
+    "vinxi": "^0.3.11"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.24.5",
+    "@types/ramda": "^0.29.12",
+    "@typescript-eslint/eslint-plugin": "^7.10.0",
+    "@typescript-eslint/parser": "^7.10.0",
+    "autoprefixer": "^10.4.19",
+    "babel-preset-solid": "^1.8.17",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "daisyui": "^4.11.1",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-solid": "^0.13.2",
+    "mocha": "^10.4.0",
+    "postcss": "^8.4.38",
+    "prettier": "3.2.4",
+    "prettier-plugin-tailwindcss": "^0.5.14",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.5.0-dev.20240523",
+    "typescript-eslint": "^7.10.0",
+    "vite-tsconfig-paths": "^4.3.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "name": "example-basic",
+  "scripts": {
+    "build": "vinxi build",
+    "dev": "vinxi dev",
+    "dev-b": "bunx --bun vinxi dev",
+    "start": "vinxi start",
+    "version": "vinxi version"
+  },
+  "type": "module"
 }

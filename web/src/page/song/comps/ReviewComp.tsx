@@ -6,9 +6,9 @@ export function ReviewComp() {
 	return (
 		<div class="w-full">
 			<h3>Reviews</h3>
-			<div class="flex rounded-sm bg-zinc-200/75 px-2 text-sm">
+			<div class="flex rounded-sm bg-gray-200/75 px-2 text-sm">
 				<span class="font-bold">Sort by: </span>
-				<ul class="flex divide-x-2 divide-zinc-400/85">
+				<ul class="flex divide-x-2 divide-gray-400/85">
 					<li class="px-1">date</li>
 					<li class="px-1">length</li>
 					<li class="px-1">votes</li>
@@ -20,10 +20,10 @@ export function ReviewComp() {
 					{(review, index) => (
 						<li>
 							<article>
-								<div class="flex justify-between rounded-md bg-zinc-200/75">
+								<div class="flex justify-between rounded-md bg-gray-200/75">
 									<div class="flex items-center">
-										<div class="flex size-8 rounded-md bg-zinc-300/80">
-											<div class="m-auto size-fit text-xs text-zinc-500">
+										<div class="flex size-8 rounded-md bg-gray-300/80">
+											<div class="m-auto size-fit text-xs text-gray-500">
 												头像
 											</div>
 										</div>

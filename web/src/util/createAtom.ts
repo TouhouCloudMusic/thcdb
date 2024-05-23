@@ -27,3 +27,5 @@ export function createAtom<T>(
 
 	return atom
 }
+
+export { createAtom as createRef }

@@ -1,20 +1,33 @@
 # Web
 
-## 安装包
+## 包管理器
 
-请使用pnpm
+包管理器使用Bun
 
-```bash
-pnpm i
-```
+安装Bun:
+
+  ```bash
+  powershell -c "irm bun.sh/install.ps1 | iex"
+  ```
+
+安装依赖:
+
+  ```bash
+  bun install
+  ```
 
 ## 开发
 
-```bash
-pnpm dev
+使用Node:
 
-# 自动在浏览器打开页面
-pnpm dev -- --open
+```bash
+bun dev
+```
+
+使用Bun:
+
+```bash
+bun dev-b
 ```
 
 ## 命名规范

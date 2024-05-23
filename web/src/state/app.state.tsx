@@ -1,6 +1,7 @@
 import { SetStoreFunction } from "solid-js/store"
 import { User } from "~/entity/user"
 import { createProviderF } from "~/util/createProvider"
+import { updateTheme, setCookieTheme } from "./theme"
 
 export const enum AppTheme {
 	light,
@@ -8,12 +9,12 @@ export const enum AppTheme {
 }
 
 export interface AppState {
-	theme: AppTheme
+	theme?: AppTheme
 	user: User | undefined
 }
 
 export const devAppState: AppState = {
-	theme: AppTheme.light,
+	// theme: AppTheme.light,
 	user: {
 		id: 1,
 		username: "admin",
@@ -28,7 +29,11 @@ function createAppStateController(
 ) {
 	return {
 		theme: () => state.theme,
-		setTheme: (theme: AppState["theme"]) => setState("theme", theme),
+		setTheme: (theme: AppTheme) => {
+			setState("theme", theme)
+			updateTheme(theme)
+			setCookieTheme(theme)
+		},
 		user: () => state.user,
 		setUser: (user: AppState["user"]) => setState("user", user),
 		logOut: () => setState("user", undefined),

@@ -1,8 +1,11 @@
 import { Show } from "solid-js"
 import style from "./Header.module.css"
 import { useAppState } from "~/state/app.state"
+import { ThemeButton } from "../ThemeButton"
 export default function Header() {
 	const appState = useAppState()
+	const navLinkClass =
+		"button !rounded-full mx-0 my-2 px-1 py-1 text-nowrap w-20 text-center"
 	return (
 		<header>
 			<nav>
@@ -13,19 +16,19 @@ export default function Header() {
 						</a>
 					</li>
 					<li>
-						<a class={style.navLink}>new music</a>
+						<a class={navLinkClass}>music</a>
 					</li>
 					<li>
-						<a class={style.navLink}>genres</a>
+						<a class={navLinkClass}>genres</a>
 					</li>
 					<li>
-						<a class={style.navLink}>charts</a>
+						<a class={navLinkClass}>charts</a>
 					</li>
 					<li>
-						<a class={style.navLink}>lists</a>
+						<a class={navLinkClass}>lists</a>
 					</li>
 					<li>
-						<a class={style.navLink}>forums</a>
+						<a class={navLinkClass}>forums</a>
 					</li>
 					<li>
 						<input
@@ -35,16 +38,19 @@ export default function Header() {
 						/>
 					</li>
 					<li>
-						<a class={style.navLink}>占位符</a>
+						<a class={navLinkClass}>占位符</a>
 					</li>
 					<li>
-						<a class={style.navLink}>占位符</a>
+						<a class={navLinkClass}>占位符</a>
 					</li>
 					<li>
-						<a class={style.navLink}>占位符</a>
+						<a class={navLinkClass}>占位符</a>
 					</li>
 					<li>
-						<a class={style.navLink}>占位符</a>
+						<a class={navLinkClass}>占位符</a>
+					</li>
+					<li class="size-8">
+						<ThemeButton class="rounded-full size-full" />
 					</li>
 					<li class={style.avatarWrapper}>
 						<Show
@@ -64,8 +70,6 @@ export default function Header() {
 									class={style.avatar}
 									onClick={() => {
 										appState.logOut()
-										console.log(appState.user())
-										console.log(appState.appTheme())
 									}}>
 									<p class="text-xs text-gray-100">头像</p>
 								</div>

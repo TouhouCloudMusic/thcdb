@@ -31,7 +31,7 @@ export function AltVerComp() {
 			</div>
 			<ul
 				class={`${style.altVerWrapper}
-						flex w-auto flex-col flex-nowrap bg-zinc-200 pt-1`}>
+						flex w-auto flex-col flex-nowrap bg-gray-200 pt-1`}>
 				<AltVerList />
 				<div
 					class={`${style.altVerBottomButton}

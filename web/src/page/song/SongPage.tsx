@@ -8,7 +8,7 @@ import { CreditComp } from "./comps/CreditComp"
 import { SongDataProvider, useSongData } from "./song.state"
 import { testSongData } from "./test.data"
 // import "./song_page.css"
-const divideClass = "divide-y-2 divide-zinc-400 w-full"
+const divideClass = "divide-y-2 divide-gray-400 w-full"
 
 function SongPage() {
 	const { title } = useSongData()

@@ -3,7 +3,7 @@ import { StarIcon } from "lucide-solid"
 import { RatingGroup } from "@ark-ui/solid"
 export function UserActionComp() {
 	const itemClass =
-		"bg-zinc-200/70 size-fit rounded-[0.1rem] py-1 px-2 border-zinc-400 text-zinc-600"
+		"bg-gray-200/70 size-fit rounded-[0.1rem] py-1 px-2 border-gray-400 text-gray-600"
 	const itemStyle = {
 		// "border-radius": "0.1rem",
 	}
