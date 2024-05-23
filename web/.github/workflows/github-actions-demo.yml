@@ -10,6 +10,8 @@ jobs:
       - uses: oven-sh/setup-bun@v1
       # test build
       - run: bun install
+      # format
+      - run: bun run format
+      # TODO: test
+      # build
       - run: bun run build
-      # output info
-      - run: echo "${{ job.status }}"

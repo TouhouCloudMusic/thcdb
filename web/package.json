@@ -58,7 +58,8 @@
 		"dev": "vinxi dev",
 		"dev-b": "bunx --bun vinxi dev",
 		"start": "vinxi start",
-		"version": "vinxi version"
+		"version": "vinxi version",
+		"format": "bun run prettier --write ./src && bun run eslint ./src"
 	},
 	"type": "module"
 }
