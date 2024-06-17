@@ -1,0 +1,10 @@
+.no_spinner::-webkit-outer-spin-button,
+.no_spinner::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.no_spinner {
+	appearance: textfield;
+	-moz-appearance: textfield;
+}

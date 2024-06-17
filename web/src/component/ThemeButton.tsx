@@ -8,14 +8,14 @@ export function ThemeButton(props: { class?: string }) {
 		<Switch>
 			<Match when={theme() === AppTheme.light}>
 				<button
-					class={`button place-content-center flex items-center ${props.class}`}
+					class={`button flex place-content-center items-center ${props.class}`}
 					onClick={() => setTheme(AppTheme.dark)}>
 					<SunIcon />
 				</button>
 			</Match>
 			<Match when={theme() === AppTheme.dark}>
 				<button
-					class={`button place-content-center flex items-center ${props.class}`}
+					class={`button flex place-content-center items-center ${props.class}`}
 					onClick={() => setTheme(AppTheme.light)}>
 					<MoonIcon />
 				</button>

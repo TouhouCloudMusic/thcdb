@@ -53,9 +53,7 @@ export function SongInfo() {
 								<li>
 									<p>
 										<a href="">{song()}</a>
-										{index !== originalSong().length - 1
-											? ", "
-											: ""}
+										{index !== originalSong().length - 1 ? ", " : ""}
 									</p>
 								</li>
 							)}
@@ -72,8 +70,8 @@ export function SongInfo() {
 			<div class={style.infoRow}>
 				<p>Ranked</p>
 				<p>
-					#{rank.thisYear()} for <a href="">2024</a>, #
-					{rank.overAll()} <a href="">overall</a>
+					#{rank.thisYear()} for <a href="">2024</a>, #{rank.overAll()}{" "}
+					<a href="">overall</a>
 				</p>
 			</div>
 			<div class={style.infoRow}>

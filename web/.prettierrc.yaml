@@ -1,0 +1,29 @@
+bracketSameLine: true
+endOfLine: lf
+experimentalTernaries: true
+htmlWhitespaceSensitivity: css
+insertPragma: false
+overrides:
+  - files: "*.json"
+    options:
+      trailingComma: all
+  - files:
+      - "*.yaml"
+      - "*.yml"
+      - "*.md"
+    options:
+      tabWidth: 2
+      useTabs: false
+  - files:
+      - "package.json"
+    options:
+      tabWidth: 2
+      useTabs: false
+plugins:
+  - prettier-plugin-tailwindcss
+quoteProps: as-needed
+requirePragma: false
+semi: false
+singleAttributePerLine: true
+trailingComma: es5
+useTabs: true

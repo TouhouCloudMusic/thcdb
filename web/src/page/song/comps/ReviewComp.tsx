@@ -42,15 +42,11 @@ export function ReviewComp() {
 										<div class="mx-2">+</div>
 										<div class="mx-2">-</div>
 										<div class="mx-2">
-											<RatingStatic
-												rating={review.rating}
-											/>
+											<RatingStatic rating={review.rating} />
 										</div>
 									</div>
 								</div>
-								<p class="my-2 pl-4 text-gray-600">
-									{review.content}
-								</p>
+								<p class="my-2 pl-4 text-gray-600">{review.content}</p>
 							</article>
 						</li>
 					)}

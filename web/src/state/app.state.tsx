@@ -1,7 +1,7 @@
-import { SetStoreFunction } from "solid-js/store"
-import { User } from "~/entity/user"
-import { createProviderF } from "~/util/createProvider"
-import { updateTheme, setCookieTheme } from "./theme"
+import type { SetStoreFunction } from "solid-js/store"
+import type { User } from "~/entity/user"
+import { createProvider } from "~/util/createProvider"
+import { setCookieTheme, updateTheme } from "./theme"
 
 export const enum AppTheme {
 	light,
@@ -45,7 +45,7 @@ function createAppStateController(
 	}
 }
 
-export const [AppStateProvider, useAppState] = createProviderF<
+export const [AppStateProvider, useAppState] = createProvider<
 	AppState,
 	AppStateController
 >(createAppStateController)

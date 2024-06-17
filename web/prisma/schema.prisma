@@ -1,0 +1,210 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins", "omitApi"]
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("VITE_DATABASE_URL")
+  relationMode = "prisma"
+}
+
+enum ArtistType {
+  Person
+  Group
+}
+
+model Artist {
+  id                  BigInt             @id @default(autoincrement())
+  name                String             @db.VarChar(64)
+  type                ArtistType
+  //
+  date_of_birth_year  Int                @default(0) @db.SmallInt
+  date_of_birth_month Int                @default(0) @db.TinyInt
+  date_of_birth_day   Int                @default(0) @db.TinyInt
+  date_of_death_year  Int                @default(0) @db.SmallInt
+  date_of_death_month Int                @default(0) @db.TinyInt
+  date_of_death_day   Int                @default(0) @db.TinyInt
+  // 别名列表，关联作为别名的字符串或是艺术家
+  alias               ArtistAlias[]      @relation("artist_alias")
+  // 此艺术家在别名表中的一对一关系，可空。
+  as_alias            ArtistAlias?       @relation(fields: [as_alias_id], references: [id])
+  as_alias_id         BigInt?
+  //
+  release             ReleaseArtist[]
+  release_credit      ReleaseCredit[]
+  release_tracklist   ReleaseTracklist[]
+  //
+  songs               Song[]
+  song_credits        SongCredit[]
+  //
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @default(now()) @updatedAt
+  //
+  as_group_id         BigInt?
+  members             GroupMember[]      @relation("members")
+  member_of           GroupMember[]      @relation("member_of")
+
+  @@index([as_alias_id])
+  @@index([as_group_id])
+  @@map("artist")
+}
+
+model ArtistAlias {
+  id           BigInt   @id @default(autoincrement())
+  // 显示名称，当此别名仅作为字符串时使用。如果此别名链接了某位艺术家，则应当设为空。
+  display_name String?  @db.VarChar(64)
+  // 此别名在艺术家表中的一对一关系，可空。
+  as_artist    Artist[]
+  // 此别名作为其他艺术家别名的关系。
+  alias_of     Artist[] @relation("artist_alias")
+
+  @@map("artist_alias")
+}
+
+model GroupMember {
+  id         BigInt  @id @default(autoincrement())
+  name       String? @db.VarChar(64)
+  artist     Artist? @relation(name: "member_of", fields: [artist_id], references: [id])
+  artist_id  BigInt?
+  group      Artist? @relation(name: "members", fields: [group_id], references: [id])
+  group_id   BigInt?
+  join_year  Int?    @db.Year
+  leave_year Int?    @db.Year
+
+  @@index([artist_id])
+  @@index([group_id])
+  @@map("group_member")
+}
+
+model Release {
+  id                 BigInt             @id @default(autoincrement())
+  type_id            BigInt
+  title              String             @db.VarChar(128)
+  // 如：ABCD-1234
+  catalog_num        String?            @db.VarChar(32)
+  credit_name        String?            @db.VarChar(128)
+  language           String?
+  release_date_year  Int                @default(0) @db.SmallInt
+  release_date_month Int                @default(0) @db.TinyInt
+  release_date_day   Int                @default(0) @db.TinyInt
+  total_disc         Int?               @db.TinyInt
+  //
+  artist             ReleaseArtist[]
+  credits            ReleaseCredit[]
+  tracklist          ReleaseTracklist[]
+  type               ReleaseType        @relation(fields: [type_id], references: [id])
+  //
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @default(now()) @updatedAt
+
+  @@index([release_date_year])
+  @@index([type_id])
+  @@map("release")
+}
+
+model ReleaseType {
+  id      BigInt    @id @default(autoincrement())
+  name    String    @db.VarChar(32)
+  release Release[]
+
+  @@map("release_type")
+}
+
+model ReleaseArtist {
+  id          BigInt  @id @default(autoincrement())
+  credit_name String?
+  separator   String? @db.VarChar(4)
+  //
+  artist_id   BigInt
+  artist      Artist  @relation(fields: [artist_id], references: [id])
+  release_id  BigInt
+  release     Release @relation(fields: [release_id], references: [id])
+
+  @@index([release_id])
+  @@index([artist_id])
+  @@map("release_artist")
+}
+
+model ReleaseTracklist {
+  id          BigInt          @id @default(autoincrement())
+  track_order Int             @db.UnsignedTinyInt
+  track_num   String?         @db.VarChar(4)
+  //
+  artist      Artist[]
+  //
+  song_id     BigInt
+  song        Song            @relation(fields: [song_id], references: [id])
+  //
+  release     Release         @relation(fields: [release_id], references: [id])
+  release_id  BigInt
+  //
+  credits     ReleaseCredit[]
+
+  @@index([song_id])
+  @@index([release_id])
+  @@map("release_tracklist")
+}
+
+model ReleaseCredit {
+  id          BigInt             @id @default(autoincrement())
+  artist      Artist             @relation(fields: [artist_id], references: [id])
+  artist_id   BigInt
+  credit_role CreditRole[]
+  release     Release            @relation(fields: [release_id], references: [id])
+  release_id  BigInt
+  track       ReleaseTracklist[]
+
+  @@index([artist_id])
+  @@index([release_id])
+  @@map("release_credit")
+}
+
+model Song {
+  id                 BigInt             @id @default(autoincrement())
+  language           String?
+  title              String             @db.VarChar(64)
+  //
+  artist             Artist[]
+  credits            SongCredit[]
+  release_tracklists ReleaseTracklist[]
+  //
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @default(now()) @updatedAt
+
+  @@map("song")
+}
+
+model SongCredit {
+  id          BigInt       @id @default(autoincrement())
+  artist_id   BigInt
+  artist      Artist       @relation(fields: [artist_id], references: [id])
+  song_id     BigInt
+  song        Song         @relation(fields: [song_id], references: [id])
+  credit_role CreditRole[]
+
+  @@index([artist_id])
+  @@index([song_id])
+  @@map("song_credit")
+}
+
+model CreditRole {
+  id             BigInt          @id @default(autoincrement())
+  name           String          @db.VarChar(16)
+  desc_short     String          @db.VarChar(255)
+  desc_long      String?         @db.Text
+  parents        CreditRole[]    @relation("inheritance_of_credit_role")
+  children       CreditRole[]    @relation("inheritance_of_credit_role")
+  song_credits   SongCredit[]
+  release_credit ReleaseCredit[]
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @default(now()) @updatedAt
+
+  @@map("credit_role")
+}

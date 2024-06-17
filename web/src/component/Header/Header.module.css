@@ -1,5 +1,5 @@
 header {
-	@apply z-[1] box-border flex w-full justify-center shadow text-gray-1000;
+	@apply z-[1] box-border flex w-full justify-center text-gray-1000 shadow;
 }
 
 nav {
@@ -28,8 +28,8 @@ nav > ul > li {
 }
 
 .search_input {
-	@apply mx-2 h-8 pl-2 ;
-	outline-color: hsl(var(--fg-sec) / .5);
+	@apply mx-2 h-8 pl-2;
+	outline-color: hsl(var(--fg-sec) / 0.5);
 	box-sizing: border-box;
 	border-width: 0.1rem;
 	border-color: transparent;
@@ -42,15 +42,14 @@ nav > ul > li {
 }
 .search_input:focus,
 .search_input:focus-visible {
-	--tw-ring-color: hsl(var(--fg-sec) / .5);
+	--tw-ring-color: hsl(var(--fg-sec) / 0.5);
 	@apply ring-2;
 	/* box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); */
 	/* border-color: hsl(var(--fg-sec) / .5); */
 }
 
-
 .avatarWrapper {
-	@apply justify-center ml-2;
+	@apply ml-2 justify-center;
 }
 
 .avatar {

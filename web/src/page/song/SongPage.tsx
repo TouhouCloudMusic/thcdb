@@ -14,7 +14,7 @@ function SongPage() {
 	const { title } = useSongData()
 	return (
 		<main>
-			<div class="mt-0 flex flex-col items-center justify-center gap-1 ">
+			<div class="mt-0 flex flex-col items-center justify-center gap-1">
 				{" "}
 				<Title>{title()}</Title>
 				<div class={divideClass}>

@@ -1,5 +1,5 @@
 import { SetStoreFunction } from "solid-js/store"
-import { createProviderF } from "~/util/createProvider"
+import { createProvider } from "~/util/createProvider"
 
 export interface AltVer {
 	title: string
@@ -75,7 +75,5 @@ function createSongController(
 	return songController
 }
 
-export const [SongDataProvider, useSongData] = createProviderF<
-	SongData,
-	SongController
->(createSongController)
+export const [SongDataProvider, useSongData] =
+	createProvider(createSongController)

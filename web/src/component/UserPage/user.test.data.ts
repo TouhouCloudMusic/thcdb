@@ -1,5 +1,4 @@
-import { User } from "~/type/entity/user"
-import { TimeLineItem, UserPageData } from "./user.data"
+import type { TimeLineItem, UserPageData } from "./user.data"
 
 function generator(index: number): TimeLineItem[] {
 	const arr: TimeLineItem[] = []

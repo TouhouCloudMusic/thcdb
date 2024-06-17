@@ -20,9 +20,7 @@ export function CreditComp() {
 												class="text-gray-600">
 												{role()}
 											</a>
-											{index !== role.length - 1
-												? ", "
-												: ""}
+											{index !== role.length - 1 ? ", " : ""}
 										</li>
 									)}
 								</Index>

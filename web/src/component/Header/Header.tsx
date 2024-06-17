@@ -1,7 +1,7 @@
 import { Show } from "solid-js"
-import style from "./Header.module.css"
 import { useAppState } from "~/state/app.state"
-import { ThemeButton } from "../ThemeButton"
+import { ThemeButton } from "../themeButton"
+import style from "./header.module.css"
 export default function Header() {
 	const appState = useAppState()
 	const navLinkClass =
@@ -10,7 +10,7 @@ export default function Header() {
 		<header>
 			<nav>
 				<ul>
-					<li class={style.logo}>
+					<li class={style["logo"]}>
 						<a href="/">
 							<strong>LOGO</strong>
 						</a>
@@ -34,7 +34,7 @@ export default function Header() {
 						<input
 							type="text"
 							placeholder="Search"
-							class={style.search_input}
+							class={style["search_input"]}
 						/>
 					</li>
 					<li>
@@ -50,9 +50,9 @@ export default function Header() {
 						<a class={navLinkClass}>占位符</a>
 					</li>
 					<li class="size-8">
-						<ThemeButton class="rounded-full size-full" />
+						<ThemeButton class="size-full rounded-full" />
 					</li>
-					<li class={style.avatarWrapper}>
+					<li class={style["avatarWrapper"]}>
 						<Show
 							when={appState.user()?.username ?? false}
 							fallback={
@@ -60,14 +60,13 @@ export default function Header() {
 									class="h-9 place-content-center rounded-md bg-green-600 px-2.5 text-center text-white hover:bg-green-600/80 active:bg-green-700/90"
 									onClick={() => {
 										appState.devLogIn()
-										console.log(appState.user())
 									}}>
 									<span class="mx-auto">登录/注册</span>
 								</button>
 							}>
 							<div class="flex">
 								<div
-									class={style.avatar}
+									class={style["avatar"]}
 									onClick={() => {
 										appState.logOut()
 									}}>

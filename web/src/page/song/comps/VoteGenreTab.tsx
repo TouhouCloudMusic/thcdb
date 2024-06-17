@@ -33,19 +33,19 @@ export function VoteGenreTab(props: {
 				transform: `translate3d(${props.position.x ?? 0}px,${props.position.y ?? 0}px,0)`,
 				transition: "transform 0s",
 			}}>
-			<div class=" min-h-fit w-[40vw] border border-gray-300 bg-gray-100/95 p-4 shadow-md shadow-gray-300">
+			<div class="min-h-fit w-[40vw] border border-gray-300 bg-gray-100/95 p-4 shadow-md shadow-gray-300">
 				<div class="flex w-full flex-row-reverse">
 					<button
-						class=" text-gray-500"
+						class="text-gray-500"
 						onClick={() => props.setShow(false)}>
 						<p>close</p>
 					</button>
 				</div>
-				<div class="flex w-48 flex-col ">
+				<div class="flex w-48 flex-col">
 					<input
 						type="text"
 						ref={inputElRef}
-						class=" w-52 rounded border border-gray-300 bg-white pl-2"
+						class="w-52 rounded border border-gray-300 bg-white pl-2"
 						placeholder="Search Genres"
 						onFocusIn={() => setDropdownShow(true)}
 						onFocusOut={() => setDropdownShow(false)}
@@ -53,9 +53,7 @@ export function VoteGenreTab(props: {
 					<Show when={dropdownShow()}>
 						<ul
 							ref={resultDropdown}
-							class=" w-max items-center divide-y divide-gray-200
-						border border-gray-300
-						bg-white p-2"
+							class="w-max items-center divide-y divide-gray-200 border border-gray-300 bg-white p-2"
 							style={{
 								position: dropdownPosition.strategy,
 								top: 0,
@@ -64,10 +62,10 @@ export function VoteGenreTab(props: {
 							}}>
 							<Index each={genreResult()}>
 								{(item) => (
-									<li class="my-auto grid w-max grid-flow-row grid-cols-6 items-center justify-between bg-white  px-2 py-1">
+									<li class="my-auto grid w-max grid-flow-row grid-cols-6 items-center justify-between bg-white px-2 py-1">
 										<a
 											href=""
-											class="col-span-3 ">
+											class="col-span-3">
 											{item()}
 										</a>
 										<button class="mx-1 h-4/5 rounded bg-green-500 px-1 text-white">
@@ -116,9 +114,7 @@ export function VoteGenreTab(props: {
 													{(item, index) => (
 														<li>
 															<a>{`User ${index}`}</a>
-															{index !== 4
-																? ", "
-																: ""}
+															{index !== 4 ? ", " : ""}
 														</li>
 													)}
 												</Index>

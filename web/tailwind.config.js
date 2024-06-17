@@ -5,6 +5,11 @@ export default {
 	darkMode: ["selector", '[data-mode="dark"]'],
 	theme: {
 		colors: {
+			inherit: "inherit",
+			current: "currentColor",
+			transparent: "transparent",
+			black: "hsl(0 0 0 / <alpha-value>)",
+			white: "hsl(0 0 100 / <alpha-value>)",
 			main: "hsl(var(--bg-main) / <alpha-value>)",
 			highlight: "hsl(var(--bg-highlight) / <alpha-value>)",
 			gray: {
@@ -103,6 +108,36 @@ export default {
 				900: "hsl(var(--pink-900) / <alpha-value>)",
 				1000: "hsl(var(--pink-1000) / <alpha-value>)",
 			},
+		},
+		fontFamily: {
+			sans: [
+				"Geist",
+				"ui-sans-serif",
+				"system-ui",
+				"sans-serif",
+				'"Apple Color Emoji"',
+				'"Segoe UI Emoji"',
+				'"Segoe UI Symbol"',
+				'"Noto Color Emoji"',
+			],
+			serif: [
+				"ui-serif",
+				"Georgia",
+				"Cambria",
+				'"Times New Roman"',
+				"Times",
+				"serif",
+			],
+			mono: [
+				"ui-monospace",
+				"SFMono-Regular",
+				"Menlo",
+				"Monaco",
+				"Consolas",
+				'"Liberation Mono"',
+				'"Courier New"',
+				"monospace",
+			],
 		},
 	},
 	plugins: [],

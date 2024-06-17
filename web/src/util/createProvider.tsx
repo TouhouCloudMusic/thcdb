@@ -1,13 +1,14 @@
+/* eslint-disable solid/components-return-once */
 /* eslint-disable solid/reactivity */
-import { JSX, createContext, useContext } from "solid-js"
-import { SetStoreFunction, createStore } from "solid-js/store"
+import { createContext, useContext, type JSXElement } from "solid-js"
+import { createStore, type SetStoreFunction } from "solid-js/store"
 
 export type Provider<T> = (props: {
-	children: JSX.Element
+	children: JSXElement
 	defaultState: T
-}) => JSX.Element
+}) => JSXElement
 
-export function createProviderF<T extends object, U>(
+export function createProvider<T extends object, U>(
 	createController: (store: T, setStore: SetStoreFunction<T>) => U
 ): [Provider<T>, () => U] {
 	const Context = createContext<U>()
@@ -15,9 +16,7 @@ export function createProviderF<T extends object, U>(
 		const [state, setState] = createStore(props.defaultState)
 		const controller = createController(state, setState)
 		return (
-			<Context.Provider value={controller}>
-				{props.children}
-			</Context.Provider>
+			<Context.Provider value={controller}>{props.children}</Context.Provider>
 		)
 	}
 	return [Provider, () => useContext(Context)!]
@@ -34,9 +33,7 @@ export function createProviderC<T extends object, U>(
 		const [state, setState] = createStore(props.defaultState)
 		const controller = new controllerClass(state, setState)
 		return (
-			<Context.Provider value={controller}>
-				{props.children}
-			</Context.Provider>
+			<Context.Provider value={controller}>{props.children}</Context.Provider>
 		)
 	}
 	return [Provider, () => useContext(Context)!]

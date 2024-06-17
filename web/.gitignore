@@ -1,25 +1,25 @@
-
-dist
-.solid
-.output
-.vercel
+# Outputs
 .netlify
-netlify
+.output
+.solid
+.vercel
 .vinxi
 
-# Environment
-.env
-.env*.local
+dist
+netlify
 
-# dependencies
-/node_modules
+# Environment
+# .env
+# .env*.local
+
+# Dependencies
+node_modules
 
 # IDEs and editors
-/.idea
-.project
 .classpath
-*.launch
-.settings/
+.idea
+.project
+.vscode
 
 # Temp
 gitignore

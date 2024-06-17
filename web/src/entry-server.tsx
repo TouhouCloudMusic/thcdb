@@ -23,11 +23,7 @@ export default createHandler(
 							{assets}
 						</head>
 						<body>
-							<div
-								id="app"
-								class="notransition">
-								{children}
-							</div>
+							<div id="app">{children}</div>
 							{scripts}
 						</body>
 					</html>
@@ -35,5 +31,5 @@ export default createHandler(
 			/>
 		)
 	},
-	{ mode: "stream" }
+	{ mode: "async" }
 )

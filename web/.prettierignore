@@ -1,10 +1,11 @@
+.husky
+.idea
+.output
+.vinxi
+
 dist
 node_modules
 public
-.husky
-.vscode
-.idea
-*.sh
-*.md
-
 src/assets
+
+src/style/shadow/shadow_default.css
