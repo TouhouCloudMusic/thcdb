@@ -3,7 +3,7 @@ import {
 	FieldArray,
 	Form,
 	getError,
-	setValues
+	setValues,
 } from "@modular-forms/solid"
 import {
 	Params,
@@ -21,7 +21,7 @@ import {
 	Switch,
 	createContext,
 	createMemo,
-	onMount
+	onMount,
 } from "solid-js"
 import { Cross1Icon } from "solid-radix-icons"
 import { Button } from "~/component/button"
