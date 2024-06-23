@@ -8,4 +8,9 @@ node_modules
 public
 src/assets
 
-src/style/shadow/shadow_default.css
+# database
+packages/database/dbschema/edgeql-js
+packages/database/dbschema/interfaces.ts
+
+# web
+packages/web/src/style/shadow/shadow_default.css

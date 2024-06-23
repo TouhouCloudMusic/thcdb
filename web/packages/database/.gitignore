@@ -12,8 +12,12 @@ node_modules
 
 # Temp
 gitignore
-.eslintcache
 
 # System Files
 .DS_Store
 Thumbs.db
+
+# Edge DB
+edgeql-js
+interfaces.ts
+dbschema/migrations

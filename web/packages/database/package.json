@@ -1,0 +1,17 @@
+{
+  "name": "@touhouclouddb/database",
+  "main": "index.ts",
+  "devDependencies": {
+    "@edgedb/generate": "^0.5.3",
+    "@types/bun": "latest",
+    "prettier": "^3.3.2"
+  },
+  "peerDependencies": {
+    "typescript": "latest",
+    "edgedb": "latest"
+  },
+  "scripts": {
+    "generate": "npx @edgedb/generate interfaces --file interfaces.ts && npx @edgedb/generate edgeql-js --target esm --output-dir ./edgeql-js"
+  },
+  "type": "module"
+}
