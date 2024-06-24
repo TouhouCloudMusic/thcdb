@@ -1,4 +1,4 @@
-import { User } from "~/entity/user"
+import { User } from "~/database/entity/user"
 
 export interface UserPageData {
 	username: string

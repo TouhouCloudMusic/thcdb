@@ -1,5 +1,5 @@
 import type { SetStoreFunction } from "solid-js/store"
-import type { User } from "~/entity/user"
+import type { User } from "~/database/entity/user"
 import { createProvider } from "~/util/createProvider"
 import { setCookieTheme, updateTheme } from "./theme"
 
