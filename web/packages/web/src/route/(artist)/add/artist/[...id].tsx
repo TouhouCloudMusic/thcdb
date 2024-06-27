@@ -5,13 +5,7 @@ import {
 	getError,
 	setValues,
 } from "@modular-forms/solid"
-import {
-	Params,
-	cache,
-	createAsync,
-	useAction,
-	useParams,
-} from "@solidjs/router"
+import { createAsync, useAction, useParams } from "@solidjs/router"
 import {
 	Accessor,
 	For,
@@ -28,36 +22,26 @@ import { Button } from "~/component/button"
 import { FormUI } from "~/component/form/ui"
 import { useContextUnsave } from "~/lib/context/use_context_unsave"
 import { notNullString } from "~/lib/validate/not_empty_string"
-import { validateAndThrowRedirect } from "~/lib/validate/throw_redirect"
-import { isEmptyOrValidID } from "~/lib/validate/validate_params"
 import { createController } from "./controller"
-import { getData } from "./init_data"
 import { h4Class } from "./style"
 import { submitAction } from "./submit"
-import { initFormStore_Member } from "./utils"
+import { initFormStore_Member } from "./init_member"
+import { initData } from "./init_data"
 
-const EditArtistPageContext =
-	createContext<ReturnType<typeof createController>>()
-const useController = useContextUnsave(EditArtistPageContext)
-
-const getArtistDataByID_EditPage = cache(async function (params: Params) {
-	const id = validateAndThrowRedirect(isEmptyOrValidID, params)
-	if (!id) return
-	return await getData(id)
-}, `artist_by_id_edit`)
+const Context = createContext<ReturnType<typeof createController>>()
+const useController = useContextUnsave(Context)
 
 export default function EditArtistPage() {
 	const controller = createController()
 	return (
-		<EditArtistPageContext.Provider value={controller}>
+		<Context.Provider value={controller}>
 			<Main />
-		</EditArtistPageContext.Provider>
+		</Context.Provider>
 	)
 }
 
 function Main() {
-	const data = createAsync(() => getArtistDataByID_EditPage(useParams()))
-
+	const data = createAsync(() => initData(useParams()))
 	const { artistData, setArtistData, formStore, type, form } = useController()
 	const action = useAction(submitAction)
 	onMount(() => {
@@ -66,7 +50,7 @@ function Main() {
 			setArtistData(initData)
 			type.setType(initData.artist_type)
 			const initFormValue = {
-				id: initData.id.toString(),
+				id: initData.app_id.toString(),
 				name: initData.name,
 				type: initData.artist_type,
 				member: initFormStore_Member(initData),
@@ -290,7 +274,7 @@ function FieldArrayItem(props: { index: () => number }) {
 				{(nameField, nameProps) => (
 					<Field
 						of={formStore}
-						name={`member.${props.index()}.isStr`}
+						name={`member.${props.index()}.is_str`}
 						type="boolean">
 						{(isTextField, isTextProps) => (
 							<div class="flex w-full flex-row place-content-between gap-2 rounded-md border-[0.1rem] bg-white p-2">
@@ -315,7 +299,7 @@ function FieldArrayItem(props: { index: () => number }) {
 									<div class="flex w-full gap-1">
 										<Field
 											of={formStore}
-											name={`member.${props.index()}.joinYear`}
+											name={`member.${props.index()}.join_year`}
 											type="number">
 											{(joinYearField, joinYearProps) => (
 												<input
@@ -331,7 +315,7 @@ function FieldArrayItem(props: { index: () => number }) {
 										</Field>
 										<Field
 											of={formStore}
-											name={`member.${props.index()}.leaveYear`}
+											name={`member.${props.index()}.leave_year`}
 											type="number">
 											{(leaveYearField, leaveYearProps) => (
 												<input
@@ -370,13 +354,13 @@ function FormFieldError(props: { index: () => number }) {
 		getError(formStore, `member.${props.index()}.name`)
 	)
 	const isTextFieldErr = createMemo(() =>
-		getError(formStore, `member.${props.index()}.isStr`)
+		getError(formStore, `member.${props.index()}.is_str`)
 	)
 	const joinYearFieldErr = createMemo(() =>
-		getError(formStore, `member.${props.index()}.joinYear`)
+		getError(formStore, `member.${props.index()}.join_year`)
 	)
 	const leaveYearFieldErr = createMemo(() =>
-		getError(formStore, `member.${props.index()}.leaveYear`)
+		getError(formStore, `member.${props.index()}.leave_year`)
 	)
 	return (
 		<>

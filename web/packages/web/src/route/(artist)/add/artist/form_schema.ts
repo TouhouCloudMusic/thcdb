@@ -33,9 +33,9 @@ export const ArtistFormSchema = v.object({
 				app_id: v.string(),
 				name: v.pipe(v.string(), v.minLength(1, "Artist name is required")),
 				artist_type: artistTypeSchema,
-				isStr: v.boolean(),
-				joinYear: yearSchema,
-				leaveYear: yearSchema,
+				is_str: v.boolean(),
+				join_year: yearSchema,
+				leave_year: yearSchema,
 			}),
 			"Invalid artist"
 		)

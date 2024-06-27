@@ -1,36 +1,18 @@
-import { redirect } from "@solidjs/router"
+"use server"
+import { type Params, cache, redirect } from "@solidjs/router"
 import e from "@touhouclouddb/database"
-import { client } from "~/database/edgedb"
+import { validateAndThrowRedirectEither } from "~/lib/validate/throw_redirect"
+import { isEmptyOrValidID } from "~/lib/validate/validate_params"
+import { findArtistByID_EditArtistPage } from "./db"
 
-async function find(id: bigint | number) {
-	"use server"
-	const idStr = id.toString()
-	return await e
-		.select(e.default.Artist, (artist) => ({
-			...artist["*"],
-			alias: {
-				...e.default.Artist.alias["*"],
-			},
-			members: {
-				...e.default.Artist.members["*"],
-			},
-			member_of: {
-				...e.default.Artist.member_of["*"],
-			},
-			filter_single: {
-				app_id: e.int64(idStr),
-			},
-		}))
-		.run(client)
-}
-
-export async function getData(id: bigint | number) {
-	"use server"
+export const initData = cache(async function (params: Params) {
+	const id = validateAndThrowRedirectEither(isEmptyOrValidID, params)
+	if (!id) return
 	try {
-		return await find(id)
+		return await findArtistByID_EditArtistPage(id)
 	} catch (error) {
 		// TODO: 研究如何把error发到客户端上
 		console.log(e)
 		throw redirect("/500")
 	}
-}
+}, `init_edit_artist_page`)

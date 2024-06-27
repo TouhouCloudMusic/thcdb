@@ -10,9 +10,13 @@ import * as R from "ramda"
 import { createSignal } from "solid-js"
 import { Nullable } from "vitest"
 import { ArtistByID } from "~/database/artist/find_artist_by_id"
-import { ArtistType } from "~/database/artist/type"
+import { Artist } from "@touhouclouddb/database"
 import { isEmptyArray } from "~/lib/validate/array"
-import { findArtistByKeyword_EditArtistPage } from "./db"
+import {
+	ArtistByKeyword_EditArtistPage,
+	ArtistListByKeyword_EditArtistPage,
+	findArtistByKeyword_EditArtistPage,
+} from "./db"
 import { ArtistFormSchema } from "./form_schema"
 import { ArtistForm, MemberList, MemberListItem } from "./type"
 
@@ -35,9 +39,9 @@ export function createController() {
 		setErrMsg: setFormErrorMsg,
 	}
 	// type
-	const [artistType, setArtistType] = createSignal<ArtistType>()
+	const [artistType, setArtistType] = createSignal<Artist.ArtistType>()
 
-	function setArtistTypeWithSwapMemberListCache(type: ArtistType) {
+	function setArtistTypeWithSwapMemberListCache(type: Artist.ArtistType) {
 		setArtistType(type)
 		setMemberSearchResult(undefined)
 		const cache = memberListCache()
@@ -55,14 +59,8 @@ export function createController() {
 		toGroup: () => setArtistTypeWithSwapMemberListCache("Group"),
 	}
 	// member
-	type MemberSearchResult = {
-		id?: string
-		app_id: string
-		name: string
-		artist_type: ArtistType
-	}
 	const [memberSearchResult, setMemberSearchResult] =
-		createSignal<MemberSearchResult[]>()
+		createSignal<ArtistListByKeyword_EditArtistPage>()
 	const [memberListCache, setMemberListCache] = createSignal<MemberList>()
 
 	const memberController = {
@@ -70,12 +68,12 @@ export function createController() {
 			return memberSearchResult()
 		},
 
-		add: (input: MemberSearchResult) => {
+		add: (input: ArtistByKeyword_EditArtistPage) => {
 			const artist: MemberListItem = {
 				app_id: input.app_id.toString(),
 				name: input.name,
 				artist_type: input.artist_type,
-				isStr: false,
+				is_str: false,
 			}
 			const memberList = getValues(formStore, "member")
 			if (memberList.find((a) => a?.app_id === artist.app_id)) return
@@ -91,7 +89,7 @@ export function createController() {
 					app_id: "",
 					artist_type: artistType() === "Person" ? "Group" : "Person",
 					name: "",
-					isStr: true,
+					is_str: true,
 				},
 			})
 		},
@@ -115,7 +113,7 @@ export function createController() {
 				} else {
 					setMemberSearchResult(
 						res.map((a) => ({
-							app_id: a.app_id.toString(),
+							app_id: a.app_id,
 							name: a.name,
 							artist_type: a.artist_type,
 						}))
