@@ -5,32 +5,6 @@ import solid from "eslint-plugin-solid"
 import globals from "globals"
 import tslint from "typescript-eslint"
 
-const typeScriptRules = {
-	"@typescript-eslint/array-type": "off",
-	"@typescript-eslint/ban-ts-comment": "off",
-	"@typescript-eslint/consistent-type-definitions": "off",
-	"@typescript-eslint/no-confusing-void-expression": "off",
-	"@typescript-eslint/no-empty-interface": "off",
-	"@typescript-eslint/no-misused-promises": [
-		"error",
-		{
-			checksVoidReturn: {
-				attributes: false,
-			},
-		},
-	],
-	"@typescript-eslint/no-non-null-assertion": "off",
-	"@typescript-eslint/no-unused-vars": "warn",
-	"@typescript-eslint/only-throw-error": "off",
-	"@typescript-eslint/restrict-plus-operands": [
-		"error",
-		{ allowNumberAndString: true },
-	],
-	"@typescript-eslint/restrict-template-expressions": [
-		"error",
-		{ allowNumber: true },
-	],
-}
 /**
  * @type {import('eslint').Linter.FlatConfig[]}
  */
@@ -47,10 +21,18 @@ export default [
 	eslintConfigPrettier,
 	...tslint.configs.strictTypeChecked,
 	...tslint.configs.stylisticTypeChecked,
+	// base
+	{
+		rules: {
+			"prefer-const": "off"
+		}
+	},
 	// typescript
 	{
 		files: ["src/**/*.ts"],
-		rules: typeScriptRules,
+		rules: {
+			...typeScriptRules(),
+		},
 	},
 	// jsx
 	{
@@ -59,7 +41,7 @@ export default [
 		...jsxA11y.flatConfigs.recommended,
 		...solid.configs["flat/typescript"],
 		rules: {
-			...typeScriptRules,
+			...typeScriptRules(),
 			"solid/self-closing-comp": [
 				"warn",
 				{
@@ -83,3 +65,32 @@ export default [
 		ignores: [".cz-config.cjs", ".output/", ".vinxi/"],
 	},
 ]
+
+function typeScriptRules() {
+	return ({
+		"@typescript-eslint/array-type": "off",
+		"@typescript-eslint/ban-ts-comment": "off",
+		"@typescript-eslint/consistent-type-definitions": "off",
+		"@typescript-eslint/no-confusing-void-expression": "off",
+		"@typescript-eslint/no-empty-interface": "off",
+		"@typescript-eslint/no-misused-promises": [
+			"error",
+			{
+				checksVoidReturn: {
+					attributes: false,
+				},
+			},
+		],
+		"@typescript-eslint/no-non-null-assertion": "off",
+		"@typescript-eslint/no-unused-vars": "warn",
+		"@typescript-eslint/only-throw-error": "off",
+		"@typescript-eslint/restrict-plus-operands": [
+			"error",
+			{ allowNumberAndString: true },
+		],
+		"@typescript-eslint/restrict-template-expressions": [
+			"error",
+			{ allowNumber: true },
+		],
+	})
+}
