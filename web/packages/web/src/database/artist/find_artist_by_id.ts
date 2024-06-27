@@ -20,6 +20,18 @@ export async function findArtistByID(id: bigint | number | string) {
 				app_id: e.int64(id),
 			},
 			...e.default.Artist["*"],
+			...e.is(e.Artist.Group, {
+				members: {
+					...e.Artist.Group.members["*"],
+					"@join_year": true,
+					"@leave_year": true,
+				},
+			}),
+			...e.is(e.Artist.Person, {
+				member_of: {
+					...e.Artist.Person.member_of["*"],
+				},
+			}),
 		}))
 		.run(client)
 }

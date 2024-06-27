@@ -2,20 +2,20 @@
 import e from "@touhouclouddb/database"
 import { client } from "../edgedb"
 
-type groupOmited =
-	| "member_of"
-	| "_member_of"
-	| "str_member_of"
-	| "_str_member_of"
-	| "artist_type"
+// type groupOmited =
+// 	| "member_of"
+// 	| "_member_of"
+// 	| "str_member_of"
+// 	| "_str_member_of"
+// 	| "artist_type"
 // type shapeOfGroup = Omit<Partial<(typeof e.Artist.Group)["*"]>, groupOmited>
 type shapeOfGroup = Partial<(typeof e.Artist.Group)["*"]>
-type personOmited =
-	| "members"
-	| "_members"
-	| "str_members"
-	| "_str_members"
-	| "artist_type"
+// type personOmited =
+// 	| "members"
+// 	| "_members"
+// 	| "str_members"
+// 	| "_str_members"
+// 	| "artist_type"
 // type shapeOfPerson = Omit<Partial<(typeof e.Artist.Person)["*"]>, personOmited>
 type shapeOfPerson = Partial<(typeof e.Artist.Person)["*"]>
 type params<T> =
