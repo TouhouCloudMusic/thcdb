@@ -18,11 +18,6 @@ module default {
 		};
 		multi text_alias: str;
 
-		members := [is Artist::Group]._members;
-		str_members := [is Artist::Group]._str_members;
-		member_of := [is Artist::Person]._member_of;
-		str_member_of := [is Artist::Person]._str_member_of;
-
 		multi release := (.<artist[is Release]);
 		multi song := (.<artist[is Song]);
 	}
@@ -42,9 +37,8 @@ module Artist {
 
 		overloaded multi alias: Person;
 
-		multi _member_of := (.<_members[is Artist::Group]);
-		# multi _member_of2: `Group`;
-		multi _str_member_of: str;
+		multi member_of := (.<members[is Artist::Group]);
+		multi str_member_of: StrMemberArtist;
 
 	}
 
@@ -52,12 +46,20 @@ module Artist {
 
 		overloaded multi alias: `Group`;
 
-		multi _members: Person {
+		multi members: Person {
 			join_year: int16;
 			leave_year: int16;
 			on target delete allow
 		};
-		multi _str_members: str;
+		multi str_members: StrMemberArtist;
+	}
+
+	type StrMemberArtist {
+		required name: str;
+		join_year: int16;
+		leave_year: int16;
+		members := (.<str_member_of[is Person]);
+		member_of := (.<str_members[is `Group`]);
 	}
 
 	function getType(x: default::Artist) -> ArtistType {
