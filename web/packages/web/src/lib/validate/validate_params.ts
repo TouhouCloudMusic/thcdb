@@ -6,7 +6,7 @@ import { InvalidParamError } from "../error/errors"
 export function isValidID(params: Params) {
 	return pipe(
 		either.tryCatch(
-			() => BigInt(params["id"]),
+			() => params["id"],
 			() => new InvalidParamError("id")
 		),
 		either.chain((id) =>
@@ -17,7 +17,7 @@ export function isValidID(params: Params) {
 
 export function isEmptyOrValidID(
 	params: Params
-): either.Either<InvalidParamError, undefined | bigint> {
+): either.Either<InvalidParamError, undefined | string> {
 	const id = params["id"]
 	return id === "" ? either.right(undefined) : isValidID(params)
 }
