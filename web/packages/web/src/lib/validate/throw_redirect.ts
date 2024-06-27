@@ -1,8 +1,9 @@
+"use server"
 import { redirect } from "@solidjs/router"
 import { either } from "fp-ts"
 import { pipe } from "fp-ts/lib/function"
 
-export function validateAndThrowRedirect<T, U>(
+export function validateAndThrowRedirectEither<T, U>(
 	validateFn: (x: T) => either.Either<Error, U>,
 	x: T
 ) {
