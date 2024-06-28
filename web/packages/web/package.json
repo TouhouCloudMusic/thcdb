@@ -10,7 +10,7 @@
   "dependencies": {
     "@ark-ui/solid": "^3.3.0",
     "@floating-ui/dom": "^1.6.5",
-    "@modular-forms/solid": "^0.21.0",
+    "@modular-forms/solid": "^0.22.1",
     "@sinclair/typebox": "^0.32.34",
     "@solid-primitives/destructure": "^0.1.17",
     "@solidjs/meta": "^0.29.4",
