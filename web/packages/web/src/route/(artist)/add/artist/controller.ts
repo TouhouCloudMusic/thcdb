@@ -6,30 +6,43 @@ import {
 	setValues,
 	valiForm,
 } from "@modular-forms/solid"
+import { Artist } from "@touhouclouddb/database"
 import * as R from "ramda"
 import { createSignal } from "solid-js"
 import { Nullable } from "vitest"
-import { ArtistByID } from "~/database/artist/find_artist_by_id"
-import { Artist } from "@touhouclouddb/database"
 import { isEmptyArray } from "~/lib/validate/array"
 import {
+	ArtistByID_EditArtistPage as ArtistByID,
 	ArtistByKeyword_EditArtistPage,
 	ArtistListByKeyword_EditArtistPage,
 	findArtistByKeyword_EditArtistPage,
 } from "./db"
 import { ArtistFormSchema } from "./form_schema"
+import { initFormStore_Member } from "./init_member"
 import { ArtistForm, MemberList, MemberListItem } from "./type"
 
-export function createController() {
-	const [artistData, setArtistData] = createSignal<ArtistByID>()
+export function createController(initData?: ArtistByID) {
+	const initFormValue = !initData ?  undefined : {
+		id: initData.id.toString(),
+		name: initData.name,
+		type: initData.artist_type,
+		member: initFormStore_Member(initData),
+	}
+
+	// readonly
+	const [artistData] = createSignal<ArtistByID | undefined>(
+		initData === null ? undefined : initData
+	)
+
+	// form
 	const formStore = createFormStore<ArtistForm>({
 		validate: valiForm(ArtistFormSchema),
+		initialValues: initFormValue,
 	})
-	const [oldValue, setOldValue] = createSignal<Nullable<Partial<ArtistForm>>>()
+	// readonly
+	const [oldValue] = createSignal<Nullable<Partial<ArtistForm>>>(initFormValue)
 	const [formErrorMsg, setFormErrorMsg] = createSignal<string>()
 	const formController = {
-		oldValue,
-		setOldValue,
 		get changed() {
 			return !R.equals(oldValue(), getValues(formStore))
 		},
@@ -39,7 +52,10 @@ export function createController() {
 		setErrMsg: setFormErrorMsg,
 	}
 	// type
-	const [artistType, setArtistType] = createSignal<Artist.ArtistType>()
+	// setter is private
+	const [artistType, setArtistType] = createSignal<
+		Artist.ArtistType | undefined
+	>(initData?.artist_type)
 
 	function setArtistTypeWithSwapMemberListCache(type: Artist.ArtistType) {
 		setArtistType(type)
@@ -54,7 +70,6 @@ export function createController() {
 		get value() {
 			return artistType()
 		},
-		setType: setArtistTypeWithSwapMemberListCache,
 		toPerson: () => setArtistTypeWithSwapMemberListCache("Person"),
 		toGroup: () => setArtistTypeWithSwapMemberListCache("Group"),
 	}
@@ -124,7 +139,6 @@ export function createController() {
 	}
 	return {
 		artistData,
-		setArtistData,
 		formStore,
 		form: formController,
 		type: typeController,

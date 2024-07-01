@@ -2,8 +2,7 @@ import {
 	Field,
 	FieldArray,
 	Form,
-	getError,
-	setValues,
+	getError
 } from "@modular-forms/solid"
 import { createAsync, useAction, useParams } from "@solidjs/router"
 import {
@@ -12,10 +11,10 @@ import {
 	Index,
 	Match,
 	Show,
+	Suspense,
 	Switch,
 	createContext,
-	createMemo,
-	onMount,
+	createMemo
 } from "solid-js"
 import { Cross1Icon } from "solid-radix-icons"
 import { Button } from "~/component/button"
@@ -23,43 +22,27 @@ import { FormUI } from "~/component/form/ui"
 import { useContextUnsave } from "~/lib/context/use_context_unsave"
 import { notNullString } from "~/lib/validate/not_empty_string"
 import { createController } from "./controller"
+import { initData } from "./init_data"
 import { h4Class } from "./style"
 import { submitAction } from "./submit"
-import { initFormStore_Member } from "./init_member"
-import { initData } from "./init_data"
 
 const Context = createContext<ReturnType<typeof createController>>()
 const useController = useContextUnsave(Context)
 
 export default function EditArtistPage() {
-	const controller = createController()
+	const data = createAsync(() => initData(useParams()))
 	return (
-		<Context.Provider value={controller}>
-			<Main />
-		</Context.Provider>
+		<Suspense fallback={<div>Loading...</div>}>
+			<Context.Provider value={createController(data())}>
+				<Main />
+			</Context.Provider>
+		</Suspense>
 	)
 }
 
 function Main() {
-	const data = createAsync(() => initData(useParams()))
-	const { artistData, setArtistData, formStore, type, form } = useController()
+	const { artistData, formStore, type, form } = useController()
 	const action = useAction(submitAction)
-	onMount(() => {
-		const initData = data()
-		if (initData) {
-			setArtistData(initData)
-			type.setType(initData.artist_type)
-			const initFormValue = {
-				id: initData.app_id.toString(),
-				name: initData.name,
-				type: initData.artist_type,
-				member: initFormStore_Member(initData),
-			}
-			setValues(formStore, initFormValue)
-			form.setOldValue(initFormValue)
-		}
-	})
-
 	return (
 		<Form
 			of={formStore}
@@ -67,7 +50,7 @@ function Main() {
 				if (!form.changed) {
 					return form.setErrMsg("No changes")
 				}
-				return action(v, data())
+				return action(v, artistData())
 			}}
 			method="post"
 			class="flex flex-col gap-2">
@@ -390,7 +373,7 @@ function InvisibleField(props: { index: Accessor<number> }) {
 		<div class="invisible">
 			<Field
 				of={formStore}
-				name={`member.${props.index()}.app_id`}>
+				name={`member.${props.index()}.id`}>
 				{(field, props) => (
 					<>
 						<input
