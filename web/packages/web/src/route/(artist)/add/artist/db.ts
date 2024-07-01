@@ -80,7 +80,7 @@ export async function findArtistByKeyword_EditArtistPage(
 		case "Person":
 			query = e.select(e.Artist.Group, (artist) => ({
 				filter: e.op(artist.name, "like", `%${keyword}%`),
-				app_id: true,
+				id: true,
 				name: true,
 				artist_type: true,
 			}))
@@ -88,7 +88,7 @@ export async function findArtistByKeyword_EditArtistPage(
 		case "Group":
 			query = e.select(e.Artist.Person, (artist) => ({
 				filter: e.op(artist.name, "like", `%${keyword}%`),
-				app_id: true,
+				id: true,
 				name: true,
 				artist_type: true,
 			}))

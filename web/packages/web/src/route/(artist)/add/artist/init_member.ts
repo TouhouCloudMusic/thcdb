@@ -8,7 +8,6 @@ export type MemberFieldArray = ArtistForm["member"]
 class Member implements Self<NonNullable<MemberFieldArray>[number]> {
 	constructor(
 		public uuid: string,
-		public app_id: string,
 		public name: string,
 		public artist_type: Artist.ArtistType,
 		public is_str: boolean,
@@ -26,7 +25,6 @@ export function initFormStore_Member(
 			res.push(
 				new Member(
 					m.id,
-					m.app_id.toString(),
 					m.name,
 					m.artist_type,
 					false,
@@ -37,7 +35,14 @@ export function initFormStore_Member(
 		)
 		data.str_member_of?.map((m) =>
 			res.push(
-				new Member(m.id, "", m.name, "Group", true, undefined, undefined)
+				new Member(
+					m.id,
+					m.name,
+					"Group",
+					true,
+					m.join_year ?? undefined,
+					m.leave_year ?? undefined
+				)
 			)
 		)
 		return sortMemberList(res)
@@ -46,7 +51,6 @@ export function initFormStore_Member(
 			res.push(
 				new Member(
 					m.id,
-					m.app_id.toString(),
 					m.name,
 					m.artist_type,
 					false,
@@ -59,7 +63,6 @@ export function initFormStore_Member(
 			res.push(
 				new Member(
 					m.id,
-					"",
 					m.name,
 					"Person",
 					true,

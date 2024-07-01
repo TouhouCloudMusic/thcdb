@@ -70,13 +70,13 @@ export function createController() {
 
 		add: (input: ArtistByKeyword_EditArtistPage) => {
 			const artist: MemberListItem = {
-				app_id: input.app_id.toString(),
+				id: input.id,
 				name: input.name,
 				artist_type: input.artist_type,
 				is_str: false,
 			}
 			const memberList = getValues(formStore, "member")
-			if (memberList.find((a) => a?.app_id === artist.app_id)) return
+			if (memberList.find((a) => a?.id === artist.id)) return
 			if (artist.artist_type === artistType()) return
 			insert(formStore, "member", {
 				value: artist,
@@ -86,7 +86,7 @@ export function createController() {
 		addStringInput: () => {
 			insert(formStore, "member", {
 				value: {
-					app_id: "",
+					id: undefined,
 					artist_type: artistType() === "Person" ? "Group" : "Person",
 					name: "",
 					is_str: true,
@@ -113,7 +113,7 @@ export function createController() {
 				} else {
 					setMemberSearchResult(
 						res.map((a) => ({
-							app_id: a.app_id,
+							id: a.id,
 							name: a.name,
 							artist_type: a.artist_type,
 						}))

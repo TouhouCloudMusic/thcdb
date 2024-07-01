@@ -30,7 +30,7 @@ export const ArtistFormSchema = v.object({
 	member: v.optional(
 		v.array(
 			v.object({
-				app_id: v.string(),
+				id: v.optional(v.string()),
 				name: v.pipe(v.string(), v.minLength(1, "Artist name is required")),
 				artist_type: artistTypeSchema,
 				is_str: v.boolean(),
