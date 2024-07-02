@@ -5,7 +5,7 @@ import { type ArtistForm } from "./type"
 import { sortMemberList } from "../../(shared)/sort_member_list"
 
 export type MemberFieldArray = ArtistForm["member"]
-class Member implements Self<NonNullable<MemberFieldArray>[number]> {
+export class Member implements Self<NonNullable<MemberFieldArray>[number]> {
 	constructor(
 		public uuid: string,
 		public name: string,

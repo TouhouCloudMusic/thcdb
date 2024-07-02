@@ -22,12 +22,15 @@ import { initFormStore_Member } from "./init_member"
 import { ArtistForm, MemberList, MemberListItem } from "./type"
 
 export function createController(initData?: ArtistByID) {
-	const initFormValue = !initData ?  undefined : {
-		id: initData.id.toString(),
-		name: initData.name,
-		type: initData.artist_type,
-		member: initFormStore_Member(initData),
-	}
+	const initFormValue =
+		!initData ? undefined : (
+			{
+				id: initData.id.toString(),
+				name: initData.name,
+				type: initData.artist_type,
+				member: initFormStore_Member(initData),
+			}
+		)
 
 	// readonly
 	const [artistData] = createSignal<ArtistByID | undefined>(
@@ -104,7 +107,7 @@ export function createController(initData?: ArtistByID) {
 					id: undefined,
 					artist_type: artistType() === "Person" ? "Group" : "Person",
 					name: "",
-					is_str: true,
+					is_str: false,
 				},
 			})
 		},

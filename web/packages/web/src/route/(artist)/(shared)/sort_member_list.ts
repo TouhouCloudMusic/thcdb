@@ -10,7 +10,7 @@ interface MemberList {
  * @param memberList
  * @returns Return sorted array, if array is empty, return empty array
  */
-export function sortMemberList<T extends MemberList[]>(memberList: T){
+export function sortMemberList<T extends MemberList[]>(memberList: T) {
 	return R.sort((a, b) => {
 		const aLeft = a.leave_year == null
 		const bLeft = b.leave_year == null

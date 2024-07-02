@@ -1,9 +1,4 @@
-import {
-	Field,
-	FieldArray,
-	Form,
-	getError
-} from "@modular-forms/solid"
+import { Field, FieldArray, Form, getError } from "@modular-forms/solid"
 import { createAsync, useAction, useParams } from "@solidjs/router"
 import {
 	Accessor,
@@ -14,7 +9,7 @@ import {
 	Suspense,
 	Switch,
 	createContext,
-	createMemo
+	createMemo,
 } from "solid-js"
 import { Cross1Icon } from "solid-radix-icons"
 import { Button } from "~/component/button"
@@ -24,7 +19,7 @@ import { notNullString } from "~/lib/validate/not_empty_string"
 import { createController } from "./controller"
 import { initData } from "./init_data"
 import { h4Class } from "./style"
-import { submitAction } from "./submit"
+import { submitAction } from "./submit_action"
 
 const Context = createContext<ReturnType<typeof createController>>()
 const useController = useContextUnsave(Context)
@@ -48,7 +43,8 @@ function Main() {
 			of={formStore}
 			onSubmit={(v) => {
 				if (!form.changed) {
-					return form.setErrMsg("No changes")
+					form.setErrMsg("No changes")
+					return
 				}
 				return action(v, artistData())
 			}}

@@ -24,8 +24,7 @@
 		// Path Alias
 		"paths": {
 			"~/*": ["./src/*"],
-			"lib/*": ["./lib/*"],
-			"db/*": ["./dbschema/*"]
+			"lib/*": ["./lib/*"]
 		}
 	}
 }
