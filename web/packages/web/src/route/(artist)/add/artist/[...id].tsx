@@ -94,6 +94,7 @@ function Main() {
 		</Form>
 	)
 }
+
 function Name() {
 	const { artistData, formStore } = useController()
 	return (

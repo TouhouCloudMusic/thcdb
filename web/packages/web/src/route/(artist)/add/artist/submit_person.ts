@@ -2,15 +2,21 @@ import e from "@touhouclouddb/database"
 import { Transaction } from "edgedb/dist/transaction"
 import { isEmptyArrayOrNone } from "~/lib/validate/array"
 import { FormData } from "./submit_action"
-import { TransactionParams } from "./submit_shared"
+import {
+	mapNewStrMemberToInsertQuery,
+	TransactionParams,
+} from "./submit_shared"
 
 export function insertPerson(tx: Transaction, formData: FormData) {
-	const newStrMemberOf = formData.getInsertStrMemberQuerySet()
+	const newStrMemberOf = formData.getNewStrMember()
 	return e
 		.insert(e.Artist.Person, {
 			name: formData.data.name,
 			// TODO: str_member_of
-			str_member_of: newStrMemberOf,
+			str_member_of:
+				newStrMemberOf ?
+					mapNewStrMemberToInsertQuery(newStrMemberOf)
+				:	undefined,
 		})
 		.run(tx)
 }
@@ -20,7 +26,7 @@ export async function updatePerson([
 	formData,
 	initData,
 ]: TransactionParams) {
-	const newStrMemberOf = formData.getInsertStrMemberQuerySet(initData)
+	const newStrMemberOf = formData.getNewStrMember(initData)
 	return e
 		.update(e.Artist.Person, () => ({
 			filter_single: {
@@ -32,25 +38,13 @@ export async function updatePerson([
 				str_member_of:
 					newStrMemberOf ?
 						{
-							"+=": newStrMemberOf,
+							"+=": mapNewStrMemberToInsertQuery(newStrMemberOf),
 						}
 					:	undefined,
 			},
 		}))
 		.run(tx)
 }
-// 好像没用
-// function getBulkInsertStrMemberOfQuery() {
-// 	return e.params({ data: e.json }, (params) =>
-// 		e.for(e.json_array_unpack(params.data), (str_member_of) =>
-// 			e.insert(e.Artist.StrMemberArtist, {
-// 				name: e.cast(e.str, str_member_of["name"]),
-// 				join_year: e.cast(e.int16, str_member_of["join_year"] ?? null),
-// 				leave_year: e.cast(e.int16, str_member_of["leave_year"] ?? null),
-// 			})
-// 		)
-// 	)
-// }
 
 // member of
 

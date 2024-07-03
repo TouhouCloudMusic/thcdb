@@ -1,12 +1,11 @@
-"use server"
 import e from "@touhouclouddb/database"
-import { isEmptyArrayOrNone } from "~/lib/validate/array"
-import { TransactionParams } from "./submit_shared"
 import { Transaction } from "edgedb/dist/transaction"
+import { isEmptyArrayOrNone } from "~/lib/validate/array"
 import { FormData } from "./submit_action"
+import { mapNewStrMemberToInsertQuery, TransactionParams } from "./submit_shared"
 
-export function insertGroup([tx, formData]: [Transaction, FormData]) {
-	const strMembers = formData.getInsertStrMemberQuerySet()
+export function insertGroup(...[tx, formData]: [Transaction, FormData]) {
+	const strMembers = formData.getNewStrMember()
 
 	const linkedMemberIDList = formData.data.member
 		?.filter((m) => !m.is_str)
@@ -16,7 +15,7 @@ export function insertGroup([tx, formData]: [Transaction, FormData]) {
 		.insert(e.Artist.Group, {
 			name: formData.data.name,
 			// TODO: str_members: hasStrMember ? strMemberList : undefined,
-			str_members: strMembers,
+			str_members: strMembers ? mapNewStrMemberToInsertQuery(strMembers) : null,
 			members:
 				!isEmptyArrayOrNone(linkedMemberIDList) ?
 					e.select(e.Artist.Person, (person) => ({
@@ -28,7 +27,7 @@ export function insertGroup([tx, formData]: [Transaction, FormData]) {
 }
 
 export function updateGroup([tx, formData, initData]: TransactionParams) {
-	const strMemberOf = formData.getInsertStrMemberQuerySet(initData)
+	const strMemberOf = formData.getNewStrMember(initData)
 
 	// todo
 	const linkedMemberIDList = formData.data.member

@@ -22,7 +22,6 @@ export function deleteUnlinkedStrMember([
 		}))
 		.run(tx)
 }
-
 // TODO: link aliases
 /**
  * Transforms a person to a group if the artist type has changed.
@@ -75,4 +74,18 @@ export async function convertArtistTypeIfTypeChanged([
 
 		return await e.insert(e.Artist.Person, insertData).run(tx)
 	}
+}
+
+export function mapNewStrMemberToInsertQuery<T extends NonNullable<FormData["strMemberList"]>>(
+	newStrMemberList: T
+) {
+	return e.set(
+		...newStrMemberList.map((m) =>
+			e.insert(e.Artist.StrMemberArtist, {
+				name: e.cast(e.str, m.name),
+				join_year: m.join_year ? e.cast(e.int16, m.join_year) : null,
+				leave_year: m.leave_year ? e.cast(e.int16, m.leave_year) : null,
+			})
+		)
+	)
 }

@@ -1,9 +1,9 @@
 import { action, redirect } from "@solidjs/router"
-import { uuid } from "edgedb/dist/codecs/ifaces"
+import { type uuid } from "edgedb/dist/codecs/ifaces"
 import * as v from "valibot"
 import { client } from "~/database/edgedb"
 import { isEmptyArrayOrNone } from "~/lib/validate/array"
-import { ArtistByID_EditArtistPage as ArtistByID } from "./db"
+import { type ArtistByID_EditArtistPage as ArtistByID } from "./db"
 import { ArtistFormSchema } from "./form_schema"
 import { Member } from "./init_member"
 import { insertGroup } from "./submit_group"
@@ -14,12 +14,11 @@ import {
 	updatePerson,
 } from "./submit_person"
 import {
-	TransactionParams,
+	type TransactionParams,
 	convertArtistTypeIfTypeChanged,
 	deleteUnlinkedStrMember,
 } from "./submit_shared"
 import { ArtistForm } from "./type"
-import e from "@touhouclouddb/database"
 
 export const submitAction = action(
 	async (formData: ArtistForm, initData?: ArtistByID) => {
@@ -154,12 +153,11 @@ export class FormData {
 		return !isEmptyArrayOrNone(this.strMemberList)
 	}
 
-	// 用到的地方需要重复的映射为insert query。可以直接返回query?
-	getInsertStrMemberQuerySet(initData?: InitData) {
+	getNewStrMember(initData?: InitData) {
 		// if new is none return none
 		if (!this.hasStrMemberList()) return undefined
 		// if old is none return new
-		let newStrMemberList
+		let newStrMemberList: StrMember[]
 		if (!initData?.hasStrMemberList()) {
 			newStrMemberList = this.strMemberList
 		} else {
@@ -168,15 +166,7 @@ export class FormData {
 			)
 		}
 		if (newStrMemberList.length === 0) return undefined
-		return e.set(
-			...newStrMemberList.map((m) =>
-				e.insert(e.Artist.StrMemberArtist, {
-					name: e.cast(e.str, m.name),
-					join_year: m.join_year ? e.cast(e.int16, m.join_year) : null,
-					leave_year: m.leave_year ? e.cast(e.int16, m.leave_year) : null,
-				})
-			)
-		)
+		return newStrMemberList
 	}
 
 	getDeletedStrMemberList(initData: InitData): uuid[] | undefined {
