@@ -110,7 +110,7 @@ export function createController(initData?: ArtistByID) {
 					id: undefined,
 					artist_type: artistType() === "Person" ? "Group" : "Person",
 					name: "",
-					is_str: false,
+					is_str: true,
 				},
 			})
 		},
