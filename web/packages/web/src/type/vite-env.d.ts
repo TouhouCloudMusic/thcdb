@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-	readonly VITE_DATABASE_URL: string
+	readonly PUB_EDGEDB_INSTANCE_NAME: string
 }
 
 interface ImportMeta {

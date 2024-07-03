@@ -8,6 +8,7 @@ export default defineConfig({
 		resolve: {
 			conditions: ["development", "browser"],
 		},
+		envPrefix: "PUB_",
 		test: {
 			browser: {
 				enabled: true,
