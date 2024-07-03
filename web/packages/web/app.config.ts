@@ -8,6 +8,15 @@ export default defineConfig({
 		resolve: {
 			conditions: ["development", "browser"],
 		},
+		build: {
+			rollupOptions: {
+				output: {
+					manualChunks: {
+						// "@touhouclouddb/database": ["@touhouclouddb/database"],
+					},
+				},
+			},
+		},
 		envPrefix: "PUB_",
 		test: {
 			browser: {
@@ -15,9 +24,7 @@ export default defineConfig({
 				name: "chrome",
 				headless: true,
 			},
-			include: [
-				"test/dom/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}",
-			],
+			include: ["test/dom/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
 		},
 	},
 	routeDir: "./route",

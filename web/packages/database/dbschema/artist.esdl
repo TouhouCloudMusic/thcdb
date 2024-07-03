@@ -5,9 +5,9 @@ module default {
 
 		artist_type := Artist::getType(Artist);
 
-		required app_id: Artist::id {
+		required app_id: Artist::seq_id {
 			constraint exclusive;
-			default := std::sequence_next(introspect Artist::id);
+			default := std::sequence_next(introspect Artist::seq_id);
 		}
 
 		date_of_start: datetime;
@@ -26,7 +26,7 @@ module default {
 
 module Artist {
 
-	scalar type id extending sequence;
+	scalar type seq_id extending sequence;
 
 	scalar type ArtistType extending enum<
 		Person,

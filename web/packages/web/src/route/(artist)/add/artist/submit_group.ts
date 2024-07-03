@@ -2,7 +2,10 @@ import e from "@touhouclouddb/database"
 import { Transaction } from "edgedb/dist/transaction"
 import { isEmptyArrayOrNone } from "~/lib/validate/array"
 import { FormData } from "./submit_action"
-import { mapNewStrMemberToInsertQuery, TransactionParams } from "./submit_shared"
+import {
+	mapNewStrMemberToInsertQuery,
+	TransactionParams,
+} from "./submit_shared"
 
 export function insertGroup(...[tx, formData]: [Transaction, FormData]) {
 	const strMembers = formData.getNewStrMember()

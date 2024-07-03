@@ -76,9 +76,9 @@ export async function convertArtistTypeIfTypeChanged([
 	}
 }
 
-export function mapNewStrMemberToInsertQuery<T extends NonNullable<FormData["strMemberList"]>>(
-	newStrMemberList: T
-) {
+export function mapNewStrMemberToInsertQuery<
+	T extends NonNullable<FormData["strMemberList"]>,
+>(newStrMemberList: T) {
 	return e.set(
 		...newStrMemberList.map((m) =>
 			e.insert(e.Artist.StrMemberArtist, {

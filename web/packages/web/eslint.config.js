@@ -24,8 +24,8 @@ export default [
 	// base
 	{
 		rules: {
-			"prefer-const": "off"
-		}
+			"prefer-const": "off",
+		},
 	},
 	// typescript
 	{
@@ -67,7 +67,7 @@ export default [
 ]
 
 function typeScriptRules() {
-	return ({
+	return {
 		"@typescript-eslint/array-type": "off",
 		"@typescript-eslint/ban-ts-comment": "off",
 		"@typescript-eslint/consistent-type-definitions": "off",
@@ -92,5 +92,5 @@ function typeScriptRules() {
 			"error",
 			{ allowNumber: true },
 		],
-	})
+	}
 }

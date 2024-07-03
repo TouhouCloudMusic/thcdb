@@ -27,7 +27,7 @@ module default {
 }
 
 module Release {
-	scalar type id extending sequence;
+	scalar type seq_id extending sequence;
 
 	scalar type `Type` extending enum<
 		Album,
