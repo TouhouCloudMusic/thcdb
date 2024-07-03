@@ -75,6 +75,9 @@ export function createController(initData?: ArtistByID) {
 		},
 		toPerson: () => setArtistTypeWithSwapMemberListCache("Person"),
 		toGroup: () => setArtistTypeWithSwapMemberListCache("Group"),
+		isPerson: () => artistType() === "Person",
+		isGroup: () => artistType() === "Group",
+		isNone: () => artistType() === undefined,
 	}
 	// member
 	const [memberSearchResult, setMemberSearchResult] =
