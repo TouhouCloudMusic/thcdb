@@ -1,7 +1,12 @@
 import { action, redirect } from "@solidjs/router"
+import e from "@touhouclouddb/database"
 import { type uuid } from "edgedb/dist/codecs/ifaces"
+import { taskEither } from "fp-ts"
+import { pipe } from "fp-ts/lib/function"
 import * as v from "valibot"
+import { Nullable } from "vitest"
 import { client } from "~/database/edgedb"
+import { matchUnknownToError } from "~/lib/convert/match_unknown_to_error"
 import { isEmptyArrayOrNone } from "~/lib/validate/array"
 import { type ArtistByID_EditArtistPage as ArtistByID } from "./db"
 import { ArtistFormSchema } from "./form_schema"
@@ -14,21 +19,35 @@ import {
 	updatePerson,
 } from "./submit_person"
 import {
-	type TransactionParams,
 	convertArtistTypeIfTypeChanged,
 	deleteUnlinkedStrMember,
+	type TransactionParams,
 } from "./submit_shared"
 import { ArtistForm } from "./type"
 
 export const submitAction = action(
 	async (formData: ArtistForm, initData?: ArtistByID) => {
-		try {
-			const res = await createOrUpdateArtist(formData, initData)
-			console.log(res === 0 && "Ok")
-		} catch (error) {
-			console.log(error)
-		}
-		throw redirect(`add/artist/${formData.id}`)
+		const task = pipe(
+			taskEither.tryCatch(
+				() => createOrUpdateArtist(formData, initData),
+				(reason) => reason
+			),
+			taskEither.match(
+				(err) => {
+					const e = matchUnknownToError(err)
+					console.log(e)
+					throw redirect("/500", {
+						statusText: matchUnknownToError(e).message,
+					})
+				},
+				(res) => {
+					console.log("Ok")
+					return res!
+				}
+			)
+		)
+		const res = await task()
+		throw redirect(`artist/${res}`)
 	},
 	"add_artist"
 )
@@ -39,6 +58,7 @@ export async function createOrUpdateArtist(
 ) {
 	"use server"
 	v.parse(ArtistFormSchema, _formData)
+	let artist_app_id: Nullable<number> = _initData?.app_id
 	const initData = _initData ? new InitData(_initData) : undefined
 	const formData = new FormData(_formData)
 	await client.transaction(async (tx) => {
@@ -50,6 +70,14 @@ export async function createOrUpdateArtist(
 				formData.isPerson ?
 					(await insertPerson(tx, formData)).id
 				:	(await insertGroup(tx, formData)).id
+			artist_app_id = (
+				await e
+					.select(e.default.Artist, (artist) => ({
+						filter_single: e.op(artist.id, "=", e.uuid(formData.uuid)),
+						app_id: true,
+					}))
+					.run(tx)
+			)?.app_id
 		}
 		// 因为现在的ts query generator还不能在插入或更新反向链接时插入或更新链接属性，所以成员链接需要单独处理
 		if (formData.isPerson) {
@@ -63,7 +91,7 @@ export async function createOrUpdateArtist(
 			await linkMemberOf(tx, formData)
 		}
 	})
-	return 0
+	return artist_app_id
 }
 
 export class InitData {

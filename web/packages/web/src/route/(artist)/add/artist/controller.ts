@@ -27,7 +27,7 @@ export function createController(initData?: ArtistByID) {
 			{
 				id: initData.id.toString(),
 				name: initData.name,
-				type: initData.artist_type,
+				artist_type: initData.artist_type,
 				member: initFormStore_Member(initData),
 			}
 		)
