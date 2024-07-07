@@ -1,4 +1,4 @@
-import { Index, Match, Show, Switch } from "solid-js"
+import { Index, Match, Switch } from "solid-js"
 import { StarIcon } from "solid-radix-icons"
 
 export function RatingStatic(props: { rating: number }) {

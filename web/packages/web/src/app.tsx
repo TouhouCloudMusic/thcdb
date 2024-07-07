@@ -5,7 +5,7 @@ import { ErrorBoundary, Show, Suspense, createResource } from "solid-js"
 import Header from "~/component/header/header"
 import "./app.css"
 import ErrorPage from "./route/500"
-import { AppStateProvider, AppTheme, devAppState } from "./state/app.state"
+import { AppStateProvider, devAppState } from "./state/app.state"
 import { getCookieTheme } from "./state/theme"
 function App() {
 	return (

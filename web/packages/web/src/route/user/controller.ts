@@ -6,6 +6,7 @@ type UserDataController = ReturnType<typeof createUserDataController>
 
 const createUserDataController = (
 	data: UserPageData,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	setData: SetStoreFunction<UserPageData>
 ) => {
 	const userDataController = {

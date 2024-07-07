@@ -1,7 +1,7 @@
 import { Title } from "@solidjs/meta"
 
 export default function HomePage() {
-	const linkClass = "text-blue-800 hover:text-blue-700 dark:text-blue-900"
+	// const linkClass = "text-blue-800 hover:text-blue-700 dark:text-blue-900"
 
 	return (
 		<main class="flex justify-center">

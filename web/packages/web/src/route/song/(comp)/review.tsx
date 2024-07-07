@@ -1,4 +1,4 @@
-import { For, Index } from "solid-js"
+import { For } from "solid-js"
 import { RatingStatic } from "~/component/static_rating"
 import { useSongData } from "../controller"
 export function ReviewComp() {
@@ -17,7 +17,7 @@ export function ReviewComp() {
 			</div>
 			<ul class="my-1.5">
 				<For each={reviews()}>
-					{(review, index) => (
+					{(review) => (
 						<li>
 							<article>
 								<div class="flex justify-between rounded-md bg-gray-200/75">

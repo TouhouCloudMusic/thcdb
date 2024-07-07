@@ -51,6 +51,7 @@ export type SongController = ReturnType<typeof createSongController>
 
 function createSongController(
 	state: SongData,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	setState: SetStoreFunction<SongData>
 ) {
 	const songController = {

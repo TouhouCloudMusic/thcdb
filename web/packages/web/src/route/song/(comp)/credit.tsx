@@ -8,7 +8,7 @@ export function CreditComp() {
 			<h3>Credits</h3>
 			<ul class="my-1 flex flex-col py-1 pl-1">
 				<Index each={credits()}>
-					{(artist, index) => (
+					{(artist) => (
 						<li>
 							<a href="">{artist().name}</a>
 							<ul class={roleListClass}>

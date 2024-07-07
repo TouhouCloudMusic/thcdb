@@ -13,7 +13,7 @@ export default [
 		languageOptions: {
 			globals: { ...globals.browser, ...globals.node },
 			parserOptions: {
-				project: ["./tsconfig.json"],
+				project: ["tsconfig.json"],
 			},
 		},
 	},

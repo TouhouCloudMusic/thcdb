@@ -12,6 +12,7 @@ export function VoteGenreTab(props: {
 	const [inputEl, inputElRef] = createSignal<HTMLInputElement>()
 	const resultDropdown = createAtom<HTMLElement>()
 	const [dropdownShow, setDropdownShow] = createSignal(false)
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [genreResult, setGenreResult] = createSignal([
 		"Test Genre 0",
 		"Test Genre 1",
@@ -84,7 +85,7 @@ export function VoteGenreTab(props: {
 					</Show>
 				</div>
 				<For each={genres()}>
-					{(genre, index) => (
+					{(genre) => (
 						<div class="my-2 divide-y-2 divide-gray-300 border bg-white px-2 py-1 shadow">
 							<div class="flex items-center justify-between">
 								<p>{genre}</p>

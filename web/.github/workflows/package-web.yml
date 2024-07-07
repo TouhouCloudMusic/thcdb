@@ -5,12 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "packages/web/**"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "packages/web/**"
+      - packages/web/**
 jobs:
   web:
     runs-on: ubuntu-latest
