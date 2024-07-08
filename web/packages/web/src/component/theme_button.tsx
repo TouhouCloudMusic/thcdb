@@ -1,6 +1,6 @@
 import { SunIcon, MoonIcon } from "solid-radix-icons"
 import { Switch, Match } from "solid-js"
-import { AppTheme, useAppState } from "~/state/app.state"
+import { AppTheme, useAppState } from "~/state/app_state"
 
 export function ThemeButton(props: { class?: string }) {
 	const { theme, setTheme } = useAppState()

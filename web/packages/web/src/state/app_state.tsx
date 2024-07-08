@@ -1,7 +1,8 @@
+import { createResource, JSX } from "solid-js"
 import type { SetStoreFunction } from "solid-js/store"
 import type { User } from "~/database/entity/user"
 import { createProvider } from "~/util/createProvider"
-import { setCookieTheme, updateTheme } from "./theme"
+import { getCookieTheme, setCookieTheme, updateTheme } from "./theme"
 
 export const enum AppTheme {
 	light,
@@ -45,7 +46,22 @@ function createAppStateController(
 	}
 }
 
-export const [AppStateProvider, useAppState] = createProvider<
+const [_AppStateProvider, useAppState] = createProvider<
 	AppState,
 	AppStateController
 >(createAppStateController)
+
+export { useAppState }
+export function AppStateProvider(props: { children: JSX.Element }) {
+	const [serverTheme] = createResource(() => getCookieTheme())
+	const initTheme = parseInt(serverTheme()?.toString() ?? "0", 10)
+	return (
+		<_AppStateProvider
+			defaultState={{
+				...devAppState,
+				theme: initTheme,
+			}}>
+			{props.children}
+		</_AppStateProvider>
+	)
+}

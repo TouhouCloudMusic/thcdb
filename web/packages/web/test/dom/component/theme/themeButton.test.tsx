@@ -2,8 +2,8 @@
 import { test, expect, describe } from "vitest"
 import { render } from "@solidjs/testing-library"
 import userEvent from "@testing-library/user-event"
-import { ThemeButton } from "~/component/themeButton"
-import { AppStateProvider, AppTheme } from "~/state/app.state"
+import { ThemeButton } from "~/component/theme_button"
+import { AppStateProvider, AppTheme } from "~/state/app_state"
 import { ParentComponent } from "solid-js"
 import { MoonIcon, SunIcon } from "solid-radix-icons"
 
