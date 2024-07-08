@@ -1,21 +1,10 @@
 import { getCookie } from "vinxi/http"
-import { AppTheme } from "./app.state"
-
-export function readLocalTheme() {
-	const localTheme = document.documentElement.getAttribute("data-mode")
-	const themeID = localTheme === "dark" ? AppTheme.dark : AppTheme.light
-	return themeID
-}
+import { AppTheme } from "./app_state.tsx"
 
 export function getCookieTheme(): AppTheme {
 	"use server"
 	const themeID = getCookie("app_theme") ?? "0"
 	return parseInt(themeID, 10)
-}
-
-/** @deprecated */
-export function storageTheme(theme: AppTheme) {
-	localStorage.setItem("app_theme", theme.toString())
 }
 
 export function setCookieTheme(theme: AppTheme) {
