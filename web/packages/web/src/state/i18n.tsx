@@ -1,45 +1,39 @@
-import {
-	Accessor,
-	createContext,
-	createMemo,
-	JSXElement,
-	onMount,
-} from "solid-js"
-import { useContextUnsave } from "~/lib/context/use_context_unsave"
-import { getCookie } from "vinxi/http"
 import { Type, type Static } from "@sinclair/typebox"
 import { TypeCompiler } from "@sinclair/typebox/compiler"
+import { createContext, createMemo, JSXElement, onMount } from "solid-js"
+import { getCookie } from "vinxi/http"
+import { useContextUnsave } from "~/lib/context/use_context_unsave"
+import Cookie from "js-cookie"
 
-const locale = Type.Union([Type.Literal("en"), Type.Literal("zh_hans")])
-const localeCompiler = TypeCompiler.Compile(locale)
-type Locale = Static<typeof locale>
+const appLocale = Type.Union([Type.Literal("en"), Type.Literal("zh_hans")])
+const appLocaleCompiler = TypeCompiler.Compile(appLocale)
+export type AppLocale = Static<typeof appLocale>
 
-function getLocaleCookie(): Locale | null {
+function getLocaleCookie(): AppLocale | null {
 	"use server"
 	const locale = getCookie("app_locale")
-	if (localeCompiler.Check(locale)) {
+	if (appLocaleCompiler.Check(locale)) {
 		return locale
 	} else return null
 }
 
-function setLocaleCookie(locale: Locale) {
-	document.cookie = `app_locale=${locale}`
+function setLocaleCookie(locale: AppLocale) {
+	Cookie.set("app_locale", locale)
 }
 
 class I18NController {
-	#locale: Locale
+	#locale: AppLocale
 	private localeMemo = createMemo(() => this.#locale)
-	constructor(locale?: Locale) {
+	constructor(locale?: AppLocale) {
 		this.#locale = locale ?? getLocaleCookie() ?? "en"
-		this.locale = this.locale.bind(this)
 		this.setlocale = this.setlocale.bind(this)
 	}
 
-	locale(): Locale {
+	get locale(): AppLocale {
 		return this.localeMemo()
 	}
 
-	setlocale(locale: Locale) {
+	setlocale(locale: AppLocale) {
 		this.#locale = locale
 		setLocaleCookie(locale)
 	}

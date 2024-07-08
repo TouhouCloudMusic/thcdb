@@ -1,5 +1,6 @@
 import { getCookie } from "vinxi/http"
 import { AppTheme } from "./app_state.tsx"
+import Cookie from "js-cookie"
 
 export function getCookieTheme(): AppTheme {
 	"use server"
@@ -8,7 +9,7 @@ export function getCookieTheme(): AppTheme {
 }
 
 export function setCookieTheme(theme: AppTheme) {
-	document.cookie = `app_theme=${theme}`
+	Cookie.set("app_theme", String(theme))
 }
 
 export function updateTheme(theme: AppTheme) {

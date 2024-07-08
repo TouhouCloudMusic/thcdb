@@ -1,6 +1,6 @@
 // @refresh reload
 import { createHandler, StartServer } from "@solidjs/start/server"
-import { initSSRTheme } from "./server/initTheme"
+import { initSSRTheme } from "./server/init_theme"
 
 export default createHandler(
 	() => {
