@@ -1,32 +1,18 @@
 import e from "@touhouclouddb/database"
 import { Transaction } from "edgedb/dist/transaction"
 import { isEmptyArrayOrNone } from "~/lib/validate/array"
-import { FormData } from "./submit_action"
-import {
-	mapNewStrMemberToInsertQuery,
-	TransactionParams,
-} from "./submit_shared"
+import { FormData, InitData } from "./submit_action"
 
 export function insertPerson(tx: Transaction, formData: FormData) {
-	const newStrMemberOf = formData.getNewStrMember()
 	return e
 		.insert(e.Artist.Person, {
 			name: formData.data.name,
-			// TODO: str_member_of
-			str_member_of:
-				newStrMemberOf ?
-					mapNewStrMemberToInsertQuery(newStrMemberOf)
-				:	undefined,
+			str_member_of: formData.strMemberList,
 		})
 		.run(tx)
 }
 
-export async function updatePerson([
-	tx,
-	formData,
-	initData,
-]: TransactionParams) {
-	const newStrMemberOf = formData.getNewStrMember(initData)
+export async function updatePerson(tx: Transaction, formData: FormData) {
 	return e
 		.update(e.Artist.Person, () => ({
 			filter_single: {
@@ -35,12 +21,7 @@ export async function updatePerson([
 			set: {
 				name: formData.data.name,
 				// TODO: str_member_of
-				str_member_of:
-					newStrMemberOf ?
-						{
-							"+=": mapNewStrMemberToInsertQuery(newStrMemberOf),
-						}
-					:	undefined,
+				str_member_of: formData.strMemberList,
 			},
 		}))
 		.run(tx)
@@ -105,7 +86,11 @@ export async function linkMemberOf(tx: Transaction, formData: FormData) {
 		})
 }
 
-export function unlinkMemberOf([tx, formData, initData]: TransactionParams) {
+export function unlinkMemberOf(
+	tx: Transaction,
+	formData: FormData,
+	initData: InitData
+) {
 	const unlinkedGroups = formData.getUnlinkedMemberList(initData)
 	if (isEmptyArrayOrNone(unlinkedGroups)) return
 	return e

@@ -18,11 +18,7 @@ import {
 	unlinkMemberOf,
 	updatePerson,
 } from "./submit_person"
-import {
-	convertArtistTypeIfTypeChanged,
-	deleteUnlinkedStrMember,
-	type TransactionParams,
-} from "./submit_shared"
+import { convertArtistTypeIfTypeChanged } from "./submit_shared"
 import { ArtistForm } from "./type"
 
 export const submitAction = action(
@@ -63,8 +59,7 @@ export async function createOrUpdateArtist(
 	const formData = new FormData(_formData)
 	await client.transaction(async (tx) => {
 		if (initData) {
-			const params = [tx, formData, initData] as TransactionParams
-			await convertArtistTypeIfTypeChanged(params)
+			await convertArtistTypeIfTypeChanged(tx, formData, initData)
 		} else {
 			formData.uuid =
 				formData.isPerson ?
@@ -82,11 +77,9 @@ export async function createOrUpdateArtist(
 		// 因为现在的ts query generator还不能在插入或更新反向链接时插入或更新链接属性，所以成员链接需要单独处理
 		if (formData.isPerson) {
 			if (initData) {
-				const params = [tx, formData, initData] as TransactionParams
-				await updatePerson(params)
-				await deleteUnlinkedStrMember(params)
+				await updatePerson(tx, formData)
 				// member of
-				await unlinkMemberOf(params)
+				await unlinkMemberOf(tx, formData, initData)
 			}
 			await linkMemberOf(tx, formData)
 		}
@@ -95,11 +88,7 @@ export async function createOrUpdateArtist(
 }
 
 export class InitData {
-	constructor(public data: NonNullable<ArtistByID>) {
-		// this.strMemberList =
-	}
-
-	// strMemberList?: StrMember[]
+	constructor(public data: NonNullable<ArtistByID>) {}
 
 	get isGroup() {
 		return this.data.artist_type === "Group"
@@ -107,20 +96,6 @@ export class InitData {
 
 	get isPerson() {
 		return this.data.artist_type === "Person"
-	}
-
-	get strMemberList() {
-		return this.isGroup ?
-				this.data.str_members?.map(
-					(m) => new StrMember(m.name, m.id, m.join_year, m.leave_year)
-				)
-			:	this.data.str_member_of?.map(
-					(m) => new StrMember(m.name, m.id, m.join_year, m.leave_year)
-				)
-	}
-
-	hasStrMemberList(): this is { strMemberList: StrMember[] } {
-		return !isEmptyArrayOrNone(this.strMemberList)
 	}
 
 	get memberList() {
@@ -172,43 +147,15 @@ export class FormData {
 	}
 
 	get strMemberList() {
-		return this.data.member
-			?.filter((m) => m.is_str)
-			.map((m) => new StrMember(m.name, m.id ?? "", m.join_year, m.leave_year))
+		return (
+			this.data.member
+				?.filter((m) => m.is_str)
+				.map((m) => new StrMember(m.name, m.join_year, m.leave_year)) ?? []
+		)
 	}
 
 	hasStrMemberList(): this is { strMemberList: StrMember[] } {
 		return !isEmptyArrayOrNone(this.strMemberList)
-	}
-
-	getNewStrMember(initData?: InitData) {
-		// if new is none return none
-		if (!this.hasStrMemberList()) return undefined
-		// if old is none return new
-		let newStrMemberList: StrMember[]
-		if (!initData?.hasStrMemberList()) {
-			newStrMemberList = this.strMemberList
-		} else {
-			newStrMemberList = this.strMemberList.filter(
-				(m) => !initData.strMemberList.map((m) => m.id).includes(m.id)
-			)
-		}
-		if (newStrMemberList.length === 0) return undefined
-		return newStrMemberList
-	}
-
-	getDeletedStrMemberList(initData: InitData): uuid[] | undefined {
-		// nothing to delete
-		if (!initData.hasStrMemberList()) return undefined
-
-		const deleted = initData.strMemberList
-			.map((oldMember) => oldMember.id)
-			.filter(
-				(id) =>
-					!this.strMemberList?.map((newMember) => newMember.id).includes(id)
-			)
-		if (deleted.length === 0) return undefined
-		else return deleted
 	}
 
 	get memberList() {
@@ -236,15 +183,14 @@ export class FormData {
 }
 
 class StrMember {
-	public join_year?: number
-	public leave_year?: number
+	public join_year: string
+	public leave_year: string
 	constructor(
 		public name: string,
-		public id: string,
 		join_year?: number | null,
 		leave_year?: number | null
 	) {
-		this.join_year = join_year ?? undefined
-		this.leave_year = leave_year ?? undefined
+		this.join_year = join_year?.toString() ?? ""
+		this.leave_year = leave_year?.toString() ?? ""
 	}
 }

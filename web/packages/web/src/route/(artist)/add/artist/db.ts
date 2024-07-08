@@ -20,12 +20,7 @@ export async function findArtistByID_EditArtistPage(id: string) {
 			},
 		}),
 		...e.is(e.Artist.Group, {
-			str_members: {
-				id: true,
-				name: true,
-				join_year: true,
-				leave_year: true,
-			},
+			str_members: true,
 		}),
 		...e.is(e.Artist.Person, {
 			member_of: {
@@ -39,12 +34,7 @@ export async function findArtistByID_EditArtistPage(id: string) {
 			},
 		}),
 		...e.is(e.Artist.Person, {
-			str_member_of: {
-				id: true,
-				name: true,
-				join_year: true,
-				leave_year: true,
-			},
+			str_member_of: true,
 		}),
 	}))
 
@@ -63,6 +53,16 @@ export async function findArtistByID_EditArtistPage(id: string) {
 								.leave_year ?? null,
 						members: null,
 					})) ?? null,
+				str_member_of: res.str_member_of?.map((m) => ({
+					name: m.name,
+					join_year: m.join_year === "" ? NaN : Number(m.join_year),
+					leave_year: m.leave_year === "" ? NaN : Number(m.leave_year),
+				})),
+				str_members: res.str_members?.map((m) => ({
+					name: m.name,
+					join_year: m.join_year === "" ? NaN : Number(m.join_year),
+					leave_year: m.leave_year === "" ? NaN : Number(m.leave_year),
+				})),
 			}
 		)
 }

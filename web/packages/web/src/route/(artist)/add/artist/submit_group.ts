@@ -2,14 +2,8 @@ import e from "@touhouclouddb/database"
 import { Transaction } from "edgedb/dist/transaction"
 import { isEmptyArrayOrNone } from "~/lib/validate/array"
 import { FormData } from "./submit_action"
-import {
-	mapNewStrMemberToInsertQuery,
-	TransactionParams,
-} from "./submit_shared"
 
 export function insertGroup(...[tx, formData]: [Transaction, FormData]) {
-	const strMembers = formData.getNewStrMember()
-
 	const linkedMemberIDList = formData.data.member
 		?.filter((m) => !m.is_str)
 		.map((m) => e.uuid(m.id ?? ""))
@@ -18,7 +12,7 @@ export function insertGroup(...[tx, formData]: [Transaction, FormData]) {
 		.insert(e.Artist.Group, {
 			name: formData.data.name,
 			// TODO: str_members: hasStrMember ? strMemberList : undefined,
-			str_members: strMembers ? mapNewStrMemberToInsertQuery(strMembers) : null,
+			str_members: formData.strMemberList,
 			members:
 				!isEmptyArrayOrNone(linkedMemberIDList) ?
 					e.select(e.Artist.Person, (person) => ({
@@ -29,9 +23,7 @@ export function insertGroup(...[tx, formData]: [Transaction, FormData]) {
 		.run(tx)
 }
 
-export function updateGroup([tx, formData, initData]: TransactionParams) {
-	const strMemberOf = formData.getNewStrMember(initData)
-
+export function updateGroup(...[tx, formData]: [Transaction, FormData]) {
 	// todo
 	const linkedMemberIDList = formData.data.member
 		?.filter((m) => !m.is_str)
@@ -43,12 +35,7 @@ export function updateGroup([tx, formData, initData]: TransactionParams) {
 			},
 			set: {
 				name: formData.data.name,
-				str_members:
-					strMemberOf ?
-						{
-							"+=": strMemberOf,
-						}
-					:	undefined,
+				str_members: formData.strMemberList,
 				members:
 					!isEmptyArrayOrNone(linkedMemberIDList) ?
 						e.select(e.Artist.Person, (person) => ({

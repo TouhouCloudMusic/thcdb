@@ -16,7 +16,7 @@ module default {
 		multi alias: Artist {
 			constraint exclusive;
 		};
-		multi text_alias: str;
+		multi str_alias: str;
 
 		multi release := (.<artist[is Release]);
 		multi song := (.<artist[is Song]);
@@ -38,8 +38,7 @@ module Artist {
 		overloaded multi alias: Person;
 
 		multi member_of := (.<members[is Artist::Group]);
-		multi str_member_of: StrMemberArtist;
-
+		str_member_of: array<tuple<name: str, join_year: str, leave_year: str>>
 	}
 
 	type `Group` extending default::Artist {
@@ -51,15 +50,7 @@ module Artist {
 			leave_year: int16;
 			on target delete allow
 		};
-		multi str_members: StrMemberArtist;
-	}
-
-	type StrMemberArtist {
-		required name: str;
-		join_year: int16;
-		leave_year: int16;
-		members := (.<str_member_of[is Person]);
-		member_of := (.<str_members[is `Group`]);
+		str_members: array<tuple<name: str, join_year: str, leave_year: str>>
 	}
 
 	function getType(x: default::Artist) -> ArtistType {
