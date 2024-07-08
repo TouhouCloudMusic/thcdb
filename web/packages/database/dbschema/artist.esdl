@@ -16,7 +16,7 @@ module default {
 		multi alias: Artist {
 			constraint exclusive;
 		};
-		multi str_alias: str;
+		str_alias: array<std::str>;
 
 		multi release := (.<artist[is Release]);
 		multi song := (.<artist[is Song]);
