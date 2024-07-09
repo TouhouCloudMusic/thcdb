@@ -38,12 +38,13 @@ html {
 	}
 }
 
-#app {
+.app_wrapper {
 	width: 100%;
 	display: flex;
 	align-items: center;
 	flex-direction: column;
 }
+
 @layer base {
 	main {
 		/* min-width: 64rem; */
