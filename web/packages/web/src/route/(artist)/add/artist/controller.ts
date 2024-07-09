@@ -149,6 +149,7 @@ export function createController(options: {
 			}
 		},
 	}
+
 	return {
 		t: i18n.translator(options.dict),
 		artistData,
