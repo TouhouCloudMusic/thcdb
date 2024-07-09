@@ -1,20 +1,31 @@
-import { Field, Form } from "@modular-forms/solid"
+import { Field, Form, getErrors } from "@modular-forms/solid"
+import * as i18n from "@solid-primitives/i18n"
 import { createAsync, useAction, useParams } from "@solidjs/router"
-import { Show, Suspense } from "solid-js"
+import { createResource, Show, Suspense } from "solid-js"
 import { Button } from "~/component/button"
 import { FormUI } from "~/component/form/ui"
-import { Member } from "./(comp)/member"
+import { useI18N } from "~/state/i18n"
+import { Member } from "./components/member"
 import { Context, useController } from "./context"
 import { createController } from "./controller"
+import { fetchDictionary } from "./i18n"
+import en_dict from "./i18n/en"
 import { initData } from "./init_data"
 import { h4Class } from "./style"
 import { submitAction } from "./submit_action"
 
 export default function EditArtistPage() {
 	const data = createAsync(() => initData(useParams()))
+	const [dict] = createResource(useI18N().locale, fetchDictionary, {
+		initialValue: i18n.flatten(en_dict),
+	})
 	return (
 		<Suspense fallback={<div>Loading...</div>}>
-			<Context.Provider value={createController(data())}>
+			<Context.Provider
+				value={createController({
+					initData: data(),
+					dict,
+				})}>
 				<Main />
 			</Context.Provider>
 		</Suspense>
@@ -22,7 +33,7 @@ export default function EditArtistPage() {
 }
 
 function Main() {
-	const { artistData, formStore, type, form } = useController()
+	const { artistData, formStore, form } = useController()
 	const action = useAction(submitAction)
 	return (
 		<Form
@@ -61,18 +72,7 @@ function Main() {
 					Submit
 				</Button.Highlight>
 				<Show when={import.meta.env.DEV}>
-					<Button.Borderless
-						type="button"
-						class="w-1/4 self-start py-1"
-						onClick={() => {
-							console.log("123")
-
-							// console.log("form store: ", getValues(formStore))
-							// console.log("form changed: ", form.changed)
-							console.log(type.value)
-						}}>
-						Log
-					</Button.Borderless>
+					<LogBtn />
 				</Show>
 			</div>
 			<FormUI.ErrorText text={form.errMsg} />
@@ -81,8 +81,24 @@ function Main() {
 	)
 }
 
+function LogBtn() {
+	const { form, formStore, type } = useController()
+	return (
+		<Button.Borderless
+			type="button"
+			class="w-1/4 self-start py-1"
+			onClick={() => {
+				console.log("form changed: ", form.changed)
+				console.log("form error: ", getErrors(formStore))
+				console.log(type.value)
+			}}>
+			Log
+		</Button.Borderless>
+	)
+}
+
 function Name() {
-	const { artistData, formStore } = useController()
+	const { artistData, formStore, t } = useController()
 	return (
 		<Field
 			of={formStore}
@@ -92,7 +108,7 @@ function Name() {
 					<label
 						for="name"
 						class={h4Class}>
-						Name
+						{t("name.label")}
 					</label>
 					<input
 						{...props}
@@ -103,6 +119,7 @@ function Name() {
 								field.error.length > 0,
 						}}
 						value={artistData() !== undefined ? artistData()?.name : undefined}
+						placeholder={t("name.placeholder")}
 						required
 					/>
 					{field.error && <FormUI.ErrorText text={field.error} />}
@@ -113,10 +130,10 @@ function Name() {
 }
 
 function Type() {
-	const { artistData, formStore, type } = useController()
+	const { artistData, formStore, type, t } = useController()
 	return (
 		<div class="flex flex-col">
-			<h4 class={h4Class}>Artist Type</h4>
+			<h4 class={h4Class}>{t("artist_type.label")}</h4>
 			<Field
 				of={formStore}
 				name="artist_type">
@@ -131,7 +148,7 @@ function Type() {
 								checked={artistData()?.artist_type === "Person"}
 								onChange={() => type.toPerson()}
 							/>
-							<label for="artist_type_person">Person</label>
+							<label for="artist_type_person">{t("artist_type.person")}</label>
 						</div>
 						<div class="flex">
 							<input
@@ -143,7 +160,7 @@ function Type() {
 								onChange={() => type.toGroup()}>
 								Group
 							</input>
-							<label for="artist_type_group">Group</label>
+							<label for="artist_type_group">{t("artist_type.group")}</label>
 						</div>
 						{field.error && <FormUI.ErrorText text={field.error} />}
 					</>

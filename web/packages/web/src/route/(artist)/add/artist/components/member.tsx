@@ -8,14 +8,14 @@ import { useController } from "../context"
 import { h4Class } from "../style"
 
 export function Member() {
-	const { formStore, type, member } = useController()
+	const { formStore, type, member, t } = useController()
 	function AddStringInputButton() {
 		return (
 			<Button.Borderless
 				type="button"
 				onClick={() => member.addStringInput()}
 				class="mx-1 px-1 text-sm text-gray-700">
-				add string input
+				{t("member.add_str_input")}
 			</Button.Borderless>
 		)
 	}
@@ -26,18 +26,18 @@ export function Member() {
 					<Switch>
 						<Match when={type.value === "Person"}>
 							<div class="flex flex-row place-content-between">
-								<p>Member of</p>
+								<p>{t("member.label.person")}</p>
 								<AddStringInputButton />
 							</div>
 						</Match>
 						<Match when={type.value === "Group"}>
 							<div class="flex flex-row place-content-between">
-								<p>Members</p>
+								<p>{t("member.label.group")}</p>
 								<AddStringInputButton />
 							</div>
 						</Match>
 						<Match when={type.value === undefined}>
-							<span class="text-sm">Please Select Artist Type</span>
+							<span class="text-sm">{t("member.label.none")}</span>
 						</Match>
 					</Switch>
 				</h4>
@@ -56,13 +56,13 @@ export function Member() {
 			</div>
 
 			<div class="flex flex-col">
-				<h4 class={h4Class}>Add Artist</h4>
+				<h4 class={h4Class}>{t("member.search.label")}</h4>
 				<input
 					type="text"
-					placeholder="Search artist"
 					class="px-1"
-					onInput={(e) => member.serach(e.currentTarget.value)}
 					disabled={type.value === undefined}
+					placeholder={t("member.search.placeholder")}
+					onInput={(e) => member.serach(e.currentTarget.value)}
 				/>
 				<div class="relative">
 					<div class="absolute w-full">

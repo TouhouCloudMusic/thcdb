@@ -6,9 +6,10 @@ import {
 	setValues,
 	valiForm,
 } from "@modular-forms/solid"
+import * as i18n from "@solid-primitives/i18n"
 import { Artist } from "@touhouclouddb/database"
 import * as R from "ramda"
-import { createSignal } from "solid-js"
+import { createSignal, Resource } from "solid-js"
 import { Nullable } from "vitest"
 import { isEmptyArray } from "~/lib/validate/array"
 import {
@@ -18,10 +19,15 @@ import {
 	findArtistByKeyword_EditArtistPage,
 } from "./db"
 import { ArtistFormSchema } from "./form_schema"
+import { FlatDict } from "./i18n"
 import { initFormStore_Member } from "./init_member"
 import { ArtistForm, MemberList, MemberListItem } from "./type"
 
-export function createController(initData?: ArtistByID) {
+export function createController(options: {
+	initData?: ArtistByID
+	dict: Resource<FlatDict>
+}) {
+	const initData = options.initData
 	const initFormValue =
 		!initData ? undefined : (
 			{
@@ -144,6 +150,7 @@ export function createController(initData?: ArtistByID) {
 		},
 	}
 	return {
+		t: i18n.translator(options.dict),
 		artistData,
 		formStore,
 		form: formController,
