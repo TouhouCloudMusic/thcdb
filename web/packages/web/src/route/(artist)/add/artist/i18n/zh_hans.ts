@@ -2,26 +2,27 @@ import { Dict } from "."
 
 const zh_hans_dict: Dict = {
 	name: {
-		label: "",
-		placeholder: ""
+		label: "TODO",
+		placeholder: "TODO",
 	},
 	artist_type: {
-		label: "",
-		person: "",
-		group: ""
+		label: "TODO",
+		person: "TODO",
+		group: "TODO",
 	},
 	member: {
-		add_str_input: "",
+		add_str_input: "TODO",
 		label: {
-			person: "",
-			group: "",
-			none: ""
+			person: "TODO",
+			group: "TODO",
+			none: "TODO",
 		},
 		search: {
-			label: "",
-			placeholder: ""
-		}
-	}
+			label: "TODO",
+			placeholder: "TODO",
+		},
+	},
+	submit: "TODO",
 }
 
 export default zh_hans_dict

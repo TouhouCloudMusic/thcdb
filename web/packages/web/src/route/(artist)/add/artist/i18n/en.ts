@@ -20,6 +20,7 @@ const dict = {
 			placeholder: "Search Artist",
 		},
 	},
+	submit: "Submit",
 }
 
 export default dict

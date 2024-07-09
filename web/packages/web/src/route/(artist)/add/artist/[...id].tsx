@@ -1,5 +1,4 @@
 import { Field, Form, getErrors } from "@modular-forms/solid"
-import * as i18n from "@solid-primitives/i18n"
 import { createAsync, useAction, useParams } from "@solidjs/router"
 import { createResource, Show, Suspense } from "solid-js"
 import { Button } from "~/component/button"
@@ -9,18 +8,15 @@ import { Member } from "./components/member"
 import { Context, useController } from "./context"
 import { createController } from "./controller"
 import { fetchDictionary } from "./i18n"
-import en_dict from "./i18n/en"
 import { initData } from "./init_data"
 import { h4Class } from "./style"
 import { submitAction } from "./submit_action"
 
 export default function EditArtistPage() {
 	const data = createAsync(() => initData(useParams()))
-	const [dict] = createResource(useI18N().locale, fetchDictionary, {
-		initialValue: i18n.flatten(en_dict),
-	})
+	const [dict] = createResource(useI18N().locale, fetchDictionary)
 	return (
-		<Suspense fallback={<div>Loading...</div>}>
+		<Suspense>
 			<Context.Provider
 				value={createController({
 					initData: data(),
@@ -33,7 +29,7 @@ export default function EditArtistPage() {
 }
 
 function Main() {
-	const { artistData, formStore, form } = useController()
+	const { artistData, formStore, form, t } = useController()
 	const action = useAction(submitAction)
 	return (
 		<Form
@@ -69,7 +65,7 @@ function Main() {
 				<Button.Highlight
 					type="submit"
 					class="w-1/4 self-start py-1">
-					Submit
+					{t("submit")}
 				</Button.Highlight>
 				<Show when={import.meta.env.DEV}>
 					<LogBtn />
