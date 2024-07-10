@@ -7,12 +7,12 @@ import {
 	createSignal,
 	JSXElement,
 	Show,
-	useTransition
+	useTransition,
 } from "solid-js"
 import { getCookie, setCookie } from "vinxi/http"
 import { useContextUnsave } from "~/lib/context/use_context_unsave"
 
-const appLocale = Type.Union([Type.Literal("en"), Type.Literal("zh_hans")])
+const appLocale = Type.Union([Type.Literal("en"), Type.Literal("zh-Hans")])
 const appLocaleCompiler = TypeCompiler.Compile(appLocale)
 export type AppLocale = Static<typeof appLocale>
 
@@ -31,6 +31,10 @@ function setLocaleCookie(locale: AppLocale) {
 	Cookie.set("app_locale", locale)
 }
 
+function setDocumentLang(locale: AppLocale) {
+	document.documentElement.lang = locale
+}
+
 function I18NController(init: AppLocale) {
 	const [locale, setLocale] = createSignal<AppLocale>(init)
 	const [duringTransition, startTransition] = useTransition()
@@ -41,6 +45,7 @@ function I18NController(init: AppLocale) {
 			void startTransition(() => {
 				setLocale(newLocale)
 				setLocaleCookie(newLocale)
+				setDocumentLang(newLocale)
 			})
 		},
 		duringTransition,
