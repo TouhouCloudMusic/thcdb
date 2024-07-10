@@ -1,17 +1,7 @@
-@import "./style/main.css";
+@import "./style/style.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@font-face {
-	font-family: "Geist";
-	font-weight: 100 900;
-	src:
-		url("./style/font/Geist/GeistVF.woff2") format("woff2"),
-		url("./style/font/Geist/GeistVF.woff") format("woff"),
-		url("./style/font/Geist/GeistVF.ttf") format("truetype");
-	font-display: swap;
-}
 
 html {
 	color: hsl(var(--gray-1000));
@@ -38,7 +28,7 @@ html {
 	}
 }
 
-.app_wrapper {
+#app_wrapper {
 	width: 100%;
 	display: flex;
 	align-items: center;
@@ -54,15 +44,6 @@ html {
 		max-width: 96vw;
 	}
 
-	/* :focus {
-	outline: none;
-	}
-
-	:focus-visible {
-		outline: 0.1rem solid;
-		border-radius: 0.1rem;
-	} */
-
 	h1 {
 		@apply text-3xl;
 	}
@@ -73,6 +54,12 @@ html {
 
 	h3 {
 		@apply text-xl;
+	}
+
+	:focus-visible {
+		/* outline-color: hsl(var(--gray-1000)); */
+		outline-style: auto;
+		outline-width: 1px;
 	}
 }
 
