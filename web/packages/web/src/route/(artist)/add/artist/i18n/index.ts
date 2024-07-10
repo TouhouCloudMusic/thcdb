@@ -6,7 +6,7 @@ export type SupportLocale = "en" | "zh_hans"
 export type FlatDict = ReturnType<typeof i18n.flatten<Dict>>
 export async function fetchDictionary(locale: SupportLocale) {
 	let dict
-	if (locale === "en") dict = en_dict
-	else dict = (await import(`./zh_hans.ts`)).default
+	if (locale === "zh_hans") dict = (await import("./zh_hans")).default
+	else dict = en_dict
 	return i18n.flatten(dict)
 }

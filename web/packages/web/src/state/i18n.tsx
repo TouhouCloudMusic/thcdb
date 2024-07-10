@@ -6,22 +6,25 @@ import {
 	createContext,
 	createSignal,
 	JSXElement,
-	onMount,
-	useTransition,
+	Show,
+	useTransition
 } from "solid-js"
-import { getCookie } from "vinxi/http"
+import { getCookie, setCookie } from "vinxi/http"
 import { useContextUnsave } from "~/lib/context/use_context_unsave"
 
 const appLocale = Type.Union([Type.Literal("en"), Type.Literal("zh_hans")])
 const appLocaleCompiler = TypeCompiler.Compile(appLocale)
 export type AppLocale = Static<typeof appLocale>
 
-function getLocaleCookie(): AppLocale | null {
+function getLocaleCookie(): AppLocale {
 	"use server"
 	const locale = getCookie("app_locale")
 	if (appLocaleCompiler.Check(locale)) {
 		return locale
-	} else return null
+	} else {
+		setCookie("app_locale", "en")
+		return "en"
+	}
 }
 
 function setLocaleCookie(locale: AppLocale) {
@@ -52,15 +55,12 @@ export function useI18N() {
 export function I18NProvider(props: { children: JSXElement }) {
 	// eslint-disable-next-line @typescript-eslint/require-await
 	const cookie = createAsync(async () => getLocaleCookie())
-	onMount(() => {
-		if (!cookie()) {
-			setLocaleCookie("en")
-		}
-	})
 	return (
-		<I18NContext.Provider value={I18NController(cookie() ?? "en")}>
-			{props.children}
-		</I18NContext.Provider>
+		<Show when={cookie()}>
+			<I18NContext.Provider value={I18NController(cookie()!)}>
+				{props.children}
+			</I18NContext.Provider>
+		</Show>
 	)
 }
 
