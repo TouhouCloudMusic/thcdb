@@ -1,0 +1,10 @@
+@font-face {
+	font-family: "Geist";
+	font-weight: 100 900;
+	src:
+		local("Geist"),
+		url("/src/assets/font/Geist/GeistVF.woff2") format("woff2"),
+		url("/src/assets/font/Geist/GeistVF.woff") format("woff"),
+		url("/src/assets/font/Geist/GeistVF.ttf") format("truetype");
+	font-display: swap;
+}
