@@ -1,5 +1,5 @@
 import { Menu } from "@ark-ui/solid"
-import { For, Show } from "solid-js"
+import { Index, Show, Suspense } from "solid-js"
 import { ThemeButton } from "~/component/theme_button"
 import { useAppState } from "~/state/app_state"
 import { AppLocale, useI18N } from "~/state/i18n"
@@ -92,30 +92,58 @@ export default function Header() {
 function Language() {
 	const locales: Record<AppLocale, string> = {
 		en: "English",
-		zh_hans: "简体中文",
+		"zh-Hans": "简体中文",
 	} as const
 	const i18n = useI18N()
 
 	return (
-		<Menu.Root
-			onSelect={(field) => i18n.setLocale(field.value as unknown as AppLocale)}>
-			<Menu.Trigger
-				class="size-fit"
-				asChild={(props) => (
-					<Button.Borderless
-						{...props()}
-						class="flex size-7 place-content-center items-center rounded-full">
-						<VTIconLanguages />
-					</Button.Borderless>
-				)}
-			/>
-			<Menu.Positioner>
-				<Menu.Content>
-					<For each={Object.entries(locales)}>
-						{(locale) => <Menu.Item value={locale[0]}>{locale[1]}</Menu.Item>}
-					</For>
-				</Menu.Content>
-			</Menu.Positioner>
-		</Menu.Root>
+		<Suspense>
+			<Menu.Root
+				onSelect={(field) => {
+					i18n.setLocale(field.value as unknown as AppLocale)
+				}}
+				positioning={{
+					placement: "bottom",
+					offset: { mainAxis: 4 },
+				}}
+				loopFocus>
+				<Menu.Trigger
+					asChild={(props) => (
+						<Button.Borderless
+							{...props()}
+							class="flex size-7 place-content-center items-center rounded-full">
+							<VTIconLanguages />
+						</Button.Borderless>
+					)}
+				/>
+				<Menu.Positioner>
+					<Menu.Content class="focus-visible:outline-none">
+						<div class="shadow-2 bg-main flex size-fit flex-col gap-1 rounded border-gray-300 p-1 transition-all">
+							{/* TODO: UX */}
+							<Index each={Object.entries(locales) as [AppLocale, string][]}>
+								{(locale) => (
+									<Menu.Item
+										value={locale()[0]}
+										closeOnSelect
+										// disabled={i18n.locale() === locale()[0]}
+										asChild={(props) => (
+											<Button.Borderless
+												{...props()}
+												class={
+													`size-full px-2 py-1 text-start text-[14px] font-normal text-gray-900 outline-none hover:bg-gray-100 data-[highlighted]:bg-gray-200 data-[highlighted]:text-gray-1000`
+													// +
+													// `aria-disabled:shadow-1 aria-disabled:text-gray-1000 aria-disabled:bg-gray-200 aria-disabled:font-medium`
+												}>
+												{locale()[1]}
+											</Button.Borderless>
+										)}
+									/>
+								)}
+							</Index>
+						</div>
+					</Menu.Content>
+				</Menu.Positioner>
+			</Menu.Root>
+		</Suspense>
 	)
 }
