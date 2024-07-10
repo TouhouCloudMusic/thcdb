@@ -1,25 +1,18 @@
-export function VTIconLanguages(
-	props:
-		| { size: number; height: undefined; width: undefined }
-		| {
-				height: number
-				width: number
-				size: undefined
-		  }
-		| {
-				height: undefined
-				width: undefined
-				size: undefined
-		  }
-		| Record<string, never>
-) {
+import { JSX } from "solid-js"
+
+type sizeProps = { size?: number }
+
+interface SvgIconProps extends JSX.SvgSVGAttributes<SVGSVGElement>, sizeProps {}
+
+export function VTIconLanguages(props: SvgIconProps) {
 	return (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
 			aria-hidden="true"
 			viewBox="0 0 24 24"
 			height={props.size ?? props.height ?? 16}
-			width={props.size ?? props.width ?? 16}>
+			width={props.size ?? props.width ?? 16}
+			fill={props.color ?? "currentColor"}>
 			<path
 				d="M0 0h24v24H0z"
 				fill="none"></path>
