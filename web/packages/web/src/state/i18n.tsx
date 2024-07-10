@@ -36,7 +36,12 @@ function setDocumentLang(locale: AppLocale) {
 }
 
 function I18NController(init: AppLocale) {
-	const [locale, setLocale] = createSignal<AppLocale>(init)
+	let Locale = init
+	if (!appLocaleCompiler.Check(Locale)) {
+		Locale = "en"
+	}
+	setDocumentLang(Locale)
+	const [locale, setLocale] = createSignal<AppLocale>(Locale)
 	const [duringTransition, startTransition] = useTransition()
 	return {
 		locale,
