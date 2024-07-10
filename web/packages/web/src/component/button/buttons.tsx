@@ -1,3 +1,3 @@
-export { default as Borderless } from "./comp/borderless"
-export { default as Highlight } from "./comp/highlight"
-export { default as Warning } from "./comp/warning"
+export { default as Borderless } from "./components/borderless"
+export { default as Highlight } from "./components/highlight"
+export { default as Warning } from "./components/warning"

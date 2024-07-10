@@ -1,6 +1,6 @@
 import { createMemo, splitProps } from "solid-js"
 import { twMerge } from "tailwind-merge"
-import { ButtonAttributes } from ".."
+import { ButtonAttributes, splitButtonProps } from ".."
 interface HighlightButtonAttributes extends ButtonAttributes {}
 
 const twClass = `
@@ -11,7 +11,7 @@ const twClass = `
 	`
 
 export default function HighlightButton(props: HighlightButtonAttributes) {
-	const [, otherProps] = splitProps(props, ["children", "class"])
+	const otherProps = splitButtonProps(props)
 	const className = createMemo(() => twMerge(twClass, props.class))
 	return (
 		<button
