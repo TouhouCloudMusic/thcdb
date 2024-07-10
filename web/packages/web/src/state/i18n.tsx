@@ -1,12 +1,13 @@
 import { Type, type Static } from "@sinclair/typebox"
 import { TypeCompiler } from "@sinclair/typebox/compiler"
+import { createAsync } from "@solidjs/router"
 import Cookie from "js-cookie"
 import {
 	createContext,
 	createSignal,
 	JSXElement,
 	onMount,
-	useTransition
+	useTransition,
 } from "solid-js"
 import { getCookie } from "vinxi/http"
 import { useContextUnsave } from "~/lib/context/use_context_unsave"
@@ -34,7 +35,7 @@ function I18NController(init: AppLocale) {
 		locale,
 		setLocale: (newLocale: AppLocale) => {
 			if (locale() === newLocale) return
-			return startTransition(() => {
+			void startTransition(() => {
 				setLocale(newLocale)
 				setLocaleCookie(newLocale)
 			})
@@ -49,14 +50,15 @@ export function useI18N() {
 }
 
 export function I18NProvider(props: { children: JSXElement }) {
-	const cookie = getLocaleCookie()
+	// eslint-disable-next-line @typescript-eslint/require-await
+	const cookie = createAsync(async () => getLocaleCookie())
 	onMount(() => {
-		if (!cookie) {
+		if (!cookie()) {
 			setLocaleCookie("en")
 		}
 	})
 	return (
-		<I18NContext.Provider value={I18NController(cookie ?? "en")}>
+		<I18NContext.Provider value={I18NController(cookie() ?? "en")}>
 			{props.children}
 		</I18NContext.Provider>
 	)
