@@ -9,14 +9,14 @@ html {
 	white-space: break-spaces;
 	font-family:
 		"Geist",
-		system-ui,
 		-apple-system,
 		BlinkMacSystemFont,
-		"Segoe UI",
 		Roboto,
 		Oxygen,
 		Ubuntu,
 		Cantarell,
+		"Segoe UI",
+		system-ui,
 		"Open Sans",
 		"Helvetica Neue",
 		sans-serif;
