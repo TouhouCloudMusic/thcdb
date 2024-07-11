@@ -1,10 +1,13 @@
+import { either } from "fp-ts"
+import { pipe } from "fp-ts/lib/function"
 import { createResource, JSX } from "solid-js"
 import type { SetStoreFunction } from "solid-js/store"
+import { match, P } from "ts-pattern"
 import type { User } from "~/database/entity/user"
 import { createProvider } from "~/util/createProvider"
-import { getCookieTheme, setCookieTheme, updateTheme } from "./theme"
+import { getThemeCookie, setThemeCookie, updateTheme } from "./theme"
 
-export const enum AppTheme {
+export enum AppTheme {
 	light,
 	dark,
 }
@@ -33,7 +36,7 @@ function createAppStateController(
 		setTheme: (theme: AppTheme) => {
 			setState("theme", theme)
 			updateTheme(theme)
-			setCookieTheme(theme)
+			setThemeCookie(theme)
 		},
 		user: () => state.user,
 		setUser: (user: AppState["user"]) => setState("user", user),
@@ -53,8 +56,20 @@ const [_AppStateProvider, useAppState] = createProvider<
 
 export { useAppState }
 export function AppStateProvider(props: { children: JSX.Element }) {
-	const [serverTheme] = createResource(() => getCookieTheme())
-	const initTheme = parseInt(serverTheme()?.toString() ?? "0", 10)
+	const [serverTheme] = createResource(() => getThemeCookie())
+	const initTheme: AppTheme = pipe(
+		serverTheme(),
+		(x) =>
+			match(x)
+				.with(P.nullish, () => either.right(AppTheme.light))
+				.otherwise((x) =>
+					either.tryCatch(() => parseInt(x) as AppTheme, either.toError)
+				),
+		either.match(
+			() => AppTheme.light,
+			(x) => x
+		)
+	)
 	return (
 		<_AppStateProvider
 			defaultState={{

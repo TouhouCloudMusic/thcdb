@@ -1,6 +1,7 @@
 import { Type, type Static } from "@sinclair/typebox"
 import { TypeCompiler } from "@sinclair/typebox/compiler"
 import { createAsync } from "@solidjs/router"
+import dayjs from "dayjs"
 import Cookie from "js-cookie"
 import {
 	createContext,
@@ -9,26 +10,27 @@ import {
 	Show,
 	useTransition,
 } from "solid-js"
-import { getCookie, setCookie } from "vinxi/http"
+import { getCookie } from "vinxi/http"
 import { useContextUnsave } from "~/lib/context/use_context_unsave"
 
 const appLocale = Type.Union([Type.Literal("en"), Type.Literal("zh-Hans")])
 const appLocaleCompiler = TypeCompiler.Compile(appLocale)
 export type AppLocale = Static<typeof appLocale>
 
-function getLocaleCookie(): AppLocale {
+function getLocaleCookie(): AppLocale | null {
 	"use server"
 	const locale = getCookie("app_locale")
 	if (appLocaleCompiler.Check(locale)) {
 		return locale
 	} else {
-		setCookie("app_locale", "en")
-		return "en"
+		return null
 	}
 }
 
 function setLocaleCookie(locale: AppLocale) {
-	Cookie.set("app_locale", locale)
+	Cookie.set("app_locale", locale, {
+		expires: dayjs().add(30, "days").toDate(),
+	})
 }
 
 function setDocumentLang(locale: AppLocale) {
@@ -41,6 +43,7 @@ function I18NController(init: AppLocale) {
 		Locale = "en"
 	}
 	setDocumentLang(Locale)
+	setLocaleCookie(Locale)
 	const [locale, setLocale] = createSignal<AppLocale>(Locale)
 	const [duringTransition, startTransition] = useTransition()
 	return {
@@ -64,7 +67,7 @@ export function useI18N() {
 
 export function I18NProvider(props: { children: JSXElement }) {
 	// eslint-disable-next-line @typescript-eslint/require-await
-	const cookie = createAsync(async () => getLocaleCookie())
+	const cookie = createAsync(async () => getLocaleCookie() ?? "en")
 	return (
 		<Show when={cookie()}>
 			<I18NContext.Provider value={I18NController(cookie()!)}>
