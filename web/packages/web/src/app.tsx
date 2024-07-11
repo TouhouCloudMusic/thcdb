@@ -1,12 +1,12 @@
 import { Title } from "@solidjs/meta"
 import { Router } from "@solidjs/router"
 import { FileRoutes } from "@solidjs/start/router"
-import { createMemo, ErrorBoundary, Show, Suspense } from "solid-js"
+import { ErrorBoundary, Show, Suspense } from "solid-js"
 import Header from "~/component/header/header"
 import "./app.css"
 import ErrorPage from "./route/500"
+import { I18NTranstionStyle, useI18N } from "./state/i18n.tsx"
 import { Providers } from "./state/index.tsx"
-import { useI18N, I18NTranstionStyle } from "./state/i18n.tsx"
 
 function Routes() {
 	return (
@@ -29,7 +29,7 @@ function Wrapper() {
 			style={{
 				...(useI18N().duringTransition() ? I18NTranstionStyle : {}),
 			}}
-			class="app_wrapper">
+			id="app_wrapper">
 			<Show
 				when={import.meta.env.DEV}
 				fallback={
