@@ -16,7 +16,7 @@
     "@solid-primitives/i18n": "^2.1.1",
     "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^0.14.1",
-    "@solidjs/start": "1.0.2",
+    "@solidjs/start": "1.0.3",
     "@touhouclouddb/database": "workspace:*",
     "dayjs": "^1.11.11",
     "edgedb": "^1.5.7",
