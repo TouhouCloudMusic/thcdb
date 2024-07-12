@@ -1,5 +1,5 @@
-module Music {
-	type Role extending Util::HasCreateAndUpdateTime {
+module music {
+	type Role extending util::WithCreateAndUpdateTime {
 		required name: str;
 		desc_short: str;
 		desc_long: str;

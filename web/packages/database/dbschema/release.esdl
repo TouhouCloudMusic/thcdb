@@ -1,8 +1,9 @@
 module default {
-	type Release extending Util::HasCreateAndUpdateTime {
+
+	type Release extending util::WithCreateAndUpdateTime {
 		required title: str;
-		required type: Release::Type {
-			default := Release::Type.Album
+		required type: release::Type {
+			default := release::Type.Album
 		};
 		catalog_num: str {
 			constraint max_len_value(32);
@@ -11,12 +12,12 @@ module default {
 
 
 		release_date: datetime;
-		release_date_visibility: Util::Date::Visibility {
-			default := Util::Date::Visibility.Full;
+		release_date_visibility: date::Visibility {
+			default := date::Visibility.Full;
 		}
 
 		total_disc: int16;
-		multi language: Util::Language;
+		multi language: lang::Language;
 
 		required multi artist: Artist {
 			constraint exclusive;
@@ -24,9 +25,10 @@ module default {
 			separator: str;
 		};
 	}
+
 }
 
-module Release {
+module release {
 	scalar type seq_id extending sequence;
 
 	scalar type `Type` extending enum<
@@ -52,7 +54,7 @@ module Release {
 		};
 	}
 
-	type TrackCredit extending Music::Credit {
+	type TrackCredit extending music::Credit {
 		track := (.<credit[is Tracklist]);
 	}
 }

@@ -1,29 +1,23 @@
-module Util {
+module util {
 
-	scalar type Language extending enum<
-		English,
-		Chinese,
-		Japanese
-	>;
-
-	abstract type HasCreateTime {
-		create_at: datetime {
+	abstract type WithCreateTime {
+		created_at: datetime {
 			rewrite insert using (datetime_of_statement());
 			readonly := true;
 		}
 	};
 
-	abstract type HasUpdateTime {
-		update_at: datetime {
+	abstract type WithUpdateTime {
+		updated_at: datetime {
 			rewrite insert, update using (datetime_of_statement());
 		}
 	};
 
-	abstract type HasCreateAndUpdateTime extending HasCreateTime, HasUpdateTime {};
+	abstract type WithCreateAndUpdateTime extending WithCreateTime, WithUpdateTime {};
 
 }
 
-module Util::Date {
+module date {
 
 	scalar type Visibility extending enum<
 		Y,
@@ -31,10 +25,14 @@ module Util::Date {
 		Full,
 	>;
 
-	# function getCurrentYear() -> int16 {
-	# 	volatility := "Volatile";
-	# 	using (
-	# 		select <int16>datetime_get(datetime_current(), "year")
-	# 	)
-	# }
+}
+
+module lang {
+
+	scalar type Language extending enum<
+		English,
+		Chinese,
+		Japanese
+	>;
+
 }
