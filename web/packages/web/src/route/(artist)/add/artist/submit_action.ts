@@ -1,8 +1,8 @@
 import { action, redirect } from "@solidjs/router"
 import e from "@touhouclouddb/database"
 import { type uuid } from "edgedb/dist/codecs/ifaces"
-import { taskEither } from "fp-ts"
-import { pipe } from "fp-ts/lib/function"
+import * as TaskEither from "fp-ts/TaskEither"
+import { pipe } from "fp-ts/function"
 import * as v from "valibot"
 import { Nullable } from "vitest"
 import { client } from "~/database/edgedb"
@@ -24,17 +24,11 @@ import { ArtistForm } from "./type"
 export const submitAction = action(
 	async (formData: ArtistForm, initData?: ArtistByID) => {
 		const task = pipe(
-			taskEither.tryCatch(
+			TaskEither.tryCatch(
 				() => createOrUpdateArtist(formData, initData),
 				(reason) => reason
 			),
-			taskEither.match(
-				(err) => {
-					const e = matchUnknownToError(err)
-					console.log(e)
-					throw redirect("/500", {
-						statusText: matchUnknownToError(e).message,
-					})
+			TaskEither.match(
 				},
 				(res) => {
 					console.log("Ok")

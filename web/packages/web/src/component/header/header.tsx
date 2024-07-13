@@ -2,7 +2,7 @@ import { Menu } from "@ark-ui/solid"
 import { Index, Show, Suspense } from "solid-js"
 import { ThemeButton } from "~/component/theme_button"
 import { useAppState } from "~/state/app_state"
-import { AppLocale, useI18N } from "~/state/i18n"
+import { type AppLocale, useI18N } from "~/state/i18n"
 import { Button } from "../button"
 import { VTIconLanguages } from "../icons/vue_theme/language"
 import style from "./header.module.css"
@@ -130,7 +130,7 @@ function Language() {
 											<Button.Borderless
 												{...props()}
 												class={
-													`size-full px-2 py-1 text-start text-[14px] font-normal text-gray-900 outline-none hover:bg-gray-100 data-[highlighted]:bg-gray-200 data-[highlighted]:text-gray-1000`
+													`data-[highlighted]:text-gray-1000 size-full px-2 py-1 text-start text-[14px] font-normal text-gray-900 outline-none hover:bg-gray-100 data-[highlighted]:bg-gray-200`
 													// +
 													// `aria-disabled:shadow-1 aria-disabled:text-gray-1000 aria-disabled:bg-gray-200 aria-disabled:font-medium`
 												}>

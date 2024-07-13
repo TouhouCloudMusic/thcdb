@@ -1,6 +1,6 @@
 import { cache, redirect, type Params } from "@solidjs/router"
-import { taskEither } from "fp-ts"
-import { pipe } from "fp-ts/lib/function"
+import * as TaskEither from "fp-ts/TaskEither"
+import { pipe } from "fp-ts/function"
 import { matchUnknownToError } from "~/lib/convert/match_unknown_to_error"
 import { validateAndThrowRedirectEither } from "~/lib/validate/throw_redirect"
 import { isEmptyOrValidID } from "~/lib/validate/validate_params"
@@ -11,11 +11,11 @@ export const initData = cache(async function (params: Params) {
 	const id = validateAndThrowRedirectEither(isEmptyOrValidID, params)
 	if (!id) return
 	const task = pipe(
-		taskEither.tryCatch(
+		TaskEither.tryCatch(
 			() => findArtistByID_EditArtistPage(id),
 			(reason) => matchUnknownToError(reason)
 		),
-		taskEither.match(
+		TaskEither.match(
 			() => {
 				// TODO: 研究如何把error发到客户端上
 				// TODO: 错误日志

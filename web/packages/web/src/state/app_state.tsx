@@ -1,5 +1,5 @@
-import { either } from "fp-ts"
-import { pipe } from "fp-ts/lib/function"
+import * as Either from "fp-ts/either"
+import { pipe } from "fp-ts/function"
 import { createResource, JSX } from "solid-js"
 import type { SetStoreFunction } from "solid-js/store"
 import { match, P } from "ts-pattern"
@@ -61,11 +61,11 @@ export function AppStateProvider(props: { children: JSX.Element }) {
 		serverTheme(),
 		(x) =>
 			match(x)
-				.with(P.nullish, () => either.right(AppTheme.light))
+				.with(P.nullish, () => Either.right(AppTheme.light))
 				.otherwise((x) =>
-					either.tryCatch(() => parseInt(x) as AppTheme, either.toError)
+					Either.tryCatch(() => parseInt(x) as AppTheme, Either.toError)
 				),
-		either.match(
+		Either.match(
 			() => AppTheme.light,
 			(x) => x
 		)
