@@ -62,7 +62,7 @@ export default [
 		},
 	},
 	{
-		ignores: [".cz-config.cjs", ".output/", ".vinxi/"],
+		ignores: [".output/", ".vinxi/"],
 	},
 ]
 
@@ -72,6 +72,13 @@ function typeScriptRules() {
 		"@typescript-eslint/ban-ts-comment": "off",
 		"@typescript-eslint/consistent-type-definitions": "off",
 		"@typescript-eslint/no-confusing-void-expression": "off",
+		"@typescript-eslint/consistent-type-imports": [
+			"error",
+			{
+				fixStyle: "inline-type-imports",
+				prefer: "type-imports",
+			},
+		],
 		"@typescript-eslint/no-empty-interface": "off",
 		"@typescript-eslint/no-misused-promises": [
 			"error",
