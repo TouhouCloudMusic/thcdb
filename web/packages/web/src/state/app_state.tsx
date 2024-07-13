@@ -1,8 +1,11 @@
 import * as Either from "fp-ts/either"
 import { pipe } from "fp-ts/function"
-import { createResource, JSX } from "solid-js"
+import {
+	createResource,
+	JSX,
+	Show
+} from "solid-js"
 import type { SetStoreFunction } from "solid-js/store"
-import { match, P } from "ts-pattern"
 import type { User } from "~/database/entity/user"
 import { createProvider } from "~/util/createProvider"
 import { getThemeCookie, setThemeCookie, updateTheme } from "./theme"
@@ -33,6 +36,16 @@ function createAppStateController(
 ) {
 	return {
 		theme: () => state.theme,
+		themeStr: () => {
+			switch (state.theme) {
+				case AppTheme.light:
+					return "light"
+				case AppTheme.dark:
+					return "dark"
+				default:
+					return "light"
+			}
+		},
 		setTheme: (theme: AppTheme) => {
 			setState("theme", theme)
 			updateTheme(theme)
@@ -57,26 +70,28 @@ const [_AppStateProvider, useAppState] = createProvider<
 export { useAppState }
 export function AppStateProvider(props: { children: JSX.Element }) {
 	const [serverTheme] = createResource(() => getThemeCookie())
-	const initTheme: AppTheme = pipe(
-		serverTheme(),
-		(x) =>
-			match(x)
-				.with(P.nullish, () => Either.right(AppTheme.light))
-				.otherwise((x) =>
-					Either.tryCatch(() => parseInt(x) as AppTheme, Either.toError)
-				),
+
+	return (
+		<Show when={serverTheme()}>
+			{(serverTheme) => (
+				<_AppStateProvider
+					defaultState={{
+						...devAppState,
+						theme: parseThemeIDToStr(serverTheme()),
+					}}>
+					{props.children}
+				</_AppStateProvider>
+			)}
+		</Show>
+	)
+}
+
+function parseThemeIDToStr(theme: string) {
+	return pipe(
+		Either.tryCatch(() => parseInt(theme) as AppTheme, Either.toError),
 		Either.match(
 			() => AppTheme.light,
 			(x) => x
 		)
-	)
-	return (
-		<_AppStateProvider
-			defaultState={{
-				...devAppState,
-				theme: initTheme,
-			}}>
-			{props.children}
-		</_AppStateProvider>
 	)
 }
