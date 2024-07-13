@@ -1,13 +1,9 @@
 import * as Either from "fp-ts/either"
 import { pipe } from "fp-ts/function"
-import {
-	createResource,
-	JSX,
-	Show
-} from "solid-js"
-import type { SetStoreFunction } from "solid-js/store"
+import type { ParentProps, Signal } from "solid-js"
+import { createContext, createResource, createSignal, Show } from "solid-js"
 import type { User } from "~/database/entity/user"
-import { createProvider } from "~/util/createProvider"
+import { useContextUnsave } from "~/lib/context/use_context_unsave"
 import { getThemeCookie, setThemeCookie, updateTheme } from "./theme"
 
 export enum AppTheme {
@@ -28,59 +24,63 @@ export const devAppState: AppState = {
 	},
 }
 
-export type AppStateController = ReturnType<typeof createAppStateController>
+class AppStateController {
+	private userSignal: Signal<User | undefined>
+	private themeSignal: Signal<AppTheme>
 
-function createAppStateController(
-	state: AppState,
-	setState: SetStoreFunction<AppState>
-) {
-	return {
-		theme: () => state.theme,
-		themeStr: () => {
-			switch (state.theme) {
-				case AppTheme.light:
-					return "light"
-				case AppTheme.dark:
-					return "dark"
-				default:
-					return "light"
-			}
-		},
-		setTheme: (theme: AppTheme) => {
-			setState("theme", theme)
-			updateTheme(theme)
-			setThemeCookie(theme)
-		},
-		user: () => state.user,
-		setUser: (user: AppState["user"]) => setState("user", user),
-		logOut: () => setState("user", undefined),
-		devLogIn: () =>
-			setState("user", {
-				id: 1,
-				username: "admin",
-			}),
+	constructor(user: AppState["user"], theme: AppTheme) {
+		this.userSignal = createSignal(user)
+		this.themeSignal = createSignal(theme)
+	}
+
+	public theme(): AppTheme {
+		return this.themeSignal[0]()
+	}
+
+	public setTheme(theme: AppTheme) {
+		const newTheme = this.themeSignal[1](theme)
+		updateTheme(theme)
+		setThemeCookie(newTheme)
+	}
+
+	public user(): User | undefined {
+		return this.userSignal[0]()
+	}
+
+	public setUser(user: User | undefined) {
+		return this.userSignal[1](user)
+	}
+
+	public logOut() {
+		this.userSignal[1](undefined)
+	}
+
+	public devLogIn() {
+		this.userSignal[1]({
+			id: 1,
+			username: "admin",
+		})
 	}
 }
 
-const [_AppStateProvider, useAppState] = createProvider<
-	AppState,
-	AppStateController
->(createAppStateController)
+const AppState = createContext<AppStateController>()
+export const useAppState = () => useContextUnsave(AppState)
 
-export { useAppState }
-export function AppStateProvider(props: { children: JSX.Element }) {
+export function AppStateProvider(props: ParentProps) {
 	const [serverTheme] = createResource(() => getThemeCookie())
 
 	return (
 		<Show when={serverTheme()}>
 			{(serverTheme) => (
-				<_AppStateProvider
-					defaultState={{
-						...devAppState,
-						theme: parseThemeIDToStr(serverTheme()),
-					}}>
+				<AppState.Provider
+					value={
+						new AppStateController(
+							devAppState.user,
+							parseThemeIDToStr(serverTheme())
+						)
+					}>
 					{props.children}
-				</_AppStateProvider>
+				</AppState.Provider>
 			)}
 		</Show>
 	)
@@ -95,3 +95,29 @@ function parseThemeIDToStr(theme: string) {
 		)
 	)
 }
+/**
+ * For future
+ */
+
+// class UserController {
+// 	protected userSignal: Signal<AppState["user"]>
+// 	constructor(user: AppState["user"]) {
+// 		this.userSignal = createSignal(user)
+// 	}
+// }
+
+// class ThemeController {
+// 	protected themeSignal: Signal<AppTheme>
+
+// 	constructor(theme: AppTheme) {
+// 		this.themeSignal = createSignal(theme)
+// 	}
+
+// 	public theme() {
+// 		return this.themeSignal[0]()
+// 	}
+
+// 	public setTheme(theme: AppTheme) {
+// 		this.themeSignal[1](theme)
+// 	}
+// }
