@@ -1,4 +1,4 @@
-import { JSX, mergeProps, splitProps } from "solid-js"
+import { type JSX, mergeProps, splitProps } from "solid-js"
 
 export interface ButtonAttributes
 	extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {

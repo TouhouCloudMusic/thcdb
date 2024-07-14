@@ -1,6 +1,6 @@
-import { createMemo, splitProps } from "solid-js"
-import { twMerge } from "tailwind-merge"
-import { ButtonAttributes, splitButtonProps } from ".."
+import { createMemo } from "solid-js";
+import { twMerge } from "tailwind-merge";
+import { type ButtonAttributes, splitButtonProps } from "..";
 
 const twClass = `
 	shadow-[var(--shadow-2] rounded transition-all

@@ -1,4 +1,4 @@
-import { Params } from "@solidjs/router"
+import type { Params } from "@solidjs/router"
 import * as Either from "fp-ts/either"
 import { pipe } from "fp-ts/function"
 import { InvalidParamError } from "../error/errors"

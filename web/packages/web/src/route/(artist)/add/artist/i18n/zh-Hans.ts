@@ -1,4 +1,4 @@
-import { Dict } from "."
+import type { Dict } from "."
 
 const zh_hans_dict: Dict = {
 	name: {

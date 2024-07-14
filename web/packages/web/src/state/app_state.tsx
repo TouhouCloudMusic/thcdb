@@ -68,7 +68,6 @@ export const useAppState = () => useContextUnsave(AppState)
 
 export function AppStateProvider(props: ParentProps) {
 	const [serverTheme] = createResource(() => getThemeCookie())
-
 	return (
 		<Show when={serverTheme()}>
 			{(serverTheme) => (

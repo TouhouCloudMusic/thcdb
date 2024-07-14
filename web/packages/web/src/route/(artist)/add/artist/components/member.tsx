@@ -1,5 +1,13 @@
 import { Field, FieldArray, getError } from "@modular-forms/solid"
-import { Accessor, For, Index, Match, Show, Switch, createMemo } from "solid-js"
+import {
+	type Accessor,
+	For,
+	Index,
+	Match,
+	Show,
+	Switch,
+	createMemo,
+} from "solid-js"
 import { Cross1Icon } from "solid-radix-icons"
 import { Button } from "~/component/button"
 import { FormUI } from "~/component/form/ui"
