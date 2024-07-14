@@ -3,22 +3,15 @@ import { test, expect, describe } from "vitest"
 import { render } from "@solidjs/testing-library"
 import userEvent from "@testing-library/user-event"
 import { ThemeButton } from "~/component/theme_button"
-import { AppStateProvider, AppTheme } from "~/state/app_state"
+import { ThemeContext, AppTheme, ThemeController } from "~/state/theme"
 import { ParentComponent } from "solid-js"
 import { MoonIcon, SunIcon } from "solid-radix-icons"
 
 const themeButtonTestWrapper: ParentComponent = (props) => (
 	<div id="app">
-		<AppStateProvider
-			defaultState={{
-				theme: AppTheme.light,
-				user: {
-					id: 1,
-					username: "admin",
-				},
-			}}>
+		<ThemeContext.Provider value={new ThemeController(AppTheme.light)}>
 			{props.children}
-		</AppStateProvider>
+		</ThemeContext.Provider>
 	</div>
 )
 

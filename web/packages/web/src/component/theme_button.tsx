@@ -1,25 +1,25 @@
 import { SunIcon, MoonIcon } from "solid-radix-icons"
 import { Switch, Match } from "solid-js"
-import { AppTheme, useAppState } from "~/state/app_state"
+import { AppTheme, useTheme } from "~/state/theme"
 import { Button } from "./button"
 
 export function ThemeButton(props: { class?: string }) {
-	const AppState = useAppState()
+	const theme = useTheme()
 	return (
 		<Switch>
-			<Match when={AppState.theme() === AppTheme.light}>
+			<Match when={theme.value() === AppTheme.light}>
 				<Button.Borderless
 					class={`flex place-content-center items-center ${props.class}`}
-					onClick={() => AppState.setTheme(AppTheme.dark)}>
+					onClick={() => theme.set(AppTheme.dark)}>
 					<SunIcon />
 				</Button.Borderless>
 			</Match>
-			<Match when={AppState.theme() === AppTheme.dark}>
-				<Button.Borderless
+			<Match when={theme.value() === AppTheme.dark}>
+				<Button.Highlight
 					class={`flex place-content-center items-center ${props.class}`}
-					onClick={() => AppState.setTheme(AppTheme.light)}>
+					onClick={() => theme.set(AppTheme.light)}>
 					<MoonIcon />
-				</Button.Borderless>
+				</Button.Highlight>
 			</Match>
 		</Switch>
 	)

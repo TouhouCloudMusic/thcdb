@@ -1,4 +1,6 @@
 import { Title } from "@solidjs/meta"
+import { Button } from "~/component/button"
+import { signIn, signOut } from "@solid-mediakit/auth/client"
 
 export default function HomePage() {
 	// const linkClass = "text-blue-800 hover:text-blue-700 dark:text-blue-900"
@@ -28,6 +30,33 @@ export default function HomePage() {
 							class="link">
 							theme
 						</a>
+					</li>
+					<li>
+						<a
+							href="/add/artist/1"
+							class="link">
+							edit artist 1
+						</a>
+					</li>
+					<li>
+						<Button.Highlight
+							onClick={() =>
+								signIn("github", {
+									redirectTo: "/",
+								})
+							}>
+							Sign In
+						</Button.Highlight>
+					</li>
+					<li>
+						<Button.Highlight
+							onClick={() =>
+								signOut({
+									redirectTo: "/",
+								})
+							}>
+							Sign out
+						</Button.Highlight>
 					</li>
 				</ul>
 			</div>

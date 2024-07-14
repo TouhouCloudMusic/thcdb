@@ -73,7 +73,7 @@ function typeScriptRules() {
 		"@typescript-eslint/consistent-type-definitions": "off",
 		"@typescript-eslint/no-confusing-void-expression": "off",
 		"@typescript-eslint/consistent-type-imports": [
-			"error",
+			"warn",
 			{
 				fixStyle: "inline-type-imports",
 				prefer: "type-imports",

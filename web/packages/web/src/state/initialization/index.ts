@@ -1,5 +1,5 @@
 import { getCookie } from "vinxi/http"
-import { AppTheme } from "../app_state"
+import { AppTheme } from "../theme"
 import { AppLocaleCompiler } from "../i18n"
 
 export function theme() {

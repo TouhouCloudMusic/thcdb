@@ -1,14 +1,14 @@
 import { Menu } from "@ark-ui/solid"
 import { Index, Show, Suspense } from "solid-js"
 import { ThemeButton } from "~/component/theme_button"
-import { useAppState } from "~/state/app_state"
 import { type AppLocale, useI18N } from "~/state/i18n"
+import { useUser } from "~/state/user"
 import { Button } from "../button"
 import { VTIconLanguages } from "../icons/vue_theme/language"
 import style from "./header.module.css"
 
 export default function Header() {
-	const appState = useAppState()
+	const userController = useUser()
 	const navLinkClass =
 		"button !rounded-full mx-0 my-2 px-1 py-1 text-nowrap w-20 text-center"
 	return (
@@ -62,22 +62,18 @@ export default function Header() {
 					</li>
 					<li class={style["avatarWrapper"]}>
 						<Show
-							when={appState.user()?.username ?? false}
+							when={userController.user()?.name ?? false}
 							fallback={
-								<button
-									class="h-9 place-content-center rounded-md bg-green-600 px-2.5 text-center text-white hover:bg-green-600/80 active:bg-green-700/90"
-									onClick={() => {
-										appState.devLogIn()
-									}}>
-									<span class="mx-auto">登录/注册</span>
-								</button>
+								<Button.Highlight
+									onClick={() => userController.signInWithGitHub()}
+									class="mx-auto">
+									Sign In
+								</Button.Highlight>
 							}>
 							<div class="flex">
 								<div
 									class={style["avatar"]}
-									onClick={() => {
-										appState.logOut()
-									}}>
+									onClick={() => userController.signOut()}>
 									<p class="text-xs text-gray-100">头像</p>
 								</div>
 							</div>
