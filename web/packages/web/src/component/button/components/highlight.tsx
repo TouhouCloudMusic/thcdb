@@ -1,7 +1,10 @@
 import { createMemo } from "solid-js"
 import { twMerge } from "tailwind-merge"
-import { type ButtonAttributes, splitButtonProps } from ".."
-import { baseButtonTwClass } from "./base"
+import {
+	baseButtonTwClass,
+	type ButtonAttributes,
+	splitButtonProps,
+} from "./base"
 
 interface HighlightButtonAttributes extends ButtonAttributes {}
 

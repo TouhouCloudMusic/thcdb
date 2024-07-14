@@ -1,7 +1,10 @@
 import { createMemo } from "solid-js"
 import { twMerge } from "tailwind-merge"
-import { type ButtonAttributes, splitButtonProps } from ".."
-import { baseButtonTwClass } from "./base"
+import {
+	baseButtonTwClass,
+	type ButtonAttributes,
+	splitButtonProps,
+} from "./base"
 
 const twClass = `
 	shadow-[var(--shadow-2]
@@ -12,7 +15,12 @@ const twClass = `
 export default function WarningButton(props: ButtonAttributes) {
 	const otherProps = splitButtonProps(props)
 	const className = createMemo(() =>
-		twMerge(baseButtonTwClass, twClass, props.class)
+		twMerge(
+			baseButtonTwClass,
+			props.isIcon ? "p-0" : "p-1",
+			twClass,
+			props.class
+		)
 	)
 	return (
 		<button

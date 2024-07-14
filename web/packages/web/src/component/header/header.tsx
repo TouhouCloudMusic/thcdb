@@ -62,11 +62,11 @@ export default function Header() {
 					</li>
 					<li class={style["avatarWrapper"]}>
 						<Show
-							when={userController.user()?.name ?? false}
+							when={!userController.user()?.name}
 							fallback={
 								<Button.Highlight
 									onClick={() => userController.signInWithGitHub()}
-									class="mx-auto">
+									class="shadow-4 mx-auto px-3 py-0.5">
 									Sign In
 								</Button.Highlight>
 							}>

@@ -38,26 +38,6 @@ export default function HomePage() {
 							edit artist 1
 						</a>
 					</li>
-					<li>
-						<Button.Highlight
-							onClick={() =>
-								signIn("github", {
-									redirectTo: "/",
-								})
-							}>
-							Sign In
-						</Button.Highlight>
-					</li>
-					<li>
-						<Button.Highlight
-							onClick={() =>
-								signOut({
-									redirectTo: "/",
-								})
-							}>
-							Sign out
-						</Button.Highlight>
-					</li>
 				</ul>
 			</div>
 		</main>
