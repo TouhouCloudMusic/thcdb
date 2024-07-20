@@ -1,9 +1,8 @@
 module default {
-
-	abstract type Artist extending util::WithCreateAndUpdateTime {
+	type Artist extending util::WithCreateAndUpdateTime, auth::RegularEntity {
 		required name: str;
 
-		artist_type: artist::ArtistType;
+		required artist_type: artist::ArtistType;
 
 		required app_id: artist::SeqID {
 			constraint exclusive;
@@ -29,16 +28,13 @@ module default {
 		multi release := (.<artist[is Release]);
 		multi song := (.<artist[is Song]);
 	}
-
 }
 
 module artist {
-
 	scalar type SeqID extending sequence;
 
 	scalar type ArtistType extending enum<
 		Person,
 		`Group`
 	>;
-
 }

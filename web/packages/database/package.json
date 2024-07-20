@@ -10,6 +10,10 @@
     "typescript": "latest",
     "edgedb": "latest"
   },
+  "exports": {
+    ".": "./index.ts",
+    "./interfaces": "./interfaces.ts"
+  },
   "scripts": {
     "generate": "npx @edgedb/generate interfaces --file interfaces.ts && npx @edgedb/generate edgeql-js --target esm --output-dir ./edgeql-js"
   },

@@ -1,5 +1,5 @@
 module music {
-	type Role extending util::WithCreateAndUpdateTime {
+	type Role extending util::WithCreateAndUpdateTime, auth::RegularEntity {
 		required name: str;
 		desc_short: str;
 		desc_long: str;

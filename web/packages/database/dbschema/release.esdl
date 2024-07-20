@@ -1,6 +1,5 @@
 module default {
-
-	type Release extending util::WithCreateAndUpdateTime {
+	type Release extending util::WithCreateAndUpdateTime, auth::RegularEntity {
 		required title: str;
 		required type: release::Type {
 			default := release::Type.Album
@@ -25,7 +24,6 @@ module default {
 			separator: str;
 		};
 	}
-
 }
 
 module release {
