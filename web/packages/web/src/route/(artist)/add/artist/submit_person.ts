@@ -1,7 +1,7 @@
 import e from "@touhouclouddb/database"
-import { Transaction } from "edgedb/dist/transaction"
+import type { Transaction } from "edgedb/dist/transaction"
 import { isEmptyArrayOrNone } from "~/lib/validate/array"
-import { FormData, InitData } from "./submit_action"
+import type { FormData, InitData } from "./submit_action"
 
 export function insertPerson(tx: Transaction, formData: FormData) {
 	return e

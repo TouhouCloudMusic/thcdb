@@ -1,6 +1,4 @@
 import { Title } from "@solidjs/meta"
-import { Button } from "~/component/button"
-import { signIn, signOut } from "@solid-mediakit/auth/client"
 
 export default function HomePage() {
 	// const linkClass = "text-blue-800 hover:text-blue-700 dark:text-blue-900"

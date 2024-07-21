@@ -1,6 +1,6 @@
 import e from "@touhouclouddb/database"
-import { Transaction } from "edgedb/dist/transaction"
-import { FormData, InitData } from "./submit_action"
+import type { Transaction } from "edgedb/dist/transaction"
+import type { FormData, InitData } from "./submit_action"
 
 // TODO: link aliases
 /**

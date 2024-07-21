@@ -10,7 +10,7 @@ import { matchUnknownToError } from "~/lib/convert/match_unknown_to_error"
 import { isEmptyArrayOrNone } from "~/lib/validate/array"
 import { type ArtistByID_EditArtistPage as ArtistByID } from "./db"
 import { ArtistFormSchema } from "./form_schema"
-import { Member } from "./init_member"
+import type { Member } from "./init_member"
 import { insertGroup } from "./submit_group"
 import {
 	insertPerson,

@@ -1,5 +1,5 @@
 import type { SongData, SongReview } from "./controller"
-import type { AltVer} from "./controller";
+import type { AltVer } from "./controller"
 import { ALT_VER_TYPES } from "./controller"
 
 function versionGenerator(index: number): AltVer[] {
