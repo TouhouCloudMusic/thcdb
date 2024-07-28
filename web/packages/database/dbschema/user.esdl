@@ -16,7 +16,7 @@ module default {
 			constraint exclusive
 		}
 
-		role: user::Role {
+		required role: user::Role {
 			default := user::Role.Regular;
 		}
 	}
