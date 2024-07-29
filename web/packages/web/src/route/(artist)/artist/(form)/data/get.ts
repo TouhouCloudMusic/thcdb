@@ -4,17 +4,17 @@ import { type Artist, type artist } from "@touhouclouddb/database/interfaces"
 import { edgedbClient } from "~/database/server"
 import { type SafePick } from "~/lib/type/safe_pick"
 
-type MemberKindArray = (SafePick<Artist, (typeof memberKeys)[number]> & {
-	"@join_year": number
-	"@leave_year": number
-})[]
-
-export interface ArtistByID_ArtistForm
+export interface ArtistByID_EditArtistPage
 	extends Pick<Artist, (typeof artistKeys)[number]> {
 	alias: Pick<Artist, (typeof aliasKeys)[number]>[]
 	members: MemberKindArray
 	member_of: MemberKindArray
 }
+
+type MemberKindArray = (SafePick<Artist, (typeof memberKeys)[number]> & {
+	"@join_year": number
+	"@leave_year": number
+})[]
 
 const artistKeys = [
 	"id",
@@ -39,27 +39,29 @@ const memberKeys = [
 	"name",
 ] as const
 
-export async function findArtistByID_ArtistForm(id: string) {
+export async function findArtistByID_EditArtistPage(
+	id: string
+): Promise<ArtistByID_EditArtistPage | null> {
 	const client = edgedbClient
 	return client.querySingle(
 		`
 		SELECT default::Artist {
-			${artistKeys.join(",")}
+			${artistKeys.join(",")},
 			alias: { ${aliasKeys.join(",")} },
 			members: { ${memberKeys.join(",")} },
 			member_of: { ${memberKeys.join(",")} },
-		} FILTER .app_id = <int64>$id`,
+		} FILTER .app_id = <int64><str>$id`,
 		{
 			id,
 		}
 	)
 }
 
-export type ArtistListByKeyword_EditArtistPage = Awaited<
+export type ArtistArrayByKeyword_EditArtistPage = Awaited<
 	ReturnType<typeof findArtistByKeyword_EditArtistPage>
 >
 export type ArtistByKeyword_EditArtistPage =
-	ArtistListByKeyword_EditArtistPage[number]
+	ArtistArrayByKeyword_EditArtistPage[number]
 
 export async function findArtistByKeyword_EditArtistPage(
 	keyword: string,
@@ -69,6 +71,7 @@ export async function findArtistByKeyword_EditArtistPage(
 		id: true,
 		app_id: true,
 		name: true,
+		artist_type: true,
 		filter: e.op(
 			e.op(e.ext.pg_trgm.word_similarity_dist(keyword, artist.name), "<=", 0.5),
 			"and",

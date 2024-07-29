@@ -1,6 +1,7 @@
 module default {
 	type Artist extending util::WithCreateAndUpdateTime, auth::RegularEntity {
 		required name: str;
+		index pg::spgist on (.name);
 
 		required artist_type: artist::ArtistType;
 

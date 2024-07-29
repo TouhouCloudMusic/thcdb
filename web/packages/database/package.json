@@ -15,7 +15,10 @@
     "./interfaces": "./interfaces.ts"
   },
   "scripts": {
-    "generate": "npx @edgedb/generate interfaces --file interfaces.ts && npx @edgedb/generate edgeql-js --target esm --output-dir ./edgeql-js"
+    "generate": "npx @edgedb/generate interfaces --file interfaces.ts && npx @edgedb/generate edgeql-js --target esm --output-dir ./edgeql-js",
+    "migration": "edgedb migration create",
+    "migrate": "edgedb migrate",
+    "all": "bun run migration && bun run migrate && bun run generate"
   },
   "type": "module"
 }

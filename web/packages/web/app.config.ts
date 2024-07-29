@@ -1,5 +1,6 @@
 /// <reference types="vitest" />
 import { defineConfig } from "@solidjs/start/config"
+import devtools from "solid-devtools/vite"
 import viteConfigPaths from "vite-tsconfig-paths"
 import devtools from "solid-devtools/vite"
 export default defineConfig({

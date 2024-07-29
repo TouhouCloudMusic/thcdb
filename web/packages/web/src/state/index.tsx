@@ -3,8 +3,8 @@ import { MetaProvider } from "@solidjs/meta"
 import { type ParentProps } from "solid-js"
 import { I18NProvider } from "./i18n/provider"
 import { TanStackProvider } from "./tanstack"
-import { UserStateProvider } from "./user"
 import { ThemeProvider } from "./theme"
+import { UserStateProvider } from "./user"
 
 export function Providers(props: ParentProps) {
 	return (

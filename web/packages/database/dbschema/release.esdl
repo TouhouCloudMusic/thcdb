@@ -1,12 +1,21 @@
 module default {
 	type Release extending util::WithCreateAndUpdateTime, auth::RegularEntity {
 		required title: str;
+		index pg::spgist on (.title);
+
 		required type: release::Type {
 			default := release::Type.Album
 		};
+
+		required app_id: release::SeqID {
+			constraint exclusive;
+			default := std::sequence_next(introspect release::SeqID);
+		}
+
 		catalog_num: str {
 			constraint max_len_value(32);
 		};
+
 		credit_name: str;
 
 
@@ -27,7 +36,7 @@ module default {
 }
 
 module release {
-	scalar type seq_id extending sequence;
+	scalar type SeqID extending sequence;
 
 	scalar type `Type` extending enum<
 		Album,

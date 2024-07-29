@@ -1,6 +1,9 @@
 import JsxA11y from "eslint-plugin-jsx-a11y"
 import Solid from "eslint-plugin-solid"
 
+/**
+ * @type {import("eslint").Linter.FlatConfig["rules"]}
+ */
 export const tsRules = {
 	"@typescript-eslint/array-type": "off",
 	"@typescript-eslint/ban-ts-comment": "off",
@@ -35,13 +38,17 @@ export const tsRules = {
 	],
 }
 
+/**
+ * @type {import("eslint").Linter.FlatConfig}
+ */
 export const tsConfig = {
-	files: ["src/**/*.ts"],
-	rules: {
-		...tsRules,
-	},
+	files: ["config/**/*.ts", "src/**/*.ts", "test/**/*.ts"],
+	rules: tsRules,
 }
 
+/**
+ * @type {import("eslint").Linter.FlatConfig}
+ */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 export const tsxConfig = {
 	files: ["src/**/*.tsx"],

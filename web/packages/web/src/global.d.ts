@@ -1,6 +1,5 @@
 /// <reference types="@solidjs/start/env" />
 declare global {
-
 	namespace NodeJS {
 		interface ProcessEnv {
 			EDGEDB_INSTANCE_NAME: string
@@ -13,4 +12,4 @@ declare global {
 	}
 }
 
-export { }
+export {}
