@@ -2,13 +2,13 @@
   "name": "@touhouclouddb/database",
   "main": "index.ts",
   "devDependencies": {
-    "@edgedb/generate": "^0.5.3",
-    "@types/bun": "latest",
-    "prettier": "^3.3.2"
+    "@edgedb/generate": "^0.5.4",
+    "@types/bun": "^1.1.6",
+    "prettier": "^3.3.3"
   },
   "peerDependencies": {
-    "typescript": "latest",
-    "edgedb": "latest"
+    "typescript": "^5.6.0-dev.20240728",
+    "edgedb": "^1.5.8"
   },
   "exports": {
     ".": "./index.ts",
