@@ -2,13 +2,14 @@ import { Type, type Static } from "@sinclair/typebox"
 import { TypeCompiler } from "@sinclair/typebox/compiler"
 import dayjs from "dayjs"
 import Cookie from "js-cookie"
-import { createContext, createSignal, Signal, useTransition } from "solid-js"
+import type { Signal } from "solid-js"
+import { createContext, createSignal, useTransition } from "solid-js"
 import { type Transition } from "solid-js/types/reactive/signal.d.ts"
 import { useContextUnsave } from "~/lib/context/use_context_unsave"
 
-const appLocale = Type.Union([Type.Literal("en"), Type.Literal("zh-Hans")])
-export const appLocaleCompiler = TypeCompiler.Compile(appLocale)
-export type AppLocale = Static<typeof appLocale>
+const APP_LOCALE = Type.Union([Type.Literal("en"), Type.Literal("zh-Hans")])
+export const AppLocaleCompiler = TypeCompiler.Compile(APP_LOCALE)
+export type AppLocale = Static<typeof APP_LOCALE>
 
 function setLocaleCookie(locale: AppLocale) {
 	Cookie.set("app_locale", locale, {
@@ -23,6 +24,7 @@ function setDocumentLang(locale: AppLocale) {
 export class I18NController {
 	private localeSignal: Signal<AppLocale>
 	private transition: Transition
+
 	constructor(locale: AppLocale) {
 		setDocumentLang(locale)
 		setLocaleCookie(locale)
