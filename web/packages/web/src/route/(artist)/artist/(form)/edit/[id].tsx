@@ -11,13 +11,13 @@ import { cacheFetchDictionary } from "../i18n"
 import { ArtistFormLayout } from "../layout"
 
 export const route = {
-	load: async () => {
+	preload: async () => {
 		const id = useParams()["id"]
 		const artist = await getArtistDataEditArtistPage(id)
 		if (!artist) throw redirect("/404")
 
 		const locale = getLocaleCookie()
-		void cacheFetchDictionary(locale)
+		await cacheFetchDictionary(locale)
 	},
 	matchFilters: {
 		id: /^\d+$/,

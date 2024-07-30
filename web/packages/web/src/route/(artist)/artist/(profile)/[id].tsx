@@ -15,7 +15,7 @@ import {
 import { getArtistProfileDataCache } from "./data"
 
 export const route = {
-	load: async () => {
+	preload: async () => {
 		const id = useParams()["id"]
 		const artist = await getArtistProfileDataCache(id)
 		if (!artist) throw redirect("/404")

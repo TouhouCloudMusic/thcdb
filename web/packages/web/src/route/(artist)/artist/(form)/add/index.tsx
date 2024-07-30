@@ -6,9 +6,9 @@ import { cacheFetchDictionary } from "../i18n"
 import { ArtistFormLayout } from "../layout"
 
 export const route = {
-	load: () => {
+	preload: async () => {
 		const locale = getLocaleCookie()
-		void cacheFetchDictionary(locale)
+		await cacheFetchDictionary(locale)
 	},
 } satisfies RouteDefinition
 
