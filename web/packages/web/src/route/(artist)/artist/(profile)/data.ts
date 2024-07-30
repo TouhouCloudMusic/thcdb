@@ -1,5 +1,5 @@
 "use server"
-import { cache } from "@solidjs/router"
+import { cache, redirect } from "@solidjs/router"
 import e from "@touhouclouddb/database"
 import { edgedbClient } from "~/database/server"
 
@@ -30,5 +30,7 @@ function findArtistBySeqID_ArtistProfile(id: string) {
 }
 
 export const getArtistProfileDataCache = cache(async (id: string) => {
-	return await findArtistBySeqID_ArtistProfile(id)
+	const res = await findArtistBySeqID_ArtistProfile(id)
+	if (!res) throw redirect("/404")
+	return res
 }, "artist_data")

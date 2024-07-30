@@ -7,18 +7,14 @@ import {
 	useParams,
 } from "@solidjs/router"
 import { Show, Suspense, onMount } from "solid-js"
-import {
-	ArtistProfilePageController,
-	Context,
-	useController,
-} from "../controller"
+import { Context, useController } from "./context"
+import { ArtistProfilePageController } from "./controller"
 import { getArtistProfileDataCache } from "./data"
 
 export const route = {
-	preload: async () => {
+	preload: () => {
 		const id = useParams()["id"]
-		const artist = await getArtistProfileDataCache(id)
-		if (!artist) throw redirect("/404")
+		void getArtistProfileDataCache(id)
 	},
 	matchFilters: {
 		id: /^\d+$/,

@@ -1,9 +1,5 @@
-import { createContext, useContext } from "solid-js"
 import { DynamicBase } from "~/lib/class/dynamic_base"
-import { type ArtistByID_ArtistProfile } from "./(profile)/data"
-
-export const Context = createContext<ArtistProfilePageController>()
-export const useController = () => useContext(Context)!
+import { type ArtistByID_ArtistProfile } from "./data"
 
 export class ArtistProfilePageController {
 	private dataController: ArtistDataController

@@ -1,4 +1,4 @@
-import { type Artist } from "@touhouclouddb/database/interfaces"
+import { type artist, type Artist } from "@touhouclouddb/database/interfaces"
 import type { Nullable } from "vitest"
 import { type Self } from "~/lib/type/self"
 import { sortMemberList } from "../../utils/sort_member_list"
@@ -11,7 +11,7 @@ export class Member implements Self<NonNullable<MemberFieldArray>[number]> {
 	leave_year: number
 	constructor(
 		public name: string,
-		public artist_type: Artist.ArtistType,
+		public artist_type: artist.ArtistType,
 		public is_str: boolean,
 		join_year: Nullable<number>,
 		leave_year: Nullable<number>,
@@ -28,11 +28,11 @@ export function initFormStore_Member(
 ): MemberFieldArray {
 	let res: MemberFieldArray = []
 	if (data.artist_type === "Person") {
-		data.member_of?.map((m) =>
+		data.member_of.map((m) =>
 			res.push(
 				new Member(
 					m.name,
-					m.artist_type,
+					"Group",
 					false,
 					m["@join_year"],
 					m["@leave_year"],
@@ -40,25 +40,41 @@ export function initFormStore_Member(
 				)
 			)
 		)
-		data.str_member_of?.map((m) =>
-			res.push(new Member(m.name, "Group", true, m.join_year, m.leave_year))
-		)
-		return sortMemberList(res)
-	} else {
-		data.members?.map((m) =>
+		data.str_member?.map((m) =>
 			res.push(
 				new Member(
 					m.name,
-					m.artist_type,
+					"Group",
+					true,
+					Number(m.join_year),
+					Number(m.leave_year)
+				)
+			)
+		)
+		return sortMemberList(res)
+	} else {
+		data.members.map((m) =>
+			res.push(
+				new Member(
+					m.name,
+					"Person",
 					false,
-					m["@join_year"] ?? undefined,
-					m["@leave_year"] ?? undefined,
+					m["@join_year"],
+					m["@leave_year"],
 					m.id
 				)
 			)
 		)
-		data.str_members?.map((m) =>
-			res.push(new Member(m.name, "Person", true, m.join_year, m.leave_year))
+		data.str_member?.map((m) =>
+			res.push(
+				new Member(
+					m.name,
+					"Person",
+					true,
+					Number(m.join_year),
+					Number(m.leave_year)
+				)
+			)
 		)
 		return sortMemberList(res)
 	}

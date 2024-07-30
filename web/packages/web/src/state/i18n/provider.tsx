@@ -2,10 +2,10 @@ import { createAsync } from "@solidjs/router"
 import { Show, type ParentProps } from "solid-js"
 import { getCookie } from "vinxi/http"
 import {
-	type AppLocale,
 	AppLocaleCompiler,
 	I18NContext,
 	I18NController,
+	type AppLocale,
 } from "."
 
 export function getLocaleCookie(): AppLocale {
