@@ -5,6 +5,7 @@ import Cookie from "js-cookie"
 import type { Signal } from "solid-js"
 import { createContext, createSignal, useTransition } from "solid-js"
 import { type Transition } from "solid-js/types/reactive/signal.d.ts"
+import { isServer } from "solid-js/web"
 import { useContextUnsave } from "~/lib/context/use_context_unsave"
 
 const APP_LOCALE = Type.Union([Type.Literal("en"), Type.Literal("zh-Hans")])
@@ -26,7 +27,7 @@ export class I18NController {
 	private transition: Transition
 
 	constructor(locale: AppLocale) {
-		setDocumentLang(locale)
+		if (!isServer) setDocumentLang(locale)
 		setLocaleCookie(locale)
 		this.localeSignal = createSignal<AppLocale>(locale)
 		this.transition = useTransition()
