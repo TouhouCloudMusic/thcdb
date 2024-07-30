@@ -1,26 +1,26 @@
-import { Field, Form, getErrors } from "@modular-forms/solid"
-import { createAsync, useAction, useParams } from "@solidjs/router"
-import { createResource, Show, Suspense } from "solid-js"
+import { Field, Form, getErrors, getValues } from "@modular-forms/solid"
+import { useAction } from "@solidjs/router"
+import { type Accessor, Show, Suspense } from "solid-js"
 import { Button } from "~/component/button"
 import { FormUI } from "~/component/form/ui"
-import { useI18N } from "~/state/i18n"
 import { Member } from "./components/member"
 import { Context, useController } from "./context"
 import { createController } from "./controller"
-import { fetchDictionary } from "./i18n"
-import { initData } from "./init_data"
+import { type ArtistByID_EditArtistPage } from "./data/get"
+import { type FlatDict } from "./i18n"
 import { h4Class } from "./style"
 import { submitAction } from "./submit_action"
 
-export default function EditArtistPage() {
-	const data = createAsync(() => initData(useParams()))
-	const [dict] = createResource(useI18N().locale, fetchDictionary)
+export function ArtistFormLayout(props: {
+	data: Accessor<ArtistByID_EditArtistPage | null>
+	dict: Accessor<FlatDict>
+}) {
 	return (
 		<Suspense>
 			<Context.Provider
 				value={createController({
-					initData: data(),
-					dict,
+					initData: props.data,
+					dict: props.dict,
 				})}>
 				<Main />
 			</Context.Provider>
@@ -39,7 +39,7 @@ function Main() {
 					form.setErrMsg("No changes")
 					return
 				}
-				return action(v, artistData())
+				return action(v, artistData)
 			}}
 			method="post"
 			class="flex flex-col gap-2">
@@ -86,6 +86,7 @@ function LogBtn() {
 			onClick={() => {
 				console.log("form changed: ", form.changed)
 				console.log("form error: ", getErrors(formStore))
+				console.log("form value: ", getValues(formStore))
 				console.log(type.value)
 			}}>
 			Log
@@ -114,7 +115,7 @@ function Name() {
 							"invalid:focus:ring-red-800 invalid:focus:border-red-800":
 								field.error.length > 0,
 						}}
-						value={artistData() !== undefined ? artistData()?.name : undefined}
+						value={artistData() ? artistData()?.name : undefined}
 						placeholder={t("name.placeholder")}
 						required
 					/>
@@ -153,9 +154,8 @@ function Type() {
 								id="artist_type_group"
 								value="Group"
 								checked={artistData()?.artist_type === "Group"}
-								onChange={() => type.toGroup()}>
-								Group
-							</input>
+								onChange={() => type.toGroup()}
+							/>
 							<label for="artist_type_group">{t("artist_type.group")}</label>
 						</div>
 						{field.error && <FormUI.ErrorText text={field.error} />}

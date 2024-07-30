@@ -7,27 +7,27 @@ import {
 	valiForm,
 } from "@modular-forms/solid"
 import * as i18n from "@solid-primitives/i18n"
-import { Artist } from "@touhouclouddb/database"
+import { type artist } from "@touhouclouddb/database/interfaces"
 import * as R from "ramda"
-import { createSignal, Resource } from "solid-js"
-import { Nullable } from "vitest"
+import type { Accessor } from "solid-js"
+import { createSignal } from "solid-js"
 import { isEmptyArray } from "~/lib/validate/array"
 import {
-	ArtistByID_EditArtistPage as ArtistByID,
-	ArtistByKeyword_EditArtistPage,
-	ArtistListByKeyword_EditArtistPage,
 	findArtistByKeyword_EditArtistPage,
-} from "./db"
+	type ArtistArrayByKeyword_EditArtistPage,
+	type ArtistByID_EditArtistPage as ArtistByID,
+	type ArtistByKeyword_EditArtistPage,
+} from "./data/get"
 import { ArtistFormSchema } from "./form_schema"
-import { FlatDict } from "./i18n"
+import type { FlatDict } from "./i18n"
 import { initFormStore_Member } from "./init_member"
-import { ArtistForm, MemberList, MemberListItem } from "./type"
+import type { ArtistForm, MemberList, MemberListItem } from "./type"
 
 export function createController(options: {
-	initData?: ArtistByID
-	dict: Resource<FlatDict>
+	initData: Accessor<ArtistByID | null>
+	dict: Accessor<FlatDict>
 }) {
-	const initData = options.initData
+	const initData = options.initData()
 	const initFormValue =
 		!initData ? undefined : (
 			{
@@ -38,22 +38,16 @@ export function createController(options: {
 			}
 		)
 
-	// readonly
-	const [artistData] = createSignal<ArtistByID | undefined>(
-		initData === null ? undefined : initData
-	)
-
 	// form
 	const formStore = createFormStore<ArtistForm>({
 		validate: valiForm(ArtistFormSchema),
 		initialValues: initFormValue,
 	})
-	// readonly
-	const [oldValue] = createSignal<Nullable<Partial<ArtistForm>>>(initFormValue)
+
 	const [formErrorMsg, setFormErrorMsg] = createSignal<string>()
 	const formController = {
 		get changed() {
-			return !R.equals(oldValue(), getValues(formStore))
+			return !R.equals(initFormValue, getValues(formStore))
 		},
 		get errMsg() {
 			return formErrorMsg()
@@ -63,10 +57,10 @@ export function createController(options: {
 	// type
 	// setter is private
 	const [artistType, setArtistType] = createSignal<
-		Artist.ArtistType | undefined
-	>(initData?.artist_type)
+		artist.ArtistType | undefined
+	>(initData?.artist_type ?? undefined)
 
-	function setArtistTypeWithSwapMemberListCache(type: Artist.ArtistType) {
+	function setArtistTypeWithSwapMemberListCache(type: artist.ArtistType) {
 		setArtistType(type)
 		setMemberSearchResult(undefined)
 		const cache = memberListCache()
@@ -87,7 +81,7 @@ export function createController(options: {
 	}
 	// member
 	const [memberSearchResult, setMemberSearchResult] =
-		createSignal<ArtistListByKeyword_EditArtistPage>()
+		createSignal<ArtistArrayByKeyword_EditArtistPage>()
 	const [memberListCache, setMemberListCache] = createSignal<MemberList>()
 
 	const memberController = {
@@ -133,17 +127,19 @@ export function createController(options: {
 			} else {
 				const type = artistType()!
 				const res = await findArtistByKeyword_EditArtistPage(keyword, type)
-				console.log(res)
-
 				if (isEmptyArray(res)) {
 					setMemberSearchResult(undefined)
 				} else {
 					setMemberSearchResult(
-						res.map((a) => ({
-							id: a.id,
-							name: a.name,
-							artist_type: a.artist_type,
-						}))
+						res.map(
+							(a) =>
+								({
+									id: a.id,
+									app_id: a.app_id,
+									name: a.name,
+									artist_type: a.artist_type,
+								}) satisfies ArtistByKeyword_EditArtistPage
+						)
 					)
 				}
 			}
@@ -152,7 +148,7 @@ export function createController(options: {
 
 	return {
 		t: i18n.translator(options.dict),
-		artistData,
+		artistData: options.initData,
 		formStore,
 		form: formController,
 		type: typeController,

@@ -1,7 +1,7 @@
 import e from "@touhouclouddb/database"
-import { Transaction } from "edgedb/dist/transaction"
+import type { Transaction } from "edgedb/dist/transaction"
 import { isEmptyArrayOrNone } from "~/lib/validate/array"
-import { FormData } from "./submit_action"
+import type { FormData } from "./submit_action"
 
 export function insertGroup(...[tx, formData]: [Transaction, FormData]) {
 	const linkedMemberIDList = formData.data.member

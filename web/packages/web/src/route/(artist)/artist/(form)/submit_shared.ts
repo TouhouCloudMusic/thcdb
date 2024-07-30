@@ -20,7 +20,7 @@ export async function convertArtistTypeIfTypeChanged(
 	if (!typeChanged) return
 
 	const insertData = {
-		id: initData.data.id,
+		// id: initData.data.id,
 		name: initData.data.name,
 		app_id: initData.data.app_id,
 		str_alias: initData.data.str_alias,

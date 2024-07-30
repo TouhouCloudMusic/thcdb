@@ -1,9 +1,9 @@
-import { Artist } from "@touhouclouddb/database"
+import { type Artist } from "@touhouclouddb/database/interfaces"
+import type { Nullable } from "vitest"
 import { type Self } from "~/lib/type/self"
-import { type ArtistByID_EditArtistPage as ArtistData } from "./db"
+import { sortMemberList } from "../../utils/sort_member_list"
+import { type ArtistByID_EditArtistPage as ArtistData } from "./data/get"
 import { type ArtistForm } from "./type"
-import { sortMemberList } from "../../(shared)/sort_member_list"
-import { Nullable } from "vitest"
 
 export type MemberFieldArray = ArtistForm["member"]
 export class Member implements Self<NonNullable<MemberFieldArray>[number]> {
