@@ -4,7 +4,6 @@ import {
 	useParams,
 	type RouteDefinition,
 } from "@solidjs/router"
-import { createEffect, Suspense } from "solid-js"
 import { useI18N } from "~/state/i18n"
 import { getLocaleCookie } from "~/state/i18n/provider"
 import { getArtistDataEditArtistPage } from "../data/cache"
@@ -26,19 +25,13 @@ export const route = {
 } satisfies RouteDefinition
 
 export default function EditArtistPage() {
-	const data = createAsync(async () =>
-		getArtistDataEditArtistPage(useParams()["id"])
-	)
-	const dict = createAsync(async () => cacheFetchDictionary(useI18N().locale()))
-	createEffect(() => {
-		console.log("locale: ", useI18N().locale())
-	})
+	const data = createAsync(() => getArtistDataEditArtistPage(useParams()["id"]))
+	const dict = createAsync(() => cacheFetchDictionary(useI18N().locale()))
+
 	return (
-		<Suspense>
-			<ArtistFormLayout
-				data={data}
-				dict={dict}
-			/>
-		</Suspense>
+		<ArtistFormLayout
+			data={data}
+			dict={dict}
+		/>
 	)
 }

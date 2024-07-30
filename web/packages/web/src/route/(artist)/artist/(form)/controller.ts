@@ -15,7 +15,7 @@ import { isEmptyArray } from "~/lib/validate/array"
 import {
 	findArtistByKeyword_EditArtistPage,
 	type ArtistArrayByKeyword_EditArtistPage,
-	type ArtistByID_EditArtistPage as ArtistByID,
+	type ArtistByID_EditArtistPage,
 	type ArtistByKeyword_EditArtistPage,
 } from "./data/get"
 import { ArtistFormSchema } from "./form_schema"
@@ -23,11 +23,11 @@ import type { FlatDict } from "./i18n"
 import { initFormStore_Member } from "./init_member"
 import type { ArtistForm, MemberList, MemberListItem } from "./type"
 
-export function createController(options: {
-	initData: Accessor<ArtistByID | null>
-	dict: Accessor<FlatDict>
-}) {
-	const initData = options.initData()
+export function createController(
+	data: Accessor<ArtistByID_EditArtistPage | null | undefined>,
+	dict: Accessor<FlatDict | undefined>
+) {
+	const initData = data()
 	const initFormValue =
 		!initData ? undefined : (
 			{
@@ -58,7 +58,7 @@ export function createController(options: {
 	// setter is private
 	const [artistType, setArtistType] = createSignal<
 		artist.ArtistType | undefined
-	>(initData?.artist_type ?? undefined)
+	>(initData?.artist_type)
 
 	function setArtistTypeWithSwapMemberListCache(type: artist.ArtistType) {
 		setArtistType(type)
@@ -125,8 +125,9 @@ export function createController(options: {
 			if (keyword.length < 3) {
 				setMemberSearchResult(undefined)
 			} else {
-				const type = artistType()!
+				const type = artistType() === "Person" ? "Group" : "Person"
 				const res = await findArtistByKeyword_EditArtistPage(keyword, type)
+
 				if (isEmptyArray(res)) {
 					setMemberSearchResult(undefined)
 				} else {
@@ -147,8 +148,8 @@ export function createController(options: {
 	}
 
 	return {
-		t: i18n.translator(options.dict),
-		artistData: options.initData,
+		t: i18n.translator(dict),
+		artistData: initData,
 		formStore,
 		form: formController,
 		type: typeController,

@@ -12,16 +12,12 @@ import { h4Class } from "./style"
 import { submitAction } from "./submit_action"
 
 export function ArtistFormLayout(props: {
-	data: Accessor<ArtistByID_EditArtistPage | null>
-	dict: Accessor<FlatDict>
+	data: Accessor<ArtistByID_EditArtistPage | null | undefined>
+	dict: Accessor<FlatDict | undefined>
 }) {
 	return (
 		<Suspense>
-			<Context.Provider
-				value={createController({
-					initData: props.data,
-					dict: props.dict,
-				})}>
+			<Context.Provider value={createController(props.data, props.dict)}>
 				<Main />
 			</Context.Provider>
 		</Suspense>
@@ -51,7 +47,7 @@ function Main() {
 						<input
 							{...props}
 							type="text"
-							value={artistData()?.id.toString() ?? ""}
+							value={artistData?.id.toString() ?? ""}
 							hidden
 						/>
 						{field.error && <p>{field.error}</p>}
@@ -115,7 +111,7 @@ function Name() {
 							"invalid:focus:ring-red-800 invalid:focus:border-red-800":
 								field.error.length > 0,
 						}}
-						value={artistData() ? artistData()?.name : undefined}
+						value={artistData ? artistData.name : undefined}
 						placeholder={t("name.placeholder")}
 						required
 					/>
@@ -142,7 +138,7 @@ function Type() {
 								type="radio"
 								id="artist_type_person"
 								value="Person"
-								checked={artistData()?.artist_type === "Person"}
+								checked={artistData?.artist_type === "Person"}
 								onChange={() => type.toPerson()}
 							/>
 							<label for="artist_type_person">{t("artist_type.person")}</label>
@@ -153,7 +149,7 @@ function Type() {
 								type="radio"
 								id="artist_type_group"
 								value="Group"
-								checked={artistData()?.artist_type === "Group"}
+								checked={artistData?.artist_type === "Group"}
 								onChange={() => type.toGroup()}
 							/>
 							<label for="artist_type_group">{t("artist_type.group")}</label>

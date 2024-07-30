@@ -73,9 +73,9 @@ export async function findArtistByKeyword_EditArtistPage(
 		name: true,
 		artist_type: true,
 		filter: e.op(
-			e.op(e.ext.pg_trgm.word_similarity_dist(keyword, artist.name), "<=", 0.5),
+			e.op(e.ext.pg_trgm.word_similarity_dist(keyword, artist.name), "<=", 0.6),
 			"and",
-			e.op(artist.artist_type, "=", artistType)
+			e.op(artist.artist_type, "=", e.cast(e.artist.ArtistType, artistType))
 		),
 	}))
 
