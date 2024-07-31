@@ -2,7 +2,7 @@ import { type artist, type Artist } from "@touhouclouddb/database/interfaces"
 import type { Nullable } from "vitest"
 import { type Self } from "~/lib/type/self"
 import { sortMemberList } from "../../utils/sort_member_list"
-import { type ArtistByID_EditArtistPage as ArtistData } from "./data/get"
+import { type ArtistByID_EditArtistPage as ArtistData } from "./data/db"
 import { type ArtistForm } from "./type"
 
 export type MemberFieldArray = ArtistForm["member"]

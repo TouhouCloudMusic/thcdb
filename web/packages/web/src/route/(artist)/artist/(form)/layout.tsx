@@ -1,23 +1,25 @@
 import { Field, Form, getErrors, getValues } from "@modular-forms/solid"
 import { useAction } from "@solidjs/router"
-import { type Accessor, Show, Suspense } from "solid-js"
+import { type Accessor, createMemo, Show, Suspense } from "solid-js"
 import { Button } from "~/component/button"
 import { FormUI } from "~/component/form/ui"
+import { useI18N } from "~/state/i18n"
 import { Member } from "./components/member"
 import { Context, useController } from "./context"
 import { createController } from "./controller"
-import { type ArtistByID_EditArtistPage } from "./data/get"
-import { type FlatDict } from "./i18n"
+import { Query } from "./data"
+import { type ArtistByID_EditArtistPage } from "./data/db"
 import { h4Class } from "./style"
 import { submitAction } from "./submit_action"
-
 export function ArtistFormLayout(props: {
-	data: Accessor<ArtistByID_EditArtistPage | null | undefined>
-	dict: Accessor<FlatDict | undefined>
+	data?: Accessor<ArtistByID_EditArtistPage | null | undefined>
 }) {
+	const data = createMemo(() => props.data?.() ?? null)
+	const dictQuery = Query.fetchDict(useI18N().locale)
+	const dict = createMemo(() => dictQuery.data)
 	return (
 		<Suspense>
-			<Context.Provider value={createController(props.data, props.dict)}>
+			<Context.Provider value={createController(data, dict)}>
 				<Main />
 			</Context.Provider>
 		</Suspense>
@@ -47,7 +49,7 @@ function Main() {
 						<input
 							{...props}
 							type="text"
-							value={artistData?.id.toString() ?? ""}
+							value={artistData()?.id.toString() ?? ""}
 							hidden
 						/>
 						{field.error && <p>{field.error}</p>}
@@ -111,7 +113,7 @@ function Name() {
 							"invalid:focus:ring-red-800 invalid:focus:border-red-800":
 								field.error.length > 0,
 						}}
-						value={artistData ? artistData.name : undefined}
+						value={artistData() ? artistData()?.name : undefined}
 						placeholder={t("name.placeholder")}
 						required
 					/>
@@ -138,7 +140,7 @@ function Type() {
 								type="radio"
 								id="artist_type_person"
 								value="Person"
-								checked={artistData?.artist_type === "Person"}
+								checked={artistData()?.artist_type === "Person"}
 								onChange={() => type.toPerson()}
 							/>
 							<label for="artist_type_person">{t("artist_type.person")}</label>
@@ -149,7 +151,7 @@ function Type() {
 								type="radio"
 								id="artist_type_group"
 								value="Group"
-								checked={artistData?.artist_type === "Group"}
+								checked={artistData()?.artist_type === "Group"}
 								onChange={() => type.toGroup()}
 							/>
 							<label for="artist_type_group">{t("artist_type.group")}</label>

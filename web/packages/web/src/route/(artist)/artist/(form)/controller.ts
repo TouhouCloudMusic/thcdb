@@ -9,45 +9,46 @@ import {
 import * as i18n from "@solid-primitives/i18n"
 import { type artist } from "@touhouclouddb/database/interfaces"
 import * as R from "ramda"
-import type { Accessor } from "solid-js"
-import { createSignal } from "solid-js"
+import { createMemo, createSignal } from "solid-js"
 import { isEmptyArray } from "~/lib/validate/array"
 import {
 	findArtistByKeyword_EditArtistPage,
 	type ArtistArrayByKeyword_EditArtistPage,
 	type ArtistByID_EditArtistPage,
 	type ArtistByKeyword_EditArtistPage,
-} from "./data/get"
+} from "./data/db"
 import { ArtistFormSchema } from "./form_schema"
 import type { FlatDict } from "./i18n"
 import { initFormStore_Member } from "./init_member"
 import type { ArtistForm, MemberList, MemberListItem } from "./type"
 
 export function createController(
-	data: Accessor<ArtistByID_EditArtistPage | null | undefined>,
-	dict: Accessor<FlatDict | undefined>
+	data: () => ArtistByID_EditArtistPage | null | undefined,
+	dict: () => FlatDict | undefined
 ) {
-	const initData = data()
-	const initFormValue =
-		!initData ? undefined : (
+	const initData = data
+	// 需要测试data更新后不memo是否会触发更新
+	const initFormValue = createMemo(() =>
+		!initData() ? undefined : (
 			{
-				id: initData.id.toString(),
-				name: initData.name,
-				artist_type: initData.artist_type,
-				member: initFormStore_Member(initData),
+				id: initData()?.id.toString(),
+				name: initData()?.name,
+				artist_type: initData()?.artist_type,
+				member: initData() ? initFormStore_Member(initData()!) : undefined,
 			}
 		)
+	)
 
 	// form
 	const formStore = createFormStore<ArtistForm>({
 		validate: valiForm(ArtistFormSchema),
-		initialValues: initFormValue,
+		initialValues: initFormValue(),
 	})
 
 	const [formErrorMsg, setFormErrorMsg] = createSignal<string>()
 	const formController = {
 		get changed() {
-			return !R.equals(initFormValue, getValues(formStore))
+			return !R.equals(initFormValue(), getValues(formStore))
 		},
 		get errMsg() {
 			return formErrorMsg()
@@ -58,7 +59,7 @@ export function createController(
 	// setter is private
 	const [artistType, setArtistType] = createSignal<
 		artist.ArtistType | undefined
-	>(initData?.artist_type)
+	>(initData()?.artist_type)
 
 	function setArtistTypeWithSwapMemberListCache(type: artist.ArtistType) {
 		setArtistType(type)

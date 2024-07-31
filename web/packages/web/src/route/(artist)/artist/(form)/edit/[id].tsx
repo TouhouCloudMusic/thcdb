@@ -1,22 +1,17 @@
-import {
-	createAsync,
-	redirect,
-	useParams,
-	type RouteDefinition,
-} from "@solidjs/router"
-import { useI18N } from "~/state/i18n"
-import { getLocaleCookie } from "~/state/i18n/provider"
-import { getArtistDataEditArtistPage } from "../data/cache"
-import { cacheFetchDictionary } from "../i18n"
+import { Navigate, useParams, type RouteDefinition } from "@solidjs/router"
+import { useQueryClient } from "@tanstack/solid-query"
+import { createEffect, createMemo, Match, Switch } from "solid-js"
+import { preloadLocale } from "~/lib/data/preload"
+import { Query } from "../data"
 import { ArtistFormLayout } from "../layout"
 
 export const route = {
-	preload: () => {
-		const id = useParams()["id"]
-		void getArtistDataEditArtistPage(id)
+	preload: async (args) => {
+		const id = args.params["id"]
+		const client = useQueryClient()
+		void Query.prefetchData(id, client)
 
-		const locale = getLocaleCookie()
-		void cacheFetchDictionary(locale)
+		void Query.prefetchDict(await preloadLocale(), client)
 	},
 	matchFilters: {
 		id: /^\d+$/,
@@ -24,13 +19,25 @@ export const route = {
 } satisfies RouteDefinition
 
 export default function EditArtistPage() {
-	const data = createAsync(() => getArtistDataEditArtistPage(useParams()["id"]))
-	const dict = createAsync(() => cacheFetchDictionary(useI18N().locale()))
+	const id = () => useParams()["id"]
+	const dataQuery = Query.fetchData(id)
+	const data = createMemo(() => dataQuery.data)
 
+	createEffect(() => {
+		if (dataQuery.isSuccess && dataQuery.data === null) {
+			Navigate({
+				href: "/404",
+			})
+		}
+	})
 	return (
-		<ArtistFormLayout
-			data={data}
-			dict={dict}
-		/>
+		<Switch>
+			<Match when={dataQuery.isError}>
+				<Navigate href="/500" />
+			</Match>
+			<Match when={dataQuery.isSuccess}>
+				<ArtistFormLayout data={data} />
+			</Match>
+		</Switch>
 	)
 }

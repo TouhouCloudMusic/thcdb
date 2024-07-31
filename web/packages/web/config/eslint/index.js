@@ -26,7 +26,18 @@ export const tsRules = {
 		},
 	],
 	"@typescript-eslint/no-non-null-assertion": "off",
-	"@typescript-eslint/no-unused-vars": "warn",
+	"@typescript-eslint/no-unused-vars": [
+		"warn",
+		{
+			args: "all",
+			argsIgnorePattern: "^_",
+			caughtErrors: "all",
+			caughtErrorsIgnorePattern: "^_",
+			destructuredArrayIgnorePattern: "^_",
+			varsIgnorePattern: "^_",
+			ignoreRestSiblings: true,
+		},
+	],
 	"@typescript-eslint/only-throw-error": "off",
 	"@typescript-eslint/restrict-plus-operands": [
 		"error",

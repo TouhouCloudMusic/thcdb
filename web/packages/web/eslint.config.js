@@ -1,4 +1,5 @@
 import Eslint from "@eslint/js"
+import tanstackQuery from "@tanstack/eslint-plugin-query"
 import Prettier from "eslint-config-prettier"
 import Oxlint from "eslint-plugin-oxlint"
 import Globals from "globals"
@@ -21,6 +22,7 @@ export default [
 	Prettier,
 	...Tslint.configs.strictTypeChecked,
 	...Tslint.configs.stylisticTypeChecked,
+	...tanstackQuery.configs["flat/recommended"],
 	// base
 	{
 		rules: {

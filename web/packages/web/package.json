@@ -42,6 +42,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.25.1",
     "@solidjs/testing-library": "^0.8.9",
+    "@tanstack/eslint-plugin-query": "^5.51.15",
     "@testing-library/jest-dom": "^6.4.8",
     "@testing-library/user-event": "^14.5.2",
     "@types/bun": "^1.1.6",
@@ -78,8 +79,7 @@
   "name": "@touhouclouddb/web",
   "scripts": {
     "build": "vinxi build",
-    "dev": "vinxi dev",
-    "dev-bun": "bunx --bun vinxi dev",
+    "dev": "bun --env-file=\".env.development\" vinxi dev",
     "start": "vinxi start",
     "version": "vinxi version",
     "format": "prettier --write ./src",

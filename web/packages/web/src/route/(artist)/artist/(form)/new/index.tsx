@@ -1,23 +1,16 @@
-import { createAsync, type RouteDefinition } from "@solidjs/router"
-import { type Accessor } from "solid-js"
-import { useI18N } from "~/state/i18n"
-import { getLocaleCookie } from "~/state/i18n/provider"
-import { cacheFetchDictionary } from "../i18n"
+import { type RouteDefinition } from "@solidjs/router"
+import { useQueryClient } from "@tanstack/solid-query"
+import { preloadLocale } from "~/lib/data/preload"
+import { Query } from "../data"
 import { ArtistFormLayout } from "../layout"
 
 export const route = {
-	preload: () => {
-		const locale = getLocaleCookie()
-		void cacheFetchDictionary(locale)
+	preload: async () => {
+		const client = useQueryClient()
+		void Query.prefetchDict(await preloadLocale(), client)
 	},
 } satisfies RouteDefinition
 
 export default function AddArtistPage() {
-	const dict = createAsync(() => cacheFetchDictionary(useI18N().locale()))
-	return (
-		<ArtistFormLayout
-			data={(() => null) as Accessor<null>}
-			dict={dict}
-		/>
-	)
+	return <ArtistFormLayout />
 }
