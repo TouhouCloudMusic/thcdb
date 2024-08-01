@@ -11,7 +11,6 @@ export interface ButtonAttributes
  * @returns props that omit `children`, `class` and `type`
  */
 export function splitButtonProps(props: ButtonAttributes) {
-	const [, otherProps1] = splitProps(props, ["children", "class", "type"])
-	const otherProps = mergeProps({ type: "button" as const }, otherProps1)
-	return otherProps
+	const [_, otherProps] = splitProps(props, ["children", "class"])
+	return mergeProps({ type: "button" as const }, otherProps)
 }
