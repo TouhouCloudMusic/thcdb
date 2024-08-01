@@ -4,7 +4,7 @@ import { type artist } from "@touhouclouddb/database/interfaces"
 import { type Client } from "edgedb"
 import { edgedbClient } from "~/database/server"
 import { mapSeqlikeIDtoStr } from "~/database/utils/map_seq_like_id_to_seq_id"
-import { type HasKey } from "~/lib/type/has_key"
+import { type HasKey } from "~/lib/type/object"
 import { type ArtistResult, type FindArtistShape } from "./type"
 
 type DefaultArtistShape = typeof defaultArtistShape
