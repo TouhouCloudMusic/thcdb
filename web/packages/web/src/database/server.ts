@@ -7,6 +7,8 @@ export const edgedbClient = createClient({
 	instanceName: process.env.EDGEDB_INSTANCE_NAME,
 	branch: "main",
 	tlsSecurity: "insecure",
+}).withConfig({
+	apply_access_policies: import.meta.env.DEV ? false : true,
 })
 
 export const serverAuthHelper = new SolidServerAuth(edgedbClient, {
