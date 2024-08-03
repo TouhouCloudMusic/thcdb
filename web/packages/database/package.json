@@ -12,7 +12,8 @@
   },
   "exports": {
     ".": "./index.ts",
-    "./interfaces": "./interfaces.ts"
+    "./interfaces": "./interfaces.ts",
+    "./*": "./edgeql-js/*"
   },
   "scripts": {
     "generate": "npx @edgedb/generate interfaces --file interfaces.ts && npx @edgedb/generate edgeql-js --target esm --output-dir ./edgeql-js",
