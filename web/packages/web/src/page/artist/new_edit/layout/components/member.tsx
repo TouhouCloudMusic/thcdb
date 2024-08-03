@@ -20,7 +20,18 @@ import { FormUI } from "~/component/form/ui"
 import { notNullString } from "~/lib/validate/not_empty_string"
 import { useController } from "../../context"
 import { h4Class } from "../style"
+declare module "solid-js" {
+	type StrictPartial<T> = Partial<T> & { [K in keyof T]?: T[K] | undefined }
 
+	export namespace JSX {
+		interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
+			value?: string | number | string[] | undefined
+		}
+		interface HTMLElementTags {
+			input: InputHTMLAttributes<HTMLInputElement>
+		}
+	}
+}
 export function Member() {
 	const { formStore, type, member, t } = useController()
 	function AddStringInputButton() {
@@ -109,7 +120,7 @@ function InvisibleField(props: { index: Accessor<number> }) {
 						<input
 							{...props}
 							type="text"
-							value={field.value}
+							value={field.value ?? ""}
 							hidden
 						/>
 					</>
@@ -188,7 +199,7 @@ function MemberField(props: { index: () => number }) {
 									<input
 										{...isTextProps}
 										type="checkbox"
-										checked={isTextField.value}
+										checked={isTextField.value ?? false}
 										hidden
 									/>
 									<Show
@@ -198,7 +209,7 @@ function MemberField(props: { index: () => number }) {
 											{...nameProps}
 											type="text"
 											class={`min-w-0 flex-1 rounded border-[0.1rem] border-gray-300 px-1`}
-											value={nameField.value}
+											value={nameField.value ?? ""}
 											placeholder="Enter artist name"
 										/>
 									</Show>
@@ -213,7 +224,7 @@ function MemberField(props: { index: () => number }) {
 													type="number"
 													min="-1"
 													max={thisYear}
-													value={joinYearField.value ?? undefined}
+													value={joinYearField.value ?? NaN}
 													onInput={(e) =>
 														yearFieldOnInput(
 															e,
@@ -241,7 +252,7 @@ function MemberField(props: { index: () => number }) {
 															`member.${props.index()}.leave_year`
 														)
 													}
-													value={leaveYearField.value ?? undefined}
+													value={leaveYearField.value ?? ""}
 													class="no_spinner w-1/2 rounded border-[0.1rem] px-1"
 													placeholder="Leave year"
 												/>

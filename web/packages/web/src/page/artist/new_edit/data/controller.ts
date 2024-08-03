@@ -3,7 +3,7 @@ import {
 	getValues,
 	insert,
 	remove,
-	setValue,
+	setValues,
 	valiForm,
 } from "@modular-forms/solid"
 import * as i18n from "@solid-primitives/i18n"
@@ -13,19 +13,14 @@ import { createMemo, createSignal } from "solid-js"
 import { type Nullable } from "~/lib/type/nullable"
 import { isEmptyArray } from "~/lib/validate/array"
 import {
-	findArtistByKeyword_EditArtistPage,
+	findArtistByKeyword,
 	type ArtistByID,
 	type ArtistByKeyword,
 	type ArtistByKeywordArray,
-} from "./db/private"
-import type {
-	ArtistForm,
-	MemberList,
-	MemberListItem,
-} from "./form_schema/private"
-import { ArtistFormSchema } from "./form_schema/private"
-import type { FlatDict } from "./i18n/private"
-import { initFormStoreMemberList } from "./private/init"
+} from "./db"
+import { ArtistFormSchema, type MemberList, type MemberListItem } from "./form"
+import { initFormStoreMemberList } from "./form/init"
+import type { FlatDict } from "./i18n"
 
 export function createController(
 	data: () => Nullable<ArtistByID>,
@@ -44,9 +39,9 @@ export function createController(
 	)
 
 	const formStore = createMemo(() =>
-		createFormStore<ArtistForm>({
+		createFormStore<ArtistFormSchema>({
 			validate: valiForm(ArtistFormSchema),
-			initialValues: initFormValue(),
+			initialValues: initFormValue() ?? {},
 		})
 	)
 	const [formErrorMsg, setFormErrorMsg] = createSignal<string>()
@@ -63,9 +58,10 @@ export function createController(
 		setArtistType(type)
 		setMemberSearchResult(undefined)
 		const cache = memberListCache()
+
 		const memberList = getValues(formStore(), "member") as MemberList
 		setMemberListCache(memberList)
-		setValue(formStore(), "member", cache ?? [])
+		setValues(formStore(), "member", cache ?? [])
 	}
 
 	const formController = {
@@ -104,8 +100,8 @@ export function createController(
 					id: input.id,
 					name: input.name,
 					is_str: false,
-					join_year: null,
-					leave_year: null,
+					join_year: undefined,
+					leave_year: undefined,
 				} satisfies MemberListItem,
 			})
 		},
@@ -113,11 +109,11 @@ export function createController(
 		addStringInput() {
 			insert(formStore(), "member", {
 				value: {
-					id: undefined,
+					id: "",
 					name: "",
 					is_str: true,
-					join_year: null,
-					leave_year: null,
+					join_year: undefined,
+					leave_year: undefined,
 				},
 			})
 		},
@@ -133,7 +129,11 @@ export function createController(
 				setMemberSearchResult(undefined)
 			} else {
 				const type = artistType() === "Person" ? "Group" : "Person"
-				const res = await findArtistByKeyword_EditArtistPage(keyword, type)
+				let existArtists = getValues(formStore(), "member")
+					.map((m) => m?.id)
+					.filter((id) => id !== "") as string[]
+
+				const res = await findArtistByKeyword(keyword, type, existArtists)
 
 				if (isEmptyArray(res)) {
 					setMemberSearchResult(undefined)

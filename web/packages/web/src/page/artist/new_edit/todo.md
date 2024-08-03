@@ -40,18 +40,16 @@
       - [ ] 添加团体
       - [ ] 更新团体
       - [ ] 转换类型
-  - [ ] 转换艺术家类型
+  - [x] 转换艺术家类型
     - [x] id
     - [x] name
     - [x] app id
     - [x] text alias
     - [x] birth date
     - [x] death date
-    - [ ] str member / str members
-    - [ ] member / members
+    - [x] str member / str members
+    - [x] member / members
 
 - [ ] Preview and diff on submit
 
 - [ ] 单元测试
-
-修复切换type bug

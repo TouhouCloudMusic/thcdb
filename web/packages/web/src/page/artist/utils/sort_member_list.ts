@@ -1,16 +1,13 @@
 import * as R from "ramda"
+import { type MemberList } from "../new_edit/data/form"
 
-interface MemberList {
-	name: string
-	join_year?: number | null
-	leave_year?: number | null
-}
 /**
  *
  * @param memberList
  * @returns Return sorted array, if array is empty, return empty array
  */
-export function sortMemberList<T extends MemberList[]>(memberList: T) {
+export function sortMemberList<T extends MemberList>(memberList: T) {
+	if (!memberList) return
 	return R.sort((a, b) => {
 		const aLeft = a.leave_year == null
 		const bLeft = b.leave_year == null

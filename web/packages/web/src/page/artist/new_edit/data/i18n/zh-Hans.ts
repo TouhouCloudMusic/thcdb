@@ -1,4 +1,4 @@
-import type { Dict } from "./private"
+import type { Dict } from "."
 
 const zh_hans_dict: Dict = {
 	name: {

@@ -3,14 +3,14 @@ import { useQueryClient } from "@tanstack/solid-query"
 import { createEffect, createMemo, Match, Switch } from "solid-js"
 import { isServer } from "solid-js/web"
 import { preloadLocale } from "~/lib/data/preload"
-import { Query } from "~/page/artist/new/edit/data"
-import { ArtistFormLayout } from "~/page/artist/new/edit/layout"
+import { Query } from "~/page/artist/new_edit/data"
+import { ArtistFormLayout } from "~/page/artist/new_edit/layout"
 import { useI18N } from "~/state/i18n"
 
 export const route = {
-	preload: async (args) => {
+	preload: async ({ params }) => {
 		if (!isServer) {
-			const id = args.params["id"]
+			const id = params["id"]
 			const client = useQueryClient()
 			void Query.prefetchData(id, client)
 			const dict = await preloadLocale()

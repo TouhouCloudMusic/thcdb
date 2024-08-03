@@ -1,8 +1,12 @@
 "use server"
 import e from "@touhouclouddb/database"
-import { type Artist, type artist } from "@touhouclouddb/database/interfaces"
+import { type artist, type Artist } from "@touhouclouddb/database/interfaces"
+import { type SelectFilterExpression } from "@touhouclouddb/database/syntax.js"
+import { type uuid } from "edgedb/dist/codecs/ifaces"
 import { edgedbClient } from "~/database/server"
+import { op_and } from "~/lib/edgedb/op"
 import { type SafePick } from "~/lib/type/safe_pick"
+import { isNotEmptyArrayOrNone } from "~/lib/validate/array"
 
 export interface ArtistByID extends Pick<Artist, (typeof artistKeys)[number]> {
 	alias: Pick<Artist, (typeof aliasKeys)[number]>[]
@@ -39,9 +43,7 @@ const memberKeys = [
 	"artist_type",
 ] as const
 
-export async function findArtistByID_EditArtistPage(
-	id: string
-): Promise<ArtistByID | null> {
+export async function findArtistByID(id: string): Promise<ArtistByID | null> {
 	const client = edgedbClient
 	return client.querySingle(
 		`
@@ -58,24 +60,33 @@ export async function findArtistByID_EditArtistPage(
 }
 
 export type ArtistByKeywordArray = Awaited<
-	ReturnType<typeof findArtistByKeyword_EditArtistPage>
+	ReturnType<typeof findArtistByKeyword>
 >
 export type ArtistByKeyword = ArtistByKeywordArray[number]
 
-export async function findArtistByKeyword_EditArtistPage(
+export async function findArtistByKeyword(
 	keyword: string,
-	artistType: artist.ArtistType
+	artistType: artist.ArtistType,
+	filterArray?: uuid[]
 ) {
 	const query = e.select(e.Artist, (artist) => ({
 		id: true,
 		app_id: true,
 		name: true,
 		artist_type: true,
-		filter: e.op(
+
+		filter: op_and(
 			e.op(e.ext.pg_trgm.word_similarity_dist(keyword, artist.name), "<=", 0.6),
-			"and",
-			e.op(artist.artist_type, "=", e.cast(e.artist.ArtistType, artistType))
-		),
+			e.op(artist.artist_type, "=", e.cast(e.artist.ArtistType, artistType)),
+			isNotEmptyArrayOrNone(filterArray) ?
+				e.op(
+					artist.id,
+					"not in",
+					e.array_unpack(e.literal(e.array(e.uuid), filterArray))
+				)
+			:	true
+		) as SelectFilterExpression,
+		limit: 20,
 	}))
 
 	return await query.run(edgedbClient)

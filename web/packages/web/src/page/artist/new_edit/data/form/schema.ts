@@ -10,13 +10,13 @@ export const yearSchema = v.union(
 	[
 		v.pipe(v.number(), v.minValue(-1), v.maxValue(new Date().getFullYear())),
 		v.nan(),
-		v.null(),
+		v.undefined(),
 	],
 	"Invalid year"
 )
 
-export type ArtistForm = v.InferInput<typeof ArtistFormSchema>
-export type MemberList = ArtistForm["member"]
+export type ArtistFormSchema = v.InferInput<typeof ArtistFormSchema>
+export type MemberList = ArtistFormSchema["member"]
 export type MemberListItem = NonNullable<MemberList>[number]
 export const ArtistFormSchema = v.object({
 	id: v.string(),
@@ -29,7 +29,7 @@ export const ArtistFormSchema = v.object({
 	member: v.optional(
 		v.array(
 			v.object({
-				id: v.optional(v.string()),
+				id: v.string(),
 				name: v.pipe(v.string(), v.minLength(1, "Artist name is required")),
 				is_str: v.boolean(),
 				// artist_type: artistTypeSchema,

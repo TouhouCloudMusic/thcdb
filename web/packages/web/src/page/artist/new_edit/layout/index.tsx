@@ -1,5 +1,6 @@
 import { Field, Form, getErrors, getValues } from "@modular-forms/solid"
 import { useAction } from "@solidjs/router"
+import { useQueryClient } from "@tanstack/solid-query"
 import { type Accessor, createMemo, Show, Suspense } from "solid-js"
 import { Button } from "~/component/button"
 import { FormUI } from "~/component/form/ui"
@@ -8,7 +9,7 @@ import { useI18N } from "~/state/i18n"
 import { Context, useController } from "../context"
 import { Action, Query } from "../data"
 import { createController } from "../data/controller"
-import { type ArtistByID } from "../data/type"
+import { type ArtistByID } from "../data/db"
 import { ArtistType } from "./components/artist_type"
 import { Member } from "./components/member"
 import { Name } from "./components/name"
@@ -40,15 +41,16 @@ export function ArtistFormLayout(props: {
 function Main() {
 	const { artistData, formStore, form, t } = useController()
 	const action = useAction(Action.submit)
+	const queryClient = useQueryClient()
 	return (
 		<Form
 			of={formStore()}
-			onSubmit={(v) => {
+			onSubmit={async (formData) => {
 				if (!form.changed) {
 					form.setErrMsg("No changes")
 					return
 				}
-				return action(v, artistData())
+				await action(queryClient, formData, artistData())
 			}}
 			method="post"
 			class="flex flex-col gap-2">

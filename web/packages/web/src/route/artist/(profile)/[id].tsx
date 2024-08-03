@@ -12,9 +12,11 @@ import { ArtistProfilePageController } from "~/page/artist/profile/controller"
 import { getArtistProfileDataCache } from "~/page/artist/profile/data"
 
 export const route = {
-	preload: () => {
-		const id = useParams()["id"]
-		void getArtistProfileDataCache(id)
+	preload: ({ params }) => {
+		// if (isServer) {
+		// 	const id = params["id"]
+		// 	void getArtistProfileDataCache(id)
+		// }
 	},
 	matchFilters: {
 		id: /^\d+$/,
@@ -46,6 +48,7 @@ function Main() {
 	return (
 		<main class="flex flex-col gap-2">
 			<h2>{data.name}</h2>
+			<a href={`/artist/edit/${data.app_id}`}>Edit</a>
 			<div class="flex">
 				<Show when={data.member_of.length !== 0 || data.members.length !== 0}>
 					<p class="text-gray-700">
