@@ -1,4 +1,5 @@
 /// <reference types="@solidjs/start/env" />
+
 declare global {
 	namespace NodeJS {
 		interface ProcessEnv {
@@ -11,5 +12,4 @@ declare global {
 		}
 	}
 }
-
 export {}

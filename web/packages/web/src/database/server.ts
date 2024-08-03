@@ -1,7 +1,7 @@
 import { SolidServerAuth } from "edge-auth-solid-start/server"
 import { createClient } from "edgedb"
 
-process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0"
+// process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0"
 
 export const edgedbClient = createClient({
 	instanceName: process.env.EDGEDB_INSTANCE_NAME,

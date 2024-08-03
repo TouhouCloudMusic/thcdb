@@ -1,7 +1,7 @@
 import { Show } from "solid-js"
 
 type ErrorTextProps = {
-	text?: string
+	text?: string | undefined
 	showWhen?: boolean
 }
 
