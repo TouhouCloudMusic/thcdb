@@ -1,5 +1,5 @@
 export function isEmptyArray<T>(arr: T[]): arr is [] {
-	return !arr.length
+	return arr.length === 0
 }
 
 export function isNotEmptyArray<T>(arr: T[]): arr is [T, ...T[]] {

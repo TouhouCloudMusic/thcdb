@@ -1,3 +1,3 @@
 export type IndexOf<T> = T extends Array<infer K> ? K : never
 
-export type NotNullArray<T> = [T, ...T[]]
+export type NonEmptyArray<T> = [T, ...T[]]
