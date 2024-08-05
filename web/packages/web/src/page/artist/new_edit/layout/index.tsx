@@ -1,18 +1,14 @@
-import { Field, Form, getErrors, getValues } from "@modular-forms/solid"
+import { Form, getErrors, getValues } from "@modular-forms/solid"
 import { useAction } from "@solidjs/router"
 import { useQueryClient } from "@tanstack/solid-query"
-import { type Accessor, createMemo, Show, Suspense } from "solid-js"
+import { createMemo, Show, Suspense, type Accessor } from "solid-js"
 import { Button } from "~/component/button"
 import { FormUI } from "~/component/form/ui"
 import { type Nullable } from "~/lib/type/nullable"
 import { useI18N } from "~/state/i18n"
 import { Context, useController } from "../context"
-import { Action, Query } from "../data"
-import { createController } from "../data/controller"
-import { type ArtistByID } from "../data/db"
-import { ArtistType } from "./components/artist_type"
-import { Member } from "./components/member"
-import { Name } from "./components/name"
+import { createController, Query, SubmitAction, type ArtistByID } from "../data"
+import { ArtistType, MemberList, Name } from "./components"
 
 export function ArtistFormLayout(props: {
 	data?: Accessor<Nullable<ArtistByID>>
@@ -40,7 +36,7 @@ export function ArtistFormLayout(props: {
 
 function Main() {
 	const { artistData, formStore, form, t } = useController()
-	const action = useAction(Action.submit)
+	const action = useAction(SubmitAction)
 	const queryClient = useQueryClient()
 	return (
 		<Form
@@ -54,24 +50,9 @@ function Main() {
 			}}
 			method="post"
 			class="flex flex-col gap-2">
-			<Field
-				of={formStore()}
-				name="id">
-				{(field, props) => (
-					<>
-						<input
-							{...props}
-							type="text"
-							value={artistData()?.id.toString() ?? ""}
-							hidden
-						/>
-						{field.error && <p>{field.error}</p>}
-					</>
-				)}
-			</Field>
 			<Name />
 			<ArtistType />
-			<Member />
+			<MemberList />
 			<div class="flex w-full flex-row place-content-around">
 				<Button.Highlight
 					type="submit"
@@ -89,7 +70,7 @@ function Main() {
 }
 
 function LogBtn() {
-	const { form, formStore, type } = useController()
+	const { form, formStore, artistType } = useController()
 	return (
 		<Button.Borderless
 			type="button"
@@ -98,7 +79,7 @@ function LogBtn() {
 				console.log("form changed: ", form.changed)
 				console.log("form error: ", getErrors(formStore()))
 				console.log("form value: ", getValues(formStore()))
-				console.log(type.value)
+				console.log(artistType.value)
 			}}>
 			Log
 		</Button.Borderless>

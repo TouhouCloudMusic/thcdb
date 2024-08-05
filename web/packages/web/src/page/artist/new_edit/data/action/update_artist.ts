@@ -12,6 +12,8 @@ export async function updateArtist({
 }: ArtistFormHelper): Promise<ArtistQueryReturnShape> {
 	const client = edgedbClient
 	const query = isPerson ? updatePersonQuery : updateGroupQuery
+	console.log("Query in updateArtist:", query.toEdgeQL())
+
 	try {
 		return await client.transaction(async (tx) => {
 			const res = await query.run(tx)

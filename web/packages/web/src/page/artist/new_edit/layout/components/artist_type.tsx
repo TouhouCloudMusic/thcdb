@@ -4,7 +4,7 @@ import { useController } from "../../context"
 import { h4Class } from "../style"
 
 export function ArtistType() {
-	const { artistData, formStore, type, t } = useController()
+	const { formStore, artistType, t } = useController()
 	return (
 		<div class="flex flex-col">
 			<h4 class={h4Class}>{t("artist_type.label")}</h4>
@@ -19,8 +19,8 @@ export function ArtistType() {
 								type="radio"
 								id="artist_type_person"
 								value="Person"
-								checked={artistData()?.artist_type === "Person"}
-								onChange={() => type.toPerson()}
+								checked={field.value === "Person"}
+								onChange={() => artistType.toPerson()}
 							/>
 							<label for="artist_type_person">{t("artist_type.person")}</label>
 						</div>
@@ -30,8 +30,8 @@ export function ArtistType() {
 								type="radio"
 								id="artist_type_group"
 								value="Group"
-								checked={artistData()?.artist_type === "Group"}
-								onChange={() => type.toGroup()}
+								checked={field.value === "Group"}
+								onChange={() => artistType.toGroup()}
 							/>
 							<label for="artist_type_group">{t("artist_type.group")}</label>
 						</div>

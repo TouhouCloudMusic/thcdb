@@ -10,13 +10,13 @@ import { isNotEmptyArrayOrNone } from "~/lib/validate/array"
 
 export interface ArtistByID extends Pick<Artist, (typeof artistKeys)[number]> {
 	alias: Pick<Artist, (typeof aliasKeys)[number]>[]
-	members: MemberKindArray
-	member_of: MemberKindArray
+	members: MemberList
+	member_of: MemberList
 }
 
-type MemberKindArray = (SafePick<Artist, (typeof memberKeys)[number]> & {
-	"@join_year": number
-	"@leave_year": number
+type MemberList = (SafePick<Artist, (typeof memberKeys)[number]> & {
+	"@join_year": number | null
+	"@leave_year": number | null
 })[]
 
 const artistKeys = [

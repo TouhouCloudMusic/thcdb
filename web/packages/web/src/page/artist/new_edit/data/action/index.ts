@@ -12,46 +12,36 @@ import { createArtist } from "./create_artist"
 import { ArtistFormHelper } from "./helpers"
 import { updateArtist } from "./update_artist"
 
-export const submit = action(
+export const SubmitAction = action(
 	async (
 		queryClient: QueryClient,
 		formData: ArtistFormSchema,
 		initData?: Nullable<ArtistByID>
 	) => {
 		v.parse(ArtistFormSchema, formData)
-		const res = await task(formData, initData)
+		const task = pipe(
+			TaskEither.tryCatch(
+				() => createOrUpdateArtist(formData, initData),
+				(reason) => matchUnknownToError(reason)
+			),
+			TaskEither.matchW(
+				(err) => {
+					throw err
+				},
+				(res) => {
+					return res
+				}
+			)
+		)
+		const res = await task()
 		await queryClient.invalidateQueries({
 			queryKey: dataQueryKey.concat(res.app_id.toString()),
 		})
 		// TODO: redirect to success page
-		throw redirect(`artist/${res.app_id}`)
+		return redirect(`artist/${res.app_id}`)
 	},
 	"create_or_update_artist"
 )
-
-async function task(
-	formData: ArtistFormSchema,
-	initData?: Nullable<ArtistByID>
-) {
-	const task = pipe(
-		TaskEither.tryCatch(
-			() => createOrUpdateArtist(formData, initData),
-			(reason) => matchUnknownToError(reason)
-		),
-		TaskEither.matchW(
-			(err) => {
-				// TODO: redirect with error msg
-				console.log(err)
-				throw redirect("/500")
-			},
-			(res) => {
-				return res
-			}
-		)
-	)
-	const res = await task()
-	return res
-}
 
 async function createOrUpdateArtist(
 	formData: ArtistFormSchema,

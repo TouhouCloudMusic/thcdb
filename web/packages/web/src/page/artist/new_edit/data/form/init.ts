@@ -1,49 +1,41 @@
 import { sortMemberList } from "~/page/artist/utils/sort_member_list"
+import { type MemberListSchema, type MemberSchema } from "."
 import { type ArtistByID } from "../db"
-import { type MemberList, type MemberListItem } from "./schema"
 
-export function initFormStoreMemberList(
-	data: NonNullable<ArtistByID>
-): MemberList {
-	let res: MemberList = []
+export function initFormStoreMemberList(data: ArtistByID): MemberListSchema {
+	let res: MemberListSchema = []
 	if (data.artist_type === "Person") {
-		data.member_of.map((m) =>
-			res.push({
-				id: m.id,
-				name: m.name,
-				is_str: false,
-				join_year: m["@join_year"],
-				leave_year: m["@leave_year"],
-			} satisfies MemberListItem)
-		)
-		data.str_member?.map((m) =>
-			res.push({
-				id: "",
-				name: m.name,
-				is_str: true,
-				join_year: m.join_year === "" ? undefined : Number(m.join_year),
-				leave_year: m.leave_year === "" ? undefined : Number(m.leave_year),
-			} satisfies MemberListItem)
-		)
-		return sortMemberList(res)
+		res.push(...mapMember(data.member_of))
 	} else {
-		data.members.map((m) =>
-			res.push({
+		res.push(...mapMember(data.members))
+	}
+	res.push(...mapStrMember(data.str_member))
+	return sortMemberList(res)
+}
+
+function mapMember(member: ArtistByID["members"]) {
+	return member.map(
+		(m) =>
+			({
 				id: m.id,
 				name: m.name,
 				is_str: false,
 				join_year: m["@join_year"],
 				leave_year: m["@leave_year"],
-			} as MemberListItem)
-		)
-		data.str_member?.map((m) =>
-			res.push({
-				name: m.name,
-				is_str: false,
-				join_year: m.join_year === "" ? undefined : Number(m.join_year),
-				leave_year: m.leave_year === "" ? undefined : Number(m.leave_year),
-			} as MemberListItem)
-		)
-		return sortMemberList(res)
-	}
+			}) satisfies MemberSchema
+	)
+}
+
+function mapStrMember(strMember: ArtistByID["str_member"]) {
+	return (
+		strMember?.map(
+			(m) =>
+				({
+					name: m.name,
+					is_str: false,
+					join_year: m.join_year === "" ? null : Number(m.join_year),
+					leave_year: m.leave_year === "" ? null : Number(m.leave_year),
+				}) satisfies MemberSchema
+		) ?? []
+	)
 }

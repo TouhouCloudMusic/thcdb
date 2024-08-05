@@ -5,12 +5,15 @@ import {
 	remove,
 	setValues,
 	valiForm,
+	type FormStore,
 } from "@modular-forms/solid"
 import * as i18n from "@solid-primitives/i18n"
 import { type artist } from "@touhouclouddb/database/interfaces"
 import * as R from "ramda"
 import { createMemo, createSignal } from "solid-js"
+import { createStore, produce } from "solid-js/store"
 import { type Nullable } from "~/lib/type/nullable"
+import { type $Store } from "~/lib/type/solid-js/store"
 import { isEmptyArray } from "~/lib/validate/array"
 import {
 	findArtistByKeyword,
@@ -18,51 +21,53 @@ import {
 	type ArtistByKeyword,
 	type ArtistByKeywordArray,
 } from "./db"
-import { ArtistFormSchema, type MemberList, type MemberListItem } from "./form"
+import {
+	ArtistFormSchema,
+	type MemberListSchema,
+	type MemberSchema,
+} from "./form"
 import { initFormStoreMemberList } from "./form/init"
 import type { FlatDict } from "./i18n"
 
+type ControllerStore = {
+	artistType: artist.ArtistType | undefined
+	member: {
+		list: MemberListSchema | undefined
+		cache?: MemberListSchema | undefined
+		searchResult?: ArtistByKeywordArray | undefined
+	}
+}
 export function createController(
-	data: () => Nullable<ArtistByID>,
+	initData: () => Nullable<ArtistByID>,
 	dict: () => FlatDict
 ) {
-	// 需要测试data更新后不memo是否会触发更新
 	const initFormValue = createMemo(() =>
-		!data() ? undefined : (
-			{
-				id: data()?.id.toString(),
-				name: data()?.name,
-				artist_type: data()?.artist_type,
-				member: data() ? initFormStoreMemberList(data()!) : undefined,
-			}
+		!initData() ? undefined : (
+			({
+				id: initData()!.id,
+				name: initData()!.name,
+				artist_type: initData()!.artist_type,
+				// TODO: Alias
+				alias: undefined,
+				member: initData() ? initFormStoreMemberList(initData()!) : undefined,
+			} as ArtistFormSchema)
 		)
 	)
 
 	const formStore = createMemo(() =>
 		createFormStore<ArtistFormSchema>({
 			validate: valiForm(ArtistFormSchema),
-			initialValues: initFormValue() ?? {},
+			initialValues: initFormValue(),
 		})
 	)
 	const [formErrorMsg, setFormErrorMsg] = createSignal<string>()
 
-	const [artistType, setArtistType] = createSignal<
-		artist.ArtistType | undefined
-	>(data()?.artist_type)
-
-	const [memberSearchResult, setMemberSearchResult] =
-		createSignal<ArtistByKeywordArray>()
-	const [memberListCache, setMemberListCache] = createSignal<MemberList>()
-
-	function setArtistTypeWithSwapMemberListCache(type: artist.ArtistType) {
-		setArtistType(type)
-		setMemberSearchResult(undefined)
-		const cache = memberListCache()
-
-		const memberList = getValues(formStore(), "member") as MemberList
-		setMemberListCache(memberList)
-		setValues(formStore(), "member", cache ?? [])
-	}
+	const [store, setStore] = createStore<ControllerStore>({
+		artistType: initFormValue()?.artist_type,
+		member: {
+			list: initFormValue()?.member,
+		},
+	})
 
 	const formController = {
 		get changed() {
@@ -74,35 +79,34 @@ export function createController(
 		setErrMsg: setFormErrorMsg,
 	}
 
-	const typeController = {
+	const artistTypeController = {
 		get value() {
-			return artistType()
+			return store.artistType
 		},
-		toPerson: () => setArtistTypeWithSwapMemberListCache("Person"),
-		toGroup: () => setArtistTypeWithSwapMemberListCache("Group"),
-		isPerson: () => artistType() === "Person",
-		isGroup: () => artistType() === "Group",
-		isNone: () => artistType() === undefined,
+		toPerson: () => setArtistType([store, setStore], formStore, "Person"),
+		toGroup: () => setArtistType([store, setStore], formStore, "Group"),
+		isPerson: () => store.artistType === "Person",
+		isGroup: () => store.artistType === "Group",
+		isNone: () => store.artistType === undefined,
 	}
-	// member
 
 	const memberController = {
 		get searchResult() {
-			return memberSearchResult()
+			return store.member.searchResult
 		},
 
-		add(input: ArtistByKeyword) {
+		add(newArtist: ArtistByKeyword) {
 			const memberList = getValues(formStore(), "member")
-			if (memberList.find((a) => a?.id === input.id)) return
-			if (input.artist_type === artistType()) return
+			if (memberList.find((a) => a?.id === newArtist.id)) return
+			if (newArtist.artist_type === store.artistType) return
 			insert(formStore(), "member", {
 				value: {
-					id: input.id,
-					name: input.name,
+					id: newArtist.id,
+					name: newArtist.name,
 					is_str: false,
-					join_year: undefined,
-					leave_year: undefined,
-				} satisfies MemberListItem,
+					join_year: null,
+					leave_year: null,
+				} satisfies MemberSchema,
 			})
 		},
 
@@ -112,8 +116,8 @@ export function createController(
 					id: "",
 					name: "",
 					is_str: true,
-					join_year: undefined,
-					leave_year: undefined,
+					join_year: null,
+					leave_year: null,
 				},
 			})
 		},
@@ -126,9 +130,10 @@ export function createController(
 
 		async serach(keyword: string) {
 			if (keyword.length < 3) {
-				setMemberSearchResult(undefined)
+				// setMemberSearchResult(undefined)
+				setStore("member", "searchResult", undefined)
 			} else {
-				const type = artistType() === "Person" ? "Group" : "Person"
+				const type = store.artistType === "Person" ? "Group" : "Person"
 				let existArtists = getValues(formStore(), "member")
 					.map((m) => m?.id)
 					.filter((id) => id !== "") as string[]
@@ -136,9 +141,11 @@ export function createController(
 				const res = await findArtistByKeyword(keyword, type, existArtists)
 
 				if (isEmptyArray(res)) {
-					setMemberSearchResult(undefined)
+					setStore("member", "searchResult", undefined)
 				} else {
-					setMemberSearchResult(
+					setStore(
+						"member",
+						"searchResult",
 						res.map(
 							(a) =>
 								({
@@ -156,10 +163,32 @@ export function createController(
 
 	return {
 		t: i18n.translator(dict),
-		artistData: data,
+		artistData: initData,
 		formStore,
 		form: formController,
-		type: typeController,
+		artistType: artistTypeController,
 		member: memberController,
 	}
+}
+
+function setArtistType(
+	[store, setStore]: $Store<ControllerStore>,
+	formStore: () => FormStore<ArtistFormSchema>,
+	artistType: artist.ArtistType
+) {
+	// update type
+	setStore("artistType", artistType)
+	// get current list
+	const currentList = getValues(formStore(), "member") as MemberListSchema
+	// swap
+	setValues(formStore(), "member", store.member.cache ?? [])
+
+	// push old to cache and clear search result
+	setStore(
+		"member",
+		produce((member) => {
+			member.cache = currentList
+			member.searchResult = undefined
+		})
+	)
 }

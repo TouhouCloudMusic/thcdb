@@ -5,35 +5,17 @@ import {
 	getValue,
 	setValue,
 } from "@modular-forms/solid"
-import {
-	type Accessor,
-	For,
-	Index,
-	Match,
-	Show,
-	Switch,
-	createMemo,
-} from "solid-js"
+import { For, Index, Match, Show, Switch, createMemo } from "solid-js"
 import { Cross1Icon } from "solid-radix-icons"
 import { Button } from "~/component/button"
 import { FormUI } from "~/component/form/ui"
+import { type IndexComponentProps } from "~/lib/type/solid-js/jsx"
 import { notNullString } from "~/lib/validate/not_empty_string"
 import { useController } from "../../context"
 import { h4Class } from "../style"
-declare module "solid-js" {
-	type StrictPartial<T> = Partial<T> & { [K in keyof T]?: T[K] | undefined }
 
-	export namespace JSX {
-		interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
-			value?: string | number | string[] | undefined
-		}
-		interface HTMLElementTags {
-			input: InputHTMLAttributes<HTMLInputElement>
-		}
-	}
-}
-export function Member() {
-	const { formStore, type, member, t } = useController()
+export function MemberList() {
+	const { formStore, artistType: type, member, t } = useController()
 	function AddStringInputButton() {
 		return (
 			<Button.Borderless
@@ -108,29 +90,7 @@ export function Member() {
 	)
 }
 
-function InvisibleField(props: { index: Accessor<number> }) {
-	const { formStore } = useController()
-	return (
-		<div class="invisible">
-			<Field
-				of={formStore()}
-				name={`member.${props.index()}.id`}>
-				{(field, props) => (
-					<>
-						<input
-							{...props}
-							type="text"
-							value={field.value ?? ""}
-							hidden
-						/>
-					</>
-				)}
-			</Field>
-		</div>
-	)
-}
-
-function FormFieldError(props: { index: () => number }) {
+function Errors(props: { index: () => number }) {
 	const { formStore } = useController()
 	const nameFieldErr = createMemo(() =>
 		getError(formStore(), `member.${props.index()}.name`)
@@ -167,7 +127,58 @@ function FormFieldError(props: { index: () => number }) {
 }
 
 function MemberField(props: { index: () => number }) {
-	const { formStore, member } = useController()
+	const { member } = useController()
+
+	return (
+		<li>
+			<div class="flex w-full flex-row place-content-between gap-2 rounded-md border-[0.1rem] bg-white p-2">
+				<div class="grid w-full grid-cols-1 gap-1">
+					<MemberName index={props.index} />
+					<div class="flex w-full gap-1">
+						<MemberYears index={props.index} />
+					</div>
+					<Errors index={props.index} />
+				</div>
+				<Button.Warning
+					type="button"
+					class="flex min-h-6 min-w-6 flex-initial place-content-center text-sm"
+					onClick={() => member.remove(props.index())}>
+					<Cross1Icon class="bold size-4 place-self-center stroke-white" />
+				</Button.Warning>
+			</div>
+			<MemberID index={props.index} />
+		</li>
+	)
+}
+
+function MemberName(props: IndexComponentProps) {
+	const { formStore } = useController()
+	return (
+		<Field
+			of={formStore()}
+			name={`member.${props.index()}.name`}>
+			{(nameField, nameProps) => (
+				<Show
+					when={
+						getValue(formStore(), `member.${props.index()}.is_str`) === true
+					}
+					fallback={<p>{nameField.value}</p>}>
+					<input
+						{...nameProps}
+						type="text"
+						class={`min-w-0 flex-1 rounded border-[0.1rem] border-gray-300 px-1`}
+						value={nameField.value ?? ""}
+						placeholder="Enter artist name"
+					/>
+				</Show>
+			)}
+		</Field>
+	)
+}
+
+function MemberYears(props: IndexComponentProps) {
+	const { formStore } = useController()
+
 	const thisYear = new Date().getFullYear()
 	function yearFieldOnInput(
 		e: InputEvent & {
@@ -181,98 +192,68 @@ function MemberField(props: { index: () => number }) {
 			target.value = String(thisYear)
 		}
 		setValue(formStore(), fieldName, Number(target.value))
-		console.log("new value", getValue(formStore(), fieldName))
 	}
 	return (
-		<li>
+		<>
 			<Field
 				of={formStore()}
-				name={`member.${props.index()}.name`}>
-				{(nameField, nameProps) => (
-					<Field
-						of={formStore()}
-						name={`member.${props.index()}.is_str`}
-						type="boolean">
-						{(isTextField, isTextProps) => (
-							<div class="flex w-full flex-row place-content-between gap-2 rounded-md border-[0.1rem] bg-white p-2">
-								<div class="grid w-full grid-cols-1 gap-1">
-									<input
-										{...isTextProps}
-										type="checkbox"
-										checked={isTextField.value ?? false}
-										hidden
-									/>
-									<Show
-										when={isTextField.value === true}
-										fallback={<p>{nameField.value}</p>}>
-										<input
-											{...nameProps}
-											type="text"
-											class={`min-w-0 flex-1 rounded border-[0.1rem] border-gray-300 px-1`}
-											value={nameField.value ?? ""}
-											placeholder="Enter artist name"
-										/>
-									</Show>
-									<div class="flex w-full gap-1">
-										<Field
-											of={formStore()}
-											name={`member.${props.index()}.join_year`}
-											type="number">
-											{(joinYearField, joinYearProps) => (
-												<input
-													{...joinYearProps}
-													type="number"
-													min="-1"
-													max={thisYear}
-													value={joinYearField.value ?? NaN}
-													onInput={(e) =>
-														yearFieldOnInput(
-															e,
-															`member.${props.index()}.join_year`
-														)
-													}
-													class="no_spinner w-1/2 rounded border-[0.1rem] border-gray-300 px-1"
-													placeholder="Join year"
-												/>
-											)}
-										</Field>
-										<Field
-											of={formStore()}
-											name={`member.${props.index()}.leave_year`}
-											type="number">
-											{(leaveYearField, leaveYearProps) => (
-												<input
-													{...leaveYearProps}
-													type="number"
-													min="-1"
-													max={thisYear}
-													onInput={(e) =>
-														yearFieldOnInput(
-															e,
-															`member.${props.index()}.leave_year`
-														)
-													}
-													value={leaveYearField.value ?? ""}
-													class="no_spinner w-1/2 rounded border-[0.1rem] px-1"
-													placeholder="Leave year"
-												/>
-											)}
-										</Field>
-									</div>
-									<FormFieldError index={props.index} />
-								</div>
-								<Button.Warning
-									type="button"
-									class="flex min-h-6 min-w-6 flex-initial place-content-center text-sm"
-									onClick={() => member.remove(props.index())}>
-									<Cross1Icon class="bold size-4 place-self-center stroke-white" />
-								</Button.Warning>
-							</div>
-						)}
-					</Field>
+				name={`member.${props.index()}.join_year`}
+				type="number">
+				{(joinYearField, joinYearProps) => (
+					<input
+						{...joinYearProps}
+						type="number"
+						min="-1"
+						max={thisYear}
+						value={joinYearField.value ?? undefined}
+						onInput={(e) =>
+							yearFieldOnInput(e, `member.${props.index()}.join_year`)
+						}
+						class="no_spinner w-1/2 rounded border-[0.1rem] border-gray-300 px-1"
+						placeholder="Join year"
+					/>
 				)}
 			</Field>
-			<InvisibleField index={props.index} />
-		</li>
+			<Field
+				of={formStore()}
+				name={`member.${props.index()}.leave_year`}
+				type="number">
+				{(leaveYearField, leaveYearProps) => (
+					<input
+						{...leaveYearProps}
+						type="number"
+						min="-1"
+						max={thisYear}
+						onInput={(e) =>
+							yearFieldOnInput(e, `member.${props.index()}.leave_year`)
+						}
+						value={leaveYearField.value ?? undefined}
+						class="no_spinner w-1/2 rounded border-[0.1rem] px-1"
+						placeholder="Leave year"
+					/>
+				)}
+			</Field>
+		</>
+	)
+}
+
+function MemberID(props: IndexComponentProps) {
+	const { formStore } = useController()
+	return (
+		<Field
+			of={formStore()}
+			name={`member.${props.index()}.id`}>
+			{(field, props) => (
+				<>
+					<input
+						{...props}
+						type="text"
+						value={field.value}
+						class="invisible"
+						hidden
+					/>
+				</>
+			)}
+		</Field>
 	)
 }

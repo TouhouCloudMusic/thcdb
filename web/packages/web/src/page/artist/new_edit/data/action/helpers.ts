@@ -13,28 +13,20 @@ import {
 } from "@touhouclouddb/database/syntax.js"
 import { type uuid } from "edgedb/dist/codecs/ifaces"
 import { expr } from "~/lib/edgedb"
-import { appendOptionalKey, optionalKey } from "~/lib/object/optional_key"
+import { type NonEmptyArray } from "~/lib/type/array"
 import { type Filter } from "~/lib/type/filter"
-import { isEmptyArrayOrNone, isNotEmptyArrayOrNone } from "~/lib/validate/array"
+import { isNotEmptyArray, isNotEmptyArrayOrNone } from "~/lib/validate/array"
 import type { ArtistByID } from "../db"
-import { type ArtistFormSchema, type MemberListItem } from "../form"
+import { type ArtistFormSchema, type MemberSchema } from "../form"
 
-type LinkedMember = Pick<
-	Required<MemberListItem>,
-	"id" | "join_year" | "leave_year"
->
+type LinkedMember = Pick<MemberSchema, "id" | "join_year" | "leave_year">
 
-type LinkedMemberList = LinkedMember[]
+type LinkedMemberList = NonEmptyArray<LinkedMember>
 
 type StrMember = {
 	name: string
 	join_year: string
 	leave_year: string
-}
-
-type MembersSubQuery = {
-	"+=": NonNullable<ArtistFormHelper["linkMembersQuery"]>
-	"-=": NonNullable<ArtistFormHelper["unlinkMembersQuery"]>
 }
 
 export type ArtistQueryReturnShape = Filter<
@@ -66,14 +58,17 @@ export class ArtistFormHelper {
 		return this.formData.artist_type === "Person"
 	}
 
-	private get initMemberList() {
+	private get initMemberIDList(): NonEmptyArray<string> | undefined {
 		if (!this.initData) return undefined
 
 		if (this.initData.artist_type == "Group") {
-			return this.initData.members.map((m) => m.id)
+			const res = this.initData.members.map((m) => m.id)
+			if (isNotEmptyArray(res)) return res
 		} else {
-			return this.initData.member_of.map((m) => m.id)
+			const res = this.initData.member_of.map((m) => m.id)
+			if (isNotEmptyArray(res)) return res
 		}
+		return undefined
 	}
 
 	private get strMemberList(): StrMember[] {
@@ -91,38 +86,6 @@ export class ArtistFormHelper {
 		)
 	}
 
-	private get initStrMemberList() {
-		return this.initData?.str_member?.map(
-			(m) =>
-				({
-					name: m.name,
-					join_year: m.join_year,
-					leave_year: m.leave_year,
-				}) as StrMember
-		)
-	}
-
-	private get linkMemberList(): LinkedMemberList | undefined {
-		const formDataMemberList = this.formData.member?.filter(
-			(m) => !m.is_str || m.id !== ""
-		)
-
-		if (!this.initData) {
-			return formDataMemberList
-		}
-
-		const initMemberList = (
-			this.initData.artist_type == "Group" ?
-				this.initData.members
-			:	this.initData.member_of).map((m) => m.id)
-
-		return formDataMemberList?.filter((m) => !initMemberList.includes(m.id))
-	}
-
-	public get hasLinkMemberList() {
-		return isNotEmptyArrayOrNone(this.linkMemberList)
-	}
-
 	private get insertBaseShape() {
 		return {
 			artist_type: this.formData.artist_type,
@@ -132,9 +95,20 @@ export class ArtistFormHelper {
 			:	undefined),
 		} satisfies InsertShape<$Artist> & BaseShape
 	}
+	private get linkMemberList(): LinkedMemberList | undefined {
+		const formDataMemberList = this.formData.member?.filter(
+			(m) => !m.is_str || m.id !== ""
+		)
+		if (!isNotEmptyArrayOrNone(formDataMemberList)) return undefined
+		else return formDataMemberList
+	}
+
+	public get hasLinkMemberList() {
+		return !this.linkMemberList
+	}
 
 	private get linkMemberJsonDataExp() {
-		if (isEmptyArrayOrNone(this.linkMemberList)) {
+		if (!this.linkMemberList) {
 			throw new Error("cannot get linkMemberExp when linkMemberList is none")
 		}
 		return toJsonArrayEdgeQLExpr(
@@ -147,36 +121,21 @@ export class ArtistFormHelper {
 	}
 
 	private get linkMembersQuery() {
-		if (isEmptyArrayOrNone(this.linkMemberList)) return undefined
-		return e.for(this.linkMemberJsonDataExp, (data) =>
-			e.select(e.default.Artist, (artist) => ({
-				filter: e.op(artist.id, "=", uuidExp(data)),
-				...joinYearAndLeaveYearExp(data),
-			}))
-		)
-	}
-
-	private get unlinkMembersList() {
-		if (!this.initData) return undefined
-
-		const unlinks = this.initMemberList?.filter(
-			(id) => !this.formData.member?.map((m) => m.id).includes(id)
-		)
-
-		if (!isNotEmptyArrayOrNone(unlinks)) return undefined
-
-		return unlinks
-	}
-
-	private get unlinkMembersQuery() {
-		if (isEmptyArrayOrNone(this.unlinkMembersList)) return undefined
-		return e.select(e.default.Artist, (artist) => ({
-			filter: e.op(
-				artist.id,
-				"in",
-				expr.fromArray(this.unlinkMembersList!, e.uuid)
-			),
-		}))
+		if (!this.linkMemberList) return undefined
+		if (this.isPerson) {
+			return null
+		} else {
+			const query = e.op(
+				"distinct",
+				e.for(this.linkMemberJsonDataExp, (data) =>
+					e.select(e.default.Artist, (artist) => ({
+						filter: e.op(artist.id, "=", uuidExp(data)),
+						...joinYearAndLeaveYearExp(data),
+					}))
+				)
+			)
+			return query
+		}
 	}
 
 	public linkMemberOfQuery = (uuid: uuid) => {
@@ -210,11 +169,11 @@ export class ArtistFormHelper {
 	}
 
 	private get unlinkMemberOfList() {
-		if (!this.initData) return null
+		if (!this.initData) return undefined
 
 		return this.initData.member_of
 			.map((m) => m.id)
-			.filter((id) => !this.initMemberList?.includes(id))
+			.filter((id) => !this.initMemberIDList?.includes(id))
 	}
 
 	public get hasUnlinkMemberOfList() {
@@ -263,18 +222,12 @@ export class ArtistFormHelper {
 			throw new Error("cannot get update query when init data is none")
 		}
 		let res: Partial<BaseShape> = {}
-		res = appendOptionalKey(
-			res,
-			this.initData.name !== this.formData.name,
-			"name",
-			this.formData.name
-		)
-		res = appendOptionalKey(
-			res,
-			this.initData.artist_type !== this.formData.artist_type,
-			"artist_type",
-			this.formData.artist_type
-		)
+		if (this.initData.name !== this.formData.name) {
+			res.name = this.formData.name
+		}
+		if (this.initData.artist_type !== this.formData.artist_type) {
+			res.artist_type = this.formData.artist_type
+		}
 
 		return {
 			...res,
@@ -327,23 +280,6 @@ export class ArtistFormHelper {
 
 		const uuid = this.initData.id
 
-		let memberSubQuery: Partial<MembersSubQuery>
-
-		if (this.linkMembersQuery != null || this.unlinkMembersQuery != null) {
-			memberSubQuery = {
-				...optionalKey(
-					this.linkMembersQuery != null,
-					"+=",
-					this.linkMembersQuery
-				),
-				...optionalKey(
-					this.unlinkMembersQuery != null,
-					"-=",
-					this.unlinkMembersQuery
-				),
-			}
-		}
-
 		const query = e.select(
 			e.assert_single(
 				e.update(e.default.Artist, () => ({
@@ -352,7 +288,7 @@ export class ArtistFormHelper {
 					},
 					set: {
 						...this.updateArtistShapeBase,
-						members: memberSubQuery as MembersSubQuery | undefined,
+						members: this.linkMembersQuery,
 					},
 				}))
 			),
