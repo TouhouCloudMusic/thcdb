@@ -1,17 +1,13 @@
 import { createAsync } from "@solidjs/router"
 import { Show, type ParentProps } from "solid-js"
 import { getCookie } from "vinxi/http"
-import {
-	AppLocaleCompiler,
-	I18NContext,
-	I18NController,
-	type AppLocale,
-} from "."
+import { AppLocale, I18NContext, I18NController } from "."
 
-export function getLocaleCookie(): AppLocale {
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function getLocaleCookie(): Promise<"en" | "zh-Hans"> {
 	"use server"
 	const locale = getCookie("app_locale")
-	if (AppLocaleCompiler.Check(locale)) {
+	if (AppLocale.allows(locale)) {
 		return locale
 	} else {
 		return "en"
@@ -19,7 +15,6 @@ export function getLocaleCookie(): AppLocale {
 }
 
 export function I18NProvider(props: ParentProps) {
-	// eslint-disable-next-line @typescript-eslint/require-await
 	const cookie = createAsync(async () => getLocaleCookie())
 	return (
 		<Show when={cookie()}>

@@ -1,5 +1,4 @@
-import { Type, type Static } from "@sinclair/typebox"
-import { TypeCompiler } from "@sinclair/typebox/compiler"
+import { type } from "arktype"
 import dayjs from "dayjs"
 import Cookie from "js-cookie"
 import type { Signal } from "solid-js"
@@ -8,9 +7,8 @@ import { type Transition } from "solid-js/types/reactive/signal.d.ts"
 import { isServer } from "solid-js/web"
 import { useContextUnsave } from "~/lib/context/use_context_unsave"
 
-const APP_LOCALE = Type.Union([Type.Literal("en"), Type.Literal("zh-Hans")])
-export const AppLocaleCompiler = TypeCompiler.Compile(APP_LOCALE)
-export type AppLocale = Static<typeof APP_LOCALE>
+export const AppLocale = type(`"en" | "zh-Hans"`)
+export type AppLocale = typeof AppLocale.infer
 
 function setLocaleCookie(locale: AppLocale) {
 	Cookie.set("app_locale", locale, {
@@ -33,8 +31,8 @@ export class I18NController {
 		this.transition = useTransition()
 	}
 
-	public locale() {
-		return this.localeSignal[0]()
+	public get locale() {
+		return this.localeSignal[0]
 	}
 
 	public setLocale(newLocale: AppLocale) {

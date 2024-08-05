@@ -1,5 +1,5 @@
 import { getCookie } from "vinxi/http"
-import { AppLocaleCompiler } from "../i18n"
+import { AppLocale } from "../i18n"
 import { AppTheme } from "../theme"
 
 export function theme() {
@@ -8,7 +8,7 @@ export function theme() {
 
 export function lang() {
 	const locale = getCookie("app_locale")
-	if (AppLocaleCompiler.Check(locale)) {
+	if (AppLocale.allows(locale)) {
 		return locale
 	} else {
 		return "en"
