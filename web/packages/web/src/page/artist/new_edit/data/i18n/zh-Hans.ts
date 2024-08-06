@@ -10,16 +10,16 @@ const zh_hans_dict: Dict = {
 		person: "个人",
 		group: "团体",
 	},
+	add_str_input_label: "add string input",
+	search_artist_card: {
+		label: "Add {{ item }}",
+		placeholder: "Search Artist",
+	},
 	member: {
-		add_str_input: "添加文本输入",
 		label: {
 			person: "成员",
 			group: "成员",
 			none: "请选择艺术家类型",
-		},
-		search: {
-			label: "添加艺术家",
-			placeholder: "搜索艺术家",
 		},
 	},
 	submit: "提交",

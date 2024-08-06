@@ -1,9 +1,9 @@
-import * as i18n from "@solid-primitives/i18n"
+import { type Flatten } from "@solid-primitives/i18n"
 import { type AppLocale } from "~/state/i18n/index.ts"
 import en_dict from "./en.ts"
 
 export type Dict = typeof en_dict
-export type FlatDict = i18n.Flatten<Dict>
+export type FlatDict = Flatten<Dict>
 
 export async function fetchDictionary(locale: AppLocale) {
 	"use server"
@@ -15,5 +15,5 @@ export async function fetchDictionary(locale: AppLocale) {
 		default:
 			dict = en_dict
 	}
-	return i18n.flatten(dict)
+	return dict
 }

@@ -1,6 +1,5 @@
 import { createFormStore, getValues, valiForm } from "@modular-forms/solid"
 import * as i18n from "@solid-primitives/i18n"
-import { type artist } from "@touhouclouddb/database/interfaces"
 import * as R from "ramda"
 import { createMemo, createSignal } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -8,12 +7,15 @@ import { type Nullable } from "~/lib/type/nullable"
 import { type ArtistByID, type ArtistByKeywordArray } from "../db"
 import { ArtistFormSchema, type MemberListSchema } from "../form"
 import { initFormStoreMemberList } from "../form/init"
-import { type FlatDict } from "../i18n"
+import { type Dict } from "../i18n"
+import { AliasController } from "./alias"
 import { ArtistTypeController } from "./artist_type"
 import { MemberController } from "./member"
 
 export interface ControllerStore {
-	artistType: artist.ArtistType | undefined
+	alias: {
+		searchResult?: ArtistByKeywordArray | undefined
+	}
 	member: {
 		list: MemberListSchema | undefined
 		cache?: MemberListSchema | undefined
@@ -22,7 +24,7 @@ export interface ControllerStore {
 }
 export function createController(
 	initData: () => Nullable<ArtistByID>,
-	dict: () => FlatDict
+	dict: () => Dict
 ) {
 	const initFormValue = createMemo(() =>
 		!initData() ? undefined : (
@@ -46,7 +48,9 @@ export function createController(
 	const [formErrorMsg, setFormErrorMsg] = createSignal<string>()
 
 	const [store, setStore] = createStore<ControllerStore>({
-		artistType: initFormValue()?.artist_type,
+		alias: {
+			searchResult: undefined,
+		},
 		member: {
 			list: initFormValue()?.member,
 		},
@@ -63,11 +67,15 @@ export function createController(
 	}
 
 	return {
-		t: i18n.translator(dict),
+		t: i18n.chainedTranslator(
+			dict(),
+			i18n.translator(() => i18n.flatten(dict()), i18n.resolveTemplate)
+		),
 		artistData: initData,
 		formStore,
 		form: formController,
 		artistType: new ArtistTypeController(store, setStore, formStore),
+		alias: new AliasController(store, setStore, formStore),
 		member: new MemberController(store, setStore, formStore),
 	}
 }

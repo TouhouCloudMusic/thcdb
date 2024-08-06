@@ -8,16 +8,16 @@ const dict = {
 		person: "Person",
 		group: "Group",
 	},
+	add_str_input_label: "add string input",
+	search_artist_card: {
+		label: "Add {{ item }}",
+		placeholder: "Search Artist",
+	},
 	member: {
-		add_str_input: "add string input",
 		label: {
 			person: "Member of",
 			group: "Members",
 			none: "Please Select Artist Type",
-		},
-		search: {
-			label: "Add Artist",
-			placeholder: "Search Artist",
 		},
 	},
 	submit: "Submit",

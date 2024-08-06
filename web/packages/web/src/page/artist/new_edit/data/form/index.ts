@@ -27,6 +27,7 @@ export type AliasSchema = v.InferInput<typeof AliasSchema>
 export const AliasSchema = v.object({
 	id: OptionalIDSchema,
 	name: ArtistNameSchema,
+	is_str: v.boolean(),
 })
 
 export type AliasListSchema = v.InferInput<typeof AliasListSchema>

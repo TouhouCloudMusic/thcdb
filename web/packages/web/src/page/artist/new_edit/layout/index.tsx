@@ -9,6 +9,7 @@ import { useI18N } from "~/state/i18n"
 import { Context, useController } from "../context"
 import { createController, Query, SubmitAction, type ArtistByID } from "../data"
 import { ArtistType, MemberList, Name } from "./components"
+import { Aliases } from "./components/alias"
 
 export function ArtistFormLayout(props: {
 	data?: Accessor<Nullable<ArtistByID>>
@@ -52,12 +53,13 @@ function Main() {
 			class="flex flex-col gap-2">
 			<Name />
 			<ArtistType />
+			<Aliases />
 			<MemberList />
 			<div class="flex w-full flex-row place-content-around">
 				<Button.Highlight
 					type="submit"
 					class="w-1/4 self-start py-1">
-					{t("submit")}
+					{t.submit()}
 				</Button.Highlight>
 				<Show when={import.meta.env.DEV}>
 					<LogBtn />
@@ -70,15 +72,15 @@ function Main() {
 }
 
 function LogBtn() {
-	const { form, formStore, artistType } = useController()
+	const { form, formStore } = useController()
 	return (
 		<Button.Borderless
 			type="button"
 			class="w-1/4 self-start py-1"
 			onClick={() => {
-				console.log("form changed: ", form.changed)
-				console.log("form error: ", getErrors(formStore()))
-				console.log(
+				console.info("form changed: ", form.changed)
+				console.info("form error: ", getErrors(formStore()))
+				console.info(
 					"form value: ",
 					getValues(formStore(), {
 						shouldActive: false,

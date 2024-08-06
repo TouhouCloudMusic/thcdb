@@ -1,56 +1,54 @@
 import {
-	type FormStore,
 	getValue,
 	getValues,
 	insert,
 	remove,
+	type FormStore,
 } from "@modular-forms/solid"
 import { type Accessor } from "solid-js"
 import { type SetStoreFunction } from "solid-js/store"
 import { isEmptyArray } from "~/lib/validate/array"
 import { type ControllerStore } from "."
-import { type ArtistByKeyword, findArtistByKeyword } from "../db"
-import { type ArtistFormSchema, type MemberSchema } from "../form"
+import { findArtistByKeyword, type ArtistByKeyword } from "../db"
+import { type ArtistFormSchema } from "../form"
 
-export class MemberController {
+export class AliasController {
 	constructor(
 		private store: ControllerStore,
 		private setStore: SetStoreFunction<ControllerStore>,
 		private formStore: Accessor<FormStore<ArtistFormSchema>>
 	) {}
+
 	get searchResult() {
-		return this.store.member.searchResult
+		return this.store.alias.searchResult
 	}
 
 	add(newArtist: ArtistByKeyword) {
-		const memberList = getValues(this.formStore(), "member")
-		if (memberList.find((a) => a?.id === newArtist.id)) return
-		if (newArtist.artist_type === getValue(this.formStore(), "artist_type"))
+		const aliases = getValues(this.formStore(), "alias")
+		if (aliases.find((a) => a?.id === newArtist.id)) return
+		if (newArtist.artist_type !== getValue(this.formStore(), "artist_type")) {
 			return
-		insert(this.formStore(), "member", {
+		}
+		insert(this.formStore(), "alias", {
 			value: {
 				id: newArtist.id,
 				name: newArtist.name,
 				is_str: false,
-				join_year: null,
-				leave_year: null,
-			} satisfies MemberSchema,
+			},
 		})
 	}
 
-	addStringInput() {
-		insert(this.formStore(), "member", {
+	addStrInput() {
+		insert(this.formStore(), "alias", {
 			value: {
-				name: "",
 				is_str: true,
-				join_year: null,
-				leave_year: null,
+				name: "",
 			},
 		})
 	}
 
 	remove(index: number) {
-		remove(this.formStore(), "member", {
+		remove(this.formStore(), "alias", {
 			at: index,
 		})
 	}
@@ -60,13 +58,13 @@ export class MemberController {
 			this.setStore("member", "searchResult", undefined)
 			return
 		}
-		const artistType =
-			getValue(this.formStore(), "artist_type") === "Person" ? "Group" : (
-				"Person"
-			)
-		const existArtists = getValues(this.formStore(), "member")
+		// search is disabled when artist type is undefined
+		const artistType = getValue(this.formStore(), "artist_type")!
+
+		const existArtists = getValues(this.formStore(), "alias")
 			.map((m) => m?.id)
-			.filter((id) => id !== "") as string[]
+			.filter((id) => id !== "")
+			.concat(getValue(this.formStore(), "id")) as string[]
 
 		const result = await findArtistByKeyword(keyword, artistType, existArtists)
 
@@ -83,6 +81,6 @@ export class MemberController {
 					artist_type: a.artist_type,
 				}) satisfies ArtistByKeyword
 		)
-		this.setStore("member", "searchResult", searchResult)
+		this.setStore("alias", "searchResult", searchResult)
 	}
 }

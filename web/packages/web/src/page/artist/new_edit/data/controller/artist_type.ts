@@ -1,5 +1,9 @@
-import { type FormStore, getValues, setValues } from "@modular-forms/solid"
-import { type artist } from "@touhouclouddb/database/interfaces"
+import {
+	type FormStore,
+	getValue,
+	getValues,
+	setValues,
+} from "@modular-forms/solid"
 import { type Accessor } from "solid-js"
 import { produce, type SetStoreFunction } from "solid-js/store"
 import { type $Store } from "~/lib/type/solid-js/store"
@@ -14,33 +18,30 @@ export class ArtistTypeController {
 	) {}
 
 	get isPerson() {
-		return this.store.artistType === "Person"
+		return getValue(this.formStore(), "artist_type") === "Person"
 	}
 
 	get isGroup() {
-		return this.store.artistType === "Group"
+		return getValue(this.formStore(), "artist_type") === "Group"
 	}
 
 	get isNone() {
-		return this.store.artistType === undefined
+		return getValue(this.formStore(), "artist_type") === undefined
 	}
 
 	toPerson() {
-		return setArtistType([this.store, this.setStore], this.formStore, "Person")
+		return setArtistType([this.store, this.setStore], this.formStore)
 	}
 
 	toGroup() {
-		return setArtistType([this.store, this.setStore], this.formStore, "Group")
+		return setArtistType([this.store, this.setStore], this.formStore)
 	}
 }
 
 function setArtistType(
 	[store, setStore]: $Store<ControllerStore>,
-	formStore: () => FormStore<ArtistFormSchema>,
-	artistType: artist.ArtistType
+	formStore: () => FormStore<ArtistFormSchema>
 ) {
-	setStore("artistType", artistType)
-
 	const currentList = getValues(formStore(), "member") as MemberListSchema
 
 	setValues(formStore(), "member", store.member.cache ?? [])

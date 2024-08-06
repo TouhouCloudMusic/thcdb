@@ -12,7 +12,6 @@ export async function updateArtist({
 }: ArtistFormHelper): Promise<ArtistQueryReturnShape> {
 	const client = edgedbClient
 	const query = isPerson ? updatePersonQuery : updateGroupQuery
-	console.log("Query in updateArtist:", query.toEdgeQL())
 
 	try {
 		return await client.transaction(async (tx) => {
@@ -21,13 +20,9 @@ export async function updateArtist({
 
 			if (isPerson) {
 				if (hasLinkMemberList) {
-					console.log("query", linkMemberOfQuery(res.id).toEdgeQL())
-
 					await linkMemberOfQuery(res.id).run(tx)
 				}
 				if (hasUnlinkMemberOfList) {
-					console.log("query", unlinkMemberOfQuery(res.id).toEdgeQL())
-
 					await unlinkMemberOfQuery(res.id).run(tx)
 				}
 			}

@@ -5,81 +5,83 @@ import {
 	getValue,
 	setValue,
 } from "@modular-forms/solid"
-import { For, Index, Match, Show, Switch, createMemo } from "solid-js"
+import { For, Match, Show, Switch, createMemo } from "solid-js"
 import { Cross1Icon } from "solid-radix-icons"
 import { Button } from "~/component/button"
 import { FormUI } from "~/component/form/ui"
 import { type IndexComponentProps } from "~/lib/type/solid-js/jsx"
 import { notNullString } from "~/lib/validate/not_empty_string"
 import { useController } from "../../context"
-import { h4Class } from "../style"
+import { scope_title_tw } from "../style"
+import { AddStringInputButton } from "./components/add_str_input_button"
+import { SearchAristCard } from "./components/search_artist_card"
+
 export function MemberList() {
 	const { formStore, artistType, member, t } = useController()
 
 	return (
-		<div class="flex min-h-64 gap-2">
-			<div class="flex w-64 flex-col">
-				<h4 class={h4Class}>
-					<div class="flex flex-row place-content-between">
+		<div
+			id="container"
+			class="flex min-h-32 place-content-between gap-2">
+			<div
+				id="left_container"
+				class="flex w-full min-w-[20rem] flex-col">
+				<div
+					id="label"
+					class="flex h-fit w-full place-content-between">
+					<h4 class={scope_title_tw}>
 						<Switch>
 							<Match when={artistType.isPerson}>
-								<p>{t("member.label.person")}</p>
+								<p>{t.member.label.person()}</p>
 							</Match>
 							<Match when={artistType.isGroup}>
-								<p>{t("member.label.group")}</p>
+								<p>{t.member.label.group()}</p>
 							</Match>
 							<Match when={artistType.isNone}>
-								<span class="text-sm">{t("member.label.none")}</span>
+								<span class="text-sm">{t.member.label.none()}</span>
 							</Match>
 						</Switch>
-						<Show when={!artistType.isNone}>
-							<Button.Borderless
-								type="button"
-								onClick={() => member.addStringInput()}
-								class="mx-1 px-1 text-sm text-gray-700">
-								{t("member.add_str_input")}
-							</Button.Borderless>
-						</Show>
-					</div>
-				</h4>
-				<FieldArray
-					of={formStore()}
-					name="member">
-					{(fieldArray) => (
-						<ul class="flex flex-col gap-2">
-							<For each={fieldArray.items}>
-								{(_, index) => <MemberField index={index} />}
-							</For>
-							{fieldArray.error && <FormUI.ErrorText text={fieldArray.error} />}
-						</ul>
-					)}
-				</FieldArray>
-			</div>
-
-			<div class="flex flex-col">
-				<h4 class={h4Class}>{t("member.search.label")}</h4>
-				<input
-					type="text"
-					class="px-1"
-					disabled={artistType.isNone}
-					placeholder={t("member.search.placeholder")}
-					onInput={(e) => member.serach(e.currentTarget.value)}
-				/>
-				<div class="relative">
-					<div class="absolute w-full">
-						<Index each={member.searchResult}>
-							{(artist) => (
-								<button
-									type="button"
-									class="border-sm my-2 w-full border-gray-300 bg-white px-2"
-									onClick={() => member.add(artist())}>
-									{artist().name}
-								</button>
-							)}
-						</Index>
-					</div>
+					</h4>
+					<Show when={!artistType.isNone}>
+						<AddStringInputButton
+							onClick={() => member.addStringInput()}
+							label={t.add_str_input_label()}
+						/>
+					</Show>
 				</div>
+				<ul
+					id="list"
+					class="flex flex-col gap-2">
+					<FieldArray
+						of={formStore()}
+						name="member">
+						{(fieldArray) => (
+							<>
+								<For each={fieldArray.items}>
+									{(_, index) => (
+										<li>
+											<MemberField index={index} />
+										</li>
+									)}
+								</For>
+								{fieldArray.error && (
+									<FormUI.ErrorText text={fieldArray.error} />
+								)}
+							</>
+						)}
+					</FieldArray>
+				</ul>
 			</div>
+			<SearchAristCard
+				label={t.search_artist_card.label({
+					item: "member",
+				})}
+				placeholder={t.search_artist_card.placeholder()}
+				onInput={(e) => member.serach(e.currentTarget.value)}
+				disableSearch={artistType.isNone}
+				searchResult={member.searchResult}
+				handleAdd={member.add.bind(member)}
+			/>
 		</div>
 	)
 }

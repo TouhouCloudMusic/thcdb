@@ -1,7 +1,7 @@
 import { Field } from "@modular-forms/solid"
 import { FormUI } from "~/component/form/ui"
 import { useController } from "../../context"
-import { h4Class } from "../style"
+import { scope_title_tw } from "../style"
 
 export function Name() {
 	const { formStore, t } = useController()
@@ -13,8 +13,8 @@ export function Name() {
 				<div class="flex flex-col">
 					<label
 						for="name"
-						class={h4Class}>
-						{t("name.label")}
+						class={scope_title_tw}>
+						{t.name.label()}
 					</label>
 					<input
 						{...props}
@@ -25,7 +25,7 @@ export function Name() {
 							"invalid:focus:ring-red-800 invalid:focus:border-red-800":
 								field.error.length > 0,
 						}}
-						placeholder={t("name.placeholder")}
+						placeholder={t.name.placeholder()}
 						required
 					/>
 					{field.error && <FormUI.ErrorText text={field.error} />}

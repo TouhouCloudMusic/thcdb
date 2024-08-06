@@ -23,7 +23,6 @@ export async function createArtist({
 		})
 	} catch (error) {
 		console.log("Query:", query.toEdgeQL())
-
 		throw error
 	}
 }
