@@ -20,16 +20,17 @@ import {
 	type ArtistByID,
 	type ArtistByKeyword,
 	type ArtistByKeywordArray,
-} from "./db"
+} from "../db"
 import {
 	ArtistFormSchema,
 	type MemberListSchema,
 	type MemberSchema,
-} from "./form"
-import { initFormStoreMemberList } from "./form/init"
-import type { FlatDict } from "./i18n"
+} from "../form"
+import { initFormStoreMemberList } from "../form/init"
+import { type FlatDict } from "../i18n"
+import { MemberController } from "./member"
 
-type ControllerStore = {
+export interface ControllerStore {
 	artistType: artist.ArtistType | undefined
 	member: {
 		list: MemberListSchema | undefined
@@ -49,7 +50,7 @@ export function createController(
 				artist_type: initData()!.artist_type,
 				// TODO: Alias
 				alias: undefined,
-				member: initData() ? initFormStoreMemberList(initData()!) : undefined,
+				members: initData() ? initFormStoreMemberList(initData()!) : undefined,
 			} as ArtistFormSchema)
 		)
 	)
@@ -90,84 +91,13 @@ export function createController(
 		isNone: () => store.artistType === undefined,
 	}
 
-	const memberController = {
-		get searchResult() {
-			return store.member.searchResult
-		},
-
-		add(newArtist: ArtistByKeyword) {
-			const memberList = getValues(formStore(), "member")
-			if (memberList.find((a) => a?.id === newArtist.id)) return
-			if (newArtist.artist_type === store.artistType) return
-			insert(formStore(), "member", {
-				value: {
-					id: newArtist.id,
-					name: newArtist.name,
-					is_str: false,
-					join_year: null,
-					leave_year: null,
-				} satisfies MemberSchema,
-			})
-		},
-
-		addStringInput() {
-			insert(formStore(), "member", {
-				value: {
-					id: "",
-					name: "",
-					is_str: true,
-					join_year: null,
-					leave_year: null,
-				},
-			})
-		},
-
-		remove(index: number) {
-			remove(formStore(), "member", {
-				at: index,
-			})
-		},
-
-		async serach(keyword: string) {
-			if (keyword.length < 3) {
-				// setMemberSearchResult(undefined)
-				setStore("member", "searchResult", undefined)
-			} else {
-				const type = store.artistType === "Person" ? "Group" : "Person"
-				let existArtists = getValues(formStore(), "member")
-					.map((m) => m?.id)
-					.filter((id) => id !== "") as string[]
-
-				const res = await findArtistByKeyword(keyword, type, existArtists)
-
-				if (isEmptyArray(res)) {
-					setStore("member", "searchResult", undefined)
-				} else {
-					setStore(
-						"member",
-						"searchResult",
-						res.map(
-							(a) =>
-								({
-									id: a.id,
-									app_id: a.app_id,
-									name: a.name,
-									artist_type: a.artist_type,
-								}) satisfies ArtistByKeyword
-						)
-					)
-				}
-			}
-		},
-	}
-
 	return {
 		t: i18n.translator(dict),
 		artistData: initData,
 		formStore,
 		form: formController,
 		artistType: artistTypeController,
-		member: memberController,
+		member: new MemberController(store, setStore, formStore),
 	}
 }
 

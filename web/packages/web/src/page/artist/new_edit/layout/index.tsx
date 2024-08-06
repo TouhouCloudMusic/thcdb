@@ -78,7 +78,12 @@ function LogBtn() {
 			onClick={() => {
 				console.log("form changed: ", form.changed)
 				console.log("form error: ", getErrors(formStore()))
-				console.log("form value: ", getValues(formStore()))
+				console.log(
+					"form value: ",
+					getValues(formStore(), {
+						shouldActive: false,
+					})
+				)
 				console.log(artistType.value)
 			}}>
 			Log

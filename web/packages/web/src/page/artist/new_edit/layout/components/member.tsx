@@ -153,15 +153,17 @@ function MemberField(props: { index: () => number }) {
 
 function MemberName(props: IndexComponentProps) {
 	const { formStore } = useController()
+	// not reactive, maybe……
+	const isStr = getValue(formStore(), `member.${props.index()}.is_str`, {
+		shouldActive: false,
+	})
 	return (
 		<Field
 			of={formStore()}
 			name={`member.${props.index()}.name`}>
 			{(nameField, nameProps) => (
 				<Show
-					when={
-						getValue(formStore(), `member.${props.index()}.is_str`) === true
-					}
+					when={isStr}
 					fallback={<p>{nameField.value}</p>}>
 					<input
 						{...nameProps}

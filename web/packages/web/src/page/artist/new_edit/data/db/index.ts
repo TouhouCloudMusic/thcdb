@@ -67,7 +67,7 @@ export type ArtistByKeyword = ArtistByKeywordArray[number]
 export async function findArtistByKeyword(
 	keyword: string,
 	artistType: artist.ArtistType,
-	filterArray?: uuid[]
+	existArtists?: uuid[]
 ) {
 	const query = e.select(e.Artist, (artist) => ({
 		id: true,
@@ -78,11 +78,11 @@ export async function findArtistByKeyword(
 		filter: op_and(
 			e.op(e.ext.pg_trgm.word_similarity_dist(keyword, artist.name), "<=", 0.6),
 			e.op(artist.artist_type, "=", e.cast(e.artist.ArtistType, artistType)),
-			isNotEmptyArrayOrNone(filterArray) ?
+			isNotEmptyArrayOrNone(existArtists) ?
 				e.op(
 					artist.id,
 					"not in",
-					e.array_unpack(e.literal(e.array(e.uuid), filterArray))
+					e.array_unpack(e.literal(e.array(e.uuid), existArtists))
 				)
 			:	true
 		) as SelectFilterExpression,
