@@ -84,7 +84,6 @@ function LogBtn() {
 						shouldActive: false,
 					})
 				)
-				console.log(artistType.value)
 			}}>
 			Log
 		</Button.Borderless>

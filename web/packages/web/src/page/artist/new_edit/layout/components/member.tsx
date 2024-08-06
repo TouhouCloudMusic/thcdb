@@ -13,40 +13,34 @@ import { type IndexComponentProps } from "~/lib/type/solid-js/jsx"
 import { notNullString } from "~/lib/validate/not_empty_string"
 import { useController } from "../../context"
 import { h4Class } from "../style"
-
 export function MemberList() {
-	const { formStore, artistType: type, member, t } = useController()
-	function AddStringInputButton() {
-		return (
-			<Button.Borderless
-				type="button"
-				onClick={() => member.addStringInput()}
-				class="mx-1 px-1 text-sm text-gray-700">
-				{t("member.add_str_input")}
-			</Button.Borderless>
-		)
-	}
+	const { formStore, artistType, member, t } = useController()
+
 	return (
 		<div class="flex min-h-64 gap-2">
 			<div class="flex w-64 flex-col">
 				<h4 class={h4Class}>
-					<Switch>
-						<Match when={type.value === "Person"}>
-							<div class="flex flex-row place-content-between">
+					<div class="flex flex-row place-content-between">
+						<Switch>
+							<Match when={artistType.isPerson}>
 								<p>{t("member.label.person")}</p>
-								<AddStringInputButton />
-							</div>
-						</Match>
-						<Match when={type.value === "Group"}>
-							<div class="flex flex-row place-content-between">
+							</Match>
+							<Match when={artistType.isGroup}>
 								<p>{t("member.label.group")}</p>
-								<AddStringInputButton />
-							</div>
-						</Match>
-						<Match when={type.value === undefined}>
-							<span class="text-sm">{t("member.label.none")}</span>
-						</Match>
-					</Switch>
+							</Match>
+							<Match when={artistType.isNone}>
+								<span class="text-sm">{t("member.label.none")}</span>
+							</Match>
+						</Switch>
+						<Show when={!artistType.isNone}>
+							<Button.Borderless
+								type="button"
+								onClick={() => member.addStringInput()}
+								class="mx-1 px-1 text-sm text-gray-700">
+								{t("member.add_str_input")}
+							</Button.Borderless>
+						</Show>
+					</div>
 				</h4>
 				<FieldArray
 					of={formStore()}
@@ -67,7 +61,7 @@ export function MemberList() {
 				<input
 					type="text"
 					class="px-1"
-					disabled={type.value === undefined}
+					disabled={artistType.isNone}
 					placeholder={t("member.search.placeholder")}
 					onInput={(e) => member.serach(e.currentTarget.value)}
 				/>
