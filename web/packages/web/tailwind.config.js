@@ -1,7 +1,11 @@
 /** @type {import('tailwindcss').Config} */
-// import daisyui from "daisyui";
 export default {
-	content: ["./src/**/*.{js,jsx,ts,tsx}"],
+	content: [
+		"./src/component/**/*.{ts,tsx}",
+		"./src/page/**/*.{ts,tsx}",
+		"./src/route/**/*.{ts,tsx}",
+		"./src/app.tsx",
+	],
 	darkMode: ["selector", '[data-mode="dark"]'],
 	theme: {
 		colors: {

@@ -13,15 +13,6 @@ export default defineConfig({
 		resolve: {
 			conditions: ["development", "browser"],
 		},
-		build: {
-			rollupOptions: {
-				output: {
-					manualChunks: {
-						// "@touhouclouddb/database": ["@touhouclouddb/database"],
-					},
-				},
-			},
-		},
 		envPrefix: "PUB_",
 		test: {
 			browser: {
