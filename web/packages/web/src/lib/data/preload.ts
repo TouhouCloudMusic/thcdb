@@ -3,13 +3,9 @@ import { type AppLocale, useI18N } from "~/state/i18n"
 import { getLocaleCookie } from "~/state/i18n/provider"
 
 export async function preloadLocale(): Promise<AppLocale> {
-	let locale: AppLocale | undefined
 	if (!isServer) {
-		locale = useI18N().locale()
-	} else if (locale === undefined) {
-		locale = await getLocaleCookie()
+		return useI18N().locale()
 	} else {
-		locale = "en"
+		return await getLocaleCookie()
 	}
-	return locale
 }
