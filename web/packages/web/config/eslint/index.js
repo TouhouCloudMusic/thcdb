@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import JsxA11y from "eslint-plugin-jsx-a11y"
 import Solid from "eslint-plugin-solid"
 
@@ -60,28 +61,41 @@ export const tsConfig = {
 /**
  * @type {import("eslint").Linter.FlatConfig}
  */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-export const tsxConfig = {
-	files: ["src/**/*.tsx"],
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-	...JsxA11y.flatConfigs.recommended,
-	...Solid.configs["flat/typescript"],
-	rules: {
-		...tsRules,
-		"solid/self-closing-comp": [
-			"warn",
-			{
-				component: "all",
-				html: "void",
-			},
-		],
-		"solid/prefer-for": "off",
-		"solid/components-return-once": ["error"],
-		/**
-		 * 暂不支持solid jsx
-		 * https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/issues/894
-		 * https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/pull/977
-		 * */
-		"jsx-a11y/label-has-associated-control": "off",
+export const tsxConfigArray = [
+	// solid
+	{
+		files: ["src/**/*.tsx"],
+		...Solid.configs["flat/typescript"],
+		rules: {
+			"solid/self-closing-comp": [
+				"warn",
+				{
+					component: "all",
+					html: "void",
+				},
+			],
+			"solid/prefer-for": "off",
+			"solid/components-return-once": ["error"],
+		},
 	},
-}
+	// a11y
+	{
+		files: ["src/**/*.tsx"],
+		...JsxA11y.flatConfigs.recommended,
+		rules: {
+			/**
+			 * 暂不支持solid jsx
+			 * https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/issues/894
+			 * https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/pull/977
+			 * */
+			"jsx-a11y/label-has-associated-control": "off",
+		},
+	},
+	// typescript
+	{
+		files: ["src/**/*.tsx"],
+		rules: {
+			...tsRules,
+		},
+	},
+]

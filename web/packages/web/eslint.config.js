@@ -1,10 +1,10 @@
 import Eslint from "@eslint/js"
 import tanstackQuery from "@tanstack/eslint-plugin-query"
 import Prettier from "eslint-config-prettier"
-import Oxlint from "eslint-plugin-oxlint"
 import Globals from "globals"
 import Tslint from "typescript-eslint"
-import { tsConfig, tsxConfig } from "./config/eslint/index.js"
+
+import { tsConfig, tsxConfigArray } from "./config/eslint/index.js"
 
 /**
  * @type {import('eslint').Linter.FlatConfig[]}
@@ -32,9 +32,8 @@ export default [
 	// typescript
 	tsConfig,
 	// jsx
-	tsxConfig,
+	...tsxConfigArray,
 	{
-		ignores: [".output/", ".vinxi/"],
+		ignores: [".output", ".vinxi", "eslint.config.js"],
 	},
-	Oxlint.configs["flat/recommended"],
 ]
