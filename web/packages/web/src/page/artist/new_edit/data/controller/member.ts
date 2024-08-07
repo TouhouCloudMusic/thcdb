@@ -66,8 +66,10 @@ export class MemberController {
 			)
 		const existArtists = getValues(this.formStore(), "member")
 			.map((m) => m?.id)
-			.filter((id) => id !== "") as string[]
-
+			.filter((id) => id !== "")
+			.concat(
+				getValue(this.formStore(), "id", { shouldActive: false })
+			) as string[]
 		const result = await findArtistByKeyword(keyword, artistType, existArtists)
 
 		if (isEmptyArray(result)) {

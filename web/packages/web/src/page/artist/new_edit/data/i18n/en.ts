@@ -10,7 +10,7 @@ const dict = {
 	},
 	add_str_input_label: "add string input",
 	search_artist_card: {
-		label: "Add {{ item }}",
+		label: "Add {{ type }}",
 		placeholder: "Search Artist",
 	},
 	member: {

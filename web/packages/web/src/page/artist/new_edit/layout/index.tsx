@@ -8,8 +8,8 @@ import { type Nullable } from "~/lib/type/nullable"
 import { useI18N } from "~/state/i18n"
 import { Context, useController } from "../context"
 import { createController, Query, SubmitAction, type ArtistByID } from "../data"
-import { ArtistType, MemberList, Name } from "./components"
-import { Aliases } from "./components/alias"
+import { ArtistType, MemberList, Name } from "./sections"
+import { Aliases } from "./sections/alias.tsx"
 
 export function ArtistFormLayout(props: {
 	data?: Accessor<Nullable<ArtistByID>>
@@ -21,14 +21,6 @@ export function ArtistFormLayout(props: {
 	return (
 		<Suspense>
 			<Context.Provider value={createController(data, dict)}>
-				<Button.Borderless>
-					<a href={"/artist/edit/" + Math.max(Number(data()?.app_id) - 1, 1)}>
-						prev
-					</a>
-				</Button.Borderless>
-				<Button.Borderless>
-					<a href={"/artist/edit/" + (Number(data()?.app_id) + 1)}>next</a>
-				</Button.Borderless>
 				<Main />
 			</Context.Provider>
 		</Suspense>
@@ -40,34 +32,51 @@ function Main() {
 	const action = useAction(SubmitAction)
 	const queryClient = useQueryClient()
 	return (
-		<Form
-			of={formStore()}
-			onSubmit={async (formData) => {
-				if (!form.changed) {
-					form.setErrMsg("No changes")
-					return
-				}
-				await action(queryClient, formData, artistData())
-			}}
-			method="post"
-			class="flex flex-col gap-2">
-			<Name />
-			<ArtistType />
-			<Aliases />
-			<MemberList />
-			<div class="flex w-full flex-row place-content-around">
-				<Button.Highlight
-					type="submit"
-					class="w-1/4 self-start py-1">
-					{t.submit()}
-				</Button.Highlight>
-				<Show when={import.meta.env.DEV}>
-					<LogBtn />
-				</Show>
-			</div>
-			<FormUI.ErrorText text={form.errMsg} />
-			<FormUI.ErrorText text={formStore().response.message} />
-		</Form>
+		<main class="flex w-full place-content-center">
+			<Form
+				of={formStore()}
+				onSubmit={async (formData) => {
+					if (!form.changed) {
+						form.setErrMsg("No changes")
+						return
+					}
+					await action(queryClient, formData, artistData())
+				}}
+				method="post"
+				class="flex w-2/3 flex-col gap-2">
+				{/* Dev only */}
+				<div class="flex min-w-48 place-content-between gap-2 self-center">
+					<Button.Borderless>
+						<a
+							href={
+								"/artist/edit/" + Math.max(artistData()?.app_id ?? 0 - 1, 1)
+							}>
+							prev
+						</a>
+					</Button.Borderless>
+					<Button.Borderless>
+						<a href={"/artist/edit/" + (artistData()?.app_id ?? 0 + 1)}>next</a>
+					</Button.Borderless>
+				</div>
+
+				<Name />
+				<ArtistType />
+				<Aliases />
+				<MemberList />
+				<div class="flex w-full flex-row place-content-around">
+					<Button.Highlight
+						type="submit"
+						class="w-1/4 self-start py-1">
+						{t.submit()}
+					</Button.Highlight>
+					<Show when={import.meta.env.DEV}>
+						<LogBtn />
+					</Show>
+				</div>
+				<FormUI.ErrorText text={form.errMsg} />
+				<FormUI.ErrorText text={formStore().response.message} />
+			</Form>
+		</main>
 	)
 }
 

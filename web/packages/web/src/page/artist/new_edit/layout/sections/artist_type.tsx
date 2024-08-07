@@ -1,13 +1,13 @@
 import { Field } from "@modular-forms/solid"
 import { FormUI } from "~/component/form/ui"
-import { useController } from "../../context"
-import { scope_title_tw } from "../style"
+import { useController } from "../../context.tsx"
+import * as Style from "../style.ts"
 
 export function ArtistType() {
 	const { formStore, artistType, t } = useController()
 	return (
 		<div class="flex flex-col">
-			<h4 class={scope_title_tw}>{t.artist_type.label()}</h4>
+			<h4 class={Style.label}>{t.artist_type.label()}</h4>
 			<Field
 				of={formStore()}
 				name="artist_type">

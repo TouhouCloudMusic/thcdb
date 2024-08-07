@@ -64,7 +64,11 @@ export class AliasController {
 		const existArtists = getValues(this.formStore(), "alias")
 			.map((m) => m?.id)
 			.filter((id) => id !== "")
-			.concat(getValue(this.formStore(), "id")) as string[]
+			.concat(
+				getValue(this.formStore(), "id", {
+					shouldActive: false,
+				})
+			) as string[]
 
 		const result = await findArtistByKeyword(keyword, artistType, existArtists)
 

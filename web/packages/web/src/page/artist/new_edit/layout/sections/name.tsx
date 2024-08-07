@@ -1,7 +1,7 @@
 import { Field } from "@modular-forms/solid"
 import { FormUI } from "~/component/form/ui"
-import { useController } from "../../context"
-import { scope_title_tw } from "../style"
+import { useController } from "../../context.tsx"
+import * as Style from "../style.ts"
 
 export function Name() {
 	const { formStore, t } = useController()
@@ -13,7 +13,7 @@ export function Name() {
 				<div class="flex flex-col">
 					<label
 						for="name"
-						class={scope_title_tw}>
+						class={Style.label}>
 						{t.name.label()}
 					</label>
 					<input

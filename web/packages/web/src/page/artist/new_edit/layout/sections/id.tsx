@@ -1,5 +1,5 @@
 import { Field } from "@modular-forms/solid"
-import { useController } from "../../context"
+import { useController } from "../../context.tsx"
 
 export function ID() {
 	const { formStore } = useController()

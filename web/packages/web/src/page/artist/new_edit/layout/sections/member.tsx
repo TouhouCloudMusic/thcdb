@@ -5,31 +5,23 @@ import {
 	getValue,
 	setValue,
 } from "@modular-forms/solid"
-import { For, Match, Show, Switch, createMemo } from "solid-js"
+import { For, Index, Match, Show, Switch, createMemo } from "solid-js"
 import { Cross1Icon } from "solid-radix-icons"
 import { Button } from "~/component/button"
 import { FormUI } from "~/component/form/ui"
-import { type IndexComponentProps } from "~/lib/type/solid-js/jsx"
-import { notNullString } from "~/lib/validate/not_empty_string"
-import { useController } from "../../context"
-import { scope_title_tw } from "../style"
-import { AddStringInputButton } from "./components/add_str_input_button"
-import { SearchAristCard } from "./components/search_artist_card"
+import { type IndexComponentProps } from "~/lib/type/solid-js/jsx.ts"
+import { notNullString } from "~/lib/validate/not_empty_string.ts"
+import { AddStringInputButton } from "~/page/artist/new_edit/layout/sections/components/add_str_input_button.tsx"
+import { useController } from "../../context.tsx"
+import * as Style from "../style.ts"
 
 export function MemberList() {
 	const { formStore, artistType, member, t } = useController()
-
 	return (
-		<div
-			id="container"
-			class="flex min-h-32 place-content-between gap-2">
-			<div
-				id="left_container"
-				class="flex w-full min-w-[20rem] flex-col">
-				<div
-					id="label"
-					class="flex h-fit w-full place-content-between">
-					<h4 class={scope_title_tw}>
+		<div class={Style.member.layout}>
+			<div class={Style.member.list.container}>
+				<div class={Style.member.list.title}>
+					<h4 class={Style.label}>
 						<Switch>
 							<Match when={artistType.isPerson}>
 								<p>{t.member.label.person()}</p>
@@ -49,9 +41,7 @@ export function MemberList() {
 						/>
 					</Show>
 				</div>
-				<ul
-					id="list"
-					class="flex flex-col gap-2">
+				<ul>
 					<FieldArray
 						of={formStore()}
 						name="member">
@@ -72,16 +62,37 @@ export function MemberList() {
 					</FieldArray>
 				</ul>
 			</div>
-			<SearchAristCard
-				label={t.search_artist_card.label({
-					item: "member",
-				})}
-				placeholder={t.search_artist_card.placeholder()}
-				onInput={(e) => member.serach(e.currentTarget.value)}
-				disableSearch={artistType.isNone}
-				searchResult={member.searchResult}
-				handleAdd={member.add.bind(member)}
-			/>
+
+			<div>
+				<h4 class={Style.label}>
+					{t.search_artist_card.label({
+						type: "member",
+					})}
+				</h4>
+				<div>
+					<input
+						type="text"
+						class="px-1"
+						disabled={artistType.isNone}
+						placeholder={t.search_artist_card.placeholder()}
+						onInput={(e) => member.serach(e.currentTarget.value)}
+					/>
+					<div class="relative">
+						<div class="absolute w-full">
+							<Index each={member.searchResult}>
+								{(result) => (
+									<button
+										type="button"
+										class="border-sm my-2 w-full border-gray-300 bg-white px-2"
+										onClick={() => member.add(result())}>
+										{result().name}
+									</button>
+								)}
+							</Index>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	)
 }

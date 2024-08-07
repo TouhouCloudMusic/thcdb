@@ -1,5 +1,5 @@
 import { Index, type JSX } from "solid-js"
-import { scope_title_tw } from "../../style"
+import * as Style from "../../style.ts"
 
 export function SearchAristCard<
 	T extends {
@@ -15,7 +15,7 @@ export function SearchAristCard<
 }) {
 	return (
 		<div class="flex flex-col">
-			<h4 class={scope_title_tw}>{props.label}</h4>
+			<h4 class={Style.label}>{props.label}</h4>
 			<input
 				type="text"
 				class="px-1"
