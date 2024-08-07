@@ -1,12 +1,10 @@
 bracketSameLine: true
-endOfLine: lf
 experimentalTernaries: true
-htmlWhitespaceSensitivity: css
-insertPragma: false
+semi: false
+singleAttributePerLine: true
+trailingComma: es5
+useTabs: true
 overrides:
-  - files: "*.json"
-    options:
-      trailingComma: all
   - files:
       - "*.yaml"
       - "*.yml"
@@ -19,11 +17,10 @@ overrides:
     options:
       tabWidth: 2
       useTabs: false
+  - files:
+      - "*.jsx"
+      - "*.tsx"
+    options:
+        htmlWhitespaceSensitivity: ignore
 plugins:
   - prettier-plugin-tailwindcss
-quoteProps: as-needed
-requirePragma: false
-semi: false
-singleAttributePerLine: true
-trailingComma: es5
-useTabs: true
