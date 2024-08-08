@@ -1,7 +1,7 @@
 import { Title } from "@solidjs/meta"
 import { Router } from "@solidjs/router"
 import { FileRoutes } from "@solidjs/start/router"
-import { ErrorBoundary, type ParentProps, Show, Suspense } from "solid-js"
+import { ErrorBoundary, type ParentProps, Show } from "solid-js"
 import Header from "~/component/header/header"
 import "./app.css"
 import ErrorPage from "./route/500"
@@ -44,18 +44,16 @@ function CustomErrorBoundary(props: ParentProps) {
 
 export default function App() {
 	return (
-		<Suspense>
-			<CustomErrorBoundary>
-				<Providers>
-					<div
-						style={{
-							...(useI18N().duringTransition() ? I18NTranstionStyle : {}),
-						}}
-						id="app_wrapper">
-						<Routes />
-					</div>
-				</Providers>
-			</CustomErrorBoundary>
-		</Suspense>
+		<CustomErrorBoundary>
+			<Providers>
+				<div
+					style={{
+						...(useI18N().duringTransition() ? I18NTranstionStyle : {}),
+					}}
+					id="app_wrapper">
+					<Routes />
+				</div>
+			</Providers>
+		</CustomErrorBoundary>
 	)
 }

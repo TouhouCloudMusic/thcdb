@@ -1,5 +1,5 @@
 import * as R from "ramda"
-import { type MemberList } from "../new_edit/data/form"
+import { type MemberList } from "../edit/data/form"
 
 /**
  *

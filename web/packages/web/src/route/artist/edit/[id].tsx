@@ -1,10 +1,9 @@
 import { Navigate, useParams, type RouteDefinition } from "@solidjs/router"
 import { useQueryClient } from "@tanstack/solid-query"
-import { createEffect, createMemo, Match, Switch } from "solid-js"
+import { createEffect, Suspense } from "solid-js"
 import { preloadLocale } from "~/lib/data/preload"
-import { Query } from "~/page/artist/new_edit/data"
-import { ArtistFormLayout } from "~/page/artist/new_edit/layout"
-import { useI18N } from "~/state/i18n"
+import { Query } from "~/page/artist/edit/data"
+import { ArtistFormLayout } from "~/page/artist/edit/layout"
 
 export const route = {
 	preload: async ({ params }) => {
@@ -21,8 +20,6 @@ export const route = {
 export default function EditArtistPage() {
 	const id = () => useParams()["id"]
 	const dataQuery = Query.fetchData(id)
-	const dictQuery = Query.fetchDict(useI18N().locale)
-	const data = createMemo(() => dataQuery.data)
 
 	createEffect(() => {
 		if (dataQuery.isSuccess && dataQuery.data === null) {
@@ -31,11 +28,5 @@ export default function EditArtistPage() {
 			})
 		}
 	})
-	return (
-		<Switch>
-			<Match when={dataQuery.isSuccess && dictQuery.isSuccess}>
-				<ArtistFormLayout data={data} />
-			</Match>
-		</Switch>
-	)
+	return <ArtistFormLayout dataQuery={dataQuery} />
 }

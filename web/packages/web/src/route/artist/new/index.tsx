@@ -1,8 +1,8 @@
 import { type RouteDefinition } from "@solidjs/router"
 import { useQueryClient } from "@tanstack/solid-query"
 import { preloadLocale } from "~/lib/data/preload"
-import { Query } from "~/page/artist/new_edit/data"
-import { ArtistFormLayout } from "~/page/artist/new_edit/layout"
+import { Query } from "~/page/artist/edit/data"
+import { ArtistFormLayout } from "~/page/artist/edit/layout"
 
 export const route = {
 	preload: async () => {

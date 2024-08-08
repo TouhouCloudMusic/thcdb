@@ -1,6 +1,7 @@
 import { Menu } from "@ark-ui/solid"
 import { Index, Show, Suspense } from "solid-js"
 import { ThemeButton } from "~/component/theme_button"
+import { clientAuthHelper } from "~/database/client"
 import { type AppLocale, useI18N } from "~/state/i18n"
 import { useUser } from "~/state/user"
 import { Button } from "../button"
@@ -43,33 +44,52 @@ export default function Header() {
 						/>
 					</li>
 					<li>
-						<a class={navLinkClass}>占位符</a>
+						<a
+							href="/"
+							class={navLinkClass}>
+							占位符
+						</a>
 					</li>
 					<li>
-						<a class={navLinkClass}>占位符</a>
+						<a
+							href="/"
+							class={navLinkClass}>
+							占位符
+						</a>
 					</li>
-					<li>
-						<a class={navLinkClass}>占位符</a>
-					</li>
-					<li>
-						<a class={navLinkClass}>占位符</a>
-					</li>
+
 					<li class="mx-1 size-8">
 						<ThemeButton class="size-7 rounded-full" />
 					</li>
 					<li class="mx-1 size-8">
 						<Language />
 					</li>
-					<li class={style["avatarWrapper"]}>
-						<Show
-							when={!userController.user()?.name}
-							fallback={
-								<Button.Highlight
-									onClick={() => userController.signInWithGitHub()}
-									class="shadow-4 mx-auto px-3 py-0.5">
-									Sign In
-								</Button.Highlight>
-							}>
+
+					<Show
+						when={userController.isSignedIn()}
+						fallback={
+							<>
+								<li class="mx-1 min-w-fit">
+									<a
+										href={clientAuthHelper.getBuiltinUIUrl()}
+										target="_self">
+										<Button.Highlight class="shadow-4 mx-auto px-3 py-0.5">
+											Sign In
+										</Button.Highlight>
+									</a>
+								</li>
+								<li class="mx-1 min-w-fit">
+									<a
+										href={clientAuthHelper.getBuiltinUISignUpUrl()}
+										target="_self">
+										<Button.Highlight class="shadow-4 mx-auto px-3 py-0.5">
+											Sign Up
+										</Button.Highlight>
+									</a>
+								</li>
+							</>
+						}>
+						<li class={style["avatarWrapper"]}>
 							<div class="flex">
 								<div
 									class={style["avatar"]}
@@ -77,8 +97,8 @@ export default function Header() {
 									<p class="text-xs text-gray-100">头像</p>
 								</div>
 							</div>
-						</Show>
-					</li>
+						</li>
+					</Show>
 				</ul>
 			</nav>
 		</header>

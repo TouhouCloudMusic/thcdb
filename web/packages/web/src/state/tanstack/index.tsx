@@ -1,19 +1,20 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query"
-import type { ParentProps } from "solid-js"
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools"
-
-const QueryClientInstance = new QueryClient({
-	defaultOptions: {
-		queries: {
-			staleTime: 1000 * 60 * 5, // 5 min
-			gcTime: 1000 * 60 * 60 * 24, // 24 hrs
-		},
-	},
-})
+import { createSignal, type ParentProps } from "solid-js"
 
 export function TanStackProvider(props: ParentProps) {
+	const [queryClinet] = createSignal(
+		new QueryClient({
+			defaultOptions: {
+				queries: {
+					staleTime: 1000 * 60 * 5, // 5 min
+					gcTime: 1000 * 60 * 60 * 24, // 24 hrs
+				},
+			},
+		})
+	)
 	return (
-		<QueryClientProvider client={QueryClientInstance}>
+		<QueryClientProvider client={queryClinet()}>
 			<SolidQueryDevtools initialIsOpen={false} />
 			{props.children}
 		</QueryClientProvider>
