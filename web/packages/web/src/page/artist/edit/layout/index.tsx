@@ -1,5 +1,5 @@
 import { Form, getErrors, getValues } from "@modular-forms/solid"
-import { useAction } from "@solidjs/router"
+import { useAction, useNavigate } from "@solidjs/router"
 import { useQueryClient, type CreateQueryResult } from "@tanstack/solid-query"
 import { Show } from "solid-js"
 import { Button } from "~/component/button"
@@ -13,6 +13,7 @@ import {
 	SubmitAction,
 	type ArtistByID,
 } from "../data/index.ts"
+import { dataQueryKey } from "../data/query"
 import { Aliases, ArtistType, ID, MemberList, Name } from "./sections/index.ts"
 
 export function ArtistFormLayout(props: {
@@ -36,6 +37,7 @@ function Main() {
 	const { dataQuery, formStore, form, t, initData } = useController()
 	const action = useAction(SubmitAction)
 	const queryClient = useQueryClient()
+	const navigate = useNavigate()
 	return (
 		<main class="flex w-full place-content-center">
 			<Form
@@ -45,7 +47,11 @@ function Main() {
 						form.setErrMsg("No changes")
 						return
 					}
-					await action(queryClient, formData, dataQuery?.data)
+					const res = await action(formData, dataQuery?.data)
+					void queryClient.invalidateQueries({
+						queryKey: dataQueryKey.concat(res.toString()),
+					})
+					return navigate(`/artist/${res}`)
 				}}
 				method="post"
 				class="flex w-2/3 flex-col gap-2">
