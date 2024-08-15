@@ -1,5 +1,5 @@
 const dict = {
-	name: "name",
+	name: "Name",
 	enter_artist_name: "Enter Artist Name",
 
 	artist_type: "Artist Type",

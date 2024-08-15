@@ -2,10 +2,12 @@ import { Form, getErrors, getValues } from "@modular-forms/solid"
 import { useAction, useNavigate } from "@solidjs/router"
 import { useQueryClient, type CreateQueryResult } from "@tanstack/solid-query"
 import { Show } from "solid-js"
+
 import { Button } from "~/component/button"
-import { FormUI } from "~/component/form/ui/index.tsx"
+import { FormUI } from "~/component/form/ui"
 import { type Nullable } from "~/lib/type/nullable"
 import { useI18N } from "~/state/i18n"
+
 import { ControllerContext, useController } from "../context.tsx"
 import {
 	createController,
@@ -13,8 +15,12 @@ import {
 	SubmitAction,
 	type ArtistByID,
 } from "../data/index.ts"
-import { dataQueryKey } from "../data/query"
-import { Aliases, ArtistType, ID, MemberList, Name } from "./sections/index.ts"
+
+import { Aliases } from "./sections/alias.tsx"
+import { ArtistType } from "./sections/artist_type.tsx"
+import { ID } from "./sections/id.tsx"
+import { MemberList } from "./sections/member.tsx"
+import { Name } from "./sections/name.tsx"
 
 export function ArtistFormLayout(props: {
 	dataQuery?: CreateQueryResult<Nullable<ArtistByID>>
@@ -49,7 +55,7 @@ function Main() {
 					}
 					const res = await action(formData, dataQuery?.data)
 					void queryClient.invalidateQueries({
-						queryKey: dataQueryKey.concat(res.toString()),
+						queryKey: Query.dataQueryKey.concat(res.toString()),
 					})
 					return navigate(`/artist/${res}`)
 				}}

@@ -46,10 +46,10 @@ function setArtistType(
 	setValues(formStore, "member", store.member.cache ?? [])
 
 	setStore(
-		"member",
-		produce((member) => {
-			member.cache = currentList
-			member.searchResult = undefined
+		produce((store) => {
+			store.alias.searchResult = undefined
+			store.member.cache = currentList
+			store.member.searchResult = undefined
 		})
 	)
 }

@@ -1,13 +1,15 @@
 import { getError, getValue, setValue } from "@modular-forms/solid"
 import { For, Index, Match, Show, Switch, createMemo } from "solid-js"
+import { twMerge } from "tailwind-merge"
+
 import { FormUI } from "~/component/form/ui"
 import { type IndexComponentProps } from "~/lib/type/solid-js/jsx.ts"
 import { notNullString } from "~/lib/validate/not_empty_string.ts"
-import { AddStringInputButton } from "~/page/artist/edit/layout/sections/components/add_str_input_button.tsx"
+
 import { useController } from "../../context.tsx"
+import { AddStringInputButton } from "./components/add_str_input_button.tsx"
 import { DeleteButton } from "./components/delete_button.tsx"
 
-import { twMerge } from "tailwind-merge"
 import * as Style from "../style.ts"
 
 export function MemberList() {
@@ -58,12 +60,12 @@ export function MemberList() {
 					</FieldArray>
 				</ul>
 			</div>
-			<SearchCard />
+			<SearchTab />
 		</div>
 	)
 }
 
-function SearchCard() {
+function SearchTab() {
 	const { artistType, member, t } = useController()
 
 	return (
@@ -78,19 +80,23 @@ function SearchCard() {
 				placeholder={t.search_artist()}
 				onInput={(e) => member.serach(e.currentTarget.value)}
 			/>
-			<div class="relative">
-				<div class="absolute w-full">
-					<Index each={member.searchResult}>
-						{(result) => (
-							<button
-								type="button"
-								class="border-sm my-2 w-full border-gray-300 bg-white px-2"
-								onClick={() => member.add(result())}>
-								{result().name}
-							</button>
-						)}
-					</Index>
-				</div>
+			<div class={Style.searchResult.container}>
+				<Show when={member.searchResult}>
+					<ul class={Style.searchResult.list}>
+						<Index each={member.searchResult}>
+							{(result) => (
+								<li>
+									<button
+										type="button"
+										class={Style.searchResult.item}
+										onClick={() => member.add(result())}>
+										{result().name}
+									</button>
+								</li>
+							)}
+						</Index>
+					</ul>
+				</Show>
 			</div>
 		</div>
 	)

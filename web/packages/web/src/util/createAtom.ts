@@ -17,10 +17,12 @@ export function createAtom<T>(
 		if (args.length === 0) {
 			return getter()
 		}
-		setter(args[0])
+		return setter(args[0])
 	}
 
 	return atom
 }
+
+export type Ref<T> = Atom<T>
 
 export { createAtom as createRef }

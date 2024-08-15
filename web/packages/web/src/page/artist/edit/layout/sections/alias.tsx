@@ -1,19 +1,21 @@
 import { getValue } from "@modular-forms/solid"
 import * as R from "radash"
 import { For, Index, Match, Show, Switch } from "solid-js"
+import { twMerge } from "tailwind-merge"
+
 import { FormUI } from "~/component/form/ui/index.tsx"
+import { type IndexComponentProps } from "~/lib/type/solid-js/jsx.ts"
+
 import { useController } from "../../context.tsx"
+import { type ArtistByKeyword } from "../../data/index.ts"
 import { AddStringInputButton } from "./components/add_str_input_button.tsx"
 import { DeleteButton } from "./components/delete_button.tsx"
 
-import { type IndexComponentProps } from "~/lib/type/solid-js/jsx.ts"
-
-import { twMerge } from "tailwind-merge"
-import { type ArtistByKeyword } from "../../data"
 import * as Style from "../style.ts"
 
 export function Aliases() {
 	const { artistType, alias, t, FieldArray, dataQuery } = useController()
+
 	return (
 		<div class={Style.alias.layout}>
 			<div class={Style.alias.list.container}>
@@ -71,8 +73,10 @@ function Alias(props: IndexComponentProps) {
 				type="string">
 				{(field, fieldProps) => (
 					<Show
-						when={!getValue(formStore, `alias.${props.index()}.id`)}
-						fallback={<div>{field.value}</div>}>
+						when={getValue(formStore, `alias.${props.index()}.is_str`, {
+							shouldActive: false,
+						})}
+						fallback={<div class="flex flex-1">{field.value}</div>}>
 						<input
 							{...fieldProps}
 							class={twMerge(Style.input, "flex-auto")}
@@ -100,6 +104,7 @@ function Alias(props: IndexComponentProps) {
 
 function SearchTab() {
 	const { artistType, alias, t } = useController()
+
 	return (
 		<div class="flex flex-col">
 			<h4 class={Style.label}>{t.add_alias()}</h4>
@@ -112,12 +117,14 @@ function SearchTab() {
 					alias.serach(e.target.value)
 				)}
 			/>
-			<div class="relative">
-				<ul class="absolute w-full gap-2">
-					<Index each={alias.searchResult}>
-						{(result) => <SearchResult result={result()} />}
-					</Index>
-				</ul>
+			<div class={Style.searchResult.container}>
+				<Show when={alias.searchResult}>
+					<ul class={Style.searchResult.list}>
+						<Index each={alias.searchResult}>
+							{(result) => <SearchResult result={result()} />}
+						</Index>
+					</ul>
+				</Show>
 			</div>
 		</div>
 	)
@@ -126,13 +133,15 @@ function SearchTab() {
 function SearchResult(props: { result: ArtistByKeyword }) {
 	const { alias } = useController()
 	return (
-		<button
-			type="button"
-			class={Style.search_result}
-			onClick={() => {
-				alias.add(props.result)
-			}}>
-			{props.result.name}
-		</button>
+		<li>
+			<button
+				type="button"
+				class={Style.searchResult.item}
+				onClick={() => {
+					alias.add(props.result)
+				}}>
+				{props.result.name}
+			</button>
+		</li>
 	)
 }
