@@ -1,13 +1,7 @@
-import {
-	createForm,
-	createFormStore,
-	FormStore,
-	getValues,
-	reset,
-	valiForm,
-} from "@modular-forms/solid"
-import { type ChainedTranslator } from "@solid-primitives/i18n"
+import { createForm, getValues, reset, valiForm } from "@modular-forms/solid"
 import { type CreateQueryResult } from "@tanstack/solid-query"
+import * as Option from "fp-ts/Option"
+import { pipe } from "fp-ts/function"
 import * as R from "ramda"
 import { createEffect, createMemo, createSignal } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -34,63 +28,6 @@ export interface ControllerStore {
 		searchResult?: ArtistByKeywordArray | undefined
 	}
 }
-// export function createController(
-// 	initData: () => Nullable<ArtistByID>,
-// 	dict: () => Dict
-// ) {
-// 	const initFormValue = createMemo(() =>
-// 		!initData() ? undefined : (
-// 			({
-// 				id: initData()!.id,
-// 				name: initData()!.name,
-// 				artist_type: initData()!.artist_type,
-// 				// TODO: Alias
-// 				alias: undefined,
-// 				members: initData() ? initFormStoreMemberList(initData()!) : undefined,
-// 			} as ArtistFormSchema)
-// 		)
-// 	)
-
-// 	const formStore = createMemo(() =>
-// 		createFormStore<ArtistFormSchema>({
-// 			validate: valiForm(ArtistFormSchema),
-// 			initialValues: initFormValue(),
-// 		})
-// 	)
-// 	const [formErrorMsg, setFormErrorMsg] = createSignal<string>()
-
-// 	const [store, setStore] = createStore<ControllerStore>({
-// 		alias: {
-// 			searchResult: undefined,
-// 		},
-// 		member: {
-// 			list: initFormValue()?.member,
-// 		},
-// 	})
-
-// 	const formController = {
-// 		get changed() {
-// 			return !R.equals(initFormValue(), getValues(formStore()))
-// 		},
-// 		get errMsg() {
-// 			return formErrorMsg()
-// 		},
-// 		setErrMsg: setFormErrorMsg,
-// 	}
-
-// 	return {
-// 		t: i18n.chainedTranslator(
-// 			dict(),
-// 			i18n.translator(() => i18n.flatten(dict()), i18n.resolveTemplate)
-// 		),
-// 		initData,
-// 		formStore,
-// 		form: formController,
-// 		artistType: new ArtistTypeController(store, setStore, formStore),
-// 		alias: new AliasController(store, setStore, formStore),
-// 		member: new MemberController(store, setStore, formStore),
-// 	}
-// }
 
 export function createController(
 	dataQuery: CreateQueryResult<Nullable<ArtistByID>> | undefined,
@@ -108,20 +45,31 @@ export function createController(
 
 	createEffect(() => {
 		if (dataQuery?.isSuccess && dataQuery.data) {
-			const newValue = setInitFormValue({
+			const newValue: ArtistFormSchema = {
 				id: dataQuery.data.id,
 				name: dataQuery.data.name,
 				artist_type: dataQuery.data.artist_type,
 				// TODO: Alias
-				alias: undefined,
-				members: initFormStoreMemberList(dataQuery.data),
-			})
+				// alias: undefined,
+			}
+
+			pipe(
+				dataQuery.data,
+				initFormStoreMemberList,
+				Option.map((m) => {
+					newValue.member = m
+				})
+			)
+
+			setInitFormValue(newValue)
 			// https://github.com/fabian-hiller/modular-forms/issues/87
 			reset(formStore, {
 				initialValues: newValue,
 			})
-			reset(formStore, {
-				initialValues: newValue,
+			setTimeout(() => {
+				reset(formStore, {
+					initialValues: newValue,
+				})
 			})
 		}
 	})
@@ -139,6 +87,14 @@ export function createController(
 
 	const formController = {
 		get changed() {
+			console.log("init:", initFormValue())
+			console.info(
+				"current: ",
+				getValues(formStore, {
+					shouldActive: false,
+				})
+			)
+
 			return !R.equals(
 				initFormValue(),
 				getValues(formStore, {
@@ -157,6 +113,7 @@ export function createController(
 		dataQuery,
 		initData,
 		formStore,
+		initFormValue,
 		Form,
 		Field,
 		FieldArray,

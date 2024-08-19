@@ -1,35 +1,38 @@
+import * as Option from "fp-ts/Option"
 import * as R from "ramda"
-import { type MemberList } from "../edit/data/form"
 
-/**
- *
- * @param memberList
- * @returns Return sorted array, if array is empty, return empty array
- */
-export function sortMemberList<T extends MemberList>(memberList: T) {
-	if (!memberList) return
-	return R.sort((a, b) => {
-		const aLeft = a.leave_year == null
-		const bLeft = b.leave_year == null
+interface Member {
+	name: string
+	leave_year: number | null
+	join_year: number | null
+}
 
-		// 现役成员排前面
-		if (aLeft !== bLeft) {
-			return aLeft ? 1 : -1
-		}
+export function sortMemberList<T extends Member[]>(memberList: T) {
+	if (memberList.length === 0) return Option.none
+	return Option.some(
+		R.sort((a, b) => {
+			const a_has_left = a.leave_year == null
+			const b_has_left = b.leave_year == null
 
-		// 然后按加入年份排序
-		const joinYearDiff = (a.join_year ?? 0) - (b.join_year ?? 0)
-		if (joinYearDiff !== 0) {
-			return joinYearDiff
-		}
+			// 现役成员排前面
+			if (a_has_left !== b_has_left) {
+				return a_has_left ? 1 : -1
+			}
 
-		// 然后按离开年份排序
-		const leaveYearDiff = (a.leave_year ?? 0) - (b.leave_year ?? 0)
-		if (leaveYearDiff !== 0) {
-			return leaveYearDiff
-		}
+			// 然后按加入年份排序
+			const join_year_diff = (a.join_year ?? 0) - (b.join_year ?? 0)
+			if (join_year_diff !== 0) {
+				return join_year_diff
+			}
 
-		// 最后按名称排序
-		return a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
-	}, memberList) as T
+			// 然后按离开年份排序
+			const leave_year_diff = (a.leave_year ?? 0) - (b.leave_year ?? 0)
+			if (leave_year_diff !== 0) {
+				return leave_year_diff
+			}
+
+			// 最后按名称排序
+			return a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+		}, memberList) as T
+	)
 }

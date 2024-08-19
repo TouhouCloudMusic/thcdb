@@ -14,7 +14,7 @@ export interface ArtistByID extends Pick<Artist, (typeof artistKeys)[number]> {
 	member_of: MemberList
 }
 
-type MemberList = (SafePick<Artist, (typeof memberKeys)[number]> & {
+export type MemberList = (SafePick<Artist, (typeof memberKeys)[number]> & {
 	"@join_year": number | null
 	"@leave_year": number | null
 })[]
@@ -44,6 +44,7 @@ const memberKeys = [
 ] as const
 
 export async function findArtistByID(id: string): Promise<ArtistByID | null> {
+	// TODO: user client
 	const client = edgedbClient
 	return client.querySingle(
 		`

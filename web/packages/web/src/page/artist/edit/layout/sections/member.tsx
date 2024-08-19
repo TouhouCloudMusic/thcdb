@@ -135,13 +135,15 @@ function MemberField(props: { index: () => number }) {
 function MemberName(props: IndexComponentProps) {
 	const { formStore, Field } = useController()
 
+	const is_str = () =>
+		getValue(formStore, `member.${props.index()}.is_str`, {
+			shouldActive: false,
+		})
 	return (
 		<Field name={`member.${props.index()}.name`}>
 			{(nameField, nameProps) => (
 				<Show
-					when={getValue(formStore, `member.${props.index()}.is_str`, {
-						shouldActive: false,
-					})}
+					when={is_str()}
 					fallback={<p>{nameField.value}</p>}>
 					<input
 						{...nameProps}

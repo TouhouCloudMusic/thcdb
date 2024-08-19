@@ -27,7 +27,7 @@ export type AliasSchema = v.InferInput<typeof AliasSchema>
 export const AliasSchema = v.object({
 	id: OptionalIDSchema,
 	name: ArtistNameSchema,
-	is_str: v.boolean(),
+	is_str: v.optional(v.boolean()),
 })
 
 export type AliasListSchema = v.InferInput<typeof AliasListSchema>
@@ -38,7 +38,7 @@ export const MemberSchema = v.object(
 	{
 		id: OptionalIDSchema,
 		name: ArtistNameSchema,
-		is_str: v.boolean(),
+		is_str: v.optional(v.boolean()),
 		join_year: YearSchema,
 		leave_year: YearSchema,
 	},

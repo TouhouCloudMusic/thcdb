@@ -97,7 +97,7 @@ export class ArtistFormHelper {
 	}
 	private get linkMemberList(): LinkedMemberList | undefined {
 		const formDataMemberList = this.formData.member?.filter(
-			(m) => !m.is_str || m.id !== ""
+			(m) => !m.is_str && m.id !== ""
 		)
 		if (!Arr.isNotEmptyOrNone(formDataMemberList)) return undefined
 		else return formDataMemberList

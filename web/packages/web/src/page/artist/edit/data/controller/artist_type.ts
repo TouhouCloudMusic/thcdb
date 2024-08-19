@@ -5,7 +5,6 @@ import {
 	setValues,
 } from "@modular-forms/solid"
 import { produce, type SetStoreFunction } from "solid-js/store"
-import { type $Store } from "~/lib/type/solid-js/store"
 import { type ControllerStore } from "."
 import { type ArtistFormSchema, type MemberListSchema } from "../form"
 
@@ -29,16 +28,17 @@ export class ArtistTypeController {
 	}
 
 	toPerson() {
-		return setArtistType([this.store, this.setStore], this.formStore)
+		return artistTypeEffect(this.store, this.setStore, this.formStore)
 	}
 
 	toGroup() {
-		return setArtistType([this.store, this.setStore], this.formStore)
+		return artistTypeEffect(this.store, this.setStore, this.formStore)
 	}
 }
 
-function setArtistType(
-	[store, setStore]: $Store<ControllerStore>,
+function artistTypeEffect(
+	store: ControllerStore,
+	setStore: SetStoreFunction<ControllerStore>,
 	formStore: FormStore<ArtistFormSchema>
 ) {
 	const currentList = getValues(formStore, "member") as MemberListSchema

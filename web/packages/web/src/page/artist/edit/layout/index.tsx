@@ -1,4 +1,4 @@
-import { Form, getErrors, getValues } from "@modular-forms/solid"
+import { getErrors, getValues, type SubmitHandler } from "@modular-forms/solid"
 import { useAction, useNavigate } from "@solidjs/router"
 import { useQueryClient, type CreateQueryResult } from "@tanstack/solid-query"
 import { Show } from "solid-js"
@@ -16,6 +16,7 @@ import {
 	type ArtistByID,
 } from "../data/index.ts"
 
+import { type ArtistFormSchema } from "../data/form/index.ts"
 import { Aliases } from "./sections/alias.tsx"
 import { ArtistType } from "./sections/artist_type.tsx"
 import { ID } from "./sections/id.tsx"
@@ -26,9 +27,9 @@ export function ArtistFormLayout(props: {
 	dataQuery?: CreateQueryResult<Nullable<ArtistByID>>
 }) {
 	const dictQuery = Query.fetchDict(useI18N().locale)
-	const dict = () => dictQuery.data
+
 	return (
-		<Show when={dict()}>
+		<Show when={dictQuery.data}>
 			{(dict) => (
 				<ControllerContext.Provider
 					value={createController(props.dataQuery, dict)}>
@@ -40,48 +41,30 @@ export function ArtistFormLayout(props: {
 }
 
 function Main() {
-	const { dataQuery, formStore, form, t, initData } = useController()
+	const { dataQuery, formStore, form, t, Form } = useController()
 	const action = useAction(SubmitAction)
 	const queryClient = useQueryClient()
 	const navigate = useNavigate()
+
+	const handleSubmit: SubmitHandler<ArtistFormSchema> = async (formData) => {
+		if (!form.changed) {
+			form.setErrMsg("No changes")
+			return
+		}
+
+		const res = await action(formData, dataQuery?.data)
+		void queryClient.invalidateQueries({
+			queryKey: Query.dataQueryKey.concat(res.toString()),
+		})
+		return navigate(`/artist/${res}`)
+	}
+
 	return (
 		<main class="flex w-full place-content-center">
 			<Form
-				of={formStore}
-				onSubmit={async (formData) => {
-					if (!form.changed) {
-						form.setErrMsg("No changes")
-						return
-					}
-					const res = await action(formData, dataQuery?.data)
-					void queryClient.invalidateQueries({
-						queryKey: Query.dataQueryKey.concat(res.toString()),
-					})
-					return navigate(`/artist/${res}`)
-				}}
+				onSubmit={handleSubmit}
 				method="post"
 				class="flex w-2/3 flex-col gap-2">
-				{/* Dev only */}
-				<div class="flex min-w-48 place-content-between gap-2 self-center">
-					<Button.Borderless>
-						<a
-							href={
-								(dataQuery?.data?.app_id ?? 0) - 1 !== 0 ?
-									`/artist/edit/${(initData()?.app_id ?? 0) - 1}`
-								:	"/artist/new"
-							}
-							preload={false}>
-							prev
-						</a>
-					</Button.Borderless>
-					<Button.Borderless>
-						<a
-							href={"/artist/edit/" + ((initData()?.app_id ?? 0) + 1)}
-							preload={false}>
-							next
-						</a>
-					</Button.Borderless>
-				</div>
 				<ID />
 				<Name />
 				<ArtistType />
@@ -112,6 +95,7 @@ function LogBtn() {
 			class="w-1/4 self-start py-1"
 			onClick={() => {
 				console.info("form changed: ", form.changed)
+
 				console.info("form error: ", getErrors(formStore))
 				console.info(
 					"form value: ",
