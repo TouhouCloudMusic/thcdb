@@ -1,6 +1,9 @@
 module music {
 	type Role extending util::WithCreateAndUpdateTime, auth::RegularEntity {
 		required name: str;
+
+		localized_name: array<tuple<language: lang::Language, name: str>>;
+
 		desc_short: str;
 		desc_long: str;
 		parents: Role {

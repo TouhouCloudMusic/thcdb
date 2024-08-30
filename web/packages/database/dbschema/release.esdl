@@ -3,6 +3,8 @@ module default {
 		required title: str;
 		index pg::spgist on (.title);
 
+		localized_title: array<tuple<language: lang::Language, title: str>>;
+
 		required type: release::Type {
 			default := release::Type.Album
 		};

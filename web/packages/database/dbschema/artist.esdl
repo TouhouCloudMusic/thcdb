@@ -5,7 +5,7 @@ module default {
 		required name: str;
 		index pg::spgist on (.name);
 
-		multi localized_name: tuple<language: lang::Language, name: str>;
+		localized_name: array<tuple<language: lang::Language, name: str>>;
 
 		required artist_type: artist::ArtistType;
 
