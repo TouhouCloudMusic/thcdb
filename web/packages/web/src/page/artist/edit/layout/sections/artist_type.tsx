@@ -17,8 +17,7 @@ export function ArtistType() {
 									type="radio"
 									id="artist_type_person"
 									value="Person"
-									checked={initData()?.artist_type === "Person"}
-									onChange={() => artistType.toPerson()}
+									checked={field.value === "Person"}
 								/>
 								<label for="artist_type_person">{t.person()}</label>
 							</div>
@@ -29,7 +28,6 @@ export function ArtistType() {
 									id="artist_type_group"
 									value="Group"
 									checked={field.value === "Group"}
-									onChange={() => artistType.toGroup()}
 								/>
 								<label for="artist_type_group">{t.group()}</label>
 							</div>

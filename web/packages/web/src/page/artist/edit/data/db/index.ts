@@ -1,25 +1,25 @@
 "use server"
 import e from "@touhouclouddb/database"
 import { type artist, type Artist } from "@touhouclouddb/database/interfaces"
-import { type SelectFilterExpression } from "@touhouclouddb/database/syntax.js"
 import { type uuid } from "edgedb/dist/codecs/ifaces"
 import { edgedbClient } from "~/database/server"
 import { op_and } from "~/lib/edgedb/op"
 import { type SafePick } from "~/lib/type/safe_pick"
 import { isNotEmptyOrNone } from "~/lib/validate/array"
 
-export interface ArtistByID extends Pick<Artist, (typeof artistKeys)[number]> {
-	alias: Pick<Artist, (typeof aliasKeys)[number]>[]
+export interface ArtistByID
+	extends Pick<Artist, (typeof artistFields)[number]> {
+	alias: Pick<Artist, (typeof aliasFields)[number]>[]
 	members: MemberList
 	member_of: MemberList
 }
 
-export type MemberList = (SafePick<Artist, (typeof memberKeys)[number]> & {
+export type MemberList = (SafePick<Artist, (typeof memberFields)[number]> & {
 	"@join_year": number | null
 	"@leave_year": number | null
 })[]
 
-const artistKeys = [
+const artistFields = [
 	"id",
 	"updated_at",
 	"created_at",
@@ -32,9 +32,9 @@ const artistKeys = [
 	"str_alias",
 ] as const
 
-const aliasKeys = ["id", "app_id", "name"] as const
+const aliasFields = ["id", "app_id", "name"] as const
 
-const memberKeys = [
+const memberFields = [
 	"@join_year",
 	"@leave_year",
 	"id",
@@ -49,10 +49,10 @@ export async function findArtistByID(id: string): Promise<ArtistByID | null> {
 	return client.querySingle(
 		`
 		SELECT default::Artist {
-			${artistKeys.join(",")},
-			alias: { ${aliasKeys.join(",")} },
-			members: { ${memberKeys.join(",")} },
-			member_of: { ${memberKeys.join(",")} },
+			${artistFields.join(",")},
+			alias: { ${aliasFields.join(",")} },
+			members: { ${memberFields.join(",")} },
+			member_of: { ${memberFields.join(",")} },
 		} FILTER .app_id = <int64><str>$id`,
 		{
 			id,
@@ -70,25 +70,30 @@ export async function findArtistByKeyword(
 	artistType: artist.ArtistType,
 	existArtists?: uuid[]
 ) {
-	const query = e.select(e.Artist, (artist) => ({
-		id: true,
-		app_id: true,
-		name: true,
-		artist_type: true,
-
-		filter: op_and(
+	const query = e.select(e.Artist, (artist) => {
+		const filterArray = [
 			e.op(e.ext.pg_trgm.word_similarity_dist(keyword, artist.name), "<=", 0.6),
 			e.op(artist.artist_type, "=", e.cast(e.artist.ArtistType, artistType)),
-			isNotEmptyOrNone(existArtists) ?
+		]
+		if (isNotEmptyOrNone(existArtists)) {
+			filterArray.push(
 				e.op(
 					artist.id,
 					"not in",
 					e.array_unpack(e.literal(e.array(e.uuid), existArtists))
 				)
-			:	true
-		) as SelectFilterExpression,
-		limit: 20,
-	}))
+			)
+		}
+		return {
+			id: true,
+			app_id: true,
+			name: true,
+			artist_type: true,
+
+			filter: op_and(...filterArray),
+			limit: 20,
+		}
+	})
 
 	return await query.run(edgedbClient)
 }

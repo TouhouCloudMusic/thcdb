@@ -4,6 +4,7 @@ import {
 	getValues,
 	setValues,
 } from "@modular-forms/solid"
+import { createEffect, on } from "solid-js"
 import { produce, type SetStoreFunction } from "solid-js/store"
 import { type ControllerStore } from "."
 import { type ArtistFormSchema, type MemberListSchema } from "../form"
@@ -13,7 +14,26 @@ export class ArtistTypeController {
 		private store: ControllerStore,
 		private setStore: SetStoreFunction<ControllerStore>,
 		private formStore: FormStore<ArtistFormSchema>
-	) {}
+	) {
+		createEffect(
+			on(
+				() => getValue(formStore, "artist_type"),
+				(type) => {
+					if (!type) return
+
+					const currentList = getValues(formStore, "member") as MemberListSchema
+					setValues(formStore, "member", this.store.member.cache ?? [])
+					this.setStore(
+						produce((store) => {
+							store.alias.searchResult = undefined
+							store.member.cache = currentList
+							store.member.searchResult = undefined
+						})
+					)
+				}
+			)
+		)
+	}
 
 	get isPerson() {
 		return getValue(this.formStore, "artist_type") === "Person"
@@ -26,30 +46,4 @@ export class ArtistTypeController {
 	get isNone() {
 		return getValue(this.formStore, "artist_type") === undefined
 	}
-
-	toPerson() {
-		return artistTypeEffect(this.store, this.setStore, this.formStore)
-	}
-
-	toGroup() {
-		return artistTypeEffect(this.store, this.setStore, this.formStore)
-	}
-}
-
-function artistTypeEffect(
-	store: ControllerStore,
-	setStore: SetStoreFunction<ControllerStore>,
-	formStore: FormStore<ArtistFormSchema>
-) {
-	const currentList = getValues(formStore, "member") as MemberListSchema
-
-	setValues(formStore, "member", store.member.cache ?? [])
-
-	setStore(
-		produce((store) => {
-			store.alias.searchResult = undefined
-			store.member.cache = currentList
-			store.member.searchResult = undefined
-		})
-	)
 }
