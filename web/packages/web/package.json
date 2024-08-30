@@ -38,7 +38,7 @@
     "solid-radix-icons": "^1.0.0",
     "tailwind-merge": "^2.4.0",
     "ts-pattern": "^5.2.0",
-    "valibot": "0.37.0",
+    "valibot": "0.40.0",
     "vinxi": "^0.4.1"
   },
   "devDependencies": {
