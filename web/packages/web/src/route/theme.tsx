@@ -1,7 +1,7 @@
 import { Title } from "@solidjs/meta"
-import { For, JSX } from "solid-js"
-import { ThemeButton } from "~/component/theme_button"
 import { A } from "@solidjs/router"
+import { For, type JSX } from "solid-js"
+import { ThemeButton } from "~/component/theme_button"
 export default function () {
 	return (
 		<main class="flex flex-col place-content-center items-center justify-center">
@@ -68,7 +68,7 @@ function ColorPanel() {
 								}}>
 								{color[0].toUpperCase() + color.slice(1)}
 							</div>
-							<For each={new Array(10)}>
+							<For each={Array.from({ length: 10 })}>
 								{(_, idx) => (
 									<>
 										<div

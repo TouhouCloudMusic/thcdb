@@ -1,4 +1,4 @@
-import { numeric } from "./type"
+import type { numeric } from "./type"
 
 export function toNumericStr(num: numeric) {
 	switch (typeof num) {

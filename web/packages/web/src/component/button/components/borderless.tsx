@@ -1,10 +1,13 @@
-import { createMemo, splitProps } from "solid-js"
+import { createMemo } from "solid-js"
 import { twMerge } from "tailwind-merge"
-import { ButtonAttributes, splitButtonProps } from ".."
+import {
+	baseButtonTwClass,
+	type ButtonAttributes,
+	splitButtonProps,
+} from "./base"
 
 const twClass = `
-	rounded transition-all
-	text-gray-1000 font-medium
+	text-gray-1000
 	bg-main
 	hover:bg-gray-200 active:bg-gray-300 disabled:!bg-gray-200
 	dark:hover:bg-gray-200 dark:active:bg-gray-300
@@ -12,7 +15,9 @@ const twClass = `
 
 export default function BorderlessButton(props: ButtonAttributes) {
 	const otherProps = splitButtonProps(props)
-	const className = createMemo(() => twMerge(twClass, props.class))
+	const className = createMemo(() =>
+		twMerge(baseButtonTwClass, twClass, props.class)
+	)
 	return (
 		<button
 			{...otherProps}

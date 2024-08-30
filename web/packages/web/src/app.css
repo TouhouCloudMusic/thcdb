@@ -23,10 +23,8 @@ html {
 		sans-serif;
 }
 
-@layer utilities {
-	.notransition * {
-		transition: none !important;
-	}
+.notransition *  {
+	transition: none !important;
 }
 
 #app_wrapper {

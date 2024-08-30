@@ -1,6 +1,6 @@
 // @refresh reload
 import { createHandler, StartServer } from "@solidjs/start/server"
-import { initSSRTheme } from "./server/init_theme"
+import * as init from "./state/initialization"
 
 export default createHandler(
 	() => {
@@ -8,8 +8,8 @@ export default createHandler(
 			<StartServer
 				document={({ assets, children, scripts }) => (
 					<html
-						lang="en"
-						data-mode={initSSRTheme()}>
+						lang={init.lang()}
+						data-mode={init.theme()}>
 						<head>
 							<meta charset="utf-8" />
 							<meta

@@ -1,4 +1,11 @@
-import { Accessor, Index, Match, Setter, Switch, createSignal } from "solid-js"
+import {
+	type Accessor,
+	Index,
+	Match,
+	type Setter,
+	Switch,
+	createSignal,
+} from "solid-js"
 import { RatingGroup } from "@ark-ui/solid"
 import { StarIcon } from "solid-radix-icons"
 

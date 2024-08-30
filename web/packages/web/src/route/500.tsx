@@ -1,7 +1,9 @@
 import { Title } from "@solidjs/meta"
 import { HttpStatusCode } from "@solidjs/start"
 
-export default function InternalServerError(props: { msg?: string }) {
+export default function InternalServerError(props: {
+	msg?: string | undefined
+}) {
 	return (
 		<main class="w-[64rem] py-32">
 			<Title>Internal Server Error</Title>

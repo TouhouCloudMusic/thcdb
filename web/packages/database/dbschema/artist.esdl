@@ -1,13 +1,17 @@
 module default {
-
-	abstract type Artist extending Util::HasCreateAndUpdateTime {
+	type Artist extending
+		auth::RegularEntity,
+		util::WithCreateAndUpdateTime {
 		required name: str;
+		index pg::spgist on (.name);
 
-		artist_type := Artist::getType(Artist);
+		multi localized_name: tuple<language: lang::Language, name: str>;
 
-		required app_id: Artist::seq_id {
+		required artist_type: artist::ArtistType;
+
+		required app_id: artist::SeqID {
 			constraint exclusive;
-			default := std::sequence_next(introspect Artist::seq_id);
+			default := std::sequence_next(introspect artist::SeqID);
 		}
 
 		date_of_start: datetime;
@@ -18,45 +22,24 @@ module default {
 		};
 		str_alias: array<std::str>;
 
+		multi member_of := (.<members[is default::Artist]);
+		multi members: Artist {
+			join_year: int16;
+			leave_year: int16;
+			on target delete allow
+		};
+		str_member: array<tuple<name: str, join_year: str, leave_year: str>>;
+
 		multi release := (.<artist[is Release]);
 		multi song := (.<artist[is Song]);
 	}
-
 }
 
-module Artist {
-
-	scalar type seq_id extending sequence;
+module artist {
+	scalar type SeqID extending sequence;
 
 	scalar type ArtistType extending enum<
 		Person,
 		`Group`
 	>;
-
-	type Person extending default::Artist {
-
-		overloaded multi alias: Person;
-
-		multi member_of := (.<members[is Artist::Group]);
-		str_member_of: array<tuple<name: str, join_year: str, leave_year: str>>
-	}
-
-	type `Group` extending default::Artist {
-
-		overloaded multi alias: `Group`;
-
-		multi members: Person {
-			join_year: int16;
-			leave_year: int16;
-			on target delete allow
-		};
-		str_members: array<tuple<name: str, join_year: str, leave_year: str>>
-	}
-
-	function getType(x: default::Artist) -> ArtistType {
-		volatility := "Stable";
-		using (
-			if x is Artist::Person then ArtistType.Person else ArtistType.`Group`
-		);
-	}
 }

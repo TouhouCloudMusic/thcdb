@@ -18,3 +18,8 @@ export class NotFoundError extends AutoNamingError {
 		super(target ? `${target} not found` : "not found")
 	}
 }
+export class NotImplementedError extends AutoNamingError {
+	constructor(readonly msg?: string) {
+		super(msg ?? "not implemented")
+	}
+}

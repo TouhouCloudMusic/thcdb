@@ -1,4 +1,5 @@
 import { Title } from "@solidjs/meta"
+import { A } from "@solidjs/router"
 
 export default function HomePage() {
 	// const linkClass = "text-blue-800 hover:text-blue-700 dark:text-blue-900"
@@ -27,6 +28,14 @@ export default function HomePage() {
 							href="/theme"
 							class="link">
 							theme
+						</a>
+					</li>
+					<li>
+						<a
+							href="/artist/edit/1"
+							class="link"
+							accessKey="">
+							edit artist 1
 						</a>
 					</li>
 				</ul>

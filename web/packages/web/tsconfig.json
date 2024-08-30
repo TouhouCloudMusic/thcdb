@@ -21,10 +21,12 @@
 		"noUnusedParameters": true,
 		"noPropertyAccessFromIndexSignature": true,
 		"noFallthroughCasesInSwitch": true,
+		"exactOptionalPropertyTypes": true,
 		// Path Alias
 		"paths": {
 			"~/*": ["./src/*"],
 			"lib/*": ["./lib/*"]
 		}
-	}
+	},
+	"exclude": ["node_modules", ".output", ".vinxi"]
 }

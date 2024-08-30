@@ -1,14 +1,15 @@
 import { Menu } from "@ark-ui/solid"
 import { Index, Show, Suspense } from "solid-js"
 import { ThemeButton } from "~/component/theme_button"
-import { useAppState } from "~/state/app_state"
-import { AppLocale, useI18N } from "~/state/i18n"
+import { clientAuthHelper } from "~/database/client"
+import { type AppLocale, useI18N } from "~/state/i18n"
+import { useUser } from "~/state/user"
 import { Button } from "../button"
 import { VTIconLanguages } from "../icons/vue_theme/language"
 import style from "./header.module.css"
 
 export default function Header() {
-	const appState = useAppState()
+	const userController = useUser()
 	const navLinkClass =
 		"button !rounded-full mx-0 my-2 px-1 py-1 text-nowrap w-20 text-center"
 	return (
@@ -43,46 +44,61 @@ export default function Header() {
 						/>
 					</li>
 					<li>
-						<a class={navLinkClass}>占位符</a>
+						<a
+							href="/"
+							class={navLinkClass}>
+							占位符
+						</a>
 					</li>
 					<li>
-						<a class={navLinkClass}>占位符</a>
+						<a
+							href="/"
+							class={navLinkClass}>
+							占位符
+						</a>
 					</li>
-					<li>
-						<a class={navLinkClass}>占位符</a>
-					</li>
-					<li>
-						<a class={navLinkClass}>占位符</a>
-					</li>
+
 					<li class="mx-1 size-8">
 						<ThemeButton class="size-7 rounded-full" />
 					</li>
 					<li class="mx-1 size-8">
 						<Language />
 					</li>
-					<li class={style["avatarWrapper"]}>
-						<Show
-							when={appState.user()?.username ?? false}
-							fallback={
-								<button
-									class="h-9 place-content-center rounded-md bg-green-600 px-2.5 text-center text-white hover:bg-green-600/80 active:bg-green-700/90"
-									onClick={() => {
-										appState.devLogIn()
-									}}>
-									<span class="mx-auto">登录/注册</span>
-								</button>
-							}>
+
+					<Show
+						when={userController.isSignedIn()}
+						fallback={
+							<>
+								<li class="mx-1 min-w-fit">
+									<a
+										href={clientAuthHelper.getBuiltinUIUrl()}
+										target="_self">
+										<Button.Highlight class="shadow-4 mx-auto px-3 py-0.5">
+											Sign In
+										</Button.Highlight>
+									</a>
+								</li>
+								<li class="mx-1 min-w-fit">
+									<a
+										href={clientAuthHelper.getBuiltinUISignUpUrl()}
+										target="_self">
+										<Button.Highlight class="shadow-4 mx-auto px-3 py-0.5">
+											Sign Up
+										</Button.Highlight>
+									</a>
+								</li>
+							</>
+						}>
+						<li class={style["avatarWrapper"]}>
 							<div class="flex">
 								<div
 									class={style["avatar"]}
-									onClick={() => {
-										appState.logOut()
-									}}>
+									onClick={() => userController.signOut()}>
 									<p class="text-xs text-gray-100">头像</p>
 								</div>
 							</div>
-						</Show>
-					</li>
+						</li>
+					</Show>
 				</ul>
 			</nav>
 		</header>
@@ -130,7 +146,7 @@ function Language() {
 											<Button.Borderless
 												{...props()}
 												class={
-													`size-full px-2 py-1 text-start text-[14px] font-normal text-gray-900 outline-none hover:bg-gray-100 data-[highlighted]:bg-gray-200 data-[highlighted]:text-gray-1000`
+													`data-[highlighted]:text-gray-1000 size-full px-2 py-1 text-start text-[14px] font-normal text-gray-900 outline-none hover:bg-gray-100 data-[highlighted]:bg-gray-200`
 													// +
 													// `aria-disabled:shadow-1 aria-disabled:text-gray-1000 aria-disabled:bg-gray-200 aria-disabled:font-medium`
 												}>

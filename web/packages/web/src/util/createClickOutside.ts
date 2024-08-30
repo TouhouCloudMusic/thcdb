@@ -1,4 +1,4 @@
-import { Setter } from "solid-js"
+import type { Setter } from "solid-js"
 
 export function createClickOutsize<T extends () => HTMLElement | undefined>(
 	ref: Array<T>,

@@ -1,4 +1,5 @@
-import { Setter, SignalOptions, createSignal } from "solid-js"
+import type { Setter, SignalOptions } from "solid-js"
+import { createSignal } from "solid-js"
 
 export type Atom<T> = (...args: [] | Parameters<Setter<T>>) => T
 
@@ -16,10 +17,12 @@ export function createAtom<T>(
 		if (args.length === 0) {
 			return getter()
 		}
-		setter(args[0])
+		return setter(args[0])
 	}
 
 	return atom
 }
+
+export type Ref<T> = Atom<T>
 
 export { createAtom as createRef }

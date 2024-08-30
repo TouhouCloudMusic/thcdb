@@ -1,22 +1,31 @@
 module default {
-	type Release extending Util::HasCreateAndUpdateTime {
+	type Release extending util::WithCreateAndUpdateTime, auth::RegularEntity {
 		required title: str;
-		required type: Release::Type {
-			default := Release::Type.Album
+		index pg::spgist on (.title);
+
+		required type: release::Type {
+			default := release::Type.Album
 		};
+
+		required app_id: release::SeqID {
+			constraint exclusive;
+			default := std::sequence_next(introspect release::SeqID);
+		}
+
 		catalog_num: str {
 			constraint max_len_value(32);
 		};
+
 		credit_name: str;
 
 
 		release_date: datetime;
-		release_date_visibility: Util::Date::Visibility {
-			default := Util::Date::Visibility.Full;
+		release_date_visibility: date::Visibility {
+			default := date::Visibility.Full;
 		}
 
 		total_disc: int16;
-		multi language: Util::Language;
+		multi language: lang::Language;
 
 		required multi artist: Artist {
 			constraint exclusive;
@@ -26,8 +35,8 @@ module default {
 	}
 }
 
-module Release {
-	scalar type seq_id extending sequence;
+module release {
+	scalar type SeqID extending sequence;
 
 	scalar type `Type` extending enum<
 		Album,
@@ -52,7 +61,7 @@ module Release {
 		};
 	}
 
-	type TrackCredit extending Music::Credit {
+	type TrackCredit extending music::Credit {
 		track := (.<credit[is Tracklist]);
 	}
 }

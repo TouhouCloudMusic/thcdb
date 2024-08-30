@@ -1,21 +1,17 @@
 /// <reference types="vitest" />
 import { defineConfig } from "@solidjs/start/config"
+import devtools from "solid-devtools/vite"
 import viteConfigPaths from "vite-tsconfig-paths"
-
 export default defineConfig({
 	vite: {
-		plugins: [viteConfigPaths()],
+		plugins: [
+			viteConfigPaths(),
+			devtools({
+				autoname: true,
+			}),
+		],
 		resolve: {
 			conditions: ["development", "browser"],
-		},
-		build: {
-			rollupOptions: {
-				output: {
-					manualChunks: {
-						// "@touhouclouddb/database": ["@touhouclouddb/database"],
-					},
-				},
-			},
 		},
 		envPrefix: "PUB_",
 		test: {
