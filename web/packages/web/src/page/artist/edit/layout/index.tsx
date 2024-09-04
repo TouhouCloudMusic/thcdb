@@ -20,11 +20,12 @@ import { type ArtistFormSchema } from "../data/form/index.ts"
 import { Aliases } from "./sections/alias.tsx"
 import { ArtistType } from "./sections/artist_type.tsx"
 import { ID } from "./sections/id.tsx"
+import { LocalizedName } from "./sections/localized_name.tsx"
 import { MemberList } from "./sections/member.tsx"
 import { Name } from "./sections/name.tsx"
 
 export function ArtistFormLayout(props: {
-	dataQuery?: CreateQueryResult<Nullable<ArtistByID>>
+	dataQuery?: CreateQueryResult<ArtistByID | null>
 }) {
 	const dictQuery = Query.fetchDict(useI18N().locale)
 
@@ -67,6 +68,7 @@ function Main() {
 				class="flex w-2/3 flex-col gap-2">
 				<ID />
 				<Name />
+				<LocalizedName />
 				<ArtistType />
 				<Aliases />
 				<MemberList />

@@ -8,7 +8,7 @@ import {
 
 const twClass = `
 	text-gray-1000
-	bg-main
+	bg-primary
 	hover:bg-gray-200 active:bg-gray-300 disabled:!bg-gray-200
 	dark:hover:bg-gray-200 dark:active:bg-gray-300
 	`

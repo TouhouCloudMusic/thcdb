@@ -47,7 +47,7 @@ export function Aliases() {
 								<For each={fieldArray.items}>
 									{(_, index) => (
 										<li>
-											<Alias index={index} />
+											<Alias index={index()} />
 										</li>
 									)}
 								</For>
@@ -69,11 +69,11 @@ function Alias(props: IndexComponentProps) {
 	return (
 		<div class="flex w-full gap-2 rounded-md border bg-white p-1.5">
 			<Field
-				name={`alias.${props.index()}.name`}
+				name={`alias.${props.index}.name`}
 				type="string">
 				{(field, fieldProps) => (
 					<Show
-						when={getValue(formStore, `alias.${props.index()}.is_str`, {
+						when={getValue(formStore, `alias.${props.index}.is_str`, {
 							shouldActive: false,
 						})}
 						fallback={<div class="flex flex-1">{field.value}</div>}>
@@ -92,7 +92,7 @@ function Alias(props: IndexComponentProps) {
 					type: "button",
 					class:
 						"flex min-h-6 min-w-6 h-6 w-6 flex-initial text-sm self-center",
-					onClick: () => alias.remove(props.index()),
+					onClick: () => alias.remove(props.index),
 				}}
 				iconProps={{
 					class: "bold size-4 place-self-center stroke-white",

@@ -5,7 +5,7 @@
 
 html {
 	color: hsl(var(--gray-1000));
-	background-color: hsl(var(--bg-main));
+	background-color: hsl(var(--bg-primary));
 	white-space: break-spaces;
 	font-family:
 		"Geist",
@@ -38,7 +38,7 @@ html {
 	main {
 		/* min-width: 64rem; */
 		@apply px-4 py-1;
-		background-color: hsl(var(--bg-main));
+		background-color: hsl(var(--bg-primary));
 		width: 64rem;
 		max-width: 96vw;
 	}

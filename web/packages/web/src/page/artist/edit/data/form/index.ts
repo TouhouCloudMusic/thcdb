@@ -1,5 +1,6 @@
 import * as v from "valibot"
 import { OptionalIDSchema } from "~/lib/form/schema/id"
+import { LocalizedLanguageSchema } from "~/lib/form/schema/language.ts"
 
 export const ArtistNameSchema = v.pipe(
 	v.string(),
@@ -8,7 +9,15 @@ export const ArtistNameSchema = v.pipe(
 	v.maxLength(128, "Artist name is too long")
 )
 
-export type ArtistTypeSchema = v.InferInput<typeof ArtistTypeSchema>
+export const LocalizedNameSchema = v.nullish(
+	v.array(
+		v.object({
+			language: LocalizedLanguageSchema,
+			name: ArtistNameSchema,
+		})
+	)
+)
+
 export const ArtistTypeSchema = v.picklist(
 	["Person", "Group"],
 	"Invalid artist type"
@@ -30,7 +39,6 @@ export const AliasSchema = v.object({
 	is_str: v.optional(v.boolean()),
 })
 
-export type AliasListSchema = v.InferInput<typeof AliasListSchema>
 export const AliasListSchema = v.optional(v.array(AliasSchema))
 
 export type MemberSchema = v.InferInput<typeof MemberSchema>
@@ -51,8 +59,9 @@ export const MemberListSchema = v.optional(v.array(MemberSchema))
 export type ArtistFormSchema = v.InferInput<typeof ArtistFormSchema>
 export const ArtistFormSchema = v.object({
 	id: OptionalIDSchema,
-	alias: AliasListSchema,
 	name: ArtistNameSchema,
+	localized_name: LocalizedNameSchema,
+	alias: AliasListSchema,
 	artist_type: ArtistTypeSchema,
 	member: MemberListSchema,
 })

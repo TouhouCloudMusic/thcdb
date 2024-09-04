@@ -1,5 +1,6 @@
 import { type RouteDefinition } from "@solidjs/router"
 import { useQueryClient } from "@tanstack/solid-query"
+import { SiteTitle } from "~/component/site_title"
 import { preloadLocale } from "~/lib/data/preload"
 import { Query } from "~/page/artist/edit/data"
 import { ArtistFormLayout } from "~/page/artist/edit/layout"
@@ -12,5 +13,10 @@ export const route = {
 } satisfies RouteDefinition
 
 export default function AddArtistPage() {
-	return <ArtistFormLayout />
+	return (
+		<>
+			<SiteTitle>New Artist</SiteTitle>
+			<ArtistFormLayout />
+		</>
+	)
 }

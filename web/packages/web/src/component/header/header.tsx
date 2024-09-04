@@ -134,7 +134,7 @@ function Language() {
 				/>
 				<Menu.Positioner>
 					<Menu.Content class="focus-visible:outline-none">
-						<div class="shadow-2 bg-main flex size-fit flex-col gap-1 rounded border-gray-300 p-1 transition-all">
+						<div class="shadow-2 bg-primary flex size-fit flex-col gap-1 rounded border-gray-300 p-1 transition-all">
 							{/* TODO: UX */}
 							<Index each={Object.entries(locales) as [AppLocale, string][]}>
 								{(locale) => (

@@ -1,18 +1,12 @@
 import { createForm, getValues, reset, valiForm } from "@modular-forms/solid"
 import { type CreateQueryResult } from "@tanstack/solid-query"
-import * as Option from "fp-ts/Option"
-import { pipe } from "fp-ts/function"
 import * as R from "ramda"
-import { createEffect, createMemo, createSignal } from "solid-js"
+import { createEffect, createMemo, createSignal, on } from "solid-js"
 import { createStore } from "solid-js/store"
 import { toChainedTranslator } from "~/lib/i18n/to_chained_translator.ts"
 import { type Nullable } from "~/lib/type/nullable"
 import { type ArtistByID, type ArtistByKeywordArray } from "../db"
-import {
-	ArtistFormSchema,
-	initFormStoreMemberList,
-	type MemberListSchema,
-} from "../form"
+import { ArtistFormSchema, initFormStore, type MemberListSchema } from "../form"
 import { type Dict } from "../i18n"
 import { AliasController } from "./alias"
 import { ArtistTypeController } from "./artist_type"
@@ -43,36 +37,27 @@ export function createController(
 		}
 	)
 
-	createEffect(() => {
-		if (dataQuery?.isSuccess && dataQuery.data) {
-			const newValue: ArtistFormSchema = {
-				id: dataQuery.data.id,
-				name: dataQuery.data.name,
-				artist_type: dataQuery.data.artist_type,
-				// TODO: Alias
-				// alias: undefined,
+	createEffect(
+		on(
+			() => dataQuery?.data,
+			() => {
+				if (dataQuery?.isSuccess && dataQuery.data) {
+					const newValue = initFormStore(dataQuery.data)
+
+					setInitFormValue(newValue)
+					// https://github.com/fabian-hiller/modular-forms/issues/87
+					reset(formStore, {
+						initialValues: newValue,
+					})
+					setTimeout(() => {
+						reset(formStore, {
+							initialValues: newValue,
+						})
+					})
+				}
 			}
-
-			pipe(
-				dataQuery.data,
-				initFormStoreMemberList,
-				Option.map((m) => {
-					newValue.member = m
-				})
-			)
-
-			setInitFormValue(newValue)
-			// https://github.com/fabian-hiller/modular-forms/issues/87
-			reset(formStore, {
-				initialValues: newValue,
-			})
-			setTimeout(() => {
-				reset(formStore, {
-					initialValues: newValue,
-				})
-			})
-		}
-	})
+		)
+	)
 
 	const [formErrorMsg, setFormErrorMsg] = createSignal<string>()
 

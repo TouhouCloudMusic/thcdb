@@ -90,8 +90,8 @@
 		--pink-900: 336 65% 45%;
 		--pink-1000: 334 74% 15%;
 
-		--bg-highlight: 0 0% 100%;
-		--bg-main: 0 0% 98%;
+		--bg-primary: 0 0% 100%;
+		--bg-secondary: 0 0% 98%;
 	}
 	html[data-mode="dark"] {
 		--gray-100: 0 0% 10%;
@@ -182,7 +182,7 @@
 		--pink-900: 341 90% 67%;
 		--pink-1000: 333 90% 96%;
 
-		--bg-highlight: 0 0% 8%;
-		--bg-main: 0 0% 5%;
+		--bg-primary: 0 0% 8%;
+		--bg-secondary: 0 0% 5%;
 	}
 }

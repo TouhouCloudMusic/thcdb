@@ -14,8 +14,8 @@ export default {
 			transparent: "transparent",
 			black: "hsl(0 0 0 / <alpha-value>)",
 			white: "hsl(0 0 100 / <alpha-value>)",
-			main: "hsl(var(--bg-main) / <alpha-value>)",
-			highlight: "hsl(var(--bg-highlight) / <alpha-value>)",
+			primary: "hsl(var(--bg-primary) / <alpha-value>)",
+			secondary: "hsl(var(--bg-secondary) / <alpha-value>)",
 			gray: {
 				100: "hsl(var(--gray-100) / <alpha-value>)",
 				200: "hsl(var(--gray-200) / <alpha-value>)",

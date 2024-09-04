@@ -30,6 +30,7 @@ const artistFields = [
 	"date_of_start",
 	"name",
 	"str_alias",
+	"localized_name",
 ] as const
 
 const aliasFields = ["id", "app_id", "name"] as const

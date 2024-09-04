@@ -10,7 +10,7 @@ interface HighlightButtonAttributes extends ButtonAttributes {}
 
 const twClass = `
   shadow-[var(--shadow-2)]
-	text-main
+	text-primary
 	bg-gray-1000 hover:bg-gray-1000/85 active:bg-gray-1000/80
 	dark:hover:bg-gray-1000/90 dark:active:bg-gray-1000/80
 	`
