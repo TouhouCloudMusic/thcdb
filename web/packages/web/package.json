@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@ark-ui/solid": "^3.10.0",
-    "@ark/attest": "^0.16.0",
+    "@ark/attest": "^0.17.0",
     "@auth/core": "^0.34.2",
     "@edgedb/auth-core": "^0.2.1",
     "@floating-ui/dom": "^1.6.10",
