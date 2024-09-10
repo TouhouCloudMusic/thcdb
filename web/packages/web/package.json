@@ -25,7 +25,7 @@
     "@tanstack/solid-query": "^5.53.3",
     "@tanstack/solid-query-devtools": "^5.54.0",
     "@touhouclouddb/database": "workspace:*",
-    "arktype": "2.0.0-rc.5",
+    "arktype": "2.0.0-rc.6",
     "dayjs": "^1.11.13",
     "edgedb": "^1.5.11",
     "edgedb-auth-solid-start": "git+https://github.com/Huliiiiii/edgedb-auth-solid-start.git",
