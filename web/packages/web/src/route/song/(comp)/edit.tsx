@@ -2,8 +2,8 @@ import { autoUpdate } from "@floating-ui/dom"
 import { useFloating } from "solid-floating-ui"
 import { createEffect, on, onCleanup } from "solid-js"
 import { createAtom } from "~/util/createAtom"
-import { ShowPortal } from "~/util/ShowPortal"
 import { createClickOutsize } from "~/util/createClickOutside"
+import { ShowPortal } from "~/util/ShowPortal"
 const itemClass = "px-2 py-1"
 export function EditComp() {
 	const open = createAtom(false)
@@ -24,14 +24,14 @@ export function EditComp() {
 	// onCleanup(() => document.removeEventListener("click", clickOutside));
 	return (
 		<>
-			<div
+			<button
 				class="text-sm text-gray-600 hover:text-gray-600/70"
 				ref={anchor}
 				onClick={() => {
-					open(!open())
+					open((x) => !x)
 				}}>
 				Edit
-			</div>
+			</button>
 			<ShowPortal when={open()}>
 				<ul
 					class="flex flex-col divide-y-[0.125rem] rounded-[0.125rem] border-[0.1rem] border-gray-200 bg-white"
@@ -43,10 +43,14 @@ export function EditComp() {
 						transform: `translate3d(${position.x ?? 0}px,${position.y ?? 0}px,0`,
 					}}>
 					<li class={itemClass}>
-						<a class="text-nowrap">Edit This Page</a>
+						<a
+							href="song/edit/[id]"
+							class="text-nowrap">
+							Edit This Page
+						</a>
 					</li>
 					<li class={itemClass}>
-						<a>History</a>
+						<a href="/song/[id]/history">History</a>
 					</li>
 				</ul>
 			</ShowPortal>

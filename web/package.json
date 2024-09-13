@@ -4,13 +4,19 @@
     "packages/*"
   ],
   "scripts": {
-    "format": "prettier --write .",
-    "commit": "bun run format && bun run lint && git cz"
+    "format": "bunx prettier --write doc *.json *.md",
+    "check": "bunx prettier -c doc *.json *.md",
+    "prepare": "husky",
+    "pre-push": "bun run check"
   },
   "type": "module",
   "trustedDependencies": [
     "esbuild",
     "msw",
     "protobufjs"
-  ]
+  ],
+  "devDependencies": {
+    "husky": "^9.1.6",
+    "prettier": "^3.3.3"
+  }
 }

@@ -116,8 +116,8 @@ function Links() {
 			</div>
 
 			<a
-				class={`link ${linkClass}`}
-				href="/114514">
+				href="/todo"
+				class={`link ${linkClass}`}>
 				Normal
 			</a>
 			<A

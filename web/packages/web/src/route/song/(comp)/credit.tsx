@@ -10,13 +10,13 @@ export function CreditComp() {
 				<Index each={credits()}>
 					{(artist) => (
 						<li>
-							<a href="">{artist().name}</a>
+							<a href="/artist/[id]">{artist().name}</a>
 							<ul class={roleListClass}>
 								<Index each={artist().role}>
 									{(role, index) => (
 										<li>
 											<a
-												href=""
+												href={"/role/" + role()}
 												class="text-gray-600">
 												{role()}
 											</a>

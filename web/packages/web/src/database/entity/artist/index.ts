@@ -37,6 +37,7 @@ export function findArtistBySeqID<
 
 export function findArtistByKeyword<
 	T extends artist.ArtistType,
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	S extends FindArtistShape = DefaultArtistShape,
 >(
 	keyword: string,

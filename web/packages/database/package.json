@@ -19,7 +19,10 @@
     "generate": "npx @edgedb/generate interfaces --file interfaces.ts && npx @edgedb/generate edgeql-js --target esm --output-dir ./edgeql-js",
     "migration": "edgedb migration create",
     "migrate": "edgedb migrate",
-    "all": "bun run migration && bun run migrate && bun run generate"
+    "all": "bun run migration && bun run migrate && bun run generate",
+    "format": "prettier --write .",
+    "check": "prettier --check .",
+    "pre-push": "bun run check"
   },
   "type": "module"
 }

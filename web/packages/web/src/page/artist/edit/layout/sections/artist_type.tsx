@@ -3,7 +3,7 @@ import { useController } from "../../context.tsx"
 import * as Style from "../style.ts"
 
 export function ArtistType() {
-	const { initData, artistType, t, Field } = useController()
+	const { t, Field } = useController()
 	return (
 		<div class="flex flex-col">
 			<h4 class={Style.label}>{t.artist_type()}</h4>

@@ -12,12 +12,6 @@ import { ArtistProfilePageController } from "~/page/artist/profile/controller"
 import { getArtistProfileDataCache } from "~/page/artist/profile/data"
 
 export const route = {
-	preload: ({ params }) => {
-		// if (isServer) {
-		// 	const id = params["id"]
-		// 	void getArtistProfileDataCache(id)
-		// }
-	},
 	matchFilters: {
 		id: /^\d+$/,
 	},

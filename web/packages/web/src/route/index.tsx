@@ -32,8 +32,7 @@ export default function HomePage() {
 					<li>
 						<a
 							href="/artist/edit/1"
-							class="link"
-							accessKey="">
+							class="link">
 							edit artist 1
 						</a>
 					</li>

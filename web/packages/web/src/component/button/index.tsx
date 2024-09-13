@@ -1,4 +1,4 @@
-import { createMemo, mergeProps, type JSX } from "solid-js"
+import { mergeProps, type JSX } from "solid-js"
 import { twMerge } from "tailwind-merge"
 import { type ValidColor } from "~/component/index.ts"
 
@@ -31,6 +31,7 @@ function propPreprocessor(
 	// @tw
 	const base = `rounded transition-all font-medium`
 
+	// eslint-disable-next-line solid/reactivity
 	return mergeProps({ type: "button" as const }, props, {
 		get class() {
 			return twMerge(

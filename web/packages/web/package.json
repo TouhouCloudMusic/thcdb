@@ -31,6 +31,7 @@
     "edgedb-auth-solid-start": "git+https://github.com/Huliiiiii/edgedb-auth-solid-start.git",
     "fp-ts": "^2.16.9",
     "js-cookie": "^3.0.5",
+    "oxlint": "^0.9.5",
     "radash": "^12.1.0",
     "ramda": "^0.30.1",
     "solid-floating-ui": "^0.3.1",
@@ -41,6 +42,7 @@
     "tailwind-merge": "^2.5.2",
     "ts-pattern": "^5.3.1",
     "valibot": "0.38.0",
+    "daisyui": "^4.12.10",
     "vinxi": "^0.4.2"
   },
   "devDependencies": {
@@ -59,8 +61,6 @@
     "@vitest/browser": "^2.1.0",
     "autoprefixer": "^10.4.20",
     "babel-preset-solid": "^1.8.22",
-    "commitizen": "^4.3.0",
-    "daisyui": "^4.12.10",
     "eslint": "^9.10.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jsx-a11y": "^6.10.0",
@@ -71,7 +71,6 @@
     "lightningcss": "^1.27.0",
     "playwright": "^1.47.0",
     "postcss": "^8.4.45",
-    "prettier": "3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.6",
     "solid-devtools": "^0.30.1",
     "tailwindcss": "^3.4.11",
@@ -92,14 +91,15 @@
     "start": "vinxi start",
     "version": "vinxi version",
     "format": "prettier --write ./src",
+    "check": "prettier --check ./src",
     "lint::es": "eslint --cache",
-    "lint::oxc": "bunx oxlint@latest -c .oxlintrc.json --import-plugin --disable-react-plugin --jsx-a11y-plugin --promise-plugin",
+    "lint::oxc": "bunx oxlint -c oxlintrc.json --import-plugin --disable-react-plugin --jsx-a11y-plugin --promise-plugin",
     "lint": "bun run lint::oxc && bun run lint::es",
     "fix": "bun run lint::oxc --fix && bun run lint::es --fix",
     "test::vite": "bun vitest run",
     "test::bun": "bun test ./**/*.buntest.ts",
-    "test": "bun run test::dom && bun run test::bun"
+    "test": "bun run test::dom && bun run test::bun",
+    "pre-push": "bun run check && bun run lint"
   },
-  "type": "module",
-  "module": "index.ts"
+  "type": "module"
 }

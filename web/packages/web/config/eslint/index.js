@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import JsxA11y from "eslint-plugin-jsx-a11y"
 import Solid from "eslint-plugin-solid"
 
 /**
- * @type {import("eslint").Linter.FlatConfig["rules"]}
+ * @type {import("eslint").Linter.RulesRecord}
  */
 export const tsRules = {
 	"@typescript-eslint/array-type": "off",
@@ -18,9 +17,12 @@ export const tsRules = {
 	],
 	"@typescript-eslint/no-confusing-void-expression": "off",
 	"@typescript-eslint/no-empty-interface": "off",
-	"@typescript-eslint/no-empty-object-type": {
-		allowInterfaces: "with-single-extends",
-	},
+	"@typescript-eslint/no-empty-object-type": [
+		"warn",
+		{
+			allowInterfaces: "with-single-extends",
+		},
+	],
 	"@typescript-eslint/no-misused-promises": [
 		"error",
 		{
@@ -54,7 +56,7 @@ export const tsRules = {
 }
 
 /**
- * @type {import("eslint").Linter.FlatConfig}
+ * @type {import("eslint").Linter.Config}
  */
 export const tsConfig = {
 	files: ["config/**/*.ts", "src/**/*.ts", "test/**/*.ts"],
@@ -62,7 +64,7 @@ export const tsConfig = {
 }
 
 /**
- * @type {import("eslint").Linter.FlatConfig}
+ * @type {import("eslint").Linter.Config[]}
  */
 export const tsxConfigArray = [
 	// solid
@@ -70,6 +72,7 @@ export const tsxConfigArray = [
 		files: ["src/**/*.tsx"],
 		...Solid.configs["flat/typescript"],
 		rules: {
+			...Solid.configs["flat/typescript"].rules,
 			"solid/self-closing-comp": [
 				"warn",
 				{
@@ -78,21 +81,13 @@ export const tsxConfigArray = [
 				},
 			],
 			"solid/prefer-for": "off",
-			"solid/components-return-once": ["error"],
 		},
 	},
 	// a11y
 	{
 		files: ["src/**/*.tsx"],
-		...JsxA11y.flatConfigs.recommended,
-		rules: {
-			/**
-			 * 暂不支持solid jsx
-			 * https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/issues/894
-			 * https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/pull/977
-			 * */
-			"jsx-a11y/label-has-associated-control": "off",
-		},
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		...JsxA11y.flatConfigs.strict,
 	},
 	// typescript
 	{

@@ -1,11 +1,11 @@
 import { createSignal } from "solid-js"
 import {
-	ButtonSize,
+	type ButtonSize,
 	PrimaryButton,
 	SecondaryButton,
 	TertiaryButton,
 } from "~/component/button/index.tsx"
-import { ValidColor } from "~/component/index.ts"
+import { type ValidColor } from "~/component/index.ts"
 
 export default function () {
 	return (

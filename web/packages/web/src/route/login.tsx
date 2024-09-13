@@ -32,14 +32,14 @@ export default function Login() {
 						<p>
 							没有账号？转到
 							<a
-								href=""
+								href="/register"
 								class={linkClass}>
 								注册
 							</a>
 						</p>
 
 						<a
-							href=""
+							href="/forgetpassword"
 							class={linkClass}>
 							忘记密码
 						</a>
@@ -81,7 +81,7 @@ export default function Login() {
 						<p>
 							已有账号？转到
 							<a
-								href=""
+								href="/login"
 								class={linkClass}>
 								登录
 							</a>

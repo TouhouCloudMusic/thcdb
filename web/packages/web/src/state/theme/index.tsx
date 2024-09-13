@@ -70,20 +70,6 @@ function mapThemeCookieToID(str: string) {
 		.otherwise(() => AppTheme.light)
 }
 
-function mapThemeIDToStr(theme: string) {
-	const id = pipe(
-		Either.tryCatch(() => parseInt(theme), Either.toError),
-		Either.match(
-			() => AppTheme.light,
-			(x) => x
-		)
-	)
-	return match(id)
-		.with(AppTheme.light, () => "light")
-		.with(AppTheme.dark, () => "dark")
-		.otherwise(() => "light")
-}
-
 export function updateTheme(theme: AppTheme) {
 	switch (theme) {
 		case AppTheme.dark:

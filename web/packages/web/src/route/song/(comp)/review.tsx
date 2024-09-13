@@ -28,7 +28,11 @@ export function ReviewComp() {
 											</div>
 										</div>
 										<p>
-											<a class="mx-2">{review.author}</a>
+											<a
+												href="user/[id]"
+												class="mx-2">
+												{review.author}
+											</a>
 										</p>
 										<p class="mx-2">
 											<time

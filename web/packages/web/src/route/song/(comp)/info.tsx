@@ -1,10 +1,10 @@
 import { autoUpdate, offset, shift } from "@floating-ui/dom"
 import { useFloating } from "solid-floating-ui"
 import { Index, Show, createSignal } from "solid-js"
-import { VoteGenreTab } from "./vote_genre_tab"
-import { useSongData } from "../controller"
 import { ShowPortal } from "~/util/ShowPortal"
+import { useSongData } from "../controller"
 import style from "../song_page.module.css"
+import { VoteGenreTab } from "./vote_genre_tab"
 export function SongInfo() {
 	const { artist, duration, originalSong, ratings, rank, genres } =
 		useSongData()
@@ -36,7 +36,7 @@ export function SongInfo() {
 			<div class={style["infoRow"]}>
 				<p class="">Artist</p>
 				<p>
-					<a href="">{artist()}</a>
+					<a href="artist/[id]">{artist()}</a>
 				</p>
 			</div>
 			<div class={style["infoRow"]}>
@@ -52,7 +52,7 @@ export function SongInfo() {
 							{(song, index) => (
 								<li>
 									<p>
-										<a href="">{song()}</a>
+										<a href="song/[id]">{song()}</a>
 										{index !== originalSong().length - 1 ? ", " : ""}
 									</p>
 								</li>
@@ -70,8 +70,8 @@ export function SongInfo() {
 			<div class={style["infoRow"]}>
 				<p>Ranked</p>
 				<p>
-					#{rank.thisYear()} for <a href="">2024</a>, #{rank.overAll()}{" "}
-					<a href="">overall</a>
+					#{rank.thisYear()} for <a href="rank?time=2024">2024</a>, #
+					{rank.overAll()} <a href="rank?time=all">overall</a>
 				</p>
 			</div>
 			<div class={style["infoRow"]}>
@@ -83,7 +83,7 @@ export function SongInfo() {
 						<Index each={genres()}>
 							{(genre, index) => (
 								<li class="">
-									<a href="">{genre()}</a>
+									<a href="genre/[id]">{genre()}</a>
 									{index !== genres().length - 1 ? ", " : ""}
 								</li>
 							)}
@@ -102,11 +102,11 @@ export function SongInfo() {
 				<p>Descriptors</p>
 				<ul class="flex">
 					<li class="">
-						<a href="">Descriptor A</a>
+						<a href="descriptor/[id]">Descriptor A</a>
 						{", "}
 					</li>
 					<li>
-						<a href="">Descriptor B</a>
+						<a href="descriptor/[id]">Descriptor B</a>
 					</li>
 				</ul>
 				<p>

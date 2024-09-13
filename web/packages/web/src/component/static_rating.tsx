@@ -9,7 +9,7 @@ export function RatingStatic(props: { rating: number }) {
 	// 	"mask mask-star-2 mask-half-2 bg-marisa-400";
 	return (
 		<div class="flex">
-			<Index each={new Array(5)}>
+			<Index each={Array.from({ length: 5 })}>
 				{(_item, index) => (
 					<Switch
 						fallback={

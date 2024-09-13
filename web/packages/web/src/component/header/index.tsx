@@ -1,4 +1,3 @@
-import { repeat } from "ramda"
 import { createSignal, Match, Switch } from "solid-js"
 import { HamburgerMenuIcon } from "solid-radix-icons"
 import { TertiaryButton } from "~/component/button/index.tsx"
@@ -8,8 +7,6 @@ import {
 	BellSlashIcon,
 } from "../icons/heroicons/24/outline.tsx"
 import { ThemeButton } from "../theme_button.tsx"
-
-const placeholders = repeat(["placeholder"], 5)
 
 // @tw
 const badgeClass =

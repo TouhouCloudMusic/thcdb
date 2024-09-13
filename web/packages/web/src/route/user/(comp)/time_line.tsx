@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Index, Match, Switch } from "solid-js"
 import { useUserController } from "../controller"
 import type { ReviewAction } from "../user"

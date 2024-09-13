@@ -62,6 +62,7 @@ function Main() {
 	return (
 		<main class="flex w-full place-content-center">
 			<Form
+				aria-label="Artist form"
 				onSubmit={handleSubmit}
 				method="post"
 				class="flex w-2/3 flex-col gap-2">

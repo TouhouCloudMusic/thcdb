@@ -1,4 +1,4 @@
-import { getError, getValue, setValue, toCustom } from "@modular-forms/solid"
+import { getError, getValue, toCustom } from "@modular-forms/solid"
 import { For, Index, Match, Show, Switch, createMemo } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
@@ -117,15 +117,12 @@ function MemberField(props: IndexComponentProps) {
 					<Errors index={props.index} />
 				</div>
 				<DeleteButton
-					buttonProps={{
-						type: "button",
-						class:
-							"flex min-h-6 min-w-6 flex-initial place-content-center text-sm",
-						onClick: () => member.remove(props.index),
-					}}
-					iconProps={{
-						class: "bold size-4 place-self-center stroke-white",
-					}}
+					type="button"
+					class={[
+						"flex min-h-6 min-w-6 flex-initial place-content-center text-sm",
+						"[&_svg]:size-4 [&_svg]:place-self-center [&_svg]:stroke-white [&_svg]:font-bold",
+					].join(" ")}
+					onClick={() => member.remove(props.index)}
 				/>
 			</div>
 			<MemberID index={props.index} />

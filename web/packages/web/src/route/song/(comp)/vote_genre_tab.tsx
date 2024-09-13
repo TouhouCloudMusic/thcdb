@@ -12,8 +12,8 @@ export function VoteGenreTab(props: {
 	const [inputEl, inputElRef] = createSignal<HTMLInputElement>()
 	const resultDropdown = createAtom<HTMLElement>()
 	const [dropdownShow, setDropdownShow] = createSignal(false)
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const [genreResult, setGenreResult] = createSignal([
+
+	const [genreResult] = createSignal([
 		"Test Genre 0",
 		"Test Genre 1",
 		"Test Genre 2",
@@ -65,7 +65,7 @@ export function VoteGenreTab(props: {
 								{(item) => (
 									<li class="my-auto grid w-max grid-flow-row grid-cols-6 items-center justify-between bg-white px-2 py-1">
 										<a
-											href=""
+											href="genre/[id]"
 											class="col-span-3">
 											{item()}
 										</a>
@@ -111,10 +111,10 @@ export function VoteGenreTab(props: {
 											<p class="w-[1.5rem]">{item()}</p>
 											{` : `}
 											<ul class="flex">
-												<Index each={new Array(5)}>
-													{(item, index) => (
+												<Index each={Array.from({ length: 5 })}>
+													{(_, index) => (
 														<li>
-															<a>{`User ${index}`}</a>
+															<a href="user/[id]">{`User ${index}`}</a>
 															{index !== 4 ? ", " : ""}
 														</li>
 													)}

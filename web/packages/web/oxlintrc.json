@@ -1,0 +1,8 @@
+{
+	"rules": {
+		"react/jsx-key": "off",
+		"jsx_a11y/anchor-is-valid": "off",
+		"jsx_a11y/label-has-associated-control": "off",
+		"unicorn/no-empty-file": "off"
+	}
+}

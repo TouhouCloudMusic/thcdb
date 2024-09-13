@@ -21,6 +21,6 @@ overrides:
       - "*.jsx"
       - "*.tsx"
     options:
-        htmlWhitespaceSensitivity: ignore
+      htmlWhitespaceSensitivity: ignore
 plugins:
   - prettier-plugin-tailwindcss

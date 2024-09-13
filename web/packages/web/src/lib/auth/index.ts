@@ -7,8 +7,8 @@ import { getSession, type SolidAuthConfig } from "@solid-mediakit/auth"
 export const authOption: SolidAuthConfig = {
 	providers: [
 		Github({
-			clientId: process.env["AUTH_GITHUB_ID"],
-			clientSecret: process.env["AUTH_GITHUB_SECRET"],
+			clientId: process.env.AUTH_GITHUB_ID,
+			clientSecret: process.env.AUTH_GITHUB_SECRET,
 		}),
 	],
 	debug: true,
