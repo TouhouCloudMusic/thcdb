@@ -7,5 +7,10 @@
     "format": "prettier --write .",
     "commit": "bun run format && bun run lint && git cz"
   },
-  "type": "module"
+  "type": "module",
+  "trustedDependencies": [
+    "esbuild",
+    "msw",
+    "protobufjs"
+  ]
 }
