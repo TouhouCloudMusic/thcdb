@@ -23,7 +23,7 @@ export function Name() {
 						type="text"
 						class={`h-7 w-2/3 rounded border border-gray-400 px-2 outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-600`}
 						classList={{
-							"invalid:focus:ring-red-800 invalid:focus:border-red-800":
+							"invalid:focus:ring-reimu-800 invalid:focus:border-reimu-800":
 								field.error.length > 0,
 						}}
 						placeholder={t.enter_artist_name()}

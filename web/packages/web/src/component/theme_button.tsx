@@ -1,25 +1,36 @@
-import { SunIcon, MoonIcon } from "solid-radix-icons"
-import { Switch, Match } from "solid-js"
+import { type ComponentProps, createMemo, Match, Switch } from "solid-js"
+import { MoonIcon, SunIcon } from "solid-radix-icons"
+import { twMerge } from "tailwind-merge"
 import { AppTheme, useTheme } from "~/state/theme"
-import { Button } from "./button"
+import { TertiaryButton } from "./button/index.tsx"
 
-export function ThemeButton(props: { class?: string }) {
+// @tw
+const defaultStyle = `flex place-content-center items-center`
+
+export function ThemeButton(
+	props: Omit<ComponentProps<"button">, "onClick" | "children" | "color">
+) {
 	const theme = useTheme()
+
+	const twClass = createMemo(() => twMerge(defaultStyle, props.class))
+
 	return (
 		<Switch>
 			<Match when={theme.value() === AppTheme.light}>
-				<Button.Borderless
-					class={`flex place-content-center items-center ${props.class}`}
+				<TertiaryButton
+					{...props}
+					class={twClass()}
 					onClick={() => theme.set(AppTheme.dark)}>
 					<SunIcon />
-				</Button.Borderless>
+				</TertiaryButton>
 			</Match>
 			<Match when={theme.value() === AppTheme.dark}>
-				<Button.Highlight
-					class={`flex place-content-center items-center ${props.class}`}
+				<TertiaryButton
+					{...props}
+					class={twClass()}
 					onClick={() => theme.set(AppTheme.light)}>
 					<MoonIcon />
-				</Button.Highlight>
+				</TertiaryButton>
 			</Match>
 		</Switch>
 	)

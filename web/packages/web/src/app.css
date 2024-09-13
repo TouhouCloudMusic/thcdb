@@ -5,7 +5,7 @@
 
 html {
 	color: hsl(var(--gray-1000));
-	background-color: hsl(var(--bg-primary));
+	background-color: hsl(var(--primary));
 	white-space: break-spaces;
 	font-family:
 		"Geist",
@@ -23,47 +23,27 @@ html {
 		sans-serif;
 }
 
-.notransition *  {
+html[data-mode="dark"] {
+	color: white;
+}
+
+body {
+	height: 100%;
+}
+
+#app {
+	height: 100%;
+}
+
+select {
+	background-color: hsl(var(--secondary));
+}
+
+.notransition * {
 	transition: none !important;
 }
 
-#app_wrapper {
-	width: 100%;
-	display: flex;
-	align-items: center;
-	flex-direction: column;
-}
-
-@layer base {
-	main {
-		/* min-width: 64rem; */
-		@apply px-4 py-1;
-		background-color: hsl(var(--bg-primary));
-		width: 64rem;
-		max-width: 96vw;
-	}
-
-	h1 {
-		@apply text-3xl;
-	}
-
-	h2 {
-		@apply text-2xl;
-	}
-
-	h3 {
-		@apply text-xl;
-	}
-
-	:focus-visible {
-		/* outline-color: hsl(var(--gray-1000)); */
-		outline-style: auto;
-		outline-width: 1px;
-	}
-}
-
-@layer utilities {
-	/* .border-sm {
-		border-width: 1.5px;
-	} */
+:focus-visible {
+	outline-style: auto;
+	outline-width: 1px;
 }

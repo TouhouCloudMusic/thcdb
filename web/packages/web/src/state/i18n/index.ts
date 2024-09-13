@@ -53,9 +53,3 @@ export const I18NContext = createContext<I18NController>()
 export function useI18N() {
 	return useContextUnsave(I18NContext)
 }
-
-export const I18NTranstionStyle = {
-	transition: "color .3s",
-	"transition-delay": ".1s",
-	"transition-timing-function": "ease-in",
-}

@@ -82,7 +82,7 @@ function LoacalizedNameField(props: IndexComponentProps) {
 							{...props}
 						/>
 						<Show when={field.error}>
-							<span class="text-sm text-red-700">{field.error}</span>
+							<span class="text-reimu-700 text-sm">{field.error}</span>
 						</Show>
 					</VStack>
 				)}
@@ -114,7 +114,7 @@ function LoacalizedNameField(props: IndexComponentProps) {
 								<Combobox.Item
 									item={props.item}
 									class="inline-flex place-content-between rounded px-1 py-0.5 data-[highlighted]:bg-gray-100">
-									<Combobox.ItemLabel class="px-1 text-gray-900 data-[selected]:font-medium data-[selected]:text-red-800">
+									<Combobox.ItemLabel class="data-[selected]:text-reimu-800 px-1 text-gray-900 data-[selected]:font-medium">
 										{props.item.rawValue}
 									</Combobox.ItemLabel>
 								</Combobox.Item>
@@ -142,7 +142,7 @@ function LoacalizedNameField(props: IndexComponentProps) {
 								</Combobox.Content>
 							</Combobox.Portal>
 							<Combobox.ErrorMessage>
-								<span class="text-sm text-red-700">{field.error}</span>
+								<span class="text-reimu-700 text-sm">{field.error}</span>
 							</Combobox.ErrorMessage>
 						</Combobox>
 					)

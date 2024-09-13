@@ -3,9 +3,8 @@ import { useAction, useNavigate } from "@solidjs/router"
 import { useQueryClient, type CreateQueryResult } from "@tanstack/solid-query"
 import { Show } from "solid-js"
 
-import { Button } from "~/component/button"
+import { PrimaryButton, TertiaryButton } from "~/component/button"
 import { FormUI } from "~/component/form/ui"
-import { type Nullable } from "~/lib/type/nullable"
 import { useI18N } from "~/state/i18n"
 
 import { ControllerContext, useController } from "../context.tsx"
@@ -73,11 +72,11 @@ function Main() {
 				<Aliases />
 				<MemberList />
 				<div class="flex w-full flex-row place-content-around">
-					<Button.Highlight
+					<PrimaryButton
 						type="submit"
 						class="w-1/4 self-start py-1">
 						{t.submit()}
-					</Button.Highlight>
+					</PrimaryButton>
 					<Show when={import.meta.env.DEV}>
 						<LogBtn />
 					</Show>
@@ -92,7 +91,7 @@ function Main() {
 function LogBtn() {
 	const { form, formStore } = useController()
 	return (
-		<Button.Borderless
+		<TertiaryButton
 			type="button"
 			class="w-1/4 self-start py-1"
 			onClick={() => {
@@ -107,6 +106,6 @@ function LogBtn() {
 				)
 			}}>
 			Log
-		</Button.Borderless>
+		</TertiaryButton>
 	)
 }

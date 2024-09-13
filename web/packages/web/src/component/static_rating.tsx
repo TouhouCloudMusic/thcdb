@@ -3,10 +3,10 @@ import { StarIcon } from "solid-radix-icons"
 
 export function RatingStatic(props: { rating: number }) {
 	// const starLeftClass = "mask mask-star-2 mask-half-1 bg-gray-500";
-	// const starLeftClassHighLight = "mask mask-star-2 mask-half-1 bg-yellow-400";
+	// const starLeftClassHighLight = "mask mask-star-2 mask-half-1 bg-marisa-400";
 	// const starRightClass = "mask mask-star-2 mask-half-2 bg-gray-500";
 	// const starRightClassHighLight =
-	// 	"mask mask-star-2 mask-half-2 bg-yellow-400";
+	// 	"mask mask-star-2 mask-half-2 bg-marisa-400";
 	return (
 		<div class="flex">
 			<Index each={new Array(5)}>

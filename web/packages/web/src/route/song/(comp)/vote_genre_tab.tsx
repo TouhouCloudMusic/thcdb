@@ -99,7 +99,7 @@ export function VoteGenreTab(props: {
 									<button class="mx-1 h-4/5 rounded bg-green-500 px-1 text-white">
 										*
 									</button>
-									<button class="mx-1 h-4/5 rounded bg-red-500 px-1 text-white">
+									<button class="bg-reimu-500 mx-1 h-4/5 rounded px-1 text-white">
 										-
 									</button>
 								</div>

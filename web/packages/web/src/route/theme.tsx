@@ -47,13 +47,13 @@ function ColorPanel() {
 				<div
 					style={{
 						...colorItemStyle,
-						"background-color": "hsl(var(--bg-secondary))",
+						"background-color": "hsl(var(--secondary))",
 						"box-shadow": "var(--shadow-3)",
 					}}></div>
 				<div
 					style={{
 						...colorItemStyle,
-						"background-color": `hsl(var(--bg-primary))`,
+						"background-color": `hsl(var(--primary))`,
 						"box-shadow": "var(--shadow-3)",
 					}}></div>
 			</div>

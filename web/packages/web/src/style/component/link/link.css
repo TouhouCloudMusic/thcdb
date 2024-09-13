@@ -4,7 +4,7 @@
 	} */
 
 	.link {
-		@apply text-blue-700 hover:decoration-current;
+		@apply text-blue-600 hover:decoration-current;
 		text-decoration: solid underline transparent;
 		text-underline-offset: 3px;
 		transition-property: all;

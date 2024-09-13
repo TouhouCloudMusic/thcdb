@@ -1,16 +1,12 @@
-import { type JSX } from "solid-js"
-import { Cross1Icon, type IconProps } from "solid-radix-icons"
-import { Button } from "~/component/button/index.ts"
+import { Cross1Icon } from "solid-radix-icons"
+import { type ButtonProps, PrimaryButton } from "~/component/button/index.tsx"
 
-interface DeleteButtonProps {
-	buttonProps: JSX.ButtonHTMLAttributes<HTMLButtonElement>
-	iconProps: IconProps
-}
-
-export function DeleteButton(props: DeleteButtonProps) {
+export function DeleteButton(props: ButtonProps) {
 	return (
-		<Button.Warning {...props.buttonProps}>
-			<Cross1Icon {...props.iconProps} />
-		</Button.Warning>
+		<PrimaryButton
+			{...props}
+			color="warning">
+			<Cross1Icon />
+		</PrimaryButton>
 	)
 }

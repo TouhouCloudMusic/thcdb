@@ -11,7 +11,7 @@ export function ErrorText(props: ErrorTextProps) {
 			when={
 				props.showWhen ?? (props.text !== undefined && props.text.length > 0)
 			}>
-			<p class="text-sm text-red-700">{props.text}</p>
+			<p class="text-reimu-700 text-sm">{props.text}</p>
 		</Show>
 	)
 }

@@ -1,16 +1,16 @@
 import { type JSX } from "solid-js"
-import { Button } from "~/component/button"
+import { TertiaryButton } from "~/component/button"
 
 export function AddStringInputButton(props: {
-	onClick: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent> | undefined
+	onClick?: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent> | undefined
 	label: string
 }) {
 	return (
-		<Button.Borderless
+		<TertiaryButton
 			type="button"
 			onClick={props.onClick}
 			class="mx-1 px-1 text-sm text-gray-700">
 			{props.label}
-		</Button.Borderless>
+		</TertiaryButton>
 	)
 }
