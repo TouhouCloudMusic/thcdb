@@ -13,12 +13,15 @@ module default {
 
 		required name: str;
 		email: str {
-			constraint exclusive
+			constraint exclusive;
 		}
 
 		required role: user::Role {
 			default := user::Role.Regular;
 		}
+
+		origin_location: tuple<country: str, province: str, city: str>;
+		current_location: tuple<country: str, province: str, city: str>;
 	}
 }
 
@@ -27,4 +30,15 @@ module user {
 		Admin,
 		Regular,
 	>;
+
+	abstract type CustomTaggable {
+		multi custom_tag: CustomTag;
+	}
+
+	type CustomTag {
+		required user: default::User;
+		required name: str;
+
+		multi target := (.<custom_tag[is CustomTaggable]);
+	}
 }

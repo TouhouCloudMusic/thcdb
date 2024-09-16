@@ -10,5 +10,5 @@ module auth {
 		using (global default::current_user.role ?= user::Role.Regular);
 		access policy read_only
 		allow select
-	 }
+	}
 }

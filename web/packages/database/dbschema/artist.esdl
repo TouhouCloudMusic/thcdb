@@ -1,33 +1,51 @@
 module default {
 	type Artist extending
 		auth::RegularEntity,
-		util::WithCreateAndUpdateTime {
+		util::WithCreateAndUpdateTime
+	{
+
+		required app_id: artist::SeqID {
+			constraint exclusive;
+			default := std::sequence_next(introspect artist::SeqID);
+			readonly := true;
+		}
+
 		required name: str;
-		index pg::spgist on (.name);
 
 		localized_name: array<tuple<language: lang::Language, name: str>>;
 
 		required artist_type: artist::ArtistType;
 
-		required app_id: artist::SeqID {
-			constraint exclusive;
-			default := std::sequence_next(introspect artist::SeqID);
-		}
+		# date of born/formed and date of died/disbanded
+		date_of_start: cal::local_date;
+		date_of_start_mask: date::FormatMask;
+		date_of_end: cal::local_date;
+		date_of_end_mask: date::FormatMask;
 
-		date_of_start: datetime;
-		date_of_end: datetime;
+		start_location: tuple<country: str, province:str, city: str>;
+		current_location: tuple<country: str, province:str, city: str>;
+		end_location: tuple<country: str, province:str, city: str>;
 
+		# aliases
 		multi alias: Artist {
 			constraint exclusive;
+			constraint expression on (@target != @source) {
+				errmessage := "Alias cannot be itself";
+			};
+			on target delete allow;
 		};
 		str_alias: array<std::str>;
 
-		multi member_of := (.<members[is default::Artist]);
 		multi members: Artist {
-			join_year: int16;
-			leave_year: int16;
-			on target delete allow
+			active_year: multirange<int32>;
+			constraint exclusive;
+			constraint expression on (@target != @source) {
+				errmessage := "Artist can't be members of their own";
+			};
+			on target delete allow;
 		};
+		multi member_of := (.<members[is Artist]);
+
 		str_member: array<tuple<name: str, join_year: str, leave_year: str>>;
 
 		multi release := (.<artist[is Release]);

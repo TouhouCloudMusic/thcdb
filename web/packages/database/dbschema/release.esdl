@@ -1,39 +1,61 @@
 module default {
-	type Release extending util::WithCreateAndUpdateTime, auth::RegularEntity {
-		required title: str;
-		index pg::spgist on (.title);
-
-		localized_title: array<tuple<language: lang::Language, title: str>>;
-
-		required type: release::Type {
-			default := release::Type.Album
-		};
+	type Release extending
+		auth::RegularEntity,
+		user::CustomTaggable,
+		util::WithCreateAndUpdateTime
+	{
 
 		required app_id: release::SeqID {
 			constraint exclusive;
 			default := std::sequence_next(introspect release::SeqID);
+			readonly := true;
 		}
 
-		catalog_num: str {
-			constraint max_len_value(32);
-		};
+		# Title
+		required title: str;
+		index pg::spgist on (.title);
+		localized_title: array<tuple<language: lang::Language, title: str>>;
 
-		credit_name: str;
+		# Type
+		required type: release::Type;
 
-
-		release_date: datetime;
-		release_date_visibility: date::Visibility {
-			default := date::Visibility.Full;
+		# Release and Recording Date
+		release_date: cal::local_date;
+		release_date_mask: date::FormatMask {
+			default := date::FormatMask.Full;
 		}
 
+		recording_date_start: cal::local_date;
+		recording_date_start_mask: date::FormatMask {
+			default := date::FormatMask.Full;
+		}
+		recording_date_end: cal::local_date;
+		recording_date_end_mask: date::FormatMask {
+			default := date::FormatMask.Full;
+		}
+
+		multi track: release::Track;
+
+		# Other Info
+		catalog_num: str;
 		total_disc: int16;
 		multi language: lang::Language;
 
+		# Links
+		## Credit Artists
+		credit_name: str;
 		required multi artist: Artist {
 			constraint exclusive;
 			credit_name: str;
 			separator: str;
-		};
+			on target delete allow;
+		}
+
+		## Labels
+		multi label: Label {
+			constraint exclusive;
+			on target delete allow;
+		}
 	}
 }
 
@@ -46,24 +68,30 @@ module release {
 		`Single`
 	>;
 
-	type Tracklist {
+	type Track {
 		required order: int16;
+
 		track_num: str;
 
-		credit: TrackCredit {
+		multi credit: TrackCredit {
 			constraint exclusive;
+			on target delete allow;
 		}
 
-		artist: default::Artist;
-		release: default::Release {
+		release := (.<track[is default::Release]);
+
+		multi artist: default::Artist {
 			constraint exclusive;
+			on target delete allow;
 		};
-		song: default::Song {
+
+		required song: default::Song {
 			constraint exclusive;
+			on target delete allow;
 		};
 	}
 
 	type TrackCredit extending music::Credit {
-		track := (.<credit[is Tracklist]);
+		track := (.<credit[is Track]);
 	}
 }

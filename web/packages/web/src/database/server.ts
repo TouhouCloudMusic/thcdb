@@ -1,5 +1,5 @@
-import { SolidServerAuth } from "edge-auth-solid-start/server"
 import { createClient } from "edgedb"
+import { SolidServerAuth } from "edgedb-auth-solid-start/server"
 
 // process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0"
 

@@ -1,5 +1,5 @@
 module date {
-	scalar type Visibility extending enum<
+	scalar type FormatMask extending enum<
 		Y,
 		YM,
 		Full,
