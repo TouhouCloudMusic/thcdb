@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable */
 /** @type {import('tailwindcss').Config} */
-export default {
+const config = {
 	content: [
 		"./src/component/**/*.{ts,tsx}",
 		"./src/page/**/*.{ts,tsx}",
@@ -15,99 +15,37 @@ export default {
 			transparent: "transparent",
 			black: "#000",
 			white: "#fff",
-			primary: "hsl(var(--primary))",
-			secondary: "hsl(var(--secondary))",
-			gray: {
-				100: "hsl(var(--gray-100))",
-				200: "hsl(var(--gray-200))",
-				300: "hsl(var(--gray-300))",
-				400: "hsl(var(--gray-400))",
-				500: "hsl(var(--gray-500))",
-				600: "hsl(var(--gray-600))",
-				700: "hsl(var(--gray-700))",
-				800: "hsl(var(--gray-800))",
-				900: "hsl(var(--gray-900))",
-				1000: "hsl(var(--gray-1000))",
-				1100: "hsl(var(--gray-1100))",
-				1200: "hsl(var(--gray-1200))",
-			},
-			slate: {
-				100: "hsl(var(--slate-100))",
-				200: "hsl(var(--slate-200))",
-				300: "hsl(var(--slate-300))",
-				400: "hsl(var(--slate-400))",
-				500: "hsl(var(--slate-500))",
-				600: "hsl(var(--slate-600))",
-				700: "hsl(var(--slate-700))",
-				800: "hsl(var(--slate-800))",
-				900: "hsl(var(--slate-900))",
-				1000: "hsl(var(--slate-1000))",
-				1100: "hsl(var(--slate-1100))",
-				1200: "hsl(var(--slate-1200))",
-			},
-			reimu: {
-				100: "hsl(var(--reimu-100))",
-				200: "hsl(var(--reimu-200))",
-				300: "hsl(var(--reimu-300))",
-				400: "hsl(var(--reimu-400))",
-				500: "hsl(var(--reimu-500))",
-				600: "hsl(var(--reimu-600))",
-				700: "hsl(var(--reimu-700))",
-				800: "hsl(var(--reimu-800))",
-				900: "hsl(var(--reimu-900))",
-				1000: "hsl(var(--reimu-1000))",
-				1100: "hsl(var(--reimu-1100))",
-				1200: "hsl(var(--reimu-1200))",
-			},
-			marisa: {
-				100: "hsl(var(--marisa-100))",
-				200: "hsl(var(--marisa-200))",
-				300: "hsl(var(--marisa-300))",
-				400: "hsl(var(--marisa-400))",
-				500: "hsl(var(--marisa-500))",
-				600: "hsl(var(--marisa-600))",
-				700: "hsl(var(--marisa-700))",
-				800: "hsl(var(--marisa-800))",
-				900: "hsl(var(--marisa-900))",
-				1000: "hsl(var(--marisa-1000))",
-				1100: "hsl(var(--marisa-1100))",
-				1200: "hsl(var(--marisa-1200))",
-			},
-			green: {
-				100: "hsl(var(--green-100))",
-				200: "hsl(var(--green-200))",
-				300: "hsl(var(--green-300))",
-				400: "hsl(var(--green-400))",
-				500: "hsl(var(--green-500))",
-				600: "hsl(var(--green-600))",
-				700: "hsl(var(--green-700))",
-				800: "hsl(var(--green-800))",
-				900: "hsl(var(--green-900))",
-				1000: "hsl(var(--green-1000))",
-				1100: "hsl(var(--green-1100))",
-				1200: "hsl(var(--green-1200))",
-			},
-			blue: {
-				100: "hsl(var(--blue-100))",
-				200: "hsl(var(--blue-200))",
-				300: "hsl(var(--blue-300))",
-				400: "hsl(var(--blue-400))",
-				500: "hsl(var(--blue-500))",
-				600: "hsl(var(--blue-600))",
-				700: "hsl(var(--blue-700))",
-				800: "hsl(var(--blue-800))",
-				900: "hsl(var(--blue-900))",
-				1000: "hsl(var(--blue-1000))",
-				1100: "hsl(var(--blue-1100))",
-				1200: "hsl(var(--blue-1200))",
-			},
+			"bg-primary": "hsl(var(--bg-primary))",
+			"bg-secondary": "hsl(var(--bg-secondary))",
+			"bg-tertiary": "hsl(var(--bg-tertiary))",
+			"fg-primary": "hsl(var(--fg-primary))",
+			"fg-secondary": "hsl(var(--fg-secondary))",
+			"fg-tertiary": "hsl(var(--fg-tertiary))",
+			...["gray", "slate", "reimu", "marisa", "green", "blue"].reduce(
+				(prev, color) => {
+					prev[color] = Array.from({ length: 11 }).reduce((prev, _, index) => {
+						const scale = (index + 1) * 100
+						prev[scale] = `hsl(var(--${color}-${scale}))`
+						return prev
+					}, {})
+					return prev
+				},
+				{}
+			),
 		},
 		extend: {
+			backgroundColor: {
+				primary: "hsl(var(--bg-primary))",
+				secondary: "hsl(var(--bg-secondary))",
+				tertiary: "hsl(var(--bg-tertiary))",
+			},
+			colors: {
+				primary: "hsl(var(--fg-primary))",
+				secondary: "hsl(var(--fg-secondary))",
+				tertiary: "hsl(var(--fg-tertiary))",
+			},
 			aria: {
 				invalid: `invalid="true"`,
-			},
-			borderColor: {
-				DEFAULT: "hsl(var(--slate-300))",
 			},
 			gap: {
 				128: "32rem",
@@ -135,7 +73,18 @@ export default {
 					"monospace",
 				],
 			},
+			ringColor: {
+				DEFAULT: "hsl(var(--default-border-color))",
+			},
+			borderColor: {
+				DEFAULT: "hsl(var(--default-border-color))",
+			},
 		},
+	},
+	future: {
+		respectDefaultRingColorOpacity: true,
 	},
 	plugins: [require("@tailwindcss/forms")],
 }
+
+export default config

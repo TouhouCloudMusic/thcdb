@@ -59,13 +59,12 @@ export function PrimaryButton(props: ButtonProps) {
 	return <Button {...finalProps} />
 }
 
-PrimaryButton.baseStyle = `shadow text-primary`
+PrimaryButton.baseStyle = `shadow text-bg-primary`
 PrimaryButton.styleRecord = {
 	gray:
 		// @tw
 		`
-		&:las
-		bg-gray-1200 hover:bg-gray-1000 active:bg-gray-900 disabled:bg-gray-800
+		bg-gray-1100 hover:bg-gray-1000 active:bg-gray-900 disabled:bg-gray-800
 		`,
 	blue:
 		// @tw
