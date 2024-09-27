@@ -8,7 +8,7 @@ import {
 	type TextFieldLabelProps,
 	type TextFieldRootProps,
 } from "@kobalte/core/text-field"
-import { mergeProps, ValidComponent } from "solid-js"
+import { mergeProps, type ValidComponent } from "solid-js"
 import { twMerge } from "tailwind-merge"
 import { ErrorMessage, Input, Label } from "./base.tsx"
 import { SmartSelectorCanAutoAddAsteriskAfterLabelOfRequiredField } from "./class_names.ts"

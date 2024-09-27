@@ -1,4 +1,4 @@
-import { createMemo, JSX } from "solid-js"
+import { createMemo, type JSX } from "solid-js"
 import { twMerge } from "tailwind-merge"
 import { Label } from "./base.tsx"
 
