@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /** @type {import('tailwindcss').Config} */
 export default {
 	content: [
@@ -101,46 +102,40 @@ export default {
 				1200: "hsl(var(--blue-1200))",
 			},
 		},
-		fontFamily: {
-			sans: [
-				"Geist",
-				"ui-sans-serif",
-				"system-ui",
-				"sans-serif",
-				'"Apple Color Emoji"',
-				'"Segoe UI Emoji"',
-				'"Segoe UI Symbol"',
-				'"Noto Color Emoji"',
-			],
-			serif: [
-				"ui-serif",
-				"Georgia",
-				"Cambria",
-				'"Times New Roman"',
-				"Times",
-				"serif",
-			],
-			mono: [
-				"ui-monospace",
-				"SFMono-Regular",
-				"Menlo",
-				"Monaco",
-				"Consolas",
-				'"Liberation Mono"',
-				'"Courier New"',
-				"monospace",
-			],
-		},
 		extend: {
+			aria: {
+				invalid: `invalid="true"`,
+			},
 			borderColor: {
-				DEFAULT: "hsl(var(--gray-300))",
+				DEFAULT: "hsl(var(--slate-300))",
 			},
 			gap: {
 				128: "32rem",
 				160: "40rem",
 				192: "48rem",
 			},
+			fontFamily: {
+				inter: ["Inter", "sans-serif"],
+				sans: [
+					"Geist",
+					"ui-sans-serif",
+					"system-ui",
+					"sans-serif",
+					'"Apple Color Emoji"',
+					'"Segoe UI Emoji"',
+					'"Segoe UI Symbol"',
+					'"Noto Color Emoji"',
+				],
+				mono: [
+					"Cascadia Code",
+					"ui-monospace",
+					"Menlo",
+					"Monaco",
+					"Consolas",
+					"monospace",
+				],
+			},
 		},
 	},
-	plugins: [],
+	plugins: [require("@tailwindcss/forms")],
 }

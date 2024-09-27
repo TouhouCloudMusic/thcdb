@@ -2,22 +2,25 @@ import { getErrors, getValues, type SubmitHandler } from "@modular-forms/solid"
 import { useAction, useNavigate } from "@solidjs/router"
 import { useQueryClient, type CreateQueryResult } from "@tanstack/solid-query"
 import { Show } from "solid-js"
+import { ArrowLeftIcon } from "solid-radix-icons"
 
 import { PrimaryButton, TertiaryButton } from "~/component/button"
 import { FormUI } from "~/component/form/ui"
 import { useI18N } from "~/state/i18n"
 
-import { ControllerContext, useController } from "../context.tsx"
+import { type ArtistFormSchema } from "../data/form/index.ts"
 import {
 	createController,
 	Query,
 	SubmitAction,
 	type ArtistByID,
 } from "../data/index.ts"
+import { ControllerContext, useController } from "./context.tsx"
 
-import { type ArtistFormSchema } from "../data/form/index.ts"
+import { FieldSet } from "~/component/form"
 import { Aliases } from "./sections/alias.tsx"
 import { ArtistType } from "./sections/artist_type.tsx"
+import { DateField } from "./sections/date.tsx"
 import { ID } from "./sections/id.tsx"
 import { LocalizedName } from "./sections/localized_name.tsx"
 import { MemberList } from "./sections/member.tsx"
@@ -47,10 +50,7 @@ function Main() {
 	const navigate = useNavigate()
 
 	const handleSubmit: SubmitHandler<ArtistFormSchema> = async (formData) => {
-		if (!form.changed) {
-			form.setErrMsg("No changes")
-			return
-		}
+		if (!form.changed) return form.setErrMsg("No changes")
 
 		const res = await action(formData, dataQuery?.data)
 		void queryClient.invalidateQueries({
@@ -60,31 +60,81 @@ function Main() {
 	}
 
 	return (
-		<main class="flex w-full place-content-center">
-			<Form
-				aria-label="Artist form"
-				onSubmit={handleSubmit}
-				method="post"
-				class="flex w-2/3 flex-col gap-2">
-				<ID />
-				<Name />
-				<LocalizedName />
-				<ArtistType />
-				<Aliases />
-				<MemberList />
-				<div class="flex w-full flex-row place-content-around">
-					<PrimaryButton
-						type="submit"
-						class="w-1/4 self-start py-1">
-						{t.submit()}
-					</PrimaryButton>
-					<Show when={import.meta.env.DEV}>
-						<LogBtn />
-					</Show>
+		<main class="flex bg-slate-100 dark:bg-slate-900">
+			<div class="bg-primary mx-auto min-w-full max-w-7xl md:min-w-[60%] md:border-x">
+				<div class="flex h-16 w-56 items-center justify-evenly">
+					<a
+						href={dataQuery ? `/artist/${dataQuery.data?.id}` : "/artists"}
+						class="text-slate-600">
+						<ArrowLeftIcon
+							width={24}
+							height={24}
+						/>
+					</a>
+					<h1 class="font-['Inter'] text-2xl font-light">
+						<Show
+							when={dataQuery}
+							fallback={"New Artist"}>
+							{"Editing: "}
+							<a href={["/artist", dataQuery?.data?.id].join("/")}>
+								{dataQuery?.data?.name}
+							</a>
+						</Show>
+					</h1>
 				</div>
-				<FormUI.ErrorText text={form.errMsg} />
-				<FormUI.ErrorText text={formStore.response.message} />
-			</Form>
+
+				<div class="grid grid-cols-1 md:grid-cols-[auto_1fr]">
+					{/* Side Bar */}
+					<aside class="dark:bg-slate-1100 col-start-1 hidden w-56 bg-slate-200 pb-16 md:block"></aside>
+					<Form
+						aria-label="Artist form"
+						onSubmit={handleSubmit}
+						method="post"
+						class="flex w-full flex-col gap-8 border-t-2 border-slate-200 px-6 pb-16 pt-4">
+						<ID />
+
+						<div class={FieldSet.className}>
+							<div class="grid grid-cols-1 gap-4 gap-y-8 md:grid-cols-6">
+								<div class="md:col-span-4">
+									<Name />
+								</div>
+								<div class="col-span-full">
+									<ArtistType />
+								</div>
+								<div class="col-span-full">
+									<LocalizedName />
+								</div>
+								<div class="col-span-full">
+									<Aliases />
+								</div>
+							</div>
+						</div>
+						<div class={FieldSet.className}>
+							<div class="grid grid-cols-1 gap-4 gap-y-8 md:grid-cols-6">
+								<div class="col-span-full">
+									<DateField />
+								</div>
+							</div>
+						</div>
+
+						<MemberList />
+
+						<div class="flex w-full flex-row place-content-around">
+							<PrimaryButton
+								type="submit"
+								color="reimu"
+								class="w-1/4 self-start py-1">
+								{t.submit()}
+							</PrimaryButton>
+							<Show when={import.meta.env.DEV}>
+								<LogBtn />
+							</Show>
+						</div>
+						{/* <FormUI.ErrorText text={form.errMsg} /> */}
+						<FormUI.ErrorText text={formStore.response.message} />
+					</Form>
+				</div>
+			</div>
 		</main>
 	)
 }

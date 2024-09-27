@@ -31,6 +31,13 @@ export default function HomePage() {
 					</li>
 					<li>
 						<a
+							href="/artist/new"
+							class="link">
+							New Artist
+						</a>
+					</li>
+					<li>
+						<a
 							href="/artist/edit/1"
 							class="link">
 							edit artist 1

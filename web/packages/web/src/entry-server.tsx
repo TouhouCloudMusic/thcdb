@@ -2,6 +2,20 @@
 import { createHandler, StartServer } from "@solidjs/start/server"
 import * as init from "./state/initialization"
 
+const Font = () => (
+	<>
+		{/* Inter */}
+		<style>
+			@import
+			url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+		</style>
+		{/* Noto Sans SC */}
+		<style>
+			@import
+			url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap');
+		</style>
+	</>
+)
 export default createHandler(
 	() => {
 		return (
@@ -20,25 +34,13 @@ export default createHandler(
 								rel="icon"
 								href="/logo.svg"
 							/>
-							<link
-								rel="preconnect"
-								href="https://fonts.googleapis.com"
-							/>
-							<link
-								rel="preconnect"
-								href="https://fonts.gstatic.com"
-								crossorigin=""
-							/>
-							<link
-								href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap"
-								rel="stylesheet"
-							/>
 							{assets}
 						</head>
 						<body>
 							<div id="app">{children}</div>
 							{scripts}
 						</body>
+						<Font />
 					</html>
 				)}
 			/>

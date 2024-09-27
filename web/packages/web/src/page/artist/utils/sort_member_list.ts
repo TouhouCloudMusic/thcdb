@@ -2,16 +2,32 @@ import * as Option from "fp-ts/Option"
 
 interface Member {
 	name: string
-	leave_year: number | null
-	join_year: number | null
+	active_year?:
+		| {
+				lower?: number | null | undefined
+				upper?: number | null | undefined
+		  }[]
+		| null
+		| undefined
 }
 
 export function sortMemberList<T extends Member>(
 	memberList: T[]
 ): Option.Option<T[]> {
+	const get_join_year = (m: T) => m.active_year?.[0].lower
+	const get_leave_year = (m: T): number | null => {
+		if (!m.active_year) return null
+		else return m.active_year[m.active_year.length - 1].upper ?? null
+	}
+
 	const compareFn = (a: T, b: T) => {
-		const a_has_left = a.leave_year == null
-		const b_has_left = b.leave_year == null
+		const a_join_year = get_join_year(a)
+		const a_leave_year = get_leave_year(a)
+		const b_join_year = get_join_year(b)
+		const b_leave_year = get_leave_year(b)
+
+		const a_has_left = a_leave_year == null
+		const b_has_left = b_leave_year == null
 
 		// 现役成员排前面
 		if (a_has_left !== b_has_left) {
@@ -19,13 +35,13 @@ export function sortMemberList<T extends Member>(
 		}
 
 		// 然后按加入年份排序
-		const join_year_diff = (a.join_year ?? 0) - (b.join_year ?? 0)
+		const join_year_diff = (a_join_year ?? 0) - (b_join_year ?? 0)
 		if (join_year_diff !== 0) {
 			return join_year_diff
 		}
 
 		// 然后按离开年份排序
-		const leave_year_diff = (a.leave_year ?? 0) - (b.leave_year ?? 0)
+		const leave_year_diff = (a_leave_year ?? 0) - (b_leave_year ?? 0)
 		if (leave_year_diff !== 0) {
 			return leave_year_diff
 		}

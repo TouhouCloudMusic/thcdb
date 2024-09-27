@@ -75,7 +75,9 @@ function initFormStoreMemberList(
 	)
 }
 
-function mapMember(member: ArtistByID["members"]) {
+function mapMember(
+	member: ArtistByID["members"]
+): Option.Option<NonNullable<MemberListSchema>> {
 	return member.length === 0 ?
 			Option.none
 		:	Option.some(
@@ -85,14 +87,18 @@ function mapMember(member: ArtistByID["members"]) {
 							id: m.id,
 							name: m.name,
 							is_str: false,
-							join_year: m["@join_year"],
-							leave_year: m["@leave_year"],
+							active_year: m["@active_year"]?.toJSON().map((r) => ({
+								lower: r.lower,
+								upper: r.upper,
+							})),
 						}) satisfies MemberSchema
 				)
 			)
 }
 
-function mapStrMember(strMember: ArtistByID["str_member"]) {
+function mapStrMember(
+	strMember: ArtistByID["str_member"]
+): Option.Option<NonNullable<MemberListSchema>> {
 	return !strMember || strMember.length === 0 ?
 			Option.none
 		:	Option.some(
@@ -101,8 +107,10 @@ function mapStrMember(strMember: ArtistByID["str_member"]) {
 						({
 							name: m.name,
 							is_str: true,
-							join_year: m.join_year === "" ? null : Number(m.join_year),
-							leave_year: m.leave_year === "" ? null : Number(m.leave_year),
+							active_year: m.active_year.toJSON().map((r) => ({
+								lower: r.lower,
+								upper: r.upper,
+							})),
 						}) satisfies MemberSchema
 				)
 			)

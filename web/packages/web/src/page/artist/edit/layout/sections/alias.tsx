@@ -1,66 +1,89 @@
-import { getValue } from "@modular-forms/solid"
+import { getValue, insert, reset } from "@modular-forms/solid"
 import * as R from "radash"
 import { For, Index, Match, Show, Switch } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
-import { FormUI } from "~/component/form/ui/index.tsx"
 import { type IndexComponentProps } from "~/lib/type/solid-js/jsx.ts"
 
-import { useController } from "../../context.tsx"
+import {
+	FieldArray as _FieldArray,
+	ErrorMessage,
+	ResetFieldDialogTrigger,
+} from "~/component/form/index.tsx"
 import { type ArtistByKeyword } from "../../data/index.ts"
-import { AddStringInputButton } from "./components/add_str_input_button.tsx"
+import { useController } from "../context.tsx"
 import { DeleteButton } from "./components/delete_button.tsx"
 
+import { PlusIcon } from "solid-radix-icons"
+import { TertiaryButton } from "~/component/button/index.tsx"
+import { Label } from "~/component/form/index.tsx"
 import * as Style from "../style.ts"
 
 export function Aliases() {
-	const { artistType, alias, t, FieldArray, dataQuery } = useController()
+	const { artistType, alias, FieldArray, dataQuery, formStore } =
+		useController()
 
 	return (
-		<div class={Style.alias.layout}>
-			<div class={Style.alias.list.container}>
-				<div class={Style.alias.list.title}>
-					<h4 class={Style.label}>
-						<Switch>
-							<Match when={dataQuery?.isLoading}>
-								<span class="text-sm">Loading...</span>
-							</Match>
-							<Match when={!dataQuery && artistType.isNone}>
-								<span class="text-sm">Please Select Artist Type</span>
-							</Match>
-							<Match when={!artistType.isNone}>Aliases</Match>
-						</Switch>
-					</h4>
-					<Show when={!artistType.isNone}>
-						<AddStringInputButton
-							onClick={() => {
-								alias.addStrInput()
-							}}
-							label={t.add_string_input()}
-						/>
-					</Show>
-				</div>
-				<ul class="flex flex-col gap-1">
-					<FieldArray name="alias">
-						{(fieldArray) => (
-							<>
-								<For each={fieldArray.items}>
-									{(_, index) => (
-										<li>
-											<Alias index={index()} />
-										</li>
-									)}
-								</For>
-								{fieldArray.error && (
-									<FormUI.ErrorText text={fieldArray.error} />
+		<FieldArray name="alias">
+			{(fieldArray) => {
+				const insertAlias = () =>
+					insert(formStore, fieldArray.name, {
+						// @ts-ignore
+						value: {},
+					})
+
+				const resetField = () => reset(formStore, fieldArray.name)
+				return (
+					<div>
+						<div class="flex items-end justify-between [&_svg]:size-[15px]">
+							<h4 class={Label.className}>
+								<Switch>
+									<Match when={dataQuery?.isLoading}>
+										<span class="text-sm leading-6">Loading...</span>
+									</Match>
+									<Match when={!dataQuery && artistType.isNone}>
+										<span class="text-sm leading-6">
+											Please Select Artist Type
+										</span>
+									</Match>
+									<Match when={!artistType.isNone}>Aliases</Match>
+								</Switch>
+							</h4>
+							<div>
+								<ResetFieldDialogTrigger
+									fieldName={fieldArray.name}
+									onReset={resetField}
+								/>
+								<TertiaryButton
+									size="xs"
+									onClick={insertAlias}
+									class="mr-0.5 aspect-square h-full p-1.5"
+									aria-label={`Insert new item to ${fieldArray.name.replace("_", " ")}`}>
+									<PlusIcon />
+								</TertiaryButton>
+							</div>
+						</div>
+
+						<ul class={_FieldArray.container.className}>
+							<For
+								each={fieldArray.items}
+								fallback={
+									<span class="m-auto text-slate-600">
+										Click "+" to add Input
+									</span>
+								}>
+								{(_, index) => (
+									<li>
+										<Alias index={index()} />
+									</li>
 								)}
-							</>
-						)}
-					</FieldArray>
-				</ul>
-			</div>
-			<SearchTab />
-		</div>
+							</For>
+						</ul>
+						<ErrorMessage>{fieldArray.error}</ErrorMessage>
+					</div>
+				)
+			}}
+		</FieldArray>
 	)
 }
 
@@ -88,15 +111,8 @@ function Alias(props: IndexComponentProps) {
 				)}
 			</Field>
 			<DeleteButton
-				buttonProps={{
-					type: "button",
-					class:
-						"flex min-h-6 min-w-6 h-6 w-6 flex-initial text-sm self-center",
-					onClick: () => alias.remove(props.index),
-				}}
-				iconProps={{
-					class: "bold size-4 place-self-center stroke-white",
-				}}
+				class={"flex h-6 min-h-6 w-6 min-w-6 flex-initial self-center text-sm"}
+				onClick={() => alias.remove(props.index)}
 			/>
 		</div>
 	)

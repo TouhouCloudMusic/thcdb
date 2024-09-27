@@ -1,6 +1,8 @@
 import * as v from "valibot"
+import { DateMask } from "~/lib/form/schema/database.ts"
 import { OptionalIDSchema } from "~/lib/form/schema/id"
 import { LocalizedLanguageSchema } from "~/lib/form/schema/language.ts"
+import { LocationSchema } from "~/lib/form/schema/location.ts"
 
 export const ArtistNameSchema = v.pipe(
 	v.string(),
@@ -20,16 +22,12 @@ export const LocalizedNameSchema = v.nullish(
 
 export const ArtistTypeSchema = v.picklist(
 	["Person", "Group"],
-	"Invalid artist type"
+	"Artist Type is Requried"
 )
 
-export type YearSchema = v.InferInput<typeof YearSchema>
-export const YearSchema = v.union(
-	[
-		v.pipe(v.number(), v.minValue(-1), v.maxValue(new Date().getFullYear())),
-		v.null(),
-	],
-	"Invalid year"
+export type OptionalYearSchema = v.InferInput<typeof OptionalYearSchema>
+export const OptionalYearSchema = v.nullish(
+	v.pipe(v.number(), v.minValue(-1), v.maxValue(new Date().getFullYear()))
 )
 
 export type AliasSchema = v.InferInput<typeof AliasSchema>
@@ -47,8 +45,14 @@ export const MemberSchema = v.object(
 		id: OptionalIDSchema,
 		name: ArtistNameSchema,
 		is_str: v.optional(v.boolean()),
-		join_year: YearSchema,
-		leave_year: YearSchema,
+		active_year: v.optional(
+			v.array(
+				v.object({
+					lower: OptionalYearSchema,
+					upper: OptionalYearSchema,
+				})
+			)
+		),
 	},
 	"Invalid artist"
 )
@@ -59,10 +63,21 @@ export const MemberListSchema = v.optional(v.array(MemberSchema))
 export type ArtistFormSchema = v.InferInput<typeof ArtistFormSchema>
 export const ArtistFormSchema = v.object({
 	id: OptionalIDSchema,
+	// basic info
 	name: ArtistNameSchema,
 	localized_name: LocalizedNameSchema,
-	alias: AliasListSchema,
 	artist_type: ArtistTypeSchema,
+	// date
+	date_of_start: v.optional(v.pipe(v.date(), v.maxValue(new Date()))),
+	date_of_start_mask: v.optional(DateMask),
+	date_of_end: v.optional(v.pipe(v.date(), v.maxValue(new Date()))),
+	date_of_end_mask: v.optional(DateMask),
+	// location
+	start_location: v.optional(LocationSchema),
+	current_location: v.optional(LocationSchema),
+	end_location: v.optional(LocationSchema),
+	// links
+	alias: AliasListSchema,
 	member: MemberListSchema,
 })
 

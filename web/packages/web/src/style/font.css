@@ -8,3 +8,13 @@
 		url("/src/assets/font/Geist/GeistVF.ttf") format("truetype");
 	font-display: swap;
 }
+
+@font-face {
+	font-family: "Cascadia Code";
+	font-style: normal;
+	font-weight: 400;
+	src:
+		local("Cascadia Code"),
+		url("/src/assets/font/CascadiaCode/CascadiaCode.woff2") format("woff2"),
+		url("/src/assets/font/CascadiaCode/CascadiaCode.ttf") format("truetype");
+}

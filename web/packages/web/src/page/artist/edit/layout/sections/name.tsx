@@ -1,8 +1,6 @@
 import { Field } from "@modular-forms/solid"
-import { FormUI } from "~/component/form/ui"
-import { useController } from "../../context.tsx"
-import * as Style from "../style.ts"
-
+import { TextField } from "~/component/form"
+import { useController } from "../context.tsx"
 export function Name() {
 	const { formStore, initData, t, dataQuery } = useController()
 
@@ -11,26 +9,19 @@ export function Name() {
 			of={formStore}
 			name="name">
 			{(field, props) => (
-				<div class="flex flex-col">
-					<label
-						for="name"
-						class={Style.label}>
-						{t.name()}
-					</label>
-					<input
+				<TextField
+					validationState={field.error.length > 0 ? "invalid" : "valid"}>
+					<TextField.Label for="name">{t.name()}</TextField.Label>
+					<TextField.Input
 						{...props}
-						value={initData()?.name ?? (!dataQuery ? "" : "Loading...")}
-						type="text"
-						class={`h-7 w-2/3 rounded border border-gray-400 px-2 outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-600`}
-						classList={{
-							"invalid:focus:ring-reimu-800 invalid:focus:border-reimu-800":
-								field.error.length > 0,
-						}}
-						placeholder={t.enter_artist_name()}
 						required
+						type="text"
+						class={["mt-2", TextField.InputContainer.className].join(" ")}
+						placeholder={t.enter_artist_name()}
+						value={initData()?.name ?? (!dataQuery ? "" : "Loading...")}
 					/>
-					{field.error && <FormUI.ErrorText text={field.error} />}
-				</div>
+					<TextField.ErrorMessage>{field.error}</TextField.ErrorMessage>
+				</TextField>
 			)}
 		</Field>
 	)

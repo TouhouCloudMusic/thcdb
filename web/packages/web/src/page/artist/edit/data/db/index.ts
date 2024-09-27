@@ -1,6 +1,7 @@
 "use server"
 import e from "@touhouclouddb/database"
 import { type artist, type Artist } from "@touhouclouddb/database/interfaces"
+import { type MultiRange } from "edgedb"
 import { type uuid } from "edgedb/dist/codecs/ifaces"
 import { edgedbClient } from "~/database/server"
 import { op_and } from "~/lib/edgedb/op"
@@ -15,8 +16,7 @@ export interface ArtistByID
 }
 
 export type MemberList = (SafePick<Artist, (typeof memberFields)[number]> & {
-	"@join_year": number | null
-	"@leave_year": number | null
+	"@active_year": MultiRange<number> | null
 })[]
 
 const artistFields = [
@@ -36,8 +36,7 @@ const artistFields = [
 const aliasFields = ["id", "app_id", "name"] as const
 
 const memberFields = [
-	"@join_year",
-	"@leave_year",
+	"@active_year",
 	"id",
 	"app_id",
 	"name",
@@ -47,6 +46,7 @@ const memberFields = [
 export async function findArtistByID(id: string): Promise<ArtistByID | null> {
 	// TODO: user client
 	const client = edgedbClient
+
 	return client.querySingle(
 		`
 		SELECT default::Artist {

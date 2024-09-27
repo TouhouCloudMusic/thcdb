@@ -5,6 +5,9 @@ type ErrorTextProps = {
 	showWhen?: boolean
 }
 
+/**
+ * @deprecated
+ */
 export function ErrorText(props: ErrorTextProps) {
 	return (
 		<Show

@@ -1,4 +1,4 @@
-import { useController } from "../../context.tsx"
+import { useController } from "../context.tsx"
 
 export function ID() {
 	const { Field } = useController()
@@ -8,7 +8,7 @@ export function ID() {
 				<>
 					<input
 						{...props}
-						type="text"
+						type="hidden"
 						value={field.value}
 						hidden
 					/>

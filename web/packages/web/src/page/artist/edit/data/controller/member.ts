@@ -32,8 +32,6 @@ export class MemberController {
 				id: newArtist.id,
 				name: newArtist.name,
 				is_str: false,
-				join_year: null,
-				leave_year: null,
 			} satisfies MemberSchema,
 		})
 	}
@@ -43,8 +41,6 @@ export class MemberController {
 			value: {
 				name: "",
 				is_str: true,
-				join_year: null,
-				leave_year: null,
 			},
 		})
 	}

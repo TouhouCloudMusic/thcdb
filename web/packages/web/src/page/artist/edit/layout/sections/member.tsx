@@ -1,20 +1,20 @@
 import { getError, getValue, toCustom } from "@modular-forms/solid"
 import { For, Index, Match, Show, Switch, createMemo } from "solid-js"
+import { PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 
+import { TertiaryButton } from "~/component/button/index.tsx"
 import { FormUI } from "~/component/form/ui"
 import { type IndexComponentProps } from "~/lib/type/solid-js/jsx.ts"
 import { notNullString } from "~/lib/validate/not_empty_string.ts"
 
-import { useController } from "../../context.tsx"
-import { AddStringInputButton } from "./components/add_str_input_button.tsx"
+import { type OptionalYearSchema } from "../../data/form/index.ts"
+import { useController } from "../context.tsx"
+import * as Style from "../style.ts"
 import { DeleteButton } from "./components/delete_button.tsx"
 
-import { type YearSchema } from "../../data/form/index.ts"
-import * as Style from "../style.ts"
-
 export function MemberList() {
-	const { artistType, member, t, FieldArray, dataQuery } = useController()
+	const { artistType, t, FieldArray, dataQuery } = useController()
 	return (
 		<div class={Style.member.layout}>
 			<div class={Style.member.list.container}>
@@ -36,10 +36,14 @@ export function MemberList() {
 						</Switch>
 					</h4>
 					<Show when={!artistType.isNone}>
-						<AddStringInputButton
-							onClick={() => member.addStringInput()}
-							label={t.add_string_input()}
-						/>
+						<TertiaryButton
+							onClick={() => {
+								"TODO"
+							}}
+							size="xs"
+							class="mr-0.5 aspect-square h-full p-1.5">
+							<PlusIcon />
+						</TertiaryButton>
 					</Show>
 				</div>
 				<ul>
@@ -104,7 +108,7 @@ function SearchTab() {
 }
 
 function MemberField(props: IndexComponentProps) {
-	const { member } = useController()
+	const { member, FieldArray } = useController()
 
 	return (
 		<li>
@@ -112,7 +116,14 @@ function MemberField(props: IndexComponentProps) {
 				<div class="grid w-full grid-cols-1 gap-1">
 					<MemberName index={props.index} />
 					<div class="flex w-full gap-1">
-						<MemberYears index={props.index} />
+						<FieldArray name={`member.${props.index}.active_year`}>
+							{(fieldArray) => (
+								<ActiveYearArray
+									fieldArrayName={fieldArray.name}
+									index={props.index}
+								/>
+							)}
+						</FieldArray>
 					</div>
 					<Errors index={props.index} />
 				</div>
@@ -156,12 +167,16 @@ function MemberName(props: IndexComponentProps) {
 	)
 }
 
-function MemberYears(props: IndexComponentProps) {
+function ActiveYearArray(
+	props: IndexComponentProps & {
+		fieldArrayName: `member.${number}.active_year`
+	}
+) {
 	const { Field } = useController()
 
 	const thisYear = new Date().getFullYear()
 
-	const transformYear = toCustom<YearSchema>(
+	const transformYear = toCustom<OptionalYearSchema>(
 		(v, e) => {
 			if (Number(e.currentTarget.value) > thisYear) {
 				e.currentTarget.value = String(thisYear)
@@ -175,7 +190,7 @@ function MemberYears(props: IndexComponentProps) {
 	return (
 		<>
 			<Field
-				name={`member.${props.index}.join_year`}
+				name={`${props.fieldArrayName}.${props.index}.lower`}
 				type="number"
 				transform={transformYear}>
 				{(joinYearField, joinYearProps) => (
@@ -191,7 +206,7 @@ function MemberYears(props: IndexComponentProps) {
 				)}
 			</Field>
 			<Field
-				name={`member.${props.index}.leave_year`}
+				name={`${props.fieldArrayName}.${props.index}.upper`}
 				type="number"
 				transform={transformYear}>
 				{(leaveYearField, leaveYearProps) => (
@@ -237,12 +252,12 @@ function Errors(props: IndexComponentProps) {
 	const isTextFieldErr = createMemo(() =>
 		getError(formStore, `member.${props.index}.is_str`)
 	)
-	const joinYearFieldErr = createMemo(() =>
-		getError(formStore, `member.${props.index}.join_year`)
-	)
-	const leaveYearFieldErr = createMemo(() =>
-		getError(formStore, `member.${props.index}.leave_year`)
-	)
+	// const joinYearFieldErr = createMemo(() =>
+	// 	getError(formStore, `member.${props.index}.join_year`)
+	// )
+	// const leaveYearFieldErr = createMemo(() =>
+	// 	getError(formStore, `member.${props.index}.leave_year`)
+	// )
 	return (
 		<>
 			<FormUI.ErrorText
@@ -253,14 +268,14 @@ function Errors(props: IndexComponentProps) {
 				showWhen={notNullString(isTextFieldErr())}
 				text={`Error in isText field:\n${isTextFieldErr()}`}
 			/>
-			<FormUI.ErrorText
+			{/* <FormUI.ErrorText
 				showWhen={notNullString(joinYearFieldErr())}
 				text={`Error in join year field:\n${joinYearFieldErr()}`}
 			/>
 			<FormUI.ErrorText
 				showWhen={notNullString(leaveYearFieldErr())}
 				text={`Error in leave year field:\n${leaveYearFieldErr()}`}
-			/>
+			/> */}
 		</>
 	)
 }

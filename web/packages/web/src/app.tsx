@@ -44,12 +44,8 @@ function Layout(props: ParentProps) {
 			style={layoutStyle()}>
 			<Title>Doujin Cloud DB</Title>
 			<Header />
-			<div class="grow border-t">
-				<div class="mx-auto min-h-[calc(100vh-2.5rem)] max-w-7xl">
-					{props.children}
-				</div>
-			</div>
-			<footer class="bg-gray-1000 mt-20 h-[300px]"></footer>
+			<div class="grow border-t">{props.children}</div>
+			<footer class="bg-gray-1000 h-[300px] pt-10"></footer>
 		</div>
 	)
 }

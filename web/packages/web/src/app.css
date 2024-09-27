@@ -36,14 +36,7 @@ body {
 }
 
 select {
-	background-color: hsl(var(--secondary));
-}
-
-.notransition * {
-	transition: none !important;
-}
-
-:focus-visible {
-	outline-style: auto;
-	outline-width: 1px;
+	&:disabled {
+		background-color: hsl(var(--secondary));
+	}
 }

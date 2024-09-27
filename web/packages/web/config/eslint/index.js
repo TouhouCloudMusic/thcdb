@@ -88,6 +88,17 @@ export const tsxConfigArray = [
 		files: ["src/**/*.tsx"],
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 		...JsxA11y.flatConfigs.strict,
+
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+		rules: {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+			...JsxA11y.flatConfigs.strict.rules,
+			"jsx-a11y": {
+				attributes: {
+					for: ["for"],
+				},
+			},
+		},
 	},
 	// typescript
 	{

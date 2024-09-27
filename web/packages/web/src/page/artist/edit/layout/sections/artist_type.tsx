@@ -1,41 +1,55 @@
-import { FormUI } from "~/component/form/ui"
-import { useController } from "../../context.tsx"
-import * as Style from "../style.ts"
+import { RadioGroup } from "~/component/form"
+import { Asterisk } from "~/component/form/Asterisk.tsx"
+import { ErrorMessage, Label } from "~/component/form/base.tsx"
+import { useController } from "../context.tsx"
 
 export function ArtistType() {
 	const { t, Field } = useController()
 	return (
-		<div class="flex flex-col">
-			<h4 class={Style.label}>{t.artist_type()}</h4>
-			<div class="h-12 w-24">
+		<fieldset>
+			<legend
+				class={`${Label.className} ${Asterisk.className} after:content-['_*']`}>
+				{t.artist_type()}
+			</legend>
+			<div class={RadioGroup.Container.className}>
 				<Field name="artist_type">
 					{(field, props) => (
 						<>
-							<div class="flex">
+							<div class={RadioGroup.Item.className}>
 								<input
 									{...props}
+									required
 									type="radio"
-									id="artist_type_person"
 									value="Person"
+									data-slot="input"
+									id="artist_type_person"
+									class={RadioGroup.Item.Input.className}
 									checked={field.value === "Person"}
 								/>
-								<label for="artist_type_person">{t.person()}</label>
+								<RadioGroup.ItemLabel for="artist_type_person">
+									{t.person()}
+								</RadioGroup.ItemLabel>
 							</div>
-							<div class="flex">
+							<div class={RadioGroup.Item.className}>
 								<input
 									{...props}
+									required
 									type="radio"
-									id="artist_type_group"
 									value="Group"
+									data-slot="input"
+									id="artist_type_group"
+									class={RadioGroup.Item.Input.className}
 									checked={field.value === "Group"}
 								/>
-								<label for="artist_type_group">{t.group()}</label>
+								<RadioGroup.ItemLabel for="artist_type_group">
+									{t.group()}
+								</RadioGroup.ItemLabel>
 							</div>
-							{field.error && <FormUI.ErrorText text={field.error} />}
+							<ErrorMessage class="mt-4 block">{field.error}</ErrorMessage>
 						</>
 					)}
 				</Field>
 			</div>
-		</div>
+		</fieldset>
 	)
 }
