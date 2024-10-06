@@ -1,5 +1,6 @@
 import { Dialog, type PolymorphicProps } from "@kobalte/core"
 import {
+	type DialogCloseButtonProps,
 	type DialogContentProps,
 	type DialogDescriptionProps,
 	type DialogOverlayProps,
@@ -13,6 +14,7 @@ import {
 	type ValidComponent,
 } from "solid-js"
 import { twMerge } from "tailwind-merge"
+import { type ButtonProps, TertiaryButton } from "~/component/button/index.tsx"
 
 export const Root = (props: DialogRootProps) => {
 	return <Dialog.Root {...props} />
@@ -38,7 +40,7 @@ export const Overlay = <T extends ValidComponent = "div">(
 		/>
 	)
 }
-
+// @tw
 Overlay.className = "fixed inset-0 z-50 bg-slate-900/10"
 
 export const Content = <T extends ValidComponent = "div">(
@@ -57,11 +59,24 @@ export const Content = <T extends ValidComponent = "div">(
 		/>
 	)
 }
-
+// @tw
 Content.className =
-	"bg-primary fixed inset-0 z-50 m-auto rounded-md p-4 shadow-md shadow-gray-200"
+	"bg-primary fixed inset-0 z-50 m-auto rounded-md p-4 shadow-md ring-1 shadow-gray-300"
 
-export const CloseButton = Dialog.CloseButton
+interface CloseButtonProps
+	extends Omit<
+			PolymorphicProps<"button", DialogCloseButtonProps<"button">>,
+			"color" | "type"
+		>,
+		ButtonProps {}
+export const CloseButton = (props: CloseButtonProps) => {
+	return (
+		<Dialog.CloseButton
+			{...props}
+			as={props.as ?? TertiaryButton}
+		/>
+	)
+}
 
 export const Title = <T extends ValidComponent = "h2">(
 	props: PolymorphicProps<T, DialogTitleProps<T>>
@@ -100,10 +115,14 @@ Description.className = "mt-2 pr-2 text-sm text-gray-800"
 export function Layout(
 	props: ParentProps & {
 		trigger: JSX.Element
+		defaultOpen?: boolean
+		modal?: boolean
 	}
 ) {
 	return (
-		<Root>
+		<Root
+			modal={props.modal ?? false}
+			defaultOpen={props.defaultOpen!}>
 			<Trigger>{props.trigger}</Trigger>
 			<Portal>
 				<Overlay />

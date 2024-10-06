@@ -1,4 +1,4 @@
-import { createMemo, type JSX, splitProps } from "solid-js"
+import { createMemo, type JSX } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
 export function Card(props: JSX.HTMLAttributes<HTMLDivElement>) {

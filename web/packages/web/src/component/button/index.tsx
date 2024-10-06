@@ -170,7 +170,7 @@ export function TertiaryButton(props: ButtonProps) {
 }
 
 TertiaryButton.baseStyle = `
-		bg-primary hover:bg-gray-100 active:bg-gray-200 disabled:bg-gray-300`
+		bg-primary hover:bg-gray-100 active:bg-gray-200 disabled:bg-gray-300 [&_svg]:text-tertiary`
 TertiaryButton.styleRecord = {
 	gray:
 		// @tw
