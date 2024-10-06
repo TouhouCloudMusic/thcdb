@@ -4,11 +4,11 @@
 @tailwind utilities;
 
 html {
-	color: hsl(var(--gray-1000));
-	background-color: hsl(var(--primary));
+	color: hsl(var(--fg-primary));
+	background-color: hsl(var(--bg-primary));
 	white-space: break-spaces;
 	font-family:
-		"Geist",
+		Geist,
 		-apple-system,
 		"Noto Sans SC",
 		BlinkMacSystemFont,
@@ -39,4 +39,8 @@ select {
 	&:disabled {
 		background-color: hsl(var(--secondary));
 	}
+}
+
+.notransition * {
+	transition: none !important;
 }

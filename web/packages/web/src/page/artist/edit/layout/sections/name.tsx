@@ -16,7 +16,7 @@ export function Name() {
 						{...props}
 						required
 						type="text"
-						class={["mt-2", TextField.InputContainer.className].join(" ")}
+						class={"mt-2"}
 						placeholder={t.enter_artist_name()}
 						value={initData()?.name ?? (!dataQuery ? "" : "Loading...")}
 					/>

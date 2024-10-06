@@ -5,7 +5,6 @@ import { Show } from "solid-js"
 import { ArrowLeftIcon } from "solid-radix-icons"
 
 import { PrimaryButton, TertiaryButton } from "~/component/button"
-import { FormUI } from "~/component/form/ui"
 import { useI18N } from "~/state/i18n"
 
 import { type ArtistFormSchema } from "../data/form/index.ts"
@@ -17,7 +16,7 @@ import {
 } from "../data/index.ts"
 import { ControllerContext, useController } from "./context.tsx"
 
-import { FieldSet } from "~/component/form"
+import { ErrorMessage, FieldSet } from "~/component/form"
 import { Aliases } from "./sections/alias.tsx"
 import { ArtistType } from "./sections/artist_type.tsx"
 import { DateField } from "./sections/date.tsx"
@@ -131,7 +130,7 @@ function Main() {
 							</Show>
 						</div>
 						{/* <FormUI.ErrorText text={form.errMsg} /> */}
-						<FormUI.ErrorText text={formStore.response.message} />
+						<ErrorMessage>{formStore.response.message}</ErrorMessage>
 					</Form>
 				</div>
 			</div>

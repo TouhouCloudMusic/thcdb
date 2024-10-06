@@ -105,6 +105,6 @@ export function createController(
 		form: formController,
 		artistType: new ArtistTypeController(store, setStore, formStore),
 		alias: new AliasController(store, setStore, formStore),
-		member: new MemberController(store, setStore, () => formStore),
+		member: new MemberController(store, setStore, formStore),
 	}
 }

@@ -8,12 +8,12 @@ import { stringSimilarity } from "string-similarity-js"
 import { twMerge } from "tailwind-merge"
 
 import { TertiaryButton } from "~/component/button/index.tsx"
-import { Combobox as ComboboxStyle } from "~/component/combobox.tsx"
 import {
 	FieldArray as _FieldArray,
 	ResetFieldDialogTrigger,
 	TextField,
 } from "~/component/form"
+import { Combobox as ComboboxStyle } from "~/component/form/Combobox/index.tsx"
 import { Card } from "~/component/layout/index.tsx"
 import { localizedLanguageArray } from "~/lib/form/schema/language.ts"
 import { type IndexComponentProps } from "~/lib/type/solid-js/jsx.ts"
@@ -109,7 +109,6 @@ function NameField(props: IndexComponentProps) {
 					class={fieldLayoutClass}>
 					<TextField.Input
 						value={field.value}
-						class={TextField.InputContainer.className}
 						placeholder="Name"
 						{...props}
 					/>
@@ -161,15 +160,12 @@ function LanguageField(props: IndexComponentProps) {
 					)}>
 					<Combobox.Control
 						aria-label="Language"
-						class={twMerge(TextField.InputContainer.className, "flex")}>
+						class={`${ComboboxStyle.Control.className} relative`}>
 						<Combobox.Input
-							class={twMerge(
-								TextField.Input.className,
-								"w-32 rounded-r-none focus:ring-0"
-							)}
+							class={`${TextField.Input.className} w-36`}
 							placeholder="Language"
 						/>
-						<Combobox.Trigger class="mr-1 text-slate-700">
+						<Combobox.Trigger class="absolute right-1 mr-0.5 self-center">
 							<Combobox.Icon>
 								<CaretSortIcon
 									height={20}
