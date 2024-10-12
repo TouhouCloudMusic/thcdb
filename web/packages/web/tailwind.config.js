@@ -79,6 +79,9 @@ const config = {
 			borderColor: {
 				DEFAULT: "hsl(var(--default-border-color))",
 			},
+			borderWidth: {
+				1.5: "1.5px",
+			},
 		},
 	},
 	future: {

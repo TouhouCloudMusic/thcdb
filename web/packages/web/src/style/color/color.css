@@ -22,7 +22,3 @@
 		--secondary: 0 0% 0%;
 	}
 }
-
-svg {
-	color: hsl(var(--default-icon-color));
-}
