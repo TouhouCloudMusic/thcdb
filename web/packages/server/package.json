@@ -1,0 +1,34 @@
+{
+  "name": "server",
+  "version": "1.0.50",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build --compile --minify-whitespace --minify-identifiers --minify-syntax --target bun --outfile server ./src/index.ts",
+    "start": "./server",
+    "generate": "bunx drizzle-kit generate",
+    "migrate": "bun ./src/database/migrate.ts",
+    "drop": "bunx drizzle-kit drop",
+    "fmt": "bunx prettier --write ."
+  },
+  "dependencies": {
+    "@elysiajs/cors": "^1.1.1",
+    "@elysiajs/opentelemetry": "^1.1.5",
+    "@elysiajs/swagger": "^1.1.3",
+    "@node-rs/argon2": "^2.0.0",
+    "@oslojs/encoding": "^1.1.0",
+    "@touhouclouddb/utils": "workspace:*",
+    "dayjs": "^1.11.13",
+    "drizzle-orm": "^0.34.0",
+    "drizzle-typebox": "^0.1.1",
+    "effect": "^3.9.1",
+    "elysia": "latest",
+    "postgres": "^3.4.4"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "drizzle-kit": "^0.25.0",
+    "typescript": "^5.6.2"
+  },
+  "module": "src/index.js"
+}

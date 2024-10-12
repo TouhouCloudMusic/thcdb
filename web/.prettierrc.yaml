@@ -1,9 +1,6 @@
-bracketSameLine: true
 experimentalTernaries: true
 semi: false
 singleAttributePerLine: true
-trailingComma: es5
-useTabs: true
 overrides:
   - files:
       - "*.yaml"

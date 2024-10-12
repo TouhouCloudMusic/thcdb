@@ -16,7 +16,7 @@ import {
 } from "../data/index.ts"
 import { ControllerContext, useController } from "./context.tsx"
 
-import { ErrorMessage, FieldSet } from "~/component/form"
+import { FieldSet } from "~/component/form"
 import { Aliases } from "./sections/alias.tsx"
 import { ArtistType } from "./sections/artist_type.tsx"
 import { DateField } from "./sections/date.tsx"
@@ -130,7 +130,7 @@ function Main() {
 							</Show>
 						</div>
 						{/* <FormUI.ErrorText text={form.errMsg} /> */}
-						<ErrorMessage>{formStore.response.message}</ErrorMessage>
+						<FormUI.ErrorText text={formStore.response.message} />
 					</Form>
 				</div>
 			</div>

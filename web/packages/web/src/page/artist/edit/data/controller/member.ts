@@ -15,18 +15,18 @@ export class MemberController {
 	constructor(
 		private store: ControllerStore,
 		private setStore: SetStoreFunction<ControllerStore>,
-		private formStore: FormStore<ArtistFormSchema>
+		private formStore: Accessor<FormStore<ArtistFormSchema>>
 	) {}
 	get searchResult() {
 		return this.store.member.searchResult
 	}
 
 	add(newArtist: ArtistByKeyword) {
-		const memberList = getValues(this.formStore, "member")
+		const memberList = getValues(this.formStore(), "member")
 		if (memberList.find((a) => a?.id === newArtist.id)) return
-		if (newArtist.artist_type === getValue(this.formStore, "artist_type"))
+		if (newArtist.artist_type === getValue(this.formStore(), "artist_type"))
 			return
-		insert(this.formStore, "member", {
+		insert(this.formStore(), "member", {
 			value: {
 				id: newArtist.id,
 				name: newArtist.name,
@@ -36,7 +36,7 @@ export class MemberController {
 	}
 
 	addStringInput() {
-		insert(this.formStore, "member", {
+		insert(this.formStore(), "member", {
 			value: {
 				name: "",
 				is_str: true,
@@ -45,7 +45,7 @@ export class MemberController {
 	}
 
 	remove(index: number) {
-		remove(this.formStore, "member", {
+		remove(this.formStore(), "member", {
 			at: index,
 		})
 	}
@@ -56,12 +56,14 @@ export class MemberController {
 			return
 		}
 		const artistType =
-			getValue(this.formStore, "artist_type") === "Person" ? "Group" : "Person"
-		const existArtists = getValues(this.formStore, "member")
+			getValue(this.formStore(), "artist_type") === "Person" ? "Group" : (
+				"Person"
+			)
+		const existArtists = getValues(this.formStore(), "member")
 			.map((m) => m?.id)
 			.filter((id) => id !== "")
 			.concat(
-				getValue(this.formStore, "id", { shouldActive: false })
+				getValue(this.formStore(), "id", { shouldActive: false })
 			) as string[]
 		const result = await findArtistByKeyword(keyword, artistType, existArtists)
 

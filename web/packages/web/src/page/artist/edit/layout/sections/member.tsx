@@ -11,6 +11,7 @@ import { notNullString } from "~/lib/validate/not_empty_string.ts"
 import { type OptionalYearSchema } from "../../data/form/index.ts"
 import { useController } from "../context.tsx"
 import * as Style from "../style.ts"
+import { DeleteButton } from "./components/delete_button.tsx"
 
 export function MemberList() {
 	const { artistType, t, FieldArray, dataQuery } = useController()
@@ -126,15 +127,14 @@ function MemberField(props: IndexComponentProps) {
 					</div>
 					<Errors index={props.index} />
 				</div>
-				<PrimaryButton
+				<DeleteButton
 					type="button"
 					class={[
 						"flex min-h-6 min-w-6 flex-initial place-content-center text-sm",
 						"[&_svg]:size-4 [&_svg]:place-self-center [&_svg]:stroke-white [&_svg]:font-bold",
 					].join(" ")}
-					onClick={() => member.remove(props.index)}>
-					<Cross1Icon />
-				</PrimaryButton>
+					onClick={() => member.remove(props.index)}
+				/>
 			</div>
 			<MemberID index={props.index} />
 		</li>

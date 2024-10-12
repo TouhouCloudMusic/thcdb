@@ -109,6 +109,7 @@ function NameField(props: IndexComponentProps) {
 					class={fieldLayoutClass}>
 					<TextField.Input
 						value={field.value}
+						class={TextField.InputContainer.className}
 						placeholder="Name"
 						{...props}
 					/>
@@ -160,12 +161,15 @@ function LanguageField(props: IndexComponentProps) {
 					)}>
 					<Combobox.Control
 						aria-label="Language"
-						class={`${ComboboxStyle.Control.className} relative`}>
+						class={twMerge(TextField.InputContainer.className, "flex")}>
 						<Combobox.Input
-							class={`${TextField.Input.className} w-36`}
+							class={twMerge(
+								TextField.Input.className,
+								"w-32 rounded-r-none focus:ring-0"
+							)}
 							placeholder="Language"
 						/>
-						<Combobox.Trigger class="absolute right-1 mr-0.5 self-center">
+						<Combobox.Trigger class="mr-1 text-slate-700">
 							<Combobox.Icon>
 								<CaretSortIcon
 									height={20}

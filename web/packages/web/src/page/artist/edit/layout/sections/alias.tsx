@@ -64,22 +64,13 @@ export function Aliases() {
 									fieldName={fieldArray.name}
 									onReset={resetField}
 								/>
-								<SearchAndAddDialog
-									data={fakeData}
-									ListItem={(props) => (
-										<>
-											<div>
-												<p>{props.data.name}</p>
-												<span class="text-tertiary">lorem ipsum</span>
-											</div>
-											<TertiaryButton
-												class="aspect-square min-h-6"
-												onClick={() => insertAlias(props.data)}>
-												<PlusIcon class="m-auto" />
-											</TertiaryButton>
-										</>
-									)}
-								/>
+								<TertiaryButton
+									size="xs"
+									onClick={insertAlias}
+									class="mr-0.5 aspect-square h-full p-1.5"
+									aria-label={`Insert new item to ${fieldArray.name.replace("_", " ")}`}>
+									<PlusIcon />
+								</TertiaryButton>
 							</div>
 						</div>
 
@@ -87,9 +78,15 @@ export function Aliases() {
 							<For
 								each={fieldArray.items}
 								fallback={
-									<span class="m-auto text-slate-600">Click "+" to add</span>
+									<span class="m-auto text-slate-600">
+										Click "+" to add Input
+									</span>
 								}>
-								{(_, index) => <Alias index={index()} />}
+								{(_, index) => (
+									<li>
+										<Alias index={index()} />
+									</li>
+								)}
 							</For>
 						</ul>
 						<ErrorMessage>{fieldArray.error}</ErrorMessage>
@@ -103,7 +100,7 @@ export function Aliases() {
 function Alias(props: IndexComponentProps) {
 	const { Field, formStore, alias } = useController()
 	return (
-		<li class="flex w-full gap-2 rounded-md bg-white p-1.5">
+		<div class="flex w-full gap-2 rounded-md border bg-white p-1.5">
 			<Field
 				name={`alias.${props.index}.name`}
 				type="string">
@@ -123,12 +120,54 @@ function Alias(props: IndexComponentProps) {
 					</Show>
 				)}
 			</Field>
-			<PrimaryButton
-				class={"aspect-square p-1 text-sm"}
-				color="warning"
-				onClick={() => alias.remove(props.index)}>
-				<Cross1Icon class="" />
-			</PrimaryButton>
+			<DeleteButton
+				class={"flex h-6 min-h-6 w-6 min-w-6 flex-initial self-center text-sm"}
+				onClick={() => alias.remove(props.index)}
+			/>
+		</div>
+	)
+}
+
+function SearchTab() {
+	const { artistType, alias, t } = useController()
+
+	return (
+		<div class="flex flex-col">
+			<h4 class={Style.label}>{t.add_alias()}</h4>
+			<input
+				type="text"
+				class={Style.input}
+				disabled={artistType.isNone}
+				placeholder={t.search_artist()}
+				onInput={R.debounce({ delay: 300 }, (e) =>
+					alias.serach(e.target.value)
+				)}
+			/>
+			<div class={Style.searchResult.container}>
+				<Show when={alias.searchResult}>
+					<ul class={Style.searchResult.list}>
+						<Index each={alias.searchResult}>
+							{(result) => <SearchResult result={result()} />}
+						</Index>
+					</ul>
+				</Show>
+			</div>
+		</div>
+	)
+}
+
+function SearchResult(props: { result: ArtistByKeyword }) {
+	const { alias } = useController()
+	return (
+		<li>
+			<button
+				type="button"
+				class={Style.searchResult.item}
+				onClick={() => {
+					alias.add(props.result)
+				}}>
+				{props.result.name}
+			</button>
 		</li>
 	)
 }

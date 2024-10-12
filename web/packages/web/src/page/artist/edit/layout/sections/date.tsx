@@ -64,40 +64,22 @@ export function DateField() {
 
 	return (
 		<section class="flex flex-col gap-y-6">
+			{/* <h2 class={`${Legend.className} mb-8`}>
+				<Show
+					when={artistType.isNone}
+					fallback={
+						<>
+							{startDateLabel()} / {endDateLabel()}
+						</>
+					}>
+					Please Select Artist Type
+				</Show>
+			</h2> */}
 			<For each={subField}>
 				{(fieldSet) => {
-					const [year, _setYear] = createSignal<number>()
-					const [month, _setMonth] = createSignal<number>()
+					const [year, setYear] = createSignal<number>()
+					const [month, setMonth] = createSignal<number>()
 					const [day, setDay] = createSignal<number>()
-
-					const setYear = (x?: number) =>
-						batch(() => {
-							if (!x) {
-								_setYear()
-								_setMonth()
-								setDay()
-								return
-							}
-
-							setYear(x)
-						})
-
-					const setMonth = (x?: number) =>
-						batch(() => {
-							if (!x) {
-								_setMonth()
-								setDay()
-								return
-							}
-							setMonth(x)
-						})
-
-					const dateMask = createMemo(() =>
-						day() ? "YMD"
-						: month() ? "YM"
-						: year() ? "Y"
-						: undefined
-					)
 
 					const daysInMonth = createMemo(() =>
 						year() && month() ?
@@ -105,26 +87,49 @@ export function DateField() {
 						:	[]
 					)
 
-					createEffect(() => {
-						if (year()) {
-							setValue(
-								formStore,
-								fieldSet.fieldName,
-								new Date(year()!, month() ? month()! - 1 : 0, day() ?? 1)
-							)
-						}
-					})
+					const dateMask = createMemo<DateMask | undefined>(() =>
+						day() ? "YMD"
+						: month() ? "YM"
+						: year() ? "Y"
+						: undefined
+					)
+
+					createEffect(
+						on([year, month, day], () => {
+							if (!month()) {
+								setDay()
+								return
+							}
+
+							if (year()) {
+								setValue(
+									formStore,
+									fieldSet.fieldName,
+									new Date(year()!, month() ? month()! - 0 : 0, day() ?? 0)
+								)
+							} else {
+								setMonth()
+								setDay()
+								setValue(formStore, fieldSet.fieldName, null)
+							}
+						})
+					)
 
 					createEffect(() => {
 						setValue(formStore, `${fieldSet.fieldName}_mask`, dateMask())
 					})
 
 					const parseInput = (
-						setFn: (x?: number) => unknown
+						setFn: Setter<number | undefined>
 					): JSX.ChangeEventHandler<HTMLSelectElement, Event> => {
 						return (e) =>
 							setFn(e.target.value === "" ? undefined : Number(e.target.value))
 					}
+
+					const selectClassName = twMerge(
+						TextField.InputContainer.className,
+						TextField.Input.className
+					)
 
 					const fieldError = createMemo(() =>
 						getError(formStore, fieldSet.fieldName, {
@@ -143,7 +148,7 @@ export function DateField() {
 							<label for={`${fieldSet.name()}_year`}>Year</label>
 							<select
 								name={`${fieldSet.name()}_year`}
-								class={Select.className}
+								class={selectClassName}
 								disabled={artistType.isNone}
 								onChange={parseInput(setYear)}>
 								<option></option>
@@ -152,13 +157,13 @@ export function DateField() {
 								</Index>
 							</select>
 
-							<label for={`${fieldSet.name()}_month`}>Month</label>
+							<label>Month</label>
 							<select
 								disabled={!year()}
 								name={`${fieldSet.name()}_month`}
-								class={Select.className}
+								class={selectClassName}
 								onChange={parseInput(setMonth)}>
-								<option></option>
+								<option onSelect={() => setMonth()}></option>
 
 								<Show when={year()}>
 									<Index each={list(1, 12)}>
@@ -170,7 +175,7 @@ export function DateField() {
 							<label for={`${fieldSet.name()}_day`}>Day</label>
 							<select
 								value={day()}
-								class={Select.className}
+								class={selectClassName}
 								onChange={parseInput(setDay)}
 								name={`${fieldSet.name()}_day`}
 								disabled={daysInMonth().length === 0}>

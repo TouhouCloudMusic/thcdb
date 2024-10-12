@@ -12,7 +12,7 @@ module default {
 
 		required name: str;
 
-		localized_name: array<tuple<language: lang::Language, name: str>>;
+		multi localized_name: tuple<language: lang::Language, name: str>;
 
 		required artist_type: artist::ArtistType;
 
