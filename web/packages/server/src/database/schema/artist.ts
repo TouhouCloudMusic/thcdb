@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm"
+import { relations, } from "drizzle-orm"
 import {
   date,
   index,
@@ -10,7 +10,7 @@ import {
   uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core"
-import { group } from "effect/Array"
+
 import { location } from "./custom_type"
 import { date_precision } from "./enum"
 import { localization_language } from "./lang"

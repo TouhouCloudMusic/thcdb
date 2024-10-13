@@ -33,17 +33,13 @@ export const release = pgTable("release", {
   ...created_and_updated_at,
 })
 
-export const release_localized_title = pgTable(
-  "release_localized_title",
-  {
-    release_id: integer("release_id")
-      .references(() => release.id, { onDelete: "cascade" })
-      .notNull(),
-    language: localization_language("language").notNull(),
-    title: varchar("title", { length: 128 }).notNull(),
-  },
-  (t) => ({}),
-)
+export const release_localized_title = pgTable("release_localized_title", {
+  release_id: integer("release_id")
+    .references(() => release.id, { onDelete: "cascade" })
+    .notNull(),
+  language: localization_language("language").notNull(),
+  title: varchar("title", { length: 128 }).notNull(),
+})
 
 export const release_relation = relations(release, ({ many }) => ({
   artist: many(release_artist),

@@ -1,13 +1,9 @@
 import {
-  customType,
   integer,
   interval,
-  pgEnum,
   pgTable,
   primaryKey,
   serial,
-  unique,
-  uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core"
 import { artist } from "./artist"

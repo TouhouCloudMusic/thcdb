@@ -4,7 +4,6 @@ import {
   PgTableWithColumns,
   real,
   serial,
-  timestamp,
   varchar,
 } from "drizzle-orm/pg-core"
 import { artist } from "../artist"

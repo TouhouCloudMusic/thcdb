@@ -1,4 +1,3 @@
-import { HashedString } from "@touhouclouddb/utils"
 import { sql } from "drizzle-orm"
 import { Effect, identity } from "effect"
 import type { NewUser } from "~/database"
