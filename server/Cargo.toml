@@ -1,0 +1,33 @@
+
+[workspace]
+members = [
+	".",
+	"migration",
+]
+
+[workspace.dependencies]
+axum = "0.7"
+sea-orm = { version = "1.1", features = [
+	"sqlx-postgres",
+	"runtime-tokio-rustls",
+	"macros",
+] }
+dotenvy = "0.15"
+juniper = "0.16"
+tokio = { version = "1", features = [
+	"full",
+] }
+
+[package]
+name = "thcdb_rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# entity = { path = "entity" }
+migration = { path = "migration" }
+
+axum.workspace = true
+sea-orm.workspace = true
+dotenvy.workspace = true
+tokio.workspace = true

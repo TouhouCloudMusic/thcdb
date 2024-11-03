@@ -1,0 +1,6 @@
+# force_multiline_blocks = true
+indent_style = "Visual"
+max_width = 80
+normalize_comments = true
+tab_spaces = 4
+wrap_comments = true
