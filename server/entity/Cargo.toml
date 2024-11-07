@@ -1,0 +1,15 @@
+[package]
+edition = "2021"
+name    = "entity"
+publish = false
+version = "0.1.0"
+
+[lib]
+name = "entity"
+path = "src/lib.rs"
+
+[dependencies]
+axum-login.workspace = true
+juniper.workspace    = true
+sea-orm.workspace    = true
+serde.workspace      = true
