@@ -1,3 +1,5 @@
+use crate::api_response;
+use crate::model::user::SignIn;
 use argon2::{
     password_hash,
     password_hash::{
@@ -7,6 +9,8 @@ use argon2::{
     Argon2,
 };
 use async_trait::async_trait;
+use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
 use axum_login::{AuthnBackend, UserId};
 use entity::user;
 use error_set::error_set;
@@ -18,8 +22,7 @@ use sea_orm::{
 };
 use sea_orm::{sea_query::Alias, QueryFilter};
 use sea_orm::{ActiveValue, ColumnTrait, DatabaseConnection, DbErr};
-use serde::{Deserialize, Serialize};
-use tokio::task::JoinError;
+use serde::Serialize;
 
 pub enum Password {
     #[allow(dead_code)]
@@ -32,7 +35,7 @@ pub static ARGON2_HASHER: Lazy<Argon2> = Lazy::new(Argon2::default);
 pub type AuthSession = axum_login::AuthSession<UserService>;
 
 error_set! {
-
+    #[derive(Serialize, Clone)]
     Error = {
         #[display("User not found")]
         NotFound,
@@ -42,16 +45,32 @@ error_set! {
         Create,
         #[display("Invalid username or password")]
         AuthenticationFailed,
+        #[serde(skip)]
         #[display("Failed to hash password: {err}")]
         HashPassword {
             err: password_hash::errors::Error
         },
+        #[serde(skip)]
         #[display("Failed to parse password")]
         ParsePassword {
             err: password_hash::errors::Error
         },
-        JoinError(JoinError)
+        #[serde(skip)]
+        #[display("Task join error")]
+        JoinError,
     };
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> Response {
+        let status_code = match self {
+            Self::NotFound => StatusCode::NOT_FOUND,
+            Self::AuthenticationFailed => StatusCode::UNAUTHORIZED,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
+        };
+
+        api_response::err(self.to_string(), Some(status_code)).into_response()
+    }
 }
 
 impl Password {
@@ -167,7 +186,11 @@ impl UserService {
                     Err(Error::AuthenticationFailed)
                 }
             })
-            .await?
+            .await
+            .map_err(|e| {
+                tracing::error!("{}", e);
+                Error::JoinError
+            })?
         } else {
             Err(Error::NotFound)
         }
@@ -195,29 +218,23 @@ impl UserService {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
-pub struct Credential {
-    pub username: String,
-    pub password: String,
-}
-
 #[async_trait]
 impl AuthnBackend for UserService {
     type User = user::Model;
-    type Credentials = Credential;
+    type Credentials = SignIn;
     type Error = Error;
 
     async fn authenticate(
         &self,
-        Credential { username, password }: Self::Credentials,
-    ) -> std::result::Result<Option<Self::User>, Self::Error> {
+        SignIn { username, password }: Self::Credentials,
+    ) -> Result<Option<Self::User>, Self::Error> {
         Ok(Some(self.verify_password(&username, &password).await?))
     }
 
     async fn get_user(
         &self,
         id: &UserId<Self>,
-    ) -> std::result::Result<Option<Self::User>, Self::Error> {
+    ) -> Result<Option<Self::User>, Self::Error> {
         self.find_by_id(id).await
     }
 }

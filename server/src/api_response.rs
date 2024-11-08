@@ -112,9 +112,12 @@ where
     }
 }
 
-pub fn err(message: String, code: Option<StatusCode>) -> Err {
+pub fn err<E>(message: E, code: Option<StatusCode>) -> Err
+where
+    E: ToString,
+{
     Err {
-        message,
+        message: message.to_string(),
         code: code.unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
         ..Err::default()
     }
@@ -124,7 +127,7 @@ mod tests {
     use super::*;
     use serde::Serialize;
     use serde_json::json;
-    
+
     #[test]
     fn test_response_json() {
         let response = super::data(json!({"a": 1}));

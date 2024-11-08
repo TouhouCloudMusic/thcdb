@@ -1,7 +1,7 @@
-use crate::model::input::*;
 use crate::model::output::*;
 use crate::service::juniper::*;
 
+use crate::model::user::{SignIn, SignUp};
 use juniper::{graphql_object, graphql_value, FieldError, FieldResult};
 
 pub struct UserQuery;
@@ -11,8 +11,8 @@ pub struct UserMutation;
 #[graphql(context = JuniperContext)]
 impl UserQuery {
     #[graphql(description = "Use username and password to login.")]
-    async fn login(
-        input: LoginInput,
+    async fn sign_in(
+        input: SignIn,
         context: &JuniperContext,
     ) -> FieldResult<LoginOutput> {
         let user_service = &context.user_service;
@@ -29,8 +29,8 @@ impl UserQuery {
 #[graphql(context = JuniperContext)]
 impl UserMutation {
     #[graphql(description = "Register a new user.")]
-    async fn signup(
-        input: SignupInput,
+    async fn sign_up(
+        input: SignUp,
         context: &JuniperContext,
     ) -> FieldResult<SignupOutput> {
         let user_service = &context.user_service;

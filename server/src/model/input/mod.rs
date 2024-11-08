@@ -3,17 +3,6 @@ use juniper::GraphQLInputObject;
 use sea_orm::prelude::DateTimeWithTimeZone;
 
 #[derive(GraphQLInputObject)]
-pub struct SignupInput {
-    pub username: String,
-    pub password: String,
-}
-#[derive(GraphQLInputObject)]
-pub struct LoginInput {
-    pub username: String,
-    pub password: String,
-}
-
-#[derive(GraphQLInputObject)]
 pub struct RetrieveSongInput {
     pub id: i32,
 }
