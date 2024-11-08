@@ -59,6 +59,8 @@ tokio.workspace              = true
 tower-sessions-redis-store   = "0.14.0"
 tracing.workspace            = true
 tracing-subscriber.workspace = true
+utoipa                       = { version = "5", features = [ "axum_extras", "chrono", "macros" ] }
+utoipa-axum                  = "0.1"
 xxhash-rust                  = { version = "0.8.12", features = [ "std", "xxh3" ] }
 
 [dev-dependencies]

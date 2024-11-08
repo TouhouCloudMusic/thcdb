@@ -1,3 +1,4 @@
+mod api_response;
 mod controller;
 mod error;
 mod model;
@@ -27,7 +28,7 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub async fn init(url: &String) -> Self {
+    pub async fn init(url: &str) -> Self {
         let database = get_db_connection(url).await;
 
         Self {
