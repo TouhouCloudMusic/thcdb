@@ -40,6 +40,7 @@ argon2.workspace             = true
 async-trait                  = { version = "0.1.83" }
 axum.workspace               = true
 axum-login.workspace         = true
+axum_typed_multipart         = "0.13"
 base64                       = "0.22.1"
 chrono.workspace             = true
 dotenvy.workspace            = true
@@ -61,6 +62,9 @@ tracing.workspace            = true
 tracing-subscriber.workspace = true
 utoipa                       = { version = "5", features = [ "axum_extras", "chrono", "macros" ] }
 utoipa-axum                  = "0.1"
+utoipa-rapidoc               = { version = "5", features = [ "axum" ] }
+utoipa-redoc                 = { version = "4", features = [ "axum" ] }
+utoipa-swagger-ui            = { version = "8", features = [ "axum" ] }
 xxhash-rust                  = { version = "0.8.12", features = [ "std", "xxh3" ] }
 
 [dev-dependencies]

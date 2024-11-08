@@ -2,16 +2,27 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
 use serde::Serialize;
-use utoipa::ToSchema;
+use utoipa::openapi::{ObjectBuilder, RefOr, Schema};
+use utoipa::{openapi, ToSchema};
 
 const STATUS_OK: &str = "Ok";
 const STATUS_ERR: &str = "Err";
+
+fn status_ok_schema() -> impl Into<RefOr<Schema>> {
+    ObjectBuilder::new()
+        .schema_type(openapi::Type::String)
+        .enum_values(vec![STATUS_OK].into())
+        .build()
+}
 
 #[derive(ToSchema, Serialize)]
 pub struct Data<T>
 where
     T: Default + Serialize,
 {
+    #[schema(
+        schema_with = status_ok_schema
+    )]
     status: String,
     data: T,
 }
@@ -39,6 +50,9 @@ where
 
 #[derive(ToSchema, Serialize)]
 pub struct Message {
+    #[schema(
+        schema_with = status_ok_schema
+    )]
     status: String,
     message: String,
 }
@@ -88,9 +102,12 @@ pub fn data<T: Serialize + Default>(data: T) -> Data<T> {
     }
 }
 
-pub fn msg(message: String) -> Message {
+pub fn msg<M>(message: M) -> Message
+where
+    M: ToString,
+{
     Message {
-        message,
+        message: message.to_string(),
         ..Message::default()
     }
 }
@@ -107,7 +124,7 @@ mod tests {
     use super::*;
     use serde::Serialize;
     use serde_json::json;
-
+    
     #[test]
     fn test_response_json() {
         let response = super::data(json!({"a": 1}));
@@ -119,7 +136,7 @@ mod tests {
         );
     }
 
-    #[derive(Serialize, Default)]
+    #[derive(Serialize, Default, ToSchema)]
     struct Person {
         id: i32,
         name: String,

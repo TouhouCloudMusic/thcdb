@@ -10,13 +10,17 @@ use axum::{routing::get, Router};
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use axum_login::AuthManagerLayerBuilder;
+use itertools::Itertools;
 use sea_orm::DatabaseConnection;
+use serde::Serialize;
 use service::{
     database::get_db_connection, ReleaseService, SongService, UserService,
 };
 use tokio::signal;
 use tower_sessions_redis_store::RedisStore;
 use tracing_subscriber::fmt::time::ChronoLocal;
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 #[derive(Clone, FromRef)]
 pub struct AppState {
@@ -40,6 +44,15 @@ impl AppState {
         }
     }
 }
+#[derive(OpenApi, Serialize)]
+#[openapi(
+    tags(
+        (name = "Touhou Cloud Db", description = "TODO")
+    )
+)]
+struct ApiDoc;
+
+struct SecurityAddon;
 
 #[tokio::main]
 async fn main() {
@@ -69,9 +82,14 @@ async fn main() {
         AuthManagerLayerBuilder::new(state.user_service.clone(), session_layer)
             .build();
 
+    let (api_router, api) = controller::api_router().split_for_parts();
+
+    let doc_router = api_router
+        .merge(SwaggerUi::new("/docs").url("/openapi.json", api.clone()));
+
     let router = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
-        .nest("/", controller::api_router())
+        .merge(doc_router)
         .layer(auth_layer)
         .with_state(state);
 
