@@ -30,7 +30,7 @@ struct AvatarUpload {
     post,
     path = "/avatar",
     request_body(
-        content_type = "multipart/formdata",
+        content_type = "multipart/form-data",
         content = AvatarUpload,
     ),
     responses((status = 200, body = api_response::Message))
