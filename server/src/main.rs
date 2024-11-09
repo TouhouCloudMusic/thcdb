@@ -13,9 +13,7 @@ use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use axum_login::AuthManagerLayerBuilder;
 use sea_orm::DatabaseConnection;
-use service::{
-    database::get_db_connection, ReleaseService, SongService, UserService,
-};
+use service::database::get_db_connection;
 use tokio::signal;
 use tower_sessions_redis_store::RedisStore;
 use tracing_subscriber::fmt::time::ChronoLocal;
@@ -24,10 +22,10 @@ use utoipa_swagger_ui::SwaggerUi;
 #[derive(Clone, FromRef)]
 pub struct AppState {
     database: DatabaseConnection,
-    user_service: UserService,
-    song_service: SongService,
-    release_service: ReleaseService,
-    image_service: service::image::Service,
+    user_service: service::User,
+    song_service: service::Song,
+    release_service: service::Release,
+    image_service: service::Image,
 }
 
 impl AppState {
@@ -36,10 +34,10 @@ impl AppState {
 
         Self {
             database: database.clone(),
-            user_service: UserService::new(database.clone()),
-            song_service: SongService::new(database.clone()),
-            release_service: ReleaseService::new(database.clone()),
-            image_service: service::image::Service::new(database.clone()),
+            user_service: service::User::new(database.clone()),
+            song_service: service::Song::new(database.clone()),
+            release_service: service::Release::new(database.clone()),
+            image_service: service::Image::new(database.clone()),
         }
     }
 }
@@ -81,11 +79,13 @@ async fn main() {
         .route(
             "/",
             get(|session: AuthSession| async {
-                if let Some(user) = session.user {
-                    format!("Hello, {}!", user.name)
-                } else {
-                    "Hello, world!".into()
-                }
+                format!("Hello, {}!", {
+                    if let Some(user) = session.user {
+                        user.name
+                    } else {
+                        "world".to_string()
+                    }
+                })
             }),
         )
         .merge(doc_router)

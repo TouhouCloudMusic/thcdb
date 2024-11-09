@@ -8,11 +8,11 @@ use sea_orm::{
 };
 
 #[derive(Default, Clone)]
-pub struct SongService {
+pub struct Service {
     database: DatabaseConnection,
 }
 
-impl SongService {
+impl Service {
     pub fn new(database: DatabaseConnection) -> Self {
         Self { database }
     }

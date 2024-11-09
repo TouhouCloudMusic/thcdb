@@ -32,7 +32,7 @@ pub enum Password {
 
 pub static ARGON2_HASHER: Lazy<Argon2> = Lazy::new(Argon2::default);
 
-pub type AuthSession = axum_login::AuthSession<UserService>;
+pub type AuthSession = axum_login::AuthSession<Service>;
 
 error_set! {
     #[derive(Serialize, Clone)]
@@ -109,11 +109,11 @@ impl From<&String> for Password {
 }
 
 #[derive(Default, Clone)]
-pub struct UserService {
+pub struct Service {
     database: DatabaseConnection,
 }
 
-impl UserService {
+impl Service {
     pub fn new(database: DatabaseConnection) -> Self {
         Self { database }
     }
@@ -219,7 +219,7 @@ impl UserService {
 }
 
 #[async_trait]
-impl AuthnBackend for UserService {
+impl AuthnBackend for Service {
     type User = user::Model;
     type Credentials = SignIn;
     type Error = Error;

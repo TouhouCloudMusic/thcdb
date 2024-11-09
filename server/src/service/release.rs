@@ -2,11 +2,11 @@ use entity::release;
 use sea_orm::{DatabaseConnection, DbErr, EntityTrait};
 
 #[derive(Default, Clone)]
-pub struct ReleaseService {
+pub struct Service {
     database: DatabaseConnection,
 }
 
-impl ReleaseService {
+impl Service {
     pub fn new(database: DatabaseConnection) -> Self {
         Self { database }
     }

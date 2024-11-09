@@ -8,8 +8,6 @@ use axum::middleware::from_fn;
 use axum::response::{IntoResponse, Redirect};
 use axum::Json;
 use axum_typed_multipart::TypedMultipart;
-use std::error::Error;
-use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -29,7 +27,7 @@ pub fn router() -> OpenApiRouter<AppState> {
 )]
 async fn sign_up(
     mut auth_session: AuthSession,
-    State(user_service): State<service::UserService>,
+    State(user_service): State<service::User>,
     Json(SignUp { username, password }): Json<SignUp>,
 ) -> impl IntoResponse {
     match user_service.create(&username, password.into()).await {
