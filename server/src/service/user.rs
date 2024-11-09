@@ -21,14 +21,8 @@ use sea_orm::{
     EntityTrait,
 };
 use sea_orm::{sea_query::Alias, QueryFilter};
-use sea_orm::{ActiveValue, ColumnTrait, DatabaseConnection, DbErr};
+use sea_orm::{ActiveValue, ColumnTrait, DatabaseConnection};
 use serde::Serialize;
-
-pub enum Password {
-    #[allow(dead_code)]
-    Hashed(String),
-    Unhashed(String),
-}
 
 pub static ARGON2_HASHER: Lazy<Argon2> = Lazy::new(Argon2::default);
 
@@ -46,18 +40,30 @@ error_set! {
         #[display("Invalid username or password")]
         AuthenticationFailed,
         #[serde(skip)]
+        #[display("Task join error")]
+        JoinError,
+        Password(PasswordError),
+        CreateUser(CreateUserError),
+    };
+    #[derive(Serialize, Clone)]
+    PasswordError = {
+        #[serde(skip)]
         #[display("Failed to hash password: {err}")]
         HashPassword {
             err: password_hash::errors::Error
         },
         #[serde(skip)]
-        #[display("Failed to parse password")]
+        #[display("Failed to parse password: {err}")]
         ParsePassword {
             err: password_hash::errors::Error
-        },
-        #[serde(skip)]
-        #[display("Task join error")]
-        JoinError,
+        }
+    };
+    #[derive(Serialize, Clone)]
+    CreateUserError = {
+        #[display("Invalid username")]
+        InvalidUserName,
+        #[display("Password is too weak")]
+        PasswordTooWeak,
     };
 }
 
@@ -70,41 +76,6 @@ impl IntoResponse for Error {
         };
 
         api_response::err(self.to_string(), Some(status_code)).into_response()
-    }
-}
-
-impl Password {
-    fn to_string(&self) -> Result<String, Error> {
-        match self {
-            Password::Hashed(password) => Ok(password.to_string()),
-            Password::Unhashed(password) => {
-                let salt = SaltString::generate(&mut OsRng);
-
-                let password_hash = ARGON2_HASHER
-                    .hash_password(password.as_bytes(), &salt)
-                    .map_err(|err| Error::HashPassword { err })?;
-
-                Ok(password_hash.to_string())
-            }
-        }
-    }
-}
-
-impl From<&str> for Password {
-    fn from(value: &str) -> Password {
-        Password::Unhashed(value.to_string())
-    }
-}
-
-impl From<String> for Password {
-    fn from(value: String) -> Password {
-        Password::Unhashed(value)
-    }
-}
-
-impl From<&String> for Password {
-    fn from(value: &String) -> Password {
-        Password::Unhashed(value.to_string())
     }
 }
 
@@ -146,16 +117,22 @@ impl Service {
 
     pub async fn create(
         &self,
-        username: &String,
-        password: Password,
+        username: &str,
+        password: &str,
     ) -> Result<user::Model, Error> {
         if !validate_username(username) {
-            return Err(Error::AuthenticationFailed);
+            return Err(CreateUserError::InvalidUserName.into());
         }
+
+        if !validate_password(password) {
+            return Err(CreateUserError::PasswordTooWeak.into());
+        }
+
+        let password = hash_password(password)?;
 
         let new_user = user::ActiveModel {
             name: ActiveValue::Set(username.to_string()),
-            password: ActiveValue::Set(password.to_string()?),
+            password: ActiveValue::Set(password.to_string()),
             ..Default::default()
         };
 
@@ -165,34 +142,35 @@ impl Service {
             .map_err(|_| Error::Create)
     }
 
-    pub async fn verify_password(
+    pub async fn verify_credentials(
         &self,
-        username: &String,
-        password: &String,
+        username: &str,
+        password: &str,
     ) -> Result<user::Model, Error> {
-        if let Ok(Some(user)) = self.find_by_name(username).await {
-            let password_bytes = password.as_bytes().to_owned();
+        let (user, password_hash) = match self.find_by_name(username).await {
+            Ok(Some(u)) => {
+                let password_hash = u.password.clone();
+                (Some(u), password_hash)
+            }
+            Ok(None) => (
+                None,
+                // TODO: don't hard-code
+                "$argon2id$v=19$m=15000,t=2,p=1$\
+                gZiV/M1gPc22ElAH/Jh1Hw$\
+                CWOrkoo7oJBQ/iyh7uJ0LO2aLEfrHwTWllSAxT0zRno"
+                    .to_string(),
+            ),
+            Err(e) => return Err(e),
+        };
 
-            tokio::task::spawn_blocking(move || {
-                let parsed_hash = PasswordHash::new(&user.password)
-                    .map_err(|err| Error::ParsePassword { err })?;
+        let verification_result =
+            verify_password(password, &password_hash).await?;
 
-                if ARGON2_HASHER
-                    .verify_password(&password_bytes, &parsed_hash)
-                    .is_ok()
-                {
-                    Ok(user)
-                } else {
-                    Err(Error::AuthenticationFailed)
-                }
-            })
-            .await
-            .map_err(|e| {
-                tracing::error!("{}", e);
-                Error::JoinError
-            })?
+        if verification_result && user.is_some() {
+            #[allow(clippy::unnecessary_unwrap)]
+            Ok(user.unwrap())
         } else {
-            Err(Error::NotFound)
+            Err(Error::AuthenticationFailed)
         }
     }
 
@@ -209,12 +187,16 @@ impl Service {
 
     pub async fn find_by_name(
         &self,
-        username: &String,
-    ) -> Result<Option<user::Model>, DbErr> {
+        username: &str,
+    ) -> Result<Option<user::Model>, Error> {
         user::Entity::find()
             .filter(user::Column::Name.eq(username))
             .one(&self.database)
             .await
+            .map_err(|e| {
+                tracing::error!("{}", e);
+                Error::Database
+            })
     }
 }
 
@@ -228,7 +210,7 @@ impl AuthnBackend for Service {
         &self,
         SignIn { username, password }: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
-        Ok(Some(self.verify_password(&username, &password).await?))
+        Ok(Some(self.verify_credentials(&username, &password).await?))
     }
 
     async fn get_user(
@@ -250,6 +232,43 @@ fn validate_username(username: &str) -> bool {
     !username
         .chars()
         .any(|c| c.is_control() || c.is_whitespace())
+}
+
+fn validate_password(password: &str) -> bool {
+    use zxcvbn::{zxcvbn, Score};
+
+    let result = zxcvbn(password, &[]);
+
+    matches!(result.score(), Score::Four | Score::Three)
+}
+
+async fn verify_password(
+    password: &str,
+    password_hash: &str,
+) -> Result<bool, Error> {
+    let bytes = password.as_bytes().to_owned();
+    let password_hash = password_hash.to_string();
+    tokio::task::spawn_blocking(move || {
+        let hash = PasswordHash::new(&password_hash)
+            .map_err(|err| PasswordError::ParsePassword { err })?;
+
+        Ok(Argon2::default().verify_password(&bytes, &hash).is_ok())
+    })
+    .await
+    .map_err(|e| {
+        tracing::error!("{}", e);
+        Error::JoinError
+    })?
+}
+
+fn hash_password(password: &str) -> Result<String, PasswordError> {
+    let salt = SaltString::generate(&mut OsRng);
+
+    let password_hash = ARGON2_HASHER
+        .hash_password(password.as_bytes(), &salt)
+        .map_err(|err| PasswordError::HashPassword { err })?;
+
+    Ok(password_hash.to_string())
 }
 
 #[cfg(test)]

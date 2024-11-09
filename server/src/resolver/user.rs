@@ -17,7 +17,7 @@ impl UserQuery {
     ) -> FieldResult<LoginOutput> {
         let user_service = &context.user_service;
         let verification_result = user_service
-            .verify_password(&input.username, &input.password)
+            .verify_credentials(&input.username, &input.password)
             .await?;
 
         Ok(LoginOutput {
@@ -43,7 +43,7 @@ impl UserMutation {
         }
 
         let user = user_service
-            .create(&input.username, (&input.password).into())
+            .create(&input.username, &input.password)
             .await
             .map_err(|err| {
                 FieldError::new(

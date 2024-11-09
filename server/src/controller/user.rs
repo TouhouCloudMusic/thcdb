@@ -30,7 +30,7 @@ async fn sign_up(
     State(user_service): State<service::User>,
     Json(SignUp { username, password }): Json<SignUp>,
 ) -> impl IntoResponse {
-    match user_service.create(&username, password.into()).await {
+    match user_service.create(&username, &password).await {
         Ok(user) => match auth_session.login(&user).await {
             Ok(_) => Redirect::to("/").into_response(),
             Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())

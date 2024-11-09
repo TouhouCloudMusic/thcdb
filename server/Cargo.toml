@@ -66,6 +66,7 @@ utoipa-rapidoc               = { version = "5", features = [ "axum" ] }
 utoipa-redoc                 = { version = "4", features = [ "axum" ] }
 utoipa-swagger-ui            = { version = "8", features = [ "axum" ] }
 xxhash-rust                  = { version = "0.8.12", features = [ "std", "xxh3" ] }
+zxcvbn                       = "3.1"
 
 [dev-dependencies]
 rusty-hook = "0.11.2"
