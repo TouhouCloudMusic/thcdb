@@ -1,25 +1,24 @@
 mod api_response;
 mod controller;
 mod error;
+mod middleware;
 mod model;
 mod resolver;
 mod service;
 
+use crate::service::user::AuthSession;
 use axum::extract::FromRef;
 use axum::{routing::get, Router};
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use axum_login::AuthManagerLayerBuilder;
-use itertools::Itertools;
 use sea_orm::DatabaseConnection;
-use serde::Serialize;
 use service::{
     database::get_db_connection, ReleaseService, SongService, UserService,
 };
 use tokio::signal;
 use tower_sessions_redis_store::RedisStore;
 use tracing_subscriber::fmt::time::ChronoLocal;
-use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 #[derive(Clone, FromRef)]
@@ -44,15 +43,6 @@ impl AppState {
         }
     }
 }
-#[derive(OpenApi, Serialize)]
-#[openapi(
-    tags(
-        (name = "Touhou Cloud Db", description = "TODO")
-    )
-)]
-struct ApiDoc;
-
-struct SecurityAddon;
 
 #[tokio::main]
 async fn main() {
@@ -88,7 +78,16 @@ async fn main() {
         .merge(SwaggerUi::new("/docs").url("/openapi.json", api.clone()));
 
     let router = Router::new()
-        .route("/", get(|| async { "Hello, World!" }))
+        .route(
+            "/",
+            get(|session: AuthSession| async {
+                if let Some(user) = session.user {
+                    format!("Hello, {}!", user.name)
+                } else {
+                    "Hello, world!".into()
+                }
+            }),
+        )
         .merge(doc_router)
         .layer(auth_layer)
         .with_state(state);

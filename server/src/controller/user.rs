@@ -1,27 +1,31 @@
+use crate::middleware::is_signed_in;
 use crate::model::user::{SignIn, SignUp, UploadAvatar};
 use crate::service::user::AuthSession;
 use crate::{api_response, service, AppState};
 use axum::extract::State;
 use axum::http::StatusCode;
+use axum::middleware::from_fn;
 use axum::response::{IntoResponse, Redirect};
 use axum::Json;
 use axum_typed_multipart::TypedMultipart;
+use std::error::Error;
+use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(upload_avatar))
-        // .route_layer(login_required!(UserService, login_url = "/signin"))
+        .route_layer(from_fn(is_signed_in))
         .routes(routes!(sign_in))
         .routes(routes!(sign_up))
 }
 
 #[utoipa::path(
     post,
-    path = "/signup",
+    path = "/",
     request_body = SignIn,
-    responses((status = 200, body = api_response::Message))
+    responses((status = 200, body = api_response::Message)),
 )]
 async fn sign_up(
     mut auth_session: AuthSession,
@@ -29,20 +33,17 @@ async fn sign_up(
     Json(SignUp { username, password }): Json<SignUp>,
 ) -> impl IntoResponse {
     match user_service.create(&username, password.into()).await {
-        Ok(user) => {
-            if auth_session.login(&user).await.is_err() {
-                return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-            }
-
-            Redirect::to("/").into_response()
-        }
-
+        Ok(user) => match auth_session.login(&user).await {
+            Ok(_) => Redirect::to("/").into_response(),
+            Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+                .into_response(),
+        },
         Err(e) => e.into_response(),
     }
 }
 #[utoipa::path(
     post,
-    path = "/signin",
+    path = "/",
     request_body = SignIn,
     responses((status = 200, body = api_response::Message))
 )]
@@ -73,7 +74,7 @@ async fn sign_in(
 
 #[utoipa::path(
     post,
-    path = "/avatar",
+    path = "/",
     request_body(
         content_type = "multipart/form-data",
         content = UploadAvatar,
