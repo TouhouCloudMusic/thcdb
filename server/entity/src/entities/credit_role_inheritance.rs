@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "credit_role_inheritance")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub child_id: i32,
+    pub role_id: i32,
     #[sea_orm(primary_key, auto_increment = false)]
     pub parent_id: i32,
 }
@@ -18,7 +18,7 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(
         belongs_to = "super::credit_role::Entity",
-        from = "Column::ChildId",
+        from = "Column::RoleId",
         to = "super::credit_role::Column::Id",
         on_update = "Cascade",
         on_delete = "NoAction"

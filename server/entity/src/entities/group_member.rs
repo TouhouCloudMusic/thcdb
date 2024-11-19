@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 )]
 #[sea_orm(table_name = "group_member")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false)]
+    #[sea_orm(primary_key)]
+    pub id: i32,
     pub member_id: i32,
-    #[sea_orm(primary_key, auto_increment = false)]
     pub group_id: i32,
 }
 
@@ -20,18 +20,34 @@ pub enum Relation {
         belongs_to = "super::artist::Entity",
         from = "Column::GroupId",
         to = "super::artist::Column::Id",
-        on_update = "Cascade",
-        on_delete = "Cascade"
+        on_update = "NoAction",
+        on_delete = "NoAction"
     )]
     Artist2,
     #[sea_orm(
         belongs_to = "super::artist::Entity",
         from = "Column::MemberId",
         to = "super::artist::Column::Id",
-        on_update = "Cascade",
-        on_delete = "Cascade"
+        on_update = "NoAction",
+        on_delete = "NoAction"
     )]
     Artist1,
+    #[sea_orm(has_many = "super::group_member_join_leave::Entity")]
+    GroupMemberJoinLeave,
+    #[sea_orm(has_many = "super::group_member_role::Entity")]
+    GroupMemberRole,
+}
+
+impl Related<super::group_member_join_leave::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::GroupMemberJoinLeave.def()
+    }
+}
+
+impl Related<super::group_member_role::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::GroupMemberRole.def()
+    }
 }
 
 impl ActiveModelBehavior for ActiveModel {}

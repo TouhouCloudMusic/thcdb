@@ -8,11 +8,11 @@ use serde::{Deserialize, Serialize};
 )]
 #[sea_orm(table_name = "release_localized_title")]
 pub struct Model {
-    #[sea_orm(primary_key)]
-    pub id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub release_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub language_id: i32,
-    #[sea_orm(column_type = "Text")]
+    #[sea_orm(primary_key, auto_increment = false, column_type = "Text")]
     pub title: String,
 }
 

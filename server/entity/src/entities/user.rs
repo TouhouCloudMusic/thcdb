@@ -19,6 +19,8 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::change_request_user::Entity")]
+    ChangeRequestUser,
     #[sea_orm(
         belongs_to = "super::image::Entity",
         from = "Column::AvatarId",
@@ -27,21 +29,19 @@ pub enum Relation {
         on_delete = "SetNull"
     )]
     Image,
-    #[sea_orm(has_many = "super::session::Entity")]
-    Session,
     #[sea_orm(has_many = "super::user_role::Entity")]
     UserRole,
+}
+
+impl Related<super::change_request_user::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ChangeRequestUser.def()
+    }
 }
 
 impl Related<super::image::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Image.def()
-    }
-}
-
-impl Related<super::session::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Session.def()
     }
 }
 

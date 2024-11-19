@@ -3,7 +3,7 @@ use crate::model::input::{
 };
 use crate::service::juniper::JuniperContext;
 use entity::song;
-use juniper::FieldResult;
+use juniper::{FieldError, FieldResult};
 
 pub struct SongQuery;
 pub struct SongMutation;
@@ -18,7 +18,6 @@ impl SongQuery {
     ) -> FieldResult<Option<song::Model>> {
         let song_service = &context.song_service;
         let song = song_service.find_by_id(input.id).await?;
-
         Ok(song)
     }
 
@@ -45,7 +44,6 @@ impl SongMutation {
         let song_service = &context.song_service;
         let new_song = song_service
             .create(
-                input.status,
                 input.title,
                 input.created_at,
                 input.updated_at,

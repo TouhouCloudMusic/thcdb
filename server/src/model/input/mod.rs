@@ -1,4 +1,3 @@
-use entity::sea_orm_active_enums::EntityStatus;
 use juniper::GraphQLInputObject;
 use sea_orm::prelude::DateTimeWithTimeZone;
 
@@ -15,8 +14,6 @@ pub struct RandomSongInput {
 
 #[derive(GraphQLInputObject)]
 pub struct CreateSongInput {
-    #[graphql(description = "The review status.")]
-    pub status: EntityStatus,
     pub title: String,
     pub created_at: DateTimeWithTimeZone,
     #[graphql(description = "The latest update time.")]

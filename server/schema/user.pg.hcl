@@ -84,29 +84,3 @@ table "user_role" {
 		columns = [ column.user_id, column.role_id ]
 	}
 }
-
-
-table "session" {
-	schema = schema.public
-
-	column "id" {
-		type = text
-	}
-	primary_key {
-		columns = [ column.id ]
-	}
-
-	column "user_id" {
-		type = int
-	}
-	foreign_key "fk_session_user_id" {
-		columns = [ column.user_id ]
-		ref_columns = [ table.user.column.id ]
-		on_update = CASCADE
-		on_delete = CASCADE
-	}
-
-	column "expires_at" {
-		type = timestamptz
-	}
-}

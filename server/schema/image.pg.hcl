@@ -15,11 +15,11 @@ table "image" {
 		type = text
 	}
 
-	column "upload_by" {
+	column "uploaded_by" {
 		type = int
 	}
-	foreign_key "fk_image_upload_by" {
-		columns = [ column.upload_by ]
+	foreign_key "fk_image_uploaded_by" {
+		columns = [ column.uploaded_by ]
 		ref_columns = [ table.user.column.id ]
 		on_update = CASCADE
 		on_delete = NO_ACTION

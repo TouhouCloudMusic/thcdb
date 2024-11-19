@@ -14,4 +14,9 @@ table "language" {
 	column "name" {
 		type = text
 	}
+	index "idx_language_name" {
+    columns = [ column.name ]
+    unique = true
+	}
+
 }

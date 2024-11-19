@@ -2,7 +2,6 @@
 
 use super::sea_orm_active_enums::ArtistType;
 use super::sea_orm_active_enums::DatePrecision;
-use super::sea_orm_active_enums::EntityStatus;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -13,8 +12,6 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub entity_id: i32,
-    pub status: EntityStatus,
     #[sea_orm(column_type = "Text")]
     pub name: String,
     pub artist_type: ArtistType,
@@ -23,23 +20,68 @@ pub struct Model {
     pub start_date_precision: Option<DatePrecision>,
     pub end_date: Option<Date>,
     pub end_date_precision: Option<DatePrecision>,
+    pub alias_group_id: Option<i32>,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::alias_group::Entity",
+        from = "Column::AliasGroupId",
+        to = "super::alias_group::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    AliasGroup,
+    #[sea_orm(has_many = "super::artist_alias_history::Entity")]
+    ArtistAliasHistory,
+    #[sea_orm(has_many = "super::artist_link::Entity")]
+    ArtistLink,
     #[sea_orm(has_many = "super::artist_localized_name::Entity")]
     ArtistLocalizedName,
+    #[sea_orm(has_many = "super::group_member_history::Entity")]
+    GroupMemberHistory,
     #[sea_orm(has_many = "super::label_founder::Entity")]
     LabelFounder,
     #[sea_orm(has_many = "super::release_artist::Entity")]
     ReleaseArtist,
+    #[sea_orm(has_many = "super::release_artist_history::Entity")]
+    ReleaseArtistHistory,
+    #[sea_orm(has_many = "super::release_track_artist_history::Entity")]
+    ReleaseTrackArtistHistory,
+    #[sea_orm(has_many = "super::song_credit_history::Entity")]
+    SongCreditHistory,
+}
+
+impl Related<super::alias_group::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::AliasGroup.def()
+    }
+}
+
+impl Related<super::artist_alias_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ArtistAliasHistory.def()
+    }
+}
+
+impl Related<super::artist_link::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ArtistLink.def()
+    }
 }
 
 impl Related<super::artist_localized_name::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ArtistLocalizedName.def()
+    }
+}
+
+impl Related<super::group_member_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::GroupMemberHistory.def()
     }
 }
 
@@ -55,6 +97,24 @@ impl Related<super::release_artist::Entity> for Entity {
     }
 }
 
+impl Related<super::release_artist_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseArtistHistory.def()
+    }
+}
+
+impl Related<super::release_track_artist_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseTrackArtistHistory.def()
+    }
+}
+
+impl Related<super::song_credit_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SongCreditHistory.def()
+    }
+}
+
 impl Related<super::label::Entity> for Entity {
     fn to() -> RelationDef {
         super::label_founder::Relation::Label.def()
@@ -64,12 +124,16 @@ impl Related<super::label::Entity> for Entity {
     }
 }
 
-impl Related<super::release::Entity> for Entity {
+impl Related<super::release_track_history::Entity> for Entity {
     fn to() -> RelationDef {
-        super::release_artist::Relation::Release.def()
+        super::release_track_artist_history::Relation::ReleaseTrackHistory.def()
     }
     fn via() -> Option<RelationDef> {
-        Some(super::release_artist::Relation::Artist.def().rev())
+        Some(
+            super::release_track_artist_history::Relation::Artist
+                .def()
+                .rev(),
+        )
     }
 }
 

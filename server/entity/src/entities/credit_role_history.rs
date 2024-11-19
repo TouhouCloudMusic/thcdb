@@ -8,30 +8,26 @@ use serde::{Deserialize, Serialize};
 )]
 #[sea_orm(table_name = "credit_role_history")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub prev_id: i32,
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub next_id: i32,
+    #[sea_orm(primary_key)]
+    pub id: i32,
+    #[sea_orm(column_type = "Text")]
+    pub name: String,
+    #[sea_orm(column_type = "Text")]
+    pub short_description: String,
+    #[sea_orm(column_type = "Text")]
+    pub description: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(
-        belongs_to = "super::credit_role::Entity",
-        from = "Column::NextId",
-        to = "super::credit_role::Column::Id",
-        on_update = "Cascade",
-        on_delete = "NoAction"
-    )]
-    CreditRole2,
-    #[sea_orm(
-        belongs_to = "super::credit_role::Entity",
-        from = "Column::PrevId",
-        to = "super::credit_role::Column::Id",
-        on_update = "Cascade",
-        on_delete = "NoAction"
-    )]
-    CreditRole1,
+    #[sea_orm(has_many = "super::credit_role_inheritance_history::Entity")]
+    CreditRoleInheritanceHistory,
+}
+
+impl Related<super::credit_role_inheritance_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::CreditRoleInheritanceHistory.def()
+    }
 }
 
 impl ActiveModelBehavior for ActiveModel {}

@@ -12,7 +12,7 @@ pub struct Model {
     pub id: i32,
     #[sea_orm(column_type = "Text")]
     pub filename: String,
-    pub upload_by: i32,
+    pub uploaded_by: i32,
     pub created_at: DateTimeWithTimeZone,
 }
 
@@ -20,7 +20,7 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(
         belongs_to = "super::user::Entity",
-        from = "Column::UploadBy",
+        from = "Column::UploadedBy",
         to = "super::user::Column::Id",
         on_update = "Cascade",
         on_delete = "NoAction"

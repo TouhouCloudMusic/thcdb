@@ -22,15 +22,15 @@ pub enum Relation {
         belongs_to = "super::artist::Entity",
         from = "Column::ArtistId",
         to = "super::artist::Column::Id",
-        on_update = "Cascade",
-        on_delete = "Cascade"
+        on_update = "NoAction",
+        on_delete = "NoAction"
     )]
     Artist,
     #[sea_orm(
         belongs_to = "super::language::Entity",
         from = "Column::LanguageId",
         to = "super::language::Column::Id",
-        on_update = "Cascade",
+        on_update = "NoAction",
         on_delete = "SetNull"
     )]
     Language,

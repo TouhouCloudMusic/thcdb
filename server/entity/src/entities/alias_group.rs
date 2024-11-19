@@ -10,11 +10,18 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub entity_id: i32,
-    pub artist_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(has_many = "super::artist::Entity")]
+    Artist,
+}
+
+impl Related<super::artist::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Artist.def()
+    }
+}
 
 impl ActiveModelBehavior for ActiveModel {}

@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    #[sea_orm(column_type = "Text")]
+    #[sea_orm(column_type = "Text", unique)]
     pub name: String,
 }
 
@@ -18,17 +18,35 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::artist_localized_name::Entity")]
     ArtistLocalizedName,
+    #[sea_orm(has_many = "super::artist_localized_name_history::Entity")]
+    ArtistLocalizedNameHistory,
     #[sea_orm(has_many = "super::label_localized_name::Entity")]
     LabelLocalizedName,
+    #[sea_orm(has_many = "super::label_localized_name_history::Entity")]
+    LabelLocalizedNameHistory,
+    #[sea_orm(has_many = "super::release_history_localized_title::Entity")]
+    ReleaseHistoryLocalizedTitle,
     #[sea_orm(has_many = "super::release_localized_title::Entity")]
     ReleaseLocalizedTitle,
+    #[sea_orm(has_many = "super::song_language::Entity")]
+    SongLanguage,
+    #[sea_orm(has_many = "super::song_language_history::Entity")]
+    SongLanguageHistory,
     #[sea_orm(has_many = "super::song_localized_title::Entity")]
     SongLocalizedTitle,
+    #[sea_orm(has_many = "super::song_localized_title_history::Entity")]
+    SongLocalizedTitleHistory,
 }
 
 impl Related<super::artist_localized_name::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ArtistLocalizedName.def()
+    }
+}
+
+impl Related<super::artist_localized_name_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ArtistLocalizedNameHistory.def()
     }
 }
 
@@ -38,15 +56,63 @@ impl Related<super::label_localized_name::Entity> for Entity {
     }
 }
 
+impl Related<super::label_localized_name_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::LabelLocalizedNameHistory.def()
+    }
+}
+
+impl Related<super::release_history_localized_title::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseHistoryLocalizedTitle.def()
+    }
+}
+
 impl Related<super::release_localized_title::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ReleaseLocalizedTitle.def()
     }
 }
 
+impl Related<super::song_language::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SongLanguage.def()
+    }
+}
+
+impl Related<super::song_language_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SongLanguageHistory.def()
+    }
+}
+
 impl Related<super::song_localized_title::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::SongLocalizedTitle.def()
+    }
+}
+
+impl Related<super::song_localized_title_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SongLocalizedTitleHistory.def()
+    }
+}
+
+impl Related<super::song::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::song_language::Relation::Song.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::song_language::Relation::Language.def().rev())
+    }
+}
+
+impl Related<super::song_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::song_language_history::Relation::SongHistory.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::song_language_history::Relation::Language.def().rev())
     }
 }
 

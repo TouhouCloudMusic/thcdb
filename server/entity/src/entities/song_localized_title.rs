@@ -13,7 +13,7 @@ pub struct Model {
     pub song_id: i32,
     pub language_id: i32,
     #[sea_orm(column_type = "Text")]
-    pub title: String,
+    pub value: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -22,16 +22,16 @@ pub enum Relation {
         belongs_to = "super::language::Entity",
         from = "Column::LanguageId",
         to = "super::language::Column::Id",
-        on_update = "Cascade",
-        on_delete = "SetNull"
+        on_update = "NoAction",
+        on_delete = "NoAction"
     )]
     Language,
     #[sea_orm(
         belongs_to = "super::song::Entity",
         from = "Column::SongId",
         to = "super::song::Column::Id",
-        on_update = "Cascade",
-        on_delete = "Cascade"
+        on_update = "NoAction",
+        on_delete = "NoAction"
     )]
     Song,
 }

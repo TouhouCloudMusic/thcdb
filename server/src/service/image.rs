@@ -31,7 +31,7 @@ impl Service {
         } else {
             let active_model = image::ActiveModel {
                 filename: ActiveValue::Set(filename),
-                upload_by: ActiveValue::Set(uploader_id),
+                uploaded_by: ActiveValue::Set(uploader_id),
                 ..Default::default()
             };
 

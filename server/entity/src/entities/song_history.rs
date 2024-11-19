@@ -8,30 +8,53 @@ use serde::{Deserialize, Serialize};
 )]
 #[sea_orm(table_name = "song_history")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub prev_id: i32,
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub next_id: i32,
+    #[sea_orm(primary_key)]
+    pub id: i32,
+    #[sea_orm(column_type = "Text")]
+    pub title: String,
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(
-        belongs_to = "super::song::Entity",
-        from = "Column::NextId",
-        to = "super::song::Column::Id",
-        on_update = "Cascade",
-        on_delete = "Cascade"
-    )]
-    Song2,
-    #[sea_orm(
-        belongs_to = "super::song::Entity",
-        from = "Column::PrevId",
-        to = "super::song::Column::Id",
-        on_update = "Cascade",
-        on_delete = "Cascade"
-    )]
-    Song1,
+    #[sea_orm(has_many = "super::song_credit_history::Entity")]
+    SongCreditHistory,
+    #[sea_orm(has_many = "super::song_language_history::Entity")]
+    SongLanguageHistory,
+    #[sea_orm(has_many = "super::song_localized_title_history::Entity")]
+    SongLocalizedTitleHistory,
+}
+
+impl Related<super::song_credit_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SongCreditHistory.def()
+    }
+}
+
+impl Related<super::song_language_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SongLanguageHistory.def()
+    }
+}
+
+impl Related<super::song_localized_title_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SongLocalizedTitleHistory.def()
+    }
+}
+
+impl Related<super::language::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::song_language_history::Relation::Language.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(
+            super::song_language_history::Relation::SongHistory
+                .def()
+                .rev(),
+        )
+    }
 }
 
 impl ActiveModelBehavior for ActiveModel {}
