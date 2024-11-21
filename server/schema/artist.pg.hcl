@@ -49,15 +49,6 @@ table "artist" {
 		type = enum.DatePrecision
 	}
 
-  column "alias_group_id" {
-    type = int
-    null = true
-  }
-  foreign_key "fk_artist_alias_group_id" {
-    columns = [ column.alias_group_id ]
-    ref_columns = [ table.alias_group.column.id ]
-  }
-
 	column "created_at" {
 		type = timestamptz
 		default = sql("now()")
