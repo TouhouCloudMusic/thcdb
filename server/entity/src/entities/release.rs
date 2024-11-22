@@ -6,7 +6,14 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(
-    Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
+    Clone,
+    Debug,
+    PartialEq,
+    DeriveEntityModel,
+    Eq,
+    Serialize,
+    Deserialize,
+    juniper :: GraphQLObject,
 )]
 #[sea_orm(table_name = "release")]
 pub struct Model {
@@ -18,7 +25,7 @@ pub struct Model {
     pub release_date: Option<Date>,
     pub release_date_precision: DatePrecision,
     pub recording_date_start: Option<Date>,
-    pub recording_date_precision: DatePrecision,
+    pub recording_date_start_precision: DatePrecision,
     pub recording_date_end: Option<Date>,
     pub recording_date_end_precision: DatePrecision,
     pub created_at: DateTimeWithTimeZone,

@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
     DeriveActiveEnum,
     Serialize,
     Deserialize,
+    juniper :: GraphQLEnum,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ArtistType")]
 pub enum ArtistType {
@@ -31,6 +32,7 @@ pub enum ArtistType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
+    juniper :: GraphQLEnum,
 )]
 #[sea_orm(
     rs_type = "String",
@@ -54,6 +56,7 @@ pub enum ChangeRequestStatus {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
+    juniper :: GraphQLEnum,
 )]
 #[sea_orm(
     rs_type = "String",
@@ -77,6 +80,7 @@ pub enum ChangeRequestType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
+    juniper :: GraphQLEnum,
 )]
 #[sea_orm(
     rs_type = "String",
@@ -102,6 +106,7 @@ pub enum ChangeRequestUserType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
+    juniper :: GraphQLEnum,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "DatePrecision")]
 pub enum DatePrecision {
@@ -121,6 +126,7 @@ pub enum DatePrecision {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
+    juniper :: GraphQLEnum,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "EntityType")]
 pub enum EntityType {
@@ -144,6 +150,7 @@ pub enum EntityType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
+    juniper :: GraphQLEnum,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "MediaPlatform")]
 pub enum MediaPlatform {
@@ -163,6 +170,7 @@ pub enum MediaPlatform {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
+    juniper :: GraphQLEnum,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ReleaseType")]
 pub enum ReleaseType {
@@ -188,6 +196,7 @@ pub enum ReleaseType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
+    juniper :: GraphQLEnum,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "TagKind")]
 pub enum TagKind {
