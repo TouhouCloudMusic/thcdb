@@ -46,7 +46,7 @@ table "release" {
 		type = date
 	}
 
-	column "recording_date_precision" {
+	column "recording_date_start_precision" {
 		type = enum.DatePrecision
 		default = "Day"
 	}
