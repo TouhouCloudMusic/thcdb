@@ -2,8 +2,8 @@
 
 pub mod prelude;
 
-pub mod alias_group;
 pub mod artist;
+pub mod artist_alias;
 pub mod artist_alias_history;
 pub mod artist_history;
 pub mod artist_link;

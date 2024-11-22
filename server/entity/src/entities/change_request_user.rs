@@ -9,11 +9,11 @@ use serde::{Deserialize, Serialize};
 )]
 #[sea_orm(table_name = "change_request_user")]
 pub struct Model {
+    #[sea_orm(primary_key)]
+    pub id: i32,
     pub change_request_id: i32,
     pub user_id: i32,
     pub user_type: ChangeRequestUserType,
-    #[sea_orm(primary_key)]
-    pub id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -11,6 +11,15 @@ table "language" {
 		columns = [ column.id ]
 	}
 
+  column "code" {
+    type = text
+    comment = "Language code of ISO 639-3"
+  }
+  index "idx_language_code" {
+    columns = [ column.code ]
+    unique = true
+  }
+
 	column "name" {
 		type = text
 	}

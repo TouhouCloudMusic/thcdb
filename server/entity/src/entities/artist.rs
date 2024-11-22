@@ -20,21 +20,12 @@ pub struct Model {
     pub start_date_precision: Option<DatePrecision>,
     pub end_date: Option<Date>,
     pub end_date_precision: Option<DatePrecision>,
-    pub alias_group_id: Option<i32>,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(
-        belongs_to = "super::alias_group::Entity",
-        from = "Column::AliasGroupId",
-        to = "super::alias_group::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
-    )]
-    AliasGroup,
     #[sea_orm(has_many = "super::artist_alias_history::Entity")]
     ArtistAliasHistory,
     #[sea_orm(has_many = "super::artist_link::Entity")]
@@ -53,12 +44,6 @@ pub enum Relation {
     ReleaseTrackArtistHistory,
     #[sea_orm(has_many = "super::song_credit_history::Entity")]
     SongCreditHistory,
-}
-
-impl Related<super::alias_group::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::AliasGroup.def()
-    }
 }
 
 impl Related<super::artist_alias_history::Entity> for Entity {
