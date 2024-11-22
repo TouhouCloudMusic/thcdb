@@ -43,12 +43,14 @@ axum.workspace               = true
 axum-login.workspace         = true
 axum_typed_multipart         = "0.13"
 base64                       = "0.22"
+bon                          = "3.0"
 chrono.workspace             = true
 dotenvy.workspace            = true
 entity.workspace             = true
 error_set                    = { version = "0.7", features = [ "tracing" ] }
 fred                         = { version = "9.4" }
 image                        = "0.25"
+iso8601-duration             = { version = "0.2", features = [ "chrono" ] }
 itertools.workspace          = true
 juniper.workspace            = true
 juniper_axum.workspace       = true

@@ -15,9 +15,8 @@ pub struct RandomSongInput {
 #[derive(GraphQLInputObject)]
 pub struct CreateSongInput {
     pub title: String,
-    pub created_at: DateTimeWithTimeZone,
-    #[graphql(description = "The latest update time.")]
-    pub updated_at: DateTimeWithTimeZone,
+    #[graphql(description = "ISO 8601 format")]
+    pub duration: String,
 }
 
 #[derive(GraphQLInputObject)]
