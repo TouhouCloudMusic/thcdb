@@ -1,11 +1,9 @@
 use crate::error::SongServiceError;
-use crate::model::input::{
-    CreateSongInput, RandomSongInput, RetrieveSongInput,
-};
+use crate::model::input::{CreateSongInput, RetrieveSongInput};
 use crate::service::juniper::JuniperContext;
 use entity::song;
-use juniper::{FieldError, FieldResult, GraphQLObject};
-use serde::Deserialize;
+use entity::GqlScalarValue;
+use juniper::FieldResult;
 use std::str::FromStr;
 
 pub struct SongQuery;
@@ -13,9 +11,8 @@ pub struct SongQuery;
 pub struct SongMutation;
 
 #[juniper::graphql_object]
-#[graphql(context = JuniperContext)]
+#[graphql(context = JuniperContext, scalar = GqlScalarValue)]
 impl SongQuery {
-    #[graphql(description = "Get a song by its id.")]
     async fn retrieve(
         input: RetrieveSongInput,
         context: &JuniperContext,
@@ -27,7 +24,7 @@ impl SongQuery {
 }
 
 #[juniper::graphql_object]
-#[graphql(context = JuniperContext)]
+#[graphql(context = JuniperContext, scalar = GqlScalarValue)]
 impl SongMutation {
     #[graphql(description = "Create a new song.")]
     async fn create(

@@ -81,12 +81,12 @@ async fn sign_in(
 )]
 async fn upload_avatar(
     auth_session: AuthSession,
-    State(image_service): State<service::image::Service>,
+    State(_image_service): State<service::image::Service>,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
     let data = form.data;
     let metadata = data.metadata;
-    let user_id = auth_session.user.ok_or(StatusCode::UNAUTHORIZED)?.id;
+    let _user_id = auth_session.user.ok_or(StatusCode::UNAUTHORIZED)?.id;
 
     if metadata
         .content_type

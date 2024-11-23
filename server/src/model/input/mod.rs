@@ -1,5 +1,4 @@
 use juniper::GraphQLInputObject;
-use sea_orm::prelude::DateTimeWithTimeZone;
 
 #[derive(GraphQLInputObject)]
 pub struct RetrieveSongInput {

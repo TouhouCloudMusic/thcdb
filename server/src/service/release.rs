@@ -1,13 +1,12 @@
-use bon::{bon, builder};
-use chrono::{Date, NaiveDate};
+use crate::error::{LogErr, ServiceError};
+use bon::bon;
+use chrono::NaiveDate;
 use entity::sea_orm_active_enums::{DatePrecision, ReleaseType};
 use entity::{release, release_artist};
-use sea_orm::TryGetError::DbErr;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, DatabaseConnection, DbErr, EntityTrait,
+    ActiveValue, DatabaseConnection, DbErr, EntityTrait, TransactionError,
     TransactionTrait,
 };
-use serde_json::to_string;
 
 #[derive(Default, Clone)]
 pub struct Service {
@@ -39,9 +38,7 @@ impl Service {
         recording_date_end: Option<NaiveDate>,
         recording_date_end_precision: Option<DatePrecision>,
         artists: Vec<i32>,
-    ) -> Result<release::Model, DbErr> {
-        let tx = self.database.begin().await?;
-
+    ) -> Result<release::Model, ServiceError> {
         let active_model = release::ActiveModel {
             id: ActiveValue::NotSet,
             title: ActiveValue::Set(title.to_string()),
@@ -64,22 +61,36 @@ impl Service {
             updated_at: ActiveValue::NotSet,
         };
 
-        let new_release: release::Model =
-            release::Entity::insert(active_model).exec_with_returning(&tx)?;
+        let new_release = self
+            .database
+            .transaction::<_, _, DbErr>(|tx| {
+                Box::pin(async move {
+                    let result = release::Entity::insert(active_model)
+                        .exec_with_returning(tx)
+                        .await?;
 
-        let release_artist: Vec<_> = artists
-            .iter()
-            .map(|artist_id| release_artist::ActiveModel {
-                release_id: ActiveValue::Set(new_release.id),
-                artist_id: ActiveValue::Set(*artist_id),
+                    let release_artist = artists.into_iter().map(|artist_id| {
+                        release_artist::ActiveModel {
+                            release_id: ActiveValue::Set(result.id),
+                            artist_id: ActiveValue::Set(artist_id),
+                        }
+                    });
+
+                    release_artist::Entity::insert_many(release_artist)
+                        .exec(tx)
+                        .await?;
+
+                    Ok(result)
+                })
             })
-            .collect();
+            .await
+            .log_err()
+            .map_err(|e| match e {
+                TransactionError::Connection(e) => e,
+                TransactionError::Transaction(e) => e,
+            })?;
 
-        release_artist::Entity::insert_many(release_artist).exec(&tx).await?;
-        
         // TODO: Other relations
-
-        tx.commit().await?;
 
         Ok(new_release)
     }

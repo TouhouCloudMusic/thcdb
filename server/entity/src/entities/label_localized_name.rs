@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
     juniper :: GraphQLObject,
 )]
 #[sea_orm(table_name = "label_localized_name")]
+# [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,

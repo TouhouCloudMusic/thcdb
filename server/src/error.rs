@@ -1,5 +1,5 @@
 use error_set::error_set;
-use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
 
 error_set! {
     ServiceError = {
@@ -10,10 +10,27 @@ error_set! {
             accepted: String
         },
         #[display("Database error")]
-        DatabaseError(sea_orm::DbErr) 
+        Database(sea_orm::DbErr),
     };
     SongServiceError = {
         #[display("Placeholder Error")]
         Placeholder,
     } || ServiceError;
+}
+
+pub trait LogErr {
+    fn log_err(self) -> Self;
+}
+
+impl<T, E> LogErr for Result<T, E>
+where
+    E: Debug,
+{
+    #[inline]
+    fn log_err(self) -> Self {
+        if let Err(ref e) = self {
+            tracing::error!("{:#?}", e);
+        }
+        self
+    }
 }

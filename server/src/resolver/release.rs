@@ -1,13 +1,14 @@
 use crate::model::input::RetrieveReleaseInput;
 use crate::service::juniper::JuniperContext;
 use entity::release;
+use entity::GqlScalarValue;
 use juniper::FieldResult;
 
 pub struct ReleaseQuery;
 // pub struct ReleaseMutation;
 
 #[juniper::graphql_object]
-#[graphql(context = JuniperContext)]
+#[graphql(context = JuniperContext, scalar = GqlScalarValue)]
 impl ReleaseQuery {
     #[graphql(description = "Get a release by its id.")]
     async fn retrieve(

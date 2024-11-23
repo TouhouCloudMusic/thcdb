@@ -1,13 +1,13 @@
+use crate::resolver::juniper::{JuniperMutation, JuniperQuery};
+use crate::{service::juniper::*, AppState};
 use axum::{
     extract::State,
     routing::{get, on, MethodFilter},
 };
+use entity::GqlScalarValue;
 use juniper::EmptySubscription;
 use juniper_axum::{extract::JuniperRequest, response::JuniperResponse};
 use juniper_axum::{graphiql, playground};
-
-use crate::resolver::juniper::{JuniperMutation, JuniperQuery};
-use crate::{service::juniper::*, AppState};
 
 pub fn router() -> axum::Router<AppState> {
     axum::Router::new()
@@ -21,12 +21,14 @@ pub fn router() -> axum::Router<AppState> {
 
 async fn graphql_handler(
     State(state): State<AppState>,
-    JuniperRequest(req): JuniperRequest,
-) -> JuniperResponse {
-    let schema = JuniperSchema::new(
+    JuniperRequest(req): JuniperRequest<GqlScalarValue>,
+) -> JuniperResponse<GqlScalarValue> {
+    let schema = JuniperSchema::new_with_scalar_value(
         JuniperQuery,
         JuniperMutation,
         EmptySubscription::new(),
     );
-    JuniperResponse(req.execute(&schema, &JuniperContext::from(state)).await)
+    JuniperResponse::<GqlScalarValue>(
+        req.execute(&schema, &JuniperContext::from(state)).await,
+    )
 }
