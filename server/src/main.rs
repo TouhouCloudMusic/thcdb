@@ -63,7 +63,7 @@ async fn main() {
 
     let session_store = RedisStore::new(pool);
     let session_layer = SessionManagerLayer::new(session_store)
-        .with_http_only(true)
+        .with_name("session_token")
         .with_expiry(Expiry::OnInactivity(Duration::days(30)));
 
     let auth_layer =
