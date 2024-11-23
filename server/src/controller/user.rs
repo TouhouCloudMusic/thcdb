@@ -21,7 +21,7 @@ pub fn router() -> OpenApiRouter<AppState> {
 
 #[utoipa::path(
     post,
-    path = "/",
+    path = "/signup",
     request_body = SignIn,
     responses((status = 200, body = api_response::Message)),
 )]
@@ -41,7 +41,7 @@ async fn sign_up(
 }
 #[utoipa::path(
     post,
-    path = "/",
+    path = "/signin",
     request_body = SignIn,
     responses((status = 200, body = api_response::Message))
 )]
@@ -72,7 +72,7 @@ async fn sign_in(
 
 #[utoipa::path(
     post,
-    path = "/",
+    path = "/avatar",
     request_body(
         content_type = "multipart/form-data",
         content = UploadAvatar,
