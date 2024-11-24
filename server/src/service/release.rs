@@ -4,8 +4,8 @@ use chrono::NaiveDate;
 use entity::sea_orm_active_enums::{DatePrecision, ReleaseType};
 use entity::{release, release_artist};
 use sea_orm::{
-    ActiveValue, DatabaseConnection, DbErr, EntityTrait, TransactionError,
-    TransactionTrait,
+    ActiveValue, DatabaseConnection, DbErr, EntityTrait, IntoActiveValue,
+    TransactionError, TransactionTrait,
 };
 
 #[derive(Default, Clone)]
@@ -29,7 +29,7 @@ impl Service {
     #[builder]
     pub async fn create(
         &self,
-        title: &str,
+        title: String,
         release_type: ReleaseType,
         release_date: Option<NaiveDate>,
         release_date_precision: Option<DatePrecision>,
@@ -41,22 +41,16 @@ impl Service {
     ) -> Result<release::Model, ServiceError> {
         let active_model = release::ActiveModel {
             id: ActiveValue::NotSet,
-            title: ActiveValue::Set(title.to_string()),
+            title: ActiveValue::Set(title),
             release_type: ActiveValue::Set(release_type),
             release_date: ActiveValue::Set(release_date),
-            release_date_precision: get_optional_date_precision_active_value(
-                release_date_precision,
-            ),
+            release_date_precision: release_date_precision.into_active_value(),
             recording_date_start: ActiveValue::Set(recording_date_start),
-            recording_date_start_precision:
-                get_optional_date_precision_active_value(
-                    recording_date_start_precision,
-                ),
+            recording_date_start_precision: recording_date_start_precision
+                .into_active_value(),
             recording_date_end: ActiveValue::Set(recording_date_end),
-            recording_date_end_precision:
-                get_optional_date_precision_active_value(
-                    recording_date_end_precision,
-                ),
+            recording_date_end_precision: recording_date_end_precision
+                .into_active_value(),
             created_at: ActiveValue::NotSet,
             updated_at: ActiveValue::NotSet,
         };
@@ -93,14 +87,5 @@ impl Service {
         // TODO: Other relations
 
         Ok(new_release)
-    }
-}
-
-fn get_optional_date_precision_active_value(
-    value: Option<DatePrecision>,
-) -> ActiveValue<DatePrecision> {
-    match value {
-        None => ActiveValue::NotSet,
-        Some(v) => ActiveValue::Set(v),
     }
 }

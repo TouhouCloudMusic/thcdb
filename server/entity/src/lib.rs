@@ -1,5 +1,3 @@
-extern crate core;
-
 #[rustfmt::skip]
 mod entities;
 mod extension;
