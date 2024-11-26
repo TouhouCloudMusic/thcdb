@@ -268,7 +268,46 @@ table "release_credit" {
 	}
 
 	column "on" {
-		type = sql("int[]")
+		type = sql("smallint[]")
+		null = true
+	}
+}
+
+table "release_credit_history" {
+	schema = schema.public
+
+	column "id" {
+		type = int
+		identity {
+			generated = BY_DEFAULT
+		}
+	}
+	primary_key {
+		columns = [ column.id ]
+	}
+
+	column "artist_id" {
+		type = int
+	}
+
+	column "release_history_id" {
+		type = int
+	}
+	foreign_key "fk_release_credit_history_release_history_id" {
+		columns = [ column.release_history_id ]
+		ref_columns = [ table.release_history.column.id ]
+	}
+
+	column "role_id" {
+		type = int
+	}
+	foreign_key "fk_release_credit_role_id" {
+		columns = [ column.role_id ]
+		ref_columns = [ table.credit_role.column.id ]
+	}
+
+	column "on" {
+		type = sql("smallint[]")
 		null = true
 	}
 }
@@ -309,7 +348,7 @@ table "release_history" {
 		type = date
 	}
 
-	column "recording_date_precision" {
+	column "recording_date_start_precision" {
 		type = enum.DatePrecision
 		default = "Day"
 	}
@@ -335,7 +374,7 @@ table "release_history" {
 	}
 }
 
-table "release_history_localized_title" {
+table "release_localized_title_history" {
 	schema = schema.public
 
 	column "history_id" {

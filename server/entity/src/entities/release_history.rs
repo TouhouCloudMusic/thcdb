@@ -26,7 +26,7 @@ pub struct Model {
     pub release_date: Option<Date>,
     pub release_date_precision: DatePrecision,
     pub recording_date_start: Option<Date>,
-    pub recording_date_precision: DatePrecision,
+    pub recording_date_start_precision: DatePrecision,
     pub recording_date_end: Option<Date>,
     pub recording_date_end_precision: DatePrecision,
     pub created_at: DateTimeWithTimeZone,
@@ -34,6 +34,15 @@ pub struct Model {
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(has_many = "super::release_credit_history::Entity")]
+    ReleaseCreditHistory,
+}
+
+impl Related<super::release_credit_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseCreditHistory.def()
+    }
+}
 
 impl ActiveModelBehavior for ActiveModel {}

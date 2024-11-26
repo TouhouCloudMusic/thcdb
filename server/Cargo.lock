@@ -3831,6 +3831,7 @@ dependencies = [
  "entity",
  "error_set",
  "fred",
+ "futures",
  "image",
  "iso8601-duration",
  "itertools 0.13.0",

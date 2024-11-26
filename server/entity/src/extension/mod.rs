@@ -1,12 +1,11 @@
+mod from;
 mod graphql;
-
-use axum_login::AuthUser;
-use juniper::ScalarValue;
-use sea_orm::{ActiveValue, IntoActiveValue};
-use serde::de::Error;
-use serde::{Deserialize, Deserializer, Serialize};
+mod into_active_value;
 
 use crate::sea_orm_active_enums::DatePrecision;
+use axum_login::AuthUser;
+use sea_orm::{ActiveValue, IntoActiveValue};
+
 pub use graphql::GqlScalarValue;
 
 impl AuthUser for super::entities::user::Model {

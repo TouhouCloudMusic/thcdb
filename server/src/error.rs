@@ -3,7 +3,7 @@ use std::fmt::Debug;
 
 error_set! {
     ServiceError = {
-        #[display("Invalid field: {field}, expected type: {expected}, accepted: {accepted}")]
+        #[display("Invalid field: {field}, expected: {expected}, accepted: {accepted}.")]
         InvalidField {
             field: String,
             expected: String,

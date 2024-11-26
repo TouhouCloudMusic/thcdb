@@ -13,13 +13,13 @@ use serde::{Deserialize, Serialize};
     Deserialize,
     juniper :: GraphQLObject,
 )]
-#[sea_orm(table_name = "release_credit")]
+#[sea_orm(table_name = "release_credit_hisotry")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub artist_id: i32,
-    pub release_id: i32,
+    pub release_history_id: i32,
     pub role_id: i32,
     pub on: Option<Vec<i16>>,
 }
@@ -35,13 +35,13 @@ pub enum Relation {
     )]
     CreditRole,
     #[sea_orm(
-        belongs_to = "super::release::Entity",
-        from = "Column::ReleaseId",
-        to = "super::release::Column::Id",
-        on_update = "Cascade",
-        on_delete = "Cascade"
+        belongs_to = "super::release_history::Entity",
+        from = "Column::ReleaseHistoryId",
+        to = "super::release_history::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
     )]
-    Release,
+    ReleaseHistory,
 }
 
 impl Related<super::credit_role::Entity> for Entity {
@@ -50,9 +50,9 @@ impl Related<super::credit_role::Entity> for Entity {
     }
 }
 
-impl Related<super::release::Entity> for Entity {
+impl Related<super::release_history::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Release.def()
+        Relation::ReleaseHistory.def()
     }
 }
 

@@ -83,7 +83,7 @@ table "change_request_user" {
     }
   }
   primary_key {
-    columns = [column.id]
+    columns = [ column.id ]
   }
 
   column "change_request_id" {
@@ -105,8 +105,11 @@ table "change_request_user" {
   column "user_type" {
     type = enum.ChangeRequestUserType
   }
+  
+  unique "unique_request_user_and_user_type" {
+    columns = [ column.change_request_id, column.user_id, column.user_type ]
+  }
 }
-
 
 table "change_request_history" {
   schema = schema.public

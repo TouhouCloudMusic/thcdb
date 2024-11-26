@@ -13,40 +13,40 @@ use serde::{Deserialize, Serialize};
     Deserialize,
     juniper :: GraphQLObject,
 )]
-#[sea_orm(table_name = "release_credit")]
+#[sea_orm(table_name = "release_localized_title_history")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
-    #[sea_orm(primary_key)]
-    pub id: i32,
-    pub artist_id: i32,
-    pub release_id: i32,
-    pub role_id: i32,
-    pub on: Option<Vec<i16>>,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub history_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub language_id: i32,
+    #[sea_orm(primary_key, auto_increment = false, column_type = "Text")]
+    pub title: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::credit_role::Entity",
-        from = "(Column::RoleId, Column::RoleId)",
-        to = "(super::credit_role::Column::Id, super::credit_role::Column::Id)",
-        on_update = "Cascade",
-        on_delete = "SetNull"
+        belongs_to = "super::language::Entity",
+        from = "Column::LanguageId",
+        to = "super::language::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
     )]
-    CreditRole,
+    Language,
     #[sea_orm(
         belongs_to = "super::release::Entity",
-        from = "Column::ReleaseId",
+        from = "Column::HistoryId",
         to = "super::release::Column::Id",
-        on_update = "Cascade",
-        on_delete = "Cascade"
+        on_update = "NoAction",
+        on_delete = "NoAction"
     )]
     Release,
 }
 
-impl Related<super::credit_role::Entity> for Entity {
+impl Related<super::language::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::CreditRole.def()
+        Relation::Language.def()
     }
 }
 

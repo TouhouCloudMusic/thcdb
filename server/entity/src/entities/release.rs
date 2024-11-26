@@ -41,14 +41,14 @@ pub enum Relation {
     ReleaseArtistHistory,
     #[sea_orm(has_many = "super::release_credit::Entity")]
     ReleaseCredit,
-    #[sea_orm(has_many = "super::release_history_localized_title::Entity")]
-    ReleaseHistoryLocalizedTitle,
     #[sea_orm(has_many = "super::release_label::Entity")]
     ReleaseLabel,
     #[sea_orm(has_many = "super::release_label_history::Entity")]
     ReleaseLabelHistory,
     #[sea_orm(has_many = "super::release_localized_title::Entity")]
     ReleaseLocalizedTitle,
+    #[sea_orm(has_many = "super::release_localized_title_history::Entity")]
+    ReleaseLocalizedTitleHistory,
     #[sea_orm(has_many = "super::release_track::Entity")]
     ReleaseTrack,
     #[sea_orm(has_many = "super::release_track_history::Entity")]
@@ -73,12 +73,6 @@ impl Related<super::release_credit::Entity> for Entity {
     }
 }
 
-impl Related<super::release_history_localized_title::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::ReleaseHistoryLocalizedTitle.def()
-    }
-}
-
 impl Related<super::release_label::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ReleaseLabel.def()
@@ -94,6 +88,12 @@ impl Related<super::release_label_history::Entity> for Entity {
 impl Related<super::release_localized_title::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ReleaseLocalizedTitle.def()
+    }
+}
+
+impl Related<super::release_localized_title_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseLocalizedTitleHistory.def()
     }
 }
 

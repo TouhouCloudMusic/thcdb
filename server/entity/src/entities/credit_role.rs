@@ -32,6 +32,8 @@ pub enum Relation {
     CreditRoleInheritanceHistory,
     #[sea_orm(has_many = "super::release_credit::Entity")]
     ReleaseCredit,
+    #[sea_orm(has_many = "super::release_credit_history::Entity")]
+    ReleaseCreditHistory,
     #[sea_orm(has_many = "super::song_credit::Entity")]
     SongCredit,
     #[sea_orm(has_many = "super::song_credit_history::Entity")]
@@ -47,6 +49,12 @@ impl Related<super::credit_role_inheritance_history::Entity> for Entity {
 impl Related<super::release_credit::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ReleaseCredit.def()
+    }
+}
+
+impl Related<super::release_credit_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseCreditHistory.def()
     }
 }
 
