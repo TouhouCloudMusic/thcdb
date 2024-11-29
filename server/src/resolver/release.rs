@@ -1,8 +1,8 @@
+use entity::{release, GqlScalarValue};
+use juniper::FieldResult;
+
 use crate::model::input::RetrieveReleaseInput;
 use crate::service::juniper::JuniperContext;
-use entity::release;
-use entity::GqlScalarValue;
-use juniper::FieldResult;
 
 pub struct ReleaseQuery;
 // pub struct ReleaseMutation;

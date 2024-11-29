@@ -124,9 +124,10 @@ where
 }
 #[cfg(test)]
 mod tests {
-    use super::*;
     use serde::Serialize;
     use serde_json::json;
+
+    use super::*;
 
     #[test]
     fn test_response_json() {

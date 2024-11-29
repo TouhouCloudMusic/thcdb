@@ -1,6 +1,7 @@
+use sea_orm_migration::prelude::*;
+
 use crate::sea_orm::ActiveValue::Set;
 use crate::sea_orm::EntityTrait;
-use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;

@@ -1,13 +1,8 @@
-use crate::api_response;
-use crate::model::user::SignIn;
-use argon2::{
-    password_hash,
-    password_hash::{
-        rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier,
-        SaltString,
-    },
-    Argon2,
+use argon2::password_hash::rand_core::OsRng;
+use argon2::password_hash::{
+    PasswordHash, PasswordHasher, PasswordVerifier, SaltString,
 };
+use argon2::{password_hash, Argon2};
 use async_trait::async_trait;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
@@ -16,13 +11,16 @@ use entity::user;
 use error_set::error_set;
 use once_cell::sync::Lazy;
 use regex::Regex;
+use sea_orm::prelude::Expr;
+use sea_orm::sea_query::{Alias, Query};
 use sea_orm::{
-    prelude::Expr, sea_query::Query, ConnectionTrait, DatabaseBackend,
-    EntityTrait,
+    ActiveValue, ColumnTrait, ConnectionTrait, DatabaseBackend,
+    DatabaseConnection, EntityTrait, QueryFilter,
 };
-use sea_orm::{sea_query::Alias, QueryFilter};
-use sea_orm::{ActiveValue, ColumnTrait, DatabaseConnection};
 use serde::Serialize;
+
+use crate::api_response;
+use crate::model::user::SignIn;
 
 pub static ARGON2_HASHER: Lazy<Argon2> = Lazy::new(Argon2::default);
 

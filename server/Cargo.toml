@@ -79,9 +79,9 @@ zxcvbn = "3.1"
 rusty-hook = "0.11.2"
 
 [profile.dev]
-opt-level = 1
-split-debuginfo = "unpacked"
 codegen-backend = "cranelift"
+opt-level       = 1
+split-debuginfo = "unpacked"
 
 [profile.dev.package."*"]
 opt-level = 3

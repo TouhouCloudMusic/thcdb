@@ -2,11 +2,11 @@ mod from;
 mod graphql;
 mod into_active_value;
 
-use crate::sea_orm_active_enums::DatePrecision;
 use axum_login::AuthUser;
+pub use graphql::GqlScalarValue;
 use sea_orm::{ActiveValue, IntoActiveValue};
 
-pub use graphql::GqlScalarValue;
+use crate::sea_orm_active_enums::DatePrecision;
 
 impl AuthUser for super::entities::user::Model {
     type Id = i32;

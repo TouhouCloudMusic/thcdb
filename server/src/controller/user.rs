@@ -1,7 +1,3 @@
-use crate::middleware::is_signed_in;
-use crate::model::user::{SignIn, SignUp, UploadAvatar};
-use crate::service::user::AuthSession;
-use crate::{api_response, service, AppState};
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::middleware::from_fn;
@@ -10,6 +6,11 @@ use axum::Json;
 use axum_typed_multipart::TypedMultipart;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
+
+use crate::middleware::is_signed_in;
+use crate::model::user::{SignIn, SignUp, UploadAvatar};
+use crate::service::user::AuthSession;
+use crate::{api_response, service, AppState};
 
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()

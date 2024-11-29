@@ -1,5 +1,6 @@
-use crate::{release, release_history};
 use sea_orm::ActiveValue::{self};
+
+use crate::{release, release_history};
 
 impl From<release::Model> for release_history::ActiveModel {
     fn from(value: release::Model) -> Self {

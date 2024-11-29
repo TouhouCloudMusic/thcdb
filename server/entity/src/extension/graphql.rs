@@ -1,4 +1,5 @@
 use core::fmt;
+
 use juniper::{graphql_scalar, ScalarValue};
 use serde::de::Error;
 use serde::{de, Deserialize, Deserializer, Serialize};
@@ -115,8 +116,9 @@ impl<'de> Deserialize<'de> for GqlScalarValue {
 type MyI16 = i16;
 
 mod i16_scalar {
-    use super::{GqlScalarValue, MyI16};
     use juniper::{InputValue, Value};
+
+    use super::{GqlScalarValue, MyI16};
 
     pub(super) fn to_output(value: &MyI16) -> Value<GqlScalarValue> {
         Value::Scalar(GqlScalarValue::SmallInt(*value))

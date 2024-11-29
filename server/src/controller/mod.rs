@@ -1,6 +1,7 @@
-use crate::AppState;
 use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
+
+use crate::AppState;
 
 mod graphql;
 mod user;

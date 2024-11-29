@@ -1,4 +1,3 @@
-use crate::error::SongServiceError;
 use bon::bon;
 use chrono::Duration;
 use entity::song;
@@ -7,6 +6,8 @@ use sea_orm::{
     ActiveValue, DatabaseConnection, EntityTrait, Order, QueryOrder,
     QuerySelect,
 };
+
+use crate::error::SongServiceError;
 
 #[derive(Default, Clone)]
 pub struct Service {

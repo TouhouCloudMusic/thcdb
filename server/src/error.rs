@@ -1,5 +1,6 @@
-use error_set::error_set;
 use std::fmt::Debug;
+
+use error_set::error_set;
 
 error_set! {
     ServiceError = {

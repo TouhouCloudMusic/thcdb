@@ -1,8 +1,9 @@
-use crate::resolver::juniper::{JuniperMutation, JuniperQuery};
-use crate::{service, AppState};
 use entity::GqlScalarValue;
 use juniper::EmptySubscription;
 use sea_orm::DatabaseConnection;
+
+use crate::resolver::juniper::{JuniperMutation, JuniperQuery};
+use crate::{service, AppState};
 
 #[derive(Default)]
 pub struct JuniperContext {

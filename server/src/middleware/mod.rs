@@ -1,8 +1,9 @@
-use crate::service::user::AuthSession;
 use axum::extract::Request;
 use axum::http::StatusCode;
 use axum::middleware::Next;
 use axum::response::IntoResponse;
+
+use crate::service::user::AuthSession;
 
 pub async fn is_signed_in(
     auth_session: AuthSession,

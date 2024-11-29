@@ -1,8 +1,9 @@
+use entity::GqlScalarValue;
+
 use crate::resolver::release::ReleaseQuery;
 use crate::resolver::song::{SongMutation, SongQuery};
 use crate::resolver::user::{UserMutation, UserQuery};
 use crate::service::juniper::JuniperContext;
-use entity::GqlScalarValue;
 
 pub struct JuniperQuery;
 pub struct JuniperMutation;

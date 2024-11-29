@@ -1,10 +1,11 @@
+use std::str::FromStr;
+
+use entity::{song, GqlScalarValue};
+use juniper::FieldResult;
+
 use crate::error::SongServiceError;
 use crate::model::input::{CreateSongInput, RetrieveSongInput};
 use crate::service::juniper::JuniperContext;
-use entity::song;
-use entity::GqlScalarValue;
-use juniper::FieldResult;
-use std::str::FromStr;
 
 pub struct SongQuery;
 

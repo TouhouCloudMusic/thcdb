@@ -6,9 +6,9 @@ mod model;
 mod resolver;
 mod service;
 
-use crate::service::user::AuthSession;
 use axum::extract::FromRef;
-use axum::{routing::get, Router};
+use axum::routing::get;
+use axum::Router;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use axum_login::AuthManagerLayerBuilder;
@@ -18,6 +18,8 @@ use tokio::signal;
 use tower_sessions_redis_store::RedisStore;
 use tracing_subscriber::fmt::time::ChronoLocal;
 use utoipa_swagger_ui::SwaggerUi;
+
+use crate::service::user::AuthSession;
 
 #[derive(Clone, FromRef)]
 pub struct AppState {

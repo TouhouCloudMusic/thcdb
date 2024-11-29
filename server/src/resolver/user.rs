@@ -1,8 +1,8 @@
-use crate::model::output::*;
-use crate::service::juniper::*;
-
-use crate::model::user::{SignIn, SignUp};
 use juniper::{graphql_object, graphql_value, FieldError, FieldResult};
+
+use crate::model::output::*;
+use crate::model::user::{SignIn, SignUp};
+use crate::service::juniper::*;
 
 pub struct UserQuery;
 pub struct UserMutation;
