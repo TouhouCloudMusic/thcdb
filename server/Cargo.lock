@@ -3104,8 +3104,7 @@ dependencies = [
 [[package]]
 name = "sea-orm"
 version = "1.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d5680a8b686985116607ef5f5af2b1f9e1cc2c228330e93101816a0baa279afa"
+source = "git+https://github.com/Huliiiiii/sea-orm.git#61cdf8d7fc10e10b42aa7b385581e03e42195bd8"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -3149,8 +3148,7 @@ dependencies = [
 [[package]]
 name = "sea-orm-macros"
 version = "1.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a239e3bb1b566ad4ec2654d0d193d6ceddfd733487edc9c21a64d214c773910"
+source = "git+https://github.com/Huliiiiii/sea-orm.git#61cdf8d7fc10e10b42aa7b385581e03e42195bd8"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",

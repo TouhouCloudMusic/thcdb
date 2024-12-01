@@ -35,6 +35,9 @@ edition = "2021"
 name    = "thcdb_rs"
 version = "0.1.0"
 
+[patch.crates-io]
+sea-orm = { git = "https://github.com/Huliiiiii/sea-orm.git", branch = "main"}
+
 [dependencies]
 anyhow.workspace = true
 argon2.workspace = true
