@@ -14,12 +14,18 @@ use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use axum_login::AuthManagerLayerBuilder;
 use sea_orm::DatabaseConnection;
 use service::database::get_db_connection;
+#[cfg(not(target_env = "msvc"))]
+use tikv_jemallocator::Jemalloc;
 use tokio::signal;
 use tower_sessions_redis_store::RedisStore;
 use tracing_subscriber::fmt::time::ChronoLocal;
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::service::user::AuthSession;
+
+#[cfg(not(target_env = "msvc"))]
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
 
 #[derive(Clone, FromRef)]
 pub struct AppState {
