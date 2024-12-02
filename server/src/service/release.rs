@@ -303,100 +303,126 @@ impl Service {
                 Track::Unlinked(t) => Either::Right(t),
             });
 
-        // TODO: Create a pr or wait someone to implement it
-        // https://github.com/SeaQL/sea-orm/issues/1862
-        let tracks = future::try_join_all(unlinked.into_iter().map(
-            |track| async move {
-                let model = song::ActiveModel {
-                    id: NotSet,
-                    title: track.title.into_active_value(),
-                    duration: match track.duration {
-                        Some(t) => Some(t.to_string()).into_active_value(),
-                        None => NotSet,
-                    },
-                    created_at: NotSet,
-                    updated_at: NotSet,
-                }
-                .insert(tx)
-                .await?;
+        let unlinked_len = unlinked.len();
 
-                Ok::<LinkedTrack, DbErr>(LinkedTrack {
-                    title: model.title.into(),
-                    song_id: model.id,
-                    artist: track.artist,
-                    track_number: track.track_number,
-                    track_order: track.track_order,
-                    duration: track.duration,
-                })
-            },
-        ))
-        .await?
-        .into_iter()
-        .chain(linked.into_iter());
-
-        let track_task = tracks.into_iter().map(|track| async move {
-            let track_model = release_track::ActiveModel {
-                id: ActiveValue::NotSet,
-                release_id: release_id.into_active_value(),
-                song_id: track.song_id.into_active_value(),
-                track_order: track.track_order.into_active_value(),
-                track_number: Into::<Option<String>>::into(
-                    track.track_number.clone(),
-                )
-                .into_active_value(),
-                title: track.title.clone().into_active_value(),
-            };
-
-            let track_history_model = release_track_history::ActiveModel {
+        let song_ams = unlinked.iter().map(|track| {
+            song::ActiveModel {
                 id: NotSet,
-                release_history_id: release_history_id.into_active_value(),
-                song_id: track.song_id.into_active_value(),
-                track_order: track.track_order.into_active_value(),
-                track_number: Into::<Option<String>>::into(track.track_number)
-                    .into_active_value(),
-                title: track.title.into_active_value(),
-            };
-
-            let track_id = release_track::Entity::insert(track_model)
-                .exec(tx)
-                .await?
-                .last_insert_id;
-
-            let track_history_id =
-                release_track_history::Entity::insert(track_history_model)
-                    .exec(tx)
-                    .await?
-                    .last_insert_id;
-
-            let artist_model = track.artist.iter().map(|artist_id| {
-                release_track_artist::Model {
-                    track_id,
-                    artist_id: *artist_id,
-                }
-                .into_active_model()
-            });
-
-            let artist_history_model = track.artist.iter().map(|artist_id| {
-                release_track_artist_history::Model {
-                    track_history_id,
-                    artist_id: *artist_id,
-                }
-                .into_active_model()
-            });
-
-            release_track_artist::Entity::insert_many(artist_model)
-                .exec(tx)
-                .await?;
-            release_track_artist_history::Entity::insert_many(
-                artist_history_model,
-            )
-            .exec(tx)
-            .await?;
-
-            Ok::<(), DbErr>(())
+                title: track.title.clone().into_active_value(),
+                duration: match track.duration {
+                    Some(t) => Some(t.to_string()).into_active_value(),
+                    None => NotSet,
+                },
+                created_at: NotSet,
+                updated_at: NotSet,
+            }
+            .into_active_model()
         });
 
-        future::try_join_all(track_task).await?;
+        let new_songs = song::Entity::insert_many(song_ams)
+            .exec_with_returning_many(tx)
+            .await?;
+
+        if new_songs.len() != unlinked_len {
+            return Err(DbErr::Custom("Return song count mismatch".into()));
+        }
+
+        let new_songs = new_songs.into_iter().zip(unlinked.into_iter()).map(
+            |(model, track)| LinkedTrack {
+                title: model.title.into(),
+                song_id: model.id,
+                artist: track.artist,
+                track_number: track.track_number,
+                track_order: track.track_order,
+                duration: track.duration,
+            },
+        );
+
+        let tracks = new_songs
+            .into_iter()
+            .chain(linked.into_iter())
+            // TODO: Do we need sorted here?
+            // .sorted_by(|a, b| {
+            //     a.track_order.cmp(&b.track_order)
+            // })
+            .collect_vec();
+
+        let (track_models, track_history_models): (Vec<_>, Vec<_>) = tracks
+            .iter()
+            .map(|track| {
+                let track_model = release_track::ActiveModel {
+                    id: ActiveValue::NotSet,
+                    release_id: release_id.into_active_value(),
+                    song_id: track.song_id.into_active_value(),
+                    track_order: track.track_order.into_active_value(),
+                    track_number: Into::<Option<String>>::into(
+                        track.track_number.clone(),
+                    )
+                    .into_active_value(),
+                    title: track.title.clone().into_active_value(),
+                };
+
+                let track_history_model = release_track_history::ActiveModel {
+                    id: NotSet,
+                    release_history_id: release_history_id.into_active_value(),
+                    song_id: track.song_id.into_active_value(),
+                    track_order: track.track_order.into_active_value(),
+                    track_number: Into::<Option<String>>::into(
+                        track.track_number.clone(),
+                    )
+                    .into_active_value(),
+                    title: track.title.clone().into_active_value(),
+                };
+
+                (track_model, track_history_model)
+            })
+            .unzip();
+
+        let new_release_tracks =
+            release_track::Entity::insert_many(track_models)
+                .exec_with_returning_many(tx)
+                .await?
+                .into_iter()
+                .zip(tracks.iter());
+
+        let new_release_track_historys =
+            release_track_history::Entity::insert_many(track_history_models)
+                .exec_with_returning_many(tx)
+                .await?
+                .into_iter()
+                .zip(tracks.iter());
+
+        let track_artist_models =
+            new_release_tracks.into_iter().flat_map(|(model, track)| {
+                track.artist.iter().map(move |artist_id| {
+                    release_track_artist::Model {
+                        track_id: model.id,
+                        artist_id: *artist_id,
+                    }
+                    .into_active_model()
+                })
+            });
+
+        let track_artist_history_model = new_release_track_historys
+            .into_iter()
+            .flat_map(|(model, track)| {
+                track.artist.iter().map(move |artist_id| {
+                    release_track_artist_history::Model {
+                        track_history_id: model.id,
+                        artist_id: *artist_id,
+                    }
+                    .into_active_model()
+                })
+            });
+
+        release_track_artist::Entity::insert_many(track_artist_models)
+            .exec(tx)
+            .await?;
+        release_track_artist_history::Entity::insert_many(
+            track_artist_history_model,
+        )
+        .exec(tx)
+        .await?;
 
         Ok(())
     }
