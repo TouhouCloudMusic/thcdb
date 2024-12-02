@@ -303,8 +303,6 @@ impl Service {
                 Track::Unlinked(t) => Either::Right(t),
             });
 
-        let unlinked_len = unlinked.len();
-
         let song_ams = unlinked.iter().map(|track| {
             song::ActiveModel {
                 id: NotSet,
@@ -319,32 +317,26 @@ impl Service {
             .into_active_model()
         });
 
+        // Just let it panic if the length mismatch (should never happen)
         let new_songs = song::Entity::insert_many(song_ams)
             .exec_with_returning_many(tx)
-            .await?;
-
-        if new_songs.len() != unlinked_len {
-            return Err(DbErr::Custom("Return song count mismatch".into()));
-        }
-
-        let new_songs = new_songs.into_iter().zip(unlinked.into_iter()).map(
-            |(model, track)| LinkedTrack {
+            .await?
+            .into_iter()
+            .zip_eq(unlinked.into_iter())
+            .map(|(model, track)| LinkedTrack {
                 title: model.title.into(),
                 song_id: model.id,
                 artist: track.artist,
                 track_number: track.track_number,
                 track_order: track.track_order,
                 duration: track.duration,
-            },
-        );
+            });
 
         let tracks = new_songs
             .into_iter()
             .chain(linked.into_iter())
             // TODO: Do we need sorted here?
-            // .sorted_by(|a, b| {
-            //     a.track_order.cmp(&b.track_order)
-            // })
+            .sorted_by(|a, b| a.track_order.cmp(&b.track_order))
             .collect_vec();
 
         let (track_models, track_history_models): (Vec<_>, Vec<_>) = tracks
