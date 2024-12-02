@@ -1,5 +1,6 @@
 use fred::prelude::*;
 
+#[derive(Clone)]
 pub struct Service {
     pub pool: RedisPool,
 }

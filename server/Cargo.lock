@@ -3104,7 +3104,7 @@ dependencies = [
 [[package]]
 name = "sea-orm"
 version = "1.1.1"
-source = "git+https://github.com/Huliiiiii/sea-orm.git#61cdf8d7fc10e10b42aa7b385581e03e42195bd8"
+source = "git+https://github.com/Huliiiiii/sea-orm.git?branch=master#5db1916072ecd5a38f1ad6ef3a81c5f9cd6264ae"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -3148,7 +3148,7 @@ dependencies = [
 [[package]]
 name = "sea-orm-macros"
 version = "1.1.1"
-source = "git+https://github.com/Huliiiiii/sea-orm.git#61cdf8d7fc10e10b42aa7b385581e03e42195bd8"
+source = "git+https://github.com/Huliiiiii/sea-orm.git?branch=master#5db1916072ecd5a38f1ad6ef3a81c5f9cd6264ae"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",
@@ -3817,6 +3817,7 @@ dependencies = [
  "sea-orm",
  "serde",
  "serde_json",
+ "tikv-jemallocator",
  "tokio",
  "tower-sessions-redis-store",
  "tracing",
@@ -3887,6 +3888,26 @@ dependencies = [
  "flate2",
  "jpeg-decoder",
  "weezl",
+]
+
+[[package]]
+name = "tikv-jemalloc-sys"
+version = "0.6.0+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd3c60906412afa9c2b5b5a48ca6a5abe5736aec9eb48ad05037a677e52e4e2d"
+dependencies = [
+ "cc",
+ "libc",
+]
+
+[[package]]
+name = "tikv-jemallocator"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4cec5ff18518d81584f477e9bfdf957f5bb0979b0bac3af4ca30b5b3ae2d2865"
+dependencies = [
+ "libc",
+ "tikv-jemalloc-sys",
 ]
 
 [[package]]

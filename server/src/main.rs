@@ -5,15 +5,14 @@ mod middleware;
 mod model;
 mod resolver;
 mod service;
+mod state;
 
-use axum::extract::FromRef;
 use axum::routing::get;
 use axum::Router;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use axum_login::AuthManagerLayerBuilder;
-use sea_orm::DatabaseConnection;
-use service::database::get_db_connection;
+use state::AppState;
 #[cfg(not(target_env = "msvc"))]
 use tikv_jemallocator::Jemalloc;
 use tokio::signal;
@@ -27,29 +26,6 @@ use crate::service::user::AuthSession;
 #[global_allocator]
 static GLOBAL: Jemalloc = Jemalloc;
 
-#[derive(Clone, FromRef)]
-pub struct AppState {
-    database: DatabaseConnection,
-    user_service: service::User,
-    song_service: service::Song,
-    release_service: service::Release,
-    image_service: service::Image,
-}
-
-impl AppState {
-    pub async fn init(url: &str) -> Self {
-        let database = get_db_connection(url).await;
-
-        Self {
-            database: database.clone(),
-            user_service: service::User::new(database.clone()),
-            song_service: service::Song::new(database.clone()),
-            release_service: service::Release::new(database.clone()),
-            image_service: service::Image::new(database.clone()),
-        }
-    }
-}
-
 #[tokio::main]
 async fn main() {
     tracing::info!("Starting server");
@@ -62,18 +38,12 @@ async fn main() {
         .with_test_writer()
         .init();
 
-    let config = service::config::Service::init();
-    let state = AppState::init(&config.database_url).await;
-
-    let redis_service = service::redis::Service::init(&config).await;
-
-    let pool = redis_service.pool();
-
-    let session_store = RedisStore::new(pool);
+    let state = AppState::init().await;
+    let config = state.config.clone();
+    let session_store = RedisStore::new(state.redis_pool());
     let session_layer = SessionManagerLayer::new(session_store)
         .with_name("session_token")
         .with_expiry(Expiry::OnInactivity(Duration::days(30)));
-
     let auth_layer =
         AuthManagerLayerBuilder::new(state.user_service.clone(), session_layer)
             .build();
@@ -120,8 +90,6 @@ async fn main() {
                     eprintln!("Unable to listen for shutdown signal: {}", err);
                 }
             }
-
-            redis_service.quit().await.unwrap()
         })
         .await
         .unwrap();

@@ -1,5 +1,6 @@
 use std::env;
 
+#[derive(Clone)]
 pub struct Service {
     pub database_url: String,
     pub redis_url: String,
