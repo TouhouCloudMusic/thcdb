@@ -91,7 +91,7 @@ async fn upload_avatar(
 
     if metadata
         .content_type
-        .map_or(false, |ct| ct.starts_with("image/"))
+        .is_some_and(|ct| ct.starts_with("image/"))
     {
         Ok(api_response::msg("ok"))
         // TODO

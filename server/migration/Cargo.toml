@@ -20,4 +20,4 @@ features = [
     "runtime-tokio-rustls", # `ASYNC_RUNTIME` feature
     "sqlx-postgres",        # `DATABASE_DRIVER` feature
 ]
-version = "1.1.0"
+version = "1.1.2"

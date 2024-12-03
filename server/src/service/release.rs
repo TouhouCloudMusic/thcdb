@@ -12,7 +12,6 @@ use entity::{
     release_localized_title_history, release_track, release_track_artist,
     release_track_artist_history, release_track_history, song,
 };
-use futures::future;
 use itertools::{Either, Itertools};
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
