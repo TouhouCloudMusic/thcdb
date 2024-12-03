@@ -1,4 +1,4 @@
-use bon::bon;
+use bon::{bon, builder};
 use chrono::NaiveDate;
 use entity::sea_orm_active_enums::{
     ChangeRequestStatus, ChangeRequestType, ChangeRequestUserType,
@@ -134,7 +134,7 @@ impl Service {
             });
         }
 
-        Self::create_release_artist()
+        create_release_artist()
             .release_id(new_release.id)
             .history_id(history.id)
             .artists(artists)
@@ -143,17 +143,17 @@ impl Service {
             .await?;
 
         if !localized_titles.is_empty() {
-            Self::create_release_localized_title()
+            create_release_localized_title()
                 .release_id(new_release.id)
                 .history_id(history.id)
-                .titles(localized_titles)
+                .localized_titles(localized_titles)
                 .transaction(tx)
                 .call()
                 .await?;
         }
 
         if !labels.is_empty() {
-            Self::create_release_label()
+            create_release_label()
                 .release_id(new_release.id)
                 .history_id(history.id)
                 .labels(labels)
@@ -163,9 +163,9 @@ impl Service {
         }
 
         if !tracks.is_empty() {
-            Self::create_release_track()
+            create_release_track()
                 .release_id(new_release.id)
-                .release_history_id(history.id)
+                .history_id(history.id)
                 .tracks(tracks)
                 .transaction(tx)
                 .call()
@@ -173,9 +173,9 @@ impl Service {
         }
 
         if !credits.is_empty() {
-            Self::create_release_credit()
+            create_release_credit()
                 .release_id(new_release.id)
-                .history_id(history.id)
+                .release_history_id(history.id)
                 .credits(credits)
                 .transaction(tx)
                 .call()
@@ -186,272 +186,276 @@ impl Service {
 
         Ok(new_release)
     }
+}
 
-    #[builder]
-    async fn create_release_artist(
-        release_id: i32,
-        history_id: i32,
-        artists: Vec<i32>,
-        transaction: &DatabaseTransaction,
-    ) -> Result<(), DbErr> {
-        let release_artist = artists.iter().map(|id| {
-            release_artist::Model {
-                release_id,
-                artist_id: *id,
-            }
-            .into_active_model()
+#[builder]
+async fn create_release_artist(
+    release_id: i32,
+    history_id: i32,
+    artists: Vec<i32>,
+    transaction: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let release_artist = artists.iter().map(|id| {
+        release_artist::Model {
+            release_id,
+            artist_id: *id,
+        }
+        .into_active_model()
+    });
+
+    let release_artist_history = artists.iter().map(|id| {
+        release_artist_history::Model {
+            history_id,
+            artist_id: *id,
+        }
+        .into_active_model()
+    });
+
+    release_artist::Entity::insert_many(release_artist)
+        .exec(transaction)
+        .await?;
+
+    release_artist_history::Entity::insert_many(release_artist_history)
+        .exec(transaction)
+        .await?;
+
+    Ok(())
+}
+
+#[builder]
+async fn create_release_localized_title(
+    release_id: i32,
+    history_id: i32,
+    localized_titles: Vec<LocalizedTitle>,
+    transaction: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let models = localized_titles.iter().map(|item| {
+        release_localized_title::Model {
+            release_id,
+            ..item.into()
+        }
+        .into_active_model()
+    });
+
+    let history_models = localized_titles.iter().map(|item| {
+        release_localized_title_history::Model {
+            history_id,
+            ..item.into()
+        }
+        .into_active_model()
+    });
+
+    release_localized_title::Entity::insert_many(models)
+        .exec(transaction)
+        .await?;
+    release_localized_title_history::Entity::insert_many(history_models)
+        .exec(transaction)
+        .await?;
+
+    Ok(())
+}
+
+#[builder]
+async fn create_release_label(
+    release_id: i32,
+    history_id: i32,
+    labels: Vec<i32>,
+    transaction: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let models = labels.iter().map(|id| {
+        release_label::Model {
+            release_id,
+            label_id: *id,
+        }
+        .into_active_model()
+    });
+
+    let history_models = labels.iter().map(|id| {
+        release_label_history::Model {
+            history_id,
+            label_id: *id,
+        }
+        .into_active_model()
+    });
+
+    release_label::Entity::insert_many(models)
+        .exec(transaction)
+        .await?;
+
+    release_label_history::Entity::insert_many(history_models)
+        .exec(transaction)
+        .await?;
+
+    Ok(())
+}
+
+#[builder]
+async fn create_release_track(
+    release_id: i32,
+    history_id: i32,
+    tracks: Vec<Track>,
+    transaction: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let tx = transaction;
+    let (linked, unlinked): (Vec<_>, Vec<_>) =
+        tracks.into_iter().partition_map(|track| match track {
+            Track::Linked(t) => Either::Left(t),
+            Track::Unlinked(t) => Either::Right(t),
         });
 
-        let release_artist_history = artists.iter().map(|id| {
-            release_artist_history::Model {
-                history_id,
-                artist_id: *id,
-            }
-            .into_active_model()
-        });
+    let song_active_models = unlinked.iter().map(|track| {
+        song::ActiveModel {
+            id: NotSet,
+            title: track.title.clone().into_active_value(),
+            duration: match track.duration {
+                Some(t) => Some(t.to_string()).into_active_value(),
+                None => NotSet,
+            },
+            created_at: NotSet,
+            updated_at: NotSet,
+        }
+        .into_active_model()
+    });
 
-        release_artist::Entity::insert_many(release_artist)
-            .exec(transaction)
-            .await?;
-
-        release_artist_history::Entity::insert_many(release_artist_history)
-            .exec(transaction)
-            .await?;
-
-        Ok(())
+    if song_active_models.len() != unlinked.len() {
+        return Err(DbErr::Custom(
+            "New song length dosen't match unlinked tracks".to_string(),
+        ));
     }
 
-    #[builder]
-    async fn create_release_localized_title(
-        release_id: i32,
-        history_id: i32,
-        titles: Vec<LocalizedTitle>,
-        transaction: &DatabaseTransaction,
-    ) -> Result<(), DbErr> {
-        let models = titles.iter().map(|item| {
-            release_localized_title::Model {
-                release_id,
-                ..item.into()
-            }
-            .into_active_model()
+    let new_songs = song::Entity::insert_many(song_active_models)
+        .exec_with_returning_many(tx)
+        .await?
+        .into_iter()
+        .zip(unlinked.into_iter())
+        .map(|(model, track)| LinkedTrack {
+            title: model.title.into(),
+            song_id: model.id,
+            artist: track.artist,
+            track_number: track.track_number,
+            track_order: track.track_order,
+            duration: track.duration,
         });
 
-        let history_models = titles.iter().map(|item| {
-            release_localized_title_history::Model {
-                history_id,
-                ..item.into()
-            }
-            .into_active_model()
-        });
+    let tracks = new_songs
+        .into_iter()
+        .chain(linked.into_iter())
+        // TODO: Do we need sorted here?
+        .sorted_by(|a, b| a.track_order.cmp(&b.track_order))
+        .collect_vec();
 
-        release_localized_title::Entity::insert_many(models)
-            .exec(transaction)
-            .await?;
-        release_localized_title_history::Entity::insert_many(history_models)
-            .exec(transaction)
-            .await?;
-
-        Ok(())
-    }
-
-    #[builder]
-    async fn create_release_label(
-        release_id: i32,
-        history_id: i32,
-        labels: Vec<i32>,
-        transaction: &DatabaseTransaction,
-    ) -> Result<(), DbErr> {
-        let models = labels.iter().map(|id| {
-            release_label::Model {
-                release_id,
-                label_id: *id,
-            }
-            .into_active_model()
-        });
-
-        let history_models = labels.iter().map(|id| {
-            release_label_history::Model {
-                history_id,
-                label_id: *id,
-            }
-            .into_active_model()
-        });
-
-        release_label::Entity::insert_many(models)
-            .exec(transaction)
-            .await?;
-
-        release_label_history::Entity::insert_many(history_models)
-            .exec(transaction)
-            .await?;
-
-        Ok(())
-    }
-
-    #[builder]
-    async fn create_release_track(
-        release_id: i32,
-        release_history_id: i32,
-        tracks: Vec<Track>,
-        transaction: &DatabaseTransaction,
-    ) -> Result<(), DbErr> {
-        let tx = transaction;
-        let (linked, unlinked): (Vec<_>, Vec<_>) =
-            tracks.into_iter().partition_map(|track| match track {
-                Track::Linked(t) => Either::Left(t),
-                Track::Unlinked(t) => Either::Right(t),
-            });
-
-        let song_ams = unlinked.iter().map(|track| {
-            song::ActiveModel {
-                id: NotSet,
+    let (track_models, track_history_models): (Vec<_>, Vec<_>) = tracks
+        .iter()
+        .map(|track| {
+            let track_model = release_track::ActiveModel {
+                id: ActiveValue::NotSet,
+                release_id: release_id.into_active_value(),
+                song_id: track.song_id.into_active_value(),
+                track_order: track.track_order.into_active_value(),
+                track_number: Into::<Option<String>>::into(
+                    track.track_number.clone(),
+                )
+                .into_active_value(),
                 title: track.title.clone().into_active_value(),
-                duration: match track.duration {
-                    Some(t) => Some(t.to_string()).into_active_value(),
-                    None => NotSet,
-                },
-                created_at: NotSet,
-                updated_at: NotSet,
-            }
-            .into_active_model()
-        });
+            };
 
-        // Just let it panic if the length mismatch (should never happen)
-        let new_songs = song::Entity::insert_many(song_ams)
+            let track_history_model = release_track_history::ActiveModel {
+                id: NotSet,
+                release_history_id: history_id.into_active_value(),
+                song_id: track.song_id.into_active_value(),
+                track_order: track.track_order.into_active_value(),
+                track_number: Into::<Option<String>>::into(
+                    track.track_number.clone(),
+                )
+                .into_active_value(),
+                title: track.title.clone().into_active_value(),
+            };
+
+            (track_model, track_history_model)
+        })
+        .unzip();
+
+    let new_release_tracks = release_track::Entity::insert_many(track_models)
+        .exec_with_returning_many(tx)
+        .await?
+        .into_iter()
+        .zip(tracks.iter());
+
+    let new_release_track_historys =
+        release_track_history::Entity::insert_many(track_history_models)
             .exec_with_returning_many(tx)
             .await?
             .into_iter()
-            .zip_eq(unlinked.into_iter())
-            .map(|(model, track)| LinkedTrack {
-                title: model.title.into(),
-                song_id: model.id,
-                artist: track.artist,
-                track_number: track.track_number,
-                track_order: track.track_order,
-                duration: track.duration,
-            });
+            .zip(tracks.iter());
 
-        let tracks = new_songs
-            .into_iter()
-            .chain(linked.into_iter())
-            // TODO: Do we need sorted here?
-            .sorted_by(|a, b| a.track_order.cmp(&b.track_order))
-            .collect_vec();
-
-        let (track_models, track_history_models): (Vec<_>, Vec<_>) = tracks
-            .iter()
-            .map(|track| {
-                let track_model = release_track::ActiveModel {
-                    id: ActiveValue::NotSet,
-                    release_id: release_id.into_active_value(),
-                    song_id: track.song_id.into_active_value(),
-                    track_order: track.track_order.into_active_value(),
-                    track_number: Into::<Option<String>>::into(
-                        track.track_number.clone(),
-                    )
-                    .into_active_value(),
-                    title: track.title.clone().into_active_value(),
-                };
-
-                let track_history_model = release_track_history::ActiveModel {
-                    id: NotSet,
-                    release_history_id: release_history_id.into_active_value(),
-                    song_id: track.song_id.into_active_value(),
-                    track_order: track.track_order.into_active_value(),
-                    track_number: Into::<Option<String>>::into(
-                        track.track_number.clone(),
-                    )
-                    .into_active_value(),
-                    title: track.title.clone().into_active_value(),
-                };
-
-                (track_model, track_history_model)
+    let track_artist_models =
+        new_release_tracks.into_iter().flat_map(|(model, track)| {
+            track.artist.iter().map(move |artist_id| {
+                release_track_artist::Model {
+                    track_id: model.id,
+                    artist_id: *artist_id,
+                }
+                .into_active_model()
             })
-            .unzip();
+        });
 
-        let new_release_tracks =
-            release_track::Entity::insert_many(track_models)
-                .exec_with_returning_many(tx)
-                .await?
-                .into_iter()
-                .zip(tracks.iter());
+    let track_artist_history_model = new_release_track_historys
+        .into_iter()
+        .flat_map(|(model, track)| {
+            track.artist.iter().map(move |artist_id| {
+                release_track_artist_history::Model {
+                    track_history_id: model.id,
+                    artist_id: *artist_id,
+                }
+                .into_active_model()
+            })
+        });
 
-        let new_release_track_historys =
-            release_track_history::Entity::insert_many(track_history_models)
-                .exec_with_returning_many(tx)
-                .await?
-                .into_iter()
-                .zip(tracks.iter());
-
-        let track_artist_models =
-            new_release_tracks.into_iter().flat_map(|(model, track)| {
-                track.artist.iter().map(move |artist_id| {
-                    release_track_artist::Model {
-                        track_id: model.id,
-                        artist_id: *artist_id,
-                    }
-                    .into_active_model()
-                })
-            });
-
-        let track_artist_history_model = new_release_track_historys
-            .into_iter()
-            .flat_map(|(model, track)| {
-                track.artist.iter().map(move |artist_id| {
-                    release_track_artist_history::Model {
-                        track_history_id: model.id,
-                        artist_id: *artist_id,
-                    }
-                    .into_active_model()
-                })
-            });
-
-        release_track_artist::Entity::insert_many(track_artist_models)
-            .exec(tx)
-            .await?;
-        release_track_artist_history::Entity::insert_many(
-            track_artist_history_model,
-        )
+    release_track_artist::Entity::insert_many(track_artist_models)
         .exec(tx)
         .await?;
+    release_track_artist_history::Entity::insert_many(
+        track_artist_history_model,
+    )
+    .exec(tx)
+    .await?;
 
-        Ok(())
-    }
+    Ok(())
+}
 
-    #[builder]
-    async fn create_release_credit(
-        release_id: i32,
-        history_id: i32,
-        credits: Vec<Credit>,
-        transaction: &DatabaseTransaction,
-    ) -> Result<(), DbErr> {
-        let credit_model =
-            credits.iter().map(|credit| release_credit::ActiveModel {
+#[builder]
+async fn create_release_credit(
+    release_id: i32,
+    release_history_id: i32,
+    credits: Vec<Credit>,
+    transaction: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let credit_model =
+        credits.iter().map(|credit| release_credit::ActiveModel {
+            id: NotSet,
+            artist_id: credit.artist_id.into_active_value(),
+            release_id: release_id.into_active_value(),
+            role_id: credit.role_id.into_active_value(),
+            on: Set(credit.on.clone()),
+        });
+
+    let credit_history_model =
+        credits
+            .iter()
+            .map(|credit| release_credit_history::ActiveModel {
                 id: NotSet,
                 artist_id: credit.artist_id.into_active_value(),
-                release_id: release_id.into_active_value(),
+                release_history_id: release_history_id.into_active_value(),
                 role_id: credit.role_id.into_active_value(),
                 on: Set(credit.on.clone()),
             });
 
-        let credit_history_model =
-            credits
-                .iter()
-                .map(|credit| release_credit_history::ActiveModel {
-                    id: NotSet,
-                    artist_id: credit.artist_id.into_active_value(),
-                    release_history_id: history_id.into_active_value(),
-                    role_id: credit.role_id.into_active_value(),
-                    on: Set(credit.on.clone()),
-                });
+    release_credit::Entity::insert_many(credit_model)
+        .exec(transaction)
+        .await?;
+    release_credit_history::Entity::insert_many(credit_history_model)
+        .exec(transaction)
+        .await?;
 
-        release_credit::Entity::insert_many(credit_model)
-            .exec(transaction)
-            .await?;
-        release_credit_history::Entity::insert_many(credit_history_model)
-            .exec(transaction)
-            .await?;
-
-        Ok(())
-    }
+    Ok(())
 }
