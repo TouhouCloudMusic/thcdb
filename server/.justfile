@@ -26,4 +26,4 @@ migrate:
   atlas schema apply -u {{db_url}} --to=file://schema
 
 generate:
-  sea-orm-cli generate entity -o entity/src/entities --with-serde=serialize --model-extra-derives juniper::GraphQLObject --model-extra-attributes 'graphql(scalar=crate::extension::GqlScalarValue)' --enum-extra-derives juniper::GraphQLEnum
+  sea-orm-cli generate entity -o entity/src/entities --with-serde=both --model-extra-derives juniper::GraphQLObject --model-extra-attributes 'graphql(scalar=crate::extension::GqlScalarValue)' --enum-extra-derives juniper::GraphQLEnum
