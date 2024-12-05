@@ -115,11 +115,6 @@ table "artist_history" {
 		type = timestamptz
 		default = sql("now()")
 	}
-
-	column "is_deleted" {
-	  type = bool
-	  default = false
-	}
 }
 
 table "artist_link" {

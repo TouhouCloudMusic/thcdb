@@ -1,5 +1,6 @@
 mod from;
 mod graphql;
+mod impl_enums;
 mod into_active_value;
 
 use axum_login::AuthUser;

@@ -25,21 +25,31 @@ pub struct Model {
     pub request_status: ChangeRequestStatus,
     pub request_type: ChangeRequestType,
     pub entity_type: EntityType,
+    #[sea_orm(column_type = "Text")]
+    pub description: String,
     pub created_at: DateTimeWithTimeZone,
     pub handled_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::change_request_history::Entity")]
-    ChangeRequestHistory,
+    #[sea_orm(has_many = "super::change_request_description_revision::Entity")]
+    ChangeRequestDescriptionRevision,
+    #[sea_orm(has_many = "super::change_request_revision::Entity")]
+    ChangeRequestRevision,
     #[sea_orm(has_many = "super::change_request_user::Entity")]
     ChangeRequestUser,
 }
 
-impl Related<super::change_request_history::Entity> for Entity {
+impl Related<super::change_request_description_revision::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ChangeRequestHistory.def()
+        Relation::ChangeRequestDescriptionRevision.def()
+    }
+}
+
+impl Related<super::change_request_revision::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ChangeRequestRevision.def()
     }
 }
 

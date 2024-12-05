@@ -52,6 +52,10 @@ table "change_request" {
     type = enum.EntityType
   }
 
+  column "description" {
+    type = text
+  }
+
   column "created_at" {
     type = timestamptz
     default = sql("now()")
@@ -105,32 +109,59 @@ table "change_request_user" {
   column "user_type" {
     type = enum.ChangeRequestUserType
   }
-  
+
   unique "unique_request_user_and_user_type" {
     columns = [ column.change_request_id, column.user_id, column.user_type ]
   }
 }
 
-table "change_request_history" {
+table "change_request_revision" {
   schema = schema.public
 
   column "change_request_id" {
     type = int
   }
-  foreign_key "fk_change_request_history_change_request_id" {
+  foreign_key "fk_change_request_revision_change_request_id" {
     columns = [ column.change_request_id ]
     ref_columns = [ table.change_request.column.id ]
   }
 
-  column "history_id" {
+  column "entity_history_id" {
     type = int
   }
 
-  column "description" {
+  primary_key {
+    columns = [column.change_request_id, column.entity_history_id]
+  }
+}
+
+table "change_request_description_revision" {
+  schema = schema.public
+
+  column "id" {
+		type = int
+		identity {
+			generated = BY_DEFAULT
+		}
+	}
+	primary_key {
+		columns = [ column.id ]
+	}
+
+  column "change_request_id" {
+    type = int
+  }
+  foreign_key "fk_change_request_description_revision_change_request_id" {
+    columns = [ column.change_request_id ]
+    ref_columns = [ table.change_request.column.id ]
+  }
+
+  column "content" {
     type = text
   }
 
-  primary_key {
-    columns = [column.change_request_id, column.history_id]
+  column "created_at" {
+    type = timestamptz
+    default = sql("now()")
   }
 }

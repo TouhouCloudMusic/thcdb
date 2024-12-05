@@ -30,7 +30,6 @@ pub struct Model {
     pub end_date_precision: Option<DatePrecision>,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
-    pub is_deleted: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -66,6 +65,19 @@ impl Related<super::artist_localized_name_history::Entity> for Entity {
 impl Related<super::group_member_history::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::GroupMemberHistory.def()
+    }
+}
+
+impl Related<super::artist::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::artist_alias_history::Relation::Artist.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(
+            super::artist_alias_history::Relation::ArtistHistory
+                .def()
+                .rev(),
+        )
     }
 }
 

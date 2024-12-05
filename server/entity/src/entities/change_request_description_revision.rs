@@ -13,33 +13,32 @@ use serde::{Deserialize, Serialize};
     Deserialize,
     juniper :: GraphQLObject,
 )]
-#[sea_orm(table_name = "group_member_join_leave_history")]
+#[sea_orm(table_name = "change_request_description_revision")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    #[sea_orm(column_type = "Text", nullable)]
-    pub join_year: Option<String>,
-    #[sea_orm(column_type = "Text", nullable)]
-    pub leave_year: Option<String>,
-    pub group_member_history_id: i32,
+    pub change_request_id: i32,
+    #[sea_orm(column_type = "Text")]
+    pub content: String,
+    pub created_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::group_member_history::Entity",
-        from = "Column::GroupMemberHistoryId",
-        to = "super::group_member_history::Column::Id",
+        belongs_to = "super::change_request::Entity",
+        from = "Column::ChangeRequestId",
+        to = "super::change_request::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    GroupMemberHistory,
+    ChangeRequest,
 }
 
-impl Related<super::group_member_history::Entity> for Entity {
+impl Related<super::change_request::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::GroupMemberHistory.def()
+        Relation::ChangeRequest.def()
     }
 }
 

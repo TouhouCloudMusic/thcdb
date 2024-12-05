@@ -5,7 +5,7 @@ use entity::sea_orm_active_enums::{
     DatePrecision, EntityType, ReleaseType,
 };
 use entity::{
-    change_request, change_request_history, change_request_user, release,
+    change_request, change_request_revision, change_request_user, release,
     release_artist, release_artist_history, release_credit,
     release_credit_history, release_history, release_label,
     release_label_history, release_localized_title,
@@ -94,16 +94,16 @@ impl Service {
             request_status: ActiveValue::Set(ChangeRequestStatus::Approved),
             request_type: ActiveValue::Set(ChangeRequestType::Create),
             entity_type: ActiveValue::Set(EntityType::Release),
+            description: ActiveValue::Set(description),
             created_at: entity_create_time.into_active_value(),
             handled_at: entity_create_time.into_active_value(),
         }
         .insert(tx)
         .await?;
 
-        change_request_history::Model {
+        change_request_revision::Model {
             change_request_id: change_request.id,
-            history_id: history.id,
-            description,
+            entity_history_id: history.id,
         }
         .into_active_model()
         .insert(tx)

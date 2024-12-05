@@ -10,12 +10,17 @@ entity = { path = "./entity" }
 # external
 anyhow = "1.0"
 argon2 = "0.5"
-axum = { version = "0.7", features = [ "macros", "multipart" ] }
+axum = { version = "0.7", features = [
+    "macros",
+    "multipart",
+] }
 axum-login = { version = "0.16" }
 chrono = "0.4"
 dotenvy = "0.15"
 itertools = "0.13"
-juniper = { version = "0.16", features = [ "chrono" ] }
+juniper = { version = "0.16", features = [
+    "chrono",
+] }
 juniper_axum = "0.1"
 sea-orm = { version = "1.1.2", features = [
     "sqlx-postgres",
@@ -23,12 +28,16 @@ sea-orm = { version = "1.1.2", features = [
     "macros",
     "debug-print",
 ] }
-serde = { version = "1", features = [ "derive" ] }
+serde = { version = "1", features = [
+    "derive",
+] }
 tokio = { version = "1", features = [
     "full",
 ] }
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = [ "chrono" ] }
+tracing-subscriber = { version = "0.3", features = [
+    "chrono",
+] }
 
 [package]
 edition = "2021"
@@ -46,15 +55,21 @@ axum.workspace = true
 axum-login.workspace = true
 axum_typed_multipart = "0.13"
 base64 = "0.22"
-bon = "3.0"
+bon = { version = "3.0", features = [
+    "implied-bounds",
+] }
 chrono.workspace = true
 dotenvy.workspace = true
 entity.workspace = true
-error_set = { version = "0.7", features = [ "tracing" ] }
+error_set = { version = "0.7", features = [
+    "tracing",
+] }
 fred = { version = "9.4" }
 futures = "0.3.31"
 image = "0.25"
-iso8601-duration = { version = "0.2", features = [ "chrono" ] }
+iso8601-duration = { version = "0.2", features = [
+    "chrono",
+] }
 itertools.workspace = true
 juniper.workspace = true
 juniper_axum.workspace = true
@@ -75,8 +90,13 @@ utoipa = { version = "5", features = [
     "preserve_order",
 ] }
 utoipa-axum = "0.1"
-utoipa-swagger-ui = { version = "8", features = [ "axum" ] }
-xxhash-rust = { version = "0.8", features = [ "std", "xxh3" ] }
+utoipa-swagger-ui = { version = "8", features = [
+    "axum",
+] }
+xxhash-rust = { version = "0.8", features = [
+    "std",
+    "xxh3",
+] }
 zxcvbn = "3.1"
 
 [dev-dependencies]

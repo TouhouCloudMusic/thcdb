@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub member_id: i32,
+    pub group_member_id: i32,
     pub role_id: i32,
 }
 
@@ -26,7 +26,7 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(
         belongs_to = "super::group_member::Entity",
-        from = "Column::MemberId",
+        from = "Column::GroupMemberId",
         to = "super::group_member::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"

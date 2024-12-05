@@ -29,16 +29,6 @@ table "artist_alias" {
 table "artist_alias_history" {
   schema = schema.public
 
-  column "id" {
-    type = int
-    identity {
-      generated = BY_DEFAULT
-    }
-  }
-  primary_key {
-    columns = [ column.id ]
-  }
-
   column "history_id" {
     type = int
   }
@@ -53,5 +43,9 @@ table "artist_alias_history" {
   foreign_key "fk_artist_alias_history_alias_id" {
     columns = [ column.alias_id ]
     ref_columns = [ table.artist.column.id ]
+  }
+
+  primary_key {
+    columns = [ column.history_id, column.alias_id ]
   }
 }

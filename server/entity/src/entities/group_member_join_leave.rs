@@ -19,8 +19,10 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub group_member_id: i32,
-    pub join_year: Option<i16>,
-    pub leave_year: Option<i16>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub join_year: Option<String>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub leave_year: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

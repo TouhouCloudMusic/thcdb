@@ -20,6 +20,7 @@ error_set! {
 }
 
 pub trait LogErr {
+    #[allow(unused)]
     fn log_err(self) -> Self;
 }
 

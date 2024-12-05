@@ -108,6 +108,15 @@ impl Related<super::song_credit_history::Entity> for Entity {
     }
 }
 
+impl Related<super::artist_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::artist_alias_history::Relation::ArtistHistory.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::artist_alias_history::Relation::Artist.def().rev())
+    }
+}
+
 impl Related<super::label::Entity> for Entity {
     fn to() -> RelationDef {
         super::label_founder::Relation::Label.def()

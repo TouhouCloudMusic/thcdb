@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 mod api_response;
 mod controller;
 mod error;
@@ -6,6 +7,7 @@ mod model;
 mod resolver;
 mod service;
 mod state;
+mod types;
 
 use axum::routing::get;
 use axum::Router;
