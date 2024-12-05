@@ -1,5 +1,5 @@
 use axum::extract::FromRef;
-use fred::prelude::RedisPool;
+use fred::prelude::Pool;
 use sea_orm::DatabaseConnection;
 
 use crate::service::database::get_db_connection;
@@ -33,7 +33,7 @@ impl AppState {
         }
     }
 
-    pub fn redis_pool(&self) -> RedisPool {
+    pub fn redis_pool(&self) -> Pool {
         self.redis_service.pool()
     }
 }

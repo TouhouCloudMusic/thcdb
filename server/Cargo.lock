@@ -1299,15 +1299,6 @@ dependencies = [
 
 [[package]]
 name = "float-cmp"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
-dependencies = [
- "num-traits",
-]
-
-[[package]]
-name = "float-cmp"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b09cf3155332e944990140d967ff5eceb70df778b34f77d8075db46e4704e6d8"
@@ -1343,33 +1334,6 @@ dependencies = [
 
 [[package]]
 name = "fred"
-version = "9.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3cdd5378252ea124b712e0ac55147d26ae3af575883b34b8423091a4c719606b"
-dependencies = [
- "arc-swap",
- "async-trait",
- "bytes",
- "bytes-utils",
- "crossbeam-queue",
- "float-cmp 0.9.0",
- "fred-macros",
- "futures",
- "log",
- "parking_lot",
- "rand",
- "redis-protocol 5.0.1",
- "semver",
- "socket2",
- "tokio",
- "tokio-stream",
- "tokio-util",
- "url",
- "urlencoding",
-]
-
-[[package]]
-name = "fred"
 version = "10.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0f5fbcd7118f15ce0ed032105c91137efa563996788a76a770e2fd928ddb243a"
@@ -1378,13 +1342,13 @@ dependencies = [
  "async-trait",
  "bytes",
  "bytes-utils",
- "float-cmp 0.10.0",
+ "float-cmp",
  "fred-macros",
  "futures",
  "log",
  "parking_lot",
  "rand",
- "redis-protocol 6.0.0",
+ "redis-protocol",
  "semver",
  "socket2",
  "tokio",
@@ -2937,20 +2901,6 @@ dependencies = [
 
 [[package]]
 name = "redis-protocol"
-version = "5.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65deb7c9501fbb2b6f812a30d59c0253779480853545153a51d8e9e444ddc99f"
-dependencies = [
- "bytes",
- "bytes-utils",
- "cookie-factory",
- "crc16",
- "log",
- "nom",
-]
-
-[[package]]
-name = "redis-protocol"
 version = "6.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9cdba59219406899220fc4cdfd17a95191ba9c9afb719b5fa5a083d63109a9f1"
@@ -3998,7 +3948,7 @@ dependencies = [
  "dotenvy",
  "entity",
  "error_set",
- "fred 9.4.0",
+ "fred",
  "futures",
  "image",
  "iso8601-duration",
@@ -4359,7 +4309,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3d1d49ad2d8f58f3bd9fa4aa95a6287b4ec83cf52cacb342ca8f2fc29724578"
 dependencies = [
  "async-trait",
- "fred 10.0.1",
+ "fred",
  "rmp-serde",
  "thiserror 2.0.3",
  "time",
