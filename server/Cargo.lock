@@ -1188,9 +1188,9 @@ dependencies = [
 
 [[package]]
 name = "error_set"
-version = "0.7.0"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f6b480d31460f72eda2955b10b81146f68e1e8ef5136d35e559939e2fde07f0"
+checksum = "384ceba2f830b31ce5e30a9a22b47a35b630a89cc6337348fb89258a1dbf83fb"
 dependencies = [
  "error_set_impl",
  "tracing",
@@ -1198,9 +1198,9 @@ dependencies = [
 
 [[package]]
 name = "error_set_impl"
-version = "0.7.0"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d449cd125912cacf5bb583db2a4f8730bea5d625e010ec5f84a939a6740d5cec"
+checksum = "c90322ec4af49f60cb82bcc209eb99585772800d97a8fc71184cf79d170c8182"
 dependencies = [
  "indices",
  "proc-macro2",

@@ -61,7 +61,7 @@ bon = { version = "3.0", features = [
 chrono.workspace = true
 dotenvy.workspace = true
 entity.workspace = true
-error_set = { version = "0.7", features = [
+error_set = { version = "0.8", features = [
     "tracing",
 ] }
 fred = { version = "9.4" }
