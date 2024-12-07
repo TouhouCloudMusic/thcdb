@@ -303,19 +303,8 @@ async fn create_release_track(
             Track::Unlinked(t) => Either::Right(t),
         });
 
-    let song_active_models = unlinked.iter().map(|track| {
-        song::ActiveModel {
-            id: NotSet,
-            title: track.title.clone().into_active_value(),
-            duration: match track.duration {
-                Some(t) => Some(t.to_string()).into_active_value(),
-                None => NotSet,
-            },
-            created_at: NotSet,
-            updated_at: NotSet,
-        }
-        .into_active_model()
-    });
+    let song_active_models =
+        unlinked.iter().map(IntoActiveModel::into_active_model);
 
     if song_active_models.len() != unlinked.len() {
         return Err(DbErr::Custom(
@@ -328,14 +317,7 @@ async fn create_release_track(
         .await?
         .into_iter()
         .zip(unlinked.into_iter())
-        .map(|(model, track)| LinkedTrack {
-            title: model.title.into(),
-            song_id: model.id,
-            artist: track.artist,
-            track_number: track.track_number,
-            track_order: track.track_order,
-            duration: track.duration,
-        });
+        .map(LinkedTrack::from);
 
     let tracks = new_songs
         .into_iter()

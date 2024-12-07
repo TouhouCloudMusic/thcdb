@@ -10,5 +10,4 @@ pub mod user;
 
 pub use image::Service as Image;
 pub use release::Service as Release;
-pub use song::Service as Song;
 pub use user::Service as User;

@@ -9,7 +9,6 @@ use crate::service::{self};
 pub struct AppState {
     pub database: DatabaseConnection,
     pub user_service: service::User,
-    pub song_service: service::Song,
     pub release_service: service::Release,
     pub image_service: service::Image,
     pub config: service::config::Service,
@@ -26,7 +25,6 @@ impl AppState {
             config,
             database: database.clone(),
             user_service: service::User::new(database.clone()),
-            song_service: service::Song::new(database.clone()),
             release_service: service::Release::new(database.clone()),
             image_service: service::Image::new(database.clone()),
             redis_service,

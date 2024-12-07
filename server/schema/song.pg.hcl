@@ -90,45 +90,6 @@ table "song_localized_title" {
 
 }
 
-table "song_credit" {
-	schema = schema.public
-
-	column "id" {
-		type = int
-		identity {
-			generated = BY_DEFAULT
-		}
-	}
-	primary_key {
-		columns = [ column.id ]
-	}
-
-	column "artist_id" {
-		type = int
-	}
-
-	column "song_id" {
-		type = int
-	}
-	foreign_key "fk_song_credit_song_id" {
-		columns = [ column.song_id ]
-		ref_columns = [ table.song.column.id ]
-		on_update = CASCADE
-		on_delete = CASCADE
-	}
-
-	column "role_id" {
-		type = int
-	}
-	foreign_key "fk_song_credit_role_id" {
-		columns = [ column.role_id ]
-		ref_columns = [ table.credit_role.column.id ]
-		on_update = CASCADE
-		on_delete = SET_NULL
-	}
-}
-
-
 table "song_history" {
 	schema = schema.public
 
@@ -191,18 +152,40 @@ table "song_localized_title_history" {
   }
 }
 
+table "song_credit" {
+	schema = schema.public
+
+	column "song_id" {
+		type = int
+	}
+	foreign_key "fk_song_credit_song_id" {
+		columns = [ column.song_id ]
+		ref_columns = [ table.song.column.id ]
+		on_update = CASCADE
+		on_delete = CASCADE
+	}
+
+  column "artist_id" {
+		type = int
+	}
+
+	column "role_id" {
+		type = int
+	}
+	foreign_key "fk_song_credit_role_id" {
+		columns = [ column.role_id ]
+		ref_columns = [ table.credit_role.column.id ]
+		on_update = CASCADE
+		on_delete = SET_NULL
+	}
+
+  primary_key {
+    columns = [ column.artist_id, column.song_id, column.role_id ]
+  }
+}
+
 table "song_credit_history" {
   schema = schema.public
-
-  column "id" {
-    type = int
-    identity {
-      generated = BY_DEFAULT
-    }
-  }
-  primary_key {
-    columns = [ column.id ]
-  }
 
   column "history_id" {
     type = int
@@ -228,16 +211,20 @@ table "song_credit_history" {
     ref_columns = [ table.credit_role.column.id ]
   }
 
+  primary_key {
+    columns = [ column.history_id, column.artist_id, column.role_id ]
+  }
+
 }
 
 table "song_language_history" {
   schema = schema.public
 
-  column "song_history_id" {
+  column "history_id" {
     type = int
   }
-  foreign_key "fk_song_language_history_song_history_id" {
-    columns = [ column.song_history_id ]
+  foreign_key "fk_song_language_history_history_id" {
+    columns = [ column.history_id ]
     ref_columns = [ table.song_history.column.id ]
   }
 
@@ -250,6 +237,6 @@ table "song_language_history" {
   }
 
   primary_key {
-    columns = [ column.song_history_id, column.language_id ]
+    columns = [ column.history_id, column.language_id ]
   }
 }

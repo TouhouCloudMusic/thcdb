@@ -126,12 +126,12 @@ pub async fn create(
         .artist()
         .author_id(author_id)
         .description(description)
-        .entity_created_time(new_artist.created_at)
+        .entity_created_at(new_artist.created_at)
         .db(db)
         .call()
         .await?;
 
-    model::change_request::link_entity(
+    model::change_request::link_history(
         new_change_request.id,
         new_artist_history.id,
         db,

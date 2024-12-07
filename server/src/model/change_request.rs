@@ -11,12 +11,17 @@ use sea_orm::{ActiveModelTrait, ConnectionTrait, DbErr};
 
 type ChangeRequestResult = Result<change_request::Model, DbErr>;
 
+pub struct BasicMetadata {
+    pub author_id: i32,
+    pub description: String,
+}
+
 #[builder]
 pub async fn create<C: ConnectionTrait>(
     author_id: i32,
     description: String,
     entity_type: EntityType,
-    entity_created_time: DateTimeWithTimeZone,
+    entity_created_at: DateTimeWithTimeZone,
     db: &C,
 ) -> ChangeRequestResult {
     let result = change_request::ActiveModel {
@@ -25,8 +30,8 @@ pub async fn create<C: ConnectionTrait>(
         request_type: Set(ChangeRequestType::Create),
         entity_type: Set(entity_type),
         description: Set(description),
-        created_at: Set(entity_created_time),
-        handled_at: Set(entity_created_time),
+        created_at: Set(entity_created_at),
+        handled_at: Set(entity_created_at),
     }
     .insert(db)
     .await?;
@@ -62,16 +67,23 @@ where
     ) -> CreateBuilder<'f, C, create_builder::SetEntityType<S>> {
         self.entity_type(EntityType::Release)
     }
+
+    #[inline]
+    pub fn song(
+        self,
+    ) -> CreateBuilder<'f, C, create_builder::SetEntityType<S>> {
+        self.entity_type(EntityType::Song)
+    }
 }
 
-pub fn link_entity<C: ConnectionTrait>(
+pub fn link_history<C: ConnectionTrait>(
     change_request_id: i32,
-    entity_id: i32,
+    entity_history_id: i32,
     db: &C,
 ) -> impl Future<Output = Result<change_request_revision::Model, DbErr>> + '_ {
     change_request_revision::ActiveModel {
         change_request_id: Set(change_request_id),
-        entity_history_id: Set(entity_id),
+        entity_history_id: Set(entity_history_id),
     }
     .insert(db)
 }

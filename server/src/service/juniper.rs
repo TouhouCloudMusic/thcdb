@@ -10,7 +10,6 @@ pub struct JuniperContext {
     #[allow(dead_code)]
     pub database: DatabaseConnection,
     pub user_service: service::User,
-    pub song_service: service::Song,
     pub release_service: service::Release,
 }
 
@@ -21,7 +20,6 @@ impl From<AppState> for JuniperContext {
         Self {
             database: state.database.clone(),
             user_service: state.user_service,
-            song_service: state.song_service,
             release_service: state.release_service,
         }
     }

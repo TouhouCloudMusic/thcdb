@@ -16,10 +16,11 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "song_credit")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
-    #[sea_orm(primary_key)]
-    pub id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub artist_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub song_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub role_id: i32,
 }
 

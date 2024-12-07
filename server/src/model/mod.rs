@@ -4,4 +4,5 @@ pub mod link;
 pub mod output;
 pub mod prelude;
 pub mod release;
+pub mod song;
 pub mod user;

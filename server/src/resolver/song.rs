@@ -2,9 +2,13 @@ use std::str::FromStr;
 
 use entity::{song, GqlScalarValue};
 use juniper::FieldResult;
+use sea_orm::TransactionTrait;
 
 use crate::error::SongServiceError;
+use crate::model::change_request::BasicMetadata;
 use crate::model::input::{CreateSongInput, RetrieveSongInput};
+use crate::model::song::NewSong;
+use crate::service;
 use crate::service::juniper::JuniperContext;
 
 pub struct SongQuery;
@@ -18,8 +22,8 @@ impl SongQuery {
         input: RetrieveSongInput,
         context: &JuniperContext,
     ) -> FieldResult<Option<song::Model>> {
-        let song_service = &context.song_service;
-        let song = song_service.find_by_id(input.id).await?;
+        let song =
+            service::song::find_by_id(input.id, &context.database).await?;
         Ok(song)
     }
 }
@@ -32,8 +36,6 @@ impl SongMutation {
         input: CreateSongInput,
         context: &JuniperContext,
     ) -> FieldResult<song::Model> {
-        let song_service = &context.song_service;
-
         let parsed_duration =
             iso8601_duration::Duration::from_str(&input.duration)
                 .map(|d| d.to_chrono())
@@ -45,14 +47,23 @@ impl SongMutation {
                         accepted: e.input,
                     }
                 })?;
-
-        let new_song = song_service
-            .create()
-            .title(input.title)
-            .maybe_duration(parsed_duration)
-            .call()
-            .await?;
-
+        let transaction = context.database.begin().await?;
+        let new_song = service::song::create(
+            NewSong {
+                title: input.title,
+                duration: parsed_duration,
+                languages: None,
+                localized_titles: None,
+                credits: None,
+                metadata: BasicMetadata {
+                    author_id: todo!(),
+                    description: todo!(),
+                },
+            },
+            &transaction,
+        )
+        .await?;
+        transaction.commit().await?;
         Ok(new_song)
     }
 }

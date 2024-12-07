@@ -1,6 +1,10 @@
 pub mod input {
     use chrono::Duration;
-    use entity::{release_localized_title, release_localized_title_history};
+    use entity::{
+        release_localized_title, release_localized_title_history, song,
+    };
+    use sea_orm::ActiveValue::{NotSet, Set};
+    use sea_orm::IntoActiveModel;
 
     pub struct LocalizedTitle {
         pub title: String,
@@ -71,6 +75,43 @@ pub mod input {
         pub title: Option<String>,
         pub song_id: i32,
     });
+
+    impl IntoActiveModel<song::ActiveModel> for UnlinkedTrack {
+        fn into_active_model(self) -> song::ActiveModel {
+            song::ActiveModel {
+                id: NotSet,
+                title: Set(self.title),
+                duration: Set(self.duration.map(|d| d.to_string())),
+                created_at: NotSet,
+                updated_at: NotSet,
+            }
+        }
+    }
+
+    impl IntoActiveModel<song::ActiveModel> for &UnlinkedTrack {
+        fn into_active_model(self) -> song::ActiveModel {
+            song::ActiveModel {
+                id: NotSet,
+                title: Set(self.title.clone()),
+                duration: Set(self.duration.map(|d| d.to_string())),
+                created_at: NotSet,
+                updated_at: NotSet,
+            }
+        }
+    }
+
+    impl From<(song::Model, UnlinkedTrack)> for LinkedTrack {
+        fn from((model, track): (song::Model, UnlinkedTrack)) -> Self {
+            Self {
+                title: model.title.into(),
+                song_id: model.id,
+                artist: track.artist,
+                track_number: track.track_number,
+                track_order: track.track_order,
+                duration: track.duration,
+            }
+        }
+    }
 
     pub enum Track {
         Unlinked(UnlinkedTrack),
