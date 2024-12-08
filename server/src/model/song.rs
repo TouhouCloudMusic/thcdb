@@ -1,5 +1,5 @@
 use chrono::Duration;
-use entity::{song, song_credit};
+use entity::song;
 use sea_orm::ActiveValue::*;
 use sea_orm::IntoActiveModel;
 
@@ -41,27 +41,6 @@ impl IntoActiveModel<song::ActiveModel> for &NewSong {
 }
 
 pub struct NewSongCredit {
-    pub song_id: i32,
     pub artist_id: i32,
     pub role_id: i32,
-}
-
-impl IntoActiveModel<song_credit::ActiveModel> for NewSongCredit {
-    fn into_active_model(self) -> song_credit::ActiveModel {
-        song_credit::ActiveModel {
-            artist_id: Set(self.artist_id),
-            song_id: Set(self.song_id),
-            role_id: Set(self.role_id),
-        }
-    }
-}
-
-impl IntoActiveModel<song_credit::ActiveModel> for &NewSongCredit {
-    fn into_active_model(self) -> song_credit::ActiveModel {
-        song_credit::ActiveModel {
-            artist_id: Set(self.artist_id),
-            song_id: Set(self.song_id),
-            role_id: Set(self.role_id),
-        }
-    }
 }

@@ -64,6 +64,7 @@ impl SongMutation {
         )
         .await?;
         transaction.commit().await?;
+
         Ok(new_song)
     }
 }
