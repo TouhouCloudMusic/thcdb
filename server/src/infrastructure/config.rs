@@ -1,13 +1,13 @@
 use std::env;
 
 #[derive(Clone)]
-pub struct Service {
+pub struct Config {
     pub database_url: String,
     pub redis_url: String,
     pub server_port: String,
 }
 
-impl Service {
+impl Config {
     pub fn init() -> Self {
         Self {
             database_url: env::var("DATABASE_URL").unwrap(),

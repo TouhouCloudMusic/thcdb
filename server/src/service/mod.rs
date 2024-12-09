@@ -1,9 +1,6 @@
 pub mod artist;
-pub mod config;
-pub mod database;
 pub mod image;
 pub mod juniper;
-pub mod redis;
 pub mod release;
 pub mod song;
 pub mod user;

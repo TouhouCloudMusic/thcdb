@@ -1,6 +1,6 @@
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
-pub async fn get_db_connection(url: &str) -> DatabaseConnection {
+pub async fn get_connection(url: &str) -> DatabaseConnection {
     let opt = ConnectOptions::new(url)
         .sqlx_logging(false)
         .min_connections(1)
