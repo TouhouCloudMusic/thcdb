@@ -24,13 +24,13 @@ db_url := if os() == 'windows' {
 }
 
 dev_db_url := if os() == 'windows' {
-	"$env:DEV_DATABASE_URL"
+	"$env:ATLAS_DEV_DATABASE_URL"
 } else {
-	"$DEV_DATABASE_URL"
+	"$ATLAS_DEV_DATABASE_URL"
 }
 
 migrate:
-  atlas schema apply -u {{db_url}} --to=file://schema --dev-url {{dev_db_url}}
+  atlas schema apply -u {{db_url}} --to=file://schema --dev-url {{dev_db_url}} --env local
 
 generate:
   sea-orm-cli generate entity -o entity/src/entities --with-serde=both --model-extra-derives juniper::GraphQLObject --model-extra-attributes 'graphql(scalar=crate::extension::GqlScalarValue)' --enum-extra-derives juniper::GraphQLEnum

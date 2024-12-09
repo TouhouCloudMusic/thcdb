@@ -19,7 +19,7 @@ To contribute to Touhou Cloud DB, make sure you have the following installed:
 Before you begin contributing, make sure to set the following environment variables:
 
 - `DATABASE_URL`: The database URL.
-- `DEV_DATABASE_URL`: The database URL for atlas validate schema.
+- `ATLAS_DEV_DATABASE_URL`: The database URL for atlas validate schema, this database must be epty. [More details](https://atlasgo.io/concepts/dev-database).
 - `REDIS_URL`: The redis url.
 - `SERVER_PORT`: The server listening port.
 
