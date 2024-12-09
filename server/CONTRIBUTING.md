@@ -14,6 +14,21 @@ To contribute to Touhou Cloud DB, make sure you have the following installed:
 
 ### Configure
 
+#### Environment Variables
+
+Before you begin contributing, make sure to set the following environment variables:
+
+- `DATABASE_URL`: The database URL.
+- `DEV_DATABASE_URL`: The database URL for atlas validate schema.
+- `REDIS_URL`: The redis url.
+- `SERVER_PORT`: The server listening port.
+
 #### Pre-Push Hook
 
 run `cargo test`
+
+#### Apply Migrations
+
+Currently, we use [`just`](https://github.com/casey/just?tab=readme-ov-file#global-justfile) to manager scripts. You can find the scripts in [`.justfile`](.justfile)
+
+To apply migrations, run `just db_all`, then run `cargo run -p migration`.
