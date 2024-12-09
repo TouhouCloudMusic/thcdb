@@ -17,7 +17,7 @@ table "link" {
     }
   }
   primary_key {
-    columns = [ column.id ]
+    columns = [column.id]
   }
 
   column "platform" {
@@ -28,6 +28,6 @@ table "link" {
     type = text
   }
   unique "unique_link_url" {
-    columns = [ column.url ]
+    columns = [column.url]
   }
 }

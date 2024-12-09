@@ -4,5 +4,5 @@ schema "public" {
 
 enum "DatePrecision" {
   schema = schema.public
-  values = [ "Day", "Month", "Year" ]
+  values = ["Day", "Month", "Year"]
 }

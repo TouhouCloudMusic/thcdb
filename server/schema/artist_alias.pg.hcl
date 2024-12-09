@@ -5,20 +5,20 @@ table "artist_alias" {
     type = int
   }
   foreign_key "fk_artist_alias_first_id" {
-    columns = [ column.first_id ]
-    ref_columns = [ table.artist.column.id ]
+    columns     = [column.first_id]
+    ref_columns = [table.artist.column.id]
   }
 
   column "second_id" {
     type = int
   }
   foreign_key "fk_artist_alias_second_id" {
-    columns = [ column.second_id ]
-    ref_columns = [ table.artist.column.id ]
+    columns     = [column.second_id]
+    ref_columns = [table.artist.column.id]
   }
 
   primary_key {
-    columns = [ column.first_id, column.second_id ]
+    columns = [column.first_id, column.second_id]
   }
 
   check "unique_relationship" {
@@ -33,19 +33,19 @@ table "artist_alias_history" {
     type = int
   }
   foreign_key "fk_artist_alias_history_history_id" {
-    columns = [ column.history_id ]
-    ref_columns = [ table.artist_history.column.id ]
+    columns     = [column.history_id]
+    ref_columns = [table.artist_history.column.id]
   }
 
   column "alias_id" {
     type = int
   }
   foreign_key "fk_artist_alias_history_alias_id" {
-    columns = [ column.alias_id ]
-    ref_columns = [ table.artist.column.id ]
+    columns     = [column.alias_id]
+    ref_columns = [table.artist.column.id]
   }
 
   primary_key {
-    columns = [ column.history_id, column.alias_id ]
+    columns = [column.history_id, column.alias_id]
   }
 }

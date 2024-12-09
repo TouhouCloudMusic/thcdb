@@ -5,6 +5,7 @@ set dotenv-required := true
 fmt:
   taplo fmt
   cargo fmt
+  atlas schema fmt ./schema
 
 fix: fmt
   cargo clippy --fix --allow-dirty --allow-staged

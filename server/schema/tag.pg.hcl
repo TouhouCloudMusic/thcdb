@@ -1,29 +1,29 @@
 enum "TagKind" {
-	schema = schema.public
-	values = [
-		"Descriptor",
-		"Form",
-		"Genre",
-		"Scene",
-	]
+  schema = schema.public
+  values = [
+    "Descriptor",
+    "Form",
+    "Genre",
+    "Scene",
+  ]
 }
 
 table "tag" {
-	schema = schema.public
+  schema = schema.public
 
-	column "id" {
-		type = int
-		identity {
-			generated = BY_DEFAULT
-		}
-	}
-	primary_key {
-		columns = [ column.id ]
-	}
+  column "id" {
+    type = int
+    identity {
+      generated = BY_DEFAULT
+    }
+  }
+  primary_key {
+    columns = [column.id]
+  }
 
-	column "name" {
-		type = text
-	}
+  column "name" {
+    type = text
+  }
 
   column "kind" {
     type = enum.TagKind
@@ -38,12 +38,12 @@ table "tag" {
   }
 
   column "created_at" {
-    type = timestamptz
+    type    = timestamptz
     default = sql("now()")
   }
 
   column "updated_at" {
-    type = timestamptz
+    type    = timestamptz
     default = sql("now()")
   }
 }
@@ -58,12 +58,12 @@ table "tag_history" {
     }
   }
   primary_key {
-    columns = [ column.id ]
+    columns = [column.id]
   }
 
   column "name" {
-		type = text
-	}
+    type = text
+  }
 
   column "kind" {
     type = enum.TagKind
@@ -78,12 +78,12 @@ table "tag_history" {
   }
 
   column "created_at" {
-    type = timestamptz
+    type    = timestamptz
     default = sql("now()")
   }
 
   column "updated_at" {
-    type = timestamptz
+    type    = timestamptz
     default = sql("now()")
   }
 }

@@ -1,30 +1,30 @@
 enum "EntityType" {
-    schema = schema.public
-    values = [
-        "Artist",
-        "Label",
-        "Release",
-        "Song",
-        "Tag",
-    ]
+  schema = schema.public
+  values = [
+    "Artist",
+    "Label",
+    "Release",
+    "Song",
+    "Tag",
+  ]
 }
 
 enum "ChangeRequestType" {
-    schema = schema.public
-    values = [
-        "Create",
-        "Update",
-        "Delete",
-    ]
+  schema = schema.public
+  values = [
+    "Create",
+    "Update",
+    "Delete",
+  ]
 }
 
 enum "ChangeRequestStatus" {
-    schema = schema.public
-    values = [
-        "Pending",
-        "Approved",
-        "Rejected",
-    ]
+  schema = schema.public
+  values = [
+    "Pending",
+    "Approved",
+    "Rejected",
+  ]
 }
 
 table "change_request" {
@@ -57,24 +57,24 @@ table "change_request" {
   }
 
   column "created_at" {
-    type = timestamptz
+    type    = timestamptz
     default = sql("now()")
   }
 
   column "handled_at" {
-    type = timestamptz
+    type    = timestamptz
     default = sql("now()")
   }
 }
 
 enum "ChangeRequestUserType" {
-    schema = schema.public
-    values = [
-        "Author",
-        "Co-Author",
-        "Reviewer",
-        "Approver",
-    ]
+  schema = schema.public
+  values = [
+    "Author",
+    "Co-Author",
+    "Reviewer",
+    "Approver",
+  ]
 }
 
 table "change_request_user" {
@@ -87,23 +87,23 @@ table "change_request_user" {
     }
   }
   primary_key {
-    columns = [ column.id ]
+    columns = [column.id]
   }
 
   column "change_request_id" {
     type = int
   }
   foreign_key "fk_change_request_co_author_change_request_id" {
-    columns = [ column.change_request_id ]
-    ref_columns = [ table.change_request.column.id ]
+    columns     = [column.change_request_id]
+    ref_columns = [table.change_request.column.id]
   }
 
   column "user_id" {
     type = int
   }
   foreign_key "fk_change_request_co_author_co_author" {
-    columns = [ column.user_id ]
-    ref_columns = [ table.user.column.id ]
+    columns     = [column.user_id]
+    ref_columns = [table.user.column.id]
   }
 
   column "user_type" {
@@ -111,7 +111,7 @@ table "change_request_user" {
   }
 
   unique "unique_request_user_and_user_type" {
-    columns = [ column.change_request_id, column.user_id, column.user_type ]
+    columns = [column.change_request_id, column.user_id, column.user_type]
   }
 }
 
@@ -122,8 +122,8 @@ table "change_request_revision" {
     type = int
   }
   foreign_key "fk_change_request_revision_change_request_id" {
-    columns = [ column.change_request_id ]
-    ref_columns = [ table.change_request.column.id ]
+    columns     = [column.change_request_id]
+    ref_columns = [table.change_request.column.id]
   }
 
   column "entity_history_id" {
@@ -139,21 +139,21 @@ table "change_request_description_revision" {
   schema = schema.public
 
   column "id" {
-		type = int
-		identity {
-			generated = BY_DEFAULT
-		}
-	}
-	primary_key {
-		columns = [ column.id ]
-	}
+    type = int
+    identity {
+      generated = BY_DEFAULT
+    }
+  }
+  primary_key {
+    columns = [column.id]
+  }
 
   column "change_request_id" {
     type = int
   }
   foreign_key "fk_change_request_description_revision_change_request_id" {
-    columns = [ column.change_request_id ]
-    ref_columns = [ table.change_request.column.id ]
+    columns     = [column.change_request_id]
+    ref_columns = [table.change_request.column.id]
   }
 
   column "content" {
@@ -161,7 +161,7 @@ table "change_request_description_revision" {
   }
 
   column "created_at" {
-    type = timestamptz
+    type    = timestamptz
     default = sql("now()")
   }
 }
