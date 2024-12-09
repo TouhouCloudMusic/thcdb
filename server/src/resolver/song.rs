@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use entity::{song, GqlScalarValue};
 use juniper::FieldResult;
-use sea_orm::TransactionTrait;
 
 use crate::error::SongServiceError;
 use crate::model::change_request::BasicMetadata;
@@ -47,7 +46,6 @@ impl SongMutation {
                         accepted: e.input,
                     }
                 })?;
-        let transaction = context.database.begin().await?;
         let new_song = service::song::create(
             NewSong {
                 title: input.title,
@@ -60,10 +58,9 @@ impl SongMutation {
                     description: todo!(),
                 },
             },
-            &transaction,
+            &context.database,
         )
         .await?;
-        transaction.commit().await?;
 
         Ok(new_song)
     }

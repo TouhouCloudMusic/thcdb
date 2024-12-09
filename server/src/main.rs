@@ -5,6 +5,7 @@ mod error;
 mod infrastructure;
 mod middleware;
 mod model;
+mod repository;
 mod resolver;
 mod service;
 mod state;
