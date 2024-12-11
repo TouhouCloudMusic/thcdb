@@ -15,7 +15,7 @@ impl ReleaseQuery {
         input: RetrieveReleaseInput,
         context: &JuniperContext,
     ) -> FieldResult<Option<release::Model>> {
-        let release_service = &context.release_service;
+        let release_service = &context.state.release_service;
         let release = release_service.find_by_id(input.id).await?;
 
         Ok(release)

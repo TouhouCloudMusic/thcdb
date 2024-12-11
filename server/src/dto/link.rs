@@ -5,12 +5,12 @@ use sea_orm::{IntoActiveModel, Set};
 use serde::Deserialize;
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
-pub struct New {
+pub struct NewLink {
     pub platform: MediaPlatform,
     pub url: String,
 }
 
-impl IntoActiveModel<link::ActiveModel> for New {
+impl IntoActiveModel<link::ActiveModel> for NewLink {
     fn into_active_model(self) -> link::ActiveModel {
         link::ActiveModel {
             id: NotSet,

@@ -8,7 +8,6 @@ members = [
 [workspace.dependencies]
 entity = { path = "./entity" }
 # external
-anyhow = "1.0"
 argon2 = "0.5"
 axum = { version = "0.8", features = [
     "macros",
@@ -48,7 +47,6 @@ version = "0.1.0"
 sea-orm = { git = "https://github.com/Huliiiiii/sea-orm.git", branch = "master" }
 
 [dependencies]
-anyhow.workspace = true
 argon2.workspace = true
 async-trait = { version = "0.1" }
 axum.workspace = true

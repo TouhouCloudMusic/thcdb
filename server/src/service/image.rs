@@ -9,11 +9,11 @@ use sea_orm::{
 };
 use xxhash_rust::xxh3::xxh3_64;
 #[derive(Clone)]
-pub struct Service {
+pub struct ImageService {
     db: DatabaseConnection,
 }
 
-impl Service {
+impl ImageService {
     pub fn new(db: DatabaseConnection) -> Self {
         Self { db }
     }
@@ -22,7 +22,7 @@ impl Service {
         &self,
         data: Bytes,
         uploader_id: i32,
-    ) -> Result<image::Model, anyhow::Error> {
+    ) -> Result<image::Model, DbErr> {
         let data_hash = xxh3_64(&data);
         let filename = URL_SAFE.encode(data_hash.to_be_bytes());
 

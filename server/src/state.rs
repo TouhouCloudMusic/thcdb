@@ -1,17 +1,21 @@
 use axum::extract::FromRef;
-use sea_orm::DatabaseConnection;
+use sea_orm::{sqlx, DatabaseConnection};
 
 use crate::infrastructure::config::Config;
 use crate::infrastructure::database::get_connection;
 use crate::infrastructure::redis::Pool;
-use crate::service::{self};
+use crate::service::image::ImageService;
+use crate::service::release::ReleaseService;
+use crate::service::song::SongService;
+use crate::service::user::UserService;
 
 #[derive(Clone, FromRef)]
 pub struct AppState {
     pub database: DatabaseConnection,
-    pub user_service: service::User,
-    pub release_service: service::Release,
-    pub image_service: service::Image,
+    pub user_service: UserService,
+    pub release_service: ReleaseService,
+    pub image_service: ImageService,
+    pub song_service: SongService,
     pub config: Config,
     pub redis_pool: Pool,
 }
@@ -25,14 +29,19 @@ impl AppState {
         Self {
             config,
             database: database.clone(),
-            user_service: service::User::new(database.clone()),
-            release_service: service::Release::new(database.clone()),
-            image_service: service::Image::new(database.clone()),
+            user_service: UserService::new(database.clone()),
+            release_service: ReleaseService::new(database.clone()),
+            image_service: ImageService::new(database.clone()),
+            song_service: SongService::new(database.clone()),
             redis_pool,
         }
     }
 
     pub fn redis_pool(&self) -> fred::prelude::Pool {
         self.redis_pool.pool()
+    }
+
+    pub fn sqlx_pool(&self) -> &sqlx::PgPool {
+        self.database.get_postgres_connection_pool()
     }
 }

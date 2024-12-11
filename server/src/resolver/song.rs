@@ -3,11 +3,10 @@ use std::str::FromStr;
 use entity::{song, GqlScalarValue};
 use juniper::FieldResult;
 
+use crate::dto::change_request::ChangeRequestMetaData;
+use crate::dto::song::NewSong;
 use crate::error::SongServiceError;
-use crate::model::change_request::BasicMetadata;
 use crate::model::input::{CreateSongInput, RetrieveSongInput};
-use crate::model::song::NewSong;
-use crate::service;
 use crate::service::juniper::JuniperContext;
 
 pub struct SongQuery;
@@ -21,12 +20,12 @@ impl SongQuery {
         input: RetrieveSongInput,
         context: &JuniperContext,
     ) -> FieldResult<Option<song::Model>> {
-        let song =
-            service::song::find_by_id(input.id, &context.database).await?;
+        let song = context.state.song_service.find_by_id(input.id).await?;
         Ok(song)
     }
 }
 
+#[allow(unused_variables, unreachable_code)]
 #[juniper::graphql_object]
 #[graphql(context = JuniperContext, scalar = GqlScalarValue)]
 impl SongMutation {
@@ -46,21 +45,21 @@ impl SongMutation {
                         accepted: e.input,
                     }
                 })?;
-        let new_song = service::song::create(
-            NewSong {
+        let new_song = context
+            .state
+            .song_service
+            .create(NewSong {
                 title: input.title,
                 duration: parsed_duration,
                 languages: None,
                 localized_titles: None,
                 credits: None,
-                metadata: BasicMetadata {
+                metadata: ChangeRequestMetaData {
                     author_id: todo!(),
                     description: todo!(),
                 },
-            },
-            &context.database,
-        )
-        .await?;
+            })
+            .await?;
 
         Ok(new_song)
     }

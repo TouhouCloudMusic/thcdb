@@ -11,7 +11,7 @@ pub struct NewSong {
     pub languages: Option<Vec<i32>>,
     pub localized_titles: Option<Vec<LocalizedTitle>>,
     pub credits: Option<Vec<NewSongCredit>>,
-    pub metadata: change_request::BasicMetadata,
+    pub metadata: change_request::ChangeRequestMetaData,
 }
 
 pub type LocalizedTitle = super::release::input::LocalizedTitle;

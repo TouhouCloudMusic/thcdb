@@ -1,7 +1,7 @@
 use juniper::{graphql_object, graphql_value, FieldError, FieldResult};
 
+use crate::dto::user::{SignIn, SignUp};
 use crate::model::output::*;
-use crate::model::user::{SignIn, SignUp};
 use crate::service::juniper::*;
 
 pub struct UserQuery;
@@ -15,7 +15,7 @@ impl UserQuery {
         input: SignIn,
         context: &JuniperContext,
     ) -> FieldResult<LoginOutput> {
-        let user_service = &context.user_service;
+        let user_service = &context.state.user_service;
         let verification_result = user_service
             .verify_credentials(&input.username, &input.password)
             .await?;
@@ -33,7 +33,7 @@ impl UserMutation {
         input: SignUp,
         context: &JuniperContext,
     ) -> FieldResult<SignupOutput> {
-        let user_service = &context.user_service;
+        let user_service = &context.state.user_service;
 
         if user_service.is_exist(&input.username).await? {
             return Err(FieldError::new(

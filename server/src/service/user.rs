@@ -20,11 +20,11 @@ use sea_orm::{
 use serde::Serialize;
 
 use crate::api_response;
-use crate::model::user::SignIn;
+use crate::dto::user::SignIn;
 
 pub static ARGON2_HASHER: Lazy<Argon2> = Lazy::new(Argon2::default);
 
-pub type AuthSession = axum_login::AuthSession<Service>;
+pub type AuthSession = axum_login::AuthSession<UserService>;
 
 error_set! {
     #[derive(Serialize, Clone)]
@@ -78,11 +78,11 @@ impl IntoResponse for Error {
 }
 
 #[derive(Default, Clone)]
-pub struct Service {
+pub struct UserService {
     database: DatabaseConnection,
 }
 
-impl Service {
+impl UserService {
     pub fn new(database: DatabaseConnection) -> Self {
         Self { database }
     }
@@ -199,7 +199,7 @@ impl Service {
 }
 
 #[async_trait]
-impl AuthnBackend for Service {
+impl AuthnBackend for UserService {
     type User = user::Model;
     type Credentials = SignIn;
     type Error = Error;

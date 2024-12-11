@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 mod api_response;
 mod controller;
+mod dto;
 mod error;
 mod infrastructure;
 mod middleware;

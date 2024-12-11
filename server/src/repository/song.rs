@@ -10,30 +10,26 @@ use itertools::izip;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{DatabaseTransaction, DbErr, EntityTrait, IntoActiveModel};
 
-use crate::model::song::NewSong;
+use crate::dto::song::NewSong;
 
-pub struct CreateData(Vec<NewSong>);
-
-impl From<NewSong> for CreateData {
-    fn from(value: NewSong) -> Self {
-        CreateData(vec![value])
-    }
-}
-
-impl From<Vec<NewSong>> for CreateData {
-    fn from(value: Vec<NewSong>) -> Self {
-        CreateData(value)
-    }
-}
-
-impl CreateData {
-    pub fn iter(&self) -> std::slice::Iter<NewSong> {
-        self.0.iter()
-    }
+pub async fn find_by_id(
+    id: i32,
+    tx: &DatabaseTransaction,
+) -> Result<Option<song::Model>, DbErr> {
+    song::Entity::find_by_id(id).one(tx).await
 }
 
 pub async fn create(
-    data: CreateData,
+    data: NewSong,
+    tx: &DatabaseTransaction,
+) -> Result<song::Model, DbErr> {
+    let mut res = create_many(vec![data], tx).await?;
+    let first = res.swap_remove(0);
+    Ok(first)
+}
+
+pub async fn create_many(
+    data: Vec<NewSong>,
     tx: &DatabaseTransaction,
 ) -> Result<Vec<song::Model>, DbErr> {
     let new_songs = song::Entity::insert_many(

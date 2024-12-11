@@ -7,10 +7,11 @@ use axum_typed_multipart::TypedMultipart;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use crate::dto::user::{SignIn, SignUp, UploadAvatar};
 use crate::middleware::is_signed_in;
-use crate::model::user::{SignIn, SignUp, UploadAvatar};
-use crate::service::user::AuthSession;
-use crate::{api_response, service, AppState};
+use crate::service::image::ImageService;
+use crate::service::user::{AuthSession, UserService};
+use crate::{api_response, AppState};
 
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
@@ -28,7 +29,7 @@ pub fn router() -> OpenApiRouter<AppState> {
 )]
 async fn sign_up(
     mut auth_session: AuthSession,
-    State(user_service): State<service::User>,
+    State(user_service): State<UserService>,
     Json(SignUp { username, password }): Json<SignUp>,
 ) -> impl IntoResponse {
     match user_service.create(&username, &password).await {
@@ -82,7 +83,7 @@ async fn sign_in(
 )]
 async fn upload_avatar(
     auth_session: AuthSession,
-    State(_image_service): State<service::image::Service>,
+    State(_image_service): State<ImageService>,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
     let data = form.data;

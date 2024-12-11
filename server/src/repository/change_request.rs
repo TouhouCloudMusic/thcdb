@@ -11,11 +11,6 @@ use sea_orm::{ActiveModelTrait, ConnectionTrait, DbErr};
 
 type ChangeRequestResult = Result<change_request::Model, DbErr>;
 
-pub struct BasicMetadata {
-    pub author_id: i32,
-    pub description: String,
-}
-
 #[builder]
 pub async fn create<C: ConnectionTrait>(
     author_id: i32,
