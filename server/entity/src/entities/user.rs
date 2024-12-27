@@ -27,8 +27,8 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::change_request_user::Entity")]
-    ChangeRequestUser,
+    #[sea_orm(has_many = "super::correction_user::Entity")]
+    CorrectionUser,
     #[sea_orm(
         belongs_to = "super::image::Entity",
         from = "Column::AvatarId",
@@ -41,9 +41,9 @@ pub enum Relation {
     UserRole,
 }
 
-impl Related<super::change_request_user::Entity> for Entity {
+impl Related<super::correction_user::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ChangeRequestUser.def()
+        Relation::CorrectionUser.def()
     }
 }
 

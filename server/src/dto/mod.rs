@@ -1,6 +1,6 @@
 pub mod artist;
-pub mod change_request;
-pub mod link;
+pub mod correction;
 pub mod release;
 pub mod song;
+pub mod r#trait;
 pub mod user;

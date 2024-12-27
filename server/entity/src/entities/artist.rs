@@ -28,8 +28,6 @@ pub struct Model {
     pub start_date_precision: Option<DatePrecision>,
     pub end_date: Option<Date>,
     pub end_date_precision: Option<DatePrecision>,
-    pub created_at: DateTimeWithTimeZone,
-    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -48,8 +46,10 @@ pub enum Relation {
     ReleaseArtist,
     #[sea_orm(has_many = "super::release_artist_history::Entity")]
     ReleaseArtistHistory,
-    #[sea_orm(has_many = "super::release_track_artist_history::Entity")]
-    ReleaseTrackArtistHistory,
+    #[sea_orm(has_many = "super::song_artist::Entity")]
+    SongArtist,
+    #[sea_orm(has_many = "super::song_artist_history::Entity")]
+    SongArtistHistory,
     #[sea_orm(has_many = "super::song_credit_history::Entity")]
     SongCreditHistory,
 }
@@ -96,9 +96,15 @@ impl Related<super::release_artist_history::Entity> for Entity {
     }
 }
 
-impl Related<super::release_track_artist_history::Entity> for Entity {
+impl Related<super::song_artist::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ReleaseTrackArtistHistory.def()
+        Relation::SongArtist.def()
+    }
+}
+
+impl Related<super::song_artist_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SongArtistHistory.def()
     }
 }
 
@@ -126,16 +132,21 @@ impl Related<super::label::Entity> for Entity {
     }
 }
 
-impl Related<super::release_track_history::Entity> for Entity {
+impl Related<super::song::Entity> for Entity {
     fn to() -> RelationDef {
-        super::release_track_artist_history::Relation::ReleaseTrackHistory.def()
+        super::song_artist::Relation::Song.def()
     }
     fn via() -> Option<RelationDef> {
-        Some(
-            super::release_track_artist_history::Relation::Artist
-                .def()
-                .rev(),
-        )
+        Some(super::song_artist::Relation::Artist.def().rev())
+    }
+}
+
+impl Related<super::song_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::song_artist_history::Relation::SongHistory.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::song_artist_history::Relation::Artist.def().rev())
     }
 }
 

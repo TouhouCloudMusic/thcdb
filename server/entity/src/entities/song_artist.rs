@@ -13,30 +13,44 @@ use serde::{Deserialize, Serialize};
     Deserialize,
     juniper :: GraphQLObject,
 )]
-#[sea_orm(table_name = "change_request_revision")]
+#[sea_orm(table_name = "song_artist")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub change_request_id: i32,
+    pub song_id: i32,
     #[sea_orm(primary_key, auto_increment = false)]
-    pub entity_history_id: i32,
+    pub artist_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::change_request::Entity",
-        from = "Column::ChangeRequestId",
-        to = "super::change_request::Column::Id",
+        belongs_to = "super::artist::Entity",
+        from = "Column::ArtistId",
+        to = "super::artist::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    ChangeRequest,
+    Artist,
+    #[sea_orm(
+        belongs_to = "super::song::Entity",
+        from = "Column::SongId",
+        to = "super::song::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Song,
 }
 
-impl Related<super::change_request::Entity> for Entity {
+impl Related<super::artist::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ChangeRequest.def()
+        Relation::Artist.def()
+    }
+}
+
+impl Related<super::song::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Song.def()
     }
 }
 

@@ -19,7 +19,8 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub artist_id: i32,
-    pub link_id: i32,
+    #[sea_orm(column_type = "Text")]
+    pub url: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -32,25 +33,11 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Artist,
-    #[sea_orm(
-        belongs_to = "super::link::Entity",
-        from = "Column::LinkId",
-        to = "super::link::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
-    )]
-    Link,
 }
 
 impl Related<super::artist::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Artist.def()
-    }
-}
-
-impl Related<super::link::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Link.def()
     }
 }
 

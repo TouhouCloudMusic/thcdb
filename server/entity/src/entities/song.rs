@@ -18,17 +18,26 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
+    pub release_id: i32,
     #[sea_orm(column_type = "Text")]
     pub title: String,
     pub duration: Option<String>,
-    pub created_at: DateTimeWithTimeZone,
-    pub updated_at: DateTimeWithTimeZone,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub track_number: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::release_track_history::Entity")]
-    ReleaseTrackHistory,
+    #[sea_orm(
+        belongs_to = "super::release::Entity",
+        from = "Column::ReleaseId",
+        to = "super::release::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Release,
+    #[sea_orm(has_many = "super::song_artist::Entity")]
+    SongArtist,
     #[sea_orm(has_many = "super::song_credit::Entity")]
     SongCredit,
     #[sea_orm(has_many = "super::song_language::Entity")]
@@ -37,9 +46,15 @@ pub enum Relation {
     SongLocalizedTitle,
 }
 
-impl Related<super::release_track_history::Entity> for Entity {
+impl Related<super::release::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ReleaseTrackHistory.def()
+        Relation::Release.def()
+    }
+}
+
+impl Related<super::song_artist::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SongArtist.def()
     }
 }
 
@@ -58,6 +73,15 @@ impl Related<super::song_language::Entity> for Entity {
 impl Related<super::song_localized_title::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::SongLocalizedTitle.def()
+    }
+}
+
+impl Related<super::artist::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::song_artist::Relation::Artist.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::song_artist::Relation::Song.def().rev())
     }
 }
 

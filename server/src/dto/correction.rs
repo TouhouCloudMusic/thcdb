@@ -1,4 +1,4 @@
-pub struct ChangeRequestMetaData {
+pub struct NewCorrectionMetadata {
     pub author_id: i32,
     pub description: String,
 }

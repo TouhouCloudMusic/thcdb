@@ -18,11 +18,11 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
+    pub group_member_history_id: i32,
     #[sea_orm(column_type = "Text", nullable)]
     pub join_year: Option<String>,
     #[sea_orm(column_type = "Text", nullable)]
     pub leave_year: Option<String>,
-    pub group_member_history_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

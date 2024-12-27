@@ -3,7 +3,7 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use super::sea_orm_active_enums::ChangeRequestUserType;
+use super::sea_orm_active_enums::CorrectionUserType;
 
 #[derive(
     Clone,
@@ -15,26 +15,27 @@ use super::sea_orm_active_enums::ChangeRequestUserType;
     Deserialize,
     juniper :: GraphQLObject,
 )]
-#[sea_orm(table_name = "change_request_user")]
+#[sea_orm(table_name = "correction_user")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
-    #[sea_orm(primary_key)]
-    pub id: i32,
-    pub change_request_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub correction_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub user_id: i32,
-    pub user_type: ChangeRequestUserType,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub user_type: CorrectionUserType,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::change_request::Entity",
-        from = "Column::ChangeRequestId",
-        to = "super::change_request::Column::Id",
+        belongs_to = "super::correction::Entity",
+        from = "Column::CorrectionId",
+        to = "super::correction::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    ChangeRequest,
+    Correction,
     #[sea_orm(
         belongs_to = "super::user::Entity",
         from = "Column::UserId",
@@ -45,9 +46,9 @@ pub enum Relation {
     User,
 }
 
-impl Related<super::change_request::Entity> for Entity {
+impl Related<super::correction::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ChangeRequest.def()
+        Relation::Correction.def()
     }
 }
 

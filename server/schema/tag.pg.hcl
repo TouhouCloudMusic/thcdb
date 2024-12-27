@@ -8,6 +8,14 @@ enum "TagKind" {
   ]
 }
 
+enum "TagRelationType" {
+  schema = schema.public
+  values = [
+    "inherit",
+    "derive"
+  ]
+}
+
 table "tag" {
   schema = schema.public
 
@@ -85,5 +93,33 @@ table "tag_history" {
   column "updated_at" {
     type    = timestamptz
     default = sql("now()")
+  }
+}
+
+table "tag_relation" {
+  schema = schema.public
+
+  column "parent_id" {
+    type = int
+  }
+  foreign_key "fk_tag_relation_parent_id" {
+    columns     = [column.parent_id]
+    ref_columns = [table.tag.column.id]
+  }
+
+  column "child_id" {
+    type = int
+  }
+  foreign_key "fk_tag_relation_child_id" {
+    columns     = [column.child_id]
+    ref_columns = [table.tag.column.id]
+  }
+
+  column "type" {
+    type = enum.TagRelationType
+  }
+
+  primary_key {
+    columns = [column.parent_id, column.child_id, column.type]
   }
 }

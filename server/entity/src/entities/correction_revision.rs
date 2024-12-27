@@ -13,32 +13,32 @@ use serde::{Deserialize, Serialize};
     Deserialize,
     juniper :: GraphQLObject,
 )]
-#[sea_orm(table_name = "change_request_description_revision")]
+#[sea_orm(table_name = "correction_revision")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
-    #[sea_orm(primary_key)]
-    pub id: i32,
-    pub change_request_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub correction_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub entity_history_id: i32,
     #[sea_orm(column_type = "Text")]
-    pub content: String,
-    pub created_at: DateTimeWithTimeZone,
+    pub description: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::change_request::Entity",
-        from = "Column::ChangeRequestId",
-        to = "super::change_request::Column::Id",
+        belongs_to = "super::correction::Entity",
+        from = "Column::CorrectionId",
+        to = "super::correction::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    ChangeRequest,
+    Correction,
 }
 
-impl Related<super::change_request::Entity> for Entity {
+impl Related<super::correction::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ChangeRequest.def()
+        Relation::Correction.def()
     }
 }
 

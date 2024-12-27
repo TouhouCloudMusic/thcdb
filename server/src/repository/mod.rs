@@ -1,4 +1,4 @@
 pub mod artist;
-pub mod change_request;
+pub mod correction;
 pub mod release;
 pub mod song;

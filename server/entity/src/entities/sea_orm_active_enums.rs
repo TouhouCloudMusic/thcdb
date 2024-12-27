@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    Copy,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ArtistType")]
 pub enum ArtistType {
@@ -33,13 +34,10 @@ pub enum ArtistType {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    Copy,
 )]
-#[sea_orm(
-    rs_type = "String",
-    db_type = "Enum",
-    enum_name = "ChangeRequestStatus"
-)]
-pub enum ChangeRequestStatus {
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "CorrectionStatus")]
+pub enum CorrectionStatus {
     #[sea_orm(string_value = "Approved")]
     Approved,
     #[sea_orm(string_value = "Pending")]
@@ -57,13 +55,10 @@ pub enum ChangeRequestStatus {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    Copy,
 )]
-#[sea_orm(
-    rs_type = "String",
-    db_type = "Enum",
-    enum_name = "ChangeRequestType"
-)]
-pub enum ChangeRequestType {
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "CorrectionType")]
+pub enum CorrectionType {
     #[sea_orm(string_value = "Create")]
     Create,
     #[sea_orm(string_value = "Delete")]
@@ -81,13 +76,14 @@ pub enum ChangeRequestType {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    Copy,
 )]
 #[sea_orm(
     rs_type = "String",
     db_type = "Enum",
-    enum_name = "ChangeRequestUserType"
+    enum_name = "CorrectionUserType"
 )]
-pub enum ChangeRequestUserType {
+pub enum CorrectionUserType {
     #[sea_orm(string_value = "Approver")]
     Approver,
     #[sea_orm(string_value = "Author")]
@@ -107,6 +103,7 @@ pub enum ChangeRequestUserType {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    Copy,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "DatePrecision")]
 pub enum DatePrecision {
@@ -127,6 +124,7 @@ pub enum DatePrecision {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    Copy,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "EntityType")]
 pub enum EntityType {
@@ -151,26 +149,7 @@ pub enum EntityType {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
-)]
-#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "MediaPlatform")]
-pub enum MediaPlatform {
-    #[sea_orm(string_value = "Bluesky")]
-    Bluesky,
-    #[sea_orm(string_value = "Weibo")]
-    Weibo,
-    #[sea_orm(string_value = "X")]
-    X,
-}
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    EnumIter,
-    DeriveActiveEnum,
-    Serialize,
-    Deserialize,
-    juniper :: GraphQLEnum,
+    Copy,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ReleaseType")]
 pub enum ReleaseType {
@@ -197,6 +176,7 @@ pub enum ReleaseType {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    Copy,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "TagKind")]
 pub enum TagKind {
@@ -208,4 +188,23 @@ pub enum TagKind {
     Genre,
     #[sea_orm(string_value = "Scene")]
     Scene,
+}
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumIter,
+    DeriveActiveEnum,
+    Serialize,
+    Deserialize,
+    juniper :: GraphQLEnum,
+    Copy,
+)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "TagRelationType")]
+pub enum TagRelationType {
+    #[sea_orm(string_value = "derive")]
+    Derive,
+    #[sea_orm(string_value = "inherit")]
+    Inherit,
 }

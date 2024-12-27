@@ -17,9 +17,9 @@ use serde::{Deserialize, Serialize};
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub language_id: i32,
-    #[sea_orm(primary_key, auto_increment = false)]
     pub history_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub language_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

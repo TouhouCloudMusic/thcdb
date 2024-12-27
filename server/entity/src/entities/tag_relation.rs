@@ -3,6 +3,8 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use super::sea_orm_active_enums::TagRelationType;
+
 #[derive(
     Clone,
     Debug,
@@ -13,33 +15,35 @@ use serde::{Deserialize, Serialize};
     Deserialize,
     juniper :: GraphQLObject,
 )]
-#[sea_orm(table_name = "change_request_history")]
+#[sea_orm(table_name = "tag_relation")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub change_request_id: i32,
+    pub parent_id: i32,
     #[sea_orm(primary_key, auto_increment = false)]
-    pub history_id: i32,
-    #[sea_orm(column_type = "Text")]
-    pub description: String,
+    pub child_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub r#type: TagRelationType,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::change_request::Entity",
-        from = "Column::ChangeRequestId",
-        to = "super::change_request::Column::Id",
+        belongs_to = "super::tag::Entity",
+        from = "Column::ChildId",
+        to = "super::tag::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    ChangeRequest,
-}
-
-impl Related<super::change_request::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::ChangeRequest.def()
-    }
+    Tag2,
+    #[sea_orm(
+        belongs_to = "super::tag::Entity",
+        from = "Column::ParentId",
+        to = "super::tag::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Tag1,
 }
 
 impl ActiveModelBehavior for ActiveModel {}

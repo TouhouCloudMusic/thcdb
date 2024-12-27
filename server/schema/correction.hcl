@@ -72,7 +72,7 @@ table "correction" {
   }
 
   column "handled_at" {
-    type    = timestamptz
+    type = timestamptz
     null = true
   }
 }

@@ -16,10 +16,11 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "artist_link_history")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
+    pub history_id: i32,
+    #[sea_orm(column_type = "Text")]
+    pub url: String,
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub history_id: i32,
-    pub link_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -32,25 +33,11 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     ArtistHistory,
-    #[sea_orm(
-        belongs_to = "super::link::Entity",
-        from = "Column::LinkId",
-        to = "super::link::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
-    )]
-    Link,
 }
 
 impl Related<super::artist_history::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ArtistHistory.def()
-    }
-}
-
-impl Related<super::link::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Link.def()
     }
 }
 

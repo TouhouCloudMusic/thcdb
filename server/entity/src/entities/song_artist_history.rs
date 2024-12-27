@@ -13,11 +13,11 @@ use serde::{Deserialize, Serialize};
     Deserialize,
     juniper :: GraphQLObject,
 )]
-#[sea_orm(table_name = "release_track_artist_history")]
+#[sea_orm(table_name = "song_artist_history")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub track_history_id: i32,
+    pub history_id: i32,
     #[sea_orm(primary_key, auto_increment = false)]
     pub artist_id: i32,
 }
@@ -33,13 +33,13 @@ pub enum Relation {
     )]
     Artist,
     #[sea_orm(
-        belongs_to = "super::release_track_history::Entity",
-        from = "Column::TrackHistoryId",
-        to = "super::release_track_history::Column::Id",
+        belongs_to = "super::song_history::Entity",
+        from = "Column::HistoryId",
+        to = "super::song_history::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    ReleaseTrackHistory,
+    SongHistory,
 }
 
 impl Related<super::artist::Entity> for Entity {
@@ -48,9 +48,9 @@ impl Related<super::artist::Entity> for Entity {
     }
 }
 
-impl Related<super::release_track_history::Entity> for Entity {
+impl Related<super::song_history::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ReleaseTrackHistory.def()
+        Relation::SongHistory.def()
     }
 }
 
