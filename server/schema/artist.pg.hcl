@@ -105,16 +105,6 @@ table "artist_history" {
     null = true
     type = enum.DatePrecision
   }
-
-  column "created_at" {
-    type    = timestamptz
-    default = sql("now()")
-  }
-
-  column "updated_at" {
-    type    = timestamptz
-    default = sql("now()")
-  }
 }
 
 table "artist_link" {
@@ -138,27 +128,13 @@ table "artist_link" {
     ref_columns = [table.artist.column.id]
   }
 
-  column "link_id" {
-    type = int
-  }
-  foreign_key "fk_artist_link_link_id" {
-    columns     = [column.link_id]
-    ref_columns = [table.link.column.id]
+  column "url" {
+    type = text
   }
 }
 
 table "artist_link_history" {
   schema = schema.public
-
-  column "id" {
-    type = int
-    identity {
-      generated = BY_DEFAULT
-    }
-  }
-  primary_key {
-    columns = [column.id]
-  }
 
   column "history_id" {
     type = int
@@ -168,11 +144,7 @@ table "artist_link_history" {
     ref_columns = [table.artist_history.column.id]
   }
 
-  column "link_id" {
-    type = int
-  }
-  foreign_key "fk_artist_link_history_link_id" {
-    columns     = [column.link_id]
-    ref_columns = [table.link.column.id]
+  column "url" {
+    type = text
   }
 }

@@ -11,6 +11,14 @@ table "song" {
     columns = [column.id]
   }
 
+  column "release_id" {
+    type = int
+  }
+  foreign_key "fk_song_release_id" {
+    columns     = [column.release_id]
+    ref_columns = [table.release.column.id]
+  }
+
   column "title" {
     type = text
   }
@@ -20,14 +28,93 @@ table "song" {
     null = true
   }
 
-  column "created_at" {
-    type    = timestamptz
-    default = sql("now()")
+  column "track_number" {
+    type = text
+    null = true
+  }
+}
+
+table "song_history" {
+  schema = schema.public
+
+  column "id" {
+    type = int
+    identity {
+      generated = BY_DEFAULT
+    }
+  }
+  primary_key {
+    columns = [column.id]
   }
 
-  column "updated_at" {
-    type    = timestamptz
-    default = sql("now()")
+  column "release_history_id" {
+    type = int
+  }
+  foreign_key "fk_song_history_release_history_id" {
+    columns     = [column.release_history_id]
+    ref_columns = [table.release_history.column.id]
+  }
+
+  column "title" {
+    type = text
+  }
+
+  column "duration" {
+    type = interval
+    null = true
+  }
+
+  column "track_number" {
+    type = text
+    null = true
+  }
+}
+
+table "song_artist" {
+  schema = schema.public
+
+  column "song_id" {
+    type = int
+  }
+  foreign_key "fk_song_artist_song_id" {
+    columns     = [column.song_id]
+    ref_columns = [table.song.column.id]
+  }
+
+  column "artist_id" {
+    type = int
+  }
+  foreign_key "fk_song_artist_artist_id" {
+    columns     = [column.artist_id]
+    ref_columns = [table.artist.column.id]
+  }
+
+  primary_key {
+    columns = [column.song_id, column.artist_id]
+  }
+}
+
+table "song_artist_history" {
+  schema = schema.public
+
+  column "history_id" {
+    type = int
+  }
+  foreign_key "fk_song_artist_history_history_id" {
+    columns     = [column.history_id]
+    ref_columns = [table.song_history.column.id]
+  }
+
+  column "artist_id" {
+    type = int
+  }
+  foreign_key "fk_song_artist_history_artist_id" {
+    columns     = [column.artist_id]
+    ref_columns = [table.artist.column.id]
+  }
+
+  primary_key {
+    columns = [column.history_id, column.artist_id]
   }
 }
 
@@ -52,6 +139,30 @@ table "song_language" {
 
   primary_key {
     columns = [column.song_id, column.language_id]
+  }
+}
+
+table "song_language_history" {
+  schema = schema.public
+
+  column "history_id" {
+    type = int
+  }
+  foreign_key "fk_song_language_history_history_id" {
+    columns     = [column.history_id]
+    ref_columns = [table.song_history.column.id]
+  }
+
+  column "language_id" {
+    type = int
+  }
+  foreign_key "fk_song_language_history_language_id" {
+    columns     = [column.language_id]
+    ref_columns = [table.language.column.id]
+  }
+
+  primary_key {
+    columns = [column.history_id, column.language_id]
   }
 }
 
@@ -88,34 +199,6 @@ table "song_localized_title" {
     type = text
   }
 
-}
-
-table "song_history" {
-  schema = schema.public
-
-  column "id" {
-    type = int
-    identity {
-      generated = BY_DEFAULT
-    }
-  }
-  primary_key {
-    columns = [column.id]
-  }
-
-  column "title" {
-    type = text
-  }
-
-  column "created_at" {
-    type    = timestamptz
-    default = sql("now()")
-  }
-
-  column "updated_at" {
-    type    = timestamptz
-    default = sql("now()")
-  }
 }
 
 table "song_localized_title_history" {
@@ -213,30 +296,5 @@ table "song_credit_history" {
 
   primary_key {
     columns = [column.history_id, column.artist_id, column.role_id]
-  }
-
-}
-
-table "song_language_history" {
-  schema = schema.public
-
-  column "history_id" {
-    type = int
-  }
-  foreign_key "fk_song_language_history_history_id" {
-    columns     = [column.history_id]
-    ref_columns = [table.song_history.column.id]
-  }
-
-  column "language_id" {
-    type = int
-  }
-  foreign_key "fk_song_language_history_language_id" {
-    columns     = [column.language_id]
-    ref_columns = [table.language.column.id]
-  }
-
-  primary_key {
-    columns = [column.history_id, column.language_id]
   }
 }
