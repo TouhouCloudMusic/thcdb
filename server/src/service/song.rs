@@ -13,7 +13,7 @@ pub struct SongService {
 }
 
 impl SongService {
-    pub fn new(db: DatabaseConnection) -> Self {
+    pub const fn new(db: DatabaseConnection) -> Self {
         Self { db }
     }
 

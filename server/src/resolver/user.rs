@@ -1,8 +1,8 @@
 use juniper::{graphql_object, graphql_value, FieldError, FieldResult};
 
 use crate::dto::user::{SignIn, SignUp};
-use crate::model::output::*;
-use crate::service::juniper::*;
+use crate::model::output::{LoginOutput, SignupOutput};
+use crate::service::juniper::JuniperContext;
 
 pub struct UserQuery;
 pub struct UserMutation;
@@ -47,7 +47,7 @@ impl UserMutation {
             .await
             .map_err(|err| {
                 FieldError::new(
-                    format!("Failed to create user: {}", err),
+                    format!("Failed to create user: {err}"),
                     graphql_value!({"status": "DATABASE_ERROR"}),
                 )
             })?;

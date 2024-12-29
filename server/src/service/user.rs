@@ -83,7 +83,7 @@ pub struct UserService {
 }
 
 impl UserService {
-    pub fn new(database: DatabaseConnection) -> Self {
+    pub const fn new(database: DatabaseConnection) -> Self {
         Self { database }
     }
 

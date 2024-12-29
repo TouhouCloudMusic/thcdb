@@ -10,7 +10,7 @@ use entity::{
     release_localized_title, release_localized_title_history, song,
     song_artist, song_artist_history, song_history,
 };
-use sea_orm::ActiveValue::*;
+use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityTrait,
     IntoActiveModel, IntoActiveValue, QueryFilter,

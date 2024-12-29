@@ -3,7 +3,7 @@ use std::str::FromStr;
 use entity::{song, GqlScalarValue};
 use juniper::FieldResult;
 
-use crate::dto::change_request::ChangeRequestMetaData;
+use crate::dto::correction::NewCorrectionMetadata;
 use crate::dto::song::NewSong;
 use crate::error::SongServiceError;
 use crate::model::input::{CreateSongInput, RetrieveSongInput};
@@ -54,7 +54,7 @@ impl SongMutation {
                 languages: None,
                 localized_titles: None,
                 credits: None,
-                metadata: ChangeRequestMetaData {
+                metadata: NewCorrectionMetadata {
                     author_id: todo!(),
                     description: todo!(),
                 },

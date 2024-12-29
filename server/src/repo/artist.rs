@@ -46,17 +46,16 @@ error_set! {
 
 }
 
+#[allow(clippy::too_many_lines)]
 pub async fn create(
     data: GeneralArtistDto,
     tx: &DatabaseTransaction,
 ) -> Result<artist::Model, Error> {
     validate(&data)?;
 
-    let artist_active_model = artist::ActiveModel::from(&data);
-    let artist_history_active_model = artist_history::ActiveModel::from(&data);
-
-    let new_artist = artist_active_model.insert(tx).await?;
-    let new_artist_history = artist_history_active_model.insert(tx).await?;
+    let new_artist = artist::ActiveModel::from(&data).insert(tx).await?;
+    let new_artist_history =
+        artist_history::ActiveModel::from(&data).insert(tx).await?;
 
     let new_correction = repo::correction::create_self_approval()
         .author_id(data.author_id)
@@ -276,7 +275,8 @@ pub async fn create(
     Ok(new_artist)
 }
 
-async fn create_update_correction(
+#[allow(clippy::too_many_lines)]
+pub async fn create_correction(
     artist_id: i32,
     data: GeneralArtistDto,
     tx: &DatabaseTransaction,
@@ -428,7 +428,11 @@ async fn create_update_correction(
     Ok(correction)
 }
 
-async fn apply_correction(
+// TODO
+#[allow(clippy::unused_async)]
+pub async fn update_correction() {}
+
+pub async fn apply_correction(
     correction_id: i32,
     approver_id: i32,
     db: &DatabaseTransaction,
@@ -437,10 +441,10 @@ async fn apply_correction(
         .await?
         .ok_or(Error::CorretionNotFound)
         .and_then(|model| {
-            if model.entity_type != EntityType::Artist {
-                Err(Error::IncorrectCorrectionEntityType)
-            } else {
+            if model.entity_type == EntityType::Artist {
                 Ok(model)
+            } else {
+                Err(Error::IncorrectCorrectionEntityType)
             }
         })?;
 
@@ -777,25 +781,25 @@ impl FromQueryResult for GroupMemberFromHistory {
     ) -> Result<Self, DbErr> {
         use sea_orm::JsonValue;
         let json_value: JsonValue = res.try_get(pre, "join_leave")?;
-        let join_leave = match json_value.as_array() {
-            Some(x) => x
-                .clone()
-                .iter()
-                .map(|x| {
-                    let first = x
-                        .get(0)
-                        .and_then(|x| x.as_str().map(|x| x.to_string()));
+        let join_leave =
+            json_value.as_array().map_or_else(std::vec::Vec::new, |x| {
+                x.iter()
+                    .map(|x| {
+                        let first = x
+                            .get(0)
+                            .and_then(JsonValue::as_str)
+                            .map(Into::into);
 
-                    let second = x
-                        .get(1)
-                        .and_then(|x| x.as_str().map(|x| x.to_string()));
+                        let second = x
+                            .get(1)
+                            .and_then(JsonValue::as_str)
+                            .map(Into::into);
 
-                    (first, second)
-                })
-                .collect(),
-            None => vec![],
-        };
-        Ok(GroupMemberFromHistory {
+                        (first, second)
+                    })
+                    .collect()
+            });
+        Ok(Self {
             member_id: res.try_get(pre, "artist_id")?,
             roles: res.try_get(pre, "role_id")?,
             join_leave,
@@ -814,14 +818,10 @@ async fn get_group_member_from_artist_history<C: ConnectionTrait>(
     ))
     .await?
     .into_iter()
-    .map(|x| {
-        GroupMemberFromHistory::from_query_result(&x, "").map_err(|e| {
-            eprint!("Failed to parse query result: {e}");
-            e
-        })
-    })
+    .map(|x| GroupMemberFromHistory::from_query_result(&x, ""))
     .try_collect()
 }
+
 #[cfg(test)]
 mod test {
     use sea_orm::{
@@ -854,20 +854,16 @@ mod test {
             .await
             .expect("Error while query");
 
-        println!("{:?}", res);
+        println!("Query result: {res:?}");
 
         if let Some(result) = res {
-            println!("Result: {:?}", result);
-
-            let foo = GroupMemberFromHistory::from_query_result(&result, "")
+            let pr = GroupMemberFromHistory::from_query_result(&result, "")
                 .map_err(|e| {
-                    eprint!("{:?}", e);
+                    eprint!("{e:?}");
 
                     e
                 });
-            println!("{:?}", foo);
-        } else {
-            println!("None");
+            println!("Parsed result: {pr:?}");
         }
 
         Ok(())

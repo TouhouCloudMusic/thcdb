@@ -1,4 +1,17 @@
 #![allow(dead_code)]
+#![warn(
+    clippy::nursery,
+    clippy::pedantic,
+    clippy::as_conversions,
+    clippy::cargo
+)]
+#![allow(
+    clippy::missing_docs_in_private_items,
+    clippy::single_call_fn,
+    clippy::cargo_common_metadata,
+    clippy::multiple_crate_versions
+)]
+
 mod api_response;
 mod controller;
 mod dto;
@@ -64,10 +77,9 @@ async fn main() {
             "/",
             get(|session: AuthSession| async {
                 format!("Hello, {}!", {
-                    if let Some(user) = session.user {
-                        user.name
-                    } else {
-                        "world".to_string()
+                    match session.user {
+                        Some(user) => user.name,
+                        _ => "world".to_string(),
                     }
                 })
             }),
@@ -93,7 +105,7 @@ async fn main() {
             match signal::ctrl_c().await {
                 Ok(()) => {}
                 Err(err) => {
-                    eprintln!("Unable to listen for shutdown signal: {}", err);
+                    eprintln!("Unable to listen for shutdown signal: {err}");
                 }
             }
         })

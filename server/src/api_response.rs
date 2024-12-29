@@ -1,3 +1,5 @@
+#![allow(clippy::option_if_let_else)]
+
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
@@ -104,24 +106,25 @@ pub fn data<T: Serialize + Default>(data: T) -> Data<T> {
 
 pub fn msg<M>(message: M) -> Message
 where
-    M: ToString,
+    M: Into<String>,
 {
     Message {
-        message: message.to_string(),
+        message: message.into(),
         ..Message::default()
     }
 }
 
-pub fn err<E>(message: E, code: Option<StatusCode>) -> Err
+pub fn err<M>(message: M, code: Option<StatusCode>) -> Err
 where
-    E: ToString,
+    M: Into<String>,
 {
     Err {
-        message: message.to_string(),
+        message: message.into(),
         code: code.unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
         ..Err::default()
     }
 }
+
 #[cfg(test)]
 mod tests {
     use serde::Serialize;
@@ -166,7 +169,7 @@ mod tests {
 
     #[test]
     fn test_response_err() {
-        let response = super::err("error".to_string(), None);
+        let response = super::err("error", None);
         let serialized = serde_json::to_string(&response).unwrap();
         assert_eq!(
             serialized,

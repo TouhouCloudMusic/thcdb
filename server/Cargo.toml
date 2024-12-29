@@ -90,6 +90,7 @@ utoipa = { version = "5", features = [
 utoipa-axum = "0.1"
 utoipa-swagger-ui = { version = "8", features = [
     "axum",
+    "vendored",
 ] }
 xxhash-rust = { version = "0.8", features = [
     "std",

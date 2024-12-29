@@ -30,6 +30,7 @@ pub async fn create(
     Ok(first)
 }
 
+#[allow(clippy::too_many_lines)]
 pub async fn create_many(
     data: Vec<NewSong>,
     tx: &DatabaseTransaction,
@@ -87,7 +88,7 @@ pub async fn create_many(
     izip!(data.iter(), new_songs.iter(), new_song_historys.iter()).for_each(
         |(data, new_song, new_song_history)| {
             if let Some(languages) = &data.languages {
-                languages.iter().for_each(|language_id| {
+                for language_id in languages {
                     language_active_models.push(
                         song_language::Model {
                             song_id: new_song.id,
@@ -103,11 +104,11 @@ pub async fn create_many(
                         }
                         .into_active_model(),
                     );
-                });
+                }
             }
 
             if let Some(localized_titles) = &data.localized_titles {
-                localized_titles.iter().for_each(|localized_title| {
+                for localized_title in localized_titles {
                     localized_title_active_models.push(
                         song_localized_title::ActiveModel {
                             id: NotSet,
@@ -125,11 +126,11 @@ pub async fn create_many(
                             value: Set(localized_title.title.clone()),
                         },
                     );
-                });
+                }
             }
 
             if let Some(credits) = &data.credits {
-                credits.iter().for_each(|credit| {
+                for credit in credits {
                     credit_active_models.push(song_credit::ActiveModel {
                         artist_id: Set(credit.artist_id),
                         song_id: Set(new_song.id),
@@ -142,7 +143,7 @@ pub async fn create_many(
                             role_id: Set(credit.role_id),
                         },
                     );
-                });
+                }
             }
         },
     );

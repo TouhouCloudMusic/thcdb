@@ -12,7 +12,7 @@ pub struct ReleaseService {
 }
 
 impl ReleaseService {
-    pub fn new(database: DatabaseConnection) -> Self {
+    pub const fn new(database: DatabaseConnection) -> Self {
         Self { database }
     }
 

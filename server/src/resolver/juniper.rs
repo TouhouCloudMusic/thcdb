@@ -1,3 +1,5 @@
+#![allow(clippy::unused_self)]
+
 use entity::GqlScalarValue;
 
 use crate::resolver::release::ReleaseQuery;
@@ -10,13 +12,13 @@ pub struct JuniperMutation;
 #[juniper::graphql_object]
 #[graphql(context = JuniperContext, scalar = GqlScalarValue)]
 impl JuniperQuery {
-    fn user(&self) -> UserQuery {
+    const fn user(&self) -> UserQuery {
         UserQuery
     }
-    fn song(&self) -> SongQuery {
+    const fn song(&self) -> SongQuery {
         SongQuery
     }
-    fn release(&self) -> ReleaseQuery {
+    const fn release(&self) -> ReleaseQuery {
         ReleaseQuery
     }
 }
@@ -24,10 +26,10 @@ impl JuniperQuery {
 #[juniper::graphql_object]
 #[graphql(context = JuniperContext, scalar = GqlScalarValue)]
 impl JuniperMutation {
-    fn user(&self) -> UserMutation {
+    const fn user(&self) -> UserMutation {
         UserMutation
     }
-    fn song(&self) -> SongMutation {
+    const fn song(&self) -> SongMutation {
         SongMutation
     }
 }

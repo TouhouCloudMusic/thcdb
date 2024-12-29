@@ -1,7 +1,7 @@
 use entity::sea_orm_active_enums::{ArtistType, DatePrecision};
 use entity::{artist, artist_history, artist_localized_name_history};
 use sea_orm::prelude::Date;
-use sea_orm::ActiveValue::*;
+use sea_orm::ActiveValue::{NotSet, Set};
 
 use crate::types::Pair;
 

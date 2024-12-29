@@ -34,7 +34,7 @@ async fn sign_up(
 ) -> impl IntoResponse {
     match user_service.create(&username, &password).await {
         Ok(user) => match auth_session.login(&user).await {
-            Ok(_) => Redirect::to("/").into_response(),
+            Ok(()) => Redirect::to("/").into_response(),
             Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
                 .into_response(),
         },
@@ -53,7 +53,7 @@ async fn sign_in(
 ) -> impl IntoResponse {
     if auth_session.user.is_some() {
         return api_response::err(
-            "Already signed in",
+            "Already signed in".to_string(),
             Some(StatusCode::from_u16(409).unwrap()),
         )
         .into_response();
@@ -94,7 +94,7 @@ async fn upload_avatar(
         .content_type
         .is_some_and(|ct| ct.starts_with("image/"))
     {
-        Ok(api_response::msg("ok"))
+        Ok(api_response::msg("ok".to_string()))
         // TODO
         // image_service
         //     .create(data.contents, user_id)

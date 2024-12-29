@@ -7,7 +7,7 @@ use juniper_axum::response::JuniperResponse;
 use juniper_axum::{graphiql, playground};
 
 use crate::resolver::juniper::{JuniperMutation, JuniperQuery};
-use crate::service::juniper::*;
+use crate::service::juniper::{JuniperContext, JuniperSchema};
 use crate::AppState;
 
 pub fn router() -> axum::Router<AppState> {
