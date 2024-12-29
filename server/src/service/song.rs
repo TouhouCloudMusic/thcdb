@@ -3,7 +3,7 @@ use sea_orm::{DatabaseConnection, TransactionTrait};
 
 use crate::dto::song::NewSong;
 use crate::error::SongServiceError;
-use crate::repository;
+use crate::repo;
 
 type Result<T> = std::result::Result<T, SongServiceError>;
 
@@ -20,7 +20,7 @@ impl SongService {
     pub async fn find_by_id(&self, id: i32) -> Result<Option<song::Model>> {
         let transcation = self.db.begin().await?;
 
-        let result = repository::song::find_by_id(id, &transcation).await?;
+        let result = repo::song::find_by_id(id, &transcation).await?;
 
         transcation.commit().await?;
 
@@ -30,7 +30,7 @@ impl SongService {
     pub async fn create(&self, data: NewSong) -> Result<song::Model> {
         let transcation = self.db.begin().await?;
 
-        let result = repository::song::create(data, &transcation).await?;
+        let result = repo::song::create(data, &transcation).await?;
 
         transcation.commit().await?;
         Ok(result)

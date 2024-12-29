@@ -1,5 +1,5 @@
 use entity::sea_orm_active_enums::{ArtistType, DatePrecision};
-use entity::{artist, artist_history};
+use entity::{artist, artist_history, artist_localized_name_history};
 use sea_orm::prelude::Date;
 use sea_orm::ActiveValue::*;
 
@@ -9,6 +9,7 @@ use crate::types::Pair;
 #[derive(bon::Builder, Clone)]
 pub struct GeneralArtistDto {
     pub name: String,
+    pub localized_name: Option<Vec<LocalizedName>>,
     pub artist_type: ArtistType,
     pub text_alias: Option<Vec<String>>,
     pub start_date: Option<Date>,
@@ -57,4 +58,19 @@ pub struct NewGroupMember {
     pub artist_id: i32,
     pub roles: Vec<i32>,
     pub join_leave: Vec<Pair<String>>,
+}
+
+#[derive(Clone)]
+pub struct LocalizedName {
+    pub language_id: i32,
+    pub name: String,
+}
+
+impl From<artist_localized_name_history::Model> for LocalizedName {
+    fn from(value: artist_localized_name_history::Model) -> Self {
+        Self {
+            language_id: value.language_id,
+            name: value.name,
+        }
+    }
 }

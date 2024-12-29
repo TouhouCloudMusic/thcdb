@@ -1,25 +1,32 @@
 use std::future::Future;
 
 use bon::builder;
-use chrono::{DateTime, FixedOffset};
+use chrono::Utc;
 use entity::sea_orm_active_enums::{
     CorrectionStatus, CorrectionType, CorrectionUserType, EntityType,
 };
-use entity::{correction, correction_revision, correction_user, user};
-use sea_orm::prelude::DateTimeWithTimeZone;
+use entity::{correction, correction_revision, correction_user};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ConnectionTrait, DatabaseTransaction, DbErr, EntityTrait,
+    IntoActiveModel,
 };
 
 type CorrectionResult = Result<correction::Model, DbErr>;
+
+pub async fn find_by_id<C: ConnectionTrait>(
+    correction_id: i32,
+    db: &C,
+) -> Result<Option<correction::Model>, DbErr> {
+    correction::Entity::find_by_id(correction_id).one(db).await
+}
 
 #[builder]
 pub async fn create<C: ConnectionTrait>(
     author_id: i32,
     description: String,
     entity_type: EntityType,
-
+    entity_id: i32,
     db: &C,
 ) -> CorrectionResult {
     let result = correction::ActiveModel {
@@ -27,6 +34,7 @@ pub async fn create<C: ConnectionTrait>(
         status: Set(CorrectionStatus::Approved),
         r#type: Set(CorrectionType::Create),
         entity_type: Set(entity_type),
+        entity_id: Set(entity_id),
         description: Set(description),
         created_at: NotSet,
         handled_at: NotSet,
@@ -63,6 +71,7 @@ pub fn link_history<C: ConnectionTrait>(
 pub async fn create_self_approval<C: ConnectionTrait>(
     author_id: i32,
     entity_type: EntityType,
+    entity_id: i32,
     description: String,
     db: &C,
 ) -> Result<correction::Model, DbErr> {
@@ -71,6 +80,7 @@ pub async fn create_self_approval<C: ConnectionTrait>(
         status: Set(CorrectionStatus::Approved),
         r#type: Set(CorrectionType::Create),
         entity_type: Set(entity_type),
+        entity_id: Set(entity_id),
         description: Set(description),
         created_at: NotSet,
         handled_at: NotSet,
@@ -104,10 +114,42 @@ async fn link_user(
         user_id: Set(user_id),
         correction_id: Set(correction_id),
         user_type: Set(user_type),
-        ..Default::default()
     });
 
     Entity::insert_many(models).exec(tx).await?;
 
     Ok(())
+}
+
+async fn handle(
+    correction_id: i32,
+    approver_id: i32,
+    status: CorrectionStatus,
+    tx: &DatabaseTransaction,
+) -> Result<correction::Model, DbErr> {
+    let correction = correction::Entity::find_by_id(correction_id)
+        .one(tx)
+        .await?;
+
+    let correction =
+        correction.ok_or(DbErr::Custom("Correction not found".to_owned()))?;
+
+    let data = vec![(approver_id, CorrectionUserType::Approver)];
+    link_user(data, correction_id, tx).await?;
+
+    let mut correction_active_model = correction.into_active_model();
+    correction_active_model.status = Set(status);
+    correction_active_model.handled_at = Set(Some(Utc::now().into()));
+
+    let correction = correction_active_model.update(tx).await?;
+
+    Ok(correction)
+}
+
+pub async fn approve(
+    correction_id: i32,
+    approver_id: i32,
+    tx: &DatabaseTransaction,
+) -> Result<correction::Model, DbErr> {
+    handle(correction_id, approver_id, CorrectionStatus::Approved, tx).await
 }

@@ -31,8 +31,8 @@ pub enum Relation {
         belongs_to = "super::group_member_history::Entity",
         from = "Column::GroupMemberHistoryId",
         to = "super::group_member_history::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
+        on_update = "Cascade",
+        on_delete = "Cascade"
     )]
     GroupMemberHistory,
 }

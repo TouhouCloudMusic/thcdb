@@ -16,9 +16,9 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "group_member_role_history")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
-    #[sea_orm(primary_key)]
-    pub id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub group_member_history_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub role_id: i32,
 }
 

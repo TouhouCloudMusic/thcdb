@@ -62,6 +62,10 @@ table "correction" {
     type = enum.EntityType
   }
 
+  column "entity_id" {
+    type = int
+  }
+
   column "description" {
     type = text
   }

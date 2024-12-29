@@ -61,22 +61,14 @@ table "group_member_history" {
 table "group_member_role" {
   schema = schema.public
 
-  column "id" {
-    type = int
-    identity {
-      generated = BY_DEFAULT
-    }
-  }
-  primary_key {
-    columns = [column.id]
-  }
-
   column "group_member_id" {
     type = int
   }
   foreign_key "fk_group_member_role_group_member_id" {
     columns     = [column.group_member_id]
     ref_columns = [table.group_member.column.id]
+    on_delete   = CASCADE
+    on_update   = CASCADE
   }
 
   column "role_id" {
@@ -86,20 +78,14 @@ table "group_member_role" {
     columns     = [column.role_id]
     ref_columns = [table.role.column.id]
   }
+
+  primary_key {
+    columns = [column.group_member_id, column.role_id]
+  }
 }
 
 table "group_member_role_history" {
   schema = schema.public
-
-  column "id" {
-    type = int
-    identity {
-      generated = BY_DEFAULT
-    }
-  }
-  primary_key {
-    columns = [column.id]
-  }
 
   column "group_member_history_id" {
     type = int
@@ -115,6 +101,10 @@ table "group_member_role_history" {
   foreign_key "fk_group_member_role_history_role_id" {
     columns     = [column.role_id]
     ref_columns = [table.role.column.id]
+  }
+
+  primary_key {
+    columns = [column.group_member_history_id, column.role_id]
   }
 }
 
@@ -137,6 +127,8 @@ table "group_member_join_leave" {
   foreign_key "fk_group_member_join_leave_member_id" {
     columns     = [column.group_member_id]
     ref_columns = [table.group_member.column.id]
+    on_delete   = CASCADE
+    on_update   = CASCADE
   }
 
   column "join_year" {
@@ -175,6 +167,8 @@ table "group_member_join_leave_history" {
   foreign_key "fk_group_member_join_leave_history_group_member_history_id" {
     columns     = [column.group_member_history_id]
     ref_columns = [table.group_member_history.column.id]
+    on_delete   = CASCADE
+    on_update   = CASCADE
   }
 
   column "join_year" {

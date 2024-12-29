@@ -1,10 +1,12 @@
 use std::vec;
 
-use entity::sea_orm_active_enums::ChangeRequestStatus;
+use entity::sea_orm_active_enums::{
+    CorrectionStatus, CorrectionType, EntityType,
+};
 use entity::{
-    change_request, change_request_revision, song, song_credit,
-    song_credit_history, song_history, song_language, song_language_history,
-    song_localized_title, song_localized_title_history,
+    correction, correction_revision, song, song_credit, song_credit_history,
+    song_history, song_language, song_language_history, song_localized_title,
+    song_localized_title_history,
 };
 use itertools::izip;
 use sea_orm::ActiveValue::{NotSet, Set};
@@ -39,37 +41,35 @@ pub async fn create_many(
     .await?;
 
     let new_song_historys = song_history::Entity::insert_many(
-        new_songs.iter().map(|song| song.into_active_model()),
+        new_songs.iter().map(song_history::ActiveModel::from),
     )
     .exec_with_returning_many(tx)
     .await?;
 
-    let new_change_requests =
-        change_request::Entity::insert_many(data.iter().map(|song| {
-            change_request::ActiveModel {
+    let new_corrections =
+        correction::Entity::insert_many(data.iter().zip(new_songs.iter()).map(
+            |(song, model): (&NewSong, &song::Model)| correction::ActiveModel {
                 id: NotSet,
-                request_status: Set(ChangeRequestStatus::Approved),
-                request_type: Set(
-                    entity::sea_orm_active_enums::ChangeRequestType::Create,
-                ),
-                entity_type: Set(
-                    entity::sea_orm_active_enums::EntityType::Song,
-                ),
+                status: Set(CorrectionStatus::Approved),
+                r#type: Set(CorrectionType::Create),
+                entity_type: Set(EntityType::Song),
+                entity_id: Set(model.id),
                 description: Set(song.metadata.description.clone()),
                 created_at: NotSet,
                 handled_at: NotSet,
-            }
-        }))
+            },
+        ))
         .exec_with_returning_many(tx)
         .await?;
 
-    change_request_revision::Entity::insert_many(
+    correction_revision::Entity::insert_many(
         new_song_historys
             .iter()
-            .zip(new_change_requests.into_iter())
-            .map(|(song, request)| change_request_revision::ActiveModel {
-                change_request_id: Set(request.id),
+            .zip(new_corrections.into_iter())
+            .map(|(song, request)| correction_revision::ActiveModel {
+                correction_id: Set(request.id),
                 entity_history_id: Set(song.id),
+                description: Set(request.description),
             }),
     )
     .exec_with_returning_many(tx)

@@ -50,6 +50,24 @@ impl Related<super::user_role::Entity> for Entity {
     }
 }
 
+impl Related<super::group_member::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::group_member_role::Relation::GroupMember.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::group_member_role::Relation::Role.def().rev())
+    }
+}
+
+impl Related<super::group_member_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::group_member_role_history::Relation::GroupMemberHistory.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::group_member_role_history::Relation::Role.def().rev())
+    }
+}
+
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
         super::user_role::Relation::User.def()
