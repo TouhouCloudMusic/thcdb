@@ -1178,6 +1178,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 
 [[package]]
+name = "err_trail"
+version = "0.8.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf171eed0f19d57286fabcc6634d5c85b1054921f531a44c962225bbb06190b4"
+dependencies = [
+ "tracing",
+]
+
+[[package]]
 name = "errno"
 version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1189,23 +1198,25 @@ dependencies = [
 
 [[package]]
 name = "error_set"
-version = "0.8.2"
+version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "384ceba2f830b31ce5e30a9a22b47a35b630a89cc6337348fb89258a1dbf83fb"
+checksum = "7a5cfac9e0befd56d4a6f7ffdad3558f798d1fc005dfaaa99ed5202efd7abec6"
 dependencies = [
+ "err_trail",
  "error_set_impl",
  "tracing",
 ]
 
 [[package]]
 name = "error_set_impl"
-version = "0.8.2"
+version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c90322ec4af49f60cb82bcc209eb99585772800d97a8fc71184cf79d170c8182"
+checksum = "a4937429fd4e1421897226f4337c9e1a4c4206f886828e51dea621cbdcb9fd38"
 dependencies = [
  "indices",
  "proc-macro2",
  "quote",
+ "regex",
  "syn 2.0.90",
 ]
 
