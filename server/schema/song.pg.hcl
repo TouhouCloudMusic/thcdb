@@ -32,6 +32,20 @@ table "song" {
     type = text
     null = true
   }
+    trigger "prevent_orphan_song_deletion" {
+    on_table = table.song
+    before_delete = true
+    for_each_row = true
+    condition = <<-SQL
+      EXISTS (
+        SELECT 1 FROM release_track 
+        WHERE release_track.song_id = OLD.id
+      )
+    SQL
+    action = <<-SQL
+      RAISE EXCEPTION 'Cannot delete song that is associated with a release';
+    SQL
+  }
 }
 
 table "song_history" {

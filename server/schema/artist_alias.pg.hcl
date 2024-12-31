@@ -24,6 +24,16 @@ table "artist_alias" {
   check "unique_relationship" {
     expr = "first_id < second_id"
   }
+
+  index "idx_artist_alias_first_id" {
+    columns = [ column.first_id ]
+  }
+
+  index "idx_artist_alias_second_id" {
+    columns = [ column.second_id ]
+  }
+
+  comment = "Store alias relationships between artists."
 }
 
 table "artist_alias_history" {
@@ -48,4 +58,14 @@ table "artist_alias_history" {
   primary_key {
     columns = [column.history_id, column.alias_id]
   }
+
+  index "idx_artist_alias_history_first_id" {
+    columns = [ column.first_id ]
+  }
+  
+  index "idx_artist_alias_history_second_id" {
+    columns = [ column.second_id ]
+  }
+
+  comment = "Track the historical changes in alias relationships between artists."
 }

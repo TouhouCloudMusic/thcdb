@@ -5,6 +5,8 @@ enum "TagKind" {
     "Form",
     "Genre",
     "Scene",
+    "Arrangement",
+    "Instrument",
   ]
 }
 
@@ -67,6 +69,14 @@ table "tag_history" {
   }
   primary_key {
     columns = [column.id]
+  }
+  
+  column "tag_id" {
+    type = int
+    foreign_key {
+      table = schema.public.tag
+      columns = [ column.id ]
+    }
   }
 
   column "name" {
