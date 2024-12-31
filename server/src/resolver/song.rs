@@ -3,7 +3,7 @@ use std::str::FromStr;
 use entity::{song, GqlScalarValue};
 use juniper::FieldResult;
 
-use crate::dto::correction::NewCorrectionMetadata;
+use crate::dto::correction::Metadata;
 use crate::dto::song::NewSong;
 use crate::error::SongServiceError;
 use crate::model::input::{CreateSongInput, RetrieveSongInput};
@@ -34,6 +34,7 @@ impl SongMutation {
         input: CreateSongInput,
         context: &JuniperContext,
     ) -> FieldResult<song::Model> {
+        todo!();
         let parsed_duration =
             iso8601_duration::Duration::from_str(&input.duration)
                 .map(|d| d.to_chrono())
@@ -54,10 +55,11 @@ impl SongMutation {
                 languages: None,
                 localized_titles: None,
                 credits: None,
-                metadata: NewCorrectionMetadata {
+                metadata: Metadata {
                     author_id: todo!(),
                     description: todo!(),
                 },
+                track_number: todo!(),
             })
             .await?;
 

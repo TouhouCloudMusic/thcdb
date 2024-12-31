@@ -66,10 +66,6 @@ table "correction" {
     type = int
   }
 
-  column "description" {
-    type = text
-  }
-
   column "created_at" {
     type    = timestamptz
     default = sql("now()")

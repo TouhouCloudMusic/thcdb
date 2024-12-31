@@ -18,17 +18,17 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub artist_history_id: i32,
     pub language_id: i32,
     #[sea_orm(column_type = "Text")]
     pub name: String,
+    pub history_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
         belongs_to = "super::artist_history::Entity",
-        from = "Column::ArtistHistoryId",
+        from = "Column::HistoryId",
         to = "super::artist_history::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"

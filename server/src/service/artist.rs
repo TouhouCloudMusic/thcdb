@@ -1,7 +1,7 @@
 use entity::artist;
 use sea_orm::{DatabaseConnection, TransactionTrait};
 
-use crate::dto::artist::GeneralArtistDto;
+use crate::dto::artist::ArtistCorrection;
 use crate::repo;
 pub struct ArtistService {
     db: DatabaseConnection,
@@ -14,7 +14,7 @@ impl ArtistService {
 
     pub async fn create(
         &self,
-        data: GeneralArtistDto,
+        data: ArtistCorrection,
     ) -> Result<artist::Model, repo::artist::Error> {
         let transaction = self.db.begin().await?;
 

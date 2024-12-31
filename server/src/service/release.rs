@@ -1,7 +1,7 @@
 use entity::release;
 use sea_orm::{DatabaseConnection, DbErr, EntityTrait, TransactionTrait};
 
-use crate::dto::correction::NewCorrectionMetadata;
+use crate::dto::correction::Metadata;
 use crate::dto::release::GeneralReleaseDto;
 use crate::error::ServiceError;
 use crate::repo;
@@ -26,7 +26,7 @@ impl ReleaseService {
     pub async fn create(
         &self,
         release_data: GeneralReleaseDto,
-        correction_data: NewCorrectionMetadata,
+        correction_data: Metadata,
     ) -> Result<release::Model, ServiceError> {
         // Question: Should check here?
         // TODO: Validate crate

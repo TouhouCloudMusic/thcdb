@@ -25,8 +25,6 @@ pub struct Model {
     pub status: CorrectionStatus,
     pub r#type: CorrectionType,
     pub entity_type: EntityType,
-    #[sea_orm(column_type = "Text")]
-    pub description: String,
     pub created_at: DateTimeWithTimeZone,
     pub handled_at: Option<DateTimeWithTimeZone>,
     pub entity_id: i32,

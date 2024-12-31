@@ -16,16 +16,16 @@ use sea_orm::{
     IntoActiveModel, IntoActiveValue, QueryFilter,
 };
 
-use crate::dto::correction::NewCorrectionMetadata;
+use crate::dto::correction::Metadata;
 use crate::dto::release::input::{Credit, LocalizedTitle};
 use crate::dto::release::{GeneralReleaseDto, NewTrack};
 use crate::repo;
 pub async fn create(
     dto: GeneralReleaseDto,
-    NewCorrectionMetadata {
+    Metadata {
         author_id,
         description,
-    }: NewCorrectionMetadata,
+    }: Metadata,
     tx: &DatabaseTransaction,
 ) -> Result<release::Model, DbErr> {
     let new_release = dto.get_release_active_model().insert(tx).await?;
@@ -46,18 +46,17 @@ pub async fn create(
         .author_id(author_id)
         .entity_type(EntityType::Release)
         .entity_id(new_release.id)
-        .description(description.clone())
         .db(tx)
         .call()
         .await?;
 
-    repo::correction::link_history(
-        correction.id,
-        new_history.id,
-        description,
-        tx,
-    )
-    .await?;
+    repo::correction::link_history()
+        .correction_id(correction.id)
+        .entity_history_id(new_history.id)
+        .description(description)
+        .db(tx)
+        .call()
+        .await?;
 
     create_release_artist(new_release.id, &artists, tx).await?;
     create_release_history_artist(new_history.id, &artists, tx).await?;
@@ -92,10 +91,10 @@ pub async fn create(
 pub async fn update(
     id: i32,
     dto: GeneralReleaseDto,
-    NewCorrectionMetadata {
+    Metadata {
         author_id,
         description,
-    }: NewCorrectionMetadata,
+    }: Metadata,
     tx: &DatabaseTransaction,
 ) -> Result<release::Model, DbErr> {
     let update_time = Utc::now();
@@ -115,20 +114,20 @@ pub async fn update(
         r#type: Set(CorrectionType::Update),
         entity_type: Set(EntityType::Release),
         entity_id: Set(id),
-        description: Set(description.clone()),
+
         created_at: Set(update_time.into()),
         handled_at: NotSet,
     }
     .insert(tx)
     .await?;
 
-    repo::correction::link_history(
-        correction.id,
-        new_release_history.id,
-        description,
-        tx,
-    )
-    .await?;
+    repo::correction::link_history()
+        .correction_id(correction.id)
+        .entity_history_id(new_release_history.id)
+        .description(description)
+        .db(tx)
+        .call()
+        .await?;
 
     correction_user::ActiveModel {
         correction_id: Set(correction.id),

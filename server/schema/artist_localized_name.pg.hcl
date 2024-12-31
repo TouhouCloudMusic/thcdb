@@ -46,11 +46,11 @@ table "artist_localized_name_history" {
     columns = [column.id]
   }
 
-  column "artist_history_id" {
+  column "history_id" {
     type = int
   }
-  foreign_key "fk_artist_localized_name_history_artist_id" {
-    columns     = [column.artist_history_id]
+  foreign_key "fk_artist_localized_name_history_history_id" {
+    columns     = [column.history_id]
     ref_columns = [table.artist_history.column.id]
   }
 

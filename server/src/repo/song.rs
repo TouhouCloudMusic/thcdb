@@ -48,18 +48,17 @@ pub async fn create_many(
     .await?;
 
     let new_corrections =
-        correction::Entity::insert_many(data.iter().zip(new_songs.iter()).map(
-            |(song, model): (&NewSong, &song::Model)| correction::ActiveModel {
+        correction::Entity::insert_many(new_songs.iter().map(|song| {
+            correction::ActiveModel {
                 id: NotSet,
                 status: Set(CorrectionStatus::Approved),
                 r#type: Set(CorrectionType::Create),
                 entity_type: Set(EntityType::Song),
-                entity_id: Set(model.id),
-                description: Set(song.metadata.description.clone()),
+                entity_id: Set(song.id),
                 created_at: NotSet,
                 handled_at: NotSet,
-            },
-        ))
+            }
+        }))
         .exec_with_returning_many(tx)
         .await?;
 
@@ -70,7 +69,8 @@ pub async fn create_many(
             .map(|(song, request)| correction_revision::ActiveModel {
                 correction_id: Set(request.id),
                 entity_history_id: Set(song.id),
-                description: Set(request.description),
+                // TODO: desc
+                description: Set(String::new()),
             }),
     )
     .exec_with_returning_many(tx)

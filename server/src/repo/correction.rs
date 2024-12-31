@@ -24,18 +24,18 @@ pub async fn find_by_id<C: ConnectionTrait>(
 #[builder]
 pub async fn create<C: ConnectionTrait>(
     author_id: i32,
-    description: String,
     entity_type: EntityType,
     entity_id: i32,
+    status: CorrectionStatus,
+    r#type: CorrectionType,
     db: &C,
 ) -> CorrectionResult {
     let result = correction::ActiveModel {
         id: NotSet,
-        status: Set(CorrectionStatus::Approved),
-        r#type: Set(CorrectionType::Create),
+        status: Set(status),
+        r#type: Set(r#type),
         entity_type: Set(entity_type),
         entity_id: Set(entity_id),
-        description: Set(description),
         created_at: NotSet,
         handled_at: NotSet,
     }
@@ -53,27 +53,12 @@ pub async fn create<C: ConnectionTrait>(
     Ok(result)
 }
 
-pub fn link_history<C: ConnectionTrait>(
-    correction_id: i32,
-    entity_history_id: i32,
-    description: String,
-    db: &C,
-) -> impl Future<Output = Result<correction_revision::Model, DbErr>> + '_ {
-    correction_revision::ActiveModel {
-        correction_id: Set(correction_id),
-        entity_history_id: Set(entity_history_id),
-        description: Set(description),
-    }
-    .insert(db)
-}
-
 #[builder]
-pub async fn create_self_approval<C: ConnectionTrait>(
+pub async fn create_self_approval(
     author_id: i32,
     entity_type: EntityType,
     entity_id: i32,
-    description: String,
-    db: &C,
+    db: &DatabaseTransaction,
 ) -> Result<correction::Model, DbErr> {
     let correction = correction::ActiveModel {
         id: NotSet,
@@ -81,7 +66,6 @@ pub async fn create_self_approval<C: ConnectionTrait>(
         r#type: Set(CorrectionType::Create),
         entity_type: Set(entity_type),
         entity_id: Set(entity_id),
-        description: Set(description),
         created_at: NotSet,
         handled_at: NotSet,
     }
@@ -103,8 +87,23 @@ pub async fn create_self_approval<C: ConnectionTrait>(
     Ok(correction)
 }
 
+#[builder]
+pub fn link_history<C: ConnectionTrait>(
+    correction_id: i32,
+    entity_history_id: i32,
+    description: String,
+    db: &C,
+) -> impl Future<Output = Result<correction_revision::Model, DbErr>> + '_ {
+    correction_revision::ActiveModel {
+        correction_id: Set(correction_id),
+        entity_history_id: Set(entity_history_id),
+        description: Set(description),
+    }
+    .insert(db)
+}
+
 async fn link_user(
-    data: Vec<(i32, CorrectionUserType)>,
+    data: impl IntoIterator<Item = (i32, CorrectionUserType)>,
     correction_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {

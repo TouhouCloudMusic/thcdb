@@ -3,11 +3,12 @@ use entity::{artist, artist_history, artist_localized_name_history};
 use sea_orm::prelude::Date;
 use sea_orm::ActiveValue::{NotSet, Set};
 
+use crate::dto;
 use crate::types::Pair;
 
 #[allow(dead_code)]
 #[derive(bon::Builder, Clone)]
-pub struct GeneralArtistDto {
+pub struct ArtistCorrection {
     pub name: String,
     pub localized_name: Option<Vec<LocalizedName>>,
     pub artist_type: ArtistType,
@@ -19,12 +20,11 @@ pub struct GeneralArtistDto {
     pub end_date_precision: Option<DatePrecision>,
     pub aliases: Option<Vec<i32>>,
     pub links: Option<Vec<String>>,
-    pub author_id: i32,
-    pub description: String,
+    pub correction_metadata: dto::correction::Metadata,
 }
 
-impl From<&GeneralArtistDto> for artist::ActiveModel {
-    fn from(value: &GeneralArtistDto) -> Self {
+impl From<&ArtistCorrection> for artist::ActiveModel {
+    fn from(value: &ArtistCorrection) -> Self {
         Self {
             id: NotSet,
             name: Set(value.name.clone()),
@@ -38,8 +38,8 @@ impl From<&GeneralArtistDto> for artist::ActiveModel {
     }
 }
 
-impl From<&GeneralArtistDto> for artist_history::ActiveModel {
-    fn from(value: &GeneralArtistDto) -> Self {
+impl From<&ArtistCorrection> for artist_history::ActiveModel {
+    fn from(value: &ArtistCorrection) -> Self {
         Self {
             id: NotSet,
             name: Set(value.name.clone()),
