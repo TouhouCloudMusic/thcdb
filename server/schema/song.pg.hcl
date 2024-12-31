@@ -32,7 +32,7 @@ table "song" {
     type = text
     null = true
   }
-    trigger "prevent_orphan_song_deletion" {
+  trigger "prevent_orphan_song_deletion" {
     on_table = table.song
     before_delete = true
     for_each_row = true
@@ -312,3 +312,53 @@ table "song_credit_history" {
     columns = [column.history_id, column.artist_id, column.role_id]
   }
 }
+
+
+table "song_relation" {
+  schema = schema.public
+
+  column "id" {
+    type = int
+    identity {
+      generated = BY_DEFAULT
+    }
+  }
+  primary_key {
+    columns = [column.id]
+  }
+
+  column "song_first_id" {
+    type = int
+  }
+  foreign_key "fk_song_relation_song_first_id" {
+    columns     = [column.song_first_id]
+    ref_columns = [table.song.column.id]
+  }
+
+  column "song_second_id" {
+    type = int
+  }
+  foreign_key "fk_song_relation_song_second_id" {
+    columns     = [column.song_second_id]
+    ref_columns = [table.song.column.id]
+  }
+
+  column "relation_type" {
+    type = text
+  }
+
+  column "description" {
+    type = text
+  }
+
+  column "created_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  column "updated_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+}
+
