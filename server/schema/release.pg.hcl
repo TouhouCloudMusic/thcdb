@@ -270,86 +270,146 @@ table "release_label" {
     on_delete   = CASCADE
   }
 
-	primary_key {
-		columns = [ column.release_id, column.label_id ]
-	}
-
+  primary_key {
+    columns = [column.release_id, column.label_id]
+  }
 }
 
 table "release_track" {
-	schema = schema.public
+  schema = schema.public
 
-	column "id" {
-		type = int
-		identity {
-			generated = BY_DEFAULT
-		}
-	}
-	primary_key {
-		columns = [ column.id ]
-	}
-
-	column "release_id" {
-		type = int
-	}
-	foreign_key "fk_release_track_release_id" {
-		columns = [ column.release_id ]
-		ref_columns = [ table.release.column.id ]
-		on_update = CASCADE
-		on_delete = CASCADE
-	}
-
-	column "song_id" {
-		type = int
-	}
-	foreign_key "fk_release_track_song_id" {
-		columns = [column.song_id]
-		ref_columns = [table.song.column.id]
-		on_delete = RESTRICT
+  column "id" {
+    type = int
+    identity {
+      generated = BY_DEFAULT
+    }
+  }
+  primary_key {
+    columns = [column.id]
   }
 
-	column "track_order" {
-		type = smallint
-	}
+  column "release_id" {
+    type = int
+  }
+  foreign_key "fk_release_track_release_id" {
+    columns     = [column.release_id]
+    ref_columns = [table.release.column.id]
+    on_update   = CASCADE
+    on_delete   = CASCADE
+  }
 
-	column "track_number" {
-		type = text
-		null = true
-	}
-
-	column "title" {
-		type = text
-		null = true
-	}
-
-    index "idx_release_track_song_id" {
+  column "song_id" {
+    type = int
+  }
+  foreign_key "fk_release_track_song_id" {
+    columns     = [column.song_id]
+    ref_columns = [table.song.column.id]
+    on_delete   = RESTRICT
+  }
+  index "idx_release_track_song_id" {
     columns = [column.song_id]
   }
 
+  column "track_number" {
+    type = text
+    null = true
+  }
+
+  column "display_title" {
+    type = text
+    null = true
+  }
+}
+
+table "release_track_history" {
+  schema = schema.public
+
+  column "id" {
+    type = int
+    identity {
+      generated = BY_DEFAULT
+    }
+  }
+  primary_key {
+    columns = [column.id]
+  }
+
+  column "history_id" {
+    type = int
+  }
+  foreign_key "fk_release_track_history_id" {
+    columns     = [column.history_id]
+    ref_columns = [table.release_history.column.id]
+    on_update   = CASCADE
+    on_delete   = CASCADE
+  }
+
+  column "song_id" {
+    type = int
+  }
+  foreign_key "fk_release_track_song_id" {
+    columns     = [column.song_id]
+    ref_columns = [table.song.column.id]
+    on_delete   = RESTRICT
+  }
+  index "idx_release_track_history_song_id" {
+    columns = [column.song_id]
+  }
+
+  column "track_number" {
+    type = text
+    null = true
+  }
+
+  column "display_title" {
+    type = text
+    null = true
+  }
 }
 
 table "release_track_artist" {
-	schema = schema.public
+  schema = schema.public
 
-	column "track_id" {
-		type = int
-	}
-	foreign_key "fk_release_track_artist_track_id" {
-		columns = [ column.track_id ]
-		ref_columns = [ table.release_track.column.id ]
-		on_update = CASCADE
-		on_delete = CASCADE
-	}
+  column "track_id" {
+    type = int
+  }
+  foreign_key "fk_release_track_artist_track_id" {
+    columns     = [column.track_id]
+    ref_columns = [table.release_track_history.column.id]
+    on_update   = CASCADE
+    on_delete   = CASCADE
+  }
 
-	column "artist_id" {
-		type = int
-	}
+  column "artist_id" {
+    type = int
+  }
 
-	primary_key {
-		columns = [ column.track_id, column.artist_id ]
-	}
+  primary_key {
+    columns = [column.track_id, column.artist_id]
+  }
 }
 
+table "release_track_artist_history" {
+  schema = schema.public
+
+  column "track_history_id" {
+    type = int
+  }
+  foreign_key "fk_release_track_artist_history_track_history_id" {
+    columns     = [column.track_history_id]
+    ref_columns = [table.release_track.column.id]
+    on_update   = CASCADE
+    on_delete   = CASCADE
+  }
+
+  column "artist_id" {
+    type = int
+  }
+
+  primary_key {
+    columns = [column.track_history_id, column.artist_id]
+  }
+}
 
 table "release_credit" {
   schema = schema.public
@@ -457,24 +517,25 @@ table "release_label_history" {
   }
 }
 
-view "orphaned_songs" {          //孤立检查
-  schema = schema.public
-  
+view "orphaned_songs" {
+  schema  = schema.public
+  comment = "This view identifies songs that are not associated with any release"
+
   column "id" {
     type = int
   }
-  
+
   column "title" {
     type = text
   }
 
-  sql = <<-SQL
+  as = <<-SQL
     SELECT s.id, s.title
-    FROM song s
-    LEFT JOIN release_track rt ON s.id = rt.song_id
+    FROM ${table.song.name} s
+    LEFT JOIN ${table.release_track.name} rt ON s.id = rt.song_id
     WHERE rt.id IS NULL
   SQL
 
-  comment = "This view identifies songs that are not associated with any release"
-}
+  depends_on = [table.song, table.release_track]
 
+}

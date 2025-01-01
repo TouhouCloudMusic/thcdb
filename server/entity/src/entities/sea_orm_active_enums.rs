@@ -203,6 +203,10 @@ pub enum TagKind {
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "TagRelationType")]
 pub enum TagRelationType {
+    #[sea_orm(string_value = "Derive")]
+    Derive,
+    #[sea_orm(string_value = "Inherit")]
+    Inherit,
     #[sea_orm(string_value = "derive")]
     Derive,
     #[sea_orm(string_value = "inherit")]

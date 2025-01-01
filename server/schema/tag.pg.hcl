@@ -5,16 +5,14 @@ enum "TagKind" {
     "Form",
     "Genre",
     "Scene",
-    "Arrangement",
-    "Instrument",
   ]
 }
 
 enum "TagRelationType" {
   schema = schema.public
   values = [
-    "inherit",
-    "derive"
+    "Inherit",
+    "Derive"
   ]
 }
 
@@ -46,16 +44,6 @@ table "tag" {
   column "description" {
     type = text
   }
-
-  column "created_at" {
-    type    = timestamptz
-    default = sql("now()")
-  }
-
-  column "updated_at" {
-    type    = timestamptz
-    default = sql("now()")
-  }
 }
 
 table "tag_history" {
@@ -69,14 +57,6 @@ table "tag_history" {
   }
   primary_key {
     columns = [column.id]
-  }
-  
-  column "tag_id" {
-    type = int
-    foreign_key {
-      table = schema.public.tag
-      columns = [ column.id ]
-    }
   }
 
   column "name" {
@@ -93,16 +73,6 @@ table "tag_history" {
 
   column "description" {
     type = text
-  }
-
-  column "created_at" {
-    type    = timestamptz
-    default = sql("now()")
-  }
-
-  column "updated_at" {
-    type    = timestamptz
-    default = sql("now()")
   }
 }
 

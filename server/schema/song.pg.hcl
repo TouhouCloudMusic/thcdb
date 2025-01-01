@@ -32,19 +32,33 @@ table "song" {
     type = text
     null = true
   }
-  trigger "prevent_orphan_song_deletion" {
-    on_table = table.song
-    before_delete = true
-    for_each_row = true
-    condition = <<-SQL
-      EXISTS (
-        SELECT 1 FROM release_track 
+}
+
+// TODO: better name
+function "prevent_orphan_song_deletion_fn" {
+  schema = schema.public
+  lang   = PLpgSQL
+  return = trigger
+  as     = <<-SQL
+    BEGIN
+      IF EXISTS (
+        SELECT 1 FROM release_track
         WHERE release_track.song_id = OLD.id
       )
-    SQL
-    action = <<-SQL
+      THEN
       RAISE EXCEPTION 'Cannot delete song that is associated with a release';
-    SQL
+      END IF;
+    End;
+  SQL
+}
+
+trigger "prevent_orphan_song_deletion" {
+  on = table.song
+  before {
+    delete = true
+  }
+  execute {
+    function = function.prevent_orphan_song_deletion_fn
   }
 }
 
@@ -313,7 +327,6 @@ table "song_credit_history" {
   }
 }
 
-
 table "song_relation" {
   schema = schema.public
 
@@ -327,20 +340,24 @@ table "song_relation" {
     columns = [column.id]
   }
 
-  column "song_first_id" {
+  column "first_id" {
     type = int
   }
-  foreign_key "fk_song_relation_song_first_id" {
-    columns     = [column.song_first_id]
+  foreign_key "fk_song_relation_first_id" {
+    columns     = [column.first_id]
     ref_columns = [table.song.column.id]
   }
 
-  column "song_second_id" {
+  column "second_id" {
     type = int
   }
-  foreign_key "fk_song_relation_song_second_id" {
-    columns     = [column.song_second_id]
+  foreign_key "fk_song_relation_second_id" {
+    columns     = [column.second_id]
     ref_columns = [table.song.column.id]
+  }
+
+  check "unique_relationship" {
+    expr = "first_id < second_id"
   }
 
   column "relation_type" {
@@ -350,15 +367,4 @@ table "song_relation" {
   column "description" {
     type = text
   }
-
-  column "created_at" {
-    type    = timestamptz
-    default = sql("now()")
-  }
-
-  column "updated_at" {
-    type    = timestamptz
-    default = sql("now()")
-  }
 }
-

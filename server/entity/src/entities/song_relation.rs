@@ -3,8 +3,6 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use super::sea_orm_active_enums::TagKind;
-
 #[derive(
     Clone,
     Debug,
@@ -15,21 +13,37 @@ use super::sea_orm_active_enums::TagKind;
     Deserialize,
     juniper :: GraphQLObject,
 )]
-#[sea_orm(table_name = "tag")]
+#[sea_orm(table_name = "song_relation")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
+    pub first_id: i32,
+    pub second_id: i32,
     #[sea_orm(column_type = "Text")]
-    pub name: String,
-    pub kind: TagKind,
-    #[sea_orm(column_type = "Text")]
-    pub short_description: String,
+    pub relation_type: String,
     #[sea_orm(column_type = "Text")]
     pub description: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::song::Entity",
+        from = "Column::FirstId",
+        to = "super::song::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Song2,
+    #[sea_orm(
+        belongs_to = "super::song::Entity",
+        from = "Column::SecondId",
+        to = "super::song::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Song1,
+}
 
 impl ActiveModelBehavior for ActiveModel {}

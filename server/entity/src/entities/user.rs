@@ -37,6 +37,8 @@ pub enum Relation {
         on_delete = "SetNull"
     )]
     Image,
+    #[sea_orm(has_many = "super::user_list::Entity")]
+    UserList,
     #[sea_orm(has_many = "super::user_role::Entity")]
     UserRole,
 }
@@ -50,6 +52,12 @@ impl Related<super::correction_user::Entity> for Entity {
 impl Related<super::image::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Image.def()
+    }
+}
+
+impl Related<super::user_list::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::UserList.def()
     }
 }
 
