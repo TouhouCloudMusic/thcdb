@@ -8,8 +8,8 @@ use entity::sea_orm_active_enums::{
 use entity::{correction, correction_revision, correction_user};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
-    ActiveModelTrait, ConnectionTrait, DatabaseTransaction, DbErr, EntityTrait,
-    IntoActiveModel,
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
+    EntityOrSelect, EntityTrait, IntoActiveModel, QueryFilter,
 };
 
 type CorrectionResult = Result<correction::Model, DbErr>;
@@ -120,9 +120,9 @@ async fn link_user(
     Ok(())
 }
 
-async fn handle(
+async fn toggle_state(
     correction_id: i32,
-    approver_id: i32,
+    user_id: i32,
     status: CorrectionStatus,
     tx: &DatabaseTransaction,
 ) -> Result<correction::Model, DbErr> {
@@ -133,7 +133,7 @@ async fn handle(
     let correction =
         correction.ok_or(DbErr::Custom("Correction not found".to_owned()))?;
 
-    let data = vec![(approver_id, CorrectionUserType::Approver)];
+    let data = vec![(user_id, CorrectionUserType::Approver)];
     link_user(data, correction_id, tx).await?;
 
     let mut correction_active_model = correction.into_active_model();
@@ -150,5 +150,31 @@ pub async fn approve(
     approver_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<correction::Model, DbErr> {
-    handle(correction_id, approver_id, CorrectionStatus::Approved, tx).await
+    toggle_state(correction_id, approver_id, CorrectionStatus::Approved, tx)
+        .await
+}
+
+pub async fn add_co_author(
+    correction_id: i32,
+    co_author_id: i32,
+    db: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let data = vec![(co_author_id, CorrectionUserType::CoAuthor)];
+    link_user(data, correction_id, db).await?;
+
+    Ok(())
+}
+
+pub async fn find_author(
+    correction_id: i32,
+    db: &impl ConnectionTrait,
+) -> Result<Option<correction_user::Model>, DbErr> {
+    correction_user::Entity
+        .select()
+        .filter(correction_user::Column::CorrectionId.eq(correction_id))
+        .filter(
+            correction_user::Column::UserType.eq(CorrectionUserType::Author),
+        )
+        .one(db)
+        .await
 }
