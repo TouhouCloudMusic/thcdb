@@ -207,8 +207,4 @@ pub enum TagRelationType {
     Derive,
     #[sea_orm(string_value = "Inherit")]
     Inherit,
-    #[sea_orm(string_value = "derive")]
-    Derive,
-    #[sea_orm(string_value = "inherit")]
-    Inherit,
 }

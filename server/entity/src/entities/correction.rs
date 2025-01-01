@@ -25,9 +25,9 @@ pub struct Model {
     pub status: CorrectionStatus,
     pub r#type: CorrectionType,
     pub entity_type: EntityType,
+    pub entity_id: i32,
     pub created_at: DateTimeWithTimeZone,
     pub handled_at: Option<DateTimeWithTimeZone>,
-    pub entity_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
