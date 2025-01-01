@@ -17,8 +17,8 @@ use sea_orm::sea_query::{Alias, PostgresQueryBuilder, Query};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, ConnectionTrait,
-    DatabaseTransaction, DbBackend, DbErr, EntityTrait, FromQueryResult,
-    ModelTrait, QueryFilter, QueryOrder, Statement,
+    DatabaseTransaction, DbBackend, DbErr, EntityName, EntityTrait,
+    FromQueryResult, ModelTrait, QueryFilter, QueryOrder, Statement,
 };
 
 use crate::dto::artist::{ArtistCorrection, LocalizedName, NewGroupMember};
@@ -174,16 +174,16 @@ pub async fn apply_correction(
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(db)
         .await?
-        .ok_or(UnexpectedError::EntityNotFound {
-            entity_name: "correction_revision",
+        .ok_or_else(|| UnexpectedError::EntityNotFound {
+            entity_name: correction_revision::Entity.table_name(),
         })?;
 
     let history =
         artist_history::Entity::find_by_id(revision.entity_history_id)
             .one(db)
             .await?
-            .ok_or(UnexpectedError::EntityNotFound {
-                entity_name: "artist_history",
+            .ok_or_else(|| UnexpectedError::EntityNotFound {
+                entity_name: artist_history::Entity.table_name(),
             })?;
 
     let aliases = history
