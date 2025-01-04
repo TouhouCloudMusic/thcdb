@@ -5,7 +5,7 @@ use juniper::FieldResult;
 
 use crate::dto::correction::Metadata;
 use crate::dto::song::NewSong;
-use crate::error::SongServiceError;
+use crate::error::GeneralRepositoryError;
 use crate::model::input::{CreateSongInput, RetrieveSongInput};
 use crate::service::juniper::JuniperContext;
 
@@ -40,7 +40,7 @@ impl SongMutation {
                 .map(|d| d.to_chrono())
                 .map_err(|e| {
                     tracing::error!("{:#?}", e);
-                    SongServiceError::InvalidField {
+                    GeneralRepositoryError::InvalidField {
                         field: "duration".to_string(),
                         expected: "ISO8601 duration".to_string(),
                         accepted: e.input,

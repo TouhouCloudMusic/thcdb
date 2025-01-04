@@ -13,3 +13,4 @@ axum-login.workspace = true
 juniper.workspace    = true
 sea-orm.workspace    = true
 serde.workspace      = true
+utoipa.workspace     = true

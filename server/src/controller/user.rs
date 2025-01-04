@@ -52,11 +52,8 @@ async fn sign_in(
     Json(creds): Json<SignIn>,
 ) -> impl IntoResponse {
     if auth_session.user.is_some() {
-        return api_response::err(
-            "Already signed in".to_string(),
-            Some(StatusCode::from_u16(409).unwrap()),
-        )
-        .into_response();
+        return api_response::err(StatusCode::CONFLICT, "Already signed in")
+            .into_response();
     }
 
     let user = match auth_session.authenticate(creds.clone()).await {

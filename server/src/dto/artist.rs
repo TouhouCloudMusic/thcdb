@@ -2,12 +2,12 @@ use entity::sea_orm_active_enums::{ArtistType, DatePrecision};
 use entity::{artist, artist_history, artist_localized_name_history};
 use sea_orm::prelude::Date;
 use sea_orm::ActiveValue::{NotSet, Set};
+use serde::Deserialize;
+use utoipa::ToSchema;
 
 use crate::dto;
-use crate::types::Pair;
 
-#[allow(dead_code)]
-#[derive(bon::Builder, Clone)]
+#[derive(bon::Builder, Clone, Deserialize, ToSchema)]
 pub struct ArtistCorrection {
     pub name: String,
     pub localized_name: Option<Vec<LocalizedName>>,
@@ -53,14 +53,14 @@ impl From<&ArtistCorrection> for artist_history::ActiveModel {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, ToSchema, Deserialize)]
 pub struct NewGroupMember {
     pub artist_id: i32,
     pub roles: Vec<i32>,
-    pub join_leave: Vec<Pair<String>>,
+    pub join_leave: Vec<(String, String)>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, ToSchema, Deserialize)]
 pub struct LocalizedName {
     pub language_id: i32,
     pub name: String,

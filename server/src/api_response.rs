@@ -1,5 +1,7 @@
 #![allow(clippy::option_if_let_else)]
 
+use std::fmt::Display;
+
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
@@ -114,13 +116,14 @@ where
     }
 }
 
-pub fn err<M>(message: M, code: Option<StatusCode>) -> Err
+pub fn err<C, M>(code: C, message: M) -> Err
 where
-    M: Into<String>,
+    C: Into<Option<StatusCode>>,
+    M: Display,
 {
     Err {
-        message: message.into(),
-        code: code.unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+        message: message.to_string(),
+        code: code.into().unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
         ..Err::default()
     }
 }
@@ -169,7 +172,7 @@ mod tests {
 
     #[test]
     fn test_response_err() {
-        let response = super::err("error", None);
+        let response = super::err(None, "error");
         let serialized = serde_json::to_string(&response).unwrap();
         assert_eq!(
             serialized,

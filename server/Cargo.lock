@@ -1214,6 +1214,7 @@ dependencies = [
  "juniper",
  "sea-orm",
  "serde",
+ "utoipa",
 ]
 
 [[package]]

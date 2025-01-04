@@ -73,7 +73,7 @@ impl IntoResponse for Error {
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         };
 
-        api_response::err(self.to_string(), Some(status_code)).into_response()
+        api_response::err(status_code, self).into_response()
     }
 }
 

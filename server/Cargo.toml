@@ -37,6 +37,12 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = [
     "chrono",
 ] }
+utoipa = { version = "5", features = [
+    "axum_extras",
+    "chrono",
+    "macros",
+    "preserve_order",
+] }
 
 [package]
 edition = "2021"
@@ -81,12 +87,7 @@ tokio.workspace = true
 tower-sessions-redis-store = "0.16.0"
 tracing.workspace = true
 tracing-subscriber.workspace = true
-utoipa = { version = "5", features = [
-    "axum_extras",
-    "chrono",
-    "macros",
-    "preserve_order",
-] }
+utoipa.workspace = true
 utoipa-axum = "0.1"
 utoipa-swagger-ui = { version = "8", features = [
     "axum",

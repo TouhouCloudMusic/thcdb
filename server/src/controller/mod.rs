@@ -3,6 +3,7 @@ use utoipa_axum::router::OpenApiRouter;
 
 use crate::AppState;
 
+mod artist;
 mod graphql;
 mod user;
 
@@ -19,4 +20,5 @@ pub fn api_router() -> OpenApiRouter<AppState> {
         // .merge(SwaggerUi::new("/").url("/api-doc/openapi.json", None))
         // .merge(graphql::router())
         .merge(user::router())
+        .merge(artist::router())
 }

@@ -23,28 +23,28 @@ use sea_orm::{
 };
 
 use crate::dto::artist::{ArtistCorrection, LocalizedName, NewGroupMember};
+use crate::error::{EntityCorrectionError, GeneralRepositoryError};
 use crate::pg_func_ext::PgFuncExt;
 use crate::repo;
 use crate::types::Pair;
 
 error_set! {
-    Error = ValidationError || UnexpectedError || {
-        Database(DbErr),
-        #[display("The correction to be applied dosen't exist")]
-        CorretionNotFound
+    Error = {
+        EntityCorrection(EntityCorrectionError),
+        Validation(ValidationError),
+        General(GeneralRepositoryError)
     };
+
     ValidationError = {
         #[display("Unknown type artist cannot have members")]
         UnknownTypeArtistOwnedMember,
-        #[display("Incorrect correction entity type")]
-        IncorrectCorrectionEntityType
     };
-    UnexpectedError = {
-        #[display("Unexpected error: related entity {entity_name} not found")]
-        EntityNotFound {
-            entity_name: &'static str
-        }
-    };
+}
+
+impl From<DbErr> for Error {
+    fn from(err: DbErr) -> Self {
+        Self::General(GeneralRepositoryError::Database(err))
+    }
 }
 
 pub async fn create(
@@ -92,7 +92,6 @@ pub async fn create_update_correction(
 
 pub async fn update_update_correction(
     correction_id: i32,
-    updater_id: i32,
     data: ArtistCorrection,
     db: &DatabaseTransaction,
 ) -> Result<(), Error> {
@@ -102,9 +101,11 @@ pub async fn update_update_correction(
 
     let author = repo::correction::find_author(correction.id, db)
         .await?
-        .ok_or_else(|| UnexpectedError::EntityNotFound {
+        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
             entity_name: correction_user::Entity.table_name(),
         })?;
+
+    let updater_id = data.correction_metadata.author_id;
 
     if author.user_id != updater_id {
         repo::correction::add_co_author(correction_id, updater_id, db).await?;
@@ -186,7 +187,7 @@ pub async fn apply_correction(
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(db)
         .await?
-        .ok_or_else(|| UnexpectedError::EntityNotFound {
+        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
             entity_name: correction_revision::Entity.table_name(),
         })?;
 
@@ -194,7 +195,7 @@ pub async fn apply_correction(
         artist_history::Entity::find_by_id(revision.entity_history_id)
             .one(db)
             .await?
-            .ok_or_else(|| UnexpectedError::EntityNotFound {
+            .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
                 entity_name: artist_history::Entity.table_name(),
             })?;
 
@@ -254,16 +255,18 @@ async fn find_artist_correction(
     correction_id: i32,
     db: &impl ConnectionTrait,
 ) -> Result<correction::Model, Error> {
-    repo::correction::find_by_id(correction_id, db)
+    let res = repo::correction::find_by_id(correction_id, db)
         .await?
-        .ok_or(Error::CorretionNotFound)
+        .ok_or(EntityCorrectionError::CorretionNotFound)
         .and_then(|model| {
             if model.entity_type == EntityType::Artist {
                 Ok(model)
             } else {
-                Err(Error::IncorrectCorrectionEntityType)
+                Err(EntityCorrectionError::IncorrectCorrectionEntityType)
             }
-        })
+        });
+
+    Ok(res?)
 }
 
 async fn create_artist_alias<C: ConnectionTrait>(
@@ -386,11 +389,11 @@ async fn create_artist_localized_name_history<C: ConnectionTrait>(
     Ok(())
 }
 
-async fn create_artist_group_member<C: ConnectionTrait>(
+async fn create_artist_group_member<'f, C: ConnectionTrait>(
     artist_id: i32,
     artist_type: ArtistType,
-    members: Option<&[NewGroupMember]>,
-    db: &C,
+    members: Option<&'f [NewGroupMember]>,
+    db: &'f C,
 ) -> Result<(), DbErr> {
     if let Some(members) = members {
         let (group_member_model, todo_roles, todo_join_leaves): (
@@ -420,14 +423,16 @@ async fn create_artist_group_member<C: ConnectionTrait>(
                 });
 
                 let todo_join_leaves =
-                    member.join_leave.iter().map(|(join_year, leave_year)| {
-                        group_member_join_leave::ActiveModel {
-                            id: NotSet,
-                            group_member_id: NotSet,
-                            join_year: Set(join_year.clone().into()),
-                            leave_year: Set(leave_year.clone().into()),
-                        }
-                    });
+                    member.join_leave.clone().into_iter().map(
+                        |(join_year, leavy_year)| {
+                            group_member_join_leave::ActiveModel {
+                                id: NotSet,
+                                group_member_id: NotSet,
+                                join_year: Set(Some(join_year)),
+                                leave_year: Set(Some(leavy_year)),
+                            }
+                        },
+                    );
 
                 (group_member_model, todo_roles, todo_join_leaves)
             })
@@ -470,10 +475,10 @@ async fn create_artist_group_member<C: ConnectionTrait>(
     Ok(())
 }
 
-async fn create_artist_group_member_history<C: ConnectionTrait>(
+async fn create_artist_group_member_history<'f, C: ConnectionTrait>(
     history_id: i32,
-    members: Option<&[NewGroupMember]>,
-    db: &C,
+    members: Option<&'f [NewGroupMember]>,
+    db: &'f C,
 ) -> Result<(), DbErr> {
     if let Some(members) = members {
         let (group_member_history_model, todo_roles, todo_join_leaves): (
@@ -495,14 +500,16 @@ async fn create_artist_group_member_history<C: ConnectionTrait>(
                             role_id: Set(*role_id),
                         }
                     }),
-                    member.join_leave.iter().map(|(join_year, leave_year)| {
-                        group_member_join_leave_history::ActiveModel {
-                            id: NotSet,
-                            group_member_history_id: NotSet,
-                            join_year: Set(join_year.clone().into()),
-                            leave_year: Set(leave_year.clone().into()),
-                        }
-                    }),
+                    member.join_leave.clone().into_iter().map(
+                        |(join_year, leave_year)| {
+                            group_member_join_leave_history::ActiveModel {
+                                id: NotSet,
+                                group_member_history_id: NotSet,
+                                join_year: Set(join_year.into()),
+                                leave_year: Set(leave_year.into()),
+                            }
+                        },
+                    ),
                 )
             })
             .multiunzip();

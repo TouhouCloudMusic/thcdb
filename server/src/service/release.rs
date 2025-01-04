@@ -3,7 +3,7 @@ use sea_orm::{DatabaseConnection, DbErr, EntityTrait, TransactionTrait};
 
 use crate::dto::correction::Metadata;
 use crate::dto::release::GeneralReleaseDto;
-use crate::error::ServiceError;
+use crate::error::GeneralRepositoryError;
 use crate::repo;
 
 #[derive(Default, Clone)]
@@ -27,11 +27,11 @@ impl ReleaseService {
         &self,
         release_data: GeneralReleaseDto,
         correction_data: Metadata,
-    ) -> Result<release::Model, ServiceError> {
+    ) -> Result<release::Model, GeneralRepositoryError> {
         // Question: Should check here?
         // TODO: Validate crate
         if release_data.artists.is_empty() {
-            return Err(ServiceError::InvalidField {
+            return Err(GeneralRepositoryError::InvalidField {
                 field: "artist".into(),
                 expected: "Vec<i32> && len > 1".into(),
                 accepted: format!("{:?}", release_data.artists),

@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
     Copy,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ArtistType")]
@@ -34,6 +35,7 @@ pub enum ArtistType {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
     Copy,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "CorrectionStatus")]
@@ -55,6 +57,7 @@ pub enum CorrectionStatus {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
     Copy,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "CorrectionType")]
@@ -76,6 +79,7 @@ pub enum CorrectionType {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
     Copy,
 )]
 #[sea_orm(
@@ -103,6 +107,7 @@ pub enum CorrectionUserType {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
     Copy,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "DatePrecision")]
@@ -124,6 +129,7 @@ pub enum DatePrecision {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
     Copy,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "EntityType")]
@@ -149,6 +155,7 @@ pub enum EntityType {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
     Copy,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ReleaseType")]
@@ -176,6 +183,7 @@ pub enum ReleaseType {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
     Copy,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "TagKind")]
@@ -199,6 +207,7 @@ pub enum TagKind {
     Serialize,
     Deserialize,
     juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
     Copy,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "TagRelationType")]
