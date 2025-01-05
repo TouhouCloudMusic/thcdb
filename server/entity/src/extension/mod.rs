@@ -1,4 +1,3 @@
-mod from;
 mod graphql;
 mod impl_enums;
 mod into_active_model;

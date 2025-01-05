@@ -61,16 +61,6 @@ table "release" {
     default = "Day"
   }
 
-  column "created_at" {
-    type    = timestamptz
-    default = sql("now()")
-  }
-
-  column "updated_at" {
-    type    = timestamptz
-    default = sql("now()")
-  }
-
 }
 
 table "release_history" {
@@ -124,15 +114,6 @@ table "release_history" {
     default = "Day"
   }
 
-  column "created_at" {
-    type    = timestamptz
-    default = sql("now()")
-  }
-
-  column "updated_at" {
-    type    = timestamptz
-    default = sql("now()")
-  }
 }
 
 table "release_artist" {

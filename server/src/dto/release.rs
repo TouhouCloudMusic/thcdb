@@ -1,12 +1,12 @@
 use chrono::Duration;
 use entity::sea_orm_active_enums::{DatePrecision, ReleaseType};
-use entity::{release, song, song_history};
+use entity::{release, release_history, song, song_history};
 use input::{Credit, LocalizedTitle};
 use sea_orm::prelude::Date;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{IntoActiveModel, IntoActiveValue};
 
-pub struct GeneralReleaseDto {
+pub struct GeneralRelease {
     pub title: String,
     pub release_type: ReleaseType,
     pub release_date: Option<Date>,
@@ -22,22 +22,46 @@ pub struct GeneralReleaseDto {
     pub credits: Vec<Credit>,
 }
 
-impl GeneralReleaseDto {
-    pub fn get_release_active_model(&self) -> release::ActiveModel {
-        release::ActiveModel {
+impl From<&GeneralRelease> for release::ActiveModel {
+    fn from(val: &GeneralRelease) -> Self {
+        Self {
             id: NotSet,
-            title: Set(self.title.clone()),
-            release_type: Set(self.release_type),
-            release_date: Set(self.release_date),
-            release_date_precision: self
+            title: Set(val.title.clone()),
+            release_type: Set(val.release_type),
+            release_date: Set(val.release_date),
+            release_date_precision: val
                 .release_date_precision
                 .into_active_value(),
-            recording_date_start: Set(self.recording_date_start),
-            recording_date_start_precision: self
+            recording_date_start: Set(val.recording_date_start),
+            recording_date_start_precision: val
                 .recording_date_start_precision
                 .into_active_value(),
-            recording_date_end: Set(self.recording_date_end),
-            recording_date_end_precision: self
+            recording_date_end: Set(val.recording_date_end),
+            recording_date_end_precision: val
+                .recording_date_end_precision
+                .into_active_value(),
+            created_at: NotSet,
+            updated_at: NotSet,
+        }
+    }
+}
+
+impl From<&GeneralRelease> for release_history::ActiveModel {
+    fn from(value: &GeneralRelease) -> Self {
+        Self {
+            id: NotSet,
+            title: Set(value.title.clone()),
+            release_type: Set(value.release_type),
+            release_date: Set(value.release_date),
+            release_date_precision: value
+                .release_date_precision
+                .into_active_value(),
+            recording_date_start: Set(value.recording_date_start),
+            recording_date_start_precision: value
+                .recording_date_start_precision
+                .into_active_value(),
+            recording_date_end: Set(value.recording_date_end),
+            recording_date_end_precision: value
                 .recording_date_end_precision
                 .into_active_value(),
             created_at: NotSet,
@@ -49,10 +73,9 @@ impl GeneralReleaseDto {
 #[derive(Clone)]
 pub struct NewTrack {
     pub title: String,
-    pub duration: Duration,
-    pub track_number: Option<String>,
-
     pub artists: Vec<i32>,
+    pub track_number: Option<String>,
+    pub duration: Duration,
 }
 
 impl IntoActiveModel<song::ActiveModel> for NewTrack {
