@@ -647,10 +647,6 @@ async fn update_artist_group_member<C: ConnectionTrait>(
     members: Vec<GroupMemberFromHistory>,
     db: &C,
 ) -> Result<(), DbErr> {
-    if artist_type == ArtistType::Unknown {
-        return Ok(());
-    }
-
     // group_member_role and group_member_join_leave are deleted by database cascade
     group_member::Entity::delete_many()
         .filter(
@@ -660,6 +656,10 @@ async fn update_artist_group_member<C: ConnectionTrait>(
         )
         .exec(db)
         .await?;
+
+    if artist_type == ArtistType::Unknown {
+        return Ok(());
+    }
 
     let group_member_models =
         members.iter().map(|data| group_member::ActiveModel {
