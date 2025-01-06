@@ -10,7 +10,7 @@ entity = { path = "./entity" }
 # external
 anyhow = "1.0"
 argon2 = "0.5"
-axum = { version = "0.7", features = [
+axum = { version = "0.8", features = [
     "macros",
     "multipart",
 ] }
