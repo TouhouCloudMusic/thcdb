@@ -17,7 +17,7 @@ axum = { version = "0.7", features = [
 axum-login = { version = "0.16" }
 chrono = "0.4"
 dotenvy = "0.15"
-itertools = "0.13"
+itertools = "0.14"
 juniper = { version = "0.16", features = [
     "chrono",
 ] }
