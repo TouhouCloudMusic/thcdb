@@ -75,4 +75,22 @@ impl Related<super::artist::Entity> for Entity {
     }
 }
 
+impl Related<super::release::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::release_label::Relation::Release.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::release_label::Relation::Label.def().rev())
+    }
+}
+
+impl Related<super::release_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::release_label_history::Relation::ReleaseHistory.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::release_label_history::Relation::Label.def().rev())
+    }
+}
+
 impl ActiveModelBehavior for ActiveModel {}

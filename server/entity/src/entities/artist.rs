@@ -132,6 +132,24 @@ impl Related<super::label::Entity> for Entity {
     }
 }
 
+impl Related<super::release::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::release_artist::Relation::Release.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::release_artist::Relation::Artist.def().rev())
+    }
+}
+
+impl Related<super::release_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::release_artist_history::Relation::ReleaseHistory.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::release_artist_history::Relation::Artist.def().rev())
+    }
+}
+
 impl Related<super::song::Entity> for Entity {
     fn to() -> RelationDef {
         super::song_artist::Relation::Song.def()

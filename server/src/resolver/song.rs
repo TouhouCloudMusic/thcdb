@@ -51,7 +51,6 @@ impl SongMutation {
             .song_service
             .create(NewSong {
                 title: input.title,
-                duration: parsed_duration,
                 languages: None,
                 localized_titles: None,
                 credits: None,
@@ -59,7 +58,6 @@ impl SongMutation {
                     author_id: todo!(),
                     description: todo!(),
                 },
-                track_number: todo!(),
             })
             .await?;
 

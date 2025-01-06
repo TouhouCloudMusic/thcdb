@@ -25,18 +25,18 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::release_track_history::Entity",
+        belongs_to = "super::release_track::Entity",
         from = "Column::TrackId",
-        to = "super::release_track_history::Column::Id",
+        to = "super::release_track::Column::Id",
         on_update = "Cascade",
         on_delete = "Cascade"
     )]
-    ReleaseTrackHistory,
+    ReleaseTrack,
 }
 
-impl Related<super::release_track_history::Entity> for Entity {
+impl Related<super::release_track::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ReleaseTrackHistory.def()
+        Relation::ReleaseTrack.def()
     }
 }
 

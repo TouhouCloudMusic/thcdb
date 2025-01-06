@@ -21,9 +21,6 @@ pub struct Model {
     pub release_id: i32,
     #[sea_orm(column_type = "Text")]
     pub title: String,
-    pub duration: Option<String>,
-    #[sea_orm(column_type = "Text", nullable)]
-    pub track_number: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

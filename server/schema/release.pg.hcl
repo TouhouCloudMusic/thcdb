@@ -149,7 +149,7 @@ table "release_artist_history" {
   }
   foreign_key "fk_release_artist_history_history_id" {
     columns     = [column.history_id]
-    ref_columns = [table.release.column.id]
+    ref_columns = [table.release_history.column.id]
   }
 
   column "artist_id" {
@@ -207,7 +207,7 @@ table "release_localized_title_history" {
   }
   foreign_key "fk_release_history_localized_title_history_id" {
     columns     = [column.history_id]
-    ref_columns = [table.release.column.id]
+    ref_columns = [table.release_history.column.id]
   }
 
   column "language_id" {
@@ -256,6 +256,30 @@ table "release_label" {
   }
 }
 
+table "release_label_history" {
+  schema = schema.public
+
+  column "history_id" {
+    type = int
+  }
+  foreign_key "fk_release_label_history_history_id" {
+    columns     = [column.history_id]
+    ref_columns = [table.release_history.column.id]
+  }
+
+  column "label_id" {
+    type = int
+  }
+  foreign_key "fk_release_label_history_label_id" {
+    columns     = [column.label_id]
+    ref_columns = [table.label.column.id]
+  }
+
+  primary_key {
+    columns = [column.history_id, column.label_id]
+  }
+}
+
 table "release_track" {
   schema = schema.public
 
@@ -298,6 +322,11 @@ table "release_track" {
 
   column "display_title" {
     type = text
+    null = true
+  }
+
+  column "duration" {
+    type = interval
     null = true
   }
 }
@@ -346,6 +375,11 @@ table "release_track_history" {
     type = text
     null = true
   }
+
+  column "duration" {
+    type = interval
+    null = true
+  }
 }
 
 table "release_track_artist" {
@@ -356,7 +390,7 @@ table "release_track_artist" {
   }
   foreign_key "fk_release_track_artist_track_id" {
     columns     = [column.track_id]
-    ref_columns = [table.release_track_history.column.id]
+    ref_columns = [table.release_track.column.id]
     on_update   = CASCADE
     on_delete   = CASCADE
   }
@@ -378,7 +412,7 @@ table "release_track_artist_history" {
   }
   foreign_key "fk_release_track_artist_history_track_history_id" {
     columns     = [column.track_history_id]
-    ref_columns = [table.release_track.column.id]
+    ref_columns = [table.release_track_history.column.id]
     on_update   = CASCADE
     on_delete   = CASCADE
   }
@@ -471,30 +505,6 @@ table "release_credit_history" {
   column "on" {
     type = sql("smallint[]")
     null = true
-  }
-}
-
-table "release_label_history" {
-  schema = schema.public
-
-  column "history_id" {
-    type = int
-  }
-  foreign_key "fk_release_label_history_history_id" {
-    columns     = [column.history_id]
-    ref_columns = [table.release.column.id]
-  }
-
-  column "label_id" {
-    type = int
-  }
-  foreign_key "fk_release_label_history_label_id" {
-    columns     = [column.label_id]
-    ref_columns = [table.label.column.id]
-  }
-
-  primary_key {
-    columns = [column.history_id, column.label_id]
   }
 }
 

@@ -1,7 +1,9 @@
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::IntoActiveValue;
 
-use crate::{artist, artist_history, song, song_history};
+use crate::{
+    artist, artist_history, release, release_history, song, song_history,
+};
 
 impl From<&song::Model> for song_history::ActiveModel {
     fn from(value: &song::Model) -> Self {
@@ -9,8 +11,6 @@ impl From<&song::Model> for song_history::ActiveModel {
             id: NotSet,
             release_history_id: NotSet,
             title: value.title.clone().into_active_value(),
-            duration: value.duration.clone().into_active_value(),
-            track_number: value.track_number.clone().into_active_value(),
         }
     }
 }
@@ -26,6 +26,26 @@ impl From<&artist_history::Model> for artist::ActiveModel {
             start_date_precision: Set(value.start_date_precision),
             end_date: Set(value.end_date),
             end_date_precision: Set(value.end_date_precision),
+        }
+    }
+}
+
+impl From<&release_history::Model> for release::ActiveModel {
+    fn from(value: &release_history::Model) -> Self {
+        Self {
+            id: NotSet,
+            title: Set(value.title.clone()),
+            release_type: Set(value.release_type),
+            release_date: Set(value.release_date),
+            release_date_precision: Set(value.release_date_precision),
+            recording_date_start: Set(value.recording_date_start),
+            recording_date_start_precision: Set(
+                value.recording_date_start_precision
+            ),
+            recording_date_end: Set(value.recording_date_end),
+            recording_date_end_precision: Set(
+                value.recording_date_end_precision
+            ),
         }
     }
 }

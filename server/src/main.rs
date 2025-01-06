@@ -9,7 +9,8 @@
     clippy::missing_docs_in_private_items,
     clippy::single_call_fn,
     clippy::cargo_common_metadata,
-    clippy::multiple_crate_versions
+    clippy::multiple_crate_versions,
+    clippy::wildcard_imports
 )]
 
 mod api_response;

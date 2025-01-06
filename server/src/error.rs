@@ -10,10 +10,10 @@ error_set! {
     GeneralRepositoryError = {
         #[display("Database error")]
         Database(sea_orm::DbErr),
-        // #[display("Entity {entity_name} not found")]
-        // EntityNotFound {
-        //     entity_name: &'static str
-        // },
+        #[display("Entity {entity_name} not found")]
+        EntityNotFound {
+            entity_name: &'static str
+        },
         #[display("Unexpected error: related entity {entity_name} not found")]
         RelatedEntityNotFound {
             entity_name: &'static str
@@ -49,6 +49,7 @@ impl AsStatusCode for GeneralRepositoryError {
                 StatusCode::INTERNAL_SERVER_ERROR
             }
             Self::InvalidField { .. } => StatusCode::BAD_REQUEST,
+            Self::EntityNotFound { .. } => StatusCode::NOT_FOUND,
         }
     }
 }

@@ -51,6 +51,7 @@ impl ArtistService {
 
         repo::artist::create_update_correction(artist_id, data, &transaction)
             .await?;
+
         transaction.commit().await?;
         Ok(())
     }
@@ -65,25 +66,6 @@ impl ArtistService {
         repo::artist::update_update_correction(
             correction_id,
             data,
-            &transaction,
-        )
-        .await?;
-
-        transaction.commit().await?;
-
-        Ok(())
-    }
-
-    pub async fn apply_correction(
-        &self,
-        correction_id: i32,
-        approver_id: i32,
-    ) -> Result<(), Error> {
-        let transaction = self.db.begin().await?;
-
-        repo::artist::apply_correction(
-            correction_id,
-            approver_id,
             &transaction,
         )
         .await?;

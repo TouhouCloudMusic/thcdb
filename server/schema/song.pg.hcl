@@ -23,15 +23,6 @@ table "song" {
     type = text
   }
 
-  column "duration" {
-    type = interval
-    null = true
-  }
-
-  column "track_number" {
-    type = text
-    null = true
-  }
 }
 
 // TODO: better name
@@ -87,15 +78,6 @@ table "song_history" {
     type = text
   }
 
-  column "duration" {
-    type = interval
-    null = true
-  }
-
-  column "track_number" {
-    type = text
-    null = true
-  }
 }
 
 table "song_artist" {

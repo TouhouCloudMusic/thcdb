@@ -9,8 +9,10 @@ use entity::{correction, correction_revision, correction_user};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
-    EntityOrSelect, EntityTrait, IntoActiveModel, QueryFilter,
+    EntityName, EntityOrSelect, EntityTrait, IntoActiveModel, QueryFilter,
 };
+
+use crate::error::GeneralRepositoryError;
 
 type CorrectionResult = Result<correction::Model, DbErr>;
 
@@ -120,61 +122,104 @@ async fn link_user(
     Ok(())
 }
 
-async fn toggle_state(
-    correction_id: i32,
-    user_id: i32,
-    status: CorrectionStatus,
-    tx: &DatabaseTransaction,
-) -> Result<correction::Model, DbErr> {
-    let correction = correction::Entity::find_by_id(correction_id)
-        .one(tx)
-        .await?;
-
-    let correction =
-        correction.ok_or(DbErr::Custom("Correction not found".to_owned()))?;
-
-    let data = vec![(user_id, CorrectionUserType::Approver)];
-    link_user(data, correction_id, tx).await?;
-
-    let mut correction_active_model = correction.into_active_model();
-    correction_active_model.status = Set(status);
-    correction_active_model.handled_at = Set(Some(Utc::now().into()));
-
-    let correction = correction_active_model.update(tx).await?;
-
-    Ok(correction)
-}
-
 pub async fn approve(
     correction_id: i32,
     approver_id: i32,
     tx: &DatabaseTransaction,
-) -> Result<correction::Model, DbErr> {
-    toggle_state(correction_id, approver_id, CorrectionStatus::Approved, tx)
-        .await
-}
+) -> Result<(), GeneralRepositoryError> {
+    let correction = utils::toggle_state(
+        correction_id,
+        approver_id,
+        CorrectionStatus::Approved,
+        tx,
+    )
+    .await?;
 
-pub async fn add_co_author(
-    correction_id: i32,
-    co_author_id: i32,
-    db: &DatabaseTransaction,
-) -> Result<(), DbErr> {
-    let data = vec![(co_author_id, CorrectionUserType::CoAuthor)];
-    link_user(data, correction_id, db).await?;
+    match correction.entity_type {
+        EntityType::Artist => {
+            super::artist::apply_correction(correction, tx).await?;
+        }
+        EntityType::Label => unimplemented!(),
+        EntityType::Release => {
+            super::release::apply_correction(correction, tx).await?;
+        }
+        EntityType::Song => unimplemented!(),
+        EntityType::Tag => unimplemented!(),
+    }
 
     Ok(())
 }
 
-pub async fn find_author(
-    correction_id: i32,
-    db: &impl ConnectionTrait,
-) -> Result<Option<correction_user::Model>, DbErr> {
-    correction_user::Entity
-        .select()
-        .filter(correction_user::Column::CorrectionId.eq(correction_id))
-        .filter(
-            correction_user::Column::UserType.eq(CorrectionUserType::Author),
-        )
-        .one(db)
-        .await
+pub mod user {
+    use super::*;
+
+    pub async fn find_author(
+        correction_id: i32,
+        db: &impl ConnectionTrait,
+    ) -> Result<Option<correction_user::Model>, DbErr> {
+        correction_user::Entity
+            .select()
+            .filter(correction_user::Column::CorrectionId.eq(correction_id))
+            .filter(
+                correction_user::Column::UserType
+                    .eq(CorrectionUserType::Author),
+            )
+            .one(db)
+            .await
+    }
+
+    pub mod utils {
+        use super::*;
+
+        pub async fn add_co_author_if_updater_not_author(
+            correction_id: i32,
+            updater_id: i32,
+            tx: &DatabaseTransaction,
+        ) -> Result<(), GeneralRepositoryError> {
+            let author_id = find_author(correction_id, tx)
+                .await?
+                .map(|model| model.user_id)
+                .ok_or_else(|| {
+                    GeneralRepositoryError::RelatedEntityNotFound {
+                        entity_name: correction_user::Entity.table_name(),
+                    }
+                })?;
+
+            if author_id != updater_id {
+                let data = vec![(updater_id, CorrectionUserType::CoAuthor)];
+                link_user(data, correction_id, tx).await?;
+            }
+
+            Ok(())
+        }
+    }
+}
+
+pub mod utils {
+    use super::*;
+
+    pub(super) async fn toggle_state(
+        correction_id: i32,
+        user_id: i32,
+        status: CorrectionStatus,
+        tx: &DatabaseTransaction,
+    ) -> Result<correction::Model, GeneralRepositoryError> {
+        let correction = correction::Entity::find_by_id(correction_id)
+            .one(tx)
+            .await?
+            .ok_or(GeneralRepositoryError::EntityNotFound {
+                entity_name: correction::Entity.table_name(),
+            })?;
+
+        let data = vec![(user_id, CorrectionUserType::Approver)];
+        link_user(data, correction_id, tx).await?;
+
+        let mut correction_active_model = correction.into_active_model();
+        correction_active_model.status = Set(status);
+        correction_active_model.handled_at = Set(Some(Utc::now().into()));
+
+        let correction = correction_active_model.update(tx).await?;
+
+        Ok(correction)
+    }
 }

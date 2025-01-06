@@ -35,13 +35,13 @@ pub enum Relation {
     )]
     Language,
     #[sea_orm(
-        belongs_to = "super::release::Entity",
+        belongs_to = "super::release_history::Entity",
         from = "Column::HistoryId",
-        to = "super::release::Column::Id",
+        to = "super::release_history::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    Release,
+    ReleaseHistory,
 }
 
 impl Related<super::language::Entity> for Entity {
@@ -50,9 +50,9 @@ impl Related<super::language::Entity> for Entity {
     }
 }
 
-impl Related<super::release::Entity> for Entity {
+impl Related<super::release_history::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Release.def()
+        Relation::ReleaseHistory.def()
     }
 }
 

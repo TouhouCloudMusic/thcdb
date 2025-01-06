@@ -17,8 +17,6 @@ struct ApiDoc;
 
 pub fn api_router() -> OpenApiRouter<AppState> {
     OpenApiRouter::with_openapi(ApiDoc::openapi())
-        // .merge(SwaggerUi::new("/").url("/api-doc/openapi.json", None))
-        // .merge(graphql::router())
         .merge(user::router())
         .merge(artist::router())
 }

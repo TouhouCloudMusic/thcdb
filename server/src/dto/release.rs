@@ -4,8 +4,9 @@ use entity::{release, release_history, song, song_history};
 use input::{Credit, LocalizedTitle};
 use sea_orm::prelude::Date;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::{IntoActiveModel, IntoActiveValue};
+use sea_orm::IntoActiveValue;
 
+#[derive(Clone)]
 pub struct GeneralRelease {
     pub title: String,
     pub release_type: ReleaseType,
@@ -40,8 +41,6 @@ impl From<&GeneralRelease> for release::ActiveModel {
             recording_date_end_precision: val
                 .recording_date_end_precision
                 .into_active_value(),
-            created_at: NotSet,
-            updated_at: NotSet,
         }
     }
 }
@@ -64,47 +63,62 @@ impl From<&GeneralRelease> for release_history::ActiveModel {
             recording_date_end_precision: value
                 .recording_date_end_precision
                 .into_active_value(),
-            created_at: NotSet,
-            updated_at: NotSet,
         }
     }
 }
 
 #[derive(Clone)]
-pub struct NewTrack {
-    pub title: String,
-    pub artists: Vec<i32>,
-    pub track_number: Option<String>,
-    pub duration: Duration,
+pub enum NewTrack {
+    Linked(Linked),
+    Unlinked(Unlinked),
 }
 
-impl IntoActiveModel<song::ActiveModel> for NewTrack {
-    fn into_active_model(self) -> song::ActiveModel {
-        song::ActiveModel {
+macro_rules! inherit_track_base {
+    ($name:ident { $($vis:vis $field:ident: $ftype:ty),* $(,)? }) => {
+        #[derive(Clone)]
+        pub struct $name {
+            pub artists: Vec<i32>,
+            pub track_number: Option<String>,
+            pub duration: Option<Duration>,
+            $($vis $field: $ftype,)*
+        }
+    };
+}
+
+inherit_track_base!(Unlinked {
+    pub display_title: String,
+});
+
+inherit_track_base!(Linked {
+    pub song_id: i32,
+    pub display_title: Option<String>,
+});
+
+impl From<&Unlinked> for song::ActiveModel {
+    fn from(value: &Unlinked) -> Self {
+        Self {
             id: NotSet,
             release_id: NotSet,
-            title: Set(self.title),
-            duration: Set(self.duration.to_string().into()),
-            track_number: self.track_number.into_active_value(),
+            title: Set(value.display_title.clone()),
         }
     }
 }
 
-impl IntoActiveModel<song_history::ActiveModel> for NewTrack {
-    fn into_active_model(self) -> song_history::ActiveModel {
-        song_history::ActiveModel {
+impl From<&Unlinked> for song_history::ActiveModel {
+    fn from(value: &Unlinked) -> Self {
+        Self {
             id: NotSet,
             release_history_id: NotSet,
-            title: Set(self.title),
-            duration: Set(self.duration.to_string().into()),
-            track_number: self.track_number.into_active_value(),
+            title: Set(value.display_title.clone()),
         }
     }
 }
 
 pub mod input {
     use entity::{release_localized_title, release_localized_title_history};
+    use sea_orm::ActiveValue::{NotSet, Set};
 
+    #[derive(Clone)]
     pub struct LocalizedTitle {
         pub title: String,
         pub language_id: i32,
@@ -154,6 +168,17 @@ pub mod input {
         }
     }
 
+    impl From<&LocalizedTitle> for release_localized_title::ActiveModel {
+        fn from(val: &LocalizedTitle) -> Self {
+            Self {
+                release_id: NotSet,
+                language_id: Set(val.language_id),
+                title: Set(val.title.clone()),
+            }
+        }
+    }
+
+    #[derive(Clone)]
     pub struct Credit {
         pub artist_id: i32,
         pub role_id: i32,

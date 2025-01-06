@@ -24,6 +24,7 @@ pub struct Model {
     pub track_number: Option<String>,
     #[sea_orm(column_type = "Text", nullable)]
     pub display_title: Option<String>,
+    pub duration: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -36,8 +37,8 @@ pub enum Relation {
         on_delete = "Cascade"
     )]
     Release,
-    #[sea_orm(has_many = "super::release_track_artist_history::Entity")]
-    ReleaseTrackArtistHistory,
+    #[sea_orm(has_many = "super::release_track_artist::Entity")]
+    ReleaseTrackArtist,
     #[sea_orm(
         belongs_to = "super::song::Entity",
         from = "Column::SongId",
@@ -54,9 +55,9 @@ impl Related<super::release::Entity> for Entity {
     }
 }
 
-impl Related<super::release_track_artist_history::Entity> for Entity {
+impl Related<super::release_track_artist::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ReleaseTrackArtistHistory.def()
+        Relation::ReleaseTrackArtist.def()
     }
 }
 

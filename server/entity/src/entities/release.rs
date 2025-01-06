@@ -29,26 +29,18 @@ pub struct Model {
     pub recording_date_start_precision: DatePrecision,
     pub recording_date_end: Option<Date>,
     pub recording_date_end_precision: DatePrecision,
-    pub created_at: DateTimeWithTimeZone,
-    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(has_many = "super::release_artist::Entity")]
     ReleaseArtist,
-    #[sea_orm(has_many = "super::release_artist_history::Entity")]
-    ReleaseArtistHistory,
     #[sea_orm(has_many = "super::release_credit::Entity")]
     ReleaseCredit,
     #[sea_orm(has_many = "super::release_label::Entity")]
     ReleaseLabel,
-    #[sea_orm(has_many = "super::release_label_history::Entity")]
-    ReleaseLabelHistory,
     #[sea_orm(has_many = "super::release_localized_title::Entity")]
     ReleaseLocalizedTitle,
-    #[sea_orm(has_many = "super::release_localized_title_history::Entity")]
-    ReleaseLocalizedTitleHistory,
     #[sea_orm(has_many = "super::release_track::Entity")]
     ReleaseTrack,
     #[sea_orm(has_many = "super::song::Entity")]
@@ -58,12 +50,6 @@ pub enum Relation {
 impl Related<super::release_artist::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ReleaseArtist.def()
-    }
-}
-
-impl Related<super::release_artist_history::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::ReleaseArtistHistory.def()
     }
 }
 
@@ -79,21 +65,9 @@ impl Related<super::release_label::Entity> for Entity {
     }
 }
 
-impl Related<super::release_label_history::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::ReleaseLabelHistory.def()
-    }
-}
-
 impl Related<super::release_localized_title::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ReleaseLocalizedTitle.def()
-    }
-}
-
-impl Related<super::release_localized_title_history::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::ReleaseLocalizedTitleHistory.def()
     }
 }
 
@@ -106,6 +80,24 @@ impl Related<super::release_track::Entity> for Entity {
 impl Related<super::song::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Song.def()
+    }
+}
+
+impl Related<super::artist::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::release_artist::Relation::Artist.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::release_artist::Relation::Release.def().rev())
+    }
+}
+
+impl Related<super::label::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::release_label::Relation::Label.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::release_label::Relation::Release.def().rev())
     }
 }
 

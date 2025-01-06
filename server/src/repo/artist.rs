@@ -6,10 +6,9 @@ use entity::sea_orm_active_enums::{
 use entity::{
     artist, artist_alias, artist_alias_history, artist_history, artist_link,
     artist_link_history, artist_localized_name, artist_localized_name_history,
-    correction, correction_revision, correction_user, group_member,
-    group_member_history, group_member_join_leave,
-    group_member_join_leave_history, group_member_role,
-    group_member_role_history,
+    correction, correction_revision, group_member, group_member_history,
+    group_member_join_leave, group_member_join_leave_history,
+    group_member_role, group_member_role_history,
 };
 use error_set::error_set;
 use itertools::Itertools;
@@ -22,6 +21,7 @@ use sea_orm::{
     FromQueryResult, ModelTrait, QueryFilter, QueryOrder, Statement,
 };
 
+use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::artist::{ArtistCorrection, LocalizedName, NewGroupMember};
 use crate::error::{EntityCorrectionError, GeneralRepositoryError};
 use crate::pg_func_ext::PgFuncExt;
@@ -99,32 +99,22 @@ pub async fn update_update_correction(
 
     let correction = find_artist_correction(correction_id, db).await?;
 
-    let author = repo::correction::find_author(correction.id, db)
-        .await?
-        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
-            entity_name: correction_user::Entity.table_name(),
-        })?;
+    add_co_author_if_updater_not_author(
+        correction.id,
+        data.correction_metadata.author_id,
+        db,
+    )
+    .await?;
 
-    let updater_id = data.correction_metadata.author_id;
-
-    if author.user_id != updater_id {
-        repo::correction::add_co_author(correction_id, updater_id, db).await?;
-    }
-
-    link_and_save_artist_history(correction_id, &data, db).await?;
+    link_and_save_artist_history(correction.id, &data, db).await?;
 
     Ok(())
 }
 
-pub async fn apply_correction(
-    correction_id: i32,
-    approver_id: i32,
+pub(super) async fn apply_correction(
+    correction: correction::Model,
     db: &DatabaseTransaction,
-) -> Result<(), Error> {
-    let correction = find_artist_correction(correction_id, db).await?;
-
-    repo::correction::approve(correction_id, approver_id, db).await?;
-
+) -> Result<(), GeneralRepositoryError> {
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
