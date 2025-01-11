@@ -152,11 +152,7 @@ impl UserService {
             }
             Ok(None) => (
                 None,
-                // TODO: don't hard-code
-                "$argon2id$v=19$m=15000,t=2,p=1$\
-                gZiV/M1gPc22ElAH/Jh1Hw$\
-                CWOrkoo7oJBQ/iyh7uJ0LO2aLEfrHwTWllSAxT0zRno"
-                    .to_string(),
+                hash_password("dummy-password")?
             ),
             Err(e) => return Err(e),
         };
