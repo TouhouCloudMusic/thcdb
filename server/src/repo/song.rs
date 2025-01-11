@@ -41,7 +41,7 @@ pub async fn create_many(
     .exec_with_returning_many(tx)
     .await?;
 
-    let new_song_historys = song_history::Entity::insert_many(
+    let new_song_histories = song_history::Entity::insert_many(
         new_songs.iter().map(song_history::ActiveModel::from),
     )
     .exec_with_returning_many(tx)
@@ -75,7 +75,7 @@ pub async fn create_many(
     izip!(
         data.iter(),
         new_songs.iter(),
-        new_song_historys.iter(),
+        new_song_histories.iter(),
         new_corrections
     )
     .for_each(|(data, new_song, new_song_history, correction)| {
