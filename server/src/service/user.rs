@@ -152,7 +152,7 @@ impl UserService {
             }
             Ok(None) => (
                 None,
-                hash_password("dummy-password")?
+                hash_password("dummyPassword")?
             ),
             Err(e) => return Err(e),
         };
