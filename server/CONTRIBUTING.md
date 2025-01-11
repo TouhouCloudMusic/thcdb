@@ -31,11 +31,11 @@ To setup pre-push hook, you must run `cargo test` once.
 
 Currently, we use [`just`](https://github.com/casey/just?tab=readme-ov-file#global-justfile) to manager scripts. You can find the scripts in [`.justfile`](.justfile)
 
-You need to register an atlas account end login to use the triggers features.
+You need to register an atlas account and login to use the triggers features.
 ```shell
 atlas login
 ```
-
+If you do not have any organization, you can request admin to join touhou-cloud-music atlas organization.
 
 To apply migrations, run `just db_all`.
 
