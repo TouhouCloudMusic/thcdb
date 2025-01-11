@@ -18,21 +18,21 @@ impl SongService {
     }
 
     pub async fn find_by_id(&self, id: i32) -> Result<Option<song::Model>> {
-        let transcation = self.db.begin().await?;
+        let transaction = self.db.begin().await?;
 
-        let result = repo::song::find_by_id(id, &transcation).await?;
+        let result = repo::song::find_by_id(id, &transaction).await?;
 
-        transcation.commit().await?;
+        transaction.commit().await?;
 
         Ok(result)
     }
 
     pub async fn create(&self, data: NewSong) -> Result<song::Model> {
-        let transcation = self.db.begin().await?;
+        let transaction = self.db.begin().await?;
 
-        let result = repo::song::create(data, &transcation).await?;
+        let result = repo::song::create(data, &transaction).await?;
 
-        transcation.commit().await?;
+        transaction.commit().await?;
         Ok(result)
     }
 }
