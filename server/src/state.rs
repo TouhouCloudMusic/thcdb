@@ -8,6 +8,7 @@ use crate::service::artist::ArtistService;
 use crate::service::image::ImageService;
 use crate::service::release::ReleaseService;
 use crate::service::song::SongService;
+use crate::service::tag::TagService;
 use crate::service::user::UserService;
 
 #[derive(Clone, FromRef)]
@@ -17,6 +18,7 @@ pub struct AppState {
     pub release_service: ReleaseService,
     pub image_service: ImageService,
     pub song_service: SongService,
+    pub tag_service: TagService,
     pub artist_service: ArtistService,
     pub config: Config,
     pub redis_pool: Pool,
@@ -36,6 +38,7 @@ impl AppState {
             artist_service: ArtistService::new(database.clone()),
             image_service: ImageService::new(database.clone()),
             song_service: SongService::new(database.clone()),
+            tag_service: TagService::new(database.clone()),
             redis_pool,
         }
     }
