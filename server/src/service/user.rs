@@ -79,12 +79,12 @@ impl IntoResponse for Error {
 
 #[derive(Default, Clone)]
 pub struct UserService {
-    database: DatabaseConnection,
+    db: DatabaseConnection,
 }
 
 impl UserService {
     pub const fn new(database: DatabaseConnection) -> Self {
-        Self { database }
+        Self { db: database }
     }
 
     pub async fn is_exist(&self, username: &String) -> Result<bool, Error> {
@@ -104,7 +104,7 @@ impl UserService {
 
         let stmt = DatabaseBackend::Postgres.build(&query);
 
-        if let Ok(Some(result)) = self.database.query_one(stmt).await {
+        if let Ok(Some(result)) = self.db.query_one(stmt).await {
             if let Ok(is_exist) = result.try_get_by::<bool, &str>(ALIAS) {
                 return Ok(is_exist);
             }
@@ -135,7 +135,7 @@ impl UserService {
         };
 
         user::Entity::insert(new_user)
-            .exec_with_returning(&self.database)
+            .exec_with_returning(&self.db)
             .await
             .map_err(|_| Error::Create)
     }
@@ -174,7 +174,7 @@ impl UserService {
     ) -> Result<Option<user::Model>, Error> {
         user::Entity::find()
             .filter(user::Column::Id.eq(*id))
-            .one(&self.database)
+            .one(&self.db)
             .await
             .map_err(|_| Error::Database)
     }
@@ -185,7 +185,7 @@ impl UserService {
     ) -> Result<Option<user::Model>, Error> {
         user::Entity::find()
             .filter(user::Column::Name.eq(username))
-            .one(&self.database)
+            .one(&self.db)
             .await
             .map_err(|e| {
                 tracing::error!("{}", e);
