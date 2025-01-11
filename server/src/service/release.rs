@@ -1,6 +1,6 @@
 use entity::release;
-use sea_orm::{DatabaseConnection, DbErr, EntityTrait, TransactionTrait};
-
+use sea_orm::{DatabaseConnection, DbErr, EntityTrait, Order, QueryOrder, QuerySelect, TransactionTrait};
+use sea_orm::sea_query::{Func, SimpleExpr};
 use crate::dto::correction::Metadata;
 use crate::dto::release::GeneralRelease;
 use crate::error::GeneralRepositoryError;
@@ -46,5 +46,16 @@ impl ReleaseService {
         transaction.commit().await?;
 
         Ok(result)
+    }
+
+    pub async fn random(
+        &self,
+        count: u64,
+    ) -> Result<Vec<release::Model>, DbErr> {
+        release::Entity::find()
+                .order_by(SimpleExpr::FunctionCall(Func::random()), Order::Desc)
+                .limit(count)
+                .all(&self.database)
+                .await
     }
 }

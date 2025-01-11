@@ -36,16 +36,3 @@ impl SongService {
         Ok(result)
     }
 }
-
-// TODO: move this to release track
-// pub async fn random(
-//     count: u64,
-//     db: &DatabaseConnection,
-// ) -> Result<Vec<song::Model>> {
-//     song::Entity::find()
-//         .order_by(SimpleExpr::FunctionCall(Func::random()), Order::Desc)
-//         .limit(count)
-//         .all(db)
-//         .await
-//         .map_err(Into::into)
-// }
