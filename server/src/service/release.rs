@@ -8,19 +8,19 @@ use crate::repo;
 
 #[derive(Default, Clone)]
 pub struct ReleaseService {
-    database: DatabaseConnection,
+    db: DatabaseConnection,
 }
 
 impl ReleaseService {
     pub const fn new(database: DatabaseConnection) -> Self {
-        Self { database }
+        Self { db: database }
     }
 
     pub async fn find_by_id(
         &self,
         id: i32,
     ) -> Result<Option<release::Model>, DbErr> {
-        release::Entity::find_by_id(id).one(&self.database).await
+        release::Entity::find_by_id(id).one(&self.db).await
     }
 
     pub async fn create(
@@ -38,7 +38,7 @@ impl ReleaseService {
             });
         }
 
-        let transaction = self.database.begin().await?;
+        let transaction = self.db.begin().await?;
 
         let result =
             repo::release::create(release_data, correction_data, &transaction)
@@ -55,7 +55,7 @@ impl ReleaseService {
         release::Entity::find()
                 .order_by(SimpleExpr::FunctionCall(Func::random()), Order::Desc)
                 .limit(count)
-                .all(&self.database)
+                .all(&self.db)
                 .await
     }
 }
