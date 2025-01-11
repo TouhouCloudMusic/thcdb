@@ -80,24 +80,22 @@ async fn sign_in(
 )]
 async fn upload_avatar(
     auth_session: AuthSession,
-    State(_image_service): State<ImageService>,
+    State(image_service): State<ImageService>,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
     let data = form.data;
     let metadata = data.metadata;
-    let _user_id = auth_session.user.ok_or(StatusCode::UNAUTHORIZED)?.id;
+    let user_id = auth_session.user.ok_or(StatusCode::UNAUTHORIZED)?.id;
 
     if metadata
         .content_type
         .is_some_and(|ct| ct.starts_with("image/"))
     {
-        Ok(api_response::msg("ok".to_string()))
-        // TODO
-        // image_service
-        //     .create(data.contents, user_id)
-        //     .await
-        //     .map(|_| api_response::msg("ok"))
-        //     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+        image_service
+            .create(data.contents, user_id)
+            .await
+            .map(|_| api_response::msg("ok"))
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
     } else {
         Err(StatusCode::BAD_REQUEST)
     }
