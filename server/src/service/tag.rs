@@ -1,5 +1,6 @@
-use sea_orm::{DatabaseConnection, TransactionTrait};
 use entity::tag;
+use sea_orm::{DatabaseConnection, TransactionTrait};
+
 use crate::dto::correction::Metadata;
 use crate::dto::tag::NewTag;
 use crate::error::GeneralRepositoryError;
@@ -22,8 +23,7 @@ impl TagService {
     ) -> Result<tag::Model, GeneralRepositoryError> {
         let transaction = self.db.begin().await?;
         let result =
-            repo::tag::create(tag_data, correction_data, &transaction)
-                .await?;
+            repo::tag::create(tag_data, correction_data, &transaction).await?;
         transaction.commit().await?;
         Ok(result)
     }

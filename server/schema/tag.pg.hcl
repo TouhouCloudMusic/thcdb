@@ -1,10 +1,13 @@
-enum "TagKind" {
+enum "TagType" {
   schema = schema.public
+  // 目前来说，Form和Topic能放在Descriptor下
   values = [
     "Descriptor",
-    "Form",
+    // "Form",
     "Genre",
+    "Movement",
     "Scene",
+    // "Topic",
   ]
 }
 
@@ -33,8 +36,8 @@ table "tag" {
     type = text
   }
 
-  column "kind" {
-    type = enum.TagKind
+  column "type" {
+    type = enum.TagType
   }
 
   column "short_description" {
@@ -63,8 +66,8 @@ table "tag_history" {
     type = text
   }
 
-  column "kind" {
-    type = enum.TagKind
+  column "type" {
+    type = enum.TagType
   }
 
   column "short_description" {

@@ -150,10 +150,7 @@ impl UserService {
                 let password_hash = u.password.clone();
                 (Some(u), password_hash)
             }
-            Ok(None) => (
-                None,
-                hash_password("dummyPassword")?
-            ),
+            Ok(None) => (None, hash_password("dummyPassword")?),
             Err(e) => return Err(e),
         };
 

@@ -1,6 +1,7 @@
-use sea_orm::{ActiveModelTrait, DatabaseTransaction};
-use entity::{tag, tag_history};
 use entity::sea_orm_active_enums::EntityType;
+use entity::{tag, tag_history};
+use sea_orm::{ActiveModelTrait, DatabaseTransaction};
+
 use crate::dto::correction::Metadata;
 use crate::dto::tag::NewTag;
 use crate::error::GeneralRepositoryError;

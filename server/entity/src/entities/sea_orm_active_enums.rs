@@ -186,16 +186,12 @@ pub enum ReleaseType {
     utoipa :: ToSchema,
     Copy,
 )]
-#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "TagKind")]
-pub enum TagKind {
-    #[sea_orm(string_value = "Descriptor")]
-    Descriptor,
-    #[sea_orm(string_value = "Form")]
-    Form,
-    #[sea_orm(string_value = "Genre")]
-    Genre,
-    #[sea_orm(string_value = "Scene")]
-    Scene,
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "TagRelationType")]
+pub enum TagRelationType {
+    #[sea_orm(string_value = "Derive")]
+    Derive,
+    #[sea_orm(string_value = "Inherit")]
+    Inherit,
 }
 #[derive(
     Debug,
@@ -210,10 +206,14 @@ pub enum TagKind {
     utoipa :: ToSchema,
     Copy,
 )]
-#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "TagRelationType")]
-pub enum TagRelationType {
-    #[sea_orm(string_value = "Derive")]
-    Derive,
-    #[sea_orm(string_value = "Inherit")]
-    Inherit,
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "TagType")]
+pub enum TagType {
+    #[sea_orm(string_value = "Descriptor")]
+    Descriptor,
+    #[sea_orm(string_value = "Genre")]
+    Genre,
+    #[sea_orm(string_value = "Movement")]
+    Movement,
+    #[sea_orm(string_value = "Scene")]
+    Scene,
 }

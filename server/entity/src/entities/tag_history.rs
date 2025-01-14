@@ -3,7 +3,7 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use super::sea_orm_active_enums::TagKind;
+use super::sea_orm_active_enums::TagType;
 
 #[derive(
     Clone,
@@ -22,7 +22,7 @@ pub struct Model {
     pub id: i32,
     #[sea_orm(column_type = "Text")]
     pub name: String,
-    pub kind: TagKind,
+    pub r#type: TagType,
     #[sea_orm(column_type = "Text")]
     pub short_description: String,
     #[sea_orm(column_type = "Text")]

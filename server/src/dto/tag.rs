@@ -1,13 +1,12 @@
-use sea_orm::ActiveValue::Set;
-use sea_orm::NotSet;
-use entity::sea_orm_active_enums::TagKind;
+use entity::sea_orm_active_enums::TagType;
 use entity::{tag, tag_history};
+use sea_orm::ActiveValue::{NotSet, Set};
 
 pub struct NewTag {
     pub name: String,
-    pub kind: TagKind,
+    pub r#type: TagType,
     pub short_description: String,
-    pub description: String
+    pub description: String,
 }
 
 impl From<&NewTag> for tag::ActiveModel {
@@ -15,7 +14,7 @@ impl From<&NewTag> for tag::ActiveModel {
         Self {
             id: NotSet,
             name: Set(value.name.clone()),
-            kind: Set(value.kind.clone()),
+            r#type: Set(value.r#type),
             short_description: Set(value.short_description.clone()),
             description: Set(value.description.clone()),
         }
@@ -27,7 +26,7 @@ impl From<&NewTag> for tag_history::ActiveModel {
         Self {
             id: NotSet,
             name: Set(value.name.clone()),
-            kind: Set(value.kind.clone()),
+            r#type: Set(value.r#type),
             short_description: Set(value.short_description.clone()),
             description: Set(value.description.clone()),
         }
