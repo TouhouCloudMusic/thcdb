@@ -414,7 +414,6 @@ dependencies = [
  "matchit 0.7.3",
  "memchr",
  "mime",
- "multer",
  "percent-encoding",
  "pin-project-lite",
  "rustversion",
@@ -540,12 +539,13 @@ dependencies = [
 
 [[package]]
 name = "axum_typed_multipart"
-version = "0.14.0"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b29db77b984912b4ee7396b8f425d4e417e72c631c4ca4ee22120b1c5dcd3c2"
+checksum = "760cf4fe5d984ade7a516ef405df575e6c9fcfab49f20dc64589daa9a447b60a"
 dependencies = [
  "anyhow",
- "axum 0.7.9",
+ "async-trait",
+ "axum 0.8.1",
  "axum_typed_multipart_macros",
  "bytes",
  "chrono",
@@ -560,9 +560,9 @@ dependencies = [
 
 [[package]]
 name = "axum_typed_multipart_macros"
-version = "0.14.0"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87986247727904b1ac050b1191218f4c433afd06ba0a734c47377c21ae192758"
+checksum = "eeffbb473f8141b23eff5deb5ea76d24b23eddefe1a25c3841cc4a3c373b7b53"
 dependencies = [
  "darling",
  "heck 0.5.0",
