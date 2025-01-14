@@ -15,11 +15,11 @@ use super::sea_orm_active_enums::TagRelationType;
     Deserialize,
     juniper :: GraphQLObject,
 )]
-#[sea_orm(table_name = "tag_relation")]
+#[sea_orm(table_name = "tag_relation_history")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub tag_id: i32,
+    pub history_id: i32,
     #[sea_orm(primary_key, auto_increment = false)]
     pub related_tag_id: i32,
     #[sea_orm(primary_key, auto_increment = false)]
@@ -35,15 +35,27 @@ pub enum Relation {
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    Tag2,
+    Tag,
     #[sea_orm(
-        belongs_to = "super::tag::Entity",
-        from = "Column::TagId",
-        to = "super::tag::Column::Id",
+        belongs_to = "super::tag_history::Entity",
+        from = "Column::HistoryId",
+        to = "super::tag_history::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    Tag1,
+    TagHistory,
+}
+
+impl Related<super::tag::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Tag.def()
+    }
+}
+
+impl Related<super::tag_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::TagHistory.def()
+    }
 }
 
 impl ActiveModelBehavior for ActiveModel {}

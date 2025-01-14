@@ -3,8 +3,6 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use super::sea_orm_active_enums::TagRelationType;
-
 #[derive(
     Clone,
     Debug,
@@ -15,35 +13,48 @@ use super::sea_orm_active_enums::TagRelationType;
     Deserialize,
     juniper :: GraphQLObject,
 )]
-#[sea_orm(table_name = "tag_relation")]
+#[sea_orm(table_name = "tag_alternative_name_history")]
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub tag_id: i32,
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub related_tag_id: i32,
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub r#type: TagRelationType,
+    #[sea_orm(primary_key)]
+    pub id: i32,
+    pub history_id: i32,
+    #[sea_orm(column_type = "Text")]
+    pub name: String,
+    pub is_origin_language: bool,
+    pub language_id: Option<i32>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::tag::Entity",
-        from = "Column::RelatedTagId",
-        to = "super::tag::Column::Id",
+        belongs_to = "super::language::Entity",
+        from = "Column::LanguageId",
+        to = "super::language::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    Tag2,
+    Language,
     #[sea_orm(
         belongs_to = "super::tag::Entity",
-        from = "Column::TagId",
+        from = "Column::HistoryId",
         to = "super::tag::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    Tag1,
+    Tag,
+}
+
+impl Related<super::language::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Language.def()
+    }
+}
+
+impl Related<super::tag::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Tag.def()
+    }
 }
 
 impl ActiveModelBehavior for ActiveModel {}
