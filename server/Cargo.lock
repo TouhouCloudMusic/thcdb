@@ -2151,11 +2151,11 @@ dependencies = [
 
 [[package]]
 name = "juniper_axum"
-version = "0.1.1"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed3b21b9af313a2967572c8d4b8875c53fc8062e10768470de4748c16ce7b992"
+checksum = "f63fb283e7f51b7f8ed9c012f3b4c4d4c8c9423e277d06162ceb1c3bc9628aa8"
 dependencies = [
- "axum 0.7.9",
+ "axum 0.8.1",
  "bytes",
  "juniper",
  "juniper_graphql_ws",
