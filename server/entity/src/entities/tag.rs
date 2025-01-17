@@ -33,8 +33,6 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::tag_alternative_name::Entity")]
     TagAlternativeName,
-    #[sea_orm(has_many = "super::tag_alternative_name_history::Entity")]
-    TagAlternativeNameHistory,
     #[sea_orm(has_many = "super::tag_relation_history::Entity")]
     TagRelationHistory,
 }
@@ -42,12 +40,6 @@ pub enum Relation {
 impl Related<super::tag_alternative_name::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::TagAlternativeName.def()
-    }
-}
-
-impl Related<super::tag_alternative_name_history::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::TagAlternativeNameHistory.def()
     }
 }
 

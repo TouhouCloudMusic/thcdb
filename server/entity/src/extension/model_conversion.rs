@@ -2,7 +2,8 @@ use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::IntoActiveValue;
 
 use crate::{
-    artist, artist_history, release, release_history, song, song_history,
+    artist, artist_history, release, release_history, song, song_history, tag,
+    tag_history,
 };
 
 impl From<&song::Model> for song_history::ActiveModel {
@@ -46,6 +47,18 @@ impl From<&release_history::Model> for release::ActiveModel {
             recording_date_end_precision: Set(
                 value.recording_date_end_precision
             ),
+        }
+    }
+}
+
+impl From<&tag_history::Model> for tag::ActiveModel {
+    fn from(value: &tag_history::Model) -> Self {
+        Self {
+            id: NotSet,
+            name: Set(value.name.clone()),
+            r#type: Set(value.r#type),
+            short_description: Set(value.short_description.clone()),
+            description: Set(value.description.clone()),
         }
     }
 }

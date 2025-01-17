@@ -198,7 +198,6 @@ pub(super) async fn apply_correction(
 
     let mut active_model = release::ActiveModel::from(&history);
     active_model.id = Set(correction.entity_id);
-
     active_model.update(tx).await?;
 
     let artists = history

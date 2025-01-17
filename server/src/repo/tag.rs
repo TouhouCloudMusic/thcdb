@@ -1,11 +1,19 @@
-use entity::sea_orm_active_enums::EntityType;
-use entity::{
-    tag, tag_alternative_name, tag_alternative_name_history, tag_history,
-    tag_relation, tag_relation_history,
+use entity::sea_orm_active_enums::{
+    CorrectionStatus, CorrectionType, EntityType,
 };
+use entity::{
+    correction, correction_revision, tag, tag_alternative_name,
+    tag_alternative_name_history, tag_history, tag_relation,
+    tag_relation_history,
+};
+use itertools::Itertools;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{ActiveModelTrait, DatabaseTransaction, EntityTrait};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityName,
+    EntityTrait, ModelTrait, QueryFilter, QueryOrder,
+};
 
+use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::correction::Metadata;
 use crate::dto::tag::{AltName, NewTag, NewTagRelation};
 use crate::error::GeneralRepositoryError;
@@ -35,6 +43,105 @@ pub async fn create(
     .await?;
 
     Ok(tag)
+}
+
+pub async fn create_update_correction(
+    tag_id: i32,
+    data: NewTag,
+    correction_metadata: Metadata,
+    tx: &DatabaseTransaction,
+) -> Result<(), GeneralRepositoryError> {
+    let correction = repo::correction::create()
+        .author_id(correction_metadata.author_id)
+        .status(CorrectionStatus::Pending)
+        .r#type(CorrectionType::Update)
+        .entity_type(EntityType::Tag)
+        .entity_id(tag_id)
+        .db(tx)
+        .call()
+        .await?;
+
+    save_tag_history_and_link_relation(
+        &data,
+        correction.id,
+        correction_metadata.description,
+        tx,
+    )
+    .await?;
+
+    Ok(())
+}
+
+pub async fn update_update_correction(
+    correction: correction::Model,
+    data: NewTag,
+    correction_metadata: Metadata,
+    tx: &DatabaseTransaction,
+) -> Result<(), GeneralRepositoryError> {
+    add_co_author_if_updater_not_author(
+        correction.id,
+        correction_metadata.author_id,
+        tx,
+    )
+    .await?;
+
+    save_tag_history_and_link_relation(
+        &data,
+        correction.id,
+        correction_metadata.description,
+        tx,
+    )
+    .await?;
+
+    Ok(())
+}
+
+pub(super) async fn apply_correction(
+    correction: correction::Model,
+    tx: &DatabaseTransaction,
+) -> Result<(), GeneralRepositoryError> {
+    let revision = correction
+        .find_related(correction_revision::Entity)
+        .order_by_desc(correction_revision::Column::EntityHistoryId)
+        .one(tx)
+        .await?
+        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+            entity_name: correction_revision::Entity.table_name(),
+        })?;
+
+    let history = tag_history::Entity::find_by_id(revision.entity_history_id)
+        .one(tx)
+        .await?
+        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+            entity_name: tag_history::Entity.table_name(),
+        })?;
+
+    let mut active_model = tag::ActiveModel::from(&history);
+    active_model.id = Set(correction.entity_id);
+    active_model.update(tx).await?;
+
+    let alt_names = history
+        .find_related(tag_alternative_name_history::Entity)
+        .all(tx)
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect_vec();
+
+    let relations = history
+        .find_related(tag_relation_history::Entity)
+        .all(tx)
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect_vec();
+
+    let tag_id = correction.entity_id;
+
+    update_alt_name(tag_id, &alt_names, tx).await?;
+    update_relation(tag_id, &relations, tx).await?;
+
+    Ok(())
 }
 
 // Relations of tag:
@@ -78,7 +185,7 @@ async fn create_alt_name(
     tag_id: i32,
     alt_names: &[AltName],
     tx: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), DbErr> {
     if alt_names.is_empty() {
         return Ok(());
     }
@@ -96,6 +203,19 @@ async fn create_alt_name(
         .await?;
 
     Ok(())
+}
+
+async fn update_alt_name(
+    tag_id: i32,
+    alt_names: &[AltName],
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    tag_alternative_name::Entity::delete_many()
+        .filter(tag_alternative_name::Column::TagId.eq(tag_id))
+        .exec(tx)
+        .await?;
+
+    create_alt_name(tag_id, alt_names, tx).await
 }
 
 async fn create_alt_name_history(
@@ -143,6 +263,19 @@ async fn create_relation(
         .await?;
 
     Ok(())
+}
+
+async fn update_relation(
+    tag_id: i32,
+    relations: &[NewTagRelation],
+    tx: &DatabaseTransaction,
+) -> Result<(), GeneralRepositoryError> {
+    tag_relation::Entity::delete_many()
+        .filter(tag_relation::Column::TagId.eq(tag_id))
+        .exec(tx)
+        .await?;
+
+    create_relation(tag_id, relations, tx).await
 }
 
 async fn create_relation_history(

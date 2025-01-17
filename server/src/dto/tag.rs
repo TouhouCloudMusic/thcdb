@@ -87,6 +87,20 @@ impl From<&AltName> for tag_alternative_name_history::ActiveModel {
     }
 }
 
+impl From<tag_alternative_name_history::Model> for AltName {
+    fn from(val: tag_alternative_name_history::Model) -> Self {
+        if val.is_origin_language {
+            Self::Alternative { name: val.name }
+        } else {
+            Self::Translation {
+                name: val.name,
+                // TODO: try from?
+                language_id: val.language_id.expect("language_id is not null"),
+            }
+        }
+    }
+}
+
 pub struct NewTagRelation {
     pub related_tag_id: i32,
     pub r#type: TagRelationType,
@@ -108,6 +122,15 @@ impl From<&NewTagRelation> for tag_relation_history::ActiveModel {
             history_id: NotSet,
             related_tag_id: Set(value.related_tag_id),
             r#type: Set(value.r#type),
+        }
+    }
+}
+
+impl From<tag_relation_history::Model> for NewTagRelation {
+    fn from(value: tag_relation_history::Model) -> Self {
+        Self {
+            r#type: value.r#type,
+            related_tag_id: value.related_tag_id,
         }
     }
 }

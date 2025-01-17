@@ -145,7 +145,7 @@ pub async fn approve(
             super::release::apply_correction(correction, tx).await?;
         }
         EntityType::Song => unimplemented!(),
-        EntityType::Tag => unimplemented!(),
+        EntityType::Tag => super::tag::apply_correction(correction, tx).await?,
     }
 
     Ok(())

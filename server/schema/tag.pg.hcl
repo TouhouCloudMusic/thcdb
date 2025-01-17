@@ -138,13 +138,14 @@ table "tag_alternative_name_history" {
   }
   foreign_key "fk_tag_alternative_name_history_history_id" {
     columns     = [column.history_id]
-    ref_columns = [table.tag.column.id]
+    ref_columns = [table.tag_history.column.id]
   }
 
   column "name" {
     type = text
   }
 
+  // TODO: rename it to `is_translation` and refactor codes
   column "is_origin_language" {
     type = bool
   }
