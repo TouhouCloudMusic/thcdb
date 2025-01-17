@@ -113,19 +113,15 @@ pub async fn create_update_correction(
     correction_metadata: Metadata,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    let now = Utc::now();
-
-    let correction = correction::ActiveModel {
-        id: NotSet,
-        status: Set(CorrectionStatus::Pending),
-        r#type: Set(CorrectionType::Update),
-        entity_type: Set(EntityType::Release),
-        entity_id: Set(release_id),
-        created_at: Set(now.into()),
-        handled_at: NotSet,
-    }
-    .insert(tx)
-    .await?;
+    let correction = repo::correction::create()
+        .author_id(correction_metadata.author_id)
+        .entity_id(release_id)
+        .entity_type(EntityType::Release)
+        .status(CorrectionStatus::Pending)
+        .r#type(CorrectionType::Update)
+        .db(tx)
+        .call()
+        .await?;
 
     let history = save_and_link_release_history()
         .data(&data)
@@ -139,16 +135,6 @@ pub async fn create_update_correction(
         .correction_id(correction.id)
         .entity_history_id(history.id)
         .description(correction_metadata.description.clone())
-        .db(tx)
-        .call()
-        .await?;
-
-    repo::correction::create()
-        .author_id(correction_metadata.author_id)
-        .entity_id(release_id)
-        .entity_type(EntityType::Release)
-        .status(CorrectionStatus::Pending)
-        .r#type(CorrectionType::Update)
         .db(tx)
         .call()
         .await?;
