@@ -1,7 +1,7 @@
 use std::future::Future;
 
 use bon::builder;
-use chrono::Utc;
+use chrono::{DateTime, FixedOffset, Utc};
 use entity::sea_orm_active_enums::{
     CorrectionStatus, CorrectionType, CorrectionUserType, EntityType,
 };
@@ -30,6 +30,7 @@ pub async fn create<C: ConnectionTrait>(
     entity_id: i32,
     status: CorrectionStatus,
     r#type: CorrectionType,
+    #[builder(into)] created_at: Option<DateTime<FixedOffset>>,
     db: &C,
 ) -> CorrectionResult {
     let result = correction::ActiveModel {
@@ -38,7 +39,7 @@ pub async fn create<C: ConnectionTrait>(
         r#type: Set(r#type),
         entity_type: Set(entity_type),
         entity_id: Set(entity_id),
-        created_at: NotSet,
+        created_at: created_at.map_or(NotSet, Set),
         handled_at: NotSet,
     }
     .insert(db)
