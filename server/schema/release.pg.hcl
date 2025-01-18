@@ -486,11 +486,11 @@ table "release_credit_history" {
     type = int
   }
 
-  column "release_history_id" {
+  column "history_id" {
     type = int
   }
-  foreign_key "fk_release_credit_history_release_history_id" {
-    columns     = [column.release_history_id]
+  foreign_key "fk_release_credit_history_history_id" {
+    columns     = [column.history_id]
     ref_columns = [table.release_history.column.id]
   }
 

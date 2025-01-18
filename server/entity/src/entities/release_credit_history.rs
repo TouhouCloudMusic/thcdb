@@ -19,7 +19,7 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub artist_id: i32,
-    pub release_history_id: i32,
+    pub history_id: i32,
     pub role_id: i32,
     pub on: Option<Vec<i16>>,
 }
@@ -36,7 +36,7 @@ pub enum Relation {
     CreditRole,
     #[sea_orm(
         belongs_to = "super::release_history::Entity",
-        from = "Column::ReleaseHistoryId",
+        from = "Column::HistoryId",
         to = "super::release_history::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"

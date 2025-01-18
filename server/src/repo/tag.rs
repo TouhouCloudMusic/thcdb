@@ -10,7 +10,7 @@ use itertools::Itertools;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityName,
-    EntityTrait, ModelTrait, QueryFilter, QueryOrder,
+    EntityOrSelect, EntityTrait, ModelTrait, QueryFilter, QueryOrder,
 };
 
 use super::correction::user::utils::add_co_author_if_updater_not_author;
@@ -120,26 +120,10 @@ pub(super) async fn apply_correction(
     active_model.id = Set(correction.entity_id);
     active_model.update(tx).await?;
 
-    let alt_names = history
-        .find_related(tag_alternative_name_history::Entity)
-        .all(tx)
-        .await?
-        .into_iter()
-        .map(Into::into)
-        .collect_vec();
-
-    let relations = history
-        .find_related(tag_relation_history::Entity)
-        .all(tx)
-        .await?
-        .into_iter()
-        .map(Into::into)
-        .collect_vec();
-
     let tag_id = correction.entity_id;
 
-    update_alt_name(tag_id, &alt_names, tx).await?;
-    update_relation(tag_id, &relations, tx).await?;
+    update_alt_name(tag_id, history.id, tx).await?;
+    update_relation(tag_id, history.id, tx).await?;
 
     Ok(())
 }
@@ -207,7 +191,7 @@ async fn create_alt_name(
 
 async fn update_alt_name(
     tag_id: i32,
-    alt_names: &[AltName],
+    history_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     tag_alternative_name::Entity::delete_many()
@@ -215,7 +199,16 @@ async fn update_alt_name(
         .exec(tx)
         .await?;
 
-    create_alt_name(tag_id, alt_names, tx).await
+    let alt_names = tag_alternative_name_history::Entity
+        .select()
+        .filter(tag_alternative_name_history::Column::HistoryId.eq(history_id))
+        .all(tx)
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect_vec();
+
+    create_alt_name(tag_id, &alt_names, tx).await
 }
 
 async fn create_alt_name_history(
@@ -267,7 +260,7 @@ async fn create_relation(
 
 async fn update_relation(
     tag_id: i32,
-    relations: &[NewTagRelation],
+    history_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), GeneralRepositoryError> {
     tag_relation::Entity::delete_many()
@@ -275,7 +268,16 @@ async fn update_relation(
         .exec(tx)
         .await?;
 
-    create_relation(tag_id, relations, tx).await
+    let relations = tag_relation_history::Entity
+        .select()
+        .filter(tag_relation_history::Column::HistoryId.eq(history_id))
+        .all(tx)
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect_vec();
+
+    create_relation(tag_id, &relations, tx).await
 }
 
 async fn create_relation_history(
