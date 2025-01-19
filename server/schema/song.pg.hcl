@@ -205,7 +205,7 @@ table "song_localized_title" {
     ref_columns = [table.language.column.id]
   }
 
-  column "value" {
+  column "title" {
     type = text
   }
 
@@ -240,7 +240,7 @@ table "song_localized_title_history" {
     ref_columns = [table.language.column.id]
   }
 
-  column "value" {
+  column "title" {
     type = text
   }
 }

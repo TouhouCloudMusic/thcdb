@@ -21,7 +21,7 @@ pub struct Model {
     pub history_id: i32,
     pub language_id: i32,
     #[sea_orm(column_type = "Text")]
-    pub value: String,
+    pub title: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
