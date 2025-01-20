@@ -98,7 +98,6 @@ impl From<&Unlinked> for song::ActiveModel {
     fn from(value: &Unlinked) -> Self {
         Self {
             id: NotSet,
-            release_id: NotSet,
             title: Set(value.display_title.clone()),
         }
     }
@@ -108,7 +107,6 @@ impl From<&Unlinked> for song_history::ActiveModel {
     fn from(value: &Unlinked) -> Self {
         Self {
             id: NotSet,
-            release_history_id: NotSet,
             title: Set(value.display_title.clone()),
         }
     }

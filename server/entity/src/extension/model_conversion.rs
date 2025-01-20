@@ -1,20 +1,8 @@
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::IntoActiveValue;
 
 use crate::{
-    artist, artist_history, release, release_history, song, song_history, tag,
-    tag_history,
+    artist, artist_history, release, release_history, tag, tag_history,
 };
-
-impl From<&song::Model> for song_history::ActiveModel {
-    fn from(value: &song::Model) -> Self {
-        Self {
-            id: NotSet,
-            release_history_id: NotSet,
-            title: value.title.clone().into_active_value(),
-        }
-    }
-}
 
 impl From<&artist_history::Model> for artist::ActiveModel {
     fn from(value: &artist_history::Model) -> Self {

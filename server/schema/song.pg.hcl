@@ -11,12 +11,23 @@ table "song" {
     columns = [column.id]
   }
 
-  column "release_id" {
-    type = int
+  column "title" {
+    type = text
   }
-  foreign_key "fk_song_release_id" {
-    columns     = [column.release_id]
-    ref_columns = [table.release.column.id]
+
+}
+
+table "song_history" {
+  schema = schema.public
+
+  column "id" {
+    type = int
+    identity {
+      generated = BY_DEFAULT
+    }
+  }
+  primary_key {
+    columns = [column.id]
   }
 
   column "title" {
@@ -53,32 +64,7 @@ trigger "prevent_orphan_song_deletion" {
   }
 }
 
-table "song_history" {
-  schema = schema.public
 
-  column "id" {
-    type = int
-    identity {
-      generated = BY_DEFAULT
-    }
-  }
-  primary_key {
-    columns = [column.id]
-  }
-
-  column "release_history_id" {
-    type = int
-  }
-  foreign_key "fk_song_history_release_history_id" {
-    columns     = [column.release_history_id]
-    ref_columns = [table.release_history.column.id]
-  }
-
-  column "title" {
-    type = text
-  }
-
-}
 
 table "song_artist" {
   schema = schema.public

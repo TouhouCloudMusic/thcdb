@@ -1,18 +1,21 @@
-use entity::sea_orm_active_enums::EntityType;
+use entity::sea_orm_active_enums::{
+    CorrectionStatus, CorrectionType, EntityType,
+};
 use entity::{
-    correction_revision, song, song_credit, song_credit_history, song_history,
-    song_language, song_language_history, song_localized_title,
+    correction, correction_revision, song, song_credit, song_credit_history,
+    song_history, song_language, song_language_history, song_localized_title,
     song_localized_title_history,
 };
 use futures::future;
 use itertools::{izip, Itertools};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
-    ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, IntoActiveModel,
-    IntoActiveValue, QueryFilter,
+    ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityName,
+    EntityTrait, IntoActiveValue, ModelTrait, QueryFilter, QueryOrder,
 };
 
 use crate::dto::song::{LocalizedTitle, NewSong, NewSongCredit};
+use crate::error::GeneralRepositoryError;
 use crate::repo;
 
 pub async fn find_by_id(
@@ -36,18 +39,7 @@ pub async fn create_many(
     data: &[NewSong],
     tx: &DatabaseTransaction,
 ) -> Result<Vec<song::Model>, DbErr> {
-    let new_songs = song::Entity::insert_many(
-        data.iter().map(IntoActiveModel::into_active_model),
-    )
-    .exec_with_returning_many(tx)
-    .await?;
-
-    let new_song_histories = song_history::Entity::insert_many(
-        // TODO: from &NewSong instead of from ActiveModel of song
-        new_songs.iter().map(song_history::ActiveModel::from),
-    )
-    .exec_with_returning_many(tx)
-    .await?;
+    let new_songs = create_many_songs_and_link_relations(data, tx).await?;
 
     let new_corrections = future::try_join_all(
         new_songs.iter().zip(data.iter()).map(async |(song, data)| {
@@ -62,6 +54,9 @@ pub async fn create_many(
         }),
     )
     .await?;
+
+    let new_song_histories =
+        create_many_song_histories_and_link_relations(data, tx).await?;
 
     let revisions = izip!(
         data.iter(),
@@ -81,70 +76,106 @@ pub async fn create_many(
         .exec(tx)
         .await?;
 
-    create_many_credits(
-        new_songs
-            .iter()
-            .zip(data.iter())
-            .map(|(model, data)| (model.id, &data.credits))
-            .collect_vec()
-            .as_slice(),
-        tx,
-    )
-    .await?;
-    create_many_credit_histories(
-        new_song_histories
-            .iter()
-            .zip(data.iter())
-            .map(|(model, data)| (model.id, &data.credits))
-            .collect_vec()
-            .as_slice(),
-        tx,
-    )
-    .await?;
-
-    create_many_languages(
-        new_songs
-            .iter()
-            .zip(data.iter())
-            .map(|(model, data)| (model.id, &data.languages))
-            .collect_vec()
-            .as_slice(),
-        tx,
-    )
-    .await?;
-    create_many_language_histories(
-        new_song_histories
-            .iter()
-            .zip(data.iter())
-            .map(|(model, data)| (model.id, &data.languages))
-            .collect_vec()
-            .as_slice(),
-        tx,
-    )
-    .await?;
-
-    create_many_localized_titles(
-        new_songs
-            .iter()
-            .zip(data.iter())
-            .map(|(model, data)| (model.id, &data.localized_titles))
-            .collect_vec()
-            .as_slice(),
-        tx,
-    )
-    .await?;
-    create_many_localized_title_histories(
-        new_song_histories
-            .iter()
-            .zip(data.iter())
-            .map(|(model, data)| (model.id, &data.localized_titles))
-            .collect_vec()
-            .as_slice(),
-        tx,
-    )
-    .await?;
-
     Ok(new_songs)
+}
+
+pub async fn create_update_correction(
+    song_id: i32,
+    data: NewSong,
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let correction = repo::correction::create()
+        .author_id(data.metadata.author_id)
+        .entity_type(EntityType::Song)
+        .status(CorrectionStatus::Pending)
+        .r#type(CorrectionType::Update)
+        .entity_id(song_id)
+        .db(tx)
+        .call()
+        .await?;
+
+    let description = data.metadata.description.clone().into_active_value();
+
+    let history = create_many_song_histories_and_link_relations(&[data], tx)
+        .await?
+        .into_iter()
+        .next()
+        .expect(
+            "song history was inserted but not returned, this should not happen",
+        );
+
+    correction_revision::Entity::insert(correction_revision::ActiveModel {
+        entity_history_id: Set(history.id),
+        correction_id: Set(correction.id),
+        description,
+    })
+    .exec(tx)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn update_update_correction(
+    correction: correction::Model,
+    data: NewSong,
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let description = data.metadata.description.clone().into_active_value();
+
+    let history = create_many_song_histories_and_link_relations(&[data], tx)
+        .await?
+        .into_iter()
+        .next()
+        .expect(
+            "song history was inserted but not returned, this should not happen",
+        );
+
+    correction_revision::Entity::insert(correction_revision::ActiveModel {
+        entity_history_id: Set(history.id),
+        correction_id: Set(correction.id),
+        description,
+    })
+    .exec(tx)
+    .await?;
+
+    Ok(())
+}
+
+pub(super) async fn apply_correction(
+    correction: correction::Model,
+    tx: &DatabaseTransaction,
+) -> Result<(), GeneralRepositoryError> {
+    let revision = correction
+        .find_related(correction_revision::Entity)
+        .order_by_desc(correction_revision::Column::EntityHistoryId)
+        .one(tx)
+        .await?
+        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+            entity_name: correction_revision::Entity.table_name(),
+        })?;
+
+    let history = song_history::Entity::find_by_id(revision.entity_history_id)
+        .one(tx)
+        .await?
+        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+            entity_name: song_history::Entity.table_name(),
+        })?;
+
+    song::ActiveModel {
+        id: Set(history.id),
+        title: Set(history.title),
+    }
+    .update(tx)
+    .await?;
+
+    let song_id = correction.entity_id;
+    let history_id = history.id;
+
+    update_credit(song_id, history_id, tx).await?;
+    update_language(song_id, history_id, tx).await?;
+    update_localized_title(song_id, history_id, tx).await?;
+
+    Ok(())
 }
 
 // Relations of song:
@@ -152,21 +183,100 @@ pub async fn create_many(
 // - language
 // - localized title
 
+async fn create_many_songs_and_link_relations(
+    data: &[NewSong],
+    tx: &DatabaseTransaction,
+) -> Result<Vec<song::Model>, DbErr> {
+    let new_songs =
+        song::Entity::insert_many(data.iter().map_into::<song::ActiveModel>())
+            .exec_with_returning_many(tx)
+            .await?;
+
+    let song_ids = new_songs.iter().map(|model| model.id).collect_vec();
+
+    create_many_credits(
+        &song_ids,
+        &data.iter().map(|x| &x.credits).collect_vec(),
+        tx,
+    )
+    .await?;
+
+    create_many_languages(
+        &song_ids,
+        &data.iter().map(|x| &x.languages).collect_vec(),
+        tx,
+    )
+    .await?;
+
+    create_many_localized_titles(
+        &song_ids,
+        &data.iter().map(|x| &x.localized_titles).collect_vec(),
+        tx,
+    )
+    .await?;
+
+    Ok(new_songs)
+}
+
+async fn create_many_song_histories_and_link_relations(
+    data: &[NewSong],
+    tx: &DatabaseTransaction,
+) -> Result<Vec<song_history::Model>, DbErr> {
+    let new_song_histories = song_history::Entity::insert_many(
+        data.iter().map_into::<song_history::ActiveModel>(),
+    )
+    .exec_with_returning_many(tx)
+    .await?;
+
+    let history_ids = new_song_histories
+        .iter()
+        .map(|model| model.id)
+        .collect_vec();
+
+    create_many_credit_histories(
+        &history_ids,
+        &data.iter().map(|x| &x.credits).collect_vec(),
+        tx,
+    )
+    .await?;
+
+    create_many_language_histories(
+        &history_ids,
+        &data.iter().map(|x| &x.languages).collect_vec(),
+        tx,
+    )
+    .await?;
+
+    create_many_localized_title_histories(
+        &history_ids,
+        &data.iter().map(|x| &x.localized_titles).collect_vec(),
+        tx,
+    )
+    .await?;
+
+    Ok(new_song_histories)
+}
+
 type CreateCreditData<'a> = (i32, &'a Option<Vec<NewSongCredit>>);
 
 async fn create_many_credits(
-    data: &[CreateCreditData<'_>],
+    song_ids: &[i32],
+    credits: &[&Option<Vec<NewSongCredit>>],
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    let models = data.iter().flat_map(|(song_id, maybe_credits)| {
-        maybe_credits.iter().flat_map(|credits| {
-            credits.iter().map(|credit| song_credit::ActiveModel {
-                artist_id: Set(credit.artist_id),
-                song_id: Set(*song_id),
-                role_id: Set(credit.role_id),
-            })
-        })
-    });
+    let models =
+        song_ids
+            .iter()
+            .zip(credits)
+            .flat_map(|(song_id, maybe_credits)| {
+                maybe_credits.iter().flat_map(|credits| {
+                    credits.iter().map(|credit| song_credit::ActiveModel {
+                        artist_id: Set(credit.artist_id),
+                        song_id: Set(*song_id),
+                        role_id: Set(credit.role_id),
+                    })
+                })
+            });
 
     song_credit::Entity::insert_many(models).exec(tx).await?;
 
@@ -174,20 +284,23 @@ async fn create_many_credits(
 }
 
 async fn create_many_credit_histories(
-    data: &[CreateCreditData<'_>],
+    history_ids: &[i32],
+    credits: &[&Option<Vec<NewSongCredit>>],
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    let models = data.iter().flat_map(|(history_id, maybe_credits)| {
-        maybe_credits.iter().flat_map(|credit| {
-            credit
-                .iter()
-                .map(|credit| song_credit_history::ActiveModel {
-                    artist_id: Set(credit.artist_id),
-                    history_id: Set(*history_id),
-                    role_id: Set(credit.role_id),
-                })
-        })
-    });
+    let models = history_ids.iter().zip(credits).flat_map(
+        |(history_id, maybe_credits)| {
+            maybe_credits.iter().flat_map(|credit| {
+                credit
+                    .iter()
+                    .map(|credit| song_credit_history::ActiveModel {
+                        artist_id: Set(credit.artist_id),
+                        history_id: Set(*history_id),
+                        role_id: Set(credit.role_id),
+                    })
+            })
+        },
+    );
 
     song_credit_history::Entity::insert_many(models)
         .exec(tx)
@@ -227,14 +340,14 @@ async fn update_credit(
     Ok(())
 }
 
-type CreateLanguageData<'a> = (i32, &'a Option<Vec<i32>>);
-
 async fn create_many_languages(
-    data: &[CreateLanguageData<'_>],
+    song_ids: &[i32],
+    languages: &[&Option<Vec<i32>>],
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    let models = data
+    let models = song_ids
         .iter()
+        .zip(languages)
         .flat_map(|(song_id, languages)| {
             languages.iter().flat_map(|langs| {
                 langs.iter().map(|language_id| song_language::ActiveModel {
@@ -253,11 +366,13 @@ async fn create_many_languages(
 }
 
 async fn create_many_language_histories(
-    data: &[CreateLanguageData<'_>],
+    history_ids: &[i32],
+    languages: &[&Option<Vec<i32>>],
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    let models = data
+    let models = history_ids
         .iter()
+        .zip(languages)
         .flat_map(|(history_id, languages)| {
             languages.iter().flat_map(|langs| {
                 langs.iter().map(|language_id| {
@@ -311,14 +426,14 @@ async fn update_language(
     Ok(())
 }
 
-type CreateLocalizedTitleData<'a> = (i32, &'a Option<Vec<LocalizedTitle>>);
-
 async fn create_many_localized_titles(
-    data: &[CreateLocalizedTitleData<'_>],
+    song_ids: &[i32],
+    localized_titles: &[&Option<Vec<LocalizedTitle>>],
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    let models = data
+    let models = song_ids
         .iter()
+        .zip(localized_titles)
         .flat_map(|(song_id, localized_titles)| {
             localized_titles.iter().flat_map(|localized_titles| {
                 localized_titles.iter().map(|localized_title| {
@@ -348,11 +463,13 @@ async fn create_many_localized_titles(
 }
 
 async fn create_many_localized_title_histories(
-    data: &[CreateLocalizedTitleData<'_>],
+    history_ids: &[i32],
+    localized_titles: &[&Option<Vec<LocalizedTitle>>],
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    let models = data
+    let models = history_ids
         .iter()
+        .zip(localized_titles)
         .flat_map(|(song_id, localized_titles)| {
             localized_titles.iter().flat_map(|localized_titles| {
                 localized_titles.iter().map(|localized_title| {

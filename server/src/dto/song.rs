@@ -1,6 +1,6 @@
-use entity::song;
+use entity::{song, song_history};
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::IntoActiveModel;
+use sea_orm::IntoActiveValue;
 
 use super::correction;
 
@@ -14,22 +14,20 @@ pub struct NewSong {
 
 pub type LocalizedTitle = super::release::input::LocalizedTitle;
 
-impl IntoActiveModel<song::ActiveModel> for NewSong {
-    fn into_active_model(self) -> song::ActiveModel {
-        song::ActiveModel {
+impl From<&NewSong> for song::ActiveModel {
+    fn from(value: &NewSong) -> Self {
+        Self {
             id: NotSet,
-            title: Set(self.title),
-            release_id: NotSet,
+            title: Set(value.title.clone()),
         }
     }
 }
 
-impl IntoActiveModel<song::ActiveModel> for &NewSong {
-    fn into_active_model(self) -> song::ActiveModel {
-        song::ActiveModel {
+impl From<&NewSong> for song_history::ActiveModel {
+    fn from(value: &NewSong) -> Self {
+        Self {
             id: NotSet,
-            title: Set(self.title.clone()),
-            release_id: NotSet,
+            title: value.title.clone().into_active_value(),
         }
     }
 }

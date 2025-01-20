@@ -18,21 +18,12 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub release_id: i32,
     #[sea_orm(column_type = "Text")]
     pub title: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(
-        belongs_to = "super::release::Entity",
-        from = "Column::ReleaseId",
-        to = "super::release::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
-    )]
-    Release,
     #[sea_orm(has_many = "super::release_track::Entity")]
     ReleaseTrack,
     #[sea_orm(has_many = "super::release_track_history::Entity")]
@@ -45,12 +36,6 @@ pub enum Relation {
     SongLanguage,
     #[sea_orm(has_many = "super::song_localized_title::Entity")]
     SongLocalizedTitle,
-}
-
-impl Related<super::release::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Release.def()
-    }
 }
 
 impl Related<super::release_track::Entity> for Entity {
