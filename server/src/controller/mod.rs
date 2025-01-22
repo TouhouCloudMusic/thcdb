@@ -7,6 +7,7 @@ mod artist;
 mod graphql;
 mod release;
 mod song;
+mod tag;
 mod user;
 
 #[derive(OpenApi)]

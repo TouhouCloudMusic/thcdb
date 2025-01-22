@@ -4,7 +4,10 @@ use entity::{
     tag_relation, tag_relation_history,
 };
 use sea_orm::ActiveValue::{NotSet, Set};
+use serde::Deserialize;
+use utoipa::ToSchema;
 
+#[derive(Clone, Deserialize, ToSchema)]
 pub struct NewTag {
     pub name: String,
     pub r#type: TagType,
@@ -39,6 +42,7 @@ impl From<&NewTag> for tag_history::ActiveModel {
     }
 }
 
+#[derive(Clone, Deserialize, ToSchema)]
 pub enum AltName {
     Alternative { name: String },
     Translation { name: String, language_id: i32 },
@@ -101,6 +105,7 @@ impl From<tag_alternative_name_history::Model> for AltName {
     }
 }
 
+#[derive(Clone, Deserialize, ToSchema)]
 pub struct NewTagRelation {
     pub related_tag_id: i32,
     pub r#type: TagRelationType,
