@@ -84,6 +84,30 @@ impl IntoResponse for EntityCorrectionError {
     }
 }
 
+impl AsStatusCode for SongServiceError {
+    fn as_status_code(&self) -> StatusCode {
+        match self {
+            // TODO: This should not happend
+            Self::IncorrectCorrectionEntityType => {
+                StatusCode::INTERNAL_SERVER_ERROR
+            }
+            Self::CorretionNotFound => StatusCode::NOT_FOUND,
+            Self::Database(_) | Self::RelatedEntityNotFound { .. } => {
+                StatusCode::INTERNAL_SERVER_ERROR
+            }
+            Self::InvalidField { .. } => StatusCode::BAD_REQUEST,
+            Self::EntityNotFound { .. } => StatusCode::NOT_FOUND,
+        }
+    }
+}
+
+impl IntoResponse for SongServiceError {
+    fn into_response(self) -> axum::response::Response {
+        api_response::err(self.as_status_code(), self.to_string())
+            .into_response()
+    }
+}
+
 pub trait LogErr {
     fn log_err(self) -> Self;
 }

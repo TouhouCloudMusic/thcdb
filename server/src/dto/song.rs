@@ -1,9 +1,12 @@
 use entity::{song, song_history};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::IntoActiveValue;
+use serde::Deserialize;
+use utoipa::ToSchema;
 
 use super::correction;
 
+#[derive(ToSchema, Deserialize)]
 pub struct NewSong {
     pub title: String,
     pub languages: Option<Vec<i32>>,
@@ -32,6 +35,7 @@ impl From<&NewSong> for song_history::ActiveModel {
     }
 }
 
+#[derive(ToSchema, Deserialize)]
 pub struct NewSongCredit {
     pub artist_id: i32,
     pub role_id: i32,

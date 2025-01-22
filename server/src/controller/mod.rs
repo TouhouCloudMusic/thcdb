@@ -6,6 +6,7 @@ use crate::AppState;
 mod artist;
 mod graphql;
 mod release;
+mod song;
 mod user;
 
 #[derive(OpenApi)]
