@@ -12,7 +12,7 @@ use crate::state::AppState;
 
 type Error = SongServiceError;
 pub fn router() -> OpenApiRouter<AppState> {
-    OpenApiRouter::new().routes(routes!(create_release))
+    OpenApiRouter::new().routes(routes!(create_song))
 }
 
 #[derive(ToSchema, Deserialize)]
@@ -30,7 +30,7 @@ struct CreateSongInput {
 		(status = 500, description = "Song create failed"),
     ),
 )]
-async fn create_release(
+async fn create_song(
     State(service): State<SongService>,
     Json(input): Json<CreateSongInput>,
 ) -> Result<(), Error> {
