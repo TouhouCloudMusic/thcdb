@@ -26,6 +26,7 @@ pub mod group_member_role_history;
 pub mod image;
 pub mod label;
 pub mod label_founder;
+pub mod label_founder_history;
 pub mod label_history;
 pub mod label_localized_name;
 pub mod label_localized_name_history;

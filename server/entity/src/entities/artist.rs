@@ -42,6 +42,8 @@ pub enum Relation {
     GroupMemberHistory,
     #[sea_orm(has_many = "super::label_founder::Entity")]
     LabelFounder,
+    #[sea_orm(has_many = "super::label_founder_history::Entity")]
+    LabelFounderHistory,
     #[sea_orm(has_many = "super::release_artist::Entity")]
     ReleaseArtist,
     #[sea_orm(has_many = "super::release_artist_history::Entity")]
@@ -84,6 +86,12 @@ impl Related<super::label_founder::Entity> for Entity {
     }
 }
 
+impl Related<super::label_founder_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::LabelFounderHistory.def()
+    }
+}
+
 impl Related<super::release_artist::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ReleaseArtist.def()
@@ -120,15 +128,6 @@ impl Related<super::artist_history::Entity> for Entity {
     }
     fn via() -> Option<RelationDef> {
         Some(super::artist_alias_history::Relation::Artist.def().rev())
-    }
-}
-
-impl Related<super::label::Entity> for Entity {
-    fn to() -> RelationDef {
-        super::label_founder::Relation::Label.def()
-    }
-    fn via() -> Option<RelationDef> {
-        Some(super::label_founder::Relation::Artist.def().rev())
     }
 }
 

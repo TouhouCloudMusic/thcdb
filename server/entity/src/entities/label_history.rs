@@ -26,8 +26,6 @@ pub struct Model {
     pub founded_date_precision: DatePrecision,
     pub dissolved_date: Option<Date>,
     pub dissolved_date_precision: DatePrecision,
-    pub created_at: DateTimeWithTimeZone,
-    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

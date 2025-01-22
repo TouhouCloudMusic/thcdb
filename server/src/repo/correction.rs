@@ -94,6 +94,7 @@ pub async fn create_self_approval(
 pub fn link_history<C: ConnectionTrait>(
     correction_id: i32,
     entity_history_id: i32,
+    // TODO: More generic
     description: String,
     db: &C,
 ) -> impl Future<Output = Result<correction_revision::Model, DbErr>> + '_ {
@@ -140,11 +141,15 @@ pub async fn approve(
         EntityType::Artist => {
             super::artist::apply_correction(correction, tx).await?;
         }
-        EntityType::Label => unimplemented!(),
+        EntityType::Label => {
+            super::label::apply_correction(correction, tx).await?;
+        }
         EntityType::Release => {
             super::release::apply_correction(correction, tx).await?;
         }
-        EntityType::Song => unimplemented!(),
+        EntityType::Song => {
+            super::tag::apply_correction(correction, tx).await?;
+        }
         EntityType::Tag => super::tag::apply_correction(correction, tx).await?,
     }
 

@@ -24,6 +24,7 @@ pub use super::group_member_role_history::Entity as GroupMemberRoleHistory;
 pub use super::image::Entity as Image;
 pub use super::label::Entity as Label;
 pub use super::label_founder::Entity as LabelFounder;
+pub use super::label_founder_history::Entity as LabelFounderHistory;
 pub use super::label_history::Entity as LabelHistory;
 pub use super::label_localized_name::Entity as LabelLocalizedName;
 pub use super::label_localized_name_history::Entity as LabelLocalizedNameHistory;

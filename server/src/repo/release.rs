@@ -174,7 +174,6 @@ pub async fn update_update_correction(
     Ok(())
 }
 
-#[allow(clippy::too_many_lines)]
 pub(super) async fn apply_correction(
     correction: correction::Model,
     tx: &DatabaseTransaction,

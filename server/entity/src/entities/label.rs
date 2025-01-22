@@ -26,14 +26,14 @@ pub struct Model {
     pub founded_date_precision: DatePrecision,
     pub dissolved_date: Option<Date>,
     pub dissolved_date_precision: DatePrecision,
-    pub created_at: DateTimeWithTimeZone,
-    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(has_many = "super::label_founder::Entity")]
     LabelFounder,
+    #[sea_orm(has_many = "super::label_founder_history::Entity")]
+    LabelFounderHistory,
     #[sea_orm(has_many = "super::label_localized_name::Entity")]
     LabelLocalizedName,
     #[sea_orm(has_many = "super::release_label::Entity")]
@@ -45,6 +45,12 @@ pub enum Relation {
 impl Related<super::label_founder::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::LabelFounder.def()
+    }
+}
+
+impl Related<super::label_founder_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::LabelFounderHistory.def()
     }
 }
 
@@ -63,15 +69,6 @@ impl Related<super::release_label::Entity> for Entity {
 impl Related<super::release_label_history::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ReleaseLabelHistory.def()
-    }
-}
-
-impl Related<super::artist::Entity> for Entity {
-    fn to() -> RelationDef {
-        super::label_founder::Relation::Artist.def()
-    }
-    fn via() -> Option<RelationDef> {
-        Some(super::label_founder::Relation::Label.def().rev())
     }
 }
 
