@@ -25,7 +25,6 @@ impl IntoResponse for service::artist::Error {
 impl IntoResponse for repo::artist::Error {
     fn into_response(self) -> axum::response::Response {
         match self {
-            Self::EntityCorrection(err) => err.into_response(),
             Self::Validation(err) => err.into_response(),
             Self::General(err) => err.into_response(),
         }

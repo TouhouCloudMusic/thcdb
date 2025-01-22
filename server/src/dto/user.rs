@@ -10,7 +10,7 @@ pub struct SignUp {
     pub password: String,
 }
 #[derive(GraphQLInputObject, ToSchema, Clone, Deserialize, Serialize)]
-pub struct SignIn {
+pub struct AuthCredential {
     pub username: String,
     pub password: String,
 }

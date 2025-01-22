@@ -25,7 +25,6 @@ impl IntoResponse for service::release::Error {
 impl IntoResponse for repo::release::Error {
     fn into_response(self) -> axum::response::Response {
         match self {
-            Self::EntityCorrection(err) => err.into_response(),
             Self::General(err) => err.into_response(),
         }
     }

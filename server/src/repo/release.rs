@@ -23,12 +23,12 @@ use crate::dto::correction::Metadata;
 use crate::dto::release::input::{Credit, LocalizedTitle};
 use crate::dto::release::{GeneralRelease, Linked, NewTrack, Unlinked};
 use crate::dto::song::NewSong;
-use crate::error::{EntityCorrectionError, GeneralRepositoryError};
+use crate::error::GeneralRepositoryError;
 use crate::repo;
 
 error_set! {
     Error = {
-        EntityCorrection(EntityCorrectionError),
+
         General(GeneralRepositoryError),
     };
 }

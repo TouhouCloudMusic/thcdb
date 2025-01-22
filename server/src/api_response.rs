@@ -77,14 +77,14 @@ impl IntoResponse for Message {
 }
 
 #[derive(ToSchema, Serialize)]
-pub struct Err {
+pub struct Error {
     status: String,
     message: String,
     #[serde(skip)]
     code: StatusCode,
 }
 
-impl Default for Err {
+impl Default for Error {
     fn default() -> Self {
         Self {
             status: STATUS_ERR.to_string(),
@@ -93,7 +93,8 @@ impl Default for Err {
         }
     }
 }
-impl IntoResponse for Err {
+
+impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         (self.code, Json(self)).into_response()
     }
@@ -116,15 +117,15 @@ where
     }
 }
 
-pub fn err<C, M>(code: C, message: M) -> Err
+pub fn err<C, M>(code: C, message: M) -> Error
 where
     C: Into<Option<StatusCode>>,
     M: Display,
 {
-    Err {
+    Error {
         message: message.to_string(),
         code: code.into().unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
-        ..Err::default()
+        ..Error::default()
     }
 }
 

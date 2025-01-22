@@ -23,14 +23,14 @@ use sea_orm::{
 
 use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::artist::{ArtistCorrection, LocalizedName, NewGroupMember};
-use crate::error::{EntityCorrectionError, GeneralRepositoryError};
+use crate::error::GeneralRepositoryError;
 use crate::pg_func_ext::PgFuncExt;
 use crate::repo;
 use crate::types::Pair;
 
 error_set! {
     Error = {
-        EntityCorrection(EntityCorrectionError),
+
         Validation(ValidationError),
         General(GeneralRepositoryError)
     };
@@ -195,16 +195,11 @@ async fn find_artist_correction(
 ) -> Result<correction::Model, Error> {
     let res = repo::correction::find_by_id(correction_id, db)
         .await?
-        .ok_or(EntityCorrectionError::CorretionNotFound)
-        .and_then(|model| {
-            if model.entity_type == EntityType::Artist {
-                Ok(model)
-            } else {
-                Err(EntityCorrectionError::IncorrectCorrectionEntityType)
-            }
-        });
+        .ok_or(GeneralRepositoryError::EntityNotFound {
+            entity_name: correction::Entity.table_name(),
+        })?;
 
-    Ok(res?)
+    Ok(res)
 }
 
 async fn create_artist_alias<C: ConnectionTrait>(

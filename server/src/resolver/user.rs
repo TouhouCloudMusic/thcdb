@@ -1,6 +1,6 @@
 use juniper::{graphql_object, graphql_value, FieldError, FieldResult};
 
-use crate::dto::user::{SignIn, SignUp};
+use crate::dto::user::{AuthCredential, SignUp};
 use crate::model::output::{LoginOutput, SignupOutput};
 use crate::service::juniper::JuniperContext;
 
@@ -12,7 +12,7 @@ pub struct UserMutation;
 impl UserQuery {
     #[graphql(description = "Use username and password to login.")]
     async fn sign_in(
-        input: SignIn,
+        input: AuthCredential,
         context: &JuniperContext,
     ) -> FieldResult<LoginOutput> {
         let user_service = &context.state.user_service;

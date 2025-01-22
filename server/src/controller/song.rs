@@ -6,11 +6,12 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::dto::song::NewSong;
-use crate::error::SongServiceError;
+use crate::error::GeneralRepositoryError;
 use crate::service::song::SongService;
 use crate::state::AppState;
 
-type Error = SongServiceError;
+type Error = GeneralRepositoryError;
+
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new().routes(routes!(create_song))
 }

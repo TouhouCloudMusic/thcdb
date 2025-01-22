@@ -4,9 +4,9 @@ use argon2::password_hash::{
 };
 use argon2::{password_hash, Argon2};
 use async_trait::async_trait;
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::body::Bytes;
 use axum_login::{AuthnBackend, UserId};
+use axum_typed_multipart::FieldData;
 use entity::user;
 use error_set::error_set;
 use once_cell::sync::Lazy;
@@ -15,65 +15,69 @@ use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{Alias, Query};
 use sea_orm::{
     ActiveValue, ColumnTrait, ConnectionTrait, DatabaseBackend,
-    DatabaseConnection, EntityTrait, QueryFilter,
+    DatabaseConnection, DbErr, EntityName, EntityTrait, QueryFilter,
 };
-use serde::Serialize;
+use tokio::task::JoinError;
 
-use crate::api_response;
-use crate::dto::user::SignIn;
+use super::image::ImageService;
+use crate::dto::user::AuthCredential;
+use crate::error::GeneralRepositoryError;
 
 pub static ARGON2_HASHER: Lazy<Argon2> = Lazy::new(Argon2::default);
 
 pub type AuthSession = axum_login::AuthSession<UserService>;
 
 error_set! {
-    #[derive(Serialize, Clone)]
     Error = {
-        #[display("User not found")]
-        NotFound,
-        #[display("Database error")]
-        Database,
-        #[display("Failed to create user")]
-        Create,
+        General(GeneralRepositoryError),
+        #[display("Already signed in")]
+        AlreadySignedIn,
         #[display("Invalid username or password")]
         AuthenticationFailed,
-        #[serde(skip)]
-        #[display("Task join error")]
-        JoinError,
-        Password(PasswordError),
-        CreateUser(CreateUserError),
-    };
-    #[derive(Serialize, Clone)]
-    PasswordError = {
-        #[serde(skip)]
+
+        #[display("Session error")]
+        Session(axum_login::tower_sessions::session::Error),
+
         #[display("Failed to hash password: {err}")]
-        HashPassword {
+        HashPasswordFailed {
             err: password_hash::errors::Error
         },
-        #[serde(skip)]
         #[display("Failed to parse password: {err}")]
-        ParsePassword {
+        ParsePasswordFailed {
             err: password_hash::errors::Error
-        }
+        },
+        Validate(ValidateError),
     };
-    #[derive(Serialize, Clone)]
-    CreateUserError = {
+    ValidateError = {
         #[display("Invalid username")]
         InvalidUserName,
+        #[display("Invalid Password")]
+        InvalidPassword,
         #[display("Password is too weak")]
         PasswordTooWeak,
+        #[display("Invalid avatar type")]
+        InvalidImageType
     };
 }
 
-impl IntoResponse for Error {
-    fn into_response(self) -> Response {
-        let status_code = match self {
-            Self::NotFound => StatusCode::NOT_FOUND,
-            Self::AuthenticationFailed => StatusCode::UNAUTHORIZED,
-            _ => StatusCode::INTERNAL_SERVER_ERROR,
-        };
+impl From<DbErr> for Error {
+    fn from(err: DbErr) -> Self {
+        GeneralRepositoryError::from(err).into()
+    }
+}
 
-        api_response::err(status_code, self).into_response()
+impl From<JoinError> for Error {
+    fn from(err: JoinError) -> Self {
+        GeneralRepositoryError::from(err).into()
+    }
+}
+
+impl From<axum_login::Error<UserService>> for Error {
+    fn from(err: axum_login::Error<UserService>) -> Self {
+        match err {
+            axum_login::Error::Backend(err) => err,
+            axum_login::Error::Session(err) => Self::Session(err),
+        }
     }
 }
 
@@ -104,13 +108,38 @@ impl UserService {
 
         let stmt = DatabaseBackend::Postgres.build(&query);
 
-        if let Ok(Some(result)) = self.db.query_one(stmt).await {
-            if let Ok(is_exist) = result.try_get_by::<bool, &str>(ALIAS) {
-                return Ok(is_exist);
-            }
-        }
+        let result = self
+            .db
+            .query_one(stmt)
+            .await?
+            .ok_or_else(|| {
+                Error::General(GeneralRepositoryError::EntityNotFound {
+                    entity_name: user::Entity.table_name(),
+                })
+            })
+            .map(|x| x.try_get::<bool>("", ALIAS))??;
 
-        Err(Error::Database)
+        Ok(result)
+    }
+
+    pub async fn find_by_id(
+        &self,
+        id: &i32,
+    ) -> Result<Option<user::Model>, Error> {
+        Ok(user::Entity::find()
+            .filter(user::Column::Id.eq(*id))
+            .one(&self.db)
+            .await?)
+    }
+
+    pub async fn find_by_name(
+        &self,
+        username: &str,
+    ) -> Result<Option<user::Model>, Error> {
+        Ok(user::Entity::find()
+            .filter(user::Column::Name.eq(username))
+            .one(&self.db)
+            .await?)
     }
 
     pub async fn create(
@@ -118,13 +147,8 @@ impl UserService {
         username: &str,
         password: &str,
     ) -> Result<user::Model, Error> {
-        if !validate_username(username) {
-            return Err(CreateUserError::InvalidUserName.into());
-        }
-
-        if !validate_password(password) {
-            return Err(CreateUserError::PasswordTooWeak.into());
-        }
+        validate_username(username)?;
+        validate_password(password)?;
 
         let password = hash_password(password)?;
 
@@ -134,10 +158,9 @@ impl UserService {
             ..Default::default()
         };
 
-        user::Entity::insert(new_user)
+        Ok(user::Entity::insert(new_user)
             .exec_with_returning(&self.db)
-            .await
-            .map_err(|_| Error::Create)
+            .await?)
     }
 
     pub async fn verify_credentials(
@@ -165,41 +188,66 @@ impl UserService {
         }
     }
 
-    pub async fn find_by_id(
+    pub async fn sign_in(
         &self,
-        id: &i32,
-    ) -> Result<Option<user::Model>, Error> {
-        user::Entity::find()
-            .filter(user::Column::Id.eq(*id))
-            .one(&self.db)
-            .await
-            .map_err(|_| Error::Database)
+        mut auth_session: AuthSession,
+        creds: AuthCredential,
+    ) -> Result<(), Error> {
+        if auth_session.user.is_some() {
+            return Err(Error::AlreadySignedIn);
+        }
+
+        let user = match auth_session.authenticate(creds.clone()).await {
+            Ok(Some(user)) => user,
+            Ok(None) => return Err(Error::AuthenticationFailed),
+            Err(err) => return Err(err.into()),
+        };
+
+        auth_session.login(&user).await?;
+
+        Ok(())
     }
 
-    pub async fn find_by_name(
+    pub async fn upload_avatar(
         &self,
-        username: &str,
-    ) -> Result<Option<user::Model>, Error> {
-        user::Entity::find()
-            .filter(user::Column::Name.eq(username))
-            .one(&self.db)
-            .await
-            .map_err(|e| {
-                tracing::error!("{}", e);
-                Error::Database
-            })
+        image_service: ImageService,
+        user_id: i32,
+        data: FieldData<Bytes>,
+    ) -> Result<(), Error> {
+        if data
+            .metadata
+            .content_type
+            .as_ref()
+            .is_some_and(|ct| ct.starts_with("image/"))
+        {
+            image_service.create(data.contents, user_id).await?;
+        } else {
+            return Err(GeneralRepositoryError::InvalidField {
+                field: "data".into(),
+                expected: "image/*".into(),
+                accepted: format!(
+                    "{:?}",
+                    data.metadata
+                        .content_type
+                        .or_else(|| Some("Nothing".to_string()))
+                ),
+            }
+            .into());
+        }
+
+        Ok(())
     }
 }
 
 #[async_trait]
 impl AuthnBackend for UserService {
     type User = user::Model;
-    type Credentials = SignIn;
+    type Credentials = AuthCredential;
     type Error = Error;
 
     async fn authenticate(
         &self,
-        SignIn { username, password }: Self::Credentials,
+        AuthCredential { username, password }: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
         Ok(Some(self.verify_credentials(&username, &password).await?))
     }
@@ -212,25 +260,42 @@ impl AuthnBackend for UserService {
     }
 }
 
-fn validate_username(username: &str) -> bool {
+fn validate_username(username: &str) -> Result<(), ValidateError> {
     static USER_NAME_REGEX: Lazy<Regex> =
         Lazy::new(|| Regex::new(r"^[\p{L}\p{N}_]{1,32}$").unwrap());
 
-    if !USER_NAME_REGEX.is_match(username) {
-        return false;
+    if USER_NAME_REGEX.is_match(username)
+        && !username
+            .chars()
+            .any(|c| c.is_control() || c.is_whitespace())
+    {
+        Ok(())
+    } else {
+        Err(ValidateError::InvalidUserName)
     }
-
-    !username
-        .chars()
-        .any(|c| c.is_control() || c.is_whitespace())
 }
 
-fn validate_password(password: &str) -> bool {
+fn validate_password(password: &str) -> Result<(), ValidateError> {
     use zxcvbn::{zxcvbn, Score};
 
-    let result = zxcvbn(password, &[]);
+    static USER_PASSWORD_REGEX: Lazy<Regex> =
+        Lazy::new(|| Regex::new(r"^[A-Za-z\d!@#$%^&*]{8,}$").unwrap());
 
-    matches!(result.score(), Score::Four | Score::Three)
+    if USER_PASSWORD_REGEX.is_match(password) {
+        let result = zxcvbn(password, &[]);
+
+        #[cfg(test)]
+        {
+            println!("password: {password}, score: {}", result.score());
+        }
+
+        match result.score() {
+            Score::Three | Score::Four => Ok(()),
+            _ => Err(ValidateError::PasswordTooWeak),
+        }
+    } else {
+        Err(ValidateError::InvalidPassword)
+    }
 }
 
 async fn verify_password(
@@ -241,23 +306,21 @@ async fn verify_password(
     let password_hash = password_hash.to_string();
     tokio::task::spawn_blocking(move || {
         let hash = PasswordHash::new(&password_hash)
-            .map_err(|err| PasswordError::ParsePassword { err })?;
+            .map_err(|err| Error::ParsePasswordFailed { err })?;
 
         Ok(Argon2::default().verify_password(&bytes, &hash).is_ok())
     })
     .await
-    .map_err(|e| {
-        tracing::error!("{}", e);
-        Error::JoinError
-    })?
+    .map_err(GeneralRepositoryError::TokioError)?
 }
 
-fn hash_password(password: &str) -> Result<String, PasswordError> {
+fn hash_password(password: &str) -> Result<String, Error> {
     let salt = SaltString::generate(&mut OsRng);
 
+    // Should this be a singleton?
     let password_hash = ARGON2_HASHER
         .hash_password(password.as_bytes(), &salt)
-        .map_err(|err| PasswordError::HashPassword { err })?;
+        .map_err(|err| Error::HashPasswordFailed { err })?;
 
     Ok(password_hash.to_string())
 }
@@ -305,7 +368,33 @@ mod tests {
         ];
 
         for (username, expected) in test_cases {
-            assert_eq!(validate_username(username), expected);
+            assert_eq!(validate_username(username).is_ok(), expected);
+        }
+    }
+
+    #[test]
+    fn test_validate_password() {
+        static TEST_CASE: [(&str, bool); 15] = [
+            ("Password123!", false),
+            ("SecurePass#2023", true),
+            ("HelloWorld!1", true),
+            ("weak", false),
+            ("password", false),
+            ("PASSWORD123", false),
+            ("Pass!", false),
+            ("12345678", false),
+            ("!@#$%^&*", false),
+            ("NoSpecialChar123", true),
+            ("NoNumberHere!", true),
+            ("nocapitals1!", true),
+            ("NOLOWERCASE1!", true),
+            ("m10KSGDckKrX38Vm", true),
+            ("1KrIuT%gcemHwjwF", true),
+        ];
+
+        for (password, expected) in TEST_CASE {
+            println!("password: {password}, expected: {expected}");
+            assert_eq!(validate_password(password).is_ok(), expected);
         }
     }
 }

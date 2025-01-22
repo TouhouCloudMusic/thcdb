@@ -10,6 +10,9 @@ error_set! {
     GeneralRepositoryError = {
         #[display("Database error")]
         Database(sea_orm::DbErr),
+        #[display("Tokio error")]
+        TokioError(tokio::task::JoinError),
+
         #[display("Entity {entity_name} not found")]
         EntityNotFound {
             entity_name: &'static str
@@ -26,28 +29,41 @@ error_set! {
         },
     };
 
-    EntityCorrectionError = {
-        #[display("Incorrect correction entity type")]
-        IncorrectCorrectionEntityType,
-        #[display("The correction to be applied dosen't exist")]
-        CorretionNotFound,
-    };
 
-    SongServiceError = SongRepositoryError;
-
-    SongRepositoryError = GeneralRepositoryError || EntityCorrectionError;
 }
 
 pub trait AsStatusCode {
     fn as_status_code(&self) -> StatusCode;
 }
 
+impl<T> AsStatusCode for Option<T>
+where
+    T: AsStatusCode,
+{
+    fn as_status_code(&self) -> StatusCode {
+        self.as_ref().map_or(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            AsStatusCode::as_status_code,
+        )
+    }
+}
+
+impl AsStatusCode for StatusCode {
+    fn as_status_code(&self) -> StatusCode {
+        *self
+    }
+}
+
 impl AsStatusCode for GeneralRepositoryError {
+    /// Status code:
+    ///   - 400
+    ///   - 404
+    ///   - 500
     fn as_status_code(&self) -> StatusCode {
         match self {
-            Self::Database(_) | Self::RelatedEntityNotFound { .. } => {
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
+            Self::Database(_)
+            | Self::RelatedEntityNotFound { .. }
+            | Self::TokioError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::InvalidField { .. } => StatusCode::BAD_REQUEST,
             Self::EntityNotFound { .. } => StatusCode::NOT_FOUND,
         }
@@ -56,53 +72,16 @@ impl AsStatusCode for GeneralRepositoryError {
 
 impl IntoResponse for GeneralRepositoryError {
     fn into_response(self) -> axum::response::Response {
-        if let Self::Database(ref db_err) = self {
-            tracing::error!("Database error: {}", db_err);
-        }
-
-        api_response::err(self.as_status_code(), self.to_string())
-            .into_response()
-    }
-}
-
-impl AsStatusCode for EntityCorrectionError {
-    fn as_status_code(&self) -> StatusCode {
         match self {
-            // TODO: This should not happend
-            Self::IncorrectCorrectionEntityType => {
-                StatusCode::INTERNAL_SERVER_ERROR
+            Self::Database(ref db_err) => {
+                tracing::error!("Database error: {}", db_err);
             }
-            Self::CorretionNotFound => StatusCode::NOT_FOUND,
+            Self::TokioError(ref join_err) => {
+                tracing::error!("Tokio error: {}", join_err);
+            }
+            _ => (),
         }
-    }
-}
 
-impl IntoResponse for EntityCorrectionError {
-    fn into_response(self) -> axum::response::Response {
-        api_response::err(self.as_status_code(), self.to_string())
-            .into_response()
-    }
-}
-
-impl AsStatusCode for SongServiceError {
-    fn as_status_code(&self) -> StatusCode {
-        match self {
-            // TODO: This should not happend
-            Self::IncorrectCorrectionEntityType => {
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
-            Self::CorretionNotFound => StatusCode::NOT_FOUND,
-            Self::Database(_) | Self::RelatedEntityNotFound { .. } => {
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
-            Self::InvalidField { .. } => StatusCode::BAD_REQUEST,
-            Self::EntityNotFound { .. } => StatusCode::NOT_FOUND,
-        }
-    }
-}
-
-impl IntoResponse for SongServiceError {
-    fn into_response(self) -> axum::response::Response {
         api_response::err(self.as_status_code(), self.to_string())
             .into_response()
     }
