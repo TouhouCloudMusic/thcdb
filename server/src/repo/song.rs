@@ -29,12 +29,15 @@ pub async fn create(
     data: NewSong,
     tx: &DatabaseTransaction,
 ) -> Result<song::Model, DbErr> {
-    let mut res = create_many(&[data], tx).await?;
-    let first = res.swap_remove(0);
-    Ok(first)
+    create_many(&[data], tx)
+        .await?
+        .into_iter()
+        .next()
+        .ok_or_else(|| {
+            DbErr::Custom("No song created, this should not happen".into())
+        })
 }
 
-#[allow(clippy::too_many_lines)]
 pub async fn create_many(
     data: &[NewSong],
     tx: &DatabaseTransaction,
