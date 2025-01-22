@@ -5,8 +5,10 @@ use input::{Credit, LocalizedTitle};
 use sea_orm::prelude::Date;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::IntoActiveValue;
+use serde::Deserialize;
+use utoipa::ToSchema;
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize, ToSchema)]
 pub struct GeneralRelease {
     pub title: String,
     pub release_type: ReleaseType,
@@ -67,7 +69,7 @@ impl From<&GeneralRelease> for release_history::ActiveModel {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, ToSchema, Deserialize)]
 pub enum NewTrack {
     Linked(Linked),
     Unlinked(Unlinked),
@@ -75,10 +77,12 @@ pub enum NewTrack {
 
 macro_rules! inherit_track_base {
     ($name:ident { $($vis:vis $field:ident: $ftype:ty),* $(,)? }) => {
-        #[derive(Clone)]
+        #[serde_with::serde_as]
+        #[derive(Clone, ToSchema, Deserialize)]
         pub struct $name {
             pub artists: Vec<i32>,
             pub track_number: Option<String>,
+            #[serde_as(as = "Option<serde_with::DurationSeconds<i64>>")]
             pub duration: Option<Duration>,
             $($vis $field: $ftype,)*
         }
@@ -115,8 +119,9 @@ impl From<&Unlinked> for song_history::ActiveModel {
 pub mod input {
     use entity::{release_localized_title, release_localized_title_history};
     use sea_orm::ActiveValue::{NotSet, Set};
-
-    #[derive(Clone)]
+    use serde::Deserialize;
+    use utoipa::ToSchema;
+    #[derive(Clone, ToSchema, Deserialize)]
     pub struct LocalizedTitle {
         pub title: String,
         pub language_id: i32,
@@ -176,7 +181,7 @@ pub mod input {
         }
     }
 
-    #[derive(Clone)]
+    #[derive(Clone, ToSchema, Deserialize)]
     pub struct Credit {
         pub artist_id: i32,
         pub role_id: i32,

@@ -1,4 +1,5 @@
 use entity::release;
+use error_set::error_set;
 use sea_orm::sea_query::{Func, SimpleExpr};
 use sea_orm::{
     DatabaseConnection, DbErr, EntityTrait, Order, QueryOrder, QuerySelect,
@@ -13,6 +14,26 @@ use crate::repo;
 #[derive(Default, Clone)]
 pub struct ReleaseService {
     db: DatabaseConnection,
+}
+
+error_set! {
+    Error = {
+        Repo(repo::release::Error)
+    };
+}
+
+impl From<DbErr> for Error {
+    fn from(err: DbErr) -> Self {
+        Self::Repo(repo::release::Error::General(
+            GeneralRepositoryError::Database(err),
+        ))
+    }
+}
+
+impl From<GeneralRepositoryError> for Error {
+    fn from(err: GeneralRepositoryError) -> Self {
+        Self::Repo(repo::release::Error::General(err))
+    }
 }
 
 impl ReleaseService {
