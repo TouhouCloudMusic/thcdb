@@ -19,7 +19,6 @@ pub fn router() -> OpenApiRouter<AppState> {
         .routes(routes!(find_by_id))
 }
 
-
 #[derive(ToSchema, Deserialize)]
 struct CreateSongInput {
     #[serde(flatten)]
@@ -62,9 +61,9 @@ async fn create_song(
 async fn find_by_id(
     State(service): State<SongService>,
     Json(input): Json<FindSongByIdInput>,
-) -> Result<Json<song::Model>, Error> {
+) -> Result<Json<song::Model>, RepositoryError> {
     Ok(Json(service.find_by_id(input.id).await?.ok_or(
-        Error::EntityNotFound {
+        RepositoryError::EntityNotFound {
             entity_name: song::Entity.table_name(),
         },
     )?))

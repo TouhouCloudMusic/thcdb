@@ -134,7 +134,7 @@ async fn find_by_id(
 ) -> Result<Json<entity::release::Model>, Error> {
     Ok(Json(service.find_by_id(input.id).await?.ok_or(
         Error::Repo(repo::release::Error::General(
-            GeneralRepositoryError::EntityNotFound {
+            RepositoryError::EntityNotFound {
                 entity_name: entity::release::Entity.table_name(),
             },
         )),
