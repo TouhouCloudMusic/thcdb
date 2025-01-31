@@ -23,19 +23,22 @@ use crate::dto::correction::Metadata;
 use crate::dto::release::input::{Credit, LocalizedTitle};
 use crate::dto::release::{GeneralRelease, Linked, NewTrack, Unlinked};
 use crate::dto::song::NewSong;
-use crate::error::GeneralRepositoryError;
+use crate::error::RepositoryError;
 use crate::repo;
 
 error_set! {
+    #[disable(From)]
     Error = {
-
-        General(GeneralRepositoryError),
+        General(RepositoryError),
     };
 }
 
-impl From<DbErr> for Error {
-    fn from(err: DbErr) -> Self {
-        Self::General(GeneralRepositoryError::Database(err))
+impl<T> From<T> for Error
+where
+    T: Into<RepositoryError>,
+{
+    fn from(value: T) -> Self {
+        Self::General(value.into())
     }
 }
 
@@ -43,7 +46,7 @@ pub async fn create(
     data: GeneralRelease,
     correction_metadata: Metadata,
     tx: &DatabaseTransaction,
-) -> Result<release::Model, GeneralRepositoryError> {
+) -> Result<release::Model, RepositoryError> {
     let new_release = release::ActiveModel::from(&data).insert(tx).await?;
 
     create_release_artist(new_release.id, &data.artists, tx).await?;
@@ -177,13 +180,13 @@ pub async fn update_update_correction(
 pub(super) async fn apply_correction(
     correction: correction::Model,
     tx: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), RepositoryError> {
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(tx)
         .await?
-        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
             entity_name: correction_revision::Entity.table_name(),
         })?;
 
@@ -191,7 +194,7 @@ pub(super) async fn apply_correction(
         release_history::Entity::find_by_id(revision.entity_history_id)
             .one(tx)
             .await?
-            .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+            .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
                 entity_name: release_history::Entity.table_name(),
             })?;
 
@@ -210,7 +213,7 @@ pub(super) async fn apply_correction(
 
     let author = repo::correction::user::find_author(correction.id, tx)
         .await?
-        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
             entity_name: correction_user::Entity.table_name(),
         })?;
 

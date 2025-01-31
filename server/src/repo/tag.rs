@@ -16,14 +16,14 @@ use sea_orm::{
 use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::correction::Metadata;
 use crate::dto::tag::{AltName, NewTag, NewTagRelation};
-use crate::error::GeneralRepositoryError;
+use crate::error::RepositoryError;
 use crate::repo;
 
 pub async fn create(
     data: NewTag,
     correction_metadata: Metadata,
     tx: &DatabaseTransaction,
-) -> Result<tag::Model, GeneralRepositoryError> {
+) -> Result<tag::Model, RepositoryError> {
     let tag = save_tag_and_link_relation(&data, tx).await?;
 
     let correction = repo::correction::create_self_approval()
@@ -50,7 +50,7 @@ pub async fn create_update_correction(
     data: NewTag,
     correction_metadata: Metadata,
     tx: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), RepositoryError> {
     let correction = repo::correction::create()
         .author_id(correction_metadata.author_id)
         .status(CorrectionStatus::Pending)
@@ -77,7 +77,7 @@ pub async fn update_update_correction(
     data: NewTag,
     correction_metadata: Metadata,
     tx: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), RepositoryError> {
     add_co_author_if_updater_not_author(
         correction.id,
         correction_metadata.author_id,
@@ -99,20 +99,20 @@ pub async fn update_update_correction(
 pub(super) async fn apply_correction(
     correction: correction::Model,
     tx: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), RepositoryError> {
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(tx)
         .await?
-        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
             entity_name: correction_revision::Entity.table_name(),
         })?;
 
     let history = tag_history::Entity::find_by_id(revision.entity_history_id)
         .one(tx)
         .await?
-        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
             entity_name: tag_history::Entity.table_name(),
         })?;
 
@@ -134,7 +134,7 @@ pub(super) async fn apply_correction(
 async fn save_tag_and_link_relation(
     data: &NewTag,
     tx: &DatabaseTransaction,
-) -> Result<tag::Model, GeneralRepositoryError> {
+) -> Result<tag::Model, RepositoryError> {
     let tag = tag::ActiveModel::from(data).insert(tx).await?;
 
     create_alt_name(tag.id, &data.alt_names, tx).await?;
@@ -148,7 +148,7 @@ async fn save_tag_history_and_link_relation(
     correction_id: i32,
     correction_desc: String,
     tx: &DatabaseTransaction,
-) -> Result<tag_history::Model, GeneralRepositoryError> {
+) -> Result<tag_history::Model, RepositoryError> {
     let history = tag_history::ActiveModel::from(data).insert(tx).await?;
 
     repo::correction::link_history()
@@ -215,7 +215,7 @@ async fn create_alt_name_history(
     history_id: i32,
     alt_names: &[AltName],
     tx: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), RepositoryError> {
     if alt_names.is_empty() {
         return Ok(());
     }
@@ -239,7 +239,7 @@ async fn create_relation(
     tag_id: i32,
     relations: &[NewTagRelation],
     tx: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), RepositoryError> {
     if relations.is_empty() {
         return Ok(());
     }
@@ -262,7 +262,7 @@ async fn update_relation(
     tag_id: i32,
     history_id: i32,
     tx: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), RepositoryError> {
     tag_relation::Entity::delete_many()
         .filter(tag_relation::Column::TagId.eq(tag_id))
         .exec(tx)
@@ -284,7 +284,7 @@ async fn create_relation_history(
     history_id: i32,
     relations: &[NewTagRelation],
     tx: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), RepositoryError> {
     if relations.is_empty() {
         return Ok(());
     }

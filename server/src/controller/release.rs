@@ -1,34 +1,79 @@
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
 use sea_orm::EntityName;
 use serde::Deserialize;
-use utoipa::ToSchema;
+use utoipa::{IntoResponses, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use crate::api_response::{
+    ErrResponseDef, IntoApiResponse, Message, StatusCodeExt,
+};
 use crate::dto::correction::Metadata;
 use crate::dto::release::GeneralRelease;
-use crate::error::GeneralRepositoryError;
+use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
 use crate::service::release::ReleaseService;
 use crate::state::AppState;
 use crate::{repo, service};
 
 type Error = service::release::Error;
 
-impl IntoResponse for service::release::Error {
-    fn into_response(self) -> axum::response::Response {
+impl StatusCodeExt for repo::release::Error {
+    fn as_status_code(&self) -> StatusCode {
         match self {
-            Self::Repo(err) => err.into_response(),
+            Self::General(err) => err.as_status_code(),
+        }
+    }
+
+    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
+        RepositoryError::all_status_codes()
+    }
+}
+
+impl AsErrorCode for repo::release::Error {
+    fn as_error_code(&self) -> ErrorCode {
+        match self {
+            Self::General(err) => err.as_error_code(),
         }
     }
 }
 
-impl IntoResponse for repo::release::Error {
+impl StatusCodeExt for service::release::Error {
+    fn as_status_code(&self) -> StatusCode {
+        match self {
+            Self::Repo(err) => err.as_status_code(),
+        }
+    }
+
+    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
+        RepositoryError::all_status_codes()
+    }
+}
+
+impl AsErrorCode for service::release::Error {
+    fn as_error_code(&self) -> ErrorCode {
+        match self {
+            Self::Repo(err) => err.as_error_code(),
+        }
+    }
+}
+
+impl IntoResponse for service::release::Error {
     fn into_response(self) -> axum::response::Response {
         match self {
-            Self::General(err) => err.into_response(),
+            Self::Repo(err) => err.into_api_response(),
         }
+    }
+}
+
+impl IntoResponses for service::release::Error {
+    fn responses() -> std::collections::BTreeMap<
+        String,
+        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
+    > {
+        Self::build_err_responses().into()
     }
 }
 
@@ -60,16 +105,18 @@ struct RandomReleaseInput {
     path = "/release",
     request_body = CreateReleaseInput,
     responses(
-		(status = 200, description = "Release create successfully"),
-		(status = 500, description = "Release create failed"),
+		(status = 200, body = Message),
+        (status = 401),
+		Error
     ),
 )]
 async fn create_release(
     State(service): State<ReleaseService>,
     Json(input): Json<CreateReleaseInput>,
-) -> Result<(), Error> {
+) -> Result<Message, Error> {
     service.create(input.data, input.correction_data).await?;
-    Ok(())
+
+    Ok(Message::ok())
 }
 
 #[utoipa::path(

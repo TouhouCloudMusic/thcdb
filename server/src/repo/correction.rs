@@ -12,7 +12,7 @@ use sea_orm::{
     EntityName, EntityOrSelect, EntityTrait, IntoActiveModel, QueryFilter,
 };
 
-use crate::error::GeneralRepositoryError;
+use crate::error::RepositoryError;
 
 type CorrectionResult = Result<correction::Model, DbErr>;
 
@@ -128,7 +128,7 @@ pub async fn approve(
     correction_id: i32,
     approver_id: i32,
     tx: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), RepositoryError> {
     let correction = utils::toggle_state(
         correction_id,
         approver_id,
@@ -181,14 +181,12 @@ pub mod user {
             correction_id: i32,
             updater_id: i32,
             tx: &DatabaseTransaction,
-        ) -> Result<(), GeneralRepositoryError> {
+        ) -> Result<(), RepositoryError> {
             let author_id = find_author(correction_id, tx)
                 .await?
                 .map(|model| model.user_id)
-                .ok_or_else(|| {
-                    GeneralRepositoryError::RelatedEntityNotFound {
-                        entity_name: correction_user::Entity.table_name(),
-                    }
+                .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+                    entity_name: correction_user::Entity.table_name(),
                 })?;
 
             if author_id != updater_id {
@@ -209,11 +207,11 @@ pub mod utils {
         user_id: i32,
         status: CorrectionStatus,
         tx: &DatabaseTransaction,
-    ) -> Result<correction::Model, GeneralRepositoryError> {
+    ) -> Result<correction::Model, RepositoryError> {
         let correction = correction::Entity::find_by_id(correction_id)
             .one(tx)
             .await?
-            .ok_or(GeneralRepositoryError::EntityNotFound {
+            .ok_or(RepositoryError::EntityNotFound {
                 entity_name: correction::Entity.table_name(),
             })?;
 

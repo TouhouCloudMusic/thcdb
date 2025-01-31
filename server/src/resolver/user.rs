@@ -1,6 +1,6 @@
 use juniper::{graphql_object, graphql_value, FieldError, FieldResult};
 
-use crate::dto::user::{AuthCredential, SignUp};
+use crate::dto::user::AuthCredential;
 use crate::model::output::{LoginOutput, SignupOutput};
 use crate::service::juniper::JuniperContext;
 
@@ -30,7 +30,7 @@ impl UserQuery {
 impl UserMutation {
     #[graphql(description = "Register a new user.")]
     async fn sign_up(
-        input: SignUp,
+        input: AuthCredential,
         context: &JuniperContext,
     ) -> FieldResult<SignupOutput> {
         let user_service = &context.state.user_service;

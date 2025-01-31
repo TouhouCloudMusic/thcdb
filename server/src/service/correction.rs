@@ -1,6 +1,6 @@
 use sea_orm::{DatabaseConnection, TransactionTrait};
 
-use crate::error::GeneralRepositoryError;
+use crate::error::RepositoryError;
 use crate::repo;
 
 pub struct Service {
@@ -16,7 +16,7 @@ impl Service {
         &self,
         correction_id: i32,
         approver_id: i32,
-    ) -> Result<(), GeneralRepositoryError> {
+    ) -> Result<(), RepositoryError> {
         let transaction = self.db.begin().await?;
         let tx = &transaction;
 

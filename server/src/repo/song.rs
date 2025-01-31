@@ -15,7 +15,7 @@ use sea_orm::{
 };
 
 use crate::dto::song::{LocalizedTitle, NewSong, NewSongCredit};
-use crate::error::GeneralRepositoryError;
+use crate::error::RepositoryError;
 use crate::repo;
 
 pub async fn find_by_id(
@@ -147,20 +147,20 @@ pub async fn update_update_correction(
 pub(super) async fn apply_correction(
     correction: correction::Model,
     tx: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), RepositoryError> {
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(tx)
         .await?
-        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
             entity_name: correction_revision::Entity.table_name(),
         })?;
 
     let history = song_history::Entity::find_by_id(revision.entity_history_id)
         .one(tx)
         .await?
-        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
             entity_name: song_history::Entity.table_name(),
         })?;
 

@@ -15,7 +15,7 @@ use sea_orm::{
 
 use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::label::{LocalizedName, NewLabel};
-use crate::error::GeneralRepositoryError;
+use crate::error::RepositoryError;
 use crate::repo;
 
 pub async fn create(
@@ -77,7 +77,7 @@ pub async fn update_update_correction(
     correction: correction::Model,
     data: NewLabel,
     tx: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), RepositoryError> {
     add_co_author_if_updater_not_author(
         correction.id,
         data.correction_metadata.author_id,
@@ -101,20 +101,20 @@ pub async fn update_update_correction(
 pub(super) async fn apply_correction(
     correction: correction::Model,
     tx: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), RepositoryError> {
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(tx)
         .await?
-        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
             entity_name: correction_revision::Entity.table_name(),
         })?;
 
     let history = label_history::Entity::find_by_id(revision.entity_history_id)
         .one(tx)
         .await?
-        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
             entity_name: label_history::Entity.table_name(),
         })?;
 

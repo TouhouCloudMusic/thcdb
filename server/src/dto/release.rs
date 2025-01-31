@@ -71,8 +71,8 @@ impl From<&GeneralRelease> for release_history::ActiveModel {
 
 #[derive(Clone, ToSchema, Deserialize)]
 pub enum NewTrack {
-    Linked(Linked),
-    Unlinked(Unlinked),
+    Linked(#[schema(inline)] Linked),
+    Unlinked(#[schema(inline)] Unlinked),
 }
 
 macro_rules! inherit_track_base {

@@ -3,38 +3,81 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
 use serde::Deserialize;
-use utoipa::ToSchema;
+use utoipa::{IntoResponses, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use crate::api_response::{
+    ErrResponseDef, IntoApiResponse, Message, StatusCodeExt,
+};
 use crate::dto::artist::ArtistCorrection;
+use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
 use crate::service::artist::ArtistService;
 use crate::state::AppState;
-use crate::{api_response, repo, service};
+use crate::{repo, service};
 
 type Error = service::artist::Error;
 
+impl StatusCodeExt for repo::artist::Error {
+    fn as_status_code(&self) -> StatusCode {
+        match self {
+            Self::Validation(_) => StatusCode::BAD_REQUEST,
+            Self::General(e) => e.as_status_code(),
+        }
+    }
+
+    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
+        [StatusCode::BAD_REQUEST]
+            .into_iter()
+            .chain(RepositoryError::all_status_codes())
+    }
+}
+
+impl AsErrorCode for repo::artist::Error {
+    fn as_error_code(&self) -> ErrorCode {
+        match self {
+            Self::Validation(e) => match e {
+                repo::artist::ValidationError::UnknownTypeArtistOwnedMember => {
+                    ErrorCode::UnknownTypeArtistOwnedMember
+                }
+            },
+            Self::General(e) => e.as_error_code(),
+        }
+    }
+}
+
+impl StatusCodeExt for service::artist::Error {
+    fn as_status_code(&self) -> StatusCode {
+        match self {
+            Self::Repo(error) => error.as_status_code(),
+        }
+    }
+
+    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
+        repo::artist::Error::all_status_codes()
+    }
+}
+
+impl AsErrorCode for service::artist::Error {
+    fn as_error_code(&self) -> ErrorCode {
+        match self {
+            Self::Repo(error) => error.as_error_code(),
+        }
+    }
+}
+
 impl IntoResponse for service::artist::Error {
     fn into_response(self) -> axum::response::Response {
-        match self {
-            Self::Repo(err) => err.into_response(),
-        }
+        self.into_api_response()
     }
 }
 
-impl IntoResponse for repo::artist::Error {
-    fn into_response(self) -> axum::response::Response {
-        match self {
-            Self::Validation(err) => err.into_response(),
-            Self::General(err) => err.into_response(),
-        }
-    }
-}
-
-impl IntoResponse for repo::artist::ValidationError {
-    fn into_response(self) -> axum::response::Response {
-        api_response::err(StatusCode::BAD_REQUEST, self.to_string())
-            .into_response()
+impl IntoResponses for service::artist::Error {
+    fn responses() -> std::collections::BTreeMap<
+        String,
+        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
+    > {
+        Self::build_err_responses().into()
     }
 }
 
@@ -43,25 +86,27 @@ pub fn router() -> OpenApiRouter<AppState> {
 }
 
 #[derive(ToSchema, Deserialize)]
-struct CreateArtistInput {
+struct NewArtist {
     #[serde(flatten)]
+    #[schema(inline)]
     pub data: ArtistCorrection,
 }
 
 #[utoipa::path(
 	post,
 	path = "/artist",
-	request_body = CreateArtistInput,
+	request_body = NewArtist,
 	responses(
-		(status = 200, description = "Artist create successfully"),
-		(status = 500, description = "Artist create failed"),
+		(status = 200, body = Message),
+        (status = 401),
+		Error
 	),
 )]
 async fn create_artist(
     State(service): State<ArtistService>,
-    Json(input): Json<CreateArtistInput>,
-) -> Result<(), Error> {
+    Json(input): Json<NewArtist>,
+) -> Result<Message, Error> {
     service.create(input.data).await?;
 
-    Ok(())
+    Ok(Message::ok())
 }

@@ -3,7 +3,6 @@ use error_set::error_set;
 use sea_orm::{DatabaseConnection, TransactionTrait};
 
 use crate::dto::artist::ArtistCorrection;
-use crate::error::GeneralRepositoryError;
 use crate::repo;
 
 #[derive(Clone)]
@@ -12,16 +11,18 @@ pub struct ArtistService {
 }
 
 error_set! {
+    #[disable(From)]
     Error = {
         Repo(repo::artist::Error)
     };
 }
 
-impl From<sea_orm::DbErr> for Error {
-    fn from(err: sea_orm::DbErr) -> Self {
-        Self::Repo(repo::artist::Error::General(
-            GeneralRepositoryError::Database(err),
-        ))
+impl<T> From<T> for Error
+where
+    T: Into<repo::artist::Error>,
+{
+    fn from(value: T) -> Self {
+        Self::Repo(value.into())
     }
 }
 

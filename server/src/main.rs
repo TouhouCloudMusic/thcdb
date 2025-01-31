@@ -1,15 +1,16 @@
 #![allow(dead_code)]
 #![warn(
-    clippy::nursery,
-    clippy::pedantic,
     clippy::as_conversions,
-    clippy::cargo
+    clippy::cargo,
+    clippy::nursery,
+    clippy::pedantic
 )]
 #![allow(
-    clippy::missing_docs_in_private_items,
-    clippy::single_call_fn,
     clippy::cargo_common_metadata,
+    clippy::iter_on_single_items,
+    clippy::missing_docs_in_private_items,
     clippy::multiple_crate_versions,
+    clippy::single_call_fn,
     clippy::wildcard_imports
 )]
 
@@ -26,6 +27,7 @@ mod resolver;
 mod service;
 mod state;
 mod types;
+mod utils;
 
 use axum::routing::get;
 use axum::Router;

@@ -5,9 +5,10 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use crate::api_response;
 use crate::dto::correction::Metadata;
 use crate::dto::tag::NewTag;
-use crate::error::GeneralRepositoryError;
+use crate::error::RepositoryError;
 use crate::service::tag::TagService;
 use crate::state::AppState;
 pub fn router() -> OpenApiRouter<AppState> {
@@ -26,14 +27,15 @@ struct CreateTagInput {
     path = "/tag",
     request_body = CreateTagInput,
     responses(
-		(status = 200, description = "Tag create successfully"),
-		(status = 500, description = "Tag create failed"),
+		(status = 200, body = api_response::Message),
+		(status = 401),
+        RepositoryError
     ),
 )]
 async fn create_tag(
     State(service): State<TagService>,
     Json(input): Json<CreateTagInput>,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<api_response::Message, RepositoryError> {
     service.create(input.data, input.correction_data).await?;
-    Ok(())
+    Ok(api_response::Message::ok())
 }

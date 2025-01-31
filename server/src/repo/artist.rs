@@ -20,21 +20,20 @@ use sea_orm::{
     DatabaseTransaction, DbBackend, DbErr, EntityName, EntityTrait,
     FromQueryResult, ModelTrait, QueryFilter, QueryOrder, Statement,
 };
+use utoipa::IntoResponses;
 
 use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::artist::{ArtistCorrection, LocalizedName, NewGroupMember};
-use crate::error::GeneralRepositoryError;
+use crate::error::RepositoryError;
 use crate::pg_func_ext::PgFuncExt;
 use crate::repo;
 use crate::types::Pair;
 
 error_set! {
     Error = {
-
         Validation(ValidationError),
-        General(GeneralRepositoryError)
+        General(RepositoryError)
     };
-
     ValidationError = {
         #[display("Unknown type artist cannot have members")]
         UnknownTypeArtistOwnedMember,
@@ -43,7 +42,18 @@ error_set! {
 
 impl From<DbErr> for Error {
     fn from(err: DbErr) -> Self {
-        Self::General(GeneralRepositoryError::Database(err))
+        RepositoryError::from(err).into()
+    }
+}
+
+#[allow(clippy::iter_on_single_items)]
+impl IntoResponses for Error {
+    fn responses() -> std::collections::BTreeMap<
+        String,
+        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
+    > {
+        use crate::api_response::ErrResponseDef;
+        Self::build_err_responses().into()
     }
 }
 
@@ -114,13 +124,13 @@ pub async fn update_update_correction(
 pub(super) async fn apply_correction(
     correction: correction::Model,
     db: &DatabaseTransaction,
-) -> Result<(), GeneralRepositoryError> {
+) -> Result<(), RepositoryError> {
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(db)
         .await?
-        .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
             entity_name: correction_revision::Entity.table_name(),
         })?;
 
@@ -128,7 +138,7 @@ pub(super) async fn apply_correction(
         artist_history::Entity::find_by_id(revision.entity_history_id)
             .one(db)
             .await?
-            .ok_or_else(|| GeneralRepositoryError::RelatedEntityNotFound {
+            .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
                 entity_name: artist_history::Entity.table_name(),
             })?;
 
@@ -195,7 +205,7 @@ async fn find_artist_correction(
 ) -> Result<correction::Model, Error> {
     let res = repo::correction::find_by_id(correction_id, db)
         .await?
-        .ok_or(GeneralRepositoryError::EntityNotFound {
+        .ok_or(RepositoryError::EntityNotFound {
             entity_name: correction::Entity.table_name(),
         })?;
 

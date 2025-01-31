@@ -7,18 +7,18 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use crate::api_response::Message;
 use crate::dto::song::NewSong;
-use crate::error::GeneralRepositoryError;
+use crate::error::RepositoryError;
 use crate::service::song::SongService;
 use crate::state::AppState;
-
-type Error = GeneralRepositoryError;
 
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(create_song))
         .routes(routes!(find_by_id))
 }
+
 
 #[derive(ToSchema, Deserialize)]
 struct CreateSongInput {
@@ -34,18 +34,20 @@ struct FindSongByIdInput {
 #[utoipa::path(
     post,
     path = "/song",
-    request_body = CreateSongInput,
+    request_body = NewSong,
     responses(
-		(status = 200, description = "Song created successfully"),
-		(status = 500, description = "Failed to create song"),
+		(status = 200, body = Message),
+        (status = 401),
+        RepositoryError
     ),
 )]
 async fn create_song(
     State(service): State<SongService>,
-    Json(input): Json<CreateSongInput>,
-) -> Result<(), Error> {
-    service.create(input.data).await?;
-    Ok(())
+    Json(input): Json<NewSong>,
+) -> Result<Message, RepositoryError> {
+    service.create(input).await?;
+
+    Ok(Message::ok())
 }
 
 #[utoipa::path(

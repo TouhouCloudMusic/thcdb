@@ -8,7 +8,7 @@ use sea_orm::{
 
 use crate::dto::correction::Metadata;
 use crate::dto::release::GeneralRelease;
-use crate::error::GeneralRepositoryError;
+use crate::error::{InvalidField, RepositoryError};
 use crate::repo;
 
 #[derive(Default, Clone)]
@@ -17,22 +17,18 @@ pub struct ReleaseService {
 }
 
 error_set! {
+    #[disable(From(repo::release::Error))]
     Error = {
         Repo(repo::release::Error)
     };
 }
 
-impl From<DbErr> for Error {
-    fn from(err: DbErr) -> Self {
-        Self::Repo(repo::release::Error::General(
-            GeneralRepositoryError::Database(err),
-        ))
-    }
-}
-
-impl From<GeneralRepositoryError> for Error {
-    fn from(err: GeneralRepositoryError) -> Self {
-        Self::Repo(repo::release::Error::General(err))
+impl<T> From<T> for Error
+where
+    T: Into<repo::release::Error>,
+{
+    fn from(err: T) -> Self {
+        Self::Repo(err.into())
     }
 }
 
@@ -52,15 +48,15 @@ impl ReleaseService {
         &self,
         release_data: GeneralRelease,
         correction_data: Metadata,
-    ) -> Result<release::Model, GeneralRepositoryError> {
+    ) -> Result<release::Model, RepositoryError> {
         // Question: Should check here?
         // TODO: Validate crate
         if release_data.artists.is_empty() {
-            return Err(GeneralRepositoryError::InvalidField {
+            Err(InvalidField {
                 field: "artist".into(),
                 expected: "Vec<i32> && len > 1".into(),
                 accepted: format!("{:?}", release_data.artists),
-            });
+            })?;
         }
 
         let transaction = self.db.begin().await?;

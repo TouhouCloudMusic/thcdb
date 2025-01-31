@@ -15,29 +15,29 @@ use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{Alias, Query};
 use sea_orm::{
     ActiveValue, ColumnTrait, ConnectionTrait, DatabaseBackend,
-    DatabaseConnection, DbErr, EntityName, EntityTrait, QueryFilter,
+    DatabaseConnection, EntityName, EntityTrait, QueryFilter,
 };
-use tokio::task::JoinError;
 
 use super::image::ImageService;
 use crate::dto::user::AuthCredential;
-use crate::error::GeneralRepositoryError;
+use crate::error::{InvalidField, RepositoryError};
 
 pub static ARGON2_HASHER: Lazy<Argon2> = Lazy::new(Argon2::default);
 
 pub type AuthSession = axum_login::AuthSession<UserService>;
 
 error_set! {
+    #[disable(From(RepositoryError))]
     Error = {
-        General(GeneralRepositoryError),
+        General(RepositoryError),
         #[display("Already signed in")]
         AlreadySignedIn,
+        #[display("Username already in use")]
+        UsernameAlreadyInUse,
         #[display("Invalid username or password")]
         AuthenticationFailed,
-
         #[display("Session error")]
         Session(axum_login::tower_sessions::session::Error),
-
         #[display("Failed to hash password: {err}")]
         HashPasswordFailed {
             err: password_hash::errors::Error
@@ -60,15 +60,12 @@ error_set! {
     };
 }
 
-impl From<DbErr> for Error {
-    fn from(err: DbErr) -> Self {
-        GeneralRepositoryError::from(err).into()
-    }
-}
-
-impl From<JoinError> for Error {
-    fn from(err: JoinError) -> Self {
-        GeneralRepositoryError::from(err).into()
+impl<T> From<T> for Error
+where
+    T: Into<RepositoryError>,
+{
+    fn from(err: T) -> Self {
+        Self::General(err.into())
     }
 }
 
@@ -91,7 +88,7 @@ impl UserService {
         Self { db: database }
     }
 
-    pub async fn is_exist(&self, username: &String) -> Result<bool, Error> {
+    pub async fn is_exist(&self, username: &str) -> Result<bool, Error> {
         const ALIAS: &str = "is_exist";
         let query = Query::select()
             .expr_as(
@@ -113,7 +110,7 @@ impl UserService {
             .query_one(stmt)
             .await?
             .ok_or_else(|| {
-                Error::General(GeneralRepositoryError::EntityNotFound {
+                Error::General(RepositoryError::EntityNotFound {
                     entity_name: user::Entity.table_name(),
                 })
             })
@@ -149,6 +146,10 @@ impl UserService {
     ) -> Result<user::Model, Error> {
         validate_username(username)?;
         validate_password(password)?;
+
+        if self.is_exist(username).await? {
+            return Err(Error::UsernameAlreadyInUse);
+        }
 
         let password = hash_password(password)?;
 
@@ -222,7 +223,7 @@ impl UserService {
         {
             image_service.create(data.contents, user_id).await?;
         } else {
-            return Err(GeneralRepositoryError::InvalidField {
+            Err(InvalidField {
                 field: "data".into(),
                 expected: "image/*".into(),
                 accepted: format!(
@@ -231,8 +232,7 @@ impl UserService {
                         .content_type
                         .or_else(|| Some("Nothing".to_string()))
                 ),
-            }
-            .into());
+            })?;
         }
 
         Ok(())
@@ -310,8 +310,7 @@ async fn verify_password(
 
         Ok(Argon2::default().verify_password(&bytes, &hash).is_ok())
     })
-    .await
-    .map_err(GeneralRepositoryError::TokioError)?
+    .await?
 }
 
 fn hash_password(password: &str) -> Result<String, Error> {
