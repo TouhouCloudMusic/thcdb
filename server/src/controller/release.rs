@@ -1,21 +1,21 @@
-use axum::extract::State;
+use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
-use sea_orm::EntityName;
 use serde::Deserialize;
-use utoipa::{IntoResponses, ToSchema};
+use utoipa::{IntoParams, IntoResponses, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::api_response::{
-    ErrResponseDef, IntoApiResponse, Message, StatusCodeExt,
+    Data, ErrResponseDef, IntoApiResponse, Message, StatusCodeExt,
 };
 use crate::dto::correction::Metadata;
 use crate::dto::release::GeneralRelease;
 use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
 use crate::service::release::ReleaseService;
 use crate::state::AppState;
+use crate::utils::MapInto;
 use crate::{repo, service};
 
 type Error = service::release::Error;
@@ -79,7 +79,7 @@ impl IntoResponses for service::release::Error {
 
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
-        .routes(routes!(create_release))
+        .routes(routes!(create))
         .routes(routes!(find_by_id))
 }
 
@@ -90,14 +90,19 @@ struct CreateReleaseInput {
     pub correction_data: Metadata,
 }
 
-#[derive(ToSchema, Deserialize)]
-struct FindReleaseByIdInput {
-    pub id: i32,
-}
-
-#[derive(ToSchema, Deserialize)]
-struct RandomReleaseInput {
-    pub count: u64,
+#[utoipa::path(
+    get,
+    path = "/release/{id}",
+    responses(
+		(status = 200, description = "Release found by id"),
+		Error,
+    ),
+)]
+async fn find_by_id(
+    State(service): State<ReleaseService>,
+    Path(id): Path<i32>,
+) -> Result<Data<entity::release::Model>, Error> {
+    service.find_by_id(id).await.map_into()
 }
 
 #[utoipa::path(
@@ -110,7 +115,7 @@ struct RandomReleaseInput {
 		Error
     ),
 )]
-async fn create_release(
+async fn create(
     State(service): State<ReleaseService>,
     Json(input): Json<CreateReleaseInput>,
 ) -> Result<Message, Error> {
@@ -119,32 +124,15 @@ async fn create_release(
     Ok(Message::ok())
 }
 
-#[utoipa::path(
-    post,
-    path = "/release",
-    request_body = FindReleaseByIdInput,
-    responses(
-		(status = 200, description = "Release found by id"),
-		(status = 500, description = "Failed to find release by id"),
-    ),
-)]
-async fn find_by_id(
-    State(service): State<ReleaseService>,
-    Json(input): Json<FindReleaseByIdInput>,
-) -> Result<Json<entity::release::Model>, Error> {
-    Ok(Json(service.find_by_id(input.id).await?.ok_or(
-        Error::Repo(repo::release::Error::General(
-            RepositoryError::EntityNotFound {
-                entity_name: entity::release::Entity.table_name(),
-            },
-        )),
-    )?))
+#[derive(IntoParams)]
+struct RandomReleaseQuery {
+    count: u64,
 }
 
 #[utoipa::path(
-    post,
+    get,
     path = "/release",
-    request_body = RandomReleaseInput,
+    params(RandomReleaseQuery),
     responses(
 		(status = 200, description = "Release found by id"),
 		(status = 500, description = "Failed to find release by id"),
@@ -152,7 +140,8 @@ async fn find_by_id(
 )]
 async fn random(
     State(service): State<ReleaseService>,
-    Json(input): Json<RandomReleaseInput>,
-) -> Result<Json<Vec<entity::release::Model>>, Error> {
-    Ok(Json(service.random(input.count).await?))
+    Query(query): Query<RandomReleaseQuery>,
+) -> Result<Data<Vec<entity::release::Model>>, Error> {
+    // TODO: set count limit
+    service.random(query.count).await.map_into()
 }

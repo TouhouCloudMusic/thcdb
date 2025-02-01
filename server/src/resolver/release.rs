@@ -18,7 +18,7 @@ impl ReleaseQuery {
         let release_service = &context.state.release_service;
         let release = release_service.find_by_id(input.id).await?;
 
-        Ok(release)
+        Ok(Some(release))
     }
 }
 

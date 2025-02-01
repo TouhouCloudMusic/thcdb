@@ -2,14 +2,15 @@ use entity::release;
 use error_set::error_set;
 use sea_orm::sea_query::{Func, SimpleExpr};
 use sea_orm::{
-    DatabaseConnection, DbErr, EntityTrait, Order, QueryOrder, QuerySelect,
-    TransactionTrait,
+    DatabaseConnection, EntityName, EntityTrait, Order, QueryOrder,
+    QuerySelect, TransactionTrait,
 };
 
 use crate::dto::correction::Metadata;
 use crate::dto::release::GeneralRelease;
 use crate::error::{InvalidField, RepositoryError};
 use crate::repo;
+use crate::utils::MapInto;
 
 #[derive(Default, Clone)]
 pub struct ReleaseService {
@@ -40,8 +41,14 @@ impl ReleaseService {
     pub async fn find_by_id(
         &self,
         id: i32,
-    ) -> Result<Option<release::Model>, DbErr> {
-        release::Entity::find_by_id(id).one(&self.db).await
+    ) -> Result<release::Model, RepositoryError> {
+        // TODO: Move to repo layer
+        release::Entity::find_by_id(id)
+            .one(&self.db)
+            .await?
+            .ok_or_else(|| RepositoryError::EntityNotFound {
+                entity_name: release::Entity.table_name(),
+            })
     }
 
     pub async fn create(
@@ -72,11 +79,12 @@ impl ReleaseService {
     pub async fn random(
         &self,
         count: u64,
-    ) -> Result<Vec<release::Model>, DbErr> {
+    ) -> Result<Vec<release::Model>, Error> {
         release::Entity::find()
             .order_by(SimpleExpr::FunctionCall(Func::random()), Order::Desc)
             .limit(count)
             .all(&self.db)
             .await
+            .map_into()
     }
 }

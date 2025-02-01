@@ -64,15 +64,33 @@ fn status_err_schema() -> impl Into<RefOr<Schema>> {
 }
 
 #[derive(ToSchema, Serialize)]
-pub struct Data<T>
-where
-    T: Default + Serialize,
-{
+pub struct Data<T> {
     #[schema(
         schema_with = status_ok_schema
     )]
     status: String,
     data: T,
+}
+
+impl<T> Data<T>
+where
+    T: Serialize,
+{
+    pub fn new(data: T) -> Self {
+        Self {
+            status: ApiStatus::Ok.to_string(),
+            data,
+        }
+    }
+}
+
+impl<T> From<T> for Data<T>
+where
+    T: Serialize,
+{
+    fn from(data: T) -> Self {
+        Self::new(data)
+    }
 }
 
 impl<T> Default for Data<T>
@@ -89,7 +107,7 @@ where
 
 impl<T> IntoResponse for Data<T>
 where
-    T: Default + Serialize,
+    T: Serialize,
 {
     fn into_response(self) -> axum::response::Response {
         Json(self).into_response()

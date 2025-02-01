@@ -16,14 +16,6 @@ use crate::service::image::ImageService;
 use crate::service::user::{AuthSession, Error, UserService, ValidateError};
 use crate::{api_response, AppState};
 
-pub fn router() -> OpenApiRouter<AppState> {
-    OpenApiRouter::new()
-        .routes(routes!(upload_avatar))
-        .route_layer(from_fn(is_signed_in))
-        .routes(routes!(sign_in))
-        .routes(routes!(sign_up))
-}
-
 impl StatusCodeExt for Error {
     fn as_status_code(&self) -> StatusCode {
         match &self {
@@ -103,6 +95,14 @@ impl IntoResponses for Error {
 }
 
 const TAG: &str = "User";
+
+pub fn router() -> OpenApiRouter<AppState> {
+    OpenApiRouter::new()
+        .routes(routes!(upload_avatar))
+        .route_layer(from_fn(is_signed_in))
+        .routes(routes!(sign_in))
+        .routes(routes!(sign_up))
+}
 
 #[utoipa::path(
     post,
