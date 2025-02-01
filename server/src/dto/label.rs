@@ -4,12 +4,12 @@ use entity::{label, label_history};
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::IntoActiveValue;
 
-pub use super::artist::LocalizedName;
+pub use super::artist::NewLocalizedName;
 use super::correction::Metadata;
 
 pub struct NewLabel {
     pub name: String,
-    pub localized_names: Vec<LocalizedName>,
+    pub localized_names: Vec<NewLocalizedName>,
     pub founded_date: Option<NaiveDate>,
     pub founded_date_precision: Option<DatePrecision>,
     pub dissolved_date: Option<NaiveDate>,

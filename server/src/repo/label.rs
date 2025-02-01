@@ -14,7 +14,7 @@ use sea_orm::{
 };
 
 use super::correction::user::utils::add_co_author_if_updater_not_author;
-use crate::dto::label::{LocalizedName, NewLabel};
+use crate::dto::label::{NewLabel, NewLocalizedName};
 use crate::error::RepositoryError;
 use crate::repo;
 
@@ -225,7 +225,7 @@ async fn create_founder_histories(
 
 async fn create_localized_names(
     label_id: i32,
-    names: &[LocalizedName],
+    names: &[NewLocalizedName],
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if names.is_empty() {
@@ -262,7 +262,7 @@ async fn update_localized_names(
         .all(tx)
         .await?
         .into_iter()
-        .map(|x| LocalizedName {
+        .map(|x| NewLocalizedName {
             language_id: x.language_id,
             name: x.name,
         })
@@ -273,7 +273,7 @@ async fn update_localized_names(
 
 async fn create_localized_name_histories(
     label_id: i32,
-    names: &[LocalizedName],
+    names: &[NewLocalizedName],
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if names.is_empty() {

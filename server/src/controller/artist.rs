@@ -1,5 +1,6 @@
-use axum::extract::State;
+use axum::extract::{Path, State};
 use axum::http::StatusCode;
+use axum::middleware::from_fn;
 use axum::response::IntoResponse;
 use axum::Json;
 use serde::Deserialize;
@@ -8,12 +9,14 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::api_response::{
-    ErrResponseDef, IntoApiResponse, Message, StatusCodeExt,
+    Data, ErrResponseDef, IntoApiResponse, Message, StatusCodeExt,
 };
-use crate::dto::artist::ArtistCorrection;
+use crate::dto::artist::{ArtistCorrection, ArtistResponse};
 use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
+use crate::middleware::is_signed_in;
 use crate::service::artist::ArtistService;
 use crate::state::AppState;
+use crate::utils::MapInto;
 use crate::{repo, service};
 
 type Error = service::artist::Error;
@@ -82,7 +85,25 @@ impl IntoResponses for service::artist::Error {
 }
 
 pub fn router() -> OpenApiRouter<AppState> {
-    OpenApiRouter::new().routes(routes!(create_artist))
+    OpenApiRouter::new()
+        .routes(routes!(create))
+        .route_layer(from_fn(is_signed_in))
+        .routes(routes!(find_by_id))
+}
+
+#[utoipa::path(
+	get,
+	path = "/artist/{id}",
+	responses(
+		(status = 200, body = ArtistResponse),
+		Error
+	),
+)]
+async fn find_by_id(
+    State(service): State<ArtistService>,
+    Path(id): Path<i32>,
+) -> Result<Data<ArtistResponse>, Error> {
+    service.find_by_id(id).await.map_into()
 }
 
 #[derive(ToSchema, Deserialize)]
@@ -102,7 +123,7 @@ struct NewArtist {
 		Error
 	),
 )]
-async fn create_artist(
+async fn create(
     State(service): State<ArtistService>,
     Json(input): Json<NewArtist>,
 ) -> Result<Message, Error> {

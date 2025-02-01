@@ -2,7 +2,7 @@ use entity::artist;
 use error_set::error_set;
 use sea_orm::{DatabaseConnection, TransactionTrait};
 
-use crate::dto::artist::ArtistCorrection;
+use crate::dto::artist::{ArtistCorrection, ArtistResponse};
 use crate::repo;
 
 #[derive(Clone)]
@@ -30,6 +30,17 @@ impl ArtistService {
     pub const fn new(db: DatabaseConnection) -> Self {
         Self { db }
     }
+
+    pub async fn find_by_id(&self, id: i32) -> Result<ArtistResponse, Error> {
+        Ok(repo::artist::find_by_id(id, &self.db).await?)
+    }
+
+    // pub async fn find_by_name(
+    //     &self,
+    //     name: &str,
+    // ) -> Result<Option<artist::Model>, Error> {
+    //     Ok(repo::artist::find_by_name(name, &self.db).await?)
+    // }
 
     pub async fn create(
         &self,

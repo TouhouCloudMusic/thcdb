@@ -1,5 +1,6 @@
 use std::sync::LazyLock;
 
+use entity::prelude::Language;
 use entity::sea_orm_active_enums::{
     ArtistType, CorrectionStatus, CorrectionType, EntityType,
 };
@@ -23,11 +24,14 @@ use sea_orm::{
 use utoipa::IntoResponses;
 
 use super::correction::user::utils::add_co_author_if_updater_not_author;
-use crate::dto::artist::{ArtistCorrection, LocalizedName, NewGroupMember};
+use crate::dto::artist::{
+    ArtistCorrection, ArtistResponse, GroupMember, LocalizedName,
+    NewLocalizedName,
+};
 use crate::error::RepositoryError;
 use crate::pg_func_ext::PgFuncExt;
-use crate::repo;
 use crate::types::Pair;
+use crate::{dto, repo};
 
 error_set! {
     Error = {
@@ -55,6 +59,135 @@ impl IntoResponses for Error {
         use crate::api_response::ErrResponseDef;
         Self::build_err_responses().into()
     }
+}
+
+#[allow(clippy::too_many_lines)]
+pub async fn find_by_id(
+    id: i32,
+    db: &impl ConnectionTrait,
+) -> Result<ArtistResponse, Error> {
+    let artist =
+        artist::Entity::find_by_id(id)
+            .one(db)
+            .await?
+            .ok_or_else(|| RepositoryError::EntityNotFound {
+                entity_name: artist::Entity.table_name(),
+            })?;
+
+    let aliases = artist_alias::Entity::find()
+        .filter(
+            artist_alias::Column::FirstId
+                .eq(id)
+                .or(artist_alias::Column::SecondId.eq(id)),
+        )
+        .all(db)
+        .await?
+        .into_iter()
+        .map(|model| {
+            if model.second_id == id {
+                model.first_id
+            } else {
+                model.second_id
+            }
+        })
+        .collect_vec();
+
+    let localized_names = artist_localized_name::Entity::find()
+        .filter(artist_localized_name::Column::ArtistId.eq(id))
+        .find_also_related(Language)
+        .into_model::<artist_localized_name::Model, dto::misc::Language>()
+        .all(db)
+        .await?
+        .into_iter()
+        .map(|(model, lang)| {
+            LocalizedName {
+                name: model.name,
+                // Localized name must have a language, so it is safe to unwrap here
+                language: lang.unwrap(),
+            }
+        })
+        .collect_vec();
+
+    let links = artist_link::Entity::find()
+        .filter(artist_link::Column::ArtistId.eq(id))
+        .all(db)
+        .await?
+        .into_iter()
+        .map(|model| model.url)
+        .collect_vec();
+
+    let members = if artist.artist_type.is_unknown() {
+        vec![]
+    } else {
+        let group_member = group_member::Entity::find()
+            .filter(if artist.artist_type.is_solo() {
+                group_member::Column::MemberId.eq(id)
+            } else {
+                group_member::Column::GroupId.eq(id)
+            })
+            .all(db)
+            .await?;
+
+        let ids = group_member.iter().map(|model| model.id).collect_vec();
+
+        let roles = group_member_role::Entity::find()
+            .filter(group_member_role::Column::GroupMemberId.is_in(ids.clone()))
+            .all(db)
+            .await?;
+
+        let join_leaves = group_member_join_leave::Entity::find()
+            .filter(group_member_join_leave::Column::GroupMemberId.is_in(ids))
+            .all(db)
+            .await?;
+
+        group_member
+            .into_iter()
+            .map(|x| GroupMember {
+                artist_id: if artist.artist_type.is_solo() {
+                    x.group_id
+                } else {
+                    x.member_id
+                },
+
+                join_leave: join_leaves
+                    .iter()
+                    .filter(|y| y.group_member_id == x.id)
+                    .map(|y| (y.join_year.clone(), y.leave_year.clone()))
+                    .collect(),
+                roles: roles
+                    .iter()
+                    .filter(|y| y.group_member_id == x.id)
+                    .map(|y| y.role_id)
+                    .collect(),
+            })
+            .collect()
+    };
+
+    Ok(ArtistResponse {
+        id,
+        name: artist.name,
+        artist_type: artist.artist_type,
+        text_alias: artist.text_alias,
+        start_date: artist.start_date,
+        start_date_precision: artist.start_date_precision,
+        end_date: artist.end_date,
+        end_date_precision: artist.end_date_precision,
+        aliases,
+        links,
+        localized_names,
+        members,
+    })
+}
+
+pub async fn find_by_name(
+    name: &str,
+    db: &impl ConnectionTrait,
+) -> Result<Vec<artist::Model>, Error> {
+    todo!();
+    // artist::Entity::find()
+    //     .filter(artist::Column::Name.eq(name))
+    //     .one(db)
+    //     .await
 }
 
 pub async fn create(
@@ -170,7 +303,7 @@ pub(super) async fn apply_correction(
         .all(db)
         .await?
         .into_iter()
-        .map(LocalizedName::from);
+        .map(NewLocalizedName::from);
 
     update_artist_localized_names(correction.entity_id, localized_names, db)
         .await?;
@@ -289,7 +422,7 @@ async fn create_artist_link_history<C: ConnectionTrait>(
 
 async fn create_artist_localized_name<C: ConnectionTrait>(
     artist_id: i32,
-    localized_names: Option<&[LocalizedName]>,
+    localized_names: Option<&[NewLocalizedName]>,
     db: &C,
 ) -> Result<(), DbErr> {
     if let Some(localized_names) = localized_names {
@@ -312,7 +445,7 @@ async fn create_artist_localized_name<C: ConnectionTrait>(
 
 async fn create_artist_localized_name_history<C: ConnectionTrait>(
     artist_id: i32,
-    localized_names: Option<&[LocalizedName]>,
+    localized_names: Option<&[NewLocalizedName]>,
     db: &C,
 ) -> Result<(), DbErr> {
     if let Some(localized_names) = localized_names {
@@ -335,7 +468,7 @@ async fn create_artist_localized_name_history<C: ConnectionTrait>(
 async fn create_artist_group_member<'f, C: ConnectionTrait>(
     artist_id: i32,
     artist_type: ArtistType,
-    members: Option<&'f [NewGroupMember]>,
+    members: Option<&'f [GroupMember]>,
     db: &'f C,
 ) -> Result<(), DbErr> {
     if let Some(members) = members {
@@ -367,12 +500,12 @@ async fn create_artist_group_member<'f, C: ConnectionTrait>(
 
                 let todo_join_leaves =
                     member.join_leave.clone().into_iter().map(
-                        |(join_year, leavy_year)| {
+                        |(join_year, leave_year)| {
                             group_member_join_leave::ActiveModel {
                                 id: NotSet,
                                 group_member_id: NotSet,
-                                join_year: Set(Some(join_year)),
-                                leave_year: Set(Some(leavy_year)),
+                                join_year: Set(join_year),
+                                leave_year: Set(leave_year),
                             }
                         },
                     );
@@ -420,7 +553,7 @@ async fn create_artist_group_member<'f, C: ConnectionTrait>(
 
 async fn create_artist_group_member_history<'f, C: ConnectionTrait>(
     history_id: i32,
-    members: Option<&'f [NewGroupMember]>,
+    members: Option<&'f [GroupMember]>,
     db: &'f C,
 ) -> Result<(), DbErr> {
     if let Some(members) = members {
@@ -448,8 +581,8 @@ async fn create_artist_group_member_history<'f, C: ConnectionTrait>(
                             group_member_join_leave_history::ActiveModel {
                                 id: NotSet,
                                 group_member_history_id: NotSet,
-                                join_year: Set(join_year.into()),
-                                leave_year: Set(leave_year.into()),
+                                join_year: Set(join_year),
+                                leave_year: Set(leave_year),
                             }
                         },
                     ),
@@ -609,7 +742,7 @@ async fn update_artist_links<
 
 async fn update_artist_localized_names<
     C: ConnectionTrait,
-    I: IntoIterator<Item = LocalizedName>,
+    I: IntoIterator<Item = NewLocalizedName>,
 >(
     artist_id: i32,
     localized_names: I,
