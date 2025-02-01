@@ -19,3 +19,20 @@ pub mod openapi {
         }
     }
 }
+
+pub trait MapInto<Target> {
+    fn map_into(self) -> Target;
+}
+
+impl<T, U, E, F> MapInto<Result<U, F>> for Result<T, E>
+where
+    T: Into<U>,
+    E: Into<F>,
+{
+    fn map_into(self) -> Result<U, F> {
+        match self {
+            Ok(t) => Ok(t.into()),
+            Err(e) => Err(e.into()),
+        }
+    }
+}
