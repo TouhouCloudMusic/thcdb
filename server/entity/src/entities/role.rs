@@ -24,47 +24,13 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::group_member_role::Entity")]
-    GroupMemberRole,
-    #[sea_orm(has_many = "super::group_member_role_history::Entity")]
-    GroupMemberRoleHistory,
     #[sea_orm(has_many = "super::user_role::Entity")]
     UserRole,
-}
-
-impl Related<super::group_member_role::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::GroupMemberRole.def()
-    }
-}
-
-impl Related<super::group_member_role_history::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::GroupMemberRoleHistory.def()
-    }
 }
 
 impl Related<super::user_role::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::UserRole.def()
-    }
-}
-
-impl Related<super::group_member::Entity> for Entity {
-    fn to() -> RelationDef {
-        super::group_member_role::Relation::GroupMember.def()
-    }
-    fn via() -> Option<RelationDef> {
-        Some(super::group_member_role::Relation::Role.def().rev())
-    }
-}
-
-impl Related<super::group_member_history::Entity> for Entity {
-    fn to() -> RelationDef {
-        super::group_member_role_history::Relation::GroupMemberHistory.def()
-    }
-    fn via() -> Option<RelationDef> {
-        Some(super::group_member_role_history::Relation::Role.def().rev())
     }
 }
 

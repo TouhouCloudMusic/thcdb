@@ -76,7 +76,7 @@ table "group_member_role" {
   }
   foreign_key "fk_group_member_role_role_id" {
     columns     = [column.role_id]
-    ref_columns = [table.role.column.id]
+    ref_columns = [table.credit_role.column.id]
   }
 
   primary_key {
@@ -100,7 +100,7 @@ table "group_member_role_history" {
   }
   foreign_key "fk_group_member_role_history_role_id" {
     columns     = [column.role_id]
-    ref_columns = [table.role.column.id]
+    ref_columns = [table.credit_role.column.id]
   }
 
   primary_key {

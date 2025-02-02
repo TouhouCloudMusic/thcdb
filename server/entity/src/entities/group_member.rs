@@ -58,9 +58,9 @@ impl Related<super::group_member_role::Entity> for Entity {
     }
 }
 
-impl Related<super::role::Entity> for Entity {
+impl Related<super::credit_role::Entity> for Entity {
     fn to() -> RelationDef {
-        super::group_member_role::Relation::Role.def()
+        super::group_member_role::Relation::CreditRole.def()
     }
     fn via() -> Option<RelationDef> {
         Some(super::group_member_role::Relation::GroupMember.def().rev())

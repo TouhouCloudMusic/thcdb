@@ -30,6 +30,10 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::credit_role_inheritance_history::Entity")]
     CreditRoleInheritanceHistory,
+    #[sea_orm(has_many = "super::group_member_role::Entity")]
+    GroupMemberRole,
+    #[sea_orm(has_many = "super::group_member_role_history::Entity")]
+    GroupMemberRoleHistory,
     #[sea_orm(has_many = "super::release_credit::Entity")]
     ReleaseCredit,
     #[sea_orm(has_many = "super::release_credit_history::Entity")]
@@ -43,6 +47,18 @@ pub enum Relation {
 impl Related<super::credit_role_inheritance_history::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::CreditRoleInheritanceHistory.def()
+    }
+}
+
+impl Related<super::group_member_role::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::GroupMemberRole.def()
+    }
+}
+
+impl Related<super::group_member_role_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::GroupMemberRoleHistory.def()
     }
 }
 
@@ -67,6 +83,28 @@ impl Related<super::song_credit::Entity> for Entity {
 impl Related<super::song_credit_history::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::SongCreditHistory.def()
+    }
+}
+
+impl Related<super::group_member::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::group_member_role::Relation::GroupMember.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::group_member_role::Relation::CreditRole.def().rev())
+    }
+}
+
+impl Related<super::group_member_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::group_member_role_history::Relation::GroupMemberHistory.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(
+            super::group_member_role_history::Relation::CreditRole
+                .def()
+                .rev(),
+        )
     }
 }
 

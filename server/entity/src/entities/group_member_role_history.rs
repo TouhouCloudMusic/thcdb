@@ -25,6 +25,14 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
+        belongs_to = "super::credit_role::Entity",
+        from = "Column::RoleId",
+        to = "super::credit_role::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    CreditRole,
+    #[sea_orm(
         belongs_to = "super::group_member_history::Entity",
         from = "Column::GroupMemberHistoryId",
         to = "super::group_member_history::Column::Id",
@@ -32,25 +40,17 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     GroupMemberHistory,
-    #[sea_orm(
-        belongs_to = "super::role::Entity",
-        from = "Column::RoleId",
-        to = "super::role::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
-    )]
-    Role,
+}
+
+impl Related<super::credit_role::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::CreditRole.def()
+    }
 }
 
 impl Related<super::group_member_history::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::GroupMemberHistory.def()
-    }
-}
-
-impl Related<super::role::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Role.def()
     }
 }
 
