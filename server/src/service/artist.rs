@@ -35,12 +35,12 @@ impl ArtistService {
         Ok(repo::artist::find_by_id(id, &self.db).await?)
     }
 
-    // pub async fn find_by_name(
-    //     &self,
-    //     name: &str,
-    // ) -> Result<Option<artist::Model>, Error> {
-    //     Ok(repo::artist::find_by_name(name, &self.db).await?)
-    // }
+    pub async fn find_by_keyword(
+        &self,
+        kw: &str,
+    ) -> Result<Vec<ArtistResponse>, Error> {
+        Ok(repo::artist::find_by_keyword(kw, &self.db).await?)
+    }
 
     pub async fn create(
         &self,

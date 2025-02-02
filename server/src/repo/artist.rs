@@ -12,6 +12,7 @@ use entity::{
     group_member_role, group_member_role_history,
 };
 use error_set::error_set;
+use futures::future::try_join_all;
 use itertools::Itertools;
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{Alias, PostgresQueryBuilder, Query};
@@ -32,6 +33,7 @@ use crate::dto::artist::{
 use crate::error::RepositoryError;
 use crate::pg_func_ext::PgFuncExt;
 use crate::types::Pair;
+use crate::utils::MapInto;
 use crate::{dto, repo};
 
 error_set! {
@@ -180,15 +182,20 @@ pub async fn find_by_id(
     })
 }
 
-pub async fn find_by_name(
-    name: &str,
+pub async fn find_by_keyword(
+    kw: &str,
     db: &impl ConnectionTrait,
-) -> Result<Vec<artist::Model>, Error> {
-    todo!();
-    // artist::Entity::find()
-    //     .filter(artist::Column::Name.eq(name))
-    //     .one(db)
-    //     .await
+) -> Result<Vec<ArtistResponse>, Error> {
+    // TODO: perf
+    try_join_all(
+        artist::Entity::find()
+            .filter(artist::Column::Name.like(kw))
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|x| find_by_id(x.id, db)),
+    )
+    .await
 }
 
 pub async fn create(

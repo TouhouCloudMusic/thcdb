@@ -1,10 +1,10 @@
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::middleware::from_fn;
 use axum::response::IntoResponse;
 use axum::Json;
 use serde::Deserialize;
-use utoipa::{IntoResponses, ToSchema};
+use utoipa::{IntoParams, IntoResponses, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -26,8 +26,11 @@ const TAG: &str = "Artist";
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(create))
+        .routes(routes!(create_update_corretion))
+        .routes(routes!(update_update_correction))
         .route_layer(from_fn(is_signed_in))
         .routes(routes!(find_by_id))
+        .routes(routes!(find_by_keyword))
 }
 
 #[utoipa::path(
@@ -35,7 +38,7 @@ pub fn router() -> OpenApiRouter<AppState> {
     tag = TAG,
 	path = "/artist/{id}",
 	responses(
-		(status = 200, body = ArtistResponse),
+		(status = 200, body = Data<ArtistResponse>),
 		Error
 	),
 )]
@@ -44,6 +47,30 @@ async fn find_by_id(
     Path(id): Path<i32>,
 ) -> Result<Data<ArtistResponse>, Error> {
     service.find_by_id(id).await.map_into()
+}
+
+#[derive(Deserialize, IntoParams)]
+struct KeywordQuery {
+    keyword: String,
+}
+
+#[utoipa::path(
+	get,
+    tag = TAG,
+	path = "/artist",
+    params(
+        KeywordQuery
+    ),
+	responses(
+		(status = 200, body = Data<Vec<ArtistResponse>>),
+		Error
+	),
+)]
+async fn find_by_keyword(
+    State(service): State<ArtistService>,
+    Query(query): Query<KeywordQuery>,
+) -> Result<Data<Vec<ArtistResponse>>, Error> {
+    service.find_by_keyword(&query.keyword).await.map_into()
 }
 
 #[derive(ToSchema, Deserialize)]
