@@ -73,6 +73,48 @@ async fn create(
     Ok(Message::ok())
 }
 
+#[utoipa::path(
+	post,
+    tag = TAG,
+	path = "/artist/{id}",
+	request_body = NewArtist,
+	responses(
+		(status = 200, body = Message),
+        (status = 401),
+		Error
+	),
+)]
+async fn create_update_corretion(
+    State(service): State<ArtistService>,
+    Path(id): Path<i32>,
+    Json(input): Json<NewArtist>,
+) -> Result<Message, Error> {
+    service.create_update_correction(id, input.data).await?;
+
+    Ok(Message::ok())
+}
+
+#[utoipa::path(
+	post,
+    tag = TAG,
+	path = "/artist/correction/{id}",
+	request_body = NewArtist,
+	responses(
+		(status = 200, body = Message),
+        (status = 401),
+		Error
+	),
+)]
+async fn update_update_correction(
+    State(service): State<ArtistService>,
+    Path(id): Path<i32>,
+    Json(input): Json<NewArtist>,
+) -> Result<Message, Error> {
+    service.update_update_correction(id, input.data).await?;
+
+    Ok(Message::ok())
+}
+
 impl StatusCodeExt for repo::artist::Error {
     fn as_status_code(&self) -> StatusCode {
         match self {

@@ -5,6 +5,7 @@ use crate::infrastructure::config::Config;
 use crate::infrastructure::database::get_connection;
 use crate::infrastructure::redis::Pool;
 use crate::service::artist::ArtistService;
+use crate::service::correction;
 use crate::service::image::ImageService;
 use crate::service::release::ReleaseService;
 use crate::service::song::SongService;
@@ -20,6 +21,7 @@ pub struct AppState {
     pub song_service: SongService,
     pub tag_service: TagService,
     pub artist_service: ArtistService,
+    pub correction_service: correction::Service,
     pub config: Config,
     pub redis_pool: Pool,
 }
@@ -38,6 +40,7 @@ impl AppState {
             artist_service: ArtistService::new(database.clone()),
             image_service: ImageService::new(database.clone()),
             song_service: SongService::new(database.clone()),
+            correction_service: correction::Service::new(database.clone()),
             tag_service: TagService::new(database.clone()),
             redis_pool,
         }

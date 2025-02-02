@@ -3,6 +3,7 @@ use sea_orm::{DatabaseConnection, TransactionTrait};
 use crate::error::RepositoryError;
 use crate::repo;
 
+#[derive(Clone)]
 pub struct Service {
     db: DatabaseConnection,
 }

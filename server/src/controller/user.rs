@@ -157,6 +157,7 @@ async fn sign_in(
 
 #[utoipa::path(
     post,
+    tag = TAG,
     path = "/avatar",
     request_body(
         content_type = "multipart/form-data",

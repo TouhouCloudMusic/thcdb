@@ -11,6 +11,7 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
     EntityName, EntityOrSelect, EntityTrait, IntoActiveModel, QueryFilter,
 };
+use utils::validate_entity_type;
 
 use crate::error::RepositoryError;
 
@@ -19,8 +20,25 @@ type CorrectionResult = Result<correction::Model, DbErr>;
 pub async fn find_by_id<C: ConnectionTrait>(
     correction_id: i32,
     db: &C,
-) -> Result<Option<correction::Model>, DbErr> {
-    correction::Entity::find_by_id(correction_id).one(db).await
+) -> Result<correction::Model, RepositoryError> {
+    correction::Entity::find_by_id(correction_id)
+        .one(db)
+        .await?
+        .ok_or_else(|| RepositoryError::EntityNotFound {
+            entity_name: correction::Entity.table_name(),
+        })
+}
+
+pub async fn find_by_id_with_type<C: ConnectionTrait>(
+    correction_id: i32,
+    entity_type: EntityType,
+    db: &C,
+) -> Result<correction::Model, RepositoryError> {
+    find_by_id(correction_id, db).await.and_then(|x| {
+        validate_entity_type(entity_type, x.entity_type)?;
+
+        Ok(x)
+    })
 }
 
 #[builder]
@@ -225,5 +243,16 @@ pub mod utils {
         let correction = correction_active_model.update(tx).await?;
 
         Ok(correction)
+    }
+
+    pub fn validate_entity_type(
+        expected: EntityType,
+        accepted: EntityType,
+    ) -> Result<(), RepositoryError> {
+        if expected == accepted {
+            Ok(())
+        } else {
+            Err(RepositoryError::IncorrectCorrectionType { expected, accepted })
+        }
     }
 }

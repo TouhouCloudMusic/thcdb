@@ -23,6 +23,7 @@ use sea_orm::{
 };
 use utoipa::IntoResponses;
 
+use super::correction::find_by_id_with_type;
 use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::artist::{
     ArtistCorrection, ArtistResponse, GroupMember, LocalizedName,
@@ -240,7 +241,8 @@ pub async fn update_update_correction(
 ) -> Result<(), Error> {
     validate(&data)?;
 
-    let correction = find_artist_correction(correction_id, db).await?;
+    let correction =
+        find_by_id_with_type(correction_id, EntityType::Artist, db).await?;
 
     add_co_author_if_updater_not_author(
         correction.id,
@@ -330,19 +332,6 @@ fn validate(data: &ArtistCorrection) -> Result<(), ValidationError> {
     } else {
         Ok(())
     }
-}
-
-async fn find_artist_correction(
-    correction_id: i32,
-    db: &impl ConnectionTrait,
-) -> Result<correction::Model, Error> {
-    let res = repo::correction::find_by_id(correction_id, db)
-        .await?
-        .ok_or(RepositoryError::EntityNotFound {
-            entity_name: correction::Entity.table_name(),
-        })?;
-
-    Ok(res)
 }
 
 async fn create_artist_alias<C: ConnectionTrait>(

@@ -4,6 +4,7 @@ use utoipa_axum::router::OpenApiRouter;
 use crate::AppState;
 
 mod artist;
+mod correction;
 mod graphql;
 mod release;
 mod song;
@@ -23,4 +24,5 @@ pub fn api_router() -> OpenApiRouter<AppState> {
         .merge(user::router())
         .merge(artist::router())
         .merge(release::router())
+        .merge(correction::router())
 }

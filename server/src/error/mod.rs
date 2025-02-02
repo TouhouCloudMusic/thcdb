@@ -4,6 +4,7 @@ use std::fmt::Debug;
 
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use entity::sea_orm_active_enums::EntityType;
 pub use error_code::*;
 use error_set::error_set;
 pub use structs::*;
@@ -25,6 +26,12 @@ error_set! {
             entity_name: &'static str
         },
         InvalidField(InvalidField),
+
+        #[display("Correction type mismatch, expected: {:#?}, accepted: {:#?}", expected, accepted)]
+        IncorrectCorrectionType {
+            expected: EntityType,
+            accepted: EntityType,
+        },
         #[display("Unexpected error: related entity {entity_name} not found")]
         UnexpRelatedEntityNotFound {
             entity_name: &'static str
@@ -60,7 +67,8 @@ impl StatusCodeExt for RepositoryError {
             | Self::UnexpRelatedEntityNotFound { .. } => {
                 StatusCode::INTERNAL_SERVER_ERROR
             }
-            Self::InvalidField { .. } => StatusCode::BAD_REQUEST,
+            Self::InvalidField { .. }
+            | Self::IncorrectCorrectionType { .. } => StatusCode::BAD_REQUEST,
             Self::EntityNotFound { .. } => StatusCode::NOT_FOUND,
         }
     }
