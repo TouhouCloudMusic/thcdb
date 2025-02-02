@@ -21,6 +21,58 @@ use crate::{repo, service};
 
 type Error = service::artist::Error;
 
+const TAG: &str = "Artist";
+
+pub fn router() -> OpenApiRouter<AppState> {
+    OpenApiRouter::new()
+        .routes(routes!(create))
+        .route_layer(from_fn(is_signed_in))
+        .routes(routes!(find_by_id))
+}
+
+#[utoipa::path(
+	get,
+    tag = TAG,
+	path = "/artist/{id}",
+	responses(
+		(status = 200, body = ArtistResponse),
+		Error
+	),
+)]
+async fn find_by_id(
+    State(service): State<ArtistService>,
+    Path(id): Path<i32>,
+) -> Result<Data<ArtistResponse>, Error> {
+    service.find_by_id(id).await.map_into()
+}
+
+#[derive(ToSchema, Deserialize)]
+struct NewArtist {
+    #[serde(flatten)]
+    #[schema(inline)]
+    pub data: ArtistCorrection,
+}
+
+#[utoipa::path(
+	post,
+    tag = TAG,
+	path = "/artist",
+	request_body = NewArtist,
+	responses(
+		(status = 200, body = Message),
+        (status = 401),
+		Error
+	),
+)]
+async fn create(
+    State(service): State<ArtistService>,
+    Json(input): Json<NewArtist>,
+) -> Result<Message, Error> {
+    service.create(input.data).await?;
+
+    Ok(Message::ok())
+}
+
 impl StatusCodeExt for repo::artist::Error {
     fn as_status_code(&self) -> StatusCode {
         match self {
@@ -82,52 +134,4 @@ impl IntoResponses for service::artist::Error {
     > {
         Self::build_err_responses().into()
     }
-}
-
-pub fn router() -> OpenApiRouter<AppState> {
-    OpenApiRouter::new()
-        .routes(routes!(create))
-        .route_layer(from_fn(is_signed_in))
-        .routes(routes!(find_by_id))
-}
-
-#[utoipa::path(
-	get,
-	path = "/artist/{id}",
-	responses(
-		(status = 200, body = ArtistResponse),
-		Error
-	),
-)]
-async fn find_by_id(
-    State(service): State<ArtistService>,
-    Path(id): Path<i32>,
-) -> Result<Data<ArtistResponse>, Error> {
-    service.find_by_id(id).await.map_into()
-}
-
-#[derive(ToSchema, Deserialize)]
-struct NewArtist {
-    #[serde(flatten)]
-    #[schema(inline)]
-    pub data: ArtistCorrection,
-}
-
-#[utoipa::path(
-	post,
-	path = "/artist",
-	request_body = NewArtist,
-	responses(
-		(status = 200, body = Message),
-        (status = 401),
-		Error
-	),
-)]
-async fn create(
-    State(service): State<ArtistService>,
-    Json(input): Json<NewArtist>,
-) -> Result<Message, Error> {
-    service.create(input.data).await?;
-
-    Ok(Message::ok())
 }

@@ -20,6 +20,80 @@ use crate::{repo, service};
 
 type Error = service::release::Error;
 
+const TAG: &str = "Release";
+
+pub fn router() -> OpenApiRouter<AppState> {
+    OpenApiRouter::new()
+        .routes(routes!(create))
+        .routes(routes!(find_by_id))
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/release/{id}",
+    responses(
+		(status = 200, description = "Release found by id"),
+		Error,
+    ),
+)]
+async fn find_by_id(
+    State(service): State<ReleaseService>,
+    Path(id): Path<i32>,
+) -> Result<Data<entity::release::Model>, Error> {
+    service.find_by_id(id).await.map_into()
+}
+
+#[derive(ToSchema, Deserialize)]
+struct NewRelease {
+    #[serde(flatten)]
+    #[schema(inline)]
+    pub data: GeneralRelease,
+    pub correction_data: Metadata,
+}
+
+#[utoipa::path(
+    post,
+    tag = TAG,
+    path = "/release",
+    request_body = NewRelease,
+    responses(
+		(status = 200, body = Message),
+        (status = 401),
+		Error
+    ),
+)]
+async fn create(
+    State(service): State<ReleaseService>,
+    Json(input): Json<NewRelease>,
+) -> Result<Message, Error> {
+    service.create(input.data, input.correction_data).await?;
+
+    Ok(Message::ok())
+}
+
+#[derive(IntoParams)]
+struct RandomReleaseQuery {
+    count: u64,
+}
+
+#[utoipa::path(
+    get,
+    path = "/release",
+    params(RandomReleaseQuery),
+    responses(
+		(status = 200, description = "Release found by id"),
+		(status = 500, description = "Failed to find release by id"),
+    ),
+)]
+async fn random(
+    State(service): State<ReleaseService>,
+    Query(query): Query<RandomReleaseQuery>,
+) -> Result<Data<Vec<entity::release::Model>>, Error> {
+    // TODO: set count limit
+    service.random(query.count).await.map_into()
+}
+
 impl StatusCodeExt for repo::release::Error {
     fn as_status_code(&self) -> StatusCode {
         match self {
@@ -75,73 +149,4 @@ impl IntoResponses for service::release::Error {
     > {
         Self::build_err_responses().into()
     }
-}
-
-pub fn router() -> OpenApiRouter<AppState> {
-    OpenApiRouter::new()
-        .routes(routes!(create))
-        .routes(routes!(find_by_id))
-}
-
-#[derive(ToSchema, Deserialize)]
-struct CreateReleaseInput {
-    #[serde(flatten)]
-    pub data: GeneralRelease,
-    pub correction_data: Metadata,
-}
-
-#[utoipa::path(
-    get,
-    path = "/release/{id}",
-    responses(
-		(status = 200, description = "Release found by id"),
-		Error,
-    ),
-)]
-async fn find_by_id(
-    State(service): State<ReleaseService>,
-    Path(id): Path<i32>,
-) -> Result<Data<entity::release::Model>, Error> {
-    service.find_by_id(id).await.map_into()
-}
-
-#[utoipa::path(
-    post,
-    path = "/release",
-    request_body = CreateReleaseInput,
-    responses(
-		(status = 200, body = Message),
-        (status = 401),
-		Error
-    ),
-)]
-async fn create(
-    State(service): State<ReleaseService>,
-    Json(input): Json<CreateReleaseInput>,
-) -> Result<Message, Error> {
-    service.create(input.data, input.correction_data).await?;
-
-    Ok(Message::ok())
-}
-
-#[derive(IntoParams)]
-struct RandomReleaseQuery {
-    count: u64,
-}
-
-#[utoipa::path(
-    get,
-    path = "/release",
-    params(RandomReleaseQuery),
-    responses(
-		(status = 200, description = "Release found by id"),
-		(status = 500, description = "Failed to find release by id"),
-    ),
-)]
-async fn random(
-    State(service): State<ReleaseService>,
-    Query(query): Query<RandomReleaseQuery>,
-) -> Result<Data<Vec<entity::release::Model>>, Error> {
-    // TODO: set count limit
-    service.random(query.count).await.map_into()
 }
