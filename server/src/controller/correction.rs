@@ -1,8 +1,8 @@
 use axum::debug_handler;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
-use axum::response::{IntoResponse, Response};
 use error_set::error_set;
+use macros::EnumToResponse;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -24,6 +24,7 @@ pub fn router() -> OpenApiRouter<AppState> {
 }
 
 error_set! {
+    #[derive(EnumToResponse)]
     Error = {
         User(service::user::Error),
         Correction(RepositoryError),
@@ -79,14 +80,4 @@ async fn handle(
     }
 
     Ok(Message::ok())
-}
-
-impl IntoResponse for Error {
-    fn into_response(self) -> Response {
-        match self {
-            Self::User(err) => err.into_response(),
-            Self::Correction(err) => err.into_response(),
-            Self::Api(err) => err.into_response(),
-        }
-    }
 }

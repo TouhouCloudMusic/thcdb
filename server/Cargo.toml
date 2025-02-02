@@ -2,11 +2,13 @@
 members = [
     ".",
     "entity",
+    "macros",
     "migration",
 ]
 
 [workspace.dependencies]
 entity = { path = "./entity" }
+macros = { path = "./macros" }
 # external
 argon2 = "0.5"
 axum = { version = "0.8", features = [
@@ -53,6 +55,9 @@ version = "0.1.0"
 sea-orm = { git = "https://github.com/Huliiiiii/sea-orm.git", branch = "master" }
 
 [dependencies]
+entity.workspace = true
+macros.workspace = true
+#
 argon2.workspace = true
 async-trait = { version = "0.1" }
 axum.workspace = true
@@ -64,7 +69,6 @@ bon = { version = "3.0", features = [
 ] }
 chrono.workspace = true
 dotenvy.workspace = true
-entity.workspace = true
 error_set = { version = "0.8", features = [
     "tracing",
 ] }
