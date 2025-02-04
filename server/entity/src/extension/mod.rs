@@ -1,5 +1,6 @@
 mod graphql;
 mod impl_enums;
+mod impls;
 mod into_active_model;
 mod into_active_value;
 mod model_conversion;

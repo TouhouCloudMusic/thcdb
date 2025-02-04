@@ -1,6 +1,8 @@
 use std::sync::LazyLock;
 
-use entity::prelude::Language;
+use entity::prelude::{
+    ArtistLink, ArtistLocalizedName, CreditRole, GroupMemberJoinLeave,
+};
 use entity::sea_orm_active_enums::{
     ArtistType, CorrectionStatus, CorrectionType, EntityType,
 };
@@ -9,32 +11,30 @@ use entity::{
     artist_link_history, artist_localized_name, artist_localized_name_history,
     correction, correction_revision, group_member, group_member_history,
     group_member_join_leave, group_member_join_leave_history,
-    group_member_role, group_member_role_history,
+    group_member_role, group_member_role_history, language,
 };
 use error_set::error_set;
-use futures::future::try_join_all;
-use itertools::Itertools;
+use itertools::{izip, Itertools};
 use sea_orm::prelude::Expr;
-use sea_orm::sea_query::{Alias, PostgresQueryBuilder, Query};
+use sea_orm::sea_query::{Alias, IntoCondition, PostgresQueryBuilder, Query};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, ConnectionTrait,
     DatabaseTransaction, DbBackend, DbErr, EntityName, EntityTrait,
-    FromQueryResult, ModelTrait, QueryFilter, QueryOrder, Statement,
+    FromQueryResult, LoaderTrait, ModelTrait, QueryFilter, QueryOrder,
+    Statement,
 };
-use utoipa::IntoResponses;
 
 use super::correction::find_by_id_with_type;
 use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::artist::{
     ArtistCorrection, ArtistResponse, GroupMember, LocalizedName,
-    NewLocalizedName,
+    NewGroupMember, NewLocalizedName,
 };
 use crate::error::RepositoryError;
 use crate::pg_func_ext::PgFuncExt;
+use crate::repo;
 use crate::types::Pair;
-use crate::utils::MapInto;
-use crate::{dto, repo};
 
 error_set! {
     Error = {
@@ -53,149 +53,136 @@ impl From<DbErr> for Error {
     }
 }
 
-#[allow(clippy::iter_on_single_items)]
-impl IntoResponses for Error {
-    fn responses() -> std::collections::BTreeMap<
-        String,
-        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
-    > {
-        use crate::api_response::ErrResponseDef;
-        Self::build_err_responses().into()
-    }
-}
-
-#[allow(clippy::too_many_lines)]
 pub async fn find_by_id(
     id: i32,
     db: &impl ConnectionTrait,
 ) -> Result<ArtistResponse, Error> {
-    let artist =
-        artist::Entity::find_by_id(id)
-            .one(db)
-            .await?
-            .ok_or_else(|| RepositoryError::EntityNotFound {
+    find_many(artist::Column::Id.eq(id), db)
+        .await?
+        .into_iter()
+        .next()
+        .ok_or_else(|| {
+            RepositoryError::EntityNotFound {
                 entity_name: artist::Entity.table_name(),
-            })?;
-
-    let aliases = artist_alias::Entity::find()
-        .filter(
-            artist_alias::Column::FirstId
-                .eq(id)
-                .or(artist_alias::Column::SecondId.eq(id)),
-        )
-        .all(db)
-        .await?
-        .into_iter()
-        .map(|model| {
-            if model.second_id == id {
-                model.first_id
-            } else {
-                model.second_id
             }
+            .into()
         })
-        .collect_vec();
-
-    let localized_names = artist_localized_name::Entity::find()
-        .filter(artist_localized_name::Column::ArtistId.eq(id))
-        .find_also_related(Language)
-        .into_model::<artist_localized_name::Model, dto::misc::Language>()
-        .all(db)
-        .await?
-        .into_iter()
-        .map(|(model, lang)| {
-            LocalizedName {
-                name: model.name,
-                // Localized name must have a language, so it is safe to unwrap here
-                language: lang.unwrap(),
-            }
-        })
-        .collect_vec();
-
-    let links = artist_link::Entity::find()
-        .filter(artist_link::Column::ArtistId.eq(id))
-        .all(db)
-        .await?
-        .into_iter()
-        .map(|model| model.url)
-        .collect_vec();
-
-    let members = if artist.artist_type.is_unknown() {
-        vec![]
-    } else {
-        let group_member = group_member::Entity::find()
-            .filter(if artist.artist_type.is_solo() {
-                group_member::Column::MemberId.eq(id)
-            } else {
-                group_member::Column::GroupId.eq(id)
-            })
-            .all(db)
-            .await?;
-
-        let ids = group_member.iter().map(|model| model.id).collect_vec();
-
-        let roles = group_member_role::Entity::find()
-            .filter(group_member_role::Column::GroupMemberId.is_in(ids.clone()))
-            .all(db)
-            .await?;
-
-        let join_leaves = group_member_join_leave::Entity::find()
-            .filter(group_member_join_leave::Column::GroupMemberId.is_in(ids))
-            .all(db)
-            .await?;
-
-        group_member
-            .into_iter()
-            .map(|x| GroupMember {
-                artist_id: if artist.artist_type.is_solo() {
-                    x.group_id
-                } else {
-                    x.member_id
-                },
-
-                join_leave: join_leaves
-                    .iter()
-                    .filter(|y| y.group_member_id == x.id)
-                    .map(|y| (y.join_year.clone(), y.leave_year.clone()))
-                    .collect(),
-                roles: roles
-                    .iter()
-                    .filter(|y| y.group_member_id == x.id)
-                    .map(|y| y.role_id)
-                    .collect(),
-            })
-            .collect()
-    };
-
-    Ok(ArtistResponse {
-        id,
-        name: artist.name,
-        artist_type: artist.artist_type,
-        text_alias: artist.text_alias,
-        start_date: artist.start_date,
-        start_date_precision: artist.start_date_precision,
-        end_date: artist.end_date,
-        end_date_precision: artist.end_date_precision,
-        aliases,
-        links,
-        localized_names,
-        members,
-    })
 }
 
 pub async fn find_by_keyword(
     kw: &str,
     db: &impl ConnectionTrait,
 ) -> Result<Vec<ArtistResponse>, Error> {
-    // TODO: perf
-    try_join_all(
-        artist::Entity::find()
-            .filter(artist::Column::Name.like(kw))
-            .all(db)
-            .await?
-            .into_iter()
-            .map(|x| find_by_id(x.id, db)),
-    )
-    .await
+    find_many(artist::Column::Name.like(kw), db).await
+}
+
+async fn find_many(
+    cond: impl IntoCondition,
+    db: &impl ConnectionTrait,
+) -> Result<Vec<ArtistResponse>, Error> {
+    let artists = artist::Entity::find().filter(cond).all(db).await?;
+
+    let ids = artists.iter().map(|x| x.id).collect_vec();
+
+    let aliases = artist_alias::Entity::find()
+        .filter(
+            Condition::any()
+                .add(artist_alias::Column::FirstId.is_in(ids.clone()))
+                .add(artist_alias::Column::SecondId.is_in(ids.clone())),
+        )
+        .all(db)
+        .await?;
+
+    let links = artists.load_many(ArtistLink, db).await?;
+
+    let localized_names = artists.load_many(ArtistLocalizedName, db).await?;
+
+    let group_members = group_member::Entity::find()
+        .filter(
+            Condition::any()
+                .add(group_member::Column::MemberId.is_in(ids.clone()))
+                .add(group_member::Column::GroupId.is_in(ids.clone())),
+        )
+        .all(db)
+        .await?;
+
+    let roles = group_members.load_many(CreditRole, db).await?;
+
+    let join_leaves = group_members.load_many(GroupMemberJoinLeave, db).await?;
+
+    let group_members = izip!(group_members, roles, join_leaves).collect_vec();
+
+    let langs = language::Entity::find()
+        .filter(
+            language::Column::Id.is_in(
+                localized_names
+                    .iter()
+                    .flat_map(|x| x.iter().map(|x| x.language_id)),
+            ),
+        )
+        .all(db)
+        .await?;
+
+    let res = izip!(artists, links, localized_names)
+        .map(|(artist, links, localized_names)| ArtistResponse {
+            id: artist.id,
+            name: artist.name,
+            artist_type: artist.artist_type,
+            text_alias: artist.text_alias,
+            start_date: artist.start_date,
+            start_date_precision: artist.start_date_precision,
+            end_date: artist.end_date,
+            end_date_precision: artist.end_date_precision,
+            aliases: aliases
+                .iter()
+                .filter(|x| x.first_id == artist.id || x.second_id == artist.id)
+                .map(|x| {
+                    if x.first_id == artist.id {
+                        x.second_id
+                    } else {
+                        x.first_id
+                    }
+                })
+                .collect(),
+            links: links.into_iter().map(|x| x.url).collect_vec(),
+            localized_names: localized_names
+                .into_iter()
+                .map(|model| LocalizedName {
+                    name: model.name,
+                    language: langs
+                        .iter()
+                        .find(|y| y.id == model.language_id)
+                        .unwrap()
+                        .into(),
+                })
+                .collect(),
+            members: group_members
+                .iter()
+                .filter(|(gm, _, _)| {
+                    if artist.artist_type.is_solo() {
+                        gm.member_id == artist.id
+                    } else {
+                        gm.group_id == artist.id
+                    }
+                })
+                .map(|(gm, role, jl)| {
+                    let artist_id = if artist.artist_type.is_solo() {
+                        gm.group_id
+                    } else {
+                        gm.member_id
+                    };
+
+                    GroupMember {
+                        artist_id,
+                        join_leave: jl.iter().map_into().collect(),
+                        roles: role.iter().map_into().collect(),
+                    }
+                })
+                .collect(),
+        })
+        .collect_vec();
+
+    Ok(res)
 }
 
 pub async fn create(
@@ -464,7 +451,7 @@ async fn create_artist_localized_name_history<C: ConnectionTrait>(
 async fn create_artist_group_member<'f, C: ConnectionTrait>(
     artist_id: i32,
     artist_type: ArtistType,
-    members: Option<&'f [GroupMember]>,
+    members: Option<&'f [NewGroupMember]>,
     db: &'f C,
 ) -> Result<(), DbErr> {
     if let Some(members) = members {
@@ -549,7 +536,7 @@ async fn create_artist_group_member<'f, C: ConnectionTrait>(
 
 async fn create_artist_group_member_history<'f, C: ConnectionTrait>(
     history_id: i32,
-    members: Option<&'f [GroupMember]>,
+    members: Option<&'f [NewGroupMember]>,
     db: &'f C,
 ) -> Result<(), DbErr> {
     if let Some(members) = members {

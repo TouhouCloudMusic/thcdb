@@ -1,11 +1,14 @@
 use entity::sea_orm_active_enums::{ArtistType, DatePrecision};
-use entity::{artist, artist_history, artist_localized_name_history};
+use entity::{
+    artist, artist_history,
+    artist_localized_name_history,
+};
 use sea_orm::prelude::Date;
 use sea_orm::ActiveValue::{NotSet, Set};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use super::misc::Language;
+use super::misc::{CreditRole, Language};
 use crate::dto;
 
 #[derive(ToSchema, Serialize)]
@@ -41,7 +44,7 @@ pub struct ArtistCorrection {
     pub aliases: Option<Vec<i32>>,
     pub links: Option<Vec<String>>,
     pub localized_name: Option<Vec<NewLocalizedName>>,
-    pub members: Option<Vec<GroupMember>>,
+    pub members: Option<Vec<NewGroupMember>>,
 
     pub correction_metadata: dto::correction::Metadata,
 }
@@ -76,20 +79,27 @@ impl From<&ArtistCorrection> for artist_history::ActiveModel {
     }
 }
 
-#[derive(Clone, ToSchema, Serialize, Deserialize)]
+#[derive(Clone, ToSchema, Serialize)]
 pub struct GroupMember {
+    pub artist_id: i32,
+    pub roles: Vec<CreditRole>,
+    pub join_leave: Vec<(Option<String>, Option<String>)>,
+}
+
+#[derive(Clone, ToSchema, Deserialize)]
+pub struct NewGroupMember {
     pub artist_id: i32,
     pub roles: Vec<i32>,
     pub join_leave: Vec<(Option<String>, Option<String>)>,
 }
 
-#[derive(Clone, ToSchema, Serialize, Deserialize)]
+#[derive(Clone, ToSchema, Serialize)]
 pub struct LocalizedName {
     pub language: Language,
     pub name: String,
 }
 
-#[derive(Clone, ToSchema, Serialize, Deserialize)]
+#[derive(Clone, ToSchema, Deserialize)]
 pub struct NewLocalizedName {
     pub language_id: i32,
     pub name: String,
