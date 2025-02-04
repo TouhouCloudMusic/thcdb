@@ -20,7 +20,7 @@ use sea_orm::{
 };
 
 use crate::dto::correction::Metadata;
-use crate::dto::release::input::{Credit, LocalizedTitle};
+use crate::dto::release::input::{NewCredit, NewLocalizedTitle};
 use crate::dto::release::{GeneralRelease, Linked, NewTrack, Unlinked};
 use crate::dto::song::NewSong;
 use crate::error::RepositoryError;
@@ -316,7 +316,7 @@ async fn create_release_artist_history(
 
 async fn create_release_localized_title(
     release_id: i32,
-    localized_titles: &[LocalizedTitle],
+    localized_titles: &[NewLocalizedTitle],
     transaction: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if localized_titles.is_empty() {
@@ -356,7 +356,7 @@ async fn update_release_localized_title(
         .all(tx)
         .await?
         .into_iter()
-        .map(|x| LocalizedTitle {
+        .map(|x| NewLocalizedTitle {
             language_id: x.language_id,
             title: x.title,
         })
@@ -369,7 +369,7 @@ async fn update_release_localized_title(
 
 async fn create_release_localized_title_history(
     history_id: i32,
-    localized_titles: &[LocalizedTitle],
+    localized_titles: &[NewLocalizedTitle],
     transaction: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if localized_titles.is_empty() {
@@ -516,31 +516,25 @@ async fn create_release_track(
     let release_track_active_models = linked
         .into_iter()
         .map(|(i, x)| {
-            (
-                i,
-                release_track::ActiveModel {
-                    id: NotSet,
-                    release_id: Set(release_id),
-                    song_id: Set(x.song_id),
-                    track_number: Set(x.track_number.clone()),
-                    display_title: Set(x.display_title.clone()),
-                    duration: Set(x.duration.map(|d| d.to_string())),
-                },
-            )
+            (i, release_track::ActiveModel {
+                id: NotSet,
+                release_id: Set(release_id),
+                song_id: Set(x.song_id),
+                track_number: Set(x.track_number.clone()),
+                display_title: Set(x.display_title.clone()),
+                duration: Set(x.duration.map(|d| d.to_string())),
+            })
         })
         .chain(unlinked.into_iter().zip(new_songs.iter()).map(
             |((i, track), model)| {
-                (
-                    i,
-                    release_track::ActiveModel {
-                        id: NotSet,
-                        release_id: Set(release_id),
-                        song_id: Set(model.id),
-                        track_number: Set(track.track_number.clone()),
-                        display_title: Set(Some(model.title.clone())),
-                        duration: Set(track.duration.map(|d| d.to_string())),
-                    },
-                )
+                (i, release_track::ActiveModel {
+                    id: NotSet,
+                    release_id: Set(release_id),
+                    song_id: Set(model.id),
+                    track_number: Set(track.track_number.clone()),
+                    display_title: Set(Some(model.title.clone())),
+                    duration: Set(track.duration.map(|d| d.to_string())),
+                })
             },
         ))
         .sorted_by(|(key1, _), (key2, _)| key1.cmp(key2))
@@ -651,31 +645,25 @@ async fn create_release_track_history(
     let release_track_active_models = linked
         .into_iter()
         .map(|(i, x)| {
-            (
-                i,
-                release_track_history::ActiveModel {
-                    id: NotSet,
-                    history_id: Set(history_id),
-                    song_id: Set(x.song_id),
-                    track_number: Set(x.track_number.clone()),
-                    display_title: Set(x.display_title.clone()),
-                    duration: Set(x.duration.map(|d| d.to_string())),
-                },
-            )
+            (i, release_track_history::ActiveModel {
+                id: NotSet,
+                history_id: Set(history_id),
+                song_id: Set(x.song_id),
+                track_number: Set(x.track_number.clone()),
+                display_title: Set(x.display_title.clone()),
+                duration: Set(x.duration.map(|d| d.to_string())),
+            })
         })
         .chain(unlinked.into_iter().zip(new_songs.iter()).map(
             |((i, track), model)| {
-                (
-                    i,
-                    release_track_history::ActiveModel {
-                        id: NotSet,
-                        history_id: Set(history_id),
-                        song_id: Set(model.id),
-                        track_number: Set(track.track_number.clone()),
-                        display_title: Set(Some(model.title.clone())),
-                        duration: Set(track.duration.map(|d| d.to_string())),
-                    },
-                )
+                (i, release_track_history::ActiveModel {
+                    id: NotSet,
+                    history_id: Set(history_id),
+                    song_id: Set(model.id),
+                    track_number: Set(track.track_number.clone()),
+                    display_title: Set(Some(model.title.clone())),
+                    duration: Set(track.duration.map(|d| d.to_string())),
+                })
             },
         ))
         .sorted_by(|(key1, _), (key2, _)| key1.cmp(key2))
@@ -716,7 +704,7 @@ async fn create_new_songs_from_tracks(
 
 async fn create_release_credit(
     release_id: i32,
-    credits: &[Credit],
+    credits: &[NewCredit],
     transaction: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if credits.is_empty() {
@@ -755,7 +743,7 @@ async fn update_release_credit(
         .all(tx)
         .await?
         .into_iter()
-        .map(|x| Credit {
+        .map(|x| NewCredit {
             artist_id: x.artist_id,
             role_id: x.role_id,
             on: x.on,
@@ -769,7 +757,7 @@ async fn update_release_credit(
 
 async fn create_release_credit_history(
     history_id: i32,
-    credits: &[Credit],
+    credits: &[NewCredit],
     transaction: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if credits.is_empty() {

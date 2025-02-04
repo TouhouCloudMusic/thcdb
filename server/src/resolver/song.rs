@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use entity::{song, GqlScalarValue};
+use entity::{GqlScalarValue, song};
 use juniper::FieldResult;
 
 use crate::dto::correction::Metadata;

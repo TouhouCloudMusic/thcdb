@@ -1,5 +1,5 @@
 use axum::extract::FromRef;
-use sea_orm::{sqlx, DatabaseConnection};
+use sea_orm::{DatabaseConnection, sqlx};
 
 use crate::infrastructure::config::Config;
 use crate::infrastructure::database::get_connection;

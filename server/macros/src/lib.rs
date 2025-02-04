@@ -1,51 +1,118 @@
-use proc_macro::TokenStream;
-use quote::quote;
-use syn::{Data, DeriveInput, Fields, parse_macro_input};
+pub use proc_macros::*;
 
-#[proc_macro_derive(EnumToResponse)]
-pub fn derive_into_response(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let enum_name = &input.ident;
+#[macro_export]
+macro_rules! impl_from {
+    (
+        $from:path > $target:path
+        {$($struct:tt)*}
+        $(,)?
+    ) => {
+        impl_from!(@inner $from, $target, {$($struct)*});
+    };
 
-    let data_enum = match input.data {
-        Data::Enum(e) => e,
-        _ => {
-            return syn::Error::new_spanned(&input, "Not an enum")
-                .to_compile_error()
-                .into();
+    (
+        $from:path >
+        $target:path
+        {$($struct:tt)*},
+        $fn:path
+        $(,)?
+    ) => {
+        impl_from!(@inner_with_fn $from, $target, {$($struct)*}, $fn);
+    };
+
+    (
+        $from:path >
+        [ $($target:path),+ ]
+        $tt:tt
+    ) => {
+        $(
+            impl_from!(@inner $from, $target, $tt);
+        )+
+    };
+
+    (
+        $from:path >
+        [ $($target:path),+ ]
+        $tt:tt,
+        $fn:path
+        $(,)?
+    ) => {
+        $(
+            impl_from!(@inner_with_fn $from, $target, $tt, $fn);
+        )+
+    };
+
+    (@inner
+        $from:path,
+        $target:path,
+        {
+            $($(,)?
+                $eq_field:ident),*
+            $($(,)?
+                => $from_field:ident $to_field:ident),*
+            $($(,)?
+                : $custome_field:ident $value:expr),*
+            $(,)?
+        }
+        $(,)?
+    ) => {
+        impl From<&$from> for $target {
+            fn from(value: &$from) -> Self {
+                Self {
+                    $( $eq_field: value.$eq_field.clone(), )*
+                    $( $to_field: value.$from_field.clone(), )*
+                    $( $custome_field: $value, )*
+                }
+            }
+        }
+
+        impl From<$from> for $target {
+            fn from(value: $from) -> Self {
+                Self {
+                    $( $eq_field: value.$eq_field, )*
+                    $( $to_field: value.$from_field, )*
+                    $( $custome_field: $value, )*
+                }
+            }
         }
     };
 
-    let branches: Vec<_> = data_enum
-        .variants
-        .iter()
-        .map(|variant| {
-            let variant_ident = &variant.ident;
+    (@inner_with_fn
+        $from:path,
+        $target:path,
+        {
+            $($(,)?
+                $eq_field:ident),*
+            $($(,)?
+                => $from_field:ident $to_field:ident),*
+            $($(,)?
+                : $custome_field:ident $value:expr),*
+            $(,)?
+        },
+        $fn:path
+        $(,)?
+    ) => {
 
-            match &variant.fields {
-                Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
-                    quote! {
-                        #enum_name::#variant_ident(err) => err.into_response()
-                    }
-                }
-                _ => syn::Error::new_spanned(
-                    variant,
-                    "Only single-field tuple variants are supported",
-                )
-                .to_compile_error(),
-            }
-        })
-        .collect();
-
-    let expanded = quote! {
-        impl axum::response::IntoResponse for #enum_name {
-            fn into_response(self) -> axum::response::Response {
-                match self {
-                    #(#branches),*
+        impl From<&$from> for $target {
+            fn from(value: &$from) -> Self {
+                Self {
+                    $( $eq_field: $fn(value.$eq_field.clone()), )*
+                    $( $to_field: $fn(value.$from_field.clone()), )*
+                    $( $custome_field: $value, )*
                 }
             }
         }
+
+        impl From<$from> for $target {
+            fn from(value: $from) -> Self {
+                Self {
+                    $( $eq_field: $fn(value.$eq_field), )*
+                    $( $to_field: $fn(value.$from_field), )*
+                    $( $custome_field: $value, )*
+                }
+            }
+        }
+
     };
 
-    TokenStream::from(expanded)
 }

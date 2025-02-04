@@ -1,6 +1,6 @@
 use entity::{song, song_history};
+use macros::impl_from;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::IntoActiveValue;
 use serde::Deserialize;
 use utoipa::ToSchema;
 
@@ -15,25 +15,16 @@ pub struct NewSong {
     pub metadata: correction::Metadata,
 }
 
-pub type LocalizedTitle = super::release::input::LocalizedTitle;
+pub type LocalizedTitle = super::release::input::NewLocalizedTitle;
 
-impl From<&NewSong> for song::ActiveModel {
-    fn from(value: &NewSong) -> Self {
-        Self {
-            id: NotSet,
-            title: Set(value.title.clone()),
-        }
-    }
-}
-
-impl From<&NewSong> for song_history::ActiveModel {
-    fn from(value: &NewSong) -> Self {
-        Self {
-            id: NotSet,
-            title: value.title.clone().into_active_value(),
-        }
-    }
-}
+impl_from!(
+    NewSong >
+    [song::ActiveModel, song_history::ActiveModel] {
+        title,
+        : id NotSet,
+    },
+    Set
+);
 
 #[derive(ToSchema, Deserialize)]
 pub struct NewSongCredit {

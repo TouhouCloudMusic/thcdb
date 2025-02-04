@@ -3,6 +3,7 @@ use entity::{
     tag, tag_alternative_name, tag_alternative_name_history, tag_history,
     tag_relation, tag_relation_history,
 };
+use macros::impl_from;
 use sea_orm::ActiveValue::{NotSet, Set};
 use serde::Deserialize;
 use utoipa::ToSchema;
@@ -18,29 +19,29 @@ pub struct NewTag {
     pub relations: Vec<NewTagRelation>,
 }
 
-impl From<&NewTag> for tag::ActiveModel {
-    fn from(value: &NewTag) -> Self {
-        Self {
-            id: NotSet,
-            name: Set(value.name.clone()),
-            r#type: Set(value.r#type),
-            short_description: Set(value.short_description.clone()),
-            description: Set(value.description.clone()),
-        }
-    }
-}
+impl_from!(
+    NewTag >
+    tag::ActiveModel {
+        name,
+        r#type,
+        short_description,
+        description,
+        : id NotSet,
+    },
+    Set
+);
 
-impl From<&NewTag> for tag_history::ActiveModel {
-    fn from(value: &NewTag) -> Self {
-        Self {
-            id: NotSet,
-            name: Set(value.name.clone()),
-            r#type: Set(value.r#type),
-            short_description: Set(value.short_description.clone()),
-            description: Set(value.description.clone()),
-        }
-    }
-}
+impl_from!(
+    NewTag >
+    tag_history::ActiveModel {
+        name,
+        r#type,
+        short_description,
+        description,
+        : id NotSet,
+    },
+    Set
+);
 
 #[derive(Clone, Deserialize, ToSchema)]
 pub enum AltName {
@@ -111,31 +112,30 @@ pub struct NewTagRelation {
     pub r#type: TagRelationType,
 }
 
-impl From<&NewTagRelation> for tag_relation::ActiveModel {
-    fn from(value: &NewTagRelation) -> Self {
-        Self {
-            tag_id: NotSet,
-            related_tag_id: Set(value.related_tag_id),
-            r#type: Set(value.r#type),
-        }
-    }
-}
+impl_from!(
+    NewTagRelation >
+    tag_relation::ActiveModel {
+        related_tag_id,
+        r#type,
+        : tag_id NotSet
+    },
+    Set
+);
 
-impl From<&NewTagRelation> for tag_relation_history::ActiveModel {
-    fn from(value: &NewTagRelation) -> Self {
-        Self {
-            history_id: NotSet,
-            related_tag_id: Set(value.related_tag_id),
-            r#type: Set(value.r#type),
-        }
-    }
-}
+impl_from!(
+    NewTagRelation >
+    tag_relation_history::ActiveModel {
+        related_tag_id,
+        r#type,
+        : history_id NotSet
+    },
+    Set
+);
 
-impl From<tag_relation_history::Model> for NewTagRelation {
-    fn from(value: tag_relation_history::Model) -> Self {
-        Self {
-            r#type: value.r#type,
-            related_tag_id: value.related_tag_id,
+impl_from!(
+    tag_relation_history::Model
+        > NewTagRelation {
+            related_tag_id,
+            r#type,
         }
-    }
-}
+);

@@ -1,5 +1,6 @@
 use entity::artist;
 use error_set::error_set;
+use macros::IntoErrorSchema;
 use sea_orm::{DatabaseConnection, TransactionTrait};
 
 use crate::dto::artist::{ArtistCorrection, ArtistResponse};
@@ -12,6 +13,7 @@ pub struct ArtistService {
 
 error_set! {
     #[disable(From)]
+    #[derive(IntoErrorSchema)]
     Error = {
         Repo(repo::artist::Error)
     };

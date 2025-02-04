@@ -1,14 +1,14 @@
 use axum::extract::State;
-use axum::routing::{get, on, MethodFilter};
+use axum::routing::{MethodFilter, get, on};
 use entity::GqlScalarValue;
 use juniper::EmptySubscription;
 use juniper_axum::extract::JuniperRequest;
 use juniper_axum::response::JuniperResponse;
 use juniper_axum::{graphiql, playground};
 
+use crate::AppState;
 use crate::resolver::juniper::{JuniperMutation, JuniperQuery};
 use crate::service::juniper::{JuniperContext, JuniperSchema};
-use crate::AppState;
 
 pub fn router() -> axum::Router<AppState> {
     axum::Router::new()

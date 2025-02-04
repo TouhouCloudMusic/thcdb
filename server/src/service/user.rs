@@ -2,7 +2,7 @@ use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::{
     PasswordHash, PasswordHasher, PasswordVerifier, SaltString,
 };
-use argon2::{password_hash, Argon2};
+use argon2::{Argon2, password_hash};
 use async_trait::async_trait;
 use axum::body::Bytes;
 use axum_login::{AuthnBackend, UserId};
@@ -307,7 +307,7 @@ fn validate_username(username: &str) -> Result<(), ValidateError> {
 }
 
 fn validate_password(password: &str) -> Result<(), ValidateError> {
-    use zxcvbn::{zxcvbn, Score};
+    use zxcvbn::{Score, zxcvbn};
 
     static USER_PASSWORD_REGEX: Lazy<Regex> =
         Lazy::new(|| Regex::new(r"^[A-Za-z\d!@#$%^&*]{8,}$").unwrap());

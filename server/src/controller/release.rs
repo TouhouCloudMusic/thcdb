@@ -1,7 +1,7 @@
+use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Json;
 use serde::Deserialize;
 use utoipa::{IntoParams, IntoResponses, ToSchema};
 use utoipa_axum::router::OpenApiRouter;

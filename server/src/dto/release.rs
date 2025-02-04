@@ -1,11 +1,12 @@
 use chrono::Duration;
 use entity::sea_orm_active_enums::{DatePrecision, ReleaseType};
 use entity::{release, release_history, song, song_history};
-use input::{Credit, LocalizedTitle};
+use input::{NewCredit, NewLocalizedTitle};
 use sea_orm::prelude::Date;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::IntoActiveValue;
-use serde::Deserialize;
+use sea_orm::prelude::Date;
+use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 #[derive(Clone, Deserialize, ToSchema)]
@@ -118,71 +119,53 @@ impl From<&Unlinked> for song_history::ActiveModel {
 
 pub mod input {
     use entity::{release_localized_title, release_localized_title_history};
+    use macros::impl_from;
     use sea_orm::ActiveValue::{NotSet, Set};
     use serde::Deserialize;
     use utoipa::ToSchema;
     #[derive(Clone, ToSchema, Deserialize)]
-    pub struct LocalizedTitle {
+    pub struct NewLocalizedTitle {
         pub title: String,
         pub language_id: i32,
     }
 
-    impl From<LocalizedTitle> for release_localized_title::Model {
-        #[inline]
-        fn from(val: LocalizedTitle) -> Self {
-            Self {
-                release_id: Default::default(),
-                language_id: val.language_id,
-                title: val.title,
-            }
-        }
-    }
+    impl_from!(NewLocalizedTitle > release_localized_title::Model {
+        title,
+        language_id,
+        : release_id Default::default(),
+    });
 
-    impl From<LocalizedTitle> for release_localized_title_history::Model {
-        #[inline]
-        fn from(val: LocalizedTitle) -> Self {
-            Self {
-                history_id: Default::default(),
-                language_id: val.language_id,
-                title: val.title,
-            }
+    impl_from!(
+        NewLocalizedTitle >
+        release_localized_title_history::Model {
+            title,
+            language_id,
+            : history_id Default::default(),
         }
-    }
+    );
 
-    impl From<&LocalizedTitle> for release_localized_title::Model {
-        #[inline]
-        fn from(val: &LocalizedTitle) -> Self {
-            Self {
-                release_id: Default::default(),
-                language_id: val.language_id,
-                title: val.title.clone(),
-            }
-        }
-    }
+    impl_from!(
+        NewLocalizedTitle >
+        release_localized_title::ActiveModel {
+            title,
+            language_id,
+            : release_id NotSet
+        },
+        Set
+    );
 
-    impl From<&LocalizedTitle> for release_localized_title_history::Model {
-        #[inline]
-        fn from(val: &LocalizedTitle) -> Self {
-            Self {
-                history_id: Default::default(),
-                language_id: val.language_id,
-                title: val.title.clone(),
-            }
-        }
-    }
-
-    impl From<&LocalizedTitle> for release_localized_title::ActiveModel {
-        fn from(val: &LocalizedTitle) -> Self {
-            Self {
-                release_id: NotSet,
-                language_id: Set(val.language_id),
-                title: Set(val.title.clone()),
-            }
-        }
-    }
+    impl_from!(
+        NewLocalizedTitle >
+        release_localized_title_history::ActiveModel {
+            title,
+            language_id,
+            : history_id NotSet
+        },
+        Set
+    );
 
     #[derive(Clone, ToSchema, Deserialize)]
-    pub struct Credit {
+    pub struct NewCredit {
         pub artist_id: i32,
         pub role_id: i32,
         pub on: Option<Vec<i16>>,

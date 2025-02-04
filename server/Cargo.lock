@@ -2307,9 +2307,7 @@ dependencies = [
 name = "macros"
 version = "0.1.0"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.98",
+ "proc_macros",
 ]
 
 [[package]]
@@ -2821,6 +2819,15 @@ dependencies = [
  "syn 2.0.98",
  "version_check",
  "yansi",
+]
+
+[[package]]
+name = "proc_macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.98",
 ]
 
 [[package]]

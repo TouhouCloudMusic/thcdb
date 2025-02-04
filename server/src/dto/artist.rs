@@ -1,10 +1,8 @@
 use entity::sea_orm_active_enums::{ArtistType, DatePrecision};
-use entity::{
-    artist, artist_history,
-    artist_localized_name_history,
-};
-use sea_orm::prelude::Date;
+use entity::{artist, artist_history, artist_localized_name_history};
+use macros::impl_from;
 use sea_orm::ActiveValue::{NotSet, Set};
+use sea_orm::prelude::Date;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -49,35 +47,20 @@ pub struct ArtistCorrection {
     pub correction_metadata: dto::correction::Metadata,
 }
 
-impl From<&ArtistCorrection> for artist::ActiveModel {
-    fn from(value: &ArtistCorrection) -> Self {
-        Self {
-            id: NotSet,
-            name: Set(value.name.clone()),
-            artist_type: Set(value.artist_type),
-            text_alias: Set(value.text_alias.clone()),
-            start_date: Set(value.start_date),
-            start_date_precision: Set(value.start_date_precision),
-            end_date: Set(value.end_date),
-            end_date_precision: Set(value.end_date_precision),
-        }
-    }
-}
-
-impl From<&ArtistCorrection> for artist_history::ActiveModel {
-    fn from(value: &ArtistCorrection) -> Self {
-        Self {
-            id: NotSet,
-            name: Set(value.name.clone()),
-            artist_type: Set(value.artist_type),
-            text_alias: Set(value.text_alias.clone()),
-            start_date: Set(value.start_date),
-            start_date_precision: Set(value.start_date_precision),
-            end_date: Set(value.end_date),
-            end_date_precision: Set(value.end_date_precision),
-        }
-    }
-}
+impl_from!(
+    ArtistCorrection >
+    [artist::ActiveModel, artist_history::ActiveModel] {
+        name,
+        artist_type,
+        text_alias,
+        start_date,
+        start_date_precision,
+        end_date,
+        end_date_precision
+        : id NotSet,
+    },
+    Set
+);
 
 #[derive(Clone, ToSchema, Serialize)]
 pub struct GroupMember {
@@ -105,11 +88,7 @@ pub struct NewLocalizedName {
     pub name: String,
 }
 
-impl From<artist_localized_name_history::Model> for NewLocalizedName {
-    fn from(value: artist_localized_name_history::Model) -> Self {
-        Self {
-            language_id: value.language_id,
-            name: value.name,
-        }
-    }
-}
+impl_from!(
+    artist_localized_name_history::Model
+        > NewLocalizedName { language_id, name }
+);

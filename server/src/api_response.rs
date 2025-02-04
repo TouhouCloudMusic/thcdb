@@ -2,16 +2,16 @@
 
 use std::fmt::Display;
 
+use axum::Json;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Json;
 use once_cell::sync::Lazy;
 use serde::Serialize;
 use utoipa::openapi::{
     ContentBuilder, ObjectBuilder, RefOr, ResponseBuilder, ResponsesBuilder,
     Schema,
 };
-use utoipa::{openapi, PartialSchema, ToSchema};
+use utoipa::{PartialSchema, ToSchema, openapi};
 
 use crate::error::{AsErrorCode, ErrorCode};
 use crate::utils::openapi::ContentType;

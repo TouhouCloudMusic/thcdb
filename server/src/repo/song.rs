@@ -7,7 +7,7 @@ use entity::{
     song_localized_title_history,
 };
 use futures::future;
-use itertools::{izip, Itertools};
+use itertools::{Itertools, izip};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityName,

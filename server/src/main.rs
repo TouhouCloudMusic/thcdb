@@ -29,11 +29,11 @@ mod state;
 mod types;
 mod utils;
 
-use axum::routing::get;
 use axum::Router;
+use axum::routing::get;
+use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
-use axum_login::AuthManagerLayerBuilder;
 use state::AppState;
 #[cfg(not(target_env = "msvc"))]
 use tikv_jemallocator::Jemalloc;

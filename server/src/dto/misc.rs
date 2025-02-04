@@ -1,3 +1,4 @@
+use macros::impl_from;
 use sea_orm::FromQueryResult;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -8,23 +9,7 @@ pub struct CreditRole {
     pub name: String,
 }
 
-impl From<entity::credit_role::Model> for CreditRole {
-    fn from(value: entity::credit_role::Model) -> Self {
-        Self {
-            id: value.id,
-            name: value.name,
-        }
-    }
-}
-
-impl From<&entity::credit_role::Model> for CreditRole {
-    fn from(value: &entity::credit_role::Model) -> Self {
-        Self {
-            id: value.id,
-            name: value.name.clone(),
-        }
-    }
-}
+impl_from!(entity::credit_role::Model > CreditRole { id, name });
 
 #[derive(Clone, ToSchema, Serialize, Deserialize, FromQueryResult)]
 pub struct Language {
@@ -33,25 +18,7 @@ pub struct Language {
     pub name: String,
 }
 
-impl From<entity::language::Model> for Language {
-    fn from(value: entity::language::Model) -> Self {
-        Self {
-            id: value.id,
-            code: value.code,
-            name: value.name,
-        }
-    }
-}
-
-impl From<&entity::language::Model> for Language {
-    fn from(value: &entity::language::Model) -> Self {
-        Self {
-            id: value.id,
-            code: value.code.clone(),
-            name: value.name.clone(),
-        }
-    }
-}
+impl_from!(entity::language::Model > Language { id, code, name });
 
 #[derive(ToSchema, Serialize)]
 pub struct LocalizedTitle {

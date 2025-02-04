@@ -1,8 +1,8 @@
 use core::fmt;
 
-use juniper::{graphql_scalar, ScalarValue};
+use juniper::{ScalarValue, graphql_scalar};
 use serde::de::Error;
-use serde::{de, Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, de};
 
 #[derive(Debug, Clone, PartialEq, ScalarValue, Serialize)]
 #[serde(untagged)]

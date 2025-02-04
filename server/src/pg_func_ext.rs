@@ -1,7 +1,7 @@
 use std::fmt::Write;
 
-use sea_orm::sea_query::{Func, FunctionCall, SimpleExpr};
 use sea_orm::Iden;
+use sea_orm::sea_query::{Func, FunctionCall, SimpleExpr};
 
 pub struct PgFuncExt;
 

@@ -1,16 +1,14 @@
+use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::middleware::from_fn;
 use axum::response::IntoResponse;
-use axum::Json;
 use serde::Deserialize;
-use utoipa::{IntoParams, IntoResponses, ToSchema};
+use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::api_response::{
-    Data, ErrResponseDef, IntoApiResponse, Message, StatusCodeExt,
-};
+use crate::api_response::{Data, IntoApiResponse, Message, StatusCodeExt};
 use crate::dto::artist::{ArtistCorrection, ArtistResponse};
 use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
 use crate::middleware::is_signed_in;
@@ -193,14 +191,5 @@ impl AsErrorCode for service::artist::Error {
 impl IntoResponse for service::artist::Error {
     fn into_response(self) -> axum::response::Response {
         self.into_api_response()
-    }
-}
-
-impl IntoResponses for service::artist::Error {
-    fn responses() -> std::collections::BTreeMap<
-        String,
-        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
-    > {
-        Self::build_err_responses().into()
     }
 }

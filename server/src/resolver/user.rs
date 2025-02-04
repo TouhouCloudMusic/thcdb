@@ -1,4 +1,4 @@
-use juniper::{graphql_object, graphql_value, FieldError, FieldResult};
+use juniper::{FieldError, FieldResult, graphql_object, graphql_value};
 
 use crate::dto::user::AuthCredential;
 use crate::model::output::{LoginOutput, SignupOutput};

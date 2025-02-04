@@ -1,4 +1,4 @@
-use entity::{release, GqlScalarValue};
+use entity::{GqlScalarValue, release};
 use juniper::FieldResult;
 
 use crate::model::input::RetrieveReleaseInput;

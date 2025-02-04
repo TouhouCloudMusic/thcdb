@@ -14,10 +14,10 @@ use entity::{
     group_member_role, group_member_role_history, language,
 };
 use error_set::error_set;
-use itertools::{izip, Itertools};
+use itertools::{Itertools, izip};
+use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{Alias, IntoCondition, PostgresQueryBuilder, Query};
-use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, ConnectionTrait,
     DatabaseTransaction, DbBackend, DbErr, EntityName, EntityTrait,
@@ -947,7 +947,7 @@ mod test {
 
     use crate::infrastructure::database::get_connection;
     use crate::repo::artist::{
-        GroupMemberFromHistory, GET_GROUP_MEMBER_FROM_ARTIST_HISTORY_BY_ID_SQL,
+        GET_GROUP_MEMBER_FROM_ARTIST_HISTORY_BY_ID_SQL, GroupMemberFromHistory,
     };
 
     #[test]

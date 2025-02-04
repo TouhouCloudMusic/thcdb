@@ -1,8 +1,8 @@
+use axum::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::middleware::from_fn;
 use axum::response::{IntoResponse, Redirect, Response};
-use axum::Json;
 use axum_typed_multipart::TypedMultipart;
 use utoipa::IntoResponses;
 use utoipa_axum::router::OpenApiRouter;
@@ -14,7 +14,7 @@ use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
 use crate::middleware::is_signed_in;
 use crate::service::image::ImageService;
 use crate::service::user::{AuthSession, Error, UserService, ValidateError};
-use crate::{api_response, AppState};
+use crate::{AppState, api_response};
 
 impl StatusCodeExt for Error {
     fn as_status_code(&self) -> StatusCode {
