@@ -2,12 +2,12 @@ use entity::release;
 use error_set::error_set;
 use sea_orm::sea_query::{Func, SimpleExpr};
 use sea_orm::{
-    DatabaseConnection, EntityName, EntityTrait, Order, QueryOrder,
-    QuerySelect, TransactionTrait,
+    DatabaseConnection, EntityTrait, Order, QueryOrder, QuerySelect,
+    TransactionTrait,
 };
 
 use crate::dto::correction::Metadata;
-use crate::dto::release::GeneralRelease;
+use crate::dto::release::{GeneralRelease, ReleaseResponse};
 use crate::error::{InvalidField, RepositoryError};
 use crate::repo;
 use crate::utils::MapInto;
@@ -41,14 +41,15 @@ impl ReleaseService {
     pub async fn find_by_id(
         &self,
         id: i32,
-    ) -> Result<release::Model, RepositoryError> {
-        // TODO: Move to repo layer
-        release::Entity::find_by_id(id)
-            .one(&self.db)
-            .await?
-            .ok_or_else(|| RepositoryError::EntityNotFound {
-                entity_name: release::Entity.table_name(),
-            })
+    ) -> Result<ReleaseResponse, RepositoryError> {
+        repo::release::find_by_id(id, &self.db).await
+    }
+
+    pub async fn find_by_keyword(
+        &self,
+        keyword: String,
+    ) -> Result<Vec<ReleaseResponse>, RepositoryError> {
+        repo::release::find_by_keyword(keyword, &self.db).await
     }
 
     pub async fn create(

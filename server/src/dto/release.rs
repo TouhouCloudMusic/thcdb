@@ -1,13 +1,59 @@
 use chrono::Duration;
 use entity::sea_orm_active_enums::{DatePrecision, ReleaseType};
-use entity::{release, release_history, song, song_history};
+use entity::{artist, label, release, release_history, song, song_history};
 use input::{NewCredit, NewLocalizedTitle};
-use sea_orm::prelude::Date;
+use macros::impl_from;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::IntoActiveValue;
 use sea_orm::prelude::Date;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+
+use super::misc::{CreditRole, LocalizedTitle};
+
+#[derive(ToSchema, Serialize)]
+#[schema(
+    as = Release
+)]
+pub struct ReleaseResponse {
+    pub id: i32,
+    pub release_type: ReleaseType,
+    pub release_date: Option<Date>,
+    pub release_date_precision: Option<DatePrecision>,
+    pub recording_date_start: Option<Date>,
+    pub recording_date_start_precision: Option<DatePrecision>,
+    pub recording_date_end: Option<Date>,
+    pub recording_date_end_precision: Option<DatePrecision>,
+
+    pub artists: Vec<ReleaseArtist>,
+    pub credits: Vec<ReleaseCredit>,
+    pub labels: Vec<ReleaseLabel>,
+    pub localized_titles: Vec<LocalizedTitle>,
+    pub tracks: Vec<i32>,
+}
+
+#[derive(ToSchema, Serialize)]
+pub struct ReleaseArtist {
+    pub id: i32,
+    pub name: String,
+}
+
+impl_from!(artist::Model > ReleaseArtist { id, name });
+
+#[derive(ToSchema, Serialize)]
+pub struct ReleaseLabel {
+    pub id: i32,
+    pub name: String,
+}
+
+impl_from!(label::Model > ReleaseLabel { id, name });
+
+#[derive(ToSchema, Serialize)]
+pub struct ReleaseCredit {
+    pub artist: ReleaseArtist,
+    pub role: CreditRole,
+    pub on: Option<Vec<i16>>,
+}
 
 #[derive(Clone, Deserialize, ToSchema)]
 pub struct GeneralRelease {
@@ -19,11 +65,12 @@ pub struct GeneralRelease {
     pub recording_date_start_precision: Option<DatePrecision>,
     pub recording_date_end: Option<Date>,
     pub recording_date_end_precision: Option<DatePrecision>,
+
     pub artists: Vec<i32>,
-    pub localized_titles: Vec<LocalizedTitle>,
+    pub localized_titles: Vec<NewLocalizedTitle>,
     pub labels: Vec<i32>,
     pub tracks: Vec<NewTrack>,
-    pub credits: Vec<Credit>,
+    pub credits: Vec<NewCredit>,
 }
 
 impl From<&GeneralRelease> for release::ActiveModel {

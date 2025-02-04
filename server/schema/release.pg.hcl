@@ -442,6 +442,10 @@ table "release_credit" {
   column "artist_id" {
     type = int
   }
+  foreign_key "fk_release_credit_artist_id" {
+    columns     = [column.artist_id]
+    ref_columns = [table.artist.column.id]
+  }
 
   column "release_id" {
     type = int
@@ -484,6 +488,10 @@ table "release_credit_history" {
 
   column "artist_id" {
     type = int
+  }
+  foreign_key "fk_release_credit_history_artist_id" {
+    columns     = [column.artist_id]
+    ref_columns = [table.artist.column.id]
   }
 
   column "history_id" {

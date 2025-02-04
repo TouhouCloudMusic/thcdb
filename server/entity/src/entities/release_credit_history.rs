@@ -27,6 +27,14 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
+        belongs_to = "super::artist::Entity",
+        from = "Column::ArtistId",
+        to = "super::artist::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Artist,
+    #[sea_orm(
         belongs_to = "super::credit_role::Entity",
         from = "(Column::RoleId, Column::RoleId)",
         to = "(super::credit_role::Column::Id, super::credit_role::Column::Id)",
@@ -42,6 +50,12 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     ReleaseHistory,
+}
+
+impl Related<super::artist::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Artist.def()
+    }
 }
 
 impl Related<super::credit_role::Entity> for Entity {

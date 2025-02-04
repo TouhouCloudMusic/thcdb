@@ -2,7 +2,7 @@
 
 use entity::GqlScalarValue;
 
-use crate::resolver::release::ReleaseQuery;
+// use crate::resolver::release::ReleaseQuery;
 use crate::resolver::song::{SongMutation, SongQuery};
 use crate::resolver::user::{UserMutation, UserQuery};
 use crate::service::juniper::JuniperContext;
@@ -18,9 +18,9 @@ impl JuniperQuery {
     const fn song(&self) -> SongQuery {
         SongQuery
     }
-    const fn release(&self) -> ReleaseQuery {
-        ReleaseQuery
-    }
+    // const fn release(&self) -> ReleaseQuery {
+    //     ReleaseQuery
+    // }
 }
 
 #[juniper::graphql_object]
