@@ -505,7 +505,7 @@ table "release_credit_history" {
   column "role_id" {
     type = int
   }
-  foreign_key "fk_release_credit_role_id" {
+  foreign_key "fk_release_credit_history_role_id" {
     columns     = [column.role_id]
     ref_columns = [table.credit_role.column.id]
   }

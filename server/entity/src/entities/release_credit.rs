@@ -36,8 +36,8 @@ pub enum Relation {
     Artist,
     #[sea_orm(
         belongs_to = "super::credit_role::Entity",
-        from = "(Column::RoleId, Column::RoleId)",
-        to = "(super::credit_role::Column::Id, super::credit_role::Column::Id)",
+        from = "Column::RoleId",
+        to = "super::credit_role::Column::Id",
         on_update = "Cascade",
         on_delete = "SetNull"
     )]

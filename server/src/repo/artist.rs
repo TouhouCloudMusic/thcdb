@@ -2,6 +2,7 @@ use std::sync::LazyLock;
 
 use entity::prelude::{
     ArtistLink, ArtistLocalizedName, CreditRole, GroupMemberJoinLeave,
+    GroupMemberRole,
 };
 use entity::sea_orm_active_enums::{
     ArtistType, CorrectionStatus, CorrectionType, EntityType,
@@ -106,7 +107,9 @@ async fn find_many(
         .all(db)
         .await?;
 
-    let roles = group_members.load_many(CreditRole, db).await?;
+    let roles = group_members
+        .load_many_to_many(CreditRole, GroupMemberRole, db)
+        .await?;
 
     let join_leaves = group_members.load_many(GroupMemberJoinLeave, db).await?;
 

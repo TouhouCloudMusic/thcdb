@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use entity::prelude::{
-    Artist, CreditRole, Label, ReleaseArtist, ReleaseCredit, ReleaseLabel,
-    ReleaseLocalizedTitle, ReleaseTrack,
+    Artist, CreditRole, Label, Release, ReleaseArtist, ReleaseCredit,
+    ReleaseLabel, ReleaseLocalizedTitle, ReleaseTrack,
 };
 use entity::sea_orm_active_enums::{
     CorrectionStatus, CorrectionType, EntityType,
@@ -22,7 +22,7 @@ use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
     EntityName, EntityOrSelect, EntityTrait, IntoActiveModel, IntoActiveValue,
-    LoaderTrait, ModelTrait, QueryFilter, QueryOrder, QuerySelect,
+    LoaderTrait, ModelTrait, QueryFilter, QueryOrder, QuerySelect, Related,
 };
 
 use crate::dto::correction::Metadata;
@@ -124,7 +124,7 @@ async fn find_many(
         .unique_by(|c| c.artist_id)
         .filter(|c| release_artist_ids.clone().any(|x| x == c.artist_id))
         .collect_vec()
-        .load_many(Artist, db)
+        .load_one(Artist, db)
         .await?
         .into_iter()
         .flatten()
@@ -132,7 +132,7 @@ async fn find_many(
         .collect_vec();
 
     let all_roles = flatten_credits
-        .load_many(CreditRole, db)
+        .load_one(CreditRole, db)
         .await?
         .into_iter()
         .flatten()

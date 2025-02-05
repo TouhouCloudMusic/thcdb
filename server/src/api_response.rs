@@ -256,17 +256,46 @@ pub trait IntoApiResponse {
 
 impl<T> IntoApiResponse for T
 where
-    T: StatusCodeExt + Display + AsErrorCode,
+    T: StatusCodeExt
+        + Display
+        + AsErrorCode
+        + std::fmt::Debug
+        + std::error::Error,
 {
     fn into_api_response(self) -> axum::response::Response {
-        Error {
-            message: self.to_string(),
-            error_code: self.as_error_code(),
-            status_code: self.as_status_code(),
-            ..Default::default()
+        match self.as_error_code() {
+            ErrorCode::DatabaseError => {
+                tracing::error!(
+                    "Database error: {:#?} {:#?}",
+                    &self,
+                    &self.source()
+                );
+            }
+            ErrorCode::TokioError => {
+                tracing::error!(
+                    "Tokio error: {:#?} {:#?}",
+                    &self,
+                    &self.source()
+                );
+            }
+            _ => (),
         }
-        .into_response()
+
+        default_impl_into_api_response(self)
     }
+}
+
+pub fn default_impl_into_api_response<T>(err: T) -> axum::response::Response
+where
+    T: StatusCodeExt + Display + AsErrorCode,
+{
+    Error {
+        message: err.to_string(),
+        error_code: err.as_error_code(),
+        status_code: err.as_status_code(),
+        ..Default::default()
+    }
+    .into_response()
 }
 
 #[cfg(test)]

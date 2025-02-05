@@ -85,15 +85,15 @@ impl StatusCodeExt for RepositoryError {
 
 impl IntoResponse for RepositoryError {
     fn into_response(self) -> axum::response::Response {
-        match &self {
-            Self::Database(db_err) => {
-                tracing::error!("Database error: {}", db_err);
-            }
-            Self::Tokio(tokio_err) => {
-                tracing::error!("Tokio error: {}", tokio_err);
-            }
-            _ => (),
-        }
+        // match &self {
+        //     Self::Database(db_err) => {
+        //         tracing::error!("Database error: {}", db_err);
+        //     }
+        //     Self::Tokio(tokio_err) => {
+        //         tracing::error!("Tokio error: {}", tokio_err);
+        //     }
+        //     _ => (),
+        // }
 
         self.into_api_response()
     }
