@@ -97,6 +97,9 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 utoipa.workspace = true
 utoipa-axum = "0.1"
+utoipa-scalar = { version = "0.3", features = [
+    "axum",
+] }
 utoipa-swagger-ui = { version = "8", features = [
     "axum",
     "vendored",

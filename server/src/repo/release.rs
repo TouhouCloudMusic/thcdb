@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use entity::prelude::{
-    Artist, CreditRole, Label, Release, ReleaseArtist, ReleaseCredit,
-    ReleaseLabel, ReleaseLocalizedTitle, ReleaseTrack,
+    Artist, CreditRole, Label, ReleaseArtist, ReleaseCredit, ReleaseLabel,
+    ReleaseLocalizedTitle, ReleaseTrack,
 };
 use entity::sea_orm_active_enums::{
     CorrectionStatus, CorrectionType, EntityType,
@@ -22,7 +22,7 @@ use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
     EntityName, EntityOrSelect, EntityTrait, IntoActiveModel, IntoActiveValue,
-    LoaderTrait, ModelTrait, QueryFilter, QueryOrder, QuerySelect, Related,
+    LoaderTrait, ModelTrait, QueryFilter, QueryOrder, QuerySelect,
 };
 
 use crate::dto::correction::Metadata;
