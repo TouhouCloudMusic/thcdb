@@ -10,10 +10,12 @@ fmt:
 fix:
   cargo clippy --fix --allow-dirty --allow-staged
 
-pre-push:
-  taplo check
+check:
+  taplo fmt --check
   cargo fmt --check
   cargo clippy
+
+pre-push: check
 
 default: fmt && fix
 
@@ -27,6 +29,7 @@ generate:
   --model-extra-derives juniper::GraphQLObject \
   --model-extra-attributes 'graphql(scalar=crate::extension::GqlScalarValue)' \
   --enum-extra-derives juniper::GraphQLEnum \
+  --enum-extra-derives utoipa::ToSchema \
   --enum-extra-derives Copy
 
 db_all: migrate && generate
