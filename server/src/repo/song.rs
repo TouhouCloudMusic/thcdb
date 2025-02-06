@@ -2,27 +2,71 @@ use entity::sea_orm_active_enums::{
     CorrectionStatus, CorrectionType, EntityType,
 };
 use entity::{
-    correction, correction_revision, song, song_credit, song_credit_history,
-    song_history, song_language, song_language_history, song_localized_title,
-    song_localized_title_history,
+    correction, correction_revision, language, song, song_credit,
+    song_credit_history, song_history, song_language, song_language_history,
+    song_localized_title, song_localized_title_history,
 };
 use futures::future;
 use itertools::{Itertools, izip};
 use sea_orm::ActiveValue::{NotSet, Set};
+use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityName,
-    EntityTrait, IntoActiveValue, ModelTrait, QueryFilter, QueryOrder,
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
+    EntityName, EntityTrait, IntoActiveValue, LoaderTrait, ModelTrait,
+    PaginatorTrait, QueryFilter, QueryOrder,
 };
 
-use crate::dto::song::{LocalizedTitle, NewSong, NewSongCredit};
+use crate::dto::share::NewLocalizedTitle;
+use crate::dto::song::{NewSong, NewSongCredit, SongResponse};
 use crate::error::RepositoryError;
 use crate::repo;
+use crate::utils::MapInto;
 
 pub async fn find_by_id(
     id: i32,
-    tx: &DatabaseTransaction,
-) -> Result<Option<song::Model>, DbErr> {
-    song::Entity::find_by_id(id).one(tx).await
+    db: &impl ConnectionTrait,
+) -> Result<SongResponse, RepositoryError> {
+    find_many(song::Column::Id.eq(id), db)
+        .await?
+        .into_iter()
+        .next()
+        .ok_or_else(|| RepositoryError::EntityNotFound {
+            entity_name: song::Entity.table_name(),
+        })
+}
+
+pub async fn find_by_keyword(
+    keyword: impl Into<String>,
+    db: &impl ConnectionTrait,
+) -> Result<impl IntoIterator<Item = SongResponse>, RepositoryError> {
+    find_many(song::Column::Title.contains(keyword), db).await
+}
+
+async fn find_many(
+    cond: impl IntoCondition,
+    db: &impl ConnectionTrait,
+) -> Result<impl IntoIterator<Item = SongResponse>, RepositoryError> {
+    let songs = song::Entity::find().filter(cond).all(db).await?;
+
+    let credits = songs.load_many(song_credit::Entity, db).await?;
+
+    let langs = songs
+        .load_many_to_many(language::Entity, song_language::Entity, db)
+        .await?;
+
+    let llts = songs.load_many(song_localized_title::Entity, db).await?;
+
+    Ok(
+        izip!(songs, credits, langs, llts).map(|(s, credits, langs, llts)| {
+            SongResponse {
+                id: s.id,
+                title: s.title,
+                credits: credits.map_into(),
+                languages: langs.map_into(),
+                localized_titles: llts.map_into(),
+            }
+        }),
+    )
 }
 
 pub async fn create(
@@ -82,11 +126,13 @@ pub async fn create_many(
     Ok(new_songs)
 }
 
-pub async fn create_update_correction(
+pub async fn create_correction(
     song_id: i32,
     data: NewSong,
     tx: &DatabaseTransaction,
-) -> Result<(), DbErr> {
+) -> Result<(), RepositoryError> {
+    utils::check_existence(song_id, tx).await?;
+
     let correction = repo::correction::create()
         .author_id(data.metadata.author_id)
         .entity_type(EntityType::Song)
@@ -118,7 +164,7 @@ pub async fn create_update_correction(
     Ok(())
 }
 
-pub async fn update_update_correction(
+pub async fn update_correction(
     correction: correction::Model,
     data: NewSong,
     tx: &DatabaseTransaction,
@@ -431,7 +477,7 @@ async fn update_language(
 
 async fn create_many_localized_titles(
     song_ids: &[i32],
-    localized_titles: &[&Option<Vec<LocalizedTitle>>],
+    localized_titles: &[&Option<Vec<NewLocalizedTitle>>],
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     let models = song_ids
@@ -467,7 +513,7 @@ async fn create_many_localized_titles(
 
 async fn create_many_localized_title_histories(
     history_ids: &[i32],
-    localized_titles: &[&Option<Vec<LocalizedTitle>>],
+    localized_titles: &[&Option<Vec<NewLocalizedTitle>>],
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     let models = history_ids
@@ -535,4 +581,30 @@ async fn update_localized_title(
     }
 
     Ok(())
+}
+
+mod utils {
+    use super::*;
+    pub async fn is_exist(
+        song_id: i32,
+        db: &impl ConnectionTrait,
+    ) -> Result<bool, DbErr> {
+        song::Entity::find_by_id(song_id)
+            .count(db)
+            .await
+            .map(|count| count > 0)
+    }
+
+    pub async fn check_existence(
+        song_id: i32,
+        db: &impl ConnectionTrait,
+    ) -> Result<(), RepositoryError> {
+        if is_exist(song_id, db).await? {
+            Ok(())
+        } else {
+            Err(RepositoryError::EntityNotFound {
+                entity_name: song::Entity.table_name(),
+            })
+        }
+    }
 }

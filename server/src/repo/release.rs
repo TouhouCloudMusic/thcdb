@@ -24,13 +24,15 @@ use sea_orm::{
     EntityName, EntityOrSelect, EntityTrait, IntoActiveModel, IntoActiveValue,
     LoaderTrait, ModelTrait, QueryFilter, QueryOrder, QuerySelect,
 };
+use utils::check_existence;
 
 use crate::dto::correction::Metadata;
-use crate::dto::misc::LocalizedTitle;
-use crate::dto::release::input::{NewCredit, NewLocalizedTitle};
+use crate::dto::release::input::NewCredit;
 use crate::dto::release::{
-    GeneralRelease, Linked, NewTrack, ReleaseResponse, Unlinked,
+    GeneralRelease, Linked, NewTrack, ReleaseCorrection, ReleaseResponse,
+    Unlinked,
 };
+use crate::dto::share::{LocalizedTitle, NewLocalizedTitle};
 use crate::dto::song::NewSong;
 use crate::error::RepositoryError;
 use crate::{dto, repo};
@@ -262,12 +264,14 @@ pub async fn create(
 
 pub async fn create_update_correction(
     release_id: i32,
-    data: GeneralRelease,
-    correction_metadata: Metadata,
+    data: ReleaseCorrection,
+    author_id: i32,
     tx: &DatabaseTransaction,
-) -> Result<(), DbErr> {
+) -> Result<(), RepositoryError> {
+    check_existence(release_id, tx).await?;
+
     let correction = repo::correction::create()
-        .author_id(correction_metadata.author_id)
+        .author_id(author_id)
         .entity_id(release_id)
         .entity_type(EntityType::Release)
         .status(CorrectionStatus::Pending)
@@ -277,9 +281,9 @@ pub async fn create_update_correction(
         .await?;
 
     let history = save_release_history_and_link_relations()
-        .data(&data)
+        .data(&data.data)
         .release_id(release_id)
-        .author_id(correction_metadata.author_id)
+        .author_id(author_id)
         .tx(tx)
         .call()
         .await?;
@@ -287,7 +291,7 @@ pub async fn create_update_correction(
     repo::correction::link_history()
         .correction_id(correction.id)
         .entity_history_id(history.id)
-        .description(correction_metadata.description.clone())
+        .description(data.correction_desc.clone())
         .db(tx)
         .call()
         .await?;
@@ -297,21 +301,16 @@ pub async fn create_update_correction(
 
 pub async fn update_update_correction(
     correction: correction::Model,
-    data: GeneralRelease,
-    correction_metadata: Metadata,
+    data: ReleaseCorrection,
+    author_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), Error> {
-    add_co_author_if_updater_not_author(
-        correction.id,
-        correction_metadata.author_id,
-        tx,
-    )
-    .await?;
+    add_co_author_if_updater_not_author(correction.id, author_id, tx).await?;
 
     let history = save_release_history_and_link_relations()
-        .data(&data)
+        .data(&data.data)
         .release_id(correction.entity_id)
-        .author_id(correction_metadata.author_id)
+        .author_id(author_id)
         .tx(tx)
         .call()
         .await?;
@@ -319,7 +318,7 @@ pub async fn update_update_correction(
     repo::correction::link_history()
         .correction_id(correction.id)
         .entity_history_id(history.id)
-        .description(correction_metadata.description.clone())
+        .description(data.correction_desc.clone())
         .db(tx)
         .call()
         .await?;
@@ -930,4 +929,25 @@ async fn create_release_credit_history(
         .await?;
 
     Ok(())
+}
+
+mod utils {
+    use sea_orm::PaginatorTrait;
+
+    use super::*;
+
+    pub async fn check_existence(
+        id: i32,
+        db: &impl ConnectionTrait,
+    ) -> Result<(), RepositoryError> {
+        let count = release::Entity::find_by_id(id).count(db).await?;
+
+        if count > 0 {
+            Ok(())
+        } else {
+            Err(RepositoryError::EntityNotFound {
+                entity_name: release::Entity.table_name(),
+            })
+        }
+    }
 }

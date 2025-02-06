@@ -66,7 +66,7 @@ async fn handle(
 ) -> Result<Message, Error> {
     let user = session.user.unwrap();
 
-    if user_service.have_role(&user, "Admin").await? {
+    if user_service.have_role(user.id, "Admin").await? {
         match query.method {
             HandleCorrectionMethod::Approve => {
                 service.approve(id, user.id).await?;

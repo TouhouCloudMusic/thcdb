@@ -10,6 +10,7 @@ use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
     EntityName, EntityOrSelect, EntityTrait, IntoActiveModel, QueryFilter,
+    QueryOrder,
 };
 use utils::validate_entity_type;
 
@@ -39,6 +40,22 @@ pub async fn find_by_id_with_type<C: ConnectionTrait>(
 
         Ok(x)
     })
+}
+
+pub async fn find_latest(
+    entity_id: i32,
+    entity_type: EntityType,
+    db: &impl ConnectionTrait,
+) -> Result<correction::Model, RepositoryError> {
+    correction::Entity::find()
+        .filter(correction::Column::EntityId.eq(entity_id))
+        .filter(correction::Column::EntityType.eq(entity_type))
+        .order_by_desc(correction::Column::Id)
+        .one(db)
+        .await?
+        .ok_or_else(|| RepositoryError::EntityNotFound {
+            entity_name: correction::Entity.table_name(),
+        })
 }
 
 #[builder]

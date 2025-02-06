@@ -36,6 +36,7 @@ error_set! {
         UnexpRelatedEntityNotFound {
             entity_name: &'static str
         },
+        Unauthorized
     };
     TokioError = {
         TaskJoin(tokio::task::JoinError)
@@ -70,6 +71,7 @@ impl StatusCodeExt for RepositoryError {
             Self::InvalidField { .. }
             | Self::IncorrectCorrectionType { .. } => StatusCode::BAD_REQUEST,
             Self::EntityNotFound { .. } => StatusCode::NOT_FOUND,
+            Self::Unauthorized => StatusCode::UNAUTHORIZED,
         }
     }
 
@@ -78,6 +80,7 @@ impl StatusCodeExt for RepositoryError {
             StatusCode::BAD_REQUEST,
             StatusCode::NOT_FOUND,
             StatusCode::INTERNAL_SERVER_ERROR,
+            StatusCode::UNAUTHORIZED,
         ]
         .into_iter()
     }

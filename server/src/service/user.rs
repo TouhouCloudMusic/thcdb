@@ -242,10 +242,10 @@ impl UserService {
 
     pub async fn get_roles(
         &self,
-        user: &user::Model,
-    ) -> Result<Vec<role::Model>, Error> {
+        user_id: i32,
+    ) -> Result<Vec<role::Model>, RepositoryError> {
         let res = UserRole::find()
-            .filter(user_role::Column::UserId.eq(user.id))
+            .filter(user_role::Column::UserId.eq(user_id))
             .find_also_related(Role)
             .all(&self.db)
             .await?;
@@ -260,13 +260,18 @@ impl UserService {
         // Ok(res.swap_remove(0))
     }
 
+    // TODO: role enum
     pub async fn have_role(
         &self,
-        user: &user::Model,
+        user_id: i32,
         // TODO: seed data, role enum and validate database when server start up
         role: &str,
-    ) -> Result<bool, Error> {
-        Ok(self.get_roles(user).await?.iter().any(|m| m.name == role))
+    ) -> Result<bool, RepositoryError> {
+        Ok(self
+            .get_roles(user_id)
+            .await?
+            .iter()
+            .any(|m| m.name == role))
     }
 }
 

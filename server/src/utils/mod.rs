@@ -36,3 +36,12 @@ where
         }
     }
 }
+
+impl<T, U> MapInto<Vec<U>> for Vec<T>
+where
+    T: Into<U>,
+{
+    fn map_into(self) -> Vec<U> {
+        self.into_iter().map(Into::into).collect()
+    }
+}

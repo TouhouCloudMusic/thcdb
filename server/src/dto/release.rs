@@ -1,7 +1,7 @@
 use chrono::Duration;
 use entity::sea_orm_active_enums::{DatePrecision, ReleaseType};
 use entity::{artist, label, release, release_history, song, song_history};
-use input::{NewCredit, NewLocalizedTitle};
+use input::NewCredit;
 use macros::impl_from;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::IntoActiveValue;
@@ -9,7 +9,7 @@ use sea_orm::prelude::Date;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use super::misc::{CreditRole, LocalizedTitle};
+use super::share::{CreditRole, LocalizedTitle, NewLocalizedTitle};
 
 #[derive(ToSchema, Serialize)]
 #[schema(
@@ -71,6 +71,13 @@ pub struct GeneralRelease {
     pub labels: Vec<i32>,
     pub tracks: Vec<NewTrack>,
     pub credits: Vec<NewCredit>,
+}
+
+#[derive(Clone, Deserialize, ToSchema)]
+pub struct ReleaseCorrection {
+    #[serde(flatten)]
+    pub data: GeneralRelease,
+    pub correction_desc: String,
 }
 
 impl From<&GeneralRelease> for release::ActiveModel {
@@ -165,51 +172,9 @@ impl From<&Unlinked> for song_history::ActiveModel {
 }
 
 pub mod input {
-    use entity::{release_localized_title, release_localized_title_history};
-    use macros::impl_from;
-    use sea_orm::ActiveValue::{NotSet, Set};
+
     use serde::Deserialize;
     use utoipa::ToSchema;
-    #[derive(Clone, ToSchema, Deserialize)]
-    pub struct NewLocalizedTitle {
-        pub title: String,
-        pub language_id: i32,
-    }
-
-    impl_from!(NewLocalizedTitle > release_localized_title::Model {
-        title,
-        language_id,
-        : release_id Default::default(),
-    });
-
-    impl_from!(
-        NewLocalizedTitle >
-        release_localized_title_history::Model {
-            title,
-            language_id,
-            : history_id Default::default(),
-        }
-    );
-
-    impl_from!(
-        NewLocalizedTitle >
-        release_localized_title::ActiveModel {
-            title,
-            language_id,
-            : release_id NotSet
-        },
-        Set
-    );
-
-    impl_from!(
-        NewLocalizedTitle >
-        release_localized_title_history::ActiveModel {
-            title,
-            language_id,
-            : history_id NotSet
-        },
-        Set
-    );
 
     #[derive(Clone, ToSchema, Deserialize)]
     pub struct NewCredit {

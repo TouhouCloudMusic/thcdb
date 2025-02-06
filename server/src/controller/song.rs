@@ -1,33 +1,66 @@
 use axum::Json;
-use axum::extract::State;
-use entity::song;
-use sea_orm::EntityName;
+use axum::extract::{Path, Query, State};
+use axum::middleware::from_fn;
+use itertools::Itertools;
 use serde::Deserialize;
 use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::api_response::Message;
-use crate::dto::song::NewSong;
+use crate::api_response::{Data, Message};
+use crate::dto::song::{NewSong, SongResponse};
 use crate::error::RepositoryError;
+use crate::middleware::is_signed_in;
 use crate::service::song::SongService;
+use crate::service::user::AuthSession;
 use crate::state::AppState;
+use crate::utils::MapInto;
 
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
-        .routes(routes!(create_song))
+        .routes(routes!(create))
+        .routes(routes!(update))
+        .route_layer(from_fn(is_signed_in))
         .routes(routes!(find_by_id))
+        .routes(routes!(find_by_keyword))
 }
 
-#[derive(ToSchema, Deserialize)]
-struct CreateSongInput {
-    #[serde(flatten)]
-    pub data: NewSong,
+#[utoipa::path(
+    get,
+    path = "/song/{id}",
+    responses(
+		(status = 200, body = Data<SongResponse>),
+		RepositoryError
+    ),
+)]
+async fn find_by_id(
+    State(service): State<SongService>,
+    Path(id): Path<i32>,
+) -> Result<Data<SongResponse>, RepositoryError> {
+    service.find_by_id(id).await.map_into()
 }
 
-#[derive(ToSchema, Deserialize)]
-struct FindSongByIdInput {
-    pub id: i32,
+#[derive(Deserialize, ToSchema)]
+struct KwQuery {
+    keyword: String,
+}
+
+#[utoipa::path(
+    get,
+    path = "/song/{id}",
+    responses(
+		(status = 200, body = Data<Vec<SongResponse>>),
+		RepositoryError
+    ),
+)]
+async fn find_by_keyword(
+    State(service): State<SongService>,
+    Query(query): Query<KwQuery>,
+) -> Result<Data<Vec<SongResponse>>, RepositoryError> {
+    service
+        .find_by_keyword(query.keyword)
+        .await
+        .map(|x| x.into_iter().collect_vec().into())
 }
 
 #[utoipa::path(
@@ -40,7 +73,7 @@ struct FindSongByIdInput {
         RepositoryError
     ),
 )]
-async fn create_song(
+async fn create(
     State(service): State<SongService>,
     Json(input): Json<NewSong>,
 ) -> Result<Message, RepositoryError> {
@@ -51,20 +84,24 @@ async fn create_song(
 
 #[utoipa::path(
     post,
-    path = "/song",
-    request_body = FindSongByIdInput,
+    path = "/song/{id}",
+    request_body = NewSong,
     responses(
-		(status = 200, description = "Song found by id"),
-		(status = 500, description = "Failed to find song by id"),
+		(status = 200, body = Message),
+        (status = 401),
+        RepositoryError
     ),
 )]
-async fn find_by_id(
+async fn update(
+    session: AuthSession,
     State(service): State<SongService>,
-    Json(input): Json<FindSongByIdInput>,
-) -> Result<Json<song::Model>, RepositoryError> {
-    Ok(Json(service.find_by_id(input.id).await?.ok_or(
-        RepositoryError::EntityNotFound {
-            entity_name: song::Entity.table_name(),
-        },
-    )?))
+    Path(song_id): Path<i32>,
+    Json(mut input): Json<NewSong>,
+) -> Result<Message, RepositoryError> {
+    // TODO: 删除用户输入中的user id
+    input.metadata.author_id = session.user.unwrap().id;
+
+    service.create_or_update_correction(song_id, input).await?;
+
+    Ok(Message::ok())
 }

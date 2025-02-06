@@ -6,7 +6,7 @@ use sea_orm::prelude::Date;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use super::misc::{CreditRole, Language};
+use super::share::{CreditRole, Language};
 use crate::dto;
 
 #[derive(ToSchema, Serialize)]

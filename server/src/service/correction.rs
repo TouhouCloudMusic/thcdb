@@ -1,5 +1,11 @@
-use sea_orm::{DatabaseConnection, TransactionTrait};
+use entity::correction_user;
+use entity::sea_orm_active_enums::CorrectionUserType;
+use sea_orm::{
+    ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter,
+    TransactionTrait,
+};
 
+use super::user::UserService;
 use crate::error::RepositoryError;
 use crate::repo;
 
@@ -26,5 +32,29 @@ impl Service {
         transaction.commit().await?;
 
         Ok(())
+    }
+
+    pub async fn is_author_or_admin(
+        &self,
+        user_id: i32,
+        correction_id: i32,
+    ) -> Result<bool, RepositoryError> {
+        let user_service = UserService::new(self.db.clone());
+
+        if user_service.have_role(user_id, "Admin").await? {
+            return Ok(true);
+        }
+
+        let count = correction_user::Entity::find()
+            .filter(correction_user::Column::CorrectionId.eq(correction_id))
+            .filter(correction_user::Column::UserId.eq(user_id))
+            .filter(
+                correction_user::Column::UserType
+                    .eq(CorrectionUserType::Author),
+            )
+            .count(&self.db)
+            .await?;
+
+        Ok(count != 0)
     }
 }

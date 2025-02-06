@@ -6,7 +6,7 @@ use juniper::FieldResult;
 use crate::dto::correction::Metadata;
 use crate::dto::song::NewSong;
 use crate::error::InvalidField;
-use crate::model::input::{CreateSongInput, RetrieveSongInput};
+use crate::model::input::CreateSongInput;
 use crate::service::juniper::JuniperContext;
 
 pub struct SongQuery;
@@ -16,13 +16,16 @@ pub struct SongMutation;
 #[juniper::graphql_object]
 #[graphql(context = JuniperContext, scalar = GqlScalarValue)]
 impl SongQuery {
-    async fn retrieve(
-        input: RetrieveSongInput,
-        context: &JuniperContext,
-    ) -> FieldResult<Option<song::Model>> {
-        let song = context.state.song_service.find_by_id(input.id).await?;
-        Ok(song)
+    fn placeholder() -> String {
+        "123".into()
     }
+    // async fn retrieve(
+    //     input: RetrieveSongInput,
+    //     context: &JuniperContext,
+    // ) -> FieldResult<Option<song::Model>> {
+    //     let song = context.state.song_service.find_by_id(input.id).await?;
+    //     Ok(song)
+    // }
 }
 
 #[allow(unused_variables, unreachable_code)]

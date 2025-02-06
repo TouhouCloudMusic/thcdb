@@ -1,4 +1,5 @@
 use entity::release;
+use entity::sea_orm_active_enums::EntityType;
 use error_set::error_set;
 use sea_orm::sea_query::{Func, SimpleExpr};
 use sea_orm::{
@@ -7,7 +8,7 @@ use sea_orm::{
 };
 
 use crate::dto::correction::Metadata;
-use crate::dto::release::{GeneralRelease, ReleaseResponse};
+use crate::dto::release::{GeneralRelease, ReleaseCorrection, ReleaseResponse};
 use crate::error::{InvalidField, RepositoryError};
 use crate::repo;
 use crate::utils::MapInto;
@@ -52,6 +53,18 @@ impl ReleaseService {
         repo::release::find_by_keyword(keyword, &self.db).await
     }
 
+    pub async fn random(
+        &self,
+        count: u64,
+    ) -> Result<Vec<release::Model>, Error> {
+        release::Entity::find()
+            .order_by(SimpleExpr::FunctionCall(Func::random()), Order::Desc)
+            .limit(count)
+            .all(&self.db)
+            .await
+            .map_into()
+    }
+
     pub async fn create(
         &self,
         release_data: GeneralRelease,
@@ -77,15 +90,50 @@ impl ReleaseService {
         Ok(result)
     }
 
-    pub async fn random(
+    pub async fn create_update_correction(
         &self,
-        count: u64,
-    ) -> Result<Vec<release::Model>, Error> {
-        release::Entity::find()
-            .order_by(SimpleExpr::FunctionCall(Func::random()), Order::Desc)
-            .limit(count)
-            .all(&self.db)
-            .await
-            .map_into()
+        release_id: i32,
+        author_id: i32,
+        data: ReleaseCorrection,
+    ) -> Result<(), Error> {
+        let transaction = self.db.begin().await?;
+
+        repo::release::create_update_correction(
+            release_id,
+            data,
+            author_id,
+            &transaction,
+        )
+        .await?;
+
+        transaction.commit().await?;
+        Ok(())
+    }
+
+    pub async fn update_update_correction(
+        &self,
+        release_id: i32,
+        author_id: i32,
+        data: ReleaseCorrection,
+    ) -> Result<(), Error> {
+        let transaction = self.db.begin().await?;
+
+        let correction = repo::correction::find_latest(
+            release_id,
+            EntityType::Release,
+            &self.db,
+        )
+        .await?;
+
+        repo::release::update_update_correction(
+            correction,
+            data,
+            author_id,
+            &transaction,
+        )
+        .await?;
+
+        transaction.commit().await?;
+        Ok(())
     }
 }

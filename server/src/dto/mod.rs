@@ -1,8 +1,8 @@
 pub mod artist;
 pub mod correction;
 pub mod label;
-pub mod misc;
 pub mod release;
+pub mod share;
 pub mod song;
 pub mod tag;
 pub mod r#trait;

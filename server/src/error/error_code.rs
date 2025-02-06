@@ -12,7 +12,8 @@ pub trait AsErrorCode {
 pub enum ErrorCode {
     InvalidField = 400_00,
     IncorrectCorrectionType = 400_01,
-    AuthenticationFailed = 401_00,
+    Unauthorized = 401_00,
+    AuthenticationFailed = 401_01,
     EntityNotFound = 404_00,
     UnknownError = 500_00,
     TokioError = 500_01,
@@ -46,6 +47,7 @@ impl AsErrorCode for RepositoryError {
             Self::IncorrectCorrectionType { .. } => {
                 ErrorCode::IncorrectCorrectionType
             }
+            Self::Unauthorized => ErrorCode::Unauthorized,
         }
     }
 }
