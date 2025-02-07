@@ -1,15 +1,12 @@
 use entity::artist;
 use error_set::error_set;
 use macros::IntoErrorSchema;
-use sea_orm::{DatabaseConnection, TransactionTrait};
+use sea_orm::TransactionTrait;
 
 use crate::dto::artist::{ArtistCorrection, ArtistResponse};
 use crate::repo;
 
-#[derive(Clone)]
-pub struct ArtistService {
-    db: DatabaseConnection,
-}
+super::def_service!();
 
 error_set! {
     #[disable(From)]
@@ -28,11 +25,7 @@ where
     }
 }
 
-impl ArtistService {
-    pub const fn new(db: DatabaseConnection) -> Self {
-        Self { db }
-    }
-
+impl Service {
     pub async fn find_by_id(&self, id: i32) -> Result<ArtistResponse, Error> {
         Ok(repo::artist::find_by_id(id, &self.db).await?)
     }

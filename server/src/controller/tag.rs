@@ -9,7 +9,7 @@ use crate::api_response;
 use crate::dto::correction::Metadata;
 use crate::dto::tag::NewTag;
 use crate::error::RepositoryError;
-use crate::service::tag::TagService;
+use crate::service::tag::Service;
 use crate::state::AppState;
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new().routes(routes!(create_tag))
@@ -33,7 +33,7 @@ struct CreateTagInput {
     ),
 )]
 async fn create_tag(
-    State(service): State<TagService>,
+    State(service): State<Service>,
     Json(input): Json<CreateTagInput>,
 ) -> Result<api_response::Message, RepositoryError> {
     service.create(input.data, input.correction_data).await?;

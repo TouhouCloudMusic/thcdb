@@ -1,8 +1,9 @@
 use axum::Json;
-use axum::extract::{Path, Query, State};
+use axum::extract::{Path, Query};
 use axum::http::StatusCode;
 use axum::middleware::from_fn;
 use axum::response::IntoResponse;
+use macros::use_service;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -12,7 +13,6 @@ use crate::api_response::{Data, IntoApiResponse, Message, StatusCodeExt};
 use crate::dto::artist::{ArtistCorrection, ArtistResponse};
 use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
 use crate::middleware::is_signed_in;
-use crate::service::artist::ArtistService;
 use crate::state::AppState;
 use crate::utils::MapInto;
 use crate::{repo, service};
@@ -40,11 +40,11 @@ pub fn router() -> OpenApiRouter<AppState> {
 		Error
 	),
 )]
+#[use_service(artist)]
 async fn find_by_id(
-    State(service): State<ArtistService>,
     Path(id): Path<i32>,
 ) -> Result<Data<ArtistResponse>, Error> {
-    service.find_by_id(id).await.map_into()
+    artist_service.find_by_id(id).await.map_into()
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -64,11 +64,14 @@ struct KeywordQuery {
 		Error
 	),
 )]
+#[use_service(artist)]
 async fn find_by_keyword(
-    State(service): State<ArtistService>,
     Query(query): Query<KeywordQuery>,
 ) -> Result<Data<Vec<ArtistResponse>>, Error> {
-    service.find_by_keyword(&query.keyword).await.map_into()
+    artist_service
+        .find_by_keyword(&query.keyword)
+        .await
+        .map_into()
 }
 
 #[derive(ToSchema, Deserialize)]
@@ -89,11 +92,9 @@ struct NewArtist {
 		Error
 	),
 )]
-async fn create(
-    State(service): State<ArtistService>,
-    Json(input): Json<NewArtist>,
-) -> Result<Message, Error> {
-    service.create(input.data).await?;
+#[use_service(artist)]
+async fn create(Json(input): Json<NewArtist>) -> Result<Message, Error> {
+    artist_service.create(input.data).await?;
 
     Ok(Message::ok())
 }
@@ -109,12 +110,14 @@ async fn create(
 		Error
 	),
 )]
+#[use_service(artist)]
 async fn create_update_corretion(
-    State(service): State<ArtistService>,
     Path(id): Path<i32>,
     Json(input): Json<NewArtist>,
 ) -> Result<Message, Error> {
-    service.create_update_correction(id, input.data).await?;
+    artist_service
+        .create_update_correction(id, input.data)
+        .await?;
 
     Ok(Message::ok())
 }
@@ -130,12 +133,14 @@ async fn create_update_corretion(
 		Error
 	),
 )]
+#[use_service(artist)]
 async fn update_update_correction(
-    State(service): State<ArtistService>,
     Path(id): Path<i32>,
     Json(input): Json<NewArtist>,
 ) -> Result<Message, Error> {
-    service.update_update_correction(id, input.data).await?;
+    artist_service
+        .update_update_correction(id, input.data)
+        .await?;
 
     Ok(Message::ok())
 }

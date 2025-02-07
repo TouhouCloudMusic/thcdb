@@ -1,21 +1,14 @@
 use entity::tag;
-use sea_orm::{DatabaseConnection, TransactionTrait};
+use sea_orm::TransactionTrait;
 
 use crate::dto::correction::Metadata;
 use crate::dto::tag::NewTag;
 use crate::error::RepositoryError;
 use crate::repo;
 
-#[derive(Default, Clone)]
-pub struct TagService {
-    db: DatabaseConnection,
-}
+super::def_service!();
 
-impl TagService {
-    pub const fn new(db: DatabaseConnection) -> Self {
-        Self { db }
-    }
-
+impl Service {
     pub async fn create(
         &self,
         tag_data: NewTag,

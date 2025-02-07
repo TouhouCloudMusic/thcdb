@@ -285,6 +285,7 @@ where
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn default_impl_into_api_response<T>(err: T) -> axum::response::Response
 where
     T: StatusCodeExt + Display + AsErrorCode,

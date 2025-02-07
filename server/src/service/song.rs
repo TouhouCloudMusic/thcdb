@@ -1,21 +1,14 @@
 use entity::sea_orm_active_enums::{CorrectionStatus, EntityType};
 use entity::{correction, song};
-use sea_orm::{DatabaseConnection, DbErr, TransactionTrait};
+use sea_orm::{DbErr, TransactionTrait};
 
 use crate::dto::song::{NewSong, SongResponse};
 use crate::error::RepositoryError;
 use crate::repo;
 
-#[derive(Clone)]
-pub struct SongService {
-    db: DatabaseConnection,
-}
+super::def_service!();
 
-impl SongService {
-    pub const fn new(db: DatabaseConnection) -> Self {
-        Self { db }
-    }
-
+impl Service {
     pub async fn find_by_id(
         &self,
         id: i32,

@@ -15,7 +15,7 @@ use crate::dto::correction::Metadata;
 use crate::dto::release::{GeneralRelease, ReleaseResponse};
 use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
 use crate::middleware::is_signed_in;
-use crate::service::release::ReleaseService;
+use crate::service::release::Service;
 use crate::state::AppState;
 use crate::utils::MapInto;
 use crate::{repo, service};
@@ -42,7 +42,7 @@ pub fn router() -> OpenApiRouter<AppState> {
     ),
 )]
 async fn find_by_id(
-    State(service): State<ReleaseService>,
+    State(service): State<Service>,
     Path(id): Path<i32>,
 ) -> Result<Data<ReleaseResponse>, Error> {
     service.find_by_id(id).await.map_into()
@@ -64,7 +64,7 @@ struct KwQuery {
     ),
 )]
 async fn find_by_keyword(
-    State(service): State<ReleaseService>,
+    State(service): State<Service>,
     Query(query): Query<KwQuery>,
 ) -> Result<Data<Vec<ReleaseResponse>>, Error> {
     service.find_by_keyword(query.keyword).await.map_into()
@@ -86,7 +86,7 @@ struct RandomReleaseQuery {
     ),
 )]
 async fn random(
-    State(service): State<ReleaseService>,
+    State(service): State<Service>,
     Query(query): Query<RandomReleaseQuery>,
 ) -> Result<Data<Vec<entity::release::Model>>, Error> {
     service.random(query.count).await.map_into()
@@ -112,7 +112,7 @@ struct NewRelease {
     ),
 )]
 async fn create(
-    State(service): State<ReleaseService>,
+    State(service): State<Service>,
     Json(input): Json<NewRelease>,
 ) -> Result<Message, Error> {
     service.create(input.data, input.correction_data).await?;

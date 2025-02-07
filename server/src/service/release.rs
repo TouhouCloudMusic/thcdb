@@ -2,10 +2,7 @@ use entity::release;
 use entity::sea_orm_active_enums::EntityType;
 use error_set::error_set;
 use sea_orm::sea_query::{Func, SimpleExpr};
-use sea_orm::{
-    DatabaseConnection, EntityTrait, Order, QueryOrder, QuerySelect,
-    TransactionTrait,
-};
+use sea_orm::{EntityTrait, Order, QueryOrder, QuerySelect, TransactionTrait};
 
 use crate::dto::correction::Metadata;
 use crate::dto::release::{GeneralRelease, ReleaseCorrection, ReleaseResponse};
@@ -13,10 +10,7 @@ use crate::error::{InvalidField, RepositoryError};
 use crate::repo;
 use crate::utils::MapInto;
 
-#[derive(Default, Clone)]
-pub struct ReleaseService {
-    db: DatabaseConnection,
-}
+super::def_service!();
 
 error_set! {
     #[disable(From(repo::release::Error))]
@@ -34,11 +28,7 @@ where
     }
 }
 
-impl ReleaseService {
-    pub const fn new(database: DatabaseConnection) -> Self {
-        Self { db: database }
-    }
-
+impl Service {
     pub async fn find_by_id(
         &self,
         id: i32,

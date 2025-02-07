@@ -11,7 +11,7 @@ use crate::api_response::{Data, Message};
 use crate::dto::song::{NewSong, SongResponse};
 use crate::error::RepositoryError;
 use crate::middleware::is_signed_in;
-use crate::service::song::SongService;
+use crate::service::song::Service;
 use crate::service::user::AuthSession;
 use crate::state::AppState;
 use crate::utils::MapInto;
@@ -34,7 +34,7 @@ pub fn router() -> OpenApiRouter<AppState> {
     ),
 )]
 async fn find_by_id(
-    State(service): State<SongService>,
+    State(service): State<Service>,
     Path(id): Path<i32>,
 ) -> Result<Data<SongResponse>, RepositoryError> {
     service.find_by_id(id).await.map_into()
@@ -54,7 +54,7 @@ struct KwQuery {
     ),
 )]
 async fn find_by_keyword(
-    State(service): State<SongService>,
+    State(service): State<Service>,
     Query(query): Query<KwQuery>,
 ) -> Result<Data<Vec<SongResponse>>, RepositoryError> {
     service
@@ -74,7 +74,7 @@ async fn find_by_keyword(
     ),
 )]
 async fn create(
-    State(service): State<SongService>,
+    State(service): State<Service>,
     Json(input): Json<NewSong>,
 ) -> Result<Message, RepositoryError> {
     service.create(input).await?;
@@ -94,7 +94,7 @@ async fn create(
 )]
 async fn update(
     session: AuthSession,
-    State(service): State<SongService>,
+    State(service): State<Service>,
     Path(song_id): Path<i32>,
     Json(mut input): Json<NewSong>,
 ) -> Result<Message, RepositoryError> {

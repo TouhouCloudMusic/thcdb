@@ -62,7 +62,7 @@ async fn handle(
     Path(id): Path<i32>,
     Query(query): Query<HandleCorrectionQuery>,
     State(service): State<service::correction::Service>,
-    State(user_service): State<service::user::UserService>,
+    State(user_service): State<service::user::Service>,
 ) -> Result<Message, Error> {
     let user = session.user.unwrap();
 

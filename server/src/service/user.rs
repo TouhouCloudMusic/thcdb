@@ -16,17 +16,16 @@ use regex::Regex;
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{Alias, Query};
 use sea_orm::{
-    ActiveValue, ColumnTrait, ConnectionTrait, DatabaseBackend,
-    DatabaseConnection, EntityName, EntityTrait, QueryFilter,
+    ActiveValue, ColumnTrait, ConnectionTrait, DatabaseBackend, EntityName, EntityTrait, QueryFilter,
 };
 
-use super::image::ImageService;
+use super::*;
 use crate::dto::user::AuthCredential;
 use crate::error::{InvalidField, RepositoryError};
 
 pub static ARGON2_HASHER: Lazy<Argon2> = Lazy::new(Argon2::default);
 
-pub type AuthSession = axum_login::AuthSession<UserService>;
+pub type AuthSession = axum_login::AuthSession<Service>;
 
 error_set! {
     #[disable(From(RepositoryError))]
@@ -71,8 +70,8 @@ where
     }
 }
 
-impl From<axum_login::Error<UserService>> for Error {
-    fn from(err: axum_login::Error<UserService>) -> Self {
+impl From<axum_login::Error<Service>> for Error {
+    fn from(err: axum_login::Error<Service>) -> Self {
         match err {
             axum_login::Error::Backend(err) => err,
             axum_login::Error::Session(err) => Self::Session(err),
@@ -80,16 +79,9 @@ impl From<axum_login::Error<UserService>> for Error {
     }
 }
 
-#[derive(Default, Clone)]
-pub struct UserService {
-    db: DatabaseConnection,
-}
+super::def_service!();
 
-impl UserService {
-    pub const fn new(database: DatabaseConnection) -> Self {
-        Self { db: database }
-    }
-
+impl Service {
     pub async fn is_exist(&self, username: &str) -> Result<bool, Error> {
         const ALIAS: &str = "is_exist";
         let query = Query::select()
@@ -213,7 +205,7 @@ impl UserService {
 
     pub async fn upload_avatar(
         &self,
-        image_service: ImageService,
+        image_service: image::Service,
         user_id: i32,
         data: FieldData<Bytes>,
     ) -> Result<(), Error> {
@@ -276,7 +268,7 @@ impl UserService {
 }
 
 #[async_trait]
-impl AuthnBackend for UserService {
+impl AuthnBackend for Service {
     type User = user::Model;
     type Credentials = AuthCredential;
     type Error = Error;

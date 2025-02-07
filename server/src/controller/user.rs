@@ -1,9 +1,9 @@
 use axum::Json;
-use axum::extract::State;
 use axum::http::StatusCode;
 use axum::middleware::from_fn;
 use axum::response::{IntoResponse, Redirect, Response};
 use axum_typed_multipart::TypedMultipart;
+use macros::use_service;
 use utoipa::IntoResponses;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
@@ -12,8 +12,7 @@ use crate::api_response::{IntoApiResponse, StatusCodeExt};
 use crate::dto::user::{AuthCredential, UploadAvatar};
 use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
 use crate::middleware::is_signed_in;
-use crate::service::image::ImageService;
-use crate::service::user::{AuthSession, Error, UserService, ValidateError};
+use crate::service::user::{AuthSession, Error, ValidateError};
 use crate::{AppState, api_response};
 
 impl StatusCodeExt for Error {
@@ -114,9 +113,9 @@ pub fn router() -> OpenApiRouter<AppState> {
         Error
     ),
 )]
+#[use_service(user)]
 async fn sign_up(
     mut auth_session: AuthSession,
-    State(user_service): State<UserService>,
     Json(AuthCredential { username, password }): Json<AuthCredential>,
 ) -> impl IntoResponse {
     match user_service.create(&username, &password).await {
@@ -144,12 +143,12 @@ async fn sign_up(
         Error
     )
 )]
+#[use_service(user)]
 async fn sign_in(
     auth_session: AuthSession,
-    State(service): State<UserService>,
     Json(creds): Json<AuthCredential>,
 ) -> Result<Redirect, Error> {
-    service
+    user_service
         .sign_in(auth_session, creds)
         .await
         .map(|()| Redirect::to("/"))
@@ -169,10 +168,9 @@ async fn sign_in(
         Error
     )
 )]
+#[use_service(user, image)]
 async fn upload_avatar(
     auth_session: AuthSession,
-    State(user_service): State<UserService>,
-    State(image_service): State<ImageService>,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
 ) -> Result<impl IntoResponse, Error> {
     if let Some(user) = auth_session.user {

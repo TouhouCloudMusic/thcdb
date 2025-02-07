@@ -1,24 +1,16 @@
 use entity::correction_user;
 use entity::sea_orm_active_enums::CorrectionUserType;
 use sea_orm::{
-    ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter,
-    TransactionTrait,
+    ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, TransactionTrait,
 };
 
-use super::user::UserService;
+use super::*;
 use crate::error::RepositoryError;
 use crate::repo;
 
-#[derive(Clone)]
-pub struct Service {
-    db: DatabaseConnection,
-}
+super::def_service!();
 
 impl Service {
-    pub const fn new(db: DatabaseConnection) -> Self {
-        Self { db }
-    }
-
     pub async fn approve(
         &self,
         correction_id: i32,
@@ -39,7 +31,7 @@ impl Service {
         user_id: i32,
         correction_id: i32,
     ) -> Result<bool, RepositoryError> {
-        let user_service = UserService::new(self.db.clone());
+        let user_service = user::Service::new(self.db.clone());
 
         if user_service.have_role(user_id, "Admin").await? {
             return Ok(true);

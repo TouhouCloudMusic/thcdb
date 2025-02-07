@@ -4,26 +4,21 @@ use sea_orm::{DatabaseConnection, sqlx};
 use crate::infrastructure::config::Config;
 use crate::infrastructure::database::get_connection;
 use crate::infrastructure::redis::Pool;
-use crate::service::artist::ArtistService;
-use crate::service::correction;
-use crate::service::image::ImageService;
-use crate::service::release::ReleaseService;
-use crate::service::song::SongService;
-use crate::service::tag::TagService;
-use crate::service::user::UserService;
+use crate::service::*;
 
 #[derive(Clone, FromRef)]
 pub struct AppState {
-    pub database: DatabaseConnection,
-    pub user_service: UserService,
-    pub release_service: ReleaseService,
-    pub image_service: ImageService,
-    pub song_service: SongService,
-    pub tag_service: TagService,
-    pub artist_service: ArtistService,
-    pub correction_service: correction::Service,
     pub config: Config,
+    pub database: DatabaseConnection,
     pub redis_pool: Pool,
+
+    pub artist_service: artist::Service,
+    pub correction_service: correction::Service,
+    pub image_service: image::Service,
+    pub release_service: release::Service,
+    pub song_service: song::Service,
+    pub tag_service: tag::Service,
+    pub user_service: user::Service,
 }
 
 impl AppState {
@@ -35,14 +30,14 @@ impl AppState {
         Self {
             config,
             database: database.clone(),
-            user_service: UserService::new(database.clone()),
-            release_service: ReleaseService::new(database.clone()),
-            artist_service: ArtistService::new(database.clone()),
-            image_service: ImageService::new(database.clone()),
-            song_service: SongService::new(database.clone()),
-            correction_service: correction::Service::new(database.clone()),
-            tag_service: TagService::new(database.clone()),
             redis_pool,
+            artist_service: artist::Service::new(database.clone()),
+            correction_service: correction::Service::new(database.clone()),
+            image_service: image::Service::new(database.clone()),
+            release_service: release::Service::new(database.clone()),
+            song_service: song::Service::new(database.clone()),
+            tag_service: tag::Service::new(database.clone()),
+            user_service: user::Service::new(database.clone()),
         }
     }
 

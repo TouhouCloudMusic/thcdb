@@ -4,20 +4,14 @@ use base64::engine::general_purpose::URL_SAFE;
 use entity::image;
 use sea_orm::prelude::Expr;
 use sea_orm::{
-    ActiveValue, ColumnTrait, DatabaseConnection, DbErr, EntityTrait,
-    PaginatorTrait, QueryFilter, QuerySelect,
+    ActiveValue, ColumnTrait, DbErr, EntityTrait, PaginatorTrait, QueryFilter,
+    QuerySelect,
 };
 use xxhash_rust::xxh3::xxh3_64;
-#[derive(Clone)]
-pub struct ImageService {
-    db: DatabaseConnection,
-}
 
-impl ImageService {
-    pub const fn new(db: DatabaseConnection) -> Self {
-        Self { db }
-    }
+super::def_service!();
 
+impl Service {
     pub async fn create(
         &self,
         data: Bytes,
