@@ -1,6 +1,6 @@
-use entity::sea_orm_active_enums::{CorrectionStatus, EntityType};
+use entity::sea_orm_active_enums::EntityType;
 use entity::{correction, song};
-use sea_orm::{DbErr, TransactionTrait};
+use sea_orm::{DatabaseConnection, DbErr, TransactionTrait};
 
 use crate::dto::song::{NewSong, SongResponse};
 use crate::error::RepositoryError;
@@ -32,56 +32,49 @@ impl Service {
         Ok(result)
     }
 
-    async fn create_correction(
-        &self,
-        song_id: i32,
-        data: NewSong,
-    ) -> Result<(), RepositoryError> {
-        let transaction = self.db.begin().await?;
-
-        repo::song::create_correction(song_id, data, &transaction).await?;
-
-        transaction.commit().await?;
-        Ok(())
-    }
-
-    async fn update_correction(
-        &self,
-        correction: correction::Model,
-        data: NewSong,
-    ) -> Result<(), RepositoryError> {
-        let transaction = self.db.begin().await?;
-
-        repo::song::update_correction(correction, data, &transaction).await?;
-
-        transaction.commit().await?;
-
-        Ok(())
-    }
-
     pub async fn create_or_update_correction(
         &self,
         song_id: i32,
         data: NewSong,
     ) -> Result<(), RepositoryError> {
-        let correction =
-            repo::correction::find_latest(song_id, EntityType::Song, &self.db)
-                .await?;
-
-        let correction_service =
-            super::correction::Service::new(self.db.clone());
-
-        if correction_service
-            .is_author_or_admin(data.metadata.author_id, correction.id)
-            .await?
-        {
-            return Err(RepositoryError::Unauthorized);
-        }
-
-        if correction.status == CorrectionStatus::Pending {
-            self.update_correction(correction, data).await
-        } else {
-            self.create_correction(song_id, data).await
-        }
+        super::correction::create_or_update_correction()
+            .entity_id(song_id)
+            .entity_type(EntityType::Song)
+            .user_id(data.metadata.author_id)
+            .closure_args(data)
+            .on_create(|_, data| create_correction(song_id, data, &self.db))
+            .on_update(|correction, data| {
+                update_correction(correction, data, &self.db)
+            })
+            .db(&self.db)
+            .call()
+            .await
     }
+}
+
+async fn create_correction(
+    song_id: i32,
+    data: NewSong,
+    db: &DatabaseConnection,
+) -> Result<(), RepositoryError> {
+    let transaction = db.begin().await?;
+
+    repo::song::create_correction(song_id, data, &transaction).await?;
+
+    transaction.commit().await?;
+    Ok(())
+}
+
+async fn update_correction(
+    correction: correction::Model,
+    data: NewSong,
+    db: &DatabaseConnection,
+) -> Result<(), RepositoryError> {
+    let transaction = db.begin().await?;
+
+    repo::song::update_correction(correction, data, &transaction).await?;
+
+    transaction.commit().await?;
+
+    Ok(())
 }

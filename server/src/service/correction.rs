@@ -1,7 +1,11 @@
+use bon::builder;
 use entity::correction_user;
-use entity::sea_orm_active_enums::CorrectionUserType;
+use entity::sea_orm_active_enums::{
+    CorrectionStatus, CorrectionUserType, EntityType,
+};
 use sea_orm::{
-    ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, TransactionTrait,
+    ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter,
+    TransactionTrait,
 };
 
 use super::*;
@@ -49,4 +53,39 @@ impl Service {
 
         Ok(count != 0)
     }
+}
+
+#[builder]
+pub async fn create_or_update_correction<T, E, A, F1, F2, E1, E2>(
+    entity_id: i32,
+    entity_type: EntityType,
+    user_id: i32,
+    closure_args: A,
+    on_create: F1,
+    on_update: F2,
+    db: &DatabaseConnection,
+) -> Result<T, E>
+where
+    F1: AsyncFnOnce(entity::correction::Model, A) -> Result<T, E1>,
+    F2: AsyncFnOnce(entity::correction::Model, A) -> Result<T, E2>,
+    E: From<RepositoryError> + From<E1> + From<E2>,
+{
+    let correction =
+        repo::correction::find_latest(entity_id, entity_type, db).await?;
+
+    let correction_service = Service::new(db.clone());
+
+    let res = if correction.status == CorrectionStatus::Pending {
+        if correction_service
+            .is_author_or_admin(user_id, correction.id)
+            .await?
+        {
+            return Err(RepositoryError::Unauthorized.into());
+        }
+        on_update(correction, closure_args).await?
+    } else {
+        on_create(correction, closure_args).await?
+    };
+
+    Ok(res)
 }

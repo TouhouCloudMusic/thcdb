@@ -1,11 +1,15 @@
+use bon::bon;
 use entity::release;
 use entity::sea_orm_active_enums::EntityType;
 use error_set::error_set;
+use macros::IntoErrorSchema;
 use sea_orm::sea_query::{Func, SimpleExpr};
-use sea_orm::{EntityTrait, Order, QueryOrder, QuerySelect, TransactionTrait};
+use sea_orm::{
+    DatabaseConnection, EntityTrait, Order, QueryOrder, QuerySelect,
+    TransactionTrait,
+};
 
-use crate::dto::correction::Metadata;
-use crate::dto::release::{GeneralRelease, ReleaseCorrection, ReleaseResponse};
+use crate::dto::release::{ReleaseCorrection, ReleaseResponse};
 use crate::error::{InvalidField, RepositoryError};
 use crate::repo;
 use crate::utils::MapInto;
@@ -14,6 +18,7 @@ super::def_service!();
 
 error_set! {
     #[disable(From(repo::release::Error))]
+    #[derive(IntoErrorSchema)]
     Error = {
         Repo(repo::release::Error)
     };
@@ -28,6 +33,7 @@ where
     }
 }
 
+#[bon]
 impl Service {
     pub async fn find_by_id(
         &self,
@@ -57,73 +63,81 @@ impl Service {
 
     pub async fn create(
         &self,
-        release_data: GeneralRelease,
-        correction_data: Metadata,
+        data: ReleaseCorrection,
+        user_id: i32,
     ) -> Result<release::Model, RepositoryError> {
         // Question: Should check here?
         // TODO: Validate crate
-        if release_data.artists.is_empty() {
+        if data.artists.is_empty() {
             Err(InvalidField {
                 field: "artist".into(),
                 expected: "Vec<i32> && len > 1".into(),
-                accepted: format!("{:?}", release_data.artists),
+                accepted: format!("{:?}", data.artists),
             })?;
         }
 
         let transaction = self.db.begin().await?;
 
-        let result =
-            repo::release::create(release_data, correction_data, &transaction)
-                .await?;
+        let result = repo::release::create(data, user_id, &transaction).await?;
         transaction.commit().await?;
 
         Ok(result)
     }
 
-    pub async fn create_update_correction(
+    #[builder]
+    pub async fn create_or_update_correction(
         &self,
         release_id: i32,
-        author_id: i32,
-        data: ReleaseCorrection,
+        release_data: ReleaseCorrection,
+        user_id: i32,
     ) -> Result<(), Error> {
-        let transaction = self.db.begin().await?;
-
-        repo::release::create_update_correction(
-            release_id,
-            data,
-            author_id,
-            &transaction,
-        )
-        .await?;
-
-        transaction.commit().await?;
-        Ok(())
+        super::correction::create_or_update_correction()
+            .entity_id(release_id)
+            .entity_type(EntityType::Release)
+            .user_id(user_id)
+            .closure_args(release_data)
+            .on_create(|_, data| {
+                create_correction(release_id, user_id, data, &self.db)
+            })
+            .on_update(|_, data| {
+                update_correction(release_id, user_id, data, &self.db)
+            })
+            .db(&self.db)
+            .call()
+            .await
     }
+}
 
-    pub async fn update_update_correction(
-        &self,
-        release_id: i32,
-        author_id: i32,
-        data: ReleaseCorrection,
-    ) -> Result<(), Error> {
-        let transaction = self.db.begin().await?;
+async fn create_correction(
+    release_id: i32,
+    author_id: i32,
+    data: ReleaseCorrection,
+    db: &DatabaseConnection,
+) -> Result<(), Error> {
+    let transaction = db.begin().await?;
 
-        let correction = repo::correction::find_latest(
-            release_id,
-            EntityType::Release,
-            &self.db,
-        )
+    repo::release::create_correction(release_id, data, author_id, &transaction)
         .await?;
 
-        repo::release::update_update_correction(
-            correction,
-            data,
-            author_id,
-            &transaction,
-        )
+    transaction.commit().await?;
+    Ok(())
+}
+
+async fn update_correction(
+    release_id: i32,
+    author_id: i32,
+    data: ReleaseCorrection,
+    db: &DatabaseConnection,
+) -> Result<(), Error> {
+    let transaction = db.begin().await?;
+
+    let correction =
+        repo::correction::find_latest(release_id, EntityType::Release, db)
+            .await?;
+
+    repo::release::update_correction(correction, data, author_id, &transaction)
         .await?;
 
-        transaction.commit().await?;
-        Ok(())
-    }
+    transaction.commit().await?;
+    Ok(())
 }

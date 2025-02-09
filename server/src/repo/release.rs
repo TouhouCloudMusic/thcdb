@@ -29,8 +29,7 @@ use utils::check_existence;
 use crate::dto::correction::Metadata;
 use crate::dto::release::input::NewCredit;
 use crate::dto::release::{
-    GeneralRelease, Linked, NewTrack, ReleaseCorrection, ReleaseResponse,
-    Unlinked,
+    Linked, NewTrack, ReleaseCorrection, ReleaseResponse, Unlinked,
 };
 use crate::dto::share::{LocalizedTitle, NewLocalizedTitle};
 use crate::dto::song::NewSong;
@@ -195,8 +194,8 @@ async fn find_many(
 }
 
 pub async fn create(
-    data: GeneralRelease,
-    correction_metadata: Metadata,
+    data: ReleaseCorrection,
+    user_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<release::Model, RepositoryError> {
     let new_release = release::ActiveModel::from(&data).insert(tx).await?;
@@ -207,16 +206,11 @@ pub async fn create(
     create_release_localized_title(new_release.id, &data.localized_titles, tx)
         .await?;
 
-    let new_release_tracks = create_release_track(
-        new_release.id,
-        &data.tracks,
-        correction_metadata.author_id,
-        tx,
-    )
-    .await?;
+    let new_release_tracks =
+        create_release_track(new_release.id, &data.tracks, user_id, tx).await?;
 
     let correction = repo::correction::create_self_approval()
-        .author_id(correction_metadata.author_id)
+        .author_id(user_id)
         .entity_type(EntityType::Release)
         .entity_id(new_release.id)
         .db(tx)
@@ -246,7 +240,7 @@ pub async fn create(
     let history = save_release_history_and_link_relations()
         .data(&data2)
         .release_id(new_release.id)
-        .author_id(correction_metadata.author_id)
+        .author_id(user_id)
         .tx(tx)
         .call()
         .await?;
@@ -254,7 +248,7 @@ pub async fn create(
     repo::correction::link_history()
         .correction_id(correction.id)
         .entity_history_id(history.id)
-        .description(correction_metadata.description.clone())
+        .description(data.correction_desc)
         .db(tx)
         .call()
         .await?;
@@ -262,7 +256,7 @@ pub async fn create(
     Ok(new_release)
 }
 
-pub async fn create_update_correction(
+pub async fn create_correction(
     release_id: i32,
     data: ReleaseCorrection,
     author_id: i32,
@@ -281,7 +275,7 @@ pub async fn create_update_correction(
         .await?;
 
     let history = save_release_history_and_link_relations()
-        .data(&data.data)
+        .data(&data)
         .release_id(release_id)
         .author_id(author_id)
         .tx(tx)
@@ -299,7 +293,7 @@ pub async fn create_update_correction(
     Ok(())
 }
 
-pub async fn update_update_correction(
+pub async fn update_correction(
     correction: correction::Model,
     data: ReleaseCorrection,
     author_id: i32,
@@ -308,7 +302,7 @@ pub async fn update_update_correction(
     add_co_author_if_updater_not_author(correction.id, author_id, tx).await?;
 
     let history = save_release_history_and_link_relations()
-        .data(&data.data)
+        .data(&data)
         .release_id(correction.entity_id)
         .author_id(author_id)
         .tx(tx)
@@ -374,7 +368,7 @@ pub(super) async fn apply_correction(
 
 #[bon::builder]
 async fn save_release_history_and_link_relations(
-    data: &GeneralRelease,
+    data: &ReleaseCorrection,
     release_id: i32,
     author_id: i32,
     tx: &DatabaseTransaction,

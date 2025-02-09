@@ -56,7 +56,7 @@ pub struct ReleaseCredit {
 }
 
 #[derive(Clone, Deserialize, ToSchema)]
-pub struct GeneralRelease {
+pub struct ReleaseCorrection {
     pub title: String,
     pub release_type: ReleaseType,
     pub release_date: Option<Date>,
@@ -71,17 +71,12 @@ pub struct GeneralRelease {
     pub labels: Vec<i32>,
     pub tracks: Vec<NewTrack>,
     pub credits: Vec<NewCredit>,
-}
 
-#[derive(Clone, Deserialize, ToSchema)]
-pub struct ReleaseCorrection {
-    #[serde(flatten)]
-    pub data: GeneralRelease,
     pub correction_desc: String,
 }
 
-impl From<&GeneralRelease> for release::ActiveModel {
-    fn from(val: &GeneralRelease) -> Self {
+impl From<&ReleaseCorrection> for release::ActiveModel {
+    fn from(val: &ReleaseCorrection) -> Self {
         Self {
             id: NotSet,
             title: Set(val.title.clone()),
@@ -102,8 +97,8 @@ impl From<&GeneralRelease> for release::ActiveModel {
     }
 }
 
-impl From<&GeneralRelease> for release_history::ActiveModel {
-    fn from(value: &GeneralRelease) -> Self {
+impl From<&ReleaseCorrection> for release_history::ActiveModel {
+    fn from(value: &ReleaseCorrection) -> Self {
         Self {
             id: NotSet,
             title: Set(value.title.clone()),

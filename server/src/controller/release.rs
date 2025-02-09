@@ -3,16 +3,14 @@ use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::middleware::from_fn;
 use axum::response::IntoResponse;
+use macros::{use_service, use_session};
 use serde::Deserialize;
-use utoipa::{IntoParams, IntoResponses, ToSchema};
+use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::api_response::{
-    Data, ErrResponseDef, IntoApiResponse, Message, StatusCodeExt,
-};
-use crate::dto::correction::Metadata;
-use crate::dto::release::{GeneralRelease, ReleaseResponse};
+use crate::api_response::{Data, IntoApiResponse, Message, StatusCodeExt};
+use crate::dto::release::{ReleaseCorrection, ReleaseResponse};
 use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
 use crate::middleware::is_signed_in;
 use crate::service::release::Service;
@@ -27,6 +25,7 @@ const TAG: &str = "Release";
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(create))
+        .routes(routes!(update))
         .route_layer(from_fn(is_signed_in))
         .routes(routes!(find_by_keyword))
         .routes(routes!(find_by_id))
@@ -92,30 +91,50 @@ async fn random(
     service.random(query.count).await.map_into()
 }
 
-#[derive(ToSchema, Deserialize)]
-struct NewRelease {
-    #[serde(flatten)]
-    #[schema(inline)]
-    pub data: GeneralRelease,
-    pub correction_data: Metadata,
-}
-
 #[utoipa::path(
     post,
     tag = TAG,
     path = "/release",
-    request_body = NewRelease,
+    request_body = ReleaseCorrection,
     responses(
 		(status = 200, body = Message),
         (status = 401),
 		Error
     ),
 )]
-async fn create(
-    State(service): State<Service>,
-    Json(input): Json<NewRelease>,
+#[use_session]
+#[use_service(release)]
+async fn create(Json(data): Json<ReleaseCorrection>) -> Result<Message, Error> {
+    let user_id = session.user.unwrap().id;
+    release_service.create(data, user_id).await?;
+
+    Ok(Message::ok())
+}
+
+#[utoipa::path(
+    post,
+    tag = TAG,
+    path = "/release/{id}",
+    request_body = ReleaseCorrection,
+    responses(
+		(status = 200, body = Message),
+        (status = 401),
+		Error
+    ),
+)]
+#[use_session]
+#[use_service(release)]
+async fn update(
+    Path(id): Path<i32>,
+    Json(data): Json<ReleaseCorrection>,
 ) -> Result<Message, Error> {
-    service.create(input.data, input.correction_data).await?;
+    release_service
+        .create_or_update_correction()
+        .release_id(id)
+        .release_data(data)
+        .user_id(session.user.unwrap().id)
+        .call()
+        .await?;
 
     Ok(Message::ok())
 }
@@ -165,14 +184,5 @@ impl IntoResponse for service::release::Error {
         match self {
             Self::Repo(err) => err.into_api_response(),
         }
-    }
-}
-
-impl IntoResponses for service::release::Error {
-    fn responses() -> std::collections::BTreeMap<
-        String,
-        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
-    > {
-        Self::build_err_responses().into()
     }
 }

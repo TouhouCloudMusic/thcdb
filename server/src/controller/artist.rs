@@ -3,7 +3,7 @@ use axum::extract::{Path, Query};
 use axum::http::StatusCode;
 use axum::middleware::from_fn;
 use axum::response::IntoResponse;
-use macros::use_service;
+use macros::{use_service, use_session};
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -24,8 +24,7 @@ const TAG: &str = "Artist";
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(create))
-        .routes(routes!(create_update_corretion))
-        .routes(routes!(update_update_correction))
+        .routes(routes!(update))
         .route_layer(from_fn(is_signed_in))
         .routes(routes!(find_by_id))
         .routes(routes!(find_by_keyword))
@@ -110,36 +109,14 @@ async fn create(Json(input): Json<NewArtist>) -> Result<Message, Error> {
 		Error
 	),
 )]
+#[use_session]
 #[use_service(artist)]
-async fn create_update_corretion(
+async fn update(
     Path(id): Path<i32>,
     Json(input): Json<NewArtist>,
 ) -> Result<Message, Error> {
     artist_service
-        .create_update_correction(id, input.data)
-        .await?;
-
-    Ok(Message::ok())
-}
-
-#[utoipa::path(
-	post,
-    tag = TAG,
-	path = "/artist/correction/{id}",
-	request_body = NewArtist,
-	responses(
-		(status = 200, body = Message),
-        (status = 401),
-		Error
-	),
-)]
-#[use_service(artist)]
-async fn update_update_correction(
-    Path(id): Path<i32>,
-    Json(input): Json<NewArtist>,
-) -> Result<Message, Error> {
-    artist_service
-        .update_update_correction(id, input.data)
+        .create_or_update_correction(id, session.user.unwrap().id, input.data)
         .await?;
 
     Ok(Message::ok())

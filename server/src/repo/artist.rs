@@ -209,15 +209,17 @@ pub async fn create(
     Ok(artist)
 }
 
-pub async fn create_update_correction(
+/// TODO: validate data on service layer
+pub async fn create_correction(
     artist_id: i32,
+    user_id: i32,
     data: ArtistCorrection,
     tx: &DatabaseTransaction,
 ) -> Result<entity::correction::Model, Error> {
     validate(&data)?;
 
     let correction = repo::correction::create()
-        .author_id(data.correction_metadata.author_id)
+        .author_id(user_id)
         .entity_type(EntityType::Artist)
         .entity_id(artist_id)
         .status(CorrectionStatus::Pending)
@@ -231,22 +233,17 @@ pub async fn create_update_correction(
     Ok(correction)
 }
 
-pub async fn update_update_correction(
-    correction_id: i32,
+/// Must check correction whether is valid before call this function
+/// TODO: validate data on service layer
+pub async fn update_correction(
+    user_id: i32,
+    correction: correction::Model,
     data: ArtistCorrection,
     db: &DatabaseTransaction,
 ) -> Result<(), Error> {
     validate(&data)?;
 
-    let correction =
-        find_by_id_with_type(correction_id, EntityType::Artist, db).await?;
-
-    add_co_author_if_updater_not_author(
-        correction.id,
-        data.correction_metadata.author_id,
-        db,
-    )
-    .await?;
+    add_co_author_if_updater_not_author(correction.id, user_id, db).await?;
 
     link_and_save_artist_history(correction.id, &data, db).await?;
 

@@ -1,7 +1,8 @@
-use entity::artist;
+use entity::sea_orm_active_enums::EntityType;
+use entity::{artist, correction};
 use error_set::error_set;
 use macros::IntoErrorSchema;
-use sea_orm::TransactionTrait;
+use sea_orm::{DatabaseConnection, TransactionTrait};
 
 use crate::dto::artist::{ArtistCorrection, ArtistResponse};
 use crate::repo;
@@ -49,36 +50,56 @@ impl Service {
         Ok(new_artist)
     }
 
-    pub async fn create_update_correction(
+    pub async fn create_or_update_correction(
         &self,
         artist_id: i32,
+        user_id: i32,
         data: ArtistCorrection,
     ) -> Result<(), Error> {
-        let transaction = self.db.begin().await?;
-
-        repo::artist::create_update_correction(artist_id, data, &transaction)
-            .await?;
-
-        transaction.commit().await?;
-        Ok(())
+        super::correction::create_or_update_correction()
+            .entity_id(artist_id)
+            .entity_type(EntityType::Artist)
+            .user_id(user_id)
+            .closure_args(data)
+            .on_create(|_, data| {
+                create_correction(artist_id, user_id, data, &self.db)
+            })
+            .on_update(|correction, data| {
+                update_correction(user_id, correction, data, &self.db)
+            })
+            .db(&self.db)
+            .call()
+            .await
     }
+}
 
-    pub async fn update_update_correction(
-        &self,
-        correction_id: i32,
-        data: ArtistCorrection,
-    ) -> Result<(), Error> {
-        let transaction = self.db.begin().await?;
+async fn create_correction(
+    artist_id: i32,
+    user_id: i32,
+    data: ArtistCorrection,
+    db: &DatabaseConnection,
+) -> Result<(), Error> {
+    let transaction = db.begin().await?;
 
-        repo::artist::update_update_correction(
-            correction_id,
-            data,
-            &transaction,
-        )
+    repo::artist::create_correction(artist_id, user_id, data, &transaction)
         .await?;
 
-        transaction.commit().await?;
+    transaction.commit().await?;
+    Ok(())
+}
 
-        Ok(())
-    }
+async fn update_correction(
+    user_id: i32,
+    correction: correction::Model,
+    data: ArtistCorrection,
+    db: &DatabaseConnection,
+) -> Result<(), Error> {
+    let transaction = db.begin().await?;
+
+    repo::artist::update_correction(user_id, correction, data, &transaction)
+        .await?;
+
+    transaction.commit().await?;
+
+    Ok(())
 }

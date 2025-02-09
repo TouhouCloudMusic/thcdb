@@ -16,7 +16,8 @@ use regex::Regex;
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{Alias, Query};
 use sea_orm::{
-    ActiveValue, ColumnTrait, ConnectionTrait, DatabaseBackend, EntityName, EntityTrait, QueryFilter,
+    ActiveValue, ColumnTrait, ConnectionTrait, DatabaseBackend, EntityName,
+    EntityTrait, QueryFilter,
 };
 
 use super::*;
