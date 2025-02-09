@@ -1,5 +1,6 @@
 use axum::Json;
 use axum::extract::State;
+use macros::use_session;
 use serde::Deserialize;
 use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
@@ -32,10 +33,14 @@ struct CreateTagInput {
         RepositoryError
     ),
 )]
+#[use_session]
 async fn create_tag(
     State(service): State<Service>,
     Json(input): Json<CreateTagInput>,
 ) -> Result<api_response::Message, RepositoryError> {
-    service.create(input.data, input.correction_data).await?;
+    let user_id = session.user.unwrap().id;
+    service
+        .create(user_id, input.data, input.correction_data)
+        .await?;
     Ok(api_response::Message::ok())
 }

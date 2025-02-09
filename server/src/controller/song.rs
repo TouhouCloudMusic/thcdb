@@ -2,6 +2,7 @@ use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
 use itertools::Itertools;
+use macros::use_session;
 use serde::Deserialize;
 use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
@@ -73,11 +74,12 @@ async fn find_by_keyword(
         RepositoryError
     ),
 )]
+#[use_session]
 async fn create(
     State(service): State<Service>,
     Json(input): Json<NewSong>,
 ) -> Result<Message, RepositoryError> {
-    service.create(input).await?;
+    service.create(session.user.unwrap().id, input).await?;
 
     Ok(Message::ok())
 }
@@ -96,12 +98,11 @@ async fn update(
     session: AuthSession,
     State(service): State<Service>,
     Path(song_id): Path<i32>,
-    Json(mut input): Json<NewSong>,
+    Json(input): Json<NewSong>,
 ) -> Result<Message, RepositoryError> {
-    // TODO: 删除用户输入中的user id
-    input.metadata.author_id = session.user.unwrap().id;
-
-    service.create_or_update_correction(song_id, input).await?;
+    service
+        .create_or_update_correction(song_id, session.user.unwrap().id, input)
+        .await?;
 
     Ok(Message::ok())
 }

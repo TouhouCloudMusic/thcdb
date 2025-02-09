@@ -40,11 +40,13 @@ impl Service {
 
     pub async fn create(
         &self,
+        user_id: i32,
         data: ArtistCorrection,
     ) -> Result<artist::Model, Error> {
         let transaction = self.db.begin().await?;
 
-        let new_artist = repo::artist::create(data, &transaction).await?;
+        let new_artist =
+            repo::artist::create(data, user_id, &transaction).await?;
 
         transaction.commit().await?;
         Ok(new_artist)

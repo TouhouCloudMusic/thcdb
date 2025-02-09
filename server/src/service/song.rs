@@ -23,10 +23,14 @@ impl Service {
         repo::song::find_by_keyword(keyword, &self.db).await
     }
 
-    pub async fn create(&self, data: NewSong) -> Result<song::Model, DbErr> {
+    pub async fn create(
+        &self,
+        user_id: i32,
+        data: NewSong,
+    ) -> Result<song::Model, DbErr> {
         let transaction = self.db.begin().await?;
 
-        let result = repo::song::create(data, &transaction).await?;
+        let result = repo::song::create(data, user_id, &transaction).await?;
 
         transaction.commit().await?;
         Ok(result)
@@ -35,16 +39,19 @@ impl Service {
     pub async fn create_or_update_correction(
         &self,
         song_id: i32,
+        user_id: i32,
         data: NewSong,
     ) -> Result<(), RepositoryError> {
         super::correction::create_or_update_correction()
             .entity_id(song_id)
             .entity_type(EntityType::Song)
-            .user_id(data.metadata.author_id)
+            .user_id(user_id)
             .closure_args(data)
-            .on_create(|_, data| create_correction(song_id, data, &self.db))
+            .on_create(|_, data| {
+                create_correction(song_id, user_id, data, &self.db)
+            })
             .on_update(|correction, data| {
-                update_correction(correction, data, &self.db)
+                update_correction(correction, user_id, data, &self.db)
             })
             .db(&self.db)
             .call()
@@ -54,12 +61,19 @@ impl Service {
 
 async fn create_correction(
     song_id: i32,
+    user_id: i32,
     data: NewSong,
     db: &DatabaseConnection,
 ) -> Result<(), RepositoryError> {
     let transaction = db.begin().await?;
 
-    repo::song::create_correction(song_id, data, &transaction).await?;
+    repo::song::create_correction()
+        .data(data)
+        .song_id(song_id)
+        .user_id(user_id)
+        .tx(&transaction)
+        .call()
+        .await?;
 
     transaction.commit().await?;
     Ok(())
@@ -67,12 +81,14 @@ async fn create_correction(
 
 async fn update_correction(
     correction: correction::Model,
+    user_id: i32,
     data: NewSong,
     db: &DatabaseConnection,
 ) -> Result<(), RepositoryError> {
     let transaction = db.begin().await?;
 
-    repo::song::update_correction(correction, data, &transaction).await?;
+    repo::song::update_correction(correction, user_id, data, &transaction)
+        .await?;
 
     transaction.commit().await?;
 

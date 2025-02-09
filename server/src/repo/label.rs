@@ -19,6 +19,7 @@ use crate::error::RepositoryError;
 use crate::repo;
 
 pub async fn create(
+    user_id: i32,
     data: NewLabel,
     tx: &DatabaseTransaction,
 ) -> Result<label::Model, DbErr> {
@@ -27,7 +28,7 @@ pub async fn create(
     let history = save_label_history_and_link_relations(&data, tx).await?;
 
     let correction = repo::correction::create_self_approval()
-        .author_id(data.correction_metadata.author_id)
+        .author_id(user_id)
         .entity_type(EntityType::Label)
         .entity_id(label.id)
         .db(tx)
@@ -47,13 +48,14 @@ pub async fn create(
 
 pub async fn create_update_correction(
     label_id: i32,
+    user_id: i32,
     data: NewLabel,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     let history = save_label_history_and_link_relations(&data, tx).await?;
 
     let correction = repo::correction::create()
-        .author_id(data.correction_metadata.author_id)
+        .author_id(user_id)
         .entity_id(label_id)
         .entity_type(EntityType::Label)
         .status(CorrectionStatus::Pending)
@@ -74,16 +76,12 @@ pub async fn create_update_correction(
 }
 
 pub async fn update_update_correction(
+    user_id: i32,
     correction: correction::Model,
     data: NewLabel,
     tx: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
-    add_co_author_if_updater_not_author(
-        correction.id,
-        data.correction_metadata.author_id,
-        tx,
-    )
-    .await?;
+    add_co_author_if_updater_not_author(correction.id, user_id, tx).await?;
 
     let history = save_label_history_and_link_relations(&data, tx).await?;
 

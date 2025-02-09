@@ -91,9 +91,12 @@ struct NewArtist {
 		Error
 	),
 )]
+#[use_session]
 #[use_service(artist)]
 async fn create(Json(input): Json<NewArtist>) -> Result<Message, Error> {
-    artist_service.create(input.data).await?;
+    artist_service
+        .create(session.user.unwrap().id, input.data)
+        .await?;
 
     Ok(Message::ok())
 }

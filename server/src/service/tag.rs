@@ -11,12 +11,14 @@ super::def_service!();
 impl Service {
     pub async fn create(
         &self,
+        user_id: i32,
         tag_data: NewTag,
         correction_data: Metadata,
     ) -> Result<tag::Model, RepositoryError> {
         let transaction = self.db.begin().await?;
         let result =
-            repo::tag::create(tag_data, correction_data, &transaction).await?;
+            repo::tag::create(user_id, tag_data, correction_data, &transaction)
+                .await?;
         transaction.commit().await?;
         Ok(result)
     }

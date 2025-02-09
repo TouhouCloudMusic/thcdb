@@ -38,15 +38,11 @@ pub struct ReleaseArtist {
     pub name: String,
 }
 
-impl_from!(artist::Model > ReleaseArtist { id, name });
-
 #[derive(ToSchema, Serialize)]
 pub struct ReleaseLabel {
     pub id: i32,
     pub name: String,
 }
-
-impl_from!(label::Model > ReleaseLabel { id, name });
 
 #[derive(ToSchema, Serialize)]
 pub struct ReleaseCredit {
@@ -54,6 +50,9 @@ pub struct ReleaseCredit {
     pub role: CreditRole,
     pub on: Option<Vec<i16>>,
 }
+
+impl_from!(artist::Model > ReleaseArtist { id, name });
+impl_from!(label::Model > ReleaseLabel { id, name });
 
 #[derive(Clone, Deserialize, ToSchema)]
 pub struct ReleaseCorrection {
@@ -72,7 +71,7 @@ pub struct ReleaseCorrection {
     pub tracks: Vec<NewTrack>,
     pub credits: Vec<NewCredit>,
 
-    pub correction_desc: String,
+    pub correction_metadata: super::correction::Metadata,
 }
 
 impl From<&ReleaseCorrection> for release::ActiveModel {

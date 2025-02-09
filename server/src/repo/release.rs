@@ -248,7 +248,7 @@ pub async fn create(
     repo::correction::link_history()
         .correction_id(correction.id)
         .entity_history_id(history.id)
-        .description(data.correction_desc)
+        .description(data.correction_metadata.description)
         .db(tx)
         .call()
         .await?;
@@ -285,7 +285,7 @@ pub async fn create_correction(
     repo::correction::link_history()
         .correction_id(correction.id)
         .entity_history_id(history.id)
-        .description(data.correction_desc.clone())
+        .description(data.correction_metadata.description)
         .db(tx)
         .call()
         .await?;
@@ -312,7 +312,7 @@ pub async fn update_correction(
     repo::correction::link_history()
         .correction_id(correction.id)
         .entity_history_id(history.id)
-        .description(data.correction_desc.clone())
+        .description(data.correction_metadata.description)
         .db(tx)
         .call()
         .await?;
@@ -629,12 +629,12 @@ async fn create_release_track(
                 localized_titles: None,
                 credits: None,
                 metadata: Metadata {
-                    author_id,
                     description: generated_desc.clone(),
                 },
             })
             .collect_vec()
             .as_slice(),
+        author_id,
         tx,
     )
     .await?;
@@ -834,12 +834,12 @@ async fn create_new_songs_from_tracks(
                 localized_titles: None,
                 credits: None,
                 metadata: Metadata {
-                    author_id,
                     description: generated_desc.clone(),
                 },
             })
             .collect_vec()
             .as_slice(),
+        author_id,
         tx,
     )
     .await

@@ -44,9 +44,6 @@ pub struct ArtistCorrection {
     pub localized_name: Option<Vec<NewLocalizedName>>,
     pub members: Option<Vec<NewGroupMember>>,
 
-    pub correction_desc: String,
-
-    #[deprecated]
     pub correction_metadata: dto::correction::Metadata,
 }
 

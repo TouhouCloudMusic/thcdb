@@ -26,7 +26,6 @@ use sea_orm::{
     Statement,
 };
 
-use super::correction::find_by_id_with_type;
 use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::artist::{
     ArtistCorrection, ArtistResponse, GroupMember, LocalizedName,
@@ -190,6 +189,7 @@ async fn find_many(
 
 pub async fn create(
     data: ArtistCorrection,
+    user_id: i32,
     db: &DatabaseTransaction,
 ) -> Result<artist::Model, Error> {
     validate(&data)?;
@@ -197,7 +197,7 @@ pub async fn create(
     let artist = link_and_save_artist(&data, db).await?;
 
     let correction = repo::correction::create_self_approval()
-        .author_id(data.correction_metadata.author_id)
+        .author_id(user_id)
         .entity_type(EntityType::Artist)
         .entity_id(artist.id)
         .db(db)

@@ -20,6 +20,7 @@ use crate::error::RepositoryError;
 use crate::repo;
 
 pub async fn create(
+    user_id: i32,
     data: NewTag,
     correction_metadata: Metadata,
     tx: &DatabaseTransaction,
@@ -27,7 +28,7 @@ pub async fn create(
     let tag = save_tag_and_link_relation(&data, tx).await?;
 
     let correction = repo::correction::create_self_approval()
-        .author_id(correction_metadata.author_id)
+        .author_id(user_id)
         .entity_type(EntityType::Tag)
         .entity_id(tag.id)
         .db(tx)
@@ -47,12 +48,13 @@ pub async fn create(
 
 pub async fn create_update_correction(
     tag_id: i32,
+    user_id: i32,
     data: NewTag,
     correction_metadata: Metadata,
     tx: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
     let correction = repo::correction::create()
-        .author_id(correction_metadata.author_id)
+        .author_id(user_id)
         .status(CorrectionStatus::Pending)
         .r#type(CorrectionType::Update)
         .entity_type(EntityType::Tag)
@@ -73,17 +75,13 @@ pub async fn create_update_correction(
 }
 
 pub async fn update_update_correction(
+    user_id: i32,
     correction: correction::Model,
     data: NewTag,
     correction_metadata: Metadata,
     tx: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
-    add_co_author_if_updater_not_author(
-        correction.id,
-        correction_metadata.author_id,
-        tx,
-    )
-    .await?;
+    add_co_author_if_updater_not_author(correction.id, user_id, tx).await?;
 
     save_tag_history_and_link_relation(
         &data,

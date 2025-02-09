@@ -1,3 +1,4 @@
+use bon::builder;
 use entity::sea_orm_active_enums::{
     CorrectionStatus, CorrectionType, EntityType,
 };
@@ -16,6 +17,7 @@ use sea_orm::{
     PaginatorTrait, QueryFilter, QueryOrder,
 };
 
+use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::share::NewLocalizedTitle;
 use crate::dto::song::{NewSong, NewSongCredit, SongResponse};
 use crate::error::RepositoryError;
@@ -71,9 +73,10 @@ async fn find_many(
 
 pub async fn create(
     data: NewSong,
+    user_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<song::Model, DbErr> {
-    create_many(&[data], tx)
+    create_many(&[data], user_id, tx)
         .await?
         .into_iter()
         .next()
@@ -84,23 +87,23 @@ pub async fn create(
 
 pub async fn create_many(
     data: &[NewSong],
+    user_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<Vec<song::Model>, DbErr> {
     let new_songs = create_many_songs_and_link_relations(data, tx).await?;
 
-    let new_corrections = future::try_join_all(
-        new_songs.iter().zip(data.iter()).map(async |(song, data)| {
+    let new_corrections =
+        future::try_join_all(new_songs.iter().map(async |song| {
             // TODO: create many self approval
             repo::correction::create_self_approval()
-                .author_id(data.metadata.author_id)
+                .author_id(user_id)
                 .entity_type(EntityType::Song)
                 .entity_id(song.id)
                 .db(tx)
                 .call()
                 .await
-        }),
-    )
-    .await?;
+        }))
+        .await?;
 
     let new_song_histories =
         create_many_song_histories_and_link_relations(data, tx).await?;
@@ -126,15 +129,17 @@ pub async fn create_many(
     Ok(new_songs)
 }
 
+#[builder]
 pub async fn create_correction(
     song_id: i32,
     data: NewSong,
+    user_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
     utils::check_existence(song_id, tx).await?;
 
     let correction = repo::correction::create()
-        .author_id(data.metadata.author_id)
+        .author_id(user_id)
         .entity_type(EntityType::Song)
         .status(CorrectionStatus::Pending)
         .r#type(CorrectionType::Update)
@@ -166,10 +171,13 @@ pub async fn create_correction(
 
 pub async fn update_correction(
     correction: correction::Model,
+    user_id: i32,
     data: NewSong,
     tx: &DatabaseTransaction,
-) -> Result<(), DbErr> {
+) -> Result<(), RepositoryError> {
     let description = data.metadata.description.clone().into_active_value();
+
+    add_co_author_if_updater_not_author(correction.id, user_id, tx).await?;
 
     let history = create_many_song_histories_and_link_relations(&[data], tx)
         .await?

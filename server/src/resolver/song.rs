@@ -38,32 +38,32 @@ impl SongMutation {
         context: &JuniperContext,
     ) -> FieldResult<song::Model> {
         todo!();
-        let parsed_duration =
-            iso8601_duration::Duration::from_str(&input.duration)
-                .map(|d| d.to_chrono())
-                .map_err(|e| {
-                    tracing::error!("{:#?}", e);
-                    InvalidField {
-                        field: "duration".to_string(),
-                        expected: "ISO8601 duration".to_string(),
-                        accepted: e.input,
-                    }
-                })?;
-        let new_song = context
-            .state
-            .song_service
-            .create(NewSong {
-                title: input.title,
-                languages: None,
-                localized_titles: None,
-                credits: None,
-                metadata: Metadata {
-                    author_id: todo!(),
-                    description: todo!(),
-                },
-            })
-            .await?;
+        // let parsed_duration =
+        //     iso8601_duration::Duration::from_str(&input.duration)
+        //         .map(|d| d.to_chrono())
+        //         .map_err(|e| {
+        //             tracing::error!("{:#?}", e);
+        //             InvalidField {
+        //                 field: "duration".to_string(),
+        //                 expected: "ISO8601 duration".to_string(),
+        //                 accepted: e.input,
+        //             }
+        //         })?;
+        // let new_song = context
+        //     .state
+        //     .song_service
+        //     .create(NewSong {
+        //         title: input.title,
+        //         languages: None,
+        //         localized_titles: None,
+        //         credits: None,
+        //         metadata: Metadata {
+        //             author_id: todo!(),
+        //             description: todo!(),
+        //         },
+        //     })
+        //     .await?;
 
-        Ok(new_song)
+        // Ok(new_song)
     }
 }
