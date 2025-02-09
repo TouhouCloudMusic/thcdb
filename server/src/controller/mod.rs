@@ -6,6 +6,7 @@ use crate::AppState;
 mod artist;
 mod correction;
 mod graphql;
+mod label;
 mod release;
 mod song;
 mod tag;

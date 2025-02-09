@@ -3,10 +3,13 @@ use entity::sea_orm_active_enums::DatePrecision;
 use entity::{label, label_history};
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::IntoActiveValue;
+use serde::Deserialize;
+use utoipa::ToSchema;
 
 pub use super::artist::NewLocalizedName;
 use super::correction::Metadata;
 
+#[derive(ToSchema, Deserialize)]
 pub struct NewLabel {
     pub name: String,
     pub localized_names: Vec<NewLocalizedName>,

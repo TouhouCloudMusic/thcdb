@@ -4,7 +4,7 @@ use quote::quote;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
-use syn::{Data, DeriveInput, Fields, ItemFn, parse_macro_input};
+use syn::{Data, DeriveInput, Fields, ItemFn, ItemStruct, parse_macro_input};
 
 #[proc_macro_derive(EnumToResponse)]
 pub fn derive_into_response(input: TokenStream) -> TokenStream {
@@ -164,4 +164,65 @@ pub fn use_session(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     input_fn.sig.inputs.insert(0, new_arg);
     quote::quote!(#input_fn).into()
+}
+
+#[proc_macro_attribute]
+pub fn inject_services(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let args = parse_macro_input!(attr as ServiceArgs);
+
+    let input = parse_macro_input!(item as ItemStruct);
+
+    let name = input.ident;
+
+    let Fields::Named(fields) = input.fields else {
+        panic!("Not a struct");
+    };
+
+    let mut new_fields = fields.named.clone();
+    let mut init_statements = Vec::new();
+
+    for service in args.services {
+        let field_name = format!("{}_service", service);
+        let field_type = format!("crate::service::{}::Service", service);
+
+        let field_ident = syn::Ident::new(&field_name, name.span());
+        let field_ty: syn::Type =
+            syn::parse_str(&field_type).expect("Invalid service type");
+
+        new_fields.push(syn::Field {
+            attrs: vec![],
+            vis: syn::Visibility::Public(Default::default()),
+            ident: Some(field_ident.clone()),
+            colon_token: Some(Default::default()),
+            ty: field_ty,
+            mutability: syn::FieldMutability::None,
+        });
+
+        init_statements.push(quote! {
+            #field_ident: crate::service::#service::Service::new(database.clone())
+        });
+    }
+
+    quote::quote!(
+        #[derive(Clone, ::axum::extract::FromRef)]
+        pub struct #name {
+            #new_fields
+        }
+
+        impl #name {
+            pub async fn init() -> Self {
+                let config = Config::init();
+                let database = get_connection(&config.database_url).await;
+                let redis_pool = Pool::init(&config.redis_url).await;
+
+                Self {
+                    config,
+                    database: database.clone(),
+                    redis_pool,
+                    #(#init_statements),*
+                }
+            }
+        }
+    )
+    .into()
 }

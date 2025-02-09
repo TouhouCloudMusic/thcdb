@@ -2,6 +2,7 @@ pub mod artist;
 pub mod correction;
 pub mod image;
 pub mod juniper;
+pub mod label;
 pub mod release;
 pub mod song;
 pub mod tag;

@@ -47,7 +47,7 @@ pub async fn create(
     Ok(label)
 }
 
-pub async fn create_update_correction(
+pub async fn create_correction(
     label_id: i32,
     user_id: i32,
     data: NewLabel,
@@ -77,7 +77,7 @@ pub async fn create_update_correction(
     Ok(())
 }
 
-pub async fn update_update_correction(
+pub async fn update_correction(
     user_id: i32,
     correction: correction::Model,
     data: NewLabel,
