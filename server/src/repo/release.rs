@@ -246,6 +246,7 @@ pub async fn create(
         .await?;
 
     repo::correction::link_history()
+        .user_id(user_id)
         .correction_id(correction.id)
         .entity_history_id(history.id)
         .description(data.correction_metadata.description)
@@ -283,6 +284,7 @@ pub async fn create_correction(
         .await?;
 
     repo::correction::link_history()
+        .user_id(author_id)
         .correction_id(correction.id)
         .entity_history_id(history.id)
         .description(data.correction_metadata.description)
@@ -310,6 +312,7 @@ pub async fn update_correction(
         .await?;
 
     repo::correction::link_history()
+        .user_id(author_id)
         .correction_id(correction.id)
         .entity_history_id(history.id)
         .description(data.correction_metadata.description)

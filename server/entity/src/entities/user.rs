@@ -27,6 +27,8 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::correction_revision::Entity")]
+    CorrectionRevision,
     #[sea_orm(has_many = "super::correction_user::Entity")]
     CorrectionUser,
     #[sea_orm(
@@ -41,6 +43,12 @@ pub enum Relation {
     UserList,
     #[sea_orm(has_many = "super::user_role::Entity")]
     UserRole,
+}
+
+impl Related<super::correction_revision::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::CorrectionRevision.def()
+    }
 }
 
 impl Related<super::correction_user::Entity> for Entity {
@@ -64,6 +72,15 @@ impl Related<super::user_list::Entity> for Entity {
 impl Related<super::user_role::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::UserRole.def()
+    }
+}
+
+impl Related<super::correction::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::correction_revision::Relation::Correction.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::correction_revision::Relation::User.def().rev())
     }
 }
 

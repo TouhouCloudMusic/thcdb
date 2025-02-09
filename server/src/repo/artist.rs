@@ -204,7 +204,7 @@ pub async fn create(
         .call()
         .await?;
 
-    link_and_save_artist_history(correction.id, &data, db).await?;
+    link_and_save_artist_history(user_id, correction.id, &data, db).await?;
 
     Ok(artist)
 }
@@ -228,7 +228,7 @@ pub async fn create_correction(
         .call()
         .await?;
 
-    link_and_save_artist_history(correction.id, &data, tx).await?;
+    link_and_save_artist_history(user_id, correction.id, &data, tx).await?;
 
     Ok(correction)
 }
@@ -245,7 +245,7 @@ pub async fn update_correction(
 
     add_co_author_if_updater_not_author(correction.id, user_id, db).await?;
 
-    link_and_save_artist_history(correction.id, &data, db).await?;
+    link_and_save_artist_history(user_id, correction.id, &data, db).await?;
 
     Ok(())
 }
@@ -637,6 +637,7 @@ async fn link_and_save_artist(
 }
 
 async fn link_and_save_artist_history(
+    user_id: i32,
     correction_id: i32,
     data: &ArtistCorrection,
     db: &DatabaseTransaction,
@@ -644,6 +645,7 @@ async fn link_and_save_artist_history(
     let history = artist_history::ActiveModel::from(data).insert(db).await?;
 
     repo::correction::link_history()
+        .user_id(user_id)
         .correction_id(correction_id)
         .entity_history_id(history.id)
         .description(data.correction_metadata.description.clone())

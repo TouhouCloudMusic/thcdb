@@ -38,7 +38,8 @@ pub async fn create(
     repo::correction::link_history()
         .correction_id(correction.id)
         .entity_history_id(history.id)
-        .description(data.correction_metadata.description.clone())
+        .description(data.correction_metadata.description)
+        .user_id(user_id)
         .db(tx)
         .call()
         .await?;
@@ -65,6 +66,7 @@ pub async fn create_update_correction(
         .await?;
 
     repo::correction::link_history()
+        .user_id(user_id)
         .correction_id(correction.id)
         .entity_history_id(history.id)
         .description(data.correction_metadata.description.clone())
@@ -86,6 +88,7 @@ pub async fn update_update_correction(
     let history = save_label_history_and_link_relations(&data, tx).await?;
 
     repo::correction::link_history()
+        .user_id(user_id)
         .correction_id(correction.id)
         .entity_history_id(history.id)
         .description(data.correction_metadata.description.clone())

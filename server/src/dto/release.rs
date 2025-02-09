@@ -74,49 +74,21 @@ pub struct ReleaseCorrection {
     pub correction_metadata: super::correction::Metadata,
 }
 
-impl From<&ReleaseCorrection> for release::ActiveModel {
-    fn from(val: &ReleaseCorrection) -> Self {
-        Self {
-            id: NotSet,
-            title: Set(val.title.clone()),
-            release_type: Set(val.release_type),
-            release_date: Set(val.release_date),
-            release_date_precision: val
-                .release_date_precision
-                .into_active_value(),
-            recording_date_start: Set(val.recording_date_start),
-            recording_date_start_precision: val
-                .recording_date_start_precision
-                .into_active_value(),
-            recording_date_end: Set(val.recording_date_end),
-            recording_date_end_precision: val
-                .recording_date_end_precision
-                .into_active_value(),
-        }
-    }
-}
-
-impl From<&ReleaseCorrection> for release_history::ActiveModel {
-    fn from(value: &ReleaseCorrection) -> Self {
-        Self {
-            id: NotSet,
-            title: Set(value.title.clone()),
-            release_type: Set(value.release_type),
-            release_date: Set(value.release_date),
-            release_date_precision: value
-                .release_date_precision
-                .into_active_value(),
-            recording_date_start: Set(value.recording_date_start),
-            recording_date_start_precision: value
-                .recording_date_start_precision
-                .into_active_value(),
-            recording_date_end: Set(value.recording_date_end),
-            recording_date_end_precision: value
-                .recording_date_end_precision
-                .into_active_value(),
-        }
-    }
-}
+impl_from!(
+    ReleaseCorrection >
+    [release::ActiveModel, release_history::ActiveModel] {
+        title,
+        release_type,
+        release_date,
+        release_date_precision,
+        recording_date_start,
+        recording_date_start_precision,
+        recording_date_end,
+        recording_date_end_precision,
+        : id NotSet
+    },
+    IntoActiveValue::into_active_value
+);
 
 #[derive(Clone, ToSchema, Deserialize)]
 pub enum NewTrack {

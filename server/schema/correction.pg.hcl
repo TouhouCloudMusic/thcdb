@@ -120,6 +120,14 @@ table "correction_revision" {
     type = int
   }
 
+  column "author_id" {
+    type = int
+  }
+  foreign_key "fk_correction_revision_author_id" {
+    columns     = [column.author_id]
+    ref_columns = [table.user.column.id]
+  }
+
   column "description" {
     type = text
   }

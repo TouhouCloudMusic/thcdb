@@ -50,4 +50,13 @@ impl Related<super::correction_user::Entity> for Entity {
     }
 }
 
+impl Related<super::user::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::correction_revision::Relation::User.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::correction_revision::Relation::Correction.def().rev())
+    }
+}
+
 impl ActiveModelBehavior for ActiveModel {}

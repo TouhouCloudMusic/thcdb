@@ -127,16 +127,17 @@ pub async fn create_self_approval(
 
 #[builder]
 pub fn link_history<C: ConnectionTrait>(
+    user_id: i32,
     correction_id: i32,
     entity_history_id: i32,
-    // TODO: More generic
-    description: String,
+    description: impl Into<String>,
     db: &C,
 ) -> impl Future<Output = Result<correction_revision::Model, DbErr>> + '_ {
     correction_revision::ActiveModel {
         correction_id: Set(correction_id),
         entity_history_id: Set(entity_history_id),
-        description: Set(description),
+        description: Set(description.into()),
+        author_id: Set(user_id),
     }
     .insert(db)
 }

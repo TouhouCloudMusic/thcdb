@@ -22,6 +22,7 @@ pub struct Model {
     pub entity_history_id: i32,
     #[sea_orm(column_type = "Text")]
     pub description: String,
+    pub author_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -34,11 +35,25 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Correction,
+    #[sea_orm(
+        belongs_to = "super::user::Entity",
+        from = "Column::AuthorId",
+        to = "super::user::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    User,
 }
 
 impl Related<super::correction::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Correction.def()
+    }
+}
+
+impl Related<super::user::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::User.def()
     }
 }
 

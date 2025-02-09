@@ -1,23 +1,28 @@
 use sea_orm::ActiveValue::{self, NotSet, Set};
 use sea_orm::IntoActiveValue;
 
-use crate::sea_orm_active_enums::{
-    CorrectionType, CorrectionUserType, DatePrecision,
-};
+use crate::sea_orm_active_enums::*;
 
-impl IntoActiveValue<CorrectionType> for CorrectionType {
-    #[inline]
-    fn into_active_value(self) -> sea_orm::ActiveValue<CorrectionType> {
-        Set(self)
-    }
+// TODO: proc macro
+macro_rules! impl_into_active_value {
+    ($($type:ty),+) => {
+        $(
+            impl IntoActiveValue<$type> for $type {
+                #[inline]
+                fn into_active_value(self) -> sea_orm::ActiveValue<$type> {
+                    Set(self)
+                }
+            }
+        )+
+    };
 }
 
-impl IntoActiveValue<CorrectionUserType> for CorrectionUserType {
-    #[inline]
-    fn into_active_value(self) -> sea_orm::ActiveValue<CorrectionUserType> {
-        Set(self)
-    }
-}
+impl_into_active_value!(
+    CorrectionType,
+    CorrectionUserType,
+    DatePrecision,
+    ReleaseType
+);
 
 impl IntoActiveValue<DatePrecision> for Option<DatePrecision> {
     fn into_active_value(self) -> ActiveValue<DatePrecision> {

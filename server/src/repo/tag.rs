@@ -1,3 +1,4 @@
+use bon::builder;
 use entity::sea_orm_active_enums::{
     CorrectionStatus, CorrectionType, EntityType,
 };
@@ -35,13 +36,14 @@ pub async fn create(
         .call()
         .await?;
 
-    save_tag_history_and_link_relation(
-        &data,
-        correction.id,
-        correction_metadata.description,
-        tx,
-    )
-    .await?;
+    save_tag_history_and_link_relation()
+        .data(&data)
+        .user_id(user_id)
+        .correction_id(correction.id)
+        .correction_desc(correction_metadata.description)
+        .tx(tx)
+        .call()
+        .await?;
 
     Ok(tag)
 }
@@ -63,13 +65,14 @@ pub async fn create_update_correction(
         .call()
         .await?;
 
-    save_tag_history_and_link_relation(
-        &data,
-        correction.id,
-        correction_metadata.description,
-        tx,
-    )
-    .await?;
+    save_tag_history_and_link_relation()
+        .data(&data)
+        .user_id(user_id)
+        .correction_id(correction.id)
+        .correction_desc(correction_metadata.description)
+        .tx(tx)
+        .call()
+        .await?;
 
     Ok(())
 }
@@ -83,13 +86,14 @@ pub async fn update_update_correction(
 ) -> Result<(), RepositoryError> {
     add_co_author_if_updater_not_author(correction.id, user_id, tx).await?;
 
-    save_tag_history_and_link_relation(
-        &data,
-        correction.id,
-        correction_metadata.description,
-        tx,
-    )
-    .await?;
+    save_tag_history_and_link_relation()
+        .data(&data)
+        .user_id(user_id)
+        .correction_id(correction.id)
+        .correction_desc(correction_metadata.description)
+        .tx(tx)
+        .call()
+        .await?;
 
     Ok(())
 }
@@ -141,16 +145,19 @@ async fn save_tag_and_link_relation(
     Ok(tag)
 }
 
+#[builder]
 async fn save_tag_history_and_link_relation(
     data: &NewTag,
     correction_id: i32,
     correction_desc: String,
+    user_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<tag_history::Model, RepositoryError> {
     let history = tag_history::ActiveModel::from(data).insert(tx).await?;
 
     repo::correction::link_history()
         .correction_id(correction_id)
+        .user_id(user_id)
         .entity_history_id(history.id)
         .description(correction_desc)
         .db(tx)

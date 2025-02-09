@@ -117,6 +117,7 @@ pub async fn create_many(
         |(item, correction, history)| correction_revision::ActiveModel {
             entity_history_id: Set(history.id),
             correction_id: Set(correction.id),
+            author_id: Set(user_id),
             description: item.metadata.description.clone().into_active_value(),
         },
     )
@@ -161,6 +162,8 @@ pub async fn create_correction(
     correction_revision::Entity::insert(correction_revision::ActiveModel {
         entity_history_id: Set(history.id),
         correction_id: Set(correction.id),
+        author_id: Set(user_id),
+
         description,
     })
     .exec(tx)
@@ -190,6 +193,7 @@ pub async fn update_correction(
     correction_revision::Entity::insert(correction_revision::ActiveModel {
         entity_history_id: Set(history.id),
         correction_id: Set(correction.id),
+        author_id: Set(user_id),
         description,
     })
     .exec(tx)
