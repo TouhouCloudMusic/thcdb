@@ -1,3 +1,4 @@
+use axum::extract::FromRef;
 use macros::inject_services;
 use sea_orm::{DatabaseConnection, sqlx};
 
@@ -6,10 +7,11 @@ use crate::infrastructure::database::get_connection;
 use crate::infrastructure::redis::Pool;
 
 #[inject_services(artist, correction, image, label, release, song, tag, user)]
+#[derive(Clone, FromRef)]
 pub struct AppState {
     pub config: Config,
     pub database: DatabaseConnection,
-    pub redis_pool: Pool,
+    redis_pool: Pool,
 }
 
 impl AppState {

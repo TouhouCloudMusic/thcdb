@@ -1,10 +1,13 @@
 use itertools::Itertools;
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
-use syn::{Data, DeriveInput, Fields, ItemFn, ItemStruct, parse_macro_input};
+use syn::{
+    Data, DeriveInput, Fields, ItemFn, ItemStruct, Type, parse_macro_input,
+    parse_quote,
+};
 
 #[proc_macro_derive(EnumToResponse)]
 pub fn derive_into_response(input: TokenStream) -> TokenStream {
@@ -170,31 +173,31 @@ pub fn use_session(attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn inject_services(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = parse_macro_input!(attr as ServiceArgs);
 
-    let input = parse_macro_input!(item as ItemStruct);
+    let mut input = parse_macro_input!(item as ItemStruct);
 
-    let name = input.ident;
+    let name = &input.ident;
 
-    let Fields::Named(fields) = input.fields else {
-        panic!("Not a struct");
+    let fields = if let Fields::Named(fields) = &mut input.fields {
+        fields
+    } else {
+        return syn::Error::new_spanned(input.fields, "Not a struct")
+            .to_compile_error()
+            .into();
     };
 
-    let mut new_fields = fields.named.clone();
     let mut init_statements = Vec::new();
 
     for service in args.services {
-        let field_name = format!("{}_service", service);
-        let field_type = format!("crate::service::{}::Service", service);
+        let field_ident = format_ident!("{}_service", service);
+        let field_type: Type =
+            parse_quote! { crate::service::#service::Service };
 
-        let field_ident = syn::Ident::new(&field_name, name.span());
-        let field_ty: syn::Type =
-            syn::parse_str(&field_type).expect("Invalid service type");
-
-        new_fields.push(syn::Field {
+        fields.named.push(syn::Field {
             attrs: vec![],
             vis: syn::Visibility::Public(Default::default()),
             ident: Some(field_ident.clone()),
             colon_token: Some(Default::default()),
-            ty: field_ty,
+            ty: field_type,
             mutability: syn::FieldMutability::None,
         });
 
@@ -203,11 +206,8 @@ pub fn inject_services(attr: TokenStream, item: TokenStream) -> TokenStream {
         });
     }
 
-    quote::quote!(
-        #[derive(Clone, ::axum::extract::FromRef)]
-        pub struct #name {
-            #new_fields
-        }
+    quote!(
+        #input
 
         impl #name {
             pub async fn init() -> Self {
