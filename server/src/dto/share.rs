@@ -69,9 +69,20 @@ pub struct SimpleLocalizedTitle {
     pub title: String,
 }
 
+#[derive(ToSchema, Serialize)]
+pub struct SimpleLocalizedName {
+    pub language_id: i32,
+    pub name: String,
+}
+
 impl_from!(
     entity::song_localized_title::Model
         > SimpleLocalizedTitle { language_id, title }
+);
+
+impl_from!(
+    entity::label_localized_name::Model
+        > SimpleLocalizedName { language_id, name }
 );
 
 #[derive(Clone, ToSchema, Deserialize)]

@@ -2,13 +2,29 @@ use entity::sea_orm_active_enums::EntityType;
 use entity::{correction, label};
 use sea_orm::{DatabaseConnection, TransactionTrait};
 
-use crate::dto::label::NewLabel;
+use crate::dto::label::{LabelResponse, NewLabel};
 use crate::error::RepositoryError;
 use crate::repo;
 
 super::def_service!();
 
 impl Service {
+    pub async fn find_by_id(
+        &self,
+        id: i32,
+    ) -> Result<LabelResponse, RepositoryError> {
+        repo::label::find_by_id(id, &self.db).await
+    }
+
+    pub async fn find_by_keyword(
+        &self,
+        keyword: String,
+    ) -> Result<Vec<LabelResponse>, RepositoryError> {
+        repo::label::find_by_keyword(keyword, &self.db)
+            .await
+            .map(|x| x.into_iter().collect())
+    }
+
     pub async fn create(
         &self,
         user_id: i32,

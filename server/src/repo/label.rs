@@ -6,17 +6,70 @@ use entity::{
     label_founder_history, label_history, label_localized_name,
     label_localized_name_history,
 };
-use itertools::Itertools;
+use itertools::{Itertools, izip};
 use sea_orm::ActiveValue::{NotSet, Set};
+use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityName,
-    EntityTrait, IntoActiveValue, ModelTrait, QueryFilter, QueryOrder,
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
+    EntityName, EntityTrait, IntoActiveValue, LoaderTrait, ModelTrait,
+    QueryFilter, QueryOrder,
 };
 
 use super::correction::user::utils::add_co_author_if_updater_not_author;
-use crate::dto::label::{NewLabel, NewLocalizedName};
+use crate::dto::label::{LabelResponse, NewLabel, NewLocalizedName};
 use crate::error::RepositoryError;
 use crate::repo;
+use crate::utils::MapInto;
+
+pub async fn find_by_id(
+    id: i32,
+    db: &impl ConnectionTrait,
+) -> Result<LabelResponse, RepositoryError> {
+    find_many(label::Column::Id.eq(id), db)
+        .await?
+        .into_iter()
+        .next()
+        .ok_or_else(|| RepositoryError::EntityNotFound {
+            entity_name: label::Entity.table_name(),
+        })
+}
+
+pub async fn find_by_keyword(
+    keyword: String,
+    db: &impl ConnectionTrait,
+) -> Result<impl IntoIterator<Item = LabelResponse>, RepositoryError> {
+    find_many(label::Column::Name.like(keyword), db).await
+}
+
+async fn find_many(
+    cond: impl IntoCondition,
+    db: &impl ConnectionTrait,
+) -> Result<impl IntoIterator<Item = LabelResponse>, RepositoryError> {
+    let labels = label::Entity::find().filter(cond).all(db).await?;
+
+    let founders = labels.load_many(label_founder::Entity, db).await?;
+
+    let localized_names =
+        labels.load_many(label_localized_name::Entity, db).await?;
+
+    let res = izip!(labels, founders, localized_names).map(
+        |(label, fouders, names)| LabelResponse {
+            id: label.id,
+            name: label.name,
+            founded_date: label
+                .founded_date
+                .map(|x| (x, label.founded_date_precision)),
+            dissolved_date: label
+                .founded_date
+                .map(|x| (x, label.dissolved_date_precision)),
+
+            founders: fouders.into_iter().map(|x| x.artist_id).collect(),
+            localized_names: names.map_into(),
+        },
+    );
+
+    Ok(res)
+}
 
 pub async fn create(
     user_id: i32,
