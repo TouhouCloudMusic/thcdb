@@ -62,36 +62,10 @@ async fn main() {
         .init();
 
     let state = AppState::init().await;
+
     let config = state.config.clone();
-    let session_store = RedisStore::new(state.redis_pool());
-    let session_layer = SessionManagerLayer::new(session_store)
-        .with_name("session_token")
-        .with_expiry(Expiry::OnInactivity(Duration::days(30)));
-    let auth_layer =
-        AuthManagerLayerBuilder::new(state.user_service.clone(), session_layer)
-            .build();
 
-    let (api_router, api_doc) = controller::api_router().split_for_parts();
-
-    let doc_router = api_router
-        .merge(SwaggerUi::new("/docs").url("/openapi.json", api_doc.clone()))
-        .merge(Scalar::with_url("/scalar", api_doc));
-
-    let router = Router::new()
-        .route(
-            "/",
-            get(|session: AuthSession| async {
-                format!("Hello, {}!", {
-                    match session.user {
-                        Some(user) => user.name,
-                        _ => "world".to_string(),
-                    }
-                })
-            }),
-        )
-        .merge(doc_router)
-        .layer(auth_layer)
-        .with_state(state);
+    let router = router(state);
 
     let listener = tokio::net::TcpListener::bind(format!(
         "0.0.0.0:{}",
@@ -116,4 +90,44 @@ async fn main() {
         })
         .await
         .unwrap();
+}
+
+fn router(state: AppState) -> Router {
+    let session_store = RedisStore::new(state.redis_pool());
+
+    let session_layer = SessionManagerLayer::new(session_store)
+        .with_name("session_token")
+        .with_expiry(Expiry::OnInactivity(Duration::days(30)));
+
+    let auth_layer =
+        AuthManagerLayerBuilder::new(state.user_service.clone(), session_layer)
+            .build();
+
+    let (api_router, api_doc) = controller::api_router().split_for_parts();
+
+    let doc_router = api_router
+        .merge(SwaggerUi::new("/docs").url("/openapi.json", api_doc.clone()))
+        .merge(Scalar::with_url("/scalar", api_doc));
+
+    Router::new()
+        .route(
+            "/",
+            get(|session: AuthSession| async {
+                format!("Hello, {}!", {
+                    match session.user {
+                        Some(user) => user.name,
+                        _ => "world".to_string(),
+                    }
+                })
+            }),
+        )
+        .merge(doc_router)
+        .layer(auth_layer)
+        .layer(
+            middleware::limit_layer()
+                .req_per_sec(5)
+                .burst_size(8)
+                .call(),
+        )
+        .with_state(state)
 }
