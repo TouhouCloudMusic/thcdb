@@ -96,11 +96,11 @@ tower-sessions-redis-store = "0.16.0"
 tracing.workspace = true
 tracing-subscriber.workspace = true
 utoipa.workspace = true
-utoipa-axum = "0.1"
+utoipa-axum = "0.2"
 utoipa-scalar = { version = "0.3", features = [
     "axum",
 ] }
-utoipa-swagger-ui = { version = "8", features = [
+utoipa-swagger-ui = { version = "9", features = [
     "axum",
     "vendored",
 ] }

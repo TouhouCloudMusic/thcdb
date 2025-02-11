@@ -30,7 +30,6 @@ mod types;
 mod utils;
 
 use axum::Router;
-use axum::response::Html;
 use axum::routing::get;
 use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
@@ -41,7 +40,7 @@ use tikv_jemallocator::Jemalloc;
 use tokio::signal;
 use tower_sessions_redis_store::RedisStore;
 use tracing_subscriber::fmt::time::ChronoLocal;
-use utoipa_scalar::Scalar;
+use utoipa_scalar::{Scalar, Servable};
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::service::user::AuthSession;
@@ -72,11 +71,11 @@ async fn main() {
         AuthManagerLayerBuilder::new(state.user_service.clone(), session_layer)
             .build();
 
-    let (api_router, api) = controller::api_router().split_for_parts();
+    let (api_router, api_doc) = controller::api_router().split_for_parts();
 
     let doc_router = api_router
-        .merge(SwaggerUi::new("/docs").url("/openapi.json", api.clone()))
-        .route("/scalar", get(async || Html(Scalar::new(api).to_html())));
+        .merge(SwaggerUi::new("/docs").url("/openapi.json", api_doc.clone()))
+        .merge(Scalar::with_url("/scalar", api_doc));
 
     let router = Router::new()
         .route(
