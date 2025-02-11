@@ -3,7 +3,7 @@ use entity::tag;
 use sea_orm::{DatabaseConnection, TransactionTrait};
 
 use crate::dto::correction::Metadata;
-use crate::dto::tag::NewTag;
+use crate::dto::tag::{NewTag, TagResponse};
 use crate::error::RepositoryError;
 use crate::repo;
 
@@ -11,6 +11,20 @@ super::def_service!();
 
 #[bon::bon]
 impl Service {
+    pub async fn find_by_id(
+        &self,
+        id: i32,
+    ) -> Result<TagResponse, RepositoryError> {
+        repo::tag::find_by_id(id, &self.db).await
+    }
+
+    pub async fn find_by_keyword(
+        &self,
+        kw: impl Into<String>,
+    ) -> Result<Vec<TagResponse>, RepositoryError> {
+        repo::tag::find_by_keyword(kw, &self.db).await
+    }
+
     pub async fn create(
         &self,
         user_id: i32,

@@ -7,18 +7,73 @@ use entity::{
     tag_alternative_name_history, tag_history, tag_relation,
     tag_relation_history,
 };
-use itertools::Itertools;
+use itertools::{Itertools, izip};
 use sea_orm::ActiveValue::Set;
+use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityName,
-    EntityOrSelect, EntityTrait, ModelTrait, QueryFilter, QueryOrder,
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
+    EntityName, EntityOrSelect, EntityTrait, LoaderTrait, ModelTrait,
+    QueryFilter, QueryOrder,
 };
 
 use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::correction::Metadata;
-use crate::dto::tag::{AltName, NewTag, NewTagRelation};
+use crate::dto::tag::{AltName, NewTag, TagRelation, TagResponse};
 use crate::error::RepositoryError;
 use crate::repo;
+use crate::utils::MapInto;
+
+pub async fn find_by_id(
+    id: i32,
+    db: &impl ConnectionTrait,
+) -> Result<TagResponse, RepositoryError> {
+    find_many(tag::Column::Id.eq(id), db)
+        .await?
+        .into_iter()
+        .next()
+        .ok_or_else(|| RepositoryError::EntityNotFound {
+            entity_name: tag::Entity.table_name(),
+        })
+}
+
+pub async fn find_by_keyword(
+    kw: impl Into<String>,
+    db: &impl ConnectionTrait,
+) -> Result<Vec<TagResponse>, RepositoryError> {
+    find_many(tag::Column::Name.contains(kw), db).await
+}
+
+async fn find_many(
+    cond: impl IntoCondition,
+    db: &impl ConnectionTrait,
+) -> Result<Vec<TagResponse>, RepositoryError> {
+    let tags = tag::Entity::find().filter(cond).all(db).await?;
+
+    let alt_names = tags.load_many(tag_alternative_name::Entity, db).await?;
+
+    let relations = tag_relation::Entity::find()
+        .filter(
+            tag_relation::Column::TagId.is_in(tags.iter().map(|tag| tag.id)),
+        )
+        .all(db)
+        .await?;
+
+    Ok(izip!(tags, alt_names)
+        .map(|(tag, alt_names)| TagResponse {
+            id: tag.id,
+            name: tag.name,
+            r#type: tag.r#type,
+            short_description: tag.short_description,
+            description: tag.description,
+            alt_names: alt_names.map_into(),
+            relations: relations
+                .iter()
+                .filter(|relation| relation.tag_id == tag.id)
+                .map_into()
+                .collect(),
+        })
+        .collect())
+}
 
 pub async fn create(
     user_id: i32,
@@ -242,7 +297,7 @@ async fn create_alt_name_history(
 
 async fn create_relation(
     tag_id: i32,
-    relations: &[NewTagRelation],
+    relations: &[TagRelation],
     tx: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
     if relations.is_empty() {
@@ -287,7 +342,7 @@ async fn update_relation(
 
 async fn create_relation_history(
     history_id: i32,
-    relations: &[NewTagRelation],
+    relations: &[TagRelation],
     tx: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
     if relations.is_empty() {
