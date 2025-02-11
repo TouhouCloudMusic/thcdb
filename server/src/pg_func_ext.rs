@@ -12,6 +12,10 @@ impl PgFuncExt {
     {
         Func::cust(ArrayAgg).arg(expr)
     }
+
+    pub fn now() -> FunctionCall {
+        Func::cust(Now)
+    }
 }
 
 struct ArrayAgg;
@@ -20,5 +24,13 @@ struct ArrayAgg;
 impl Iden for ArrayAgg {
     fn unquoted(&self, s: &mut dyn Write) {
         write!(s, "ARRAY_AGG").unwrap();
+    }
+}
+
+struct Now;
+
+impl Iden for Now {
+    fn unquoted(&self, s: &mut dyn Write) {
+        write!(s, "Now").unwrap();
     }
 }

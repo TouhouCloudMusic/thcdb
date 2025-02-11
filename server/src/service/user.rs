@@ -23,6 +23,7 @@ use sea_orm::{
 use super::*;
 use crate::dto::user::AuthCredential;
 use crate::error::{InvalidField, RepositoryError};
+use crate::repo::user::update_user_last_login;
 
 pub static ARGON2_HASHER: Lazy<Argon2> = Lazy::new(Argon2::default);
 
@@ -283,9 +284,15 @@ impl AuthnBackend for Service {
 
     async fn get_user(
         &self,
-        id: &UserId<Self>,
+        user_id: &UserId<Self>,
     ) -> Result<Option<Self::User>, Self::Error> {
-        self.find_by_id(id).await
+        let user = self.find_by_id(user_id).await?;
+
+        if user.is_some() {
+            update_user_last_login(*user_id, &self.db).await?;
+        }
+
+        Ok(user)
     }
 }
 

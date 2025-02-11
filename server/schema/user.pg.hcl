@@ -16,7 +16,10 @@ table "user" {
     null = false
     type = text
   }
-
+  index "idx_name" {
+    columns = [column.name]
+    unique  = true
+  }
   column "password" {
     null = false
     type = text
@@ -33,10 +36,11 @@ table "user" {
     on_delete   = SET_NULL
   }
 
-  index "idx_name" {
-    columns = [column.name]
-    unique  = true
+  column "last_login" {
+    type    = timestamptz
+    default = sql("now()")
   }
+
 }
 
 table "role" {

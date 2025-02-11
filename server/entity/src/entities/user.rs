@@ -23,6 +23,7 @@ pub struct Model {
     #[sea_orm(column_type = "Text")]
     pub password: String,
     pub avatar_id: Option<i32>,
+    pub last_login: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
