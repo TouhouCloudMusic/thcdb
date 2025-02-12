@@ -36,10 +36,10 @@ pub enum Relation {
     LabelFounderHistory,
     #[sea_orm(has_many = "super::label_localized_name::Entity")]
     LabelLocalizedName,
-    #[sea_orm(has_many = "super::release_label::Entity")]
-    ReleaseLabel,
-    #[sea_orm(has_many = "super::release_label_history::Entity")]
-    ReleaseLabelHistory,
+    #[sea_orm(has_many = "super::release_catalog_number::Entity")]
+    ReleaseCatalogNumber,
+    #[sea_orm(has_many = "super::release_catalog_number_history::Entity")]
+    ReleaseCatalogNumberHistory,
 }
 
 impl Related<super::label_founder::Entity> for Entity {
@@ -60,33 +60,15 @@ impl Related<super::label_localized_name::Entity> for Entity {
     }
 }
 
-impl Related<super::release_label::Entity> for Entity {
+impl Related<super::release_catalog_number::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ReleaseLabel.def()
+        Relation::ReleaseCatalogNumber.def()
     }
 }
 
-impl Related<super::release_label_history::Entity> for Entity {
+impl Related<super::release_catalog_number_history::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ReleaseLabelHistory.def()
-    }
-}
-
-impl Related<super::release::Entity> for Entity {
-    fn to() -> RelationDef {
-        super::release_label::Relation::Release.def()
-    }
-    fn via() -> Option<RelationDef> {
-        Some(super::release_label::Relation::Label.def().rev())
-    }
-}
-
-impl Related<super::release_history::Entity> for Entity {
-    fn to() -> RelationDef {
-        super::release_label_history::Relation::ReleaseHistory.def()
-    }
-    fn via() -> Option<RelationDef> {
-        Some(super::release_label_history::Relation::Label.def().rev())
+        Relation::ReleaseCatalogNumberHistory.def()
     }
 }
 

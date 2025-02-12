@@ -1,6 +1,9 @@
 use chrono::Duration;
 use entity::sea_orm_active_enums::{DatePrecision, ReleaseType};
-use entity::{artist, label, release, release_history, song, song_history};
+use entity::{
+    artist, label, release, release_catalog_number,
+    release_catalog_number_history, release_history, song, song_history,
+};
 use input::NewCredit;
 use macros::impl_from;
 use sea_orm::ActiveValue::{NotSet, Set};
@@ -27,7 +30,7 @@ pub struct ReleaseResponse {
 
     pub artists: Vec<ReleaseArtist>,
     pub credits: Vec<ReleaseCredit>,
-    pub labels: Vec<ReleaseLabel>,
+    pub catalog_nums: Vec<ReleaseCatalogNumber>,
     pub localized_titles: Vec<LocalizedTitle>,
     pub tracks: Vec<i32>,
 }
@@ -38,10 +41,10 @@ pub struct ReleaseArtist {
     pub name: String,
 }
 
-#[derive(ToSchema, Serialize)]
-pub struct ReleaseLabel {
-    pub id: i32,
-    pub name: String,
+#[derive(Clone, ToSchema, Serialize, Deserialize)]
+pub struct ReleaseCatalogNumber {
+    pub catalog_number: String,
+    pub label_id: Option<i32>,
 }
 
 #[derive(ToSchema, Serialize)]
@@ -51,8 +54,28 @@ pub struct ReleaseCredit {
     pub on: Option<Vec<i16>>,
 }
 
+#[derive(ToSchema, Serialize)]
+pub struct ReleaseLabel {
+    pub id: i32,
+    pub name: String,
+}
+
 impl_from!(artist::Model > ReleaseArtist { id, name });
 impl_from!(label::Model > ReleaseLabel { id, name });
+impl_from!(
+    release_catalog_number::Model
+        > ReleaseCatalogNumber {
+            catalog_number,
+            label_id
+        }
+);
+impl_from!(
+    release_catalog_number_history::Model
+        > ReleaseCatalogNumber {
+            catalog_number,
+            label_id
+        }
+);
 
 #[derive(Clone, Deserialize, ToSchema)]
 pub struct ReleaseCorrection {
@@ -67,7 +90,7 @@ pub struct ReleaseCorrection {
 
     pub artists: Vec<i32>,
     pub localized_titles: Vec<NewLocalizedTitle>,
-    pub labels: Vec<i32>,
+    pub catalog_nums: Vec<ReleaseCatalogNumber>,
     pub tracks: Vec<NewTrack>,
     pub credits: Vec<NewCredit>,
 

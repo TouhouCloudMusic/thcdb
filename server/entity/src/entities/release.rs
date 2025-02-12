@@ -35,10 +35,10 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::release_artist::Entity")]
     ReleaseArtist,
+    #[sea_orm(has_many = "super::release_catalog_number::Entity")]
+    ReleaseCatalogNumber,
     #[sea_orm(has_many = "super::release_credit::Entity")]
     ReleaseCredit,
-    #[sea_orm(has_many = "super::release_label::Entity")]
-    ReleaseLabel,
     #[sea_orm(has_many = "super::release_localized_title::Entity")]
     ReleaseLocalizedTitle,
     #[sea_orm(has_many = "super::release_track::Entity")]
@@ -51,15 +51,15 @@ impl Related<super::release_artist::Entity> for Entity {
     }
 }
 
-impl Related<super::release_credit::Entity> for Entity {
+impl Related<super::release_catalog_number::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ReleaseCredit.def()
+        Relation::ReleaseCatalogNumber.def()
     }
 }
 
-impl Related<super::release_label::Entity> for Entity {
+impl Related<super::release_credit::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ReleaseLabel.def()
+        Relation::ReleaseCredit.def()
     }
 }
 
@@ -81,15 +81,6 @@ impl Related<super::artist::Entity> for Entity {
     }
     fn via() -> Option<RelationDef> {
         Some(super::release_artist::Relation::Release.def().rev())
-    }
-}
-
-impl Related<super::label::Entity> for Entity {
-    fn to() -> RelationDef {
-        super::release_label::Relation::Label.def()
-    }
-    fn via() -> Option<RelationDef> {
-        Some(super::release_label::Relation::Release.def().rev())
     }
 }
 

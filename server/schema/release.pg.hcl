@@ -228,8 +228,18 @@ table "release_localized_title_history" {
 
 }
 
-table "release_label" {
+table "release_catalog_number" {
   schema = schema.public
+
+  column "id" {
+    type = int
+    identity {
+      generated = BY_DEFAULT
+    }
+  }
+  primary_key {
+    columns = [column.id]
+  }
 
   column "release_id" {
     type = int
@@ -241,43 +251,56 @@ table "release_label" {
     on_delete   = CASCADE
   }
 
+  column "catalog_number" {
+    type = text
+  }
+
   column "label_id" {
     type = int
+    null = true
   }
   foreign_key "fk_release_label_label_id" {
     columns     = [column.label_id]
     ref_columns = [table.label.column.id]
-    on_update   = CASCADE
-    on_delete   = CASCADE
-  }
-
-  primary_key {
-    columns = [column.release_id, column.label_id]
+    on_update   = SET_NULL
+    on_delete   = SET_NULL
   }
 }
 
-table "release_label_history" {
+table "release_catalog_number_history" {
   schema = schema.public
+
+  column "id" {
+    type = int
+    identity {
+      generated = BY_DEFAULT
+    }
+  }
+  primary_key {
+    columns = [column.id]
+  }
 
   column "history_id" {
     type = int
   }
-  foreign_key "fk_release_label_history_history_id" {
+  foreign_key "fk_release_catalog_number_history_history_id" {
     columns     = [column.history_id]
     ref_columns = [table.release_history.column.id]
   }
 
+  column "catalog_number" {
+    type = text
+  }
+
   column "label_id" {
     type = int
+    null = true
   }
-  foreign_key "fk_release_label_history_label_id" {
+  foreign_key "fk_release_catalog_number_history_label_id" {
     columns     = [column.label_id]
     ref_columns = [table.label.column.id]
   }
 
-  primary_key {
-    columns = [column.history_id, column.label_id]
-  }
 }
 
 table "release_track" {
