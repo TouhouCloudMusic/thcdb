@@ -671,25 +671,31 @@ async fn create_release_track(
     let release_track_active_models = linked
         .into_iter()
         .map(|(i, x)| {
-            (i, release_track::ActiveModel {
-                id: NotSet,
-                release_id: Set(release_id),
-                song_id: Set(x.song_id),
-                track_number: Set(x.track_number.clone()),
-                display_title: Set(x.display_title.clone()),
-                duration: Set(x.duration.map(|d| d.to_string())),
-            })
+            (
+                i,
+                release_track::ActiveModel {
+                    id: NotSet,
+                    release_id: Set(release_id),
+                    song_id: Set(x.song_id),
+                    track_number: Set(x.track_number.clone()),
+                    display_title: Set(x.display_title.clone()),
+                    duration: Set(x.duration.map(|d| d.to_string())),
+                },
+            )
         })
         .chain(unlinked.into_iter().zip(new_songs.iter()).map(
             |((i, track), model)| {
-                (i, release_track::ActiveModel {
-                    id: NotSet,
-                    release_id: Set(release_id),
-                    song_id: Set(model.id),
-                    track_number: Set(track.track_number.clone()),
-                    display_title: Set(Some(model.title.clone())),
-                    duration: Set(track.duration.map(|d| d.to_string())),
-                })
+                (
+                    i,
+                    release_track::ActiveModel {
+                        id: NotSet,
+                        release_id: Set(release_id),
+                        song_id: Set(model.id),
+                        track_number: Set(track.track_number.clone()),
+                        display_title: Set(Some(model.title.clone())),
+                        duration: Set(track.duration.map(|d| d.to_string())),
+                    },
+                )
             },
         ))
         .sorted_by(|(key1, _), (key2, _)| key1.cmp(key2))
@@ -800,25 +806,31 @@ async fn create_release_track_history(
     let release_track_active_models = linked
         .into_iter()
         .map(|(i, x)| {
-            (i, release_track_history::ActiveModel {
-                id: NotSet,
-                history_id: Set(history_id),
-                song_id: Set(x.song_id),
-                track_number: Set(x.track_number.clone()),
-                display_title: Set(x.display_title.clone()),
-                duration: Set(x.duration.map(|d| d.to_string())),
-            })
+            (
+                i,
+                release_track_history::ActiveModel {
+                    id: NotSet,
+                    history_id: Set(history_id),
+                    song_id: Set(x.song_id),
+                    track_number: Set(x.track_number.clone()),
+                    display_title: Set(x.display_title.clone()),
+                    duration: Set(x.duration.map(|d| d.to_string())),
+                },
+            )
         })
         .chain(unlinked.into_iter().zip(new_songs.iter()).map(
             |((i, track), model)| {
-                (i, release_track_history::ActiveModel {
-                    id: NotSet,
-                    history_id: Set(history_id),
-                    song_id: Set(model.id),
-                    track_number: Set(track.track_number.clone()),
-                    display_title: Set(Some(model.title.clone())),
-                    duration: Set(track.duration.map(|d| d.to_string())),
-                })
+                (
+                    i,
+                    release_track_history::ActiveModel {
+                        id: NotSet,
+                        history_id: Set(history_id),
+                        song_id: Set(model.id),
+                        track_number: Set(track.track_number.clone()),
+                        display_title: Set(Some(model.title.clone())),
+                        duration: Set(track.duration.map(|d| d.to_string())),
+                    },
+                )
             },
         ))
         .sorted_by(|(key1, _), (key2, _)| key1.cmp(key2))
