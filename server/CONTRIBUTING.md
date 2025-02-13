@@ -14,9 +14,11 @@ To contribute to Touhou Cloud DB, make sure you have the following installed:
 
 - **Mold**: If you want faster compilation, you can install [Mold](https://github.com/rui314/mold] and uncomment the clang argument in [.cargo/config.toml](./.cargo/config.toml)
 
-  ```
+- **Sea Orm CLI**: A tool for generate entities from database. Run `cargo install sea-orm-cli` to install it.
+
+```
   以上为开发Only
-  ```
+```
 
 - **Atlas**: We use [Atlas](https://atlasgo.io/) for database migrations. Please refer to Atlas's installation guide to set it up.
 
