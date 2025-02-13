@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::{
     PasswordHash, PasswordHasher, PasswordVerifier, SaltString,
@@ -10,7 +12,6 @@ use axum_typed_multipart::FieldData;
 use entity::{role, user, user_role};
 use error_set::error_set;
 use itertools::Itertools;
-use once_cell::sync::Lazy;
 use regex::Regex;
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{Alias, Query};
@@ -24,7 +25,7 @@ use crate::dto::user::AuthCredential;
 use crate::error::{InvalidField, RepositoryError};
 use crate::repo::user::update_user_last_login;
 
-pub static ARGON2_HASHER: Lazy<Argon2> = Lazy::new(Argon2::default);
+pub static ARGON2_HASHER: LazyLock<Argon2> = LazyLock::new(Argon2::default);
 
 pub type AuthSession = axum_login::AuthSession<Service>;
 
@@ -277,8 +278,8 @@ impl AuthnBackend for Service {
 }
 
 fn validate_username(username: &str) -> Result<(), ValidateError> {
-    static USER_NAME_REGEX: Lazy<Regex> =
-        Lazy::new(|| Regex::new(r"^[\p{L}\p{N}_]{1,32}$").unwrap());
+    static USER_NAME_REGEX: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"^[\p{L}\p{N}_]{1,32}$").unwrap());
 
     if USER_NAME_REGEX.is_match(username)
         && !username
@@ -294,8 +295,8 @@ fn validate_username(username: &str) -> Result<(), ValidateError> {
 fn validate_password(password: &str) -> Result<(), ValidateError> {
     use zxcvbn::{Score, zxcvbn};
 
-    static USER_PASSWORD_REGEX: Lazy<Regex> =
-        Lazy::new(|| Regex::new(r"^[A-Za-z\d!@#$%^&*]{8,}$").unwrap());
+    static USER_PASSWORD_REGEX: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"^[A-Za-z\d!@#$%^&*]{8,}$").unwrap());
 
     if USER_PASSWORD_REGEX.is_match(password) {
         let result = zxcvbn(password, &[]);

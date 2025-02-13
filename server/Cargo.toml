@@ -84,7 +84,6 @@ iso8601-duration = { version = "0.2", features = [
 itertools.workspace = true
 juniper.workspace = true
 juniper_axum.workspace = true
-once_cell = "1.20"
 regex = "1.11"
 sea-orm.workspace = true
 serde.workspace = true

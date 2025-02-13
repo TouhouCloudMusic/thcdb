@@ -1,11 +1,11 @@
 #![allow(clippy::option_if_let_else)]
 
 use std::fmt::Display;
+use std::sync::LazyLock;
 
 use axum::Json;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use once_cell::sync::Lazy;
 use serde::Serialize;
 use utoipa::openapi::{
     ContentBuilder, ObjectBuilder, RefOr, ResponseBuilder, ResponsesBuilder,
@@ -178,14 +178,15 @@ impl IntoResponse for Error {
     }
 }
 
-static ERR_RESPONSE_CACHE: Lazy<utoipa::openapi::Response> = Lazy::new(|| {
-    ResponseBuilder::new()
-        .content(
-            ContentType::Json,
-            ContentBuilder::new().schema(Error::schema().into()).build(),
-        )
-        .build()
-});
+static ERR_RESPONSE_CACHE: LazyLock<utoipa::openapi::Response> =
+    LazyLock::new(|| {
+        ResponseBuilder::new()
+            .content(
+                ContentType::Json,
+                ContentBuilder::new().schema(Error::schema().into()).build(),
+            )
+            .build()
+    });
 
 impl Error {
     pub fn response_def() -> utoipa::openapi::Response {

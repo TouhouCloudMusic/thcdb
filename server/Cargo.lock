@@ -4168,7 +4168,6 @@ dependencies = [
  "juniper",
  "juniper_axum",
  "macros",
- "once_cell",
  "regex",
  "rusty-hook",
  "sea-orm",
