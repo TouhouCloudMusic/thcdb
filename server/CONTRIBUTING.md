@@ -7,15 +7,23 @@
 To contribute to Touhou Cloud DB, make sure you have the following installed:
 
 - **Rust**: Our project is written in Rust. You can install it from [rust-lang.org](https://www.rust-lang.org/).
-  set it up.
-- **Taplo**: [Taplo](https://taplo.tamasfe.dev/) is used for TOML file formatting and linting. Install Taplo to ensure
-  your TOML files are correctly formatted.
+
+- **Taplo**: [Taplo](https://taplo.tamasfe.dev/) is used for TOML file formatting and linting. Install Taplo to ensure your TOML files are correctly formatted.
+
+- **Just**: We use [Just](https://github.com/casey/just) for our project's scripts. Please refer to Just's installation guide to set it up.
+
+- **Mold**: If you want faster compilation, you can install [Mold](https://github.com/rui314/mold] and uncomment the clang argument in [.cargo/config.toml](./.cargo/config.toml)
+
   ```
   以上为开发Only
   ```
-- **Atlas**: We use [Atlas](https://atlasgo.io/) for database migrations. Please refer to Atlas's installation guide to
+
+- **Atlas**: We use [Atlas](https://atlasgo.io/) for database migrations. Please refer to Atlas's installation guide to set it up.
+
 - **Postgresql**: We use [PostgreSQL](https://www.postgresql.org/) for our database. Please refer to PostgreSQL's installation guide to set it up.
-- **Redis**: We use [Redis](https://redis.io/) for our
+
+- **Redis**: We use [Redis](https://redis.io/) for our cache. Please refer to Redis's installation guide to set it up.
+
 
 ### Configure
 
