@@ -19,11 +19,11 @@ use crate::utils::MapInto;
 
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
-        .routes(routes!(create))
-        .routes(routes!(update))
+        .routes(routes!(create_song))
+        .routes(routes!(update_song))
         .route_layer(from_fn(is_signed_in))
-        .routes(routes!(find_by_id))
-        .routes(routes!(find_by_keyword))
+        .routes(routes!(find_song_by_id))
+        .routes(routes!(find_song_by_keyword))
 }
 
 #[utoipa::path(
@@ -34,7 +34,7 @@ pub fn router() -> OpenApiRouter<AppState> {
 		RepositoryError
     ),
 )]
-async fn find_by_id(
+async fn find_song_by_id(
     State(service): State<Service>,
     Path(id): Path<i32>,
 ) -> Result<Data<SongResponse>, RepositoryError> {
@@ -54,7 +54,7 @@ struct KwQuery {
 		RepositoryError
     ),
 )]
-async fn find_by_keyword(
+async fn find_song_by_keyword(
     State(service): State<Service>,
     Query(query): Query<KwQuery>,
 ) -> Result<Data<Vec<SongResponse>>, RepositoryError> {
@@ -75,7 +75,7 @@ async fn find_by_keyword(
     ),
 )]
 #[use_session]
-async fn create(
+async fn create_song(
     State(service): State<Service>,
     Json(input): Json<NewSong>,
 ) -> Result<Message, RepositoryError> {
@@ -94,7 +94,7 @@ async fn create(
         RepositoryError
     ),
 )]
-async fn update(
+async fn update_song(
     session: AuthSession,
     State(service): State<Service>,
     Path(song_id): Path<i32>,

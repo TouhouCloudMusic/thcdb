@@ -18,11 +18,11 @@ const TAG: &str = "Label";
 
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::<AppState>::new()
-        .routes(routes!(create))
-        .routes(routes!(upsert_correction))
+        .routes(routes!(create_label))
+        .routes(routes!(upsert_label_correction))
         .route_layer(from_fn(is_signed_in))
-        .routes(routes!(find_by_id))
-        .routes(routes!(find_by_keyword))
+        .routes(routes!(find_label_by_id))
+        .routes(routes!(find_label_by_keyword))
 }
 
 #[utoipa::path(
@@ -36,7 +36,7 @@ pub fn router() -> OpenApiRouter<AppState> {
     ),
 )]
 #[use_service(label)]
-async fn find_by_id(
+async fn find_label_by_id(
     Path(id): Path<i32>,
 ) -> Result<Data<LabelResponse>, RepositoryError> {
     label_service.find_by_id(id).await.map_into()
@@ -59,7 +59,7 @@ struct KwArgs {
     ),
 )]
 #[use_service(label)]
-async fn find_by_keyword(
+async fn find_label_by_keyword(
     Query(query): Query<KwArgs>,
 ) -> Result<Data<Vec<LabelResponse>>, RepositoryError> {
     label_service
@@ -81,7 +81,7 @@ async fn find_by_keyword(
 )]
 #[use_session]
 #[use_service(label)]
-async fn create(
+async fn create_label(
     Json(data): Json<NewLabel>,
 ) -> Result<Message, RepositoryError> {
     label_service.create(session.user.unwrap().id, data).await?;
@@ -102,7 +102,7 @@ async fn create(
 )]
 #[use_session]
 #[use_service(label)]
-async fn upsert_correction(
+async fn upsert_label_correction(
     Path(id): Path<i32>,
     Json(data): Json<NewLabel>,
 ) -> Result<Message, RepositoryError> {

@@ -23,11 +23,11 @@ const TAG: &str = "Artist";
 
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
-        .routes(routes!(create))
-        .routes(routes!(update))
+        .routes(routes!(create_artist))
+        .routes(routes!(upsert_artist_correction))
         .route_layer(from_fn(is_signed_in))
-        .routes(routes!(find_by_id))
-        .routes(routes!(find_by_keyword))
+        .routes(routes!(find_artist_by_id))
+        .routes(routes!(find_artist_by_keyword))
 }
 
 #[utoipa::path(
@@ -40,7 +40,7 @@ pub fn router() -> OpenApiRouter<AppState> {
 	),
 )]
 #[use_service(artist)]
-async fn find_by_id(
+async fn find_artist_by_id(
     Path(id): Path<i32>,
 ) -> Result<Data<ArtistResponse>, Error> {
     artist_service.find_by_id(id).await.map_into()
@@ -64,7 +64,7 @@ struct KeywordQuery {
 	),
 )]
 #[use_service(artist)]
-async fn find_by_keyword(
+async fn find_artist_by_keyword(
     Query(query): Query<KeywordQuery>,
 ) -> Result<Data<Vec<ArtistResponse>>, Error> {
     artist_service
@@ -93,7 +93,7 @@ struct NewArtist {
 )]
 #[use_session]
 #[use_service(artist)]
-async fn create(Json(input): Json<NewArtist>) -> Result<Message, Error> {
+async fn create_artist(Json(input): Json<NewArtist>) -> Result<Message, Error> {
     artist_service
         .create(session.user.unwrap().id, input.data)
         .await?;
@@ -114,7 +114,7 @@ async fn create(Json(input): Json<NewArtist>) -> Result<Message, Error> {
 )]
 #[use_session]
 #[use_service(artist)]
-async fn update(
+async fn upsert_artist_correction(
     Path(id): Path<i32>,
     Json(input): Json<NewArtist>,
 ) -> Result<Message, Error> {

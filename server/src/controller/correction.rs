@@ -20,7 +20,7 @@ const TAG: &str = "Correction";
 
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
-        .routes(routes!(handle))
+        .routes(routes!(handle_correction))
         .route_layer(from_fn(is_signed_in))
 }
 
@@ -58,7 +58,8 @@ struct HandleCorrectionQuery {
 	),
 )]
 #[debug_handler(state = AppState)]
-async fn handle(
+// TODO: Better name
+async fn handle_correction(
     session: AuthSession,
     Path(id): Path<i32>,
     Query(query): Query<HandleCorrectionQuery>,
