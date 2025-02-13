@@ -9,6 +9,7 @@ use sea_orm::{
 };
 
 use super::*;
+use crate::dto::enums::UserRole;
 use crate::error::RepositoryError;
 use crate::repo;
 
@@ -37,7 +38,12 @@ impl Service {
     ) -> Result<bool, RepositoryError> {
         let user_service = user::Service::new(self.db.clone());
 
-        if user_service.have_role(user_id, "Admin").await? {
+        if user_service
+            .get_roles(user_id)
+            .await?
+            .into_iter()
+            .any(|r| UserRole::Admin == r || UserRole::Moderator == r)
+        {
             return Ok(true);
         }
 

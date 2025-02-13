@@ -7,7 +7,6 @@ use async_trait::async_trait;
 use axum::body::Bytes;
 use axum_login::{AuthnBackend, UserId};
 use axum_typed_multipart::FieldData;
-use entity::prelude::{Role, UserRole};
 use entity::{role, user, user_role};
 use error_set::error_set;
 use itertools::Itertools;
@@ -238,34 +237,15 @@ impl Service {
         &self,
         user_id: i32,
     ) -> Result<Vec<role::Model>, RepositoryError> {
-        let res = UserRole::find()
+        let res = user_role::Entity::find()
             .filter(user_role::Column::UserId.eq(user_id))
-            .find_also_related(Role)
+            .find_also_related(role::Entity)
             .all(&self.db)
             .await?;
 
         let res = res.into_iter().filter_map(|x| x.1).collect_vec();
 
         Ok(res)
-        // let mut res = vec![user]
-        //     .load_many_to_many(Role, UserRole, &self.db)
-        //     .await?;
-
-        // Ok(res.swap_remove(0))
-    }
-
-    // TODO: role enum
-    pub async fn have_role(
-        &self,
-        user_id: i32,
-        // TODO: seed data, role enum and validate database when server start up
-        role: &str,
-    ) -> Result<bool, RepositoryError> {
-        Ok(self
-            .get_roles(user_id)
-            .await?
-            .iter()
-            .any(|m| m.name == role))
     }
 }
 

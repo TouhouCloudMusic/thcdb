@@ -34,6 +34,7 @@ use axum::routing::get;
 use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
+use dto::enums::check_database_lookup_tables;
 use state::AppState;
 #[cfg(not(target_env = "msvc"))]
 use tikv_jemallocator::Jemalloc;
@@ -62,6 +63,10 @@ async fn main() {
         .init();
 
     let state = AppState::init().await;
+
+    check_database_lookup_tables(&state.database)
+        .await
+        .expect("Error while checking database lookup tables.");
 
     let config = state.config.clone();
 

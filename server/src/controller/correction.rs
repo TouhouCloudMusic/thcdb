@@ -9,6 +9,7 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::api_response::Message;
+use crate::dto::enums::UserRole;
 use crate::error::{ApiError, RepositoryError};
 use crate::middleware::is_signed_in;
 use crate::service;
@@ -66,7 +67,12 @@ async fn handle(
 ) -> Result<Message, Error> {
     let user = session.user.unwrap();
 
-    if user_service.have_role(user.id, "Admin").await? {
+    if user_service
+        .get_roles(user.id)
+        .await?
+        .into_iter()
+        .any(|x| UserRole::Admin == x || UserRole::Moderator == x)
+    {
         match query.method {
             HandleCorrectionMethod::Approve => {
                 service.approve(id, user.id).await?;
