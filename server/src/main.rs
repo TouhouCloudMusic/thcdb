@@ -29,6 +29,8 @@ mod state;
 mod types;
 mod utils;
 
+use std::net::SocketAddr;
+
 use axum::Router;
 use axum::routing::get;
 use axum_login::AuthManagerLayerBuilder;
@@ -84,17 +86,20 @@ async fn main() {
         config.server_port
     );
 
-    axum::serve(listener, router)
-        .with_graceful_shutdown(async {
-            match signal::ctrl_c().await {
-                Ok(()) => {}
-                Err(err) => {
-                    eprintln!("Unable to listen for shutdown signal: {err}");
-                }
+    axum::serve(
+        listener,
+        router.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .with_graceful_shutdown(async {
+        match signal::ctrl_c().await {
+            Ok(()) => {}
+            Err(err) => {
+                eprintln!("Unable to listen for shutdown signal: {err}");
             }
-        })
-        .await
-        .unwrap();
+        }
+    })
+    .await
+    .unwrap();
 }
 
 fn router(state: AppState) -> Router {
