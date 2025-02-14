@@ -4,7 +4,7 @@ use axum::http::StatusCode;
 use axum::middleware::from_fn;
 use axum::response::{IntoResponse, Response};
 use axum_typed_multipart::TypedMultipart;
-use macros::use_service;
+use macros::{use_service, use_session};
 use utoipa::IntoResponses;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
@@ -26,6 +26,7 @@ const TAG: &str = "User";
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(upload_avatar))
+        .routes(routes!(sign_out))
         .route_layer(from_fn(is_signed_in))
         .routes(routes!(profile))
         .routes(routes!(sign_in))
@@ -59,7 +60,7 @@ async fn profile(
 #[utoipa::path(
     post,
     tag = TAG,
-    path = "/signup",
+    path = "/sign_up",
     request_body = AuthCredential,
     responses(
         (status = 200, body = Message),
@@ -91,7 +92,7 @@ async fn sign_up(
 #[utoipa::path(
     post,
     tag = TAG,
-    path = "/signin",
+    path = "/sign_in",
     request_body = AuthCredential,
     responses(
         (status = 200, body = Message),
@@ -107,6 +108,22 @@ async fn sign_in(
         .sign_in(auth_session, creds)
         .await
         .map(|()| Message::ok())
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/sign_out",
+    responses(
+        (status = 200, body = Message),
+        (status = 401),
+        Error
+    )
+)]
+#[use_service(user)]
+#[use_session]
+async fn sign_out() -> Result<Message, Error> {
+    user_service.sign_out(session).await.map(|()| Message::ok())
 }
 
 #[utoipa::path(

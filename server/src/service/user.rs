@@ -241,6 +241,14 @@ impl Service {
         Ok(())
     }
 
+    pub async fn sign_out(
+        &self,
+        mut auth_session: AuthSession,
+    ) -> Result<(), Error> {
+        auth_session.logout().await?;
+        Ok(())
+    }
+
     pub async fn upload_avatar(
         &self,
         image_service: image::Service,
