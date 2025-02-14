@@ -31,8 +31,8 @@ mod utils;
 
 use std::net::SocketAddr;
 
-use axum::Router;
 use axum::routing::get;
+use axum::{Json, Router};
 use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
@@ -44,7 +44,6 @@ use tokio::signal;
 use tower_sessions_redis_store::RedisStore;
 use tracing_subscriber::fmt::time::ChronoLocal;
 use utoipa_scalar::{Scalar, Servable};
-use utoipa_swagger_ui::SwaggerUi;
 
 use crate::service::user::AuthSession;
 
@@ -116,8 +115,11 @@ fn router(state: AppState) -> Router {
     let (api_router, api_doc) = controller::api_router().split_for_parts();
 
     let doc_router = api_router
-        .merge(SwaggerUi::new("/docs").url("/openapi.json", api_doc.clone()))
-        .merge(Scalar::with_url("/scalar", api_doc));
+        .merge(Scalar::with_url("/docs", api_doc.clone()))
+        .route(
+            "/openapi.json",
+            get(async move || Json(api_doc.to_json().unwrap())),
+        );
 
     Router::new()
         .route(

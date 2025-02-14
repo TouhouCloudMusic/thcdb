@@ -106,10 +106,6 @@ utoipa-axum = "0.2"
 utoipa-scalar = { version = "0.3", features = [
     "axum",
 ] }
-utoipa-swagger-ui = { version = "9", features = [
-    "axum",
-    "vendored",
-] }
 xxhash-rust = { version = "0.8", features = [
     "std",
     "xxh3",
