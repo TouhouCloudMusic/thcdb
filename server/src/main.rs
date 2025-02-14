@@ -137,8 +137,8 @@ fn router(state: AppState) -> Router {
         .layer(auth_layer)
         .layer(
             middleware::limit_layer()
-                .req_per_sec(5)
-                .burst_size(8)
+                .req_per_sec(state.config.req_per_sec)
+                .burst_size(state.config.req_burst_size)
                 .call(),
         )
         .with_state(state)
