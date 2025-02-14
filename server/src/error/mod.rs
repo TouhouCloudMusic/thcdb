@@ -7,6 +7,7 @@ use axum::response::IntoResponse;
 use entity::sea_orm_active_enums::EntityType;
 pub use error_code::*;
 use error_set::error_set;
+use itertools::Itertools;
 use macros::IntoErrorSchema;
 use sea_orm::DbErr;
 pub use structs::*;
@@ -20,7 +21,6 @@ error_set! {
     #[disable(From(TokioError))]
     #[derive(IntoErrorSchema)]
     RepositoryError = {
-        #[display("Database error")]
         Database(DbErrWrapper),
         Tokio(TokioError),
         #[display("Entity {entity_name} not found")]
@@ -45,7 +45,9 @@ error_set! {
     };
 }
 
-pub trait ApiErrorTrait: StatusCodeExt + AsErrorCode {}
+pub trait ApiErrorTrait: StatusCodeExt + AsErrorCode {
+    fn before_into_api_error(&self) {}
+}
 
 #[derive(Debug)]
 pub struct DbErrWrapper(DbErr);
@@ -58,7 +60,7 @@ impl From<DbErr> for DbErrWrapper {
 
 impl Display for DbErrWrapper {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "Database error")
     }
 }
 
@@ -74,11 +76,45 @@ impl StatusCodeExt for DbErrWrapper {
     }
 }
 
+impl AsErrorCode for DbErrWrapper {
+    fn as_error_code(&self) -> ErrorCode {
+        ErrorCode::DatabaseError
+    }
+}
+
+impl ApiErrorTrait for DbErrWrapper {
+    fn before_into_api_error(&self) {
+        tracing::error!("Database error: {}", self);
+    }
+}
+
 impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
         match self {
             Self::Unauthorized => StatusCode::UNAUTHORIZED.into_response(),
         }
+    }
+}
+
+impl StatusCodeExt for TokioError {
+    fn as_status_code(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
+        [StatusCode::INTERNAL_SERVER_ERROR].into_iter()
+    }
+}
+
+impl AsErrorCode for TokioError {
+    fn as_error_code(&self) -> ErrorCode {
+        ErrorCode::TokioError
+    }
+}
+
+impl ApiErrorTrait for TokioError {
+    fn before_into_api_error(&self) {
+        tracing::error!("Tokio error: {}", self);
     }
 }
 
@@ -100,9 +136,9 @@ impl From<DbErr> for RepositoryError {
 impl StatusCodeExt for RepositoryError {
     fn as_status_code(&self) -> StatusCode {
         match self {
-            Self::Tokio(_)
-            | Self::Database(_)
-            | Self::UnexpRelatedEntityNotFound { .. } => {
+            Self::Tokio(e) => e.as_status_code(),
+            Self::Database(e) => e.as_status_code(),
+            Self::UnexpRelatedEntityNotFound { .. } => {
                 StatusCode::INTERNAL_SERVER_ERROR
             }
             Self::InvalidField { .. }
@@ -120,21 +156,16 @@ impl StatusCodeExt for RepositoryError {
             StatusCode::UNAUTHORIZED,
         ]
         .into_iter()
+        .chain(DbErrWrapper::all_status_codes())
+        .chain(TokioError::all_status_codes())
+        .unique()
     }
 }
 
+impl ApiErrorTrait for RepositoryError {}
+
 impl IntoResponse for RepositoryError {
     fn into_response(self) -> axum::response::Response {
-        // match &self {
-        //     Self::Database(db_err) => {
-        //         tracing::error!("Database error: {}", db_err);
-        //     }
-        //     Self::Tokio(tokio_err) => {
-        //         tracing::error!("Tokio error: {}", tokio_err);
-        //     }
-        //     _ => (),
-        // }
-
         self.into_api_response()
     }
 }

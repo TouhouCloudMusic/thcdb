@@ -13,7 +13,7 @@ use utoipa::openapi::{
 };
 use utoipa::{PartialSchema, ToSchema, openapi};
 
-use crate::error::{AsErrorCode, ErrorCode};
+use crate::error::{ApiErrorTrait, AsErrorCode, ErrorCode};
 use crate::utils::openapi::ContentType;
 
 pub trait StatusCodeExt {
@@ -257,30 +257,10 @@ pub trait IntoApiResponse {
 
 impl<T> IntoApiResponse for T
 where
-    T: StatusCodeExt
-        + Display
-        + AsErrorCode
-        + std::fmt::Debug
-        + std::error::Error,
+    T: ApiErrorTrait + Display + std::fmt::Debug + std::error::Error,
 {
     fn into_api_response(self) -> axum::response::Response {
-        match self.as_error_code() {
-            ErrorCode::DatabaseError => {
-                tracing::error!(
-                    "Database error: {:#?} {:#?}",
-                    &self,
-                    &self.source()
-                );
-            }
-            ErrorCode::TokioError => {
-                tracing::error!(
-                    "Tokio error: {:#?} {:#?}",
-                    &self,
-                    &self.source()
-                );
-            }
-            _ => (),
-        }
+        self.before_into_api_error();
 
         default_impl_into_api_response(self)
     }

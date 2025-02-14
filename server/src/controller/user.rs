@@ -4,6 +4,7 @@ use axum::http::StatusCode;
 use axum::middleware::from_fn;
 use axum::response::{IntoResponse, Response};
 use axum_typed_multipart::TypedMultipart;
+use itertools::Itertools;
 use macros::{use_service, use_session};
 use utoipa::IntoResponses;
 use utoipa_axum::router::OpenApiRouter;
@@ -212,6 +213,7 @@ impl StatusCodeExt for Error {
         ]
         .into_iter()
         .chain(RepositoryError::all_status_codes())
+        .unique()
     }
 }
 
@@ -240,6 +242,8 @@ impl AsErrorCode for Error {
         }
     }
 }
+
+impl ApiErrorTrait for Error {}
 
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
