@@ -3,7 +3,7 @@ use serde_repr::Serialize_repr;
 use super::RepositoryError;
 
 pub trait AsErrorCode {
-    fn as_error_code(&self) -> ErrorCode;
+    fn as_error_code(&self) -> crate::error::ErrorCode;
 }
 
 #[allow(clippy::inconsistent_digit_grouping)]
@@ -20,11 +20,11 @@ pub enum ErrorCode {
     DatabaseError = 500_02,
     RedisError = 500_03,
     UnExpRelatedEntityNotFound = 500_04,
+    IoError = 500_05,
     // User
     InvalidUserName = 1_400_00,
     InvalidPassword = 1_400_01,
     PasswordTooWeak = 1_400_02,
-    InvalidImageType = 1_400_03,
     AlreadySignedIn = 1_409_00,
     UsernameAlreadyInUse = 1_409_01,
     SessionMiddlewareError = 1_500_00,
@@ -32,6 +32,8 @@ pub enum ErrorCode {
     HashPasswordFailed = 1_500_02,
     // Artist
     UnknownTypeArtistOwnedMember = 2_400_00,
+    // Image
+    InvalidImageType = 3_400_00,
 }
 
 impl AsErrorCode for RepositoryError {

@@ -1,25 +1,27 @@
 mod error_code;
 mod structs;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use entity::sea_orm_active_enums::EntityType;
 pub use error_code::*;
 use error_set::error_set;
+use macros::IntoErrorSchema;
+use sea_orm::DbErr;
 pub use structs::*;
-use utoipa::IntoResponses;
 
-use crate::api_response::{ErrResponseDef, IntoApiResponse, StatusCodeExt};
+use crate::api_response::{IntoApiResponse, StatusCodeExt};
 
 error_set! {
     ApiError = {
         Unauthorized
     };
     #[disable(From(TokioError))]
+    #[derive(IntoErrorSchema)]
     RepositoryError = {
         #[display("Database error")]
-        Database(sea_orm::DbErr),
+        Database(DbErrWrapper),
         Tokio(TokioError),
         #[display("Entity {entity_name} not found")]
         EntityNotFound {
@@ -43,6 +45,35 @@ error_set! {
     };
 }
 
+pub trait ApiErrorTrait: StatusCodeExt + AsErrorCode {}
+
+#[derive(Debug)]
+pub struct DbErrWrapper(DbErr);
+
+impl From<DbErr> for DbErrWrapper {
+    fn from(value: DbErr) -> Self {
+        Self(value)
+    }
+}
+
+impl Display for DbErrWrapper {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl std::error::Error for DbErrWrapper {}
+
+impl StatusCodeExt for DbErrWrapper {
+    fn as_status_code(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
+        [StatusCode::INTERNAL_SERVER_ERROR].into_iter()
+    }
+}
+
 impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
         match self {
@@ -57,6 +88,12 @@ where
 {
     fn from(value: T) -> Self {
         Self::Tokio(value.into())
+    }
+}
+
+impl From<DbErr> for RepositoryError {
+    fn from(value: DbErr) -> Self {
+        Self::Database(DbErrWrapper(value))
     }
 }
 
@@ -99,14 +136,5 @@ impl IntoResponse for RepositoryError {
         // }
 
         self.into_api_response()
-    }
-}
-
-impl IntoResponses for RepositoryError {
-    fn responses() -> std::collections::BTreeMap<
-        String,
-        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
-    > {
-        Self::build_err_responses().into()
     }
 }

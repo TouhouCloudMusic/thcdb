@@ -11,10 +11,12 @@
     clippy::missing_docs_in_private_items,
     clippy::multiple_crate_versions,
     clippy::single_call_fn,
-    clippy::wildcard_imports
+    clippy::wildcard_imports,
+    clippy::enum_glob_use
 )]
 
 mod api_response;
+mod constant;
 mod controller;
 mod dto;
 mod error;

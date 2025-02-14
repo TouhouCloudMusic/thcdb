@@ -70,6 +70,9 @@ bon = { version = "3.0", features = [
     "implied-bounds",
 ] }
 chrono.workspace = true
+derive_more = { version = "2.0.1", features = [
+    "display",
+] }
 dotenvy.workspace = true
 error_set = { version = "0.8", features = [
     "tracing",
@@ -126,7 +129,23 @@ opt-level       = 3
 
 [profile.dev.package."async-trait"]
 codegen-backend = "llvm"
-opt-level       = 3
+inherits        = "default"
+
+[profile.dev.package."macros"]
+codegen-backend = "llvm"
+inherits        = "default"
+
+[profile.dev.package."utoipa"]
+codegen-backend = "llvm"
+inherits        = "default"
+
+[profile.dev.package."derive_more"]
+codegen-backend = "llvm"
+inherits        = "default"
+
+[profile.dev.package."strum"]
+codegen-backend = "llvm"
+inherits        = "default"
 
 [profile.release]
 codegen-units   = 1

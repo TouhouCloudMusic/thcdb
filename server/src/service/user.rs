@@ -12,6 +12,7 @@ use axum_typed_multipart::FieldData;
 use entity::{role, user, user_role};
 use error_set::error_set;
 use itertools::Itertools;
+use macros::IntoErrorSchema;
 use regex::Regex;
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{Alias, Query};
@@ -60,6 +61,11 @@ error_set! {
         PasswordTooWeak,
         #[display("Invalid avatar type")]
         InvalidImageType
+    };
+    #[derive(IntoErrorSchema)]
+    UploadAvatarError = {
+        CreateImageError(super::image::CreateError),
+        InvalidField(InvalidField)
     };
 }
 
@@ -240,7 +246,7 @@ impl Service {
         image_service: image::Service,
         user_id: i32,
         data: FieldData<Bytes>,
-    ) -> Result<(), Error> {
+    ) -> Result<(), UploadAvatarError> {
         if data
             .metadata
             .content_type

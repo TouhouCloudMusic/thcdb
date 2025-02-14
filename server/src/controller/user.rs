@@ -11,9 +11,14 @@ use utoipa_axum::routes;
 
 use crate::api_response::{Data, IntoApiResponse, Message, StatusCodeExt};
 use crate::dto::user::{AuthCredential, UploadAvatar, UserProfile};
-use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
+use crate::error::{
+    ApiErrorTrait, AsErrorCode, ErrorCode, InvalidField, RepositoryError,
+};
 use crate::middleware::is_signed_in;
-use crate::service::user::{AuthSession, Error, ValidateError};
+use crate::service::image::CreateError;
+use crate::service::user::{
+    AuthSession, Error, UploadAvatarError, ValidateError,
+};
 use crate::{AppState, api_response};
 
 const TAG: &str = "User";
@@ -115,14 +120,15 @@ async fn sign_in(
     responses(
         (status = 200, body = api_response::Message),
         (status = 401),
-        Error
+        UploadAvatarError
     )
 )]
 #[use_service(user, image)]
+#[axum::debug_handler(state = AppState)]
 async fn upload_avatar(
     auth_session: AuthSession,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
-) -> Result<impl IntoResponse, Error> {
+) -> Result<impl IntoResponse, UploadAvatarError> {
     if let Some(user) = auth_session.user {
         user_service
             .upload_avatar(image_service, user.id, form.data)
@@ -130,6 +136,36 @@ async fn upload_avatar(
             .map(|()| api_response::msg("Upload successful").into_response())
     } else {
         Ok(Error::AuthenticationFailed.into_response())
+    }
+}
+
+impl StatusCodeExt for UploadAvatarError {
+    fn as_status_code(&self) -> StatusCode {
+        match self {
+            Self::CreateImageError(err) => err.as_status_code(),
+            Self::InvalidField(err) => err.as_status_code(),
+        }
+    }
+
+    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
+        CreateError::all_status_codes().chain(InvalidField::all_status_codes())
+    }
+}
+
+impl AsErrorCode for UploadAvatarError {
+    fn as_error_code(&self) -> ErrorCode {
+        match self {
+            Self::CreateImageError(err) => err.as_error_code(),
+            Self::InvalidField(err) => err.as_error_code(),
+        }
+    }
+}
+
+impl ApiErrorTrait for UploadAvatarError {}
+
+impl IntoResponse for UploadAvatarError {
+    fn into_response(self) -> axum::response::Response {
+        self.into_api_response()
     }
 }
 

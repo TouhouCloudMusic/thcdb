@@ -15,6 +15,10 @@ table "image" {
     type = text
   }
 
+  column "directory" {
+    type = text
+  }
+
   column "uploaded_by" {
     type = int
   }
