@@ -21,7 +21,7 @@ use sea_orm::{
 };
 
 use super::*;
-use crate::dto::user::AuthCredential;
+use crate::dto::user::{AuthCredential, UserProfile};
 use crate::error::{InvalidField, RepositoryError};
 use crate::repo::user::update_user_last_login;
 
@@ -133,6 +133,33 @@ impl Service {
             .filter(user::Column::Name.eq(username))
             .one(&self.db)
             .await?)
+    }
+
+    pub async fn profile(
+        &self,
+        username: String,
+    ) -> Result<Option<UserProfile>, Error> {
+        if let Some(user) = user::Entity::find()
+            .filter(user::Column::Name.eq(username))
+            .one(&self.db)
+            .await?
+        {
+            let roles = user_role::Entity::find()
+                .filter(user_role::Column::UserId.eq(user.id))
+                .all(&self.db)
+                .await?;
+
+            let profile = UserProfile {
+                name: user.name,
+                avatar_id: user.avatar_id,
+                last_login: user.last_login.into(),
+                roles: roles.into_iter().map(|x| x.role_id).collect(),
+            };
+
+            Ok(profile.into())
+        } else {
+            Ok(None)
+        }
     }
 
     pub async fn create(

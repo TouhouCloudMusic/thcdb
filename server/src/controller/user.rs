@@ -1,4 +1,5 @@
 use axum::Json;
+use axum::extract::Path;
 use axum::http::StatusCode;
 use axum::middleware::from_fn;
 use axum::response::{IntoResponse, Redirect, Response};
@@ -8,8 +9,8 @@ use utoipa::IntoResponses;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::api_response::{IntoApiResponse, StatusCodeExt};
-use crate::dto::user::{AuthCredential, UploadAvatar};
+use crate::api_response::{Data, IntoApiResponse, StatusCodeExt};
+use crate::dto::user::{AuthCredential, UploadAvatar, UserProfile};
 use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
 use crate::middleware::is_signed_in;
 use crate::service::user::{AuthSession, Error, ValidateError};
@@ -21,8 +22,33 @@ pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(upload_avatar))
         .route_layer(from_fn(is_signed_in))
+        .routes(routes!(profile))
         .routes(routes!(sign_in))
         .routes(routes!(sign_up))
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/profile/{name}",
+    responses(
+        (status = 200, body = Data<UserProfile>),
+        (status = 404),
+        Error
+    ),
+)]
+#[use_service(user)]
+async fn profile(
+    Path(name): Path<String>,
+) -> Result<Data<UserProfile>, impl IntoResponse> {
+    user_service
+        .profile(name)
+        .await
+        .map_err(IntoResponse::into_response)?
+        .map_or_else(
+            || Err(StatusCode::NOT_FOUND.into_response()),
+            |user| Ok(user.into()),
+        )
 }
 
 #[utoipa::path(
