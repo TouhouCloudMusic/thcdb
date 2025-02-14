@@ -139,8 +139,9 @@ impl Service {
         &self,
         username: String,
     ) -> Result<Option<UserProfile>, Error> {
-        if let Some(user) = user::Entity::find()
+        if let Some((user, avatar)) = user::Entity::find()
             .filter(user::Column::Name.eq(username))
+            .find_also_related(entity::image::Entity)
             .one(&self.db)
             .await?
         {
@@ -149,9 +150,11 @@ impl Service {
                 .all(&self.db)
                 .await?;
 
+            let avatar_name = avatar.map(|x| x.filename);
+
             let profile = UserProfile {
                 name: user.name,
-                avatar_id: user.avatar_id,
+                avatar_name,
                 last_login: user.last_login.into(),
                 roles: roles.into_iter().map(|x| x.role_id).collect(),
             };
