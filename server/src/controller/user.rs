@@ -2,14 +2,14 @@ use axum::Json;
 use axum::extract::Path;
 use axum::http::StatusCode;
 use axum::middleware::from_fn;
-use axum::response::{IntoResponse, Redirect, Response};
+use axum::response::{IntoResponse, Response};
 use axum_typed_multipart::TypedMultipart;
 use macros::use_service;
 use utoipa::IntoResponses;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::api_response::{Data, IntoApiResponse, StatusCodeExt};
+use crate::api_response::{Data, IntoApiResponse, Message, StatusCodeExt};
 use crate::dto::user::{AuthCredential, UploadAvatar, UserProfile};
 use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
 use crate::middleware::is_signed_in;
@@ -57,7 +57,7 @@ async fn profile(
     path = "/signup",
     request_body = AuthCredential,
     responses(
-        (status = 303),
+        (status = 200, body = Message),
         Error
     ),
 )]
@@ -65,19 +65,21 @@ async fn profile(
 async fn sign_up(
     mut auth_session: AuthSession,
     Json(AuthCredential { username, password }): Json<AuthCredential>,
-) -> impl IntoResponse {
-    match user_service.create(&username, &password).await {
-        Ok(user) => match auth_session.login(&user).await {
-            Ok(()) => Redirect::to("/").into_response(),
-            Err(e) => match e {
-                axum_login::Error::Session(err) => {
-                    (StatusCode::INTERNAL_SERVER_ERROR, err.to_string())
-                        .into_response()
-                }
-                axum_login::Error::Backend(err) => err.into_response(),
-            },
+) -> Result<Message, impl IntoResponse> {
+    let user = user_service
+        .create(&username, &password)
+        .await
+        .map_err(IntoResponse::into_response)?;
+
+    match auth_session.login(&user).await {
+        Ok(()) => Ok(Message::ok()),
+        Err(e) => match e {
+            axum_login::Error::Session(err) => {
+                Err((StatusCode::INTERNAL_SERVER_ERROR, err.to_string())
+                    .into_response())
+            }
+            axum_login::Error::Backend(err) => Err(err.into_response()),
         },
-        Err(e) => e.into_response(),
     }
 }
 
@@ -87,7 +89,7 @@ async fn sign_up(
     path = "/signin",
     request_body = AuthCredential,
     responses(
-        (status = 303),
+        (status = 200, body = Message),
         Error
     )
 )]
@@ -95,11 +97,11 @@ async fn sign_up(
 async fn sign_in(
     auth_session: AuthSession,
     Json(creds): Json<AuthCredential>,
-) -> Result<Redirect, Error> {
+) -> Result<Message, Error> {
     user_service
         .sign_in(auth_session, creds)
         .await
-        .map(|()| Redirect::to("/"))
+        .map(|()| Message::ok())
 }
 
 #[utoipa::path(
