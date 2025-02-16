@@ -8,7 +8,7 @@ fmt:
   cargo fmt
 
 fix:
-  cargo clippy --fix --allow-dirty --allow-staged
+  cargo clippy --fix --workspace --allow-dirty --allow-staged
 
 check:
   taplo fmt --check
@@ -33,3 +33,6 @@ generate:
   --enum-extra-derives Copy
 
 db_all: migrate && generate
+
+converge:
+  cargo tarpaulin --workspace --exclude-files entity/src/entities/*
