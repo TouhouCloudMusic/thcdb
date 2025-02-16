@@ -3342,8 +3342,8 @@ dependencies = [
 
 [[package]]
 name = "sea-orm"
-version = "1.1.4"
-source = "git+https://github.com/Huliiiiii/sea-orm.git?branch=master#efa4c4f2b04e40a37dab2c2915da8917157fde91"
+version = "1.1.5"
+source = "git+https://github.com/Huliiiiii/sea-orm.git?branch=fork#f1db9db7a2538aaf58185a81c9a157c0a1051726"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -3386,8 +3386,8 @@ dependencies = [
 
 [[package]]
 name = "sea-orm-macros"
-version = "1.1.4"
-source = "git+https://github.com/Huliiiiii/sea-orm.git?branch=master#efa4c4f2b04e40a37dab2c2915da8917157fde91"
+version = "1.1.5"
+source = "git+https://github.com/Huliiiiii/sea-orm.git?branch=fork#f1db9db7a2538aaf58185a81c9a157c0a1051726"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",

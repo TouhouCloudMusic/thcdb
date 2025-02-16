@@ -54,7 +54,7 @@ name    = "thcdb_rs"
 version = "0.1.0"
 
 [patch.crates-io]
-sea-orm = { git = "https://github.com/Huliiiiii/sea-orm.git", branch = "master" }
+sea-orm = { git = "https://github.com/Huliiiiii/sea-orm.git", branch = "fork" }
 
 [dependencies]
 entity.workspace = true
@@ -131,7 +131,7 @@ opt-level       = 3
 codegen-backend = "llvm"
 inherits        = "default"
 
-[profile.dev.package."macros"]
+[profile.dev.package."proc_macros"]
 codegen-backend = "llvm"
 inherits        = "default"
 
