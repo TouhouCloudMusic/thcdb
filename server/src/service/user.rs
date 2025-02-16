@@ -12,7 +12,7 @@ use axum_typed_multipart::FieldData;
 use entity::{role, user, user_role};
 use error_set::error_set;
 use itertools::Itertools;
-use macros::IntoErrorSchema;
+use macros::{ApiError, FromDbErr, IntoErrorSchema};
 use regex::Regex;
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{Alias, Query};
@@ -23,7 +23,7 @@ use sea_orm::{
 
 use super::*;
 use crate::dto::user::{AuthCredential, UserProfile};
-use crate::error::{InvalidField, RepositoryError};
+use crate::error::{DbErrWrapper, InvalidField, RepositoryError};
 use crate::repo::user::update_user_last_login;
 
 pub static ARGON2_HASHER: LazyLock<Argon2> = LazyLock::new(Argon2::default);
@@ -62,9 +62,22 @@ error_set! {
         #[display("Invalid avatar type")]
         InvalidImageType
     };
-    #[derive(IntoErrorSchema)]
+    #[derive(IntoErrorSchema, FromDbErr, ApiError)]
     UploadAvatarError = {
+        #[api_error(
+            status_code = self,
+            error_code = self
+        )]
+        DbErr(DbErrWrapper),
+        #[api_error(
+            status_code = self,
+            error_code = self
+        )]
         CreateImageError(super::image::CreateError),
+        #[api_error(
+            status_code = self,
+            error_code = self
+        )]
         InvalidField(InvalidField)
     };
 }
@@ -261,7 +274,13 @@ impl Service {
             .as_ref()
             .is_some_and(|ct| ct.starts_with("image/"))
         {
-            image_service.create(data.contents, user_id).await?;
+            let image = image_service.create(data.contents, user_id).await?;
+
+            user::Entity::update_many()
+                .filter(user::Column::Id.eq(user_id))
+                .col_expr(user::Column::AvatarId, Expr::value(image.id))
+                .exec(&self.db)
+                .await?;
         } else {
             Err(InvalidField {
                 field: "data".into(),

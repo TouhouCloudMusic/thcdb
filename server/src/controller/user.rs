@@ -12,11 +12,8 @@ use utoipa_axum::routes;
 
 use crate::api_response::{Data, IntoApiResponse, Message, StatusCodeExt};
 use crate::dto::user::{AuthCredential, UploadAvatar, UserProfile};
-use crate::error::{
-    ApiErrorTrait, AsErrorCode, ErrorCode, InvalidField, RepositoryError,
-};
+use crate::error::{ApiErrorTrait, AsErrorCode, ErrorCode, RepositoryError};
 use crate::middleware::is_signed_in;
-use crate::service::image::CreateError;
 use crate::service::user::{
     AuthSession, Error, UploadAvatarError, ValidateError,
 };
@@ -156,30 +153,6 @@ async fn upload_avatar(
         Ok(Error::AuthenticationFailed.into_response())
     }
 }
-
-impl StatusCodeExt for UploadAvatarError {
-    fn as_status_code(&self) -> StatusCode {
-        match self {
-            Self::CreateImageError(err) => err.as_status_code(),
-            Self::InvalidField(err) => err.as_status_code(),
-        }
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
-        CreateError::all_status_codes().chain(InvalidField::all_status_codes())
-    }
-}
-
-impl AsErrorCode for UploadAvatarError {
-    fn as_error_code(&self) -> ErrorCode {
-        match self {
-            Self::CreateImageError(err) => err.as_error_code(),
-            Self::InvalidField(err) => err.as_error_code(),
-        }
-    }
-}
-
-impl ApiErrorTrait for UploadAvatarError {}
 
 impl IntoResponse for UploadAvatarError {
     fn into_response(self) -> axum::response::Response {
