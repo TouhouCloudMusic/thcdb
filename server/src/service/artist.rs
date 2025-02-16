@@ -1,7 +1,7 @@
 use entity::sea_orm_active_enums::EntityType;
 use entity::{artist, correction};
 use error_set::error_set;
-use macros::IntoErrorSchema;
+use macros::{ApiError, IntoErrorSchema};
 use sea_orm::{DatabaseConnection, TransactionTrait};
 
 use crate::dto::artist::{ArtistCorrection, ArtistResponse};
@@ -11,8 +11,12 @@ super::def_service!();
 
 error_set! {
     #[disable(From)]
-    #[derive(IntoErrorSchema)]
+    #[derive(IntoErrorSchema, ApiError)]
     Error = {
+        #[api_error(
+            status_code(self),
+            error_code(self),
+        )]
         Repo(repo::artist::Error)
     };
 }

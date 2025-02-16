@@ -11,7 +11,7 @@ use utoipa_axum::routes;
 
 use crate::api_response::{Data, IntoApiResponse, Message, StatusCodeExt};
 use crate::dto::release::{ReleaseCorrection, ReleaseResponse};
-use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
+use crate::error::{ApiErrorTrait, AsErrorCode, ErrorCode, RepositoryError};
 use crate::middleware::is_signed_in;
 use crate::service::release::Service;
 use crate::state::AppState;
@@ -181,10 +181,10 @@ impl AsErrorCode for service::release::Error {
     }
 }
 
+impl ApiErrorTrait for service::release::Error {}
+
 impl IntoResponse for service::release::Error {
     fn into_response(self) -> axum::response::Response {
-        match self {
-            Self::Repo(err) => err.into_api_response(),
-        }
+        self.into_api_response()
     }
 }

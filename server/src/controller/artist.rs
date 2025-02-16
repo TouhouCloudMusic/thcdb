@@ -134,8 +134,8 @@ impl StatusCodeExt for repo::artist::Error {
     }
 
     fn all_status_codes() -> impl Iterator<Item = StatusCode> {
-        [StatusCode::BAD_REQUEST]
-            .into_iter()
+        std::iter::empty()
+            .chain([StatusCode::BAD_REQUEST])
             .chain(RepositoryError::all_status_codes())
     }
 }
@@ -149,26 +149,6 @@ impl AsErrorCode for repo::artist::Error {
                 }
             },
             Self::General(e) => e.as_error_code(),
-        }
-    }
-}
-
-impl StatusCodeExt for service::artist::Error {
-    fn as_status_code(&self) -> StatusCode {
-        match self {
-            Self::Repo(error) => error.as_status_code(),
-        }
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
-        repo::artist::Error::all_status_codes()
-    }
-}
-
-impl AsErrorCode for service::artist::Error {
-    fn as_error_code(&self) -> ErrorCode {
-        match self {
-            Self::Repo(error) => error.as_error_code(),
         }
     }
 }

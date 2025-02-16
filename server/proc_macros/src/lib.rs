@@ -1,3 +1,7 @@
+#![feature(let_chains)]
+#![feature(if_let_guard)]
+
+use error::*;
 use itertools::Itertools;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
@@ -9,6 +13,10 @@ use syn::{
     parse_quote,
 };
 
+mod error;
+mod utils;
+
+// TODO: Better name
 #[proc_macro_derive(EnumToResponse)]
 pub fn derive_into_response(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -50,26 +58,6 @@ pub fn derive_into_response(input: TokenStream) -> TokenStream {
                 match self {
                     #(#branches),*
                 }
-            }
-        }
-    };
-
-    TokenStream::from(expanded)
-}
-
-#[proc_macro_derive(IntoErrorSchema)]
-pub fn derive_impl_error_schema(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let target_name = &input.ident;
-
-    let expanded = quote! {
-        impl ::utoipa::IntoResponses for #target_name {
-            fn responses() -> ::std::collections::BTreeMap<
-                ::std::string::String,
-                ::utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
-            > {
-                use crate::api_response::ErrResponseDef;
-                Self::build_err_responses().into()
             }
         }
     };
@@ -225,4 +213,24 @@ pub fn inject_services(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     )
     .into()
+}
+
+#[proc_macro_derive(IntoErrorSchema)]
+pub fn derive_impl_error_schema(input: TokenStream) -> TokenStream {
+    error_schema_impl(input)
+}
+
+// Workaround till error_set can work with attr macros
+#[proc_macro_derive(FromDbErr)]
+pub fn derive_from_db_err(input: TokenStream) -> TokenStream {
+    from_db_err_impl(input)
+}
+
+#[proc_macro_derive(ApiError, attributes(api_error))]
+pub fn derive_api_error(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    match derive_api_error_impl(input) {
+        Ok(v) => v,
+        Err(e) => e.to_compile_error().into(),
+    }
 }

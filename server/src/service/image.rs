@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::path::PathBuf;
 
 use axum::body::Bytes;
@@ -6,7 +5,8 @@ use axum::http::StatusCode;
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE;
 use entity::image;
-use itertools::Itertools;
+use error_set::error_set;
+use macros::{ApiError, FromDbErr};
 use sea_orm::ActiveValue::*;
 use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter};
 use tokio::fs::File;
@@ -15,53 +15,30 @@ use xxhash_rust::xxh3::xxh3_128;
 
 use crate::api_response::StatusCodeExt;
 use crate::constant::IMAGE_DIR;
-use crate::error::{ApiErrorTrait, AsErrorCode, DbErrWrapper, ErrorCode};
+use crate::error::{DbErrWrapper, ErrorCode};
 
 super::def_service!();
-use error_set::error_set;
 
 error_set! {
+    #[derive(FromDbErr, ApiError)]
     CreateError = {
+        #[api_error(
+            status_code(self),
+            error_code(ErrorCode::DatabaseError),
+        )]
         DbErr(DbErrWrapper),
+        #[api_error(
+            status_code(StatusCode::INTERNAL_SERVER_ERROR),
+            error_code(ErrorCode::IoError),
+        )]
         WriteFile(std::io::Error),
+        #[api_error(
+            status_code(self),
+            error_code(ErrorCode::InvalidImageType),
+        )]
         InvalidType(InvalidType)
     };
 }
-
-impl From<DbErr> for CreateError {
-    fn from(value: DbErr) -> Self {
-        Self::DbErr(DbErrWrapper::from(value))
-    }
-}
-
-impl StatusCodeExt for CreateError {
-    fn as_status_code(&self) -> axum::http::StatusCode {
-        match self {
-            Self::DbErr(db_err_wrapper) => db_err_wrapper.as_status_code(),
-            Self::WriteFile(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            Self::InvalidType(invalid_type) => invalid_type.as_status_code(),
-        }
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = axum::http::StatusCode> {
-        DbErrWrapper::all_status_codes()
-            .chain([StatusCode::INTERNAL_SERVER_ERROR])
-            .chain(InvalidType::all_status_codes())
-            .unique()
-    }
-}
-
-impl AsErrorCode for CreateError {
-    fn as_error_code(&self) -> ErrorCode {
-        match self {
-            Self::DbErr(_) => ErrorCode::DatabaseError,
-            Self::WriteFile(_) => ErrorCode::IoError,
-            Self::InvalidType(_) => ErrorCode::InvalidImageType,
-        }
-    }
-}
-
-impl ApiErrorTrait for CreateError {}
 
 #[derive(Debug, derive_more::Display)]
 #[display("Invalid image type, accepted: {accepted}, expected: {expected}")]
@@ -86,7 +63,7 @@ impl InvalidType {
     }
 }
 
-impl Error for InvalidType {}
+impl std::error::Error for InvalidType {}
 
 impl Default for InvalidType {
     fn default() -> Self {
