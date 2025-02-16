@@ -7,7 +7,8 @@ use utoipa::ToSchema;
 #[derive(Clone, ToSchema, Serialize)]
 pub struct UserProfile {
     pub name: String,
-    pub avatar_name: Option<String>,
+    /// Avatar url with sub directory, eg. ab/cd/abcd..xyz.jpg
+    pub avatar_url: Option<String>,
     pub last_login: Option<chrono::DateTime<chrono::FixedOffset>>,
     pub roles: Vec<i32>,
 }

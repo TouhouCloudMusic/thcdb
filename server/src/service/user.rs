@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::sync::LazyLock;
 
 use argon2::password_hash::rand_core::OsRng;
@@ -169,11 +170,17 @@ impl Service {
                 .all(&self.db)
                 .await?;
 
-            let avatar_name = avatar.map(|x| x.filename);
+            let avatar_url = avatar.map(|a| {
+                PathBuf::from_iter([&a.directory, &a.filename])
+                    .to_str()
+                    // String from database are valid unicode so unwrap is safe
+                    .unwrap()
+                    .to_string()
+            });
 
             let profile = UserProfile {
                 name: user.name,
-                avatar_name,
+                avatar_url,
                 last_login: user.last_login.into(),
                 roles: roles.into_iter().map(|x| x.role_id).collect(),
             };
@@ -313,6 +320,14 @@ impl Service {
     }
 }
 
+fn get_avatar_url(model: &entity::image::Model) -> String {
+    PathBuf::from_iter([&model.directory, &model.filename])
+        .to_str()
+        // String from database are valid unicode so unwrap is safe
+        .unwrap()
+        .to_string()
+}
+
 #[async_trait]
 impl AuthnBackend for Service {
     type User = user::Model;
@@ -406,6 +421,8 @@ fn hash_password(password: &str) -> Result<String, Error> {
 
 #[cfg(test)]
 mod tests {
+    use chrono::DateTime;
+
     use super::*;
 
     #[test]
@@ -475,5 +492,18 @@ mod tests {
             println!("password: {password}, expected: {expected}");
             assert_eq!(validate_password(password).is_ok(), expected);
         }
+    }
+
+    #[test]
+    fn get_avatar_url_test() {
+        let model = entity::image::Model {
+            id: Default::default(),
+            directory: "ab/cd".into(),
+            filename: "foobar.jpg".into(),
+            uploaded_by: Default::default(),
+            created_at: DateTime::default(),
+        };
+
+        assert_eq!(super::get_avatar_url(&model), "ab/cd/foobar.jpg");
     }
 }
