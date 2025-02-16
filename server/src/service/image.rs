@@ -135,12 +135,16 @@ impl Service {
         let data_hash = xxh3_128(&data);
         let filename = URL_SAFE.encode(data_hash.to_be_bytes());
 
-        let dir1 = &filename[0..2];
-        let dir2 = &filename[2..4];
-        let pre_path: PathBuf = [dir1, dir2].iter().collect();
+        let sub_dir1 = &filename[0..2];
+        let sub_dir2 = &filename[2..4];
+        let sub_dir: PathBuf = [sub_dir1, sub_dir2].iter().collect();
+        let image_dir_path: PathBuf =
+            [IMAGE_DIR, sub_dir1, sub_dir2].iter().collect();
+
+        tokio::fs::create_dir_all(&image_dir_path).await?;
 
         // eg. image/ab/cd/filename.jpg
-        let full_path = [IMAGE_DIR, dir1, dir2, &filename]
+        let full_path = [IMAGE_DIR, sub_dir1, sub_dir2, &filename]
             .iter()
             .collect::<PathBuf>()
             .with_extension(extension);
@@ -157,7 +161,7 @@ impl Service {
             let active_model = image::ActiveModel {
                 filename: Set(filename),
                 uploaded_by: Set(uploader_id),
-                directory: Set(pre_path
+                directory: Set(sub_dir
                     .to_str()
                     // Should it be safe here?
                     .unwrap()
