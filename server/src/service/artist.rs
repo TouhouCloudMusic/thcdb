@@ -14,8 +14,8 @@ error_set! {
     #[derive(IntoErrorSchema, ApiError)]
     Error = {
         #[api_error(
-            status_code(self),
-            error_code(self),
+            status_code = self,
+            error_code = self,
         )]
         Repo(repo::artist::Error)
     };

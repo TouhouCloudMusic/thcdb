@@ -23,18 +23,18 @@ error_set! {
     #[derive(FromDbErr, ApiError)]
     CreateError = {
         #[api_error(
-            status_code(self),
-            error_code(ErrorCode::DatabaseError),
+            status_code = self,
+            error_code = ErrorCode::DatabaseError
         )]
         DbErr(DbErrWrapper),
         #[api_error(
-            status_code(StatusCode::INTERNAL_SERVER_ERROR),
-            error_code(ErrorCode::IoError),
+            status_code = StatusCode::INTERNAL_SERVER_ERROR,
+            error_code = ErrorCode::IoError,
         )]
         WriteFile(std::io::Error),
         #[api_error(
-            status_code(self),
-            error_code(ErrorCode::InvalidImageType),
+            status_code = self,
+            error_code = ErrorCode::InvalidImageType
         )]
         InvalidType(InvalidType)
     };
