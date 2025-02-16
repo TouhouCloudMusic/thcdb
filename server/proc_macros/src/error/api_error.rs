@@ -8,7 +8,7 @@ use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::token::Comma;
 use syn::{
-    Data, DataEnum, DeriveInput, Error, Fields, Ident, Meta, Path, Variant,
+    Data, DataEnum, DeriveInput, Error, Expr, Fields, Ident, Meta, Variant,
 };
 
 enum Code {
@@ -23,6 +23,19 @@ struct ApiErrorAttrs {
 
 impl Parse for ApiErrorAttrs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        fn parse_meta(meta: &Meta, error: &'static str) -> syn::Result<Code> {
+            match &meta {
+                Meta::NameValue(nv) if let Expr::Path(path) = &nv.value => {
+                    Ok(if path.path.is_ident("self") {
+                        Code::Inner
+                    } else {
+                        Code::Specified(path.to_token_stream())
+                    })
+                }
+                _ => Err(Error::new_spanned(meta, error)),
+            }
+        }
+
         let metas = Punctuated::<Meta, Comma>::parse_terminated(input)?;
 
         let mut status_code = None;
@@ -36,21 +49,10 @@ impl Parse for ApiErrorAttrs {
                         "Duplicate `status_code` attribute found",
                     ));
                 }
-                status_code = Some(match meta {
-                    Meta::List(list)
-                        if let Ok(path) = list.parse_args::<Path>() =>
-                    {
-                        if path.is_ident("self") {
-                            Code::Inner
-                        } else {
-                            Code::Specified(path.to_token_stream())
-                        }
-                    }
-                    _ => Err(Error::new_spanned(
-                        meta,
-                        "Invalid attribute syntax: must be `status_code(...)` or `status_code(self)`",
-                    ))?,
-                })
+                status_code = Some(parse_meta(
+                    &meta,
+                    "Invalid attribute syntax: must be `status_code = ...` or `status_code` = self`",
+                )?)
             } else if meta.path().is_ident("error_code") {
                 if error_code.is_some() {
                     return Err(Error::new_spanned(
@@ -58,28 +60,16 @@ impl Parse for ApiErrorAttrs {
                         "Duplicate 'error_code' attribute found",
                     ));
                 }
-                match meta {
-                    Meta::List(list)
-                        if let Ok(path) = list.parse_args::<Path>() =>
-                    {
-                        error_code = Some(if path.is_ident("self") {
-                            Code::Inner
-                        } else {
-                            Code::Specified(path.to_token_stream())
-                        });
-                    }
-                    _ => {
-                        return Err(Error::new_spanned(
-                            meta,
-                            "Invalid attribute syntax: must be `error_code(...)` or `error_code(self)`",
-                        ));
-                    }
-                }
+                error_code = Some(parse_meta(
+                    &meta,
+                    "Invalid attribute syntax: must be `error_code = ...` or `error_code = self`",
+                )?)
             }
         }
         let status_code = status_code.ok_or_else(|| {
             Error::new(input.span(), "Missing required 'status_code' attribute")
         })?;
+
         let error_code = error_code.ok_or_else(|| {
             Error::new(input.span(), "Missing required 'error_code' attribute")
         })?;
