@@ -151,7 +151,10 @@ fn router(state: AppState) -> Router {
 }
 
 fn static_dir() -> Router<AppState> {
-    let image = PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]);
+    let image_path = PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]);
 
-    Router::new().nest_service(image.to_str().unwrap(), ServeDir::new(&image))
+    Router::new().nest_service(
+        &format!("/{}", image_path.to_string_lossy()),
+        ServeDir::new(&image_path),
+    )
 }
