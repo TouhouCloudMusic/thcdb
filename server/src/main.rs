@@ -32,17 +32,20 @@ mod types;
 mod utils;
 
 use std::net::SocketAddr;
+use std::path::PathBuf;
 
 use axum::routing::get;
 use axum::{Json, Router};
 use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
+use constant::{IMAGE_DIR, PUBLIC_DIR};
 use dto::enums::check_database_lookup_tables;
 use state::AppState;
 #[cfg(not(target_env = "msvc"))]
 use tikv_jemallocator::Jemalloc;
 use tokio::signal;
+use tower_http::services::ServeDir;
 use tower_sessions_redis_store::RedisStore;
 use tracing_subscriber::fmt::time::ChronoLocal;
 use utoipa_scalar::{Scalar, Servable};
@@ -136,6 +139,7 @@ fn router(state: AppState) -> Router {
             }),
         )
         .merge(doc_router)
+        .merge(static_dir())
         .layer(auth_layer)
         .layer(
             middleware::limit_layer()
@@ -144,4 +148,10 @@ fn router(state: AppState) -> Router {
                 .call(),
         )
         .with_state(state)
+}
+
+fn static_dir() -> Router<AppState> {
+    let image = PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]);
+
+    Router::new().nest_service(image.to_str().unwrap(), ServeDir::new(&image))
 }
