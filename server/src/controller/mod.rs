@@ -22,8 +22,11 @@ struct ApiDoc;
 
 pub fn api_router() -> OpenApiRouter<AppState> {
     OpenApiRouter::with_openapi(ApiDoc::openapi())
-        .merge(user::router())
         .merge(artist::router())
-        .merge(release::router())
         .merge(correction::router())
+        .merge(label::router())
+        .merge(release::router())
+        .merge(song::router())
+        .merge(tag::router())
+        .merge(user::router())
 }
