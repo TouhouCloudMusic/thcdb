@@ -34,12 +34,16 @@ pub struct ArtistCorrection {
     pub name: String,
     pub artist_type: ArtistType,
     pub text_alias: Option<Vec<String>>,
+    /// Birth date for a person and formation date for a group
     pub start_date: Option<Date>,
     pub start_date_precision: Option<DatePrecision>,
+    /// Death date for a person and disbandment date for a group
     pub end_date: Option<Date>,
     pub end_date_precision: Option<DatePrecision>,
 
+    /// List of Ids of the artist's aliases
     pub aliases: Option<Vec<i32>>,
+    /// List of artist-related URLs
     pub links: Option<Vec<String>>,
     pub localized_name: Option<Vec<NewLocalizedName>>,
     pub members: Option<Vec<NewGroupMember>>,
