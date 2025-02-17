@@ -14,6 +14,7 @@ check:
   taplo fmt --check
   cargo fmt --check
   cargo clippy
+  cargo test
 
 pre-push: check
 
