@@ -84,7 +84,7 @@ impl AsErrorCode for DbErrWrapper {
 
 impl ApiErrorTrait for DbErrWrapper {
     fn before_into_api_error(&self) {
-        tracing::error!("Database error: {}", self);
+        tracing::error!("Database error: {}", self.0);
     }
 }
 
@@ -172,6 +172,10 @@ impl ApiErrorTrait for RepositoryError {}
 
 impl IntoResponse for RepositoryError {
     fn into_response(self) -> axum::response::Response {
-        self.into_api_response()
+        match self {
+            Self::Database(e) => e.into_response(),
+            Self::Tokio(e) => e.into_api_response(),
+            _ => self.into_api_response(),
+        }
     }
 }
