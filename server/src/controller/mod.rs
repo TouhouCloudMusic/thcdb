@@ -7,6 +7,7 @@ mod artist;
 mod correction;
 mod graphql;
 mod label;
+mod lookup_table;
 mod release;
 mod song;
 mod tag;
@@ -25,6 +26,7 @@ pub fn api_router() -> OpenApiRouter<AppState> {
         .merge(artist::router())
         .merge(correction::router())
         .merge(label::router())
+        .merge(lookup_table::router())
         .merge(release::router())
         .merge(song::router())
         .merge(tag::router())

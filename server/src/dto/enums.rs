@@ -1,6 +1,7 @@
 use entity::role;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{ConnectionTrait, DbErr, EntityTrait, IntoActiveModel};
+use serde::Serialize;
 use strum::IntoEnumIterator;
 use strum_macros::{EnumCount, EnumIter, EnumString};
 
@@ -88,7 +89,13 @@ where
 }
 
 #[derive(
-    Clone, Copy, EnumString, EnumIter, EnumCount, strum_macros::Display,
+    Clone,
+    Copy,
+    EnumString,
+    EnumIter,
+    EnumCount,
+    strum_macros::Display,
+    Serialize,
 )]
 pub enum UserRole {
     Admin,
@@ -114,6 +121,13 @@ impl From<UserRole> for role::ActiveModel {
             id: Set(val.as_id()),
             name: Set(val.to_string()),
         }
+    }
+}
+
+#[allow(clippy::fallible_impl_from)]
+impl From<&role::Model> for UserRole {
+    fn from(val: &role::Model) -> Self {
+        Self::try_from_id(val.id).unwrap()
     }
 }
 

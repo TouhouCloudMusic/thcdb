@@ -49,7 +49,7 @@ pub trait ApiErrorTrait: StatusCodeExt + AsErrorCode {
     fn before_into_api_error(&self) {}
 }
 
-#[derive(Debug)]
+#[derive(Debug, IntoErrorSchema)]
 pub struct DbErrWrapper(DbErr);
 
 impl From<DbErr> for DbErrWrapper {
@@ -85,6 +85,12 @@ impl AsErrorCode for DbErrWrapper {
 impl ApiErrorTrait for DbErrWrapper {
     fn before_into_api_error(&self) {
         tracing::error!("Database error: {}", self);
+    }
+}
+
+impl IntoResponse for DbErrWrapper {
+    fn into_response(self) -> axum::response::Response {
+        self.into_api_response()
     }
 }
 
