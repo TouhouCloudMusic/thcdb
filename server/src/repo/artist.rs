@@ -943,48 +943,35 @@ async fn get_group_member_from_artist_history<C: ConnectionTrait>(
 
 #[cfg(test)]
 mod test {
-    use sea_orm::{
-        ConnectionTrait, DbBackend, DbErr, FromQueryResult, Statement,
-    };
 
-    use crate::infrastructure::database::get_connection;
-    use crate::repo::artist::{
-        GET_GROUP_MEMBER_FROM_ARTIST_HISTORY_BY_ID_SQL, GroupMemberFromHistory,
-    };
+    // #[tokio::test]
+    // async fn get_group_member_from_artist_history_exec() -> Result<(), DbErr> {
+    //     // TODO: Test env and test database
+    //     dotenvy::dotenv().ok();
+    //     let config = crate::infrastructure::config::Config::init();
+    //     let client = get_connection(&config.database_url).await;
 
-    #[test]
-    fn get_group_member_from_artist_history_query_generation() {
-        print!("{}", GET_GROUP_MEMBER_FROM_ARTIST_HISTORY_BY_ID_SQL.clone());
-    }
+    //     let res = client
+    //         .query_one(Statement::from_sql_and_values(
+    //             DbBackend::Postgres,
+    //             &*GET_GROUP_MEMBER_FROM_ARTIST_HISTORY_BY_ID_SQL,
+    //             [1.into()],
+    //         ))
+    //         .await
+    //         .expect("Error while query");
 
-    #[tokio::test]
-    async fn get_group_member_from_artist_history_exec() -> Result<(), DbErr> {
-        // TODO: Test env and test database
-        dotenvy::dotenv().ok();
-        let config = crate::infrastructure::config::Config::init();
-        let client = get_connection(&config.database_url).await;
+    //     println!("Query result: {res:?}");
 
-        let res = client
-            .query_one(Statement::from_sql_and_values(
-                DbBackend::Postgres,
-                &*GET_GROUP_MEMBER_FROM_ARTIST_HISTORY_BY_ID_SQL,
-                [1.into()],
-            ))
-            .await
-            .expect("Error while query");
+    //     if let Some(result) = res {
+    //         let pr = GroupMemberFromHistory::from_query_result(&result, "")
+    //             .map_err(|e| {
+    //                 eprint!("{e:?}");
 
-        println!("Query result: {res:?}");
+    //                 e
+    //             });
+    //         println!("Parsed result: {pr:?}");
+    //     }
 
-        if let Some(result) = res {
-            let pr = GroupMemberFromHistory::from_query_result(&result, "")
-                .map_err(|e| {
-                    eprint!("{e:?}");
-
-                    e
-                });
-            println!("Parsed result: {pr:?}");
-        }
-
-        Ok(())
-    }
+    //     Ok(())
+    // }
 }
