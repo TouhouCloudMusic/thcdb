@@ -111,17 +111,18 @@ impl Service {
         };
 
         let data_hash = xxh3_128(&data);
-        let filename = URL_SAFE.encode(data_hash.to_be_bytes());
+        let file_hash = URL_SAFE.encode(data_hash.to_be_bytes());
+        let filename = format!("{file_hash}.{extension}");
 
-        let sub_dir1 = &filename[0..2];
-        let sub_dir2 = &filename[2..4];
+        let sub_dir1 = &file_hash[0..2];
+        let sub_dir2 = &file_hash[2..4];
         let sub_dir = [sub_dir1, sub_dir2];
         let sub_dir_pathbuf: PathBuf = sub_dir.iter().collect();
 
         check_and_create_img_sub_dir(&sub_dir).await?;
 
         // eg. image/ab/cd/filename.jpg
-        let full_path = gen_image_path(&sub_dir, &filename, extension);
+        let full_path = gen_image_path(&sub_dir, &file_hash, extension);
 
         // Write file
         let mut file = File::create(full_path).await?;
@@ -169,11 +170,11 @@ async fn check_and_create_img_sub_dir(sub_dir: &[&str]) -> io::Result<()> {
     tokio::fs::create_dir_all(&image_dir_path).await
 }
 
-fn gen_image_path(sub_dir: &[&str], file_name: &str, ext: &str) -> PathBuf {
+fn gen_image_path(sub_dir: &[&str], file_hash: &str, ext: &str) -> PathBuf {
     [PUBLIC_DIR, IMAGE_DIR]
         .iter()
         .chain(sub_dir)
-        .chain([file_name].iter())
+        .chain([file_hash].iter())
         .collect::<PathBuf>()
         .with_extension(ext)
 }
