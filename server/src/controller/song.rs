@@ -4,7 +4,7 @@ use axum::middleware::from_fn;
 use itertools::Itertools;
 use macros::use_session;
 use serde::Deserialize;
-use utoipa::ToSchema;
+use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -41,14 +41,15 @@ async fn find_song_by_id(
     service.find_by_id(id).await.map_into()
 }
 
-#[derive(Deserialize, ToSchema)]
+#[derive(Deserialize, ToSchema, IntoParams)]
 struct KwQuery {
     keyword: String,
 }
 
 #[utoipa::path(
     get,
-    path = "/song/{id}",
+    path = "/song",
+    params(KwQuery),
     responses(
 		(status = 200, body = Data<Vec<SongResponse>>),
 		RepositoryError
