@@ -1,3 +1,4 @@
+use std::io;
 use std::path::PathBuf;
 
 use axum::body::Bytes;
@@ -14,7 +15,7 @@ use tokio::io::AsyncWriteExt;
 use xxhash_rust::xxh3::xxh3_128;
 
 use crate::api_response::StatusCodeExt;
-use crate::constant::IMAGE_DIR;
+use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::error::{DbErrWrapper, ErrorCode};
 
 super::def_service!();
@@ -114,17 +115,13 @@ impl Service {
 
         let sub_dir1 = &filename[0..2];
         let sub_dir2 = &filename[2..4];
-        let sub_dir: PathBuf = [sub_dir1, sub_dir2].iter().collect();
-        let image_dir_path: PathBuf =
-            [IMAGE_DIR, sub_dir1, sub_dir2].iter().collect();
+        let sub_dir = [sub_dir1, sub_dir2];
+        let sub_dir_pathbuf: PathBuf = sub_dir.iter().collect();
 
-        tokio::fs::create_dir_all(&image_dir_path).await?;
+        check_and_create_img_sub_dir(&sub_dir).await?;
 
         // eg. image/ab/cd/filename.jpg
-        let full_path = [IMAGE_DIR, sub_dir1, sub_dir2, &filename]
-            .iter()
-            .collect::<PathBuf>()
-            .with_extension(extension);
+        let full_path = gen_image_path(&sub_dir, &filename, extension);
 
         // Write file
         let mut file = File::create(full_path).await?;
@@ -138,7 +135,7 @@ impl Service {
             let active_model = image::ActiveModel {
                 filename: Set(filename),
                 uploaded_by: Set(uploader_id),
-                directory: Set(sub_dir
+                directory: Set(sub_dir_pathbuf
                     .to_str()
                     // Should it be safe here?
                     .unwrap()
@@ -165,6 +162,22 @@ impl Service {
     }
 }
 
+async fn check_and_create_img_sub_dir(sub_dir: &[&str]) -> io::Result<()> {
+    let image_dir_path: PathBuf =
+        [PUBLIC_DIR, IMAGE_DIR].iter().chain(sub_dir).collect();
+
+    tokio::fs::create_dir_all(&image_dir_path).await
+}
+
+fn gen_image_path(sub_dir: &[&str], file_name: &str, ext: &str) -> PathBuf {
+    [PUBLIC_DIR, IMAGE_DIR]
+        .iter()
+        .chain(sub_dir)
+        .chain([file_name].iter())
+        .collect::<PathBuf>()
+        .with_extension(ext)
+}
+
 #[cfg(test)]
 mod test {
 
@@ -172,13 +185,19 @@ mod test {
 
     use image::ImageFormat;
 
+    use crate::service::image::gen_image_path;
+
     #[test]
     fn path_display() {
-        let path: PathBuf = ["image", "aa", "bb", "filename"].iter().collect();
-
-        let path = path.with_extension(
+        let path: PathBuf = gen_image_path(
+            &["aa", "bb"],
+            "filename",
             ImageFormat::Jpeg.extensions_str().first().unwrap(),
         );
-        assert_eq!(path.display().to_string(), "image/aa/bb/filename.jpg");
+
+        assert_eq!(
+            path.display().to_string(),
+            "public/image/aa/bb/filename.jpg"
+        );
     }
 }
