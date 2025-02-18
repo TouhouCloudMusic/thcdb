@@ -65,20 +65,8 @@ error_set! {
     };
     #[derive(IntoErrorSchema, FromDbErr, ApiError)]
     UploadAvatarError = {
-        #[api_error(
-            status_code = self,
-            error_code = self
-        )]
         DbErr(DbErrWrapper),
-        #[api_error(
-            status_code = self,
-            error_code = self
-        )]
         CreateImageError(super::image::CreateError),
-        #[api_error(
-            status_code = self,
-            error_code = self
-        )]
         InvalidField(InvalidField)
     };
 }

@@ -1,5 +1,6 @@
 use std::sync::LazyLock;
 
+use axum::http::StatusCode;
 use entity::prelude::{
     ArtistLink, ArtistLocalizedName, CreditRole, GroupMemberJoinLeave,
     GroupMemberRole,
@@ -16,6 +17,7 @@ use entity::{
 };
 use error_set::error_set;
 use itertools::{Itertools, izip};
+use macros::ApiError;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{Alias, IntoCondition, PostgresQueryBuilder, Query};
@@ -31,13 +33,18 @@ use crate::dto::artist::{
     ArtistCorrection, ArtistResponse, GroupMember, LocalizedName,
     NewGroupMember, NewLocalizedName,
 };
-use crate::error::RepositoryError;
+use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
 use crate::pg_func_ext::PgFuncExt;
 use crate::repo;
 use crate::types::Pair;
 
 error_set! {
+    #[derive(ApiError)]
     Error = {
+        #[api_error(
+            status_code = StatusCode::BAD_REQUEST,
+            into_response = self
+        )]
         Validation(ValidationError),
         General(RepositoryError)
     };
@@ -45,6 +52,16 @@ error_set! {
         #[display("Unknown type artist cannot have members")]
         UnknownTypeArtistOwnedMember,
     };
+}
+
+impl AsErrorCode for ValidationError {
+    fn as_error_code(&self) -> ErrorCode {
+        match self {
+            Self::UnknownTypeArtistOwnedMember => {
+                ErrorCode::UnknownTypeArtistOwnedMember
+            }
+        }
+    }
 }
 
 impl From<DbErr> for Error {

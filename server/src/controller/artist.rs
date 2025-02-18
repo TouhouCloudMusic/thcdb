@@ -1,21 +1,18 @@
 use axum::Json;
 use axum::extract::{Path, Query};
-use axum::http::StatusCode;
 use axum::middleware::from_fn;
-use axum::response::IntoResponse;
 use macros::{use_service, use_session};
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::api_response::{Data, IntoApiResponse, Message, StatusCodeExt};
+use crate::api_response::{Data, Message};
 use crate::dto::artist::{ArtistCorrection, ArtistResponse};
-use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
 use crate::middleware::is_signed_in;
+use crate::service;
 use crate::state::AppState;
 use crate::utils::MapInto;
-use crate::{repo, service};
 
 type Error = service::artist::Error;
 
@@ -123,38 +120,4 @@ async fn upsert_artist_correction(
         .await?;
 
     Ok(Message::ok())
-}
-
-impl StatusCodeExt for repo::artist::Error {
-    fn as_status_code(&self) -> StatusCode {
-        match self {
-            Self::Validation(_) => StatusCode::BAD_REQUEST,
-            Self::General(e) => e.as_status_code(),
-        }
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
-        std::iter::empty()
-            .chain([StatusCode::BAD_REQUEST])
-            .chain(RepositoryError::all_status_codes())
-    }
-}
-
-impl AsErrorCode for repo::artist::Error {
-    fn as_error_code(&self) -> ErrorCode {
-        match self {
-            Self::Validation(e) => match e {
-                repo::artist::ValidationError::UnknownTypeArtistOwnedMember => {
-                    ErrorCode::UnknownTypeArtistOwnedMember
-                }
-            },
-            Self::General(e) => e.as_error_code(),
-        }
-    }
-}
-
-impl IntoResponse for service::artist::Error {
-    fn into_response(self) -> axum::response::Response {
-        self.into_api_response()
-    }
 }

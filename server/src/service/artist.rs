@@ -13,10 +13,6 @@ error_set! {
     #[disable(From)]
     #[derive(IntoErrorSchema, ApiError)]
     Error = {
-        #[api_error(
-            status_code = self,
-            error_code = self,
-        )]
         Repo(repo::artist::Error)
     };
 }

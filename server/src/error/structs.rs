@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use super::{AsErrorCode, ErrorCode};
+use super::{ApiErrorTrait, AsErrorCode, ErrorCode};
 use crate::api_response::StatusCodeExt;
 
 #[derive(Debug)]
@@ -37,3 +37,5 @@ impl AsErrorCode for InvalidField {
         ErrorCode::InvalidField
     }
 }
+
+impl ApiErrorTrait for InvalidField {}

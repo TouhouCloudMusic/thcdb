@@ -154,12 +154,6 @@ async fn upload_avatar(
     }
 }
 
-impl IntoResponse for UploadAvatarError {
-    fn into_response(self) -> axum::response::Response {
-        self.into_api_response()
-    }
-}
-
 impl StatusCodeExt for Error {
     fn as_status_code(&self) -> StatusCode {
         match &self {
