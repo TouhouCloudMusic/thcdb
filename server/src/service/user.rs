@@ -1,3 +1,4 @@
+use std::env;
 use std::path::PathBuf;
 use std::sync::LazyLock;
 
@@ -16,18 +17,19 @@ use itertools::Itertools;
 use macros::{ApiError, FromDbErr, IntoErrorSchema};
 use regex::Regex;
 use sea_orm::prelude::Expr;
-use sea_orm::sea_query::{Alias, Query};
+use sea_orm::sea_query::{Alias, OnConflict, Query};
 use sea_orm::{
-    ActiveValue, ColumnTrait, ConnectionTrait, DatabaseBackend, EntityName,
-    EntityTrait, QueryFilter,
+    ActiveValue, ColumnTrait, ConnectionTrait, DatabaseBackend,
+    DatabaseConnection, EntityName, EntityTrait, IntoActiveModel, Iterable,
+    QueryFilter, TransactionTrait,
 };
 
 use super::*;
+use crate::dto::enums::{LookUpTableEnum, UserRole};
 use crate::dto::user::{AuthCredential, UserProfile};
 use crate::error::{DbErrWrapper, InvalidField, RepositoryError};
 use crate::repo::user::update_user_last_login;
-
-pub static ARGON2_HASHER: LazyLock<Argon2> = LazyLock::new(Argon2::default);
+use crate::state::ARGON2_HASHER;
 
 pub type AuthSession = axum_login::AuthSession<Service>;
 
@@ -191,7 +193,8 @@ impl Service {
             return Err(Error::UsernameAlreadyInUse);
         }
 
-        let password = hash_password(password)?;
+        let password = hash_password(password)
+            .map_err(|err| Error::HashPasswordFailed { err })?;
 
         let new_user = user::ActiveModel {
             name: ActiveValue::Set(username.to_string()),
@@ -214,7 +217,11 @@ impl Service {
                 let password_hash = u.password.clone();
                 (Some(u), password_hash)
             }
-            Ok(None) => (None, hash_password("dummyPassword")?),
+            Ok(None) => (
+                None,
+                hash_password("dummyPassword")
+                    .map_err(|err| Error::HashPasswordFailed { err })?,
+            ),
             Err(e) => return Err(e),
         };
 
@@ -396,15 +403,58 @@ async fn verify_password(
     .await?
 }
 
-fn hash_password(password: &str) -> Result<String, Error> {
+pub fn hash_password(
+    password: &str,
+) -> Result<String, password_hash::errors::Error> {
     let salt = SaltString::generate(&mut OsRng);
 
     // Should this be a singleton?
-    let password_hash = ARGON2_HASHER
-        .hash_password(password.as_bytes(), &salt)
-        .map_err(|err| Error::HashPasswordFailed { err })?;
+    let password_hash =
+        ARGON2_HASHER.hash_password(password.as_bytes(), &salt)?;
 
     Ok(password_hash.to_string())
+}
+
+pub async fn upsert_admin_acc(db: &DatabaseConnection) {
+    let password = hash_password(
+        &env::var("ADMIN_PASSWORD").expect("Env var ADMIN_PASSWORD is not set"),
+    )
+    .unwrap();
+
+    async {
+        let tx = db.begin().await?;
+        user::Entity::insert(
+            user::Model {
+                id: 1,
+                name: "Admin".into(),
+                password,
+                avatar_id: None,
+                last_login: chrono::Local::now().into(),
+            }
+            .into_active_model(),
+        )
+        .on_conflict(
+            OnConflict::column(user::Column::Id)
+                .update_columns(user::Column::iter())
+                .to_owned(),
+        )
+        .exec(&tx)
+        .await?;
+
+        user_role::Entity::insert(
+            user_role::Model {
+                user_id: 1,
+                role_id: UserRole::Admin.as_id(),
+            }
+            .into_active_model(),
+        )
+        .exec(&tx)
+        .await?;
+
+        tx.commit().await
+    }
+    .await
+    .expect("Failed to upsert admin account");
 }
 
 #[cfg(test)]

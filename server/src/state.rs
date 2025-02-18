@@ -1,3 +1,6 @@
+use std::sync::LazyLock;
+
+use argon2::Argon2;
 use axum::extract::FromRef;
 use macros::inject_services;
 use sea_orm::{DatabaseConnection, sqlx};
@@ -23,3 +26,5 @@ impl AppState {
         self.database.get_postgres_connection_pool()
     }
 }
+
+pub static ARGON2_HASHER: LazyLock<Argon2> = LazyLock::new(Argon2::default);

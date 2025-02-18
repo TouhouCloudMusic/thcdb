@@ -1,9 +1,13 @@
 use entity::role;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{ConnectionTrait, DbErr, EntityTrait, IntoActiveModel};
+use sea_orm::{
+    ConnectionTrait, DatabaseConnection, DbErr, EntityTrait, IntoActiveModel,
+};
 use serde::Serialize;
 use strum::IntoEnumIterator;
 use strum_macros::{EnumCount, EnumIter, EnumString};
+
+use crate::service::user::upsert_admin_acc;
 
 pub enum LookupTableCheckResult<T> {
     Ok,
@@ -241,9 +245,11 @@ where
 }
 
 pub async fn check_database_lookup_tables(
-    db: &impl ConnectionTrait,
+    db: &DatabaseConnection,
 ) -> Result<(), DbErr> {
     UserRole::check_and_sync(db).await?;
+
+    upsert_admin_acc(db).await;
 
     Ok(())
 }
