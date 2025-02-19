@@ -448,6 +448,7 @@ pub async fn upsert_admin_acc(db: &DatabaseConnection) {
             }
             .into_active_model(),
         )
+        .on_conflict_do_nothing()
         .exec(&tx)
         .await?;
 
