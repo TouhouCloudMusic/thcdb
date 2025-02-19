@@ -30,6 +30,10 @@ pub enum Relation {
     ArtistLocalizedName,
     #[sea_orm(has_many = "super::artist_localized_name_history::Entity")]
     ArtistLocalizedNameHistory,
+    #[sea_orm(has_many = "super::event_alternative_name::Entity")]
+    EventAlternativeName,
+    #[sea_orm(has_many = "super::event_alternative_name_history::Entity")]
+    EventAlternativeNameHistory,
     #[sea_orm(has_many = "super::label_localized_name::Entity")]
     LabelLocalizedName,
     #[sea_orm(has_many = "super::label_localized_name_history::Entity")]
@@ -61,6 +65,18 @@ impl Related<super::artist_localized_name::Entity> for Entity {
 impl Related<super::artist_localized_name_history::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ArtistLocalizedNameHistory.def()
+    }
+}
+
+impl Related<super::event_alternative_name::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::EventAlternativeName.def()
+    }
+}
+
+impl Related<super::event_alternative_name_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::EventAlternativeNameHistory.def()
     }
 }
 

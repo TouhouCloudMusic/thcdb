@@ -187,6 +187,7 @@ pub async fn approve(
             super::tag::apply_correction(correction, tx).await?;
         }
         EntityType::Tag => super::tag::apply_correction(correction, tx).await?,
+        EntityType::Event => todo!(),
     }
 
     Ok(())

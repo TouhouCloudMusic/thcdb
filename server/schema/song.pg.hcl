@@ -37,32 +37,32 @@ table "song_history" {
 }
 
 // TODO: better name
-function "prevent_orphan_song_deletion_fn" {
-  schema = schema.public
-  lang   = PLpgSQL
-  return = trigger
-  as     = <<-SQL
-    BEGIN
-      IF EXISTS (
-        SELECT 1 FROM release_track
-        WHERE release_track.song_id = OLD.id
-      )
-      THEN
-      RAISE EXCEPTION 'Cannot delete song that is associated with a release';
-      END IF;
-    End;
-  SQL
-}
+// function "prevent_orphan_song_deletion_fn" {
+//   schema = schema.public
+//   lang   = PLpgSQL
+//   return = trigger
+//   as     = <<-SQL
+//     BEGIN
+//       IF EXISTS (
+//         SELECT 1 FROM release_track
+//         WHERE release_track.song_id = OLD.id
+//       )
+//       THEN
+//       RAISE EXCEPTION 'Cannot delete song that is associated with a release';
+//       END IF;
+//     End;
+//   SQL
+// }
 
-trigger "prevent_orphan_song_deletion" {
-  on = table.song
-  before {
-    delete = true
-  }
-  execute {
-    function = function.prevent_orphan_song_deletion_fn
-  }
-}
+// trigger "prevent_orphan_song_deletion" {
+//   on = table.song
+//   before {
+//     delete = true
+//   }
+//   execute {
+//     function = function.prevent_orphan_song_deletion_fn
+//   }
+// }
 
 
 

@@ -1,14 +1,3 @@
-enum "EntityType" {
-  schema = schema.public
-  values = [
-    "Artist",
-    "Label",
-    "Release",
-    "Song",
-    "Tag",
-  ]
-}
-
 enum "CorrectionType" {
   schema = schema.public
   values = [

@@ -16,6 +16,30 @@ use serde::{Deserialize, Serialize};
     utoipa :: ToSchema,
     Copy,
 )]
+#[sea_orm(
+    rs_type = "String",
+    db_type = "Enum",
+    enum_name = "AlternativeNameType"
+)]
+pub enum AlternativeNameType {
+    #[sea_orm(string_value = "Alias")]
+    Alias,
+    #[sea_orm(string_value = "Localization")]
+    Localization,
+}
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumIter,
+    DeriveActiveEnum,
+    Serialize,
+    Deserialize,
+    juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
+    Copy,
+)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ArtistType")]
 pub enum ArtistType {
     #[sea_orm(string_value = "Solo")]
@@ -144,6 +168,8 @@ pub enum EntityType {
     Song,
     #[sea_orm(string_value = "Tag")]
     Tag,
+    #[sea_orm(string_value = "Event")]
+    Event,
 }
 #[derive(
     Debug,

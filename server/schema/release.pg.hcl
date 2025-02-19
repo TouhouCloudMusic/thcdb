@@ -539,25 +539,73 @@ table "release_credit_history" {
   }
 }
 
-view "orphaned_songs" {
-  schema  = schema.public
-  comment = "This view identifies songs that are not associated with any release"
+table "release_event" {
+  schema = schema.public
 
-  column "id" {
+  column "release_id" {
     type = int
   }
-
-  column "title" {
-    type = text
+  foreign_key "fk_release_event_release_id" {
+    columns = [ column.release_id ]
+    ref_columns = [ table.event.column.id ]
   }
 
-  as = <<-SQL
-    SELECT s.id, s.title
-    FROM ${table.song.name} s
-    LEFT JOIN ${table.release_track.name} rt ON s.id = rt.song_id
-    WHERE rt.id IS NULL
-  SQL
+  column "event_id" {
+    type = int
+  }
+  foreign_key "fk_release_event_event_id" {
+    columns = [ column.event_id ]
+    ref_columns = [ table.event.column.id ]
+  }
 
-  depends_on = [table.song, table.release_track]
-
+  primary_key {
+    columns = [ column.release_id, column.event_id ]
+  }
 }
+
+table "release_event_history" {
+  schema = schema.public
+
+  column "hisotry_id" {
+    type = int
+  }
+  foreign_key "fk_release_event_history_hisotry_id" {
+    columns = [ column.hisotry_id ]
+    ref_columns = [ table.event.column.id ]
+  }
+
+  column "event_id" {
+    type = int
+  }
+  foreign_key "fk_release_event_history_id" {
+    columns = [ column.event_id ]
+    ref_columns = [ table.event.column.id ]
+  }
+
+  primary_key {
+    columns = [ column.hisotry_id, column.event_id ]
+  }
+}
+
+// view "orphaned_songs" {
+//   schema  = schema.public
+//   comment = "This view identifies songs that are not associated with any release"
+
+//   column "id" {
+//     type = int
+//   }
+
+//   column "title" {
+//     type = text
+//   }
+
+//   as = <<-SQL
+//     SELECT s.id, s.title
+//     FROM ${table.song.name} s
+//     LEFT JOIN ${table.release_track.name} rt ON s.id = rt.song_id
+//     WHERE rt.id IS NULL
+//   SQL
+
+//   depends_on = [table.song, table.release_track]
+
+// }
