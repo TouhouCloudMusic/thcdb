@@ -7,7 +7,7 @@ use entity::{
     song_credit_history, song_history, song_language, song_language_history,
     song_localized_title, song_localized_title_history,
 };
-use futures::future;
+use futures_util::future;
 use itertools::{Itertools, izip};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::sea_query::IntoCondition;
@@ -92,18 +92,16 @@ pub async fn create_many(
 ) -> Result<Vec<song::Model>, DbErr> {
     let new_songs = create_many_songs_and_link_relations(data, tx).await?;
 
-    let new_corrections =
-        future::try_join_all(new_songs.iter().map(async |song| {
-            // TODO: create many self approval
-            repo::correction::create_self_approval()
-                .author_id(user_id)
-                .entity_type(EntityType::Song)
-                .entity_id(song.id)
-                .db(tx)
-                .call()
-                .await
-        }))
-        .await?;
+    let new_corrections = future::try_join_all(new_songs.iter().map(|song| {
+        // TODO: create many self approval
+        repo::correction::create_self_approval()
+            .author_id(user_id)
+            .entity_type(EntityType::Song)
+            .entity_id(song.id)
+            .db(tx)
+            .call()
+    }))
+    .await?;
 
     let new_song_histories =
         create_many_song_histories_and_link_relations(data, tx).await?;
