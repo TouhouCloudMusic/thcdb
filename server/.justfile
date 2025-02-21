@@ -8,6 +8,7 @@ fmt:
   cargo fmt
 
 fix:
+  cargo fix --workspace --allow-dirty --allow-staged
   cargo clippy --fix --workspace --allow-dirty --allow-staged
 
 check:
