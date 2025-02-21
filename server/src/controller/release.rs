@@ -21,11 +21,11 @@ const TAG: &str = "Release";
 
 pub fn router() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
-        .routes(routes!(create_song))
-        .routes(routes!(update_song))
+        .routes(routes!(create_release))
+        .routes(routes!(update_release))
         .route_layer(from_fn(is_signed_in))
-        .routes(routes!(find_song_by_keyword))
-        .routes(routes!(find_song_by_id))
+        .routes(routes!(find_release_by_keyword))
+        .routes(routes!(find_release_by_id))
 }
 
 #[utoipa::path(
@@ -37,7 +37,7 @@ pub fn router() -> OpenApiRouter<AppState> {
 		Error,
     ),
 )]
-async fn find_song_by_id(
+async fn find_release_by_id(
     State(service): State<Service>,
     Path(id): Path<i32>,
 ) -> Result<Data<ReleaseResponse>, Error> {
@@ -59,7 +59,7 @@ struct KwQuery {
 		Error,
     ),
 )]
-async fn find_song_by_keyword(
+async fn find_release_by_keyword(
     State(service): State<Service>,
     Query(query): Query<KwQuery>,
 ) -> Result<Data<Vec<ReleaseResponse>>, Error> {
@@ -101,7 +101,7 @@ async fn random(
 )]
 #[use_session]
 #[use_service(release)]
-async fn create_song(
+async fn create_release(
     Json(data): Json<ReleaseCorrection>,
 ) -> Result<Message, Error> {
     let user_id = session.user.unwrap().id;
@@ -123,7 +123,7 @@ async fn create_song(
 )]
 #[use_session]
 #[use_service(release)]
-async fn update_song(
+async fn update_release(
     Path(id): Path<i32>,
     Json(data): Json<ReleaseCorrection>,
 ) -> Result<Message, Error> {
