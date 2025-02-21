@@ -32,6 +32,7 @@ use crate::error::RepositoryError;
 use crate::repo;
 use crate::repo::correction::SelfApprovalCorrection;
 use crate::utils::MapInto;
+use crate::utils::orm::InsertMany;
 
 pub async fn create(
     data: ReleaseCorrection,
@@ -174,10 +175,6 @@ pub async fn apply_correction(
                 entity_name: release_history::Entity.table_name(),
             })?;
 
-    let mut active_model = release::ActiveModel::from(&history);
-    active_model.id = Set(correction.entity_id);
-    active_model.update(tx).await?;
-
     let author = repo::correction::user::find_author(correction.id, tx)
         .await?
         .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
@@ -185,6 +182,7 @@ pub async fn apply_correction(
         })?;
 
     tokio::try_join!(
+        release::ActiveModel::from((correction.entity_id, &history)).update(tx),
         update_release_artist(correction.entity_id, history.id, tx),
         update_release_catalog_number(correction.entity_id, history.id, tx),
         update_release_credit(correction.entity_id, history.id, tx),
@@ -270,19 +268,16 @@ async fn save_release_history_and_link_relations(
 async fn create_release_artist(
     release_id: i32,
     artists: &[i32],
-    transaction: &DatabaseTransaction,
+    db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    let release_artist =
-        artists.iter().map(|artist_id| release_artist::ActiveModel {
+    artists
+        .iter()
+        .map(|artist_id| release_artist::ActiveModel {
             release_id: Set(release_id),
             artist_id: Set(*artist_id),
-        });
-
-    release_artist::Entity::insert_many(release_artist)
-        .exec(transaction)
-        .await?;
-
-    Ok(())
+        })
+        .insert_many_without_returning(db)
+        .await
 }
 
 async fn update_release_artist(
@@ -314,38 +309,30 @@ async fn create_release_artist_history(
     artists: &[i32],
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    let release_artist_history =
-        artists
-            .iter()
-            .map(|artist_id| release_artist_history::ActiveModel {
-                history_id: Set(history_id),
-                artist_id: Set(*artist_id),
-            });
-
-    release_artist_history::Entity::insert_many(release_artist_history)
-        .exec(tx)
-        .await?;
-
-    Ok(())
+    artists
+        .iter()
+        .map(|artist_id| release_artist_history::ActiveModel {
+            history_id: Set(history_id),
+            artist_id: Set(*artist_id),
+        })
+        .insert_many_without_returning(tx)
+        .await
 }
 
 async fn create_release_catalog_number(
     release_id: i32,
     catalog_nums: &[ReleaseCatalogNumber],
-    transaction: &DatabaseTransaction,
+    tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    let models =
-        catalog_nums
-            .iter()
-            .map(|data| release_catalog_number::ActiveModel {
-                id: NotSet,
-                release_id: Set(release_id),
-                label_id: Set(data.label_id),
-                catalog_number: Set(data.catalog_number.clone()),
-            });
-
-    release_catalog_number::Entity::insert_many(models)
-        .exec(transaction)
+    catalog_nums
+        .iter()
+        .map(|data| release_catalog_number::ActiveModel {
+            id: NotSet,
+            release_id: Set(release_id),
+            label_id: Set(data.label_id),
+            catalog_number: Set(data.catalog_number.clone()),
+        })
+        .insert_many_without_returning(tx)
         .await?;
 
     Ok(())
@@ -379,19 +366,17 @@ async fn update_release_catalog_number(
 async fn create_release_catalog_number_history(
     history_id: i32,
     catalog_nums: &[ReleaseCatalogNumber],
-    transaction: &DatabaseTransaction,
+    tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    let history_models = catalog_nums.iter().map(|data| {
-        release_catalog_number_history::ActiveModel {
+    catalog_nums
+        .iter()
+        .map(|data| release_catalog_number_history::ActiveModel {
             id: NotSet,
             history_id: Set(history_id),
             catalog_number: Set(data.catalog_number.clone()),
             label_id: Set(data.label_id),
-        }
-    });
-
-    release_catalog_number_history::Entity::insert_many(history_models)
-        .exec(transaction)
+        })
+        .insert_many_without_returning(tx)
         .await?;
 
     Ok(())
@@ -400,23 +385,22 @@ async fn create_release_catalog_number_history(
 async fn create_release_credit(
     release_id: i32,
     credits: &[NewCredit],
-    transaction: &DatabaseTransaction,
+    tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if credits.is_empty() {
         return Ok(());
     }
 
-    let credit_model =
-        credits.iter().map(|credit| release_credit::ActiveModel {
+    credits
+        .iter()
+        .map(|credit| release_credit::ActiveModel {
             id: NotSet,
             artist_id: credit.artist_id.into_active_value(),
             release_id: release_id.into_active_value(),
             role_id: credit.role_id.into_active_value(),
             on: Set(credit.on.clone()),
-        });
-
-    release_credit::Entity::insert_many(credit_model)
-        .exec(transaction)
+        })
+        .insert_many_without_returning(tx)
         .await?;
 
     Ok(())
@@ -453,25 +437,22 @@ async fn update_release_credit(
 async fn create_release_credit_history(
     history_id: i32,
     credits: &[NewCredit],
-    transaction: &DatabaseTransaction,
+    tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if credits.is_empty() {
         return Ok(());
     }
 
-    let credit_history_model =
-        credits
-            .iter()
-            .map(|credit| release_credit_history::ActiveModel {
-                id: NotSet,
-                artist_id: credit.artist_id.into_active_value(),
-                history_id: history_id.into_active_value(),
-                role_id: credit.role_id.into_active_value(),
-                on: Set(credit.on.clone()),
-            });
-
-    release_credit_history::Entity::insert_many(credit_history_model)
-        .exec(transaction)
+    credits
+        .iter()
+        .map(|credit| release_credit_history::ActiveModel {
+            id: NotSet,
+            artist_id: credit.artist_id.into_active_value(),
+            history_id: history_id.into_active_value(),
+            role_id: credit.role_id.into_active_value(),
+            on: Set(credit.on.clone()),
+        })
+        .insert_many_without_returning(tx)
         .await?;
 
     Ok(())
@@ -483,14 +464,14 @@ async fn create_release_event(
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if !events.is_empty() {
-        release_event::Entity::insert_many(events.iter().map(|id| {
-            release_event::ActiveModel {
+        events
+            .iter()
+            .map(|id| release_event::ActiveModel {
                 release_id: release_id.into_active_value(),
                 event_id: id.into_active_value(),
-            }
-        }))
-        .exec(tx)
-        .await?;
+            })
+            .insert_many_without_returning(tx)
+            .await?;
     }
 
     Ok(())
@@ -523,14 +504,14 @@ async fn create_release_event_history(
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if !events.is_empty() {
-        release_event_history::Entity::insert_many(events.iter().map(|id| {
-            release_event_history::ActiveModel {
+        events
+            .iter()
+            .map(|id| release_event_history::ActiveModel {
                 history_id: history_id.into_active_value(),
                 event_id: id.into_active_value(),
-            }
-        }))
-        .exec(tx)
-        .await?;
+            })
+            .insert_many_without_returning(tx)
+            .await?;
     }
 
     Ok(())
@@ -539,22 +520,22 @@ async fn create_release_event_history(
 async fn create_release_localized_title(
     release_id: i32,
     localized_titles: &[NewLocalizedTitle],
-    transaction: &DatabaseTransaction,
+    tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if localized_titles.is_empty() {
         return Ok(());
     }
 
-    let models = localized_titles.iter().map(|item| {
-        release_localized_title::Model {
-            release_id,
-            ..item.into()
-        }
-        .into_active_model()
-    });
-
-    release_localized_title::Entity::insert_many(models)
-        .exec(transaction)
+    localized_titles
+        .iter()
+        .map(|item| {
+            release_localized_title::Model {
+                release_id,
+                ..item.into()
+            }
+            .into_active_model()
+        })
+        .insert_many_without_returning(tx)
         .await?;
 
     Ok(())
@@ -592,29 +573,28 @@ async fn update_release_localized_title(
 async fn create_release_localized_title_history(
     history_id: i32,
     localized_titles: &[NewLocalizedTitle],
-    transaction: &DatabaseTransaction,
+    tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if localized_titles.is_empty() {
         return Ok(());
     }
-
-    let history_models = localized_titles.iter().map(|item| {
-        release_localized_title_history::Model {
-            history_id,
-            ..item.into()
-        }
-        .into_active_model()
-    });
-
-    release_localized_title_history::Entity::insert_many(history_models)
-        .exec(transaction)
+    localized_titles
+        .iter()
+        .map(|item| {
+            release_localized_title_history::Model {
+                history_id,
+                ..item.into()
+            }
+            .into_active_model()
+        })
+        .insert_many_without_returning(tx)
         .await?;
 
     Ok(())
 }
 
 fn get_generated_desc(release_id: i32) -> String {
-    format!("Automatically created during creation of release {release_id}")
+    format!("Automatically created when creating release {release_id}")
 }
 
 async fn create_release_track(
@@ -653,7 +633,7 @@ async fn create_release_track(
     )
     .await?;
 
-    let song_artist_active_models = new_songs
+    new_songs
         .iter()
         .zip(unlinked.iter())
         .flat_map(|(song, (_, track))| {
@@ -664,31 +644,30 @@ async fn create_release_track(
                     song_id: song.id.into_active_value(),
                     artist_id: artist_id.into_active_value(),
                 })
-        });
-
-    song_artist::Entity::insert_many(song_artist_active_models)
-        .exec(tx)
+        })
+        .collect_vec()
+        .insert_many_without_returning(tx)
         .await?;
 
-    let release_track_active_models = linked
+    linked
         .into_iter()
-        .map(|(i, x)| {
+        .map(|(key, track)| {
             (
-                i,
+                key,
                 release_track::ActiveModel {
                     id: NotSet,
                     release_id: Set(release_id),
-                    song_id: Set(x.song_id),
-                    track_number: Set(x.track_number.clone()),
-                    display_title: Set(x.display_title.clone()),
-                    duration: Set(x.duration.map(|d| d.to_string())),
+                    song_id: Set(track.song_id),
+                    track_number: Set(track.track_number.clone()),
+                    display_title: Set(track.display_title.clone()),
+                    duration: Set(track.duration.map(|d| d.to_string())),
                 },
             )
         })
         .chain(unlinked.into_iter().zip(new_songs.iter()).map(
-            |((i, track), model)| {
+            |((key, track), model)| {
                 (
-                    i,
+                    key,
                     release_track::ActiveModel {
                         id: NotSet,
                         release_id: Set(release_id),
@@ -701,10 +680,8 @@ async fn create_release_track(
             },
         ))
         .sorted_by(|(key1, _), (key2, _)| key1.cmp(key2))
-        .map(|x| x.1);
-
-    release_track::Entity::insert_many(release_track_active_models)
-        .exec_with_returning_many(tx)
+        .map(|(_, model)| model)
+        .insert_many(tx)
         .await
 }
 
@@ -797,8 +774,8 @@ async fn create_release_track_history(
             NewTrack::Unlinked(x) => Either::Right((i, x)),
         });
 
-    let new_songs = create_new_songs_from_tracks(
-        unlinked.as_slice(),
+    let new_songs = create_new_songs_from_unlinked_tracks(
+        unlinked.iter().map(|(_, track)| *track),
         release_id,
         author_id,
         db,
@@ -843,8 +820,8 @@ async fn create_release_track_history(
         .await
 }
 
-async fn create_new_songs_from_tracks(
-    unlinked: &[(usize, &Unlinked)],
+async fn create_new_songs_from_unlinked_tracks(
+    unlinked: impl IntoIterator<Item = &Unlinked>,
     release_id: i32,
     author_id: i32,
     tx: &DatabaseTransaction,
@@ -852,9 +829,9 @@ async fn create_new_songs_from_tracks(
     let generated_desc = get_generated_desc(release_id);
 
     repo::song::create_many(
-        unlinked
-            .iter()
-            .map(|(_, x)| NewSong {
+        &unlinked
+            .into_iter()
+            .map(|x| NewSong {
                 title: x.display_title.clone(),
                 languages: None,
                 localized_titles: None,
@@ -863,8 +840,7 @@ async fn create_new_songs_from_tracks(
                     description: generated_desc.clone(),
                 },
             })
-            .collect_vec()
-            .as_slice(),
+            .collect_vec(),
         author_id,
         tx,
     )

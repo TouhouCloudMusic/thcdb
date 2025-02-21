@@ -1,3 +1,5 @@
+pub mod orm;
+
 pub mod openapi {
 
     #[derive(Debug)]

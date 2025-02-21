@@ -19,21 +19,21 @@ impl From<&artist_history::Model> for artist::ActiveModel {
     }
 }
 
-impl From<&release_history::Model> for release::ActiveModel {
-    fn from(value: &release_history::Model) -> Self {
+impl From<(i32, &release_history::Model)> for release::ActiveModel {
+    fn from((id, model): (i32, &release_history::Model)) -> Self {
         Self {
-            id: NotSet,
-            title: Set(value.title.clone()),
-            release_type: Set(value.release_type),
-            release_date: Set(value.release_date),
-            release_date_precision: Set(value.release_date_precision),
-            recording_date_start: Set(value.recording_date_start),
+            id: Set(id),
+            title: Set(model.title.clone()),
+            release_type: Set(model.release_type),
+            release_date: Set(model.release_date),
+            release_date_precision: Set(model.release_date_precision),
+            recording_date_start: Set(model.recording_date_start),
             recording_date_start_precision: Set(
-                value.recording_date_start_precision
+                model.recording_date_start_precision
             ),
-            recording_date_end: Set(value.recording_date_end),
+            recording_date_end: Set(model.recording_date_end),
             recording_date_end_precision: Set(
-                value.recording_date_end_precision
+                model.recording_date_end_precision
             ),
         }
     }
