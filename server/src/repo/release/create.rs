@@ -18,6 +18,7 @@ use sea_orm::{
     EntityOrSelect, EntityTrait, IntoActiveModel, IntoActiveValue, ModelTrait,
     QueryFilter, QueryOrder, QuerySelect,
 };
+use tokio::try_join;
 
 use super::share::check_existence;
 use crate::dto::correction::Metadata;
@@ -30,20 +31,7 @@ use crate::dto::song::NewSong;
 use crate::error::RepositoryError;
 use crate::repo;
 use crate::repo::correction::SelfApprovalCorrection;
-use crate::repo::utils::relation_enum;
 use crate::utils::MapInto;
-
-relation_enum! {
-    ReleaseReleation {
-        Artist,
-        CatalogNumber,
-        Credit,
-        Event,
-        LocalizedTitles,
-        Track,
-    },
-    RELEASE_RELEATIONS
-}
 
 pub async fn create(
     data: ReleaseCorrection,
@@ -196,47 +184,19 @@ pub async fn apply_correction(
             entity_name: correction_user::Entity.table_name(),
         })?;
 
-    for relation in RELEASE_RELEATIONS {
-        match relation {
-            ReleaseReleation::Artist => {
-                update_release_artist(correction.entity_id, history.id, tx)
-                    .await?;
-            }
-            ReleaseReleation::CatalogNumber => {
-                update_release_catalog_number(
-                    correction.entity_id,
-                    history.id,
-                    tx,
-                )
-                .await?;
-            }
-            ReleaseReleation::Credit => {
-                update_release_credit(correction.entity_id, history.id, tx)
-                    .await?;
-            }
-            ReleaseReleation::Event => {
-                update_release_event(correction.entity_id, history.id, tx)
-                    .await?;
-            }
-            ReleaseReleation::LocalizedTitles => {
-                update_release_localized_title(
-                    correction.entity_id,
-                    history.id,
-                    tx,
-                )
-                .await?;
-            }
-            ReleaseReleation::Track => {
-                update_release_track(
-                    correction.entity_id,
-                    history.id,
-                    author.user_id,
-                    tx,
-                )
-                .await?;
-            }
-        }
-    }
+    tokio::try_join!(
+        update_release_artist(correction.entity_id, history.id, tx),
+        update_release_catalog_number(correction.entity_id, history.id, tx),
+        update_release_credit(correction.entity_id, history.id, tx),
+        update_release_event(correction.entity_id, history.id, tx),
+        update_release_localized_title(correction.entity_id, history.id, tx),
+        update_release_track(
+            correction.entity_id,
+            history.id,
+            author.user_id,
+            tx
+        ),
+    )?;
 
     Ok(())
 }
@@ -250,48 +210,24 @@ async fn save_and_link_relations(
     let new_release: release::Model =
         release::ActiveModel::from(data).insert(tx).await?;
 
-    for releation in &RELEASE_RELEATIONS {
-        match releation {
-            ReleaseReleation::Artist => {
-                create_release_artist(new_release.id, &data.artists, tx)
-                    .await?;
-            }
-            ReleaseReleation::CatalogNumber => {
-                create_release_catalog_number(
-                    new_release.id,
-                    &data.catalog_nums,
-                    tx,
-                )
-                .await?;
-            }
-            ReleaseReleation::Credit => {
-                create_release_credit(new_release.id, &data.credits, tx)
-                    .await?;
-            }
-            ReleaseReleation::Event => {
-                create_release_event(new_release.id, &data.events, tx).await?;
-            }
-            ReleaseReleation::LocalizedTitles => {
-                create_release_localized_title(
-                    new_release.id,
-                    &data.localized_titles,
-                    tx,
-                )
-                .await?;
-            }
-            ReleaseReleation::Track => {
-                *new_release_tracks = Some(
-                    create_release_track(
-                        new_release.id,
-                        &data.tracks,
-                        author_id,
-                        tx,
-                    )
-                    .await?,
-                );
-            }
+    try_join!(
+        create_release_artist(new_release.id, &data.artists, tx),
+        create_release_catalog_number(new_release.id, &data.catalog_nums, tx),
+        create_release_credit(new_release.id, &data.credits, tx),
+        create_release_event(new_release.id, &data.events, tx),
+        create_release_localized_title(
+            new_release.id,
+            &data.localized_titles,
+            tx
+        ),
+        async {
+            create_release_track(new_release.id, &data.tracks, author_id, tx)
+                .await
+                .map(|x| {
+                    *new_release_tracks = Some(x);
+                })
         }
-    }
+    )?;
 
     Ok(new_release)
 }
@@ -305,48 +241,28 @@ async fn save_release_history_and_link_relations(
 ) -> Result<release_history::Model, DbErr> {
     let history = release_history::ActiveModel::from(data).insert(tx).await?;
 
-    for releation in RELEASE_RELEATIONS {
-        match releation {
-            ReleaseReleation::Artist => {
-                create_release_artist_history(history.id, &data.artists, tx)
-                    .await?;
-            }
-            ReleaseReleation::CatalogNumber => {
-                create_release_catalog_number_history(
-                    history.id,
-                    &data.catalog_nums,
-                    tx,
-                )
-                .await?;
-            }
-            ReleaseReleation::Credit => {
-                create_release_credit_history(history.id, &data.credits, tx)
-                    .await?;
-            }
-            ReleaseReleation::Event => {
-                create_release_event_history(history.id, &data.events, tx)
-                    .await?;
-            }
-            ReleaseReleation::LocalizedTitles => {
-                create_release_localized_title_history(
-                    history.id,
-                    &data.localized_titles,
-                    tx,
-                )
-                .await?;
-            }
-            ReleaseReleation::Track => {
-                create_release_track_history()
-                    .history_id(history.id)
-                    .release_id(release_id)
-                    .tracks(&data.tracks)
-                    .author_id(author_id)
-                    .db(tx)
-                    .call()
-                    .await?;
-            }
-        }
-    }
+    tokio::try_join!(
+        create_release_artist_history(history.id, &data.artists, tx),
+        create_release_catalog_number_history(
+            history.id,
+            &data.catalog_nums,
+            tx,
+        ),
+        create_release_credit_history(history.id, &data.credits, tx),
+        create_release_event_history(history.id, &data.events, tx),
+        create_release_localized_title_history(
+            history.id,
+            &data.localized_titles,
+            tx,
+        ),
+        create_release_track_history()
+            .history_id(history.id)
+            .release_id(release_id)
+            .tracks(&data.tracks)
+            .author_id(author_id)
+            .db(tx)
+            .call()
+    )?;
 
     Ok(history)
 }
