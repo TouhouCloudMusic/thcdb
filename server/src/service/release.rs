@@ -1,8 +1,6 @@
 use bon::bon;
 use entity::release;
 use entity::sea_orm_active_enums::EntityType;
-use error_set::error_set;
-use macros::IntoErrorSchema;
 use sea_orm::sea_query::{Func, SimpleExpr};
 use sea_orm::{
     DatabaseConnection, EntityTrait, Order, QueryOrder, QuerySelect,
@@ -16,22 +14,7 @@ use crate::utils::MapInto;
 
 super::def_service!();
 
-error_set! {
-    #[disable(From(repo::release::Error))]
-    #[derive(IntoErrorSchema)]
-    Error = {
-        Repo(repo::release::Error)
-    };
-}
-
-impl<T> From<T> for Error
-where
-    T: Into<repo::release::Error>,
-{
-    fn from(err: T) -> Self {
-        Self::Repo(err.into())
-    }
-}
+type Error = RepositoryError;
 
 #[bon]
 impl Service {

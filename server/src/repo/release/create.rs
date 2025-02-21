@@ -1,200 +1,48 @@
 use chrono::{DateTime, Utc};
-use entity::prelude::{
-    Artist, CreditRole, ReleaseArtist, ReleaseCredit, ReleaseLocalizedTitle,
-    ReleaseTrack,
-};
 use entity::sea_orm_active_enums::{
     CorrectionStatus, CorrectionType, EntityType,
 };
 use entity::{
-    artist, correction, correction_revision, correction_user, language,
-    release, release_artist, release_artist_history, release_catalog_number,
+    correction, correction_revision, correction_user, release, release_artist,
+    release_artist_history, release_catalog_number,
     release_catalog_number_history, release_credit, release_credit_history,
-    release_history, release_localized_title, release_localized_title_history,
-    release_track, release_track_artist_history, release_track_history, song,
-    song_artist,
+    release_event, release_event_history, release_history,
+    release_localized_title, release_localized_title_history, release_track,
+    release_track_artist_history, release_track_history, song, song_artist,
 };
-use error_set::error_set;
-use itertools::{Either, Itertools, izip};
+use itertools::{Either, Itertools};
 use repo::correction::user::utils::add_co_author_if_updater_not_author;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
-    EntityName, EntityOrSelect, EntityTrait, IntoActiveModel, IntoActiveValue,
-    LoaderTrait, ModelTrait, QueryFilter, QueryOrder, QuerySelect,
+    ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityName,
+    EntityOrSelect, EntityTrait, IntoActiveModel, IntoActiveValue, ModelTrait,
+    QueryFilter, QueryOrder, QuerySelect,
 };
-use utils::check_existence;
 
+use super::share::check_existence;
 use crate::dto::correction::Metadata;
 use crate::dto::release::input::NewCredit;
 use crate::dto::release::{
-    Linked, NewTrack, ReleaseCatalogNumber, ReleaseCorrection, ReleaseResponse,
-    Unlinked,
+    Linked, NewTrack, ReleaseCatalogNumber, ReleaseCorrection, Unlinked,
 };
-use crate::dto::share::{LocalizedTitle, NewLocalizedTitle};
+use crate::dto::share::NewLocalizedTitle;
 use crate::dto::song::NewSong;
 use crate::error::RepositoryError;
+use crate::repo;
+use crate::repo::correction::SelfApprovalCorrection;
+use crate::repo::utils::relation_enum;
 use crate::utils::MapInto;
-use crate::{dto, repo};
 
-error_set! {
-    #[disable(From)]
-    Error = {
-        General(RepositoryError),
-    };
-}
-
-impl<T> From<T> for Error
-where
-    T: Into<RepositoryError>,
-{
-    fn from(value: T) -> Self {
-        Self::General(value.into())
-    }
-}
-
-pub async fn find_by_id(
-    id: i32,
-    db: &impl ConnectionTrait,
-) -> Result<ReleaseResponse, RepositoryError> {
-    find_many(release::Column::Id.eq(id), db)
-        .await?
-        .into_iter()
-        .next()
-        .ok_or_else(|| RepositoryError::EntityNotFound {
-            entity_name: release::Entity.table_name(),
-        })
-}
-
-pub async fn find_by_keyword(
-    kw: String,
-    db: &impl ConnectionTrait,
-) -> Result<Vec<ReleaseResponse>, RepositoryError> {
-    find_many(release::Column::Title.like(kw), db).await
-}
-
-#[allow(clippy::too_many_lines)]
-async fn find_many(
-    cond: impl IntoCondition,
-    db: &impl ConnectionTrait,
-) -> Result<Vec<ReleaseResponse>, RepositoryError> {
-    let releases = release::Entity::find().filter(cond).all(db).await?;
-
-    let artists = releases
-        .load_many_to_many(Artist, ReleaseArtist, db)
-        .await?;
-
-    let catalog_nums = releases
-        .load_many(release_catalog_number::Entity, db)
-        .await?;
-
-    let llts = releases.load_many(ReleaseLocalizedTitle, db).await?;
-
-    let langs = language::Entity::find()
-        .filter(
-            language::Column::Id.is_in(
-                llts.iter()
-                    .flatten()
-                    .map(|x| x.language_id)
-                    .unique()
-                    .collect_vec(),
-            ),
-        )
-        .all(db)
-        .await?;
-
-    let tracks = releases.load_many(ReleaseTrack, db).await?;
-
-    let release_artist_ids =
-        artists.iter().flatten().unique_by(|a| a.id).map(|x| x.id);
-
-    let credits = releases.load_many(ReleaseCredit, db).await?;
-
-    let flatten_credits = credits.clone().into_iter().flatten().collect_vec();
-
-    let all_artists = flatten_credits
-        .clone()
-        .into_iter()
-        .unique_by(|c| c.artist_id)
-        .collect_vec()
-        .load_one(
-            artist::Entity::find()
-                .filter(artist::Column::Id.is_not_in(release_artist_ids)),
-            db,
-        )
-        .await?
-        .into_iter()
-        .flatten()
-        .chain(artists.clone().into_iter().flatten())
-        .collect_vec();
-
-    let all_roles = flatten_credits
-        .load_one(CreditRole, db)
-        .await?
-        .into_iter()
-        .flatten()
-        .collect_vec();
-
-    let res = izip!(releases, artists, credits, catalog_nums, llts, tracks)
-        .map(
-            |(
-                model,
-                artists,
-                credits,
-                catalog_nums,
-                localized_titles,
-                tracks,
-            )| {
-                ReleaseResponse {
-                    id: model.id,
-                    release_type: model.release_type,
-                    release_date: model.release_date,
-                    release_date_precision: Some(model.release_date_precision),
-                    recording_date_start: model.recording_date_start,
-                    recording_date_start_precision: Some(
-                        model.recording_date_start_precision,
-                    ),
-                    recording_date_end: model.recording_date_end,
-                    recording_date_end_precision: Some(
-                        model.recording_date_end_precision,
-                    ),
-                    artists: artists.into_iter().map_into().collect(),
-                    credits: credits
-                        .into_iter()
-                        .map(|c| dto::release::ReleaseCredit {
-                            artist: all_artists
-                                .iter()
-                                .find(|a| a.id == c.artist_id)
-                                .unwrap()
-                                .into(),
-                            role: all_roles
-                                .iter()
-                                .find(|r| r.id == c.role_id)
-                                .unwrap()
-                                .into(),
-                            on: c.on,
-                        })
-                        .collect(),
-                    catalog_nums: catalog_nums.map_into(),
-                    localized_titles: localized_titles
-                        .into_iter()
-                        .map(|x| LocalizedTitle {
-                            language: langs
-                                .iter()
-                                .find(|l| l.id == x.language_id)
-                                .unwrap()
-                                .into(),
-                            title: x.title,
-                        })
-                        .collect(),
-                    tracks: tracks.into_iter().map(|x| x.id).collect(),
-                }
-            },
-        )
-        .collect();
-
-    Ok(res)
+relation_enum! {
+    ReleaseReleation {
+        Artist,
+        CatalogNumber,
+        Credit,
+        Event,
+        LocalizedTitles,
+        Track,
+    },
+    RELEASE_RELEATIONS
 }
 
 pub async fn create(
@@ -202,28 +50,16 @@ pub async fn create(
     user_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<release::Model, RepositoryError> {
-    let new_release = release::ActiveModel::from(&data).insert(tx).await?;
+    let mut new_release_tracks = None;
 
-    create_release_artist(new_release.id, &data.artists, tx).await?;
-    create_release_credit(new_release.id, &data.credits, tx).await?;
-    create_release_catalog_number(new_release.id, &data.catalog_nums, tx)
-        .await?;
-    create_release_localized_title(new_release.id, &data.localized_titles, tx)
-        .await?;
+    let new_release =
+        save_and_link_relations(user_id, &data, &mut new_release_tracks, tx)
+            .await?;
 
-    let new_release_tracks =
-        create_release_track(new_release.id, &data.tracks, user_id, tx).await?;
+    let mut data = data;
 
-    let correction = repo::correction::create_self_approval()
-        .author_id(user_id)
-        .entity_type(EntityType::Release)
-        .entity_id(new_release.id)
-        .db(tx)
-        .call()
-        .await?;
-
-    let mut data2 = data.clone();
-    data2.tracks = new_release_tracks
+    data.tracks = new_release_tracks
+        .unwrap()
         .into_iter()
         .zip(data.tracks)
         .map(|(model, track)| {
@@ -243,21 +79,22 @@ pub async fn create(
         .collect();
 
     let history = save_release_history_and_link_relations()
-        .data(&data2)
+        .data(&data)
         .release_id(new_release.id)
         .author_id(user_id)
         .tx(tx)
         .call()
         .await?;
 
-    repo::correction::link_history()
-        .user_id(user_id)
-        .correction_id(correction.id)
-        .entity_history_id(history.id)
-        .description(data.correction_metadata.description)
-        .db(tx)
-        .call()
-        .await?;
+    SelfApprovalCorrection::create(
+        user_id,
+        EntityType::Release,
+        new_release.id,
+        history.id,
+        data.correction_metadata.description,
+        tx,
+    )
+    .await?;
 
     Ok(new_release)
 }
@@ -305,7 +142,7 @@ pub async fn update_correction(
     data: ReleaseCorrection,
     author_id: i32,
     tx: &DatabaseTransaction,
-) -> Result<(), Error> {
+) -> Result<(), RepositoryError> {
     add_co_author_if_updater_not_author(correction.id, author_id, tx).await?;
 
     let history = save_release_history_and_link_relations()
@@ -328,7 +165,7 @@ pub async fn update_correction(
     Ok(())
 }
 
-pub(super) async fn apply_correction(
+pub async fn apply_correction(
     correction: correction::Model,
     tx: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
@@ -353,25 +190,110 @@ pub(super) async fn apply_correction(
     active_model.id = Set(correction.entity_id);
     active_model.update(tx).await?;
 
-    update_release_artist(correction.entity_id, history.id, tx).await?;
-
-    update_release_credit(correction.entity_id, history.id, tx).await?;
-
-    update_release_catalog_number(correction.entity_id, history.id, tx).await?;
-
-    update_release_localized_title(correction.entity_id, history.id, tx)
-        .await?;
-
     let author = repo::correction::user::find_author(correction.id, tx)
         .await?
         .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
             entity_name: correction_user::Entity.table_name(),
         })?;
 
-    update_release_track(correction.entity_id, history.id, author.user_id, tx)
-        .await?;
+    for relation in RELEASE_RELEATIONS {
+        match relation {
+            ReleaseReleation::Artist => {
+                update_release_artist(correction.entity_id, history.id, tx)
+                    .await?;
+            }
+            ReleaseReleation::CatalogNumber => {
+                update_release_catalog_number(
+                    correction.entity_id,
+                    history.id,
+                    tx,
+                )
+                .await?;
+            }
+            ReleaseReleation::Credit => {
+                update_release_credit(correction.entity_id, history.id, tx)
+                    .await?;
+            }
+            ReleaseReleation::Event => {
+                update_release_event(correction.entity_id, history.id, tx)
+                    .await?;
+            }
+            ReleaseReleation::LocalizedTitles => {
+                update_release_localized_title(
+                    correction.entity_id,
+                    history.id,
+                    tx,
+                )
+                .await?;
+            }
+            ReleaseReleation::Track => {
+                update_release_track(
+                    correction.entity_id,
+                    history.id,
+                    author.user_id,
+                    tx,
+                )
+                .await?;
+            }
+        }
+    }
 
     Ok(())
+}
+
+async fn save_and_link_relations(
+    author_id: i32,
+    data: &ReleaseCorrection,
+    new_release_tracks: &mut Option<Vec<release_track::Model>>,
+    tx: &DatabaseTransaction,
+) -> Result<release::Model, DbErr> {
+    let new_release: release::Model =
+        release::ActiveModel::from(data).insert(tx).await?;
+
+    for releation in &RELEASE_RELEATIONS {
+        match releation {
+            ReleaseReleation::Artist => {
+                create_release_artist(new_release.id, &data.artists, tx)
+                    .await?;
+            }
+            ReleaseReleation::CatalogNumber => {
+                create_release_catalog_number(
+                    new_release.id,
+                    &data.catalog_nums,
+                    tx,
+                )
+                .await?;
+            }
+            ReleaseReleation::Credit => {
+                create_release_credit(new_release.id, &data.credits, tx)
+                    .await?;
+            }
+            ReleaseReleation::Event => {
+                create_release_event(new_release.id, &data.events, tx).await?;
+            }
+            ReleaseReleation::LocalizedTitles => {
+                create_release_localized_title(
+                    new_release.id,
+                    &data.localized_titles,
+                    tx,
+                )
+                .await?;
+            }
+            ReleaseReleation::Track => {
+                *new_release_tracks = Some(
+                    create_release_track(
+                        new_release.id,
+                        &data.tracks,
+                        author_id,
+                        tx,
+                    )
+                    .await?,
+                );
+            }
+        }
+    }
+
+    Ok(new_release)
 }
 
 #[bon::builder]
@@ -382,24 +304,49 @@ async fn save_release_history_and_link_relations(
     tx: &DatabaseTransaction,
 ) -> Result<release_history::Model, DbErr> {
     let history = release_history::ActiveModel::from(data).insert(tx).await?;
-    create_release_artist_history(history.id, &data.artists, tx).await?;
-    create_release_credit_history(history.id, &data.credits, tx).await?;
-    create_release_catalog_number_history(history.id, &data.catalog_nums, tx)
-        .await?;
-    create_release_localized_title_history(
-        history.id,
-        &data.localized_titles,
-        tx,
-    )
-    .await?;
-    create_release_track_history()
-        .history_id(history.id)
-        .release_id(release_id)
-        .tracks(&data.tracks)
-        .author_id(author_id)
-        .db(tx)
-        .call()
-        .await?;
+
+    for releation in RELEASE_RELEATIONS {
+        match releation {
+            ReleaseReleation::Artist => {
+                create_release_artist_history(history.id, &data.artists, tx)
+                    .await?;
+            }
+            ReleaseReleation::CatalogNumber => {
+                create_release_catalog_number_history(
+                    history.id,
+                    &data.catalog_nums,
+                    tx,
+                )
+                .await?;
+            }
+            ReleaseReleation::Credit => {
+                create_release_credit_history(history.id, &data.credits, tx)
+                    .await?;
+            }
+            ReleaseReleation::Event => {
+                create_release_event_history(history.id, &data.events, tx)
+                    .await?;
+            }
+            ReleaseReleation::LocalizedTitles => {
+                create_release_localized_title_history(
+                    history.id,
+                    &data.localized_titles,
+                    tx,
+                )
+                .await?;
+            }
+            ReleaseReleation::Track => {
+                create_release_track_history()
+                    .history_id(history.id)
+                    .release_id(release_id)
+                    .tracks(&data.tracks)
+                    .author_id(author_id)
+                    .db(tx)
+                    .call()
+                    .await?;
+            }
+        }
+    }
 
     Ok(history)
 }
@@ -462,6 +409,213 @@ async fn create_release_artist_history(
     release_artist_history::Entity::insert_many(release_artist_history)
         .exec(tx)
         .await?;
+
+    Ok(())
+}
+
+async fn create_release_catalog_number(
+    release_id: i32,
+    catalog_nums: &[ReleaseCatalogNumber],
+    transaction: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let models =
+        catalog_nums
+            .iter()
+            .map(|data| release_catalog_number::ActiveModel {
+                id: NotSet,
+                release_id: Set(release_id),
+                label_id: Set(data.label_id),
+                catalog_number: Set(data.catalog_number.clone()),
+            });
+
+    release_catalog_number::Entity::insert_many(models)
+        .exec(transaction)
+        .await?;
+
+    Ok(())
+}
+
+async fn update_release_catalog_number(
+    release_id: i32,
+    history_id: i32,
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    release_catalog_number::Entity::delete_many()
+        .filter(release_catalog_number::Column::ReleaseId.eq(release_id))
+        .exec(tx)
+        .await?;
+
+    let labels = release_catalog_number_history::Entity
+        .select()
+        .column(release_catalog_number_history::Column::LabelId)
+        .filter(
+            release_catalog_number_history::Column::HistoryId.eq(history_id),
+        )
+        .all(tx)
+        .await?
+        .map_into();
+
+    create_release_catalog_number(release_id, &labels, tx).await?;
+
+    Ok(())
+}
+
+async fn create_release_catalog_number_history(
+    history_id: i32,
+    catalog_nums: &[ReleaseCatalogNumber],
+    transaction: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let history_models = catalog_nums.iter().map(|data| {
+        release_catalog_number_history::ActiveModel {
+            id: NotSet,
+            history_id: Set(history_id),
+            catalog_number: Set(data.catalog_number.clone()),
+            label_id: Set(data.label_id),
+        }
+    });
+
+    release_catalog_number_history::Entity::insert_many(history_models)
+        .exec(transaction)
+        .await?;
+
+    Ok(())
+}
+
+async fn create_release_credit(
+    release_id: i32,
+    credits: &[NewCredit],
+    transaction: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    if credits.is_empty() {
+        return Ok(());
+    }
+
+    let credit_model =
+        credits.iter().map(|credit| release_credit::ActiveModel {
+            id: NotSet,
+            artist_id: credit.artist_id.into_active_value(),
+            release_id: release_id.into_active_value(),
+            role_id: credit.role_id.into_active_value(),
+            on: Set(credit.on.clone()),
+        });
+
+    release_credit::Entity::insert_many(credit_model)
+        .exec(transaction)
+        .await?;
+
+    Ok(())
+}
+
+async fn update_release_credit(
+    release_id: i32,
+    history_id: i32,
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    release_credit::Entity::delete_many()
+        .filter(release_credit::Column::ReleaseId.eq(release_id))
+        .exec(tx)
+        .await?;
+
+    let credits = release_credit_history::Entity
+        .select()
+        .filter(release_credit_history::Column::HistoryId.eq(history_id))
+        .all(tx)
+        .await?
+        .into_iter()
+        .map(|x| NewCredit {
+            artist_id: x.artist_id,
+            role_id: x.role_id,
+            on: x.on,
+        })
+        .collect_vec();
+
+    create_release_credit(release_id, &credits, tx).await?;
+
+    Ok(())
+}
+
+async fn create_release_credit_history(
+    history_id: i32,
+    credits: &[NewCredit],
+    transaction: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    if credits.is_empty() {
+        return Ok(());
+    }
+
+    let credit_history_model =
+        credits
+            .iter()
+            .map(|credit| release_credit_history::ActiveModel {
+                id: NotSet,
+                artist_id: credit.artist_id.into_active_value(),
+                history_id: history_id.into_active_value(),
+                role_id: credit.role_id.into_active_value(),
+                on: Set(credit.on.clone()),
+            });
+
+    release_credit_history::Entity::insert_many(credit_history_model)
+        .exec(transaction)
+        .await?;
+
+    Ok(())
+}
+
+async fn create_release_event(
+    release_id: i32,
+    events: &[i32],
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    if !events.is_empty() {
+        release_event::Entity::insert_many(events.iter().map(|id| {
+            release_event::ActiveModel {
+                release_id: release_id.into_active_value(),
+                event_id: id.into_active_value(),
+            }
+        }))
+        .exec(tx)
+        .await?;
+    }
+
+    Ok(())
+}
+
+async fn update_release_event(
+    release_id: i32,
+    history_id: i32,
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    release_event::Entity::delete_many()
+        .filter(release_event::Column::ReleaseId.eq(release_id))
+        .exec(tx)
+        .await?;
+
+    let events = release_event_history::Entity::find()
+        .filter(release_event_history::Column::HistoryId.eq(history_id))
+        .all(tx)
+        .await?
+        .into_iter()
+        .map(|x| x.event_id)
+        .collect_vec();
+
+    create_release_event(release_id, &events, tx).await
+}
+
+async fn create_release_event_history(
+    history_id: i32,
+    events: &[i32],
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    if !events.is_empty() {
+        release_event_history::Entity::insert_many(events.iter().map(|id| {
+            release_event_history::ActiveModel {
+                history_id: history_id.into_active_value(),
+                event_id: id.into_active_value(),
+            }
+        }))
+        .exec(tx)
+        .await?;
+    }
 
     Ok(())
 }
@@ -537,74 +691,6 @@ async fn create_release_localized_title_history(
     });
 
     release_localized_title_history::Entity::insert_many(history_models)
-        .exec(transaction)
-        .await?;
-
-    Ok(())
-}
-
-async fn create_release_catalog_number(
-    release_id: i32,
-    catalog_nums: &[ReleaseCatalogNumber],
-    transaction: &DatabaseTransaction,
-) -> Result<(), DbErr> {
-    let models =
-        catalog_nums
-            .iter()
-            .map(|data| release_catalog_number::ActiveModel {
-                id: NotSet,
-                release_id: Set(release_id),
-                label_id: Set(data.label_id),
-                catalog_number: Set(data.catalog_number.clone()),
-            });
-
-    release_catalog_number::Entity::insert_many(models)
-        .exec(transaction)
-        .await?;
-
-    Ok(())
-}
-
-async fn update_release_catalog_number(
-    release_id: i32,
-    history_id: i32,
-    tx: &DatabaseTransaction,
-) -> Result<(), DbErr> {
-    release_catalog_number::Entity::delete_many()
-        .filter(release_catalog_number::Column::ReleaseId.eq(release_id))
-        .exec(tx)
-        .await?;
-
-    let labels = release_catalog_number_history::Entity
-        .select()
-        .column(release_catalog_number_history::Column::LabelId)
-        .filter(
-            release_catalog_number_history::Column::HistoryId.eq(history_id),
-        )
-        .all(tx)
-        .await?
-        .map_into();
-
-    create_release_catalog_number(release_id, &labels, tx).await?;
-
-    Ok(())
-}
-
-async fn create_release_catalog_number_history(
-    history_id: i32,
-    catalog_nums: &[ReleaseCatalogNumber],
-    transaction: &DatabaseTransaction,
-) -> Result<(), DbErr> {
-    let history_models = catalog_nums.iter().map(|data| {
-        release_catalog_number_history::ActiveModel {
-            id: NotSet,
-            history_id: Set(history_id),
-            catalog_number: Set(data.catalog_number.clone()),
-            label_id: Set(data.label_id),
-        }
-    });
-
-    release_catalog_number_history::Entity::insert_many(history_models)
         .exec(transaction)
         .await?;
 
@@ -867,105 +953,4 @@ async fn create_new_songs_from_tracks(
         tx,
     )
     .await
-}
-
-async fn create_release_credit(
-    release_id: i32,
-    credits: &[NewCredit],
-    transaction: &DatabaseTransaction,
-) -> Result<(), DbErr> {
-    if credits.is_empty() {
-        return Ok(());
-    }
-
-    let credit_model =
-        credits.iter().map(|credit| release_credit::ActiveModel {
-            id: NotSet,
-            artist_id: credit.artist_id.into_active_value(),
-            release_id: release_id.into_active_value(),
-            role_id: credit.role_id.into_active_value(),
-            on: Set(credit.on.clone()),
-        });
-
-    release_credit::Entity::insert_many(credit_model)
-        .exec(transaction)
-        .await?;
-
-    Ok(())
-}
-
-async fn update_release_credit(
-    release_id: i32,
-    history_id: i32,
-    tx: &DatabaseTransaction,
-) -> Result<(), DbErr> {
-    release_credit::Entity::delete_many()
-        .filter(release_credit::Column::ReleaseId.eq(release_id))
-        .exec(tx)
-        .await?;
-
-    let credits = release_credit_history::Entity
-        .select()
-        .filter(release_credit_history::Column::HistoryId.eq(history_id))
-        .all(tx)
-        .await?
-        .into_iter()
-        .map(|x| NewCredit {
-            artist_id: x.artist_id,
-            role_id: x.role_id,
-            on: x.on,
-        })
-        .collect_vec();
-
-    create_release_credit(release_id, &credits, tx).await?;
-
-    Ok(())
-}
-
-async fn create_release_credit_history(
-    history_id: i32,
-    credits: &[NewCredit],
-    transaction: &DatabaseTransaction,
-) -> Result<(), DbErr> {
-    if credits.is_empty() {
-        return Ok(());
-    }
-
-    let credit_history_model =
-        credits
-            .iter()
-            .map(|credit| release_credit_history::ActiveModel {
-                id: NotSet,
-                artist_id: credit.artist_id.into_active_value(),
-                history_id: history_id.into_active_value(),
-                role_id: credit.role_id.into_active_value(),
-                on: Set(credit.on.clone()),
-            });
-
-    release_credit_history::Entity::insert_many(credit_history_model)
-        .exec(transaction)
-        .await?;
-
-    Ok(())
-}
-
-mod utils {
-    use sea_orm::PaginatorTrait;
-
-    use super::*;
-
-    pub async fn check_existence(
-        id: i32,
-        db: &impl ConnectionTrait,
-    ) -> Result<(), RepositoryError> {
-        let count = release::Entity::find_by_id(id).count(db).await?;
-
-        if count > 0 {
-            Ok(())
-        } else {
-            Err(RepositoryError::EntityNotFound {
-                entity_name: release::Entity.table_name(),
-            })
-        }
-    }
 }

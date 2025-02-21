@@ -89,10 +89,11 @@ pub struct ReleaseCorrection {
     pub recording_date_end_precision: Option<DatePrecision>,
 
     pub artists: Vec<i32>,
-    pub localized_titles: Vec<NewLocalizedTitle>,
     pub catalog_nums: Vec<ReleaseCatalogNumber>,
-    pub tracks: Vec<NewTrack>,
     pub credits: Vec<NewCredit>,
+    pub events: Vec<i32>,
+    pub localized_titles: Vec<NewLocalizedTitle>,
+    pub tracks: Vec<NewTrack>,
 
     pub correction_metadata: super::correction::Metadata,
 }

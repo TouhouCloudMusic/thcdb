@@ -1,24 +1,21 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
-use axum::http::StatusCode;
 use axum::middleware::from_fn;
-use axum::response::IntoResponse;
 use macros::{use_service, use_session};
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::api_response::{Data, IntoApiResponse, Message, StatusCodeExt};
+use crate::api_response::{Data, Message};
 use crate::dto::release::{ReleaseCorrection, ReleaseResponse};
-use crate::error::{ApiErrorTrait, AsErrorCode, ErrorCode, RepositoryError};
+use crate::error::RepositoryError;
 use crate::middleware::is_signed_in;
 use crate::service::release::Service;
 use crate::state::AppState;
 use crate::utils::MapInto;
-use crate::{repo, service};
 
-type Error = service::release::Error;
+type Error = RepositoryError;
 
 const TAG: &str = "Release";
 
@@ -139,52 +136,4 @@ async fn update_song(
         .await?;
 
     Ok(Message::ok())
-}
-
-impl StatusCodeExt for repo::release::Error {
-    fn as_status_code(&self) -> StatusCode {
-        match self {
-            Self::General(err) => err.as_status_code(),
-        }
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
-        RepositoryError::all_status_codes()
-    }
-}
-
-impl AsErrorCode for repo::release::Error {
-    fn as_error_code(&self) -> ErrorCode {
-        match self {
-            Self::General(err) => err.as_error_code(),
-        }
-    }
-}
-
-impl StatusCodeExt for service::release::Error {
-    fn as_status_code(&self) -> StatusCode {
-        match self {
-            Self::Repo(err) => err.as_status_code(),
-        }
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
-        RepositoryError::all_status_codes()
-    }
-}
-
-impl AsErrorCode for service::release::Error {
-    fn as_error_code(&self) -> ErrorCode {
-        match self {
-            Self::Repo(err) => err.as_error_code(),
-        }
-    }
-}
-
-impl ApiErrorTrait for service::release::Error {}
-
-impl IntoResponse for service::release::Error {
-    fn into_response(self) -> axum::response::Response {
-        self.into_api_response()
-    }
 }

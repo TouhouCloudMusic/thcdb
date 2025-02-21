@@ -14,6 +14,7 @@
     clippy::wildcard_imports,
     clippy::enum_glob_use
 )]
+#![feature(variant_count)]
 
 mod api_response;
 mod constant;

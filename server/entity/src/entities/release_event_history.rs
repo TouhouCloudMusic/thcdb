@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 # [graphql (scalar = crate :: extension :: GqlScalarValue)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub hisotry_id: i32,
+    pub history_id: i32,
     #[sea_orm(primary_key, auto_increment = false)]
     pub event_id: i32,
 }
@@ -26,7 +26,7 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(
         belongs_to = "super::event::Entity",
-        from = "Column::HisotryId",
+        from = "Column::HistoryId",
         to = "super::event::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"

@@ -1,5 +1,3 @@
-use std::future::Future;
-
 use bon::builder;
 use chrono::{DateTime, FixedOffset, Utc};
 use entity::sea_orm_active_enums::{
@@ -89,6 +87,41 @@ pub async fn create<C: ConnectionTrait>(
     .await?;
 
     Ok(result)
+}
+
+pub struct SelfApprovalCorrection {
+    entity_type: EntityType,
+}
+
+impl SelfApprovalCorrection {
+    /// Create a self approval correction and link it to the entity history
+    pub async fn create(
+        author_id: i32,
+        entity_type: EntityType,
+        entity_id: i32,
+        history_id: i32,
+        description: impl Into<String>,
+        db: &DatabaseTransaction,
+    ) -> Result<correction::Model, DbErr> {
+        let correction = create_self_approval()
+            .author_id(author_id)
+            .entity_type(entity_type)
+            .entity_id(entity_id)
+            .db(db)
+            .call()
+            .await?;
+
+        link_history()
+            .user_id(author_id)
+            .correction_id(correction.id)
+            .entity_history_id(history_id)
+            .description(description)
+            .db(db)
+            .call()
+            .await?;
+
+        Ok(correction)
+    }
 }
 
 #[builder]

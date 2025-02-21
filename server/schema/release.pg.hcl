@@ -546,44 +546,44 @@ table "release_event" {
     type = int
   }
   foreign_key "fk_release_event_release_id" {
-    columns = [ column.release_id ]
-    ref_columns = [ table.event.column.id ]
+    columns     = [column.release_id]
+    ref_columns = [table.event.column.id]
   }
 
   column "event_id" {
     type = int
   }
   foreign_key "fk_release_event_event_id" {
-    columns = [ column.event_id ]
-    ref_columns = [ table.event.column.id ]
+    columns     = [column.event_id]
+    ref_columns = [table.event.column.id]
   }
 
   primary_key {
-    columns = [ column.release_id, column.event_id ]
+    columns = [column.release_id, column.event_id]
   }
 }
 
 table "release_event_history" {
   schema = schema.public
 
-  column "hisotry_id" {
+  column "history_id" {
     type = int
   }
-  foreign_key "fk_release_event_history_hisotry_id" {
-    columns = [ column.hisotry_id ]
-    ref_columns = [ table.event.column.id ]
+  foreign_key "fk_release_event_history_history_id" {
+    columns     = [column.history_id]
+    ref_columns = [table.event.column.id]
   }
 
   column "event_id" {
     type = int
   }
   foreign_key "fk_release_event_history_id" {
-    columns = [ column.event_id ]
-    ref_columns = [ table.event.column.id ]
+    columns     = [column.event_id]
+    ref_columns = [table.event.column.id]
   }
 
   primary_key {
-    columns = [ column.hisotry_id, column.event_id ]
+    columns = [column.history_id, column.event_id]
   }
 }
 
