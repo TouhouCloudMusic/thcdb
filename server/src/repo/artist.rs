@@ -5,9 +5,7 @@ use entity::prelude::{
     ArtistLink, ArtistLocalizedName, CreditRole, GroupMemberJoinLeave,
     GroupMemberRole,
 };
-use entity::sea_orm_active_enums::{
-    ArtistType, CorrectionStatus, CorrectionType, EntityType,
-};
+use entity::sea_orm_active_enums::{ArtistType, EntityType};
 use entity::{
     artist, artist_alias, artist_alias_history, artist_history, artist_link,
     artist_link_history, artist_localized_name, artist_localized_name_history,
@@ -27,8 +25,8 @@ use sea_orm::{
     FromQueryResult, LoaderTrait, ModelTrait, QueryFilter, QueryOrder,
     Statement,
 };
+use tokio::try_join;
 
-use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::artist::{
     ArtistCorrection, ArtistResponse, GroupMember, LocalizedName,
     NewGroupMember, NewLocalizedName,
@@ -211,17 +209,18 @@ pub async fn create(
 ) -> Result<artist::Model, Error> {
     validate(&data)?;
 
-    let artist = link_and_save_artist(&data, db).await?;
+    let artist = save_artist_and_relations(&data, db).await?;
 
-    let correction = repo::correction::create_self_approval()
+    let history = save_artist_history_and_relations(&data, db).await?;
+
+    repo::correction::create_self_approval()
         .author_id(user_id)
         .entity_type(EntityType::Artist)
         .entity_id(artist.id)
-        .db(db)
-        .call()
+        .history_id(history.id)
+        .description(data.correction_metadata.description)
+        .call(db)
         .await?;
-
-    link_and_save_artist_history(user_id, correction.id, &data, db).await?;
 
     Ok(artist)
 }
@@ -235,17 +234,16 @@ pub async fn create_correction(
 ) -> Result<entity::correction::Model, Error> {
     validate(&data)?;
 
+    let history = save_artist_history_and_relations(&data, tx).await?;
+
     let correction = repo::correction::create()
         .author_id(user_id)
-        .entity_type(EntityType::Artist)
         .entity_id(artist_id)
-        .status(CorrectionStatus::Pending)
-        .r#type(CorrectionType::Update)
-        .db(tx)
-        .call()
+        .entity_type(EntityType::Artist)
+        .history_id(history.id)
+        .description(data.correction_metadata.description)
+        .call(tx)
         .await?;
-
-    link_and_save_artist_history(user_id, correction.id, &data, tx).await?;
 
     Ok(correction)
 }
@@ -260,9 +258,15 @@ pub async fn update_correction(
 ) -> Result<(), Error> {
     validate(&data)?;
 
-    add_co_author_if_updater_not_author(correction.id, user_id, db).await?;
+    let history = save_artist_history_and_relations(&data, db).await?;
 
-    link_and_save_artist_history(user_id, correction.id, &data, db).await?;
+    repo::correction::update()
+        .author_id(user_id)
+        .history_id(history.id)
+        .correction_id(correction.id)
+        .description(data.correction_metadata.description)
+        .call(db)
+        .await?;
 
     Ok(())
 }
@@ -629,61 +633,51 @@ async fn create_artist_group_member_history<'f, C: ConnectionTrait>(
     Ok(())
 }
 
-async fn link_and_save_artist(
+async fn save_artist_and_relations(
     data: &ArtistCorrection,
     db: &DatabaseTransaction,
 ) -> Result<artist::Model, Error> {
     let artist = artist::ActiveModel::from(data).insert(db).await?;
 
-    create_artist_alias(artist.id, data.aliases.as_deref(), db).await?;
-
-    create_artist_link(artist.id, data.links.as_deref(), db).await?;
-
-    create_artist_localized_name(artist.id, data.localized_name.as_deref(), db)
-        .await?;
-
-    create_artist_group_member(
-        artist.id,
-        data.artist_type,
-        data.members.as_deref(),
-        db,
-    )
-    .await?;
+    try_join!(
+        create_artist_alias(artist.id, data.aliases.as_deref(), db),
+        create_artist_link(artist.id, data.links.as_deref(), db),
+        create_artist_localized_name(
+            artist.id,
+            data.localized_name.as_deref(),
+            db
+        ),
+        create_artist_group_member(
+            artist.id,
+            data.artist_type,
+            data.members.as_deref(),
+            db,
+        ),
+    )?;
 
     Ok(artist)
 }
 
-async fn link_and_save_artist_history(
-    user_id: i32,
-    correction_id: i32,
+async fn save_artist_history_and_relations(
     data: &ArtistCorrection,
     db: &DatabaseTransaction,
 ) -> Result<artist_history::Model, Error> {
     let history = artist_history::ActiveModel::from(data).insert(db).await?;
 
-    repo::correction::create_revision()
-        .user_id(user_id)
-        .correction_id(correction_id)
-        .entity_history_id(history.id)
-        .description(data.correction_metadata.description.clone())
-        .db(db)
-        .call()
-        .await?;
-
-    create_artist_alias_history(history.id, data.aliases.as_deref(), db)
-        .await?;
-
-    create_artist_link_history(history.id, data.links.as_deref(), db).await?;
-
-    create_artist_localized_name_history(
-        history.id,
-        data.localized_name.as_deref(),
-        db,
-    )
-    .await?;
-
-    create_artist_group_member_history(history.id, data.members.as_deref(), db)
-        .await?;
+    try_join!(
+        create_artist_alias_history(history.id, data.aliases.as_deref(), db),
+        create_artist_link_history(history.id, data.links.as_deref(), db),
+        create_artist_localized_name_history(
+            history.id,
+            data.localized_name.as_deref(),
+            db,
+        ),
+        create_artist_group_member_history(
+            history.id,
+            data.members.as_deref(),
+            db
+        ),
+    )?;
 
     Ok(history)
 }

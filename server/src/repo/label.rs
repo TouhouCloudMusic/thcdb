@@ -1,6 +1,4 @@
-use entity::sea_orm_active_enums::{
-    CorrectionStatus, CorrectionType, EntityType,
-};
+use entity::sea_orm_active_enums::EntityType;
 use entity::{
     correction, correction_revision, label, label_founder,
     label_founder_history, label_history, label_localized_name,
@@ -15,7 +13,6 @@ use sea_orm::{
     QueryFilter, QueryOrder,
 };
 
-use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::label::{LabelResponse, NewLabel, NewLocalizedName};
 use crate::error::RepositoryError;
 use crate::repo;
@@ -53,18 +50,25 @@ async fn find_many(
         labels.load_many(label_localized_name::Entity, db).await?;
 
     let res = izip!(labels, founders, localized_names).map(
-        |(label, fouders, names)| LabelResponse {
-            id: label.id,
-            name: label.name,
-            founded_date: label
+        |(label, fouders, names)| {
+            let founded_date = label
                 .founded_date
-                .map(|x| (x, label.founded_date_precision)),
-            dissolved_date: label
-                .founded_date
-                .map(|x| (x, label.dissolved_date_precision)),
+                .map(|x| (x, label.founded_date_precision));
 
-            founders: fouders.into_iter().map(|x| x.artist_id).collect(),
-            localized_names: names.map_into(),
+            let dissolved_date = label
+                .dissolved_date
+                .map(|x| (x, label.dissolved_date_precision));
+
+            let founders = fouders.into_iter().map(|x| x.artist_id).collect();
+
+            LabelResponse {
+                id: label.id,
+                name: label.name,
+                founded_date,
+                dissolved_date,
+                founders,
+                localized_names: names.map_into(),
+            }
         },
     );
 
@@ -80,21 +84,13 @@ pub async fn create(
 
     let history = save_label_history_and_link_relations(&data, tx).await?;
 
-    let correction = repo::correction::create_self_approval()
+    repo::correction::create_self_approval()
         .author_id(user_id)
         .entity_type(EntityType::Label)
         .entity_id(label.id)
-        .db(tx)
-        .call()
-        .await?;
-
-    repo::correction::create_revision()
-        .correction_id(correction.id)
-        .entity_history_id(history.id)
+        .history_id(history.id)
         .description(data.correction_metadata.description)
-        .user_id(user_id)
-        .db(tx)
-        .call()
+        .call(tx)
         .await?;
 
     Ok(label)
@@ -108,23 +104,13 @@ pub async fn create_correction(
 ) -> Result<(), DbErr> {
     let history = save_label_history_and_link_relations(&data, tx).await?;
 
-    let correction = repo::correction::create()
+    repo::correction::create()
         .author_id(user_id)
         .entity_id(label_id)
         .entity_type(EntityType::Label)
-        .status(CorrectionStatus::Pending)
-        .r#type(CorrectionType::Update)
-        .db(tx)
-        .call()
-        .await?;
-
-    repo::correction::create_revision()
-        .user_id(user_id)
-        .correction_id(correction.id)
-        .entity_history_id(history.id)
-        .description(data.correction_metadata.description.clone())
-        .db(tx)
-        .call()
+        .history_id(history.id)
+        .description(data.correction_metadata.description)
+        .call(tx)
         .await?;
 
     Ok(())
@@ -136,17 +122,14 @@ pub async fn update_correction(
     data: NewLabel,
     tx: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
-    add_co_author_if_updater_not_author(correction.id, user_id, tx).await?;
-
     let history = save_label_history_and_link_relations(&data, tx).await?;
 
-    repo::correction::create_revision()
-        .user_id(user_id)
+    repo::correction::update()
+        .author_id(user_id)
         .correction_id(correction.id)
-        .entity_history_id(history.id)
-        .description(data.correction_metadata.description.clone())
-        .db(tx)
-        .call()
+        .history_id(history.id)
+        .description(data.correction_metadata.description)
+        .call(tx)
         .await?;
 
     Ok(())

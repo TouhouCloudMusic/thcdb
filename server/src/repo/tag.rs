@@ -1,7 +1,4 @@
-use bon::builder;
-use entity::sea_orm_active_enums::{
-    CorrectionStatus, CorrectionType, EntityType,
-};
+use entity::sea_orm_active_enums::EntityType;
 use entity::{
     correction, correction_revision, tag, tag_alternative_name,
     tag_alternative_name_history, tag_history, tag_relation,
@@ -16,7 +13,6 @@ use sea_orm::{
     QueryFilter, QueryOrder,
 };
 
-use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::correction::Metadata;
 use crate::dto::tag::{AltName, NewTag, TagRelation, TagResponse};
 use crate::error::RepositoryError;
@@ -83,71 +79,56 @@ pub async fn create(
 ) -> Result<tag::Model, RepositoryError> {
     let tag = save_tag_and_link_relation(&data, tx).await?;
 
-    let correction = repo::correction::create_self_approval()
+    let history = save_tag_history_and_link_relation(&data, tx).await?;
+
+    repo::correction::create_self_approval()
         .author_id(user_id)
         .entity_type(EntityType::Tag)
         .entity_id(tag.id)
-        .db(tx)
-        .call()
-        .await?;
-
-    save_tag_history_and_link_relation()
-        .data(&data)
-        .user_id(user_id)
-        .correction_id(correction.id)
-        .correction_desc(correction_metadata.description)
-        .tx(tx)
-        .call()
+        .history_id(history.id)
+        .description(correction_metadata.description)
+        .call(tx)
         .await?;
 
     Ok(tag)
 }
 
-pub async fn create_update_correction(
+pub async fn create_correction(
     tag_id: i32,
     user_id: i32,
     data: NewTag,
     correction_metadata: Metadata,
     tx: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
-    let correction = repo::correction::create()
-        .author_id(user_id)
-        .status(CorrectionStatus::Pending)
-        .r#type(CorrectionType::Update)
-        .entity_type(EntityType::Tag)
-        .entity_id(tag_id)
-        .db(tx)
-        .call()
-        .await?;
+    let history = save_tag_history_and_link_relation(&data, tx).await?;
 
-    save_tag_history_and_link_relation()
-        .data(&data)
-        .user_id(user_id)
-        .correction_id(correction.id)
-        .correction_desc(correction_metadata.description)
-        .tx(tx)
-        .call()
+    repo::correction::create()
+        .author_id(user_id)
+        .entity_id(tag_id)
+        .entity_type(EntityType::Tag)
+        .history_id(history.id)
+        .description(correction_metadata.description)
+        .call(tx)
         .await?;
 
     Ok(())
 }
 
-pub async fn update_update_correction(
+pub async fn update_correction(
     user_id: i32,
     correction: correction::Model,
     data: NewTag,
     correction_metadata: Metadata,
     tx: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
-    add_co_author_if_updater_not_author(correction.id, user_id, tx).await?;
+    let history = save_tag_history_and_link_relation(&data, tx).await?;
 
-    save_tag_history_and_link_relation()
-        .data(&data)
-        .user_id(user_id)
+    repo::correction::update()
+        .author_id(user_id)
+        .history_id(history.id)
         .correction_id(correction.id)
-        .correction_desc(correction_metadata.description)
-        .tx(tx)
-        .call()
+        .description(correction_metadata.description)
+        .call(tx)
         .await?;
 
     Ok(())
@@ -200,24 +181,11 @@ async fn save_tag_and_link_relation(
     Ok(tag)
 }
 
-#[builder]
 async fn save_tag_history_and_link_relation(
     data: &NewTag,
-    correction_id: i32,
-    correction_desc: String,
-    user_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<tag_history::Model, RepositoryError> {
     let history = tag_history::ActiveModel::from(data).insert(tx).await?;
-
-    repo::correction::create_revision()
-        .correction_id(correction_id)
-        .user_id(user_id)
-        .entity_history_id(history.id)
-        .description(correction_desc)
-        .db(tx)
-        .call()
-        .await?;
 
     create_alt_name_history(history.id, &data.alt_names, tx).await?;
     create_relation_history(history.id, &data.relations, tx).await?;

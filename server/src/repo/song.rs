@@ -1,7 +1,5 @@
 use bon::builder;
-use entity::sea_orm_active_enums::{
-    CorrectionStatus, CorrectionType, EntityType,
-};
+use entity::sea_orm_active_enums::EntityType;
 use entity::{
     correction, correction_revision, language, song, song_credit,
     song_credit_history, song_history, song_language, song_language_history,
@@ -17,7 +15,6 @@ use sea_orm::{
     PaginatorTrait, QueryFilter, QueryOrder,
 };
 
-use super::correction::user::utils::add_co_author_if_updater_not_author;
 use crate::dto::share::NewLocalizedTitle;
 use crate::dto::song::{NewSong, NewSongCredit, SongResponse};
 use crate::error::RepositoryError;
@@ -92,38 +89,28 @@ pub async fn create_many(
 ) -> Result<Vec<song::Model>, DbErr> {
     let new_songs = create_many_songs_and_link_relations(data, tx).await?;
 
-    let new_corrections = future::try_join_all(new_songs.iter().map(|song| {
-        // TODO: create many self approval
-        repo::correction::create_self_approval()
-            .author_id(user_id)
-            .entity_type(EntityType::Song)
-            .entity_id(song.id)
-            .db(tx)
-            .call()
-    }))
+    let new_song_histories = create_many_song_histories_and_link_relations(
+        &data.iter().collect_vec(),
+        tx,
+    )
     .await?;
 
-    let new_song_histories =
-        create_many_song_histories_and_link_relations(data, tx).await?;
-
-    let revisions = izip!(
-        data.iter(),
-        new_song_histories.iter(),
-        new_corrections.iter()
+    // TODO: create many self approval
+    future::try_join_all(
+        izip!(data.iter(), new_songs.iter(), new_song_histories).map(
+            |(data, model, history)| {
+                // TODO: create many self approval
+                repo::correction::create_self_approval()
+                    .author_id(user_id)
+                    .entity_type(EntityType::Song)
+                    .entity_id(model.id)
+                    .history_id(history.id)
+                    .description(data.correction_metadata.description.clone())
+                    .call(tx)
+            },
+        ),
     )
-    .map(
-        |(item, correction, history)| correction_revision::ActiveModel {
-            entity_history_id: Set(history.id),
-            correction_id: Set(correction.id),
-            author_id: Set(user_id),
-            description: item.metadata.description.clone().into_active_value(),
-        },
-    )
-    .collect_vec();
-
-    correction_revision::Entity::insert_many(revisions)
-        .exec(tx)
-        .await?;
+    .await?;
 
     Ok(new_songs)
 }
@@ -137,35 +124,27 @@ pub async fn create_correction(
 ) -> Result<(), RepositoryError> {
     utils::check_existence(song_id, tx).await?;
 
-    let correction = repo::correction::create()
+    let description = data.correction_metadata.description.clone();
+
+    let history = create_many_song_histories_and_link_relations(
+        &[&data],
+        tx,
+    )
+    .await?
+    .into_iter()
+    .next()
+    .expect(
+        "song history was inserted but not returned, this should not happen",
+    );
+
+    repo::correction::create()
         .author_id(user_id)
         .entity_type(EntityType::Song)
-        .status(CorrectionStatus::Pending)
-        .r#type(CorrectionType::Update)
         .entity_id(song_id)
-        .db(tx)
-        .call()
+        .description(description)
+        .history_id(history.id)
+        .call(tx)
         .await?;
-
-    let description = data.metadata.description.clone().into_active_value();
-
-    let history = create_many_song_histories_and_link_relations(&[data], tx)
-        .await?
-        .into_iter()
-        .next()
-        .expect(
-            "song history was inserted but not returned, this should not happen",
-        );
-
-    correction_revision::Entity::insert(correction_revision::ActiveModel {
-        entity_history_id: Set(history.id),
-        correction_id: Set(correction.id),
-        author_id: Set(user_id),
-
-        description,
-    })
-    .exec(tx)
-    .await?;
 
     Ok(())
 }
@@ -176,26 +155,24 @@ pub async fn update_correction(
     data: NewSong,
     tx: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
-    let description = data.metadata.description.clone().into_active_value();
+    let history = create_many_song_histories_and_link_relations(
+        &[&data],
+        tx,
+    )
+    .await?
+    .into_iter()
+    .next()
+    .expect(
+        "song history was inserted but not returned, this should not happen",
+    );
 
-    add_co_author_if_updater_not_author(correction.id, user_id, tx).await?;
-
-    let history = create_many_song_histories_and_link_relations(&[data], tx)
-        .await?
-        .into_iter()
-        .next()
-        .expect(
-            "song history was inserted but not returned, this should not happen",
-        );
-
-    correction_revision::Entity::insert(correction_revision::ActiveModel {
-        entity_history_id: Set(history.id),
-        correction_id: Set(correction.id),
-        author_id: Set(user_id),
-        description,
-    })
-    .exec(tx)
-    .await?;
+    repo::correction::update()
+        .author_id(user_id)
+        .correction_id(correction.id)
+        .history_id(history.id)
+        .description(data.correction_metadata.description)
+        .call(tx)
+        .await?;
 
     Ok(())
 }
@@ -278,11 +255,11 @@ async fn create_many_songs_and_link_relations(
 }
 
 async fn create_many_song_histories_and_link_relations(
-    data: &[NewSong],
+    data: &[&NewSong],
     tx: &DatabaseTransaction,
 ) -> Result<Vec<song_history::Model>, DbErr> {
     let new_song_histories = song_history::Entity::insert_many(
-        data.iter().map_into::<song_history::ActiveModel>(),
+        data.iter().copied().map_into::<song_history::ActiveModel>(),
     )
     .exec_with_returning_many(tx)
     .await?;

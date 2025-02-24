@@ -1,7 +1,5 @@
 use chrono::{DateTime, Utc};
-use entity::sea_orm_active_enums::{
-    CorrectionStatus, CorrectionType, EntityType,
-};
+use entity::sea_orm_active_enums::EntityType;
 use entity::{
     correction, correction_revision, correction_user, release, release_artist,
     release_artist_history, release_catalog_number,
@@ -11,7 +9,6 @@ use entity::{
     release_track_artist_history, release_track_history, song, song_artist,
 };
 use itertools::{Either, Itertools};
-use repo::correction::user::utils::add_co_author_if_updater_not_author;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityName,
@@ -30,7 +27,6 @@ use crate::dto::share::NewLocalizedTitle;
 use crate::dto::song::NewSong;
 use crate::error::RepositoryError;
 use crate::repo;
-use crate::repo::correction::SelfApprovalCorrection;
 use crate::utils::MapInto;
 use crate::utils::orm::InsertMany;
 
@@ -41,7 +37,7 @@ pub async fn create(
 ) -> Result<release::Model, RepositoryError> {
     let mut new_release_tracks = None;
 
-    let new_release =
+    let release =
         save_and_link_relations(user_id, &data, &mut new_release_tracks, tx)
             .await?;
 
@@ -69,23 +65,22 @@ pub async fn create(
 
     let history = save_release_history_and_link_relations()
         .data(&data)
-        .release_id(new_release.id)
+        .release_id(release.id)
         .author_id(user_id)
         .tx(tx)
         .call()
         .await?;
 
-    SelfApprovalCorrection::create(
-        user_id,
-        EntityType::Release,
-        new_release.id,
-        history.id,
-        data.correction_metadata.description,
-        tx,
-    )
-    .await?;
+    repo::correction::create_self_approval()
+        .author_id(user_id)
+        .entity_type(EntityType::Tag)
+        .entity_id(release.id)
+        .history_id(history.id)
+        .description(data.correction_metadata.description)
+        .call(tx)
+        .await?;
 
-    Ok(new_release)
+    Ok(release)
 }
 
 pub async fn create_correction(
@@ -96,16 +91,6 @@ pub async fn create_correction(
 ) -> Result<(), RepositoryError> {
     check_existence(release_id, tx).await?;
 
-    let correction = repo::correction::create()
-        .author_id(author_id)
-        .entity_id(release_id)
-        .entity_type(EntityType::Release)
-        .status(CorrectionStatus::Pending)
-        .r#type(CorrectionType::Update)
-        .db(tx)
-        .call()
-        .await?;
-
     let history = save_release_history_and_link_relations()
         .data(&data)
         .release_id(release_id)
@@ -114,13 +99,13 @@ pub async fn create_correction(
         .call()
         .await?;
 
-    repo::correction::create_revision()
-        .user_id(author_id)
-        .correction_id(correction.id)
-        .entity_history_id(history.id)
+    repo::correction::create()
+        .author_id(author_id)
+        .entity_id(release_id)
+        .entity_type(EntityType::Release)
+        .history_id(history.id)
         .description(data.correction_metadata.description)
-        .db(tx)
-        .call()
+        .call(tx)
         .await?;
 
     Ok(())
@@ -132,8 +117,6 @@ pub async fn update_correction(
     author_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
-    add_co_author_if_updater_not_author(correction.id, author_id, tx).await?;
-
     let history = save_release_history_and_link_relations()
         .data(&data)
         .release_id(correction.entity_id)
@@ -142,13 +125,12 @@ pub async fn update_correction(
         .call()
         .await?;
 
-    repo::correction::create_revision()
-        .user_id(author_id)
+    repo::correction::update()
+        .author_id(author_id)
+        .history_id(history.id)
         .correction_id(correction.id)
-        .entity_history_id(history.id)
         .description(data.correction_metadata.description)
-        .db(tx)
-        .call()
+        .call(tx)
         .await?;
 
     Ok(())
@@ -623,7 +605,7 @@ async fn create_release_track(
                 languages: None,
                 localized_titles: None,
                 credits: None,
-                metadata: Metadata {
+                correction_metadata: Metadata {
                     description: generated_desc.clone(),
                 },
             })
@@ -837,7 +819,7 @@ async fn create_new_songs_from_unlinked_tracks(
                 languages: None,
                 localized_titles: None,
                 credits: None,
-                metadata: Metadata {
+                correction_metadata: Metadata {
                     description: generated_desc.clone(),
                 },
             })

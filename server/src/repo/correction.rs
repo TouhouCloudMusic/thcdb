@@ -1,5 +1,5 @@
 use bon::builder;
-use chrono::{DateTime, FixedOffset, Utc};
+use chrono::Utc;
 use entity::sea_orm_active_enums::{
     CorrectionStatus, CorrectionType, CorrectionUserType, EntityType,
 };
@@ -57,79 +57,120 @@ pub async fn find_latest(
         })
 }
 
+/// Create a new pending correction and link the entity history to its revision
+///
+/// Type and status is optional
+/// - Default type is `CorrectionType::Update`
+/// - Default status is `CorrectionStatus::Pending`
+///
+/// ```
+/// repo::correction::create()
+///     .author_id(user_id)
+///     .entity_id(event_id)
+///     .entity_type(EntityType::Event)
+///     .call(db)
+///     .await?;
+/// ```
 #[builder]
-pub async fn create<C: ConnectionTrait>(
+pub async fn create(
+    #[builder(finish_fn)] db: &DatabaseTransaction,
     author_id: i32,
-    entity_type: EntityType,
     entity_id: i32,
-    status: CorrectionStatus,
-    r#type: CorrectionType,
-    #[builder(into)] created_at: Option<DateTime<FixedOffset>>,
-    db: &C,
-) -> CorrectionResult {
-    let result = correction::ActiveModel {
+    history_id: i32,
+    entity_type: EntityType,
+    #[builder(into)] description: String,
+    /// Default = `CorrectionStatus::Pending`
+    status: Option<CorrectionStatus>,
+    /// Default = `CorrectionType::Update`
+    r#type: Option<CorrectionType>,
+) -> Result<correction::Model, DbErr> {
+    let correction = correction::ActiveModel {
         id: NotSet,
-        status: Set(status),
-        r#type: Set(r#type),
+        status: Set(status.unwrap_or(CorrectionStatus::Pending)),
+        r#type: Set(r#type.unwrap_or(CorrectionType::Update)),
         entity_type: Set(entity_type),
         entity_id: Set(entity_id),
-        created_at: created_at.map_or(NotSet, Set),
+        created_at: NotSet,
         handled_at: NotSet,
     }
     .insert(db)
     .await?;
 
+    // TODO: remove dupelicate correction user table
     correction_user::ActiveModel {
-        correction_id: Set(result.id),
+        correction_id: Set(correction.id),
         user_id: Set(author_id),
         user_type: Set(CorrectionUserType::Author),
     }
     .insert(db)
     .await?;
 
-    Ok(result)
+    revision::create()
+        .correction_id(correction.id)
+        .author_id(author_id)
+        .entity_history_id(history_id)
+        .description(description)
+        .call(db)
+        .await?;
+
+    Ok(correction)
 }
 
-/// Create a pending correction
+/// Create a self approval correction and link the history to its revision
 #[builder]
-pub async fn create_v2(
+pub async fn create_self_approval(
+    #[builder(finish_fn)] db: &DatabaseTransaction,
     author_id: i32,
     entity_type: EntityType,
     entity_id: i32,
+    #[builder(into)] description: String,
     history_id: i32,
-    description: String,
-    db: &DatabaseTransaction,
 ) -> Result<correction::Model, DbErr> {
-    let correction = create()
-        .author_id(author_id)
-        .entity_type(entity_type)
-        .entity_id(entity_id)
-        .status(CorrectionStatus::Pending)
-        .r#type(CorrectionType::Update)
-        .db(db)
-        .call()
-        .await?;
+    let correction = correction::ActiveModel {
+        id: NotSet,
+        status: Set(CorrectionStatus::Approved),
+        r#type: Set(CorrectionType::Create),
+        entity_type: Set(entity_type),
+        entity_id: Set(entity_id),
+        created_at: NotSet,
+        handled_at: NotSet,
+    }
+    .insert(db)
+    .await?;
 
-    correction_revision::Model {
+    let task1 = correction_user::Entity::insert_many(
+        [CorrectionUserType::Author, CorrectionUserType::Approver]
+            .into_iter()
+            .map(|r#type| correction_user::ActiveModel {
+                correction_id: Set(correction.id),
+                user_id: Set(author_id),
+                user_type: Set(r#type),
+            }),
+    )
+    .exec(db);
+
+    let task2 = correction_revision::Model {
         correction_id: correction.id,
         entity_history_id: history_id,
         description,
         author_id,
     }
     .into_active_model()
-    .insert(db)
-    .await?;
+    .insert(db);
+
+    tokio::try_join!(task1, task2)?;
 
     Ok(correction)
 }
 
+/// Add co-author if updater is not the original author, then insert new correction revision
 #[builder]
 pub async fn update(
+    #[builder(finish_fn)] db: &DatabaseTransaction,
     author_id: i32,
     history_id: i32,
     description: String,
     correction_id: i32,
-    db: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
     add_co_author_if_updater_not_author(correction_id, author_id, db).await?;
 
@@ -144,92 +185,6 @@ pub async fn update(
     .await?;
 
     Ok(())
-}
-
-pub struct SelfApprovalCorrection {}
-
-impl SelfApprovalCorrection {
-    /// Create a self approval correction and link it to the entity history
-    pub async fn create(
-        author_id: i32,
-        entity_type: EntityType,
-        entity_id: i32,
-        history_id: i32,
-        description: impl Into<String>,
-        db: &DatabaseTransaction,
-    ) -> Result<correction::Model, DbErr> {
-        let correction = create_self_approval()
-            .author_id(author_id)
-            .entity_type(entity_type)
-            .entity_id(entity_id)
-            .db(db)
-            .call()
-            .await?;
-
-        correction_revision::Model {
-            correction_id: correction.id,
-            entity_history_id: history_id,
-            description: description.into(),
-            author_id,
-        }
-        .into_active_model()
-        .insert(db)
-        .await?;
-
-        Ok(correction)
-    }
-}
-
-#[builder]
-pub async fn create_self_approval(
-    author_id: i32,
-    entity_type: EntityType,
-    entity_id: i32,
-    db: &DatabaseTransaction,
-) -> Result<correction::Model, DbErr> {
-    let correction = correction::ActiveModel {
-        id: NotSet,
-        status: Set(CorrectionStatus::Approved),
-        r#type: Set(CorrectionType::Create),
-        entity_type: Set(entity_type),
-        entity_id: Set(entity_id),
-        created_at: NotSet,
-        handled_at: NotSet,
-    }
-    .insert(db)
-    .await?;
-
-    correction_user::Entity::insert_many(
-        [CorrectionUserType::Author, CorrectionUserType::Approver]
-            .into_iter()
-            .map(|r#type| correction_user::ActiveModel {
-                correction_id: Set(correction.id),
-                user_id: Set(author_id),
-                user_type: Set(r#type),
-            }),
-    )
-    .exec(db)
-    .await?;
-
-    Ok(correction)
-}
-
-#[builder]
-#[deprecated = "Just use active model"]
-pub fn create_revision<C: ConnectionTrait>(
-    user_id: i32,
-    correction_id: i32,
-    entity_history_id: i32,
-    description: impl Into<String>,
-    db: &C,
-) -> impl Future<Output = Result<correction_revision::Model, DbErr>> + '_ {
-    correction_revision::ActiveModel {
-        correction_id: Set(correction_id),
-        entity_history_id: Set(entity_history_id),
-        description: Set(description.into()),
-        author_id: Set(user_id),
-    }
-    .insert(db)
 }
 
 async fn link_user(
@@ -301,7 +256,7 @@ pub mod user {
             .await
     }
 
-    pub mod utils {
+    pub(super) mod utils {
         use super::*;
 
         pub async fn add_co_author_if_updater_not_author(
@@ -327,10 +282,11 @@ pub mod user {
 }
 
 pub mod revision {
+    use bon::builder;
     use entity::correction_revision;
     use sea_orm::{
-        ColumnTrait, ConnectionTrait, EntityName, EntityTrait, QueryFilter,
-        QueryOrder,
+        ActiveModelTrait, ColumnTrait, ConnectionTrait, DbErr, EntityName,
+        EntityTrait, IntoActiveModel, QueryFilter, QueryOrder,
     };
 
     use crate::error::RepositoryError;
@@ -347,6 +303,25 @@ pub mod revision {
             .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
                 entity_name: correction_revision::Entity.table_name(),
             })
+    }
+
+    #[builder]
+    pub(super) async fn create(
+        #[builder(finish_fn)] db: &impl ConnectionTrait,
+        author_id: i32,
+        correction_id: i32,
+        entity_history_id: i32,
+        #[builder(into)] description: String,
+    ) -> Result<correction_revision::Model, DbErr> {
+        correction_revision::Model {
+            correction_id,
+            entity_history_id,
+            description,
+            author_id,
+        }
+        .into_active_model()
+        .insert(db)
+        .await
     }
 }
 

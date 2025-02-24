@@ -35,7 +35,7 @@ pub struct NewSong {
 
     pub localized_titles: Option<Vec<NewLocalizedTitle>>,
     pub credits: Option<Vec<NewSongCredit>>,
-    pub metadata: correction::Metadata,
+    pub correction_metadata: correction::Metadata,
 }
 
 impl_from!(

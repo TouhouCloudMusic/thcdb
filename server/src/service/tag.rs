@@ -55,12 +55,12 @@ impl Service {
             .user_id(user_id)
             .closure_args((data, correction_metadata))
             .on_create(|_, (data, metadata)| {
-                repo::tag::create_update_correction(
+                repo::tag::create_correction(
                     tag_id, user_id, data, metadata, &tx,
                 )
             })
             .on_update(|correction, (data, metadata)| {
-                repo::tag::update_update_correction(
+                repo::tag::update_correction(
                     user_id, correction, data, metadata, &tx,
                 )
             })
@@ -83,7 +83,7 @@ async fn create_correction(
 ) -> Result<(), RepositoryError> {
     let tx = db.begin().await?;
 
-    repo::tag::create_update_correction(
+    repo::tag::create_correction(
         tag_id,
         user_id,
         data,
@@ -106,10 +106,8 @@ async fn update_correction(
 ) -> Result<(), RepositoryError> {
     let tx = db.begin().await?;
 
-    repo::tag::update_update_correction(
-        user_id, correction, data, metadata, &tx,
-    )
-    .await?;
+    repo::tag::update_correction(user_id, correction, data, metadata, &tx)
+        .await?;
 
     tx.commit().await?;
 

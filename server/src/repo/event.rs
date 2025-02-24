@@ -12,7 +12,6 @@ use sea_orm::{
 };
 use tokio::try_join;
 
-use super::correction::SelfApprovalCorrection;
 use crate::dto::event::{EventCorrection, EventResponse};
 use crate::dto::share::{AlternativeName, AlternativeNameResponse};
 use crate::error::RepositoryError;
@@ -82,15 +81,14 @@ pub async fn create(
 
     let history = create_entity_history_and_relations(&data, db).await?;
 
-    SelfApprovalCorrection::create(
-        user_id,
-        EntityType::Event,
-        event.id,
-        history.id,
-        data.correction_metadata.description,
-        db,
-    )
-    .await?;
+    repo::correction::create_self_approval()
+        .author_id(user_id)
+        .entity_type(EntityType::Event)
+        .entity_id(event.id)
+        .history_id(history.id)
+        .description(data.correction_metadata.description)
+        .call(db)
+        .await?;
 
     Ok(event)
 }
@@ -103,14 +101,13 @@ pub async fn create_correction(
 ) -> Result<(), DbErr> {
     let history = create_entity_history_and_relations(&data, db).await?;
 
-    repo::correction::create_v2()
+    repo::correction::create()
         .author_id(user_id)
-        .entity_type(EntityType::Event)
         .entity_id(event_id)
         .history_id(history.id)
+        .entity_type(EntityType::Event)
         .description(data.correction_metadata.description)
-        .db(db)
-        .call()
+        .call(db)
         .await?;
 
     Ok(())
@@ -129,8 +126,7 @@ pub async fn update_correction(
         .history_id(history.id)
         .correction_id(correction.id)
         .description(data.correction_metadata.description)
-        .db(db)
-        .call()
+        .call(db)
         .await?;
 
     Ok(())
