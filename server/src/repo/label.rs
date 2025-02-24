@@ -88,7 +88,7 @@ pub async fn create(
         .call()
         .await?;
 
-    repo::correction::link_history()
+    repo::correction::create_revision()
         .correction_id(correction.id)
         .entity_history_id(history.id)
         .description(data.correction_metadata.description)
@@ -118,7 +118,7 @@ pub async fn create_correction(
         .call()
         .await?;
 
-    repo::correction::link_history()
+    repo::correction::create_revision()
         .user_id(user_id)
         .correction_id(correction.id)
         .entity_history_id(history.id)
@@ -140,7 +140,7 @@ pub async fn update_correction(
 
     let history = save_label_history_and_link_relations(&data, tx).await?;
 
-    repo::correction::link_history()
+    repo::correction::create_revision()
         .user_id(user_id)
         .correction_id(correction.id)
         .entity_history_id(history.id)

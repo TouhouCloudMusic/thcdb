@@ -1,6 +1,7 @@
 pub mod artist;
 pub mod correction;
 pub mod enums;
+pub mod event;
 pub mod label;
 pub mod release;
 pub mod share;

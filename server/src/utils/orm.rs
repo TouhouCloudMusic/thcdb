@@ -59,6 +59,8 @@ macro_rules! impl_insert_many {
 }
 
 impl_insert_many! {
+    event_alternative_name,
+    event_alternative_name_history,
     release_artist,
     release_artist_history,
     release_catalog_number,

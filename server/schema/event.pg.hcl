@@ -25,6 +25,7 @@ table "event" {
 
   column "start_date" {
     type = date
+    null = true
   }
 
   column "start_date_precision" {
@@ -34,11 +35,22 @@ table "event" {
 
   column "end_date" {
     type = date
+    null = true
   }
 
   column "end_date_precision" {
     type    = enum.DatePrecision
     default = "Day"
+  }
+
+  check "validate_date" {
+    expr = <<EOT
+    (end_date IS NOT NULL)
+    AND
+    (start_date IS NOT NULL)
+    AND
+    (end_date > start_date)
+    EOT
   }
 }
 
@@ -69,6 +81,7 @@ table "event_history" {
 
   column "start_date" {
     type = date
+    null = true
   }
 
   column "start_date_precision" {
@@ -78,11 +91,22 @@ table "event_history" {
 
   column "end_date" {
     type = date
+    null = true
   }
 
   column "end_date_precision" {
     type    = enum.DatePrecision
     default = "Day"
+  }
+
+  check "validate_date" {
+    expr = <<EOT
+    (end_date IS NOT NULL)
+    AND
+    (start_date IS NOT NULL)
+    AND
+    (end_date > start_date)
+    EOT
   }
 }
 
@@ -159,11 +183,6 @@ table "event_alternative_name_history" {
   foreign_key "fk_event_alternative_name_history_history_id" {
     columns     = [column.history_id]
     ref_columns = [table.event_history.column.id]
-  }
-
-  column "event_id" {
-    type = int
-
   }
 
   column "name" {

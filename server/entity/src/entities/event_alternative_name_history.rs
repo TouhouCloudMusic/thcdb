@@ -21,7 +21,6 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub history_id: i32,
-    pub event_id: i32,
     #[sea_orm(column_type = "Text")]
     pub name: String,
     pub r#type: AlternativeNameType,

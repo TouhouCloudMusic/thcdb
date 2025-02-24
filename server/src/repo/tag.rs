@@ -210,7 +210,7 @@ async fn save_tag_history_and_link_relation(
 ) -> Result<tag_history::Model, RepositoryError> {
     let history = tag_history::ActiveModel::from(data).insert(tx).await?;
 
-    repo::correction::link_history()
+    repo::correction::create_revision()
         .correction_id(correction_id)
         .user_id(user_id)
         .entity_history_id(history.id)

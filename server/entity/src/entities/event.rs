@@ -26,9 +26,9 @@ pub struct Model {
     pub short_description: String,
     #[sea_orm(column_type = "Text")]
     pub description: String,
-    pub start_date: Date,
+    pub start_date: Option<Date>,
     pub start_date_precision: DatePrecision,
-    pub end_date: Date,
+    pub end_date: Option<Date>,
     pub end_date_precision: DatePrecision,
 }
 

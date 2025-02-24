@@ -114,7 +114,7 @@ pub async fn create_correction(
         .call()
         .await?;
 
-    repo::correction::link_history()
+    repo::correction::create_revision()
         .user_id(author_id)
         .correction_id(correction.id)
         .entity_history_id(history.id)
@@ -142,7 +142,7 @@ pub async fn update_correction(
         .call()
         .await?;
 
-    repo::correction::link_history()
+    repo::correction::create_revision()
         .user_id(author_id)
         .correction_id(correction.id)
         .entity_history_id(history.id)
@@ -158,6 +158,7 @@ pub async fn apply_correction(
     correction: correction::Model,
     tx: &DatabaseTransaction,
 ) -> Result<(), RepositoryError> {
+    // TODO: refactor
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)

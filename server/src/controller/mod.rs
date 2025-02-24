@@ -5,6 +5,7 @@ use crate::AppState;
 
 mod artist;
 mod correction;
+mod event;
 mod graphql;
 mod label;
 mod lookup_table;
@@ -25,6 +26,7 @@ pub fn api_router() -> OpenApiRouter<AppState> {
     OpenApiRouter::with_openapi(ApiDoc::openapi())
         .merge(artist::router())
         .merge(correction::router())
+        .merge(event::router())
         .merge(label::router())
         .merge(lookup_table::router())
         .merge(release::router())

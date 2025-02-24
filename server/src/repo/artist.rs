@@ -661,7 +661,7 @@ async fn link_and_save_artist_history(
 ) -> Result<artist_history::Model, Error> {
     let history = artist_history::ActiveModel::from(data).insert(db).await?;
 
-    repo::correction::link_history()
+    repo::correction::create_revision()
         .user_id(user_id)
         .correction_id(correction_id)
         .entity_history_id(history.id)

@@ -71,9 +71,10 @@ struct ServiceArgs {
 
 impl Parse for ServiceArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        const SERVICE_LIST: [&str; 8] = [
+        const SERVICE_LIST: [&str; 9] = [
             "artist",
             "correction",
+            "event",
             "image",
             "label",
             "release",

@@ -119,8 +119,9 @@ zxcvbn = "3.1"
 [dev-dependencies]
 rusty-hook = "0.11.2"
 
+# https://doc.rust-lang.org/cargo/reference/profcailes.html
 [profile.dev]
-# codegen-backend = "cranelift"
+codegen-backend = "cranelift"
 opt-level       = 1
 split-debuginfo = "unpacked"
 
@@ -128,25 +129,33 @@ split-debuginfo = "unpacked"
 codegen-backend = "cranelift"
 opt-level       = 3
 
+[profile.dev.package."bon"]
+codegen-backend = "llvm"
+opt-level       = 3
+
 [profile.dev.package."async-trait"]
 codegen-backend = "llvm"
-inherits        = "default"
+opt-level       = 3
+
+[profile.dev.package."macros"]
+codegen-backend = "llvm"
+opt-level       = 3
 
 [profile.dev.package."proc_macros"]
 codegen-backend = "llvm"
-inherits        = "default"
+opt-level       = 3
 
 [profile.dev.package."utoipa"]
 codegen-backend = "llvm"
-inherits        = "default"
+opt-level       = 3
 
 [profile.dev.package."derive_more"]
 codegen-backend = "llvm"
-inherits        = "default"
+opt-level       = 3
 
-[profile.dev.package."strum"]
+[profile.dev.package."strum_macros"]
 codegen-backend = "llvm"
-inherits        = "default"
+opt-level       = 3
 
 [profile.release]
 codegen-units   = 1

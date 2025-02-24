@@ -10,6 +10,7 @@ use sea_orm::{
     EntityName, EntityOrSelect, EntityTrait, IntoActiveModel, QueryFilter,
     QueryOrder,
 };
+use user::utils::add_co_author_if_updater_not_author;
 use utils::validate_entity_type;
 
 use crate::error::RepositoryError;
@@ -89,9 +90,63 @@ pub async fn create<C: ConnectionTrait>(
     Ok(result)
 }
 
-pub struct SelfApprovalCorrection {
+/// Create a pending correction
+#[builder]
+pub async fn create_v2(
+    author_id: i32,
     entity_type: EntityType,
+    entity_id: i32,
+    history_id: i32,
+    description: String,
+    db: &DatabaseTransaction,
+) -> Result<correction::Model, DbErr> {
+    let correction = create()
+        .author_id(author_id)
+        .entity_type(entity_type)
+        .entity_id(entity_id)
+        .status(CorrectionStatus::Pending)
+        .r#type(CorrectionType::Update)
+        .db(db)
+        .call()
+        .await?;
+
+    correction_revision::Model {
+        correction_id: correction.id,
+        entity_history_id: history_id,
+        description,
+        author_id,
+    }
+    .into_active_model()
+    .insert(db)
+    .await?;
+
+    Ok(correction)
 }
+
+#[builder]
+pub async fn update(
+    author_id: i32,
+    history_id: i32,
+    description: String,
+    correction_id: i32,
+    db: &DatabaseTransaction,
+) -> Result<(), RepositoryError> {
+    add_co_author_if_updater_not_author(correction_id, author_id, db).await?;
+
+    correction_revision::Model {
+        correction_id,
+        entity_history_id: history_id,
+        description,
+        author_id,
+    }
+    .into_active_model()
+    .insert(db)
+    .await?;
+
+    Ok(())
+}
+
+pub struct SelfApprovalCorrection {}
 
 impl SelfApprovalCorrection {
     /// Create a self approval correction and link it to the entity history
@@ -111,14 +166,15 @@ impl SelfApprovalCorrection {
             .call()
             .await?;
 
-        link_history()
-            .user_id(author_id)
-            .correction_id(correction.id)
-            .entity_history_id(history_id)
-            .description(description)
-            .db(db)
-            .call()
-            .await?;
+        correction_revision::Model {
+            correction_id: correction.id,
+            entity_history_id: history_id,
+            description: description.into(),
+            author_id,
+        }
+        .into_active_model()
+        .insert(db)
+        .await?;
 
         Ok(correction)
     }
@@ -159,7 +215,8 @@ pub async fn create_self_approval(
 }
 
 #[builder]
-pub fn link_history<C: ConnectionTrait>(
+#[deprecated = "Just use active model"]
+pub fn create_revision<C: ConnectionTrait>(
     user_id: i32,
     correction_id: i32,
     entity_history_id: i32,
@@ -266,6 +323,30 @@ pub mod user {
 
             Ok(())
         }
+    }
+}
+
+pub mod revision {
+    use entity::correction_revision;
+    use sea_orm::{
+        ColumnTrait, ConnectionTrait, EntityName, EntityTrait, QueryFilter,
+        QueryOrder,
+    };
+
+    use crate::error::RepositoryError;
+
+    pub async fn find_latest(
+        correction_id: i32,
+        db: &impl ConnectionTrait,
+    ) -> Result<correction_revision::Model, RepositoryError> {
+        correction_revision::Entity::find()
+            .filter(correction_revision::Column::CorrectionId.eq(correction_id))
+            .order_by_desc(correction_revision::Column::EntityHistoryId)
+            .one(db)
+            .await?
+            .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+                entity_name: correction_revision::Entity.table_name(),
+            })
     }
 }
 
