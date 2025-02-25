@@ -1,7 +1,7 @@
 use entity::user;
 use sea_orm::{ColumnTrait, ConnectionTrait, DbErr, EntityTrait, QueryFilter};
 
-use crate::pg_func_ext::PgFuncExt;
+use crate::utils::orm::PgFuncExt;
 
 pub async fn update_user_last_login(
     user_id: i32,

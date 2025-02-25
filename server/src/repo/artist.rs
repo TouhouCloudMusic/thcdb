@@ -32,9 +32,9 @@ use crate::dto::artist::{
     NewGroupMember, NewLocalizedName,
 };
 use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
-use crate::pg_func_ext::PgFuncExt;
 use crate::repo;
 use crate::types::Pair;
+use crate::utils::orm::PgFuncExt;
 
 error_set! {
     #[derive(ApiError)]

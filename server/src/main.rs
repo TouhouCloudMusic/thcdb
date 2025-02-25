@@ -24,7 +24,6 @@ mod error;
 mod infrastructure;
 mod middleware;
 mod model;
-mod pg_func_ext;
 mod repo;
 mod resolver;
 mod service;

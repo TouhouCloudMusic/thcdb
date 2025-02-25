@@ -1,5 +1,8 @@
 use sea_orm::{ConnectionTrait, EntityTrait, IntoActiveModel};
 
+mod pg_func_ext;
+pub use pg_func_ext::PgFuncExt;
+
 pub trait InsertMany<T: EntityTrait> {
     type Entity: EntityTrait;
     async fn insert_many(
