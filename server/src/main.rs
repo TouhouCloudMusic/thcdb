@@ -41,7 +41,6 @@ use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use constant::{IMAGE_DIR, PUBLIC_DIR};
-use dto::enums::check_database_lookup_tables;
 use state::AppState;
 #[cfg(not(target_env = "msvc"))]
 use tikv_jemallocator::Jemalloc;
@@ -71,7 +70,7 @@ async fn main() {
 
     let state = AppState::init().await;
 
-    check_database_lookup_tables(&state.database)
+    model::lookup_table::check_database_lookup_tables(&state.database)
         .await
         .expect("Error while checking database lookup tables.");
 

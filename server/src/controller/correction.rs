@@ -9,9 +9,9 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::api_response::Message;
-use crate::dto::enums::UserRole;
 use crate::error::{ApiError, RepositoryError};
 use crate::middleware::is_signed_in;
+use crate::model::user_role::UserRole;
 use crate::service;
 use crate::service::user::AuthSession;
 use crate::state::AppState;

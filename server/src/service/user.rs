@@ -25,9 +25,10 @@ use sea_orm::{
 };
 
 use super::*;
-use crate::dto::enums::{LookUpTableEnum, UserRole};
 use crate::dto::user::{AuthCredential, UserProfile};
 use crate::error::{DbErrWrapper, InvalidField, RepositoryError};
+use crate::model::lookup_table::LookupTableEnum;
+use crate::model::user_role::UserRole;
 use crate::repo::user::update_user_last_login;
 use crate::state::ARGON2_HASHER;
 
