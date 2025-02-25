@@ -34,7 +34,10 @@ generate:
   --enum-extra-derives utoipa::ToSchema \
   --enum-extra-derives Copy
 
-db_all: migrate && generate
+__rm_entites:
+  rm ./entity/src/entities/*
+
+db_all: migrate __rm_entites generate
 
 converge:
   cargo tarpaulin --workspace --exclude-files entity/src/entities/*
