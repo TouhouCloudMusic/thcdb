@@ -7,6 +7,7 @@ use serde::Deserialize;
 #[derive(Deserialize)]
 struct Lang {
     name: String,
+    // ISO 639-3 Code
     code: String,
 }
 
@@ -28,6 +29,7 @@ pub async fn upsert_langauge(db: &impl ConnectionTrait) -> Result<(), DbErr> {
         ("Russian", "rus"),
         ("Spanish", "spa"),
         ("Swedish", "swe"),
+        ("Conlang", "n/a"),
     ]; // Append only after deployment
 
     let data = langs
