@@ -62,6 +62,48 @@ pub enum ArtistType {
     utoipa :: ToSchema,
     Copy,
 )]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "CommentState")]
+pub enum CommentState {
+    #[sea_orm(string_value = "Visable")]
+    Visable,
+    #[sea_orm(string_value = "InReview")]
+    InReview,
+    #[sea_orm(string_value = "Hidden")]
+    Hidden,
+    #[sea_orm(string_value = "Deleted")]
+    Deleted,
+}
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumIter,
+    DeriveActiveEnum,
+    Serialize,
+    Deserialize,
+    juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
+    Copy,
+)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "CommentTarget")]
+pub enum CommentTarget {
+    #[sea_orm(string_value = "Correction")]
+    Correction,
+}
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumIter,
+    DeriveActiveEnum,
+    Serialize,
+    Deserialize,
+    juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
+    Copy,
+)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "CorrectionStatus")]
 pub enum CorrectionStatus {
     #[sea_orm(string_value = "Pending")]

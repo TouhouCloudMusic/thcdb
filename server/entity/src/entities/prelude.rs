@@ -8,6 +8,8 @@ pub use super::artist_link::Entity as ArtistLink;
 pub use super::artist_link_history::Entity as ArtistLinkHistory;
 pub use super::artist_localized_name::Entity as ArtistLocalizedName;
 pub use super::artist_localized_name_history::Entity as ArtistLocalizedNameHistory;
+pub use super::comment::Entity as Comment;
+pub use super::comment_revision::Entity as CommentRevision;
 pub use super::correction::Entity as Correction;
 pub use super::correction_revision::Entity as CorrectionRevision;
 pub use super::correction_user::Entity as CorrectionUser;

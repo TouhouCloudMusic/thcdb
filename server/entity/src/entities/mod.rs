@@ -10,6 +10,8 @@ pub mod artist_link;
 pub mod artist_link_history;
 pub mod artist_localized_name;
 pub mod artist_localized_name_history;
+pub mod comment;
+pub mod comment_revision;
 pub mod correction;
 pub mod correction_revision;
 pub mod correction_user;
