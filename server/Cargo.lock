@@ -2881,6 +2881,7 @@ dependencies = [
 name = "proc_macros"
 version = "0.1.0"
 dependencies = [
+ "darling",
  "itertools 0.14.0",
  "proc-macro2",
  "quote",

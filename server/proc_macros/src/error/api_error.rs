@@ -1,126 +1,70 @@
-use std::vec;
-
+use darling::FromMeta;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
-use quote::{ToTokens, quote};
-use syn::parse::{Parse, ParseStream};
+use quote::quote;
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
 use syn::{
-    Data, DataEnum, DeriveInput, Error, Expr, Fields, Ident, Meta, Variant,
+    Data, DataEnum, DeriveInput, Error, Expr, Fields, Ident, Path, Variant,
 };
 
+#[derive(Default)]
 enum CodeOpt {
+    #[default]
     Inner,
-    Specified(proc_macro2::TokenStream),
+    Specified(Path),
 }
 
+#[derive(Default)]
 enum IntoResponseOpt {
+    #[default]
     Inner,
     ItSelf,
 }
 
-struct ApiErrorAttrs {
+impl darling::FromMeta for CodeOpt {
+    fn from_expr(expr: &Expr) -> darling::Result<Self> {
+        if let Expr::Path(path) = expr {
+            if path.path.is_ident("inner") {
+                Ok(CodeOpt::Inner)
+            } else {
+                Ok(CodeOpt::Specified(path.path.clone()))
+            }
+        } else {
+            Err(darling::Error::custom("invalid code"))
+        }
+    }
+
+    fn from_none() -> Option<Self> {
+        Some(CodeOpt::Inner)
+    }
+}
+
+impl darling::FromMeta for IntoResponseOpt {
+    fn from_expr(expr: &Expr) -> darling::Result<Self> {
+        if let Expr::Path(path) = expr {
+            if path.path.is_ident("inner") {
+                Ok(IntoResponseOpt::Inner)
+            } else if path.path.is_ident("self") {
+                Ok(IntoResponseOpt::ItSelf)
+            } else {
+                Err(darling::Error::custom("invalid code"))
+            }
+        } else {
+            Err(darling::Error::custom("invalid code"))
+        }
+    }
+
+    fn from_none() -> Option<Self> {
+        Some(IntoResponseOpt::Inner)
+    }
+}
+
+#[derive(FromMeta, Default)]
+struct ApiErrorVariantMeta {
     status_code: CodeOpt,
     error_code: CodeOpt,
     into_response: IntoResponseOpt,
-}
-
-impl Parse for ApiErrorAttrs {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        fn dupe_attr_err_builder(tokens: impl ToTokens, name: &str) -> Error {
-            Error::new_spanned(
-                tokens,
-                format!("Duplicate `{name}` attribute found"),
-            )
-        }
-
-        let metas = Punctuated::<Meta, Comma>::parse_terminated(input)?;
-
-        let mut status_code = None;
-        let mut error_code = None;
-        let mut into_response = None;
-
-        for meta in metas {
-            if meta.path().is_ident("status_code") {
-                if status_code.is_some() {
-                    return Err(dupe_attr_err_builder(&meta, "status_code"));
-                }
-                status_code = Some(match meta {
-                    Meta::NameValue(ref nv)
-                        if let Expr::Path(path) = &nv.value =>
-                    {
-                        if path.to_token_stream().to_string() == "inner" {
-                            CodeOpt::Inner
-                        } else {
-                            CodeOpt::Specified(path.to_token_stream())
-                        }
-                    }
-                    _ => Err(Error::new_spanned(
-                        &meta,
-                        "Invalid attribute syntax: must be `status_code = ...` or `status_code = inner`",
-                    ))?,
-                })
-            } else if meta.path().is_ident("error_code") {
-                if error_code.is_some() {
-                    return Err(Error::new_spanned(
-                        meta,
-                        "Duplicate 'error_code' attribute found",
-                    ));
-                }
-                error_code = Some(match meta {
-                    Meta::NameValue(ref nv)
-                        if let Expr::Path(path) = &nv.value =>
-                    {
-                        if path.to_token_stream().to_string() == "inner" {
-                            CodeOpt::Inner
-                        } else {
-                            CodeOpt::Specified(path.to_token_stream())
-                        }
-                    }
-                    _ => Err(Error::new_spanned(
-                        &meta,
-                        "Invalid attribute syntax: must be `error_code = ...` or `error_code = inner`",
-                    ))?,
-                })
-            } else if meta.path().is_ident("into_response") {
-                if into_response.is_some() {
-                    return Err(Error::new_spanned(
-                        meta,
-                        "Duplicate 'into_response' attribute found",
-                    ));
-                }
-                into_response = Some(match meta {
-                    Meta::NameValue(ref nv) => {
-                        if nv.value.to_token_stream().to_string() == "self" {
-                            IntoResponseOpt::ItSelf
-                        } else {
-                            Err(Error::new_spanned(
-                                meta,
-                                "Invalid attribute syntax: must be `into_response = self`",
-                            ))?
-                        }
-                    }
-                    _ => IntoResponseOpt::Inner,
-                })
-            } else {
-                return Err(Error::new_spanned(
-                    &meta,
-                    format!(
-                        "Invalid attribute found {:?}, valid options are `status_code`, `error_code` and `into_response`",
-                        &meta
-                    ),
-                ));
-            }
-        }
-
-        // Use internal fields if not set
-        Ok(ApiErrorAttrs {
-            status_code: status_code.unwrap_or(CodeOpt::Inner),
-            error_code: error_code.unwrap_or(CodeOpt::Inner),
-            into_response: into_response.unwrap_or(IntoResponseOpt::Inner),
-        })
-    }
 }
 
 pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
@@ -163,7 +107,6 @@ pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
         #impl_block
 
         #impl_api_error_trait
-
     }
     .into())
 }
@@ -172,15 +115,41 @@ fn gen_api_error_impl(
     ident: &Ident,
     variants: Punctuated<Variant, Comma>,
 ) -> syn::Result<TokenStream2> {
-    let mut status_code_arms = vec![];
-    let mut codes = vec![];
-    let mut field_types = vec![];
-    let mut error_code_arms = vec![];
+    let mut status_code_left_arms = vec![];
+    let mut status_code_right_arms = vec![];
+
+    let mut all_status_codes = vec![];
+    let mut inner_all_status_code_types = vec![];
+
+    let mut error_code_left_arms = vec![];
+    let mut error_code_right_arms = vec![];
+
     let mut into_response_arms = vec![];
 
     for variant in &variants {
         let var_name = &variant.ident;
         let api_err_attr = parse_api_error_attrs(variant)?;
+
+        if let CodeOpt::Specified(code) = &api_err_attr.status_code {
+            all_status_codes.push(code.clone());
+            status_code_right_arms.push(quote! {
+                #code
+            });
+        } else {
+            status_code_right_arms.push(quote! {
+                inner.as_status_code()
+            });
+        }
+
+        if let CodeOpt::Specified(code) = &api_err_attr.error_code {
+            error_code_right_arms.push(quote! {
+                #code
+            });
+        } else {
+            error_code_right_arms.push(quote! {
+                inner.as_error_code()
+            });
+        }
 
         match &variant.fields {
             Fields::Unnamed(fields) => {
@@ -194,30 +163,29 @@ fn gen_api_error_impl(
                 let field_ty = fields.unnamed.first().map(|f| &f.ty).unwrap();
 
                 match api_err_attr.status_code {
-                    CodeOpt::Specified(code) => {
-                        codes.push(code.clone());
-                        status_code_arms.push(quote! {
-                            Self::#var_name(_) => #code
+                    CodeOpt::Specified(_) => {
+                        status_code_left_arms.push(quote! {
+                            Self::#var_name(_)
                         });
                     }
                     CodeOpt::Inner => {
-                        field_types.push(field_ty);
+                        inner_all_status_code_types.push(field_ty);
 
-                        status_code_arms.push(quote! {
-                            Self::#var_name(inner) => inner.as_status_code()
+                        status_code_left_arms.push(quote! {
+                            Self::#var_name(inner)
                         });
                     }
                 };
 
                 match api_err_attr.error_code {
-                    CodeOpt::Specified(code) => {
-                        error_code_arms.push(quote! {
-                            Self::#var_name(_) => #code
+                    CodeOpt::Specified(_) => {
+                        error_code_left_arms.push(quote! {
+                            Self::#var_name(_)
                         });
                     }
                     CodeOpt::Inner => {
-                        error_code_arms.push(quote! {
-                            Self::#var_name(inner) => inner.as_error_code()
+                        error_code_left_arms.push(quote! {
+                            Self::#var_name(inner)
                         });
                     }
                 };
@@ -244,10 +212,8 @@ fn gen_api_error_impl(
                 };
 
                 match api_err_attr.status_code {
-                    CodeOpt::Specified(code) => {
-                        codes.push(code.clone());
-                        status_code_arms
-                            .push(quote! { Self::#var_name => #code });
+                    CodeOpt::Specified(_) => {
+                        status_code_left_arms.push(quote! { Self::#var_name });
                     }
                     CodeOpt::Inner => {
                         Err(no_specify_error_builder("status_code"))?
@@ -255,9 +221,9 @@ fn gen_api_error_impl(
                 };
 
                 match api_err_attr.error_code {
-                    CodeOpt::Specified(code) => {
-                        error_code_arms.push(quote! {
-                            Self::#var_name => #code;
+                    CodeOpt::Specified(_) => {
+                        error_code_left_arms.push(quote! {
+                            Self::#var_name
                         });
                     }
                     CodeOpt::Inner => {
@@ -287,7 +253,7 @@ fn gen_api_error_impl(
         impl crate::api_response::StatusCodeExt for #ident {
             fn as_status_code(&self) -> ::axum::http::StatusCode {
                 match self {
-                    #(#status_code_arms),*
+                    #(#status_code_left_arms => #status_code_right_arms),*
 
                 }
             }
@@ -295,9 +261,9 @@ fn gen_api_error_impl(
             fn all_status_codes() -> impl Iterator<Item=::axum::http::StatusCode> {
                 std::iter::empty()
                     .chain([
-                        #(#codes),*
+                        #(#all_status_codes),*
                     ])
-                    #(.chain(#field_types::all_status_codes()))*
+                    #(.chain(#inner_all_status_code_types::all_status_codes()))*
 
             }
         }
@@ -305,7 +271,7 @@ fn gen_api_error_impl(
         impl crate::error::AsErrorCode for #ident {
             fn as_error_code(&self) -> crate::error::ErrorCode {
                 match self {
-                    #(#error_code_arms),*
+                    #(#error_code_left_arms => #error_code_right_arms),*
 
                 }
             }
@@ -323,22 +289,14 @@ fn gen_api_error_impl(
     })
 }
 
-fn parse_api_error_attrs(variant: &Variant) -> syn::Result<ApiErrorAttrs> {
+fn parse_api_error_attrs(
+    variant: &Variant,
+) -> syn::Result<ApiErrorVariantMeta> {
     for attr in &variant.attrs {
         if attr.path().is_ident("api_error") {
-            return match &attr.meta {
-                Meta::List(list) => list.parse_args::<ApiErrorAttrs>(),
-                _ => Err(Error::new_spanned(
-                    attr,
-                    "Invalid api error attribute syntax",
-                ))?,
-            };
+            return Ok(ApiErrorVariantMeta::from_meta(&attr.meta)?);
         }
     }
 
-    Ok(ApiErrorAttrs {
-        error_code: CodeOpt::Inner,
-        status_code: CodeOpt::Inner,
-        into_response: IntoResponseOpt::Inner,
-    })
+    Ok(ApiErrorVariantMeta::default())
 }
