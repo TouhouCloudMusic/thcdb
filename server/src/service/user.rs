@@ -42,7 +42,7 @@ error_set! {
         AlreadySignedIn,
         #[display("Username already in use")]
         UsernameAlreadyInUse,
-        #[display("Invalid username or password")]
+        #[display("Incorrect username or password")]
         AuthenticationFailed,
         #[display("Session error")]
         Session(axum_login::tower_sessions::session::Error),
