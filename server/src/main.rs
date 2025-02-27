@@ -17,6 +17,7 @@
 #![feature(variant_count)]
 
 mod api_response;
+mod app;
 mod constant;
 mod controller;
 mod dto;
@@ -32,24 +33,13 @@ mod types;
 mod utils;
 
 use std::net::SocketAddr;
-use std::path::PathBuf;
 
-use axum::routing::get;
-use axum::{Json, Router};
-use axum_login::AuthManagerLayerBuilder;
-use axum_login::tower_sessions::cookie::time::Duration;
-use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
-use constant::{IMAGE_DIR, PUBLIC_DIR};
+use app::create_app;
 use state::{AppState, CONFIG};
 #[cfg(not(target_env = "msvc"))]
 use tikv_jemallocator::Jemalloc;
 use tokio::signal;
-use tower_http::services::ServeDir;
-use tower_sessions_redis_store::RedisStore;
 use tracing_subscriber::fmt::time::ChronoLocal;
-use utoipa_scalar::{Scalar, Servable};
-
-use crate::service::user::AuthSession;
 
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
@@ -73,7 +63,7 @@ async fn main() {
         .await
         .expect("Error while checking database lookup tables.");
 
-    let router = router(state);
+    let app = create_app(state);
 
     let listener =
         tokio::net::TcpListener::bind(format!("0.0.0.0:{}", CONFIG.app.port))
@@ -84,7 +74,7 @@ async fn main() {
 
     axum::serve(
         listener,
-        router.into_make_service_with_connect_info::<SocketAddr>(),
+        app.into_make_service_with_connect_info::<SocketAddr>(),
     )
     .with_graceful_shutdown(async {
         match signal::ctrl_c().await {
@@ -96,59 +86,4 @@ async fn main() {
     })
     .await
     .unwrap();
-}
-
-fn router(state: AppState) -> Router {
-    let session_store = RedisStore::new(state.redis_pool());
-
-    let session_layer = SessionManagerLayer::new(session_store)
-        .with_name("session_token")
-        .with_expiry(Expiry::OnInactivity(Duration::days(30)));
-
-    let auth_layer =
-        AuthManagerLayerBuilder::new(state.user_service.clone(), session_layer)
-            .build();
-
-    let (api_router, api_doc) = controller::api_router().split_for_parts();
-
-    let doc_router = api_router
-        .merge(Scalar::with_url("/docs", api_doc.clone()))
-        .route(
-            "/openapi.json",
-            get(async move || Json(api_doc.to_json().unwrap())),
-        );
-
-    Router::new()
-        .route(
-            "/",
-            get(|session: AuthSession| async {
-                format!("Hello, {}!", {
-                    match session.user {
-                        Some(user) => user.name,
-                        _ => "world".to_string(),
-                    }
-                })
-            }),
-        )
-        .merge(doc_router)
-        .merge(static_dir())
-        .layer(auth_layer)
-        .layer({
-            let conf = CONFIG.middleware.limit;
-
-            middleware::limit_layer()
-                .req_per_sec(conf.req_per_sec)
-                .burst_size(conf.burst_size)
-                .call()
-        })
-        .with_state(state)
-}
-
-fn static_dir() -> Router<AppState> {
-    let image_path = PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]);
-
-    Router::new().nest_service(
-        &format!("/{}", image_path.to_string_lossy()),
-        ServeDir::new(&image_path),
-    )
 }
