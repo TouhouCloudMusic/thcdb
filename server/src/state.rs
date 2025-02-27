@@ -9,12 +9,13 @@ use crate::infrastructure::config::Config;
 use crate::infrastructure::database::get_connection;
 use crate::infrastructure::redis::Pool;
 
+pub static CONFIG: LazyLock<Config> = LazyLock::new(Config::init);
+
 #[inject_services(
     artist, correction, event, image, label, release, song, tag, user
 )]
 #[derive(Clone, FromRef)]
 pub struct AppState {
-    pub config: Config,
     pub database: DatabaseConnection,
     redis_pool: Pool,
 }

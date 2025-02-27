@@ -200,12 +200,10 @@ pub fn inject_services(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         impl #name {
             pub async fn init() -> Self {
-                let config = Config::init();
-                let database = get_connection(&config.database_url).await;
-                let redis_pool = Pool::init(&config.redis_url).await;
+                let database = get_connection(&CONFIG.database_url).await;
+                let redis_pool = Pool::init(&CONFIG.redis_url).await;
 
                 Self {
-                    config,
                     database: database.clone(),
                     redis_pool,
                     #(#init_statements),*

@@ -40,7 +40,7 @@ use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use constant::{IMAGE_DIR, PUBLIC_DIR};
-use state::AppState;
+use state::{AppState, CONFIG};
 #[cfg(not(target_env = "msvc"))]
 use tikv_jemallocator::Jemalloc;
 use tokio::signal;
@@ -73,21 +73,14 @@ async fn main() {
         .await
         .expect("Error while checking database lookup tables.");
 
-    let config = state.config.clone();
-
     let router = router(state);
 
-    let listener = tokio::net::TcpListener::bind(format!(
-        "0.0.0.0:{}",
-        config.server_port
-    ))
-    .await
-    .unwrap();
+    let listener =
+        tokio::net::TcpListener::bind(format!("0.0.0.0:{}", CONFIG.app.port))
+            .await
+            .unwrap();
 
-    tracing::info!(
-        "Server listening on http://127.0.0.1:{}",
-        config.server_port
-    );
+    tracing::info!("Server listening on http://127.0.0.1:{}", CONFIG.app.port);
 
     axum::serve(
         listener,
@@ -140,12 +133,14 @@ fn router(state: AppState) -> Router {
         .merge(doc_router)
         .merge(static_dir())
         .layer(auth_layer)
-        .layer(
+        .layer({
+            let conf = CONFIG.middleware.limit;
+
             middleware::limit_layer()
-                .req_per_sec(state.config.req_per_sec)
-                .burst_size(state.config.req_burst_size)
-                .call(),
-        )
+                .req_per_sec(conf.req_per_sec)
+                .burst_size(conf.burst_size)
+                .call()
+        })
         .with_state(state)
 }
 

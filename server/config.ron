@@ -1,0 +1,11 @@
+(
+    app: (
+        port: 12345
+    ),
+    middleware: (
+        limit: (
+            req_per_sec: 5,
+            burst_size: 8,
+        )
+    )
+)
