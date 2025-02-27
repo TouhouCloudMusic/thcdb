@@ -366,11 +366,16 @@ fn validate_username(username: &str) -> Result<(), ValidateError> {
     }
 }
 
+/// Valid characters
+/// - A-z
+/// - 0-9
+/// - \`~!@#$%^&*()-_=+
 fn validate_password(password: &str) -> Result<(), ValidateError> {
     use zxcvbn::{Score, zxcvbn};
 
-    static USER_PASSWORD_REGEX: LazyLock<Regex> =
-        LazyLock::new(|| Regex::new(r"^[A-Za-z\d!@#$%^&*]{8,}$").unwrap());
+    static USER_PASSWORD_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+        Regex::new(r"^[A-Za-z\d`~!@#$%^&*()\-_=+]{8,}$").unwrap()
+    });
 
     if USER_PASSWORD_REGEX.is_match(password) {
         let result = zxcvbn(password, &[]);
@@ -510,7 +515,7 @@ mod tests {
 
     #[test]
     fn test_validate_password() {
-        static TEST_CASE: [(&str, bool); 15] = [
+        let test_case = [
             ("Password123!", false),
             ("SecurePass#2023", true),
             ("HelloWorld!1", true),
@@ -526,9 +531,10 @@ mod tests {
             ("NOLOWERCASE1!", true),
             ("m10KSGDckKrX38Vm", true),
             ("1KrIuT%gcemHwjwF", true),
+            ("a1`~!@#$%^&*()-_=+", true),
         ];
 
-        for (password, expected) in TEST_CASE {
+        for (password, expected) in test_case {
             println!("password: {password}, expected: {expected}");
             assert_eq!(validate_password(password).is_ok(), expected);
         }
