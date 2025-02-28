@@ -84,6 +84,8 @@ table "group_member_role" {
   }
 }
 
+
+
 table "group_member_role_history" {
   schema = schema.public
 
@@ -106,6 +108,22 @@ table "group_member_role_history" {
   primary_key {
     columns = [column.group_member_history_id, column.role_id]
   }
+}
+
+enum "JoinYearType" {
+  schema = schema.public
+  values = [
+    "FoundingMember",
+    "Specific"
+  ]
+}
+
+enum "LeaveYearType" {
+  schema = schema.public
+  values = [
+    "Unknown",
+    "Specific"
+  ]
 }
 
 table "group_member_join_leave" {
@@ -132,18 +150,33 @@ table "group_member_join_leave" {
   }
 
   column "join_year" {
-    type = text
+    type = smallint
     null = true
+  }
+
+  column "join_year_type" {
+    type = enum.JoinYearType
+  }
+
+  check "join_year_type_check" {
+    expr = <<EOT
+    join_year_type = 'FoundingMember' AND join_year IS NULL
+    EOT
   }
 
   column "leave_year" {
-    type = text
+    type = smallint
     null = true
   }
 
-  check "validate_join_leave" {
-    comment = "Valid values are numeric strings, '?', 'present'. Join year with an extra value 'founding_members'"
-    expr    = "join_year ~ '^(\\d+|\\?|present|founding_member)$' AND leave_year ~ '^(\\d+|\\?|present)$'"
+  column "leave_year_type" {
+    type = enum.LeaveYearType
+  }
+
+  check "leave_year_type_check" {
+    expr = <<EOT
+    leave_year_type = 'Unknown' AND leave_year IS NULL
+    EOT
   }
 }
 
@@ -172,12 +205,32 @@ table "group_member_join_leave_history" {
   }
 
   column "join_year" {
-    type = text
+    type = smallint
     null = true
   }
 
+  column "join_year_type" {
+    type = enum.JoinYearType
+  }
+
+  check "join_year_type_check" {
+    expr = <<EOT
+    join_year_type = 'FoundingMember' AND join_year IS NULL
+    EOT
+  }
+
   column "leave_year" {
-    type = text
+    type = smallint
     null = true
+  }
+
+  column "leave_year_type" {
+    type = enum.LeaveYearType
+  }
+
+  check "leave_year_type_check" {
+    expr = <<EOT
+    leave_year_type = 'Unknown' AND leave_year IS NULL
+    EOT
   }
 }

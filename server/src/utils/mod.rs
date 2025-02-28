@@ -47,3 +47,25 @@ where
         self.into_iter().map(Into::into).collect()
     }
 }
+
+pub trait Pipe<O>
+where
+    Self: Sized,
+{
+    fn pipe(self, mut f: impl FnMut(Self) -> O) -> O {
+        f(self)
+    }
+}
+
+impl<T, O> Pipe<O> for T {}
+
+pub trait Reverse<O> {
+    #[doc(alias = "reverse")]
+    fn rev(self) -> O;
+}
+
+impl<A, B> Reverse<(B, A)> for (A, B) {
+    fn rev(self) -> (B, A) {
+        (self.1, self.0)
+    }
+}

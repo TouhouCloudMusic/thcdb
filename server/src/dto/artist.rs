@@ -8,6 +8,7 @@ use utoipa::ToSchema;
 
 use super::share::{CreditRole, Language};
 use crate::dto;
+use crate::model::artist::group_member::{JoinYear, LeaveYear};
 
 #[derive(ToSchema, Serialize)]
 #[schema(
@@ -70,14 +71,14 @@ impl_from!(
 pub struct GroupMember {
     pub artist_id: i32,
     pub roles: Vec<CreditRole>,
-    pub join_leave: Vec<(Option<String>, Option<String>)>,
+    pub join_leave: Vec<(JoinYear, LeaveYear)>,
 }
 
 #[derive(Clone, ToSchema, Deserialize)]
 pub struct NewGroupMember {
     pub artist_id: i32,
     pub roles: Vec<i32>,
-    pub join_leave: Vec<(Option<String>, Option<String>)>,
+    pub join_leave: Vec<(JoinYear, LeaveYear)>,
 }
 
 #[derive(Clone, ToSchema, Serialize)]

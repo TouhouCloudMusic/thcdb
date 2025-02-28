@@ -226,6 +226,46 @@ pub enum EntityType {
     utoipa :: ToSchema,
     Copy,
 )]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "JoinYearType")]
+pub enum JoinYearType {
+    #[sea_orm(string_value = "FoundingMember")]
+    FoundingMember,
+    #[sea_orm(string_value = "Specific")]
+    Specific,
+}
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumIter,
+    DeriveActiveEnum,
+    Serialize,
+    Deserialize,
+    juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
+    Copy,
+)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "LeaveYearType")]
+pub enum LeaveYearType {
+    #[sea_orm(string_value = "Unknown")]
+    Unknown,
+    #[sea_orm(string_value = "Specific")]
+    Specific,
+}
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumIter,
+    DeriveActiveEnum,
+    Serialize,
+    Deserialize,
+    juniper :: GraphQLEnum,
+    utoipa :: ToSchema,
+    Copy,
+)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ReleaseType")]
 pub enum ReleaseType {
     #[sea_orm(string_value = "Album")]

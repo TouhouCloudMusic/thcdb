@@ -21,9 +21,8 @@ use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{Alias, IntoCondition, PostgresQueryBuilder, Query};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, ConnectionTrait,
-    DatabaseTransaction, DbBackend, DbErr, EntityName, EntityTrait,
-    FromQueryResult, LoaderTrait, ModelTrait, QueryFilter, QueryOrder,
-    Statement,
+    DatabaseTransaction, DbErr, EntityName, EntityTrait, LoaderTrait,
+    ModelTrait, QueryFilter, QueryOrder,
 };
 use tokio::try_join;
 
@@ -32,9 +31,10 @@ use crate::dto::artist::{
     NewGroupMember, NewLocalizedName,
 };
 use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
+use crate::model::artist::group_member::{JoinYear, LeaveYear};
 use crate::repo;
-use crate::types::Pair;
 use crate::utils::orm::PgFuncExt;
+use crate::utils::{Pipe, Reverse};
 
 error_set! {
     #[derive(ApiError)]
@@ -191,7 +191,10 @@ async fn find_many(
 
                     GroupMember {
                         artist_id,
-                        join_leave: jl.iter().map_into().collect(),
+                        join_leave: jl
+                            .iter()
+                            .map(|x| (x.into(), x.into()))
+                            .collect(),
                         roles: role.iter().map_into().collect(),
                     }
                 })
@@ -325,13 +328,24 @@ pub(super) async fn apply_correction(
     update_artist_localized_names(correction.entity_id, localized_names, db)
         .await?;
 
-    let group_member =
-        get_group_member_from_artist_history(history.id, db).await?;
+    let group_member = history
+        .find_related(group_member_history::Entity)
+        .all(db)
+        .await?;
+
+    let group_member_role = group_member
+        .load_many(group_member_role_history::Entity, db)
+        .await?;
+
+    let group_member_join_leave = group_member
+        .load_many(group_member_join_leave_history::Entity, db)
+        .await?;
 
     update_artist_group_member(
         correction.entity_id,
         history.artist_type,
-        group_member,
+        izip!(group_member, group_member_role, group_member_join_leave)
+            .collect_vec(),
         db,
     )
     .await?;
@@ -469,11 +483,11 @@ async fn create_artist_localized_name_history<C: ConnectionTrait>(
     Ok(())
 }
 
-async fn create_artist_group_member<'f, C: ConnectionTrait>(
+async fn create_artist_group_member<C: ConnectionTrait>(
     artist_id: i32,
     artist_type: ArtistType,
-    members: Option<&'f [NewGroupMember]>,
-    db: &'f C,
+    members: Option<&[NewGroupMember]>,
+    db: &C,
 ) -> Result<(), DbErr> {
     if let Some(members) = members {
         let (group_member_model, todo_roles, todo_join_leaves): (
@@ -505,11 +519,19 @@ async fn create_artist_group_member<'f, C: ConnectionTrait>(
                 let todo_join_leaves =
                     member.join_leave.clone().into_iter().map(
                         |(join_year, leave_year)| {
+                            let (join_year, join_year_type) =
+                                join_year.deconstruct();
+
+                            let (leave_year, leave_year_type) =
+                                leave_year.deconstruct();
+
                             group_member_join_leave::ActiveModel {
                                 id: NotSet,
                                 group_member_id: NotSet,
                                 join_year: Set(join_year),
+                                join_year_type: Set(join_year_type),
                                 leave_year: Set(leave_year),
+                                leave_year_type: Set(leave_year_type),
                             }
                         },
                     );
@@ -582,11 +604,19 @@ async fn create_artist_group_member_history<'f, C: ConnectionTrait>(
                     }),
                     member.join_leave.clone().into_iter().map(
                         |(join_year, leave_year)| {
+                            let (join_year, join_year_type) =
+                                join_year.deconstruct();
+
+                            let (leave_year, leave_year_type) =
+                                leave_year.deconstruct();
+
                             group_member_join_leave_history::ActiveModel {
                                 id: NotSet,
                                 group_member_history_id: NotSet,
                                 join_year: Set(join_year),
+                                join_year_type: Set(join_year_type),
                                 leave_year: Set(leave_year),
+                                leave_year_type: Set(leave_year_type),
                             }
                         },
                     ),
@@ -736,13 +766,10 @@ async fn update_artist_links<
     Ok(())
 }
 
-async fn update_artist_localized_names<
-    C: ConnectionTrait,
-    I: IntoIterator<Item = NewLocalizedName>,
->(
+async fn update_artist_localized_names(
     artist_id: i32,
-    localized_names: I,
-    db: &C,
+    localized_names: impl IntoIterator<Item = NewLocalizedName>,
+    db: &impl ConnectionTrait,
 ) -> Result<(), DbErr> {
     artist_localized_name::Entity::delete_many()
         .filter(artist_localized_name::Column::ArtistId.eq(artist_id))
@@ -765,11 +792,15 @@ async fn update_artist_localized_names<
     Ok(())
 }
 
-async fn update_artist_group_member<C: ConnectionTrait>(
+async fn update_artist_group_member(
     artist_id: i32,
     artist_type: ArtistType,
-    members: Vec<GroupMemberFromHistory>,
-    db: &C,
+    members: Vec<(
+        group_member_history::Model,
+        Vec<group_member_role_history::Model>,
+        Vec<group_member_join_leave_history::Model>,
+    )>,
+    db: &impl ConnectionTrait,
 ) -> Result<(), DbErr> {
     // group_member_role and group_member_join_leave are deleted by database cascade
     group_member::Entity::delete_many()
@@ -786,46 +817,62 @@ async fn update_artist_group_member<C: ConnectionTrait>(
     }
 
     let group_member_models =
-        members.iter().map(|data| group_member::ActiveModel {
-            group_id: Set(if artist_type.is_multiple() {
-                artist_id
-            } else {
-                data.member_id
-            }),
-            member_id: Set(if artist_type.is_multiple() {
-                data.member_id
-            } else {
-                artist_id
-            }),
-            id: NotSet,
+        members.iter().map(|(group_member_history, _, _)| {
+            let (group_id, member_id) =
+                (artist_id, group_member_history.artist_id).pipe(|x| {
+                    if artist_type.is_multiple() {
+                        x
+                    } else {
+                        x.rev()
+                    }
+                });
+
+            group_member::ActiveModel {
+                id: NotSet,
+                group_id: Set(group_id),
+                member_id: Set(member_id),
+            }
         });
 
     let res = group_member::Entity::insert_many(group_member_models)
         .exec_with_returning_many(db)
         .await?;
 
-    let role_models = res.iter().zip(members.iter()).flat_map(|(a, b)| {
-        b.roles.iter().map(|x| group_member_role::ActiveModel {
-            group_member_id: Set(a.id),
-            role_id: Set(*x),
-        })
-    });
+    let role_models =
+        res.iter()
+            .zip(members.iter())
+            .flat_map(|(a, (_, role_history, _))| {
+                role_history.iter().map(|m| group_member_role::ActiveModel {
+                    group_member_id: Set(a.id),
+                    role_id: Set(m.role_id),
+                })
+            });
 
     group_member_role::Entity::insert_many(role_models)
         .exec(db)
         .await?;
 
     let join_leave_models =
-        res.iter().zip(members.iter()).flat_map(|(a, b)| {
-            b.join_leave
-                .iter()
-                .map(|x| group_member_join_leave::ActiveModel {
-                    id: NotSet,
-                    group_member_id: Set(a.id),
-                    join_year: Set(x.0.clone()),
-                    leave_year: Set(x.1.clone()),
+        res.iter()
+            .zip(members.iter())
+            .flat_map(|(res, (_, _, jl_history))| {
+                jl_history.iter().map(|model| {
+                    let (join_year, join_year_type) =
+                        JoinYear::from(model).deconstruct();
+
+                    let (leave_year, leave_year_type) =
+                        LeaveYear::from(model).deconstruct();
+
+                    group_member_join_leave::ActiveModel {
+                        id: NotSet,
+                        group_member_id: Set(res.id),
+                        join_year: Set(join_year),
+                        join_year_type: Set(join_year_type),
+                        leave_year: Set(leave_year),
+                        leave_year_type: Set(leave_year_type),
+                    }
                 })
-        });
+            });
 
     group_member_join_leave::Entity::insert_many(join_leave_models)
         .exec(db)
@@ -896,61 +943,6 @@ static GET_GROUP_MEMBER_FROM_ARTIST_HISTORY_BY_ID_SQL: LazyLock<String> =
 
         stmt
     });
-
-#[derive(Debug)]
-struct GroupMemberFromHistory {
-    pub member_id: i32,
-    pub roles: Vec<i32>,
-    pub join_leave: Vec<Pair<Option<String>>>,
-}
-
-impl FromQueryResult for GroupMemberFromHistory {
-    fn from_query_result(
-        res: &sea_orm::QueryResult,
-        pre: &str,
-    ) -> Result<Self, DbErr> {
-        use sea_orm::JsonValue;
-        let json_value: JsonValue = res.try_get(pre, "join_leave")?;
-        let join_leave =
-            json_value.as_array().map_or_else(std::vec::Vec::new, |x| {
-                x.iter()
-                    .map(|x| {
-                        let first = x
-                            .get(0)
-                            .and_then(JsonValue::as_str)
-                            .map(Into::into);
-
-                        let second = x
-                            .get(1)
-                            .and_then(JsonValue::as_str)
-                            .map(Into::into);
-
-                        (first, second)
-                    })
-                    .collect()
-            });
-        Ok(Self {
-            member_id: res.try_get(pre, "artist_id")?,
-            roles: res.try_get(pre, "role_id")?,
-            join_leave,
-        })
-    }
-}
-
-async fn get_group_member_from_artist_history<C: ConnectionTrait>(
-    history_id: i32,
-    db: &C,
-) -> Result<Vec<GroupMemberFromHistory>, DbErr> {
-    db.query_all(Statement::from_sql_and_values(
-        DbBackend::Postgres,
-        &*GET_GROUP_MEMBER_FROM_ARTIST_HISTORY_BY_ID_SQL,
-        [history_id.into()],
-    ))
-    .await?
-    .into_iter()
-    .map(|x| GroupMemberFromHistory::from_query_result(&x, ""))
-    .try_collect()
-}
 
 #[cfg(test)]
 mod test {
