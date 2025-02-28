@@ -16,12 +16,13 @@ use error_set::error_set;
 use itertools::Itertools;
 use macros::{ApiError, FromDbErr, IntoErrorSchema};
 use regex::Regex;
+use sea_orm::ActiveValue::*;
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{Alias, OnConflict, Query};
 use sea_orm::{
-    ActiveValue, ColumnTrait, ConnectionTrait, DatabaseBackend,
-    DatabaseConnection, EntityName, EntityTrait, IntoActiveModel, Iterable,
-    QueryFilter, TransactionTrait,
+    ColumnTrait, ConnectionTrait, DatabaseBackend, DatabaseConnection,
+    EntityName, EntityTrait, IntoActiveModel, Iterable, QueryFilter,
+    TransactionTrait,
 };
 
 use super::*;
@@ -197,15 +198,27 @@ impl Service {
         let password = hash_password(password)
             .map_err(|err| Error::HashPasswordFailed { err })?;
 
-        let new_user = user::ActiveModel {
-            name: ActiveValue::Set(username.to_string()),
-            password: ActiveValue::Set(password.to_string()),
+        let model = user::ActiveModel {
+            name: Set(username.to_string()),
+            password: Set(password.to_string()),
             ..Default::default()
         };
 
-        Ok(user::Entity::insert(new_user)
+        let user = user::Entity::insert(model)
             .exec_with_returning(&self.db)
-            .await?)
+            .await?;
+
+        user_role::Entity::insert(
+            user_role::Model {
+                user_id: user.id,
+                role_id: UserRole::User.as_id(),
+            }
+            .into_active_model(),
+        )
+        .exec(&self.db)
+        .await?;
+
+        Ok(user)
     }
 
     pub async fn verify_credentials(
