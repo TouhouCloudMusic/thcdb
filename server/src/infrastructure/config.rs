@@ -2,6 +2,8 @@ use std::env;
 
 use serde::Deserialize;
 
+use crate::utils::Pipe;
+
 #[derive(Clone)]
 pub struct Config {
     pub database_url: String,
@@ -36,6 +38,16 @@ impl Config {
     pub fn init() -> Self {
         let config = config::Config::builder()
             .add_source(config::File::with_name("config"))
+            .pipe(|x| {
+                let cfg = x;
+
+                #[cfg(debug_assertions)]
+                let cfg = cfg.add_source(
+                    config::File::with_name("config.dev").required(false),
+                );
+
+                cfg
+            })
             .build()
             .expect("Failed to build config");
 
