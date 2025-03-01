@@ -1,8 +1,8 @@
-use entity::prelude::{
-    Artist, CreditRole, ReleaseArtist, ReleaseCredit, ReleaseLocalizedTitle,
-    ReleaseTrack,
+use entity::{
+    artist, credit_role, language, release, release_artist,
+    release_catalog_number, release_credit, release_localized_title,
+    release_track,
 };
-use entity::{artist, language, release, release_catalog_number};
 use itertools::{Itertools, izip};
 use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
@@ -44,14 +44,16 @@ async fn find_many(
     let releases = release::Entity::find().filter(cond).all(db).await?;
 
     let artists = releases
-        .load_many_to_many(Artist, ReleaseArtist, db)
+        .load_many_to_many(artist::Entity, release_artist::Entity, db)
         .await?;
 
     let catalog_nums = releases
         .load_many(release_catalog_number::Entity, db)
         .await?;
 
-    let llts = releases.load_many(ReleaseLocalizedTitle, db).await?;
+    let llts = releases
+        .load_many(release_localized_title::Entity, db)
+        .await?;
 
     let langs = language::Entity::find()
         .filter(
@@ -66,12 +68,12 @@ async fn find_many(
         .all(db)
         .await?;
 
-    let tracks = releases.load_many(ReleaseTrack, db).await?;
+    let tracks = releases.load_many(release_track::Entity, db).await?;
 
     let release_artist_ids =
         artists.iter().flatten().unique_by(|a| a.id).map(|x| x.id);
 
-    let credits = releases.load_many(ReleaseCredit, db).await?;
+    let credits = releases.load_many(release_credit::Entity, db).await?;
 
     let flatten_credits = credits.clone().into_iter().flatten().collect_vec();
 
@@ -92,7 +94,7 @@ async fn find_many(
         .collect_vec();
 
     let all_roles = flatten_credits
-        .load_one(CreditRole, db)
+        .load_one(credit_role::Entity, db)
         .await?
         .into_iter()
         .flatten()

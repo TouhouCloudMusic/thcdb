@@ -1,17 +1,14 @@
 use std::sync::LazyLock;
 
 use axum::http::StatusCode;
-use entity::prelude::{
-    ArtistLink, ArtistLocalizedName, CreditRole, GroupMemberJoinLeave,
-    GroupMemberRole,
-};
 use entity::sea_orm_active_enums::{ArtistType, EntityType};
 use entity::{
     artist, artist_alias, artist_alias_history, artist_history, artist_link,
     artist_link_history, artist_localized_name, artist_localized_name_history,
-    correction, correction_revision, group_member, group_member_history,
-    group_member_join_leave, group_member_join_leave_history,
-    group_member_role, group_member_role_history, language,
+    correction, correction_revision, credit_role, group_member,
+    group_member_history, group_member_join_leave,
+    group_member_join_leave_history, group_member_role,
+    group_member_role_history, language,
 };
 use error_set::error_set;
 use itertools::{Itertools, izip};
@@ -108,9 +105,10 @@ async fn find_many(
         .all(db)
         .await?;
 
-    let links = artists.load_many(ArtistLink, db).await?;
+    let links = artists.load_many(artist_link::Entity, db).await?;
 
-    let localized_names = artists.load_many(ArtistLocalizedName, db).await?;
+    let localized_names =
+        artists.load_many(artist_localized_name::Entity, db).await?;
 
     let group_members = group_member::Entity::find()
         .filter(
@@ -122,10 +120,12 @@ async fn find_many(
         .await?;
 
     let roles = group_members
-        .load_many_to_many(CreditRole, GroupMemberRole, db)
+        .load_many_to_many(credit_role::Entity, group_member_role::Entity, db)
         .await?;
 
-    let join_leaves = group_members.load_many(GroupMemberJoinLeave, db).await?;
+    let join_leaves = group_members
+        .load_many(group_member_join_leave::Entity, db)
+        .await?;
 
     let group_members = izip!(group_members, roles, join_leaves).collect_vec();
 

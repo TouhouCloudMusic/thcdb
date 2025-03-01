@@ -24,9 +24,14 @@ default: fmt && fix
 migrate:
   atlas schema apply --env local
 
-generate:
+
+__rm_entites:
+  rm ./entity/src/entities/*
+
+__generate:
   sea-orm-cli generate entity \
   -o entity/src/entities \
+  --with-prelude=none \
   --with-serde=both \
   --model-extra-derives juniper::GraphQLObject \
   --model-extra-attributes 'graphql(scalar=crate::extension::GqlScalarValue)' \
@@ -34,10 +39,9 @@ generate:
   --enum-extra-derives utoipa::ToSchema \
   --enum-extra-derives Copy
 
-__rm_entites:
-  rm ./entity/src/entities/*
+generate: __rm_entites __generate
 
-db_all: migrate __rm_entites generate
+db_all: migrate generate
 
 converge:
   cargo tarpaulin --workspace --exclude-files entity/src/entities/*
