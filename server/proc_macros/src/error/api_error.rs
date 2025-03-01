@@ -231,16 +231,9 @@ fn gen_api_error_impl(
                     }
                 };
 
-                match api_err_attr.into_response {
-                    IntoResponseOpt::ItSelf => {
-                        into_response_arms.push(quote! {
-                            Self::#var_name => self.into_api_response()
-                        });
-                    }
-                    IntoResponseOpt::Inner => {
-                        Err(no_specify_error_builder(""))?
-                    }
-                };
+                into_response_arms.push(quote! {
+                    Self::#var_name => self.into_api_response()
+                });
             }
             Fields::Named(_) => Err(Error::new_spanned(
                 variant,

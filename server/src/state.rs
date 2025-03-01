@@ -30,4 +30,5 @@ impl AppState {
     }
 }
 
+// Should this be a singleton?
 pub static ARGON2_HASHER: LazyLock<Argon2> = LazyLock::new(Argon2::default);

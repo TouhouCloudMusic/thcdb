@@ -1,7 +1,6 @@
 use axum::body::Bytes;
 use axum_typed_multipart::{FieldData, TryFromMultipart};
-use juniper::GraphQLInputObject;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use utoipa::ToSchema;
 
 #[derive(Clone, ToSchema, Serialize)]
@@ -11,12 +10,6 @@ pub struct UserProfile {
     pub avatar_url: Option<String>,
     pub last_login: Option<chrono::DateTime<chrono::FixedOffset>>,
     pub roles: Vec<i32>,
-}
-
-#[derive(GraphQLInputObject, ToSchema, Clone, Deserialize, Serialize)]
-pub struct AuthCredential {
-    pub username: String,
-    pub password: String,
 }
 
 #[derive(ToSchema, TryFromMultipart, Debug)]

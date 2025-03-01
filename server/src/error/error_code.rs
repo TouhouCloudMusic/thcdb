@@ -15,6 +15,7 @@ pub enum ErrorCode {
     Unauthorized = 401_00,
     AuthenticationFailed = 401_01,
     EntityNotFound = 404_00,
+    InternalServerError = 500,
     UnknownError = 500_00,
     TokioError = 500_01,
     DatabaseError = 500_02,

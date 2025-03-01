@@ -1,71 +1,67 @@
-use std::env;
 use std::path::PathBuf;
-use std::sync::LazyLock;
+use std::{env, str};
 
-use argon2::password_hash::rand_core::OsRng;
-use argon2::password_hash::{
-    PasswordHash, PasswordHasher, PasswordVerifier, SaltString,
-};
-use argon2::{Argon2, password_hash};
+use argon2::password_hash;
 use async_trait::async_trait;
 use axum::body::Bytes;
+use axum::http::StatusCode;
 use axum_login::{AuthnBackend, UserId};
 use axum_typed_multipart::FieldData;
 use entity::{role, user, user_role};
 use error_set::error_set;
 use itertools::Itertools;
 use macros::{ApiError, FromDbErr, IntoErrorSchema};
-use regex::Regex;
 use sea_orm::ActiveValue::*;
 use sea_orm::prelude::Expr;
-use sea_orm::sea_query::{Alias, OnConflict, Query};
+use sea_orm::sea_query::OnConflict;
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DatabaseBackend, DatabaseConnection,
-    EntityName, EntityTrait, IntoActiveModel, Iterable, QueryFilter,
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseConnection, DbErr,
+    EntityTrait, IntoActiveModel, Iterable, PaginatorTrait, QueryFilter,
     TransactionTrait,
 };
 
 use super::*;
-use crate::dto::user::{AuthCredential, UserProfile};
-use crate::error::{DbErrWrapper, InvalidField, RepositoryError};
+use crate::api_response::StatusCodeExt;
+use crate::domain::auth::{
+    AuthCredential, AuthnError, HasherError, ValidateCredsError, hash_password,
+};
+use crate::dto::user::UserProfile;
+use crate::error::{
+    ApiErrorTrait, AsErrorCode, DbErrWrapper, ErrorCode, InvalidField,
+    RepositoryError,
+};
 use crate::model::lookup_table::LookupTableEnum;
 use crate::model::user_role::UserRole;
-use crate::repo::user::update_user_last_login;
-use crate::state::ARGON2_HASHER;
+use crate::utils::orm::PgFuncExt;
 
 pub type AuthSession = axum_login::AuthSession<Service>;
 
 error_set! {
-    #[disable(From(RepositoryError))]
-    Error = {
-        General(RepositoryError),
-        #[display("Already signed in")]
-        AlreadySignedIn,
-        #[display("Username already in use")]
-        UsernameAlreadyInUse,
-        #[display("Incorrect username or password")]
-        AuthenticationFailed,
-        #[display("Session error")]
-        Session(axum_login::tower_sessions::session::Error),
-        #[display("Failed to hash password: {err}")]
-        HashPasswordFailed {
-            err: password_hash::errors::Error
-        },
-        #[display("Failed to parse password: {err}")]
-        ParsePasswordFailed {
-            err: password_hash::errors::Error
-        },
-        Validate(ValidateError),
+    #[derive(ApiError)]
+    AuthnBackendError = {
+        Authn(AuthnError),
+        Repo(RepositoryError)
     };
-    ValidateError = {
-        #[display("Invalid username")]
-        InvalidUserName,
-        #[display("Invalid Password")]
-        InvalidPassword,
-        #[display("Password is too weak")]
-        PasswordTooWeak,
-        #[display("Invalid avatar type")]
-        InvalidImageType
+    #[derive(ApiError, IntoErrorSchema)]
+    SessionBackendError = {
+        Session(SessionError),
+        AuthnBackend(AuthnBackendError)
+    };
+    #[derive(ApiError, IntoErrorSchema)]
+    SignInError = {
+        #[display("Already signed in")]
+        #[api_error(
+            status_code = StatusCode::CONFLICT,
+            error_code = ErrorCode::AlreadySignedIn,
+        )]
+        AlreadySignedIn,
+        Authn(AuthnError),
+        Session(SessionBackendError),
+    };
+    #[derive(ApiError, IntoErrorSchema)]
+    SignUpError = {
+        Create(CreateUserError),
+        Session(SessionBackendError),
     };
     #[derive(IntoErrorSchema, FromDbErr, ApiError)]
     UploadAvatarError = {
@@ -73,84 +69,110 @@ error_set! {
         CreateImageError(super::image::CreateError),
         InvalidField(InvalidField)
     };
+    #[derive(ApiError, IntoErrorSchema)]
+    CreateUserError = {
+        #[display("Username already in use")]
+        #[api_error(
+            status_code = StatusCode::CONFLICT,
+            error_code = ErrorCode::UsernameAlreadyInUse
+        )]
+        UsernameAlreadyInUse,
+        Hash(HasherError),
+        Validate(ValidateCredsError),
+        Repo(RepositoryError),
+    };
 }
 
-impl<T> From<T> for Error
-where
-    T: Into<RepositoryError>,
-{
-    fn from(err: T) -> Self {
-        Self::General(err.into())
+#[derive(Debug, derive_more::Display)]
+#[display("Session error")]
+pub struct SessionError(axum_login::tower_sessions::session::Error);
+
+impl From<axum_login::tower_sessions::session::Error> for SessionError {
+    fn from(value: axum_login::tower_sessions::session::Error) -> Self {
+        Self(value)
     }
 }
 
-impl From<axum_login::Error<Service>> for Error {
-    fn from(err: axum_login::Error<Service>) -> Self {
-        match err {
-            axum_login::Error::Backend(err) => err,
-            axum_login::Error::Session(err) => Self::Session(err),
+impl StatusCodeExt for SessionError {
+    fn as_status_code(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
+        [StatusCode::INTERNAL_SERVER_ERROR].into_iter()
+    }
+}
+
+impl AsErrorCode for SessionError {
+    fn as_error_code(&self) -> crate::error::ErrorCode {
+        ErrorCode::InternalServerError
+    }
+}
+
+impl ApiErrorTrait for SessionError {}
+
+impl std::error::Error for SessionError {}
+
+impl From<DbErr> for AuthnBackendError {
+    fn from(value: DbErr) -> Self {
+        Self::Repo(value.into())
+    }
+}
+
+impl From<DbErr> for CreateUserError {
+    fn from(value: DbErr) -> Self {
+        Self::Repo(value.into())
+    }
+}
+
+impl From<password_hash::Error> for CreateUserError {
+    fn from(value: password_hash::Error) -> Self {
+        Self::Hash(value.into())
+    }
+}
+
+impl From<axum_login::Error<Service>> for SessionBackendError {
+    fn from(value: axum_login::Error<Service>) -> Self {
+        match value {
+            axum_login::Error::Session(err) => Self::Session(SessionError(err)),
+            axum_login::Error::Backend(err) => Self::AuthnBackend(err),
         }
+    }
+}
+
+impl From<axum_login::Error<Service>> for SignInError {
+    fn from(value: axum_login::Error<Service>) -> Self {
+        Self::Session(value.into())
     }
 }
 
 super::def_service!();
 
 impl Service {
-    pub async fn is_exist(&self, username: &str) -> Result<bool, Error> {
-        const ALIAS: &str = "is_exist";
-        let query = Query::select()
-            .expr_as(
-                Expr::exists(
-                    Query::select()
-                        .expr(Expr::value(1))
-                        .from(user::Entity)
-                        .and_where(user::Column::Name.eq(username))
-                        .to_owned(),
-                ),
-                Alias::new(ALIAS),
-            )
-            .to_owned();
-
-        let stmt = DatabaseBackend::Postgres.build(&query);
-
-        let result = self
-            .db
-            .query_one(stmt)
-            .await?
-            .ok_or_else(|| {
-                Error::General(RepositoryError::EntityNotFound {
-                    entity_name: user::Entity.table_name(),
-                })
-            })
-            .map(|x| x.try_get::<bool>("", ALIAS))??;
-
-        Ok(result)
-    }
-
     pub async fn find_by_id(
         &self,
         id: &i32,
-    ) -> Result<Option<user::Model>, Error> {
-        Ok(user::Entity::find()
+    ) -> Result<Option<user::Model>, DbErr> {
+        user::Entity::find()
             .filter(user::Column::Id.eq(*id))
             .one(&self.db)
-            .await?)
+            .await
     }
 
     pub async fn find_by_name(
         &self,
         username: &str,
-    ) -> Result<Option<user::Model>, Error> {
-        Ok(user::Entity::find()
+    ) -> Result<Option<user::Model>, DbErr> {
+        user::Entity::find()
             .filter(user::Column::Name.eq(username))
             .one(&self.db)
-            .await?)
+            .await
     }
 
     pub async fn profile(
         &self,
         username: String,
-    ) -> Result<Option<UserProfile>, Error> {
+    ) -> Result<Option<UserProfile>, RepositoryError> {
         if let Some((user, avatar)) = user::Entity::find()
             .filter(user::Column::Name.eq(username))
             .find_also_related(entity::image::Entity)
@@ -185,84 +207,45 @@ impl Service {
 
     pub async fn create(
         &self,
+        creds: AuthCredential,
+    ) -> Result<user::Model, CreateUserError> {
+        create_impl(creds, &self.db).await
+    }
+
+    pub async fn is_username_in_use(
+        &self,
         username: &str,
-        password: &str,
-    ) -> Result<user::Model, Error> {
-        validate_username(username)?;
-        validate_password(password)?;
-
-        if self.is_exist(username).await? {
-            return Err(Error::UsernameAlreadyInUse);
-        }
-
-        let password = hash_password(password)
-            .map_err(|err| Error::HashPasswordFailed { err })?;
-
-        let model = user::ActiveModel {
-            name: Set(username.to_string()),
-            password: Set(password.to_string()),
-            ..Default::default()
-        };
-
-        let user = user::Entity::insert(model)
-            .exec_with_returning(&self.db)
+    ) -> Result<bool, RepositoryError> {
+        let user = user::Entity::find()
+            .filter(user::Column::Name.eq(username))
+            .count(&self.db)
             .await?;
-
-        user_role::Entity::insert(
-            user_role::Model {
-                user_id: user.id,
-                role_id: UserRole::User.as_id(),
-            }
-            .into_active_model(),
-        )
-        .exec(&self.db)
-        .await?;
-
-        Ok(user)
+        Ok(user > 0)
     }
 
     pub async fn verify_credentials(
         &self,
-        username: &str,
-        password: &str,
-    ) -> Result<user::Model, Error> {
-        let (user, password_hash) = match self.find_by_name(username).await {
-            Ok(Some(u)) => {
-                let password_hash = u.password.clone();
-                (Some(u), password_hash)
-            }
-            Ok(None) => (
-                None,
-                hash_password("dummyPassword")
-                    .map_err(|err| Error::HashPasswordFailed { err })?,
-            ),
-            Err(e) => return Err(e),
-        };
+        cred: AuthCredential,
+    ) -> Result<Option<user::Model>, AuthnBackendError> {
+        let user = self.find_by_name(&cred.username).await?;
+        let password = user.as_ref().map(|u| u.password.as_str());
 
-        let verification_result =
-            verify_password(password, &password_hash).await?;
-
-        if verification_result && user.is_some() {
-            #[allow(clippy::unnecessary_unwrap)]
-            Ok(user.unwrap())
-        } else {
-            Err(Error::AuthenticationFailed)
-        }
+        cred.verify_credentials(password).await?;
+        Ok(user)
     }
 
     pub async fn sign_in(
         &self,
         mut auth_session: AuthSession,
         creds: AuthCredential,
-    ) -> Result<(), Error> {
+    ) -> Result<(), SignInError> {
         if auth_session.user.is_some() {
-            return Err(Error::AlreadySignedIn);
+            return Err(SignInError::AlreadySignedIn);
         }
 
-        let user = match auth_session.authenticate(creds.clone()).await {
-            Ok(Some(user)) => user,
-            Ok(None) => return Err(Error::AuthenticationFailed),
-            Err(err) => return Err(err.into()),
+        let user = match auth_session.authenticate(creds).await? {
+            Some(user) => user,
+            None => Err(AuthnError::AuthenticationFailed)?,
         };
 
         auth_session.login(&user).await?;
@@ -273,7 +256,7 @@ impl Service {
     pub async fn sign_out(
         &self,
         mut auth_session: AuthSession,
-    ) -> Result<(), Error> {
+    ) -> Result<(), SessionBackendError> {
         auth_session.logout().await?;
         Ok(())
     }
@@ -329,109 +312,64 @@ impl Service {
     }
 }
 
-fn get_avatar_url(model: &entity::image::Model) -> String {
-    PathBuf::from_iter([&model.directory, &model.filename])
-        .to_str()
-        // String from database are valid unicode so unwrap is safe
-        .unwrap()
-        .to_string()
-}
+async fn create_impl(
+    creds: AuthCredential,
+    db: &DatabaseConnection,
+) -> Result<user::Model, CreateUserError> {
+    creds.validate()?;
 
-#[async_trait]
-impl AuthnBackend for Service {
-    type User = user::Model;
-    type Credentials = AuthCredential;
-    type Error = Error;
+    let AuthCredential { username, .. } = &creds;
 
-    async fn authenticate(
-        &self,
-        AuthCredential { username, password }: Self::Credentials,
-    ) -> Result<Option<Self::User>, Self::Error> {
-        Ok(Some(self.verify_credentials(&username, &password).await?))
+    if is_username_in_use(username, db).await? {
+        return Err(CreateUserError::UsernameAlreadyInUse);
     }
 
-    async fn get_user(
-        &self,
-        user_id: &UserId<Self>,
-    ) -> Result<Option<Self::User>, Self::Error> {
-        let user = self.find_by_id(user_id).await?;
+    let password = creds.hashed_password()?;
 
-        if user.is_some() {
-            update_user_last_login(*user_id, &self.db).await?;
+    let user = user::ActiveModel {
+        name: Set(username.to_owned()),
+        password: Set(password.to_owned()),
+        ..Default::default()
+    }
+    .insert(db)
+    .await?;
+
+    user_role::Entity::insert(
+        user_role::Model {
+            user_id: user.id,
+            role_id: UserRole::User.as_id(),
         }
+        .into_active_model(),
+    )
+    .exec(db)
+    .await?;
 
-        Ok(user)
-    }
+    Ok(user)
 }
 
-fn validate_username(username: &str) -> Result<(), ValidateError> {
-    static USER_NAME_REGEX: LazyLock<Regex> =
-        LazyLock::new(|| Regex::new(r"^[\p{L}\p{N}_]{1,32}$").unwrap());
+pub async fn is_username_in_use(
+    username: &str,
+    db: &impl ConnectionTrait,
+) -> Result<bool, RepositoryError> {
+    let user = user::Entity::find()
+        .filter(user::Column::Name.eq(username))
+        .count(db)
+        .await?;
 
-    if USER_NAME_REGEX.is_match(username)
-        && !username
-            .chars()
-            .any(|c| c.is_control() || c.is_whitespace())
-    {
-        Ok(())
-    } else {
-        Err(ValidateError::InvalidUserName)
-    }
+    Ok(user > 0)
 }
 
-/// Valid characters
-/// - A-z
-/// - 0-9
-/// - \`~!@#$%^&*()-_=+
-fn validate_password(password: &str) -> Result<(), ValidateError> {
-    use zxcvbn::{Score, zxcvbn};
+pub async fn update_last_login(
+    user_id: i32,
+    db: &impl ConnectionTrait,
+) -> Result<(), DbErr> {
+    user::Entity::update_many()
+        .col_expr(user::Column::LastLogin, PgFuncExt::now().into())
+        .filter(user::Column::Id.eq(user_id))
+        .exec(db)
+        .await?;
 
-    static USER_PASSWORD_REGEX: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"^[A-Za-z\d`~!@#$%^&*()\-_=+]{8,}$").unwrap()
-    });
-
-    if USER_PASSWORD_REGEX.is_match(password) {
-        let result = zxcvbn(password, &[]);
-
-        #[cfg(test)]
-        {
-            println!("password: {password}, score: {}", result.score());
-        }
-
-        match result.score() {
-            Score::Three | Score::Four => Ok(()),
-            _ => Err(ValidateError::PasswordTooWeak),
-        }
-    } else {
-        Err(ValidateError::InvalidPassword)
-    }
-}
-
-async fn verify_password(
-    password: &str,
-    password_hash: &str,
-) -> Result<bool, Error> {
-    let bytes = password.as_bytes().to_owned();
-    let password_hash = password_hash.to_string();
-    tokio::task::spawn_blocking(move || {
-        let hash = PasswordHash::new(&password_hash)
-            .map_err(|err| Error::ParsePasswordFailed { err })?;
-
-        Ok(Argon2::default().verify_password(&bytes, &hash).is_ok())
-    })
-    .await?
-}
-
-pub fn hash_password(
-    password: &str,
-) -> Result<String, password_hash::errors::Error> {
-    let salt = SaltString::generate(&mut OsRng);
-
-    // Should this be a singleton?
-    let password_hash =
-        ARGON2_HASHER.hash_password(password.as_bytes(), &salt)?;
-
-    Ok(password_hash.to_string())
+    Ok(())
 }
 
 pub async fn upsert_admin_acc(db: &DatabaseConnection) {
@@ -477,81 +415,44 @@ pub async fn upsert_admin_acc(db: &DatabaseConnection) {
     .expect("Failed to upsert admin account");
 }
 
+fn get_avatar_url(model: &entity::image::Model) -> String {
+    PathBuf::from_iter([&model.directory, &model.filename])
+        .to_str()
+        // String from database are valid unicode so unwrap is safe
+        .unwrap()
+        .to_string()
+}
+
+#[async_trait]
+impl AuthnBackend for Service {
+    type User = user::Model;
+    type Credentials = AuthCredential;
+    type Error = AuthnBackendError;
+
+    async fn authenticate(
+        &self,
+        creds: Self::Credentials,
+    ) -> Result<Option<Self::User>, Self::Error> {
+        self.verify_credentials(creds).await
+    }
+
+    async fn get_user(
+        &self,
+        user_id: &UserId<Self>,
+    ) -> Result<Option<Self::User>, Self::Error> {
+        let user = self.find_by_id(user_id).await?;
+
+        if user.is_some() {
+            update_last_login(*user_id, &self.db).await?;
+        }
+
+        Ok(user)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use chrono::DateTime;
-
-    use super::*;
-
-    #[test]
-    fn test_validate_username() {
-        let test_cases = [
-            // 长度
-            ("", false),
-            (&"a".repeat(33), false),
-            // 空格
-            (" a ", false),
-            ("a a", false),
-            // 特殊字符
-            ("😀", false),       // emoji
-            (" ", false),        // 单个空格
-            ("\n", false),       // 换行符
-            ("\t", false),       // 制表符
-            ("\u{200B}", false), // 零宽空格
-            ("\u{00A0}", false), // 不间断空格
-            ("alice_megatron", true),
-            // 中文
-            ("无蛋黄", true),
-            ("憂鬱的臺灣烏龜", true),
-            // 日文
-            ("ひらがな", true),
-            ("かたかな", true),
-            ("カタカナ", true),
-            // 韩文
-            ("안녕하세요", true),
-            ("사용자", true),
-            // 西里尔字母
-            ("пример", true),
-            ("пользователь", true),
-            // 德语字符
-            ("müller", true),
-            ("straße", true),
-            // 阿拉伯字符
-            ("مرحبا", true),
-            ("مستخدم", true),
-        ];
-
-        for (username, expected) in test_cases {
-            assert_eq!(validate_username(username).is_ok(), expected);
-        }
-    }
-
-    #[test]
-    fn test_validate_password() {
-        let test_case = [
-            ("Password123!", false),
-            ("SecurePass#2023", true),
-            ("HelloWorld!1", true),
-            ("weak", false),
-            ("password", false),
-            ("PASSWORD123", false),
-            ("Pass!", false),
-            ("12345678", false),
-            ("!@#$%^&*", false),
-            ("NoSpecialChar123", true),
-            ("NoNumberHere!", true),
-            ("nocapitals1!", true),
-            ("NOLOWERCASE1!", true),
-            ("m10KSGDckKrX38Vm", true),
-            ("1KrIuT%gcemHwjwF", true),
-            ("a1`~!@#$%^&*()-_=+", true),
-        ];
-
-        for (password, expected) in test_case {
-            println!("password: {password}, expected: {expected}");
-            assert_eq!(validate_password(password).is_ok(), expected);
-        }
-    }
 
     #[test]
     fn get_avatar_url_test() {

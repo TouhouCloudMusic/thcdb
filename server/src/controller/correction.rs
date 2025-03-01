@@ -27,8 +27,7 @@ pub fn router() -> OpenApiRouter<AppState> {
 error_set! {
     #[derive(EnumToResponse)]
     Error = {
-        User(service::user::Error),
-        Correction(RepositoryError),
+        Repo(RepositoryError),
         Api(ApiError)
     };
 }

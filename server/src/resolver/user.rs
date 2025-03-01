@@ -1,6 +1,6 @@
-use juniper::{FieldError, FieldResult, graphql_object, graphql_value};
+use juniper::{FieldResult, graphql_object};
 
-use crate::dto::user::AuthCredential;
+use crate::domain::auth::AuthCredential;
 use crate::model::output::{LoginOutput, SignupOutput};
 use crate::service::juniper::JuniperContext;
 
@@ -15,14 +15,15 @@ impl UserQuery {
         input: AuthCredential,
         context: &JuniperContext,
     ) -> FieldResult<LoginOutput> {
-        let user_service = &context.state.user_service;
-        let verification_result = user_service
-            .verify_credentials(&input.username, &input.password)
-            .await?;
+        todo!()
+        // let user_service = &context.state.user_service;
+        // let verification_result = user_service
+        //     .verify_credentials(&input.username, &input.password)
+        //     .await?;
 
-        Ok(LoginOutput {
-            message: format!("Hello {}!", verification_result.name),
-        })
+        // Ok(LoginOutput {
+        //     message: format!("Hello {}!", verification_result.name),
+        // })
     }
 }
 #[graphql_object]
@@ -33,25 +34,26 @@ impl UserMutation {
         input: AuthCredential,
         context: &JuniperContext,
     ) -> FieldResult<SignupOutput> {
-        let user_service = &context.state.user_service;
+        todo!()
+        // let user_service = &context.state.user_service;
 
-        if user_service.is_exist(&input.username).await? {
-            return Err(FieldError::new(
-                "User already exits",
-                graphql_value!({"status": "USER_EXISTS"}),
-            ));
-        }
+        // if user_service.is_use(&input.username).await? {
+        //     return Err(FieldError::new(
+        //         "User already exits",
+        //         graphql_value!({"status": "USER_EXISTS"}),
+        //     ));
+        // }
 
-        let user = user_service
-            .create(&input.username, &input.password)
-            .await
-            .map_err(|err| {
-                FieldError::new(
-                    format!("Failed to create user: {err}"),
-                    graphql_value!({"status": "DATABASE_ERROR"}),
-                )
-            })?;
+        // let user = user_service
+        //     .create()
+        //     .await
+        //     .map_err(|err| {
+        //         FieldError::new(
+        //             format!("Failed to create user: {err}"),
+        //             graphql_value!({"status": "DATABASE_ERROR"}),
+        //         )
+        //     })?;
 
-        Ok(SignupOutput { id: user.id })
+        // Ok(SignupOutput { id: user.id })
     }
 }

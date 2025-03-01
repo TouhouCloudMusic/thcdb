@@ -14,12 +14,15 @@
     clippy::wildcard_imports,
     clippy::enum_glob_use
 )]
+#![deny(unused_must_use)]
 #![feature(variant_count)]
+#![feature(let_chains)]
 
 mod api_response;
 mod app;
 mod constant;
 mod controller;
+mod domain;
 mod dto;
 mod error;
 mod infrastructure;
