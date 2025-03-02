@@ -44,6 +44,9 @@ error_set! {
     };
     #[derive(ApiError, IntoErrorSchema)]
     SessionBackendError = {
+        #[api_error(
+            into_response = self
+        )]
         Session(SessionError),
         AuthnBackend(AuthnBackendError)
     };
@@ -67,6 +70,9 @@ error_set! {
     UploadAvatarError = {
         DbErr(DbErrWrapper),
         CreateImageError(super::image::CreateError),
+        #[api_error(
+            into_response = self
+        )]
         InvalidField(InvalidField)
     };
     #[derive(ApiError, IntoErrorSchema)]
@@ -77,7 +83,13 @@ error_set! {
             error_code = ErrorCode::UsernameAlreadyInUse
         )]
         UsernameAlreadyInUse,
+        #[api_error(
+            into_response = self
+        )]
         Hash(HasherError),
+        #[api_error(
+            into_response = self
+        )]
         Validate(ValidateCredsError),
         Repo(RepositoryError),
     };

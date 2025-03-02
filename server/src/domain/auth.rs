@@ -27,7 +27,13 @@ error_set! {
         )]
         #[display("Incorrect username or password")]
         AuthenticationFailed,
+        #[api_error(
+            into_response = self
+        )]
         Hash(HasherError),
+        #[api_error(
+            into_response = self
+        )]
         Tokio(TokioError),
     };
     ValidateCredsError = {

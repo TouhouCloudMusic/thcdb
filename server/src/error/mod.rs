@@ -64,7 +64,11 @@ impl Display for DbErrWrapper {
     }
 }
 
-impl std::error::Error for DbErrWrapper {}
+impl std::error::Error for DbErrWrapper {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        self.0.source()
+    }
+}
 
 impl StatusCodeExt for DbErrWrapper {
     fn as_status_code(&self) -> StatusCode {
@@ -135,7 +139,7 @@ where
 
 impl From<DbErr> for RepositoryError {
     fn from(value: DbErr) -> Self {
-        Self::Database(DbErrWrapper(value))
+        Self::Database(DbErrWrapper::from(value))
     }
 }
 
@@ -175,7 +179,7 @@ impl IntoResponse for RepositoryError {
         match self {
             Self::Database(e) => e.into_response(),
             Self::Tokio(e) => e.into_api_response(),
-            _ => self.into_api_response(),
+            _ => self.into_response(),
         }
     }
 }

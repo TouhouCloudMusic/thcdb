@@ -156,7 +156,7 @@ fn gen_api_error_impl(
                 if fields.unnamed.len() != 1 {
                     return Err(Error::new_spanned(
                         fields,
-                        "Only accepts a single StatusCode",
+                        "Field length must be 1",
                     ));
                 }
 
@@ -198,7 +198,7 @@ fn gen_api_error_impl(
                     }
                     IntoResponseOpt::Inner => {
                         into_response_arms.push(quote! {
-                            Self::#var_name(inner) => inner.into_api_response()
+                            Self::#var_name(inner) => inner.into_response()
                         });
                     }
                 };
