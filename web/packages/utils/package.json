@@ -4,15 +4,9 @@
   "type": "module",
   "devDependencies": {},
   "exports": {
-    ".": "./src/index.ts",
-    "./drizzle": "./src/drizzle/index.ts"
+    ".": "./src/index.ts"
   },
   "dependencies": {
-    "@node-rs/argon2": "^2.0.0",
-    "effect": "^3.9.1",
-    "fp-ts": "^2.16.9"
-  },
-  "peerDependencies": {
-    "drizzle-orm": "^0.35.3"
+    "effect": "^3.9.1"
   }
 }
