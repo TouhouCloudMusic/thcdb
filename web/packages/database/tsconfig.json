@@ -1,14 +1,14 @@
 {
-	"compilerOptions": {
-		"target": "ESNext",
-		"module": "ESNext",
-		"moduleResolution": "Bundler",
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"composite": true,
-		"strict": true,
-		// "skipLibCheck": true,
-		"declarationMap": true,
-		"declaration": true
-	}
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "composite": true,
+    "strict": true,
+    // "skipLibCheck": true,
+    "declarationMap": true,
+    "declaration": true
+  }
 }

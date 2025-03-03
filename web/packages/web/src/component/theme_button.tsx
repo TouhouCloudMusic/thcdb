@@ -8,30 +8,32 @@ import { TertiaryButton } from "./button/index.tsx"
 const defaultStyle = `flex place-content-center items-center`
 
 export function ThemeButton(
-	props: Omit<ComponentProps<"button">, "onClick" | "children" | "color">
+  props: Omit<ComponentProps<"button">, "onClick" | "children" | "color">,
 ) {
-	const theme = useTheme()
+  const theme = useTheme()
 
-	const twClass = createMemo(() => twMerge(defaultStyle, props.class))
+  const twClass = createMemo(() => twMerge(defaultStyle, props.class))
 
-	return (
-		<Switch>
-			<Match when={theme.value() === AppTheme.light}>
-				<TertiaryButton
-					{...props}
-					class={twClass()}
-					onClick={() => theme.set(AppTheme.dark)}>
-					<SunIcon />
-				</TertiaryButton>
-			</Match>
-			<Match when={theme.value() === AppTheme.dark}>
-				<TertiaryButton
-					{...props}
-					class={twClass()}
-					onClick={() => theme.set(AppTheme.light)}>
-					<MoonIcon />
-				</TertiaryButton>
-			</Match>
-		</Switch>
-	)
+  return (
+    <Switch>
+      <Match when={theme.value() === AppTheme.light}>
+        <TertiaryButton
+          {...props}
+          class={twClass()}
+          onClick={() => theme.set(AppTheme.dark)}
+        >
+          <SunIcon />
+        </TertiaryButton>
+      </Match>
+      <Match when={theme.value() === AppTheme.dark}>
+        <TertiaryButton
+          {...props}
+          class={twClass()}
+          onClick={() => theme.set(AppTheme.light)}
+        >
+          <MoonIcon />
+        </TertiaryButton>
+      </Match>
+    </Switch>
+  )
 }

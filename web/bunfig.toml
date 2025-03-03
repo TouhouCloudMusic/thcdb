@@ -1,5 +1,8 @@
 [install]
 registry = "https://registry.npmmirror.com"
 
+[install.lockfile]
+print = "yarn"
+
 [test]
 coverage = true

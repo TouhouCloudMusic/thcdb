@@ -1,38 +1,38 @@
 {
-	"compilerOptions": {
-		"allowImportingTsExtensions": true,
-		"allowJs": true,
-		"allowSyntheticDefaultImports": true,
-		"esModuleInterop": true,
-		"exactOptionalPropertyTypes": true,
-		"isolatedModules": true,
-		"jsx": "preserve",
-		"jsxImportSource": "solid-js",
-		// Bundler
-		"lib": ["ESNext", "DOM"],
-		"module": "ESNext",
-		"moduleResolution": "bundler",
-		"noEmit": true,
-		"noFallthroughCasesInSwitch": true,
-		"noPropertyAccessFromIndexSignature": true,
-		"noUnusedLocals": true,
-		"noUnusedParameters": true,
-		// Path Alias
-		"paths": {
-			"lib/*": ["./lib/*"],
-			"~/*": ["./src/*"]
-		},
-		"skipLibCheck": true,
-		"sourceMap": true,
-		// Linter
-		"strict": true,
-		"target": "ESNext",
-		"types": [
-			"@types/bun",
-			"@testing-library/jest-dom",
-			"vinxi/types/client",
-			"vitest/importMeta"
-		]
-	},
-	"exclude": ["node_modules", ".output", ".vinxi"]
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "exactOptionalPropertyTypes": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    // Bundler
+    "lib": ["ESNext", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    // Path Alias
+    "paths": {
+      "lib/*": ["./lib/*"],
+      "~/*": ["./src/*"]
+    },
+    "skipLibCheck": true,
+    "sourceMap": true,
+    // Linter
+    "strict": true,
+    "target": "ESNext",
+    "types": [
+      "@types/bun",
+      "@testing-library/jest-dom",
+      "vinxi/types/client",
+      "vitest/importMeta"
+    ]
+  },
+  "exclude": ["node_modules", ".output", ".vinxi"]
 }

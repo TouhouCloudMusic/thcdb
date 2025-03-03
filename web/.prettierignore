@@ -12,3 +12,5 @@ src/assets
 
 # web
 packages/web/src/style/shadow/shadow_default.css
+
+packages/database/edgeql-js

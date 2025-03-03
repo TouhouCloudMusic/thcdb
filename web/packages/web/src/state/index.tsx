@@ -7,17 +7,17 @@ import { ThemeProvider } from "./theme"
 import { UserStateProvider } from "./user"
 
 export function Providers(props: ParentProps) {
-	return (
-		<MetaProvider>
-			<SessionProvider>
-				<TanStackProvider>
-					<UserStateProvider>
-						<I18NProvider>
-							<ThemeProvider>{props.children}</ThemeProvider>
-						</I18NProvider>
-					</UserStateProvider>
-				</TanStackProvider>
-			</SessionProvider>
-		</MetaProvider>
-	)
+  return (
+    <MetaProvider>
+      <SessionProvider>
+        <TanStackProvider>
+          <UserStateProvider>
+            <I18NProvider>
+              <ThemeProvider>{props.children}</ThemeProvider>
+            </I18NProvider>
+          </UserStateProvider>
+        </TanStackProvider>
+      </SessionProvider>
+    </MetaProvider>
+  )
 }

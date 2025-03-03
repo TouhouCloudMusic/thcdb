@@ -1,34 +1,42 @@
 {
   "name": "server",
   "version": "1.0.50",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts",
     "build": "bun build --compile --minify-whitespace --minify-identifiers --minify-syntax --target bun --outfile server ./src/index.ts",
+    "db:drop": "bunx drizzle-kit drop",
+    "db:generate": "bunx drizzle-kit generate",
+    "db:init": "bun scripts/init_database/create_database.ts && bun scripts/init_database/run_create_type.ts && bun run db:migrate && scripts/init_database/run_init_lookup_table.ts",
+    "db:migrate": "bun ./src/database/migrate/index.ts",
+    "dev": "bun --bun --watch src/index.ts",
+    "fix": "bunx oxlint --fix --fix-suggestions && bunx eslint --fix --cache",
+    "fmt": "bunx prettier --cache --write .",
+    "lint": "bunx oxlint && bunx eslint --cache",
     "start": "./server",
-    "generate": "bunx drizzle-kit generate",
-    "migrate": "bun ./src/database/migrate.ts",
-    "drop": "bunx drizzle-kit drop",
-    "fmt": "bunx prettier --write ."
+    "pre-push": "bun test"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.1.1",
-    "@elysiajs/opentelemetry": "^1.1.5",
-    "@elysiajs/swagger": "^1.1.3",
+    "@elysiajs/html": "^1.1.1",
+    "@elysiajs/static": "^1.1.1",
+    "@elysiajs/swagger": "1.1.3",
     "@node-rs/argon2": "^2.0.0",
+    "@oslojs/crypto": "^1.0.1",
     "@oslojs/encoding": "^1.1.0",
     "@touhouclouddb/utils": "workspace:*",
     "dayjs": "^1.11.13",
-    "drizzle-orm": "^0.34.0",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.35.3",
     "drizzle-typebox": "^0.1.1",
     "effect": "^3.9.1",
-    "elysia": "latest",
-    "postgres": "^3.4.4"
+    "elysia": "1.1.21",
+    "postgres": "^3.4.4",
+    "radash": "^12.1.0",
+    "sharp": "^0.33.5"
   },
   "devDependencies": {
-    "bun-types": "latest",
-    "drizzle-kit": "^0.25.0",
-    "typescript": "^5.6.2"
+    "@eslint/js": "^9.13.0",
+    "drizzle-kit": "^0.26.2"
   },
   "module": "src/index.js"
 }

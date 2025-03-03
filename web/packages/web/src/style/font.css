@@ -1,17 +1,17 @@
 @font-face {
-	font-family: Geist;
-	font-weight: 100 900;
-	src:
-		local("Geist[wght]"),
-		url("/src/assets/font/Geist/Geist[wght].woff2") format("woff2");
+  font-family: Geist;
+  font-weight: 100 900;
+  src:
+    local("Geist[wght]"),
+    url("/src/assets/font/Geist/Geist[wght].woff2") format("woff2");
 }
 
 @font-face {
-	font-family: "Cascadia Code";
-	font-style: normal;
-	font-weight: 400;
-	src:
-		local("Cascadia Code"),
-		url("/src/assets/font/CascadiaCode/CascadiaCode.woff2") format("woff2"),
-		url("/src/assets/font/CascadiaCode/CascadiaCode.ttf") format("truetype");
+  font-family: "Cascadia Code";
+  font-style: normal;
+  font-weight: 400;
+  src:
+    local("Cascadia Code"),
+    url("/src/assets/font/CascadiaCode/CascadiaCode.woff2") format("woff2"),
+    url("/src/assets/font/CascadiaCode/CascadiaCode.ttf") format("truetype");
 }

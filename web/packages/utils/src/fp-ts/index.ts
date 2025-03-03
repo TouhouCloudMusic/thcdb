@@ -19,7 +19,7 @@ export const myE = {
     E2 extends GetLeft<EB>,
     B extends GetRight<EB>,
   >(
-    f: (a: A) => EB
+    f: (a: A) => EB,
   ) => (ma: TaskEither<E1, A>) => TE.TaskEither<E1 | E2, B>,
 }
 
@@ -33,7 +33,7 @@ export const myTE = {
     B,
   >(
     name: Exclude<N, keyof A>,
-    f: (a: A) => TaskEither<E2, B>
+    f: (a: A) => TaskEither<E2, B>,
   ) => (fa: TEA) => TaskEither<
     E1 | E2,
     {
@@ -46,7 +46,7 @@ export const myTE = {
     E2 extends GetLeft<TEB>,
     B extends GetRight<TEB>,
   >(
-    f: (a: A) => TEB
+    f: (a: A) => TEB,
   ) => <E1>(ma: TaskEither<E1, A>) => TE.TaskEither<E1 | E2, B>,
   unwrap: <E, A>(fa: TaskEither<E, A>) =>
     TE.matchW(identity.of, identity.of)(fa),

@@ -1,3 +1,3 @@
 export interface IndexComponentProps {
-	index: number
+  index: number
 }

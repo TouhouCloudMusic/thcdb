@@ -2,16 +2,17 @@
   "name": "@touhouclouddb/utils",
   "module": "./src/index.ts",
   "type": "module",
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
+  "devDependencies": {},
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./drizzle": "./src/drizzle/index.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.0.0",
-    "argon2": "^0.41.1",
     "effect": "^3.9.1",
     "fp-ts": "^2.16.9"
+  },
+  "peerDependencies": {
+    "drizzle-orm": "^0.35.3"
   }
 }

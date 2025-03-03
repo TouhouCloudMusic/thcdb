@@ -11,45 +11,45 @@ export const AppLocale = type(`"en" | "zh-Hans"`)
 export type AppLocale = typeof AppLocale.infer
 
 function setLocaleCookie(locale: AppLocale) {
-	Cookie.set("app_locale", locale, {
-		expires: dayjs().add(30, "days").toDate(),
-	})
+  Cookie.set("app_locale", locale, {
+    expires: dayjs().add(30, "days").toDate(),
+  })
 }
 
 function setDocumentLang(locale: AppLocale) {
-	document.documentElement.lang = locale
+  document.documentElement.lang = locale
 }
 
 export class I18NController {
-	private localeSignal: Signal<AppLocale>
-	private transition: Transition
+  private localeSignal: Signal<AppLocale>
+  private transition: Transition
 
-	constructor(locale: AppLocale) {
-		if (!isServer) setDocumentLang(locale)
-		setLocaleCookie(locale)
-		this.localeSignal = createSignal<AppLocale>(locale)
-		this.transition = useTransition()
-	}
+  constructor(locale: AppLocale) {
+    if (!isServer) setDocumentLang(locale)
+    setLocaleCookie(locale)
+    this.localeSignal = createSignal<AppLocale>(locale)
+    this.transition = useTransition()
+  }
 
-	public get locale() {
-		return this.localeSignal[0]
-	}
+  public get locale() {
+    return this.localeSignal[0]
+  }
 
-	public setLocale(newLocale: AppLocale) {
-		if (this.locale() === newLocale) return
-		void this.transition[1](() => {
-			this.localeSignal[1](newLocale)
-			setLocaleCookie(newLocale)
-			setDocumentLang(newLocale)
-		})
-	}
+  public setLocale(newLocale: AppLocale) {
+    if (this.locale() === newLocale) return
+    void this.transition[1](() => {
+      this.localeSignal[1](newLocale)
+      setLocaleCookie(newLocale)
+      setDocumentLang(newLocale)
+    })
+  }
 
-	public duringTransition() {
-		return this.transition[0]()
-	}
+  public duringTransition() {
+    return this.transition[0]()
+  }
 }
 
 export const I18NContext = createContext<I18NController>()
 export function useI18N() {
-	return useContextUnsave(I18NContext)
+  return useContextUnsave(I18NContext)
 }

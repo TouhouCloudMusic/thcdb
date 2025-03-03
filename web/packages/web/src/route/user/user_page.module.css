@@ -1,7 +1,7 @@
 main {
-	display: flex;
+  display: flex;
 }
 
 aside {
-	flex-grow: 1;
+  flex-grow: 1;
 }

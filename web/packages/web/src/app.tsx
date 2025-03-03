@@ -10,61 +10,64 @@ import { Providers } from "./state/index.tsx"
 import "./app.css"
 
 export default function App() {
-	return (
-		<Providers>
-			<Routes />
-		</Providers>
-	)
+  return (
+    <Providers>
+      <Routes />
+    </Providers>
+  )
 }
 
 function Routes() {
-	return (
-		<Router root={(props) => <Layout {...props} />}>
-			<CustomErrorBoundary>
-				<FileRoutes />
-			</CustomErrorBoundary>
-		</Router>
-	)
+  return (
+    <Router root={(props) => <Layout {...props} />}>
+      <CustomErrorBoundary>
+        <FileRoutes />
+      </CustomErrorBoundary>
+    </Router>
+  )
 }
 
 function Layout(props: ParentProps) {
-	const layoutStyle = createMemo(() =>
-		useI18N().duringTransition() ?
-			{
-				transition: "color .3s",
-				"transition-delay": ".1s",
-				"transition-timing-function": "ease-in",
-			}
-		:	undefined
-	)
+  const layoutStyle = createMemo(() =>
+    useI18N().duringTransition() ?
+      {
+        transition: "color .3s",
+        "transition-delay": ".1s",
+        "transition-timing-function": "ease-in",
+      }
+    : undefined,
+  )
 
-	return (
-		<div
-			class="flex min-h-full flex-col"
-			style={layoutStyle()}>
-			<Title>Doujin Cloud DB</Title>
-			<Header />
-			<div class="grow border-t">{props.children}</div>
-			<footer class="bg-gray-1000 h-[300px] pt-10"></footer>
-		</div>
-	)
+  return (
+    <div
+      class="flex min-h-full flex-col"
+      style={layoutStyle()}
+    >
+      <Title>Doujin Cloud DB</Title>
+      <Header />
+      <div class="grow border-t">{props.children}</div>
+      <footer class="bg-gray-1000 h-[300px] pt-10"></footer>
+    </div>
+  )
 }
 
 function CustomErrorBoundary(props: ParentProps) {
-	return (
-		<Show
-			when={import.meta.env.DEV}
-			fallback={
-				<ErrorBoundary
-					fallback={(e: Error) => (
-						<>
-							<ErrorPage msg={e.stack} />
-						</>
-					)}>
-					{props.children}
-				</ErrorBoundary>
-			}>
-			{props.children}
-		</Show>
-	)
+  return (
+    <Show
+      when={import.meta.env.DEV}
+      fallback={
+        <ErrorBoundary
+          fallback={(e: Error) => (
+            <>
+              <ErrorPage msg={e.stack} />
+            </>
+          )}
+        >
+          {props.children}
+        </ErrorBoundary>
+      }
+    >
+      {props.children}
+    </Show>
+  )
 }

@@ -13,98 +13,98 @@ import { ArtistTypeController } from "./artist_type"
 import { MemberController } from "./member"
 
 export interface ControllerStore {
-	alias: {
-		searchResult?: ArtistByKeywordArray | undefined
-	}
-	member: {
-		list: MemberListSchema | undefined
-		cache?: MemberListSchema | undefined
-		searchResult?: ArtistByKeywordArray | undefined
-	}
+  alias: {
+    searchResult?: ArtistByKeywordArray | undefined
+  }
+  member: {
+    list: MemberListSchema | undefined
+    cache?: MemberListSchema | undefined
+    searchResult?: ArtistByKeywordArray | undefined
+  }
 }
 
 export function createController(
-	dataQuery: CreateQueryResult<Nullable<ArtistByID>> | undefined,
-	dict: () => Dict
+  dataQuery: CreateQueryResult<Nullable<ArtistByID>> | undefined,
+  dict: () => Dict,
 ) {
-	const initData = createMemo(() => dataQuery?.data)
+  const initData = createMemo(() => dataQuery?.data)
 
-	const [initFormValue, setInitFormValue] = createSignal<ArtistFormSchema>()
+  const [initFormValue, setInitFormValue] = createSignal<ArtistFormSchema>()
 
-	const [formStore, { Form, Field, FieldArray }] = createForm<ArtistFormSchema>(
-		{
-			validate: valiForm(ArtistFormSchema),
-		}
-	)
+  const [formStore, { Form, Field, FieldArray }] = createForm<ArtistFormSchema>(
+    {
+      validate: valiForm(ArtistFormSchema),
+    },
+  )
 
-	createEffect(
-		on(
-			() => dataQuery?.data,
-			() => {
-				if (dataQuery?.isSuccess && dataQuery.data) {
-					const newValue = initFormStore(dataQuery.data)
+  createEffect(
+    on(
+      () => dataQuery?.data,
+      () => {
+        if (dataQuery?.isSuccess && dataQuery.data) {
+          const newValue = initFormStore(dataQuery.data)
 
-					setInitFormValue(newValue)
-					// https://github.com/fabian-hiller/modular-forms/issues/87
-					reset(formStore, {
-						initialValues: newValue,
-					})
-					setTimeout(() => {
-						reset(formStore, {
-							initialValues: newValue,
-						})
-					})
-				}
-			}
-		)
-	)
+          setInitFormValue(newValue)
+          // https://github.com/fabian-hiller/modular-forms/issues/87
+          reset(formStore, {
+            initialValues: newValue,
+          })
+          setTimeout(() => {
+            reset(formStore, {
+              initialValues: newValue,
+            })
+          })
+        }
+      },
+    ),
+  )
 
-	const [formErrorMsg, setFormErrorMsg] = createSignal<string>()
+  const [formErrorMsg, setFormErrorMsg] = createSignal<string>()
 
-	const [store, setStore] = createStore<ControllerStore>({
-		alias: {
-			searchResult: undefined,
-		},
-		member: {
-			list: undefined,
-		},
-	})
+  const [store, setStore] = createStore<ControllerStore>({
+    alias: {
+      searchResult: undefined,
+    },
+    member: {
+      list: undefined,
+    },
+  })
 
-	const formController = {
-		get changed() {
-			console.log("init:", initFormValue())
-			console.info(
-				"current: ",
-				getValues(formStore, {
-					shouldActive: false,
-				})
-			)
+  const formController = {
+    get changed() {
+      console.log("init:", initFormValue())
+      console.info(
+        "current: ",
+        getValues(formStore, {
+          shouldActive: false,
+        }),
+      )
 
-			return !R.equals(
-				initFormValue(),
-				getValues(formStore, {
-					shouldActive: false,
-				})
-			)
-		},
-		get errMsg() {
-			return formErrorMsg()
-		},
-		setErrMsg: setFormErrorMsg,
-	}
+      return !R.equals(
+        initFormValue(),
+        getValues(formStore, {
+          shouldActive: false,
+        }),
+      )
+    },
+    get errMsg() {
+      return formErrorMsg()
+    },
+    setErrMsg: setFormErrorMsg,
+  }
 
-	return {
-		t: toChainedTranslator(dict),
-		dataQuery,
-		initData,
-		formStore,
-		initFormValue,
-		Form,
-		Field,
-		FieldArray,
-		form: formController,
-		artistType: new ArtistTypeController(store, setStore, formStore),
-		alias: new AliasController(store, setStore, formStore),
-		member: new MemberController(store, setStore, formStore),
-	}
+  return {
+    t: toChainedTranslator(dict),
+    dataQuery,
+    initData,
+    formStore,
+    initFormValue,
+    Form,
+    Field,
+    FieldArray,
+    form: formController,
+    artistType: new ArtistTypeController(store, setStore, formStore),
+    alias: new AliasController(store, setStore, formStore),
+    member: new MemberController(store, setStore, formStore),
+  }
 }

@@ -4,39 +4,39 @@
 @tailwind utilities;
 
 html {
-	color: hsl(var(--fg-primary));
-	background-color: hsl(var(--bg-primary));
-	white-space: break-spaces;
-	font-family:
-		Geist,
-		-apple-system,
-		"Noto Sans SC",
-		BlinkMacSystemFont,
-		Roboto,
-		Oxygen,
-		Ubuntu,
-		Cantarell,
-		"Segoe UI",
-		system-ui,
-		"Open Sans",
-		"Helvetica Neue",
-		sans-serif;
+  color: hsl(var(--fg-primary));
+  background-color: hsl(var(--bg-primary));
+  white-space: break-spaces;
+  font-family:
+    Geist,
+    -apple-system,
+    "Noto Sans SC",
+    BlinkMacSystemFont,
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Segoe UI",
+    system-ui,
+    "Open Sans",
+    "Helvetica Neue",
+    sans-serif;
 }
 
 html[data-mode="dark"] {
-	color: white;
+  color: white;
 }
 
 body {
-	height: 100%;
+  height: 100%;
 }
 
 #app {
-	height: 100%;
+  height: 100%;
 }
 
 select {
-	&:disabled {
-		background-color: hsl(var(--secondary));
-	}
+  &:disabled {
+    background-color: hsl(var(--secondary));
+  }
 }

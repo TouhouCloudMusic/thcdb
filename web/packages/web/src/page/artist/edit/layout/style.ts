@@ -13,12 +13,12 @@ const alias_list_container = "flex min-w-96 flex-col"
 // @tw
 const alias_list_title = "flex flex-row place-content-between"
 export const alias = {
-	layout: alias_layout,
-	label: alias_label,
-	list: {
-		container: alias_list_container,
-		title: alias_list_title,
-	},
+  layout: alias_layout,
+  label: alias_label,
+  list: {
+    container: alias_list_container,
+    title: alias_list_title,
+  },
 } as const
 
 export { alias as member }
@@ -28,13 +28,13 @@ const search_result_container = "h-72 overflow-auto"
 
 // @tw
 const search_result_list =
-	"mt-2 gap-1 w-full h-fit flex flex-col rounded bg-white px-2 py-1"
+  "mt-2 gap-1 w-full h-fit flex flex-col rounded bg-white px-2 py-1"
 
 // @tw
 const search_result = "w-full rounded border border-gray-300 bg-white px-2 mt-1"
 
 export const searchResult = {
-	container: search_result_container,
-	list: search_result_list,
-	item: search_result,
+  container: search_result_container,
+  list: search_result_list,
+  item: search_result,
 }

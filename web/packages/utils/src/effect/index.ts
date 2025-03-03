@@ -1,9 +1,10 @@
 import { Effect as EF, Micro as M } from "effect"
 import type { Effect } from "effect/Effect"
-import { never } from "effect/Fiber"
+
 import type { Micro } from "effect/Micro"
 import type { Simplify } from "effect/Types"
 export { io } from "fp-ts"
+export { toError } from "fp-ts/Either"
 
 type GetT<T> =
   T extends Micro<infer A, unknown, unknown> ? A

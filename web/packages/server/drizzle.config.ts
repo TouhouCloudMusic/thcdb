@@ -1,18 +1,7 @@
 import { defineConfig } from "drizzle-kit"
 
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      DB_HOST: string
-      DB_USER: string
-      DB_PASSWORD: string
-      DB_NAME: string
-    }
-  }
-}
-
 export default defineConfig({
-  schema: ["./src/database/schema/index.ts"],
+  schema: ["./src/database/schema.ts"],
   out: "./drizzle",
   dialect: "postgresql", // 'postgresql' | 'mysql' | 'sqlite'
   dbCredentials: {

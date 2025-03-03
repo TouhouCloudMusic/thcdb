@@ -8,22 +8,22 @@ import { ArtistFormHelper } from "./helpers"
 import { updateArtist } from "./update_artist"
 
 export const SubmitAction = action(
-	async (formData: ArtistFormSchema, initData?: Nullable<ArtistByID>) => {
-		v.parse(ArtistFormSchema, formData)
+  async (formData: ArtistFormSchema, initData?: Nullable<ArtistByID>) => {
+    v.parse(ArtistFormSchema, formData)
 
-		return (await createOrUpdateArtist(formData, initData)).app_id
-	},
-	"create_or_update_artist"
+    return (await createOrUpdateArtist(formData, initData)).app_id
+  },
+  "create_or_update_artist",
 )
 
 async function createOrUpdateArtist(
-	formData: ArtistFormSchema,
-	initData?: Nullable<ArtistByID>
+  formData: ArtistFormSchema,
+  initData?: Nullable<ArtistByID>,
 ) {
-	"use server"
-	if (initData?.id) {
-		return await updateArtist(new ArtistFormHelper(formData, initData))
-	} else {
-		return await createArtist(new ArtistFormHelper(formData))
-	}
+  "use server"
+  if (initData?.id) {
+    return await updateArtist(new ArtistFormHelper(formData, initData))
+  } else {
+    return await createArtist(new ArtistFormHelper(formData))
+  }
 }

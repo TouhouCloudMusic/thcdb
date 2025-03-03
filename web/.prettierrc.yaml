@@ -3,21 +3,8 @@ semi: false
 singleAttributePerLine: true
 overrides:
   - files:
-      - "*.yaml"
-      - "*.yml"
-      - "*.md"
-    options:
-      tabWidth: 2
-      useTabs: false
-  - files:
-      - "package.json"
-    options:
-      tabWidth: 2
-      useTabs: false
-  - files:
-      - "*.jsx"
-      - "*.tsx"
+      - "packages/web/**/.{ts,tsx}"
     options:
       htmlWhitespaceSensitivity: ignore
-plugins:
-  - prettier-plugin-tailwindcss
+      plugins:
+          - prettier-plugin-tailwindcss

@@ -1,15 +1,28 @@
 import cors from "@elysiajs/cors"
-import { opentelemetry } from "@elysiajs/opentelemetry"
+import { html } from "@elysiajs/html"
+import staticPlugin from "@elysiajs/static"
 import swagger from "@elysiajs/swagger"
-import { Elysia } from "elysia"
-import { artist_router } from "./route/artist"
-import { user_router } from "./route/user"
+import { Elysia, error } from "elysia"
+import Postgres from "postgres"
+import { Hello } from "./homepage"
+import { Response } from "./lib/response"
+import { api_router } from "./route"
+import { user_controller } from "./user/controller"
+
+console.log("🐛 Starting server...")
 
 const app = new Elysia()
-  .use(opentelemetry())
+  .use(
+    staticPlugin({
+      prefix: "/",
+      staticLimit: 0,
+    }),
+  )
+  .use(html())
   .use(
     swagger({
       path: "/docs",
+      provider: "swagger-ui",
       documentation: {
         info: {
           title: "Touhou Cloud DB",
@@ -23,13 +36,15 @@ const app = new Elysia()
       origin: false,
     }),
   )
-  .onError(({ error, code }) => {
-    if (code === "NOT_FOUND") return "Not Found :("
-    console.log(error)
+  .onError(({ error: err, code }) => {
+    if (code === "NOT_FOUND") return error(404)
+    console.log(err)
+    if (err instanceof Postgres.PostgresError)
+      return Response.err(500, "Database error :(")
   })
-  .get("/", () => "Hello Elysia")
-  .use(user_router)
-  .use(artist_router)
+  .use(Hello)
+  .use(user_controller)
+  .use(api_router)
   .listen(process.env.PORT || 3456)
 
 console.log(
