@@ -1,4 +1,2 @@
-.vinxi
-.output
-.vscode
-.attest
+node_modules
+dist

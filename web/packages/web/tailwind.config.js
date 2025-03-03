@@ -1,12 +1,12 @@
 /* eslint-disable */
 /** @type {import('tailwindcss').Config} */
 const config = {
-  content: [
-    "./src/component/**/*.{ts,tsx}",
-    "./src/page/**/*.{ts,tsx}",
-    "./src/route/**/*.{ts,tsx}",
-    "./src/app.tsx",
-  ],
+  // content: [
+  //   "./src/component/**/*.{ts,tsx}",
+  //   "./src/page/**/*.{ts,tsx}",
+  //   "./src/route/**/*.{ts,tsx}",
+  //   "./src/app.tsx",
+  // ],
   darkMode: ["selector", '[data-mode="dark"]'],
   theme: {
     colors: {

@@ -3,7 +3,7 @@ import { AppLocale } from "../i18n"
 import { AppTheme } from "../theme"
 
 export function theme() {
-  return getCookie("app_theme") === AppTheme.dark.toString() ? "dark" : "light"
+  return getCookie("app_theme") === AppTheme.Dark.toString() ? "dark" : "light"
 }
 
 export function lang() {

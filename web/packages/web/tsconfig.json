@@ -8,31 +8,20 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
-    // Bundler
-    "lib": ["ESNext", "DOM"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
     "noPropertyAccessFromIndexSignature": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    // Path Alias
+    "noUncheckedIndexedAccess": true,
     "paths": {
-      "lib/*": ["./lib/*"],
-      "~/*": ["./src/*"]
+      "~/*": ["./src/*"],
+      "lib/*": ["./lib/*"]
     },
     "skipLibCheck": true,
     "sourceMap": true,
-    // Linter
     "strict": true,
     "target": "ESNext",
-    "types": [
-      "@types/bun",
-      "@testing-library/jest-dom",
-      "vinxi/types/client",
-      "vitest/importMeta"
-    ]
-  },
-  "exclude": ["node_modules", ".output", ".vinxi"]
+    "types": ["vite/client", "@testing-library/jest-dom", "vitest/importMeta"]
+  }
 }

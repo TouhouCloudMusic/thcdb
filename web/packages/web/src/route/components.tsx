@@ -4,8 +4,8 @@ import {
   PrimaryButton,
   SecondaryButton,
   TertiaryButton,
-} from "~/component/button/index.tsx"
-import { type ValidColor } from "~/component/index.ts"
+} from "~/components/button"
+import { type ValidColor } from "~/components"
 
 export default function () {
   return (

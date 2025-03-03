@@ -1,7 +1,7 @@
 import { Title } from "@solidjs/meta"
 import { A } from "@solidjs/router"
 import { For, type JSX } from "solid-js"
-import { ThemeButton } from "~/component/theme_button"
+import { ThemeButton } from "~/components/theme_button"
 export default function () {
   return (
     <main class="flex flex-col place-content-center items-center justify-center">

@@ -7,9 +7,9 @@ import {
   useParams,
 } from "@solidjs/router"
 import { Show, Suspense, onMount } from "solid-js"
-import { Context, useController } from "~/page/artist/profile/context"
-import { ArtistProfilePageController } from "~/page/artist/profile/controller"
-import { getArtistProfileDataCache } from "~/page/artist/profile/data"
+import { Context, useController } from "~/views/artist/profile/context"
+import { ArtistProfilePageController } from "~/views/artist/profile/controller"
+import { getArtistProfileDataCache } from "~/views/artist/profile/data"
 
 export const route = {
   matchFilters: {
