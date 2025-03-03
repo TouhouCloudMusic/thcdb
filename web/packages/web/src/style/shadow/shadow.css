@@ -1,4 +1,4 @@
-@import "./shadow_default.css";
-@import "./shadow_p3.css" supports(color: color(display-p3 1 1 1));
+@import './shadow_default.css';
+@import './shadow_p3.css' supports(color: color(display-p3 1 1 1));
 /* 不知道为什么会导致CSS无效 */
 /* @import "./shadow_oklab.css" supports(color: color-mix(in oklab, white, black)); */

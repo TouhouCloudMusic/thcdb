@@ -44,7 +44,7 @@ export function LocalizedName() {
   return (
     <FieldArray
       name="localized_name"
-      revalidateOn="blur"
+      revalidateOn="blur-sm"
     >
       {(fieldArray) => (
         // Label

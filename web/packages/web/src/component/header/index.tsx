@@ -10,7 +10,7 @@ import { ThemeButton } from "../theme_button.tsx"
 
 // @tw
 const badgeClass =
-  "rounded border text-gray-600 size-7 flex place-items-center place-content-center"
+  "rounded-sm border text-gray-600 size-7 flex place-items-center place-content-center"
 
 const enum NotificationState {
   None,

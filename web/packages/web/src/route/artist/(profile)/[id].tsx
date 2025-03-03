@@ -174,11 +174,11 @@ function ReleaseTab() {
   return (
     <ul>
       {data.release.map((r) => (
-        <li class="flex h-12 gap-2 rounded p-1">
+        <li class="flex h-12 gap-2 rounded-sm p-1">
           <img
             src={`/img/cover/release/${r.app_id}.png`}
             alt={`cover art of ${r.title}`}
-            class="rounded"
+            class="rounded-sm"
           />
           <div class="flex flex-col place-content-center">
             <a
@@ -202,11 +202,11 @@ function ReleaseTab() {
 // 	return (
 // 		<ul>
 // 			{data.release_credit?.map((r) => (
-// 				<li class="flex h-12 gap-2 rounded p-1">
+// 				<li class="flex h-12 gap-2 rounded-sm p-1">
 // 					<img
 // 						src={`/img/cover/release/${r.release.id}.png`}
 // 						alt={`cover art of ${r.release.title}`}
-// 						class="rounded"
+// 						class="rounded-sm"
 // 					/>
 // 					<div class="flex flex-col place-content-center">
 // 						<a

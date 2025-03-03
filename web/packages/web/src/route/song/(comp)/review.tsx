@@ -6,7 +6,7 @@ export function ReviewComp() {
   return (
     <div class="w-full">
       <h3>Reviews</h3>
-      <div class="flex rounded-sm bg-gray-200/75 px-2 text-sm">
+      <div class="flex rounded-xs bg-gray-200/75 px-2 text-sm">
         <span class="font-bold">Sort by: </span>
         <ul class="flex divide-x-2 divide-gray-400/85">
           <li class="px-1">date</li>

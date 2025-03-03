@@ -1,5 +1,5 @@
 export default function Login() {
-  const inputClass = "border-gray-200 border-2 rounded-sm	pl-1.5 bg-gray-100"
+  const inputClass = "border-gray-200 border-2 rounded-xs	pl-1.5 bg-gray-100"
   // const btnClass =
   // "border-gray-200 w-16 h-8 rounded-md border-2 text-gray-500";
   const submitBtnClass = "bg-green-500 text-white w-16 h-8 rounded-md "

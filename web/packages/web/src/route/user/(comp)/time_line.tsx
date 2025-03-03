@@ -9,7 +9,7 @@ export default function TimelineList() {
     <ul class="flex flex-col-reverse">
       <Index each={userData.timeline()}>
         {(item) => (
-          <li class="border-sm my-1 rounded border-gray-300 px-3 py-2">
+          <li class="border-sm my-1 rounded-sm border-gray-300 px-3 py-2">
             <div class="my-2 flex justify-between pr-2">
               <div class="size-9 place-content-center rounded-full bg-gray-400 text-center text-sm text-white">
                 <a
@@ -34,7 +34,7 @@ export default function TimelineList() {
                 </p>
                 <div>
                   <div class="my-2 flex items-center pl-8">
-                    <div class="size-9 place-content-center rounded bg-gray-400 text-center text-sm text-white">
+                    <div class="size-9 place-content-center rounded-sm bg-gray-400 text-center text-sm text-white">
                       <a
                         href={`/${item().target_type}/${item().target_id}`}
                         class=""

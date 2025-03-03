@@ -72,7 +72,7 @@ function TextFieldInput<T extends ValidComponent = "input">(
 // @tw
 TextFieldInput.className = twMerge(
   Input.className,
-  "focus-within:ring-reimu-700 aria-invalid:ring-2 aria-invalid:ring-reimu-700 has-[[aria-invalid]]:ring-reimu-700 rounded-md ring-1 ring-inset focus-within:ring-inset has-[[aria-invalid]]:ring-2",
+  "focus-within:ring-reimu-700 aria-invalid:ring-2 aria-invalid:ring-reimu-700 has-aria-[invalid]:ring-reimu-700 rounded-md ring-1 ring-inset focus-within:ring-inset has-aria-[invalid]:ring-2",
 )
 
 TextField.Input = TextFieldInput

@@ -5,7 +5,7 @@ export function TextInput(
   props: Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "type">,
 ) {
   // @tw
-  const style = "rounded border border-gray-300 pl-2 h-8"
+  const style = "rounded-sm border border-gray-300 pl-2 h-8"
 
   const [, otherProps] = splitProps(props, ["class"])
 

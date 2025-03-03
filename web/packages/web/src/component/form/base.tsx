@@ -40,5 +40,5 @@ export const Input = {
 
 export const InputContainer = {
   className:
-    "ring-1 rounded-md ring-inset focus-within:ring-inset focus-within:ring-reimu-700 aria-invalid:ring-2 aria-invalid:ring-reimu-700 has-[[aria-invalid]]:ring-2 has-[[aria-invalid]]:ring-reimu-700",
+    "ring-1 rounded-md ring-inset focus-within:ring-inset focus-within:ring-reimu-700 aria-invalid:ring-2 aria-invalid:ring-reimu-700 has-aria-[invalid]:ring-2 has-aria-[invalid]:ring-reimu-700",
 }

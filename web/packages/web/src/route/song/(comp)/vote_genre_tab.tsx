@@ -48,7 +48,7 @@ export function VoteGenreTab(props: {
           <input
             type="text"
             ref={inputElRef}
-            class="w-52 rounded border border-gray-300 bg-white pl-2"
+            class="w-52 rounded-sm border border-gray-300 bg-white pl-2"
             placeholder="Search Genres"
             onFocusIn={() => setDropdownShow(true)}
             onFocusOut={() => setDropdownShow(false)}
@@ -73,13 +73,13 @@ export function VoteGenreTab(props: {
                     >
                       {item()}
                     </a>
-                    <button class="mx-1 h-4/5 rounded bg-green-500 px-1 text-white">
+                    <button class="mx-1 h-4/5 rounded-sm bg-green-500 px-1 text-white">
                       ***
                     </button>
-                    <button class="mx-1 h-4/5 rounded bg-green-500 px-1 text-white">
+                    <button class="mx-1 h-4/5 rounded-sm bg-green-500 px-1 text-white">
                       **
                     </button>
-                    <button class="mx-1 h-4/5 rounded bg-green-500 px-1 text-white">
+                    <button class="mx-1 h-4/5 rounded-sm bg-green-500 px-1 text-white">
                       *
                     </button>
                   </li>
@@ -90,20 +90,20 @@ export function VoteGenreTab(props: {
         </div>
         <For each={genres()}>
           {(genre) => (
-            <div class="my-2 divide-y-2 divide-gray-300 border bg-white px-2 py-1 shadow">
+            <div class="my-2 divide-y-2 divide-gray-300 border bg-white px-2 py-1 shadow-sm">
               <div class="flex items-center justify-between">
                 <p>{genre}</p>
                 <div class="grid grid-cols-4 items-center">
-                  <button class="mx-1 h-4/5 rounded bg-green-500 px-1 text-white">
+                  <button class="mx-1 h-4/5 rounded-sm bg-green-500 px-1 text-white">
                     ***
                   </button>
-                  <button class="mx-1 h-4/5 rounded bg-green-500 px-1 text-white">
+                  <button class="mx-1 h-4/5 rounded-sm bg-green-500 px-1 text-white">
                     **
                   </button>
-                  <button class="mx-1 h-4/5 rounded bg-green-500 px-1 text-white">
+                  <button class="mx-1 h-4/5 rounded-sm bg-green-500 px-1 text-white">
                     *
                   </button>
-                  <button class="bg-reimu-500 mx-1 h-4/5 rounded px-1 text-white">
+                  <button class="bg-reimu-500 mx-1 h-4/5 rounded-sm px-1 text-white">
                     -
                   </button>
                 </div>

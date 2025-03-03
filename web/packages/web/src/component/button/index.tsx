@@ -31,7 +31,7 @@ function propPreprocessor(
   props: ButtonProps,
   variantStyle: () => string,
 ): ButtonProps {
-  const base = `rounded transition-all font-medium`
+  const base = `rounded-sm transition-all font-medium`
 
   return mergeProps({ type: "button" as const }, props, {
     get class() {
@@ -59,7 +59,7 @@ export function PrimaryButton(props: ButtonProps) {
   return <Button {...finalProps} />
 }
 
-PrimaryButton.baseStyle = `shadow text-bg-primary`
+PrimaryButton.baseStyle = `shadow-sm text-bg-primary`
 PrimaryButton.styleRecord = {
   gray:
     // @tw
@@ -105,7 +105,7 @@ PrimaryButton.getStyle = (color: ExtendValidColor) =>
   )
 
 export function SecondaryButton(props: ButtonProps) {
-  const baseStyle = "shadow-sm shadow-gray-100"
+  const baseStyle = "shadow-xs shadow-gray-100"
 
   const finalProps = propPreprocessor(props, () =>
     baseStyle.concat(
@@ -176,7 +176,7 @@ TertiaryButton.styleRecord = {
     // @tw
     `
 		text-gray-800 disabled:text-gray-600
-		disabled:shadow-sm
+		disabled:shadow-xs
 		`,
   blue:
     // @tw

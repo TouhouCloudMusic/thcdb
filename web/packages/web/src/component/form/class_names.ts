@@ -1,4 +1,4 @@
 export const SmartSelectorCanAutoAddAsteriskAfterLabelOfRequiredField =
-  "[&_[data-slot=label]]:[&:has([data-slot=input]:required)]:after:content-['_*'] [&_[data-slot=label]]:after:text-reimu-700 [&_[data-slot=label]]:after:text-sm"
+  "[&:has([data-slot=input]:required)]:**:data-[slot=label]:after:content-['_*'] **:data-[slot=label]:after:text-reimu-700 **:data-[slot=label]:after:text-sm"
 
 export const RequiredAsteriskClassName = "after:text-reimu-700 after:text-sm"
