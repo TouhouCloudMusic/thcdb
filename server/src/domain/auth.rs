@@ -265,7 +265,7 @@ impl<const N: usize> VerificationCode<N> {
 
         let mut digits = [const { Digit::Zero }; N];
 
-        for item in digits.iter_mut().take(N) {
+        for item in digits.iter_mut() {
             let digit = match rng.random_range(0..=9) {
                 0 => Digit::Zero,
                 1 => Digit::One,
