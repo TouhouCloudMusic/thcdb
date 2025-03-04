@@ -85,6 +85,13 @@ iso8601-duration = { version = "0.2", features = [
 itertools.workspace = true
 juniper.workspace = true
 juniper_axum.workspace = true
+lettre = { version = "0.11.14", default-features = false, features = [
+    "builder",
+    "hostname",
+    "pool",
+    "smtp-transport",
+    "tokio1-rustls-tls",
+] }
 rand = "0.9.0"
 regex = "1.11"
 sea-orm.workspace = true
@@ -114,13 +121,12 @@ xxhash-rust = { version = "0.8", features = [
     "xxh3",
 ] }
 zxcvbn = "3.1"
-
 [dev-dependencies]
 rusty-hook = "0.11.2"
 
 # https://doc.rust-lang.org/cargo/reference/profcailes.html
 [profile.dev]
-codegen-backend = "cranelift"
+codegen-backend = "llvm"
 opt-level       = 1
 split-debuginfo = "unpacked"
 
@@ -129,6 +135,10 @@ codegen-backend = "cranelift"
 opt-level       = 3
 
 [profile.dev.package."bon"]
+codegen-backend = "llvm"
+opt-level       = 3
+
+[profile.dev.package."axum-macros"]
 codegen-backend = "llvm"
 opt-level       = 3
 
@@ -144,7 +154,15 @@ opt-level       = 3
 codegen-backend = "llvm"
 opt-level       = 3
 
+[profile.dev.package."sea-orm-macros"]
+codegen-backend = "llvm"
+opt-level       = 3
+
 [profile.dev.package."utoipa"]
+codegen-backend = "llvm"
+opt-level       = 3
+
+[profile.dev.package."utoipa-gen"]
 codegen-backend = "llvm"
 opt-level       = 3
 
@@ -153,6 +171,14 @@ codegen-backend = "llvm"
 opt-level       = 3
 
 [profile.dev.package."strum_macros"]
+codegen-backend = "llvm"
+opt-level       = 3
+
+[profile.dev.package."juniper_codegen"]
+codegen-backend = "llvm"
+opt-level       = 3
+
+[profile.dev.package."darling"]
 codegen-backend = "llvm"
 opt-level       = 3
 

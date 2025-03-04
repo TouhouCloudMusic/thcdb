@@ -2,6 +2,7 @@ use std::sync::LazyLock;
 
 use argon2::Argon2;
 use axum::extract::FromRef;
+use lettre::{AsyncSmtpTransport, Tokio1Executor};
 use macros::inject_services;
 use sea_orm::{DatabaseConnection, sqlx};
 
@@ -18,6 +19,7 @@ pub static CONFIG: LazyLock<Config> = LazyLock::new(Config::init);
 pub struct AppState {
     pub database: DatabaseConnection,
     redis_pool: Pool,
+    pub transport: AsyncSmtpTransport<Tokio1Executor>,
 }
 
 impl AppState {

@@ -203,9 +203,19 @@ pub fn inject_services(attr: TokenStream, item: TokenStream) -> TokenStream {
                 let database = get_connection(&CONFIG.database_url).await;
                 let redis_pool = Pool::init(&CONFIG.redis_url).await;
 
+
+                let stmp_conf = &CONFIG.email;
+                use lettre::transport::smtp::authentication::Credentials;
+                let creds = Credentials::new(stmp_conf.creds.username.clone(), stmp_conf.creds.password.clone());
+                let transport = AsyncSmtpTransport::<Tokio1Executor>::relay(&stmp_conf.host)
+                    .unwrap()
+                    .credentials(creds)
+                    .build();
+
                 Self {
                     database: database.clone(),
                     redis_pool,
+                    transport,
                     #(#init_statements),*
                 }
             }

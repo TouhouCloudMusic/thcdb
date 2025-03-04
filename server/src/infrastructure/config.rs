@@ -9,18 +9,32 @@ pub struct Config {
     pub database_url: String,
     pub redis_url: String,
     pub app: AppConfig,
+    pub email: EmailConfig,
     pub middleware: MiddlewareConfig,
 }
 
-#[derive(Clone, Copy, Deserialize)]
+#[derive(Clone, Deserialize)]
 struct ConfigFile {
     app: AppConfig,
+    email: EmailConfig,
     middleware: MiddlewareConfig,
 }
 
 #[derive(Clone, Copy, Deserialize)]
 pub struct AppConfig {
     pub port: u16,
+}
+
+#[derive(Clone, Deserialize)]
+pub struct EmailConfig {
+    pub creds: EmailCreds,
+    pub host: String,
+}
+
+#[derive(Clone, Deserialize)]
+pub struct EmailCreds {
+    pub username: String,
+    pub password: String,
 }
 
 #[derive(Clone, Copy, Deserialize)]
@@ -57,6 +71,7 @@ impl Config {
             database_url: env::var("DATABASE_URL").unwrap(),
             redis_url: env::var("REDIS_URL").unwrap(),
             app: config.app,
+            email: config.email,
             middleware: config.middleware,
         }
     }
