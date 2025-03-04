@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::sync::LazyLock;
 
 use argon2::password_hash::rand_core::OsRng;
@@ -5,8 +6,10 @@ use argon2::password_hash::{self, SaltString};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum::http::StatusCode;
 use error_set::error_set;
+use itertools::Itertools;
 use juniper::GraphQLInputObject;
 use macros::ApiError;
+use rand::Rng;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use tokio::task::JoinError;
@@ -213,6 +216,79 @@ fn validate_password(password: &str) -> Result<(), ValidateCredsError> {
         }
     } else {
         Err(ValidateCredsError::InvalidPassword)
+    }
+}
+
+enum Digit {
+    Zero,
+    One,
+    Two,
+    Three,
+    Four,
+    Five,
+    Six,
+    Seven,
+    Eight,
+    Nine,
+}
+
+impl Digit {
+    const fn as_str(&self) -> &'static str {
+        match self {
+            Self::Zero => "0",
+            Self::One => "1",
+            Self::Two => "2",
+            Self::Three => "3",
+            Self::Four => "4",
+            Self::Five => "5",
+            Self::Six => "6",
+            Self::Seven => "7",
+            Self::Eight => "8",
+            Self::Nine => "9",
+        }
+    }
+}
+
+impl Display for Digit {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
+pub struct VerificationCode<const N: usize> {
+    digits: [Digit; N],
+}
+
+impl<const N: usize> VerificationCode<N> {
+    pub fn new() -> Self {
+        let mut rng = rand::rng();
+
+        let mut digits = [const { Digit::Zero }; N];
+
+        for item in digits.iter_mut().take(N) {
+            let digit = match rng.random_range(0..=9) {
+                0 => Digit::Zero,
+                1 => Digit::One,
+                2 => Digit::Two,
+                3 => Digit::Three,
+                4 => Digit::Four,
+                5 => Digit::Five,
+                6 => Digit::Six,
+                7 => Digit::Seven,
+                8 => Digit::Eight,
+                9 => Digit::Nine,
+                _ => panic!("impossible"),
+            };
+            *item = digit;
+        }
+
+        Self { digits }
+    }
+}
+
+impl<const N: usize> Display for VerificationCode<N> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.digits.iter().join(""))
     }
 }
 
