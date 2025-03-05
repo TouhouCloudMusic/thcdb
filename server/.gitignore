@@ -3,3 +3,4 @@
 .idea
 /public
 rustc*
+config.dev.ron
