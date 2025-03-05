@@ -1,5 +1,5 @@
 import { getValue, insert, reset } from "@modular-forms/solid"
-import { For, Match, Show, Switch } from "solid-js"
+import { For, Match, Show, Switch, Index } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 

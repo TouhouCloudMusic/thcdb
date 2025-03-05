@@ -155,7 +155,7 @@ function LanguageField(props: IndexComponentProps) {
           class={fieldLayoutClass}
           defaultFilter={defaultFilter}
           options={localizedLanguageArray}
-          onChange={(v) => setValue(formStore, props.name, v!)}
+          onChange={(v) => setValue(formStore, props.name, v)}
           validationState={field.error.length > 0 ? "invalid" : "valid"}
           itemComponent={(props) => (
             <Combobox.Item

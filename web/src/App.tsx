@@ -4,29 +4,23 @@ import { createMemo, ErrorBoundary, type ParentProps, Show } from "solid-js"
 import { Header } from "~/components/header/index.tsx"
 import ErrorPage from "./route/500.tsx"
 import { useI18N } from "./state/i18n"
-import { Providers } from "./state"
+import { StateProvider } from "./state"
 
 export default function App() {
   return (
-    <>
-      <Providers>
-        <Routes />
-      </Providers>
-      {/* <Providers>
-        <Routes />
-      </Providers> */}
-    </>
+    <StateProvider>
+      <Routes />
+    </StateProvider>
   )
 }
 
 function Routes() {
   return (
-    <div class="text-black">hello world</div>
-    // <Router root={(props) => <Layout {...props} />}>
-    //   <CustomErrorBoundary>
-    //     <div class="text-black">hello world</div>
-    //   </CustomErrorBoundary>
-    // </Router>
+    <Router root={(props) => <Layout {...props} />}>
+      <AppErrorBoundary>
+        <div class="text-black">hello world</div>
+      </AppErrorBoundary>
+    </Router>
   )
 }
 
@@ -52,20 +46,14 @@ function Layout(props: ParentProps) {
   )
 }
 
-function CustomErrorBoundary(props: ParentProps) {
+function AppErrorBoundary(props: ParentProps) {
   if (import.meta.env.DEV) {
     // eslint-disable-next-line solid/components-return-once
     return <>{props.children}</>
   } else {
     // eslint-disable-next-line solid/components-return-once
     return (
-      <ErrorBoundary
-        fallback={(e: Error) => (
-          <>
-            <ErrorPage msg={e.stack} />
-          </>
-        )}
-      >
+      <ErrorBoundary fallback={(e: Error) => <ErrorPage msg={e.stack} />}>
         {props.children}
       </ErrorBoundary>
     )

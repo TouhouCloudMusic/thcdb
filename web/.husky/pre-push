@@ -1,2 +1,0 @@
-# bun run pre-push && bun run --filter "*" pre-push
-bun run pre-push && bun run --filter "server" pre-push
