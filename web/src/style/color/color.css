@@ -1,24 +1,21 @@
-@import './palette.css';
+@import "./palette.css";
 
-@layer base {
-  :root {
-    --black: 0 0% 0%;
-    --white: 0 0% 100%;
-  }
+@theme inline {
+  --background-color-primary: var(--color-white);
+  --background-color-secondary: var(--color-slate-100);
+  --background-color-tertiary: var(--color-white);
 
-  html {
-    --bg-primary: var(--white);
-    --bg-secondary: var(--slate-100);
-    --bg-tertiary: var(--white);
-    --fg-primary: var(--slate-1100);
-    --fg-secondary: var(--slate-700);
-    --fg-tertiary: var(--slate-500);
-    --default-border-color: var(--slate-300);
-    --default-icon-color: var(--slate-500);
-  }
+  --text-color-primary: var(--color-slate-1100);
+  --text-color-secondary: var(--color-slate-700);
+  --text-color-tertiary: var(--color-slate-500);
 
-  html[data-mode="dark"] {
-    --primary: var(--slate-100);
-    --secondary: 0 0% 0%;
+  --default-border-color: var(--color-slate-300);
+  --default-icon-color: var(--color-slate-500);
+}
+
+@layer theme {
+  [data-mode="dark"] {
+    --text-color-primary: var(--color-slate-100);
+    --text-color-secondary: var(--color-black);
   }
 }

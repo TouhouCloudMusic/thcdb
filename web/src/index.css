@@ -1,29 +1,20 @@
 @import "./style/style.css";
 @import "tailwindcss";
 
-/* @config '../tailwind.config.js'; */
+@custom-variant dark (&:where([data-mode=dark] *));
 
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: hsl(var(--default-border-color));
-  }
+@theme {
+  --font-inter: "Inter", "sans-serif";
+  --font-sans:
+    "Geist", "ui-sans-serif", "system-ui", "sans-serif", '"Apple Color Emoji"',
+    '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"';
+  --font-mono:
+    "Cascadia Code", "ui-monospace", "Menlo", "Monaco", "Consolas", "monospace";
 }
 
 html {
-  color: hsl(var(--fg-primary));
-  background-color: hsl(var(--bg-primary));
+  color: hsl(var(--text-color-primary));
+  background-color: hsl(var(--background-color-primary));
   white-space: break-spaces;
   font-family:
     Geist,
@@ -55,6 +46,6 @@ body {
 
 select {
   &:disabled {
-    background-color: hsl(var(--secondary));
+    background-color: hsl(var(--background-color-secondary));
   }
 }
