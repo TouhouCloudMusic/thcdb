@@ -4,7 +4,7 @@
     ),
     email: (
         creds: (
-            username: "todo"
+            username: "todo",
             password: "todo"
         ),
         host: "todo"
