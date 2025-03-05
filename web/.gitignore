@@ -18,4 +18,9 @@ gitignore
 # System Files
 .DS_Store
 Thumbs.db
+
+# Log
 *storybook.log
+
+# Output
+dist
