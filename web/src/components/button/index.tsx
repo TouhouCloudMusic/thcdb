@@ -1,5 +1,5 @@
 /* eslint-disable solid/reactivity */
-import { Button } from "@kobalte/core/Button"
+import { Button } from "@kobalte/core/button"
 import { mergeProps, type JSX } from "solid-js"
 import { twMerge } from "tailwind-merge"
 import { type ValidColor } from "~/components"
