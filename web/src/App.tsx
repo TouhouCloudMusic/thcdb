@@ -1,4 +1,4 @@
-import { Title, Style } from "@solidjs/meta"
+import { Title, Style, Link } from "@solidjs/meta"
 import { Router } from "@solidjs/router"
 import { createMemo, ErrorBoundary, type ParentProps, Show } from "solid-js"
 import { Header } from "~/components/header/index.tsx"
@@ -39,6 +39,7 @@ function Layout(props: ParentProps) {
   return (
     <div class="flex min-h-full flex-col">
       <Title>Doujin Cloud DB</Title>
+      <Link rel="shortcut icon" href="/logo.svg" type="image/x-icon"></Link>
       {/* <Header /> */}
       <div class="grow border-t">{props.children}</div>
       <footer class="bg-gray-1000 h-[300px] pt-10"></footer>
