@@ -7,16 +7,22 @@ import { type ValidColor } from "~/components"
  * Note: 样式没做完
  */
 export type ButtonSize = "xs" | "sm" | "md" | "lg"
+export const ButtonSize = {
+  iter: function* () {
+    yield "xs"
+    yield "sm"
+    yield "md"
+    yield "lg"
+  },
+}
 
 export interface ButtonProps
   extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize
-  color?: ValidColor | "warning"
+  color?: ValidColor
 }
 
-type ExtendValidColor = ValidColor | "warning"
-
-const sizeRecord = {
+const sizeClassList = {
   // @tw
   xs: "text-xs py-1 px-1.5",
   // @tw
@@ -27,89 +33,79 @@ const sizeRecord = {
   lg: "text-xl py-4 px-8",
 } as const
 
-function propPreprocessor(
-  props: ButtonProps,
-  variantStyle: () => string,
-): ButtonProps {
-  const base = `rounded-sm transition-all font-medium`
-
+function mergeButtonProps(props: ButtonProps, style: string): ButtonProps {
+  const BUTTON_COMMON_STYLES = `rounded-sm transition-all font-medium p1`
   return mergeProps({ type: "button" as const }, props, {
     get class() {
       return twMerge(
-        base,
-        props.size ? sizeRecord[props.size] : undefined,
-        variantStyle(),
+        BUTTON_COMMON_STYLES,
+        props.size ? sizeClassList[props.size] : undefined,
+        style,
         props.class,
       )
     },
   })
 }
 
-function getVariantStyle(
-  color: ValidColor | "warning",
-  styleRecord: Record<ValidColor, string>,
-) {
-  return styleRecord[color == "warning" ? "reimu" : color]
-}
-
 export function PrimaryButton(props: ButtonProps) {
-  const finalProps = propPreprocessor(props, () =>
-    PrimaryButton.getStyle(props.color ?? "gray"),
+  const STYLE_VARIANTS: Record<ValidColor, string> = {
+    gray:
+      // @tw
+      `
+      bg-gray-1100 hover:bg-gray-1000 active:bg-gray-900 disabled:bg-gray-800
+      `,
+    blue:
+      // @tw
+      `
+      bg-blue-700 hover:bg-blue-600 active:bg-blue-500 disabled:bg-blue-700/500
+      dark:disabled:bg-blue-600
+      `,
+    reimu:
+      // @tw
+      `
+      bg-reimu-700 hover:bg-reimu-600 active:bg-reimu-500 disabled:bg-blue-700/500
+      dark:disabled:bg-reimu-600
+      `,
+    marisa:
+      // @tw
+      `
+      dark:text-marisa-1200
+      bg-marisa-1200 hover:bg-marisa-1000 active:bg-marisa-900 disabled:bg-marisa-800
+      dark:bg-marisa-500 dark:hover:bg-marisa-600 dark:active:bg-marisa-700 dark:disabled:bg-marisa-600
+      `,
+    green:
+      // @tw
+      `
+         dark:text-green-1200
+        bg-green-1200 hover:bg-green-1000 active:bg-green-900 disabled:bg-green-800
+        dark:bg-green-500 dark:hover:bg-green-600 dark:active:bg-green-700 dark:disabled:bg-green-600`,
+    slate:
+      // @tw
+      `
+      dark:text-slate-1200
+      bg-slate-1200 hover:bg-slate-1000 active:bg-slate-900 disabled:bg-slate-800
+      dark:bg-slate-500 dark:hover:bg-slate-600 dark:active:bg-slate-700 dark:disabled:bg-slate-600
+      `,
+  }
+
+  return (
+    <Button
+      {...mergeButtonProps(
+        props,
+        `shadow-sm text-(--background-color-primary)`.concat(
+          STYLE_VARIANTS[props.color ?? "gray"],
+        ),
+      )}
+    />
   )
-  return <Button {...finalProps} />
 }
-
-PrimaryButton.baseStyle = `shadow-sm text-bg-primary`
-PrimaryButton.styleRecord = {
-  gray:
-    // @tw
-    `
-		bg-gray-1100 hover:bg-gray-1000 active:bg-gray-900 disabled:bg-gray-800
-		`,
-  blue:
-    // @tw
-    `
-		bg-blue-700 hover:bg-blue-600 active:bg-blue-500 disabled:bg-blue-700/500
-		dark:disabled:bg-blue-600
-		`,
-  reimu:
-    // @tw
-    `
-		bg-reimu-700 hover:bg-reimu-600 active:bg-reimu-500 disabled:bg-blue-700/500
-		dark:disabled:bg-reimu-600
-		`,
-  marisa:
-    // @tw
-    `
-		dark:text-marisa-1200
-		bg-marisa-1200 hover:bg-marisa-1000 active:bg-marisa-900 disabled:bg-marisa-800
-		dark:bg-marisa-500 dark:hover:bg-marisa-600 dark:active:bg-marisa-700 dark:disabled:bg-marisa-600
-		`,
-  green:
-    // @tw
-    `
-			 dark:text-green-1200
-			bg-green-1200 hover:bg-green-1000 active:bg-green-900 disabled:bg-green-800
-			dark:bg-green-500 dark:hover:bg-green-600 dark:active:bg-green-700 dark:disabled:bg-green-600`,
-  slate:
-    // @tw
-    `
-			 dark:text-slate-1200
-			bg-slate-1200 hover:bg-slate-1000 active:bg-slate-900 disabled:bg-slate-800
-			dark:bg-slate-500 dark:hover:bg-slate-600 dark:active:bg-slate-700 dark:disabled:bg-slate-600`,
-} as Record<ValidColor, string>
-
-PrimaryButton.getStyle = (color: ExtendValidColor) =>
-  PrimaryButton.baseStyle.concat(
-    getVariantStyle(color, PrimaryButton.styleRecord),
-  )
 
 export function SecondaryButton(props: ButtonProps) {
   const baseStyle = "shadow-xs shadow-gray-100"
 
-  const finalProps = propPreprocessor(props, () =>
+  const finalProps = mergeButtonProps(props, () =>
     baseStyle.concat(
-      getVariantStyle(props.color ?? "gray", SecondaryButton.styleRecord),
+      getColor(props.color ?? "gray", SecondaryButton.styleRecord),
     ),
   )
 
@@ -162,7 +158,7 @@ SecondaryButton.styleRecord = {
 } as Record<ValidColor, string>
 twMerge("")
 export function TertiaryButton(props: ButtonProps) {
-  const finalProps = propPreprocessor(props, () =>
+  const finalProps = mergeButtonProps(props, () =>
     TertiaryButton.getStyle(props.color ?? "gray"),
   )
 
@@ -209,7 +205,5 @@ TertiaryButton.styleRecord = {
 		disabled:bg-gray-300
 		`,
 } as Record<ValidColor, string>
-TertiaryButton.getStyle = (color: ExtendValidColor) =>
-  TertiaryButton.baseStyle.concat(
-    getVariantStyle(color, TertiaryButton.styleRecord),
-  )
+TertiaryButton.getStyle = (color: ExtendedValidColor) =>
+  TertiaryButton.baseStyle.concat(getColor(color, TertiaryButton.styleRecord))
