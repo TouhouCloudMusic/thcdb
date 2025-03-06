@@ -41,10 +41,11 @@ export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export function Button(props: Props) {
   const BUTTON_COMMON_STYLES = `rounded-sm transition-all font-medium p1`
+  const DEFAULT_COLOR: AppColor = "Gray"
   let variant_color = match.in<Variant>().match({
-    "'Primary'": () => PrimaryColor[props.color ?? "Gray"],
-    "'Tertiary'": () => TertiaryColor[props.color ?? "Gray"],
-    default: () => SecondaryColor[props.color ?? "Gray"],
+    "'Primary'": () => PrimaryColor[props.color ?? DEFAULT_COLOR],
+    "'Tertiary'": () => TertiaryColor[props.color ?? DEFAULT_COLOR],
+    default: () => SecondaryColor[props.color ?? DEFAULT_COLOR],
   })
 
   let final_props: Props = mergeProps({ type: "button" as const }, props, {
@@ -91,6 +92,12 @@ const PrimaryColor: Record<AppColor, string> = {
     `
     bg-gray-1100 hover:bg-gray-1000 active:bg-gray-900 disabled:bg-gray-800
     `,
+  Slate:
+    // @tw
+    `
+    bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-700/500
+    dark:disabled:bg-slate-600
+    `,
   Blue:
     // @tw
     `
@@ -106,23 +113,14 @@ const PrimaryColor: Record<AppColor, string> = {
   Marisa:
     // @tw
     `
-    dark:text-marisa-1200
-    bg-marisa-1200 hover:bg-marisa-1000 active:bg-marisa-900 disabled:bg-marisa-800
-    dark:bg-marisa-500 dark:hover:bg-marisa-600 dark:active:bg-marisa-700 dark:disabled:bg-marisa-600
+    bg-marisa-700 hover:bg-marisa-600 active:bg-marisa-500 disabled:bg-marisa-700/500
+    dark:disabled:bg-marisa-600
     `,
   Green:
     // @tw
     `
-       dark:text-green-1200
-      bg-green-1200 hover:bg-green-1000 active:bg-green-900 disabled:bg-green-800
-      dark:bg-green-500 dark:hover:bg-green-600 dark:active:bg-green-700 dark:disabled:bg-green-600`,
-  Slate:
-    // @tw
-    `
-    dark:text-slate-1200
-    bg-slate-1200 hover:bg-slate-1000 active:bg-slate-900 disabled:bg-slate-800
-    dark:bg-slate-500 dark:hover:bg-slate-600 dark:active:bg-slate-700 dark:disabled:bg-slate-600
-    `,
+    bg-green-700 hover:bg-green-600 active:bg-green-500 disabled:bg-green-700/500
+    dark:disabled:bg-green-600`,
 }
 
 const SecondaryColor: Record<AppColor, string> = {
@@ -137,9 +135,8 @@ const SecondaryColor: Record<AppColor, string> = {
   Blue:
     // @tw
     `
-		shadow-blue-300
-		bg-blue-100 hover:bg-blue-1000/85 active:bg-blue-1000/80
-		dark:hover:bg-blue-1000/90 dark:active:bg-blue-1000/80
+		text-blue-700 hover:text-white active:text-white
+		bg-gray-100 hover:bg-blue-900 active:bg-blue-1000
 		`,
   Reimu:
     // @tw
@@ -150,23 +147,23 @@ const SecondaryColor: Record<AppColor, string> = {
   Marisa:
     // @tw
     `
-		shadow-blue-300
-		bg-blue-100 hover:bg-blue-1000/85 active:bg-blue-1000/80
-		dark:hover:bg-blue-1000/90 dark:active:bg-blue-1000/80
+		text-marisa-700 hover:text-white active:text-white
+		bg-gray-100 hover:bg-marisa-900 active:bg-marisa-1000
+		dark:hover:bg-marisa-900/90 dark:active:bg-marisa-900/80
 		`,
   Green:
     // @tw
     `
-		shadow-blue-300
-		bg-blue-100 hover:bg-blue-1000/85 active:bg-blue-1000/80
-		dark:hover:bg-blue-1000/90 dark:active:bg-blue-1000/80
+		text-green-700 hover:text-white active:text-white
+		bg-gray-100 hover:bg-green-900 active:bg-green-1000
+		dark:hover:bg-green-900/90 dark:active:bg-green-900/80
 		`,
   Slate:
     // @tw
     `
-		shadow-blue-300
-		bg-blue-100 hover:bg-blue-1000/85 active:bg-blue-1000/80
-		dark:hover:bg-blue-1000/90 dark:active:bg-blue-1000/80
+		text-slate-700 hover:text-white active:text-white
+		bg-gray-100 hover:bg-slate-900 active:bg-slate-1000
+		dark:hover:bg-slate-900/90 dark:active:bg-slate-900/80
 		`,
 }
 
@@ -186,25 +183,25 @@ const TertiaryColor: Record<AppColor, string> = {
   Reimu:
     // @tw
     `
-      text-blue-700
+      text-reimu-700
       disabled:bg-gray-300
       `,
   Marisa:
     // @tw
     `
-      text-reimu-700
+      text-marisa-700
       disabled:bg-gray-300
       `,
   Green:
     // @tw
     `
-      text-reimu-700
+      text-green-700
       disabled:bg-gray-300
       `,
   Slate:
     // @tw
     `
-      text-reimu-700
+      text-slate-700
       disabled:bg-gray-300
       `,
 }
