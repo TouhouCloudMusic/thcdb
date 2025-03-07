@@ -44,6 +44,10 @@ body {
   height: 100%;
 }
 
+svg {
+  color: var(--text-color-tertiary);
+}
+
 select {
   &:disabled {
     background-color: hsl(var(--background-color-secondary));

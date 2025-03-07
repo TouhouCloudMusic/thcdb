@@ -1,67 +1,110 @@
-import { createSignal, Match, Switch } from "solid-js"
-import { HamburgerMenuIcon } from "solid-radix-icons"
-import { TertiaryButton } from "~/components/button/index.tsx"
+import { createMemo, Match, Show, Switch } from "solid-js"
+import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
+import { Button } from "~/components/button"
 import {
   BellAlertIcon,
   BellIcon,
   BellSlashIcon,
 } from "../icons/heroicons/24/outline.tsx"
-import { ThemeButton } from "../theme_button.tsx"
+import { Avatar } from "../avatar/index.tsx"
 
-// @tw
-const badgeClass =
-  "rounded-sm border text-gray-600 size-7 flex place-items-center place-content-center"
+import { NotificationState, useUserCtx } from "~/state/user"
 
-const enum NotificationState {
-  None,
-  Unread,
-  Muted,
-}
-
-const iconSize = {
-  width: 16,
-  height: 16,
-}
+const HEADER_BTN_CLASS = "size-6 p-1 m-auto"
 
 export function Header() {
-  const [notificationState] = createSignal(NotificationState.None)
-
+  const Divider = () => <span class="w-[0.5px] bg-slate-400 h-5 ml-3"></span>
   return (
-    <header class="bg-primary box-content h-10 content-center items-center px-4 py-2">
+    <header class="bg-primary box-content h-12 content-center items-center px-4 py-2">
       <div class="my-auto flex h-8 items-center justify-between">
         {/* Left */}
         <div class="flex items-center">
-          <button class={badgeClass}>
-            <HamburgerMenuIcon {...iconSize} />
-          </button>
-          <a
-            href="/"
-            class="mx-4 size-8 place-content-center rounded-full bg-gray-300 text-center text-[0.5rem] text-white"
+          <Button
+            variant="Tertiary"
+            class={HEADER_BTN_CLASS}
           >
-            LOGO
-          </a>
+            <HamburgerMenuIcon class={"size-4 m-auto"} />
+          </Button>
+          <Divider />
         </div>
+
         {/* Right	*/}
-        <div class="ml-4 flex items-center gap-2 md:ml-6">
-          <ThemeButton class={badgeClass} />
-          <TertiaryButton
-            type="button"
-            class={badgeClass}
+        <div class="flex place-content-center items-center gap-3 shrink">
+          <SearchBar />
+          <Divider />
+          <Show
+            when={useUserCtx().user}
+            fallback={<UnauthenticatedButtons />}
           >
-            <Switch>
-              <Match when={notificationState() === NotificationState.None}>
-                <BellIcon {...iconSize} />
-              </Match>
-              <Match when={notificationState() === NotificationState.Unread}>
-                <BellAlertIcon {...iconSize} />
-              </Match>
-              <Match when={notificationState() === NotificationState.Muted}>
-                <BellSlashIcon {...iconSize} />
-              </Match>
-            </Switch>
-          </TertiaryButton>
+            {(user) => (
+              <>
+                <div class="h-8 w-8 grid place-items-center">
+                  <NotificationButton />
+                </div>
+                <Avatar src={user().avatar_url} />
+              </>
+            )}
+          </Show>
         </div>
       </div>
     </header>
+  )
+}
+
+function SearchBar() {
+  return (
+    <div
+      class={`
+    bg-slate-100 w-64 min-w-min max-h-full h-8 my-2 rounded-xs flex items-center place-content-start
+    hover:ring-1 hover:ring-reimu-600 pl-2.5 duration-250
+    `}
+    >
+      <MagnifyingGlassIcon class={"size-4"} />
+    </div>
+  )
+}
+
+function NotificationButton() {
+  let notification_state = createMemo(() => useUserCtx().notification_state)
+  return (
+    <Button
+      variant="Tertiary"
+      class={HEADER_BTN_CLASS}
+    >
+      <Switch>
+        <Match when={notification_state() === NotificationState.None}>
+          <BellIcon class={"size-4 m-auto"} />
+        </Match>
+        <Match when={notification_state() === NotificationState.Unread}>
+          <BellAlertIcon class={"size-4 m-auto"} />
+        </Match>
+        <Match when={notification_state() === NotificationState.Muted}>
+          <BellSlashIcon class={"size-4 m-auto"} />
+        </Match>
+      </Switch>
+    </Button>
+  )
+}
+
+function UnauthenticatedButtons() {
+  // @tw
+  const BTN_CLASS = "w-18 max-h-full text-sm"
+  return (
+    <>
+      <Button
+        variant="Tertiary"
+        size="Sm"
+        class={BTN_CLASS.concat(" ", "text-slate-900")}
+      >
+        Sign In
+      </Button>
+      <Button
+        variant="Primary"
+        size="Sm"
+        class={BTN_CLASS}
+      >
+        Sign Up
+      </Button>
+    </>
   )
 }
