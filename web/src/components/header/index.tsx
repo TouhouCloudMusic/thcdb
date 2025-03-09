@@ -41,7 +41,7 @@ export function Header() {
                 <div class="h-8 w-8 grid place-items-center">
                   <NotificationButton />
                 </div>
-                <Avatar src={user().avatar_url} />
+                <Avatar user={user()} />
               </>
             )}
           </Show>
