@@ -1,47 +1,53 @@
-import { 
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
-} from "@suid/material"
-import { Button } from "@suid/material"
-import { type JSX } from "solid-js"
+import { Show, type JSX } from "solid-js"
+import { Dialog } from "."
+import { Button } from "../button"
 
-export interface AlertDialogProps {
-    open: boolean
-    title: string
-    content: string
-    onClose: () => void
-    onConfirm?: () => void
-    onCancel?: () => void
-    confirmText?: string
-    cancelText?: string
+export interface AlertDialogProps extends Dialog.RootProps {
+  /**
+   * Trigger element of the dialog, doesn't need to be wrapped in `Dialog.Trigger`
+   */
+  trigger: JSX.Element
+  title: string
+  description: string
+  onCancel: () => void
+  onConfirm: () => void
+  cancelText?: string
+  confirmText?: string
+  hideCancel?: boolean
 }
 
 export function AlertDialog(props: AlertDialogProps) {
-    const handleConfirm = () => {
-        if (props.onConfirm) props.onConfirm();
-        props.onClose();
-    }
-
-    const handleCancel = () => {
-        if (props.onCancel) props.onCancel();
-        props.onClose();
-    }
-
-    return (
-        <Dialog open={props.open} onClose={props.onClose}>
-            <DialogTitle id="alert-dialog-title">{props.title}</DialogTitle>
-            <DialogContent>
-                <DialogContentText>
-                    {props.content}
-                </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={handleCancel}>{props.cancelText ?? "取消"}</Button>
-                <Button onClick={handleConfirm} autoFocus>{props.confirmText ?? "确定"}</Button>
-            </DialogActions>
-        </Dialog>
-    )
+  return (
+    <Dialog.Layout
+      trigger={props.trigger}
+      open={props.open!}
+      defaultOpen={props.defaultOpen!}
+      onOpenChange={props.onOpenChange!}
+    >
+      <Dialog.Content class="h-48 w-96 flex flex-col place-content-between">
+        <div>
+          <Dialog.Title class="text-lg">{props.title}</Dialog.Title>
+          <Dialog.Description>{props.description}</Dialog.Description>
+        </div>
+        <div class="flex gap-2">
+          <Button
+            class="ml-auto"
+            variant="Tertiary"
+            color="Reimu"
+            onClick={props.onConfirm}
+          >
+            {props.confirmText ?? "确定"}
+          </Button>
+          <Show when={!props.hideCancel}>
+            <Dialog.CloseButton
+              variant="Primary"
+              onClick={props.onCancel}
+            >
+              {props.cancelText ?? "取消"}
+            </Dialog.CloseButton>
+          </Show>{" "}
+        </div>
+      </Dialog.Content>
+    </Dialog.Layout>
+  )
 }
