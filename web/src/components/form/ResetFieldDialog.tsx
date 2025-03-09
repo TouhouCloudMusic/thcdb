@@ -1,9 +1,5 @@
 import { createMemo } from "solid-js"
-import {
-  PrimaryButton,
-  SecondaryButton,
-  TertiaryButton,
-} from "../button/index.tsx"
+import { Button, SecondaryButton, TertiaryButton } from "../button/index.tsx"
 import { ArrowPathIcon } from "../icons/heroicons/24/outline.tsx"
 import { Dialog } from "./Dialog/index.ts"
 
@@ -18,7 +14,7 @@ export function ResetFieldDialogTrigger(props: {
   return (
     <Dialog.Root modal>
       <Dialog.Trigger
-        size="xs"
+        size="Xs"
         class="mr-0.5 aspect-square h-full p-1.5"
         aria-label={`Reset ${fieldNameWithoutUnderscore()} field to initial state`}
         as={TertiaryButton}
@@ -36,15 +32,15 @@ export function ResetFieldDialogTrigger(props: {
             <Dialog.CloseButton
               class=""
               color="warning"
-              size="sm"
+              size="Sm"
               onClick={props.onReset}
               as={SecondaryButton}
             >
               Reset
             </Dialog.CloseButton>
             <Dialog.CloseButton
-              size="sm"
-              as={PrimaryButton}
+              size="Sm"
+              as={Button}
             >
               No
             </Dialog.CloseButton>

@@ -14,7 +14,7 @@ import {
   type ValidComponent,
 } from "solid-js"
 import { twMerge } from "tailwind-merge"
-import { type ButtonProps, TertiaryButton } from "~/components/button"
+import { type Props, TertiaryButton } from "~/components/button"
 
 export const Root = (props: DialogRootProps) => {
   return <Dialog.Root {...props} />
@@ -68,7 +68,7 @@ interface CloseButtonProps
       PolymorphicProps<"button", DialogCloseButtonProps<"button">>,
       "color" | "type"
     >,
-    ButtonProps {}
+    Props {}
 export const CloseButton = (props: CloseButtonProps) => {
   return (
     <Dialog.CloseButton
