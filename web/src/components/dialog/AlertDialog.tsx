@@ -45,7 +45,7 @@ export function AlertDialog(props: AlertDialogProps) {
             >
               {props.cancelText ?? "取消"}
             </Dialog.CloseButton>
-          </Show>{" "}
+          </Show>
         </div>
       </Dialog.Content>
     </Dialog.Layout>
