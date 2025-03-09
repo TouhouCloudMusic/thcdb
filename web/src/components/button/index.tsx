@@ -83,7 +83,7 @@ const SizeClass = {
 const VariantClass = {
   Primary: `shadow-sm text-(--background-color-primary)`,
   Secondary: `shadow-xs shadow-gray-100`,
-  Tertiary: `bg-primary hover:bg-gray-100 active:bg-gray-200 disabled:bg-gray-300 [&_svg]:text-tertiary`,
+  Tertiary: `bg-primary hover:bg-gray-100 active:bg-gray-200 disabled:bg-gray-300`,
 }
 
 const PrimaryColor: Record<AppColor, string> = {
