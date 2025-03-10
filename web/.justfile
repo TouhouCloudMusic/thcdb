@@ -7,7 +7,7 @@ eslint +FLAGS="":
 esfix: (eslint "--fix")
 
 oxlint +FLAGS="":
-	bunx oxlint -c oxlintrc.json --import-plugin --disable-react-plugin --jsx-a11y-plugin --promise-plugin {{FLAGS}}
+	bunx oxlint -c oxlintrc.json {{FLAGS}}
 
 oxfix: (oxlint "--fix")
 
