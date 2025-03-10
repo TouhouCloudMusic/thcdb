@@ -7,14 +7,14 @@ import Tslint from "typescript-eslint"
 import { tsConfig, tsxConfigArray } from "./config/eslint/index.js"
 
 /**
- * @type {import('eslint').Linter.FlatConfig[]}
+ * @type {import('eslint').Linter.Config[]}
  */
 export default [
   {
     languageOptions: {
       globals: { ...Globals.browser, ...Globals.node },
       parserOptions: {
-        project: ["tsconfig.json"],
+        project: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -35,6 +35,6 @@ export default [
   // jsx
   ...tsxConfigArray,
   {
-    ignores: [".output", ".vinxi", "eslint.config.js"],
+    ignores: ["eslint.config.js"],
   },
 ]
