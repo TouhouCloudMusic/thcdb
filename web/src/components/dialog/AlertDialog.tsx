@@ -30,22 +30,22 @@ export function AlertDialog(props: AlertDialogProps) {
           <Dialog.Description>{props.description}</Dialog.Description>
         </div>
         <div class="flex gap-2">
-          <Button
-            class="ml-auto"
-            variant="Tertiary"
-            color="Reimu"
-            onClick={props.onConfirm}
-          >
-            {props.confirmText ?? "确定"}
-          </Button>
           <Show when={!props.hideCancel}>
             <Dialog.CloseButton
-              variant="Primary"
+              class="ml-auto"
+              variant="Tertiary"
               onClick={props.onCancel}
             >
               {props.cancelText ?? "取消"}
             </Dialog.CloseButton>
           </Show>
+          <Button
+            variant="Primary"
+            color="Reimu"
+            onClick={props.onConfirm}
+          >
+            {props.confirmText ?? "确定"}
+          </Button>
         </div>
       </Dialog.Content>
     </Dialog.Layout>
