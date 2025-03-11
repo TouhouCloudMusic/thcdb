@@ -161,6 +161,7 @@ impl From<axum_login::Error<Service>> for SignInError {
 super::def_service!();
 
 impl Service {
+    // TODO: Move them to repository
     pub async fn find_by_id(
         &self,
         id: &i32,
@@ -185,36 +186,23 @@ impl Service {
         &self,
         username: String,
     ) -> Result<Option<UserProfile>, RepositoryError> {
-        if let Some((user, avatar)) = user::Entity::find()
+        let Some(profile) = user::Entity::find()
             .filter(user::Column::Name.eq(username))
-            .find_also_related(entity::image::Entity)
+            .left_join(entity::image::Entity)
+            .into_partial_model::<profile::UserProfileRaw>()
             .one(&self.db)
             .await?
-        {
-            let roles = user_role::Entity::find()
-                .filter(user_role::Column::UserId.eq(user.id))
-                .all(&self.db)
-                .await?;
+        else {
+            return Ok(None);
+        };
 
-            let avatar_url = avatar.map(|a| {
-                PathBuf::from_iter([&a.directory, &a.filename])
-                    .to_str()
-                    // String from database are valid unicode so unwrap is safe
-                    .unwrap()
-                    .to_string()
-            });
+        let user_roles = user_role::Entity::find()
+            .filter(user_role::Column::UserId.eq(profile.id))
+            .into_partial_model::<profile::UserRoleRaw>()
+            .all(&self.db)
+            .await?;
 
-            let profile = UserProfile {
-                name: user.name,
-                avatar_url,
-                last_login: user.last_login.into(),
-                roles: roles.into_iter().map(|x| x.role_id).collect(),
-            };
-
-            Ok(profile.into())
-        } else {
-            Ok(None)
-        }
+        Ok(Some((profile, user_roles).into()))
     }
 
     pub async fn create(
@@ -459,6 +447,53 @@ impl AuthnBackend for Service {
         }
 
         Ok(user)
+    }
+}
+
+mod profile {
+    use std::path::PathBuf;
+
+    use entity::*;
+    use sea_orm::DerivePartialModel;
+
+    use crate::dto::user::UserProfile;
+
+    #[derive(DerivePartialModel)]
+    #[sea_orm(entity = "user::Entity", from_query_result)]
+    pub(super) struct UserProfileRaw {
+        pub id: i32,
+        pub name: String,
+        pub last_login: Option<chrono::DateTime<chrono::FixedOffset>>,
+        #[sea_orm(nested)]
+        pub avatar_url: Option<AvatarRaw>,
+    }
+
+    #[derive(DerivePartialModel)]
+    #[sea_orm(entity = "image::Entity", from_query_result)]
+    pub(super) struct AvatarRaw {
+        pub directory: String,
+        pub filename: String,
+    }
+
+    #[derive(DerivePartialModel)]
+    #[sea_orm(entity = "user_role::Entity", from_query_result)]
+    pub(super) struct UserRoleRaw {
+        pub role_id: i32,
+    }
+
+    impl From<(UserProfileRaw, Vec<UserRoleRaw>)> for UserProfile {
+        fn from((profile, roles): (UserProfileRaw, Vec<UserRoleRaw>)) -> Self {
+            Self {
+                name: profile.name,
+                last_login: profile.last_login,
+                avatar_url: profile.avatar_url.map(|a| {
+                    PathBuf::from_iter([&a.directory, &a.filename])
+                        .to_string_lossy()
+                        .to_string()
+                }),
+                roles: roles.into_iter().map(|x| x.role_id).collect(),
+            }
+        }
     }
 }
 
