@@ -1,8 +1,8 @@
 import { MetaProvider } from "@solidjs/meta"
 import { type ParentProps } from "solid-js"
+import { I18NProvider } from "./i18n"
 import { TanStackProvider } from "./tanstack"
 import { ThemeProvider } from "./theme"
-import { I18NProvider } from "./i18n"
 
 export function StateProvider(props: ParentProps) {
   return (

@@ -1,12 +1,12 @@
 import { createMemo, Match, Show, Switch } from "solid-js"
 import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
 import { Button } from "~/components/button"
+import { Avatar } from "../avatar/index.tsx"
 import {
   BellAlertIcon,
   BellIcon,
   BellSlashIcon,
 } from "../icons/heroicons/24/outline.tsx"
-import { Avatar } from "../avatar/index.tsx"
 
 import { NotificationState, useUserCtx } from "~/state/user"
 

@@ -1,7 +1,7 @@
-import { type Meta, type StoryObj } from "storybook-solidjs"
-import { AlertDialog } from "./AlertDialog"
 import { createSignal } from "solid-js"
+import { type Meta, type StoryObj } from "storybook-solidjs"
 import { Button } from "../button"
+import { AlertDialog } from "./AlertDialog"
 
 const meta = {
   component: AlertDialog,

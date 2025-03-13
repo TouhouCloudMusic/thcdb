@@ -1,6 +1,3 @@
-import { useUserCtx } from "~/state/user"
-import { ListItem, Sidebar } from "."
-import { Avatar } from "../avatar"
 import {
   BookmarkIcon,
   Cross1Icon,
@@ -12,7 +9,10 @@ import {
   PersonIcon,
   ReaderIcon,
 } from "solid-radix-icons"
+import { useUserCtx } from "~/state/user"
+import { Avatar } from "../avatar"
 import { Direction, Divider } from "../divider"
+import { ListItem, Sidebar } from "."
 
 export type Props = {
   onClose: VoidFunction

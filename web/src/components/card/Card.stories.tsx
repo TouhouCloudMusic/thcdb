@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "storybook-solidjs"
-import { Card } from "."
 import { StoryLayout } from "~/utils/storybook_ext"
+import { Card } from "."
 
 const meta: Meta<typeof Card> = {
   component: Card,

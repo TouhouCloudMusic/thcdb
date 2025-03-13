@@ -1,7 +1,7 @@
 import * as Kobalte from "@kobalte/core/button"
-import { mergeProps, type JSX } from "solid-js"
-import { twMerge } from "tailwind-merge"
 import { match } from "arktype"
+import { type JSX, mergeProps } from "solid-js"
+import { twMerge } from "tailwind-merge"
 import { type AppColor } from "~/components"
 
 /**

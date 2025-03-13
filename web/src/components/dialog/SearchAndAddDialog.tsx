@@ -2,8 +2,8 @@ import { For, type JSX, type ParentProps } from "solid-js"
 import { Cross2Icon, MagnifyingGlassIcon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 import { TertiaryButton } from "../button/index.tsx"
-import { Dialog } from "../form/Dialog/index.ts"
 import { TextField } from "../form/index.tsx"
+import { Dialog } from "./index.ts"
 
 export function SearchAndAddDialog<T extends Record<string, unknown>>(
   props: ParentProps & {
@@ -26,7 +26,7 @@ export function SearchAndAddDialog<T extends Record<string, unknown>>(
       defaultOpen={props.defaultOpen ?? false}
       trigger={
         <TertiaryButton
-          size="xs"
+          size="Xs"
           class="aspect-square p-1.5"
         >
           <PlusIcon />

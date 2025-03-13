@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "storybook-solidjs"
 
-import { Size, Button, Variant } from "."
 import { AppColor } from ".."
+import { Button, Size, Variant } from "."
 
 const meta: Meta<typeof Button> = {
   component: Button,

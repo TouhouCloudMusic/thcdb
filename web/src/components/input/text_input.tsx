@@ -1,4 +1,4 @@
-import { createMemo, splitProps, type JSX } from "solid-js"
+import { createMemo, type JSX, splitProps } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
 export function TextInput(
