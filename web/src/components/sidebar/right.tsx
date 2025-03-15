@@ -10,9 +10,10 @@ import {
   ReaderIcon,
 } from "solid-radix-icons"
 import { useUserCtx } from "~/state/user"
+
+import { ListItem, Sidebar } from "."
 import { Avatar } from "../avatar"
 import { Direction, Divider } from "../divider"
-import { ListItem, Sidebar } from "."
 
 export type Props = {
   onClose: VoidFunction

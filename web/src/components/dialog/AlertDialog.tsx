@@ -1,6 +1,7 @@
 import { type JSX, Show } from "solid-js"
-import { Button } from "../button"
+
 import { Dialog } from "."
+import { Button } from "../button"
 
 export interface AlertDialogProps extends Dialog.RootProps {
   /**

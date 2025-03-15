@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs"
+
 import * as avatar from "."
 import baka from "./baka.jpg"
 
