@@ -7,7 +7,7 @@ import * as right from "./right"
 const meta: Meta<typeof right.RightSidebar> = {
   component: right.RightSidebar,
   render: (_, { loaded: { user_ctx } }) => (
-    <UserContextProvider ctx={user_ctx as UserContext}>
+    <UserContextProvider user={user_ctx as UserContext}>
       <right.RightSidebar
         onClose={() => {
           return
