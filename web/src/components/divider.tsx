@@ -1,9 +1,9 @@
+import { splitProps, type JSX } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
 export type Props = {
-  class?: string | undefined
   direction: Direction
-}
+} & JSX.HTMLAttributes<HTMLSpanElement>
 
 export const enum Direction {
   Vertical,
@@ -20,9 +20,12 @@ export function Divider(props: Props) {
     }
   }
 
+  let [_, other_props] = splitProps(props, ["class"])
+
   return (
     <span
       class={twMerge("bg-slate-300", direction_class(), props.class)}
+      {...other_props}
     ></span>
   )
 }
