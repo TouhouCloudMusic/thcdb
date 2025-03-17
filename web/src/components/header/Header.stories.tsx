@@ -7,7 +7,7 @@ import * as header from "."
 const meta: Meta<typeof header.Header> = {
   component: header.Header,
   render: (args, { loaded: { user_ctx } }) => (
-    <UserContextProvider ctx={user_ctx as UserContext}>
+    <UserContextProvider user={user_ctx as UserContext}>
       <header.Header {...args} />
     </UserContextProvider>
   ),
