@@ -1,5 +1,5 @@
-import { createContext, createMemo, type ParentProps } from "solid-js"
-
+import { createContext, type ParentProps } from "solid-js"
+import { createMutable } from "solid-js/store"
 import { useContextUnsave } from "~/lib/context"
 
 export const enum NotificationState {
@@ -8,7 +8,9 @@ export const enum NotificationState {
   Muted,
 }
 export class UserStore {
-  constructor(private ctx: UserContext) {}
+  constructor(private ctx: UserContext) {
+    return createMutable(this)
+  }
 
   get notification_state() {
     if (this.ctx?.config?.mute_notifications === true) {
@@ -24,6 +26,18 @@ export class UserStore {
     if (this.ctx) {
       return this.ctx.user
     }
+  }
+
+  get is_signed_in() {
+    return this.user !== undefined
+  }
+
+  sign_in(ctx: UserContext) {
+    this.ctx = ctx
+  }
+
+  sign_out() {
+    this.ctx = undefined
   }
 }
 
@@ -43,18 +57,19 @@ export type UserConfig = {
   mute_notifications: boolean
 }
 
-const USER_CONTEXT = createContext<() => UserStore>()
+const USER_CONTEXT = createContext<UserStore>()
 
-export const useUserCtx = () => useContextUnsave(USER_CONTEXT)()
+export const use_user_ctx = () => useContextUnsave(USER_CONTEXT)
 
 export function UserContextProvider(
   props: ParentProps & {
-    ctx: UserContext
+    user: UserContext
   },
 ) {
-  const state = createMemo(() => new UserStore(props.ctx))
+  // eslint-disable-next-line solid/reactivity
+  let store = new UserStore(props.user)
   return (
-    <USER_CONTEXT.Provider value={state}>
+    <USER_CONTEXT.Provider value={store}>
       {props.children}
     </USER_CONTEXT.Provider>
   )
