@@ -4,7 +4,7 @@ use utoipa_axum::router::OpenApiRouter;
 use crate::AppState;
 
 mod artist;
-pub mod correction;
+mod correction;
 mod event;
 mod graphql;
 mod label;
@@ -18,7 +18,17 @@ mod user;
 #[openapi(
     tags(
         (name = "Touhou Cloud Db", description = "TODO")
-    )
+    ),
+    info(
+        license(
+            name = "MIT",
+            url  = "https://opensource.org/licenses/MIT"
+        )
+    ),
+    // https://github.com/juhaku/utoipa/issues/1165
+    components(schemas(
+        correction::HandleCorrectionMethod
+    ))
 )]
 struct ApiDoc;
 
