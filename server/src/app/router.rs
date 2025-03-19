@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use axum::routing::get;
 use axum::{Json, Router};
 use tower_http::services::ServeDir;
+use utoipa::OpenApi;
 use utoipa_scalar::{Scalar, Servable};
 
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
@@ -10,15 +11,21 @@ use crate::controller;
 use crate::service::user::AuthSession;
 use crate::state::AppState;
 
+// https://github.com/juhaku/utoipa/issues/1165
+#[derive(utoipa::OpenApi)]
+#[openapi(components(schemas(
+    controller::correction::HandleCorrectionMethod
+)))]
+struct ExtApiDoc;
+
 pub fn router() -> Router<AppState> {
     let (api_router, api_doc) = controller::api_router().split_for_parts();
 
+    let api_doc = api_doc.merge_from(ExtApiDoc::openapi());
+
     let doc_router = api_router
         .merge(Scalar::with_url("/docs", api_doc.clone()))
-        .route(
-            "/openapi.json",
-            get(async move || Json(api_doc.to_json().unwrap())),
-        );
+        .route("/openapi.json", get(async move || Json(api_doc)));
 
     Router::new()
         .route(

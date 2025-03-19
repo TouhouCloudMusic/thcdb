@@ -4,7 +4,7 @@ use utoipa_axum::router::OpenApiRouter;
 use crate::AppState;
 
 mod artist;
-mod correction;
+pub mod correction;
 mod event;
 mod graphql;
 mod label;

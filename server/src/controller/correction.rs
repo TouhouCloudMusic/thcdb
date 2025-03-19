@@ -33,7 +33,7 @@ error_set! {
 }
 
 #[derive(ToSchema, Deserialize)]
-enum HandleCorrectionMethod {
+pub enum HandleCorrectionMethod {
     Approve,
     Reject,
 }
