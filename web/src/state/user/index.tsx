@@ -1,6 +1,7 @@
 import { createContext, type ParentProps } from "solid-js"
 import { createMutable } from "solid-js/store"
 import { useContextUnsave } from "~/lib/context"
+import { type UserProfile } from "~/model/user"
 
 export const enum NotificationState {
   None,
@@ -15,7 +16,7 @@ export class UserStore {
   get notification_state() {
     if (this.ctx?.config?.mute_notifications === true) {
       return NotificationState.Muted
-    } else if ((this.ctx?.notifications.length ?? 0) > 0) {
+    } else if ((this.ctx?.notifications?.length ?? 0) > 0) {
       return NotificationState.Unread
     } else {
       return NotificationState.None
@@ -47,8 +48,8 @@ export type User = {
 }
 export type UserContext =
   | {
-      user: User
-      notifications: unknown[]
+      user: UserProfile
+      notifications?: unknown[]
       config?: UserConfig
     }
   | undefined
