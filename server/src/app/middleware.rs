@@ -1,7 +1,8 @@
-use axum::Router;
+use axum::{Router, http};
 use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
+use tower_http::cors::{Any, CorsLayer};
 use tower_sessions_redis_store::RedisStore;
 
 use crate::middleware;
@@ -21,12 +22,32 @@ pub fn append_global_middleware_layer(
         AuthManagerLayerBuilder::new(state.user_service.clone(), session_layer)
             .build();
 
-    router.layer(auth_layer).layer({
-        let conf = CONFIG.middleware.limit;
+    let conf = CONFIG.middleware.limit;
 
-        middleware::limit_layer()
-            .req_per_sec(conf.req_per_sec)
-            .burst_size(conf.burst_size)
-            .call()
-    })
+    let limit_layer = middleware::limit_layer()
+        .req_per_sec(conf.req_per_sec)
+        .burst_size(conf.burst_size)
+        .call();
+
+    router
+        .layer(auth_layer)
+        .layer(limit_layer)
+        .layer(cors_layer())
+}
+
+fn cors_layer() -> CorsLayer {
+    use http::Method;
+
+    let origins = [
+        // TODO: config file
+        "http://127.0.0.1:3000".parse().unwrap(),
+        "http://localhost:3000".parse().unwrap(),
+    ];
+
+    let methods = [Method::GET, Method::POST];
+
+    CorsLayer::new()
+        .allow_origin(origins)
+        .allow_methods(methods)
+        .allow_headers(Any)
 }
