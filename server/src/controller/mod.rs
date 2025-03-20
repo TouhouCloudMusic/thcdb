@@ -16,10 +16,9 @@ mod user;
 
 #[derive(OpenApi)]
 #[openapi(
-    tags(
-        (name = "Touhou Cloud Db", description = "TODO")
-    ),
     info(
+        title = "Touhou Cloud DB",
+        description = "TODO",
         license(
             name = "MIT",
             url  = "https://opensource.org/licenses/MIT"
