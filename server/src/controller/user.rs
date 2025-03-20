@@ -17,6 +17,7 @@ use crate::service::user::{
     AuthSession, SessionBackendError, SignInError, SignUpError,
     UploadAvatarError,
 };
+use crate::utils::MapInto;
 use crate::{AppState, api_response};
 
 const TAG: &str = "User";
@@ -46,7 +47,7 @@ async fn profile(
     Path(name): Path<String>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
     user_service
-        .profile(name)
+        .profile(&name)
         .await
         .map_err(IntoResponse::into_response)?
         .map_or_else(
@@ -61,21 +62,16 @@ async fn profile(
     path = "/sign_up",
     request_body = AuthCredential,
     responses(
-        (status = 200, body = Message),
+        (status = 200, body = Data<UserProfile>),
         SignUpError
     ),
 )]
 #[use_service(user)]
 async fn sign_up(
-    mut auth_session: AuthSession,
+    auth_session: AuthSession,
     Json(creds): Json<AuthCredential>,
-) -> Result<Message, SignUpError> {
-    let user = user_service.create(creds).await?;
-
-    match auth_session.login(&user).await {
-        Ok(()) => Ok(Message::ok()),
-        Err(e) => Err(SessionBackendError::from(e).into()),
-    }
+) -> Result<Data<UserProfile>, SignUpError> {
+    user_service.sign_up(auth_session, creds).await.map_into()
 }
 
 #[utoipa::path(
@@ -84,19 +80,16 @@ async fn sign_up(
     path = "/sign_in",
     request_body = AuthCredential,
     responses(
-        (status = 200, body = Message),
-        SignInError
+        (status = 200, body = Data<UserProfile>),
+        SignInError,
     )
 )]
 #[use_service(user)]
 async fn sign_in(
     auth_session: AuthSession,
     Json(creds): Json<AuthCredential>,
-) -> Result<Message, SignInError> {
-    user_service
-        .sign_in(auth_session, creds)
-        .await
-        .map(|()| Message::ok())
+) -> Result<Data<UserProfile>, SignInError> {
+    user_service.sign_in(auth_session, creds).await.map_into()
 }
 
 #[utoipa::path(

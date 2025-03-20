@@ -60,11 +60,13 @@ error_set! {
         AlreadySignedIn,
         Authn(AuthnError),
         Session(SessionBackendError),
+        Repo(RepositoryError)
     };
     #[derive(ApiError, IntoErrorSchema)]
     SignUpError = {
         Create(CreateUserError),
         Session(SessionBackendError),
+        Repo(RepositoryError)
     };
     #[derive(IntoErrorSchema, FromDbErr, ApiError)]
     UploadAvatarError = {
@@ -184,7 +186,7 @@ impl Service {
 
     pub async fn profile(
         &self,
-        username: String,
+        username: &str,
     ) -> Result<Option<UserProfile>, RepositoryError> {
         let Some(profile) = user::Entity::find()
             .filter(user::Column::Name.eq(username))
@@ -205,40 +207,33 @@ impl Service {
         Ok(Some((profile, user_roles).into()))
     }
 
-    pub async fn create(
+    async fn create(
         &self,
         creds: AuthCredential,
     ) -> Result<user::Model, CreateUserError> {
         create_impl(creds, &self.db).await
     }
 
-    pub async fn is_username_in_use(
+    pub async fn sign_up(
         &self,
-        username: &str,
-    ) -> Result<bool, RepositoryError> {
-        let user = user::Entity::find()
-            .filter(user::Column::Name.eq(username))
-            .count(&self.db)
-            .await?;
-        Ok(user > 0)
-    }
+        mut auth_session: AuthSession,
+        creds: AuthCredential,
+    ) -> Result<UserProfile, SignUpError> {
+        let user = self.create(creds).await?;
 
-    pub async fn verify_credentials(
-        &self,
-        cred: AuthCredential,
-    ) -> Result<Option<user::Model>, AuthnBackendError> {
-        let user = self.find_by_name(&cred.username).await?;
-        let password = user.as_ref().map(|u| u.password.as_str());
+        let profile = self.profile(&user.name).await?.unwrap();
 
-        cred.verify_credentials(password).await?;
-        Ok(user)
+        match auth_session.login(&user).await {
+            Ok(()) => Ok(profile),
+            Err(e) => Err(SessionBackendError::from(e).into()),
+        }
     }
 
     pub async fn sign_in(
         &self,
         mut auth_session: AuthSession,
         creds: AuthCredential,
-    ) -> Result<(), SignInError> {
+    ) -> Result<UserProfile, SignInError> {
         if auth_session.user.is_some() {
             return Err(SignInError::AlreadySignedIn);
         }
@@ -250,7 +245,7 @@ impl Service {
 
         auth_session.login(&user).await?;
 
-        Ok(())
+        Ok(self.profile(&user.name).await?.unwrap())
     }
 
     pub async fn sign_out(
@@ -258,6 +253,7 @@ impl Service {
         mut auth_session: AuthSession,
     ) -> Result<(), SessionBackendError> {
         auth_session.logout().await?;
+
         Ok(())
     }
 
@@ -294,6 +290,28 @@ impl Service {
         }
 
         Ok(())
+    }
+
+    pub async fn is_username_in_use(
+        &self,
+        username: &str,
+    ) -> Result<bool, RepositoryError> {
+        let user = user::Entity::find()
+            .filter(user::Column::Name.eq(username))
+            .count(&self.db)
+            .await?;
+        Ok(user > 0)
+    }
+
+    pub async fn verify_credentials(
+        &self,
+        cred: AuthCredential,
+    ) -> Result<Option<user::Model>, AuthnBackendError> {
+        let user = self.find_by_name(&cred.username).await?;
+        let password = user.as_ref().map(|u| u.password.as_str());
+
+        cred.verify_credentials(password).await?;
+        Ok(user)
     }
 
     pub async fn get_roles(
