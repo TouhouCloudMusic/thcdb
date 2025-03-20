@@ -346,7 +346,7 @@ async fn create_impl(
 
     let user = user::ActiveModel {
         name: Set(username.to_owned()),
-        password: Set(password.to_owned()),
+        password: Set(password.clone()),
         ..Default::default()
     }
     .insert(db)
