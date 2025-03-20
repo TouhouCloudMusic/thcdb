@@ -29,7 +29,7 @@ mod infrastructure;
 mod middleware;
 mod model;
 mod repo;
-mod resolver;
+// mod resolver;
 mod service;
 mod state;
 mod types;

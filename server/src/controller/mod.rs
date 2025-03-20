@@ -6,7 +6,7 @@ use crate::AppState;
 mod artist;
 mod correction;
 mod event;
-mod graphql;
+// mod graphql;
 mod label;
 mod lookup_table;
 mod release;
