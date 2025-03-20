@@ -52,7 +52,7 @@ pub trait Pipe<O>
 where
     Self: Sized,
 {
-    fn pipe(self, mut f: impl FnMut(Self) -> O) -> O {
+    fn pipe(self, f: impl FnOnce(Self) -> O) -> O {
         f(self)
     }
 }
