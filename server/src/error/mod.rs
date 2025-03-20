@@ -1,6 +1,6 @@
 mod error_code;
 mod structs;
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -8,7 +8,7 @@ use entity::sea_orm_active_enums::EntityType;
 pub use error_code::*;
 use error_set::error_set;
 use itertools::Itertools;
-use macros::IntoErrorSchema;
+use macros::{ApiError, IntoErrorSchema};
 use sea_orm::DbErr;
 pub use structs::*;
 
@@ -49,18 +49,19 @@ pub trait ApiErrorTrait: StatusCodeExt + AsErrorCode {
     fn before_into_api_error(&self) {}
 }
 
-#[derive(Debug, IntoErrorSchema)]
+#[derive(Debug, IntoErrorSchema, ApiError, derive_more::Display)]
+#[display("Database error")]
+#[api_error(
+    status_code = StatusCode::INTERNAL_SERVER_ERROR,
+    error_code = ErrorCode::DatabaseError,
+    into_response = self,
+    impl_api_error = false,
+)]
 pub struct DbErrWrapper(DbErr);
 
 impl From<DbErr> for DbErrWrapper {
     fn from(value: DbErr) -> Self {
         Self(value)
-    }
-}
-
-impl Display for DbErrWrapper {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Database error")
     }
 }
 
@@ -70,31 +71,9 @@ impl std::error::Error for DbErrWrapper {
     }
 }
 
-impl StatusCodeExt for DbErrWrapper {
-    fn as_status_code(&self) -> StatusCode {
-        StatusCode::INTERNAL_SERVER_ERROR
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
-        [StatusCode::INTERNAL_SERVER_ERROR].into_iter()
-    }
-}
-
-impl AsErrorCode for DbErrWrapper {
-    fn as_error_code(&self) -> ErrorCode {
-        ErrorCode::DatabaseError
-    }
-}
-
 impl ApiErrorTrait for DbErrWrapper {
     fn before_into_api_error(&self) {
         tracing::error!("Database error: {}", self.0);
-    }
-}
-
-impl IntoResponse for DbErrWrapper {
-    fn into_response(self) -> axum::response::Response {
-        self.into_api_response()
     }
 }
 

@@ -1,9 +1,15 @@
 use std::fmt::Display;
 
-use super::{ApiErrorTrait, AsErrorCode, ErrorCode};
-use crate::api_response::StatusCodeExt;
+use axum::http::StatusCode;
+use macros::ApiError;
 
-#[derive(Debug)]
+use super::ErrorCode;
+
+#[derive(Debug, ApiError)]
+#[api_error(
+    status_code = StatusCode::BAD_REQUEST,
+    error_code = ErrorCode::InvalidField
+)]
 pub struct InvalidField {
     pub field: String,
     pub expected: String,
@@ -21,21 +27,3 @@ impl Display for InvalidField {
 }
 
 impl std::error::Error for InvalidField {}
-
-impl StatusCodeExt for InvalidField {
-    fn as_status_code(&self) -> axum::http::StatusCode {
-        axum::http::StatusCode::BAD_REQUEST
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = axum::http::StatusCode> {
-        [axum::http::StatusCode::BAD_REQUEST].into_iter()
-    }
-}
-
-impl AsErrorCode for InvalidField {
-    fn as_error_code(&self) -> ErrorCode {
-        ErrorCode::InvalidField
-    }
-}
-
-impl ApiErrorTrait for InvalidField {}

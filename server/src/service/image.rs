@@ -14,7 +14,6 @@ use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 use xxhash_rust::xxh3::xxh3_128;
 
-use crate::api_response::StatusCodeExt;
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::error::{DbErrWrapper, ErrorCode};
 
@@ -23,10 +22,6 @@ super::def_service!();
 error_set! {
     #[derive(FromDbErr, ApiError)]
     CreateError = {
-        #[api_error(
-            status_code = inner,
-            error_code = ErrorCode::DatabaseError
-        )]
         DbErr(DbErrWrapper),
         #[api_error(
             status_code = StatusCode::INTERNAL_SERVER_ERROR,
@@ -36,7 +31,7 @@ error_set! {
         #[display("Failed to write file to image directory")]
         WriteFile(std::io::Error),
         #[api_error(
-            status_code = inner,
+            status_code = StatusCode::BAD_REQUEST,
             error_code = ErrorCode::InvalidImageType,
             into_response = self
         )]
@@ -75,16 +70,6 @@ impl Default for InvalidType {
             accepted: String::new(),
             expected: "png or jpeg",
         }
-    }
-}
-
-impl StatusCodeExt for InvalidType {
-    fn as_status_code(&self) -> axum::http::StatusCode {
-        axum::http::StatusCode::BAD_REQUEST
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = axum::http::StatusCode> {
-        [axum::http::StatusCode::BAD_REQUEST].into_iter()
     }
 }
 

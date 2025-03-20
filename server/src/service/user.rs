@@ -21,15 +21,11 @@ use sea_orm::{
 };
 
 use super::*;
-use crate::api_response::StatusCodeExt;
 use crate::domain::auth::{
     AuthCredential, AuthnError, HasherError, ValidateCredsError, hash_password,
 };
 use crate::dto::user::UserProfile;
-use crate::error::{
-    ApiErrorTrait, AsErrorCode, DbErrWrapper, ErrorCode, InvalidField,
-    ServiceError,
-};
+use crate::error::{DbErrWrapper, ErrorCode, InvalidField, ServiceError};
 use crate::model::lookup_table::LookupTableEnum;
 use crate::model::user_role::UserRole;
 use crate::utils::orm::PgFuncExt;
@@ -97,35 +93,22 @@ error_set! {
     };
 }
 
-#[derive(Debug, derive_more::Display)]
+#[derive(Debug, derive_more::Display, ApiError)]
 #[display("Session error")]
+#[api_error(
+    status_code = StatusCode::INTERNAL_SERVER_ERROR,
+    error_code = ErrorCode::InternalServerError,
+    into_response = self
+)]
 pub struct SessionError(axum_login::tower_sessions::session::Error);
+
+impl std::error::Error for SessionError {}
 
 impl From<axum_login::tower_sessions::session::Error> for SessionError {
     fn from(value: axum_login::tower_sessions::session::Error) -> Self {
         Self(value)
     }
 }
-
-impl StatusCodeExt for SessionError {
-    fn as_status_code(&self) -> StatusCode {
-        StatusCode::INTERNAL_SERVER_ERROR
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
-        [StatusCode::INTERNAL_SERVER_ERROR].into_iter()
-    }
-}
-
-impl AsErrorCode for SessionError {
-    fn as_error_code(&self) -> crate::error::ErrorCode {
-        ErrorCode::InternalServerError
-    }
-}
-
-impl ApiErrorTrait for SessionError {}
-
-impl std::error::Error for SessionError {}
 
 impl From<DbErr> for AuthnBackendError {
     fn from(value: DbErr) -> Self {

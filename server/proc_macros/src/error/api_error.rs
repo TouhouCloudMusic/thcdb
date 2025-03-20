@@ -5,7 +5,8 @@ use quote::quote;
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
 use syn::{
-    Data, DataEnum, DeriveInput, Error, Expr, Fields, Ident, Path, Variant,
+    Data, DataEnum, DataStruct, DeriveInput, Error, Expr, Fields, Ident, Path,
+    Variant,
 };
 
 #[derive(Default)]
@@ -67,6 +68,19 @@ struct ApiErrorVariantMeta {
     into_response: IntoResponseOpt,
 }
 
+#[derive(FromMeta, Default)]
+struct ApiErrorEnumMeta {
+    impl_api_error: Option<bool>,
+}
+
+#[derive(FromMeta, Default)]
+struct ApiErrorStructMeta {
+    status_code: CodeOpt,
+    error_code: CodeOpt,
+    into_response: IntoResponseOpt,
+    impl_api_error: Option<bool>,
+}
+
 pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
     let DeriveInput {
         attrs,
@@ -76,29 +90,54 @@ pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
         data,
     } = input;
 
-    let variants = match data {
-        Data::Enum(DataEnum { variants, .. }) => variants,
+    let (impl_block, is_impl_api_error) = match data {
+        Data::Enum(DataEnum { variants, .. }) => {
+            let is_impl_api_error = {
+                let api_err_attr = 'ret: {
+                    for attr in attrs {
+                        if attr.path().is_ident("api_error") {
+                            break 'ret ApiErrorEnumMeta::from_meta(
+                                &attr.meta,
+                            )?;
+                        }
+                    }
+                    ApiErrorEnumMeta::default()
+                };
+
+                api_err_attr.impl_api_error
+            };
+            (gen_enum_impl(&ident, variants)?, is_impl_api_error)
+        }
+        Data::Struct(r#struct) => {
+            let is_impl_api_error = {
+                let api_err_attr = 'ret: {
+                    for attr in &attrs {
+                        if attr.path().is_ident("api_error") {
+                            break 'ret ApiErrorStructMeta::from_meta(
+                                &attr.meta,
+                            )?;
+                        }
+                    }
+                    ApiErrorStructMeta::default()
+                };
+
+                api_err_attr.impl_api_error
+            };
+            (
+                gen_struct_impl(&ident, &attrs, r#struct)?,
+                is_impl_api_error,
+            )
+        }
         _ => Err(Error::new_spanned(
             &ident,
-            "ApiError can only be derived for enums",
+            "ApiError can only be derived for enums and structs",
         ))?,
     };
 
-    let impl_block = gen_api_error_impl(&ident, variants)?;
-
-    let is_enable_impl_api_error = !attrs.iter().any(|attr| {
-        attr.path().is_ident("api_error")
-            && attr
-                .meta
-                .require_list()
-                .is_ok_and(|x| x.path.is_ident("disable_impl"))
-    });
-
-    let impl_api_error_trait = if is_enable_impl_api_error {
-        quote! {
-            impl crate::error::ApiErrorTrait for #ident {}
-        }
-        .into()
+    let impl_api_error_block = if is_impl_api_error.unwrap_or(true) {
+        Some(quote! {
+           impl crate::error::ApiErrorTrait for #ident {}
+        })
     } else {
         None
     };
@@ -106,12 +145,12 @@ pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
     Ok(quote! {
         #impl_block
 
-        #impl_api_error_trait
+        #impl_api_error_block
     }
     .into())
 }
 
-fn gen_api_error_impl(
+fn gen_enum_impl(
     ident: &Ident,
     variants: Punctuated<Variant, Comma>,
 ) -> syn::Result<TokenStream2> {
@@ -128,7 +167,15 @@ fn gen_api_error_impl(
 
     for variant in &variants {
         let var_name = &variant.ident;
-        let api_err_attr = parse_api_error_attrs(variant)?;
+        let api_err_attr = 'ret: {
+            for attr in &variant.attrs {
+                if attr.path().is_ident("api_error") {
+                    break 'ret ApiErrorVariantMeta::from_meta(&attr.meta)?;
+                }
+            }
+
+            ApiErrorVariantMeta::default()
+        };
 
         if let CodeOpt::Specified(code) = &api_err_attr.status_code {
             all_status_codes.push(code.clone());
@@ -282,14 +329,98 @@ fn gen_api_error_impl(
     })
 }
 
-fn parse_api_error_attrs(
-    variant: &Variant,
-) -> syn::Result<ApiErrorVariantMeta> {
-    for attr in &variant.attrs {
-        if attr.path().is_ident("api_error") {
-            return Ok(ApiErrorVariantMeta::from_meta(&attr.meta)?);
+fn gen_struct_impl(
+    ident: &Ident,
+    attrs: &[syn::Attribute],
+    r#struct: DataStruct,
+) -> syn::Result<TokenStream2> {
+    let api_err_attr = 'ret: {
+        for attr in attrs {
+            if attr.path().is_ident("api_error") {
+                break 'ret ApiErrorStructMeta::from_meta(&attr.meta)?;
+            }
         }
-    }
 
-    Ok(ApiErrorVariantMeta::default())
+        ApiErrorStructMeta::default()
+    };
+
+    let (status_code_impl, all_status_code_impl) = match api_err_attr
+        .status_code
+    {
+        CodeOpt::Specified(path) => (
+            quote! {
+                #path
+            },
+            quote! {
+                std::iter::once(#path)
+            },
+        ),
+        CodeOpt::Inner => (
+            quote! {
+                self.0.as_status_code()
+            },
+            quote! {
+                <self.0 as crate::api_response::StatusCodeExt>::all_status_codes()
+            },
+        ),
+    };
+
+    let error_code_impl = match api_err_attr.error_code {
+        CodeOpt::Specified(path) => {
+            quote! {
+                #path
+            }
+        }
+        CodeOpt::Inner => {
+            quote! {
+                self.0.as_error_code()
+            }
+        }
+    };
+
+    let into_res_impl = match api_err_attr.into_response {
+        IntoResponseOpt::Inner
+            if r#struct.fields.len() == 1
+                && r#struct.fields.iter().next().unwrap().ident.is_none() =>
+        {
+            quote! {
+                self.0.into_response()
+            }
+        }
+        _ => {
+            quote! {
+                self.into_api_response()
+            }
+        } /* _ => {
+           *     return Err(Error::new_spanned(
+           *         ident,
+           *         "Only new type struct support inner into_response",
+           *     ));
+           * } */
+    };
+
+    Ok(quote! {
+        impl crate::api_response::StatusCodeExt for #ident {
+            fn as_status_code(&self) -> ::axum::http::StatusCode {
+                #status_code_impl
+            }
+
+            fn all_status_codes() -> impl Iterator<Item=::axum::http::StatusCode> {
+                #all_status_code_impl
+            }
+        }
+
+        impl crate::error::AsErrorCode for #ident {
+            fn as_error_code(&self) -> crate::error::ErrorCode {
+                #error_code_impl
+            }
+        }
+
+        impl ::axum::response::IntoResponse for #ident {
+            fn into_response(self) -> ::axum::response::Response {
+                use crate::api_response::IntoApiResponse;
+                #into_res_impl
+            }
+        }
+    })
 }
