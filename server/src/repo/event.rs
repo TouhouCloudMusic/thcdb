@@ -14,19 +14,19 @@ use tokio::try_join;
 
 use crate::dto::event::{EventCorrection, EventResponse};
 use crate::dto::share::{AlternativeName, AlternativeNameResponse};
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::repo;
 use crate::utils::orm::InsertMany;
 
 pub async fn find_by_id(
     id: i32,
     db: &impl ConnectionTrait,
-) -> Result<EventResponse, RepositoryError> {
+) -> Result<EventResponse, ServiceError> {
     let event = find_many(event::Column::Id.eq(id), db)
         .await?
         .into_iter()
         .next()
-        .ok_or_else(|| RepositoryError::EntityNotFound {
+        .ok_or_else(|| ServiceError::EntityNotFound {
             entity_name: event::Entity.table_name(),
         })?;
 
@@ -118,7 +118,7 @@ pub async fn update_correction(
     correction: correction::Model,
     data: EventCorrection,
     db: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let history = create_entity_history_and_relations(&data, db).await?;
 
     repo::correction::update()
@@ -135,14 +135,14 @@ pub async fn update_correction(
 pub(super) async fn apply_correction(
     correction: correction::Model,
     db: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let revision =
         repo::correction::revision::find_latest(correction.id, db).await?;
 
     let history = event_history::Entity::find_by_id(revision.entity_history_id)
         .one(db)
         .await?
-        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+        .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
             entity_name: event_history::Entity.table_name(),
         })?;
 

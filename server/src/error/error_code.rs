@@ -1,6 +1,6 @@
 use serde_repr::Serialize_repr;
 
-use super::RepositoryError;
+use super::ServiceError;
 
 pub trait AsErrorCode {
     fn as_error_code(&self) -> crate::error::ErrorCode;
@@ -37,7 +37,7 @@ pub enum ErrorCode {
     InvalidImageType = 3_400_00,
 }
 
-impl AsErrorCode for RepositoryError {
+impl AsErrorCode for ServiceError {
     fn as_error_code(&self) -> ErrorCode {
         match self {
             Self::Database(_) => ErrorCode::DatabaseError,

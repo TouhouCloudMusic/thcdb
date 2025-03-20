@@ -9,7 +9,7 @@ use utoipa_axum::routes;
 
 use crate::api_response::{Data, Message};
 use crate::dto::label::{LabelResponse, NewLabel};
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
 use crate::state::AppState;
 use crate::utils::MapInto;
@@ -32,13 +32,13 @@ pub fn router() -> OpenApiRouter<AppState> {
     responses(
         (status = 200, body = Data<LabelResponse>),
         (status = 401),
-        RepositoryError
+        ServiceError
     ),
 )]
 #[use_service(label)]
 async fn find_label_by_id(
     Path(id): Path<i32>,
-) -> Result<Data<LabelResponse>, RepositoryError> {
+) -> Result<Data<LabelResponse>, ServiceError> {
     label_service.find_by_id(id).await.map_into()
 }
 
@@ -55,13 +55,13 @@ struct KwArgs {
     responses(
         (status = 200, body = Data<Vec<LabelResponse>>),
         (status = 401),
-        RepositoryError
+        ServiceError
     ),
 )]
 #[use_service(label)]
 async fn find_label_by_keyword(
     Query(query): Query<KwArgs>,
-) -> Result<Data<Vec<LabelResponse>>, RepositoryError> {
+) -> Result<Data<Vec<LabelResponse>>, ServiceError> {
     label_service
         .find_by_keyword(query.keyword)
         .await
@@ -76,14 +76,14 @@ async fn find_label_by_keyword(
     responses(
         (status = 200, body = Message),
         (status = 401),
-        RepositoryError
+        ServiceError
     ),
 )]
 #[use_session]
 #[use_service(label)]
 async fn create_label(
     Json(data): Json<NewLabel>,
-) -> Result<Message, RepositoryError> {
+) -> Result<Message, ServiceError> {
     label_service.create(session.user.unwrap().id, data).await?;
 
     Ok(Message::ok())
@@ -97,7 +97,7 @@ async fn create_label(
     responses(
         (status = 200, body = Message),
         (status = 401),
-                RepositoryError
+                ServiceError
     ),
 )]
 #[use_session]
@@ -105,7 +105,7 @@ async fn create_label(
 async fn upsert_label_correction(
     Path(id): Path<i32>,
     Json(data): Json<NewLabel>,
-) -> Result<Message, RepositoryError> {
+) -> Result<Message, ServiceError> {
     label_service
         .upsert_correction(session.user.unwrap().id, id, data)
         .await?;

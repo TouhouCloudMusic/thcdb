@@ -15,19 +15,19 @@ use sea_orm::{
 
 use crate::dto::correction::Metadata;
 use crate::dto::tag::{AltName, NewTag, TagRelation, TagResponse};
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::repo;
 use crate::utils::MapInto;
 
 pub async fn find_by_id(
     id: i32,
     db: &impl ConnectionTrait,
-) -> Result<TagResponse, RepositoryError> {
+) -> Result<TagResponse, ServiceError> {
     find_many(tag::Column::Id.eq(id), db)
         .await?
         .into_iter()
         .next()
-        .ok_or_else(|| RepositoryError::EntityNotFound {
+        .ok_or_else(|| ServiceError::EntityNotFound {
             entity_name: tag::Entity.table_name(),
         })
 }
@@ -35,14 +35,14 @@ pub async fn find_by_id(
 pub async fn find_by_keyword(
     kw: impl Into<String>,
     db: &impl ConnectionTrait,
-) -> Result<Vec<TagResponse>, RepositoryError> {
+) -> Result<Vec<TagResponse>, ServiceError> {
     find_many(tag::Column::Name.contains(kw), db).await
 }
 
 async fn find_many(
     cond: impl IntoCondition,
     db: &impl ConnectionTrait,
-) -> Result<Vec<TagResponse>, RepositoryError> {
+) -> Result<Vec<TagResponse>, ServiceError> {
     let tags = tag::Entity::find().filter(cond).all(db).await?;
 
     let alt_names = tags.load_many(tag_alternative_name::Entity, db).await?;
@@ -76,7 +76,7 @@ pub async fn create(
     data: NewTag,
     correction_metadata: Metadata,
     tx: &DatabaseTransaction,
-) -> Result<tag::Model, RepositoryError> {
+) -> Result<tag::Model, ServiceError> {
     let tag = save_tag_and_link_relation(&data, tx).await?;
 
     let history = save_tag_history_and_link_relation(&data, tx).await?;
@@ -99,7 +99,7 @@ pub async fn create_correction(
     data: NewTag,
     correction_metadata: Metadata,
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let history = save_tag_history_and_link_relation(&data, tx).await?;
 
     repo::correction::create()
@@ -120,7 +120,7 @@ pub async fn update_correction(
     data: NewTag,
     correction_metadata: Metadata,
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let history = save_tag_history_and_link_relation(&data, tx).await?;
 
     repo::correction::update()
@@ -137,20 +137,20 @@ pub async fn update_correction(
 pub(super) async fn apply_correction(
     correction: correction::Model,
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(tx)
         .await?
-        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+        .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
             entity_name: correction_revision::Entity.table_name(),
         })?;
 
     let history = tag_history::Entity::find_by_id(revision.entity_history_id)
         .one(tx)
         .await?
-        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+        .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
             entity_name: tag_history::Entity.table_name(),
         })?;
 
@@ -172,7 +172,7 @@ pub(super) async fn apply_correction(
 async fn save_tag_and_link_relation(
     data: &NewTag,
     tx: &DatabaseTransaction,
-) -> Result<tag::Model, RepositoryError> {
+) -> Result<tag::Model, ServiceError> {
     let tag = tag::ActiveModel::from(data).insert(tx).await?;
 
     create_alt_name(tag.id, &data.alt_names, tx).await?;
@@ -184,7 +184,7 @@ async fn save_tag_and_link_relation(
 async fn save_tag_history_and_link_relation(
     data: &NewTag,
     tx: &DatabaseTransaction,
-) -> Result<tag_history::Model, RepositoryError> {
+) -> Result<tag_history::Model, ServiceError> {
     let history = tag_history::ActiveModel::from(data).insert(tx).await?;
 
     create_alt_name_history(history.id, &data.alt_names, tx).await?;
@@ -243,7 +243,7 @@ async fn create_alt_name_history(
     history_id: i32,
     alt_names: &[AltName],
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     if alt_names.is_empty() {
         return Ok(());
     }
@@ -267,7 +267,7 @@ async fn create_relation(
     tag_id: i32,
     relations: &[TagRelation],
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     if relations.is_empty() {
         return Ok(());
     }
@@ -290,7 +290,7 @@ async fn update_relation(
     tag_id: i32,
     history_id: i32,
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     tag_relation::Entity::delete_many()
         .filter(tag_relation::Column::TagId.eq(tag_id))
         .exec(tx)
@@ -312,7 +312,7 @@ async fn create_relation_history(
     history_id: i32,
     relations: &[TagRelation],
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     if relations.is_empty() {
         return Ok(());
     }

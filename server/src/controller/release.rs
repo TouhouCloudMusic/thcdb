@@ -9,13 +9,13 @@ use utoipa_axum::routes;
 
 use crate::api_response::{Data, Message};
 use crate::dto::release::{ReleaseCorrection, ReleaseResponse};
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
 use crate::service::release::Service;
 use crate::state::AppState;
 use crate::utils::MapInto;
 
-type Error = RepositoryError;
+type Error = ServiceError;
 
 const TAG: &str = "Release";
 

@@ -4,7 +4,7 @@ use sea_orm::{DatabaseConnection, TransactionTrait};
 
 use crate::dto::correction::Metadata;
 use crate::dto::tag::{NewTag, TagResponse};
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::repo;
 
 super::def_service!();
@@ -14,14 +14,14 @@ impl Service {
     pub async fn find_by_id(
         &self,
         id: i32,
-    ) -> Result<TagResponse, RepositoryError> {
+    ) -> Result<TagResponse, ServiceError> {
         repo::tag::find_by_id(id, &self.db).await
     }
 
     pub async fn find_by_keyword(
         &self,
         kw: impl Into<String>,
-    ) -> Result<Vec<TagResponse>, RepositoryError> {
+    ) -> Result<Vec<TagResponse>, ServiceError> {
         repo::tag::find_by_keyword(kw, &self.db).await
     }
 
@@ -30,7 +30,7 @@ impl Service {
         user_id: i32,
         data: NewTag,
         correction_data: Metadata,
-    ) -> Result<tag::Model, RepositoryError> {
+    ) -> Result<tag::Model, ServiceError> {
         let transaction = self.db.begin().await?;
         let result =
             repo::tag::create(user_id, data, correction_data, &transaction)
@@ -46,7 +46,7 @@ impl Service {
         tag_id: i32,
         data: NewTag,
         correction_metadata: Metadata,
-    ) -> Result<(), RepositoryError> {
+    ) -> Result<(), ServiceError> {
         let tx = self.db.begin().await?;
 
         let res = super::correction::create_or_update_correction()
@@ -80,7 +80,7 @@ async fn create_correction(
     data: NewTag,
     correction_metadata: Metadata,
     db: &DatabaseConnection,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let tx = db.begin().await?;
 
     repo::tag::create_correction(
@@ -103,7 +103,7 @@ async fn update_correction(
     data: NewTag,
     metadata: Metadata,
     db: &DatabaseConnection,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let tx = db.begin().await?;
 
     repo::tag::update_correction(user_id, correction, data, metadata, &tx)

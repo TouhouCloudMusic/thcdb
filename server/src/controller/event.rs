@@ -9,7 +9,7 @@ use utoipa_axum::routes;
 
 use crate::api_response::{Data, Message};
 use crate::dto::event::{EventCorrection, EventResponse};
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
 use crate::state::AppState;
 use crate::utils::MapInto;
@@ -31,13 +31,13 @@ pub fn router() -> OpenApiRouter<AppState> {
 	path = "/event/{id}",
 	responses(
 		(status = 200, body = Data<EventResponse>),
-		RepositoryError
+		ServiceError
 	),
 )]
 #[use_service(event)]
 async fn find_by_id(
     Path(id): Path<i32>,
-) -> Result<Data<EventResponse>, RepositoryError> {
+) -> Result<Data<EventResponse>, ServiceError> {
     event_service.find_by_id(id).await.map_into()
 }
 
@@ -55,13 +55,13 @@ struct KeywordQuery {
     ),
 	responses(
 		(status = 200, body = Data<Vec<EventResponse>>),
-		RepositoryError
+		ServiceError
 	),
 )]
 #[use_service(event)]
 async fn find_by_keyword(
     Query(query): Query<KeywordQuery>,
-) -> Result<Data<Vec<EventResponse>>, RepositoryError> {
+) -> Result<Data<Vec<EventResponse>>, ServiceError> {
     event_service
         .find_by_keyword(query.keyword)
         .await
@@ -76,14 +76,14 @@ async fn find_by_keyword(
 	responses(
 		(status = 200, body = Message),
         (status = 401),
-		RepositoryError
+		ServiceError
 	),
 )]
 #[use_session]
 #[use_service(event)]
 async fn create(
     Json(input): Json<EventCorrection>,
-) -> Result<Message, RepositoryError> {
+) -> Result<Message, ServiceError> {
     event_service
         .create(session.user.unwrap().id, input)
         .await?;
@@ -99,7 +99,7 @@ async fn create(
 	responses(
 		(status = 200, body = Message),
         (status = 401),
-		RepositoryError
+		ServiceError
 	),
 )]
 #[use_session]
@@ -107,7 +107,7 @@ async fn create(
 async fn upsert_correction(
     Path(id): Path<i32>,
     Json(input): Json<EventCorrection>,
-) -> Result<Message, RepositoryError> {
+) -> Result<Message, ServiceError> {
     event_service
         .upsert_correction(id, session.user.unwrap().id, input)
         .await?;

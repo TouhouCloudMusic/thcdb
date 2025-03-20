@@ -20,7 +20,7 @@ error_set! {
     };
     #[disable(From(TokioError))]
     #[derive(IntoErrorSchema)]
-    RepositoryError = {
+    ServiceError = {
         Database(DbErrWrapper),
         Tokio(TokioError),
         #[display("Entity {entity_name} not found")]
@@ -128,7 +128,7 @@ impl ApiErrorTrait for TokioError {
     }
 }
 
-impl<T> From<T> for RepositoryError
+impl<T> From<T> for ServiceError
 where
     T: Into<TokioError>,
 {
@@ -137,13 +137,13 @@ where
     }
 }
 
-impl From<DbErr> for RepositoryError {
+impl From<DbErr> for ServiceError {
     fn from(value: DbErr) -> Self {
         Self::Database(DbErrWrapper::from(value))
     }
 }
 
-impl StatusCodeExt for RepositoryError {
+impl StatusCodeExt for ServiceError {
     fn as_status_code(&self) -> StatusCode {
         match self {
             Self::Tokio(e) => e.as_status_code(),
@@ -172,9 +172,9 @@ impl StatusCodeExt for RepositoryError {
     }
 }
 
-impl ApiErrorTrait for RepositoryError {}
+impl ApiErrorTrait for ServiceError {}
 
-impl IntoResponse for RepositoryError {
+impl IntoResponse for ServiceError {
     fn into_response(self) -> axum::response::Response {
         match self {
             Self::Database(e) => e.into_response(),

@@ -25,7 +25,7 @@ use crate::dto::release::{
 };
 use crate::dto::share::NewLocalizedTitle;
 use crate::dto::song::NewSong;
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::repo;
 use crate::utils::MapInto;
 use crate::utils::orm::InsertMany;
@@ -34,7 +34,7 @@ pub async fn create(
     data: ReleaseCorrection,
     user_id: i32,
     tx: &DatabaseTransaction,
-) -> Result<release::Model, RepositoryError> {
+) -> Result<release::Model, ServiceError> {
     let mut new_release_tracks = None;
 
     let release =
@@ -88,7 +88,7 @@ pub async fn create_correction(
     data: ReleaseCorrection,
     author_id: i32,
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     check_existence(release_id, tx).await?;
 
     let history = save_release_history_and_link_relations()
@@ -116,7 +116,7 @@ pub async fn update_correction(
     data: ReleaseCorrection,
     author_id: i32,
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let history = save_release_history_and_link_relations()
         .data(&data)
         .release_id(correction.entity_id)
@@ -139,14 +139,14 @@ pub async fn update_correction(
 pub async fn apply_correction(
     correction: correction::Model,
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     // TODO: refactor
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(tx)
         .await?
-        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+        .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
             entity_name: correction_revision::Entity.table_name(),
         })?;
 
@@ -154,13 +154,13 @@ pub async fn apply_correction(
         release_history::Entity::find_by_id(revision.entity_history_id)
             .one(tx)
             .await?
-            .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+            .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
                 entity_name: release_history::Entity.table_name(),
             })?;
 
     let author = repo::correction::user::find_author(correction.id, tx)
         .await?
-        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+        .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
             entity_name: correction_user::Entity.table_name(),
         })?;
 

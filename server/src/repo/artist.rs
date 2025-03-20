@@ -27,7 +27,7 @@ use crate::dto::artist::{
     ArtistCorrection, ArtistResponse, GroupMember, LocalizedName,
     NewGroupMember, NewLocalizedName,
 };
-use crate::error::{AsErrorCode, ErrorCode, RepositoryError};
+use crate::error::{AsErrorCode, ErrorCode, ServiceError};
 use crate::model::artist::group_member::{JoinYear, LeaveYear};
 use crate::repo;
 use crate::utils::orm::PgFuncExt;
@@ -41,7 +41,7 @@ error_set! {
             into_response = self
         )]
         Validation(ValidationError),
-        General(RepositoryError)
+        General(ServiceError)
     };
     ValidationError = {
         #[display("Unknown type artist cannot have members")]
@@ -61,7 +61,7 @@ impl AsErrorCode for ValidationError {
 
 impl From<DbErr> for Error {
     fn from(err: DbErr) -> Self {
-        RepositoryError::from(err).into()
+        ServiceError::from(err).into()
     }
 }
 
@@ -74,7 +74,7 @@ pub async fn find_by_id(
         .into_iter()
         .next()
         .ok_or_else(|| {
-            RepositoryError::EntityNotFound {
+            ServiceError::EntityNotFound {
                 entity_name: artist::Entity.table_name(),
             }
             .into()
@@ -277,13 +277,13 @@ pub async fn update_correction(
 pub(super) async fn apply_correction(
     correction: correction::Model,
     db: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(db)
         .await?
-        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+        .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
             entity_name: correction_revision::Entity.table_name(),
         })?;
 
@@ -291,7 +291,7 @@ pub(super) async fn apply_correction(
         artist_history::Entity::find_by_id(revision.entity_history_id)
             .one(db)
             .await?
-            .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+            .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
                 entity_name: artist_history::Entity.table_name(),
             })?;
 

@@ -3,7 +3,7 @@ use entity::{correction, event};
 use sea_orm::{DatabaseConnection, DbErr, TransactionTrait};
 
 use crate::dto::event::{EventCorrection, EventResponse};
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::repo;
 
 super::def_service!();
@@ -12,7 +12,7 @@ impl Service {
     pub async fn find_by_id(
         &self,
         id: i32,
-    ) -> Result<EventResponse, RepositoryError> {
+    ) -> Result<EventResponse, ServiceError> {
         repo::event::find_by_id(id, &self.db).await
     }
 
@@ -41,7 +41,7 @@ impl Service {
         event_id: i32,
         user_id: i32,
         data: EventCorrection,
-    ) -> Result<(), RepositoryError> {
+    ) -> Result<(), ServiceError> {
         super::correction::create_or_update_correction()
             .entity_id(event_id)
             .entity_type(EntityType::Event)
@@ -64,7 +64,7 @@ async fn create_correction(
     user_id: i32,
     data: EventCorrection,
     db: &DatabaseConnection,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let transaction = db.begin().await?;
     let tx = &transaction;
 
@@ -80,7 +80,7 @@ async fn update_correction(
     user_id: i32,
     data: EventCorrection,
     db: &DatabaseConnection,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let transaction = db.begin().await?;
     let tx = &transaction;
 

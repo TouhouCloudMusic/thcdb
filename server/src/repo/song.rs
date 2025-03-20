@@ -17,19 +17,19 @@ use sea_orm::{
 
 use crate::dto::share::NewLocalizedTitle;
 use crate::dto::song::{NewSong, NewSongCredit, SongResponse};
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::repo;
 use crate::utils::MapInto;
 
 pub async fn find_by_id(
     id: i32,
     db: &impl ConnectionTrait,
-) -> Result<SongResponse, RepositoryError> {
+) -> Result<SongResponse, ServiceError> {
     find_many(song::Column::Id.eq(id), db)
         .await?
         .into_iter()
         .next()
-        .ok_or_else(|| RepositoryError::EntityNotFound {
+        .ok_or_else(|| ServiceError::EntityNotFound {
             entity_name: song::Entity.table_name(),
         })
 }
@@ -37,14 +37,14 @@ pub async fn find_by_id(
 pub async fn find_by_keyword(
     keyword: impl Into<String>,
     db: &impl ConnectionTrait,
-) -> Result<impl IntoIterator<Item = SongResponse>, RepositoryError> {
+) -> Result<impl IntoIterator<Item = SongResponse>, ServiceError> {
     find_many(song::Column::Title.contains(keyword), db).await
 }
 
 async fn find_many(
     cond: impl IntoCondition,
     db: &impl ConnectionTrait,
-) -> Result<impl IntoIterator<Item = SongResponse>, RepositoryError> {
+) -> Result<impl IntoIterator<Item = SongResponse>, ServiceError> {
     let songs = song::Entity::find().filter(cond).all(db).await?;
 
     let credits = songs.load_many(song_credit::Entity, db).await?;
@@ -121,7 +121,7 @@ pub async fn create_correction(
     data: NewSong,
     user_id: i32,
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     utils::check_existence(song_id, tx).await?;
 
     let description = data.correction_metadata.description.clone();
@@ -154,7 +154,7 @@ pub async fn update_correction(
     user_id: i32,
     data: NewSong,
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let history = create_many_song_histories_and_link_relations(
         &[&data],
         tx,
@@ -180,20 +180,20 @@ pub async fn update_correction(
 pub(super) async fn apply_correction(
     correction: correction::Model,
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(tx)
         .await?
-        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+        .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
             entity_name: correction_revision::Entity.table_name(),
         })?;
 
     let history = song_history::Entity::find_by_id(revision.entity_history_id)
         .one(tx)
         .await?
-        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+        .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
             entity_name: song_history::Entity.table_name(),
         })?;
 
@@ -585,11 +585,11 @@ mod utils {
     pub async fn check_existence(
         song_id: i32,
         db: &impl ConnectionTrait,
-    ) -> Result<(), RepositoryError> {
+    ) -> Result<(), ServiceError> {
         if is_exist(song_id, db).await? {
             Ok(())
         } else {
-            Err(RepositoryError::EntityNotFound {
+            Err(ServiceError::EntityNotFound {
                 entity_name: song::Entity.table_name(),
             })
         }

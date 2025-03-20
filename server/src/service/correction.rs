@@ -9,7 +9,7 @@ use sea_orm::{
 };
 
 use super::*;
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::model::user_role::UserRole;
 use crate::repo;
 
@@ -20,7 +20,7 @@ impl Service {
         &self,
         correction_id: i32,
         approver_id: i32,
-    ) -> Result<(), RepositoryError> {
+    ) -> Result<(), ServiceError> {
         let transaction = self.db.begin().await?;
         let tx = &transaction;
 
@@ -35,7 +35,7 @@ impl Service {
         &self,
         user_id: i32,
         correction_id: i32,
-    ) -> Result<bool, RepositoryError> {
+    ) -> Result<bool, ServiceError> {
         let user_service = user::Service::new(self.db.clone());
 
         if user_service
@@ -74,7 +74,7 @@ pub async fn create_or_update_correction<T, E, A, F1, F2, E1, E2>(
 where
     F1: AsyncFnOnce(entity::correction::Model, A) -> Result<T, E1>,
     F2: AsyncFnOnce(entity::correction::Model, A) -> Result<T, E2>,
-    E: From<RepositoryError> + From<E1> + From<E2>,
+    E: From<ServiceError> + From<E1> + From<E2>,
 {
     let correction =
         repo::correction::find_latest(entity_id, entity_type, db).await?;
@@ -86,7 +86,7 @@ where
             .is_author_or_admin(user_id, correction.id)
             .await?
         {
-            return Err(RepositoryError::Unauthorized.into());
+            return Err(ServiceError::Unauthorized.into());
         }
         on_update(correction, closure_args).await?
     } else {

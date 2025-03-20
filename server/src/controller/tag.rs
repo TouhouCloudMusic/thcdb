@@ -10,7 +10,7 @@ use utoipa_axum::routes;
 use crate::api_response::{self, Data};
 use crate::dto::correction::Metadata;
 use crate::dto::tag::{NewTag, TagResponse};
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
 use crate::service::tag::Service;
 use crate::state::AppState;
@@ -29,13 +29,13 @@ pub fn router() -> OpenApiRouter<AppState> {
     responses(
 		(status = 200, body = Data<TagResponse>),
 		(status = 401),
-        RepositoryError
+        ServiceError
     ),
 )]
 #[use_service(tag)]
 async fn find_by_id(
     Path(id): Path<i32>,
-) -> Result<Data<TagResponse>, RepositoryError> {
+) -> Result<Data<TagResponse>, ServiceError> {
     tag_service.find_by_id(id).await.map_into()
 }
 
@@ -51,13 +51,13 @@ struct KwArgs {
     responses(
 		(status = 200, body = Data<TagResponse>),
 		(status = 401),
-        RepositoryError
+        ServiceError
     ),
 )]
 #[use_service(tag)]
 async fn find_by_keyword(
     Query(query): Query<KwArgs>,
-) -> Result<Data<Vec<TagResponse>>, RepositoryError> {
+) -> Result<Data<Vec<TagResponse>>, ServiceError> {
     tag_service.find_by_keyword(query.keyword).await.map_into()
 }
 
@@ -76,14 +76,14 @@ struct TagCorrection {
     responses(
 		(status = 200, body = api_response::Message),
 		(status = 401),
-        RepositoryError
+        ServiceError
     ),
 )]
 #[use_session]
 async fn create_tag(
     State(service): State<Service>,
     Json(input): Json<TagCorrection>,
-) -> Result<api_response::Message, RepositoryError> {
+) -> Result<api_response::Message, ServiceError> {
     let user_id = session.user.unwrap().id;
     service
         .create(user_id, input.data, input.correction_metadata)
@@ -98,7 +98,7 @@ async fn create_tag(
     responses(
 		(status = 200, body = api_response::Message),
 		(status = 401),
-        RepositoryError
+        ServiceError
     ),
 )]
 #[use_session]
@@ -106,7 +106,7 @@ async fn create_tag(
 async fn upsert_tag_correction(
     Path(id): Path<i32>,
     Json(input): Json<TagCorrection>,
-) -> Result<api_response::Message, RepositoryError> {
+) -> Result<api_response::Message, ServiceError> {
     let user_id = session.user.unwrap().id;
     tag_service
         .upsert_correction()

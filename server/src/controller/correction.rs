@@ -9,7 +9,7 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::api_response::Message;
-use crate::error::{ApiError, RepositoryError};
+use crate::error::{ApiError, ServiceError};
 use crate::middleware::is_signed_in;
 use crate::model::user_role::UserRole;
 use crate::service;
@@ -27,7 +27,7 @@ pub fn router() -> OpenApiRouter<AppState> {
 error_set! {
     #[derive(EnumToResponse)]
     Error = {
-        Repo(RepositoryError),
+        Service(ServiceError),
         Api(ApiError)
     };
 }
@@ -53,7 +53,7 @@ struct HandleCorrectionQuery {
 	responses(
 		(status = 200, body = Message),
 		(status = 401),
-		RepositoryError
+		ServiceError
 	),
 )]
 #[debug_handler(state = AppState)]

@@ -3,7 +3,7 @@ use entity::{correction, label};
 use sea_orm::{DatabaseConnection, TransactionTrait};
 
 use crate::dto::label::{LabelResponse, NewLabel};
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::repo;
 
 super::def_service!();
@@ -12,14 +12,14 @@ impl Service {
     pub async fn find_by_id(
         &self,
         id: i32,
-    ) -> Result<LabelResponse, RepositoryError> {
+    ) -> Result<LabelResponse, ServiceError> {
         repo::label::find_by_id(id, &self.db).await
     }
 
     pub async fn find_by_keyword(
         &self,
         keyword: String,
-    ) -> Result<Vec<LabelResponse>, RepositoryError> {
+    ) -> Result<Vec<LabelResponse>, ServiceError> {
         repo::label::find_by_keyword(keyword, &self.db)
             .await
             .map(|x| x.into_iter().collect())
@@ -29,7 +29,7 @@ impl Service {
         &self,
         user_id: i32,
         data: NewLabel,
-    ) -> Result<label::Model, RepositoryError> {
+    ) -> Result<label::Model, ServiceError> {
         let tx = self.db.begin().await?;
 
         let model = repo::label::create(user_id, data, &tx).await?;
@@ -44,7 +44,7 @@ impl Service {
         user_id: i32,
         label_id: i32,
         data: NewLabel,
-    ) -> Result<(), RepositoryError> {
+    ) -> Result<(), ServiceError> {
         super::correction::create_or_update_correction()
             .entity_id(label_id)
             .entity_type(EntityType::Label)
@@ -67,7 +67,7 @@ async fn create_correction(
     label_id: i32,
     data: NewLabel,
     db: &DatabaseConnection,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let tx = db.begin().await?;
 
     repo::label::create_correction(label_id, user_id, data, &tx).await?;
@@ -82,7 +82,7 @@ async fn update_correction(
     correction: correction::Model,
     data: NewLabel,
     db: &DatabaseConnection,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let tx = db.begin().await?;
 
     repo::label::update_correction(user_id, correction, data, &tx).await?;

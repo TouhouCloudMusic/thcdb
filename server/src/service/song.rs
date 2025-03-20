@@ -3,7 +3,7 @@ use entity::{correction, song};
 use sea_orm::{DatabaseConnection, DbErr, TransactionTrait};
 
 use crate::dto::song::{NewSong, SongResponse};
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::repo;
 
 super::def_service!();
@@ -12,14 +12,14 @@ impl Service {
     pub async fn find_by_id(
         &self,
         id: i32,
-    ) -> Result<SongResponse, RepositoryError> {
+    ) -> Result<SongResponse, ServiceError> {
         repo::song::find_by_id(id, &self.db).await
     }
 
     pub async fn find_by_keyword(
         &self,
         keyword: impl Into<String>,
-    ) -> Result<impl IntoIterator<Item = SongResponse>, RepositoryError> {
+    ) -> Result<impl IntoIterator<Item = SongResponse>, ServiceError> {
         repo::song::find_by_keyword(keyword, &self.db).await
     }
 
@@ -41,7 +41,7 @@ impl Service {
         song_id: i32,
         user_id: i32,
         data: NewSong,
-    ) -> Result<(), RepositoryError> {
+    ) -> Result<(), ServiceError> {
         super::correction::create_or_update_correction()
             .entity_id(song_id)
             .entity_type(EntityType::Song)
@@ -64,7 +64,7 @@ async fn create_correction(
     user_id: i32,
     data: NewSong,
     db: &DatabaseConnection,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let transaction = db.begin().await?;
 
     repo::song::create_correction()
@@ -84,7 +84,7 @@ async fn update_correction(
     user_id: i32,
     data: NewSong,
     db: &DatabaseConnection,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let transaction = db.begin().await?;
 
     repo::song::update_correction(correction, user_id, data, &transaction)

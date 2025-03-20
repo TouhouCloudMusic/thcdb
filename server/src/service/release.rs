@@ -8,27 +8,27 @@ use sea_orm::{
 };
 
 use crate::dto::release::{ReleaseCorrection, ReleaseResponse};
-use crate::error::{InvalidField, RepositoryError};
+use crate::error::{InvalidField, ServiceError};
 use crate::repo;
 use crate::utils::MapInto;
 
 super::def_service!();
 
-type Error = RepositoryError;
+type Error = ServiceError;
 
 #[bon]
 impl Service {
     pub async fn find_by_id(
         &self,
         id: i32,
-    ) -> Result<ReleaseResponse, RepositoryError> {
+    ) -> Result<ReleaseResponse, ServiceError> {
         repo::release::find_by_id(id, &self.db).await
     }
 
     pub async fn find_by_keyword(
         &self,
         keyword: String,
-    ) -> Result<Vec<ReleaseResponse>, RepositoryError> {
+    ) -> Result<Vec<ReleaseResponse>, ServiceError> {
         repo::release::find_by_keyword(keyword, &self.db).await
     }
 
@@ -48,7 +48,7 @@ impl Service {
         &self,
         data: ReleaseCorrection,
         user_id: i32,
-    ) -> Result<release::Model, RepositoryError> {
+    ) -> Result<release::Model, ServiceError> {
         // Question: Should check here?
         // TODO: Validate crate
         if data.artists.is_empty() {

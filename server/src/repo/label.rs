@@ -14,19 +14,19 @@ use sea_orm::{
 };
 
 use crate::dto::label::{LabelResponse, NewLabel, NewLocalizedName};
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::repo;
 use crate::utils::MapInto;
 
 pub async fn find_by_id(
     id: i32,
     db: &impl ConnectionTrait,
-) -> Result<LabelResponse, RepositoryError> {
+) -> Result<LabelResponse, ServiceError> {
     find_many(label::Column::Id.eq(id), db)
         .await?
         .into_iter()
         .next()
-        .ok_or_else(|| RepositoryError::EntityNotFound {
+        .ok_or_else(|| ServiceError::EntityNotFound {
             entity_name: label::Entity.table_name(),
         })
 }
@@ -34,14 +34,14 @@ pub async fn find_by_id(
 pub async fn find_by_keyword(
     keyword: String,
     db: &impl ConnectionTrait,
-) -> Result<impl IntoIterator<Item = LabelResponse>, RepositoryError> {
+) -> Result<impl IntoIterator<Item = LabelResponse>, ServiceError> {
     find_many(label::Column::Name.like(keyword), db).await
 }
 
 async fn find_many(
     cond: impl IntoCondition,
     db: &impl ConnectionTrait,
-) -> Result<impl IntoIterator<Item = LabelResponse>, RepositoryError> {
+) -> Result<impl IntoIterator<Item = LabelResponse>, ServiceError> {
     let labels = label::Entity::find().filter(cond).all(db).await?;
 
     let founders = labels.load_many(label_founder::Entity, db).await?;
@@ -121,7 +121,7 @@ pub async fn update_correction(
     correction: correction::Model,
     data: NewLabel,
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let history = save_label_history_and_link_relations(&data, tx).await?;
 
     repo::correction::update()
@@ -138,20 +138,20 @@ pub async fn update_correction(
 pub(super) async fn apply_correction(
     correction: correction::Model,
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(tx)
         .await?
-        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+        .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
             entity_name: correction_revision::Entity.table_name(),
         })?;
 
     let history = label_history::Entity::find_by_id(revision.entity_history_id)
         .one(tx)
         .await?
-        .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+        .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
             entity_name: label_history::Entity.table_name(),
         })?;
 

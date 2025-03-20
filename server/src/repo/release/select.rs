@@ -13,18 +13,18 @@ use sea_orm::{
 use crate::dto;
 use crate::dto::release::ReleaseResponse;
 use crate::dto::share::LocalizedTitle;
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::utils::MapInto;
 
 pub async fn find_by_id(
     id: i32,
     db: &impl ConnectionTrait,
-) -> Result<ReleaseResponse, RepositoryError> {
+) -> Result<ReleaseResponse, ServiceError> {
     find_many(release::Column::Id.eq(id), db)
         .await?
         .into_iter()
         .next()
-        .ok_or_else(|| RepositoryError::EntityNotFound {
+        .ok_or_else(|| ServiceError::EntityNotFound {
             entity_name: release::Entity.table_name(),
         })
 }
@@ -32,7 +32,7 @@ pub async fn find_by_id(
 pub async fn find_by_keyword(
     kw: String,
     db: &impl ConnectionTrait,
-) -> Result<Vec<ReleaseResponse>, RepositoryError> {
+) -> Result<Vec<ReleaseResponse>, ServiceError> {
     find_many(release::Column::Title.like(kw), db).await
 }
 
@@ -40,7 +40,7 @@ pub async fn find_by_keyword(
 async fn find_many(
     cond: impl IntoCondition,
     db: &impl ConnectionTrait,
-) -> Result<Vec<ReleaseResponse>, RepositoryError> {
+) -> Result<Vec<ReleaseResponse>, ServiceError> {
     let releases = release::Entity::find().filter(cond).all(db).await?;
 
     let artists = releases

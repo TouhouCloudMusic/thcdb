@@ -13,18 +13,18 @@ use sea_orm::{
 use user::utils::add_co_author_if_updater_not_author;
 use utils::validate_entity_type;
 
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 
 type CorrectionResult = Result<correction::Model, DbErr>;
 
 pub async fn find_by_id<C: ConnectionTrait>(
     correction_id: i32,
     db: &C,
-) -> Result<correction::Model, RepositoryError> {
+) -> Result<correction::Model, ServiceError> {
     correction::Entity::find_by_id(correction_id)
         .one(db)
         .await?
-        .ok_or_else(|| RepositoryError::EntityNotFound {
+        .ok_or_else(|| ServiceError::EntityNotFound {
             entity_name: correction::Entity.table_name(),
         })
 }
@@ -33,7 +33,7 @@ pub async fn find_by_id_with_type<C: ConnectionTrait>(
     correction_id: i32,
     entity_type: EntityType,
     db: &C,
-) -> Result<correction::Model, RepositoryError> {
+) -> Result<correction::Model, ServiceError> {
     find_by_id(correction_id, db).await.and_then(|x| {
         validate_entity_type(entity_type, x.entity_type)?;
 
@@ -45,14 +45,14 @@ pub async fn find_latest(
     entity_id: i32,
     entity_type: EntityType,
     db: &impl ConnectionTrait,
-) -> Result<correction::Model, RepositoryError> {
+) -> Result<correction::Model, ServiceError> {
     correction::Entity::find()
         .filter(correction::Column::EntityId.eq(entity_id))
         .filter(correction::Column::EntityType.eq(entity_type))
         .order_by_desc(correction::Column::Id)
         .one(db)
         .await?
-        .ok_or_else(|| RepositoryError::EntityNotFound {
+        .ok_or_else(|| ServiceError::EntityNotFound {
             entity_name: correction::Entity.table_name(),
         })
 }
@@ -171,7 +171,7 @@ pub async fn update(
     history_id: i32,
     description: String,
     correction_id: i32,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     add_co_author_if_updater_not_author(correction_id, author_id, db).await?;
 
     correction_revision::Model {
@@ -209,7 +209,7 @@ pub async fn approve(
     correction_id: i32,
     approver_id: i32,
     tx: &DatabaseTransaction,
-) -> Result<(), RepositoryError> {
+) -> Result<(), ServiceError> {
     let correction = utils::toggle_state(
         correction_id,
         approver_id,
@@ -263,11 +263,11 @@ pub mod user {
             correction_id: i32,
             updater_id: i32,
             tx: &DatabaseTransaction,
-        ) -> Result<(), RepositoryError> {
+        ) -> Result<(), ServiceError> {
             let author_id = find_author(correction_id, tx)
                 .await?
                 .map(|model| model.user_id)
-                .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+                .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
                     entity_name: correction_user::Entity.table_name(),
                 })?;
 
@@ -289,18 +289,18 @@ pub mod revision {
         EntityTrait, IntoActiveModel, QueryFilter, QueryOrder,
     };
 
-    use crate::error::RepositoryError;
+    use crate::error::ServiceError;
 
     pub async fn find_latest(
         correction_id: i32,
         db: &impl ConnectionTrait,
-    ) -> Result<correction_revision::Model, RepositoryError> {
+    ) -> Result<correction_revision::Model, ServiceError> {
         correction_revision::Entity::find()
             .filter(correction_revision::Column::CorrectionId.eq(correction_id))
             .order_by_desc(correction_revision::Column::EntityHistoryId)
             .one(db)
             .await?
-            .ok_or_else(|| RepositoryError::UnexpRelatedEntityNotFound {
+            .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
                 entity_name: correction_revision::Entity.table_name(),
             })
     }
@@ -333,11 +333,11 @@ pub mod utils {
         user_id: i32,
         status: CorrectionStatus,
         tx: &DatabaseTransaction,
-    ) -> Result<correction::Model, RepositoryError> {
+    ) -> Result<correction::Model, ServiceError> {
         let correction = correction::Entity::find_by_id(correction_id)
             .one(tx)
             .await?
-            .ok_or(RepositoryError::EntityNotFound {
+            .ok_or(ServiceError::EntityNotFound {
                 entity_name: correction::Entity.table_name(),
             })?;
 
@@ -356,11 +356,11 @@ pub mod utils {
     pub fn validate_entity_type(
         expected: EntityType,
         accepted: EntityType,
-    ) -> Result<(), RepositoryError> {
+    ) -> Result<(), ServiceError> {
         if expected == accepted {
             Ok(())
         } else {
-            Err(RepositoryError::IncorrectCorrectionType { expected, accepted })
+            Err(ServiceError::IncorrectCorrectionType { expected, accepted })
         }
     }
 }

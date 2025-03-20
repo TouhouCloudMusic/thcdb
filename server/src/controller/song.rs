@@ -10,7 +10,7 @@ use utoipa_axum::routes;
 
 use crate::api_response::{Data, Message};
 use crate::dto::song::{NewSong, SongResponse};
-use crate::error::RepositoryError;
+use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
 use crate::service::song::Service;
 use crate::service::user::AuthSession;
@@ -31,13 +31,13 @@ pub fn router() -> OpenApiRouter<AppState> {
     path = "/song/{id}",
     responses(
 		(status = 200, body = Data<SongResponse>),
-		RepositoryError
+		ServiceError
     ),
 )]
 async fn find_song_by_id(
     State(service): State<Service>,
     Path(id): Path<i32>,
-) -> Result<Data<SongResponse>, RepositoryError> {
+) -> Result<Data<SongResponse>, ServiceError> {
     service.find_by_id(id).await.map_into()
 }
 
@@ -52,13 +52,13 @@ struct KwQuery {
     params(KwQuery),
     responses(
 		(status = 200, body = Data<Vec<SongResponse>>),
-		RepositoryError
+		ServiceError
     ),
 )]
 async fn find_song_by_keyword(
     State(service): State<Service>,
     Query(query): Query<KwQuery>,
-) -> Result<Data<Vec<SongResponse>>, RepositoryError> {
+) -> Result<Data<Vec<SongResponse>>, ServiceError> {
     service
         .find_by_keyword(query.keyword)
         .await
@@ -72,14 +72,14 @@ async fn find_song_by_keyword(
     responses(
 		(status = 200, body = Message),
         (status = 401),
-        RepositoryError
+        ServiceError
     ),
 )]
 #[use_session]
 async fn create_song(
     State(service): State<Service>,
     Json(input): Json<NewSong>,
-) -> Result<Message, RepositoryError> {
+) -> Result<Message, ServiceError> {
     service.create(session.user.unwrap().id, input).await?;
 
     Ok(Message::ok())
@@ -92,7 +92,7 @@ async fn create_song(
     responses(
 		(status = 200, body = Message),
         (status = 401),
-        RepositoryError
+        ServiceError
     ),
 )]
 async fn update_song(
@@ -100,7 +100,7 @@ async fn update_song(
     State(service): State<Service>,
     Path(song_id): Path<i32>,
     Json(input): Json<NewSong>,
-) -> Result<Message, RepositoryError> {
+) -> Result<Message, ServiceError> {
     service
         .create_or_update_correction(song_id, session.user.unwrap().id, input)
         .await?;

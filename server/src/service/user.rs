@@ -28,7 +28,7 @@ use crate::domain::auth::{
 use crate::dto::user::UserProfile;
 use crate::error::{
     ApiErrorTrait, AsErrorCode, DbErrWrapper, ErrorCode, InvalidField,
-    RepositoryError,
+    ServiceError,
 };
 use crate::model::lookup_table::LookupTableEnum;
 use crate::model::user_role::UserRole;
@@ -40,7 +40,7 @@ error_set! {
     #[derive(ApiError)]
     AuthnBackendError = {
         Authn(AuthnError),
-        Repo(RepositoryError)
+        Service(ServiceError)
     };
     #[derive(ApiError, IntoErrorSchema)]
     SessionBackendError = {
@@ -60,13 +60,13 @@ error_set! {
         AlreadySignedIn,
         Authn(AuthnError),
         Session(SessionBackendError),
-        Repo(RepositoryError)
+        Service(ServiceError)
     };
     #[derive(ApiError, IntoErrorSchema)]
     SignUpError = {
         Create(CreateUserError),
         Session(SessionBackendError),
-        Repo(RepositoryError)
+        Service(ServiceError)
     };
     #[derive(IntoErrorSchema, FromDbErr, ApiError)]
     UploadAvatarError = {
@@ -93,7 +93,7 @@ error_set! {
             into_response = self
         )]
         Validate(ValidateCredsError),
-        Repo(RepositoryError),
+        Service(ServiceError),
     };
 }
 
@@ -129,13 +129,13 @@ impl std::error::Error for SessionError {}
 
 impl From<DbErr> for AuthnBackendError {
     fn from(value: DbErr) -> Self {
-        Self::Repo(value.into())
+        Self::Service(value.into())
     }
 }
 
 impl From<DbErr> for CreateUserError {
     fn from(value: DbErr) -> Self {
-        Self::Repo(value.into())
+        Self::Service(value.into())
     }
 }
 
@@ -187,7 +187,7 @@ impl Service {
     pub async fn profile(
         &self,
         username: &str,
-    ) -> Result<Option<UserProfile>, RepositoryError> {
+    ) -> Result<Option<UserProfile>, ServiceError> {
         let Some(profile) = user::Entity::find()
             .filter(user::Column::Name.eq(username))
             .left_join(entity::image::Entity)
@@ -295,7 +295,7 @@ impl Service {
     pub async fn is_username_in_use(
         &self,
         username: &str,
-    ) -> Result<bool, RepositoryError> {
+    ) -> Result<bool, ServiceError> {
         let user = user::Entity::find()
             .filter(user::Column::Name.eq(username))
             .count(&self.db)
@@ -317,7 +317,7 @@ impl Service {
     pub async fn get_roles(
         &self,
         user_id: i32,
-    ) -> Result<Vec<role::Model>, RepositoryError> {
+    ) -> Result<Vec<role::Model>, ServiceError> {
         let res = user_role::Entity::find()
             .filter(user_role::Column::UserId.eq(user_id))
             .find_also_related(role::Entity)
@@ -368,7 +368,7 @@ async fn create_impl(
 pub async fn is_username_in_use(
     username: &str,
     db: &impl ConnectionTrait,
-) -> Result<bool, RepositoryError> {
+) -> Result<bool, ServiceError> {
     let user = user::Entity::find()
         .filter(user::Column::Name.eq(username))
         .count(db)
