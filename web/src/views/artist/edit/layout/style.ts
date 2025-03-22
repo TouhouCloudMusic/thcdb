@@ -31,7 +31,8 @@ const search_result_list =
   "mt-2 gap-1 w-full h-fit flex flex-col rounded-sm bg-white px-2 py-1"
 
 // @tw
-const search_result = "w-full rounded-sm border border-gray-300 bg-white px-2 mt-1"
+const search_result =
+  "w-full rounded-sm border border-gray-300 bg-white px-2 mt-1"
 
 export const searchResult = {
   container: search_result_container,

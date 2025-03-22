@@ -1,4 +1,5 @@
 import { DynamicBase } from "~/lib/class/dynamic_base"
+
 import { type ArtistByID_ArtistProfile } from "./data"
 
 export class ArtistProfilePageController {

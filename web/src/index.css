@@ -31,7 +31,9 @@ html {
     sans-serif;
 }
 
-body, html, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
 }

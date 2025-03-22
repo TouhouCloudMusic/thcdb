@@ -1,22 +1,20 @@
 import { getErrors, getValues, type SubmitHandler } from "@modular-forms/solid"
 import { useAction, useNavigate } from "@solidjs/router"
-import { useQueryClient, type CreateQueryResult } from "@tanstack/solid-query"
+import { type CreateQueryResult, useQueryClient } from "@tanstack/solid-query"
 import { Show } from "solid-js"
 import { ArrowLeftIcon } from "solid-radix-icons"
-
-import { PrimaryButton, TertiaryButton } from "~/components/button/index.tsx"
+import { Button, TertiaryButton } from "~/components/button/index.tsx"
+import { FieldSet } from "~/components/form/index.tsx"
 import { useI18N } from "~/state/i18n"
 
 import { type ArtistFormSchema } from "../data/form/index.ts"
 import {
+  type ArtistByID,
   createController,
   Query,
   SubmitAction,
-  type ArtistByID,
 } from "../data/index.ts"
 import { ControllerContext, useController } from "./context.tsx"
-
-import { FieldSet } from "~/components/form/index.tsx"
 import { Aliases } from "./sections/alias.tsx"
 import { ArtistType } from "./sections/artist_type.tsx"
 import { DateField } from "./sections/date.tsx"
@@ -123,13 +121,13 @@ function Main() {
             <MemberList />
 
             <div class="flex w-full flex-row place-content-around">
-              <PrimaryButton
+              <Button
                 type="submit"
-                color="reimu"
+                color="Reimu"
                 class="w-1/4 self-start py-1"
               >
                 {t.submit()}
-              </PrimaryButton>
+              </Button>
               <Show when={import.meta.env.DEV}>
                 <LogBtn />
               </Show>

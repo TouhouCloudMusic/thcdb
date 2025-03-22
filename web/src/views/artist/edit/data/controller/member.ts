@@ -7,6 +7,7 @@ import {
 } from "@modular-forms/solid"
 import { type SetStoreFunction } from "solid-js/store"
 import { isEmptyArray } from "~/lib/validate/array"
+
 import { type ControllerStore } from "."
 import { type ArtistByKeyword, findArtistByKeyword } from "../db"
 import { type ArtistFormSchema, type MemberSchema } from "../form"
@@ -24,8 +25,9 @@ export class MemberController {
   add(newArtist: ArtistByKeyword) {
     const memberList = getValues(this.formStore(), "member")
     if (memberList.find((a) => a?.id === newArtist.id)) return
-    if (newArtist.artist_type === getValue(this.formStore(), "artist_type"))
+    if (newArtist.artist_type === getValue(this.formStore(), "artist_type")) {
       return
+    }
     insert(this.formStore(), "member", {
       value: {
         id: newArtist.id,

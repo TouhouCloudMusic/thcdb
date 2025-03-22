@@ -1,4 +1,5 @@
 import { getCookie } from "vinxi/http"
+
 import { AppLocale } from "../i18n"
 import { AppTheme } from "../theme"
 

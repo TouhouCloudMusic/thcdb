@@ -1,6 +1,8 @@
 import { For } from "solid-js"
 import { RatingStatic } from "~/components/static_rating"
+
 import { useSongData } from "../controller"
+
 export function ReviewComp() {
   const { reviews } = useSongData()
   return (

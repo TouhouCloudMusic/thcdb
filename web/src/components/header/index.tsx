@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/solid-router"
 import { createMemo, Match, Show, Switch } from "solid-js"
 import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
 import { Button } from "~/components/button"
@@ -97,14 +98,14 @@ function UnauthenticatedButtons() {
         size="Sm"
         class={BTN_CLASS.concat(" ", "text-slate-900")}
       >
-        Sign In
+        <Link to="/auth">Sign In</Link>
       </Button>
       <Button
         variant="Primary"
         size="Sm"
         class={BTN_CLASS}
       >
-        Sign Up
+        <Link to="/auth">Sign Up</Link>
       </Button>
     </>
   )

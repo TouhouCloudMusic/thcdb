@@ -1,15 +1,15 @@
 import {
+  type FormStore,
   getValue,
   getValues,
   insert,
   remove,
-  type FormStore,
 } from "@modular-forms/solid"
 import { type SetStoreFunction } from "solid-js/store"
-
 import { isEmptyArray } from "~/lib/validate/array"
+
 import { type ControllerStore } from "."
-import { findArtistByKeyword, type ArtistByKeyword } from "../db"
+import { type ArtistByKeyword, findArtistByKeyword } from "../db"
 import { type ArtistFormSchema } from "../form"
 
 export class AliasController {

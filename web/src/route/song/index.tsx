@@ -1,12 +1,14 @@
 import { Title } from "@solidjs/meta"
-import { EditComp } from "./(comp)/edit"
-import { UserActionComp } from "./(comp)/user_action"
+
 import { AltVerComp } from "./(comp)/alt_ver"
-import { ReviewComp } from "./(comp)/review"
-import { SongInfo } from "./(comp)/info"
 import { CreditComp } from "./(comp)/credit"
+import { EditComp } from "./(comp)/edit"
+import { SongInfo } from "./(comp)/info"
+import { ReviewComp } from "./(comp)/review"
+import { UserActionComp } from "./(comp)/user_action"
 import { SongDataProvider, useSongData } from "./controller"
 import { testSongData } from "./test_data"
+
 // import "./song_page.css"
 const divideClass = "divide-y-2 divide-gray-400 w-full"
 

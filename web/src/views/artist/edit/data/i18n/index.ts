@@ -1,5 +1,6 @@
 import { type Flatten } from "@solid-primitives/i18n"
 import { type AppLocale } from "~/state/i18n/index.ts"
+
 import en_dict from "./en.ts"
 
 export type Dict = typeof en_dict

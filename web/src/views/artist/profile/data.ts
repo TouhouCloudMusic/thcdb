@@ -1,4 +1,5 @@
 "use server"
+
 import { cache, redirect } from "@solidjs/router"
 import e from "@touhouclouddb/database"
 import { edgedbClient } from "~/database/server"

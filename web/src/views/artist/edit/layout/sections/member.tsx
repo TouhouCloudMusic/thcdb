@@ -1,9 +1,8 @@
 import { getError, getValue, toCustom } from "@modular-forms/solid"
-import { For, Index, Match, Show, Switch, createMemo } from "solid-js"
-import { Cross1Icon, PlusIcon } from "solid-radix-icons"
+import { createMemo, For, Index, Match, Show, Switch } from "solid-js"
+import { PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
-
-import { PrimaryButton, TertiaryButton } from "~/components/button/index.tsx"
+import { TertiaryButton } from "~/components/button/index.tsx"
 import { FormUI } from "~/components/form/ui/index.tsx"
 import { type IndexComponentProps } from "~/lib/type/solid-js/jsx.ts"
 import { notNullString } from "~/lib/validate/not_empty_string.ts"
@@ -40,7 +39,7 @@ export function MemberList() {
               onClick={() => {
                 "TODO"
               }}
-              size="xs"
+              size="Xs"
               class="mr-0.5 aspect-square h-full p-1.5"
             >
               <PlusIcon />

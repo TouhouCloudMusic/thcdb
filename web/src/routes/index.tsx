@@ -1,11 +1,15 @@
 import { Title } from "@solidjs/meta"
 import { createFileRoute, Link } from "@tanstack/solid-router"
+import Cookies from "js-cookie"
+import { Button } from "~/components/button"
+import { use_user_ctx } from "~/state/user"
 
 export const Route = createFileRoute("/")({
   component: HomePage,
 })
 
 function HomePage() {
+  let user_ctx = use_user_ctx()
   return (
     <div class="flex justify-center">
       <div class="w-[60rem]">
@@ -17,6 +21,14 @@ function HomePage() {
           <li>
             <Link to="/profile">Profile</Link>
           </li>
+          <Button
+            // eslint-disable-next-line solid/reactivity
+            onClick={async () => {
+              await user_ctx.sign_out()
+            }}
+          >
+            Sign Out
+          </Button>
         </ul>
       </div>
     </div>

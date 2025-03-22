@@ -1,6 +1,7 @@
-import { RadioGroup } from "~/components/form/index.tsx"
 import { Asterisk } from "~/components/form/Asterisk.tsx"
 import { ErrorMessage, Label } from "~/components/form/base.tsx"
+import { RadioGroup } from "~/components/form/index.tsx"
+
 import { useController } from "../context.tsx"
 
 export function ArtistType() {

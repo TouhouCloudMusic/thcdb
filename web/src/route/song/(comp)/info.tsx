@@ -2,9 +2,11 @@ import { autoUpdate, offset, shift } from "@floating-ui/dom"
 import { useFloating } from "solid-floating-ui"
 import { Index, Show, createSignal } from "solid-js"
 import { ShowPortal } from "~/utils/ShowPortal"
+
 import { useSongData } from "../controller"
 import style from "../song_page.module.css"
 import { VoteGenreTab } from "./vote_genre_tab"
+
 export function SongInfo() {
   const { artist, duration, originalSong, ratings, rank, genres } =
     useSongData()

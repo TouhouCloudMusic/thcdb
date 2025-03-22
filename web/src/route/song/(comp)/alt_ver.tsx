@@ -1,5 +1,6 @@
 import { useSongData } from "../controller"
 import style from "../song_page.module.css"
+
 export function AltVerComp() {
   const { altVers } = useSongData()
 

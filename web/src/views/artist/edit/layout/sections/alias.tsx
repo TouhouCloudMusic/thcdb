@@ -1,30 +1,20 @@
 import { getValue, insert, reset } from "@modular-forms/solid"
-import { For, Match, Show, Switch, Index } from "solid-js"
-import { Cross1Icon, PlusIcon } from "solid-radix-icons"
-import { twMerge } from "tailwind-merge"
-
-import { PrimaryButton, TertiaryButton } from "~/components/button/index.tsx"
-import { Label } from "~/components/form/index.tsx"
-import { type IndexComponentProps } from "~/lib/type/solid-js/jsx.ts"
-
 import { repeat } from "ramda"
-import { SearchAndAddDialog } from "~/components/dialog/SearchAndAddDialog.tsx"
+import { For, Index, Match, Show, Switch } from "solid-js"
+import { PlusIcon } from "solid-radix-icons"
+import { twMerge } from "tailwind-merge"
+import { TertiaryButton } from "~/components/button/index.tsx"
+import { Label } from "~/components/form/index.tsx"
 import {
-  FieldArray as _FieldArray,
   ErrorMessage,
+  FieldArray as _FieldArray,
   ResetFieldDialogTrigger,
 } from "~/components/form/index.tsx"
+import { type IndexComponentProps } from "~/lib/type/solid-js/jsx.ts"
+
 import { type AliasSchema } from "../../data/form/index.ts"
 import { useController } from "../context.tsx"
 import * as Style from "../style.ts"
-
-const fakeData = repeat(
-  {
-    name: "Foo",
-    is_str: false,
-  },
-  9,
-)
 
 export function Aliases() {
   const { artistType, FieldArray, dataQuery, formStore } = useController()
@@ -65,10 +55,13 @@ export function Aliases() {
                   onReset={resetField}
                 />
                 <TertiaryButton
-                  size="xs"
+                  size="Xs"
                   onClick={insertAlias}
                   class="mr-0.5 aspect-square h-full p-1.5"
-                  aria-label={`Insert new item to ${fieldArray.name.replace("_", " ")}`}
+                  aria-label={`Insert new item to ${fieldArray.name.replace(
+                    "_",
+                    " ",
+                  )}`}
                 >
                   <PlusIcon />
                 </TertiaryButton>

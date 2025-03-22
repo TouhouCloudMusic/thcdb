@@ -1,6 +1,7 @@
 import { For, type JSX, type ParentProps } from "solid-js"
 import { Cross2Icon, MagnifyingGlassIcon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
+
 import { TertiaryButton } from "../button/index.tsx"
 import { TextField } from "../form/index.tsx"
 import { Dialog } from "./index.ts"

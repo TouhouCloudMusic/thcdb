@@ -1,9 +1,10 @@
 import { autoUpdate } from "@floating-ui/dom"
 import { useFloating } from "solid-floating-ui"
 import { createEffect, on, onCleanup } from "solid-js"
+import { ShowPortal } from "~/utils/ShowPortal"
 import { createAtom } from "~/utils/createAtom"
 import { createClickOutsize } from "~/utils/createClickOutside"
-import { ShowPortal } from "~/utils/ShowPortal"
+
 const itemClass = "px-2 py-1"
 export function EditComp() {
   const open = createAtom(false)

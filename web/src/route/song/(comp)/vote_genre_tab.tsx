@@ -2,7 +2,9 @@ import { autoUpdate, offset } from "@floating-ui/dom"
 import { type UseFloatingResult, useFloating } from "solid-floating-ui"
 import { For, Index, type Setter, Show, createSignal } from "solid-js"
 import { createAtom } from "~/utils/createAtom"
+
 import { useSongData } from "../controller"
+
 export function VoteGenreTab(props: {
   voteTabRef: Setter<HTMLElement | undefined>
   position: UseFloatingResult
