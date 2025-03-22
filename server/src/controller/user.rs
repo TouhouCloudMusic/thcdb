@@ -1,5 +1,5 @@
 use axum::Json;
-use axum::extract::Path;
+use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::middleware::from_fn;
 use axum::response::IntoResponse;
@@ -28,8 +28,38 @@ pub fn router() -> OpenApiRouter<AppState> {
         .routes(routes!(sign_out))
         .route_layer(from_fn(is_signed_in))
         .routes(routes!(profile))
+        .routes(routes!(profile_with_name))
         .routes(routes!(sign_in))
         .routes(routes!(sign_up))
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/profile",
+    responses(
+        (status = 200, body = Data<UserProfile>),
+        (status = 404),
+        ServiceError
+    ),
+)]
+#[use_session]
+async fn profile(
+    State(state): State<AppState>,
+) -> Result<Data<UserProfile>, impl IntoResponse> {
+    if let Some(user) = session.user {
+        state
+            .user_service
+            .profile(&user.name)
+            .await
+            .map_err(IntoResponse::into_response)?
+            .map_or_else(
+                || Err(StatusCode::NOT_FOUND.into_response()),
+                |user| Ok(user.into()),
+            )
+    } else {
+        Err(StatusCode::NOT_FOUND.into_response())
+    }
 }
 
 #[utoipa::path(
@@ -42,11 +72,12 @@ pub fn router() -> OpenApiRouter<AppState> {
         ServiceError
     ),
 )]
-#[use_service(user)]
-async fn profile(
+async fn profile_with_name(
+    State(state): State<AppState>,
     Path(name): Path<String>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
-    user_service
+    state
+        .user_service
         .profile(&name)
         .await
         .map_err(IntoResponse::into_response)?
