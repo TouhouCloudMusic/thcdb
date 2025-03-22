@@ -1,6 +1,7 @@
 import { createForm, valiForm, type SubmitHandler } from "@modular-forms/solid"
-import { useNavigate } from "@tanstack/solid-router"
+import { Navigate, useNavigate } from "@tanstack/solid-router"
 import { error } from "openapi-typescript"
+import { Show } from "solid-js"
 import * as v from "valibot"
 import { Button } from "~/components/button"
 import { Input } from "~/components/input"
@@ -48,44 +49,49 @@ function SignIn() {
   }
 
   return (
-    <Form
-      datatype="application/json"
-      onSubmit={handle_submit}
-      class="flex flex-col gap-4 w-1/3 mx-auto"
+    <Show
+      when={!user_ctx.user}
+      fallback={<Navigate to="/" />}
     >
-      <Field name="username">
-        {(field, props) => (
-          <>
-            <label for="username">Username</label>
-            <Input
-              {...props}
-              type="text"
-              id="username"
-            />
-            {field.error && <div>{field.error}</div>}
-          </>
-        )}
-      </Field>
-      <Field name="password">
-        {(field, props) => (
-          <>
-            <label for="password">Password</label>
-            <Input
-              {...props}
-              type="password"
-              id="password"
-            />
-            {field.error && <div>{field.error}</div>}
-          </>
-        )}
-      </Field>
-
-      <Button
-        type="submit"
-        variant="Primary"
+      <Form
+        datatype="application/json"
+        onSubmit={handle_submit}
+        class="flex flex-col gap-4 w-1/3 mx-auto"
       >
-        Submit
-      </Button>
-    </Form>
+        <Field name="username">
+          {(field, props) => (
+            <>
+              <label for="username">Username</label>
+              <Input
+                {...props}
+                type="text"
+                id="username"
+              />
+              {field.error && <div>{field.error}</div>}
+            </>
+          )}
+        </Field>
+        <Field name="password">
+          {(field, props) => (
+            <>
+              <label for="password">Password</label>
+              <Input
+                {...props}
+                type="password"
+                id="password"
+              />
+              {field.error && <div>{field.error}</div>}
+            </>
+          )}
+        </Field>
+
+        <Button
+          type="submit"
+          variant="Primary"
+        >
+          Submit
+        </Button>
+      </Form>
+    </Show>
   )
 }
