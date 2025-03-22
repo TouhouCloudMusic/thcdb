@@ -4,13 +4,12 @@
 use error::*;
 use itertools::Itertools;
 use proc_macro::TokenStream;
-use quote::{format_ident, quote};
+use quote::quote;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
 use syn::{
-    Data, DeriveInput, Fields, ItemFn, ItemStruct, Type, parse_macro_input,
-    parse_quote,
+    Data, DeriveInput, Fields, ItemFn, parse_macro_input,
 };
 
 mod error;
@@ -156,72 +155,6 @@ pub fn use_session(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     input_fn.sig.inputs.insert(0, new_arg);
     quote::quote!(#input_fn).into()
-}
-
-#[proc_macro_attribute]
-pub fn inject_services(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(attr as ServiceArgs);
-
-    let mut input = parse_macro_input!(item as ItemStruct);
-
-    let name = &input.ident;
-
-    let fields = if let Fields::Named(fields) = &mut input.fields {
-        fields
-    } else {
-        return syn::Error::new_spanned(input.fields, "Not a struct")
-            .to_compile_error()
-            .into();
-    };
-
-    let mut init_statements = Vec::new();
-
-    for service in args.services {
-        let field_ident = format_ident!("{}_service", service);
-        let field_type: Type =
-            parse_quote! { crate::service::#service::Service };
-
-        fields.named.push(syn::Field {
-            attrs: vec![],
-            vis: syn::Visibility::Public(Default::default()),
-            ident: Some(field_ident.clone()),
-            colon_token: Some(Default::default()),
-            ty: field_type,
-            mutability: syn::FieldMutability::None,
-        });
-
-        init_statements.push(quote! {
-            #field_ident: crate::service::#service::Service::new(database.clone())
-        });
-    }
-
-    quote!(
-        #input
-
-        impl #name {
-            pub async fn init() -> Self {
-                let database = get_connection(&CONFIG.database_url).await;
-                let redis_pool = Pool::init(&CONFIG.redis_url).await;
-
-
-                let stmp_conf = &CONFIG.email;
-                use lettre::transport::smtp::authentication::Credentials;
-                let creds = Credentials::new(stmp_conf.creds.username.clone(), stmp_conf.creds.password.clone());
-                let transport = AsyncSmtpTransport::<Tokio1Executor>::relay(&stmp_conf.host)
-                    .unwrap()
-                    .credentials(creds)
-                    .build();
-
-                Self {
-                    database: database.clone(),
-                    redis_pool,
-                    transport,
-                    #(#init_statements),*
-                }
-            }
-        }
-    )
-    .into()
 }
 
 #[proc_macro_derive(IntoErrorSchema)]

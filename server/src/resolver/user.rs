@@ -1,6 +1,6 @@
 use juniper::{FieldResult, graphql_object};
 
-use crate::domain::auth::AuthCredential;
+use crate::model::auth::AuthCredential;
 use crate::model::output::{LoginOutput, SignupOutput};
 use crate::service::juniper::JuniperContext;
 

@@ -33,9 +33,6 @@ __generate:
   -o entity/src/entities \
   --with-prelude=none \
   --with-serde=both \
-  --model-extra-derives juniper::GraphQLObject \
-  --model-extra-attributes 'graphql(scalar=crate::extension::GqlScalarValue)' \
-  --enum-extra-derives juniper::GraphQLEnum \
   --enum-extra-derives utoipa::ToSchema \
   --enum-extra-derives Copy
 

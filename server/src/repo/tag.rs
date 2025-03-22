@@ -10,14 +10,113 @@ use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
     EntityName, EntityOrSelect, EntityTrait, LoaderTrait, ModelTrait,
-    QueryFilter, QueryOrder,
+    QueryFilter, QueryOrder, TransactionTrait,
 };
 
-use crate::dto::correction::Metadata;
-use crate::dto::tag::{AltName, NewTag, TagRelation, TagResponse};
+use super::SeaOrmRepository;
+use crate::dto::tag::{AltName, TagCorrection, TagRelation, TagResponse};
 use crate::error::ServiceError;
 use crate::repo;
 use crate::utils::MapInto;
+
+pub trait TagRepository {
+    type Error;
+
+    async fn create(
+        &self,
+        user_id: i32,
+        data: TagCorrection,
+    ) -> Result<(), Self::Error>;
+
+    async fn create_correction(
+        &self,
+        user_id: i32,
+        tag_id: i32,
+        data: TagCorrection,
+    ) -> Result<(), Self::Error>;
+
+    async fn update_correction(
+        &self,
+        user_id: i32,
+        tag_id: i32,
+        data: TagCorrection,
+    ) -> Result<(), Self::Error>;
+
+    async fn find_one(
+        &self,
+        id: i32,
+    ) -> Result<Option<TagResponse>, Self::Error>;
+
+    async fn find_many(
+        &self,
+        ids: impl IntoIterator<Item = i32>,
+    ) -> Result<Vec<TagResponse>, Self::Error>;
+
+    async fn find_by_keyword(
+        &self,
+        keyword: &str,
+    ) -> Result<Vec<TagResponse>, Self::Error>;
+}
+
+impl TagRepository for SeaOrmRepository {
+    type Error = DbErr;
+
+    async fn create(
+        &self,
+        user_id: i32,
+        data: TagCorrection,
+    ) -> Result<(), Self::Error> {
+        let tx = self.conn.begin().await?;
+        create(user_id, data, &tx).await?;
+        tx.commit().await?;
+        Ok(())
+    }
+
+    async fn create_correction(
+        &self,
+        user_id: i32,
+        tag_id: i32,
+        data: TagCorrection,
+    ) -> Result<(), Self::Error> {
+        let tx = self.conn.begin().await?;
+        create_correction_impl(user_id, tag_id, data, &tx).await?;
+        tx.commit().await?;
+        Ok(())
+    }
+
+    async fn update_correction(
+        &self,
+        user_id: i32,
+        correction_id: i32,
+        data: TagCorrection,
+    ) -> Result<(), Self::Error> {
+        let tx = self.conn.begin().await?;
+        update_correction_impl(user_id, correction_id, data, &tx).await?;
+        tx.commit().await?;
+        Ok(())
+    }
+
+    async fn find_one(
+        &self,
+        id: i32,
+    ) -> Result<Option<TagResponse>, Self::Error> {
+        find_one(tag::Column::Id.eq(id), &self.conn).await
+    }
+
+    async fn find_many(
+        &self,
+        ids: impl IntoIterator<Item = i32>,
+    ) -> Result<Vec<TagResponse>, Self::Error> {
+        find_many(tag::Column::Id.is_in(ids), &self.conn).await
+    }
+
+    async fn find_by_keyword(
+        &self,
+        keyword: &str,
+    ) -> Result<Vec<TagResponse>, Self::Error> {
+        find_many(tag::Column::Name.contains(keyword), &self.conn).await
+    }
+}
 
 pub async fn find_by_id(
     id: i32,
@@ -35,14 +134,21 @@ pub async fn find_by_id(
 pub async fn find_by_keyword(
     kw: impl Into<String>,
     db: &impl ConnectionTrait,
-) -> Result<Vec<TagResponse>, ServiceError> {
+) -> Result<Vec<TagResponse>, DbErr> {
     find_many(tag::Column::Name.contains(kw), db).await
+}
+
+async fn find_one(
+    cond: impl IntoCondition,
+    db: &impl ConnectionTrait,
+) -> Result<Option<TagResponse>, DbErr> {
+    Ok(find_many(cond, db).await?.into_iter().next())
 }
 
 async fn find_many(
     cond: impl IntoCondition,
     db: &impl ConnectionTrait,
-) -> Result<Vec<TagResponse>, ServiceError> {
+) -> Result<Vec<TagResponse>, DbErr> {
     let tags = tag::Entity::find().filter(cond).all(db).await?;
 
     let alt_names = tags.load_many(tag_alternative_name::Entity, db).await?;
@@ -73,10 +179,10 @@ async fn find_many(
 
 pub async fn create(
     user_id: i32,
-    data: NewTag,
-    correction_metadata: Metadata,
+    data: TagCorrection,
+
     tx: &DatabaseTransaction,
-) -> Result<tag::Model, ServiceError> {
+) -> Result<tag::Model, DbErr> {
     let tag = save_tag_and_link_relation(&data, tx).await?;
 
     let history = save_tag_history_and_link_relation(&data, tx).await?;
@@ -86,20 +192,19 @@ pub async fn create(
         .entity_type(EntityType::Tag)
         .entity_id(tag.id)
         .history_id(history.id)
-        .description(correction_metadata.description)
+        .description(data.correction_metadata.description)
         .call(tx)
         .await?;
 
     Ok(tag)
 }
 
-pub async fn create_correction(
-    tag_id: i32,
+async fn create_correction_impl(
     user_id: i32,
-    data: NewTag,
-    correction_metadata: Metadata,
+    tag_id: i32,
+    data: TagCorrection,
     tx: &DatabaseTransaction,
-) -> Result<(), ServiceError> {
+) -> Result<(), DbErr> {
     let history = save_tag_history_and_link_relation(&data, tx).await?;
 
     repo::correction::create()
@@ -107,27 +212,26 @@ pub async fn create_correction(
         .entity_id(tag_id)
         .entity_type(EntityType::Tag)
         .history_id(history.id)
-        .description(correction_metadata.description)
+        .description(data.correction_metadata.description)
         .call(tx)
         .await?;
 
     Ok(())
 }
 
-pub async fn update_correction(
+async fn update_correction_impl(
     user_id: i32,
-    correction: correction::Model,
-    data: NewTag,
-    correction_metadata: Metadata,
+    correction_id: i32,
+    data: TagCorrection,
     tx: &DatabaseTransaction,
-) -> Result<(), ServiceError> {
+) -> Result<(), DbErr> {
     let history = save_tag_history_and_link_relation(&data, tx).await?;
 
     repo::correction::update()
         .author_id(user_id)
         .history_id(history.id)
-        .correction_id(correction.id)
-        .description(correction_metadata.description)
+        .correction_id(correction_id)
+        .description(data.correction_metadata.description)
         .call(tx)
         .await?;
 
@@ -170,9 +274,9 @@ pub(super) async fn apply_correction(
 // - alternative name
 // - relation
 async fn save_tag_and_link_relation(
-    data: &NewTag,
+    data: &TagCorrection,
     tx: &DatabaseTransaction,
-) -> Result<tag::Model, ServiceError> {
+) -> Result<tag::Model, DbErr> {
     let tag = tag::ActiveModel::from(data).insert(tx).await?;
 
     create_alt_name(tag.id, &data.alt_names, tx).await?;
@@ -182,9 +286,9 @@ async fn save_tag_and_link_relation(
 }
 
 async fn save_tag_history_and_link_relation(
-    data: &NewTag,
+    data: &TagCorrection,
     tx: &DatabaseTransaction,
-) -> Result<tag_history::Model, ServiceError> {
+) -> Result<tag_history::Model, DbErr> {
     let history = tag_history::ActiveModel::from(data).insert(tx).await?;
 
     create_alt_name_history(history.id, &data.alt_names, tx).await?;
@@ -243,7 +347,7 @@ async fn create_alt_name_history(
     history_id: i32,
     alt_names: &[AltName],
     tx: &DatabaseTransaction,
-) -> Result<(), ServiceError> {
+) -> Result<(), DbErr> {
     if alt_names.is_empty() {
         return Ok(());
     }
@@ -267,7 +371,7 @@ async fn create_relation(
     tag_id: i32,
     relations: &[TagRelation],
     tx: &DatabaseTransaction,
-) -> Result<(), ServiceError> {
+) -> Result<(), DbErr> {
     if relations.is_empty() {
         return Ok(());
     }
@@ -290,7 +394,7 @@ async fn update_relation(
     tag_id: i32,
     history_id: i32,
     tx: &DatabaseTransaction,
-) -> Result<(), ServiceError> {
+) -> Result<(), DbErr> {
     tag_relation::Entity::delete_many()
         .filter(tag_relation::Column::TagId.eq(tag_id))
         .exec(tx)
@@ -312,7 +416,7 @@ async fn create_relation_history(
     history_id: i32,
     relations: &[TagRelation],
     tx: &DatabaseTransaction,
-) -> Result<(), ServiceError> {
+) -> Result<(), DbErr> {
     if relations.is_empty() {
         return Ok(());
     }

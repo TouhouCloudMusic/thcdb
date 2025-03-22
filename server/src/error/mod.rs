@@ -122,6 +122,7 @@ impl IntoResponse for TokioError {
     }
 }
 
+#[cfg(test)]
 mod test {
 
     use tracing_test::traced_test;

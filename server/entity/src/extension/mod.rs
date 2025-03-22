@@ -1,10 +1,10 @@
-mod graphql;
+// mod graphql;
 mod impl_enums;
 mod into_active_model;
 mod into_active_value;
 mod model_conversion;
 use axum_login::AuthUser;
-pub use graphql::GqlScalarValue;
+// pub use graphql::GqlScalarValue;
 
 impl AuthUser for super::entities::user::Model {
     type Id = i32;

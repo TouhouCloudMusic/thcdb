@@ -22,9 +22,19 @@ pub mod user;
 static ID_EXPR: LazyLock<sea_query::Expr> =
     LazyLock::new(|| Expr::col(Alias::new("id")));
 
-pub struct SeaOrmRepository<T> {
+#[derive(Clone)]
+pub struct SeaOrmRepository<T = ()> {
     conn: DatabaseConnection,
     _type: PhantomData<T>,
+}
+
+impl<T> SeaOrmRepository<T> {
+    pub const fn new(conn: DatabaseConnection) -> Self {
+        Self {
+            conn,
+            _type: PhantomData,
+        }
+    }
 }
 
 impl<T> SeaOrmRepository<T>
@@ -33,29 +43,23 @@ where
     T::Model: IntoActiveModel<T::ActiveModel> + Send + Sync,
     i32: Into<<<T as EntityTrait>::PrimaryKey as PrimaryKeyTrait>::ValueType>,
 {
-    pub async fn create(
-        &self,
-        model: T::ActiveModel,
-    ) -> Result<T::Model, DbErr> {
+    async fn create(&self, model: T::ActiveModel) -> Result<T::Model, DbErr> {
         T::insert(model).exec_with_returning(&self.conn).await
     }
 
-    pub async fn update(
-        &self,
-        model: T::ActiveModel,
-    ) -> Result<T::Model, DbErr> {
+    async fn update(&self, model: T::ActiveModel) -> Result<T::Model, DbErr> {
         T::update(model).exec(&self.conn).await
     }
 
-    pub async fn delete_by_id(&self, id: i32) -> Result<(), DbErr> {
+    async fn delete_by_id(&self, id: i32) -> Result<(), DbErr> {
         self.delete_by_cond(ID_EXPR.clone().eq(id)).await
     }
 
-    pub async fn delete_by_ids(&self, ids: Vec<i32>) -> Result<(), DbErr> {
+    async fn delete_by_ids(&self, ids: Vec<i32>) -> Result<(), DbErr> {
         self.delete_by_cond(ID_EXPR.clone().is_in(ids)).await
     }
 
-    pub async fn delete_by_cond(
+    async fn delete_by_cond(
         &self,
         cond: impl IntoCondition,
     ) -> Result<(), DbErr> {
@@ -66,25 +70,25 @@ where
             .map(|_| ())
     }
 
-    pub async fn find_by_id(&self, id: i32) -> Result<Option<T::Model>, DbErr> {
+    async fn find_by_id(&self, id: i32) -> Result<Option<T::Model>, DbErr> {
         self.find_one(ID_EXPR.clone().eq(id)).await
     }
 
-    pub async fn find_one(
+    async fn find_one(
         &self,
         cond: impl IntoCondition,
     ) -> Result<Option<T::Model>, DbErr> {
         T::find().filter(cond).one(&self.conn).await
     }
 
-    pub async fn find_many(
+    async fn find_many(
         &self,
         cond: impl IntoCondition,
     ) -> Result<Vec<T::Model>, DbErr> {
         T::find().filter(cond).all(&self.conn).await
     }
 
-    pub async fn find_with_pagination(
+    async fn find_with_pagination(
         &self,
         page: u64,
         page_size: u64,

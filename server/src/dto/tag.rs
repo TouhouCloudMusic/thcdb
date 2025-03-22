@@ -8,6 +8,8 @@ use sea_orm::ActiveValue::{NotSet, Set};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
+use super::correction::Metadata;
+
 #[derive(Clone, Serialize, ToSchema)]
 #[schema(
     as = Tag
@@ -24,7 +26,7 @@ pub struct TagResponse {
 }
 
 #[derive(Clone, Deserialize, ToSchema)]
-pub struct NewTag {
+pub struct TagCorrection {
     pub name: String,
     pub r#type: TagType,
     pub short_description: String,
@@ -32,10 +34,11 @@ pub struct NewTag {
     // Relations
     pub alt_names: Vec<AltName>,
     pub relations: Vec<TagRelation>,
+    pub correction_metadata: Metadata,
 }
 
 impl_from!(
-    NewTag >
+    TagCorrection >
     tag::ActiveModel {
         name,
         r#type,
@@ -47,7 +50,7 @@ impl_from!(
 );
 
 impl_from!(
-    NewTag >
+    TagCorrection >
     tag_history::ActiveModel {
         name,
         r#type,

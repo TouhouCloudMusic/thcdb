@@ -22,13 +22,13 @@ use sea_orm::{
 };
 
 use super::*;
-use crate::domain::auth::{
-    AuthCredential, AuthnError, HasherError, ValidateCredsError, hash_password,
-};
 use crate::dto::user::UserProfile;
 use crate::error::{DbErrWrapper, ErrorCode, InvalidField, ServiceError};
+use crate::model::auth::{
+    AuthCredential, AuthnError, HasherError, UserRole, ValidateCredsError,
+    hash_password,
+};
 use crate::model::lookup_table::LookupTableEnum;
-use crate::model::user_role::UserRole;
 use crate::utils::orm::PgFuncExt;
 
 pub type AuthSession = axum_login::AuthSession<Service>;

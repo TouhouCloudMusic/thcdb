@@ -6,6 +6,7 @@
     clippy::pedantic
 )]
 #![allow(
+    async_fn_in_trait,
     clippy::cargo_common_metadata,
     clippy::iter_on_single_items,
     clippy::missing_docs_in_private_items,
@@ -22,7 +23,6 @@ mod api_response;
 mod app;
 mod constant;
 mod controller;
-mod domain;
 mod dto;
 mod error;
 mod infrastructure;

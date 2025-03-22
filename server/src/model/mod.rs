@@ -1,9 +1,6 @@
-pub mod input;
-pub mod output;
-
 pub mod artist;
+pub mod auth;
 pub mod lookup_table;
-pub use lookup_table::user_role;
 
 // pub mod share {
 //     use std::sync::LazyLock;

@@ -1,18 +1,16 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
-use macros::{use_service, use_session};
+use macros::use_session;
 use serde::Deserialize;
-use utoipa::{IntoParams, ToSchema};
+use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::api_response::{self, Data};
-use crate::dto::correction::Metadata;
-use crate::dto::tag::{NewTag, TagResponse};
+use crate::dto::tag::{TagCorrection, TagResponse};
 use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
-use crate::service::tag::Service;
 use crate::state::AppState;
 use crate::utils::MapInto;
 
@@ -32,11 +30,11 @@ pub fn router() -> OpenApiRouter<AppState> {
         ServiceError
     ),
 )]
-#[use_service(tag)]
 async fn find_by_id(
+    State(state): State<AppState>,
     Path(id): Path<i32>,
 ) -> Result<Data<TagResponse>, ServiceError> {
-    tag_service.find_by_id(id).await.map_into()
+    state.tag_service.find_by_id(id).await.map_into()
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -54,19 +52,15 @@ struct KwArgs {
         ServiceError
     ),
 )]
-#[use_service(tag)]
 async fn find_by_keyword(
+    State(state): State<AppState>,
     Query(query): Query<KwArgs>,
 ) -> Result<Data<Vec<TagResponse>>, ServiceError> {
-    tag_service.find_by_keyword(query.keyword).await.map_into()
-}
-
-#[derive(ToSchema, Deserialize)]
-struct TagCorrection {
-    #[serde(flatten)]
-    #[schema(inline)]
-    pub data: NewTag,
-    pub correction_metadata: Metadata,
+    state
+        .tag_service
+        .find_by_keyword(&query.keyword)
+        .await
+        .map_into()
 }
 
 #[utoipa::path(
@@ -81,13 +75,11 @@ struct TagCorrection {
 )]
 #[use_session]
 async fn create_tag(
-    State(service): State<Service>,
+    State(state): State<AppState>,
     Json(input): Json<TagCorrection>,
 ) -> Result<api_response::Message, ServiceError> {
     let user_id = session.user.unwrap().id;
-    service
-        .create(user_id, input.data, input.correction_metadata)
-        .await?;
+    state.tag_service.create(user_id, input).await?;
     Ok(api_response::Message::ok())
 }
 
@@ -102,18 +94,18 @@ async fn create_tag(
     ),
 )]
 #[use_session]
-#[use_service(tag)]
 async fn upsert_tag_correction(
+    State(state): State<AppState>,
     Path(id): Path<i32>,
     Json(input): Json<TagCorrection>,
 ) -> Result<api_response::Message, ServiceError> {
     let user_id = session.user.unwrap().id;
-    tag_service
+    state
+        .tag_service
         .upsert_correction()
         .tag_id(id)
         .user_id(user_id)
-        .data(input.data)
-        .correction_metadata(input.correction_metadata)
+        .data(input)
         .call()
         .await?;
 

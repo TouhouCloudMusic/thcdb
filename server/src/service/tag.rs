@@ -1,42 +1,53 @@
 use entity::sea_orm_active_enums::EntityType;
 use entity::tag;
-use sea_orm::{DatabaseConnection, TransactionTrait};
+use sea_orm::{DatabaseConnection, EntityName};
 
-use crate::dto::correction::Metadata;
-use crate::dto::tag::{NewTag, TagResponse};
+use crate::dto::tag::{TagCorrection, TagResponse};
 use crate::error::ServiceError;
-use crate::repo;
+use crate::repo::tag::TagRepository;
+use crate::utils::MapInto;
 
-super::def_service!();
+#[derive(Clone)]
+pub struct Service<T> {
+    db: DatabaseConnection,
+    repo: T,
+}
 
 #[bon::bon]
-impl Service {
+impl<T> Service<T>
+where
+    T: TagRepository + Send + Sync,
+    ServiceError: From<<T as TagRepository>::Error>,
+{
+    pub const fn new(db: DatabaseConnection, repo: T) -> Self {
+        Self { db, repo }
+    }
+
     pub async fn find_by_id(
         &self,
         id: i32,
     ) -> Result<TagResponse, ServiceError> {
-        repo::tag::find_by_id(id, &self.db).await
+        self.repo.find_one(id).await?.ok_or_else(|| {
+            ServiceError::EntityNotFound {
+                entity_name: tag::Entity.table_name(),
+            }
+        })
     }
 
     pub async fn find_by_keyword(
         &self,
-        kw: impl Into<String>,
+        kw: &str,
     ) -> Result<Vec<TagResponse>, ServiceError> {
-        repo::tag::find_by_keyword(kw, &self.db).await
+        self.repo.find_by_keyword(kw).await.map_into()
     }
 
     pub async fn create(
         &self,
         user_id: i32,
-        data: NewTag,
-        correction_data: Metadata,
-    ) -> Result<tag::Model, ServiceError> {
-        let transaction = self.db.begin().await?;
-        let result =
-            repo::tag::create(user_id, data, correction_data, &transaction)
-                .await?;
-        transaction.commit().await?;
-        Ok(result)
+        data: TagCorrection,
+    ) -> Result<(), ServiceError> {
+        self.repo.create(user_id, data).await?;
+        Ok(())
     }
 
     #[builder]
@@ -44,72 +55,21 @@ impl Service {
         &self,
         user_id: i32,
         tag_id: i32,
-        data: NewTag,
-        correction_metadata: Metadata,
+        data: TagCorrection,
     ) -> Result<(), ServiceError> {
-        let tx = self.db.begin().await?;
-
-        let res = super::correction::create_or_update_correction()
+        super::correction::create_or_update_correction()
             .entity_id(tag_id)
             .entity_type(EntityType::Tag)
             .user_id(user_id)
-            .closure_args((data, correction_metadata))
-            .on_create(|_, (data, metadata)| {
-                repo::tag::create_correction(
-                    tag_id, user_id, data, metadata, &tx,
-                )
+            .closure_args(data)
+            .on_create(|_, data| {
+                self.repo.create_correction(user_id, tag_id, data)
             })
-            .on_update(|correction, (data, metadata)| {
-                repo::tag::update_correction(
-                    user_id, correction, data, metadata, &tx,
-                )
+            .on_update(|correction: entity::correction::Model, data| {
+                self.repo.update_correction(user_id, correction.id, data)
             })
             .db(&self.db)
             .call()
-            .await;
-
-        tx.commit().await?;
-
-        res
+            .await
     }
-}
-
-async fn create_correction(
-    tag_id: i32,
-    user_id: i32,
-    data: NewTag,
-    correction_metadata: Metadata,
-    db: &DatabaseConnection,
-) -> Result<(), ServiceError> {
-    let tx = db.begin().await?;
-
-    repo::tag::create_correction(
-        tag_id,
-        user_id,
-        data,
-        correction_metadata,
-        &tx,
-    )
-    .await?;
-
-    tx.commit().await?;
-
-    Ok(())
-}
-
-async fn update_correction(
-    user_id: i32,
-    correction: entity::correction::Model,
-    data: NewTag,
-    metadata: Metadata,
-    db: &DatabaseConnection,
-) -> Result<(), ServiceError> {
-    let tx = db.begin().await?;
-
-    repo::tag::update_correction(user_id, correction, data, metadata, &tx)
-        .await?;
-
-    tx.commit().await?;
-
-    Ok(())
 }

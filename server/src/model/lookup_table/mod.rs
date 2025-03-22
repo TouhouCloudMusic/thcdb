@@ -2,12 +2,19 @@ use sea_orm::{
     ConnectionTrait, DatabaseConnection, DbErr, EntityTrait, IntoActiveModel,
 };
 use strum::IntoEnumIterator;
-use user_role::{LookupTableCheckResult, UserRole};
 
+use super::auth::UserRole;
 use crate::service::user::upsert_admin_acc;
 
-pub mod language;
-pub mod user_role;
+mod language;
+mod user_role;
+
+enum LookupTableCheckResult<T> {
+    Ok,
+    Empty,
+    Unsync,
+    Conflict(T),
+}
 
 pub async fn check_database_lookup_tables(
     db: &DatabaseConnection,

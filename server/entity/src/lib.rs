@@ -5,4 +5,4 @@ mod extension;
 #[rustfmt::skip]
 pub use entities::*;
 
-pub use extension::GqlScalarValue;
+// pub use extension::GqlScalarValue;

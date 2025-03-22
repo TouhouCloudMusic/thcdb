@@ -8,7 +8,7 @@ use utoipa_axum::routes;
 use crate::api_response::Data;
 use crate::dto::share::Language;
 use crate::error::DbErrWrapper;
-use crate::model::user_role::UserRole;
+use crate::model::auth::UserRole;
 use crate::state::AppState;
 
 pub fn router() -> OpenApiRouter<AppState> {

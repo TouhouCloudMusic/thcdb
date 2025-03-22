@@ -1,4 +1,3 @@
-use std::fmt::Display;
 use std::sync::LazyLock;
 
 use argon2::password_hash::rand_core::OsRng;
@@ -7,16 +6,12 @@ use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum::http::StatusCode;
 use derive_more::From;
 use error_set::error_set;
-use itertools::Itertools;
-use juniper::GraphQLInputObject;
 use macros::ApiError;
-use rand::Rng;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::api_response::StatusCodeExt;
-use crate::error::{ApiErrorTrait, AsErrorCode, ErrorCode, TokioError};
+use crate::error::{ApiErrorTrait, ErrorCode, TokioError};
 use crate::state::ARGON2_HASHER;
 
 error_set! {
@@ -26,7 +21,6 @@ error_set! {
         #[api_error(
             status_code = StatusCode::UNAUTHORIZED,
             error_code = ErrorCode::AuthenticationFailed,
-            into_response = self
         )]
         #[display("Incorrect username or password")]
         AuthenticationFailed,
@@ -41,39 +35,42 @@ error_set! {
         #[from(tokio::task::JoinError)]
         Tokio(TokioError),
     };
+    #[derive(ApiError)]
     ValidateCredsError = {
         #[display("Invalid username")]
+        #[api_error(
+            status_code = StatusCode::BAD_REQUEST,
+            error_code = ErrorCode::InvalidUserName
+        )]
         InvalidUserName,
         #[display("Invalid Password")]
+        #[api_error(
+            status_code = StatusCode::BAD_REQUEST,
+            error_code = ErrorCode::InvalidPassword
+        )]
         InvalidPassword,
         #[display("Password is too weak")]
+        #[api_error(
+            status_code = StatusCode::BAD_REQUEST,
+            error_code = ErrorCode::PasswordTooWeak
+        )]
         PasswordTooWeak,
     };
-
-    #[derive(From)]
+    #[derive(From, ApiError)]
+    #[api_error(
+        impl_api_error = false
+    )]
     HasherError = {
         #[display("Failed to hash password")]
         #[from]
+        #[api_error(
+            status_code = StatusCode::INTERNAL_SERVER_ERROR,
+            error_code = ErrorCode::InternalServerError
+        )]
         HashPasswordFailed {
             err: password_hash::Error
         },
     };
-}
-
-impl StatusCodeExt for HasherError {
-    fn as_status_code(&self) -> StatusCode {
-        StatusCode::INTERNAL_SERVER_ERROR
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
-        [StatusCode::INTERNAL_SERVER_ERROR].into_iter()
-    }
-}
-
-impl AsErrorCode for HasherError {
-    fn as_error_code(&self) -> ErrorCode {
-        ErrorCode::InternalServerError
-    }
 }
 
 impl ApiErrorTrait for HasherError {
@@ -82,29 +79,7 @@ impl ApiErrorTrait for HasherError {
     }
 }
 
-impl StatusCodeExt for ValidateCredsError {
-    fn as_status_code(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
-        [StatusCode::BAD_REQUEST].into_iter()
-    }
-}
-
-impl AsErrorCode for ValidateCredsError {
-    fn as_error_code(&self) -> ErrorCode {
-        match self {
-            Self::InvalidUserName => ErrorCode::InvalidUserName,
-            Self::InvalidPassword => ErrorCode::InvalidPassword,
-            Self::PasswordTooWeak => ErrorCode::PasswordTooWeak,
-        }
-    }
-}
-
-impl ApiErrorTrait for ValidateCredsError {}
-
-#[derive(GraphQLInputObject, ToSchema, Clone, Deserialize, Serialize)]
+#[derive(Clone, Serialize, Deserialize, ToSchema)]
 pub struct AuthCredential {
     pub username: String,
     pub password: String,
@@ -203,79 +178,6 @@ fn validate_password(password: &str) -> Result<(), ValidateCredsError> {
         }
     } else {
         Err(ValidateCredsError::InvalidPassword)
-    }
-}
-
-enum Digit {
-    Zero,
-    One,
-    Two,
-    Three,
-    Four,
-    Five,
-    Six,
-    Seven,
-    Eight,
-    Nine,
-}
-
-impl Digit {
-    const fn as_str(&self) -> &'static str {
-        match self {
-            Self::Zero => "0",
-            Self::One => "1",
-            Self::Two => "2",
-            Self::Three => "3",
-            Self::Four => "4",
-            Self::Five => "5",
-            Self::Six => "6",
-            Self::Seven => "7",
-            Self::Eight => "8",
-            Self::Nine => "9",
-        }
-    }
-}
-
-impl Display for Digit {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_str())
-    }
-}
-
-pub struct VerificationCode<const N: usize> {
-    digits: [Digit; N],
-}
-
-impl<const N: usize> VerificationCode<N> {
-    pub fn new() -> Self {
-        let mut rng = rand::rng();
-
-        let mut digits = [const { Digit::Zero }; N];
-
-        for item in &mut digits {
-            let digit = match rng.random_range(0..=9) {
-                0 => Digit::Zero,
-                1 => Digit::One,
-                2 => Digit::Two,
-                3 => Digit::Three,
-                4 => Digit::Four,
-                5 => Digit::Five,
-                6 => Digit::Six,
-                7 => Digit::Seven,
-                8 => Digit::Eight,
-                9 => Digit::Nine,
-                _ => panic!("impossible"),
-            };
-            *item = digit;
-        }
-
-        Self { digits }
-    }
-}
-
-impl<const N: usize> Display for VerificationCode<N> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.digits.iter().join(""))
     }
 }
 

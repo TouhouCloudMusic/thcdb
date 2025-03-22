@@ -9,10 +9,10 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::api_response::{Data, Message};
-use crate::domain::auth::{AuthCredential, AuthnError};
 use crate::dto::user::{UploadAvatar, UserProfile};
 use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
+use crate::model::auth::{AuthCredential, AuthnError};
 use crate::service::user::{
     AuthSession, SessionBackendError, SignInError, SignUpError,
     UploadAvatarError,

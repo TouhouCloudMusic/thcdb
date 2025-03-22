@@ -1,37 +1,14 @@
 use entity::role;
 use sea_orm::ActiveValue::Set;
 use sea_orm::EntityTrait;
-use serde::Serialize;
-use strum_macros::{EnumCount, EnumIter, EnumString};
 
-use super::{LookupTableEnum, ValidateLookupTable};
-
-pub enum LookupTableCheckResult<T> {
-    Ok,
-    Empty,
-    Unsync,
-    Conflict(T),
-}
+use super::{LookupTableCheckResult, LookupTableEnum, ValidateLookupTable};
+use crate::model::auth::UserRole;
 
 impl<T> From<T> for LookupTableCheckResult<T> {
     fn from(val: T) -> Self {
         Self::Conflict(val)
     }
-}
-
-#[derive(
-    Clone,
-    Copy,
-    EnumString,
-    EnumIter,
-    EnumCount,
-    strum_macros::Display,
-    Serialize,
-)]
-pub enum UserRole {
-    Admin,
-    Moderator,
-    User,
 }
 
 impl PartialEq<role::Model> for UserRole {
@@ -40,7 +17,7 @@ impl PartialEq<role::Model> for UserRole {
     }
 }
 
-pub struct UserRoleConflict {
+pub(super) struct UserRoleConflict {
     pub id: i32,
     pub db_name: String,
     pub enum_name: String,

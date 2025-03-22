@@ -10,7 +10,7 @@ use sea_orm::{
 
 use super::*;
 use crate::error::ServiceError;
-use crate::model::user_role::UserRole;
+use crate::model::auth::UserRole;
 use crate::repo;
 
 super::def_service!();
@@ -62,18 +62,16 @@ impl Service {
 }
 
 #[builder]
-pub async fn create_or_update_correction<T, E, A, F1, F2, E1, E2>(
+pub async fn create_or_update_correction<T, E, A, E1, E2>(
     entity_id: i32,
     entity_type: EntityType,
     user_id: i32,
     closure_args: A,
-    on_create: F1,
-    on_update: F2,
+    on_create: impl AsyncFnOnce(entity::correction::Model, A) -> Result<T, E1>,
+    on_update: impl AsyncFnOnce(entity::correction::Model, A) -> Result<T, E2>,
     db: &DatabaseConnection,
 ) -> Result<T, E>
 where
-    F1: AsyncFnOnce(entity::correction::Model, A) -> Result<T, E1>,
-    F2: AsyncFnOnce(entity::correction::Model, A) -> Result<T, E2>,
     E: From<ServiceError> + From<E1> + From<E2>,
 {
     let correction =

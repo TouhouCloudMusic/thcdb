@@ -171,7 +171,7 @@ pub async fn update(
     history_id: i32,
     description: String,
     correction_id: i32,
-) -> Result<(), ServiceError> {
+) -> Result<(), DbErr> {
     add_co_author_if_updater_not_author(correction_id, author_id, db).await?;
 
     correction_revision::Model {
@@ -263,12 +263,14 @@ pub mod user {
             correction_id: i32,
             updater_id: i32,
             tx: &DatabaseTransaction,
-        ) -> Result<(), ServiceError> {
+        ) -> Result<(), DbErr> {
             let author_id = find_author(correction_id, tx)
                 .await?
                 .map(|model| model.user_id)
-                .ok_or_else(|| ServiceError::UnexpRelatedEntityNotFound {
-                    entity_name: correction_user::Entity.table_name(),
+                .ok_or_else(|| {
+                    DbErr::Custom(
+                        "Author not found. This should not happen".to_string(),
+                    )
                 })?;
 
             if author_id != updater_id {

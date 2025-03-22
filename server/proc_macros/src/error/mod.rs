@@ -1,7 +1,7 @@
 pub use api_error::*;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Error, parse_macro_input};
+use syn::{DeriveInput, parse_macro_input};
 
 mod api_error;
 
