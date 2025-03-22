@@ -1,7 +1,5 @@
 use serde_repr::Serialize_repr;
 
-use super::ServiceError;
-
 pub trait AsErrorCode {
     fn as_error_code(&self) -> crate::error::ErrorCode;
 }
@@ -35,22 +33,4 @@ pub enum ErrorCode {
     UnknownTypeArtistOwnedMember = 2_400_00,
     // Image
     InvalidImageType = 3_400_00,
-}
-
-impl AsErrorCode for ServiceError {
-    fn as_error_code(&self) -> ErrorCode {
-        match self {
-            Self::Database(_) => ErrorCode::DatabaseError,
-            Self::Tokio(_) => ErrorCode::TokioError,
-            Self::EntityNotFound { .. } => ErrorCode::EntityNotFound,
-            Self::UnexpRelatedEntityNotFound { .. } => {
-                ErrorCode::UnExpRelatedEntityNotFound
-            }
-            Self::InvalidField { .. } => ErrorCode::InvalidField,
-            Self::IncorrectCorrectionType { .. } => {
-                ErrorCode::IncorrectCorrectionType
-            }
-            Self::Unauthorized => ErrorCode::Unauthorized,
-        }
-    }
 }

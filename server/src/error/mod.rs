@@ -1,13 +1,14 @@
 mod error_code;
 mod structs;
+
 use std::fmt::Debug;
 
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use derive_more::{Display, Error, From};
 use entity::sea_orm_active_enums::EntityType;
 pub use error_code::*;
 use error_set::error_set;
-use itertools::Itertools;
 use macros::{ApiError, IntoErrorSchema};
 use sea_orm::DbErr;
 pub use structs::*;
@@ -19,25 +20,45 @@ error_set! {
         Unauthorized
     };
     #[disable(From(TokioError))]
-    #[derive(IntoErrorSchema)]
+    #[derive(IntoErrorSchema, From, ApiError)]
     ServiceError = {
+        #[from(DbErr)]
         Database(DbErrWrapper),
         Tokio(TokioError),
         #[display("Entity {entity_name} not found")]
+        #[api_error(
+            status_code = StatusCode::INTERNAL_SERVER_ERROR,
+            error_code = ErrorCode::EntityNotFound,
+        )]
         EntityNotFound {
             entity_name: &'static str
         },
+        #[api_error(
+            status_code = StatusCode::BAD_REQUEST,
+            error_code = ErrorCode::InvalidField,
+        )]
         InvalidField(InvalidField),
-
         #[display("Correction type mismatch, expected: {:#?}, accepted: {:#?}", expected, accepted)]
+        #[api_error(
+            status_code = StatusCode::BAD_REQUEST,
+            error_code = ErrorCode::IncorrectCorrectionType,
+        )]
         IncorrectCorrectionType {
             expected: EntityType,
             accepted: EntityType,
         },
         #[display("Unexpected error: related entity {entity_name} not found")]
+        #[api_error(
+            status_code = StatusCode::BAD_REQUEST,
+            error_code = ErrorCode::IncorrectCorrectionType,
+        )]
         UnexpRelatedEntityNotFound {
             entity_name: &'static str
         },
+        #[api_error(
+            status_code = StatusCode::UNAUTHORIZED,
+            error_code = ErrorCode::Unauthorized,
+        )]
         Unauthorized
     };
     TokioError = {
@@ -49,7 +70,7 @@ pub trait ApiErrorTrait: StatusCodeExt + AsErrorCode {
     fn before_into_api_error(&self) {}
 }
 
-#[derive(Debug, IntoErrorSchema, ApiError, derive_more::Display)]
+#[derive(Debug, IntoErrorSchema, ApiError, Display, From, Error)]
 #[display("Database error")]
 #[api_error(
     status_code = StatusCode::INTERNAL_SERVER_ERROR,
@@ -59,21 +80,9 @@ pub trait ApiErrorTrait: StatusCodeExt + AsErrorCode {
 )]
 pub struct DbErrWrapper(DbErr);
 
-impl From<DbErr> for DbErrWrapper {
-    fn from(value: DbErr) -> Self {
-        Self(value)
-    }
-}
-
-impl std::error::Error for DbErrWrapper {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        self.0.source()
-    }
-}
-
 impl ApiErrorTrait for DbErrWrapper {
     fn before_into_api_error(&self) {
-        tracing::error!("Database error: {}", self.0);
+        tracing::error!("Database error: {:#?}", self.0);
     }
 }
 
@@ -103,62 +112,53 @@ impl AsErrorCode for TokioError {
 
 impl ApiErrorTrait for TokioError {
     fn before_into_api_error(&self) {
-        tracing::error!("Tokio error: {}", self);
+        tracing::error!("Tokio error: {:#?}", self);
     }
 }
 
-impl<T> From<T> for ServiceError
-where
-    T: Into<TokioError>,
-{
-    fn from(value: T) -> Self {
-        Self::Tokio(value.into())
-    }
-}
-
-impl From<DbErr> for ServiceError {
-    fn from(value: DbErr) -> Self {
-        Self::Database(DbErrWrapper::from(value))
-    }
-}
-
-impl StatusCodeExt for ServiceError {
-    fn as_status_code(&self) -> StatusCode {
-        match self {
-            Self::Tokio(e) => e.as_status_code(),
-            Self::Database(e) => e.as_status_code(),
-            Self::UnexpRelatedEntityNotFound { .. } => {
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
-            Self::InvalidField { .. }
-            | Self::IncorrectCorrectionType { .. } => StatusCode::BAD_REQUEST,
-            Self::EntityNotFound { .. } => StatusCode::NOT_FOUND,
-            Self::Unauthorized => StatusCode::UNAUTHORIZED,
-        }
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
-        [
-            StatusCode::BAD_REQUEST,
-            StatusCode::NOT_FOUND,
-            StatusCode::INTERNAL_SERVER_ERROR,
-            StatusCode::UNAUTHORIZED,
-        ]
-        .into_iter()
-        .chain(DbErrWrapper::all_status_codes())
-        .chain(TokioError::all_status_codes())
-        .unique()
-    }
-}
-
-impl ApiErrorTrait for ServiceError {}
-
-impl IntoResponse for ServiceError {
+impl IntoResponse for TokioError {
     fn into_response(self) -> axum::response::Response {
-        match self {
-            Self::Database(e) => e.into_response(),
-            Self::Tokio(e) => e.into_api_response(),
-            _ => self.into_response(),
-        }
+        self.into_api_response()
+    }
+}
+
+mod test {
+
+    use tracing_test::traced_test;
+
+    use super::*;
+
+    // https://github.com/dbrgn/tracing-test/issues/48
+    // This bug causes errors with line breaks cannot be captured
+    // So I can only test the prefix of errors here
+    // If this test fails, it may be because error messages has been changed
+    #[tokio::test]
+    #[traced_test]
+    async fn test_nested_err_print() {
+        let err = ServiceError::Database(DbErrWrapper(DbErr::Custom(
+            "foobar".to_string(),
+        )));
+
+        let _ = err.into_response();
+
+        assert!(logs_contain("Database error: Custom"));
+
+        let err = ServiceError::Tokio(TokioError::TaskJoin(
+            async {
+                let handle = tokio::spawn(async {
+                    panic!("fake panic");
+                });
+
+                match handle.await {
+                    Err(e) => e,
+                    _ => unreachable!(),
+                }
+            }
+            .await,
+        ));
+
+        let _ = err.into_response();
+
+        assert!(logs_contain("Tokio error: TaskJoin"));
     }
 }

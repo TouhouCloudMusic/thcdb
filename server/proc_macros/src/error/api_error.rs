@@ -9,14 +9,14 @@ use syn::{
     Variant,
 };
 
-#[derive(Default)]
+#[derive(Default, PartialEq, Debug)]
 enum CodeOpt {
     #[default]
     Inner,
     Specified(Path),
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 enum IntoResponseOpt {
     #[default]
     Inner,
@@ -61,7 +61,7 @@ impl darling::FromMeta for IntoResponseOpt {
     }
 }
 
-#[derive(FromMeta, Default)]
+#[derive(FromMeta, Default, Debug)]
 struct ApiErrorVariantMeta {
     status_code: CodeOpt,
     error_code: CodeOpt,
@@ -282,10 +282,32 @@ fn gen_enum_impl(
                     Self::#var_name => self.into_api_response()
                 });
             }
-            Fields::Named(_) => Err(Error::new_spanned(
-                variant,
-                "Named variant fields are not supported",
-            ))?,
+
+            Fields::Named(_) => {
+                if api_err_attr.status_code == CodeOpt::Inner
+                    || api_err_attr.error_code == CodeOpt::Inner
+                {
+                    Err(Error::new_spanned(
+                        variant,
+                        format!(
+                            "Named fields variant {:?} are not support inner method.\nAttrs: {:?}",
+                            variant.ident.to_string(),
+                            api_err_attr
+                        ),
+                    ))?;
+                }
+
+                status_code_left_arms.push(quote! {
+                    Self::#var_name { .. }
+                });
+
+                error_code_left_arms.push(quote! {
+                    Self::#var_name { .. }
+                });
+                into_response_arms.push(quote! {
+                    Self::#var_name { .. } => self.into_api_response()
+                });
+            }
         };
     }
 

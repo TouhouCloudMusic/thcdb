@@ -229,12 +229,6 @@ pub fn derive_impl_error_schema(input: TokenStream) -> TokenStream {
     error_schema_impl(input)
 }
 
-// Workaround till error_set can work with attr macros
-#[proc_macro_derive(FromDbErr)]
-pub fn derive_from_db_err(input: TokenStream) -> TokenStream {
-    from_db_err_impl(input)
-}
-
 #[proc_macro_derive(ApiError, attributes(api_error))]
 pub fn derive_api_error(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);

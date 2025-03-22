@@ -67,9 +67,13 @@ bon = { version = "3.0", features = [
     "implied-bounds",
 ] }
 chrono.workspace = true
-config = { version = "0.15.8", features = [ "ron" ], default-features = false }
+config = { version = "0.15.8", features = [
+    "ron",
+], default-features = false }
 derive_more = { version = "2.0.1", features = [
     "display",
+    "error",
+    "from",
 ] }
 dotenvy.workspace = true
 error_set = { version = "0.8", features = [
@@ -98,7 +102,10 @@ sea-orm.workspace = true
 serde.workspace = true
 serde_json = "1.0"
 serde_repr = "0.1"
-serde_with = { version = "3.12.0", features = [ "chrono_0_4" ] }
+serde_with = { version = "3.12.0", features = [
+    "chrono_0_4",
+] }
+smart-default = "0.7.1"
 strum = "0.27.0"
 strum_macros = "0.27.0"
 tikv-jemallocator = "0.6.0"
@@ -106,11 +113,16 @@ tokio.workspace = true
 tower = { version = "0.5.2", features = [
     "limit",
 ] }
-tower-http = { version = "0.6.2", features = [ "fs", "trace", "cors" ] }
+tower-http = { version = "0.6.2", features = [
+    "fs",
+    "trace",
+    "cors",
+] }
 tower-sessions-redis-store = "0.16.0"
 tower_governor = "0.6.0"
 tracing.workspace = true
 tracing-subscriber.workspace = true
+tracing-test = "0.2.5"
 utoipa.workspace = true
 utoipa-axum = "0.2"
 utoipa-scalar = { version = "0.3", features = [
@@ -131,56 +143,7 @@ opt-level       = 1
 split-debuginfo = "unpacked"
 
 [profile.dev.package."*"]
-codegen-backend = "cranelift"
-opt-level       = 3
-
-[profile.dev.package."bon"]
-codegen-backend = "llvm"
-opt-level       = 3
-
-[profile.dev.package."axum-macros"]
-codegen-backend = "llvm"
-opt-level       = 3
-
-[profile.dev.package."async-trait"]
-codegen-backend = "llvm"
-opt-level       = 3
-
-[profile.dev.package."macros"]
-codegen-backend = "llvm"
-opt-level       = 3
-
-[profile.dev.package."proc_macros"]
-codegen-backend = "llvm"
-opt-level       = 3
-
-[profile.dev.package."sea-orm-macros"]
-codegen-backend = "llvm"
-opt-level       = 3
-
-[profile.dev.package."utoipa"]
-codegen-backend = "llvm"
-opt-level       = 3
-
-[profile.dev.package."utoipa-gen"]
-codegen-backend = "llvm"
-opt-level       = 3
-
-[profile.dev.package."derive_more"]
-codegen-backend = "llvm"
-opt-level       = 3
-
-[profile.dev.package."strum_macros"]
-codegen-backend = "llvm"
-opt-level       = 3
-
-[profile.dev.package."juniper_codegen"]
-codegen-backend = "llvm"
-opt-level       = 3
-
-[profile.dev.package."darling"]
-codegen-backend = "llvm"
-opt-level       = 3
+opt-level = 3
 
 [profile.release]
 codegen-units   = 1

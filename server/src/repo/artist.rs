@@ -1,6 +1,7 @@
 use std::sync::LazyLock;
 
 use axum::http::StatusCode;
+use derive_more::From;
 use entity::sea_orm_active_enums::{ArtistType, EntityType};
 use entity::{
     artist, artist_alias, artist_alias_history, artist_history, artist_link,
@@ -34,13 +35,14 @@ use crate::utils::orm::PgFuncExt;
 use crate::utils::{Pipe, Reverse};
 
 error_set! {
-    #[derive(ApiError)]
+    #[derive(ApiError, From)]
     Error = {
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
             into_response = self
         )]
         Validation(ValidationError),
+        #[from(DbErr)]
         General(ServiceError)
     };
     ValidationError = {
@@ -56,12 +58,6 @@ impl AsErrorCode for ValidationError {
                 ErrorCode::UnknownTypeArtistOwnedMember
             }
         }
-    }
-}
-
-impl From<DbErr> for Error {
-    fn from(err: DbErr) -> Self {
-        ServiceError::from(err).into()
     }
 }
 
@@ -88,6 +84,7 @@ pub async fn find_by_keyword(
     find_many(artist::Column::Name.like(kw), db).await
 }
 
+#[allow(clippy::too_many_lines)]
 async fn find_many(
     cond: impl IntoCondition,
     db: &impl ConnectionTrait,

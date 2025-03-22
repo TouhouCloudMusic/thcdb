@@ -5,11 +5,13 @@ use axum::body::Bytes;
 use axum::http::StatusCode;
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE;
+use derive_more::{Display, Error, From};
 use entity::image;
 use error_set::error_set;
-use macros::{ApiError, FromDbErr};
+use macros::ApiError;
 use sea_orm::ActiveValue::*;
 use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter};
+use smart_default::SmartDefault;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 use xxhash_rust::xxh3::xxh3_128;
@@ -20,8 +22,9 @@ use crate::error::{DbErrWrapper, ErrorCode};
 super::def_service!();
 
 error_set! {
-    #[derive(FromDbErr, ApiError)]
+    #[derive(From, ApiError)]
     CreateError = {
+        #[from(DbErr)]
         DbErr(DbErrWrapper),
         #[api_error(
             status_code = StatusCode::INTERNAL_SERVER_ERROR,
@@ -39,10 +42,12 @@ error_set! {
     };
 }
 
-#[derive(Debug, derive_more::Display)]
+#[derive(Debug, Display, Error, SmartDefault)]
 #[display("Invalid image type, accepted: {accepted}, expected: {expected}")]
 pub struct InvalidType {
+    #[default = "Unknown"]
     accepted: String,
+    #[default = "png or jpeg"]
     expected: &'static str,
 }
 
@@ -58,17 +63,6 @@ impl InvalidType {
         Self {
             accepted: "Unknown".to_string(),
             ..Default::default()
-        }
-    }
-}
-
-impl std::error::Error for InvalidType {}
-
-impl Default for InvalidType {
-    fn default() -> Self {
-        Self {
-            accepted: String::new(),
-            expected: "png or jpeg",
         }
     }
 }

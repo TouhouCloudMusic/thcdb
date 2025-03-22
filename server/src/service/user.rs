@@ -7,10 +7,11 @@ use axum::body::Bytes;
 use axum::http::StatusCode;
 use axum_login::{AuthnBackend, UserId};
 use axum_typed_multipart::FieldData;
+use derive_more::{Display, Error, From};
 use entity::{role, user, user_role};
 use error_set::error_set;
 use itertools::Itertools;
-use macros::{ApiError, FromDbErr, IntoErrorSchema};
+use macros::{ApiError, IntoErrorSchema};
 use sea_orm::ActiveValue::*;
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::OnConflict;
@@ -33,9 +34,10 @@ use crate::utils::orm::PgFuncExt;
 pub type AuthSession = axum_login::AuthSession<Service>;
 
 error_set! {
-    #[derive(ApiError)]
+    #[derive(ApiError, From)]
     AuthnBackendError = {
         Authn(AuthnError),
+        #[from(DbErr)]
         Service(ServiceError)
     };
     #[derive(ApiError, IntoErrorSchema)]
@@ -46,7 +48,8 @@ error_set! {
         Session(SessionError),
         AuthnBackend(AuthnBackendError)
     };
-    #[derive(ApiError, IntoErrorSchema)]
+    #[derive(ApiError, IntoErrorSchema, From)]
+
     SignInError = {
         #[display("Already signed in")]
         #[api_error(
@@ -55,6 +58,7 @@ error_set! {
         )]
         AlreadySignedIn,
         Authn(AuthnError),
+        #[from(axum_login::Error<Service>)]
         Session(SessionBackendError),
         Service(ServiceError)
     };
@@ -64,8 +68,9 @@ error_set! {
         Session(SessionBackendError),
         Service(ServiceError)
     };
-    #[derive(IntoErrorSchema, FromDbErr, ApiError)]
+    #[derive(IntoErrorSchema, ApiError, From)]
     UploadAvatarError = {
+        #[from(DbErr)]
         DbErr(DbErrWrapper),
         CreateImageError(super::image::CreateError),
         #[api_error(
@@ -73,7 +78,7 @@ error_set! {
         )]
         InvalidField(InvalidField)
     };
-    #[derive(ApiError, IntoErrorSchema)]
+    #[derive(ApiError, IntoErrorSchema, From)]
     CreateUserError = {
         #[display("Username already in use")]
         #[api_error(
@@ -84,16 +89,18 @@ error_set! {
         #[api_error(
             into_response = self
         )]
+        #[from(password_hash::Error)]
         Hash(HasherError),
         #[api_error(
             into_response = self
         )]
         Validate(ValidateCredsError),
+        #[from(DbErr)]
         Service(ServiceError),
     };
 }
 
-#[derive(Debug, derive_more::Display, ApiError)]
+#[derive(Debug, Display, ApiError, From, Error)]
 #[display("Session error")]
 #[api_error(
     status_code = StatusCode::INTERNAL_SERVER_ERROR,
@@ -102,44 +109,12 @@ error_set! {
 )]
 pub struct SessionError(axum_login::tower_sessions::session::Error);
 
-impl std::error::Error for SessionError {}
-
-impl From<axum_login::tower_sessions::session::Error> for SessionError {
-    fn from(value: axum_login::tower_sessions::session::Error) -> Self {
-        Self(value)
-    }
-}
-
-impl From<DbErr> for AuthnBackendError {
-    fn from(value: DbErr) -> Self {
-        Self::Service(value.into())
-    }
-}
-
-impl From<DbErr> for CreateUserError {
-    fn from(value: DbErr) -> Self {
-        Self::Service(value.into())
-    }
-}
-
-impl From<password_hash::Error> for CreateUserError {
-    fn from(value: password_hash::Error) -> Self {
-        Self::Hash(value.into())
-    }
-}
-
 impl From<axum_login::Error<Service>> for SessionBackendError {
     fn from(value: axum_login::Error<Service>) -> Self {
         match value {
             axum_login::Error::Session(err) => Self::Session(SessionError(err)),
             axum_login::Error::Backend(err) => Self::AuthnBackend(err),
         }
-    }
-}
-
-impl From<axum_login::Error<Service>> for SignInError {
-    fn from(value: axum_login::Error<Service>) -> Self {
-        Self::Session(value.into())
     }
 }
 

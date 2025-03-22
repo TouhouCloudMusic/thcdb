@@ -5,6 +5,7 @@ use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::{self, SaltString};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum::http::StatusCode;
+use derive_more::From;
 use error_set::error_set;
 use itertools::Itertools;
 use juniper::GraphQLInputObject;
@@ -12,7 +13,6 @@ use macros::ApiError;
 use rand::Rng;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use tokio::task::JoinError;
 use utoipa::ToSchema;
 
 use crate::api_response::StatusCodeExt;
@@ -20,7 +20,7 @@ use crate::error::{ApiErrorTrait, AsErrorCode, ErrorCode, TokioError};
 use crate::state::ARGON2_HASHER;
 
 error_set! {
-    #[derive(ApiError)]
+    #[derive(ApiError, From)]
     #[disable(From(TokioError, HasherError))]
     AuthnError = {
         #[api_error(
@@ -33,10 +33,12 @@ error_set! {
         #[api_error(
             into_response = self
         )]
+        #[from(password_hash::Error)]
         Hash(HasherError),
         #[api_error(
             into_response = self
         )]
+        #[from(tokio::task::JoinError)]
         Tokio(TokioError),
     };
     ValidateCredsError = {
@@ -47,30 +49,15 @@ error_set! {
         #[display("Password is too weak")]
         PasswordTooWeak,
     };
+
+    #[derive(From)]
     HasherError = {
         #[display("Failed to hash password")]
+        #[from]
         HashPasswordFailed {
-            err: password_hash::errors::Error
+            err: password_hash::Error
         },
     };
-}
-
-impl From<JoinError> for AuthnError {
-    fn from(value: JoinError) -> Self {
-        Self::Tokio(value.into())
-    }
-}
-
-impl From<password_hash::Error> for AuthnError {
-    fn from(value: password_hash::Error) -> Self {
-        Self::Hash(value.into())
-    }
-}
-
-impl From<password_hash::Error> for HasherError {
-    fn from(value: password_hash::Error) -> Self {
-        Self::HashPasswordFailed { err: value }
-    }
 }
 
 impl StatusCodeExt for HasherError {
