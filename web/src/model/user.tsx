@@ -1,11 +1,11 @@
-export type UserProfile = {
-  name: string
-  avatar_url?: string
-  last_login?: Date
-  roles: number[]
-}
+import { type } from "arktype"
+import { type components } from "~/query/openapi"
 
-export type AuthCreds = {
-  username: string
-  password: string
-}
+export type UserProfile = components["schemas"]["UserProfile"]
+
+export const auth_creds = type({
+  username: "string",
+  password: "string",
+})
+
+export type AuthCreds = typeof auth_creds.infer

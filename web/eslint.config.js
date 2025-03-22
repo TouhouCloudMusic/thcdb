@@ -35,6 +35,6 @@ export default [
   // jsx
   ...tsxConfigArray,
   {
-    ignores: ["eslint.config.js"],
+    ignores: ["eslint.config.js", "src/query/openapi.ts"],
   },
 ]

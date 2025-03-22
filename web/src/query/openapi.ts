@@ -143,7 +143,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/profile/{name}": {
+    "/profile": {
         parameters: {
             query?: never;
             header?: never;
@@ -151,6 +151,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["profile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["profile_with_name"];
         put?: never;
         post?: never;
         delete?: never;
@@ -894,7 +910,6 @@ export interface components {
             description: string;
             alt_names: components["schemas"]["AltName"][];
             relations: components["schemas"]["TagRelation"][];
-        } & {
             correction_metadata: components["schemas"]["Metadata"];
         };
         TagRelation: {
@@ -965,19 +980,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
-            };
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1033,19 +1035,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
-            };
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1098,19 +1087,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
             };
             500: {
                 headers: {
@@ -1168,19 +1144,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
             };
             500: {
                 headers: {
@@ -1292,19 +1255,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
-            };
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1357,19 +1307,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
             };
             500: {
                 headers: {
@@ -1426,19 +1363,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
-            };
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1491,19 +1415,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
             };
             500: {
                 headers: {
@@ -1562,19 +1473,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
-            };
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1627,19 +1525,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
             };
             500: {
                 headers: {
@@ -1696,19 +1581,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
-            };
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1761,19 +1633,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
             };
             500: {
                 headers: {
@@ -1832,19 +1691,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
-            };
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -1896,6 +1742,63 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_UserProfile"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "Err";
+                        message: string;
+                        error_code: number;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "Err";
+                        message: string;
+                        error_code: number;
+                    };
+                };
+            };
+        };
+    };
+    profile_with_name: {
+        parameters: {
+            query?: never;
+            header?: never;
             path: {
                 name: string;
             };
@@ -1934,14 +1837,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
+                content?: never;
             };
             500: {
                 headers: {
@@ -1995,19 +1891,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
             };
             500: {
                 headers: {
@@ -2064,19 +1947,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
-            };
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2129,19 +1999,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
             };
             500: {
                 headers: {
@@ -2200,19 +2057,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
-            };
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2246,7 +2090,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Message"];
+                    "application/json": components["schemas"]["Data_UserProfile"];
                 };
             };
             400: {
@@ -2267,19 +2111,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
             };
             409: {
                 headers: {
@@ -2345,19 +2176,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
-            };
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2391,7 +2209,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Message"];
+                    "application/json": components["schemas"]["Data_UserProfile"];
                 };
             };
             400: {
@@ -2412,19 +2230,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
             };
             409: {
                 headers: {
@@ -2492,19 +2297,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
-            };
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2560,19 +2352,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
-            };
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2625,19 +2404,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
             };
             500: {
                 headers: {
@@ -2696,19 +2462,6 @@ export interface operations {
                 };
                 content?: never;
             };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
-            };
             500: {
                 headers: {
                     [name: string]: unknown;
@@ -2763,19 +2516,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
             };
             500: {
                 headers: {
@@ -2833,19 +2573,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "Err";
-                        message: string;
-                        error_code: number;
-                    };
-                };
             };
             500: {
                 headers: {
