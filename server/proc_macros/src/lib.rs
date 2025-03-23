@@ -8,9 +8,7 @@ use quote::quote;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
-use syn::{
-    Data, DeriveInput, Fields, ItemFn, parse_macro_input,
-};
+use syn::{Data, DeriveInput, Fields, ItemFn, parse_macro_input};
 
 mod error;
 mod utils;
