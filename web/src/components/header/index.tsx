@@ -2,7 +2,7 @@ import { Link } from "@tanstack/solid-router"
 import { createMemo, Match, Show, Switch } from "solid-js"
 import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
 import { Button } from "~/components/button"
-import { NotificationState, use_user_ctx } from "~/state/user"
+import { NotificationState, useUserCtx } from "~/state/user"
 
 import { Avatar } from "../avatar/index.tsx"
 import {
@@ -25,7 +25,9 @@ export function Header() {
             variant="Tertiary"
             class={HEADER_BTN_CLASS}
           >
-            <HamburgerMenuIcon class={"size-4 m-auto"} />
+            <Link to="/">
+              <HamburgerMenuIcon class={"size-4 m-auto"} />
+            </Link>
           </Button>
           <Divider />
         </div>
@@ -35,7 +37,7 @@ export function Header() {
           <SearchBar />
           <Divider />
           <Show
-            when={use_user_ctx().user}
+            when={useUserCtx().user}
             fallback={<UnauthenticatedButtons />}
           >
             {(user) => (
@@ -67,7 +69,7 @@ function SearchBar() {
 }
 
 function NotificationButton() {
-  let notification_state = createMemo(() => use_user_ctx().notification_state)
+  let notification_state = createMemo(() => useUserCtx().notification_state)
   return (
     <Button
       variant="Tertiary"
@@ -98,14 +100,28 @@ function UnauthenticatedButtons() {
         size="Sm"
         class={BTN_CLASS.concat(" ", "text-slate-900")}
       >
-        <Link to="/auth">Sign In</Link>
+        <Link
+          to="/auth"
+          search={{
+            type: "sign_in",
+          }}
+        >
+          Sign In
+        </Link>
       </Button>
       <Button
         variant="Primary"
         size="Sm"
         class={BTN_CLASS}
       >
-        <Link to="/auth">Sign Up</Link>
+        <Link
+          to="/auth"
+          search={{
+            type: "sign_up",
+          }}
+        >
+          Sign Up
+        </Link>
       </Button>
     </>
   )

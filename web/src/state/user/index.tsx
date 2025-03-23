@@ -74,7 +74,7 @@ export type UserConfig = {
 
 const USER_CONTEXT = createContext<UserStore>()
 
-export const use_user_ctx = () => useContextUnsave(USER_CONTEXT)
+export const useUserCtx = () => useContextUnsave(USER_CONTEXT)
 
 export function UserContextProvider(props: ParentProps) {
   let store = new UserStore(undefined)
