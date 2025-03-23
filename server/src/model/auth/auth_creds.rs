@@ -103,13 +103,13 @@ impl AuthCredential {
         &self,
         hash: Option<&str>,
     ) -> Result<(), AuthnError> {
-        verify_password(
-            &self.hashed_password()?,
-            hash.unwrap_or(&hash_password("dummyPassword")?),
-        )
-        .await?;
+        let dummy_password = || hash_password("dummy_password");
 
-        Ok(())
+        verify_password(
+            hash.unwrap_or(&dummy_password()?).to_owned(),
+            &self.password,
+        )
+        .await
     }
 }
 
@@ -121,21 +121,27 @@ pub fn hash_password(pwd: &str) -> password_hash::Result<String> {
     Ok(res.to_string())
 }
 
+/// Return `[Err(AuthnError::AuthenticationFailed)]` if password is incorrect
+/// otherwise return `Ok(())`
 async fn verify_password(
-    password: &str,
-    password_hash: &str,
-) -> Result<bool, AuthnError> {
-    let bytes = password.as_bytes().to_owned();
-    let password_hash = password_hash.to_string();
-
-    tokio::task::spawn_blocking(move || {
+    password_hash: String,
+    input: &str,
+) -> Result<(), AuthnError> {
+    let bytes = input.as_bytes().to_owned();
+    let res = tokio::task::spawn_blocking(move || {
         let hash = PasswordHash::new(&password_hash)?;
 
         Ok::<bool, AuthnError>(
             Argon2::default().verify_password(&bytes, &hash).is_ok(),
         )
     })
-    .await?
+    .await??;
+
+    if res {
+        Ok(())
+    } else {
+        Err(AuthnError::AuthenticationFailed)
+    }
 }
 
 fn validate_username(username: &str) -> Result<(), ValidateCredsError> {
@@ -185,6 +191,44 @@ fn validate_password(password: &str) -> Result<(), ValidateCredsError> {
 mod test {
 
     use super::*;
+
+    #[tokio::test]
+    async fn verify_password() {
+        let password = "Password123123!";
+        let hash = hash_password(password).unwrap();
+
+        let res = super::verify_password(hash, password).await.is_ok();
+
+        assert!(res);
+    }
+
+    #[tokio::test]
+    async fn verify_credentials() {
+        let pwd = "Password123123!".to_string();
+        let res = AuthCredential {
+            username: "Alice".to_string(),
+            password: pwd.clone(),
+        }
+        .verify_credentials(Some(&hash_password(&pwd).unwrap()))
+        .await
+        .is_ok();
+
+        assert!(res);
+    }
+
+    #[tokio::test]
+    async fn verify_credentials_fail() {
+        let pwd = "Password123123!".to_string();
+        let res = AuthCredential {
+            username: "Alice".to_string(),
+            password: pwd.clone(),
+        }
+        .verify_credentials(None)
+        .await
+        .is_err();
+
+        assert!(res);
+    }
 
     #[test]
     fn test_validate_username() {
