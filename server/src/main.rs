@@ -38,11 +38,11 @@ mod utils;
 use std::net::SocketAddr;
 
 use app::create_app;
+use infrastructure::logger::Logger;
 use state::{AppState, CONFIG};
 #[cfg(not(target_env = "msvc"))]
 use tikv_jemallocator::Jemalloc;
 use tokio::signal;
-use tracing_subscriber::fmt::time::ChronoLocal;
 
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
@@ -50,15 +50,11 @@ static GLOBAL: Jemalloc = Jemalloc;
 
 #[tokio::main]
 async fn main() {
-    tracing::info!("Starting server");
-
     dotenvy::dotenv().unwrap();
 
-    tracing_subscriber::fmt()
-        .with_timer(ChronoLocal::new("%Y-%m-%d %H:%M:%S".to_string()))
-        .with_max_level(tracing::Level::DEBUG)
-        .with_test_writer()
-        .init();
+    Logger::init();
+
+    tracing::info!("Starting server");
 
     let state = AppState::init().await;
 
