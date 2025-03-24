@@ -23,5 +23,6 @@
     "strict": true,
     "target": "ESNext",
     "types": ["vite/client", "@testing-library/jest-dom", "vitest/importMeta"]
-  }
+  },
+  "exclude": ["node_modules", "dist", "public"]
 }
