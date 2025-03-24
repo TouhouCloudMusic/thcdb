@@ -1,16 +1,28 @@
+import { Dialog as K_Dialog } from "@kobalte/core"
 import { Link } from "@tanstack/solid-router"
-import { createMemo, Match, Show, Switch } from "solid-js"
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  Match,
+  Show,
+  Switch,
+} from "solid-js"
 import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
 import { Button } from "~/components/button"
+import { type UserProfile } from "~/model/user"
 import { NotificationState, useUserCtx } from "~/state/user"
+import { createClickOutside } from "~/utils/createClickOutside"
 
 import { Avatar } from "../avatar/index.tsx"
+import { Dialog } from "../dialog"
 import {
   BellAlertIcon,
   BellIcon,
   BellSlashIcon,
 } from "../icons/heroicons/24/outline.tsx"
 import { Input } from "../input"
+import { RightSidebar } from "../sidebar/right"
 
 const HEADER_BTN_CLASS = "size-6 p-1 m-auto"
 
@@ -31,27 +43,66 @@ export function Header() {
           </Button>
           <Divider />
         </div>
+        <SearchBar />
 
         {/* Right	*/}
         <div class="flex place-content-center items-center gap-3 shrink">
-          <SearchBar />
           <Divider />
           <Show
             when={useUserCtx().user}
             fallback={<UnauthenticatedButtons />}
           >
-            {(user) => (
-              <>
-                <div class="h-8 w-8 grid place-items-center">
-                  <NotificationButton />
-                </div>
-                <Avatar user={user()} />
-              </>
-            )}
+            {(user) => <AuthenticatedContent user={user()} />}
           </Show>
         </div>
       </div>
     </header>
+  )
+}
+
+function AuthenticatedContent(props: { user: UserProfile }) {
+  let [show, setShow] = createSignal(false)
+  let close = () => setShow(false)
+
+  let [sidebar_ref, setRef] = createSignal<HTMLDivElement>(
+    undefined as unknown as HTMLDivElement,
+  )
+
+  let handleClickOutside = createClickOutside(sidebar_ref, close)
+
+  createEffect(() => {
+    if (show()) {
+      document.addEventListener("click", handleClickOutside)
+    } else {
+      document.removeEventListener("click", handleClickOutside)
+    }
+  })
+  return (
+    <>
+      <div class="h-8 w-8 grid place-items-center">
+        <NotificationButton />
+      </div>
+      <button onClick={() => setShow(!show())}>
+        <Avatar
+          user={props.user}
+          onClick={() => setShow(!show())}
+        />
+      </button>
+      <Dialog.Root
+        open={show()}
+        onOpenChange={close}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay onClick={close} />
+          <K_Dialog.Content class="fixed inset-0 z-50">
+            <RightSidebar
+              ref={setRef}
+              onClose={() => setShow(false)}
+            />
+          </K_Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </>
   )
 }
 
@@ -60,7 +111,7 @@ function SearchBar() {
     <div class="grid items-center">
       <Input
         class={`
-        bg-slate-100 w-64 h-7 rounded-xs duration-200 pl-2 border-none
+        bg-slate-100 w-96 mr-auto h-7 rounded-xs duration-200 pl-2 border-none
         `}
       />
       <MagnifyingGlassIcon class={"size-4 col-start-1 absolute ml-2"} />

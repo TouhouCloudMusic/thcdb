@@ -17,16 +17,7 @@ import {
 import { twMerge } from "tailwind-merge"
 import { Button, type Props } from "~/components/button"
 
-export type RootProps = Pick<
-  K_DialogRootProps,
-  "open" | "defaultOpen" | "onOpenChange"
->
-/**
- * @see https://kobalte.dev/docs/core/components/dialog
- */
-export function Root(props: K_DialogRootProps) {
-  return <Dialog.Root {...props} />
-}
+export const Root = Dialog.Root
 
 export const Trigger = Dialog.Trigger
 

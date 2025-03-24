@@ -1,3 +1,4 @@
+import { JSX, Ref } from "solid-js"
 import {
   BookmarkIcon,
   Cross1Icon,
@@ -13,26 +14,32 @@ import { useUserCtx } from "~/state/user"
 
 import { ListItem, Sidebar } from "."
 import { Avatar } from "../avatar"
+import { Button } from "../button"
 import { Divider } from "../divider"
 
 export type Props = {
   onClose: VoidFunction
+  ref?: Ref<HTMLDivElement>
 }
 
 export function RightSidebar(props: Props) {
   let user_ctx = useUserCtx()
   return (
-    <div class="w-full h-[48vh] bg-slate-800/5">
-      <Sidebar class="p-3 flex flex-col gap-2">
-        <div class="flex gap-1">
+    <>
+      <Sidebar
+        ref={props.ref}
+        class="h-full right-0 relative p-3 flex flex-col gap-2"
+      >
+        <div class="flex pl-1">
           <Avatar user={user_ctx.user} />
-          <div>
-            <div class="font-medium text-sm">{user_ctx.user?.name}</div>
-          </div>
-          <Cross1Icon
-            class="h-fit ml-auto"
+          <div class="font-medium text-sm mx-2">{user_ctx.user?.name}</div>
+          <Button
+            variant="Tertiary"
+            class="ml-auto self-center size-fit p-1 mr-1"
             onClick={props.onClose}
-          />
+          >
+            <Cross1Icon />
+          </Button>
         </div>
         <Divider
           class="px-2 my-0.5"
@@ -73,12 +80,12 @@ export function RightSidebar(props: Props) {
             <GearIcon />
             <span>Settings</span>
           </ListItem>
-          <ListItem>
+          <ListItem onClick={() => user_ctx.sign_out()}>
             <ExitIcon />
             <span>Sign Out</span>
           </ListItem>
         </div>
       </Sidebar>
-    </div>
+    </>
   )
 }
