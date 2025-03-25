@@ -34,3 +34,14 @@ pub enum ErrorCode {
     // Image
     InvalidImageType = 3_400_00,
 }
+
+impl ErrorCode {
+    pub fn message(&self) -> &'static str {
+        match self {
+            Self::InternalServerError | Self::IoError => {
+                "Internal Server Error"
+            }
+            _ => unimplemented!(),
+        }
+    }
+}

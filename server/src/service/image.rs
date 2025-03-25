@@ -12,7 +12,7 @@ use macros::ApiError;
 use sea_orm::ActiveValue::*;
 use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter};
 use smart_default::SmartDefault;
-use tokio::fs::File;
+use tokio::fs::{self, File};
 use tokio::io::AsyncWriteExt;
 use xxhash_rust::xxh3::xxh3_128;
 
@@ -31,8 +31,8 @@ error_set! {
             error_code = ErrorCode::IoError,
             into_response = self
         )]
-        #[display("Failed to write file to image directory")]
-        WriteFile(std::io::Error),
+        #[display("{}", ErrorCode::IoError.message())]
+        Fs(std::io::Error),
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
             error_code = ErrorCode::InvalidImageType,
@@ -106,31 +106,46 @@ impl Service {
         // eg. image/ab/cd/filename.jpg
         let full_path = gen_image_path(&sub_dir, &file_hash, extension);
 
-        // Write file
-        let mut file = File::create(full_path).await?;
-        file.write_all(&data).await?;
-        file.flush().await?;
+        let mut file = File::create(&full_path).await?;
 
-        // 哈希可能碰撞，但哈希碰撞不太可能
-        if let Some(image) = self.find_by_name(&filename).await? {
-            Ok(image)
-        } else {
-            let active_model = image::ActiveModel {
-                filename: Set(filename),
-                uploaded_by: Set(uploader_id),
-                directory: Set(sub_dir_pathbuf
-                    .to_str()
-                    // Should it be safe here?
-                    .unwrap()
-                    .to_string()),
+        let task = async || {
+            file.write_all(&data).await?;
+            file.flush().await?;
 
-                id: NotSet,
-                created_at: NotSet,
-            };
+            // 哈希可能碰撞，但哈希碰撞不太可能
+            if let Some(image) = self.find_by_name(&filename).await? {
+                Ok(image)
+            } else {
+                let active_model = image::ActiveModel {
+                    filename: Set(filename),
+                    uploaded_by: Set(uploader_id),
+                    directory: Set(sub_dir_pathbuf
+                        .to_str()
+                        // Should it be safe here?
+                        .unwrap()
+                        .to_string()),
 
-            Ok(image::Entity::insert(active_model)
-                .exec_with_returning(&self.db)
-                .await?)
+                    id: NotSet,
+                    created_at: NotSet,
+                };
+
+                Ok::<_, CreateError>(
+                    image::Entity::insert(active_model)
+                        .exec_with_returning(&self.db)
+                        .await?,
+                )
+            }
+        };
+
+        match task().await {
+            Ok(image) => Ok(image),
+            Err(err) => {
+                fs::remove_file(&full_path).await.map_err(|e| {
+                    tracing::error!("Failed to remove file: {}", e);
+                    CreateError::Fs(e)
+                })?;
+                Err(err)
+            }
         }
     }
 
