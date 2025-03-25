@@ -153,15 +153,16 @@ async fn sign_out() -> Result<Message, SessionBackendError> {
         UploadAvatarError
     )
 )]
-#[use_service(user, image)]
 #[axum::debug_handler(state = AppState)]
 async fn upload_avatar(
     auth_session: AuthSession,
+    State(state): State<AppState>,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
 ) -> Result<impl IntoResponse, UploadAvatarError> {
     if let Some(user) = auth_session.user {
-        user_service
-            .upload_avatar(image_service, user.id, form.data)
+        state
+            .user_service
+            .upload_avatar(&state.image_service, user.id, form.data)
             .await
             .map(|()| api_response::msg("Upload successful").into_response())
     } else {

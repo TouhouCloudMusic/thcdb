@@ -4279,6 +4279,7 @@ dependencies = [
  "smart-default",
  "strum 0.27.1",
  "strum_macros",
+ "thiserror 2.0.12",
  "tikv-jemallocator",
  "tokio",
  "tower",

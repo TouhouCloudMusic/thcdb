@@ -16,8 +16,7 @@
     clippy::enum_glob_use
 )]
 #![deny(unused_must_use)]
-#![feature(variant_count)]
-#![feature(let_chains)]
+#![feature(variant_count, let_chains, try_blocks, min_specialization)]
 
 mod api_response;
 mod app;
@@ -30,6 +29,8 @@ mod middleware;
 mod model;
 mod repo;
 // mod resolver;
+mod application;
+mod domain;
 mod service;
 mod state;
 mod types;

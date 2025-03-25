@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::sync::LazyLock;
 
 use argon2::Argon2;
@@ -6,12 +7,19 @@ use lettre::transport::smtp::authentication::Credentials;
 use lettre::{AsyncSmtpTransport, Tokio1Executor};
 use sea_orm::{DatabaseConnection, sqlx};
 
+use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::infrastructure::config::Config;
 use crate::infrastructure::database::get_connection;
 use crate::infrastructure::redis::Pool;
 use crate::repo::SeaOrmRepository;
+use crate::{application, infrastructure};
 
 pub static CONFIG: LazyLock<Config> = LazyLock::new(Config::init);
+
+pub type ImageSerivce = application::service::image::Service<
+    infrastructure::repository::SeaOrmRepository,
+    infrastructure::service::image::FileImageStorage,
+>;
 
 #[derive(Clone, FromRef)]
 pub struct AppState {
@@ -21,7 +29,10 @@ pub struct AppState {
     pub artist_service: crate::service::artist::Service,
     pub correction_service: crate::service::correction::Service,
     pub event_service: crate::service::event::Service,
-    pub image_service: crate::service::image::Service,
+    pub image_service: application::service::image::Service<
+        infrastructure::repository::SeaOrmRepository,
+        infrastructure::service::image::FileImageStorage,
+    >,
     pub label_service: crate::service::label::Service,
     pub release_service: crate::service::release::Service,
     pub song_service: crate::service::song::Service,
@@ -29,9 +40,12 @@ pub struct AppState {
     pub user_service: crate::service::user::Service,
 }
 
+static IMAGE_PATH: LazyLock<PathBuf> =
+    LazyLock::new(|| PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]));
+
 impl AppState {
     pub async fn init() -> Self {
-        let database = get_connection(&CONFIG.database_url).await;
+        let conn = get_connection(&CONFIG.database_url).await;
         let redis_pool = Pool::init(&CONFIG.redis_url).await;
         let stmp_conf = &CONFIG.email;
         let creds = Credentials::new(
@@ -43,36 +57,38 @@ impl AppState {
                 .unwrap()
                 .credentials(creds)
                 .build();
+
+        let sea_orm_repo =
+            infrastructure::repository::SeaOrmRepository::new(conn.clone());
+
+        let file_image_storage =
+            infrastructure::service::image::FileImageStorage::new(&IMAGE_PATH);
+
         Self {
-            database: database.clone(),
+            database: conn.clone(),
             redis_pool,
             transport,
-            artist_service: crate::service::artist::Service::new(
-                database.clone(),
-            ),
+            artist_service: crate::service::artist::Service::new(conn.clone()),
             correction_service: crate::service::correction::Service::new(
-                database.clone(),
+                conn.clone(),
             ),
-            event_service: crate::service::event::Service::new(
-                database.clone(),
-            ),
-            image_service: crate::service::image::Service::new(
-                database.clone(),
-            ),
-            label_service: crate::service::label::Service::new(
-                database.clone(),
-            ),
+            event_service: crate::service::event::Service::new(conn.clone()),
+            image_service: application::service::image::Service::builder()
+                .repo(sea_orm_repo)
+                .storage(file_image_storage)
+                .build(),
+            label_service: crate::service::label::Service::new(conn.clone()),
             release_service: crate::service::release::Service::new(
-                database.clone(),
+                conn.clone(),
             ),
-            song_service: crate::service::song::Service::new(database.clone()),
+            song_service: crate::service::song::Service::new(conn.clone()),
             tag_service: {
                 crate::service::tag::Service::new(
-                    database.clone(),
-                    SeaOrmRepository::new(database.clone()),
+                    conn.clone(),
+                    SeaOrmRepository::new(conn.clone()),
                 )
             },
-            user_service: crate::service::user::Service::new(database.clone()),
+            user_service: crate::service::user::Service::new(conn.clone()),
         }
     }
 }

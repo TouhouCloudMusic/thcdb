@@ -21,7 +21,6 @@ use sea_orm::{
     TransactionTrait,
 };
 
-use super::*;
 use crate::dto::user::UserProfile;
 use crate::error::{DbErrWrapper, ErrorCode, InvalidField, ServiceError};
 use crate::model::auth::{
@@ -30,8 +29,15 @@ use crate::model::auth::{
 };
 use crate::model::lookup_table::LookupTableEnum;
 use crate::utils::orm::PgFuncExt;
+use crate::{application, domain, infrastructure, state};
 
 pub type AuthSession = axum_login::AuthSession<Service>;
+
+type CreateImageSerivceError = application::service::image::CreateError<
+    <infrastructure::repository::SeaOrmRepository as domain::repository::image::Repository>::Error,
+    <infrastructure::service::image::FileImageStorage as domain::service::image::AsyncImageStorage>::CreateError,
+    <infrastructure::service::image::FileImageStorage as domain::service::image::AsyncImageStorage>::RemoveError
+>;
 
 error_set! {
     #[derive(ApiError, From)]
@@ -49,7 +55,6 @@ error_set! {
         AuthnBackend(AuthnBackendError)
     };
     #[derive(ApiError, IntoErrorSchema, From)]
-
     SignInError = {
         #[display("Already signed in")]
         #[api_error(
@@ -72,11 +77,18 @@ error_set! {
     UploadAvatarError = {
         #[from(DbErr)]
         DbErr(DbErrWrapper),
-        CreateImageError(super::image::CreateError),
+        // TODO: Impl api error trait
+        #[api_error(
+            status_code = StatusCode::INTERNAL_SERVER_ERROR,
+            error_code = ErrorCode::InternalServerError,
+            into_response = self
+        )]
+        #[display("{}", ErrorCode::InternalServerError.message())]
+        ImageService(CreateImageSerivceError),
         #[api_error(
             into_response = self
         )]
-        InvalidField(InvalidField)
+        InvalidField(InvalidField),
     };
     #[derive(ApiError, IntoErrorSchema, From)]
     CreateUserError = {
@@ -217,7 +229,7 @@ impl Service {
 
     pub async fn upload_avatar(
         &self,
-        image_service: image::Service,
+        image_service: &state::ImageSerivce,
         user_id: i32,
         data: FieldData<Bytes>,
     ) -> Result<(), UploadAvatarError> {
@@ -227,7 +239,7 @@ impl Service {
             .as_ref()
             .is_some_and(|ct| ct.starts_with("image/"))
         {
-            let image = image_service.create(data.contents, user_id).await?;
+            let image = image_service.create(&data.contents, user_id).await?;
 
             user::Entity::update_many()
                 .filter(user::Column::Id.eq(user_id))
