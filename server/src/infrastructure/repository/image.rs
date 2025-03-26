@@ -1,4 +1,4 @@
-use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter};
+use sea_orm::{ColumnTrait, DbErr, EntityTrait, IntoActiveModel, QueryFilter};
 
 use super::SeaOrmRepository;
 use crate::domain;
@@ -8,9 +8,9 @@ impl domain::repository::image::Repository for SeaOrmRepository {
 
     async fn create(
         &self,
-        data: entity::image::ActiveModel,
+        data: domain::entity::image::NewImage,
     ) -> Result<entity::image::Model, Self::Error> {
-        entity::image::Entity::insert(data)
+        entity::image::Entity::insert(data.into_active_model())
             .exec_with_returning(&self.conn)
             .await
     }

@@ -1,9 +1,11 @@
+use crate::domain;
+
 pub trait Repository: Send + Sync {
     type Error;
 
     async fn create(
         &self,
-        data: entity::image::ActiveModel,
+        data: domain::entity::image::NewImage,
     ) -> Result<entity::image::Model, Self::Error>;
 
     async fn find_by_filename(

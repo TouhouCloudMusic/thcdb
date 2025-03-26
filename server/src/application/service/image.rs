@@ -2,9 +2,9 @@ use std::path::PathBuf;
 
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE;
-use sea_orm::ActiveValue::{NotSet, Set};
 use xxhash_rust::xxh3::xxh3_128;
 
+use crate::domain::entity::image::NewImage;
 use crate::domain::service::image::{
     AsyncImageStorage, InvalidType, ValidatedPath, Validator, ValidatorTrait,
 };
@@ -78,19 +78,14 @@ where
             {
                 image
             } else {
-                let active_model = entity::image::ActiveModel {
-                    id: NotSet,
-                    filename: Set(filename),
-                    uploaded_by: Set(uploader_id),
+                let new_img = NewImage::builder()
+                    .filename(filename)
                     // All chars of sub dir are valid ascii, so unwrap is safe
-                    directory: Set(sub_dir.to_str().unwrap().to_string()),
-                    created_at: NotSet,
-                };
+                    .directory(sub_dir.to_str().unwrap().to_string())
+                    .uploaded_by(uploader_id)
+                    .build();
 
-                self.repo
-                    .create(active_model)
-                    .await
-                    .map_err(CreateError::Repo)?
+                self.repo.create(new_img).await.map_err(CreateError::Repo)?
             }
         };
 
