@@ -1,7 +1,17 @@
 use sea_orm::{ColumnTrait, DbErr, EntityTrait, IntoActiveModel, QueryFilter};
 
-use super::SeaOrmRepository;
 use crate::domain;
+
+#[derive(Clone)]
+pub struct SeaOrmRepository {
+    conn: sea_orm::DatabaseConnection,
+}
+
+impl SeaOrmRepository {
+    pub const fn new(conn: sea_orm::DatabaseConnection) -> Self {
+        Self { conn }
+    }
+}
 
 impl domain::repository::image::Repository for SeaOrmRepository {
     type Error = DbErr;

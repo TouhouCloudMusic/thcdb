@@ -17,8 +17,8 @@ use crate::{application, infrastructure};
 pub static CONFIG: LazyLock<Config> = LazyLock::new(Config::init);
 
 pub type ImageSerivce = application::service::image::Service<
-    infrastructure::repository::SeaOrmRepository,
-    infrastructure::service::image::FileImageStorage,
+    infrastructure::adapter::database::SeaOrmRepository,
+    infrastructure::adapter::storage::image::LocalFileImageStorage,
 >;
 
 pub type TagService = crate::service::tag::Service<SeaOrmRepository>;
@@ -37,10 +37,7 @@ pub struct AppState {
     pub artist_service: crate::service::artist::Service,
     pub correction_service: crate::service::correction::Service,
     pub event_service: crate::service::event::Service,
-    pub image_service: application::service::image::Service<
-        infrastructure::repository::SeaOrmRepository,
-        infrastructure::service::image::FileImageStorage,
-    >,
+    pub image_service: ImageSerivce,
     pub label_service: crate::service::label::Service,
     pub release_service: crate::service::release::Service,
     pub song_service: crate::service::song::Service,
@@ -67,10 +64,14 @@ impl AppState {
                 .build();
 
         let sea_orm_repo =
-            infrastructure::repository::SeaOrmRepository::new(conn.clone());
+            infrastructure::adapter::database::SeaOrmRepository::new(
+                conn.clone(),
+            );
 
         let file_image_storage =
-            infrastructure::service::image::FileImageStorage::new(&IMAGE_PATH);
+            infrastructure::adapter::storage::image::LocalFileImageStorage::new(
+                &IMAGE_PATH,
+            );
 
         Self {
             database: conn.clone(),

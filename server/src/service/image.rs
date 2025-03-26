@@ -14,8 +14,8 @@ use crate::domain::service::image::{
     AsyncImageStorage, InvalidType, ValidatedPath, Validator, ValidatorTrait,
 };
 use crate::error::DbErrWrapper;
-use crate::infrastructure::service::image::{
-    FILE_IMAGE_STORAGE, FileImageStorageError,
+use crate::infrastructure::adapter::storage::image::{
+    FILE_IMAGE_STORAGE, LocalFileImageStorageError,
 };
 
 super::def_service!();
@@ -26,7 +26,7 @@ error_set! {
         #[from(DbErr)]
         DbErr(DbErrWrapper),
         #[from(InvalidType, std::io::Error)]
-        Infra(FileImageStorageError),
+        Infra(LocalFileImageStorageError),
     };
 }
 

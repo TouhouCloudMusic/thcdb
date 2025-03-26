@@ -22,22 +22,25 @@ use sea_orm::{
 };
 
 use crate::application::service::image::CreateError;
+use crate::domain::service::image::AsyncImageStorage;
 use crate::dto::user::UserProfile;
 use crate::error::{DbErrWrapper, ErrorCode, InvalidField, ServiceError};
+use crate::infrastructure::adapter::storage::image::LocalFileImageStorage;
+use crate::infrastructure::adapter::{self};
 use crate::model::auth::{
     AuthCredential, AuthnError, HasherError, UserRole, ValidateCredsError,
     hash_password,
 };
 use crate::model::lookup_table::LookupTableEnum;
 use crate::utils::orm::PgFuncExt;
-use crate::{application, domain, infrastructure};
+use crate::{application, domain};
 
 pub type AuthSession = axum_login::AuthSession<Service>;
 
 type CreateImageSerivceError = application::service::image::CreateError<
-    <infrastructure::repository::SeaOrmRepository as domain::repository::image::Repository>::Error,
-    <infrastructure::service::image::FileImageStorage as domain::service::image::AsyncImageStorage>::CreateError,
-    <infrastructure::service::image::FileImageStorage as domain::service::image::AsyncImageStorage>::RemoveError
+    <adapter::database::SeaOrmRepository as domain::repository::image::Repository>::Error,
+    <LocalFileImageStorage as AsyncImageStorage>::CreateError,
+    <LocalFileImageStorage as AsyncImageStorage>::RemoveError
 >;
 
 error_set! {
@@ -236,7 +239,7 @@ impl Service {
     ) -> Result<(), UploadAvatarError>
     where
         R: domain::repository::image::Repository,
-        S: domain::service::image::AsyncImageStorage,
+        S: AsyncImageStorage,
         UploadAvatarError:
             From<CreateError<R::Error, S::CreateError, S::RemoveError>>,
     {
