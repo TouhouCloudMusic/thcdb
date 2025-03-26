@@ -32,12 +32,32 @@ where
     storage: S,
 }
 
-impl<R, S> Service<R, S>
+pub trait ServiceTrait<R, S>: Send + Sync
 where
     R: domain::repository::image::Repository,
     S: AsyncImageStorage,
 {
-    pub async fn create(
+    async fn create(
+        &self,
+        data: &[u8],
+        uploader_id: i32,
+    ) -> Result<
+        entity::image::Model,
+        CreateError<R::Error, S::CreateError, S::RemoveError>,
+    >;
+
+    async fn find_by_filename(
+        &self,
+        filename: &str,
+    ) -> Result<Option<entity::image::Model>, R::Error>;
+}
+
+impl<R, S> ServiceTrait<R, S> for Service<R, S>
+where
+    R: domain::repository::image::Repository,
+    S: AsyncImageStorage,
+{
+    async fn create(
         &self,
         data: &[u8],
         uploader_id: i32,
@@ -101,7 +121,7 @@ where
         }
     }
 
-    pub async fn find_by_filename(
+    async fn find_by_filename(
         &self,
         filename: &str,
     ) -> Result<Option<entity::image::Model>, R::Error> {

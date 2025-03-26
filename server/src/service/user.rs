@@ -21,6 +21,7 @@ use sea_orm::{
     TransactionTrait,
 };
 
+use crate::application::service::image::CreateError;
 use crate::dto::user::UserProfile;
 use crate::error::{DbErrWrapper, ErrorCode, InvalidField, ServiceError};
 use crate::model::auth::{
@@ -29,7 +30,7 @@ use crate::model::auth::{
 };
 use crate::model::lookup_table::LookupTableEnum;
 use crate::utils::orm::PgFuncExt;
-use crate::{application, domain, infrastructure, state};
+use crate::{application, domain, infrastructure};
 
 pub type AuthSession = axum_login::AuthSession<Service>;
 
@@ -227,12 +228,18 @@ impl Service {
         Ok(())
     }
 
-    pub async fn upload_avatar(
+    pub async fn upload_avatar<R, S>(
         &self,
-        image_service: &state::ImageSerivce,
+        image_service: &impl application::service::image::ServiceTrait<R, S>,
         user_id: i32,
         data: FieldData<Bytes>,
-    ) -> Result<(), UploadAvatarError> {
+    ) -> Result<(), UploadAvatarError>
+    where
+        R: domain::repository::image::Repository,
+        S: domain::service::image::AsyncImageStorage,
+        UploadAvatarError:
+            From<CreateError<R::Error, S::CreateError, S::RemoveError>>,
+    {
         if data
             .metadata
             .content_type
