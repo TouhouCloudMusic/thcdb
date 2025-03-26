@@ -1,5 +1,7 @@
+use std::sync::Arc;
+
 use axum::Json;
-use axum::extract::{Path, Query};
+use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
 use macros::{use_service, use_session};
 use serde::Deserialize;
@@ -10,7 +12,7 @@ use utoipa_axum::routes;
 use crate::api_response::{Data, Message};
 use crate::dto::artist::{ArtistCorrection, ArtistResponse};
 use crate::middleware::is_signed_in;
-use crate::service;
+use crate::service::{self, artist};
 use crate::state::AppState;
 use crate::utils::MapInto;
 
@@ -18,7 +20,7 @@ type Error = service::artist::Error;
 
 const TAG: &str = "Artist";
 
-pub fn router() -> OpenApiRouter<AppState> {
+pub fn router() -> OpenApiRouter<Arc<AppState>> {
     OpenApiRouter::new()
         .routes(routes!(create_artist))
         .routes(routes!(upsert_artist_correction))
@@ -36,8 +38,8 @@ pub fn router() -> OpenApiRouter<AppState> {
 		Error
 	),
 )]
-#[use_service(artist)]
 async fn find_artist_by_id(
+    State(artist_service): State<artist::Service>,
     Path(id): Path<i32>,
 ) -> Result<Data<ArtistResponse>, Error> {
     artist_service.find_by_id(id).await.map_into()

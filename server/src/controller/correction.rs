@@ -1,4 +1,5 @@
-use axum::debug_handler;
+use std::sync::Arc;
+
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
 use error_set::error_set;
@@ -18,7 +19,7 @@ use crate::state::AppState;
 
 const TAG: &str = "Correction";
 
-pub fn router() -> OpenApiRouter<AppState> {
+pub fn router() -> OpenApiRouter<Arc<AppState>> {
     OpenApiRouter::new()
         .routes(routes!(handle_correction))
         .route_layer(from_fn(is_signed_in))
@@ -56,7 +57,6 @@ struct HandleCorrectionQuery {
 		ServiceError
 	),
 )]
-#[debug_handler(state = AppState)]
 // TODO: Better name
 async fn handle_correction(
     session: AuthSession,

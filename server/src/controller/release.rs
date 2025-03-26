@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
@@ -19,7 +21,7 @@ type Error = ServiceError;
 
 const TAG: &str = "Release";
 
-pub fn router() -> OpenApiRouter<AppState> {
+pub fn router() -> OpenApiRouter<Arc<AppState>> {
     OpenApiRouter::new()
         .routes(routes!(create_release))
         .routes(routes!(update_release))

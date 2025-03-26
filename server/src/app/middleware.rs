@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::{Router, http};
 use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
@@ -9,9 +11,9 @@ use crate::middleware;
 use crate::state::{AppState, CONFIG};
 
 pub fn append_global_middleware_layer(
-    router: Router<AppState>,
+    router: Router<Arc<AppState>>,
     state: &AppState,
-) -> Router<AppState> {
+) -> Router<Arc<AppState>> {
     let session_store = RedisStore::new(state.redis_pool());
 
     let session_layer = SessionManagerLayer::new(session_store)

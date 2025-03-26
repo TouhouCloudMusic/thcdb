@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
@@ -17,7 +19,7 @@ use crate::service::user::AuthSession;
 use crate::state::AppState;
 use crate::utils::MapInto;
 
-pub fn router() -> OpenApiRouter<AppState> {
+pub fn router() -> OpenApiRouter<Arc<AppState>> {
     OpenApiRouter::new()
         .routes(routes!(create_song))
         .routes(routes!(update_song))

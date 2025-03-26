@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
@@ -11,10 +13,10 @@ use crate::api_response::{self, Data};
 use crate::dto::tag::{TagCorrection, TagResponse};
 use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
-use crate::state::AppState;
+use crate::state::{self, AppState};
 use crate::utils::MapInto;
 
-pub fn router() -> OpenApiRouter<AppState> {
+pub fn router() -> OpenApiRouter<Arc<AppState>> {
     OpenApiRouter::new()
         .routes(routes!(create_tag))
         .routes(routes!(upsert_tag_correction))
@@ -31,10 +33,10 @@ pub fn router() -> OpenApiRouter<AppState> {
     ),
 )]
 async fn find_by_id(
-    State(state): State<AppState>,
+    State(tag_service): State<state::TagService>,
     Path(id): Path<i32>,
 ) -> Result<Data<TagResponse>, ServiceError> {
-    state.tag_service.find_by_id(id).await.map_into()
+    tag_service.find_by_id(id).await.map_into()
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -53,14 +55,10 @@ struct KwArgs {
     ),
 )]
 async fn find_by_keyword(
-    State(state): State<AppState>,
+    State(tag_service): State<state::TagService>,
     Query(query): Query<KwArgs>,
 ) -> Result<Data<Vec<TagResponse>>, ServiceError> {
-    state
-        .tag_service
-        .find_by_keyword(&query.keyword)
-        .await
-        .map_into()
+    tag_service.find_by_keyword(&query.keyword).await.map_into()
 }
 
 #[utoipa::path(
@@ -75,11 +73,11 @@ async fn find_by_keyword(
 )]
 #[use_session]
 async fn create_tag(
-    State(state): State<AppState>,
+    State(tag_service): State<state::TagService>,
     Json(input): Json<TagCorrection>,
 ) -> Result<api_response::Message, ServiceError> {
     let user_id = session.user.unwrap().id;
-    state.tag_service.create(user_id, input).await?;
+    tag_service.create(user_id, input).await?;
     Ok(api_response::Message::ok())
 }
 
@@ -95,13 +93,12 @@ async fn create_tag(
 )]
 #[use_session]
 async fn upsert_tag_correction(
-    State(state): State<AppState>,
+    State(tag_service): State<state::TagService>,
     Path(id): Path<i32>,
     Json(input): Json<TagCorrection>,
 ) -> Result<api_response::Message, ServiceError> {
     let user_id = session.user.unwrap().id;
-    state
-        .tag_service
+    tag_service
         .upsert_correction()
         .tag_id(id)
         .user_id(user_id)

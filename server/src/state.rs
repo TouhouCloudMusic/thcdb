@@ -2,9 +2,9 @@ use std::path::PathBuf;
 use std::sync::LazyLock;
 
 use argon2::Argon2;
-use axum::extract::FromRef;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{AsyncSmtpTransport, Tokio1Executor};
+use macros::FromRefArc;
 use sea_orm::{DatabaseConnection, sqlx};
 
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
@@ -21,11 +21,19 @@ pub type ImageSerivce = application::service::image::Service<
     infrastructure::service::image::FileImageStorage,
 >;
 
-#[derive(Clone, FromRef)]
+pub type TagService = crate::service::tag::Service<SeaOrmRepository>;
+
+pub type UserService = crate::service::user::Service;
+
+#[derive(Clone, FromRefArc)]
 pub struct AppState {
+    #[from_ref_arc(skip)]
     pub database: DatabaseConnection,
+    #[from_ref_arc(skip)]
     redis_pool: Pool,
+    #[from_ref_arc(skip)]
     pub transport: AsyncSmtpTransport<Tokio1Executor>,
+
     pub artist_service: crate::service::artist::Service,
     pub correction_service: crate::service::correction::Service,
     pub event_service: crate::service::event::Service,
@@ -36,8 +44,8 @@ pub struct AppState {
     pub label_service: crate::service::label::Service,
     pub release_service: crate::service::release::Service,
     pub song_service: crate::service::song::Service,
-    pub tag_service: crate::service::tag::Service<SeaOrmRepository>,
-    pub user_service: crate::service::user::Service,
+    pub tag_service: TagService,
+    pub user_service: UserService,
 }
 
 static IMAGE_PATH: LazyLock<PathBuf> =

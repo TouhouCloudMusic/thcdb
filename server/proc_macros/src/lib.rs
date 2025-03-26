@@ -2,6 +2,7 @@
 #![feature(if_let_guard)]
 
 use error::*;
+use from_ref_arc::derive_from_ref_arc_impl;
 use itertools::Itertools;
 use proc_macro::TokenStream;
 use quote::quote;
@@ -11,6 +12,7 @@ use syn::token::Comma;
 use syn::{Data, DeriveInput, Fields, ItemFn, parse_macro_input};
 
 mod error;
+mod from_ref_arc;
 mod utils;
 
 // TODO: Better name
@@ -165,6 +167,15 @@ pub fn derive_api_error(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     match derive_api_error_impl(input) {
         Ok(v) => v,
+        Err(e) => e.to_compile_error().into(),
+    }
+}
+
+#[proc_macro_derive(FromRefArc, attributes(from_ref_arc))]
+pub fn derive_from_ref_arc(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    match derive_from_ref_arc_impl(input) {
+        Ok(v) => v.into(),
         Err(e) => e.to_compile_error().into(),
     }
 }

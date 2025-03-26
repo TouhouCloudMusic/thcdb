@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::Json;
 use axum::extract::{Path, Query};
 use axum::middleware::from_fn;
@@ -16,7 +18,7 @@ use crate::utils::MapInto;
 
 const TAG: &str = "Event";
 
-pub fn router() -> OpenApiRouter<AppState> {
+pub fn router() -> OpenApiRouter<Arc<AppState>> {
     OpenApiRouter::new()
         .routes(routes!(create))
         .routes(routes!(upsert_correction))

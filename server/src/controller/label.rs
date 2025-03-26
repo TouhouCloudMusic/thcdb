@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::Json;
 use axum::extract::{Path, Query};
 use axum::middleware::from_fn;
@@ -16,8 +18,8 @@ use crate::utils::MapInto;
 
 const TAG: &str = "Label";
 
-pub fn router() -> OpenApiRouter<AppState> {
-    OpenApiRouter::<AppState>::new()
+pub fn router() -> OpenApiRouter<Arc<AppState>> {
+    OpenApiRouter::new()
         .routes(routes!(create_label))
         .routes(routes!(upsert_label_correction))
         .route_layer(from_fn(is_signed_in))

@@ -1,7 +1,9 @@
+use std::sync::Arc;
+
 use axum::extract::State;
 use entity::{language, role};
 use itertools::Itertools;
-use sea_orm::{DatabaseConnection, EntityTrait};
+use sea_orm::EntityTrait;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -11,7 +13,7 @@ use crate::error::DbErrWrapper;
 use crate::model::auth::UserRole;
 use crate::state::AppState;
 
-pub fn router() -> OpenApiRouter<AppState> {
+pub fn router() -> OpenApiRouter<Arc<AppState>> {
     OpenApiRouter::new()
         .routes(routes!(language_list))
         .routes(routes!(user_roles))
@@ -26,10 +28,10 @@ pub fn router() -> OpenApiRouter<AppState> {
     ),
 )]
 async fn language_list(
-    State(db): State<DatabaseConnection>,
+    State(state): State<Arc<AppState>>,
 ) -> Result<Data<Vec<Language>>, DbErrWrapper> {
     let res: Vec<Language> = language::Entity::find()
-        .all(&db)
+        .all(&state.database)
         .await?
         .iter()
         .map_into()
@@ -47,10 +49,10 @@ async fn language_list(
     ),
 )]
 async fn user_roles(
-    State(db): State<DatabaseConnection>,
+    State(state): State<Arc<AppState>>,
 ) -> Result<Data<Vec<UserRole>>, DbErrWrapper> {
     Ok(role::Entity::find()
-        .all(&db)
+        .all(&state.database)
         .await?
         .iter()
         .map_into()

@@ -1,10 +1,12 @@
+use std::sync::Arc;
+
 use axum::Json;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::middleware::from_fn;
 use axum::response::IntoResponse;
 use axum_typed_multipart::TypedMultipart;
-use macros::{use_service, use_session};
+use macros::use_session;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -18,11 +20,11 @@ use crate::service::user::{
     UploadAvatarError,
 };
 use crate::utils::MapInto;
-use crate::{AppState, api_response};
+use crate::{AppState, api_response, state};
 
 const TAG: &str = "User";
 
-pub fn router() -> OpenApiRouter<AppState> {
+pub fn router() -> OpenApiRouter<Arc<AppState>> {
     OpenApiRouter::new()
         .routes(routes!(upload_avatar))
         .routes(routes!(sign_out))
@@ -45,11 +47,10 @@ pub fn router() -> OpenApiRouter<AppState> {
 )]
 #[use_session]
 async fn profile(
-    State(state): State<AppState>,
+    State(user_service): State<state::UserService>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
     if let Some(user) = session.user {
-        state
-            .user_service
+        user_service
             .profile(&user.name)
             .await
             .map_err(IntoResponse::into_response)?
@@ -73,11 +74,10 @@ async fn profile(
     ),
 )]
 async fn profile_with_name(
-    State(state): State<AppState>,
+    State(user_service): State<state::UserService>,
     Path(name): Path<String>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
-    state
-        .user_service
+    user_service
         .profile(&name)
         .await
         .map_err(IntoResponse::into_response)?
@@ -97,9 +97,9 @@ async fn profile_with_name(
         SignUpError
     ),
 )]
-#[use_service(user)]
 async fn sign_up(
     auth_session: AuthSession,
+    State(user_service): State<state::UserService>,
     Json(creds): Json<AuthCredential>,
 ) -> Result<Data<UserProfile>, SignUpError> {
     user_service.sign_up(auth_session, creds).await.map_into()
@@ -115,9 +115,9 @@ async fn sign_up(
         SignInError,
     )
 )]
-#[use_service(user)]
 async fn sign_in(
     auth_session: AuthSession,
+    State(user_service): State<state::UserService>,
     Json(creds): Json<AuthCredential>,
 ) -> Result<Data<UserProfile>, SignInError> {
     user_service.sign_in(auth_session, creds).await.map_into()
@@ -133,9 +133,10 @@ async fn sign_in(
         SessionBackendError
     )
 )]
-#[use_service(user)]
 #[use_session]
-async fn sign_out() -> Result<Message, SessionBackendError> {
+async fn sign_out(
+    State(user_service): State<state::UserService>,
+) -> Result<Message, SessionBackendError> {
     user_service.sign_out(session).await.map(|()| Message::ok())
 }
 
@@ -153,10 +154,9 @@ async fn sign_out() -> Result<Message, SessionBackendError> {
         UploadAvatarError
     )
 )]
-#[axum::debug_handler(state = AppState)]
 async fn upload_avatar(
     auth_session: AuthSession,
-    State(state): State<AppState>,
+    State(state): State<Arc<AppState>>,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
 ) -> Result<impl IntoResponse, UploadAvatarError> {
     if let Some(user) = auth_session.user {
