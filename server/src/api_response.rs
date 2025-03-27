@@ -49,14 +49,14 @@ impl Display for ApiStatus {
     }
 }
 
-fn status_ok_schema() -> impl Into<RefOr<Schema>> {
+pub fn status_ok_schema() -> impl Into<RefOr<Schema>> {
     ObjectBuilder::new()
         .schema_type(openapi::Type::String)
         .enum_values(vec![ApiStatus::Ok.to_string()].into())
         .build()
 }
 
-fn status_err_schema() -> impl Into<RefOr<Schema>> {
+pub fn status_err_schema() -> impl Into<RefOr<Schema>> {
     ObjectBuilder::new()
         .schema_type(openapi::Type::String)
         .enum_values(vec![ApiStatus::Err.to_string()].into())

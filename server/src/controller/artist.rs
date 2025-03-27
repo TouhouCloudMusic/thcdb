@@ -9,7 +9,7 @@ use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::api_response::{Data, Message};
+use crate::api_response::{Data, Message, status_ok_schema};
 use crate::dto::artist::{ArtistCorrection, ArtistResponse};
 use crate::middleware::is_signed_in;
 use crate::service::{self, artist};
@@ -29,12 +29,22 @@ pub fn router() -> OpenApiRouter<Arc<AppState>> {
         .routes(routes!(find_artist_by_keyword))
 }
 
+#[derive(ToSchema)]
+struct DataArtist {
+    #[schema(
+        schema_with = status_ok_schema
+    )]
+    status: String,
+    #[schema(inline = false)]
+    data: ArtistResponse,
+}
+
 #[utoipa::path(
 	get,
     tag = TAG,
 	path = "/artist/{id}",
 	responses(
-		(status = 200, body = Data<ArtistResponse>),
+		(status = 200, body = DataArtist),
 		Error
 	),
 )]
@@ -50,6 +60,16 @@ struct KeywordQuery {
     keyword: String,
 }
 
+#[derive(ToSchema)]
+struct DataVecArtist {
+    #[schema(
+        schema_with = status_ok_schema
+    )]
+    status: String,
+    #[schema(inline = false)]
+    data: Vec<ArtistResponse>,
+}
+
 #[utoipa::path(
 	get,
     tag = TAG,
@@ -58,7 +78,7 @@ struct KeywordQuery {
         KeywordQuery
     ),
 	responses(
-		(status = 200, body = Data<Vec<ArtistResponse>>),
+		(status = 200, body = DataVecArtist),
 		Error
 	),
 )]
