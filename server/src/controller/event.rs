@@ -27,6 +27,11 @@ pub fn router() -> OpenApiRouter<Arc<AppState>> {
         .routes(routes!(find_by_keyword))
 }
 
+super::data! {
+    DataEventResponse, EventResponse
+    DataVecEventResponse, Vec<EventResponse>
+}
+
 #[utoipa::path(
 	get,
     tag = TAG,
@@ -56,7 +61,7 @@ struct KeywordQuery {
         KeywordQuery
     ),
 	responses(
-		(status = 200, body = Data<Vec<EventResponse>>),
+		(status = 200, body = DataVecEventResponse),
 		ServiceError
 	),
 )]

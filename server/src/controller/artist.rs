@@ -92,18 +92,11 @@ async fn find_artist_by_keyword(
         .map_into()
 }
 
-#[derive(ToSchema, Deserialize)]
-struct NewArtist {
-    #[serde(flatten)]
-    #[schema(inline)]
-    pub data: ArtistCorrection,
-}
-
 #[utoipa::path(
 	post,
     tag = TAG,
 	path = "/artist",
-	request_body = NewArtist,
+	request_body = ArtistCorrection,
 	responses(
 		(status = 200, body = Message),
         (status = 401),
@@ -112,9 +105,11 @@ struct NewArtist {
 )]
 #[use_session]
 #[use_service(artist)]
-async fn create_artist(Json(input): Json<NewArtist>) -> Result<Message, Error> {
+async fn create_artist(
+    Json(input): Json<ArtistCorrection>,
+) -> Result<Message, Error> {
     artist_service
-        .create(session.user.unwrap().id, input.data)
+        .create(session.user.unwrap().id, input)
         .await?;
 
     Ok(Message::ok())
@@ -124,7 +119,7 @@ async fn create_artist(Json(input): Json<NewArtist>) -> Result<Message, Error> {
 	post,
     tag = TAG,
 	path = "/artist/{id}",
-	request_body = NewArtist,
+	request_body = ArtistCorrection,
 	responses(
 		(status = 200, body = Message),
         (status = 401),
@@ -135,10 +130,10 @@ async fn create_artist(Json(input): Json<NewArtist>) -> Result<Message, Error> {
 #[use_service(artist)]
 async fn upsert_artist_correction(
     Path(id): Path<i32>,
-    Json(input): Json<NewArtist>,
+    Json(input): Json<ArtistCorrection>,
 ) -> Result<Message, Error> {
     artist_service
-        .create_or_update_correction(id, session.user.unwrap().id, input.data)
+        .create_or_update_correction(id, session.user.unwrap().id, input)
         .await?;
 
     Ok(Message::ok())

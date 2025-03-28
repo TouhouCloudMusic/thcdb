@@ -28,11 +28,16 @@ pub fn router() -> OpenApiRouter<Arc<AppState>> {
         .routes(routes!(find_song_by_keyword))
 }
 
+super::data! {
+    DataSongResponse, SongResponse
+    DataVecSongResponse, Vec<SongResponse>
+}
+
 #[utoipa::path(
     get,
     path = "/song/{id}",
     responses(
-		(status = 200, body = Data<SongResponse>),
+		(status = 200, body = DataSongResponse),
 		ServiceError
     ),
 )]
@@ -53,7 +58,7 @@ struct KwQuery {
     path = "/song",
     params(KwQuery),
     responses(
-		(status = 200, body = Data<Vec<SongResponse>>),
+		(status = 200, body = DataVecSongResponse),
 		ServiceError
     ),
 )]

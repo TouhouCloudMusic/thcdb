@@ -23,11 +23,16 @@ pub fn router() -> OpenApiRouter<Arc<AppState>> {
         .route_layer(from_fn(is_signed_in))
 }
 
+super::data! {
+    DataTagResponse, TagResponse
+    DataVecTagResponse, Vec<TagResponse>
+}
+
 #[utoipa::path(
     post,
     path = "/tag/{id}",
     responses(
-		(status = 200, body = Data<TagResponse>),
+		(status = 200, body = DataTagResponse),
 		(status = 401),
         ServiceError
     ),
@@ -49,7 +54,7 @@ struct KwArgs {
     path = "/tag",
     params(KwArgs),
     responses(
-		(status = 200, body = Data<TagResponse>),
+		(status = 200, body = DataVecTagResponse),
 		(status = 401),
         ServiceError
     ),

@@ -27,12 +27,17 @@ pub fn router() -> OpenApiRouter<Arc<AppState>> {
         .routes(routes!(find_label_by_keyword))
 }
 
+super::data! {
+    DataLabelResponse, LabelResponse
+    DataVecLabelResponse, Vec<LabelResponse>
+}
+
 #[utoipa::path(
     get,
     tag = TAG,
     path = "/label/{id}",
     responses(
-        (status = 200, body = Data<LabelResponse>),
+        (status = 200, body = DataLabelResponse),
         (status = 401),
         ServiceError
     ),
@@ -55,7 +60,7 @@ struct KwArgs {
     path = "/label",
     params(KwArgs),
     responses(
-        (status = 200, body = Data<Vec<LabelResponse>>),
+        (status = 200, body = DataVecLabelResponse),
         (status = 401),
         ServiceError
     ),

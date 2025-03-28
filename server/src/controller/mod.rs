@@ -45,3 +45,17 @@ pub fn api_router() -> OpenApiRouter<Arc<AppState>> {
         .merge(tag::router())
         .merge(user::router())
 }
+
+macro_rules! data {
+    ($($name:ident, $type:ty $(, $as:ident)? $(,)?)*) => {
+        $(
+            #[derive(utoipa::ToSchema)]
+            struct $name {
+                status: String,
+                data: $type
+            }
+        ) *
+    };
+}
+
+use data;

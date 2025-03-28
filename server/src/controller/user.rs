@@ -35,12 +35,16 @@ pub fn router() -> OpenApiRouter<Arc<AppState>> {
         .routes(routes!(sign_up))
 }
 
+super::data! {
+    DataUserProfile, UserProfile
+}
+
 #[utoipa::path(
     get,
     tag = TAG,
     path = "/profile",
     responses(
-        (status = 200, body = Data<UserProfile>),
+        (status = 200, body = DataUserProfile),
         (status = 404),
         ServiceError
     ),
@@ -68,7 +72,7 @@ async fn profile(
     tag = TAG,
     path = "/profile/{name}",
     responses(
-        (status = 200, body = Data<UserProfile>),
+        (status = 200, body = DataUserProfile),
         (status = 404),
         ServiceError
     ),
@@ -93,7 +97,7 @@ async fn profile_with_name(
     path = "/sign_up",
     request_body = AuthCredential,
     responses(
-        (status = 200, body = Data<UserProfile>),
+        (status = 200, body = DataUserProfile),
         SignUpError
     ),
 )]
@@ -111,7 +115,7 @@ async fn sign_up(
     path = "/sign_in",
     request_body = AuthCredential,
     responses(
-        (status = 200, body = Data<UserProfile>),
+        (status = 200, body = DataUserProfile),
         SignInError,
     )
 )]

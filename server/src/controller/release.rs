@@ -30,12 +30,17 @@ pub fn router() -> OpenApiRouter<Arc<AppState>> {
         .routes(routes!(find_release_by_id))
 }
 
+super::data! {
+    DataReleaseResponse, ReleaseResponse
+    DataVecReleaseResponse, Vec<ReleaseResponse>
+}
+
 #[utoipa::path(
     get,
     tag = TAG,
     path = "/release/{id}",
     responses(
-		(status = 200, body = Data<ReleaseResponse>),
+		(status = 200, body = DataReleaseResponse),
 		Error,
     ),
 )]
@@ -57,7 +62,7 @@ struct KwQuery {
     path = "/release",
     params(KwQuery),
     responses(
-		(status = 200, body = Data<Vec<ReleaseResponse>>),
+		(status = 200, body = DataVecReleaseResponse),
 		Error,
     ),
 )]

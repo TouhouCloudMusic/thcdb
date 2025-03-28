@@ -19,11 +19,15 @@ pub fn router() -> OpenApiRouter<Arc<AppState>> {
         .routes(routes!(user_roles))
 }
 
+super::data! {
+    DataVecLanguage, Vec<Language>
+}
+
 #[utoipa::path(
     get,
     path = "/languages",
     responses(
-        (status = 200, body = Data<Vec<Language>>),
+        (status = 200, body = DataVecLanguage),
         DbErrWrapper
     ),
 )]
@@ -44,7 +48,7 @@ async fn language_list(
     get,
     path = "/user_roles",
     responses(
-        (status = 200, body = Data<Vec<Language>>),
+        (status = 200, body = DataVecLanguage),
         DbErrWrapper
     ),
 )]
