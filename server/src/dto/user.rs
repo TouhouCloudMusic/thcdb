@@ -15,6 +15,11 @@ pub struct UserProfile {
 #[derive(ToSchema, TryFromMultipart, Debug)]
 pub struct UploadAvatar {
     #[form_data(limit = "10MiB")]
-    #[schema(value_type = String, format = Binary)]
+    #[schema(
+        value_type = String,
+        format = Binary,
+        maximum = 10485760,
+        minimum = 1024
+    )]
     pub data: FieldData<Bytes>,
 }

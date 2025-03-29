@@ -30,6 +30,9 @@ sea-orm = { version = "1.1.2", features = [
 serde = { version = "1", features = [
     "derive",
 ] }
+syn = { version = "2.0.98", features = [
+    "full",
+] }
 tokio = { version = "1", features = [
     "full",
 ] }
@@ -43,6 +46,11 @@ utoipa = { version = "5", features = [
     "macros",
     "preserve_order",
 ] }
+
+[build-dependencies]
+dotenvy.workspace = true
+git2              = "0.20.1"
+syn.workspace     = true
 
 [package]
 edition = "2024"

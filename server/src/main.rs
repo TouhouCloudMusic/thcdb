@@ -13,7 +13,8 @@
     clippy::multiple_crate_versions,
     clippy::single_call_fn,
     clippy::wildcard_imports,
-    clippy::enum_glob_use
+    clippy::enum_glob_use,
+    clippy::unreadable_literal
 )]
 #![deny(unused_must_use)]
 #![feature(variant_count, let_chains, try_blocks, min_specialization)]
@@ -63,7 +64,7 @@ async fn main() {
         .await
         .expect("Error while checking database lookup tables.");
 
-    let app = create_app(state);
+    let app = create_app(state).merge(constant::router());
 
     let listener =
         tokio::net::TcpListener::bind(format!("0.0.0.0:{}", CONFIG.app.port))
