@@ -386,6 +386,30 @@ export type components = {
             localized_names: components["schemas"]["LocalizedName"][];
             members: components["schemas"]["GroupMember"][];
         };
+        ArtistCorrection: {
+            name: string;
+            artist_type: components["schemas"]["ArtistType"];
+            text_alias?: string[] | null;
+            /**
+             * Format: date
+             * @description Birth date for a person and formation date for a group
+             */
+            start_date?: string | null;
+            start_date_precision?: null | components["schemas"]["DatePrecision"];
+            /**
+             * Format: date
+             * @description Death date for a person and disbandment date for a group
+             */
+            end_date?: string | null;
+            end_date_precision?: null | components["schemas"]["DatePrecision"];
+            /** @description List of Ids of the artist's aliases */
+            aliases?: number[] | null;
+            /** @description List of artist-related URLs */
+            links?: string[] | null;
+            localized_name?: components["schemas"]["NewLocalizedName"][] | null;
+            members?: components["schemas"]["NewGroupMember"][] | null;
+            correction_metadata: components["schemas"]["Metadata"];
+        };
         /** @enum {string} */
         ArtistType: "Solo" | "Multiple" | "Unknown";
         AuthCredential: {
@@ -397,26 +421,51 @@ export type components = {
             id: number;
             name: string;
         };
-        Data_Artist: {
+        DataArtist: {
             /** @enum {string} */
             status: "Ok";
-            data: {
-                /** Format: int32 */
-                id: number;
-                name: string;
-                artist_type: components["schemas"]["ArtistType"];
-                text_alias?: string[] | null;
-                /** Format: date */
-                start_date?: string | null;
-                start_date_precision?: null | components["schemas"]["DatePrecision"];
-                /** Format: date */
-                end_date?: string | null;
-                end_date_precision?: null | components["schemas"]["DatePrecision"];
-                aliases: number[];
-                links: string[];
-                localized_names: components["schemas"]["LocalizedName"][];
-                members: components["schemas"]["GroupMember"][];
-            };
+            data: components["schemas"]["Artist"];
+        };
+        DataLabelResponse: {
+            status: string;
+            data: components["schemas"]["Label"];
+        };
+        DataReleaseResponse: {
+            status: string;
+            data: components["schemas"]["Release"];
+        };
+        DataSongResponse: {
+            status: string;
+            data: components["schemas"]["SongResponse"];
+        };
+        DataUserProfile: {
+            status: string;
+            data: components["schemas"]["UserProfile"];
+        };
+        DataVecArtist: {
+            /** @enum {string} */
+            status: "Ok";
+            data: components["schemas"]["Artist"][];
+        };
+        DataVecEventResponse: {
+            status: string;
+            data: components["schemas"]["EventResponse"][];
+        };
+        DataVecLabelResponse: {
+            status: string;
+            data: components["schemas"]["Label"][];
+        };
+        DataVecLanguage: {
+            status: string;
+            data: components["schemas"]["Language"][];
+        };
+        DataVecReleaseResponse: {
+            status: string;
+            data: components["schemas"]["Release"][];
+        };
+        DataVecSongResponse: {
+            status: string;
+            data: components["schemas"]["SongResponse"][];
         };
         Data_EventResponse: {
             /** @enum {string} */
@@ -437,205 +486,6 @@ export type components = {
                 ] | null;
                 alternative_names: components["schemas"]["AlternativeNameResponse"][];
             };
-        };
-        Data_Label: {
-            /** @enum {string} */
-            status: "Ok";
-            data: {
-                /** Format: int32 */
-                id: number;
-                name: string;
-                founded_date?: [
-                    string,
-                    "Day" | "Month" | "Year"
-                ] | null;
-                dissolved_date?: [
-                    string,
-                    "Day" | "Month" | "Year"
-                ] | null;
-                founders: number[];
-                localized_names: components["schemas"]["SimpleLocalizedName"][];
-            };
-        };
-        Data_Release: {
-            /** @enum {string} */
-            status: "Ok";
-            data: {
-                /** Format: int32 */
-                id: number;
-                release_type: components["schemas"]["ReleaseType"];
-                /** Format: date */
-                release_date?: string | null;
-                release_date_precision?: null | components["schemas"]["DatePrecision"];
-                /** Format: date */
-                recording_date_start?: string | null;
-                recording_date_start_precision?: null | components["schemas"]["DatePrecision"];
-                /** Format: date */
-                recording_date_end?: string | null;
-                recording_date_end_precision?: null | components["schemas"]["DatePrecision"];
-                artists: components["schemas"]["ReleaseArtist"][];
-                credits: components["schemas"]["ReleaseCredit"][];
-                catalog_nums: components["schemas"]["ReleaseCatalogNumber"][];
-                localized_titles: components["schemas"]["LocalizedTitle"][];
-                tracks: number[];
-            };
-        };
-        Data_SongResponse: {
-            /** @enum {string} */
-            status: "Ok";
-            data: {
-                /** Format: int32 */
-                id: number;
-                title: string;
-                credits: {
-                    /** Format: int32 */
-                    artist_id: number;
-                    /** Format: int32 */
-                    role_id: number;
-                }[];
-                languages: {
-                    /** Format: int32 */
-                    id: number;
-                    code: string;
-                    name: string;
-                }[];
-                localized_titles: {
-                    /** Format: int32 */
-                    language_id: number;
-                    title: string;
-                }[];
-            };
-        };
-        Data_UserProfile: {
-            /** @enum {string} */
-            status: "Ok";
-            data: {
-                name: string;
-                /** @description Avatar url with sub directory, eg. ab/cd/abcd..xyz.jpg */
-                avatar_url?: string | null;
-                /** Format: date-time */
-                last_login?: string | null;
-                roles: number[];
-            };
-        };
-        Data_Vec_Artist: {
-            /** @enum {string} */
-            status: "Ok";
-            data: {
-                /** Format: int32 */
-                id: number;
-                name: string;
-                artist_type: components["schemas"]["ArtistType"];
-                text_alias?: string[] | null;
-                /** Format: date */
-                start_date?: string | null;
-                start_date_precision?: null | components["schemas"]["DatePrecision"];
-                /** Format: date */
-                end_date?: string | null;
-                end_date_precision?: null | components["schemas"]["DatePrecision"];
-                aliases: number[];
-                links: string[];
-                localized_names: components["schemas"]["LocalizedName"][];
-                members: components["schemas"]["GroupMember"][];
-            }[];
-        };
-        Data_Vec_EventResponse: {
-            /** @enum {string} */
-            status: "Ok";
-            data: {
-                /** Format: int32 */
-                id: number;
-                name: string;
-                short_description: string;
-                description: string;
-                start_date?: [
-                    string,
-                    "Day" | "Month" | "Year"
-                ] | null;
-                end_date?: [
-                    string,
-                    "Day" | "Month" | "Year"
-                ] | null;
-                alternative_names: components["schemas"]["AlternativeNameResponse"][];
-            }[];
-        };
-        Data_Vec_Label: {
-            /** @enum {string} */
-            status: "Ok";
-            data: {
-                /** Format: int32 */
-                id: number;
-                name: string;
-                founded_date?: [
-                    string,
-                    "Day" | "Month" | "Year"
-                ] | null;
-                dissolved_date?: [
-                    string,
-                    "Day" | "Month" | "Year"
-                ] | null;
-                founders: number[];
-                localized_names: components["schemas"]["SimpleLocalizedName"][];
-            }[];
-        };
-        Data_Vec_Language: {
-            /** @enum {string} */
-            status: "Ok";
-            data: {
-                /** Format: int32 */
-                id: number;
-                code: string;
-                name: string;
-            }[];
-        };
-        Data_Vec_Release: {
-            /** @enum {string} */
-            status: "Ok";
-            data: {
-                /** Format: int32 */
-                id: number;
-                release_type: components["schemas"]["ReleaseType"];
-                /** Format: date */
-                release_date?: string | null;
-                release_date_precision?: null | components["schemas"]["DatePrecision"];
-                /** Format: date */
-                recording_date_start?: string | null;
-                recording_date_start_precision?: null | components["schemas"]["DatePrecision"];
-                /** Format: date */
-                recording_date_end?: string | null;
-                recording_date_end_precision?: null | components["schemas"]["DatePrecision"];
-                artists: components["schemas"]["ReleaseArtist"][];
-                credits: components["schemas"]["ReleaseCredit"][];
-                catalog_nums: components["schemas"]["ReleaseCatalogNumber"][];
-                localized_titles: components["schemas"]["LocalizedTitle"][];
-                tracks: number[];
-            }[];
-        };
-        Data_Vec_SongResponse: {
-            /** @enum {string} */
-            status: "Ok";
-            data: {
-                /** Format: int32 */
-                id: number;
-                title: string;
-                credits: {
-                    /** Format: int32 */
-                    artist_id: number;
-                    /** Format: int32 */
-                    role_id: number;
-                }[];
-                languages: {
-                    /** Format: int32 */
-                    id: number;
-                    code: string;
-                    name: string;
-                }[];
-                localized_titles: {
-                    /** Format: int32 */
-                    language_id: number;
-                    title: string;
-                }[];
-            }[];
         };
         /** @enum {string} */
         DatePrecision: "Day" | "Month" | "Year";
@@ -721,30 +571,6 @@ export type components = {
         };
         Metadata: {
             description: string;
-        };
-        NewArtist: {
-            name: string;
-            artist_type: components["schemas"]["ArtistType"];
-            text_alias?: string[] | null;
-            /**
-             * Format: date
-             * @description Birth date for a person and formation date for a group
-             */
-            start_date?: string | null;
-            start_date_precision?: null | components["schemas"]["DatePrecision"];
-            /**
-             * Format: date
-             * @description Death date for a person and disbandment date for a group
-             */
-            end_date?: string | null;
-            end_date_precision?: null | components["schemas"]["DatePrecision"];
-            /** @description List of Ids of the artist's aliases */
-            aliases?: number[] | null;
-            /** @description List of artist-related URLs */
-            links?: string[] | null;
-            localized_name?: components["schemas"]["NewLocalizedName"][] | null;
-            members?: components["schemas"]["NewGroupMember"][] | null;
-            correction_metadata: components["schemas"]["Metadata"];
         };
         NewCredit: {
             /** Format: int32 */
@@ -923,7 +749,7 @@ export type components = {
         TagType: "Descriptor" | "Genre" | "Movement" | "Scene";
         UploadAvatar: {
             /** Format: binary */
-            data: string;
+            data: Blob;
         };
         UserProfile: {
             name: string;
@@ -958,7 +784,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_Vec_Artist"];
+                    "application/json": components["schemas"]["DataVecArtist"];
                 };
             };
             400: {
@@ -1004,7 +830,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NewArtist"];
+                "application/json": components["schemas"]["ArtistCorrection"];
             };
         };
         responses: {
@@ -1066,7 +892,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_Artist"];
+                    "application/json": components["schemas"]["DataArtist"];
                 };
             };
             400: {
@@ -1114,7 +940,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NewArtist"];
+                "application/json": components["schemas"]["ArtistCorrection"];
             };
         };
         responses: {
@@ -1286,7 +1112,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_Vec_EventResponse"];
+                    "application/json": components["schemas"]["DataVecEventResponse"];
                 };
             };
             400: {
@@ -1504,7 +1330,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_Vec_Label"];
+                    "application/json": components["schemas"]["DataVecLabelResponse"];
                 };
             };
             400: {
@@ -1612,7 +1438,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_Label"];
+                    "application/json": components["schemas"]["DataLabelResponse"];
                 };
             };
             400: {
@@ -1720,7 +1546,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_Vec_Language"];
+                    "application/json": components["schemas"]["DataVecLanguage"];
                 };
             };
             500: {
@@ -1752,7 +1578,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_UserProfile"];
+                    "application/json": components["schemas"]["DataUserProfile"];
                 };
             };
             400: {
@@ -1811,7 +1637,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_UserProfile"];
+                    "application/json": components["schemas"]["DataUserProfile"];
                 };
             };
             400: {
@@ -1870,7 +1696,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_Vec_Release"];
+                    "application/json": components["schemas"]["DataVecReleaseResponse"];
                 };
             };
             400: {
@@ -1978,7 +1804,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_Release"];
+                    "application/json": components["schemas"]["DataReleaseResponse"];
                 };
             };
             400: {
@@ -2090,7 +1916,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_UserProfile"];
+                    "application/json": components["schemas"]["DataUserProfile"];
                 };
             };
             400: {
@@ -2209,7 +2035,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_UserProfile"];
+                    "application/json": components["schemas"]["DataUserProfile"];
                 };
             };
             400: {
@@ -2275,7 +2101,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_Vec_SongResponse"];
+                    "application/json": components["schemas"]["DataVecSongResponse"];
                 };
             };
             400: {
@@ -2383,7 +2209,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_SongResponse"];
+                    "application/json": components["schemas"]["DataSongResponse"];
                 };
             };
             400: {
@@ -2603,7 +2429,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_Vec_Language"];
+                    "application/json": components["schemas"]["DataVecLanguage"];
                 };
             };
             500: {
