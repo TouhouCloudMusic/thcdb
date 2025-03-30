@@ -23,3 +23,9 @@ Thumbs.db
 
 # Output
 dist
+
+# Generated Files
+src/constant/server.ts
+
+
+src/stories
