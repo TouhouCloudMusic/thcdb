@@ -4,3 +4,6 @@
 /public
 rustc*
 config.dev.ron
+
+
+src/constant/gen.rs
