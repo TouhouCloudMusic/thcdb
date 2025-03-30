@@ -6,7 +6,7 @@ use git2::Repository;
 use syn::{BinOp, Expr, Item, Lit, parse_file};
 
 fn main() {
-    let _ = dotenvy::dotenv().unwrap();
+    let _ = dotenvy::dotenv().expect(".env file not found");
 
     let commit_hash = if let Ok(repo) = Repository::open(".")
         && let Ok(head) = repo.head()
