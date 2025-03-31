@@ -5,7 +5,7 @@ pub trait Repository: Send + Sync {
 
     async fn create(
         &self,
-        data: domain::entity::image::NewImage,
+        data: domain::model::image::NewImage,
     ) -> Result<entity::image::Model, Self::Error>;
 
     async fn find_by_filename(

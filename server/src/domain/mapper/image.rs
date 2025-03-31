@@ -1,10 +1,10 @@
 use sea_orm::ActiveValue::Set;
 use sea_orm::NotSet;
 
-impl From<crate::domain::entity::image::NewImage>
+impl From<crate::domain::model::image::NewImage>
     for entity::image::ActiveModel
 {
-    fn from(val: crate::domain::entity::image::NewImage) -> Self {
+    fn from(val: crate::domain::model::image::NewImage) -> Self {
         Self {
             id: NotSet,
             filename: Set(val.filename),

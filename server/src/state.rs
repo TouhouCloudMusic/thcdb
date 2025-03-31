@@ -8,13 +8,16 @@ use macros::FromRefArc;
 use sea_orm::{DatabaseConnection, sqlx};
 
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
+use crate::infrastructure::adapter;
+use crate::infrastructure::adapter::database::SeaOrmRepository;
 use crate::infrastructure::config::Config;
 use crate::infrastructure::database::get_connection;
 use crate::infrastructure::redis::Pool;
-use crate::repo::SeaOrmRepository;
 use crate::{application, infrastructure};
 
 pub static CONFIG: LazyLock<Config> = LazyLock::new(Config::init);
+
+pub type SeaOrmRepo = adapter::database::SeaOrmRepository;
 
 pub type ImageSerivce = application::service::image::Service<
     infrastructure::adapter::database::SeaOrmRepository,
@@ -33,6 +36,8 @@ pub struct AppState {
     redis_pool: Pool,
     #[from_ref_arc(skip)]
     pub transport: AsyncSmtpTransport<Tokio1Executor>,
+
+    pub sea_orm_repo: adapter::database::SeaOrmRepository,
 
     pub artist_service: crate::service::artist::Service,
     pub correction_service: crate::service::correction::Service,
@@ -77,6 +82,8 @@ impl AppState {
             database: conn.clone(),
             redis_pool,
             transport,
+            sea_orm_repo: SeaOrmRepository::new(conn.clone()),
+
             artist_service: crate::service::artist::Service::new(conn.clone()),
             correction_service: crate::service::correction::Service::new(
                 conn.clone(),

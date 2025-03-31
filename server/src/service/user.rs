@@ -23,7 +23,6 @@ use sea_orm::{
 
 use crate::application::service::image::CreateError;
 use crate::domain::service::image::AsyncImageStorage;
-use crate::dto::user::UserProfile;
 use crate::error::{DbErrWrapper, ErrorCode, InvalidField, ServiceError};
 use crate::infrastructure::adapter::storage::image::LocalFileImageStorage;
 use crate::infrastructure::adapter::{self};
@@ -71,10 +70,11 @@ error_set! {
         Session(SessionBackendError),
         Service(ServiceError)
     };
-    #[derive(ApiError, IntoErrorSchema)]
+    #[derive(ApiError, IntoErrorSchema, From)]
     SignUpError = {
         Create(CreateUserError),
         Session(SessionBackendError),
+        #[from(DbErr)]
         Service(ServiceError)
     };
     #[derive(IntoErrorSchema, ApiError, From)]
@@ -158,29 +158,6 @@ impl Service {
             .await
     }
 
-    pub async fn profile(
-        &self,
-        username: &str,
-    ) -> Result<Option<UserProfile>, ServiceError> {
-        let Some(profile) = user::Entity::find()
-            .filter(user::Column::Name.eq(username))
-            .left_join(entity::image::Entity)
-            .into_partial_model::<profile::UserProfileRaw>()
-            .one(&self.db)
-            .await?
-        else {
-            return Ok(None);
-        };
-
-        let user_roles = user_role::Entity::find()
-            .filter(user_role::Column::UserId.eq(profile.id))
-            .into_partial_model::<profile::UserRoleRaw>()
-            .all(&self.db)
-            .await?;
-
-        Ok(Some((profile, user_roles).into()))
-    }
-
     async fn create(
         &self,
         creds: AuthCredential,
@@ -190,24 +167,22 @@ impl Service {
 
     pub async fn sign_up(
         &self,
-        mut auth_session: AuthSession,
+        auth_session: &mut AuthSession,
         creds: AuthCredential,
-    ) -> Result<UserProfile, SignUpError> {
+    ) -> Result<(), SignUpError> {
         let user = self.create(creds).await?;
 
-        let profile = self.profile(&user.name).await?.unwrap();
-
         match auth_session.login(&user).await {
-            Ok(()) => Ok(profile),
+            Ok(()) => Ok(()),
             Err(e) => Err(SessionBackendError::from(e).into()),
         }
     }
 
     pub async fn sign_in(
         &self,
-        mut auth_session: AuthSession,
+        auth_session: &mut AuthSession,
         creds: AuthCredential,
-    ) -> Result<UserProfile, SignInError> {
+    ) -> Result<(), SignInError> {
         if auth_session.user.is_some() {
             return Err(SignInError::AlreadySignedIn);
         }
@@ -217,9 +192,10 @@ impl Service {
             None => Err(AuthnError::AuthenticationFailed)?,
         };
 
-        auth_session.login(&user).await?;
-
-        Ok(self.profile(&user.name).await?.unwrap())
+        match auth_session.login(&user).await {
+            Ok(()) => Ok(()),
+            Err(e) => Err(SessionBackendError::from(e).into()),
+        }
     }
 
     pub async fn sign_out(
@@ -445,53 +421,6 @@ impl AuthnBackend for Service {
         }
 
         Ok(user)
-    }
-}
-
-mod profile {
-    use std::path::PathBuf;
-
-    use entity::*;
-    use sea_orm::DerivePartialModel;
-
-    use crate::dto::user::UserProfile;
-
-    #[derive(DerivePartialModel)]
-    #[sea_orm(entity = "user::Entity", from_query_result)]
-    pub(super) struct UserProfileRaw {
-        pub id: i32,
-        pub name: String,
-        pub last_login: chrono::DateTime<chrono::FixedOffset>,
-        #[sea_orm(nested)]
-        pub avatar_url: Option<AvatarRaw>,
-    }
-
-    #[derive(DerivePartialModel)]
-    #[sea_orm(entity = "image::Entity", from_query_result)]
-    pub(super) struct AvatarRaw {
-        pub directory: String,
-        pub filename: String,
-    }
-
-    #[derive(DerivePartialModel)]
-    #[sea_orm(entity = "user_role::Entity", from_query_result)]
-    pub(super) struct UserRoleRaw {
-        pub role_id: i32,
-    }
-
-    impl From<(UserProfileRaw, Vec<UserRoleRaw>)> for UserProfile {
-        fn from((profile, roles): (UserProfileRaw, Vec<UserRoleRaw>)) -> Self {
-            Self {
-                name: profile.name,
-                last_login: profile.last_login,
-                avatar_url: profile.avatar_url.map(|a| {
-                    PathBuf::from_iter([&a.directory, &a.filename])
-                        .to_string_lossy()
-                        .to_string()
-                }),
-                roles: roles.into_iter().map(|x| x.role_id).collect(),
-            }
-        }
     }
 }
 

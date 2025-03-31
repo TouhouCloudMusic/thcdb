@@ -4,7 +4,7 @@ use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE;
 use xxhash_rust::xxh3::xxh3_128;
 
-use crate::domain::entity::image::NewImage;
+use crate::domain::model::image::NewImage;
 use crate::domain::service::image::{
     AsyncImageStorage, InvalidType, ValidatedPath, Validator, ValidatorTrait,
 };

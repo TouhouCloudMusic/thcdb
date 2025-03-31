@@ -13,9 +13,9 @@ use sea_orm::{
     QueryFilter, QueryOrder, TransactionTrait,
 };
 
-use super::SeaOrmRepository;
 use crate::dto::tag::{AltName, TagCorrection, TagRelation, TagResponse};
 use crate::error::ServiceError;
+use crate::infrastructure::adapter::database::SeaOrmRepository;
 use crate::repo;
 use crate::utils::MapInto;
 

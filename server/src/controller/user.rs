@@ -11,15 +11,16 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::api_response::{Data, Message};
-use crate::dto::user::{UploadAvatar, UserProfile};
-use crate::error::ServiceError;
+use crate::application::use_case;
+use crate::domain::model::user::Profile;
+use crate::dto::user::UploadAvatar;
+use crate::error::{DbErrWrapper, ServiceError};
 use crate::middleware::is_signed_in;
 use crate::model::auth::{AuthCredential, AuthnError};
 use crate::service::user::{
     AuthSession, SessionBackendError, SignInError, SignUpError,
     UploadAvatarError,
 };
-use crate::utils::MapInto;
 use crate::{AppState, api_response, state};
 
 const TAG: &str = "User";
@@ -36,7 +37,7 @@ pub fn router() -> OpenApiRouter<Arc<AppState>> {
 }
 
 super::data! {
-    DataUserProfile, UserProfile
+    DataUserProfile, Profile
 }
 
 #[utoipa::path(
@@ -51,17 +52,10 @@ super::data! {
 )]
 #[use_session]
 async fn profile(
-    State(user_service): State<state::UserService>,
-) -> Result<Data<UserProfile>, impl IntoResponse> {
+    State(repo): State<state::SeaOrmRepo>,
+) -> Result<Data<Profile>, impl IntoResponse> {
     if let Some(user) = session.user {
-        user_service
-            .profile(&user.name)
-            .await
-            .map_err(IntoResponse::into_response)?
-            .map_or_else(
-                || Err(StatusCode::NOT_FOUND.into_response()),
-                |user| Ok(user.into()),
-            )
+        profile_impl(repo, &user.name).await
     } else {
         Err(StatusCode::NOT_FOUND.into_response())
     }
@@ -78,17 +72,10 @@ async fn profile(
     ),
 )]
 async fn profile_with_name(
-    State(user_service): State<state::UserService>,
+    State(repo): State<state::SeaOrmRepo>,
     Path(name): Path<String>,
-) -> Result<Data<UserProfile>, impl IntoResponse> {
-    user_service
-        .profile(&name)
-        .await
-        .map_err(IntoResponse::into_response)?
-        .map_or_else(
-            || Err(StatusCode::NOT_FOUND.into_response()),
-            |user| Ok(user.into()),
-        )
+) -> Result<Data<Profile>, impl IntoResponse> {
+    profile_impl(repo, &name).await
 }
 
 #[utoipa::path(
@@ -102,11 +89,19 @@ async fn profile_with_name(
     ),
 )]
 async fn sign_up(
-    auth_session: AuthSession,
+    mut auth_session: AuthSession,
+    State(repo): State<state::SeaOrmRepo>,
     State(user_service): State<state::UserService>,
     Json(creds): Json<AuthCredential>,
-) -> Result<Data<UserProfile>, SignUpError> {
-    user_service.sign_up(auth_session, creds).await.map_into()
+) -> Result<Data<Profile>, impl IntoResponse> {
+    user_service
+        .sign_up(&mut auth_session, creds)
+        .await
+        .map_err(IntoResponse::into_response)?;
+
+    let username = &auth_session.user.unwrap().name;
+
+    profile_impl(repo, username).await
 }
 
 #[utoipa::path(
@@ -120,11 +115,19 @@ async fn sign_up(
     )
 )]
 async fn sign_in(
-    auth_session: AuthSession,
+    mut auth_session: AuthSession,
+    State(repo): State<state::SeaOrmRepo>,
     State(user_service): State<state::UserService>,
     Json(creds): Json<AuthCredential>,
-) -> Result<Data<UserProfile>, SignInError> {
-    user_service.sign_in(auth_session, creds).await.map_into()
+) -> Result<Data<Profile>, impl IntoResponse> {
+    user_service
+        .sign_in(&mut auth_session, creds)
+        .await
+        .map_err(IntoResponse::into_response)?;
+
+    let username = &auth_session.user.unwrap().name;
+
+    profile_impl(repo, username).await
 }
 
 #[utoipa::path(
@@ -172,4 +175,21 @@ async fn upload_avatar(
     } else {
         Ok(AuthnError::AuthenticationFailed.into_response())
     }
+}
+
+async fn profile_impl(
+    repo: state::SeaOrmRepo,
+    name: &str,
+) -> Result<Data<Profile>, axum::response::Response> {
+    let profile_use_case = use_case::user::Profile::new(repo);
+
+    profile_use_case
+        .find_by_name(name)
+        .await
+        .map_err(DbErrWrapper::from)
+        .map_err(IntoResponse::into_response)?
+        .map_or_else(
+            || Err(StatusCode::NOT_FOUND.into_response()),
+            |user| Ok(user.into()),
+        )
 }
