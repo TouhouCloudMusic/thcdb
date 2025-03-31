@@ -461,7 +461,7 @@ mod profile {
     pub(super) struct UserProfileRaw {
         pub id: i32,
         pub name: String,
-        pub last_login: Option<chrono::DateTime<chrono::FixedOffset>>,
+        pub last_login: chrono::DateTime<chrono::FixedOffset>,
         #[sea_orm(nested)]
         pub avatar_url: Option<AvatarRaw>,
     }
