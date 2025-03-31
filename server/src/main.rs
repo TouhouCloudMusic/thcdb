@@ -42,11 +42,11 @@ use std::net::SocketAddr;
 use app::create_app;
 use infrastructure::logger::Logger;
 use state::{AppState, CONFIG};
-#[cfg(not(target_env = "msvc"))]
+#[cfg(target_os = "linux")]
 use tikv_jemallocator::Jemalloc;
 use tokio::signal;
 
-#[cfg(not(target_env = "msvc"))]
+#[cfg(target_os = "linux")]
 #[global_allocator]
 static GLOBAL: Jemalloc = Jemalloc;
 

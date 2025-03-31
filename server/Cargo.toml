@@ -111,7 +111,6 @@ smart-default = "0.7.1"
 strum = "0.27.0"
 strum_macros = "0.27.0"
 thiserror = "2.0.12"
-tikv-jemallocator = "0.6.0"
 tokio.workspace = true
 tower = { version = "0.5.2", features = [
     "limit",
@@ -136,6 +135,9 @@ xxhash-rust = { version = "0.8", features = [
     "xxh3",
 ] }
 zxcvbn = "3.1"
+
+[target.x86_64-unknown-linux-gnu.dependencies]
+tikv-jemallocator = "0.6.0"
 
 [dev-dependencies]
 rusty-hook = "0.11.2"
