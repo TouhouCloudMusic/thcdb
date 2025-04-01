@@ -72,8 +72,8 @@ export function createCropperBoundary(
     // 6. Remove the cropper image clone.
     cropperCanvas.removeChild(cropperImageClone)
 
-    let canvasH = cropperCanvasRect.width
-    let canvasW = cropperCanvasRect.height
+    let canvasH = cropperImageRect.width
+    let canvasW = cropperImageRect.height
     let xOffset = cropperImageRect.left - cropperCanvasRect.left
     let yOffset = cropperImageRect.top - cropperCanvasRect.top
 
@@ -85,7 +85,7 @@ export function createCropperBoundary(
     }
 
     if (!inSelection(store.selection as Selection, maxSelection)) {
-      // event.preventDefault()
+      event.preventDefault()
     }
   }
 
