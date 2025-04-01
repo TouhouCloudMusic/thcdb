@@ -44,7 +44,7 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
     async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<domain::model::user::Profile>, Self::Error> {
+    ) -> Result<Option<domain::model::user::UserProfile>, Self::Error> {
         use std::path::PathBuf;
 
         use entity::*;
@@ -73,7 +73,9 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
             pub role_id: i32,
         }
 
-        impl From<(UserProfileRaw, Vec<UserRoleRaw>)> for domain::model::user::Profile {
+        impl From<(UserProfileRaw, Vec<UserRoleRaw>)>
+            for domain::model::user::UserProfile
+        {
             fn from(
                 (profile, roles): (UserProfileRaw, Vec<UserRoleRaw>),
             ) -> Self {

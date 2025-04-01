@@ -15,7 +15,7 @@ pub mod user {
     use utoipa::ToSchema;
 
     #[derive(Clone, ToSchema, Serialize)]
-    pub struct Profile {
+    pub struct UserProfile {
         pub name: String,
         /// Avatar url with sub directory, eg. ab/cd/abcd..xyz.jpg
         pub avatar_url: Option<String>,

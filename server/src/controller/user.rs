@@ -12,7 +12,7 @@ use utoipa_axum::routes;
 
 use crate::api_response::{Data, Message};
 use crate::application::use_case;
-use crate::domain::model::user::Profile;
+use crate::domain::model::user::UserProfile;
 use crate::dto::user::UploadAvatar;
 use crate::error::{DbErrWrapper, ServiceError};
 use crate::middleware::is_signed_in;
@@ -37,7 +37,7 @@ pub fn router() -> OpenApiRouter<Arc<AppState>> {
 }
 
 super::data! {
-    DataUserProfile, Profile
+    DataUserProfile, UserProfile
 }
 
 #[utoipa::path(
@@ -53,7 +53,7 @@ super::data! {
 #[use_session]
 async fn profile(
     State(repo): State<state::SeaOrmRepo>,
-) -> Result<Data<Profile>, impl IntoResponse> {
+) -> Result<Data<UserProfile>, impl IntoResponse> {
     if let Some(user) = session.user {
         profile_impl(repo, &user.name).await
     } else {
@@ -74,7 +74,7 @@ async fn profile(
 async fn profile_with_name(
     State(repo): State<state::SeaOrmRepo>,
     Path(name): Path<String>,
-) -> Result<Data<Profile>, impl IntoResponse> {
+) -> Result<Data<UserProfile>, impl IntoResponse> {
     profile_impl(repo, &name).await
 }
 
@@ -93,7 +93,7 @@ async fn sign_up(
     State(repo): State<state::SeaOrmRepo>,
     State(user_service): State<state::UserService>,
     Json(creds): Json<AuthCredential>,
-) -> Result<Data<Profile>, impl IntoResponse> {
+) -> Result<Data<UserProfile>, impl IntoResponse> {
     user_service
         .sign_up(&mut auth_session, creds)
         .await
@@ -119,7 +119,7 @@ async fn sign_in(
     State(repo): State<state::SeaOrmRepo>,
     State(user_service): State<state::UserService>,
     Json(creds): Json<AuthCredential>,
-) -> Result<Data<Profile>, impl IntoResponse> {
+) -> Result<Data<UserProfile>, impl IntoResponse> {
     user_service
         .sign_in(&mut auth_session, creds)
         .await
@@ -180,7 +180,7 @@ async fn upload_avatar(
 async fn profile_impl(
     repo: state::SeaOrmRepo,
     name: &str,
-) -> Result<Data<Profile>, axum::response::Response> {
+) -> Result<Data<UserProfile>, axum::response::Response> {
     let profile_use_case = use_case::user::Profile::new(repo);
 
     profile_use_case

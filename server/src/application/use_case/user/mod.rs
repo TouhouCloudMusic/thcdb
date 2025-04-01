@@ -17,7 +17,7 @@ where
     pub async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<model::user::Profile>, R::Error> {
+    ) -> Result<Option<model::user::UserProfile>, R::Error> {
         self.repo.find_by_name(name).await
     }
 }

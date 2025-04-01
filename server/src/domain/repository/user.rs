@@ -16,5 +16,5 @@ pub trait ProfileRepository: RepositoryTrait {
     async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<model::user::Profile>, Self::Error>;
+    ) -> Result<Option<model::user::UserProfile>, Self::Error>;
 }
