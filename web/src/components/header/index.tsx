@@ -1,13 +1,6 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
 import { Link } from "@tanstack/solid-router"
-import {
-  createEffect,
-  createMemo,
-  createSignal,
-  Match,
-  Show,
-  Switch,
-} from "solid-js"
+import { createMemo, Match, Show, Switch } from "solid-js"
 import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
 import { Button } from "~/components/button"
 import { type UserProfile } from "~/model/user"
@@ -29,7 +22,7 @@ const HEADER_BTN_CLASS = "size-6 p-1 m-auto"
 export function Header() {
   const Divider = () => <span class="w-[0.5px] bg-slate-400 h-5 ml-3"></span>
   return (
-    <header class="bg-primary box-content content-center items-center px-4 py-2 border-b-1 border-slate-400">
+    <header class="bg-primary box-content content-center items-center px-4 py-2 border-b-1 border-slate-300">
       <div class="my-auto flex h-8 items-center justify-between">
         {/* Left */}
         <div class="flex items-center">
@@ -61,22 +54,8 @@ export function Header() {
 }
 
 function AuthenticatedContent(props: { user: UserProfile }) {
-  let [show, setShow] = createSignal(false)
+  let [show, setShow, setRef] = createClickOutside()
   let close = () => setShow(false)
-
-  let [sidebar_ref, setRef] = createSignal<HTMLDivElement>(
-    undefined as unknown as HTMLDivElement,
-  )
-
-  let handleClickOutside = createClickOutside(sidebar_ref, close)
-
-  createEffect(() => {
-    if (show()) {
-      document.addEventListener("click", handleClickOutside)
-    } else {
-      document.removeEventListener("click", handleClickOutside)
-    }
-  })
   return (
     <>
       <div class="h-8 w-8 grid place-items-center">

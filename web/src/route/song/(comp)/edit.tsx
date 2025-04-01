@@ -3,7 +3,7 @@ import { useFloating } from "solid-floating-ui"
 import { createEffect, on, onCleanup } from "solid-js"
 import { ShowPortal } from "~/utils/ShowPortal"
 import { createAtom } from "~/utils/createAtom"
-import { createClickOutsize } from "~/utils/createClickOutside"
+import { createClickOutside } from "~/utils/createClickOutside"
 
 const itemClass = "px-2 py-1"
 export function EditComp() {
@@ -14,7 +14,7 @@ export function EditComp() {
     placement: "bottom-end",
     whileElementsMounted: autoUpdate,
   })
-  const clickOutside = createClickOutsize([dropdown, anchor], open)
+  const clickOutside = createClickOutside([dropdown, anchor], open)
   createEffect(
     on(open, () => {
       if (open()) document.addEventListener("click", clickOutside)

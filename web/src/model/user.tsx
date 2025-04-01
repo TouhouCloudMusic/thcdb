@@ -1,5 +1,5 @@
 import { type } from "arktype"
-import { type components } from "~/query/openapi"
+import { type components } from "~/data/openapi"
 
 export type UserProfile = components["schemas"]["UserProfile"]
 

@@ -18,7 +18,7 @@ export function Avatar(props: Props) {
         when={!error()}
         fallback={
           <div class="size-full flex items-center justify-center bg-gray-200">
-            <span class="text-sm text-gray-500">
+            <span class="text-gray-500">
               {props.user?.name[0]?.toUpperCase() ?? "N/A"}
             </span>
           </div>

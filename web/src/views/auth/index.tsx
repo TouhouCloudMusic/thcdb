@@ -10,7 +10,7 @@ import * as v from "valibot"
 import { Button } from "~/components/button"
 import { Divider } from "~/components/divider"
 import { Input } from "~/components/input"
-import { FetchClient } from "~/query"
+import { FetchClient } from "~/data"
 import { useUserCtx } from "~/state/user"
 
 const AuthCredsSchema = v.object({

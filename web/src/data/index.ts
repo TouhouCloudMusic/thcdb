@@ -5,5 +5,3 @@ import type { paths } from "./openapi"
 export const FetchClient = createFetchClient<paths>({
   baseUrl: "/api",
 })
-
-export * as Query from "./prelude"

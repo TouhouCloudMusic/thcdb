@@ -51,7 +51,7 @@ function Layout(props: ParentProps) {
 }
 
 function AppErrorBoundary(props: ParentProps) {
-  if (import.meta.env.DEV) {
+  if (false) {
     // eslint-disable-next-line solid/components-return-once
     return <>{props.children}</>
   } else {

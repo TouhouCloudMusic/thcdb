@@ -756,7 +756,7 @@ export type components = {
             /** @description Avatar url with sub directory, eg. ab/cd/abcd..xyz.jpg */
             avatar_url?: string | null;
             /** Format: date-time */
-            last_login?: string | null;
+            last_login: string;
             roles: number[];
         };
     };
