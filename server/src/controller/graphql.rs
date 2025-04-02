@@ -6,7 +6,7 @@ use juniper_axum::extract::JuniperRequest;
 use juniper_axum::response::JuniperResponse;
 use juniper_axum::{graphiql, playground};
 
-use crate::AppState;
+use crate::ArcAppState;
 use crate::resolver::juniper::{JuniperMutation, JuniperQuery};
 use crate::service::juniper::{JuniperContext, JuniperSchema};
 

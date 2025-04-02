@@ -1,9 +1,7 @@
-use std::sync::Arc;
-
 use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
 
-use crate::AppState;
+use crate::ArcAppState;
 
 mod artist;
 mod correction;
@@ -33,7 +31,7 @@ mod user;
 )]
 struct ApiDoc;
 
-pub fn api_router() -> OpenApiRouter<Arc<AppState>> {
+pub fn api_router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::with_openapi(ApiDoc::openapi())
         .merge(artist::router())
         .merge(correction::router())

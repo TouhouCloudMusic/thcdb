@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
@@ -13,10 +11,10 @@ use crate::api_response::{self, Data};
 use crate::dto::tag::{TagCorrection, TagResponse};
 use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
-use crate::state::{self, AppState};
+use crate::state::{self, ArcAppState};
 use crate::utils::MapInto;
 
-pub fn router() -> OpenApiRouter<Arc<AppState>> {
+pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(create_tag))
         .routes(routes!(upsert_tag_correction))

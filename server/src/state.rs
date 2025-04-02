@@ -1,32 +1,50 @@
+use std::ops::Deref;
 use std::path::PathBuf;
-use std::sync::LazyLock;
+use std::sync::{Arc, LazyLock};
 
 use argon2::Argon2;
+use axum::extract::FromRef;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{AsyncSmtpTransport, Tokio1Executor};
 use macros::FromRefArc;
 use sea_orm::{DatabaseConnection, sqlx};
 
+use crate::application::use_case;
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::infrastructure::adapter;
-use crate::infrastructure::adapter::database::SeaOrmRepository;
+pub use crate::infrastructure::adapter::database::SeaOrmRepository;
 use crate::infrastructure::config::Config;
 use crate::infrastructure::database::get_connection;
 use crate::infrastructure::redis::Pool;
 use crate::{application, infrastructure};
 
-pub static CONFIG: LazyLock<Config> = LazyLock::new(Config::init);
+pub type ArtistService = crate::service::artist::Service;
 
-pub type SeaOrmRepo = adapter::database::SeaOrmRepository;
+pub type CorretionService = crate::service::correction::Service;
 
-pub type ImageSerivce = application::service::image::Service<
+pub type EventService = crate::service::event::Service;
+
+pub type ImageService = application::service::image::Service<
     infrastructure::adapter::database::SeaOrmRepository,
     infrastructure::adapter::storage::image::LocalFileImageStorage,
 >;
 
-pub type TagService = crate::service::tag::Service<SeaOrmRepository>;
+pub type LabelService = crate::service::label::Service;
 
+pub type ReleaseService = crate::service::release::Service;
+
+pub type SongService = crate::service::song::Service;
+
+pub type TagService = crate::service::tag::Service<SeaOrmRepository>;
 pub type UserService = crate::service::user::Service;
+
+pub static CONFIG: LazyLock<Config> = LazyLock::new(Config::init);
+
+// Should this be a singleton?
+pub static ARGON2_HASHER: LazyLock<Argon2> = LazyLock::new(Argon2::default);
+
+static IMAGE_PATH: LazyLock<PathBuf> =
+    LazyLock::new(|| PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]));
 
 #[derive(Clone, FromRefArc)]
 pub struct AppState {
@@ -38,20 +56,7 @@ pub struct AppState {
     pub transport: AsyncSmtpTransport<Tokio1Executor>,
 
     pub sea_orm_repo: adapter::database::SeaOrmRepository,
-
-    pub artist_service: crate::service::artist::Service,
-    pub correction_service: crate::service::correction::Service,
-    pub event_service: crate::service::event::Service,
-    pub image_service: ImageSerivce,
-    pub label_service: crate::service::label::Service,
-    pub release_service: crate::service::release::Service,
-    pub song_service: crate::service::song::Service,
-    pub tag_service: TagService,
-    pub user_service: UserService,
 }
-
-static IMAGE_PATH: LazyLock<PathBuf> =
-    LazyLock::new(|| PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]));
 
 impl AppState {
     pub async fn init() -> Self {
@@ -68,43 +73,11 @@ impl AppState {
                 .credentials(creds)
                 .build();
 
-        let sea_orm_repo =
-            infrastructure::adapter::database::SeaOrmRepository::new(
-                conn.clone(),
-            );
-
-        let file_image_storage =
-            infrastructure::adapter::storage::image::LocalFileImageStorage::new(
-                &IMAGE_PATH,
-            );
-
         Self {
             database: conn.clone(),
             redis_pool,
             transport,
             sea_orm_repo: SeaOrmRepository::new(conn.clone()),
-
-            artist_service: crate::service::artist::Service::new(conn.clone()),
-            correction_service: crate::service::correction::Service::new(
-                conn.clone(),
-            ),
-            event_service: crate::service::event::Service::new(conn.clone()),
-            image_service: application::service::image::Service::builder()
-                .repo(sea_orm_repo)
-                .storage(file_image_storage)
-                .build(),
-            label_service: crate::service::label::Service::new(conn.clone()),
-            release_service: crate::service::release::Service::new(
-                conn.clone(),
-            ),
-            song_service: crate::service::song::Service::new(conn.clone()),
-            tag_service: {
-                crate::service::tag::Service::new(
-                    conn.clone(),
-                    SeaOrmRepository::new(conn.clone()),
-                )
-            },
-            user_service: crate::service::user::Service::new(conn.clone()),
         }
     }
 }
@@ -119,5 +92,86 @@ impl AppState {
     }
 }
 
-// Should this be a singleton?
-pub static ARGON2_HASHER: LazyLock<Argon2> = LazyLock::new(Argon2::default);
+#[derive(Clone)]
+pub struct ArcAppState(Arc<AppState>);
+
+impl Deref for ArcAppState {
+    type Target = AppState;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl ArcAppState {
+    pub async fn init() -> Self {
+        Self(Arc::new(AppState::init().await))
+    }
+}
+
+impl FromRef<ArcAppState> for use_case::user::Profile<SeaOrmRepository> {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self::new(input.sea_orm_repo.clone())
+    }
+}
+
+impl FromRef<ArcAppState> for ArtistService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self::new(input.database.clone())
+    }
+}
+
+impl FromRef<ArcAppState> for ImageService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        let image_store =
+            infrastructure::adapter::storage::image::LocalFileImageStorage::new(
+                &IMAGE_PATH,
+            );
+        Self::builder()
+            .repo(input.sea_orm_repo.clone())
+            .storage(image_store)
+            .build()
+    }
+}
+
+impl FromRef<ArcAppState> for TagService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self::new(input.database.clone(), input.sea_orm_repo.clone())
+    }
+}
+
+impl FromRef<ArcAppState> for UserService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self::new(input.database.clone())
+    }
+}
+
+impl FromRef<ArcAppState> for CorretionService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self::new(input.database.clone())
+    }
+}
+
+impl FromRef<ArcAppState> for EventService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self::new(input.database.clone())
+    }
+}
+
+impl FromRef<ArcAppState> for LabelService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self::new(input.database.clone())
+    }
+}
+
+impl FromRef<ArcAppState> for ReleaseService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self::new(input.database.clone())
+    }
+}
+
+impl FromRef<ArcAppState> for SongService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self::new(input.database.clone())
+    }
+}

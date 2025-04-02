@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
@@ -13,14 +11,14 @@ use crate::api_response::{Data, Message, status_ok_schema};
 use crate::dto::artist::{ArtistCorrection, ArtistResponse};
 use crate::middleware::is_signed_in;
 use crate::service::{self, artist};
-use crate::state::AppState;
+use crate::state::ArcAppState;
 use crate::utils::MapInto;
 
 type Error = service::artist::Error;
 
 const TAG: &str = "Artist";
 
-pub fn router() -> OpenApiRouter<Arc<AppState>> {
+pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(create_artist))
         .routes(routes!(upsert_artist_correction))

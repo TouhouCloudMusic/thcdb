@@ -16,7 +16,7 @@
     clippy::enum_glob_use,
     clippy::unreadable_literal
 )]
-#![deny(unused_must_use)]
+#![deny(unused_must_use, clippy::clone_on_copy)]
 #![feature(variant_count, let_chains, try_blocks, min_specialization)]
 
 mod api_response;
@@ -41,7 +41,7 @@ use std::net::SocketAddr;
 
 use app::create_app;
 use infrastructure::logger::Logger;
-use state::{AppState, CONFIG};
+use state::{ArcAppState, CONFIG};
 #[cfg(target_os = "linux")]
 use tikv_jemallocator::Jemalloc;
 use tokio::signal;
@@ -58,7 +58,7 @@ async fn main() {
 
     tracing::info!("Starting server");
 
-    let state = AppState::init().await;
+    let state = ArcAppState::init().await;
 
     model::lookup_table::check_database_lookup_tables(&state.database)
         .await

@@ -1,5 +1,6 @@
 use crate::domain::{model, repository};
 
+#[derive(Clone)]
 pub struct Profile<R> {
     repo: R,
 }

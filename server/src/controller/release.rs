@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
@@ -14,14 +12,14 @@ use crate::dto::release::{ReleaseCorrection, ReleaseResponse};
 use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
 use crate::service::release::Service;
-use crate::state::AppState;
+use crate::state::ArcAppState;
 use crate::utils::MapInto;
 
 type Error = ServiceError;
 
 const TAG: &str = "Release";
 
-pub fn router() -> OpenApiRouter<Arc<AppState>> {
+pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(create_release))
         .routes(routes!(update_release))

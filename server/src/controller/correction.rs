@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
 use error_set::error_set;
@@ -15,11 +13,11 @@ use crate::middleware::is_signed_in;
 use crate::model::auth::UserRole;
 use crate::service;
 use crate::service::user::AuthSession;
-use crate::state::AppState;
+use crate::state::ArcAppState;
 
 const TAG: &str = "Correction";
 
-pub fn router() -> OpenApiRouter<Arc<AppState>> {
+pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(handle_correction))
         .route_layer(from_fn(is_signed_in))

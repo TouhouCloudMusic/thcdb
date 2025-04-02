@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::Json;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
@@ -21,11 +19,11 @@ use crate::service::user::{
     AuthSession, SessionBackendError, SignInError, SignUpError,
     UploadAvatarError,
 };
-use crate::{AppState, api_response, state};
+use crate::{ArcAppState, api_response, state};
 
 const TAG: &str = "User";
 
-pub fn router() -> OpenApiRouter<Arc<AppState>> {
+pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(upload_avatar))
         .routes(routes!(sign_out))
@@ -40,6 +38,8 @@ super::data! {
     DataUserProfile, UserProfile
 }
 
+type ProfileUseCase = use_case::user::Profile<state::SeaOrmRepository>;
+
 #[utoipa::path(
     get,
     tag = TAG,
@@ -52,10 +52,10 @@ super::data! {
 )]
 #[use_session]
 async fn profile(
-    State(repo): State<state::SeaOrmRepo>,
+    State(use_case): State<ProfileUseCase>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
     if let Some(user) = session.user {
-        profile_impl(repo, &user.name).await
+        profile_impl(&use_case, &user.name).await
     } else {
         Err(StatusCode::NOT_FOUND.into_response())
     }
@@ -72,10 +72,10 @@ async fn profile(
     ),
 )]
 async fn profile_with_name(
-    State(repo): State<state::SeaOrmRepo>,
+    State(use_case): State<ProfileUseCase>,
     Path(name): Path<String>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
-    profile_impl(repo, &name).await
+    profile_impl(&use_case, &name).await
 }
 
 #[utoipa::path(
@@ -90,7 +90,7 @@ async fn profile_with_name(
 )]
 async fn sign_up(
     mut auth_session: AuthSession,
-    State(repo): State<state::SeaOrmRepo>,
+    State(use_case): State<ProfileUseCase>,
     State(user_service): State<state::UserService>,
     Json(creds): Json<AuthCredential>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
@@ -101,7 +101,7 @@ async fn sign_up(
 
     let username = &auth_session.user.unwrap().name;
 
-    profile_impl(repo, username).await
+    profile_impl(&use_case, username).await
 }
 
 #[utoipa::path(
@@ -116,7 +116,7 @@ async fn sign_up(
 )]
 async fn sign_in(
     mut auth_session: AuthSession,
-    State(repo): State<state::SeaOrmRepo>,
+    State(use_case): State<ProfileUseCase>,
     State(user_service): State<state::UserService>,
     Json(creds): Json<AuthCredential>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
@@ -127,7 +127,7 @@ async fn sign_in(
 
     let username = &auth_session.user.unwrap().name;
 
-    profile_impl(repo, username).await
+    profile_impl(&use_case, username).await
 }
 
 #[utoipa::path(
@@ -163,13 +163,13 @@ async fn sign_out(
 )]
 async fn upload_avatar(
     auth_session: AuthSession,
-    State(state): State<Arc<AppState>>,
+    State(user_service): State<state::UserService>,
+    State(image_service): State<state::ImageService>,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
 ) -> Result<impl IntoResponse, UploadAvatarError> {
     if let Some(user) = auth_session.user {
-        state
-            .user_service
-            .upload_avatar(&state.image_service, user.id, form.data)
+        user_service
+            .upload_avatar(&image_service, user.id, form.data)
             .await
             .map(|()| api_response::msg("Upload successful").into_response())
     } else {
@@ -178,12 +178,10 @@ async fn upload_avatar(
 }
 
 async fn profile_impl(
-    repo: state::SeaOrmRepo,
+    use_case: &ProfileUseCase,
     name: &str,
 ) -> Result<Data<UserProfile>, axum::response::Response> {
-    let profile_use_case = use_case::user::Profile::new(repo);
-
-    profile_use_case
+    use_case
         .find_by_name(name)
         .await
         .map_err(DbErrWrapper::from)

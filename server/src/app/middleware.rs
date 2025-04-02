@@ -1,5 +1,4 @@
-use std::sync::Arc;
-
+use axum::extract::FromRef;
 use axum::{Router, http};
 use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
@@ -7,22 +6,24 @@ use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use tower_http::cors::{Any, CorsLayer};
 use tower_sessions_redis_store::RedisStore;
 
-use crate::middleware;
-use crate::state::{AppState, CONFIG};
+use crate::state::{ArcAppState, CONFIG};
+use crate::{middleware, state};
 
 pub fn append_global_middleware_layer(
-    router: Router<Arc<AppState>>,
-    state: &AppState,
-) -> Router<Arc<AppState>> {
+    router: Router<ArcAppState>,
+    state: &ArcAppState,
+) -> Router<ArcAppState> {
     let session_store = RedisStore::new(state.redis_pool());
 
     let session_layer = SessionManagerLayer::new(session_store)
         .with_name("session_token")
         .with_expiry(Expiry::OnInactivity(Duration::days(30)));
 
-    let auth_layer =
-        AuthManagerLayerBuilder::new(state.user_service.clone(), session_layer)
-            .build();
+    let auth_layer = AuthManagerLayerBuilder::new(
+        state::UserService::from_ref(state),
+        session_layer,
+    )
+    .build();
 
     let conf = CONFIG.middleware.limit;
 

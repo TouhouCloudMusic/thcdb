@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use std::sync::Arc;
 
 use axum::routing::get;
 use axum::{Json, Router};
@@ -9,9 +8,9 @@ use utoipa_scalar::{Scalar, Servable};
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::controller;
 use crate::service::user::AuthSession;
-use crate::state::AppState;
+use crate::state::ArcAppState;
 
-pub fn router() -> Router<Arc<AppState>> {
+pub fn router() -> Router<ArcAppState> {
     let (api_router, api_doc) = controller::api_router().split_for_parts();
 
     let doc_router = api_router
@@ -34,7 +33,7 @@ pub fn router() -> Router<Arc<AppState>> {
         .merge(static_dir())
 }
 
-fn static_dir() -> Router<Arc<AppState>> {
+fn static_dir() -> Router<ArcAppState> {
     let image_path = PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]);
 
     Router::new().nest_service(

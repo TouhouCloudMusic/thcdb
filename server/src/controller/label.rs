@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::Json;
 use axum::extract::{Path, Query};
 use axum::middleware::from_fn;
@@ -13,12 +11,12 @@ use crate::api_response::{Data, Message};
 use crate::dto::label::{LabelResponse, NewLabel};
 use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
-use crate::state::AppState;
+use crate::state::ArcAppState;
 use crate::utils::MapInto;
 
 const TAG: &str = "Label";
 
-pub fn router() -> OpenApiRouter<Arc<AppState>> {
+pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(create_label))
         .routes(routes!(upsert_label_correction))

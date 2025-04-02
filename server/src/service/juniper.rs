@@ -1,7 +1,7 @@
 use entity::GqlScalarValue;
 use juniper::EmptySubscription;
 
-use crate::AppState;
+use crate::ArcAppState;
 use crate::resolver::juniper::{JuniperMutation, JuniperQuery};
 
 pub struct JuniperContext {
