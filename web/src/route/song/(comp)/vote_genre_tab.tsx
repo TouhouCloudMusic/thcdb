@@ -3,7 +3,7 @@ import { type UseFloatingResult, useFloating } from "solid-floating-ui"
 import { For, Index, type Setter, Show, createSignal } from "solid-js"
 import { createAtom } from "~/utils/createAtom"
 
-import { useSongData } from "../controller"
+import { useSongData } from "../store"
 
 export function VoteGenreTab(props: {
   voteTabRef: Setter<HTMLElement | undefined>
@@ -105,7 +105,7 @@ export function VoteGenreTab(props: {
                   <button class="mx-1 h-4/5 rounded-sm bg-green-500 px-1 text-white">
                     *
                   </button>
-                  <button class="bg-reimu-500 mx-1 h-4/5 rounded-sm px-1 text-white">
+                  <button class="mx-1 h-4/5 rounded-sm bg-reimu-500 px-1 text-white">
                     -
                   </button>
                 </div>

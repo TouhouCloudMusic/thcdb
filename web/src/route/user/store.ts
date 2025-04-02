@@ -3,9 +3,9 @@ import { createProvider } from "~/utils/createProvider"
 
 import type { UserPageData } from "./user"
 
-type UserDataController = ReturnType<typeof createUserDataController>
+type UserDataStore = ReturnType<typeof createUserDataStore>
 
-const createUserDataController = (
+const createUserDataStore = (
   data: UserPageData,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setData: SetStoreFunction<UserPageData>,
@@ -19,5 +19,5 @@ const createUserDataController = (
 
 export const [UserDataProvider, useUserController] = createProvider<
   UserPageData,
-  UserDataController
->(createUserDataController)
+  UserDataStore
+>(createUserDataStore)

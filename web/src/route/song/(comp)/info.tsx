@@ -3,8 +3,8 @@ import { useFloating } from "solid-floating-ui"
 import { Index, Show, createSignal } from "solid-js"
 import { ShowPortal } from "~/utils/ShowPortal"
 
-import { useSongData } from "../controller"
 import style from "../song_page.module.css"
+import { useSongData } from "../store"
 import { VoteGenreTab } from "./vote_genre_tab"
 
 export function SongInfo() {

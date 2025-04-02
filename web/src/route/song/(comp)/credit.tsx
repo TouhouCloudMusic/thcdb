@@ -1,6 +1,6 @@
 import { Index } from "solid-js"
 
-import { useSongData } from "../controller"
+import { useSongData } from "../store"
 
 const roleListClass = "flex flex-wrap my-0.5 text-sm"
 export function CreditComp() {

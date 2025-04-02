@@ -6,8 +6,8 @@ import { EditComp } from "./(comp)/edit"
 import { SongInfo } from "./(comp)/info"
 import { ReviewComp } from "./(comp)/review"
 import { UserActionComp } from "./(comp)/user_action"
-import { SongDataProvider, useSongData } from "./controller"
-import { testSongData } from "./test_data"
+import { testSongData } from "./mock_data"
+import { SongDataProvider, useSongData } from "./store"
 
 // import "./song_page.css"
 const divideClass = "divide-y-2 divide-gray-400 w-full"
@@ -17,7 +17,6 @@ function SongPage() {
   return (
     <main>
       <div class="mt-0 flex flex-col items-center justify-center gap-1">
-        {" "}
         <Title>{title()}</Title>
         <div class={divideClass}>
           <div class="flex items-baseline justify-between">
