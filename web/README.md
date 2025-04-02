@@ -13,3 +13,16 @@ Figma 网页设计链接
 ## 命名规范
 
 TODO
+
+## Commit 格式
+
+module(可选, 小写): Message(第一个单词大写)
+
+示例:
+
+```
+payment: Fix currency rounding error
+
+- Corrects USD conversion calculations
+- Affects checkout and refund flows
+```
