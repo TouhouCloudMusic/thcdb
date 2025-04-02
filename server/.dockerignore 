@@ -1,0 +1,10 @@
+**/target/
+**/.git/
+**/.gitignore
+**/docker-compose.override.yml
+**/.env
+**/.DS_Store
+
+./vscode
+./idea
+./github

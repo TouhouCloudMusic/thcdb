@@ -7,3 +7,10 @@ env "local" {
 		src = "file://schema/"
 	}
 }
+
+env "docker" {
+	exclude = ["*.seaql_migrations"]
+	schema {
+		src = "file://schema/"
+	}
+}
