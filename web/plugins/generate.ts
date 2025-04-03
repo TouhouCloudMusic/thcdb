@@ -8,9 +8,7 @@ export const generatePlugin = (base_url?: string): Plugin => ({
   name: "generate",
   async buildStart() {
     if (!base_url) {
-      console.log(
-        "SERVER_BASE_URL is not defined, skipping constants generation",
-      )
+      console.log("base_url is not defined, skipping constants generation")
       return
     }
     try {
@@ -20,7 +18,13 @@ export const generatePlugin = (base_url?: string): Plugin => ({
       ])
       console.log("File generated successfully")
     } catch (error) {
-      console.error("Failed to generate file:", error)
+      let msg
+      if (error instanceof Error) {
+        msg = error.message
+      } else {
+        msg = error
+      }
+      console.error("Failed to generate file:", msg)
     }
   },
 })
