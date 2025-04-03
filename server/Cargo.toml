@@ -21,6 +21,7 @@ axum-login = { version = "0.17" }
 chrono = "0.4"
 dotenvy = "0.15"
 itertools = "0.14"
+quote = "1.0.38"
 sea-orm = { version = "1.1.2", features = [
     "sqlx-postgres",
     "runtime-tokio-rustls",
@@ -50,6 +51,7 @@ utoipa = { version = "5", features = [
 [build-dependencies]
 dotenvy.workspace = true
 git2              = "0.20.1"
+quote.workspace   = true
 syn.workspace     = true
 
 [package]

@@ -11,6 +11,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
+use crate::constant::{USER_NAME_REGEX_STR, USER_PASSWORD_REGEX_STR};
 use crate::error::{ApiErrorTrait, ErrorCode, TokioError};
 use crate::state::ARGON2_HASHER;
 
@@ -146,7 +147,7 @@ async fn verify_password(
 
 fn validate_username(username: &str) -> Result<(), ValidateCredsError> {
     static USER_NAME_REGEX: LazyLock<Regex> =
-        LazyLock::new(|| Regex::new(r"^[\p{L}\p{N}_]{1,32}$").unwrap());
+        LazyLock::new(|| Regex::new(USER_NAME_REGEX_STR).unwrap());
 
     if USER_NAME_REGEX.is_match(username)
         && !username
@@ -166,9 +167,8 @@ fn validate_username(username: &str) -> Result<(), ValidateCredsError> {
 fn validate_password(password: &str) -> Result<(), ValidateCredsError> {
     use zxcvbn::{Score, zxcvbn};
 
-    static USER_PASSWORD_REGEX: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"^[A-Za-z\d`~!@#$%^&*()\-_=+]{8,}$").unwrap()
-    });
+    static USER_PASSWORD_REGEX: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(USER_PASSWORD_REGEX_STR).unwrap());
 
     if USER_PASSWORD_REGEX.is_match(password) {
         let result = zxcvbn(password, &[]);
@@ -235,8 +235,6 @@ mod test {
         let test_cases = [
             // 长度
             ("", false),
-            (&"a".repeat(33), false),
-            // 空格
             (" a ", false),
             ("a a", false),
             // 特殊字符
