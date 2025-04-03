@@ -37,6 +37,8 @@ Before you begin contributing, make sure to set the following environment variab
 - `ATLAS_DEV_DATABASE_URL`: The database URL for atlas validate schema, this database must be empty. [More details](https://atlasgo.io/concepts/dev-database).
 - `REDIS_URL`: The redis url.
 - `SERVER_PORT`: The server listening port.
+- `ADMIN_PASSWORD`: The Admin password for the dev only admin account.
+
 
 #### Pre-Push Hook
 
