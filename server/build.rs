@@ -7,6 +7,7 @@ use quote::ToTokens;
 use syn::{BinOp, Expr, Item, Lit, parse_file};
 
 fn main() {
+    const LINE_BREAK: char = '\n';
     let _ = dotenvy::dotenv().expect(".env file not found");
 
     let commit_hash = if let Ok(repo) = Repository::open(".")
@@ -28,7 +29,7 @@ fn main() {
     let comment_msg =
         format!("Auto-generated from thcdb server #{commit_hash}\n\n");
 
-    let kt_pkg = "net.hearnsoft.tcm.server.constants";
+    let kt_pkg = "package net.hearnsoft.tcm.server.constants";
 
     let kt_header = format!(
         "// {comment_msg}\
@@ -66,20 +67,20 @@ fn main() {
                         _ => None,
                     } {
                         ts_content.push(format!(
-                            r##"r#"export const {ident} = {str}\n\n"#"##,
+                            r##"r#"export const {ident} = {str}{LINE_BREAK}"#"##,
                         ));
 
                         kt_content.push(format!(
-                            r##"r#"const val {ident} = {str}\n\n)"#"##,
+                            r##"r#"const val {ident} = {str}{LINE_BREAK}"#"##
                         ));
                     } else {
                         ts_content.push(format!(
-                            r#"format!("export const {ident} = {{}})\n\n", {})"#,
+                            r#"format!("export const {ident} = {{}}{LINE_BREAK}", {})"#,
                             right_expr.to_token_stream()
                         ));
 
                         kt_content.push(format!(
-                            r#"format!("const val {ident} = {{}})\n\n", {})"#,
+                            r#"format!("const val {ident} = {{}}{LINE_BREAK}", {})"#,
                             right_expr.to_token_stream()
                         ));
                     }
