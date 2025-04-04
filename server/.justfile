@@ -1,10 +1,9 @@
-set windows-shell := ["pwsh.exe", "-NoLogo","-Command"]
+set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 set dotenv-load := true
 set dotenv-required := true
 
 fmt:
   taplo fmt
-  atlas schema fmt ./schema
   cargo fmt
 
 fix:

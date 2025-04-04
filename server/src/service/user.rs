@@ -22,6 +22,7 @@ use sea_orm::{
 };
 
 use crate::application::service::image::CreateError;
+use crate::constant::ADMIN_USERNAME;
 use crate::domain::service::image::AsyncImageStorage;
 use crate::error::{DbErrWrapper, ErrorCode, InvalidField, ServiceError};
 use crate::infrastructure::adapter::storage::image::LocalFileImageStorage;
@@ -344,13 +345,19 @@ pub async fn upsert_admin_acc(db: &DatabaseConnection) {
     async {
         let tx = db.begin().await?;
 
-        if username_in_use("Admin", &tx).await? {
+        if username_in_use(ADMIN_USERNAME, &tx).await? {
+            user::Entity::update_many()
+                .col_expr(user::Column::Password, Expr::value(password))
+                .filter(user::Column::Name.eq(ADMIN_USERNAME))
+                .exec(&tx)
+                .await?;
+
             return Ok(());
         }
 
         let res = user::Entity::insert(user::ActiveModel {
             id: NotSet,
-            name: Set("Admin".into()),
+            name: Set(ADMIN_USERNAME.to_string()),
             password: Set(password),
             avatar_id: Set(None),
             last_login: Set(chrono::Local::now().into()),
