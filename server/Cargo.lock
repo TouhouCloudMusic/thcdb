@@ -4342,6 +4342,7 @@ dependencies = [
  "itertools 0.14.0",
  "lettre",
  "macros",
+ "migration",
  "quote",
  "rand 0.9.0",
  "regex",

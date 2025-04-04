@@ -10,6 +10,7 @@ members = [
 [workspace.dependencies]
 entity      = { path = "./entity" }
 macros      = { path = "./macros" }
+migration   = { path = "./migration" }
 proc_macros = { path = "./proc_macros" }
 # external
 argon2 = "0.5"
@@ -60,8 +61,9 @@ name    = "thcdb_rs"
 version = "0.1.0"
 
 [dependencies]
-entity.workspace = true
-macros.workspace = true
+entity.workspace    = true
+macros.workspace    = true
+migration.workspace = true
 #
 argon2.workspace = true
 async-trait = { version = "0.1" }

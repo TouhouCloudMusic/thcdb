@@ -41,6 +41,7 @@ use std::net::SocketAddr;
 
 use app::create_app;
 use infrastructure::logger::Logger;
+use migration::MigratorTrait;
 use state::{ArcAppState, CONFIG};
 #[cfg(target_os = "linux")]
 use tikv_jemallocator::Jemalloc;
@@ -51,14 +52,16 @@ use tokio::signal;
 static GLOBAL: Jemalloc = Jemalloc;
 
 #[tokio::main]
-async fn main() {
-    dotenvy::dotenv().unwrap();
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenvy::dotenv()?;
 
     Logger::init();
 
     tracing::info!("Starting server");
 
     let state = ArcAppState::init().await;
+
+    migration::Migrator::up(&state.database, None).await?;
 
     model::lookup_table::check_database_lookup_tables(&state.database)
         .await
@@ -68,8 +71,7 @@ async fn main() {
 
     let listener =
         tokio::net::TcpListener::bind(format!("0.0.0.0:{}", CONFIG.app.port))
-            .await
-            .unwrap();
+            .await?;
 
     tracing::info!("Server listening on http://127.0.0.1:{}", CONFIG.app.port);
 
@@ -85,6 +87,7 @@ async fn main() {
             }
         }
     })
-    .await
-    .unwrap();
+    .await?;
+
+    Ok(())
 }

@@ -21,10 +21,6 @@ pre-push: check
 
 default: fmt && fix
 
-migrate:
-  atlas schema apply --env local
-
-
 __rm_entites:
   rm ./entity/src/entities/*
 
@@ -37,8 +33,6 @@ __generate:
   --enum-extra-derives Copy
 
 generate: __rm_entites __generate
-
-db_all: migrate generate
 
 converge:
   cargo tarpaulin --workspace --exclude-files entity/src/entities/*
