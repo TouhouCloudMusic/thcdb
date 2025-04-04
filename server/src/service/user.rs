@@ -248,17 +248,6 @@ impl Service {
         Ok(())
     }
 
-    pub async fn is_username_in_use(
-        &self,
-        username: &str,
-    ) -> Result<bool, ServiceError> {
-        let user = user::Entity::find()
-            .filter(user::Column::Name.eq(username))
-            .count(&self.db)
-            .await?;
-        Ok(user > 0)
-    }
-
     pub async fn verify_credentials(
         &self,
         cred: AuthCredential,
@@ -294,7 +283,7 @@ async fn create_impl(
 
     let AuthCredential { username, .. } = &creds;
 
-    if is_username_in_use(username, db).await? {
+    if username_in_use(username, db).await? {
         return Err(CreateUserError::UsernameAlreadyInUse);
     }
 
@@ -321,10 +310,10 @@ async fn create_impl(
     Ok(user)
 }
 
-pub async fn is_username_in_use(
+async fn username_in_use(
     username: &str,
     db: &impl ConnectionTrait,
-) -> Result<bool, ServiceError> {
+) -> Result<bool, DbErr> {
     let user = user::Entity::find()
         .filter(user::Column::Name.eq(username))
         .count(db)
@@ -354,27 +343,29 @@ pub async fn upsert_admin_acc(db: &DatabaseConnection) {
 
     async {
         let tx = db.begin().await?;
-        user::Entity::insert(
-            user::Model {
-                id: 1,
-                name: "Admin".into(),
-                password,
-                avatar_id: None,
-                last_login: chrono::Local::now().into(),
-            }
-            .into_active_model(),
-        )
+
+        if username_in_use("Admin", &tx).await? {
+            return Ok(());
+        }
+
+        let res = user::Entity::insert(user::ActiveModel {
+            id: NotSet,
+            name: Set("Admin".into()),
+            password: Set(password),
+            avatar_id: Set(None),
+            last_login: Set(chrono::Local::now().into()),
+        })
         .on_conflict(
-            OnConflict::column(user::Column::Id)
+            OnConflict::column(user::Column::Name)
                 .update_columns(user::Column::iter())
                 .to_owned(),
         )
-        .exec(&tx)
+        .exec_with_returning(&tx)
         .await?;
 
         user_role::Entity::insert(
             user_role::Model {
-                user_id: 1,
+                user_id: res.id,
                 role_id: UserRole::Admin.as_id(),
             }
             .into_active_model(),
