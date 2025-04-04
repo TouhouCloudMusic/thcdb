@@ -6,7 +6,7 @@ on:
 
 jobs:
   create-branch-for-task:
-    if: contains(toJson(github.event.issue.labels), 'Todo Task')
+    if: contains(toJson(github.event.issue.labels), 'todo task')
     runs-on: ubuntu-latest
 
     steps:
