@@ -3,6 +3,7 @@ name: Create Branch for Todo Task
 on:
   issues:
     types: [opened]
+  workflow_dispatch:
 
 jobs:
   create-branch-for-task:
