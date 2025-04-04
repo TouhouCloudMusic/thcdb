@@ -31,8 +31,8 @@ jobs:
 
     - name: Create and push branch
       run: |
-        git fetch origin main
-        git checkout -b ${{ steps.vars.outputs.branch_name }} origin/main
+        git fetch origin dev
+        git checkout -b ${{ steps.vars.outputs.branch_name }} origin/dev
         git push origin ${{ steps.vars.outputs.branch_name }}
 
     - name: Comment on the issue
