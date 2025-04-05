@@ -18,5 +18,6 @@
     ["@tw\\s\\*?\\/?[\\s\\S]+?[`]([^`]*)"],
     ["@tw\\s\\*?\\/?[\\s\\S]+?[\"]([^\"]*)"]
   ],
-  "tailwindCSS.classFunctions": ["twMerge"]
+  "tailwindCSS.classFunctions": ["twMerge"],
+  "tailwindCSS.experimental.configFile": "src/index.css"
 }
