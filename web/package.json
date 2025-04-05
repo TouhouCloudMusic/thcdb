@@ -16,7 +16,6 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@ark/attest": "^0.43.2",
     "@floating-ui/dom": "^1.6.13",
     "@kobalte/core": "^0.13.9",
     "@modular-forms/solid": "^0.25.1",
@@ -29,12 +28,9 @@
     "@tanstack/solid-router": "^1.114.23",
     "arktype": "^2.1.2",
     "cropperjs": "^2.0.0",
-    "daisyui": "^5.0.0",
     "dayjs": "^1.11.13",
     "js-cookie": "^3.0.5",
     "openapi-fetch": "^0.13.5",
-    "openapi-react-query": "^0.3.1",
-    "radash": "^12.1.0",
     "solid-floating-ui": "^0.3.1",
     "solid-js": "^1.9.5",
     "solid-popper": "^0.3.0",
@@ -43,6 +39,7 @@
     "valibot": "1.0.0"
   },
   "devDependencies": {
+    "@ark/attest": "^0.43.2",
     "@chromatic-com/storybook": "^3.2.5",
     "@eslint/js": "^9.21.0",
     "@faker-js/faker": "^9.5.1",
@@ -51,7 +48,6 @@
     "@storybook/addon-interactions": "^8.6.3",
     "@storybook/blocks": "^8.6.3",
     "@storybook/test": "^8.6.3",
-    "@suid/vite-plugin": "^0.3.1",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/vite": "^4.0.9",
     "@tanstack/eslint-plugin-query": "^5.66.1",
