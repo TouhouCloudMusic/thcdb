@@ -54,7 +54,9 @@ fn main() {
                         Expr::Lit(expr_lit) => match &expr_lit.lit {
                             Lit::Str(s) => Some(format!(
                                 "\"{}\"",
-                                s.value().replace('"', r#"\""#)
+                                s.value()
+                                    .replace('"', r#"\""#)
+                                    .replace('\\', r"\\")
                             )),
                             Lit::Int(i) => Some(i.to_string()),
                             Lit::Float(f) => Some(f.to_string()),
