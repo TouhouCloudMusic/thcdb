@@ -9,28 +9,28 @@ import { createEffect, createSignal, onCleanup } from "solid-js"
  *  * the setter of the element
  */
 export function createClickOutside() {
-  let [show, setShow] = createSignal(false)
+	let [show, setShow] = createSignal(false)
 
-  let [ref, setRef] = createSignal<HTMLElement | undefined>()
+	let [ref, setRef] = createSignal<HTMLElement | undefined>()
 
-  let callback = (event: MouseEvent) => {
-    if (event.type !== "mouseup") return
-    let isInside = ref() ? event.composedPath().includes(ref()!) : false
-    if (!isInside) {
-      setShow(false)
-    }
-  }
+	let callback = (event: MouseEvent) => {
+		if (event.type == "mouseup") return
+		let isInside = ref() ? event.composedPath().includes(ref()!) : false
+		if (!isInside) {
+			setShow(false)
+		}
+	}
 
-  createEffect(() => {
-    if (show()) {
-      document.addEventListener("click", callback)
-    } else {
-      document.removeEventListener("click", callback)
-    }
-    onCleanup(() => {
-      document.removeEventListener("click", callback)
-    })
-  })
+	createEffect(() => {
+		if (show()) {
+			document.addEventListener("click", callback)
+		} else {
+			document.removeEventListener("click", callback)
+		}
+		onCleanup(() => {
+			document.removeEventListener("click", callback)
+		})
+	})
 
-  return [show, setShow, setRef] as const
+	return [show, setShow, setRef] as const
 }
