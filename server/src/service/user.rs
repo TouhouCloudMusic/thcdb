@@ -28,11 +28,8 @@ use crate::error::{DbErrWrapper, ErrorCode, InvalidField, ServiceError};
 use crate::infrastructure::adapter::storage::image::LocalFileImageStorage;
 use crate::infrastructure::adapter::{self};
 use crate::model::lookup_table::LookupTableEnum;
-use crate::state::AuthService;
 use crate::utils::orm::PgFuncExt;
 use crate::{application, domain};
-
-pub type AuthSession = axum_login::AuthSession<AuthService>;
 
 type CreateImageSerivceError = application::service::image::CreateError<
     <adapter::database::SeaOrmRepository as domain::repository::image::Repository>::Error,

@@ -4,7 +4,6 @@ use axum::http::StatusCode;
 use axum::middleware::from_fn;
 use axum::response::IntoResponse;
 use axum_typed_multipart::TypedMultipart;
-use macros::use_session;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -51,8 +50,9 @@ type ProfileUseCase = use_case::user::Profile<state::SeaOrmRepository>;
         ServiceError
     ),
 )]
-#[use_session]
+
 async fn profile(
+    session: AuthSession,
     State(use_case): State<ProfileUseCase>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
     if let Some(user) = session.user {

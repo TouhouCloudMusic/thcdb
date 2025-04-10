@@ -126,37 +126,6 @@ pub fn use_service(attr: TokenStream, item: TokenStream) -> TokenStream {
     quote::quote!(#input_fn).into()
 }
 
-/// ```no_run
-/// #[use_session]
-/// fn foo() {
-///     session.xxx();
-/// }
-///
-/// #[use_session(baz)]
-/// fn bar() {
-///     baz.xxx();
-/// }
-/// ```
-#[proc_macro_attribute]
-pub fn use_session(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let ident = parse_macro_input!(attr as Option<syn::Ident>);
-
-    let mut input_fn = parse_macro_input!(item as ItemFn);
-
-    let param_name = if let Some(name) = ident {
-        name.to_string()
-    } else {
-        "session".to_string()
-    };
-    let param_type = "crate::service::user::AuthSession";
-
-    let new_arg: syn::FnArg =
-        syn::parse_str(&format!("{}: {}", param_name, param_type)).unwrap();
-
-    input_fn.sig.inputs.insert(0, new_arg);
-    quote::quote!(#input_fn).into()
-}
-
 #[proc_macro_derive(IntoErrorSchema)]
 pub fn derive_impl_error_schema(input: TokenStream) -> TokenStream {
     error_schema_impl(input)

@@ -1,7 +1,7 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
-use macros::{use_service, use_session};
+use macros::use_service;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -11,7 +11,7 @@ use crate::api_response::{Data, Message, status_ok_schema};
 use crate::dto::artist::{ArtistCorrection, ArtistResponse};
 use crate::middleware::is_signed_in;
 use crate::service::{self, artist};
-use crate::state::ArcAppState;
+use crate::state::{ArcAppState, AuthSession};
 use crate::utils::MapInto;
 
 type Error = service::artist::Error;
@@ -101,13 +101,13 @@ async fn find_artist_by_keyword(
 		Error
 	),
 )]
-#[use_session]
-#[use_service(artist)]
 async fn create_artist(
+    auth_session: AuthSession,
+    State(artist_service): State<artist::Service>,
     Json(input): Json<ArtistCorrection>,
 ) -> Result<Message, Error> {
     artist_service
-        .create(session.user.unwrap().id, input)
+        .create(auth_session.user.unwrap().id, input)
         .await?;
 
     Ok(Message::ok())
@@ -124,9 +124,9 @@ async fn create_artist(
 		Error
 	),
 )]
-#[use_session]
 #[use_service(artist)]
 async fn upsert_artist_correction(
+    session: AuthSession,
     Path(id): Path<i32>,
     Json(input): Json<ArtistCorrection>,
 ) -> Result<Message, Error> {

@@ -2,7 +2,6 @@ use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
 use itertools::Itertools;
-use macros::use_session;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -13,8 +12,7 @@ use crate::dto::song::{NewSong, SongResponse};
 use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
 use crate::service::song::Service;
-use crate::service::user::AuthSession;
-use crate::state::ArcAppState;
+use crate::state::{ArcAppState, AuthSession};
 use crate::utils::MapInto;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
@@ -80,8 +78,8 @@ async fn find_song_by_keyword(
         ServiceError
     ),
 )]
-#[use_session]
 async fn create_song(
+    session: AuthSession,
     State(service): State<Service>,
     Json(input): Json<NewSong>,
 ) -> Result<Message, ServiceError> {

@@ -1,7 +1,6 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
-use macros::use_session;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -11,7 +10,7 @@ use crate::api_response::{self, Data};
 use crate::dto::tag::{TagCorrection, TagResponse};
 use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
-use crate::state::{self, ArcAppState};
+use crate::state::{self, ArcAppState, AuthSession};
 use crate::utils::MapInto;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
@@ -74,8 +73,8 @@ async fn find_by_keyword(
         ServiceError
     ),
 )]
-#[use_session]
 async fn create_tag(
+    session: AuthSession,
     State(tag_service): State<state::TagService>,
     Json(input): Json<TagCorrection>,
 ) -> Result<api_response::Message, ServiceError> {
@@ -94,8 +93,8 @@ async fn create_tag(
         ServiceError
     ),
 )]
-#[use_session]
 async fn upsert_tag_correction(
+    session: AuthSession,
     State(tag_service): State<state::TagService>,
     Path(id): Path<i32>,
     Json(input): Json<TagCorrection>,

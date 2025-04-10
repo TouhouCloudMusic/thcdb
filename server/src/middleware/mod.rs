@@ -8,7 +8,7 @@ use tower_governor::GovernorLayer;
 use tower_governor::key_extractor::PeerIpKeyExtractor;
 
 use crate::error;
-use crate::service::user::AuthSession;
+use crate::state::AuthSession;
 
 pub async fn is_signed_in(
     auth_session: AuthSession,

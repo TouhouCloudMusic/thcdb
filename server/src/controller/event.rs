@@ -1,7 +1,7 @@
 use axum::Json;
 use axum::extract::{Path, Query};
 use axum::middleware::from_fn;
-use macros::{use_service, use_session};
+use macros::use_service;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -11,7 +11,7 @@ use crate::api_response::{Data, Message};
 use crate::dto::event::{EventCorrection, EventResponse};
 use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
-use crate::state::ArcAppState;
+use crate::state::{ArcAppState, AuthSession};
 use crate::utils::MapInto;
 
 const TAG: &str = "Event";
@@ -84,9 +84,9 @@ async fn find_by_keyword(
 		ServiceError
 	),
 )]
-#[use_session]
 #[use_service(event)]
 async fn create(
+    session: AuthSession,
     Json(input): Json<EventCorrection>,
 ) -> Result<Message, ServiceError> {
     event_service
@@ -107,9 +107,9 @@ async fn create(
 		ServiceError
 	),
 )]
-#[use_session]
 #[use_service(event)]
 async fn upsert_correction(
+    session: AuthSession,
     Path(id): Path<i32>,
     Json(input): Json<EventCorrection>,
 ) -> Result<Message, ServiceError> {

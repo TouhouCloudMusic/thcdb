@@ -1,7 +1,7 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
-use macros::{use_service, use_session};
+use macros::{use_service, };
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -12,7 +12,7 @@ use crate::dto::release::{ReleaseCorrection, ReleaseResponse};
 use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
 use crate::service::release::Service;
-use crate::state::ArcAppState;
+use crate::state::{ArcAppState, AuthSession};
 use crate::utils::MapInto;
 
 type Error = ServiceError;
@@ -104,9 +104,9 @@ async fn random(
 		Error
     ),
 )]
-#[use_session]
 #[use_service(release)]
 async fn create_release(
+    session: AuthSession,
     Json(data): Json<ReleaseCorrection>,
 ) -> Result<Message, Error> {
     let user_id = session.user.unwrap().id;
@@ -126,9 +126,9 @@ async fn create_release(
 		Error
     ),
 )]
-#[use_session]
 #[use_service(release)]
 async fn update_release(
+    session: AuthSession,
     Path(id): Path<i32>,
     Json(data): Json<ReleaseCorrection>,
 ) -> Result<Message, Error> {

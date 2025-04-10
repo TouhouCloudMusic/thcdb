@@ -7,8 +7,7 @@ use utoipa_scalar::{Scalar, Servable};
 
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::controller;
-use crate::service::user::AuthSession;
-use crate::state::ArcAppState;
+use crate::state::{ArcAppState, AuthSession};
 
 pub fn router() -> Router<ArcAppState> {
     let (api_router, api_doc) = controller::api_router().split_for_parts();
