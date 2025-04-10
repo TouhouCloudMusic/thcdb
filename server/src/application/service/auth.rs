@@ -41,6 +41,7 @@ where
     #[from(password_hash::Error)]
     Hash(HasherError),
     #[error(transparent)]
+    #[from(ValidateCredsError)]
     Validate(ValidateCredsError),
 }
 
@@ -147,10 +148,6 @@ where
         &self,
         creds: AuthCredential,
     ) -> Result<User, SignInError<R::Error>> {
-        creds
-            .validate()
-            .map_err(|_| AuthnError::AuthenticationFailed)?;
-
         let user = self
             .repo
             .find_by_name(&creds.username)
@@ -168,6 +165,8 @@ where
         &self,
         creds: AuthCredential,
     ) -> Result<User, SignUpError<R::Error>> {
+        creds.validate()?;
+
         self.repo
             .find_by_name(&creds.username)
             .await

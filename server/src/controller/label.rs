@@ -1,7 +1,7 @@
 use axum::Json;
 use axum::extract::{Path, Query};
 use axum::middleware::from_fn;
-use macros::{use_service, };
+use macros::use_service;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
