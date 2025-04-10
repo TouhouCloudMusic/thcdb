@@ -37,7 +37,10 @@ pub type SongService = crate::service::song::Service;
 
 pub type TagService = crate::service::tag::Service<SeaOrmRepository>;
 pub type UserService = crate::service::user::Service;
+pub type AuthService =
+    crate::application::service::auth::AuthService<SeaOrmRepository>;
 
+pub type AuthSession = axum_login::AuthSession<AuthService>;
 pub static CONFIG: LazyLock<Config> = LazyLock::new(Config::init);
 
 // Should this be a singleton?
@@ -173,5 +176,11 @@ impl FromRef<ArcAppState> for ReleaseService {
 impl FromRef<ArcAppState> for SongService {
     fn from_ref(input: &ArcAppState) -> Self {
         Self::new(input.database.clone())
+    }
+}
+
+impl FromRef<ArcAppState> for AuthService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self::new(input.sea_orm_repo.clone())
     }
 }

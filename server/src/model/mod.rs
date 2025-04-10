@@ -1,5 +1,4 @@
 pub mod artist;
-pub mod auth;
 pub mod lookup_table;
 
 // pub mod share {

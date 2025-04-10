@@ -1,16 +1,20 @@
-use super::RepositoryTrait;
-use crate::domain::model;
+use crate::domain::model::user::User;
+use crate::domain::model::{self};
 
-pub trait Repository: RepositoryTrait {
+pub trait Repository: Send + Sync {
     type Error;
+
+    async fn create(&self, user: User) -> Result<User, Self::Error>;
+
+    async fn find_by_id(&self, id: i32) -> Result<Option<User>, Self::Error>;
 
     async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<entity::user::Model>, Self::Error>;
+    ) -> Result<Option<User>, Self::Error>;
 }
 
-pub trait ProfileRepository: RepositoryTrait {
+pub trait ProfileRepository: Send + Sync {
     type Error;
 
     async fn find_by_name(

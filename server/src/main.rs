@@ -17,7 +17,14 @@
     clippy::unreadable_literal
 )]
 #![deny(unused_must_use, clippy::clone_on_copy)]
-#![feature(variant_count, let_chains, try_blocks, min_specialization)]
+#![feature(
+    variant_count,
+    let_chains,
+    try_blocks,
+    min_specialization,
+    trait_alias
+)]
+#![feature(return_type_notation)]
 
 mod api_response;
 mod app;

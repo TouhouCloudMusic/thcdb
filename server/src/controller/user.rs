@@ -9,16 +9,17 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::api_response::{Data, Message};
-use crate::application::use_case;
+use crate::application::service::auth::{
+    AuthServiceTrait, SessionBackendError, SignInError, SignUpError,
+};
+use crate::application::use_case::{self};
+use crate::domain::model::auth::{AuthCredential, AuthnError};
 use crate::domain::model::user::UserProfile;
 use crate::dto::user::UploadAvatar;
 use crate::error::{DbErrWrapper, ServiceError};
 use crate::middleware::is_signed_in;
-use crate::model::auth::{AuthCredential, AuthnError};
-use crate::service::user::{
-    AuthSession, SessionBackendError, SignInError, SignUpError,
-    UploadAvatarError,
-};
+use crate::service::user::UploadAvatarError;
+use crate::state::AuthSession;
 use crate::{ArcAppState, api_response, state};
 
 const TAG: &str = "User";
@@ -85,23 +86,26 @@ async fn profile_with_name(
     request_body = AuthCredential,
     responses(
         (status = 200, body = DataUserProfile),
-        SignUpError
+        SignUpError<DbErrWrapper>
     ),
 )]
 async fn sign_up(
     mut auth_session: AuthSession,
     State(use_case): State<ProfileUseCase>,
-    State(user_service): State<state::UserService>,
+    State(auth_service): State<state::AuthService>,
     Json(creds): Json<AuthCredential>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
-    user_service
-        .sign_up(&mut auth_session, creds)
+    let user = auth_service
+        .sign_up(creds)
         .await
         .map_err(IntoResponse::into_response)?;
 
-    let username = &auth_session.user.unwrap().name;
+    auth_session
+        .login(&user)
+        .await
+        .map_err(|e| SessionBackendError::from(e).into_response())?;
 
-    profile_impl(&use_case, username).await
+    profile_impl(&use_case, &user.name).await
 }
 
 #[utoipa::path(
@@ -111,23 +115,28 @@ async fn sign_up(
     request_body = AuthCredential,
     responses(
         (status = 200, body = DataUserProfile),
-        SignInError,
+        (status = 401),
+        SignInError<DbErrWrapper>,
     )
 )]
 async fn sign_in(
-    mut auth_session: AuthSession,
+    mut auth_session: state::AuthSession,
     State(use_case): State<ProfileUseCase>,
-    State(user_service): State<state::UserService>,
     Json(creds): Json<AuthCredential>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
-    user_service
-        .sign_in(&mut auth_session, creds)
+    let user = auth_session
+        .authenticate(creds)
         .await
-        .map_err(IntoResponse::into_response)?;
+        .map_err(SessionBackendError::from)
+        .map_err(IntoResponse::into_response)?
+        .ok_or_else(|| StatusCode::UNAUTHORIZED.into_response())?;
 
-    let username = &auth_session.user.unwrap().name;
+    auth_session
+        .login(&user)
+        .await
+        .map_err(|e| SessionBackendError::from(e).into_response())?;
 
-    profile_impl(&use_case, username).await
+    profile_impl(&use_case, &user.name).await
 }
 
 #[utoipa::path(
@@ -137,14 +146,14 @@ async fn sign_in(
     responses(
         (status = 200, body = Message),
         (status = 401),
-        SessionBackendError
+        SessionBackendError<DbErrWrapper>,
     )
 )]
-#[use_session]
+
 async fn sign_out(
-    State(user_service): State<state::UserService>,
-) -> Result<Message, SessionBackendError> {
-    user_service.sign_out(session).await.map(|()| Message::ok())
+    mut session: AuthSession,
+) -> Result<Message, SessionBackendError<DbErrWrapper>> {
+    Ok(session.logout().await.map(|_| Message::ok())?)
 }
 
 #[utoipa::path(
@@ -184,7 +193,6 @@ async fn profile_impl(
     use_case
         .find_by_name(name)
         .await
-        .map_err(DbErrWrapper::from)
         .map_err(IntoResponse::into_response)?
         .map_or_else(
             || Err(StatusCode::NOT_FOUND.into_response()),

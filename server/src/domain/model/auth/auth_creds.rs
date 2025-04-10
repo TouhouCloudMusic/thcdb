@@ -74,12 +74,6 @@ error_set! {
     };
 }
 
-impl ApiErrorTrait for HasherError {
-    fn before_into_api_error(&self) {
-        tracing::error!("Hasher error: {}", self);
-    }
-}
-
 #[derive(Clone, Serialize, Deserialize, ToSchema)]
 pub struct AuthCredential {
     pub username: String,
@@ -87,6 +81,7 @@ pub struct AuthCredential {
 }
 
 impl AuthCredential {
+    // TODO: Validate on new
     pub fn validate(&self) -> Result<(), ValidateCredsError> {
         validate_username(&self.username)?;
         validate_password(&self.password)?;
@@ -184,6 +179,11 @@ fn validate_password(password: &str) -> Result<(), ValidateCredsError> {
         }
     } else {
         Err(ValidateCredsError::InvalidPassword)
+    }
+}
+impl ApiErrorTrait for HasherError {
+    fn before_into_api_error(&self) {
+        tracing::error!("Hasher error: {}", self);
     }
 }
 

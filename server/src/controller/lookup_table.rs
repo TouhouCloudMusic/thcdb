@@ -6,9 +6,9 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::api_response::Data;
+use crate::domain::model::auth::UserRole;
 use crate::dto::share::Language;
 use crate::error::DbErrWrapper;
-use crate::model::auth::UserRole;
 use crate::state::ArcAppState;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {

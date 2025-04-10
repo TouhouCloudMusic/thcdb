@@ -15,6 +15,11 @@ pub use structs::*;
 
 use crate::api_response::{IntoApiResponse, StatusCodeExt};
 
+pub trait ApiErrorTraitDeps = std::error::Error
+    + axum::response::IntoResponse
+    + crate::error::ApiErrorTrait
+    + IntoApiResponse;
+
 error_set! {
     ApiError = {
         Unauthorized

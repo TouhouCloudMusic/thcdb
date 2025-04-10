@@ -1,6 +1,7 @@
 use sea_orm::{ColumnTrait, DbErr, EntityTrait, IntoActiveModel, QueryFilter};
 
-use crate::domain;
+use crate::domain::{self};
+use crate::error::DbErrWrapper;
 
 #[derive(Clone)]
 pub struct SeaOrmRepository {
@@ -12,8 +13,6 @@ impl SeaOrmRepository {
         Self { conn }
     }
 }
-
-impl domain::repository::RepositoryTrait for SeaOrmRepository {}
 
 impl domain::repository::image::Repository for SeaOrmRepository {
     type Error = DbErr;
@@ -38,8 +37,117 @@ impl domain::repository::image::Repository for SeaOrmRepository {
     }
 }
 
+mod user {
+    use itertools::Itertools;
+    use migration::IntoCondition;
+    use sea_orm::ActiveValue::Set;
+    use sea_orm::{
+        ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, QueryFilter,
+    };
+
+    use super::SeaOrmRepository;
+    use crate::domain::model::auth::UserRole;
+    use crate::domain::model::user::User;
+    use crate::domain::{self};
+    use crate::error::DbErrWrapper;
+
+    impl domain::repository::user::Repository for SeaOrmRepository {
+        type Error = DbErrWrapper;
+
+        async fn find_by_id(
+            &self,
+            id: i32,
+        ) -> Result<Option<User>, Self::Error> {
+            Ok(find_many_impl(entity::user::Column::Id.eq(id), &self.conn)
+                .await?
+                .into_iter()
+                .next())
+        }
+
+        async fn find_by_name(
+            &self,
+            name: &str,
+        ) -> Result<Option<User>, Self::Error> {
+            Ok(
+                find_many_impl(entity::user::Column::Name.eq(name), &self.conn)
+                    .await?
+                    .into_iter()
+                    .next(),
+            )
+        }
+
+        async fn create(&self, user: User) -> Result<User, Self::Error> {
+            let model = entity::user::ActiveModel {
+                name: Set(user.name),
+                password: Set(user.password),
+                ..Default::default()
+            }
+            .insert(&self.conn)
+            .await?;
+
+            let roles = user
+                .roles
+                .into_iter()
+                .map(|role| entity::user_role::ActiveModel {
+                    user_id: Set(model.id),
+                    role_id: Set(role.into()),
+                })
+                .collect_vec();
+
+            let roles = entity::user_role::Entity::insert_many(roles)
+                .exec_with_returning_many(&self.conn)
+                .await?;
+
+            let mut user = User::from(model);
+
+            user.roles = roles
+                .into_iter()
+                .map(|x| x.role_id.try_into())
+                .collect::<Result<Vec<UserRole>, _>>()?;
+
+            Ok(user)
+        }
+    }
+
+    impl From<entity::user::Model> for User {
+        fn from(value: entity::user::Model) -> Self {
+            Self {
+                id: value.id,
+                name: value.name,
+                password: value.password,
+                avatar_id: None,
+                last_login: value.last_login,
+                roles: vec![],
+            }
+        }
+    }
+
+    async fn find_many_impl(
+        filter: impl IntoCondition,
+        conn: &impl sea_orm::ConnectionTrait,
+    ) -> Result<Vec<User>, DbErr> {
+        entity::user::Entity::find()
+            .find_with_related(entity::user_role::Entity)
+            .filter(filter)
+            .all(conn)
+            .await?
+            .into_iter()
+            .map(|(model, roles)| {
+                let mut user = User::from(model);
+
+                user.roles = roles
+                    .into_iter()
+                    .map(|x| x.role_id.try_into())
+                    .collect::<Result<Vec<UserRole>, _>>()?;
+
+                Ok(user)
+            })
+            .collect()
+    }
+}
+
 impl domain::repository::user::ProfileRepository for SeaOrmRepository {
-    type Error = DbErr;
+    type Error = DbErrWrapper;
 
     async fn find_by_name(
         &self,

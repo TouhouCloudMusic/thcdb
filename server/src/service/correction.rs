@@ -9,8 +9,8 @@ use sea_orm::{
 };
 
 use super::*;
+use crate::domain::model::auth::UserRole;
 use crate::error::ServiceError;
-use crate::model::auth::UserRole;
 use crate::repo;
 
 super::def_service!();

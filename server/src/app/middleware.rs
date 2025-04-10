@@ -1,4 +1,3 @@
-use axum::extract::FromRef;
 use axum::{Router, http};
 use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
@@ -20,7 +19,8 @@ pub fn append_global_middleware_layer(
         .with_expiry(Expiry::OnInactivity(Duration::days(30)));
 
     let auth_layer = AuthManagerLayerBuilder::new(
-        state::UserService::from_ref(state),
+        // TODO: From Ref for state
+        state::AuthService::new(state.sea_orm_repo.clone()),
         session_layer,
     )
     .build();

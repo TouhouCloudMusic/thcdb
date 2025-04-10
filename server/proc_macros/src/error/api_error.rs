@@ -6,7 +6,7 @@ use syn::punctuated::Punctuated;
 use syn::token::Comma;
 use syn::{
     Data, DataEnum, DataStruct, DeriveInput, Error, Expr, Fields, Ident, Path,
-    Variant,
+    PathArguments, Type, TypePath, Variant,
 };
 
 #[derive(Default, PartialEq, Debug)]
@@ -86,7 +86,7 @@ pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
         attrs,
         vis: _vis,
         ident,
-        generics: _generics,
+        generics,
         data,
     } = input;
 
@@ -106,7 +106,10 @@ pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
 
                 api_err_attr.impl_api_error
             };
-            (gen_enum_impl(&ident, variants)?, is_impl_api_error)
+            (
+                gen_enum_impl(&ident, variants, &generics)?,
+                is_impl_api_error,
+            )
         }
         Data::Struct(r#struct) => {
             let is_impl_api_error = {
@@ -134,9 +137,10 @@ pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
         ))?,
     };
 
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let impl_api_error_block = if is_impl_api_error.unwrap_or(true) {
         Some(quote! {
-           impl crate::error::ApiErrorTrait for #ident {}
+           impl #impl_generics crate::error::ApiErrorTrait for #ident #ty_generics #where_clause {}
         })
     } else {
         None
@@ -153,6 +157,7 @@ pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
 fn gen_enum_impl(
     ident: &Ident,
     variants: Punctuated<Variant, Comma>,
+    generics: &syn::Generics,
 ) -> syn::Result<TokenStream2> {
     let mut status_code_left_arms = vec![];
     let mut status_code_right_arms = vec![];
@@ -164,6 +169,8 @@ fn gen_enum_impl(
     let mut error_code_right_arms = vec![];
 
     let mut into_response_arms = vec![];
+
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     for variant in &variants {
         let var_name = &variant.ident;
@@ -208,6 +215,7 @@ fn gen_enum_impl(
                 }
 
                 let field_ty = fields.unnamed.first().map(|f| &f.ty).unwrap();
+                let field_ty = insert_colon2_in_type_path(field_ty.clone());
 
                 match api_err_attr.status_code {
                     CodeOpt::Specified(_) => {
@@ -312,7 +320,9 @@ fn gen_enum_impl(
     }
 
     Ok(quote! {
-        impl crate::api_response::StatusCodeExt for #ident {
+        impl #impl_generics crate::api_response::StatusCodeExt for #ident #ty_generics
+            #where_clause
+        {
             fn as_status_code(&self) -> ::axum::http::StatusCode {
                 match self {
                     #(#status_code_left_arms => #status_code_right_arms),*
@@ -330,7 +340,9 @@ fn gen_enum_impl(
             }
         }
 
-        impl crate::error::AsErrorCode for #ident {
+        impl #impl_generics crate::error::AsErrorCode for #ident #ty_generics
+            #where_clause
+        {
             fn as_error_code(&self) -> crate::error::ErrorCode {
                 match self {
                     #(#error_code_left_arms => #error_code_right_arms),*
@@ -339,7 +351,9 @@ fn gen_enum_impl(
             }
         }
 
-        impl ::axum::response::IntoResponse for #ident {
+        impl #impl_generics ::axum::response::IntoResponse for #ident #ty_generics
+            #where_clause
+        {
             fn into_response(self) -> ::axum::response::Response {
                 use crate::api_response::IntoApiResponse;
                 match self {
@@ -349,6 +363,24 @@ fn gen_enum_impl(
             }
         }
     })
+}
+
+fn insert_colon2_in_type_path(mut ty: Type) -> Type {
+    if let Type::Path(TypePath {
+        qself: None,
+        ref mut path,
+    }) = ty
+    {
+        for segment in &mut path.segments {
+            if let PathArguments::AngleBracketed(ref mut abga) =
+                segment.arguments
+            {
+                abga.colon2_token.get_or_insert(Default::default());
+            }
+        }
+    }
+
+    ty
 }
 
 fn gen_struct_impl(
