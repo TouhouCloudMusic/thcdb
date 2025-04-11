@@ -1,3 +1,6 @@
+#
+# <div style="text-align: center;">[English](readme.md) | [中文](readme.zh-CN.md) | [日本語](readme.ja.md)</div>
+
 # Touhou Cloud DB
 
 Touhou Cloud DB is a collaborative platform for tagging and organizing doujin music. Our goal is to build an open-access
