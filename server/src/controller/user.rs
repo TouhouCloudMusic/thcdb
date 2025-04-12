@@ -180,7 +180,9 @@ async fn upload_avatar(
         user_service
             .upload_avatar(&image_service, user.id, form.data)
             .await
-            .map(|()| api_response::msg("Upload successful").into_response())
+            .map(|()| {
+                api_response::Message::new("Upload successful").into_response()
+            })
     } else {
         Ok(AuthnError::AuthenticationFailed.into_response())
     }

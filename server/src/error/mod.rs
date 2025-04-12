@@ -20,6 +20,10 @@ pub trait ApiErrorTraitDeps = std::error::Error
     + crate::error::ApiErrorTrait
     + IntoApiResponse;
 
+pub trait ApiErrorTrait: StatusCodeExt + AsErrorCode {
+    fn before_into_api_error(&self) {}
+}
+
 error_set! {
     ApiError = {
         Unauthorized
@@ -71,10 +75,6 @@ error_set! {
     };
 }
 
-pub trait ApiErrorTrait: StatusCodeExt + AsErrorCode {
-    fn before_into_api_error(&self) {}
-}
-
 #[derive(Debug, IntoErrorSchema, ApiError, Display, From, Error)]
 #[display("Database error")]
 #[api_error(
@@ -88,6 +88,12 @@ pub struct DbErrWrapper(DbErr);
 impl ApiErrorTrait for DbErrWrapper {
     fn before_into_api_error(&self) {
         tracing::error!("Database error: {:#?}", self.0);
+    }
+}
+
+impl IntoApiResponse for DbErrWrapper {
+    fn into_api_response(self) -> axum::response::Response {
+        todo!()
     }
 }
 

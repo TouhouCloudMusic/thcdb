@@ -5,7 +5,7 @@ pub trait AsErrorCode {
 }
 
 #[allow(clippy::inconsistent_digit_grouping)]
-#[derive(Serialize_repr)]
+#[derive(Serialize_repr, Clone, Copy)]
 #[repr(u32)]
 pub enum ErrorCode {
     InvalidField = 400_00,
@@ -36,12 +36,18 @@ pub enum ErrorCode {
 }
 
 impl ErrorCode {
-    pub fn message(&self) -> &'static str {
+    pub fn message(self) -> &'static str {
         match self {
             Self::InternalServerError | Self::IoError => {
                 "Internal Server Error"
             }
             _ => unimplemented!(),
         }
+    }
+}
+
+impl AsErrorCode for ErrorCode {
+    fn as_error_code(&self) -> crate::error::ErrorCode {
+        *self
     }
 }

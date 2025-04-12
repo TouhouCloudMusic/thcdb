@@ -1,11 +1,11 @@
 #![allow(clippy::option_if_let_else)]
 
 use std::fmt::Display;
-use std::sync::LazyLock;
 
 use axum::Json;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use derive_more::Display;
 use serde::Serialize;
 use utoipa::openapi::{
     ContentBuilder, ObjectBuilder, RefOr, ResponseBuilder, ResponsesBuilder,
@@ -16,51 +16,31 @@ use utoipa::{PartialSchema, ToSchema, openapi};
 use crate::error::{ApiErrorTrait, AsErrorCode, ErrorCode};
 use crate::utils::openapi::ContentType;
 
+#[derive(Debug, Serialize, Display)]
+enum Status {
+    Ok,
+    Err,
+}
+
 pub trait StatusCodeExt {
     fn as_status_code(&self) -> StatusCode;
 
     fn all_status_codes() -> impl Iterator<Item = StatusCode>;
 }
 
-// impl<T> AsStatusCode for Option<T>
-// where
-//     T: AsStatusCode,
-// {
-//     fn as_status_code(&self) -> StatusCode {
-//         self.as_ref().map_or(
-//             StatusCode::INTERNAL_SERVER_ERROR,
-//             AsStatusCode::as_status_code,
-//         )
-//     }
-// }
-
-#[derive(Debug)]
-enum ApiStatus {
-    Ok,
-    Err,
+pub trait IntoApiResponse {
+    fn into_api_response(self) -> axum::response::Response;
 }
 
-impl Display for ApiStatus {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(match self {
-            Self::Ok => "Ok",
-            Self::Err => "Err",
-        })
+impl<T> IntoApiResponse for T
+where
+    T: ApiErrorTrait + std::error::Error,
+{
+    default fn into_api_response(self) -> axum::response::Response {
+        self.before_into_api_error();
+
+        Error::from_api_error(&self).into_response()
     }
-}
-
-pub fn status_ok_schema() -> impl Into<RefOr<Schema>> {
-    ObjectBuilder::new()
-        .schema_type(openapi::Type::String)
-        .enum_values(vec![ApiStatus::Ok.to_string()].into())
-        .build()
-}
-
-pub fn status_err_schema() -> impl Into<RefOr<Schema>> {
-    ObjectBuilder::new()
-        .schema_type(openapi::Type::String)
-        .enum_values(vec![ApiStatus::Err.to_string()].into())
-        .build()
 }
 
 #[derive(ToSchema, Serialize)]
@@ -68,7 +48,7 @@ pub struct Data<T> {
     #[schema(
         schema_with = status_ok_schema
     )]
-    status: String,
+    status: Status,
     data: T,
 }
 
@@ -76,9 +56,9 @@ impl<T> Data<T>
 where
     T: Serialize,
 {
-    pub fn new(data: T) -> Self {
+    pub const fn new(data: T) -> Self {
         Self {
-            status: ApiStatus::Ok.to_string(),
+            status: Status::Ok,
             data,
         }
     }
@@ -90,18 +70,6 @@ where
 {
     fn from(data: T) -> Self {
         Self::new(data)
-    }
-}
-
-impl<T> Default for Data<T>
-where
-    T: Default + Serialize,
-{
-    fn default() -> Self {
-        Self {
-            status: ApiStatus::Ok.to_string(),
-            data: Default::default(),
-        }
     }
 }
 
@@ -119,24 +87,22 @@ pub struct Message {
     #[schema(
         schema_with = status_ok_schema
     )]
-    status: String,
+    status: Status,
     message: String,
 }
 
 impl Message {
     pub fn ok() -> Self {
         Self {
-            status: ApiStatus::Ok.to_string(),
-            message: ApiStatus::Ok.to_string(),
+            status: Status::Ok,
+            message: Status::Ok.to_string(),
         }
     }
-}
 
-impl Default for Message {
-    fn default() -> Self {
+    pub fn new(message: impl Display) -> Self {
         Self {
-            status: ApiStatus::Ok.to_string(),
-            message: String::new(),
+            status: Status::Ok,
+            message: message.to_string(),
         }
     }
 }
@@ -151,7 +117,7 @@ impl IntoResponse for Message {
 #[derive(ToSchema, Serialize)]
 pub struct Error {
     #[schema(schema_with = status_err_schema)]
-    status: String,
+    status: Status,
     message: String,
     #[schema(
         value_type = usize
@@ -161,36 +127,48 @@ pub struct Error {
     status_code: StatusCode,
 }
 
-impl Default for Error {
-    fn default() -> Self {
+#[bon::bon]
+impl Error {
+    #[builder]
+    pub fn new(
+        message: &(impl Display + ?Sized),
+        status_code: Option<StatusCode>,
+        error_code: &impl AsErrorCode,
+    ) -> Self {
         Self {
-            status: ApiStatus::Err.to_string(),
-            message: String::new(),
-            status_code: StatusCode::INTERNAL_SERVER_ERROR,
-            error_code: ErrorCode::UnknownError,
+            status: Status::Err,
+            message: message.to_string(),
+            status_code: status_code
+                .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+            error_code: error_code.as_error_code(),
         }
+    }
+
+    pub fn from_api_error<T>(err: &T) -> Self
+    where
+        T: ApiErrorTrait + Display,
+    {
+        Self {
+            status: Status::Err,
+            message: err.to_string(),
+            error_code: err.as_error_code(),
+            status_code: err.as_status_code(),
+        }
+    }
+
+    pub fn response_def() -> utoipa::openapi::Response {
+        ResponseBuilder::new()
+            .content(
+                ContentType::Json,
+                ContentBuilder::new().schema(Self::schema().into()).build(),
+            )
+            .build()
     }
 }
 
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         (self.status_code, Json(self)).into_response()
-    }
-}
-
-static ERR_RESPONSE_CACHE: LazyLock<utoipa::openapi::Response> =
-    LazyLock::new(|| {
-        ResponseBuilder::new()
-            .content(
-                ContentType::Json,
-                ContentBuilder::new().schema(Error::schema().into()).build(),
-            )
-            .build()
-    });
-
-impl Error {
-    pub fn response_def() -> utoipa::openapi::Response {
-        ERR_RESPONSE_CACHE.clone()
     }
 }
 
@@ -216,68 +194,18 @@ where
     }
 }
 
-pub fn data<T: Serialize + Default>(data: T) -> Data<T> {
-    Data {
-        data,
-        ..Data::default()
-    }
+pub fn status_ok_schema() -> impl Into<RefOr<Schema>> {
+    ObjectBuilder::new()
+        .schema_type(openapi::Type::String)
+        .enum_values(vec![Status::Ok.to_string()].into())
+        .build()
 }
 
-pub fn msg<M>(message: M) -> Message
-where
-    M: Into<String>,
-{
-    Message {
-        message: message.into(),
-        ..Message::default()
-    }
-}
-
-#[deprecated = "Use `Message::ok` instead"]
-pub fn ok() -> Message {
-    msg("Ok")
-}
-
-pub fn err<C, M>(code: C, message: M, error_code: ErrorCode) -> Error
-where
-    C: Into<Option<StatusCode>>,
-    M: Display,
-{
-    Error {
-        message: message.to_string(),
-        status_code: code.into().unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
-        error_code,
-        ..Error::default()
-    }
-}
-
-pub trait IntoApiResponse {
-    fn into_api_response(self) -> axum::response::Response;
-}
-
-impl<T> IntoApiResponse for T
-where
-    T: ApiErrorTrait + Display + std::fmt::Debug + std::error::Error,
-{
-    fn into_api_response(self) -> axum::response::Response {
-        self.before_into_api_error();
-
-        default_impl_into_api_response(self)
-    }
-}
-
-#[allow(clippy::needless_pass_by_value)]
-pub fn default_impl_into_api_response<T>(err: T) -> axum::response::Response
-where
-    T: StatusCodeExt + Display + AsErrorCode,
-{
-    Error {
-        message: err.to_string(),
-        error_code: err.as_error_code(),
-        status_code: err.as_status_code(),
-        ..Default::default()
-    }
-    .into_response()
+pub fn status_err_schema() -> impl Into<RefOr<Schema>> {
+    ObjectBuilder::new()
+        .schema_type(openapi::Type::String)
+        .enum_values(vec![Status::Err.to_string()].into())
+        .build()
 }
 
 #[cfg(test)]
@@ -289,12 +217,12 @@ mod tests {
 
     #[test]
     fn test_response_json() {
-        let response = super::data(json!({"a": 1}));
+        let response = super::Data::new(json!({"a": 1}));
         let serialized = serde_json::to_string(&response).unwrap();
 
         assert_eq!(
             serialized,
-            format!(r#"{{"status":"{}","data":{{"a":1}}}}"#, ApiStatus::Ok)
+            format!(r#"{{"status":"{}","data":{{"a":1}}}}"#, Status::Ok)
         );
     }
 
@@ -307,7 +235,7 @@ mod tests {
 
     #[test]
     fn test_response_struct() {
-        let response = super::data(Person {
+        let response = super::Data::new(Person {
             id: 1,
             name: "John".to_string(),
             age: 30,
@@ -318,7 +246,7 @@ mod tests {
             serialized,
             format!(
                 r#"{{"status":"{}","data":{{"id":1,"name":"John","age":30}}}}"#,
-                ApiStatus::Ok
+                Status::Ok
             )
         );
     }
@@ -326,13 +254,17 @@ mod tests {
     #[test]
     #[allow(clippy::as_conversions)]
     fn test_response_err() {
-        let response = super::err(None, "error", ErrorCode::UnknownError);
+        let response = super::Error::builder()
+            .error_code(&ErrorCode::UnknownError)
+            .message("error")
+            .build();
+
         let serialized = serde_json::to_string(&response)
             .expect("Failed to serialize response");
 
         let expected_json = format!(
             r#"{{"status":"{}","message":"error","error_code":{}}}"#,
-            ApiStatus::Err,
+            Status::Err,
             ErrorCode::UnknownError as usize
         );
 
