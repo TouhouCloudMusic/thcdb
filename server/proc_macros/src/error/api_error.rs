@@ -69,16 +69,13 @@ struct ApiErrorVariantMeta {
 }
 
 #[derive(FromMeta, Default)]
-struct ApiErrorEnumMeta {
-    impl_api_error: Option<bool>,
-}
+struct ApiErrorEnumMeta {}
 
 #[derive(FromMeta, Default)]
 struct ApiErrorStructMeta {
     status_code: CodeOpt,
     error_code: CodeOpt,
     into_response: IntoResponseOpt,
-    impl_api_error: Option<bool>,
 }
 
 pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
@@ -90,66 +87,20 @@ pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
         data,
     } = input;
 
-    let (impl_block, is_impl_api_error) = match data {
+    let impl_block = match data {
         Data::Enum(DataEnum { variants, .. }) => {
-            let is_impl_api_error = {
-                let api_err_attr = 'ret: {
-                    for attr in attrs {
-                        if attr.path().is_ident("api_error") {
-                            break 'ret ApiErrorEnumMeta::from_meta(
-                                &attr.meta,
-                            )?;
-                        }
-                    }
-                    ApiErrorEnumMeta::default()
-                };
-
-                api_err_attr.impl_api_error
-            };
-            (
-                gen_enum_impl(&ident, variants, &generics)?,
-                is_impl_api_error,
-            )
+            gen_enum_impl(&ident, variants, &generics)?
         }
-        Data::Struct(r#struct) => {
-            let is_impl_api_error = {
-                let api_err_attr = 'ret: {
-                    for attr in &attrs {
-                        if attr.path().is_ident("api_error") {
-                            break 'ret ApiErrorStructMeta::from_meta(
-                                &attr.meta,
-                            )?;
-                        }
-                    }
-                    ApiErrorStructMeta::default()
-                };
-
-                api_err_attr.impl_api_error
-            };
-            (
-                gen_struct_impl(&ident, &attrs, r#struct)?,
-                is_impl_api_error,
-            )
-        }
+        Data::Struct(r#struct) => gen_struct_impl(&ident, &attrs, r#struct)?,
         _ => Err(Error::new_spanned(
             &ident,
             "ApiError can only be derived for enums and structs",
         ))?,
     };
 
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
-    let impl_api_error_block = if is_impl_api_error.unwrap_or(true) {
-        Some(quote! {
-           impl #impl_generics crate::error::ApiErrorTrait for #ident #ty_generics #where_clause {}
-        })
-    } else {
-        None
-    };
-
     Ok(quote! {
         #impl_block
 
-        #impl_api_error_block
     }
     .into())
 }

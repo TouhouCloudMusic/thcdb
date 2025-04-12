@@ -37,10 +37,16 @@ where
     T: ApiErrorTrait + std::error::Error,
 {
     default fn into_api_response(self) -> axum::response::Response {
-        self.before_into_api_error();
-
-        Error::from_api_error(&self).into_response()
+        default_into_api_response_impl(self)
     }
+}
+
+#[allow(clippy::needless_pass_by_value)]
+pub fn default_into_api_response_impl<T>(x: T) -> axum::response::Response
+where
+    T: ApiErrorTrait + std::error::Error,
+{
+    Error::from_api_error(&x).into_response()
 }
 
 #[derive(ToSchema, Serialize)]
@@ -146,7 +152,7 @@ impl Error {
 
     pub fn from_api_error<T>(err: &T) -> Self
     where
-        T: ApiErrorTrait + Display,
+        T: StatusCodeExt + AsErrorCode + Display,
     {
         Self {
             status: Status::Err,

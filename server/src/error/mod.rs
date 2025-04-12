@@ -13,16 +13,16 @@ use macros::{ApiError, IntoErrorSchema};
 use sea_orm::DbErr;
 pub use structs::*;
 
-use crate::api_response::{IntoApiResponse, StatusCodeExt};
+use crate::api_response::{
+    IntoApiResponse, StatusCodeExt, default_into_api_response_impl,
+};
 
-pub trait ApiErrorTraitDeps = std::error::Error
+pub trait ApiErrorTrait = StatusCodeExt + AsErrorCode;
+
+pub trait ApiErrorResponseTrait = std::error::Error
     + axum::response::IntoResponse
     + crate::error::ApiErrorTrait
     + IntoApiResponse;
-
-pub trait ApiErrorTrait: StatusCodeExt + AsErrorCode {
-    fn before_into_api_error(&self) {}
-}
 
 error_set! {
     ApiError = {
@@ -81,19 +81,13 @@ error_set! {
     status_code = StatusCode::INTERNAL_SERVER_ERROR,
     error_code = ErrorCode::DatabaseError,
     into_response = self,
-    impl_api_error = false,
 )]
 pub struct DbErrWrapper(DbErr);
 
-impl ApiErrorTrait for DbErrWrapper {
-    fn before_into_api_error(&self) {
-        tracing::error!("Database error: {:#?}", self.0);
-    }
-}
-
 impl IntoApiResponse for DbErrWrapper {
     fn into_api_response(self) -> axum::response::Response {
-        todo!()
+        tracing::error!("Database error: {:#?}", self.0);
+        default_into_api_response_impl(self)
     }
 }
 
@@ -121,9 +115,10 @@ impl AsErrorCode for TokioError {
     }
 }
 
-impl ApiErrorTrait for TokioError {
-    fn before_into_api_error(&self) {
+impl IntoApiResponse for TokioError {
+    fn into_api_response(self) -> axum::response::Response {
         tracing::error!("Tokio error: {:#?}", self);
+        default_into_api_response_impl(self)
     }
 }
 

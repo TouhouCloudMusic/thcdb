@@ -4,6 +4,7 @@ use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::{self, SaltString};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use derive_more::From;
 use error_set::error_set;
 use macros::ApiError;
@@ -11,8 +12,9 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
+use crate::api_response::{Error, IntoApiResponse};
 use crate::constant::{USER_NAME_REGEX_STR, USER_PASSWORD_REGEX_STR};
-use crate::error::{ApiErrorTrait, ErrorCode, TokioError};
+use crate::error::{ErrorCode, TokioError};
 use crate::state::ARGON2_HASHER;
 
 error_set! {
@@ -181,9 +183,11 @@ fn validate_password(password: &str) -> Result<(), ValidateCredsError> {
         Err(ValidateCredsError::InvalidPassword)
     }
 }
-impl ApiErrorTrait for HasherError {
-    fn before_into_api_error(&self) {
+
+impl IntoApiResponse for HasherError {
+    fn into_api_response(self) -> axum::response::Response {
         tracing::error!("Hasher error: {}", self);
+        Error::from_api_error(&self).into_response()
     }
 }
 
