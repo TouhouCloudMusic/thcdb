@@ -19,10 +19,10 @@ use crate::api_response::{
 
 pub trait ApiErrorTrait = StatusCodeExt + AsErrorCode;
 
-pub trait ApiErrorResponseTrait = std::error::Error
-    + axum::response::IntoResponse
-    + crate::error::ApiErrorTrait
-    + IntoApiResponse;
+pub trait ImpledApiError = std::error::Error
+    + ApiErrorTrait
+    + IntoApiResponse
+    + axum::response::IntoResponse;
 
 error_set! {
     ApiError = {

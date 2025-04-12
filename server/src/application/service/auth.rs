@@ -14,7 +14,7 @@ use crate::domain::model::auth::{
     AuthCredential, AuthnError, HasherError, ValidateCredsError,
 };
 use crate::domain::model::user::User;
-use crate::error::{ApiErrorResponseTrait, ErrorCode};
+use crate::error::{ErrorCode, ImpledApiError};
 
 #[derive(Clone)]
 pub struct AuthService<R> {
@@ -24,7 +24,7 @@ pub struct AuthService<R> {
 #[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema, From)]
 pub enum SignUpError<R>
 where
-    R: ApiErrorResponseTrait,
+    R: ImpledApiError,
 {
     #[error("Username already in use")]
     #[api_error(
@@ -48,7 +48,7 @@ where
 #[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
 pub enum SignInError<R>
 where
-    R: ApiErrorResponseTrait,
+    R: ImpledApiError,
 {
     #[api_error(
             status_code = StatusCode::CONFLICT,
@@ -77,7 +77,7 @@ impl<R> From<axum_login::Error<AuthService<R>>>
     for SessionBackendError<R::Error>
 where
     R: domain::repository::user::Repository,
-    R::Error: ApiErrorResponseTrait,
+    R::Error: ImpledApiError,
     AuthService<R>: axum_login::AuthnBackend,
     <AuthService<R> as axum_login::AuthnBackend>::Error:
         Into<AuthnBackendError<R::Error>>,
@@ -93,7 +93,7 @@ where
 error_set::error_set! {
     #[derive(ApiError, IntoErrorSchema)]
     #[disable(From)]
-    SessionBackendError<R: ApiErrorResponseTrait> = {
+    SessionBackendError<R: ImpledApiError> = {
         #[api_error(
             into_response = self
         )]
@@ -104,7 +104,7 @@ error_set::error_set! {
 #[derive(thiserror::Error, ApiError, Debug)]
 pub enum AuthnBackendError<R>
 where
-    R: ApiErrorResponseTrait,
+    R: ImpledApiError,
 {
     #[error(transparent)]
     Authn(AuthnError),
@@ -117,7 +117,7 @@ where
 pub trait AuthServiceTrait<R>: Send + Sync
 where
     R: domain::repository::user::Repository,
-    R::Error: ApiErrorResponseTrait,
+    R::Error: ImpledApiError,
 {
     async fn sign_in(
         &self,
@@ -142,7 +142,7 @@ where
 impl<R> AuthServiceTrait<R> for AuthService<R>
 where
     R: domain::repository::user::Repository,
-    R::Error: ApiErrorResponseTrait,
+    R::Error: ImpledApiError,
 {
     async fn sign_in(
         &self,
@@ -194,7 +194,7 @@ impl AuthUser for domain::model::user::User {
 impl<R> AuthnBackend for AuthService<R>
 where
     R: Clone + domain::repository::user::Repository,
-    R::Error: ApiErrorResponseTrait + Send + Sync,
+    R::Error: ImpledApiError + Send + Sync,
     for<'a> R::find_by_id(..): Send,
     for<'a> R::find_by_name(..): Send,
 {
