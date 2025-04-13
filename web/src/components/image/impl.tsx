@@ -11,7 +11,7 @@ import {
 import { createStore } from "solid-js/store"
 import { Portal } from "solid-js/web"
 import { twMerge } from "tailwind-merge"
-import { callHandlerUnion } from "~/lib/dom/event"
+import { callHandlerUnion } from "~/utils/dom/event"
 
 const enum State {
 	Loading,
