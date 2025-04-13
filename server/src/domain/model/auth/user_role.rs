@@ -1,6 +1,7 @@
 use sea_orm::DbErr;
 use serde::Serialize;
 use strum_macros::{EnumCount, EnumIter, EnumString};
+use utoipa::ToSchema;
 
 #[derive(
     Clone,
@@ -11,6 +12,7 @@ use strum_macros::{EnumCount, EnumIter, EnumString};
     EnumCount,
     strum_macros::Display,
     Serialize,
+    ToSchema,
 )]
 pub enum UserRole {
     Admin = 1,
