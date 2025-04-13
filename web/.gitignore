@@ -26,6 +26,7 @@ dist
 
 # Generated Files
 src/constant/server.ts
+src/data/openapi.ts
 
 
 src/stories
