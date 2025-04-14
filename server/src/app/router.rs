@@ -40,3 +40,18 @@ fn static_dir() -> Router<ArcAppState> {
         ServeDir::new(&image_path),
     )
 }
+
+#[cfg(test)]
+mod test {
+    use std::path::PathBuf;
+
+    use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
+
+    #[test]
+    fn static_path() {
+        let image_path = PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]);
+        let gen_path = format!("/{}", image_path.to_string_lossy());
+
+        assert_eq!(gen_path, "/public/image");
+    }
+}

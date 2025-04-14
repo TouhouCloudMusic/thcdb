@@ -57,14 +57,16 @@ pub mod image {
             path: &ValidatedPath,
             data: &[u8],
         ) -> Result<Self::File, Self::CreateError> {
-            let path = path.inner();
+            let inner = path.inner();
+            let full_path = PathBuf::from_iter([self.base_path, inner]);
             tokio::fs::create_dir_all(
-                path.parent()
+                full_path
+                    .parent()
                     .expect("Failed to get parent dir while creating image"),
             )
             .await?;
 
-            let mut file = tokio::fs::File::create(&path).await?;
+            let mut file = tokio::fs::File::create(&full_path).await?;
 
             let write_file_res: Result<(), std::io::Error> = try {
                 file.write_all(data).await?;
@@ -74,7 +76,7 @@ pub mod image {
             match write_file_res {
                 Ok(()) => Ok(file),
                 Err(err) => {
-                    self.remove(&path).await?;
+                    self.remove(&full_path).await?;
                     Err(err)?
                 }
             }
