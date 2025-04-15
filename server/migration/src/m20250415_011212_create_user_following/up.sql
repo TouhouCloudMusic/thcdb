@@ -1,4 +1,4 @@
-CREATE TABLE "public"."user_followings" (
+CREATE TABLE "public"."user_following" (
   "user_id" INT NOT NULL REFERENCES public.user(id),
   "following_id" INT NOT NULL REFERENCES public.user(id),
   "following_at" TIMESTAMPTZ DEFAULT NOW(),
