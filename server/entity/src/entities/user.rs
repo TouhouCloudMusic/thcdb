@@ -16,6 +16,7 @@ pub struct Model {
     pub password: String,
     pub avatar_id: Option<i32>,
     pub last_login: DateTimeWithTimeZone,
+    pub profile_banner_id: Option<i32>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -33,7 +34,15 @@ pub enum Relation {
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    Image,
+    Image2,
+    #[sea_orm(
+        belongs_to = "super::image::Entity",
+        from = "Column::ProfileBannerId",
+        to = "super::image::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Image1,
     #[sea_orm(has_many = "super::user_list::Entity")]
     UserList,
     #[sea_orm(has_many = "super::user_role::Entity")]
@@ -55,12 +64,6 @@ impl Related<super::correction_revision::Entity> for Entity {
 impl Related<super::correction_user::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::CorrectionUser.def()
-    }
-}
-
-impl Related<super::image::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Image.def()
     }
 }
 

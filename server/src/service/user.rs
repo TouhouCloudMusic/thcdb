@@ -207,6 +207,7 @@ pub async fn upsert_admin_acc(db: &DatabaseConnection) {
             name: Set(ADMIN_USERNAME.to_string()),
             password: Set(password),
             avatar_id: Set(None),
+            profile_banner_id: Set(None),
             last_login: Set(chrono::Local::now().into()),
         })
         .on_conflict(

@@ -1,8 +1,9 @@
+use entity::relation::UserRelationExt;
 use entity::{user_following, user_role};
 use itertools::Itertools;
 use sea_orm::{
-    ColumnTrait, DbErr, EntityTrait, IntoActiveModel, PaginatorTrait,
-    QueryFilter, QuerySelect, QueryTrait,
+    ColumnTrait, DbErr, EntityTrait, IntoActiveModel, JoinType, PaginatorTrait,
+    QueryFilter, QuerySelect, QueryTrait, RelationTrait,
 };
 
 use crate::domain::model::auth::UserRole;
@@ -216,7 +217,7 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
 
         let Some(profile) = user::Entity::find()
             .filter(user::Column::Name.eq(name))
-            .left_join(entity::image::Entity)
+            .join(JoinType::LeftJoin, UserRelationExt::Avatar.def())
             .into_partial_model::<UserProfileRaw>()
             .one(&self.conn)
             .await?
