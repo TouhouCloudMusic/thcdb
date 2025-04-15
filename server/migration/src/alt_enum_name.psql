@@ -1,0 +1,14 @@
+ALTER TYPE "ArtistType" RENAME TO artisttype;
+ALTER TYPE "DatePrecision" RENAME TO dateprecision;
+ALTER TYPE "JoinYearType" RENAME TO joinyeartype;
+ALTER TYPE "LeaveYearType" RENAME TO leaveyeartype;
+ALTER TYPE "CommentTarget" RENAME TO commenttarget;
+ALTER TYPE "CommentState" RENAME TO commentstate;
+ALTER TYPE "CorrectionType" RENAME TO correctiontype;
+ALTER TYPE "CorrectionStatus" RENAME TO correctionstatus;
+ALTER TYPE "EntityType" RENAME TO entitytype;
+ALTER TYPE "CorrectionUserType" RENAME TO correctionusertype;
+ALTER TYPE "AlternativeNameType" RENAME TO alternativenametype;
+ALTER TYPE "ReleaseType" RENAME TO releasetype;
+ALTER TYPE "TagType" RENAME TO tagtype;
+ALTER TYPE "TagRelationType" RENAME TO tagrelationtype;

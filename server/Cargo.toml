@@ -23,12 +23,16 @@ chrono = "0.4"
 dotenvy = "0.15"
 itertools = "0.14"
 quote = "1.0.38"
-sea-orm = { version = "1.1.2", features = [
+sea-orm = { version = "1.1.10", features = [
     "sqlx-postgres",
     "runtime-tokio-rustls",
     "macros",
     "debug-print",
 ] }
+sea-orm-migration = { features = [
+    "runtime-tokio-rustls",
+    "sqlx-postgres",
+], version = "1.1.10" }
 serde = { version = "1", features = [
     "derive",
 ] }
@@ -162,3 +166,7 @@ lto             = "thin"
 opt-level       = 3
 overflow-checks = true
 panic           = "abort"
+
+[patch.crates-io]
+sea-orm           = { git = "https://github.com/Huliiiiii/sea-orm", branch = "mod-rs-pattern", package = "sea-orm" }
+sea-orm-migration = { git = "https://github.com/Huliiiiii/sea-orm", branch = "mod-rs-pattern", package = "sea-orm-migration" }

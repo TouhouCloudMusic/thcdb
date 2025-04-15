@@ -271,7 +271,6 @@ async fn create_localized_names(
 
     let active_models =
         names.iter().map(|name| label_localized_name::ActiveModel {
-            id: NotSet,
             label_id: Set(label_id),
             language_id: Set(name.language_id),
             name: Set(name.name.clone()),
@@ -321,7 +320,6 @@ async fn create_localized_name_histories(
         names
             .iter()
             .map(|name| label_localized_name_history::ActiveModel {
-                id: NotSet,
                 history_id: Set(label_id),
                 language_id: Set(name.language_id),
                 name: Set(name.name.clone()),
