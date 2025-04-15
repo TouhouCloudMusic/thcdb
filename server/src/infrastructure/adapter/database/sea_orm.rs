@@ -1,9 +1,14 @@
+use std::path::PathBuf;
+
 use entity::relation::UserRelationExt;
 use entity::{user_following, user_role};
 use itertools::Itertools;
+use sea_orm::prelude::Expr;
+use sea_orm::sea_query::Alias;
 use sea_orm::{
-    ColumnTrait, DbErr, EntityTrait, IntoActiveModel, JoinType, PaginatorTrait,
-    QueryFilter, QuerySelect, QueryTrait, RelationTrait,
+    ColumnTrait, DbErr, EntityTrait, FromQueryResult, IntoActiveModel,
+    JoinType, PaginatorTrait, QueryFilter, QuerySelect, QueryTrait,
+    RelationTrait,
 };
 
 use crate::domain::model::auth::UserRole;
@@ -46,8 +51,8 @@ impl domain::repository::image::Repository for SeaOrmRepository {
 
 mod user {
     use itertools::Itertools;
-    use migration::IntoCondition;
     use sea_orm::ActiveValue::Set;
+    use sea_orm::sea_query::IntoCondition;
     use sea_orm::{
         ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, QueryFilter,
     };
@@ -164,30 +169,29 @@ impl TryFrom<user_role::Model> for UserRole {
 impl domain::repository::user::ProfileRepository for SeaOrmRepository {
     type Error = DbErrWrapper;
 
+    #[allow(clippy::too_many_lines)]
     async fn find_by_name(
         &self,
         name: &str,
     ) -> Result<Option<domain::model::user::UserProfile>, Self::Error> {
-        use std::path::PathBuf;
-
         use entity::*;
-        use sea_orm::DerivePartialModel;
 
-        #[derive(DerivePartialModel)]
+        const AVATAR_ALIAS: &str = "a";
+
+        const BANNER_ALIAS: &str = "b";
+
+        #[derive(FromQueryResult)]
         #[sea_orm(entity = "user::Entity", from_query_result)]
         struct UserProfileRaw {
             pub id: i32,
             pub name: String,
             pub last_login: chrono::DateTime<chrono::FixedOffset>,
-            #[sea_orm(nested)]
-            pub avatar_url: Option<AvatarRaw>,
-        }
 
-        #[derive(DerivePartialModel)]
-        #[sea_orm(entity = "image::Entity", from_query_result)]
-        struct AvatarRaw {
-            pub directory: String,
-            pub filename: String,
+            pub avatar_url_dir: Option<String>,
+            pub avatar_url_filename: Option<String>,
+
+            pub banner_url_dir: Option<String>,
+            pub banner_url_file: Option<String>,
         }
 
         impl TryFrom<(UserProfileRaw, Vec<user_role::Model>)>
@@ -198,14 +202,37 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
             fn try_from(
                 (profile, roles): (UserProfileRaw, Vec<user_role::Model>),
             ) -> Result<Self, Self::Error> {
+                let avatar_url = if let Some(dir) = profile.avatar_url_dir
+                    && let Some(filename) = profile.avatar_url_filename
+                {
+                    Some(
+                        PathBuf::from(dir)
+                            .join(filename)
+                            .to_string_lossy()
+                            .to_string(),
+                    )
+                } else {
+                    None
+                };
+
+                let banner_url = if let Some(dir) = profile.banner_url_dir
+                    && let Some(filename) = profile.banner_url_file
+                {
+                    Some(
+                        PathBuf::from(dir)
+                            .join(filename)
+                            .to_string_lossy()
+                            .to_string(),
+                    )
+                } else {
+                    None
+                };
+
                 Ok(Self {
                     name: profile.name,
                     last_login: profile.last_login,
-                    avatar_url: profile.avatar_url.map(|a| {
-                        PathBuf::from_iter([&a.directory, &a.filename])
-                            .to_string_lossy()
-                            .to_string()
-                    }),
+                    avatar_url,
+                    banner_url,
                     roles: roles
                         .into_iter()
                         .map(TryInto::try_into)
@@ -215,10 +242,42 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
             }
         }
 
+        let avatar_alias = Alias::new(AVATAR_ALIAS);
+        let banner_alias = Alias::new(BANNER_ALIAS);
+
         let Some(profile) = user::Entity::find()
             .filter(user::Column::Name.eq(name))
-            .join(JoinType::LeftJoin, UserRelationExt::Avatar.def())
-            .into_partial_model::<UserProfileRaw>()
+            .join_as(
+                JoinType::LeftJoin,
+                UserRelationExt::Avatar.def(),
+                avatar_alias.clone(),
+            )
+            .join_as(
+                JoinType::LeftJoin,
+                UserRelationExt::ProfileBanner.def(),
+                banner_alias.clone(),
+            )
+            .select_only()
+            .column(user::Column::Id)
+            .column(user::Column::Name)
+            .column(user::Column::LastLogin)
+            .column_as(
+                Expr::col((avatar_alias.clone(), image::Column::Directory)),
+                "avatar_url_directory",
+            )
+            .column_as(
+                Expr::col((avatar_alias.clone(), image::Column::Filename)),
+                "avatar_url_filename",
+            )
+            .column_as(
+                Expr::col((banner_alias.clone(), image::Column::Directory)),
+                "banner_url_directory",
+            )
+            .column_as(
+                Expr::col((banner_alias.clone(), image::Column::Filename)),
+                "banner_url_filename",
+            )
+            .into_model::<UserProfileRaw>()
             .one(&self.conn)
             .await?
         else {

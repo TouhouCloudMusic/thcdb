@@ -48,7 +48,7 @@ use std::net::SocketAddr;
 
 use app::create_app;
 use infrastructure::logger::Logger;
-use migration::MigratorTrait;
+use sea_orm_migration::migrator::MigratorTrait;
 use state::{ArcAppState, CONFIG};
 #[cfg(target_os = "linux")]
 use tikv_jemallocator::Jemalloc;

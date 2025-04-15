@@ -4337,6 +4337,7 @@ dependencies = [
  "regex",
  "rusty-hook",
  "sea-orm",
+ "sea-orm-migration",
  "serde",
  "serde_json",
  "serde_repr",

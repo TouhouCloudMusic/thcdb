@@ -20,15 +20,21 @@ pub mod user {
     #[derive(Clone, ToSchema, Serialize)]
     pub struct UserProfile {
         pub name: String,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        #[schema(nullable = false)]
+
         /// Avatar url with sub directory, eg. ab/cd/abcd..xyz.jpg
+        #[schema(nullable = false)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub avatar_url: Option<String>,
+
+        #[schema(nullable = false)]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub banner_url: Option<String>,
         pub last_login: chrono::DateTime<chrono::FixedOffset>,
         pub roles: Vec<UserRole>,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        #[schema(nullable = false)]
+
         /// Whether the querist follows the user. Return `None` if querist is not signed in or it's querist's own profile
+        #[schema(nullable = false)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub is_following: Option<bool>,
     }
 
