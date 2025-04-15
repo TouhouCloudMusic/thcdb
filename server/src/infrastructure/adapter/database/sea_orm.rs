@@ -1,9 +1,11 @@
-use entity::user_following;
+use entity::{user_following, user_role};
+use itertools::Itertools;
 use sea_orm::{
     ColumnTrait, DbErr, EntityTrait, IntoActiveModel, PaginatorTrait,
     QueryFilter, QuerySelect, QueryTrait,
 };
 
+use crate::domain::model::auth::UserRole;
 use crate::domain::{self};
 use crate::error::DbErrWrapper;
 
@@ -150,6 +152,14 @@ mod user {
     }
 }
 
+impl TryFrom<user_role::Model> for UserRole {
+    type Error = DbErr;
+
+    fn try_from(value: user_role::Model) -> Result<Self, Self::Error> {
+        Self::try_from(value.role_id)
+    }
+}
+
 impl domain::repository::user::ProfileRepository for SeaOrmRepository {
     type Error = DbErrWrapper;
 
@@ -179,13 +189,15 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
             pub filename: String,
         }
 
-        impl From<(UserProfileRaw, Vec<user_role::Model>)>
+        impl TryFrom<(UserProfileRaw, Vec<user_role::Model>)>
             for domain::model::user::UserProfile
         {
-            fn from(
+            type Error = DbErr;
+
+            fn try_from(
                 (profile, roles): (UserProfileRaw, Vec<user_role::Model>),
-            ) -> Self {
-                Self {
+            ) -> Result<Self, Self::Error> {
+                Ok(Self {
                     name: profile.name,
                     last_login: profile.last_login,
                     avatar_url: profile.avatar_url.map(|a| {
@@ -193,9 +205,12 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
                             .to_string_lossy()
                             .to_string()
                     }),
-                    roles: roles.into_iter().map(|x| x.role_id).collect(),
+                    roles: roles
+                        .into_iter()
+                        .map(TryInto::try_into)
+                        .try_collect()?,
                     is_following: None,
-                }
+                })
             }
         }
 
@@ -215,7 +230,7 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
             .all(&self.conn)
             .await?;
 
-        Ok(Some((profile, user_roles).into()))
+        Ok(Some((profile, user_roles).try_into()?))
     }
 
     async fn with_following(

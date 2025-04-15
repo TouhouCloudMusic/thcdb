@@ -25,7 +25,7 @@ pub mod user {
         /// Avatar url with sub directory, eg. ab/cd/abcd..xyz.jpg
         pub avatar_url: Option<String>,
         pub last_login: chrono::DateTime<chrono::FixedOffset>,
-        pub roles: Vec<i32>,
+        pub roles: Vec<UserRole>,
         #[serde(skip_serializing_if = "Option::is_none")]
         #[schema(nullable = false)]
         /// Whether the querist follows the user. Return `None` if querist is not signed in or it's querist's own profile
