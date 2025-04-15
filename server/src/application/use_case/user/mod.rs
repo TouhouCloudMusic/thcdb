@@ -21,4 +21,12 @@ where
     ) -> Result<Option<model::user::UserProfile>, R::Error> {
         self.repo.find_by_name(name).await
     }
+
+    pub async fn with_following(
+        &self,
+        profile: &mut model::user::UserProfile,
+        current_user: &model::user::User,
+    ) -> Result<(), R::Error> {
+        self.repo.with_following(profile, current_user).await
+    }
 }

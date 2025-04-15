@@ -5,7 +5,7 @@ use entity::{
     label_localized_name_history,
 };
 use itertools::{Itertools, izip};
-use sea_orm::ActiveValue::{NotSet, Set};
+use sea_orm::ActiveValue::Set;
 use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,

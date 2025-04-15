@@ -1,4 +1,8 @@
-use sea_orm::{ColumnTrait, DbErr, EntityTrait, IntoActiveModel, QueryFilter};
+use entity::user_following;
+use sea_orm::{
+    ColumnTrait, DbErr, EntityTrait, IntoActiveModel, PaginatorTrait,
+    QueryFilter, QuerySelect, QueryTrait,
+};
 
 use crate::domain::{self};
 use crate::error::DbErrWrapper;
@@ -175,17 +179,11 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
             pub filename: String,
         }
 
-        #[derive(DerivePartialModel)]
-        #[sea_orm(entity = "user_role::Entity", from_query_result)]
-        struct UserRoleRaw {
-            pub role_id: i32,
-        }
-
-        impl From<(UserProfileRaw, Vec<UserRoleRaw>)>
+        impl From<(UserProfileRaw, Vec<user_role::Model>)>
             for domain::model::user::UserProfile
         {
             fn from(
-                (profile, roles): (UserProfileRaw, Vec<UserRoleRaw>),
+                (profile, roles): (UserProfileRaw, Vec<user_role::Model>),
             ) -> Self {
                 Self {
                     name: profile.name,
@@ -196,6 +194,7 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
                             .to_string()
                     }),
                     roles: roles.into_iter().map(|x| x.role_id).collect(),
+                    is_following: None,
                 }
             }
         }
@@ -211,11 +210,37 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
         };
 
         let user_roles = user_role::Entity::find()
+            .column(user_role::Column::RoleId)
             .filter(user_role::Column::UserId.eq(profile.id))
-            .into_partial_model::<UserRoleRaw>()
             .all(&self.conn)
             .await?;
 
         Ok(Some((profile, user_roles).into()))
+    }
+
+    async fn with_following(
+        &self,
+        profile: &mut domain::model::user::UserProfile,
+        current_user: &domain::model::user::User,
+    ) -> Result<(), Self::Error> {
+        if profile.name == current_user.name {
+            return Ok(());
+        }
+
+        let sub_query = entity::user::Entity::find()
+            .select_only()
+            .column(entity::user::Column::Id)
+            .filter(entity::user::Column::Name.eq(&profile.name))
+            .into_query();
+
+        let res = user_following::Entity::find()
+            .filter(user_following::Column::UserId.eq(current_user.id))
+            .filter(user_following::Column::FollowingId.in_subquery(sub_query))
+            .count(&self.conn)
+            .await?;
+
+        profile.is_following = Some(res > 0);
+
+        Ok(())
     }
 }

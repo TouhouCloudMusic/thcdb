@@ -19,7 +19,7 @@ use crate::error::{DbErrWrapper, ServiceError};
 use crate::middleware::is_signed_in;
 use crate::service::user::UploadAvatarError;
 use crate::state::AuthSession;
-use crate::{ArcAppState, api_response, state};
+use crate::{ArcAppState, api_response, domain, state};
 
 const TAG: &str = "User";
 
@@ -56,7 +56,7 @@ async fn profile(
     State(use_case): State<ProfileUseCase>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
     if let Some(user) = session.user {
-        profile_impl(&use_case, &user.name).await
+        profile_impl(&use_case, &user.name, Some(&user)).await
     } else {
         Err(StatusCode::NOT_FOUND.into_response())
     }
@@ -73,10 +73,11 @@ async fn profile(
     ),
 )]
 async fn profile_with_name(
+    session: AuthSession,
     State(use_case): State<ProfileUseCase>,
     Path(name): Path<String>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
-    profile_impl(&use_case, &name).await
+    profile_impl(&use_case, &name, session.user.as_ref()).await
 }
 
 #[utoipa::path(
@@ -105,7 +106,7 @@ async fn sign_up(
         .await
         .map_err(|e| SessionBackendError::from(e).into_response())?;
 
-    profile_impl(&use_case, &user.name).await
+    profile_impl(&use_case, &user.name, None).await
 }
 
 #[utoipa::path(
@@ -136,7 +137,7 @@ async fn sign_in(
         .await
         .map_err(|e| SessionBackendError::from(e).into_response())?;
 
-    profile_impl(&use_case, &user.name).await
+    profile_impl(&use_case, &user.name, None).await
 }
 
 #[utoipa::path(
@@ -191,13 +192,20 @@ async fn upload_avatar(
 async fn profile_impl(
     use_case: &ProfileUseCase,
     name: &str,
+    current_user: Option<&domain::model::user::User>,
 ) -> Result<Data<UserProfile>, axum::response::Response> {
-    use_case
+    let mut profile = use_case
         .find_by_name(name)
         .await
         .map_err(IntoResponse::into_response)?
-        .map_or_else(
-            || Err(StatusCode::NOT_FOUND.into_response()),
-            |user| Ok(user.into()),
-        )
+        .ok_or_else(|| StatusCode::NOT_FOUND.into_response())?;
+
+    if let Some(current_user) = current_user {
+        use_case
+            .with_following(&mut profile, current_user)
+            .await
+            .map_err(IntoResponse::into_response)?;
+    }
+
+    Ok(profile.into())
 }

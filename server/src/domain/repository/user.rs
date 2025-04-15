@@ -1,4 +1,4 @@
-use crate::domain::model::user::User;
+use crate::domain::model::user::{User, UserProfile};
 use crate::domain::model::{self};
 
 pub trait Repository: Send + Sync {
@@ -20,5 +20,11 @@ pub trait ProfileRepository: Send + Sync {
     async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<model::user::UserProfile>, Self::Error>;
+    ) -> Result<Option<UserProfile>, Self::Error>;
+
+    async fn with_following(
+        &self,
+        profile: &mut UserProfile,
+        current_user: &model::user::User,
+    ) -> Result<(), Self::Error>;
 }
