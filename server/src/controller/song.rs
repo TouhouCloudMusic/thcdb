@@ -15,6 +15,8 @@ use crate::service::song::Service;
 use crate::state::{ArcAppState, AuthSession};
 use crate::utils::MapInto;
 
+const TAG: &str = "Song";
+
 pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(create_song))
@@ -31,6 +33,7 @@ super::data! {
 
 #[utoipa::path(
     get,
+    tag = TAG,
     path = "/song/{id}",
     responses(
 		(status = 200, body = DataSongResponse),
@@ -51,6 +54,7 @@ struct KwQuery {
 
 #[utoipa::path(
     get,
+    tag = TAG,
     path = "/song",
     params(KwQuery),
     responses(
@@ -70,6 +74,7 @@ async fn find_song_by_keyword(
 
 #[utoipa::path(
     post,
+    tag = TAG,
     path = "/song",
     request_body = NewSong,
     responses(
@@ -90,6 +95,7 @@ async fn create_song(
 
 #[utoipa::path(
     post,
+    tag = TAG,
     path = "/song/{id}",
     request_body = NewSong,
     responses(

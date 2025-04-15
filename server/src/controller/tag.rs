@@ -13,6 +13,8 @@ use crate::middleware::is_signed_in;
 use crate::state::{self, ArcAppState, AuthSession};
 use crate::utils::MapInto;
 
+const TAG: &str = "Tag";
+
 pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(create_tag))
@@ -27,6 +29,7 @@ super::data! {
 
 #[utoipa::path(
     post,
+    tag = TAG,
     path = "/tag/{id}",
     responses(
 		(status = 200, body = DataTagResponse),
@@ -48,6 +51,7 @@ struct KwArgs {
 
 #[utoipa::path(
     post,
+    tag = TAG,
     path = "/tag",
     params(KwArgs),
     responses(
