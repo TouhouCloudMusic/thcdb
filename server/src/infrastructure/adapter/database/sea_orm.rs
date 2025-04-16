@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use entity::relation::UserRelationExt;
 use entity::{user_following, user_role};
+use field_types::FieldName;
 use itertools::Itertools;
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::Alias;
@@ -200,7 +201,7 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
 
         const BANNER_ALIAS: &str = "b";
 
-        #[derive(FromQueryResult)]
+        #[derive(FromQueryResult, FieldName)]
         #[sea_orm(entity = "user::Entity", from_query_result)]
         struct UserProfileRaw {
             pub id: i32,
@@ -283,19 +284,19 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
             .column(user::Column::LastLogin)
             .column_as(
                 Expr::col((avatar_alias.clone(), image::Column::Directory)),
-                "avatar_url_directory",
+                UserProfileRawFieldName::AvatarUrlDir.name(),
             )
             .column_as(
                 Expr::col((avatar_alias.clone(), image::Column::Filename)),
-                "avatar_url_filename",
+                UserProfileRawFieldName::AvatarUrlFilename.name(),
             )
             .column_as(
                 Expr::col((banner_alias.clone(), image::Column::Directory)),
-                "banner_url_directory",
+                UserProfileRawFieldName::BannerUrlDir.name(),
             )
             .column_as(
                 Expr::col((banner_alias.clone(), image::Column::Filename)),
-                "banner_url_filename",
+                UserProfileRawFieldName::BannerUrlFile.name(),
             )
             .into_model::<UserProfileRaw>()
             .one(&self.conn)
