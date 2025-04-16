@@ -100,11 +100,11 @@ impl std::fmt::Display for InvalidImageType {
         let accepted_name = self
             .accepted
             .and_then(|accepted| accepted.extensions_str().first())
-            .map_or("Unknown or unreadable format", |v| v);
+            .map_or("unknown or unreadable format", |v| v);
 
         write!(
             f,
-            "Invalid image type, accepted: {:?}, expected: {:?}",
+            "Invalid image type, accepted: {}, expected: {:#?}",
             accepted_name, self.expected
         )
     }
@@ -234,7 +234,8 @@ impl ImageValidator {
             buffer.len().try_into().unwrap(),
         ))?;
 
-        let reader = ImageReader::new(io::Cursor::new(buffer));
+        let reader =
+            ImageReader::new(io::Cursor::new(buffer)).with_guessed_format()?;
 
         let format = reader.format().ok_or_else(|| {
             ValidationError::InvalidType(InvalidImageType::unknown(
