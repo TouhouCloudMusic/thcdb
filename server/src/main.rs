@@ -50,13 +50,14 @@ use app::create_app;
 use infrastructure::logger::Logger;
 use sea_orm_migration::migrator::MigratorTrait;
 use state::{ArcAppState, CONFIG};
-#[cfg(target_os = "linux")]
-use tikv_jemallocator::Jemalloc;
 use tokio::signal;
 
-#[cfg(target_os = "linux")]
-#[global_allocator]
-static GLOBAL: Jemalloc = Jemalloc;
+#[cfg(all(unix, not(debug_assertions)))]
+mod alloc {
+    use tikv_jemallocator::Jemalloc;
+    #[global_allocator]
+    static GLOBAL: Jemalloc = Jemalloc;
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
