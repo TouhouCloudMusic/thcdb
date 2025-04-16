@@ -8,6 +8,7 @@ pub trait AsErrorCode {
 #[derive(Serialize_repr, Clone, Copy)]
 #[repr(u32)]
 pub enum ErrorCode {
+    BadRequest = 400,
     InvalidField = 400_00,
     IncorrectCorrectionType = 400_01,
     Unauthorized = 401_00,

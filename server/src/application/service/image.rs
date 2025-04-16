@@ -6,14 +6,15 @@ use xxhash_rust::xxh3::xxh3_128;
 
 use crate::domain::model::image::NewImage;
 use crate::domain::service::image::{
-    AsyncImageStorage, InvalidType, ValidatedPath, Validator, ValidatorTrait,
+    AsyncImageStorage, InvalidImageTypeOld, ValidatedPath, Validator,
+    ValidatorTrait,
 };
 use crate::domain::{self};
 
 #[derive(Debug, thiserror::Error)]
 pub enum CreateError<R, S> {
     #[error(transparent)]
-    InvalidType(#[from] InvalidType),
+    InvalidType(#[from] InvalidImageTypeOld),
     #[error(transparent)]
     Repo(R),
     #[error(transparent)]

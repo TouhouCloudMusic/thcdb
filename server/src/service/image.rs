@@ -11,7 +11,8 @@ use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter};
 use xxhash_rust::xxh3::xxh3_128;
 
 use crate::domain::service::image::{
-    AsyncImageStorage, InvalidType, ValidatedPath, Validator, ValidatorTrait,
+    AsyncImageStorage, InvalidImageTypeOld, ValidatedPath, Validator,
+    ValidatorTrait,
 };
 use crate::error::DbErrWrapper;
 use crate::infrastructure::adapter::storage::image::{
@@ -25,7 +26,7 @@ error_set! {
     CreateError = {
         #[from(DbErr)]
         DbErr(DbErrWrapper),
-        InvalidType(InvalidType),
+        InvalidType(InvalidImageTypeOld),
         #[from(std::io::Error)]
         Infra(LocalFileImageStorageError),
     };
