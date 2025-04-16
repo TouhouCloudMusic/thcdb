@@ -25,7 +25,8 @@ error_set! {
     CreateError = {
         #[from(DbErr)]
         DbErr(DbErrWrapper),
-        #[from(InvalidType, std::io::Error)]
+        InvalidType(InvalidType),
+        #[from(std::io::Error)]
         Infra(LocalFileImageStorageError),
     };
 }

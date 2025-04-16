@@ -1,10 +1,18 @@
 use std::path::{Path, PathBuf};
 
+use axum::http::StatusCode;
 use derive_more::{Display, Error};
+use macros::ApiError;
 use smart_default::SmartDefault;
 
-#[derive(Debug, Display, Error, SmartDefault)]
+use crate::error::ErrorCode;
+
+#[derive(Debug, Display, Error, SmartDefault, ApiError)]
 #[display("Invalid image type, accepted: {accepted}, expected: {expected}")]
+#[api_error(
+    status_code = StatusCode::BAD_REQUEST,
+    error_code = ErrorCode::InvalidImageType
+)]
 pub struct InvalidType {
     #[default = "Unknown"]
     accepted: String,
@@ -107,17 +115,16 @@ impl ValidatorTrait for Validator {
 
 pub trait AsyncImageStorage: Send + Sync {
     type File;
-    type CreateError;
-    type RemoveError;
+    type Error;
 
     async fn create(
         &self,
         path: &ValidatedPath,
         data: &[u8],
-    ) -> Result<Self::File, Self::CreateError>;
+    ) -> Result<Self::File, Self::Error>;
 
     async fn remove(
         &self,
         path: impl AsRef<Path> + Send + Sync,
-    ) -> Result<(), Self::RemoveError>;
+    ) -> Result<(), Self::Error>;
 }

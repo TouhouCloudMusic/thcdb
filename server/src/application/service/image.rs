@@ -11,15 +11,13 @@ use crate::domain::service::image::{
 use crate::domain::{self};
 
 #[derive(Debug, thiserror::Error)]
-pub enum CreateError<R, C, RM> {
+pub enum CreateError<R, S> {
     #[error(transparent)]
     InvalidType(#[from] InvalidType),
     #[error(transparent)]
     Repo(R),
     #[error(transparent)]
-    Create(C),
-    #[error(transparent)]
-    Remove(RM),
+    Storage(S),
 }
 
 #[derive(Clone, bon::Builder)]
@@ -41,10 +39,7 @@ where
         &self,
         data: &[u8],
         uploader_id: i32,
-    ) -> Result<
-        entity::image::Model,
-        CreateError<R::Error, S::CreateError, S::RemoveError>,
-    >;
+    ) -> Result<entity::image::Model, CreateError<R::Error, S::Error>>;
 
     async fn find_by_filename(
         &self,
@@ -61,10 +56,7 @@ where
         &self,
         data: &[u8],
         uploader_id: i32,
-    ) -> Result<
-        entity::image::Model,
-        CreateError<R::Error, S::CreateError, S::RemoveError>,
-    > {
+    ) -> Result<entity::image::Model, CreateError<R::Error, S::Error>> {
         let validator = Validator::default();
         let extension = validator.validate_extension(data)?;
 
@@ -84,12 +76,12 @@ where
         self.storage
             .create(&full_path, data)
             .await
-            .map_err(CreateError::Create)?;
+            .map_err(CreateError::Storage)?;
 
         #[allow(clippy::type_complexity)]
         let res: Result<
             entity::image::Model,
-            CreateError<R::Error, S::CreateError, S::RemoveError>,
+            CreateError<R::Error, S::Error>,
         > = try {
             if let Some(image) = self
                 .find_by_filename(&filename)
@@ -115,7 +107,7 @@ where
                 self.storage
                     .remove(full_path)
                     .await
-                    .map_err(CreateError::Remove)?;
+                    .map_err(CreateError::Storage)?;
                 Err(err)
             }
         }

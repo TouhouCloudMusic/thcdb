@@ -33,8 +33,8 @@ use crate::{application, domain};
 
 type CreateImageSerivceError = application::service::image::CreateError<
     <adapter::database::SeaOrmRepository as domain::repository::image::Repository>::Error,
-    <LocalFileImageStorage as AsyncImageStorage>::CreateError,
-    <LocalFileImageStorage as AsyncImageStorage>::RemoveError
+    <LocalFileImageStorage as AsyncImageStorage>::Error,
+
 >;
 
 error_set! {
@@ -110,8 +110,7 @@ impl Service {
     where
         R: domain::repository::image::Repository,
         S: AsyncImageStorage,
-        UploadAvatarError:
-            From<CreateError<R::Error, S::CreateError, S::RemoveError>>,
+        UploadAvatarError: From<CreateError<R::Error, S::Error>>,
     {
         if data
             .metadata
