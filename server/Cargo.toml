@@ -78,6 +78,9 @@ base64 = "0.22"
 bon = { version = "3.0", features = [
     "implied-bounds",
 ] }
+bytesize = { version = "2.0.1", features = [
+    "serde",
+] }
 chrono.workspace = true
 config = { version = "0.15.8", features = [
     "ron",
@@ -145,7 +148,7 @@ xxhash-rust = { version = "0.8", features = [
 ] }
 zxcvbn = "3.1"
 
-[target.'cfg(target_os = "linux")'.dependencies]
+[target.'cfg(unix)'.dependencies]
 tikv-jemallocator = "0.6.0"
 
 [dev-dependencies]

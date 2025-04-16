@@ -1,6 +1,6 @@
 use std::io;
 use std::ops::Range;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use axum::http::StatusCode;
 use bytesize::ByteSize;
@@ -156,12 +156,15 @@ impl std::fmt::Display for InvalidImageSize {
     }
 }
 
-#[derive(bon::Builder)]
+pub struct ImageValidationResult {
+    pub extension: String,
+}
+
 pub struct ImageValidatorOption {
-    valid_formats: &'static [ImageFormat],
-    file_size_limit: Range<Option<ByteSize>>,
-    width_limit: Range<Option<u32>>,
-    height_limit: Range<Option<u32>>,
+    pub valid_formats: &'static [ImageFormat],
+    pub file_size_limit: Range<Option<ByteSize>>,
+    pub width_limit: Range<Option<u32>>,
+    pub height_limit: Range<Option<u32>>,
 }
 
 pub struct ImageValidator {
@@ -222,7 +225,10 @@ impl ImageValidator {
         }
     }
 
-    pub fn validate(&self, buffer: &[u8]) -> Result<(), ValidationError> {
+    pub fn validate(
+        &self,
+        buffer: &[u8],
+    ) -> Result<ImageValidationResult, ValidationError> {
         self.validate_file_size(ByteSize(
             // We don't use 128-bit computers, so it is safe to unwrap here
             buffer.len().try_into().unwrap(),
@@ -243,97 +249,9 @@ impl ImageValidator {
 
         self.validate_size(width, height)?;
 
-        Ok(())
-    }
-}
-
-#[deprecated]
-pub struct ValidatedExtension<'s>(&'s str);
-
-#[deprecated]
-impl ValidatedExtension<'_> {
-    pub const fn inner(&self) -> &str {
-        self.0
-    }
-}
-
-#[deprecated]
-pub struct ValidatedPath(PathBuf);
-
-#[deprecated]
-impl ValidatedPath {
-    pub const fn inner(&self) -> &PathBuf {
-        &self.0
-    }
-
-    pub fn new(
-        validator: &impl ValidatorTrait,
-        path: &Path,
-        buffer: &[u8],
-    ) -> Result<Self, InvalidImageTypeOld> {
-        let ext = validator.validate_extension(buffer)?;
-
-        let path = path.with_extension(ext.0);
-
-        Ok(Self(path))
-    }
-
-    pub fn from_validated_ext(path: &Path, ext: &ValidatedExtension) -> Self {
-        let path = path.with_extension(ext.0);
-
-        Self(path)
-    }
-}
-
-impl From<ValidatedPath> for PathBuf {
-    fn from(val: ValidatedPath) -> Self {
-        val.0
-    }
-}
-
-impl AsRef<Path> for ValidatedPath {
-    fn as_ref(&self) -> &Path {
-        &self.0
-    }
-}
-
-#[deprecated]
-pub trait ValidatorTrait {
-    fn validate_extension(
-        &self,
-        buffer: &[u8],
-    ) -> Result<ValidatedExtension, InvalidImageTypeOld>;
-}
-
-#[derive(Default)]
-#[deprecated]
-pub struct Validator {}
-
-impl ValidatorTrait for Validator {
-    fn validate_extension(
-        &self,
-        buffer: &[u8],
-    ) -> std::result::Result<ValidatedExtension, InvalidImageTypeOld> {
-        let res = match ::image::guess_format(buffer) {
-            Ok(format) => match &format {
-                ::image::ImageFormat::Png | ::image::ImageFormat::Jpeg => {
-                    *format.extensions_str().first().unwrap()
-                }
-                _ => Err(InvalidImageTypeOld::from_accepted(
-                    *format.extensions_str().first().unwrap(),
-                ))?,
-            },
-            Err(err) => {
-                tracing::error!(
-                    "Error while guessing format on create image: {}",
-                    err
-                );
-
-                Err(InvalidImageTypeOld::default())?
-            }
-        };
-
-        Ok(ValidatedExtension(res))
+        Ok(ImageValidationResult {
+            extension: (*format.extensions_str().first().unwrap()).to_string(),
+        })
     }
 }
 
@@ -343,7 +261,7 @@ pub trait AsyncImageStorage: Send + Sync {
 
     async fn create(
         &self,
-        path: &ValidatedPath,
+        path: impl AsRef<Path>,
         data: &[u8],
     ) -> Result<Self::File, Self::Error>;
 

@@ -1,7 +1,6 @@
 pub mod artist;
 pub mod correction;
 pub mod event;
-pub mod image;
 // pub mod juniper;
 pub mod label;
 pub mod release;

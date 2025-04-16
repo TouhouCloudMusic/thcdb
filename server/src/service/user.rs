@@ -5,9 +5,11 @@ use argon2::password_hash;
 use axum::body::Bytes;
 use axum::http::StatusCode;
 use axum_typed_multipart::FieldData;
+use bytesize::ByteSize;
 use derive_more::From;
 use entity::{role, user, user_role};
 use error_set::error_set;
+use image::ImageFormat;
 use itertools::Itertools;
 use macros::{ApiError, IntoErrorSchema};
 use sea_orm::ActiveValue::*;
@@ -18,12 +20,13 @@ use sea_orm::{
     IntoActiveModel, Iterable, PaginatorTrait, QueryFilter, TransactionTrait,
 };
 
-use crate::application::service::image::CreateError;
 use crate::constant::ADMIN_USERNAME;
 use crate::domain::model::auth::{
     HasherError, UserRole, ValidateCredsError, hash_password,
 };
-use crate::domain::service::image::AsyncImageStorage;
+use crate::domain::service::image::{
+    AsyncImageStorage, ImageValidator, ImageValidatorOption, ValidationError,
+};
 use crate::error::{DbErrWrapper, ErrorCode, InvalidField, ServiceError};
 use crate::infrastructure::adapter::storage::image::LocalFileImageStorage;
 use crate::infrastructure::adapter::{self};
@@ -31,14 +34,13 @@ use crate::model::lookup_table::LookupTableEnum;
 use crate::utils::orm::PgFuncExt;
 use crate::{application, domain};
 
-type CreateImageSerivceError = application::service::image::CreateError<
+type ImageServiceCreateError = application::service::image::CreateError<
     <adapter::database::SeaOrmRepository as domain::repository::image::Repository>::Error,
     <LocalFileImageStorage as AsyncImageStorage>::Error,
-
 >;
 
 error_set! {
-        #[derive(IntoErrorSchema, ApiError, From)]
+    #[derive(IntoErrorSchema, ApiError, From)]
     UploadAvatarError = {
         #[from(DbErr)]
         DbErr(DbErrWrapper),
@@ -49,11 +51,13 @@ error_set! {
             into_response = self
         )]
         #[display("{}", ErrorCode::InternalServerError.message())]
-        ImageService(CreateImageSerivceError),
+        ImageService(ImageServiceCreateError),
         #[api_error(
             into_response = self
         )]
         InvalidField(InvalidField),
+
+        Validtion(ValidationError)
     };
     #[derive(ApiError, IntoErrorSchema, From)]
     CreateUserError = {
@@ -101,16 +105,14 @@ impl Service {
             .await
     }
 
-    pub async fn upload_avatar<R, S>(
+    pub async fn upload_avatar<IS: application::service::image::ServiceTrait>(
         &self,
-        image_service: &impl application::service::image::ServiceTrait<R, S>,
+        image_service: &IS,
         user_id: i32,
         data: FieldData<Bytes>,
     ) -> Result<(), UploadAvatarError>
     where
-        R: domain::repository::image::Repository,
-        S: AsyncImageStorage,
-        UploadAvatarError: From<CreateError<R::Error, S::Error>>,
+        IS::CreateError: Into<ImageServiceCreateError>,
     {
         if data
             .metadata
@@ -118,7 +120,23 @@ impl Service {
             .as_ref()
             .is_some_and(|ct| ct.starts_with("image/"))
         {
-            let image = image_service.create(&data.contents, user_id).await?;
+            const AVATAR_VALIDATOR_OPTION: ImageValidatorOption =
+                ImageValidatorOption {
+                    valid_formats: &[ImageFormat::Png, ImageFormat::Jpeg],
+                    file_size_limit: Some(ByteSize::kib(10))
+                        ..Some(ByteSize::mib(10)),
+                    width_limit: Some(128)..Some(2048 + 1),
+                    height_limit: Some(128)..Some(2048 + 1),
+                };
+
+            const AVATAR_VALIDATOR: ImageValidator =
+                ImageValidator::new(AVATAR_VALIDATOR_OPTION);
+
+            let validate_res = AVATAR_VALIDATOR.validate(&data.contents)?;
+            let image = image_service
+                .create(&data.contents, validate_res.extension, user_id)
+                .await
+                .map_err(|e| UploadAvatarError::ImageService(e.into()))?;
 
             user::Entity::update_many()
                 .filter(user::Column::Id.eq(user_id))

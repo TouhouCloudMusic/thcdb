@@ -7,4 +7,3 @@ pub mod share;
 pub mod song;
 pub mod tag;
 pub mod r#trait;
-pub mod user;

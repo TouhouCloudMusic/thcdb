@@ -8,23 +8,26 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::api_response::{Data, Message};
+use crate::application::dto::user::{UploadAvatar, UploadProfileBanner};
 use crate::application::service::auth::{
     AuthServiceTrait, SessionBackendError, SignInError, SignUpError,
 };
+use crate::application::service::{ImageServiceTrait, UserImageServiceError};
 use crate::application::use_case::{self};
+use crate::domain::UserRepository;
 use crate::domain::model::auth::{AuthCredential, AuthnError};
 use crate::domain::model::user::UserProfile;
-use crate::dto::user::UploadAvatar;
 use crate::error::{DbErrWrapper, ServiceError};
 use crate::middleware::is_signed_in;
 use crate::service::user::UploadAvatarError;
-use crate::state::AuthSession;
+use crate::state::{AuthSession, SeaOrmRepository};
 use crate::{ArcAppState, api_response, domain, state};
 
 const TAG: &str = "User";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
+        .routes(routes!(upload_profile_banner))
         .routes(routes!(upload_avatar))
         .routes(routes!(sign_out))
         .route_layer(from_fn(is_signed_in))
@@ -182,6 +185,42 @@ async fn upload_avatar(
             .upload_avatar(&image_service, user.id, form.data)
             .await
             .map(|()| {
+                api_response::Message::new("Upload successful").into_response()
+            })
+    } else {
+        Ok(AuthnError::AuthenticationFailed.into_response())
+    }
+}
+
+type UploadProfileBannerError = UserImageServiceError<
+    <SeaOrmRepository as UserRepository>::Error,
+    <state::ImageService as ImageServiceTrait>::CreateError,
+>;
+
+#[utoipa::path(
+    post,
+    tag = TAG,
+    path = "/profile_banner",
+    request_body(
+        content_type = "multipart/form-data",
+        content = UploadProfileBanner,
+    ),
+    responses(
+        (status = 200, body = api_response::Message),
+        (status = 401),
+        UploadProfileBannerError
+    )
+)]
+async fn upload_profile_banner(
+    auth_session: AuthSession,
+    State(service): State<state::UserImageService>,
+    TypedMultipart(form): TypedMultipart<UploadProfileBanner>,
+) -> Result<impl IntoResponse, UploadProfileBannerError> {
+    if let Some(user) = auth_session.user {
+        service
+            .upload_banner_image(user, &form.data.contents)
+            .await
+            .map(|_| {
                 api_response::Message::new("Upload successful").into_response()
             })
     } else {

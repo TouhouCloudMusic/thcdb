@@ -44,6 +44,7 @@ pub mod user {
         pub name: String,
         pub password: String,
         pub avatar_id: Option<i32>,
+        pub profile_banner_id: Option<i32>,
         pub last_login: chrono::DateTime<chrono::FixedOffset>,
         pub roles: Vec<UserRole>,
     }
@@ -57,6 +58,7 @@ pub mod user {
                 password: value.hashed_password()?,
                 name: value.username,
                 avatar_id: None,
+                profile_banner_id: None,
                 last_login: chrono::Utc::now().into(),
                 roles: vec![UserRole::User],
             })

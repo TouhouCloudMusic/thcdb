@@ -1,5 +1,5 @@
 pub mod image {
-    use std::path::PathBuf;
+    use std::path::{Path, PathBuf};
     use std::sync::LazyLock;
 
     use axum::http::StatusCode;
@@ -7,7 +7,7 @@ pub mod image {
     use tokio::io::AsyncWriteExt;
 
     use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
-    use crate::domain::service::image::{AsyncImageStorage, ValidatedPath};
+    use crate::domain::service::image::AsyncImageStorage;
     use crate::error::ErrorCode;
 
     pub static DEFAULT_PATH: LazyLock<PathBuf> =
@@ -44,11 +44,10 @@ pub mod image {
 
         async fn create(
             &self,
-            path: &ValidatedPath,
+            path: impl AsRef<Path>,
             data: &[u8],
         ) -> Result<Self::File, Self::Error> {
-            let inner = path.inner();
-            let full_path = PathBuf::from_iter([self.base_path, inner]);
+            let full_path = PathBuf::from_iter([self.base_path, path.as_ref()]);
             tokio::fs::create_dir_all(
                 full_path
                     .parent()

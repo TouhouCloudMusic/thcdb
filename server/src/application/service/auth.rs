@@ -174,7 +174,7 @@ where
             .map_or(Ok(()), |_| Err(SignUpError::UsernameAlreadyInUse))?;
 
         self.repo
-            .create(creds.try_into()?)
+            .save(creds.try_into()?)
             .await
             .map_err(SignUpError::Repo)
     }

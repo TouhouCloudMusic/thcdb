@@ -37,6 +37,11 @@ pub type SongService = crate::service::song::Service;
 
 pub type TagService = crate::service::tag::Service<SeaOrmRepository>;
 pub type UserService = crate::service::user::Service;
+pub type UserImageService = crate::application::service::user::UserImageService<
+    SeaOrmRepository,
+    ImageService,
+>;
+
 pub type AuthService =
     crate::application::service::auth::AuthService<SeaOrmRepository>;
 
@@ -182,5 +187,11 @@ impl FromRef<ArcAppState> for SongService {
 impl FromRef<ArcAppState> for AuthService {
     fn from_ref(input: &ArcAppState) -> Self {
         Self::new(input.sea_orm_repo.clone())
+    }
+}
+
+impl FromRef<ArcAppState> for UserImageService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self::new(input.sea_orm_repo.clone(), FromRef::from_ref(input))
     }
 }

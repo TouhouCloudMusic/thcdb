@@ -27,35 +27,37 @@ impl SeaOrmRepository {
 }
 
 impl domain::repository::image::Repository for SeaOrmRepository {
-    type Error = DbErr;
+    type Error = DbErrWrapper;
 
     async fn create(
         &self,
         data: domain::model::image::NewImage,
     ) -> Result<entity::image::Model, Self::Error> {
-        entity::image::Entity::insert(data.into_active_model())
+        Ok(entity::image::Entity::insert(data.into_active_model())
             .exec_with_returning(&self.conn)
-            .await
+            .await?)
     }
 
     async fn find_by_filename(
         &self,
         filename: &str,
     ) -> Result<Option<entity::image::Model>, Self::Error> {
-        entity::image::Entity::find()
+        Ok(entity::image::Entity::find()
             .filter(entity::image::Column::Filename.eq(filename))
             .one(&self.conn)
-            .await
+            .await?)
     }
 }
 
 mod user {
     use itertools::Itertools;
-    use sea_orm::ActiveValue::Set;
+    use sea_orm::ActiveValue::{NotSet, Set};
     use sea_orm::sea_query::IntoCondition;
     use sea_orm::{
-        ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, QueryFilter,
+        ColumnTrait, DbErr, EntityTrait, Iterable, QueryFilter,
+        TransactionTrait,
     };
+    use sea_orm_migration::prelude::OnConflict;
 
     use super::SeaOrmRepository;
     use crate::domain::model::auth::UserRole;
@@ -88,14 +90,24 @@ mod user {
             )
         }
 
-        async fn create(&self, user: User) -> Result<User, Self::Error> {
-            let model = entity::user::ActiveModel {
-                name: Set(user.name),
-                password: Set(user.password),
-                ..Default::default()
-            }
-            .insert(&self.conn)
-            .await?;
+        async fn save(&self, user: User) -> Result<User, Self::Error> {
+            let tx = self.conn.begin().await?;
+            let model =
+                entity::user::Entity::insert(entity::user::ActiveModel {
+                    id: if user.id > 0 { Set(user.id) } else { NotSet },
+                    name: Set(user.name),
+                    password: Set(user.password),
+                    avatar_id: Set(user.avatar_id),
+                    profile_banner_id: Set(user.profile_banner_id),
+                    last_login: Set(user.last_login),
+                })
+                .on_conflict(
+                    OnConflict::column(entity::user::Column::Id)
+                        .update_columns(entity::user::Column::iter())
+                        .to_owned(),
+                )
+                .exec_with_returning(&tx)
+                .await?;
 
             let roles = user
                 .roles
@@ -106,8 +118,13 @@ mod user {
                 })
                 .collect_vec();
 
+            entity::user_role::Entity::delete_many()
+                .filter(entity::user_role::Column::UserId.eq(model.id))
+                .exec(&tx)
+                .await?;
+
             let roles = entity::user_role::Entity::insert_many(roles)
-                .exec_with_returning_many(&self.conn)
+                .exec_with_returning_many(&tx)
                 .await?;
 
             let mut user = User::from(model);
@@ -116,6 +133,8 @@ mod user {
                 .into_iter()
                 .map(|x| x.role_id.try_into())
                 .collect::<Result<Vec<UserRole>, _>>()?;
+
+            tx.commit().await?;
 
             Ok(user)
         }
@@ -127,7 +146,8 @@ mod user {
                 id: value.id,
                 name: value.name,
                 password: value.password,
-                avatar_id: None,
+                avatar_id: value.avatar_id,
+                profile_banner_id: value.profile_banner_id,
                 last_login: value.last_login,
                 roles: vec![],
             }
