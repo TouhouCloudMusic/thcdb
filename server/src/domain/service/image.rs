@@ -1,34 +1,39 @@
 use std::io;
-use std::ops::Range;
 use std::path::Path;
+use std::range::RangeInclusive;
 
 use axum::http::StatusCode;
+use bon::Builder;
 use bytesize::ByteSize;
 use derive_more::{Display, Error};
 use error_set::error_set;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 use macros::ApiError;
-use smart_default::SmartDefault;
 
 use crate::error::ErrorCode;
 
 error_set! {
     #[derive(ApiError)]
     ValidationError = {
-        InvalidType(InvalidImageType),
+        InvalidType(InvalidForamt),
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
             error_code = ErrorCode::BadRequest,
             into_response = self
         )]
-        InvalidFileSize(InvalidImageFileSize),
+        InvalidFileSize(InvalidFileSize),
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
             error_code = ErrorCode::BadRequest,
             into_response = self
         )]
-        InvalidSize(InvalidImageSize),
-
+        InvalidSize(InvalidSize),
+        #[api_error(
+            status_code = StatusCode::BAD_REQUEST,
+            error_code = ErrorCode::BadRequest,
+            into_response = self
+        )]
+        InvalidRatio(InvalidRatio),
         // TODO: Internal error wrapper
         #[api_error(
             status_code = StatusCode::INTERNAL_SERVER_ERROR,
@@ -47,36 +52,17 @@ error_set! {
     };
 }
 
-#[derive(Debug, Display, Error, SmartDefault, ApiError)]
-#[display("Invalid image type, accepted: {accepted}, expected: {expected}")]
-#[api_error(
-    status_code = StatusCode::BAD_REQUEST,
-    error_code = ErrorCode::InvalidImageType
-)]
-pub struct InvalidImageTypeOld {
-    accepted: String,
-    expected: &'static str,
-}
-
-impl InvalidImageTypeOld {
-    pub fn from_accepted(accepted: impl Into<String>) -> Self {
-        Self {
-            accepted: accepted.into(),
-            ..Default::default()
-        }
-    }
-}
 #[derive(Debug, Error, ApiError)]
 #[api_error(
     status_code = StatusCode::BAD_REQUEST,
     error_code = ErrorCode::InvalidImageType
 )]
-pub struct InvalidImageType {
+pub struct InvalidForamt {
     accepted: Option<ImageFormat>,
     expected: &'static [ImageFormat],
 }
 
-impl InvalidImageType {
+impl InvalidForamt {
     pub const fn new(
         accepted: ImageFormat,
         expected: &'static [ImageFormat],
@@ -95,7 +81,7 @@ impl InvalidImageType {
     }
 }
 
-impl std::fmt::Display for InvalidImageType {
+impl std::fmt::Display for InvalidForamt {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let accepted_name = self
             .accepted
@@ -104,19 +90,19 @@ impl std::fmt::Display for InvalidImageType {
 
         write!(
             f,
-            "Invalid image type, accepted: {}, expected: {:#?}",
+            "Invalid image format, accepted: {}, expected: {:#?}",
             accepted_name, self.expected
         )
     }
 }
 
 #[derive(Debug, Error)]
-pub struct InvalidImageFileSize {
+pub struct InvalidFileSize {
     accepted: ByteSize,
-    range: Range<ByteSize>,
+    range: RangeInclusive<ByteSize>,
 }
 
-impl std::fmt::Display for InvalidImageFileSize {
+impl std::fmt::Display for InvalidFileSize {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.accepted < self.range.start {
             write!(
@@ -135,19 +121,19 @@ impl std::fmt::Display for InvalidImageFileSize {
 }
 
 #[derive(Debug, Error)]
-pub struct InvalidImageSize {
+pub struct InvalidSize {
     width: u32,
     height: u32,
-    width_limit: Range<u32>,
-    height_limit: Range<u32>,
+    width_range: RangeInclusive<u32>,
+    height_range: RangeInclusive<u32>,
 }
 
-impl std::fmt::Display for InvalidImageSize {
+impl std::fmt::Display for InvalidSize {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let min_size =
-            format!("{} x {}", self.width_limit.start, self.height_limit.start);
+            format!("{} x {}", self.width_range.start, self.height_range.start);
         let max_size =
-            format!("{} x {}", self.width_limit.end, self.height_limit.end);
+            format!("{} x {}", self.width_range.end, self.height_range.end);
         let image_size = format!("{} x {}", self.width, self.height);
         write!(
             f,
@@ -156,23 +142,88 @@ impl std::fmt::Display for InvalidImageSize {
     }
 }
 
-pub struct ImageValidationResult {
+#[derive(Debug, Display)]
+pub enum Ratio {
+    Int(u8),
+    Float(f64),
+}
+
+impl From<u8> for Ratio {
+    fn from(v: u8) -> Self {
+        Self::Int(v)
+    }
+}
+
+impl From<u32> for Ratio {
+    #[expect(clippy::cast_possible_truncation)]
+    fn from(v: u32) -> Self {
+        Self::Int(v as u8)
+    }
+}
+
+impl From<f64> for Ratio {
+    fn from(v: f64) -> Self {
+        Self::Float(v)
+    }
+}
+
+#[derive(Debug, Error, Display)]
+#[display(
+    "Invalid image ratio, accepted: {accepted:.2}, expected: {expected:.2}"
+)]
+pub struct InvalidRatio {
+    accepted: f64,
+    expected: f64,
+}
+
+impl InvalidRatio {
+    pub const fn new(accepted: f64, expected: f64) -> Self {
+        Self { accepted, expected }
+    }
+}
+
+pub struct ValidationReturn {
     pub extension: String,
 }
 
-pub struct ImageValidatorOption {
-    pub valid_formats: &'static [ImageFormat],
-    pub file_size_limit: Range<Option<ByteSize>>,
-    pub width_limit: Range<Option<u32>>,
-    pub height_limit: Range<Option<u32>>,
+#[derive(Builder)]
+pub struct ValidatorOption {
+    valid_formats: &'static [ImageFormat],
+    /// The file size range of the image, default [100 kib, 10 mib]
+    #[builder(into, default = ByteSize::kib(100)..=ByteSize::mib(10))]
+    file_size_range: RangeInclusive<ByteSize>,
+    /// The width range of the image, default is [128px, 4096px]
+    #[builder(into, default = 128..=4096)]
+    width_range: RangeInclusive<u32>,
+    /// The height range of the image, default is [128px, 4096px]
+    #[builder(into, default = 128..=4096)]
+    height_range: RangeInclusive<u32>,
+    #[builder(into)]
+    ratio: Option<Ratio>,
 }
 
-pub struct ImageValidator {
-    option: ImageValidatorOption,
+use validator_option_builder::{IsUnset, SetHeightRange, SetWidthRange};
+
+impl<S: validator_option_builder::State> ValidatorOptionBuilder<S> {
+    pub fn size_range(
+        self,
+        value: impl Into<RangeInclusive<u32>>,
+    ) -> ValidatorOptionBuilder<SetHeightRange<SetWidthRange<S>>>
+    where
+        S::HeightRange: IsUnset,
+        S::WidthRange: IsUnset,
+    {
+        let range = value.into();
+        self.width_range(range).height_range(range)
+    }
 }
 
-impl ImageValidator {
-    pub const fn new(option: ImageValidatorOption) -> Self {
+pub struct Validator {
+    option: ValidatorOption,
+}
+
+impl Validator {
+    pub const fn new(option: ValidatorOption) -> Self {
         Self { option }
     }
 
@@ -180,20 +231,18 @@ impl ImageValidator {
         &self,
         width: u32,
         height: u32,
-    ) -> Result<(), InvalidImageSize> {
-        let width_limit = self.option.width_limit.start.unwrap_or(0)
-            ..self.option.width_limit.end.unwrap_or(u32::MAX);
-        let height_limit = self.option.height_limit.start.unwrap_or(0)
-            ..self.option.height_limit.end.unwrap_or(u32::MAX);
+    ) -> Result<(), InvalidSize> {
+        let width_range = self.option.width_range;
+        let height_range = self.option.height_range;
 
-        if width_limit.contains(&width) && height_limit.contains(&height) {
+        if width_range.contains(&width) && height_range.contains(&height) {
             Ok(())
         } else {
-            Err(InvalidImageSize {
+            Err(InvalidSize {
                 width,
                 height,
-                width_limit,
-                height_limit,
+                width_range,
+                height_range,
             })
         }
     }
@@ -201,15 +250,14 @@ impl ImageValidator {
     fn validate_file_size(
         &self,
         size: ByteSize,
-    ) -> Result<(), InvalidImageFileSize> {
-        let range = &self.option.file_size_limit;
-        if range.contains(&Some(size)) {
+    ) -> Result<(), InvalidFileSize> {
+        let range = &self.option.file_size_range;
+        if range.contains(&size) {
             Ok(())
         } else {
-            Err(InvalidImageFileSize {
+            Err(InvalidFileSize {
                 accepted: size,
-                range: (range.start.unwrap_or(ByteSize(0)))
-                    ..(range.end.unwrap_or(ByteSize(u64::MAX))),
+                range: *range,
             })
         }
     }
@@ -217,18 +265,40 @@ impl ImageValidator {
     fn validate_format(
         &self,
         format: ImageFormat,
-    ) -> Result<(), InvalidImageType> {
+    ) -> Result<(), InvalidForamt> {
         if self.option.valid_formats.contains(&format) {
             Ok(())
         } else {
-            Err(InvalidImageType::new(format, self.option.valid_formats))
+            Err(InvalidForamt::new(format, self.option.valid_formats))
         }
+    }
+
+    fn validate_ratio(&self, ratio: f64) -> Result<(), InvalidRatio> {
+        fn is_valid_ratio(
+            target_ratio: f64,
+            tolerance: f64,
+            ratio: f64,
+        ) -> bool {
+            (ratio - target_ratio).abs() <= tolerance
+        }
+
+        self.option.ratio.as_ref().map_or(Ok(()), |r| {
+            let target = match r {
+                Ratio::Int(i) => f64::from(*i),
+                Ratio::Float(f) => *f,
+            };
+            if is_valid_ratio(target, 0.01, ratio) {
+                Ok(())
+            } else {
+                Err(InvalidRatio::new(ratio, target))
+            }
+        })
     }
 
     pub fn validate(
         &self,
         buffer: &[u8],
-    ) -> Result<ImageValidationResult, ValidationError> {
+    ) -> Result<ValidationReturn, ValidationError> {
         self.validate_file_size(ByteSize(
             // We don't use 128-bit computers, so it is safe to unwrap here
             buffer.len().try_into().unwrap(),
@@ -238,7 +308,7 @@ impl ImageValidator {
             ImageReader::new(io::Cursor::new(buffer)).with_guessed_format()?;
 
         let format = reader.format().ok_or_else(|| {
-            ValidationError::InvalidType(InvalidImageType::unknown(
+            ValidationError::InvalidType(InvalidForamt::unknown(
                 self.option.valid_formats,
             ))
         })?;
@@ -250,7 +320,9 @@ impl ImageValidator {
 
         self.validate_size(width, height)?;
 
-        Ok(ImageValidationResult {
+        self.validate_ratio(f64::from(width) / f64::from(height))?;
+
+        Ok(ValidationReturn {
             extension: (*format.extensions_str().first().unwrap()).to_string(),
         })
     }

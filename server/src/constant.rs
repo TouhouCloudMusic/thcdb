@@ -19,7 +19,6 @@ mod share {
     pub const PROFILE_BANNER_MIN_WIDTH: u32 = 600;
     pub const PROFILE_BANNER_MAX_HEIGHT: u32 = 500;
     pub const PROFILE_BANNER_MIN_HEIGHT: u32 = 200;
-    pub const PROFILE_BANNER_RATIO: u32 = 1500 / 500;
 
     // Note: if you modify these values, please also change the regexes below
     pub const USER_NAME_MIN_LENGTH: u8 = 1;

@@ -41,7 +41,7 @@ where
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 pub fn default_into_api_response_impl<T>(x: T) -> axum::response::Response
 where
     T: ApiErrorTrait + std::error::Error,

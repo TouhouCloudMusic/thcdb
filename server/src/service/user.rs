@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::sync::LazyLock;
 use std::{env, str};
 
 use argon2::password_hash;
@@ -25,7 +26,7 @@ use crate::domain::model::auth::{
     HasherError, UserRole, ValidateCredsError, hash_password,
 };
 use crate::domain::service::image::{
-    AsyncImageStorage, ImageValidator, ImageValidatorOption, ValidationError,
+    AsyncImageStorage, ValidationError, Validator, ValidatorOption,
 };
 use crate::error::{DbErrWrapper, ErrorCode, InvalidField, ServiceError};
 use crate::infrastructure::adapter::storage::image::LocalFileImageStorage;
@@ -120,17 +121,16 @@ impl Service {
             .as_ref()
             .is_some_and(|ct| ct.starts_with("image/"))
         {
-            const AVATAR_VALIDATOR_OPTION: ImageValidatorOption =
-                ImageValidatorOption {
-                    valid_formats: &[ImageFormat::Png, ImageFormat::Jpeg],
-                    file_size_limit: Some(ByteSize::kib(10))
-                        ..Some(ByteSize::mib(10)),
-                    width_limit: Some(128)..Some(2048 + 1),
-                    height_limit: Some(128)..Some(2048 + 1),
-                };
-
-            const AVATAR_VALIDATOR: ImageValidator =
-                ImageValidator::new(AVATAR_VALIDATOR_OPTION);
+            static AVATAR_VALIDATOR: LazyLock<Validator> =
+                LazyLock::new(|| {
+                    let opt = ValidatorOption::builder()
+                        .valid_formats(&[ImageFormat::Png, ImageFormat::Jpeg])
+                        .file_size_range(ByteSize::kib(10)..=ByteSize::mib(100))
+                        .size_range(128u32..=2048)
+                        .ratio(1u8)
+                        .build();
+                    Validator::new(opt)
+                });
 
             let validate_res = AVATAR_VALIDATOR.validate(&data.contents)?;
             let image = image_service

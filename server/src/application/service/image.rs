@@ -6,21 +6,9 @@ use macros::ApiError;
 use xxhash_rust::xxh3::xxh3_128;
 
 use crate::domain::model::image::NewImage;
-use crate::domain::service::image::{
-    AsyncImageStorage, InvalidImageType, InvalidImageTypeOld,
-};
+use crate::domain::service::image::{AsyncImageStorage, ValidationError};
 use crate::domain::{self};
 use crate::error::ImpledApiError;
-
-#[derive(Debug, thiserror::Error)]
-pub enum CreateErrorOld<R, S> {
-    #[error(transparent)]
-    InvalidType(#[from] InvalidImageTypeOld),
-    #[error(transparent)]
-    Repo(R),
-    #[error(transparent)]
-    Storage(S),
-}
 
 #[derive(Debug, thiserror::Error, ApiError)]
 pub enum CreateError<R, S>
@@ -29,7 +17,7 @@ where
     S: ImpledApiError,
 {
     #[error(transparent)]
-    InvalidType(#[from] InvalidImageType),
+    InvalidType(#[from] ValidationError),
     #[error(transparent)]
     Repo(R),
     #[error(transparent)]

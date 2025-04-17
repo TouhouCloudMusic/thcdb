@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use bytesize::ByteSize;
 use error_set::error_set;
 use futures_util::TryFutureExt;
@@ -12,22 +14,20 @@ use crate::constant::{
 use crate::domain::UserRepository;
 use crate::domain::model::user::User;
 use crate::domain::service::image::{
-    ImageValidator, ImageValidatorOption, ValidationError,
+    ValidationError, Validator, ValidatorOption,
 };
 use crate::error::ImpledApiError;
 
-const PROFILE_BANNER_VALIDATE_OPTION: ImageValidatorOption =
-    ImageValidatorOption {
-        valid_formats: &[ImageFormat::Png, ImageFormat::Jpeg],
-        file_size_limit: Some(ByteSize::kib(10))..Some(ByteSize::mib(100)),
-        width_limit: Some(PROFILE_BANNER_MIN_WIDTH)
-            ..Some(PROFILE_BANNER_MAX_WIDTH),
-        height_limit: Some(PROFILE_BANNER_MIN_HEIGHT)
-            ..Some(PROFILE_BANNER_MAX_HEIGHT),
-    };
-
-const PROFILE_BANNER_VALIDATOR: ImageValidator =
-    ImageValidator::new(PROFILE_BANNER_VALIDATE_OPTION);
+static PROFILE_BANNER_VALIDATOR: LazyLock<Validator> = LazyLock::new(|| {
+    let opt = ValidatorOption::builder()
+        .valid_formats(&[ImageFormat::Png, ImageFormat::Jpeg])
+        .file_size_range(ByteSize::kib(10)..=ByteSize::mib(100))
+        .width_range(PROFILE_BANNER_MIN_WIDTH..=PROFILE_BANNER_MAX_WIDTH)
+        .height_range(PROFILE_BANNER_MIN_HEIGHT..=PROFILE_BANNER_MAX_HEIGHT)
+        .ratio(PROFILE_BANNER_MAX_WIDTH / PROFILE_BANNER_MAX_HEIGHT)
+        .build();
+    Validator::new(opt)
+});
 
 error_set! {
     #[derive(ApiError, IntoErrorSchema)]
@@ -65,7 +65,7 @@ where
         mut user: User,
         buffer: &[u8],
     ) -> Result<User, UserImageServiceError<U::Error, IS::CreateError>> {
-        let validator = PROFILE_BANNER_VALIDATOR;
+        let validator = &PROFILE_BANNER_VALIDATOR;
 
         let res = validator.validate(buffer)?;
 

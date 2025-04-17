@@ -1,12 +1,9 @@
-#![allow(dead_code)]
-#![warn(
-    clippy::as_conversions,
-    clippy::cargo,
-    clippy::nursery,
-    clippy::pedantic
-)]
+#![deny(unused_must_use)]
+#![deny(clippy::clone_on_copy)]
+#![warn(clippy::cargo, clippy::nursery, clippy::pedantic)]
+#![warn(clippy::allow_attributes)]
+#![allow(dead_code, async_fn_in_trait)]
 #![allow(
-    async_fn_in_trait,
     clippy::cargo_common_metadata,
     clippy::iter_on_single_items,
     clippy::missing_docs_in_private_items,
@@ -16,15 +13,15 @@
     clippy::enum_glob_use,
     clippy::unreadable_literal
 )]
-#![deny(unused_must_use, clippy::clone_on_copy)]
 #![feature(
-    variant_count,
     let_chains,
-    try_blocks,
     min_specialization,
-    trait_alias
+    new_range_api,
+    return_type_notation,
+    trait_alias,
+    try_blocks,
+    variant_count
 )]
-#![feature(return_type_notation)]
 
 mod api_response;
 mod app;
