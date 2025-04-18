@@ -9,7 +9,7 @@ use sea_orm::{
 };
 
 use super::*;
-use crate::domain::model::auth::UserRole;
+use crate::domain::model::auth::UserRoleEnum;
 use crate::error::ServiceError;
 use crate::repo;
 
@@ -42,7 +42,7 @@ impl Service {
             .get_roles(user_id)
             .await?
             .into_iter()
-            .any(|r| UserRole::Admin == r || UserRole::Moderator == r)
+            .any(|r| UserRoleEnum::Admin == r || UserRoleEnum::Moderator == r)
         {
             return Ok(true);
         }

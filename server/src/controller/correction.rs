@@ -8,7 +8,7 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::api_response::Message;
-use crate::domain::model::auth::UserRole;
+use crate::domain::model::auth::UserRoleEnum;
 use crate::error::{ApiError, ServiceError};
 use crate::middleware::is_signed_in;
 use crate::service;
@@ -68,7 +68,7 @@ async fn handle_correction(
         .get_roles(user.id)
         .await?
         .into_iter()
-        .any(|x| UserRole::Admin == x || UserRole::Moderator == x)
+        .any(|x| UserRoleEnum::Admin == x || UserRoleEnum::Moderator == x)
     {
         match query.method {
             HandleCorrectionMethod::Approve => {

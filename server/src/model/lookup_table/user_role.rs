@@ -3,7 +3,7 @@ use sea_orm::ActiveValue::Set;
 use sea_orm::EntityTrait;
 
 use super::{LookupTableCheckResult, LookupTableEnum, ValidateLookupTable};
-use crate::domain::model::auth::UserRole;
+use crate::domain::model::auth::UserRoleEnum;
 
 impl<T> From<T> for LookupTableCheckResult<T> {
     fn from(val: T) -> Self {
@@ -11,7 +11,7 @@ impl<T> From<T> for LookupTableCheckResult<T> {
     }
 }
 
-impl PartialEq<role::Model> for UserRole {
+impl PartialEq<role::Model> for UserRoleEnum {
     fn eq(&self, other: &role::Model) -> bool {
         self.as_id() == other.id && self.to_string() == other.name
     }
@@ -23,8 +23,8 @@ pub(super) struct UserRoleConflict {
     pub enum_name: String,
 }
 
-impl From<UserRole> for role::ActiveModel {
-    fn from(val: UserRole) -> Self {
+impl From<UserRoleEnum> for role::ActiveModel {
+    fn from(val: UserRoleEnum) -> Self {
         Self {
             id: Set(val.as_id()),
             name: Set(val.to_string()),
@@ -33,13 +33,13 @@ impl From<UserRole> for role::ActiveModel {
 }
 
 #[allow(clippy::fallible_impl_from)]
-impl From<&role::Model> for UserRole {
+impl From<&role::Model> for UserRoleEnum {
     fn from(val: &role::Model) -> Self {
         Self::try_from_id(val.id).unwrap()
     }
 }
 
-impl ValidateLookupTable for UserRole {
+impl ValidateLookupTable for UserRoleEnum {
     type ConflictData = UserRoleConflict;
 
     type Entity = role::Entity;
@@ -78,7 +78,7 @@ impl ValidateLookupTable for UserRole {
     }
 }
 
-impl LookupTableEnum for UserRole {
+impl LookupTableEnum for UserRoleEnum {
     fn as_id(&self) -> i32 {
         match self {
             Self::Admin => 1,

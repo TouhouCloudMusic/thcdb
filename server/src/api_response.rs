@@ -119,7 +119,7 @@ impl IntoResponse for Message {
     }
 }
 
-#[allow(clippy::struct_field_names)]
+#[expect(clippy::struct_field_names)]
 #[derive(ToSchema, Serialize)]
 pub struct Error {
     #[schema(schema_with = status_err_schema)]
@@ -258,7 +258,7 @@ mod tests {
     }
 
     #[test]
-    #[allow(clippy::as_conversions)]
+    #[expect(clippy::as_conversions)]
     fn test_response_err() {
         let response = super::Error::builder()
             .error_code(&ErrorCode::UnknownError)

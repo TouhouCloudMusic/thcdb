@@ -23,7 +23,7 @@ use sea_orm::{
 
 use crate::constant::ADMIN_USERNAME;
 use crate::domain::model::auth::{
-    HasherError, UserRole, ValidateCredsError, hash_password,
+    HasherError, UserRoleEnum, ValidateCredsError, hash_password,
 };
 use crate::domain::service::image::{
     AsyncImageStorage, ValidationError, Validator, ValidatorOption,
@@ -238,7 +238,7 @@ pub async fn upsert_admin_acc(db: &DatabaseConnection) {
         user_role::Entity::insert(
             user_role::Model {
                 user_id: res.id,
-                role_id: UserRole::Admin.as_id(),
+                role_id: UserRoleEnum::Admin.as_id(),
             }
             .into_active_model(),
         )

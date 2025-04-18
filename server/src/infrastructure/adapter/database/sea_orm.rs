@@ -12,7 +12,7 @@ use sea_orm::{
     RelationTrait,
 };
 
-use crate::domain::model::auth::UserRole;
+use crate::domain::model::auth::UserRoleEnum;
 use crate::domain::{self};
 use crate::error::DbErrWrapper;
 
@@ -115,7 +115,7 @@ mod user {
                 .into_iter()
                 .map(|role| entity::user_role::ActiveModel {
                     user_id: Set(model.id),
-                    role_id: Set(role.into()),
+                    role_id: Set(role.id),
                 })
                 .collect_vec();
 
@@ -132,7 +132,7 @@ mod user {
 
             user.roles = roles
                 .into_iter()
-                .map(|x| x.role_id.try_into())
+                .map(TryInto::try_into)
                 .collect::<Result<Vec<UserRole>, _>>()?;
 
             tx.commit().await?;
@@ -170,7 +170,7 @@ mod user {
 
                 user.roles = roles
                     .into_iter()
-                    .map(|x| x.role_id.try_into())
+                    .map(TryInto::try_into)
                     .collect::<Result<Vec<UserRole>, _>>()?;
 
                 Ok(user)
@@ -179,7 +179,7 @@ mod user {
     }
 }
 
-impl TryFrom<user_role::Model> for UserRole {
+impl TryFrom<user_role::Model> for UserRoleEnum {
     type Error = DbErr;
 
     fn try_from(value: user_role::Model) -> Result<Self, Self::Error> {
@@ -190,7 +190,7 @@ impl TryFrom<user_role::Model> for UserRole {
 impl domain::repository::user::ProfileRepository for SeaOrmRepository {
     type Error = DbErrWrapper;
 
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::too_many_lines)]
     async fn find_by_name(
         &self,
         name: &str,

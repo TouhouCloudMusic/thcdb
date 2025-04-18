@@ -3,7 +3,7 @@ use sea_orm::{
 };
 use strum::IntoEnumIterator;
 
-use crate::domain::model::auth::UserRole;
+use crate::domain::model::auth::UserRoleEnum;
 use crate::service::user::upsert_admin_acc;
 
 mod language;
@@ -19,7 +19,7 @@ enum LookupTableCheckResult<T> {
 pub async fn check_database_lookup_tables(
     db: &DatabaseConnection,
 ) -> Result<(), DbErr> {
-    UserRole::check_and_sync(db).await?;
+    UserRoleEnum::check_and_sync(db).await?;
     language::upsert_langauge(db).await?;
 
     upsert_admin_acc(db).await;
