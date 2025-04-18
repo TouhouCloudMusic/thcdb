@@ -1,7 +1,6 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
-use macros::use_service;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -11,10 +10,10 @@ use crate::api_response::{Data, Message};
 use crate::dto::release::{ReleaseCorrection, ReleaseResponse};
 use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
-use crate::service::release::Service;
-use crate::state::{ArcAppState, AuthSession};
+use crate::state::{self, ArcAppState, AuthSession};
 use crate::utils::MapInto;
 
+type Service = state::ReleaseService;
 type Error = ServiceError;
 
 const TAG: &str = "Release";
@@ -104,13 +103,13 @@ async fn random(
 		Error
     ),
 )]
-#[use_service(release)]
 async fn create_release(
+    service: State<Service>,
     session: AuthSession,
     Json(data): Json<ReleaseCorrection>,
 ) -> Result<Message, Error> {
     let user_id = session.user.unwrap().id;
-    release_service.create(data, user_id).await?;
+    service.create(data, user_id).await?;
 
     Ok(Message::ok())
 }
@@ -126,13 +125,13 @@ async fn create_release(
 		Error
     ),
 )]
-#[use_service(release)]
 async fn update_release(
+    service: State<Service>,
     session: AuthSession,
     Path(id): Path<i32>,
     Json(data): Json<ReleaseCorrection>,
 ) -> Result<Message, Error> {
-    release_service
+    service
         .create_or_update_correction()
         .release_id(id)
         .release_data(data)

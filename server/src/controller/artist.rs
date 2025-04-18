@@ -1,7 +1,6 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
-use macros::use_service;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -10,10 +9,11 @@ use utoipa_axum::routes;
 use crate::api_response::{Data, Message, status_ok_schema};
 use crate::dto::artist::{ArtistCorrection, ArtistResponse};
 use crate::middleware::is_signed_in;
-use crate::service::{self, artist};
-use crate::state::{ArcAppState, AuthSession};
+use crate::service;
+use crate::state::{self, ArcAppState, AuthSession};
 use crate::utils::MapInto;
 
+type Service = state::ArtistService;
 type Error = service::artist::Error;
 
 const TAG: &str = "Artist";
@@ -38,16 +38,16 @@ struct DataArtist {
 }
 
 #[utoipa::path(
-	get,
+    get,
     tag = TAG,
-	path = "/artist/{id}",
-	responses(
-		(status = 200, body = DataArtist),
-		Error
-	),
+    path = "/artist/{id}",
+    responses(
+        (status = 200, body = DataArtist),
+        Error
+    ),
 )]
 async fn find_artist_by_id(
-    State(artist_service): State<artist::Service>,
+    State(artist_service): State<Service>,
     Path(id): Path<i32>,
 ) -> Result<Data<ArtistResponse>, Error> {
     artist_service.find_by_id(id).await.map_into()
@@ -69,19 +69,19 @@ struct DataVecArtist {
 }
 
 #[utoipa::path(
-	get,
+    get,
     tag = TAG,
-	path = "/artist",
+    path = "/artist",
     params(
         KeywordQuery
     ),
-	responses(
-		(status = 200, body = DataVecArtist),
-		Error
-	),
+    responses(
+        (status = 200, body = DataVecArtist),
+        Error
+    ),
 )]
-#[use_service(artist)]
 async fn find_artist_by_keyword(
+    State(artist_service): State<Service>,
     Query(query): Query<KeywordQuery>,
 ) -> Result<Data<Vec<ArtistResponse>>, Error> {
     artist_service
@@ -91,19 +91,19 @@ async fn find_artist_by_keyword(
 }
 
 #[utoipa::path(
-	post,
+    post,
     tag = TAG,
-	path = "/artist",
-	request_body = ArtistCorrection,
-	responses(
-		(status = 200, body = Message),
+    path = "/artist",
+    request_body = ArtistCorrection,
+    responses(
+        (status = 200, body = Message),
         (status = 401),
-		Error
-	),
+        Error
+    ),
 )]
 async fn create_artist(
     auth_session: AuthSession,
-    State(artist_service): State<artist::Service>,
+    State(artist_service): State<Service>,
     Json(input): Json<ArtistCorrection>,
 ) -> Result<Message, Error> {
     artist_service
@@ -114,19 +114,19 @@ async fn create_artist(
 }
 
 #[utoipa::path(
-	post,
+    post,
     tag = TAG,
-	path = "/artist/{id}",
-	request_body = ArtistCorrection,
-	responses(
-		(status = 200, body = Message),
+    path = "/artist/{id}",
+    request_body = ArtistCorrection,
+    responses(
+        (status = 200, body = Message),
         (status = 401),
-		Error
-	),
+        Error
+    ),
 )]
-#[use_service(artist)]
 async fn upsert_artist_correction(
     session: AuthSession,
+    State(artist_service): State<Service>,
     Path(id): Path<i32>,
     Json(input): Json<ArtistCorrection>,
 ) -> Result<Message, Error> {

@@ -1,7 +1,6 @@
 use axum::Json;
-use axum::extract::{Path, Query};
+use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
-use macros::use_service;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -11,8 +10,10 @@ use crate::api_response::{Data, Message};
 use crate::dto::event::{EventCorrection, EventResponse};
 use crate::error::ServiceError;
 use crate::middleware::is_signed_in;
-use crate::state::{ArcAppState, AuthSession};
+use crate::state::{self, ArcAppState, AuthSession};
 use crate::utils::MapInto;
+
+type Service = state::EventService;
 
 const TAG: &str = "Event";
 
@@ -31,19 +32,19 @@ super::data! {
 }
 
 #[utoipa::path(
-	get,
+    get,
     tag = TAG,
-	path = "/event/{id}",
-	responses(
-		(status = 200, body = Data<EventResponse>),
-		ServiceError
-	),
+    path = "/event/{id}",
+    responses(
+        (status = 200, body = Data<EventResponse>),
+        ServiceError
+    ),
 )]
-#[use_service(event)]
 async fn find_by_id(
+    State(service): State<Service>,
     Path(id): Path<i32>,
 ) -> Result<Data<EventResponse>, ServiceError> {
-    event_service.find_by_id(id).await.map_into()
+    service.find_by_id(id).await.map_into()
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -52,68 +53,63 @@ struct KeywordQuery {
 }
 
 #[utoipa::path(
-	get,
+    get,
     tag = TAG,
-	path = "/event",
+    path = "/event",
     params(
         KeywordQuery
     ),
-	responses(
-		(status = 200, body = DataVecEventResponse),
-		ServiceError
-	),
+    responses(
+        (status = 200, body = DataVecEventResponse),
+        ServiceError
+    ),
 )]
-#[use_service(event)]
 async fn find_by_keyword(
+    State(service): State<Service>,
     Query(query): Query<KeywordQuery>,
 ) -> Result<Data<Vec<EventResponse>>, ServiceError> {
-    event_service
-        .find_by_keyword(query.keyword)
-        .await
-        .map_into()
+    service.find_by_keyword(query.keyword).await.map_into()
 }
 
 #[utoipa::path(
-	post,
+    post,
     tag = TAG,
-	path = "/event",
-	request_body = EventCorrection,
-	responses(
-		(status = 200, body = Message),
+    path = "/event",
+    request_body = EventCorrection,
+    responses(
+        (status = 200, body = Message),
         (status = 401),
-		ServiceError
-	),
+        ServiceError
+    ),
 )]
-#[use_service(event)]
 async fn create(
     session: AuthSession,
+    State(service): State<Service>,
     Json(input): Json<EventCorrection>,
 ) -> Result<Message, ServiceError> {
-    event_service
-        .create(session.user.unwrap().id, input)
-        .await?;
+    service.create(session.user.unwrap().id, input).await?;
 
     Ok(Message::ok())
 }
 
 #[utoipa::path(
-	post,
+    post,
     tag = TAG,
-	path = "/event/{id}",
-	request_body = EventCorrection,
-	responses(
-		(status = 200, body = Message),
+    path = "/event/{id}",
+    request_body = EventCorrection,
+    responses(
+        (status = 200, body = Message),
         (status = 401),
-		ServiceError
-	),
+        ServiceError
+    ),
 )]
-#[use_service(event)]
 async fn upsert_correction(
     session: AuthSession,
+    State(service): State<Service>,
     Path(id): Path<i32>,
     Json(input): Json<EventCorrection>,
 ) -> Result<Message, ServiceError> {
-    event_service
+    service
         .upsert_correction(id, session.user.unwrap().id, input)
         .await?;
 
