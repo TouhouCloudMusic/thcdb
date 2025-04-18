@@ -94,7 +94,6 @@ dotenvy.workspace = true
 error_set = { version = "0.8", features = [
     "tracing",
 ] }
-field_types = "1.1.0"
 fred = { version = "10.0" }
 futures-util = "0.3"
 governor = "0.8.0"

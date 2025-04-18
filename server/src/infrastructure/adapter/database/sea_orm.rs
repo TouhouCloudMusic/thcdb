@@ -2,8 +2,8 @@ use std::path::PathBuf;
 
 use entity::relation::UserRelationExt;
 use entity::{user_following, user_role};
-use field_types::FieldName;
 use itertools::Itertools;
+use macros::FieldEnum;
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::Alias;
 use sea_orm::{
@@ -201,7 +201,7 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
 
         const BANNER_ALIAS: &str = "b";
 
-        #[derive(FromQueryResult, FieldName)]
+        #[derive(FromQueryResult, FieldEnum)]
         #[sea_orm(entity = "user::Entity", from_query_result)]
         struct UserProfileRaw {
             pub id: i32,
@@ -213,6 +213,12 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
 
             pub banner_url_dir: Option<String>,
             pub banner_url_file: Option<String>,
+        }
+
+        impl sea_orm::IntoIdentity for UserProfileRawFieldName {
+            fn into_identity(self) -> sea_orm::Identity {
+                self.as_str().into_identity()
+            }
         }
 
         impl TryFrom<(UserProfileRaw, Vec<user_role::Model>)>
@@ -284,19 +290,19 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
             .column(user::Column::LastLogin)
             .column_as(
                 Expr::col((avatar_alias.clone(), image::Column::Directory)),
-                UserProfileRawFieldName::AvatarUrlDir.name(),
+                UserProfileRawFieldName::AvatarUrlDir,
             )
             .column_as(
                 Expr::col((avatar_alias.clone(), image::Column::Filename)),
-                UserProfileRawFieldName::AvatarUrlFilename.name(),
+                UserProfileRawFieldName::AvatarUrlFilename,
             )
             .column_as(
                 Expr::col((banner_alias.clone(), image::Column::Directory)),
-                UserProfileRawFieldName::BannerUrlDir.name(),
+                UserProfileRawFieldName::BannerUrlDir,
             )
             .column_as(
                 Expr::col((banner_alias.clone(), image::Column::Filename)),
-                UserProfileRawFieldName::BannerUrlFile.name(),
+                UserProfileRawFieldName::BannerUrlFile,
             )
             .into_model::<UserProfileRaw>()
             .one(&self.conn)

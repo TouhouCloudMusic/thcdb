@@ -8,6 +8,7 @@ use quote::quote;
 use syn::{Data, DeriveInput, Fields, parse_macro_input};
 
 mod error;
+mod field_enum;
 mod from_ref_arc;
 mod utils;
 
@@ -78,6 +79,15 @@ pub fn derive_api_error(input: TokenStream) -> TokenStream {
 pub fn derive_from_ref_arc(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     match derive_from_ref_arc_impl(input) {
+        Ok(v) => v.into(),
+        Err(e) => e.to_compile_error().into(),
+    }
+}
+
+#[proc_macro_derive(FieldEnum, attributes(field_enum))]
+pub fn derive_field_enum(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    match field_enum::derive_impl(input) {
         Ok(v) => v.into(),
         Err(e) => e.to_compile_error().into(),
     }
