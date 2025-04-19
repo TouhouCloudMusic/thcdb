@@ -30,8 +30,8 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(upload_profile_banner))
         .routes(routes!(upload_avatar))
         .routes(routes!(sign_out))
-        .route_layer(from_fn(is_signed_in))
         .routes(routes!(profile))
+        .route_layer(from_fn(is_signed_in))
         .routes(routes!(profile_with_name))
         .routes(routes!(sign_in))
         .routes(routes!(sign_up))
@@ -53,16 +53,15 @@ type ProfileUseCase = use_case::user::Profile<state::SeaOrmRepository>;
         ServiceError
     ),
 )]
-
 async fn profile(
     session: AuthSession,
     State(use_case): State<ProfileUseCase>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
-    if let Some(user) = session.user {
-        profile_impl(&use_case, &user.name, Some(&user)).await
-    } else {
-        Err(StatusCode::NOT_FOUND.into_response())
-    }
+    let user = unsafe {
+        // Handle by middleware
+        session.user.unwrap_unchecked()
+    };
+    profile_impl(&use_case, &user.name, Some(&user)).await
 }
 
 #[utoipa::path(
