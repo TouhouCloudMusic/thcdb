@@ -60,9 +60,6 @@ error_set! {
         PasswordTooWeak,
     };
     #[derive(From, ApiError)]
-    #[api_error(
-        impl_api_error = false
-    )]
     HasherError = {
         #[display("Failed to hash password")]
         #[from]

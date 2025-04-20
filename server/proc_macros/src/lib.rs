@@ -70,7 +70,7 @@ pub fn derive_impl_error_schema(input: TokenStream) -> TokenStream {
 pub fn derive_api_error(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     match derive_api_error_impl(input) {
-        Ok(v) => v,
+        Ok(v) => v.into(),
         Err(e) => e.to_compile_error().into(),
     }
 }
