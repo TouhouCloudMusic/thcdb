@@ -8,10 +8,7 @@ impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let db = manager.get_connection();
 
-        db.execute_unprepared(include_str!(
-            "m20250403_165328_init_database.sql"
-        ))
-        .await?;
+        db.execute_unprepared(include_str!("up.sql")).await?;
 
         Ok(())
     }

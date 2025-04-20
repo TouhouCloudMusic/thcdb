@@ -17,6 +17,8 @@ pub struct Model {
     pub avatar_id: Option<i32>,
     pub last_login: DateTimeWithTimeZone,
     pub profile_banner_id: Option<i32>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub bio: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

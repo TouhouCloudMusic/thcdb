@@ -226,6 +226,7 @@ pub async fn upsert_admin_acc(db: &DatabaseConnection) {
             avatar_id: Set(None),
             profile_banner_id: Set(None),
             last_login: Set(chrono::Local::now().into()),
+            bio: Set(None),
         })
         .on_conflict(
             OnConflict::column(user::Column::Name)

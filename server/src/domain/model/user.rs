@@ -35,6 +35,7 @@ pub struct User {
     pub profile_banner_id: Option<i32>,
     pub last_login: chrono::DateTime<chrono::FixedOffset>,
     pub roles: Vec<UserRole>,
+    pub bio: Option<String>,
 }
 
 impl TryFrom<AuthCredential> for User {
@@ -49,6 +50,7 @@ impl TryFrom<AuthCredential> for User {
             profile_banner_id: None,
             last_login: chrono::Utc::now().into(),
             roles: vec![UserRoleEnum::User.into()],
+            bio: None,
         })
     }
 }

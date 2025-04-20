@@ -11,6 +11,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250415_021231_simplify_column_names::Migration),
             Box::new(m20250415_034740_fix_release_catalog_num::Migration),
             Box::new(m20250415_143551_add_user_profile_banner::Migration),
+            Box::new(m20250421_023142_add_user_bio::Migration),
         ]
     }
 }
@@ -19,3 +20,4 @@ mod m20250415_011212_create_user_following;
 mod m20250415_021231_simplify_column_names;
 mod m20250415_034740_fix_release_catalog_num;
 mod m20250415_143551_add_user_profile_banner;
+mod m20250421_023142_add_user_bio;
