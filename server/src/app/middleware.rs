@@ -1,6 +1,7 @@
+use std::env;
+
 use axum::{Router, http};
 use axum_login::AuthManagerLayerBuilder;
-use axum_login::tower_sessions::cookie::SameSite;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use tower_http::cors::{Any, CorsLayer};
@@ -17,7 +18,13 @@ pub fn append_global_middleware_layer(
 
     let session_layer = SessionManagerLayer::new(session_store)
         .with_name("session_token")
-        .with_expiry(Expiry::OnInactivity(Duration::days(30)));
+        .with_expiry(Expiry::OnInactivity(Duration::days(30)))
+        .with_secure(
+            env::var("SESSION_SECURE")
+                .as_deref()
+                .unwrap_or("true")
+                .eq_ignore_ascii_case("true"),
+        );
 
     let auth_layer = AuthManagerLayerBuilder::new(
         // TODO: From Ref for state
