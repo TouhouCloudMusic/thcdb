@@ -117,6 +117,12 @@ impl ArcAppState {
     }
 }
 
+impl FromRef<ArcAppState> for SeaOrmRepository {
+    fn from_ref(input: &ArcAppState) -> Self {
+        input.sea_orm_repo.clone()
+    }
+}
+
 impl FromRef<ArcAppState> for use_case::user::Profile<SeaOrmRepository> {
     fn from_ref(input: &ArcAppState) -> Self {
         Self::new(input.sea_orm_repo.clone())

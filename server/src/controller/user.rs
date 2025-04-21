@@ -16,6 +16,7 @@ use crate::application::service::{ImageServiceTrait, UserImageServiceError};
 use crate::application::use_case::{self};
 use crate::domain::UserRepository;
 use crate::domain::model::auth::{AuthCredential, AuthnError};
+use crate::domain::model::markdown::{self, Markdown};
 use crate::domain::model::user::UserProfile;
 use crate::error::{DbErrWrapper, ServiceError};
 use crate::middleware::is_signed_in;
@@ -31,6 +32,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(upload_avatar))
         .routes(routes!(sign_out))
         .routes(routes!(profile))
+        .routes(routes!(update_bio))
         .route_layer(from_fn(is_signed_in))
         .routes(routes!(profile_with_name))
         .routes(routes!(sign_in))
@@ -246,4 +248,41 @@ async fn profile_impl(
     }
 
     Ok(profile.into())
+}
+
+#[utoipa::path(
+    post,
+    tag = TAG,
+    path = "/profile/bio",
+    request_body(content = String, content_type = "text/plain"),
+    responses(
+        (status = 200, body = api_response::Message),
+        (status = 401),
+        markdown::Error,
+        DbErrWrapper
+    )
+)]
+async fn update_bio(
+    auth_session: AuthSession,
+    State(database): State<state::SeaOrmRepository>,
+    text: String,
+) -> Result<Message, impl IntoResponse> {
+    use entity::user;
+    use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, Set};
+
+    let markdown =
+        Markdown::parse(text).map_err(IntoResponse::into_response)?;
+
+    let user = auth_session.user.unwrap();
+
+    user::Entity::update_many()
+        .filter(user::Column::Id.eq(user.id))
+        .set(user::ActiveModel {
+            bio: Set(Some(markdown.to_string())),
+            ..Default::default()
+        })
+        .exec(&database.conn)
+        .await
+        .map(|_| Message::new("Bio updated successfully"))
+        .map_err(|e| DbErrWrapper::from(e).into_response())
 }
