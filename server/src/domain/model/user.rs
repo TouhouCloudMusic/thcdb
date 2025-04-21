@@ -25,6 +25,8 @@ pub struct UserProfile {
     #[schema(nullable = false)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_following: Option<bool>,
+
+    pub bio: Option<String>,
 }
 
 #[derive(Clone, Debug)]

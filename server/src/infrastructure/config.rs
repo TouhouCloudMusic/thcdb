@@ -68,11 +68,16 @@ impl Config {
         let config: ConfigFile = config.try_deserialize().unwrap();
 
         Self {
-            database_url: env::var("DATABASE_URL").unwrap(),
-            redis_url: env::var("REDIS_URL").unwrap(),
+            database_url: pretty_unwrap_env("DATABASE_URL"),
+            redis_url: pretty_unwrap_env("REDIS_URL"),
             app: config.app,
             email: config.email,
             middleware: config.middleware,
         }
     }
+}
+
+#[expect(clippy::expect_fun_call, reason = "run once")]
+fn pretty_unwrap_env(key: &str) -> String {
+    env::var(key).expect(&format!("Env {key} not set"))
 }

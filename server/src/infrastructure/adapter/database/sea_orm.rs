@@ -210,6 +210,7 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
             pub id: i32,
             pub name: String,
             pub last_login: chrono::DateTime<chrono::FixedOffset>,
+            pub bio: Option<String>,
 
             pub avatar_url_dir: Option<String>,
             pub avatar_url_filename: Option<String>,
@@ -268,6 +269,7 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
                         .map(TryInto::try_into)
                         .try_collect()?,
                     is_following: None,
+                    bio: profile.bio,
                 })
             }
         }
@@ -291,6 +293,7 @@ impl domain::repository::user::ProfileRepository for SeaOrmRepository {
             .column(user::Column::Id)
             .column(user::Column::Name)
             .column(user::Column::LastLogin)
+            .column(user::Column::Bio)
             .column_as(
                 Expr::col((avatar_alias.clone(), image::Column::Directory)),
                 UserProfileRawFieldName::AvatarUrlDir,
