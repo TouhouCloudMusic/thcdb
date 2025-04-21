@@ -3,6 +3,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::auth::{AuthCredential, UserRole, UserRoleEnum};
+use super::markdown::Markdown;
 
 #[derive(Clone, ToSchema, Serialize)]
 pub struct UserProfile {
@@ -35,7 +36,7 @@ pub struct User {
     pub profile_banner_id: Option<i32>,
     pub last_login: chrono::DateTime<chrono::FixedOffset>,
     pub roles: Vec<UserRole>,
-    pub bio: Option<String>,
+    pub bio: Option<Markdown>,
 }
 
 impl TryFrom<AuthCredential> for User {

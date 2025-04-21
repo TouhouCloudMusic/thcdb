@@ -62,6 +62,7 @@ mod user {
 
     use super::SeaOrmRepository;
     use crate::domain::model::auth::UserRole;
+    use crate::domain::model::markdown::Markdown;
     use crate::domain::model::user::User;
     use crate::domain::{self};
     use crate::error::DbErrWrapper;
@@ -101,7 +102,7 @@ mod user {
                     avatar_id: Set(user.avatar_id),
                     profile_banner_id: Set(user.profile_banner_id),
                     last_login: Set(user.last_login),
-                    bio: Set(user.bio),
+                    bio: Set(user.bio.map(|bio| bio.to_string())),
                 })
                 .on_conflict(
                     OnConflict::column(entity::user::Column::Id)
@@ -152,7 +153,7 @@ mod user {
                 profile_banner_id: value.profile_banner_id,
                 last_login: value.last_login,
                 roles: vec![],
-                bio: value.bio,
+                bio: value.bio.map(Markdown::new_unchecked),
             }
         }
     }

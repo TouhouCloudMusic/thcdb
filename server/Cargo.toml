@@ -69,6 +69,7 @@ entity.workspace    = true
 macros.workspace    = true
 migration.workspace = true
 #
+ammonia = "4.0.0"
 argon2.workspace = true
 async-trait = { version = "0.1" }
 axum.workspace = true
@@ -108,6 +109,10 @@ lettre = { version = "0.11.14", default-features = false, features = [
     "pool",
     "smtp-transport",
     "tokio1-rustls-tls",
+] }
+pulldown-cmark = { version = "0.13.0", default-features = false, features = [
+    "html",
+    "simd",
 ] }
 rand = "0.9.0"
 regex = "1.11"
