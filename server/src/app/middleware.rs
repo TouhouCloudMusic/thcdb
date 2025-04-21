@@ -61,5 +61,4 @@ fn cors_layer() -> CorsLayer {
         .allow_origin(origins)
         .allow_methods(methods)
         .allow_headers(Any)
-        .allow_credentials(true)
 }
