@@ -1,5 +1,6 @@
 use axum::{Router, http};
 use axum_login::AuthManagerLayerBuilder;
+use axum_login::tower_sessions::cookie::SameSite;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use tower_http::cors::{Any, CorsLayer};
@@ -53,4 +54,5 @@ fn cors_layer() -> CorsLayer {
         .allow_origin(origins)
         .allow_methods(methods)
         .allow_headers(Any)
+        .allow_credentials(true)
 }
