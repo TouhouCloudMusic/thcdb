@@ -26,7 +26,7 @@ use crate::domain::model::auth::{
     HasherError, UserRoleEnum, ValidateCredsError, hash_password,
 };
 use crate::domain::service::image::{
-    AsyncImageStorage, ValidationError, Validator, ValidatorOption,
+    AsyncImageStorage, ParseOption, Parser, ValidationError,
 };
 use crate::error::{DbErrWrapper, ErrorCode, InvalidField, ServiceError};
 use crate::infrastructure::adapter::storage::image::LocalFileImageStorage;
@@ -121,20 +121,18 @@ impl Service {
             .as_ref()
             .is_some_and(|ct| ct.starts_with("image/"))
         {
-            static AVATAR_VALIDATOR: LazyLock<Validator> =
-                LazyLock::new(|| {
-                    let opt = ValidatorOption::builder()
-                        .valid_formats(&[ImageFormat::Png, ImageFormat::Jpeg])
-                        .file_size_range(ByteSize::kib(10)..=ByteSize::mib(100))
-                        .size_range(128u32..=2048)
-                        .ratio(1u8)
-                        .build();
-                    Validator::new(opt)
-                });
+            static AVATAR_PARSER: LazyLock<Parser> = LazyLock::new(|| {
+                let opt = ParseOption::builder()
+                    .valid_formats(&[ImageFormat::Png, ImageFormat::Jpeg])
+                    .file_size_range(ByteSize::kib(10)..=ByteSize::mib(100))
+                    .size_range(128u32..=2048)
+                    .ratio(1u8)
+                    .build();
+                Parser::new(opt)
+            });
 
-            let validate_res = AVATAR_VALIDATOR.validate(&data.contents)?;
             let image = image_service
-                .create(&data.contents, validate_res.extension, user_id)
+                .create(&data.contents, &AVATAR_PARSER, user_id)
                 .await
                 .map_err(|e| UploadAvatarError::ImageService(e.into()))?;
 

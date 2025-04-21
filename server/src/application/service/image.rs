@@ -1,12 +1,14 @@
 use std::path::PathBuf;
 
 use base64::Engine;
-use base64::prelude::BASE64_URL_SAFE;
+use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use macros::ApiError;
 use xxhash_rust::xxh3::xxh3_128;
 
 use crate::domain::model::image::NewImage;
-use crate::domain::service::image::{AsyncImageStorage, ValidationError};
+use crate::domain::service::image::{
+    AsyncImageStorage, ParsedImage, Parser, ValidationError,
+};
 use crate::domain::{self};
 use crate::error::ImpledApiError;
 
@@ -38,8 +40,8 @@ pub trait ServiceTrait: Send + Sync {
     type CreateError;
     async fn create(
         &self,
-        data: &[u8],
-        extension: String,
+        buffer: &[u8],
+        parser: &Parser,
         uploader_id: i32,
     ) -> Result<entity::image::Model, Self::CreateError>;
 
@@ -60,13 +62,17 @@ where
     type CreateError = CreateError<R::Error, S::Error>;
     async fn create(
         &self,
-        data: &[u8],
-        extension: String,
+        buffer: &[u8],
+        parser: &Parser,
         uploader_id: i32,
     ) -> Result<entity::image::Model, CreateError<R::Error, S::Error>> {
-        let data_hash = xxh3_128(data);
-        let base64_hash = BASE64_URL_SAFE.encode(data_hash.to_be_bytes());
-        let filename = format!("{base64_hash}.{extension}");
+        let ParsedImage {
+            extension, bytes, ..
+        } = parser.parse(&buffer)?;
+        let xxhash = xxh3_128(&bytes);
+
+        let base64_hash = BASE64_URL_SAFE_NO_PAD.encode(xxhash.to_be_bytes());
+        let filename = format!("{base64_hash}.{extension}",);
 
         let sub_dir1 = &base64_hash[0..2];
         let sub_dir2 = &base64_hash[2..4];
@@ -77,15 +83,11 @@ where
         let full_path = image_path.with_extension(extension);
 
         self.storage
-            .create(&full_path, data)
+            .create(&full_path, &bytes)
             .await
             .map_err(CreateError::Storage)?;
 
-        #[allow(clippy::type_complexity)]
-        let res: Result<
-            entity::image::Model,
-            CreateError<R::Error, S::Error>,
-        > = try {
+        let res: Result<entity::image::Model, CreateError<R::Error, S::Error>> = try {
             if let Some(image) = self
                 .find_by_filename(&filename)
                 .await

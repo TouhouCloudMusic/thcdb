@@ -182,12 +182,13 @@ impl InvalidRatio {
     }
 }
 
-pub struct ValidationReturn {
+pub struct ParsedImage {
+    pub bytes: Vec<u8>,
     pub extension: String,
 }
 
 #[derive(Builder)]
-pub struct ValidatorOption {
+pub struct ParseOption {
     valid_formats: &'static [ImageFormat],
     /// The file size range of the image, default [100 kib, 10 mib]
     #[builder(into, default = ByteSize::kib(100)..=ByteSize::mib(10))]
@@ -200,15 +201,20 @@ pub struct ValidatorOption {
     height_range: RangeInclusive<u32>,
     #[builder(into)]
     ratio: Option<Ratio>,
+    /// Target image format, default is WebP
+    ///
+    /// If the image is not in this format, it will be converted to this format
+    #[builder(required, default = Some(ImageFormat::WebP))]
+    convert_to: Option<ImageFormat>,
 }
 
-use validator_option_builder::{IsUnset, SetHeightRange, SetWidthRange};
+use parse_option_builder::{IsUnset, SetHeightRange, SetWidthRange};
 
-impl<S: validator_option_builder::State> ValidatorOptionBuilder<S> {
+impl<S: parse_option_builder::State> ParseOptionBuilder<S> {
     pub fn size_range(
         self,
         value: impl Into<RangeInclusive<u32>>,
-    ) -> ValidatorOptionBuilder<SetHeightRange<SetWidthRange<S>>>
+    ) -> ParseOptionBuilder<SetHeightRange<SetWidthRange<S>>>
     where
         S::HeightRange: IsUnset,
         S::WidthRange: IsUnset,
@@ -218,12 +224,12 @@ impl<S: validator_option_builder::State> ValidatorOptionBuilder<S> {
     }
 }
 
-pub struct Validator {
-    option: ValidatorOption,
+pub struct Parser {
+    option: ParseOption,
 }
 
-impl Validator {
-    pub const fn new(option: ValidatorOption) -> Self {
+impl Parser {
+    pub const fn new(option: ParseOption) -> Self {
         Self { option }
     }
 
@@ -295,17 +301,14 @@ impl Validator {
         })
     }
 
-    pub fn validate(
-        &self,
-        buffer: &[u8],
-    ) -> Result<ValidationReturn, ValidationError> {
+    pub fn parse(&self, bytes: &[u8]) -> Result<ParsedImage, ValidationError> {
         self.validate_file_size(ByteSize(
             // We don't use 128-bit computers, so it is safe to unwrap here
-            buffer.len().try_into().unwrap(),
+            bytes.len().try_into().unwrap(),
         ))?;
 
         let reader =
-            ImageReader::new(io::Cursor::new(buffer)).with_guessed_format()?;
+            ImageReader::new(io::Cursor::new(bytes)).with_guessed_format()?;
 
         let format = reader.format().ok_or_else(|| {
             ValidationError::InvalidType(InvalidForamt::unknown(
@@ -322,9 +325,23 @@ impl Validator {
 
         self.validate_ratio(f64::from(width) / f64::from(height))?;
 
-        Ok(ValidationReturn {
-            extension: (*format.extensions_str().first().unwrap()).to_string(),
-        })
+        if let Some(convert_to) = self.option.convert_to
+            && format != convert_to
+        {
+            let mut buffer = Vec::new();
+            image.write_to(&mut io::Cursor::new(&mut buffer), convert_to)?;
+            Ok(ParsedImage {
+                bytes: buffer,
+                extension: (*convert_to.extensions_str().first().unwrap())
+                    .to_string(),
+            })
+        } else {
+            Ok(ParsedImage {
+                bytes: image.into_bytes(),
+                extension: (*format.extensions_str().first().unwrap())
+                    .to_string(),
+            })
+        }
     }
 }
 
