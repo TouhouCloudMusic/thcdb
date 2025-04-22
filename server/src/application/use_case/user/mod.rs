@@ -1,4 +1,6 @@
 use crate::domain::{model, repository};
+use crate::error::InternalError;
+use crate::utils::MapInto;
 
 #[derive(Clone)]
 pub struct Profile<R> {
@@ -14,19 +16,23 @@ impl<R> Profile<R> {
 impl<R> Profile<R>
 where
     R: repository::user::ProfileRepository,
+    R::Error: Into<InternalError>,
 {
     pub async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<model::user::UserProfile>, R::Error> {
-        self.repo.find_by_name(name).await
+    ) -> Result<Option<model::user::UserProfile>, InternalError> {
+        self.repo.find_by_name(name).await.map_into()
     }
 
     pub async fn with_following(
         &self,
         profile: &mut model::user::UserProfile,
         current_user: &model::user::User,
-    ) -> Result<(), R::Error> {
-        self.repo.with_following(profile, current_user).await
+    ) -> Result<(), InternalError> {
+        self.repo
+            .with_following(profile, current_user)
+            .await
+            .map_into()
     }
 }

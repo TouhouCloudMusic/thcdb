@@ -3,7 +3,7 @@ use sea_orm::IntoActiveModel;
 use crate::domain;
 
 impl IntoActiveModel<entity::image::ActiveModel>
-    for domain::model::image::NewImage
+    for domain::model::image::Image
 {
     fn into_active_model(self) -> entity::image::ActiveModel {
         self.into()

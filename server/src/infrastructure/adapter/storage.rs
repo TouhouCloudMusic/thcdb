@@ -7,8 +7,8 @@ pub mod image {
     use tokio::io::AsyncWriteExt;
 
     use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
-    use crate::domain::service::image::AsyncImageStorage;
-    use crate::error::ErrorCode;
+    use crate::domain::image::AsyncImageStorage;
+    use crate::error::{ErrorCode, InternalError};
 
     pub static DEFAULT_PATH: LazyLock<PathBuf> =
         LazyLock::new(|| PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]));
@@ -25,6 +25,14 @@ pub mod image {
         )]
         #[error("{}", ErrorCode::IoError.message())]
         Io(#[from] std::io::Error),
+    }
+
+    impl From<LocalFileImageStorageError> for InternalError {
+        fn from(val: LocalFileImageStorageError) -> Self {
+            match val {
+                LocalFileImageStorageError::Io(err) => Self::from(err),
+            }
+        }
     }
 
     #[derive(Clone)]

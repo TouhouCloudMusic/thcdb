@@ -32,7 +32,7 @@ impl From<UserRoleEnum> for role::ActiveModel {
     }
 }
 
-#[allow(clippy::fallible_impl_from)]
+#[expect(clippy::fallible_impl_from)]
 impl From<&role::Model> for UserRoleEnum {
     fn from(val: &role::Model) -> Self {
         Self::try_from_id(val.id).unwrap()

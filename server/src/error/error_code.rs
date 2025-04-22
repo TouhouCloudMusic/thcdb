@@ -4,7 +4,7 @@ pub trait AsErrorCode {
     fn as_error_code(&self) -> crate::error::ErrorCode;
 }
 
-#[allow(clippy::inconsistent_digit_grouping)]
+#[expect(clippy::inconsistent_digit_grouping)]
 #[derive(Serialize_repr, Clone, Copy)]
 #[repr(u32)]
 pub enum ErrorCode {

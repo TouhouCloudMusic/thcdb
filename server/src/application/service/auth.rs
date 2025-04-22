@@ -14,7 +14,7 @@ use crate::domain::model::auth::{
     AuthCredential, AuthnError, HasherError, ValidateCredsError,
 };
 use crate::domain::model::user::User;
-use crate::error::{ErrorCode, ImpledApiError};
+use crate::error::{ErrorCode, InternalError};
 
 #[derive(Clone)]
 pub struct AuthService<R> {
@@ -22,10 +22,7 @@ pub struct AuthService<R> {
 }
 
 #[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema, From)]
-pub enum SignUpError<R>
-where
-    R: ImpledApiError,
-{
+pub enum SignUpError {
     #[error("Username already in use")]
     #[api_error(
         status_code = StatusCode::CONFLICT,
@@ -33,7 +30,7 @@ where
     )]
     UsernameAlreadyInUse,
     #[error(transparent)]
-    Repo(R),
+    Internal(#[from] InternalError),
     #[api_error(
         into_response = self
     )]
@@ -46,10 +43,7 @@ where
 }
 
 #[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
-pub enum SignInError<R>
-where
-    R: ImpledApiError,
-{
+pub enum SignInError {
     #[api_error(
             status_code = StatusCode::CONFLICT,
             error_code = ErrorCode::AlreadySignedIn,
@@ -59,7 +53,7 @@ where
     #[error(transparent)]
     Authn(#[from] AuthnError),
     #[error(transparent)]
-    Repo(R),
+    Internal(#[from] InternalError),
     #[error(transparent)]
     Validate(#[from] ValidateCredsError),
 }
@@ -73,14 +67,12 @@ where
 )]
 pub struct SessionError(axum_login::tower_sessions::session::Error);
 
-impl<R> From<axum_login::Error<AuthService<R>>>
-    for SessionBackendError<R::Error>
+impl<R> From<axum_login::Error<AuthService<R>>> for SessionBackendError
 where
-    R: domain::repository::user::Repository,
-    R::Error: ImpledApiError,
     AuthService<R>: axum_login::AuthnBackend,
+    // Error is AuthnBackendError but we can't use types in trait bound
     <AuthService<R> as axum_login::AuthnBackend>::Error:
-        Into<AuthnBackendError<R::Error>>,
+        Into<AuthnBackendError>,
 {
     fn from(value: axum_login::Error<AuthService<R>>) -> Self {
         match value {
@@ -92,42 +84,33 @@ where
 
 error_set::error_set! {
     #[derive(ApiError, IntoErrorSchema)]
-    #[disable(From)]
-    SessionBackendError<R: ImpledApiError> = {
+    SessionBackendError = {
         #[api_error(
             into_response = self
         )]
         Session(SessionError),
-        AuthnBackend(AuthnBackendError<R>)
+        AuthnBackend(AuthnBackendError)
     };
 }
 #[derive(thiserror::Error, ApiError, Debug)]
-pub enum AuthnBackendError<R>
-where
-    R: ImpledApiError,
-{
+pub enum AuthnBackendError {
     #[error(transparent)]
-    Authn(AuthnError),
+    Authn(#[from] AuthnError),
     #[error(transparent)]
-    SignIn(#[from] SignInError<R>),
+    SignIn(#[from] SignInError),
     #[error(transparent)]
-    Repo(R),
+    Internal(#[from] InternalError),
 }
 
 pub trait AuthServiceTrait<R>: Send + Sync
 where
     R: domain::repository::user::Repository,
-    R::Error: ImpledApiError,
 {
-    async fn sign_in(
-        &self,
-        creds: AuthCredential,
-    ) -> Result<User, SignInError<R::Error>>;
+    async fn sign_in(&self, creds: AuthCredential)
+    -> Result<User, SignInError>;
 
-    async fn sign_up(
-        &self,
-        creds: AuthCredential,
-    ) -> Result<User, SignUpError<R::Error>>;
+    async fn sign_up(&self, creds: AuthCredential)
+    -> Result<User, SignUpError>;
 }
 
 impl<R> AuthService<R>
@@ -142,17 +125,17 @@ where
 impl<R> AuthServiceTrait<R> for AuthService<R>
 where
     R: domain::repository::user::Repository,
-    R::Error: ImpledApiError,
+    R::Error: Into<InternalError>,
 {
     async fn sign_in(
         &self,
         creds: AuthCredential,
-    ) -> Result<User, SignInError<R::Error>> {
+    ) -> Result<User, SignInError> {
         let user = self
             .repo
             .find_by_name(&creds.username)
             .await
-            .map_err(SignInError::Repo)?;
+            .map_err(std::convert::Into::into)?;
 
         creds
             .verify_credentials(user.as_ref().map(|u| u.password.as_str()))
@@ -164,19 +147,19 @@ where
     async fn sign_up(
         &self,
         creds: AuthCredential,
-    ) -> Result<User, SignUpError<R::Error>> {
+    ) -> Result<User, SignUpError> {
         creds.validate()?;
 
         self.repo
             .find_by_name(&creds.username)
             .await
-            .map_err(SignUpError::Repo)?
+            .map_err(|e| SignUpError::Internal(e.into()))?
             .map_or(Ok(()), |_| Err(SignUpError::UsernameAlreadyInUse))?;
 
         self.repo
             .save(creds.try_into()?)
             .await
-            .map_err(SignUpError::Repo)
+            .map_err(|e| SignUpError::Internal(e.into()))
     }
 }
 
@@ -194,13 +177,13 @@ impl AuthUser for domain::model::user::User {
 impl<R> AuthnBackend for AuthService<R>
 where
     R: Clone + domain::repository::user::Repository,
-    R::Error: ImpledApiError + Send + Sync,
+    R::Error: Send + Sync + Into<InternalError>,
     for<'a> R::find_by_id(..): Send,
     for<'a> R::find_by_name(..): Send,
 {
     type User = domain::model::user::User;
     type Credentials = AuthCredential;
-    type Error = AuthnBackendError<R::Error>;
+    type Error = AuthnBackendError;
 
     fn authenticate<'life0, 'async_trait>(
         &'life0 self,
@@ -240,7 +223,7 @@ where
     {
         self.repo
             .find_by_id(*user_id)
-            .map_err(AuthnBackendError::Repo)
+            .map_err(|e| e.into().into())
             .boxed()
     }
 }

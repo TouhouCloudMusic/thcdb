@@ -1,9 +1,7 @@
 use crate::domain::model::user::{User, UserProfile};
 use crate::domain::model::{self};
 
-pub trait Repository: Send + Sync {
-    type Error;
-
+pub trait Repository: super::RepositoryTrait {
     async fn save(&self, user: User) -> Result<User, Self::Error>;
 
     async fn find_by_id(&self, id: i32) -> Result<Option<User>, Self::Error>;
@@ -14,9 +12,7 @@ pub trait Repository: Send + Sync {
     ) -> Result<Option<User>, Self::Error>;
 }
 
-pub trait ProfileRepository: Send + Sync {
-    type Error;
-
+pub trait ProfileRepository: super::RepositoryTrait {
     async fn find_by_name(
         &self,
         name: &str,

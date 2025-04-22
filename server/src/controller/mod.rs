@@ -7,8 +7,8 @@ mod artist;
 mod correction;
 mod event;
 // mod graphql;
+mod enum_table;
 mod label;
-mod lookup_table;
 mod release;
 mod song;
 mod tag;
@@ -37,7 +37,7 @@ pub fn api_router() -> OpenApiRouter<ArcAppState> {
         .merge(correction::router())
         .merge(event::router())
         .merge(label::router())
-        .merge(lookup_table::router())
+        .merge(enum_table::router())
         .merge(release::router())
         .merge(song::router())
         .merge(tag::router())

@@ -11,12 +11,12 @@ use sea_orm::{DatabaseConnection, sqlx};
 
 use crate::application::use_case;
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
+use crate::infrastructure;
 use crate::infrastructure::adapter;
 pub use crate::infrastructure::adapter::database::SeaOrmRepository;
 use crate::infrastructure::config::Config;
 use crate::infrastructure::database::get_connection;
 use crate::infrastructure::redis::Pool;
-use crate::{application, infrastructure};
 
 pub type ArtistService = crate::service::artist::Service;
 
@@ -24,7 +24,7 @@ pub type CorretionService = crate::service::correction::Service;
 
 pub type EventService = crate::service::event::Service;
 
-pub type ImageService = application::service::image::Service<
+pub type ImageService = crate::domain::image::Service<
     infrastructure::adapter::database::SeaOrmRepository,
     infrastructure::adapter::storage::image::LocalFileImageStorage,
 >;

@@ -9,19 +9,18 @@ use utoipa_axum::routes;
 
 use crate::api_response::{Data, Message};
 use crate::application::dto::user::{UploadAvatar, UploadProfileBanner};
+use crate::application::service::UserImageServiceError;
 use crate::application::service::auth::{
     AuthServiceTrait, SessionBackendError, SignInError, SignUpError,
 };
-use crate::application::service::{ImageServiceTrait, UserImageServiceError};
 use crate::application::use_case::{self};
-use crate::domain::UserRepository;
 use crate::domain::model::auth::{AuthCredential, AuthnError};
 use crate::domain::model::markdown::{self, Markdown};
 use crate::domain::model::user::UserProfile;
-use crate::error::{DbErrWrapper, ServiceError};
+use crate::error::{InternalError, ServiceError};
 use crate::middleware::is_signed_in;
 use crate::service::user::UploadAvatarError;
-use crate::state::{AuthSession, SeaOrmRepository};
+use crate::state::AuthSession;
 use crate::{ArcAppState, api_response, domain, state};
 
 const TAG: &str = "User";
@@ -91,7 +90,7 @@ async fn profile_with_name(
     request_body = AuthCredential,
     responses(
         (status = 200, body = DataUserProfile),
-        SignUpError<DbErrWrapper>
+        SignUpError
     ),
 )]
 async fn sign_up(
@@ -121,7 +120,7 @@ async fn sign_up(
     responses(
         (status = 200, body = DataUserProfile),
         (status = 401),
-        SignInError<DbErrWrapper>,
+        SignInError,
     )
 )]
 async fn sign_in(
@@ -139,7 +138,8 @@ async fn sign_in(
     auth_session
         .login(&user)
         .await
-        .map_err(|e| SessionBackendError::from(e).into_response())?;
+        .map_err(SessionBackendError::from)
+        .map_err(IntoResponse::into_response)?;
 
     profile_impl(&use_case, &user.name, None).await
 }
@@ -151,13 +151,13 @@ async fn sign_in(
     responses(
         (status = 200, body = Message),
         (status = 401),
-        SessionBackendError<DbErrWrapper>,
+        SessionBackendError,
     )
 )]
 
 async fn sign_out(
     mut session: AuthSession,
-) -> Result<Message, SessionBackendError<DbErrWrapper>> {
+) -> Result<Message, SessionBackendError> {
     Ok(session.logout().await.map(|_| Message::ok())?)
 }
 
@@ -194,8 +194,7 @@ async fn upload_avatar(
 }
 
 type UploadProfileBannerError = UserImageServiceError<
-    <SeaOrmRepository as UserRepository>::Error,
-    <state::ImageService as ImageServiceTrait>::CreateError,
+    <state::ImageService as domain::image::ServiceTrait>::Error,
 >;
 
 #[utoipa::path(
@@ -259,7 +258,7 @@ async fn profile_impl(
         (status = 200, body = api_response::Message),
         (status = 401),
         markdown::Error,
-        DbErrWrapper
+        InternalError
     )
 )]
 async fn update_bio(
@@ -284,5 +283,5 @@ async fn update_bio(
         .exec(&database.conn)
         .await
         .map(|_| Message::new("Bio updated successfully"))
-        .map_err(|e| DbErrWrapper::from(e).into_response())
+        .map_err(|e| InternalError::from(e).into_response())
 }

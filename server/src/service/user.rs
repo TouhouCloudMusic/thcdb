@@ -22,29 +22,22 @@ use sea_orm::{
 };
 
 use crate::constant::ADMIN_USERNAME;
+use crate::domain;
+use crate::domain::image::{ParseOption, Parser, ValidationError};
 use crate::domain::model::auth::{
     HasherError, UserRoleEnum, ValidateCredsError, hash_password,
 };
-use crate::domain::service::image::{
-    AsyncImageStorage, ParseOption, Parser, ValidationError,
-};
-use crate::error::{DbErrWrapper, ErrorCode, InvalidField, ServiceError};
-use crate::infrastructure::adapter::storage::image::LocalFileImageStorage;
-use crate::infrastructure::adapter::{self};
+use crate::error::{ErrorCode, InternalError, InvalidField, ServiceError};
 use crate::model::lookup_table::LookupTableEnum;
 use crate::utils::orm::PgFuncExt;
-use crate::{application, domain};
 
-type ImageServiceCreateError = application::service::image::CreateError<
-    <adapter::database::SeaOrmRepository as domain::repository::image::Repository>::Error,
-    <LocalFileImageStorage as AsyncImageStorage>::Error,
->;
+type ImageServiceCreateError = domain::image::Error;
 
 error_set! {
     #[derive(IntoErrorSchema, ApiError, From)]
     UploadAvatarError = {
         #[from(DbErr)]
-        DbErr(DbErrWrapper),
+        DbErr(InternalError),
         // TODO: Impl api error trait
         #[api_error(
             status_code = StatusCode::INTERNAL_SERVER_ERROR,
@@ -106,14 +99,14 @@ impl Service {
             .await
     }
 
-    pub async fn upload_avatar<IS: application::service::image::ServiceTrait>(
+    pub async fn upload_avatar<IS: domain::image::ServiceTrait>(
         &self,
         image_service: &IS,
         user_id: i32,
         data: FieldData<Bytes>,
     ) -> Result<(), UploadAvatarError>
     where
-        IS::CreateError: Into<ImageServiceCreateError>,
+        IS::Error: Into<ImageServiceCreateError>,
     {
         if data
             .metadata

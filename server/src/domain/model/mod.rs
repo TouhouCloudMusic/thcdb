@@ -2,11 +2,35 @@ pub mod image {
 
     use bon::Builder;
 
+    use crate::domain::image::{ParsedImage, Parser, ValidationError};
+
     #[derive(Builder, Clone, Debug)]
+    pub struct Image {
+        /// Filename with extension
+        pub filename: String,
+        pub uploaded_by: i32,
+        pub directory: String,
+    }
+
     pub struct NewImage {
-        pub(in crate::domain) filename: String,
-        pub(in crate::domain) uploaded_by: i32,
-        pub(in crate::domain) directory: String,
+        pub parsed: ParsedImage,
+        pub uploaded_by: i32,
+    }
+
+    #[bon::bon]
+    impl NewImage {
+        #[builder]
+        pub fn parse_bytes(
+            #[builder(start_fn)] parser: &Parser,
+            bytes: &[u8],
+            uploaded_by: i32,
+        ) -> Result<Self, ValidationError> {
+            let parsed = parser.parse(bytes)?;
+            Ok(Self {
+                parsed,
+                uploaded_by,
+            })
+        }
     }
 }
 

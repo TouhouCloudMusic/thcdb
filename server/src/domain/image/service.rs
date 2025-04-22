@@ -1,16 +1,20 @@
 use std::io;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::range::RangeInclusive;
 
 use axum::http::StatusCode;
+use base64::Engine;
+use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use bon::Builder;
 use bytesize::ByteSize;
 use derive_more::{Display, Error};
 use error_set::error_set;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 use macros::ApiError;
+use xxhash_rust::xxh3::xxh3_128;
 
-use crate::error::ErrorCode;
+use crate::domain::model::image::Image;
+use crate::error::{ErrorCode, InternalError};
 
 error_set! {
     #[derive(ApiError)]
@@ -184,7 +188,7 @@ impl InvalidRatio {
 
 pub struct ParsedImage {
     pub bytes: Vec<u8>,
-    pub extension: String,
+    pub extension: &'static str,
 }
 
 #[derive(Builder)]
@@ -332,14 +336,12 @@ impl Parser {
             image.write_to(&mut io::Cursor::new(&mut buffer), convert_to)?;
             Ok(ParsedImage {
                 bytes: buffer,
-                extension: (*convert_to.extensions_str().first().unwrap())
-                    .to_string(),
+                extension: convert_to.extensions_str().first().unwrap(),
             })
         } else {
             Ok(ParsedImage {
                 bytes: image.into_bytes(),
-                extension: (*format.extensions_str().first().unwrap())
-                    .to_string(),
+                extension: format.extensions_str().first().unwrap(),
             })
         }
     }
@@ -359,4 +361,151 @@ pub trait AsyncImageStorage: Send + Sync {
         &self,
         path: impl AsRef<Path> + Send + Sync,
     ) -> Result<(), Self::Error>;
+}
+
+#[derive(Debug, thiserror::Error, ApiError)]
+pub enum Error {
+    #[error(transparent)]
+    Validation(#[from] ValidationError),
+    #[error(transparent)]
+    Internal(InternalError),
+}
+
+impl<T> From<T> for Error
+where
+    T: Into<InternalError>,
+{
+    fn from(e: T) -> Self {
+        Self::Internal(e.into())
+    }
+}
+
+#[derive(Clone, bon::Builder)]
+pub struct Service<R, S>
+where
+    R: super::Repository,
+    S: AsyncImageStorage,
+{
+    repo: R,
+    storage: S,
+}
+
+pub trait ServiceTrait: Send + Sync {
+    type Error;
+
+    async fn create(
+        &self,
+        buffer: &[u8],
+        parser: &Parser,
+        uploader_id: i32,
+    ) -> Result<entity::image::Model, Self::Error>;
+
+    async fn find_by_filename(
+        &self,
+        filename: &str,
+    ) -> Result<Option<entity::image::Model>, Self::Error>;
+}
+
+impl<Repo, Storage> ServiceTrait for Service<Repo, Storage>
+where
+    Repo: super::Repository,
+    Storage: AsyncImageStorage,
+    Repo::Error: Into<InternalError>,
+    Storage::Error: Into<InternalError>,
+{
+    type Error = Error;
+    async fn create(
+        &self,
+        buffer: &[u8],
+        parser: &Parser,
+        uploader_id: i32,
+    ) -> Result<entity::image::Model, Self::Error> {
+        let ParsedImage {
+            extension, bytes, ..
+        } = parser.parse(buffer)?;
+        let xxhash = xxh3_128(&bytes);
+
+        let base64_hash = BASE64_URL_SAFE_NO_PAD.encode(xxhash.to_be_bytes());
+        let ImgPath {
+            filename,
+            sub_dir,
+            full_path,
+        } = ImgPath::from_hash_and_ext(&base64_hash, extension);
+
+        if let Some(image) = self.repo.find_by_filename(&filename).await? {
+            Ok(image)
+        } else {
+            let new_img = Image::builder()
+                .filename(filename)
+                // All chars of sub dir are valid ascii, so unwrap is safe
+                .directory(sub_dir.to_str().unwrap().to_string())
+                .uploaded_by(uploader_id)
+                .build();
+
+            let image = self.repo.save(new_img).await?;
+
+            self.storage.create(&full_path, &bytes).await?;
+
+            Ok(image)
+        }
+    }
+
+    async fn find_by_filename(
+        &self,
+        filename: &str,
+    ) -> Result<Option<entity::image::Model>, Self::Error> {
+        Ok(self.repo.find_by_filename(filename).await?)
+    }
+}
+
+struct ImgPath {
+    pub filename: String,
+    pub sub_dir: PathBuf,
+    pub full_path: PathBuf,
+}
+
+impl ImgPath {
+    pub fn from_hash_and_ext(file_hash: &str, extension: &str) -> Self {
+        let filename = format!("{file_hash}.{extension}",);
+
+        let sub_dir = PathBuf::from(&file_hash[0..2]).join(&file_hash[2..4]);
+        let full_path = sub_dir.join(&filename);
+
+        Self {
+            filename,
+            sub_dir,
+            full_path,
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::path::PathBuf;
+
+    use super::ImgPath;
+
+    #[test]
+
+    fn fs_path() {
+        let file_hash = "1234567890abcdef1234567890abcdef";
+        let extension = "png";
+        let ImgPath {
+            filename,
+            sub_dir,
+            full_path,
+        } = ImgPath::from_hash_and_ext(file_hash, extension);
+
+        assert_eq!(filename, "1234567890abcdef1234567890abcdef.png");
+        assert_eq!(sub_dir, PathBuf::from("12/34"));
+        assert_eq!(sub_dir.to_str().unwrap(), "12/34");
+        assert_eq!(
+            full_path,
+            PathBuf::from("12/34/1234567890abcdef1234567890abcdef.png")
+        );
+        assert_eq!(
+            full_path.to_string_lossy(),
+            "12/34/1234567890abcdef1234567890abcdef.png"
+        );
+    }
 }

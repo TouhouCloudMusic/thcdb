@@ -32,7 +32,7 @@ error_set! {
     #[derive(IntoErrorSchema, From, ApiError)]
     ServiceError = {
         #[from(DbErr)]
-        Database(DbErrWrapper),
+        Database(InternalError),
         Tokio(TokioError),
         #[display("Entity {entity_name} not found")]
         #[api_error(
@@ -75,22 +75,6 @@ error_set! {
     };
 }
 
-#[derive(Debug, IntoErrorSchema, ApiError, Display, From, Error)]
-#[display("Database error")]
-#[api_error(
-    status_code = StatusCode::INTERNAL_SERVER_ERROR,
-    error_code = ErrorCode::DatabaseError,
-    into_response = self,
-)]
-pub struct DbErrWrapper(DbErr);
-
-impl IntoApiResponse for DbErrWrapper {
-    fn into_api_response(self) -> axum::response::Response {
-        tracing::error!("Database error: {:#?}", self.0);
-        default_into_api_response_impl(self)
-    }
-}
-
 impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
         match self {
@@ -128,6 +112,49 @@ impl IntoResponse for TokioError {
     }
 }
 
+#[derive(Debug, Display, From, Error)]
+enum InternalErrorEnum {
+    SeaOrm(DbErr),
+    Tokio(tokio::task::JoinError),
+    Io(std::io::Error),
+}
+
+#[derive(Debug, Display, Error, ApiError, IntoErrorSchema)]
+#[display("Internal server error")]
+#[api_error(
+    status_code = StatusCode::INTERNAL_SERVER_ERROR,
+    error_code = ErrorCode::InternalServerError,
+    into_response = self,
+)]
+pub struct InternalError(InternalErrorEnum);
+
+impl<T> From<T> for InternalError
+where
+    T: Into<InternalErrorEnum>,
+{
+    fn from(value: T) -> Self {
+        Self(value.into())
+    }
+}
+
+impl IntoApiResponse for InternalError {
+    fn into_api_response(self) -> axum::response::Response {
+        match &self.0 {
+            InternalErrorEnum::SeaOrm(err) => {
+                tracing::error!("Database error: {:#?}", err);
+            }
+            InternalErrorEnum::Tokio(err) => {
+                tracing::error!("Tokio error: {:#?}", err);
+            }
+            InternalErrorEnum::Io(err) => {
+                tracing::error!("IO error: {:#?}", err);
+            }
+        }
+
+        default_into_api_response_impl(self)
+    }
+}
+
 #[cfg(test)]
 mod test {
 
@@ -142,7 +169,7 @@ mod test {
     #[tokio::test]
     #[traced_test]
     async fn test_nested_err_print() {
-        let err = ServiceError::Database(DbErrWrapper(DbErr::Custom(
+        let err = ServiceError::Database(InternalError::from(DbErr::Custom(
             "foobar".to_string(),
         )));
 

@@ -36,7 +36,7 @@ pub async fn find_by_keyword(
     find_many(release::Column::Title.like(kw), db).await
 }
 
-#[allow(clippy::too_many_lines)]
+#[expect(clippy::too_many_lines)]
 async fn find_many(
     cond: impl IntoCondition,
     db: &impl ConnectionTrait,

@@ -6,15 +6,14 @@ use futures_util::TryFutureExt;
 use image::ImageFormat;
 use macros::{ApiError, IntoErrorSchema};
 
-use super::ImageServiceTrait;
 use crate::constant::{
     PROFILE_BANNER_MAX_HEIGHT, PROFILE_BANNER_MAX_WIDTH,
     PROFILE_BANNER_MIN_HEIGHT, PROFILE_BANNER_MIN_WIDTH,
 };
-use crate::domain::UserRepository;
+use crate::domain::image::{ParseOption, Parser, ValidationError};
 use crate::domain::model::user::User;
-use crate::domain::service::image::{ParseOption, Parser, ValidationError};
-use crate::error::ImpledApiError;
+use crate::domain::{self, UserRepository};
+use crate::error::{ImpledApiError, InternalError};
 
 static PROFILE_BANNER_PARSER: LazyLock<Parser> = LazyLock::new(|| {
     let opt = ParseOption::builder()
@@ -29,9 +28,9 @@ static PROFILE_BANNER_PARSER: LazyLock<Parser> = LazyLock::new(|| {
 
 error_set! {
     #[derive(ApiError, IntoErrorSchema)]
-    #[disable(From(U, IS))]
-    UserImageServiceError<U: ImpledApiError, IS: ImpledApiError> = {
-        UserRepo(U),
+    #[disable(From(IS))]
+    UserImageServiceError< IS: ImpledApiError> = {
+        Internal(InternalError),
         ImageService(IS),
         Validate(ValidationError),
     };
@@ -54,20 +53,20 @@ impl<U, IS> UserImageService<U, IS> {
 impl<U, IS> UserImageService<U, IS>
 where
     U: UserRepository,
-    U::Error: ImpledApiError,
-    IS: ImageServiceTrait,
-    IS::CreateError: ImpledApiError,
+    U::Error: Into<InternalError>,
+    IS: domain::image::ServiceTrait,
+    IS::Error: ImpledApiError,
 {
     pub async fn upload_banner_image(
         &self,
         mut user: User,
         buffer: &[u8],
-    ) -> Result<User, UserImageServiceError<U::Error, IS::CreateError>> {
+    ) -> Result<User, UserImageServiceError<IS::Error>> {
         let parser = &PROFILE_BANNER_PARSER;
 
         let image = self
             .image_service
-            .create(buffer, &parser, user.id)
+            .create(buffer, parser, user.id)
             .map_err(UserImageServiceError::ImageService)
             .await?;
 
@@ -77,7 +76,7 @@ where
             .user_repo
             .save(user)
             .await
-            .map_err(UserImageServiceError::UserRepo)?;
+            .map_err(|e| UserImageServiceError::Internal(e.into()))?;
 
         Ok(user)
     }

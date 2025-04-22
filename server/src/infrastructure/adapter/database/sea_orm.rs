@@ -7,14 +7,14 @@ use macros::FieldEnum;
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::Alias;
 use sea_orm::{
-    ColumnTrait, DbErr, EntityTrait, FromQueryResult, IntoActiveModel,
+    ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, FromQueryResult,
     JoinType, PaginatorTrait, QueryFilter, QuerySelect, QueryTrait,
-    RelationTrait,
+    RelationTrait, TransactionTrait,
 };
 
 use crate::domain::model::auth::UserRoleEnum;
+use crate::domain::repository::RepositoryTrait;
 use crate::domain::{self};
-use crate::error::DbErrWrapper;
 
 #[derive(Clone)]
 pub struct SeaOrmRepository {
@@ -27,26 +27,65 @@ impl SeaOrmRepository {
     }
 }
 
-impl domain::repository::image::Repository for SeaOrmRepository {
-    type Error = DbErrWrapper;
+impl RepositoryTrait for SeaOrmRepository {
+    type Transaction = DatabaseTransaction;
 
-    async fn create(
+    type Error = DbErr;
+
+    async fn start_transaction(
         &self,
-        data: domain::model::image::NewImage,
-    ) -> Result<entity::image::Model, Self::Error> {
-        Ok(entity::image::Entity::insert(data.into_active_model())
-            .exec_with_returning(&self.conn)
-            .await?)
+    ) -> Result<Self::Transaction, Self::Error> {
+        self.conn.begin().await
     }
 
-    async fn find_by_filename(
+    async fn commit_transaction(
         &self,
-        filename: &str,
-    ) -> Result<Option<entity::image::Model>, Self::Error> {
-        Ok(entity::image::Entity::find()
-            .filter(entity::image::Column::Filename.eq(filename))
-            .one(&self.conn)
-            .await?)
+        transaction: Self::Transaction,
+    ) -> Result<(), Self::Error> {
+        transaction.commit().await
+    }
+}
+
+mod image {
+    use sea_orm::{ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter};
+
+    use super::SeaOrmRepository;
+    use crate::domain;
+
+    async fn save_impl(
+        conn: &impl sea_orm::ConnectionTrait,
+        data: domain::model::image::Image,
+    ) -> Result<entity::image::Model, sea_orm::DbErr> {
+        entity::image::Entity::insert(data.into_active_model())
+            .exec_with_returning(conn)
+            .await
+    }
+
+    impl domain::image::Repository for SeaOrmRepository {
+        async fn save(
+            &self,
+            data: domain::model::image::Image,
+        ) -> Result<entity::image::Model, Self::Error> {
+            save_impl(&self.conn, data).await
+        }
+
+        async fn save_in_tx(
+            &self,
+            tx: &mut Self::Transaction,
+            data: domain::model::image::Image,
+        ) -> Result<entity::image::Model, Self::Error> {
+            save_impl(tx, data).await
+        }
+
+        async fn find_by_filename(
+            &self,
+            filename: &str,
+        ) -> Result<Option<entity::image::Model>, Self::Error> {
+            entity::image::Entity::find()
+                .filter(entity::image::Column::Filename.eq(filename))
+                .one(&self.conn)
+                .await
+        }
     }
 }
 
@@ -65,11 +104,8 @@ mod user {
     use crate::domain::model::markdown::Markdown;
     use crate::domain::model::user::User;
     use crate::domain::{self};
-    use crate::error::DbErrWrapper;
 
     impl domain::repository::user::Repository for SeaOrmRepository {
-        type Error = DbErrWrapper;
-
         async fn find_by_id(
             &self,
             id: i32,
@@ -191,8 +227,6 @@ impl TryFrom<user_role::Model> for UserRoleEnum {
 }
 
 impl domain::repository::user::ProfileRepository for SeaOrmRepository {
-    type Error = DbErrWrapper;
-
     #[expect(clippy::too_many_lines)]
     async fn find_by_name(
         &self,
