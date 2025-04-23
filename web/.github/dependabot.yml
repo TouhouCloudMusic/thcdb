@@ -5,13 +5,12 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
+  - package-ecosystem: "bun" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
-    open-pull-requests-limit: 5
-    commit-message:
-      prefix: "dependencies"
+    target-branch: "dev"
+    open-pull-requests-limit: 10
     rebase-strategy: "auto"
     labels:
       - "dependencies"
