@@ -1,10 +1,17 @@
 experimentalTernaries: true
 semi: false
 singleAttributePerLine: true
+useTabs: true
+importOrder:
+  - <THIRD_PARTY_MODULES>
+  - "^[../]"
+  - "^[./]"
+importOrderSeparation: true
+tailwindStylesheet: "./src/index.css"
+plugins:
+  - "@trivago/prettier-plugin-sort-imports"
+  - prettier-plugin-tailwindcss
 overrides:
-  - files:
-      - "packages/web/**/.{ts,tsx}"
+  - files: "*.yaml"
     options:
-      htmlWhitespaceSensitivity: ignore
-      plugins:
-        - prettier-plugin-tailwindcss
+      tabWidth: 2

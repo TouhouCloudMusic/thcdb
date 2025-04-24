@@ -8,7 +8,6 @@ node_modules
 .classpath
 .idea
 .project
-.vscode
 .vs
 
 # Temp
@@ -18,3 +17,16 @@ gitignore
 # System Files
 .DS_Store
 Thumbs.db
+
+# Log
+*storybook.log
+
+# Output
+dist
+
+# Generated Files
+src/constant/server.ts
+src/data/openapi.ts
+
+
+src/stories

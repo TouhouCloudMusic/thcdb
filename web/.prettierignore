@@ -1,16 +1,11 @@
 .husky
-.idea
-.output
-.vinxi
 
 dist
 node_modules
 public
+
 src/assets
+src/routeTree.gen.ts
 
-
-
-# web
-packages/web/src/style/shadow/shadow_default.css
-
-packages/database/edgeql-js
+src/style/shadow/shadow_default.css
+src/style/shadow/shadow_oklab.css

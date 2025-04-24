@@ -1,0 +1,16 @@
+{
+  "rules": {
+    // "jsx_a11y/label-has-associated-control": "off",
+    "unicorn/no-empty-file": "off"
+  },
+  "plugins": [
+    "import",
+    "jsdoc",
+    "jsx-a11y",
+    "oxc",
+    "promise",
+    "typescript",
+    "unicorn",
+    "vitest"
+  ]
+}
