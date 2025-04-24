@@ -71,7 +71,7 @@
 		"@vitest/browser": "^3.0.7",
 		"babel-preset-solid": "^1.9.5",
 		"eslint": "^9.21.0",
-		"eslint-config-prettier": "^10.0.2",
+		"eslint-config-prettier": "^10.1.2",
 		"eslint-plugin-jsx-a11y": "^6.10.2",
 		"eslint-plugin-oxlint": "^0.15.13",
 		"eslint-plugin-perfectionist": "^4.9.0",
