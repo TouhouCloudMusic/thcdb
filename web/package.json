@@ -21,7 +21,7 @@
 		"@modular-forms/solid": "^0.25.1",
 		"@shikijs/markdown-it": "^3.3.0",
 		"@shikijs/transformers": "^3.3.0",
-		"@solid-primitives/destructure": "^0.1.17",
+		"@solid-primitives/destructure": "^0.2.0",
 		"@solid-primitives/i18n": "^2.2.0",
 		"@solidjs/meta": "^0.29.4",
 		"@solidjs/router": "^0.15.3",
