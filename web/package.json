@@ -61,7 +61,7 @@
 		"@tailwindcss/vite": "^4.1.4",
 		"@tanstack/eslint-plugin-query": "^5.73.3",
 		"@tanstack/router-plugin": "^1.114.23",
-		"@tanstack/solid-router-devtools": "^1.114.23",
+		"@tanstack/solid-router-devtools": "^1.117.0",
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/user-event": "^14.6.1",
 		"@trivago/prettier-plugin-sort-imports": "^5.2.2",
