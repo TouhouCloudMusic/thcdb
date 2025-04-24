@@ -87,6 +87,10 @@ pub async fn create_many(
     user_id: i32,
     tx: &DatabaseTransaction,
 ) -> Result<Vec<song::Model>, DbErr> {
+    if data.is_empty() {
+        return Ok(vec![]);
+    }
+
     let new_songs = create_many_songs_and_link_relations(data, tx).await?;
 
     let new_song_histories = create_many_song_histories_and_link_relations(
@@ -223,6 +227,10 @@ async fn create_many_songs_and_link_relations(
     data: &[NewSong],
     tx: &DatabaseTransaction,
 ) -> Result<Vec<song::Model>, DbErr> {
+    if data.is_empty() {
+        return Ok(vec![]);
+    }
+
     let new_songs =
         song::Entity::insert_many(data.iter().map_into::<song::ActiveModel>())
             .exec_with_returning_many(tx)
@@ -258,6 +266,10 @@ async fn create_many_song_histories_and_link_relations(
     data: &[&NewSong],
     tx: &DatabaseTransaction,
 ) -> Result<Vec<song_history::Model>, DbErr> {
+    if data.is_empty() {
+        return Ok(vec![]);
+    }
+
     let new_song_histories = song_history::Entity::insert_many(
         data.iter().copied().map_into::<song_history::ActiveModel>(),
     )

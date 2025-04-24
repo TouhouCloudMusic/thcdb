@@ -20,7 +20,7 @@ use sea_orm::sea_query::{Alias, IntoCondition, PostgresQueryBuilder, Query};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, ConnectionTrait,
     DatabaseTransaction, DbErr, EntityName, EntityTrait, LoaderTrait,
-    ModelTrait, QueryFilter, QueryOrder,
+    ModelTrait, QueryFilter, QueryOrder, TryInsertResult,
 };
 use tokio::try_join;
 
@@ -225,7 +225,7 @@ pub async fn create(
     Ok(artist)
 }
 
-/// TODO: validate data on service layer
+/// TODO: validate data
 pub async fn create_correction(
     artist_id: i32,
     user_id: i32,
@@ -249,7 +249,7 @@ pub async fn create_correction(
 }
 
 /// Must check correction whether is valid before call this function
-/// TODO: validate data on service layer
+/// TODO: validate data
 pub async fn update_correction(
     user_id: i32,
     correction: correction::Model,
@@ -371,7 +371,10 @@ async fn create_artist_alias<C: ConnectionTrait>(
             second_id: Set(*id.max(&artist_id)),
         });
 
-        artist_alias::Entity::insert_many(model).exec(db).await?;
+        artist_alias::Entity::insert_many(model)
+            .on_empty_do_nothing()
+            .exec(db)
+            .await?;
     }
 
     Ok(())
@@ -390,6 +393,7 @@ async fn create_artist_alias_history<C: ConnectionTrait>(
             });
 
         artist_alias_history::Entity::insert_many(history_model)
+            .on_empty_do_nothing()
             .exec(db)
             .await?;
     }
@@ -409,7 +413,10 @@ async fn create_artist_link<C: ConnectionTrait>(
             url: Set(url.to_string()),
         });
 
-        artist_link::Entity::insert_many(model).exec(db).await?;
+        artist_link::Entity::insert_many(model)
+            .on_empty_do_nothing()
+            .exec(db)
+            .await?;
     }
 
     Ok(())
@@ -428,6 +435,7 @@ async fn create_artist_link_history<C: ConnectionTrait>(
         });
 
         artist_link_history::Entity::insert_many(model)
+            .on_empty_do_nothing()
             .exec(db)
             .await?;
     }
@@ -451,6 +459,7 @@ async fn create_artist_localized_name<C: ConnectionTrait>(
         });
 
         artist_localized_name::Entity::insert_many(model)
+            .on_empty_do_nothing()
             .exec(db)
             .await?;
     }
@@ -473,6 +482,7 @@ async fn create_artist_localized_name_history<C: ConnectionTrait>(
             }
         });
         artist_localized_name_history::Entity::insert_many(model)
+            .on_empty_do_nothing()
             .exec(db)
             .await?;
     }
@@ -537,10 +547,14 @@ async fn create_artist_group_member<C: ConnectionTrait>(
             })
             .multiunzip();
 
-        let new_group_members =
+        let TryInsertResult::Inserted(new_group_members) =
             group_member::Entity::insert_many(group_member_model)
+                .on_empty_do_nothing()
                 .exec_with_returning_many(db)
-                .await?;
+                .await?
+        else {
+            return Ok(());
+        };
 
         let role_models = new_group_members
             .iter()
@@ -562,6 +576,8 @@ async fn create_artist_group_member<C: ConnectionTrait>(
                 })
             });
 
+        // We checked length of members before, so this should be safe
+
         group_member_role::Entity::insert_many(role_models)
             .exec(db)
             .await?;
@@ -579,7 +595,9 @@ async fn create_artist_group_member_history<'f, C: ConnectionTrait>(
     members: Option<&'f [NewGroupMember]>,
     db: &'f C,
 ) -> Result<(), DbErr> {
-    if let Some(members) = members {
+    if let Some(members) = members
+        && !members.is_empty()
+    {
         let (group_member_history_model, todo_roles, todo_join_leaves): (
             Vec<_>,
             Vec<_>,
@@ -726,10 +744,17 @@ async fn update_artist_aliases<
         .exec(db)
         .await?;
 
-    let model = aliases.into_iter().map(|id| artist_alias::ActiveModel {
-        first_id: Set(id.min(artist_id)),
-        second_id: Set(id.max(artist_id)),
-    });
+    let model = aliases
+        .into_iter()
+        .map(|id| artist_alias::ActiveModel {
+            first_id: Set(id.min(artist_id)),
+            second_id: Set(id.max(artist_id)),
+        })
+        .collect::<Vec<_>>();
+
+    if model.is_empty() {
+        return Ok(());
+    }
 
     artist_alias::Entity::insert_many(model).exec(db).await?;
 
@@ -758,6 +783,10 @@ async fn update_artist_links<
         })
         .collect::<Vec<_>>();
 
+    if model.is_empty() {
+        return Ok(());
+    }
+
     artist_link::Entity::insert_many(model).exec(db).await?;
 
     Ok(())
@@ -773,14 +802,19 @@ async fn update_artist_localized_names(
         .exec(db)
         .await?;
 
-    let models = localized_names.into_iter().map(|x| {
-        artist_localized_name::ActiveModel {
+    let models = localized_names
+        .into_iter()
+        .map(|x| artist_localized_name::ActiveModel {
             id: NotSet,
             artist_id: Set(artist_id),
             language_id: Set(x.language_id),
             name: Set(x.name),
-        }
-    });
+        })
+        .collect::<Vec<_>>();
+
+    if models.is_empty() {
+        return Ok(());
+    }
 
     artist_localized_name::Entity::insert_many(models)
         .exec(db)
@@ -809,7 +843,7 @@ async fn update_artist_group_member(
         .exec(db)
         .await?;
 
-    if artist_type == ArtistType::Unknown {
+    if artist_type == ArtistType::Unknown || members.is_empty() {
         return Ok(());
     }
 
