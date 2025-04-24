@@ -1,6 +1,6 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
 import { Link } from "@tanstack/solid-router"
-import { createMemo, Match, Show, Switch } from "solid-js"
+import { createMemo, createResource, Match, Show, Switch } from "solid-js"
 import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
 import { Button } from "~/components/button"
 import { type UserProfile } from "~/model/user"
@@ -56,16 +56,14 @@ export function Header() {
 function AuthenticatedContent(props: { user: UserProfile }) {
 	let [show, setShow, setRef] = createClickOutside()
 	let close = () => setShow(false)
+	let [data] = createResource(() => Promise.resolve(props.user))
 	return (
 		<>
 			<div class="grid h-8 w-8 place-items-center">
 				<NotificationButton />
 			</div>
 			<button onClick={() => setShow(!show())}>
-				<Avatar
-					user={props.user}
-					onClick={() => setShow(!show())}
-				/>
+				<Avatar user={data} />
 			</button>
 			<Dialog.Root
 				open={show()}
