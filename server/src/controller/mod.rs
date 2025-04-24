@@ -1,5 +1,8 @@
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
 
 use crate::ArcAppState;
 
@@ -42,6 +45,18 @@ pub fn api_router() -> OpenApiRouter<ArcAppState> {
         .merge(song::router())
         .merge(tag::router())
         .merge(user::router())
+        .routes(routes!(health_check))
+}
+
+#[utoipa::path(
+    get,
+    path = "/health_check",
+    responses(
+        (status = 200)
+    ),
+)]
+async fn health_check() -> impl IntoResponse {
+    StatusCode::OK
 }
 
 macro_rules! data {
