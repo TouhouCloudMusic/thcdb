@@ -1,7 +1,12 @@
 use sea_orm_migration::prelude::*;
 
-#[derive(DeriveMigrationName)]
 pub struct Migration;
+
+impl MigrationName for Migration {
+    fn name(&self) -> &str {
+        "m20250415_011212_create_user_following"
+    }
+}
 
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
