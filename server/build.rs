@@ -8,7 +8,6 @@ use syn::{BinOp, Expr, Item, Lit, parse_file};
 
 fn main() {
     const LINE_BREAK: char = '\n';
-    let _ = dotenvy::dotenv().expect(".env file not found");
 
     let commit_hash = if let Ok(repo) = Repository::open(".")
         && let Ok(head) = repo.head()
