@@ -16,6 +16,7 @@ jobs:
 
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@nightly
+    - uses: mozilla-actions/sccache-action@v0.0.9
 
     - name: Build project
       run: cargo build --release
