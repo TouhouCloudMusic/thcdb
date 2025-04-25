@@ -241,10 +241,38 @@ fn derive_enum_impl(
                         ),
                     ));
                 }
-                status_code_left_arms.push(quote! { Self::#var_name { .. } });
-                status_code_right_arms.push(quote! { self.as_status_code() });
-                error_code_left_arms.push(quote! { Self::#var_name { .. } });
-                error_code_right_arms.push(quote! { self.as_error_code() });
+
+                match variant.status_code {
+                    CodeOpt::None => {
+                        status_code_left_arms
+                            .push(quote! { Self::#var_name { .. } });
+                        status_code_right_arms
+                            .push(quote! { self.as_status_code() });
+                    }
+                    CodeOpt::Specified(path) => {
+                        status_code_left_arms
+                            .push(quote! { Self::#var_name { .. } });
+                        status_code_right_arms.push(quote! { #path });
+                        all_status_codes.push(quote! { #path });
+                    }
+                    CodeOpt::Inner => unreachable!(),
+                }
+
+                match variant.error_code {
+                    CodeOpt::None => {
+                        error_code_left_arms
+                            .push(quote! { Self::#var_name { .. } });
+                        error_code_right_arms
+                            .push(quote! { self.as_error_code() });
+                    }
+                    CodeOpt::Specified(path) => {
+                        error_code_left_arms
+                            .push(quote! { Self::#var_name { .. } });
+                        error_code_right_arms.push(quote! { #path });
+                    }
+                    CodeOpt::Inner => unreachable!(),
+                }
+
                 into_response_arms.push(quote! {
                     Self::#var_name { .. } => self.into_api_response()
                 });
