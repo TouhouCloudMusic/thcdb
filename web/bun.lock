@@ -23,7 +23,7 @@
         "dayjs": "^1.11.13",
         "install": "^0.13.0",
         "js-cookie": "^3.0.5",
-        "marked": "^15.0.10",
+        "marked": "^15.0.11",
         "marked-footnote": "^1.2.4",
         "marked-shiki": "^1.2.0",
         "openapi-fetch": "^0.13.5",
@@ -1182,7 +1182,7 @@
 
     "markdown-it": ["markdown-it@14.1.0", "https://registry.npmmirror.com/markdown-it/-/markdown-it-14.1.0.tgz", { "dependencies": { "argparse": "^2.0.1", "entities": "^4.4.0", "linkify-it": "^5.0.0", "mdurl": "^2.0.0", "punycode.js": "^2.3.1", "uc.micro": "^2.1.0" }, "bin": { "markdown-it": "bin/markdown-it.mjs" } }, "sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg=="],
 
-    "marked": ["marked@15.0.10", "https://registry.npmmirror.com/marked/-/marked-15.0.10.tgz", { "bin": { "marked": "bin/marked.js" } }, "sha512-BXzsfFiR2UqXFKRwpugWuCYi9mWd1aX/Yns/X52xWfvfen9lnGEDbJw9ZEjjvLZVqntqT2gX45eYvqb2dIokDw=="],
+    "marked": ["marked@15.0.11", "https://registry.npmmirror.com/marked/-/marked-15.0.11.tgz", { "bin": { "marked": "bin/marked.js" } }, "sha512-1BEXAU2euRCG3xwgLVT1y0xbJEld1XOrmRJpUwRCcy7rxhSCwMrmEu9LXoPhHSCJG41V7YcQ2mjKRr5BA3ITIA=="],
 
     "marked-footnote": ["marked-footnote@1.2.4", "https://registry.npmmirror.com/marked-footnote/-/marked-footnote-1.2.4.tgz", { "peerDependencies": { "marked": ">=7.0.0" } }, "sha512-DB2Kl+wFh6YwZd70qABMY6WUkG1UuyqoNTFoDfGyG79Pz24neYtLBkB+45a7o72V7gkfvbC3CGzIYFobxfMT1Q=="],
 
