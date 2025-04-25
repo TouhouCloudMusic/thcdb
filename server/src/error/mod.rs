@@ -36,7 +36,7 @@ error_set! {
         Tokio(TokioError),
         #[display("Entity {entity_name} not found")]
         #[api_error(
-            status_code = StatusCode::INTERNAL_SERVER_ERROR,
+            status_code = StatusCode::NOT_FOUND,
             error_code = ErrorCode::EntityNotFound,
         )]
         EntityNotFound {
