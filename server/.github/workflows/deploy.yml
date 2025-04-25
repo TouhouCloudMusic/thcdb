@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-      group: "deploy-dev-server-${{ github.ref }}"
+      group: "deploy-dev-server"
       cancel-in-progress: true
 
     steps:
