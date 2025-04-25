@@ -36,10 +36,15 @@ jobs:
         echo "${{ secrets.DEV_SSH_PRIVATE_KEY }}" > $HOME/.ssh/id_rsa
         chmod 600 $HOME/.ssh/id_rsa
 
+    - name: Stop systemd Service
+      run: |
+        ssh -i $HOME/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }} \
+        "sudo systemctl stop thcdb_rs"
+
     - name: Copy binary to server
       run: |
         scp target/release/thcdb_rs \
-        ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }}:~/server/thcdb_rs
+        ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }}:/home/${{ secrets.DEV_SSH_USER }}//server/thcdb_rs
 
     - name: Restart systemd service
       run: |
