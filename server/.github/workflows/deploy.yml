@@ -12,12 +12,10 @@ jobs:
 
     steps:
     - name: Checkout source
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Rust
-      uses: actions/setup-rust@v1
-      with:
-        rust-version: nightly
+      uses: dtolnay/rust-toolchain@nightly
 
     - name: Build project
       run: cargo build --release
