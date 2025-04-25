@@ -13,7 +13,7 @@
         "@solid-primitives/i18n": "^2.2.0",
         "@solidjs/meta": "^0.29.4",
         "@solidjs/router": "^0.15.3",
-        "@tanstack/solid-query": "^5.67.1",
+        "@tanstack/solid-query": "^5.74.4",
         "@tanstack/solid-query-devtools": "^5.74.6",
         "@tanstack/solid-router": "^1.114.23",
         "@types/markdown-it": "^14.1.2",
@@ -530,7 +530,7 @@
 
     "@tanstack/history": ["@tanstack/history@1.114.22", "https://registry.npmmirror.com/@tanstack/history/-/history-1.114.22.tgz", {}, "sha512-CNwKraj/Xa8H7DUyzrFBQC3wL96JzIxT4i9CW0hxqFNNmLDyUcMJr8264iqqfxC0u1lFSG96URad08T2Qhadpw=="],
 
-    "@tanstack/query-core": ["@tanstack/query-core@5.67.1", "https://registry.npmmirror.com/@tanstack/query-core/-/query-core-5.67.1.tgz", {}, "sha512-AkFmuukVejyqVIjEQoFhLb3q+xHl7JG8G9cANWTMe3s8iKzD9j1VBSYXgCjy6vm6xM8cUCR9zP2yqWxY9pTWOA=="],
+    "@tanstack/query-core": ["@tanstack/query-core@5.74.4", "https://registry.npmmirror.com/@tanstack/query-core/-/query-core-5.74.4.tgz", {}, "sha512-YuG0A0+3i9b2Gfo9fkmNnkUWh5+5cFhWBN0pJAHkHilTx6A0nv8kepkk4T4GRt4e5ahbtFj2eTtkiPcVU1xO4A=="],
 
     "@tanstack/query-devtools": ["@tanstack/query-devtools@5.74.6", "https://registry.npmmirror.com/@tanstack/query-devtools/-/query-devtools-5.74.6.tgz", {}, "sha512-djaFT11mVCOW3e0Ezfyiq7T6OoHy2LRI1fUFQvj+G6+/4A1FkuRMNUhQkdP1GXlx8id0f1/zd5fgDpIy5SU/Iw=="],
 
@@ -544,7 +544,7 @@
 
     "@tanstack/router-utils": ["@tanstack/router-utils@1.114.12", "https://registry.npmmirror.com/@tanstack/router-utils/-/router-utils-1.114.12.tgz", { "dependencies": { "@babel/generator": "^7.26.8", "@babel/parser": "^7.26.8", "ansis": "^3.11.0", "diff": "^7.0.0" } }, "sha512-W4tltvM9FQuDEJejz/JJD3q/pVHBXBb8VmA77pZlj4IBW97RnUNy8CUwZUgSYcb9OReoO4i/VjjQCUq9ZdiDmg=="],
 
-    "@tanstack/solid-query": ["@tanstack/solid-query@5.67.1", "https://registry.npmmirror.com/@tanstack/solid-query/-/solid-query-5.67.1.tgz", { "dependencies": { "@tanstack/query-core": "5.67.1" }, "peerDependencies": { "solid-js": "^1.6.0" } }, "sha512-ijJeZ5cxR5w1c+HKbwPbG+Uix4QAvmX3lWTzLQLqsW357TCd3SuQCkb5tN/TPgDFKuIfLYwEJd/LJ7VCEBkqBw=="],
+    "@tanstack/solid-query": ["@tanstack/solid-query@5.74.4", "https://registry.npmmirror.com/@tanstack/solid-query/-/solid-query-5.74.4.tgz", { "dependencies": { "@tanstack/query-core": "5.74.4" }, "peerDependencies": { "solid-js": "^1.6.0" } }, "sha512-m5DFB9L9d3uL7eRHSlOARuDBOn2JKiZZ4MJ3mX0fT7rv2MbZuSOyerQ44JQsWCo/HJD82XefsXEYrDVi3uy+Eg=="],
 
     "@tanstack/solid-query-devtools": ["@tanstack/solid-query-devtools@5.74.6", "https://registry.npmmirror.com/@tanstack/solid-query-devtools/-/solid-query-devtools-5.74.6.tgz", { "dependencies": { "@tanstack/query-devtools": "5.74.6" }, "peerDependencies": { "@tanstack/solid-query": "^5.74.4", "solid-js": "^1.6.0" } }, "sha512-Wqk5QsCXYFaElJGcg41QiOc14UAbYk+w0qAYOUAkq0v6vqESk89GtEBd0VR83crWawnNWuBB2VjYPvwM3MxC6w=="],
 

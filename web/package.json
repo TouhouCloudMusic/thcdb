@@ -25,7 +25,7 @@
 		"@solid-primitives/i18n": "^2.2.0",
 		"@solidjs/meta": "^0.29.4",
 		"@solidjs/router": "^0.15.3",
-		"@tanstack/solid-query": "^5.67.1",
+		"@tanstack/solid-query": "^5.74.4",
 		"@tanstack/solid-query-devtools": "^5.74.6",
 		"@tanstack/solid-router": "^1.114.23",
 		"@types/markdown-it": "^14.1.2",
