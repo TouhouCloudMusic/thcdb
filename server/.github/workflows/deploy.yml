@@ -39,7 +39,7 @@ jobs:
     - name: Stop systemd Service
       run: |
         ssh -i $HOME/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }} \
-        "sudo systemctl stop thcdb_rs"
+        "sudo systemctl stop thcdb.service"
 
     - name: Copy binary to server
       run: |
@@ -49,4 +49,4 @@ jobs:
     - name: Restart systemd service
       run: |
         ssh -i $HOME/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }} \
-        "sudo systemctl restart thcdb_rs"
+        "sudo systemctl restart thcdb.service"
