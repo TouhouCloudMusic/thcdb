@@ -75,7 +75,7 @@
         "prettier": "^3.5.3",
         "prettier-plugin-tailwindcss": "^0.6.11",
         "solid-devtools": "^0.33.0",
-        "storybook": "^8.6.3",
+        "storybook": "^8.6.12",
         "storybook-solidjs": "^1.0.0-beta.6",
         "storybook-solidjs-vite": "^1.0.0-beta.6",
         "tailwindcss": "^4.1.4",
@@ -474,7 +474,7 @@
 
     "@storybook/builder-vite": ["@storybook/builder-vite@9.0.0-alpha.1", "https://registry.npmmirror.com/@storybook/builder-vite/-/builder-vite-9.0.0-alpha.1.tgz", { "dependencies": { "@storybook/csf-plugin": "9.0.0-alpha.1", "browser-assert": "^1.2.1", "ts-dedent": "^2.0.0" }, "peerDependencies": { "storybook": "^9.0.0-alpha.1", "vite": "^4.0.0 || ^5.0.0 || ^6.0.0" } }, "sha512-uIcc85jwjZNHJuUrWqs5ADB2ge+4mMTIblJf+6gvqYMMj53MyzDtpci7pkT2daKcO03n2VB6pcjW21T/LEqL3g=="],
 
-    "@storybook/core": ["@storybook/core@8.6.3", "https://registry.npmmirror.com/@storybook/core/-/core-8.6.3.tgz", { "dependencies": { "@storybook/theming": "8.6.3", "better-opn": "^3.0.2", "browser-assert": "^1.2.1", "esbuild": "^0.18.0 || ^0.19.0 || ^0.20.0 || ^0.21.0 || ^0.22.0 || ^0.23.0 || ^0.24.0 || ^0.25.0", "esbuild-register": "^3.5.0", "jsdoc-type-pratt-parser": "^4.0.0", "process": "^0.11.10", "recast": "^0.23.5", "semver": "^7.6.2", "util": "^0.12.5", "ws": "^8.2.3" }, "peerDependencies": { "prettier": "^2 || ^3" }, "optionalPeers": ["prettier"] }, "sha512-0iMTfmo3UFCa1hFJLtThnRIppkIpGPyTL3MElhORP1t5l9lCUq5am0ymbi/TeCbsJPjE86FjeO0NinokL9iQiw=="],
+    "@storybook/core": ["@storybook/core@8.6.12", "https://registry.npmmirror.com/@storybook/core/-/core-8.6.12.tgz", { "dependencies": { "@storybook/theming": "8.6.12", "better-opn": "^3.0.2", "browser-assert": "^1.2.1", "esbuild": "^0.18.0 || ^0.19.0 || ^0.20.0 || ^0.21.0 || ^0.22.0 || ^0.23.0 || ^0.24.0 || ^0.25.0", "esbuild-register": "^3.5.0", "jsdoc-type-pratt-parser": "^4.0.0", "process": "^0.11.10", "recast": "^0.23.5", "semver": "^7.6.2", "util": "^0.12.5", "ws": "^8.2.3" }, "peerDependencies": { "prettier": "^2 || ^3" }, "optionalPeers": ["prettier"] }, "sha512-t+ZuDzAlsXKa6tLxNZT81gEAt4GNwsKP/Id2wluhmUWD/lwYW0uum1JiPUuanw8xD6TdakCW/7ULZc7aQUBLCQ=="],
 
     "@storybook/csf": ["@storybook/csf@0.1.13", "https://registry.npmmirror.com/@storybook/csf/-/csf-0.1.13.tgz", { "dependencies": { "type-fest": "^2.19.0" } }, "sha512-7xOOwCLGB3ebM87eemep89MYRFTko+D8qE7EdAAq74lgdqRR5cOUtYWJLjO2dLtP94nqoOdHJo6MdLLKzg412Q=="],
 
@@ -490,7 +490,7 @@
 
     "@storybook/test": ["@storybook/test@8.6.12", "https://registry.npmmirror.com/@storybook/test/-/test-8.6.12.tgz", { "dependencies": { "@storybook/global": "^5.0.0", "@storybook/instrumenter": "8.6.12", "@testing-library/dom": "10.4.0", "@testing-library/jest-dom": "6.5.0", "@testing-library/user-event": "14.5.2", "@vitest/expect": "2.0.5", "@vitest/spy": "2.0.5" }, "peerDependencies": { "storybook": "^8.6.12" } }, "sha512-0BK1Eg+VD0lNMB1BtxqHE3tP9FdkUmohtvWG7cq6lWvMrbCmAmh3VWai3RMCCDOukPFpjabOr8BBRLVvhNpv2w=="],
 
-    "@storybook/theming": ["@storybook/theming@8.6.3", "https://registry.npmmirror.com/@storybook/theming/-/theming-8.6.3.tgz", { "peerDependencies": { "storybook": "^8.2.0 || ^8.3.0-0 || ^8.4.0-0 || ^8.5.0-0 || ^8.6.0-0" } }, "sha512-sDcWnnko73KOCIc9stQyec9KvTmGOuMswqeKtWh0ha/wsgYB6G2/2j1xOheFmWKPitOsbwgvqtjCP7bRE68uIA=="],
+    "@storybook/theming": ["@storybook/theming@8.6.12", "https://registry.npmmirror.com/@storybook/theming/-/theming-8.6.12.tgz", { "peerDependencies": { "storybook": "^8.2.0 || ^8.3.0-0 || ^8.4.0-0 || ^8.5.0-0 || ^8.6.0-0" } }, "sha512-6VjZg8HJ2Op7+KV7ihJpYrDnFtd9D1jrQnUS8LckcpuBXrIEbaut5+34ObY8ssQnSqkk2GwIZBBBQYQBCVvkOw=="],
 
     "@swc/helpers": ["@swc/helpers@0.5.15", "https://registry.npmmirror.com/@swc/helpers/-/helpers-0.5.15.tgz", { "dependencies": { "tslib": "^2.8.0" } }, "sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g=="],
 
@@ -1442,7 +1442,7 @@
 
     "std-env": ["std-env@3.8.1", "https://registry.npmmirror.com/std-env/-/std-env-3.8.1.tgz", {}, "sha512-vj5lIj3Mwf9D79hBkltk5qmkFI+biIKWS2IBxEyEU3AX1tUf7AoL8nSazCOiiqQsGKIq01SClsKEzweu34uwvA=="],
 
-    "storybook": ["storybook@8.6.3", "https://registry.npmmirror.com/storybook/-/storybook-8.6.3.tgz", { "dependencies": { "@storybook/core": "8.6.3" }, "peerDependencies": { "prettier": "^2 || ^3" }, "optionalPeers": ["prettier"], "bin": { "getstorybook": "./bin/index.cjs", "sb": "./bin/index.cjs", "storybook": "./bin/index.cjs" } }, "sha512-Vbmd8/FXp6X0AOMak6arcg3WdkHj+2AYJTNHbCPVHsCEbnREyRZIG+Eq5/Ffmy6byiz+4OAX5HwsHGSMR6Xmow=="],
+    "storybook": ["storybook@8.6.12", "https://registry.npmmirror.com/storybook/-/storybook-8.6.12.tgz", { "dependencies": { "@storybook/core": "8.6.12" }, "peerDependencies": { "prettier": "^2 || ^3" }, "optionalPeers": ["prettier"], "bin": { "sb": "./bin/index.cjs", "storybook": "./bin/index.cjs", "getstorybook": "./bin/index.cjs" } }, "sha512-Z/nWYEHBTLK1ZBtAWdhxC0l5zf7ioJ7G4+zYqtTdYeb67gTnxNj80gehf8o8QY9L2zA2+eyMRGLC2V5fI7Z3Tw=="],
 
     "storybook-solidjs": ["storybook-solidjs@1.0.0-beta.6", "https://registry.npmmirror.com/storybook-solidjs/-/storybook-solidjs-1.0.0-beta.6.tgz", { "dependencies": { "@babel/standalone": "^7.26.2" }, "peerDependencies": { "solid-js": "^1.9.3" } }, "sha512-QlnDo0zljwr/GToBe+JmRrw9dsmY8mR1RzRa7ugG0PPzzLVMU9hL1rqtT6qnVVIjqZTMCce3FNCxPZLrxQZaWA=="],
 
