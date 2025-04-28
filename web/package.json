@@ -27,7 +27,7 @@
 		"@solidjs/router": "^0.15.3",
 		"@tanstack/solid-query": "^5.74.4",
 		"@tanstack/solid-query-devtools": "^5.74.6",
-		"@tanstack/solid-router": "^1.114.23",
+		"@tanstack/solid-router": "^1.117.1",
 		"@types/markdown-it": "^14.1.2",
 		"@types/markdown-it-footnote": "^3.0.4",
 		"arktype": "^2.1.20",
