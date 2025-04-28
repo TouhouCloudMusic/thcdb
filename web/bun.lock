@@ -14,7 +14,7 @@
         "@solidjs/meta": "^0.29.4",
         "@solidjs/router": "^0.15.3",
         "@tanstack/solid-query": "^5.74.4",
-        "@tanstack/solid-query-devtools": "^5.74.6",
+        "@tanstack/solid-query-devtools": "^5.74.7",
         "@tanstack/solid-router": "^1.117.1",
         "@types/markdown-it": "^14.1.2",
         "@types/markdown-it-footnote": "^3.0.4",
@@ -534,7 +534,7 @@
 
     "@tanstack/query-core": ["@tanstack/query-core@5.74.4", "https://registry.npmmirror.com/@tanstack/query-core/-/query-core-5.74.4.tgz", {}, "sha512-YuG0A0+3i9b2Gfo9fkmNnkUWh5+5cFhWBN0pJAHkHilTx6A0nv8kepkk4T4GRt4e5ahbtFj2eTtkiPcVU1xO4A=="],
 
-    "@tanstack/query-devtools": ["@tanstack/query-devtools@5.74.6", "https://registry.npmmirror.com/@tanstack/query-devtools/-/query-devtools-5.74.6.tgz", {}, "sha512-djaFT11mVCOW3e0Ezfyiq7T6OoHy2LRI1fUFQvj+G6+/4A1FkuRMNUhQkdP1GXlx8id0f1/zd5fgDpIy5SU/Iw=="],
+    "@tanstack/query-devtools": ["@tanstack/query-devtools@5.74.7", "https://registry.npmmirror.com/@tanstack/query-devtools/-/query-devtools-5.74.7.tgz", {}, "sha512-nSNlfuGdnHf4yB0S+BoNYOE1o3oAH093weAYZolIHfS2stulyA/gWfSk/9H4ZFk5mAAHb5vNqAeJOmbdcGPEQw=="],
 
     "@tanstack/router-core": ["@tanstack/router-core@1.117.1", "https://registry.npmmirror.com/@tanstack/router-core/-/router-core-1.117.1.tgz", { "dependencies": { "@tanstack/history": "1.115.0", "@tanstack/store": "^0.7.0", "tiny-invariant": "^1.3.3" } }, "sha512-z7njzO6yn8kwJP0fDh43mXuO/zlYs0cexjd0M+0RKf6W4mfMuPvFAiUeD4CZEk+kBLgZxtaJxBUkhpZCN8Zecw=="],
 
@@ -548,7 +548,7 @@
 
     "@tanstack/solid-query": ["@tanstack/solid-query@5.74.4", "https://registry.npmmirror.com/@tanstack/solid-query/-/solid-query-5.74.4.tgz", { "dependencies": { "@tanstack/query-core": "5.74.4" }, "peerDependencies": { "solid-js": "^1.6.0" } }, "sha512-m5DFB9L9d3uL7eRHSlOARuDBOn2JKiZZ4MJ3mX0fT7rv2MbZuSOyerQ44JQsWCo/HJD82XefsXEYrDVi3uy+Eg=="],
 
-    "@tanstack/solid-query-devtools": ["@tanstack/solid-query-devtools@5.74.6", "https://registry.npmmirror.com/@tanstack/solid-query-devtools/-/solid-query-devtools-5.74.6.tgz", { "dependencies": { "@tanstack/query-devtools": "5.74.6" }, "peerDependencies": { "@tanstack/solid-query": "^5.74.4", "solid-js": "^1.6.0" } }, "sha512-Wqk5QsCXYFaElJGcg41QiOc14UAbYk+w0qAYOUAkq0v6vqESk89GtEBd0VR83crWawnNWuBB2VjYPvwM3MxC6w=="],
+    "@tanstack/solid-query-devtools": ["@tanstack/solid-query-devtools@5.74.7", "https://registry.npmmirror.com/@tanstack/solid-query-devtools/-/solid-query-devtools-5.74.7.tgz", { "dependencies": { "@tanstack/query-devtools": "5.74.7" }, "peerDependencies": { "@tanstack/solid-query": "^5.74.7", "solid-js": "^1.6.0" } }, "sha512-Ed7WSgA6Yro8Qn1PVjbObW0l4ROaiomzjAWUw5Tap1xCHprbnkMpc2VUxijF1MidGfgje9ah+RIRM9cFf2GoNw=="],
 
     "@tanstack/solid-router": ["@tanstack/solid-router@1.117.1", "https://registry.npmmirror.com/@tanstack/solid-router/-/solid-router-1.117.1.tgz", { "dependencies": { "@solid-devtools/logger": "^0.9.4", "@solid-primitives/refs": "^1.0.8", "@solidjs/meta": "^0.29.4", "@tanstack/history": "1.115.0", "@tanstack/router-core": "1.117.1", "@tanstack/solid-store": "^0.7.0", "jsesc": "^3.0.2", "tiny-invariant": "^1.3.3", "tiny-warning": "^1.0.3" }, "peerDependencies": { "solid-js": "^1.9.5" } }, "sha512-olYi2SNwVN1okSusMQt2+4egXAprLoSFqu0OrZiKUlccVY0c8eItfPFJCjM/Qein0WTn2dd/kz82Q/44PFwpew=="],
 
@@ -1748,8 +1748,6 @@
 
     "eslint-plugin-solid/@typescript-eslint/utils": ["@typescript-eslint/utils@8.26.0", "https://registry.npmmirror.com/@typescript-eslint/utils/-/utils-8.26.0.tgz", { "dependencies": { "@eslint-community/eslint-utils": "^4.4.0", "@typescript-eslint/scope-manager": "8.26.0", "@typescript-eslint/types": "8.26.0", "@typescript-eslint/typescript-estree": "8.26.0" }, "peerDependencies": { "eslint": "^8.57.0 || ^9.0.0", "typescript": ">=4.8.4 <5.9.0" } }, "sha512-2L2tU3FVwhvU14LndnQCA2frYC8JnPDVKyQtWFPf8IYFMt/ykEN1bPolNhNbCVgOmdzTlWdusCTKA/9nKrf8Ig=="],
 
-    "eslint-plugin-storybook/@typescript-eslint/utils": ["@typescript-eslint/utils@8.31.0", "https://registry.npmmirror.com/@typescript-eslint/utils/-/utils-8.31.0.tgz", { "dependencies": { "@eslint-community/eslint-utils": "^4.4.0", "@typescript-eslint/scope-manager": "8.31.0", "@typescript-eslint/types": "8.31.0", "@typescript-eslint/typescript-estree": "8.31.0" }, "peerDependencies": { "eslint": "^8.57.0 || ^9.0.0", "typescript": ">=4.8.4 <5.9.0" } }, "sha512-qi6uPLt9cjTFxAb1zGNgTob4x9ur7xC6mHQJ8GwEzGMGE9tYniublmJaowOJ9V2jUzxrltTPfdG2nKlWsq0+Ww=="],
-
     "fast-glob/glob-parent": ["glob-parent@5.1.2", "https://registry.npmmirror.com/glob-parent/-/glob-parent-5.1.2.tgz", { "dependencies": { "is-glob": "^4.0.1" } }, "sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow=="],
 
     "micromatch/picomatch": ["picomatch@2.3.1", "https://registry.npmmirror.com/picomatch/-/picomatch-2.3.1.tgz", {}, "sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA=="],
@@ -1824,10 +1822,6 @@
 
     "eslint-plugin-solid/@typescript-eslint/utils/@typescript-eslint/typescript-estree": ["@typescript-eslint/typescript-estree@8.26.0", "https://registry.npmmirror.com/@typescript-eslint/typescript-estree/-/typescript-estree-8.26.0.tgz", { "dependencies": { "@typescript-eslint/types": "8.26.0", "@typescript-eslint/visitor-keys": "8.26.0", "debug": "^4.3.4", "fast-glob": "^3.3.2", "is-glob": "^4.0.3", "minimatch": "^9.0.4", "semver": "^7.6.0", "ts-api-utils": "^2.0.1" }, "peerDependencies": { "typescript": ">=4.8.4 <5.9.0" } }, "sha512-tiJ1Hvy/V/oMVRTbEOIeemA2XoylimlDQ03CgPPNaHYZbpsc78Hmngnt+WXZfJX1pjQ711V7g0H7cSJThGYfPQ=="],
 
-    "eslint-plugin-storybook/@typescript-eslint/utils/@typescript-eslint/scope-manager": ["@typescript-eslint/scope-manager@8.31.0", "https://registry.npmmirror.com/@typescript-eslint/scope-manager/-/scope-manager-8.31.0.tgz", { "dependencies": { "@typescript-eslint/types": "8.31.0", "@typescript-eslint/visitor-keys": "8.31.0" } }, "sha512-knO8UyF78Nt8O/B64i7TlGXod69ko7z6vJD9uhSlm0qkAbGeRUSudcm0+K/4CrRjrpiHfBCjMWlc08Vav1xwcw=="],
-
-    "eslint-plugin-storybook/@typescript-eslint/utils/@typescript-eslint/typescript-estree": ["@typescript-eslint/typescript-estree@8.31.0", "https://registry.npmmirror.com/@typescript-eslint/typescript-estree/-/typescript-estree-8.31.0.tgz", { "dependencies": { "@typescript-eslint/types": "8.31.0", "@typescript-eslint/visitor-keys": "8.31.0", "debug": "^4.3.4", "fast-glob": "^3.3.2", "is-glob": "^4.0.3", "minimatch": "^9.0.4", "semver": "^7.6.0", "ts-api-utils": "^2.0.1" }, "peerDependencies": { "typescript": ">=4.8.4 <5.9.0" } }, "sha512-xLmgn4Yl46xi6aDSZ9KkyfhhtnYI15/CvHbpOy/eR5NWhK/BK8wc709KKwhAR0m4ZKRP7h07bm4BWUYOCuRpQQ=="],
-
     "eslint/chalk/supports-color": ["supports-color@7.2.0", "https://registry.npmmirror.com/supports-color/-/supports-color-7.2.0.tgz", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw=="],
 
     "msw/yargs/cliui": ["cliui@8.0.1", "https://registry.npmmirror.com/cliui/-/cliui-8.0.1.tgz", { "dependencies": { "string-width": "^4.2.0", "strip-ansi": "^6.0.1", "wrap-ansi": "^7.0.0" } }, "sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ=="],
@@ -1853,10 +1847,6 @@
     "eslint-plugin-solid/@typescript-eslint/utils/@typescript-eslint/typescript-estree/minimatch": ["minimatch@9.0.5", "https://registry.npmmirror.com/minimatch/-/minimatch-9.0.5.tgz", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow=="],
 
     "eslint-plugin-solid/@typescript-eslint/utils/@typescript-eslint/typescript-estree/semver": ["semver@7.7.1", "https://registry.npmmirror.com/semver/-/semver-7.7.1.tgz", { "bin": { "semver": "bin/semver.js" } }, "sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA=="],
-
-    "eslint-plugin-storybook/@typescript-eslint/utils/@typescript-eslint/typescript-estree/minimatch": ["minimatch@9.0.5", "https://registry.npmmirror.com/minimatch/-/minimatch-9.0.5.tgz", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow=="],
-
-    "eslint-plugin-storybook/@typescript-eslint/utils/@typescript-eslint/typescript-estree/semver": ["semver@7.7.1", "https://registry.npmmirror.com/semver/-/semver-7.7.1.tgz", { "bin": { "semver": "bin/semver.js" } }, "sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA=="],
 
     "msw/yargs/cliui/strip-ansi": ["strip-ansi@6.0.1", "https://registry.npmmirror.com/strip-ansi/-/strip-ansi-6.0.1.tgz", { "dependencies": { "ansi-regex": "^5.0.1" } }, "sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A=="],
 
@@ -1953,8 +1943,6 @@
     "vitest/vite/esbuild/@esbuild/win32-x64": ["@esbuild/win32-x64@0.21.5", "https://registry.npmmirror.com/@esbuild/win32-x64/-/win32-x64-0.21.5.tgz", { "os": "win32", "cpu": "x64" }, "sha512-tQd/1efJuzPC6rCFwEvLtci/xNFcTZknmXs98FYDfGE4wP9ClFV98nyKrzJKVPMhdDnjzLhdUyMX4PsQAPjwIw=="],
 
     "eslint-plugin-solid/@typescript-eslint/utils/@typescript-eslint/typescript-estree/minimatch/brace-expansion": ["brace-expansion@2.0.1", "https://registry.npmmirror.com/brace-expansion/-/brace-expansion-2.0.1.tgz", { "dependencies": { "balanced-match": "^1.0.0" } }, "sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA=="],
-
-    "eslint-plugin-storybook/@typescript-eslint/utils/@typescript-eslint/typescript-estree/minimatch/brace-expansion": ["brace-expansion@2.0.1", "https://registry.npmmirror.com/brace-expansion/-/brace-expansion-2.0.1.tgz", { "dependencies": { "balanced-match": "^1.0.0" } }, "sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA=="],
 
     "msw/yargs/cliui/strip-ansi/ansi-regex": ["ansi-regex@5.0.1", "https://registry.npmmirror.com/ansi-regex/-/ansi-regex-5.0.1.tgz", {}, "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ=="],
   }
