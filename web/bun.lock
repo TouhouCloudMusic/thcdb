@@ -49,7 +49,7 @@
         "@tailwindcss/vite": "^4.1.4",
         "@tanstack/eslint-plugin-query": "^5.74.7",
         "@tanstack/router-plugin": "^1.117.1",
-        "@tanstack/solid-router-devtools": "^1.117.0",
+        "@tanstack/solid-router-devtools": "^1.117.1",
         "@testing-library/jest-dom": "^6.6.3",
         "@testing-library/user-event": "^14.6.1",
         "@trivago/prettier-plugin-sort-imports": "^5.2.2",
@@ -536,7 +536,7 @@
 
     "@tanstack/router-core": ["@tanstack/router-core@1.117.1", "https://registry.npmmirror.com/@tanstack/router-core/-/router-core-1.117.1.tgz", { "dependencies": { "@tanstack/history": "1.115.0", "@tanstack/store": "^0.7.0", "tiny-invariant": "^1.3.3" } }, "sha512-z7njzO6yn8kwJP0fDh43mXuO/zlYs0cexjd0M+0RKf6W4mfMuPvFAiUeD4CZEk+kBLgZxtaJxBUkhpZCN8Zecw=="],
 
-    "@tanstack/router-devtools-core": ["@tanstack/router-devtools-core@1.117.0", "https://registry.npmmirror.com/@tanstack/router-devtools-core/-/router-devtools-core-1.117.0.tgz", { "dependencies": { "clsx": "^2.1.1", "goober": "^2.1.16" }, "peerDependencies": { "@tanstack/router-core": "^1.117.0", "csstype": "^3.0.10", "solid-js": ">=1.9.5", "tiny-invariant": "^1.3.3" }, "optionalPeers": ["csstype"] }, "sha512-HZqQ8mcQKwrzh1wzInwBITk8PrMRUTT5H4SZlnjnV+GRyKhx3MbjfolX2VWFJSr13qNsdKL5vLEaS9Il3WbCwg=="],
+    "@tanstack/router-devtools-core": ["@tanstack/router-devtools-core@1.117.1", "https://registry.npmmirror.com/@tanstack/router-devtools-core/-/router-devtools-core-1.117.1.tgz", { "dependencies": { "clsx": "^2.1.1", "goober": "^2.1.16" }, "peerDependencies": { "@tanstack/router-core": "^1.117.1", "csstype": "^3.0.10", "solid-js": ">=1.9.5", "tiny-invariant": "^1.3.3" }, "optionalPeers": ["csstype"] }, "sha512-C4h6u8c2AkBShPv1OoKK3JEsrn2Quf2LFy7tH6aJFDxFa+JL1w37NDDxVC8/JEtF/8dQYV1Mmocvs78mpUVFXA=="],
 
     "@tanstack/router-generator": ["@tanstack/router-generator@1.117.1", "https://registry.npmmirror.com/@tanstack/router-generator/-/router-generator-1.117.1.tgz", { "dependencies": { "@tanstack/virtual-file-routes": "^1.115.0", "prettier": "^3.5.0", "tsx": "^4.19.2", "zod": "^3.24.2" }, "peerDependencies": { "@tanstack/react-router": "^1.117.1" }, "optionalPeers": ["@tanstack/react-router"] }, "sha512-1V6Y8TibqnMpwizxchzJgE7FUhbSlAIvnrnUwmQhvFhMFtYOdvNkrdZzBD625fcTA/jLs9zUtSeWyiRMKTSPFQ=="],
 
@@ -550,7 +550,7 @@
 
     "@tanstack/solid-router": ["@tanstack/solid-router@1.117.1", "https://registry.npmmirror.com/@tanstack/solid-router/-/solid-router-1.117.1.tgz", { "dependencies": { "@solid-devtools/logger": "^0.9.4", "@solid-primitives/refs": "^1.0.8", "@solidjs/meta": "^0.29.4", "@tanstack/history": "1.115.0", "@tanstack/router-core": "1.117.1", "@tanstack/solid-store": "^0.7.0", "jsesc": "^3.0.2", "tiny-invariant": "^1.3.3", "tiny-warning": "^1.0.3" }, "peerDependencies": { "solid-js": "^1.9.5" } }, "sha512-olYi2SNwVN1okSusMQt2+4egXAprLoSFqu0OrZiKUlccVY0c8eItfPFJCjM/Qein0WTn2dd/kz82Q/44PFwpew=="],
 
-    "@tanstack/solid-router-devtools": ["@tanstack/solid-router-devtools@1.117.0", "https://registry.npmmirror.com/@tanstack/solid-router-devtools/-/solid-router-devtools-1.117.0.tgz", { "dependencies": { "@tanstack/router-devtools-core": "^1.117.0", "solid-js": "^1.9.5" }, "peerDependencies": { "@tanstack/solid-router": "^1.117.0" } }, "sha512-LjBOiTCoH/cdgCzhgzX5/qcGtW5hUNL8+EvW/bPJAla3DNZidePEyfWQL1kSUJF7L/ntYer3wxkOebAAIlwzpw=="],
+    "@tanstack/solid-router-devtools": ["@tanstack/solid-router-devtools@1.117.1", "https://registry.npmmirror.com/@tanstack/solid-router-devtools/-/solid-router-devtools-1.117.1.tgz", { "dependencies": { "@tanstack/router-devtools-core": "^1.117.1", "solid-js": "^1.9.5" }, "peerDependencies": { "@tanstack/solid-router": "^1.117.1" } }, "sha512-tKcdtECxilNW3lXy+wsBXnMG6/M9iEE8BZTO6ParuD7lRrcf//lzHMVa9uB2RCOsqq0pvqTt1/8C3Hv4TxYPOg=="],
 
     "@tanstack/solid-store": ["@tanstack/solid-store@0.7.0", "https://registry.npmmirror.com/@tanstack/solid-store/-/solid-store-0.7.0.tgz", { "dependencies": { "@tanstack/store": "0.7.0" }, "peerDependencies": { "solid-js": "^1.6.0" } }, "sha512-uDQYkUuH3MppitiduZLTEcItkTr8vEJ33jzp2rH2VvlNRMGbuU54GQcqf3dLIlTbZ1/Z2TtIBtBjjl+N/OhwRg=="],
 
