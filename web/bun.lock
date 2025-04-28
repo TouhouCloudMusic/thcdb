@@ -48,7 +48,7 @@
         "@tailwindcss/forms": "^0.5.10",
         "@tailwindcss/vite": "^4.1.4",
         "@tanstack/eslint-plugin-query": "^5.74.7",
-        "@tanstack/router-plugin": "^1.117.1",
+        "@tanstack/router-plugin": "^1.117.2",
         "@tanstack/solid-router-devtools": "^1.117.1",
         "@testing-library/jest-dom": "^6.6.3",
         "@testing-library/user-event": "^14.6.1",
@@ -542,7 +542,7 @@
 
     "@tanstack/router-generator": ["@tanstack/router-generator@1.117.1", "https://registry.npmmirror.com/@tanstack/router-generator/-/router-generator-1.117.1.tgz", { "dependencies": { "@tanstack/virtual-file-routes": "^1.115.0", "prettier": "^3.5.0", "tsx": "^4.19.2", "zod": "^3.24.2" }, "peerDependencies": { "@tanstack/react-router": "^1.117.1" }, "optionalPeers": ["@tanstack/react-router"] }, "sha512-1V6Y8TibqnMpwizxchzJgE7FUhbSlAIvnrnUwmQhvFhMFtYOdvNkrdZzBD625fcTA/jLs9zUtSeWyiRMKTSPFQ=="],
 
-    "@tanstack/router-plugin": ["@tanstack/router-plugin@1.117.1", "https://registry.npmmirror.com/@tanstack/router-plugin/-/router-plugin-1.117.1.tgz", { "dependencies": { "@babel/core": "^7.26.8", "@babel/plugin-syntax-jsx": "^7.25.9", "@babel/plugin-syntax-typescript": "^7.25.9", "@babel/template": "^7.26.8", "@babel/traverse": "^7.26.8", "@babel/types": "^7.26.8", "@tanstack/router-core": "^1.117.1", "@tanstack/router-generator": "^1.117.1", "@tanstack/router-utils": "^1.115.0", "@tanstack/virtual-file-routes": "^1.115.0", "@types/babel__core": "^7.20.5", "@types/babel__template": "^7.4.4", "@types/babel__traverse": "^7.20.6", "babel-dead-code-elimination": "^1.0.10", "chokidar": "^3.6.0", "unplugin": "^2.1.2", "zod": "^3.24.2" }, "peerDependencies": { "@rsbuild/core": ">=1.0.2", "@tanstack/react-router": "^1.117.1", "vite": ">=5.0.0 || >=6.0.0", "vite-plugin-solid": "^2.11.2", "webpack": ">=5.92.0" }, "optionalPeers": ["@rsbuild/core", "@tanstack/react-router", "vite", "vite-plugin-solid", "webpack"] }, "sha512-kOqM5Nm2QNK234wud5eTaXf6QsdMeQE65uif+lAzNGER48sK2Mb0ExSuZCii1U7AqRl5Kt/pV2iou5BjFp8XsA=="],
+    "@tanstack/router-plugin": ["@tanstack/router-plugin@1.117.2", "https://registry.npmmirror.com/@tanstack/router-plugin/-/router-plugin-1.117.2.tgz", { "dependencies": { "@babel/core": "^7.26.8", "@babel/plugin-syntax-jsx": "^7.25.9", "@babel/plugin-syntax-typescript": "^7.25.9", "@babel/template": "^7.26.8", "@babel/traverse": "^7.26.8", "@babel/types": "^7.26.8", "@tanstack/router-core": "^1.117.1", "@tanstack/router-generator": "^1.117.1", "@tanstack/router-utils": "^1.115.0", "@tanstack/virtual-file-routes": "^1.115.0", "@types/babel__core": "^7.20.5", "@types/babel__template": "^7.4.4", "@types/babel__traverse": "^7.20.6", "babel-dead-code-elimination": "^1.0.10", "chokidar": "^3.6.0", "unplugin": "^2.1.2", "zod": "^3.24.2" }, "peerDependencies": { "@rsbuild/core": ">=1.0.2", "@tanstack/react-router": "^1.117.1", "vite": ">=5.0.0 || >=6.0.0", "vite-plugin-solid": "^2.11.2", "webpack": ">=5.92.0" }, "optionalPeers": ["@rsbuild/core", "@tanstack/react-router", "vite", "vite-plugin-solid", "webpack"] }, "sha512-QgiFW4HVnxYbMz8AUg+IZdPBqZx7u02D4j71uw6q+aWEDU5qYLB0RzdtBRvvb2cB7ZSzXLGbtDqiMN5mHcww2w=="],
 
     "@tanstack/router-utils": ["@tanstack/router-utils@1.115.0", "https://registry.npmmirror.com/@tanstack/router-utils/-/router-utils-1.115.0.tgz", { "dependencies": { "@babel/generator": "^7.26.8", "@babel/parser": "^7.26.8", "ansis": "^3.11.0", "diff": "^7.0.0" } }, "sha512-Dng4y+uLR9b5zPGg7dHReHOTHQa6x+G6nCoZshsDtWrYsrdCcJEtLyhwZ5wG8OyYS6dVr/Cn+E5Bd2b6BhJ89w=="],
 
