@@ -10,7 +10,7 @@
         "@shikijs/markdown-it": "^3.3.0",
         "@shikijs/transformers": "^3.3.0",
         "@solid-primitives/destructure": "^0.2.0",
-        "@solid-primitives/i18n": "^2.2.0",
+        "@solid-primitives/i18n": "^2.2.1",
         "@solidjs/meta": "^0.29.4",
         "@solidjs/router": "^0.15.3",
         "@tanstack/solid-query": "^5.74.4",
@@ -414,7 +414,7 @@
 
     "@solid-primitives/event-listener": ["@solid-primitives/event-listener@2.4.0", "https://registry.npmmirror.com/@solid-primitives/event-listener/-/event-listener-2.4.0.tgz", { "dependencies": { "@solid-primitives/utils": "^6.3.0" }, "peerDependencies": { "solid-js": "^1.6.12" } }, "sha512-TSfR1PNTfojFEYGSxSMCnUhXsaYWBo4p+cm73QmWODa9YnaQAk6PB7VjzG2bOT2D817VlvuOqTj0Qdq+MZrdGg=="],
 
-    "@solid-primitives/i18n": ["@solid-primitives/i18n@2.2.0", "https://registry.npmmirror.com/@solid-primitives/i18n/-/i18n-2.2.0.tgz", { "peerDependencies": { "solid-js": "^1.6.12" } }, "sha512-OY1IvGNefg4espiv3JL7gi38rcOaDdgRsderms6cHboDfHdye6HGI1mLkdrQxonN9TrsOBHeWtP/ptLBgSevfQ=="],
+    "@solid-primitives/i18n": ["@solid-primitives/i18n@2.2.1", "https://registry.npmmirror.com/@solid-primitives/i18n/-/i18n-2.2.1.tgz", { "peerDependencies": { "solid-js": "^1.6.12" } }, "sha512-TnTnE2Ku11MGYZ1JzhJ8pYscwg1fr9MteoYxPwsfxWfh9Jp5K7RRJncJn9BhOHvNLwROjqOHZ46PT7sPHqbcXw=="],
 
     "@solid-primitives/keyboard": ["@solid-primitives/keyboard@1.2.8", "https://registry.npmmirror.com/@solid-primitives/keyboard/-/keyboard-1.2.8.tgz", { "dependencies": { "@solid-primitives/event-listener": "^2.3.3", "@solid-primitives/rootless": "^1.4.5", "@solid-primitives/utils": "^6.2.3" }, "peerDependencies": { "solid-js": "^1.6.12" } }, "sha512-pJtcbkjozS6L1xvTht9rPpyPpX55nAkfBzbFWdf3y0Suwh6qClTibvvObzKOf7uzQ+8aZRDH4LsoGmbTKXtJjQ=="],
 
