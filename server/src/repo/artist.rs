@@ -6,17 +6,16 @@ use entity::sea_orm_active_enums::{ArtistType, EntityType};
 use entity::{
     artist, artist_alias, artist_alias_history, artist_history, artist_link,
     artist_link_history, artist_localized_name, artist_localized_name_history,
-    correction, correction_revision, credit_role, group_member,
-    group_member_history, group_member_join_leave,
-    group_member_join_leave_history, group_member_role,
-    group_member_role_history, language,
+    correction, correction_revision, group_member, group_member_history,
+    group_member_join_leave, group_member_join_leave_history,
+    group_member_role, group_member_role_history,
 };
 use error_set::error_set;
 use itertools::{Itertools, izip};
 use macros::ApiError;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::prelude::Expr;
-use sea_orm::sea_query::{Alias, IntoCondition, PostgresQueryBuilder, Query};
+use sea_orm::sea_query::{Alias, PostgresQueryBuilder, Query};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, ConnectionTrait,
     DatabaseTransaction, DbErr, EntityName, EntityTrait, LoaderTrait,
@@ -24,12 +23,8 @@ use sea_orm::{
 };
 use tokio::try_join;
 
-use crate::dto::artist::{
-    ArtistCorrection, ArtistResponse, GroupMember, LocalizedName,
-    NewGroupMember, NewLocalizedName,
-};
+use crate::dto::artist::{ArtistCorrection, NewGroupMember, NewLocalizedName};
 use crate::error::{AsErrorCode, ErrorCode, ServiceError};
-use crate::model::artist::group_member::{JoinYear, LeaveYear};
 use crate::repo;
 use crate::utils::orm::PgFuncExt;
 use crate::utils::{Pipe, Reverse};
@@ -59,147 +54,6 @@ impl AsErrorCode for ValidationError {
             }
         }
     }
-}
-
-pub async fn find_by_id(
-    id: i32,
-    db: &impl ConnectionTrait,
-) -> Result<ArtistResponse, Error> {
-    find_many(artist::Column::Id.eq(id), db)
-        .await?
-        .into_iter()
-        .next()
-        .ok_or_else(|| {
-            ServiceError::EntityNotFound {
-                entity_name: artist::Entity.table_name(),
-            }
-            .into()
-        })
-}
-
-pub async fn find_by_keyword(
-    kw: &str,
-    db: &impl ConnectionTrait,
-) -> Result<Vec<ArtistResponse>, Error> {
-    find_many(artist::Column::Name.like(kw), db).await
-}
-
-#[expect(clippy::too_many_lines)]
-async fn find_many(
-    cond: impl IntoCondition,
-    db: &impl ConnectionTrait,
-) -> Result<Vec<ArtistResponse>, Error> {
-    let artists = artist::Entity::find().filter(cond).all(db).await?;
-
-    let ids = artists.iter().map(|x| x.id).collect_vec();
-
-    let aliases = artist_alias::Entity::find()
-        .filter(
-            Condition::any()
-                .add(artist_alias::Column::FirstId.is_in(ids.clone()))
-                .add(artist_alias::Column::SecondId.is_in(ids.clone())),
-        )
-        .all(db)
-        .await?;
-
-    let links = artists.load_many(artist_link::Entity, db).await?;
-
-    let localized_names =
-        artists.load_many(artist_localized_name::Entity, db).await?;
-
-    let group_members = group_member::Entity::find()
-        .filter(
-            Condition::any()
-                .add(group_member::Column::MemberId.is_in(ids.clone()))
-                .add(group_member::Column::GroupId.is_in(ids.clone())),
-        )
-        .all(db)
-        .await?;
-
-    let roles = group_members
-        .load_many_to_many(credit_role::Entity, group_member_role::Entity, db)
-        .await?;
-
-    let join_leaves = group_members
-        .load_many(group_member_join_leave::Entity, db)
-        .await?;
-
-    let group_members = izip!(group_members, roles, join_leaves).collect_vec();
-
-    let langs = language::Entity::find()
-        .filter(
-            language::Column::Id.is_in(
-                localized_names
-                    .iter()
-                    .flat_map(|x| x.iter().map(|x| x.language_id)),
-            ),
-        )
-        .all(db)
-        .await?;
-
-    let res = izip!(artists, links, localized_names)
-        .map(|(artist, links, localized_names)| ArtistResponse {
-            id: artist.id,
-            name: artist.name,
-            artist_type: artist.artist_type,
-            text_alias: artist.text_alias,
-            start_date: artist.start_date,
-            start_date_precision: artist.start_date_precision,
-            end_date: artist.end_date,
-            end_date_precision: artist.end_date_precision,
-            aliases: aliases
-                .iter()
-                .filter(|x| x.first_id == artist.id || x.second_id == artist.id)
-                .map(|x| {
-                    if x.first_id == artist.id {
-                        x.second_id
-                    } else {
-                        x.first_id
-                    }
-                })
-                .collect(),
-            links: links.into_iter().map(|x| x.url).collect_vec(),
-            localized_names: localized_names
-                .into_iter()
-                .map(|model| LocalizedName {
-                    name: model.name,
-                    language: langs
-                        .iter()
-                        .find(|y| y.id == model.language_id)
-                        .unwrap()
-                        .into(),
-                })
-                .collect(),
-            members: group_members
-                .iter()
-                .filter(|(gm, _, _)| {
-                    if artist.artist_type.is_solo() {
-                        gm.member_id == artist.id
-                    } else {
-                        gm.group_id == artist.id
-                    }
-                })
-                .map(|(gm, role, jl)| {
-                    let artist_id = if artist.artist_type.is_solo() {
-                        gm.group_id
-                    } else {
-                        gm.member_id
-                    };
-
-                    GroupMember {
-                        artist_id,
-                        join_leave: jl
-                            .iter()
-                            .map(|x| (x.into(), x.into()))
-                            .collect(),
-                        roles: role.iter().map_into().collect(),
-                    }
-                })
-                .collect(),
-        })
-        .collect_vec();
-
-    Ok(res)
 }
 
 pub async fn create(
@@ -526,19 +380,11 @@ async fn create_artist_group_member<C: ConnectionTrait>(
                 let todo_join_leaves =
                     member.join_leave.clone().into_iter().map(
                         |(join_year, leave_year)| {
-                            let (join_year, join_year_type) =
-                                join_year.deconstruct();
-
-                            let (leave_year, leave_year_type) =
-                                leave_year.deconstruct();
-
                             group_member_join_leave::ActiveModel {
                                 id: NotSet,
                                 group_member_id: NotSet,
                                 join_year: Set(join_year),
-                                join_year_type: Set(join_year_type),
                                 leave_year: Set(leave_year),
-                                leave_year_type: Set(leave_year_type),
                             }
                         },
                     );
@@ -619,19 +465,11 @@ async fn create_artist_group_member_history<'f, C: ConnectionTrait>(
                     }),
                     member.join_leave.clone().into_iter().map(
                         |(join_year, leave_year)| {
-                            let (join_year, join_year_type) =
-                                join_year.deconstruct();
-
-                            let (leave_year, leave_year_type) =
-                                leave_year.deconstruct();
-
                             group_member_join_leave_history::ActiveModel {
                                 id: NotSet,
                                 group_member_history_id: NotSet,
                                 join_year: Set(join_year),
-                                join_year_type: Set(join_year_type),
                                 leave_year: Set(leave_year),
-                                leave_year_type: Set(leave_year_type),
                             }
                         },
                     ),
@@ -888,19 +726,11 @@ async fn update_artist_group_member(
             .zip(members.iter())
             .flat_map(|(res, (_, _, jl_history))| {
                 jl_history.iter().map(|model| {
-                    let (join_year, join_year_type) =
-                        JoinYear::from(model).deconstruct();
-
-                    let (leave_year, leave_year_type) =
-                        LeaveYear::from(model).deconstruct();
-
                     group_member_join_leave::ActiveModel {
                         id: NotSet,
                         group_member_id: Set(res.id),
-                        join_year: Set(join_year),
-                        join_year_type: Set(join_year_type),
-                        leave_year: Set(leave_year),
-                        leave_year_type: Set(leave_year_type),
+                        join_year: Set(model.join_year),
+                        leave_year: Set(model.leave_year),
                     }
                 })
             });

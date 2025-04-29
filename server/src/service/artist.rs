@@ -4,7 +4,7 @@ use error_set::error_set;
 use macros::{ApiError, IntoErrorSchema};
 use sea_orm::{DatabaseConnection, TransactionTrait};
 
-use crate::dto::artist::{ArtistCorrection, ArtistResponse};
+use crate::dto::artist::ArtistCorrection;
 use crate::repo;
 
 super::def_service!();
@@ -27,17 +27,6 @@ where
 }
 
 impl Service {
-    pub async fn find_by_id(&self, id: i32) -> Result<ArtistResponse, Error> {
-        Ok(repo::artist::find_by_id(id, &self.db).await?)
-    }
-
-    pub async fn find_by_keyword(
-        &self,
-        kw: &str,
-    ) -> Result<Vec<ArtistResponse>, Error> {
-        Ok(repo::artist::find_by_keyword(kw, &self.db).await?)
-    }
-
     pub async fn create(
         &self,
         user_id: i32,

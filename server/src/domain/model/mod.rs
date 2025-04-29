@@ -1,40 +1,74 @@
 pub mod image {
+    use std::path::PathBuf;
 
+    use base64::Engine;
+    use base64::prelude::BASE64_URL_SAFE_NO_PAD;
     use bon::Builder;
+    use chrono::{DateTime, FixedOffset};
+    use entity::image::Model as DbModel;
+    use macros::AutoMapper;
+    use xxhash_rust::xxh3::xxh3_128;
 
-    use crate::domain::image::{ParsedImage, Parser, ValidationError};
+    use crate::domain::image::ParsedImage;
 
-    #[derive(Builder, Clone, Debug)]
+    #[derive(Clone, Debug, AutoMapper, Builder)]
+    #[mapper(from(DbModel))]
     pub struct Image {
+        pub id: i32,
         /// Filename with extension
         pub filename: String,
-        pub uploaded_by: i32,
         pub directory: String,
+        pub uploaded_by: i32,
+        pub uploaded_at: DateTime<FixedOffset>,
     }
 
+    impl Image {
+        pub fn full_path(&self) -> PathBuf {
+            PathBuf::from_iter([&self.directory, &self.filename])
+        }
+    }
+
+    #[derive(Builder, Clone, Debug)]
     pub struct NewImage {
-        pub parsed: ParsedImage,
+        file_hash: String,
+        extension: &'static str,
+        pub directory: String,
         pub uploaded_by: i32,
     }
 
-    #[bon::bon]
     impl NewImage {
-        #[builder]
-        pub fn parse_bytes(
-            #[builder(start_fn)] parser: &Parser,
-            bytes: &[u8],
-            uploaded_by: i32,
-        ) -> Result<Self, ValidationError> {
-            let parsed = parser.parse(bytes)?;
-            Ok(Self {
-                parsed,
+        pub fn from_parsed(parsed: ParsedImage, uploaded_by: i32) -> Self {
+            let ParsedImage {
+                extension, bytes, ..
+            } = parsed;
+            let xxhash = xxh3_128(&bytes);
+
+            let file_hash = BASE64_URL_SAFE_NO_PAD.encode(xxhash.to_be_bytes());
+
+            let sub_dir =
+                PathBuf::from(&file_hash[0..2]).join(&file_hash[2..4]);
+
+            Self {
+                file_hash,
+                extension,
+                directory: sub_dir.to_str().unwrap().to_string(),
                 uploaded_by,
-            })
+            }
+        }
+
+        pub fn full_path(&self) -> PathBuf {
+            PathBuf::from_iter([
+                &self.directory,
+                &self.file_hash,
+                self.extension,
+            ])
+        }
+
+        pub fn filename(&self) -> String {
+            format!("{}.{}", self.file_hash, self.extension)
         }
     }
 }
-
-pub mod user;
 
 pub mod auth {
     pub use auth_creds::*;

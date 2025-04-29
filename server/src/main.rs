@@ -5,13 +5,14 @@
 #![allow(dead_code, async_fn_in_trait)]
 #![allow(
     clippy::cargo_common_metadata,
+    clippy::enum_glob_use,
     clippy::iter_on_single_items,
     clippy::missing_docs_in_private_items,
     clippy::multiple_crate_versions,
     clippy::single_call_fn,
-    clippy::wildcard_imports,
-    clippy::enum_glob_use,
-    clippy::unreadable_literal
+    clippy::unreadable_literal,
+    clippy::use_self,
+    clippy::wildcard_imports
 )]
 #![feature(
     let_chains,

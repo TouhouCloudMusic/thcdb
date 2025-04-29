@@ -1,7 +1,9 @@
+pub mod artist;
+pub mod artist_image_queue;
+pub mod image;
+pub mod image_queue;
 pub mod mapper;
 pub mod model;
 pub mod repository;
-
-pub mod image;
-
-pub use repository::user::Repository as UserRepository;
+pub mod share;
+pub mod user;

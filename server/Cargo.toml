@@ -79,6 +79,8 @@ base64 = "0.22"
 bon = { version = "3.0", features = [
     "implied-bounds",
 ] }
+boolinator = "2.4.0"
+bytes = "1.10.1"
 bytesize = { version = "2.0.1", features = [
     "serde",
 ] }
@@ -142,6 +144,7 @@ tower_governor = "0.7.0"
 tracing.workspace = true
 tracing-subscriber.workspace = true
 tracing-test = "0.2.5"
+trait-variant = "0.1.2"
 utoipa.workspace = true
 utoipa-axum = "0.2"
 utoipa-scalar = { version = "0.3", features = [

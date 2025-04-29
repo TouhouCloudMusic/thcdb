@@ -1,19 +1,16 @@
-use ::core::future::Future;
-use ::core::marker::Send;
-use ::core::pin::Pin;
 use argon2::password_hash;
+use async_trait::async_trait;
 use axum::http::StatusCode;
 use axum_login::{AuthUser, AuthnBackend, UserId};
 use derive_more::{Display, From};
-use futures_util::{FutureExt, TryFutureExt};
 use macros::{ApiError, IntoErrorSchema};
 use thiserror::Error;
 
-use crate::domain;
 use crate::domain::model::auth::{
     AuthCredential, AuthnError, HasherError, ValidateCredsError,
 };
-use crate::domain::model::user::User;
+use crate::domain::repository::{RepositoryTrait, TransactionManager};
+use crate::domain::user::{self, TransactionRepository, User};
 use crate::error::{ErrorCode, InternalError};
 
 #[derive(Clone)]
@@ -42,7 +39,7 @@ pub enum SignUpError {
     Validate(ValidateCredsError),
 }
 
-#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema, From)]
 pub enum SignInError {
     #[api_error(
             status_code = StatusCode::CONFLICT,
@@ -53,7 +50,8 @@ pub enum SignInError {
     #[error(transparent)]
     Authn(#[from] AuthnError),
     #[error(transparent)]
-    Internal(#[from] InternalError),
+    #[from(forward)]
+    Internal(InternalError),
     #[error(transparent)]
     Validate(#[from] ValidateCredsError),
 }
@@ -69,15 +67,12 @@ pub struct SessionError(axum_login::tower_sessions::session::Error);
 
 impl<R> From<axum_login::Error<AuthService<R>>> for SessionBackendError
 where
-    AuthService<R>: axum_login::AuthnBackend,
-    // Error is AuthnBackendError but we can't use types in trait bound
-    <AuthService<R> as axum_login::AuthnBackend>::Error:
-        Into<AuthnBackendError>,
+    AuthService<R>: axum_login::AuthnBackend<Error = AuthnBackendError>,
 {
     fn from(value: axum_login::Error<AuthService<R>>) -> Self {
         match value {
             axum_login::Error::Session(err) => Self::Session(SessionError(err)),
-            axum_login::Error::Backend(err) => Self::AuthnBackend(err.into()),
+            axum_login::Error::Backend(err) => Self::AuthnBackend(err),
         }
     }
 }
@@ -92,7 +87,7 @@ error_set::error_set! {
         AuthnBackend(AuthnBackendError)
     };
 }
-#[derive(thiserror::Error, ApiError, Debug)]
+#[derive(Debug, thiserror::Error, ApiError)]
 pub enum AuthnBackendError {
     #[error(transparent)]
     Authn(#[from] AuthnError),
@@ -104,7 +99,7 @@ pub enum AuthnBackendError {
 
 pub trait AuthServiceTrait<R>: Send + Sync
 where
-    R: domain::repository::user::Repository,
+    R: user::Repository,
 {
     async fn sign_in(&self, creds: AuthCredential)
     -> Result<User, SignInError>;
@@ -113,29 +108,27 @@ where
     -> Result<User, SignUpError>;
 }
 
-impl<R> AuthService<R>
-where
-    R: domain::repository::user::Repository,
-{
+impl<R> AuthService<R> {
     pub const fn new(repo: R) -> Self {
         Self { repo }
     }
 }
 
+trait AuthServiceTraitBounds<R> = where
+    R: TransactionManager + user::Repository,
+    R::TransactionRepository: user::TransactionRepository,
+    InternalError: From<R::Error>
+        + From<<R::TransactionRepository as RepositoryTrait>::Error>;
+
 impl<R> AuthServiceTrait<R> for AuthService<R>
 where
-    R: domain::repository::user::Repository,
-    R::Error: Into<InternalError>,
+    Self: AuthServiceTraitBounds<R>,
 {
     async fn sign_in(
         &self,
         creds: AuthCredential,
     ) -> Result<User, SignInError> {
-        let user = self
-            .repo
-            .find_by_name(&creds.username)
-            .await
-            .map_err(std::convert::Into::into)?;
+        let user = self.repo.find_by_name(&creds.username).await?;
 
         creds
             .verify_credentials(user.as_ref().map(|u| u.password.as_str()))
@@ -156,14 +149,20 @@ where
             .map_err(|e| SignUpError::Internal(e.into()))?
             .map_or(Ok(()), |_| Err(SignUpError::UsernameAlreadyInUse))?;
 
-        self.repo
+        let tx_repo = self
+            .repo
+            .begin_transaction()
+            .await
+            .map_err(|e| SignUpError::Internal(e.into()))?;
+
+        tx_repo
             .save(creds.try_into()?)
             .await
             .map_err(|e| SignUpError::Internal(e.into()))
     }
 }
 
-impl AuthUser for domain::model::user::User {
+impl AuthUser for user::User {
     type Id = i32;
     fn id(&self) -> Self::Id {
         self.id
@@ -174,56 +173,31 @@ impl AuthUser for domain::model::user::User {
     }
 }
 
+#[async_trait]
 impl<R> AuthnBackend for AuthService<R>
 where
-    R: Clone + domain::repository::user::Repository,
-    R::Error: Send + Sync + Into<InternalError>,
-    for<'a> R::find_by_id(..): Send,
-    for<'a> R::find_by_name(..): Send,
+    Self: AuthServiceTraitBounds<R>,
+    R: Clone + user::Repository,
 {
-    type User = domain::model::user::User;
+    type User = user::User;
     type Credentials = AuthCredential;
     type Error = AuthnBackendError;
 
-    fn authenticate<'life0, 'async_trait>(
-        &'life0 self,
+    async fn authenticate(
+        &self,
         creds: Self::Credentials,
-    ) -> Pin<
-        Box<
-            dyn Future<Output = Result<Option<Self::User>, Self::Error>>
-                + Send
-                + 'async_trait,
-        >,
-    >
-    where
-        'life0: 'async_trait,
-        Self: 'async_trait,
-    {
-        async {
-            let user = self.sign_in(creds).await?;
-            Ok(Some(user))
-        }
-        .boxed()
+    ) -> Result<Option<Self::User>, Self::Error> {
+        let user = self.sign_in(creds).await?;
+        Ok(Some(user))
     }
 
-    fn get_user<'life0, 'life1, 'async_trait>(
-        &'life0 self,
-        user_id: &'life1 UserId<Self>,
-    ) -> Pin<
-        Box<
-            dyn Future<Output = Result<Option<Self::User>, Self::Error>>
-                + Send
-                + 'async_trait,
-        >,
-    >
-    where
-        'life0: 'async_trait,
-        'life1: 'async_trait,
-        Self: 'async_trait,
-    {
+    async fn get_user(
+        &self,
+        user_id: &UserId<Self>,
+    ) -> Result<Option<Self::User>, Self::Error> {
         self.repo
             .find_by_id(*user_id)
-            .map_err(|e| e.into().into())
-            .boxed()
+            .await
+            .map_err(|e| InternalError::from(e).into())
     }
 }

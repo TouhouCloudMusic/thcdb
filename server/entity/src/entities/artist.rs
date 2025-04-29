@@ -20,12 +20,22 @@ pub struct Model {
     pub start_date_precision: Option<DatePrecision>,
     pub end_date: Option<Date>,
     pub end_date_precision: Option<DatePrecision>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub location_country: Option<String>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub location_province: Option<String>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub location_city: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(has_many = "super::artist_alias_history::Entity")]
     ArtistAliasHistory,
+    #[sea_orm(has_many = "super::artist_image::Entity")]
+    ArtistImage,
+    #[sea_orm(has_many = "super::artist_image_queue::Entity")]
+    ArtistImageQueue,
     #[sea_orm(has_many = "super::artist_link::Entity")]
     ArtistLink,
     #[sea_orm(has_many = "super::artist_localized_name::Entity")]
@@ -61,6 +71,18 @@ pub enum Relation {
 impl Related<super::artist_alias_history::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ArtistAliasHistory.def()
+    }
+}
+
+impl Related<super::artist_image::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ArtistImage.def()
+    }
+}
+
+impl Related<super::artist_image_queue::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ArtistImageQueue.def()
     }
 }
 
@@ -160,6 +182,24 @@ impl Related<super::artist_history::Entity> for Entity {
     }
     fn via() -> Option<RelationDef> {
         Some(super::artist_alias_history::Relation::Artist.def().rev())
+    }
+}
+
+impl Related<super::image::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::artist_image::Relation::Image.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::artist_image::Relation::Artist.def().rev())
+    }
+}
+
+impl Related<super::image_queue::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::artist_image_queue::Relation::ImageQueue.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::artist_image_queue::Relation::Artist.def().rev())
     }
 }
 

@@ -9,24 +9,33 @@ use lettre::{AsyncSmtpTransport, Tokio1Executor};
 use macros::FromRefArc;
 use sea_orm::{DatabaseConnection, sqlx};
 
+use crate::application::artist::upload_profile_image::UploadArtistProfileImageUseCase as UploadArtistProfileImageUseCaseTrait;
 use crate::application::use_case;
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
-use crate::infrastructure;
-use crate::infrastructure::adapter;
-pub use crate::infrastructure::adapter::database::SeaOrmRepository;
+use crate::controller::TryFromRef;
+use crate::domain::repository::TransactionManager;
+use crate::error::InternalError;
+pub use crate::infrastructure::adapter::database::sea_orm::{
+    SeaOrmRepository, SeaOrmTransactionRepository,
+};
+use crate::infrastructure::adapter::storage::image::LocalFileImageStorage;
 use crate::infrastructure::config::Config;
 use crate::infrastructure::database::get_connection;
 use crate::infrastructure::redis::Pool;
 
 pub type ArtistService = crate::service::artist::Service;
+pub type UploadArtistProfileImageUseCase = UploadArtistProfileImageUseCaseTrait<
+    SeaOrmRepository,
+    LocalFileImageStorage,
+>;
 
 pub type CorretionService = crate::service::correction::Service;
 
 pub type EventService = crate::service::event::Service;
 
 pub type ImageService = crate::domain::image::Service<
-    infrastructure::adapter::database::SeaOrmRepository,
-    infrastructure::adapter::storage::image::LocalFileImageStorage,
+    SeaOrmTransactionRepository,
+    LocalFileImageStorage,
 >;
 
 pub type LabelService = crate::service::label::Service;
@@ -38,7 +47,7 @@ pub type SongService = crate::service::song::Service;
 pub type TagService = crate::service::tag::Service<SeaOrmRepository>;
 pub type UserService = crate::service::user::Service;
 pub type UserImageService = crate::application::service::user::UserImageService<
-    SeaOrmRepository,
+    SeaOrmTransactionRepository,
     ImageService,
 >;
 
@@ -50,6 +59,8 @@ pub static CONFIG: LazyLock<Config> = LazyLock::new(Config::init);
 
 // Should this be a singleton?
 pub static ARGON2_HASHER: LazyLock<Argon2> = LazyLock::new(Argon2::default);
+pub static FS_IMAGE_STORAGE: LazyLock<LocalFileImageStorage> =
+    LazyLock::new(|| LocalFileImageStorage::new(&IMAGE_PATH));
 
 static IMAGE_PATH: LazyLock<PathBuf> =
     LazyLock::new(|| PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]));
@@ -63,7 +74,7 @@ pub struct AppState {
     #[from_ref_arc(skip)]
     pub transport: AsyncSmtpTransport<Tokio1Executor>,
 
-    pub sea_orm_repo: adapter::database::SeaOrmRepository,
+    pub sea_orm_repo: SeaOrmRepository,
 }
 
 impl AppState {
@@ -135,16 +146,19 @@ impl FromRef<ArcAppState> for ArtistService {
     }
 }
 
-impl FromRef<ArcAppState> for ImageService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        let image_store =
-            infrastructure::adapter::storage::image::LocalFileImageStorage::new(
-                &IMAGE_PATH,
-            );
-        Self::builder()
-            .repo(input.sea_orm_repo.clone())
-            .storage(image_store)
-            .build()
+impl TryFromRef<ArcAppState> for ImageService {
+    type Rejection = InternalError;
+
+    async fn try_from_ref(input: &ArcAppState) -> Result<Self, Self::Rejection>
+    where
+        Self: Sized,
+    {
+        let tx_repo = input.sea_orm_repo.begin_transaction().await?;
+
+        Ok(ImageService::builder()
+            .repo(tx_repo)
+            .storage(*FS_IMAGE_STORAGE)
+            .build())
     }
 }
 
@@ -196,8 +210,38 @@ impl FromRef<ArcAppState> for AuthService {
     }
 }
 
-impl FromRef<ArcAppState> for UserImageService {
+impl FromRef<ArcAppState> for UploadArtistProfileImageUseCase {
     fn from_ref(input: &ArcAppState) -> Self {
-        Self::new(input.sea_orm_repo.clone(), FromRef::from_ref(input))
+        let repo = input.sea_orm_repo.clone();
+        let storage = *FS_IMAGE_STORAGE;
+        Self::new(repo, storage)
+    }
+}
+
+impl TryFromRef<ArcAppState> for SeaOrmTransactionRepository {
+    type Rejection = InternalError;
+
+    async fn try_from_ref(input: &ArcAppState) -> Result<Self, Self::Rejection>
+    where
+        Self: Sized,
+    {
+        Ok(input.sea_orm_repo.begin_transaction().await?)
+    }
+}
+
+impl TryFromRef<ArcAppState> for UserImageService {
+    type Rejection = InternalError;
+
+    async fn try_from_ref(input: &ArcAppState) -> Result<Self, Self::Rejection>
+    where
+        Self: Sized,
+    {
+        let tx_repo = SeaOrmTransactionRepository::try_from_ref(input).await?;
+
+        let image_service = ImageService::builder()
+            .repo(tx_repo.clone())
+            .storage(*FS_IMAGE_STORAGE)
+            .build();
+        Ok(Self::new(tx_repo, image_service))
     }
 }

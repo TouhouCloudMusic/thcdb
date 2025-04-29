@@ -3,17 +3,16 @@ use std::path::{Path, PathBuf};
 use std::range::RangeInclusive;
 
 use axum::http::StatusCode;
-use base64::Engine;
-use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use bon::Builder;
+use boolinator::Boolinator;
 use bytesize::ByteSize;
 use derive_more::{Display, Error};
 use error_set::error_set;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 use macros::ApiError;
-use xxhash_rust::xxh3::xxh3_128;
 
-use crate::domain::model::image::Image;
+use crate::domain::model::image::{Image, NewImage};
+use crate::domain::repository::TransactionRepositoryTrait;
 use crate::error::{ErrorCode, InternalError};
 
 error_set! {
@@ -146,42 +145,18 @@ impl std::fmt::Display for InvalidSize {
     }
 }
 
-#[derive(Debug, Display)]
-pub enum Ratio {
-    Int(u8),
-    Float(f64),
-}
-
-impl From<u8> for Ratio {
-    fn from(v: u8) -> Self {
-        Self::Int(v)
-    }
-}
-
-impl From<u32> for Ratio {
-    #[expect(clippy::cast_possible_truncation)]
-    fn from(v: u32) -> Self {
-        Self::Int(v as u8)
-    }
-}
-
-impl From<f64> for Ratio {
-    fn from(v: f64) -> Self {
-        Self::Float(v)
-    }
-}
-
 #[derive(Debug, Error, Display)]
 #[display(
-    "Invalid image ratio, accepted: {accepted:.2}, expected: {expected:.2}"
+    "Invalid image ratio, accepted: {accepted:.2}, expected: {:.2} to {:.2}",
+    expected.start, expected.end
 )]
 pub struct InvalidRatio {
     accepted: f64,
-    expected: f64,
+    expected: RangeInclusive<f64>,
 }
 
 impl InvalidRatio {
-    pub const fn new(accepted: f64, expected: f64) -> Self {
+    pub const fn new(accepted: f64, expected: RangeInclusive<f64>) -> Self {
         Self { accepted, expected }
     }
 }
@@ -203,8 +178,16 @@ pub struct ParseOption {
     /// The height range of the image, default is [128px, 4096px]
     #[builder(into, default = 128..=4096)]
     height_range: RangeInclusive<u32>,
-    #[builder(into)]
-    ratio: Option<Ratio>,
+    #[builder(with = |ratio: impl Into<RangeInclusive<f64>>| {
+        const DEVIATION: f64 = 0.01;
+        let mut ratio = ratio.into();
+
+        ratio.start *= 1f64 - DEVIATION;
+        ratio.end *= 1f64 + DEVIATION;
+
+        ratio
+    })]
+    ratio: RangeInclusive<f64>,
     /// Target image format, default is WebP
     ///
     /// If the image is not in this format, it will be converted to this format
@@ -284,25 +267,10 @@ impl Parser {
     }
 
     fn validate_ratio(&self, ratio: f64) -> Result<(), InvalidRatio> {
-        fn is_valid_ratio(
-            target_ratio: f64,
-            tolerance: f64,
-            ratio: f64,
-        ) -> bool {
-            (ratio - target_ratio).abs() <= tolerance
-        }
-
-        self.option.ratio.as_ref().map_or(Ok(()), |r| {
-            let target = match r {
-                Ratio::Int(i) => f64::from(*i),
-                Ratio::Float(f) => *f,
-            };
-            if is_valid_ratio(target, 0.01, ratio) {
-                Ok(())
-            } else {
-                Err(InvalidRatio::new(ratio, target))
-            }
-        })
+        self.option
+            .ratio
+            .contains(&ratio)
+            .ok_or(InvalidRatio::new(ratio, self.option.ratio))
     }
 
     pub fn parse(&self, bytes: &[u8]) -> Result<ParsedImage, ValidationError> {
@@ -390,70 +358,70 @@ where
     storage: S,
 }
 
-pub trait ServiceTrait: Send + Sync {
-    type Error;
+pub trait ServiceBounds<Repo, Storage> = where
+    // Wrap IO in transaction
+    Repo: super::Repository + TransactionRepositoryTrait,
+    Storage: AsyncImageStorage,
+    InternalError: From<Repo::Error> + From<Storage::Error>;
 
+pub trait ServiceTrait: Send + Sync {
     async fn create(
         &self,
         buffer: &[u8],
         parser: &Parser,
         uploader_id: i32,
-    ) -> Result<entity::image::Model, Self::Error>;
+    ) -> Result<Image, Error>;
+
+    async fn delete(&self, image: Image) -> Result<(), Error>;
 
     async fn find_by_filename(
         &self,
         filename: &str,
-    ) -> Result<Option<entity::image::Model>, Self::Error>;
+    ) -> Result<Option<Image>, Error>;
 }
 
+// Todo: Move to application layer
 impl<Repo, Storage> ServiceTrait for Service<Repo, Storage>
 where
-    Repo: super::Repository,
-    Storage: AsyncImageStorage,
-    Repo::Error: Into<InternalError>,
-    Storage::Error: Into<InternalError>,
+    Self: ServiceBounds<Repo, Storage>,
 {
-    type Error = Error;
     async fn create(
         &self,
-        buffer: &[u8],
+        bytes: &[u8],
         parser: &Parser,
-        uploader_id: i32,
-    ) -> Result<entity::image::Model, Self::Error> {
-        let ParsedImage {
-            extension, bytes, ..
-        } = parser.parse(buffer)?;
-        let xxhash = xxh3_128(&bytes);
+        uploaded_by: i32,
+    ) -> Result<Image, Error> {
+        let parsed = parser.parse(bytes)?;
 
-        let base64_hash = BASE64_URL_SAFE_NO_PAD.encode(xxhash.to_be_bytes());
-        let ImgPath {
-            filename,
-            sub_dir,
-            full_path,
-        } = ImgPath::from_hash_and_ext(&base64_hash, extension);
+        let new_image = NewImage::from_parsed(parsed, uploaded_by);
 
-        if let Some(image) = self.repo.find_by_filename(&filename).await? {
+        // We use xxhash128, so if the hash is the same, it is the same image.
+        if let Some(image) =
+            self.repo.find_by_filename(&new_image.filename()).await?
+        {
             Ok(image)
         } else {
-            let new_img = Image::builder()
-                .filename(filename)
-                // All chars of sub dir are valid ascii, so unwrap is safe
-                .directory(sub_dir.to_str().unwrap().to_string())
-                .uploaded_by(uploader_id)
-                .build();
+            let full_path = new_image.full_path();
 
-            let image = self.repo.save(new_img).await?;
-
-            self.storage.create(&full_path, &bytes).await?;
-
+            let image = self.repo.save(new_image).await?;
+            self.storage.create(full_path, bytes).await?;
             Ok(image)
         }
     }
 
+    async fn delete(&self, image: Image) -> Result<(), Error> {
+        self.repo.delete(image.id).await?;
+
+        self.storage.remove(image.full_path()).await?;
+
+        Ok(())
+    }
+
+    // TODO: This does not need to be wrapped in the transaction, consider moving it elsewhere
     async fn find_by_filename(
         &self,
         filename: &str,
-    ) -> Result<Option<entity::image::Model>, Self::Error> {
+    ) -> Result<Option<Image>, Error> {
         Ok(self.repo.find_by_filename(filename).await?)
     }
 }

@@ -99,14 +99,15 @@ impl Service {
             .await
     }
 
-    pub async fn upload_avatar<IS: domain::image::ServiceTrait>(
+    // TODO: Move to user image service
+    pub async fn upload_avatar<IS>(
         &self,
         image_service: &IS,
         user_id: i32,
         data: FieldData<Bytes>,
     ) -> Result<(), UploadAvatarError>
     where
-        IS::Error: Into<ImageServiceCreateError>,
+        IS: domain::image::ServiceTrait,
     {
         if data
             .metadata
@@ -119,7 +120,7 @@ impl Service {
                     .valid_formats(&[ImageFormat::Png, ImageFormat::Jpeg])
                     .file_size_range(ByteSize::kib(10)..=ByteSize::mib(100))
                     .size_range(128u32..=2048)
-                    .ratio(1u8)
+                    .ratio(1f64..=1f64)
                     .build();
                 Parser::new(opt)
             });
@@ -127,7 +128,7 @@ impl Service {
             let image = image_service
                 .create(&data.contents, &AVATAR_PARSER, user_id)
                 .await
-                .map_err(|e| UploadAvatarError::ImageService(e.into()))?;
+                .map_err(UploadAvatarError::ImageService)?;
 
             user::Entity::update_many()
                 .filter(user::Column::Id.eq(user_id))
@@ -263,7 +264,7 @@ mod tests {
             directory: "ab/cd".into(),
             filename: "foobar.jpg".into(),
             uploaded_by: Default::default(),
-            created_at: DateTime::default(),
+            uploaded_at: DateTime::default(),
         };
 
         assert_eq!(super::get_avatar_url(&model), "ab/cd/foobar.jpg");

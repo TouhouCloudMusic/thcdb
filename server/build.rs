@@ -102,7 +102,7 @@ fn main() {
         "\n"
     ));
     ts_content.iter().for_each(|str| {
-        content.push_str(&format!("    tmp.push_str(&{});\n", str));
+        content.push_str(&format!("    tmp.push_str(&{str});\n"));
     });
     content.push_str("tmp\n});");
 
@@ -116,7 +116,7 @@ fn main() {
         "\n"
     ));
     kt_content.iter().for_each(|str| {
-        content.push_str(&format!("    tmp.push_str(&{});\n", str));
+        content.push_str(&format!("    tmp.push_str(&{str});\n"));
     });
     content.push_str("tmp\n});");
 
@@ -125,7 +125,7 @@ fn main() {
     fs::create_dir_all("src/constant").expect("Create dir failed");
     fs::write(out_dir, content.trim()).expect("Failed to write file");
 
-    println!("cargo:rerun-if-changed={}", rust_module_path);
+    println!("cargo:rerun-if-changed={rust_module_path}");
 }
 
 fn eval_binexpr(expr: &Expr) -> i64 {

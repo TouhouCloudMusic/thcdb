@@ -12,6 +12,10 @@ impl MigratorTrait for Migrator {
             Box::new(m20250415_034740_fix_release_catalog_num::Migration),
             Box::new(m20250415_143551_add_user_profile_banner::Migration),
             Box::new(m20250421_023142_add_user_bio::Migration),
+            Box::new(m20250426_014449_add_artist_location::Migration),
+            Box::new(m20250426_174454_remove_join_leave_type::Migration),
+            Box::new(m20250427_223913_create_image_queue::Migration),
+            Box::new(m20250427_233244_create_artist_image::Migration),
         ]
     }
 }
@@ -21,3 +25,7 @@ mod m20250415_021231_simplify_column_names;
 mod m20250415_034740_fix_release_catalog_num;
 mod m20250415_143551_add_user_profile_banner;
 mod m20250421_023142_add_user_bio;
+mod m20250426_014449_add_artist_location;
+mod m20250426_174454_remove_join_leave_type;
+mod m20250427_223913_create_image_queue;
+mod m20250427_233244_create_artist_image;

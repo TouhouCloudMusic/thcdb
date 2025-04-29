@@ -115,12 +115,12 @@ where
     }
 
     for model in &models {
-        if let Ok(r#enum) = Enum::try_from_model(model) {
-            if r#enum != *model {
-                return Ok(LookupTableCheckResult::Conflict(
-                    r#enum.new_conflict_data(model),
-                ));
-            }
+        if let Ok(r#enum) = Enum::try_from_model(model)
+            && r#enum != *model
+        {
+            return Ok(LookupTableCheckResult::Conflict(
+                r#enum.new_conflict_data(model),
+            ));
         }
     }
 

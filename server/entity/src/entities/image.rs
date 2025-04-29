@@ -15,11 +15,15 @@ pub struct Model {
     #[sea_orm(column_type = "Text")]
     pub directory: String,
     pub uploaded_by: i32,
-    pub created_at: DateTimeWithTimeZone,
+    pub uploaded_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::artist_image::Entity")]
+    ArtistImage,
+    #[sea_orm(has_many = "super::image_queue::Entity")]
+    ImageQueue,
     #[sea_orm(
         belongs_to = "super::user::Entity",
         from = "Column::UploadedBy",
@@ -30,9 +34,30 @@ pub enum Relation {
     User,
 }
 
+impl Related<super::artist_image::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ArtistImage.def()
+    }
+}
+
+impl Related<super::image_queue::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ImageQueue.def()
+    }
+}
+
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::User.def()
+    }
+}
+
+impl Related<super::artist::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::artist_image::Relation::Artist.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::artist_image::Relation::Image.def().rev())
     }
 }
 

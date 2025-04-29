@@ -38,6 +38,23 @@ pub enum AlternativeNameType {
     utoipa :: ToSchema,
     Copy,
 )]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ArtistImageType")]
+pub enum ArtistImageType {
+    #[sea_orm(string_value = "Profile")]
+    Profile,
+}
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumIter,
+    DeriveActiveEnum,
+    Serialize,
+    Deserialize,
+    utoipa :: ToSchema,
+    Copy,
+)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ArtistType")]
 pub enum ArtistType {
     #[sea_orm(string_value = "Solo")]
@@ -216,31 +233,18 @@ pub enum EntityType {
     utoipa :: ToSchema,
     Copy,
 )]
-#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "JoinYearType")]
-pub enum JoinYearType {
-    #[sea_orm(string_value = "FoundingMember")]
-    FoundingMember,
-    #[sea_orm(string_value = "Specific")]
-    Specific,
-}
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    EnumIter,
-    DeriveActiveEnum,
-    Serialize,
-    Deserialize,
-    utoipa :: ToSchema,
-    Copy,
-)]
-#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "LeaveYearType")]
-pub enum LeaveYearType {
-    #[sea_orm(string_value = "Unknown")]
-    Unknown,
-    #[sea_orm(string_value = "Specific")]
-    Specific,
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ImageQueueStatus")]
+pub enum ImageQueueStatus {
+    #[sea_orm(string_value = "Pending")]
+    Pending,
+    #[sea_orm(string_value = "Approved")]
+    Approved,
+    #[sea_orm(string_value = "Rejected")]
+    Rejected,
+    #[sea_orm(string_value = "Cancelled")]
+    Cancelled,
+    #[sea_orm(string_value = "Reverted")]
+    Reverted,
 }
 #[derive(
     Debug,

@@ -3,8 +3,6 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use super::sea_orm_active_enums::{JoinYearType, LeaveYearType};
-
 #[derive(
     Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
 )]
@@ -14,9 +12,7 @@ pub struct Model {
     pub id: i32,
     pub group_member_id: i32,
     pub join_year: Option<i16>,
-    pub join_year_type: JoinYearType,
     pub leave_year: Option<i16>,
-    pub leave_year_type: LeaveYearType,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -7,6 +7,7 @@ use axum_typed_multipart::TypedMultipart;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use super::TryState;
 use crate::api_response::{Data, Message};
 use crate::application::dto::user::{UploadAvatar, UploadProfileBanner};
 use crate::application::service::UserImageServiceError;
@@ -16,7 +17,7 @@ use crate::application::service::auth::{
 use crate::application::use_case::{self};
 use crate::domain::model::auth::{AuthCredential, AuthnError};
 use crate::domain::model::markdown::{self, Markdown};
-use crate::domain::model::user::UserProfile;
+use crate::domain::user::UserProfile;
 use crate::error::{InternalError, ServiceError};
 use crate::middleware::is_signed_in;
 use crate::service::user::UploadAvatarError;
@@ -178,7 +179,7 @@ async fn sign_out(
 async fn upload_avatar(
     auth_session: AuthSession,
     State(user_service): State<state::UserService>,
-    State(image_service): State<state::ImageService>,
+    TryState(image_service): TryState<state::ImageService>,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
 ) -> Result<impl IntoResponse, UploadAvatarError> {
     if let Some(user) = auth_session.user {
@@ -193,10 +194,6 @@ async fn upload_avatar(
     }
 }
 
-type UploadProfileBannerError = UserImageServiceError<
-    <state::ImageService as domain::image::ServiceTrait>::Error,
->;
-
 #[utoipa::path(
     post,
     tag = TAG,
@@ -208,14 +205,14 @@ type UploadProfileBannerError = UserImageServiceError<
     responses(
         (status = 200, body = api_response::Message),
         (status = 401),
-        UploadProfileBannerError
+        UserImageServiceError
     )
 )]
 async fn upload_profile_banner(
     auth_session: AuthSession,
-    State(service): State<state::UserImageService>,
+    TryState(service): TryState<state::UserImageService>,
     TypedMultipart(form): TypedMultipart<UploadProfileBanner>,
-) -> Result<impl IntoResponse, UploadProfileBannerError> {
+) -> Result<impl IntoResponse, UserImageServiceError> {
     if let Some(user) = auth_session.user {
         service
             .upload_banner_image(user, &form.data.contents)
@@ -231,7 +228,7 @@ async fn upload_profile_banner(
 async fn profile_impl(
     use_case: &ProfileUseCase,
     name: &str,
-    current_user: Option<&domain::model::user::User>,
+    current_user: Option<&domain::user::User>,
 ) -> Result<Data<UserProfile>, axum::response::Response> {
     let mut profile = use_case
         .find_by_name(name)

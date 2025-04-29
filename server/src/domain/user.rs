@@ -2,8 +2,9 @@ use argon2::password_hash;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::auth::{AuthCredential, UserRole, UserRoleEnum};
-use super::markdown::Markdown;
+use super::model::auth::{AuthCredential, UserRole, UserRoleEnum};
+use super::model::markdown::Markdown;
+use super::repository::{RepositoryTrait, TransactionRepositoryTrait};
 
 #[derive(Clone, ToSchema, Serialize)]
 pub struct UserProfile {
@@ -56,4 +57,32 @@ impl TryFrom<AuthCredential> for User {
             bio: None,
         })
     }
+}
+
+#[trait_variant::make(Send)]
+pub trait Repository: RepositoryTrait {
+    async fn find_by_id(&self, id: i32) -> Result<Option<User>, Self::Error>;
+
+    async fn find_by_name(
+        &self,
+        name: &str,
+    ) -> Result<Option<User>, Self::Error>;
+}
+
+#[trait_variant::make(Send)]
+pub trait TransactionRepository: TransactionRepositoryTrait {
+    async fn save(&self, user: User) -> Result<User, Self::Error>;
+}
+
+pub trait ProfileRepository: RepositoryTrait {
+    async fn find_by_name(
+        &self,
+        name: &str,
+    ) -> Result<Option<UserProfile>, Self::Error>;
+
+    async fn with_following(
+        &self,
+        profile: &mut UserProfile,
+        current_user: &User,
+    ) -> Result<(), Self::Error>;
 }

@@ -6,29 +6,8 @@ use sea_orm::prelude::Date;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use super::share::{CreditRole, Language};
+use super::share::Language;
 use crate::dto;
-use crate::model::artist::group_member::{JoinYear, LeaveYear};
-
-#[derive(ToSchema, Serialize)]
-#[schema(
-    as = Artist
-)]
-pub struct ArtistResponse {
-    pub id: i32,
-    pub name: String,
-    pub artist_type: ArtistType,
-    pub text_alias: Option<Vec<String>>,
-    pub start_date: Option<Date>,
-    pub start_date_precision: Option<DatePrecision>,
-    pub end_date: Option<Date>,
-    pub end_date_precision: Option<DatePrecision>,
-
-    pub aliases: Vec<i32>,
-    pub links: Vec<String>,
-    pub localized_names: Vec<LocalizedName>,
-    pub members: Vec<GroupMember>,
-}
 
 #[derive(bon::Builder, Clone, Deserialize, ToSchema)]
 pub struct ArtistCorrection {
@@ -41,6 +20,12 @@ pub struct ArtistCorrection {
     /// Death date for a person and disbandment date for a group
     pub end_date: Option<Date>,
     pub end_date_precision: Option<DatePrecision>,
+
+    pub location_country: Option<String>,
+    pub location_province: Option<String>,
+    pub location_city: Option<String>,
+
+    pub profile_image_id: Option<i32>,
 
     /// List of Ids of the artist's aliases
     pub aliases: Option<Vec<i32>>,
@@ -62,23 +47,20 @@ impl_from!(
         start_date_precision,
         end_date,
         end_date_precision,
+        location_country,
+        location_province,
+        location_city,
+
         : id NotSet,
     },
     Set
 );
 
-#[derive(Clone, ToSchema, Serialize)]
-pub struct GroupMember {
-    pub artist_id: i32,
-    pub roles: Vec<CreditRole>,
-    pub join_leave: Vec<(JoinYear, LeaveYear)>,
-}
-
 #[derive(Clone, ToSchema, Deserialize)]
 pub struct NewGroupMember {
     pub artist_id: i32,
     pub roles: Vec<i32>,
-    pub join_leave: Vec<(JoinYear, LeaveYear)>,
+    pub join_leave: Vec<(Option<i16>, Option<i16>)>,
 }
 
 #[derive(Clone, ToSchema, Serialize)]

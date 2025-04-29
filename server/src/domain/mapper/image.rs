@@ -8,7 +8,7 @@ impl From<crate::domain::model::image::Image> for entity::image::ActiveModel {
             filename: Set(val.filename),
             uploaded_by: Set(val.uploaded_by),
             directory: Set(val.directory),
-            created_at: NotSet,
+            uploaded_at: NotSet,
         }
     }
 }

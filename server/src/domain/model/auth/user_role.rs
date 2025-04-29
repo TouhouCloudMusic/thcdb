@@ -7,9 +7,11 @@ use utoipa::ToSchema;
     Clone,
     Copy,
     Debug,
-    EnumString,
+    PartialEq,
+    Eq,
     EnumIter,
     EnumCount,
+    EnumString,
     strum_macros::Display,
     Serialize,
     ToSchema,
@@ -39,6 +41,18 @@ impl TryFrom<i32> for UserRoleEnum {
             3 => Self::User,
             _ => Err(DbErr::Custom("Invalid user role".to_string()))?,
         })
+    }
+}
+
+impl From<UserRole> for UserRoleEnum {
+    fn from(val: UserRole) -> Self {
+        (&val).into()
+    }
+}
+
+impl From<&UserRole> for UserRoleEnum {
+    fn from(val: &UserRole) -> Self {
+        Self::try_from(val.id).expect("Invalid user role id from database")
     }
 }
 

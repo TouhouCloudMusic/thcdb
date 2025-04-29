@@ -1,67 +1,74 @@
 use std::sync::LazyLock;
 
+use ::image::ImageFormat;
 use bytesize::ByteSize;
+use derive_more::From;
 use error_set::error_set;
 use futures_util::TryFutureExt;
-use image::ImageFormat;
 use macros::{ApiError, IntoErrorSchema};
 
 use crate::constant::{
-    PROFILE_BANNER_MAX_HEIGHT, PROFILE_BANNER_MAX_WIDTH,
-    PROFILE_BANNER_MIN_HEIGHT, PROFILE_BANNER_MIN_WIDTH,
+    USER_PROFILE_BANNER_MAX_HEIGHT, USER_PROFILE_BANNER_MAX_WIDTH,
+    USER_PROFILE_BANNER_MIN_HEIGHT, USER_PROFILE_BANNER_MIN_WIDTH,
 };
-use crate::domain::image::{ParseOption, Parser, ValidationError};
-use crate::domain::model::user::User;
-use crate::domain::{self, UserRepository};
-use crate::error::{ImpledApiError, InternalError};
+use crate::domain::image::{self, ParseOption, Parser, ValidationError};
+use crate::domain::user::{self, User};
+use crate::domain::{self};
+use crate::error::InternalError;
 
 static PROFILE_BANNER_PARSER: LazyLock<Parser> = LazyLock::new(|| {
     let opt = ParseOption::builder()
         .valid_formats(&[ImageFormat::Png, ImageFormat::Jpeg])
         .file_size_range(ByteSize::kib(10)..=ByteSize::mib(100))
-        .width_range(PROFILE_BANNER_MIN_WIDTH..=PROFILE_BANNER_MAX_WIDTH)
-        .height_range(PROFILE_BANNER_MIN_HEIGHT..=PROFILE_BANNER_MAX_HEIGHT)
-        .ratio(PROFILE_BANNER_MAX_WIDTH / PROFILE_BANNER_MAX_HEIGHT)
+        .width_range(
+            USER_PROFILE_BANNER_MIN_WIDTH..=USER_PROFILE_BANNER_MAX_WIDTH,
+        )
+        .height_range(
+            USER_PROFILE_BANNER_MIN_HEIGHT..=USER_PROFILE_BANNER_MAX_HEIGHT,
+        )
+        .ratio(1f64..=1f64)
         .build();
     Parser::new(opt)
 });
 
 error_set! {
-    #[derive(ApiError, IntoErrorSchema)]
-    #[disable(From(IS))]
-    UserImageServiceError< IS: ImpledApiError> = {
+    #[derive(ApiError, IntoErrorSchema, From)]
+    #[disable(From(InternalError))]
+    UserImageServiceError = {
+        #[from(forward)]
         Internal(InternalError),
-        ImageService(IS),
+        ImageService(image::Error),
         Validate(ValidationError),
+
     };
 }
 
-pub struct UserImageService<U, IS> {
-    user_repo: U,
-    image_service: IS,
+pub struct UserImageService<UR, S> {
+    user_repo: UR,
+    image_service: S,
 }
 
 impl<U, IS> UserImageService<U, IS> {
-    pub const fn new(user_repo: U, image_service: IS) -> Self {
+    pub const fn new(user_repo: U, s: IS) -> Self {
         Self {
             user_repo,
-            image_service,
+            image_service: s,
         }
     }
 }
 
-impl<U, IS> UserImageService<U, IS>
+impl<UR, IS> UserImageService<UR, IS>
 where
-    U: UserRepository,
-    U::Error: Into<InternalError>,
+    UR: user::TransactionRepository,
     IS: domain::image::ServiceTrait,
-    IS::Error: ImpledApiError,
+    UserImageServiceError: From<UR::Error>,
 {
+    // FIXME: Transaction is controlled externally
     pub async fn upload_banner_image(
-        &self,
+        self,
         mut user: User,
         buffer: &[u8],
-    ) -> Result<User, UserImageServiceError<IS::Error>> {
+    ) -> Result<User, UserImageServiceError> {
         let parser = &PROFILE_BANNER_PARSER;
 
         let image = self
@@ -72,11 +79,9 @@ where
 
         user.profile_banner_id = Some(image.id);
 
-        let user = self
-            .user_repo
-            .save(user)
-            .await
-            .map_err(|e| UserImageServiceError::Internal(e.into()))?;
+        let user = self.user_repo.save(user).await?;
+
+        self.user_repo.commit().await?;
 
         Ok(user)
     }

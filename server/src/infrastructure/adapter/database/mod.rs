@@ -1,3 +1,1 @@
-pub use self::sea_orm::SeaOrmRepository;
-
-mod sea_orm;
+pub mod sea_orm;

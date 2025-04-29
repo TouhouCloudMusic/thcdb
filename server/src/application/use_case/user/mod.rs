@@ -1,4 +1,5 @@
-use crate::domain::{model, repository};
+use crate::domain::user;
+use crate::domain::user::{User, UserProfile};
 use crate::error::InternalError;
 use crate::utils::MapInto;
 
@@ -15,20 +16,20 @@ impl<R> Profile<R> {
 
 impl<R> Profile<R>
 where
-    R: repository::user::ProfileRepository,
+    R: user::ProfileRepository,
     R::Error: Into<InternalError>,
 {
     pub async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<model::user::UserProfile>, InternalError> {
+    ) -> Result<Option<UserProfile>, InternalError> {
         self.repo.find_by_name(name).await.map_into()
     }
 
     pub async fn with_following(
         &self,
-        profile: &mut model::user::UserProfile,
-        current_user: &model::user::User,
+        profile: &mut UserProfile,
+        current_user: &User,
     ) -> Result<(), InternalError> {
         self.repo
             .with_following(profile, current_user)

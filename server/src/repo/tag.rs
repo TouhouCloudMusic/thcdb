@@ -15,7 +15,7 @@ use sea_orm::{
 
 use crate::dto::tag::{AltName, TagCorrection, TagRelation, TagResponse};
 use crate::error::ServiceError;
-use crate::infrastructure::adapter::database::SeaOrmRepository;
+use crate::infrastructure::adapter::database::sea_orm::SeaOrmRepository;
 use crate::repo;
 use crate::utils::MapInto;
 

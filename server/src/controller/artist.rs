@@ -1,17 +1,25 @@
 use axum::Json;
+use axum::body::Bytes;
 use axum::extract::{Path, Query, State};
 use axum::middleware::from_fn;
+use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::api_response::{Data, Message, status_ok_schema};
-use crate::dto::artist::{ArtistCorrection, ArtistResponse};
+use super::{CurrentUser, data};
+use crate::api_response::{Data, Message};
+use crate::application::artist::upload_profile_image::{
+    self, UploadArtistProfileImageDto,
+};
+use crate::domain::artist::model::Artist;
+use crate::dto::artist::ArtistCorrection;
+use crate::error::{InternalError, ServiceError};
 use crate::middleware::is_signed_in;
-use crate::service;
 use crate::state::{self, ArcAppState, AuthSession};
 use crate::utils::MapInto;
+use crate::{domain, service};
 
 type Service = state::ArtistService;
 type Error = service::artist::Error;
@@ -22,20 +30,16 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(create_artist))
         .routes(routes!(upsert_artist_correction))
+        .routes(routes!(upload_artist_profile_image))
         .route_layer(from_fn(is_signed_in))
         .routes(routes!(find_artist_by_id))
         .routes(routes!(find_artist_by_keyword))
 }
 
-#[derive(ToSchema)]
-struct DataArtist {
-    #[schema(
-        schema_with = status_ok_schema
-    )]
-    status: String,
-    #[schema(inline = false)]
-    data: ArtistResponse,
-}
+data!(
+    DataArtist, Artist
+    DataVecArtist, Vec<Artist>
+);
 
 #[utoipa::path(
     get,
@@ -43,29 +47,30 @@ struct DataArtist {
     path = "/artist/{id}",
     responses(
         (status = 200, body = DataArtist),
-        Error
+        ServiceError
     ),
 )]
 async fn find_artist_by_id(
-    State(artist_service): State<Service>,
+    State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-) -> Result<Data<ArtistResponse>, Error> {
-    artist_service.find_by_id(id).await.map_into()
+) -> Result<Data<Artist>, ServiceError> {
+    let artist = domain::artist::repository::Repository::find_by_id(&repo, id)
+        .await
+        .map_err(ServiceError::from)?;
+
+    artist.map_or_else(
+        || {
+            Err(ServiceError::EntityNotFound {
+                entity_name: "artist",
+            })
+        },
+        |artist| Ok(Data::new(artist)),
+    )
 }
 
 #[derive(Deserialize, IntoParams)]
 struct KeywordQuery {
     keyword: String,
-}
-
-#[derive(ToSchema)]
-struct DataVecArtist {
-    #[schema(
-        schema_with = status_ok_schema
-    )]
-    status: String,
-    #[schema(inline = false)]
-    data: Vec<ArtistResponse>,
 }
 
 #[utoipa::path(
@@ -77,15 +82,14 @@ struct DataVecArtist {
     ),
     responses(
         (status = 200, body = DataVecArtist),
-        Error
+        InternalError
     ),
 )]
 async fn find_artist_by_keyword(
-    State(artist_service): State<Service>,
+    State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KeywordQuery>,
-) -> Result<Data<Vec<ArtistResponse>>, Error> {
-    artist_service
-        .find_by_keyword(&query.keyword)
+) -> Result<Data<Vec<Artist>>, InternalError> {
+    domain::artist::repository::Repository::find_by_name(&repo, &query.keyword)
         .await
         .map_into()
 }
@@ -133,6 +137,44 @@ async fn upsert_artist_correction(
     artist_service
         .create_or_update_correction(id, session.user.unwrap().id, input)
         .await?;
+
+    Ok(Message::ok())
+}
+
+#[derive(Debug, ToSchema, TryFromMultipart)]
+pub struct ArtistProfileImageInput {
+    #[form_data(limit = "10MiB")]
+    #[schema(
+        value_type = String,
+        format = Binary,
+        maximum = 10485760,
+        minimum = 1024
+    )]
+    pub data: FieldData<Bytes>,
+}
+
+#[utoipa::path(
+    post,
+    tag = TAG,
+    path = "/artist/{id}/profile_image",
+    responses(
+        (status = 200, body = Message),
+        upload_profile_image::Error
+    )
+)]
+async fn upload_artist_profile_image(
+    CurrentUser(user): CurrentUser,
+    State(use_case): State<state::UploadArtistProfileImageUseCase>,
+    Path(id): Path<i32>,
+    TypedMultipart(form): TypedMultipart<ArtistProfileImageInput>,
+) -> Result<Message, upload_profile_image::Error> {
+    let data = form.data.contents;
+    let dto = UploadArtistProfileImageDto {
+        bytes: data,
+        user,
+        artist_id: id,
+    };
+    use_case.exec(dto).await?;
 
     Ok(Message::ok())
 }

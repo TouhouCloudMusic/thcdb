@@ -35,7 +35,7 @@ pub mod image {
         }
     }
 
-    #[derive(Clone)]
+    #[derive(Clone, Copy)]
     pub struct LocalFileImageStorage {
         pub base_path: &'static PathBuf,
     }
