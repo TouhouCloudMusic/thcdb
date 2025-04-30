@@ -91,13 +91,18 @@ struct ApiErrorReceiver {
 #[darling(attributes(api_error))]
 struct ApiErrorVariantReceiver {
     ident: Ident,
-    fields: darling::ast::Fields<darling::util::Ignored>,
+    fields: darling::ast::Fields<ApiErrorVariantField>,
     #[darling(default)]
     status_code: CodeOpt,
     #[darling(default)]
     error_code: CodeOpt,
     #[darling(default)]
     into_response: IntoResponseOpt,
+}
+
+#[derive(Debug, Clone, FromField)]
+struct ApiErrorVariantField {
+    ty: syn::Type,
 }
 
 #[derive(FromField)]
@@ -128,7 +133,8 @@ fn derive_enum_impl(
 
     let mut status_code_left_arms = vec![];
     let mut status_code_right_arms = vec![];
-    let mut all_status_codes = vec![];
+    let mut all_status_code_iter = vec![];
+    let mut all_status_code_item = vec![];
     let mut error_code_left_arms = vec![];
     let mut error_code_right_arms = vec![];
     let mut into_response_arms = vec![];
@@ -153,18 +159,23 @@ fn derive_enum_impl(
                     ));
                 }
 
+                let inner_type = fields.fields[0].ty.clone();
+
                 match &variant.status_code {
                     CodeOpt::Specified(code) => {
                         status_code_left_arms
                             .push(quote! { Self::#var_name(_) });
                         status_code_right_arms.push(quote! { #code });
-                        all_status_codes.push(quote! { #code });
+                        all_status_code_item.push(quote! { #code });
                     }
+                    // Default value is inner
                     CodeOpt::Inner | CodeOpt::None => {
                         status_code_left_arms
                             .push(quote! { Self::#var_name(inner) });
                         status_code_right_arms
                             .push(quote! { inner.as_status_code() });
+                        all_status_code_iter
+                            .push(quote! { #inner_type::all_status_codes() });
                     }
                 }
 
@@ -207,7 +218,7 @@ fn derive_enum_impl(
                     CodeOpt::Specified(code) => {
                         status_code_left_arms.push(quote! { Self::#var_name });
                         status_code_right_arms.push(quote! { #code });
-                        all_status_codes.push(quote! { #code });
+                        all_status_code_item.push(quote! { #code });
                     }
                     CodeOpt::Inner | CodeOpt::None => {
                         return Err(no_specify_error_builder("status_code"));
@@ -253,7 +264,7 @@ fn derive_enum_impl(
                         status_code_left_arms
                             .push(quote! { Self::#var_name { .. } });
                         status_code_right_arms.push(quote! { #path });
-                        all_status_codes.push(quote! { #path });
+                        all_status_code_item.push(quote! { #path });
                     }
                     CodeOpt::Inner => unreachable!(),
                 }
@@ -291,10 +302,12 @@ fn derive_enum_impl(
             }
 
             fn all_status_codes() -> impl Iterator<Item=::axum::http::StatusCode> {
+                use crate::api_response::StatusCodeExt;
                 std::iter::empty()
                     .chain([
-                        #(#all_status_codes),*
+                        #(#all_status_code_item),*
                     ])
+                    #(.chain(#all_status_code_iter))*
             }
         }
 
