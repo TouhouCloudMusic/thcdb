@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+use argon2::password_hash;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use derive_more::{Display, Error, From};
@@ -26,13 +27,11 @@ error_set! {
     ApiError = {
         Unauthorized
     };
-    #[disable(From(TokioError))]
+    #[disable(From(InfraError))]
     #[derive(IntoErrorSchema, From, ApiError)]
     ServiceError = {
-        #[from(DbErr)]
-        Database(InfraError),
-        #[from(tokio::task::JoinError)]
-        Tokio(TokioError),
+        #[from(forward)]
+        Infra(InfraError),
         #[display("Entity {entity_name} not found")]
         #[api_error(
             status_code = StatusCode::NOT_FOUND,
@@ -64,9 +63,6 @@ error_set! {
         )]
         Unauthorized
     };
-    TokioError = {
-        TaskJoin(tokio::task::JoinError)
-    };
 }
 
 impl IntoResponse for ApiError {
@@ -77,34 +73,12 @@ impl IntoResponse for ApiError {
     }
 }
 
-impl AsStatusCode for TokioError {
-    fn as_status_code(&self) -> StatusCode {
-        StatusCode::INTERNAL_SERVER_ERROR
-    }
-
-    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
-        [StatusCode::INTERNAL_SERVER_ERROR].into_iter()
-    }
-}
-
-impl IntoApiResponse for TokioError {
-    fn into_api_response(self) -> axum::response::Response {
-        tracing::error!("Tokio error: {:#?}", self);
-        default_into_api_response_impl(self)
-    }
-}
-
-impl IntoResponse for TokioError {
-    fn into_response(self) -> axum::response::Response {
-        self.into_api_response()
-    }
-}
-
 #[derive(Debug, Display, From, Error)]
 enum InfraErrorEnum {
     SeaOrm(DbErr),
     Tokio(tokio::task::JoinError),
     Io(std::io::Error),
+    PasswordHash(password_hash::Error),
 }
 
 #[derive(Debug, Display, Error, ApiError, IntoErrorSchema)]
@@ -128,13 +102,16 @@ impl IntoApiResponse for InfraError {
     fn into_api_response(self) -> axum::response::Response {
         match &self.0 {
             InfraErrorEnum::SeaOrm(err) => {
-                tracing::error!("Database error: {:#?}", err);
+                tracing::error!("Database error: {err}");
             }
             InfraErrorEnum::Tokio(err) => {
-                tracing::error!("Tokio error: {:#?}", err);
+                tracing::error!("Tokio error: {err}");
             }
             InfraErrorEnum::Io(err) => {
-                tracing::error!("IO error: {:#?}", err);
+                tracing::error!("IO error: {err}");
+            }
+            InfraErrorEnum::PasswordHash(err) => {
+                tracing::error!("Password hash error: {err}");
             }
         }
 
@@ -156,7 +133,7 @@ mod test {
     #[tokio::test]
     #[traced_test]
     async fn test_nested_err_print() {
-        let err = ServiceError::Database(InfraError::from(DbErr::Custom(
+        let err = ServiceError::Infra(InfraError::from(DbErr::Custom(
             "foobar".to_string(),
         )));
 

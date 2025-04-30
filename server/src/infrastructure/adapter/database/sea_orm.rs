@@ -40,19 +40,19 @@ impl RepositoryTrait for SeaOrmRepository {
 impl TransactionManager for SeaOrmRepository {
     type TransactionRepository = SeaOrmTransactionRepository;
 
-    async fn begin_transaction(
-        &self,
-    ) -> Result<Self::TransactionRepository, Self::Error> {
+    async fn begin(&self) -> Result<Self::TransactionRepository, Self::Error> {
         let tx = self.conn.begin().await?;
         let tx = Arc::new(tx);
         Ok(Self::TransactionRepository { tx })
     }
 
-    async fn commit_transaction(
-        &self,
-        transaction: Self::TransactionRepository,
-    ) -> Result<(), Self::Error> {
-        transaction.commit().await
+    async fn run_transaction<F, T, E>(&self, f: F) -> Result<T, E>
+    where
+        F: AsyncFnOnce(&Self::TransactionRepository) -> Result<T, E> + Send,
+        T: Send,
+        E: Send + From<Self::Error>,
+    {
+        run_transaction_impl(self, f).await
     }
 }
 
@@ -72,6 +72,26 @@ impl RepositoryTrait for SeaOrmTransactionRepository {
     }
 }
 
+impl TransactionManager for SeaOrmTransactionRepository {
+    type TransactionRepository = Self;
+
+    async fn begin(&self) -> Result<Self::TransactionRepository, Self::Error> {
+        let save_point = self.tx.begin().await?;
+        Ok(Self {
+            tx: Arc::new(save_point),
+        })
+    }
+
+    async fn run_transaction<F, T, E>(&self, f: F) -> Result<T, E>
+    where
+        F: AsyncFnOnce(&Self::TransactionRepository) -> Result<T, E> + Send,
+        T: Send,
+        E: Send + From<Self::Error>,
+    {
+        run_transaction_impl(self, f).await
+    }
+}
+
 impl TransactionRepositoryTrait for SeaOrmTransactionRepository {
     async fn commit(self) -> Result<(), Self::Error> {
         Arc::try_unwrap(self.tx)
@@ -87,4 +107,22 @@ impl TryFrom<user_role::Model> for UserRoleEnum {
     fn try_from(value: user_role::Model) -> Result<Self, Self::Error> {
         Self::try_from(value.role_id)
     }
+}
+
+async fn run_transaction_impl<C, F, T, E>(tx: &C, f: F) -> Result<T, E>
+where
+    C: TransactionManager,
+    F: AsyncFnOnce(&C::TransactionRepository) -> Result<T, E> + Send,
+    T: Send,
+    E: Send
+        + From<C::Error>
+        + From<<C::TransactionRepository as RepositoryTrait>::Error>,
+{
+    let repo = tx.begin().await?;
+
+    let ret = f(&repo).await;
+
+    repo.commit().await?;
+
+    ret
 }

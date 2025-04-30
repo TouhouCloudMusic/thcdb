@@ -1,4 +1,3 @@
-use argon2::password_hash;
 use async_trait::async_trait;
 use axum::http::StatusCode;
 use axum_login::{AuthUser, AuthnBackend, UserId};
@@ -7,7 +6,7 @@ use macros::{ApiError, IntoErrorSchema};
 use thiserror::Error;
 
 use crate::domain::model::auth::{
-    AuthCredential, AuthnError, HasherError, ValidateCredsError,
+    AuthCredential, AuthnError, ValidateCredsError,
 };
 use crate::domain::repository::{
     RepositoryTrait, TransactionManager, TransactionRepositoryTrait,
@@ -33,9 +32,6 @@ pub enum SignUpError {
     #[api_error(
         into_response = self
     )]
-    #[error(transparent)]
-    #[from(password_hash::Error)]
-    Hash(HasherError),
     #[error(transparent)]
     #[from(ValidateCredsError)]
     Validate(ValidateCredsError),
@@ -144,15 +140,16 @@ where
         &self,
         creds: AuthCredential,
     ) -> Result<User, SignUpError> {
+        // TODO: Validate in construction
         creds.validate()?;
 
         if self.repo.find_by_name(&creds.username).await?.is_some() {
             return Err(SignUpError::UsernameAlreadyInUse);
         }
 
-        let tx_repo = self.repo.begin_transaction().await?;
+        let tx_repo = self.repo.begin().await?;
 
-        let user = tx_repo.save(creds.try_into()?).await?;
+        let user = tx_repo.create(creds.try_into()?).await?;
 
         tx_repo.commit().await?;
 

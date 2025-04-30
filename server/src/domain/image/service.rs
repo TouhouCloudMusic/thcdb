@@ -12,7 +12,9 @@ use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 use macros::ApiError;
 
 use crate::domain::model::image::{Image, NewImage};
-use crate::domain::repository::TransactionRepositoryTrait;
+use crate::domain::repository::{
+    TransactionManager, TransactionRepositoryTrait,
+};
 use crate::error::InfraError;
 
 error_set! {
@@ -343,20 +345,10 @@ where
 }
 
 #[derive(Clone, bon::Builder)]
-pub struct Service<R, S>
-where
-    R: super::Repository,
-    S: AsyncImageStorage,
-{
+pub struct Service<R, S> {
     repo: R,
     storage: S,
 }
-
-pub trait ServiceBounds<Repo, Storage> = where
-    // Wrap IO in transaction
-    Repo: super::Repository + TransactionRepositoryTrait,
-    Storage: AsyncImageStorage,
-    InfraError: From<Repo::Error> + From<Storage::Error>;
 
 pub trait ServiceTrait: Send + Sync {
     async fn create(
@@ -375,9 +367,13 @@ pub trait ServiceTrait: Send + Sync {
 }
 
 // Todo: Move to application layer
-impl<Repo, Storage> ServiceTrait for Service<Repo, Storage>
+impl<Repo, Storage, TxRepo> ServiceTrait for Service<Repo, Storage>
 where
-    Self: ServiceBounds<Repo, Storage>,
+    Repo:
+        super::Repository + TransactionManager<TransactionRepository = TxRepo>,
+    TxRepo: super::Repository + TransactionRepositoryTrait,
+    Storage: AsyncImageStorage,
+    InfraError: From<Repo::Error> + From<TxRepo::Error> + From<Storage::Error>,
 {
     async fn create(
         &self,
@@ -385,30 +381,41 @@ where
         parser: &Parser,
         uploaded_by: i32,
     ) -> Result<Image, Error> {
-        let parsed = parser.parse(bytes)?;
+        let repo = &self.repo;
+        repo.run_transaction(async |tx| {
+            let parsed = parser.parse(bytes)?;
 
-        let new_image = NewImage::from_parsed(parsed, uploaded_by);
+            let new_image = NewImage::from_parsed(parsed, uploaded_by);
 
-        // We use xxhash128, so if the hash is the same, it is the same image.
-        if let Some(image) =
-            self.repo.find_by_filename(&new_image.filename()).await?
-        {
+            // We use xxhash128, so if the hash is the same, it is the same image.
+            let image = if let Some(image) =
+                tx.find_by_filename(&new_image.filename()).await?
+            {
+                image
+            } else {
+                let full_path = new_image.full_path();
+
+                let image = tx.save(new_image).await?;
+                self.storage.create(full_path, bytes).await?;
+                image
+            };
+
             Ok(image)
-        } else {
-            let full_path = new_image.full_path();
-
-            let image = self.repo.save(new_image).await?;
-            self.storage.create(full_path, bytes).await?;
-            Ok(image)
-        }
+        })
+        .await
     }
 
     async fn delete(&self, image: Image) -> Result<(), Error> {
-        self.repo.delete(image.id).await?;
+        let repo = &self.repo;
 
-        self.storage.remove(image.full_path()).await?;
+        repo.run_transaction(async |tx| {
+            tx.delete(image.id).await?;
 
-        Ok(())
+            self.storage.remove(image.full_path()).await?;
+
+            Ok(())
+        })
+        .await
     }
 
     // TODO: This does not need to be wrapped in the transaction, consider moving it elsewhere

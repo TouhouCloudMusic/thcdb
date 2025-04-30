@@ -28,7 +28,7 @@ use crate::domain::model::auth::{
     HasherError, UserRoleEnum, ValidateCredsError, hash_password,
 };
 use crate::error::{InfraError, InvalidField, ServiceError};
-use crate::model::lookup_table::LookupTableEnum;
+use crate::model::enum_table::EnumTable;
 use crate::utils::orm::PgFuncExt;
 
 error_set! {

@@ -4,15 +4,20 @@
 #![warn(clippy::allow_attributes)]
 #![allow(dead_code, async_fn_in_trait)]
 #![allow(
+    // We won't release
     clippy::cargo_common_metadata,
-    clippy::enum_glob_use,
-    clippy::iter_on_single_items,
     clippy::missing_docs_in_private_items,
+    // Detection is not smart
+    clippy::cognitive_complexity,
+    // Sometimes useful
+    clippy::enum_glob_use,
+    clippy::wildcard_imports,
+    clippy::iter_on_single_items,
     clippy::multiple_crate_versions,
     clippy::single_call_fn,
     clippy::unreadable_literal,
+    // Sometimes annoying
     clippy::use_self,
-    clippy::wildcard_imports
 )]
 #![feature(
     let_chains,
@@ -69,7 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     migration::Migrator::up(&state.database, None).await?;
 
-    model::lookup_table::check_database_lookup_tables(&state.database)
+    model::enum_table::check_database_lookup_tables(&state.database)
         .await
         .expect("Error while checking database lookup tables.");
 

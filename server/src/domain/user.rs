@@ -1,10 +1,10 @@
-use argon2::password_hash;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::model::auth::{AuthCredential, UserRole, UserRoleEnum};
+use super::model::auth::{AuthCredential, UserRole};
 use super::model::markdown::Markdown;
 use super::repository::{RepositoryTrait, TransactionRepositoryTrait};
+use crate::error::InfraError;
 
 #[derive(Clone, ToSchema, Serialize)]
 pub struct UserProfile {
@@ -42,19 +42,19 @@ pub struct User {
     pub bio: Option<Markdown>,
 }
 
-impl TryFrom<AuthCredential> for User {
-    type Error = password_hash::errors::Error;
+#[derive(Clone, Debug)]
+pub struct NewUser {
+    pub name: String,
+    pub password: String,
+}
 
-    fn try_from(value: AuthCredential) -> Result<Self, Self::Error> {
+impl TryFrom<AuthCredential> for NewUser {
+    type Error = InfraError;
+
+    fn try_from(mut value: AuthCredential) -> Result<Self, Self::Error> {
         Ok(Self {
-            id: -1,
-            password: value.hashed_password()?,
+            password: value.password_hash()?.to_string(),
             name: value.username,
-            avatar_id: None,
-            profile_banner_id: None,
-            last_login: chrono::Utc::now().into(),
-            roles: vec![UserRoleEnum::User.into()],
-            bio: None,
         })
     }
 }
@@ -71,7 +71,8 @@ pub trait Repository: RepositoryTrait {
 
 #[trait_variant::make(Send)]
 pub trait TransactionRepository: TransactionRepositoryTrait {
-    async fn save(&self, user: User) -> Result<User, Self::Error>;
+    async fn create(&self, user: NewUser) -> Result<User, Self::Error>;
+    async fn update(&self, user: User) -> Result<User, Self::Error>;
 }
 
 pub trait ProfileRepository: RepositoryTrait {

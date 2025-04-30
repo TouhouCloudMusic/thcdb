@@ -78,7 +78,7 @@ where
 
         user.profile_banner_id = Some(image.id);
 
-        let user = self.user_repo.save(user).await?;
+        let user = self.user_repo.update(user).await?;
 
         self.user_repo.commit().await?;
 

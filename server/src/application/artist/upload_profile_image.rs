@@ -17,7 +17,7 @@ use crate::domain::image::{
     AsyncImageStorage, ParseOption, Parser, ServiceTrait,
 };
 use crate::domain::repository::{
-    RepositoryTrait, TransactionManager, TransactionRepositoryTrait,
+    TransactionManager, TransactionRepositoryTrait,
 };
 use crate::domain::user::User;
 use crate::domain::{image, image_queue};
@@ -50,19 +50,19 @@ pub struct UploadArtistProfileImageUseCase<Repo, Storage> {
     storage: Storage,
 }
 
-impl<Repo, Storage> UploadArtistProfileImageUseCase<Repo, Storage>
+impl<Repo, TxRepo, Storage> UploadArtistProfileImageUseCase<Repo, Storage>
 where
-    Repo: TransactionManager,
+    Repo: TransactionManager<TransactionRepository = TxRepo>,
     // Perhaps these repos should be separated, but there is no need for this in the foreseeable future.
-    Repo::TransactionRepository: Clone
-        + RepositoryTrait
-        + image::Repository
+    TxRepo: Clone
         + image_queue::Repository
-        + artist_image_queue::Repository,
+        + artist_image_queue::Repository
+        // Image service requirements
+        + TransactionManager<TransactionRepository = TxRepo>
+        + TransactionRepositoryTrait
+        + image::Repository,
     Storage: AsyncImageStorage + Clone,
-    InfraError: From<Repo::Error>
-        + From<<Repo::TransactionRepository as RepositoryTrait>::Error>
-        + From<Storage::Error>,
+    InfraError: From<Repo::Error> + From<TxRepo::Error> + From<Storage::Error>,
 {
     /// Warn: Make sure inner transaction is wrapped in Arc
     pub const fn new(repo: Repo, storage: Storage) -> Self {
@@ -79,16 +79,20 @@ where
             artist_id,
         } = dto;
 
-        let tx_repo = self.repo.begin_transaction().await?;
+        let tx_repo = self.repo.begin().await?;
 
         let image_service = image::Service::builder()
             .repo(tx_repo.clone())
             .storage(self.storage.clone())
             .build();
 
-        let image = image_service
-            .create(&bytes, &ARTIST_PROFILE_IMAGE_PARSER, user.id)
-            .await?;
+        let image = ServiceTrait::create(
+            &image_service,
+            &bytes,
+            &ARTIST_PROFILE_IMAGE_PARSER,
+            user.id,
+        )
+        .await?;
 
         let new_image_queue = image_queue::NewImageQueue::new(&user, &image);
 

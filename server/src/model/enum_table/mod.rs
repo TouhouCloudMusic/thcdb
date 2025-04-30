@@ -27,13 +27,11 @@ pub async fn check_database_lookup_tables(
     Ok(())
 }
 
-pub trait LookupTableEnum
+pub trait EnumTable: TryFrom<i32>
 where
     Self: Sized,
 {
     fn as_id(&self) -> i32;
-
-    fn try_from_id(id: i32) -> Result<Self, ()>;
 }
 
 trait ValidateLookupTable

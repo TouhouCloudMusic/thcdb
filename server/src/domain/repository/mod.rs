@@ -12,11 +12,11 @@ pub trait TransactionRepositoryTrait: RepositoryTrait {
 pub trait TransactionManager: RepositoryTrait {
     type TransactionRepository: TransactionRepositoryTrait;
 
-    async fn begin_transaction(
-        &self,
-    ) -> Result<Self::TransactionRepository, Self::Error>;
-    async fn commit_transaction(
-        &self,
-        transaction: Self::TransactionRepository,
-    ) -> Result<(), Self::Error>;
+    async fn begin(&self) -> Result<Self::TransactionRepository, Self::Error>;
+
+    async fn run_transaction<F, T, E>(&self, f: F) -> Result<T, E>
+    where
+        F: AsyncFnOnce(&Self::TransactionRepository) -> Result<T, E> + Send,
+        T: Send,
+        E: Send + From<Self::Error>;
 }

@@ -1,5 +1,5 @@
 pub mod artist;
-pub mod lookup_table;
+pub mod enum_table;
 
 // pub mod share {
 //     use std::sync::LazyLock;

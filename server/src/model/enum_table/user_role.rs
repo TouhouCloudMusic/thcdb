@@ -1,8 +1,8 @@
 use entity::role;
 use sea_orm::ActiveValue::Set;
-use sea_orm::EntityTrait;
+use sea_orm::{DbErr, EntityTrait};
 
-use super::{LookupTableCheckResult, LookupTableEnum, ValidateLookupTable};
+use super::{EnumTable, LookupTableCheckResult, ValidateLookupTable};
 use crate::domain::model::auth::UserRoleEnum;
 
 impl<T> From<T> for LookupTableCheckResult<T> {
@@ -32,10 +32,9 @@ impl From<UserRoleEnum> for role::ActiveModel {
     }
 }
 
-#[expect(clippy::fallible_impl_from)]
 impl From<&role::Model> for UserRoleEnum {
     fn from(val: &role::Model) -> Self {
-        Self::try_from_id(val.id).unwrap()
+        Self::try_from(val.id).expect("Invalid user role id from database")
     }
 }
 
@@ -47,7 +46,7 @@ impl ValidateLookupTable for UserRoleEnum {
     fn try_from_model(
         model: &<Self::Entity as EntityTrait>::Model,
     ) -> Result<Self, ()> {
-        Self::try_from_id(model.id)
+        Self::try_from(model.id).map_err(|_| ())
     }
 
     fn new_conflict_data(
@@ -78,7 +77,7 @@ impl ValidateLookupTable for UserRoleEnum {
     }
 }
 
-impl LookupTableEnum for UserRoleEnum {
+impl EnumTable for UserRoleEnum {
     fn as_id(&self) -> i32 {
         match self {
             Self::Admin => 1,
@@ -86,14 +85,20 @@ impl LookupTableEnum for UserRoleEnum {
             Self::User => 3,
         }
     }
+}
 
-    fn try_from_id(id: i32) -> Result<Self, ()> {
-        let res = match id {
+impl TryFrom<i32> for UserRoleEnum {
+    type Error = DbErr;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        let res = match value {
             1 => Self::Admin,
             2 => Self::Moderator,
             3 => Self::User,
             _ => {
-                return Err(());
+                return Err(DbErr::Custom(
+                    "Invalid user role id from database".to_owned(),
+                ));
             }
         };
 

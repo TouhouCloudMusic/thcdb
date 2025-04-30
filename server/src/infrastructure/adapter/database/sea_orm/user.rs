@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use entity::relation::UserRelationExt;
+use entity::user::ActiveModel;
 use entity::user_following;
 use itertools::Itertools;
 use macros::FieldEnum;
@@ -8,18 +9,19 @@ use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
-    ColumnTrait, DbErr, EntityTrait, FromQueryResult, Iterable, JoinType,
-    PaginatorTrait, QueryFilter, QuerySelect, QueryTrait, RelationTrait,
-    TransactionTrait,
+    ColumnTrait, DbErr, EntityTrait, FromQueryResult, IntoActiveModel,
+    Iterable, JoinType, PaginatorTrait, QueryFilter, QuerySelect, QueryTrait,
+    RelationTrait, TransactionTrait,
 };
 use sea_orm_migration::prelude::{Alias, OnConflict};
 
 use super::{SeaOrmRepository, SeaOrmTransactionRepository};
 use crate::domain;
-use crate::domain::model::auth::UserRole;
+use crate::domain::model::auth::{UserRole, UserRoleEnum};
 use crate::domain::model::markdown::Markdown;
 use crate::domain::repository::RepositoryTrait;
-use crate::domain::user::{self, User, UserProfile};
+use crate::domain::user::{self, NewUser, User, UserProfile};
+use crate::model::enum_table::EnumTable;
 
 impl user::Repository for SeaOrmRepository {
     async fn find_by_id(&self, id: i32) -> Result<Option<User>, Self::Error> {
@@ -43,27 +45,42 @@ impl user::Repository for SeaOrmRepository {
 }
 
 impl user::TransactionRepository for SeaOrmTransactionRepository {
-    async fn save(&self, user: User) -> Result<User, Self::Error> {
+    async fn create(&self, user: NewUser) -> Result<User, Self::Error> {
         let tx = self.conn().begin().await?;
-        let model = entity::user::Entity::insert(entity::user::ActiveModel {
-            id: if user.id > 0 { Set(user.id) } else { NotSet },
-            name: Set(user.name),
-            password: Set(user.password),
-            avatar_id: Set(user.avatar_id),
-            profile_banner_id: Set(user.profile_banner_id),
-            last_login: Set(user.last_login),
-            bio: Set(user.bio.map(|bio| bio.to_string())),
+
+        let model = entity::user::Entity::insert(user.into_active_model())
+            .exec_with_returning(&tx)
+            .await?;
+
+        entity::user_role::Entity::insert(entity::user_role::ActiveModel {
+            user_id: Set(model.id),
+            role_id: Set(UserRoleEnum::User.as_id()),
         })
-        .on_conflict(
-            OnConflict::column(entity::user::Column::Id)
-                .update_columns(entity::user::Column::iter())
-                .to_owned(),
-        )
-        .exec_with_returning(&tx)
+        .exec(&tx)
         .await?;
 
-        let roles = user
-            .roles
+        let mut user = User::from(model);
+
+        user.roles = vec![UserRoleEnum::User.into()];
+
+        tx.commit().await?;
+
+        Ok(user)
+    }
+
+    async fn update(&self, user: User) -> Result<User, Self::Error> {
+        let tx = self.conn();
+        let user_roles = user.roles.clone();
+        let model = entity::user::Entity::insert(user.into_active_model())
+            .on_conflict(
+                OnConflict::column(entity::user::Column::Id)
+                    .update_columns(entity::user::Column::iter())
+                    .to_owned(),
+            )
+            .exec_with_returning(tx)
+            .await?;
+
+        let roles = user_roles
             .into_iter()
             .map(|role| entity::user_role::ActiveModel {
                 user_id: Set(model.id),
@@ -73,11 +90,11 @@ impl user::TransactionRepository for SeaOrmTransactionRepository {
 
         entity::user_role::Entity::delete_many()
             .filter(entity::user_role::Column::UserId.eq(model.id))
-            .exec(&tx)
+            .exec(tx)
             .await?;
 
         let roles = entity::user_role::Entity::insert_many(roles)
-            .exec_with_returning_many(&tx)
+            .exec_with_returning_many(tx)
             .await?;
 
         let mut user = User::from(model);
@@ -87,24 +104,7 @@ impl user::TransactionRepository for SeaOrmTransactionRepository {
             .map(TryInto::try_into)
             .collect::<Result<Vec<UserRole>, _>>()?;
 
-        tx.commit().await?;
-
         Ok(user)
-    }
-}
-
-impl From<entity::user::Model> for User {
-    fn from(value: entity::user::Model) -> Self {
-        Self {
-            id: value.id,
-            name: value.name,
-            password: value.password,
-            avatar_id: value.avatar_id,
-            profile_banner_id: value.profile_banner_id,
-            last_login: value.last_login,
-            roles: vec![],
-            bio: value.bio.map(Markdown::new_unchecked),
-        }
     }
 }
 
@@ -129,6 +129,55 @@ async fn find_many_impl(
             Ok(user)
         })
         .collect()
+}
+
+impl From<entity::user::Model> for User {
+    fn from(value: entity::user::Model) -> Self {
+        Self {
+            id: value.id,
+            name: value.name,
+            password: value.password,
+            avatar_id: value.avatar_id,
+            profile_banner_id: value.profile_banner_id,
+            last_login: value.last_login,
+            roles: vec![],
+            bio: value.bio.map(Markdown::new_unchecked),
+        }
+    }
+}
+
+impl IntoActiveModel<ActiveModel> for User {
+    fn into_active_model(self) -> ActiveModel {
+        ActiveModel {
+            id: Set(self.id),
+            name: Set(self.name),
+            password: Set(self.password),
+            avatar_id: Set(self.avatar_id),
+            last_login: Set(self.last_login),
+            profile_banner_id: Set(self.profile_banner_id),
+            bio: Set(self.bio.map(|x| x.to_string())),
+        }
+    }
+}
+
+impl From<NewUser> for ActiveModel {
+    fn from(val: NewUser) -> Self {
+        Self {
+            id: NotSet,
+            name: Set(val.name),
+            password: Set(val.password),
+            avatar_id: NotSet,
+            last_login: NotSet,
+            profile_banner_id: NotSet,
+            bio: NotSet,
+        }
+    }
+}
+
+impl IntoActiveModel<ActiveModel> for NewUser {
+    fn into_active_model(self) -> ActiveModel {
+        self.into()
+    }
 }
 
 impl user::ProfileRepository for SeaOrmRepository {

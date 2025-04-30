@@ -74,6 +74,7 @@ macros.workspace    = true
 migration.workspace = true
 #
 ammonia = "4.0.0"
+argon2.features = [ "std" ]
 argon2.workspace = true
 async-trait = { version = "0.1" }
 axum.workspace = true
@@ -178,8 +179,8 @@ opt-level       = 3
 opt-level = 3
 
 [profile.ra]
-inherits        = "dev"
 codegen-backend = "llvm"
+inherits        = "dev"
 
 [profile.release]
 codegen-units   = 1

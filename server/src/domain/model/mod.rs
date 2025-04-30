@@ -81,6 +81,7 @@ pub mod auth {
 }
 
 pub mod markdown {
+
     use std::sync::LazyLock;
 
     use axum::http::StatusCode;

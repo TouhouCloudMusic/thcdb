@@ -153,7 +153,7 @@ impl TryFromRef<ArcAppState> for ImageService {
     where
         Self: Sized,
     {
-        let tx_repo = input.sea_orm_repo.begin_transaction().await?;
+        let tx_repo = input.sea_orm_repo.begin().await?;
 
         Ok(ImageService::builder()
             .repo(tx_repo)
@@ -225,7 +225,7 @@ impl TryFromRef<ArcAppState> for SeaOrmTransactionRepository {
     where
         Self: Sized,
     {
-        Ok(input.sea_orm_repo.begin_transaction().await?)
+        Ok(input.sea_orm_repo.begin().await?)
     }
 }
 

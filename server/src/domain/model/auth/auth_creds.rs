@@ -14,28 +14,20 @@ use utoipa::ToSchema;
 
 use crate::api_response::{Error, IntoApiResponse};
 use crate::constant::{USER_NAME_REGEX_STR, USER_PASSWORD_REGEX_STR};
-use crate::error::TokioError;
+use crate::error::InfraError;
 use crate::state::ARGON2_HASHER;
 
 error_set! {
     #[derive(ApiError, From)]
-    #[disable(From(TokioError, HasherError))]
+    #[disable(From(InfraError))]
     AuthnError = {
         #[api_error(
             status_code = StatusCode::UNAUTHORIZED,
         )]
         #[display("Incorrect username or password")]
         AuthenticationFailed,
-        #[api_error(
-            into_response = self
-        )]
-        #[from(password_hash::Error)]
-        Hash(HasherError),
-        #[api_error(
-            into_response = self
-        )]
-        #[from(tokio::task::JoinError)]
-        Tokio(TokioError),
+        #[from(forward)]
+        Infra(InfraError),
     };
     #[derive(ApiError)]
     ValidateCredsError = {
@@ -68,13 +60,29 @@ error_set! {
     };
 }
 
+#[expect(clippy::unsafe_derive_deserialize, reason = "skipped")]
 #[derive(Clone, Serialize, Deserialize, ToSchema)]
 pub struct AuthCredential {
     pub username: String,
     pub password: String,
+    #[serde(skip)]
+    hash: Option<String>,
 }
 
 impl AuthCredential {
+    pub fn try_new(
+        username: String,
+        password: String,
+    ) -> Result<Self, ValidateCredsError> {
+        validate_username(&username)?;
+        validate_password(&password)?;
+        Ok(Self {
+            username,
+            password,
+            hash: None,
+        })
+    }
+
     // TODO: Validate on new
     pub fn validate(&self) -> Result<(), ValidateCredsError> {
         validate_username(&self.username)?;
@@ -83,10 +91,19 @@ impl AuthCredential {
         Ok(())
     }
 
-    pub fn hashed_password(
-        &self,
-    ) -> Result<String, password_hash::errors::Error> {
-        hash_password(&self.password)
+    pub fn password_hash(
+        &mut self,
+    ) -> Result<&str, password_hash::errors::Error> {
+        let hash = if let Some(ref existing) = self.hash {
+            existing
+        } else {
+            let new_hash = hash_password(&self.password)?;
+            self.hash = Some(new_hash);
+            // SAFE
+            unsafe { self.hash.as_ref().unwrap_unchecked() }
+        };
+
+        Ok(hash)
     }
 
     pub async fn verify_credentials(
@@ -204,6 +221,7 @@ mod test {
         let res = AuthCredential {
             username: "Alice".to_string(),
             password: pwd.clone(),
+            hash: None,
         }
         .verify_credentials(Some(&hash_password(&pwd).unwrap()))
         .await
@@ -218,6 +236,7 @@ mod test {
         let res = AuthCredential {
             username: "Alice".to_string(),
             password: pwd.clone(),
+            hash: None,
         }
         .verify_credentials(None)
         .await

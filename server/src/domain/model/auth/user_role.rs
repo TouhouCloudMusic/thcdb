@@ -32,18 +32,6 @@ impl From<UserRoleEnum> for i32 {
     }
 }
 
-impl TryFrom<i32> for UserRoleEnum {
-    type Error = DbErr;
-    fn try_from(value: i32) -> Result<Self, Self::Error> {
-        Ok(match value {
-            1 => Self::Admin,
-            2 => Self::Moderator,
-            3 => Self::User,
-            _ => Err(DbErr::Custom("Invalid user role".to_string()))?,
-        })
-    }
-}
-
 impl From<UserRole> for UserRoleEnum {
     fn from(val: UserRole) -> Self {
         (&val).into()
