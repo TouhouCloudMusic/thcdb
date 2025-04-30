@@ -2,12 +2,14 @@ use std::path::PathBuf;
 
 use axum::routing::get;
 use axum::{Json, Router};
+use maud::{DOCTYPE, html};
 use tower_http::services::ServeDir;
 use utoipa_scalar::{Scalar, Servable};
 
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::controller;
 use crate::state::{ArcAppState, AuthSession};
+use crate::utils::TapMut;
 
 pub fn router() -> Router<ArcAppState> {
     let (api_router, api_doc) = controller::api_router().split_for_parts();
@@ -20,12 +22,26 @@ pub fn router() -> Router<ArcAppState> {
         .route(
             "/",
             get(|session: AuthSession| async {
-                format!("Hello, {}!", {
-                    match session.user {
-                        Some(user) => user.name,
-                        _ => "world".to_string(),
+                let hello_msg = String::from("Welcome to touhou cloud music").tap_mut(|s|{
+                    if let Some(user) = session.user {
+                       *s = format!("{s}, {}",user.name);
                     }
-                })
+                });
+
+                html! {
+                    (DOCTYPE)
+                    html {
+                        head { title { "Touhou Cloud Db" }}
+                        body {
+                            h1 { (hello_msg) }
+                            p {
+                                "Our website is not yet complete, you can visit " a href="/docs" {
+                                    "docs"
+                                } " for the API reference"
+                            }
+                        }
+                    }
+                }
             }),
         )
         .merge(doc_router)

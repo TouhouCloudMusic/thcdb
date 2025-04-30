@@ -112,6 +112,9 @@ lettre = { version = "0.11.14", default-features = false, features = [
     "smtp-transport",
     "tokio1-rustls-tls",
 ] }
+maud = { version = "0.27.0", features = [
+    "axum",
+] }
 pulldown-cmark = { version = "0.13.0", default-features = false, features = [
     "html",
     "simd",
