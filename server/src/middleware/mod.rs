@@ -4,7 +4,6 @@ use governor::clock::QuantaInstant;
 use tower_governor::GovernorLayer;
 use tower_governor::key_extractor::PeerIpKeyExtractor;
 
-
 #[bon::builder]
 pub fn limit_layer(
     req_per_sec: u64,
