@@ -9,7 +9,9 @@ use thiserror::Error;
 use crate::domain::model::auth::{
     AuthCredential, AuthnError, HasherError, ValidateCredsError,
 };
-use crate::domain::repository::{RepositoryTrait, TransactionManager};
+use crate::domain::repository::{
+    RepositoryTrait, TransactionManager, TransactionRepositoryTrait,
+};
 use crate::domain::user::{self, TransactionRepository, User};
 use crate::error::InfraError;
 
@@ -26,7 +28,8 @@ pub enum SignUpError {
     )]
     UsernameAlreadyInUse,
     #[error(transparent)]
-    Internal(#[from] InfraError),
+    #[from(forward)]
+    Internal(InfraError),
     #[api_error(
         into_response = self
     )]
@@ -119,7 +122,10 @@ trait AuthServiceTraitBounds<R> = where
 
 impl<R> AuthServiceTrait<R> for AuthService<R>
 where
-    Self: AuthServiceTraitBounds<R>,
+    R: TransactionManager + user::Repository,
+    R::TransactionRepository: user::TransactionRepository,
+    InfraError: From<R::Error>
+        + From<<R::TransactionRepository as RepositoryTrait>::Error>,
 {
     async fn sign_in(
         &self,
@@ -140,22 +146,17 @@ where
     ) -> Result<User, SignUpError> {
         creds.validate()?;
 
-        self.repo
-            .find_by_name(&creds.username)
-            .await
-            .map_err(|e| SignUpError::Internal(e.into()))?
-            .map_or(Ok(()), |_| Err(SignUpError::UsernameAlreadyInUse))?;
+        if self.repo.find_by_name(&creds.username).await?.is_some() {
+            return Err(SignUpError::UsernameAlreadyInUse);
+        }
 
-        let tx_repo = self
-            .repo
-            .begin_transaction()
-            .await
-            .map_err(|e| SignUpError::Internal(e.into()))?;
+        let tx_repo = self.repo.begin_transaction().await?;
 
-        tx_repo
-            .save(creds.try_into()?)
-            .await
-            .map_err(|e| SignUpError::Internal(e.into()))
+        let user = tx_repo.save(creds.try_into()?).await?;
+
+        tx_repo.commit().await?;
+
+        Ok(user)
     }
 }
 
