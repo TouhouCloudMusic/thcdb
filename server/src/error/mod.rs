@@ -1,23 +1,21 @@
-mod error_code;
-mod structs;
-
 use std::fmt::Debug;
 
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use derive_more::{Display, Error, From};
 use entity::sea_orm_active_enums::EntityType;
-pub use error_code::*;
 use error_set::error_set;
 use macros::{ApiError, IntoErrorSchema};
 use sea_orm::DbErr;
+
+mod structs;
 pub use structs::*;
 
 use crate::api_response::{
-    IntoApiResponse, StatusCodeExt, default_into_api_response_impl,
+    AsStatusCode, IntoApiResponse, default_into_api_response_impl,
 };
 
-pub trait ApiErrorTrait = StatusCodeExt + AsErrorCode;
+pub trait ApiErrorTrait = AsStatusCode;
 
 pub trait ImpledApiError = std::error::Error
     + ApiErrorTrait
@@ -32,26 +30,23 @@ error_set! {
     #[derive(IntoErrorSchema, From, ApiError)]
     ServiceError = {
         #[from(DbErr)]
-        Database(InternalError),
+        Database(InfraError),
         #[from(tokio::task::JoinError)]
         Tokio(TokioError),
         #[display("Entity {entity_name} not found")]
         #[api_error(
             status_code = StatusCode::NOT_FOUND,
-            error_code = ErrorCode::EntityNotFound,
         )]
         EntityNotFound {
             entity_name: &'static str
         },
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
-            error_code = ErrorCode::InvalidField,
         )]
         InvalidField(InvalidField),
         #[display("Correction type mismatch, expected: {:#?}, accepted: {:#?}", expected, accepted)]
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
-            error_code = ErrorCode::IncorrectCorrectionType,
         )]
         IncorrectCorrectionType {
             expected: EntityType,
@@ -60,14 +55,12 @@ error_set! {
         #[display("Unexpected error: related entity {entity_name} not found")]
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
-            error_code = ErrorCode::IncorrectCorrectionType,
         )]
         UnexpRelatedEntityNotFound {
             entity_name: &'static str
         },
         #[api_error(
             status_code = StatusCode::UNAUTHORIZED,
-            error_code = ErrorCode::Unauthorized,
         )]
         Unauthorized
     };
@@ -84,19 +77,13 @@ impl IntoResponse for ApiError {
     }
 }
 
-impl StatusCodeExt for TokioError {
+impl AsStatusCode for TokioError {
     fn as_status_code(&self) -> StatusCode {
         StatusCode::INTERNAL_SERVER_ERROR
     }
 
     fn all_status_codes() -> impl Iterator<Item = StatusCode> {
         [StatusCode::INTERNAL_SERVER_ERROR].into_iter()
-    }
-}
-
-impl AsErrorCode for TokioError {
-    fn as_error_code(&self) -> ErrorCode {
-        ErrorCode::TokioError
     }
 }
 
@@ -114,7 +101,7 @@ impl IntoResponse for TokioError {
 }
 
 #[derive(Debug, Display, From, Error)]
-enum InternalErrorEnum {
+enum InfraErrorEnum {
     SeaOrm(DbErr),
     Tokio(tokio::task::JoinError),
     Io(std::io::Error),
@@ -124,30 +111,29 @@ enum InternalErrorEnum {
 #[display("Internal server error")]
 #[api_error(
     status_code = StatusCode::INTERNAL_SERVER_ERROR,
-    error_code = ErrorCode::InternalServerError,
     into_response = self,
 )]
-pub struct InternalError(InternalErrorEnum);
+pub struct InfraError(InfraErrorEnum);
 
-impl<T> From<T> for InternalError
+impl<T> From<T> for InfraError
 where
-    T: Into<InternalErrorEnum>,
+    T: Into<InfraErrorEnum>,
 {
     fn from(value: T) -> Self {
         Self(value.into())
     }
 }
 
-impl IntoApiResponse for InternalError {
+impl IntoApiResponse for InfraError {
     fn into_api_response(self) -> axum::response::Response {
         match &self.0 {
-            InternalErrorEnum::SeaOrm(err) => {
+            InfraErrorEnum::SeaOrm(err) => {
                 tracing::error!("Database error: {:#?}", err);
             }
-            InternalErrorEnum::Tokio(err) => {
+            InfraErrorEnum::Tokio(err) => {
                 tracing::error!("Tokio error: {:#?}", err);
             }
-            InternalErrorEnum::Io(err) => {
+            InfraErrorEnum::Io(err) => {
                 tracing::error!("IO error: {:#?}", err);
             }
         }
@@ -170,7 +156,7 @@ mod test {
     #[tokio::test]
     #[traced_test]
     async fn test_nested_err_print() {
-        let err = ServiceError::Database(InternalError::from(DbErr::Custom(
+        let err = ServiceError::Database(InfraError::from(DbErr::Custom(
             "foobar".to_string(),
         )));
 

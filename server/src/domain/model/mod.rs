@@ -88,8 +88,6 @@ pub mod markdown {
     use macros::{ApiError, IntoErrorSchema};
     use pulldown_cmark::{Event, Options, Parser, TextMergeStream};
 
-    use crate::error::ErrorCode;
-
     #[derive(Debug, Clone, Display)]
     pub struct Markdown(String);
 
@@ -97,7 +95,6 @@ pub mod markdown {
     #[display("Invalid markdown")]
     #[api_error(
         status_code = StatusCode::BAD_REQUEST,
-        error_code = ErrorCode::BadRequest
     )]
     pub enum Error {
         ContainsHtml,

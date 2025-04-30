@@ -2,38 +2,16 @@ pub mod image {
     use std::path::{Path, PathBuf};
     use std::sync::LazyLock;
 
-    use axum::http::StatusCode;
-    use macros::ApiError;
     use tokio::io::AsyncWriteExt;
 
     use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
     use crate::domain::image::AsyncImageStorage;
-    use crate::error::{ErrorCode, InternalError};
 
     pub static DEFAULT_PATH: LazyLock<PathBuf> =
         LazyLock::new(|| PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]));
 
     pub static FILE_IMAGE_STORAGE: LazyLock<LocalFileImageStorage> =
         LazyLock::new(|| LocalFileImageStorage::new(&DEFAULT_PATH));
-
-    #[derive(thiserror::Error, Debug, ApiError)]
-    pub enum LocalFileImageStorageError {
-        #[api_error(
-            status_code = StatusCode::INTERNAL_SERVER_ERROR,
-            error_code = ErrorCode::IoError,
-            into_response = self
-        )]
-        #[error("{}", ErrorCode::IoError.message())]
-        Io(#[from] std::io::Error),
-    }
-
-    impl From<LocalFileImageStorageError> for InternalError {
-        fn from(val: LocalFileImageStorageError) -> Self {
-            match val {
-                LocalFileImageStorageError::Io(err) => Self::from(err),
-            }
-        }
-    }
 
     #[derive(Clone, Copy)]
     pub struct LocalFileImageStorage {
@@ -48,7 +26,7 @@ pub mod image {
 
     impl AsyncImageStorage for LocalFileImageStorage {
         type File = tokio::fs::File;
-        type Error = LocalFileImageStorageError;
+        type Error = std::io::Error;
 
         async fn create(
             &self,
@@ -83,9 +61,9 @@ pub mod image {
             &self,
             path: impl AsRef<std::path::Path> + Send + Sync,
         ) -> Result<(), Self::Error> {
-            Ok(tokio::fs::remove_file(&path).await.inspect_err(|e| {
+            tokio::fs::remove_file(&path).await.inspect_err(|e| {
                 tracing::error!("Failed to remove file: {}", e);
-            })?)
+            })
         }
     }
 }

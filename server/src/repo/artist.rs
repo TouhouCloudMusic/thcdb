@@ -24,7 +24,7 @@ use sea_orm::{
 use tokio::try_join;
 
 use crate::dto::artist::{ArtistCorrection, NewGroupMember, NewLocalizedName};
-use crate::error::{AsErrorCode, ErrorCode, ServiceError};
+use crate::error::ServiceError;
 use crate::repo;
 use crate::utils::orm::PgFuncExt;
 use crate::utils::{Pipe, Reverse};
@@ -44,16 +44,6 @@ error_set! {
         #[display("Unknown type artist cannot have members")]
         UnknownTypeArtistOwnedMember,
     };
-}
-
-impl AsErrorCode for ValidationError {
-    fn as_error_code(&self) -> ErrorCode {
-        match self {
-            Self::UnknownTypeArtistOwnedMember => {
-                ErrorCode::UnknownTypeArtistOwnedMember
-            }
-        }
-    }
 }
 
 pub async fn create(

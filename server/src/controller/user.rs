@@ -17,7 +17,7 @@ use crate::application::use_case::{self};
 use crate::domain::model::auth::AuthCredential;
 use crate::domain::model::markdown::{self, Markdown};
 use crate::domain::user::UserProfile;
-use crate::error::{InternalError, ServiceError};
+use crate::error::{InfraError, ServiceError};
 use crate::service::user::UploadAvatarError;
 use crate::state::AuthSession;
 use crate::{ArcAppState, api_response, domain, state};
@@ -240,7 +240,7 @@ async fn profile_impl(
         (status = 200, body = api_response::Message),
         (status = 401),
         markdown::Error,
-        InternalError
+        InfraError
     )
 )]
 async fn update_bio(
@@ -263,5 +263,5 @@ async fn update_bio(
         .exec(&database.conn)
         .await
         .map(|_| Message::new("Bio updated successfully"))
-        .map_err(|e| InternalError::from(e).into_response())
+        .map_err(|e| InfraError::from(e).into_response())
 }

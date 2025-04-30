@@ -13,7 +13,7 @@ use macros::ApiError;
 
 use crate::domain::model::image::{Image, NewImage};
 use crate::domain::repository::TransactionRepositoryTrait;
-use crate::error::{ErrorCode, InternalError};
+use crate::error::InfraError;
 
 error_set! {
     #[derive(ApiError)]
@@ -21,33 +21,28 @@ error_set! {
         InvalidType(InvalidForamt),
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
-            error_code = ErrorCode::BadRequest,
             into_response = self
         )]
         InvalidFileSize(InvalidFileSize),
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
-            error_code = ErrorCode::BadRequest,
             into_response = self
         )]
         InvalidSize(InvalidSize),
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
-            error_code = ErrorCode::BadRequest,
             into_response = self
         )]
         InvalidRatio(InvalidRatio),
         // TODO: Internal error wrapper
         #[api_error(
             status_code = StatusCode::INTERNAL_SERVER_ERROR,
-            error_code = ErrorCode::InternalServerError,
             into_response = self
         )]
         #[display("Internal server error")]
         Io(io::Error),
         #[api_error(
             status_code = StatusCode::INTERNAL_SERVER_ERROR,
-            error_code = ErrorCode::InternalServerError,
             into_response = self
         )]
         #[display("Internal server error")]
@@ -58,7 +53,6 @@ error_set! {
 #[derive(Debug, Error, ApiError)]
 #[api_error(
     status_code = StatusCode::BAD_REQUEST,
-    error_code = ErrorCode::InvalidImageType
 )]
 pub struct InvalidForamt {
     accepted: Option<ImageFormat>,
@@ -336,12 +330,12 @@ pub enum Error {
     #[error(transparent)]
     Validation(#[from] ValidationError),
     #[error(transparent)]
-    Internal(InternalError),
+    Internal(InfraError),
 }
 
 impl<T> From<T> for Error
 where
-    T: Into<InternalError>,
+    T: Into<InfraError>,
 {
     fn from(e: T) -> Self {
         Self::Internal(e.into())
@@ -362,7 +356,7 @@ pub trait ServiceBounds<Repo, Storage> = where
     // Wrap IO in transaction
     Repo: super::Repository + TransactionRepositoryTrait,
     Storage: AsyncImageStorage,
-    InternalError: From<Repo::Error> + From<Storage::Error>;
+    InfraError: From<Repo::Error> + From<Storage::Error>;
 
 pub trait ServiceTrait: Send + Sync {
     async fn create(

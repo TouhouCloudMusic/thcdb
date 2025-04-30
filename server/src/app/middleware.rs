@@ -1,5 +1,6 @@
 use std::env;
 
+use axum::extract::FromRef;
 use axum::{Router, http};
 use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
@@ -27,8 +28,7 @@ pub fn append_global_middleware_layer(
         );
 
     let auth_layer = AuthManagerLayerBuilder::new(
-        // TODO: From Ref for state
-        state::AuthService::new(state.sea_orm_repo.clone()),
+        state::AuthService::from_ref(state),
         session_layer,
     )
     .build();

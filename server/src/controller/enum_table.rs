@@ -8,7 +8,7 @@ use utoipa_axum::routes;
 use crate::api_response::Data;
 use crate::domain::model::auth::UserRoleEnum;
 use crate::dto::share::Language;
-use crate::error::InternalError;
+use crate::error::InfraError;
 use crate::state::ArcAppState;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
@@ -27,12 +27,12 @@ super::data! {
     path = "/languages",
     responses(
         (status = 200, body = DataVecLanguage),
-        InternalError
+        InfraError
     ),
 )]
 async fn language_list(
     State(state): State<ArcAppState>,
-) -> Result<Data<Vec<Language>>, InternalError> {
+) -> Result<Data<Vec<Language>>, InfraError> {
     let res: Vec<Language> = language::Entity::find()
         .all(&state.database)
         .await?
@@ -48,12 +48,12 @@ async fn language_list(
     path = "/user_roles",
     responses(
         (status = 200, body = DataVecUserRole),
-        InternalError
+        InfraError
     ),
 )]
 async fn user_roles(
     State(state): State<ArcAppState>,
-) -> Result<Data<Vec<UserRoleEnum>>, InternalError> {
+) -> Result<Data<Vec<UserRoleEnum>>, InfraError> {
     Ok(role::Entity::find()
         .all(&state.database)
         .await?

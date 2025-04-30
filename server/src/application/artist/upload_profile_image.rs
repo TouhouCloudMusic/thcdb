@@ -21,7 +21,7 @@ use crate::domain::repository::{
 };
 use crate::domain::user::User;
 use crate::domain::{image, image_queue};
-use crate::error::InternalError;
+use crate::error::InfraError;
 
 static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
     let opt = ParseOption::builder()
@@ -41,7 +41,7 @@ static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
 #[derive(Debug, Display, Error, From, ApiError, IntoErrorSchema)]
 pub enum Error {
     #[from(forward)]
-    Internal(InternalError),
+    Internal(InfraError),
     Service(#[from] image::Error),
 }
 
@@ -60,7 +60,7 @@ where
         + image_queue::Repository
         + artist_image_queue::Repository,
     Storage: AsyncImageStorage + Clone,
-    InternalError: From<Repo::Error>
+    InfraError: From<Repo::Error>
         + From<<Repo::TransactionRepository as RepositoryTrait>::Error>
         + From<Storage::Error>,
 {

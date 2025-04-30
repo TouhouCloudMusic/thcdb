@@ -14,7 +14,7 @@ use crate::application::artist::upload_profile_image::{
 };
 use crate::domain::artist::model::Artist;
 use crate::dto::artist::ArtistCorrection;
-use crate::error::{InternalError, ServiceError};
+use crate::error::{InfraError, ServiceError};
 use crate::state::{self, ArcAppState};
 use crate::utils::MapInto;
 use crate::{domain, service};
@@ -79,13 +79,13 @@ struct KeywordQuery {
     ),
     responses(
         (status = 200, body = DataVecArtist),
-        InternalError
+        InfraError
     ),
 )]
 async fn find_artist_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KeywordQuery>,
-) -> Result<Data<Vec<Artist>>, InternalError> {
+) -> Result<Data<Vec<Artist>>, InfraError> {
     domain::artist::repository::Repository::find_by_name(&repo, &query.keyword)
         .await
         .map_into()

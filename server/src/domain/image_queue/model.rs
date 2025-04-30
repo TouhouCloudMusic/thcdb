@@ -11,7 +11,6 @@ use thiserror::Error;
 use crate::domain::model::auth::UserRoleEnum;
 use crate::domain::model::image::Image;
 use crate::domain::user::User;
-use crate::error::ErrorCode;
 use crate::utils::Intersection;
 
 #[derive(Debug, Clone, Copy, Display, Error, ApiError)]
@@ -19,13 +18,11 @@ pub enum Error {
     #[display("Invalid operation")]
     #[api_error(
         status_code = StatusCode::BAD_REQUEST,
-        error_code = ErrorCode::BadRequest
     )]
     InvalidOperation,
     #[display("Permission denied")]
     #[api_error(
         status_code = StatusCode::FORBIDDEN,
-        error_code = ErrorCode::Placeholder
     )]
     PermissionDenied,
 }

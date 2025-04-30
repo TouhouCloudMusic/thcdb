@@ -14,7 +14,7 @@ use utoipa::ToSchema;
 
 use crate::api_response::{Error, IntoApiResponse};
 use crate::constant::{USER_NAME_REGEX_STR, USER_PASSWORD_REGEX_STR};
-use crate::error::{ErrorCode, TokioError};
+use crate::error::TokioError;
 use crate::state::ARGON2_HASHER;
 
 error_set! {
@@ -23,7 +23,6 @@ error_set! {
     AuthnError = {
         #[api_error(
             status_code = StatusCode::UNAUTHORIZED,
-            error_code = ErrorCode::AuthenticationFailed,
         )]
         #[display("Incorrect username or password")]
         AuthenticationFailed,
@@ -43,19 +42,16 @@ error_set! {
         #[display("Invalid username")]
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
-            error_code = ErrorCode::InvalidUserName
         )]
         InvalidUserName,
         #[display("Invalid Password")]
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
-            error_code = ErrorCode::InvalidPassword
         )]
         InvalidPassword,
         #[display("Password is too weak")]
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
-            error_code = ErrorCode::PasswordTooWeak
         )]
         PasswordTooWeak,
     };
@@ -65,7 +61,6 @@ error_set! {
         #[from]
         #[api_error(
             status_code = StatusCode::INTERNAL_SERVER_ERROR,
-            error_code = ErrorCode::InternalServerError
         )]
         HashPasswordFailed {
             err: password_hash::Error

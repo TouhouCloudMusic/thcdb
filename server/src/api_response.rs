@@ -13,7 +13,7 @@ use utoipa::openapi::{
 };
 use utoipa::{PartialSchema, ToSchema, openapi};
 
-use crate::error::{ApiErrorTrait, AsErrorCode, ErrorCode};
+use crate::error::ApiErrorTrait;
 use crate::utils::openapi::ContentType;
 
 #[derive(Debug, Serialize, Display)]
@@ -22,7 +22,7 @@ enum Status {
     Err,
 }
 
-pub trait StatusCodeExt {
+pub trait AsStatusCode {
     fn as_status_code(&self) -> StatusCode;
 
     fn all_status_codes() -> impl Iterator<Item = StatusCode>;
@@ -119,16 +119,11 @@ impl IntoResponse for Message {
     }
 }
 
-#[expect(clippy::struct_field_names)]
 #[derive(ToSchema, Serialize)]
 pub struct Error {
     #[schema(schema_with = status_err_schema)]
     status: Status,
     message: String,
-    #[schema(
-        value_type = usize
-    )]
-    error_code: ErrorCode,
     #[serde(skip)]
     status_code: StatusCode,
 }
@@ -139,25 +134,22 @@ impl Error {
     pub fn new(
         message: &(impl Display + ?Sized),
         status_code: Option<StatusCode>,
-        error_code: &impl AsErrorCode,
     ) -> Self {
         Self {
             status: Status::Err,
             message: message.to_string(),
             status_code: status_code
                 .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
-            error_code: error_code.as_error_code(),
         }
     }
 
     pub fn from_api_error<T>(err: &T) -> Self
     where
-        T: StatusCodeExt + AsErrorCode + Display,
+        T: AsStatusCode + Display,
     {
         Self {
             status: Status::Err,
             message: err.to_string(),
-            error_code: err.as_error_code(),
             status_code: err.as_status_code(),
         }
     }
@@ -184,7 +176,7 @@ pub trait ErrResponseDef {
 
 impl<T> ErrResponseDef for T
 where
-    T: StatusCodeExt,
+    T: AsStatusCode,
 {
     fn build_err_responses() -> utoipa::openapi::Responses {
         ResponsesBuilder::new()
@@ -258,21 +250,14 @@ mod tests {
     }
 
     #[test]
-    #[expect(clippy::as_conversions)]
     fn test_response_err() {
-        let response = super::Error::builder()
-            .error_code(&ErrorCode::UnknownError)
-            .message("error")
-            .build();
+        let response = super::Error::builder().message("error").build();
 
         let serialized = serde_json::to_string(&response)
             .expect("Failed to serialize response");
 
-        let expected_json = format!(
-            r#"{{"status":"{}","message":"error","error_code":{}}}"#,
-            Status::Err,
-            ErrorCode::UnknownError as usize
-        );
+        let expected_json =
+            format!(r#"{{"status":"{}","message":"error"}}"#, Status::Err,);
 
         assert_eq!(serialized, expected_json);
     }

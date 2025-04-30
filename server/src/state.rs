@@ -14,7 +14,7 @@ use crate::application::use_case;
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::controller::TryFromRef;
 use crate::domain::repository::TransactionManager;
-use crate::error::InternalError;
+use crate::error::InfraError;
 pub use crate::infrastructure::adapter::database::sea_orm::{
     SeaOrmRepository, SeaOrmTransactionRepository,
 };
@@ -147,7 +147,7 @@ impl FromRef<ArcAppState> for ArtistService {
 }
 
 impl TryFromRef<ArcAppState> for ImageService {
-    type Rejection = InternalError;
+    type Rejection = InfraError;
 
     async fn try_from_ref(input: &ArcAppState) -> Result<Self, Self::Rejection>
     where
@@ -219,7 +219,7 @@ impl FromRef<ArcAppState> for UploadArtistProfileImageUseCase {
 }
 
 impl TryFromRef<ArcAppState> for SeaOrmTransactionRepository {
-    type Rejection = InternalError;
+    type Rejection = InfraError;
 
     async fn try_from_ref(input: &ArcAppState) -> Result<Self, Self::Rejection>
     where
@@ -230,7 +230,7 @@ impl TryFromRef<ArcAppState> for SeaOrmTransactionRepository {
 }
 
 impl TryFromRef<ArcAppState> for UserImageService {
-    type Rejection = InternalError;
+    type Rejection = InfraError;
 
     async fn try_from_ref(input: &ArcAppState) -> Result<Self, Self::Rejection>
     where

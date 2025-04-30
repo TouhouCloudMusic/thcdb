@@ -1,6 +1,3 @@
-use std::sync::Arc;
-
-// TODO: transaction manager?
 pub trait RepositoryTrait: Send + Sync {
     type Conn: Send;
     type Error: Send;
@@ -22,17 +19,4 @@ pub trait TransactionManager: RepositoryTrait {
         &self,
         transaction: Self::TransactionRepository,
     ) -> Result<(), Self::Error>;
-}
-
-impl<T> RepositoryTrait for Arc<T>
-where
-    T: RepositoryTrait,
-{
-    type Conn = T::Conn;
-
-    type Error = T::Error;
-
-    fn conn(&self) -> &Self::Conn {
-        self.as_ref().conn()
-    }
 }

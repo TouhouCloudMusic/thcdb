@@ -13,7 +13,7 @@ mod field_enum;
 mod from_ref_arc;
 mod utils;
 
-// TODO: Better name
+// TODO: Delegate enum
 #[proc_macro_derive(EnumToResponse)]
 pub fn derive_into_response(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);

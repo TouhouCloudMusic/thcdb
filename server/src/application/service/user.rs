@@ -14,7 +14,7 @@ use crate::constant::{
 use crate::domain::image::{self, ParseOption, Parser, ValidationError};
 use crate::domain::user::{self, User};
 use crate::domain::{self};
-use crate::error::InternalError;
+use crate::error::InfraError;
 
 static PROFILE_BANNER_PARSER: LazyLock<Parser> = LazyLock::new(|| {
     let opt = ParseOption::builder()
@@ -33,13 +33,12 @@ static PROFILE_BANNER_PARSER: LazyLock<Parser> = LazyLock::new(|| {
 
 error_set! {
     #[derive(ApiError, IntoErrorSchema, From)]
-    #[disable(From(InternalError))]
+    #[disable(From(InfraError))]
     UserImageServiceError = {
         #[from(forward)]
-        Internal(InternalError),
+        Internal(InfraError),
         ImageService(image::Error),
         Validate(ValidationError),
-
     };
 }
 

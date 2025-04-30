@@ -11,7 +11,7 @@ use crate::domain::model::auth::{
 };
 use crate::domain::repository::{RepositoryTrait, TransactionManager};
 use crate::domain::user::{self, TransactionRepository, User};
-use crate::error::{ErrorCode, InternalError};
+use crate::error::InfraError;
 
 #[derive(Clone)]
 pub struct AuthService<R> {
@@ -23,11 +23,10 @@ pub enum SignUpError {
     #[error("Username already in use")]
     #[api_error(
         status_code = StatusCode::CONFLICT,
-        error_code = ErrorCode::UsernameAlreadyInUse
     )]
     UsernameAlreadyInUse,
     #[error(transparent)]
-    Internal(#[from] InternalError),
+    Internal(#[from] InfraError),
     #[api_error(
         into_response = self
     )]
@@ -42,8 +41,7 @@ pub enum SignUpError {
 #[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema, From)]
 pub enum SignInError {
     #[api_error(
-            status_code = StatusCode::CONFLICT,
-            error_code = ErrorCode::AlreadySignedIn,
+        status_code = StatusCode::CONFLICT,
     )]
     #[error("Already signed in")]
     AlreadySignedIn,
@@ -51,7 +49,7 @@ pub enum SignInError {
     Authn(#[from] AuthnError),
     #[error(transparent)]
     #[from(forward)]
-    Internal(InternalError),
+    Internal(InfraError),
     #[error(transparent)]
     Validate(#[from] ValidateCredsError),
 }
@@ -60,7 +58,6 @@ pub enum SignInError {
 #[display("Session error")]
 #[api_error(
     status_code = StatusCode::INTERNAL_SERVER_ERROR,
-    error_code = ErrorCode::InternalServerError,
     into_response = self
 )]
 pub struct SessionError(axum_login::tower_sessions::session::Error);
@@ -94,7 +91,7 @@ pub enum AuthnBackendError {
     #[error(transparent)]
     SignIn(#[from] SignInError),
     #[error(transparent)]
-    Internal(#[from] InternalError),
+    Internal(#[from] InfraError),
 }
 
 pub trait AuthServiceTrait<R>: Send + Sync
@@ -117,7 +114,7 @@ impl<R> AuthService<R> {
 trait AuthServiceTraitBounds<R> = where
     R: TransactionManager + user::Repository,
     R::TransactionRepository: user::TransactionRepository,
-    InternalError: From<R::Error>
+    InfraError: From<R::Error>
         + From<<R::TransactionRepository as RepositoryTrait>::Error>;
 
 impl<R> AuthServiceTrait<R> for AuthService<R>
@@ -198,6 +195,6 @@ where
         self.repo
             .find_by_id(*user_id)
             .await
-            .map_err(|e| InternalError::from(e).into())
+            .map_err(|e| InfraError::from(e).into())
     }
 }

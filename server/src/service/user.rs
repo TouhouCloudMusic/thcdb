@@ -27,30 +27,24 @@ use crate::domain::image::{ParseOption, Parser, ValidationError};
 use crate::domain::model::auth::{
     HasherError, UserRoleEnum, ValidateCredsError, hash_password,
 };
-use crate::error::{ErrorCode, InternalError, InvalidField, ServiceError};
+use crate::error::{InfraError, InvalidField, ServiceError};
 use crate::model::lookup_table::LookupTableEnum;
 use crate::utils::orm::PgFuncExt;
-
-type ImageServiceCreateError = domain::image::Error;
 
 error_set! {
     #[derive(IntoErrorSchema, ApiError, From)]
     UploadAvatarError = {
         #[from(DbErr)]
-        DbErr(InternalError),
-        // TODO: Impl api error trait
+        Infra(InfraError),
         #[api_error(
             status_code = StatusCode::INTERNAL_SERVER_ERROR,
-            error_code = ErrorCode::InternalServerError,
             into_response = self
         )]
-        #[display("{}", ErrorCode::InternalServerError.message())]
-        ImageService(ImageServiceCreateError),
+        Domain(domain::image::Error),
         #[api_error(
             into_response = self
         )]
         InvalidField(InvalidField),
-
         Validtion(ValidationError)
     };
     #[derive(ApiError, IntoErrorSchema, From)]
@@ -58,7 +52,6 @@ error_set! {
         #[display("Username already in use")]
         #[api_error(
             status_code = StatusCode::CONFLICT,
-            error_code = ErrorCode::UsernameAlreadyInUse
         )]
         UsernameAlreadyInUse,
         #[api_error(
@@ -128,7 +121,7 @@ impl Service {
             let image = image_service
                 .create(&data.contents, &AVATAR_PARSER, user_id)
                 .await
-                .map_err(UploadAvatarError::ImageService)?;
+                .map_err(UploadAvatarError::Domain)?;
 
             user::Entity::update_many()
                 .filter(user::Column::Id.eq(user_id))

@@ -82,8 +82,6 @@ struct ApiErrorReceiver {
     #[darling(default)]
     status_code: CodeOpt,
     #[darling(default)]
-    error_code: CodeOpt,
-    #[darling(default)]
     into_response: IntoResponseOpt,
 }
 
@@ -94,8 +92,6 @@ struct ApiErrorVariantReceiver {
     fields: darling::ast::Fields<ApiErrorVariantField>,
     #[darling(default)]
     status_code: CodeOpt,
-    #[darling(default)]
-    error_code: CodeOpt,
     #[darling(default)]
     into_response: IntoResponseOpt,
 }
@@ -135,8 +131,7 @@ fn derive_enum_impl(
     let mut status_code_right_arms = vec![];
     let mut all_status_code_iter = vec![];
     let mut all_status_code_item = vec![];
-    let mut error_code_left_arms = vec![];
-    let mut error_code_right_arms = vec![];
+
     let mut into_response_arms = vec![];
 
     for variant in variants {
@@ -146,7 +141,6 @@ fn derive_enum_impl(
 
         variant.status_code =
             variant.status_code.or(receiver.status_code.clone());
-        variant.error_code = variant.error_code.or(receiver.error_code.clone());
         variant.into_response =
             variant.into_response.or(receiver.into_response.clone());
 
@@ -176,20 +170,6 @@ fn derive_enum_impl(
                             .push(quote! { inner.as_status_code() });
                         all_status_code_iter
                             .push(quote! { #inner_type::all_status_codes() });
-                    }
-                }
-
-                match &variant.error_code {
-                    CodeOpt::Specified(code) => {
-                        error_code_left_arms
-                            .push(quote! { Self::#var_name(_) });
-                        error_code_right_arms.push(quote! { #code });
-                    }
-                    CodeOpt::Inner | CodeOpt::None => {
-                        error_code_left_arms
-                            .push(quote! { Self::#var_name(inner) });
-                        error_code_right_arms
-                            .push(quote! { inner.as_error_code() });
                     }
                 }
 
@@ -225,24 +205,12 @@ fn derive_enum_impl(
                     }
                 }
 
-                match variant.error_code {
-                    CodeOpt::Specified(ref code) => {
-                        error_code_left_arms.push(quote! { Self::#var_name });
-                        error_code_right_arms.push(quote! { #code });
-                    }
-                    CodeOpt::Inner | CodeOpt::None => {
-                        return Err(no_specify_error_builder("error_code"));
-                    }
-                }
-
                 into_response_arms.push(quote! {
                     Self::#var_name => self.into_api_response()
                 });
             }
             darling::ast::Style::Struct => {
-                if matches!(variant.status_code, CodeOpt::Inner)
-                    || matches!(variant.error_code, CodeOpt::Inner)
-                {
+                if matches!(variant.status_code, CodeOpt::Inner) {
                     return Err(Error::new_spanned(
                         var_name,
                         format!(
@@ -269,21 +237,6 @@ fn derive_enum_impl(
                     CodeOpt::Inner => unreachable!(),
                 }
 
-                match variant.error_code {
-                    CodeOpt::None => {
-                        error_code_left_arms
-                            .push(quote! { Self::#var_name { .. } });
-                        error_code_right_arms
-                            .push(quote! { self.as_error_code() });
-                    }
-                    CodeOpt::Specified(path) => {
-                        error_code_left_arms
-                            .push(quote! { Self::#var_name { .. } });
-                        error_code_right_arms.push(quote! { #path });
-                    }
-                    CodeOpt::Inner => unreachable!(),
-                }
-
                 into_response_arms.push(quote! {
                     Self::#var_name { .. } => self.into_api_response()
                 });
@@ -292,7 +245,7 @@ fn derive_enum_impl(
     }
 
     Ok(quote! {
-        impl #impl_generics crate::api_response::StatusCodeExt for #ident #ty_generics
+        impl #impl_generics crate::api_response::AsStatusCode for #ident #ty_generics
             #where_clause
         {
             fn as_status_code(&self) -> ::axum::http::StatusCode {
@@ -302,22 +255,12 @@ fn derive_enum_impl(
             }
 
             fn all_status_codes() -> impl Iterator<Item=::axum::http::StatusCode> {
-                use crate::api_response::StatusCodeExt;
+                use crate::api_response::AsStatusCode;
                 std::iter::empty()
                     .chain([
                         #(#all_status_code_item),*
                     ])
                     #(.chain(#all_status_code_iter))*
-            }
-        }
-
-        impl #impl_generics crate::error::AsErrorCode for #ident #ty_generics
-            #where_clause
-        {
-            fn as_error_code(&self) -> crate::error::ErrorCode {
-                match self {
-                    #(#error_code_left_arms => #error_code_right_arms),*
-                }
             }
         }
 
@@ -374,22 +317,6 @@ fn derive_struct_impl(receiver: &ApiErrorReceiver) -> TokenStream {
         }
     };
 
-    let error_code_impl = match strc.style {
-        darling::ast::Style::Tuple
-            if let CodeOpt::Inner | CodeOpt::None = receiver.error_code =>
-        {
-            quote! { self.0.as_error_code() }
-        }
-        _ => {
-            if let CodeOpt::Specified(ref path) = receiver.error_code {
-                quote! { #path }
-            } else {
-                return Error::new_spanned(ident, "No error_code specified")
-                    .to_compile_error();
-            }
-        }
-    };
-
     let into_res_impl = match strc.style {
         darling::ast::Style::Tuple
             if let IntoResponseOpt::Inner | IntoResponseOpt::None =
@@ -413,7 +340,7 @@ fn derive_struct_impl(receiver: &ApiErrorReceiver) -> TokenStream {
     };
 
     quote! {
-        impl #impl_generics crate::api_response::StatusCodeExt for #ident #ty_generics #where_clause {
+        impl #impl_generics crate::api_response::AsStatusCode for #ident #ty_generics #where_clause {
             fn as_status_code(&self) -> ::axum::http::StatusCode {
                 #status_code_impl
             }
@@ -421,11 +348,7 @@ fn derive_struct_impl(receiver: &ApiErrorReceiver) -> TokenStream {
                 #all_status_code_impl
             }
         }
-        impl #impl_generics crate::error::AsErrorCode for #ident #ty_generics #where_clause {
-            fn as_error_code(&self) -> crate::error::ErrorCode {
-                #error_code_impl
-            }
-        }
+
         impl #impl_generics ::axum::response::IntoResponse for #ident #ty_generics #where_clause {
             fn into_response(self) -> ::axum::response::Response {
                 use crate::api_response::IntoApiResponse;
