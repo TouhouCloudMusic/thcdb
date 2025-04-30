@@ -50,7 +50,7 @@ use sea_orm_migration::migrator::MigratorTrait;
 use state::{ArcAppState, CONFIG};
 use tokio::signal;
 
-#[cfg(all(unix, not(debug_assertions)))]
+#[cfg(all(feature = "release", unix))]
 mod alloc {
     use tikv_jemallocator::Jemalloc;
     #[global_allocator]
