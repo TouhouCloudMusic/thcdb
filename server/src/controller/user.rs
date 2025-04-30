@@ -1,13 +1,12 @@
 use axum::Json;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
-use axum::middleware::from_fn;
 use axum::response::IntoResponse;
 use axum_typed_multipart::TypedMultipart;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::TryState;
+use super::{CurrentUser, TryState};
 use crate::api_response::{Data, Message};
 use crate::application::dto::user::{UploadAvatar, UploadProfileBanner};
 use crate::application::service::UserImageServiceError;
@@ -15,11 +14,10 @@ use crate::application::service::auth::{
     AuthServiceTrait, SessionBackendError, SignInError, SignUpError,
 };
 use crate::application::use_case::{self};
-use crate::domain::model::auth::{AuthCredential, AuthnError};
+use crate::domain::model::auth::AuthCredential;
 use crate::domain::model::markdown::{self, Markdown};
 use crate::domain::user::UserProfile;
 use crate::error::{InternalError, ServiceError};
-use crate::middleware::is_signed_in;
 use crate::service::user::UploadAvatarError;
 use crate::state::AuthSession;
 use crate::{ArcAppState, api_response, domain, state};
@@ -33,7 +31,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(sign_out))
         .routes(routes!(profile))
         .routes(routes!(update_bio))
-        .route_layer(from_fn(is_signed_in))
         .routes(routes!(profile_with_name))
         .routes(routes!(sign_in))
         .routes(routes!(sign_up))
@@ -56,13 +53,9 @@ type ProfileUseCase = use_case::user::Profile<state::SeaOrmRepository>;
     ),
 )]
 async fn profile(
-    session: AuthSession,
+    CurrentUser(user): CurrentUser,
     State(use_case): State<ProfileUseCase>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
-    let user = unsafe {
-        // Handle by middleware
-        session.user.unwrap_unchecked()
-    };
     profile_impl(&use_case, &user.name, Some(&user)).await
 }
 
@@ -177,21 +170,17 @@ async fn sign_out(
     )
 )]
 async fn upload_avatar(
-    auth_session: AuthSession,
+    CurrentUser(user): CurrentUser,
     State(user_service): State<state::UserService>,
     TryState(image_service): TryState<state::ImageService>,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
 ) -> Result<impl IntoResponse, UploadAvatarError> {
-    if let Some(user) = auth_session.user {
-        user_service
-            .upload_avatar(&image_service, user.id, form.data)
-            .await
-            .map(|()| {
-                api_response::Message::new("Upload successful").into_response()
-            })
-    } else {
-        Ok(AuthnError::AuthenticationFailed.into_response())
-    }
+    user_service
+        .upload_avatar(&image_service, user.id, form.data)
+        .await
+        .map(|()| {
+            api_response::Message::new("Upload successful").into_response()
+        })
 }
 
 #[utoipa::path(
@@ -209,20 +198,16 @@ async fn upload_avatar(
     )
 )]
 async fn upload_profile_banner(
-    auth_session: AuthSession,
+    CurrentUser(user): CurrentUser,
     TryState(service): TryState<state::UserImageService>,
     TypedMultipart(form): TypedMultipart<UploadProfileBanner>,
 ) -> Result<impl IntoResponse, UserImageServiceError> {
-    if let Some(user) = auth_session.user {
-        service
-            .upload_banner_image(user, &form.data.contents)
-            .await
-            .map(|_| {
-                api_response::Message::new("Upload successful").into_response()
-            })
-    } else {
-        Ok(AuthnError::AuthenticationFailed.into_response())
-    }
+    service
+        .upload_banner_image(user, &form.data.contents)
+        .await
+        .map(|_| {
+            api_response::Message::new("Upload successful").into_response()
+        })
 }
 
 async fn profile_impl(
@@ -259,7 +244,7 @@ async fn profile_impl(
     )
 )]
 async fn update_bio(
-    auth_session: AuthSession,
+    CurrentUser(user): CurrentUser,
     State(database): State<state::SeaOrmRepository>,
     text: String,
 ) -> Result<Message, impl IntoResponse> {
@@ -268,8 +253,6 @@ async fn update_bio(
 
     let markdown =
         Markdown::parse(text).map_err(IntoResponse::into_response)?;
-
-    let user = auth_session.user.unwrap();
 
     user::Entity::update_many()
         .filter(user::Column::Id.eq(user.id))

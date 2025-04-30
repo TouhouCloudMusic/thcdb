@@ -1,16 +1,15 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
-use axum::middleware::from_fn;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use super::CurrentUser;
 use crate::api_response::{Data, Message};
 use crate::dto::event::{EventCorrection, EventResponse};
 use crate::error::ServiceError;
-use crate::middleware::is_signed_in;
-use crate::state::{self, ArcAppState, AuthSession};
+use crate::state::{self, ArcAppState};
 use crate::utils::MapInto;
 
 type Service = state::EventService;
@@ -21,7 +20,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(create))
         .routes(routes!(upsert_correction))
-        .route_layer(from_fn(is_signed_in))
         .routes(routes!(find_by_id))
         .routes(routes!(find_by_keyword))
 }
@@ -83,11 +81,11 @@ async fn find_by_keyword(
     ),
 )]
 async fn create(
-    session: AuthSession,
+    CurrentUser(user): CurrentUser,
     State(service): State<Service>,
     Json(input): Json<EventCorrection>,
 ) -> Result<Message, ServiceError> {
-    service.create(session.user.unwrap().id, input).await?;
+    service.create(user.id, input).await?;
 
     Ok(Message::ok())
 }
@@ -104,14 +102,12 @@ async fn create(
     ),
 )]
 async fn upsert_correction(
-    session: AuthSession,
+    CurrentUser(user): CurrentUser,
     State(service): State<Service>,
     Path(id): Path<i32>,
     Json(input): Json<EventCorrection>,
 ) -> Result<Message, ServiceError> {
-    service
-        .upsert_correction(id, session.user.unwrap().id, input)
-        .await?;
+    service.upsert_correction(id, user.id, input).await?;
 
     Ok(Message::ok())
 }

@@ -1,7 +1,6 @@
 use axum::Json;
 use axum::body::Bytes;
 use axum::extract::{Path, Query, State};
-use axum::middleware::from_fn;
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
@@ -16,8 +15,7 @@ use crate::application::artist::upload_profile_image::{
 use crate::domain::artist::model::Artist;
 use crate::dto::artist::ArtistCorrection;
 use crate::error::{InternalError, ServiceError};
-use crate::middleware::is_signed_in;
-use crate::state::{self, ArcAppState, AuthSession};
+use crate::state::{self, ArcAppState};
 use crate::utils::MapInto;
 use crate::{domain, service};
 
@@ -31,7 +29,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(create_artist))
         .routes(routes!(upsert_artist_correction))
         .routes(routes!(upload_artist_profile_image))
-        .route_layer(from_fn(is_signed_in))
         .routes(routes!(find_artist_by_id))
         .routes(routes!(find_artist_by_keyword))
 }
@@ -106,13 +103,11 @@ async fn find_artist_by_keyword(
     ),
 )]
 async fn create_artist(
-    auth_session: AuthSession,
+    CurrentUser(user): CurrentUser,
     State(artist_service): State<Service>,
     Json(input): Json<ArtistCorrection>,
 ) -> Result<Message, Error> {
-    artist_service
-        .create(auth_session.user.unwrap().id, input)
-        .await?;
+    artist_service.create(user.id, input).await?;
 
     Ok(Message::ok())
 }
@@ -129,13 +124,13 @@ async fn create_artist(
     ),
 )]
 async fn upsert_artist_correction(
-    session: AuthSession,
+    CurrentUser(user): CurrentUser,
     State(artist_service): State<Service>,
     Path(id): Path<i32>,
     Json(input): Json<ArtistCorrection>,
 ) -> Result<Message, Error> {
     artist_service
-        .create_or_update_correction(id, session.user.unwrap().id, input)
+        .create_or_update_correction(id, user.id, input)
         .await?;
 
     Ok(Message::ok())
@@ -175,6 +170,5 @@ async fn upload_artist_profile_image(
         artist_id: id,
     };
     use_case.exec(dto).await?;
-
     Ok(Message::ok())
 }

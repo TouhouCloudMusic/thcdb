@@ -1,25 +1,9 @@
 use std::sync::Arc;
 
-use axum::extract::Request;
-use axum::middleware::Next;
-use axum::response::Response;
 use governor::clock::QuantaInstant;
 use tower_governor::GovernorLayer;
 use tower_governor::key_extractor::PeerIpKeyExtractor;
 
-use crate::error;
-use crate::state::AuthSession;
-
-pub async fn is_signed_in(
-    auth_session: AuthSession,
-    req: Request,
-    next: Next,
-) -> Result<Response, error::ApiError> {
-    match auth_session.user {
-        Some(_) => Ok(next.run(req).await),
-        None => Err(error::ApiError::Unauthorized),
-    }
-}
 
 #[bon::builder]
 pub fn limit_layer(

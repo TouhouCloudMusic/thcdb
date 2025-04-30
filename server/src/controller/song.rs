@@ -1,18 +1,17 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
-use axum::middleware::from_fn;
 use itertools::Itertools;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use super::CurrentUser;
 use crate::api_response::{Data, Message};
 use crate::dto::song::{NewSong, SongResponse};
 use crate::error::ServiceError;
-use crate::middleware::is_signed_in;
 use crate::service::song::Service;
-use crate::state::{ArcAppState, AuthSession};
+use crate::state::ArcAppState;
 use crate::utils::MapInto;
 
 const TAG: &str = "Song";
@@ -21,7 +20,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(create_song))
         .routes(routes!(update_song))
-        .route_layer(from_fn(is_signed_in))
         .routes(routes!(find_song_by_id))
         .routes(routes!(find_song_by_keyword))
 }
@@ -84,11 +82,11 @@ async fn find_song_by_keyword(
     ),
 )]
 async fn create_song(
-    session: AuthSession,
+    CurrentUser(user): CurrentUser,
     State(service): State<Service>,
     Json(input): Json<NewSong>,
 ) -> Result<Message, ServiceError> {
-    service.create(session.user.unwrap().id, input).await?;
+    service.create(user.id, input).await?;
 
     Ok(Message::ok())
 }
@@ -105,13 +103,13 @@ async fn create_song(
     ),
 )]
 async fn update_song(
-    session: AuthSession,
+    CurrentUser(user): CurrentUser,
     State(service): State<Service>,
     Path(song_id): Path<i32>,
     Json(input): Json<NewSong>,
 ) -> Result<Message, ServiceError> {
     service
-        .create_or_update_correction(song_id, session.user.unwrap().id, input)
+        .create_or_update_correction(song_id, user.id, input)
         .await?;
 
     Ok(Message::ok())

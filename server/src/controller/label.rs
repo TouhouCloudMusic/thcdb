@@ -1,17 +1,16 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
-use axum::middleware::from_fn;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use super::CurrentUser;
 use crate::api_response::{Data, Message};
 use crate::dto::label::{LabelResponse, NewLabel};
 use crate::error::ServiceError;
-use crate::middleware::is_signed_in;
 use crate::state;
-use crate::state::{ArcAppState, AuthSession};
+use crate::state::ArcAppState;
 use crate::utils::MapInto;
 
 const TAG: &str = "Label";
@@ -20,7 +19,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(create_label))
         .routes(routes!(upsert_label_correction))
-        .route_layer(from_fn(is_signed_in))
         .routes(routes!(find_label_by_id))
         .routes(routes!(find_label_by_keyword))
 }
@@ -86,11 +84,11 @@ async fn find_label_by_keyword(
 )]
 
 async fn create_label(
+    CurrentUser(user): CurrentUser,
     label_service: State<state::LabelService>,
-    session: AuthSession,
     Json(data): Json<NewLabel>,
 ) -> Result<Message, ServiceError> {
-    label_service.create(session.user.unwrap().id, data).await?;
+    label_service.create(user.id, data).await?;
 
     Ok(Message::ok())
 }
@@ -107,14 +105,12 @@ async fn create_label(
     ),
 )]
 async fn upsert_label_correction(
+    CurrentUser(user): CurrentUser,
     label_service: State<state::LabelService>,
-    session: AuthSession,
     Path(id): Path<i32>,
     Json(data): Json<NewLabel>,
 ) -> Result<Message, ServiceError> {
-    label_service
-        .upsert_correction(session.user.unwrap().id, id, data)
-        .await?;
+    label_service.upsert_correction(user.id, id, data).await?;
 
     Ok(Message::ok())
 }
