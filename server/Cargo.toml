@@ -1,3 +1,7 @@
+cargo-features = [
+    "codegen-backend",
+]
+
 [workspace]
 members = [
     ".",
@@ -166,12 +170,20 @@ rusty-hook = "0.11.2"
 
 # https://doc.rust-lang.org/cargo/reference/profcailes.html
 [profile.dev]
-# codegen-backend = "cranelift"
-opt-level       = 1
-split-debuginfo = "unpacked"
-
-[profile.dev.package."*"]
+debug     = 0
 opt-level = 3
+
+[profile.dev.build-override]
+opt-level = 3
+
+[profile.fast]
+codegen-backend = "cranelift"
+debug           = 0
+inherits        = "dev"
+opt-level       = 3
+
+[profile.test]
+inherits = "fast"
 
 [profile.release]
 codegen-units   = 1

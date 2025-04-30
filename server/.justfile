@@ -7,13 +7,13 @@ fmt:
   cargo fmt
 
 fix:
-  cargo fix --workspace --allow-dirty --allow-staged
-  cargo clippy --fix --workspace --allow-dirty --allow-staged
+  cargo fix          --profile fast --workspace --allow-dirty --allow-staged
+  cargo clippy --fix --profile fast --workspace --allow-dirty --allow-staged
 
 check:
   taplo fmt --check
   cargo fmt --check
-  cargo clippy
+  cargo clippy --profile fast
   cargo test
 
 pre-push: check
