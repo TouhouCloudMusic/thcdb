@@ -5,3 +5,4 @@ pub mod email;
 pub mod logger;
 pub mod mapper;
 pub mod redis;
+pub mod storage;

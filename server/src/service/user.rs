@@ -258,6 +258,7 @@ mod tests {
             filename: "foobar.jpg".into(),
             uploaded_by: Default::default(),
             uploaded_at: DateTime::default(),
+            backend: entity::enums::StorageBackend::Fs,
         };
 
         assert_eq!(super::get_avatar_url(&model), "ab/cd/foobar.jpg");

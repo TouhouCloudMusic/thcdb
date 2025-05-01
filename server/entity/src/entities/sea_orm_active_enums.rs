@@ -315,3 +315,20 @@ pub enum TagType {
     #[sea_orm(string_value = "Scene")]
     Scene,
 }
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumIter,
+    DeriveActiveEnum,
+    Serialize,
+    Deserialize,
+    utoipa :: ToSchema,
+    Copy,
+)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "storage_backend")]
+pub enum StorageBackend {
+    #[sea_orm(string_value = "fs")]
+    Fs,
+}

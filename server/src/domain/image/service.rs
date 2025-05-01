@@ -1,5 +1,5 @@
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::range::RangeInclusive;
 
 use axum::http::StatusCode;
@@ -7,6 +7,7 @@ use bon::Builder;
 use boolinator::Boolinator;
 use bytesize::ByteSize;
 use derive_more::{Display, Error};
+use entity::enums::StorageBackend;
 use error_set::error_set;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 use macros::ApiError;
@@ -315,16 +316,9 @@ pub trait AsyncImageStorage: Send + Sync {
     type File;
     type Error;
 
-    async fn create(
-        &self,
-        path: impl AsRef<Path>,
-        data: &[u8],
-    ) -> Result<Self::File, Self::Error>;
+    async fn create(&self, image: NewImage) -> Result<Self::File, Self::Error>;
 
-    async fn remove(
-        &self,
-        path: impl AsRef<Path> + Send + Sync,
-    ) -> Result<(), Self::Error>;
+    async fn remove(&self, image: Image) -> Result<(), Self::Error>;
 }
 
 #[derive(Debug, thiserror::Error, ApiError)]
@@ -385,7 +379,9 @@ where
         repo.run_transaction(async |tx| {
             let parsed = parser.parse(bytes)?;
 
-            let new_image = NewImage::from_parsed(parsed, uploaded_by);
+            // TODO: Support more storage
+            let new_image =
+                NewImage::from_parsed(parsed, uploaded_by, StorageBackend::Fs);
 
             // We use xxhash128, so if the hash is the same, it is the same image.
             let image = if let Some(image) =
@@ -393,10 +389,8 @@ where
             {
                 image
             } else {
-                let full_path = new_image.full_path();
-
-                let image = tx.save(new_image).await?;
-                self.storage.create(full_path, bytes).await?;
+                let image = tx.save(&new_image).await?;
+                self.storage.create(new_image).await?;
                 image
             };
 
@@ -411,7 +405,7 @@ where
         repo.run_transaction(async |tx| {
             tx.delete(image.id).await?;
 
-            self.storage.remove(image.full_path()).await?;
+            self.storage.remove(image).await?;
 
             Ok(())
         })

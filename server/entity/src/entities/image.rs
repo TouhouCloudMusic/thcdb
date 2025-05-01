@@ -3,6 +3,8 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use super::sea_orm_active_enums::StorageBackend;
+
 #[derive(
     Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
 )]
@@ -16,6 +18,7 @@ pub struct Model {
     pub directory: String,
     pub uploaded_by: i32,
     pub uploaded_at: DateTimeWithTimeZone,
+    pub backend: StorageBackend,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

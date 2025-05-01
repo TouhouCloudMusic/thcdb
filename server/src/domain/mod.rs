@@ -2,7 +2,6 @@ pub mod artist;
 pub mod artist_image_queue;
 pub mod image;
 pub mod image_queue;
-pub mod mapper;
 pub mod model;
 pub mod repository;
 pub mod share;

@@ -5,6 +5,7 @@ pub mod image {
     use base64::prelude::BASE64_URL_SAFE_NO_PAD;
     use bon::Builder;
     use chrono::{DateTime, FixedOffset};
+    use entity::enums::StorageBackend;
     use entity::image::Model as DbModel;
     use macros::AutoMapper;
     use xxhash_rust::xxh3::xxh3_128;
@@ -20,6 +21,7 @@ pub mod image {
         pub directory: String,
         pub uploaded_by: i32,
         pub uploaded_at: DateTime<FixedOffset>,
+        pub backend: StorageBackend,
     }
 
     impl Image {
@@ -30,14 +32,21 @@ pub mod image {
 
     #[derive(Builder, Clone, Debug)]
     pub struct NewImage {
-        file_hash: String,
-        extension: &'static str,
         pub directory: String,
         pub uploaded_by: i32,
+        pub backend: StorageBackend,
+        pub bytes: Vec<u8>,
+
+        file_hash: String,
+        extension: &'static str,
     }
 
     impl NewImage {
-        pub fn from_parsed(parsed: ParsedImage, uploaded_by: i32) -> Self {
+        pub fn from_parsed(
+            parsed: ParsedImage,
+            uploaded_by: i32,
+            backend: StorageBackend,
+        ) -> Self {
             let ParsedImage {
                 extension, bytes, ..
             } = parsed;
@@ -53,6 +62,8 @@ pub mod image {
                 extension,
                 directory: sub_dir.to_str().unwrap().to_string(),
                 uploaded_by,
+                backend,
+                bytes,
             }
         }
 

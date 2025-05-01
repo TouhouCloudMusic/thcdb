@@ -52,7 +52,7 @@ use std::net::SocketAddr;
 use app::create_app;
 use infrastructure::logger::Logger;
 use sea_orm_migration::migrator::MigratorTrait;
-use state::{ArcAppState, CONFIG};
+use state::{APP_CONFIG, ArcAppState};
 use tokio::signal;
 
 #[cfg(all(feature = "release", unix))]
@@ -80,11 +80,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = create_app(state).merge(constant::router());
 
-    let listener =
-        tokio::net::TcpListener::bind(format!("0.0.0.0:{}", CONFIG.app.port))
-            .await?;
+    let listener = tokio::net::TcpListener::bind(format!(
+        "0.0.0.0:{}",
+        APP_CONFIG.app.port
+    ))
+    .await?;
 
-    tracing::info!("Server listening on http://127.0.0.1:{}", CONFIG.app.port);
+    tracing::info!(
+        "Server listening on http://127.0.0.1:{}",
+        APP_CONFIG.app.port
+    );
 
     axum::serve(
         listener,

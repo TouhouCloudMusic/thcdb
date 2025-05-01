@@ -16,6 +16,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250426_174454_remove_join_leave_type::Migration),
             Box::new(m20250427_223913_create_image_queue::Migration),
             Box::new(m20250427_233244_create_artist_image::Migration),
+            Box::new(m20250505_115956_add_storage_backend::Migration),
         ]
     }
 }
@@ -29,3 +30,4 @@ mod m20250426_014449_add_artist_location;
 mod m20250426_174454_remove_join_leave_type;
 mod m20250427_223913_create_image_queue;
 mod m20250427_233244_create_artist_image;
+mod m20250505_115956_add_storage_backend;

@@ -18,16 +18,16 @@ use crate::error::InfraError;
 pub use crate::infrastructure::adapter::database::sea_orm::{
     SeaOrmRepository, SeaOrmTransactionRepository,
 };
-use crate::infrastructure::adapter::storage::image::LocalFileImageStorage;
 use crate::infrastructure::config::Config;
 use crate::infrastructure::database::get_connection;
 use crate::infrastructure::redis::Pool;
+use crate::infrastructure::storage::{
+    GenericImageStorage, GenericImageStorageConfig,
+};
 
 pub type ArtistService = crate::service::artist::Service;
-pub type UploadArtistProfileImageUseCase = UploadArtistProfileImageUseCaseTrait<
-    SeaOrmRepository,
-    LocalFileImageStorage,
->;
+pub type UploadArtistProfileImageUseCase =
+    UploadArtistProfileImageUseCaseTrait<SeaOrmRepository, GenericImageStorage>;
 
 pub type CorretionService = crate::service::correction::Service;
 
@@ -35,7 +35,7 @@ pub type EventService = crate::service::event::Service;
 
 pub type ImageService = crate::domain::image::Service<
     SeaOrmTransactionRepository,
-    LocalFileImageStorage,
+    GenericImageStorage,
 >;
 
 pub type LabelService = crate::service::label::Service;
@@ -55,15 +55,17 @@ pub type AuthService =
     crate::application::service::auth::AuthService<SeaOrmRepository>;
 
 pub type AuthSession = axum_login::AuthSession<AuthService>;
-pub static CONFIG: LazyLock<Config> = LazyLock::new(Config::init);
 
-// Should this be a singleton?
+pub static APP_CONFIG: LazyLock<Config> = LazyLock::new(Config::init);
 pub static ARGON2_HASHER: LazyLock<Argon2> = LazyLock::new(Argon2::default);
-pub static FS_IMAGE_STORAGE: LazyLock<LocalFileImageStorage> =
-    LazyLock::new(|| LocalFileImageStorage::new(&IMAGE_PATH));
 
-static IMAGE_PATH: LazyLock<PathBuf> =
+static FS_IMAGE_BASE_PATH: LazyLock<PathBuf> =
     LazyLock::new(|| PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]));
+static FS_IMAGE_STORAGE: LazyLock<GenericImageStorage> = LazyLock::new(|| {
+    GenericImageStorage::new(GenericImageStorageConfig {
+        fs_base_path: FS_IMAGE_BASE_PATH.to_path_buf(),
+    })
+});
 
 #[derive(Clone, FromRefArc)]
 pub struct AppState {
@@ -79,9 +81,9 @@ pub struct AppState {
 
 impl AppState {
     pub async fn init() -> Self {
-        let conn = get_connection(&CONFIG.database_url).await;
-        let redis_pool = Pool::init(&CONFIG.redis_url).await;
-        let stmp_conf = &CONFIG.email;
+        let conn = get_connection(&APP_CONFIG.database_url).await;
+        let redis_pool = Pool::init(&APP_CONFIG.redis_url).await;
+        let stmp_conf = &APP_CONFIG.email;
         let creds = Credentials::new(
             stmp_conf.creds.username.clone(),
             stmp_conf.creds.password.clone(),
@@ -157,7 +159,7 @@ impl TryFromRef<ArcAppState> for ImageService {
 
         Ok(ImageService::builder()
             .repo(tx_repo)
-            .storage(*FS_IMAGE_STORAGE)
+            .storage(FS_IMAGE_STORAGE.clone())
             .build())
     }
 }
@@ -213,7 +215,7 @@ impl FromRef<ArcAppState> for AuthService {
 impl FromRef<ArcAppState> for UploadArtistProfileImageUseCase {
     fn from_ref(input: &ArcAppState) -> Self {
         let repo = input.sea_orm_repo.clone();
-        let storage = *FS_IMAGE_STORAGE;
+        let storage = FS_IMAGE_STORAGE.clone();
         Self::new(repo, storage)
     }
 }
@@ -240,7 +242,7 @@ impl TryFromRef<ArcAppState> for UserImageService {
 
         let image_service = ImageService::builder()
             .repo(tx_repo.clone())
-            .storage(*FS_IMAGE_STORAGE)
+            .storage(FS_IMAGE_STORAGE.clone())
             .build();
         Ok(Self::new(tx_repo, image_service))
     }

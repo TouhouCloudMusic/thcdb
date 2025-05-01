@@ -8,7 +8,7 @@ use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use tower_http::cors::{Any, CorsLayer};
 use tower_sessions_redis_store::RedisStore;
 
-use crate::state::{ArcAppState, CONFIG};
+use crate::state::{APP_CONFIG, ArcAppState};
 use crate::{middleware, state};
 
 pub fn append_global_middleware_layer(
@@ -33,7 +33,7 @@ pub fn append_global_middleware_layer(
     )
     .build();
 
-    let conf = CONFIG.middleware.limit;
+    let conf = APP_CONFIG.middleware.limit;
 
     let limit_layer = middleware::limit_layer()
         .req_per_sec(conf.req_per_sec)
