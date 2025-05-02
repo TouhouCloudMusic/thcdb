@@ -1,60 +1,42 @@
 use std::env;
 
+use nestify::nest;
 use serde::Deserialize;
 
 use crate::utils::Pipe;
 
-#[derive(Clone)]
-pub struct Config {
-    pub database_url: String,
-    pub redis_url: String,
-    pub app: AppConfig,
-    pub email: EmailConfig,
-    pub middleware: MiddlewareConfig,
+nest! {
+    #[derive(Clone, Deserialize)]*
+    pub struct Config {
+        pub database_url: String,
+        pub redis_url: String,
+        pub app: pub struct App {
+            pub port: u16,
+        },
+        pub email: pub struct Email {
+            pub creds: pub struct EmailCreds {
+                pub username: String,
+                pub password: String,
+            },
+            pub host: String,
+        },
+        pub middleware: pub struct Middleware {
+            pub limit: pub struct LimitMiddleware {
+                pub req_per_sec: u64,
+                pub burst_size: u32,
+            }
+        }
+    }
 }
 
-#[derive(Clone, Deserialize)]
-struct ConfigFile {
-    app: AppConfig,
-    email: EmailConfig,
-    middleware: MiddlewareConfig,
-}
-
-#[derive(Clone, Copy, Deserialize)]
-pub struct AppConfig {
-    pub port: u16,
-}
-
-#[derive(Clone, Deserialize)]
-pub struct EmailConfig {
-    pub creds: EmailCreds,
-    pub host: String,
-}
-
-#[derive(Clone, Deserialize)]
-pub struct EmailCreds {
-    pub username: String,
-    pub password: String,
-}
-
-#[derive(Clone, Copy, Deserialize)]
-pub struct MiddlewareConfig {
-    pub limit: LimitMiddlewareConfig,
-}
-
-#[derive(Clone, Copy, Deserialize)]
-pub struct LimitMiddlewareConfig {
-    pub req_per_sec: u64,
-    pub burst_size: u32,
-}
+impl Copy for LimitMiddleware {}
 
 impl Config {
     pub fn init() -> Self {
-        let config = config::Config::builder()
+        config::Config::builder()
             .add_source(config::File::with_name("config"))
-            .pipe(|x| {
-                let cfg = x;
-
+            .add_source(config::Environment::default())
+            .pipe(|cfg| {
                 #[cfg(debug_assertions)]
                 let cfg = cfg.add_source(
                     config::File::with_name("config.dev").required(false),
@@ -63,17 +45,9 @@ impl Config {
                 cfg
             })
             .build()
-            .expect("Failed to build config");
-
-        let config: ConfigFile = config.try_deserialize().unwrap();
-
-        Self {
-            database_url: pretty_unwrap_env("DATABASE_URL"),
-            redis_url: pretty_unwrap_env("REDIS_URL"),
-            app: config.app,
-            email: config.email,
-            middleware: config.middleware,
-        }
+            .expect("Failed to build config")
+            .try_deserialize()
+            .expect("Failed to parse config file")
     }
 }
 
