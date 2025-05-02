@@ -6,12 +6,12 @@ use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::CurrentUser;
+use super::extractor::CurrentUser;
+use super::state::ArcAppState;
 use crate::api_response::Message;
 use crate::domain::model::auth::UserRoleEnum;
 use crate::error::{ApiError, ServiceError};
 use crate::service;
-use crate::state::ArcAppState;
 
 const TAG: &str = "Correction";
 

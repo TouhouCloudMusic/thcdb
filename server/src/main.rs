@@ -30,30 +30,26 @@
 )]
 
 mod api_response;
-mod app;
 mod constant;
-mod controller;
 mod dto;
 mod error;
 mod infrastructure;
-mod middleware;
 mod model;
 mod repo;
 // mod resolver;
 mod application;
 mod domain;
+mod presentation;
 mod service;
-mod state;
 mod types;
 mod utils;
 
-use std::net::SocketAddr;
+use std::sync::Arc;
 
-use app::create_app;
 use infrastructure::logger::Logger;
-use sea_orm_migration::migrator::MigratorTrait;
-use state::{APP_CONFIG, ArcAppState};
-use tokio::signal;
+use infrastructure::singleton::APP_CONFIG;
+use infrastructure::state::AppState;
+use sea_orm_migration::MigratorTrait;
 
 #[cfg(all(feature = "release", unix))]
 mod alloc {
@@ -70,15 +66,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tracing::info!("Starting server");
 
-    let state = ArcAppState::init().await;
+    let state = AppState::init(&APP_CONFIG).await;
 
     migration::Migrator::up(&state.database, None).await?;
 
     model::enum_table::check_database_lookup_tables(&state.database)
         .await
         .expect("Error while checking database lookup tables.");
-
-    let app = create_app(state).merge(constant::router());
 
     let listener = tokio::net::TcpListener::bind(format!(
         "0.0.0.0:{}",
@@ -91,19 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         APP_CONFIG.app.port
     );
 
-    axum::serve(
-        listener,
-        app.into_make_service_with_connect_info::<SocketAddr>(),
-    )
-    .with_graceful_shutdown(async {
-        match signal::ctrl_c().await {
-            Ok(()) => {}
-            Err(err) => {
-                eprintln!("Unable to listen for shutdown signal: {err}");
-            }
-        }
-    })
-    .await?;
+    presentation::rest::listen(listener, Arc::new(state)).await?;
 
     Ok(())
 }

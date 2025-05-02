@@ -1,82 +1,12 @@
-mod artist;
-mod correction;
-mod event;
-// mod graphql;
-mod enum_table;
-mod label;
-mod release;
-mod song;
-mod tag;
-mod user;
-
 use std::convert::Infallible;
 
 use axum::extract::FromRequestParts;
 use axum::http::StatusCode;
 use axum::http::request::Parts;
 use axum::response::IntoResponse;
-use utoipa::OpenApi;
-use utoipa_axum::router::OpenApiRouter;
-use utoipa_axum::routes;
 
+use super::state;
 use crate::domain::user::User;
-use crate::{ArcAppState, state};
-
-#[derive(OpenApi)]
-#[openapi(
-    info(
-        title = "Touhou Cloud DB",
-        description = "TODO",
-        license(
-            name = "MIT",
-            url  = "https://opensource.org/licenses/MIT"
-        )
-    ),
-    // https://github.com/juhaku/utoipa/issues/1165
-    components(schemas(
-        correction::HandleCorrectionMethod
-    ))
-)]
-struct ApiDoc;
-
-pub fn api_router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::with_openapi(ApiDoc::openapi())
-        .merge(artist::router())
-        .merge(correction::router())
-        .merge(event::router())
-        .merge(label::router())
-        .merge(enum_table::router())
-        .merge(release::router())
-        .merge(song::router())
-        .merge(tag::router())
-        .merge(user::router())
-        .routes(routes!(health_check))
-}
-
-#[utoipa::path(
-    get,
-    path = "/health_check",
-    responses(
-        (status = 200)
-    ),
-)]
-async fn health_check() -> impl IntoResponse {
-    StatusCode::OK
-}
-
-macro_rules! data {
-    ($($name:ident, $type:ty $(, $as:ident)? $(,)?)*) => {
-        $(
-            #[derive(utoipa::ToSchema)]
-            struct $name {
-                status: String,
-                data: $type
-            }
-        ) *
-    };
-}
-
-use data;
 
 #[trait_variant::make(Send)]
 pub trait TryFromRef<T> {
@@ -98,7 +28,7 @@ where
     }
 }
 
-struct TryState<S>(pub S);
+pub struct TryState<S>(pub S);
 
 impl<In, Out> FromRequestParts<In> for TryState<Out>
 where
@@ -116,7 +46,7 @@ where
     }
 }
 
-struct CurrentUser(pub User);
+pub struct CurrentUser(pub User);
 
 impl<S> FromRequestParts<S> for CurrentUser
 where

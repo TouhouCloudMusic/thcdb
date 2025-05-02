@@ -6,7 +6,8 @@ use axum_typed_multipart::TypedMultipart;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::{CurrentUser, TryState};
+use super::extractor::{CurrentUser, TryState};
+use super::state::{self, ArcAppState, AuthSession};
 use crate::api_response::{Data, Message};
 use crate::application::dto::user::{UploadAvatar, UploadProfileBanner};
 use crate::application::service::UserImageServiceError;
@@ -19,8 +20,7 @@ use crate::domain::model::markdown::{self, Markdown};
 use crate::domain::user::UserProfile;
 use crate::error::{InfraError, ServiceError};
 use crate::service::user::UploadAvatarError;
-use crate::state::AuthSession;
-use crate::{ArcAppState, api_response, domain, state};
+use crate::{api_response, domain};
 
 const TAG: &str = "User";
 

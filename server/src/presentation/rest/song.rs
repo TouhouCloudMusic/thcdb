@@ -6,12 +6,12 @@ use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::CurrentUser;
+use super::extractor::CurrentUser;
+use super::state::ArcAppState;
 use crate::api_response::{Data, Message};
 use crate::dto::song::{NewSong, SongResponse};
 use crate::error::ServiceError;
 use crate::service::song::Service;
-use crate::state::ArcAppState;
 use crate::utils::MapInto;
 
 const TAG: &str = "Song";

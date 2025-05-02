@@ -5,12 +5,12 @@ use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::CurrentUser;
+use super::extractor::CurrentUser;
+use super::state;
+use super::state::ArcAppState;
 use crate::api_response::{Data, Message};
 use crate::dto::label::{LabelResponse, NewLabel};
 use crate::error::ServiceError;
-use crate::state;
-use crate::state::ArcAppState;
 use crate::utils::MapInto;
 
 const TAG: &str = "Label";

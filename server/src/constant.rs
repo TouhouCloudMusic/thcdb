@@ -1,8 +1,5 @@
-use axum::Router;
-use axum::routing::get;
-
 #[rustfmt::skip]
-mod r#gen;
+pub mod r#gen;
 
 pub const PUBLIC_DIR: &str = "public";
 pub const IMAGE_DIR: &str = "image";
@@ -38,10 +35,4 @@ mod share {
     pub const USER_PASSWORD_MAX_LENGTH: u8 = 64;
     pub const USER_PASSWORD_REGEX_STR: &str =
         r"^[A-Za-z\d`~!@#$%^&*()\-_=+]{8,64}$";
-}
-
-pub fn router() -> Router {
-    Router::new()
-        .route("/constant.ts", get(async || r#gen::TS_CONSTANTS.clone()))
-        .route("/constant.kt", get(async || r#gen::KT_CONSTANTS.clone()))
 }

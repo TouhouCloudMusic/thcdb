@@ -7,7 +7,9 @@ use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::{CurrentUser, data};
+use super::data;
+use super::extractor::CurrentUser;
+use super::state::{self, ArcAppState};
 use crate::api_response::{Data, Message};
 use crate::application::artist::upload_profile_image::{
     self, UploadArtistProfileImageDto,
@@ -15,7 +17,6 @@ use crate::application::artist::upload_profile_image::{
 use crate::domain::artist::model::Artist;
 use crate::dto::artist::ArtistCorrection;
 use crate::error::{InfraError, ServiceError};
-use crate::state::{self, ArcAppState};
 use crate::utils::MapInto;
 use crate::{domain, service};
 

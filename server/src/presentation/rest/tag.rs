@@ -5,11 +5,11 @@ use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::CurrentUser;
+use super::extractor::CurrentUser;
+use super::state::{self, ArcAppState};
 use crate::api_response::{self, Data};
 use crate::dto::tag::{TagCorrection, TagResponse};
 use crate::error::ServiceError;
-use crate::state::{self, ArcAppState};
 use crate::utils::MapInto;
 
 const TAG: &str = "Tag";

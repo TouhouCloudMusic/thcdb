@@ -5,11 +5,11 @@ use sea_orm::EntityTrait;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use super::state::ArcAppState;
 use crate::api_response::Data;
 use crate::domain::model::auth::UserRoleEnum;
 use crate::dto::share::Language;
 use crate::error::InfraError;
-use crate::state::ArcAppState;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()

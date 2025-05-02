@@ -15,7 +15,7 @@ use utoipa::ToSchema;
 use crate::api_response::{Error, IntoApiResponse};
 use crate::constant::{USER_NAME_REGEX_STR, USER_PASSWORD_REGEX_STR};
 use crate::error::InfraError;
-use crate::state::ARGON2_HASHER;
+use crate::infrastructure::singleton::ARGON2_HASHER;
 
 error_set! {
     #[derive(ApiError, From)]
