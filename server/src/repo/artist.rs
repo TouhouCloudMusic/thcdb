@@ -1,21 +1,17 @@
-use std::sync::LazyLock;
-
 use axum::http::StatusCode;
 use derive_more::From;
 use entity::sea_orm_active_enums::{ArtistType, EntityType};
 use entity::{
     artist, artist_alias, artist_alias_history, artist_history, artist_link,
     artist_link_history, artist_localized_name, artist_localized_name_history,
-    correction, correction_revision, group_member, group_member_history,
-    group_member_join_leave, group_member_join_leave_history,
-    group_member_role, group_member_role_history,
+    artist_membership, artist_membership_history, artist_membership_role,
+    artist_membership_role_history, artist_membership_tenure,
+    artist_membership_tenure_history, correction, correction_revision,
 };
 use error_set::error_set;
 use itertools::{Itertools, izip};
 use macros::ApiError;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::prelude::Expr;
-use sea_orm::sea_query::{Alias, PostgresQueryBuilder, Query};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, ConnectionTrait,
     DatabaseTransaction, DbErr, EntityName, EntityTrait, LoaderTrait,
@@ -26,7 +22,6 @@ use tokio::try_join;
 use crate::dto::artist::{ArtistCorrection, NewGroupMember, NewLocalizedName};
 use crate::error::ServiceError;
 use crate::repo;
-use crate::utils::orm::PgFuncExt;
 use crate::utils::{Pipe, Reverse};
 
 error_set! {
@@ -169,24 +164,28 @@ pub(super) async fn apply_correction(
     update_artist_localized_names(correction.entity_id, localized_names, db)
         .await?;
 
-    let group_member = history
-        .find_related(group_member_history::Entity)
+    let artist_membership = history
+        .find_related(artist_membership_history::Entity)
         .all(db)
         .await?;
 
-    let group_member_role = group_member
-        .load_many(group_member_role_history::Entity, db)
+    let artist_membership_role = artist_membership
+        .load_many(artist_membership_role_history::Entity, db)
         .await?;
 
-    let group_member_join_leave = group_member
-        .load_many(group_member_join_leave_history::Entity, db)
+    let artist_membership_tenure = artist_membership
+        .load_many(artist_membership_tenure_history::Entity, db)
         .await?;
 
-    update_artist_group_member(
+    update_artist_artist_membership(
         correction.entity_id,
         history.artist_type,
-        izip!(group_member, group_member_role, group_member_join_leave)
-            .collect_vec(),
+        izip!(
+            artist_membership,
+            artist_membership_role,
+            artist_membership_tenure
+        )
+        .collect_vec(),
         db,
     )
     .await?;
@@ -334,14 +333,14 @@ async fn create_artist_localized_name_history<C: ConnectionTrait>(
     Ok(())
 }
 
-async fn create_artist_group_member<C: ConnectionTrait>(
+async fn create_artist_artist_membership<C: ConnectionTrait>(
     artist_id: i32,
     artist_type: ArtistType,
     members: Option<&[NewGroupMember]>,
     db: &C,
 ) -> Result<(), DbErr> {
     if let Some(members) = members {
-        let (group_member_model, todo_roles, todo_join_leaves): (
+        let (artist_membership_model, todo_roles, todo_join_leaves): (
             Vec<_>,
             Vec<_>,
             Vec<_>,
@@ -354,15 +353,15 @@ async fn create_artist_group_member<C: ConnectionTrait>(
                     (Set(artist_id), Set(member.artist_id))
                 };
 
-                let group_member_model = group_member::ActiveModel {
+                let artist_membership_model = artist_membership::ActiveModel {
                     id: NotSet,
                     member_id,
                     group_id,
                 };
 
                 let todo_roles = member.roles.iter().map(|role_id| {
-                    group_member_role::ActiveModel {
-                        group_member_id: NotSet,
+                    artist_membership_role::ActiveModel {
+                        membership_id: NotSet,
                         role_id: Set(*role_id),
                     }
                 });
@@ -370,21 +369,21 @@ async fn create_artist_group_member<C: ConnectionTrait>(
                 let todo_join_leaves =
                     member.join_leave.clone().into_iter().map(
                         |(join_year, leave_year)| {
-                            group_member_join_leave::ActiveModel {
+                            artist_membership_tenure::ActiveModel {
                                 id: NotSet,
-                                group_member_id: NotSet,
+                                membership_id: NotSet,
                                 join_year: Set(join_year),
                                 leave_year: Set(leave_year),
                             }
                         },
                     );
 
-                (group_member_model, todo_roles, todo_join_leaves)
+                (artist_membership_model, todo_roles, todo_join_leaves)
             })
             .multiunzip();
 
-        let TryInsertResult::Inserted(new_group_members) =
-            group_member::Entity::insert_many(group_member_model)
+        let TryInsertResult::Inserted(new_artist_memberships) =
+            artist_membership::Entity::insert_many(artist_membership_model)
                 .on_empty_do_nothing()
                 .exec_with_returning_many(db)
                 .await?
@@ -392,33 +391,33 @@ async fn create_artist_group_member<C: ConnectionTrait>(
             return Ok(());
         };
 
-        let role_models = new_group_members
+        let role_models = new_artist_memberships
             .iter()
             .zip(todo_roles.into_iter())
-            .flat_map(|(group_member, roles)| {
+            .flat_map(|(artist_membership, roles)| {
                 roles.into_iter().map(|mut active_model| {
-                    active_model.group_member_id = Set(group_member.id);
+                    active_model.membership_id = Set(artist_membership.id);
                     active_model
                 })
             });
 
-        let join_leave_models = new_group_members
+        let join_leave_models = new_artist_memberships
             .iter()
             .zip(todo_join_leaves.into_iter())
-            .flat_map(|(group_member, join_leaves)| {
+            .flat_map(|(artist_membership, join_leaves)| {
                 join_leaves.into_iter().map(|mut active_model| {
-                    active_model.group_member_id = Set(group_member.id);
+                    active_model.membership_id = Set(artist_membership.id);
                     active_model
                 })
             });
 
         // We checked length of members before, so this should be safe
 
-        group_member_role::Entity::insert_many(role_models)
+        artist_membership_role::Entity::insert_many(role_models)
             .exec(db)
             .await?;
 
-        group_member_join_leave::Entity::insert_many(join_leave_models)
+        artist_membership_tenure::Entity::insert_many(join_leave_models)
             .exec(db)
             .await?;
     }
@@ -426,7 +425,7 @@ async fn create_artist_group_member<C: ConnectionTrait>(
     Ok(())
 }
 
-async fn create_artist_group_member_history<'f, C: ConnectionTrait>(
+async fn create_artist_artist_membership_history<'f, C: ConnectionTrait>(
     history_id: i32,
     members: Option<&'f [NewGroupMember]>,
     db: &'f C,
@@ -434,7 +433,7 @@ async fn create_artist_group_member_history<'f, C: ConnectionTrait>(
     if let Some(members) = members
         && !members.is_empty()
     {
-        let (group_member_history_model, todo_roles, todo_join_leaves): (
+        let (artist_membership_history_model, todo_roles, todo_join_leaves): (
             Vec<_>,
             Vec<_>,
             Vec<_>,
@@ -442,22 +441,22 @@ async fn create_artist_group_member_history<'f, C: ConnectionTrait>(
             .iter()
             .map(|member| {
                 (
-                    group_member_history::ActiveModel {
+                    artist_membership_history::ActiveModel {
                         id: NotSet,
                         history_id: Set(history_id),
                         artist_id: Set(member.artist_id),
                     },
                     member.roles.iter().map(|role_id| {
-                        group_member_role_history::ActiveModel {
-                            group_member_history_id: NotSet,
+                        artist_membership_role_history::ActiveModel {
+                            membership_history_id: NotSet,
                             role_id: Set(*role_id),
                         }
                     }),
                     member.join_leave.clone().into_iter().map(
                         |(join_year, leave_year)| {
-                            group_member_join_leave_history::ActiveModel {
+                            artist_membership_tenure_history::ActiveModel {
                                 id: NotSet,
-                                group_member_history_id: NotSet,
+                                membership_history_id: NotSet,
                                 join_year: Set(join_year),
                                 leave_year: Set(leave_year),
                             }
@@ -467,40 +466,43 @@ async fn create_artist_group_member_history<'f, C: ConnectionTrait>(
             })
             .multiunzip();
 
-        let new_group_members = group_member_history::Entity::insert_many(
-            group_member_history_model,
-        )
-        .exec_with_returning_many(db)
-        .await?;
+        let new_artist_memberships =
+            artist_membership_history::Entity::insert_many(
+                artist_membership_history_model,
+            )
+            .exec_with_returning_many(db)
+            .await?;
 
-        let role_models = new_group_members
+        let role_models = new_artist_memberships
             .iter()
             .zip(todo_roles.into_iter())
-            .flat_map(|(group_member_history, roles)| {
+            .flat_map(|(artist_membership_history, roles)| {
                 roles.into_iter().map(|mut active_model| {
-                    active_model.group_member_history_id =
-                        Set(group_member_history.id);
+                    active_model.membership_history_id =
+                        Set(artist_membership_history.id);
                     active_model
                 })
             });
 
-        let join_leave_models = new_group_members
+        let join_leave_models = new_artist_memberships
             .iter()
             .zip(todo_join_leaves.into_iter())
             .flat_map(|(history, join_leaves)| {
                 join_leaves.into_iter().map(|mut active_model| {
-                    active_model.group_member_history_id = Set(history.id);
+                    active_model.membership_history_id = Set(history.id);
                     active_model
                 })
             });
 
-        group_member_role_history::Entity::insert_many(role_models)
+        artist_membership_role_history::Entity::insert_many(role_models)
             .exec(db)
             .await?;
 
-        group_member_join_leave_history::Entity::insert_many(join_leave_models)
-            .exec(db)
-            .await?;
+        artist_membership_tenure_history::Entity::insert_many(
+            join_leave_models,
+        )
+        .exec(db)
+        .await?;
     }
 
     Ok(())
@@ -520,7 +522,7 @@ async fn save_artist_and_relations(
             data.localized_name.as_deref(),
             db
         ),
-        create_artist_group_member(
+        create_artist_artist_membership(
             artist.id,
             data.artist_type,
             data.members.as_deref(),
@@ -545,7 +547,7 @@ async fn save_artist_history_and_relations(
             data.localized_name.as_deref(),
             db,
         ),
-        create_artist_group_member_history(
+        create_artist_artist_membership_history(
             history.id,
             data.members.as_deref(),
             db
@@ -651,22 +653,22 @@ async fn update_artist_localized_names(
     Ok(())
 }
 
-async fn update_artist_group_member(
+async fn update_artist_artist_membership(
     artist_id: i32,
     artist_type: ArtistType,
     members: Vec<(
-        group_member_history::Model,
-        Vec<group_member_role_history::Model>,
-        Vec<group_member_join_leave_history::Model>,
+        artist_membership_history::Model,
+        Vec<artist_membership_role_history::Model>,
+        Vec<artist_membership_tenure_history::Model>,
     )>,
     db: &impl ConnectionTrait,
 ) -> Result<(), DbErr> {
-    // group_member_role and group_member_join_leave are deleted by database cascade
-    group_member::Entity::delete_many()
+    // artist_membership_role and artist_membership_tenure are deleted by database cascade
+    artist_membership::Entity::delete_many()
         .filter(
             Condition::any()
-                .add(group_member::Column::MemberId.eq(artist_id))
-                .add(group_member::Column::GroupId.eq(artist_id)),
+                .add(artist_membership::Column::MemberId.eq(artist_id))
+                .add(artist_membership::Column::GroupId.eq(artist_id)),
         )
         .exec(db)
         .await?;
@@ -675,10 +677,10 @@ async fn update_artist_group_member(
         return Ok(());
     }
 
-    let group_member_models =
-        members.iter().map(|(group_member_history, _, _)| {
+    let artist_membership_models =
+        members.iter().map(|(artist_membership_history, _, _)| {
             let (group_id, member_id) =
-                (artist_id, group_member_history.artist_id).pipe(|x| {
+                (artist_id, artist_membership_history.artist_id).pipe(|x| {
                     if artist_type.is_multiple() {
                         x
                     } else {
@@ -686,14 +688,14 @@ async fn update_artist_group_member(
                     }
                 });
 
-            group_member::ActiveModel {
+            artist_membership::ActiveModel {
                 id: NotSet,
                 group_id: Set(group_id),
                 member_id: Set(member_id),
             }
         });
 
-    let res = group_member::Entity::insert_many(group_member_models)
+    let res = artist_membership::Entity::insert_many(artist_membership_models)
         .exec_with_returning_many(db)
         .await?;
 
@@ -701,13 +703,15 @@ async fn update_artist_group_member(
         res.iter()
             .zip(members.iter())
             .flat_map(|(a, (_, role_history, _))| {
-                role_history.iter().map(|m| group_member_role::ActiveModel {
-                    group_member_id: Set(a.id),
-                    role_id: Set(m.role_id),
+                role_history.iter().map(|m| {
+                    artist_membership_role::ActiveModel {
+                        membership_id: Set(a.id),
+                        role_id: Set(m.role_id),
+                    }
                 })
             });
 
-    group_member_role::Entity::insert_many(role_models)
+    artist_membership_role::Entity::insert_many(role_models)
         .exec(db)
         .await?;
 
@@ -716,90 +720,27 @@ async fn update_artist_group_member(
             .zip(members.iter())
             .flat_map(|(res, (_, _, jl_history))| {
                 jl_history.iter().map(|model| {
-                    group_member_join_leave::ActiveModel {
+                    artist_membership_tenure::ActiveModel {
                         id: NotSet,
-                        group_member_id: Set(res.id),
+                        membership_id: Set(res.id),
                         join_year: Set(model.join_year),
                         leave_year: Set(model.leave_year),
                     }
                 })
             });
 
-    group_member_join_leave::Entity::insert_many(join_leave_models)
+    artist_membership_tenure::Entity::insert_many(join_leave_models)
         .exec(db)
         .await?;
 
     Ok(())
 }
 
-static GET_GROUP_MEMBER_FROM_ARTIST_HISTORY_BY_ID_SQL: LazyLock<String> =
-    LazyLock::<String>::new(|| {
-        use entity::group_member_join_leave_history as join_leave_history;
-
-        let query = Query::select()
-            .column(group_member_history::Column::ArtistId)
-            .expr_as(
-                PgFuncExt::array_agg(Expr::col((
-                    group_member_role_history::Entity,
-                    group_member_role_history::Column::RoleId,
-                ))),
-                Alias::new("role_id"),
-            )
-            .expr_as(
-                PgFuncExt::array_agg(Expr::tuple(
-                    [
-                        join_leave_history::Column::JoinYear,
-                        join_leave_history::Column::LeaveYear,
-                    ]
-                    .map(|x| Expr::col(x).into()),
-                )),
-                Alias::new("join_leave"),
-            )
-            .from(group_member_history::Entity)
-            .left_join(
-                group_member_role_history::Entity,
-                Expr::col((
-                    group_member_role_history::Entity,
-                    group_member_role_history::Column::GroupMemberHistoryId,
-                ))
-                .equals((
-                    group_member_history::Entity,
-                    group_member_history::Column::Id,
-                )),
-            )
-            .left_join(
-                join_leave_history::Entity,
-                Expr::col((
-                    group_member_role_history::Entity,
-                    join_leave_history::Column::GroupMemberHistoryId,
-                ))
-                .equals((
-                    group_member_history::Entity,
-                    group_member_history::Column::Id,
-                )),
-            )
-            .and_where(
-                Expr::col((
-                    group_member_history::Entity,
-                    group_member_history::Column::Id,
-                ))
-                .eq(1),
-            )
-            .add_group_by([
-                Expr::col(group_member_history::Column::ArtistId).into()
-            ])
-            .to_owned();
-
-        let (stmt, _) = query.build(PostgresQueryBuilder);
-
-        stmt
-    });
-
 #[cfg(test)]
 mod test {
 
     // #[tokio::test]
-    // async fn get_group_member_from_artist_history_exec() -> Result<(), DbErr> {
+    // async fn get_artist_membership_from_artist_history_exec() -> Result<(), DbErr> {
     //     // TODO: Test env and test database
     //     dotenvy::dotenv().ok();
     //     let config = crate::infrastructure::config::Config::init();
@@ -808,7 +749,7 @@ mod test {
     //     let res = client
     //         .query_one(Statement::from_sql_and_values(
     //             DbBackend::Postgres,
-    //             &*GET_GROUP_MEMBER_FROM_ARTIST_HISTORY_BY_ID_SQL,
+    //             &*GET_artist_membership_FROM_ARTIST_HISTORY_BY_ID_SQL,
     //             [1.into()],
     //         ))
     //         .await

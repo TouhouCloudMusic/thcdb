@@ -6,16 +6,24 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
 )]
-#[sea_orm(table_name = "group_member_role")]
+#[sea_orm(table_name = "artist_membership_role_history")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub group_member_id: i32,
+    pub membership_history_id: i32,
     #[sea_orm(primary_key, auto_increment = false)]
     pub role_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::artist_membership_history::Entity",
+        from = "Column::MembershipHistoryId",
+        to = "super::artist_membership_history::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    ArtistMembershipHistory,
     #[sea_orm(
         belongs_to = "super::credit_role::Entity",
         from = "Column::RoleId",
@@ -24,25 +32,17 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     CreditRole,
-    #[sea_orm(
-        belongs_to = "super::group_member::Entity",
-        from = "Column::GroupMemberId",
-        to = "super::group_member::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
-    )]
-    GroupMember,
+}
+
+impl Related<super::artist_membership_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ArtistMembershipHistory.def()
+    }
 }
 
 impl Related<super::credit_role::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::CreditRole.def()
-    }
-}
-
-impl Related<super::group_member::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::GroupMember.def()
     }
 }
 

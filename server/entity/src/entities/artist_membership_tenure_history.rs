@@ -6,11 +6,11 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
 )]
-#[sea_orm(table_name = "group_member_join_leave_history")]
+#[sea_orm(table_name = "artist_membership_tenure_history")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub group_member_history_id: i32,
+    pub membership_history_id: i32,
     pub join_year: Option<i16>,
     pub leave_year: Option<i16>,
 }
@@ -18,18 +18,18 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::group_member_history::Entity",
-        from = "Column::GroupMemberHistoryId",
-        to = "super::group_member_history::Column::Id",
+        belongs_to = "super::artist_membership_history::Entity",
+        from = "Column::MembershipHistoryId",
+        to = "super::artist_membership_history::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    GroupMemberHistory,
+    ArtistMembershipHistory,
 }
 
-impl Related<super::group_member_history::Entity> for Entity {
+impl Related<super::artist_membership_history::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::GroupMemberHistory.def()
+        Relation::ArtistMembershipHistory.def()
     }
 }
 

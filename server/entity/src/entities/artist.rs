@@ -40,8 +40,8 @@ pub enum Relation {
     ArtistLink,
     #[sea_orm(has_many = "super::artist_localized_name::Entity")]
     ArtistLocalizedName,
-    #[sea_orm(has_many = "super::group_member_history::Entity")]
-    GroupMemberHistory,
+    #[sea_orm(has_many = "super::artist_membership_history::Entity")]
+    ArtistMembershipHistory,
     #[sea_orm(has_many = "super::label_founder::Entity")]
     LabelFounder,
     #[sea_orm(has_many = "super::label_founder_history::Entity")]
@@ -98,9 +98,9 @@ impl Related<super::artist_localized_name::Entity> for Entity {
     }
 }
 
-impl Related<super::group_member_history::Entity> for Entity {
+impl Related<super::artist_membership_history::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::GroupMemberHistory.def()
+        Relation::ArtistMembershipHistory.def()
     }
 }
 

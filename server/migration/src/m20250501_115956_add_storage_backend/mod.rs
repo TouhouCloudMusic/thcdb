@@ -4,6 +4,7 @@ pub struct Migration;
 
 impl MigrationName for Migration {
     fn name(&self) -> &str {
+        // typo, don't fix
         "m20250505_115956_add_storage_backend"
     }
 }

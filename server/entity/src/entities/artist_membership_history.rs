@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
 )]
-#[sea_orm(table_name = "group_member_history")]
+#[sea_orm(table_name = "artist_membership_history")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
@@ -32,10 +32,10 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     ArtistHistory,
-    #[sea_orm(has_many = "super::group_member_join_leave_history::Entity")]
-    GroupMemberJoinLeaveHistory,
-    #[sea_orm(has_many = "super::group_member_role_history::Entity")]
-    GroupMemberRoleHistory,
+    #[sea_orm(has_many = "super::artist_membership_role_history::Entity")]
+    ArtistMembershipRoleHistory,
+    #[sea_orm(has_many = "super::artist_membership_tenure_history::Entity")]
+    ArtistMembershipTenureHistory,
 }
 
 impl Related<super::artist::Entity> for Entity {
@@ -50,28 +50,24 @@ impl Related<super::artist_history::Entity> for Entity {
     }
 }
 
-impl Related<super::group_member_join_leave_history::Entity> for Entity {
+impl Related<super::artist_membership_role_history::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::GroupMemberJoinLeaveHistory.def()
+        Relation::ArtistMembershipRoleHistory.def()
     }
 }
 
-impl Related<super::group_member_role_history::Entity> for Entity {
+impl Related<super::artist_membership_tenure_history::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::GroupMemberRoleHistory.def()
+        Relation::ArtistMembershipTenureHistory.def()
     }
 }
 
 impl Related<super::credit_role::Entity> for Entity {
     fn to() -> RelationDef {
-        super::group_member_role_history::Relation::CreditRole.def()
+        super::artist_membership_role_history::Relation::CreditRole.def()
     }
     fn via() -> Option<RelationDef> {
-        Some(
-            super::group_member_role_history::Relation::GroupMemberHistory
-                .def()
-                .rev(),
-        )
+        Some (super :: artist_membership_role_history :: Relation :: ArtistMembershipHistory . def () . rev ())
     }
 }
 

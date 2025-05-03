@@ -4,8 +4,8 @@ use std::path::PathBuf;
 use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{
     artist_alias, artist_image, artist_link, artist_localized_name,
-    credit_role, group_member, group_member_join_leave, group_member_role,
-    image, language,
+    artist_membership, artist_membership_role, artist_membership_tenure,
+    credit_role, image, language,
 };
 use itertools::{Itertools, izip};
 use sea_orm::{
@@ -90,25 +90,32 @@ async fn find_many_impl(
     let localized_names =
         artists.load_many(artist_localized_name::Entity, db).await?;
 
-    let group_members = group_member::Entity::find()
+    let artist_memberships = artist_membership::Entity::find()
         .filter(
             Condition::any()
-                .add(group_member::Column::MemberId.is_in(ids.iter().copied()))
-                .add(group_member::Column::GroupId.is_in(ids)),
+                .add(
+                    artist_membership::Column::MemberId
+                        .is_in(ids.iter().copied()),
+                )
+                .add(artist_membership::Column::GroupId.is_in(ids)),
         )
         .all(db)
         .await?;
 
-    let roles = group_members
-        .load_many_to_many(credit_role::Entity, group_member_role::Entity, db)
+    let roles = artist_memberships
+        .load_many_to_many(
+            credit_role::Entity,
+            artist_membership_role::Entity,
+            db,
+        )
         .await?;
 
-    let join_leaves = group_members
-        .load_many(group_member_join_leave::Entity, db)
+    let join_leaves = artist_memberships
+        .load_many(artist_membership_tenure::Entity, db)
         .await?;
 
     let group_association =
-        izip!(group_members, roles, join_leaves).collect_vec();
+        izip!(artist_memberships, roles, join_leaves).collect_vec();
 
     let langs = language::Entity::find()
         .filter(

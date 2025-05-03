@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
 )]
-#[sea_orm(table_name = "group_member")]
+#[sea_orm(table_name = "artist_membership")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
@@ -32,30 +32,34 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Artist1,
-    #[sea_orm(has_many = "super::group_member_join_leave::Entity")]
-    GroupMemberJoinLeave,
-    #[sea_orm(has_many = "super::group_member_role::Entity")]
-    GroupMemberRole,
+    #[sea_orm(has_many = "super::artist_membership_role::Entity")]
+    ArtistMembershipRole,
+    #[sea_orm(has_many = "super::artist_membership_tenure::Entity")]
+    ArtistMembershipTenure,
 }
 
-impl Related<super::group_member_join_leave::Entity> for Entity {
+impl Related<super::artist_membership_role::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::GroupMemberJoinLeave.def()
+        Relation::ArtistMembershipRole.def()
     }
 }
 
-impl Related<super::group_member_role::Entity> for Entity {
+impl Related<super::artist_membership_tenure::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::GroupMemberRole.def()
+        Relation::ArtistMembershipTenure.def()
     }
 }
 
 impl Related<super::credit_role::Entity> for Entity {
     fn to() -> RelationDef {
-        super::group_member_role::Relation::CreditRole.def()
+        super::artist_membership_role::Relation::CreditRole.def()
     }
     fn via() -> Option<RelationDef> {
-        Some(super::group_member_role::Relation::GroupMember.def().rev())
+        Some(
+            super::artist_membership_role::Relation::ArtistMembership
+                .def()
+                .rev(),
+        )
     }
 }
 
