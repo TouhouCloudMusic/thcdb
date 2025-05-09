@@ -8,9 +8,7 @@ use thiserror::Error;
 use crate::domain::model::auth::{
     AuthCredential, AuthnError, ValidateCredsError,
 };
-use crate::domain::repository::{
-    RepositoryTrait, TransactionManager, TransactionRepositoryTrait,
-};
+use crate::domain::repository::{Connection, Transaction, TransactionManager};
 use crate::domain::user::{self, TransactionRepository, User};
 use crate::error::InfraError;
 
@@ -113,15 +111,15 @@ impl<R> AuthService<R> {
 trait AuthServiceTraitBounds<R> = where
     R: TransactionManager + user::Repository,
     R::TransactionRepository: user::TransactionRepository,
-    InfraError: From<R::Error>
-        + From<<R::TransactionRepository as RepositoryTrait>::Error>;
+    InfraError:
+        From<R::Error> + From<<R::TransactionRepository as Connection>::Error>;
 
 impl<R> AuthServiceTrait<R> for AuthService<R>
 where
     R: TransactionManager + user::Repository,
     R::TransactionRepository: user::TransactionRepository,
-    InfraError: From<R::Error>
-        + From<<R::TransactionRepository as RepositoryTrait>::Error>,
+    InfraError:
+        From<R::Error> + From<<R::TransactionRepository as Connection>::Error>,
 {
     async fn sign_in(
         &self,

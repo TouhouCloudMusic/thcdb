@@ -8,14 +8,16 @@ use crate::application::artist::upload_profile_image::UploadArtistProfileImageUs
 use crate::application::use_case;
 use crate::domain::repository::TransactionManager;
 use crate::error::InfraError;
-pub use crate::infrastructure::adapter::database::sea_orm::{
-    SeaOrmRepository, SeaOrmTransactionRepository,
+pub use crate::infrastructure::database::sea_orm::{
+    SeaOrmRepository, SeaOrmTxRepo,
 };
 use crate::infrastructure::singleton::FS_IMAGE_STORAGE;
 use crate::infrastructure::state::AppState;
 use crate::infrastructure::storage::GenericImageStorage;
 
 pub type ArtistService = crate::service::artist::Service;
+pub type ArtistServiceNew =
+    crate::application::artist::Service<SeaOrmRepository>;
 pub type UploadArtistProfileImageUseCase =
     UploadArtistProfileImageUseCaseTrait<SeaOrmRepository, GenericImageStorage>;
 
@@ -23,10 +25,8 @@ pub type CorretionService = crate::service::correction::Service;
 
 pub type EventService = crate::service::event::Service;
 
-pub type ImageService = crate::domain::image::Service<
-    SeaOrmTransactionRepository,
-    GenericImageStorage,
->;
+pub type ImageService =
+    crate::domain::image::Service<SeaOrmTxRepo, GenericImageStorage>;
 
 pub type LabelService = crate::service::label::Service;
 
@@ -37,7 +37,7 @@ pub type SongService = crate::service::song::Service;
 pub type TagService = crate::service::tag::Service<SeaOrmRepository>;
 pub type UserService = crate::service::user::Service;
 pub type UserImageService = crate::application::service::user::UserImageService<
-    SeaOrmTransactionRepository,
+    SeaOrmTxRepo,
     ImageService,
 >;
 
@@ -78,6 +78,14 @@ impl FromRef<ArcAppState> for use_case::user::Profile<SeaOrmRepository> {
 impl FromRef<ArcAppState> for ArtistService {
     fn from_ref(input: &ArcAppState) -> Self {
         Self::new(input.database.clone())
+    }
+}
+
+impl FromRef<ArcAppState> for ArtistServiceNew {
+    fn from_ref(input: &ArcAppState) -> Self {
+        ArtistServiceNew {
+            repo: input.sea_orm_repo.clone(),
+        }
     }
 }
 
@@ -153,7 +161,7 @@ impl FromRef<ArcAppState> for UploadArtistProfileImageUseCase {
     }
 }
 
-impl TryFromRef<ArcAppState> for SeaOrmTransactionRepository {
+impl TryFromRef<ArcAppState> for SeaOrmTxRepo {
     type Rejection = InfraError;
 
     async fn try_from_ref(input: &ArcAppState) -> Result<Self, Self::Rejection>
@@ -171,7 +179,7 @@ impl TryFromRef<ArcAppState> for UserImageService {
     where
         Self: Sized,
     {
-        let tx_repo = SeaOrmTransactionRepository::try_from_ref(input).await?;
+        let tx_repo = SeaOrmTxRepo::try_from_ref(input).await?;
 
         let image_service = ImageService::builder()
             .repo(tx_repo.clone())

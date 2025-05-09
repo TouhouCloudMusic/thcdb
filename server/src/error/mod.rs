@@ -1,9 +1,10 @@
+use std::borrow::Cow;
 use std::fmt::Debug;
 
 use argon2::password_hash;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use derive_more::{Display, Error, From};
+use derive_more::{Display, From};
 use entity::sea_orm_active_enums::EntityType;
 use error_set::error_set;
 use macros::{ApiError, IntoErrorSchema};
@@ -73,45 +74,39 @@ impl IntoResponse for ApiError {
     }
 }
 
-#[derive(Debug, Display, From, Error)]
-enum InfraErrorEnum {
-    SeaOrm(DbErr),
-    Tokio(tokio::task::JoinError),
-    Io(std::io::Error),
-    PasswordHash(password_hash::Error),
-}
-
-#[derive(Debug, Display, Error, ApiError, IntoErrorSchema)]
+#[derive(
+    Debug, Display, derive_more::Error, From, ApiError, IntoErrorSchema,
+)]
 #[display("Internal server error")]
 #[api_error(
     status_code = StatusCode::INTERNAL_SERVER_ERROR,
     into_response = self,
 )]
-pub struct InfraError(InfraErrorEnum);
-
-impl<T> From<T> for InfraError
-where
-    T: Into<InfraErrorEnum>,
-{
-    fn from(value: T) -> Self {
-        Self(value.into())
-    }
+pub enum InfraError {
+    SeaOrm(DbErr),
+    Tokio(tokio::task::JoinError),
+    Io(std::io::Error),
+    PasswordHash(password_hash::Error),
+    Custom(#[error(not(source))] Cow<'static, str>),
 }
 
 impl IntoApiResponse for InfraError {
     fn into_api_response(self) -> axum::response::Response {
-        match &self.0 {
-            InfraErrorEnum::SeaOrm(err) => {
+        match &self {
+            InfraError::SeaOrm(err) => {
                 tracing::error!("Database error: {err}");
             }
-            InfraErrorEnum::Tokio(err) => {
+            InfraError::Tokio(err) => {
                 tracing::error!("Tokio error: {err}");
             }
-            InfraErrorEnum::Io(err) => {
+            InfraError::Io(err) => {
                 tracing::error!("IO error: {err}");
             }
-            InfraErrorEnum::PasswordHash(err) => {
+            InfraError::PasswordHash(err) => {
                 tracing::error!("Password hash error: {err}");
+            }
+            InfraError::Custom(cow) => {
+                tracing::error!("{cow}");
             }
         }
 

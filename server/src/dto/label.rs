@@ -7,9 +7,9 @@ use sea_orm::IntoActiveValue;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-pub use super::artist::NewLocalizedName;
 use super::correction::Metadata;
 use super::share::SimpleLocalizedName;
+use crate::domain::share::model::NewLocalizedName;
 
 #[derive(ToSchema, Serialize)]
 #[schema(

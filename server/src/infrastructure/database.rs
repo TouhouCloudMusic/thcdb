@@ -1,4 +1,6 @@
-use sea_orm::{ConnectOptions, Database, DatabaseConnection};
+use ::sea_orm::{ConnectOptions, Database, DatabaseConnection};
+
+pub mod sea_orm;
 
 pub async fn get_connection(url: &str) -> DatabaseConnection {
     let opt = ConnectOptions::new(url)

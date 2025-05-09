@@ -1,9 +1,7 @@
-/target
 .env
 .idea
-/public
+public
+target
 rustc*
 config.dev.ron
-
-
 src/constant/gen.rs

@@ -4420,6 +4420,7 @@ dependencies = [
  "tracing-subscriber",
  "tracing-test",
  "trait-variant",
+ "url",
  "utoipa",
  "utoipa-axum",
  "utoipa-scalar",
@@ -4988,6 +4989,7 @@ dependencies = [
  "form_urlencoded",
  "idna",
  "percent-encoding",
+ "serde",
 ]
 
 [[package]]
@@ -5055,6 +5057,7 @@ dependencies = [
  "quote",
  "regex",
  "syn 2.0.101",
+ "url",
 ]
 
 [[package]]

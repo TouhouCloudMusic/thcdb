@@ -13,9 +13,7 @@ use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 use macros::ApiError;
 
 use crate::domain::model::image::{Image, NewImage};
-use crate::domain::repository::{
-    TransactionManager, TransactionRepositoryTrait,
-};
+use crate::domain::repository::{Transaction, TransactionManager};
 use crate::error::InfraError;
 
 error_set! {
@@ -365,7 +363,7 @@ impl<Repo, Storage, TxRepo> ServiceTrait for Service<Repo, Storage>
 where
     Repo:
         super::Repository + TransactionManager<TransactionRepository = TxRepo>,
-    TxRepo: super::Repository + TransactionRepositoryTrait,
+    TxRepo: super::Repository + Transaction,
     Storage: AsyncImageStorage,
     InfraError: From<Repo::Error> + From<TxRepo::Error> + From<Storage::Error>,
 {
@@ -376,7 +374,7 @@ where
         uploaded_by: i32,
     ) -> Result<Image, Error> {
         let repo = &self.repo;
-        repo.run_transaction(async |tx| {
+        repo.run(async |tx| {
             let parsed = parser.parse(bytes)?;
 
             // TODO: Support more storage
@@ -402,7 +400,7 @@ where
     async fn delete(&self, image: Image) -> Result<(), Error> {
         let repo = &self.repo;
 
-        repo.run_transaction(async |tx| {
+        repo.run(async |tx| {
             tx.delete(image.id).await?;
 
             self.storage.remove(image).await?;

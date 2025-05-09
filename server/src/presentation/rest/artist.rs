@@ -14,11 +14,12 @@ use crate::api_response::{Data, Message};
 use crate::application::artist::upload_profile_image::{
     self, UploadArtistProfileImageDto,
 };
-use crate::domain::artist::model::Artist;
+use crate::application::dto::NewCorrectionDto;
+use crate::domain::artist::model::{Artist, NewArtist};
 use crate::dto::artist::ArtistCorrection;
 use crate::error::{InfraError, ServiceError};
 use crate::utils::MapInto;
-use crate::{domain, service};
+use crate::{application, domain, service};
 
 type Service = state::ArtistService;
 type Error = service::artist::Error;
@@ -52,7 +53,7 @@ async fn find_artist_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
 ) -> Result<Data<Artist>, ServiceError> {
-    let artist = domain::artist::repository::Repository::find_by_id(&repo, id)
+    let artist = domain::artist::repository::Repo::find_by_id(&repo, id)
         .await
         .map_err(ServiceError::from)?;
 
@@ -87,7 +88,7 @@ async fn find_artist_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KeywordQuery>,
 ) -> Result<Data<Vec<Artist>>, InfraError> {
-    domain::artist::repository::Repository::find_by_name(&repo, &query.keyword)
+    domain::artist::repository::Repo::find_by_name(&repo, &query.keyword)
         .await
         .map_into()
 }
@@ -96,21 +97,23 @@ async fn find_artist_by_keyword(
     post,
     tag = TAG,
     path = "/artist",
-    request_body = ArtistCorrection,
+    request_body = NewCorrectionDto<NewArtist>,
     responses(
         (status = 200, body = Message),
         (status = 401),
-        Error
+        application::artist::Error
     ),
 )]
+#[axum::debug_handler]
 async fn create_artist(
     CurrentUser(user): CurrentUser,
-    State(artist_service): State<Service>,
-    Json(input): Json<ArtistCorrection>,
-) -> Result<Message, Error> {
-    artist_service.create(user.id, input).await?;
-
-    Ok(Message::ok())
+    State(service): State<state::ArtistServiceNew>,
+    Json(input): Json<NewCorrectionDto<NewArtist>>,
+) -> Result<Message, application::artist::Error> {
+    service
+        .create(input.with_author(user))
+        .await
+        .map(|()| Message::ok())
 }
 
 #[utoipa::path(

@@ -2,9 +2,9 @@ use lettre::transport::smtp::authentication::Credentials;
 use lettre::{AsyncSmtpTransport, Tokio1Executor};
 use sea_orm::{DatabaseConnection, sqlx};
 
-use super::adapter::database::sea_orm::SeaOrmRepository;
 use super::config::Config;
 use super::database::get_connection;
+use super::database::sea_orm::SeaOrmRepository;
 use super::redis::Pool;
 
 #[derive(Clone)]

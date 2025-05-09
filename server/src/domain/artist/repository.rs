@@ -1,13 +1,19 @@
-use crate::domain::repository::RepositoryTrait;
+use super::model::{Artist, NewArtist};
+use crate::domain::correction::NewCorrection;
+use crate::domain::repository::Connection;
 
-pub trait Repository: RepositoryTrait {
-    async fn find_by_id(
-        &self,
-        id: i32,
-    ) -> Result<Option<super::model::Artist>, Self::Error>;
+pub trait Repo: Connection {
+    async fn find_by_id(&self, id: i32) -> Result<Option<Artist>, Self::Error>;
 
     async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Vec<super::model::Artist>, Self::Error>;
+    ) -> Result<Vec<Artist>, Self::Error>;
+}
+
+pub trait TxRepo: Repo {
+    async fn create(
+        &self,
+        correction: NewCorrection<NewArtist>,
+    ) -> Result<i32, Self::Error>;
 }

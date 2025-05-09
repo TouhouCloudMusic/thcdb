@@ -1,5 +1,5 @@
+use entity::correction;
 use entity::sea_orm_active_enums::EntityType;
-use entity::{artist, correction};
 use error_set::error_set;
 use macros::{ApiError, IntoErrorSchema};
 use sea_orm::{DatabaseConnection, TransactionTrait};
@@ -27,20 +27,6 @@ where
 }
 
 impl Service {
-    pub async fn create(
-        &self,
-        user_id: i32,
-        data: ArtistCorrection,
-    ) -> Result<artist::Model, Error> {
-        let transaction = self.db.begin().await?;
-
-        let new_artist =
-            repo::artist::create(data, user_id, &transaction).await?;
-
-        transaction.commit().await?;
-        Ok(new_artist)
-    }
-
     pub async fn create_or_update_correction(
         &self,
         artist_id: i32,

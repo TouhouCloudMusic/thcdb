@@ -8,6 +8,7 @@ use quote::quote;
 use syn::{Data, DeriveInput, Fields, parse_macro_input};
 
 mod auto_mapper;
+mod cmp_chain;
 mod error;
 mod field_enum;
 mod from_ref_arc;
@@ -101,4 +102,9 @@ pub fn derive_auto_mapper(input: TokenStream) -> TokenStream {
         Ok(v) => v.into(),
         Err(e) => e.to_compile_error().into(),
     }
+}
+
+#[proc_macro]
+pub fn cmp_chain(input: TokenStream) -> TokenStream {
+    cmp_chain::cmp_chain(input.into()).into()
 }

@@ -12,9 +12,7 @@ use sea_orm::{
 };
 
 use crate::domain::model::auth::UserRoleEnum;
-use crate::domain::repository::{
-    RepositoryTrait, TransactionManager, TransactionRepositoryTrait,
-};
+use crate::domain::repository::{Connection, Transaction, TransactionManager};
 
 #[derive(Clone)]
 pub struct SeaOrmRepository {
@@ -27,7 +25,7 @@ impl SeaOrmRepository {
     }
 }
 
-impl RepositoryTrait for SeaOrmRepository {
+impl Connection for SeaOrmRepository {
     type Error = DbErr;
 
     type Conn = DatabaseConnection;
@@ -38,7 +36,7 @@ impl RepositoryTrait for SeaOrmRepository {
 }
 
 impl TransactionManager for SeaOrmRepository {
-    type TransactionRepository = SeaOrmTransactionRepository;
+    type TransactionRepository = SeaOrmTxRepo;
 
     async fn begin(&self) -> Result<Self::TransactionRepository, Self::Error> {
         let tx = self.conn.begin().await?;
@@ -46,7 +44,7 @@ impl TransactionManager for SeaOrmRepository {
         Ok(Self::TransactionRepository { tx })
     }
 
-    async fn run_transaction<F, T, E>(&self, f: F) -> Result<T, E>
+    async fn run<F, T, E>(&self, f: F) -> Result<T, E>
     where
         F: AsyncFnOnce(&Self::TransactionRepository) -> Result<T, E> + Send,
         T: Send,
@@ -57,12 +55,12 @@ impl TransactionManager for SeaOrmRepository {
 }
 
 #[derive(Clone)]
-pub struct SeaOrmTransactionRepository {
+pub struct SeaOrmTxRepo {
     // Make this can be cloned
     tx: Arc<sea_orm::DatabaseTransaction>,
 }
 
-impl RepositoryTrait for SeaOrmTransactionRepository {
+impl Connection for SeaOrmTxRepo {
     type Error = DbErr;
 
     type Conn = DatabaseTransaction;
@@ -72,7 +70,7 @@ impl RepositoryTrait for SeaOrmTransactionRepository {
     }
 }
 
-impl TransactionManager for SeaOrmTransactionRepository {
+impl TransactionManager for SeaOrmTxRepo {
     type TransactionRepository = Self;
 
     async fn begin(&self) -> Result<Self::TransactionRepository, Self::Error> {
@@ -82,7 +80,7 @@ impl TransactionManager for SeaOrmTransactionRepository {
         })
     }
 
-    async fn run_transaction<F, T, E>(&self, f: F) -> Result<T, E>
+    async fn run<F, T, E>(&self, f: F) -> Result<T, E>
     where
         F: AsyncFnOnce(&Self::TransactionRepository) -> Result<T, E> + Send,
         T: Send,
@@ -92,7 +90,7 @@ impl TransactionManager for SeaOrmTransactionRepository {
     }
 }
 
-impl TransactionRepositoryTrait for SeaOrmTransactionRepository {
+impl Transaction for SeaOrmTxRepo {
     async fn commit(self) -> Result<(), Self::Error> {
         Arc::try_unwrap(self.tx)
             .map_err(|_| DbErr::Custom("Cannot commit transaction: multiple references to the transaction exist".to_owned()))?
@@ -116,7 +114,7 @@ where
     T: Send,
     E: Send
         + From<C::Error>
-        + From<<C::TransactionRepository as RepositoryTrait>::Error>,
+        + From<<C::TransactionRepository as Connection>::Error>,
 {
     let repo = tx.begin().await?;
 

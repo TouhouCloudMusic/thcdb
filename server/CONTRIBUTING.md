@@ -12,20 +12,19 @@ To contribute to Touhou Cloud DB, make sure you have the following installed:
 
 - **Just**: We use [Just](https://github.com/casey/just) for our project's scripts. Please refer to Just's installation guide to set it up.
 
-- **Mold**: If you want faster compilation, you can install [Mold](https://github.com/rui314/mold] and uncomment the clang argument in [.cargo/config.toml](./.cargo/config.toml)
+- **Mold**: If you want faster compilation, you can install [Mold](https://github.com/rui314/mold) and uncomment the clang argument in [.cargo/config.toml](./.cargo/config.toml)
 
 - **Sea Orm CLI**: A tool for generate entities from database. Run `cargo install sea-orm-cli` to install it.
 
-```
-  以上为开发Only
+``` plaintext
+The above is for development only.
 ```
 
 - **Postgresql**: We use [PostgreSQL](https://www.postgresql.org/) for our database. Please refer to PostgreSQL's installation guide to set it up.
 
 - **Redis**: We use [Redis](https://redis.io/) for our cache. Please refer to Redis's installation guide to set it up.
 
-
-### Configure
+### Configurations
 
 #### Environment Variables
 
@@ -34,7 +33,6 @@ Before you begin contributing, make sure to set the following environment variab
 - `DATABASE_URL`: The database URL.
 - `REDIS_URL`: The redis url.
 - `ADMIN_PASSWORD`: The Admin password for the dev only admin account.
-
 
 #### Pre-Push Hook
 

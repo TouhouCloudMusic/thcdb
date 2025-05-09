@@ -1,12 +1,12 @@
 use entity::sea_orm_active_enums::{ArtistType, DatePrecision};
-use entity::{artist, artist_history, artist_localized_name_history};
+use entity::{artist, artist_history};
 use macros::impl_from;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::prelude::Date;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use utoipa::ToSchema;
 
-use super::share::Language;
+use crate::domain::share::model::NewLocalizedName;
 use crate::dto;
 
 #[derive(bon::Builder, Clone, Deserialize, ToSchema)]
@@ -62,20 +62,3 @@ pub struct NewGroupMember {
     pub roles: Vec<i32>,
     pub join_leave: Vec<(Option<i16>, Option<i16>)>,
 }
-
-#[derive(Clone, ToSchema, Serialize)]
-pub struct LocalizedName {
-    pub language: Language,
-    pub name: String,
-}
-
-#[derive(Clone, ToSchema, Deserialize)]
-pub struct NewLocalizedName {
-    pub language_id: i32,
-    pub name: String,
-}
-
-impl_from!(
-    artist_localized_name_history::Model
-        > NewLocalizedName { language_id, name }
-);

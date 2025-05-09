@@ -2,12 +2,12 @@ use entity::artist_image_queue as db;
 use sea_orm::{ConnectionTrait, DbErr, EntityTrait, IntoActiveModel};
 
 use crate::domain::artist_image_queue::{ArtistImageQueue, Repository};
-use crate::domain::repository::RepositoryTrait;
+use crate::domain::repository::Connection;
 use crate::utils::MapInto;
 
 impl<T> Repository for T
 where
-    T: RepositoryTrait<Error = DbErr>,
+    T: Connection<Error = DbErr>,
     T::Conn: ConnectionTrait,
 {
     async fn create(

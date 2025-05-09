@@ -7,12 +7,12 @@ use sea_orm::{
 
 use crate::domain::image;
 use crate::domain::model::image::{Image, NewImage};
-use crate::domain::repository::RepositoryTrait;
+use crate::domain::repository::Connection;
 use crate::utils::MapInto;
 
 impl<T> image::Repository for T
 where
-    T: RepositoryTrait<Error = DbErr>,
+    T: Connection<Error = DbErr>,
     T::Conn: ConnectionTrait,
 {
     async fn save(&self, new_image: &NewImage) -> Result<Image, Self::Error> {

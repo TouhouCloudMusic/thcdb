@@ -5,12 +5,12 @@ use sea_orm::{
 };
 
 use crate::domain::image_queue::{ImageQueue, NewImageQueue, Repository};
-use crate::domain::repository::RepositoryTrait;
+use crate::domain::repository::Connection;
 use crate::utils::MapInto;
 
 impl<T> Repository for T
 where
-    T: RepositoryTrait<Error = DbErr>,
+    T: Connection<Error = DbErr>,
     T::Conn: ConnectionTrait,
 {
     async fn create(

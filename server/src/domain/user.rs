@@ -3,7 +3,7 @@ use utoipa::ToSchema;
 
 use super::model::auth::{AuthCredential, UserRole};
 use super::model::markdown::Markdown;
-use super::repository::{RepositoryTrait, TransactionRepositoryTrait};
+use super::repository::{Connection, Transaction};
 use crate::error::InfraError;
 
 #[derive(Clone, ToSchema, Serialize)]
@@ -60,7 +60,7 @@ impl TryFrom<AuthCredential> for NewUser {
 }
 
 #[trait_variant::make(Send)]
-pub trait Repository: RepositoryTrait {
+pub trait Repository: Connection {
     async fn find_by_id(&self, id: i32) -> Result<Option<User>, Self::Error>;
 
     async fn find_by_name(
@@ -70,12 +70,12 @@ pub trait Repository: RepositoryTrait {
 }
 
 #[trait_variant::make(Send)]
-pub trait TransactionRepository: TransactionRepositoryTrait {
+pub trait TransactionRepository: Transaction {
     async fn create(&self, user: NewUser) -> Result<User, Self::Error>;
     async fn update(&self, user: User) -> Result<User, Self::Error>;
 }
 
-pub trait ProfileRepository: RepositoryTrait {
+pub trait ProfileRepository: Connection {
     async fn find_by_name(
         &self,
         name: &str,

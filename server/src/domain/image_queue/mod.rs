@@ -2,9 +2,9 @@ mod model;
 
 pub use model::{ImageQueue, NewImageQueue};
 
-use super::repository::RepositoryTrait;
+use super::repository::Connection;
 
-pub trait Repository: RepositoryTrait {
+pub trait Repository: Connection {
     async fn create(
         &self,
         model: NewImageQueue,

@@ -13,7 +13,8 @@ use sea_orm::{
     QueryFilter, QueryOrder,
 };
 
-use crate::dto::label::{LabelResponse, NewLabel, NewLocalizedName};
+use crate::domain::share::model::NewLocalizedName;
+use crate::dto::label::{LabelResponse, NewLabel};
 use crate::error::ServiceError;
 use crate::repo;
 use crate::utils::MapInto;

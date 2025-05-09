@@ -15,11 +15,11 @@ use sea_orm::{
 };
 use sea_orm_migration::prelude::{Alias, OnConflict};
 
-use super::{SeaOrmRepository, SeaOrmTransactionRepository};
+use super::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::domain;
 use crate::domain::model::auth::{UserRole, UserRoleEnum};
 use crate::domain::model::markdown::Markdown;
-use crate::domain::repository::RepositoryTrait;
+use crate::domain::repository::Connection;
 use crate::domain::user::{self, NewUser, User, UserProfile};
 use crate::model::enum_table::EnumTable;
 
@@ -44,7 +44,7 @@ impl user::Repository for SeaOrmRepository {
     }
 }
 
-impl user::TransactionRepository for SeaOrmTransactionRepository {
+impl user::TransactionRepository for SeaOrmTxRepo {
     async fn create(&self, user: NewUser) -> Result<User, Self::Error> {
         let tx = self.conn().begin().await?;
 

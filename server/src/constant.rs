@@ -9,6 +9,10 @@ pub const ADMIN_USERNAME: &str = "Admin";
 pub use share::*;
 
 mod share {
+
+    pub const ENTITY_IDENT_MIN_LEN: usize = 1;
+    pub const ENTITY_IDENT_MAX_LEN: usize = 128;
+
     // Artist
 
     pub const ARTIST_PROFILE_IMAGE_MIN_WIDTH: u32 = 256;

@@ -53,8 +53,8 @@ tracing-subscriber = { version = "0.3", features = [
 utoipa = { version = "5", features = [
     "axum_extras",
     "chrono",
-    "macros",
     "preserve_order",
+    "url",
 ] }
 
 [build-dependencies]
@@ -100,6 +100,7 @@ derive_more = { version = "2.0.1", features = [
     "display",
     "error",
     "from",
+    "into",
 ] }
 dotenvy.workspace = true
 error_set = { version = "0.8", features = [
@@ -123,6 +124,7 @@ lettre = { version = "0.11.14", default-features = false, features = [
 maud = { version = "0.27.0", features = [
     "axum",
 ] }
+nestify = "0.3.3"
 pulldown-cmark = { version = "0.13.0", default-features = false, features = [
     "html",
     "simd",
@@ -156,6 +158,9 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 tracing-test = "0.2.5"
 trait-variant = "0.1.2"
+url = { version = "2.5.4", features = [
+    "serde",
+] }
 utoipa.workspace = true
 utoipa-axum = "0.2"
 utoipa-scalar = { version = "0.3", features = [
@@ -167,23 +172,24 @@ xxhash-rust = { version = "0.8", features = [
 ] }
 zxcvbn = "3.1"
 # Optional
-nestify           = "0.3.3"
 tikv-jemallocator = { version = "0.6.0", optional = true }
 
 [dev-dependencies]
 rusty-hook = "0.11.2"
 
-# https://doc.rust-lang.org/cargo/reference/profcailes.html
+# https://doc.rust-lang.org/cargo/reference/profiles.html
 [profile.dev]
 codegen-backend = "cranelift"
 debug           = 0
-opt-level       = 3
+opt-level       = 1
+strip           = "debuginfo"
 
 [profile.dev.build-override]
 opt-level = 3
 
 [profile.ra]
 codegen-backend = "llvm"
+incremental     = false
 inherits        = "dev"
 
 [profile.release]

@@ -16,9 +16,7 @@ use crate::domain::artist_image_queue::{self, ArtistImageQueue};
 use crate::domain::image::{
     AsyncImageStorage, ParseOption, Parser, ServiceTrait,
 };
-use crate::domain::repository::{
-    TransactionManager, TransactionRepositoryTrait,
-};
+use crate::domain::repository::{Transaction, TransactionManager};
 use crate::domain::user::User;
 use crate::domain::{image, image_queue};
 use crate::error::InfraError;
@@ -59,7 +57,7 @@ where
         + artist_image_queue::Repository
         // Image service requirements
         + TransactionManager<TransactionRepository = TxRepo>
-        + TransactionRepositoryTrait
+        + Transaction
         + image::Repository,
     Storage: AsyncImageStorage + Clone,
     InfraError: From<Repo::Error> + From<TxRepo::Error> + From<Storage::Error>,

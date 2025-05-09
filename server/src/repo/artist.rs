@@ -19,7 +19,8 @@ use sea_orm::{
 };
 use tokio::try_join;
 
-use crate::dto::artist::{ArtistCorrection, NewGroupMember, NewLocalizedName};
+use crate::domain::share::model::NewLocalizedName;
+use crate::dto::artist::{ArtistCorrection, NewGroupMember};
 use crate::error::ServiceError;
 use crate::repo;
 use crate::utils::{Pipe, Reverse};
@@ -39,29 +40,6 @@ error_set! {
         #[display("Unknown type artist cannot have members")]
         UnknownTypeArtistOwnedMember,
     };
-}
-
-pub async fn create(
-    data: ArtistCorrection,
-    user_id: i32,
-    db: &DatabaseTransaction,
-) -> Result<artist::Model, Error> {
-    validate(&data)?;
-
-    let artist = save_artist_and_relations(&data, db).await?;
-
-    let history = save_artist_history_and_relations(&data, db).await?;
-
-    repo::correction::create_self_approval()
-        .author_id(user_id)
-        .entity_type(EntityType::Artist)
-        .entity_id(artist.id)
-        .history_id(history.id)
-        .description(data.correction_metadata.description)
-        .call(db)
-        .await?;
-
-    Ok(artist)
 }
 
 /// TODO: validate data
@@ -734,6 +712,15 @@ async fn update_artist_artist_membership(
         .await?;
 
     Ok(())
+}
+
+impl From<artist_localized_name_history::Model> for NewLocalizedName {
+    fn from(value: artist_localized_name_history::Model) -> Self {
+        Self {
+            language_id: value.language_id,
+            name: value.name,
+        }
+    }
 }
 
 #[cfg(test)]
