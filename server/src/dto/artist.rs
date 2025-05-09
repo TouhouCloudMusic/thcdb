@@ -21,9 +21,12 @@ pub struct ArtistCorrection {
     pub end_date: Option<Date>,
     pub end_date_precision: Option<DatePrecision>,
 
-    pub location_country: Option<String>,
-    pub location_province: Option<String>,
-    pub location_city: Option<String>,
+    pub start_location_country: Option<String>,
+    pub start_location_province: Option<String>,
+    pub start_location_city: Option<String>,
+    pub current_location_country: Option<String>,
+    pub current_location_province: Option<String>,
+    pub current_location_city: Option<String>,
 
     pub profile_image_id: Option<i32>,
 
@@ -47,9 +50,12 @@ impl_from!(
         start_date_precision,
         end_date,
         end_date_precision,
-        location_country,
-        location_province,
-        location_city,
+        start_location_city,
+        start_location_province,
+        start_location_country,
+        current_location_city,
+        current_location_province,
+        current_location_country,
 
         : id NotSet,
     },

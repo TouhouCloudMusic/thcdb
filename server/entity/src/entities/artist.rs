@@ -21,11 +21,17 @@ pub struct Model {
     pub end_date: Option<Date>,
     pub end_date_precision: Option<DatePrecision>,
     #[sea_orm(column_type = "Text", nullable)]
-    pub location_country: Option<String>,
+    pub current_location_country: Option<String>,
     #[sea_orm(column_type = "Text", nullable)]
-    pub location_province: Option<String>,
+    pub current_location_province: Option<String>,
     #[sea_orm(column_type = "Text", nullable)]
-    pub location_city: Option<String>,
+    pub current_location_city: Option<String>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub start_location_country: Option<String>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub start_location_province: Option<String>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub start_location_city: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

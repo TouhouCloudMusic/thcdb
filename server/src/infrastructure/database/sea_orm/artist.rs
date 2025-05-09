@@ -188,7 +188,7 @@ async fn find_many_impl(
                 })
                 .collect();
 
-            let group_association = group_association
+            let memberships = group_association
                 .iter()
                 .filter(|(model, _, _)| {
                     if artist.artist_type.is_solo() {
@@ -245,7 +245,17 @@ async fn find_many_impl(
                 aliases,
                 links: links.into_iter().map(|x| x.url).collect_vec(),
                 localized_names,
-                memberships: group_association,
+                start_location: Location {
+                    country: artist.start_location_country,
+                    province: artist.start_location_province,
+                    city: artist.start_location_city,
+                },
+                current_location: Location {
+                    country: artist.current_location_country,
+                    province: artist.current_location_province,
+                    city: artist.current_location_city,
+                },
+                memberships,
                 profile_image_url,
             }
         })
@@ -288,8 +298,13 @@ async fn save_artist_and_relations(
 
     let text_alias = conv_text_aliases(data.text_aliases.clone());
 
-    let (location_country, location_province, location_city) =
-        conv_location(data.localtion.clone());
+    let (start_location_country, start_location_province, start_location_city) =
+        conv_location(data.start_location.clone());
+    let (
+        current_location_country,
+        current_location_province,
+        current_location_city,
+    ) = conv_location(data.current_location.clone());
 
     let artist_model = entity::artist::ActiveModel {
         id: NotSet,
@@ -300,9 +315,12 @@ async fn save_artist_and_relations(
         start_date_precision,
         end_date,
         end_date_precision,
-        location_country,
-        location_province,
-        location_city,
+        start_location_country,
+        start_location_province,
+        start_location_city,
+        current_location_country,
+        current_location_province,
+        current_location_city,
     };
 
     let artist = artist_model.insert(conn).await?;
@@ -336,8 +354,13 @@ async fn save_artist_history_and_relations(
 
     let text_alias = conv_text_aliases(data.text_aliases.clone());
 
-    let (location_country, location_province, location_city) =
-        conv_location(data.localtion.clone());
+    let (start_location_country, start_location_province, start_location_city) =
+        conv_location(data.start_location.clone());
+    let (
+        current_location_country,
+        current_location_province,
+        current_location_city,
+    ) = conv_location(data.current_location.clone());
 
     let artist_history_model = entity::artist_history::ActiveModel {
         id: NotSet,
@@ -348,9 +371,12 @@ async fn save_artist_history_and_relations(
         start_date_precision,
         end_date,
         end_date_precision,
-        location_country,
-        location_province,
-        location_city,
+        start_location_country,
+        start_location_province,
+        start_location_city,
+        current_location_country,
+        current_location_province,
+        current_location_city,
     };
 
     let artist_history = artist_history_model.insert(conn).await?;

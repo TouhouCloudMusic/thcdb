@@ -53,6 +53,12 @@ pub struct Artist {
     pub links: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub localized_names: Vec<LocalizedName>,
+
+    #[serde(skip_serializing_if = "Location::is_empty")]
+    pub start_location: Location,
+    #[serde(skip_serializing_if = "Location::is_empty")]
+    pub current_location: Location,
+
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Groups list for individuals, member list for groups,
     pub memberships: Vec<Membership>,
@@ -76,7 +82,8 @@ pub struct NewArtist {
     pub links: Option<Vec<Url>>,
     pub localized_names: Option<Vec<NewLocalizedName>>,
 
-    pub localtion: Option<Location>,
+    pub start_location: Option<Location>,
+    pub current_location: Option<Location>,
 
     /// Groups list for individuals, member list for groups,
     pub memberships: Option<Vec<NewMembership>>,

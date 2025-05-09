@@ -85,9 +85,22 @@ pub struct NewLocalizedName {
     pub name: String,
 }
 
-#[derive(Clone, Deserialize, ToSchema)]
+#[derive(Clone, Debug, Serialize, Deserialize, ToSchema)]
 pub struct Location {
     pub country: Option<String>,
     pub province: Option<String>,
     pub city: Option<String>,
+}
+
+impl Location {
+    pub const fn is_empty(&self) -> bool {
+        matches!(
+            self,
+            Self {
+                country: None,
+                province: None,
+                city: None,
+            }
+        )
+    }
 }

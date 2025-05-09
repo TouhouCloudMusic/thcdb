@@ -15,9 +15,16 @@ impl From<&artist_history::Model> for artist::ActiveModel {
             start_date_precision: Set(value.start_date_precision),
             end_date: Set(value.end_date),
             end_date_precision: Set(value.end_date_precision),
-            location_country: Set(value.location_country.clone()),
-            location_province: Set(value.location_province.clone()),
-            location_city: Set(value.location_city.clone()),
+            start_location_country: Set(value.start_location_country.clone()),
+            start_location_province: Set(value.start_location_province.clone()),
+            start_location_city: Set(value.start_location_city.clone()),
+            current_location_country: Set(value
+                .current_location_country
+                .clone()),
+            current_location_province: Set(value
+                .current_location_province
+                .clone()),
+            current_location_city: Set(value.current_location_city.clone()),
         }
     }
 }
