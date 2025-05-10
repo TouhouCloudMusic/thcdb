@@ -10,10 +10,14 @@ pub mod artist;
 pub mod user;
 
 #[derive(Deserialize, ToSchema)]
+#[schema(
+    as = NewCorrection
+)]
 pub struct NewCorrectionDto<T>
 where
     T: CorrectionEntity,
 {
+    #[schema(inline = false)]
     pub data: T,
     pub description: String,
     pub r#type: CorrectionType,
