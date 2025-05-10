@@ -17,35 +17,11 @@ import {
 	Show,
 	type ParentProps,
 } from "solid-js"
-import * as v from "valibot"
-import { FetchClient } from "~/api"
+import { FetchClient, AuthSchema } from "~/api"
 import { Button } from "~/components/button"
 import { Divider } from "~/components/divider"
 import { Input } from "~/components/input"
 import { useUserCtx } from "~/state/user"
-
-const SignInForm = v.object({
-	username: v.string(),
-	password: v.string(),
-})
-type SignInForm = v.InferInput<typeof SignInForm>
-
-const SignUpFrom = v.pipe(
-	v.object({
-		username: v.string(),
-		password: v.string(),
-		repeated_password: v.string(),
-	}),
-	v.forward(
-		v.partialCheck(
-			[["password"], ["repeated_password"]],
-			(input) => input.password === input.repeated_password,
-			"Password mismatch",
-		),
-		["repeated_password"],
-	),
-)
-type SignUpForm = v.InferInput<typeof SignUpFrom>
 
 export function Auth() {
 	return (
@@ -78,13 +54,13 @@ function FormComp() {
 	const form_store = createMemo(() => {
 		if (mode() == "sign_in") {
 			// @ts-ignore
-			return createFormStore<SignInForm>({
-				validate: valiForm(SignInForm),
+			return createFormStore<AuthSchema.SignIn>({
+				validate: valiForm(AuthSchema.SignIn),
 			})
 		} else {
 			// @ts-ignore
-			return createFormStore<SignUpForm>({
-				validate: valiForm(SignUpFrom),
+			return createFormStore<AuthSchema.SignUp>({
+				validate: valiForm(AuthSchema.SignUp),
 			})
 		}
 	})
@@ -96,7 +72,7 @@ function FormComp() {
 	let user_ctx = useUserCtx()
 	let nav = useNavigate()
 
-	let handle_submit: SubmitHandler<SignInForm> = async (values, _) => {
+	let handle_submit: SubmitHandler<AuthSchema.SignIn> = async (values, _) => {
 		let { data, error } =
 			mode() === "sign_in" ?
 				await FetchClient.POST("/sign_in", {
@@ -113,7 +89,7 @@ function FormComp() {
 				})
 
 		if (error) {
-			throw new FormError<SignInForm>(error.message)
+			throw new FormError<AuthSchema.SignIn>(error.message)
 		}
 
 		if (data) {
@@ -125,7 +101,7 @@ function FormComp() {
 	}
 	return (
 		<Form
-			of={form_store() as FormStore<SignInForm>}
+			of={form_store() as FormStore<AuthSchema.SignIn>}
 			datatype="application/json"
 			onSubmit={handle_submit}
 			class="mx-auto mt-32 flex w-1/3 flex-col gap-4 rounded border-1 border-slate-100 p-8 shadow-lg"
@@ -149,7 +125,7 @@ function FormComp() {
 				class="bg-slate-300"
 			/>
 			<Field
-				of={form_store() as FormStore<SignInForm>}
+				of={form_store() as FormStore<AuthSchema.SignIn>}
 				name="username"
 			>
 				{(field, props) => (
@@ -160,7 +136,7 @@ function FormComp() {
 				)}
 			</Field>
 			<Field
-				of={form_store() as FormStore<SignInForm>}
+				of={form_store() as FormStore<AuthSchema.SignIn>}
 				name="password"
 			>
 				{(field, props) => (
@@ -174,7 +150,7 @@ function FormComp() {
 			</Field>
 			<Show when={mode() === "sign_up"}>
 				<Field
-					of={form_store() as FormStore<SignUpForm>}
+					of={form_store() as FormStore<AuthSchema.SignUp>}
 					name="repeated_password"
 				>
 					{(field, props) => {
@@ -230,8 +206,8 @@ function FieldError(props: ParentProps) {
 }
 
 function UserNameField(props: {
-	field: FieldStore<SignInForm, "username">
-	props: FieldElementProps<SignInForm, "username">
+	field: FieldStore<AuthSchema.SignIn, "username">
+	props: FieldElementProps<AuthSchema.SignIn, "username">
 }) {
 	return (
 		<FieldLayout
@@ -251,9 +227,9 @@ function UserNameField(props: {
 function PasswordField<T extends "password" | "repeated_password">(props: {
 	name: T
 	label: string
-	field: T extends "password" ? FieldStore<SignInForm, T>
-	:	FieldStore<SignUpForm, T>
-	props: FieldElementProps<SignUpForm, T>
+	field: T extends "password" ? FieldStore<AuthSchema.SignIn, T>
+	:	FieldStore<AuthSchema.SignUp, T>
+	props: FieldElementProps<AuthSchema.SignUp, T>
 }) {
 	return (
 		<FieldLayout

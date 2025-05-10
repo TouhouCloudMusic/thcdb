@@ -9,3 +9,4 @@ export const FetchClient = createFetchClient<paths>({
 })
 
 export * from "./user"
+export * from "./auth"
