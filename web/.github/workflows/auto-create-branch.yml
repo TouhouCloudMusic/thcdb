@@ -10,7 +10,7 @@ env:
 
 jobs:
   create-branch-for-task:
-    if: contains(github.event.issue.labels.*.name, 'todo task')
+    if: contains(github.event.issue.labels.*.name, 'C-todo')
     runs-on: ubuntu-latest
 
     steps:
