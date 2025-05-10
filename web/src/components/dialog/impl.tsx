@@ -4,64 +4,79 @@ import {
   type DialogContentProps,
   type DialogDescriptionProps,
   type DialogOverlayProps,
-  type DialogRootProps as K_DialogRootProps,
   type DialogTitleProps,
+  type DialogRootProps,
 } from "@kobalte/core/dialog"
-import {
-  createMemo,
-  type JSX,
-  type ParentProps,
-  splitProps,
-  type ValidComponent,
-} from "solid-js"
+import { mergeProps, type ValidComponent } from "solid-js"
 import { twMerge } from "tailwind-merge"
-import { Button, type Props } from "~/components/button"
+import { Button } from "~/components/button"
 
-export const Root = Dialog.Root
+export type RootProps = DialogRootProps
+
+export function Root(props: RootProps) {
+  return <Dialog.Root {...props} />
+}
 
 export const Trigger = Dialog.Trigger
 
 export const Portal = Dialog.Portal
 
-export const Overlay = <T extends ValidComponent = "div">(
-  props: PolymorphicProps<T, DialogOverlayProps<T>>,
-) => {
-  const CLASS = "fixed inset-0 z-50 bg-slate-900/10"
-
-  let class_name = createMemo(() => twMerge(CLASS, props["class"]))
-
-  return (
-    <Dialog.Overlay
-      {...props}
-      class={class_name()}
-    />
-  )
+export type OverlayProps<T extends ValidComponent> = PolymorphicProps<
+  T,
+  DialogOverlayProps<T>
+> & {
+  "data-blur"?: boolean | undefined
 }
+
+export function Overlay<T extends ValidComponent = "div">(
+  props: OverlayProps<T>,
+) {
+  const CLASS = `
+    fixed inset-0 z-50 bg-slate-900/20
+    opacity-0 data-expanded:opacity-100
+    animate-fade-out data-expanded:animate-fade-in
+    data-blur:backdrop-blur-none data-blur:data-expanded:backdrop-blur-2xs
+    data-blur:animate-blur-out data-blur:data-expanded:animate-blur-in
+    `
+
+  let local_props = mergeProps(props, {
+    get class() {
+      return twMerge(CLASS, props["class"])
+    },
+  })
+
+  return <Dialog.Overlay {...local_props} />
+}
+
+export type ContentProps<T extends ValidComponent = "div"> = PolymorphicProps<
+  T,
+  DialogContentProps<T>
+>
 
 export function Content<T extends ValidComponent = "div">(
-  props: PolymorphicProps<T, DialogContentProps<T>>,
+  props: ContentProps<T>,
 ) {
-  const CLASS =
-    "bg-primary fixed inset-0 z-50 m-auto rounded-md p-4 shadow-lg shadow-gray-300"
+  const CLASS = `
+  bg-primary fixed z-50 m-auto rounded-md p-4 shadow-lg shadow-gray-300
+  left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+  animate-scale-fade-out data-expanded:animate-scale-fade-in
+  `
 
-  let class_name = createMemo(() => twMerge(CLASS, props["class"]))
+  let local_props = mergeProps(props, {
+    get class() {
+      return twMerge(CLASS, props["class"])
+    },
+  })
 
-  return (
-    <Dialog.Content
-      {...props}
-      class={class_name()}
-    />
-  )
+  return <Dialog.Content {...local_props} />
 }
 
-interface CloseButtonProps
-  extends Omit<
-      PolymorphicProps<"button", DialogCloseButtonProps<"button">>,
-      "color" | "type"
-    >,
-    Props {}
+type CloseButtonProps<T extends ValidComponent = typeof Button> =
+  PolymorphicProps<T, DialogCloseButtonProps<"button">>
 
-export function CloseButton(props: CloseButtonProps) {
+export function CloseButton<T extends ValidComponent = typeof Button>(
+  props: CloseButtonProps<T>,
+) {
   return (
     <Dialog.CloseButton
       {...props}
@@ -75,14 +90,13 @@ export function Title<T extends ValidComponent = "h2">(
 ) {
   const CLASS = "font-medium"
 
-  let class_name = createMemo(() => twMerge(CLASS, props["class"]))
+  let local_props = mergeProps(props, {
+    get class() {
+      return twMerge(CLASS, props["class"])
+    },
+  })
 
-  return (
-    <Dialog.Title
-      {...props}
-      class={class_name()}
-    />
-  )
+  return <Dialog.Title {...local_props} />
 }
 
 export function Description<T extends ValidComponent = "p">(
@@ -90,46 +104,10 @@ export function Description<T extends ValidComponent = "p">(
 ) {
   const CLASS = "mt-2 pr-2 text-sm text-gray-800"
 
-  let class_name = createMemo(() => twMerge(CLASS, props["class"]))
-
-  return (
-    <Dialog.Description
-      {...props}
-      class={class_name()}
-    />
-  )
-}
-
-type LayoutProps = ParentProps &
-  K_DialogRootProps & {
-    trigger: JSX.Element
-  }
-
-/**
- * A pre-made dialog layout
- *
- * @example
- * ```tsx
- * <Dialog.Layout
- *     trigger={<Button><PlusIcon /></Button>}
- * >
- *     <Dialog.Content>
- *         <Dialog.Title>Dialog Title</Dialog.Title>
- *         <Dialog.Description>Dialog Description</Dialog.Description>
- *         <Dialog.CloseButton>Close</Dialog.CloseButton>
- *     </Dialog.Content>
- * </Dialog.Layout>
- * ```
- */
-export function Layout(props: LayoutProps) {
-  let [_, root_props] = splitProps(props, ["children", "trigger"])
-  return (
-    <Root {...root_props}>
-      <Trigger>{props.trigger}</Trigger>
-      <Portal>
-        <Overlay />
-        {props.children}
-      </Portal>
-    </Root>
-  )
+  let local_props = mergeProps(props, {
+    get class() {
+      return twMerge(CLASS, props["class"])
+    },
+  })
+  return <Dialog.Description {...local_props} />
 }

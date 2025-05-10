@@ -4,6 +4,8 @@
 @custom-variant dark (&:where([data-mode=dark] *));
 
 @theme {
+	--blur-2xs: 2px;
+
 	--font-inter: "Inter", "sans-serif";
 	--font-sans:
 		"Geist", "ui-sans-serif", "system-ui", "sans-serif", '"Apple Color Emoji"',
@@ -90,7 +92,7 @@ body,
 		pre:has(code) {
 			@apply p-4;
 			code {
-				@apply text-sm break-all whitespace-pre-wrap;
+				@apply whitespace-pre-wrap break-all text-sm;
 				font-family: "Cascadia Next SC";
 			}
 		}

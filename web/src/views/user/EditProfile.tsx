@@ -1,7 +1,6 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
 import { FileField } from "@kobalte/core/file-field"
 import { createForm, valiForm } from "@modular-forms/solid"
-import "cropperjs"
 import {
 	createEffect,
 	createMemo,

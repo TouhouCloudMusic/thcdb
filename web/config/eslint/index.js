@@ -81,6 +81,7 @@ export const tsxConfigArray = [
         },
       ],
       "solid/prefer-for": "off",
+      ...reactiveRules(),
     },
   },
   // a11y
@@ -116,3 +117,14 @@ export const tsxConfigArray = [
     },
   },
 ]
+
+function reactiveRules() {
+  return {
+    "solid/reactivity": [
+      "error",
+      {
+        customReactiveFunctions: [],
+      },
+    ],
+  }
+}
