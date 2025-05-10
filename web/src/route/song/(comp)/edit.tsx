@@ -36,7 +36,7 @@ export function EditComp() {
       </button>
       <ShowPortal when={open()}>
         <ul
-          class="flex flex-col divide-y-[0.125rem] rounded-[0.125rem] border-[0.1rem] border-gray-200 bg-white"
+          class="flex flex-col divide-y-[0.125rem] rounded-xs border-[0.1rem] border-gray-200 bg-white"
           ref={dropdown}
           style={{
             position: position.strategy,

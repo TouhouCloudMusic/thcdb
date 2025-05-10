@@ -43,7 +43,7 @@ export function SearchAndAddDialog<T extends Record<string, unknown>>(
       >
         <PlusIcon />
       </Dialog.Trigger>
-      <Dialog.Content class="flex max-h-[min(48rem,50%)] min-h-[32rem] max-w-sm flex-col px-0 pb-8">
+      <Dialog.Content class="flex max-h-[min(48rem,50%)] min-h-128 max-w-sm flex-col px-0 pb-8">
         <div class="mx-4 flex justify-between">
           <Dialog.Title class="text-lg font-medium">{props.title}</Dialog.Title>
           <Dialog.CloseButton class="aspect-square h-full p-1">

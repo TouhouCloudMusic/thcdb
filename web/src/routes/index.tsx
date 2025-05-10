@@ -11,7 +11,7 @@ function HomePage() {
   let user_ctx = useUserCtx()
   return (
     <div class="flex justify-center">
-      <div class="w-[60rem]">
+      <div class="w-240">
         <Title>Hello World</Title>
         <ul class="my-2 flex flex-col gap-2">
           <li>

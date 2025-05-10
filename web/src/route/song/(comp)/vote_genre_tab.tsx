@@ -27,7 +27,7 @@ export function VoteGenreTab(props: {
   })
   return (
     <div
-      class="z-20 grid h-[100%] w-full place-items-center"
+      class="z-20 grid h-full w-full place-items-center"
       ref={props.voteTabRef}
       style={{
         position: props.position.strategy,
@@ -114,7 +114,7 @@ export function VoteGenreTab(props: {
                 <Index each={["***", "**", "*", "-"]}>
                   {(item) => (
                     <div class="flex">
-                      <p class="w-[1.5rem]">{item()}</p>
+                      <p class="w-6">{item()}</p>
                       {` : `}
                       <ul class="flex">
                         <Index
