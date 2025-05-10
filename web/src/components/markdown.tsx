@@ -1,6 +1,6 @@
 import { createAsync } from "@solidjs/router"
-import { useMarkdown } from "~/libs/markdown"
 import { type Nullable } from "~/types"
+import { useMarkdown } from "~/utils/markdown"
 
 type Props = {
 	content?: Nullable<string>
