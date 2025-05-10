@@ -1,8 +1,7 @@
 import { createContext, onMount, type ParentProps } from "solid-js"
 import { createMutable } from "solid-js/store"
-import { FetchClient } from "~/data"
-import { type UserProfile } from "~/model/user"
-import { assertContext, useContextUnsave } from "~/utils/context"
+import { FetchClient, type UserProfile } from "~/api"
+import { assertContext } from "~/utils/context"
 
 export const enum NotificationState {
 	None,

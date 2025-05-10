@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs"
-import * as mock from "~/data/mock"
+import * as mock from "~/api/mock"
 import { type UserContext, UserContextProvider } from "~/state/user"
 
 import * as right from "./right"
