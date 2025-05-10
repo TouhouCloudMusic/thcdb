@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  BASE_BRANCH: dev
+  BASE_BRANCH: main
 
 jobs:
   create-branch-for-task:

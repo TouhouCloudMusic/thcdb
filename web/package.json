@@ -87,8 +87,8 @@
 		"prettier-plugin-tailwindcss": "^0.6.11",
 		"solid-devtools": "^0.34.0",
 		"storybook": "^8.6.12",
-		"storybook-solidjs": "^1.0.0-beta.6",
-		"storybook-solidjs-vite": "^1.0.0-beta.6",
+		"storybook-solidjs": "=1.0.0-beta.6",
+		"storybook-solidjs-vite": "=1.0.0-beta.6",
 		"tailwindcss": "^4.1.4",
 		"typescript": "^5.8.3",
 		"typescript-eslint": "^8.31.0",
@@ -100,5 +100,8 @@
 		"extends": [
 			"plugin:storybook/recommended"
 		]
-	}
+	},
+	"trustedDependencies": [
+		"@tailwindcss/oxide"
+	]
 }
