@@ -5,46 +5,52 @@ on:
     types: [opened]
   workflow_dispatch:
 
+env:
+  BASE_BRANCH: dev
+
 jobs:
   create-branch-for-task:
-    if: contains(toJson(github.event.issue.labels), 'todo task')
+    if: contains(github.event.issue.labels.*.name, 'todo task')
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout dev branch
-      uses: actions/checkout@v4
-      with:
-        ref: dev
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BASE_BRANCH }}
 
-    - name: Set up Git config
-      run: |
-        git config --global user.name "${{ github.actor }}"
-        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+      - name: Set up Git config
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
 
-    - name: Generate branch name
-      id: vars
-      run: |
-        ISSUE_NUMBER=${{ github.event.issue.number }}
-        ISSUE_TITLE="${{ github.event.issue.title }}"
-        BRANCH_NAME="issue-${ISSUE_NUMBER}-$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | sed -E 's/^-|-$//g')"
-        echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+      - name: Generate branch name
+        run: |
+          ISSUE_NUMBER=${{ github.event.issue.number }}
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          SLUG=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' \
+           | sed -E 's/[^a-z0-9]+/-/g' \
+           | sed -E 's/^-|-$//g' | cut -c1-25)
+          BRANCH_NAME="${ISSUE_NUMBER}-${SLUG}"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
-    - name: Create and push branch
-      run: |
-        git fetch origin dev
-        git checkout -b ${{ steps.vars.outputs.branch_name }} origin/dev
-        git push origin ${{ steps.vars.outputs.branch_name }}
+      - name: Create and push branch
+        run: |
+          git fetch origin ${{ env.BASE_BRANCH }}
+          if git ls-remote --heads origin "$BRANCH_NAME" | grep -q "$BRANCH_NAME"; then
+            echo "Branch $BRANCH_NAME already exists. Skipping."
+          else
+            git checkout -b "$BRANCH_NAME" origin/${{ env.BASE_BRANCH }}
+            git push origin "$BRANCH_NAME"
+          fi
 
-    - name: Comment on the issue
-      uses: actions/github-script@v7
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const issue_number = context.issue.number;
-          const title = context.payload.issue.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-          const branch_name = `issue-${issue_number}-${title}`;
-          github.rest.issues.createComment({
-            ...context.repo,
-            issue_number,
-            body: `🚀 自动为任务创建了分支：\`${branch_name}\`。\n请在此分支下开发并提交 PR！`
-          });
+      - name: Comment on the issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              ...context.repo,
+              issue_number,
+              body: `🚀 自动为任务创建了分支：\`${process.env.BRANCH_NAME}\`。\n请在此分支下开发并提交 PR！`
+            });
