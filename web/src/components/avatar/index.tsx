@@ -7,7 +7,7 @@ import {
 	Suspense,
 } from "solid-js"
 import { twMerge } from "tailwind-merge"
-import { type UserProfile } from "~/model/user"
+import { type UserProfile } from "~/api/user"
 import { imgUrl } from "~/utils/adapter/static_file"
 
 export interface Props
