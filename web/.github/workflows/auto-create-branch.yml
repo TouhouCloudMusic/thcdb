@@ -28,7 +28,9 @@ jobs:
         run: |
           ISSUE_NUMBER=${{ github.event.issue.number }}
           ISSUE_TITLE="${{ github.event.issue.title }}"
-          SLUG=$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' \
+          SLUG=$(echo "$ISSUE_TITLE" \
+           | sed 's/\bTask\b//g' \
+           | tr '[:upper:]' '[:lower:]' \
            | sed -E 's/[^a-z0-9]+/-/g' \
            | sed -E 's/^-|-$//g' | cut -c1-25)
           BRANCH_NAME="${ISSUE_NUMBER}-${SLUG}"
