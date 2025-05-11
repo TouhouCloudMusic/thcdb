@@ -44,13 +44,13 @@ error_set! {
             status_code = StatusCode::BAD_REQUEST,
         )]
         InvalidField(InvalidField),
-        #[display("Correction type mismatch, expected: {:#?}, accepted: {:#?}", expected, accepted)]
+        #[display("Correction type mismatch, expected: {:#?}, received: {:#?}", expected, received)]
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
         )]
         IncorrectCorrectionType {
             expected: EntityType,
-            accepted: EntityType,
+            received: EntityType,
         },
         #[display("Unexpected error: related entity {entity_name} not found")]
         #[api_error(

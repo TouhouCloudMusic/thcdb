@@ -12,7 +12,7 @@ pub trait Len {
 }
 
 pub struct InvalidLen<T: Len> {
-    accepted: T::Len,
+    received: T::Len,
 }
 
 impl<T> Display for InvalidLen<T>
@@ -23,8 +23,8 @@ where
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Invalid len, accepted: {}, min: {}, max: {}",
-            self.accepted,
+            "Invalid len, received: {}, min: {}, max: {}",
+            self.received,
             T::MIN,
             T::MAX
         )
@@ -43,7 +43,7 @@ where
         if Self::MIN <= len || len <= Self::MAX {
             Ok(self)
         } else {
-            Err(InvalidLen { accepted: len })
+            Err(InvalidLen { received: len })
         }
     }
 }

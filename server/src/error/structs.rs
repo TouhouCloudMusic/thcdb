@@ -7,10 +7,10 @@ use macros::ApiError;
     status_code = StatusCode::BAD_REQUEST,
 )]
 #[display(
-    "Invalid field: {field}, expected: {expected}, accepted: {accepted}."
+    "Invalid field: {field}, expected: {expected}, received: {received}."
 )]
 pub struct InvalidField {
     pub field: String,
     pub expected: String,
-    pub accepted: String,
+    pub received: String,
 }

@@ -357,12 +357,12 @@ pub mod utils {
 
     pub fn validate_entity_type(
         expected: EntityType,
-        accepted: EntityType,
+        received: EntityType,
     ) -> Result<(), ServiceError> {
-        if expected == accepted {
+        if expected == received {
             Ok(())
         } else {
-            Err(ServiceError::IncorrectCorrectionType { expected, accepted })
+            Err(ServiceError::IncorrectCorrectionType { expected, received })
         }
     }
 }

@@ -55,7 +55,7 @@ impl Service {
             Err(InvalidField {
                 field: "artist".into(),
                 expected: "Vec<i32> && len > 1".into(),
-                accepted: format!("{:?}", data.artists),
+                received: format!("{:?}", data.artists),
             })?;
         }
 

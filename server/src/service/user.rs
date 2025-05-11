@@ -132,7 +132,7 @@ impl Service {
             Err(InvalidField {
                 field: "data".into(),
                 expected: "image/*".into(),
-                accepted: format!(
+                received: format!(
                     "{:?}",
                     data.metadata
                         .content_type

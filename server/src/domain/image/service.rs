@@ -56,24 +56,24 @@ error_set! {
     status_code = StatusCode::BAD_REQUEST,
 )]
 pub struct InvalidForamt {
-    accepted: Option<ImageFormat>,
+    received: Option<ImageFormat>,
     expected: &'static [ImageFormat],
 }
 
 impl InvalidForamt {
     pub const fn new(
-        accepted: ImageFormat,
+        received: ImageFormat,
         expected: &'static [ImageFormat],
     ) -> Self {
         Self {
-            accepted: Some(accepted),
+            received: Some(received),
             expected,
         }
     }
 
     pub const fn unknown(expected: &'static [ImageFormat]) -> Self {
         Self {
-            accepted: None,
+            received: None,
             expected,
         }
     }
@@ -81,38 +81,38 @@ impl InvalidForamt {
 
 impl std::fmt::Display for InvalidForamt {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let accepted_name = self
-            .accepted
-            .and_then(|accepted| accepted.extensions_str().first())
+        let received_name = self
+            .received
+            .and_then(|received| received.extensions_str().first())
             .map_or("unknown or unreadable format", |v| v);
 
         write!(
             f,
-            "Invalid image format, accepted: {}, expected: {:#?}",
-            accepted_name, self.expected
+            "Invalid image format, received: {}, expected: {:#?}",
+            received_name, self.expected
         )
     }
 }
 
 #[derive(Debug, Error)]
 pub struct InvalidFileSize {
-    accepted: ByteSize,
+    received: ByteSize,
     range: RangeInclusive<ByteSize>,
 }
 
 impl std::fmt::Display for InvalidFileSize {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.accepted < self.range.start {
+        if self.received < self.range.start {
             write!(
                 f,
-                "Image too small, min: {}, accepted: {}",
-                self.range.start, self.accepted
+                "Image too small, min: {}, received: {}",
+                self.range.start, self.received
             )
         } else {
             write!(
                 f,
-                "Image too large, max: {}, accepted: {}",
-                self.range.end, self.accepted
+                "Image too large, max: {}, received: {}",
+                self.range.end, self.received
             )
         }
     }
@@ -135,24 +135,24 @@ impl std::fmt::Display for InvalidSize {
         let image_size = format!("{} x {}", self.width, self.height);
         write!(
             f,
-            "Invalid image size, min: {min_size}, max: {max_size}, accepted: {image_size}",
+            "Invalid image size, min: {min_size}, max: {max_size}, received: {image_size}",
         )
     }
 }
 
 #[derive(Debug, Error, Display)]
 #[display(
-    "Invalid image ratio, accepted: {accepted:.2}, expected: {:.2} to {:.2}",
+    "Invalid image ratio, received: {received:.2}, expected: {:.2} to {:.2}",
     expected.start, expected.end
 )]
 pub struct InvalidRatio {
-    accepted: f64,
+    received: f64,
     expected: RangeInclusive<f64>,
 }
 
 impl InvalidRatio {
-    pub const fn new(accepted: f64, expected: RangeInclusive<f64>) -> Self {
-        Self { accepted, expected }
+    pub const fn new(received: f64, expected: RangeInclusive<f64>) -> Self {
+        Self { received, expected }
     }
 }
 
@@ -244,7 +244,7 @@ impl Parser {
             Ok(())
         } else {
             Err(InvalidFileSize {
-                accepted: size,
+                received: size,
                 range: *range,
             })
         }

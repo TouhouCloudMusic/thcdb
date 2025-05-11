@@ -41,7 +41,7 @@ impl SongMutation {
         //             InvalidField {
         //                 field: "duration".to_string(),
         //                 expected: "ISO8601 duration".to_string(),
-        //                 accepted: e.input,
+        //                 received: e.input,
         //             }
         //         })?;
         // let new_song = context
