@@ -26,7 +26,7 @@
         "marked": "^15.0.11",
         "marked-footnote": "^1.2.4",
         "marked-shiki": "^1.2.0",
-        "openapi-fetch": "^0.13.5",
+        "openapi-fetch": "^0.14.0",
         "shiki": "^3.3.0",
         "solid-floating-ui": "^0.3.1",
         "solid-js": "^1.9.5",
@@ -1264,7 +1264,7 @@
 
     "open": ["open@8.4.2", "https://registry.npmmirror.com/open/-/open-8.4.2.tgz", { "dependencies": { "define-lazy-prop": "^2.0.0", "is-docker": "^2.1.1", "is-wsl": "^2.2.0" } }, "sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ=="],
 
-    "openapi-fetch": ["openapi-fetch@0.13.7", "https://registry.npmmirror.com/openapi-fetch/-/openapi-fetch-0.13.7.tgz", { "dependencies": { "openapi-typescript-helpers": "^0.0.15" } }, "sha512-3QdcAgvLFZ4j9Rcja7/Tq1j0qyv/LPqnHzwtMz5gKj6iddTdP48r+FZd8rmb+6xL9CdnJ5OmgdM0CpgGBi6Fgg=="],
+    "openapi-fetch": ["openapi-fetch@0.14.0", "https://registry.npmmirror.com/openapi-fetch/-/openapi-fetch-0.14.0.tgz", { "dependencies": { "openapi-typescript-helpers": "^0.0.15" } }, "sha512-PshIdm1NgdLvb05zp8LqRQMNSKzIlPkyMxYFxwyHR+UlKD4t2nUjkDhNxeRbhRSEd3x5EUNh2w5sJYwkhOH4fg=="],
 
     "openapi-typescript": ["openapi-typescript@7.7.1", "https://registry.npmmirror.com/openapi-typescript/-/openapi-typescript-7.7.1.tgz", { "dependencies": { "@redocly/openapi-core": "^1.34.2", "ansi-colors": "^4.1.3", "change-case": "^5.4.4", "parse-json": "^8.3.0", "supports-color": "^9.4.0", "yargs-parser": "^21.1.1" }, "peerDependencies": { "typescript": "^5.x" }, "bin": { "openapi-typescript": "bin/cli.js" } }, "sha512-apa45jEOxcVfYHTD9eHpW0cR8yQn7jQFTCnSWNdjKbWmyjha8CMj1LdGHdk0Z70kFSR6EfjdDuOCY7PFICrNSg=="],
 
