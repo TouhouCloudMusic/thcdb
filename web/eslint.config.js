@@ -1,8 +1,9 @@
-import Eslint from "@eslint/js"
+import eslint from "@eslint/js"
 import tanstackQuery from "@tanstack/eslint-plugin-query"
-import Prettier from "eslint-config-prettier"
-import Globals from "globals"
-import Tslint from "typescript-eslint"
+import prettier from "eslint-config-prettier"
+import oxlint from "eslint-plugin-oxlint"
+import globals from "globals"
+import tslint from "typescript-eslint"
 
 import { tsConfig, tsxConfigArray } from "./config/eslint/index.js"
 
@@ -12,17 +13,17 @@ import { tsConfig, tsxConfigArray } from "./config/eslint/index.js"
 export default [
 	{
 		languageOptions: {
-			globals: { ...Globals.browser, ...Globals.node },
+			globals: { ...globals.browser, ...globals.node },
 			parserOptions: {
 				project: true,
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},
 	},
-	Eslint.configs.recommended,
-	Prettier,
-	...Tslint.configs.strictTypeChecked,
-	...Tslint.configs.stylisticTypeChecked,
+	eslint.configs.recommended,
+	prettier,
+	...tslint.configs.strictTypeChecked,
+	...tslint.configs.stylisticTypeChecked,
 	...tanstackQuery.configs["flat/recommended"],
 	// base
 	{
@@ -37,4 +38,5 @@ export default [
 	{
 		ignores: ["eslint.config.js", "src/**/openapi.ts", "dist/"],
 	},
+	...oxlint.buildFromOxlintConfigFile("./.oxlintrc.json"),
 ]

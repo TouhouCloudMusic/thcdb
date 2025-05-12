@@ -1,16 +1,48 @@
 {
-  "rules": {
-    // "jsx_a11y/label-has-associated-control": "off",
-    "unicorn/no-empty-file": "off"
-  },
-  "plugins": [
-    "import",
-    "jsdoc",
-    "jsx-a11y",
-    "oxc",
-    "promise",
-    "typescript",
-    "unicorn",
-    "vitest"
-  ]
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"categories": {
+		"correctness": "error",
+		"suspicious": "warn",
+		"pedantic": "warn",
+		"perf": "warn",
+		"style": "warn",
+		"restriction": "warn",
+		"nursery": "warn"
+	},
+	"rules": {
+		"eslint/eqeqeq": ["warn", "smart"],
+		"eslint/func-style": "off",
+		"eslint/max-lines-per-function": [
+			"warn",
+			{
+				"IIFEs": false,
+				"max": 50,
+				"skipBlankLines": false,
+				"skipComments": false
+			}
+		],
+		"eslint/max-nested-callbacks": ["warn", 10],
+		"eslint/sort-imports": "off",
+
+		"typescript/explicit-function-return-type": "off",
+
+		"import/exports-last": "off",
+		"import/max-dependencies": "off",
+		"import/no-anonymous-default-export": "off",
+		"import/no-namespace": "off",
+
+		"unicorn/no-anonymous-default-export": "off",
+		"unicorn/no-empty-file": "off"
+	},
+
+	"plugins": [
+		"import",
+		"jsdoc",
+		"jsx-a11y",
+		"oxc",
+		"promise",
+		"typescript",
+		"unicorn",
+		"vitest"
+	]
 }
