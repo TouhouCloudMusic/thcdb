@@ -28,38 +28,35 @@ pub enum ValidationError {
     InvalidTenure,
 }
 
+#[serde_with::apply(
+    Vec      => #[serde(skip_serializing_if = "Vec::is_empty")],
+    Option   => #[serde(skip_serializing_if = "Option::is_none")],
+    Location => #[serde(skip_serializing_if = "Location::is_empty")],
+)]
 #[derive(Clone, Debug, Serialize, ToSchema)]
 #[expect(clippy::struct_field_names, reason = "type is a keyword")]
 pub struct Artist {
     pub id: i32,
     pub name: String,
     pub artist_type: ArtistType,
-    #[serde(skip_serializing_if = "Option::is_none")]
     /// Aliases without own page
     pub text_aliases: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     /// Birthday for individuals, founding date for groups
     pub start_date: Option<DateWithPrecision>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     /// Death date for individuals, disbandment date for groups
     pub end_date: Option<DateWithPrecision>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     /// Profile image of artist
     pub profile_image_url: Option<String>,
 
     /// List of id of artist aliases
     pub aliases: Vec<i32>,
     pub links: Vec<String>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub localized_names: Vec<LocalizedName>,
 
-    #[serde(skip_serializing_if = "Location::is_empty")]
     pub start_location: Location,
-    #[serde(skip_serializing_if = "Location::is_empty")]
     pub current_location: Location,
 
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Groups list for individuals, member list for groups,
     pub memberships: Vec<Membership>,
 }
