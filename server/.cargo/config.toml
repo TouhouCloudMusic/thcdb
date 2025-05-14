@@ -27,7 +27,7 @@ rustflags = [
     # You may need to install it:
     #
     # - cargo install --locked wild-linker
-    "-Clink-arg=--ld-path=wild",
+    # "-Clink-arg=--ld-path=wild",
 
     # Nightly
     "-Zshare-generics=y",
