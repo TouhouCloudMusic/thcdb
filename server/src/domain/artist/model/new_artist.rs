@@ -4,18 +4,15 @@ use derive_more::{Display, Error};
 use entity::enums::EntityType;
 pub use entity::sea_orm_active_enums::ArtistType;
 use macros::{ApiError, cmp_chain};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use url::Url;
 use utoipa::ToSchema;
 
+use super::Tenure;
 use crate::domain::correction::CorrectionEntity;
 use crate::domain::share::model::{
-    CreditRole, DateWithPrecision, EntityIdent, LocalizedName, Location,
-    NewLocalizedName,
+    DateWithPrecision, EntityIdent, Location, NewLocalizedName,
 };
-
-#[cfg(test)]
-mod test;
 
 #[derive(Debug, Display, Error, PartialEq, Eq, ApiError)]
 #[api_error(
@@ -26,39 +23,6 @@ pub enum ValidationError {
     UnknownTypeArtistHasMembers,
     #[display("Invalid tenure")]
     InvalidTenure,
-}
-
-#[serde_with::apply(
-    Vec      => #[serde(skip_serializing_if = "Vec::is_empty")],
-    Option   => #[serde(skip_serializing_if = "Option::is_none")],
-    Location => #[serde(skip_serializing_if = "Location::is_empty")],
-)]
-#[derive(Clone, Debug, Serialize, ToSchema)]
-#[expect(clippy::struct_field_names, reason = "type is a keyword")]
-pub struct Artist {
-    pub id: i32,
-    pub name: String,
-    pub artist_type: ArtistType,
-    /// Aliases without own page
-    pub text_aliases: Option<Vec<String>>,
-    /// Birthday for individuals, founding date for groups
-    pub start_date: Option<DateWithPrecision>,
-    /// Death date for individuals, disbandment date for groups
-    pub end_date: Option<DateWithPrecision>,
-
-    /// Profile image of artist
-    pub profile_image_url: Option<String>,
-
-    /// List of id of artist aliases
-    pub aliases: Vec<i32>,
-    pub links: Vec<String>,
-    pub localized_names: Vec<LocalizedName>,
-
-    pub start_location: Location,
-    pub current_location: Location,
-
-    /// Groups list for individuals, member list for groups,
-    pub memberships: Vec<Membership>,
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -95,7 +59,7 @@ impl NewArtist {
 
         if let Some(memberships) = &self.memberships {
             for membership in memberships {
-                validate_tenure(&membership.tenure)?;
+                validate_tenures(&membership.tenure)?;
             }
         }
 
@@ -109,24 +73,11 @@ impl CorrectionEntity for NewArtist {
     }
 }
 
-#[derive(Clone, Debug, Serialize, ToSchema)]
-pub struct Membership {
-    pub artist_id: i32,
-    pub roles: Vec<CreditRole>,
-    pub tenure: Vec<Tenure>,
-}
-
 #[derive(Deserialize, ToSchema)]
 pub struct NewMembership {
     pub artist_id: i32,
     pub roles: Vec<i32>,
     pub tenure: Vec<Tenure>,
-}
-
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, ToSchema)]
-pub struct Tenure {
-    pub join_year: Option<i16>,
-    pub leave_year: Option<i16>,
 }
 
 fn validate_artist_type_and_membership(
@@ -140,26 +91,26 @@ fn validate_artist_type_and_membership(
     }
 }
 
-fn validate_tenure(tenures: &[Tenure]) -> Result<(), ValidationError> {
+fn validate_tenures(tenures: &[Tenure]) -> Result<(), ValidationError> {
     fn validate_tenure_body(tenures: &[Tenure]) -> Result<(), ValidationError> {
         tenures.windows(2).all(|x| {
-            let [first, second] = x else { unreachable!() };
-            if let Tenure {
-                join_year: first_join,
-                leave_year: Some(first_leave),
-            } = first
-                && let Tenure {
-                    join_year: Some(second_join),
-                    leave_year: second_leave,
-                } = second
-            {
-                let first_join = &first_join.unwrap_or_default();
-                let second_leave = &second_leave.unwrap_or(i16::MAX);
-                cmp_chain!(first_join < first_leave < second_join < second_leave)
-            } else {
-                false
-            }
-        }).ok_or(ValidationError::InvalidTenure)
+        let [first, second] = x else { unreachable!() };
+        if let Tenure {
+            join_year: first_join,
+            leave_year: Some(first_leave),
+        } = first
+            && let Tenure {
+                join_year: Some(second_join),
+                leave_year: second_leave,
+            } = second
+        {
+            let first_join = &first_join.unwrap_or_default();
+            let second_leave = &second_leave.unwrap_or(i16::MAX);
+            cmp_chain!(first_join < first_leave < second_join < second_leave)
+        } else {
+            false
+        }
+    }).ok_or(ValidationError::InvalidTenure)
     }
 
     match tenures {

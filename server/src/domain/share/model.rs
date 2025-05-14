@@ -85,6 +85,9 @@ pub struct NewLocalizedName {
     pub name: String,
 }
 
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Clone, Debug, Serialize, Deserialize, ToSchema)]
 pub struct Location {
     pub country: Option<String>,

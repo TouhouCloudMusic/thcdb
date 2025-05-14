@@ -1,9 +1,3 @@
-mod artist;
-mod artist_image_queue;
-mod image;
-mod image_queue;
-mod user;
-
 use std::sync::Arc;
 
 use entity::user_role;
@@ -13,6 +7,13 @@ use sea_orm::{
 
 use crate::domain::model::auth::UserRoleEnum;
 use crate::domain::repository::{Connection, Transaction, TransactionManager};
+
+mod artist;
+mod artist_image_queue;
+mod correction;
+mod image;
+mod image_queue;
+mod user;
 
 #[derive(Clone)]
 pub struct SeaOrmRepository {

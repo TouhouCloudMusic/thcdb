@@ -101,7 +101,7 @@ async fn find_artist_by_keyword(
     responses(
         (status = 200, body = Message),
         (status = 401),
-        application::artist::Error
+        application::artist::CreateError
     ),
 )]
 #[axum::debug_handler]
@@ -109,7 +109,7 @@ async fn create_artist(
     CurrentUser(user): CurrentUser,
     State(service): State<state::ArtistServiceNew>,
     Json(input): Json<NewCorrectionDto<NewArtist>>,
-) -> Result<Message, application::artist::Error> {
+) -> Result<Message, application::artist::CreateError> {
     service
         .create(input.with_author(user))
         .await

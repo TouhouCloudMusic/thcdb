@@ -17,7 +17,7 @@ pub struct Service<R> {
 #[derive(
     Debug, Display, From, derive_more::Error, ApiError, IntoErrorSchema,
 )]
-pub enum Error {
+pub enum CreateError {
     #[from(forward)]
     Infra(InfraError),
     #[from]
@@ -33,7 +33,7 @@ where
     pub async fn create(
         &self,
         correction: NewCorrection<NewArtist>,
-    ) -> Result<(), Error> {
+    ) -> Result<(), CreateError> {
         let tx_repo = self.repo.begin().await?;
 
         correction.data.validate()?;

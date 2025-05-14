@@ -37,3 +37,11 @@ where
         self.data.entity_type()
     }
 }
+
+pub trait Repo: super::repository::Connection {
+    async fn pending_correction(
+        &self,
+        id: i32,
+        entity_type: EntityType,
+    ) -> Result<Option<i32>, Self::Error>;
+}

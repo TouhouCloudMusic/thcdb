@@ -8,43 +8,45 @@ use crate::application::artist::upload_profile_image::UploadArtistProfileImageUs
 use crate::application::use_case;
 use crate::domain::repository::TransactionManager;
 use crate::error::InfraError;
-pub use crate::infrastructure::database::sea_orm::{
+pub(super) use crate::infrastructure::database::sea_orm::{
     SeaOrmRepository, SeaOrmTxRepo,
 };
 use crate::infrastructure::singleton::FS_IMAGE_STORAGE;
 use crate::infrastructure::state::AppState;
 use crate::infrastructure::storage::GenericImageStorage;
+use crate::service as service_old;
 
-pub type ArtistService = crate::service::artist::Service;
-pub type ArtistServiceNew =
+pub(super) type ArtistService = service_old::artist::Service;
+pub(super) type ArtistServiceNew =
     crate::application::artist::Service<SeaOrmRepository>;
-pub type UploadArtistProfileImageUseCase =
+pub(super) type UploadArtistProfileImageUseCase =
     UploadArtistProfileImageUseCaseTrait<SeaOrmRepository, GenericImageStorage>;
 
-pub type CorretionService = crate::service::correction::Service;
+pub(super) type CorretionServiceOld = service_old::correction::Service;
 
-pub type EventService = crate::service::event::Service;
+pub(super) type EventService = service_old::event::Service;
 
-pub type ImageService =
+pub(super) type ImageService =
     crate::domain::image::Service<SeaOrmTxRepo, GenericImageStorage>;
 
-pub type LabelService = crate::service::label::Service;
+pub(super) type LabelService = service_old::label::Service;
 
-pub type ReleaseService = crate::service::release::Service;
+pub(super) type ReleaseService = service_old::release::Service;
 
-pub type SongService = crate::service::song::Service;
+pub(super) type SongService = service_old::song::Service;
 
-pub type TagService = crate::service::tag::Service<SeaOrmRepository>;
-pub type UserService = crate::service::user::Service;
-pub type UserImageService = crate::application::service::user::UserImageService<
-    SeaOrmTxRepo,
-    ImageService,
->;
+pub(super) type TagService = service_old::tag::Service<SeaOrmRepository>;
+pub(super) type UserService = service_old::user::Service;
+pub(super) type UserImageService =
+    crate::application::service::user::UserImageService<
+        SeaOrmTxRepo,
+        ImageService,
+    >;
 
-pub type AuthService =
+pub(super) type AuthService =
     crate::application::service::auth::AuthService<SeaOrmRepository>;
 
-pub type AuthSession = axum_login::AuthSession<AuthService>;
+pub(super) type AuthSession = axum_login::AuthSession<AuthService>;
 
 #[derive(Clone)]
 pub struct ArcAppState(Arc<AppState>);
@@ -117,7 +119,7 @@ impl FromRef<ArcAppState> for UserService {
     }
 }
 
-impl FromRef<ArcAppState> for CorretionService {
+impl FromRef<ArcAppState> for CorretionServiceOld {
     fn from_ref(input: &ArcAppState) -> Self {
         Self::new(input.database.clone())
     }

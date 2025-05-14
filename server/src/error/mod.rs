@@ -83,47 +83,36 @@ pub enum InfraErrorEnum {
     Custom(#[error(not(source))] Cow<'static, str>),
 }
 
-#[derive(
-    Debug, Display, derive_more::Error, From, ApiError, IntoErrorSchema,
-)]
+impl InfraErrorEnum {
+    const fn prefix(&self) -> &'static str {
+        match self {
+            Self::SeaOrm(_) => "Database error",
+            Self::Tokio(_) => "Tokio error",
+            Self::Io(_) => "IO error",
+            Self::PasswordHash(_) => "Password hash error",
+            Self::Custom(_) => "Custom error",
+        }
+    }
+}
+
+#[derive(Debug, Display, derive_more::Error, ApiError, IntoErrorSchema)]
 #[display("Internal server error")]
 #[api_error(
     status_code = StatusCode::INTERNAL_SERVER_ERROR,
     into_response = self,
 )]
 pub struct InfraError {
-    error: InfraErrorEnum,
-    context: Option<Cow<'static, str>>,
+    inner: Box<InfraErrorEnum>,
 }
 
 impl InfraError {
     pub fn with_context(
-        mut self,
-        context: impl Into<Cow<'static, str>>,
-    ) -> Self {
-        self.context = Some(context.into());
-        self
-    }
-
-    const fn prefix(&self) -> &'static str {
-        match &self.error {
-            InfraErrorEnum::SeaOrm(_) => "Database error",
-            InfraErrorEnum::Tokio(_) => "Tokio error",
-            InfraErrorEnum::Io(_) => "IO error",
-            InfraErrorEnum::PasswordHash(_) => "Password hash error",
-            InfraErrorEnum::Custom(_) => "Custom error",
-        }
-    }
-
-    fn trace(&self) {
-        let pre = self.prefix();
-        match &self.context {
-            Some(context) => {
-                tracing::error!("{pre}: {context}\n Cause by: {}", self.error);
-            }
-            None => {
-                tracing::error!("{pre}: {}", self.error);
-            }
+        self,
+        context: impl Into<String>,
+    ) -> ContextError<Self> {
+        ContextError {
+            error: self,
+            context: context.into(),
         }
     }
 }
@@ -132,19 +121,33 @@ impl<T> From<T> for InfraError
 where
     T: Into<InfraErrorEnum>,
 {
-    fn from(error: T) -> Self {
-        InfraError {
-            error: error.into(),
-            context: None,
+    fn from(value: T) -> Self {
+        Self {
+            inner: Box::new(value.into()),
         }
     }
 }
 
 impl IntoApiResponse for InfraError {
     fn into_api_response(self) -> axum::response::Response {
-        self.trace();
+        let pre = self.inner.prefix();
+        tracing::error!("{pre}: {}", self.inner);
 
         default_into_api_response_impl(self)
+    }
+}
+
+pub struct ContextError<E> {
+    error: E,
+    context: String,
+}
+
+impl IntoApiResponse for ContextError<InfraError> {
+    fn into_api_response(self) -> axum::response::Response {
+        let pre = self.error.inner.prefix();
+        let context = self.context;
+        tracing::error!("{pre}: {context}\n Cause by: {}", self.error);
+        default_into_api_response_impl(self.error)
     }
 }
 
