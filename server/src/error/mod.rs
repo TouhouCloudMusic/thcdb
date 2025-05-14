@@ -74,6 +74,15 @@ impl IntoResponse for ApiError {
     }
 }
 
+#[derive(Debug, Display, derive_more::Error, From)]
+pub enum InfraErrorEnum {
+    SeaOrm(DbErr),
+    Tokio(tokio::task::JoinError),
+    Io(std::io::Error),
+    PasswordHash(password_hash::Error),
+    Custom(#[error(not(source))] Cow<'static, str>),
+}
+
 #[derive(
     Debug, Display, derive_more::Error, From, ApiError, IntoErrorSchema,
 )]
@@ -82,33 +91,58 @@ impl IntoResponse for ApiError {
     status_code = StatusCode::INTERNAL_SERVER_ERROR,
     into_response = self,
 )]
-pub enum InfraError {
-    SeaOrm(DbErr),
-    Tokio(tokio::task::JoinError),
-    Io(std::io::Error),
-    PasswordHash(password_hash::Error),
-    Custom(#[error(not(source))] Cow<'static, str>),
+pub struct InfraError {
+    error: InfraErrorEnum,
+    context: Option<Cow<'static, str>>,
+}
+
+impl InfraError {
+    pub fn with_context(
+        mut self,
+        context: impl Into<Cow<'static, str>>,
+    ) -> Self {
+        self.context = Some(context.into());
+        self
+    }
+
+    const fn prefix(&self) -> &'static str {
+        match &self.error {
+            InfraErrorEnum::SeaOrm(_) => "Database error",
+            InfraErrorEnum::Tokio(_) => "Tokio error",
+            InfraErrorEnum::Io(_) => "IO error",
+            InfraErrorEnum::PasswordHash(_) => "Password hash error",
+            InfraErrorEnum::Custom(_) => "Custom error",
+        }
+    }
+
+    fn trace(&self) {
+        let pre = self.prefix();
+        match &self.context {
+            Some(context) => {
+                tracing::error!("{pre}: {context}\n Cause by: {}", self.error);
+            }
+            None => {
+                tracing::error!("{pre}: {}", self.error);
+            }
+        }
+    }
+}
+
+impl<T> From<T> for InfraError
+where
+    T: Into<InfraErrorEnum>,
+{
+    fn from(error: T) -> Self {
+        InfraError {
+            error: error.into(),
+            context: None,
+        }
+    }
 }
 
 impl IntoApiResponse for InfraError {
     fn into_api_response(self) -> axum::response::Response {
-        match &self {
-            InfraError::SeaOrm(err) => {
-                tracing::error!("Database error: {err}");
-            }
-            InfraError::Tokio(err) => {
-                tracing::error!("Tokio error: {err}");
-            }
-            InfraError::Io(err) => {
-                tracing::error!("IO error: {err}");
-            }
-            InfraError::PasswordHash(err) => {
-                tracing::error!("Password hash error: {err}");
-            }
-            InfraError::Custom(cow) => {
-                tracing::error!("{cow}");
-            }
-        }
+        self.trace();
 
         default_into_api_response_impl(self)
     }
