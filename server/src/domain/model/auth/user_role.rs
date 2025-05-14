@@ -1,6 +1,6 @@
 use sea_orm::DbErr;
 use serde::Serialize;
-use strum_macros::{EnumCount, EnumIter, EnumString};
+use strum::{EnumCount, EnumIter, EnumString};
 use utoipa::ToSchema;
 
 #[derive(
@@ -12,7 +12,7 @@ use utoipa::ToSchema;
     EnumIter,
     EnumCount,
     EnumString,
-    strum_macros::Display,
+    strum::Display,
     Serialize,
     ToSchema,
 )]

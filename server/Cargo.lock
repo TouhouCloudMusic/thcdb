@@ -4410,7 +4410,6 @@ dependencies = [
  "serde_with",
  "smart-default",
  "strum 0.27.1",
- "strum_macros",
  "syn 2.0.101",
  "thiserror 2.0.12",
  "tikv-jemallocator",
