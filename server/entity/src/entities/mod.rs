@@ -31,6 +31,7 @@ pub mod event_alternative_name_history;
 pub mod event_history;
 pub mod image;
 pub mod image_queue;
+pub mod image_reference;
 pub mod label;
 pub mod label_founder;
 pub mod label_founder_history;
