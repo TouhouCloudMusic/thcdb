@@ -101,11 +101,10 @@ async fn upsert_tag_correction(
     Path(id): Path<i32>,
     Json(input): Json<TagCorrection>,
 ) -> Result<api_response::Message, ServiceError> {
-    let user_id = user.id;
     tag_service
         .upsert_correction()
         .tag_id(id)
-        .user_id(user_id)
+        .user(&user)
         .data(input)
         .call()
         .await?;

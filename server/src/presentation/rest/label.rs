@@ -110,7 +110,7 @@ async fn upsert_label_correction(
     Path(id): Path<i32>,
     Json(data): Json<NewLabel>,
 ) -> Result<Message, ServiceError> {
-    label_service.upsert_correction(user.id, id, data).await?;
+    label_service.upsert_correction(&user, id, data).await?;
 
     Ok(Message::ok())
 }

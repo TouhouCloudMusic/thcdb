@@ -134,7 +134,7 @@ async fn upsert_artist_correction(
     Json(input): Json<ArtistCorrection>,
 ) -> Result<Message, Error> {
     artist_service
-        .create_or_update_correction(id, user.id, input)
+        .create_or_update_correction(id, &user, input)
         .await?;
 
     Ok(Message::ok())

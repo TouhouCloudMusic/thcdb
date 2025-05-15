@@ -8,8 +8,8 @@ use sea_orm::{
     TransactionTrait,
 };
 
-use super::*;
 use crate::domain::model::auth::UserRoleEnum;
+use crate::domain::user::User;
 use crate::error::ServiceError;
 use crate::repo;
 
@@ -33,23 +33,21 @@ impl Service {
 
     pub async fn is_author_or_admin(
         &self,
-        user_id: i32,
+
+        user: &User,
         correction_id: i32,
     ) -> Result<bool, ServiceError> {
-        let user_service = user::Service::new(self.db.clone());
-
-        if user_service
-            .get_roles(user_id)
-            .await?
-            .into_iter()
-            .any(|r| UserRoleEnum::Admin == r || UserRoleEnum::Moderator == r)
-        {
+        if user.roles.iter().any(|r| {
+            UserRoleEnum::try_from(r.id).is_ok_and(|role| {
+                matches!(role, UserRoleEnum::Admin | UserRoleEnum::Moderator)
+            })
+        }) {
             return Ok(true);
         }
 
         let count = correction_user::Entity::find()
             .filter(correction_user::Column::CorrectionId.eq(correction_id))
-            .filter(correction_user::Column::UserId.eq(user_id))
+            .filter(correction_user::Column::UserId.eq(user.id))
             .filter(
                 correction_user::Column::UserType
                     .eq(CorrectionUserType::Author),
@@ -65,7 +63,7 @@ impl Service {
 pub async fn create_or_update_correction<T, E, A, E1, E2>(
     entity_id: i32,
     entity_type: EntityType,
-    user_id: i32,
+    user: &User,
     closure_args: A,
     on_create: impl AsyncFnOnce(entity::correction::Model, A) -> Result<T, E1>,
     on_update: impl AsyncFnOnce(entity::correction::Model, A) -> Result<T, E2>,
@@ -81,7 +79,7 @@ where
 
     let res = if correction.status == CorrectionStatus::Pending {
         if correction_service
-            .is_author_or_admin(user_id, correction.id)
+            .is_author_or_admin(user, correction.id)
             .await?
         {
             return Err(ServiceError::Unauthorized.into());

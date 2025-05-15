@@ -133,7 +133,7 @@ async fn update_release(
         .create_or_update_correction()
         .release_id(id)
         .release_data(data)
-        .user_id(user.id)
+        .user(&user)
         .call()
         .await?;
 

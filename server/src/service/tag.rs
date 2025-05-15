@@ -2,6 +2,7 @@ use entity::sea_orm_active_enums::EntityType;
 use entity::tag;
 use sea_orm::{DatabaseConnection, EntityName};
 
+use crate::domain::user::User;
 use crate::dto::tag::{TagCorrection, TagResponse};
 use crate::error::ServiceError;
 use crate::repo::tag::TagRepository;
@@ -53,20 +54,20 @@ where
     #[builder]
     pub async fn upsert_correction(
         &self,
-        user_id: i32,
+        user: &User,
         tag_id: i32,
         data: TagCorrection,
     ) -> Result<(), ServiceError> {
         super::correction::create_or_update_correction()
             .entity_id(tag_id)
             .entity_type(EntityType::Tag)
-            .user_id(user_id)
+            .user(user)
             .closure_args(data)
             .on_create(|_, data| {
-                self.repo.create_correction(user_id, tag_id, data)
+                self.repo.create_correction(user.id, tag_id, data)
             })
             .on_update(|correction: entity::correction::Model, data| {
-                self.repo.update_correction(user_id, correction.id, data)
+                self.repo.update_correction(user.id, correction.id, data)
             })
             .db(&self.db)
             .call()

@@ -2,6 +2,7 @@ use entity::sea_orm_active_enums::EntityType;
 use entity::{correction, song};
 use sea_orm::{DatabaseConnection, DbErr, TransactionTrait};
 
+use crate::domain::user::User;
 use crate::dto::song::{NewSong, SongResponse};
 use crate::error::ServiceError;
 use crate::repo;
@@ -38,20 +39,20 @@ impl Service {
 
     pub async fn create_or_update_correction(
         &self,
+        user: &User,
         song_id: i32,
-        user_id: i32,
         data: NewSong,
     ) -> Result<(), ServiceError> {
         super::correction::create_or_update_correction()
             .entity_id(song_id)
             .entity_type(EntityType::Song)
-            .user_id(user_id)
+            .user(user)
             .closure_args(data)
             .on_create(|_, data| {
-                create_correction(song_id, user_id, data, &self.db)
+                create_correction(song_id, user.id, data, &self.db)
             })
             .on_update(|correction, data| {
-                update_correction(correction, user_id, data, &self.db)
+                update_correction(correction, user.id, data, &self.db)
             })
             .db(&self.db)
             .call()

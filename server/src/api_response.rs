@@ -128,19 +128,47 @@ pub struct Error {
     status_code: StatusCode,
 }
 
-#[bon::bon]
-impl Error {
-    #[builder]
-    pub fn new(
-        message: &(impl Display + ?Sized),
-        status_code: Option<StatusCode>,
-    ) -> Self {
-        Self {
+trait IntoError {
+    fn into_error(self) -> Error;
+}
+
+impl IntoError for &str {
+    fn into_error(self) -> Error {
+        Error {
             status: Status::Err,
-            message: message.to_string(),
-            status_code: status_code
-                .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+            message: self.to_string(),
+            status_code: StatusCode::INTERNAL_SERVER_ERROR,
         }
+    }
+}
+
+impl IntoError for String {
+    fn into_error(self) -> Error {
+        Error {
+            status: Status::Err,
+            message: self,
+            status_code: StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+}
+
+impl<T> IntoError for (T, StatusCode)
+where
+    T: Display,
+{
+    fn into_error(self) -> Error {
+        Error {
+            status: Status::Err,
+            message: self.0.to_string(),
+            status_code: self.1,
+        }
+    }
+}
+
+impl Error {
+    #[expect(private_bounds)]
+    pub fn new(err: impl IntoError) -> Self {
+        err.into_error()
     }
 
     pub fn from_api_error<T>(err: &T) -> Self
@@ -207,14 +235,14 @@ pub fn status_err_schema() -> impl Into<RefOr<Schema>> {
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use serde::Serialize;
     use serde_json::json;
 
     use super::*;
 
     #[test]
-    fn test_response_json() {
+    fn serialize_data_json() {
         let response = super::Data::new(json!({"a": 1}));
         let serialized = serde_json::to_string(&response).unwrap();
 
@@ -232,7 +260,7 @@ mod tests {
     }
 
     #[test]
-    fn test_response_struct() {
+    fn serialize_data_struct() {
         let response = super::Data::new(Person {
             id: 1,
             name: "John".to_string(),
@@ -250,8 +278,8 @@ mod tests {
     }
 
     #[test]
-    fn test_response_err() {
-        let response = super::Error::builder().message("error").build();
+    fn serialize_error() {
+        let response = super::Error::new("error");
 
         let serialized = serde_json::to_string(&response)
             .expect("Failed to serialize response");

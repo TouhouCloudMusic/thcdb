@@ -4,6 +4,7 @@ use error_set::error_set;
 use macros::{ApiError, IntoErrorSchema};
 use sea_orm::{DatabaseConnection, TransactionTrait};
 
+use crate::domain::user::User;
 use crate::dto::artist::ArtistCorrection;
 use crate::repo;
 
@@ -30,19 +31,19 @@ impl Service {
     pub async fn create_or_update_correction(
         &self,
         artist_id: i32,
-        user_id: i32,
+        user: &User,
         data: ArtistCorrection,
     ) -> Result<(), Error> {
         super::correction::create_or_update_correction()
             .entity_id(artist_id)
             .entity_type(EntityType::Artist)
-            .user_id(user_id)
+            .user(user)
             .closure_args(data)
             .on_create(|_, data| {
-                create_correction(artist_id, user_id, data, &self.db)
+                create_correction(artist_id, user.id, data, &self.db)
             })
             .on_update(|correction, data| {
-                update_correction(user_id, correction, data, &self.db)
+                update_correction(user.id, correction, data, &self.db)
             })
             .db(&self.db)
             .call()

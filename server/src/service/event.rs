@@ -2,6 +2,7 @@ use entity::sea_orm_active_enums::EntityType;
 use entity::{correction, event};
 use sea_orm::{DatabaseConnection, DbErr, TransactionTrait};
 
+use crate::domain::user::User;
 use crate::dto::event::{EventCorrection, EventResponse};
 use crate::error::ServiceError;
 use crate::repo;
@@ -39,19 +40,19 @@ impl Service {
     pub async fn upsert_correction(
         &self,
         event_id: i32,
-        user_id: i32,
+        user: &User,
         data: EventCorrection,
     ) -> Result<(), ServiceError> {
         super::correction::create_or_update_correction()
             .entity_id(event_id)
             .entity_type(EntityType::Event)
-            .user_id(user_id)
+            .user(user)
             .closure_args(data)
             .on_create(|_, data| {
-                create_correction(event_id, user_id, data, &self.db)
+                create_correction(event_id, user.id, data, &self.db)
             })
             .on_update(|correction, data| {
-                update_correction(correction, user_id, data, &self.db)
+                update_correction(correction, user.id, data, &self.db)
             })
             .db(&self.db)
             .call()

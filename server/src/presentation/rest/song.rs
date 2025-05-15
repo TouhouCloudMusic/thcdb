@@ -109,7 +109,7 @@ async fn update_song(
     Json(input): Json<NewSong>,
 ) -> Result<Message, ServiceError> {
     service
-        .create_or_update_correction(song_id, user.id, input)
+        .create_or_update_correction(&user, song_id, input)
         .await?;
 
     Ok(Message::ok())

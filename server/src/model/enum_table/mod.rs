@@ -4,7 +4,7 @@ use sea_orm::{
 use strum::IntoEnumIterator;
 
 use crate::domain::model::auth::UserRoleEnum;
-use crate::service::user::upsert_admin_acc;
+use crate::infrastructure::database::sea_orm::utils::upsert_admin_acc;
 
 mod language;
 mod user_role;

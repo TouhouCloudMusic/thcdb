@@ -1,4 +1,5 @@
 use axum::extract::{Path, Query, State};
+use axum::response::IntoResponse;
 use entity::enums::EntityType;
 use error_set::error_set;
 use macros::EnumToResponse;
@@ -9,7 +10,7 @@ use utoipa_axum::routes;
 
 use super::extractor::CurrentUser;
 use super::state::{self, ArcAppState};
-use crate::api_response::{Data, Message};
+use crate::api_response::{self, Data, Message};
 use crate::domain::model::auth::UserRoleEnum;
 use crate::error::{ApiError, InfraError, ServiceError};
 use crate::utils::MapInto;
@@ -61,27 +62,25 @@ async fn handle_correction(
     Path(id): Path<i32>,
     Query(query): Query<HandleCorrectionQuery>,
     State(service): State<service::correction::Service>,
-    State(user_service): State<service::user::Service>,
-) -> Result<Message, Error> {
-    if user_service
-        .get_roles(user.id)
-        .await?
-        .into_iter()
-        .any(|x| UserRoleEnum::Admin == x || UserRoleEnum::Moderator == x)
-    {
-        match query.method {
-            HandleCorrectionMethod::Approve => {
-                service.approve(id, user.id).await?;
-            }
-            HandleCorrectionMethod::Reject => {
-                todo!()
-            }
-        }
-    } else {
-        Err(ApiError::Unauthorized)?;
+) -> Result<Message, impl IntoResponse> {
+    if !user.roles.iter().any(|x| {
+        UserRoleEnum::try_from(x.id).is_ok_and(|role| {
+            matches!(role, UserRoleEnum::Admin | UserRoleEnum::Moderator)
+        })
+    }) {
+        return Err(ApiError::Unauthorized.into_response())?;
     }
 
-    Ok(Message::ok())
+    match query.method {
+        HandleCorrectionMethod::Approve => service
+            .approve(id, user.id)
+            .await
+            .map_err(IntoResponse::into_response)
+            .map(|()| Message::ok()),
+        HandleCorrectionMethod::Reject => {
+            Err(api_response::Error::new("Not implemented").into_response())
+        }
+    }
 }
 
 #[derive(Deserialize, ToSchema)]

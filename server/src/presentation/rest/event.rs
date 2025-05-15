@@ -107,7 +107,7 @@ async fn upsert_correction(
     Path(id): Path<i32>,
     Json(input): Json<EventCorrection>,
 ) -> Result<Message, ServiceError> {
-    service.upsert_correction(id, user.id, input).await?;
+    service.upsert_correction(id, &user, input).await?;
 
     Ok(Message::ok())
 }

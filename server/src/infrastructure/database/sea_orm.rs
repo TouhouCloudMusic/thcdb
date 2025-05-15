@@ -14,6 +14,7 @@ mod correction;
 mod image;
 mod image_queue;
 mod user;
+pub mod utils;
 
 #[derive(Clone)]
 pub struct SeaOrmRepository {

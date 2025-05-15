@@ -7,6 +7,7 @@ use sea_orm::{
     TransactionTrait,
 };
 
+use crate::domain::user::User;
 use crate::dto::release::{ReleaseCorrection, ReleaseResponse};
 use crate::error::{InvalidField, ServiceError};
 use crate::repo;
@@ -72,18 +73,18 @@ impl Service {
         &self,
         release_id: i32,
         release_data: ReleaseCorrection,
-        user_id: i32,
+        user: &User,
     ) -> Result<(), Error> {
         super::correction::create_or_update_correction()
             .entity_id(release_id)
             .entity_type(EntityType::Release)
-            .user_id(user_id)
+            .user(user)
             .closure_args(release_data)
             .on_create(|_, data| {
-                create_correction(release_id, user_id, data, &self.db)
+                create_correction(release_id, user.id, data, &self.db)
             })
             .on_update(|_, data| {
-                update_correction(release_id, user_id, data, &self.db)
+                update_correction(release_id, user.id, data, &self.db)
             })
             .db(&self.db)
             .call()
