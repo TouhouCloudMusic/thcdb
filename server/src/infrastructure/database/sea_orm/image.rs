@@ -22,10 +22,19 @@ where
     }
 
     async fn delete(&self, id: i32) -> Result<(), Self::Error> {
-        entity::image::Entity::delete_by_id(id)
+        entity::image::Entity::delete_many()
+            .filter(entity::image::Column::Id.eq(id))
             .exec(self.conn())
             .await
             .map(|_| ())
+    }
+
+    async fn find_by_id(&self, id: i32) -> Result<Option<Image>, Self::Error> {
+        entity::image::Entity::find()
+            .filter(entity::image::Column::Id.eq(id))
+            .one(self.conn())
+            .await
+            .map(crate::utils::MapInto::map_into)
     }
 
     async fn find_by_filename(

@@ -94,7 +94,7 @@ impl TransactionManager for SeaOrmTxRepo {
 impl Transaction for SeaOrmTxRepo {
     async fn commit(self) -> Result<(), Self::Error> {
         Arc::try_unwrap(self.tx)
-            .map_err(|_| DbErr::Custom("Cannot commit transaction: multiple references to the transaction exist".to_owned()))?
+            .map_err(|tx| DbErr::Custom(format!("Cannot commit transaction: multiple references to the transaction exist, current weak count: {}, strong count: {}", Arc::weak_count(&tx), Arc::strong_count(&tx))))?
             .commit()
             .await
     }

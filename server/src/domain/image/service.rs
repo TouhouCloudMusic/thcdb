@@ -13,8 +13,8 @@ use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 use macros::ApiError;
 
 use crate::domain::model::image::{Image, NewImage};
-use crate::domain::repository::{Transaction, TransactionManager};
-use crate::error::InfraError;
+use crate::domain::repository::Transaction;
+use crate::error::{InfraError, InfraErrorEnum};
 
 error_set! {
     #[derive(ApiError)]
@@ -190,6 +190,17 @@ pub struct ParseOption {
     convert_to: Option<ImageFormat>,
 }
 
+impl ParseOption {
+    pub const SQUARE: RangeInclusive<f64> = RangeInclusive {
+        start: 1.0,
+        end: 1.0,
+    };
+
+    pub const fn into_parser(self) -> Parser {
+        Parser::new(self)
+    }
+}
+
 use parse_option_builder::{IsUnset, SetHeightRange, SetWidthRange};
 
 impl<S: parse_option_builder::State> ParseOptionBuilder<S> {
@@ -312,7 +323,7 @@ impl Parser {
 
 pub trait AsyncImageStorage: Send + Sync {
     type File;
-    type Error;
+    type Error: Into<InfraErrorEnum>;
 
     async fn create(&self, image: NewImage) -> Result<Self::File, Self::Error>;
 
@@ -342,80 +353,67 @@ pub struct Service<R, S> {
     storage: S,
 }
 
-pub trait ServiceTrait: Send + Sync {
-    async fn create(
-        &self,
-        buffer: &[u8],
-        parser: &Parser,
-        uploader_id: i32,
-    ) -> Result<Image, Error>;
-
-    async fn delete(&self, image: Image) -> Result<(), Error>;
-
-    async fn find_by_filename(
-        &self,
-        filename: &str,
-    ) -> Result<Option<Image>, Error>;
+impl<R, S> Service<R, S> {
+    pub const fn new(repo: R, storage: S) -> Self {
+        Self { repo, storage }
+    }
 }
 
-// Todo: Move to application layer
-impl<Repo, Storage, TxRepo> ServiceTrait for Service<Repo, Storage>
+impl<Repo, Storage> Service<Repo, Storage>
 where
-    Repo:
-        super::Repository + TransactionManager<TransactionRepository = TxRepo>,
-    TxRepo: super::Repository + Transaction,
+    Repo: super::Repository,
     Storage: AsyncImageStorage,
-    InfraError: From<Repo::Error> + From<TxRepo::Error> + From<Storage::Error>,
 {
-    async fn create(
+    pub async fn find_by_id(&self, id: i32) -> Result<Option<Image>, Error> {
+        Ok(self.repo.find_by_id(id).await?)
+    }
+
+    pub async fn find_by_filename(
+        &self,
+        filename: &str,
+    ) -> Result<Option<Image>, Error> {
+        Ok(self.repo.find_by_filename(filename).await?)
+    }
+}
+
+impl<Tx, Storage> Service<Tx, Storage>
+where
+    Tx: Transaction + super::Repository,
+    Storage: AsyncImageStorage,
+{
+    pub async fn create(
         &self,
         bytes: &[u8],
         parser: &Parser,
         uploaded_by: i32,
     ) -> Result<Image, Error> {
-        let repo = &self.repo;
-        repo.run(async |tx| {
-            let parsed = parser.parse(bytes)?;
+        let tx = &self.repo;
+        let parsed = parser.parse(bytes)?;
 
-            // TODO: Support more storage
-            let new_image =
-                NewImage::from_parsed(parsed, uploaded_by, StorageBackend::Fs);
+        // TODO: Support more storage
+        let new_image =
+            NewImage::from_parsed(parsed, uploaded_by, StorageBackend::Fs);
 
-            // We use xxhash128, so if the hash is the same, it is the same image.
-            let image = if let Some(image) =
-                tx.find_by_filename(&new_image.filename()).await?
-            {
-                image
-            } else {
-                let image = tx.save(&new_image).await?;
-                self.storage.create(new_image).await?;
-                image
-            };
+        // We use xxhash128, so if the hash is the same, it is the same image.
+        let image = if let Some(image) =
+            tx.find_by_filename(&new_image.filename()).await?
+        {
+            image
+        } else {
+            let image = tx.save(&new_image).await?;
+            self.storage.create(new_image).await?;
+            image
+        };
 
-            Ok(image)
-        })
-        .await
+        Ok(image)
     }
 
-    async fn delete(&self, image: Image) -> Result<(), Error> {
-        let repo = &self.repo;
+    pub async fn delete(&self, image: Image) -> Result<(), Error> {
+        self.repo.delete(image.id).await?;
 
-        repo.run(async |tx| {
-            tx.delete(image.id).await?;
+        self.storage.remove(image).await?;
 
-            self.storage.remove(image).await?;
-
-            Ok(())
-        })
-        .await
-    }
-
-    // TODO: This does not need to be wrapped in the transaction, consider moving it elsewhere
-    async fn find_by_filename(
-        &self,
-        filename: &str,
-    ) -> Result<Option<Image>, Error> {
-        Ok(self.repo.find_by_filename(filename).await?)
+        Ok(())
     }
 }
 

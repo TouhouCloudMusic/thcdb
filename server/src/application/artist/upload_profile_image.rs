@@ -13,9 +13,7 @@ use crate::constant::{
     ARTIST_PROFILE_IMAGE_RATIO_MAX, ARTIST_PROFILE_IMAGE_RATIO_MIN,
 };
 use crate::domain::artist_image_queue::{self, ArtistImageQueue};
-use crate::domain::image::{
-    AsyncImageStorage, ParseOption, Parser, ServiceTrait,
-};
+use crate::domain::image::{AsyncImageStorage, ParseOption, Parser};
 use crate::domain::repository::{Transaction, TransactionManager};
 use crate::domain::user::User;
 use crate::domain::{image, image_queue};
@@ -53,14 +51,11 @@ where
     Repo: TransactionManager<TransactionRepository = TxRepo>,
     // Perhaps these repos should be separated, but there is no need for this in the foreseeable future.
     TxRepo: Clone
-        + image_queue::Repository
-        + artist_image_queue::Repository
-        // Image service requirements
-        + TransactionManager<TransactionRepository = TxRepo>
         + Transaction
-        + image::Repository,
+        + image::Repository
+        + image_queue::Repository
+        + artist_image_queue::Repository,
     Storage: AsyncImageStorage + Clone,
-    InfraError: From<Repo::Error> + From<TxRepo::Error> + From<Storage::Error>,
 {
     /// Warn: Make sure inner transaction is wrapped in Arc
     pub const fn new(repo: Repo, storage: Storage) -> Self {
@@ -79,18 +74,9 @@ where
 
         let tx_repo = self.repo.begin().await?;
 
-        let image_service = image::Service::builder()
-            .repo(tx_repo.clone())
-            .storage(self.storage.clone())
-            .build();
-
-        let image = ServiceTrait::create(
-            &image_service,
-            &bytes,
-            &ARTIST_PROFILE_IMAGE_PARSER,
-            user.id,
-        )
-        .await?;
+        let image = image::Service::new(tx_repo.clone(), self.storage.clone())
+            .create(&bytes, &ARTIST_PROFILE_IMAGE_PARSER, user.id)
+            .await?;
 
         let new_image_queue = image_queue::NewImageQueue::new(&user, &image);
 

@@ -36,11 +36,10 @@ pub(super) type ReleaseService = service_old::release::Service;
 pub(super) type SongService = service_old::song::Service;
 
 pub(super) type TagService = service_old::tag::Service<SeaOrmRepository>;
-pub(super) type UserService = service_old::user::Service;
 pub(super) type UserImageService =
     crate::application::service::user::UserImageService<
-        SeaOrmTxRepo,
-        ImageService,
+        SeaOrmRepository,
+        GenericImageStorage,
     >;
 
 pub(super) type AuthService =
@@ -113,12 +112,6 @@ impl FromRef<ArcAppState> for TagService {
     }
 }
 
-impl FromRef<ArcAppState> for UserService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        Self::new(input.database.clone())
-    }
-}
-
 impl FromRef<ArcAppState> for CorretionServiceOld {
     fn from_ref(input: &ArcAppState) -> Self {
         Self::new(input.database.clone())
@@ -174,19 +167,10 @@ impl TryFromRef<ArcAppState> for SeaOrmTxRepo {
     }
 }
 
-impl TryFromRef<ArcAppState> for UserImageService {
-    type Rejection = InfraError;
-
-    async fn try_from_ref(input: &ArcAppState) -> Result<Self, Self::Rejection>
-    where
-        Self: Sized,
-    {
-        let tx_repo = SeaOrmTxRepo::try_from_ref(input).await?;
-
-        let image_service = ImageService::builder()
-            .repo(tx_repo.clone())
-            .storage(FS_IMAGE_STORAGE.clone())
-            .build();
-        Ok(Self::new(tx_repo, image_service))
+impl FromRef<ArcAppState> for UserImageService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        let repo = input.sea_orm_repo.clone();
+        let storage = FS_IMAGE_STORAGE.clone();
+        Self::new(repo, storage)
     }
 }

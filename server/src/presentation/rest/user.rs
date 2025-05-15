@@ -6,7 +6,7 @@ use axum_typed_multipart::TypedMultipart;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::extractor::{CurrentUser, TryState};
+use super::extractor::CurrentUser;
 use super::state::{self, ArcAppState, AuthSession};
 use crate::api_response::{Data, Message};
 use crate::application::dto::user::{UploadAvatar, UploadProfileBanner};
@@ -19,7 +19,6 @@ use crate::domain::model::auth::AuthCredential;
 use crate::domain::model::markdown::{self, Markdown};
 use crate::domain::user::UserProfile;
 use crate::error::{InfraError, ServiceError};
-use crate::service::user::UploadAvatarError;
 use crate::{api_response, domain};
 
 const TAG: &str = "User";
@@ -166,17 +165,16 @@ async fn sign_out(
     responses(
         (status = 200, body = api_response::Message),
         (status = 401),
-        UploadAvatarError
+        UserImageServiceError
     )
 )]
 async fn upload_avatar(
     CurrentUser(user): CurrentUser,
-    State(user_service): State<state::UserService>,
-    TryState(image_service): TryState<state::ImageService>,
+    State(service): State<state::UserImageService>,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
-) -> Result<impl IntoResponse, UploadAvatarError> {
-    user_service
-        .upload_avatar(&image_service, user.id, form.data)
+) -> Result<impl IntoResponse, UserImageServiceError> {
+    service
+        .upload_avatar(user, &form.data.contents)
         .await
         .map(|()| {
             api_response::Message::new("Upload successful").into_response()
@@ -199,7 +197,7 @@ async fn upload_avatar(
 )]
 async fn upload_profile_banner(
     CurrentUser(user): CurrentUser,
-    TryState(service): TryState<state::UserImageService>,
+    State(service): State<state::UserImageService>,
     TypedMultipart(form): TypedMultipart<UploadProfileBanner>,
 ) -> Result<impl IntoResponse, UserImageServiceError> {
     service

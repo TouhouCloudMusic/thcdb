@@ -44,7 +44,7 @@ impl user::Repository for SeaOrmRepository {
     }
 }
 
-impl user::TransactionRepository for SeaOrmTxRepo {
+impl user::TxRepo for SeaOrmTxRepo {
     async fn create(&self, user: NewUser) -> Result<User, Self::Error> {
         let tx = self.conn().begin().await?;
 

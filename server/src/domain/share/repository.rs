@@ -1,6 +1,8 @@
+use crate::error::InfraErrorEnum;
+
 pub trait Connection: Send + Sync {
     type Conn: Send;
-    type Error: Send;
+    type Error: Send + Into<InfraErrorEnum>;
 
     fn conn(&self) -> &Self::Conn;
 }

@@ -1,35 +1,49 @@
-use std::sync::LazyLock;
-
-use ::image::ImageFormat;
-use bytesize::ByteSize;
 use derive_more::From;
 use error_set::error_set;
 use futures_util::TryFutureExt;
 use macros::{ApiError, IntoErrorSchema};
 
-use crate::constant::{
-    USER_PROFILE_BANNER_MAX_HEIGHT, USER_PROFILE_BANNER_MAX_WIDTH,
-    USER_PROFILE_BANNER_MIN_HEIGHT, USER_PROFILE_BANNER_MIN_WIDTH,
-};
-use crate::domain::image::{self, ParseOption, Parser, ValidationError};
-use crate::domain::user::{self, User};
-use crate::domain::{self};
+use crate::domain::image::{self, AsyncImageStorage, ValidationError};
+use crate::domain::repository::{Transaction, TransactionManager};
+use crate::domain::user::{self, TxRepo, User};
 use crate::error::InfraError;
 
-static PROFILE_BANNER_PARSER: LazyLock<Parser> = LazyLock::new(|| {
-    let opt = ParseOption::builder()
-        .valid_formats(&[ImageFormat::Png, ImageFormat::Jpeg])
-        .file_size_range(ByteSize::kib(10)..=ByteSize::mib(100))
-        .width_range(
-            USER_PROFILE_BANNER_MIN_WIDTH..=USER_PROFILE_BANNER_MAX_WIDTH,
-        )
-        .height_range(
-            USER_PROFILE_BANNER_MIN_HEIGHT..=USER_PROFILE_BANNER_MAX_HEIGHT,
-        )
-        .ratio(1f64..=1f64)
-        .build();
-    Parser::new(opt)
-});
+mod parser {
+    use std::sync::LazyLock;
+
+    use ::image::ImageFormat;
+    use bytesize::ByteSize;
+
+    use crate::constant::{
+        USER_PROFILE_BANNER_MAX_HEIGHT, USER_PROFILE_BANNER_MAX_WIDTH,
+        USER_PROFILE_BANNER_MIN_HEIGHT, USER_PROFILE_BANNER_MIN_WIDTH,
+    };
+    use crate::domain::image::{ParseOption, Parser};
+    pub static AVATAR: LazyLock<Parser> = LazyLock::new(|| {
+        ParseOption::builder()
+            .valid_formats(&[ImageFormat::Png, ImageFormat::Jpeg])
+            .file_size_range(ByteSize::kib(10)..=ByteSize::mib(100))
+            .size_range(128u32..=2048)
+            .ratio(1f64..=1f64)
+            .build()
+            .into_parser()
+    });
+
+    pub static PROFILE_BANNER: LazyLock<Parser> = LazyLock::new(|| {
+        ParseOption::builder()
+            .valid_formats(&[ImageFormat::Png, ImageFormat::Jpeg])
+            .file_size_range(ByteSize::kib(10)..=ByteSize::mib(100))
+            .width_range(
+                USER_PROFILE_BANNER_MIN_WIDTH..=USER_PROFILE_BANNER_MAX_WIDTH,
+            )
+            .height_range(
+                USER_PROFILE_BANNER_MIN_HEIGHT..=USER_PROFILE_BANNER_MAX_HEIGHT,
+            )
+            .ratio(ParseOption::SQUARE)
+            .build()
+            .into_parser()
+    });
+}
 
 error_set! {
     #[derive(ApiError, IntoErrorSchema, From)]
@@ -42,45 +56,81 @@ error_set! {
     };
 }
 
-pub struct UserImageService<UR, S> {
-    user_repo: UR,
-    image_service: S,
+#[derive(Clone)]
+pub struct UserImageService<R, S> {
+    repo: R,
+    storage: S,
 }
 
-impl<U, IS> UserImageService<U, IS> {
-    pub const fn new(user_repo: U, s: IS) -> Self {
-        Self {
-            user_repo,
-            image_service: s,
-        }
+impl<R, S> UserImageService<R, S> {
+    pub const fn new(repo: R, storage: S) -> Self {
+        Self { repo, storage }
     }
 }
 
-impl<UR, IS> UserImageService<UR, IS>
+impl<R, S> UserImageService<R, S>
 where
-    UR: user::TransactionRepository,
-    IS: domain::image::ServiceTrait,
-    UserImageServiceError: From<UR::Error>,
+    R: TransactionManager,
+    R::TransactionRepository: Clone + user::TxRepo + image::Repository,
+    S: Clone + AsyncImageStorage,
 {
-    // FIXME: Transaction is controlled externally
+    pub async fn upload_avatar(
+        &self,
+        mut user: User,
+        buffer: &[u8],
+    ) -> Result<(), UserImageServiceError> {
+        let tx = self.repo.begin().await?;
+
+        // drop image service because tx is arc
+        {
+            let image_service =
+                image::Service::new(tx.clone(), self.storage.clone());
+
+            // TODO: Ref count
+            // if let Some(image_id) = user.avatar_id
+            //     && let Some(image) = image_service.find_by_id(image_id).await?
+            // {
+            //     image_service
+            //         .delete(image)
+            //         .await
+            //         .map_err(UserImageServiceError::ImageService)?;
+            // }
+
+            let image = image_service
+                .create(buffer, &parser::AVATAR, user.id)
+                .await
+                .map_err(UserImageServiceError::ImageService)?;
+
+            user.avatar_id = Some(image.id);
+        }
+
+        tx.update(user).await?;
+
+        tx.commit().await?;
+
+        Ok(())
+    }
+
     pub async fn upload_banner_image(
-        self,
+        &self,
         mut user: User,
         buffer: &[u8],
     ) -> Result<User, UserImageServiceError> {
-        let parser = &PROFILE_BANNER_PARSER;
+        let tx = self.repo.begin().await?;
 
-        let image = self
-            .image_service
-            .create(buffer, parser, user.id)
+        let image_service =
+            image::Service::new(tx.clone(), self.storage.clone());
+
+        let image = image_service
+            .create(buffer, &parser::PROFILE_BANNER, user.id)
             .map_err(UserImageServiceError::ImageService)
             .await?;
 
         user.profile_banner_id = Some(image.id);
 
-        let user = self.user_repo.update(user).await?;
+        let user = tx.update(user).await?;
 
-        self.user_repo.commit().await?;
+        tx.commit().await?;
 
         Ok(user)
     }

@@ -6,25 +6,23 @@ use super::model::markdown::Markdown;
 use super::repository::{Connection, Transaction};
 use crate::error::InfraError;
 
+#[serde_with::apply(
+    Vec    => #[serde(skip_serializing_if = "Vec::is_empty")],
+    Option => #[serde(skip_serializing_if = "Option::is_none")]
+)]
 #[derive(Clone, ToSchema, Serialize)]
 pub struct UserProfile {
     pub name: String,
 
     /// Avatar url with sub directory, eg. ab/cd/abcd..xyz.jpg
-    #[schema(nullable = false)]
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub avatar_url: Option<String>,
 
     /// Banner url with sub directory, eg. ab/cd/abcd..xyz.jpg
-    #[schema(nullable = false)]
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub banner_url: Option<String>,
     pub last_login: chrono::DateTime<chrono::FixedOffset>,
     pub roles: Vec<UserRole>,
 
     /// Whether the querist follows the user. Return `None` if querist is not signed in or it's querist's own profile
-    #[schema(nullable = false)]
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub is_following: Option<bool>,
 
     pub bio: Option<String>,
@@ -70,7 +68,7 @@ pub trait Repository: Connection {
 }
 
 #[trait_variant::make(Send)]
-pub trait TransactionRepository: Transaction {
+pub trait TxRepo: Transaction {
     async fn create(&self, user: NewUser) -> Result<User, Self::Error>;
     async fn update(&self, user: User) -> Result<User, Self::Error>;
 }

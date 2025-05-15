@@ -6,6 +6,8 @@ pub trait Repository: Connection {
 
     async fn delete(&self, id: i32) -> Result<(), Self::Error>;
 
+    async fn find_by_id(&self, id: i32) -> Result<Option<Image>, Self::Error>;
+
     async fn find_by_filename(
         &self,
         filename: &str,

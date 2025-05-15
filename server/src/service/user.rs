@@ -1,16 +1,11 @@
 use std::path::PathBuf;
-use std::sync::LazyLock;
 use std::{env, str};
 
 use argon2::password_hash;
-use axum::body::Bytes;
 use axum::http::StatusCode;
-use axum_typed_multipart::FieldData;
-use bytesize::ByteSize;
 use derive_more::From;
 use entity::{role, user, user_role};
 use error_set::error_set;
-use image::ImageFormat;
 use itertools::Itertools;
 use macros::{ApiError, IntoErrorSchema};
 use sea_orm::ActiveValue::*;
@@ -23,7 +18,7 @@ use sea_orm::{
 
 use crate::constant::ADMIN_USERNAME;
 use crate::domain;
-use crate::domain::image::{ParseOption, Parser, ValidationError};
+use crate::domain::image::ValidationError;
 use crate::domain::model::auth::{
     HasherError, UserRoleEnum, ValidateCredsError, hash_password,
 };
@@ -90,58 +85,6 @@ impl Service {
             .filter(user::Column::Name.eq(username))
             .one(&self.db)
             .await
-    }
-
-    // TODO: Move to user image service
-    pub async fn upload_avatar<IS>(
-        &self,
-        image_service: &IS,
-        user_id: i32,
-        data: FieldData<Bytes>,
-    ) -> Result<(), UploadAvatarError>
-    where
-        IS: domain::image::ServiceTrait,
-    {
-        if data
-            .metadata
-            .content_type
-            .as_ref()
-            .is_some_and(|ct| ct.starts_with("image/"))
-        {
-            static AVATAR_PARSER: LazyLock<Parser> = LazyLock::new(|| {
-                let opt = ParseOption::builder()
-                    .valid_formats(&[ImageFormat::Png, ImageFormat::Jpeg])
-                    .file_size_range(ByteSize::kib(10)..=ByteSize::mib(100))
-                    .size_range(128u32..=2048)
-                    .ratio(1f64..=1f64)
-                    .build();
-                Parser::new(opt)
-            });
-
-            let image = image_service
-                .create(&data.contents, &AVATAR_PARSER, user_id)
-                .await
-                .map_err(UploadAvatarError::Domain)?;
-
-            user::Entity::update_many()
-                .filter(user::Column::Id.eq(user_id))
-                .col_expr(user::Column::AvatarId, Expr::value(image.id))
-                .exec(&self.db)
-                .await?;
-        } else {
-            Err(InvalidField {
-                field: "data".into(),
-                expected: "image/*".into(),
-                received: format!(
-                    "{:?}",
-                    data.metadata
-                        .content_type
-                        .or_else(|| Some("Nothing".to_string()))
-                ),
-            })?;
-        }
-
-        Ok(())
     }
 
     pub async fn get_roles(

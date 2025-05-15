@@ -9,7 +9,7 @@ use crate::domain::model::auth::{
     AuthCredential, AuthnError, ValidateCredsError,
 };
 use crate::domain::repository::{Connection, Transaction, TransactionManager};
-use crate::domain::user::{self, TransactionRepository, User};
+use crate::domain::user::{self, TxRepo, User};
 use crate::error::InfraError;
 
 #[derive(Clone)]
@@ -110,14 +110,14 @@ impl<R> AuthService<R> {
 
 trait AuthServiceTraitBounds<R> = where
     R: TransactionManager + user::Repository,
-    R::TransactionRepository: user::TransactionRepository,
+    R::TransactionRepository: user::TxRepo,
     InfraError:
         From<R::Error> + From<<R::TransactionRepository as Connection>::Error>;
 
 impl<R> AuthServiceTrait<R> for AuthService<R>
 where
     R: TransactionManager + user::Repository,
-    R::TransactionRepository: user::TransactionRepository,
+    R::TransactionRepository: user::TxRepo,
     InfraError:
         From<R::Error> + From<<R::TransactionRepository as Connection>::Error>,
 {
