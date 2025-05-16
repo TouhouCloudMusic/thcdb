@@ -9,12 +9,14 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::extractor::CurrentUser;
-use super::state::{self, ArcAppState};
+use super::state::{self, ArcAppState, SeaOrmTxRepo};
 use crate::api_response::{self, Data, Message};
-use crate::domain::correction::{self, CorrectionFilter};
-use crate::domain::model::auth::UserRoleEnum;
+use crate::application;
+use crate::domain::correction::{
+    self, ApproveCorrectionContext, CorrectionFilter,
+};
+use crate::domain::repository::TransactionManager;
 use crate::error::{ApiError, InfraError, ServiceError};
-use crate::service;
 
 const TAG: &str = "Correction";
 
@@ -53,7 +55,7 @@ struct HandleCorrectionQuery {
 	responses(
 		(status = 200, body = Message),
 		(status = 401),
-		ServiceError
+		application::correction::Error
 	),
 )]
 // TODO: Better name
@@ -61,25 +63,51 @@ async fn handle_correction(
     CurrentUser(user): CurrentUser,
     Path(id): Path<i32>,
     Query(query): Query<HandleCorrectionQuery>,
-    State(service): State<service::correction::Service>,
+    state: State<state::ArcAppState>,
+    State(service): State<state::CorrectionService>,
 ) -> Result<Message, impl IntoResponse> {
-    if !user.roles.iter().any(|x| {
-        UserRoleEnum::try_from(x.id).is_ok_and(|role| {
-            matches!(role, UserRoleEnum::Admin | UserRoleEnum::Moderator)
-        })
-    }) {
-        return Err(ApiError::Unauthorized.into_response())?;
-    }
+    let tx_repo = state
+        .sea_orm_repo
+        .begin()
+        .await
+        .map_err(InfraError::from)
+        .map_err(IntoResponse::into_response)?;
 
     match query.method {
         HandleCorrectionMethod::Approve => service
-            .approve(id, user.id)
+            .approve(id, user, tx_repo)
             .await
             .map_err(IntoResponse::into_response)
             .map(|()| Message::ok()),
         HandleCorrectionMethod::Reject => {
             Err(api_response::Error::new("Not implemented").into_response())
         }
+    }
+}
+
+impl ApproveCorrectionContext for SeaOrmTxRepo {
+    fn artist_repo(self) -> impl crate::domain::artist::TxRepo {
+        self
+    }
+
+    fn release_repo(self) -> impl crate::domain::release::TxRepo {
+        self
+    }
+
+    fn song_repo(self) -> impl crate::domain::song::TxRepo {
+        self
+    }
+
+    fn label_repo(self) -> impl crate::domain::label::TxRepo {
+        self
+    }
+
+    fn event_repo(self) -> impl crate::domain::event::TxRepo {
+        self
+    }
+
+    fn tag_repo(self) -> impl crate::domain::tag::TxRepo {
+        self
     }
 }
 

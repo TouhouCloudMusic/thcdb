@@ -1,8 +1,8 @@
 use entity::role;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{DbErr, EntityTrait};
+use sea_orm::EntityTrait;
 
-use super::{EnumTable, LookupTableCheckResult, ValidateLookupTable};
+use super::{EnumTableValue, LookupTableCheckResult, ValidateLookupTable};
 use crate::domain::model::auth::UserRoleEnum;
 
 impl<T> From<T> for LookupTableCheckResult<T> {
@@ -77,31 +77,12 @@ impl ValidateLookupTable for UserRoleEnum {
     }
 }
 
-impl EnumTable for UserRoleEnum {
+impl EnumTableValue for UserRoleEnum {
     fn as_id(&self) -> i32 {
         match self {
             Self::Admin => 1,
             Self::Moderator => 2,
             Self::User => 3,
         }
-    }
-}
-
-impl TryFrom<i32> for UserRoleEnum {
-    type Error = DbErr;
-
-    fn try_from(value: i32) -> Result<Self, Self::Error> {
-        let res = match value {
-            1 => Self::Admin,
-            2 => Self::Moderator,
-            3 => Self::User,
-            _ => {
-                return Err(DbErr::Custom(
-                    "Invalid user role id from database".to_owned(),
-                ));
-            }
-        };
-
-        Ok(res)
     }
 }

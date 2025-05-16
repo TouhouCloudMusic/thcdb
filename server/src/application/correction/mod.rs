@@ -2,9 +2,12 @@ use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
 use crate::domain::correction::{
-    self, CorrectionEntity, CorrectionFilter, NewCorrectionMeta,
+    self, ApproveCorrectionContext, CorrectionEntity, CorrectionFilter,
+    NewCorrectionMeta, TxRepo,
 };
-use crate::domain::model::auth::UserRoleEnum;
+use crate::domain::model::auth::{CorrectionApprover, UserRoleEnum};
+use crate::domain::repository::{Transaction, TransactionManager};
+use crate::domain::user::User;
 use crate::error::{InfraError, Unauthorized};
 
 mod model;
@@ -38,7 +41,16 @@ where
         Self { repo }
     }
 
-    pub async fn upsert_correction<T: CorrectionEntity>(
+    // TODO: Add self approval
+    pub async fn create<T: CorrectionEntity>(
+        &self,
+        meta: impl Into<NewCorrectionMeta<T>>,
+    ) -> Result<(), InfraError> {
+        self.repo.create(meta.into()).await?;
+        Ok(())
+    }
+
+    pub async fn upsert<T: CorrectionEntity>(
         &self,
         meta: NewCorrectionMeta<T>,
     ) -> Result<(), Error> {
@@ -69,6 +81,30 @@ where
         } else {
             self.repo.update(prev_correction.id, meta).await?;
         }
+
+        Ok(())
+    }
+}
+
+impl<R> Service<R>
+where
+    R: TransactionManager,
+    R::TransactionRepository: correction::TxRepo,
+{
+    pub async fn approve(
+        &self,
+        correction_id: i32,
+        user: User,
+        context: impl ApproveCorrectionContext,
+    ) -> Result<(), Error> {
+        let approver =
+            CorrectionApprover::from_user(user).ok_or(Unauthorized)?;
+
+        let tx_repo = self.repo.begin().await?;
+
+        tx_repo.approve(correction_id, approver, context).await?;
+
+        tx_repo.commit().await?;
 
         Ok(())
     }

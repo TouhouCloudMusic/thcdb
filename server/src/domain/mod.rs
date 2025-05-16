@@ -1,10 +1,14 @@
 pub mod artist;
 pub mod artist_image_queue;
 pub mod correction;
+pub mod event;
 pub mod image;
 pub mod image_queue;
+pub mod label;
 pub mod model;
+pub mod release;
 pub mod share;
+pub mod song;
+pub mod tag;
 pub mod user;
-
 pub use share::*;

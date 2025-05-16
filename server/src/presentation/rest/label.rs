@@ -9,7 +9,9 @@ use super::extractor::CurrentUser;
 use super::state;
 use super::state::ArcAppState;
 use crate::api_response::{Data, Message};
-use crate::dto::label::{LabelResponse, NewLabel};
+use crate::application::correction::NewCorrectionDto;
+use crate::application::label::{CreateError, UpsertCorrectionError};
+use crate::domain::label::{Label, NewLabel};
 use crate::error::ServiceError;
 use crate::utils::MapInto;
 
@@ -24,8 +26,8 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 }
 
 super::data! {
-    DataLabelResponse, LabelResponse
-    DataVecLabelResponse, Vec<LabelResponse>
+    DataOptionLabel, Option<Label>
+    DataVecLabel, Vec<Label>
 }
 
 #[utoipa::path(
@@ -33,7 +35,7 @@ super::data! {
     tag = TAG,
     path = "/label/{id}",
     responses(
-        (status = 200, body = DataLabelResponse),
+        (status = 200, body = DataOptionLabel),
         (status = 401),
         ServiceError
     ),
@@ -41,7 +43,7 @@ super::data! {
 async fn find_label_by_id(
     label_service: State<state::LabelService>,
     Path(id): Path<i32>,
-) -> Result<Data<LabelResponse>, ServiceError> {
+) -> Result<Data<Option<Label>>, ServiceError> {
     label_service.find_by_id(id).await.map_into()
 }
 
@@ -56,7 +58,7 @@ struct KwArgs {
     path = "/label",
     params(KwArgs),
     responses(
-        (status = 200, body = DataVecLabelResponse),
+        (status = 200, body = DataVecLabel),
         (status = 401),
         ServiceError
     ),
@@ -64,9 +66,9 @@ struct KwArgs {
 async fn find_label_by_keyword(
     label_service: State<state::LabelService>,
     Query(query): Query<KwArgs>,
-) -> Result<Data<Vec<LabelResponse>>, ServiceError> {
+) -> Result<Data<Vec<Label>>, ServiceError> {
     label_service
-        .find_by_keyword(query.keyword)
+        .find_by_keyword(&query.keyword)
         .await
         .map_into()
 }
@@ -75,7 +77,7 @@ async fn find_label_by_keyword(
     post,
     tag = TAG,
     path = "/label",
-    request_body = NewLabel,
+    request_body = NewCorrectionDto<NewLabel>,
     responses(
         (status = 200, body = Message),
         (status = 401),
@@ -86,9 +88,9 @@ async fn find_label_by_keyword(
 async fn create_label(
     CurrentUser(user): CurrentUser,
     label_service: State<state::LabelService>,
-    Json(data): Json<NewLabel>,
-) -> Result<Message, ServiceError> {
-    label_service.create(user.id, data).await?;
+    Json(dto): Json<NewCorrectionDto<NewLabel>>,
+) -> Result<Message, CreateError> {
+    label_service.create(dto.with_author(user)).await?;
 
     Ok(Message::ok())
 }
@@ -97,20 +99,22 @@ async fn create_label(
     post,
     tag = TAG,
     path = "/label/{id}",
-    request_body = NewLabel,
+    request_body = NewCorrectionDto<NewLabel>,
     responses(
         (status = 200, body = Message),
         (status = 401),
-                ServiceError
+        UpsertCorrectionError
     ),
 )]
 async fn upsert_label_correction(
     CurrentUser(user): CurrentUser,
     label_service: State<state::LabelService>,
     Path(id): Path<i32>,
-    Json(data): Json<NewLabel>,
-) -> Result<Message, ServiceError> {
-    label_service.upsert_correction(&user, id, data).await?;
+    Json(dto): Json<NewCorrectionDto<NewLabel>>,
+) -> Result<Message, UpsertCorrectionError> {
+    label_service
+        .upsert_correction(id, dto.with_author(user))
+        .await?;
 
     Ok(Message::ok())
 }

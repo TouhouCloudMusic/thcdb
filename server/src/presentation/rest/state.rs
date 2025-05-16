@@ -13,33 +13,6 @@ pub(super) use crate::infrastructure::database::sea_orm::{
 use crate::infrastructure::singleton::FS_IMAGE_STORAGE;
 use crate::infrastructure::state::AppState;
 use crate::infrastructure::storage::GenericImageStorage;
-use crate::service as service_old;
-
-pub(super) type AuthService = application::auth::AuthService<SeaOrmRepository>;
-
-pub(super) type AuthSession = axum_login::AuthSession<AuthService>;
-
-pub(super) type ArtistService = application::artist::Service<SeaOrmRepository>;
-pub(super) type ArtistImageService =
-    application::artist_image::Service<SeaOrmRepository, GenericImageStorage>;
-
-pub(super) type CorretionServiceOld = service_old::correction::Service;
-
-pub(super) type EventService = service_old::event::Service;
-
-pub(super) type ImageService =
-    crate::domain::image::Service<SeaOrmTxRepo, GenericImageStorage>;
-
-pub(super) type LabelService = service_old::label::Service;
-
-pub(super) type ReleaseService = service_old::release::Service;
-
-pub(super) type SongService = service_old::song::Service;
-
-pub(super) type TagService = service_old::tag::Service<SeaOrmRepository>;
-pub(super) type UserImageService =
-    application::user_image::Service<SeaOrmRepository, GenericImageStorage>;
-pub(super) type UserProfileService = user_profile::Service<SeaOrmRepository>;
 
 #[derive(Clone)]
 pub struct ArcAppState(Arc<AppState>);
@@ -57,6 +30,83 @@ impl ArcAppState {
         Self(state)
     }
 }
+
+pub(super) type AuthService = application::auth::AuthService<SeaOrmRepository>;
+
+pub(super) type AuthSession = axum_login::AuthSession<AuthService>;
+
+pub(super) type ArtistService = application::artist::Service<SeaOrmRepository>;
+pub(super) type ArtistImageService =
+    application::artist_image::Service<SeaOrmRepository, GenericImageStorage>;
+
+pub(super) type CorrectionService =
+    application::correction::Service<SeaOrmRepository>;
+
+impl FromRef<ArcAppState> for CorrectionService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self {
+            repo: input.sea_orm_repo.clone(),
+        }
+    }
+}
+
+pub(super) type EventService = application::event::Service<SeaOrmRepository>;
+
+impl FromRef<ArcAppState> for EventService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self {
+            repo: input.sea_orm_repo.clone(),
+        }
+    }
+}
+
+pub(super) type ImageService =
+    crate::domain::image::Service<SeaOrmTxRepo, GenericImageStorage>;
+
+pub(super) type LabelService = application::label::Service<SeaOrmRepository>;
+
+impl FromRef<ArcAppState> for LabelService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self {
+            repo: input.sea_orm_repo.clone(),
+        }
+    }
+}
+
+pub(super) type ReleaseService =
+    application::release::Service<SeaOrmRepository>;
+
+impl FromRef<ArcAppState> for ReleaseService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self {
+            repo: input.sea_orm_repo.clone(),
+        }
+    }
+}
+
+pub(super) type SongService = application::song::Service<SeaOrmRepository>;
+
+impl FromRef<ArcAppState> for SongService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self {
+            repo: input.sea_orm_repo.clone(),
+        }
+    }
+}
+
+pub(super) type TagService = application::tag::Service<SeaOrmRepository>;
+
+impl FromRef<ArcAppState> for TagService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self {
+            repo: input.sea_orm_repo.clone(),
+        }
+    }
+}
+
+pub(super) type UserImageService =
+    application::user_image::Service<SeaOrmRepository, GenericImageStorage>;
+pub(super) type UserProfileService = user_profile::Service<SeaOrmRepository>;
 
 impl FromRef<ArcAppState> for SeaOrmRepository {
     fn from_ref(input: &ArcAppState) -> Self {
@@ -91,42 +141,6 @@ impl TryFromRef<ArcAppState> for ImageService {
             .repo(tx_repo)
             .storage(FS_IMAGE_STORAGE.clone())
             .build())
-    }
-}
-
-impl FromRef<ArcAppState> for TagService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        Self::new(input.database.clone(), input.sea_orm_repo.clone())
-    }
-}
-
-impl FromRef<ArcAppState> for CorretionServiceOld {
-    fn from_ref(input: &ArcAppState) -> Self {
-        Self::new(input.database.clone())
-    }
-}
-
-impl FromRef<ArcAppState> for EventService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        Self::new(input.database.clone())
-    }
-}
-
-impl FromRef<ArcAppState> for LabelService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        Self::new(input.database.clone())
-    }
-}
-
-impl FromRef<ArcAppState> for ReleaseService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        Self::new(input.database.clone())
-    }
-}
-
-impl FromRef<ArcAppState> for SongService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        Self::new(input.database.clone())
     }
 }
 

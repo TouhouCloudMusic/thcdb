@@ -21,7 +21,6 @@ use crate::domain::model::auth::{UserRole, UserRoleEnum};
 use crate::domain::model::markdown::Markdown;
 use crate::domain::repository::Connection;
 use crate::domain::user::{self, NewUser, User, UserProfile};
-use crate::model::enum_table::EnumTable;
 
 impl user::Repository for SeaOrmRepository {
     async fn find_by_id(&self, id: i32) -> Result<Option<User>, Self::Error> {
@@ -54,7 +53,7 @@ impl user::TxRepo for SeaOrmTxRepo {
 
         entity::user_role::Entity::insert(entity::user_role::ActiveModel {
             user_id: Set(model.id),
-            role_id: Set(UserRoleEnum::User.as_id()),
+            role_id: Set(UserRoleEnum::User.into()),
         })
         .exec(&tx)
         .await?;

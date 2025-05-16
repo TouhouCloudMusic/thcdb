@@ -8,7 +8,7 @@ use utoipa_axum::routes;
 use super::state::ArcAppState;
 use crate::api_response::Data;
 use crate::domain::model::auth::UserRoleEnum;
-use crate::dto::share::Language;
+use crate::domain::share::model::Language;
 use crate::error::InfraError;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
@@ -36,9 +36,9 @@ async fn language_list(
     let res: Vec<Language> = language::Entity::find()
         .all(&state.database)
         .await?
-        .iter()
+        .into_iter()
         .map_into()
-        .collect_vec();
+        .collect();
 
     Ok(res.into())
 }
@@ -58,7 +58,7 @@ async fn user_roles(
         .all(&state.database)
         .await?
         .iter()
-        .map_into()
+        .filter_map(|model| UserRoleEnum::try_from(model.id).ok())
         .collect_vec()
         .into())
 }

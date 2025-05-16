@@ -85,6 +85,18 @@ pub struct NewLocalizedName {
     pub name: String,
 }
 
+#[derive(Clone, Debug, Serialize, ToSchema)]
+pub struct LocalizedTitle {
+    pub language: Language,
+    pub title: String,
+}
+
+#[derive(Clone, Debug, Deserialize, ToSchema)]
+pub struct NewLocalizedTitle {
+    pub language_id: i32,
+    pub title: String,
+}
+
 #[serde_with::apply(
     Option => #[serde(skip_serializing_if = "Option::is_none")],
 )]

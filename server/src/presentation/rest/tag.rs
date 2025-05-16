@@ -8,8 +8,11 @@ use utoipa_axum::routes;
 use super::extractor::CurrentUser;
 use super::state::{self, ArcAppState};
 use crate::api_response::{self, Data};
-use crate::dto::tag::{TagCorrection, TagResponse};
-use crate::error::ServiceError;
+use crate::application::correction::NewCorrectionDto;
+use crate::application::tag::{CreateError, UpsertCorrectionError};
+use crate::domain::tag::NewTag;
+use crate::domain::tag::model::Tag;
+use crate::error::InfraError;
 use crate::utils::MapInto;
 
 const TAG: &str = "Tag";
@@ -23,8 +26,8 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 }
 
 super::data! {
-    DataTagResponse, TagResponse
-    DataVecTagResponse, Vec<TagResponse>
+    DataOptionTag, Option<Tag>
+    DataVecTag, Vec<Tag>
 }
 
 #[utoipa::path(
@@ -32,15 +35,15 @@ super::data! {
     tag = TAG,
     path = "/tag/{id}",
     responses(
-		(status = 200, body = DataTagResponse),
+		(status = 200, body = DataOptionTag),
 		(status = 401),
-        ServiceError
+        InfraError
     ),
 )]
 async fn find_tag_by_id(
     State(tag_service): State<state::TagService>,
     Path(id): Path<i32>,
-) -> Result<Data<TagResponse>, ServiceError> {
+) -> Result<Data<Option<Tag>>, InfraError> {
     tag_service.find_by_id(id).await.map_into()
 }
 
@@ -55,60 +58,55 @@ struct KwArgs {
     path = "/tag",
     params(KwArgs),
     responses(
-		(status = 200, body = DataVecTagResponse),
+		(status = 200, body = DataVecTag),
 		(status = 401),
-        ServiceError
+        InfraError
     ),
 )]
 async fn find_tag_by_keyword(
     State(tag_service): State<state::TagService>,
     Query(query): Query<KwArgs>,
-) -> Result<Data<Vec<TagResponse>>, ServiceError> {
+) -> Result<Data<Vec<Tag>>, InfraError> {
     tag_service.find_by_keyword(&query.keyword).await.map_into()
 }
 
 #[utoipa::path(
     post,
     path = "/tag",
-    request_body = TagCorrection,
+    request_body = NewCorrectionDto<NewTag>,
     responses(
 		(status = 200, body = api_response::Message),
 		(status = 401),
-        ServiceError
+        InfraError
     ),
 )]
 async fn create_tag(
     CurrentUser(user): CurrentUser,
     State(tag_service): State<state::TagService>,
-    Json(input): Json<TagCorrection>,
-) -> Result<api_response::Message, ServiceError> {
-    let user_id = user.id;
-    tag_service.create(user_id, input).await?;
+    Json(dto): Json<NewCorrectionDto<NewTag>>,
+) -> Result<api_response::Message, CreateError> {
+    tag_service.create(dto.with_author(user)).await?;
     Ok(api_response::Message::ok())
 }
 
 #[utoipa::path(
     post,
     path = "/tag/{id}",
-    request_body = TagCorrection,
+    request_body = NewCorrectionDto<NewTag>,
     responses(
 		(status = 200, body = api_response::Message),
 		(status = 401),
-        ServiceError
+        UpsertCorrectionError
     ),
 )]
 async fn upsert_tag_correction(
     CurrentUser(user): CurrentUser,
     State(tag_service): State<state::TagService>,
     Path(id): Path<i32>,
-    Json(input): Json<TagCorrection>,
-) -> Result<api_response::Message, ServiceError> {
+    Json(dto): Json<NewCorrectionDto<NewTag>>,
+) -> Result<api_response::Message, UpsertCorrectionError> {
     tag_service
-        .upsert_correction()
-        .tag_id(id)
-        .user(&user)
-        .data(input)
-        .call()
+        .upsert_correction(id, dto.with_author(user))
         .await?;
 
     Ok(api_response::Message::ok())

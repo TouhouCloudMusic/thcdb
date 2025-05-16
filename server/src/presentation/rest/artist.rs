@@ -48,7 +48,7 @@ async fn find_artist_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
 ) -> Result<Data<Artist>, ServiceError> {
-    let artist = domain::artist::repository::Repo::find_by_id(&repo, id)
+    let artist = domain::artist::repo::Repo::find_by_id(&repo, id)
         .await
         .map_err(ServiceError::from)?;
 
@@ -83,7 +83,7 @@ async fn find_artist_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KeywordQuery>,
 ) -> Result<Data<Vec<Artist>>, InfraError> {
-    domain::artist::repository::Repo::find_by_name(&repo, &query.keyword)
+    domain::artist::repo::Repo::find_by_name(&repo, &query.keyword)
         .await
         .map_into()
 }

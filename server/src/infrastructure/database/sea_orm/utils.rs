@@ -11,7 +11,6 @@ use sea_orm::{
 
 use crate::constant::ADMIN_USERNAME;
 use crate::domain::model::auth::{UserRoleEnum, hash_password};
-use crate::model::enum_table::EnumTable;
 
 async fn username_in_use(
     username: &str,
@@ -64,7 +63,7 @@ pub async fn upsert_admin_acc(db: &DatabaseConnection) {
         user_role::Entity::insert(
             user_role::Model {
                 user_id: res.id,
-                role_id: UserRoleEnum::Admin.as_id(),
+                role_id: UserRoleEnum::Admin.into(),
             }
             .into_active_model(),
         )

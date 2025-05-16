@@ -30,12 +30,14 @@ where
     pub r#type: CorrectionType,
 }
 
+// TODO: just use user id and role or use ref
 pub struct NewCorrectionMeta<T> {
     pub author: User,
     pub r#type: CorrectionType,
     pub entity_id: i32,
     pub history_id: i32,
     pub description: String,
+    pub status: CorrectionStatus,
     pub phantom: std::marker::PhantomData<T>,
 }
 

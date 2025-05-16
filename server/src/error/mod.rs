@@ -24,12 +24,19 @@ pub trait ImpledApiError = std::error::Error
     + axum::response::IntoResponse;
 
 error_set! {
-    #[derive(ApiError)]
+    #[derive(From, ApiError, IntoErrorSchema)]
+    #[disable(From(InfraError))]
     ApiError = {
         #[api_error(
             status_code = StatusCode::UNAUTHORIZED,
         )]
-        Unauthorized
+        Unauthorized,
+        #[api_error(
+            status_code = StatusCode::NOT_FOUND,
+        )]
+        NotFound,
+        #[from(forward)]
+        Infra(InfraError)
     };
     #[disable(From(InfraError))]
     #[derive(IntoErrorSchema, From, ApiError)]

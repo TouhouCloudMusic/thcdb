@@ -1,8 +1,10 @@
 use derive_more::{Display, From};
+use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
+use crate::domain::artist;
 use crate::domain::artist::model::{NewArtist, ValidationError};
-use crate::domain::artist::repository::{Repo, TxRepo};
+use crate::domain::artist::repo::Repo;
 use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
 use crate::domain::repository::TransactionManager;
 use crate::error::InfraError;
@@ -37,20 +39,37 @@ pub enum UpsertCorrectionError {
 impl<R, TR> Service<R>
 where
     R: Repo + TransactionManager<TransactionRepository = TR>,
-    TR: Clone + TxRepo + correction::TxRepo,
+    TR: Clone + artist::TxRepo + correction::TxRepo,
     InfraError: From<R::Error> + From<TR::Error>,
 {
     pub async fn create(
         &self,
         correction: NewCorrection<NewArtist>,
     ) -> Result<(), CreateError> {
-        let tx_repo = self.repo.begin().await?;
-
         correction.data.validate()?;
 
-        let _ = TxRepo::create(&tx_repo, correction).await?;
+        let tx_repo = self.repo.begin().await?;
 
-        tx_repo.commit().await?;
+        let entity_id =
+            artist::TxRepo::create(&tx_repo, &correction.data).await?;
+
+        let history_id = tx_repo.create_history(&correction.data).await?;
+
+        let correction_service = super::correction::Service::new(tx_repo);
+
+        correction_service
+            .create(NewCorrectionMeta::<NewArtist> {
+                author: correction.author,
+                r#type: correction.r#type,
+                entity_id,
+                history_id,
+                status: CorrectionStatus::Approved,
+                description: correction.description,
+                phantom: std::marker::PhantomData,
+            })
+            .await?;
+
+        correction_service.repo.commit().await?;
 
         Ok(())
     }
@@ -60,30 +79,26 @@ where
         id: i32,
         correction: NewCorrection<NewArtist>,
     ) -> Result<(), UpsertCorrectionError> {
-        let tx_repo = self.repo.begin().await?;
-
         correction.data.validate()?;
 
-        // Create artist history from the data
-        let history_id = tx_repo.create_history(&correction).await?;
+        let tx_repo = self.repo.begin().await?;
 
-        {
-            let correction_service =
-                super::correction::Service::new(tx_repo.clone());
+        let history_id = tx_repo.create_history(&correction.data).await?;
+        let correction_service = super::correction::Service::new(tx_repo);
 
-            correction_service
-                .upsert_correction(NewCorrectionMeta::<NewArtist> {
-                    author: correction.author,
-                    r#type: correction.r#type,
-                    entity_id: id,
-                    history_id,
-                    description: correction.description,
-                    phantom: std::marker::PhantomData,
-                })
-                .await?;
-        }
+        correction_service
+            .upsert(NewCorrectionMeta::<NewArtist> {
+                author: correction.author,
+                r#type: correction.r#type,
+                entity_id: id,
+                status: CorrectionStatus::Pending,
+                history_id,
+                description: correction.description,
+                phantom: std::marker::PhantomData,
+            })
+            .await?;
 
-        tx_repo.commit().await?;
+        correction_service.repo.commit().await?;
 
         Ok(())
     }

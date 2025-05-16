@@ -1,7 +1,7 @@
 #[rustfmt::skip]
 mod entities;
-mod extension;
-pub use extension::relation;
+mod ext;
+pub use ext::relation;
 
 #[rustfmt::skip]
 pub use entities::*;

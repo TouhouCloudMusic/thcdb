@@ -32,6 +32,19 @@ impl From<UserRoleEnum> for i32 {
     }
 }
 
+impl TryFrom<i32> for UserRoleEnum {
+    type Error = &'static str;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        match value {
+            1 => Ok(UserRoleEnum::Admin),
+            2 => Ok(UserRoleEnum::Moderator),
+            3 => Ok(UserRoleEnum::User),
+            _ => Err("Invalid user role id from database"),
+        }
+    }
+}
+
 impl From<UserRole> for UserRoleEnum {
     fn from(val: UserRole) -> Self {
         (&val).into()
@@ -54,7 +67,9 @@ pub struct UserRole {
 impl TryFrom<entity::user_role::Model> for UserRole {
     type Error = DbErr;
     fn try_from(value: entity::user_role::Model) -> Result<Self, Self::Error> {
-        Ok(UserRoleEnum::try_from(value.role_id)?.into())
+        Ok(UserRoleEnum::try_from(value.role_id)
+            .map_err(|str| DbErr::Custom(str.to_owned()))?
+            .into())
     }
 }
 

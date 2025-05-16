@@ -27,7 +27,7 @@ pub async fn check_database_lookup_tables(
     Ok(())
 }
 
-pub trait EnumTable: TryFrom<i32>
+pub trait EnumTableValue: TryFrom<i32>
 where
     Self: Sized,
 {

@@ -1,0 +1,125 @@
+use derive_more::{Display, From};
+use entity::enums::CorrectionStatus;
+use macros::{ApiError, IntoErrorSchema};
+
+use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
+use crate::domain::repository::TransactionManager;
+use crate::domain::tag::Tag;
+use crate::domain::tag::model::NewTag;
+use crate::domain::tag::repo::{Repo, TxRepo};
+use crate::error::InfraError;
+
+#[derive(Clone)]
+pub struct Service<R> {
+    pub repo: R,
+}
+
+#[derive(
+    Debug, Display, From, derive_more::Error, ApiError, IntoErrorSchema,
+)]
+pub enum CreateError {
+    #[from(forward)]
+    Infra(InfraError),
+}
+
+#[derive(
+    Debug, Display, From, derive_more::Error, ApiError, IntoErrorSchema,
+)]
+pub enum UpsertCorrectionError {
+    #[from(forward)]
+    Infra(InfraError),
+    #[from]
+    Correction(super::correction::Error),
+}
+
+impl<R> Service<R> {
+    pub const fn new(repo: R) -> Self {
+        Self { repo }
+    }
+}
+
+impl<R> Service<R>
+where
+    R: Repo,
+{
+    pub async fn find_by_id(&self, id: i32) -> Result<Option<Tag>, InfraError> {
+        self.repo.find_by_id(id).await.map_err(InfraError::from)
+    }
+
+    pub async fn find_by_keyword(
+        &self,
+        keyword: &str,
+    ) -> Result<Vec<Tag>, InfraError> {
+        self.repo
+            .find_by_keyword(keyword)
+            .await
+            .map_err(InfraError::from)
+    }
+}
+
+impl<R, TR> Service<R>
+where
+    R: TransactionManager<TransactionRepository = TR>,
+    TR: Clone + TxRepo + correction::TxRepo,
+{
+    pub async fn create(
+        &self,
+        correction: NewCorrection<NewTag>,
+    ) -> Result<(), CreateError> {
+        let tx_repo = self.repo.begin().await?;
+
+        let entity_id = TxRepo::create(&tx_repo, &correction.data).await?;
+
+        let history_id = tx_repo.create_history(&correction.data).await?;
+
+        let correction_service = super::correction::Service::new(tx_repo);
+
+        correction_service
+            .create(NewCorrectionMeta::<NewTag> {
+                author: correction.author,
+                r#type: correction.r#type,
+                entity_id,
+                history_id,
+                status: CorrectionStatus::Approved,
+                description: correction.description,
+                phantom: std::marker::PhantomData,
+            })
+            .await?;
+
+        correction_service.repo.commit().await?;
+
+        Ok(())
+    }
+
+    pub async fn upsert_correction(
+        &self,
+        id: i32,
+        correction: NewCorrection<NewTag>,
+    ) -> Result<(), UpsertCorrectionError> {
+        let tx_repo = self.repo.begin().await?;
+
+        // Create tag history from the data
+        let history_id = tx_repo.create_history(&correction.data).await?;
+
+        {
+            let correction_service =
+                super::correction::Service::new(tx_repo.clone());
+
+            correction_service
+                .upsert(NewCorrectionMeta::<NewTag> {
+                    author: correction.author,
+                    r#type: correction.r#type,
+                    entity_id: id,
+                    history_id,
+                    status: CorrectionStatus::Pending,
+                    description: correction.description,
+                    phantom: std::marker::PhantomData,
+                })
+                .await?;
+        }
+
+        tx_repo.commit().await?;
+
+        Ok(())
+    }
+}
