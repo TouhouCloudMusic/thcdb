@@ -11,10 +11,10 @@ use utoipa_axum::routes;
 use super::extractor::CurrentUser;
 use super::state::{self, ArcAppState};
 use crate::api_response::{self, Data, Message};
+use crate::domain::correction::{self, CorrectionFilter};
 use crate::domain::model::auth::UserRoleEnum;
 use crate::error::{ApiError, InfraError, ServiceError};
-use crate::utils::MapInto;
-use crate::{domain, service};
+use crate::service;
 
 const TAG: &str = "Correction";
 
@@ -136,7 +136,11 @@ async fn pending_correction(
     >,
     State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Data<Option<i32>>, InfraError> {
-    domain::correction::Repo::pending_correction(&repo, id, entity_type.into())
-        .await
-        .map_into()
+    Ok(correction::Repo::find_one(
+        &repo,
+        CorrectionFilter::pending(id, entity_type.into()),
+    )
+    .await?
+    .map(|x| x.id)
+    .into())
 }

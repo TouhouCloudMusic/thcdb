@@ -1,3 +1,5 @@
+#![expect(dead_code)]
+
 pub trait MapInto<Target> {
     fn map_into(self) -> Target;
 }

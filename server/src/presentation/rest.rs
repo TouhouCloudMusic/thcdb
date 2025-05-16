@@ -159,6 +159,7 @@ macro_rules! data {
 	($($name:ident, $type:ty $(, $as:ident)? $(,)?)*) => {
         $(
             #[derive(utoipa::ToSchema)]
+            #[allow(clippy::allow_attributes,dead_code)]
             struct $name {
                     status: String,
                     data: $type

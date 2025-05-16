@@ -18,6 +18,8 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(create_tag))
         .routes(routes!(upsert_tag_correction))
+        .routes(routes!(find_by_id))
+        .routes(routes!(find_by_keyword))
 }
 
 super::data! {

@@ -3,7 +3,6 @@ use std::fmt::Debug;
 
 use argon2::password_hash;
 use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use derive_more::{Display, From};
 use entity::sea_orm_active_enums::EntityType;
 use error_set::error_set;
@@ -25,7 +24,11 @@ pub trait ImpledApiError = std::error::Error
     + axum::response::IntoResponse;
 
 error_set! {
+    #[derive(ApiError)]
     ApiError = {
+        #[api_error(
+            status_code = StatusCode::UNAUTHORIZED,
+        )]
         Unauthorized
     };
     #[disable(From(InfraError))]
@@ -66,13 +69,13 @@ error_set! {
     };
 }
 
-impl IntoResponse for ApiError {
-    fn into_response(self) -> axum::response::Response {
-        match self {
-            Self::Unauthorized => StatusCode::UNAUTHORIZED.into_response(),
-        }
-    }
-}
+// impl IntoResponse for ApiError {
+//     fn into_response(self) -> axum::response::Response {
+//         match self {
+//             Self::Unauthorized => StatusCode::UNAUTHORIZED.into_response(),
+//         }
+//     }
+// }
 
 #[derive(Debug, Display, derive_more::Error, From)]
 pub enum InfraErrorEnum {

@@ -121,6 +121,9 @@ async fn sign_in(
     State(use_case): State<ProfileUseCase>,
     Json(creds): Json<AuthCredential>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
+    if auth_session.user.is_some() {
+        return Err(SignInError::AlreadySignedIn.into_response());
+    }
     let user = auth_session
         .authenticate(creds)
         .await

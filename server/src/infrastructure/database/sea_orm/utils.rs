@@ -10,9 +10,7 @@ use sea_orm::{
 };
 
 use crate::constant::ADMIN_USERNAME;
-use crate::domain::model::auth::{
-    UserRoleEnum, hash_password,
-};
+use crate::domain::model::auth::{UserRoleEnum, hash_password};
 use crate::model::enum_table::EnumTable;
 
 async fn username_in_use(

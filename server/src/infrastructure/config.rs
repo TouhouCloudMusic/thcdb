@@ -1,5 +1,3 @@
-use std::env;
-
 use nestify::nest;
 use serde::Deserialize;
 
@@ -49,9 +47,4 @@ impl Config {
             .try_deserialize()
             .expect("Failed to parse config file")
     }
-}
-
-#[expect(clippy::expect_fun_call, reason = "run once")]
-fn pretty_unwrap_env(key: &str) -> String {
-    env::var(key).expect(&format!("Env {key} not set"))
 }

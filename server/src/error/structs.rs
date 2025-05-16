@@ -14,3 +14,9 @@ pub struct InvalidField {
     pub expected: String,
     pub received: String,
 }
+
+#[derive(Debug, Display, Error, ApiError)]
+#[api_error(
+    status_code = StatusCode::UNAUTHORIZED,
+)]
+pub struct Unauthorized;

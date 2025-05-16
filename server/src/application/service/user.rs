@@ -15,21 +15,28 @@ mod parser {
     use bytesize::ByteSize;
 
     use crate::constant::{
+        AVATAR_MAX_FILE_SIZE, AVATAR_MIN_FILE_SIZE,
         USER_PROFILE_BANNER_MAX_HEIGHT, USER_PROFILE_BANNER_MAX_WIDTH,
         USER_PROFILE_BANNER_MIN_HEIGHT, USER_PROFILE_BANNER_MIN_WIDTH,
     };
     use crate::domain::image::{ParseOption, Parser};
+
     pub static AVATAR: LazyLock<Parser> = LazyLock::new(|| {
         ParseOption::builder()
             .valid_formats(&[ImageFormat::Png, ImageFormat::Jpeg])
-            .file_size_range(ByteSize::kib(10)..=ByteSize::mib(100))
+            .file_size_range(
+                ByteSize::b(AVATAR_MIN_FILE_SIZE)
+                    ..=ByteSize::b(AVATAR_MAX_FILE_SIZE),
+            )
             .size_range(128u32..=2048)
-            .ratio(1f64..=1f64)
+            .ratio(ParseOption::SQUARE)
             .build()
             .into_parser()
     });
 
     pub static PROFILE_BANNER: LazyLock<Parser> = LazyLock::new(|| {
+        let ratio = f64::from(USER_PROFILE_BANNER_MAX_WIDTH)
+            / f64::from(USER_PROFILE_BANNER_MAX_HEIGHT);
         ParseOption::builder()
             .valid_formats(&[ImageFormat::Png, ImageFormat::Jpeg])
             .file_size_range(ByteSize::kib(10)..=ByteSize::mib(100))
@@ -39,7 +46,7 @@ mod parser {
             .height_range(
                 USER_PROFILE_BANNER_MIN_HEIGHT..=USER_PROFILE_BANNER_MAX_HEIGHT,
             )
-            .ratio(ParseOption::SQUARE)
+            .ratio(ratio..=ratio)
             .build()
             .into_parser()
     });

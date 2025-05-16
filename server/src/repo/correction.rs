@@ -11,35 +11,8 @@ use sea_orm::{
     QueryOrder,
 };
 use user::utils::add_co_author_if_updater_not_author;
-use utils::validate_entity_type;
 
 use crate::error::ServiceError;
-
-type CorrectionResult = Result<correction::Model, DbErr>;
-
-pub async fn find_by_id<C: ConnectionTrait>(
-    correction_id: i32,
-    db: &C,
-) -> Result<correction::Model, ServiceError> {
-    correction::Entity::find_by_id(correction_id)
-        .one(db)
-        .await?
-        .ok_or_else(|| ServiceError::EntityNotFound {
-            entity_name: correction::Entity.table_name(),
-        })
-}
-
-pub async fn find_by_id_with_type<C: ConnectionTrait>(
-    correction_id: i32,
-    entity_type: EntityType,
-    db: &C,
-) -> Result<correction::Model, ServiceError> {
-    find_by_id(correction_id, db).await.and_then(|x| {
-        validate_entity_type(entity_type, x.entity_type)?;
-
-        Ok(x)
-    })
-}
 
 pub async fn find_latest(
     entity_id: i32,
@@ -229,10 +202,12 @@ pub async fn approve(
             super::release::apply_correction(correction, tx).await?;
         }
         EntityType::Song => {
-            super::tag::apply_correction(correction, tx).await?;
+            super::song::apply_correction(correction, tx).await?;
         }
         EntityType::Tag => super::tag::apply_correction(correction, tx).await?,
-        EntityType::Event => todo!(),
+        EntityType::Event => {
+            super::event::apply_correction(correction, tx).await?;
+        }
     }
 
     Ok(())
@@ -308,7 +283,7 @@ pub mod revision {
     }
 
     #[builder]
-    pub(super) async fn create(
+    pub async fn create(
         #[builder(finish_fn)] db: &impl ConnectionTrait,
         author_id: i32,
         correction_id: i32,
@@ -353,16 +328,5 @@ pub mod utils {
         let correction = correction_active_model.update(tx).await?;
 
         Ok(correction)
-    }
-
-    pub fn validate_entity_type(
-        expected: EntityType,
-        received: EntityType,
-    ) -> Result<(), ServiceError> {
-        if expected == received {
-            Ok(())
-        } else {
-            Err(ServiceError::IncorrectCorrectionType { expected, received })
-        }
     }
 }

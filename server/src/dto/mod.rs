@@ -6,4 +6,3 @@ pub mod release;
 pub mod share;
 pub mod song;
 pub mod tag;
-pub mod r#trait;

@@ -93,7 +93,7 @@ fn main() {
     let out_dir = "src/constant/gen.rs";
 
     let mut content = String::new();
-    content.push_str("#![allow(clippy::all, unused_imports, clippy::needless_raw_string_hashes)]\nuse std::sync::LazyLock;\nuse crate::constant::*;\n\n");
+    content.push_str("#![allow(unused_imports, clippy::all, clippy::needless_raw_string_hashes, clippy::format_push_string)]\nuse std::sync::LazyLock;\nuse crate::constant::*;\n\n");
     content.push_str(
         "pub static TS_CONSTANTS: LazyLock<String> = LazyLock::new(||{\n",
     );

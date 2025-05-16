@@ -305,8 +305,6 @@ async fn create_many_song_histories_and_link_relations(
     Ok(new_song_histories)
 }
 
-type CreateCreditData<'a> = (i32, &'a Option<Vec<NewSongCredit>>);
-
 async fn create_many_credits(
     song_ids: &[i32],
     credits: &[&Option<Vec<NewSongCredit>>],

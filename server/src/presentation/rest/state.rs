@@ -16,8 +16,7 @@ use crate::infrastructure::state::AppState;
 use crate::infrastructure::storage::GenericImageStorage;
 use crate::service as service_old;
 
-pub(super) type ArtistService = service_old::artist::Service;
-pub(super) type ArtistServiceNew =
+pub(super) type ArtistService =
     crate::application::artist::Service<SeaOrmRepository>;
 pub(super) type UploadArtistProfileImageUseCase =
     UploadArtistProfileImageUseCaseTrait<SeaOrmRepository, GenericImageStorage>;
@@ -78,13 +77,7 @@ impl FromRef<ArcAppState> for use_case::user::Profile<SeaOrmRepository> {
 
 impl FromRef<ArcAppState> for ArtistService {
     fn from_ref(input: &ArcAppState) -> Self {
-        Self::new(input.database.clone())
-    }
-}
-
-impl FromRef<ArcAppState> for ArtistServiceNew {
-    fn from_ref(input: &ArcAppState) -> Self {
-        ArtistServiceNew {
+        ArtistService {
             repo: input.sea_orm_repo.clone(),
         }
     }

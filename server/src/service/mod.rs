@@ -1,4 +1,3 @@
-pub mod artist;
 pub mod correction;
 pub mod event;
 // pub mod juniper;

@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use chrono::NaiveDate;
-use entity::enums::{ArtistType, DatePrecision, EntityType};
-use entity::sea_orm_active_enums::ArtistImageType;
+use entity::enums::{ArtistType, DatePrecision};
+use entity::sea_orm_active_enums::{ArtistImageType, EntityType};
 use entity::{
     artist_alias, artist_alias_history, artist_image, artist_link,
     artist_link_history, artist_localized_name, artist_localized_name_history,
@@ -285,6 +285,15 @@ impl TxRepo for SeaOrmTxRepo {
             .await?;
 
         Ok(artist.id)
+    }
+
+    async fn create_history(
+        &self,
+        correction: &NewCorrection<NewArtist>,
+    ) -> Result<i32, Self::Error> {
+        save_artist_history_and_relations(&correction.data, self.conn())
+            .await
+            .map(|x| x.id)
     }
 }
 

@@ -1,22 +1,10 @@
 use std::path::PathBuf;
-use std::sync::LazyLock;
 
 use entity::enums::StorageBackend;
 
 use super::FsStorage;
-use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::domain::image::AsyncImageStorage;
 use crate::domain::model::image::{Image, NewImage};
-
-static FS_PATH: LazyLock<PathBuf> =
-    LazyLock::new(|| PathBuf::from_iter([PUBLIC_DIR, IMAGE_DIR]));
-
-static FILE_IMAGE_STORAGE: LazyLock<FsStorage> =
-    LazyLock::new(|| FsStorage::new(FS_PATH.to_path_buf()));
-
-pub enum Error {
-    Fs(std::io::Error),
-}
 
 #[derive(Clone)]
 pub struct GenericImageStorage {

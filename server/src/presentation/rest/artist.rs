@@ -11,18 +11,15 @@ use super::data;
 use super::extractor::CurrentUser;
 use super::state::{self, ArcAppState};
 use crate::api_response::{Data, Message};
+use crate::application::artist::UpsertCorrectionError;
 use crate::application::artist::upload_profile_image::{
     self, UploadArtistProfileImageDto,
 };
 use crate::application::dto::NewCorrectionDto;
 use crate::domain::artist::model::{Artist, NewArtist};
-use crate::dto::artist::ArtistCorrection;
 use crate::error::{InfraError, ServiceError};
 use crate::utils::MapInto;
-use crate::{application, domain, service};
-
-type Service = state::ArtistService;
-type Error = service::artist::Error;
+use crate::{application, domain};
 
 const TAG: &str = "Artist";
 
@@ -107,7 +104,7 @@ async fn find_artist_by_keyword(
 #[axum::debug_handler]
 async fn create_artist(
     CurrentUser(user): CurrentUser,
-    State(service): State<state::ArtistServiceNew>,
+    State(service): State<state::ArtistService>,
     Json(input): Json<NewCorrectionDto<NewArtist>>,
 ) -> Result<Message, application::artist::CreateError> {
     service
@@ -120,22 +117,20 @@ async fn create_artist(
     post,
     tag = TAG,
     path = "/artist/{id}",
-    request_body = ArtistCorrection,
+    request_body = NewCorrectionDto<NewArtist>,
     responses(
         (status = 200, body = Message),
         (status = 401),
-        Error
+        UpsertCorrectionError
     ),
 )]
 async fn upsert_artist_correction(
     CurrentUser(user): CurrentUser,
-    State(artist_service): State<Service>,
+    State(service): State<state::ArtistService>,
     Path(id): Path<i32>,
-    Json(input): Json<ArtistCorrection>,
-) -> Result<Message, Error> {
-    artist_service
-        .create_or_update_correction(id, &user, input)
-        .await?;
+    Json(dto): Json<NewCorrectionDto<NewArtist>>,
+) -> Result<Message, UpsertCorrectionError> {
+    service.upsert_correction(id, dto.with_author(user)).await?;
 
     Ok(Message::ok())
 }

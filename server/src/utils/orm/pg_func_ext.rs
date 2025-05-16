@@ -1,3 +1,4 @@
+#![expect(dead_code)]
 use std::fmt::Write;
 
 use sea_orm::Iden;

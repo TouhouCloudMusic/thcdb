@@ -1,5 +1,4 @@
 use std::io;
-use std::path::PathBuf;
 use std::range::RangeInclusive;
 
 use axum::http::StatusCode;
@@ -414,57 +413,5 @@ where
         self.storage.remove(image).await?;
 
         Ok(())
-    }
-}
-
-struct ImgPath {
-    pub filename: String,
-    pub sub_dir: PathBuf,
-    pub full_path: PathBuf,
-}
-
-impl ImgPath {
-    pub fn from_hash_and_ext(file_hash: &str, extension: &str) -> Self {
-        let filename = format!("{file_hash}.{extension}",);
-
-        let sub_dir = PathBuf::from(&file_hash[0..2]).join(&file_hash[2..4]);
-        let full_path = sub_dir.join(&filename);
-
-        Self {
-            filename,
-            sub_dir,
-            full_path,
-        }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use std::path::PathBuf;
-
-    use super::ImgPath;
-
-    #[test]
-
-    fn fs_path() {
-        let file_hash = "1234567890abcdef1234567890abcdef";
-        let extension = "png";
-        let ImgPath {
-            filename,
-            sub_dir,
-            full_path,
-        } = ImgPath::from_hash_and_ext(file_hash, extension);
-
-        assert_eq!(filename, "1234567890abcdef1234567890abcdef.png");
-        assert_eq!(sub_dir, PathBuf::from("12/34"));
-        assert_eq!(sub_dir.to_str().unwrap(), "12/34");
-        assert_eq!(
-            full_path,
-            PathBuf::from("12/34/1234567890abcdef1234567890abcdef.png")
-        );
-        assert_eq!(
-            full_path.to_string_lossy(),
-            "12/34/1234567890abcdef1234567890abcdef.png"
-        );
     }
 }

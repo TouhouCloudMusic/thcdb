@@ -1,7 +1,7 @@
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::model::auth::{AuthCredential, UserRole};
+use super::model::auth::{AuthCredential, UserRole, UserRoleEnum};
 use super::model::markdown::Markdown;
 use super::repository::{Connection, Transaction};
 use crate::error::InfraError;
@@ -38,6 +38,15 @@ pub struct User {
     pub last_login: chrono::DateTime<chrono::FixedOffset>,
     pub roles: Vec<UserRole>,
     pub bio: Option<Markdown>,
+}
+
+impl User {
+    pub fn has_roles(&self, expected: &[UserRoleEnum]) -> bool {
+        self.roles.iter().any(|r| {
+            UserRoleEnum::try_from(r.id)
+                .is_ok_and(|role| expected.contains(&role))
+        })
+    }
 }
 
 #[derive(Clone, Debug)]

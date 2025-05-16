@@ -41,7 +41,6 @@ mod application;
 mod domain;
 mod presentation;
 mod service;
-mod types;
 mod utils;
 
 use std::sync::Arc;

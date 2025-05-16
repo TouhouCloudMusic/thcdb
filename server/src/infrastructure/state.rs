@@ -1,6 +1,6 @@
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{AsyncSmtpTransport, Tokio1Executor};
-use sea_orm::{DatabaseConnection, sqlx};
+use sea_orm::DatabaseConnection;
 
 use super::config::Config;
 use super::database::get_connection;
@@ -45,9 +45,5 @@ impl AppState {
 impl AppState {
     pub fn redis_pool(&self) -> fred::prelude::Pool {
         self.redis_pool.pool()
-    }
-
-    pub fn sqlx_pool(&self) -> &sqlx::PgPool {
-        self.database.get_postgres_connection_pool()
     }
 }

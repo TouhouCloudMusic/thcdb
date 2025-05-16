@@ -182,6 +182,7 @@ rusty-hook = "0.11.2"
 [profile.dev]
 codegen-backend = "cranelift"
 debug           = 0
+incremental     = false
 opt-level       = 1
 strip           = "debuginfo"
 
@@ -190,7 +191,6 @@ opt-level = 3
 
 [profile.ra]
 codegen-backend = "llvm"
-incremental     = false
 inherits        = "dev"
 
 [profile.release]

@@ -68,7 +68,7 @@ impl NewArtist {
 }
 
 impl CorrectionEntity for NewArtist {
-    fn entity_type(&self) -> EntityType {
+    fn entity_type() -> EntityType {
         EntityType::Artist
     }
 }
