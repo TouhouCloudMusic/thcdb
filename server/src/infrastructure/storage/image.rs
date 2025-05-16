@@ -3,8 +3,7 @@ use std::path::PathBuf;
 use entity::enums::StorageBackend;
 
 use super::FsStorage;
-use crate::domain::image::AsyncImageStorage;
-use crate::domain::model::image::{Image, NewImage};
+use crate::domain::image::{AsyncImageStorage, Image, NewImage};
 
 #[derive(Clone)]
 pub struct GenericImageStorage {

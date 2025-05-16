@@ -3,7 +3,7 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use super::sea_orm_active_enums::EntityType;
+use super::sea_orm_active_enums::ImageRefEntityType;
 
 #[derive(
     Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
@@ -15,7 +15,7 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub ref_entity_id: i32,
     #[sea_orm(primary_key, auto_increment = false)]
-    pub ref_entity_type: EntityType,
+    pub ref_entity_type: ImageRefEntityType,
     #[sea_orm(column_type = "Text", nullable)]
     pub ref_usage: Option<String>,
 }

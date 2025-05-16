@@ -1,5 +1,3 @@
-pub mod image;
-
 pub mod auth {
     pub use auth_creds::*;
     mod auth_creds;

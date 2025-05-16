@@ -8,8 +8,8 @@ use macros::{ApiError, AutoMapper};
 use sea_orm::prelude::DateTimeWithTimeZone;
 use thiserror::Error;
 
+use crate::domain::image::Image;
 use crate::domain::model::auth::UserRoleEnum;
-use crate::domain::model::image::Image;
 use crate::domain::user::User;
 use crate::utils::Intersection;
 

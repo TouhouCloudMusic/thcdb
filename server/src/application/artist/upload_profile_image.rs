@@ -4,6 +4,7 @@ use ::image::ImageFormat;
 use bytes::Bytes;
 use bytesize::ByteSize;
 use derive_more::{Display, From};
+use entity::enums::ImageRefEntityType;
 use macros::{ApiError, IntoErrorSchema};
 use thiserror::Error;
 
@@ -13,7 +14,9 @@ use crate::constant::{
     ARTIST_PROFILE_IMAGE_RATIO_MAX, ARTIST_PROFILE_IMAGE_RATIO_MIN,
 };
 use crate::domain::artist_image_queue::{self, ArtistImageQueue};
-use crate::domain::image::{AsyncImageStorage, ParseOption, Parser};
+use crate::domain::image::{
+    AsyncImageStorage, CreateImageMeta, ParseOption, Parser,
+};
 use crate::domain::repository::{Transaction, TransactionManager};
 use crate::domain::user::User;
 use crate::domain::{image, image_queue};
@@ -52,7 +55,7 @@ where
     // Perhaps these repos should be separated, but there is no need for this in the foreseeable future.
     TxRepo: Clone
         + Transaction
-        + image::Repository
+        + image::TxRepo
         + image_queue::Repository
         + artist_image_queue::Repository,
     Storage: AsyncImageStorage + Clone,
@@ -66,6 +69,7 @@ where
         &self,
         dto: UploadArtistProfileImageDto,
     ) -> Result<(), Error> {
+        const USAGE: &str = "profile_image";
         let UploadArtistProfileImageDto {
             bytes,
             user,
@@ -75,7 +79,16 @@ where
         let tx_repo = self.repo.begin().await?;
 
         let image = image::Service::new(tx_repo.clone(), self.storage.clone())
-            .create(&bytes, &ARTIST_PROFILE_IMAGE_PARSER, user.id)
+            .create(
+                &bytes,
+                &ARTIST_PROFILE_IMAGE_PARSER,
+                CreateImageMeta {
+                    entity_id: artist_id,
+                    entity_type: ImageRefEntityType::Artist,
+                    usage: Some(USAGE.into()),
+                    uploaded_by: user.id,
+                },
+            )
             .await?;
 
         let new_image_queue = image_queue::NewImageQueue::new(&user, &image);

@@ -6,6 +6,7 @@ use bon::Builder;
 use chrono::{DateTime, FixedOffset};
 use entity::enums::StorageBackend;
 use entity::image::Model as DbModel;
+pub use entity::image_reference::Model as ImageRef;
 use macros::AutoMapper;
 use xxhash_rust::xxh3::xxh3_128;
 

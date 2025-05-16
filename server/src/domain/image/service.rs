@@ -6,12 +6,12 @@ use bon::Builder;
 use boolinator::Boolinator;
 use bytesize::ByteSize;
 use derive_more::{Display, Error};
-use entity::enums::StorageBackend;
+use entity::enums::{ImageRefEntityType, StorageBackend};
 use error_set::error_set;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 use macros::ApiError;
 
-use crate::domain::model::image::{Image, NewImage};
+use crate::domain::image::model::{Image, ImageRef, NewImage};
 use crate::domain::repository::Transaction;
 use crate::error::{InfraError, InfraErrorEnum};
 
@@ -360,7 +360,7 @@ impl<R, S> Service<R, S> {
 
 impl<Repo, Storage> Service<Repo, Storage>
 where
-    Repo: super::Repository,
+    Repo: super::Repo,
     Storage: AsyncImageStorage,
 {
     pub async fn find_by_id(&self, id: i32) -> Result<Option<Image>, Error> {
@@ -375,23 +375,30 @@ where
     }
 }
 
+pub struct CreateImageMeta {
+    pub entity_id: i32,
+    pub entity_type: ImageRefEntityType,
+    pub usage: Option<String>,
+    pub uploaded_by: i32,
+}
+
 impl<Tx, Storage> Service<Tx, Storage>
 where
-    Tx: Transaction + super::Repository,
+    Tx: Transaction + super::Repo + super::repository::TxRepo,
     Storage: AsyncImageStorage,
 {
     pub async fn create(
         &self,
         bytes: &[u8],
         parser: &Parser,
-        uploaded_by: i32,
+        meta: CreateImageMeta,
     ) -> Result<Image, Error> {
         let tx = &self.repo;
         let parsed = parser.parse(bytes)?;
 
         // TODO: Support more storage
         let new_image =
-            NewImage::from_parsed(parsed, uploaded_by, StorageBackend::Fs);
+            NewImage::from_parsed(parsed, meta.uploaded_by, StorageBackend::Fs);
 
         // We use xxhash128, so if the hash is the same, it is the same image.
         let image = if let Some(image) =
@@ -399,18 +406,48 @@ where
         {
             image
         } else {
-            let image = tx.save(&new_image).await?;
+            let image = tx.create(&new_image).await?;
             self.storage.create(new_image).await?;
             image
         };
 
+        // Create image reference
+        let image_ref = entity::image_reference::Model {
+            image_id: image.id,
+            ref_entity_id: meta.uploaded_by,
+            ref_entity_type: meta.entity_type,
+            ref_usage: meta.usage,
+        };
+        self.repo.create_ref(image_ref).await?;
+
         Ok(image)
     }
 
-    pub async fn delete(&self, image: Image) -> Result<(), Error> {
+    async fn delete(&self, image: Image) -> Result<(), Error> {
         self.repo.delete(image.id).await?;
 
         self.storage.remove(image).await?;
+
+        Ok(())
+    }
+
+    /// Decrement the reference count for an image and delete it if no references remain
+    pub async fn decr_ref_count(
+        &self,
+        image_ref: ImageRef,
+    ) -> Result<(), Error> {
+        self.repo.remove_ref(image_ref.clone()).await?;
+
+        // Check if this was the last reference
+        let count = self.repo.ref_count(image_ref.image_id).await?;
+        if count == 0 {
+            // Get the image and delete it
+            if let Some(image) =
+                self.repo.find_by_id(image_ref.image_id).await?
+            {
+                self.delete(image).await?;
+            }
+        }
 
         Ok(())
     }

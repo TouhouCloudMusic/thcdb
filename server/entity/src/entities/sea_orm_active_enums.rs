@@ -327,6 +327,35 @@ pub enum TagType {
     utoipa :: ToSchema,
     Copy,
 )]
+#[sea_orm(
+    rs_type = "String",
+    db_type = "Enum",
+    enum_name = "image_ref_entity_type"
+)]
+pub enum ImageRefEntityType {
+    #[sea_orm(string_value = "Artist")]
+    Artist,
+    #[sea_orm(string_value = "User")]
+    User,
+    #[sea_orm(string_value = "Song")]
+    Song,
+    #[sea_orm(string_value = "Label")]
+    Label,
+    #[sea_orm(string_value = "Release")]
+    Release,
+}
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumIter,
+    DeriveActiveEnum,
+    Serialize,
+    Deserialize,
+    utoipa :: ToSchema,
+    Copy,
+)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "storage_backend")]
 pub enum StorageBackend {
     #[sea_orm(string_value = "fs")]

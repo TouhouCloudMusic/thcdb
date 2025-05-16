@@ -1,9 +1,13 @@
 use derive_more::From;
+use entity::enums::ImageRefEntityType;
 use error_set::error_set;
 use futures_util::TryFutureExt;
 use macros::{ApiError, IntoErrorSchema};
 
-use crate::domain::image::{self, AsyncImageStorage, ValidationError};
+use crate::domain::image::repository::TxRepo as ImageTxRepo;
+use crate::domain::image::{
+    self, AsyncImageStorage, CreateImageMeta, ValidationError,
+};
 use crate::domain::repository::{Transaction, TransactionManager};
 use crate::domain::user::{self, TxRepo, User};
 use crate::error::InfraError;
@@ -78,7 +82,7 @@ impl<R, S> UserImageService<R, S> {
 impl<R, S> UserImageService<R, S>
 where
     R: TransactionManager,
-    R::TransactionRepository: Clone + user::TxRepo + image::Repository,
+    R::TransactionRepository: Clone + user::TxRepo + image::Repo + ImageTxRepo,
     S: Clone + AsyncImageStorage,
 {
     pub async fn upload_avatar(
@@ -86,6 +90,7 @@ where
         mut user: User,
         buffer: &[u8],
     ) -> Result<(), UserImageServiceError> {
+        const USAGE: &str = "avatar";
         let tx = self.repo.begin().await?;
 
         // drop image service because tx is arc
@@ -93,22 +98,37 @@ where
             let image_service =
                 image::Service::new(tx.clone(), self.storage.clone());
 
-            // TODO: Ref count
-            // if let Some(image_id) = user.avatar_id
-            //     && let Some(image) = image_service.find_by_id(image_id).await?
-            // {
-            //     image_service
-            //         .delete(image)
-            //         .await
-            //         .map_err(UserImageServiceError::ImageService)?;
-            // }
+            // Handle previous avatar reference
+            if let Some(old_avatar_id) = user.avatar_id {
+                // Delete the reference between user and avatar
 
-            let image = image_service
-                .create(buffer, &parser::AVATAR, user.id)
+                let image_ref = entity::image_reference::Model {
+                    image_id: old_avatar_id,
+                    ref_entity_id: user.id,
+                    ref_entity_type: ImageRefEntityType::User,
+                    ref_usage: Some(USAGE.to_string()),
+                };
+                image_service
+                    .decr_ref_count(image_ref)
+                    .await
+                    .map_err(UserImageServiceError::ImageService)?;
+            }
+
+            let new_avatar = image_service
+                .create(
+                    buffer,
+                    &parser::AVATAR,
+                    CreateImageMeta {
+                        entity_id: user.id,
+                        entity_type: ImageRefEntityType::User,
+                        usage: Some(USAGE.into()),
+                        uploaded_by: user.id,
+                    },
+                )
                 .await
                 .map_err(UserImageServiceError::ImageService)?;
 
-            user.avatar_id = Some(image.id);
+            user.avatar_id = Some(new_avatar.id);
         }
 
         tx.update(user).await?;
@@ -123,13 +143,39 @@ where
         mut user: User,
         buffer: &[u8],
     ) -> Result<User, UserImageServiceError> {
+        const USAGE: &str = "profile_banner";
         let tx = self.repo.begin().await?;
 
         let image_service =
             image::Service::new(tx.clone(), self.storage.clone());
 
+        // Handle previous banner reference
+        if let Some(image_id) = user.profile_banner_id {
+            // Delete the reference between user and banner
+
+            let image_ref = entity::image_reference::Model {
+                image_id,
+                ref_entity_id: user.id,
+                ref_entity_type: ImageRefEntityType::User,
+                ref_usage: Some(USAGE.to_string()),
+            };
+            image_service
+                .decr_ref_count(image_ref)
+                .await
+                .map_err(UserImageServiceError::ImageService)?;
+        }
+
         let image = image_service
-            .create(buffer, &parser::PROFILE_BANNER, user.id)
+            .create(
+                buffer,
+                &parser::PROFILE_BANNER,
+                CreateImageMeta {
+                    entity_id: user.id,
+                    entity_type: ImageRefEntityType::User,
+                    usage: Some(USAGE.into()),
+                    uploaded_by: user.id,
+                },
+            )
             .map_err(UserImageServiceError::ImageService)
             .await?;
 
