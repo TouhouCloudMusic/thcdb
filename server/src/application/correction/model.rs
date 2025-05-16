@@ -6,9 +6,6 @@ use utoipa::ToSchema;
 use crate::domain::correction::{CorrectionEntity, NewCorrection};
 use crate::domain::user::User;
 
-pub mod artist;
-pub mod user;
-
 #[derive(Deserialize, ToSchema)]
 #[schema(
     as = NewCorrection

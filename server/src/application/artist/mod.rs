@@ -7,8 +7,6 @@ use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
 use crate::domain::repository::TransactionManager;
 use crate::error::InfraError;
 
-pub mod upload_profile_image;
-
 #[derive(Clone)]
 pub struct Service<R> {
     pub repo: R,

@@ -4,17 +4,17 @@ use crate::error::InfraError;
 use crate::utils::MapInto;
 
 #[derive(Clone)]
-pub struct Profile<R> {
+pub struct Service<R> {
     repo: R,
 }
 
-impl<R> Profile<R> {
+impl<R> Service<R> {
     pub const fn new(repo: R) -> Self {
         Self { repo }
     }
 }
 
-impl<R> Profile<R>
+impl<R> Service<R>
 where
     R: user::ProfileRepository,
     R::Error: Into<InfraError>,

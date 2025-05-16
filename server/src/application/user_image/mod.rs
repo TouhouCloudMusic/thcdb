@@ -12,6 +12,9 @@ use crate::domain::repository::{Transaction, TransactionManager};
 use crate::domain::user::{self, TxRepo, User};
 use crate::error::InfraError;
 
+mod model;
+pub use model::*;
+
 mod parser {
     use std::sync::LazyLock;
 
@@ -68,18 +71,18 @@ error_set! {
 }
 
 #[derive(Clone)]
-pub struct UserImageService<R, S> {
+pub struct Service<R, S> {
     repo: R,
     storage: S,
 }
 
-impl<R, S> UserImageService<R, S> {
+impl<R, S> Service<R, S> {
     pub const fn new(repo: R, storage: S) -> Self {
         Self { repo, storage }
     }
 }
 
-impl<R, S> UserImageService<R, S>
+impl<R, S> Service<R, S>
 where
     R: TransactionManager,
     R::TransactionRepository: Clone + user::TxRepo + image::Repo + ImageTxRepo,

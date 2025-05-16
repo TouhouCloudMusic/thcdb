@@ -12,10 +12,8 @@ use super::extractor::CurrentUser;
 use super::state::{self, ArcAppState};
 use crate::api_response::{Data, Message};
 use crate::application::artist::UpsertCorrectionError;
-use crate::application::artist::upload_profile_image::{
-    self, UploadArtistProfileImageDto,
-};
-use crate::application::dto::NewCorrectionDto;
+use crate::application::artist_image::{self, ArtistProfileImageInput};
+use crate::application::correction::NewCorrectionDto;
 use crate::domain::artist::model::{Artist, NewArtist};
 use crate::error::{InfraError, ServiceError};
 use crate::utils::MapInto;
@@ -136,7 +134,7 @@ async fn upsert_artist_correction(
 }
 
 #[derive(Debug, ToSchema, TryFromMultipart)]
-pub struct ArtistProfileImageInput {
+pub struct ArtistProfileImageFormData {
     #[form_data(limit = "10MiB")]
     #[schema(
         value_type = String,
@@ -153,21 +151,21 @@ pub struct ArtistProfileImageInput {
     path = "/artist/{id}/profile_image",
     responses(
         (status = 200, body = Message),
-        upload_profile_image::Error
+        artist_image::Error
     )
 )]
 async fn upload_artist_profile_image(
     CurrentUser(user): CurrentUser,
-    State(use_case): State<state::UploadArtistProfileImageUseCase>,
+    State(service): State<state::ArtistImageService>,
     Path(id): Path<i32>,
-    TypedMultipart(form): TypedMultipart<ArtistProfileImageInput>,
-) -> Result<Message, upload_profile_image::Error> {
+    TypedMultipart(form): TypedMultipart<ArtistProfileImageFormData>,
+) -> Result<Message, artist_image::Error> {
     let data = form.data.contents;
-    let dto = UploadArtistProfileImageDto {
+    let dto = ArtistProfileImageInput {
         bytes: data,
         user,
         artist_id: id,
     };
-    use_case.exec(dto).await?;
+    service.upload_profile_image(dto).await?;
     Ok(Message::ok())
 }

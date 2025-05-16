@@ -4,8 +4,7 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 
 use super::extractor::TryFromRef;
-use crate::application::artist::upload_profile_image::UploadArtistProfileImageUseCase as UploadArtistProfileImageUseCaseTrait;
-use crate::application::use_case;
+use crate::application::{self, user_profile};
 use crate::domain::repository::TransactionManager;
 use crate::error::InfraError;
 pub(super) use crate::infrastructure::database::sea_orm::{
@@ -16,10 +15,13 @@ use crate::infrastructure::state::AppState;
 use crate::infrastructure::storage::GenericImageStorage;
 use crate::service as service_old;
 
-pub(super) type ArtistService =
-    crate::application::artist::Service<SeaOrmRepository>;
-pub(super) type UploadArtistProfileImageUseCase =
-    UploadArtistProfileImageUseCaseTrait<SeaOrmRepository, GenericImageStorage>;
+pub(super) type AuthService = application::auth::AuthService<SeaOrmRepository>;
+
+pub(super) type AuthSession = axum_login::AuthSession<AuthService>;
+
+pub(super) type ArtistService = application::artist::Service<SeaOrmRepository>;
+pub(super) type ArtistImageService =
+    application::artist_image::Service<SeaOrmRepository, GenericImageStorage>;
 
 pub(super) type CorretionServiceOld = service_old::correction::Service;
 
@@ -36,15 +38,8 @@ pub(super) type SongService = service_old::song::Service;
 
 pub(super) type TagService = service_old::tag::Service<SeaOrmRepository>;
 pub(super) type UserImageService =
-    crate::application::service::user::UserImageService<
-        SeaOrmRepository,
-        GenericImageStorage,
-    >;
-
-pub(super) type AuthService =
-    crate::application::service::auth::AuthService<SeaOrmRepository>;
-
-pub(super) type AuthSession = axum_login::AuthSession<AuthService>;
+    application::user_image::Service<SeaOrmRepository, GenericImageStorage>;
+pub(super) type UserProfileService = user_profile::Service<SeaOrmRepository>;
 
 #[derive(Clone)]
 pub struct ArcAppState(Arc<AppState>);
@@ -69,7 +64,7 @@ impl FromRef<ArcAppState> for SeaOrmRepository {
     }
 }
 
-impl FromRef<ArcAppState> for use_case::user::Profile<SeaOrmRepository> {
+impl FromRef<ArcAppState> for UserProfileService {
     fn from_ref(input: &ArcAppState) -> Self {
         Self::new(input.sea_orm_repo.clone())
     }
@@ -141,7 +136,7 @@ impl FromRef<ArcAppState> for AuthService {
     }
 }
 
-impl FromRef<ArcAppState> for UploadArtistProfileImageUseCase {
+impl FromRef<ArcAppState> for ArtistImageService {
     fn from_ref(input: &ArcAppState) -> Self {
         let repo = input.sea_orm_repo.clone();
         let storage = FS_IMAGE_STORAGE.clone();

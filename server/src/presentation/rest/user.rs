@@ -9,12 +9,12 @@ use utoipa_axum::routes;
 use super::extractor::CurrentUser;
 use super::state::{self, ArcAppState, AuthSession};
 use crate::api_response::{Data, Message};
-use crate::application::dto::user::{UploadAvatar, UploadProfileBanner};
-use crate::application::service::UserImageServiceError;
-use crate::application::service::auth::{
+use crate::application::auth::{
     AuthServiceTrait, SessionBackendError, SignInError, SignUpError,
 };
-use crate::application::use_case::{self};
+use crate::application::user_image::{
+    UploadAvatar, UploadProfileBanner, UserImageServiceError,
+};
 use crate::domain::model::auth::AuthCredential;
 use crate::domain::model::markdown::{self, Markdown};
 use crate::domain::user::UserProfile;
@@ -39,8 +39,6 @@ super::data! {
     DataUserProfile, UserProfile
 }
 
-type ProfileUseCase = use_case::user::Profile<state::SeaOrmRepository>;
-
 #[utoipa::path(
     get,
     tag = TAG,
@@ -53,9 +51,9 @@ type ProfileUseCase = use_case::user::Profile<state::SeaOrmRepository>;
 )]
 async fn profile(
     CurrentUser(user): CurrentUser,
-    State(use_case): State<ProfileUseCase>,
+    State(service): State<state::UserProfileService>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
-    profile_impl(&use_case, &user.name, Some(&user)).await
+    profile_impl(&service, &user.name, Some(&user)).await
 }
 
 #[utoipa::path(
@@ -70,7 +68,7 @@ async fn profile(
 )]
 async fn profile_with_name(
     session: AuthSession,
-    State(use_case): State<ProfileUseCase>,
+    State(use_case): State<state::UserProfileService>,
     Path(name): Path<String>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
     profile_impl(&use_case, &name, session.user.as_ref()).await
@@ -88,7 +86,7 @@ async fn profile_with_name(
 )]
 async fn sign_up(
     mut auth_session: AuthSession,
-    State(use_case): State<ProfileUseCase>,
+    State(use_case): State<state::UserProfileService>,
     State(auth_service): State<state::AuthService>,
     Json(creds): Json<AuthCredential>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
@@ -118,7 +116,7 @@ async fn sign_up(
 )]
 async fn sign_in(
     mut auth_session: state::AuthSession,
-    State(use_case): State<ProfileUseCase>,
+    State(use_case): State<state::UserProfileService>,
     Json(creds): Json<AuthCredential>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
     if auth_session.user.is_some() {
@@ -212,18 +210,18 @@ async fn upload_profile_banner(
 }
 
 async fn profile_impl(
-    use_case: &ProfileUseCase,
+    service: &state::UserProfileService,
     name: &str,
     current_user: Option<&domain::user::User>,
 ) -> Result<Data<UserProfile>, axum::response::Response> {
-    let mut profile = use_case
+    let mut profile = service
         .find_by_name(name)
         .await
         .map_err(IntoResponse::into_response)?
         .ok_or_else(|| StatusCode::NOT_FOUND.into_response())?;
 
     if let Some(current_user) = current_user {
-        use_case
+        service
             .with_following(&mut profile, current_user)
             .await
             .map_err(IntoResponse::into_response)?;

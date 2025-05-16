@@ -7,6 +7,9 @@ use crate::domain::correction::{
 use crate::domain::model::auth::UserRoleEnum;
 use crate::error::{InfraError, Unauthorized};
 
+mod model;
+pub use model::*;
+
 #[derive(
     Debug,
     derive_more::Display,

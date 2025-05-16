@@ -44,12 +44,12 @@ pub enum Error {
     Service(#[from] image::Error),
 }
 
-pub struct UploadArtistProfileImageUseCase<Repo, Storage> {
+pub struct Service<Repo, Storage> {
     repo: Repo,
     storage: Storage,
 }
 
-impl<Repo, TxRepo, Storage> UploadArtistProfileImageUseCase<Repo, Storage>
+impl<Repo, TxRepo, Storage> Service<Repo, Storage>
 where
     Repo: TransactionManager<TransactionRepository = TxRepo>,
     // Perhaps these repos should be separated, but there is no need for this in the foreseeable future.
@@ -65,12 +65,12 @@ where
         Self { repo, storage }
     }
 
-    pub async fn exec(
+    pub async fn upload_profile_image(
         &self,
-        dto: UploadArtistProfileImageDto,
+        dto: ArtistProfileImageInput,
     ) -> Result<(), Error> {
         const USAGE: &str = "profile_image";
-        let UploadArtistProfileImageDto {
+        let ArtistProfileImageInput {
             bytes,
             user,
             artist_id,
@@ -108,7 +108,7 @@ where
     }
 }
 
-pub struct UploadArtistProfileImageDto {
+pub struct ArtistProfileImageInput {
     pub bytes: Bytes,
     #[doc(alias = "uploaded_by")]
     pub user: User,
