@@ -20,8 +20,8 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(create))
         .routes(routes!(upsert_correction))
-        .routes(routes!(find_by_id))
-        .routes(routes!(find_by_keyword))
+        .routes(routes!(find_event_by_id))
+        .routes(routes!(find_event_by_keyword))
 }
 
 super::data! {
@@ -38,7 +38,7 @@ super::data! {
         ServiceError
     ),
 )]
-async fn find_by_id(
+async fn find_event_by_id(
     State(service): State<Service>,
     Path(id): Path<i32>,
 ) -> Result<Data<EventResponse>, ServiceError> {
@@ -62,7 +62,7 @@ struct KeywordQuery {
         ServiceError
     ),
 )]
-async fn find_by_keyword(
+async fn find_event_by_keyword(
     State(service): State<Service>,
     Query(query): Query<KeywordQuery>,
 ) -> Result<Data<Vec<EventResponse>>, ServiceError> {

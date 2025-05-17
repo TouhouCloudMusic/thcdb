@@ -18,8 +18,8 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(create_tag))
         .routes(routes!(upsert_tag_correction))
-        .routes(routes!(find_by_id))
-        .routes(routes!(find_by_keyword))
+        .routes(routes!(find_tag_by_id))
+        .routes(routes!(find_tag_by_keyword))
 }
 
 super::data! {
@@ -37,7 +37,7 @@ super::data! {
         ServiceError
     ),
 )]
-async fn find_by_id(
+async fn find_tag_by_id(
     State(tag_service): State<state::TagService>,
     Path(id): Path<i32>,
 ) -> Result<Data<TagResponse>, ServiceError> {
@@ -60,7 +60,7 @@ struct KwArgs {
         ServiceError
     ),
 )]
-async fn find_by_keyword(
+async fn find_tag_by_keyword(
     State(tag_service): State<state::TagService>,
     Query(query): Query<KwArgs>,
 ) -> Result<Data<Vec<TagResponse>>, ServiceError> {
