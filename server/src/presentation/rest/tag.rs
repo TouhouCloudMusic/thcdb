@@ -28,7 +28,7 @@ super::data! {
 }
 
 #[utoipa::path(
-    post,
+    get,
     tag = TAG,
     path = "/tag/{id}",
     responses(
@@ -50,7 +50,7 @@ struct KwArgs {
 }
 
 #[utoipa::path(
-    post,
+    get,
     tag = TAG,
     path = "/tag",
     params(KwArgs),
@@ -68,7 +68,7 @@ async fn find_by_keyword(
 }
 
 #[utoipa::path(
-    get,
+    post,
     path = "/tag",
     request_body = TagCorrection,
     responses(
