@@ -1,23 +1,22 @@
 {
-  "files.exclude": {
-    ".eslintcache": true
-  },
-  // formatter
-  "[json][jsonc][typescript][typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    // Prettier will insert new line so we don't
-    "files.insertFinalNewline": false
-  },
-  "typescript.preferences.importModuleSpecifierEnding": "minimal",
+	"files.exclude": {
+		".eslintcache": true
+	},
+	// formatter
+	"[json][jsonc][typescript][typescriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		// Prettier will insert new line so we don't
+		"files.insertFinalNewline": false
+	},
+	"typescript.preferences.importModuleSpecifierEnding": "minimal",
 
-  // tailwind
-  "tailwindCSS.classAttributes": ["class", "class:list", "twMerge"],
-  "tailwindCSS.experimental.classRegex": [
-    ["(?:twMerge|twJoin)[(]([^)]*)"],
-    ["@tw\\s\\*?\\/?[\\s\\S]+?[']([^']*)"],
-    ["@tw\\s\\*?\\/?[\\s\\S]+?[`]([^`]*)"],
-    ["@tw\\s\\*?\\/?[\\s\\S]+?[\"]([^\"]*)"]
-  ],
-  "tailwindCSS.classFunctions": ["twMerge"],
-  "tailwindCSS.experimental.configFile": "src/index.css"
+	// tailwind
+	"tailwindCSS.classAttributes": ["class", "class:list", "twMerge"],
+	"tailwindCSS.experimental.classRegex": [
+		["@tw\\s\\*?\\/?[\\s\\S]+?[']([^']*)"],
+		["@tw\\s\\*?\\/?[\\s\\S]+?[`]([^`]*)"],
+		["@tw\\s\\*?\\/?[\\s\\S]+?[\"]([^\"]*)"]
+	],
+	"tailwindCSS.classFunctions": ["twMerge", "twJoin", "tw"],
+	"tailwindCSS.experimental.configFile": "src/index.css"
 }

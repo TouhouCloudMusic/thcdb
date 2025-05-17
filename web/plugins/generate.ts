@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import fs from "fs/promises"
+import fs from "node:fs/promises"
 import openApiGen, { astToString } from "openapi-typescript"
-import path from "path"
+import path from "node:path"
 import ts from "typescript"
-import { Plugin } from "vite"
+import type { Plugin } from "vite"
 
 const OPENAPI_OUTPUT_DIR = "./src/api"
 
@@ -60,6 +59,7 @@ export async function generateOpenApi(base_url: string) {
 
 	let ast = await openApiGen(json, {
 		exportType: true,
+
 		transform(schemaObject, _metadata) {
 			let types: ts.TypeNode[] = []
 
@@ -69,7 +69,7 @@ export async function generateOpenApi(base_url: string) {
 				}) ||
 				schemaObject.nullable
 			) {
-				types.push(...[UNDEF, NULL])
+				types.push(UNDEF, NULL)
 			}
 
 			if (schemaObject.format === "binary") {
@@ -78,7 +78,7 @@ export async function generateOpenApi(base_url: string) {
 
 			switch (types.length) {
 				case 0:
-					return undefined
+					return
 				case 1:
 					return types[0]
 				default:

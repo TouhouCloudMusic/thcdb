@@ -23,7 +23,7 @@ import { type components } from "~/data/openapi"
 import { PageLayout } from "~/layout/PageLayout"
 import { useUserCtx } from "~/state/user"
 import { type Replace } from "~/types"
-import { type SatisfyValibotSchema as GenericValibotSchema } from "~/types/valibot"
+import { type ExternalSchema as GenericValibotSchema } from "~/types/valibot"
 import { createCropperBoundary } from "~/utils/adapter/cropper"
 import { createClickOutside } from "~/utils/solid/createClickOutside"
 

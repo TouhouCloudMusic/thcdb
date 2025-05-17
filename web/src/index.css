@@ -1,5 +1,5 @@
-@import "./style/style.css";
 @import "tailwindcss";
+@import "./style/style.css";
 
 @custom-variant dark (&:where([data-mode=dark] *));
 
@@ -92,7 +92,7 @@ body,
 		pre:has(code) {
 			@apply p-4;
 			code {
-				@apply whitespace-pre-wrap break-all text-sm;
+				@apply text-sm break-all whitespace-pre-wrap;
 				font-family: "Cascadia Next SC";
 			}
 		}
@@ -115,5 +115,16 @@ body,
 				@apply text-right;
 			}
 		}
+	}
+}
+
+@utility no-spinner {
+	appearance: textfield;
+	-moz-appearance: textfield;
+
+	&::-webkit-outer-spin-button,
+	&::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
 	}
 }

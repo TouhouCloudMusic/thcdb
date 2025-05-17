@@ -1,5 +1,8 @@
 {
 	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"env": {
+		"browser": true
+	},
 	"categories": {
 		"correctness": "error",
 		"suspicious": "warn",
@@ -10,21 +13,41 @@
 		"nursery": "warn"
 	},
 	"rules": {
+		"no-async-await": "off",
+		"no-duplicate-imports": "off",
+		"no-ternary": "off",
+		"no-undefined": "off",
+		"no-unused-vars": "warn",
+		"no-magic-numbers": [
+			"error",
+			{ "ignore": [0, 1], "ignoreArrayIndexes": true }
+		],
+		"sort-keys": "off",
+
+		"oxc/no-const-enum": "off",
+		"oxc/no-optional-chaining": "off",
+
 		"eslint/eqeqeq": ["warn", "smart"],
 		"eslint/func-style": "off",
+		"eslint/max-depth": ["warn", 4],
 		"eslint/max-lines-per-function": [
 			"warn",
 			{
 				"IIFEs": false,
-				"max": 50,
+				"max": 100,
 				"skipBlankLines": false,
 				"skipComments": false
 			}
 		],
 		"eslint/max-nested-callbacks": ["warn", 10],
+		"eslint/no-redeclare": "off",
 		"eslint/sort-imports": "off",
+		"eslint/yoda": "off",
 
+		"typescript/ban-ts-comment": "off",
+		"typescript/consistent-type-definitions": "off",
 		"typescript/explicit-function-return-type": "off",
+		"typescript/consistent-indexed-object-style": "warn",
 
 		"import/exports-last": "off",
 		"import/max-dependencies": "off",
@@ -32,9 +55,9 @@
 		"import/no-namespace": "off",
 
 		"unicorn/no-anonymous-default-export": "off",
-		"unicorn/no-empty-file": "off"
+		"unicorn/no-empty-file": "off",
+		"unicorn/no-null": "off"
 	},
-
 	"plugins": [
 		"import",
 		"jsdoc",

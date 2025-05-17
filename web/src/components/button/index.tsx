@@ -28,6 +28,7 @@ export const Variant = {
 		yield "Secondary"
 		yield "Tertiary"
 	},
+	// TODO: remove default value
 	default(): Variant {
 		return "Secondary"
 	},
@@ -81,10 +82,12 @@ const SizeClass = {
 	Lg: "text-xl py-4 px-8",
 }
 
+// @tw
 const VariantClass = {
 	Primary: `shadow-sm text-(--background-color-primary)`,
 	Secondary: `shadow-xs shadow-gray-100`,
-	Tertiary: `bg-primary hover:bg-gray-100 active:bg-gray-200 disabled:bg-gray-300`,
+	// @tw
+	Tertiary: `bg-primary not-disabled:hover:bg-gray-100 not-disabled:active:bg-gray-200 disabled:bg-secondary`,
 }
 
 const PrimaryColor: Record<AppColor, string> = {
