@@ -68,7 +68,7 @@ async fn find_by_keyword(
 }
 
 #[utoipa::path(
-    post,
+    get,
     path = "/tag",
     request_body = TagCorrection,
     responses(
