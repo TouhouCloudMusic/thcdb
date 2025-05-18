@@ -3,38 +3,55 @@ name: Deploy Dev Server
 on:
   push:
     branches:
-      - dev
+      - main
   workflow_dispatch:
+
+env:
+  # Disable incremental compilation
+  CARGO_INCREMENTAL: 0
+  # Disable debuginfo
+  CARGO_PROFILE_DEV_DEBUG: 0
+  RUSTC_WRAPPER: "sccache"
+  SCCACHE_GHA_ENABLED: "true"
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    concurrency:
+      group: "deploy-dev-server"
+      cancel-in-progress: true
+
     steps:
-    - name: Checkout source
-      uses: actions/checkout@v3
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-    - name: Set up Rust
-      uses: actions/setup-rust@v1
-      with:
-        rust-version: nightly
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@nightly
+        # Use build cache
+      - uses: mozilla-actions/sccache-action@v0.0.9
 
-    - name: Build project
-      run: cargo build --release
+      - name: Build project
+        run: cargo build --release
 
-    - name: Set up SCP
-      run: |
-        mkdir -v -m 700 $HOME/.ssh
-        ssh-keyscan -H ${{ secrets.DEV_SSH_HOST }} >> $HOME/.ssh/known_hosts
-        echo "${{ secrets.DEV_SSH_KEY }}" > $HOME/.ssh/id_rsa
-        chmod 600 $HOME/.ssh/id_rsa
+      - name: Set up SCP
+        run: |
+          mkdir -v -m 700 $HOME/.ssh
+          ssh-keyscan -H ${{ secrets.DEV_SSH_HOST }} >> $HOME/.ssh/known_hosts
+          echo "${{ secrets.DEV_SSH_PRIVATE_KEY }}" > $HOME/.ssh/id_rsa
+          chmod 600 $HOME/.ssh/id_rsa
 
-    - name: Copy binary to server
-      run: |
-        scp target/release/thcdb_rs\
-        ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }}:~/server/thcdb_rs
+      - name: Stop systemd Service
+        run: |
+          ssh -i $HOME/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }} \
+          "sudo systemctl stop thcdb.service"
 
-    - name: Restart systemd service
-      run: |
-        ssh -i $HOME/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }} \
-        "sudo systemctl restart thcdb_rs"
+      - name: Copy binary to server
+        run: |
+          scp target/release/thcdb_rs \
+          ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }}:/home/${{ secrets.DEV_SSH_USER }}//server/thcdb_rs
+
+      - name: Restart systemd service
+        run: |
+          ssh -i $HOME/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }} \
+          "sudo systemctl restart thcdb.service"

@@ -1,0 +1,13 @@
+[app]
+port = 12345
+
+[email]
+host = "todo"
+
+[email.creds]
+password = "todo"
+username = "todo"
+
+[middleware.limit]
+burst_size  = 8
+req_per_sec = 5

@@ -1,3 +1,7 @@
+cargo-features = [
+    "codegen-backend",
+]
+
 [workspace]
 members = [
     ".",
@@ -10,6 +14,7 @@ members = [
 [workspace.dependencies]
 entity      = { path = "./entity" }
 macros      = { path = "./macros" }
+migration   = { path = "./migration" }
 proc_macros = { path = "./proc_macros" }
 # external
 argon2 = "0.5"
@@ -21,12 +26,17 @@ axum-login = { version = "0.17" }
 chrono = "0.4"
 dotenvy = "0.15"
 itertools = "0.14"
-sea-orm = { version = "1.1.2", features = [
+quote = "1.0.38"
+sea-orm = { version = "1.1.10", features = [
     "sqlx-postgres",
     "runtime-tokio-rustls",
     "macros",
     "debug-print",
 ] }
+sea-orm-migration = { features = [
+    "runtime-tokio-rustls",
+    "sqlx-postgres",
+], version = "1.1.10" }
 serde = { version = "1", features = [
     "derive",
 ] }
@@ -43,13 +53,14 @@ tracing-subscriber = { version = "0.3", features = [
 utoipa = { version = "5", features = [
     "axum_extras",
     "chrono",
-    "macros",
     "preserve_order",
+    "url",
 ] }
 
 [build-dependencies]
 dotenvy.workspace = true
 git2              = "0.20.1"
+quote.workspace   = true
 syn.workspace     = true
 
 [package]
@@ -58,26 +69,38 @@ name    = "thcdb_rs"
 version = "0.1.0"
 
 [dependencies]
-entity.workspace = true
-macros.workspace = true
+entity.workspace    = true
+macros.workspace    = true
+migration.workspace = true
 #
+ammonia = "4.0.0"
+argon2.features = [
+    "std",
+]
 argon2.workspace = true
 async-trait = { version = "0.1" }
 axum.workspace = true
 axum-login.workspace = true
-axum_typed_multipart = "0.15"
+axum_typed_multipart = "0.16"
 base64 = "0.22"
 bon = { version = "3.0", features = [
     "implied-bounds",
 ] }
+boolinator = "2.4.0"
+bytes = "1.10.1"
+bytesize = { version = "2.0.1", features = [
+    "serde",
+] }
 chrono.workspace = true
 config = { version = "0.15.8", features = [
     "ron",
+    "toml",
 ], default-features = false }
 derive_more = { version = "2.0.1", features = [
     "display",
     "error",
     "from",
+    "into",
 ] }
 dotenvy.workspace = true
 error_set = { version = "0.8", features = [
@@ -98,9 +121,18 @@ lettre = { version = "0.11.14", default-features = false, features = [
     "smtp-transport",
     "tokio1-rustls-tls",
 ] }
+maud = { version = "0.27.0", features = [
+    "axum",
+] }
+nestify = "0.3.3"
+pulldown-cmark = { version = "0.13.0", default-features = false, features = [
+    "html",
+    "simd",
+] }
 rand = "0.9.0"
 regex = "1.11"
 sea-orm.workspace = true
+sea-orm-migration.workspace = true
 serde.workspace = true
 serde_json = "1.0"
 serde_repr = "0.1"
@@ -108,10 +140,10 @@ serde_with = { version = "3.12.0", features = [
     "chrono_0_4",
 ] }
 smart-default = "0.7.1"
-strum = "0.27.0"
-strum_macros = "0.27.0"
+strum = { version = "0.27", features = [
+    "derive",
+] }
 thiserror = "2.0.12"
-tikv-jemallocator = "0.6.0"
 tokio.workspace = true
 tower = { version = "0.5.2", features = [
     "limit",
@@ -122,10 +154,14 @@ tower-http = { version = "0.6.2", features = [
     "cors",
 ] }
 tower-sessions-redis-store = "0.16.0"
-tower_governor = "0.6.0"
+tower_governor = "0.7.0"
 tracing.workspace = true
 tracing-subscriber.workspace = true
 tracing-test = "0.2.5"
+trait-variant = "0.1.2"
+url = { version = "2.5.4", features = [
+    "serde",
+] }
 utoipa.workspace = true
 utoipa-axum = "0.2"
 utoipa-scalar = { version = "0.3", features = [
@@ -136,18 +172,27 @@ xxhash-rust = { version = "0.8", features = [
     "xxh3",
 ] }
 zxcvbn = "3.1"
+# Optional
+tikv-jemallocator = { version = "0.6.0", optional = true }
 
 [dev-dependencies]
 rusty-hook = "0.11.2"
 
-# https://doc.rust-lang.org/cargo/reference/profcailes.html
+# https://doc.rust-lang.org/cargo/reference/profiles.html
 [profile.dev]
-# codegen-backend = "cranelift"
+codegen-backend = "cranelift"
+debug           = 0
 opt-level       = 1
-split-debuginfo = "unpacked"
+strip           = "debuginfo"
+# If you get incremental compilation ICE, disable it
+# incremental     = false
 
-[profile.dev.package."*"]
+[profile.dev.build-override]
 opt-level = 3
+
+[profile.ra]
+codegen-backend = "llvm"
+inherits        = "dev"
 
 [profile.release]
 codegen-units   = 1
@@ -156,3 +201,8 @@ lto             = "thin"
 opt-level       = 3
 overflow-checks = true
 panic           = "abort"
+
+[features]
+release = [
+    "tikv-jemallocator",
+]

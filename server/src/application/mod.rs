@@ -1,1 +1,11 @@
-pub mod service;
+pub mod artist;
+pub mod artist_image;
+pub mod auth;
+pub mod correction;
+pub mod event;
+pub mod label;
+pub mod release;
+pub mod song;
+pub mod tag;
+pub mod user_image;
+pub mod user_profile;

@@ -1,0 +1,38 @@
+name: Lint
+
+on:
+  # push:
+  #   branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  # Disable incremental compilation
+  CARGO_INCREMENTAL: 0
+  # Disable debuginfo
+  CARGO_TERM_COLOR: always
+  RUSTC_WRAPPER: "sccache"
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  rust:
+    name: Rust
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        # Use build cache
+      - uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Check format
+        run: cargo fmt --check
+
+      - name: Clippywc
+        run: cargo clippy --quiet
+
+      - name: Build test
+        run: cargo test --no-run
+
+      - name: Run test
+        run: cargo test --quiet

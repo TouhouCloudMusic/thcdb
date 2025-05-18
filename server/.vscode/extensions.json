@@ -1,0 +1,8 @@
+{
+	"recommendations": [
+		"skellock.just",
+		"tamasfe.even-better-toml",
+		"rust-lang.rust-analyzer",
+		"inferrinizzard.prettier-sql-vscode"
+	]
+}

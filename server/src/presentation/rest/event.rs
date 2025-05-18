@@ -1,0 +1,119 @@
+use axum::Json;
+use axum::extract::{Path, Query, State};
+use serde::Deserialize;
+use utoipa::IntoParams;
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
+
+use super::extractor::CurrentUser;
+use super::state::{self, ArcAppState};
+use crate::api_response::{Data, Message};
+use crate::application::correction::NewCorrectionDto;
+use crate::application::event;
+use crate::domain::event::NewEvent;
+use crate::domain::event::model::Event;
+// use crate::dto::event::{Event, NewEvent};
+use crate::error::{ApiError, InfraError};
+use crate::utils::MapInto;
+
+const TAG: &str = "Event";
+
+pub fn router() -> OpenApiRouter<ArcAppState> {
+    OpenApiRouter::new()
+        .routes(routes!(create))
+        .routes(routes!(upsert_correction))
+        .routes(routes!(find_event_by_id))
+        .routes(routes!(find_event_by_keyword))
+}
+
+super::data! {
+    DataEvent, Event
+    DataVecEvent, Vec<Event>
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/event/{id}",
+    responses(
+        (status = 200, body = Data<Event>),
+        ApiError
+    ),
+)]
+async fn find_event_by_id(
+    State(service): State<state::EventService>,
+    Path(id): Path<i32>,
+) -> Result<Data<Event>, ApiError> {
+    service
+        .find_by_id(id)
+        .await?
+        .map(Data::new)
+        .ok_or(ApiError::NotFound)
+}
+
+#[derive(Deserialize, IntoParams)]
+struct KeywordQuery {
+    keyword: String,
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/event",
+    params(
+        KeywordQuery
+    ),
+    responses(
+        (status = 200, body = DataVecEvent),
+        InfraError
+    ),
+)]
+async fn find_event_by_keyword(
+    State(service): State<state::EventService>,
+    Query(query): Query<KeywordQuery>,
+) -> Result<Data<Vec<Event>>, InfraError> {
+    service.find_by_keyword(&query.keyword).await.map_into()
+}
+
+#[utoipa::path(
+    post,
+    tag = TAG,
+    path = "/event",
+    request_body = NewCorrectionDto<NewEvent>,
+    responses(
+        (status = 200, body = Message),
+        (status = 401),
+        InfraError
+    ),
+)]
+async fn create(
+    CurrentUser(user): CurrentUser,
+    State(service): State<state::EventService>,
+    Json(dto): Json<NewCorrectionDto<NewEvent>>,
+) -> Result<Message, InfraError> {
+    service.create(dto.with_author(user)).await?;
+
+    Ok(Message::ok())
+}
+
+#[utoipa::path(
+    post,
+    tag = TAG,
+    path = "/event/{id}",
+    request_body = NewEvent,
+    responses(
+        (status = 200, body = Message),
+        (status = 401),
+        event::UpsertCorrectionError
+    ),
+)]
+async fn upsert_correction(
+    CurrentUser(user): CurrentUser,
+    State(service): State<state::EventService>,
+    Path(id): Path<i32>,
+    Json(dto): Json<NewCorrectionDto<NewEvent>>,
+) -> Result<Message, event::UpsertCorrectionError> {
+    service.upsert_correction(id, dto.with_author(user)).await?;
+
+    Ok(Message::ok())
+}

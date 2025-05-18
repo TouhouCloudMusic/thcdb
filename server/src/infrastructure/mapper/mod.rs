@@ -1,1 +1,1 @@
-pub mod image;
+pub mod artist;

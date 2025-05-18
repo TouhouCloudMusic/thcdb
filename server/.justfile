@@ -1,14 +1,13 @@
-set windows-shell := ["pwsh.exe", "-NoLogo","-Command"]
+set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 set dotenv-load := true
 set dotenv-required := true
 
 fmt:
   taplo fmt
-  atlas schema fmt ./schema
   cargo fmt
 
 fix:
-  cargo fix --workspace --allow-dirty --allow-staged
+  cargo fix          --workspace --allow-dirty --allow-staged
   cargo clippy --fix --workspace --allow-dirty --allow-staged
 
 check:
@@ -20,10 +19,6 @@ check:
 pre-push: check
 
 default: fmt && fix
-
-migrate:
-  atlas schema apply --env local
-
 
 __rm_entites:
   rm ./entity/src/entities/*
@@ -37,8 +32,6 @@ __generate:
   --enum-extra-derives Copy
 
 generate: __rm_entites __generate
-
-db_all: migrate generate
 
 converge:
   cargo tarpaulin --workspace --exclude-files entity/src/entities/*

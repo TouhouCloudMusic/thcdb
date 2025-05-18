@@ -1,124 +1,163 @@
-mod error_code;
-mod structs;
-
+use std::borrow::Cow;
 use std::fmt::Debug;
 
+use argon2::password_hash;
 use axum::http::StatusCode;
-use axum::response::IntoResponse;
-use derive_more::{Display, Error, From};
+use derive_more::{Display, From};
 use entity::sea_orm_active_enums::EntityType;
-pub use error_code::*;
 use error_set::error_set;
 use macros::{ApiError, IntoErrorSchema};
 use sea_orm::DbErr;
+
+mod structs;
 pub use structs::*;
 
-use crate::api_response::{IntoApiResponse, StatusCodeExt};
+use crate::api_response::{
+    AsStatusCode, IntoApiResponse, default_into_api_response_impl,
+};
+
+pub trait ApiErrorTrait = AsStatusCode;
+
+pub trait ImpledApiError = std::error::Error
+    + ApiErrorTrait
+    + IntoApiResponse
+    + axum::response::IntoResponse;
 
 error_set! {
+    #[derive(From, ApiError, IntoErrorSchema)]
+    #[disable(From(InfraError))]
     ApiError = {
-        Unauthorized
+        #[api_error(
+            status_code = StatusCode::UNAUTHORIZED,
+        )]
+        Unauthorized,
+        #[api_error(
+            status_code = StatusCode::NOT_FOUND,
+        )]
+        NotFound,
+        #[from(forward)]
+        Infra(InfraError)
     };
-    #[disable(From(TokioError))]
+    #[disable(From(InfraError))]
     #[derive(IntoErrorSchema, From, ApiError)]
     ServiceError = {
-        #[from(DbErr)]
-        Database(DbErrWrapper),
-        Tokio(TokioError),
+        #[from(forward)]
+        Infra(InfraError),
         #[display("Entity {entity_name} not found")]
         #[api_error(
-            status_code = StatusCode::INTERNAL_SERVER_ERROR,
-            error_code = ErrorCode::EntityNotFound,
+            status_code = StatusCode::NOT_FOUND,
         )]
         EntityNotFound {
             entity_name: &'static str
         },
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
-            error_code = ErrorCode::InvalidField,
         )]
         InvalidField(InvalidField),
-        #[display("Correction type mismatch, expected: {:#?}, accepted: {:#?}", expected, accepted)]
+        #[display("Correction type mismatch, expected: {:#?}, received: {:#?}", expected, received)]
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
-            error_code = ErrorCode::IncorrectCorrectionType,
         )]
         IncorrectCorrectionType {
             expected: EntityType,
-            accepted: EntityType,
+            received: EntityType,
         },
         #[display("Unexpected error: related entity {entity_name} not found")]
         #[api_error(
             status_code = StatusCode::BAD_REQUEST,
-            error_code = ErrorCode::IncorrectCorrectionType,
         )]
         UnexpRelatedEntityNotFound {
             entity_name: &'static str
         },
         #[api_error(
             status_code = StatusCode::UNAUTHORIZED,
-            error_code = ErrorCode::Unauthorized,
         )]
         Unauthorized
     };
-    TokioError = {
-        TaskJoin(tokio::task::JoinError)
-    };
 }
 
-pub trait ApiErrorTrait: StatusCodeExt + AsErrorCode {
-    fn before_into_api_error(&self) {}
+// impl IntoResponse for ApiError {
+//     fn into_response(self) -> axum::response::Response {
+//         match self {
+//             Self::Unauthorized => StatusCode::UNAUTHORIZED.into_response(),
+//         }
+//     }
+// }
+
+#[derive(Debug, Display, derive_more::Error, From)]
+pub enum InfraErrorEnum {
+    SeaOrm(DbErr),
+    Tokio(tokio::task::JoinError),
+    Io(std::io::Error),
+    PasswordHash(password_hash::Error),
+    Custom(#[error(not(source))] Cow<'static, str>),
 }
 
-#[derive(Debug, IntoErrorSchema, ApiError, Display, From, Error)]
-#[display("Database error")]
-#[api_error(
-    status_code = StatusCode::INTERNAL_SERVER_ERROR,
-    error_code = ErrorCode::DatabaseError,
-    into_response = self,
-    impl_api_error = false,
-)]
-pub struct DbErrWrapper(DbErr);
-
-impl ApiErrorTrait for DbErrWrapper {
-    fn before_into_api_error(&self) {
-        tracing::error!("Database error: {:#?}", self.0);
-    }
-}
-
-impl IntoResponse for ApiError {
-    fn into_response(self) -> axum::response::Response {
+impl InfraErrorEnum {
+    const fn prefix(&self) -> &'static str {
         match self {
-            Self::Unauthorized => StatusCode::UNAUTHORIZED.into_response(),
+            Self::SeaOrm(_) => "Database error",
+            Self::Tokio(_) => "Tokio error",
+            Self::Io(_) => "IO error",
+            Self::PasswordHash(_) => "Password hash error",
+            Self::Custom(_) => "Custom error",
         }
     }
 }
 
-impl StatusCodeExt for TokioError {
-    fn as_status_code(&self) -> StatusCode {
-        StatusCode::INTERNAL_SERVER_ERROR
-    }
+#[derive(Debug, Display, derive_more::Error, ApiError, IntoErrorSchema)]
+#[display("Internal server error")]
+#[api_error(
+    status_code = StatusCode::INTERNAL_SERVER_ERROR,
+    into_response = self,
+)]
+pub struct InfraError {
+    inner: Box<InfraErrorEnum>,
+}
 
-    fn all_status_codes() -> impl Iterator<Item = StatusCode> {
-        [StatusCode::INTERNAL_SERVER_ERROR].into_iter()
+impl InfraError {
+    pub fn with_context(
+        self,
+        context: impl Into<String>,
+    ) -> ContextError<Self> {
+        ContextError {
+            error: self,
+            context: context.into(),
+        }
     }
 }
 
-impl AsErrorCode for TokioError {
-    fn as_error_code(&self) -> ErrorCode {
-        ErrorCode::TokioError
+impl<T> From<T> for InfraError
+where
+    T: Into<InfraErrorEnum>,
+{
+    fn from(value: T) -> Self {
+        Self {
+            inner: Box::new(value.into()),
+        }
     }
 }
 
-impl ApiErrorTrait for TokioError {
-    fn before_into_api_error(&self) {
-        tracing::error!("Tokio error: {:#?}", self);
+impl IntoApiResponse for InfraError {
+    fn into_api_response(self) -> axum::response::Response {
+        let pre = self.inner.prefix();
+        tracing::error!("{pre}: {}", self.inner);
+
+        default_into_api_response_impl(self)
     }
 }
 
-impl IntoResponse for TokioError {
-    fn into_response(self) -> axum::response::Response {
-        self.into_api_response()
+pub struct ContextError<E> {
+    error: E,
+    context: String,
+}
+
+impl IntoApiResponse for ContextError<InfraError> {
+    fn into_api_response(self) -> axum::response::Response {
+        let pre = self.error.inner.prefix();
+        let context = self.context;
+        tracing::error!("{pre}: {context}\n Cause by: {}", self.error);
+        default_into_api_response_impl(self.error)
     }
 }
 
@@ -136,7 +175,7 @@ mod test {
     #[tokio::test]
     #[traced_test]
     async fn test_nested_err_print() {
-        let err = ServiceError::Database(DbErrWrapper(DbErr::Custom(
+        let err = ServiceError::Infra(InfraError::from(DbErr::Custom(
             "foobar".to_string(),
         )));
 
@@ -144,22 +183,23 @@ mod test {
 
         assert!(logs_contain("Database error: Custom"));
 
-        let err = ServiceError::Tokio(TokioError::TaskJoin(
-            async {
-                let handle = tokio::spawn(async {
-                    panic!("fake panic");
-                });
+        // cranelift dosen't support catch_unwind yet
+        // let err = ServiceError::Tokio(TokioError::TaskJoin(
+        //     async {
+        //         let handle = tokio::spawn(async {
+        //             panic!("fake panic");
+        //         });
 
-                match handle.await {
-                    Err(e) => e,
-                    _ => unreachable!(),
-                }
-            }
-            .await,
-        ));
+        //         match handle.await {
+        //             Err(e) => e,
+        //             _ => unreachable!(),
+        //         }
+        //     }
+        //     .await,
+        // ));
 
-        let _ = err.into_response();
+        // let _ = err.into_response();
 
-        assert!(logs_contain("Tokio error: TaskJoin"));
+        // assert!(logs_contain("Tokio error: TaskJoin"));
     }
 }

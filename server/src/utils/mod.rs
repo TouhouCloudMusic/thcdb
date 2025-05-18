@@ -1,5 +1,5 @@
 pub mod orm;
-
+pub mod validation;
 pub mod openapi {
 
     #[derive(Debug)]
@@ -21,51 +21,5 @@ pub mod openapi {
         }
     }
 }
-
-pub trait MapInto<Target> {
-    fn map_into(self) -> Target;
-}
-
-impl<T, U, E, F> MapInto<Result<U, F>> for Result<T, E>
-where
-    T: Into<U>,
-    E: Into<F>,
-{
-    fn map_into(self) -> Result<U, F> {
-        match self {
-            Ok(t) => Ok(t.into()),
-            Err(e) => Err(e.into()),
-        }
-    }
-}
-
-impl<T, U> MapInto<Vec<U>> for Vec<T>
-where
-    T: Into<U>,
-{
-    fn map_into(self) -> Vec<U> {
-        self.into_iter().map(Into::into).collect()
-    }
-}
-
-pub trait Pipe<O>
-where
-    Self: Sized,
-{
-    fn pipe(self, f: impl FnOnce(Self) -> O) -> O {
-        f(self)
-    }
-}
-
-impl<T, O> Pipe<O> for T {}
-
-pub trait Reverse<O> {
-    #[doc(alias = "reverse")]
-    fn rev(self) -> O;
-}
-
-impl<A, B> Reverse<(B, A)> for (A, B) {
-    fn rev(self) -> (B, A) {
-        (self.1, self.0)
-    }
-}
+pub mod traits;
+pub use traits::*;
