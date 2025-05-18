@@ -14,13 +14,9 @@ To contribute to Touhou Cloud DB, make sure you have the following installed:
 
 - **Mold**: If you want faster compilation, you can install [Mold](https://github.com/rui314/mold) and uncomment the clang argument in [.cargo/config.toml](./.cargo/config.toml)
 
-- **Sea Orm CLI**: A tool for generate entities from database. Run `cargo install sea-orm-cli` to install it.
+- **Sea Orm CLI**: A tool for generating entities from database. Run `cargo install sea-orm-cli` to install it.
 
-``` plaintext
-The above is for development only.
-```
-
-- **Postgresql**: We use [PostgreSQL](https://www.postgresql.org/) for our database. Please refer to PostgreSQL's installation guide to set it up.
+- **PostgreSQL**: We use [PostgreSQL](https://www.postgresql.org/) for our database. Please refer to PostgreSQL's installation guide to set it up.
 
 - **Redis**: We use [Redis](https://redis.io/) for our cache. Please refer to Redis's installation guide to set it up.
 
