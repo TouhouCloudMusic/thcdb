@@ -1,3 +1,4 @@
 {
-  "rust-analyzer.cargo.extraArgs": ["--profile", "ra"]
+  "rust-analyzer.cargo.extraArgs": ["--profile", "ra"],
+  "rust-analyzer.cargo.targetDir": true
 }

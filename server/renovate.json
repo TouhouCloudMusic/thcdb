@@ -1,8 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    ":semanticCommitsDisabled"
-  ],
-  "baseBranches": ["dev"]
+  "extends": ["config:recommended", ":semanticCommitsDisabled"],
+  "baseBranches": ["main"]
 }
