@@ -26,13 +26,13 @@ jobs:
       - uses: mozilla-actions/sccache-action@v0.0.9
 
       - name: Check format
-        run: cargo fmt --check --verbose
+        run: cargo fmt --check
 
-      - name: Clippy
-        run: cargo clippy --verbose --profile fast
+      - name: Clippywc
+        run: cargo clippy --quiet
 
       - name: Build test
-        run: cargo test --no-run --profile fast
+        run: cargo test --no-run
 
       - name: Run test
-        run: cargo test --verbose --profile fast
+        run: cargo test --quiet
