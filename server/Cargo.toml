@@ -1,7 +1,3 @@
-cargo-features = [
-    "codegen-backend",
-]
-
 [workspace]
 members = [
     ".",
@@ -180,10 +176,9 @@ rusty-hook = "0.11.2"
 
 # https://doc.rust-lang.org/cargo/reference/profiles.html
 [profile.dev]
-codegen-backend = "cranelift"
-debug           = 0
-opt-level       = 1
-strip           = "debuginfo"
+debug     = 0
+opt-level = 1
+strip     = "debuginfo"
 # If you get incremental compilation ICE, disable it
 # incremental     = false
 
@@ -191,8 +186,8 @@ strip           = "debuginfo"
 opt-level = 3
 
 [profile.ra]
-codegen-backend = "llvm"
-inherits        = "dev"
+incremental = false
+inherits    = "dev"
 
 [profile.release]
 codegen-units   = 1
