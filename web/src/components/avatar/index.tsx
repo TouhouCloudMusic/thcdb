@@ -1,18 +1,12 @@
-import {
-	createSignal,
-	type JSX,
-	type Resource,
-	Show,
-	splitProps,
-	Suspense,
-} from "solid-js"
+import { createSignal, type JSX, Show, splitProps, Suspense } from "solid-js"
 import { twMerge } from "tailwind-merge"
-import { type UserProfile } from "~/api/user"
+
+import type { UserProfile } from "~/api/user"
 import { imgUrl } from "~/utils/adapter/static_file"
 
 export interface Props
 	extends Omit<JSX.ImgHTMLAttributes<HTMLImageElement>, "src" | "onError"> {
-	user?: Resource<UserProfile>
+	user?: UserProfile
 }
 
 const enum ImageLoadingState {
@@ -53,7 +47,7 @@ export function Avatar(props: Props) {
 				{(user) => (
 					<img
 						{...otherProps}
-						src={imgUrl(user()()?.avatar_url)}
+						src={imgUrl(user().avatar_url)}
 						alt={props.alt ?? "avatar"}
 						onLoad={() => {
 							setImageState(ImageLoadingState.Loaded)

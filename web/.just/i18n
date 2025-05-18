@@ -1,0 +1,8 @@
+default: extract compile
+
+extract:
+	bunx lingui extract
+compile:
+	bunx lingui compile --typescript
+clean:
+	bunx lingui extract --clean

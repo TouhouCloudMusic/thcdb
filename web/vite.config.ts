@@ -1,7 +1,9 @@
+import { lingui as linguiSolidPlugin } from "@lingui-solid/vite-plugin"
 import tailwindcss from "@tailwindcss/vite"
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite"
 import { defineConfig } from "vite"
 import { loadEnv } from "vite"
+import babelMacrosPlugin from "vite-plugin-babel-macros"
 import solidPlugin from "vite-plugin-solid"
 import tsconfigPaths from "vite-tsconfig-paths"
 
@@ -15,9 +17,12 @@ export default defineConfig(({ mode }) => {
 	}
 	return {
 		plugins: [
+			babelMacrosPlugin(),
+			linguiSolidPlugin(),
 			solidPlugin(),
-			tailwindcss(),
 			TanStackRouterVite({ target: "solid", autoCodeSplitting: true }),
+			tailwindcss(),
+
 			tsconfigPaths(),
 			generatePlugin(SERVER_URL),
 		],

@@ -18,6 +18,7 @@
 	"dependencies": {
 		"@floating-ui/dom": "^1.6.13",
 		"@kobalte/core": "^0.13.9",
+		"@lingui-solid/solid": "^5.1.4",
 		"@modular-forms/solid": "^0.25.1",
 		"@shikijs/markdown-it": "^3.3.0",
 		"@shikijs/transformers": "^3.3.0",
@@ -52,6 +53,13 @@
 		"@chromatic-com/storybook": "^3.2.6",
 		"@eslint/js": "^9.21.0",
 		"@faker-js/faker": "^9.5.1",
+		"@lingui-solid/babel-plugin-extract-messages": "^5.1.3",
+		"@lingui-solid/babel-plugin-lingui-macro": "^5.1.3",
+		"@lingui-solid/vite-plugin": "^5.1.3",
+		"@lingui/cli": "^5.3.1",
+		"@lingui/conf": "^5.3.1",
+		"@lingui/core": "^5.3.1",
+		"@lingui/macro": "^5.3.1",
 		"@solidjs/testing-library": "^0.8.10",
 		"@storybook/addon-essentials": "^8.6.12",
 		"@storybook/addon-interactions": "^8.6.12",
@@ -93,6 +101,7 @@
 		"typescript": "^5.8.3",
 		"typescript-eslint": "^8.31.0",
 		"vite": "^6.3.3",
+		"vite-plugin-babel-macros": "^1.0.6",
 		"vite-plugin-solid": "^2.11.6",
 		"vite-tsconfig-paths": "^5.1.4"
 	},
@@ -102,6 +111,7 @@
 		]
 	},
 	"trustedDependencies": [
-		"@tailwindcss/oxide"
+		"@tailwindcss/oxide",
+		"esbuild"
 	]
 }

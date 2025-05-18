@@ -3,6 +3,7 @@
 	"env": {
 		"browser": true
 	},
+	"ignorePatterns": ["src/locale/**"],
 	"categories": {
 		"correctness": "error",
 		"suspicious": "warn",
@@ -13,6 +14,7 @@
 		"nursery": "warn"
 	},
 	"rules": {
+		"eqeqeq": "off",
 		"no-async-await": "off",
 		"no-duplicate-imports": "off",
 		"no-ternary": "off",
@@ -22,12 +24,12 @@
 			"error",
 			{ "ignore": [0, 1], "ignoreArrayIndexes": true }
 		],
+		"no-void": "off",
 		"sort-keys": "off",
 
 		"oxc/no-const-enum": "off",
 		"oxc/no-optional-chaining": "off",
 
-		"eslint/eqeqeq": ["warn", "smart"],
 		"eslint/func-style": "off",
 		"eslint/max-depth": ["warn", 4],
 		"eslint/max-lines-per-function": [
@@ -48,6 +50,7 @@
 		"typescript/consistent-type-definitions": "off",
 		"typescript/explicit-function-return-type": "off",
 		"typescript/consistent-indexed-object-style": "warn",
+		"typescript/prefer-enum-initializers": "off",
 
 		"import/exports-last": "off",
 		"import/max-dependencies": "off",
@@ -56,7 +59,18 @@
 
 		"unicorn/no-anonymous-default-export": "off",
 		"unicorn/no-empty-file": "off",
-		"unicorn/no-null": "off"
+		"unicorn/no-null": "off",
+		"unicorn/filename-case": [
+			"warn",
+			{
+				"cases": {
+					"snakeCase": true,
+					"pascalCase": true
+				}
+			}
+		],
+
+		"promise/prefer-await-to-then": "off"
 	},
 	"plugins": [
 		"import",

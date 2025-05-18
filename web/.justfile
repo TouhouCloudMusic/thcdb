@@ -1,3 +1,8 @@
+mod i18n '.just/i18n'
+
+default:
+	@just --list
+
 fmt:
 	npx prettier --write .
 

@@ -1,8 +1,10 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
+import { useLingui, Trans } from "@lingui-solid/solid/macro"
 import { Link } from "@tanstack/solid-router"
 import { createMemo, createResource, Match, Show, Switch } from "solid-js"
 import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
-import { type UserProfile } from "~/api/user"
+
+import type { UserProfile } from "~/api/user"
 import { Button } from "~/components/button"
 import { NotificationState, useUserCtx } from "~/state/user"
 import { createClickOutside } from "~/utils/solid/createClickOutside.ts"
@@ -56,14 +58,13 @@ export function Header() {
 function AuthenticatedContent(props: { user: UserProfile }) {
 	let [show, setShow, setRef] = createClickOutside()
 	let close = () => setShow(false)
-	let [data] = createResource(() => Promise.resolve(props.user))
 	return (
 		<>
 			<div class="grid h-8 w-8 place-items-center">
 				<NotificationButton />
 			</div>
 			<button onClick={() => setShow(!show())}>
-				<Avatar user={data} />
+				<Avatar user={props.user} />
 			</button>
 			<Dialog.Root
 				open={show()}
@@ -119,6 +120,7 @@ function NotificationButton() {
 function UnauthenticatedButtons() {
 	// @tw
 	const BTN_CLASS = "w-18 max-h-full text-sm"
+
 	return (
 		<>
 			<Button
@@ -132,7 +134,7 @@ function UnauthenticatedButtons() {
 						type: "sign_in",
 					}}
 				>
-					Sign In
+					<Trans>Sign In</Trans>
 				</Link>
 			</Button>
 			<Button
@@ -146,7 +148,7 @@ function UnauthenticatedButtons() {
 						type: "sign_up",
 					}}
 				>
-					Sign Up
+					<Trans>Sign Up</Trans>
 				</Link>
 			</Button>
 		</>

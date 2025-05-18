@@ -1,66 +1,85 @@
+import { I18nProvider as LinguiProvier } from "@lingui-solid/solid"
+import { i18n } from "@lingui/core"
 import { type } from "arktype"
-import type { ParentProps, Signal } from "solid-js"
-import { createContext, createSignal, useTransition } from "solid-js"
-import type { Context, Transition } from "solid-js/types/reactive/signal.d.ts"
-import { useContextUnsave } from "~/utils/context"
+import type { ParentProps, Accessor, Setter } from "solid-js"
+import {
+	createContext,
+	createEffect,
+	createSignal,
+	on,
+	useTransition,
+} from "solid-js"
+import type { Transition } from "solid-js/types/reactive/signal.d.ts"
+
+import { messages as enMsg } from "~/locale/en/messages"
+import { messages as zhMsg } from "~/locale/zh-Hans/messages"
+import { assertContext } from "~/utils/context"
 
 export const AppLocale = type(`"en" | "zh-Hans"`)
 export type AppLocale = typeof AppLocale.infer
-export const I18nContext =
-	createContext<I18nStore>() as unknown as Context<I18nStore>
 
+const I18nContext = createContext<I18nStore>()
 export function I18NProvider(props: ParentProps) {
 	return (
-		<>
-			<I18nContext.Provider value={I18nStore.default()}>
-				{props.children}
-			</I18nContext.Provider>
-		</>
+		<I18nContext.Provider value={I18nStore.new("en")}>
+			<LinguiProvier i18n={i18n}> {props.children}</LinguiProvier>
+		</I18nContext.Provider>
 	)
 }
 
 export class I18nStore {
-	private locale_signal: Signal<AppLocale>
-	private transition: Transition
+	#locale: Accessor<AppLocale>
+	#setLocale: Setter<AppLocale>
+	inTransition: Transition[0]
+	private startTransition: Transition[1]
 
-	constructor(locale: AppLocale) {
-		this.locale_signal = createSignal<AppLocale>(locale)
-		this.transition = useTransition()
+	constructor(init: AppLocale) {
+		const [locale, setLocale] = createSignal<AppLocale>(init)
+		const [inTransition, startTransition] = useTransition()
 
-		this.effect()
+		this.#locale = locale
+		this.#setLocale = setLocale
+		this.inTransition = inTransition
+		this.startTransition = startTransition
+
+		createEffect(
+			on(locale, (locale) => {
+				setDocumentLang(locale)
+				switch (locale) {
+					case "en":
+						i18n.load(locale, enMsg)
+						break
+					case "zh-Hans":
+						i18n.load(locale, zhMsg)
+						break
+					default:
+					/** unreachable */
+				}
+
+				i18n.activate(locale)
+			}),
+		)
+	}
+
+	public get locale() {
+		return this.#locale()
 	}
 
 	public static new(locale: AppLocale) {
 		return new I18nStore(locale)
 	}
 
-	public static default() {
-		return new I18nStore("en")
-	}
-
-	public get locale() {
-		return this.locale_signal[0]
-	}
-
 	public setLocale(newLocale: AppLocale) {
-		if (this.locale() === newLocale) return
-		void this.transition[1](() => {
-			this.locale_signal[1](newLocale)
-			this.effect()
-		})
-	}
-
-	public duringTransition() {
-		return this.transition[0]()
-	}
-
-	effect() {
-		setDocumentLang(this.locale())
+		if (!(this.#locale() === newLocale)) {
+			void this.startTransition(() => {
+				this.#setLocale(newLocale)
+			})
+		}
 	}
 }
 
 export function useI18N() {
-	return useContextUnsave(I18nContext)
+	return assertContext(I18nContext)
 }
 
 function setDocumentLang(locale: AppLocale) {
