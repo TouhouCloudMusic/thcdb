@@ -2,7 +2,7 @@ import extractor from "@lingui-solid/babel-plugin-extract-messages/extractor"
 import { defineConfig } from "@lingui/cli"
 
 // oxlint-disable-next-line no-default-export
-export default {
+export default defineConfig({
 	sourceLocale: "en",
 	locales: ["zh-Hans", "en"],
 	catalogs: [
@@ -16,4 +16,4 @@ export default {
 		useLingui: ["@lingui-solid/solid", "useLingui"],
 	},
 	extractors: [extractor],
-}
+})

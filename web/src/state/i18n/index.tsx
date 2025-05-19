@@ -11,30 +11,31 @@ import {
 } from "solid-js"
 import type { Transition } from "solid-js/types/reactive/signal.d.ts"
 
-import { messages as enMsg } from "~/locale/en/messages"
-import { messages as zhMsg } from "~/locale/zh-Hans/messages"
 import { assertContext } from "~/utils/context"
 
-export const AppLocale = type(`"en" | "zh-Hans"`)
-export type AppLocale = typeof AppLocale.infer
+import { initUserLang } from "./init"
+
+export const AppLang = type(`"en" | "zh-Hans"`)
+export type AppLang = typeof AppLang.infer
 
 const I18nContext = createContext<I18nStore>()
 export function I18NProvider(props: ParentProps) {
+	const lang = initUserLang()
 	return (
-		<I18nContext.Provider value={I18nStore.new("en")}>
+		<I18nContext.Provider value={I18nStore.new(lang)}>
 			<LinguiProvier i18n={i18n}> {props.children}</LinguiProvier>
 		</I18nContext.Provider>
 	)
 }
 
 export class I18nStore {
-	#locale: Accessor<AppLocale>
-	#setLocale: Setter<AppLocale>
+	#locale: Accessor<AppLang>
+	#setLocale: Setter<AppLang>
 	inTransition: Transition[0]
 	private startTransition: Transition[1]
 
-	constructor(init: AppLocale) {
-		const [locale, setLocale] = createSignal<AppLocale>(init)
+	constructor(init: AppLang) {
+		const [locale, setLocale] = createSignal<AppLang>(init)
 		const [inTransition, startTransition] = useTransition()
 
 		this.#locale = locale
@@ -47,15 +48,21 @@ export class I18nStore {
 				setDocumentLang(locale)
 				switch (locale) {
 					case "en":
-						i18n.load(locale, enMsg)
+						void import("../../locale/en/messages.ts").then(({ messages }) => {
+							i18n.load(locale, messages)
+						})
+
 						break
 					case "zh-Hans":
-						i18n.load(locale, zhMsg)
+						void import(`../../locale/zh-Hans/messages.ts`).then(
+							({ messages }) => {
+								i18n.load(locale, messages)
+							},
+						)
 						break
 					default:
 					/** unreachable */
 				}
-
 				i18n.activate(locale)
 			}),
 		)
@@ -65,11 +72,11 @@ export class I18nStore {
 		return this.#locale()
 	}
 
-	public static new(locale: AppLocale) {
-		return new I18nStore(locale)
+	public static new(lang: AppLang) {
+		return new I18nStore(lang)
 	}
 
-	public setLocale(newLocale: AppLocale) {
+	public setLocale(newLocale: AppLang) {
 		if (!(this.#locale() === newLocale)) {
 			void this.startTransition(() => {
 				this.#setLocale(newLocale)
@@ -82,6 +89,6 @@ export function useI18N() {
 	return assertContext(I18nContext)
 }
 
-function setDocumentLang(locale: AppLocale) {
+function setDocumentLang(locale: AppLang) {
 	document.documentElement.lang = locale
 }

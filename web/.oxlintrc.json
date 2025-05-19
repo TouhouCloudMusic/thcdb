@@ -25,6 +25,8 @@
 			{ "ignore": [0, 1], "ignoreArrayIndexes": true }
 		],
 		"no-void": "off",
+		"no-case-declarations": "off",
+		"no-else-return": "off",
 		"sort-keys": "off",
 
 		"oxc/no-const-enum": "off",
@@ -69,6 +71,7 @@
 				}
 			}
 		],
+		"unicorn/switch-case-braces": "off",
 
 		"promise/prefer-await-to-then": "off"
 	},
