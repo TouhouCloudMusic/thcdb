@@ -3,7 +3,8 @@ import { Title } from "@solidjs/meta"
 import { createRootRoute, Outlet } from "@tanstack/solid-router"
 import { TanStackRouterDevtools } from "@tanstack/solid-router-devtools"
 import { ErrorBoundary, type ParentProps } from "solid-js"
-import { Header } from "~/components/header"
+
+import { Header } from "~/components/Header"
 import ErrorPage from "~/route/500.tsx"
 import { NotFound } from "~/views/NotFound"
 

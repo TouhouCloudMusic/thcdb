@@ -13,10 +13,62 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/components/header/index.tsx:137
-#~ msgid "Sign In"
-#~ msgstr "Sign In"
+#: src/components/Header/LeftSidebar.tsx:44
+msgid "Artist"
+msgstr "Artist"
 
-#: src/components/header/index.tsx:151
-#~ msgid "Sign Up"
-#~ msgstr "Sign Up"
+#: src/components/Header/LeftSidebar.tsx:32
+msgid "Chart"
+msgstr "Chart"
+
+#: src/components/Header/LeftSidebar.tsx:60
+msgid "Discover"
+msgstr "Discover"
+
+#: src/components/Header/LeftSidebar.tsx:48
+msgid "Event"
+msgstr "Event"
+
+#: src/views/auth/component/AuthForm.tsx:72
+msgid "Password"
+msgstr "Password"
+
+#: src/components/Header/LeftSidebar.tsx:28
+msgid "Recommandation"
+msgstr "Recommandation"
+
+#: src/components/Header/LeftSidebar.tsx:40
+msgid "Release"
+msgstr "Release"
+
+#: src/views/auth/component/AuthForm.tsx:86
+msgid "Repeated Password"
+msgstr "Repeated Password"
+
+#: src/views/auth/component/AuthForm.tsx:36
+#: src/views/auth/component/AuthForm.tsx:103
+#: src/components/Header/index.tsx:153
+msgid "Sign In"
+msgstr "Sign In"
+
+#: src/views/auth/component/AuthForm.tsx:44
+#: src/views/auth/component/AuthForm.tsx:103
+#: src/components/Header/index.tsx:161
+msgid "Sign Up"
+msgstr "Sign Up"
+
+#: src/components/Header/LeftSidebar.tsx:36
+msgid "Song"
+msgstr "Song"
+
+#: src/components/Header/LeftSidebar.tsx:52
+msgid "Tag"
+msgstr "Tag"
+
+#: src/App.tsx:31
+msgid "Touhou Cloud DB"
+msgstr "Touhou Cloud DB"
+
+#: src/App.tsx:35
+msgid "Touhou Cloud DB is an open doujin music database"
+msgstr "Touhou Cloud DB is an open doujin music database"

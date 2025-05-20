@@ -11,9 +11,10 @@ import {
 	PersonIcon,
 	ReaderIcon,
 } from "solid-radix-icons"
+
+import { ListItem, Sidebar } from "~/components/Sidebar"
 import { useUserCtx } from "~/state/user"
 
-import { ListItem, Sidebar } from "."
 import { Avatar } from "../avatar"
 import { Button } from "../button"
 import { Divider } from "../divider"
@@ -25,7 +26,7 @@ export type Props = {
 
 export function RightSidebar(props: Props) {
 	const userCtx = useUserCtx()
-	const [resource] = createResource(() => userCtx.user!)
+
 	return (
 		<>
 			<Sidebar
@@ -33,7 +34,7 @@ export function RightSidebar(props: Props) {
 				class="relative right-0 flex h-full flex-col gap-2 p-3"
 			>
 				<div class="flex pl-1">
-					<Avatar user={resource} />
+					<Avatar user={userCtx.user} />
 					<div class="mx-2 text-sm font-medium">{userCtx.user?.name}</div>
 					<Button
 						variant="Tertiary"

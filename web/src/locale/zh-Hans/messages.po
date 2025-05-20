@@ -13,10 +13,62 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/components/header/index.tsx:137
-#~ msgid "Sign In"
-#~ msgstr "登录"
+#: src/components/Header/LeftSidebar.tsx:44
+msgid "Artist"
+msgstr ""
 
-#: src/components/header/index.tsx:151
-#~ msgid "Sign Up"
-#~ msgstr "注册"
+#: src/components/Header/LeftSidebar.tsx:32
+msgid "Chart"
+msgstr ""
+
+#: src/components/Header/LeftSidebar.tsx:60
+msgid "Discover"
+msgstr ""
+
+#: src/components/Header/LeftSidebar.tsx:48
+msgid "Event"
+msgstr ""
+
+#: src/views/auth/component/AuthForm.tsx:72
+msgid "Password"
+msgstr ""
+
+#: src/components/Header/LeftSidebar.tsx:28
+msgid "Recommandation"
+msgstr ""
+
+#: src/components/Header/LeftSidebar.tsx:40
+msgid "Release"
+msgstr ""
+
+#: src/views/auth/component/AuthForm.tsx:86
+msgid "Repeated Password"
+msgstr ""
+
+#: src/views/auth/component/AuthForm.tsx:36
+#: src/views/auth/component/AuthForm.tsx:103
+#: src/components/Header/index.tsx:153
+msgid "Sign In"
+msgstr "登录"
+
+#: src/views/auth/component/AuthForm.tsx:44
+#: src/views/auth/component/AuthForm.tsx:103
+#: src/components/Header/index.tsx:161
+msgid "Sign Up"
+msgstr "注册"
+
+#: src/components/Header/LeftSidebar.tsx:36
+msgid "Song"
+msgstr ""
+
+#: src/components/Header/LeftSidebar.tsx:52
+msgid "Tag"
+msgstr ""
+
+#: src/App.tsx:31
+msgid "Touhou Cloud DB"
+msgstr "东方同音鉴"
+
+#: src/App.tsx:35
+msgid "Touhou Cloud DB is an open doujin music database"
+msgstr "东方同音鉴是一个开放的同人音乐数据库"

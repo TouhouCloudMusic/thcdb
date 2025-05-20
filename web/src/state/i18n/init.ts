@@ -1,11 +1,11 @@
-import { AppLang } from "."
+import { AppLocale } from "."
 
-const DEFAULT_LANG: AppLang = "en"
+const DEFAULT_LANG: AppLocale = "en"
 const STORAGE_KEY = "userLang"
 
-export function initUserLang(): AppLang {
-	const saved = localStorage.getItem(STORAGE_KEY) as AppLang | null
-	if (AppLang.allows(saved)) {
+export function initUserLang(): AppLocale {
+	const saved = localStorage.getItem(STORAGE_KEY) as AppLocale | null
+	if (AppLocale.allows(saved)) {
 		return saved
 	}
 

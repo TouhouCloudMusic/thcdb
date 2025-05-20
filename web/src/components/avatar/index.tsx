@@ -4,9 +4,12 @@ import { twMerge } from "tailwind-merge"
 import type { UserProfile } from "~/api/user"
 import { imgUrl } from "~/utils/adapter/static_file"
 
+// 默认头像路径
+const DEFAULT_AVATAR = "/Admin.jpg"
+
 export interface Props
 	extends Omit<JSX.ImgHTMLAttributes<HTMLImageElement>, "src" | "onError"> {
-	user?: UserProfile
+	user?: UserProfile | undefined
 }
 
 const enum ImageLoadingState {
@@ -34,14 +37,12 @@ export function Avatar(props: Props) {
 			<Show
 				when={props.user}
 				fallback={
-					<div
-						class={twMerge(
-							"flex size-8 items-center justify-center rounded-full bg-slate-200",
-							props.class,
-						)}
-					>
-						<span class="text-slate-500">N/A</span>
-					</div>
+					<img
+						{...otherProps}
+						src={DEFAULT_AVATAR}
+						alt="默认头像"
+						class={twMerge("size-8 rounded-full object-cover", props.class)}
+					/>
 				}
 			>
 				{(user) => (

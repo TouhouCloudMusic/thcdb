@@ -1,7 +1,7 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
-import { useLingui, Trans } from "@lingui-solid/solid/macro"
+import { useLingui } from "@lingui-solid/solid/macro"
 import { Link } from "@tanstack/solid-router"
-import { createMemo, createResource, Match, Show, Switch } from "solid-js"
+import { createMemo, Match, Show, Switch } from "solid-js"
 import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
 
 import type { UserProfile } from "~/api/user"
@@ -10,39 +10,54 @@ import { NotificationState, useUserCtx } from "~/state/user"
 import { createClickOutside } from "~/utils/solid/createClickOutside.ts"
 
 import { Avatar } from "../avatar/index.tsx"
-import { Dialog } from "../dialog"
+import { Dialog } from "../dialog/index.ts"
+import { Divider } from "../divider"
 import {
 	BellAlertIcon,
 	BellIcon,
 	BellSlashIcon,
 } from "../icons/heroicons/24/outline.tsx"
-import { Input } from "../input"
-import { RightSidebar } from "../sidebar/right"
+import { LeftSidebar } from "./LeftSidebar"
+import { RightSidebar } from "./RightSidebar"
 
-const HEADER_BTN_CLASS = "size-6 p-1 m-auto"
+const HEADER_BTN_CLASS = "size-fit p-1 m-auto"
 
 export function Header() {
-	const Divider = () => <span class="ml-3 h-5 w-[0.5px] bg-slate-400"></span>
 	return (
 		<header class="box-content content-center items-center border-b-1 border-slate-300 bg-primary px-4 py-2">
 			<div class="my-auto flex h-8 items-center justify-between">
 				{/* Left */}
-				<div class="flex items-center">
-					<Button
-						variant="Tertiary"
-						class={HEADER_BTN_CLASS}
-					>
-						<Link to="/">
-							<HamburgerMenuIcon class={"m-auto size-4"} />
-						</Link>
-					</Button>
-					<Divider />
+				<div class="flex items-center gap-3">
+					<Dialog.Root>
+						<K_Dialog.Trigger
+							variant="Tertiary"
+							class={HEADER_BTN_CLASS}
+							as={Button}
+						>
+							<HamburgerMenuIcon class={"m-auto size-5 text-slate-400"} />
+						</K_Dialog.Trigger>
+						<Dialog.Portal>
+							<Dialog.Overlay />
+							<K_Dialog.Content class="fixed inset-0 z-50 w-fit">
+								<LeftSidebar />
+							</K_Dialog.Content>
+						</Dialog.Portal>
+					</Dialog.Root>
+
+					<Divider
+						vertical
+						class="h-6"
+					/>
 				</div>
 				<SearchBar />
 
 				{/* Right	*/}
-				<div class="flex shrink place-content-center items-center gap-3">
-					<Divider />
+
+				<div class="flex h-full shrink place-content-center items-center gap-3">
+					<Divider
+						vertical
+						class="h-6"
+					/>
 					<Show
 						when={useUserCtx().user}
 						fallback={<UnauthenticatedButtons />}
@@ -86,9 +101,9 @@ function AuthenticatedContent(props: { user: UserProfile }) {
 
 function SearchBar() {
 	return (
-		<div class="grid items-center">
-			<Input
-				class={`mr-auto h-7 w-96 rounded-xs border-none bg-slate-100 pl-2 duration-200`}
+		<div class="ml-36 grid w-fit items-center">
+			<input
+				class={`mr-auto h-7 w-96 rounded-xs bg-slate-100 pl-7 outline-transparent duration-200 hover:outline hover:outline-reimu-600 focus:bg-white focus:outline-[1.5px] focus:outline-reimu-600`}
 			/>
 			<MagnifyingGlassIcon class={"absolute col-start-1 ml-2 size-4"} />
 		</div>
@@ -119,14 +134,15 @@ function NotificationButton() {
 
 function UnauthenticatedButtons() {
 	// @tw
-	const BTN_CLASS = "w-18 max-h-full text-sm"
+	const BTN_CLASS = "py-1 px-3 text-sm"
+	const { t } = useLingui()
 
 	return (
-		<>
+		<div class="grid grid-cols-2 gap-3">
 			<Button
 				variant="Tertiary"
-				size="Sm"
 				class={BTN_CLASS.concat(" ", "text-slate-900")}
+				type="button"
 			>
 				<Link
 					to="/auth"
@@ -134,23 +150,16 @@ function UnauthenticatedButtons() {
 						type: "sign_in",
 					}}
 				>
-					<Trans>Sign In</Trans>
+					{t`Sign In`}
 				</Link>
 			</Button>
 			<Button
 				variant="Primary"
-				size="Sm"
 				class={BTN_CLASS}
+				type="button"
 			>
-				<Link
-					to="/auth"
-					search={{
-						type: "sign_up",
-					}}
-				>
-					<Trans>Sign Up</Trans>
-				</Link>
+				{t`Sign Up`}
 			</Button>
-		</>
+		</div>
 	)
 }

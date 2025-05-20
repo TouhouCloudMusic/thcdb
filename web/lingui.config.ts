@@ -8,7 +8,8 @@ export default defineConfig({
 	catalogs: [
 		{
 			path: "<rootDir>/src/locale/{locale}/messages",
-			include: ["src"],
+			include: ["<rootDir>/src"],
+			exclude: ["**/*.test.*", "**/*.stories.*", "src/assets"],
 		},
 	],
 	runtimeConfigModule: {

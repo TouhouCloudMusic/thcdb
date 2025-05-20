@@ -63,7 +63,7 @@
 		"unicorn/no-empty-file": "off",
 		"unicorn/no-null": "off",
 		"unicorn/filename-case": [
-			"warn",
+			"off",
 			{
 				"cases": {
 					"snakeCase": true,

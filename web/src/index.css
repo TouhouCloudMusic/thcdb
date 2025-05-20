@@ -91,8 +91,9 @@ body,
 
 		pre:has(code) {
 			@apply p-4;
+
 			code {
-				@apply text-sm break-all whitespace-pre-wrap;
+				@apply whitespace-pre-wrap break-all text-sm;
 				font-family: "Cascadia Next SC";
 			}
 		}
@@ -111,10 +112,23 @@ body,
 			*[align="left"] {
 				@apply text-left;
 			}
+
 			*[align="right"] {
 				@apply text-right;
 			}
 		}
+	}
+}
+
+@utility hide-scrollbar {
+	-ms-overflow-style: none;
+	/* IE and Edge */
+	scrollbar-width: none;
+	/* Firefox */
+
+	&::-webkit-scrollbar {
+		display: none;
+		/* Chrome, Safari and Opera */
 	}
 }
 
