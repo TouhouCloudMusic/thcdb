@@ -1,7 +1,9 @@
 use std::sync::LazyLock;
 
 use argon2::password_hash::rand_core::OsRng;
-use argon2::password_hash::{self, SaltString};
+use argon2::password_hash::{
+    SaltString, {self},
+};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -12,14 +14,13 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::api_response::{Error, IntoApiResponse};
 use crate::constant::{USER_NAME_REGEX_STR, USER_PASSWORD_REGEX_STR};
-use crate::error::InfraError;
-use crate::infrastructure::singleton::ARGON2_HASHER;
+use crate::infra::singleton::ARGON2_HASHER;
+use crate::presentation::api_response::{Error, IntoApiResponse};
 
 error_set! {
     #[derive(ApiError, From)]
-    #[disable(From(InfraError))]
+    #[disable(From(crate::infra::Error))]
     AuthnError = {
         #[api_error(
             status_code = StatusCode::UNAUTHORIZED,
@@ -27,7 +28,7 @@ error_set! {
         #[display("Incorrect username or password")]
         AuthenticationFailed,
         #[from(forward)]
-        Infra(InfraError),
+        Infra(crate::infra::Error),
     };
     #[derive(ApiError)]
     ValidateCredsError = {

@@ -9,8 +9,10 @@ use crate::domain::model::auth::{
     AuthCredential, AuthnError, ValidateCredsError,
 };
 use crate::domain::repository::{Connection, Transaction, TransactionManager};
-use crate::domain::user::{self, TxRepo, User};
-use crate::error::InfraError;
+use crate::domain::user::{
+    TxRepo, User, {self},
+};
+use crate::infra::error::Error;
 
 #[derive(Clone)]
 pub struct AuthService<R> {
@@ -26,7 +28,7 @@ pub enum SignUpError {
     UsernameAlreadyInUse,
     #[error(transparent)]
     #[from(forward)]
-    Internal(InfraError),
+    Infra(crate::infra::Error),
     #[api_error(
         into_response = self
     )]
@@ -46,7 +48,7 @@ pub enum SignInError {
     Authn(#[from] AuthnError),
     #[error(transparent)]
     #[from(forward)]
-    Internal(InfraError),
+    Infra(crate::infra::Error),
     #[error(transparent)]
     Validate(#[from] ValidateCredsError),
 }
@@ -88,7 +90,7 @@ pub enum AuthnBackendError {
     #[error(transparent)]
     SignIn(#[from] SignInError),
     #[error(transparent)]
-    Internal(#[from] InfraError),
+    Internal(#[from] Error),
 }
 
 pub trait AuthServiceTrait<R>: Send + Sync
@@ -111,14 +113,14 @@ impl<R> AuthService<R> {
 trait AuthServiceTraitBounds<R> = where
     R: TransactionManager + user::Repository,
     R::TransactionRepository: user::TxRepo,
-    InfraError:
+    Error:
         From<R::Error> + From<<R::TransactionRepository as Connection>::Error>;
 
 impl<R> AuthServiceTrait<R> for AuthService<R>
 where
     R: TransactionManager + user::Repository,
     R::TransactionRepository: user::TxRepo,
-    InfraError:
+    Error:
         From<R::Error> + From<<R::TransactionRepository as Connection>::Error>,
 {
     async fn sign_in(
@@ -191,6 +193,6 @@ where
         self.repo
             .find_by_id(*user_id)
             .await
-            .map_err(|e| InfraError::from(e).into())
+            .map_err(|e| Error::from(e).into())
     }
 }

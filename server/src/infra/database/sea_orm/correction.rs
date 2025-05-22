@@ -21,7 +21,7 @@ use crate::domain::release::TxRepo as _;
 use crate::domain::repository::Connection;
 use crate::domain::song::TxRepo as _;
 use crate::domain::tag::TxRepo as _;
-use crate::error::InfraError;
+use crate::infra::error::Error;
 
 impl<T> Repo for T
 where
@@ -142,7 +142,7 @@ impl TxRepo for SeaOrmTxRepo {
         correction_id: i32,
         CorrectionApprover(approver): CorrectionApprover,
         context: impl ApproveCorrectionContext,
-    ) -> Result<(), InfraError> {
+    ) -> Result<(), Error> {
         let correction = entity::correction::Entity::find_by_id(correction_id)
             .one(self.conn())
             .await?

@@ -8,7 +8,7 @@ use sea_orm::{
 use crate::domain::image;
 use crate::domain::image::{Image, ImageRef, NewImage};
 use crate::domain::repository::Connection;
-use crate::infrastructure::database::sea_orm::SeaOrmTxRepo;
+use crate::infra::database::sea_orm::SeaOrmTxRepo;
 use crate::utils::MapInto;
 
 impl<T> image::Repo for T

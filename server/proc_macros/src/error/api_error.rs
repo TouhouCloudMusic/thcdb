@@ -1,7 +1,7 @@
 use darling::{FromDeriveInput, FromField, FromVariant};
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{DeriveInput, Error, Expr, Ident, Path};
+use syn::{DeriveInput, Error, Expr, Ident, Path, parse_str};
 
 #[derive(Default, PartialEq, Debug, Clone)]
 enum CodeOpt {
@@ -105,6 +105,8 @@ struct ApiErrorVariantField {
 
 struct ApiErrorField {}
 
+static API_RESPONSE_MOD_PATH: &str = "crate::presentation::api_response";
+
 pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
     let receiver = ApiErrorReceiver::from_derive_input(&input)
         .map_err(|e| Error::new_spanned(&input, e.to_string()))?;
@@ -113,7 +115,7 @@ pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
         darling::ast::Data::Enum(ref variants) => {
             derive_enum_impl(&receiver, variants)?
         }
-        darling::ast::Data::Struct(_) => derive_struct_impl(&receiver),
+        darling::ast::Data::Struct(_) => derive_struct_impl(&receiver)?,
     };
 
     Ok(tokens)
@@ -244,8 +246,9 @@ fn derive_enum_impl(
         }
     }
 
+    let mod_path: TokenStream = parse_str(API_RESPONSE_MOD_PATH)?;
     Ok(quote! {
-        impl #impl_generics crate::api_response::AsStatusCode for #ident #ty_generics
+        impl #impl_generics #mod_path::ApiError for #ident #ty_generics
             #where_clause
         {
             fn as_status_code(&self) -> ::axum::http::StatusCode {
@@ -255,7 +258,7 @@ fn derive_enum_impl(
             }
 
             fn all_status_codes() -> impl Iterator<Item=::axum::http::StatusCode> {
-                use crate::api_response::AsStatusCode;
+                use #mod_path::ApiError;
                 std::iter::empty()
                     .chain([
                         #(#all_status_code_item),*
@@ -268,7 +271,7 @@ fn derive_enum_impl(
             #where_clause
         {
             fn into_response(self) -> ::axum::response::Response {
-                use crate::api_response::IntoApiResponse;
+                use #mod_path::IntoApiResponse;
                 match self {
                     #(#into_response_arms),*
                 }
@@ -277,7 +280,7 @@ fn derive_enum_impl(
     })
 }
 
-fn derive_struct_impl(receiver: &ApiErrorReceiver) -> TokenStream {
+fn derive_struct_impl(receiver: &ApiErrorReceiver) -> syn::Result<TokenStream> {
     let ident = &receiver.ident;
     let (impl_generics, ty_generics, where_clause) =
         receiver.generics.split_for_impl();
@@ -295,8 +298,7 @@ fn derive_struct_impl(receiver: &ApiErrorReceiver) -> TokenStream {
             if let CodeOpt::Specified(ref path) = receiver.status_code {
                 quote! { #path }
             } else {
-                return Error::new_spanned(ident, "No status_code specified")
-                    .to_compile_error();
+                Err(Error::new_spanned(ident, "No status_code specified"))?
             }
         }
     };
@@ -311,8 +313,7 @@ fn derive_struct_impl(receiver: &ApiErrorReceiver) -> TokenStream {
             if let CodeOpt::Specified(ref path) = receiver.status_code {
                 quote! { std::iter::once(#path) }
             } else {
-                return Error::new_spanned(ident, "No status_code specified")
-                    .to_compile_error();
+                Err(Error::new_spanned(ident, "No status_code specified"))?
             }
         }
     };
@@ -330,17 +331,17 @@ fn derive_struct_impl(receiver: &ApiErrorReceiver) -> TokenStream {
             {
                 quote! { self.into_api_response() }
             } else {
-                return Error::new_spanned(
+                Err(Error::new_spanned(
                     ident,
                     "No into_response specified or invalid syntax",
-                )
-                .to_compile_error();
+                ))?
             }
         }
     };
 
-    quote! {
-        impl #impl_generics crate::api_response::AsStatusCode for #ident #ty_generics #where_clause {
+    let mod_path: TokenStream = syn::parse_str(API_RESPONSE_MOD_PATH)?;
+    Ok(quote! {
+        impl #impl_generics #mod_path::ApiError for #ident #ty_generics #where_clause {
             fn as_status_code(&self) -> ::axum::http::StatusCode {
                 #status_code_impl
             }
@@ -351,9 +352,9 @@ fn derive_struct_impl(receiver: &ApiErrorReceiver) -> TokenStream {
 
         impl #impl_generics ::axum::response::IntoResponse for #ident #ty_generics #where_clause {
             fn into_response(self) -> ::axum::response::Response {
-                use crate::api_response::IntoApiResponse;
+                use #mod_path::IntoApiResponse;
                 #into_res_impl
             }
         }
-    }
+    })
 }

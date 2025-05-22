@@ -8,7 +8,7 @@ use sea_orm::{
 use crate::domain::release::model::{NewRelease, Release};
 use crate::domain::release::repo::{Filter, Repo, TxRepo};
 use crate::domain::repository::Connection;
-use crate::error::InfraError;
+use crate::infra::error::Error;
 
 mod impls;
 use impls::*;
@@ -19,10 +19,7 @@ where
     T: Connection<Error = DbErr>,
     T::Conn: ConnectionTrait,
 {
-    async fn find_one(
-        &self,
-        filter: Filter,
-    ) -> Result<Option<Release>, InfraError> {
+    async fn find_one(&self, filter: Filter) -> Result<Option<Release>, Error> {
         let condition = match filter {
             Filter::Id(id) => release::Column::Id.eq(id),
             Filter::Keyword(keyword) => {
@@ -36,10 +33,7 @@ where
             .next())
     }
 
-    async fn find_many(
-        &self,
-        filter: Filter,
-    ) -> Result<Vec<Release>, InfraError> {
+    async fn find_many(&self, filter: Filter) -> Result<Vec<Release>, Error> {
         let condition = match filter {
             Filter::Id(id) => release::Column::Id.eq(id),
             Filter::Keyword(keyword) => {
@@ -53,8 +47,8 @@ where
     }
 }
 
-impl TxRepo for crate::infrastructure::database::sea_orm::SeaOrmTxRepo {
-    async fn create(&self, data: &NewRelease) -> Result<i32, InfraError> {
+impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
+    async fn create(&self, data: &NewRelease) -> Result<i32, Error> {
         // Create the release model
         let release =
             release::ActiveModel::from(data).insert(self.conn()).await?;
@@ -85,10 +79,7 @@ impl TxRepo for crate::infrastructure::database::sea_orm::SeaOrmTxRepo {
         Ok(release.id)
     }
 
-    async fn create_history(
-        &self,
-        data: &NewRelease,
-    ) -> Result<i32, InfraError> {
+    async fn create_history(&self, data: &NewRelease) -> Result<i32, Error> {
         // Create the release history model
         let history = release_history::ActiveModel::from(data)
             .insert(self.conn())
@@ -132,7 +123,7 @@ impl TxRepo for crate::infrastructure::database::sea_orm::SeaOrmTxRepo {
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), InfraError> {
+    ) -> Result<(), Error> {
         // Retrieve the correction history ID
         let revision = entity::correction_revision::Entity::find()
             .filter(
@@ -143,7 +134,7 @@ impl TxRepo for crate::infrastructure::database::sea_orm::SeaOrmTxRepo {
             .one(self.conn())
             .await?
             .ok_or_else(|| {
-                InfraError::from(DbErr::Custom(
+                Error::from(DbErr::Custom(
                     "Correction revision not found".to_string(),
                 ))
             })?;
@@ -154,7 +145,7 @@ impl TxRepo for crate::infrastructure::database::sea_orm::SeaOrmTxRepo {
                 .one(self.conn())
                 .await?
                 .ok_or_else(|| {
-                    InfraError::from(DbErr::Custom(
+                    Error::from(DbErr::Custom(
                         "Release history not found".to_string(),
                     ))
                 })?;

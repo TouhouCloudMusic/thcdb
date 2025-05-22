@@ -16,8 +16,10 @@ use tower_governor::key_extractor::PeerIpKeyExtractor;
 use tower_http::cors::{Any, CorsLayer};
 use tower_sessions_redis_store::RedisStore;
 
-use super::state::{self, ArcAppState};
-use crate::infrastructure::singleton::APP_CONFIG;
+use super::state::{
+    ArcAppState, {self},
+};
+use crate::infra::singleton::APP_CONFIG;
 
 pub trait AxumLayerBounds = where
     Self: Layer<Route> + Clone + Send + Sync + 'static + Sized,

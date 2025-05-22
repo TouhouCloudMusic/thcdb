@@ -2,16 +2,17 @@ use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
 use crate::domain::correction::{
-    self, ApproveCorrectionContext, CorrectionEntity, CorrectionFilter,
-    NewCorrectionMeta, TxRepo,
+    ApproveCorrectionContext, CorrectionEntity, CorrectionFilter,
+    NewCorrectionMeta, TxRepo, {self},
 };
 use crate::domain::model::auth::{CorrectionApprover, UserRoleEnum};
 use crate::domain::repository::{Transaction, TransactionManager};
 use crate::domain::user::User;
-use crate::error::{InfraError, Unauthorized};
 
 mod model;
 pub use model::*;
+
+use super::error::Unauthorized;
 
 #[derive(
     Debug,
@@ -23,7 +24,7 @@ pub use model::*;
 )]
 pub enum Error {
     #[from(forward)]
-    Infra(InfraError),
+    Infra(crate::infra::Error),
     #[from]
     Unauthorized(Unauthorized),
 }
@@ -45,7 +46,7 @@ where
     pub async fn create<T: CorrectionEntity>(
         &self,
         meta: impl Into<NewCorrectionMeta<T>>,
-    ) -> Result<(), InfraError> {
+    ) -> Result<(), Error> {
         self.repo.create(meta.into()).await?;
         Ok(())
     }

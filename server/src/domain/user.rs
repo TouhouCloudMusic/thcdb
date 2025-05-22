@@ -4,7 +4,7 @@ use utoipa::ToSchema;
 use super::model::auth::{AuthCredential, UserRole, UserRoleEnum};
 use super::model::markdown::Markdown;
 use super::repository::{Connection, Transaction};
-use crate::error::InfraError;
+use crate::infra::error::Error;
 
 #[serde_with::apply(
     Vec    => #[serde(skip_serializing_if = "Vec::is_empty")],
@@ -56,7 +56,7 @@ pub struct NewUser {
 }
 
 impl TryFrom<AuthCredential> for NewUser {
-    type Error = InfraError;
+    type Error = Error;
 
     fn try_from(mut value: AuthCredential) -> Result<Self, Self::Error> {
         Ok(Self {

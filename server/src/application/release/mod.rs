@@ -2,11 +2,13 @@ use derive_more::{Display, From};
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
-use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
+use crate::domain::correction::{
+    NewCorrection, NewCorrectionMeta, {self},
+};
 use crate::domain::release::repo::Filter;
 use crate::domain::release::{NewRelease, Release, Repo, TxRepo};
 use crate::domain::repository::TransactionManager;
-use crate::error::InfraError;
+use crate::infra::error::Error;
 
 #[derive(Clone)]
 pub struct Service<R> {
@@ -18,7 +20,7 @@ pub struct Service<R> {
 )]
 pub enum CreateError {
     #[from(forward)]
-    Infra(InfraError),
+    Correction(super::correction::Error),
 }
 
 #[derive(
@@ -26,7 +28,7 @@ pub enum CreateError {
 )]
 pub enum UpsertCorrectionError {
     #[from(forward)]
-    Infra(InfraError),
+    Infra(crate::infra::Error),
     #[from]
     Correction(super::correction::Error),
 }
@@ -38,14 +40,14 @@ where
     pub async fn find_one(
         &self,
         filter: Filter,
-    ) -> Result<Option<Release>, InfraError> {
+    ) -> Result<Option<Release>, Error> {
         self.repo.find_one(filter).await
     }
 
     pub async fn find_many(
         &self,
         filter: Filter,
-    ) -> Result<Vec<Release>, InfraError> {
+    ) -> Result<Vec<Release>, Error> {
         self.repo.find_many(filter).await
     }
 }

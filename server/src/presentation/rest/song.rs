@@ -6,12 +6,14 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::extractor::CurrentUser;
-use super::state::{self, ArcAppState};
-use crate::api_response::{Data, Message};
+use super::state::{
+    ArcAppState, {self},
+};
 use crate::application::correction::NewCorrectionDto;
 use crate::application::song::{CreateError, UpsertCorrectionError};
 use crate::domain::song::model::{NewSong, Song};
-use crate::error::InfraError;
+use crate::infra::error::Error;
+use crate::presentation::api_response::{Data, Message};
 use crate::utils::MapInto;
 
 const TAG: &str = "Song";
@@ -35,13 +37,13 @@ super::data! {
     path = "/song/{id}",
     responses(
 		(status = 200, body = DataOptionSong),
-		InfraError
+		Error
     ),
 )]
 async fn find_song_by_id(
     State(service): State<state::SongService>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<Song>>, InfraError> {
+) -> Result<Data<Option<Song>>, Error> {
     service.find_by_id(id).await.map_into()
 }
 
@@ -57,13 +59,13 @@ struct KwQuery {
     params(KwQuery),
     responses(
 		(status = 200, body = DataVecSong),
-		InfraError
+		Error
     ),
 )]
 async fn find_song_by_keyword(
     State(service): State<state::SongService>,
     Query(query): Query<KwQuery>,
-) -> Result<Data<Vec<Song>>, InfraError> {
+) -> Result<Data<Vec<Song>>, Error> {
     service.find_by_keyword(&query.keyword).await.map_into()
 }
 

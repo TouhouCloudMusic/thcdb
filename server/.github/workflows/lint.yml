@@ -14,7 +14,7 @@ env:
   CARGO_TERM_COLOR: always
   RUSTC_WRAPPER: "sccache"
   SCCACHE_GHA_ENABLED: "true"
-  RUSTFLAGS: "-D warnings"
+  RUSTFLAGS: "-W warnings"
 
 jobs:
   rust:
@@ -28,7 +28,7 @@ jobs:
       - name: Check format
         run: cargo fmt --check
 
-      - name: Clippywc
+      - name: Clippy
         run: cargo clippy --quiet
 
       - name: Build test

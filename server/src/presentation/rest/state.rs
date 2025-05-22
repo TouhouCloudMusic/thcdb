@@ -4,15 +4,17 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 
 use super::extractor::TryFromRef;
-use crate::application::{self, user_profile};
+use crate::application::{
+    user_profile, {self},
+};
 use crate::domain::repository::TransactionManager;
-use crate::error::InfraError;
-pub(super) use crate::infrastructure::database::sea_orm::{
+pub(super) use crate::infra::database::sea_orm::{
     SeaOrmRepository, SeaOrmTxRepo,
 };
-use crate::infrastructure::singleton::FS_IMAGE_STORAGE;
-use crate::infrastructure::state::AppState;
-use crate::infrastructure::storage::GenericImageStorage;
+use crate::infra::error::Error;
+use crate::infra::singleton::FS_IMAGE_STORAGE;
+use crate::infra::state::AppState;
+use crate::infra::storage::GenericImageStorage;
 
 #[derive(Clone)]
 pub struct ArcAppState(Arc<AppState>);
@@ -129,7 +131,7 @@ impl FromRef<ArcAppState> for ArtistService {
 }
 
 impl TryFromRef<ArcAppState> for ImageService {
-    type Rejection = InfraError;
+    type Rejection = Error;
 
     async fn try_from_ref(input: &ArcAppState) -> Result<Self, Self::Rejection>
     where
@@ -159,7 +161,7 @@ impl FromRef<ArcAppState> for ArtistImageService {
 }
 
 impl TryFromRef<ArcAppState> for SeaOrmTxRepo {
-    type Rejection = InfraError;
+    type Rejection = Error;
 
     async fn try_from_ref(input: &ArcAppState) -> Result<Self, Self::Rejection>
     where

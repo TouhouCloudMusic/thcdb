@@ -6,11 +6,12 @@ use macros::{ApiError, IntoErrorSchema};
 
 use crate::domain::image::repository::TxRepo as ImageTxRepo;
 use crate::domain::image::{
-    self, AsyncImageStorage, CreateImageMeta, ValidationError,
+    AsyncImageStorage, CreateImageMeta, ValidationError, {self},
 };
 use crate::domain::repository::{Transaction, TransactionManager};
-use crate::domain::user::{self, TxRepo, User};
-use crate::error::InfraError;
+use crate::domain::user::{
+    TxRepo, User, {self},
+};
 
 mod model;
 pub use model::*;
@@ -61,10 +62,10 @@ mod parser {
 
 error_set! {
     #[derive(ApiError, IntoErrorSchema, From)]
-    #[disable(From(InfraError))]
+    #[disable(From(crate::infra::Error))]
     UserImageServiceError = {
         #[from(forward)]
-        Internal(InfraError),
+        Infra(crate::infra::Error),
         ImageService(image::Error),
         Validate(ValidationError),
     };

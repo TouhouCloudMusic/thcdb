@@ -4,88 +4,15 @@ use std::fmt::Debug;
 use argon2::password_hash;
 use axum::http::StatusCode;
 use derive_more::{Display, From};
-use entity::sea_orm_active_enums::EntityType;
-use error_set::error_set;
 use macros::{ApiError, IntoErrorSchema};
 use sea_orm::DbErr;
 
-mod structs;
-pub use structs::*;
-
-use crate::api_response::{
-    AsStatusCode, IntoApiResponse, default_into_api_response_impl,
+use crate::presentation::api_response::{
+    IntoApiResponse, default_into_api_response_impl,
 };
 
-pub trait ApiErrorTrait = AsStatusCode;
-
-pub trait ImpledApiError = std::error::Error
-    + ApiErrorTrait
-    + IntoApiResponse
-    + axum::response::IntoResponse;
-
-error_set! {
-    #[derive(From, ApiError, IntoErrorSchema)]
-    #[disable(From(InfraError))]
-    ApiError = {
-        #[api_error(
-            status_code = StatusCode::UNAUTHORIZED,
-        )]
-        Unauthorized,
-        #[api_error(
-            status_code = StatusCode::NOT_FOUND,
-        )]
-        NotFound,
-        #[from(forward)]
-        Infra(InfraError)
-    };
-    #[disable(From(InfraError))]
-    #[derive(IntoErrorSchema, From, ApiError)]
-    ServiceError = {
-        #[from(forward)]
-        Infra(InfraError),
-        #[display("Entity {entity_name} not found")]
-        #[api_error(
-            status_code = StatusCode::NOT_FOUND,
-        )]
-        EntityNotFound {
-            entity_name: &'static str
-        },
-        #[api_error(
-            status_code = StatusCode::BAD_REQUEST,
-        )]
-        InvalidField(InvalidField),
-        #[display("Correction type mismatch, expected: {:#?}, received: {:#?}", expected, received)]
-        #[api_error(
-            status_code = StatusCode::BAD_REQUEST,
-        )]
-        IncorrectCorrectionType {
-            expected: EntityType,
-            received: EntityType,
-        },
-        #[display("Unexpected error: related entity {entity_name} not found")]
-        #[api_error(
-            status_code = StatusCode::BAD_REQUEST,
-        )]
-        UnexpRelatedEntityNotFound {
-            entity_name: &'static str
-        },
-        #[api_error(
-            status_code = StatusCode::UNAUTHORIZED,
-        )]
-        Unauthorized
-    };
-}
-
-// impl IntoResponse for ApiError {
-//     fn into_response(self) -> axum::response::Response {
-//         match self {
-//             Self::Unauthorized => StatusCode::UNAUTHORIZED.into_response(),
-//         }
-//     }
-// }
-
 #[derive(Debug, Display, derive_more::Error, From)]
-pub enum InfraErrorEnum {
+pub enum ErrorEnum {
     SeaOrm(DbErr),
     Tokio(tokio::task::JoinError),
     Io(std::io::Error),
@@ -93,7 +20,7 @@ pub enum InfraErrorEnum {
     Custom(#[error(not(source))] Cow<'static, str>),
 }
 
-impl InfraErrorEnum {
+impl ErrorEnum {
     const fn prefix(&self) -> &'static str {
         match self {
             Self::SeaOrm(_) => "Database error",
@@ -111,11 +38,11 @@ impl InfraErrorEnum {
     status_code = StatusCode::INTERNAL_SERVER_ERROR,
     into_response = self,
 )]
-pub struct InfraError {
-    inner: Box<InfraErrorEnum>,
+pub struct Error {
+    inner: Box<ErrorEnum>,
 }
 
-impl InfraError {
+impl Error {
     pub fn with_context(
         self,
         context: impl Into<String>,
@@ -127,9 +54,9 @@ impl InfraError {
     }
 }
 
-impl<T> From<T> for InfraError
+impl<T> From<T> for Error
 where
-    T: Into<InfraErrorEnum>,
+    T: Into<ErrorEnum>,
 {
     fn from(value: T) -> Self {
         Self {
@@ -138,7 +65,7 @@ where
     }
 }
 
-impl IntoApiResponse for InfraError {
+impl IntoApiResponse for Error {
     fn into_api_response(self) -> axum::response::Response {
         let pre = self.inner.prefix();
         tracing::error!("{pre}: {}", self.inner);
@@ -152,7 +79,7 @@ pub struct ContextError<E> {
     context: String,
 }
 
-impl IntoApiResponse for ContextError<InfraError> {
+impl IntoApiResponse for ContextError<Error> {
     fn into_api_response(self) -> axum::response::Response {
         let pre = self.error.inner.prefix();
         let context = self.context;
@@ -164,9 +91,11 @@ impl IntoApiResponse for ContextError<InfraError> {
 #[cfg(test)]
 mod test {
 
+    use axum::response::IntoResponse;
     use tracing_test::traced_test;
 
     use super::*;
+    use crate::presentation::error::ApiError;
 
     // https://github.com/dbrgn/tracing-test/issues/48
     // This bug causes errors with line breaks cannot be captured
@@ -175,9 +104,8 @@ mod test {
     #[tokio::test]
     #[traced_test]
     async fn test_nested_err_print() {
-        let err = ServiceError::Infra(InfraError::from(DbErr::Custom(
-            "foobar".to_string(),
-        )));
+        let err =
+            ApiError::Infra(Error::from(DbErr::Custom("foobar".to_string())));
 
         let _ = err.into_response();
 

@@ -110,7 +110,7 @@ async fn find_many_impl(
         .collect_vec())
 }
 
-impl TxRepo for crate::infrastructure::database::sea_orm::SeaOrmTxRepo {
+impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(&self, data: &NewSong) -> Result<i32, Self::Error> {
         let song = create_song_and_relations(data, self.conn()).await?;
 

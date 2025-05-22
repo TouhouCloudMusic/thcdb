@@ -20,7 +20,9 @@ use crate::domain;
 use crate::domain::model::auth::{UserRole, UserRoleEnum};
 use crate::domain::model::markdown::Markdown;
 use crate::domain::repository::Connection;
-use crate::domain::user::{self, NewUser, User, UserProfile};
+use crate::domain::user::{
+    NewUser, User, UserProfile, {self},
+};
 
 impl user::Repository for SeaOrmRepository {
     async fn find_by_id(&self, id: i32) -> Result<Option<User>, Self::Error> {

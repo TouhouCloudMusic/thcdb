@@ -2,11 +2,13 @@ use derive_more::{Display, From};
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
-use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
+use crate::domain::correction::{
+    NewCorrection, NewCorrectionMeta, {self},
+};
 use crate::domain::event;
 use crate::domain::event::NewEvent;
 use crate::domain::repository::TransactionManager;
-use crate::error::InfraError;
+use crate::infra::error::Error;
 
 #[derive(Clone)]
 pub struct Service<R> {
@@ -16,9 +18,17 @@ pub struct Service<R> {
 #[derive(
     Debug, Display, From, derive_more::Error, ApiError, IntoErrorSchema,
 )]
+pub enum CreateError {
+    #[from(forward)]
+    Correction(super::correction::Error),
+}
+
+#[derive(
+    Debug, Display, From, derive_more::Error, ApiError, IntoErrorSchema,
+)]
 pub enum UpsertCorrectionError {
     #[from(forward)]
-    Infra(InfraError),
+    Infra(crate::infra::Error),
     #[from]
     Correction(super::correction::Error),
 }
@@ -30,14 +40,14 @@ where
     pub async fn find_by_id(
         &self,
         id: i32,
-    ) -> Result<Option<event::Event>, InfraError> {
+    ) -> Result<Option<event::Event>, Error> {
         Ok(event::Repo::find_by_id(&self.repo, id).await?)
     }
 
     pub async fn find_by_keyword(
         &self,
         keyword: &str,
-    ) -> Result<Vec<event::Event>, InfraError> {
+    ) -> Result<Vec<event::Event>, Error> {
         Ok(event::Repo::find_by_keyword(&self.repo, keyword).await?)
     }
 }
@@ -50,7 +60,7 @@ where
     pub async fn create(
         &self,
         correction: NewCorrection<NewEvent>,
-    ) -> Result<(), InfraError> {
+    ) -> Result<(), CreateError> {
         let tx_repo = self.repo.begin().await?;
 
         // TODO: Create entity in event repo, create correction in correction repo

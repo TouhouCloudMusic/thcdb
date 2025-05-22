@@ -12,73 +12,47 @@ pub trait InsertMany<T: EntityTrait> {
         <Self::Entity as EntityTrait>::Model:
             IntoActiveModel<<Self::Entity as EntityTrait>::ActiveModel>;
 
-    async fn insert_many_without_returning(
+    // async fn insert_many_without_returning(
+    //     self,
+    //     db: &impl ConnectionTrait,
+    // ) -> Result<(), sea_orm::DbErr>
+    // where
+    //     <Self::Entity as EntityTrait>::Model:
+    //         IntoActiveModel<<Self::Entity as EntityTrait>::ActiveModel>;
+}
+
+impl<E, I> InsertMany<E> for I
+where
+    E: EntityTrait,
+    I: IntoIterator<Item = E::ActiveModel>,
+{
+    type Entity = E;
+    async fn insert_many(
         self,
         db: &impl ConnectionTrait,
-    ) -> Result<(), sea_orm::DbErr>
+    ) -> Result<Vec<<Self::Entity as EntityTrait>::Model>, sea_orm::DbErr>
     where
         <Self::Entity as EntityTrait>::Model:
-            IntoActiveModel<<Self::Entity as EntityTrait>::ActiveModel>;
-}
+            IntoActiveModel<<Self::Entity as EntityTrait>::ActiveModel>,
+    {
+        Self::Entity::insert_many(self)
+            .exec_with_returning_many(db)
+            .await
+    }
 
-macro_rules! impl_insert_many {
-    ( $($path:ident),* $(,)?) => {
-        $(
-            impl<I> InsertMany<entity::$path::Entity> for I
-            where
-                I: IntoIterator<Item = entity::$path::ActiveModel>,
-            {
-                type Entity = entity::$path::Entity;
-                async fn insert_many(
-                    self,
-                    db: &impl ConnectionTrait,
-                ) -> Result<Vec<<Self::Entity as EntityTrait>::Model>, sea_orm::DbErr>
-                where
-                    <Self::Entity as EntityTrait>::Model:
-                        IntoActiveModel<<Self::Entity as EntityTrait>::ActiveModel>,
-                {
-                    Self::Entity::insert_many(self)
-                        .exec_with_returning_many(db)
-                        .await
-                }
-
-                async fn insert_many_without_returning(
-                    self,
-                    db: &impl ConnectionTrait,
-                ) -> Result<(), sea_orm::DbErr>
-                where
-                    <Self::Entity as EntityTrait>::Model:
-                        IntoActiveModel<<Self::Entity as EntityTrait>::ActiveModel>,
-                {
-                    Self::Entity::insert_many(self)
-                        .exec_without_returning(db)
-                        .await?;
-                    Ok(())
-                }
-            }
-        )*
-    };
-}
-
-impl_insert_many! {
-    event_alternative_name,
-    event_alternative_name_history,
-    release_artist,
-    release_artist_history,
-    release_catalog_number,
-    release_catalog_number_history,
-    release_credit,
-    release_credit_history,
-    release_event,
-    release_event_history,
-    release_localized_title,
-    release_localized_title_history,
-    release_track,
-    release_track_history,
-    song,
-    song_history,
-    song_artist,
-    song_artist_history,
+    // async fn insert_many_without_returning(
+    //     self,
+    //     db: &impl ConnectionTrait,
+    // ) -> Result<(), sea_orm::DbErr>
+    // where
+    //     <Self::Entity as EntityTrait>::Model:
+    //         IntoActiveModel<<Self::Entity as EntityTrait>::ActiveModel>,
+    // {
+    //     Self::Entity::insert_many(self)
+    //         .exec_without_returning(db)
+    //         .await?;
+    //     Ok(())
+    // }
 }
 
 // use sea_orm::sea_query::{Alias, IntoIden, SelectExpr, SelectStatement};

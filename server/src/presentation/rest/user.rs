@@ -7,19 +7,23 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::extractor::CurrentUser;
-use super::state::{self, ArcAppState, AuthSession};
-use crate::api_response::{Data, Message};
+use super::state::{
+    ArcAppState, AuthSession, {self},
+};
 use crate::application::auth::{
     AuthServiceTrait, SessionBackendError, SignInError, SignUpError,
 };
 use crate::application::user_image::{
     UploadAvatar, UploadProfileBanner, UserImageServiceError,
 };
+use crate::domain;
 use crate::domain::model::auth::AuthCredential;
-use crate::domain::model::markdown::{self, Markdown};
+use crate::domain::model::markdown::{
+    Markdown, {self},
+};
 use crate::domain::user::UserProfile;
-use crate::error::{InfraError, ServiceError};
-use crate::{api_response, domain};
+use crate::infra::error::Error;
+use crate::presentation::api_response::{self, Data, Message};
 
 const TAG: &str = "User";
 
@@ -46,7 +50,7 @@ super::data! {
     responses(
         (status = 200, body = DataUserProfile),
         (status = 404),
-        ServiceError
+        Error
     ),
 )]
 async fn profile(
@@ -63,7 +67,7 @@ async fn profile(
     responses(
         (status = 200, body = DataUserProfile),
         (status = 404),
-        ServiceError
+        Error
     ),
 )]
 async fn profile_with_name(
@@ -239,7 +243,7 @@ async fn profile_impl(
         (status = 200, body = api_response::Message),
         (status = 401),
         markdown::Error,
-        InfraError
+        Error
     )
 )]
 async fn update_bio(
@@ -262,5 +266,5 @@ async fn update_bio(
         .exec(&database.conn)
         .await
         .map(|_| Message::new("Bio updated successfully"))
-        .map_err(|e| InfraError::from(e).into_response())
+        .map_err(|e| Error::from(e).into_response())
 }

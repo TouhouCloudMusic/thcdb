@@ -1,6 +1,7 @@
 use ::sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
 pub mod sea_orm;
+pub use sea_orm::enum_table::check_database_lookup_tables;
 
 pub async fn get_connection(url: &str) -> DatabaseConnection {
     let opt = ConnectOptions::new(url)

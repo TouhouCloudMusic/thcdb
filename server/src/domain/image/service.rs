@@ -13,7 +13,7 @@ use macros::ApiError;
 
 use crate::domain::image::model::{Image, ImageRef, NewImage};
 use crate::domain::repository::Transaction;
-use crate::error::{InfraError, InfraErrorEnum};
+use crate::infra::{self};
 
 error_set! {
     #[derive(ApiError)]
@@ -322,7 +322,7 @@ impl Parser {
 
 pub trait AsyncImageStorage: Send + Sync {
     type File;
-    type Error: Into<InfraErrorEnum>;
+    type Error: Into<infra::ErrorEnum>;
 
     async fn create(&self, image: NewImage) -> Result<Self::File, Self::Error>;
 
@@ -334,15 +334,15 @@ pub enum Error {
     #[error(transparent)]
     Validation(#[from] ValidationError),
     #[error(transparent)]
-    Internal(InfraError),
+    Infra(infra::Error),
 }
 
 impl<T> From<T> for Error
 where
-    T: Into<InfraError>,
+    T: Into<infra::Error>,
 {
     fn from(e: T) -> Self {
-        Self::Internal(e.into())
+        Self::Infra(e.into())
     }
 }
 

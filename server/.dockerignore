@@ -1,10 +1,30 @@
-**/target/
-**/.git/
-**/.gitignore
-**/docker-compose.override.yml
-**/.env
-**/.DS_Store
+# Version control
+.git
+.gitignore
+.github
 
-./vscode
-./idea
-./github
+# Build artifacts
+target/
+
+# Development files
+.vscode/
+.idea/
+*.log
+*.md
+docs/
+public/
+
+# Docker files
+docker-compose*.yml
+
+# Test files
+*/test/
+*.test.rs
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Environment files
+.env*

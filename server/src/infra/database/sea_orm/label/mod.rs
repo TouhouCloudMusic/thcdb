@@ -109,7 +109,7 @@ async fn find_many_impl(
     Ok(res)
 }
 
-impl TxRepo for crate::infrastructure::database::sea_orm::SeaOrmTxRepo {
+impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(&self, data: &NewLabel) -> Result<i32, Self::Error> {
         let label = save_label_and_link_relations(data, self.conn()).await?;
 

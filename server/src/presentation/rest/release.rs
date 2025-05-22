@@ -6,17 +6,18 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::extractor::CurrentUser;
-use super::state::{self, ArcAppState};
-use crate::api_response::{Data, Message};
+use super::state::{
+    ArcAppState, {self},
+};
 use crate::application::correction::NewCorrectionDto;
 use crate::application::release::{CreateError, UpsertCorrectionError};
 use crate::domain::release::repo::Filter;
 use crate::domain::release::{NewRelease, Release};
-use crate::error::ServiceError;
+use crate::infra::error::Error;
+use crate::presentation::api_response::{Data, Message};
 use crate::utils::MapInto;
 
 type Service = state::ReleaseService;
-type Error = ServiceError;
 
 const TAG: &str = "Release";
 

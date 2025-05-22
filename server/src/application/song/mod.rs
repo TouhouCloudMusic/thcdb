@@ -2,11 +2,13 @@ use derive_more::{Display, From};
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
-use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
+use crate::domain::correction::{
+    NewCorrection, NewCorrectionMeta, {self},
+};
 use crate::domain::repository::TransactionManager;
 use crate::domain::song::model::{NewSong, Song};
 use crate::domain::song::repo::{Repo, TxRepo};
-use crate::error::InfraError;
+use crate::infra::error::Error;
 
 #[derive(Clone)]
 pub struct Service<R> {
@@ -18,7 +20,7 @@ pub struct Service<R> {
 )]
 pub enum CreateError {
     #[from(forward)]
-    Infra(InfraError),
+    Correction(super::correction::Error),
 }
 
 #[derive(
@@ -26,7 +28,7 @@ pub enum CreateError {
 )]
 pub enum UpsertCorrectionError {
     #[from(forward)]
-    Infra(InfraError),
+    Infra(crate::infra::Error),
     #[from]
     Correction(super::correction::Error),
 }
@@ -35,17 +37,11 @@ impl<R> Service<R>
 where
     R: Repo,
 {
-    pub async fn find_by_id(
-        &self,
-        id: i32,
-    ) -> Result<Option<Song>, InfraError> {
+    pub async fn find_by_id(&self, id: i32) -> Result<Option<Song>, Error> {
         Ok(self.repo.find_by_id(id).await?)
     }
 
-    pub async fn find_by_keyword(
-        &self,
-        kw: &str,
-    ) -> Result<Vec<Song>, InfraError> {
+    pub async fn find_by_keyword(&self, kw: &str) -> Result<Vec<Song>, Error> {
         Ok(self.repo.find_by_keyword(kw).await?)
     }
 }

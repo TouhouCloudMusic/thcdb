@@ -9,7 +9,9 @@ use entity::{
 };
 use futures_util::try_join;
 use itertools::Itertools;
-use sea_orm::ActiveValue::{self, NotSet, Set};
+use sea_orm::ActiveValue::{
+    NotSet, Set, {self},
+};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, ConnectionTrait,
     DatabaseTransaction, DbErr, EntityTrait, LoaderTrait, QueryFilter,

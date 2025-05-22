@@ -1,15 +1,6 @@
 use std::fmt::Display;
 
-pub trait Len {
-    type Len: PartialOrd;
-    const EMPTY: Self::Len;
-
-    fn len(&self) -> Self::Len;
-
-    fn is_empty(&self) -> bool {
-        self.len() == Self::EMPTY
-    }
-}
+use super::Len;
 
 pub struct InvalidLen<T: Len> {
     received: T::Len,
@@ -45,35 +36,5 @@ where
         } else {
             Err(InvalidLen { received: len })
         }
-    }
-}
-
-impl Len for String {
-    type Len = usize;
-
-    const EMPTY: Self::Len = 0;
-
-    fn len(&self) -> Self::Len {
-        self.len()
-    }
-}
-
-impl<T> Len for Vec<T> {
-    type Len = usize;
-
-    const EMPTY: Self::Len = 0;
-
-    fn len(&self) -> Self::Len {
-        self.len()
-    }
-}
-
-impl<T> Len for [T] {
-    type Len = usize;
-
-    const EMPTY: Self::Len = 0;
-
-    fn len(&self) -> Self::Len {
-        self.len()
     }
 }

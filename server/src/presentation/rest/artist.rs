@@ -9,13 +9,17 @@ use utoipa_axum::routes;
 
 use super::data;
 use super::extractor::CurrentUser;
-use super::state::{self, ArcAppState};
-use crate::api_response::{Data, Message};
+use super::state::{
+    ArcAppState, {self},
+};
 use crate::application::artist::UpsertCorrectionError;
-use crate::application::artist_image::{self, ArtistProfileImageInput};
+use crate::application::artist_image::{
+    ArtistProfileImageInput, {self},
+};
 use crate::application::correction::NewCorrectionDto;
 use crate::domain::artist::model::{Artist, NewArtist};
-use crate::error::{InfraError, ServiceError};
+use crate::infra::error::Error;
+use crate::presentation::api_response::{Data, Message};
 use crate::utils::MapInto;
 use crate::{application, domain};
 
@@ -31,7 +35,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 }
 
 data!(
-    DataArtist, Artist
+    DataOptionArtist, Option<Artist>
     DataVecArtist, Vec<Artist>
 );
 
@@ -40,26 +44,17 @@ data!(
     tag = TAG,
     path = "/artist/{id}",
     responses(
-        (status = 200, body = DataArtist),
-        ServiceError
+        (status = 200, body = DataOptionArtist),
+        Error
     ),
 )]
 async fn find_artist_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-) -> Result<Data<Artist>, ServiceError> {
-    let artist = domain::artist::repo::Repo::find_by_id(&repo, id)
+) -> Result<Data<Option<Artist>>, Error> {
+    domain::artist::repo::Repo::find_by_id(&repo, id)
         .await
-        .map_err(ServiceError::from)?;
-
-    artist.map_or_else(
-        || {
-            Err(ServiceError::EntityNotFound {
-                entity_name: "artist",
-            })
-        },
-        |artist| Ok(Data::new(artist)),
-    )
+        .map_into()
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -76,13 +71,13 @@ struct KeywordQuery {
     ),
     responses(
         (status = 200, body = DataVecArtist),
-        InfraError
+        Error
     ),
 )]
 async fn find_artist_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KeywordQuery>,
-) -> Result<Data<Vec<Artist>>, InfraError> {
+) -> Result<Data<Vec<Artist>>, Error> {
     domain::artist::repo::Repo::find_by_name(&repo, &query.keyword)
         .await
         .map_into()

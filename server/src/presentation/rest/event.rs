@@ -6,15 +6,19 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::extractor::CurrentUser;
-use super::state::{self, ArcAppState};
-use crate::api_response::{Data, Message};
+use super::state::{
+    ArcAppState, {self},
+};
 use crate::application::correction::NewCorrectionDto;
-use crate::application::event;
+use crate::application::event::{self, CreateError};
 use crate::domain::event::NewEvent;
 use crate::domain::event::model::Event;
+use crate::infra::error::Error;
+use crate::presentation::api_response::{Data, Message};
+use crate::presentation::error::ApiError;
 // use crate::dto::event::{Event, NewEvent};
-use crate::error::{ApiError, InfraError};
 use crate::utils::MapInto;
+use crate::utils::Pipe;
 
 const TAG: &str = "Event";
 
@@ -27,7 +31,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 }
 
 super::data! {
-    DataEvent, Event
+    DataOptionEvent, Option<Event>
     DataVecEvent, Vec<Event>
 }
 
@@ -43,12 +47,8 @@ super::data! {
 async fn find_event_by_id(
     State(service): State<state::EventService>,
     Path(id): Path<i32>,
-) -> Result<Data<Event>, ApiError> {
-    service
-        .find_by_id(id)
-        .await?
-        .map(Data::new)
-        .ok_or(ApiError::NotFound)
+) -> Result<Data<Option<Event>>, ApiError> {
+    service.find_by_id(id).await?.pipe(Data::new).pipe(Ok)
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -65,13 +65,13 @@ struct KeywordQuery {
     ),
     responses(
         (status = 200, body = DataVecEvent),
-        InfraError
+        Error
     ),
 )]
 async fn find_event_by_keyword(
     State(service): State<state::EventService>,
     Query(query): Query<KeywordQuery>,
-) -> Result<Data<Vec<Event>>, InfraError> {
+) -> Result<Data<Vec<Event>>, Error> {
     service.find_by_keyword(&query.keyword).await.map_into()
 }
 
@@ -83,14 +83,14 @@ async fn find_event_by_keyword(
     responses(
         (status = 200, body = Message),
         (status = 401),
-        InfraError
+        CreateError
     ),
 )]
 async fn create(
     CurrentUser(user): CurrentUser,
     State(service): State<state::EventService>,
     Json(dto): Json<NewCorrectionDto<NewEvent>>,
-) -> Result<Message, InfraError> {
+) -> Result<Message, CreateError> {
     service.create(dto.with_author(user)).await?;
 
     Ok(Message::ok())

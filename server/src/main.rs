@@ -2,7 +2,9 @@
 #![deny(clippy::clone_on_copy)]
 #![warn(clippy::cargo, clippy::nursery, clippy::pedantic)]
 #![warn(clippy::allow_attributes)]
-#![allow(dead_code, async_fn_in_trait)]
+#![allow(
+    // dead_code,
+     async_fn_in_trait)]
 #![allow(
     // We won't release
     clippy::cargo_common_metadata,
@@ -29,21 +31,19 @@
     variant_count
 )]
 
-mod api_response;
 mod application;
 mod constant;
 mod domain;
-mod error;
-mod infrastructure;
-mod model;
+mod infra;
 mod presentation;
 mod utils;
 
 use std::sync::Arc;
 
-use infrastructure::logger::Logger;
-use infrastructure::singleton::APP_CONFIG;
-use infrastructure::state::AppState;
+use infra::database::check_database_lookup_tables;
+use infra::logger::Logger;
+use infra::singleton::APP_CONFIG;
+use infra::state::AppState;
 use sea_orm_migration::MigratorTrait;
 
 #[cfg(all(feature = "release", unix))]
@@ -65,7 +65,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     migration::Migrator::up(&state.database, None).await?;
 
-    model::enum_table::check_database_lookup_tables(&state.database)
+    check_database_lookup_tables(&state.database)
         .await
         .expect("Error while checking database lookup tables.");
 

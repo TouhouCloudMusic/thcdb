@@ -2,12 +2,14 @@ use derive_more::{Display, From};
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
-use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
+use crate::domain::correction::{
+    NewCorrection, NewCorrectionMeta, {self},
+};
 use crate::domain::repository::TransactionManager;
 use crate::domain::tag::Tag;
 use crate::domain::tag::model::NewTag;
 use crate::domain::tag::repo::{Repo, TxRepo};
-use crate::error::InfraError;
+use crate::infra::error::Error;
 
 #[derive(Clone)]
 pub struct Service<R> {
@@ -19,7 +21,7 @@ pub struct Service<R> {
 )]
 pub enum CreateError {
     #[from(forward)]
-    Infra(InfraError),
+    Correction(super::correction::Error),
 }
 
 #[derive(
@@ -27,7 +29,7 @@ pub enum CreateError {
 )]
 pub enum UpsertCorrectionError {
     #[from(forward)]
-    Infra(InfraError),
+    Infra(crate::infra::Error),
     #[from]
     Correction(super::correction::Error),
 }
@@ -42,18 +44,18 @@ impl<R> Service<R>
 where
     R: Repo,
 {
-    pub async fn find_by_id(&self, id: i32) -> Result<Option<Tag>, InfraError> {
-        self.repo.find_by_id(id).await.map_err(InfraError::from)
+    pub async fn find_by_id(&self, id: i32) -> Result<Option<Tag>, Error> {
+        self.repo.find_by_id(id).await.map_err(Error::from)
     }
 
     pub async fn find_by_keyword(
         &self,
         keyword: &str,
-    ) -> Result<Vec<Tag>, InfraError> {
+    ) -> Result<Vec<Tag>, Error> {
         self.repo
             .find_by_keyword(keyword)
             .await
-            .map_err(InfraError::from)
+            .map_err(Error::from)
     }
 }
 

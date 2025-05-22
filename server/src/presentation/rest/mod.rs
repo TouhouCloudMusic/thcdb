@@ -19,7 +19,7 @@ use utoipa_scalar::{Scalar, Servable};
 
 use crate::constant::r#gen::{KT_CONSTANTS, TS_CONSTANTS};
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
-use crate::infrastructure::state::AppState;
+use crate::infra::state::AppState;
 use crate::utils::{Pipe, TapMut};
 
 mod artist;

@@ -1,22 +1,24 @@
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use entity::enums::EntityType;
-use error_set::error_set;
-use macros::EnumToResponse;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::extractor::CurrentUser;
-use super::state::{self, ArcAppState, SeaOrmTxRepo};
-use crate::api_response::{self, Data, Message};
+use super::state::{
+    ArcAppState, SeaOrmTxRepo, {self},
+};
 use crate::application;
 use crate::domain::correction::{
-    self, ApproveCorrectionContext, CorrectionFilter,
+    ApproveCorrectionContext, CorrectionFilter, {self},
 };
 use crate::domain::repository::TransactionManager;
-use crate::error::{ApiError, InfraError, ServiceError};
+use crate::infra::error::Error;
+use crate::presentation::api_response::{
+    Data, Message, {self},
+};
 
 const TAG: &str = "Correction";
 
@@ -24,14 +26,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .routes(routes!(handle_correction))
         .routes(routes!(pending_correction))
-}
-
-error_set! {
-    #[derive(EnumToResponse)]
-    Error = {
-        Service(ServiceError),
-        Api(ApiError)
-    };
 }
 
 #[derive(ToSchema, Deserialize)]
@@ -70,7 +64,7 @@ async fn handle_correction(
         .sea_orm_repo
         .begin()
         .await
-        .map_err(InfraError::from)
+        .map_err(Error::from)
         .map_err(IntoResponse::into_response)?;
 
     match query.method {
@@ -154,7 +148,7 @@ struct PendingCorrectionPath {
 	responses(
 		(status = 200, body = Data<Option<i32>>),
 		(status = 401),
-		InfraError
+		Error
 	),
 )]
 async fn pending_correction(
@@ -163,7 +157,7 @@ async fn pending_correction(
         PendingCorrectionPath,
     >,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<Option<i32>>, InfraError> {
+) -> Result<Data<Option<i32>>, Error> {
     Ok(correction::Repo::find_one(
         &repo,
         CorrectionFilter::pending(id, entity_type.into()),

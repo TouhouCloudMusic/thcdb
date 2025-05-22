@@ -6,13 +6,17 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::extractor::CurrentUser;
-use super::state::{self, ArcAppState};
-use crate::api_response::{self, Data};
+use super::state::{
+    ArcAppState, {self},
+};
 use crate::application::correction::NewCorrectionDto;
 use crate::application::tag::{CreateError, UpsertCorrectionError};
 use crate::domain::tag::NewTag;
 use crate::domain::tag::model::Tag;
-use crate::error::InfraError;
+use crate::infra::error::Error;
+use crate::presentation::api_response::{
+    Data, {self},
+};
 use crate::utils::MapInto;
 
 const TAG: &str = "Tag";
@@ -37,13 +41,13 @@ super::data! {
     responses(
 		(status = 200, body = DataOptionTag),
 		(status = 401),
-        InfraError
+        Error
     ),
 )]
 async fn find_tag_by_id(
     State(tag_service): State<state::TagService>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<Tag>>, InfraError> {
+) -> Result<Data<Option<Tag>>, Error> {
     tag_service.find_by_id(id).await.map_into()
 }
 
@@ -60,13 +64,13 @@ struct KwArgs {
     responses(
 		(status = 200, body = DataVecTag),
 		(status = 401),
-        InfraError
+        Error
     ),
 )]
 async fn find_tag_by_keyword(
     State(tag_service): State<state::TagService>,
     Query(query): Query<KwArgs>,
-) -> Result<Data<Vec<Tag>>, InfraError> {
+) -> Result<Data<Vec<Tag>>, Error> {
     tag_service.find_by_keyword(&query.keyword).await.map_into()
 }
 
@@ -77,7 +81,7 @@ async fn find_tag_by_keyword(
     responses(
 		(status = 200, body = api_response::Message),
 		(status = 401),
-        InfraError
+        Error
     ),
 )]
 async fn create_tag(

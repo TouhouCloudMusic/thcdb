@@ -1,6 +1,6 @@
 use crate::domain::user;
 use crate::domain::user::{User, UserProfile};
-use crate::error::InfraError;
+use crate::infra::error::Error;
 use crate::utils::MapInto;
 
 #[derive(Clone)]
@@ -17,12 +17,12 @@ impl<R> Service<R> {
 impl<R> Service<R>
 where
     R: user::ProfileRepository,
-    R::Error: Into<InfraError>,
+    R::Error: Into<Error>,
 {
     pub async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<UserProfile>, InfraError> {
+    ) -> Result<Option<UserProfile>, Error> {
         self.repo.find_by_name(name).await.map_into()
     }
 
@@ -30,7 +30,7 @@ where
         &self,
         profile: &mut UserProfile,
         current_user: &User,
-    ) -> Result<(), InfraError> {
+    ) -> Result<(), Error> {
         self.repo
             .with_following(profile, current_user)
             .await

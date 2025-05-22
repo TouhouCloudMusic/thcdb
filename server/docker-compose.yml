@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17@sha256:864831322bf2520e7d03d899b01b542de6de9ece6fe29c89f19dc5e1d5568ccf
+    image: postgres:17-alpine
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -14,59 +14,28 @@ services:
       - "5432:5432"
     networks:
       - db
-  dev_db:
-    image: postgres:17@sha256:864831322bf2520e7d03d899b01b542de6de9ece6fe29c89f19dc5e1d5568ccf
-    restart: always
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${ATLAS_DB}
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${ATLAS_DB}"]
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - dev_db
 
-  migrate:
-    image: arigaio/atlas:latest@sha256:3e988cdb8f96134b8fe17ff6e84e2e5016a3c6e3c71e5732ad68843fc1658bc4
-    command: >
-      schema apply
-      --env docker
-      --url postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      --dev-url postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@dev_db:5432/${ATLAS_DB}
-    networks:
-      - db
-      - dev_db
-    depends_on:
-      db:
-        condition: service_healthy
-      dev_db:
-        condition: service_healthy
-
-
-  redis:
-    image: redis:8@sha256:1b7c17f650602d97a10724d796f45f0b5250d47ee5ba02f28de89f8a1531f3ce
+  valkey:
+    image: valkey/valkey:latest
     restart: always
     ports:
       - "6379:6379"
 
   app:
-    build: .
+    build:
+      context: .
+      target: production
     depends_on:
       - db
-      - redis
+      - valkey
     environment:
       DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
-      REDIS_URL: "redis://redis:6379"
+      valkey_URL: "valkey://valkey:6379"
     ports:
       - "12345:12345"
 
 networks:
   db:
-  dev_db:
 
 volumes:
   pgdata:

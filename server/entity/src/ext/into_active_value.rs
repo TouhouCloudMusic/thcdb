@@ -1,4 +1,6 @@
-use sea_orm::ActiveValue::{self, NotSet, Set};
+use sea_orm::ActiveValue::{
+    NotSet, Set, {self},
+};
 use sea_orm::IntoActiveValue;
 
 use crate::sea_orm_active_enums::*;

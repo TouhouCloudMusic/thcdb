@@ -13,7 +13,6 @@ use utoipa::openapi::{
 };
 use utoipa::{PartialSchema, ToSchema, openapi};
 
-use crate::error::ApiErrorTrait;
 use crate::utils::openapi::ContentType;
 
 #[derive(Debug, Serialize, Display)]
@@ -22,11 +21,16 @@ enum Status {
     Err,
 }
 
-pub trait AsStatusCode {
+pub trait ApiError {
     fn as_status_code(&self) -> StatusCode;
 
     fn all_status_codes() -> impl Iterator<Item = StatusCode>;
 }
+
+pub trait ImpledApiError = std::error::Error
+    + ApiError
+    + IntoApiResponse
+    + axum::response::IntoResponse;
 
 pub trait IntoApiResponse {
     fn into_api_response(self) -> axum::response::Response;
@@ -34,7 +38,7 @@ pub trait IntoApiResponse {
 
 impl<T> IntoApiResponse for T
 where
-    T: ApiErrorTrait + std::error::Error,
+    T: ApiError + std::error::Error,
 {
     default fn into_api_response(self) -> axum::response::Response {
         default_into_api_response_impl(self)
@@ -44,7 +48,7 @@ where
 #[expect(clippy::needless_pass_by_value)]
 pub fn default_into_api_response_impl<T>(x: T) -> axum::response::Response
 where
-    T: ApiErrorTrait + std::error::Error,
+    T: ApiError + std::error::Error,
 {
     Error::from_api_error(&x).into_response()
 }
@@ -173,7 +177,7 @@ impl Error {
 
     pub fn from_api_error<T>(err: &T) -> Self
     where
-        T: AsStatusCode + Display,
+        T: ApiError + Display,
     {
         Self {
             status: Status::Err,
@@ -204,7 +208,7 @@ pub trait ErrResponseDef {
 
 impl<T> ErrResponseDef for T
 where
-    T: AsStatusCode,
+    T: ApiError,
 {
     fn build_err_responses() -> utoipa::openapi::Responses {
         ResponsesBuilder::new()

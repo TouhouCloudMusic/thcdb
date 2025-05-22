@@ -5,9 +5,10 @@ use macros::{ApiError, IntoErrorSchema};
 use crate::domain::artist;
 use crate::domain::artist::model::{NewArtist, ValidationError};
 use crate::domain::artist::repo::Repo;
-use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
+use crate::domain::correction::{
+    NewCorrection, NewCorrectionMeta, {self},
+};
 use crate::domain::repository::TransactionManager;
-use crate::error::InfraError;
 
 #[derive(Clone)]
 pub struct Service<R> {
@@ -19,7 +20,7 @@ pub struct Service<R> {
 )]
 pub enum CreateError {
     #[from(forward)]
-    Infra(InfraError),
+    Correction(super::correction::Error),
     #[from]
     Validation(ValidationError),
 }
@@ -29,7 +30,7 @@ pub enum CreateError {
 )]
 pub enum UpsertCorrectionError {
     #[from(forward)]
-    Infra(InfraError),
+    Infra(crate::infra::Error),
     #[from]
     Validation(ValidationError),
     #[from]
@@ -40,7 +41,6 @@ impl<R, TR> Service<R>
 where
     R: Repo + TransactionManager<TransactionRepository = TR>,
     TR: Clone + artist::TxRepo + correction::TxRepo,
-    InfraError: From<R::Error> + From<TR::Error>,
 {
     pub async fn create(
         &self,

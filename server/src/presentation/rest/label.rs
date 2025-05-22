@@ -8,11 +8,11 @@ use utoipa_axum::routes;
 use super::extractor::CurrentUser;
 use super::state;
 use super::state::ArcAppState;
-use crate::api_response::{Data, Message};
 use crate::application::correction::NewCorrectionDto;
 use crate::application::label::{CreateError, UpsertCorrectionError};
 use crate::domain::label::{Label, NewLabel};
-use crate::error::ServiceError;
+use crate::infra::error::Error;
+use crate::presentation::api_response::{Data, Message};
 use crate::utils::MapInto;
 
 const TAG: &str = "Label";
@@ -37,13 +37,13 @@ super::data! {
     responses(
         (status = 200, body = DataOptionLabel),
         (status = 401),
-        ServiceError
+        Error
     ),
 )]
 async fn find_label_by_id(
     label_service: State<state::LabelService>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<Label>>, ServiceError> {
+) -> Result<Data<Option<Label>>, Error> {
     label_service.find_by_id(id).await.map_into()
 }
 
@@ -60,13 +60,13 @@ struct KwArgs {
     responses(
         (status = 200, body = DataVecLabel),
         (status = 401),
-        ServiceError
+        Error
     ),
 )]
 async fn find_label_by_keyword(
     label_service: State<state::LabelService>,
     Query(query): Query<KwArgs>,
-) -> Result<Data<Vec<Label>>, ServiceError> {
+) -> Result<Data<Vec<Label>>, Error> {
     label_service
         .find_by_keyword(&query.keyword)
         .await
@@ -81,7 +81,7 @@ async fn find_label_by_keyword(
     responses(
         (status = 200, body = Message),
         (status = 401),
-        ServiceError
+        CreateError
     ),
 )]
 

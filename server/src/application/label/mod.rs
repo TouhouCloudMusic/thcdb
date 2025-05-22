@@ -2,12 +2,16 @@ use derive_more::{Display, From};
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
-use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
+use crate::domain::correction::{
+    NewCorrection, NewCorrectionMeta, {self},
+};
 use crate::domain::label::model::NewLabel;
 use crate::domain::label::repo::{Repo, TxRepo};
-use crate::domain::label::{self, Label};
+use crate::domain::label::{
+    Label, {self},
+};
 use crate::domain::repository::TransactionManager;
-use crate::error::InfraError;
+use crate::infra::error::Error;
 
 #[derive(Clone)]
 pub struct Service<R> {
@@ -19,7 +23,7 @@ pub struct Service<R> {
 )]
 pub enum CreateError {
     #[from(forward)]
-    Infra(InfraError),
+    Correction(super::correction::Error),
 }
 
 #[derive(
@@ -27,7 +31,7 @@ pub enum CreateError {
 )]
 pub enum UpsertCorrectionError {
     #[from(forward)]
-    Infra(InfraError),
+    Infra(crate::infra::Error),
     #[from]
     Correction(super::correction::Error),
 }
@@ -36,17 +40,14 @@ impl<R> Service<R>
 where
     R: label::Repo,
 {
-    pub async fn find_by_id(
-        &self,
-        id: i32,
-    ) -> Result<Option<Label>, InfraError> {
+    pub async fn find_by_id(&self, id: i32) -> Result<Option<Label>, Error> {
         Ok(self.repo.find_by_id(id).await?)
     }
 
     pub async fn find_by_keyword(
         &self,
         keyword: &str,
-    ) -> Result<Vec<Label>, InfraError> {
+    ) -> Result<Vec<Label>, Error> {
         Ok(self.repo.find_by_keyword(keyword).await?)
     }
 }
@@ -55,7 +56,7 @@ impl<R, TR> Service<R>
 where
     R: Repo + TransactionManager<TransactionRepository = TR>,
     TR: Clone + TxRepo + correction::TxRepo,
-    InfraError: From<R::Error> + From<TR::Error>,
+    Error: From<R::Error> + From<TR::Error>,
 {
     pub async fn create(
         &self,

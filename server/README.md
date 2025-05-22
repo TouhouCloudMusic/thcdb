@@ -28,6 +28,4 @@ Our project team consists of two main groups: skilled programmers who have limit
 
 If you have expertise in front-end development, UI design, or database management—and the time to contribute—we would love your help to bring this project closer to completion. Together, we can make Touhou Cloud DB an invaluable resource for the doujin music community!
 
-More: [CONTRIBUTING.md](./CONTRIBUTING.md)
-
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed contribution guidelines.

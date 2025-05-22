@@ -8,7 +8,7 @@ pub use model::*;
 use super::model::auth::CorrectionApprover;
 use super::repository::Transaction;
 use super::user::User;
-use crate::error::InfraError;
+use crate::infra::error::Error;
 
 pub trait CorrectionEntity {
     fn entity_type() -> EntityType;
@@ -83,14 +83,14 @@ pub trait TxRepo: Repo {
         correction_id: i32,
         approver: CorrectionApprover,
         context: impl ApproveCorrectionContext,
-    ) -> Result<(), InfraError>;
+    ) -> Result<(), Error>;
 }
 
 pub trait CorrectionEntityRepo<T>: Transaction
 where
     T: CorrectionEntity,
 {
-    async fn create(&self, data: &T) -> Result<i32, InfraError>;
+    async fn create(&self, data: &T) -> Result<i32, Error>;
 
-    async fn create_history(&self, data: &T) -> Result<i32, InfraError>;
+    async fn create_history(&self, data: &T) -> Result<i32, Error>;
 }

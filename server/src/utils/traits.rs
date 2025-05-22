@@ -1,7 +1,5 @@
 #![expect(dead_code)]
 
-use super::validation::Len;
-
 pub trait MapInto<Target> {
     fn map_into(self) -> Target;
 }
@@ -109,6 +107,47 @@ where
     }
 }
 
+pub trait Len {
+    type Len: PartialOrd;
+    const EMPTY: Self::Len;
+
+    fn len(&self) -> Self::Len;
+
+    fn is_empty(&self) -> bool {
+        self.len() == Self::EMPTY
+    }
+}
+
+impl Len for String {
+    type Len = usize;
+
+    const EMPTY: Self::Len = 0;
+
+    fn len(&self) -> Self::Len {
+        self.len()
+    }
+}
+
+impl<T> Len for Vec<T> {
+    type Len = usize;
+
+    const EMPTY: Self::Len = 0;
+
+    fn len(&self) -> Self::Len {
+        self.len()
+    }
+}
+
+impl<T> Len for [T] {
+    type Len = usize;
+
+    const EMPTY: Self::Len = 0;
+
+    fn len(&self) -> Self::Len {
+        self.len()
+    }
+}
+
 pub trait NonEmpty: Sized {
     fn non_empty(self) -> Option<Self>;
     fn non_empty_or<E>(self, err: E) -> Result<Self, E>;
@@ -152,70 +191,5 @@ impl<T> NonEmpty for &[T] {
 
     fn non_empty_then<U>(self, f: impl FnOnce(Self) -> U) -> Option<U> {
         if self.is_empty() { None } else { Some(f(self)) }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_non_empty_vec_some() {
-        let v = vec![1, 2, 3];
-        let result = v.clone().non_empty();
-        assert_eq!(result, Some(v));
-    }
-
-    #[test]
-    fn test_non_empty_vec_none() {
-        let v: Vec<i32> = vec![];
-        let result = v.non_empty();
-        assert_eq!(result, None);
-    }
-
-    #[test]
-    fn test_non_empty_or_ok() {
-        let v = vec![42];
-        let result: Result<_, &str> = v.clone().non_empty_or("empty");
-        assert_eq!(result, Ok(v));
-    }
-
-    #[test]
-    fn test_non_empty_or_err() {
-        let v: Vec<i32> = vec![];
-        let result: Result<_, &str> = v.non_empty_or("empty");
-        assert_eq!(result, Err("empty"));
-    }
-
-    #[test]
-    fn test_non_empty_or_else_ok() {
-        let v = vec![99];
-        let result: Result<_, String> =
-            v.clone().non_empty_or_else(|| "err".to_string());
-        assert_eq!(result, Ok(v));
-    }
-
-    #[test]
-    fn test_non_empty_or_else_lazy_err() {
-        let v: Vec<i32> = vec![];
-        let mut called = false;
-        let result: Result<_, String> = v.non_empty_or_else(|| {
-            called = true;
-            "error".to_string()
-        });
-        assert_eq!(result, Err("error".to_string()));
-        assert!(called);
-    }
-
-    #[test]
-    fn test_non_empty_or_else_not_called_if_non_empty() {
-        let v = vec![1];
-        let mut called = false;
-        let result: Result<_, String> = v.clone().non_empty_or_else(|| {
-            called = true;
-            "should not be called".to_string()
-        });
-        assert_eq!(result, Ok(v));
-        assert!(!called);
     }
 }

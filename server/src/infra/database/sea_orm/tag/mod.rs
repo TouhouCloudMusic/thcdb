@@ -79,7 +79,7 @@ async fn find_many_impl(
         .collect())
 }
 
-impl TxRepo for crate::infrastructure::database::sea_orm::SeaOrmTxRepo {
+impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(&self, data: &NewTag) -> Result<i32, Self::Error> {
         let tag = create_tag_impl(data, self.conn()).await?;
 
