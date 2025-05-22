@@ -161,8 +161,11 @@ macro_rules! data {
             #[derive(utoipa::ToSchema)]
             #[allow(clippy::allow_attributes,dead_code)]
             struct $name {
-                    status: String,
-                    data: $type
+                status: String,
+                #[schema(
+                    required = true,
+                )]
+                data: $type
             }
         ) *
 	};
