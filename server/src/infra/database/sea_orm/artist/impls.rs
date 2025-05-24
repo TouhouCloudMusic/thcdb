@@ -20,7 +20,7 @@ use sea_orm::{
 use url::Url;
 
 use crate::domain::artist::model::{NewArtist, NewMembership, Tenure};
-use crate::domain::share::model::{
+use crate::domain::shared::model::{
     DateWithPrecision, EntityIdent, Location, NewLocalizedName,
 };
 

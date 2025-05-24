@@ -18,7 +18,7 @@ use super::SeaOrmTxRepo;
 use crate::domain::artist::model::{Artist, Membership, NewArtist, Tenure};
 use crate::domain::artist::repo::{Repo, TxRepo};
 use crate::domain::repository::Connection;
-use crate::domain::share::model::{CreditRole, LocalizedName, Location};
+use crate::domain::shared::model::{CreditRole, LocalizedName, Location};
 
 mod impls;
 

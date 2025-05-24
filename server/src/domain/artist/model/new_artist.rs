@@ -10,7 +10,7 @@ use utoipa::ToSchema;
 
 use super::Tenure;
 use crate::domain::correction::CorrectionEntity;
-use crate::domain::share::model::{
+use crate::domain::shared::model::{
     DateWithPrecision, EntityIdent, Location, NewLocalizedName,
 };
 

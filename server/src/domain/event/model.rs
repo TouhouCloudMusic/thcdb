@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::domain::correction::CorrectionEntity;
-use crate::domain::share::model::{DateWithPrecision, EntityIdent};
+use crate::domain::shared::model::{DateWithPrecision, EntityIdent};
 
 #[serde_with::apply(
     Vec    => #[serde(skip_serializing_if = "Vec::is_empty")],

@@ -2,7 +2,7 @@ pub use entity::sea_orm_active_enums::ArtistType;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::domain::share::model::{
+use crate::domain::shared::model::{
     CreditRole, DateWithPrecision, LocalizedName, Location,
 };
 

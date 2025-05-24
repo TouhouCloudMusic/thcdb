@@ -13,7 +13,7 @@ use sea_orm::{
 use crate::domain::label::model::{Label, NewLabel};
 use crate::domain::label::{Repo, TxRepo};
 use crate::domain::repository::Connection;
-use crate::domain::share::model::{
+use crate::domain::shared::model::{
     DateWithPrecision, LocalizedName, NewLocalizedName,
 };
 

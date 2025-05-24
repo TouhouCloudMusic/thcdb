@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::domain::correction::CorrectionEntity;
-use crate::domain::share::model::{
+use crate::domain::shared::model::{
     DateWithPrecision, EntityIdent, LocalizedName, NewLocalizedName,
 };
 

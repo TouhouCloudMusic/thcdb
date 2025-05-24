@@ -15,7 +15,7 @@ use sea_orm::{
 use crate::domain::event::model::{AlternativeName, Event, NewEvent};
 use crate::domain::event::repo::{Repo, TxRepo};
 use crate::domain::repository::Connection;
-use crate::domain::share::model::DateWithPrecision;
+use crate::domain::shared::model::DateWithPrecision;
 
 impl<T> Repo for T
 where

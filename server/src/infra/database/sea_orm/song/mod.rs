@@ -13,7 +13,7 @@ use sea_orm::{
 };
 
 use crate::domain::repository::Connection;
-use crate::domain::share::model::{Language, NewLocalizedName};
+use crate::domain::shared::model::{Language, NewLocalizedName};
 use crate::domain::song::model::{
     LocalizedTitle, NewSong, NewSongCredit, Song, SongCredit,
 };

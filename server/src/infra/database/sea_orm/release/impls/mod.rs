@@ -13,7 +13,7 @@ use sea_orm::{
 use crate::domain::release::model::{
     CatalogNumber, Release, ReleaseArtist, ReleaseCredit,
 };
-use crate::domain::share::model::NewLocalizedTitle;
+use crate::domain::shared::model::NewLocalizedTitle;
 use crate::utils::NonEmpty;
 
 mod track;
@@ -121,6 +121,7 @@ fn conv_to_domain_model(
 ) -> Release {
     Release {
         id: release_model.id,
+        title: release_model.title.clone(),
         release_type: release_model.release_type,
         release_date: release_model.release_date,
         release_date_precision: Some(release_model.release_date_precision),
@@ -175,7 +176,7 @@ fn conv_catalog_numbers(
 fn conv_localized_titles(
     loc_titles: &[entity::release_localized_title::Model],
     languages: &[entity::language::Model],
-) -> Vec<crate::domain::share::model::LocalizedTitle> {
+) -> Vec<crate::domain::shared::model::LocalizedTitle> {
     loc_titles
         .iter()
         .map(|lt| {
@@ -186,8 +187,8 @@ fn conv_localized_titles(
                     panic!("Language with id {} not found", lt.language_id)
                 });
 
-            crate::domain::share::model::LocalizedTitle {
-                language: crate::domain::share::model::Language {
+            crate::domain::shared::model::LocalizedTitle {
+                language: crate::domain::shared::model::Language {
                     id: language.id,
                     name: language.name.clone(),
                     code: language.code.clone(),
@@ -226,7 +227,7 @@ fn conv_credits(
                     id: artist.id,
                     name: artist.name.clone(),
                 },
-                role: crate::domain::share::model::CreditRole {
+                role: crate::domain::shared::model::CreditRole {
                     id: role.id,
                     name: role.name.clone(),
                 },

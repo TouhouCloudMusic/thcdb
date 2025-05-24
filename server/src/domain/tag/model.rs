@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::domain::correction::CorrectionEntity;
-use crate::domain::share::model::EntityIdent;
+use crate::domain::shared::model::EntityIdent;
 
 #[derive(Clone, Debug, Serialize, ToSchema)]
 pub struct Tag {

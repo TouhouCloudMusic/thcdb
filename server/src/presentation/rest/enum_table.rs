@@ -7,7 +7,7 @@ use utoipa_axum::routes;
 
 use super::state::ArcAppState;
 use crate::domain::model::auth::UserRoleEnum;
-use crate::domain::share::model::Language;
+use crate::domain::shared::model::Language;
 use crate::infra::error::Error;
 use crate::presentation::api_response::Data;
 

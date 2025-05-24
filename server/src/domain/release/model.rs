@@ -6,19 +6,20 @@ use sea_orm::prelude::Date;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use super::super::share::model::{
+use super::super::shared::model::{
     CreditRole, LocalizedTitle, NewLocalizedTitle,
 };
 use crate::domain::correction::CorrectionEntity;
-use crate::domain::share::model::DateWithPrecision;
+use crate::domain::shared::model::DateWithPrecision;
 
-#[derive(ToSchema, Serialize)]
+#[derive(Clone, Debug, ToSchema, Serialize)]
 #[schema(
     as = Release
 )]
 #[expect(clippy::struct_field_names)]
 pub struct Release {
     pub id: i32,
+    pub title: String,
     pub release_type: ReleaseType,
     pub release_date: Option<Date>,
     pub release_date_precision: Option<DatePrecision>,
@@ -34,19 +35,19 @@ pub struct Release {
     pub tracks: Vec<i32>,
 }
 
-#[derive(ToSchema, Serialize)]
+#[derive(Clone, Debug, ToSchema, Serialize)]
 pub struct ReleaseArtist {
     pub id: i32,
     pub name: String,
 }
 
-#[derive(Clone, ToSchema, Serialize, Deserialize)]
+#[derive(Clone, Debug, ToSchema, Serialize, Deserialize)]
 pub struct CatalogNumber {
     pub catalog_number: String,
     pub label_id: Option<i32>,
 }
 
-#[derive(ToSchema, Serialize)]
+#[derive(Clone, Debug, ToSchema, Serialize)]
 pub struct ReleaseCredit {
     pub artist: ReleaseArtist,
     pub role: CreditRole,
