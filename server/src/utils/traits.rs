@@ -193,3 +193,13 @@ impl<T> NonEmpty for &[T] {
         if self.is_empty() { None } else { Some(f(self)) }
     }
 }
+
+pub trait BoolExt {
+    fn and_some<T>(self, t: T) -> Option<T>;
+}
+
+impl BoolExt for bool {
+    fn and_some<T>(self, t: T) -> Option<T> {
+        if self { Some(t) } else { None }
+    }
+}

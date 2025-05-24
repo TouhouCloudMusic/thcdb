@@ -10,6 +10,7 @@ use crate::domain::repository::{Connection, Transaction, TransactionManager};
 
 mod artist;
 mod artist_image_queue;
+mod artist_release;
 mod correction;
 pub mod enum_table;
 mod event;

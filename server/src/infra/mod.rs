@@ -9,4 +9,4 @@ pub mod singleton;
 pub mod state;
 pub mod storage;
 
-pub use error::{Error, ErrorEnum};
+pub use error::{Error, ErrorEnum, Result};

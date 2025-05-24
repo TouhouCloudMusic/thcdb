@@ -2,6 +2,7 @@ use axum::Json;
 use axum::body::Bytes;
 use axum::extract::{Path, Query, State};
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
+use entity::enums::ReleaseType;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -18,6 +19,11 @@ use crate::application::artist_image::{
 };
 use crate::application::correction::NewCorrectionDto;
 use crate::domain::artist::model::{Artist, NewArtist};
+use crate::domain::artist_release::{
+    AppearanceQuery, ArtistRelease, CreditQuery, DiscographyQuery,
+};
+use crate::domain::release::model::Release;
+use crate::domain::repository::{Cursored, Pagination};
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
 use crate::utils::MapInto;
@@ -32,11 +38,16 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(upload_artist_profile_image))
         .routes(routes!(find_artist_by_id))
         .routes(routes!(find_artist_by_keyword))
+        .routes(routes!(find_artist_discographies))
+        .routes(routes!(find_artist_apperances))
+        .routes(routes!(get_artist_credits))
 }
 
 data!(
     DataOptionArtist, Option<Artist>
     DataVecArtist, Vec<Artist>
+    DataVecRelease, Vec<Release>
+    DataCursoredArtistRelease, Cursored<ArtistRelease>
 );
 
 #[utoipa::path(
@@ -163,4 +174,114 @@ async fn upload_artist_profile_image(
     };
     service.upload_profile_image(dto).await?;
     Ok(Message::ok())
+}
+
+#[derive(Deserialize, IntoParams)]
+struct AppearanceQueryDto {
+    pub pagination: Pagination,
+}
+
+impl AppearanceQueryDto {
+    pub const fn into_query(self, artist_id: i32) -> AppearanceQuery {
+        AppearanceQuery {
+            artist_id,
+            pagination: self.pagination,
+        }
+    }
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/artist/{id}/appearances",
+    params(
+        AppearanceQueryDto
+    ),
+    responses(
+        (status = 200, body = DataCursoredArtistRelease),
+        Error
+    ),
+)]
+async fn find_artist_apperances(
+    State(repo): State<state::SeaOrmRepository>,
+    Path(id): Path<i32>,
+    Query(dto): Query<AppearanceQueryDto>,
+) -> Result<Data<Cursored<ArtistRelease>>, Error> {
+    domain::artist_release::Repo::appearance(&repo, dto.into_query(id))
+        .await
+        .map_into()
+}
+
+#[derive(Deserialize, IntoParams)]
+struct CreditQueryDto {
+    pub pagination: Pagination,
+}
+
+impl CreditQueryDto {
+    pub const fn into_query(self, artist_id: i32) -> CreditQuery {
+        CreditQuery {
+            artist_id,
+            pagination: self.pagination,
+        }
+    }
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/artist/{id}/credits",
+    params(
+        CreditQueryDto
+    ),
+    responses(
+        (status = 200, body = DataCursoredArtistRelease),
+        Error
+    ),
+)]
+async fn get_artist_credits(
+    State(repo): State<state::SeaOrmRepository>,
+    Path(id): Path<i32>,
+    Query(dto): Query<CreditQueryDto>,
+) -> Result<Data<Cursored<ArtistRelease>>, Error> {
+    domain::artist_release::Repo::credit(&repo, dto.into_query(id))
+        .await
+        .map_into()
+}
+
+#[derive(Deserialize, IntoParams)]
+struct DiscographyQueryDto {
+    pub release_type: ReleaseType,
+    pub pagination: Pagination,
+}
+
+impl DiscographyQueryDto {
+    pub const fn into_query(self, artist_id: i32) -> DiscographyQuery {
+        DiscographyQuery {
+            artist_id,
+            release_type: self.release_type,
+            pagination: self.pagination,
+        }
+    }
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/artist/{id}/discographies",
+    params(
+        DiscographyQueryDto
+    ),
+    responses(
+        (status = 200, body = DataCursoredArtistRelease),
+        Error
+    ),
+)]
+async fn find_artist_discographies(
+    State(repo): State<state::SeaOrmRepository>,
+    Path(id): Path<i32>,
+    Query(dto): Query<DiscographyQueryDto>,
+) -> Result<Data<Cursored<ArtistRelease>>, Error> {
+    domain::artist_release::Repo::discography(&repo, dto.into_query(id))
+        .await
+        .map_into()
 }

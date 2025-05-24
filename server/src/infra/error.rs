@@ -11,6 +11,8 @@ use crate::presentation::api_response::{
     IntoApiResponse, default_into_api_response_impl,
 };
 
+pub type Result<T> = std::result::Result<T, Error>;
+
 #[derive(Debug, Display, derive_more::Error, From)]
 pub enum ErrorEnum {
     SeaOrm(DbErr),
