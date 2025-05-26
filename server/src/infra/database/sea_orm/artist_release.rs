@@ -47,6 +47,7 @@ async fn find_artist_release_impl(
             release::Column::Title,
             release::Column::ReleaseDate,
             release::Column::ReleaseDatePrecision,
+            release::Column::ReleaseType,
         ])
         .filter(cond.into())
         .cursor_by(release::Column::Id);
@@ -108,6 +109,7 @@ fn to_artist_release(
         title: release.title,
         artist,
         release_date,
+        release_type: release.release_type,
     }
 }
 

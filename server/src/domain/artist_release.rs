@@ -11,6 +11,7 @@ pub struct ArtistRelease {
     pub title: String,
     pub artist: Vec<ArtistReleaseArtist>,
     pub release_date: Option<DateWithPrecision>,
+    pub release_type: ReleaseType,
 }
 
 #[derive(Serialize, ToSchema)]
