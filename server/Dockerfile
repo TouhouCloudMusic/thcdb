@@ -1,4 +1,4 @@
-FROM rustlang/rust:nightly@sha256:3863bee1418e41d6d757cd94f75b8f5497f72dc7298a957b26f68009e03827e8 AS builder
+FROM rustlang/rust:nightly@sha256:ebabfcbe6b9c40cc645638d512e84dfb922edfc3e26161a97eb277de6abf0fb8 AS builder
 
 WORKDIR /app
 
