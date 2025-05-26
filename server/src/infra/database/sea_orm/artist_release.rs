@@ -8,7 +8,7 @@ use sea_orm_migration::prelude::Cond;
 
 use super::SeaOrmRepository;
 use crate::domain::artist_release::*;
-use crate::domain::repository::{Connection, Paginated, Pagination};
+use crate::domain::repository::{Connection, Cursor, Paginated};
 use crate::domain::shared::model::DateWithPrecision;
 use crate::infra;
 
@@ -37,7 +37,7 @@ impl Repo for SeaOrmRepository {
 
 async fn find_artist_release_impl(
     cond: impl Into<Cond>,
-    pagination: Pagination,
+    pagination: Cursor,
     db: &impl ConnectionTrait,
 ) -> infra::Result<Paginated<ArtistRelease>> {
     let mut cursor = release::Entity::find()
@@ -52,7 +52,7 @@ async fn find_artist_release_impl(
         .filter(cond.into())
         .cursor_by(release::Column::Id);
 
-    cursor.after(pagination.cursor);
+    cursor.after(pagination.at);
 
     // Get one more to check if there are more
     let mut releases =

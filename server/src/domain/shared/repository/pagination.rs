@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use utoipa::{IntoParams, ToSchema};
+use utoipa::ToSchema;
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct Paginated<T> {
@@ -16,8 +16,8 @@ impl<T> Paginated<T> {
     }
 }
 
-#[derive(Clone, Copy, Deserialize, ToSchema, IntoParams)]
-pub struct Pagination {
-    pub cursor: u32,
+#[derive(Clone, Copy)]
+pub struct Cursor {
+    pub at: u32,
     pub limit: u8,
 }

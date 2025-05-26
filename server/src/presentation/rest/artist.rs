@@ -23,7 +23,7 @@ use crate::domain::artist_release::{
     AppearanceQuery, ArtistRelease, CreditQuery, DiscographyQuery,
 };
 use crate::domain::release::model::Release;
-use crate::domain::repository::{Paginated, Pagination};
+use crate::domain::repository::{Cursor, Paginated};
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
 use crate::utils::MapInto;
@@ -176,17 +176,21 @@ async fn upload_artist_profile_image(
     Ok(Message::ok())
 }
 
+// https://github.com/juhaku/utoipa/issues/841 IntoParams does not respect #[serde(flatten)]
 #[derive(Deserialize, IntoParams)]
 struct AppearanceQueryDto {
-    #[serde(flatten)]
-    pub pagination: Pagination,
+    cursor: u32,
+    limit: u8,
 }
 
 impl AppearanceQueryDto {
-    pub const fn into_query(self, artist_id: i32) -> AppearanceQuery {
+    const fn into_query(self, artist_id: i32) -> AppearanceQuery {
         AppearanceQuery {
             artist_id,
-            pagination: self.pagination,
+            pagination: Cursor {
+                at: self.cursor,
+                limit: self.limit,
+            },
         }
     }
 }
@@ -213,17 +217,20 @@ async fn find_artist_apperances(
         .map_into()
 }
 
-#[derive(Deserialize, IntoParams)]
+#[derive(Deserialize, IntoParams, ToSchema)]
 struct CreditQueryDto {
-    #[serde(flatten)]
-    pub pagination: Pagination,
+    cursor: u32,
+    limit: u8,
 }
 
 impl CreditQueryDto {
-    pub const fn into_query(self, artist_id: i32) -> CreditQuery {
+    const fn into_query(self, artist_id: i32) -> CreditQuery {
         CreditQuery {
             artist_id,
-            pagination: self.pagination,
+            pagination: Cursor {
+                at: self.cursor,
+                limit: self.limit,
+            },
         }
     }
 }
@@ -250,19 +257,22 @@ async fn get_artist_credits(
         .map_into()
 }
 
-#[derive(Deserialize, IntoParams)]
+#[derive(Deserialize, IntoParams, ToSchema)]
 struct DiscographyQueryDto {
-    pub release_type: ReleaseType,
-    #[serde(flatten)]
-    pub pagination: Pagination,
+    release_type: ReleaseType,
+    cursor: u32,
+    limit: u8,
 }
 
 impl DiscographyQueryDto {
-    pub const fn into_query(self, artist_id: i32) -> DiscographyQuery {
+    const fn into_query(self, artist_id: i32) -> DiscographyQuery {
         DiscographyQuery {
             artist_id,
             release_type: self.release_type,
-            pagination: self.pagination,
+            pagination: Cursor {
+                at: self.cursor,
+                limit: self.limit,
+            },
         }
     }
 }

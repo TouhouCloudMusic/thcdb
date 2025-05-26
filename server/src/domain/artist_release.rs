@@ -2,7 +2,7 @@ use entity::enums::ReleaseType;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::repository::{Connection, Paginated, Pagination};
+use super::repository::{Connection, Cursor, Paginated};
 use super::shared::model::DateWithPrecision;
 use crate::infra;
 
@@ -24,18 +24,18 @@ pub struct ArtistReleaseArtist {
 
 pub struct AppearanceQuery {
     pub artist_id: i32,
-    pub pagination: Pagination,
+    pub pagination: Cursor,
 }
 
 pub struct CreditQuery {
     pub artist_id: i32,
-    pub pagination: Pagination,
+    pub pagination: Cursor,
 }
 
 pub struct DiscographyQuery {
     pub artist_id: i32,
     pub release_type: ReleaseType,
-    pub pagination: Pagination,
+    pub pagination: Cursor,
 }
 
 pub trait Repo: Connection {
