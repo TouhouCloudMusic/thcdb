@@ -8,7 +8,7 @@ use sea_orm_migration::prelude::Cond;
 
 use super::SeaOrmRepository;
 use crate::domain::artist_release::*;
-use crate::domain::repository::{Connection, Cursored, Pagination};
+use crate::domain::repository::{Connection, Paginated, Pagination};
 use crate::domain::shared::model::DateWithPrecision;
 use crate::infra;
 
@@ -16,21 +16,21 @@ impl Repo for SeaOrmRepository {
     async fn appearance(
         &self,
         query: AppearanceQuery,
-    ) -> infra::Result<Cursored<ArtistRelease>> {
+    ) -> infra::Result<Paginated<ArtistRelease>> {
         find_artist_release_impl(&query, query.pagination, self.conn()).await
     }
 
     async fn credit(
         &self,
         query: CreditQuery,
-    ) -> infra::Result<Cursored<ArtistRelease>> {
+    ) -> infra::Result<Paginated<ArtistRelease>> {
         find_artist_release_impl(&query, query.pagination, self.conn()).await
     }
 
     async fn discography(
         &self,
         query: DiscographyQuery,
-    ) -> infra::Result<Cursored<ArtistRelease>> {
+    ) -> infra::Result<Paginated<ArtistRelease>> {
         find_artist_release_impl(&query, query.pagination, self.conn()).await
     }
 }
@@ -39,7 +39,7 @@ async fn find_artist_release_impl(
     cond: impl Into<Cond>,
     pagination: Pagination,
     db: &impl ConnectionTrait,
-) -> infra::Result<Cursored<ArtistRelease>> {
+) -> infra::Result<Paginated<ArtistRelease>> {
     let mut cursor = release::Entity::find()
         .select_only()
         .columns([
@@ -68,7 +68,7 @@ async fn find_artist_release_impl(
         Some(last_release_id) => has_more.as_some(last_release_id),
         // Should never happen
         None => {
-            return Ok(Cursored::nothing());
+            return Ok(Paginated::nothing());
         }
     };
 
@@ -86,7 +86,7 @@ async fn find_artist_release_impl(
         .map(to_artist_release)
         .collect_vec();
 
-    Ok(Cursored { items, next_cursor })
+    Ok(Paginated { items, next_cursor })
 }
 
 fn to_artist_release(

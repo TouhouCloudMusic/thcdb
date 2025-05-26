@@ -23,7 +23,7 @@ use crate::domain::artist_release::{
     AppearanceQuery, ArtistRelease, CreditQuery, DiscographyQuery,
 };
 use crate::domain::release::model::Release;
-use crate::domain::repository::{Cursored, Pagination};
+use crate::domain::repository::{Paginated, Pagination};
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
 use crate::utils::MapInto;
@@ -47,7 +47,7 @@ data!(
     DataOptionArtist, Option<Artist>
     DataVecArtist, Vec<Artist>
     DataVecRelease, Vec<Release>
-    DataCursoredArtistRelease, Cursored<ArtistRelease>
+    DataCursoredArtistRelease, Paginated<ArtistRelease>
 );
 
 #[utoipa::path(
@@ -206,7 +206,7 @@ async fn find_artist_apperances(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<AppearanceQueryDto>,
-) -> Result<Data<Cursored<ArtistRelease>>, Error> {
+) -> Result<Data<Paginated<ArtistRelease>>, Error> {
     domain::artist_release::Repo::appearance(&repo, dto.into_query(id))
         .await
         .map_into()
@@ -242,7 +242,7 @@ async fn get_artist_credits(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<CreditQueryDto>,
-) -> Result<Data<Cursored<ArtistRelease>>, Error> {
+) -> Result<Data<Paginated<ArtistRelease>>, Error> {
     domain::artist_release::Repo::credit(&repo, dto.into_query(id))
         .await
         .map_into()
@@ -280,7 +280,7 @@ async fn find_artist_discographies(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<DiscographyQueryDto>,
-) -> Result<Data<Cursored<ArtistRelease>>, Error> {
+) -> Result<Data<Paginated<ArtistRelease>>, Error> {
     domain::artist_release::Repo::discography(&repo, dto.into_query(id))
         .await
         .map_into()

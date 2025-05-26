@@ -2,12 +2,12 @@ use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 
 #[derive(Serialize, Deserialize, ToSchema)]
-pub struct Cursored<T> {
+pub struct Paginated<T> {
     pub items: Vec<T>,
     pub next_cursor: Option<i32>,
 }
 
-impl<T> Cursored<T> {
+impl<T> Paginated<T> {
     pub const fn nothing() -> Self {
         Self {
             items: vec![],

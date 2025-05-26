@@ -2,7 +2,7 @@ use entity::enums::ReleaseType;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::repository::{Connection, Cursored, Pagination};
+use super::repository::{Connection, Paginated, Pagination};
 use super::shared::model::DateWithPrecision;
 use crate::infra;
 
@@ -42,15 +42,15 @@ pub trait Repo: Connection {
     async fn appearance(
         &self,
         query: AppearanceQuery,
-    ) -> infra::Result<Cursored<ArtistRelease>>;
+    ) -> infra::Result<Paginated<ArtistRelease>>;
 
     async fn credit(
         &self,
         query: CreditQuery,
-    ) -> infra::Result<Cursored<ArtistRelease>>;
+    ) -> infra::Result<Paginated<ArtistRelease>>;
 
     async fn discography(
         &self,
         query: DiscographyQuery,
-    ) -> infra::Result<Cursored<ArtistRelease>>;
+    ) -> infra::Result<Paginated<ArtistRelease>>;
 }
