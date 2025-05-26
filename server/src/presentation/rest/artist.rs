@@ -178,6 +178,7 @@ async fn upload_artist_profile_image(
 
 #[derive(Deserialize, IntoParams)]
 struct AppearanceQueryDto {
+    #[serde(flatten)]
     pub pagination: Pagination,
 }
 
@@ -214,6 +215,7 @@ async fn find_artist_apperances(
 
 #[derive(Deserialize, IntoParams)]
 struct CreditQueryDto {
+    #[serde(flatten)]
     pub pagination: Pagination,
 }
 
@@ -251,6 +253,7 @@ async fn get_artist_credits(
 #[derive(Deserialize, IntoParams)]
 struct DiscographyQueryDto {
     pub release_type: ReleaseType,
+    #[serde(flatten)]
     pub pagination: Pagination,
 }
 
