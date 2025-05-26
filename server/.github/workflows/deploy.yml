@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "crates/**"
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "build.rs"
   workflow_dispatch:
 
 env:

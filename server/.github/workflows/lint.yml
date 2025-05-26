@@ -5,6 +5,12 @@ on:
   #   branches: ["main"]
   pull_request:
     branches: ["main"]
+    paths:
+      - "crates/**"
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "build.rs"
   workflow_dispatch:
 
 env:
