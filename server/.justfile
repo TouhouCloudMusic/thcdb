@@ -21,11 +21,11 @@ pre-push: check
 default: fmt && fix
 
 __rm_entites:
-  rm ./entity/src/entities/*
+  rm crates/entity/src/entities/*
 
 __generate:
   sea-orm-cli generate entity \
-  -o entity/src/entities \
+  -o crates/entity/src/entities \
   --with-prelude=none \
   --with-serde=both \
   --enum-extra-derives utoipa::ToSchema \
@@ -34,4 +34,4 @@ __generate:
 generate: __rm_entites __generate
 
 converge:
-  cargo tarpaulin --workspace --exclude-files entity/src/entities/*
+  cargo tarpaulin --workspace --exclude-files crates/entity/src/entities/*

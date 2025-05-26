@@ -1,17 +1,17 @@
 [workspace]
 members = [
     ".",
-    "entity",
-    "macros",
-    "migration",
-    "proc_macros",
+    "crates/entity",
+    "crates/macros",
+    "crates/migration",
+    "crates/proc_macros",
 ]
 
 [workspace.dependencies]
-entity      = { path = "./entity" }
-macros      = { path = "./macros" }
-migration   = { path = "./migration" }
-proc_macros = { path = "./proc_macros" }
+entity      = { path = "crates/entity" }
+macros      = { path = "crates/macros" }
+migration   = { path = "crates/migration" }
+proc_macros = { path = "crates/proc_macros" }
 # external
 argon2 = "0.5"
 axum = { version = "0.8", features = [
