@@ -13,13 +13,29 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/views/artist/profile/comp/Info.tsx:51
+msgid "Aliases"
+msgstr "Aliases"
+
 #: src/components/Header/LeftSidebar.tsx:44
 msgid "Artist"
 msgstr "Artist"
 
+#: src/views/artist/profile/comp/Info.tsx:26
+msgid "Born"
+msgstr "Born"
+
 #: src/components/Header/LeftSidebar.tsx:32
 msgid "Chart"
 msgstr "Chart"
+
+#: src/views/artist/profile/comp/Info.tsx:31
+msgid "Died"
+msgstr "Died"
+
+#: src/views/artist/profile/comp/Info.tsx:31
+msgid "Disbanded"
+msgstr "Disbanded"
 
 #: src/components/Header/LeftSidebar.tsx:60
 msgid "Discover"
@@ -28,6 +44,18 @@ msgstr "Discover"
 #: src/components/Header/LeftSidebar.tsx:48
 msgid "Event"
 msgstr "Event"
+
+#: src/views/artist/profile/comp/Info.tsx:26
+msgid "Formed"
+msgstr "Formed"
+
+#: src/views/artist/profile/comp/Info.tsx:97
+msgid "Member Of"
+msgstr "Member Of"
+
+#: src/views/artist/profile/comp/Info.tsx:99
+msgid "Members"
+msgstr "Members"
 
 #: src/views/auth/component/AuthForm.tsx:72
 msgid "Password"
@@ -65,10 +93,14 @@ msgstr "Song"
 msgid "Tag"
 msgstr "Tag"
 
-#: src/App.tsx:31
+#: src/views/artist/profile/comp/ArtistRelease.tsx:113
+msgid "This Artist has no releases yet, you can upload them on <0>Upload New Release</0>"
+msgstr "This Artist has no releases yet, you can upload them on <0>Upload New Release</0>"
+
+#: src/App.tsx:35
 msgid "Touhou Cloud DB"
 msgstr "Touhou Cloud DB"
 
-#: src/App.tsx:35
+#: src/App.tsx:39
 msgid "Touhou Cloud DB is an open doujin music database"
 msgstr "Touhou Cloud DB is an open doujin music database"

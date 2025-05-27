@@ -22,15 +22,30 @@
 		"no-unused-vars": "warn",
 		"no-magic-numbers": [
 			"error",
-			{ "ignore": [0, 1], "ignoreArrayIndexes": true }
+			{ "ignore": [-1, 0, 1], "ignoreArrayIndexes": true }
 		],
 		"no-void": "off",
 		"no-case-declarations": "off",
 		"no-else-return": "off",
+		"no-negated-condition": "off",
+		"no-empty-function": [
+			"warn",
+			{
+				"allow": ["constructor", "privateConstructors", "protectedConstructors"]
+			}
+		],
 		"sort-keys": "off",
+
+		"default-case": [
+			"warn",
+			{
+				"commentPattern": "Unreachable"
+			}
+		],
 
 		"oxc/no-const-enum": "off",
 		"oxc/no-optional-chaining": "off",
+		"oxc/no-barrel-file": "off",
 
 		"eslint/func-style": "off",
 		"eslint/max-depth": ["warn", 4],
@@ -53,11 +68,14 @@
 		"typescript/explicit-function-return-type": "off",
 		"typescript/consistent-indexed-object-style": "warn",
 		"typescript/prefer-enum-initializers": "off",
+		"typescript/no-non-null-assertion": "off",
 
 		"import/exports-last": "off",
 		"import/max-dependencies": "off",
 		"import/no-anonymous-default-export": "off",
 		"import/no-namespace": "off",
+		"import/group-exports": "off",
+		"import/no-cycle": "off",
 
 		"unicorn/no-anonymous-default-export": "off",
 		"unicorn/no-empty-file": "off",

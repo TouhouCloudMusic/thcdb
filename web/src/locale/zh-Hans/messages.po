@@ -13,12 +13,28 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/views/artist/profile/comp/Info.tsx:51
+msgid "Aliases"
+msgstr ""
+
 #: src/components/Header/LeftSidebar.tsx:44
 msgid "Artist"
 msgstr ""
 
+#: src/views/artist/profile/comp/Info.tsx:26
+msgid "Born"
+msgstr ""
+
 #: src/components/Header/LeftSidebar.tsx:32
 msgid "Chart"
+msgstr ""
+
+#: src/views/artist/profile/comp/Info.tsx:31
+msgid "Died"
+msgstr ""
+
+#: src/views/artist/profile/comp/Info.tsx:31
+msgid "Disbanded"
 msgstr ""
 
 #: src/components/Header/LeftSidebar.tsx:60
@@ -27,6 +43,18 @@ msgstr ""
 
 #: src/components/Header/LeftSidebar.tsx:48
 msgid "Event"
+msgstr ""
+
+#: src/views/artist/profile/comp/Info.tsx:26
+msgid "Formed"
+msgstr ""
+
+#: src/views/artist/profile/comp/Info.tsx:97
+msgid "Member Of"
+msgstr ""
+
+#: src/views/artist/profile/comp/Info.tsx:99
+msgid "Members"
 msgstr ""
 
 #: src/views/auth/component/AuthForm.tsx:72
@@ -65,10 +93,14 @@ msgstr ""
 msgid "Tag"
 msgstr ""
 
-#: src/App.tsx:31
+#: src/views/artist/profile/comp/ArtistRelease.tsx:113
+msgid "This Artist has no releases yet, you can upload them on <0>Upload New Release</0>"
+msgstr ""
+
+#: src/App.tsx:35
 msgid "Touhou Cloud DB"
 msgstr "东方同音鉴"
 
-#: src/App.tsx:35
+#: src/App.tsx:39
 msgid "Touhou Cloud DB is an open doujin music database"
 msgstr "东方同音鉴是一个开放的同人音乐数据库"

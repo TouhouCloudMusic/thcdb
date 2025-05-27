@@ -1,4 +1,4 @@
-import { type OpenApiSchema } from ".."
+import type { OpenApiSchema } from ".."
 
 export * as UserMutation from "./mutation"
 export * as UserFetcher from "./fetcher"

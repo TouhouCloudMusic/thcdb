@@ -1,1 +1,1 @@
-export * as Image from "./impl"
+export * as Image from "./__internal"

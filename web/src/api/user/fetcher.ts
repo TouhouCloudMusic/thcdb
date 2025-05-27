@@ -1,4 +1,6 @@
-import { FetchClient, type UserProfile } from ".."
+// oxlint-disable-next-line no-cycle
+import { FetchClient } from ".."
+import type { UserProfile } from "./index"
 
 export type Option = {
 	"params.username"?: string | undefined
@@ -21,10 +23,11 @@ export async function userProfile({
 	if (res.data) {
 		return res.data.data
 	} else if (res.error) {
-		throw res.error.message
+		throw new Error(res.error.message)
+		// oxlint-disable-next-line no-magic-numbers
 	} else if (res.response.status === 404) {
-		return undefined
+		return
 	} else {
-		throw Error("Unknown error")
+		throw new Error("Unknown error")
 	}
 }

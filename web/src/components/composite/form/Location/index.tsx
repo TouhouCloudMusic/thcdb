@@ -1,5 +1,6 @@
 import { For } from "solid-js"
-import type { Location as LocationType } from "~/api/share/schema"
+
+import type { Location as LocationType } from "~/api/shared/schema"
 import { FormComp } from "~/components/common/form"
 import { InputField } from "~/components/common/form/Input"
 

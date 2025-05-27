@@ -1,10 +1,11 @@
 import dayjs from "dayjs"
 import { createEffect, createMemo, on } from "solid-js"
 import { createStore } from "solid-js/store"
+
 import type {
-	DateWithPrecision as t_DateWithPrecision,
+	DateWithPrecisionIn as t_DateWithPrecision,
 	DatePrecision,
-} from "~/api/share/schema"
+} from "~/api/shared/schema"
 import { FormComp } from "~/components/common/form"
 import { InputField } from "~/components/common/form/Input"
 
@@ -66,12 +67,14 @@ export function DateWithPrecision(props: DateWithPrecisionProps) {
 	const precision = createMemo<DatePrecision | undefined>(() => {
 		if (store.d) {
 			return "Day"
-		} if (store.m) {
+		}
+		if (store.m) {
 			return "Month"
-		} if (store.y) {
+		}
+		if (store.y) {
 			return "Year"
 		}
-			return undefined
+		return undefined
 	})
 
 	createEffect(

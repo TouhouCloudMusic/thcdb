@@ -1,4 +1,5 @@
 import createFetchClient from "openapi-fetch"
+
 import type { Expand, RevExactRecursive } from "~/types"
 
 import type { paths, components } from "./openapi"

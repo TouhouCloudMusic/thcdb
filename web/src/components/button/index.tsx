@@ -2,7 +2,8 @@ import * as Kobalte from "@kobalte/core/button"
 import { match } from "arktype"
 import { type JSX, mergeProps } from "solid-js"
 import { twMerge } from "tailwind-merge"
-import { type AppColor } from "~/components"
+
+import type { AppColor } from "~/components"
 
 /**
  * Note: 样式没做完
@@ -87,7 +88,7 @@ const VariantClass = {
 	Primary: `shadow-sm text-(--background-color-primary)`,
 	Secondary: `shadow-xs shadow-gray-100`,
 	// @tw
-	Tertiary: `bg-primary not-disabled:hover:bg-gray-100 not-disabled:active:bg-gray-200 disabled:bg-secondary`,
+	Tertiary: `bg-primary hover:bg-gray-100 active:bg-gray-200 disabled:bg-secondary disabled:hover:bg-secondary disabled:active:bg-secondary`,
 }
 
 const PrimaryColor: Record<AppColor, string> = {
