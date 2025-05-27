@@ -10,7 +10,7 @@ export type Pagination = {
 }
 
 export type Paginated<T> = Omit<
-	OpenApiSchema["Paginated_ArtistRelease"],
+	OpenApiSchema["Paginated_Discography"],
 	"items"
 > & {
 	items: T[]
