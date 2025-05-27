@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use boolinator::Boolinator;
 use entity::artist::{self};
 use entity::{release, release_artist};
@@ -12,35 +14,8 @@ use crate::domain::repository::{Connection, Cursor, Paginated};
 use crate::domain::shared::model::DateWithPrecision;
 use crate::infra;
 
-impl Repo for SeaOrmRepository {
-    async fn appearance(
-        &self,
-        query: AppearanceQuery,
-    ) -> infra::Result<Paginated<ArtistRelease>> {
-        find_artist_release_impl(&query, query.pagination, self.conn()).await
-    }
-
-    async fn credit(
-        &self,
-        query: CreditQuery,
-    ) -> infra::Result<Paginated<ArtistRelease>> {
-        find_artist_release_impl(&query, query.pagination, self.conn()).await
-    }
-
-    async fn discography(
-        &self,
-        query: DiscographyQuery,
-    ) -> infra::Result<Paginated<ArtistRelease>> {
-        find_artist_release_impl(&query, query.pagination, self.conn()).await
-    }
-}
-
-async fn find_artist_release_impl(
-    cond: impl Into<Cond>,
-    pagination: Cursor,
-    db: &impl ConnectionTrait,
-) -> infra::Result<Paginated<ArtistRelease>> {
-    let mut cursor = release::Entity::find()
+static BASE_SELECT: LazyLock<Select<release::Entity>> = LazyLock::new(|| {
+    release::Entity::find()
         .select_only()
         .columns([
             release::Column::Id,
@@ -49,8 +24,50 @@ async fn find_artist_release_impl(
             release::Column::ReleaseDatePrecision,
             release::Column::ReleaseType,
         ])
-        .filter(cond.into())
-        .cursor_by(release::Column::Id);
+        // Artist Id filter
+        .left_join(release_artist::Entity)
+});
+
+impl Repo for SeaOrmRepository {
+    async fn appearance(
+        &self,
+        query: AppearanceQuery,
+    ) -> infra::Result<Paginated<ArtistRelease>> {
+        find_artist_release_impl(
+            BASE_SELECT.clone(),
+            query.pagination,
+            self.conn(),
+        )
+        .await
+    }
+
+    async fn credit(
+        &self,
+        query: CreditQuery,
+    ) -> infra::Result<Paginated<ArtistRelease>> {
+        find_artist_release_impl(
+            BASE_SELECT.clone(),
+            query.pagination,
+            self.conn(),
+        )
+        .await
+    }
+
+    async fn discography(
+        &self,
+        query: DiscographyQuery,
+    ) -> infra::Result<Paginated<ArtistRelease>> {
+        let select = BASE_SELECT.clone().filter(Cond::from(&query));
+        find_artist_release_impl(select, query.pagination, self.conn()).await
+    }
+}
+
+async fn find_artist_release_impl(
+    select: Select<release::Entity>,
+    pagination: Cursor,
+    db: &impl ConnectionTrait,
+) -> infra::Result<Paginated<ArtistRelease>> {
+    let mut cursor = select.cursor_by(release::Column::Id);
 
     cursor.after(pagination.at);
 
@@ -75,7 +92,6 @@ async fn find_artist_release_impl(
     let release_artist = releases
         .load_many_to_many(
             artist::Entity::find()
-                .select_only()
                 .columns([artist::Column::Id, artist::Column::Name]),
             release_artist::Entity,
             db,
