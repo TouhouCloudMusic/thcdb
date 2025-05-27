@@ -34,7 +34,7 @@ impl Repo for SeaOrmRepository {
         query: AppearanceQuery,
     ) -> infra::Result<Paginated<ArtistRelease>> {
         find_artist_release_impl(
-            BASE_SELECT.clone(),
+            BASE_SELECT.clone().filter(Cond::from(&query)),
             query.pagination,
             self.conn(),
         )
@@ -46,7 +46,7 @@ impl Repo for SeaOrmRepository {
         query: CreditQuery,
     ) -> infra::Result<Paginated<ArtistRelease>> {
         find_artist_release_impl(
-            BASE_SELECT.clone(),
+            BASE_SELECT.clone().filter(Cond::from(&query)),
             query.pagination,
             self.conn(),
         )
