@@ -96,6 +96,7 @@ export function AuthForm() {
 					<FormComp.ErrorMessage message={formStore().response.message} />
 
 					<Button
+						type="submit"
 						variant="Primary"
 						color="Reimu"
 						class="mt-2 w-full shadow-lg"

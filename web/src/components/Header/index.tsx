@@ -158,7 +158,14 @@ function UnauthenticatedButtons() {
 				class={BTN_CLASS}
 				type="button"
 			>
-				{t`Sign Up`}
+				<Link
+					to="/auth"
+					search={{
+						type: "sign_up",
+					}}
+				>
+					{t`Sign Up`}
+				</Link>
 			</Button>
 		</div>
 	)
