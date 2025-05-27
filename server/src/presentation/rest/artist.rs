@@ -3,7 +3,7 @@ use axum::body::Bytes;
 use axum::extract::{Path, Query, State};
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use entity::enums::ReleaseType;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
@@ -38,7 +38,8 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(upload_artist_profile_image))
         .routes(routes!(find_artist_by_id))
         .routes(routes!(find_artist_by_keyword))
-        .routes(routes!(find_artist_discographies))
+        .routes(routes!(find_artist_discographies_init))
+        .routes(routes!(find_artist_discographies_by_type))
         .routes(routes!(find_artist_apperances))
         .routes(routes!(get_artist_credits))
 }
@@ -257,7 +258,7 @@ async fn get_artist_credits(
         .map_into()
 }
 
-#[derive(Deserialize, IntoParams, ToSchema)]
+#[derive(Deserialize, IntoParams)]
 struct DiscographyQueryDto {
     release_type: ReleaseType,
     cursor: u32,
@@ -289,7 +290,7 @@ impl DiscographyQueryDto {
         Error
     ),
 )]
-async fn find_artist_discographies(
+async fn find_artist_discographies_by_type(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<DiscographyQueryDto>,
@@ -297,4 +298,90 @@ async fn find_artist_discographies(
     domain::artist_release::Repo::discography(&repo, dto.into_query(id))
         .await
         .map_into()
+}
+
+#[derive(Deserialize, IntoParams)]
+struct InitDiscographyQueryDto {
+    cursor: u32,
+    limit: u8,
+}
+
+impl InitDiscographyQueryDto {
+    const fn to_query(
+        &self,
+        artist_id: i32,
+        release_type: ReleaseType,
+    ) -> DiscographyQuery {
+        DiscographyQuery {
+            artist_id,
+            release_type,
+            pagination: Cursor {
+                at: self.cursor,
+                limit: self.limit,
+            },
+        }
+    }
+}
+
+#[derive(Serialize, ToSchema)]
+struct InitDiscography {
+    album: Paginated<ArtistRelease>,
+    ep: Paginated<ArtistRelease>,
+    compilation: Paginated<ArtistRelease>,
+    single: Paginated<ArtistRelease>,
+    demo: Paginated<ArtistRelease>,
+    other: Paginated<ArtistRelease>,
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/artist/{id}/discographies/init",
+    params(
+        InitDiscographyQueryDto
+    ),
+    responses(
+        (status = 200, body = DataCursoredArtistRelease),
+        Error
+    ),
+)]
+async fn find_artist_discographies_init(
+    State(repo): State<state::SeaOrmRepository>,
+    Path(id): Path<i32>,
+    Query(dto): Query<InitDiscographyQueryDto>,
+) -> Result<Data<InitDiscography>, Error> {
+    let (album, ep, compilation, single, demo, other) = tokio::try_join!(
+        domain::artist_release::Repo::discography(
+            &repo,
+            dto.to_query(id, ReleaseType::Album),
+        ),
+        domain::artist_release::Repo::discography(
+            &repo,
+            dto.to_query(id, ReleaseType::Ep),
+        ),
+        domain::artist_release::Repo::discography(
+            &repo,
+            dto.to_query(id, ReleaseType::Single),
+        ),
+        domain::artist_release::Repo::discography(
+            &repo,
+            dto.to_query(id, ReleaseType::Compilation),
+        ),
+        domain::artist_release::Repo::discography(
+            &repo,
+            dto.to_query(id, ReleaseType::Demo),
+        ),
+        domain::artist_release::Repo::discography(
+            &repo,
+            dto.to_query(id, ReleaseType::Other),
+        ),
+    )?;
+    Ok(Data::new(InitDiscography {
+        album,
+        ep,
+        compilation,
+        single,
+        demo,
+        other,
+    }))
 }
