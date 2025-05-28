@@ -98,7 +98,7 @@ pub fn limit_layer(
     use tower_governor::governor::GovernorConfigBuilder;
 
     let config = GovernorConfigBuilder::default()
-        .per_second(req_per_sec)
+        .per_millisecond(1000 / req_per_sec)
         .burst_size(burst_size)
         .finish()
         .unwrap();
