@@ -48,7 +48,7 @@ data!(
     DataOptionArtist, Option<Artist>
     DataVecArtist, Vec<Artist>
     DataVecRelease, Vec<Release>
-    DataCursoredArtistRelease, Paginated<ArtistRelease>
+    DataPaginatedArtistRelease, Paginated<ArtistRelease>
 );
 
 #[utoipa::path(
@@ -204,7 +204,7 @@ impl AppearanceQueryDto {
         AppearanceQueryDto
     ),
     responses(
-        (status = 200, body = DataCursoredArtistRelease),
+        (status = 200, body = DataPaginatedArtistRelease),
         Error
     ),
 )]
@@ -244,7 +244,7 @@ impl CreditQueryDto {
         CreditQueryDto
     ),
     responses(
-        (status = 200, body = DataCursoredArtistRelease),
+        (status = 200, body = DataPaginatedArtistRelease),
         Error
     ),
 )]
@@ -286,7 +286,7 @@ impl DiscographyQueryDto {
         DiscographyQueryDto
     ),
     responses(
-        (status = 200, body = DataCursoredArtistRelease),
+        (status = 200, body = DataPaginatedArtistRelease),
         Error
     ),
 )]
@@ -302,7 +302,6 @@ async fn find_artist_discographies_by_type(
 
 #[derive(Deserialize, IntoParams)]
 struct InitDiscographyQueryDto {
-    cursor: u32,
     limit: u8,
 }
 
@@ -316,7 +315,7 @@ impl InitDiscographyQueryDto {
             artist_id,
             release_type,
             pagination: Cursor {
-                at: self.cursor,
+                at: 0,
                 limit: self.limit,
             },
         }
@@ -333,6 +332,10 @@ struct InitDiscography {
     other: Paginated<ArtistRelease>,
 }
 
+data! {
+    DataInitDiscography, InitDiscography
+}
+
 #[utoipa::path(
     get,
     tag = TAG,
@@ -341,7 +344,7 @@ struct InitDiscography {
         InitDiscographyQueryDto
     ),
     responses(
-        (status = 200, body = DataCursoredArtistRelease),
+        (status = 200, body = DataInitDiscography),
         Error
     ),
 )]
