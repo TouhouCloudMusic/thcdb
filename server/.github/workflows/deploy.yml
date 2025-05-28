@@ -35,10 +35,17 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@nightly
         # Use build cache
-      - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
+      - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad
+
+      - name: Install mold
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mold clang
 
       - name: Build project
-        run: cargo build --release
+        run: cargo build
+        env:
+          RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
 
       - name: Set up SCP
         run: |
@@ -54,7 +61,7 @@ jobs:
 
       - name: Copy binary to server
         run: |
-          scp target/release/thcdb_rs \
+          scp target/debug/thcdb_rs \
           ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SSH_HOST }}:/home/${{ secrets.DEV_SSH_USER }}//server/thcdb_rs
 
       - name: Restart systemd service
