@@ -4,8 +4,8 @@ use boolinator::Boolinator;
 use entity::artist::{self};
 use entity::{release, release_artist};
 use itertools::{Itertools, izip};
+use sea_orm::Condition;
 use sea_orm::prelude::*;
-use sea_orm::{Condition, QuerySelect};
 use sea_orm_migration::prelude::Cond;
 
 use super::SeaOrmRepository;
@@ -16,14 +16,6 @@ use crate::infra;
 
 static BASE_SELECT: LazyLock<Select<release::Entity>> = LazyLock::new(|| {
     release::Entity::find()
-        .select_only()
-        .columns([
-            release::Column::Id,
-            release::Column::Title,
-            release::Column::ReleaseDate,
-            release::Column::ReleaseDatePrecision,
-            release::Column::ReleaseType,
-        ])
         // Artist Id filter
         .left_join(release_artist::Entity)
 });
@@ -90,12 +82,7 @@ async fn find_artist_release_impl(
     };
 
     let release_artist = releases
-        .load_many_to_many(
-            artist::Entity::find()
-                .columns([artist::Column::Id, artist::Column::Name]),
-            release_artist::Entity,
-            db,
-        )
+        .load_many_to_many(artist::Entity::find(), release_artist::Entity, db)
         .await?;
 
     let items: Vec<ArtistRelease> = izip!(releases, release_artist)
