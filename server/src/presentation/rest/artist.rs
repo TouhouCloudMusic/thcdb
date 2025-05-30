@@ -49,7 +49,9 @@ data!(
     DataOptionArtist, Option<Artist>
     DataVecArtist, Vec<Artist>
     DataVecRelease, Vec<Release>
-    DataPaginatedArtistRelease, Paginated<Discography>
+    DataPaginatedDiscography, Paginated<Discography>
+    DataPaginatedAppearance, Paginated<Appearance>
+    DataPaginatedCredit, Paginated<Credit>
 );
 
 #[utoipa::path(
@@ -205,7 +207,7 @@ impl AppearanceQueryDto {
         AppearanceQueryDto
     ),
     responses(
-        (status = 200, body = DataPaginatedArtistRelease),
+        (status = 200, body = DataPaginatedAppearance),
         Error
     ),
 )]
@@ -245,7 +247,7 @@ impl CreditQueryDto {
         CreditQueryDto
     ),
     responses(
-        (status = 200, body = DataPaginatedArtistRelease),
+        (status = 200, body = DataPaginatedCredit),
         Error
     ),
 )]
@@ -287,7 +289,7 @@ impl DiscographyQueryDto {
         DiscographyQueryDto
     ),
     responses(
-        (status = 200, body = DataPaginatedArtistRelease),
+        (status = 200, body = DataPaginatedDiscography),
         Error
     ),
 )]
