@@ -20,7 +20,8 @@ use crate::application::artist_image::{
 use crate::application::correction::NewCorrectionDto;
 use crate::domain::artist::model::{Artist, NewArtist};
 use crate::domain::artist_release::{
-    AppearanceQuery, ArtistRelease, CreditQuery, DiscographyQuery,
+    Appearance, AppearanceQuery, Credit, CreditQuery, Discography,
+    DiscographyQuery,
 };
 use crate::domain::release::model::Release;
 use crate::domain::repository::{Cursor, Paginated};
@@ -48,7 +49,7 @@ data!(
     DataOptionArtist, Option<Artist>
     DataVecArtist, Vec<Artist>
     DataVecRelease, Vec<Release>
-    DataPaginatedArtistRelease, Paginated<ArtistRelease>
+    DataPaginatedArtistRelease, Paginated<Discography>
 );
 
 #[utoipa::path(
@@ -212,7 +213,7 @@ async fn find_artist_apperances(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<AppearanceQueryDto>,
-) -> Result<Data<Paginated<ArtistRelease>>, Error> {
+) -> Result<Data<Paginated<Appearance>>, Error> {
     domain::artist_release::Repo::appearance(&repo, dto.into_query(id))
         .await
         .map_into()
@@ -252,7 +253,7 @@ async fn get_artist_credits(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<CreditQueryDto>,
-) -> Result<Data<Paginated<ArtistRelease>>, Error> {
+) -> Result<Data<Paginated<Credit>>, Error> {
     domain::artist_release::Repo::credit(&repo, dto.into_query(id))
         .await
         .map_into()
@@ -294,7 +295,7 @@ async fn find_artist_discographies_by_type(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<DiscographyQueryDto>,
-) -> Result<Data<Paginated<ArtistRelease>>, Error> {
+) -> Result<Data<Paginated<Discography>>, Error> {
     domain::artist_release::Repo::discography(&repo, dto.into_query(id))
         .await
         .map_into()
@@ -324,12 +325,12 @@ impl InitDiscographyQueryDto {
 
 #[derive(Serialize, ToSchema)]
 struct InitDiscography {
-    album: Paginated<ArtistRelease>,
-    ep: Paginated<ArtistRelease>,
-    compilation: Paginated<ArtistRelease>,
-    single: Paginated<ArtistRelease>,
-    demo: Paginated<ArtistRelease>,
-    other: Paginated<ArtistRelease>,
+    album: Paginated<Discography>,
+    ep: Paginated<Discography>,
+    compilation: Paginated<Discography>,
+    single: Paginated<Discography>,
+    demo: Paginated<Discography>,
+    other: Paginated<Discography>,
 }
 
 data! {

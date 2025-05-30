@@ -3,11 +3,22 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::repository::{Connection, Cursor, Paginated};
-use super::shared::model::DateWithPrecision;
+use super::shared::model::{CreditRole, DateWithPrecision};
 use crate::infra;
 
+pub type Appearance = Discography;
+
 #[derive(Serialize, ToSchema)]
-pub struct ArtistRelease {
+pub struct Credit {
+    pub title: String,
+    pub artist: Vec<ArtistReleaseArtist>,
+    pub release_date: Option<DateWithPrecision>,
+    pub release_type: ReleaseType,
+    pub roles: Vec<CreditRole>,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct Discography {
     pub title: String,
     pub artist: Vec<ArtistReleaseArtist>,
     pub release_date: Option<DateWithPrecision>,
@@ -42,15 +53,15 @@ pub trait Repo: Connection {
     async fn appearance(
         &self,
         query: AppearanceQuery,
-    ) -> infra::Result<Paginated<ArtistRelease>>;
+    ) -> infra::Result<Paginated<Appearance>>;
 
     async fn credit(
         &self,
         query: CreditQuery,
-    ) -> infra::Result<Paginated<ArtistRelease>>;
+    ) -> infra::Result<Paginated<Credit>>;
 
     async fn discography(
         &self,
         query: DiscographyQuery,
-    ) -> infra::Result<Paginated<ArtistRelease>>;
+    ) -> infra::Result<Paginated<Discography>>;
 }

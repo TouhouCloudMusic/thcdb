@@ -14,6 +14,13 @@ impl<T> Paginated<T> {
             next_cursor: None,
         }
     }
+
+    pub fn map_items<U>(self, f: impl Fn(T) -> U) -> Paginated<U> {
+        Paginated {
+            items: self.items.into_iter().map(f).collect(),
+            next_cursor: self.next_cursor,
+        }
+    }
 }
 
 #[derive(Clone, Copy)]

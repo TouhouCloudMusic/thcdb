@@ -29,6 +29,16 @@ impl DateWithPrecision {
     pub const fn destruct(self) -> (NaiveDate, DatePrecision) {
         (self.value, self.precision)
     }
+
+    pub const fn from_option(
+        value: Option<NaiveDate>,
+        precision: DatePrecision,
+    ) -> Option<Self> {
+        match value {
+            Some(value) => Some(Self { value, precision }),
+            None => None,
+        }
+    }
 }
 
 impl From<(NaiveDate, DatePrecision)> for DateWithPrecision {
