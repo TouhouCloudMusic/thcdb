@@ -4,4 +4,14 @@ import type { OpenApiSchema } from ".."
 export * from "./schema"
 export * as DateWithPrecision from "./__internal/date_with_prec"
 
-export type Pagination = OpenApiSchema["Pagination"]
+export type Pagination = {
+	cursor: number
+	limit: number
+}
+
+export type Paginated<T> = Omit<
+	OpenApiSchema["Paginated_ArtistRelease"],
+	"items"
+> & {
+	items: T[]
+}

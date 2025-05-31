@@ -9,11 +9,7 @@ import { assertContext } from "~/utils/context"
 
 import { ArtistContext } from ".."
 
-function InfoLabel(props: ParentProps) {
-	return <span class="text-sm text-tertiary">{props.children}</span>
-}
-
-export function Info() {
+export function ArtistInfo() {
 	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 
@@ -155,6 +151,10 @@ function Location(props: { location?: Artist["start_location"] }) {
 			</div>
 		</Show>
 	)
+}
+
+function InfoLabel(props: ParentProps) {
+	return <span class="text-sm text-tertiary">{props.children}</span>
 }
 
 // Data utils

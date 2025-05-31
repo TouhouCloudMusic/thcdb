@@ -1,12 +1,16 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
+import { createEffect } from "solid-js"
+import { createStore, produce } from "solid-js/store"
 import * as v from "valibot"
 
+import type { Discography } from "~/api/artist"
 import { ArtistQueryOption } from "~/api/artist"
-import { RELEASE_TYPES, ReleaseType } from "~/api/release"
+import type { ReleaseType } from "~/api/release"
+import { RELEASE_TYPES } from "~/api/release"
 import { EntityId } from "~/api/shared/schema"
 import { TanstackQueryClinet } from "~/state/tanstack"
-import { mapTuple } from "~/utils/data/array"
+import { Obj } from "~/utils/data"
 import { ArtistProfilePage } from "~/views/artist/profile"
 
 export const Route = createFileRoute("/artist/$id")({
@@ -26,114 +30,49 @@ export const Route = createFileRoute("/artist/$id")({
 // oxlint-disable-next-line max-lines-per-function
 function RouteComponent() {
 	const params = Route.useParams()
-	const query = useQuery(() =>
-		ArtistQueryOption.findById(Number.parseInt(params().id, 10)),
+	const artistId = Number.parseInt(params().id, 10)
+	const query = useQuery(() => ArtistQueryOption.findById(artistId))
+
+	const appearances = useInfiniteQuery(() =>
+		ArtistQueryOption.appearances(artistId),
 	)
 
-	const initDiscographyAlbum = useInfiniteQuery(() =>
-		ArtistQueryOption.discography(query.data!.id, "Album"),
-	)
-	const initDiscographyEP = useInfiniteQuery(() =>
-		ArtistQueryOption.discography(query.data!.id, "Ep"),
-	)
+	const credits = useInfiniteQuery(() => ArtistQueryOption.credits(artistId))
 
-	const initDiscographySingle = useInfiniteQuery(() =>
-		ArtistQueryOption.discography(query.data!.id, "Single"),
+	// Discographies
+
+	const initDiscographies = useQuery(() =>
+		ArtistQueryOption.discographyInit(artistId),
 	)
 
-	const initDiscographyCompilation = useInfiniteQuery(() =>
-		ArtistQueryOption.discography(query.data!.id, "Compilation"),
+	const [discographyMap, setDiscographyMap] = createStore(
+		Obj.fromEntries(RELEASE_TYPES.map((ty) => [ty, [] as Discography[]])),
 	)
 
-	const initDiscographyDemo = useInfiniteQuery(() =>
-		ArtistQueryOption.discography(query.data!.id, "Demo"),
+	const discography = Obj.fromEntries(
+		RELEASE_TYPES.map((type) => [
+			type,
+			useInfiniteQuery(() =>
+				Obj.merge(ArtistQueryOption.discography(artistId, type), {
+					initialPageParam: 0,
+					getNextPageParam: (last) => last.next_cursor,
+				}),
+			),
+		]),
 	)
 
-	const initDiscographyOther = useInfiniteQuery(() =>
-		ArtistQueryOption.discography(query.data!.id, "Other"),
-	)
-
-	const initDiscographies = [
-		initDiscographyAlbum,
-		initDiscographyEP,
-		initDiscographySingle,
-		initDiscographyCompilation,
-		initDiscographyDemo,
-		initDiscographyOther,
-	]
-
-	const initAppearances = useInfiniteQuery(() =>
-		ArtistQueryOption.appearances(query.data!.id),
-	)
-
-	const initCredits = useInfiniteQuery(() =>
-		ArtistQueryOption.credits(query.data!.id),
-	)
-
-	const discographies = {
-		get data() {
-			return initDiscographies.flatMap((q) =>
-				q.data!.pages.flatMap((p) => p.items),
-			)
-		},
-		hasNext(type: ReleaseType) {
-			// oxlint-disable-next-line default-case
-			switch (type) {
-				case "Album":
-					return initDiscographyAlbum.hasNextPage
-				case "Ep":
-					return initDiscographyEP.hasNextPage
-				case "Single":
-					return initDiscographySingle.hasNextPage
-				case "Compilation":
-					return initDiscographyCompilation.hasNextPage
-				case "Demo":
-					return initDiscographyDemo.hasNextPage
-				case "Other":
-					return initDiscographyOther.hasNextPage
+	for (const type of RELEASE_TYPES) {
+		createEffect(() => {
+			const query = discography[type]
+			if (query.isSuccess) {
+				setDiscographyMap(
+					produce((v) => {
+						v[type].push(...query.data.pages.at(-1)!.items)
+						// v[type] = query.data.pages.flatMap((p) => p.items)
+					}),
+				)
 			}
-		},
-		async next(type: ReleaseType): Promise<void> {
-			// oxlint-disable-next-line default-case
-			switch (type) {
-				case "Album":
-					if (initDiscographyAlbum.isFetchingNextPage) {
-						return
-					}
-					await initDiscographyAlbum.fetchNextPage()
-					return
-				case "Ep":
-					if (initDiscographyEP.isFetchingNextPage) {
-						return
-					}
-					await initDiscographyEP.fetchNextPage()
-					return
-				case "Single":
-					if (initDiscographySingle.isFetchingNextPage) {
-						return
-					}
-					await initDiscographySingle.fetchNextPage()
-					return
-				case "Compilation":
-					if (initDiscographyCompilation.isFetchingNextPage) {
-						return
-					}
-					await initDiscographyCompilation.fetchNextPage()
-					return
-				case "Demo":
-					if (initDiscographyDemo.isFetchingNextPage) {
-						return
-					}
-					await initDiscographyDemo.fetchNextPage()
-					return
-				case "Other":
-					if (initDiscographyOther.isFetchingNextPage) {
-						return
-					}
-					await initDiscographyOther.fetchNextPage()
-					return
-			}
-		},
+		})
 	}
 
 	return (
@@ -142,29 +81,50 @@ function RouteComponent() {
 				artist={query.data!}
 				appearances={{
 					get data() {
-						return initAppearances.data?.pages.flatMap((p) => p.items) ?? []
+						return appearances.data?.pages.flatMap((p) => p.items) ?? []
 					},
 					get hasNext() {
-						return initAppearances.hasNextPage
+						return appearances.hasNextPage
 					},
 					async next() {
-						await initAppearances.fetchNextPage()
+						await appearances.fetchNextPage()
 						return
+					},
+					get isLoading() {
+						return appearances.isLoading
 					},
 				}}
 				credits={{
 					get data() {
-						return initCredits.data?.pages.flatMap((p) => p.items) ?? []
+						return credits.data?.pages.flatMap((p) => p.items) ?? []
 					},
 					get hasNext() {
-						return initCredits.hasNextPage
+						return credits.hasNextPage
 					},
 					async next() {
-						await initCredits.fetchNextPage()
+						await credits.fetchNextPage()
 						return
 					},
+					get isLoading() {
+						return credits.isLoading
+					},
 				}}
-				discographies={discographies}
+				discographies={{
+					get data() {
+						return discographyMap
+					},
+					hasNext(type: ReleaseType) {
+						return discography[type].hasNextPage
+					},
+					async next(type: ReleaseType): Promise<void> {
+						if (discography[type].isFetchingNextPage) return
+
+						await discography[type].fetchNextPage()
+					},
+					get isLoading() {
+						return initDiscographies.isLoading
+					},
+				}}
 			/>
 		</>
 	)

@@ -38,7 +38,10 @@ export const Schema = v.pipe(
 	}),
 )
 
-export function display(date: Out): string {
+export function display(date: Out): string
+export function display(date?: Out | null): string | undefined
+export function display(date?: Out | null): string | undefined {
+	if (!date) return
 	const [year, month, day] = date.value.split("-")
 	if (date.precision == "Year") {
 		return year!

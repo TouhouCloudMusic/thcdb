@@ -23,7 +23,7 @@ export function handleApiResponse<T>(res: ApiResponse<T>): T {
 		return res.data.data
 	}
 
-	if (res.error) {
+	if (res.error?.message) {
 		throw new Error(res.error.message)
 	}
 
