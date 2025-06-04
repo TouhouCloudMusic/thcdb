@@ -1,7 +1,10 @@
 use darling::{FromDeriveInput, FromField, FromVariant};
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{DeriveInput, Error, Expr, Ident, Path, parse_str};
+use syn::{
+    DeriveInput, Error, Expr, Ident, Path, PathArguments, Token, Type,
+    TypePath, parse_str,
+};
 
 #[derive(Default, PartialEq, Debug, Clone)]
 enum CodeOpt {
@@ -156,6 +159,7 @@ fn derive_enum_impl(
                 }
 
                 let inner_type = fields.fields[0].ty.clone();
+                let inner_type = add_turbo_fish(inner_type);
 
                 match &variant.status_code {
                     CodeOpt::Specified(code) => {
@@ -357,4 +361,16 @@ fn derive_struct_impl(receiver: &ApiErrorReceiver) -> syn::Result<TokenStream> {
             }
         }
     })
+}
+
+fn add_turbo_fish(mut ty: syn::Type) -> syn::Type {
+    if let Type::Path(TypePath { path, .. }) = &mut ty
+        && let Some(last_segment) = path.segments.last_mut()
+        && let PathArguments::AngleBracketed(ref mut angle_args) =
+            last_segment.arguments
+        && angle_args.colon2_token.is_none()
+    {
+        angle_args.colon2_token = Some(Token![::](Span::call_site()));
+    }
+    ty
 }

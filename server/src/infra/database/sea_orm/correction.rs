@@ -21,7 +21,7 @@ use crate::domain::release::TxRepo as _;
 use crate::domain::repository::Connection;
 use crate::domain::song::TxRepo as _;
 use crate::domain::tag::TxRepo as _;
-use crate::infra::error::Error;
+use crate::infra;
 
 impl<T> Repo for T
 where
@@ -137,12 +137,22 @@ impl TxRepo for SeaOrmTxRepo {
         Ok(())
     }
 
-    async fn approve(
+    // TODO: Move to service
+    async fn approve<Ctx>(
         &self,
         correction_id: i32,
         CorrectionApprover(approver): CorrectionApprover,
-        context: impl ApproveCorrectionContext,
-    ) -> Result<(), Error> {
+        context: Ctx,
+    ) -> Result<(), infra::Error>
+    where
+        Ctx: ApproveCorrectionContext,
+        infra::Error: From<<Ctx::ArtistRepo as Connection>::Error>
+            + From<<Ctx::ReleaseRepo as Connection>::Error>
+            + From<<Ctx::SongRepo as Connection>::Error>
+            + From<<Ctx::LabelRepo as Connection>::Error>
+            + From<<Ctx::EventRepo as Connection>::Error>
+            + From<<Ctx::TagRepo as Connection>::Error>,
+    {
         let correction = entity::correction::Entity::find_by_id(correction_id)
             .one(self.conn())
             .await?

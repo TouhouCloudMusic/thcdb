@@ -36,19 +36,20 @@ pub enum UpsertCorrectionError {
 impl<R> Service<R>
 where
     R: Repo,
+    crate::infra::Error: From<R::Error>,
 {
     pub async fn find_one(
         &self,
         filter: Filter,
     ) -> Result<Option<Release>, Error> {
-        self.repo.find_one(filter).await
+        Ok(self.repo.find_one(filter).await?)
     }
 
     pub async fn find_many(
         &self,
         filter: Filter,
     ) -> Result<Vec<Release>, Error> {
-        self.repo.find_many(filter).await
+        Ok(self.repo.find_many(filter).await?)
     }
 }
 
@@ -56,6 +57,7 @@ impl<R, TR> Service<R>
 where
     R: TransactionManager<TransactionRepository = TR>,
     TR: TxRepo + correction::TxRepo,
+    crate::infra::Error: From<R::Error> + From<TR::Error>,
 {
     pub async fn create(
         &self,

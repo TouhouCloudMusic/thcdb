@@ -60,6 +60,7 @@ where
         + image_queue::Repository
         + artist_image_queue::Repository,
     Storage: AsyncImageStorage + Clone,
+    crate::infra::Error: From<Repo::Error> + From<TxRepo::Error>,
 {
     /// Warn: Make sure inner transaction is wrapped in Arc
     pub const fn new(repo: Repo, storage: Storage) -> Self {

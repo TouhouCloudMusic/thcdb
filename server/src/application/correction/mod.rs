@@ -2,11 +2,11 @@ use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
 use crate::domain::correction::{
-    ApproveCorrectionContext, CorrectionEntity, CorrectionFilter,
-    NewCorrectionMeta, TxRepo, {self},
+    self, ApproveCorrectionContext, CorrectionEntity, CorrectionFilter,
+    NewCorrectionMeta,
 };
 use crate::domain::model::auth::{CorrectionApprover, UserRoleEnum};
-use crate::domain::repository::{Transaction, TransactionManager};
+use crate::domain::repository::{Connection, Transaction, TransactionManager};
 use crate::domain::user::User;
 
 mod model;
@@ -37,6 +37,7 @@ pub struct Service<R> {
 impl<R> Service<R>
 where
     R: correction::TxRepo,
+    crate::infra::Error: From<R::Error>,
 {
     pub const fn new(repo: R) -> Self {
         Self { repo }
@@ -87,17 +88,27 @@ where
     }
 }
 
-impl<R> Service<R>
+impl<R, TR> Service<R>
 where
-    R: TransactionManager,
-    R::TransactionRepository: correction::TxRepo,
+    R: TransactionManager<TransactionRepository = TR>,
+    TR: correction::TxRepo + Transaction,
+    crate::infra::Error: From<R::Error> + From<TR::Error>,
 {
-    pub async fn approve(
+    pub async fn approve<Ctx>(
         &self,
         correction_id: i32,
         user: User,
-        context: impl ApproveCorrectionContext,
-    ) -> Result<(), Error> {
+        context: Ctx,
+    ) -> Result<(), Error>
+    where
+        Ctx: ApproveCorrectionContext,
+        crate::infra::Error: From<<Ctx::ArtistRepo as Connection>::Error>
+            + From<<Ctx::ReleaseRepo as Connection>::Error>
+            + From<<Ctx::SongRepo as Connection>::Error>
+            + From<<Ctx::LabelRepo as Connection>::Error>
+            + From<<Ctx::EventRepo as Connection>::Error>
+            + From<<Ctx::TagRepo as Connection>::Error>,
+    {
         let approver =
             CorrectionApprover::from_user(user).ok_or(Unauthorized)?;
 

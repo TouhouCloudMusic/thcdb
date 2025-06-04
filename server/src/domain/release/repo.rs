@@ -1,5 +1,4 @@
 use crate::domain::repository::{Connection, Transaction};
-use crate::infra::error::Error;
 
 pub enum Filter {
     Id(i32),
@@ -10,11 +9,11 @@ pub trait Repo: Connection {
     async fn find_one(
         &self,
         filter: Filter,
-    ) -> Result<Option<super::model::Release>, Error>;
+    ) -> Result<Option<super::model::Release>, Self::Error>;
     async fn find_many(
         &self,
         filter: Filter,
-    ) -> Result<Vec<super::model::Release>, Error>;
+    ) -> Result<Vec<super::model::Release>, Self::Error>;
 }
 
 pub trait TxRepo: Transaction + Repo
@@ -24,15 +23,15 @@ where
     async fn create(
         &self,
         data: &super::model::NewRelease,
-    ) -> Result<i32, Error>;
+    ) -> Result<i32, Self::Error>;
 
     async fn create_history(
         &self,
         data: &super::model::NewRelease,
-    ) -> Result<i32, Error>;
+    ) -> Result<i32, Self::Error>;
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Error>;
+    ) -> Result<(), Self::Error>;
 }

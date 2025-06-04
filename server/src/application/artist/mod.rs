@@ -41,6 +41,7 @@ impl<R, TR> Service<R>
 where
     R: Repo + TransactionManager<TransactionRepository = TR>,
     TR: Clone + artist::TxRepo + correction::TxRepo,
+    crate::infra::Error: From<R::Error> + From<TR::Error>,
 {
     pub async fn create(
         &self,

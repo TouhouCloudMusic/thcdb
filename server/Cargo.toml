@@ -104,6 +104,7 @@ error_set = { version = "0.8", features = [
     "tracing",
 ] }
 fred = { version = "10.0" }
+frunk = { version = "0.4.3", features = [ "std" ] }
 futures-util = "0.3"
 governor = "0.8.0"
 image = "0.25"
@@ -142,6 +143,7 @@ strum = { version = "0.27", features = [
     "derive",
 ] }
 thiserror = "2.0.12"
+tikv-jemallocator = { version = "0.6.0", optional = true }
 tokio.workspace = true
 tower = { version = "0.5.2", features = [
     "limit",
@@ -170,8 +172,6 @@ xxhash-rust = { version = "0.8", features = [
     "xxh3",
 ] }
 zxcvbn = "3.1"
-# Optional
-tikv-jemallocator = { version = "0.6.0", optional = true }
 
 [dev-dependencies]
 rusty-hook = "=0.11.2"

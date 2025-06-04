@@ -1,11 +1,9 @@
-use crate::infra::ErrorEnum;
-
 mod pagination;
 pub use pagination::*;
 
 pub trait Connection: Send + Sync {
     type Conn: Send + Sync;
-    type Error: Send + Sync + Into<ErrorEnum>;
+    type Error: Send + Sync;
 
     fn conn(&self) -> &Self::Conn;
 }

@@ -36,6 +36,7 @@ pub enum UpsertCorrectionError {
 impl<R> Service<R>
 where
     R: event::Repo,
+    crate::infra::Error: From<R::Error>,
 {
     pub async fn find_by_id(
         &self,
@@ -56,6 +57,7 @@ impl<R, TR> Service<R>
 where
     R: TransactionManager<TransactionRepository = TR>,
     TR: event::TxRepo + correction::TxRepo,
+    crate::infra::Error: From<R::Error> + From<TR::Error>,
 {
     pub async fn create(
         &self,

@@ -80,27 +80,34 @@ async fn handle_correction(
 }
 
 impl ApproveCorrectionContext for SeaOrmTxRepo {
-    fn artist_repo(self) -> impl crate::domain::artist::TxRepo {
+    type ArtistRepo = Self;
+    type ReleaseRepo = Self;
+    type SongRepo = Self;
+    type LabelRepo = Self;
+    type EventRepo = Self;
+    type TagRepo = Self;
+
+    fn artist_repo(self) -> Self::ArtistRepo {
         self
     }
 
-    fn release_repo(self) -> impl crate::domain::release::TxRepo {
+    fn release_repo(self) -> Self::ReleaseRepo {
         self
     }
 
-    fn song_repo(self) -> impl crate::domain::song::TxRepo {
+    fn song_repo(self) -> Self::SongRepo {
         self
     }
 
-    fn label_repo(self) -> impl crate::domain::label::TxRepo {
+    fn label_repo(self) -> Self::LabelRepo {
         self
     }
 
-    fn event_repo(self) -> impl crate::domain::event::TxRepo {
+    fn event_repo(self) -> Self::EventRepo {
         self
     }
 
-    fn tag_repo(self) -> impl crate::domain::tag::TxRepo {
+    fn tag_repo(self) -> Self::TagRepo {
         self
     }
 }

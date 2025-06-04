@@ -322,7 +322,7 @@ impl Parser {
 
 pub trait AsyncImageStorage: Send + Sync {
     type File;
-    type Error: Into<infra::ErrorEnum>;
+    type Error: Into<infra::Error>;
 
     async fn create(&self, image: NewImage) -> Result<Self::File, Self::Error>;
 
@@ -362,6 +362,7 @@ impl<Repo, Storage> Service<Repo, Storage>
 where
     Repo: super::Repo,
     Storage: AsyncImageStorage,
+    crate::infra::error::Error: From<Repo::Error>,
 {
     pub async fn find_by_id(&self, id: i32) -> Result<Option<Image>, Error> {
         Ok(self.repo.find_by_id(id).await?)
@@ -386,6 +387,7 @@ impl<Tx, Storage> Service<Tx, Storage>
 where
     Tx: Transaction + super::Repo + super::repository::TxRepo,
     Storage: AsyncImageStorage,
+    crate::infra::error::Error: From<Tx::Error>,
 {
     pub async fn create(
         &self,

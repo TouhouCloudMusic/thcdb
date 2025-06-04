@@ -8,10 +8,11 @@ use crate::domain::image::repository::TxRepo as ImageTxRepo;
 use crate::domain::image::{
     AsyncImageStorage, CreateImageMeta, ValidationError, {self},
 };
-use crate::domain::repository::{Transaction, TransactionManager};
+use crate::domain::repository::TransactionManager;
 use crate::domain::user::{
-    TxRepo, User, {self},
+    User, {self},
 };
+use crate::infra;
 
 mod model;
 pub use model::*;
@@ -83,11 +84,12 @@ impl<R, S> Service<R, S> {
     }
 }
 
-impl<R, S> Service<R, S>
+impl<Repo, TxRepo, Storage> Service<Repo, Storage>
 where
-    R: TransactionManager,
-    R::TransactionRepository: Clone + user::TxRepo + image::Repo + ImageTxRepo,
-    S: Clone + AsyncImageStorage,
+    Repo: TransactionManager<TransactionRepository = TxRepo>,
+    TxRepo: Clone + user::TxRepo + image::Repo + ImageTxRepo,
+    Storage: Clone + AsyncImageStorage,
+    infra::Error: From<Repo::Error> + From<TxRepo::Error>,
 {
     pub async fn upload_avatar(
         &self,

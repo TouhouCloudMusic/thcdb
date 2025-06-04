@@ -39,6 +39,7 @@ pub enum UpsertCorrectionError {
 impl<R> Service<R>
 where
     R: label::Repo,
+    crate::infra::Error: From<R::Error>,
 {
     pub async fn find_by_id(&self, id: i32) -> Result<Option<Label>, Error> {
         Ok(self.repo.find_by_id(id).await?)
