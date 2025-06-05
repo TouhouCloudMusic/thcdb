@@ -1,8 +1,9 @@
 use boolinator::Boolinator;
 use entity::artist::{self};
+use entity::enums::ReleaseImageType;
 use entity::{
-    credit_role, release, release_artist, release_credit, release_track,
-    release_track_artist,
+    credit_role, release, release_artist, release_credit, release_image,
+    release_track, release_track_artist,
 };
 use itertools::{Itertools, izip};
 use sea_orm::JoinType::*;
@@ -12,10 +13,24 @@ use sea_query::{Cond, ExprTrait, IntoCondition, SimpleExpr};
 
 use super::SeaOrmRepository;
 use crate::domain::artist_release::*;
+use crate::domain::image::Image;
 use crate::domain::repository::{Connection, Cursor, Paginated};
 use crate::domain::shared::model::{CreditRole, DateWithPrecision};
 use crate::infra;
 use crate::utils::MapInto;
+
+struct ArtistReleaseIR {
+    release: release::Model,
+    artists: Vec<artist::Model>,
+    cover_url: Option<String>,
+}
+
+struct CreditIR {
+    release: release::Model,
+    artists: Vec<artist::Model>,
+    cover_url: Option<String>,
+    release_credits: Vec<release_credit::Model>,
+}
 
 impl Repo for SeaOrmRepository {
     async fn appearance(
@@ -42,10 +57,19 @@ impl Repo for SeaOrmRepository {
         )
         .await?;
 
-        let (releases, artists): (
-            Vec<release::Model>,
-            Vec<Vec<artist::Model>>,
-        ) = releases_and_artists.items.into_iter().unzip();
+        let Paginated { items, next_cursor } = releases_and_artists;
+
+        let (releases, (artists, cover_urls)): (Vec<_>, (Vec<_>, Vec<_>)) =
+            items
+                .into_iter()
+                .map(|x| {
+                    let release = x.release;
+                    let artists = x.artists;
+                    let cover_url = x.cover_url;
+
+                    (release, (artists, cover_url))
+                })
+                .unzip();
 
         let release_credits = releases
             .load_many(
@@ -67,17 +91,18 @@ impl Repo for SeaOrmRepository {
             .all(self.conn())
             .await?;
 
-        let items = into_artist_credits(
-            releases,
-            artists,
-            release_credits,
-            &credit_roles,
-        );
+        let credit_irs = izip!(releases, artists, cover_urls, release_credits)
+            .map(|(release, artists, cover_url, release_credits)| CreditIR {
+                release,
+                artists,
+                cover_url,
+                release_credits,
+            })
+            .collect_vec();
 
-        Ok(Paginated {
-            items,
-            next_cursor: releases_and_artists.next_cursor,
-        })
+        let items = into_artist_credits(credit_irs, &credit_roles);
+
+        Ok(Paginated { items, next_cursor })
     }
 
     async fn discography(
@@ -99,7 +124,7 @@ async fn find_artist_releases(
     select: Select<release::Entity>,
     pagination: Cursor,
     db: &impl ConnectionTrait,
-) -> infra::Result<Paginated<(release::Model, Vec<artist::Model>)>> {
+) -> infra::Result<Paginated<ArtistReleaseIR>> {
     let mut cursor = select.cursor_by(release::Column::Id);
 
     cursor.after(pagination.at);
@@ -126,13 +151,40 @@ async fn find_artist_releases(
         .load_many_to_many(artist::Entity::find(), release_artist::Entity, db)
         .await?;
 
-    let items = izip!(releases, release_artist).collect_vec();
+    let cover_urls = releases
+        .load_many_to_many(
+            entity::image::Entity::find()
+                .left_join(release_image::Entity)
+                .filter(
+                    release_image::Column::Type.eq(ReleaseImageType::Cover),
+                ),
+            release_image::Entity,
+            db,
+        )
+        .await?
+        .into_iter()
+        .map(|x| x.into_iter().next().map(Image::from).map(|x| x.url()))
+        .collect_vec();
+
+    let items = izip!(releases, release_artist, cover_urls)
+        .map(|x| ArtistReleaseIR {
+            release: x.0,
+            artists: x.1,
+            cover_url: x.2,
+        })
+        .collect_vec();
 
     Ok(Paginated { items, next_cursor })
 }
 
-impl From<(release::Model, Vec<artist::Model>)> for Discography {
-    fn from((release, artists): (release::Model, Vec<artist::Model>)) -> Self {
+impl From<ArtistReleaseIR> for Discography {
+    fn from(
+        ArtistReleaseIR {
+            release,
+            artists,
+            cover_url,
+        }: ArtistReleaseIR,
+    ) -> Self {
         let artist = artists.map_into();
 
         let release_date = DateWithPrecision::from_option(
@@ -145,6 +197,7 @@ impl From<(release::Model, Vec<artist::Model>)> for Discography {
             artist,
             release_date,
             release_type: release.release_type,
+            cover_url,
         }
     }
 }
@@ -178,28 +231,34 @@ fn into_credit_roles(
 }
 
 fn into_artist_credits(
-    releases: Vec<release::Model>,
-    artists: Vec<Vec<artist::Model>>,
-    release_credits: Vec<Vec<release_credit::Model>>,
+    ir: Vec<CreditIR>,
     credit_roles: &[credit_role::Model],
 ) -> Vec<Credit> {
-    izip!(releases, artists, release_credits)
-        .map(|(release, artists, release_credits)| {
-            let roles = into_credit_roles(release_credits, credit_roles);
+    ir.into_iter()
+        .map(
+            |CreditIR {
+                 release,
+                 artists,
+                 cover_url,
+                 release_credits,
+             }| {
+                let roles = into_credit_roles(release_credits, credit_roles);
 
-            let artist = artists.map_into();
+                let artist = artists.map_into();
 
-            Credit {
-                title: release.title,
-                artist,
-                release_date: DateWithPrecision::from_option(
-                    release.release_date,
-                    release.release_date_precision,
-                ),
-                release_type: release.release_type,
-                roles,
-            }
-        })
+                Credit {
+                    title: release.title,
+                    artist,
+                    release_date: DateWithPrecision::from_option(
+                        release.release_date,
+                        release.release_date_precision,
+                    ),
+                    release_type: release.release_type,
+                    roles,
+                    cover_url,
+                }
+            },
+        )
         .collect_vec()
 }
 

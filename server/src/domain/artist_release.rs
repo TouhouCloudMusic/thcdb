@@ -12,6 +12,7 @@ pub type Appearance = Discography;
 pub struct Credit {
     pub title: String,
     pub artist: Vec<ArtistReleaseArtist>,
+    pub cover_url: Option<String>,
     pub release_date: Option<DateWithPrecision>,
     pub release_type: ReleaseType,
     pub roles: Vec<CreditRole>,
@@ -20,6 +21,7 @@ pub struct Credit {
 #[derive(Serialize, ToSchema)]
 pub struct Discography {
     pub title: String,
+    pub cover_url: Option<String>,
     pub artist: Vec<ArtistReleaseArtist>,
     pub release_date: Option<DateWithPrecision>,
     pub release_type: ReleaseType,
