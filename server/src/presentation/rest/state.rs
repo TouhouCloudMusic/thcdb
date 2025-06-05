@@ -40,6 +40,8 @@ pub(super) type AuthSession = axum_login::AuthSession<AuthService>;
 pub(super) type ArtistService = application::artist::Service<SeaOrmRepository>;
 pub(super) type ArtistImageService =
     application::artist_image::Service<SeaOrmRepository, GenericImageStorage>;
+pub(super) type ReleaseImageService =
+    application::release_image::Service<SeaOrmRepository, GenericImageStorage>;
 
 pub(super) type CorrectionService =
     application::correction::Service<SeaOrmRepository>;
@@ -149,6 +151,14 @@ impl TryFromRef<ArcAppState> for ImageService {
 impl FromRef<ArcAppState> for AuthService {
     fn from_ref(input: &ArcAppState) -> Self {
         Self::new(input.sea_orm_repo.clone())
+    }
+}
+
+impl FromRef<ArcAppState> for ReleaseImageService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        let repo = input.sea_orm_repo.clone();
+        let storage = FS_IMAGE_STORAGE.clone();
+        Self::new(repo, storage)
     }
 }
 

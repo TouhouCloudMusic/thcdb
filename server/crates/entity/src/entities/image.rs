@@ -29,6 +29,8 @@ pub enum Relation {
     ImageQueue,
     #[sea_orm(has_many = "super::image_reference::Entity")]
     ImageReference,
+    #[sea_orm(has_many = "super::release_image::Entity")]
+    ReleaseImage,
     #[sea_orm(
         belongs_to = "super::user::Entity",
         from = "Column::UploadedBy",
@@ -57,6 +59,12 @@ impl Related<super::image_reference::Entity> for Entity {
     }
 }
 
+impl Related<super::release_image::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseImage.def()
+    }
+}
+
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::User.def()
@@ -69,6 +77,15 @@ impl Related<super::artist::Entity> for Entity {
     }
     fn via() -> Option<RelationDef> {
         Some(super::artist_image::Relation::Image.def().rev())
+    }
+}
+
+impl Related<super::release::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::release_image::Relation::Release.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::release_image::Relation::Image.def().rev())
     }
 }
 

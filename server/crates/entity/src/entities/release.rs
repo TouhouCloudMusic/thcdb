@@ -33,6 +33,10 @@ pub enum Relation {
     ReleaseCredit,
     #[sea_orm(has_many = "super::release_event::Entity")]
     ReleaseEvent,
+    #[sea_orm(has_many = "super::release_image::Entity")]
+    ReleaseImage,
+    #[sea_orm(has_many = "super::release_image_queue::Entity")]
+    ReleaseImageQueue,
     #[sea_orm(has_many = "super::release_localized_title::Entity")]
     ReleaseLocalizedTitle,
     #[sea_orm(has_many = "super::release_track::Entity")]
@@ -63,6 +67,18 @@ impl Related<super::release_event::Entity> for Entity {
     }
 }
 
+impl Related<super::release_image::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseImage.def()
+    }
+}
+
+impl Related<super::release_image_queue::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseImageQueue.def()
+    }
+}
+
 impl Related<super::release_localized_title::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ReleaseLocalizedTitle.def()
@@ -90,6 +106,24 @@ impl Related<super::event::Entity> for Entity {
     }
     fn via() -> Option<RelationDef> {
         Some(super::release_event::Relation::Release.def().rev())
+    }
+}
+
+impl Related<super::image::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::release_image::Relation::Image.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::release_image::Relation::Release.def().rev())
+    }
+}
+
+impl Related<super::image_queue::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::release_image_queue::Relation::ImageQueue.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::release_image_queue::Relation::Release.def().rev())
     }
 }
 

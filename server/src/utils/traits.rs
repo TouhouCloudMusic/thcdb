@@ -203,3 +203,43 @@ impl BoolExt for bool {
         if self { Some(t) } else { None }
     }
 }
+
+/// This trait allow us to write:
+/// ```ignore
+/// #[serde_with::apply(
+///   _ => #[serde(skip_serializing_if = "Serializable::should_skip")],
+/// )]
+/// ```
+/// instead of:
+/// ```ignore
+/// #[serde_with::apply(
+///   Vec    => #[serde(skip_serializing_if = "Vec::is_empty")],
+///   Option => #[serde(skip_serializing_if = "Option::is_none")],
+/// )]
+/// ```
+///
+/// Benchmarks show that this approach does not add runtime overhead.
+pub trait Serializable {
+    fn should_skip(&self) -> bool;
+}
+
+impl<T> Serializable for T {
+    #[inline]
+    default fn should_skip(&self) -> bool {
+        false
+    }
+}
+
+impl<T> Serializable for Option<T> {
+    #[inline]
+    fn should_skip(&self) -> bool {
+        self.is_none()
+    }
+}
+
+impl<T> Serializable for Vec<T> {
+    #[inline]
+    fn should_skip(&self) -> bool {
+        self.is_empty()
+    }
+}

@@ -1,0 +1,8 @@
+{
+  "excludes": [],
+  "includes": ["crates/migration/src/**/*.sql"],
+  "sql": {
+    "linesBetweenQueries": 2
+  },
+  "plugins": ["https://plugins.dprint.dev/sql-0.2.0.wasm"]
+}

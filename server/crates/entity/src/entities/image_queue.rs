@@ -34,6 +34,8 @@ pub enum Relation {
         on_delete = "SetNull"
     )]
     Image,
+    #[sea_orm(has_many = "super::release_image_queue::Entity")]
+    ReleaseImageQueue,
     #[sea_orm(
         belongs_to = "super::user::Entity",
         from = "Column::CreadedBy",
@@ -72,12 +74,27 @@ impl Related<super::image::Entity> for Entity {
     }
 }
 
+impl Related<super::release_image_queue::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseImageQueue.def()
+    }
+}
+
 impl Related<super::artist::Entity> for Entity {
     fn to() -> RelationDef {
         super::artist_image_queue::Relation::Artist.def()
     }
     fn via() -> Option<RelationDef> {
         Some(super::artist_image_queue::Relation::ImageQueue.def().rev())
+    }
+}
+
+impl Related<super::release::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::release_image_queue::Relation::Release.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::release_image_queue::Relation::ImageQueue.def().rev())
     }
 }
 

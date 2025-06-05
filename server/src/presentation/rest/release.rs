@@ -1,7 +1,9 @@
 use axum::Json;
+use axum::body::Bytes;
 use axum::extract::{Path, Query, State};
+use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use serde::Deserialize;
-use utoipa::IntoParams;
+use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -9,8 +11,10 @@ use super::extractor::CurrentUser;
 use super::state::{
     ArcAppState, {self},
 };
+use crate::application;
 use crate::application::correction::NewCorrectionDto;
 use crate::application::release::{CreateError, UpsertCorrectionError};
+use crate::application::release_image::ReleaseCoverArtInput;
 use crate::domain::release::repo::Filter;
 use crate::domain::release::{NewRelease, Release};
 use crate::infra::error::Error;
@@ -27,6 +31,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(update_release))
         .routes(routes!(find_release_by_keyword))
         .routes(routes!(find_release_by_id))
+        .routes(routes!(upload_release_cover_art))
 }
 
 super::data! {
@@ -137,5 +142,44 @@ async fn update_release(
 ) -> Result<Message, UpsertCorrectionError> {
     service.upsert_correction(id, dto.with_author(user)).await?;
 
+    Ok(Message::ok())
+}
+
+#[derive(Debug, ToSchema, TryFromMultipart)]
+pub struct ReleaseCoverArtFormData {
+    #[form_data(limit = "10MiB")]
+    #[schema(
+        value_type = String,
+        format = Binary,
+        maximum = 10485760, // 10 MiB
+        minimum = 1024    // 1 KiB
+    )]
+    pub data: FieldData<Bytes>,
+}
+
+#[utoipa::path(
+    post,
+    tag = TAG,
+    path = "/release/{id}/cover_art",
+    request_body = ReleaseCoverArtFormData,
+    responses(
+        (status = 200, body = Message),
+        (status = 401),
+        application::release_image::Error
+    )
+)]
+
+async fn upload_release_cover_art(
+    CurrentUser(user): CurrentUser,
+    State(service): State<state::ReleaseImageService>,
+    Path(id): Path<i32>,
+    TypedMultipart(form): TypedMultipart<ReleaseCoverArtFormData>,
+) -> Result<Message, application::release_image::Error> {
+    let dto = ReleaseCoverArtInput {
+        bytes: form.data.contents,
+        user,
+        release_id: id,
+    };
+    service.upload_cover_art(dto).await?;
     Ok(Message::ok())
 }

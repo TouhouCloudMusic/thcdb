@@ -28,6 +28,14 @@ impl Image {
     pub fn full_path(&self) -> PathBuf {
         PathBuf::from_iter([&self.directory, &self.filename])
     }
+
+    pub fn url(&self) -> String {
+        match self.backend {
+            StorageBackend::Fs => {
+                format!("{}", self.full_path().to_string_lossy())
+            }
+        }
+    }
 }
 
 #[derive(Builder, Clone, Debug)]

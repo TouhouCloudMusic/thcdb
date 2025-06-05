@@ -4,7 +4,7 @@ pub use model::{ImageQueue, NewImageQueue};
 
 use super::repository::Connection;
 
-pub trait Repository: Connection {
+pub trait Repo: Connection {
     async fn create(
         &self,
         model: NewImageQueue,

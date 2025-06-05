@@ -356,6 +356,27 @@ pub enum ImageRefEntityType {
     utoipa :: ToSchema,
     Copy,
 )]
+#[sea_orm(
+    rs_type = "String",
+    db_type = "Enum",
+    enum_name = "release_image_type"
+)]
+pub enum ReleaseImageType {
+    #[sea_orm(string_value = "Cover")]
+    Cover,
+}
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    EnumIter,
+    DeriveActiveEnum,
+    Serialize,
+    Deserialize,
+    utoipa :: ToSchema,
+    Copy,
+)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "storage_backend")]
 pub enum StorageBackend {
     #[sea_orm(string_value = "fs")]

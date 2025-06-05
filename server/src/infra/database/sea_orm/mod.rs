@@ -19,6 +19,8 @@ mod image;
 mod image_queue;
 mod label;
 mod release;
+mod release_image;
+mod release_image_queue;
 mod song;
 mod tag;
 mod user;

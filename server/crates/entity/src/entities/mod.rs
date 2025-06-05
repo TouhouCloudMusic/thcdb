@@ -49,6 +49,8 @@ pub mod release_credit_history;
 pub mod release_event;
 pub mod release_event_history;
 pub mod release_history;
+pub mod release_image;
+pub mod release_image_queue;
 pub mod release_localized_title;
 pub mod release_localized_title_history;
 pub mod release_track;

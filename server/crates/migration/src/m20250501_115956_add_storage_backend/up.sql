@@ -1,14 +1,20 @@
 CREATE TYPE storage_backend AS ENUM('fs');
 
-ALTER TABLE image
-ADD COLUMN "backend" storage_backend;
+ALTER TABLE
+  image
+ADD
+  COLUMN "backend" storage_backend;
 
-UPDATE image
+UPDATE
+  image
 SET
-	"backend" = 'fs'
+  "backend" = 'fs'
 WHERE
-	"backend" IS NULL;
+  "backend" IS NULL;
 
-ALTER TABLE image
-ALTER COLUMN "backend"
-SET NOT NULL;
+ALTER TABLE
+  image
+ALTER COLUMN
+  "backend"
+SET
+  NOT NULL;

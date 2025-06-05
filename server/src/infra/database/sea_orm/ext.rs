@@ -1,6 +1,16 @@
-use sea_orm::{ConnectionTrait, EntityTrait, IntoActiveModel};
+use sea_orm::{
+    ConnectionTrait, DbErr, EntityTrait, IntoActiveModel, RuntimeErr,
+};
 
-mod pg_func_ext;
+pub(super) mod maybe_loader;
+pub(super) mod pg_func_ext;
+
+fn query_error<T>(message: T) -> DbErr
+where
+    T: Into<String>,
+{
+    DbErr::Query(RuntimeErr::Internal(message.into()))
+}
 
 pub trait InsertMany<T: EntityTrait> {
     type Entity: EntityTrait;

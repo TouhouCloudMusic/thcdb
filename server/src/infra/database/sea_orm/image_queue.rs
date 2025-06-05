@@ -4,11 +4,11 @@ use sea_orm::{
     ActiveModelTrait, ConnectionTrait, DbErr, EntityTrait, IntoActiveModel,
 };
 
-use crate::domain::image_queue::{ImageQueue, NewImageQueue, Repository};
+use crate::domain::image_queue::{ImageQueue, NewImageQueue, Repo};
 use crate::domain::repository::Connection;
 use crate::utils::MapInto;
 
-impl<T> Repository for T
+impl<T> Repo for T
 where
     T: Connection<Error = DbErr>,
     T::Conn: ConnectionTrait,

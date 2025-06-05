@@ -9,9 +9,9 @@ use macros::{ApiError, IntoErrorSchema};
 use thiserror::Error;
 
 use crate::constant::{
-    ARTIST_PROFILE_IMAGE_MAX_HEIGHT, ARTIST_PROFILE_IMAGE_MAX_WIDTH,
-    ARTIST_PROFILE_IMAGE_MIN_HEIGHT, ARTIST_PROFILE_IMAGE_MIN_WIDTH,
-    ARTIST_PROFILE_IMAGE_RATIO_MAX, ARTIST_PROFILE_IMAGE_RATIO_MIN,
+    ARTIST_PROFILE_IMAGE_MAX_HEIGHT, ARTIST_PROFILE_IMAGE_MAX_RATIO,
+    ARTIST_PROFILE_IMAGE_MAX_WIDTH, ARTIST_PROFILE_IMAGE_MIN_HEIGHT,
+    ARTIST_PROFILE_IMAGE_MIN_RATIO, ARTIST_PROFILE_IMAGE_MIN_WIDTH,
 };
 use crate::domain::artist_image_queue::{
     ArtistImageQueue, {self},
@@ -33,7 +33,7 @@ static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
         .height_range(
             ARTIST_PROFILE_IMAGE_MIN_HEIGHT..=ARTIST_PROFILE_IMAGE_MAX_HEIGHT,
         )
-        .ratio(ARTIST_PROFILE_IMAGE_RATIO_MIN..=ARTIST_PROFILE_IMAGE_RATIO_MAX)
+        .ratio(ARTIST_PROFILE_IMAGE_MIN_RATIO..=ARTIST_PROFILE_IMAGE_MAX_RATIO)
         .build();
     Parser::new(opt)
 });
@@ -57,7 +57,7 @@ where
     TxRepo: Clone
         + Transaction
         + image::TxRepo
-        + image_queue::Repository
+        + image_queue::Repo
         + artist_image_queue::Repository,
     Storage: AsyncImageStorage + Clone,
     crate::infra::Error: From<Repo::Error> + From<TxRepo::Error>,
@@ -96,7 +96,7 @@ where
         let new_image_queue = image_queue::NewImageQueue::new(&user, &image);
 
         let image_queue =
-            image_queue::Repository::create(&tx_repo, new_image_queue).await?;
+            image_queue::Repo::create(&tx_repo, new_image_queue).await?;
 
         let artist_image_queue =
             ArtistImageQueue::profile(artist_id, image_queue.id);

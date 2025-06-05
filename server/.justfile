@@ -4,6 +4,7 @@ set dotenv-required := true
 
 fmt:
   taplo fmt
+  dprint fmt
   cargo fmt
 
 fix:
@@ -12,6 +13,7 @@ fix:
 
 check:
   taplo fmt --check
+  dprint check
   cargo fmt --check
   cargo clippy
   cargo test

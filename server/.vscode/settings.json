@@ -1,4 +1,8 @@
 {
   "rust-analyzer.cargo.extraArgs": ["--profile", "ra"],
-  "rust-analyzer.cargo.targetDir": true
+  "rust-analyzer.cargo.targetDir": true,
+  "rust-analyzer.imports.prefix": "self",
+  "[sql]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  }
 }

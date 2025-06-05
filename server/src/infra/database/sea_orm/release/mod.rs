@@ -2,7 +2,7 @@ use entity::{release, release_history};
 use sea_orm::ActiveValue::Set;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DbErr, EntityTrait,
-    QueryFilter, QueryOrder,
+    PaginatorTrait, QueryFilter, QueryOrder, QuerySelect,
 };
 
 use crate::domain::release::model::{NewRelease, Release};
@@ -49,6 +49,16 @@ where
         let res = find_many_impl(condition, self.conn()).await?;
 
         Ok(res)
+    }
+
+    async fn exist(&self, id: i32) -> Result<bool, Self::Error> {
+        Ok(release::Entity::find()
+            .select_only()
+            .expr(1)
+            .filter(release::Column::Id.eq(id))
+            .count(self.conn())
+            .await?
+            > 0)
     }
 }
 

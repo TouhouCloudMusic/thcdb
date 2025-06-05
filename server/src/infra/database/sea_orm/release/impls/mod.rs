@@ -1,3 +1,4 @@
+use entity::enums::ReleaseImageType;
 use entity::{
     release, release_artist, release_artist_history, release_catalog_number,
     release_catalog_number_history, release_credit, release_credit_history,
@@ -10,10 +11,12 @@ use sea_orm::{
     LoaderTrait, QueryFilter,
 };
 
+use crate::domain;
 use crate::domain::release::model::{
     CatalogNumber, Release, ReleaseArtist, ReleaseCredit,
 };
 use crate::domain::shared::model::NewLocalizedTitle;
+use crate::infra::database::sea_orm::ext::maybe_loader::MaybeLoader;
 use crate::utils::NonEmpty;
 
 mod track;
@@ -25,7 +28,7 @@ pub async fn find_many_impl(
     db: &impl ConnectionTrait,
 ) -> Result<Vec<Release>, DbErr> {
     let releases = release::Entity::find().filter(condition).all(db).await?;
-    let related = load_related_entities(&releases, db).await?;
+    let related = RelatedEntities::load(&releases, db).await?;
 
     let result = releases
         .into_iter()
@@ -34,72 +37,6 @@ pub async fn find_many_impl(
         .collect();
 
     Ok(result)
-}
-
-// Helper function to load all related entities
-async fn load_related_entities(
-    releases: &[release::Model],
-    db: &impl ConnectionTrait,
-) -> Result<RelatedEntities, DbErr> {
-    // Load all related entities in parallel
-    let (artists, catalog_numbers, localized_titles, tracks, credits) = tokio::try_join!(
-        releases.load_many_to_many(
-            entity::artist::Entity,
-            entity::release_artist::Entity,
-            db,
-        ),
-        releases.load_many(entity::release_catalog_number::Entity, db),
-        releases.load_many(entity::release_localized_title::Entity, db),
-        releases.load_many(entity::release_track::Entity, db),
-        releases.load_many(entity::release_credit::Entity, db),
-    )?;
-
-    let language_ids = localized_titles
-        .iter()
-        .flatten()
-        .map(|x| x.language_id)
-        .unique();
-    let languages = entity::language::Entity::find()
-        .filter(entity::language::Column::Id.is_in(language_ids))
-        .all(db)
-        .await?;
-
-    let flatten_credits = credits.clone().into_iter().flatten().collect_vec();
-
-    let all_artist_ids = artists.iter().flatten().map(|x| x.id).unique();
-    let credit_artists = flatten_credits
-        .clone()
-        .into_iter()
-        .unique_by(|c| c.artist_id)
-        .collect_vec()
-        .load_one(
-            entity::artist::Entity::find()
-                .filter(entity::artist::Column::Id.is_not_in(all_artist_ids)),
-            db,
-        )
-        .await?
-        .into_iter()
-        .flatten()
-        .chain(artists.clone().into_iter().flatten())
-        .collect_vec();
-
-    let credit_roles = flatten_credits
-        .load_one(entity::credit_role::Entity, db)
-        .await?
-        .into_iter()
-        .flatten()
-        .collect_vec();
-
-    Ok(RelatedEntities {
-        artists,
-        catalog_numbers,
-        localized_titles,
-        languages,
-        tracks,
-        credits,
-        credit_artists,
-        credit_roles,
-    })
 }
 
 struct RelatedEntities {
@@ -111,9 +48,92 @@ struct RelatedEntities {
     credits: Vec<Vec<entity::release_credit::Model>>,
     credit_artists: Vec<entity::artist::Model>,
     credit_roles: Vec<entity::credit_role::Model>,
+    cover_arts: Vec<Option<entity::image::Model>>,
 }
 
-// Map release entity to domain model
+impl RelatedEntities {
+    async fn load(
+        releases: &[release::Model],
+        db: &impl ConnectionTrait,
+    ) -> Result<Self, DbErr> {
+        let (artists, catalog_numbers, localized_titles, tracks, credits) = tokio::try_join!(
+            releases.load_many_to_many(
+                entity::artist::Entity,
+                entity::release_artist::Entity,
+                db,
+            ),
+            releases.load_many(entity::release_catalog_number::Entity, db),
+            releases.load_many(entity::release_localized_title::Entity, db),
+            releases.load_many(entity::release_track::Entity, db),
+            releases.load_many(entity::release_credit::Entity, db),
+        )?;
+
+        let language_ids = localized_titles
+            .iter()
+            .flatten()
+            .map(|x| x.language_id)
+            .unique();
+        let languages = entity::language::Entity::find()
+            .filter(entity::language::Column::Id.is_in(language_ids))
+            .all(db)
+            .await?;
+
+        let flatten_credits =
+            credits.clone().into_iter().flatten().collect_vec();
+
+        let all_artist_ids = artists.iter().flatten().map(|x| x.id).unique();
+        let credit_artists = flatten_credits
+            .clone()
+            .into_iter()
+            .unique_by(|c| c.artist_id)
+            .collect_vec()
+            .load_one(
+                entity::artist::Entity::find().filter(
+                    entity::artist::Column::Id.is_not_in(all_artist_ids),
+                ),
+                db,
+            )
+            .await?
+            .into_iter()
+            .flatten()
+            .chain(artists.clone().into_iter().flatten())
+            .collect_vec();
+
+        let credit_roles = flatten_credits
+            .load_one(entity::credit_role::Entity, db)
+            .await?
+            .into_iter()
+            .flatten()
+            .collect_vec();
+
+        let release_images = releases
+            .load_one(
+                entity::release_image::Entity::find().filter(
+                    entity::release_image::Column::Type
+                        .eq(ReleaseImageType::Cover),
+                ),
+                db,
+            )
+            .await?;
+
+        let cover_arts = release_images
+            .maybe_load_one(entity::image::Entity, db)
+            .await?;
+
+        Ok(Self {
+            artists,
+            catalog_numbers,
+            localized_titles,
+            languages,
+            tracks,
+            credits,
+            credit_artists,
+            credit_roles,
+            cover_arts,
+        })
+    }
+}
+
 fn conv_to_domain_model(
     release_model: &release::Model,
     related: &RelatedEntities,
@@ -145,6 +165,10 @@ fn conv_to_domain_model(
             &related.credit_artists,
             &related.credit_roles,
         ),
+        cover_art_url: related.cover_arts[index]
+            .clone()
+            .map(domain::image::Image::from)
+            .map(|image| image.url()),
     }
 }
 

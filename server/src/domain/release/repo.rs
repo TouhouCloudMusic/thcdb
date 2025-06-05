@@ -14,6 +14,7 @@ pub trait Repo: Connection {
         &self,
         filter: Filter,
     ) -> Result<Vec<super::model::Release>, Self::Error>;
+    async fn exist(&self, id: i32) -> Result<bool, Self::Error>;
 }
 
 pub trait TxRepo: Transaction + Repo

@@ -20,3 +20,10 @@ pub struct InvalidField {
     status_code = StatusCode::UNAUTHORIZED,
 )]
 pub struct Unauthorized;
+
+#[derive(Debug, Display, Error)]
+#[display("{entity_type} #{entity_id} not found")]
+pub struct EntityNotFound {
+    pub entity_id: i32,
+    pub entity_type: &'static str,
+}

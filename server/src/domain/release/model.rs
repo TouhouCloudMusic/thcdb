@@ -11,7 +11,11 @@ use super::super::shared::model::{
 };
 use crate::domain::correction::CorrectionEntity;
 use crate::domain::shared::model::DateWithPrecision;
+use crate::utils::traits::Serializable;
 
+#[serde_with::apply(
+    _ => #[serde(skip_serializing_if = "Serializable::should_skip")],
+)]
 #[derive(Clone, Debug, ToSchema, Serialize)]
 #[schema(
     as = Release
@@ -27,6 +31,7 @@ pub struct Release {
     pub recording_date_start_precision: Option<DatePrecision>,
     pub recording_date_end: Option<Date>,
     pub recording_date_end_precision: Option<DatePrecision>,
+    pub cover_art_url: Option<String>,
 
     pub artists: Vec<ReleaseArtist>,
     pub credits: Vec<ReleaseCredit>,
