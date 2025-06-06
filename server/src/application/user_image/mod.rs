@@ -104,22 +104,6 @@ where
             let image_service =
                 image::Service::new(tx.clone(), self.storage.clone());
 
-            // Handle previous avatar reference
-            if let Some(old_avatar_id) = user.avatar_id {
-                // Delete the reference between user and avatar
-
-                let image_ref = entity::image_reference::Model {
-                    image_id: old_avatar_id,
-                    ref_entity_id: user.id,
-                    ref_entity_type: ImageRefEntityType::User,
-                    ref_usage: Some(USAGE.to_string()),
-                };
-                image_service
-                    .decr_ref_count(image_ref)
-                    .await
-                    .map_err(UserImageServiceError::ImageService)?;
-            }
-
             let new_avatar = image_service
                 .create(
                     buffer,
@@ -134,10 +118,26 @@ where
                 .await
                 .map_err(UserImageServiceError::ImageService)?;
 
-            user.avatar_id = Some(new_avatar.id);
-        }
+            let old_avatar_id = user.avatar_id;
+            let user_id = user.id;
 
-        tx.update(user).await?;
+            user.avatar_id = Some(new_avatar.id);
+
+            tx.update(user).await?;
+
+            if let Some(old_avatar_id) = old_avatar_id {
+                let image_ref = entity::image_reference::Model {
+                    image_id: old_avatar_id,
+                    ref_entity_id: user_id,
+                    ref_entity_type: ImageRefEntityType::User,
+                    ref_usage: Some(USAGE.to_string()),
+                };
+                image_service
+                    .decr_ref_count(image_ref)
+                    .await
+                    .map_err(UserImageServiceError::ImageService)?;
+            }
+        }
 
         tx.commit().await?;
 
