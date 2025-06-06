@@ -89,7 +89,7 @@
 		"husky": "^9.1.7",
 		"jsdom": "^26.1.0",
 		"openapi-typescript": "^7.6.1",
-		"oxlint": "^0.16.0",
+		"oxlint": "^0.17.0",
 		"playwright": "^1.52.0",
 		"prettier": "^3.5.3",
 		"prettier-plugin-tailwindcss": "^0.6.11",
