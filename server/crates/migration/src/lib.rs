@@ -21,6 +21,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20250509_215750_add_more_artist_location::Migration),
             Box::new(m20250516_062600_image_ref_count::Migration),
             Box::new(m20250605_073000_create_release_image::Migration),
+            Box::new(m20250606_140000_defer_user_fkey::Migration),
+            Box::new(m20250607_092000_remove_image_ref_count::Migration),
         ]
     }
 }
@@ -39,3 +41,5 @@ mod m20250503_123235_rename_group_member;
 mod m20250509_215750_add_more_artist_location;
 mod m20250516_062600_image_ref_count;
 mod m20250605_073000_create_release_image;
+mod m20250606_140000_defer_user_fkey;
+mod m20250607_092000_remove_image_ref_count;

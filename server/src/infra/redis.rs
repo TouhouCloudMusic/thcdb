@@ -2,7 +2,7 @@ use fred::prelude::{ClientLike, Config, Error, Pool as RedisPool};
 
 #[derive(Clone)]
 pub struct Pool {
-    inner: RedisPool,
+    pub inner: RedisPool,
 }
 
 impl Pool {

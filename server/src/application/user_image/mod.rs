@@ -1,18 +1,15 @@
-use derive_more::From;
-use entity::enums::ImageRefEntityType;
-use error_set::error_set;
-use futures_util::TryFutureExt;
+use derive_more::{Display, Error, From};
 use macros::{ApiError, IntoErrorSchema};
 
 use crate::domain::image::repository::TxRepo as ImageTxRepo;
 use crate::domain::image::{
-    AsyncImageStorage, CreateImageMeta, ValidationError, {self},
+    AsyncFileStorage, CreateImageMeta, Parser, ValidationError, {self},
 };
 use crate::domain::repository::TransactionManager;
 use crate::domain::user::{
     User, {self},
 };
-use crate::infra;
+use crate::infra::{self};
 
 mod model;
 pub use model::*;
@@ -61,15 +58,14 @@ mod parser {
     });
 }
 
-error_set! {
-    #[derive(ApiError, IntoErrorSchema, From)]
-    #[disable(From(crate::infra::Error))]
-    UserImageServiceError = {
-        #[from(forward)]
-        Infra(crate::infra::Error),
-        ImageService(image::Error),
-        Validate(ValidationError),
-    };
+#[derive(Debug, Display, Error, ApiError, IntoErrorSchema, From)]
+pub enum Error {
+    #[from(forward)]
+    Infra(crate::infra::Error),
+    #[from]
+    ImageService(image::Error),
+    #[from]
+    Validate(ValidationError),
 }
 
 #[derive(Clone)]
@@ -88,109 +84,84 @@ impl<Repo, TxRepo, Storage> Service<Repo, Storage>
 where
     Repo: TransactionManager<TransactionRepository = TxRepo>,
     TxRepo: Clone + user::TxRepo + image::Repo + ImageTxRepo,
-    Storage: Clone + AsyncImageStorage,
+    Storage: Clone + AsyncFileStorage,
     infra::Error: From<Repo::Error> + From<TxRepo::Error>,
 {
     pub async fn upload_avatar(
         &self,
-        mut user: User,
+        user: User,
         buffer: &[u8],
-    ) -> Result<(), UserImageServiceError> {
-        const USAGE: &str = "avatar";
-        let tx = self.repo.begin().await?;
-
-        // drop image service because tx is arc
-        {
-            let image_service =
-                image::Service::new(tx.clone(), self.storage.clone());
-
-            let new_avatar = image_service
-                .create(
-                    buffer,
-                    &parser::AVATAR,
-                    CreateImageMeta {
-                        entity_id: user.id,
-                        entity_type: ImageRefEntityType::User,
-                        usage: Some(USAGE.into()),
-                        uploaded_by: user.id,
-                    },
-                )
-                .await
-                .map_err(UserImageServiceError::ImageService)?;
-
-            let old_avatar_id = user.avatar_id;
-            let user_id = user.id;
-
-            user.avatar_id = Some(new_avatar.id);
-
-            tx.update(user).await?;
-
-            if let Some(old_avatar_id) = old_avatar_id {
-                let image_ref = entity::image_reference::Model {
-                    image_id: old_avatar_id,
-                    ref_entity_id: user_id,
-                    ref_entity_type: ImageRefEntityType::User,
-                    ref_usage: Some(USAGE.to_string()),
-                };
-                image_service
-                    .decr_ref_count(image_ref)
-                    .await
-                    .map_err(UserImageServiceError::ImageService)?;
-            }
-        }
-
-        tx.commit().await?;
-
-        Ok(())
+    ) -> Result<(), Error> {
+        update_user_image(
+            self.repo.begin().await?,
+            self.storage.clone(),
+            user,
+            buffer,
+            &parser::AVATAR,
+            |user| &mut user.avatar_id,
+        )
+        .await
+        .map(|_| ())
     }
 
     pub async fn upload_banner_image(
         &self,
-        mut user: User,
+        user: User,
         buffer: &[u8],
-    ) -> Result<User, UserImageServiceError> {
-        const USAGE: &str = "profile_banner";
-        let tx = self.repo.begin().await?;
-
-        let image_service =
-            image::Service::new(tx.clone(), self.storage.clone());
-
-        // Handle previous banner reference
-        if let Some(image_id) = user.profile_banner_id {
-            // Delete the reference between user and banner
-
-            let image_ref = entity::image_reference::Model {
-                image_id,
-                ref_entity_id: user.id,
-                ref_entity_type: ImageRefEntityType::User,
-                ref_usage: Some(USAGE.to_string()),
-            };
-            image_service
-                .decr_ref_count(image_ref)
-                .await
-                .map_err(UserImageServiceError::ImageService)?;
-        }
-
-        let image = image_service
-            .create(
-                buffer,
-                &parser::PROFILE_BANNER,
-                CreateImageMeta {
-                    entity_id: user.id,
-                    entity_type: ImageRefEntityType::User,
-                    usage: Some(USAGE.into()),
-                    uploaded_by: user.id,
-                },
-            )
-            .map_err(UserImageServiceError::ImageService)
-            .await?;
-
-        user.profile_banner_id = Some(image.id);
-
-        let user = tx.update(user).await?;
-
-        tx.commit().await?;
-
-        Ok(user)
+    ) -> Result<User, Error> {
+        update_user_image(
+            self.repo.begin().await?,
+            self.storage.clone(),
+            user,
+            buffer,
+            &parser::PROFILE_BANNER,
+            |user| &mut user.profile_banner_id,
+        )
+        .await
     }
+}
+
+async fn update_user_image<TxRepo, Storage, F>(
+    tx: TxRepo,
+    storage: Storage,
+    mut user: User,
+    buffer: &[u8],
+    parser: &'static Parser,
+    get_field_fn: F,
+) -> Result<User, Error>
+where
+    F: FnOnce(&mut User) -> &mut Option<i32>,
+    TxRepo: Clone + user::TxRepo + image::Repo + ImageTxRepo,
+    Storage: Clone + AsyncFileStorage,
+    infra::Error: From<TxRepo::Error>,
+{
+    let image_service = image::Service::new(tx.clone(), storage);
+
+    // Create new image
+    let new_image = image_service
+        .create(
+            buffer,
+            parser,
+            CreateImageMeta {
+                uploaded_by: user.id,
+            },
+        )
+        .await?;
+
+    let image_field_ref = get_field_fn(&mut user);
+    let prev_id = *image_field_ref;
+    let new_id = Some(new_image.id);
+
+    if prev_id == new_id {
+        return Ok(user);
+    }
+
+    *image_field_ref = new_id;
+
+    drop(image_service);
+
+    let user = tx.update(user).await?;
+    tx.commit().await?;
+
+    Ok(user)
 }

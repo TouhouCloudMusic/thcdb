@@ -49,7 +49,8 @@ where
 }
 
 fn auth_layer(state: &ArcAppState) -> impl AxumLayerBounds {
-    let session_store = RedisStore::new(state.redis_pool());
+    let pool = state.redis_pool();
+    let session_store = RedisStore::new(pool);
 
     let session_layer = SessionManagerLayer::new(session_store)
         .with_name("session_token")

@@ -11,14 +11,14 @@ ADD
 ADD
   CONSTRAINT "join_year_type_check" CHECK (
     (
-      join_year_type = 'FoundingMember' :: public."JoinYearType"
+      join_year_type = 'FoundingMember'::public."JoinYearType"
     )
     AND (join_year IS NULL)
   ),
 ADD
   CONSTRAINT "leave_year_type_check" CHECK (
     (
-      leave_year_type = 'Unknown' :: public."LeaveYearType"
+      leave_year_type = 'Unknown'::public."LeaveYearType"
     )
     AND (leave_year IS NULL)
   );
@@ -32,14 +32,14 @@ ADD
 ADD
   CONSTRAINT "join_year_type_check" CHECK (
     (
-      join_year_type = 'FoundingMember' :: public."JoinYearType"
+      join_year_type = 'FoundingMember'::public."JoinYearType"
     )
     AND (join_year IS NULL)
   ),
 ADD
   CONSTRAINT "leave_year_type_check" CHECK (
     (
-      leave_year_type = 'Unknown' :: public."LeaveYearType"
+      leave_year_type = 'Unknown'::public."LeaveYearType"
     )
     AND (leave_year IS NULL)
   );

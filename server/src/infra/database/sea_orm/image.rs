@@ -2,11 +2,11 @@ use entity::image::Model;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ColumnTrait, ConnectionTrait, DbErr, EntityTrait, IntoActiveModel,
-    IntoActiveValue, PaginatorTrait, QueryFilter, QueryTrait,
+    IntoActiveValue, QueryFilter,
 };
 
 use crate::domain::image;
-use crate::domain::image::{Image, ImageRef, NewImage};
+use crate::domain::image::{Image, NewImage};
 use crate::domain::repository::Connection;
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
 use crate::utils::MapInto;
@@ -33,13 +33,6 @@ where
             .one(self.conn())
             .await
             .map(crate::utils::MapInto::map_into)
-    }
-
-    async fn ref_count(&self, image_id: i32) -> Result<u64, Self::Error> {
-        entity::image_reference::Entity::find()
-            .filter(entity::image_reference::Column::ImageId.eq(image_id))
-            .count(self.conn())
-            .await
     }
 }
 
@@ -88,41 +81,6 @@ impl image::TxRepo for SeaOrmTxRepo {
     async fn delete(&self, id: i32) -> Result<(), Self::Error> {
         entity::image::Entity::delete_many()
             .filter(entity::image::Column::Id.eq(id))
-            .exec(self.conn())
-            .await
-            .map(|_| ())
-    }
-
-    async fn create_ref(&self, image_ref: ImageRef) -> Result<(), Self::Error> {
-        entity::image_reference::Entity::insert(
-            entity::image_reference::ActiveModel {
-                image_id: Set(image_ref.image_id),
-                ref_entity_id: Set(image_ref.ref_entity_id),
-                ref_entity_type: Set(image_ref.ref_entity_type),
-                ref_usage: Set(image_ref.ref_usage),
-            },
-        )
-        .exec(self.conn())
-        .await
-        .map(|_| ())
-    }
-
-    async fn remove_ref(&self, image_ref: ImageRef) -> Result<(), Self::Error> {
-        entity::image_reference::Entity::delete_many()
-            .filter(
-                entity::image_reference::Column::ImageId.eq(image_ref.image_id),
-            )
-            .filter(
-                entity::image_reference::Column::RefEntityId
-                    .eq(image_ref.ref_entity_id),
-            )
-            .filter(
-                entity::image_reference::Column::RefEntityType
-                    .eq(image_ref.ref_entity_type),
-            )
-            .apply_if(image_ref.ref_usage, |query, val| {
-                query.filter(entity::image_reference::Column::RefUsage.eq(val))
-            })
             .exec(self.conn())
             .await
             .map(|_| ())

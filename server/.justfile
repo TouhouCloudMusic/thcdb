@@ -1,6 +1,7 @@
 set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 set dotenv-load := true
 set dotenv-required := true
+set positional-arguments
 
 fmt:
   taplo fmt
@@ -34,6 +35,10 @@ __generate:
   --enum-extra-derives Copy
 
 generate: __rm_entites __generate
+
+@migrate *args:
+  cargo run -p migration "$@"
+
 
 converge:
   cargo tarpaulin --workspace --exclude-files crates/entity/src/entities/*

@@ -5,13 +5,12 @@ use axum::http::StatusCode;
 use bytes::Bytes;
 use bytesize::ByteSize;
 use derive_more::{Display, From};
-use entity::enums::ImageRefEntityType;
 use macros::{ApiError, IntoErrorSchema};
 use thiserror::Error;
 
 use super::error::EntityNotFound;
 use crate::domain::image::{
-    AsyncImageStorage, CreateImageMeta, ParseOption, Parser,
+    AsyncFileStorage, CreateImageMeta, ParseOption, Parser,
 };
 use crate::domain::release_image::{self};
 use crate::domain::release_image_queue::{self, ReleaseImageQueue};
@@ -65,7 +64,7 @@ where
         + image_queue::Repo
         + release_image::Repo
         + release_image_queue::Repo,
-    Storage: AsyncImageStorage + Clone,
+    Storage: AsyncFileStorage + Clone,
     crate::infra::Error: From<Repo::Error> + From<TxRepo::Error>,
 {
     pub const fn new(repo: Repo, storage: Storage) -> Self {
@@ -76,9 +75,6 @@ where
         &self,
         dto: ReleaseCoverArtInput,
     ) -> Result<(), Error> {
-        // Don't change this
-        const USAGE: &str = "cover_art";
-
         let ReleaseCoverArtInput {
             bytes,
             user,
@@ -102,9 +98,6 @@ where
                 &bytes,
                 &RELEASE_COVER_IMAGE_PARSER,
                 CreateImageMeta {
-                    entity_id: release_id,
-                    entity_type: ImageRefEntityType::Release,
-                    usage: Some(USAGE.into()),
                     uploaded_by: user.id,
                 },
             )
@@ -119,6 +112,8 @@ where
             ReleaseImageQueue::cover(release_id, image_queue_entry.id);
         release_image_queue::Repo::create(&tx_repo, release_image_queue_entry)
             .await?;
+
+        drop(image_service);
 
         tx_repo.commit().await?;
 

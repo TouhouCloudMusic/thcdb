@@ -44,19 +44,21 @@ where
     },
 }
 
-impl From<DbErr> for SeaOrmError {
-    fn from(value: DbErr) -> Self {
+impl TryFrom<DbErr> for FkViolation<DbErr> {
+    type Error = DbErr;
+
+    fn try_from(value: DbErr) -> Result<Self, Self::Error> {
         match value {
             DbErr::Query(RuntimeErr::SqlxError(sqlx::Error::Database(
                 ref err,
             ))) if err.is_foreign_key_violation() => {
                 let table = err.table().unwrap_or("unknown").to_string();
-                SeaOrmError::FkViolation(FkViolation::Auto {
+                Ok(FkViolation::Auto {
                     entity: table,
                     source: value,
                 })
             }
-            err => SeaOrmError::General(err),
+            err => Err(err),
         }
     }
 }

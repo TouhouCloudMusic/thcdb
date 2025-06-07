@@ -11,7 +11,7 @@ use super::redis::Pool;
 pub struct AppState {
     pub database: DatabaseConnection,
 
-    redis_pool: Pool,
+    redis_pool: fred::prelude::Pool,
 
     pub transport: AsyncSmtpTransport<Tokio1Executor>,
 
@@ -21,7 +21,7 @@ pub struct AppState {
 impl AppState {
     pub async fn init(config: &Config) -> Self {
         let conn = get_connection(&config.database_url).await;
-        let redis_pool = Pool::init(&config.redis_url).await;
+        let redis_pool = Pool::init(&config.redis_url).await.inner;
         let stmp_conf = &config.email;
         let creds = Credentials::new(
             stmp_conf.creds.username.clone(),
@@ -44,6 +44,6 @@ impl AppState {
 
 impl AppState {
     pub fn redis_pool(&self) -> fred::prelude::Pool {
-        self.redis_pool.pool()
+        self.redis_pool.clone()
     }
 }

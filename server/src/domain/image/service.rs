@@ -6,12 +6,12 @@ use bon::Builder;
 use boolinator::Boolinator;
 use bytesize::ByteSize;
 use derive_more::{Display, Error};
-use entity::enums::{ImageRefEntityType, StorageBackend};
+use entity::enums::StorageBackend;
 use error_set::error_set;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 use macros::ApiError;
 
-use crate::domain::image::model::{Image, ImageRef, NewImage};
+use crate::domain::image::model::{Image, NewImage};
 use crate::domain::repository::Transaction;
 use crate::infra::{self};
 
@@ -320,7 +320,7 @@ impl Parser {
     }
 }
 
-pub trait AsyncImageStorage: Send + Sync {
+pub trait AsyncFileStorage: Send + Sync {
     type File;
     type Error: Into<infra::Error>;
 
@@ -361,7 +361,7 @@ impl<R, S> Service<R, S> {
 impl<Repo, Storage> Service<Repo, Storage>
 where
     Repo: super::Repo,
-    Storage: AsyncImageStorage,
+    Storage: AsyncFileStorage,
     crate::infra::error::Error: From<Repo::Error>,
 {
     pub async fn find_by_id(&self, id: i32) -> Result<Option<Image>, Error> {
@@ -377,16 +377,13 @@ where
 }
 
 pub struct CreateImageMeta {
-    pub entity_id: i32,
-    pub entity_type: ImageRefEntityType,
-    pub usage: Option<String>,
     pub uploaded_by: i32,
 }
 
 impl<Tx, Storage> Service<Tx, Storage>
 where
     Tx: Transaction + super::Repo + super::repository::TxRepo,
-    Storage: AsyncImageStorage,
+    Storage: AsyncFileStorage,
     crate::infra::error::Error: From<Tx::Error>,
 {
     pub async fn create(
@@ -413,15 +410,6 @@ where
             image
         };
 
-        // Create image reference
-        let image_ref = entity::image_reference::Model {
-            image_id: image.id,
-            ref_entity_id: meta.uploaded_by,
-            ref_entity_type: meta.entity_type,
-            ref_usage: meta.usage,
-        };
-        self.repo.create_ref(image_ref).await?;
-
         Ok(image)
     }
 
@@ -429,27 +417,6 @@ where
         self.repo.delete(image.id).await?;
 
         self.storage.remove(image).await?;
-
-        Ok(())
-    }
-
-    /// Decrement the reference count for an image and delete it if no references remain
-    pub async fn decr_ref_count(
-        &self,
-        image_ref: ImageRef,
-    ) -> Result<(), Error> {
-        self.repo.remove_ref(image_ref.clone()).await?;
-
-        // Check if this was the last reference
-        let count = self.repo.ref_count(image_ref.image_id).await?;
-        if count == 0 {
-            // Get the image and delete it
-            if let Some(image) =
-                self.repo.find_by_id(image_ref.image_id).await?
-            {
-                self.delete(image).await?;
-            }
-        }
 
         Ok(())
     }

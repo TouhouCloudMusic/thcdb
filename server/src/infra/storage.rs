@@ -2,8 +2,8 @@ use std::path::{Path, PathBuf};
 
 use tokio::io::AsyncWriteExt;
 
-pub mod image;
-pub use self::image::{GenericImageStorage, GenericImageStorageConfig};
+pub mod file;
+pub use self::file::{GenericFileStorage, GenericFileStorageConfig};
 
 #[derive(Clone)]
 struct FsStorage {
@@ -13,6 +13,20 @@ struct FsStorage {
 impl FsStorage {
     const fn new(base_path: PathBuf) -> Self {
         Self { base_path }
+    }
+
+    pub fn prepend_prefix(&self, path: impl AsRef<Path>) -> PathBuf {
+        let path = path.as_ref();
+        assert!(
+            !path.is_absolute(),
+            "Path {} is absolute, this should not happen",
+            path.display()
+        );
+        if path.starts_with(&self.base_path) {
+            path.to_path_buf()
+        } else {
+            PathBuf::from_iter([&self.base_path, path])
+        }
     }
 }
 
@@ -50,8 +64,47 @@ impl FsStorage {
         &self,
         path: impl AsRef<std::path::Path> + Send + Sync,
     ) -> Result<(), std::io::Error> {
-        tokio::fs::remove_file(&path).await.inspect_err(|e| {
-            tracing::error!("Failed to remove file: {}", e);
-        })
+        let path = self.prepend_prefix(path);
+        let res = tokio::fs::remove_file(&path).await.inspect_err(|e| {
+            tracing::error!("Failed to remove file {:?}, {e}", path);
+        });
+
+        match res {
+            Ok(()) => Ok(()),
+            Err(e) => match e.kind() {
+                // If the file does not exist, it is already removed
+                std::io::ErrorKind::NotFound => Ok(()),
+                _ => Err(e),
+            },
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+
+    #[test]
+    fn fs_storage_prepend_prefix() {
+        let storage = super::FsStorage::new("base/path".into());
+
+        assert_eq!(
+            storage.prepend_prefix("test").to_str().unwrap(),
+            "base/path/test"
+        );
+        assert_eq!(
+            storage.prepend_prefix("test.png").to_str().unwrap(),
+            "base/path/test.png"
+        );
+        assert_eq!(
+            storage.prepend_prefix("foo/test.png").to_str().unwrap(),
+            "base/path/foo/test.png"
+        );
+    }
+
+    #[test]
+    #[should_panic = "Path /test is absolute, this should not happen"]
+    fn fs_storage_prepend_prefix_absolute() {
+        let storage = super::FsStorage::new("base/path".into());
+        storage.prepend_prefix("/test");
     }
 }

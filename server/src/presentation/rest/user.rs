@@ -14,7 +14,7 @@ use crate::application::auth::{
     AuthServiceTrait, SessionBackendError, SignInError, SignUpError,
 };
 use crate::application::user_image::{
-    UploadAvatar, UploadProfileBanner, UserImageServiceError,
+    Error as UserImageError, UploadAvatar, UploadProfileBanner,
 };
 use crate::domain;
 use crate::domain::model::auth::AuthCredential;
@@ -170,14 +170,14 @@ async fn sign_out(
     responses(
         (status = 200, body = api_response::Message),
         (status = 401),
-        UserImageServiceError
+        UserImageError
     )
 )]
 async fn upload_avatar(
     CurrentUser(user): CurrentUser,
     State(service): State<state::UserImageService>,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
-) -> Result<impl IntoResponse, UserImageServiceError> {
+) -> Result<impl IntoResponse, UserImageError> {
     service
         .upload_avatar(user, &form.data.contents)
         .await
@@ -197,14 +197,14 @@ async fn upload_avatar(
     responses(
         (status = 200, body = api_response::Message),
         (status = 401),
-        UserImageServiceError
+        UserImageError
     )
 )]
 async fn upload_profile_banner(
     CurrentUser(user): CurrentUser,
     State(service): State<state::UserImageService>,
     TypedMultipart(form): TypedMultipart<UploadProfileBanner>,
-) -> Result<impl IntoResponse, UserImageServiceError> {
+) -> Result<impl IntoResponse, UserImageError> {
     service
         .upload_banner_image(user, &form.data.contents)
         .await

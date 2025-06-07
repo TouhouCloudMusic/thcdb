@@ -31,13 +31,13 @@ ADD
   CONSTRAINT "image_queue_image_id_null_check" CHECK (
     ("image_id" IS NULL) = (
       "status" = ANY (
-        ARRAY ['Rejected', 'Cancelled'] :: "public"."ImageQueueStatus" []
+        ARRAY ['Rejected', 'Cancelled']::"public"."ImageQueueStatus" []
       )
     )
   ),
 ADD
   CONSTRAINT "image_queue_handled_by_null_check" CHECK (
     ("handled_by" IS NULL) = (
-      "status" = 'Pending' :: "public"."ImageQueueStatus"
+      "status" = 'Pending'::"public"."ImageQueueStatus"
     )
   );

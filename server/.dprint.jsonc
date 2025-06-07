@@ -2,7 +2,11 @@
   "excludes": [],
   "includes": ["crates/migration/src/**/*.sql"],
   "sql": {
-    "linesBetweenQueries": 2
+    "linesBetweenQueries": 2,
+    "uppercase": true
   },
-  "plugins": ["https://plugins.dprint.dev/sql-0.2.0.wasm"]
+  "plugins": [
+    // "https://plugins.dprint.dev/sql-0.2.0.wasm"
+    "https://github.com/Huliiiiii/dprint-plugin-sql/releases/download/20250606/dprint_plugin_sql.wasm"
+  ]
 }

@@ -4,17 +4,15 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 
 use super::extractor::TryFromRef;
-use crate::application::{
-    user_profile, {self},
-};
+use crate::application::{self, user_profile};
 use crate::domain::repository::TransactionManager;
 pub(super) use crate::infra::database::sea_orm::{
     SeaOrmRepository, SeaOrmTxRepo,
 };
 use crate::infra::error::Error;
-use crate::infra::singleton::FS_IMAGE_STORAGE;
+use crate::infra::singleton::FS_IMAGE_BASE_PATH;
 use crate::infra::state::AppState;
-use crate::infra::storage::GenericImageStorage;
+use crate::infra::storage::{GenericFileStorage, GenericFileStorageConfig};
 
 #[derive(Clone)]
 pub struct ArcAppState(Arc<AppState>);
@@ -39,9 +37,9 @@ pub(super) type AuthSession = axum_login::AuthSession<AuthService>;
 
 pub(super) type ArtistService = application::artist::Service<SeaOrmRepository>;
 pub(super) type ArtistImageService =
-    application::artist_image::Service<SeaOrmRepository, GenericImageStorage>;
+    application::artist_image::Service<SeaOrmRepository, GenericFileStorage>;
 pub(super) type ReleaseImageService =
-    application::release_image::Service<SeaOrmRepository, GenericImageStorage>;
+    application::release_image::Service<SeaOrmRepository, GenericFileStorage>;
 
 pub(super) type CorrectionService =
     application::correction::Service<SeaOrmRepository>;
@@ -65,7 +63,7 @@ impl FromRef<ArcAppState> for EventService {
 }
 
 pub(super) type ImageService =
-    crate::domain::image::Service<SeaOrmTxRepo, GenericImageStorage>;
+    crate::domain::image::Service<SeaOrmTxRepo, GenericFileStorage>;
 
 pub(super) type LabelService = application::label::Service<SeaOrmRepository>;
 
@@ -109,7 +107,7 @@ impl FromRef<ArcAppState> for TagService {
 }
 
 pub(super) type UserImageService =
-    application::user_image::Service<SeaOrmRepository, GenericImageStorage>;
+    application::user_image::Service<SeaOrmRepository, GenericFileStorage>;
 pub(super) type UserProfileService = user_profile::Service<SeaOrmRepository>;
 
 impl FromRef<ArcAppState> for SeaOrmRepository {
@@ -143,7 +141,10 @@ impl TryFromRef<ArcAppState> for ImageService {
 
         Ok(ImageService::builder()
             .repo(tx_repo)
-            .storage(FS_IMAGE_STORAGE.clone())
+            .storage(GenericFileStorage::new(GenericFileStorageConfig {
+                fs_base_path: FS_IMAGE_BASE_PATH.to_path_buf(),
+                redis_pool: input.redis_pool(),
+            }))
             .build())
     }
 }
@@ -157,7 +158,10 @@ impl FromRef<ArcAppState> for AuthService {
 impl FromRef<ArcAppState> for ReleaseImageService {
     fn from_ref(input: &ArcAppState) -> Self {
         let repo = input.sea_orm_repo.clone();
-        let storage = FS_IMAGE_STORAGE.clone();
+        let storage = GenericFileStorage::new(GenericFileStorageConfig {
+            fs_base_path: FS_IMAGE_BASE_PATH.to_path_buf(),
+            redis_pool: input.redis_pool(),
+        });
         Self::new(repo, storage)
     }
 }
@@ -165,7 +169,10 @@ impl FromRef<ArcAppState> for ReleaseImageService {
 impl FromRef<ArcAppState> for ArtistImageService {
     fn from_ref(input: &ArcAppState) -> Self {
         let repo = input.sea_orm_repo.clone();
-        let storage = FS_IMAGE_STORAGE.clone();
+        let storage = GenericFileStorage::new(GenericFileStorageConfig {
+            fs_base_path: FS_IMAGE_BASE_PATH.to_path_buf(),
+            redis_pool: input.redis_pool(),
+        });
         Self::new(repo, storage)
     }
 }
@@ -184,7 +191,10 @@ impl TryFromRef<ArcAppState> for SeaOrmTxRepo {
 impl FromRef<ArcAppState> for UserImageService {
     fn from_ref(input: &ArcAppState) -> Self {
         let repo = input.sea_orm_repo.clone();
-        let storage = FS_IMAGE_STORAGE.clone();
+        let storage = GenericFileStorage::new(GenericFileStorageConfig {
+            fs_base_path: FS_IMAGE_BASE_PATH.to_path_buf(),
+            redis_pool: input.redis_pool(),
+        });
         Self::new(repo, storage)
     }
 }

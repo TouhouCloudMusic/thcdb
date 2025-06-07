@@ -10,10 +10,10 @@ use sea_orm::prelude::Expr;
 use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
     ColumnTrait, DbErr, EntityTrait, FromQueryResult, IntoActiveModel,
-    Iterable, JoinType, PaginatorTrait, QueryFilter, QuerySelect, QueryTrait,
+    JoinType, PaginatorTrait, QueryFilter, QuerySelect, QueryTrait,
     RelationTrait, TransactionTrait,
 };
-use sea_orm_migration::prelude::{Alias, OnConflict};
+use sea_orm_migration::prelude::Alias;
 
 use super::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::domain;
@@ -72,13 +72,8 @@ impl user::TxRepo for SeaOrmTxRepo {
     async fn update(&self, user: User) -> Result<User, Self::Error> {
         let tx = self.conn();
         let user_roles = user.roles.clone();
-        let model = entity::user::Entity::insert(user.into_active_model())
-            .on_conflict(
-                OnConflict::column(entity::user::Column::Id)
-                    .update_columns(entity::user::Column::iter())
-                    .to_owned(),
-            )
-            .exec_with_returning(tx)
+        let model = entity::user::Entity::update(user.into_active_model())
+            .exec(tx)
             .await?;
 
         let roles = user_roles
@@ -100,10 +95,7 @@ impl user::TxRepo for SeaOrmTxRepo {
 
         let mut user = User::from(model);
 
-        user.roles = roles
-            .into_iter()
-            .map(TryInto::try_into)
-            .collect::<Result<Vec<UserRole>, _>>()?;
+        user.roles = roles.into_iter().map(TryInto::try_into).try_collect()?;
 
         Ok(user)
     }

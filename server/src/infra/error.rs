@@ -8,7 +8,7 @@ use derive_more::{Display, From};
 use macros::{ApiError, IntoErrorSchema};
 use sea_orm::DbErr;
 
-use super::database::error::{FkViolation, SeaOrmError};
+use super::database::error::FkViolation;
 use crate::presentation::api_response::{
     IntoApiResponse, default_into_api_response_impl,
 };
@@ -16,10 +16,18 @@ use crate::presentation::api_response::{
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// Note: Don't impl from for variants
-#[derive(Debug, Display, derive_more::Error, ApiError, IntoErrorSchema)]
+#[derive(
+    Debug, Display, From, derive_more::Error, ApiError, IntoErrorSchema,
+)]
 pub enum Error {
     Internal(InternalError),
     User(UserError),
+}
+
+impl From<DbErr> for Error {
+    fn from(value: DbErr) -> Self {
+        Error::Internal(InternalError::SeaOrm(value))
+    }
 }
 
 impl Error {
@@ -30,20 +38,6 @@ impl Error {
         ContextError {
             error: self,
             context: context.into(),
-        }
-    }
-}
-
-impl From<DbErr> for Error {
-    fn from(value: DbErr) -> Self {
-        let e = SeaOrmError::from(value);
-        match e {
-            SeaOrmError::General(e) => {
-                Error::Internal(InternalError::SeaOrm(e))
-            }
-            SeaOrmError::FkViolation(e) => {
-                Error::User(UserError::FkViolation(e))
-            }
         }
     }
 }

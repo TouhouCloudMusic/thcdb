@@ -27,8 +27,6 @@ pub enum Relation {
     ArtistImage,
     #[sea_orm(has_many = "super::image_queue::Entity")]
     ImageQueue,
-    #[sea_orm(has_many = "super::image_reference::Entity")]
-    ImageReference,
     #[sea_orm(has_many = "super::release_image::Entity")]
     ReleaseImage,
     #[sea_orm(
@@ -50,12 +48,6 @@ impl Related<super::artist_image::Entity> for Entity {
 impl Related<super::image_queue::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ImageQueue.def()
-    }
-}
-
-impl Related<super::image_reference::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::ImageReference.def()
     }
 }
 

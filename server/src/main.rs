@@ -46,6 +46,8 @@ use infra::singleton::APP_CONFIG;
 use infra::state::AppState;
 use sea_orm_migration::MigratorTrait;
 
+use self::infra::worker::Worker;
+
 #[cfg(all(feature = "release", unix))]
 mod alloc {
     use tikv_jemallocator::Jemalloc;
@@ -68,6 +70,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     check_database_lookup_tables(&state.database)
         .await
         .expect("Error while checking database lookup tables.");
+
+    Worker {
+        redis_pool: state.redis_pool(),
+    }
+    .init();
 
     let listener = tokio::net::TcpListener::bind(format!(
         "0.0.0.0:{}",

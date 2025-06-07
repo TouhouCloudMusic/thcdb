@@ -4,7 +4,6 @@ use ::image::ImageFormat;
 use bytes::Bytes;
 use bytesize::ByteSize;
 use derive_more::{Display, From};
-use entity::enums::ImageRefEntityType;
 use macros::{ApiError, IntoErrorSchema};
 use thiserror::Error;
 
@@ -17,7 +16,7 @@ use crate::domain::artist_image_queue::{
     ArtistImageQueue, {self},
 };
 use crate::domain::image::{
-    AsyncImageStorage, CreateImageMeta, ParseOption, Parser,
+    AsyncFileStorage, CreateImageMeta, ParseOption, Parser,
 };
 use crate::domain::repository::{Transaction, TransactionManager};
 use crate::domain::user::User;
@@ -59,7 +58,7 @@ where
         + image::TxRepo
         + image_queue::Repo
         + artist_image_queue::Repository,
-    Storage: AsyncImageStorage + Clone,
+    Storage: AsyncFileStorage + Clone,
     crate::infra::Error: From<Repo::Error> + From<TxRepo::Error>,
 {
     /// Warn: Make sure inner transaction is wrapped in Arc
@@ -71,7 +70,6 @@ where
         &self,
         dto: ArtistProfileImageInput,
     ) -> Result<(), Error> {
-        const USAGE: &str = "profile_image";
         let ArtistProfileImageInput {
             bytes,
             user,
@@ -80,14 +78,13 @@ where
 
         let tx_repo = self.repo.begin().await?;
 
-        let image = image::Service::new(tx_repo.clone(), self.storage.clone())
+        let image_service =
+            image::Service::new(tx_repo.clone(), self.storage.clone());
+        let image = image_service
             .create(
                 &bytes,
                 &ARTIST_PROFILE_IMAGE_PARSER,
                 CreateImageMeta {
-                    entity_id: artist_id,
-                    entity_type: ImageRefEntityType::Artist,
-                    usage: Some(USAGE.into()),
                     uploaded_by: user.id,
                 },
             )
@@ -103,6 +100,8 @@ where
 
         artist_image_queue::Repository::create(&tx_repo, artist_image_queue)
             .await?;
+
+        drop(image_service);
 
         tx_repo.commit().await?;
 

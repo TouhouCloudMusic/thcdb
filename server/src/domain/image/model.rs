@@ -6,7 +6,6 @@ use bon::Builder;
 use chrono::{DateTime, FixedOffset};
 use entity::enums::StorageBackend;
 use entity::image::Model as DbModel;
-pub use entity::image_reference::Model as ImageRef;
 use macros::AutoMapper;
 use xxhash_rust::xxh3::xxh3_128;
 
@@ -81,5 +80,28 @@ impl NewImage {
 
     pub fn filename(&self) -> String {
         format!("{}.{}", self.file_hash, self.extension)
+    }
+}
+
+#[cfg(test)]
+mod test {
+
+    use crate::domain::image::Image;
+
+    #[test]
+    fn image_path_gen() {
+        let image = Image {
+            id: 0,
+            filename: "test_hash.png".to_string(),
+            directory: "test_dir/bar/".to_string(),
+            uploaded_by: 0,
+            uploaded_at: chrono::Utc::now().into(),
+            backend: entity::enums::StorageBackend::Fs,
+        };
+
+        assert_eq!(
+            image.full_path().to_str().unwrap(),
+            "test_dir/bar/test_hash.png"
+        );
     }
 }
