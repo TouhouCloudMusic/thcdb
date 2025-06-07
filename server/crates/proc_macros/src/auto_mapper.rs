@@ -2,7 +2,7 @@ use darling::ast::{Data, NestedMeta};
 use darling::{FromDeriveInput, FromField, FromMeta};
 use itertools::Itertools;
 use quote::{format_ident, quote};
-use syn::{DeriveInput, Expr, Ident, Path};
+use syn::{DeriveInput, Expr, Ident, Path, Type};
 
 #[derive(FromDeriveInput)]
 #[darling(attributes(mapper), supports(struct_named))]
@@ -25,7 +25,7 @@ struct AutoMapperField {
 }
 
 struct ConvEntry {
-    path: Path,
+    ty: syn::Type,
     map: Option<Path>,
     default: Option<bool>,
 }
@@ -33,17 +33,18 @@ struct ConvEntry {
 impl FromMeta for ConvEntry {
     fn from_list(items: &[darling::ast::NestedMeta]) -> darling::Result<Self> {
         let mut errors = darling::Error::accumulator();
-        let path = match &items[0] {
-            NestedMeta::Meta(syn::Meta::Path(path)) => Some(path.clone()),
-            _ => {
+        let path = match parse_type_def(&items[0]) {
+            Some(s) => Some(s),
+            None => {
                 errors.push(
-                    darling::Error::custom("Expected path as first argument.")
-                        .with_span(&items[0]),
+                    darling::Error::custom(
+                        "Failed to parse ConvEntry. Expected path or ty = \"ty\" as first argument.",
+                    )
+                    .with_span(&items[0]),
                 );
                 None
             }
         };
-
         let mut map = None;
         const MAP: &str = "map";
         let mut default = None;
@@ -108,7 +109,7 @@ impl FromMeta for ConvEntry {
 
         errors.finish()?;
         Ok(Self {
-            path: path.unwrap(),
+            ty: path.expect("Failed to get type on ConvEntry"),
             map,
             default,
         })
@@ -117,7 +118,7 @@ impl FromMeta for ConvEntry {
 
 #[derive(Debug, Clone)]
 struct OnEntry {
-    ty: Path,
+    ty: syn::Type,
     map: Option<Path>,
     with: Option<Expr>,
     rename: Option<Ident>,
@@ -127,12 +128,14 @@ struct OnEntry {
 impl FromMeta for OnEntry {
     fn from_list(items: &[darling::ast::NestedMeta]) -> darling::Result<Self> {
         let mut errors = darling::Error::accumulator();
-        let ty = match &items[0] {
-            NestedMeta::Meta(syn::Meta::Path(path)) => Some(path.clone()),
-            _ => {
+        let ty = match parse_type_def(&items[0]) {
+            Some(s) => Some(s),
+            None => {
                 errors.push(
-                    darling::Error::custom("Expected path as first argument.")
-                        .with_span(&items[0]),
+                    darling::Error::custom(
+                        "Failed to parse OnEntry. Expected path or ty = \"ty\" as first argument.",
+                    )
+                    .with_span(&items[0]),
                 );
                 None
             }
@@ -249,7 +252,7 @@ impl FromMeta for OnEntry {
 
         errors.finish()?;
         Ok(Self {
-            ty: ty.unwrap(),
+            ty: ty.expect("Failed to get type on OnEntry"),
             map,
             with,
             rename,
@@ -280,12 +283,14 @@ pub fn derive_impl(
                 let field_exprs = fields
                     .iter()
                     .map(|field| {
-                        let on = get_on(&field.on, &from.path);
+                        let on = get_on(&field.on, &from.ty);
                         let field_name = field.ident.as_ref().unwrap();
                         let rename = on
                             .and_then(|x| x.rename.as_ref())
                             .map(|s| format_ident!("{s}"))
                             .unwrap_or(field_name.clone());
+
+                        let is_ref = matches!(&from.ty, Type::Reference(_));
 
                         let right_hand_expr = if let Some(on) = on {
                             on.map
@@ -303,6 +308,14 @@ pub fn derive_impl(
                         }
                         .unwrap_or_else(|| quote! { value.#rename });
 
+                        let right_hand_expr = if is_ref {
+                            right_hand_expr
+                        } else {
+                            quote! {
+                                #right_hand_expr.clone()
+                            }
+                        };
+
                         quote! {
                             #field_name: #right_hand_expr,
                         }
@@ -316,7 +329,7 @@ pub fn derive_impl(
                 } else {
                     None
                 };
-                let path = &from.path;
+                let path = &from.ty;
 
                 let block = quote! {
                     impl #impl_generics From<#path> for #ident #ty_generics #where_clause  {
@@ -337,7 +350,7 @@ pub fn derive_impl(
                 let field_exprs = fields
                     .iter()
                     .filter_map(|field| {
-                        let on = get_on(&field.on, &into.path);
+                        let on = get_on(&field.on, &into.ty);
                         if let Some(true) = on.and_then(|x| x.skip) {
                             return None;
                         }
@@ -374,7 +387,7 @@ pub fn derive_impl(
                 } else {
                     None
                 };
-                let path = &into.path;
+                let path = &into.ty;
 
                 let block = quote! {
                     impl #impl_generics From<#ident #ty_generics> for #path #where_clause  {
@@ -398,6 +411,28 @@ pub fn derive_impl(
     })
 }
 
-fn get_on<'a>(iter: &'a [OnEntry], path: &'a Path) -> Option<&'a OnEntry> {
+fn get_on<'a>(iter: &'a [OnEntry], path: &'a syn::Type) -> Option<&'a OnEntry> {
     iter.iter().find(|OnEntry { ty, .. }| ty == path)
+}
+
+fn parse_type_def(meta: &NestedMeta) -> Option<syn::Type> {
+    match meta {
+        NestedMeta::Meta(syn::Meta::Path(path)) => {
+            Some(syn::Type::Path(syn::TypePath {
+                qself: None,
+                path: path.clone(),
+            }))
+        }
+        // TODO: Replace it with `ref` property
+        NestedMeta::Meta(syn::Meta::NameValue(name_value))
+            if name_value.path.is_ident("ty")
+                && let Expr::Lit(syn::ExprLit {
+                    lit: syn::Lit::Str(lit_str),
+                    ..
+                }) = &name_value.value =>
+        {
+            syn::parse_str::<syn::Type>(&lit_str.value()).ok()
+        }
+        _ => None,
+    }
 }

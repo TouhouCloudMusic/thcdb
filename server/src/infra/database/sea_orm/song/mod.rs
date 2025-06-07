@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use entity::{
-    language, song, song_credit, song_credit_history, song_history,
+    artist, song, song_credit, song_credit_history, song_history,
     song_language, song_language_history, song_localized_title,
     song_localized_title_history,
 };
@@ -12,8 +14,10 @@ use sea_orm::{
     EntityTrait, IntoActiveValue, LoaderTrait, QueryFilter,
 };
 
+use super::cache::LANGUAGE_CACHE;
+use crate::domain::artist::model::SimpleArtist;
 use crate::domain::repository::Connection;
-use crate::domain::shared::model::{Language, NewLocalizedName};
+use crate::domain::shared::model::{CreditRole, Language, NewLocalizedName};
 use crate::domain::song::model::{
     LocalizedTitle, NewSong, NewSongCredit, Song, SongCredit,
 };
@@ -45,69 +49,154 @@ async fn find_many_impl(
     db: &impl ConnectionTrait,
 ) -> Result<Vec<Song>, DbErr> {
     let songs = song::Entity::find().filter(cond).all(db).await?;
+    if songs.is_empty() {
+        return Ok(vec![]);
+    }
 
-    let credits = songs.load_many(song_credit::Entity, db).await?;
+    let (
+        song_artists_list,
+        song_credits_list,
+        song_langs_list,
+        localized_titles_list,
+    ) = tokio::try_join!(
+        songs.load_many(artist::Entity, db),
+        songs.load_many(song_credit::Entity, db),
+        songs.load_many(song_language::Entity, db),
+        songs.load_many(song_localized_title::Entity, db),
+    )?;
 
-    let langs = songs
-        .load_many_to_many(language::Entity, song_language::Entity, db)
-        .await?;
-
-    let localized_titles =
-        songs.load_many(song_localized_title::Entity, db).await?;
-
-    let language_ids = localized_titles
+    let song_credits_artists_ids: Vec<_> = song_credits_list
         .iter()
-        .flat_map(|titles| titles.iter().map(|title| title.language_id))
-        .collect::<Vec<_>>();
+        .flat_map(|credits| credits.iter().map(|c| c.artist_id))
+        .collect();
 
-    let languages = if language_ids.is_empty() {
-        vec![]
-    } else {
-        language::Entity::find()
-            .filter(language::Column::Id.is_in(language_ids))
-            .all(db)
-            .await?
-    };
+    let song_credits_roles_ids: Vec<_> = song_credits_list
+        .iter()
+        .flat_map(|credits| credits.iter().map(|c| c.role_id))
+        .unique()
+        .collect();
 
-    Ok(izip!(songs, credits, langs, localized_titles)
-        .map(|(s, credits, langs, titles)| Song {
-            id: s.id,
-            title: s.title,
-            credits: credits
-                .into_iter()
-                .map(|c| SongCredit {
-                    artist_id: c.artist_id,
-                    role_id: c.role_id,
-                })
-                .collect(),
-            languages: langs
-                .into_iter()
-                .map(|l| Language {
-                    id: l.id,
-                    name: l.name,
-                    code: l.code,
-                })
-                .collect(),
-            localized_titles: titles
-                .into_iter()
-                .map(|t| {
-                    let language = languages
-                        .iter()
-                        .find(|l| l.id == t.language_id)
-                        .unwrap()
-                        .clone();
+    let (credit_roles_map, song_credits_artist_map, lang_cache) = tokio::try_join!(
+        load_credit_roles(&song_credits_roles_ids, db),
+        load_credit_artists(&song_credits_artists_ids, db),
+        LANGUAGE_CACHE.get_or_init(db),
+    )?;
+
+    Ok(izip!(
+        songs,
+        song_artists_list,
+        song_credits_list,
+        song_langs_list,
+        localized_titles_list
+    )
+    .map(|(s_model, s_artists, s_credits, s_langs, s_titles)| {
+        let artists = s_artists
+            .into_iter()
+            .map(|a| SimpleArtist {
+                id: a.id,
+                name: a.name,
+            })
+            .collect();
+
+        let credits = build_song_credits(
+            s_credits,
+            &song_credits_artist_map,
+            &credit_roles_map,
+        );
+
+        let languages = s_langs
+            .into_iter()
+            .filter_map(|l| lang_cache.get(&l.language_id).cloned())
+            .collect();
+
+        let localized_titles = s_titles
+            .into_iter()
+            .filter_map(|t| {
+                lang_cache.get(&t.language_id).map(|lang_model| {
                     LocalizedTitle {
                         language: Language {
-                            id: language.id,
-                            name: language.name,
-                            code: language.code,
+                            id: lang_model.id,
+                            name: lang_model.name.clone(),
+                            code: lang_model.code.clone(),
                         },
-                        title: t.title,
+                        title: t.title.clone(),
                     }
                 })
-                .collect(),
+            })
+            .collect();
+
+        Song {
+            id: s_model.id,
+            title: s_model.title,
+            artists,
+            credits,
+            languages,
+            localized_titles,
+        }
+    })
+    .collect_vec())
+}
+
+async fn load_credit_roles(
+    role_ids: &[i32],
+    db: &impl ConnectionTrait,
+) -> Result<HashMap<i32, CreditRole>, DbErr> {
+    use entity::credit_role;
+
+    if role_ids.is_empty() {
+        return Ok(HashMap::new());
+    }
+
+    let roles = credit_role::Entity::find()
+        .filter(credit_role::Column::Id.is_in(role_ids.iter().copied()))
+        .all(db)
+        .await?;
+
+    Ok(roles
+        .into_iter()
+        .map(|r| {
+            (
+                r.id,
+                CreditRole {
+                    id: r.id,
+                    name: r.name,
+                },
+            )
         })
-        .collect_vec())
+        .collect())
+}
+
+async fn load_credit_artists(
+    artist_ids: &[i32],
+    db: &impl ConnectionTrait,
+) -> Result<HashMap<i32, SimpleArtist>, DbErr> {
+    if artist_ids.is_empty() {
+        return Ok(HashMap::new());
+    }
+
+    let artists = artist::Entity::find()
+        .filter(artist::Column::Id.is_in(artist_ids.iter().copied()))
+        .all(db)
+        .await?;
+
+    Ok(artists.into_iter().map(|a| (a.id, a.into())).collect())
+}
+
+fn build_song_credits(
+    credits: Vec<song_credit::Model>,
+    artist_map: &HashMap<i32, SimpleArtist>,
+    role_map: &HashMap<i32, CreditRole>,
+) -> Vec<SongCredit> {
+    credits
+        .into_iter()
+        .filter_map(|c| {
+            artist_map
+                .get(&c.artist_id)
+                .cloned()
+                .zip(role_map.get(&c.role_id).cloned())
+                .map(|(artist, role)| SongCredit { artist, role })
+        })
+        .collect()
 }
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {

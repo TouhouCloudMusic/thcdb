@@ -1,4 +1,5 @@
 pub use entity::sea_orm_active_enums::ArtistType;
+use macros::AutoMapper;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -61,4 +62,11 @@ pub struct Membership {
 pub struct Tenure {
     pub join_year: Option<i16>,
     pub leave_year: Option<i16>,
+}
+
+#[derive(Clone, Debug, Serialize, ToSchema, AutoMapper)]
+#[mapper(from(entity::artist::Model))]
+pub struct SimpleArtist {
+    pub id: i32,
+    pub name: String,
 }
