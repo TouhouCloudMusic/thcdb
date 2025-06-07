@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use entity::{
-    artist, song, song_credit, song_credit_history, song_history,
+    artist, song, song_artist, song_credit, song_credit_history, song_history,
     song_language, song_language_history, song_localized_title,
     song_localized_title_history,
 };
@@ -59,7 +59,7 @@ async fn find_many_impl(
         song_langs_list,
         localized_titles_list,
     ) = tokio::try_join!(
-        songs.load_many(artist::Entity, db),
+        songs.load_many_to_many(artist::Entity, song_artist::Entity, db),
         songs.load_many(song_credit::Entity, db),
         songs.load_many(song_language::Entity, db),
         songs.load_many(song_localized_title::Entity, db),
