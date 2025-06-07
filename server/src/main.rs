@@ -40,7 +40,6 @@ mod utils;
 
 use std::sync::Arc;
 
-use infra::database::check_database_lookup_tables;
 use infra::logger::Logger;
 use infra::singleton::APP_CONFIG;
 use infra::state::AppState;
@@ -66,10 +65,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let state = AppState::init(&APP_CONFIG).await;
 
     migration::Migrator::up(&state.database, None).await?;
-
-    check_database_lookup_tables(&state.database)
-        .await
-        .expect("Error while checking database lookup tables.");
 
     Worker {
         redis_pool: state.redis_pool(),
