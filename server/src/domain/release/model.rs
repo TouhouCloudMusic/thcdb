@@ -134,3 +134,13 @@ pub struct NewCredit {
     pub role_id: i32,
     pub on: Option<Vec<i16>>,
 }
+
+#[serde_with::apply(
+    _ => #[serde(skip_serializing_if = "Serializable::should_skip")],
+)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
+pub struct SimpleRelease {
+    pub id: i32,
+    pub title: String,
+    pub cover_art_url: Option<String>,
+}

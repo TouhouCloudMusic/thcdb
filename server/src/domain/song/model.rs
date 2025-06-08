@@ -4,6 +4,7 @@ use utoipa::ToSchema;
 
 use crate::domain::artist::model::SimpleArtist;
 use crate::domain::correction::CorrectionEntity;
+use crate::domain::release::model::SimpleRelease;
 use crate::domain::shared::model::{
     CreditRole, EntityIdent, Language, NewLocalizedName,
 };
@@ -16,6 +17,7 @@ pub struct Song {
     pub id: i32,
     pub title: String,
     pub artists: Vec<SimpleArtist>,
+    pub releases: Vec<SimpleRelease>,
     pub credits: Vec<SongCredit>,
     pub languages: Vec<Language>,
     pub localized_titles: Vec<LocalizedTitle>,

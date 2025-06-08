@@ -25,14 +25,26 @@ pub struct Image {
 
 impl Image {
     pub fn full_path(&self) -> PathBuf {
-        PathBuf::from_iter([&self.directory, &self.filename])
+        Image::full_path_impl(&self.directory, &self.filename)
+    }
+
+    fn full_path_impl(directory: &str, filename: &str) -> PathBuf {
+        PathBuf::from_iter([directory, filename])
     }
 
     pub fn url(&self) -> String {
-        match self.backend {
-            StorageBackend::Fs => {
-                format!("{}", self.full_path().to_string_lossy())
-            }
+        Self::format_url(self.backend, &self.directory, &self.filename)
+    }
+
+    pub fn format_url(
+        backend: StorageBackend,
+        directory: &str,
+        filename: &str,
+    ) -> String {
+        match backend {
+            StorageBackend::Fs => Image::full_path_impl(directory, filename)
+                .to_string_lossy()
+                .to_string(),
         }
     }
 }

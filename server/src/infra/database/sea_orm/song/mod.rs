@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 
+use entity::enums::StorageBackend;
+use entity::sea_orm_active_enums::ReleaseImageType;
 use entity::{
-    artist, song, song_artist, song_credit, song_credit_history, song_history,
-    song_language, song_language_history, song_localized_title,
-    song_localized_title_history,
+    artist, image, release_image, song, song_artist, song_credit,
+    song_credit_history, song_history, song_language, song_language_history,
+    song_localized_title, song_localized_title_history,
 };
 use impls::apply_update;
 use itertools::{Itertools, izip};
@@ -11,17 +13,21 @@ use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
-    EntityTrait, IntoActiveValue, LoaderTrait, QueryFilter,
+    EntityTrait, IntoActiveValue, JoinType, LoaderTrait, QueryFilter,
+    QuerySelect, RelationTrait, Select,
 };
 
 use super::cache::LANGUAGE_CACHE;
 use crate::domain::artist::model::SimpleArtist;
+use crate::domain::image::Image;
+use crate::domain::release::model::SimpleRelease;
 use crate::domain::repository::Connection;
-use crate::domain::shared::model::{CreditRole, Language, NewLocalizedName};
+use crate::domain::shared::model::{CreditRole, NewLocalizedName};
 use crate::domain::song::model::{
     LocalizedTitle, NewSong, NewSongCredit, Song, SongCredit,
 };
 use crate::domain::song::repo::{Repo, TxRepo};
+use crate::utils::MapInto;
 
 mod impls;
 
@@ -58,83 +64,97 @@ async fn find_many_impl(
         song_credits_list,
         song_langs_list,
         localized_titles_list,
+        song_releases_list,
     ) = tokio::try_join!(
         songs.load_many_to_many(artist::Entity, song_artist::Entity, db),
         songs.load_many(song_credit::Entity, db),
-        songs.load_many(song_language::Entity, db),
+        songs.load_many(song_language::Entity::find(), db),
         songs.load_many(song_localized_title::Entity, db),
+        songs.load_many_to_many(
+            entity::release::Entity,
+            entity::release_track::Entity,
+            db,
+        ),
     )?;
 
-    let song_credits_artists_ids: Vec<_> = song_credits_list
-        .iter()
-        .flat_map(|credits| credits.iter().map(|c| c.artist_id))
-        .collect();
+    let (song_credits_artists_ids, song_credits_roles_ids): (Vec<_>, Vec<_>) =
+        song_credits_list
+            .iter()
+            .flat_map(|credits| {
+                credits.iter().map(|c| (c.artist_id, c.role_id))
+            })
+            .unzip();
 
-    let song_credits_roles_ids: Vec<_> = song_credits_list
+    let (song_credits_artist_map, credit_roles_map, lang_cache) = tokio::try_join!(
+        load_credit_artists(&song_credits_artists_ids, db),
+        load_credit_roles(&song_credits_roles_ids, db),
+        LANGUAGE_CACHE.get_or_init(db),
+    )?;
+
+    let song_release_ids: Vec<_> = song_releases_list
         .iter()
-        .flat_map(|credits| credits.iter().map(|c| c.role_id))
+        .flat_map(|releases| releases.iter().map(|r| r.id))
         .unique()
         .collect();
 
-    let (credit_roles_map, song_credits_artist_map, lang_cache) = tokio::try_join!(
-        load_credit_roles(&song_credits_roles_ids, db),
-        load_credit_artists(&song_credits_artists_ids, db),
-        LANGUAGE_CACHE.get_or_init(db),
-    )?;
+    let release_cover_art_urls =
+        load_release_cover_art_urls(&song_release_ids, db).await?;
 
     Ok(izip!(
         songs,
         song_artists_list,
         song_credits_list,
         song_langs_list,
-        localized_titles_list
+        localized_titles_list,
+        song_releases_list,
     )
-    .map(|(s_model, s_artists, s_credits, s_langs, s_titles)| {
-        let artists = s_artists
-            .into_iter()
-            .map(|a| SimpleArtist {
-                id: a.id,
-                name: a.name,
-            })
-            .collect();
+    .map(
+        |(s_model, s_artists, s_credits, s_langs, s_titles, s_releases)| {
+            let artists = s_artists.map_into();
 
-        let credits = build_song_credits(
-            s_credits,
-            &song_credits_artist_map,
-            &credit_roles_map,
-        );
+            let releases = s_releases
+                .into_iter()
+                .map(|r| SimpleRelease {
+                    id: r.id,
+                    title: r.title,
+                    cover_art_url: release_cover_art_urls.get(&r.id).cloned(),
+                })
+                .collect();
 
-        let languages = s_langs
-            .into_iter()
-            .filter_map(|l| lang_cache.get(&l.language_id).cloned())
-            .collect();
+            let credits = build_song_credits(
+                s_credits,
+                &song_credits_artist_map,
+                &credit_roles_map,
+            );
 
-        let localized_titles = s_titles
-            .into_iter()
-            .filter_map(|t| {
-                lang_cache.get(&t.language_id).map(|lang_model| {
+            let languages = s_langs
+                .into_iter()
+                .filter_map(|l| lang_cache.get(&l.language_id))
+                .cloned()
+                .collect();
+
+            let localized_titles = s_titles
+                .into_iter()
+                .filter_map(|t| try {
                     LocalizedTitle {
-                        language: Language {
-                            id: lang_model.id,
-                            name: lang_model.name.clone(),
-                            code: lang_model.code.clone(),
-                        },
-                        title: t.title.clone(),
+                        language: lang_cache.get(&t.language_id).cloned()?,
+                        title: t.title,
                     }
                 })
-            })
-            .collect();
+                .collect();
 
-        Song {
-            id: s_model.id,
-            title: s_model.title,
-            artists,
-            credits,
-            languages,
-            localized_titles,
-        }
-    })
-    .collect_vec())
+            Song {
+                id: s_model.id,
+                title: s_model.title,
+                artists,
+                credits,
+                languages,
+                localized_titles,
+                releases,
+            }
+        },
+    )
+    .collect())
 }
 
 async fn load_credit_roles(
@@ -164,6 +184,46 @@ async fn load_credit_roles(
             )
         })
         .collect())
+}
+
+async fn load_release_cover_art_urls(
+    release_ids: &[i32],
+    db: &impl ConnectionTrait,
+) -> Result<HashMap<i32, String>, DbErr> {
+    if release_ids.is_empty() {
+        return Ok(HashMap::new());
+    }
+
+    let cover_art_urls_map = load_release_cover_art_urls_query(release_ids)
+        .into_tuple::<(i32, String, String, StorageBackend)>()
+        .all(db)
+        .await?
+        .into_iter()
+        .map(|(release_id, directory, filename, backend)| {
+            (
+                release_id,
+                Image::format_url(backend, &directory, &filename),
+            )
+        })
+        .collect::<HashMap<i32, String>>();
+
+    Ok(cover_art_urls_map)
+}
+
+fn load_release_cover_art_urls_query(
+    release_ids: &[i32],
+) -> Select<release_image::Entity> {
+    release_image::Entity::find()
+        .select_only()
+        .column(release_image::Column::ReleaseId)
+        .column(image::Column::Directory)
+        .column(image::Column::Filename)
+        .column(image::Column::Backend)
+        .join(JoinType::InnerJoin, release_image::Relation::Image.def())
+        .filter(
+            release_image::Column::ReleaseId.is_in(release_ids.iter().copied()),
+        )
+        .filter(release_image::Column::Type.eq(ReleaseImageType::Cover))
 }
 
 async fn load_credit_artists(
@@ -411,4 +471,19 @@ async fn create_localized_title_histories(
         .await?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use sea_orm::QueryTrait;
+
+    use super::*;
+    #[test]
+    fn test_load_release_cover_art_urls_query() {
+        let query = load_release_cover_art_urls_query(&[1, 2, 3, 3]);
+        assert_eq!(
+            query.build(sea_orm::DatabaseBackend::Postgres).to_string(),
+            r#"SELECT "release_image"."release_id", "image"."directory", "image"."filename", CAST("image"."backend" AS "text") FROM "release_image" INNER JOIN "image" ON "release_image"."image_id" = "image"."id" WHERE "release_image"."release_id" IN (1, 2, 3, 3) AND "release_image"."type" = (CAST('Cover' AS "release_image_type"))"#,
+        );
+    }
 }

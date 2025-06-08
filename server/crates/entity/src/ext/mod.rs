@@ -4,6 +4,7 @@ mod into_active_model;
 mod into_active_value;
 
 mod model_conversion;
+pub mod relation;
 use axum_login::AuthUser;
 // pub use graphql::GqlScalarValue;
 
@@ -57,36 +58,5 @@ mod impl_relation {
             tag,
         ],
         (correction, EntityId)
-    }
-}
-
-pub mod relation {
-    use sea_orm::{EntityTrait, EnumIter, RelationTrait};
-
-    use crate::entities::*;
-
-    #[derive(Debug, EnumIter)]
-    pub enum UserRelationExt {
-        Avatar,
-        ProfileBanner,
-    }
-
-    impl RelationTrait for UserRelationExt {
-        fn def(&self) -> sea_orm::RelationDef {
-            match self {
-                UserRelationExt::Avatar => {
-                    user::Entity::belongs_to(image::Entity)
-                        .from(user::Column::AvatarId)
-                        .to(image::Column::Id)
-                        .into()
-                }
-                UserRelationExt::ProfileBanner => {
-                    user::Entity::belongs_to(image::Entity)
-                        .from(user::Column::ProfileBannerId)
-                        .to(image::Column::Id)
-                        .into()
-                }
-            }
-        }
     }
 }
