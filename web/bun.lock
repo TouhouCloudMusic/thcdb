@@ -37,7 +37,7 @@
         "valibot": "1.1.0",
       },
       "devDependencies": {
-        "@ark/attest": "^0.46.0",
+        "@ark/attest": "^0.48.0",
         "@chromatic-com/storybook": "^3.2.6",
         "@eslint/js": "^9.21.0",
         "@faker-js/faker": "^9.5.1",
@@ -104,7 +104,7 @@
 
     "@ampproject/remapping": ["@ampproject/remapping@2.3.0", "https://registry.npmmirror.com/@ampproject/remapping/-/remapping-2.3.0.tgz", { "dependencies": { "@jridgewell/gen-mapping": "^0.3.5", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw=="],
 
-    "@ark/attest": ["@ark/attest@0.46.0", "https://registry.npmmirror.com/@ark/attest/-/attest-0.46.0.tgz", { "dependencies": { "@ark/fs": "0.46.0", "@ark/util": "0.46.0", "@prettier/sync": "0.5.5", "@typescript/analyze-trace": "0.10.1", "@typescript/vfs": "1.6.1", "arktype": "2.1.20", "prettier": "3.5.3" }, "peerDependencies": { "typescript": "*" }, "bin": { "attest": "out/cli/cli.js" } }, "sha512-bDo8Mtx94oFkhozao9rjoWf1/MOV4lakpoKtPvIFfHceE3M3jVqIOVY46Xh1TibMhjQ1vMtd55PcfllHYjbm8w=="],
+    "@ark/attest": ["@ark/attest@0.48.2", "https://registry.npmmirror.com/@ark/attest/-/attest-0.48.2.tgz", { "dependencies": { "@ark/fs": "0.46.0", "@ark/util": "0.46.0", "@prettier/sync": "0.5.5", "@typescript/analyze-trace": "0.10.1", "@typescript/vfs": "1.6.1", "arktype": "2.1.20", "prettier": "3.5.3" }, "peerDependencies": { "typescript": "*" }, "bin": { "attest": "out/cli/cli.js" } }, "sha512-3k+PRxQSXk55Dqhghg+B+Ftpk+le+s2TBJpFoFRBseTOL0FNjZmXFuy9ZNBXCTGVT7nAUDBZrcmz+AAMQNr+Bw=="],
 
     "@ark/fs": ["@ark/fs@0.46.0", "https://registry.npmmirror.com/@ark/fs/-/fs-0.46.0.tgz", {}, "sha512-lBW6Vv6dZ74Gcc+zvJP8gjZACMo5o6hEuOvAtX6EJ5xNYBmX7nrXQaDdRfQNGDzgaX5UHGqi/vxk5moK94K7Yw=="],
 
