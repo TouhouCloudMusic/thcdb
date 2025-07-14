@@ -11,10 +11,10 @@ use super::super::shared::model::{
 };
 use crate::domain::correction::CorrectionEntity;
 use crate::domain::shared::model::DateWithPrecision;
-use crate::utils::traits::Serializable;
 
 #[serde_with::apply(
-    _ => #[serde(skip_serializing_if = "Serializable::should_skip")],
+    Vec    => #[serde(skip_serializing_if = "Vec::is_empty")],
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
 )]
 #[derive(Clone, Debug, ToSchema, Serialize)]
 #[schema(
@@ -136,7 +136,7 @@ pub struct NewCredit {
 }
 
 #[serde_with::apply(
-    _ => #[serde(skip_serializing_if = "Serializable::should_skip")],
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
 )]
 #[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct SimpleRelease {

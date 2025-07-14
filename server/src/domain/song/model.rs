@@ -10,7 +10,7 @@ use crate::domain::shared::model::{
 };
 
 #[serde_with::apply(
-    _ => #[serde(skip_serializing_if = "crate::utils::Serializable::should_skip")],
+    Vec => #[serde(skip_serializing_if = "Vec::is_empty")],
 )]
 #[derive(Clone, Debug, Serialize, ToSchema)]
 pub struct Song {
