@@ -4,15 +4,15 @@ default:
 	@just --list
 
 fmt:
-	npx prettier --write .
+	pnpm exec prettier --write .
 
 eslint +FLAGS="":
-	npx eslint --cache {{FLAGS}}
+	pnpm exec eslint --cache {{FLAGS}}
 
 esfix: (eslint "--fix")
 
 oxlint +FLAGS="":
-	bunx oxlint -c .oxlintrc.json {{FLAGS}}
+	pnpm exec oxlint -c .oxlintrc.json {{FLAGS}}
 
 oxfix: (oxlint "--fix")
 

@@ -1,8 +1,8 @@
 default: extract compile
 
 extract:
-	bunx lingui extract
+	pnpm exec lingui extract
 compile:
-	bunx lingui compile --typescript
+	pnpm exec lingui compile --typescript
 clean:
-	bunx lingui extract --clean
+	pnpm exec lingui extract --clean

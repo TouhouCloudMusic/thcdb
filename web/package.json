@@ -6,12 +6,7 @@
 		"dev": "vite",
 		"build": "vite build",
 		"serve": "vite preview",
-		"format": "prettier --write ./src",
 		"check": "prettier --check ./src",
-		"test::vite": "bun vitest run",
-		"test::bun": "bun test ./**/*.buntest.ts",
-		"test": "bun run test::dom && bun run test::bun",
-		"pre-push": "bun run check && bun run lint",
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build"
 	},
