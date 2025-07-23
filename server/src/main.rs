@@ -43,7 +43,6 @@ use std::sync::Arc;
 use infra::logger::Logger;
 use infra::singleton::APP_CONFIG;
 use infra::state::AppState;
-use sea_orm_migration::MigratorTrait;
 
 use self::infra::worker::Worker;
 
@@ -63,8 +62,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("Starting server");
 
     let state = AppState::init(&APP_CONFIG).await;
-
-    migration::Migrator::up(&state.database, None).await?;
 
     Worker {
         redis_pool: state.redis_pool(),
