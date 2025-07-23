@@ -1,9 +1,9 @@
 use entity::artist_image_queue as db;
+use libfp::BifunctorExt;
 use sea_orm::{ConnectionTrait, DbErr, EntityTrait, IntoActiveModel};
 
 use crate::domain::artist_image_queue::{ArtistImageQueue, Repository};
 use crate::domain::repository::Connection;
-use crate::utils::MapInto;
 
 impl<T> Repository for T
 where
@@ -17,6 +17,6 @@ where
         db::Entity::insert(db::Model::from(queue).into_active_model())
             .exec_with_returning(self.conn())
             .await
-            .map_into()
+            .bimap_into()
     }
 }

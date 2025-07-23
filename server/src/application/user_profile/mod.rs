@@ -1,7 +1,8 @@
+use libfp::BifunctorExt;
+
 use crate::domain::user;
 use crate::domain::user::{User, UserProfile};
 use crate::infra::error::Error;
-use crate::utils::MapInto;
 
 #[derive(Clone)]
 pub struct Service<R> {
@@ -23,7 +24,7 @@ where
         &self,
         name: &str,
     ) -> Result<Option<UserProfile>, Error> {
-        self.repo.find_by_name(name).await.map_into()
+        self.repo.find_by_name(name).await.bimap_into()
     }
 
     pub async fn with_following(
@@ -34,6 +35,6 @@ where
         self.repo
             .with_following(profile, current_user)
             .await
-            .map_into()
+            .bimap_into()
     }
 }

@@ -1,15 +1,15 @@
 use std::fmt::Display;
 
-use super::Len;
+use libfp::Len;
 
 pub struct InvalidLen<T: Len> {
-    received: T::Len,
+    received: T::Unit,
 }
 
 impl<T> Display for InvalidLen<T>
 where
     T: LenCheck,
-    T::Len: Display,
+    T::Unit: Display + PartialOrd,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -25,9 +25,10 @@ where
 pub trait LenCheck: Len
 where
     Self: Sized,
+    Self::Unit: PartialOrd,
 {
-    const MAX: Self::Len;
-    const MIN: Self::Len;
+    const MAX: Self::Unit;
+    const MIN: Self::Unit;
 
     fn len_check(self) -> Result<Self, InvalidLen<Self>> {
         let len = self.len();

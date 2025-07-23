@@ -9,6 +9,7 @@ use entity::{
 };
 use impls::apply_update;
 use itertools::{Itertools, izip};
+use libfp::FunctorExt;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
@@ -28,7 +29,6 @@ use crate::domain::song::model::{
 };
 use crate::domain::song::repo::{Repo, TxRepo};
 use crate::domain::song_lyrics::model::SongLyrics;
-use crate::utils::MapInto;
 
 mod impls;
 
@@ -123,7 +123,7 @@ async fn find_many_impl(
             s_releases,
             s_lyrics,
         )| {
-            let artists = s_artists.map_into();
+            let artists = s_artists.fmap_into();
 
             let releases = s_releases
                 .into_iter()

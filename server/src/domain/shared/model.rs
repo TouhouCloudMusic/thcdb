@@ -8,9 +8,9 @@ use utoipa::ToSchema;
 
 mod pub_use_below {}
 pub use entity::sea_orm_active_enums::DatePrecision;
+use libfp::Len;
 
 use crate::constant::{ENTITY_IDENT_MAX_LEN, ENTITY_IDENT_MIN_LEN};
-use crate::utils::Len;
 use crate::utils::validation::{InvalidLen, LenCheck};
 #[derive(AutoMapper, Clone, Debug, Serialize, ToSchema)]
 #[mapper(from(DbCreditRole))]
@@ -61,18 +61,16 @@ impl EntityIdent {
 }
 
 impl Len for EntityIdent {
-    type Len = usize;
+    type Unit = usize;
 
-    const EMPTY: Self::Len = 0;
-
-    fn len(&self) -> Self::Len {
+    fn len(&self) -> Self::Unit {
         self.0.len()
     }
 }
 
 impl LenCheck for EntityIdent {
-    const MIN: Self::Len = ENTITY_IDENT_MIN_LEN;
-    const MAX: Self::Len = ENTITY_IDENT_MAX_LEN;
+    const MIN: Self::Unit = ENTITY_IDENT_MIN_LEN;
+    const MAX: Self::Unit = ENTITY_IDENT_MAX_LEN;
 }
 
 #[derive(AutoMapper, Clone, Debug, Serialize, ToSchema)]

@@ -2,6 +2,7 @@ use axum::Json;
 use axum::body::Bytes;
 use axum::extract::{Path, Query, State};
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
+use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -19,7 +20,6 @@ use crate::domain::release::repo::Filter;
 use crate::domain::release::{NewRelease, Release};
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
-use crate::utils::MapInto;
 
 type Service = state::ReleaseService;
 
@@ -52,7 +52,7 @@ async fn find_release_by_id(
     State(service): State<Service>,
     Path(id): Path<i32>,
 ) -> Result<Data<Option<Release>>, Error> {
-    service.find_one(Filter::Id(id)).await.map_into()
+    service.find_one(Filter::Id(id)).await.bimap_into()
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -77,7 +77,7 @@ async fn find_release_by_keyword(
     service
         .find_many(Filter::Keyword(query.keyword))
         .await
-        .map_into()
+        .bimap_into()
 }
 
 #[derive(IntoParams)]
@@ -99,7 +99,7 @@ struct RandomReleaseQuery {
 //     State(service): State<Service>,
 //     Query(query): Query<RandomReleaseQuery>,
 // ) -> Result<Data<Vec<entity::release::Model>>, Error> {
-//     service.random(query.count).await.map_into()
+//     service.random(query.count).await.bimap_into()
 // }
 
 #[utoipa::path(

@@ -4,6 +4,7 @@ use entity::{
     release_catalog_number_history, release_credit, release_credit_history,
 };
 use itertools::Itertools;
+use libfp::EmptyExt;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
@@ -17,7 +18,6 @@ use crate::domain::release::model::{
 };
 use crate::domain::shared::model::NewLocalizedTitle;
 use crate::infra::database::sea_orm::ext::maybe_loader::MaybeLoader;
-use crate::utils::NonEmpty;
 
 mod track;
 pub use track::*;
@@ -266,7 +266,7 @@ pub(super) async fn create_release_artist(
     artists: &[i32],
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    if let Some(artists) = artists.non_empty() {
+    if let Some(artists) = artists.into_option() {
         let models = artists
             .iter()
             .copied()
@@ -289,7 +289,7 @@ pub(super) async fn create_release_artist_history(
     artists: &[i32],
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    if let Some(artists) = artists.non_empty() {
+    if let Some(artists) = artists.into_option() {
         let models = artists
             .iter()
             .copied()
@@ -326,7 +326,7 @@ pub(super) async fn update_release_artist(
         .into_iter()
         .map(|x| x.artist_id)
         .collect_vec()
-        .non_empty()
+        .into_option()
     {
         create_release_artist(release_id, &artists, db).await?;
     }
@@ -339,7 +339,7 @@ pub(super) async fn create_release_catalog_number(
     catalog_nums: &[CatalogNumber],
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    if let Some(catalog_nums) = catalog_nums.non_empty() {
+    if let Some(catalog_nums) = catalog_nums.into_option() {
         let models = catalog_nums
             .iter()
             .map(|data| release_catalog_number::ActiveModel {
@@ -363,7 +363,7 @@ pub(super) async fn create_release_catalog_number_history(
     catalog_nums: &[CatalogNumber],
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
-    if let Some(catalog_nums) = catalog_nums.non_empty() {
+    if let Some(catalog_nums) = catalog_nums.into_option() {
         let models = catalog_nums
             .iter()
             .map(|data| release_catalog_number_history::ActiveModel {
@@ -406,7 +406,7 @@ pub(super) async fn update_release_catalog_number(
             label_id: x.label_id,
         })
         .collect_vec()
-        .non_empty()
+        .into_option()
     else {
         return Ok(());
     };

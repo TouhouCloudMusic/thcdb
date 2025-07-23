@@ -1,5 +1,6 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
+use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -14,7 +15,6 @@ use crate::application::song::{CreateError, UpsertCorrectionError};
 use crate::domain::song::model::{NewSong, Song};
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
-use crate::utils::MapInto;
 
 const TAG: &str = "Song";
 
@@ -44,7 +44,7 @@ async fn find_song_by_id(
     State(service): State<state::SongService>,
     Path(id): Path<i32>,
 ) -> Result<Data<Option<Song>>, Error> {
-    service.find_by_id(id).await.map_into()
+    service.find_by_id(id).await.bimap_into()
 }
 
 #[derive(Deserialize, ToSchema, IntoParams)]
@@ -66,7 +66,7 @@ async fn find_song_by_keyword(
     State(service): State<state::SongService>,
     Query(query): Query<KwQuery>,
 ) -> Result<Data<Vec<Song>>, Error> {
-    service.find_by_keyword(&query.keyword).await.map_into()
+    service.find_by_keyword(&query.keyword).await.bimap_into()
 }
 
 #[utoipa::path(

@@ -1,6 +1,7 @@
 use axum::http::StatusCode;
 use boolinator::Boolinator;
 use chrono::Utc;
+use collection_ext::Intersection;
 use derive_more::Display;
 pub use entity::sea_orm_active_enums::ImageQueueStatus;
 use itertools::Itertools;
@@ -11,7 +12,6 @@ use thiserror::Error;
 use crate::domain::image::Image;
 use crate::domain::model::auth::UserRoleEnum;
 use crate::domain::user::User;
-use crate::utils::Intersection;
 
 #[derive(Debug, Clone, Copy, Display, Error, ApiError)]
 pub enum Error {
@@ -111,7 +111,6 @@ impl ImageQueue {
             .map(|role| UserRoleEnum::try_from(role.id).unwrap())
             .collect_vec();
         let required_roles = action.required_roles();
-
         let has_permission =
             // Users also can cancel their image uploads
             user_roles.intersects(&required_roles)

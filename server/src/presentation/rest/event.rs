@@ -1,5 +1,8 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
+// use crate::dto::event::{Event, NewEvent};
+use flow::Pipe;
+use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -16,9 +19,6 @@ use crate::domain::event::model::Event;
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
 use crate::presentation::error::ApiError;
-// use crate::dto::event::{Event, NewEvent};
-use crate::utils::MapInto;
-use crate::utils::Pipe;
 
 const TAG: &str = "Event";
 
@@ -72,7 +72,7 @@ async fn find_event_by_keyword(
     State(service): State<state::EventService>,
     Query(query): Query<KeywordQuery>,
 ) -> Result<Data<Vec<Event>>, Error> {
-    service.find_by_keyword(&query.keyword).await.map_into()
+    service.find_by_keyword(&query.keyword).await.bimap_into()
 }
 
 #[utoipa::path(

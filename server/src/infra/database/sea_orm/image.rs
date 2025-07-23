@@ -1,4 +1,5 @@
 use entity::image::Model;
+use libfp::FunctorExt;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ColumnTrait, ConnectionTrait, DbErr, EntityTrait, IntoActiveModel,
@@ -9,7 +10,6 @@ use crate::domain::image;
 use crate::domain::image::{Image, NewImage};
 use crate::domain::repository::Connection;
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
-use crate::utils::MapInto;
 
 impl<T> image::Repo for T
 where
@@ -21,7 +21,7 @@ where
             .filter(entity::image::Column::Id.eq(id))
             .one(self.conn())
             .await
-            .map(crate::utils::MapInto::map_into)
+            .map(FunctorExt::fmap_into)
     }
 
     async fn find_by_filename(
@@ -32,7 +32,7 @@ where
             .filter(entity::image::Column::Filename.eq(filename))
             .one(self.conn())
             .await
-            .map(crate::utils::MapInto::map_into)
+            .map(FunctorExt::fmap_into)
     }
 }
 
@@ -75,7 +75,7 @@ impl image::TxRepo for SeaOrmTxRepo {
     async fn create(&self, new_image: &NewImage) -> Result<Image, Self::Error> {
         save_impl(self.conn(), new_image.into_active_model())
             .await
-            .map_into()
+            .fmap_into()
     }
 
     async fn delete(&self, id: i32) -> Result<(), Self::Error> {

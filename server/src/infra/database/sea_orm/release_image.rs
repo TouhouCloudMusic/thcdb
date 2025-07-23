@@ -1,10 +1,10 @@
 use entity::release_image;
+use libfp::FunctorExt;
 use sea_orm::{EntityTrait, IntoActiveModel};
 
 use super::SeaOrmTxRepo;
 use crate::domain::release_image::{ReleaseImage, Repo};
 use crate::domain::repository::Connection;
-use crate::utils::MapInto;
 
 impl Repo for SeaOrmTxRepo {
     async fn create(
@@ -16,6 +16,6 @@ impl Repo for SeaOrmTxRepo {
         )
         .exec_with_returning(self.conn())
         .await
-        .map_into()
+        .fmap_into()
     }
 }

@@ -1,4 +1,5 @@
 use entity::image_queue as db;
+use libfp::FunctorExt;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ConnectionTrait, DbErr, EntityTrait, IntoActiveModel,
@@ -6,7 +7,6 @@ use sea_orm::{
 
 use crate::domain::image_queue::{ImageQueue, NewImageQueue, Repo};
 use crate::domain::repository::Connection;
-use crate::utils::MapInto;
 
 impl<T> Repo for T
 where
@@ -20,7 +20,7 @@ where
         db::Entity::insert(model.into_active_model())
             .exec_with_returning(self.conn())
             .await
-            .map_into()
+            .fmap_into()
     }
 
     async fn update(

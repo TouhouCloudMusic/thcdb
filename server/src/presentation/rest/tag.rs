@@ -1,5 +1,6 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
+use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -17,7 +18,6 @@ use crate::infra::error::Error;
 use crate::presentation::api_response::{
     Data, {self},
 };
-use crate::utils::MapInto;
 
 const TAG: &str = "Tag";
 
@@ -48,7 +48,7 @@ async fn find_tag_by_id(
     State(tag_service): State<state::TagService>,
     Path(id): Path<i32>,
 ) -> Result<Data<Option<Tag>>, Error> {
-    tag_service.find_by_id(id).await.map_into()
+    tag_service.find_by_id(id).await.bimap_into()
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -71,7 +71,10 @@ async fn find_tag_by_keyword(
     State(tag_service): State<state::TagService>,
     Query(query): Query<KwArgs>,
 ) -> Result<Data<Vec<Tag>>, Error> {
-    tag_service.find_by_keyword(&query.keyword).await.map_into()
+    tag_service
+        .find_by_keyword(&query.keyword)
+        .await
+        .bimap_into()
 }
 
 #[utoipa::path(

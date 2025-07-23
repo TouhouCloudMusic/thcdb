@@ -1,7 +1,10 @@
 [workspace]
 members = [
     ".",
+    "crates/collection_ext",
     "crates/entity",
+    "crates/flow",
+    "crates/libfp",
     "crates/macros",
     "crates/migration",
     "crates/proc_macros",
@@ -9,11 +12,14 @@ members = [
 ]
 
 [workspace.dependencies]
-entity      = { path = "crates/entity" }
-fast-lrc    = { path = "crates/fast_lrc" }
-macros      = { path = "crates/macros" }
-migration   = { path = "crates/migration" }
-proc_macros = { path = "crates/proc_macros" }
+collection_ext = { path = "crates/collection_ext" }
+entity         = { path = "crates/entity" }
+fast-lrc       = { path = "crates/fast_lrc" }
+flow           = { path = "crates/flow" }
+libfp          = { path = "crates/libfp" }
+macros         = { path = "crates/macros" }
+migration      = { path = "crates/migration" }
+proc_macros    = { path = "crates/proc_macros" }
 # external
 argon2 = "0.5"
 axum = { version = "0.8", features = [
@@ -69,9 +75,12 @@ name    = "thcdb_rs"
 version = "0.1.0"
 
 [dependencies]
-entity.workspace    = true
-macros.workspace    = true
-migration.workspace = true
+collection_ext.workspace = true
+entity.workspace         = true
+flow.workspace           = true
+libfp.workspace          = true
+macros.workspace         = true
+migration.workspace      = true
 #
 ammonia = "4.0.0"
 argon2.features = [

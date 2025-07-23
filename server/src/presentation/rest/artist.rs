@@ -3,6 +3,7 @@ use axum::body::Bytes;
 use axum::extract::{Path, Query, State};
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use entity::enums::ReleaseType;
+use libfp::BifunctorExt;
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -27,7 +28,6 @@ use crate::domain::release::model::Release;
 use crate::domain::repository::{Cursor, Paginated};
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
-use crate::utils::MapInto;
 use crate::{application, domain};
 
 const TAG: &str = "Artist";
@@ -69,7 +69,7 @@ async fn find_artist_by_id(
 ) -> Result<Data<Option<Artist>>, Error> {
     domain::artist::repo::Repo::find_by_id(&repo, id)
         .await
-        .map_into()
+        .bimap_into()
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -95,7 +95,7 @@ async fn find_artist_by_keyword(
 ) -> Result<Data<Vec<Artist>>, Error> {
     domain::artist::repo::Repo::find_by_name(&repo, &query.keyword)
         .await
-        .map_into()
+        .bimap_into()
 }
 
 #[utoipa::path(
@@ -218,7 +218,7 @@ async fn find_artist_apperances(
 ) -> Result<Data<Paginated<Appearance>>, Error> {
     domain::artist_release::Repo::appearance(&repo, dto.into_query(id))
         .await
-        .map_into()
+        .bimap_into()
 }
 
 #[derive(Deserialize, IntoParams, ToSchema)]
@@ -258,7 +258,7 @@ async fn get_artist_credits(
 ) -> Result<Data<Paginated<Credit>>, Error> {
     domain::artist_release::Repo::credit(&repo, dto.into_query(id))
         .await
-        .map_into()
+        .bimap_into()
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -300,7 +300,7 @@ async fn find_artist_discographies_by_type(
 ) -> Result<Data<Paginated<Discography>>, Error> {
     domain::artist_release::Repo::discography(&repo, dto.into_query(id))
         .await
-        .map_into()
+        .bimap_into()
 }
 
 #[derive(Deserialize, IntoParams)]

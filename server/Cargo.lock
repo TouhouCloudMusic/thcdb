@@ -791,6 +791,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f46ad14479a25103f283c0f10005961cf086d8dc42205bb44c46ac563475dca6"
 
 [[package]]
+name = "collection_ext"
+version = "0.1.0"
+
+[[package]]
 name = "color_quant"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1403,6 +1407,10 @@ checksum = "b09cf3155332e944990140d967ff5eceb70df778b34f77d8075db46e4704e6d8"
 dependencies = [
  "num-traits",
 ]
+
+[[package]]
+name = "flow"
+version = "0.1.0"
 
 [[package]]
 name = "flume"
@@ -2447,6 +2455,10 @@ name = "libc"
 version = "0.2.172"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d750af042f7ef4f724306de029d18836c26c1765a54a6a3f094cbd23a7267ffa"
+
+[[package]]
+name = "libfp"
+version = "0.1.0"
 
 [[package]]
 name = "libfuzzer-sys"
@@ -4720,11 +4732,13 @@ dependencies = [
  "bytes",
  "bytesize",
  "chrono",
+ "collection_ext",
  "config",
  "derive_more",
  "dotenvy",
  "entity",
  "error_set",
+ "flow",
  "fred",
  "frunk",
  "futures-util",
@@ -4734,6 +4748,7 @@ dependencies = [
  "iso8601-duration",
  "itertools 0.14.0",
  "lettre",
+ "libfp",
  "macros",
  "maud",
  "migration",

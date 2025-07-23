@@ -1,7 +1,6 @@
+use flow::Pipe;
 use nestify::nest;
 use serde::Deserialize;
-
-use crate::utils::Pipe;
 
 nest! {
     #[derive(Clone, Deserialize)]*

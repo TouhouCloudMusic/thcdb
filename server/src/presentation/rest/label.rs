@@ -1,5 +1,6 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
+use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -13,7 +14,6 @@ use crate::application::label::{CreateError, UpsertCorrectionError};
 use crate::domain::label::{Label, NewLabel};
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
-use crate::utils::MapInto;
 
 const TAG: &str = "Label";
 
@@ -44,7 +44,7 @@ async fn find_label_by_id(
     label_service: State<state::LabelService>,
     Path(id): Path<i32>,
 ) -> Result<Data<Option<Label>>, Error> {
-    label_service.find_by_id(id).await.map_into()
+    label_service.find_by_id(id).await.bimap_into()
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -70,7 +70,7 @@ async fn find_label_by_keyword(
     label_service
         .find_by_keyword(&query.keyword)
         .await
-        .map_into()
+        .bimap_into()
 }
 
 #[utoipa::path(

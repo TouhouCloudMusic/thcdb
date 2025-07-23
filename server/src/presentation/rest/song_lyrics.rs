@@ -1,5 +1,6 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
+use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -15,7 +16,6 @@ use crate::domain::song_lyrics::model::{NewSongLyrics, SongLyrics};
 use crate::domain::song_lyrics::repo::{FindManyFilter, FindOneFilter};
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
-use crate::utils::MapInto;
 
 const TAG: &str = "Song Lyrics";
 
@@ -77,7 +77,7 @@ async fn find_one_song_lyrics(
     State(service): State<state::SongLyricsService>,
     Query(query): Query<FindOneSongLyricsQuery>,
 ) -> Result<Data<Option<SongLyrics>>, Error> {
-    service.find_one(query.into()).await.map_into()
+    service.find_one(query.into()).await.bimap_into()
 }
 
 #[utoipa::path(
@@ -94,7 +94,7 @@ async fn find_many_song_lyrics(
     State(service): State<state::SongLyricsService>,
     Query(query): Query<FindManySongLyricsQuery>,
 ) -> Result<Data<Vec<SongLyrics>>, Error> {
-    service.find_many(query.into()).await.map_into()
+    service.find_many(query.into()).await.bimap_into()
 }
 
 #[utoipa::path(
