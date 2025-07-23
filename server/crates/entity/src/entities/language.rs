@@ -42,6 +42,10 @@ pub enum Relation {
     SongLocalizedTitle,
     #[sea_orm(has_many = "super::song_localized_title_history::Entity")]
     SongLocalizedTitleHistory,
+    #[sea_orm(has_many = "super::song_lyrics::Entity")]
+    SongLyrics,
+    #[sea_orm(has_many = "super::song_lyrics_history::Entity")]
+    SongLyricsHistory,
     #[sea_orm(has_many = "super::tag_alternative_name::Entity")]
     TagAlternativeName,
     #[sea_orm(has_many = "super::tag_alternative_name_history::Entity")]
@@ -117,6 +121,18 @@ impl Related<super::song_localized_title::Entity> for Entity {
 impl Related<super::song_localized_title_history::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::SongLocalizedTitleHistory.def()
+    }
+}
+
+impl Related<super::song_lyrics::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SongLyrics.def()
+    }
+}
+
+impl Related<super::song_lyrics_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SongLyricsHistory.def()
     }
 }
 

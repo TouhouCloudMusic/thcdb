@@ -23,6 +23,7 @@ mod release;
 mod release_image;
 mod release_image_queue;
 mod song;
+mod song_lyrics;
 mod tag;
 mod user;
 pub mod utils;

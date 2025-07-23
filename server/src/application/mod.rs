@@ -8,6 +8,7 @@ pub mod label;
 pub mod release;
 pub mod release_image;
 pub mod song;
+pub mod song_lyrics;
 pub mod tag;
 pub mod user_image;
 pub mod user_profile;

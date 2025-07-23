@@ -5,7 +5,7 @@ use entity::sea_orm_active_enums::ReleaseImageType;
 use entity::{
     artist, image, release_image, song, song_artist, song_credit,
     song_credit_history, song_history, song_language, song_language_history,
-    song_localized_title, song_localized_title_history,
+    song_localized_title, song_localized_title_history, song_lyrics,
 };
 use impls::apply_update;
 use itertools::{Itertools, izip};
@@ -22,11 +22,12 @@ use crate::domain::artist::model::SimpleArtist;
 use crate::domain::image::Image;
 use crate::domain::release::model::SimpleRelease;
 use crate::domain::repository::Connection;
-use crate::domain::shared::model::{CreditRole, NewLocalizedName};
+use crate::domain::shared::model::{CreditRole, Language, NewLocalizedName};
 use crate::domain::song::model::{
     LocalizedTitle, NewSong, NewSongCredit, Song, SongCredit,
 };
 use crate::domain::song::repo::{Repo, TxRepo};
+use crate::domain::song_lyrics::model::SongLyrics;
 use crate::utils::MapInto;
 
 mod impls;
@@ -50,6 +51,7 @@ where
     }
 }
 
+#[expect(clippy::too_many_lines)]
 async fn find_many_impl(
     cond: impl IntoCondition,
     db: &impl ConnectionTrait,
@@ -65,6 +67,7 @@ async fn find_many_impl(
         song_langs_list,
         localized_titles_list,
         song_releases_list,
+        song_lyrics_list,
     ) = tokio::try_join!(
         songs.load_many_to_many(artist::Entity, song_artist::Entity, db),
         songs.load_many(song_credit::Entity, db),
@@ -75,6 +78,7 @@ async fn find_many_impl(
             entity::release_track::Entity,
             db,
         ),
+        songs.load_many(song_lyrics::Entity, db),
     )?;
 
     let (song_credits_artists_ids, song_credits_roles_ids): (Vec<_>, Vec<_>) =
@@ -107,9 +111,18 @@ async fn find_many_impl(
         song_langs_list,
         localized_titles_list,
         song_releases_list,
+        song_lyrics_list,
     )
     .map(
-        |(s_model, s_artists, s_credits, s_langs, s_titles, s_releases)| {
+        |(
+            s_model,
+            s_artists,
+            s_credits,
+            s_langs,
+            s_titles,
+            s_releases,
+            s_lyrics,
+        )| {
             let artists = s_artists.map_into();
 
             let releases = s_releases
@@ -143,6 +156,8 @@ async fn find_many_impl(
                 })
                 .collect();
 
+            let lyrics = build_song_lyrics(s_lyrics, lang_cache);
+
             Song {
                 id: s_model.id,
                 title: s_model.title,
@@ -151,6 +166,7 @@ async fn find_many_impl(
                 languages,
                 localized_titles,
                 releases,
+                lyrics,
             }
         },
     )
@@ -255,6 +271,23 @@ fn build_song_credits(
                 .cloned()
                 .zip(role_map.get(&c.role_id).cloned())
                 .map(|(artist, role)| SongCredit { artist, role })
+        })
+        .collect()
+}
+
+fn build_song_lyrics(
+    lyrics: Vec<song_lyrics::Model>,
+    lang_cache: &HashMap<i32, Language>,
+) -> Vec<SongLyrics> {
+    lyrics
+        .into_iter()
+        .map(|l| SongLyrics {
+            id: l.id,
+            song_id: l.song_id,
+            language_id: l.language_id,
+            content: l.content,
+            is_main: l.is_main,
+            language: lang_cache.get(&l.language_id).cloned(),
         })
         .collect()
 }

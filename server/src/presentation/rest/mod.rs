@@ -31,6 +31,7 @@ mod label;
 mod middleware;
 mod release;
 mod song;
+mod song_lyrics;
 mod state;
 mod tag;
 mod user;
@@ -86,6 +87,7 @@ fn router(state: ArcAppState) -> Router {
         .merge(enum_table::router())
         .merge(release::router())
         .merge(song::router())
+        .merge(song_lyrics::router())
         .merge(tag::router())
         .merge(user::router())
         .routes(routes!(health_check));
@@ -171,6 +173,17 @@ macro_rules! data {
 	};
 }
 use data;
+
+macro_rules! router_new {
+    () => {};
+    ($($name:ident),*) => {
+        OpenApiRouter::new()
+        $(
+            .routes(utoipa_axum::routes!($name))
+        )*
+    }
+}
+use router_new;
 
 #[cfg(test)]
 mod test {

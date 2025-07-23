@@ -96,6 +96,17 @@ impl FromRef<ArcAppState> for SongService {
     }
 }
 
+pub(super) type SongLyricsService =
+    application::song_lyrics::Service<SeaOrmRepository>;
+
+impl FromRef<ArcAppState> for SongLyricsService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self {
+            repo: input.sea_orm_repo.clone(),
+        }
+    }
+}
+
 pub(super) type TagService = application::tag::Service<SeaOrmRepository>;
 
 impl FromRef<ArcAppState> for TagService {

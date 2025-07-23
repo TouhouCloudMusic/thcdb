@@ -5,10 +5,12 @@ members = [
     "crates/macros",
     "crates/migration",
     "crates/proc_macros",
+    "crates/fast_lrc",
 ]
 
 [workspace.dependencies]
 entity      = { path = "crates/entity" }
+fast-lrc    = { path = "crates/fast_lrc" }
 macros      = { path = "crates/macros" }
 migration   = { path = "crates/migration" }
 proc_macros = { path = "crates/proc_macros" }
@@ -23,6 +25,7 @@ chrono = "0.4"
 dotenvy = "0.15"
 itertools = "0.14"
 quote = "1.0.38"
+rand = "0.9.0"
 sea-orm = { version = "1.1.10", features = [
     "sqlx-postgres",
     "runtime-tokio-rustls",
@@ -129,7 +132,7 @@ pulldown-cmark = { version = "0.13.0", default-features = false, features = [
     "html",
     "simd",
 ] }
-rand = "0.9.0"
+rand.workspace = true
 regex = "1.11"
 sea-orm.workspace = true
 sea-orm-migration.workspace = true

@@ -220,6 +220,8 @@ pub enum EntityType {
     Tag,
     #[sea_orm(string_value = "Event")]
     Event,
+    #[sea_orm(string_value = "SongLyrics")]
+    SongLyrics,
 }
 #[derive(
     Debug,

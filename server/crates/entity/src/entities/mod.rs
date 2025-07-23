@@ -68,6 +68,8 @@ pub mod song_language;
 pub mod song_language_history;
 pub mod song_localized_title;
 pub mod song_localized_title_history;
+pub mod song_lyrics;
+pub mod song_lyrics_history;
 pub mod song_relation;
 pub mod tag;
 pub mod tag_alternative_name;

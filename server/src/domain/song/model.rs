@@ -8,6 +8,7 @@ use crate::domain::release::model::SimpleRelease;
 use crate::domain::shared::model::{
     CreditRole, EntityIdent, Language, NewLocalizedName,
 };
+use crate::domain::song_lyrics::SongLyrics;
 
 #[serde_with::apply(
     Vec => #[serde(skip_serializing_if = "Vec::is_empty")],
@@ -21,6 +22,7 @@ pub struct Song {
     pub credits: Vec<SongCredit>,
     pub languages: Vec<Language>,
     pub localized_titles: Vec<LocalizedTitle>,
+    pub lyrics: Vec<SongLyrics>,
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]

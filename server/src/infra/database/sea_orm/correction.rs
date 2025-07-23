@@ -20,6 +20,7 @@ use crate::domain::model::auth::CorrectionApprover;
 use crate::domain::release::TxRepo as _;
 use crate::domain::repository::Connection;
 use crate::domain::song::TxRepo as _;
+use crate::domain::song_lyrics::TxRepo as _;
 use crate::domain::tag::TxRepo as _;
 use crate::infra;
 
@@ -151,7 +152,8 @@ impl TxRepo for SeaOrmTxRepo {
             + From<<Ctx::SongRepo as Connection>::Error>
             + From<<Ctx::LabelRepo as Connection>::Error>
             + From<<Ctx::EventRepo as Connection>::Error>
-            + From<<Ctx::TagRepo as Connection>::Error>,
+            + From<<Ctx::TagRepo as Connection>::Error>
+            + From<<Ctx::SongLyricsRepo as Connection>::Error>,
     {
         let correction = entity::correction::Entity::find_by_id(correction_id)
             .one(self.conn())
@@ -194,6 +196,9 @@ impl TxRepo for SeaOrmTxRepo {
             }
             EntityType::Event => {
                 context.event_repo().apply_update(correction).await?;
+            }
+            EntityType::SongLyrics => {
+                context.song_lyrics_repo().apply_update(correction).await?;
             }
         }
 

@@ -107,7 +107,8 @@ where
             + From<<Ctx::SongRepo as Connection>::Error>
             + From<<Ctx::LabelRepo as Connection>::Error>
             + From<<Ctx::EventRepo as Connection>::Error>
-            + From<<Ctx::TagRepo as Connection>::Error>,
+            + From<<Ctx::TagRepo as Connection>::Error>
+            + From<<Ctx::SongLyricsRepo as Connection>::Error>,
     {
         let approver =
             CorrectionApprover::from_user(user).ok_or(Unauthorized)?;

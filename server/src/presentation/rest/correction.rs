@@ -86,6 +86,7 @@ impl ApproveCorrectionContext for SeaOrmTxRepo {
     type LabelRepo = Self;
     type EventRepo = Self;
     type TagRepo = Self;
+    type SongLyricsRepo = Self;
 
     fn artist_repo(self) -> Self::ArtistRepo {
         self
@@ -110,6 +111,10 @@ impl ApproveCorrectionContext for SeaOrmTxRepo {
     fn tag_repo(self) -> Self::TagRepo {
         self
     }
+
+    fn song_lyrics_repo(self) -> Self::SongLyricsRepo {
+        self
+    }
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -121,6 +126,7 @@ enum EntityTypePath {
     Song,
     Tag,
     Event,
+    SongLyrics,
 }
 
 impl From<EntityTypePath> for EntityType {
@@ -132,6 +138,7 @@ impl From<EntityTypePath> for EntityType {
             EntityTypePath::Song => Self::Song,
             EntityTypePath::Tag => Self::Tag,
             EntityTypePath::Event => Self::Event,
+            EntityTypePath::SongLyrics => Self::SongLyrics,
         }
     }
 }

@@ -1,0 +1,32 @@
+[package]
+edition = "2024"
+name    = "fast-lrc"
+version = "0.1.0"
+
+[dependencies]
+atoi_simd = "0.16.1"
+memchr = "2.7.5"
+smallvec = { version = "1.15.1", features = [
+    "union",
+] }
+
+[dev-dependencies]
+atoi           = "2"
+criterion      = "0.5"
+lexical-core   = "1.0.5"
+lrc            = "0.1"
+rand.workspace = true
+
+[[bench]]
+harness = false
+name    = "lrc_parsing"
+
+[[bench]]
+harness = false
+name    = "timestamp"
+
+[features]
+rayon = [
+]
+simd = [
+]

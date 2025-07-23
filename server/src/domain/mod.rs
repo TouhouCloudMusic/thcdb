@@ -9,6 +9,7 @@ pub mod model;
 pub mod release;
 pub mod shared;
 pub mod song;
+pub mod song_lyrics;
 pub mod tag;
 pub mod user;
 pub use shared::*;
