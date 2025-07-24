@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use entity::{correction_revision, song_lyrics, song_lyrics_history};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
@@ -8,6 +10,7 @@ use sea_orm::{
 use super::SeaOrmTxRepo;
 use super::cache::LANGUAGE_CACHE;
 use crate::domain::repository::Connection;
+use crate::domain::shared::model::Language;
 use crate::domain::song_lyrics::model::{NewSongLyrics, SongLyrics};
 use crate::domain::song_lyrics::repo::{
     FindManyFilter, FindOneFilter, Repo, TxRepo,
@@ -38,16 +41,8 @@ where
 
         if let Some(model) = model {
             let lang_cache = LANGUAGE_CACHE.get_or_init(self.conn()).await?;
-            let language = lang_cache.get(&model.language_id).cloned();
 
-            Ok(Some(SongLyrics {
-                id: model.id,
-                song_id: model.song_id,
-                language_id: model.language_id,
-                content: model.content,
-                is_main: model.is_main,
-                language,
-            }))
+            Ok(Some(SongLyrics::from_model_and_cache(model, lang_cache)))
         } else {
             Ok(None)
         }
@@ -81,17 +76,7 @@ where
 
         Ok(models
             .into_iter()
-            .map(|m| {
-                let language = lang_cache.get(&m.language_id).cloned();
-                SongLyrics {
-                    id: m.id,
-                    song_id: m.song_id,
-                    language_id: m.language_id,
-                    content: m.content,
-                    is_main: m.is_main,
-                    language,
-                }
-            })
+            .map(|m| SongLyrics::from_model_and_cache(m, lang_cache))
             .collect())
     }
 }
@@ -227,4 +212,24 @@ async fn apply_update_impl(
     }
 
     Ok(())
+}
+
+impl SongLyrics {
+    pub(super) fn from_model_and_cache(
+        model: song_lyrics::Model,
+        lang_cache: &HashMap<i32, Language>,
+    ) -> Self {
+        let language = lang_cache
+            .get(&model.language_id)
+            .cloned()
+            .expect("Language should be found in cache");
+
+        Self {
+            id: model.id,
+            song_id: model.song_id,
+            content: model.content,
+            is_main: model.is_main,
+            language,
+        }
+    }
 }

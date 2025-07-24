@@ -11,10 +11,9 @@ use crate::domain::shared::model::Language;
 pub struct SongLyrics {
     pub id: i32,
     pub song_id: i32,
-    pub language_id: i32,
     pub content: String,
     pub is_main: bool,
-    pub language: Option<Language>,
+    pub language: Language,
 }
 
 #[derive(Clone, Debug, Deserialize, ToSchema)]

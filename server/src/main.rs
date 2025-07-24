@@ -2,9 +2,7 @@
 #![deny(clippy::clone_on_copy)]
 #![warn(clippy::cargo, clippy::nursery, clippy::pedantic)]
 #![warn(clippy::allow_attributes)]
-#![allow(
-    // dead_code,
-     async_fn_in_trait)]
+#![allow(dead_code, async_fn_in_trait)]
 #![allow(
     // We won't release
     clippy::cargo_common_metadata,

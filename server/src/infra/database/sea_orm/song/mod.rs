@@ -281,14 +281,7 @@ fn build_song_lyrics(
 ) -> Vec<SongLyrics> {
     lyrics
         .into_iter()
-        .map(|l| SongLyrics {
-            id: l.id,
-            song_id: l.song_id,
-            language_id: l.language_id,
-            content: l.content,
-            is_main: l.is_main,
-            language: lang_cache.get(&l.language_id).cloned(),
-        })
+        .map(|l| SongLyrics::from_model_and_cache(l, lang_cache))
         .collect()
 }
 
