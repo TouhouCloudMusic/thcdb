@@ -4,11 +4,13 @@ import { createRouter, RouterProvider } from "@tanstack/solid-router"
 
 import { routeTree } from "./routeTree.gen"
 import { StateProvider } from "./state"
+import { NotFound } from "./views/NotFound"
 
 const router = createRouter({
 	routeTree,
 	// We use tanstack query, so we don't need the built-in cache of tanstack router
 	defaultPreloadStaleTime: 0,
+	defaultNotFoundComponent: () => <NotFound />,
 })
 
 declare module "@tanstack/solid-router" {

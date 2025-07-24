@@ -8,188 +8,92 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as LibraryRouteImport } from './routes/library'
+import { Route as FeedsRouteImport } from './routes/feeds'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ArticlesRouteImport } from './routes/articles'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as SongMockRouteImport } from './routes/song/mock'
+import { Route as SongIdRouteImport } from './routes/song/$id'
+import { Route as ArtistNewRouteImport } from './routes/artist/new'
+import { Route as ArtistIdRouteImport } from './routes/artist/$id'
+import { Route as userTest_avatar_uploadRouteImport } from './routes/(user)/test_avatar_upload'
+import { Route as userProfileRouteImport } from './routes/(user)/profile'
+import { Route as userProfileEditRouteImport } from './routes/(user)/profile_.edit'
+import { Route as userProfileUsernameRouteImport } from './routes/(user)/profile_.$username'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as LibraryImport } from './routes/library'
-import { Route as FeedsImport } from './routes/feeds'
-import { Route as AuthImport } from './routes/auth'
-import { Route as ArticlesImport } from './routes/articles'
-import { Route as AboutImport } from './routes/about'
-import { Route as IndexImport } from './routes/index'
-import { Route as ArtistNewImport } from './routes/artist/new'
-import { Route as ArtistIdImport } from './routes/artist/$id'
-import { Route as userTestavataruploadImport } from './routes/(user)/test_avatar_upload'
-import { Route as userProfileImport } from './routes/(user)/profile'
-import { Route as userProfileEditImport } from './routes/(user)/profile_.edit'
-import { Route as userProfileUsernameImport } from './routes/(user)/profile_.$username'
-
-// Create/Update Routes
-
-const LibraryRoute = LibraryImport.update({
+const LibraryRoute = LibraryRouteImport.update({
   id: '/library',
   path: '/library',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const FeedsRoute = FeedsImport.update({
+const FeedsRoute = FeedsRouteImport.update({
   id: '/feeds',
   path: '/feeds',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AuthRoute = AuthImport.update({
+const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const ArticlesRoute = ArticlesImport.update({
+const ArticlesRoute = ArticlesRouteImport.update({
   id: '/articles',
   path: '/articles',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AboutRoute = AboutImport.update({
+const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const IndexRoute = IndexImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const ArtistNewRoute = ArtistNewImport.update({
+const SongMockRoute = SongMockRouteImport.update({
+  id: '/song/mock',
+  path: '/song/mock',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SongIdRoute = SongIdRouteImport.update({
+  id: '/song/$id',
+  path: '/song/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArtistNewRoute = ArtistNewRouteImport.update({
   id: '/artist/new',
   path: '/artist/new',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const ArtistIdRoute = ArtistIdImport.update({
+const ArtistIdRoute = ArtistIdRouteImport.update({
   id: '/artist/$id',
   path: '/artist/$id',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const userTestavataruploadRoute = userTestavataruploadImport.update({
+const userTest_avatar_uploadRoute = userTest_avatar_uploadRouteImport.update({
   id: '/(user)/test_avatar_upload',
   path: '/test_avatar_upload',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const userProfileRoute = userProfileImport.update({
+const userProfileRoute = userProfileRouteImport.update({
   id: '/(user)/profile',
   path: '/profile',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const userProfileEditRoute = userProfileEditImport.update({
+const userProfileEditRoute = userProfileEditRouteImport.update({
   id: '/(user)/profile_/edit',
   path: '/profile/edit',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const userProfileUsernameRoute = userProfileUsernameImport.update({
+const userProfileUsernameRoute = userProfileUsernameRouteImport.update({
   id: '/(user)/profile_/$username',
   path: '/profile/$username',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-// Populate the FileRoutesByPath interface
-
-declare module '@tanstack/solid-router' {
-  interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
-      parentRoute: typeof rootRoute
-    }
-    '/articles': {
-      id: '/articles'
-      path: '/articles'
-      fullPath: '/articles'
-      preLoaderRoute: typeof ArticlesImport
-      parentRoute: typeof rootRoute
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthImport
-      parentRoute: typeof rootRoute
-    }
-    '/feeds': {
-      id: '/feeds'
-      path: '/feeds'
-      fullPath: '/feeds'
-      preLoaderRoute: typeof FeedsImport
-      parentRoute: typeof rootRoute
-    }
-    '/library': {
-      id: '/library'
-      path: '/library'
-      fullPath: '/library'
-      preLoaderRoute: typeof LibraryImport
-      parentRoute: typeof rootRoute
-    }
-    '/(user)/profile': {
-      id: '/(user)/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof userProfileImport
-      parentRoute: typeof rootRoute
-    }
-    '/(user)/test_avatar_upload': {
-      id: '/(user)/test_avatar_upload'
-      path: '/test_avatar_upload'
-      fullPath: '/test_avatar_upload'
-      preLoaderRoute: typeof userTestavataruploadImport
-      parentRoute: typeof rootRoute
-    }
-    '/artist/$id': {
-      id: '/artist/$id'
-      path: '/artist/$id'
-      fullPath: '/artist/$id'
-      preLoaderRoute: typeof ArtistIdImport
-      parentRoute: typeof rootRoute
-    }
-    '/artist/new': {
-      id: '/artist/new'
-      path: '/artist/new'
-      fullPath: '/artist/new'
-      preLoaderRoute: typeof ArtistNewImport
-      parentRoute: typeof rootRoute
-    }
-    '/(user)/profile_/$username': {
-      id: '/(user)/profile_/$username'
-      path: '/profile/$username'
-      fullPath: '/profile/$username'
-      preLoaderRoute: typeof userProfileUsernameImport
-      parentRoute: typeof rootRoute
-    }
-    '/(user)/profile_/edit': {
-      id: '/(user)/profile_/edit'
-      path: '/profile/edit'
-      fullPath: '/profile/edit'
-      preLoaderRoute: typeof userProfileEditImport
-      parentRoute: typeof rootRoute
-    }
-  }
-}
-
-// Create and export the route tree
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -199,13 +103,14 @@ export interface FileRoutesByFullPath {
   '/feeds': typeof FeedsRoute
   '/library': typeof LibraryRoute
   '/profile': typeof userProfileRoute
-  '/test_avatar_upload': typeof userTestavataruploadRoute
+  '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/$id': typeof ArtistIdRoute
   '/artist/new': typeof ArtistNewRoute
+  '/song/$id': typeof SongIdRoute
+  '/song/mock': typeof SongMockRoute
   '/profile/$username': typeof userProfileUsernameRoute
   '/profile/edit': typeof userProfileEditRoute
 }
-
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
@@ -214,15 +119,16 @@ export interface FileRoutesByTo {
   '/feeds': typeof FeedsRoute
   '/library': typeof LibraryRoute
   '/profile': typeof userProfileRoute
-  '/test_avatar_upload': typeof userTestavataruploadRoute
+  '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/$id': typeof ArtistIdRoute
   '/artist/new': typeof ArtistNewRoute
+  '/song/$id': typeof SongIdRoute
+  '/song/mock': typeof SongMockRoute
   '/profile/$username': typeof userProfileUsernameRoute
   '/profile/edit': typeof userProfileEditRoute
 }
-
 export interface FileRoutesById {
-  __root__: typeof rootRoute
+  __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/articles': typeof ArticlesRoute
@@ -230,13 +136,14 @@ export interface FileRoutesById {
   '/feeds': typeof FeedsRoute
   '/library': typeof LibraryRoute
   '/(user)/profile': typeof userProfileRoute
-  '/(user)/test_avatar_upload': typeof userTestavataruploadRoute
+  '/(user)/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/$id': typeof ArtistIdRoute
   '/artist/new': typeof ArtistNewRoute
+  '/song/$id': typeof SongIdRoute
+  '/song/mock': typeof SongMockRoute
   '/(user)/profile_/$username': typeof userProfileUsernameRoute
   '/(user)/profile_/edit': typeof userProfileEditRoute
 }
-
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
@@ -250,6 +157,8 @@ export interface FileRouteTypes {
     | '/test_avatar_upload'
     | '/artist/$id'
     | '/artist/new'
+    | '/song/$id'
+    | '/song/mock'
     | '/profile/$username'
     | '/profile/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -264,6 +173,8 @@ export interface FileRouteTypes {
     | '/test_avatar_upload'
     | '/artist/$id'
     | '/artist/new'
+    | '/song/$id'
+    | '/song/mock'
     | '/profile/$username'
     | '/profile/edit'
   id:
@@ -278,11 +189,12 @@ export interface FileRouteTypes {
     | '/(user)/test_avatar_upload'
     | '/artist/$id'
     | '/artist/new'
+    | '/song/$id'
+    | '/song/mock'
     | '/(user)/profile_/$username'
     | '/(user)/profile_/edit'
   fileRoutesById: FileRoutesById
 }
-
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
@@ -291,11 +203,116 @@ export interface RootRouteChildren {
   FeedsRoute: typeof FeedsRoute
   LibraryRoute: typeof LibraryRoute
   userProfileRoute: typeof userProfileRoute
-  userTestavataruploadRoute: typeof userTestavataruploadRoute
+  userTest_avatar_uploadRoute: typeof userTest_avatar_uploadRoute
   ArtistIdRoute: typeof ArtistIdRoute
   ArtistNewRoute: typeof ArtistNewRoute
+  SongIdRoute: typeof SongIdRoute
+  SongMockRoute: typeof SongMockRoute
   userProfileUsernameRoute: typeof userProfileUsernameRoute
   userProfileEditRoute: typeof userProfileEditRoute
+}
+
+declare module '@tanstack/solid-router' {
+  interface FileRoutesByPath {
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feeds': {
+      id: '/feeds'
+      path: '/feeds'
+      fullPath: '/feeds'
+      preLoaderRoute: typeof FeedsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/articles': {
+      id: '/articles'
+      path: '/articles'
+      fullPath: '/articles'
+      preLoaderRoute: typeof ArticlesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/song/mock': {
+      id: '/song/mock'
+      path: '/song/mock'
+      fullPath: '/song/mock'
+      preLoaderRoute: typeof SongMockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/song/$id': {
+      id: '/song/$id'
+      path: '/song/$id'
+      fullPath: '/song/$id'
+      preLoaderRoute: typeof SongIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/artist/new': {
+      id: '/artist/new'
+      path: '/artist/new'
+      fullPath: '/artist/new'
+      preLoaderRoute: typeof ArtistNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/artist/$id': {
+      id: '/artist/$id'
+      path: '/artist/$id'
+      fullPath: '/artist/$id'
+      preLoaderRoute: typeof ArtistIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(user)/test_avatar_upload': {
+      id: '/(user)/test_avatar_upload'
+      path: '/test_avatar_upload'
+      fullPath: '/test_avatar_upload'
+      preLoaderRoute: typeof userTest_avatar_uploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(user)/profile': {
+      id: '/(user)/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof userProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(user)/profile_/edit': {
+      id: '/(user)/profile_/edit'
+      path: '/profile/edit'
+      fullPath: '/profile/edit'
+      preLoaderRoute: typeof userProfileEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(user)/profile_/$username': {
+      id: '/(user)/profile_/$username'
+      path: '/profile/$username'
+      fullPath: '/profile/$username'
+      preLoaderRoute: typeof userProfileUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+  }
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -306,73 +323,14 @@ const rootRouteChildren: RootRouteChildren = {
   FeedsRoute: FeedsRoute,
   LibraryRoute: LibraryRoute,
   userProfileRoute: userProfileRoute,
-  userTestavataruploadRoute: userTestavataruploadRoute,
+  userTest_avatar_uploadRoute: userTest_avatar_uploadRoute,
   ArtistIdRoute: ArtistIdRoute,
   ArtistNewRoute: ArtistNewRoute,
+  SongIdRoute: SongIdRoute,
+  SongMockRoute: SongMockRoute,
   userProfileUsernameRoute: userProfileUsernameRoute,
   userProfileEditRoute: userProfileEditRoute,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/",
-        "/about",
-        "/articles",
-        "/auth",
-        "/feeds",
-        "/library",
-        "/(user)/profile",
-        "/(user)/test_avatar_upload",
-        "/artist/$id",
-        "/artist/new",
-        "/(user)/profile_/$username",
-        "/(user)/profile_/edit"
-      ]
-    },
-    "/": {
-      "filePath": "index.tsx"
-    },
-    "/about": {
-      "filePath": "about.tsx"
-    },
-    "/articles": {
-      "filePath": "articles.tsx"
-    },
-    "/auth": {
-      "filePath": "auth.tsx"
-    },
-    "/feeds": {
-      "filePath": "feeds.tsx"
-    },
-    "/library": {
-      "filePath": "library.tsx"
-    },
-    "/(user)/profile": {
-      "filePath": "(user)/profile.tsx"
-    },
-    "/(user)/test_avatar_upload": {
-      "filePath": "(user)/test_avatar_upload.tsx"
-    },
-    "/artist/$id": {
-      "filePath": "artist/$id.tsx"
-    },
-    "/artist/new": {
-      "filePath": "artist/new.tsx"
-    },
-    "/(user)/profile_/$username": {
-      "filePath": "(user)/profile_.$username.tsx"
-    },
-    "/(user)/profile_/edit": {
-      "filePath": "(user)/profile_.edit.tsx"
-    }
-  }
-}
-ROUTE_MANIFEST_END */

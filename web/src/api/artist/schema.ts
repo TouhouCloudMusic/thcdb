@@ -5,7 +5,7 @@ import type { ExternalSchema } from "~/types/valibot"
 
 import type { OpenApiSchema } from ".."
 import { NewCorrection } from "../correction"
-import type { DateWithPrecisionIn } from "../shared/schema"
+import { DateWithPrecision } from "../shared"
 import {
 	EntityId,
 	EntityIdent,
@@ -47,8 +47,8 @@ export type NewMembership = v.InferInput<typeof NewMembership>
 export type NewArtist = Expand<
 	SafeOmit<o_NewArtist, "start_date" | "end_date"> &
 		Partial<{
-			start_date: DateWithPrecisionIn | null
-			end_date: DateWithPrecisionIn | null
+			start_date: DateWithPrecision.In | null
+			end_date: DateWithPrecision.In | null
 		}>
 >
 export const NewArtist = v.object({
@@ -57,8 +57,8 @@ export const NewArtist = v.object({
 	artist_type: ArtistType,
 	aliases: v.nullish(v.array(EntityId)),
 	text_aliases: v.nullish(v.array(EntityIdent)),
-	start_date: v.nullish(DateWithPrecision),
-	end_date: v.nullish(DateWithPrecision),
+	start_date: v.nullish(DateWithPrecision.Schema),
+	end_date: v.nullish(DateWithPrecision.Schema),
 	links: v.nullish(v.array(v.pipe(v.string(), v.url()))),
 	start_location: v.nullish(Location),
 	current_location: v.nullish(Location),
@@ -72,3 +72,5 @@ export type NewArtistCorrectionOut = If<
 	o_NewArtistCorrection,
 	never
 >
+
+export type SimpleArtist = OpenApiSchema["SimpleArtist"]

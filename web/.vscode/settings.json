@@ -10,8 +10,9 @@
 	},
 	"typescript.preferences.importModuleSpecifierEnding": "minimal",
 
+	"typescript.preferences.autoImportSpecifierExcludeRegexes": ["/^__.*$/"],
 	// tailwind
-	"tailwindCSS.classAttributes": ["class", "class:list", "twMerge"],
+	"tailwindCSS.classAttributes": ["class", "class:list", ".*class"],
 	"tailwindCSS.experimental.classRegex": [
 		["@tw\\s\\*?\\/?[\\s\\S]+?[']([^']*)"],
 		["@tw\\s\\*?\\/?[\\s\\S]+?[`]([^`]*)"],

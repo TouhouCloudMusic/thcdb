@@ -5,9 +5,9 @@
 	--background-color-secondary: var(--color-slate-100);
 	--background-color-tertiary: var(--color-white);
 
-	--text-color-primary: var(--color-slate-1000);
-	--text-color-secondary: var(--color-slate-800);
-	--text-color-tertiary: var(--color-slate-600);
+	--text-color-primary: var(--color-slate-900);
+	--text-color-secondary: var(--color-slate-700);
+	--text-color-tertiary: var(--color-slate-500);
 
 	--default-border-color: var(--color-slate-300);
 	--default-icon-color: var(--color-slate-500);

@@ -3,7 +3,6 @@ import * as K_Tab from "@kobalte/core/tabs"
 import { createContext, mergeProps } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
-import { Button } from "~/components/button"
 import { assertContext } from "~/utils/context"
 
 export type RootProps = PolymorphicProps<"div", K_Tab.TabsRootProps<"div">> & {
@@ -56,27 +55,28 @@ export function List(props: PolymorphicProps<"ul", K_Tab.TabsListProps<"ul">>) {
 	)
 }
 
+const TRIGGER_CLASS =
+	"p-0 duration-150 rounded-none text-sm font-medium tracking-widest text-tertiary uppercase transition-all hover:text-primary data-[selected]:text-primary "
+
 export function Trigger(
-	props: PolymorphicProps<typeof Button, K_Tab.TabsTriggerProps<typeof Button>>,
+	props: PolymorphicProps<"button", K_Tab.TabsTriggerProps<"button">>,
 ) {
 	const finalProps = mergeProps(props, {
 		get class() {
-			return twMerge(
-				"p-0 duration-100 hover:bg-slate-50 active:bg-slate-200/50 rounded-none",
-				props.class,
-			)
+			return twMerge(TRIGGER_CLASS, props.class)
 		},
 	})
 
 	return (
 		<K_Tab.Trigger
-			as={Button}
-			variant="Tertiary"
+			as="button"
+			// variant="Tertiary"
 			{...finalProps}
 		/>
 	)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export function Content<T>(
 	props: PolymorphicProps<"div", K_Tab.TabsContentProps<"div">> & { value: T },
 ) {
@@ -119,7 +119,7 @@ export function Indicator(props: IndicatorProps) {
 
 			return twMerge(
 				positionClass(),
-				"absolute bg-reimu-600 duration-150",
+				"absolute bg-reimu-600 duration-150 rounded-full",
 				props.class,
 			)
 		},

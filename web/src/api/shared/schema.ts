@@ -3,7 +3,6 @@ import * as v from "valibot"
 import { ENTITY_IDENT_MAX_LEN, ENTITY_IDENT_MIN_LEN } from "~/constant/server"
 import type { Eq, If } from "~/types"
 import type { ExternalSchema } from "~/types/valibot"
-import type { DeepMerge } from "~/utils/object"
 
 import type { OpenApiSchema } from ".."
 

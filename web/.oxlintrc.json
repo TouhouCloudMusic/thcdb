@@ -13,10 +13,12 @@
 		"restriction": "warn",
 		"nursery": "warn"
 	},
+	"settings": {},
 	"rules": {
 		// False Positives
 		"array-callback-return": ["off", { "allowImplicitReturn": true }],
 		"curly": "off",
+		"id-length": "off",
 		"max-params": "off",
 		"eqeqeq": "off",
 		"no-plusplus": "off",
@@ -85,11 +87,12 @@
 		"typescript/no-non-null-assertion": "off",
 
 		"import/exports-last": "off",
+		"import/group-exports": "off",
 		"import/max-dependencies": "off",
 		"import/no-anonymous-default-export": "off",
-		"import/no-namespace": "off",
-		"import/group-exports": "off",
 		"import/no-cycle": "off",
+		"import/no-namespace": "off",
+		"import/prefer-default-export": "off",
 
 		"unicorn/no-anonymous-default-export": "off",
 		"unicorn/no-empty-file": "off",
@@ -105,7 +108,9 @@
 		],
 		"unicorn/switch-case-braces": "off",
 
-		"promise/prefer-await-to-then": "off"
+		"promise/prefer-await-to-then": "off",
+
+		"jsx-a11y/label-has-associated-control": "off"
 	},
 	"plugins": [
 		"import",
