@@ -82,6 +82,7 @@ impl RelatedEntities {
             credits.clone().into_iter().flatten().collect_vec();
 
         let all_artist_ids = artists.iter().flatten().map(|x| x.id).unique();
+
         let credit_artists = flatten_credits
             .clone()
             .into_iter()
@@ -107,14 +108,17 @@ impl RelatedEntities {
             .collect_vec();
 
         let release_images = releases
-            .load_one(
+            .load_many(
                 entity::release_image::Entity::find().filter(
                     entity::release_image::Column::Type
                         .eq(ReleaseImageType::Cover),
                 ),
                 db,
             )
-            .await?;
+            .await?
+            .into_iter()
+            .map(|x| x.into_iter().next())
+            .collect_vec();
 
         let cover_arts = release_images
             .maybe_load_one(entity::image::Entity, db)
