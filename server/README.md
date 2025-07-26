@@ -1,5 +1,7 @@
 # Touhou Cloud DB
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/TouhouCloudMusic/server)
+
 <h2 style="text-align: left;">
     <a href="README.md">English</a> |
     <a href="./docs/zh_CN/README.md">中文</a> |
