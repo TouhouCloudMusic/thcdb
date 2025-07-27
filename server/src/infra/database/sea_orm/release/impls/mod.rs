@@ -6,7 +6,6 @@ use entity::{
 use itertools::Itertools;
 use libfp::EmptyExt;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
     ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr, EntityTrait,
     LoaderTrait, QueryFilter,
@@ -22,12 +21,11 @@ use crate::infra::database::sea_orm::ext::maybe_loader::MaybeLoader;
 mod track;
 pub use track::*;
 
-// Main function to find releases
 pub async fn find_many_impl(
-    condition: impl IntoCondition,
+    select: sea_orm::Select<release::Entity>,
     db: &impl ConnectionTrait,
 ) -> Result<Vec<Release>, DbErr> {
-    let releases = release::Entity::find().filter(condition).all(db).await?;
+    let releases = select.all(db).await?;
     let related = RelatedEntities::load(&releases, db).await?;
 
     let result = releases

@@ -1,2 +1,3 @@
 ALTER TABLE
-  "public"."user" DROP COLUMN "profile_banner_id";
+  "public"."user"
+  DROP COLUMN "profile_banner_id";

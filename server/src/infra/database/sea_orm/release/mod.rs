@@ -4,6 +4,8 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DbErr, EntityTrait,
     PaginatorTrait, QueryFilter, QueryOrder, QuerySelect,
 };
+use sea_query::extension::postgres::PgBinOper;
+use sea_query::{ExprTrait, Func};
 
 use crate::domain::release::model::{NewRelease, Release};
 use crate::domain::release::repo::{Filter, Repo, TxRepo};
@@ -22,14 +24,7 @@ where
         &self,
         filter: Filter,
     ) -> Result<Option<Release>, Self::Error> {
-        let condition = match filter {
-            Filter::Id(id) => release::Column::Id.eq(id),
-            Filter::Keyword(keyword) => {
-                release::Column::Title.like(format!("%{keyword}%"))
-            }
-        };
-
-        Ok(find_many_impl(condition, self.conn())
+        Ok(find_many_impl(filter.into_select().limit(1), self.conn())
             .await?
             .into_iter()
             .next())
@@ -37,18 +32,10 @@ where
 
     async fn find_many(
         &self,
+        // TODO: many filter
         filter: Filter,
     ) -> Result<Vec<Release>, Self::Error> {
-        let condition = match filter {
-            Filter::Id(id) => release::Column::Id.eq(id),
-            Filter::Keyword(keyword) => {
-                release::Column::Title.like(format!("%{keyword}%"))
-            }
-        };
-
-        let res = find_many_impl(condition, self.conn()).await?;
-
-        Ok(res)
+        find_many_impl(filter.into_select(), self.conn()).await
     }
 
     async fn exist(&self, id: i32) -> Result<bool, Self::Error> {
@@ -216,5 +203,27 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
         )?;
 
         Ok(())
+    }
+}
+
+impl Filter {
+    fn into_select(self) -> sea_orm::Select<release::Entity> {
+        match self {
+            Filter::Id(id) => {
+                release::Entity::find().filter(release::Column::Id.eq(id))
+            }
+            Filter::Keyword(keyword) => {
+                let search_term = Func::lower(keyword);
+                release::Entity::find()
+                    .filter(
+                        Func::lower(release::Column::Title.into_expr())
+                            .binary(PgBinOper::Similarity, search_term.clone()),
+                    )
+                    .order_by_asc(
+                        Func::lower(release::Column::Title.into_expr())
+                            .binary(PgBinOper::SimilarityDistance, search_term),
+                    )
+            }
+        }
     }
 }

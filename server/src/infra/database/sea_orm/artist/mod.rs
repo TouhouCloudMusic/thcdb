@@ -3,16 +3,17 @@ use std::path::PathBuf;
 
 use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{
-    artist_alias, artist_image, artist_link, artist_localized_name,
+    artist, artist_alias, artist_image, artist_link, artist_localized_name,
     artist_membership, artist_membership_role, artist_membership_tenure,
     credit_role, image, language,
 };
 use itertools::{Itertools, izip};
 use sea_orm::{
     ColumnTrait, Condition, ConnectionTrait, DbErr, EntityTrait,
-    FromQueryResult, LoaderTrait, QueryFilter,
+    FromQueryResult, LoaderTrait, QueryFilter, QueryOrder, Select,
 };
-use sea_orm_migration::prelude::IntoCondition;
+use sea_query::extension::postgres::PgBinOper;
+use sea_query::{ExprTrait, Func};
 
 use super::SeaOrmTxRepo;
 use crate::domain::artist::model::{Artist, Membership, NewArtist, Tenure};
@@ -28,7 +29,9 @@ where
     T::Conn: ConnectionTrait,
 {
     async fn find_by_id(&self, id: i32) -> Result<Option<Artist>, Self::Error> {
-        find_many_impl(entity::artist::Column::Id.eq(id), self.conn())
+        let select = artist::Entity::find().filter(artist::Column::Id.eq(id));
+
+        find_many_impl(select, self.conn())
             .await
             .map(|x| x.into_iter().next())
     }
@@ -37,7 +40,19 @@ where
         &self,
         name: &str,
     ) -> Result<Vec<Artist>, Self::Error> {
-        find_many_impl(entity::artist::Column::Name.eq(name), self.conn()).await
+        let search_term = Func::lower(name);
+
+        let select = artist::Entity::find()
+            .filter(
+                Func::lower(artist::Column::Name.into_expr())
+                    .binary(PgBinOper::Similarity, search_term.clone()),
+            )
+            .order_by_asc(
+                Func::lower(artist::Column::Name.into_expr())
+                    .binary(PgBinOper::SimilarityDistance, search_term),
+            );
+
+        find_many_impl(select, self.conn()).await
     }
 }
 
@@ -51,10 +66,10 @@ struct ArtistImage {
 
 #[expect(clippy::too_many_lines, reason = "TODO")]
 async fn find_many_impl(
-    cond: impl IntoCondition,
+    select: Select<artist::Entity>,
     db: &impl ConnectionTrait,
 ) -> Result<Vec<Artist>, DbErr> {
-    let artists = entity::artist::Entity::find().filter(cond).all(db).await?;
+    let artists = select.all(db).await?;
 
     let ids = artists.iter().map(|x| x.id).unique().collect_vec();
     let aliases = artist_alias::Entity::find()

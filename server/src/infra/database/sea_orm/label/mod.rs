@@ -4,11 +4,12 @@ use entity::{
 };
 use itertools::{Itertools, izip};
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
-    EntityTrait, IntoActiveValue, LoaderTrait, QueryFilter,
+    EntityTrait, IntoActiveValue, LoaderTrait, QueryFilter, QueryOrder,
 };
+use sea_query::extension::postgres::PgBinOper;
+use sea_query::{ExprTrait, Func};
 
 use crate::domain::label::model::{Label, NewLabel};
 use crate::domain::label::{Repo, TxRepo};
@@ -25,7 +26,8 @@ where
     T::Conn: ConnectionTrait,
 {
     async fn find_by_id(&self, id: i32) -> Result<Option<Label>, Self::Error> {
-        find_many_impl(label::Column::Id.eq(id), self.conn())
+        let select = label::Entity::find().filter(label::Column::Id.eq(id));
+        find_many_impl(select, self.conn())
             .await
             .map(|x| x.into_iter().next())
     }
@@ -34,15 +36,26 @@ where
         &self,
         keyword: &str,
     ) -> Result<Vec<Label>, Self::Error> {
-        find_many_impl(label::Column::Name.like(keyword), self.conn()).await
+        let search_term = Func::lower(keyword);
+
+        let select = label::Entity::find()
+            .filter(
+                Func::lower(label::Column::Name.into_expr())
+                    .binary(PgBinOper::Similarity, search_term.clone()),
+            )
+            .order_by_asc(
+                Func::lower(label::Column::Name.into_expr())
+                    .binary(PgBinOper::SimilarityDistance, search_term),
+            );
+        find_many_impl(select, self.conn()).await
     }
 }
 
 async fn find_many_impl(
-    cond: impl IntoCondition,
+    select: sea_orm::Select<label::Entity>,
     db: &impl ConnectionTrait,
 ) -> Result<Vec<Label>, DbErr> {
-    let labels = label::Entity::find().filter(cond).all(db).await?;
+    let labels = select.all(db).await?;
 
     let founders = labels.load_many(label_founder::Entity, db).await?;
 

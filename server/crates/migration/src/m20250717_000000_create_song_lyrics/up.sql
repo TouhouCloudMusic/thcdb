@@ -11,7 +11,8 @@ IF NOT EXISTS (
   WHERE
     pg_type.typname = 'EntityType'
     AND pg_enum.enumlabel = 'SongLyrics'
-) THEN ALTER TYPE "public"."EntityType"
+) THEN
+ALTER TYPE "public"."EntityType"
 ADD
   VALUE 'SongLyrics';
 

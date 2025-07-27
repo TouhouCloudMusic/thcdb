@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use entity::enums::StorageBackend;
 use entity::sea_orm_active_enums::ReleaseImageType;
+use entity::song::Column::{Id, Title};
 use entity::{
     artist, image, release_image, song, song_artist, song_credit,
     song_credit_history, song_history, song_language, song_language_history,
@@ -11,12 +12,13 @@ use impls::apply_update;
 use itertools::{Itertools, izip};
 use libfp::FunctorExt;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
     EntityTrait, IntoActiveValue, JoinType, LoaderTrait, QueryFilter,
-    QuerySelect, RelationTrait, Select,
+    QueryOrder, QuerySelect, RelationTrait, Select,
 };
+use sea_query::extension::postgres::PgBinOper::*;
+use sea_query::{ExprTrait, Func};
 
 use super::cache::LANGUAGE_CACHE;
 use crate::domain::artist::model::SimpleArtist;
@@ -38,7 +40,8 @@ where
     T::Conn: ConnectionTrait,
 {
     async fn find_by_id(&self, id: i32) -> Result<Option<Song>, Self::Error> {
-        find_many_impl(song::Column::Id.eq(id), self.conn())
+        let select = song::Entity::find().filter(Id.eq(id));
+        find_many_impl(select, self.conn())
             .await
             .map(|x| x.into_iter().next())
     }
@@ -47,16 +50,27 @@ where
         &self,
         keyword: &str,
     ) -> Result<Vec<Song>, Self::Error> {
-        find_many_impl(song::Column::Title.contains(keyword), self.conn()).await
+        let search_term = Func::lower(keyword);
+
+        let select = song::Entity::find()
+            .filter(
+                Func::lower(Title.into_expr())
+                    .binary(Similarity, search_term.clone()),
+            )
+            .order_by_asc(
+                Func::lower(Title.into_expr())
+                    .binary(SimilarityDistance, search_term),
+            );
+        find_many_impl(select, self.conn()).await
     }
 }
 
 #[expect(clippy::too_many_lines)]
 async fn find_many_impl(
-    cond: impl IntoCondition,
+    select: sea_orm::Select<song::Entity>,
     db: &impl ConnectionTrait,
 ) -> Result<Vec<Song>, DbErr> {
-    let songs = song::Entity::find().filter(cond).all(db).await?;
+    let songs = select.all(db).await?;
     if songs.is_empty() {
         return Ok(vec![]);
     }

@@ -1,14 +1,16 @@
+use entity::tag::Column::Name;
 use entity::{
     tag, tag_alternative_name, tag_alternative_name_history, tag_history,
     tag_relation, tag_relation_history,
 };
 use itertools::izip;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
-    EntityTrait, IntoActiveValue, LoaderTrait, QueryFilter,
+    EntityTrait, IntoActiveValue, LoaderTrait, QueryFilter, QueryOrder,
 };
+use sea_query::extension::postgres::PgBinOper::*;
+use sea_query::{ExprTrait, Func};
 
 use crate::domain::repository::Connection;
 use crate::domain::tag::model::{
@@ -25,7 +27,8 @@ where
     T::Conn: ConnectionTrait,
 {
     async fn find_by_id(&self, id: i32) -> Result<Option<Tag>, Self::Error> {
-        find_many_impl(tag::Column::Id.eq(id), self.conn())
+        let select = tag::Entity::find().filter(tag::Column::Id.eq(id));
+        find_many_impl(select, self.conn())
             .await
             .map(|x| x.into_iter().next())
     }
@@ -34,15 +37,26 @@ where
         &self,
         keyword: &str,
     ) -> Result<Vec<Tag>, Self::Error> {
-        find_many_impl(tag::Column::Name.contains(keyword), self.conn()).await
+        let search_term = Func::lower(keyword);
+
+        let select = tag::Entity::find()
+            .filter(
+                Func::lower(Name.into_expr())
+                    .binary(Similarity, search_term.clone()),
+            )
+            .order_by_asc(
+                Func::lower(Name.into_expr())
+                    .binary(SimilarityDistance, search_term),
+            );
+        find_many_impl(select, self.conn()).await
     }
 }
 
 async fn find_many_impl(
-    cond: impl IntoCondition,
+    select: sea_orm::Select<tag::Entity>,
     db: &impl ConnectionTrait,
 ) -> Result<Vec<Tag>, DbErr> {
-    let tags = tag::Entity::find().filter(cond).all(db).await?;
+    let tags = select.all(db).await?;
 
     let alt_names = tags.load_many(tag_alternative_name::Entity, db).await?;
 

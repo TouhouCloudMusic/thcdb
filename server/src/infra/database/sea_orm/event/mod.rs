@@ -5,12 +5,13 @@ use entity::{
 };
 use itertools::{Itertools, izip};
 use sea_orm::ActiveValue::NotSet;
-use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
     EntityTrait, IntoActiveValue, LoaderTrait, ModelTrait, QueryFilter,
     QueryOrder, Set,
 };
+use sea_query::extension::postgres::PgBinOper;
+use sea_query::{ExprTrait, Func};
 
 use crate::domain::event::model::{AlternativeName, Event, NewEvent};
 use crate::domain::event::repo::{Repo, TxRepo};
@@ -23,7 +24,9 @@ where
     T::Conn: ConnectionTrait,
 {
     async fn find_by_id(&self, id: i32) -> Result<Option<Event>, Self::Error> {
-        find_many_impl(event::Column::Id.eq(id), self.conn())
+        let select = event::Entity::find().filter(event::Column::Id.eq(id));
+
+        find_many_impl(select, self.conn())
             .await
             .map(|x| x.into_iter().next())
     }
@@ -32,19 +35,26 @@ where
         &self,
         keyword: &str,
     ) -> Result<Vec<Event>, Self::Error> {
-        find_many_impl(event::Column::Name.contains(keyword), self.conn()).await
+        let search_term = Func::lower(keyword);
+
+        let selector = event::Entity::find()
+            .filter(
+                Func::lower(event::Column::Name.into_expr())
+                    .binary(PgBinOper::Similarity, search_term.clone()),
+            )
+            .order_by_asc(
+                Func::lower(event::Column::Name.into_expr())
+                    .binary(PgBinOper::SimilarityDistance, search_term),
+            );
+        find_many_impl(selector, self.conn()).await
     }
 }
 
 async fn find_many_impl(
-    cond: impl IntoCondition,
+    selector: sea_orm::Select<event::Entity>,
     db: &impl ConnectionTrait,
 ) -> Result<Vec<Event>, DbErr> {
-    let events = event::Entity::find()
-        .filter(cond)
-        .order_by_desc(event::Column::Id)
-        .all(db)
-        .await?;
+    let events = selector.all(db).await?;
 
     let alt_names =
         events.load_many(event_alternative_name::Entity, db).await?;

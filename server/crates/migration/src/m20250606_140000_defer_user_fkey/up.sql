@@ -1,8 +1,10 @@
 ALTER TABLE
-  "user" DROP CONSTRAINT user_avatar_id_fkey;
+  "user"
+  DROP CONSTRAINT user_avatar_id_fkey;
 
 ALTER TABLE
-  "user" DROP CONSTRAINT user_profile_banner_id_fkey;
+  "user"
+  DROP CONSTRAINT user_profile_banner_id_fkey;
 
 ALTER TABLE
   "user"
