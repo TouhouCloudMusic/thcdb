@@ -1,5 +1,4 @@
 use axum::http::StatusCode;
-use boolinator::Boolinator;
 use chrono::Utc;
 use collection_ext::Intersection;
 use derive_more::Display;

@@ -1,7 +1,6 @@
 use std::backtrace::Backtrace;
 
 use axum::http::StatusCode;
-use boolinator::Boolinator;
 use derive_more::Display;
 use entity::enums::EntityType;
 pub use entity::sea_orm_active_enums::ArtistType;

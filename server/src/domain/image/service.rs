@@ -4,7 +4,6 @@ use std::range::RangeInclusive;
 
 use axum::http::StatusCode;
 use bon::Builder;
-use boolinator::Boolinator;
 use bytesize::ByteSize;
 use entity::enums::StorageBackend;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};

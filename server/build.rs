@@ -1,5 +1,3 @@
-#![feature(let_chains)]
-
 use std::fs;
 
 use git2::Repository;

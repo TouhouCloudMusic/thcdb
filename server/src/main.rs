@@ -20,6 +20,7 @@
     clippy::use_self,
 )]
 #![feature(
+    bool_to_result,
     error_generic_member_access,
     min_specialization,
     new_range_api,

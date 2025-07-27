@@ -1,4 +1,3 @@
-use boolinator::Boolinator;
 use entity::artist::{self};
 use entity::enums::ReleaseImageType;
 use entity::{
@@ -140,7 +139,7 @@ async fn find_artist_releases(
     }
 
     let next_cursor = match releases.last().map(|x| x.id) {
-        Some(last_release_id) => has_more.as_some(last_release_id),
+        Some(last_release_id) => has_more.then_some(last_release_id),
         // Should never happen
         None => {
             return Ok(Paginated::nothing());

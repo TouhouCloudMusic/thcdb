@@ -1,3 +1,4 @@
+#![expect(clippy::needless_for_each)]
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
