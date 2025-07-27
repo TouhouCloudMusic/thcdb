@@ -1,4 +1,4 @@
-#![deny(unused_must_use)]
+#![deny(unused_must_use, unconditional_recursion)]
 #![deny(clippy::clone_on_copy)]
 #![warn(clippy::cargo, clippy::nursery, clippy::pedantic)]
 #![warn(clippy::allow_attributes)]
@@ -20,7 +20,7 @@
     clippy::use_self,
 )]
 #![feature(
-    let_chains,
+    error_generic_member_access,
     min_specialization,
     new_range_api,
     return_type_notation,

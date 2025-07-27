@@ -1,3 +1,4 @@
+use std::backtrace::Backtrace;
 use std::io;
 use std::range::RangeInclusive;
 
@@ -5,9 +6,7 @@ use axum::http::StatusCode;
 use bon::Builder;
 use boolinator::Boolinator;
 use bytesize::ByteSize;
-use derive_more::{Display, Error};
 use entity::enums::StorageBackend;
-use error_set::error_set;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 use macros::ApiError;
 
@@ -15,65 +14,94 @@ use crate::domain::image::model::{Image, NewImage};
 use crate::domain::repository::Transaction;
 use crate::infra::{self};
 
-error_set! {
-    #[derive(ApiError)]
-    ValidationError = {
-        InvalidType(InvalidForamt),
-        #[api_error(
-            status_code = StatusCode::BAD_REQUEST,
-            into_response = self
-        )]
-        InvalidFileSize(InvalidFileSize),
-        #[api_error(
-            status_code = StatusCode::BAD_REQUEST,
-            into_response = self
-        )]
-        InvalidSize(InvalidSize),
-        #[api_error(
-            status_code = StatusCode::BAD_REQUEST,
-            into_response = self
-        )]
-        InvalidRatio(InvalidRatio),
-        // TODO: Internal error wrapper
-        #[api_error(
-            status_code = StatusCode::INTERNAL_SERVER_ERROR,
-            into_response = self
-        )]
-        #[display("Internal server error")]
-        Io(io::Error),
-        #[api_error(
-            status_code = StatusCode::INTERNAL_SERVER_ERROR,
-            into_response = self
-        )]
-        #[display("Internal server error")]
-        Image(ImageError),
-    };
+// TODO: conv to internal error
+#[derive(Debug, thiserror::Error, ApiError)]
+pub enum ValidationError {
+    #[error(transparent)]
+    InvalidType(
+        #[from]
+        #[backtrace]
+        InvalidForamt,
+    ),
+    #[error("Invalid file size: {source}")]
+    #[api_error(
+        status_code = StatusCode::BAD_REQUEST,
+        into_response = self
+    )]
+    InvalidFileSize {
+        #[from]
+        source: InvalidFileSize,
+        backtrace: Backtrace,
+    },
+    #[error("Invalid size: {source}")]
+    #[api_error(
+        status_code = StatusCode::BAD_REQUEST,
+        into_response = self
+    )]
+    InvalidSize {
+        #[from]
+        source: InvalidSize,
+        backtrace: Backtrace,
+    },
+    #[error("Invalid ratio: {source}")]
+    #[api_error(
+        status_code = StatusCode::BAD_REQUEST,
+        into_response = self
+    )]
+    InvalidRatio {
+        #[from]
+        source: InvalidRatio,
+        backtrace: Backtrace,
+    },
+    #[error("Internal server error")]
+    #[api_error(
+        status_code = StatusCode::INTERNAL_SERVER_ERROR,
+        into_response = self
+    )]
+    Io {
+        #[from]
+        source: io::Error,
+        backtrace: Backtrace,
+    },
+    #[error("Internal server error")]
+    #[api_error(
+        status_code = StatusCode::INTERNAL_SERVER_ERROR,
+        into_response = self
+    )]
+    Image {
+        #[from]
+        source: ImageError,
+        backtrace: Backtrace,
+    },
 }
 
-#[derive(Debug, Error, ApiError)]
+#[derive(Debug, thiserror::Error, ApiError)]
 #[api_error(
     status_code = StatusCode::BAD_REQUEST,
 )]
 pub struct InvalidForamt {
     received: Option<ImageFormat>,
     expected: &'static [ImageFormat],
+    backtrace: Backtrace,
 }
 
 impl InvalidForamt {
-    pub const fn new(
+    pub fn new(
         received: ImageFormat,
         expected: &'static [ImageFormat],
     ) -> Self {
         Self {
             received: Some(received),
             expected,
+            backtrace: Backtrace::capture(),
         }
     }
 
-    pub const fn unknown(expected: &'static [ImageFormat]) -> Self {
+    pub fn unknown(expected: &'static [ImageFormat]) -> Self {
         Self {
             received: None,
             expected,
+            backtrace: Backtrace::capture(),
         }
     }
 }
@@ -93,10 +121,11 @@ impl std::fmt::Display for InvalidForamt {
     }
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, thiserror::Error)]
 pub struct InvalidFileSize {
     received: ByteSize,
     range: RangeInclusive<ByteSize>,
+    backtrace: Backtrace,
 }
 
 impl std::fmt::Display for InvalidFileSize {
@@ -117,12 +146,13 @@ impl std::fmt::Display for InvalidFileSize {
     }
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, thiserror::Error)]
 pub struct InvalidSize {
     width: u32,
     height: u32,
     width_range: RangeInclusive<u32>,
     height_range: RangeInclusive<u32>,
+    backtrace: Backtrace,
 }
 
 impl std::fmt::Display for InvalidSize {
@@ -139,19 +169,24 @@ impl std::fmt::Display for InvalidSize {
     }
 }
 
-#[derive(Debug, Error, Display)]
-#[display(
+#[derive(Debug, thiserror::Error)]
+#[error(
     "Invalid image ratio, received: {received:.2}, expected: {:.2} to {:.2}",
     expected.start, expected.end
 )]
 pub struct InvalidRatio {
     received: f64,
     expected: RangeInclusive<f64>,
+    backtrace: Backtrace,
 }
 
 impl InvalidRatio {
-    pub const fn new(received: f64, expected: RangeInclusive<f64>) -> Self {
-        Self { received, expected }
+    pub fn new(received: f64, expected: RangeInclusive<f64>) -> Self {
+        Self {
+            received,
+            expected,
+            backtrace: Backtrace::capture(),
+        }
     }
 }
 
@@ -241,6 +276,7 @@ impl Parser {
                 height,
                 width_range,
                 height_range,
+                backtrace: Backtrace::capture(),
             })
         }
     }
@@ -256,6 +292,7 @@ impl Parser {
             Err(InvalidFileSize {
                 received: size,
                 range: *range,
+                backtrace: Backtrace::capture(),
             })
         }
     }
@@ -332,9 +369,16 @@ pub trait AsyncFileStorage: Send + Sync {
 #[derive(Debug, thiserror::Error, ApiError)]
 pub enum Error {
     #[error(transparent)]
-    Validation(#[from] ValidationError),
+    Validation(
+        #[from]
+        #[backtrace]
+        ValidationError,
+    ),
     #[error(transparent)]
-    Infra(infra::Error),
+    Infra {
+        #[backtrace]
+        source: infra::Error,
+    },
 }
 
 impl<T> From<T> for Error
@@ -342,7 +386,7 @@ where
     T: Into<infra::Error>,
 {
     fn from(e: T) -> Self {
-        Self::Infra(e.into())
+        Self::Infra { source: e.into() }
     }
 }
 

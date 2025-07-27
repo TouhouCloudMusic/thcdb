@@ -1,4 +1,7 @@
+use std::backtrace::Backtrace;
+
 use axum::http::StatusCode;
+use derive_more::Display;
 use entity::enums::EntityType;
 use macros::ApiError;
 use serde::{Deserialize, Serialize};
@@ -24,32 +27,49 @@ pub struct NewSongLyrics {
     pub is_main: bool,
 }
 
-#[derive(Clone, Debug, thiserror::Error, ApiError)]
+#[derive(Debug, thiserror::Error, ApiError)]
+#[error("Validation error: {kind}")]
 #[api_error(
-    status_code = StatusCode::BAD_REQUEST,
-    into_response = self
+    status_code = StatusCode::BAD_REQUEST
 )]
-pub enum ValidationError {
-    #[error("Content is empty")]
+pub struct ValidationError {
+    pub kind: ValidationErrorKind,
+    pub backtrace: Backtrace,
+}
+
+impl From<ValidationErrorKind> for ValidationError {
+    fn from(kind: ValidationErrorKind) -> Self {
+        Self {
+            kind,
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+#[derive(Debug, Display)]
+pub enum ValidationErrorKind {
+    #[display("Content is empty")]
     EmptyContent,
-    #[error("Invalid Song Id: {0}")]
+    #[display("Invalid Song Id: {_0}")]
     InvalidSongId(i32),
-    #[error("Invalid Langauge Id: {0}")]
+    #[display("Invalid Language Id: {_0}")]
     InvalidLanguageId(i32),
 }
+
+use ValidationErrorKind::*;
 
 impl NewSongLyrics {
     pub fn validate(&self) -> Result<(), ValidationError> {
         if self.content.trim().is_empty() {
-            return Err(ValidationError::EmptyContent);
+            return Err(EmptyContent.into());
         }
 
         if self.song_id <= 0 {
-            return Err(ValidationError::InvalidSongId(self.song_id));
+            return Err(InvalidSongId(self.song_id).into());
         }
 
         if self.language_id <= 0 {
-            return Err(ValidationError::InvalidLanguageId(self.language_id));
+            return Err(InvalidLanguageId(self.language_id).into());
         }
 
         Ok(())

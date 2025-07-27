@@ -1,4 +1,3 @@
-use derive_more::{Display, From};
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
@@ -15,22 +14,52 @@ pub struct Service<R> {
     pub repo: R,
 }
 
-#[derive(
-    Debug, Display, From, derive_more::Error, ApiError, IntoErrorSchema,
-)]
+#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
 pub enum CreateError {
-    #[from(forward)]
-    Correction(super::correction::Error),
+    #[error(transparent)]
+    Correction(
+        #[from]
+        #[backtrace]
+        super::correction::Error,
+    ),
+    #[error(transparent)]
+    Infra {
+        #[backtrace]
+        source: crate::infra::Error,
+    },
 }
 
-#[derive(
-    Debug, Display, From, derive_more::Error, ApiError, IntoErrorSchema,
-)]
+impl<E> From<E> for CreateError
+where
+    E: Into<crate::infra::Error>,
+{
+    fn from(err: E) -> Self {
+        Self::Infra { source: err.into() }
+    }
+}
+
+#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
 pub enum UpsertCorrectionError {
-    #[from(forward)]
-    Infra(crate::infra::Error),
-    #[from]
-    Correction(super::correction::Error),
+    #[error(transparent)]
+    Infra {
+        #[backtrace]
+        source: crate::infra::Error,
+    },
+    #[error(transparent)]
+    Correction(
+        #[from]
+        #[backtrace]
+        super::correction::Error,
+    ),
+}
+
+impl<E> From<E> for UpsertCorrectionError
+where
+    E: Into<crate::infra::Error>,
+{
+    fn from(err: E) -> Self {
+        Self::Infra { source: err.into() }
+    }
 }
 
 impl<R> Service<R>

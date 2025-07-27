@@ -1,4 +1,3 @@
-use derive_more::{Display, Error, From};
 use macros::{ApiError, IntoErrorSchema};
 
 use crate::domain::image::repository::TxRepo as ImageTxRepo;
@@ -58,14 +57,34 @@ mod parser {
     });
 }
 
-#[derive(Debug, Display, Error, ApiError, IntoErrorSchema, From)]
+#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
 pub enum Error {
-    #[from(forward)]
-    Infra(crate::infra::Error),
-    #[from]
-    ImageService(image::Error),
-    #[from]
-    Validate(ValidationError),
+    #[error(transparent)]
+    Infra {
+        #[backtrace]
+        source: crate::infra::Error,
+    },
+    #[error(transparent)]
+    ImageService(
+        #[from]
+        #[backtrace]
+        image::Error,
+    ),
+    #[error(transparent)]
+    Validate(
+        #[from]
+        #[backtrace]
+        ValidationError,
+    ),
+}
+
+impl<E> From<E> for Error
+where
+    E: Into<crate::infra::Error>,
+{
+    fn from(err: E) -> Self {
+        Self::Infra { source: err.into() }
+    }
 }
 
 #[derive(Clone)]

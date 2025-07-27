@@ -23,7 +23,7 @@ use crate::domain::model::markdown::{
 };
 use crate::domain::user::UserProfile;
 use crate::infra::error::Error;
-use crate::presentation::api_response::{self, Data, Message};
+use crate::presentation::api_response::{self, Data, IntoApiResponse, Message};
 
 const TAG: &str = "User";
 
@@ -124,13 +124,13 @@ async fn sign_in(
     Json(creds): Json<AuthCredential>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
     if auth_session.user.is_some() {
-        return Err(SignInError::AlreadySignedIn.into_response());
+        return Err(SignInError::already_signed_in().into_api_response());
     }
     let user = auth_session
         .authenticate(creds)
         .await
         .map_err(SessionBackendError::from)
-        .map_err(IntoResponse::into_response)?
+        .map_err(IntoApiResponse::into_api_response)?
         .ok_or_else(|| StatusCode::UNAUTHORIZED.into_response())?;
 
     auth_session

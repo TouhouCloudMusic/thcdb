@@ -1,4 +1,4 @@
-use derive_more::{Display, From};
+use derive_more::From;
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
@@ -15,26 +15,48 @@ pub struct Service<R> {
     pub repo: R,
 }
 
-#[derive(
-    Debug, Display, From, derive_more::Error, ApiError, IntoErrorSchema,
-)]
+#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
 pub enum CreateError {
+    #[error(transparent)]
+    Correction(
+        #[from]
+        #[backtrace]
+        super::correction::Error,
+    ),
+    #[error(transparent)]
+    Validation(
+        #[from]
+        #[backtrace]
+        ValidationError,
+    ),
+    #[error(transparent)]
     #[from(forward)]
-    Correction(super::correction::Error),
-    #[from]
-    Validation(ValidationError),
+    Infra {
+        #[backtrace]
+        source: crate::infra::Error,
+    },
 }
 
-#[derive(
-    Debug, Display, From, derive_more::Error, ApiError, IntoErrorSchema,
-)]
+#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
 pub enum UpsertCorrectionError {
+    #[error(transparent)]
     #[from(forward)]
-    Infra(crate::infra::Error),
-    #[from]
-    Validation(ValidationError),
-    #[from]
-    Correction(super::correction::Error),
+    Infra {
+        #[backtrace]
+        source: crate::infra::Error,
+    },
+    #[error(transparent)]
+    Validation(
+        #[from]
+        #[backtrace]
+        ValidationError,
+    ),
+    #[error(transparent)]
+    Correction(
+        #[from]
+        #[backtrace]
+        super::correction::Error,
+    ),
 }
 
 impl<R, TR> Service<R>

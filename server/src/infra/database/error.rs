@@ -1,13 +1,10 @@
+use std::backtrace::Backtrace;
+
 use axum::http::StatusCode;
 use frunk::{Coprod, Coproduct};
 use itertools::Itertools;
 use macros::ApiError;
 use sea_orm::{DbErr, RuntimeErr, sqlx};
-
-pub enum SeaOrmError {
-    General(DbErr),
-    FkViolation(FkViolation<DbErr>),
-}
 
 #[derive(Debug)]
 pub struct IdOrIds(Coprod!(i32, Vec<i32>));
@@ -23,25 +20,35 @@ impl std::fmt::Display for IdOrIds {
     }
 }
 
+#[derive(Debug)]
+pub enum FkViolationKind {
+    Auto {
+        entity: String,
+    },
+    Manual {
+        entity: (String, i32),
+        target: (String, IdOrIds),
+    },
+}
+
 #[derive(Debug, thiserror::Error, ApiError)]
 #[api_error(
     status_code = StatusCode::BAD_REQUEST,
 )]
-pub enum FkViolation<T>
+#[error("{}", match &self.kind {
+    FkViolationKind::Auto { entity } => format!("Invalid relation on {entity}"),
+    FkViolationKind::Manual { entity, target } => format!(
+        "Invalid relation between {} {} and {} {}",
+        entity.0, entity.1, target.0, target.1
+    ),
+})]
+pub struct FkViolation<T>
 where
     T: 'static + std::error::Error,
 {
-    #[error("Invalid relation on {entity}")]
-    Auto { entity: String, source: T },
-    #[error(
-        "Invalid relation between {} {} and {} {}",
-        entity.0, entity.1, target.0, target.1
-    )]
-    Manual {
-        entity: (String, i32),
-        target: (String, IdOrIds),
-        source: T,
-    },
+    pub kind: FkViolationKind,
+    pub source: T,
+    backtrace: Backtrace,
 }
 
 impl TryFrom<DbErr> for FkViolation<DbErr> {
@@ -53,9 +60,10 @@ impl TryFrom<DbErr> for FkViolation<DbErr> {
                 ref err,
             ))) if err.is_foreign_key_violation() => {
                 let table = err.table().unwrap_or("unknown").to_string();
-                Ok(FkViolation::Auto {
-                    entity: table,
+                Ok(FkViolation {
+                    kind: FkViolationKind::Auto { entity: table },
                     source: value,
+                    backtrace: Backtrace::capture(),
                 })
             }
             err => Err(err),

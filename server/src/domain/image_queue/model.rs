@@ -111,11 +111,10 @@ impl ImageQueue {
             .map(|role| UserRoleEnum::try_from(role.id).unwrap())
             .collect_vec();
         let required_roles = action.required_roles();
-        let has_permission =
-            // Users also can cancel their image uploads
-            user_roles.intersects(&required_roles)
-                || action == ImageQueueActionEnum::Cancel
-                    && user.id == self.creaded_by;
+        // Users also can cancel their image uploads
+        let has_permission = user_roles.intersects(&required_roles)
+            || action == ImageQueueActionEnum::Cancel
+                && user.id == self.creaded_by;
 
         has_permission.ok_or(Error::PermissionDenied)
     }

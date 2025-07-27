@@ -1,9 +1,10 @@
+use std::backtrace::Backtrace;
+
 use async_trait::async_trait;
 use axum::http::StatusCode;
 use axum_login::{AuthUser, AuthnBackend, UserId};
-use derive_more::{Display, From};
+use derive_more::From;
 use macros::{ApiError, IntoErrorSchema};
-use thiserror::Error;
 
 use crate::domain::model::auth::{
     AuthCredential, AuthnError, ValidateCredsError,
@@ -19,47 +20,93 @@ pub struct AuthService<R> {
     repo: R,
 }
 
-#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema, From)]
+#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
 pub enum SignUpError {
     #[error("Username already in use")]
     #[api_error(
         status_code = StatusCode::CONFLICT,
     )]
-    UsernameAlreadyInUse,
+    UsernameAlreadyInUse { backtrace: Backtrace },
     #[error(transparent)]
     #[from(forward)]
-    Infra(crate::infra::Error),
+    Infra {
+        #[backtrace]
+        source: crate::infra::Error,
+    },
+    #[error(transparent)]
     #[api_error(
         into_response = self
     )]
-    #[error(transparent)]
-    #[from(ValidateCredsError)]
-    Validate(ValidateCredsError),
+    Validate(
+        #[from]
+        #[backtrace]
+        ValidateCredsError,
+    ),
 }
 
-#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema, From)]
+impl SignUpError {
+    pub fn username_already_in_use() -> Self {
+        Self::UsernameAlreadyInUse {
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
 pub enum SignInError {
+    #[error("Already signed in")]
     #[api_error(
         status_code = StatusCode::CONFLICT,
     )]
-    #[error("Already signed in")]
-    AlreadySignedIn,
+    AlreadySignedIn { backtrace: Backtrace },
     #[error(transparent)]
-    Authn(#[from] AuthnError),
+    Authn(
+        #[from]
+        #[backtrace]
+        AuthnError,
+    ),
     #[error(transparent)]
     #[from(forward)]
-    Infra(crate::infra::Error),
+    Infra {
+        #[backtrace]
+        source: crate::infra::Error,
+    },
     #[error(transparent)]
-    Validate(#[from] ValidateCredsError),
+    Validate(
+        #[from]
+        #[backtrace]
+        ValidateCredsError,
+    ),
 }
 
-#[derive(Debug, Display, ApiError, From, Error)]
-#[display("Session error")]
+impl SignInError {
+    pub fn already_signed_in() -> Self {
+        Self::AlreadySignedIn {
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+#[derive(Debug, thiserror::Error, ApiError)]
+#[error("Session error: {source}")]
 #[api_error(
     status_code = StatusCode::INTERNAL_SERVER_ERROR,
     into_response = self
 )]
-pub struct SessionError(axum_login::tower_sessions::session::Error);
+pub struct SessionError {
+    #[from]
+    source: axum_login::tower_sessions::session::Error,
+    backtrace: Backtrace,
+}
+
+impl SessionError {
+    pub fn new(source: axum_login::tower_sessions::session::Error) -> Self {
+        Self {
+            source,
+            backtrace: Backtrace::force_capture(),
+        }
+    }
+}
 
 impl<R> From<axum_login::Error<AuthService<R>>> for SessionBackendError
 where
@@ -67,21 +114,31 @@ where
 {
     fn from(value: axum_login::Error<AuthService<R>>) -> Self {
         match value {
-            axum_login::Error::Session(err) => Self::Session(SessionError(err)),
+            axum_login::Error::Session(err) => {
+                Self::Session(SessionError::new(err))
+            }
             axum_login::Error::Backend(err) => Self::AuthnBackend(err),
         }
     }
 }
 
-error_set::error_set! {
-    #[derive(ApiError, IntoErrorSchema)]
-    SessionBackendError = {
-        #[api_error(
-            into_response = self
-        )]
-        Session(SessionError),
-        AuthnBackend(AuthnBackendError)
-    };
+#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
+pub enum SessionBackendError {
+    #[error(transparent)]
+    #[api_error(
+        into_response = self
+    )]
+    Session(
+        #[from]
+        #[backtrace]
+        SessionError,
+    ),
+    #[error(transparent)]
+    AuthnBackend(
+        #[from]
+        #[backtrace]
+        AuthnBackendError,
+    ),
 }
 #[derive(Debug, thiserror::Error, ApiError)]
 pub enum AuthnBackendError {
@@ -133,7 +190,9 @@ where
             .verify_credentials(user.as_ref().map(|u| u.password.as_str()))
             .await?;
 
-        Ok(user.ok_or(AuthnError::AuthenticationFailed)?)
+        Ok(user.ok_or_else(|| AuthnError::AuthenticationFailed {
+            backtrace: std::backtrace::Backtrace::capture(),
+        })?)
     }
 
     async fn sign_up(
@@ -144,7 +203,9 @@ where
         creds.validate()?;
 
         if self.repo.find_by_name(&creds.username).await?.is_some() {
-            return Err(SignUpError::UsernameAlreadyInUse);
+            return Err(SignUpError::UsernameAlreadyInUse {
+                backtrace: Backtrace::capture(),
+            });
         }
 
         let tx_repo = self.repo.begin().await?;

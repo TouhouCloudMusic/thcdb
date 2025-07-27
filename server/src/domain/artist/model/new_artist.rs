@@ -1,6 +1,8 @@
+use std::backtrace::Backtrace;
+
 use axum::http::StatusCode;
 use boolinator::Boolinator;
-use derive_more::{Display, Error};
+use derive_more::Display;
 use entity::enums::EntityType;
 pub use entity::sea_orm_active_enums::ArtistType;
 use macros::{ApiError, cmp_chain};
@@ -14,16 +16,34 @@ use crate::domain::shared::model::{
     DateWithPrecision, EntityIdent, Location, NewLocalizedName,
 };
 
-#[derive(Debug, Display, Error, PartialEq, Eq, ApiError)]
+// TODO: Generic validation error
+#[derive(Debug, thiserror::Error, ApiError)]
+#[error("Validation error: {kind}")]
 #[api_error(
     status_code = StatusCode::BAD_REQUEST
 )]
-pub enum ValidationError {
+pub struct ValidationError {
+    pub kind: ValidationErrorKind,
+    pub backtrace: Backtrace,
+}
+
+impl From<ValidationErrorKind> for ValidationError {
+    fn from(kind: ValidationErrorKind) -> Self {
+        Self {
+            kind,
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+#[derive(Debug, Display)]
+pub enum ValidationErrorKind {
     #[display("Unknown type artist cannot have members")]
     UnknownTypeArtistHasMembers,
     #[display("Invalid tenure")]
     InvalidTenure,
 }
+use ValidationErrorKind::*;
 
 #[derive(Deserialize, ToSchema)]
 pub struct NewArtist {
@@ -85,34 +105,13 @@ fn validate_artist_type_and_membership(
     membership: Option<&Vec<NewMembership>>,
 ) -> Result<(), ValidationError> {
     if artist_type.is_unknown() && membership.is_some_and(|x| !x.is_empty()) {
-        Err(ValidationError::UnknownTypeArtistHasMembers)
+        Err(UnknownTypeArtistHasMembers.into())
     } else {
         Ok(())
     }
 }
 
 fn validate_tenures(tenures: &[Tenure]) -> Result<(), ValidationError> {
-    fn validate_tenure_body(tenures: &[Tenure]) -> Result<(), ValidationError> {
-        tenures.windows(2).all(|x| {
-        let [first, second] = x else { unreachable!() };
-        if let Tenure {
-            join_year: first_join,
-            leave_year: Some(first_leave),
-        } = first
-            && let Tenure {
-                join_year: Some(second_join),
-                leave_year: second_leave,
-            } = second
-        {
-            let first_join = &first_join.unwrap_or_default();
-            let second_leave = &second_leave.unwrap_or(i16::MAX);
-            cmp_chain!(first_join < first_leave < second_join < second_leave)
-        } else {
-            false
-        }
-    }).ok_or(ValidationError::InvalidTenure)
-    }
-
     match tenures {
         [] => Ok(()),
         [tenure] => {
@@ -125,8 +124,36 @@ fn validate_tenures(tenures: &[Tenure]) -> Result<(), ValidationError> {
                 (Some(join), Some(leave)) => join > leave,
                 _ => true,
             }
-            .ok_or(ValidationError::InvalidTenure)
+            .ok_or_else(|| InvalidTenure.into())
         }
         rest => validate_tenure_body(rest),
     }
+}
+
+fn validate_tenure_body(tenures: &[Tenure]) -> Result<(), ValidationError> {
+    tenures
+        .windows(2)
+        .all(|x| {
+            let [first, second] = x else { unreachable!() };
+
+            if let Tenure {
+                join_year: first_join,
+                leave_year: Some(first_leave),
+            } = first
+                && let Tenure {
+                    join_year: Some(second_join),
+                    leave_year: second_leave,
+                } = second
+            {
+                let first_join = &first_join.unwrap_or_default();
+                let second_leave = &second_leave.unwrap_or(i16::MAX);
+
+                cmp_chain! {
+                    first_join < first_leave < second_join < second_leave
+                }
+            } else {
+                false
+            }
+        })
+        .ok_or_else(|| InvalidTenure.into())
 }

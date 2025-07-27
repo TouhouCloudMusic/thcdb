@@ -1,13 +1,12 @@
-use derive_more::{Display, From};
+use derive_more::From;
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
-use crate::domain::correction::{
-    NewCorrection, NewCorrectionMeta, {self},
-};
+use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
 use crate::domain::event;
 use crate::domain::event::NewEvent;
 use crate::domain::repository::TransactionManager;
+use crate::infra;
 use crate::infra::error::Error;
 
 #[derive(Clone)]
@@ -15,28 +14,42 @@ pub struct Service<R> {
     pub repo: R,
 }
 
-#[derive(
-    Debug, Display, From, derive_more::Error, ApiError, IntoErrorSchema,
-)]
+#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
 pub enum CreateError {
+    #[error(transparent)]
+    Correction(
+        #[from]
+        #[backtrace]
+        super::correction::Error,
+    ),
+    #[error(transparent)]
     #[from(forward)]
-    Correction(super::correction::Error),
+    Infra {
+        #[backtrace]
+        source: infra::Error,
+    },
 }
 
-#[derive(
-    Debug, Display, From, derive_more::Error, ApiError, IntoErrorSchema,
-)]
+#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
 pub enum UpsertCorrectionError {
+    #[error(transparent)]
+    Correction(
+        #[from]
+        #[backtrace]
+        super::correction::Error,
+    ),
+    #[error(transparent)]
     #[from(forward)]
-    Infra(crate::infra::Error),
-    #[from]
-    Correction(super::correction::Error),
+    Infra {
+        #[backtrace]
+        source: infra::Error,
+    },
 }
 
 impl<R> Service<R>
 where
     R: event::Repo,
-    crate::infra::Error: From<R::Error>,
+    infra::Error: From<R::Error>,
 {
     pub async fn find_by_id(
         &self,
@@ -57,7 +70,7 @@ impl<R, TR> Service<R>
 where
     R: TransactionManager<TransactionRepository = TR>,
     TR: event::TxRepo + correction::TxRepo,
-    crate::infra::Error: From<R::Error> + From<TR::Error>,
+    infra::Error: From<R::Error> + From<TR::Error>,
 {
     pub async fn create(
         &self,

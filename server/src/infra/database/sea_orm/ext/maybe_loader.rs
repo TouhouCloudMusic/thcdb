@@ -163,7 +163,8 @@ where
         Identity::Many(cols) => {
             let values = cols.iter().map(|col| {
                 let col_name = col.to_string();
-                let column = <<Model::Entity as EntityTrait>::Column as FromStr>::from_str(
+                let column =
+                <<Model::Entity as EntityTrait>::Column as FromStr>::from_str(
                     &col_name,
                 )
                 .unwrap_or_else(|_| panic!("Failed at mapping '{col_name}' to column"));

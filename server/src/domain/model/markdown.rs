@@ -1,19 +1,36 @@
+use std::backtrace::Backtrace;
 use std::sync::LazyLock;
 
 use axum::http::StatusCode;
-use derive_more::{Display, Error};
+use derive_more::Display;
 use macros::{ApiError, IntoErrorSchema};
 use pulldown_cmark::{Event, Options, Parser, TextMergeStream};
 
 #[derive(Debug, Clone, Display)]
 pub struct Markdown(String);
 
-#[derive(Debug, Display, Error, ApiError, IntoErrorSchema)]
-#[display("Invalid markdown")]
+#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
+#[error("{kind}")]
 #[api_error(
     status_code = StatusCode::BAD_REQUEST,
 )]
-pub enum Error {
+pub struct Error {
+    pub kind: ErrorKind,
+    pub backtrace: Backtrace,
+}
+
+impl From<ErrorKind> for Error {
+    fn from(kind: ErrorKind) -> Self {
+        Self {
+            kind,
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+#[derive(Debug, Display)]
+pub enum ErrorKind {
+    #[display("Invalid markdown")]
     ContainsHtml,
 }
 
@@ -34,7 +51,7 @@ impl Markdown {
             for event in stream {
                 match event {
                     Event::Html(_) | Event::InlineHtml(_) => {
-                        return Err(Error::ContainsHtml);
+                        return Err(ErrorKind::ContainsHtml.into());
                     }
                     _ => {}
                 }

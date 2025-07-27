@@ -82,10 +82,7 @@ where
         } = dto;
 
         if !self.repo.exist(release_id).await? {
-            Err(EntityNotFound {
-                entity_id: release_id,
-                entity_type: "release",
-            })?;
+            Err(EntityNotFound::new(release_id, "release"))?;
         }
 
         let tx_repo = self.repo.begin().await?;

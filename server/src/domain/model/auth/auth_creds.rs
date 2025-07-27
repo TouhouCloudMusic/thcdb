@@ -1,3 +1,4 @@
+use std::backtrace::Backtrace;
 use std::sync::LazyLock;
 
 use argon2::password_hash::rand_core::OsRng;
@@ -7,8 +8,7 @@ use argon2::password_hash::{
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use derive_more::From;
-use error_set::error_set;
+use derive_more::Display;
 use macros::ApiError;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -18,47 +18,83 @@ use crate::constant::{USER_NAME_REGEX_STR, USER_PASSWORD_REGEX_STR};
 use crate::infra::singleton::ARGON2_HASHER;
 use crate::presentation::api_response::{Error, IntoApiResponse};
 
-error_set! {
-    #[derive(ApiError, From)]
-    #[disable(From(crate::infra::Error))]
-    AuthnError = {
-        #[api_error(
-            status_code = StatusCode::UNAUTHORIZED,
-        )]
-        #[display("Incorrect username or password")]
-        AuthenticationFailed,
-        #[from(forward)]
-        Infra(crate::infra::Error),
-    };
-    #[derive(ApiError)]
-    ValidateCredsError = {
-        #[display("Invalid username")]
-        #[api_error(
-            status_code = StatusCode::BAD_REQUEST,
-        )]
-        InvalidUserName,
-        #[display("Invalid Password")]
-        #[api_error(
-            status_code = StatusCode::BAD_REQUEST,
-        )]
-        InvalidPassword,
-        #[display("Password is too weak")]
-        #[api_error(
-            status_code = StatusCode::BAD_REQUEST,
-        )]
-        PasswordTooWeak,
-    };
-    #[derive(From, ApiError)]
-    HasherError = {
-        #[display("Failed to hash password")]
+#[derive(Debug, thiserror::Error, ApiError)]
+pub enum AuthnError {
+    #[error("Incorrect username or password")]
+    #[api_error(
+        status_code = StatusCode::UNAUTHORIZED,
+    )]
+    AuthenticationFailed { backtrace: Backtrace },
+    #[error(transparent)]
+    Infra(
         #[from]
-        #[api_error(
-            status_code = StatusCode::INTERNAL_SERVER_ERROR,
-        )]
-        HashPasswordFailed {
-            err: password_hash::Error
-        },
-    };
+        #[backtrace]
+        crate::infra::Error,
+    ),
+    #[error("Password hash error: {source}")]
+    PasswordHash {
+        #[from]
+        source: password_hash::Error,
+        backtrace: Backtrace,
+    },
+    #[error("Join error: {source}")]
+    Join {
+        #[from]
+        source: tokio::task::JoinError,
+        backtrace: Backtrace,
+    },
+}
+
+impl AuthnError {
+    pub fn authentication_failed() -> Self {
+        Self::AuthenticationFailed {
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+#[derive(Debug, thiserror::Error, ApiError)]
+#[error("{kind}")]
+#[api_error(
+    status_code = StatusCode::BAD_REQUEST,
+)]
+pub struct ValidateCredsError {
+    pub kind: ValidateCredsErrorKind,
+    pub backtrace: Backtrace,
+}
+
+impl From<ValidateCredsErrorKind> for ValidateCredsError {
+    fn from(kind: ValidateCredsErrorKind) -> Self {
+        Self {
+            kind,
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+#[derive(Debug, Display)]
+pub enum ValidateCredsErrorKind {
+    #[display("Invalid username")]
+    InvalidUserName,
+    #[display("Invalid Password")]
+    InvalidPassword,
+    #[display("Password is too weak")]
+    PasswordTooWeak,
+}
+
+use ValidateCredsErrorKind::*;
+
+#[derive(Debug, thiserror::Error, ApiError)]
+pub enum HasherError {
+    #[error("Failed to hash password: {source}")]
+    #[api_error(
+        status_code = StatusCode::INTERNAL_SERVER_ERROR,
+    )]
+    HashPasswordFailed {
+        #[from]
+        source: password_hash::Error,
+        backtrace: Backtrace,
+    },
 }
 
 #[expect(clippy::unsafe_derive_deserialize, reason = "skipped")]
@@ -136,20 +172,25 @@ async fn verify_password(
     input: &str,
 ) -> Result<(), AuthnError> {
     let bytes = input.as_bytes().to_owned();
-    let res = tokio::task::spawn_blocking(move || {
+    tokio::task::spawn_blocking(move || {
         let hash = PasswordHash::new(&password_hash)?;
 
-        Ok::<bool, AuthnError>(
-            Argon2::default().verify_password(&bytes, &hash).is_ok(),
-        )
+        let verify_result = Argon2::default().verify_password(&bytes, &hash);
+
+        match verify_result {
+            // Password is match
+            Ok(()) => Ok(()),
+            Err(err) => match err {
+                password_hash::Error::Password => {
+                    Err(AuthnError::authentication_failed())
+                }
+                other => Err(other.into()),
+            },
+        }
     })
     .await??;
 
-    if res {
-        Ok(())
-    } else {
-        Err(AuthnError::AuthenticationFailed)
-    }
+    Ok(())
 }
 
 fn validate_username(username: &str) -> Result<(), ValidateCredsError> {
@@ -163,7 +204,7 @@ fn validate_username(username: &str) -> Result<(), ValidateCredsError> {
     {
         Ok(())
     } else {
-        Err(ValidateCredsError::InvalidUserName)
+        Err(InvalidUserName.into())
     }
 }
 
@@ -187,10 +228,10 @@ fn validate_password(password: &str) -> Result<(), ValidateCredsError> {
 
         match result.score() {
             Score::Three | Score::Four => Ok(()),
-            _ => Err(ValidateCredsError::PasswordTooWeak),
+            _ => Err(PasswordTooWeak.into()),
         }
     } else {
-        Err(ValidateCredsError::InvalidPassword)
+        Err(InvalidPassword.into())
     }
 }
 

@@ -8,25 +8,35 @@ use crate::domain::correction::{
 use crate::domain::model::auth::{CorrectionApprover, UserRoleEnum};
 use crate::domain::repository::{Connection, Transaction, TransactionManager};
 use crate::domain::user::User;
+use crate::infra;
 
 mod model;
 pub use model::*;
 
 use super::error::Unauthorized;
 
-#[derive(
-    Debug,
-    derive_more::Display,
-    derive_more::From,
-    derive_more::Error,
-    ApiError,
-    IntoErrorSchema,
-)]
+#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
 pub enum Error {
-    #[from(forward)]
-    Infra(crate::infra::Error),
-    #[from]
-    Unauthorized(Unauthorized),
+    #[error(transparent)]
+    Infra {
+        #[backtrace]
+        source: infra::Error,
+    },
+    #[error(transparent)]
+    Unauthorized(
+        #[from]
+        #[backtrace]
+        Unauthorized,
+    ),
+}
+
+impl<E> From<E> for Error
+where
+    E: Into<infra::Error>,
+{
+    fn from(err: E) -> Self {
+        Self::Infra { source: err.into() }
+    }
 }
 
 #[derive(Clone)]
@@ -37,7 +47,7 @@ pub struct Service<R> {
 impl<R> Service<R>
 where
     R: correction::TxRepo,
-    crate::infra::Error: From<R::Error>,
+    infra::Error: From<R::Error>,
 {
     pub const fn new(repo: R) -> Self {
         Self { repo }
@@ -76,7 +86,7 @@ where
             };
 
             if !is_author_or_admin {
-                Err(Unauthorized)?;
+                Err(Unauthorized::new())?;
             }
 
             self.repo.create(meta).await?;
@@ -92,7 +102,7 @@ impl<R, TR> Service<R>
 where
     R: TransactionManager<TransactionRepository = TR>,
     TR: correction::TxRepo + Transaction,
-    crate::infra::Error: From<R::Error> + From<TR::Error>,
+    infra::Error: From<R::Error> + From<TR::Error>,
 {
     pub async fn approve<Ctx>(
         &self,
@@ -102,7 +112,7 @@ where
     ) -> Result<(), Error>
     where
         Ctx: ApproveCorrectionContext,
-        crate::infra::Error: From<<Ctx::ArtistRepo as Connection>::Error>
+        infra::Error: From<<Ctx::ArtistRepo as Connection>::Error>
             + From<<Ctx::ReleaseRepo as Connection>::Error>
             + From<<Ctx::SongRepo as Connection>::Error>
             + From<<Ctx::LabelRepo as Connection>::Error>
@@ -110,8 +120,8 @@ where
             + From<<Ctx::TagRepo as Connection>::Error>
             + From<<Ctx::SongLyricsRepo as Connection>::Error>,
     {
-        let approver =
-            CorrectionApprover::from_user(user).ok_or(Unauthorized)?;
+        let approver = CorrectionApprover::from_user(user)
+            .ok_or_else(Unauthorized::new)?;
 
         let tx_repo = self.repo.begin().await?;
 
