@@ -26,7 +26,7 @@ axum = { version = "0.8", features = [
     "macros",
     "multipart",
 ] }
-axum-login = { version = "0.17" }
+axum-login = { version = "0.18" }
 chrono = "0.4"
 dotenvy = "0.15"
 itertools = "0.14"
