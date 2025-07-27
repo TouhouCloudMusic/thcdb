@@ -12,7 +12,7 @@ smallvec = { version = "1.15.1", features = [
 
 [dev-dependencies]
 atoi           = "2"
-criterion      = "0.5"
+criterion      = "0.7"
 lexical-core   = "1.0.5"
 lrc            = "0.1"
 rand.workspace = true
