@@ -367,9 +367,9 @@ dependencies = [
 
 [[package]]
 name = "axum_typed_multipart"
-version = "0.16.2"
+version = "0.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8986dff40423605627d31ebd1cc903d39001b6370c0c7337b02a8093ba484521"
+checksum = "7915d0c957ffd1a28edd7dff1f6d7b79c80e519b19b0961a8c80423504c45a82"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -388,9 +388,9 @@ dependencies = [
 
 [[package]]
 name = "axum_typed_multipart_macros"
-version = "0.16.2"
+version = "0.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f58e854cb9d7f3ea26701fbbbb38f6cec456d8129f86c1b91c7171711a5d30d7"
+checksum = "cc9e427c074d9f5355a2a7d969cf3a48dde6bf888b120937fb4c96ad2604b48a"
 dependencies = [
  "darling 0.20.11",
  "heck 0.5.0",
@@ -5749,7 +5749,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
