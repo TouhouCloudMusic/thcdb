@@ -1,4 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:best-practices", ":semanticCommitsDisabled"]
+  "extends": ["config:best-practices", ":semanticCommitsDisabled"],
+  "pinVersions": false,
+  "docker-compose": {
+    "pinDigests": false
+  }
 }
