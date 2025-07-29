@@ -1,6 +1,5 @@
 use std::backtrace::Backtrace;
 
-use async_trait::async_trait;
 use axum::http::StatusCode;
 use axum_login::{AuthUser, AuthnBackend, UserId};
 use derive_more::From;
@@ -229,7 +228,6 @@ impl AuthUser for user::User {
     }
 }
 
-#[async_trait]
 impl<R> AuthnBackend for AuthService<R>
 where
     Self: AuthServiceTraitBounds<R>,
