@@ -1,6 +1,10 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"extends": ["config:recommended", ":semanticCommitsDisabled", group:allNonMajor],
+	"extends": [
+		"config:recommended",
+		":semanticCommitsDisabled", 
+		"group:allNonMajor"
+	],
 	"prConcurrentLimit": 0,
 	"minimumReleaseAge": "3 days",
 	"baseBranches": ["main"]
