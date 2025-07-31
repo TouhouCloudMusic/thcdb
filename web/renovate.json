@@ -15,7 +15,7 @@
 		{
 			"matchManagers": ["npm"],
 			"matchPackagePatterns": ["^storybook-solidjs"],
-		}，
+		},
 		{
 			"matchUpdateTypes": ["minor", "patch"],
 		}
