@@ -2,8 +2,7 @@
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"extends": [
 		"config:recommended",
-		":semanticCommitsDisabled",
-		"group:allNonMajor"
+		":semanticCommitsDisabled"
 	],
 	"prConcurrentLimit": 0,
 	"minimumReleaseAge": "3 days",
@@ -12,12 +11,13 @@
 		{
 			"matchManagers": ["npm"],
 			"matchPackagePatterns": ["^@tanstack"],
-			"groupName": "tanstack"
 		},
 		{
 			"matchManagers": ["npm"],
 			"matchPackagePatterns": ["^storybook-solidjs"],
-			"groupName": "tanstacstorybook-solidjsk"
+		}，
+		{
+			"matchUpdateTypes": ["minor", "patch"],
 		}
 	]
 }
