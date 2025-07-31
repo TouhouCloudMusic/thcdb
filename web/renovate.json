@@ -7,17 +7,4 @@
 	"prConcurrentLimit": 0,
 	"minimumReleaseAge": "3 days",
 	"baseBranches": ["main"],
-	"packageRules": [
-		{
-			"matchManagers": ["npm"],
-			"matchPackagePatterns": ["^@tanstack"],
-		},
-		{
-			"matchManagers": ["npm"],
-			"matchPackagePatterns": ["^storybook-solidjs"],
-		},
-		{
-			"matchUpdateTypes": ["minor", "patch"],
-		}
-	]
 }
