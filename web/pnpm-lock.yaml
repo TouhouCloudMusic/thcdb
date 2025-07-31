@@ -52,7 +52,7 @@ importers:
         version: 2.1.20
       cropperjs:
         specifier: ^2.0.0
-        version: 2.0.0
+        version: 2.0.1
       dayjs:
         specifier: ^1.11.13
         version: 1.11.13
@@ -442,38 +442,38 @@ packages:
     peerDependencies:
       solid-js: ^1.8
 
-  '@cropper/element-canvas@2.0.0':
-    resolution: {integrity: sha512-GPtGJgSm92crJhhhwUsaMw3rz2KfJWWSz7kRAlufFEV/EHTP5+6r6/Z1BCGRna830i+Avqbm435XLOtA7PVJwA==}
+  '@cropper/element-canvas@2.0.1':
+    resolution: {integrity: sha512-OKxq/O0HL9W2JegOsc2zh1NRpERZcLM5+M8aQ/eXdmMcfi1lzosPftag3Irp6pTsVpwV6B6ypIxKESzJ4ci9Fw==}
 
-  '@cropper/element-crosshair@2.0.0':
-    resolution: {integrity: sha512-KfPfyrdeFvUC31Ws7ATtcalWWSaMtrC6bMoCipZhqbUOE7wZoL4ecDSL6BUOZxPa74awZUqfzirCDjHvheBfyw==}
+  '@cropper/element-crosshair@2.0.1':
+    resolution: {integrity: sha512-bS5msU9cTU/jf1/kDw+QJmEM9/rw8IgOdpolR85iMVUCR8sRcLa0wgom42MBHcpBYB6hvL5YfiOeXZ7lHIYMpw==}
 
-  '@cropper/element-grid@2.0.0':
-    resolution: {integrity: sha512-i78SQ0IJTLFveKX6P7svkfMYVdgHrQ8ZmmEw8keFy9n1ZVbK+SK0UHK5FNMRNI/gtVhKJOGEnK/zeyjUdj4Iyw==}
+  '@cropper/element-grid@2.0.1':
+    resolution: {integrity: sha512-ayqCvYQJ+GVT31HhFpttzHabW1T/LsIwLJY5PLTMG0cEZLw/E8ihg8mxctjZbo852D7oEePbz6/2SeuCb1018Q==}
 
-  '@cropper/element-handle@2.0.0':
-    resolution: {integrity: sha512-ZJvW+0MkK9E8xYymGdoruaQn2kwjSHFpNSWinjyq6csuVQiCPxlX5ovAEDldmZ9MWePPtWEi3vLKQOo2Yb0T8g==}
+  '@cropper/element-handle@2.0.1':
+    resolution: {integrity: sha512-fdifyyPIaR9S2eQ7qPHuM8fX8uToAfBsi8vQlR9EM+oJkDNil0uO4rWyArLWEtlr0/q7U0OvsufcuJ7ffqfmpg==}
 
-  '@cropper/element-image@2.0.0':
-    resolution: {integrity: sha512-9BxiTS/aHRmrjopaFQb9mQQXmx4ruhYHGkDZMVz24AXpMFjUY6OpqrWse/WjzD9tfhMFvEdu17b3VAekcAgpeg==}
+  '@cropper/element-image@2.0.1':
+    resolution: {integrity: sha512-gPj5Sl2T8Cno198Cz3F3TDfcYoALW3yJ3fV6PHXmhMnX8sBkL7J441do7Vwkg0mEd2CogCtTLAf+p7ljdV0kgA==}
 
-  '@cropper/element-selection@2.0.0':
-    resolution: {integrity: sha512-ensNnbIfJsJ8bhbJTH/RXtk2URFvTOO4TvfRk461n2FPEC588D7rwBmUJxQg74IiTi4y1JbCI+6j+4LyzYBLCQ==}
+  '@cropper/element-selection@2.0.1':
+    resolution: {integrity: sha512-atv+Aeq2N2eWawelIRPGh1kYFdNrpb0QkUPPheGxz1ImfxpLdcHO9gb9T5noQijizUW2G0pNvts4ZaITQ0I71Q==}
 
-  '@cropper/element-shade@2.0.0':
-    resolution: {integrity: sha512-jv/2bbNZnhU4W+T4G0c8ADocLIZvQFTXgCf2RFDNhI5UVxurzWBnDdb8Mx8LnVplnkTqO+xUmHZYve0CwgWo+Q==}
+  '@cropper/element-shade@2.0.1':
+    resolution: {integrity: sha512-YIYgJ690NdFQ6wJLRFh/EySNVxGFKArncQ4FrsJ3yHU+ShgtOKz4FpjFLpqJRJB9swoVbD3WKTimGyzXrwjZrQ==}
 
-  '@cropper/element-viewer@2.0.0':
-    resolution: {integrity: sha512-zY+3VRN5TvpM8twlphYtXw0tzJL2VgzeK7ufhL1BixVqOdRxwP13TprYIhqwGt9EW/SyJZUiaIu396T89kRX8A==}
+  '@cropper/element-viewer@2.0.1':
+    resolution: {integrity: sha512-HDj25l08pWi/AO6El/OqfQHBpBC4Lh5NEnQN1SOldsmxEwt27Ubv6ndDsF8LkTK7XPwjjZRpyQPyfig4w8L2JQ==}
 
-  '@cropper/element@2.0.0':
-    resolution: {integrity: sha512-lsthn0nQq73GExUE7Mg/ss6Q3RXADGDv055hxoLFwvl/wGHgy6ZkYlfLZ/VmgBHC6jDK5IgPBFnqrPqlXWSGBA==}
+  '@cropper/element@2.0.1':
+    resolution: {integrity: sha512-Jn1hR7XWzWQM/QfXRGMGzdkJ2gG/UcLdQPZQ7OKs0JiFfRzKpzu4u/nYrXHeH3MM2iOslLqh2kqYju6mjZLMJQ==}
 
-  '@cropper/elements@2.0.0':
-    resolution: {integrity: sha512-PQkPo1nUjxLFUQuHYu+6atfHxpX9B41Xribao6wpvmvmNIFML6LQdNqqWYb6LyM7ujsu71CZdBiMT5oetjJVoQ==}
+  '@cropper/elements@2.0.1':
+    resolution: {integrity: sha512-paFbBLXTKXNngn1yDi2ZIf+FO1pIEQXyBntmqOjuxqtG73KuEKv633wsJPFpj958bgcfSakgBbF80j+3nHbPug==}
 
-  '@cropper/utils@2.0.0':
-    resolution: {integrity: sha512-cprLYr+7kK3faGgoOsTW9gIn5sefDr2KwOmgyjzIXk+8PLpW8FgFKEg5FoWfRD5zMAmkCBuX6rGKDK3VdUEGrg==}
+  '@cropper/utils@2.0.1':
+    resolution: {integrity: sha512-A9RnAFmgNF5aZk5q2VZnFnHtXWu1kPyEN0LVsX8wJ2LBRu2nyETKwz+ZXVsVWliktToCaYojHKrS+6/HODyEZA==}
 
   '@csstools/color-helpers@5.0.2':
     resolution: {integrity: sha512-JqWH1vsgdGcw2RR6VliXXdA0/59LttzlU8UlRT/iUUsEeWfYq8I+K0yhihEUTTHLRm1EXvpsCx3083EU15ecsA==}
@@ -1617,10 +1617,10 @@ packages:
       react-dom:
         optional: true
 
-  '@storybook/builder-vite@9.1.0-beta.1':
-    resolution: {integrity: sha512-zpZOCuzMpr9akYhZ4E3Db9gtFogjVABSIw3TL82k7WBhvuoBqIrT1ay1zx7spjL4OoTIXLz8Z0IHTQv0UMmL9g==}
+  '@storybook/builder-vite@9.2.0-alpha.0':
+    resolution: {integrity: sha512-JNKtNj6pDbv5ndn8hwag9pTZtbARqY27g4TujBgtbHffjIT5CwlOGinjofSKS6KXp966tfykQt185AzFTq2DyA==}
     peerDependencies:
-      storybook: ^9.1.0-beta.1
+      storybook: ^9.2.0-alpha.0
       vite: ^5.0.0 || ^6.0.0 || ^7.0.0
 
   '@storybook/core@8.6.14':
@@ -1636,10 +1636,10 @@ packages:
     peerDependencies:
       storybook: ^8.6.14
 
-  '@storybook/csf-plugin@9.1.0-beta.1':
-    resolution: {integrity: sha512-CIMubjBn5YRlWsQoaWOgZ9LxvJ2f/v0K3e99eRqj5mwcLs88Nkk3IOYczlfjJiatuJypRUXR1P83n2QbD1bCHA==}
+  '@storybook/csf-plugin@9.2.0-alpha.0':
+    resolution: {integrity: sha512-O6aNbu4qYuua3l2ZV6MHH7GI+dMHrAWArNrKnIjzwzFqmmgDhClWjDXrI1RiP6hgR941GPusRiEoKQWOes6TCw==}
     peerDependencies:
-      storybook: ^9.1.0-beta.1
+      storybook: ^9.2.0-alpha.0
 
   '@storybook/csf@0.1.13':
     resolution: {integrity: sha512-7xOOwCLGB3ebM87eemep89MYRFTko+D8qE7EdAAq74lgdqRR5cOUtYWJLjO2dLtP94nqoOdHJo6MdLLKzg412Q==}
@@ -2492,8 +2492,8 @@ packages:
       typescript:
         optional: true
 
-  cropperjs@2.0.0:
-    resolution: {integrity: sha512-TO2j0Qre01kPHbow4FuTrbdEB4jTmGRySxW49jyEIqlJZuEBfrvCTT0vC3eRB2WBXudDfKi1Onako6DKWKxeAQ==}
+  cropperjs@2.0.1:
+    resolution: {integrity: sha512-hiJwk2SCPZqxMA7aR3byzLpYUqOrQo+ihMk8k/WRm/xe/LX8wNzAIzMwEB/NEGJYA6sbewxW9TUlrRUYi/2Ipg==}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -4967,71 +4967,71 @@ snapshots:
       '@floating-ui/dom': 1.7.2
       solid-js: 1.9.7
 
-  '@cropper/element-canvas@2.0.0':
+  '@cropper/element-canvas@2.0.1':
     dependencies:
-      '@cropper/element': 2.0.0
-      '@cropper/utils': 2.0.0
+      '@cropper/element': 2.0.1
+      '@cropper/utils': 2.0.1
 
-  '@cropper/element-crosshair@2.0.0':
+  '@cropper/element-crosshair@2.0.1':
     dependencies:
-      '@cropper/element': 2.0.0
-      '@cropper/utils': 2.0.0
+      '@cropper/element': 2.0.1
+      '@cropper/utils': 2.0.1
 
-  '@cropper/element-grid@2.0.0':
+  '@cropper/element-grid@2.0.1':
     dependencies:
-      '@cropper/element': 2.0.0
-      '@cropper/utils': 2.0.0
+      '@cropper/element': 2.0.1
+      '@cropper/utils': 2.0.1
 
-  '@cropper/element-handle@2.0.0':
+  '@cropper/element-handle@2.0.1':
     dependencies:
-      '@cropper/element': 2.0.0
-      '@cropper/utils': 2.0.0
+      '@cropper/element': 2.0.1
+      '@cropper/utils': 2.0.1
 
-  '@cropper/element-image@2.0.0':
+  '@cropper/element-image@2.0.1':
     dependencies:
-      '@cropper/element': 2.0.0
-      '@cropper/element-canvas': 2.0.0
-      '@cropper/utils': 2.0.0
+      '@cropper/element': 2.0.1
+      '@cropper/element-canvas': 2.0.1
+      '@cropper/utils': 2.0.1
 
-  '@cropper/element-selection@2.0.0':
+  '@cropper/element-selection@2.0.1':
     dependencies:
-      '@cropper/element': 2.0.0
-      '@cropper/element-canvas': 2.0.0
-      '@cropper/element-image': 2.0.0
-      '@cropper/utils': 2.0.0
+      '@cropper/element': 2.0.1
+      '@cropper/element-canvas': 2.0.1
+      '@cropper/element-image': 2.0.1
+      '@cropper/utils': 2.0.1
 
-  '@cropper/element-shade@2.0.0':
+  '@cropper/element-shade@2.0.1':
     dependencies:
-      '@cropper/element': 2.0.0
-      '@cropper/element-canvas': 2.0.0
-      '@cropper/element-selection': 2.0.0
-      '@cropper/utils': 2.0.0
+      '@cropper/element': 2.0.1
+      '@cropper/element-canvas': 2.0.1
+      '@cropper/element-selection': 2.0.1
+      '@cropper/utils': 2.0.1
 
-  '@cropper/element-viewer@2.0.0':
+  '@cropper/element-viewer@2.0.1':
     dependencies:
-      '@cropper/element': 2.0.0
-      '@cropper/element-canvas': 2.0.0
-      '@cropper/element-image': 2.0.0
-      '@cropper/element-selection': 2.0.0
-      '@cropper/utils': 2.0.0
+      '@cropper/element': 2.0.1
+      '@cropper/element-canvas': 2.0.1
+      '@cropper/element-image': 2.0.1
+      '@cropper/element-selection': 2.0.1
+      '@cropper/utils': 2.0.1
 
-  '@cropper/element@2.0.0':
+  '@cropper/element@2.0.1':
     dependencies:
-      '@cropper/utils': 2.0.0
+      '@cropper/utils': 2.0.1
 
-  '@cropper/elements@2.0.0':
+  '@cropper/elements@2.0.1':
     dependencies:
-      '@cropper/element': 2.0.0
-      '@cropper/element-canvas': 2.0.0
-      '@cropper/element-crosshair': 2.0.0
-      '@cropper/element-grid': 2.0.0
-      '@cropper/element-handle': 2.0.0
-      '@cropper/element-image': 2.0.0
-      '@cropper/element-selection': 2.0.0
-      '@cropper/element-shade': 2.0.0
-      '@cropper/element-viewer': 2.0.0
+      '@cropper/element': 2.0.1
+      '@cropper/element-canvas': 2.0.1
+      '@cropper/element-crosshair': 2.0.1
+      '@cropper/element-grid': 2.0.1
+      '@cropper/element-handle': 2.0.1
+      '@cropper/element-image': 2.0.1
+      '@cropper/element-selection': 2.0.1
+      '@cropper/element-shade': 2.0.1
+      '@cropper/element-viewer': 2.0.1
 
-  '@cropper/utils@2.0.0': {}
+  '@cropper/utils@2.0.1': {}
 
   '@csstools/color-helpers@5.0.2': {}
 
@@ -6038,9 +6038,9 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  '@storybook/builder-vite@9.1.0-beta.1(storybook@8.6.14(prettier@3.6.2))(vite@7.0.6(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3))':
+  '@storybook/builder-vite@9.2.0-alpha.0(storybook@8.6.14(prettier@3.6.2))(vite@7.0.6(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3))':
     dependencies:
-      '@storybook/csf-plugin': 9.1.0-beta.1(storybook@8.6.14(prettier@3.6.2))
+      '@storybook/csf-plugin': 9.2.0-alpha.0(storybook@8.6.14(prettier@3.6.2))
       storybook: 8.6.14(prettier@3.6.2)
       ts-dedent: 2.2.0
       vite: 7.0.6(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)
@@ -6071,7 +6071,7 @@ snapshots:
       storybook: 8.6.14(prettier@3.6.2)
       unplugin: 1.16.1
 
-  '@storybook/csf-plugin@9.1.0-beta.1(storybook@8.6.14(prettier@3.6.2))':
+  '@storybook/csf-plugin@9.2.0-alpha.0(storybook@8.6.14(prettier@3.6.2))':
     dependencies:
       storybook: 8.6.14(prettier@3.6.2)
       unplugin: 1.16.1
@@ -7052,10 +7052,10 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
 
-  cropperjs@2.0.0:
+  cropperjs@2.0.1:
     dependencies:
-      '@cropper/elements': 2.0.0
-      '@cropper/utils': 2.0.0
+      '@cropper/elements': 2.0.1
+      '@cropper/utils': 2.0.1
 
   cross-spawn@7.0.6:
     dependencies:
@@ -8807,7 +8807,7 @@ snapshots:
 
   storybook-solidjs-vite@1.0.0-beta.6(@testing-library/jest-dom@6.6.4)(solid-js@1.9.7)(storybook@8.6.14(prettier@3.6.2))(vite@7.0.6(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)):
     dependencies:
-      '@storybook/builder-vite': 9.1.0-beta.1(storybook@8.6.14(prettier@3.6.2))(vite@7.0.6(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3))
+      '@storybook/builder-vite': 9.2.0-alpha.0(storybook@8.6.14(prettier@3.6.2))(vite@7.0.6(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3))
       magic-string: 0.30.17
       vite-plugin-solid: 2.11.7(@testing-library/jest-dom@6.6.4)(solid-js@1.9.7)(vite@7.0.6(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3))
     transitivePeerDependencies:
