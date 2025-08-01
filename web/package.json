@@ -43,7 +43,7 @@
 		"@types/markdown-it": "^14.1.2",
 		"@types/markdown-it-footnote": "^3.0.4",
 		"@ark/attest": "^0.48.0",
-		"@chromatic-com/storybook": "^3.2.6",
+		"@chromatic-com/storybook": "^4.0.0",
 		"@eslint/js": "^9.21.0",
 		"@faker-js/faker": "^9.5.1",
 		"@lingui-solid/babel-plugin-extract-messages": "^5.1.3",
