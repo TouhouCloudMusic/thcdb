@@ -88,7 +88,7 @@
 		"solid-devtools": "^0.34.0",
 		"storybook": "^8.6.12",
 		"storybook-solidjs": "=1.0.0-beta.6",
-		"storybook-solidjs-vite": "=1.0.0-beta.6",
+		"storybook-solidjs-vite": "=9.0.2",
 		"tailwindcss": "^4.1.6",
 		"typescript": "^5.8.3",
 		"typescript-eslint": "^8.31.0",
