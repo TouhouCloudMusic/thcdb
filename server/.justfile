@@ -31,8 +31,11 @@ __generate:
   -o crates/entity/src/entities \
   --with-prelude=none \
   --with-serde=both \
+  --enum-extra-derives Copy \
+  --enum-extra-derives enumset::EnumSetType \
   --enum-extra-derives utoipa::ToSchema \
-  --enum-extra-derives Copy
+  --enum-extra-attributes="enumset(no_super_impls), enumset(serialize_repr = \"list\")"
+
 
 generate: __rm_entites __generate
 

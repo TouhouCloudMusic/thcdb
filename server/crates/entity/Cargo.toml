@@ -10,6 +10,7 @@ path = "src/lib.rs"
 
 [dependencies]
 axum-login.workspace = true
+enumset.workspace    = true
 sea-orm.workspace    = true
 serde.workspace      = true
 utoipa.workspace     = true

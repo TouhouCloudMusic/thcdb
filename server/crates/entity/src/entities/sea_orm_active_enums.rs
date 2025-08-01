@@ -12,14 +12,17 @@ use serde::{Deserialize, Serialize};
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(
     rs_type = "String",
     db_type = "Enum",
     enum_name = "AlternativeNameType"
 )]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum AlternativeNameType {
     #[sea_orm(string_value = "Alias")]
     Alias,
@@ -35,10 +38,13 @@ pub enum AlternativeNameType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ArtistImageType")]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum ArtistImageType {
     #[sea_orm(string_value = "Profile")]
     Profile,
@@ -52,10 +58,13 @@ pub enum ArtistImageType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ArtistType")]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum ArtistType {
     #[sea_orm(string_value = "Solo")]
     Solo,
@@ -73,10 +82,13 @@ pub enum ArtistType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "CommentState")]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum CommentState {
     #[sea_orm(string_value = "Visable")]
     Visable,
@@ -96,10 +108,13 @@ pub enum CommentState {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "CommentTarget")]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum CommentTarget {
     #[sea_orm(string_value = "Correction")]
     Correction,
@@ -113,10 +128,13 @@ pub enum CommentTarget {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "CorrectionStatus")]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum CorrectionStatus {
     #[sea_orm(string_value = "Pending")]
     Pending,
@@ -134,10 +152,13 @@ pub enum CorrectionStatus {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "CorrectionType")]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum CorrectionType {
     #[sea_orm(string_value = "Create")]
     Create,
@@ -155,14 +176,17 @@ pub enum CorrectionType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(
     rs_type = "String",
     db_type = "Enum",
     enum_name = "CorrectionUserType"
 )]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum CorrectionUserType {
     #[sea_orm(string_value = "Author")]
     Author,
@@ -182,10 +206,13 @@ pub enum CorrectionUserType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "DatePrecision")]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum DatePrecision {
     #[sea_orm(string_value = "Day")]
     Day,
@@ -203,10 +230,13 @@ pub enum DatePrecision {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "EntityType")]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum EntityType {
     #[sea_orm(string_value = "Artist")]
     Artist,
@@ -232,10 +262,13 @@ pub enum EntityType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ImageQueueStatus")]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum ImageQueueStatus {
     #[sea_orm(string_value = "Pending")]
     Pending,
@@ -257,10 +290,13 @@ pub enum ImageQueueStatus {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "ReleaseType")]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum ReleaseType {
     #[sea_orm(string_value = "Album")]
     Album,
@@ -284,10 +320,13 @@ pub enum ReleaseType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "TagRelationType")]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum TagRelationType {
     #[sea_orm(string_value = "Inherit")]
     Inherit,
@@ -303,10 +342,13 @@ pub enum TagRelationType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "TagType")]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum TagType {
     #[sea_orm(string_value = "Descriptor")]
     Descriptor,
@@ -326,14 +368,17 @@ pub enum TagType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(
     rs_type = "String",
     db_type = "Enum",
     enum_name = "release_image_type"
 )]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum ReleaseImageType {
     #[sea_orm(string_value = "Cover")]
     Cover,
@@ -347,10 +392,13 @@ pub enum ReleaseImageType {
     DeriveActiveEnum,
     Serialize,
     Deserialize,
-    utoipa :: ToSchema,
     Copy,
+    enumset :: EnumSetType,
+    utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "storage_backend")]
+#[enumset(no_super_impls)]
+#[enumset(serialize_repr = "list")]
 pub enum StorageBackend {
     #[sea_orm(string_value = "fs")]
     Fs,

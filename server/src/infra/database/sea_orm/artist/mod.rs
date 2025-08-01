@@ -13,11 +13,11 @@ use sea_orm::{
     FromQueryResult, LoaderTrait, QueryFilter, QueryOrder, Select,
 };
 use sea_query::extension::postgres::PgBinOper;
-use sea_query::{ExprTrait, Func};
+use sea_query::{Cond, ExprTrait, Func, SimpleExpr};
 
 use super::SeaOrmTxRepo;
 use crate::domain::artist::model::{Artist, Membership, NewArtist, Tenure};
-use crate::domain::artist::repo::{Repo, TxRepo};
+use crate::domain::artist::repo::{CommonFilter, FindManyFilter, Repo, TxRepo};
 use crate::domain::repository::Connection;
 use crate::domain::shared::model::{CreditRole, LocalizedName, Location};
 
@@ -28,25 +28,35 @@ where
     T: Connection<Error = DbErr>,
     T::Conn: ConnectionTrait,
 {
-    async fn find_by_id(&self, id: i32) -> Result<Option<Artist>, Self::Error> {
-        let select = artist::Entity::find().filter(artist::Column::Id.eq(id));
+    async fn find_one(
+        &self,
+        id: i32,
+        common: CommonFilter,
+    ) -> Result<Option<Artist>, Self::Error> {
+        let select = artist::Entity::find()
+            .filter(artist::Column::Id.eq(id))
+            .filter(SimpleExpr::from(common));
 
         find_many_impl(select, self.conn())
             .await
             .map(|x| x.into_iter().next())
     }
 
-    async fn find_by_name(
+    async fn find_many(
         &self,
-        name: &str,
+        filter: FindManyFilter,
+        common: CommonFilter,
     ) -> Result<Vec<Artist>, Self::Error> {
-        let search_term = Func::lower(name);
+        let FindManyFilter::Keyword(keyword) = &filter;
+
+        let search_term = Func::lower(keyword);
 
         let select = artist::Entity::find()
             .filter(
                 Func::lower(artist::Column::Name.into_expr())
                     .binary(PgBinOper::Similarity, search_term.clone()),
             )
+            .filter(SimpleExpr::from(common))
             .order_by_asc(
                 Func::lower(artist::Column::Name.into_expr())
                     .binary(PgBinOper::SimilarityDistance, search_term),
@@ -288,5 +298,46 @@ impl TxRepo for SeaOrmTxRepo {
     ) -> Result<(), Self::Error> {
         impls::apply_update(correction, self.conn()).await?;
         Ok(())
+    }
+}
+
+impl From<CommonFilter> for SimpleExpr {
+    fn from(value: CommonFilter) -> Self {
+        Cond::all()
+            .add_option(
+                value
+                    .artist_type
+                    .map(|x| artist::Column::ArtistType.is_in(x)),
+            )
+            .add_option(value.exclusion.and_then(|x| {
+                if x.is_empty() {
+                    None
+                } else {
+                    Some(artist::Column::Id.is_not_in(x))
+                }
+            }))
+            .into()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use sea_query::{PostgresQueryBuilder, QueryBuilder};
+
+    use super::*;
+
+    #[test]
+    fn common_filter_into_expr() {
+        let filter = CommonFilter {
+            artist_type: None,
+            exclusion: None,
+        };
+
+        let expr = SimpleExpr::from(filter);
+
+        let mut str = String::new();
+        PostgresQueryBuilder.prepare_simple_expr(&expr, &mut str);
+
+        assert_eq!(str, "TRUE");
     }
 }

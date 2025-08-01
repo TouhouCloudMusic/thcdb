@@ -1,7 +1,7 @@
 use axum::Json;
-use axum::body::Bytes;
 use axum::extract::{Path, Query, State};
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
+use bytes::Bytes;
 use entity::enums::ReleaseType;
 use libfp::BifunctorExt;
 use serde::{Deserialize, Serialize};
@@ -19,7 +19,9 @@ use crate::application::artist_image::{
     ArtistProfileImageInput, {self},
 };
 use crate::application::correction::NewCorrectionDto;
+use crate::domain::artist::CommonFilter;
 use crate::domain::artist::model::{Artist, NewArtist};
+use crate::domain::artist::repo::FindManyFilter;
 use crate::domain::artist_release::{
     Appearance, AppearanceQuery, Credit, CreditQuery, Discography,
     DiscographyQuery,
@@ -38,7 +40,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(upsert_artist_correction))
         .routes(routes!(upload_artist_profile_image))
         .routes(routes!(find_artist_by_id))
-        .routes(routes!(find_artist_by_keyword))
+        .routes(routes!(find_many_artist))
         .routes(routes!(find_artist_discographies_init))
         .routes(routes!(find_artist_discographies_by_type))
         .routes(routes!(find_artist_apperances))
@@ -58,6 +60,7 @@ data!(
     get,
     tag = TAG,
     path = "/artist/{id}",
+    request_body = CommonFilter,
     responses(
         (status = 200, body = DataOptionArtist),
         Error
@@ -66,15 +69,22 @@ data!(
 async fn find_artist_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
+    Json(query): Json<CommonFilter>,
 ) -> Result<Data<Option<Artist>>, Error> {
-    domain::artist::repo::Repo::find_by_id(&repo, id)
+    domain::artist::repo::Repo::find_one(&repo, id, query)
         .await
         .bimap_into()
 }
 
-#[derive(Deserialize, IntoParams)]
-struct KeywordQuery {
+#[derive(Deserialize, ToSchema, IntoParams)]
+struct FindManyFilterDto {
     keyword: String,
+}
+
+impl From<FindManyFilterDto> for FindManyFilter {
+    fn from(value: FindManyFilterDto) -> Self {
+        Self::Keyword(value.keyword)
+    }
 }
 
 #[utoipa::path(
@@ -82,18 +92,20 @@ struct KeywordQuery {
     tag = TAG,
     path = "/artist",
     params(
-        KeywordQuery
+        FindManyFilterDto
     ),
+    request_body = CommonFilter,
     responses(
         (status = 200, body = DataVecArtist),
         Error
     ),
 )]
-async fn find_artist_by_keyword(
+async fn find_many_artist(
     State(repo): State<state::SeaOrmRepository>,
-    Query(query): Query<KeywordQuery>,
+    Query(query): Query<FindManyFilterDto>,
+    Json(common): Json<CommonFilter>,
 ) -> Result<Data<Vec<Artist>>, Error> {
-    domain::artist::repo::Repo::find_by_name(&repo, &query.keyword)
+    domain::artist::repo::Repo::find_many(&repo, query.into(), common)
         .await
         .bimap_into()
 }
