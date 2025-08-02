@@ -60,7 +60,7 @@ data!(
     get,
     tag = TAG,
     path = "/artist/{id}",
-    request_body = CommonFilter,
+    request_body = Option<CommonFilter>,
     responses(
         (status = 200, body = DataOptionArtist),
         Error
@@ -69,9 +69,9 @@ data!(
 async fn find_artist_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-    Json(query): Json<CommonFilter>,
+    Json(query): Json<Option<CommonFilter>>,
 ) -> Result<Data<Option<Artist>>, Error> {
-    domain::artist::repo::Repo::find_one(&repo, id, query)
+    domain::artist::repo::Repo::find_one(&repo, id, query.unwrap_or_default())
         .await
         .bimap_into()
 }
@@ -94,7 +94,7 @@ impl From<FindManyFilterDto> for FindManyFilter {
     params(
         FindManyFilterDto
     ),
-    request_body = CommonFilter,
+    request_body = Option<CommonFilter>,
     responses(
         (status = 200, body = DataVecArtist),
         Error
@@ -103,11 +103,15 @@ impl From<FindManyFilterDto> for FindManyFilter {
 async fn find_many_artist(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<FindManyFilterDto>,
-    Json(common): Json<CommonFilter>,
+    Json(common): Json<Option<CommonFilter>>,
 ) -> Result<Data<Vec<Artist>>, Error> {
-    domain::artist::repo::Repo::find_many(&repo, query.into(), common)
-        .await
-        .bimap_into()
+    domain::artist::repo::Repo::find_many(
+        &repo,
+        query.into(),
+        common.unwrap_or_default(),
+    )
+    .await
+    .bimap_into()
 }
 
 #[utoipa::path(
