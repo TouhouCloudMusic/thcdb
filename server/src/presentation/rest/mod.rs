@@ -27,7 +27,7 @@ mod artist;
 mod correction;
 mod enum_table;
 mod event;
-mod extractor;
+mod extract;
 mod label;
 mod middleware;
 mod release;

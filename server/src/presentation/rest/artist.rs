@@ -10,7 +10,7 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::data;
-use super::extractor::CurrentUser;
+use super::extract::{CurrentUser, MaybeJson};
 use super::state::{
     ArcAppState, {self},
 };
@@ -69,9 +69,9 @@ data!(
 async fn find_artist_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-    Json(query): Json<Option<CommonFilter>>,
+    MaybeJson(common): MaybeJson<CommonFilter>,
 ) -> Result<Data<Option<Artist>>, Error> {
-    domain::artist::repo::Repo::find_one(&repo, id, query.unwrap_or_default())
+    domain::artist::repo::Repo::find_one(&repo, id, common.unwrap_or_default())
         .await
         .bimap_into()
 }
@@ -94,7 +94,10 @@ impl From<FindManyFilterDto> for FindManyFilter {
     params(
         FindManyFilterDto
     ),
-    request_body = Option<CommonFilter>,
+    request_body(
+        content = Option<CommonFilter>,
+        content_type = "application/json"
+    ),
     responses(
         (status = 200, body = DataVecArtist),
         Error
@@ -103,7 +106,7 @@ impl From<FindManyFilterDto> for FindManyFilter {
 async fn find_many_artist(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<FindManyFilterDto>,
-    Json(common): Json<Option<CommonFilter>>,
+    MaybeJson(common): MaybeJson<CommonFilter>,
 ) -> Result<Data<Vec<Artist>>, Error> {
     domain::artist::repo::Repo::find_many(
         &repo,

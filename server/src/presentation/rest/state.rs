@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use axum::extract::FromRef;
 
-use super::extractor::TryFromRef;
+use super::extract::TryFromRef;
 use crate::application::{self, user_profile};
 use crate::domain::repository::TransactionManager;
 pub(super) use crate::infra::database::sea_orm::{

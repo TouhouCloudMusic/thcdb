@@ -5,7 +5,7 @@ use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 
-use super::extractor::CurrentUser;
+use super::extract::CurrentUser;
 use super::router_new;
 use super::state::{
     ArcAppState, {self},

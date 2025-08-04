@@ -8,7 +8,7 @@ use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::extractor::CurrentUser;
+use super::extract::CurrentUser;
 use super::state::{
     ArcAppState, {self},
 };
