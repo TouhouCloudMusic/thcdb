@@ -82,6 +82,11 @@ async fn find_many_impl(
     let artists = select.all(db).await?;
 
     let ids = artists.iter().map(|x| x.id).unique().collect_vec();
+
+    if ids.is_empty() {
+        return Ok(vec![]);
+    }
+
     let aliases = artist_alias::Entity::find()
         .filter(
             Condition::any()
@@ -92,7 +97,7 @@ async fn find_many_impl(
         .await?;
 
     let artist_images = artist_image::Entity::find()
-        .filter(artist_image::Column::ArtistId.is_in(ids.clone()))
+        .filter(artist_image::Column::ArtistId.is_in(ids.iter().copied()))
         .left_join(image::Entity)
         .into_model::<ArtistImage>()
         .all(db)
