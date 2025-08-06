@@ -7,6 +7,7 @@ use axum::response::IntoResponse;
 mod auth;
 pub use auth::CurrentUser;
 mod json;
+
 pub use json::MaybeJson;
 
 #[trait_variant::make(Send)]

@@ -1,6 +1,6 @@
 use enumset::EnumSet;
 use serde::Deserialize;
-use utoipa::ToSchema;
+use utoipa::{IntoParams, ToSchema};
 
 use super::model::{Artist, ArtistType, NewArtist};
 use crate::domain::repository::{Connection, Transaction};
@@ -11,12 +11,24 @@ pub enum FindManyFilter {
     Keyword(String),
 }
 
-#[derive(Clone, Debug, Default, Deserialize, ToSchema)]
+#[derive(Clone, Debug, Default, Deserialize, ToSchema, IntoParams)]
+#[schema(as = ArtistCommonFilter)]
 pub struct CommonFilter {
     #[schema(
         value_type = HashSet<ArtistType>
     )]
-    pub artist_type: Option<EnumSet<ArtistType>>,
+    #[param(
+        value_type = HashSet<ArtistType>
+    )]
+    #[serde(rename = "artist_type")]
+    pub artist_types: Option<EnumSet<ArtistType>>,
+
+    #[schema(
+        value_type = HashSet<i32>
+    )]
+    #[param(
+        value_type = HashSet<i32>
+    )]
     pub exclusion: Option<Vec<i32>>,
 }
 

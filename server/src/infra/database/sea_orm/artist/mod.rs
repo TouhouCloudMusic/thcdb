@@ -311,7 +311,7 @@ impl From<CommonFilter> for SimpleExpr {
         Cond::all()
             .add_option(
                 value
-                    .artist_type
+                    .artist_types
                     .map(|x| artist::Column::ArtistType.is_in(x)),
             )
             .add_option(value.exclusion.and_then(|x| {
@@ -334,7 +334,7 @@ mod tests {
     #[test]
     fn common_filter_into_expr() {
         let filter = CommonFilter {
-            artist_type: None,
+            artist_types: None,
             exclusion: None,
         };
 

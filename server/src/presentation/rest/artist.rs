@@ -10,7 +10,7 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::data;
-use super::extract::{CurrentUser, MaybeJson};
+use super::extract::CurrentUser;
 use super::state::{
     ArcAppState, {self},
 };
@@ -60,7 +60,9 @@ data!(
     get,
     tag = TAG,
     path = "/artist/{id}",
-    request_body = Option<CommonFilter>,
+       params(
+        CommonFilter
+    ),
     responses(
         (status = 200, body = DataOptionArtist),
         Error
@@ -69,14 +71,16 @@ data!(
 async fn find_artist_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-    MaybeJson(common): MaybeJson<CommonFilter>,
+    axum_extra::extract::Query(common): axum_extra::extract::Query<
+        CommonFilter,
+    >,
 ) -> Result<Data<Option<Artist>>, Error> {
-    domain::artist::repo::Repo::find_one(&repo, id, common.unwrap_or_default())
+    domain::artist::repo::Repo::find_one(&repo, id, common)
         .await
         .bimap_into()
 }
 
-#[derive(Deserialize, ToSchema, IntoParams)]
+#[derive(Deserialize, IntoParams)]
 struct FindManyFilterDto {
     keyword: String,
 }
@@ -92,11 +96,8 @@ impl From<FindManyFilterDto> for FindManyFilter {
     tag = TAG,
     path = "/artist",
     params(
-        FindManyFilterDto
-    ),
-    request_body(
-        content = Option<CommonFilter>,
-        content_type = "application/json"
+        FindManyFilterDto,
+        CommonFilter
     ),
     responses(
         (status = 200, body = DataVecArtist),
@@ -105,16 +106,16 @@ impl From<FindManyFilterDto> for FindManyFilter {
 )]
 async fn find_many_artist(
     State(repo): State<state::SeaOrmRepository>,
-    Query(query): Query<FindManyFilterDto>,
-    MaybeJson(common): MaybeJson<CommonFilter>,
+    axum_extra::extract::Query(query): axum_extra::extract::Query<
+        FindManyFilterDto,
+    >,
+    axum_extra::extract::Query(common): axum_extra::extract::Query<
+        CommonFilter,
+    >,
 ) -> Result<Data<Vec<Artist>>, Error> {
-    domain::artist::repo::Repo::find_many(
-        &repo,
-        query.into(),
-        common.unwrap_or_default(),
-    )
-    .await
-    .bimap_into()
+    domain::artist::repo::Repo::find_many(&repo, query.into(), common)
+        .await
+        .bimap_into()
 }
 
 #[utoipa::path(
