@@ -20,7 +20,7 @@ pub struct CommonFilter {
     #[param(
         value_type = HashSet<ArtistType>
     )]
-    #[serde(rename = "artist_type")]
+    #[serde(default, rename = "artist_type")]
     pub artist_types: Option<EnumSet<ArtistType>>,
 
     #[schema(
@@ -29,6 +29,7 @@ pub struct CommonFilter {
     #[param(
         value_type = HashSet<i32>
     )]
+    #[serde(default)]
     pub exclusion: Option<Vec<i32>>,
 }
 
