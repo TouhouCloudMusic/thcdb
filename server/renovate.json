@@ -4,9 +4,11 @@
     "config:best-practices",
     ":semanticCommitsDisabled",
     "group:allNonMajor",
-    ":preserveSemverRanges"
+    ":preserveSemverRanges",
+    "schedule:weekly"
   ],
-  "rangeStrategy": "replace",
+  "prConcurrentLimit": 0,
+	"minimumReleaseAge": "3 days",
   "docker-compose": {
     "pinDigests": false
   }
