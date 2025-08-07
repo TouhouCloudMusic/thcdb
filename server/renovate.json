@@ -3,7 +3,8 @@
   "extends": [
     "config:best-practices",
     ":semanticCommitsDisabled",
-    "group:allNonMajor"
+    "group:allNonMajor",
+    ":preserveSemverRanges"
   ],
   "rangeStrategy": "replace",
   "docker-compose": {
