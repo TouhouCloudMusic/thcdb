@@ -160,7 +160,7 @@ pub struct ReleaseCoverArtFormData {
 #[utoipa::path(
     post,
     tag = TAG,
-    path = "/release/{id}/cover_art",
+    path = "/release/{id}/cover-art",
     request_body = ReleaseCoverArtFormData,
     responses(
         (status = 200, body = Message),

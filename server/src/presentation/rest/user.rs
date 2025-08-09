@@ -81,7 +81,7 @@ async fn profile_with_name(
 #[utoipa::path(
     post,
     tag = TAG,
-    path = "/sign_up",
+    path = "/sign-up",
     request_body = AuthCredential,
     responses(
         (status = 200, body = DataUserProfile),
@@ -110,7 +110,7 @@ async fn sign_up(
 #[utoipa::path(
     post,
     tag = TAG,
-    path = "/sign_in",
+    path = "/sign-in",
     request_body = AuthCredential,
     responses(
         (status = 200, body = DataUserProfile),
@@ -145,7 +145,7 @@ async fn sign_in(
 #[utoipa::path(
     get,
     tag = TAG,
-    path = "/sign_out",
+    path = "/sign-out",
     responses(
         (status = 200, body = Message),
         (status = 401),
@@ -189,7 +189,7 @@ async fn upload_avatar(
 #[utoipa::path(
     post,
     tag = TAG,
-    path = "/profile_banner",
+    path = "/profile-banner",
     request_body(
         content_type = "multipart/form-data",
         content = UploadProfileBanner,

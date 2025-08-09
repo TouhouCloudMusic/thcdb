@@ -44,7 +44,7 @@ async fn language_list(
 
 #[utoipa::path(
     get,
-    path = "/user_roles",
+    path = "/user-roles",
     responses(
         (status = 200, body = DataVecUserRole),
         Error

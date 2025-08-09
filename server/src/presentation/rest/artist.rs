@@ -178,7 +178,7 @@ pub struct ArtistProfileImageFormData {
 #[utoipa::path(
     post,
     tag = TAG,
-    path = "/artist/{id}/profile_image",
+    path = "/artist/{id}/profile-image",
     responses(
         (status = 200, body = Message),
         artist_image::Error
