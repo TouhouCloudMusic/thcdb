@@ -14,5 +14,6 @@ pub mod tag;
 pub mod user;
 pub use shared::*;
 pub mod artist_release;
+pub mod credit_role;
 pub mod release_image;
 pub mod release_image_queue;

@@ -14,6 +14,7 @@ use crate::domain::correction::{
     ApproveCorrectionContext, Correction, CorrectionEntity, CorrectionFilter,
     CorrectionFilterStatus, NewCorrectionMeta, Repo, TxRepo,
 };
+use crate::domain::credit_role::TxRepo as _;
 use crate::domain::event::TxRepo as _;
 use crate::domain::label::TxRepo as _;
 use crate::domain::model::auth::CorrectionApprover;
@@ -153,7 +154,8 @@ impl TxRepo for SeaOrmTxRepo {
             + From<<Ctx::LabelRepo as Connection>::Error>
             + From<<Ctx::EventRepo as Connection>::Error>
             + From<<Ctx::TagRepo as Connection>::Error>
-            + From<<Ctx::SongLyricsRepo as Connection>::Error>,
+            + From<<Ctx::SongLyricsRepo as Connection>::Error>
+            + From<<Ctx::CreditRoleRepo as Connection>::Error>,
     {
         let correction = entity::correction::Entity::find_by_id(correction_id)
             .one(self.conn())
@@ -199,6 +201,9 @@ impl TxRepo for SeaOrmTxRepo {
             }
             EntityType::SongLyrics => {
                 context.song_lyrics_repo().apply_update(correction).await?;
+            }
+            EntityType::CreditRole => {
+                context.credit_role_repo().apply_update(correction).await?;
             }
         }
 

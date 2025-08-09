@@ -22,10 +22,11 @@ use sea_query::{ExprTrait, Func};
 
 use super::cache::LANGUAGE_CACHE;
 use crate::domain::artist::model::SimpleArtist;
+use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::image::Image;
 use crate::domain::release::model::SimpleRelease;
 use crate::domain::repository::Connection;
-use crate::domain::shared::model::{CreditRole, Language, NewLocalizedName};
+use crate::domain::shared::model::{Language, NewLocalizedName};
 use crate::domain::song::model::{
     LocalizedTitle, NewSong, NewSongCredit, Song, SongCredit,
 };
@@ -190,7 +191,7 @@ async fn find_many_impl(
 async fn load_credit_roles(
     role_ids: &[i32],
     db: &impl ConnectionTrait,
-) -> Result<HashMap<i32, CreditRole>, DbErr> {
+) -> Result<HashMap<i32, CreditRoleRef>, DbErr> {
     use entity::credit_role;
 
     if role_ids.is_empty() {
@@ -207,7 +208,7 @@ async fn load_credit_roles(
         .map(|r| {
             (
                 r.id,
-                CreditRole {
+                CreditRoleRef {
                     id: r.id,
                     name: r.name,
                 },
@@ -275,7 +276,7 @@ async fn load_credit_artists(
 fn build_song_credits(
     credits: Vec<song_credit::Model>,
     artist_map: &HashMap<i32, SimpleArtist>,
-    role_map: &HashMap<i32, CreditRole>,
+    role_map: &HashMap<i32, CreditRoleRef>,
 ) -> Vec<SongCredit> {
     credits
         .into_iter()

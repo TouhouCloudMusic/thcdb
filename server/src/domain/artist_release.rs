@@ -3,7 +3,8 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::repository::{Connection, Cursor, Paginated};
-use super::shared::model::{CreditRole, DateWithPrecision};
+use super::shared::model::DateWithPrecision;
+use crate::domain::credit_role::CreditRoleRef;
 use crate::infra;
 
 pub type Appearance = Discography;
@@ -15,7 +16,7 @@ pub struct Credit {
     pub cover_url: Option<String>,
     pub release_date: Option<DateWithPrecision>,
     pub release_type: ReleaseType,
-    pub roles: Vec<CreditRole>,
+    pub roles: Vec<CreditRoleRef>,
 }
 
 #[derive(Serialize, ToSchema)]

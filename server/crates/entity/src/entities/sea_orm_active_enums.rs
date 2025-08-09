@@ -252,6 +252,8 @@ pub enum EntityType {
     Event,
     #[sea_orm(string_value = "SongLyrics")]
     SongLyrics,
+    #[sea_orm(string_value = "CreditRole")]
+    CreditRole,
 }
 #[derive(
     Debug,

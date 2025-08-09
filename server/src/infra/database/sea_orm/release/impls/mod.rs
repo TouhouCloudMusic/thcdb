@@ -253,7 +253,7 @@ fn conv_credits(
                     id: artist.id,
                     name: artist.name.clone(),
                 },
-                role: crate::domain::shared::model::CreditRole {
+                role: crate::domain::credit_role::model::CreditRoleRef {
                     id: role.id,
                     name: role.name.clone(),
                 },

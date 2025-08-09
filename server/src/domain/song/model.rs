@@ -4,10 +4,9 @@ use utoipa::ToSchema;
 
 use crate::domain::artist::model::SimpleArtist;
 use crate::domain::correction::CorrectionEntity;
+use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::release::model::SimpleRelease;
-use crate::domain::shared::model::{
-    CreditRole, EntityIdent, Language, NewLocalizedName,
-};
+use crate::domain::shared::model::{EntityIdent, Language, NewLocalizedName};
 use crate::domain::song_lyrics::SongLyrics;
 
 #[serde_with::apply(
@@ -28,7 +27,7 @@ pub struct Song {
 #[derive(Clone, Debug, Serialize, ToSchema)]
 pub struct SongCredit {
     pub artist: SimpleArtist,
-    pub role: CreditRole,
+    pub role: CreditRoleRef,
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]

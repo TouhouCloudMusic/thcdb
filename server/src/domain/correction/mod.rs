@@ -66,7 +66,8 @@ where
         + From<<Self::LabelRepo as Connection>::Error>
         + From<<Self::EventRepo as Connection>::Error>
         + From<<Self::TagRepo as Connection>::Error>
-        + From<<Self::SongLyricsRepo as Connection>::Error>,
+        + From<<Self::SongLyricsRepo as Connection>::Error>
+        + From<<Self::CreditRoleRepo as Connection>::Error>,
 {
     type ArtistRepo: super::artist::TxRepo;
     type ReleaseRepo: super::release::TxRepo;
@@ -75,6 +76,7 @@ where
     type EventRepo: super::event::TxRepo;
     type TagRepo: super::tag::TxRepo;
     type SongLyricsRepo: super::song_lyrics::TxRepo;
+    type CreditRoleRepo: super::credit_role::TxRepo;
 
     fn artist_repo(self) -> Self::ArtistRepo;
     fn release_repo(self) -> Self::ReleaseRepo;
@@ -83,6 +85,7 @@ where
     fn event_repo(self) -> Self::EventRepo;
     fn tag_repo(self) -> Self::TagRepo;
     fn song_lyrics_repo(self) -> Self::SongLyricsRepo;
+    fn credit_role_repo(self) -> Self::CreditRoleRepo;
 }
 
 pub trait TxRepo: Repo {
@@ -111,7 +114,8 @@ pub trait TxRepo: Repo {
             + From<<Ctx::LabelRepo as Connection>::Error>
             + From<<Ctx::EventRepo as Connection>::Error>
             + From<<Ctx::TagRepo as Connection>::Error>
-            + From<<Ctx::SongLyricsRepo as Connection>::Error>;
+            + From<<Ctx::SongLyricsRepo as Connection>::Error>
+            + From<<Ctx::CreditRoleRepo as Connection>::Error>;
 }
 
 pub trait CorrectionEntityRepo<T>: Transaction

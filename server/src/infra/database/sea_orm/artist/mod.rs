@@ -18,8 +18,9 @@ use sea_query::{Cond, ExprTrait, Func, SimpleExpr};
 use super::SeaOrmTxRepo;
 use crate::domain::artist::model::{Artist, Membership, NewArtist, Tenure};
 use crate::domain::artist::repo::{CommonFilter, FindManyFilter, Repo, TxRepo};
+use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::repository::Connection;
-use crate::domain::shared::model::{CreditRole, LocalizedName, Location};
+use crate::domain::shared::model::{LocalizedName, Location};
 
 mod impls;
 
@@ -231,7 +232,7 @@ async fn find_many_impl(
                         artist_id,
                         roles: role
                             .iter()
-                            .map(|x| CreditRole {
+                            .map(|x| CreditRoleRef {
                                 id: x.id,
                                 name: x.name.clone(),
                             })

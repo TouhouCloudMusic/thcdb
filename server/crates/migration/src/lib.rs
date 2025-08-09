@@ -26,6 +26,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250607_095500_seeding_language_data::Migration),
             Box::new(m20250717_000000_create_song_lyrics::Migration),
             Box::new(m20250727_120000_enable_pg_trgm::Migration),
+            Box::new(m20250808_153600_add_credit_role_entity_type::Migration),
         ]
     }
 }
@@ -49,3 +50,4 @@ mod m20250607_092000_remove_image_ref_count;
 mod m20250607_095500_seeding_language_data;
 mod m20250717_000000_create_song_lyrics;
 mod m20250727_120000_enable_pg_trgm;
+mod m20250808_153600_add_credit_role_entity_type;

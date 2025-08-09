@@ -12,12 +12,6 @@ use libfp::Len;
 
 use crate::constant::{ENTITY_IDENT_MAX_LEN, ENTITY_IDENT_MIN_LEN};
 use crate::utils::validation::{InvalidLen, LenCheck};
-#[derive(AutoMapper, Clone, Debug, Serialize, ToSchema)]
-#[mapper(from(DbCreditRole))]
-pub struct CreditRole {
-    pub id: i32,
-    pub name: String,
-}
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, ToSchema)]
 pub struct DateWithPrecision {
@@ -47,7 +41,7 @@ impl From<(NaiveDate, DatePrecision)> for DateWithPrecision {
     }
 }
 
-#[derive(Clone, Display, Into, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Display, Into, Deserialize, ToSchema)]
 pub struct EntityIdent(String);
 
 impl EntityIdent {

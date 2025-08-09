@@ -6,10 +6,9 @@ use sea_orm::prelude::Date;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use super::super::shared::model::{
-    CreditRole, LocalizedTitle, NewLocalizedTitle,
-};
+use super::super::shared::model::{LocalizedTitle, NewLocalizedTitle};
 use crate::domain::correction::CorrectionEntity;
+use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::shared::model::DateWithPrecision;
 
 #[serde_with::apply(
@@ -55,7 +54,7 @@ pub struct CatalogNumber {
 #[derive(Clone, Debug, ToSchema, Serialize)]
 pub struct ReleaseCredit {
     pub artist: ReleaseArtist,
-    pub role: CreditRole,
+    pub role: CreditRoleRef,
     pub on: Option<Vec<i16>>,
 }
 

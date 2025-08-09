@@ -13,9 +13,10 @@ use sea_query::{Cond, ExprTrait, IntoCondition, SimpleExpr};
 
 use super::SeaOrmRepository;
 use crate::domain::artist_release::*;
+use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::image::Image;
 use crate::domain::repository::{Connection, Cursor, Paginated};
-use crate::domain::shared::model::{CreditRole, DateWithPrecision};
+use crate::domain::shared::model::DateWithPrecision;
 use crate::infra;
 
 struct ArtistReleaseIR {
@@ -213,7 +214,7 @@ impl From<artist::Model> for ArtistReleaseArtist {
 fn into_credit_roles(
     models: Vec<release_credit::Model>,
     roles: &[credit_role::Model],
-) -> Vec<CreditRole> {
+) -> Vec<CreditRoleRef> {
     models
         .into_iter()
         .map(|model| {
@@ -221,7 +222,7 @@ fn into_credit_roles(
                 .iter()
                 .find(|role| role.id == model.role_id)
                 .expect("Always has credit roles");
-            CreditRole {
+            CreditRoleRef {
                 id: model.role_id,
                 name: role.name.clone(),
             }

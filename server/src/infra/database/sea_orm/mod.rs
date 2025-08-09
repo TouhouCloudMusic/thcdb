@@ -13,6 +13,7 @@ mod artist_image_queue;
 mod artist_release;
 mod cache;
 mod correction;
+mod credit_role;
 pub mod enum_table;
 mod event;
 pub mod ext;

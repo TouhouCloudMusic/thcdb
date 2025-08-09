@@ -25,6 +25,7 @@ use crate::infra::state::AppState;
 
 mod artist;
 mod correction;
+mod credit_role;
 mod enum_table;
 mod event;
 mod extract;
@@ -91,6 +92,7 @@ fn router(state: ArcAppState) -> Router {
         .merge(song_lyrics::router())
         .merge(tag::router())
         .merge(user::router())
+        .merge(credit_role::router())
         .routes(routes!(health_check));
 
     let (router, api_doc) = api_router.split_for_parts();

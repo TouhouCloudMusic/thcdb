@@ -4,11 +4,14 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::domain::shared::model::{
-    CreditRole, DateWithPrecision, LocalizedName, Location,
+    DateWithPrecision, LocalizedName, Location,
 };
 
 mod new_artist;
 pub use new_artist::*;
+
+use crate::domain::credit_role::CreditRoleRef;
+
 #[cfg(test)]
 mod test;
 
@@ -51,7 +54,7 @@ pub struct Artist {
 #[derive(Clone, Debug, Serialize, ToSchema)]
 pub struct Membership {
     pub artist_id: i32,
-    pub roles: Vec<CreditRole>,
+    pub roles: Vec<CreditRoleRef>,
     pub tenure: Vec<Tenure>,
 }
 
