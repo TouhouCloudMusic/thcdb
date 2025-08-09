@@ -3,7 +3,6 @@
   "extends": [
     "config:best-practices",
     ":semanticCommitsDisabled",
-    "group:allNonMajor",
     ":preserveSemverRanges",
     "schedule:weekly"
   ],
