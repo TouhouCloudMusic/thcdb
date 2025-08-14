@@ -13,34 +13,44 @@
 		"restriction": "warn",
 		"nursery": "warn"
 	},
-	"settings": {},
+	"plugins": [
+		"import",
+		"jsdoc",
+		"jsx-a11y",
+		"oxc",
+		"promise",
+		"typescript",
+		"unicorn"
+	],
+	"settings": {
+		"jsx-a11y": {
+			"attributes": {
+				"for": ["for"]
+			},
+			"polymorphicPropName": "as"
+		}
+	},
+
 	"rules": {
-		// False Positives
-		"array-callback-return": ["off", { "allowImplicitReturn": true }],
-		"curly": "off",
-		"id-length": "off",
-		"max-params": "off",
-		"eqeqeq": "off",
-		"no-plusplus": "off",
-		"no-async-await": "off",
-		"no-duplicate-imports": "off",
-		"no-ternary": "off",
-		"no-undefined": "off",
-		"no-unused-vars": "warn",
-		"no-magic-numbers": [
-			"error",
-			{ "ignore": [-1, 0, 1], "ignoreArrayIndexes": true }
-		],
-		"no-void": "off",
-		"no-case-declarations": "off",
-		"no-else-return": "off",
-		"no-negated-condition": "off",
-		"no-empty-function": [
+		"array-callback-return": [
 			"warn",
 			{
-				"allow": ["constructor", "privateConstructors", "protectedConstructors"]
+				"allowImplicitReturn": true
 			}
 		],
+		"arrow-body-style": "off",
+		"curly": "off",
+		"eqeqeq": ["off", "smart"],
+		"func-style": [
+			"error",
+			"declaration",
+			{
+				"allowArrowFunctions": true
+			}
+		],
+		"id-length": "off",
+		"init-declarations": "off",
+		"max-depth": ["warn", 4],
 		"max-lines": [
 			"warn",
 			{
@@ -49,42 +59,49 @@
 				"skipComments": true
 			}
 		],
-		"sort-keys": "off",
-
-		"default-case": [
-			"warn",
-			{
-				"commentPattern": "Unreachable"
-			}
-		],
-
-		"oxc/no-const-enum": "off",
-		"oxc/no-optional-chaining": "off",
-		"oxc/no-barrel-file": "off",
-		"oxc/no-rest-spread-properties": "off",
-
-		"eslint/func-style": "off",
-		"eslint/max-depth": ["warn", 4],
-		"eslint/max-lines-per-function": [
+		"max-lines-per-function": [
 			"warn",
 			{
 				"IIFEs": false,
 				"max": 100,
-				"skipBlankLines": false,
-				"skipComments": false
+				"skipBlankLines": true,
+				"skipComments": true
 			}
 		],
-		"eslint/max-nested-callbacks": ["warn", 10],
-		"eslint/no-redeclare": "off",
-		"eslint/sort-imports": "off",
-		"eslint/yoda": "off",
-
-		"typescript/ban-ts-comment": "off",
-		"typescript/consistent-type-definitions": "off",
-		"typescript/explicit-function-return-type": "off",
-		"typescript/consistent-indexed-object-style": "warn",
-		"typescript/prefer-enum-initializers": "off",
-		"typescript/no-non-null-assertion": "off",
+		"max-nested-callbacks": ["warn", 10],
+		"max-params": [
+			"warn",
+			{
+				"max": 4
+			}
+		],
+		"new-cap": "off",
+		"no-async-await": "off",
+		"no-continue": "off",
+		// Disable this, as type import is not recognized.
+		// We use the import plugin instead.
+		"no-duplicate-imports": "off",
+		"no-empty-function": [
+			"warn",
+			{
+				"allow": ["constructor", "privateConstructors", "protectedConstructors"]
+			}
+		],
+		"no-magic-numbers": [
+			"error",
+			{
+				"ignore": [-1, 0, 1, 2, 12, 24, 60, 1000, 3600],
+				"ignoreArrayIndexes": true
+			}
+		],
+		"no-plusplus": ["warn", { "allowForLoopAfterthoughts": true }],
+		"no-ternary": "off",
+		"no-undefined": "off",
+		"no-unused-vars": "warn",
+		"no-void": "off",
+		"prefer-destructuring": "off",
+		"sort-imports": "off", // We use prettier plugin
+		"sort-keys": "off",
 
 		"import/exports-last": "off",
 		"import/group-exports": "off",
@@ -94,32 +111,48 @@
 		"import/no-namespace": "off",
 		"import/prefer-default-export": "off",
 
-		"unicorn/no-anonymous-default-export": "off",
-		"unicorn/no-empty-file": "off",
-		"unicorn/no-null": "off",
+		"oxc/no-barrel-file": "off",
+		"oxc/no-const-enum": "off",
+		"oxc/no-optional-chaining": "off",
+		"oxc/no-rest-spread-properties": "off",
+
+		"promise/prefer-await-to-then": "off",
+
+		"typescript/ban-ts-comment": "off",
+		"typescript/consistent-type-definitions": "off",
+		"typescript/explicit-function-return-type": "off",
+		"typescript/explicit-module-boundary-types": "off",
+		"typescript/no-non-null-assertion": "off",
+		"typescript/prefer-enum-initializers": "off",
+
+		"unicorn/explicit-length-check": "off",
 		"unicorn/filename-case": [
-			"off",
+			"warn",
 			{
 				"cases": {
+					"camelCase": true,
 					"snakeCase": true,
 					"pascalCase": true
 				}
 			}
 		],
-		"unicorn/switch-case-braces": "off",
-
-		"promise/prefer-await-to-then": "off",
-
-		"jsx-a11y/label-has-associated-control": "off"
+		"unicorn/no-anonymous-default-export": "off",
+		"unicorn/prefer-spread": "off"
 	},
-	"plugins": [
-		"import",
-		"jsdoc",
-		"jsx-a11y",
-		"oxc",
-		"promise",
-		"typescript",
-		"unicorn",
-		"vitest"
+	"overrides": [
+		{
+			"files": ["*.stories.tsx"],
+			"rules": {
+				"import/no-default-export": "off"
+			}
+		},
+		{
+			"files": ["*.test.ts", "*.test.tsx"],
+			"plugins": ["vitest"],
+			"rules": {
+				"max-lines-per-function": "off",
+				"vitest/prefer-to-be-truthy": "off"
+			}
+		}
 	]
 }

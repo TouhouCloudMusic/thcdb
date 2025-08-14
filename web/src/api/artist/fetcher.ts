@@ -2,7 +2,7 @@ import { FetchClient } from ".."
 import type { ReleaseType } from "../release"
 import type { Pagination } from "../shared"
 import { handleApiResponse } from "../utils"
-import type { NewArtistCorrectionOut } from "./schema"
+import type { ArtistCommonFilter, NewArtistCorrectionOut } from "./schema"
 
 export interface __CreataOption {
 	data: NewArtistCorrectionOut
@@ -22,16 +22,28 @@ export async function __create(opt: __CreataOption) {
 	throw new Error(response.statusText)
 }
 
-export async function __findById(id: number) {
-	const res = await FetchClient.GET(`/artist/{id}`, {
+export interface __UpdateOption {
+	id: number
+	data: NewArtistCorrectionOut
+}
+export async function __update(opt: __UpdateOption) {
+	const { data, error, response } = await FetchClient.POST(`/artist/{id}`, {
 		params: {
 			path: {
-				id,
+				id: opt.id,
 			},
 		},
+		body: opt.data,
 	})
+	if (data) {
+		return data
+	}
 
-	return handleApiResponse(res)
+	if (error) {
+		throw new Error(error.message)
+	}
+
+	throw new Error(response.statusText)
 }
 
 const DEFAULT_ARTIST_RELEASE_LIMIT = 10
@@ -103,6 +115,36 @@ export async function __discographiesInit(
 			},
 			query: {
 				limit,
+			},
+		},
+	})
+
+	return handleApiResponse(res)
+}
+
+export async function __findById(id: number, filter?: ArtistCommonFilter) {
+	const res = await FetchClient.GET(`/artist/{id}`, {
+		params: {
+			path: {
+				id,
+			},
+			query: filter,
+		},
+	})
+
+	return handleApiResponse(res)
+}
+
+export async function __findByKeyword(
+	keyword: string,
+	filter?: ArtistCommonFilter,
+) {
+	const res = await FetchClient.GET("/artist", {
+		params: {
+			query: {
+				keyword,
+				artist_type: filter?.artist_type,
+				exclusion: filter?.exclusion,
 			},
 		},
 	})

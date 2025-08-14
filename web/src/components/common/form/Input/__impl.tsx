@@ -186,7 +186,7 @@ export function Error(props: FormComp.ErrorMessageProps) {
 	const context = assertContext(Context)
 
 	createEffect(() => {
-		context.setValid(!props.message)
+		context.setValid(!(props.children ?? props.messagee))
 	})
 
 	return <FormComp.ErrorMessage {...props} />

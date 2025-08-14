@@ -9,16 +9,28 @@ import { Str } from "~/utils/data"
 
 import type { ReleaseType } from "../release"
 import * as F from "./fetcher"
+import type { ArtistCommonFilter } from "./schema"
 
-export function findById(id: number) {
+export function findById(id: number, filter?: ArtistCommonFilter) {
 	return queryOptions({
-		queryKey: ["artist::profile", id],
+		queryKey: ["artist::profile", id, filter],
 		queryFn: async () => {
-			const artist = await F.__findById(id)
+			const artist = await F.__findById(id, filter)
 			if (!artist) {
 				throw notFound()
 			}
 			return artist
+		},
+		throwOnError: true,
+	})
+}
+
+export function findByKeyword(keyword: string, filter?: ArtistCommonFilter) {
+	return queryOptions({
+		queryKey: ["artist::keyword", keyword, filter],
+		queryFn: async () => {
+			const artists = await F.__findByKeyword(keyword, filter)
+			return artists
 		},
 		throwOnError: true,
 	})

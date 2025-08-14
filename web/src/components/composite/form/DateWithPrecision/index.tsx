@@ -2,16 +2,14 @@ import dayjs from "dayjs"
 import { createEffect, createMemo, on } from "solid-js"
 import { createStore } from "solid-js/store"
 
-import type {
-	DateWithPrecisionIn as t_DateWithPrecision,
-	DatePrecision,
-} from "~/api/shared/schema"
+import type { DateWithPrecision as TDateWithPrecision } from "~/api"
+import type { DatePrecision } from "~/api/shared/schema"
 import { FormComp } from "~/components/common/form"
 import { InputField } from "~/components/common/form/Input"
 
 export interface DateWithPrecisionProps {
 	label: string
-	setValue(val?: t_DateWithPrecision): void
+	setValue(val?: TDateWithPrecision.In): void
 	error: string | undefined
 }
 
@@ -23,6 +21,20 @@ interface Store {
 
 const THIS_YEAR = new Date().getFullYear()
 
+const onChange =
+	(f: (value?: number) => void) =>
+	(
+		e: Event & {
+			currentTarget: HTMLInputElement
+			target: HTMLInputElement
+		},
+	) => {
+		const value = Number.parseInt(e.target.value, 10)
+
+		f(value)
+	}
+
+// oxlint-disable-next-line max-lines-per-function
 export function DateWithPrecision(props: DateWithPrecisionProps) {
 	const [store, setStore] = createStore<Store>({})
 
@@ -31,34 +43,24 @@ export function DateWithPrecision(props: DateWithPrecisionProps) {
 			dayjs(`${store.y}-${store.m}`).daysInMonth()
 		:	undefined,
 	)
+
 	const setYear = (val?: number) => {
 		if (val && val > THIS_YEAR) {
 			val = THIS_YEAR
 		}
-
 		setStore("y", val)
 	}
+
 	const setMonth = (val?: number) => {
 		setStore("m", val)
 	}
+
 	const setDay = (val?: number) => {
 		if (val && val > maxDay()!) {
 			val = maxDay()
 		}
 		setStore("d", val)
 	}
-	const onChange =
-		(f: (value?: number) => void) =>
-		(
-			e: Event & {
-				currentTarget: HTMLInputElement
-				target: HTMLInputElement
-			},
-		) => {
-			const value = parseInt(e.target.value)
-
-			f(value)
-		}
 
 	const date = createMemo(() =>
 		store.y ? new Date(store.y, (store.m ?? 1) - 1, store.d) : undefined,
@@ -74,19 +76,19 @@ export function DateWithPrecision(props: DateWithPrecisionProps) {
 		if (store.y) {
 			return "Year"
 		}
-		return undefined
+		return
 	})
 
 	createEffect(
 		on(date, (date) => {
-			if (date) {
-				props.setValue({
-					value: date,
-					precision: precision()!,
-				})
-			} else {
-				props.setValue(undefined)
-			}
+			props.setValue(
+				date ?
+					{
+						value: date,
+						precision: precision()!,
+					}
+				:	undefined,
+			)
 		}),
 	)
 

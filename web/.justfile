@@ -21,3 +21,6 @@ lint: oxlint eslint
 fix: oxfix esfix
 
 quickfix: oxfix
+
+test:
+	pnpm exec vitest

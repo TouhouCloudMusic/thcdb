@@ -12,6 +12,7 @@ export const FetchClient = createFetchClient<RevExactRecursive<paths>>({
 
 export type { Artist } from "./artist"
 export * from "./auth"
+export * from "./language"
 export * from "./release"
 export * from "./shared"
 export * from "./user"

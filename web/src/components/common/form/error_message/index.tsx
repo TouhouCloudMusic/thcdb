@@ -1,4 +1,5 @@
-import { type JSX, mergeProps, Show } from "solid-js"
+import type { JSX } from "solid-js"
+import { mergeProps, Show } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
 export const ERROR_MESSAGE_CLASSNAME = "text-reimu-700 text-sm mt-2"
@@ -7,10 +8,12 @@ export type ErrorMessageProps = Omit<
 	JSX.HTMLAttributes<HTMLSpanElement>,
 	"children"
 > & {
-	message: string | undefined
+	/** @deprecated use children instead */
+	message?: string | undefined
+	children?: string
 }
 
-export function ErrorMessage(props: ErrorMessageProps) {
+export function ErrorMessage(props: ErrorMessageProps): JSX.Element {
 	const localProps = mergeProps(props, {
 		get class() {
 			return props.class ?
@@ -19,8 +22,8 @@ export function ErrorMessage(props: ErrorMessageProps) {
 		},
 	})
 	return (
-		<Show when={props.message}>
-			<span {...localProps}>{props.message}</span>
+		<Show when={props.children ?? props.message}>
+			<span {...localProps}>{props.children ?? props.message}</span>
 		</Show>
 	)
 }

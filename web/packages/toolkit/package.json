@@ -1,0 +1,11 @@
+{
+	"name": "@thc/toolkit",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.ts",
+	"scripts": {},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"packageManager": "pnpm@10.13.1"
+}

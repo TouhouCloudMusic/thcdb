@@ -13,15 +13,27 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/views/artist/profile/comp/Info.tsx:51
+#: src/views/artist/edit/index.tsx:239
+msgid "-- Please select artist type --"
+msgstr ""
+
+#: src/views/artist/profile/comp/ArtistInfo.tsx:58
 msgid "Aliases"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:147
+msgid "Are you sure you want to leave this page? Your changes will be lost."
 msgstr ""
 
 #: src/components/Header/LeftSidebar.tsx:44
 msgid "Artist"
 msgstr ""
 
-#: src/views/artist/profile/comp/Info.tsx:26
+#: src/views/artist/edit/index.tsx:230
+msgid "Artist Type"
+msgstr ""
+
+#: src/views/artist/profile/comp/ArtistInfo.tsx:27
 msgid "Born"
 msgstr ""
 
@@ -29,11 +41,23 @@ msgstr ""
 msgid "Chart"
 msgstr ""
 
-#: src/views/artist/profile/comp/Info.tsx:31
+#: src/views/artist/edit/index.tsx:57
+msgid "Create Artist"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:292
+msgid "Current Location"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:306
+msgid "Description"
+msgstr ""
+
+#: src/views/artist/profile/comp/ArtistInfo.tsx:32
 msgid "Died"
 msgstr ""
 
-#: src/views/artist/profile/comp/Info.tsx:31
+#: src/views/artist/profile/comp/ArtistInfo.tsx:32
 msgid "Disbanded"
 msgstr ""
 
@@ -41,20 +65,45 @@ msgstr ""
 msgid "Discover"
 msgstr ""
 
+#: src/views/artist/edit/index.tsx:55
+msgid "Edit Artist"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:276
+msgid "End date"
+msgstr ""
+
+#. placeholder {0}: mutation.error.message
+#: src/views/artist/edit/index.tsx:352
+msgid "Error: {0}"
+msgstr ""
+
 #: src/components/Header/LeftSidebar.tsx:48
 msgid "Event"
 msgstr ""
 
-#: src/views/artist/profile/comp/Info.tsx:26
+#: src/views/artist/profile/comp/ArtistInfo.tsx:27
 msgid "Formed"
 msgstr ""
 
-#: src/views/artist/profile/comp/Info.tsx:97
+#: src/views/artist/edit/index.tsx:345
+msgid "Loading"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:65
+msgid "Loading..."
+msgstr ""
+
+#: src/views/artist/profile/comp/ArtistInfo.tsx:104
 msgid "Member Of"
 msgstr ""
 
-#: src/views/artist/profile/comp/Info.tsx:99
+#: src/views/artist/profile/comp/ArtistInfo.tsx:106
 msgid "Members"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:210
+msgid "Name"
 msgstr ""
 
 #: src/views/auth/component/AuthForm.tsx:72
@@ -74,14 +123,14 @@ msgid "Repeated Password"
 msgstr ""
 
 #: src/views/auth/component/AuthForm.tsx:36
-#: src/views/auth/component/AuthForm.tsx:103
+#: src/views/auth/component/AuthForm.tsx:104
 #: src/components/Header/index.tsx:153
 msgid "Sign In"
 msgstr "登录"
 
 #: src/views/auth/component/AuthForm.tsx:44
-#: src/views/auth/component/AuthForm.tsx:103
-#: src/components/Header/index.tsx:161
+#: src/views/auth/component/AuthForm.tsx:104
+#: src/components/Header/index.tsx:167
 msgid "Sign Up"
 msgstr "注册"
 
@@ -89,11 +138,23 @@ msgstr "注册"
 msgid "Song"
 msgstr ""
 
+#: src/views/artist/edit/index.tsx:265
+msgid "Start date"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:286
+msgid "Start Location"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:345
+msgid "Submit"
+msgstr ""
+
 #: src/components/Header/LeftSidebar.tsx:52
 msgid "Tag"
 msgstr ""
 
-#: src/views/artist/profile/comp/ArtistRelease.tsx:113
+#: src/views/artist/profile/comp/ArtistReleaseInfo.tsx:133
 msgid "This Artist has no releases yet, you can upload them on <0>Upload New Release</0>"
 msgstr ""
 

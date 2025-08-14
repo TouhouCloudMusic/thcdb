@@ -5,6 +5,7 @@ import type { ExternalSchema } from "~/types/valibot"
 
 import type { OpenApiSchema } from ".."
 import { NewCorrection } from "../correction"
+import type { paths } from "../openapi"
 import { DateWithPrecision } from "../shared"
 import {
 	EntityId,
@@ -30,6 +31,7 @@ export type ArtistType = If<
 	o_ArtistType,
 	never
 >
+
 export const Tenure = v.object({
 	join_year: v.nullish(Year),
 	leave_year: v.nullish(Year),
@@ -74,3 +76,7 @@ export type NewArtistCorrectionOut = If<
 >
 
 export type SimpleArtist = OpenApiSchema["SimpleArtist"]
+export type ArtistCommonFilter = SafeOmit<
+	paths["/artist"]["get"]["parameters"]["query"],
+	"keyword"
+>

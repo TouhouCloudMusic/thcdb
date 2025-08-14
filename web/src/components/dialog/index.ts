@@ -1,1 +1,1 @@
-export * as Dialog from "./impl.tsx"
+export * as Dialog from "./__internal"

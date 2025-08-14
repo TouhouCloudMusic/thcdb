@@ -12,6 +12,7 @@
 	},
 	"dependencies": {
 		"@floating-ui/dom": "^1.6.13",
+		"@formisch/solid": "^0.2.0",
 		"@kobalte/core": "^0.13.9",
 		"@lingui-solid/solid": "^5.1.4",
 		"@modular-forms/solid": "^0.25.1",
@@ -24,9 +25,11 @@
 		"@tanstack/solid-query": "^5.74.4",
 		"@tanstack/solid-query-devtools": "^5.74.7",
 		"@tanstack/solid-router": "^1.117.1",
+		"@thc/toolkit": "workspace:*",
 		"arktype": "^2.1.20",
 		"cropperjs": "^2.0.0",
 		"dayjs": "^1.11.13",
+		"fast-check": "^4.2.0",
 		"marked": "^16.0.0",
 		"marked-footnote": "^1.2.4",
 		"marked-shiki": "^1.2.0",
@@ -40,8 +43,6 @@
 		"valibot": "1.1.0"
 	},
 	"devDependencies": {
-		"@types/markdown-it": "^14.1.2",
-		"@types/markdown-it-footnote": "^3.0.4",
 		"@ark/attest": "^0.48.0",
 		"@chromatic-com/storybook": "^4.0.0",
 		"@eslint/js": "^9.21.0",
@@ -67,6 +68,8 @@
 		"@testing-library/user-event": "^14.6.1",
 		"@trivago/prettier-plugin-sort-imports": "^5.2.2",
 		"@types/eslint-config-prettier": "^6.11.3",
+		"@types/markdown-it": "^14.1.2",
+		"@types/markdown-it-footnote": "^3.0.4",
 		"@vitest/browser": "^3.1.2",
 		"babel-preset-solid": "^1.9.5",
 		"eslint": "^9.21.0",
@@ -95,7 +98,8 @@
 		"vite": "^7.0.0",
 		"vite-plugin-babel-macros": "^1.0.6",
 		"vite-plugin-solid": "^2.11.6",
-		"vite-tsconfig-paths": "^5.1.4"
+		"vite-tsconfig-paths": "^5.1.4",
+		"vitest": "^3.2.4"
 	},
 	"eslintConfig": {
 		"extends": [

@@ -1,18 +1,24 @@
+/// <reference types="vitest/config" />
 import { lingui as linguiSolidPlugin } from "@lingui-solid/vite-plugin"
 import tailwindcss from "@tailwindcss/vite"
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite"
-import { defineConfig } from "vite"
-import { loadEnv } from "vite"
+import { tanstackRouter } from "@tanstack/router-plugin/vite"
+import { defineConfig, loadEnv } from "vite"
 import babelMacrosPlugin from "vite-plugin-babel-macros"
 import solidPlugin from "vite-plugin-solid"
 import tsconfigPaths from "vite-tsconfig-paths"
 
 import { generatePlugin } from "./plugins/generate"
 
+// oxlint-disable-next-line no-default-export
 export default defineConfig(({ mode }) => {
-	const SERVER_URL = loadEnv(mode, process.cwd())["VITE_SERVER_URL"]
+	// oxlint-disable-next-line no-undef
+	const env = loadEnv(mode, process.cwd())
+	// oxlint-disable-next-line no-undef
+	const isTest = !!process.env["VITEST"]
+	const SERVER_URL =
+		env["VITE_SERVER_URL"] ?? (isTest ? "http://localhost:9999" : undefined)
 
-	if (!SERVER_URL) {
+	if (!SERVER_URL && !isTest) {
 		throw new Error("Environment variable `VITE_SERVER_URL` is not defined")
 	}
 	return {
@@ -20,11 +26,11 @@ export default defineConfig(({ mode }) => {
 			babelMacrosPlugin(),
 			linguiSolidPlugin(),
 			solidPlugin(),
-			TanStackRouterVite({ target: "solid", autoCodeSplitting: true }),
+			tanstackRouter({ target: "solid" }),
 			tailwindcss(),
 
 			tsconfigPaths(),
-			generatePlugin(SERVER_URL),
+			...(isTest ? [] : [generatePlugin(SERVER_URL)]),
 		],
 		server: {
 			port: 3000,
@@ -39,6 +45,9 @@ export default defineConfig(({ mode }) => {
 		},
 		build: {
 			target: "esnext",
+		},
+		test: {
+			projects: ["packages/*", "."],
 		},
 	}
 })

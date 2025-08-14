@@ -7,3 +7,5 @@ export type { SimpleArtist } from "./schema"
 export type Artist = OpenApiSchema["Artist"]
 
 export type * from "./type/artist_release"
+
+export type { ArtistCommonFilter } from "./schema"
