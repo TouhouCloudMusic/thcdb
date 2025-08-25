@@ -21,6 +21,7 @@ use utoipa_scalar::{Scalar, Servable};
 
 use crate::constant::r#gen::{KT_CONSTANTS, TS_CONSTANTS};
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
+use crate::domain::artist::CommonFilter as ArtistCommonFilter;
 use crate::infra::state::AppState;
 
 mod artist;
@@ -51,6 +52,7 @@ mod user;
     // https://github.com/juhaku/utoipa/issues/1165
     components(schemas(
         correction::HandleCorrectionMethod,
+        ArtistCommonFilter,
     ))
 )]
 struct ApiDoc;
