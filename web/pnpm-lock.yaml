@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@floating-ui/dom':
         specifier: ^1.7.3
-        version: 1.7.3
+        version: 1.7.4
       '@formisch/solid':
         specifier: ^0.3.0
         version: 0.3.0(solid-js@1.9.9)(typescript@5.9.2)(valibot@1.1.0(typescript@5.9.2))
@@ -97,7 +97,7 @@ importers:
         version: link:packages/solid-cropper
       solid-floating-ui:
         specifier: ^0.3.1
-        version: 0.3.1(@floating-ui/dom@1.7.3)(solid-js@1.9.9)
+        version: 0.3.1(@floating-ui/dom@1.7.4)(solid-js@1.9.9)
       solid-js:
         specifier: ^1.9.9
         version: 1.9.9
@@ -883,8 +883,8 @@ packages:
   '@floating-ui/core@1.7.3':
     resolution: {integrity: sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w==}
 
-  '@floating-ui/dom@1.7.3':
-    resolution: {integrity: sha512-uZA413QEpNuhtb3/iIKoYMSK07keHPYeXF02Zhd6e213j+d1NamLix/mCLxBUDW/Gx52sPH2m+chlUsyaBs/Ag==}
+  '@floating-ui/dom@1.7.4':
+    resolution: {integrity: sha512-OOchDgh4F2CchOX94cRVqhvy7b3AFb+/rQXyswmzmGakRfkMgoWVjfnLWkRirfLEfuD4ysVW16eXzwt3jHIzKA==}
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
@@ -4887,7 +4887,7 @@ snapshots:
 
   '@corvu/utils@0.4.2(solid-js@1.9.9)':
     dependencies:
-      '@floating-ui/dom': 1.7.3
+      '@floating-ui/dom': 1.7.4
       solid-js: 1.9.9
 
   '@cropper/element-canvas@2.0.1':
@@ -5173,7 +5173,7 @@ snapshots:
     dependencies:
       '@floating-ui/utils': 0.2.10
 
-  '@floating-ui/dom@1.7.3':
+  '@floating-ui/dom@1.7.4':
     dependencies:
       '@floating-ui/core': 1.7.3
       '@floating-ui/utils': 0.2.10
@@ -5269,7 +5269,7 @@ snapshots:
 
   '@kobalte/core@0.13.11(solid-js@1.9.9)':
     dependencies:
-      '@floating-ui/dom': 1.7.3
+      '@floating-ui/dom': 1.7.4
       '@internationalized/date': 3.8.2
       '@internationalized/number': 3.6.4
       '@kobalte/utils': 0.9.1(solid-js@1.9.9)
@@ -8574,9 +8574,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  solid-floating-ui@0.3.1(@floating-ui/dom@1.7.3)(solid-js@1.9.9):
+  solid-floating-ui@0.3.1(@floating-ui/dom@1.7.4)(solid-js@1.9.9):
     dependencies:
-      '@floating-ui/dom': 1.7.3
+      '@floating-ui/dom': 1.7.4
       solid-js: 1.9.9
 
   solid-js@1.9.9:
