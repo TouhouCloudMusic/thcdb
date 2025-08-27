@@ -1,4 +1,4 @@
-import { MetaProvider } from "@solidjs/meta";
+import { MetaProvider } from "@solidjs/meta"
 import type { ParentProps } from "solid-js"
 
 import { I18NProvider } from "./i18n"

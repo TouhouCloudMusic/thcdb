@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, useNavigate } from "@tanstack/solid-router"
-import { createEffect } from "solid-js"
+import { ArtistQueryOption } from "@thc/query"
+import { Option as O } from "effect"
+import { createEffect, Show } from "solid-js"
 import * as v from "valibot"
 
-import { ArtistQueryOption } from "~/api/artist"
-import { EntityId } from "~/api/shared/schema"
-import { TanstackQueryClinet } from "~/state/tanstack"
+import { EntityId } from "~/domain/shared"
+import { QUERY_CLIENT } from "~/state/tanstack"
 import { EditArtistPage } from "~/views/artist/edit"
 
 export const Route = createFileRoute("/artist/$id/edit")({
@@ -13,7 +14,7 @@ export const Route = createFileRoute("/artist/$id/edit")({
 	loader: async ({ params: { id } }) => {
 		const parsedId = v.parse(EntityId, Number.parseInt(id, 10))
 
-		return await TanstackQueryClinet.ensureQueryData(
+		return await QUERY_CLIENT.ensureQueryData(
 			ArtistQueryOption.findById(parsedId),
 		)
 	},
@@ -27,7 +28,7 @@ function RouteComponent() {
 
 	const nav = useNavigate()
 	createEffect(() => {
-		if (!query.data && !query.isPending) {
+		if (query.isError) {
 			// TODO: Show error message
 			void nav({
 				to: "/",
@@ -36,9 +37,13 @@ function RouteComponent() {
 	})
 
 	return (
-		<EditArtistPage
-			type="edit"
-			artist={query.data!}
-		/>
+		<Show when={query.data}>
+			{(a) => (
+				<EditArtistPage
+					type="edit"
+					artist={O.getOrThrow(a())}
+				/>
+			)}
+		</Show>
 	)
 }

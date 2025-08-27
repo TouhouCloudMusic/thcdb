@@ -1,6 +1,5 @@
-import type { SimpleArtist } from "~/api/artist"
-import type { CreditRole } from "~/api/credit"
+import type { SimpleArtist, CreditRoleRef } from "@thc/api"
 
 export * as SongCreditStatics from "./__internal"
 
-export type GroupedSongCredit = { artist: SimpleArtist; roles: CreditRole[] }
+export type GroupedSongCredit = { artist: SimpleArtist; roles: CreditRoleRef[] }

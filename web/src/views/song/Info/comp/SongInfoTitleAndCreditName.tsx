@@ -3,7 +3,7 @@ import { Trans } from "@lingui-solid/solid/macro"
 import { Link } from "@tanstack/solid-router"
 import { createMemo, For, Match, Show, Switch } from "solid-js"
 
-import { assertContext } from "~/utils/context"
+import { assertContext } from "~/utils/solid/assertContext"
 
 import { SongInfoPageContext } from ".."
 

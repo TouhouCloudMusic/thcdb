@@ -2,11 +2,12 @@ import * as meta from "@solidjs/meta"
 import { Title } from "@solidjs/meta"
 import { createRootRoute, Outlet } from "@tanstack/solid-router"
 import { TanStackRouterDevtools } from "@tanstack/solid-router-devtools"
-import { ErrorBoundary, type ParentProps } from "solid-js"
+import type { ParentProps } from "solid-js"
+import { ErrorBoundary } from "solid-js"
 
 import { Header } from "~/components/Header"
-import ErrorPage from "~/route/500.tsx"
 import { NotFound } from "~/views/NotFound"
+import { InternalServerError } from "~/views/error/InternalServerError"
 
 export const Route = createRootRoute({
 	component: RouteTree,
@@ -55,12 +56,13 @@ function AppErrorBoundary(props: ParentProps) {
 	if (!import.meta.env.DEV) {
 		// eslint-disable-next-line solid/components-return-once
 		return <>{props.children}</>
-	} else {
-		// eslint-disable-next-line solid/components-return-once
-		return (
-			<ErrorBoundary fallback={(e: Error) => <ErrorPage msg={e.stack} />}>
-				{props.children}
-			</ErrorBoundary>
-		)
 	}
+	// eslint-disable-next-line solid/components-return-once
+	return (
+		<ErrorBoundary
+			fallback={(e: Error) => <InternalServerError msg={e.stack} />}
+		>
+			{props.children}
+		</ErrorBoundary>
+	)
 }

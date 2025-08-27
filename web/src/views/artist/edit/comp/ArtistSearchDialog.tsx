@@ -1,14 +1,15 @@
 import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
+import type { Artist, ArtistCommonFilter } from "@thc/api"
+import { ArtistQueryOption } from "@thc/query"
 import { debounce, id } from "@thc/toolkit"
-import { createSignal, For, createMemo, Suspense, type JSX } from "solid-js"
+import { createSignal, For, createMemo, Suspense } from "solid-js"
+import type { JSX } from "solid-js"
 import { PlusIcon } from "solid-radix-icons"
 
-import { ArtistQueryOption } from "~/api/artist"
-import type { Artist, ArtistCommonFilter } from "~/api/artist"
-import { Button } from "~/components/button"
-import { SearchDialog } from "~/components/composite/form/SearchDialog"
+import { Button } from "~/components/atomic/button"
 import { Dialog } from "~/components/dialog"
+import { SearchDialog } from "~/components/form/SearchDialog"
 
 type ArtistSearchDialogProps = {
 	onSelect: (artist: Artist) => void

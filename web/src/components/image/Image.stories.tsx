@@ -18,16 +18,13 @@ export const Default: Story = {
 	name: "Default Image",
 	render: (args) => (
 		<Image.Root {...args}>
-			<Image.Container>
-				<Image.Img
-					loading="lazy"
-					width={300}
-					height={300}
-					src="https://th.bing.com/th/id/OIP.1JqzUmtCX3Ng-8i-n5_kHgAAAA?w=120&h=104&c=7&bgcl=de1aa5&r=0&o=6&dpr=1.5&pid=13.1"
-				/>
-				<Image.Fallback />
-				<Image.ErrorComponent />
-			</Image.Container>
+			<Image.Img
+				loading="lazy"
+				width={300}
+				height={300}
+				src="https://th.bing.com/th/id/OIP.1JqzUmtCX3Ng-8i-n5_kHgAAAA?w=120&h=104&c=7&bgcl=de1aa5&r=0&o=6&dpr=1.5&pid=13.1"
+			/>
+			<Image.Fallback />
 		</Image.Root>
 	),
 	args: {},
@@ -38,16 +35,13 @@ export const ErrorState: Story = {
 	name: "Error State",
 	render: (args) => (
 		<Image.Root {...args}>
-			<Image.Container>
-				<Image.Img
-					loading="lazy"
-					width={300}
-					height={300}
-					src=""
-				/>
-				<Image.Fallback />
-				<Image.ErrorComponent />
-			</Image.Container>
+			<Image.Img
+				loading="lazy"
+				width={300}
+				height={300}
+				src=""
+			/>
+			<Image.Fallback />
 		</Image.Root>
 	),
 }
@@ -62,21 +56,18 @@ export const WithPreview: Story = {
 		})
 		return (
 			<Image.Root {...args}>
-				<Image.Container>
-					<Image.Img
-						loading="lazy"
-						width={300}
-						height={300}
-						onClick={() => setOpen(true)}
-						src="https://th.bing.com/th/id/OIP.1JqzUmtCX3Ng-8i-n5_kHgAAAA?w=120&h=104&c=7&bgcl=de1aa5&r=0&o=6&dpr=1.5&pid=13.1"
-					/>
-					<Image.Fallback />
-					<Image.ErrorComponent />
-					<Image.Preview
-						open={open()}
-						close={() => setOpen(false)}
-					/>
-				</Image.Container>
+				<Image.Img
+					loading="lazy"
+					width={300}
+					height={300}
+					onClick={() => setOpen(true)}
+					src="https://th.bing.com/th/id/OIP.1JqzUmtCX3Ng-8i-n5_kHgAAAA?w=120&h=104&c=7&bgcl=de1aa5&r=0&o=6&dpr=1.5&pid=13.1"
+				/>
+				<Image.Fallback />
+				<Image.Preview
+					open={open()}
+					close={() => setOpen(false)}
+				/>
 			</Image.Root>
 		)
 	},

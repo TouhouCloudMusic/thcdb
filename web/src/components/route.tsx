@@ -1,15 +1,17 @@
 import { Navigate } from "@tanstack/solid-router"
-import { ParentProps, Show } from "solid-js"
-import { useUserCtx } from "~/state/user"
+import type { ParentProps } from "solid-js"
+import { Show } from "solid-js"
+
+import { useCurrentUser } from "~/state/user"
 
 export function AuthGuard(props: ParentProps) {
-  let user_ctx = useUserCtx()
-  return (
-    <Show
-      when={user_ctx.user}
-      fallback={<Navigate to="/" />}
-    >
-      {props.children}
-    </Show>
-  )
+	let user_ctx = useCurrentUser()
+	return (
+		<Show
+			when={user_ctx.user}
+			fallback={<Navigate to="/" />}
+		>
+			{props.children}
+		</Show>
+	)
 }

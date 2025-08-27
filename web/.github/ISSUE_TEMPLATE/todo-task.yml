@@ -3,7 +3,7 @@ description: 用于创建开发/实现任务，会自动添加标签并创建分
 title: "Task: "
 labels: ["todo task"]
 assignees:
-  - your-github-username  # 可选
+  - your-github-username # 可选
 
 body:
   - type: markdown

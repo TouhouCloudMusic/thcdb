@@ -1,11 +1,11 @@
 import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import * as M from "@modular-forms/solid"
+import type { ArtistMutation } from "@thc/query"
 
-import type { ArtistMutation } from "~/api/artist"
-import type { NewArtistCorrection } from "~/api/artist/schema"
-import { Button } from "~/components/button"
-import { FormComp } from "~/components/common/form"
-import { InputField } from "~/components/common/form/Input"
+import { Button } from "~/components/atomic/button"
+import { FormComp } from "~/components/atomic/form"
+import { InputField } from "~/components/atomic/form/Input"
+import type { NewArtistCorrection } from "~/domain/artist/schema"
 
 import { useArtistForm } from "../context"
 
@@ -32,7 +32,7 @@ export function ArtistFormActions(props: ArtistFormFormActionsProps) {
 							{...fieldProps}
 							id={field.name}
 						/>
-						<InputField.Error message={field.error} />
+						<InputField.Error>{field.error}</InputField.Error>
 					</InputField.Root>
 				)}
 			</M.Field>
@@ -60,18 +60,18 @@ export function ArtistFormActions(props: ArtistFormFormActionsProps) {
 					type="submit"
 					disabled={props.mutation.isPending || formStore.submitting}
 				>
-					{props.mutation.isPending || formStore.submitting ?
-						t`Loading`
-					:	t`Submit`}
+					{props.mutation.isPending || formStore.submitting
+						? t`Loading`
+						: t`Submit`}
 				</Button>
 
 				<FormComp.ErrorMessage message={formStore.response.message} />
 				<FormComp.ErrorMessage
 					class="text-lg"
 					message={
-						props.mutation.isError ?
-							t`Error: ${props.mutation.error.message}`
-						:	undefined
+						props.mutation.isError
+							? t`Error: ${props.mutation.error.message}`
+							: undefined
 					}
 				/>
 			</div>

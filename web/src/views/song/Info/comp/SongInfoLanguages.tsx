@@ -2,7 +2,7 @@
 import { Trans } from "@lingui-solid/solid/macro"
 import { For, Show } from "solid-js"
 
-import { assertContext } from "~/utils/context"
+import { assertContext } from "~/utils/solid/assertContext"
 
 import { SongInfoPageContext } from ".."
 

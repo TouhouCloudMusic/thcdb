@@ -1,0 +1,13 @@
+{
+	"name": "@thc/query",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"packageManager": "pnpm@10.13.1",
+	"exports": {
+		".": "./src/index.ts"
+	}
+}

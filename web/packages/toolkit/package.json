@@ -7,5 +7,10 @@
 	"keywords": [],
 	"author": "",
 	"license": "MIT",
-	"packageManager": "pnpm@10.13.1"
+	"packageManager": "pnpm@10.13.1",
+	"exports": {
+		".": "./index.ts",
+		"./types": "./types.ts",
+		"./data": "./data/index.ts"
+	}
 }

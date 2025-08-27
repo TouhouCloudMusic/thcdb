@@ -12,7 +12,7 @@ import { mergeProps } from "solid-js"
 import type { ValidComponent } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
-import { Button } from "~/components/button"
+import { Button } from "~/components/atomic/button"
 
 export type RootProps = DialogRootProps
 

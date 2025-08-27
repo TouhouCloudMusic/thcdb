@@ -14,13 +14,11 @@ export default defineConfig(({ mode }) => {
 	// oxlint-disable-next-line no-undef
 	const env = loadEnv(mode, process.cwd())
 	// oxlint-disable-next-line no-undef
-	const isTest = !!process.env["VITEST"]
-	const SERVER_URL =
-		env["VITE_SERVER_URL"] ?? (isTest ? "http://localhost:9999" : undefined)
 
-	if (!SERVER_URL && !isTest) {
-		throw new Error("Environment variable `VITE_SERVER_URL` is not defined")
-	}
+	const isTest = mode == "test"
+
+	const SERVER_URL = env["VITE_SERVER_URL"]
+
 	return {
 		plugins: [
 			babelMacrosPlugin(),
@@ -28,9 +26,8 @@ export default defineConfig(({ mode }) => {
 			solidPlugin(),
 			tanstackRouter({ target: "solid" }),
 			tailwindcss(),
-
 			tsconfigPaths(),
-			...(isTest ? [] : [generatePlugin(SERVER_URL)]),
+			generatePlugin(SERVER_URL, isTest),
 		],
 		server: {
 			port: 3000,

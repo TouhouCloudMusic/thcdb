@@ -1,15 +1,15 @@
 /* @refresh reload */
 import * as M from "@modular-forms/solid"
+import type { Artist, ArtistCommonFilter } from "@thc/api"
 import { createMemo } from "solid-js"
 import type { JSX } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 import { Cross1Icon } from "solid-radix-icons"
 
-import type { Artist, ArtistCommonFilter } from "~/api/artist"
-import { Button } from "~/components/button"
-import { Intersperse } from "~/components/common/Intersperse"
-import { FormComp } from "~/components/common/form"
-import { Divider } from "~/components/divider"
+import { Divider } from "~/components/atomic/Divider"
+import { Button } from "~/components/atomic/button"
+import { FormComp } from "~/components/atomic/form"
+import { Intersperse } from "~/components/data/Intersperse"
 
 import { useArtistForm } from "../../context"
 import { ArtistSearchDialog } from "../ArtistSearchDialog"

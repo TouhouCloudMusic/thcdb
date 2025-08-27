@@ -2,7 +2,7 @@
 import { Trans } from "@lingui-solid/solid/macro"
 import { createSignal, For } from "solid-js"
 
-import { assertContext } from "~/utils/context"
+import { assertContext } from "~/utils/solid/assertContext"
 
 import { SongInfoPageContext } from ".."
 
@@ -10,9 +10,9 @@ export function SongInfoLyrics() {
 	const ctx = assertContext(SongInfoPageContext)
 
 	const lyricsList = () => ctx.song.lyrics
-	const langs = () => ctx.song.lyrics?.map((x) => x.language!)
+	const langs = () => ctx.song.lyrics?.map((x) => x.language)
 	const [activeLang, setActiveLang] = createSignal(
-		lyricsList()?.find((x) => x.is_main)!.language_id!,
+		lyricsList()?.find((x) => x.is_main)!.language.id,
 	)
 
 	return (
@@ -46,7 +46,7 @@ export function SongInfoLyrics() {
 
 			<div>
 				<div class="text-lg leading-relaxed font-light whitespace-pre-wrap text-secondary">
-					{lyricsList()?.find((x) => x.language_id == activeLang())?.content}
+					{lyricsList()?.find((x) => x.language.id == activeLang())?.content}
 				</div>
 			</div>
 		</div>

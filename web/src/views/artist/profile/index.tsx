@@ -1,8 +1,7 @@
 /* @refresh skip */
+import type { Artist, ArtistCredit, Discography, ReleaseType } from "@thc/api"
 import { createContext, Suspense } from "solid-js"
 
-import type { Artist, Discography, Appearance, Credit } from "~/api/artist"
-import type { ReleaseType } from "~/api/release"
 import { Image } from "~/components/image"
 import { PageLayout } from "~/layout/PageLayout"
 import type { InfiniteQuery } from "~/types/query"
@@ -12,28 +11,28 @@ import { ArtistReleaseInfo } from "./comp/ArtistReleaseInfo"
 
 export type ArtistContext = {
 	artist: Artist
-	appearances: InfiniteQuery<Appearance>
+	appearances: InfiniteQuery<Discography>
 	discographies: {
 		data: Record<ReleaseType, Discography[]>
 		hasNext(type: ReleaseType): boolean
 		next(type: ReleaseType): Promise<void>
 		isLoading: boolean
 	}
-	credits: InfiniteQuery<Credit>
+	credits: InfiniteQuery<ArtistCredit>
 }
 
 export const ArtistContext = createContext<ArtistContext>()
 
 export type ArtistProfilePageProps = {
 	artist: Artist
-	appearances: InfiniteQuery<Appearance>
+	appearances: InfiniteQuery<Discography>
 	discographies: {
 		data: Record<ReleaseType, Discography[]>
 		hasNext(type: ReleaseType): boolean
 		next(type: ReleaseType): Promise<void>
 		isLoading: boolean
 	}
-	credits: InfiniteQuery<Credit>
+	credits: InfiniteQuery<ArtistCredit>
 }
 
 export function ArtistProfilePage(props: ArtistProfilePageProps) {
@@ -61,9 +60,11 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 							<Image.Root>
 								<Image.Fallback>
 									{(state) =>
-										state == Image.State.Error ?
+										state == Image.State.Error ? (
 											<div class="size-64 bg-slate-100"></div>
-										:	<></>
+										) : (
+											<></>
+										)
 									}
 								</Image.Fallback>
 								<Image.Img src={props.artist.profile_image_url ?? undefined} />

@@ -4,9 +4,9 @@ import { Field, Form } from "@modular-forms/solid"
 import type { FormStore } from "@modular-forms/solid"
 import { Show } from "solid-js"
 
-import type { AuthSchema } from "~/api"
-import { Button } from "~/components/button"
-import { FormComp } from "~/components/common/form"
+import { Button } from "~/components/atomic/button"
+import { FormComp } from "~/components/atomic/form"
+import type { SignIn, SignUp } from "~/domain/auth"
 
 import type { AuthFormMode } from "../store"
 import { useAuthForm } from "../store"
@@ -47,13 +47,13 @@ export function AuthForm() {
 					</Tabs.List>
 				</Tabs>
 				<Form
-					of={formStore() as FormStore<AuthSchema.SignIn>}
+					of={formStore() as FormStore<SignIn>}
 					datatype="application/json"
 					onSubmit={handleSubmit}
 					class="w-full space-y-8"
 				>
 					<Field
-						of={formStore() as FormStore<AuthSchema.SignIn>}
+						of={formStore() as FormStore<SignIn>}
 						name="username"
 					>
 						{(field, props) => (
@@ -64,7 +64,7 @@ export function AuthForm() {
 						)}
 					</Field>
 					<Field
-						of={formStore() as FormStore<AuthSchema.SignIn>}
+						of={formStore() as FormStore<SignIn>}
 						name="password"
 					>
 						{(field, props) => (
@@ -78,7 +78,7 @@ export function AuthForm() {
 
 					<Show when={mode() === "sign_up"}>
 						<Field
-							of={formStore() as FormStore<AuthSchema.SignUp>}
+							of={formStore() as FormStore<SignUp>}
 							name="repeated_password"
 						>
 							{(field, props) => (
@@ -93,7 +93,9 @@ export function AuthForm() {
 
 					{/* TODO: Rememeber me */}
 
-					<FormComp.ErrorMessage message={formStore().response.message} />
+					<FormComp.ErrorMessage>
+						{formStore().response.message}
+					</FormComp.ErrorMessage>
 
 					<Button
 						type="submit"

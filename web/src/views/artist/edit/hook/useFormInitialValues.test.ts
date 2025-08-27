@@ -1,8 +1,7 @@
 // oxlint-disable no-magic-numbers
+import type { Artist } from "@thc/api"
 import fc from "fast-check"
 import { describe, it, expect } from "vitest"
-
-import type { Artist } from "~/api/artist"
 
 import { useArtistFormInitialValues } from "./useFormInitialValues"
 

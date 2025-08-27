@@ -1,4 +1,5 @@
-import { type ComponentProps, mergeProps, type ParentProps } from "solid-js"
+import { mergeProps } from "solid-js"
+import type { ComponentProps, ParentProps } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
 export function PageLayout(props: ParentProps<ComponentProps<"div">>) {

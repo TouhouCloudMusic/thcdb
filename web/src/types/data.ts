@@ -13,16 +13,16 @@ export type SafeOmit<T, K extends keyof T> = {
 /** Record */
 type IsRecord<T> = T extends Record<PropertyKey, unknown> ? true : false
 
-type UnionToIntersection<U> =
-	(U extends unknown ? (k: U) => void : never) extends (k: infer I) => void ? I
-	:	never
+type UnionToIntersection<U> = (
+	U extends unknown ? (k: U) => void : never
+) extends (k: infer I) => void
+	? I
+	: never
 
 type LastOf<T> =
-	UnionToIntersection<T extends unknown ? () => T : never> extends (
-		() => infer R
-	) ?
-		R
-	:	never
+	UnionToIntersection<T extends unknown ? () => T : never> extends () => infer R
+		? R
+		: never
 
 export type UnionToTuple<
 	T,

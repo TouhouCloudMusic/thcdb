@@ -1,0 +1,12 @@
+{
+	"name": "solid-cropper",
+	"version": "1.0.0",
+	"description": "",
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"packageManager": "pnpm@10.14.0",
+	"dependencies": {
+		"cropperjs": "*"
+	}
+}

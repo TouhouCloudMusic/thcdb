@@ -1,6 +1,7 @@
 import type { ParentProps, Signal } from "solid-js"
 import { createContext, createSignal, Suspense } from "solid-js"
-import { useContextUnsave } from "~/utils/context"
+
+import { assertContext } from "~/utils/solid/assertContext"
 
 export enum AppTheme {
 	Light,
@@ -30,11 +31,13 @@ export class ThemeStore {
 		this.signal[1](theme)
 
 		switch (theme) {
-			case AppTheme.Dark:
+			case AppTheme.Dark: {
 				this.setDocumentTheme()
 				break
-			default:
+			}
+			default: {
 				this.setDocumentTheme()
+			}
 		}
 	}
 
@@ -44,7 +47,7 @@ export class ThemeStore {
 }
 
 export const ThemeContext = createContext<ThemeStore>()
-export const useTheme = () => useContextUnsave(ThemeContext)
+export const useTheme = () => assertContext(ThemeContext)
 
 export function ThemeProvider(props: ParentProps) {
 	return (
@@ -56,34 +59,21 @@ export function ThemeProvider(props: ParentProps) {
 	)
 }
 
-function fromString(str: string) {
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-	if (AppTheme.Dark == parseInt(str)) {
-		return AppTheme.Dark
-	} else {
-		return AppTheme.Light
-	}
-}
-
 function toString(theme: AppTheme) {
 	switch (theme) {
-		case AppTheme.Dark:
+		case AppTheme.Dark: {
 			return "dark"
-		default:
+		}
+		default: {
 			return "light"
+		}
 	}
 }
 
-// function setThemeCookie(theme: AppTheme) {
-//   Cookie.set("app_theme", String(theme), {
-//     expires: dayjs().add(30, "days").toDate(),
-//   })
-// }
-
 function setDocumentTheme(theme: AppTheme) {
-	document.getElementById("app")!.classList.add("notransition")
-	document.documentElement.setAttribute("data-mode", toString(theme))
+	document.querySelector("#app")!.classList.add("notransition")
+	document.documentElement.dataset["mode"] = toString(theme)
 	setTimeout(() => {
-		document.getElementById("app")!.classList.remove("notransition")
+		document.querySelector("#app")!.classList.remove("notransition")
 	}, 0)
 }

@@ -10,7 +10,8 @@ import {
 import { Marked } from "marked"
 import markedFootnote from "marked-footnote"
 import markedShiki from "marked-shiki"
-import { createHighlighter, type LanguageInput } from "shiki"
+import { createHighlighter } from "shiki"
+import type { LanguageInput } from "shiki"
 import { createResource, createRoot } from "solid-js"
 
 type Markdown = {

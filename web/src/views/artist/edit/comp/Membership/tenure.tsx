@@ -6,10 +6,10 @@ import type { JSX } from "solid-js"
 import { For } from "solid-js"
 import { Cross1Icon } from "solid-radix-icons"
 
-import type { NewArtistCorrection } from "~/api/artist/schema"
-import { Button } from "~/components/button"
-import { FormComp } from "~/components/common"
-import { InputField } from "~/components/common/form/Input"
+import { FormComp } from "~/components/atomic"
+import { Button } from "~/components/atomic/button"
+import { InputField } from "~/components/atomic/form/Input"
+import type { NewArtistCorrection } from "~/domain/artist/schema"
 
 import { useArtistForm } from "../../context"
 
@@ -101,7 +101,7 @@ function TenureEntry(props: {
 									type="number"
 									class="no-spinner"
 									placeholder={idx == 0 ? t`Join year` : t`Leave year`}
-									value={field.value}
+									value={field.value ?? undefined}
 								/>
 								<InputField.Error>{field.error}</InputField.Error>
 							</InputField.Root>

@@ -11,3 +11,5 @@ src/style/shadow/shadow_default.css
 src/style/shadow/shadow_oklab.css
 
 src/locale
+
+*lock.yaml

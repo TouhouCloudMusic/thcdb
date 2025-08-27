@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/solid-router"
-import { createResource, type Ref } from "solid-js"
+import { createResource } from "solid-js"
+import type { Ref } from "solid-js"
 import {
 	BookmarkIcon,
 	Cross1Icon,
@@ -13,11 +14,11 @@ import {
 } from "solid-radix-icons"
 
 import { ListItem, Sidebar } from "~/components/Sidebar"
-import { useUserCtx } from "~/state/user"
+import { useCurrentUser } from "~/state/user"
 
-import { Avatar } from "../avatar"
-import { Button } from "../button"
-import { Divider } from "../divider"
+import { Divider } from "../atomic/Divider"
+import { Avatar } from "../atomic/avatar"
+import { Button } from "../atomic/button"
 
 export type Props = {
 	onClose: VoidFunction
@@ -25,7 +26,7 @@ export type Props = {
 }
 
 export function RightSidebar(props: Props) {
-	const userCtx = useUserCtx()
+	const userCtx = useCurrentUser()
 
 	return (
 		<>

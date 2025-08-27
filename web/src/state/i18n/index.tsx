@@ -4,7 +4,7 @@ import { type } from "arktype"
 import type { ParentProps } from "solid-js"
 import { createContext } from "solid-js"
 
-import { assertContext } from "~/utils/context"
+import { assertContext } from "~/utils/solid/assertContext"
 
 import { initUserLang } from "./init"
 

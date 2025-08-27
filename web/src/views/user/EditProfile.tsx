@@ -1,34 +1,23 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
 import { FileField } from "@kobalte/core/file-field"
 import { createForm, valiForm } from "@modular-forms/solid"
-import {
-	createEffect,
-	createMemo,
-	createSignal,
-	JSX,
-	Match,
-	onCleanup,
-	type Setter,
-	Show,
-	Switch,
-	type ValidComponent,
-} from "solid-js"
-import { createMutable, createStore } from "solid-js/store"
+import { Option } from "effect"
+import { Cropper } from "solid-cropper"
+import type { Setter, ValidComponent } from "solid-js"
+import { createMemo, createSignal, onCleanup, Show } from "solid-js"
+import { createMutable } from "solid-js/store"
 import * as v from "valibot"
-import { Avatar } from "~/components/avatar"
-import { Button } from "~/components/button"
-import { Card } from "~/components/card"
+
+import { Card } from "~/components/atomic/Card"
+import { Avatar } from "~/components/atomic/avatar"
+import { Button } from "~/components/atomic/button"
 import { Dialog } from "~/components/dialog"
-import { type components } from "~/data/openapi"
 import { PageLayout } from "~/layout/PageLayout"
-import { useUserCtx } from "~/state/user"
-import { type Replace } from "~/types"
-import { type ExternalSchema as GenericValibotSchema } from "~/types/valibot"
-import { createCropperBoundary } from "~/utils/adapter/cropper"
+import { useCurrentUser } from "~/state/user"
 import { createClickOutside } from "~/utils/solid/createClickOutside"
 
 export function EditProfile() {
-	let user_ctx = useUserCtx()
+	let user_ctx = useCurrentUser()
 
 	let user = createMutable(user_ctx.user!)
 
@@ -37,8 +26,13 @@ export function EditProfile() {
 			<div class="col-span-22 col-start-2 grid grid-cols-[1fr_auto] pt-6">
 				<div>
 					<div>{user.name}</div>
+					{/* TODO: locales */}
 					<div>{new Date(user.last_login).toLocaleString("zh-CN")}</div>
-					<div>{user.roles.join(", ")}</div>
+					<div>
+						{Option.fromNullable(user.roles)
+							.pipe(Option.map((x) => x.map((y) => y.name).join(", ")))
+							.pipe(Option.getOrUndefined)}
+					</div>
 				</div>
 				<div>
 					<Avatar
@@ -52,18 +46,12 @@ export function EditProfile() {
 	)
 }
 
-type UploadAvatarForm = Replace<
-	components["schemas"]["UploadAvatar"],
-	Blob,
-	File
->
-
 const UploadAvatarFormSchema = v.object({
 	data: v.file(),
-} satisfies GenericValibotSchema<UploadAvatarForm>)
+})
 
 function UploadAvatarFormDialog() {
-	let [_, { Form, Field }] = createForm<UploadAvatarForm>({
+	let [_, __] = createForm({
 		validate: valiForm(UploadAvatarFormSchema),
 	})
 	let [show, setShow, ref] = createClickOutside()
@@ -104,7 +92,7 @@ export function UploadAvatarFormContent(props: {
     rounded-md
   `
 
-	let [_, { Form, Field }] = createForm<UploadAvatarForm>({
+	let [_, { Form, Field }] = createForm({
 		validate: valiForm(UploadAvatarFormSchema),
 	})
 
@@ -197,45 +185,45 @@ export function UploadAvatarFormContent(props: {
 
 function UploadAvatarFormCanvas(props: { file: File }) {
 	let url = createMemo(() => {
-		let url = window.URL.createObjectURL(props.file)
+		let url = globalThis.URL.createObjectURL(props.file)
 
-		onCleanup(() => window.URL.revokeObjectURL(url))
+		onCleanup(() => globalThis.URL.revokeObjectURL(url))
 
 		return url
 	})
 
-	let store = createCropperBoundary("image")
+	// let store = createCropperBoundary("image")
 
 	return (
-		<cropper-canvas
+		<Cropper.Canvas
 			background
 			class="size-88"
-			ref={store.setCanvasRef}
+			// ref={store.setCanvasRef}
 		>
-			<cropper-image
+			<Cropper.Image
 				src={url()}
 				alt="TODO"
 				scalable
 				rotatable
 				translatable
 				skewable
-				ref={store.setImageRef}
-			></cropper-image>
-			<cropper-shade hidden></cropper-shade>
+				// ref={store.setImageRef}
+			/>
+			<Cropper.Shade hidden />
 
-			<cropper-selection
+			<Cropper.Selection
 				aspect-ratio={1}
 				initial-coverage={0.75}
 				keyboard
 				precise
 				// dynamic
-				ref={store.setSelectionRef}
+				// ref={store.setSelectionRef}
 			>
-				<cropper-handle
+				<Cropper.Handle
 					action="move"
 					plain
-				></cropper-handle>
-			</cropper-selection>
-		</cropper-canvas>
+				/>
+			</Cropper.Selection>
+		</Cropper.Canvas>
 	)
 }

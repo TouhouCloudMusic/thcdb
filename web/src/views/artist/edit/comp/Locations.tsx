@@ -1,8 +1,8 @@
 import { useLingui } from "@lingui-solid/solid/macro"
 import * as M from "@modular-forms/solid"
 
-import type { NewArtistCorrection } from "~/api/artist/schema"
-import { Location } from "~/components/composite/form/Location"
+import { Location } from "~/components/form/Location"
+import type { NewArtistCorrection } from "~/domain/artist/schema"
 
 import { useArtistForm } from "../context"
 

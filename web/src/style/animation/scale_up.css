@@ -1,26 +1,26 @@
 @theme {
-  --scale-up-start: 0.2;
-  --animate-scale-up: scale-up 200ms ease-out;
-  --animate-scale-down: scale-down 200ms ease-in;
+	--scale-up-start: 0.2;
+	--animate-scale-up: scale-up 200ms ease-out;
+	--animate-scale-down: scale-down 200ms ease-in;
 
-  @keyframes scale-up {
-    from {
-      transform: scale(var(--scale-up-start));
-      opacity: 0;
-    }
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-  @keyframes scale-down {
-    from {
-      transform: scale(1);
-      opacity: 1;
-    }
-    to {
-      transform: scale(var(--scale-up-start));
-      opacity: 0;
-    }
-  }
+	@keyframes scale-up {
+		from {
+			transform: scale(var(--scale-up-start));
+			opacity: 0;
+		}
+		to {
+			transform: scale(1);
+			opacity: 1;
+		}
+	}
+	@keyframes scale-down {
+		from {
+			transform: scale(1);
+			opacity: 1;
+		}
+		to {
+			transform: scale(var(--scale-up-start));
+			opacity: 0;
+		}
+	}
 }

@@ -1,4 +1,6 @@
 import { Trans, useLingui } from "@lingui-solid/solid/macro"
+import type { IconProps } from "@thc/icons"
+import { RankingIcon } from "@thc/icons/custom"
 import type { JSX } from "solid-js"
 import { For } from "solid-js"
 import {
@@ -10,9 +12,6 @@ import {
 } from "solid-radix-icons"
 
 import { ListItem, Sidebar } from "~/components/Sidebar"
-import { RankingIcon } from "~/components/icons/custom"
-
-import type { IconProps } from "../icons"
 
 type ListItemContent = {
 	icon: (props: IconProps) => JSX.Element

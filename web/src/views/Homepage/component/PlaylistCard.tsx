@@ -21,9 +21,7 @@ export function PlaylistCard({ playlist }: PlaylistCardProps) {
 				<h3 class="line-clamp-2 text-sm font-medium text-gray-800 hover:text-rose-600">
 					{playlist.title}
 				</h3>
-				<p class="mt-1 text-xs text-gray-500">
-					by {playlist.creator}
-				</p>
+				<p class="mt-1 text-xs text-gray-500">by {playlist.creator}</p>
 			</div>
 		</div>
 	)

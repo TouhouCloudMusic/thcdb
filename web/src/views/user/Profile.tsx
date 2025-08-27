@@ -1,36 +1,35 @@
-/* @refresh skip */
+/* @refresh reload */
 import { Link } from "@tanstack/solid-router"
+import type { UserProfile, UserRole, UserRoleEnum } from "@thc/api"
+import type { ComponentProps, Resource } from "solid-js"
 import {
-	type ComponentProps,
 	createContext,
 	createSignal,
 	ErrorBoundary,
 	For,
 	Match,
 	mergeProps,
-	type Resource,
 	Show,
 	Suspense,
 	Switch,
 } from "solid-js"
-import { type DOMElement } from "solid-js/jsx-runtime"
 import { twJoin, twMerge } from "tailwind-merge"
-import { type UserRole, type UserProfile } from "~/api/user"
-import { Avatar } from "~/components/avatar"
-import { Button } from "~/components/button"
+
+import { Avatar } from "~/components/atomic/avatar"
+import { Button } from "~/components/atomic/button"
 import { Markdown } from "~/components/markdown"
 import { PageLayout } from "~/layout/PageLayout"
 import { imgUrl } from "~/utils/adapter/static_file"
-import { assertContext } from "~/utils/context"
 import { callHandlerUnion } from "~/utils/dom/event"
+import { assertContext } from "~/utils/solid/assertContext"
 
 type Props = {
-	data: Resource<UserProfile>
+	data: UserProfile
 	isCurrentUser: boolean
 }
 
 type Context = {
-	user: Resource<UserProfile>
+	user: UserProfile
 	userType: UserType
 }
 
@@ -50,11 +49,11 @@ export function Profile(props: Props) {
 		get userType() {
 			if (props.isCurrentUser) {
 				return UserType.Current
-			} else if (this.user()?.is_following) {
-				return UserType.Following
-			} else {
-				return UserType.Unfollowed
 			}
+			if (this.user.is_following) {
+				return UserType.Following
+			}
+			return UserType.Unfollowed
 		},
 	}
 
@@ -71,19 +70,14 @@ function Content() {
 	return (
 		<PageLayout class="isolate">
 			{/* Profile banner */}
-			<div
-				class={twJoin(
-					"flex h-68 w-full overflow-hidden bg-slate-200",
-					context.user.loading && "animate-pulse",
-				)}
-			>
+			<div class={twJoin("flex h-68 w-full overflow-hidden bg-slate-200")}>
 				<Suspense>
 					<ErrorBoundary
 						fallback={(e) => {
 							return <div>Image Error: {e}</div>
 						}}
 					>
-						<Show when={!context.user.error && context.user.latest?.banner_url}>
+						<Show when={context.user.banner_url}>
 							{(url) => (
 								<img
 									src={imgUrl(url())}
@@ -106,14 +100,7 @@ function Content() {
 							<ProfileButton />
 						</div>
 						<ul class="mt-1 flex gap-2">
-							<For
-								each={context.user()?.roles.concat([
-									{
-										id: 123,
-										name: "Moderator",
-									},
-								])}
-							>
+							<For each={context.user.roles}>
 								{(role) => (
 									<li>
 										<RoleBadge role={role.name} />
@@ -152,7 +139,7 @@ function UserName() {
 			}
 		>
 			<span class="flex font-inter text-xl font-semibold text-slate-1000">
-				{context.user()?.name}
+				{context.user.name}
 			</span>
 		</Suspense>
 	)
@@ -183,32 +170,32 @@ function ProfileButton(props: ProfileButtonProps) {
 
 	const buttonProps = mergeProps(props, {
 		get onMouseOver() {
-			return context.userType === UserType.Following ?
-					(
+			return context.userType === UserType.Following
+				? (
 						e: MouseEvent & {
 							currentTarget: HTMLButtonElement
-							target: DOMElement
+							target: Element
 						},
 						// eslint-disable-next-line solid/reactivity
 					) => {
 						e.target.innerHTML = "Unfollow"
 						callHandlerUnion(e, props.onMouseOver)
 					}
-				:	props.onMouseOver
+				: props.onMouseOver
 		},
 		get onMouseOut() {
-			return context.userType === UserType.Following ?
-					(
+			return context.userType === UserType.Following
+				? (
 						e: MouseEvent & {
 							currentTarget: HTMLButtonElement
-							target: DOMElement
+							target: Element
 						},
 						// eslint-disable-next-line solid/reactivity
 					) => {
 						e.target.innerHTML = "Following"
 						callHandlerUnion(e, props.onMouseEnter)
 					}
-				:	props.onMouseOver
+				: props.onMouseOver
 		},
 	} satisfies ComponentProps<"button">)
 
@@ -227,7 +214,7 @@ function ProfileButton(props: ProfileButtonProps) {
 		>
 			{
 				// This is to trigger suspense
-				void context.user()
+				void context.user
 			}
 			<Switch>
 				<Match when={context.userType === UserType.Current}>
@@ -276,7 +263,7 @@ function Bio() {
 			>
 				<Suspense>
 					<Markdown
-						content={ctx.user()?.bio}
+						content={ctx.user.bio}
 						fallback="这个人什么也没有写哦（"
 						onRendered={() => setMdParsing(false)}
 					/>
@@ -286,20 +273,24 @@ function Bio() {
 	)
 }
 
-function RoleBadge(props: { role: UserRole }) {
-	function matchColor(role: UserRole) {
-		switch (role) {
-			case "Admin":
-				// @tw
-				return "bg-reimu-100 text-reimu-700"
-			case "Moderator":
-				// @tw
-				return "bg-purple-100/80 text-purple-800/75"
-			case "User":
-				return ""
+function matchColor(role: UserRoleEnum) {
+	// oxlint-disable-next-line default-case
+	switch (role) {
+		case "Admin": {
+			// @tw
+			return "bg-reimu-100 text-reimu-700"
+		}
+		case "Moderator": {
+			// @tw
+			return "bg-purple-100/80 text-purple-800/75"
+		}
+		case "User": {
+			return ""
 		}
 	}
+}
 
+function RoleBadge(props: { role: UserRoleEnum }) {
 	return (
 		<Show when={props.role != "User"}>
 			<div

@@ -1,5 +1,11 @@
 /* @refresh skip */
 import { Trans } from "@lingui-solid/solid/macro"
+import type {
+	ArtistCredit,
+	CreditRoleRef,
+	Discography,
+	ReleaseType,
+} from "@thc/api"
 import type { ComponentProps, JSX, ParentProps } from "solid-js"
 import {
 	createMemo,
@@ -12,12 +18,11 @@ import {
 import { Dynamic } from "solid-js/web"
 import { twJoin, twMerge } from "tailwind-merge"
 
-import { RELEASE_TYPES, DateWithPrecision } from "~/api"
-import type { ReleaseType } from "~/api"
-import type { Credit, Discography } from "~/api/artist"
-import { Button } from "~/components/button"
-import { Tab } from "~/components/common/Tab"
-import { assertContext } from "~/utils/context"
+import { Tab } from "~/components/atomic/Tab"
+import { Button } from "~/components/atomic/button"
+import { RELEASE_TYPES } from "~/domain/release"
+import { DateWithPrecision } from "~/domain/shared"
+import { assertContext } from "~/utils/solid/assertContext"
 
 import { ArtistContext } from ".."
 
@@ -34,9 +39,9 @@ export function ArtistReleaseInfo() {
 			<Show
 				when={
 					!(
-						context.discographies.isLoading ||
-						context.appearances.isLoading ||
-						context.credits.isLoading
+						context.discographies.isLoading
+						|| context.appearances.isLoading
+						|| context.credits.isLoading
 					)
 				}
 				fallback={<div>Loading...</div>}
@@ -56,12 +61,15 @@ function Inner() {
 				<For
 					each={TABS.filter((tab) => {
 						switch (tab) {
-							case "Appearance":
+							case "Appearance": {
 								return context.appearances.data.length
-							case "Credit":
+							}
+							case "Credit": {
 								return context.credits.data.length
-							default:
+							}
+							default: {
 								return true
+							}
 						}
 					})}
 				>
@@ -83,7 +91,7 @@ function Inner() {
 				value="Discography"
 				class="w-full border-t border-slate-300"
 			>
-				<Discography />
+				<DiscographyTab />
 			</Tab.Content>
 			<Tab.Content<ArtistReleaseType>
 				value="Appearance"
@@ -115,7 +123,7 @@ function Inner() {
 	)
 }
 
-function Discography() {
+function DiscographyTab() {
 	const context = assertContext(ArtistContext)
 	const [selectedType, setSelectedType] = createSignal<ReleaseType>("Album")
 
@@ -174,7 +182,7 @@ function Discography() {
 	)
 }
 
-function ArtistReleaseList<T extends Discography | Credit>(props: {
+function ArtistReleaseList<T extends Discography | CreditRoleRef>(props: {
 	data?: T[] | undefined
 	hasNext: boolean
 	next: () => Promise<void>
@@ -205,15 +213,15 @@ function ArtistReleaseList<T extends Discography | Credit>(props: {
 function DiscographyItem(props: { item: Discography }) {
 	const context = assertContext(ArtistContext)
 	const subtitle = () => {
-		const displayArtistName =
-			props.item.artist.some((a) => a.name === context.artist.name) ?
-				undefined
-			:	props.item.artist.map((a) => a.name).join(", ")
+		const displayArtistName = props.item.artist.some(
+			(a) => a.name === context.artist.name,
+		)
+			? undefined
+			: props.item.artist.map((a) => a.name).join(", ")
 
-		const releaseDate =
-			props.item.release_date ?
-				DateWithPrecision.display(props.item.release_date)
-			:	undefined
+		const releaseDate = props.item.release_date
+			? DateWithPrecision.display(props.item.release_date)
+			: undefined
 		if (displayArtistName && releaseDate) {
 			return `${displayArtistName} · ${releaseDate}`
 		}
@@ -236,7 +244,7 @@ function DiscographyItem(props: { item: Discography }) {
 	)
 }
 
-function CreditItem(props: { item: Credit }) {
+function CreditItem(props: { item: ArtistCredit }) {
 	return (
 		<ItemLayout>
 			<div class="flex whitespace-pre">
@@ -247,9 +255,7 @@ function CreditItem(props: { item: Credit }) {
 						{(artist, index) => (
 							<li class={"text-normal leading-6 text-secondary"}>
 								{artist.name}
-								{index() === props.item.roles.length - 1 ?
-									<></>
-								:	" & "}
+								{index() === props.item.roles.length - 1 ? <></> : " & "}
 							</li>
 						)}
 					</For>
@@ -257,7 +263,7 @@ function CreditItem(props: { item: Credit }) {
 			</div>
 			<Show when={props.item.release_date}>
 				<ItemSubTitle>
-					{DateWithPrecision.display(props.item.release_date)}
+					{DateWithPrecision.display(props.item.release_date!)}
 				</ItemSubTitle>
 			</Show>
 			<ItemSubTitle
@@ -268,9 +274,7 @@ function CreditItem(props: { item: Credit }) {
 					{(role, index) => (
 						<li>
 							{role.name}
-							{index() === props.item.roles.length - 1 ?
-								<></>
-							:	", "}
+							{index() === props.item.roles.length - 1 ? <></> : ", "}
 						</li>
 					)}
 				</For>

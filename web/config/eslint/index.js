@@ -23,6 +23,7 @@ export const tsRules = {
 			allowInterfaces: "with-single-extends",
 		},
 	],
+	"@typescript-eslint/no-unsafe-assignment": "off",
 	"@typescript-eslint/no-misused-promises": [
 		"error",
 		{

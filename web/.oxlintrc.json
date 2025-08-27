@@ -3,7 +3,7 @@
 	"env": {
 		"browser": true
 	},
-	"ignorePatterns": ["src/locale/**"],
+	"ignorePatterns": ["src/locale/**", "**.gen.ts"],
 	"categories": {
 		"correctness": "error",
 		"suspicious": "warn",
@@ -33,7 +33,7 @@
 
 	"rules": {
 		"array-callback-return": [
-			"warn",
+			"off",
 			{
 				"allowImplicitReturn": true
 			}
@@ -41,6 +41,7 @@
 		"arrow-body-style": "off",
 		"curly": "off",
 		"eqeqeq": ["off", "smart"],
+		"func-names": "off",
 		"func-style": [
 			"error",
 			"declaration",
@@ -81,6 +82,7 @@
 		// Disable this, as type import is not recognized.
 		// We use the import plugin instead.
 		"no-duplicate-imports": "off",
+		"no-else-return": "off",
 		"no-empty-function": [
 			"warn",
 			{
@@ -90,7 +92,7 @@
 		"no-magic-numbers": [
 			"error",
 			{
-				"ignore": [-1, 0, 1, 2, 12, 24, 60, 1000, 3600],
+				"ignore": [-1, 0, 1, 2, 4, 8, 12, 16, 24, 60, 1000, 3600],
 				"ignoreArrayIndexes": true
 			}
 		],
@@ -109,6 +111,10 @@
 		"import/no-anonymous-default-export": "off",
 		"import/no-cycle": "off",
 		"import/no-namespace": "off",
+		"import/no-unassigned-imports": [
+			"error",
+			{ "allow": ["cropperjs", "**/*.css"] }
+		],
 		"import/prefer-default-export": "off",
 
 		"oxc/no-barrel-file": "off",
@@ -117,6 +123,7 @@
 		"oxc/no-rest-spread-properties": "off",
 
 		"promise/prefer-await-to-then": "off",
+		"promise/prefer-await-to-callbacks": "off",
 
 		"typescript/ban-ts-comment": "off",
 		"typescript/consistent-type-definitions": "off",
@@ -137,12 +144,15 @@
 			}
 		],
 		"unicorn/no-anonymous-default-export": "off",
+		"unicorn/no-array-reduce": "off",
+		"unicorn/no-array-method-this-argument": "off",
 		"unicorn/prefer-spread": "off"
 	},
 	"overrides": [
 		{
 			"files": ["*.stories.tsx"],
 			"rules": {
+				"no-magic-numbers": "off",
 				"import/no-default-export": "off"
 			}
 		},
@@ -152,6 +162,13 @@
 			"rules": {
 				"max-lines-per-function": "off",
 				"vitest/prefer-to-be-truthy": "off"
+			}
+		},
+		{
+			"files": ["plugins/*.ts"],
+			"rules": {
+				"no-console": "off",
+				"no-magic-numbers": "off"
 			}
 		}
 	]

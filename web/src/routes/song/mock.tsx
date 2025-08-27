@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/solid-router"
+import type { Song } from "@thc/api"
 
-import type { Song } from "~/api/song"
 import { SongInfoPage } from "~/views/song/Info"
 
 export const Route = createFileRoute("/song/mock")({
@@ -270,7 +270,7 @@ const mockData: Song = {
 		{
 			id: 1,
 			song_id: 1,
-			language_id: 1,
+
 			content: `東の国の眠らない夜に
 幻想の扉が開かれて
 古き良き調べが響いている
@@ -295,7 +295,6 @@ const mockData: Song = {
 		{
 			id: 2,
 			song_id: 1,
-			language_id: 2,
 			content: `In the sleepless night of the eastern land
 The door to fantasy opens wide
 Ancient melodies echo through the air
@@ -320,7 +319,7 @@ Let's treasure this precious day`,
 		{
 			id: 3,
 			song_id: 1,
-			language_id: 3,
+
 			content: `在东方国度的不眠之夜
 幻想之门缓缓开启
 古老的旋律在空中回响

@@ -1,6 +1,6 @@
 /* @refresh skip */
 import { Image } from "~/components/image"
-import { assertContext } from "~/utils/context"
+import { assertContext } from "~/utils/solid/assertContext"
 
 import { SongInfoPageContext } from ".."
 

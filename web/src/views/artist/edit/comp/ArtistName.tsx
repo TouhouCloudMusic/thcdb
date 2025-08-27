@@ -1,8 +1,8 @@
 import { Trans } from "@lingui-solid/solid/macro"
 import * as M from "@modular-forms/solid"
 
-import type { NewArtistCorrection } from "~/api/artist/schema"
-import { InputField } from "~/components/common/form/Input"
+import { InputField } from "~/components/atomic/form/Input"
+import type { NewArtistCorrection } from "~/domain/artist/schema"
 
 import { useArtistForm } from "../context"
 
@@ -25,7 +25,7 @@ export function ArtistFormNameField() {
 						id="name"
 						value={field.value}
 					/>
-					<InputField.Error message={field.error} />
+					<InputField.Error>{field.error}</InputField.Error>
 				</InputField.Root>
 			)}
 		</M.Field>

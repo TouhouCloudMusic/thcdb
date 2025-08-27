@@ -1,9 +1,10 @@
 import { Trans } from "@lingui-solid/solid/macro"
 import * as M from "@modular-forms/solid"
+import type { ArtistType } from "@thc/api"
 import { For } from "solid-js"
 
-import type { ArtistType, NewArtistCorrection } from "~/api/artist/schema"
-import { FormComp } from "~/components/common/form"
+import { FormComp } from "~/components/atomic/form"
+import type { NewArtistCorrection } from "~/domain/artist/schema"
 
 import { useArtistForm } from "../context"
 

@@ -1,16 +1,16 @@
 /* @refresh skip */
 import { useLingui } from "@lingui-solid/solid/macro"
+import { useNavigate } from "@tanstack/solid-router"
+import type { Artist } from "@thc/api"
 import type { ParentProps } from "solid-js"
 import { createMemo, Show, For } from "solid-js"
-
-import type { Artist } from "~/api/artist"
-import { DateWithPrecision } from "~/api/shared"
-import { assertContext } from "~/utils/context"
-import { Button } from "~/components/button"
 import { ArrowLeftIcon } from "solid-radix-icons"
 
+import { Button } from "~/components/atomic/button"
+import { DateWithPrecision } from "~/domain/shared"
+import { assertContext } from "~/utils/solid/assertContext"
+
 import { ArtistContext } from ".."
-import { useNavigate } from "@tanstack/solid-router"
 
 export function ArtistInfo() {
 	const { t } = useLingui()
@@ -40,11 +40,18 @@ export function ArtistInfo() {
 				<Links />
 			</div>
 			{/* Test */}
-			<Button class="mt-4 w-fit" variant="Tertiary" size="Sm" onClick={() => {
-				void navigator({
-					to: "/artist/" + context.artist.id + "/edit",
-				})
-			}}>Edit</Button>
+			<Button
+				class="mt-4 w-fit"
+				variant="Tertiary"
+				size="Sm"
+				onClick={() => {
+					void navigator({
+						to: "/artist/" + context.artist.id + "/edit",
+					})
+				}}
+			>
+				Edit
+			</Button>
 		</div>
 	)
 }
@@ -99,19 +106,17 @@ function Membership() {
 	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 	const label = createMemo(() => {
-		switch (context.artist.artist_type) {
-			case "Solo":
-				return t`Member Of`
-			case "Multiple":
-				return t`Members`
-			// Unreachable
+		if (context.artist.artist_type === "Solo") {
+			return t`Member Of`
+		} else if (context.artist.artist_type === "Multiple") {
+			return t`Members`
 		}
 	})
 	return (
 		<Show
 			when={
-				context.artist.artist_type !== "Unknown" &&
-				context.artist.memberships?.length
+				context.artist.artist_type !== "Unknown"
+				&& context.artist.memberships?.length
 			}
 		>
 			<div>

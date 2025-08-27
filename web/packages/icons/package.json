@@ -1,0 +1,19 @@
+{
+	"name": "@thc/icons",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"packageManager": "pnpm@10.14.0",
+	"dependencies": {
+		"solid-js": "*"
+	},
+	"exports": {
+		".": "./index.ts",
+		"./vue_theme": "./vue_theme/index.ts",
+		"./heroicons/24/outline": "./heroicons/24/outline/index.ts",
+		"./custom": "./custom/index.tsx"
+	}
+}

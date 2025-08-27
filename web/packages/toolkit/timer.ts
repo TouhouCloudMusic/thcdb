@@ -29,13 +29,15 @@ export function debounce<T extends unknown[]>(
 	if (argsLength === 2) {
 		if (typeof arg1 === "number") {
 			return createDebounced(arg2 as VoidFn<T>, arg1)
-		} else if (typeof arg1 === "function") {
+		}
+		if (typeof arg1 === "function") {
 			return createDebounced(arg1, arg2 as number)
 		}
 	} else if (argsLength === 1) {
 		if (typeof arg1 === "number") {
 			return (fn: VoidFn) => createDebounced(fn, arg1)
-		} else if (typeof arg1 === "function") {
+		}
+		if (typeof arg1 === "function") {
 			return (timeout: number) => createDebounced(arg1, timeout)
 		}
 	}

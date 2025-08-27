@@ -1,31 +1,29 @@
 @keyframes float {
+	0%,
+	100% {
+		transform: translateY(0) rotate(12deg);
+	}
 
-    0%,
-    100% {
-        transform: translateY(0) rotate(12deg);
-    }
-
-    50% {
-        transform: translateY(-10px) rotate(14deg);
-    }
+	50% {
+		transform: translateY(-10px) rotate(14deg);
+	}
 }
 
 @keyframes pulse-slow {
+	0%,
+	100% {
+		opacity: 0.1;
+	}
 
-    0%,
-    100% {
-        opacity: 0.1;
-    }
-
-    50% {
-        opacity: 0.3;
-    }
+	50% {
+		opacity: 0.3;
+	}
 }
 
 .animate-float {
-    animation: float 6s ease-in-out infinite;
+	animation: float 6s ease-in-out infinite;
 }
 
 .animate-pulse-slow {
-    animation: pulse-slow 8s ease-in-out infinite;
+	animation: pulse-slow 8s ease-in-out infinite;
 }

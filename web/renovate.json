@@ -7,5 +7,5 @@
 	],
 	"prConcurrentLimit": 0,
 	"minimumReleaseAge": "3 days",
-	"baseBranches": ["main"],
+	"baseBranches": ["main"]
 }

@@ -1,4 +1,4 @@
-import { type JSX } from "solid-js"
+import type { JSX } from "solid-js"
 
 export function callHandlerUnion<T, E extends Event>(
 	event: E & {
@@ -30,11 +30,10 @@ export function compositeHandler<T, E extends Event>(
 			callHandlerUnion(e, handlers[0])
 			callHandlerUnion(e, handlers[1])
 		}
-	} else {
-		return (e) => {
-			for (const handler of handlers) {
-				callHandlerUnion(e, handler)
-			}
+	}
+	return (e) => {
+		for (const handler of handlers) {
+			callHandlerUnion(e, handler)
 		}
 	}
 }

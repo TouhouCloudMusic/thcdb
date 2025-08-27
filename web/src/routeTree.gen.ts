@@ -9,10 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LibraryRouteImport } from './routes/library'
-import { Route as FeedsRouteImport } from './routes/feeds'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as ArticlesRouteImport } from './routes/articles'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SongMockRouteImport } from './routes/song/mock'
@@ -25,24 +22,9 @@ import { Route as ArtistIdEditRouteImport } from './routes/artist/$id.edit'
 import { Route as userProfileEditRouteImport } from './routes/(user)/profile_.edit'
 import { Route as userProfileUsernameRouteImport } from './routes/(user)/profile_.$username'
 
-const LibraryRoute = LibraryRouteImport.update({
-  id: '/library',
-  path: '/library',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FeedsRoute = FeedsRouteImport.update({
-  id: '/feeds',
-  path: '/feeds',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ArticlesRoute = ArticlesRouteImport.update({
-  id: '/articles',
-  path: '/articles',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -104,10 +86,7 @@ const userProfileUsernameRoute = userProfileUsernameRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/articles': typeof ArticlesRoute
   '/auth': typeof AuthRoute
-  '/feeds': typeof FeedsRoute
-  '/library': typeof LibraryRoute
   '/profile': typeof userProfileRoute
   '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/new': typeof ArtistNewRoute
@@ -121,10 +100,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/articles': typeof ArticlesRoute
   '/auth': typeof AuthRoute
-  '/feeds': typeof FeedsRoute
-  '/library': typeof LibraryRoute
   '/profile': typeof userProfileRoute
   '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/new': typeof ArtistNewRoute
@@ -139,10 +115,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/articles': typeof ArticlesRoute
   '/auth': typeof AuthRoute
-  '/feeds': typeof FeedsRoute
-  '/library': typeof LibraryRoute
   '/(user)/profile': typeof userProfileRoute
   '/(user)/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/new': typeof ArtistNewRoute
@@ -158,10 +131,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
-    | '/articles'
     | '/auth'
-    | '/feeds'
-    | '/library'
     | '/profile'
     | '/test_avatar_upload'
     | '/artist/new'
@@ -175,10 +145,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
-    | '/articles'
     | '/auth'
-    | '/feeds'
-    | '/library'
     | '/profile'
     | '/test_avatar_upload'
     | '/artist/new'
@@ -192,10 +159,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
-    | '/articles'
     | '/auth'
-    | '/feeds'
-    | '/library'
     | '/(user)/profile'
     | '/(user)/test_avatar_upload'
     | '/artist/new'
@@ -210,10 +174,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  ArticlesRoute: typeof ArticlesRoute
   AuthRoute: typeof AuthRoute
-  FeedsRoute: typeof FeedsRoute
-  LibraryRoute: typeof LibraryRoute
   userProfileRoute: typeof userProfileRoute
   userTest_avatar_uploadRoute: typeof userTest_avatar_uploadRoute
   ArtistNewRoute: typeof ArtistNewRoute
@@ -227,32 +188,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/solid-router' {
   interface FileRoutesByPath {
-    '/library': {
-      id: '/library'
-      path: '/library'
-      fullPath: '/library'
-      preLoaderRoute: typeof LibraryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/feeds': {
-      id: '/feeds'
-      path: '/feeds'
-      fullPath: '/feeds'
-      preLoaderRoute: typeof FeedsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/articles': {
-      id: '/articles'
-      path: '/articles'
-      fullPath: '/articles'
-      preLoaderRoute: typeof ArticlesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -338,10 +278,7 @@ declare module '@tanstack/solid-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  ArticlesRoute: ArticlesRoute,
   AuthRoute: AuthRoute,
-  FeedsRoute: FeedsRoute,
-  LibraryRoute: LibraryRoute,
   userProfileRoute: userProfileRoute,
   userTest_avatar_uploadRoute: userTest_avatar_uploadRoute,
   ArtistNewRoute: ArtistNewRoute,

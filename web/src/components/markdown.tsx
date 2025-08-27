@@ -1,5 +1,6 @@
 import { createAsync } from "@solidjs/router"
-import { type Nullable } from "~/types"
+
+import type { Nullable } from "~/types"
 import { useMarkdown } from "~/utils/markdown"
 
 type Props = {
@@ -15,9 +16,8 @@ export function Markdown(props: Props) {
 
 			props.onRendered()
 			return ret
-		} else {
-			return props.fallback
 		}
+		return props.fallback
 	})
 
 	return (

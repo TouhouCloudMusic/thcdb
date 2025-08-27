@@ -1,6 +1,5 @@
 import type { JSX, ParentProps } from "solid-js"
 import {
-	type ComponentProps,
 	mergeProps,
 	createContext,
 	useContext,
@@ -9,6 +8,7 @@ import {
 	splitProps,
 	createMemo,
 } from "solid-js"
+import type { ComponentProps } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Portal } from "solid-js/web"
 import { twMerge } from "tailwind-merge"
@@ -68,19 +68,6 @@ export function Root(props: RootProps) {
 	)
 }
 
-export type ContainerProps = ComponentProps<"div">
-
-/** @deprecated  */
-export function Container(props: ContainerProps) {
-	const localProps = mergeProps(props, {
-		get class() {
-			return twMerge("relative h-full w-full", props.class)
-		},
-	})
-
-	return <div {...localProps}>{props.children}</div>
-}
-
 export type ImgProps = ComponentProps<"img">
 
 const IMAGE_CLASS = "object-cover"
@@ -136,24 +123,10 @@ export function Fallback(props: FallbackProps) {
 	const context = useContext(ImageContext)!
 	return (
 		<>
-			{typeof props.children == "function" ?
-				props.children(context.state)
-			:	(props.children ?? DEFAULT_FALLBACK)}
+			{typeof props.children == "function"
+				? props.children(context.state)
+				: (props.children ?? DEFAULT_FALLBACK)}
 		</>
-	)
-}
-
-/** @deprecated use fallback */
-export function ErrorComponent(props: ParentProps) {
-	const context = useContext(ImageContext)!
-	return (
-		<Show when={context.isError}>
-			{props.children ?? (
-				<div class="flex h-full w-full items-center justify-center bg-gray-200">
-					<span class="text-lg text-gray-500">Image Not Found!</span>
-				</div>
-			)}
-		</Show>
 	)
 }
 

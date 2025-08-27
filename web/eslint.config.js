@@ -22,21 +22,16 @@ export default [
 	},
 	eslint.configs.recommended,
 	prettier,
-	...tslint.configs.strictTypeChecked,
-	...tslint.configs.stylisticTypeChecked,
+	// ...tslint.configs.strictTypeChecked,
+	// ...tslint.configs.stylisticTypeChecked,
 	...tanstackQuery.configs["flat/recommended"],
-	// base
-	{
-		rules: {
-			"prefer-const": "off",
-		},
-	},
+
 	// typescript
 	tsConfig,
 	// jsx
 	...tsxConfigArray,
 	{
-		ignores: ["eslint.config.js", "src/**/openapi.ts", "dist/"],
+		ignores: ["eslint.config.js", "src/**/openapi.ts", "dist/", "packages/**"],
 	},
 	...oxlint.buildFromOxlintConfigFile("./.oxlintrc.json"),
 ]

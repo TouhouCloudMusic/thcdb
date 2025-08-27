@@ -93,7 +93,7 @@ body,
 			@apply p-4;
 
 			code {
-				@apply whitespace-pre-wrap break-all text-sm;
+				@apply text-sm break-all whitespace-pre-wrap;
 				font-family: "Cascadia Next SC";
 			}
 		}

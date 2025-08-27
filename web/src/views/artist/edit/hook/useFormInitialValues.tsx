@@ -1,6 +1,7 @@
 /* eslint-disable solid/reactivity */
-import type { Artist } from "~/api/artist"
-import type { NewArtistCorrection } from "~/api/artist/schema"
+import type { Artist } from "@thc/api"
+
+import type { NewArtistCorrection } from "~/domain/artist"
 
 type Props =
 	| {
@@ -12,8 +13,8 @@ type Props =
 	  }
 
 export function useArtistFormInitialValues(props: Props): NewArtistCorrection {
-	return props.type == "new" ?
-			{
+	return props.type == "new"
+		? {
 				type: "Create",
 				description: "",
 				data: {
@@ -26,7 +27,7 @@ export function useArtistFormInitialValues(props: Props): NewArtistCorrection {
 					memberships: [],
 				},
 			}
-		:	{
+		: {
 				type: "Update",
 				description: "",
 				data: {
@@ -39,20 +40,18 @@ export function useArtistFormInitialValues(props: Props): NewArtistCorrection {
 						})) ?? [],
 					aliases: props.artist.aliases ?? [],
 					text_aliases: props.artist.text_aliases ?? [],
-					start_date:
-						props.artist.start_date ?
-							{
+					start_date: props.artist.start_date
+						? {
 								value: new Date(props.artist.start_date.value),
 								precision: props.artist.start_date.precision,
 							}
-						:	undefined,
-					end_date:
-						props.artist.end_date ?
-							{
+						: undefined,
+					end_date: props.artist.end_date
+						? {
 								value: new Date(props.artist.end_date.value),
 								precision: props.artist.end_date.precision,
 							}
-						:	undefined,
+						: undefined,
 					links: props.artist.links ?? [],
 					start_location: props.artist.start_location,
 					current_location: props.artist.current_location,

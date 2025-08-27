@@ -1,17 +1,17 @@
 // @refresh-reload
 // oxlint-disable max-lines-per-function
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
+import { useLingui } from "@lingui-solid/solid/macro"
 import * as M from "@modular-forms/solid"
 import { useQuery } from "@tanstack/solid-query"
+import type { CreditRoleSummary } from "@thc/api"
+import { CreditRoleQueryOption } from "@thc/query"
 import { debounce, id } from "@thc/toolkit"
 import { createMemo, createSignal, For, Suspense } from "solid-js"
 import type { JSX } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 import { CheckIcon, Cross1Icon } from "solid-radix-icons"
 
-import { CreditRoleQueryOption } from "~/api/credit"
-import type { CreditRoleSummary } from "~/api/credit"
-import { Combobox } from "~/components/common/Combobox"
+import { Combobox } from "~/components/atomic/Combobox"
 
 import { useArtistForm } from "../../context"
 
@@ -40,7 +40,7 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 	}))
 
 	let options = createMemo(() => {
-		let data = rolesQuery.isSuccess ? rolesQuery.data : []
+		let data = rolesQuery.data ?? []
 
 		return data.filter((role) => !roles.some((x) => x.id === role.id))
 	})
