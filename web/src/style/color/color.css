@@ -9,13 +9,6 @@
 	--text-color-secondary: var(--color-slate-700);
 	--text-color-tertiary: var(--color-slate-500);
 
-	--default-border-color: var(--color-slate-300);
+	--default-border-color: var(--color-slate-400);
 	--default-icon-color: var(--color-slate-500);
-}
-
-@layer theme {
-	[data-mode="dark"] {
-		--text-color-primary: var(--color-slate-100);
-		--text-color-secondary: var(--color-black);
-	}
 }

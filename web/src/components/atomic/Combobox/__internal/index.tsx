@@ -71,7 +71,7 @@ const INPUT_BASE_CLASS = tw(`
 	text-slate-900 focus:text-primary,
 	bg-primary
 	border border-slate-300
-  disabled:bg-slate-50
+  disabled:bg-slate-100
   rounded-sm
   outline-[1.5px]
   not-disabled:hover:outline-reimu-500
@@ -280,8 +280,8 @@ export const ITEM_CLASS = tw(`
 
 	border-l-2 border-transparent
 	transition-all duration-150
-	hover:bg-slate-50 hover:border-reimu-600
-	data-highlighted:bg-slate-50 data-highlighted:border-reimu-600
+	hover:bg-slate-100 hover:border-reimu-600
+	data-highlighted:bg-slate-100 data-highlighted:border-reimu-600
 	`)
 
 export type ItemProps = ComponentProps<typeof Combobox.Item<"li">>
@@ -334,7 +334,7 @@ export function Item(props: ItemProps): JSX.Element {
 }
 
 export const ITEM_LABEL_CLASS = tw(`
-	text-slate-1000
+	text-slate-900
 `)
 
 export type ItemLabelProps = ComponentProps<typeof Combobox.ItemLabel<"div">>

@@ -96,7 +96,7 @@ function DateInfo(props: { value?: Artist["start_date"]; label: string }) {
 		<Show when={props.value}>
 			<div class="flex flex-col">
 				<InfoLabel>{props.label}</InfoLabel>
-				<span class="text-slate-1000">{parsedDate()}</span>
+				<span class="text-slate-900">{parsedDate()}</span>
 			</div>
 		</Show>
 	)

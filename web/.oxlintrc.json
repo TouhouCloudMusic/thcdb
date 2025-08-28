@@ -3,7 +3,11 @@
 	"env": {
 		"browser": true
 	},
-	"ignorePatterns": ["src/locale/**", "**.gen.ts"],
+	"ignorePatterns": [
+		"src/locale/**",
+		"**.gen.ts",
+		"src/style/color/convert.ts"
+	],
 	"categories": {
 		"correctness": "error",
 		"suspicious": "warn",

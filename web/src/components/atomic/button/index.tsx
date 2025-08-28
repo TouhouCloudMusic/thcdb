@@ -96,7 +96,7 @@ const PrimaryColor: Record<AppColor, string> = {
 	Gray:
 		// @tw
 		`
-    bg-gray-1100 hover:bg-gray-1000 active:bg-gray-900 disabled:bg-gray-800
+    bg-gray-900 hover:bg-gray-900 active:bg-gray-800 disabled:bg-gray-800
     `,
 	Slate:
 		// @tw
@@ -142,7 +142,7 @@ const SecondaryColor: Record<AppColor, string> = {
 		// @tw
 		`
 		text-blue-700 hover:text-white active:text-white
-		bg-slate-100 hover:bg-blue-900 active:bg-blue-1000
+		bg-slate-100 hover:bg-blue-800 active:bg-blue-900
 		`,
 	Reimu:
 		// @tw
@@ -154,21 +154,21 @@ const SecondaryColor: Record<AppColor, string> = {
 		// @tw
 		`
 		text-marisa-700 hover:text-white active:text-white
-		bg-slate-100 hover:bg-marisa-900 active:bg-marisa-1000
+		bg-slate-100 hover:bg-marisa-800 active:bg-marisa-900
 		dark:hover:bg-marisa-900/90 dark:active:bg-marisa-900/80
 		`,
 	Green:
 		// @tw
 		`
 		text-green-700 hover:text-white active:text-white
-		bg-slate-100 hover:bg-green-900 active:bg-green-1000
+		bg-slate-100 hover:bg-green-900 active:bg-green-900
 		dark:hover:bg-green-900/90 dark:active:bg-green-900/80
 		`,
 	Slate:
 		// @tw
 		`
 		text-slate-700 hover:text-white active:text-white
-		bg-slate-100 hover:bg-slate-900 active:bg-slate-1000
+		bg-slate-100 hover:bg-slate-900 active:bg-slate-900
 		dark:hover:bg-slate-900/90 dark:active:bg-slate-900/80
 		`,
 }

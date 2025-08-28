@@ -54,7 +54,7 @@ export function Label(props: LabelProps) {
 
 type DetailProps = ParentProps<ComponentProps<"div">>
 
-const DETAIL_CLASS = "text-slate-1000"
+const DETAIL_CLASS = "text-slate-900"
 
 export function Detail(props: DetailProps) {
 	let finalProps = mergeProps(props, {

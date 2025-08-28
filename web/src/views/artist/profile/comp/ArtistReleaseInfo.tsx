@@ -293,7 +293,7 @@ function ItemLayout(props: ParentProps) {
 }
 
 function ItemTitle(props: ParentProps) {
-	return <div class="font-semibold text-slate-1000">{props.children}</div>
+	return <div class="font-semibold text-slate-900">{props.children}</div>
 }
 
 const SUBTITLE_CLASS = "text-sm text-secondary"

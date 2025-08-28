@@ -138,7 +138,7 @@ function UserName() {
 				<div class="h-full w-36 animate-pulse rounded-md bg-slate-200"></div>
 			}
 		>
-			<span class="flex font-inter text-xl font-semibold text-slate-1000">
+			<span class="flex font-inter text-xl font-semibold text-slate-900">
 				{context.user.name}
 			</span>
 		</Suspense>

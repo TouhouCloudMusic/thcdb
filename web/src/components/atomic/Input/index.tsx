@@ -9,7 +9,7 @@ export const INPUT_BASE_CLASSNAME = tw(`
 		bg-primary
 		border border-slate-300
 
-		disabled:bg-slate-50
+		disabled:bg-slate-100
 
 		rounded-sm
 
