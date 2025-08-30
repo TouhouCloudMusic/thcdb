@@ -19,7 +19,7 @@ use crate::domain;
 use crate::domain::release::model::{
     CatalogNumber, Release, ReleaseArtist, ReleaseCredit, ReleaseTrack,
 };
-use crate::domain::shared::model::NewLocalizedTitle;
+use crate::domain::shared::model::{DateWithPrecision, NewLocalizedTitle};
 use crate::domain::song::model::SongRef;
 use crate::infra::database::sea_orm::cache::{
     LANGUAGE_CACHE, LanguageCache, LanguageCacheMap,
@@ -35,14 +35,16 @@ pub(super) fn conv_to_domain_model(
         id: release_model.id,
         title: release_model.title.clone(),
         release_type: release_model.release_type,
-        release_date: release_model.release_date,
-        release_date_precision: Some(release_model.release_date_precision),
-        recording_date_start: release_model.recording_date_start,
-        recording_date_start_precision: Some(
+        release_date: DateWithPrecision::from_option(
+            release_model.release_date,
+            release_model.release_date_precision,
+        ),
+        recording_date_start: DateWithPrecision::from_option(
+            release_model.recording_date_start,
             release_model.recording_date_start_precision,
         ),
-        recording_date_end: release_model.recording_date_end,
-        recording_date_end_precision: Some(
+        recording_date_end: DateWithPrecision::from_option(
+            release_model.recording_date_end,
             release_model.recording_date_end_precision,
         ),
         artists: conv_artists(&related.artists[index]),
