@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
 use entity::enums::ReleaseImageType;
 use entity::{
-    release, release_artist, release_artist_history, release_catalog_number,
-    release_catalog_number_history, release_credit, release_credit_history,
+    language, release, release_artist, release_artist_history,
+    release_catalog_number, release_catalog_number_history, release_credit,
+    release_credit_history, release_track_artist,
 };
 use itertools::Itertools;
 use libfp::EmptyExt;
@@ -11,13 +14,20 @@ use sea_orm::{
     LoaderTrait, QueryFilter,
 };
 
+use self::conv::conv_to_domain_model;
+use self::loader::RelatedEntities;
 use crate::domain;
 use crate::domain::release::model::{
-    CatalogNumber, Release, ReleaseArtist, ReleaseCredit,
+    CatalogNumber, Release, ReleaseArtist, ReleaseCredit, ReleaseTrack,
 };
 use crate::domain::shared::model::NewLocalizedTitle;
+use crate::infra::database::sea_orm::cache::{
+    LANGUAGE_CACHE, LanguageCache, LanguageCacheMap,
+};
 use crate::infra::database::sea_orm::ext::maybe_loader::MaybeLoader;
 
+mod conv;
+mod loader;
 mod track;
 pub use track::*;
 
@@ -35,232 +45,6 @@ pub async fn find_many_impl(
         .collect();
 
     Ok(result)
-}
-
-struct RelatedEntities {
-    artists: Vec<Vec<entity::artist::Model>>,
-    catalog_numbers: Vec<Vec<entity::release_catalog_number::Model>>,
-    localized_titles: Vec<Vec<entity::release_localized_title::Model>>,
-    languages: Vec<entity::language::Model>,
-    tracks: Vec<Vec<entity::release_track::Model>>,
-    credits: Vec<Vec<entity::release_credit::Model>>,
-    credit_artists: Vec<entity::artist::Model>,
-    credit_roles: Vec<entity::credit_role::Model>,
-    cover_arts: Vec<Option<entity::image::Model>>,
-}
-
-impl RelatedEntities {
-    async fn load(
-        releases: &[release::Model],
-        db: &impl ConnectionTrait,
-    ) -> Result<Self, DbErr> {
-        let (artists, catalog_numbers, localized_titles, tracks, credits) = tokio::try_join!(
-            releases.load_many_to_many(
-                entity::artist::Entity,
-                entity::release_artist::Entity,
-                db,
-            ),
-            releases.load_many(entity::release_catalog_number::Entity, db),
-            releases.load_many(entity::release_localized_title::Entity, db),
-            releases.load_many(entity::release_track::Entity, db),
-            releases.load_many(entity::release_credit::Entity, db),
-        )?;
-
-        let language_ids = localized_titles
-            .iter()
-            .flatten()
-            .map(|x| x.language_id)
-            .unique();
-        let languages = entity::language::Entity::find()
-            .filter(entity::language::Column::Id.is_in(language_ids))
-            .all(db)
-            .await?;
-
-        let flatten_credits =
-            credits.clone().into_iter().flatten().collect_vec();
-
-        let all_artist_ids = artists.iter().flatten().map(|x| x.id).unique();
-
-        let credit_artists = flatten_credits
-            .clone()
-            .into_iter()
-            .unique_by(|c| c.artist_id)
-            .collect_vec()
-            .load_one(
-                entity::artist::Entity::find().filter(
-                    entity::artist::Column::Id.is_not_in(all_artist_ids),
-                ),
-                db,
-            )
-            .await?
-            .into_iter()
-            .flatten()
-            .chain(artists.clone().into_iter().flatten())
-            .collect_vec();
-
-        let credit_roles = flatten_credits
-            .load_one(entity::credit_role::Entity, db)
-            .await?
-            .into_iter()
-            .flatten()
-            .collect_vec();
-
-        let release_images = releases
-            .load_many(
-                entity::release_image::Entity::find().filter(
-                    entity::release_image::Column::Type
-                        .eq(ReleaseImageType::Cover),
-                ),
-                db,
-            )
-            .await?
-            .into_iter()
-            .map(|x| x.into_iter().next())
-            .collect_vec();
-
-        let cover_arts = release_images
-            .maybe_load_one(entity::image::Entity, db)
-            .await?;
-
-        Ok(Self {
-            artists,
-            catalog_numbers,
-            localized_titles,
-            languages,
-            tracks,
-            credits,
-            credit_artists,
-            credit_roles,
-            cover_arts,
-        })
-    }
-}
-
-fn conv_to_domain_model(
-    release_model: &release::Model,
-    related: &RelatedEntities,
-    index: usize,
-) -> Release {
-    Release {
-        id: release_model.id,
-        title: release_model.title.clone(),
-        release_type: release_model.release_type,
-        release_date: release_model.release_date,
-        release_date_precision: Some(release_model.release_date_precision),
-        recording_date_start: release_model.recording_date_start,
-        recording_date_start_precision: Some(
-            release_model.recording_date_start_precision,
-        ),
-        recording_date_end: release_model.recording_date_end,
-        recording_date_end_precision: Some(
-            release_model.recording_date_end_precision,
-        ),
-        artists: conv_artists(&related.artists[index]),
-        catalog_nums: conv_catalog_numbers(&related.catalog_numbers[index]),
-        localized_titles: conv_localized_titles(
-            &related.localized_titles[index],
-            &related.languages,
-        ),
-        tracks: related.tracks[index].iter().map(|track| track.id).collect(),
-        credits: conv_credits(
-            &related.credits[index],
-            &related.credit_artists,
-            &related.credit_roles,
-        ),
-        cover_art_url: related.cover_arts[index]
-            .clone()
-            .map(domain::image::Image::from)
-            .map(|image| image.url()),
-    }
-}
-
-// Map artists to domain model
-fn conv_artists(artists: &[entity::artist::Model]) -> Vec<ReleaseArtist> {
-    artists
-        .iter()
-        .map(|artist| ReleaseArtist {
-            id: artist.id,
-            name: artist.name.clone(),
-        })
-        .collect()
-}
-
-// Map catalog numbers to domain model
-fn conv_catalog_numbers(
-    catalog_nums: &[entity::release_catalog_number::Model],
-) -> Vec<CatalogNumber> {
-    catalog_nums
-        .iter()
-        .map(|cn| CatalogNumber {
-            catalog_number: cn.catalog_number.clone(),
-            label_id: cn.label_id,
-        })
-        .collect()
-}
-
-// Map localized titles to domain model
-fn conv_localized_titles(
-    loc_titles: &[entity::release_localized_title::Model],
-    languages: &[entity::language::Model],
-) -> Vec<crate::domain::shared::model::LocalizedTitle> {
-    loc_titles
-        .iter()
-        .map(|lt| {
-            let language = languages
-                .iter()
-                .find(|l| l.id == lt.language_id)
-                .unwrap_or_else(|| {
-                    panic!("Language with id {} not found", lt.language_id)
-                });
-
-            crate::domain::shared::model::LocalizedTitle {
-                language: crate::domain::shared::model::Language {
-                    id: language.id,
-                    name: language.name.clone(),
-                    code: language.code.clone(),
-                },
-                title: lt.title.clone(),
-            }
-        })
-        .collect()
-}
-
-// Map credits to domain model
-fn conv_credits(
-    credits: &[entity::release_credit::Model],
-    credit_artists: &[entity::artist::Model],
-    credit_roles: &[entity::credit_role::Model],
-) -> Vec<ReleaseCredit> {
-    credits
-        .iter()
-        .map(|credit| {
-            let artist = credit_artists
-                .iter()
-                .find(|a| a.id == credit.artist_id)
-                .unwrap_or_else(|| {
-                    panic!("Artist with id {} not found", credit.artist_id)
-                });
-
-            let role = credit_roles
-                .iter()
-                .find(|r| r.id == credit.role_id)
-                .unwrap_or_else(|| {
-                    panic!("Role with id {} not found", credit.role_id)
-                });
-
-            ReleaseCredit {
-                artist: ReleaseArtist {
-                    id: artist.id,
-                    name: artist.name.clone(),
-                },
-                role: crate::domain::credit_role::model::CreditRoleRef {
-                    id: role.id,
-                    name: role.name.clone(),
-                },
-                on: credit.on.clone(),
-            }
-        })
-        .collect()
 }
 
 pub(super) async fn create_release_artist(

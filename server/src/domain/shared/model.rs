@@ -69,6 +69,7 @@ impl LenCheck for EntityIdent {
 
 #[derive(AutoMapper, Clone, Debug, Serialize, ToSchema)]
 #[mapper(from(DbLanguage))]
+#[cfg_attr(test, derive(PartialEq, Eq))]
 pub struct Language {
     pub id: i32,
     pub code: String,
@@ -88,6 +89,7 @@ pub struct NewLocalizedName {
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
 pub struct LocalizedTitle {
     pub language: Language,
     pub title: String,

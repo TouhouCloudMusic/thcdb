@@ -24,6 +24,13 @@ pub struct Song {
     pub lyrics: Vec<SongLyrics>,
 }
 
+#[derive(Clone, Debug, ToSchema, Serialize)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
+pub struct SongRef {
+    pub id: i32,
+    pub title: String,
+}
+
 #[derive(Clone, Debug, Serialize, ToSchema)]
 pub struct SongCredit {
     pub artist: SimpleArtist,

@@ -59,7 +59,7 @@ pub async fn create_release_track(
                     song_id: Set(track.song_id),
                     track_number: Set(track.track_number.clone()),
                     display_title: Set(track.display_title.clone()),
-                    duration: Set(track.duration.map(|d| d.to_string())),
+                    duration: Set(track.duration),
                 },
             )
         })
@@ -73,7 +73,7 @@ pub async fn create_release_track(
                         song_id: Set(model.id),
                         track_number: Set(track.track_number.clone()),
                         display_title: Set(Some(model.title.clone())),
-                        duration: Set(track.duration.map(|d| d.to_string())),
+                        duration: Set(track.duration),
                     },
                 )
             },
@@ -166,7 +166,7 @@ pub async fn create_release_track_history(
                     song_id: Set(x.song_id),
                     track_number: Set(x.track_number.clone()),
                     display_title: Set(x.display_title.clone()),
-                    duration: Set(x.duration.map(|d| d.to_string())),
+                    duration: Set(x.duration),
                 },
             )
         })
@@ -180,7 +180,7 @@ pub async fn create_release_track_history(
                         song_id: Set(model.id),
                         track_number: Set(track.track_number.clone()),
                         display_title: Set(Some(model.title.clone())),
-                        duration: Set(track.duration.map(|d| d.to_string())),
+                        duration: Set(track.duration),
                     },
                 )
             },
@@ -236,18 +236,7 @@ pub async fn update_release_track(
     let new_tracks: Vec<NewTrack> = tracks
         .into_iter()
         .map(|track| {
-            let duration = track.duration.as_deref().and_then(|duration_str| {
-                iso8601_duration::Duration::parse(duration_str)
-                    .ok()
-                    .map(|d| {
-                        d.to_chrono_at_datetime(chrono::DateTime::<
-                                chrono::Utc,
-                            >::from_naive_utc_and_offset(
-                                chrono::Utc::now().naive_utc(),
-                                chrono::Utc,
-                            ))
-                    })
-            });
+            let duration = track.duration;
 
             NewTrack::Linked(Linked {
                 song_id: track.song_id,

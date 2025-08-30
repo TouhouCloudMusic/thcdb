@@ -11,6 +11,7 @@ pub struct LanguageCache {
 }
 
 pub static LANGUAGE_CACHE: LanguageCache = LanguageCache::new();
+pub type LanguageCacheMap = HashMap<i32, Language>;
 
 impl LanguageCache {
     pub const fn new() -> Self {
