@@ -13,9 +13,9 @@ use sea_query::{ExprTrait, Func};
 use crate::domain::credit_role::repo::{
     CommonFilter, FindManyFilter, QueryKind,
 };
-use crate::domain::credit_role::{CreditRoleRef, NewCreditRole, Repo, TxRepo};
-use crate::domain::repository::{Connection, Transaction};
-use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
+use crate::domain::credit_role::{NewCreditRole, Repo, TxRepo};
+use crate::domain::repository::Connection;
+use crate::infra::database::sea_orm::SeaOrmTxRepo;
 
 impl<T> Repo for T
 where

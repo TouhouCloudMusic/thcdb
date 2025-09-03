@@ -2,7 +2,7 @@ use axum::Json;
 use axum::extract::{Path, Query, State};
 use libfp::BifunctorExt;
 use serde::Deserialize;
-use utoipa::{IntoParams, ToSchema};
+use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -14,7 +14,6 @@ use crate::domain::credit_role::*;
 use crate::domain::query_kind;
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
-use crate::presentation::rest::state;
 use crate::presentation::rest::state::{ArcAppState, CreditRoleService};
 
 const TAG: &str = "Credit Role";

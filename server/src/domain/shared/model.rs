@@ -1,6 +1,5 @@
 use chrono::NaiveDate;
 use derive_more::{Display, Into};
-use entity::credit_role::Model as DbCreditRole;
 use entity::language::Model as DbLanguage;
 use macros::AutoMapper;
 use serde::{Deserialize, Serialize};

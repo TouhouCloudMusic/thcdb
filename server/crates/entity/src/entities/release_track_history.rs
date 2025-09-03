@@ -17,10 +17,19 @@ pub struct Model {
     #[sea_orm(column_type = "Text", nullable)]
     pub display_title: Option<String>,
     pub duration: Option<i32>,
+    pub disc_history_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::release_disc_history::Entity",
+        from = "Column::DiscHistoryId",
+        to = "super::release_disc_history::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    ReleaseDiscHistory,
     #[sea_orm(
         belongs_to = "super::release_history::Entity",
         from = "Column::HistoryId",
@@ -39,6 +48,12 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Song,
+}
+
+impl Related<super::release_disc_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseDiscHistory.def()
+    }
 }
 
 impl Related<super::release_history::Entity> for Entity {

@@ -45,6 +45,8 @@ pub mod release_catalog_number;
 pub mod release_catalog_number_history;
 pub mod release_credit;
 pub mod release_credit_history;
+pub mod release_disc;
+pub mod release_disc_history;
 pub mod release_event;
 pub mod release_event_history;
 pub mod release_history;

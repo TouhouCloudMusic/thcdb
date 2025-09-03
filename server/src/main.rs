@@ -2,7 +2,7 @@
 #![deny(clippy::clone_on_copy)]
 #![warn(clippy::cargo, clippy::nursery, clippy::pedantic)]
 #![warn(clippy::allow_attributes)]
-#![allow(dead_code, async_fn_in_trait, unused_imports)]
+#![allow(dead_code, async_fn_in_trait)]
 #![allow(
     // We won't release
     clippy::cargo_common_metadata,
@@ -18,6 +18,7 @@
     clippy::unreadable_literal,
     // Sometimes annoying
     clippy::use_self,
+    clippy::redundant_pub_crate,
 )]
 #![feature(
     bool_to_result,

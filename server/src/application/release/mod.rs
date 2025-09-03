@@ -1,4 +1,5 @@
 use entity::enums::CorrectionStatus;
+use garde::Validate;
 use macros::{ApiError, IntoErrorSchema};
 
 use crate::domain::correction::{
@@ -27,6 +28,10 @@ pub enum CreateError {
         #[backtrace]
         source: crate::infra::Error,
     },
+    // TODO: better error
+    #[error("Validation error: {0}")]
+    #[api_error(status_code = axum::http::StatusCode::BAD_REQUEST)]
+    Validation(String),
 }
 
 impl<E> From<E> for CreateError
@@ -51,6 +56,9 @@ pub enum UpsertCorrectionError {
         #[backtrace]
         super::correction::Error,
     ),
+    #[error("Validation error: {0}")]
+    #[api_error(status_code = axum::http::StatusCode::BAD_REQUEST)]
+    Validation(String),
 }
 
 impl<E> From<E> for UpsertCorrectionError
@@ -92,6 +100,11 @@ where
         &self,
         correction: NewCorrection<NewRelease>,
     ) -> Result<(), CreateError> {
+        correction
+            .data
+            .validate()
+            .map_err(|e| CreateError::Validation(e.to_string()))?;
+
         let tx_repo = self.repo.begin().await?;
 
         let entity_id = TxRepo::create(&tx_repo, &correction.data).await?;
@@ -122,6 +135,11 @@ where
         id: i32,
         correction: NewCorrection<NewRelease>,
     ) -> Result<(), UpsertCorrectionError> {
+        correction
+            .data
+            .validate()
+            .map_err(|e| UpsertCorrectionError::Validation(e.to_string()))?;
+
         let tx_repo = self.repo.begin().await?;
 
         // Create Releasehistory from the data

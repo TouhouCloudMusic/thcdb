@@ -8,8 +8,6 @@ mod auth;
 pub use auth::CurrentUser;
 mod json;
 
-pub use json::MaybeJson;
-
 #[trait_variant::make(Send)]
 pub trait TryFromRef<T> {
     type Rejection: IntoResponse;

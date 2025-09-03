@@ -3,7 +3,7 @@ use sea_orm_migration::prelude::*;
 pub struct Migrator;
 
 macro_rules! migrations {
-    ($($path:ident),+) => {
+    ($($path:ident),+ $(,)?) => {
         $(mod $path;)+
 
         #[async_trait::async_trait]
@@ -39,7 +39,8 @@ migrations![
     m20250717_000000_create_song_lyrics,
     m20250727_120000_enable_pg_trgm,
     m20250808_153600_add_credit_role_entity_type,
-    m20250828_124137_change_duration_to_integer
+    m20250828_124137_change_duration_to_integer,
+    m20250901_053512_create_release_disc,
 ];
 
 macro_rules! migration {

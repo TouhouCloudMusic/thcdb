@@ -1,26 +1,12 @@
-use std::collections::HashMap;
-
 use entity::enums::ReleaseImageType;
-use entity::{
-    language, release, release_artist, release_artist_history,
-    release_catalog_number, release_catalog_number_history, release_credit,
-    release_credit_history, release_track_artist,
-};
+use entity::release;
 use itertools::Itertools;
-use libfp::EmptyExt;
-use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr, EntityTrait,
-    LoaderTrait, QueryFilter,
+    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, LoaderTrait, QueryFilter,
 };
 
-use crate::domain;
-use crate::domain::release::model::{
-    CatalogNumber, Release, ReleaseArtist, ReleaseCredit, ReleaseTrack,
-};
-use crate::domain::shared::model::NewLocalizedTitle;
 use crate::infra::database::sea_orm::cache::{
-    LANGUAGE_CACHE, LanguageCache, LanguageCacheMap,
+    LANGUAGE_CACHE, LanguageCacheMap,
 };
 use crate::infra::database::sea_orm::ext::maybe_loader::MaybeLoader;
 
@@ -30,6 +16,7 @@ pub(super) struct RelatedEntities {
     pub(super) localized_titles:
         Vec<Vec<entity::release_localized_title::Model>>,
     pub(super) languages: &'static LanguageCacheMap,
+    pub(super) discs: Vec<Vec<entity::release_disc::Model>>,
     pub(super) tracks: Vec<Vec<entity::release_track::Model>>,
     pub(super) track_songs: Vec<entity::song::Model>,
     pub(super) track_artists: Vec<entity::artist::Model>,
@@ -44,6 +31,7 @@ struct BaseEntities {
     artists: Vec<Vec<entity::artist::Model>>,
     catalog_numbers: Vec<Vec<entity::release_catalog_number::Model>>,
     localized_titles: Vec<Vec<entity::release_localized_title::Model>>,
+    discs: Vec<Vec<entity::release_disc::Model>>,
     tracks: Vec<Vec<entity::release_track::Model>>,
     credits: Vec<Vec<entity::release_credit::Model>>,
 }
@@ -63,6 +51,7 @@ impl RelatedEntities {
             artists,
             catalog_numbers,
             localized_titles,
+            discs,
             tracks,
             credits,
         } = Self::load_base_entities(releases, db).await?;
@@ -81,6 +70,7 @@ impl RelatedEntities {
             catalog_numbers,
             localized_titles,
             languages,
+            discs,
             tracks,
             track_songs,
             track_artists,
@@ -96,7 +86,14 @@ impl RelatedEntities {
         releases: &[release::Model],
         db: &impl ConnectionTrait,
     ) -> Result<BaseEntities, DbErr> {
-        let (artists, catalog_numbers, localized_titles, tracks, credits) = tokio::try_join!(
+        let (
+            artists,
+            catalog_numbers,
+            localized_titles,
+            discs,
+            tracks,
+            credits,
+        ) = tokio::try_join!(
             releases.load_many_to_many(
                 entity::artist::Entity,
                 entity::release_artist::Entity,
@@ -104,6 +101,7 @@ impl RelatedEntities {
             ),
             releases.load_many(entity::release_catalog_number::Entity, db),
             releases.load_many(entity::release_localized_title::Entity, db),
+            releases.load_many(entity::release_disc::Entity, db),
             releases.load_many(entity::release_track::Entity, db),
             releases.load_many(entity::release_credit::Entity, db),
         )?;
@@ -112,6 +110,7 @@ impl RelatedEntities {
             artists,
             catalog_numbers,
             localized_titles,
+            discs,
             tracks,
             credits,
         })
@@ -125,17 +124,24 @@ impl RelatedEntities {
         (Vec<entity::artist::Model>, Vec<entity::credit_role::Model>),
         DbErr,
     > {
+        // TODO: ref loader
         let flatten_credits = credits.iter().flatten().cloned().collect_vec();
-        let all_artist_ids = artists.iter().flatten().map(|x| x.id).unique();
 
-        let credit_artists = flatten_credits
+        let unique_artists = flatten_credits
             .iter()
-            .cloned()
             .unique_by(|c| c.artist_id)
-            .collect_vec()
+            .cloned()
+            .collect_vec();
+
+        // Filter out existing artists to avoid duplicates, then chain them with inputs.
+
+        let release_artist_ids =
+            artists.iter().flatten().map(|x| x.id).unique();
+
+        let credit_artists = unique_artists
             .load_one(
                 entity::artist::Entity::find().filter(
-                    entity::artist::Column::Id.is_not_in(all_artist_ids),
+                    entity::artist::Column::Id.is_not_in(release_artist_ids),
                 ),
                 db,
             )

@@ -1,30 +1,56 @@
-use entity::sea_orm_active_enums::{DatePrecision, ReleaseType};
-use entity::{song, song_history};
-use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::prelude::Date;
-use serde::{Deserialize, Serialize};
+use entity::sea_orm_active_enums::ReleaseType;
+use garde::Validate;
+use serde::Deserialize;
 use utoipa::ToSchema;
 
-use super::out::CatalogNumber;
+use super::CatalogNumber;
 use crate::domain::correction::CorrectionEntity;
-use crate::domain::credit_role::CreditRoleRef;
-use crate::domain::shared::model::{
-    DateWithPrecision, LocalizedTitle, NewLocalizedTitle,
-};
-#[derive(Clone, Deserialize, ToSchema)]
-pub struct NewRelease {
-    pub title: String,
-    pub release_type: ReleaseType,
-    pub release_date: Option<DateWithPrecision>,
-    pub recording_start_date: Option<DateWithPrecision>,
-    pub recording_end_date: Option<DateWithPrecision>,
+use crate::domain::shared::model::{DateWithPrecision, NewLocalizedTitle};
 
+#[derive(Clone, Validate, Deserialize, ToSchema)]
+pub struct NewRelease {
+    #[garde(length(min = 1))]
+    pub title: String,
+    #[garde(skip)]
+    pub release_type: ReleaseType,
+    #[garde(skip)]
+    pub release_date: Option<DateWithPrecision>,
+    #[garde(skip)]
+    pub recording_start_date: Option<DateWithPrecision>,
+    #[garde(skip)]
+    pub recording_end_date: Option<DateWithPrecision>,
+    #[garde(skip)]
     pub artists: Vec<i32>,
+    #[garde(skip)]
     pub catalog_nums: Vec<CatalogNumber>,
+    #[garde(skip)]
     pub credits: Vec<NewCredit>,
+    #[garde(length(min = 1))]
+    pub discs: Vec<NewDisc>,
+    #[garde(skip)]
     pub events: Vec<i32>,
+    #[garde(skip)]
     pub localized_titles: Vec<NewLocalizedTitle>,
+    #[garde(custom(is_valid_track_list(&self.discs)))]
     pub tracks: Vec<NewTrack>,
+}
+
+fn is_valid_track_list(
+    discs: &[NewDisc],
+) -> impl FnOnce(&[NewTrack], &()) -> garde::Result + '_ {
+    move |tracks, ()| {
+        for (idx, track) in tracks.iter().enumerate() {
+            if track.disc_index as usize >= discs.len() {
+                let disc_idx = track.disc_index;
+
+                return Err(garde::Error::new(format!(
+                    "Disc index {disc_idx} of track {idx} is out of bounds",
+                )));
+            }
+        }
+
+        Ok(())
+    }
 }
 
 impl CorrectionEntity for NewRelease {
@@ -34,49 +60,19 @@ impl CorrectionEntity for NewRelease {
 }
 
 #[derive(Clone, ToSchema, Deserialize)]
-pub enum NewTrack {
-    Linked(#[schema(inline)] Linked),
-    Unlinked(#[schema(inline)] Unlinked),
-}
-
-macro_rules! inherit_track_base {
-    ($name:ident { $($vis:vis $field:ident: $ftype:ty),* $(,)? }) => {
-        #[serde_with::serde_as]
-        #[derive(Clone, ToSchema, Deserialize)]
-        pub struct $name {
-            pub artists: Vec<i32>,
-            pub track_number: Option<String>,
-            pub duration: Option<i32>,
-            $($vis $field: $ftype,)*
-        }
-    };
-}
-
-inherit_track_base!(Unlinked {
-    pub display_title: String,
-});
-
-inherit_track_base!(Linked {
+pub struct NewTrack {
     pub song_id: i32,
+    pub track_number: Option<String>,
     pub display_title: Option<String>,
-});
+    pub duration: Option<i32>,
+    pub disc_index: u8,
 
-impl From<&Unlinked> for song::ActiveModel {
-    fn from(value: &Unlinked) -> Self {
-        Self {
-            id: NotSet,
-            title: Set(value.display_title.clone()),
-        }
-    }
+    pub artists: Vec<i32>,
 }
 
-impl From<&Unlinked> for song_history::ActiveModel {
-    fn from(value: &Unlinked) -> Self {
-        Self {
-            id: NotSet,
-            title: Set(value.display_title.clone()),
-        }
-    }
+#[derive(Clone, ToSchema, Deserialize)]
+pub struct NewDisc {
+    pub name: Option<String>,
 }
 
 #[derive(Clone, ToSchema, Deserialize)]

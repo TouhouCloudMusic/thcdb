@@ -1,15 +1,9 @@
-use entity::sea_orm_active_enums::{DatePrecision, ReleaseType};
-use entity::{song, song_history};
-use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::prelude::Date;
+use entity::sea_orm_active_enums::ReleaseType;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::domain::correction::CorrectionEntity;
 use crate::domain::credit_role::CreditRoleRef;
-use crate::domain::shared::model::{
-    DateWithPrecision, LocalizedTitle, NewLocalizedTitle,
-};
+use crate::domain::shared::model::{DateWithPrecision, LocalizedTitle};
 use crate::domain::song::model::SongRef;
 
 #[serde_with::apply(
@@ -34,10 +28,11 @@ pub struct Release {
     pub credits: Vec<ReleaseCredit>,
     pub catalog_nums: Vec<CatalogNumber>,
     pub localized_titles: Vec<LocalizedTitle>,
+    pub discs: Vec<ReleaseDisc>,
     pub tracks: Vec<ReleaseTrack>,
 }
 
-#[derive(Clone, Debug, ToSchema, Serialize)]
+#[derive(Clone, Debug, ToSchema, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq, Eq))]
 pub struct ReleaseArtist {
     pub id: i32,
@@ -68,6 +63,7 @@ pub struct ReleaseCredit {
 pub struct ReleaseTrack {
     pub id: i32,
     pub track_number: Option<String>,
+    pub disc_id: i32,
     pub display_title: Option<String>,
     /// Milliseconds of this track
     pub duration: Option<i32>,
@@ -76,11 +72,21 @@ pub struct ReleaseTrack {
 }
 
 #[serde_with::apply(
-Option => #[serde(skip_serializing_if = "Option::is_none")],
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
 )]
 #[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct SimpleRelease {
     pub id: i32,
     pub title: String,
     pub cover_art_url: Option<String>,
+}
+
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
+#[derive(Clone, Debug, ToSchema, Serialize)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
+pub struct ReleaseDisc {
+    pub id: i32,
+    pub name: Option<String>,
 }

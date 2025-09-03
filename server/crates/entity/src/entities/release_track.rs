@@ -17,6 +17,7 @@ pub struct Model {
     #[sea_orm(column_type = "Text", nullable)]
     pub display_title: Option<String>,
     pub duration: Option<i32>,
+    pub disc_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -29,6 +30,14 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Release,
+    #[sea_orm(
+        belongs_to = "super::release_disc::Entity",
+        from = "Column::DiscId",
+        to = "super::release_disc::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    ReleaseDisc,
     #[sea_orm(has_many = "super::release_track_artist::Entity")]
     ReleaseTrackArtist,
     #[sea_orm(
@@ -44,6 +53,12 @@ pub enum Relation {
 impl Related<super::release::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Release.def()
+    }
+}
+
+impl Related<super::release_disc::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseDisc.def()
     }
 }
 
