@@ -1,7 +1,7 @@
 use std::backtrace::Backtrace;
 
 use axum::http::StatusCode;
-use macros::ApiError;
+use macros::{ApiError, IntoErrorSchema};
 
 #[derive(Debug, thiserror::Error, ApiError)]
 #[api_error(
@@ -15,7 +15,7 @@ pub struct InvalidField {
     backtrace: Backtrace,
 }
 
-#[derive(Debug, thiserror::Error, ApiError)]
+#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
 #[api_error(
     status_code = StatusCode::UNAUTHORIZED,
 )]

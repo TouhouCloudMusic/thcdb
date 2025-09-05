@@ -1,5 +1,6 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
+use axum::response::IntoResponse;
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use bytes::Bytes;
 use entity::enums::ReleaseType;
@@ -14,11 +15,12 @@ use super::extract::CurrentUser;
 use super::state::{
     ArcAppState, {self},
 };
-use crate::application::artist::UpsertCorrectionError;
 use crate::application::artist_image::{
     ArtistProfileImageInput, {self},
 };
 use crate::application::correction::NewCorrectionDto;
+use crate::application::error::Unauthorized;
+use crate::domain;
 use crate::domain::artist::CommonFilter;
 use crate::domain::artist::model::{Artist, NewArtist};
 use crate::domain::artist::repo::FindManyFilter;
@@ -28,9 +30,8 @@ use crate::domain::artist_release::{
 };
 use crate::domain::release::model::Release;
 use crate::domain::repository::{Cursor, Paginated};
-use crate::infra::error::Error;
-use crate::presentation::api_response::{Data, Message};
-use crate::{application, domain};
+use crate::infra::error::{Error, InternalError};
+use crate::presentation::api_response::{Data, IntoApiResponse, Message};
 
 const TAG: &str = "Artist";
 
@@ -125,20 +126,24 @@ async fn find_many_artist(
     request_body = NewCorrectionDto<NewArtist>,
     responses(
         (status = 200, body = Message),
-        (status = 401),
-        application::artist::CreateError
+        InternalError,
+        domain::artist::ValidationError
     ),
 )]
-#[axum::debug_handler]
+// #[axum::debug_handler]
 async fn create_artist(
     CurrentUser(user): CurrentUser,
     State(service): State<state::ArtistService>,
     Json(input): Json<NewCorrectionDto<NewArtist>>,
-) -> Result<Message, application::artist::CreateError> {
+) -> Result<Message, impl IntoResponse> {
     service
         .create(input.with_author(user))
         .await
         .map(|()| Message::ok())
+        .map_err(|e| match e.to_enum() {
+            eros::E2::A(e) => e.into_api_response(),
+            eros::E2::B(e) => e.into_api_response(),
+        })
 }
 
 #[utoipa::path(
@@ -148,8 +153,9 @@ async fn create_artist(
     request_body = NewCorrectionDto<NewArtist>,
     responses(
         (status = 200, body = Message),
-        (status = 401),
-        UpsertCorrectionError
+        InternalError,
+        domain::artist::ValidationError,
+        Unauthorized
     ),
 )]
 async fn upsert_artist_correction(
@@ -157,10 +163,16 @@ async fn upsert_artist_correction(
     State(service): State<state::ArtistService>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewArtist>>,
-) -> Result<Message, UpsertCorrectionError> {
-    service.upsert_correction(id, dto.with_author(user)).await?;
-
-    Ok(Message::ok())
+) -> Result<Message, impl IntoResponse> {
+    service
+        .upsert_correction(id, dto.with_author(user))
+        .await
+        .map(|()| Message::ok())
+        .map_err(|x| match x.to_enum() {
+            eros::E3::A(e) => e.into_api_response(),
+            eros::E3::B(e) => e.into_api_response(),
+            eros::E3::C(e) => e.into_api_response(),
+        })
 }
 
 #[derive(Debug, ToSchema, TryFromMultipart)]

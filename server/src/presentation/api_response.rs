@@ -24,7 +24,9 @@ enum Status {
 pub trait ApiError {
     fn as_status_code(&self) -> StatusCode;
 
-    fn all_status_codes() -> impl Iterator<Item = StatusCode>;
+    fn all_status_codes() -> impl Iterator<Item = StatusCode>
+    where
+        Self: Sized;
 }
 
 pub trait ImpledApiError = std::error::Error

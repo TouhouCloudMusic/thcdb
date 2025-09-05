@@ -1,7 +1,7 @@
-use derive_more::From;
 use entity::enums::CorrectionStatus;
-use macros::{ApiError, IntoErrorSchema};
+use eros::{IntoUnionResult, ReshapeUnionResult};
 
+use super::error::Unauthorized;
 use crate::domain::artist;
 use crate::domain::artist::model::{NewArtist, ValidationError};
 use crate::domain::artist::repo::Repo;
@@ -9,79 +9,47 @@ use crate::domain::correction::{
     NewCorrection, NewCorrectionMeta, {self},
 };
 use crate::domain::repository::TransactionManager;
+use crate::infra::error::InternalError;
 
 #[derive(Clone)]
 pub struct Service<R> {
     pub repo: R,
 }
 
-#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
-pub enum CreateError {
-    #[error(transparent)]
-    Correction(
-        #[from]
-        #[backtrace]
-        super::correction::Error,
-    ),
-    #[error(transparent)]
-    Validation(
-        #[from]
-        #[backtrace]
-        ValidationError,
-    ),
-    #[error(transparent)]
-    #[from(forward)]
-    Infra {
-        #[backtrace]
-        source: crate::infra::Error,
-    },
-}
-
-#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
-pub enum UpsertCorrectionError {
-    #[error(transparent)]
-    #[from(forward)]
-    Infra {
-        #[backtrace]
-        source: crate::infra::Error,
-    },
-    #[error(transparent)]
-    Validation(
-        #[from]
-        #[backtrace]
-        ValidationError,
-    ),
-    #[error(transparent)]
-    Correction(
-        #[from]
-        #[backtrace]
-        super::correction::Error,
-    ),
-}
-
 impl<R, TR> Service<R>
 where
     R: Repo + TransactionManager<TransactionRepository = TR>,
     TR: Clone + artist::TxRepo + correction::TxRepo,
-    crate::infra::Error: From<R::Error> + From<TR::Error>,
+    InternalError: From<R::Error> + From<TR::Error>,
 {
     pub async fn create(
         &self,
         correction: NewCorrection<NewArtist>,
-    ) -> Result<(), CreateError> {
-        correction.data.validate()?;
+    ) -> eros::UnionResult<(), (InternalError, ValidationError)> {
+        correction.data.validate().union()?;
 
-        let tx_repo = self.repo.begin().await?;
+        let tx_repo = self
+            .repo
+            .begin()
+            .await
+            .map_err(InternalError::from)
+            .union()?;
 
-        let entity_id =
-            artist::TxRepo::create(&tx_repo, &correction.data).await?;
+        let entity_id = artist::TxRepo::create(&tx_repo, &correction.data)
+            .await
+            .map_err(InternalError::from)
+            .union()?;
 
-        let history_id = tx_repo.create_history(&correction.data).await?;
+        let history_id = tx_repo
+            .create_history(&correction.data)
+            .await
+            .map_err(InternalError::from)
+            .union()?;
 
         let correction_service = super::correction::Service::new(tx_repo);
 
         correction_service
-            .create(NewCorrectionMeta::<NewArtist> {
+            .create2(NewCorrectionMeta::<NewArtist> {
                 author: correction.author,
                 r#type: correction.r#type,
                 entity_id,
@@ -90,9 +58,15 @@ where
                 description: correction.description,
                 phantom: std::marker::PhantomData,
             })
-            .await?;
+            .await
+            .union()?;
 
-        correction_service.repo.commit().await?;
+        correction_service
+            .repo
+            .commit()
+            .await
+            .map_err(InternalError::from)
+            .union()?;
 
         Ok(())
     }
@@ -101,16 +75,26 @@ where
         &self,
         id: i32,
         correction: NewCorrection<NewArtist>,
-    ) -> Result<(), UpsertCorrectionError> {
-        correction.data.validate()?;
+    ) -> eros::UnionResult<(), (InternalError, ValidationError, Unauthorized)>
+    {
+        correction.data.validate().union()?;
 
-        let tx_repo = self.repo.begin().await?;
+        let tx_repo = self
+            .repo
+            .begin()
+            .await
+            .map_err(InternalError::from)
+            .union()?;
 
-        let history_id = tx_repo.create_history(&correction.data).await?;
+        let history_id = tx_repo
+            .create_history(&correction.data)
+            .await
+            .map_err(InternalError::from)
+            .union()?;
         let correction_service = super::correction::Service::new(tx_repo);
 
         correction_service
-            .upsert(NewCorrectionMeta::<NewArtist> {
+            .upsert2(NewCorrectionMeta::<NewArtist> {
                 author: correction.author,
                 r#type: correction.r#type,
                 entity_id: id,
@@ -119,9 +103,15 @@ where
                 description: correction.description,
                 phantom: std::marker::PhantomData,
             })
-            .await?;
+            .await
+            .widen()?;
 
-        correction_service.repo.commit().await?;
+        correction_service
+            .repo
+            .commit()
+            .await
+            .map_err(InternalError::from)
+            .union()?;
 
         Ok(())
     }

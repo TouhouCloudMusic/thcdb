@@ -3,7 +3,12 @@ pub use pagination::*;
 
 pub trait Connection: Send + Sync {
     type Conn: Send + Sync;
-    type Error: Send + Sync + std::fmt::Debug + std::fmt::Display;
+    type Error: Send
+        + Sync
+        + std::fmt::Debug
+        + std::fmt::Display
+        + std::error::Error
+        + 'static;
 
     fn conn(&self) -> &Self::Conn;
 }

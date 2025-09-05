@@ -63,7 +63,7 @@ impl From<tokio::task::JoinError> for Error {
     }
 }
 
-#[derive(Debug, thiserror::Error, ApiError)]
+#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
 #[api_error(
     status_code = StatusCode::INTERNAL_SERVER_ERROR,
     into_response = self

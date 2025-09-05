@@ -1,4 +1,5 @@
 use entity::enums::CorrectionStatus;
+use eros::IntoUnionResult;
 use macros::{ApiError, IntoErrorSchema};
 
 use crate::domain::correction::{
@@ -9,6 +10,7 @@ use crate::domain::model::auth::{CorrectionApprover, UserRoleEnum};
 use crate::domain::repository::{Connection, Transaction, TransactionManager};
 use crate::domain::user::User;
 use crate::infra;
+use crate::infra::error::InternalError;
 
 mod model;
 pub use model::*;
@@ -47,7 +49,6 @@ pub struct Service<R> {
 impl<R> Service<R>
 where
     R: correction::TxRepo,
-    infra::Error: From<R::Error>,
 {
     pub const fn new(repo: R) -> Self {
         Self { repo }
@@ -57,7 +58,21 @@ where
     pub async fn create<T: CorrectionEntity>(
         &self,
         meta: impl Into<NewCorrectionMeta<T>>,
-    ) -> Result<(), Error> {
+    ) -> Result<(), Error>
+    where
+        infra::Error: From<R::Error>,
+    {
+        self.repo.create(meta.into()).await?;
+        Ok(())
+    }
+
+    pub async fn create2<T: CorrectionEntity>(
+        &self,
+        meta: impl Into<NewCorrectionMeta<T>>,
+    ) -> Result<(), InternalError>
+    where
+        InternalError: From<R::Error>,
+    {
         self.repo.create(meta.into()).await?;
         Ok(())
     }
@@ -65,7 +80,10 @@ where
     pub async fn upsert<T: CorrectionEntity>(
         &self,
         meta: NewCorrectionMeta<T>,
-    ) -> Result<(), Error> {
+    ) -> Result<(), Error>
+    where
+        infra::Error: From<R::Error>,
+    {
         let prev_correction = self
             .repo
             .find_one(CorrectionFilter::latest(
@@ -93,6 +111,52 @@ where
         } else {
             self.repo.update(prev_correction.id, meta).await?;
         }
+
+        Ok(())
+    }
+
+    pub async fn upsert2<T: CorrectionEntity>(
+        &self,
+        meta: NewCorrectionMeta<T>,
+    ) -> eros::UnionResult<(), (InternalError, Unauthorized)>
+    where
+        InternalError: From<R::Error>,
+    {
+        let prev_correction = self
+            .repo
+            .find_one(CorrectionFilter::latest(
+                meta.entity_id,
+                T::entity_type(),
+            ))
+            .await
+            .map_err(InternalError::from)
+            .union()?
+            .expect("Correction should be founded");
+
+        if prev_correction.status == CorrectionStatus::Pending {
+            let is_author_or_admin = if meta
+                .author
+                .has_roles(&[UserRoleEnum::Admin, UserRoleEnum::Moderator])
+            {
+                true
+            } else {
+                self.repo
+                    .is_author(&meta.author, &prev_correction)
+                    .await
+                    .map_err(InternalError::from)
+                    .union()?
+            };
+
+            if !is_author_or_admin {
+                Err(Unauthorized::new()).union()?;
+            }
+
+            self.repo.create(meta).await
+        } else {
+            self.repo.update(prev_correction.id, meta).await
+        }
+        .map_err(InternalError::from)
+        .union()?;
 
         Ok(())
     }

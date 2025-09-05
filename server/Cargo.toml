@@ -118,6 +118,7 @@ derive_more = { version = "2.0.1", features = [
 ] }
 dotenvy.workspace = true
 enumset.workspace = true
+eros = { version = "0.2.0-rc.2", features = [ "min_specialization" ] }
 fred = { version = "10.0" }
 frunk = { version = "0.4.3", features = [
     "std",

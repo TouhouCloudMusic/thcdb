@@ -1,10 +1,8 @@
-use std::backtrace::Backtrace;
-
 use axum::http::StatusCode;
 use derive_more::Display;
 use entity::enums::EntityType;
 pub use entity::sea_orm_active_enums::ArtistType;
-use macros::{ApiError, cmp_chain};
+use macros::{ApiError, IntoErrorSchema, cmp_chain};
 use serde::Deserialize;
 use url::Url;
 use utoipa::ToSchema;
@@ -15,23 +13,18 @@ use crate::domain::shared::model::{
     DateWithPrecision, EntityIdent, Location, NewLocalizedName,
 };
 
-// TODO: Generic validation error
-#[derive(Debug, thiserror::Error, ApiError)]
+#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
 #[error("Validation error: {kind}")]
 #[api_error(
     status_code = StatusCode::BAD_REQUEST
 )]
 pub struct ValidationError {
     pub kind: ValidationErrorKind,
-    pub backtrace: Backtrace,
 }
 
 impl From<ValidationErrorKind> for ValidationError {
     fn from(kind: ValidationErrorKind) -> Self {
-        Self {
-            kind,
-            backtrace: Backtrace::capture(),
-        }
+        Self { kind }
     }
 }
 
