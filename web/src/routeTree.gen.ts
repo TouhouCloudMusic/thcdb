@@ -8,21 +8,21 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AboutRouteImport } from './routes/about'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as SongMockRouteImport } from './routes/song/mock'
-import { Route as SongIdRouteImport } from './routes/song/$id'
-import { Route as ReleaseMockRouteImport } from './routes/release/mock'
-import { Route as ReleaseIdRouteImport } from './routes/release/$id'
-import { Route as ArtistNewRouteImport } from './routes/artist/new'
-import { Route as userTest_avatar_uploadRouteImport } from './routes/(user)/test_avatar_upload'
-import { Route as userProfileRouteImport } from './routes/(user)/profile'
-import { Route as ArtistIdIndexRouteImport } from './routes/artist/$id.index'
-import { Route as ArtistIdEditRouteImport } from './routes/artist/$id.edit'
-import { Route as userProfileEditRouteImport } from './routes/(user)/profile_.edit'
-import { Route as userProfileUsernameRouteImport } from './routes/(user)/profile_.$username'
+import { Route as rootRouteImport } from './route/__root'
+import { Route as AuthRouteImport } from './route/auth'
+import { Route as AboutRouteImport } from './route/about'
+import { Route as IndexRouteImport } from './route/index'
+import { Route as SongMockRouteImport } from './route/song/mock'
+import { Route as SongIdRouteImport } from './route/song/$id'
+import { Route as ReleaseMockRouteImport } from './route/release/mock'
+import { Route as ReleaseIdRouteImport } from './route/release/$id'
+import { Route as ArtistNewRouteImport } from './route/artist/new'
+import { Route as userTest_avatar_uploadRouteImport } from './route/(user)/test_avatar_upload'
+import { Route as userProfileRouteImport } from './route/(user)/profile'
+import { Route as ArtistIdIndexRouteImport } from './route/artist/$id.index'
+import { Route as ArtistIdEditRouteImport } from './route/artist/$id.edit'
+import { Route as userProfileEditRouteImport } from './route/(user)/profile_.edit'
+import { Route as userProfileUsernameRouteImport } from './route/(user)/profile_.$username'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',

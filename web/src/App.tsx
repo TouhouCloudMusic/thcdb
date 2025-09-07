@@ -4,7 +4,7 @@ import { createRouter, RouterProvider } from "@tanstack/solid-router"
 
 import { routeTree } from "./routeTree.gen"
 import { StateProvider } from "./state"
-import { NotFound } from "./views/NotFound"
+import { NotFound } from "./view/NotFound"
 
 const router = createRouter({
 	routeTree,

@@ -1,6 +1,6 @@
 import * as v from "valibot"
 
-import type { nil } from "~/types"
+import type { nil } from "~/type"
 
 import { DatePrecision } from "./schema"
 

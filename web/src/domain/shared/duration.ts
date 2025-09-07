@@ -1,4 +1,4 @@
-import type { nil } from "~/types"
+import type { nil } from "~/type"
 
 type Duration = number
 export const enum Precision {

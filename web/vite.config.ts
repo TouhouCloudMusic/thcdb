@@ -30,7 +30,11 @@ export default defineConfig(({ mode }) => {
 
 	return {
 		plugins: [
-			tanstackRouter({ target: "solid", autoCodeSplitting: true }),
+			tanstackRouter({
+				target: "solid",
+				autoCodeSplitting: true,
+				routesDirectory: "src/route",
+			}),
 			babelMacrosPlugin(),
 			linguiSolidPlugin(),
 			solidPlugin(),

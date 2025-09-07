@@ -3,7 +3,7 @@ import { mergeConfig } from "vite"
 
 const config: StorybookConfig = {
 	framework: "storybook-solidjs-vite",
-	stories: ["../src/components/**/*.stories.@(ts|tsx)"],
+	stories: ["../src/component/**/*.stories.@(ts|tsx)"],
 	addons: [
 		"@storybook/addon-onboarding",
 		"@storybook/addon-docs",

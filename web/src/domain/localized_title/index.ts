@@ -1,6 +1,6 @@
 import type { LocalizedTitle } from "@thc/api"
 
-import type { nil } from "~/types"
+import type { nil } from "~/type"
 
 /**
  * Get the preferred localized title from an array of localized titles.
