@@ -17,7 +17,7 @@ use sea_orm_migration::prelude::Alias;
 
 use super::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::domain;
-use crate::domain::model::auth::{UserRole, UserRoleEnum};
+use crate::domain::model::auth::UserRoleEnum;
 use crate::domain::model::markdown::Markdown;
 use crate::domain::repository::Connection;
 use crate::domain::user::{
@@ -25,7 +25,10 @@ use crate::domain::user::{
 };
 
 impl user::Repository for SeaOrmRepository {
-    async fn find_by_id(&self, id: i32) -> Result<Option<User>, Self::Error> {
+    async fn find_by_id(
+        &self,
+        id: i32,
+    ) -> Result<Option<User>, Box<dyn std::error::Error + Send + Sync>> {
         Ok(find_many_impl(entity::user::Column::Id.eq(id), self.conn())
             .await?
             .into_iter()
@@ -35,7 +38,7 @@ impl user::Repository for SeaOrmRepository {
     async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<User>, Self::Error> {
+    ) -> Result<Option<User>, Box<dyn std::error::Error + Send + Sync>> {
         Ok(
             find_many_impl(entity::user::Column::Name.eq(name), self.conn())
                 .await?
@@ -46,7 +49,10 @@ impl user::Repository for SeaOrmRepository {
 }
 
 impl user::TxRepo for SeaOrmTxRepo {
-    async fn create(&self, user: NewUser) -> Result<User, Self::Error> {
+    async fn create(
+        &self,
+        user: NewUser,
+    ) -> Result<User, Box<dyn std::error::Error + Send + Sync>> {
         let tx = self.conn().begin().await?;
 
         let model = entity::user::Entity::insert(user.into_active_model())
@@ -69,7 +75,10 @@ impl user::TxRepo for SeaOrmTxRepo {
         Ok(user)
     }
 
-    async fn update(&self, user: User) -> Result<User, Self::Error> {
+    async fn update(
+        &self,
+        user: User,
+    ) -> Result<User, Box<dyn std::error::Error + Send + Sync>> {
         let tx = self.conn();
         let user_roles = user.roles.clone();
         let model = entity::user::Entity::update(user.into_active_model())
@@ -114,10 +123,8 @@ async fn find_many_impl(
         .map(|(model, roles)| {
             let mut user = User::from(model);
 
-            user.roles = roles
-                .into_iter()
-                .map(TryInto::try_into)
-                .collect::<Result<Vec<UserRole>, _>>()?;
+            user.roles =
+                roles.into_iter().map(TryInto::try_into).try_collect()?;
 
             Ok(user)
         })
@@ -178,7 +185,8 @@ impl user::ProfileRepository for SeaOrmRepository {
     async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<UserProfile>, Self::Error> {
+    ) -> Result<Option<UserProfile>, Box<dyn std::error::Error + Send + Sync>>
+    {
         use entity::*;
 
         const AVATAR_ALIAS: &str = "a";
@@ -309,7 +317,7 @@ impl user::ProfileRepository for SeaOrmRepository {
         &self,
         profile: &mut UserProfile,
         current_user: &domain::user::User,
-    ) -> Result<(), Self::Error> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         if profile.name == current_user.name {
             return Ok(());
         }

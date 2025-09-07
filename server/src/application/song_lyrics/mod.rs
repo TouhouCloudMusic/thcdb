@@ -1,5 +1,3 @@
-use std::backtrace::Backtrace;
-
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
@@ -20,61 +18,45 @@ pub struct Service<R> {
     pub repo: R,
 }
 
-#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+
 pub enum CreateError {
-    #[error(transparent)]
-    Correction(
-        #[from]
-        #[backtrace]
-        super::correction::Error,
-    ),
-    #[error(transparent)]
-    Infra {
-        #[backtrace]
-        source: crate::infra::Error,
+    #[snafu(transparent)]
+    Correction {
+        source: crate::application::correction::Error,
     },
-    #[error(transparent)]
-    Validation(
-        #[from]
-        #[backtrace]
-        ValidationError,
-    ),
+    #[snafu(transparent)]
+    Infra { source: crate::infra::Error },
+    #[snafu(transparent)]
+    Validation { source: ValidationError },
 }
 impl<E> From<E> for CreateError
 where
     E: Into<crate::infra::Error>,
 {
-    fn from(err: E) -> Self {
+    default fn from(err: E) -> Self {
         Self::Infra { source: err.into() }
     }
 }
 
-#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+
 pub enum UpsertCorrectionError {
-    #[error(transparent)]
-    Correction(
-        #[from]
-        #[backtrace]
-        super::correction::Error,
-    ),
-    #[error(transparent)]
-    Infra {
-        #[backtrace]
-        source: crate::infra::Error,
+    #[snafu(transparent)]
+    Correction {
+        source: crate::application::correction::Error,
     },
-    #[error("Validation error: {source}")]
-    Validation {
-        #[from]
-        source: ValidationError,
-        backtrace: Backtrace,
-    },
+    #[snafu(transparent)]
+    Infra { source: crate::infra::Error },
+    #[snafu(transparent)]
+    Validation { source: ValidationError },
 }
 
 impl<E> From<E> for UpsertCorrectionError
 where
     E: Into<crate::infra::Error>,
 {
-    fn from(err: E) -> Self {
+    default fn from(err: E) -> Self {
         Self::Infra { source: err.into() }
     }
 }
@@ -82,7 +64,6 @@ where
 impl<R> Service<R>
 where
     R: Repo,
-    crate::infra::Error: From<R::Error>,
 {
     pub async fn find_one(
         &self,
@@ -103,7 +84,6 @@ impl<R, TR> Service<R>
 where
     R: TransactionManager<TransactionRepository = TR>,
     TR: TxRepo + correction::TxRepo,
-    crate::infra::Error: From<R::Error> + From<TR::Error>,
 {
     pub async fn create(
         &self,

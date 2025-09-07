@@ -1,4 +1,3 @@
-use derive_more::From;
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
@@ -14,42 +13,48 @@ pub struct Service<R> {
     pub repo: R,
 }
 
-#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
 pub enum CreateError {
-    #[error(transparent)]
-    Correction(
-        #[from]
-        #[backtrace]
-        super::correction::Error,
-    ),
-    #[error(transparent)]
-    #[from(forward)]
-    Infra {
-        #[backtrace]
-        source: infra::Error,
+    #[snafu(transparent)]
+    Correction {
+        source: crate::application::correction::Error,
     },
+    #[snafu(transparent)]
+    Infra { source: infra::Error },
 }
 
-#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
+impl<E> From<E> for CreateError
+where
+    E: Into<infra::Error>,
+{
+    default fn from(err: E) -> Self {
+        Self::Infra { source: err.into() }
+    }
+}
+
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+
 pub enum UpsertCorrectionError {
-    #[error(transparent)]
-    Correction(
-        #[from]
-        #[backtrace]
-        super::correction::Error,
-    ),
-    #[error(transparent)]
-    #[from(forward)]
-    Infra {
-        #[backtrace]
-        source: infra::Error,
+    #[snafu(transparent)]
+    Correction {
+        source: crate::application::correction::Error,
     },
+    #[snafu(transparent)]
+    Infra { source: infra::Error },
+}
+
+impl<E> From<E> for UpsertCorrectionError
+where
+    E: Into<infra::Error>,
+{
+    default fn from(err: E) -> Self {
+        Self::Infra { source: err.into() }
+    }
 }
 
 impl<R> Service<R>
 where
     R: event::Repo,
-    infra::Error: From<R::Error>,
 {
     pub async fn find_by_id(
         &self,
@@ -70,7 +75,6 @@ impl<R, TR> Service<R>
 where
     R: TransactionManager<TransactionRepository = TR>,
     TR: event::TxRepo + correction::TxRepo,
-    infra::Error: From<R::Error> + From<TR::Error>,
 {
     pub async fn create(
         &self,

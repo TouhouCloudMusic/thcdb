@@ -5,7 +5,6 @@ use utoipa::ToSchema;
 use super::repository::{Connection, Cursor, Paginated};
 use super::shared::model::DateWithPrecision;
 use crate::domain::credit_role::CreditRoleRef;
-use crate::infra;
 
 pub type Appearance = Discography;
 
@@ -56,15 +55,15 @@ pub trait Repo: Connection {
     async fn appearance(
         &self,
         query: AppearanceQuery,
-    ) -> infra::Result<Paginated<Appearance>>;
+    ) -> Result<Paginated<Appearance>, Box<dyn std::error::Error + Send + Sync>>;
 
     async fn credit(
         &self,
         query: CreditQuery,
-    ) -> infra::Result<Paginated<Credit>>;
+    ) -> Result<Paginated<Credit>, Box<dyn std::error::Error + Send + Sync>>;
 
     async fn discography(
         &self,
         query: DiscographyQuery,
-    ) -> infra::Result<Paginated<Discography>>;
+    ) -> Result<Paginated<Discography>, Box<dyn std::error::Error + Send + Sync>>;
 }

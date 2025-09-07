@@ -15,57 +15,49 @@ pub struct Service<R> {
     pub repo: R,
 }
 
-#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+#[snafu(module)]
 pub enum CreateError {
-    #[error(transparent)]
-    Correction(
-        #[from]
-        #[backtrace]
-        super::correction::Error,
-    ),
-    #[error(transparent)]
-    Infra {
-        #[backtrace]
-        source: crate::infra::Error,
+    #[snafu(transparent)]
+    Correction {
+        source: crate::application::correction::Error,
     },
+    #[snafu(transparent)]
+    Infra { source: crate::infra::Error },
     // TODO: better error
-    #[error("Validation error: {0}")]
+    #[snafu(display("Validation error: {message}"))]
     #[api_error(status_code = axum::http::StatusCode::BAD_REQUEST)]
-    Validation(String),
+    Validation { message: String },
 }
 
 impl<E> From<E> for CreateError
 where
     E: Into<crate::infra::Error>,
 {
-    fn from(err: E) -> Self {
+    default fn from(err: E) -> Self {
         Self::Infra { source: err.into() }
     }
 }
 
-#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+#[snafu(module)]
 pub enum UpsertCorrectionError {
-    #[error(transparent)]
-    Infra {
-        #[backtrace]
-        source: crate::infra::Error,
+    #[snafu(transparent)]
+    Infra { source: crate::infra::Error },
+    #[snafu(transparent)]
+    Correction {
+        source: crate::application::correction::Error,
     },
-    #[error(transparent)]
-    Correction(
-        #[from]
-        #[backtrace]
-        super::correction::Error,
-    ),
-    #[error("Validation error: {0}")]
+    #[snafu(display("Validation error: {message}"))]
     #[api_error(status_code = axum::http::StatusCode::BAD_REQUEST)]
-    Validation(String),
+    Validation { message: String },
 }
 
 impl<E> From<E> for UpsertCorrectionError
 where
     E: Into<crate::infra::Error>,
 {
-    fn from(err: E) -> Self {
+    default fn from(err: E) -> Self {
         Self::Infra { source: err.into() }
     }
 }
@@ -73,7 +65,6 @@ where
 impl<R> Service<R>
 where
     R: Repo,
-    crate::infra::Error: From<R::Error>,
 {
     pub async fn find_one(
         &self,
@@ -94,7 +85,6 @@ impl<R, TR> Service<R>
 where
     R: TransactionManager<TransactionRepository = TR>,
     TR: TxRepo + correction::TxRepo,
-    crate::infra::Error: From<R::Error> + From<TR::Error>,
 {
     pub async fn create(
         &self,
@@ -103,7 +93,9 @@ where
         correction
             .data
             .validate()
-            .map_err(|e| CreateError::Validation(e.to_string()))?;
+            .map_err(|e| CreateError::Validation {
+                message: e.to_string(),
+            })?;
 
         let tx_repo = self.repo.begin().await?;
 
@@ -135,10 +127,11 @@ where
         id: i32,
         correction: NewCorrection<NewRelease>,
     ) -> Result<(), UpsertCorrectionError> {
-        correction
-            .data
-            .validate()
-            .map_err(|e| UpsertCorrectionError::Validation(e.to_string()))?;
+        correction.data.validate().map_err(|e| {
+            UpsertCorrectionError::Validation {
+                message: e.to_string(),
+            }
+        })?;
 
         let tx_repo = self.repo.begin().await?;
 

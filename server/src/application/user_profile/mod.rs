@@ -18,7 +18,6 @@ impl<R> Service<R> {
 impl<R> Service<R>
 where
     R: user::ProfileRepository,
-    R::Error: Into<Error>,
 {
     pub async fn find_by_name(
         &self,

@@ -26,5 +26,5 @@ pub trait Repository: Connection {
     async fn create(
         &self,
         queue: ArtistImageQueue,
-    ) -> Result<ArtistImageQueue, Self::Error>;
+    ) -> Result<ArtistImageQueue, Box<dyn std::error::Error + Send + Sync>>;
 }

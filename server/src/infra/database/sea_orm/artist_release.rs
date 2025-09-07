@@ -17,7 +17,6 @@ use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::image::Image;
 use crate::domain::repository::{Connection, Cursor, Paginated};
 use crate::domain::shared::model::DateWithPrecision;
-use crate::infra;
 
 struct ArtistReleaseIR {
     release: release::Model,
@@ -36,7 +35,8 @@ impl Repo for SeaOrmRepository {
     async fn appearance(
         &self,
         query: AppearanceQuery,
-    ) -> infra::Result<Paginated<Appearance>> {
+    ) -> Result<Paginated<Appearance>, Box<dyn std::error::Error + Send + Sync>>
+    {
         find_artist_releases(
             appearance_select(query.artist_id),
             query.pagination,
@@ -49,7 +49,8 @@ impl Repo for SeaOrmRepository {
     async fn credit(
         &self,
         query: CreditQuery,
-    ) -> infra::Result<Paginated<Credit>> {
+    ) -> Result<Paginated<Credit>, Box<dyn std::error::Error + Send + Sync>>
+    {
         let releases_and_artists = find_artist_releases(
             credit_select(query.artist_id),
             query.pagination,
@@ -108,7 +109,8 @@ impl Repo for SeaOrmRepository {
     async fn discography(
         &self,
         query: DiscographyQuery,
-    ) -> infra::Result<Paginated<Discography>> {
+    ) -> Result<Paginated<Discography>, Box<dyn std::error::Error + Send + Sync>>
+    {
         let select = release::Entity::find()
             .filter(release::Column::ReleaseType.eq(query.release_type))
             .filter(release_artist::Column::ArtistId.eq(query.artist_id))
@@ -124,7 +126,8 @@ async fn find_artist_releases(
     select: Select<release::Entity>,
     pagination: Cursor,
     db: &impl ConnectionTrait,
-) -> infra::Result<Paginated<ArtistReleaseIR>> {
+) -> Result<Paginated<ArtistReleaseIR>, Box<dyn std::error::Error + Send + Sync>>
+{
     let mut cursor = select.cursor_by(release::Column::Id);
 
     cursor.after(pagination.at);

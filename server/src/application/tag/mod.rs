@@ -1,4 +1,3 @@
-use derive_more::From;
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
@@ -16,36 +15,44 @@ pub struct Service<R> {
     pub repo: R,
 }
 
-#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+
 pub enum CreateError {
-    #[error(transparent)]
-    Correction(
-        #[from]
-        #[backtrace]
-        super::correction::Error,
-    ),
-    #[error(transparent)]
-    #[from(forward)]
-    Infra {
-        #[backtrace]
-        source: crate::infra::Error,
+    #[snafu(transparent)]
+    Correction {
+        source: crate::application::correction::Error,
     },
+    #[snafu(transparent)]
+    Infra { source: crate::infra::Error },
 }
 
-#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+
 pub enum UpsertCorrectionError {
-    #[error(transparent)]
-    Correction(
-        #[from]
-        #[backtrace]
-        super::correction::Error,
-    ),
-    #[error(transparent)]
-    #[from(forward)]
-    Infra {
-        #[backtrace]
-        source: crate::infra::Error,
+    #[snafu(transparent)]
+    Correction {
+        source: crate::application::correction::Error,
     },
+    #[snafu(transparent)]
+    Infra { source: crate::infra::Error },
+}
+
+impl<E> From<E> for CreateError
+where
+    E: Into<crate::infra::Error>,
+{
+    default fn from(err: E) -> Self {
+        Self::Infra { source: err.into() }
+    }
+}
+
+impl<E> From<E> for UpsertCorrectionError
+where
+    E: Into<crate::infra::Error>,
+{
+    default fn from(err: E) -> Self {
+        Self::Infra { source: err.into() }
+    }
 }
 
 impl<R> Service<R> {
@@ -57,7 +64,6 @@ impl<R> Service<R> {
 impl<R> Service<R>
 where
     R: Repo,
-    crate::infra::Error: From<R::Error>,
 {
     pub async fn find_by_id(&self, id: i32) -> Result<Option<Tag>, Error> {
         self.repo.find_by_id(id).await.map_err(Error::from)
@@ -78,7 +84,6 @@ impl<R, TR> Service<R>
 where
     R: TransactionManager<TransactionRepository = TR>,
     TR: Clone + TxRepo + correction::TxRepo,
-    crate::infra::Error: From<R::Error> + From<TR::Error>,
 {
     pub async fn create(
         &self,

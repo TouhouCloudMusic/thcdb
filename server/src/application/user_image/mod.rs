@@ -8,7 +8,6 @@ use crate::domain::repository::TransactionManager;
 use crate::domain::user::{
     User, {self},
 };
-use crate::infra::{self};
 
 mod model;
 pub use model::*;
@@ -57,32 +56,22 @@ mod parser {
     });
 }
 
-#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+
 pub enum Error {
-    #[error(transparent)]
-    Infra {
-        #[backtrace]
-        source: crate::infra::Error,
-    },
-    #[error(transparent)]
-    ImageService(
-        #[from]
-        #[backtrace]
-        image::Error,
-    ),
-    #[error(transparent)]
-    Validate(
-        #[from]
-        #[backtrace]
-        ValidationError,
-    ),
+    #[snafu(transparent)]
+    Infra { source: crate::infra::Error },
+    #[snafu(transparent)]
+    ImageService { source: image::Error },
+    #[snafu(transparent)]
+    Validate { source: ValidationError },
 }
 
 impl<E> From<E> for Error
 where
     E: Into<crate::infra::Error>,
 {
-    fn from(err: E) -> Self {
+    default fn from(err: E) -> Self {
         Self::Infra { source: err.into() }
     }
 }
@@ -104,7 +93,6 @@ where
     Repo: TransactionManager<TransactionRepository = TxRepo>,
     TxRepo: Clone + user::TxRepo + image::Repo + ImageTxRepo,
     Storage: Clone + AsyncFileStorage,
-    infra::Error: From<Repo::Error> + From<TxRepo::Error>,
 {
     pub async fn upload_avatar(
         &self,
@@ -152,7 +140,6 @@ where
     F: FnOnce(&mut User) -> &mut Option<i32>,
     TxRepo: Clone + user::TxRepo + image::Repo + ImageTxRepo,
     Storage: Clone + AsyncFileStorage,
-    infra::Error: From<TxRepo::Error>,
 {
     let image_service = image::Service::new(tx.clone(), storage);
 

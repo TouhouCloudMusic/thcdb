@@ -29,6 +29,8 @@ enum IntoResponseOpt {
     None,
     Inner,
     ItSelf,
+    // For named-field variants: forward to a specific field, e.g. `source`
+    Field(Ident),
 }
 
 impl IntoResponseOpt {
@@ -64,6 +66,8 @@ impl darling::FromMeta for IntoResponseOpt {
                 Ok(IntoResponseOpt::Inner)
             } else if path.path.is_ident("self") {
                 Ok(IntoResponseOpt::ItSelf)
+            } else if let Some(seg) = path.path.segments.last() {
+                Ok(IntoResponseOpt::Field(seg.ident.clone()))
             } else {
                 Err(darling::Error::custom("invalid code"))
             }
@@ -190,6 +194,7 @@ fn derive_enum_impl(
                             Self::#var_name(inner) => inner.into_response()
                         });
                     }
+                    IntoResponseOpt::Field(_) => unreachable!(),
                 }
             }
             darling::ast::Style::Unit => {
@@ -243,9 +248,19 @@ fn derive_enum_impl(
                     CodeOpt::Inner => unreachable!(),
                 }
 
-                into_response_arms.push(quote! {
-                    Self::#var_name { .. } => self.into_api_response()
-                });
+                match variant.into_response {
+                    IntoResponseOpt::Field(ref ident) => {
+                        let field_ident = ident;
+                        into_response_arms.push(quote! {
+                            Self::#var_name { #field_ident, .. } => #field_ident.into_response()
+                        });
+                    }
+                    _ => {
+                        into_response_arms.push(quote! {
+                            Self::#var_name { .. } => self.into_api_response()
+                        });
+                    }
+                }
             }
         }
     }

@@ -27,13 +27,13 @@ pub trait Repo: Connection {
     async fn find_one(
         &self,
         filter: FindOneFilter,
-    ) -> Result<Option<SongLyrics>, Self::Error>;
+    ) -> Result<Option<SongLyrics>, Box<dyn std::error::Error + Send + Sync>>;
 
     /// Find multiple song lyrics records by filter
     async fn find_many(
         &self,
         filter: FindManyFilter,
-    ) -> Result<Vec<SongLyrics>, Self::Error>;
+    ) -> Result<Vec<SongLyrics>, Box<dyn std::error::Error + Send + Sync>>;
 }
 
 /// Transaction repository trait for song lyrics operations
@@ -42,17 +42,20 @@ where
     Self::apply_update(..): Send,
 {
     /// Create new song lyrics
-    async fn create(&self, lyrics: &NewSongLyrics) -> Result<i32, Self::Error>;
+    async fn create(
+        &self,
+        lyrics: &NewSongLyrics,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
 
     /// Create history record for song lyrics
     async fn create_history(
         &self,
         lyrics: &NewSongLyrics,
-    ) -> Result<i32, Self::Error>;
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
 
     /// Apply correction update to song lyrics
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Self::Error>;
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
 }

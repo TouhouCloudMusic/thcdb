@@ -10,4 +10,4 @@ pub mod state;
 pub mod storage;
 pub mod worker;
 
-pub use error::{Error, Result};
+pub use error::Error;

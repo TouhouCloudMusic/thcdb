@@ -2,16 +2,16 @@ use std::backtrace::Backtrace;
 
 use axum::http::StatusCode;
 use axum_login::{AuthUser, AuthnBackend, UserId};
-use derive_more::From;
 use macros::{ApiError, IntoErrorSchema};
 
 use crate::domain::model::auth::{
     AuthCredential, AuthnError, ValidateCredsError,
 };
-use crate::domain::repository::{Connection, Transaction, TransactionManager};
+use crate::domain::repository::{Transaction, TransactionManager};
 use crate::domain::user::{
     TxRepo, User, {self},
 };
+use crate::infra;
 use crate::infra::error::Error;
 
 #[derive(Clone)]
@@ -19,81 +19,68 @@ pub struct AuthService<R> {
     repo: R,
 }
 
-#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
 pub enum SignUpError {
-    #[error("Username already in use")]
+    #[snafu(display("Username already in use"))]
     #[api_error(
         status_code = StatusCode::CONFLICT,
     )]
-    UsernameAlreadyInUse { backtrace: Backtrace },
-    #[error(transparent)]
-    #[from(forward)]
-    Infra {
-        #[backtrace]
-        source: crate::infra::Error,
-    },
-    #[error(transparent)]
+    UsernameAlreadyInUse,
+    #[snafu(transparent)]
+    Infra { source: infra::Error },
+    #[snafu(transparent)]
     #[api_error(
         into_response = self
     )]
-    Validate(
-        #[from]
-        #[backtrace]
-        ValidateCredsError,
-    ),
+    Validate { source: ValidateCredsError },
 }
 
-impl SignUpError {
-    pub fn username_already_in_use() -> Self {
-        Self::UsernameAlreadyInUse {
-            backtrace: Backtrace::capture(),
-        }
+impl<E> From<E> for SignUpError
+where
+    E: Into<infra::Error>,
+{
+    default fn from(err: E) -> Self {
+        Self::Infra { source: err.into() }
     }
 }
 
-#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
 pub enum SignInError {
-    #[error("Already signed in")]
+    #[snafu(display("Already signed in"))]
     #[api_error(
         status_code = StatusCode::CONFLICT,
     )]
-    AlreadySignedIn { backtrace: Backtrace },
-    #[error(transparent)]
-    Authn(
-        #[from]
-        #[backtrace]
-        AuthnError,
-    ),
-    #[error(transparent)]
-    #[from(forward)]
-    Infra {
-        #[backtrace]
-        source: crate::infra::Error,
-    },
-    #[error(transparent)]
-    Validate(
-        #[from]
-        #[backtrace]
-        ValidateCredsError,
-    ),
+    AlreadySignedIn,
+    #[snafu(transparent)]
+    Authn { source: AuthnError },
+    #[snafu(transparent)]
+    Infra { source: infra::Error },
+    #[snafu(transparent)]
+    Validate { source: ValidateCredsError },
 }
 
 impl SignInError {
-    pub fn already_signed_in() -> Self {
-        Self::AlreadySignedIn {
-            backtrace: Backtrace::capture(),
-        }
+    pub const fn already_signed_in() -> Self {
+        Self::AlreadySignedIn
     }
 }
 
-#[derive(Debug, thiserror::Error, ApiError)]
-#[error("Session error: {source}")]
+impl<E> From<E> for SignInError
+where
+    E: Into<infra::Error>,
+{
+    default fn from(err: E) -> Self {
+        Self::Infra { source: err.into() }
+    }
+}
+
+#[derive(Debug, snafu::Snafu, ApiError)]
+#[snafu(display("Session error: {source}"))]
 #[api_error(
     status_code = StatusCode::INTERNAL_SERVER_ERROR,
     into_response = self
 )]
 pub struct SessionError {
-    #[from]
     source: axum_login::tower_sessions::session::Error,
     backtrace: Backtrace,
 }
@@ -113,40 +100,36 @@ where
 {
     fn from(value: axum_login::Error<AuthService<R>>) -> Self {
         match value {
-            axum_login::Error::Session(err) => {
-                Self::Session(SessionError::new(err))
+            axum_login::Error::Session(err) => Self::Session {
+                source: SessionError::new(err),
+            },
+            axum_login::Error::Backend(err) => {
+                Self::AuthnBackend { source: err }
             }
-            axum_login::Error::Backend(err) => Self::AuthnBackend(err),
         }
     }
 }
 
-#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+
 pub enum SessionBackendError {
-    #[error(transparent)]
+    #[snafu(transparent)]
     #[api_error(
         into_response = self
     )]
-    Session(
-        #[from]
-        #[backtrace]
-        SessionError,
-    ),
-    #[error(transparent)]
-    AuthnBackend(
-        #[from]
-        #[backtrace]
-        AuthnBackendError,
-    ),
+    Session { source: SessionError },
+    #[snafu(transparent)]
+    AuthnBackend { source: AuthnBackendError },
 }
-#[derive(Debug, thiserror::Error, ApiError)]
+#[derive(Debug, snafu::Snafu, ApiError)]
+
 pub enum AuthnBackendError {
-    #[error(transparent)]
-    Authn(#[from] AuthnError),
-    #[error(transparent)]
-    SignIn(#[from] SignInError),
-    #[error(transparent)]
-    Internal(#[from] Error),
+    #[snafu(transparent)]
+    Authn { source: AuthnError },
+    #[snafu(transparent)]
+    SignIn { source: SignInError },
+    #[snafu(transparent)]
+    Internal { source: Error },
 }
 
 pub trait AuthServiceTrait<R>: Send + Sync
@@ -168,16 +151,12 @@ impl<R> AuthService<R> {
 
 trait AuthServiceTraitBounds<R> = where
     R: TransactionManager + user::Repository,
-    R::TransactionRepository: user::TxRepo,
-    Error:
-        From<R::Error> + From<<R::TransactionRepository as Connection>::Error>;
+    R::TransactionRepository: user::TxRepo;
 
 impl<R> AuthServiceTrait<R> for AuthService<R>
 where
     R: TransactionManager + user::Repository,
     R::TransactionRepository: user::TxRepo,
-    Error:
-        From<R::Error> + From<<R::TransactionRepository as Connection>::Error>,
 {
     async fn sign_in(
         &self,
@@ -202,9 +181,7 @@ where
         creds.validate()?;
 
         if self.repo.find_by_name(&creds.username).await?.is_some() {
-            return Err(SignUpError::UsernameAlreadyInUse {
-                backtrace: Backtrace::capture(),
-            });
+            return Err(SignUpError::UsernameAlreadyInUse);
         }
 
         let tx_repo = self.repo.begin().await?;

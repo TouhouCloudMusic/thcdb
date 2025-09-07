@@ -3,7 +3,7 @@ use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 
 use super::model::{Artist, ArtistType, NewArtist};
-use crate::domain::repository::{Connection, Transaction};
+use crate::domain::repository::Transaction;
 
 #[derive(Clone, Debug, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
@@ -33,33 +33,36 @@ pub struct CommonFilter {
     pub exclusion: Option<Vec<i32>>,
 }
 
-pub trait Repo: Connection {
+pub trait Repo {
     async fn find_one(
         &self,
         id: i32,
         common: CommonFilter,
-    ) -> Result<Option<Artist>, Self::Error>;
+    ) -> Result<Option<Artist>, Box<dyn std::error::Error + Send + Sync>>;
 
     async fn find_many(
         &self,
         filter: FindManyFilter,
         common: CommonFilter,
-    ) -> Result<Vec<Artist>, Self::Error>;
+    ) -> Result<Vec<Artist>, Box<dyn std::error::Error + Send + Sync>>;
 }
 
 pub trait TxRepo: Repo + Transaction
 where
     Self::apply_update(..): Send,
 {
-    async fn create(&self, data: &NewArtist) -> Result<i32, Self::Error>;
+    async fn create(
+        &self,
+        data: &NewArtist,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
 
     async fn create_history(
         &self,
         data: &NewArtist,
-    ) -> Result<i32, Self::Error>;
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
 
     async fn apply_update(
         &self,
         data: entity::correction::Model,
-    ) -> Result<(), Self::Error>;
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
 }

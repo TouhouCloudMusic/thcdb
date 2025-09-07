@@ -38,5 +38,5 @@ pub trait Repo: Connection {
     async fn create(
         &self,
         image: ReleaseImage,
-    ) -> Result<ReleaseImage, Self::Error>;
+    ) -> Result<ReleaseImage, Box<dyn std::error::Error + Send + Sync>>;
 }

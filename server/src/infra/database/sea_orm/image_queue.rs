@@ -2,36 +2,39 @@ use entity::image_queue as db;
 use libfp::FunctorExt;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
-    ActiveModelTrait, ConnectionTrait, DbErr, EntityTrait, IntoActiveModel,
+    ActiveModelTrait, ConnectionTrait, EntityTrait, IntoActiveModel,
 };
+use snafu::ResultExt;
 
 use crate::domain::image_queue::{ImageQueue, NewImageQueue, Repo};
 use crate::domain::repository::Connection;
 
 impl<T> Repo for T
 where
-    T: Connection<Error = DbErr>,
+    T: Connection,
     T::Conn: ConnectionTrait,
 {
     async fn create(
         &self,
         model: NewImageQueue,
-    ) -> Result<ImageQueue, Self::Error> {
+    ) -> Result<ImageQueue, Box<dyn std::error::Error + Send + Sync>> {
         db::Entity::insert(model.into_active_model())
             .exec_with_returning(self.conn())
             .await
             .fmap_into()
+            .boxed()
     }
 
     async fn update(
         &self,
         model: ImageQueue,
-    ) -> Result<ImageQueue, Self::Error> {
+    ) -> Result<ImageQueue, Box<dyn std::error::Error + Send + Sync>> {
         db::Model::from(model)
             .into_active_model()
             .update(self.conn())
             .await
             .map(Into::into)
+            .boxed()
     }
 }
 

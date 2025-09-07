@@ -1,4 +1,3 @@
-use derive_more::From;
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
@@ -18,42 +17,48 @@ pub struct Service<R> {
     pub repo: R,
 }
 
-#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
 pub enum CreateError {
-    #[error(transparent)]
-    Correction(
-        #[from]
-        #[backtrace]
-        super::correction::Error,
-    ),
-    #[error(transparent)]
-    #[from(forward)]
-    Infra {
-        #[backtrace]
-        source: crate::infra::Error,
+    #[snafu(transparent)]
+    Correction {
+        source: crate::application::correction::Error,
+    },
+    #[snafu(transparent)]
+    Infra { source: crate::infra::Error },
+}
+
+impl<A> From<A> for CreateError
+where
+    A: Into<crate::infra::Error>,
+{
+    default fn from(err: A) -> Self {
+        Self::Infra { source: err.into() }
+    }
+}
+
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+
+pub enum UpsertCorrectionError {
+    #[snafu(transparent)]
+    Infra { source: crate::infra::Error },
+    #[snafu(transparent)]
+    Correction {
+        source: crate::application::correction::Error,
     },
 }
 
-#[derive(Debug, From, thiserror::Error, ApiError, IntoErrorSchema)]
-pub enum UpsertCorrectionError {
-    #[error(transparent)]
-    #[from(forward)]
-    Infra {
-        #[backtrace]
-        source: crate::infra::Error,
-    },
-    #[error(transparent)]
-    Correction(
-        #[from]
-        #[backtrace]
-        super::correction::Error,
-    ),
+impl<A> From<A> for UpsertCorrectionError
+where
+    A: Into<crate::infra::Error>,
+{
+    default fn from(err: A) -> Self {
+        Self::Infra { source: err.into() }
+    }
 }
 
 impl<R> Service<R>
 where
     R: Repo,
-    crate::infra::Error: From<R::Error>,
 {
     pub async fn find_one<K: QueryKind>(
         &self,
@@ -76,7 +81,6 @@ impl<R, TR> Service<R>
 where
     R: Repo + TransactionManager<TransactionRepository = TR>,
     TR: Clone + TxRepo + correction::TxRepo,
-    crate::infra::Error: From<R::Error> + From<TR::Error>,
 {
     pub async fn create(
         &self,

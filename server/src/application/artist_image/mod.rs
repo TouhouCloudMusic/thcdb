@@ -3,9 +3,8 @@ use std::sync::LazyLock;
 use ::image::ImageFormat;
 use bytes::Bytes;
 use bytesize::ByteSize;
-use derive_more::{Display, From};
 use macros::{ApiError, IntoErrorSchema};
-use thiserror::Error;
+use snafu::Snafu;
 
 use crate::constant::{
     ARTIST_PROFILE_IMAGE_MAX_HEIGHT, ARTIST_PROFILE_IMAGE_MAX_RATIO,
@@ -21,6 +20,7 @@ use crate::domain::image::{
 use crate::domain::repository::{Transaction, TransactionManager};
 use crate::domain::user::User;
 use crate::domain::{image, image_queue};
+use crate::infra;
 
 static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
     let opt = ParseOption::builder()
@@ -37,11 +37,21 @@ static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
     Parser::new(opt)
 });
 
-#[derive(Debug, Display, Error, From, ApiError, IntoErrorSchema)]
+#[derive(Debug, Snafu, ApiError, IntoErrorSchema)]
 pub enum Error {
-    #[from(forward)]
-    Infra(crate::infra::Error),
-    Service(#[from] image::Error),
+    #[snafu(transparent)]
+    Infra { source: infra::Error },
+    #[snafu(transparent)]
+    Service { source: image::Error },
+}
+
+impl<A> From<A> for Error
+where
+    A: Into<infra::Error>,
+{
+    default fn from(err: A) -> Self {
+        Self::Infra { source: err.into() }
+    }
 }
 
 pub struct Service<Repo, Storage> {
@@ -59,7 +69,6 @@ where
         + image_queue::Repo
         + artist_image_queue::Repository,
     Storage: AsyncFileStorage + Clone,
-    crate::infra::Error: From<Repo::Error> + From<TxRepo::Error>,
 {
     /// Warn: Make sure inner transaction is wrapped in Arc
     pub const fn new(repo: Repo, storage: Storage) -> Self {

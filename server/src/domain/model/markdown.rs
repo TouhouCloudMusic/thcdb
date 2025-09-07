@@ -9,8 +9,8 @@ use pulldown_cmark::{Event, Options, Parser, TextMergeStream};
 #[derive(Debug, Clone, Display)]
 pub struct Markdown(String);
 
-#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
-#[error("{kind}")]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+#[snafu(display("{kind}"))]
 #[api_error(
     status_code = StatusCode::BAD_REQUEST,
 )]

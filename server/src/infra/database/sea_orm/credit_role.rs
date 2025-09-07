@@ -19,14 +19,15 @@ use crate::infra::database::sea_orm::SeaOrmTxRepo;
 
 impl<T> Repo for T
 where
-    T: Connection<Error = DbErr>,
+    T: Connection,
     T::Conn: sea_orm::ConnectionTrait,
 {
     async fn find_one<K: QueryKind>(
         &self,
         id: i32,
         _common: CommonFilter,
-    ) -> Result<Option<K::Output>, Self::Error> {
+    ) -> Result<Option<K::Output>, Box<dyn std::error::Error + Send + Sync>>
+    {
         let role = credit_role::Entity::find_by_id(id).one(self.conn()).await?;
 
         Ok(role.map(Into::into))
@@ -36,7 +37,7 @@ where
         &self,
         filter: FindManyFilter,
         _common: CommonFilter,
-    ) -> Result<Vec<K::Output>, Self::Error> {
+    ) -> Result<Vec<K::Output>, Box<dyn std::error::Error + Send + Sync>> {
         let roles = match filter {
             FindManyFilter::Name(name) => {
                 let search_term = Func::lower(name);
@@ -60,7 +61,10 @@ where
 }
 
 impl TxRepo for SeaOrmTxRepo {
-    async fn create(&self, data: &NewCreditRole) -> Result<i32, Self::Error> {
+    async fn create(
+        &self,
+        data: &NewCreditRole,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
         let credit_role_model = credit_role::ActiveModel {
             id: NotSet,
             name: data.name.to_string().into_active_value(),
@@ -100,7 +104,7 @@ impl TxRepo for SeaOrmTxRepo {
     async fn create_history(
         &self,
         data: &NewCreditRole,
-    ) -> Result<i32, Self::Error> {
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
         let credit_role_history_model = credit_role_history::ActiveModel {
             id: NotSet,
             name: data.name.to_string().into_active_value(),
@@ -144,7 +148,7 @@ impl TxRepo for SeaOrmTxRepo {
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Self::Error> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         // Get the latest correction revision
         let revision = correction_revision::Entity::find()
             .filter(correction_revision::Column::CorrectionId.eq(correction.id))

@@ -32,28 +32,31 @@ pub trait Repo: Connection {
         &self,
         id: i32,
         common: CommonFilter,
-    ) -> Result<Option<K::Output>, Self::Error>;
+    ) -> Result<Option<K::Output>, Box<dyn std::error::Error + Send + Sync>>;
 
     async fn find_many<K: QueryKind>(
         &self,
         filter: FindManyFilter,
         common: CommonFilter,
-    ) -> Result<Vec<K::Output>, Self::Error>;
+    ) -> Result<Vec<K::Output>, Box<dyn std::error::Error + Send + Sync>>;
 }
 
 pub trait TxRepo: Repo + Transaction
 where
     Self::apply_update(..): Send,
 {
-    async fn create(&self, data: &NewCreditRole) -> Result<i32, Self::Error>;
+    async fn create(
+        &self,
+        data: &NewCreditRole,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
 
     async fn create_history(
         &self,
         data: &NewCreditRole,
-    ) -> Result<i32, Self::Error>;
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Self::Error>;
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
 }

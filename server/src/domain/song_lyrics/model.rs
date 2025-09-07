@@ -27,8 +27,8 @@ pub struct NewSongLyrics {
     pub is_main: bool,
 }
 
-#[derive(Debug, thiserror::Error, ApiError)]
-#[error("Validation error: {kind}")]
+#[derive(Debug, snafu::Snafu, ApiError)]
+#[snafu(display("Validation error: {kind}"))]
 #[api_error(
     status_code = StatusCode::BAD_REQUEST
 )]

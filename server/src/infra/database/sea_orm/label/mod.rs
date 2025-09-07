@@ -10,6 +10,7 @@ use sea_orm::{
 };
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
+use snafu::ResultExt;
 
 use crate::domain::label::model::{Label, NewLabel};
 use crate::domain::label::{Repo, TxRepo};
@@ -22,20 +23,24 @@ mod impls;
 
 impl<T> Repo for T
 where
-    T: Connection<Error = DbErr>,
+    T: Connection,
     T::Conn: ConnectionTrait,
 {
-    async fn find_by_id(&self, id: i32) -> Result<Option<Label>, Self::Error> {
+    async fn find_by_id(
+        &self,
+        id: i32,
+    ) -> Result<Option<Label>, Box<dyn std::error::Error + Send + Sync>> {
         let select = label::Entity::find().filter(label::Column::Id.eq(id));
         find_many_impl(select, self.conn())
             .await
             .map(|x| x.into_iter().next())
+            .boxed()
     }
 
     async fn find_by_keyword(
         &self,
         keyword: &str,
-    ) -> Result<Vec<Label>, Self::Error> {
+    ) -> Result<Vec<Label>, Box<dyn std::error::Error + Send + Sync>> {
         let search_term = Func::lower(keyword);
 
         let select = label::Entity::find()
@@ -47,7 +52,7 @@ where
                 Func::lower(label::Column::Name.into_expr())
                     .binary(PgBinOper::SimilarityDistance, search_term),
             );
-        find_many_impl(select, self.conn()).await
+        find_many_impl(select, self.conn()).await.boxed()
     }
 }
 
@@ -123,8 +128,13 @@ async fn find_many_impl(
 }
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
-    async fn create(&self, data: &NewLabel) -> Result<i32, Self::Error> {
-        let label = save_label_and_link_relations(data, self.conn()).await?;
+    async fn create(
+        &self,
+        data: &NewLabel,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+        let label = save_label_and_link_relations(data, self.conn())
+            .await
+            .boxed()?;
 
         Ok(label.id)
     }
@@ -132,17 +142,18 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create_history(
         &self,
         data: &NewLabel,
-    ) -> Result<i32, Self::Error> {
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
         save_label_history_and_link_relations(data, self.conn())
             .await
             .map(|x| x.id)
+            .boxed()
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Self::Error> {
-        impls::apply_update(correction, self.conn()).await
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        impls::apply_update(correction, self.conn()).await.boxed()
     }
 }
 

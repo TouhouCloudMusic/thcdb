@@ -27,13 +27,14 @@ use crate::infra;
 
 impl<T> Repo for T
 where
-    T: Connection<Error = DbErr>,
+    T: Connection,
     T::Conn: sea_orm::ConnectionTrait,
 {
     async fn find_one(
         &self,
         filter: CorrectionFilter,
-    ) -> Result<Option<Correction>, Self::Error> {
+    ) -> Result<Option<Correction>, Box<dyn std::error::Error + Send + Sync>>
+    {
         let ret = Entity::find()
             .filter(Column::EntityId.eq(filter.entity_id))
             .filter(Column::EntityType.eq(filter.entity_type))
@@ -64,7 +65,7 @@ where
         &self,
         user: &crate::domain::user::User,
         correction: &Correction,
-    ) -> Result<bool, Self::Error> {
+    ) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
         let correction_id = correction.id;
         let count = correction_user::Entity::find()
             .filter(correction_user::Column::CorrectionId.eq(correction_id))
@@ -83,7 +84,7 @@ impl TxRepo for SeaOrmTxRepo {
     async fn create(
         &self,
         meta: NewCorrectionMeta<impl CorrectionEntity>,
-    ) -> Result<(), Self::Error> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let new_correction = entity::correction::ActiveModel {
             id: NotSet,
             status: Set(CorrectionStatus::Pending),
@@ -125,7 +126,7 @@ impl TxRepo for SeaOrmTxRepo {
         &self,
         id: i32,
         meta: NewCorrectionMeta<impl CorrectionEntity>,
-    ) -> Result<(), Self::Error> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         correction_revision::Model {
             correction_id: id,
             entity_history_id: meta.history_id,
@@ -148,14 +149,6 @@ impl TxRepo for SeaOrmTxRepo {
     ) -> Result<(), infra::Error>
     where
         Ctx: ApproveCorrectionContext,
-        infra::Error: From<<Ctx::ArtistRepo as Connection>::Error>
-            + From<<Ctx::ReleaseRepo as Connection>::Error>
-            + From<<Ctx::SongRepo as Connection>::Error>
-            + From<<Ctx::LabelRepo as Connection>::Error>
-            + From<<Ctx::EventRepo as Connection>::Error>
-            + From<<Ctx::TagRepo as Connection>::Error>
-            + From<<Ctx::SongLyricsRepo as Connection>::Error>
-            + From<<Ctx::CreditRoleRepo as Connection>::Error>,
     {
         let correction = entity::correction::Entity::find_by_id(correction_id)
             .one(self.conn())

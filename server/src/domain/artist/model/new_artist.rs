@@ -13,8 +13,8 @@ use crate::domain::shared::model::{
     DateWithPrecision, EntityIdent, Location, NewLocalizedName,
 };
 
-#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
-#[error("Validation error: {kind}")]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+#[snafu(display("Validation error: {kind}"))]
 #[api_error(
     status_code = StatusCode::BAD_REQUEST
 )]

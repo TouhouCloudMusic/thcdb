@@ -4,12 +4,11 @@ use macros::{ApiError, IntoErrorSchema};
 
 use crate::infra;
 
-#[derive(Debug, thiserror::Error, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
 pub enum ApiError {
-    #[error(transparent)]
-    Infra(
-        #[from]
-        #[backtrace]
-        infra::Error,
-    ),
+    #[snafu(transparent)]
+    #[api_error(
+        into_response = source
+    )]
+    Infra { source: infra::Error },
 }

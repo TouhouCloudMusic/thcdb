@@ -4,7 +4,9 @@ use entity::user_role;
 use sea_orm::{
     DatabaseConnection, DatabaseTransaction, DbErr, TransactionTrait,
 };
+use snafu::ResultExt;
 
+use crate::domain::error::InfraWhatever;
 use crate::domain::model::auth::UserRoleEnum;
 use crate::domain::repository::{Connection, Transaction, TransactionManager};
 
@@ -29,6 +31,8 @@ mod tag;
 mod user;
 pub mod utils;
 
+/// `DatabaseConnection` is a wrapper of Arc<InnerPool>.
+/// So don't wrap this type in Arc.
 #[derive(Clone)]
 pub struct SeaOrmRepository {
     pub conn: sea_orm::DatabaseConnection,
@@ -41,8 +45,6 @@ impl SeaOrmRepository {
 }
 
 impl Connection for SeaOrmRepository {
-    type Error = DbErr;
-
     type Conn = DatabaseConnection;
 
     fn conn(&self) -> &Self::Conn {
@@ -53,17 +55,28 @@ impl Connection for SeaOrmRepository {
 impl TransactionManager for SeaOrmRepository {
     type TransactionRepository = SeaOrmTxRepo;
 
-    async fn begin(&self) -> Result<Self::TransactionRepository, Self::Error> {
+    async fn begin(
+        &self,
+    ) -> Result<
+        Self::TransactionRepository,
+        Box<dyn std::error::Error + Send + Sync>,
+    > {
         let tx = self.conn.begin().await?;
         let tx = Arc::new(tx);
         Ok(Self::TransactionRepository { tx })
     }
 
-    async fn run<F, T, E>(&self, f: F) -> Result<T, E>
+    async fn run<F, T>(
+        &self,
+        f: F,
+    ) -> Result<T, Box<dyn std::error::Error + Send + Sync>>
     where
-        F: AsyncFnOnce(&Self::TransactionRepository) -> Result<T, E> + Send,
+        F: AsyncFnOnce(
+                &Self::TransactionRepository,
+            )
+                -> Result<T, Box<dyn std::error::Error + Send + Sync>>
+            + Send,
         T: Send,
-        E: Send + From<Self::Error>,
     {
         run_transaction_impl(self, f).await
     }
@@ -76,8 +89,6 @@ pub struct SeaOrmTxRepo {
 }
 
 impl Connection for SeaOrmTxRepo {
-    type Error = DbErr;
-
     type Conn = DatabaseTransaction;
 
     fn conn(&self) -> &Self::Conn {
@@ -88,29 +99,55 @@ impl Connection for SeaOrmTxRepo {
 impl TransactionManager for SeaOrmTxRepo {
     type TransactionRepository = Self;
 
-    async fn begin(&self) -> Result<Self::TransactionRepository, Self::Error> {
-        let save_point = self.tx.begin().await?;
+    async fn begin(
+        &self,
+    ) -> Result<
+        Self::TransactionRepository,
+        Box<dyn std::error::Error + Send + Sync>,
+    > {
+        let save_point = self.tx.begin().await.boxed()?;
         Ok(Self {
             tx: Arc::new(save_point),
         })
     }
 
-    async fn run<F, T, E>(&self, f: F) -> Result<T, E>
+    async fn run<F, T>(
+        &self,
+        f: F,
+    ) -> Result<T, Box<dyn std::error::Error + Send + Sync>>
     where
-        F: AsyncFnOnce(&Self::TransactionRepository) -> Result<T, E> + Send,
+        F: AsyncFnOnce(
+                &Self::TransactionRepository,
+            )
+                -> Result<T, Box<dyn std::error::Error + Send + Sync>>
+            + Send,
         T: Send,
-        E: Send + From<Self::Error>,
     {
         run_transaction_impl(self, f).await
     }
 }
 
 impl Transaction for SeaOrmTxRepo {
-    async fn commit(self) -> Result<(), Self::Error> {
+    async fn commit(
+        self,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         Arc::try_unwrap(self.tx)
-            .map_err(|tx| DbErr::Custom(format!("Cannot commit transaction: multiple references to the transaction exist, current weak count: {}, strong count: {}", Arc::weak_count(&tx), Arc::strong_count(&tx))))?
+            .map_err(|tx| {
+                let wc = Arc::weak_count(&tx);
+                let sc = Arc::strong_count(&tx);
+                let msg = format!(
+                    "Cannot commit transaction: \
+                    multiple references to the transaction exist, \
+                    current weak count: {wc}, strong count: {sc}"
+                );
+                InfraWhatever::from(msg)
+            })
+            .boxed()?
             .commit()
             .await
+            .boxed()?;
+
+        Ok(())
     }
 }
 
@@ -130,9 +167,7 @@ where
     C: TransactionManager,
     F: AsyncFnOnce(&C::TransactionRepository) -> Result<T, E> + Send,
     T: Send,
-    E: Send
-        + From<C::Error>
-        + From<<C::TransactionRepository as Connection>::Error>,
+    E: Send + From<Box<dyn std::error::Error + Send + Sync>>,
 {
     let repo = tx.begin().await?;
 

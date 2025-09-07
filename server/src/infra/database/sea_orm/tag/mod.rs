@@ -11,6 +11,7 @@ use sea_orm::{
 };
 use sea_query::extension::postgres::PgBinOper::*;
 use sea_query::{ExprTrait, Func};
+use snafu::ResultExt;
 
 use crate::domain::repository::Connection;
 use crate::domain::tag::model::{
@@ -23,20 +24,24 @@ use impls::*;
 
 impl<T> Repo for T
 where
-    T: Connection<Error = DbErr>,
+    T: Connection,
     T::Conn: ConnectionTrait,
 {
-    async fn find_by_id(&self, id: i32) -> Result<Option<Tag>, Self::Error> {
+    async fn find_by_id(
+        &self,
+        id: i32,
+    ) -> Result<Option<Tag>, Box<dyn std::error::Error + Send + Sync>> {
         let select = tag::Entity::find().filter(tag::Column::Id.eq(id));
         find_many_impl(select, self.conn())
             .await
             .map(|x| x.into_iter().next())
+            .boxed()
     }
 
     async fn find_by_keyword(
         &self,
         keyword: &str,
-    ) -> Result<Vec<Tag>, Self::Error> {
+    ) -> Result<Vec<Tag>, Box<dyn std::error::Error + Send + Sync>> {
         let search_term = Func::lower(keyword);
 
         let select = tag::Entity::find()
@@ -48,7 +53,7 @@ where
                 Func::lower(Name.into_expr())
                     .binary(SimilarityDistance, search_term),
             );
-        find_many_impl(select, self.conn()).await
+        find_many_impl(select, self.conn()).await.boxed()
     }
 }
 
@@ -94,21 +99,30 @@ async fn find_many_impl(
 }
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
-    async fn create(&self, data: &NewTag) -> Result<i32, Self::Error> {
+    async fn create(
+        &self,
+        data: &NewTag,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
         let tag = create_tag_impl(data, self.conn()).await?;
 
         Ok(tag.id)
     }
 
-    async fn create_history(&self, data: &NewTag) -> Result<i32, Self::Error> {
-        create_history_impl(data, self.conn()).await.map(|x| x.id)
+    async fn create_history(
+        &self,
+        data: &NewTag,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+        create_history_impl(data, self.conn())
+            .await
+            .map(|x| x.id)
+            .boxed()
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Self::Error> {
-        apply_correction(correction, self.conn()).await
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        apply_correction(correction, self.conn()).await.boxed()
     }
 }
 

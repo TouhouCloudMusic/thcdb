@@ -68,29 +68,38 @@ impl TryFrom<AuthCredential> for NewUser {
 
 #[trait_variant::make(Send)]
 pub trait Repository: Connection {
-    async fn find_by_id(&self, id: i32) -> Result<Option<User>, Self::Error>;
+    async fn find_by_id(
+        &self,
+        id: i32,
+    ) -> Result<Option<User>, Box<dyn std::error::Error + Send + Sync>>;
 
     async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<User>, Self::Error>;
+    ) -> Result<Option<User>, Box<dyn std::error::Error + Send + Sync>>;
 }
 
 #[trait_variant::make(Send)]
 pub trait TxRepo: Transaction {
-    async fn create(&self, user: NewUser) -> Result<User, Self::Error>;
-    async fn update(&self, user: User) -> Result<User, Self::Error>;
+    async fn create(
+        &self,
+        user: NewUser,
+    ) -> Result<User, Box<dyn std::error::Error + Send + Sync>>;
+    async fn update(
+        &self,
+        user: User,
+    ) -> Result<User, Box<dyn std::error::Error + Send + Sync>>;
 }
 
 pub trait ProfileRepository: Connection {
     async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<UserProfile>, Self::Error>;
+    ) -> Result<Option<UserProfile>, Box<dyn std::error::Error + Send + Sync>>;
 
     async fn with_following(
         &self,
         profile: &mut UserProfile,
         current_user: &User,
-    ) -> Result<(), Self::Error>;
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
 }

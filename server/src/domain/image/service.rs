@@ -14,67 +14,109 @@ use crate::domain::repository::Transaction;
 use crate::infra::{self};
 
 // TODO: conv to internal error
-#[derive(Debug, thiserror::Error, ApiError)]
+#[derive(Debug, snafu::Snafu, ApiError)]
+#[snafu(module)]
 pub enum ValidationError {
-    #[error(transparent)]
-    InvalidType(
-        #[from]
-        #[backtrace]
-        InvalidForamt,
-    ),
-    #[error("Invalid file size: {source}")]
+    #[snafu(transparent)]
+    InvalidType { source: InvalidForamt },
+    #[snafu(display("Invalid file size: {source}"))]
     #[api_error(
         status_code = StatusCode::BAD_REQUEST,
         into_response = self
     )]
     InvalidFileSize {
-        #[from]
         source: InvalidFileSize,
         backtrace: Backtrace,
     },
-    #[error("Invalid size: {source}")]
+    #[snafu(display("Invalid size: {source}"))]
     #[api_error(
         status_code = StatusCode::BAD_REQUEST,
         into_response = self
     )]
     InvalidSize {
-        #[from]
         source: InvalidSize,
         backtrace: Backtrace,
     },
-    #[error("Invalid ratio: {source}")]
+    #[snafu(display("Invalid ratio: {source}"))]
     #[api_error(
         status_code = StatusCode::BAD_REQUEST,
         into_response = self
     )]
     InvalidRatio {
-        #[from]
         source: InvalidRatio,
         backtrace: Backtrace,
     },
-    #[error("Internal server error")]
+    #[snafu(display("Internal server error"))]
     #[api_error(
         status_code = StatusCode::INTERNAL_SERVER_ERROR,
         into_response = self
     )]
     Io {
-        #[from]
         source: io::Error,
         backtrace: Backtrace,
     },
-    #[error("Internal server error")]
+    #[snafu(display("Internal server error"))]
     #[api_error(
         status_code = StatusCode::INTERNAL_SERVER_ERROR,
         into_response = self
     )]
     Image {
-        #[from]
         source: ImageError,
         backtrace: Backtrace,
     },
 }
 
-#[derive(Debug, thiserror::Error, ApiError)]
+impl From<InvalidFileSize> for ValidationError {
+    fn from(source: InvalidFileSize) -> Self {
+        Self::InvalidFileSize {
+            source,
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+impl From<InvalidSize> for ValidationError {
+    fn from(source: InvalidSize) -> Self {
+        Self::InvalidSize {
+            source,
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+impl From<InvalidRatio> for ValidationError {
+    fn from(source: InvalidRatio) -> Self {
+        Self::InvalidRatio {
+            source,
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+impl From<io::Error> for ValidationError {
+    fn from(source: io::Error) -> Self {
+        Self::Io {
+            source,
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+impl From<ImageError> for ValidationError {
+    fn from(source: ImageError) -> Self {
+        Self::Image {
+            source,
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+#[derive(Debug, snafu::Snafu, ApiError)]
+#[snafu(display(
+    "Invalid image format, received: {}, expected: {:#?}",
+    received.and_then(|r| r.extensions_str().first().copied()).unwrap_or("unknown or unreadable format"),
+    expected
+))]
 #[api_error(
     status_code = StatusCode::BAD_REQUEST,
 )]
@@ -105,47 +147,26 @@ impl InvalidForamt {
     }
 }
 
-impl std::fmt::Display for InvalidForamt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let received_name = self
-            .received
-            .and_then(|received| received.extensions_str().first())
-            .map_or("unknown or unreadable format", |v| v);
-
-        write!(
-            f,
-            "Invalid image format, received: {}, expected: {:#?}",
-            received_name, self.expected
-        )
+#[derive(Debug, snafu::Snafu)]
+#[snafu(display(
+    "{}",
+    if *received < range.start {
+        format!("Image too small, min: {}, received: {}", range.start, received)
+    } else {
+        format!("Image too large, max: {}, received: {}", range.end, received)
     }
-}
-
-#[derive(Debug, thiserror::Error)]
+))]
 pub struct InvalidFileSize {
     received: ByteSize,
     range: RangeInclusive<ByteSize>,
     backtrace: Backtrace,
 }
 
-impl std::fmt::Display for InvalidFileSize {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.received < self.range.start {
-            write!(
-                f,
-                "Image too small, min: {}, received: {}",
-                self.range.start, self.received
-            )
-        } else {
-            write!(
-                f,
-                "Image too large, max: {}, received: {}",
-                self.range.end, self.received
-            )
-        }
-    }
-}
-
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, snafu::Snafu)]
+#[snafu(display(
+    "Invalid image size, min: {} x {}, max: {} x {}, received: {} x {}",
+    width_range.start, height_range.start, width_range.end, height_range.end, width, height
+))]
 pub struct InvalidSize {
     width: u32,
     height: u32,
@@ -154,25 +175,11 @@ pub struct InvalidSize {
     backtrace: Backtrace,
 }
 
-impl std::fmt::Display for InvalidSize {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let min_size =
-            format!("{} x {}", self.width_range.start, self.height_range.start);
-        let max_size =
-            format!("{} x {}", self.width_range.end, self.height_range.end);
-        let image_size = format!("{} x {}", self.width, self.height);
-        write!(
-            f,
-            "Invalid image size, min: {min_size}, max: {max_size}, received: {image_size}",
-        )
-    }
-}
-
-#[derive(Debug, thiserror::Error)]
-#[error(
+#[derive(Debug, snafu::Snafu)]
+#[snafu(display(
     "Invalid image ratio, received: {received:.2}, expected: {:.2} to {:.2}",
     expected.start, expected.end
-)]
+))]
 pub struct InvalidRatio {
     received: f64,
     expected: RangeInclusive<f64>,
@@ -323,11 +330,12 @@ impl Parser {
         let reader =
             ImageReader::new(io::Cursor::new(bytes)).with_guessed_format()?;
 
-        let format = reader.format().ok_or_else(|| {
-            ValidationError::InvalidType(InvalidForamt::unknown(
-                self.option.valid_formats,
-            ))
-        })?;
+        let format =
+            reader
+                .format()
+                .ok_or_else(|| ValidationError::InvalidType {
+                    source: InvalidForamt::unknown(self.option.valid_formats),
+                })?;
 
         self.validate_format(format)?;
 
@@ -365,17 +373,14 @@ pub trait AsyncFileStorage: Send + Sync {
     async fn remove(&self, image: Image) -> Result<(), Self::Error>;
 }
 
-#[derive(Debug, thiserror::Error, ApiError)]
+#[derive(Debug, snafu::Snafu, ApiError)]
+
 pub enum Error {
-    #[error(transparent)]
-    Validation(
-        #[from]
-        #[backtrace]
-        ValidationError,
-    ),
-    #[error(transparent)]
+    #[snafu(transparent)]
+    Validation {
+        source: ValidationError,
+    },
     Infra {
-        #[backtrace]
         source: infra::Error,
     },
 }
@@ -405,7 +410,6 @@ impl<Repo, Storage> Service<Repo, Storage>
 where
     Repo: super::Repo,
     Storage: AsyncFileStorage,
-    crate::infra::error::Error: From<Repo::Error>,
 {
     pub async fn find_by_id(&self, id: i32) -> Result<Option<Image>, Error> {
         Ok(self.repo.find_by_id(id).await?)
@@ -427,7 +431,6 @@ impl<Tx, Storage> Service<Tx, Storage>
 where
     Tx: Transaction + super::Repo + super::repository::TxRepo,
     Storage: AsyncFileStorage,
-    crate::infra::error::Error: From<Tx::Error>,
 {
     pub async fn create(
         &self,

@@ -19,6 +19,7 @@ use sea_orm::{
 };
 use sea_query::extension::postgres::PgBinOper::*;
 use sea_query::{ExprTrait, Func};
+use snafu::ResultExt;
 
 use super::cache::LANGUAGE_CACHE;
 use crate::domain::artist::model::SimpleArtist;
@@ -37,20 +38,24 @@ mod impls;
 
 impl<T> Repo for T
 where
-    T: Connection<Error = DbErr>,
+    T: Connection,
     T::Conn: ConnectionTrait,
 {
-    async fn find_by_id(&self, id: i32) -> Result<Option<Song>, Self::Error> {
+    async fn find_by_id(
+        &self,
+        id: i32,
+    ) -> Result<Option<Song>, Box<dyn std::error::Error + Send + Sync>> {
         let select = song::Entity::find().filter(Id.eq(id));
         find_many_impl(select, self.conn())
             .await
             .map(|x| x.into_iter().next())
+            .boxed()
     }
 
     async fn find_by_keyword(
         &self,
         keyword: &str,
-    ) -> Result<Vec<Song>, Self::Error> {
+    ) -> Result<Vec<Song>, Box<dyn std::error::Error + Send + Sync>> {
         let search_term = Func::lower(keyword);
 
         let select = song::Entity::find()
@@ -62,7 +67,7 @@ where
                 Func::lower(Title.into_expr())
                     .binary(SimilarityDistance, search_term),
             );
-        find_many_impl(select, self.conn()).await
+        find_many_impl(select, self.conn()).await.boxed()
     }
 }
 
@@ -301,23 +306,30 @@ fn build_song_lyrics(
 }
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
-    async fn create(&self, data: &NewSong) -> Result<i32, Self::Error> {
+    async fn create(
+        &self,
+        data: &NewSong,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
         let song = create_song_and_relations(data, self.conn()).await?;
 
         Ok(song.id)
     }
 
-    async fn create_history(&self, data: &NewSong) -> Result<i32, Self::Error> {
+    async fn create_history(
+        &self,
+        data: &NewSong,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
         create_song_history_and_relations(data, self.conn())
             .await
             .map(|x| x.id)
+            .boxed()
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Self::Error> {
-        apply_update(correction, self.conn()).await
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        apply_update(correction, self.conn()).await.boxed()
     }
 }
 

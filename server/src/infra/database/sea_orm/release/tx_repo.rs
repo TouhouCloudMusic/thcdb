@@ -10,7 +10,10 @@ use crate::domain::release::repo::TxRepo;
 use crate::domain::repository::Connection;
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
-    async fn create(&self, data: &NewRelease) -> Result<i32, Self::Error> {
+    async fn create(
+        &self,
+        data: &NewRelease,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
         let release =
             release::ActiveModel::from(data).insert(self.conn()).await?;
 
@@ -41,7 +44,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create_history(
         &self,
         data: &NewRelease,
-    ) -> Result<i32, Self::Error> {
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
         let history = release_history::ActiveModel::from(data)
             .insert(self.conn())
             .await?;
@@ -87,7 +90,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Self::Error> {
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         // Retrieve the correction history ID
         let revision = entity::correction_revision::Entity::find()
             .filter(

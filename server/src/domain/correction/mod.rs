@@ -6,7 +6,7 @@ pub use entity::enums::CorrectionStatus;
 pub use model::*;
 
 use super::model::auth::CorrectionApprover;
-use super::repository::{Connection, Transaction};
+use super::repository::Transaction;
 use super::user::User;
 use crate::infra;
 use crate::infra::error::Error;
@@ -49,26 +49,16 @@ pub trait Repo: super::repository::Connection {
     async fn find_one(
         &self,
         filter: CorrectionFilter,
-    ) -> Result<Option<Correction>, Self::Error>;
+    ) -> Result<Option<Correction>, Box<dyn std::error::Error + Send + Sync>>;
 
     async fn is_author(
         &self,
         user: &User,
         correction: &Correction,
-    ) -> Result<bool, Self::Error>;
+    ) -> Result<bool, Box<dyn std::error::Error + Send + Sync>>;
 }
 
-pub trait ApproveCorrectionContext: Send + Sync
-where
-    infra::Error: From<<Self::ArtistRepo as Connection>::Error>
-        + From<<Self::ReleaseRepo as Connection>::Error>
-        + From<<Self::SongRepo as Connection>::Error>
-        + From<<Self::LabelRepo as Connection>::Error>
-        + From<<Self::EventRepo as Connection>::Error>
-        + From<<Self::TagRepo as Connection>::Error>
-        + From<<Self::SongLyricsRepo as Connection>::Error>
-        + From<<Self::CreditRoleRepo as Connection>::Error>,
-{
+pub trait ApproveCorrectionContext: Send + Sync {
     type ArtistRepo: super::artist::TxRepo;
     type ReleaseRepo: super::release::TxRepo;
     type SongRepo: super::song::TxRepo;
@@ -92,13 +82,13 @@ pub trait TxRepo: Repo {
     async fn create(
         &self,
         meta: NewCorrectionMeta<impl CorrectionEntity>,
-    ) -> Result<(), Self::Error>;
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
 
     async fn update(
         &self,
         id: i32,
         meta: NewCorrectionMeta<impl CorrectionEntity>,
-    ) -> Result<(), Self::Error>;
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
 
     async fn approve<Ctx>(
         &self,
@@ -107,15 +97,7 @@ pub trait TxRepo: Repo {
         context: Ctx,
     ) -> Result<(), infra::Error>
     where
-        Ctx: ApproveCorrectionContext,
-        infra::Error: From<<Ctx::ArtistRepo as Connection>::Error>
-            + From<<Ctx::ReleaseRepo as Connection>::Error>
-            + From<<Ctx::SongRepo as Connection>::Error>
-            + From<<Ctx::LabelRepo as Connection>::Error>
-            + From<<Ctx::EventRepo as Connection>::Error>
-            + From<<Ctx::TagRepo as Connection>::Error>
-            + From<<Ctx::SongLyricsRepo as Connection>::Error>
-            + From<<Ctx::CreditRoleRepo as Connection>::Error>;
+        Ctx: ApproveCorrectionContext;
 }
 
 pub trait CorrectionEntityRepo<T>: Transaction

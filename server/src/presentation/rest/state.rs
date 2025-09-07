@@ -136,7 +136,7 @@ impl FromRef<ArcAppState> for UserProfileService {
 impl FromRef<ArcAppState> for ArtistService {
     fn from_ref(input: &ArcAppState) -> Self {
         ArtistService {
-            repo: input.sea_orm_repo.clone(),
+            conn: input.sea_orm_repo.clone(),
         }
     }
 }

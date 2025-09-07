@@ -18,28 +18,23 @@ use crate::constant::{USER_NAME_REGEX_STR, USER_PASSWORD_REGEX_STR};
 use crate::infra::singleton::ARGON2_HASHER;
 use crate::presentation::api_response::{Error, IntoApiResponse};
 
-#[derive(Debug, thiserror::Error, ApiError)]
+#[derive(Debug, snafu::Snafu, ApiError)]
+
 pub enum AuthnError {
-    #[error("Incorrect username or password")]
+    #[snafu(display("Incorrect username or password"))]
     #[api_error(
         status_code = StatusCode::UNAUTHORIZED,
     )]
     AuthenticationFailed { backtrace: Backtrace },
-    #[error(transparent)]
-    Infra(
-        #[from]
-        #[backtrace]
-        crate::infra::Error,
-    ),
-    #[error("Password hash error: {source}")]
+    #[snafu(transparent)]
+    Infra { source: crate::infra::Error },
+    #[snafu(display("Password hash error: {source}"))]
     PasswordHash {
-        #[from]
         source: password_hash::Error,
         backtrace: Backtrace,
     },
-    #[error("Join error: {source}")]
+    #[snafu(display("Join error: {source}"))]
     Join {
-        #[from]
         source: tokio::task::JoinError,
         backtrace: Backtrace,
     },
@@ -53,8 +48,26 @@ impl AuthnError {
     }
 }
 
-#[derive(Debug, thiserror::Error, ApiError)]
-#[error("{kind}")]
+impl From<password_hash::Error> for AuthnError {
+    fn from(source: password_hash::Error) -> Self {
+        Self::PasswordHash {
+            source,
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+impl From<tokio::task::JoinError> for AuthnError {
+    fn from(source: tokio::task::JoinError) -> Self {
+        Self::Join {
+            source,
+            backtrace: Backtrace::capture(),
+        }
+    }
+}
+
+#[derive(Debug, snafu::Snafu, ApiError)]
+#[snafu(display("{kind}"))]
 #[api_error(
     status_code = StatusCode::BAD_REQUEST,
 )]
@@ -84,14 +97,14 @@ pub enum ValidateCredsErrorKind {
 
 use ValidateCredsErrorKind::*;
 
-#[derive(Debug, thiserror::Error, ApiError)]
+#[derive(Debug, snafu::Snafu, ApiError)]
+
 pub enum HasherError {
-    #[error("Failed to hash password: {source}")]
+    #[snafu(display("Failed to hash password: {source}"))]
     #[api_error(
         status_code = StatusCode::INTERNAL_SERVER_ERROR,
     )]
     HashPasswordFailed {
-        #[from]
         source: password_hash::Error,
         backtrace: Backtrace,
     },

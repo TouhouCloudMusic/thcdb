@@ -6,6 +6,7 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DbErr, EntityTrait,
     ModelTrait, QueryFilter, QueryOrder, QueryTrait,
 };
+use snafu::ResultExt;
 
 use super::SeaOrmTxRepo;
 use super::cache::LANGUAGE_CACHE;
@@ -18,13 +19,14 @@ use crate::domain::song_lyrics::repo::{
 
 impl<T> Repo for T
 where
-    T: Connection<Error = DbErr>,
+    T: Connection,
     T::Conn: ConnectionTrait,
 {
     async fn find_one(
         &self,
         filter: FindOneFilter,
-    ) -> Result<Option<SongLyrics>, Self::Error> {
+    ) -> Result<Option<SongLyrics>, Box<dyn std::error::Error + Send + Sync>>
+    {
         let filter = match filter {
             FindOneFilter::Id { id } => song_lyrics::Column::Id.eq(id),
             FindOneFilter::SongAndLang {
@@ -51,7 +53,7 @@ where
     async fn find_many(
         &self,
         filter: FindManyFilter,
-    ) -> Result<Vec<SongLyrics>, Self::Error> {
+    ) -> Result<Vec<SongLyrics>, Box<dyn std::error::Error + Send + Sync>> {
         let filter = match filter {
             FindManyFilter::Song { song_id } => {
                 song_lyrics::Column::SongId.eq(song_id)
@@ -82,22 +84,25 @@ where
 }
 
 impl TxRepo for SeaOrmTxRepo {
-    async fn create(&self, lyrics: &NewSongLyrics) -> Result<i32, Self::Error> {
-        create_lyrics_impl(lyrics, self.conn()).await
+    async fn create(
+        &self,
+        lyrics: &NewSongLyrics,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+        create_lyrics_impl(lyrics, self.conn()).await.boxed()
     }
 
     async fn create_history(
         &self,
         lyrics: &NewSongLyrics,
-    ) -> Result<i32, Self::Error> {
-        create_history_impl(lyrics, self.conn()).await
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+        create_history_impl(lyrics, self.conn()).await.boxed()
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Self::Error> {
-        apply_update_impl(correction, self.conn()).await
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        apply_update_impl(correction, self.conn()).await.boxed()
     }
 }
 

@@ -4,9 +4,8 @@ use ::image::ImageFormat;
 use axum::http::StatusCode;
 use bytes::Bytes;
 use bytesize::ByteSize;
-use derive_more::{Display, From};
 use macros::{ApiError, IntoErrorSchema};
-use thiserror::Error;
+use snafu::Snafu;
 
 use super::error::EntityNotFound;
 use crate::domain::image::{
@@ -17,6 +16,7 @@ use crate::domain::release_image_queue::{self, ReleaseImageQueue};
 use crate::domain::repository::{Transaction, TransactionManager};
 use crate::domain::user::User;
 use crate::domain::{image, image_queue, release};
+use crate::infra;
 
 static RELEASE_COVER_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
     use crate::constant::{
@@ -38,16 +38,30 @@ static RELEASE_COVER_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
         .into_parser()
 });
 
-#[derive(Debug, Display, Error, From, ApiError, IntoErrorSchema)]
+#[derive(Debug, Snafu, ApiError, IntoErrorSchema)]
+
 pub enum Error {
-    #[from(forward)]
-    Infra(crate::infra::Error),
-    Service(#[from] image::Error),
+    #[snafu(transparent)]
+    Infra { source: crate::infra::Error },
+    #[snafu(transparent)]
+    Service { source: image::Error },
     #[api_error(
         status_code = StatusCode::BAD_REQUEST,
         into_response = self
     )]
-    ReleaseNotFound(#[from] EntityNotFound),
+    #[snafu(transparent)]
+    ReleaseNotFound { source: EntityNotFound },
+}
+
+impl<T> From<T> for Error
+where
+    T: Into<infra::Error>,
+{
+    default fn from(value: T) -> Self {
+        Self::Infra {
+            source: value.into(),
+        }
+    }
 }
 
 pub struct Service<Repo, Storage> {
@@ -65,7 +79,6 @@ where
         + release_image::Repo
         + release_image_queue::Repo,
     Storage: AsyncFileStorage + Clone,
-    crate::infra::Error: From<Repo::Error> + From<TxRepo::Error>,
 {
     pub const fn new(repo: Repo, storage: Storage) -> Self {
         Self { repo, storage }

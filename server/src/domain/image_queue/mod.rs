@@ -8,9 +8,9 @@ pub trait Repo: Connection {
     async fn create(
         &self,
         model: NewImageQueue,
-    ) -> Result<ImageQueue, Self::Error>;
+    ) -> Result<ImageQueue, Box<dyn std::error::Error + Send + Sync>>;
     async fn update(
         &self,
         model: ImageQueue,
-    ) -> Result<ImageQueue, Self::Error>;
+    ) -> Result<ImageQueue, Box<dyn std::error::Error + Send + Sync>>;
 }

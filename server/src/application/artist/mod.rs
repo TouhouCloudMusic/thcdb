@@ -4,46 +4,44 @@ use eros::{IntoUnionResult, ReshapeUnionResult};
 use super::error::Unauthorized;
 use crate::domain::artist;
 use crate::domain::artist::model::{NewArtist, ValidationError};
-use crate::domain::artist::repo::Repo;
 use crate::domain::correction::{
     NewCorrection, NewCorrectionMeta, {self},
 };
 use crate::domain::repository::TransactionManager;
-use crate::infra::error::InternalError;
+use crate::infra;
 
 #[derive(Clone)]
-pub struct Service<R> {
-    pub repo: R,
+pub struct Service<A> {
+    pub conn: A,
 }
 
-impl<R, TR> Service<R>
+impl<Conn, Repo> Service<Conn>
 where
-    R: Repo + TransactionManager<TransactionRepository = TR>,
-    TR: Clone + artist::TxRepo + correction::TxRepo,
-    InternalError: From<R::Error> + From<TR::Error>,
+    Conn: TransactionManager<TransactionRepository = Repo>,
+    Repo: artist::TxRepo + correction::TxRepo,
 {
     pub async fn create(
         &self,
         correction: NewCorrection<NewArtist>,
-    ) -> eros::UnionResult<(), (InternalError, ValidationError)> {
+    ) -> eros::UnionResult<(), (infra::Error, ValidationError)> {
         correction.data.validate().union()?;
 
         let tx_repo = self
-            .repo
+            .conn
             .begin()
             .await
-            .map_err(InternalError::from)
+            .map_err(infra::Error::from)
             .union()?;
 
         let entity_id = artist::TxRepo::create(&tx_repo, &correction.data)
             .await
-            .map_err(InternalError::from)
+            .map_err(infra::Error::from)
             .union()?;
 
         let history_id = tx_repo
             .create_history(&correction.data)
             .await
-            .map_err(InternalError::from)
+            .map_err(infra::Error::from)
             .union()?;
 
         let correction_service = super::correction::Service::new(tx_repo);
@@ -65,7 +63,7 @@ where
             .repo
             .commit()
             .await
-            .map_err(InternalError::from)
+            .map_err(infra::Error::from)
             .union()?;
 
         Ok(())
@@ -75,21 +73,21 @@ where
         &self,
         id: i32,
         correction: NewCorrection<NewArtist>,
-    ) -> eros::UnionResult<(), (InternalError, ValidationError, Unauthorized)>
+    ) -> eros::UnionResult<(), (infra::Error, ValidationError, Unauthorized)>
     {
         correction.data.validate().union()?;
 
         let tx_repo = self
-            .repo
+            .conn
             .begin()
             .await
-            .map_err(InternalError::from)
+            .map_err(infra::Error::from)
             .union()?;
 
         let history_id = tx_repo
             .create_history(&correction.data)
             .await
-            .map_err(InternalError::from)
+            .map_err(infra::Error::from)
             .union()?;
         let correction_service = super::correction::Service::new(tx_repo);
 
@@ -110,7 +108,7 @@ where
             .repo
             .commit()
             .await
-            .map_err(InternalError::from)
+            .map_err(infra::Error::from)
             .union()?;
 
         Ok(())

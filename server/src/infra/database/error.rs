@@ -31,17 +31,17 @@ pub enum FkViolationKind {
     },
 }
 
-#[derive(Debug, thiserror::Error, ApiError)]
+#[derive(Debug, snafu::Snafu, ApiError)]
 #[api_error(
     status_code = StatusCode::BAD_REQUEST,
 )]
-#[error("{}", match &self.kind {
+#[snafu(display("{}", match &self.kind {
     FkViolationKind::Auto { entity } => format!("Invalid relation on {entity}"),
     FkViolationKind::Manual { entity, target } => format!(
         "Invalid relation between {} {} and {} {}",
         entity.0, entity.1, target.0, target.1
     ),
-})]
+}))]
 pub struct FkViolation<T>
 where
     T: 'static + std::error::Error,

@@ -14,6 +14,7 @@ use sea_orm::{
 };
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{Cond, ExprTrait, Func, SimpleExpr};
+use snafu::ResultExt;
 
 use super::SeaOrmTxRepo;
 use crate::domain::artist::model::{Artist, Membership, NewArtist, Tenure};
@@ -26,14 +27,14 @@ mod impls;
 
 impl<T> Repo for T
 where
-    T: Connection<Error = DbErr>,
+    T: Connection,
     T::Conn: ConnectionTrait,
 {
     async fn find_one(
         &self,
         id: i32,
         common: CommonFilter,
-    ) -> Result<Option<Artist>, Self::Error> {
+    ) -> Result<Option<Artist>, Box<dyn std::error::Error + Send + Sync>> {
         let select = artist::Entity::find()
             .filter(artist::Column::Id.eq(id))
             .filter(SimpleExpr::from(common));
@@ -41,13 +42,14 @@ where
         find_many_impl(select, self.conn())
             .await
             .map(|x| x.into_iter().next())
+            .boxed()
     }
 
     async fn find_many(
         &self,
         filter: FindManyFilter,
         common: CommonFilter,
-    ) -> Result<Vec<Artist>, Self::Error> {
+    ) -> Result<Vec<Artist>, Box<dyn std::error::Error + Send + Sync>> {
         let FindManyFilter::Keyword(keyword) = &filter;
 
         let search_term = Func::lower(keyword);
@@ -63,7 +65,7 @@ where
                     .binary(PgBinOper::SimilarityDistance, search_term),
             );
 
-        find_many_impl(select, self.conn()).await
+        find_many_impl(select, self.conn()).await.boxed()
     }
 }
 
@@ -283,26 +285,25 @@ async fn find_many_impl(
 }
 
 impl TxRepo for SeaOrmTxRepo {
-    async fn create(&self, data: &NewArtist) -> Result<i32, Self::Error> {
-        impls::create_artist(data, self.conn()).await.map(|x| x.id)
+    async fn create(
+        &self,
+        data: &NewArtist,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+        Ok(impls::create_artist(data, self.conn()).await?.id)
     }
 
     async fn create_history(
         &self,
         data: &NewArtist,
-    ) -> Result<i32, Self::Error> {
-        let ret = impls::create_artist_history(data, self.conn())
-            .await
-            .map(|x| x.id)?;
-
-        Ok(ret)
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+        Ok(impls::create_artist_history(data, self.conn()).await?.id)
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Self::Error> {
-        impls::apply_update(correction, self.conn()).await?;
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        impls::apply_update(correction, self.conn()).await.boxed()?;
         Ok(())
     }
 }

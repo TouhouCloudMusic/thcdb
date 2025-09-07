@@ -1,25 +1,25 @@
 use axum::http::StatusCode;
 use chrono::Utc;
 use collection_ext::Intersection;
-use derive_more::Display;
 pub use entity::sea_orm_active_enums::ImageQueueStatus;
 use itertools::Itertools;
 use macros::{ApiError, AutoMapper};
 use sea_orm::prelude::DateTimeWithTimeZone;
-use thiserror::Error;
+use snafu::Snafu;
 
 use crate::domain::image::Image;
 use crate::domain::model::auth::UserRoleEnum;
 use crate::domain::user::User;
 
-#[derive(Debug, Clone, Copy, Display, Error, ApiError)]
+#[derive(Debug, Clone, Copy, Snafu, ApiError)]
+
 pub enum Error {
-    #[display("Invalid operation")]
+    #[snafu(display("Invalid operation"))]
     #[api_error(
         status_code = StatusCode::BAD_REQUEST,
     )]
     InvalidOperation,
-    #[display("Permission denied")]
+    #[snafu(display("Permission denied"))]
     #[api_error(
         status_code = StatusCode::FORBIDDEN,
     )]

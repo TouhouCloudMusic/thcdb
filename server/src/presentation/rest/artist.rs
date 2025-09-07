@@ -30,7 +30,7 @@ use crate::domain::artist_release::{
 };
 use crate::domain::release::model::Release;
 use crate::domain::repository::{Cursor, Paginated};
-use crate::infra::error::{Error, InternalError};
+use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, IntoApiResponse, Message};
 
 const TAG: &str = "Artist";
@@ -126,7 +126,7 @@ async fn find_many_artist(
     request_body = NewCorrectionDto<NewArtist>,
     responses(
         (status = 200, body = Message),
-        InternalError,
+        Error,
         domain::artist::ValidationError
     ),
 )]
@@ -153,7 +153,7 @@ async fn create_artist(
     request_body = NewCorrectionDto<NewArtist>,
     responses(
         (status = 200, body = Message),
-        InternalError,
+        Error,
         domain::artist::ValidationError,
         Unauthorized
     ),

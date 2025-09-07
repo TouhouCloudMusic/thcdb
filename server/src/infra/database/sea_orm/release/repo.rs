@@ -1,8 +1,9 @@
 use entity::release;
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, PaginatorTrait,
-    QueryFilter, QuerySelect,
+    ColumnTrait, ConnectionTrait, EntityTrait, PaginatorTrait, QueryFilter,
+    QuerySelect,
 };
+use snafu::ResultExt;
 
 use super::impls::*;
 use crate::domain::release::model::Release;
@@ -11,13 +12,13 @@ use crate::domain::repository::Connection;
 
 impl<T> Repo for T
 where
-    T: Connection<Error = DbErr>,
+    T: Connection,
     T::Conn: ConnectionTrait,
 {
     async fn find_one(
         &self,
         filter: Filter,
-    ) -> Result<Option<Release>, Self::Error> {
+    ) -> Result<Option<Release>, Box<dyn std::error::Error + Send + Sync>> {
         Ok(find_many_impl(filter.into_select().limit(1), self.conn())
             .await?
             .into_iter()
@@ -28,17 +29,23 @@ where
         &self,
         // TODO: many filter
         filter: Filter,
-    ) -> Result<Vec<Release>, Self::Error> {
-        find_many_impl(filter.into_select(), self.conn()).await
+    ) -> Result<Vec<Release>, Box<dyn std::error::Error + Send + Sync>> {
+        find_many_impl(filter.into_select(), self.conn())
+            .await
+            .boxed()
     }
 
-    async fn exist(&self, id: i32) -> Result<bool, Self::Error> {
+    async fn exist(
+        &self,
+        id: i32,
+    ) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
         Ok(release::Entity::find()
             .select_only()
             .expr(1)
             .filter(release::Column::Id.eq(id))
             .count(self.conn())
-            .await?
+            .await
+            .boxed()?
             > 0)
     }
 }
