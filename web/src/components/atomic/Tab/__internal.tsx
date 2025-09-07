@@ -3,6 +3,7 @@ import * as K_Tab from "@kobalte/core/tabs"
 import { createContext, mergeProps } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
+import { tw } from "~/utils"
 import { assertContext } from "~/utils/solid/assertContext"
 
 export type RootProps = PolymorphicProps<"div", K_Tab.TabsRootProps<"div">> & {
@@ -55,8 +56,14 @@ export function List(props: PolymorphicProps<"ul", K_Tab.TabsListProps<"ul">>) {
 	)
 }
 
-const TRIGGER_CLASS =
-	"p-0 duration-150 rounded-none text-sm font-medium tracking-widest text-tertiary uppercase transition-all hover:text-primary data-[selected]:text-primary "
+const TRIGGER_CLASS = tw(
+	`
+	px-2 rounded-none
+	text-sm font-medium tracking-widest text-tertiary uppercase
+	transition-all duration-150
+	hover:text-primary
+	data-[selected]:text-primary`,
+)
 
 export function Trigger(
 	props: PolymorphicProps<"button", K_Tab.TabsTriggerProps<"button">>,
@@ -99,19 +106,19 @@ export function Indicator(props: IndicatorProps) {
 					(!props.position && context.orientation == "horizontal")
 					|| props.position === "bottom"
 				) {
-					return "bottom-[-1px] h-[2px]"
+					return "bottom-[-0.5px] h-[2px]"
 				}
 				if (
 					(!props.position && context.orientation == "vertical")
 					|| props.position === "right"
 				) {
-					return "right-[-1px] w-[2px]"
+					return "right-[-0.5px] w-[2px]"
 				}
 				if (props.position === "top") {
-					return "top-[-1px] h-[2px]"
+					return "top-[-0.5px] h-[2px]"
 				}
 				if (props.position === "left") {
-					return "left-[-1px] w-[2px]"
+					return "left-[-0.5px] w-[2px]"
 				}
 
 				return ""

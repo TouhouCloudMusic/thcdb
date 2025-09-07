@@ -47,7 +47,7 @@ function Layout(props: ParentProps) {
 			/>
 			<Header />
 			<main>{props.children}</main>
-			<footer class="bg-gray-900 h-[300px] pt-10"></footer>
+			<footer class="h-[300px] bg-slate-900 pt-10"></footer>
 		</div>
 	)
 }

@@ -1,5 +1,5 @@
 let text = `
---color-slate-100: #f3f4f5;
+	--color-slate-100: #f3f4f5;
 	--color-slate-200: #e8eaed;
 	--color-slate-300: #d5d7db;
 	--color-slate-400: #c0c3c8;
@@ -14,8 +14,8 @@ let text = `
 	--color-reimu-200: #fce1df;
 	--color-reimu-300: #ffcac6;
 	--color-reimu-400: #ff9e99;
-	--color-reimu-500: #f87572;
-	--color-reimu-600: #db464c;
+	--color-reimu-500: #fe7475;
+	--color-reimu-600: #ea575c;
 	--color-reimu-700: #a82f33;
 	--color-reimu-800: #6f1c1b;
 	--color-reimu-900: #3d0c07;
@@ -79,4 +79,4 @@ let result = Array.from(map.entries()).map(([color, colors]) => ({
 	colors,
 }))
 
-console.log(result)
+console.log(JSON.stringify(result, null, 2))

@@ -71,7 +71,9 @@ export function ArtistFormTextAliases() {
 											<Cross1Icon />
 										</Button>
 									</li>
-									{idx() < fieldArray.items.length - 1 && <Divider horizonal />}
+									{idx() < fieldArray.items.length - 1 && (
+										<Divider horizontal />
+									)}
 								</>
 							)}
 						</For>

@@ -4,7 +4,7 @@ export function NewMusic() {
 	return (
 		<div>
 			<div class="mb-4 flex items-center justify-between">
-				<h2 class="text-gray-800 text-xl font-bold">最新音乐</h2>
+				<h2 class="text-xl font-bold text-slate-800">最新音乐</h2>
 				<a
 					href="#"
 					class="text-rose-600 hover:text-rose-700 text-sm"
@@ -17,7 +17,7 @@ export function NewMusic() {
 				<div class="grid grid-cols-2 gap-4">
 					<For each={Array.from({ length: 6 }).fill(0)}>
 						{(_, i) => (
-							<div class="hover:bg-gray-100 flex items-center rounded-md p-2">
+							<div class="flex items-center rounded-md p-2 hover:bg-slate-100">
 								<div class="bg-rose-100 h-10 w-10 flex-shrink-0 overflow-hidden rounded">
 									<img
 										src={`https://placehold.co/100x100/red/white?text=${i() + 1}`}
@@ -26,12 +26,12 @@ export function NewMusic() {
 									/>
 								</div>
 								<div class="ml-3 flex-1 overflow-hidden">
-									<h4 class="text-gray-800 truncate text-sm font-medium">
+									<h4 class="truncate text-sm font-medium text-slate-800">
 										东方同音鉴曲目 {i() + 1}
 									</h4>
-									<p class="text-gray-500 truncate text-xs">幻想乡音乐人</p>
+									<p class="truncate text-xs text-slate-500">幻想乡音乐人</p>
 								</div>
-								<button class="text-gray-400 hover:text-rose-600 p-2">
+								<button class="hover:text-rose-600 p-2 text-slate-400">
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
 										class="h-5 w-5"

@@ -94,14 +94,14 @@ export function ArtistFormMembership(): JSX.Element {
 			</div>
 			<ul class="flex h-full flex-col">
 				<Divider
-					horizonal
+					horizontal
 					class="mb-2"
 				/>
 				<Intersperse
-					each={membership.inner}
-					separator={
+					of={membership.inner}
+					with={
 						<Divider
-							horizonal
+							horizontal
 							class="my-2"
 						/>
 					}
@@ -116,7 +116,7 @@ export function ArtistFormMembership(): JSX.Element {
 					)}
 				</Intersperse>
 				<Divider
-					horizonal
+					horizontal
 					class="mt-2"
 				/>
 			</ul>

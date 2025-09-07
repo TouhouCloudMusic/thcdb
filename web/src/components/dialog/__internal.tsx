@@ -61,7 +61,7 @@ const CONTENT_CLASS = `
   left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
   animate-scale-fade-out data-expanded:animate-scale-fade-in
   `
-// rounded-md p-4 shadow-lg shadow-gray-300
+// rounded-md p-4 shadow-lg shadow-slate-300
 
 export function Content<T extends ValidComponent = "div">(
 	props: ContentProps<T>,
@@ -106,7 +106,7 @@ export function Title<T extends ValidComponent = "h2">(
 export function Description<T extends ValidComponent = "p">(
 	props: PolymorphicProps<T, DialogDescriptionProps<T>>,
 ) {
-	const CLASS = "mt-2 pr-2 text-sm text-gray-800"
+	const CLASS = "mt-2 pr-2 text-sm text-slate-800"
 
 	let local_props = mergeProps(props, {
 		get class() {

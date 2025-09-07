@@ -11,7 +11,10 @@
 		"Geist", "ui-sans-serif", "system-ui", "sans-serif", '"Apple Color Emoji"',
 		'"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"';
 	--font-mono:
-		"Cascadia Code", "ui-monospace", "Menlo", "Monaco", "Consolas", "monospace";
+		"Geist Mono", "ui-monospace", "Menlo", "Monaco", "Consolas", "monospace";
+	--font-code:
+		"Cascadia Next SC", "ui-monospace", "Menlo", "Monaco", "Consolas",
+		"monospace";
 }
 
 /* Marked footnote plugin required */

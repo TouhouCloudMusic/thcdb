@@ -1,5 +1,7 @@
 import * as v from "valibot"
 
+import type { nil } from "~/types"
+
 import { DatePrecision } from "./schema"
 
 export type In = {
@@ -30,7 +32,9 @@ export const Schema = v.pipe(
 )
 
 export function display(date: Out): string
-export function display(date?: Out | null): string | undefined {
+export function display(date: nil): undefined
+export function display(date: Out | nil): string | undefined
+export function display(date: Out | nil): string | undefined {
 	if (!date) return
 	const [year, month, day] = date.value.split("-")
 	if (date.precision == "Year") {

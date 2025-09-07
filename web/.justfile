@@ -30,3 +30,6 @@ quickfix: oxfix
 
 test:
 	pnpm exec vitest
+
+check:
+  pnpm tsgo -p .

@@ -26,8 +26,8 @@ export function List<T>(props: ListProps<T>) {
 	return (
 		<ul {...ulProps2}>
 			<Intersperse
-				each={listProps.items}
-				separator={listProps.separator ?? <>,&nbsp;</>}
+				of={listProps.items}
+				with={listProps.separator ?? <>,&nbsp;</>}
 			>
 				{listProps.children}
 			</Intersperse>

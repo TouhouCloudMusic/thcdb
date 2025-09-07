@@ -61,8 +61,8 @@ export const ArtistFormAliasesField = () => {
 			</div>
 			<ul class="flex h-full flex-col gap-2">
 				<Intersperse
-					each={aliases}
-					separator={<Divider horizonal />}
+					of={aliases}
+					with={<Divider horizontal />}
 					fallback={<FieldArrayFallback />}
 				>
 					{(alias, idx) => (

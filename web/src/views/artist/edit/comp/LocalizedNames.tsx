@@ -82,7 +82,9 @@ export function ArtistFormLocalizedNames() {
 									>
 										<Cross1Icon />
 									</Button>
-									{idx() < fieldArray.items.length - 1 && <Divider horizonal />}
+									{idx() < fieldArray.items.length - 1 && (
+										<Divider horizontal />
+									)}
 								</li>
 							)}
 						</For>

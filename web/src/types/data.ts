@@ -1,6 +1,6 @@
 import type { If, Eq } from "."
 
-export type Nullable<T> = T | null | undefined
+export type nil = null | undefined
 
 export type SafePick<T, K extends keyof T> = {
 	[P in K]: T[P]

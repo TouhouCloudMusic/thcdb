@@ -5,11 +5,11 @@ import { twMerge } from "tailwind-merge"
 export type Props = (
 	| {
 			vertical: true
-			horizonal?: undefined
+			horizontal?: undefined
 	  }
 	| {
 			vertical?: undefined
-			horizonal: true
+			horizontal: true
 	  }
 )
 	& JSX.HTMLAttributes<HTMLSpanElement>

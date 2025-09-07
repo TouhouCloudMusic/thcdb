@@ -37,13 +37,13 @@ export function Navbar() {
 							class={`relative py-4 text-sm font-medium whitespace-nowrap transition-colors ${
 								item.active
 									? "text-rose-600"
-									: "text-gray-600 hover:text-gray-900"
+									: "text-slate-600 hover:text-slate-900"
 							}`}
 							onClick={() => setActive(item.id)}
 						>
 							{item.label}
 							{item.active && (
-								<div class="absolute right-0 bottom-0 left-0 h-0.5 rounded-full bg-rose-600"></div>
+								<div class="bg-rose-600 absolute right-0 bottom-0 left-0 h-0.5 rounded-full"></div>
 							)}
 						</button>
 					)}

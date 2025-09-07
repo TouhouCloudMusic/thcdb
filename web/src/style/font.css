@@ -2,8 +2,16 @@
 	font-family: Geist;
 	font-weight: 100 900;
 	src:
-		local("Geist[wght]"),
+		local("Geist"),
 		url("/src/assets/font/Geist/Geist[wght].woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Geist Mono";
+	font-weight: 100 900;
+	src:
+		local("Geist Mono"),
+		url("/src/assets/font/Geist/GeistMono[wght].woff2") format("woff2");
 }
 
 @font-face {
@@ -21,7 +29,7 @@
 	font-style: normal;
 	font-weight: 400;
 	src:
-		local("Cascadia Code"),
+		local("Cascadia Next SC"),
 		url("/src/assets/font/CascadiaCode/CascadiaNextSC.wght.ttf")
 			format("truetype");
 }

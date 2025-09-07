@@ -17,15 +17,7 @@
 		"restriction": "warn",
 		"nursery": "warn"
 	},
-	"plugins": [
-		"import",
-		"jsdoc",
-		"jsx-a11y",
-		"oxc",
-		"promise",
-		"typescript",
-		"unicorn"
-	],
+	"plugins": ["import", "jsx-a11y", "oxc", "promise", "typescript", "unicorn"],
 	"settings": {
 		"jsx-a11y": {
 			"attributes": {
@@ -94,7 +86,7 @@
 			}
 		],
 		"no-magic-numbers": [
-			"error",
+			"off",
 			{
 				"ignore": [-1, 0, 1, 2, 4, 8, 12, 16, 24, 60, 1000, 3600],
 				"ignoreArrayIndexes": true
@@ -150,6 +142,7 @@
 		"unicorn/no-anonymous-default-export": "off",
 		"unicorn/no-array-reduce": "off",
 		"unicorn/no-array-method-this-argument": "off",
+		"unicorn/numeric-separators-style": "off",
 		"unicorn/prefer-spread": "off"
 	},
 	"overrides": [
@@ -165,6 +158,8 @@
 			"plugins": ["vitest"],
 			"rules": {
 				"max-lines-per-function": "off",
+				"unicorn/no-null": "off",
+				"unicorn/no-useless-undefined": "off",
 				"vitest/prefer-to-be-truthy": "off"
 			}
 		},

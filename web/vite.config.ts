@@ -1,4 +1,3 @@
-/// <reference types="vitest/config" />
 import { lingui as linguiSolidPlugin } from "@lingui-solid/vite-plugin"
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
 import tailwindcss from "@tailwindcss/vite"
@@ -9,6 +8,7 @@ import { defineConfig, loadEnv } from "vite"
 import babelMacrosPlugin from "vite-plugin-babel-macros"
 import solidPlugin from "vite-plugin-solid"
 import tsconfigPaths from "vite-tsconfig-paths"
+import { defineProject } from "vitest/config"
 
 import { generatePlugin } from "./plugins/generate"
 
@@ -30,10 +30,10 @@ export default defineConfig(({ mode }) => {
 
 	return {
 		plugins: [
+			tanstackRouter({ target: "solid", autoCodeSplitting: true }),
 			babelMacrosPlugin(),
 			linguiSolidPlugin(),
 			solidPlugin(),
-			tanstackRouter({ target: "solid" }),
 			tailwindcss(),
 			tsconfigPaths(),
 			generatePlugin(SERVER_URL, isTest),
@@ -53,9 +53,15 @@ export default defineConfig(({ mode }) => {
 			target: "esnext",
 		},
 		test: {
-			workspace: [
-				{
-					extends: true,
+			projects: [
+				defineProject({
+					test: {
+						name: "unit",
+						globals: true,
+						include: ["src/**/*.test.{ts,tsx}"],
+					},
+				}),
+				defineProject({
 					plugins: [
 						// The plugin will run tests for the stories defined in your Storybook config
 						// See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
@@ -76,7 +82,7 @@ export default defineConfig(({ mode }) => {
 						// More info at: https://storybook.js.org/docs/api/portable-stories/portable-stories-vitest#setprojectannotations
 						setupFiles: [".storybook/vitest.setup.ts"],
 					},
-				},
+				}),
 			],
 		},
 	}

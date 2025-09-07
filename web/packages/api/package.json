@@ -6,8 +6,10 @@
 	"keywords": [],
 	"author": "",
 	"license": "MIT",
-	"packageManager": "pnpm@10.13.1",
 	"exports": {
 		".": "./src/index.ts"
+	},
+	"dependencies": {
+		"openapi-typescript": "^7.9.1"
 	}
 }

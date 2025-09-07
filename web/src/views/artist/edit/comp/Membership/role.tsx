@@ -154,7 +154,7 @@ function RoleBadge(props: {
 					<span>{props.role.name}</span>
 					<button
 						type="button"
-						class="text-gray-600"
+						class="text-slate-600"
 						aria-label={t`Remove role`}
 						title={t`Remove role`}
 						onClick={() => props.removeRole()}

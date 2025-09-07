@@ -20,10 +20,10 @@ export function HomePage() {
 						{/* 推荐歌单 */}
 						<div class="mb-8">
 							<div class="mb-4 flex items-center justify-between">
-								<h2 class="text-xl font-bold text-gray-800">推荐歌单</h2>
+								<h2 class="text-xl font-bold text-slate-800">推荐歌单</h2>
 								<a
 									href="#"
-									class="text-sm text-rose-600 hover:text-rose-700"
+									class="text-rose-600 hover:text-rose-700 text-sm"
 								>
 									查看更多
 								</a>

@@ -104,29 +104,15 @@ export function Img(props: ImgProps) {
 }
 
 type FallbackProps = {
-	children?:
-		| ParentProps["children"]
-		| ((props: Omit<State, State.Ok>) => JSX.Element)
+	children: (props: Omit<State, State.Ok>) => JSX.Element
 }
-
-const DEFAULT_FALLBACK = (
-	<div class="flex h-full w-full animate-pulse items-center justify-center bg-gray-200">
-		<img
-			class="m-auto w-3/4"
-			src="/img/cover/release/1.png"
-			alt="Loading..."
-		/>
-	</div>
-)
 
 export function Fallback(props: FallbackProps) {
 	const context = useContext(ImageContext)!
 	return (
-		<>
-			{typeof props.children == "function"
-				? props.children(context.state)
-				: (props.children ?? DEFAULT_FALLBACK)}
-		</>
+		<Show when={context.state !== State.Ok}>
+			{props.children(context.state)}
+		</Show>
 	)
 }
 

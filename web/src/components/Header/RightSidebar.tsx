@@ -47,7 +47,7 @@ export function RightSidebar(props: Props) {
 				</div>
 				<Divider
 					class="my-0.5 px-2"
-					horizonal
+					horizontal
 				/>
 				<div class="flex flex-col">
 					<ListItem>
@@ -75,7 +75,7 @@ export function RightSidebar(props: Props) {
 				</div>
 				<Divider
 					class="my-0.5 px-2"
-					horizonal
+					horizontal
 				/>
 				<div class="flex flex-col">
 					<ListItem>

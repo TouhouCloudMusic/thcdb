@@ -42,7 +42,7 @@ function SearchDialogExample() {
 					{sampleData.map((item) => (
 						<li class="border-y-1.5 border-slate-200 bg-primary px-4 py-2">
 							<div class="font-medium">{item.name}</div>
-							<div class="text-sm text-gray-500">{item.category}</div>
+							<div class="text-sm text-slate-500">{item.category}</div>
 						</li>
 					))}
 				</SearchDialog.List>

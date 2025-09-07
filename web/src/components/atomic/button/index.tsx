@@ -87,16 +87,16 @@ const SizeClass = {
 // @tw
 const VariantClass = {
 	Primary: `shadow-sm text-(--background-color-primary)`,
-	Secondary: `shadow-xs shadow-gray-100`,
+	Secondary: `shadow-xs shadow-slate-100`,
 	// @tw
-	Tertiary: `bg-primary hover:bg-gray-100 active:bg-gray-200 disabled:bg-secondary disabled:hover:bg-secondary disabled:active:bg-secondary`,
+	Tertiary: `bg-primary hover:bg-slate-100 active:bg-slate-200 disabled:bg-secondary disabled:hover:bg-secondary disabled:active:bg-secondary`,
 }
 
 const PrimaryColor: Record<AppColor, string> = {
 	Gray:
 		// @tw
 		`
-    bg-gray-900 hover:bg-gray-900 active:bg-gray-800 disabled:bg-gray-800
+    bg-slate-900 hover:bg-slate-900 active:bg-slate-800 disabled:bg-slate-800
     `,
 	Slate:
 		// @tw
@@ -135,8 +135,8 @@ const SecondaryColor: Record<AppColor, string> = {
 		`
 		bg-primary
 		ring-2 ring-inset ring-slate-200
-		text-gray-700	hover:bg-gray-200 active:bg-gray-300 disabled:bg-gray-400
-		dark:hover:bg-gray-100/90 dark:active:bg-gray-100/80
+		text-slate-700	hover:bg-slate-200 active:bg-slate-300 disabled:bg-slate-400
+		dark:hover:bg-slate-100/90 dark:active:bg-slate-100/80
 		`,
 	Blue:
 		// @tw
@@ -177,32 +177,32 @@ const TertiaryColor: Record<AppColor, string> = {
 	Gray:
 		// @tw
 		`
-      text-gray-800 disabled:text-gray-600
+      text-slate-800 disabled:text-slate-600
       disabled:shadow-xs
       `,
 	Blue:
 		// @tw
 		`
       text-blue-700
-      disabled:bg-gray-300
+      disabled:bg-slate-300
       `,
 	Reimu:
 		// @tw
 		`
       text-reimu-700
-      disabled:bg-gray-300
+      disabled:bg-slate-300
       `,
 	Marisa:
 		// @tw
 		`
       text-marisa-700
-      disabled:bg-gray-300
+      disabled:bg-slate-300
       `,
 	Green:
 		// @tw
 		`
       text-green-700
-      disabled:bg-gray-300
+      disabled:bg-slate-300
       `,
 	Slate:
 		// @tw

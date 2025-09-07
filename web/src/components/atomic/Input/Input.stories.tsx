@@ -25,7 +25,7 @@ export const Default: Story = {
 export const A: Story = {
 	args: {
 		class: `
-      bg-gray-100 border-none
+      bg-slate-100 border-none
       `,
 	},
 }

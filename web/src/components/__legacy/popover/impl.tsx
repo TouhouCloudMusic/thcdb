@@ -97,7 +97,7 @@ export function Arrow(props: PolymorphicProps<"div", PopoverArrowProps>) {
 export function Description<T extends ValidComponent = "p">(
 	props: PolymorphicProps<T, PopoverDescriptionProps<T>>,
 ) {
-	const CLASS = "my-2 pr-2 text-sm text-gray-800"
+	const CLASS = "my-2 pr-2 text-sm text-slate-800"
 
 	let local_props = mergeProps(props, {
 		get class() {

@@ -32,7 +32,7 @@ export function Player() {
 	}
 
 	return (
-		<div class="fixed right-0 bottom-0 left-0 z-50 h-20 border-t border-gray-200 bg-white shadow-lg">
+		<div class="fixed right-0 bottom-0 left-0 z-50 h-20 border-t border-slate-200 bg-white shadow-lg">
 			<div class="container mx-auto flex h-full items-center px-4">
 				{/* 歌曲信息 */}
 				<div class="flex w-1/4 items-center">
@@ -47,12 +47,12 @@ export function Player() {
 									/>
 								</div>
 								<div class="overflow-hidden">
-									<h4 class="truncate text-sm font-medium text-gray-800">
+									<h4 class="truncate text-sm font-medium text-slate-800">
 										{song().title}
 									</h4>
-									<p class="truncate text-xs text-gray-500">{song().artist}</p>
+									<p class="truncate text-xs text-slate-500">{song().artist}</p>
 								</div>
-								<button class="ml-4 text-gray-400 hover:text-rose-600">
+								<button class="hover:text-rose-600 ml-4 text-slate-400">
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
 										class="h-5 w-5"
@@ -76,7 +76,7 @@ export function Player() {
 				{/* 播放控制 */}
 				<div class="flex w-2/4 flex-col items-center justify-center">
 					<div class="flex items-center space-x-4">
-						<button class="text-gray-500 hover:text-gray-700">
+						<button class="text-slate-500 hover:text-slate-700">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								class="h-5 w-5"
@@ -94,7 +94,7 @@ export function Player() {
 						</button>
 
 						<button
-							class="rounded-full bg-rose-600 p-2 text-white transition hover:bg-rose-700"
+							class="bg-rose-600 hover:bg-rose-700 rounded-full p-2 text-white transition"
 							onClick={togglePlay}
 						>
 							<Show
@@ -133,7 +133,7 @@ export function Player() {
 							</Show>
 						</button>
 
-						<button class="text-gray-500 hover:text-gray-700">
+						<button class="text-slate-500 hover:text-slate-700">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								class="h-5 w-5"
@@ -152,18 +152,18 @@ export function Player() {
 					</div>
 
 					<div class="mt-2 flex w-full items-center">
-						<span class="mr-2 text-xs text-gray-500">
+						<span class="mr-2 text-xs text-slate-500">
 							{formatTime(currentTime())}
 						</span>
-						<div class="h-1 flex-1 overflow-hidden rounded-full bg-gray-200">
+						<div class="h-1 flex-1 overflow-hidden rounded-full bg-slate-200">
 							<div
-								class="h-full bg-rose-600"
+								class="bg-rose-600 h-full"
 								style={{
 									width: `${(currentTime() / (currentSong()?.duration || 1)) * 100}%`,
 								}}
 							></div>
 						</div>
-						<span class="ml-2 text-xs text-gray-500">
+						<span class="ml-2 text-xs text-slate-500">
 							{formatTime(currentSong()?.duration || 0)}
 						</span>
 					</div>
@@ -171,7 +171,7 @@ export function Player() {
 
 				{/* 音量控制 */}
 				<div class="flex w-1/4 items-center justify-end">
-					<button class="mr-2 text-gray-500 hover:text-gray-700">
+					<button class="mr-2 text-slate-500 hover:text-slate-700">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-5 w-5"
@@ -188,14 +188,14 @@ export function Player() {
 						</svg>
 					</button>
 
-					<div class="h-1 w-24 overflow-hidden rounded-full bg-gray-200">
+					<div class="h-1 w-24 overflow-hidden rounded-full bg-slate-200">
 						<div
-							class="h-full bg-rose-600"
+							class="bg-rose-600 h-full"
 							style={{ width: `${volume()}%` }}
 						></div>
 					</div>
 
-					<button class="ml-4 text-gray-500 hover:text-gray-700">
+					<button class="ml-4 text-slate-500 hover:text-slate-700">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-5 w-5"

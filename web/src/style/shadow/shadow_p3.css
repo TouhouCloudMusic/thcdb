@@ -22,33 +22,33 @@
   @media (color-gamut: p3) {
     html,
     html[data-mode="light"] {
-      --gray-a1: color(display-p3 0 0 0 / 0.012);
-      --gray-a2: color(display-p3 0 0 0 / 0.024);
-      --gray-a3: color(display-p3 0 0 0 / 0.063);
-      --gray-a4: color(display-p3 0 0 0 / 0.09);
-      --gray-a5: color(display-p3 0 0 0 / 0.122);
-      --gray-a6: color(display-p3 0 0 0 / 0.153);
-      --gray-a7: color(display-p3 0 0 0 / 0.192);
-      --gray-a8: color(display-p3 0 0 0 / 0.267);
-      --gray-a9: color(display-p3 0 0 0 / 0.447);
-      --gray-a10: color(display-p3 0 0 0 / 0.486);
-      --gray-a11: color(display-p3 0 0 0 / 0.608);
-      --gray-a12: color(display-p3 0 0 0 / 0.875);
+      --slate-a1: color(display-p3 0 0 0 / 0.012);
+      --slate-a2: color(display-p3 0 0 0 / 0.024);
+      --slate-a3: color(display-p3 0 0 0 / 0.063);
+      --slate-a4: color(display-p3 0 0 0 / 0.09);
+      --slate-a5: color(display-p3 0 0 0 / 0.122);
+      --slate-a6: color(display-p3 0 0 0 / 0.153);
+      --slate-a7: color(display-p3 0 0 0 / 0.192);
+      --slate-a8: color(display-p3 0 0 0 / 0.267);
+      --slate-a9: color(display-p3 0 0 0 / 0.447);
+      --slate-a10: color(display-p3 0 0 0 / 0.486);
+      --slate-a11: color(display-p3 0 0 0 / 0.608);
+      --slate-a12: color(display-p3 0 0 0 / 0.875);
     }
 
     html[data-mode="dark"] {
-      --gray-a1: color(display-p3 0 0 0 / 0);
-      --gray-a2: color(display-p3 1 1 1 / 0.034);
-      --gray-a3: color(display-p3 1 1 1 / 0.071);
-      --gray-a4: color(display-p3 1 1 1 / 0.105);
-      --gray-a5: color(display-p3 1 1 1 / 0.134);
-      --gray-a6: color(display-p3 1 1 1 / 0.172);
-      --gray-a7: color(display-p3 1 1 1 / 0.231);
-      --gray-a8: color(display-p3 1 1 1 / 0.332);
-      --gray-a9: color(display-p3 1 1 1 / 0.391);
-      --gray-a10: color(display-p3 1 1 1 / 0.445);
-      --gray-a11: color(display-p3 1 1 1 / 0.685);
-      --gray-a12: color(display-p3 1 1 1 / 0.929);
+      --slate-a1: color(display-p3 0 0 0 / 0);
+      --slate-a2: color(display-p3 1 1 1 / 0.034);
+      --slate-a3: color(display-p3 1 1 1 / 0.071);
+      --slate-a4: color(display-p3 1 1 1 / 0.105);
+      --slate-a5: color(display-p3 1 1 1 / 0.134);
+      --slate-a6: color(display-p3 1 1 1 / 0.172);
+      --slate-a7: color(display-p3 1 1 1 / 0.231);
+      --slate-a8: color(display-p3 1 1 1 / 0.332);
+      --slate-a9: color(display-p3 1 1 1 / 0.391);
+      --slate-a10: color(display-p3 1 1 1 / 0.445);
+      --slate-a11: color(display-p3 1 1 1 / 0.685);
+      --slate-a12: color(display-p3 1 1 1 / 0.929);
     }
   }
 }

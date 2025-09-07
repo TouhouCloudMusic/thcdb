@@ -6,7 +6,7 @@ import {
 import type { ArtistCommonFilter, ReleaseType } from "@thc/api"
 import { ArtistApi } from "@thc/api"
 import { StrExt } from "@thc/toolkit/data"
-import { Either } from "effect"
+import { Either, identity } from "effect"
 
 export function findById(id: number, filter?: ArtistCommonFilter) {
 	return queryOptions({
@@ -17,7 +17,7 @@ export function findById(id: number, filter?: ArtistCommonFilter) {
 				query: filter,
 			})
 			return Either.match(result, {
-				onRight: (data) => data,
+				onRight: identity,
 				onLeft: (error) => {
 					throw error
 				},

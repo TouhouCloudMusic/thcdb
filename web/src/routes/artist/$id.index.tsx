@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
-import { createFileRoute } from "@tanstack/solid-router"
+import { createFileRoute, notFound } from "@tanstack/solid-router"
 import type { ReleaseType, Discography } from "@thc/api"
 import { ArtistQueryOption } from "@thc/query"
 import { ObjExt } from "@thc/toolkit/data"
@@ -78,10 +78,10 @@ function RouteComponent() {
 	}
 
 	return (
-		<Show when={query.data}>
+		<Show when={query.data && O.getOrThrowWith(query.data, () => notFound())}>
 			{(artist) => (
 				<ArtistProfilePage
-					artist={O.getOrThrow(artist())}
+					artist={artist()}
 					appearances={{
 						get data() {
 							return appearances.data?.pages.flatMap((p) => p.items) ?? []
