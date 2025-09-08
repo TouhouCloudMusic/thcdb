@@ -16,9 +16,9 @@ pub struct NewRelease {
     #[garde(skip)]
     pub release_date: Option<DateWithPrecision>,
     #[garde(skip)]
-    pub recording_start_date: Option<DateWithPrecision>,
+    pub recording_date_start: Option<DateWithPrecision>,
     #[garde(skip)]
-    pub recording_end_date: Option<DateWithPrecision>,
+    pub recording_date_end: Option<DateWithPrecision>,
     #[garde(skip)]
     pub artists: Vec<i32>,
     #[garde(skip)]

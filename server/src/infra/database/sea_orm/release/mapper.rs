@@ -16,19 +16,19 @@ impl From<&NewRelease> for release::ActiveModel {
                 .as_ref()
                 .map_or(DatePrecision::Day, |dp| dp.precision)),
             recording_date_start: Set(value
-                .recording_start_date
+                .recording_date_start
                 .as_ref()
                 .map(|dp| dp.value)),
             recording_date_start_precision: Set(value
-                .recording_start_date
+                .recording_date_start
                 .as_ref()
                 .map_or(DatePrecision::Day, |dp| dp.precision)),
             recording_date_end: Set(value
-                .recording_end_date
+                .recording_date_end
                 .as_ref()
                 .map(|dp| dp.value)),
             recording_date_end_precision: Set(value
-                .recording_end_date
+                .recording_date_end
                 .as_ref()
                 .map_or(DatePrecision::Day, |dp| dp.precision)),
         }
@@ -47,19 +47,19 @@ impl From<&NewRelease> for release_history::ActiveModel {
                 .as_ref()
                 .map_or(DatePrecision::Day, |dp| dp.precision)),
             recording_date_start: Set(value
-                .recording_start_date
+                .recording_date_start
                 .as_ref()
                 .map(|dp| dp.value)),
             recording_date_start_precision: Set(value
-                .recording_start_date
+                .recording_date_start
                 .as_ref()
                 .map_or(DatePrecision::Day, |dp| dp.precision)),
             recording_date_end: Set(value
-                .recording_end_date
+                .recording_date_end
                 .as_ref()
                 .map(|dp| dp.value)),
             recording_date_end_precision: Set(value
-                .recording_end_date
+                .recording_date_end
                 .as_ref()
                 .map_or(DatePrecision::Day, |dp| dp.precision)),
         }
