@@ -153,7 +153,7 @@ impl InvalidForamt {
     if *received < range.start {
         format!("Image too small, min: {}, received: {}", range.start, received)
     } else {
-        format!("Image too large, max: {}, received: {}", range.end, received)
+        format!("Image too large, max: {}, received: {}", range.last, received)
     }
 ))]
 pub struct InvalidFileSize {
@@ -165,7 +165,7 @@ pub struct InvalidFileSize {
 #[derive(Debug, snafu::Snafu)]
 #[snafu(display(
     "Invalid image size, min: {} x {}, max: {} x {}, received: {} x {}",
-    width_range.start, height_range.start, width_range.end, height_range.end, width, height
+    width_range.start, height_range.start, width_range.last, height_range.last, width, height
 ))]
 pub struct InvalidSize {
     width: u32,
@@ -178,7 +178,7 @@ pub struct InvalidSize {
 #[derive(Debug, snafu::Snafu)]
 #[snafu(display(
     "Invalid image ratio, received: {received:.2}, expected: {:.2} to {:.2}",
-    expected.start, expected.end
+    expected.start, expected.last
 ))]
 pub struct InvalidRatio {
     received: f64,
@@ -218,7 +218,7 @@ pub struct ParseOption {
         let mut ratio = ratio.into();
 
         ratio.start *= 1f64 - DEVIATION;
-        ratio.end *= 1f64 + DEVIATION;
+        ratio.last *= 1f64 + DEVIATION;
 
         ratio
     })]
@@ -233,7 +233,7 @@ pub struct ParseOption {
 impl ParseOption {
     pub const SQUARE: RangeInclusive<f64> = RangeInclusive {
         start: 1.0,
-        end: 1.0,
+        last: 1.0,
     };
 
     pub const fn into_parser(self) -> Parser {
