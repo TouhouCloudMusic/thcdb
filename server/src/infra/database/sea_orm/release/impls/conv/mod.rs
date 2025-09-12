@@ -4,6 +4,8 @@ use itertools::Itertools;
 use super::RelatedEntities;
 use crate::domain;
 use crate::domain::credit_role::model::CreditRoleRef;
+use crate::domain::event::model::SimpleEvent;
+use crate::domain::label::model::SimpleLabel;
 use crate::domain::release::model::{
     CatalogNumber, Release, ReleaseArtist, ReleaseCredit, ReleaseDisc,
     ReleaseTrack,
@@ -37,7 +39,10 @@ pub(super) fn conv_to_domain_model(
             release_model.recording_date_end_precision,
         ),
         artists: conv_artists(&related.artists[index]),
-        catalog_nums: conv_catalog_numbers(&related.catalog_numbers[index]),
+        catalog_nums: conv_catalog_numbers(
+            &related.catalog_numbers[index],
+            &related.labels,
+        ),
         localized_titles: conv_localized_titles(
             &related.localized_titles[index],
             related.languages,
@@ -54,6 +59,7 @@ pub(super) fn conv_to_domain_model(
             &related.credit_artists,
             &related.credit_roles,
         ),
+        events: conv_events(&related.events[index]),
         cover_art_url: related.cover_arts[index]
             .clone()
             .map(domain::image::Image::from)
@@ -73,12 +79,23 @@ fn conv_artists(artists: &[entity::artist::Model]) -> Vec<ReleaseArtist> {
 
 fn conv_catalog_numbers(
     catalog_nums: &[entity::release_catalog_number::Model],
+    labels: &[entity::label::Model],
 ) -> Vec<CatalogNumber> {
     catalog_nums
         .iter()
-        .map(|cn| CatalogNumber {
-            catalog_number: cn.catalog_number.clone(),
-            label_id: cn.label_id,
+        .map(|cn| {
+            let label = cn
+                .label_id
+                .and_then(|id| labels.iter().find(|l| l.id == id))
+                .map(|l| SimpleLabel {
+                    id: l.id,
+                    name: l.name.clone(),
+                });
+
+            CatalogNumber {
+                catalog_number: cn.catalog_number.clone(),
+                label,
+            }
         })
         .collect()
 }
@@ -195,6 +212,16 @@ fn conv_discs(discs: &[entity::release_disc::Model]) -> Vec<ReleaseDisc> {
         .map(|disc| ReleaseDisc {
             id: disc.id,
             name: disc.name.clone(),
+        })
+        .collect()
+}
+
+fn conv_events(events: &[entity::event::Model]) -> Vec<SimpleEvent> {
+    events
+        .iter()
+        .map(|e| SimpleEvent {
+            id: e.id,
+            name: e.name.clone(),
         })
         .collect()
 }

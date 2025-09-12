@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::domain::credit_role::CreditRoleRef;
+use crate::domain::event::model::SimpleEvent;
+use crate::domain::label::model::SimpleLabel;
 use crate::domain::shared::model::{DateWithPrecision, LocalizedTitle};
 use crate::domain::song::model::SongRef;
 
@@ -30,6 +32,7 @@ pub struct Release {
     pub localized_titles: Vec<LocalizedTitle>,
     pub discs: Vec<ReleaseDisc>,
     pub tracks: Vec<ReleaseTrack>,
+    pub events: Vec<SimpleEvent>,
 }
 
 #[derive(Clone, Debug, ToSchema, Serialize, Deserialize)]
@@ -43,7 +46,7 @@ pub struct ReleaseArtist {
 #[cfg_attr(test, derive(PartialEq, Eq))]
 pub struct CatalogNumber {
     pub catalog_number: String,
-    pub label_id: Option<i32>,
+    pub label: Option<SimpleLabel>,
 }
 
 #[derive(Clone, Debug, ToSchema, Serialize)]

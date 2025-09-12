@@ -25,6 +25,8 @@ pub(super) struct RelatedEntities {
     pub(super) credit_artists: Vec<entity::artist::Model>,
     pub(super) credit_roles: Vec<entity::credit_role::Model>,
     pub(super) cover_arts: Vec<Option<entity::image::Model>>,
+    pub(super) events: Vec<Vec<entity::event::Model>>,
+    pub(super) labels: Vec<entity::label::Model>,
 }
 
 struct BaseEntities {
@@ -34,6 +36,7 @@ struct BaseEntities {
     discs: Vec<Vec<entity::release_disc::Model>>,
     tracks: Vec<Vec<entity::release_track::Model>>,
     credits: Vec<Vec<entity::release_credit::Model>>,
+    events: Vec<Vec<entity::event::Model>>,
 }
 
 struct TrackDetails {
@@ -54,6 +57,7 @@ impl RelatedEntities {
             discs,
             tracks,
             credits,
+            events,
         } = Self::load_base_entities(releases, db).await?;
         let (credit_artists, credit_roles) =
             Self::load_credit_details(&credits, &artists, db).await?;
@@ -64,6 +68,19 @@ impl RelatedEntities {
         } = Self::load_track_details(&tracks, db).await?;
         let cover_arts = Self::load_cover_arts(releases, db).await?;
         let languages = LANGUAGE_CACHE.get_or_init(db).await?;
+
+        // Load labels used by catalog numbers
+        let labels = {
+            let ids = catalog_numbers
+                .iter()
+                .flatten()
+                .filter_map(|cn| cn.label_id)
+                .unique();
+            entity::label::Entity::find()
+                .filter(entity::label::Column::Id.is_in(ids))
+                .all(db)
+                .await?
+        };
 
         Ok(Self {
             artists,
@@ -79,6 +96,8 @@ impl RelatedEntities {
             credit_artists,
             credit_roles,
             cover_arts,
+            events,
+            labels,
         })
     }
 
@@ -93,6 +112,7 @@ impl RelatedEntities {
             discs,
             tracks,
             credits,
+            events,
         ) = tokio::try_join!(
             releases.load_many_to_many(
                 entity::artist::Entity,
@@ -104,6 +124,11 @@ impl RelatedEntities {
             releases.load_many(entity::release_disc::Entity, db),
             releases.load_many(entity::release_track::Entity, db),
             releases.load_many(entity::release_credit::Entity, db),
+            releases.load_many_to_many(
+                entity::event::Entity,
+                entity::release_event::Entity,
+                db
+            ),
         )?;
 
         Ok(BaseEntities {
@@ -113,6 +138,7 @@ impl RelatedEntities {
             discs,
             tracks,
             credits,
+            events,
         })
     }
 

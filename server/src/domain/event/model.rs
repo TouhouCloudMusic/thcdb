@@ -21,6 +21,13 @@ pub struct Event {
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
+pub struct SimpleEvent {
+    pub id: i32,
+    pub name: String,
+}
+
+#[derive(Clone, Debug, Serialize, ToSchema)]
 pub struct AlternativeName {
     pub id: i32,
     pub name: String,

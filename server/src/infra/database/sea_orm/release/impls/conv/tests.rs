@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
+use entity::sea_orm_active_enums::DatePrecision;
 use entity::{
-    artist, credit_role, release_catalog_number, release_credit,
-    release_localized_title, release_track, song,
+    artist, credit_role, label as label_entity, release_catalog_number,
+    release_credit, release_localized_title, release_track, song,
 };
 use itertools::Itertools;
 
@@ -11,6 +12,7 @@ use super::{
     conv_tracks,
 };
 use crate::domain;
+use crate::domain::label::model::SimpleLabel;
 use crate::domain::release::model::{
     CatalogNumber, ReleaseArtist, ReleaseCredit, ReleaseTrack,
 };
@@ -86,18 +88,30 @@ fn test_conv_catalog_numbers() {
         },
     ];
 
+    let labels = vec![label_entity::Model {
+        id: 1,
+        name: "Label 1".to_string(),
+        founded_date: None,
+        founded_date_precision: DatePrecision::Year,
+        dissolved_date: None,
+        dissolved_date_precision: DatePrecision::Year,
+    }];
+
     let expected = vec![
         CatalogNumber {
             catalog_number: "CAT-1".to_string(),
-            label_id: Some(1),
+            label: Some(SimpleLabel {
+                id: 1,
+                name: "Label 1".into(),
+            }),
         },
         CatalogNumber {
             catalog_number: "CAT-2".to_string(),
-            label_id: None,
+            label: None,
         },
     ];
 
-    let result = conv_catalog_numbers(&catalog_numbers);
+    let result = conv_catalog_numbers(&catalog_numbers, &labels);
 
     assert_eq!(result, expected);
 }

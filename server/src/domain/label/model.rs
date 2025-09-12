@@ -17,6 +17,13 @@ pub struct Label {
     pub localized_names: Vec<LocalizedName>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, ToSchema)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
+pub struct SimpleLabel {
+    pub id: i32,
+    pub name: String,
+}
+
 #[derive(Deserialize, ToSchema)]
 pub struct NewLabel {
     pub name: EntityIdent,

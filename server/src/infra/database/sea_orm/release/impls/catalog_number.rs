@@ -6,11 +6,11 @@ use sea_orm::{
     ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, QueryFilter,
 };
 
-use crate::domain::release::model::CatalogNumber;
+use crate::domain::release::model::NewCatalogNumber;
 
 pub(crate) async fn create_release_catalog_number(
     release_id: i32,
-    catalog_nums: &[CatalogNumber],
+    catalog_nums: &[NewCatalogNumber],
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if let Some(catalog_nums) = catalog_nums.into_option() {
@@ -34,7 +34,7 @@ pub(crate) async fn create_release_catalog_number(
 
 pub(crate) async fn create_release_catalog_number_history(
     history_id: i32,
-    catalog_nums: &[CatalogNumber],
+    catalog_nums: &[NewCatalogNumber],
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     if let Some(catalog_nums) = catalog_nums.into_option() {
@@ -68,22 +68,22 @@ pub(crate) async fn update_release_catalog_number(
         .await?;
 
     // Get catalog numbers from history
-    let Some(catalog_nums) = release_catalog_number_history::Entity::find()
+    let catalog_nums = release_catalog_number_history::Entity::find()
         .filter(
             release_catalog_number_history::Column::HistoryId.eq(history_id),
         )
         .all(db)
         .await?
         .into_iter()
-        .map(|x| CatalogNumber {
+        .map(|x| NewCatalogNumber {
             catalog_number: x.catalog_number,
             label_id: x.label_id,
         })
-        .collect_vec()
-        .into_option()
-    else {
+        .collect_vec();
+
+    if catalog_nums.is_empty() {
         return Ok(());
-    };
+    }
 
     // Create new catalog numbers
     create_release_catalog_number(release_id, &catalog_nums, db).await

@@ -3,7 +3,6 @@ use garde::Validate;
 use serde::Deserialize;
 use utoipa::ToSchema;
 
-use super::CatalogNumber;
 use crate::domain::correction::CorrectionEntity;
 use crate::domain::shared::model::{DateWithPrecision, NewLocalizedTitle};
 
@@ -22,7 +21,7 @@ pub struct NewRelease {
     #[garde(skip)]
     pub artists: Vec<i32>,
     #[garde(skip)]
-    pub catalog_nums: Vec<CatalogNumber>,
+    pub catalog_nums: Vec<NewCatalogNumber>,
     #[garde(skip)]
     pub credits: Vec<NewCredit>,
     #[garde(length(min = 1))]
@@ -57,6 +56,12 @@ impl CorrectionEntity for NewRelease {
     fn entity_type() -> entity::enums::EntityType {
         entity::enums::EntityType::Release
     }
+}
+
+#[derive(Clone, ToSchema, Deserialize)]
+pub struct NewCatalogNumber {
+    pub catalog_number: String,
+    pub label_id: Option<i32>,
 }
 
 #[derive(Clone, ToSchema, Deserialize)]
