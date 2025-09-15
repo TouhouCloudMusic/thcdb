@@ -29,11 +29,17 @@ pub enum AuthnError {
     #[snafu(transparent)]
     Infra { source: crate::infra::Error },
     #[snafu(display("Password hash error: {source}"))]
+    #[api_error(
+        status_code = StatusCode::INTERNAL_SERVER_ERROR,
+    )]
     PasswordHash {
         source: password_hash::Error,
         backtrace: Backtrace,
     },
     #[snafu(display("Join error: {source}"))]
+    #[api_error(
+        status_code = StatusCode::INTERNAL_SERVER_ERROR,
+    )]
     Join {
         source: tokio::task::JoinError,
         backtrace: Backtrace,

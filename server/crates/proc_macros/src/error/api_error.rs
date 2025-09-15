@@ -105,12 +105,16 @@ struct ApiErrorVariantReceiver {
 
 #[derive(Debug, Clone, FromField)]
 struct ApiErrorVariantField {
+    ident: Option<Ident>,
     ty: syn::Type,
 }
 
-#[derive(FromField)]
+#[derive(Debug, Clone, FromField)]
 
-struct ApiErrorField {}
+struct ApiErrorField {
+    ident: Option<Ident>,
+    ty: syn::Type,
+}
 
 static API_RESPONSE_MOD_PATH: &str = "crate::presentation::api_response";
 
@@ -232,12 +236,47 @@ fn derive_enum_impl(
                     ));
                 }
 
+                // Forward impl to source by default if not specified
+                let source_field = fields.fields.iter().find_map(|field| {
+                    field.ident.as_ref().and_then(|ident| {
+                        if ident == "source" {
+                            Some((ident.clone(), field.ty.clone()))
+                        } else {
+                            None
+                        }
+                    })
+                });
+
+                let needs_source = matches!(variant.status_code, CodeOpt::None);
+
+                let missing_source = || {
+                    Error::new_spanned(
+                        var_name,
+                        format!(
+                            "Named fields variant `{}` must specify #[api_error(...)] or contain a `source` field",
+                            var_name
+                        ),
+                    )
+                };
+
+                // If no status_code is specified and there is no `source`,
+                // we cannot infer defaults, so bail out during macro expansion.
+                if needs_source && source_field.is_none() {
+                    return Err(missing_source());
+                }
+
                 match variant.status_code {
                     CodeOpt::None => {
-                        status_code_left_arms
-                            .push(quote! { Self::#var_name { .. } });
+                        let (source_ident, source_ty) =
+                            source_field.clone().unwrap();
+                        let source_ty = add_turbo_fish(source_ty);
+                        status_code_left_arms.push(
+                            quote! { Self::#var_name { #source_ident, .. } },
+                        );
                         status_code_right_arms
-                            .push(quote! { self.as_status_code() });
+                            .push(quote! { #source_ident.as_status_code() });
+                        all_status_code_iter
+                            .push(quote! { #source_ty::all_status_codes() });
                     }
                     CodeOpt::Specified(path) => {
                         status_code_left_arms
@@ -255,10 +294,24 @@ fn derive_enum_impl(
                             Self::#var_name { #field_ident, .. } => #field_ident.into_response()
                         });
                     }
-                    _ => {
+                    IntoResponseOpt::ItSelf => {
                         into_response_arms.push(quote! {
                             Self::#var_name { .. } => self.into_api_response()
                         });
+                    }
+                    IntoResponseOpt::None => {
+                        into_response_arms.push(quote! {
+                            Self::#var_name { .. } => self.into_api_response()
+                        });
+                    }
+                    IntoResponseOpt::Inner => {
+                        return Err(Error::new_spanned(
+                            var_name,
+                            format!(
+                                "Named fields variant `{}` does not support `into_response = inner`",
+                                var_name
+                            ),
+                        ));
                     }
                 }
             }
@@ -307,11 +360,45 @@ fn derive_struct_impl(receiver: &ApiErrorReceiver) -> syn::Result<TokenStream> {
     let data = &receiver.data;
 
     let strc = data.as_ref().take_struct().unwrap();
+    // Struct errors follow the same rule: prefer a `source` field for implicit
+    // status/response forwarding.
+    let source_field = strc.fields.iter().find_map(|field| {
+        field.ident.as_ref().and_then(|ident| {
+            if ident == "source" {
+                Some((ident.clone(), field.ty.clone()))
+            } else {
+                None
+            }
+        })
+    });
+
+    let missing_source = || {
+        Error::new_spanned(
+            ident,
+            "No status_code specified and `source` field not found",
+        )
+    };
+
+    // Without an explicit status_code and no `source` field, we cannot derive
+    // sensible defaults, so this must be rejected at compile time.
+    let needs_struct_source = matches!(strc.style, darling::ast::Style::Struct)
+        && matches!(receiver.status_code, CodeOpt::None);
+
+    if needs_struct_source && source_field.is_none() {
+        return Err(missing_source());
+    }
+
     let status_code_impl = match strc.style {
         darling::ast::Style::Tuple
             if let CodeOpt::Inner | CodeOpt::None = receiver.status_code =>
         {
             quote! { self.0.as_status_code() }
+        }
+        darling::ast::Style::Struct
+            if matches!(receiver.status_code, CodeOpt::None) =>
+        {
+            let (source_ident, _) = source_field.clone().unwrap();
+            quote! { self.#source_ident.as_status_code() }
         }
         _ => {
             if let CodeOpt::Specified(ref path) = receiver.status_code {
@@ -327,6 +414,13 @@ fn derive_struct_impl(receiver: &ApiErrorReceiver) -> syn::Result<TokenStream> {
             if let CodeOpt::Inner | CodeOpt::None = receiver.status_code =>
         {
             quote! { self.0.all_status_codes() }
+        }
+        darling::ast::Style::Struct
+            if matches!(receiver.status_code, CodeOpt::None) =>
+        {
+            let (_, source_ty) = source_field.clone().unwrap();
+            let source_ty = add_turbo_fish(source_ty);
+            quote! { #source_ty::all_status_codes() }
         }
         _ => {
             if let CodeOpt::Specified(ref path) = receiver.status_code {
@@ -344,18 +438,18 @@ fn derive_struct_impl(receiver: &ApiErrorReceiver) -> syn::Result<TokenStream> {
         {
             quote! { self.0.into_response() }
         }
-        _ => {
-            if let IntoResponseOpt::ItSelf | IntoResponseOpt::None =
-                receiver.into_response
-            {
-                quote! { self.into_api_response() }
-            } else {
-                Err(Error::new_spanned(
-                    ident,
-                    "No into_response specified or invalid syntax",
-                ))?
+        _ => match receiver.into_response {
+            IntoResponseOpt::ItSelf => quote! { self.into_api_response() },
+            IntoResponseOpt::None => quote! { self.into_api_response() },
+            IntoResponseOpt::Field(ref ident) => {
+                let field_ident = ident;
+                quote! { self.#field_ident.into_response() }
             }
-        }
+            IntoResponseOpt::Inner => Err(Error::new_spanned(
+                ident,
+                "No into_response specified or invalid syntax",
+            ))?,
+        },
     };
 
     let mod_path: TokenStream = syn::parse_str(API_RESPONSE_MOD_PATH)?;

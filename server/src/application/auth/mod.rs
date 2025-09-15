@@ -111,18 +111,14 @@ where
 }
 
 #[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
-
 pub enum SessionBackendError {
     #[snafu(transparent)]
-    #[api_error(
-        into_response = self
-    )]
     Session { source: SessionError },
     #[snafu(transparent)]
     AuthnBackend { source: AuthnBackendError },
 }
-#[derive(Debug, snafu::Snafu, ApiError)]
 
+#[derive(Debug, snafu::Snafu, ApiError)]
 pub enum AuthnBackendError {
     #[snafu(transparent)]
     Authn { source: AuthnError },
