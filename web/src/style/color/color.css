@@ -11,4 +11,10 @@
 
 	--default-border-color: var(--color-slate-400);
 	--default-icon-color: var(--color-slate-500);
+
+	--color-reimu-650: color-mix(
+		in oklch,
+		var(--color-reimu-600) 50%,
+		var(--color-reimu-500) 50%
+	);
 }

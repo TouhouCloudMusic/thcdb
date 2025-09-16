@@ -32,3 +32,5 @@ type ADTTest1 = ADTEnum<[{ a: string }, { b: number }]>
 type ADTTest2 = ADTEnum<
 	[{ a: string; share: number }, { b: number; share?: number }]
 >
+
+export type nil = null | undefined

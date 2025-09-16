@@ -1,4 +1,3 @@
-import { Trans } from "@lingui-solid/solid/macro"
 import { Link } from "@tanstack/solid-router"
 import type { CreditRoleRef, Release, SimpleArtist } from "@thc/api"
 import { For, Show } from "solid-js"

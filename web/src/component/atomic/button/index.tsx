@@ -113,7 +113,8 @@ const PrimaryColor: Record<AppColor, string> = {
 	Reimu:
 		// @tw
 		`
-    bg-reimu-700 hover:bg-reimu-600 active:bg-reimu-500 disabled:bg-blue-700/500
+    bg-reimu-600
+		hover:bg-reimu-650 active:bg-reimu-500 disabled:bg-reimu-700/500
     dark:disabled:bg-reimu-600
     `,
 	Marisa:

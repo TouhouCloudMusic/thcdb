@@ -1,9 +1,9 @@
 import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
-import type { Artist, ArtistCommonFilter } from "@thc/api"
-import { ArtistQueryOption } from "@thc/query"
+import type { Song } from "@thc/api"
+import { SongQueryOption } from "@thc/query"
 import { debounce, id } from "@thc/toolkit"
-import { createSignal, For, createMemo, Suspense } from "solid-js"
+import { createMemo, createSignal, Suspense, For } from "solid-js"
 import type { JSX } from "solid-js"
 import { PlusIcon } from "solid-radix-icons"
 
@@ -11,20 +11,16 @@ import { Button } from "~/component/atomic/button"
 import { Dialog } from "~/component/dialog"
 import { SearchDialog } from "~/component/form/SearchDialog"
 
-type ArtistSearchDialogProps = {
-	onSelect: (artist: Artist) => void
+type Props = {
+	icon?: JSX.Element
+	onSelect: (song: Song) => void
 	disabled?: boolean
-	filter?: ArtistCommonFilter
 }
 
-export function ArtistSearchDialog(
-	props: ArtistSearchDialogProps,
-): JSX.Element {
+export function SongSearchDialog(props: Props): JSX.Element {
 	const { t } = useLingui()
-
 	const [searchKeyword, setSearchKeyword] = createSignal("")
 
-	// oxlint-disable-next-line no-magic-numbers
 	const onInput = debounce(300, (e: Event) => {
 		setSearchKeyword((e.target as HTMLInputElement).value)
 	})
@@ -34,10 +30,8 @@ export function ArtistSearchDialog(
 		return keyword.length > 1 ? keyword : undefined
 	})
 
-	const artistsQuery = useQuery(() => ({
-		...ArtistQueryOption.findByKeyword(searchTerm()!, {
-			artist_type: props.filter?.artist_type,
-		}),
+	const songsQuery = useQuery(() => ({
+		...SongQueryOption.findByKeyword(searchTerm()!),
 		placeholderData: id,
 		enabled: Boolean(searchTerm()),
 	}))
@@ -50,13 +44,13 @@ export function ArtistSearchDialog(
 				class="h-max p-2"
 				disabled={props.disabled}
 			>
-				<PlusIcon class="size-4 text-slate-600" />
+				{props.icon}
 			</Dialog.Trigger>
 
 			<SearchDialog.Content>
 				<div class="mb-6 space-y-4">
 					<SearchDialog.Label>
-						<Trans>Search Artist</Trans>
+						<Trans>Search Song</Trans>
 					</SearchDialog.Label>
 					<SearchDialog.Input
 						placeholder={t`Search...`}
@@ -68,22 +62,19 @@ export function ArtistSearchDialog(
 
 				<SearchDialog.List>
 					<Suspense>
-						<For
-							each={artistsQuery.data?.filter(
-								(x) => !props.filter?.exclusion?.includes(x.id),
-							)}
-						>
-							{(artist) => (
+						<For each={songsQuery.data}>
+							{(song) => (
 								<li class="group relative border-slate-300 p-4 text-left transition-all duration-150 not-first:border-t last:border-b hover:bg-slate-100 active:bg-slate-100">
 									<div class="absolute top-0 left-0 h-full w-px origin-left scale-y-0 transform-gpu bg-reimu-600 transition-all ease-in-out group-hover:scale-y-100"></div>
 									<button
 										type="button"
 										class="w-full"
-										onClick={() => props.onSelect(artist)}
+										onClick={() => props.onSelect(song)}
 									>
 										<div class="flex items-center justify-between">
 											<div class="text-left text-lg font-light text-primary">
-												{artist.name}
+												{song.title}
+												{/* could render artists */}
 											</div>
 											<div class="opacity-0 transition-opacity duration-150 group-hover:opacity-100">
 												<PlusIcon class="size-4 text-tertiary" />

@@ -50,7 +50,7 @@ export function Label(props: LabelProps): JSX.Element {
 
 // Control Component
 export const CONTROL_CLASS = tw(`
-  grid grid-cols-1 relative
+  grid grid-cols-1 relative isolate
 `)
 
 export type ControlProps = ComponentProps<typeof Combobox.Control<"div">>
@@ -68,7 +68,7 @@ export function Control(props: ControlProps): JSX.Element {
 // TODO: Replace it with common input
 
 const INPUT_BASE_CLASS = tw(`
-	text-slate-900 focus:text-primary,
+	text-slate-900 focus:text-primary
 	bg-primary
 	border border-slate-300
   disabled:bg-slate-100

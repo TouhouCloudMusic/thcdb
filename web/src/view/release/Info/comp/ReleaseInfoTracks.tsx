@@ -1,4 +1,4 @@
-import type { ReleaseArtist, ReleaseDisc, ReleaseTrack } from "@thc/api"
+import type { ReleaseArtist, ReleaseTrack } from "@thc/api"
 import { For, Show } from "solid-js"
 
 import { Divider } from "~/component/atomic/Divider"

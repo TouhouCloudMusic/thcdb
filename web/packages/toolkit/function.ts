@@ -132,3 +132,14 @@ export function pipe(x: unknown, ...fns: ((x: unknown) => unknown)[]): unknown {
 		}
 	}
 }
+
+/**
+ * Predicate complement
+ *
+ * complement :: (a -> true) -> (a -> false)
+ * complement :: (a -> false) -> (a -> true)
+ */
+export const complement =
+	<A>(f: (x: A) => boolean) =>
+	(x: A) =>
+		!f(x)

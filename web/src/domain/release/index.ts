@@ -1,8 +1,2 @@
-export const RELEASE_TYPES = [
-	"Album",
-	"Ep",
-	"Single",
-	"Compilation",
-	"Demo",
-	"Other",
-] as const
+export * from "./constants"
+export * from "./schema"

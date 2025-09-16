@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { format, FormatOption, Precision } from "./duration"
+import type { FormatOption } from "./duration"
+import { format, Precision } from "./duration"
 
 describe("formatDuration", () => {
 	it("should return undefined for null or undefined input", () => {

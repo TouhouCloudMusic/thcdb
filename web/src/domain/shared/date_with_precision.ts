@@ -46,7 +46,11 @@ export function display(date: Out | nil): string | undefined {
 	return `${year!}-${month!}-${day!}`
 }
 
-function toPlainDate(date: Date): string {
-	// oxlint-disable-next-line no-non-null-assertion
+export const toInput = (date: Out | nil): In | undefined => {
+	if (!date) return undefined
+	return { value: new Date(date.value), precision: date.precision }
+}
+
+const toPlainDate = (date: Date): string => {
 	return date.toISOString().split("T")[0]!
 }

@@ -2,7 +2,7 @@ import type { JSX } from "solid-js"
 import { mergeProps, Show } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
-export const ERROR_MESSAGE_CLASSNAME = "text-reimu-700 text-sm mt-2"
+export const ERROR_MESSAGE_CLASSNAME = "text-reimu-600 text-sm mt-2"
 
 export type ErrorMessageProps = Omit<
 	JSX.HTMLAttributes<HTMLSpanElement>,

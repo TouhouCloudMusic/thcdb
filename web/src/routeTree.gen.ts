@@ -14,12 +14,14 @@ import { Route as AboutRouteImport } from './route/about'
 import { Route as IndexRouteImport } from './route/index'
 import { Route as SongMockRouteImport } from './route/song/mock'
 import { Route as SongIdRouteImport } from './route/song/$id'
+import { Route as ReleaseNewRouteImport } from './route/release/new'
 import { Route as ReleaseMockRouteImport } from './route/release/mock'
 import { Route as ReleaseIdRouteImport } from './route/release/$id'
 import { Route as ArtistNewRouteImport } from './route/artist/new'
 import { Route as userTest_avatar_uploadRouteImport } from './route/(user)/test_avatar_upload'
 import { Route as userProfileRouteImport } from './route/(user)/profile'
 import { Route as ArtistIdIndexRouteImport } from './route/artist/$id.index'
+import { Route as ReleaseIdEditRouteImport } from './route/release/$id.edit'
 import { Route as ArtistIdEditRouteImport } from './route/artist/$id.edit'
 import { Route as userProfileEditRouteImport } from './route/(user)/profile_.edit'
 import { Route as userProfileUsernameRouteImport } from './route/(user)/profile_.$username'
@@ -47,6 +49,11 @@ const SongMockRoute = SongMockRouteImport.update({
 const SongIdRoute = SongIdRouteImport.update({
   id: '/song/$id',
   path: '/song/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReleaseNewRoute = ReleaseNewRouteImport.update({
+  id: '/release/new',
+  path: '/release/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReleaseMockRoute = ReleaseMockRouteImport.update({
@@ -79,6 +86,11 @@ const ArtistIdIndexRoute = ArtistIdIndexRouteImport.update({
   path: '/artist/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReleaseIdEditRoute = ReleaseIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => ReleaseIdRoute,
+} as any)
 const ArtistIdEditRoute = ArtistIdEditRouteImport.update({
   id: '/artist/$id/edit',
   path: '/artist/$id/edit',
@@ -102,13 +114,15 @@ export interface FileRoutesByFullPath {
   '/profile': typeof userProfileRoute
   '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/new': typeof ArtistNewRoute
-  '/release/$id': typeof ReleaseIdRoute
+  '/release/$id': typeof ReleaseIdRouteWithChildren
   '/release/mock': typeof ReleaseMockRoute
+  '/release/new': typeof ReleaseNewRoute
   '/song/$id': typeof SongIdRoute
   '/song/mock': typeof SongMockRoute
   '/profile/$username': typeof userProfileUsernameRoute
   '/profile/edit': typeof userProfileEditRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
+  '/release/$id/edit': typeof ReleaseIdEditRoute
   '/artist/$id': typeof ArtistIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -118,13 +132,15 @@ export interface FileRoutesByTo {
   '/profile': typeof userProfileRoute
   '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/new': typeof ArtistNewRoute
-  '/release/$id': typeof ReleaseIdRoute
+  '/release/$id': typeof ReleaseIdRouteWithChildren
   '/release/mock': typeof ReleaseMockRoute
+  '/release/new': typeof ReleaseNewRoute
   '/song/$id': typeof SongIdRoute
   '/song/mock': typeof SongMockRoute
   '/profile/$username': typeof userProfileUsernameRoute
   '/profile/edit': typeof userProfileEditRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
+  '/release/$id/edit': typeof ReleaseIdEditRoute
   '/artist/$id': typeof ArtistIdIndexRoute
 }
 export interface FileRoutesById {
@@ -135,13 +151,15 @@ export interface FileRoutesById {
   '/(user)/profile': typeof userProfileRoute
   '/(user)/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/new': typeof ArtistNewRoute
-  '/release/$id': typeof ReleaseIdRoute
+  '/release/$id': typeof ReleaseIdRouteWithChildren
   '/release/mock': typeof ReleaseMockRoute
+  '/release/new': typeof ReleaseNewRoute
   '/song/$id': typeof SongIdRoute
   '/song/mock': typeof SongMockRoute
   '/(user)/profile_/$username': typeof userProfileUsernameRoute
   '/(user)/profile_/edit': typeof userProfileEditRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
+  '/release/$id/edit': typeof ReleaseIdEditRoute
   '/artist/$id/': typeof ArtistIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -155,11 +173,13 @@ export interface FileRouteTypes {
     | '/artist/new'
     | '/release/$id'
     | '/release/mock'
+    | '/release/new'
     | '/song/$id'
     | '/song/mock'
     | '/profile/$username'
     | '/profile/edit'
     | '/artist/$id/edit'
+    | '/release/$id/edit'
     | '/artist/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -171,11 +191,13 @@ export interface FileRouteTypes {
     | '/artist/new'
     | '/release/$id'
     | '/release/mock'
+    | '/release/new'
     | '/song/$id'
     | '/song/mock'
     | '/profile/$username'
     | '/profile/edit'
     | '/artist/$id/edit'
+    | '/release/$id/edit'
     | '/artist/$id'
   id:
     | '__root__'
@@ -187,11 +209,13 @@ export interface FileRouteTypes {
     | '/artist/new'
     | '/release/$id'
     | '/release/mock'
+    | '/release/new'
     | '/song/$id'
     | '/song/mock'
     | '/(user)/profile_/$username'
     | '/(user)/profile_/edit'
     | '/artist/$id/edit'
+    | '/release/$id/edit'
     | '/artist/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -202,8 +226,9 @@ export interface RootRouteChildren {
   userProfileRoute: typeof userProfileRoute
   userTest_avatar_uploadRoute: typeof userTest_avatar_uploadRoute
   ArtistNewRoute: typeof ArtistNewRoute
-  ReleaseIdRoute: typeof ReleaseIdRoute
+  ReleaseIdRoute: typeof ReleaseIdRouteWithChildren
   ReleaseMockRoute: typeof ReleaseMockRoute
+  ReleaseNewRoute: typeof ReleaseNewRoute
   SongIdRoute: typeof SongIdRoute
   SongMockRoute: typeof SongMockRoute
   userProfileUsernameRoute: typeof userProfileUsernameRoute
@@ -249,6 +274,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof SongIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/release/new': {
+      id: '/release/new'
+      path: '/release/new'
+      fullPath: '/release/new'
+      preLoaderRoute: typeof ReleaseNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/release/mock': {
       id: '/release/mock'
       path: '/release/mock'
@@ -291,6 +323,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof ArtistIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/release/$id/edit': {
+      id: '/release/$id/edit'
+      path: '/edit'
+      fullPath: '/release/$id/edit'
+      preLoaderRoute: typeof ReleaseIdEditRouteImport
+      parentRoute: typeof ReleaseIdRoute
+    }
     '/artist/$id/edit': {
       id: '/artist/$id/edit'
       path: '/artist/$id/edit'
@@ -315,6 +354,18 @@ declare module '@tanstack/solid-router' {
   }
 }
 
+interface ReleaseIdRouteChildren {
+  ReleaseIdEditRoute: typeof ReleaseIdEditRoute
+}
+
+const ReleaseIdRouteChildren: ReleaseIdRouteChildren = {
+  ReleaseIdEditRoute: ReleaseIdEditRoute,
+}
+
+const ReleaseIdRouteWithChildren = ReleaseIdRoute._addFileChildren(
+  ReleaseIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -322,8 +373,9 @@ const rootRouteChildren: RootRouteChildren = {
   userProfileRoute: userProfileRoute,
   userTest_avatar_uploadRoute: userTest_avatar_uploadRoute,
   ArtistNewRoute: ArtistNewRoute,
-  ReleaseIdRoute: ReleaseIdRoute,
+  ReleaseIdRoute: ReleaseIdRouteWithChildren,
   ReleaseMockRoute: ReleaseMockRoute,
+  ReleaseNewRoute: ReleaseNewRoute,
   SongIdRoute: SongIdRoute,
   SongMockRoute: SongMockRoute,
   userProfileUsernameRoute: userProfileUsernameRoute,

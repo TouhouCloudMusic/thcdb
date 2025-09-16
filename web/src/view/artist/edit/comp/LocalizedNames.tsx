@@ -1,23 +1,20 @@
 import * as M from "@modular-forms/solid"
-import { useQuery } from "@tanstack/solid-query"
 import type { Language } from "@thc/api"
-import { LanguagesQuery } from "@thc/query"
 import { For } from "solid-js"
-import { CheckIcon, Cross1Icon, PlusIcon } from "solid-radix-icons"
+import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 
-import { Combobox } from "~/component/atomic/Combobox"
 import { Divider } from "~/component/atomic/Divider"
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
+import { FieldArrayFallback } from "~/component/form/FieldArrayFallback"
+import { LanguageCombobox } from "~/component/form/stateful/LanguageCombobox"
 import type { NewArtistCorrection } from "~/domain/artist/schema"
 
 import { useArtistForm } from "../context"
-import { FieldArrayFallback } from "./FieldArrayFallback"
 
 export function ArtistFormLocalizedNames() {
 	const { formStore } = useArtistForm()
-	let langs = useQuery(() => LanguagesQuery.findAll())
 
 	let insert = () =>
 		M.insert(formStore, "data.localized_names", {
@@ -70,10 +67,7 @@ export function ArtistFormLocalizedNames() {
 										)}
 									</M.Field>
 
-									<LanguageCombobox
-										index={idx()}
-										langs={langs.data ?? []}
-									/>
+									<LanguageCombobox onChange={createOnLangChange(idx())} />
 									<Button
 										variant="Tertiary"
 										size="Sm"
@@ -95,50 +89,14 @@ export function ArtistFormLocalizedNames() {
 	)
 }
 
-// oxlint-disable-next-line max-lines-per-function
-function LanguageCombobox(props: { index: number; langs: Language[] }) {
+function createOnLangChange(index: number) {
 	const { formStore } = useArtistForm()
 	let onChange = (v: Language | null) => {
 		if (v) {
-			M.setValue(
-				formStore,
-				`data.localized_names.${props.index}.language_id`,
-				v.id,
-			)
+			M.setValue(formStore, `data.localized_names.${index}.language_id`, v.id)
 		} else {
-			M.reset(formStore, `data.localized_names.${props.index}.language_id`)
+			M.reset(formStore, `data.localized_names.${index}.language_id`)
 		}
 	}
-
-	return (
-		<Combobox.Root
-			placeholder="Select language"
-			options={props.langs}
-			optionValue="id"
-			optionTextValue="name"
-			optionLabel="name"
-			onChange={onChange}
-			itemComponent={(props) => (
-				<Combobox.Item item={props.item}>
-					<Combobox.ItemLabel>{props.item.rawValue.name}</Combobox.ItemLabel>
-					<Combobox.ItemIndicator>
-						<CheckIcon class="text-primary" />
-					</Combobox.ItemIndicator>
-				</Combobox.Item>
-			)}
-		>
-			<Combobox.Control>
-				<Combobox.Input />
-				<Combobox.Trigger>
-					<Combobox.Icon />
-				</Combobox.Trigger>
-			</Combobox.Control>
-
-			<Combobox.Portal>
-				<Combobox.Content>
-					<Combobox.Listbox />
-				</Combobox.Content>
-			</Combobox.Portal>
-		</Combobox.Root>
-	)
+	return onChange
 }

@@ -8,10 +8,10 @@ import { Divider } from "~/component/atomic/Divider"
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { Intersperse } from "~/component/data/Intersperse"
+import { FieldArrayFallback } from "~/component/form/FieldArrayFallback"
+import { ArtistSearchDialog } from "~/component/form/SearchDialog"
 
 import { useArtistForm } from "../context"
-import { ArtistSearchDialog } from "./ArtistSearchDialog"
-import { FieldArrayFallback } from "./FieldArrayFallback"
 
 export const ArtistFormAliasesField = () => {
 	let [aliases, setAliases] = createStore<Artist[]>([])
@@ -55,7 +55,7 @@ export const ArtistFormAliasesField = () => {
 				<div class="flex gap-2">
 					<ArtistSearchDialog
 						onSelect={handleSelect}
-						filter={filter()}
+						queryFilter={filter()}
 					/>
 				</div>
 			</div>

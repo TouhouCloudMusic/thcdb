@@ -62,8 +62,9 @@ export default defineConfig(({ mode }) => {
 					test: {
 						name: "unit",
 						globals: true,
-						include: ["src/**/*.test.{ts,tsx}"],
+						include: ["./src/**/*.test.{ts,tsx}", "./tsconfig.json"],
 					},
+					plugins: [tsconfigPaths()],
 				}),
 				defineProject({
 					plugins: [

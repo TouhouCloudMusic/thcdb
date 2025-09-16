@@ -75,6 +75,7 @@
 		"new-cap": "off",
 		"no-async-await": "off",
 		"no-continue": "off",
+		"no-constructor-return": "off",
 		// Disable this, as type import is not recognized.
 		// We use the import plugin instead.
 		"no-duplicate-imports": "off",

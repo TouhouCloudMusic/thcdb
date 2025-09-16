@@ -3,8 +3,8 @@
 	--color-white: white;
 	--color-black: black;
 	/* slate */
-	--color-slate-100: #f3f4f5;
-	--color-slate-200: #e8eaed;
+	--color-slate-100: #f6f7f8;
+	--color-slate-200: #eff0f1;
 	--color-slate-300: #d5d7db;
 	--color-slate-400: #c0c3c8;
 	--color-slate-500: #a0a4ab;
@@ -18,9 +18,9 @@
 	--color-reimu-200: #fce1df;
 	--color-reimu-300: #ffcac6;
 	--color-reimu-400: #ff9e99;
-	--color-reimu-500: #fe7475;
-	--color-reimu-600: #ea575c;
-	--color-reimu-700: #a82f33;
+	--color-reimu-500: #f76467;
+	--color-reimu-600: #de444b;
+	--color-reimu-700: #a82c32;
 	--color-reimu-800: #6f1c1b;
 	--color-reimu-900: #3d0c07;
 

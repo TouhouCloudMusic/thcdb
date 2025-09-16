@@ -16,7 +16,7 @@ export const enum NotificationState {
 
 export class UserStore {
 	constructor(private ctx: UserContext) {
-		createMutable(this)
+		return createMutable(this)
 	}
 
 	private isLoading = false

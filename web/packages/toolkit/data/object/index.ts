@@ -14,3 +14,15 @@ export function fromEntries<K extends PropertyKey, V>(
 } {
 	return Object.fromEntries(entries) as Record<K, V>
 }
+
+export const pick =
+	<A extends Record<PropertyKey, unknown>, Keys extends (keyof A)[]>(
+		keys: Keys,
+	) =>
+	(obj: A): Pick<A, Keys[number]> => {
+		let ret = {} as Pick<A, Keys[number]>
+		for (const key of keys) {
+			ret[key] = obj[key]
+		}
+		return ret
+	}

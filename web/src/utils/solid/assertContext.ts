@@ -9,7 +9,7 @@ export function assertContext<T>(
 
 	if (import.meta.env.DEV && !ctx) {
 		throw new Error(
-			`Context ${name} is not set, please make sure you're in a provider`,
+			`${name ?? "Context"} is not set, please make sure you're in a provider`,
 		)
 	}
 

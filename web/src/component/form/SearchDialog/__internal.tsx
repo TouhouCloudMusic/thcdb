@@ -1,4 +1,4 @@
-import type { JSX } from "solid-js"
+import type { JSX, ParentProps } from "solid-js"
 import { mergeProps } from "solid-js"
 import { MagnifyingGlassIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
@@ -76,4 +76,18 @@ export function List(props: ListProps) {
 		},
 	})
 	return <ul {...listProps}></ul>
+}
+
+export function Item(props: ParentProps) {
+	return (
+		<li class="group relative isolate border-slate-300 p-4 text-left transition-all duration-150 not-first:border-t last:border-b hover:bg-[#f6f7f8] active:bg-[#f0f1f2]">
+			{props.children}
+		</li>
+	)
+}
+
+export function ItemIndicator() {
+	return (
+		<div class="absolute top-0 left-0 z-20 h-full w-px origin-left scale-y-0 transform-gpu bg-[#ef5d5d] transition-all ease-in-out group-hover:scale-y-100"></div>
+	)
 }
