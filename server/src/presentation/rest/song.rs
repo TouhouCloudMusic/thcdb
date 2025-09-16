@@ -94,7 +94,7 @@ async fn create_song(
     post,
     tag = TAG,
     path = "/song/{id}",
-    request_body = NewSong,
+    request_body = NewCorrectionDto<NewSong>,
     responses(
 		(status = 200, body = Message),
         (status = 401),
