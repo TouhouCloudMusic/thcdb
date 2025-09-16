@@ -29,13 +29,20 @@ jobs:
       cancel-in-progress: true
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+      - uses: actions/checkout@v5
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@nightly
         # Use build cache
-      - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad
+      - uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Cache Cargo downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install mold
         run: |
