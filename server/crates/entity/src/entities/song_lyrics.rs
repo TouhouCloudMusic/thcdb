@@ -10,7 +10,6 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    #[sea_orm(unique)]
     pub song_id: i32,
     pub language_id: i32,
     #[sea_orm(column_type = "Text")]
