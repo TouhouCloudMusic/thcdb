@@ -41,6 +41,7 @@ migrations![
     m20250808_153600_add_credit_role_entity_type,
     m20250828_124137_change_duration_to_integer,
     m20250901_053512_create_release_disc,
+    m20250918_080000_make_song_credit_role_optional,
 ];
 
 macro_rules! migration {

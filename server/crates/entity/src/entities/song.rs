@@ -28,7 +28,7 @@ pub enum Relation {
     SongLanguage,
     #[sea_orm(has_many = "super::song_localized_title::Entity")]
     SongLocalizedTitle,
-    #[sea_orm(has_one = "super::song_lyrics::Entity")]
+    #[sea_orm(has_many = "super::song_lyrics::Entity")]
     SongLyrics,
     #[sea_orm(has_many = "super::song_lyrics_history::Entity")]
     SongLyricsHistory,

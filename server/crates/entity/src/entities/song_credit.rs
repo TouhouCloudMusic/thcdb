@@ -8,12 +8,11 @@ use serde::{Deserialize, Serialize};
 )]
 #[sea_orm(table_name = "song_credit")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false)]
     pub song_id: i32,
-    #[sea_orm(primary_key, auto_increment = false)]
     pub artist_id: i32,
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub role_id: i32,
+    pub role_id: Option<i32>,
+    #[sea_orm(primary_key)]
+    pub id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

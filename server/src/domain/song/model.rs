@@ -34,7 +34,8 @@ pub struct SongRef {
 #[derive(Clone, Debug, Serialize, ToSchema)]
 pub struct SongCredit {
     pub artist: SimpleArtist,
-    pub role: CreditRoleRef,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub role: Option<CreditRoleRef>,
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]
@@ -46,6 +47,7 @@ pub struct LocalizedTitle {
 #[derive(Deserialize, ToSchema)]
 pub struct NewSong {
     pub title: EntityIdent,
+    pub artists: Option<Vec<i32>>,
     pub credits: Option<Vec<NewSongCredit>>,
     pub languages: Option<Vec<i32>>,
     pub localized_titles: Option<Vec<NewLocalizedName>>,
@@ -54,7 +56,8 @@ pub struct NewSong {
 #[derive(Deserialize, ToSchema)]
 pub struct NewSongCredit {
     pub artist_id: i32,
-    pub role_id: i32,
+    #[serde(default)]
+    pub role_id: Option<i32>,
 }
 
 impl CorrectionEntity for NewSong {

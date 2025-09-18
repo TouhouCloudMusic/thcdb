@@ -4,9 +4,10 @@ use entity::enums::StorageBackend;
 use entity::sea_orm_active_enums::ReleaseImageType;
 use entity::song::Column::{Id, Title};
 use entity::{
-    artist, image, release_image, song, song_artist, song_credit,
-    song_credit_history, song_history, song_language, song_language_history,
-    song_localized_title, song_localized_title_history, song_lyrics,
+    artist, image, release_image, song, song_artist, song_artist_history,
+    song_credit, song_credit_history, song_history, song_language,
+    song_language_history, song_localized_title, song_localized_title_history,
+    song_lyrics,
 };
 use impls::apply_update;
 use itertools::{Itertools, izip};
@@ -194,7 +195,7 @@ async fn find_many_impl(
 }
 
 async fn load_credit_roles(
-    role_ids: &[i32],
+    role_ids: &[Option<i32>],
     db: &impl ConnectionTrait,
 ) -> Result<HashMap<i32, CreditRoleRef>, DbErr> {
     use entity::credit_role;
@@ -204,7 +205,10 @@ async fn load_credit_roles(
     }
 
     let roles = credit_role::Entity::find()
-        .filter(credit_role::Column::Id.is_in(role_ids.iter().copied()))
+        .filter(
+            credit_role::Column::Id
+                .is_in(role_ids.iter().flatten().unique().copied()),
+        )
         .all(db)
         .await?;
 
@@ -286,11 +290,12 @@ fn build_song_credits(
     credits
         .into_iter()
         .filter_map(|c| {
-            artist_map
-                .get(&c.artist_id)
-                .cloned()
-                .zip(role_map.get(&c.role_id).cloned())
-                .map(|(artist, role)| SongCredit { artist, role })
+            let artist = artist_map.get(&c.artist_id).cloned()?;
+            let role = c
+                .role_id
+                .and_then(|role_id| role_map.get(&role_id).cloned());
+
+            Some(SongCredit { artist, role })
         })
         .collect()
 }
@@ -344,6 +349,11 @@ async fn create_song_and_relations(
 
     let song = song_model.insert(tx).await?;
 
+    // artists
+    if let Some(artists) = &data.artists {
+        create_artists(song.id, artists, tx).await?;
+    }
+
     if let Some(credits) = &data.credits {
         create_credits(song.id, credits, tx).await?;
     }
@@ -370,6 +380,11 @@ async fn create_song_history_and_relations(
 
     let history = history_model.insert(tx).await?;
 
+    // artists history
+    if let Some(artists) = &data.artists {
+        create_artist_histories(history.id, artists, tx).await?;
+    }
+
     if let Some(credits) = &data.credits {
         create_credit_histories(history.id, credits, tx).await?;
     }
@@ -386,6 +401,49 @@ async fn create_song_history_and_relations(
     Ok(history)
 }
 
+async fn create_artists(
+    song_id: i32,
+    artists: &[i32],
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    if artists.is_empty() {
+        return Ok(());
+    }
+
+    let models = artists.iter().map(|artist_id| song_artist::ActiveModel {
+        song_id: song_id.into_active_value(),
+        artist_id: (*artist_id).into_active_value(),
+    });
+
+    song_artist::Entity::insert_many(models).exec(tx).await?;
+
+    Ok(())
+}
+
+async fn create_artist_histories(
+    history_id: i32,
+    artists: &[i32],
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    if artists.is_empty() {
+        return Ok(());
+    }
+
+    let models =
+        artists
+            .iter()
+            .map(|artist_id| song_artist_history::ActiveModel {
+                history_id: history_id.into_active_value(),
+                artist_id: (*artist_id).into_active_value(),
+            });
+
+    song_artist_history::Entity::insert_many(models)
+        .exec(tx)
+        .await?;
+
+    Ok(())
+}
+
 async fn create_credits(
     song_id: i32,
     credits: &[NewSongCredit],
@@ -396,9 +454,10 @@ async fn create_credits(
     }
 
     let models = credits.iter().map(|credit| song_credit::ActiveModel {
+        id: NotSet,
         artist_id: Set(credit.artist_id),
         song_id: Set(song_id),
-        role_id: Set(credit.role_id),
+        role_id: credit.role_id.into_active_value(),
     });
 
     song_credit::Entity::insert_many(models).exec(tx).await?;
@@ -419,9 +478,10 @@ async fn create_credit_histories(
         credits
             .iter()
             .map(|credit| song_credit_history::ActiveModel {
+                id: NotSet,
                 artist_id: Set(credit.artist_id),
                 history_id: Set(history_id),
-                role_id: Set(credit.role_id),
+                role_id: credit.role_id.into_active_value(),
             });
 
     song_credit_history::Entity::insert_many(models)

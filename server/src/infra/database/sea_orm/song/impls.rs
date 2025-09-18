@@ -1,7 +1,7 @@
 use entity::{
-    correction_revision, song, song_credit, song_credit_history, song_history,
-    song_language, song_language_history, song_localized_title,
-    song_localized_title_history,
+    correction_revision, song, song_artist, song_artist_history, song_credit,
+    song_credit_history, song_history, song_language, song_language_history,
+    song_localized_title, song_localized_title_history,
 };
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
@@ -39,9 +39,43 @@ pub async fn apply_update(
     let history_id = revision.entity_history_id;
 
     // Update related entities
+    update_artists(song_id, history_id, tx).await?;
     update_credits(song_id, history_id, tx).await?;
     update_languages(song_id, history_id, tx).await?;
     update_localized_titles(song_id, history_id, tx).await?;
+
+    Ok(())
+}
+
+async fn update_artists(
+    song_id: i32,
+    history_id: i32,
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    // Delete existing artists
+    song_artist::Entity::delete_many()
+        .filter(song_artist::Column::SongId.eq(song_id))
+        .exec(tx)
+        .await?;
+
+    // Get history artist records
+    let artists = song_artist_history::Entity::find()
+        .filter(song_artist_history::Column::HistoryId.eq(history_id))
+        .all(tx)
+        .await?;
+
+    if artists.is_empty() {
+        return Ok(());
+    }
+
+    // Create new models from history
+    let models = artists.iter().map(|a| song_artist::ActiveModel {
+        song_id: Set(song_id),
+        artist_id: Set(a.artist_id),
+    });
+
+    // Insert new models
+    song_artist::Entity::insert_many(models).exec(tx).await?;
 
     Ok(())
 }
@@ -69,6 +103,7 @@ async fn update_credits(
 
     // Create new models from history
     let models = credits.iter().map(|credit| song_credit::ActiveModel {
+        id: NotSet,
         song_id: Set(song_id),
         artist_id: Set(credit.artist_id),
         role_id: Set(credit.role_id),
