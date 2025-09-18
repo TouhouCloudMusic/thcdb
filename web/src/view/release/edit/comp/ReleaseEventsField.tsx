@@ -4,12 +4,12 @@ import { Trans } from "@lingui-solid/solid/macro"
 import type { SimpleEvent } from "@thc/api"
 import { For } from "solid-js"
 import { createStore } from "solid-js/store"
-import { Cross1Icon } from "solid-radix-icons"
+import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
-import { FieldArrayFallback } from "~/component/form/FieldArrayFallback"
+import { FieldArrayFallback } from "~/component/form"
 import { EventSearchDialog } from "~/component/form/SearchDialog"
 
 import { EventInfo } from "./EntityInfo"
@@ -41,7 +41,10 @@ export function ReleaseEventsField(props: {
 					<Trans>Events</Trans>
 				</FormComp.Label>
 				<div class="flex gap-2">
-					<EventSearchDialog onSelect={addEvent} />
+					<EventSearchDialog
+						onSelect={addEvent}
+						icon={<PlusIcon class="size-4 text-slate-600" />}
+					/>
 				</div>
 			</div>
 			<ul class="flex h-full flex-col gap-2">

@@ -30,8 +30,8 @@ export const DatePrecision = v.union(
 export type DatePrecision = v.InferInput<typeof DatePrecision>
 
 export const NewLocalizedName = v.object({
-	language_id: EntityId,
-	name: EntityIdent,
+	language_id: v.message(EntityId, "Language not selected"),
+	name: v.message(EntityIdent, "Name is required and must be non-empty"),
 })
 
 export const Year = v.pipe(v.number(), v.integer())

@@ -49,7 +49,7 @@ export function ArtistFormActions(props: ArtistFormFormActionsProps) {
 							id={field.name}
 							value={field.value}
 						/>
-						<InputField.Error message={field.error} />
+						<InputField.Error>{field.error}</InputField.Error>
 					</InputField.Root>
 				)}
 			</M.Field>
@@ -65,15 +65,14 @@ export function ArtistFormActions(props: ArtistFormFormActionsProps) {
 						: t`Submit`}
 				</Button>
 
-				<FormComp.ErrorMessage message={formStore.response.message} />
-				<FormComp.ErrorMessage
-					class="text-lg"
-					message={
-						props.mutation.isError
-							? t`Error: ${props.mutation.error.message}`
-							: undefined
-					}
-				/>
+				<FormComp.ErrorMessage>
+					{formStore.response.message}
+				</FormComp.ErrorMessage>
+				<FormComp.ErrorMessage class="text-lg">
+					{props.mutation.isError
+						? t`Error: ${props.mutation.error.message}`
+						: undefined}
+				</FormComp.ErrorMessage>
 			</div>
 		</>
 	)

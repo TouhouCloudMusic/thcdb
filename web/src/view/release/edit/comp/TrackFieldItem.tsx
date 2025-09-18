@@ -3,7 +3,7 @@ import { Trans } from "@lingui-solid/solid/macro"
 import type { ReleaseTrack, SimpleArtist, Song } from "@thc/api"
 import { For } from "solid-js"
 import { createStore } from "solid-js/store"
-import { Cross1Icon, Pencil1Icon } from "solid-radix-icons"
+import { Cross1Icon, Pencil1Icon, PlusIcon } from "solid-radix-icons"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
@@ -224,6 +224,7 @@ function TrackArtistsField(props: {
 				<ArtistSearchDialog
 					onSelect={props.onAdd}
 					dataFilter={(a: SimpleArtist) => !props.hasArtist(a)}
+					icon={<PlusIcon class="size-4 text-slate-600" />}
 				/>
 			</div>
 

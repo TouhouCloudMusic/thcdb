@@ -17,6 +17,7 @@ type ArtistSearchDialogProps = {
 	disabled?: boolean
 	queryFilter?: ArtistCommonFilter
 	dataFilter?: (artist: Artist) => boolean
+	icon: JSX.Element
 }
 
 export function ArtistSearchDialog(
@@ -57,7 +58,7 @@ export function ArtistSearchDialog(
 					class="h-max p-2"
 					disabled={props.disabled}
 				>
-					<PlusIcon class="size-4 text-slate-600" />
+					{props.icon}
 				</Dialog.Trigger>
 			}
 			value={searchKeyword()}

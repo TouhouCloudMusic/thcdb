@@ -76,13 +76,12 @@ function FormContent(props: Props) {
 
 	useBlocker({
 		shouldBlockFn() {
-			if (form.isSubmitted) return false
-			if (form.isDirty) return true
+			if (form.isSubmitted || !form.isDirty) return false
 
-			const msg = confirm(
+			const stay = confirm(
 				t`Are you sure you want to leave this page? Your changes will be lost.`,
 			)
-			return !msg
+			return !stay
 		},
 	})
 

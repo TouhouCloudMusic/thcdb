@@ -1,7 +1,6 @@
-import type { components, operations } from "../../gen"
 import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
-import { adaptApi, adaptApiResult, adaptApiResultOptional } from "../../shared"
+import { adaptApiResult, adaptApiResultMessage } from "../../shared"
 
 export async function findSongById(options: Opt<"find_song_by_id">) {
 	const res = await FetchClient.GET("/song/{id}", {
@@ -17,4 +16,21 @@ export async function findSongByKeyword(options: Opt<"find_song_by_keyword">) {
 	})
 
 	return adaptApiResult(res)
+}
+
+export async function create(options: Opt<"create_song">) {
+	const res = await FetchClient.POST("/song", {
+		body: options.body,
+	})
+
+	return adaptApiResultMessage(res)
+}
+
+export async function update(options: Opt<"update_song">) {
+	const res = await FetchClient.POST("/song/{id}", {
+		params: { path: options.path },
+		body: options.body,
+	})
+
+	return adaptApiResultMessage(res)
 }

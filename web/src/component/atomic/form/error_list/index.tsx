@@ -10,7 +10,14 @@ export function ErrorList(props: {
 }): JSX.Element {
 	return (
 		<For each={props.errors}>
-			{(error) => <ErrorMessage class={props.class}>{error}</ErrorMessage>}
+			{(error) => (
+				<ErrorMessage
+					class={props.class}
+					as="li"
+				>
+					{error}
+				</ErrorMessage>
+			)}
 		</For>
 	)
 }

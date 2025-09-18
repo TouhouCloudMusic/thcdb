@@ -4,13 +4,13 @@ import type { Artist, ArtistCommonFilter } from "@thc/api"
 import { createMemo } from "solid-js"
 import type { JSX } from "solid-js"
 import { createStore, produce } from "solid-js/store"
-import { Cross1Icon } from "solid-radix-icons"
+import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 
 import { Divider } from "~/component/atomic/Divider"
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { Intersperse } from "~/component/data/Intersperse"
-import { FieldArrayFallback } from "~/component/form/FieldArrayFallback"
+import { FieldArrayFallback } from "~/component/form"
 import { ArtistSearchDialog } from "~/component/form/SearchDialog"
 
 import { useArtistForm } from "../../context"
@@ -93,6 +93,7 @@ export function ArtistFormMembership(): JSX.Element {
 					dataFilter={(artist) =>
 						!membership.inner.some((m) => m.id === artist.id)
 					}
+					icon={<PlusIcon class="size-4 text-slate-600" />}
 				/>
 			</div>
 			<ul class="flex h-full flex-col">

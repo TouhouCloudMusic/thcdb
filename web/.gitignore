@@ -1,4 +1,5 @@
 # Environment
+.envrc
 .env.local
 
 # Dependencies

@@ -156,7 +156,7 @@ export function Label(props: LabelProps) {
 	return <K_TextField.Label {...localProps} />
 }
 
-export function Error(props: FormComp.ErrorMessageProps) {
+export function Error(props: FormComp.ErrorMessageProps<"span">) {
 	const context = assertContext(Context)
 
 	createEffect(() => {

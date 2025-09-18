@@ -4,7 +4,7 @@ import type { Label } from "@thc/api"
 import { LabelQueryOption } from "@thc/query"
 import { debounce, id } from "@thc/toolkit"
 import { createSignal, createMemo } from "solid-js"
-import type { JSX, ParentProps } from "solid-js"
+import type { JSX } from "solid-js"
 import { PlusIcon } from "solid-radix-icons"
 
 import { Button } from "~/component/atomic/button"
@@ -15,11 +15,10 @@ import { EntitySearchDialog } from "./EntitySearchDialog"
 type LabelSearchDialogProps = {
 	onSelect: (label: Label) => void
 	disabled?: boolean
+	icon: JSX.Element
 }
 
-export function LabelSearchDialog(
-	props: ParentProps<LabelSearchDialogProps>,
-): JSX.Element {
+export function LabelSearchDialog(props: LabelSearchDialogProps): JSX.Element {
 	const [searchKeyword, setSearchKeyword] = createSignal("")
 
 	const onInput = debounce(300, (e: Event) => {
@@ -47,7 +46,7 @@ export function LabelSearchDialog(
 					class="h-max p-2"
 					disabled={props.disabled}
 				>
-					{props.children}
+					{props.icon}
 				</Dialog.Trigger>
 			}
 			value={searchKeyword()}

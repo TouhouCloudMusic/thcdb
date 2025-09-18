@@ -18,9 +18,8 @@ export function useReleaseFormSubmission(props: Props) {
 	const navigator = useNavigate()
 	const mutation = ReleaseMutation.getInstance()
 
+	// TODO: error handling
 	const handleSubmit = (data: InferOutput<typeof NewReleaseCorrection>) => {
-		console.log(data)
-
 		if (props.type === "new") {
 			mutation.mutate(
 				{ type: "Create", data },
@@ -29,7 +28,9 @@ export function useReleaseFormSubmission(props: Props) {
 						void navigator({ to: "/" })
 					},
 					onError(error) {
-						console.error("Failed to create release:", error)
+						if (import.meta.env.DEV) {
+							console.error("Failed to create release:", error)
+						}
 					},
 				},
 			)
@@ -41,7 +42,9 @@ export function useReleaseFormSubmission(props: Props) {
 						void navigator({ to: `/release/${props.release.id}` })
 					},
 					onError(error) {
-						console.error("Failed to update release:", error)
+						if (import.meta.env.DEV) {
+							console.error("Failed to update release:", error)
+						}
 					},
 				},
 			)

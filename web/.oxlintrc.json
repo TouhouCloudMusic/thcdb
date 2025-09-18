@@ -143,6 +143,8 @@
 		"unicorn/no-anonymous-default-export": "off",
 		"unicorn/no-array-reduce": "off",
 		"unicorn/no-array-method-this-argument": "off",
+		// Dupe
+		"unicorn/no-nested-ternary": "off",
 		"unicorn/numeric-separators-style": "off",
 		"unicorn/prefer-spread": "off"
 	},

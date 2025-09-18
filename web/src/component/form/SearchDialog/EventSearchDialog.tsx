@@ -17,6 +17,7 @@ type SimpleEvent = TEvent
 type Props = {
 	onSelect: (event: SimpleEvent) => void
 	disabled?: boolean
+	icon: JSX.Element
 }
 
 export function EventSearchDialog(props: Props): JSX.Element {
@@ -47,7 +48,7 @@ export function EventSearchDialog(props: Props): JSX.Element {
 					class="h-max p-2"
 					disabled={props.disabled}
 				>
-					<PlusIcon class="size-4 text-slate-600" />
+					{props.icon}
 				</Dialog.Trigger>
 			}
 			value={searchKeyword()}

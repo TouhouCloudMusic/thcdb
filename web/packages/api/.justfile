@@ -1,7 +1,7 @@
 set dotenv-load
 
 gen:
-  rm ./src/gen.ts
+  rm -f ./src/gen.ts
   pnpm exec openapi-typescript $API_SCHEMA -o ./src/gen.ts \
   --alphabetize \
   --array-length \

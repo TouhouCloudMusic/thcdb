@@ -54,7 +54,7 @@ export function Button(props: Props) {
 
 	let final_props: Props = mergeProps({ type: "button" as const }, props, {
 		get class() {
-			let size_class = SizeClass[props.size ?? Size.default()]
+			let size_class = props.size ? SizeClass[props.size] : undefined
 			let variant = props.variant ?? "Secondary"
 
 			let variant_class = VariantClass[variant]

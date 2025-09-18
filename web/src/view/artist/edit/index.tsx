@@ -91,16 +91,12 @@ function Form(props: Props) {
 
 	useBlocker({
 		shouldBlockFn() {
-			if (!formStore.dirty) {
-				return false
-			}
+			if (formStore.submitted || !formStore.dirty) return false
 
-			const msg = confirm(
+			const stay = confirm(
 				t`Are you sure you want to leave this page? Your changes will be lost.`,
 			)
-
-			// bro confirmation = unblock...
-			return !msg
+			return !stay
 		},
 	})
 
