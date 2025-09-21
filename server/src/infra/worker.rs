@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use fred::prelude::ListInterface;
+use fred::prelude::{Client, ClientLike, ListInterface, Options};
 
 use super::storage::file::REMOVE_FILE_FAIELD_KEY;
 use crate::utils::retry_async;
@@ -16,9 +16,16 @@ impl Worker {
 }
 
 fn init_remove_file(redis_pool: fred::prelude::Pool) {
+    let client = Client::clone_new(redis_pool.next()).with_options(&Options {
+        timeout: Duration::from_secs(0).into(),
+        ..Default::default()
+    });
+
     tokio::spawn(async move {
+        client.init().await.unwrap();
+        tracing::info!("File removal worker started");
         loop {
-            match redis_pool
+            match client
                 .brpop::<Option<String>, _>(REMOVE_FILE_FAIELD_KEY, 0.0)
                 .await
             {

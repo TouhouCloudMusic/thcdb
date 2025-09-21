@@ -1,4 +1,9 @@
-use fred::prelude::{ClientLike, Config, Error, Pool as RedisPool};
+use std::time::Duration;
+
+use fred::prelude::{
+    ClientLike, Config, ConnectionConfig, Error, PerformanceConfig,
+    Pool as RedisPool,
+};
 
 #[derive(Clone)]
 pub struct Pool {
@@ -9,7 +14,19 @@ impl Pool {
     pub async fn init(url: &str) -> Self {
         let mut config = Config::from_url(url).unwrap();
         config.fail_fast = true;
-        let pool = RedisPool::new(config, None, None, None, 6).unwrap();
+
+        let pool = RedisPool::new(
+            config,
+            PerformanceConfig {
+                default_command_timeout: Duration::from_millis(500),
+                ..Default::default()
+            }
+            .into(),
+            None,
+            None,
+            6,
+        )
+        .unwrap();
         pool.init().await.unwrap();
 
         let pong: String = pool.ping(None).await.unwrap();
