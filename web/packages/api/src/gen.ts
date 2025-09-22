@@ -1198,18 +1198,23 @@ export type components = {
             title: string;
         };
         Tag: {
-            alt_names: components["schemas"]["AlternativeName"][];
-            description?: string | null;
+            alt_names?: components["schemas"]["AlternativeName"][];
+            description: string;
             /** Format: int32 */
             id: number;
             name: string;
-            relations: components["schemas"]["TagRelation"][];
-            short_description?: string | null;
+            relations?: components["schemas"]["TagRelation"][];
+            short_description: string;
+            type: components["schemas"]["TagType"];
+        };
+        TagRef: {
+            /** Format: int32 */
+            id: number;
+            name: string;
             type: components["schemas"]["TagType"];
         };
         TagRelation: {
-            /** Format: int32 */
-            related_tag_id: number;
+            tag: components["schemas"]["TagRef"];
             type: components["schemas"]["TagRelationType"];
         };
         /** @enum {string} */
@@ -1348,6 +1353,7 @@ export type SongCredit = components['schemas']['SongCredit'];
 export type SongLyrics = components['schemas']['SongLyrics'];
 export type SongRef = components['schemas']['SongRef'];
 export type Tag = components['schemas']['Tag'];
+export type TagRef = components['schemas']['TagRef'];
 export type TagRelation = components['schemas']['TagRelation'];
 export type TagRelationType = components['schemas']['TagRelationType'];
 export type TagType = components['schemas']['TagType'];

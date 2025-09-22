@@ -4,23 +4,27 @@ import { twMerge } from "tailwind-merge"
 
 import { tw } from "~/utils"
 
+// TODO: border color
+export const INPUT_LIKE_BASE_CLASS = tw(`
+	bg-primary
+
+	rounded
+
+	border border-slate-300
+	aria-invalid:border-reimu-600
+
+	disabled:bg-slate-100
+
+	outline-1 outline-transparent -outline-offset-1
+	focus:outline-reimu-600
+	not-disabled:hover:outline-reimu-500
+
+	transition-all duration-100
+	`)
+
 export const INPUT_BASE_CLASSNAME = tw(`
-		text-slate-900 focus:text-primary
-		bg-primary
-		border border-slate-300
+		${INPUT_LIKE_BASE_CLASS}
 
-		disabled:bg-slate-100
-
-		rounded-sm
-
-		outline-[1.5px]
-		not-disabled:hover:outline-reimu-500
-		focus:outline-reimu-600
-
-		outline-transparent -outline-offset-1
-		aria-invalid:border-reimu-600
-
-		transition-all duration-100
 	`)
 
 export const INPUT_CLASSNAME = twMerge(INPUT_BASE_CLASSNAME, `pl-2 h-8`)

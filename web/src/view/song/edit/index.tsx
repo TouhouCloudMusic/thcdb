@@ -1,11 +1,10 @@
 import { Form, createForm, getAllErrors, getInput } from "@formisch/solid"
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
+import { useLingui } from "@lingui-solid/solid/macro"
 import { useBlocker } from "@tanstack/solid-router"
 import type { JSX } from "solid-js"
 import { createEffect, Show } from "solid-js"
-import { twJoin } from "tailwind-merge"
 
-import { Button } from "~/component/atomic/button"
+import { FormActionBar } from "~/component/form"
 import { NewSongCorrection } from "~/domain/song"
 import { PageLayout } from "~/layout/PageLayout"
 
@@ -111,35 +110,16 @@ function FormContent(props: Props) {
 					initCredits={props.type === "edit" ? (props.song.credits ?? []) : []}
 					class="col-span-2 row-start-5"
 				/>
-				<div></div>
 			</div>
-			<div class="sticky bottom-0 col-span-full mt-12 flex justify-end border-t border-slate-300 bg-white p-4">
-				<div class="grid grid-cols-2 gap-2">
-					<Button
-						variant="Tertiary"
-						class="px-3 py-1.5"
-						onClick={() => history.back()}
-					>
-						<Trans>Back</Trans>
-					</Button>
-					<Button
-						variant="Primary"
-						type="submit"
-						class={twJoin(
-							"px-3 py-1.5",
-							form.isSubmitting ? "cursor-wait opacity-80" : "",
-						)}
-						onClick={() => {
-							if (import.meta.env.DEV) {
-								const errs = getAllErrors(form)
-								console.log(errs)
-							}
-						}}
-					>
-						<Trans>{form.isSubmitting ? "Submitting" : "Submit"}</Trans>
-					</Button>
-				</div>
-			</div>
+			<FormActionBar
+				submitting={form.isSubmitting}
+				onSubmit={() => {
+					if (import.meta.env.DEV) {
+						const errs = getAllErrors(form)
+						console.log(errs)
+					}
+				}}
+			/>
 		</Form>
 	)
 }
