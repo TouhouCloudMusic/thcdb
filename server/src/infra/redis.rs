@@ -1,8 +1,7 @@
 use std::time::Duration;
 
 use fred::prelude::{
-    ClientLike, Config, ConnectionConfig, Error, PerformanceConfig,
-    Pool as RedisPool,
+    ClientLike, Config, Error, PerformanceConfig, Pool as RedisPool,
 };
 
 #[derive(Clone)]
