@@ -12,7 +12,7 @@
 	},
 	"dependencies": {
 		"@floating-ui/dom": "^1.7.3",
-		"@formisch/solid": "^0.3.1",
+		"@formisch/solid": "^0.4.0",
 		"@kobalte/core": "^0.13.11",
 		"@lingui-solid/solid": "^5.1.4",
 		"@modular-forms/solid": "^0.25.1",
