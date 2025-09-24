@@ -18,16 +18,7 @@ import { MembershipRoleField } from "./role"
 import { TenureFieldArray } from "./tenure"
 
 function createMembershipStore() {
-	let [membershipStore, setMembershipStore] = createStore([
-		{
-			id: 0,
-			name: "Foo",
-		},
-		{
-			id: 0,
-			name: "Boo",
-		},
-	] as Artist[])
+	let [membershipStore, setMembershipStore] = createStore([] as Artist[])
 
 	return {
 		get inner() {
