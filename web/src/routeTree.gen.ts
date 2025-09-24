@@ -13,6 +13,8 @@ import { Route as AuthRouteImport } from './route/auth'
 import { Route as AboutRouteImport } from './route/about'
 import { Route as IndexRouteImport } from './route/index'
 import { Route as TagNewRouteImport } from './route/tag/new'
+import { Route as TagMockRouteImport } from './route/tag/mock'
+import { Route as TagIdRouteImport } from './route/tag/$id'
 import { Route as SongNewRouteImport } from './route/song/new'
 import { Route as SongMockRouteImport } from './route/song/mock'
 import { Route as SongIdRouteImport } from './route/song/$id'
@@ -48,6 +50,16 @@ const IndexRoute = IndexRouteImport.update({
 const TagNewRoute = TagNewRouteImport.update({
   id: '/tag/new',
   path: '/tag/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TagMockRoute = TagMockRouteImport.update({
+  id: '/tag/mock',
+  path: '/tag/mock',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TagIdRoute = TagIdRouteImport.update({
+  id: '/tag/$id',
+  path: '/tag/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SongNewRoute = SongNewRouteImport.update({
@@ -101,9 +113,9 @@ const ArtistIdIndexRoute = ArtistIdIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const TagIdEditRoute = TagIdEditRouteImport.update({
-  id: '/tag/$id/edit',
-  path: '/tag/$id/edit',
-  getParentRoute: () => rootRouteImport,
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => TagIdRoute,
 } as any)
 const SongIdEditRoute = SongIdEditRouteImport.update({
   id: '/edit',
@@ -144,6 +156,8 @@ export interface FileRoutesByFullPath {
   '/song/$id': typeof SongIdRouteWithChildren
   '/song/mock': typeof SongMockRoute
   '/song/new': typeof SongNewRoute
+  '/tag/$id': typeof TagIdRouteWithChildren
+  '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
   '/profile/$username': typeof userProfileUsernameRoute
   '/profile/edit': typeof userProfileEditRoute
@@ -166,6 +180,8 @@ export interface FileRoutesByTo {
   '/song/$id': typeof SongIdRouteWithChildren
   '/song/mock': typeof SongMockRoute
   '/song/new': typeof SongNewRoute
+  '/tag/$id': typeof TagIdRouteWithChildren
+  '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
   '/profile/$username': typeof userProfileUsernameRoute
   '/profile/edit': typeof userProfileEditRoute
@@ -189,6 +205,8 @@ export interface FileRoutesById {
   '/song/$id': typeof SongIdRouteWithChildren
   '/song/mock': typeof SongMockRoute
   '/song/new': typeof SongNewRoute
+  '/tag/$id': typeof TagIdRouteWithChildren
+  '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
   '/(user)/profile_/$username': typeof userProfileUsernameRoute
   '/(user)/profile_/edit': typeof userProfileEditRoute
@@ -213,6 +231,8 @@ export interface FileRouteTypes {
     | '/song/$id'
     | '/song/mock'
     | '/song/new'
+    | '/tag/$id'
+    | '/tag/mock'
     | '/tag/new'
     | '/profile/$username'
     | '/profile/edit'
@@ -235,6 +255,8 @@ export interface FileRouteTypes {
     | '/song/$id'
     | '/song/mock'
     | '/song/new'
+    | '/tag/$id'
+    | '/tag/mock'
     | '/tag/new'
     | '/profile/$username'
     | '/profile/edit'
@@ -257,6 +279,8 @@ export interface FileRouteTypes {
     | '/song/$id'
     | '/song/mock'
     | '/song/new'
+    | '/tag/$id'
+    | '/tag/mock'
     | '/tag/new'
     | '/(user)/profile_/$username'
     | '/(user)/profile_/edit'
@@ -280,11 +304,12 @@ export interface RootRouteChildren {
   SongIdRoute: typeof SongIdRouteWithChildren
   SongMockRoute: typeof SongMockRoute
   SongNewRoute: typeof SongNewRoute
+  TagIdRoute: typeof TagIdRouteWithChildren
+  TagMockRoute: typeof TagMockRoute
   TagNewRoute: typeof TagNewRoute
   userProfileUsernameRoute: typeof userProfileUsernameRoute
   userProfileEditRoute: typeof userProfileEditRoute
   ArtistIdEditRoute: typeof ArtistIdEditRoute
-  TagIdEditRoute: typeof TagIdEditRoute
   ArtistIdIndexRoute: typeof ArtistIdIndexRoute
 }
 
@@ -316,6 +341,20 @@ declare module '@tanstack/solid-router' {
       path: '/tag/new'
       fullPath: '/tag/new'
       preLoaderRoute: typeof TagNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tag/mock': {
+      id: '/tag/mock'
+      path: '/tag/mock'
+      fullPath: '/tag/mock'
+      preLoaderRoute: typeof TagMockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tag/$id': {
+      id: '/tag/$id'
+      path: '/tag/$id'
+      fullPath: '/tag/$id'
+      preLoaderRoute: typeof TagIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/song/new': {
@@ -390,10 +429,10 @@ declare module '@tanstack/solid-router' {
     }
     '/tag/$id/edit': {
       id: '/tag/$id/edit'
-      path: '/tag/$id/edit'
+      path: '/edit'
       fullPath: '/tag/$id/edit'
       preLoaderRoute: typeof TagIdEditRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TagIdRoute
     }
     '/song/$id/edit': {
       id: '/song/$id/edit'
@@ -456,6 +495,16 @@ const SongIdRouteChildren: SongIdRouteChildren = {
 const SongIdRouteWithChildren =
   SongIdRoute._addFileChildren(SongIdRouteChildren)
 
+interface TagIdRouteChildren {
+  TagIdEditRoute: typeof TagIdEditRoute
+}
+
+const TagIdRouteChildren: TagIdRouteChildren = {
+  TagIdEditRoute: TagIdEditRoute,
+}
+
+const TagIdRouteWithChildren = TagIdRoute._addFileChildren(TagIdRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -469,11 +518,12 @@ const rootRouteChildren: RootRouteChildren = {
   SongIdRoute: SongIdRouteWithChildren,
   SongMockRoute: SongMockRoute,
   SongNewRoute: SongNewRoute,
+  TagIdRoute: TagIdRouteWithChildren,
+  TagMockRoute: TagMockRoute,
   TagNewRoute: TagNewRoute,
   userProfileUsernameRoute: userProfileUsernameRoute,
   userProfileEditRoute: userProfileEditRoute,
   ArtistIdEditRoute: ArtistIdEditRoute,
-  TagIdEditRoute: TagIdEditRoute,
   ArtistIdIndexRoute: ArtistIdIndexRoute,
 }
 export const routeTree = rootRouteImport
