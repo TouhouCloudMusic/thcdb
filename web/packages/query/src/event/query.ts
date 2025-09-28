@@ -2,6 +2,21 @@ import { queryOptions } from "@tanstack/solid-query"
 import { EventApi } from "@thc/api"
 import { Either } from "effect"
 
+export function findById(id: number) {
+	return queryOptions({
+		queryKey: ["event::info", id],
+		queryFn: async () => {
+			const result = await EventApi.findEventById({
+				path: { id },
+			})
+			return Either.getOrThrowWith(result, (error) => {
+				throw error
+			})
+		},
+		throwOnError: true,
+	})
+}
+
 export function findByKeyword(keyword: string) {
 	return queryOptions({
 		queryKey: ["event::keyword", keyword],

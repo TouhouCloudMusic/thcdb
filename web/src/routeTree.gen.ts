@@ -21,6 +21,8 @@ import { Route as SongIdRouteImport } from './route/song/$id'
 import { Route as ReleaseNewRouteImport } from './route/release/new'
 import { Route as ReleaseMockRouteImport } from './route/release/mock'
 import { Route as ReleaseIdRouteImport } from './route/release/$id'
+import { Route as EventMockRouteImport } from './route/event/mock'
+import { Route as EventIdRouteImport } from './route/event/$id'
 import { Route as ArtistNewRouteImport } from './route/artist/new'
 import { Route as userTest_avatar_uploadRouteImport } from './route/(user)/test_avatar_upload'
 import { Route as userProfileRouteImport } from './route/(user)/profile'
@@ -92,6 +94,16 @@ const ReleaseIdRoute = ReleaseIdRouteImport.update({
   path: '/release/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventMockRoute = EventMockRouteImport.update({
+  id: '/event/mock',
+  path: '/event/mock',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventIdRoute = EventIdRouteImport.update({
+  id: '/event/$id',
+  path: '/event/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArtistNewRoute = ArtistNewRouteImport.update({
   id: '/artist/new',
   path: '/artist/new',
@@ -150,6 +162,8 @@ export interface FileRoutesByFullPath {
   '/profile': typeof userProfileRoute
   '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/new': typeof ArtistNewRoute
+  '/event/$id': typeof EventIdRoute
+  '/event/mock': typeof EventMockRoute
   '/release/$id': typeof ReleaseIdRouteWithChildren
   '/release/mock': typeof ReleaseMockRoute
   '/release/new': typeof ReleaseNewRoute
@@ -174,6 +188,8 @@ export interface FileRoutesByTo {
   '/profile': typeof userProfileRoute
   '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/new': typeof ArtistNewRoute
+  '/event/$id': typeof EventIdRoute
+  '/event/mock': typeof EventMockRoute
   '/release/$id': typeof ReleaseIdRouteWithChildren
   '/release/mock': typeof ReleaseMockRoute
   '/release/new': typeof ReleaseNewRoute
@@ -199,6 +215,8 @@ export interface FileRoutesById {
   '/(user)/profile': typeof userProfileRoute
   '/(user)/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/new': typeof ArtistNewRoute
+  '/event/$id': typeof EventIdRoute
+  '/event/mock': typeof EventMockRoute
   '/release/$id': typeof ReleaseIdRouteWithChildren
   '/release/mock': typeof ReleaseMockRoute
   '/release/new': typeof ReleaseNewRoute
@@ -225,6 +243,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/test_avatar_upload'
     | '/artist/new'
+    | '/event/$id'
+    | '/event/mock'
     | '/release/$id'
     | '/release/mock'
     | '/release/new'
@@ -249,6 +269,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/test_avatar_upload'
     | '/artist/new'
+    | '/event/$id'
+    | '/event/mock'
     | '/release/$id'
     | '/release/mock'
     | '/release/new'
@@ -273,6 +295,8 @@ export interface FileRouteTypes {
     | '/(user)/profile'
     | '/(user)/test_avatar_upload'
     | '/artist/new'
+    | '/event/$id'
+    | '/event/mock'
     | '/release/$id'
     | '/release/mock'
     | '/release/new'
@@ -298,6 +322,8 @@ export interface RootRouteChildren {
   userProfileRoute: typeof userProfileRoute
   userTest_avatar_uploadRoute: typeof userTest_avatar_uploadRoute
   ArtistNewRoute: typeof ArtistNewRoute
+  EventIdRoute: typeof EventIdRoute
+  EventMockRoute: typeof EventMockRoute
   ReleaseIdRoute: typeof ReleaseIdRouteWithChildren
   ReleaseMockRoute: typeof ReleaseMockRoute
   ReleaseNewRoute: typeof ReleaseNewRoute
@@ -397,6 +423,20 @@ declare module '@tanstack/solid-router' {
       path: '/release/$id'
       fullPath: '/release/$id'
       preLoaderRoute: typeof ReleaseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/event/mock': {
+      id: '/event/mock'
+      path: '/event/mock'
+      fullPath: '/event/mock'
+      preLoaderRoute: typeof EventMockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/event/$id': {
+      id: '/event/$id'
+      path: '/event/$id'
+      fullPath: '/event/$id'
+      preLoaderRoute: typeof EventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/artist/new': {
@@ -512,6 +552,8 @@ const rootRouteChildren: RootRouteChildren = {
   userProfileRoute: userProfileRoute,
   userTest_avatar_uploadRoute: userTest_avatar_uploadRoute,
   ArtistNewRoute: ArtistNewRoute,
+  EventIdRoute: EventIdRoute,
+  EventMockRoute: EventMockRoute,
   ReleaseIdRoute: ReleaseIdRouteWithChildren,
   ReleaseMockRoute: ReleaseMockRoute,
   ReleaseNewRoute: ReleaseNewRoute,
