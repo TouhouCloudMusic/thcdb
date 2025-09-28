@@ -43,6 +43,7 @@ use std::sync::Arc;
 use infra::logger::Logger;
 use infra::singleton::APP_CONFIG;
 use infra::state::AppState;
+use snafu::{ResultExt, Whatever};
 
 use self::infra::worker::Worker;
 
@@ -54,8 +55,9 @@ mod alloc {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    dotenvy::dotenv()?;
+#[snafu::report]
+async fn main() -> Result<(), Whatever> {
+    dotenvy::dotenv().whatever_context("Failed to load .env file")?;
 
     Logger::init();
 
@@ -72,14 +74,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "0.0.0.0:{}",
         APP_CONFIG.app.port
     ))
-    .await?;
+    .await
+    .whatever_context("Failed to bind TCP listener")?;
 
     tracing::info!(
         "Server listening on http://127.0.0.1:{}",
         APP_CONFIG.app.port
     );
 
-    presentation::rest::listen(listener, Arc::new(state)).await?;
+    presentation::rest::listen(listener, Arc::new(state))
+        .await
+        .whatever_context("Failed to start REST listener")?;
 
     Ok(())
 }
