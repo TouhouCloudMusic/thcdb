@@ -17,7 +17,7 @@ use snafu::ResultExt;
 use crate::domain::event::model::{AlternativeName, Event, NewEvent};
 use crate::domain::event::repo::{Repo, TxRepo};
 use crate::domain::repository::Connection;
-use crate::domain::shared::model::DateWithPrecision;
+use crate::domain::shared::model::{DateWithPrecision, Location};
 
 impl<T> Repo for T
 where
@@ -68,8 +68,13 @@ async fn find_many_impl(
         .map(|(event, alt_name)| Event {
             id: event.id,
             name: event.name,
-            short_description: Some(event.short_description),
-            description: Some(event.description),
+            short_description: event.short_description,
+            description: event.description,
+            location: Location {
+                country: event.location_country,
+                province: event.location_province,
+                city: event.location_city,
+            },
             start_date: match (event.start_date, event.start_date_precision) {
                 (Some(date), precision) => Some(DateWithPrecision {
                     value: date,
@@ -153,6 +158,21 @@ async fn create_event_and_relations(
             .end_date
             .map(|d| d.precision)
             .into_active_value(),
+        location_country: data
+            .location
+            .as_ref()
+            .and_then(|l| l.country.clone())
+            .into_active_value(),
+        location_province: data
+            .location
+            .as_ref()
+            .and_then(|l| l.province.clone())
+            .into_active_value(),
+        location_city: data
+            .location
+            .as_ref()
+            .and_then(|l| l.city.clone())
+            .into_active_value(),
     };
 
     let event = event_model.insert(tx).await?;
@@ -190,6 +210,21 @@ async fn create_event_history_and_relations(
         end_date_precision: data
             .end_date
             .map(|d| d.precision)
+            .into_active_value(),
+        location_country: data
+            .location
+            .as_ref()
+            .and_then(|l| l.country.clone())
+            .into_active_value(),
+        location_province: data
+            .location
+            .as_ref()
+            .and_then(|l| l.province.clone())
+            .into_active_value(),
+        location_city: data
+            .location
+            .as_ref()
+            .and_then(|l| l.city.clone())
             .into_active_value(),
     };
 
@@ -283,6 +318,9 @@ async fn apply_correction(
         start_date_precision: Set(history.start_date_precision),
         end_date: Set(history.end_date),
         end_date_precision: Set(history.end_date_precision),
+        location_country: Set(history.location_country),
+        location_province: Set(history.location_province),
+        location_city: Set(history.location_city),
     };
 
     active_model.update(tx).await?;
