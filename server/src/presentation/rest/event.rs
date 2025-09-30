@@ -24,8 +24,8 @@ const TAG: &str = "Event";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
-        .routes(routes!(create))
-        .routes(routes!(upsert_correction))
+        .routes(routes!(create_event))
+        .routes(routes!(upsert_event_correction))
         .routes(routes!(find_event_by_id))
         .routes(routes!(find_event_by_keyword))
 }
@@ -86,7 +86,7 @@ async fn find_event_by_keyword(
         CreateError
     ),
 )]
-async fn create(
+async fn create_event(
     CurrentUser(user): CurrentUser,
     State(service): State<state::EventService>,
     Json(dto): Json<NewCorrectionDto<NewEvent>>,
@@ -107,7 +107,7 @@ async fn create(
         event::UpsertCorrectionError
     ),
 )]
-async fn upsert_correction(
+async fn upsert_event_correction(
     CurrentUser(user): CurrentUser,
     State(service): State<state::EventService>,
     Path(id): Path<i32>,
