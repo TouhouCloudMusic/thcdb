@@ -221,7 +221,7 @@ export type paths = {
         };
         get: operations["find_event_by_keyword"];
         put?: never;
-        post: operations["create"];
+        post: operations["create_event"];
         delete?: never;
         options?: never;
         head?: never;
@@ -237,7 +237,7 @@ export type paths = {
         };
         get: operations["find_event_by_id"];
         put?: never;
-        post: operations["upsert_correction"];
+        post: operations["upsert_event_correction"];
         delete?: never;
         options?: never;
         head?: never;
@@ -667,12 +667,13 @@ export type components = {
         Data_Event: {
             data: {
                 alternative_names?: components["schemas"]["AlternativeName"][];
-                description?: string | null;
+                description?: string;
                 end_date?: null | components["schemas"]["DateWithPrecision"];
                 /** Format: int32 */
                 id: number;
-                name: string;
-                short_description?: string | null;
+                location?: components["schemas"]["Location"];
+                name?: string;
+                short_description?: string;
                 start_date?: null | components["schemas"]["DateWithPrecision"];
             };
             /** @enum {string} */
@@ -781,12 +782,13 @@ export type components = {
         EntityIdent: string;
         Event: {
             alternative_names?: components["schemas"]["AlternativeName"][];
-            description?: string | null;
+            description?: string;
             end_date?: null | components["schemas"]["DateWithPrecision"];
             /** Format: int32 */
             id: number;
-            name: string;
-            short_description?: string | null;
+            location?: components["schemas"]["Location"];
+            name?: string;
+            short_description?: string;
             start_date?: null | components["schemas"]["DateWithPrecision"];
         };
         /** @enum {string} */
@@ -894,6 +896,7 @@ export type components = {
                 alternative_names?: string[] | null;
                 description?: string | null;
                 end_date?: null | components["schemas"]["DateWithPrecision"];
+                location?: null | components["schemas"]["Location"];
                 name: components["schemas"]["EntityIdent"];
                 short_description?: string | null;
                 start_date?: null | components["schemas"]["DateWithPrecision"];
@@ -985,6 +988,7 @@ export type components = {
             alternative_names?: string[] | null;
             description?: string | null;
             end_date?: null | components["schemas"]["DateWithPrecision"];
+            location?: null | components["schemas"]["Location"];
             name: components["schemas"]["EntityIdent"];
             short_description?: string | null;
             start_date?: null | components["schemas"]["DateWithPrecision"];
@@ -2200,7 +2204,7 @@ export interface operations {
             };
         };
     };
-    create: {
+    create_event: {
         parameters: {
             query?: never;
             header?: never;
@@ -2298,7 +2302,7 @@ export interface operations {
             };
         };
     };
-    upsert_correction: {
+    upsert_event_correction: {
         parameters: {
             query?: never;
             header?: never;
@@ -3935,9 +3939,9 @@ export enum ApiPaths {
     find_credit_role_by_id = "/credit-role/{id}",
     upsert_credit_role_correction = "/credit-role/{id}",
     find_event_by_keyword = "/event",
-    create = "/event",
+    create_event = "/event",
     find_event_by_id = "/event/{id}",
-    upsert_correction = "/event/{id}",
+    upsert_event_correction = "/event/{id}",
     health_check = "/health_check",
     find_label_by_keyword = "/label",
     create_label = "/label",

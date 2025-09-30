@@ -113,6 +113,7 @@
 			{ "allow": ["cropperjs", "**/*.css"] }
 		],
 		"import/prefer-default-export": "off",
+		"import/no-named-export": "off",
 
 		"oxc/no-barrel-file": "off",
 		"oxc/no-const-enum": "off",

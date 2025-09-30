@@ -1,3 +1,4 @@
+import { DateExt } from "@thc/toolkit/data"
 import dayjs from "dayjs"
 import { createEffect, createMemo, on } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -10,6 +11,7 @@ import type {
 
 export interface DateWithPrecisionProps {
 	class?: string
+	value?: TDateWithPrecision.In
 	setValue(val?: TDateWithPrecision.In): void
 }
 
@@ -21,9 +23,8 @@ interface Store {
 
 const THIS_YEAR = new Date().getFullYear()
 
-const onInput =
-	(f: (value?: number) => void) =>
-	(
+function onInput(f: (value?: number) => void) {
+	return (
 		e: InputEvent & {
 			currentTarget: HTMLInputElement
 			target: Element
@@ -33,6 +34,7 @@ const onInput =
 
 		f(value)
 	}
+}
 
 function getPrecision(store: Store) {
 	if (store.d) {
@@ -47,8 +49,21 @@ function getPrecision(store: Store) {
 	return
 }
 
+function valueToStore(value?: TDateWithPrecision.In): Store {
+	if (!value) {
+		return {}
+	}
+
+	const year = value.value.getFullYear()
+	const month =
+		value.precision === "Year" ? undefined : value.value.getMonth() + 1
+	const day = value.precision === "Day" ? value.value.getDate() : undefined
+
+	return { y: year, m: month, d: day }
+}
+
 export function DateWithPrecision(props: DateWithPrecisionProps) {
-	const [store, setStore] = createStore<Store>({})
+	const [store, setStore] = createStore<Store>(valueToStore(props.value))
 
 	const maxDay = createMemo(() =>
 		store.y && store.m
@@ -72,12 +87,24 @@ export function DateWithPrecision(props: DateWithPrecisionProps) {
 		setStore("d", val)
 	}
 
-	const date = createMemo(() =>
-		store.y ? new Date(store.y, (store.m ?? 1) - 1, store.d) : undefined,
-	)
+	const date = createMemo(() => {
+		if (!store.y) return
+		const year = store.y
+		const month = store.m ?? 1
+		const day = store.d ?? 1
+		return DateExt.fromYMD(year, month, day)
+	})
 
 	const precision = createMemo<DatePrecision | undefined>(() =>
 		getPrecision(store),
+	)
+
+	createEffect(
+		on(
+			() => props.value,
+			(value) => setStore(valueToStore(value)),
+			{ defer: true },
+		),
 	)
 
 	createEffect(

@@ -46,15 +46,17 @@ function EventInfoHeader() {
 				<h1 class="text-3xl leading-tight font-light tracking-tight text-primary">
 					{ctx.event.name}
 				</h1>
-				<Show when={ctx.event.short_description}>
-					<p class="tracking-wide text-tertiary">
-						{ctx.event.short_description}
-					</p>
-				</Show>
+				<p class="tracking-wide text-tertiary">
+					{ctx.event.short_description ?? "Short description is not provided"}
+				</p>
 			</header>
 			<div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
-				<Show when={ctx.event.start_date}>
-					<span class="text-tertiary">Date</span>
+				<span class="text-tertiary">Date</span>
+
+				<Show
+					when={ctx.event.start_date}
+					fallback={<span>N/A</span>}
+				>
 					<div>
 						<span>{DateWithPrecision.display(ctx.event.start_date)}</span>
 						<Show when={ctx.event.end_date}>

@@ -13,9 +13,12 @@ export const Route = createFileRoute("/event/$id")({
 	component: RouteComponent,
 	loader: async ({ params }) => {
 		const parsedId = v.parse(EntityId, Number.parseInt(params.id, 10))
-		return await QUERY_CLIENT.ensureQueryData(
+		let data = await QUERY_CLIENT.ensureQueryData(
 			EventQueryOption.findById(parsedId),
 		)
+		if (O.isNone(data)) {
+			throw notFound()
+		}
 	},
 })
 
@@ -25,7 +28,7 @@ function RouteComponent() {
 	const query = useQuery(() => EventQueryOption.findById(eventId))
 
 	return (
-		<Show when={query.data && O.getOrThrowWith(query.data, () => notFound())}>
+		<Show when={query.isSuccess && O.getOrUndefined(query.data)}>
 			{(event) => <EventInfoPage event={event()} />}
 		</Show>
 	)

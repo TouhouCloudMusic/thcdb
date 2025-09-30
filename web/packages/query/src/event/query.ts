@@ -2,9 +2,14 @@ import { queryOptions } from "@tanstack/solid-query"
 import { EventApi } from "@thc/api"
 import { Either } from "effect"
 
+export const QUERY_KEYS = {
+	DETAIL_ID: "event::info",
+	DETAIL_KEYWORD: "event::keyword",
+}
+
 export function findById(id: number) {
 	return queryOptions({
-		queryKey: ["event::info", id],
+		queryKey: [QUERY_KEYS.DETAIL_ID, id],
 		queryFn: async () => {
 			const result = await EventApi.findEventById({
 				path: { id },
@@ -19,7 +24,7 @@ export function findById(id: number) {
 
 export function findByKeyword(keyword: string) {
 	return queryOptions({
-		queryKey: ["event::keyword", keyword],
+		queryKey: [QUERY_KEYS.DETAIL_KEYWORD, keyword],
 		queryFn: async () => {
 			const result = await EventApi.findEventByKeyword({
 				query: { keyword },
