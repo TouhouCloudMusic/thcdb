@@ -1,0 +1,1 @@
+-- We don't drop it because it's the right behavior and didn't make other changes

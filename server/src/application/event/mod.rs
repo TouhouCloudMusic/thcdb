@@ -1,10 +1,11 @@
 use entity::enums::CorrectionStatus;
+use garde::Validate;
 use macros::{ApiError, IntoErrorSchema};
 
 use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
-use crate::domain::event;
 use crate::domain::event::NewEvent;
 use crate::domain::repository::TransactionManager;
+use crate::domain::{ValidationError, event};
 use crate::infra;
 use crate::infra::error::Error;
 
@@ -14,6 +15,7 @@ pub struct Service<R> {
 }
 
 #[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+#[snafu(module)]
 pub enum CreateError {
     #[snafu(transparent)]
     Correction {
@@ -21,6 +23,10 @@ pub enum CreateError {
     },
     #[snafu(transparent)]
     Infra { source: infra::Error },
+    #[snafu(transparent)]
+    Validation {
+        source: ValidationError<garde::Report>,
+    },
 }
 
 impl<E> From<E> for CreateError
@@ -33,7 +39,7 @@ where
 }
 
 #[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
-
+#[snafu(module)]
 pub enum UpsertCorrectionError {
     #[snafu(transparent)]
     Correction {
@@ -41,6 +47,10 @@ pub enum UpsertCorrectionError {
     },
     #[snafu(transparent)]
     Infra { source: infra::Error },
+    #[snafu(transparent)]
+    Validation {
+        source: ValidationError<garde::Report>,
+    },
 }
 
 impl<E> From<E> for UpsertCorrectionError
@@ -80,6 +90,8 @@ where
         &self,
         correction: NewCorrection<NewEvent>,
     ) -> Result<(), CreateError> {
+        correction.data.validate().map_err(ValidationError::from)?;
+
         let tx_repo = self.repo.begin().await?;
 
         // TODO: Create entity in event repo, create correction in correction repo
@@ -114,6 +126,8 @@ where
         entity_id: i32,
         correction: NewCorrection<NewEvent>,
     ) -> Result<(), UpsertCorrectionError> {
+        correction.data.validate().map_err(ValidationError::from)?;
+
         let tx_repo = self.repo.begin().await?;
 
         let history_id = tx_repo.create_history(&correction.data).await?;
