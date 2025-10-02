@@ -2,7 +2,6 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::model::auth::{AuthCredential, UserRole, UserRoleEnum};
-use super::model::markdown::Markdown;
 use super::repository::{Connection, Transaction};
 use crate::infra::error::Error;
 
@@ -37,7 +36,7 @@ pub struct User {
     pub profile_banner_id: Option<i32>,
     pub last_login: chrono::DateTime<chrono::FixedOffset>,
     pub roles: Vec<UserRole>,
-    pub bio: Option<Markdown>,
+    pub bio: Option<String>,
 }
 
 impl User {

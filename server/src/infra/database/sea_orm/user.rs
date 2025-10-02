@@ -18,7 +18,6 @@ use sea_orm_migration::prelude::Alias;
 use super::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::domain;
 use crate::domain::model::auth::UserRoleEnum;
-use crate::domain::model::markdown::Markdown;
 use crate::domain::repository::Connection;
 use crate::domain::user::{
     NewUser, User, UserProfile, {self},
@@ -141,7 +140,7 @@ impl From<entity::user::Model> for User {
             profile_banner_id: value.profile_banner_id,
             last_login: value.last_login,
             roles: vec![],
-            bio: value.bio.map(Markdown::new_unchecked),
+            bio: value.bio,
         }
     }
 }
@@ -155,7 +154,7 @@ impl IntoActiveModel<ActiveModel> for User {
             avatar_id: Set(self.avatar_id),
             last_login: Set(self.last_login),
             profile_banner_id: Set(self.profile_banner_id),
-            bio: Set(self.bio.map(|x| x.to_string())),
+            bio: Set(self.bio),
         }
     }
 }
