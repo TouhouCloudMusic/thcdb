@@ -69,7 +69,6 @@ utoipa = { version = "5", features = [
 
 [build-dependencies]
 dotenvy.workspace = true
-git2              = "0.20.1"
 quote.workspace   = true
 syn.workspace     = true
 
@@ -118,7 +117,9 @@ derive_more = { version = "2.0.1", features = [
 ] }
 dotenvy.workspace = true
 enumset.workspace = true
-eros = { version = "0.2.0-rc.2", features = [ "min_specialization" ] }
+eros = { version = "0.2.0-rc.2", features = [
+    "min_specialization",
+] }
 fred = { version = "10.0" }
 frunk = { version = "0.4.3", features = [
     "std",
@@ -210,8 +211,8 @@ strip     = "debuginfo"
 opt-level = 3
 
 [profile.ra]
-incremental = false
-inherits    = "dev"
+# incremental = false
+inherits = "dev"
 
 [profile.release]
 codegen-units   = 1

@@ -57,8 +57,8 @@ mod alloc {
 #[tokio::main]
 #[snafu::report]
 async fn main() -> Result<(), Whatever> {
-    dotenvy::dotenv().whatever_context("Failed to load .env file")?;
-
+    // Load .env file if exists
+    let _ = dotenvy::dotenv();
     Logger::init();
 
     tracing::info!("Starting server");

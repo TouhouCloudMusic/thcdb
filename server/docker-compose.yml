@@ -1,41 +1,54 @@
 services:
   db:
-    image: postgres:17-alpine@sha256:f325a29ec9deb7039c5f07761d77d79d537dac836ecd99f982f6ca5476724604
+    image: postgres:18-alpine
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-appuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-appuser}
+      POSTGRES_DB: ${POSTGRES_DB:-appdb}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-appuser} -d ${POSTGRES_DB:-appdb}"]
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     networks:
-      - db
+      - backend
 
-  valkey:
-    image: valkey/valkey:latest@sha256:ff21bc0f8194dc9c105b769aeabf9585fea6a8ed649c0781caeac5cb3c247884
+  redis:
+    image: valkey/valkey:8-alpine
     restart: always
-    ports:
-      - "6379:6379"
+    command: valkey-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redisdata:/data
+    networks:
+      - backend
 
   app:
     build:
       context: .
-      target: production
     depends_on:
-      - db
-      - valkey
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
-      DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
-      valkey_URL: "valkey://valkey:6379"
+      SESSION_SECURE: ${SESSION_SECURE:-false}
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-changeme}"
+
+      DATABASE_URL: "postgres://${POSTGRES_USER:-appuser}:${POSTGRES_PASSWORD:-appuser}@db:5432/${POSTGRES_DB:-appdb}"
+      REDIS_URL: "redis://redis:6379"
     ports:
       - "12345:12345"
+    networks:
+      - backend
 
 networks:
-  db:
+  backend:
 
 volumes:
   pgdata:
+  redisdata:

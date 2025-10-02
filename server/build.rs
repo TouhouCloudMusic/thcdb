@@ -1,30 +1,16 @@
 use std::fs;
 
-use git2::Repository;
 use quote::ToTokens;
 use syn::{BinOp, Expr, Item, Lit, parse_file};
 
 fn main() {
     const LINE_BREAK: char = '\n';
 
-    let commit_hash = if let Ok(repo) = Repository::open(".")
-        && let Ok(head) = repo.head()
-    {
-        let commit = head.peel_to_commit().unwrap();
-        let hash = commit.id().to_string();
-        let short_hash = &hash[..7];
-
-        short_hash.to_string()
-    } else {
-        panic!("Unable get git commit hash");
-    };
-
     let rust_module_path = "src/constant.rs";
     let content = fs::read_to_string(rust_module_path).unwrap();
     let ast = parse_file(&content).unwrap();
 
-    let comment_msg =
-        format!("Auto-generated from thcdb server #{commit_hash}\n\n");
+    let comment_msg = format!("Auto-generated from thcdb server\n\n");
 
     let kt_pkg = "package net.hearnsoft.tcm.server.constants";
 
