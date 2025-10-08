@@ -1,7 +1,14 @@
+# Local files
+.direnv
 .env
+.envrc
 .idea
+config.dev.ron
 public
 target
-rustc*
-config.dev.ron
+
+# Generated files
 src/constant/gen.rs
+
+# Rustc ICE log
+rustc*
