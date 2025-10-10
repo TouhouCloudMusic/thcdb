@@ -7,9 +7,8 @@ use sea_orm::{
 };
 use snafu::ResultExt;
 
-use crate::domain::image;
 use crate::domain::image::{Image, NewImage};
-use crate::domain::repository::Connection;
+use crate::domain::{Connection, image};
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
 
 impl<T> image::Repo for T

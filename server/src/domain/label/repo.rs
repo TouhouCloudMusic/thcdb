@@ -1,19 +1,7 @@
-use super::model::{Label, NewLabel};
-use crate::domain::repository::{Connection, Transaction};
+use super::model::NewLabel;
+use crate::domain::Transaction;
 
-pub trait Repo: Connection {
-    async fn find_by_id(
-        &self,
-        id: i32,
-    ) -> Result<Option<Label>, Box<dyn std::error::Error + Send + Sync>>;
-
-    async fn find_by_keyword(
-        &self,
-        keyword: &str,
-    ) -> Result<Vec<Label>, Box<dyn std::error::Error + Send + Sync>>;
-}
-
-pub trait TxRepo: Repo + Transaction
+pub trait TxRepo: Transaction
 where
     Self::apply_update(..): Send,
 {

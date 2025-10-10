@@ -1,10 +1,10 @@
 use macros::{ApiError, IntoErrorSchema};
 
-use crate::domain::image::repository::TxRepo as ImageTxRepo;
+use crate::domain::TransactionManager;
 use crate::domain::image::{
-    AsyncFileStorage, CreateImageMeta, Parser, ValidationError, {self},
+    AsyncFileStorage, CreateImageMeta, Parser, TxRepo as ImageTxRepo,
+    ValidationError, {self},
 };
-use crate::domain::repository::TransactionManager;
 use crate::domain::user::{
     User, {self},
 };

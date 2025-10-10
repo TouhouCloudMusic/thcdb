@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::domain::correction::CorrectionEntity;
-use crate::domain::shared::model::Language;
+use crate::domain::shared::Language;
 
 #[derive(Clone, Debug, Serialize, ToSchema)]
 pub struct SongLyrics {

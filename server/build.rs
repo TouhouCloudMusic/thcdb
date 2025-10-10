@@ -10,7 +10,7 @@ fn main() {
     let content = fs::read_to_string(rust_module_path).unwrap();
     let ast = parse_file(&content).unwrap();
 
-    let comment_msg = format!("Auto-generated from thcdb server\n\n");
+    let comment_msg = "Auto-generated from thcdb server\n\n";
 
     let kt_pkg = "package net.hearnsoft.tcm.server.constants";
 

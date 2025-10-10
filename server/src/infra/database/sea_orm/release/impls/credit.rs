@@ -5,7 +5,7 @@ use sea_orm::{
     ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, QueryFilter,
 };
 
-use crate::domain::release::model::NewCredit;
+use crate::domain::release::NewCredit;
 
 pub(crate) async fn create_release_credit(
     release_id: i32,

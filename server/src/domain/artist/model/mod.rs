@@ -3,9 +3,7 @@ use macros::AutoMapper;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::domain::shared::model::{
-    DateWithPrecision, LocalizedName, Location,
-};
+use crate::domain::shared::{DateWithPrecision, LocalizedName, Location};
 
 mod new_artist;
 pub use new_artist::*;

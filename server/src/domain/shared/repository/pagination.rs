@@ -26,6 +26,6 @@ impl<T> Paginated<T> {
 
 #[derive(Clone, Copy)]
 pub struct Cursor {
-    pub at: u32,
+    pub at: i32,
     pub limit: u8,
 }

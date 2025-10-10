@@ -17,8 +17,8 @@ use sea_orm_migration::prelude::Alias;
 
 use super::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::domain;
-use crate::domain::model::auth::UserRoleEnum;
-use crate::domain::repository::Connection;
+use crate::domain::Connection;
+use crate::domain::model::UserRoleEnum;
 use crate::domain::user::{
     NewUser, User, UserProfile, {self},
 };

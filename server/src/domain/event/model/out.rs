@@ -1,7 +1,7 @@
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::domain::shared::model::{DateWithPrecision, Location};
+use crate::domain::shared::{DateWithPrecision, Location};
 
 #[serde_with::apply(
     Vec      => #[serde(skip_serializing_if = "Vec::is_empty")],

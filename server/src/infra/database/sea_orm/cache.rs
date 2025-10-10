@@ -4,7 +4,7 @@ use std::sync::OnceLock;
 use entity::language;
 use sea_orm::{ConnectionTrait, DbErr, EntityTrait};
 
-use crate::domain::shared::model::Language;
+use crate::domain::shared::Language;
 
 pub struct LanguageCache {
     inner: OnceLock<HashMap<i32, Language>>,

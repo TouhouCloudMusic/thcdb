@@ -1,3 +1,2 @@
-pub mod auth;
-
-pub mod markdown;
+mod auth;
+pub use auth::*;

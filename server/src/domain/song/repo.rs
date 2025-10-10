@@ -1,19 +1,7 @@
-use super::model::{NewSong, Song};
-use crate::domain::repository::{Connection, Transaction};
+use super::model::NewSong;
+use crate::domain::Transaction;
 
-pub trait Repo: Connection {
-    async fn find_by_id(
-        &self,
-        id: i32,
-    ) -> Result<Option<Song>, Box<dyn std::error::Error + Send + Sync>>;
-
-    async fn find_by_keyword(
-        &self,
-        keyword: &str,
-    ) -> Result<Vec<Song>, Box<dyn std::error::Error + Send + Sync>>;
-}
-
-pub trait TxRepo: Repo + Transaction
+pub trait TxRepo: Transaction
 where
     Self::apply_update(..): Send,
 {

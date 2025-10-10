@@ -4,7 +4,7 @@ use serde::Deserialize;
 use utoipa::ToSchema;
 
 use crate::domain::correction::CorrectionEntity;
-use crate::domain::shared::model::{DateWithPrecision, EntityIdent, Location};
+use crate::domain::shared::{DateWithPrecision, EntityIdent, Location};
 
 #[derive(Validate, Deserialize, ToSchema)]
 pub struct NewEvent {

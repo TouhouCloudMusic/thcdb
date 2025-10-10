@@ -1,8 +1,9 @@
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::model::auth::{AuthCredential, UserRole, UserRoleEnum};
-use super::repository::{Connection, Transaction};
+use super::auth::AuthCredential;
+use super::model::{UserRole, UserRoleEnum};
+use super::{Connection, Transaction};
 use crate::infra::error::Error;
 
 #[serde_with::apply(

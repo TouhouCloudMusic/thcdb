@@ -116,7 +116,8 @@ struct ApiErrorField {
     ty: syn::Type,
 }
 
-static API_RESPONSE_MOD_PATH: &str = "crate::presentation::api_response";
+static API_RESPONSE_MOD_PATH: &str =
+    "crate::adapter::inbound::rest::api_response";
 
 pub fn derive_api_error_impl(input: DeriveInput) -> syn::Result<TokenStream> {
     let receiver = ApiErrorReceiver::from_derive_input(&input)

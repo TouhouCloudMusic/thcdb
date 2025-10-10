@@ -5,7 +5,7 @@ use itertools::Itertools;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{DatabaseTransaction, DbErr, EntityTrait};
 
-use crate::domain::release::model::NewTrack;
+use crate::domain::release::NewTrack;
 
 pub async fn create_release_track(
     release_id: i32,

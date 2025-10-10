@@ -8,7 +8,7 @@ use sea_orm::{
 };
 use vecmap::VecMap;
 
-use crate::domain::release::model::NewDisc;
+use crate::domain::release::NewDisc;
 
 pub(crate) async fn create_release_disc(
     release_id: i32,

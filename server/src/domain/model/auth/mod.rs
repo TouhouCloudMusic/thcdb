@@ -1,12 +1,11 @@
-pub use auth_creds::*;
-mod auth_creds;
 pub use user_role::*;
 mod user_role;
 #[expect(unused_imports)]
 pub use verfication_code::*;
 
-use crate::domain::user::User;
 mod verfication_code;
+
+use crate::domain::user::User;
 
 pub struct CorrectionApprover(pub User);
 

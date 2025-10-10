@@ -7,58 +7,10 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveValue,
     QueryFilter, QueryOrder, Set,
 };
-use sea_query::extension::postgres::PgBinOper;
-use sea_query::{ExprTrait, Func};
 
-use crate::domain::credit_role::repo::{
-    CommonFilter, FindManyFilter, QueryKind,
-};
-use crate::domain::credit_role::{NewCreditRole, Repo, TxRepo};
-use crate::domain::repository::Connection;
+use crate::domain::Connection;
+use crate::domain::credit_role::{NewCreditRole, TxRepo};
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
-
-impl<T> Repo for T
-where
-    T: Connection,
-    T::Conn: sea_orm::ConnectionTrait,
-{
-    async fn find_one<K: QueryKind>(
-        &self,
-        id: i32,
-        _common: CommonFilter,
-    ) -> Result<Option<K::Output>, Box<dyn std::error::Error + Send + Sync>>
-    {
-        let role = credit_role::Entity::find_by_id(id).one(self.conn()).await?;
-
-        Ok(role.map(Into::into))
-    }
-
-    async fn find_many<K: QueryKind>(
-        &self,
-        filter: FindManyFilter,
-        _common: CommonFilter,
-    ) -> Result<Vec<K::Output>, Box<dyn std::error::Error + Send + Sync>> {
-        let roles = match filter {
-            FindManyFilter::Name(name) => {
-                let search_term = Func::lower(name);
-
-                credit_role::Entity::find()
-                    .filter(
-                        Func::lower(credit_role::Column::Name.into_expr())
-                            .binary(PgBinOper::Similarity, search_term.clone()),
-                    )
-                    .order_by_asc(
-                        Func::lower(credit_role::Column::Name.into_expr())
-                            .binary(PgBinOper::SimilarityDistance, search_term),
-                    )
-                    .all(self.conn())
-                    .await?
-            }
-        };
-
-        Ok(roles.into_iter().map(Into::into).collect())
-    }
-}
 
 impl TxRepo for SeaOrmTxRepo {
     async fn create(

@@ -1,13 +1,11 @@
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
+use crate::domain::TransactionManager;
 use crate::domain::correction::{
     NewCorrection, NewCorrectionMeta, {self},
 };
-use crate::domain::repository::TransactionManager;
-use crate::domain::song::model::{NewSong, Song};
-use crate::domain::song::repo::{Repo, TxRepo};
-use crate::infra::error::Error;
+use crate::domain::song::{NewSong, TxRepo};
 
 #[derive(Clone)]
 pub struct Service<R> {
@@ -51,19 +49,6 @@ where
 {
     default fn from(err: E) -> Self {
         Self::Infra { source: err.into() }
-    }
-}
-
-impl<R> Service<R>
-where
-    R: Repo,
-{
-    pub async fn find_by_id(&self, id: i32) -> Result<Option<Song>, Error> {
-        Ok(self.repo.find_by_id(id).await?)
-    }
-
-    pub async fn find_by_keyword(&self, kw: &str) -> Result<Vec<Song>, Error> {
-        Ok(self.repo.find_by_keyword(kw).await?)
     }
 }
 

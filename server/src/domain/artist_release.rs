@@ -2,8 +2,7 @@ use entity::enums::ReleaseType;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::repository::{Connection, Cursor, Paginated};
-use super::shared::model::DateWithPrecision;
+use super::{Cursor, DateWithPrecision};
 use crate::domain::credit_role::CreditRoleRef;
 
 pub type Appearance = Discography;
@@ -49,21 +48,4 @@ pub struct DiscographyQuery {
     pub artist_id: i32,
     pub release_type: ReleaseType,
     pub pagination: Cursor,
-}
-
-pub trait Repo: Connection {
-    async fn appearance(
-        &self,
-        query: AppearanceQuery,
-    ) -> Result<Paginated<Appearance>, Box<dyn std::error::Error + Send + Sync>>;
-
-    async fn credit(
-        &self,
-        query: CreditQuery,
-    ) -> Result<Paginated<Credit>, Box<dyn std::error::Error + Send + Sync>>;
-
-    async fn discography(
-        &self,
-        query: DiscographyQuery,
-    ) -> Result<Paginated<Discography>, Box<dyn std::error::Error + Send + Sync>>;
 }

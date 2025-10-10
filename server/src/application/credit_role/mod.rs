@@ -1,16 +1,11 @@
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
+use crate::domain::TransactionManager;
 use crate::domain::correction::{
     NewCorrection, NewCorrectionMeta, {self},
 };
-use crate::domain::credit_role::model::NewCreditRole;
-use crate::domain::credit_role::repo::{
-    CommonFilter, FindManyFilter, QueryKind,
-};
-use crate::domain::credit_role::{Repo, TxRepo};
-use crate::domain::repository::TransactionManager;
-use crate::infra::Error;
+use crate::domain::credit_role::{NewCreditRole, TxRepo};
 
 #[derive(Clone)]
 pub struct Service<R> {
@@ -56,30 +51,9 @@ where
     }
 }
 
-impl<R> Service<R>
-where
-    R: Repo,
-{
-    pub async fn find_one<K: QueryKind>(
-        &self,
-        id: i32,
-        common: CommonFilter,
-    ) -> Result<Option<K::Output>, Error> {
-        Ok(self.repo.find_one::<K>(id, common).await?)
-    }
-
-    pub async fn find_many_credit_roles<K: QueryKind>(
-        &self,
-        filter: FindManyFilter,
-        common: CommonFilter,
-    ) -> Result<Vec<K::Output>, Error> {
-        Ok(self.repo.find_many::<K>(filter, common).await?)
-    }
-}
-
 impl<R, TR> Service<R>
 where
-    R: Repo + TransactionManager<TransactionRepository = TR>,
+    R: TransactionManager<TransactionRepository = TR>,
     TR: Clone + TxRepo + correction::TxRepo,
 {
     pub async fn create(

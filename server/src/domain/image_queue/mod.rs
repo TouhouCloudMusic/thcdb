@@ -2,7 +2,7 @@ mod model;
 
 pub use model::{ImageQueue, NewImageQueue};
 
-use super::repository::Connection;
+use super::Connection;
 
 pub trait Repo: Connection {
     async fn create(

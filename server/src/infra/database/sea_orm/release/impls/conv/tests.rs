@@ -5,19 +5,18 @@ use entity::{
     artist, credit_role, label as label_entity, release_catalog_number,
     release_credit, release_localized_title, release_track, song,
 };
-use itertools::Itertools;
 
 use super::{
     conv_artists, conv_catalog_numbers, conv_credits, conv_localized_titles,
     conv_tracks,
 };
 use crate::domain;
-use crate::domain::label::model::SimpleLabel;
-use crate::domain::release::model::{
+use crate::domain::label::SimpleLabel;
+use crate::domain::release::{
     CatalogNumber, ReleaseArtist, ReleaseCredit, ReleaseTrack,
 };
-use crate::domain::shared::model::Language;
-use crate::domain::song::model::SongRef;
+use crate::domain::shared::Language;
+use crate::domain::song::SongRef;
 
 #[test]
 fn test_conv_artists() {
@@ -147,11 +146,11 @@ fn test_conv_localized_titles() {
             .collect();
 
     let expected = vec![
-        domain::shared::model::LocalizedTitle {
+        domain::shared::LocalizedTitle {
             language: lang_en,
             title: "Title EN".to_string(),
         },
-        domain::shared::model::LocalizedTitle {
+        domain::shared::LocalizedTitle {
             language: lang_jp,
             title: "Title JP".to_string(),
         },
@@ -236,7 +235,7 @@ fn test_conv_credits() {
                 id: 1,
                 name: "Artist 1".to_string(),
             },
-            role: crate::domain::credit_role::model::CreditRoleRef {
+            role: crate::domain::credit_role::CreditRoleRef {
                 id: 1,
                 name: "Role 1".to_string(),
             },
@@ -247,7 +246,7 @@ fn test_conv_credits() {
                 id: 2,
                 name: "Artist 2".to_string(),
             },
-            role: crate::domain::credit_role::model::CreditRoleRef {
+            role: crate::domain::credit_role::CreditRoleRef {
                 id: 2,
                 name: "Role 2".to_string(),
             },

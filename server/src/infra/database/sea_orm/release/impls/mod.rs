@@ -3,7 +3,7 @@ use sea_orm::{ConnectionTrait, DbErr};
 
 use self::conv::conv_to_domain_model;
 use self::loader::RelatedEntities;
-use crate::domain::release::model::Release;
+use crate::domain::release::Release;
 
 mod artist;
 mod catalog_number;

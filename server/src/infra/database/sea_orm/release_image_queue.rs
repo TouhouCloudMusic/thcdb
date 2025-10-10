@@ -4,8 +4,8 @@ use sea_orm::{EntityTrait, IntoActiveModel};
 use snafu::ResultExt;
 
 use super::SeaOrmTxRepo;
+use crate::domain::Connection;
 use crate::domain::release_image_queue::{ReleaseImageQueue, Repo};
-use crate::domain::repository::Connection;
 
 impl Repo for SeaOrmTxRepo {
     async fn create(

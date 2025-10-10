@@ -18,7 +18,7 @@ pub fn error_schema_impl(input: TokenStream) -> TokenStream {
                 ::std::string::String,
                 ::utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
             > {
-                use crate::presentation::api_response::ErrResponseDef;
+                use crate::adapter::inbound::rest::api_response::ErrResponseDef;
                 Self::build_err_responses().into()
             }
         }

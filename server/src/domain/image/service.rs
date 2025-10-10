@@ -9,8 +9,8 @@ use entity::enums::StorageBackend;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 use macros::ApiError;
 
-use crate::domain::image::model::{Image, NewImage};
-use crate::domain::repository::Transaction;
+use crate::domain::Transaction;
+use crate::domain::image::{Image, NewImage};
 use crate::infra::{self};
 
 // TODO: conv to internal error

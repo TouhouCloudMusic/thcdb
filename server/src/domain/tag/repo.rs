@@ -1,19 +1,7 @@
-use super::model::{NewTag, Tag};
-use crate::domain::repository::{Connection, Transaction};
+use super::model::NewTag;
+use crate::domain::Transaction;
 
-pub trait Repo: Connection {
-    async fn find_by_id(
-        &self,
-        id: i32,
-    ) -> Result<Option<Tag>, Box<dyn std::error::Error + Send + Sync>>;
-
-    async fn find_by_keyword(
-        &self,
-        keyword: &str,
-    ) -> Result<Vec<Tag>, Box<dyn std::error::Error + Send + Sync>>;
-}
-
-pub trait TxRepo: Repo + Transaction
+pub trait TxRepo: Transaction
 where
     Self::apply_update(..): Send,
 {

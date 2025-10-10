@@ -2,8 +2,8 @@ use entity::artist_image_queue as db;
 use sea_orm::{ConnectionTrait, EntityTrait, IntoActiveModel};
 use snafu::ResultExt;
 
+use crate::domain::Connection;
 use crate::domain::artist_image_queue::{ArtistImageQueue, Repository};
-use crate::domain::repository::Connection;
 
 impl<T> Repository for T
 where

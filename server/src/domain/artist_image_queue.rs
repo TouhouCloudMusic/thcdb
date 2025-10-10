@@ -2,7 +2,7 @@ use entity::artist_image_queue::Model as DbModel;
 use entity::sea_orm_active_enums::ArtistImageType;
 use macros::AutoMapper;
 
-use super::repository::Connection;
+use super::Connection;
 
 #[derive(AutoMapper)]
 #[mapper(from(DbModel), into(DbModel))]

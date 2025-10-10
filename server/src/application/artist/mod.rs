@@ -2,12 +2,11 @@ use entity::enums::CorrectionStatus;
 use eros::{IntoUnionResult, ReshapeUnionResult};
 
 use super::error::Unauthorized;
-use crate::domain::artist;
-use crate::domain::artist::model::{NewArtist, ValidationError};
+use crate::domain::artist::{NewArtist, ValidationError};
 use crate::domain::correction::{
     NewCorrection, NewCorrectionMeta, {self},
 };
-use crate::domain::repository::TransactionManager;
+use crate::domain::{TransactionManager, artist};
 use crate::infra;
 
 #[derive(Clone)]

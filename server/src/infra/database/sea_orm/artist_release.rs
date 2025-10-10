@@ -8,15 +8,14 @@ use itertools::{Itertools, izip};
 use libfp::FunctorExt;
 use sea_orm::JoinType::*;
 use sea_orm::prelude::*;
-use sea_orm::{QuerySelect, QueryTrait};
+use sea_orm::{ConnectionTrait, DbErr, QuerySelect, QueryTrait};
 use sea_query::{Cond, ExprTrait, IntoCondition, SimpleExpr};
 
-use super::SeaOrmRepository;
 use crate::domain::artist_release::*;
 use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::image::Image;
-use crate::domain::repository::{Connection, Cursor, Paginated};
-use crate::domain::shared::model::DateWithPrecision;
+use crate::domain::shared::DateWithPrecision;
+use crate::domain::{Connection, Cursor, Paginated};
 
 struct ArtistReleaseIR {
     release: release::Model,
@@ -31,103 +30,107 @@ struct CreditIR {
     release_credits: Vec<release_credit::Model>,
 }
 
-impl Repo for SeaOrmRepository {
-    async fn appearance(
-        &self,
-        query: AppearanceQuery,
-    ) -> Result<Paginated<Appearance>, Box<dyn std::error::Error + Send + Sync>>
-    {
-        find_artist_releases(
-            appearance_select(query.artist_id),
-            query.pagination,
-            self.conn(),
-        )
-        .await
-        .map(|x| x.map_items(Into::into))
-    }
+pub(crate) async fn appearance<R>(
+    repo: &R,
+    query: AppearanceQuery,
+) -> Result<Paginated<Appearance>, DbErr>
+where
+    R: Connection,
+    R::Conn: ConnectionTrait,
+{
+    find_artist_releases(
+        appearance_select(query.artist_id),
+        query.pagination,
+        repo.conn(),
+    )
+    .await
+    .map(|x| x.map_items(Into::into))
+}
 
-    async fn credit(
-        &self,
-        query: CreditQuery,
-    ) -> Result<Paginated<Credit>, Box<dyn std::error::Error + Send + Sync>>
-    {
-        let releases_and_artists = find_artist_releases(
-            credit_select(query.artist_id),
-            query.pagination,
-            self.conn(),
+pub(crate) async fn credit<R>(
+    repo: &R,
+    query: CreditQuery,
+) -> Result<Paginated<Credit>, DbErr>
+where
+    R: Connection,
+    R::Conn: ConnectionTrait,
+{
+    let releases_and_artists = find_artist_releases(
+        credit_select(query.artist_id),
+        query.pagination,
+        repo.conn(),
+    )
+    .await?;
+
+    let Paginated { items, next_cursor } = releases_and_artists;
+
+    let (releases, (artists, cover_urls)): (Vec<_>, (Vec<_>, Vec<_>)) = items
+        .into_iter()
+        .map(|x| {
+            let release = x.release;
+            let artists = x.artists;
+            let cover_url = x.cover_url;
+
+            (release, (artists, cover_url))
+        })
+        .unzip();
+
+    let release_credits = releases
+        .load_many(
+            release_credit::Entity::find()
+                .filter(release_credit::Column::ArtistId.eq(query.artist_id)),
+            repo.conn(),
         )
         .await?;
 
-        let Paginated { items, next_cursor } = releases_and_artists;
+    let role_ids = release_credits
+        .iter()
+        .flatten()
+        .map(|x| x.role_id)
+        .collect_vec();
 
-        let (releases, (artists, cover_urls)): (Vec<_>, (Vec<_>, Vec<_>)) =
-            items
-                .into_iter()
-                .map(|x| {
-                    let release = x.release;
-                    let artists = x.artists;
-                    let cover_url = x.cover_url;
+    let credit_roles = credit_role::Entity::find()
+        .filter(credit_role::Column::Id.is_in(role_ids))
+        .all(repo.conn())
+        .await?;
 
-                    (release, (artists, cover_url))
-                })
-                .unzip();
+    let credit_irs = izip!(releases, artists, cover_urls, release_credits)
+        .map(|(release, artists, cover_url, release_credits)| CreditIR {
+            release,
+            artists,
+            cover_url,
+            release_credits,
+        })
+        .collect_vec();
 
-        let release_credits = releases
-            .load_many(
-                release_credit::Entity::find().filter(
-                    release_credit::Column::ArtistId.eq(query.artist_id),
-                ),
-                self.conn(),
-            )
-            .await?;
+    let items = into_artist_credits(credit_irs, &credit_roles);
 
-        let role_ids = release_credits
-            .iter()
-            .flatten()
-            .map(|x| x.role_id)
-            .collect_vec();
+    Ok(Paginated { items, next_cursor })
+}
 
-        let credit_roles = credit_role::Entity::find()
-            .filter(credit_role::Column::Id.is_in(role_ids))
-            .all(self.conn())
-            .await?;
+pub(crate) async fn discography<R>(
+    repo: &R,
+    query: DiscographyQuery,
+) -> Result<Paginated<Discography>, DbErr>
+where
+    R: Connection,
+    R::Conn: ConnectionTrait,
+{
+    let select = release::Entity::find()
+        .filter(release::Column::ReleaseType.eq(query.release_type))
+        .filter(release_artist::Column::ArtistId.eq(query.artist_id))
+        .left_join(release_artist::Entity);
 
-        let credit_irs = izip!(releases, artists, cover_urls, release_credits)
-            .map(|(release, artists, cover_url, release_credits)| CreditIR {
-                release,
-                artists,
-                cover_url,
-                release_credits,
-            })
-            .collect_vec();
-
-        let items = into_artist_credits(credit_irs, &credit_roles);
-
-        Ok(Paginated { items, next_cursor })
-    }
-
-    async fn discography(
-        &self,
-        query: DiscographyQuery,
-    ) -> Result<Paginated<Discography>, Box<dyn std::error::Error + Send + Sync>>
-    {
-        let select = release::Entity::find()
-            .filter(release::Column::ReleaseType.eq(query.release_type))
-            .filter(release_artist::Column::ArtistId.eq(query.artist_id))
-            .left_join(release_artist::Entity);
-
-        find_artist_releases(select, query.pagination, self.conn())
-            .await
-            .map(|x| x.map_items(Into::into))
-    }
+    find_artist_releases(select, query.pagination, repo.conn())
+        .await
+        .map(|x| x.map_items(Into::into))
 }
 
 async fn find_artist_releases(
     select: Select<release::Entity>,
     pagination: Cursor,
     db: &impl ConnectionTrait,
-) -> Result<Paginated<ArtistReleaseIR>, Box<dyn std::error::Error + Send + Sync>>
-{
+) -> Result<Paginated<ArtistReleaseIR>, DbErr> {
     let mut cursor = select.cursor_by(release::Column::Id);
 
     cursor.after(pagination.at);

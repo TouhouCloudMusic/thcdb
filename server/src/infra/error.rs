@@ -6,7 +6,7 @@ use macros::{ApiError, IntoErrorSchema};
 use sea_orm::DbErr;
 
 use super::database::error::FkViolation;
-use crate::presentation::api_response::{
+use crate::adapter::inbound::rest::api_response::{
     IntoApiResponse, default_into_api_response_impl,
 };
 
@@ -104,7 +104,7 @@ mod test {
     use tracing_test::traced_test;
 
     use super::*;
-    use crate::presentation::error::ApiError;
+    use crate::adapter::inbound::rest::ApiError;
 
     // https://github.com/dbrgn/tracing-test/issues/48
     // This bug causes errors with line breaks cannot be captured

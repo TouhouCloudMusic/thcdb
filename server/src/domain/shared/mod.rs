@@ -1,5 +1,7 @@
-pub mod model;
-pub mod repository;
+mod model;
+mod repository;
+pub use model::*;
+pub use repository::*;
 
 pub mod query_kind {
     pub struct Ref;

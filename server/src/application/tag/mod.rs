@@ -1,14 +1,11 @@
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
+use crate::domain::TransactionManager;
 use crate::domain::correction::{
     NewCorrection, NewCorrectionMeta, {self},
 };
-use crate::domain::repository::TransactionManager;
-use crate::domain::tag::Tag;
-use crate::domain::tag::model::NewTag;
-use crate::domain::tag::repo::{Repo, TxRepo};
-use crate::infra::error::Error;
+use crate::domain::tag::{NewTag, TxRepo};
 
 #[derive(Clone)]
 pub struct Service<R> {
@@ -58,25 +55,6 @@ where
 impl<R> Service<R> {
     pub const fn new(repo: R) -> Self {
         Self { repo }
-    }
-}
-
-impl<R> Service<R>
-where
-    R: Repo,
-{
-    pub async fn find_by_id(&self, id: i32) -> Result<Option<Tag>, Error> {
-        self.repo.find_by_id(id).await.map_err(Error::from)
-    }
-
-    pub async fn find_by_keyword(
-        &self,
-        keyword: &str,
-    ) -> Result<Vec<Tag>, Error> {
-        self.repo
-            .find_by_keyword(keyword)
-            .await
-            .map_err(Error::from)
     }
 }
 

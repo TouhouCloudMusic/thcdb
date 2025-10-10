@@ -9,6 +9,7 @@ use sea_orm::{
 };
 
 use super::SeaOrmTxRepo;
+use crate::domain::Connection;
 use crate::domain::artist::TxRepo as _;
 use crate::domain::correction::{
     ApproveCorrectionContext, Correction, CorrectionEntity, CorrectionFilter,
@@ -17,9 +18,8 @@ use crate::domain::correction::{
 use crate::domain::credit_role::TxRepo as _;
 use crate::domain::event::TxRepo as _;
 use crate::domain::label::TxRepo as _;
-use crate::domain::model::auth::CorrectionApprover;
+use crate::domain::model::CorrectionApprover;
 use crate::domain::release::TxRepo as _;
-use crate::domain::repository::Connection;
 use crate::domain::song::TxRepo as _;
 use crate::domain::song_lyrics::TxRepo as _;
 use crate::domain::tag::TxRepo as _;

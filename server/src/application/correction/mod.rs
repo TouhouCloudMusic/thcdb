@@ -6,9 +6,9 @@ use crate::domain::correction::{
     self, ApproveCorrectionContext, CorrectionEntity, CorrectionFilter,
     NewCorrectionMeta,
 };
-use crate::domain::model::auth::{CorrectionApprover, UserRoleEnum};
-use crate::domain::repository::{Transaction, TransactionManager};
+use crate::domain::model::{CorrectionApprover, UserRoleEnum};
 use crate::domain::user::User;
+use crate::domain::{Transaction, TransactionManager};
 use crate::infra;
 use crate::infra::error::Error as InfraError;
 

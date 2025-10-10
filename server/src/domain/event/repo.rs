@@ -1,19 +1,7 @@
-use super::model::{Event, NewEvent};
-use crate::domain::repository::{Connection, Transaction};
+use super::model::NewEvent;
+use crate::domain::{Connection, Transaction};
 
-pub trait Repo: Connection {
-    async fn find_by_id(
-        &self,
-        id: i32,
-    ) -> Result<Option<Event>, Box<dyn std::error::Error + Send + Sync>>;
-
-    async fn find_by_keyword(
-        &self,
-        keyword: &str,
-    ) -> Result<Vec<Event>, Box<dyn std::error::Error + Send + Sync>>;
-}
-
-pub trait TxRepo: Repo + Transaction
+pub trait TxRepo: Connection + Transaction
 where
     Self::apply_update(..): Send,
 {

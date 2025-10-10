@@ -2,11 +2,11 @@ use entity::enums::EntityType;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::domain::artist::model::SimpleArtist;
+use crate::domain::artist::SimpleArtist;
 use crate::domain::correction::CorrectionEntity;
 use crate::domain::credit_role::CreditRoleRef;
-use crate::domain::release::model::SimpleRelease;
-use crate::domain::shared::model::{EntityIdent, Language, NewLocalizedName};
+use crate::domain::release::SimpleRelease;
+use crate::domain::shared::{EntityIdent, Language, NewLocalizedName};
 use crate::domain::song_lyrics::SongLyrics;
 
 #[serde_with::apply(

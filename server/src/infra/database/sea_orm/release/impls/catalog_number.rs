@@ -6,7 +6,7 @@ use sea_orm::{
     ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, QueryFilter,
 };
 
-use crate::domain::release::model::NewCatalogNumber;
+use crate::domain::release::NewCatalogNumber;
 
 pub(crate) async fn create_release_catalog_number(
     release_id: i32,

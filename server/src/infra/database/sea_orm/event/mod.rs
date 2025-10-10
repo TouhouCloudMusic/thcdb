@@ -3,104 +3,15 @@ use entity::{
     correction_revision, event, event_alternative_name,
     event_alternative_name_history, event_history,
 };
-use itertools::{Itertools, izip};
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
-    EntityTrait, IntoActiveValue, LoaderTrait, ModelTrait, QueryFilter,
-    QueryOrder, Set,
+    ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityTrait,
+    IntoActiveValue, ModelTrait, QueryFilter, QueryOrder, Set,
 };
-use sea_query::extension::postgres::PgBinOper;
-use sea_query::{ExprTrait, Func};
 use snafu::ResultExt;
 
-use crate::domain::event::model::{AlternativeName, Event, NewEvent};
-use crate::domain::event::repo::{Repo, TxRepo};
-use crate::domain::repository::Connection;
-use crate::domain::shared::model::{DateWithPrecision, Location};
-
-impl<T> Repo for T
-where
-    T: Connection,
-    T::Conn: ConnectionTrait,
-{
-    async fn find_by_id(
-        &self,
-        id: i32,
-    ) -> Result<Option<Event>, Box<dyn std::error::Error + Send + Sync>> {
-        let select = event::Entity::find().filter(event::Column::Id.eq(id));
-
-        find_many_impl(select, self.conn())
-            .await
-            .map(|x| x.into_iter().next())
-            .boxed()
-    }
-
-    async fn find_by_keyword(
-        &self,
-        keyword: &str,
-    ) -> Result<Vec<Event>, Box<dyn std::error::Error + Send + Sync>> {
-        let search_term = Func::lower(keyword);
-
-        let selector = event::Entity::find()
-            .filter(
-                Func::lower(event::Column::Name.into_expr())
-                    .binary(PgBinOper::Similarity, search_term.clone()),
-            )
-            .order_by_asc(
-                Func::lower(event::Column::Name.into_expr())
-                    .binary(PgBinOper::SimilarityDistance, search_term),
-            );
-        find_many_impl(selector, self.conn()).await.boxed()
-    }
-}
-
-async fn find_many_impl(
-    selector: sea_orm::Select<event::Entity>,
-    db: &impl ConnectionTrait,
-) -> Result<Vec<Event>, DbErr> {
-    let events = selector.all(db).await?;
-
-    let alt_names =
-        events.load_many(event_alternative_name::Entity, db).await?;
-
-    let res = izip!(events, alt_names)
-        .map(|(event, alt_name)| Event {
-            id: event.id,
-            name: event.name,
-            short_description: event.short_description,
-            description: event.description,
-            location: Location {
-                country: event.location_country,
-                province: event.location_province,
-                city: event.location_city,
-            },
-            start_date: match (event.start_date, event.start_date_precision) {
-                (Some(date), precision) => Some(DateWithPrecision {
-                    value: date,
-                    precision,
-                }),
-                _ => None,
-            },
-            end_date: match (event.end_date, event.end_date_precision) {
-                (Some(date), precision) => Some(DateWithPrecision {
-                    value: date,
-                    precision,
-                }),
-                _ => None,
-            },
-            alternative_names: alt_name
-                .into_iter()
-                .map(|an| AlternativeName {
-                    id: an.id,
-                    name: an.name,
-                })
-                .collect_vec(),
-        })
-        .collect_vec();
-
-    Ok(res)
-}
+use crate::domain::Connection;
+use crate::domain::event::{NewEvent, TxRepo};
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(

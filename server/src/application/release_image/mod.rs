@@ -5,6 +5,7 @@ use axum::http::StatusCode;
 use bytes::Bytes;
 use bytesize::ByteSize;
 use macros::{ApiError, IntoErrorSchema};
+use sea_orm::ConnectionTrait;
 use snafu::Snafu;
 
 use super::error::EntityNotFound;
@@ -13,9 +14,11 @@ use crate::domain::image::{
 };
 use crate::domain::release_image::{self};
 use crate::domain::release_image_queue::{self, ReleaseImageQueue};
-use crate::domain::repository::{Transaction, TransactionManager};
 use crate::domain::user::User;
-use crate::domain::{image, image_queue, release};
+use crate::domain::{
+    Connection, Transaction, TransactionManager, image, image_queue,
+};
+use crate::feature::release::find::repo as release_repo;
 use crate::infra;
 
 static RELEASE_COVER_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
@@ -71,7 +74,8 @@ pub struct Service<Repo, Storage> {
 
 impl<Repo, TxRepo, Storage> Service<Repo, Storage>
 where
-    Repo: TransactionManager<TransactionRepository = TxRepo> + release::Repo,
+    Repo: TransactionManager<TransactionRepository = TxRepo> + Connection,
+    Repo::Conn: ConnectionTrait,
     TxRepo: Clone
         + Transaction
         + image::TxRepo
@@ -94,7 +98,10 @@ where
             release_id,
         } = dto;
 
-        if !self.repo.exist(release_id).await? {
+        if !release_repo::exists(&self.repo, release_id)
+            .await
+            .map_err(Error::from)?
+        {
             Err(EntityNotFound::new(release_id, "release"))?;
         }
 

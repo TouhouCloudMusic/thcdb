@@ -1,53 +1,7 @@
-use enumset::EnumSet;
-use serde::Deserialize;
-use utoipa::{IntoParams, ToSchema};
+use super::model::NewArtist;
+use crate::domain::Transaction;
 
-use super::model::{Artist, ArtistType, NewArtist};
-use crate::domain::repository::Transaction;
-
-#[derive(Clone, Debug, Deserialize, ToSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum FindManyFilter {
-    Keyword(String),
-}
-
-#[derive(Clone, Debug, Default, Deserialize, ToSchema, IntoParams)]
-#[schema(as = ArtistCommonFilter)]
-pub struct CommonFilter {
-    #[schema(
-        value_type = HashSet<ArtistType>
-    )]
-    #[param(
-        value_type = HashSet<ArtistType>
-    )]
-    #[serde(default, rename = "artist_type")]
-    pub artist_types: Option<EnumSet<ArtistType>>,
-
-    #[schema(
-        value_type = HashSet<i32>
-    )]
-    #[param(
-        value_type = HashSet<i32>
-    )]
-    #[serde(default)]
-    pub exclusion: Option<Vec<i32>>,
-}
-
-pub trait Repo {
-    async fn find_one(
-        &self,
-        id: i32,
-        common: CommonFilter,
-    ) -> Result<Option<Artist>, Box<dyn std::error::Error + Send + Sync>>;
-
-    async fn find_many(
-        &self,
-        filter: FindManyFilter,
-        common: CommonFilter,
-    ) -> Result<Vec<Artist>, Box<dyn std::error::Error + Send + Sync>>;
-}
-
-pub trait TxRepo: Repo + Transaction
+pub trait TxRepo: Transaction
 where
     Self::apply_update(..): Send,
 {

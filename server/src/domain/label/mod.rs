@@ -1,4 +1,4 @@
-pub mod model;
-pub use model::{Label, NewLabel};
-pub mod repo;
-pub use repo::{Repo, TxRepo};
+mod model;
+pub use model::*;
+mod repo;
+pub use repo::TxRepo;

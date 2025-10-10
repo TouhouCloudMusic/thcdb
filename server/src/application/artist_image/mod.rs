@@ -17,9 +17,8 @@ use crate::domain::artist_image_queue::{
 use crate::domain::image::{
     AsyncFileStorage, CreateImageMeta, ParseOption, Parser,
 };
-use crate::domain::repository::{Transaction, TransactionManager};
 use crate::domain::user::User;
-use crate::domain::{image, image_queue};
+use crate::domain::{Transaction, TransactionManager, image, image_queue};
 use crate::infra;
 
 static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {

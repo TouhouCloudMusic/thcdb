@@ -7,13 +7,13 @@ use sea_orm::{
 use snafu::ResultExt;
 
 use crate::domain::error::InfraWhatever;
-use crate::domain::model::auth::UserRoleEnum;
-use crate::domain::repository::{Connection, Transaction, TransactionManager};
+use crate::domain::model::UserRoleEnum;
+use crate::domain::{Connection, Transaction, TransactionManager};
 
 mod artist;
 mod artist_image_queue;
-mod artist_release;
-mod cache;
+pub(crate) mod artist_release;
+pub(crate) mod cache;
 mod correction;
 mod credit_role;
 pub mod enum_table;
@@ -22,7 +22,7 @@ pub mod ext;
 mod image;
 mod image_queue;
 mod label;
-mod release;
+pub(crate) mod release;
 mod release_image;
 mod release_image_queue;
 mod song;

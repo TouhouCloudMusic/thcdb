@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use entity::{correction_revision, song_lyrics, song_lyrics_history};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
@@ -9,79 +7,8 @@ use sea_orm::{
 use snafu::ResultExt;
 
 use super::SeaOrmTxRepo;
-use super::cache::LANGUAGE_CACHE;
-use crate::domain::repository::Connection;
-use crate::domain::shared::model::Language;
-use crate::domain::song_lyrics::model::{NewSongLyrics, SongLyrics};
-use crate::domain::song_lyrics::repo::{
-    FindManyFilter, FindOneFilter, Repo, TxRepo,
-};
-
-impl<T> Repo for T
-where
-    T: Connection,
-    T::Conn: ConnectionTrait,
-{
-    async fn find_one(
-        &self,
-        filter: FindOneFilter,
-    ) -> Result<Option<SongLyrics>, Box<dyn std::error::Error + Send + Sync>>
-    {
-        let filter = match filter {
-            FindOneFilter::Id { id } => song_lyrics::Column::Id.eq(id),
-            FindOneFilter::SongAndLang {
-                song_id,
-                language_id,
-            } => song_lyrics::Column::SongId
-                .eq(song_id)
-                .and(song_lyrics::Column::LanguageId.eq(language_id)),
-        };
-
-        let query = song_lyrics::Entity::find().filter(filter);
-
-        let model = query.one(self.conn()).await?;
-
-        if let Some(model) = model {
-            let lang_cache = LANGUAGE_CACHE.get_or_init(self.conn()).await?;
-
-            Ok(Some(SongLyrics::from_model_and_cache(model, lang_cache)))
-        } else {
-            Ok(None)
-        }
-    }
-
-    async fn find_many(
-        &self,
-        filter: FindManyFilter,
-    ) -> Result<Vec<SongLyrics>, Box<dyn std::error::Error + Send + Sync>> {
-        let filter = match filter {
-            FindManyFilter::Song { song_id } => {
-                song_lyrics::Column::SongId.eq(song_id)
-            }
-            FindManyFilter::Language { language_id } => {
-                song_lyrics::Column::LanguageId.eq(language_id)
-            }
-            // TODO: validate len
-            FindManyFilter::Songs { song_ids } => {
-                song_lyrics::Column::SongId.is_in(song_ids)
-            }
-        };
-        let query = song_lyrics::Entity::find().filter(filter);
-
-        let models = query.all(self.conn()).await?;
-
-        if models.is_empty() {
-            return Ok(vec![]);
-        }
-
-        let lang_cache = LANGUAGE_CACHE.get_or_init(self.conn()).await?;
-
-        Ok(models
-            .into_iter()
-            .map(|m| SongLyrics::from_model_and_cache(m, lang_cache))
-            .collect())
-    }
-}
+use crate::domain::Connection;
+use crate::domain::song_lyrics::{NewSongLyrics, TxRepo};
 
 impl TxRepo for SeaOrmTxRepo {
     async fn create(
@@ -217,24 +144,4 @@ async fn apply_update_impl(
     }
 
     Ok(())
-}
-
-impl SongLyrics {
-    pub(super) fn from_model_and_cache(
-        model: song_lyrics::Model,
-        lang_cache: &HashMap<i32, Language>,
-    ) -> Self {
-        let language = lang_cache
-            .get(&model.language_id)
-            .cloned()
-            .expect("Language should be found in cache");
-
-        Self {
-            id: model.id,
-            song_id: model.song_id,
-            content: model.content,
-            is_main: model.is_main,
-            language,
-        }
-    }
 }

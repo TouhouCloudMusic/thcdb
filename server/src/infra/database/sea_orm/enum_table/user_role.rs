@@ -3,7 +3,7 @@ use sea_orm::ActiveValue::Set;
 use sea_orm::EntityTrait;
 
 use super::{EnumTableValue, LookupTableCheckResult, ValidateLookupTable};
-use crate::domain::model::auth::UserRoleEnum;
+use crate::domain::model::UserRoleEnum;
 
 impl<T> From<T> for LookupTableCheckResult<T> {
     fn from(val: T) -> Self {

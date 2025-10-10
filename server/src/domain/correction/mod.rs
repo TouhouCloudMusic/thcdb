@@ -1,12 +1,12 @@
 use entity::enums::EntityType;
 
-pub mod model;
+mod model;
 
 pub use entity::enums::CorrectionStatus;
 pub use model::*;
 
-use super::model::auth::CorrectionApprover;
-use super::repository::Transaction;
+use super::Transaction;
+use super::model::CorrectionApprover;
 use super::user::User;
 use crate::infra;
 use crate::infra::error::Error;
@@ -45,7 +45,7 @@ impl CorrectionFilter {
     }
 }
 
-pub trait Repo: super::repository::Connection {
+pub trait Repo: super::Connection {
     async fn find_one(
         &self,
         filter: CorrectionFilter,

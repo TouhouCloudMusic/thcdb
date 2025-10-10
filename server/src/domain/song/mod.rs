@@ -1,3 +1,4 @@
-pub mod model;
-pub mod repo;
+mod model;
+mod repo;
+pub use model::*;
 pub use repo::TxRepo;

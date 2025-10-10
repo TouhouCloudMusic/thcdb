@@ -1,5 +1,5 @@
 use super::{Image, NewImage};
-use crate::domain::repository::{Connection, Transaction};
+use crate::domain::{Connection, Transaction};
 
 pub trait Repo: Connection {
     async fn find_by_id(

@@ -8,7 +8,7 @@ use sea_orm::prelude::DateTimeWithTimeZone;
 use snafu::Snafu;
 
 use crate::domain::image::Image;
-use crate::domain::model::auth::UserRoleEnum;
+use crate::domain::model::UserRoleEnum;
 use crate::domain::user::User;
 
 #[derive(Debug, Clone, Copy, Snafu, ApiError)]

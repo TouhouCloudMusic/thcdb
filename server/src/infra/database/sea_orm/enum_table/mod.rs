@@ -3,7 +3,7 @@ use sea_orm::{
 };
 use strum::IntoEnumIterator;
 
-use crate::domain::model::auth::UserRoleEnum;
+use crate::domain::model::UserRoleEnum;
 use crate::infra::database::sea_orm::utils::upsert_admin_acc;
 
 mod user_role;

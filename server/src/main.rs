@@ -31,11 +31,12 @@
     variant_count
 )]
 
+mod adapter;
 mod application;
 mod constant;
 mod domain;
+mod feature;
 mod infra;
-mod presentation;
 mod utils;
 
 use std::sync::Arc;
@@ -82,7 +83,7 @@ async fn main() -> Result<(), Whatever> {
         APP_CONFIG.app.port
     );
 
-    presentation::rest::listen(listener, Arc::new(state))
+    adapter::inbound::rest::listen(listener, Arc::new(state))
         .await
         .whatever_context("Failed to start REST listener")?;
 

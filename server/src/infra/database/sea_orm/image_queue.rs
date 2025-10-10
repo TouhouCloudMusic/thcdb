@@ -6,8 +6,8 @@ use sea_orm::{
 };
 use snafu::ResultExt;
 
+use crate::domain::Connection;
 use crate::domain::image_queue::{ImageQueue, NewImageQueue, Repo};
-use crate::domain::repository::Connection;
 
 impl<T> Repo for T
 where

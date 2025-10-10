@@ -4,7 +4,7 @@ use serde::Deserialize;
 use utoipa::ToSchema;
 
 use crate::domain::correction::CorrectionEntity;
-use crate::domain::shared::model::{DateWithPrecision, NewLocalizedTitle};
+use crate::domain::shared::{DateWithPrecision, NewLocalizedTitle};
 
 #[derive(Clone, Validate, Deserialize, ToSchema)]
 pub struct NewRelease {

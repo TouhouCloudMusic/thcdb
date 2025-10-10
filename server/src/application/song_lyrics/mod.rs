@@ -1,17 +1,11 @@
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
+use crate::domain::TransactionManager;
 use crate::domain::correction::{
     NewCorrection, NewCorrectionMeta, {self},
 };
-use crate::domain::repository::TransactionManager;
-use crate::domain::song_lyrics::model::{
-    NewSongLyrics, SongLyrics, ValidationError,
-};
-use crate::domain::song_lyrics::repo::{
-    FindManyFilter, FindOneFilter, Repo, TxRepo,
-};
-use crate::infra::error::Error;
+use crate::domain::song_lyrics::{NewSongLyrics, TxRepo, ValidationError};
 
 #[derive(Clone)]
 pub struct Service<R> {
@@ -58,25 +52,6 @@ where
 {
     default fn from(err: E) -> Self {
         Self::Infra { source: err.into() }
-    }
-}
-
-impl<R> Service<R>
-where
-    R: Repo,
-{
-    pub async fn find_one(
-        &self,
-        filter: FindOneFilter,
-    ) -> Result<Option<SongLyrics>, Error> {
-        Ok(self.repo.find_one(filter).await?)
-    }
-
-    pub async fn find_many(
-        &self,
-        filter: FindManyFilter,
-    ) -> Result<Vec<SongLyrics>, Error> {
-        Ok(self.repo.find_many(filter).await?)
     }
 }
 

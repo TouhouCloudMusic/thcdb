@@ -2,13 +2,11 @@ use entity::enums::CorrectionStatus;
 use garde::Validate;
 use macros::{ApiError, IntoErrorSchema};
 
+use crate::domain::TransactionManager;
 use crate::domain::correction::{
     NewCorrection, NewCorrectionMeta, {self},
 };
-use crate::domain::release::repo::Filter;
-use crate::domain::release::{NewRelease, Release, Repo, TxRepo};
-use crate::domain::repository::TransactionManager;
-use crate::infra::error::Error;
+use crate::domain::release::{NewRelease, TxRepo};
 
 #[derive(Clone)]
 pub struct Service<R> {
@@ -59,25 +57,6 @@ where
 {
     default fn from(err: E) -> Self {
         Self::Infra { source: err.into() }
-    }
-}
-
-impl<R> Service<R>
-where
-    R: Repo,
-{
-    pub async fn find_one(
-        &self,
-        filter: Filter,
-    ) -> Result<Option<Release>, Error> {
-        Ok(self.repo.find_one(filter).await?)
-    }
-
-    pub async fn find_many(
-        &self,
-        filter: Filter,
-    ) -> Result<Vec<Release>, Error> {
-        Ok(self.repo.find_many(filter).await?)
     }
 }
 

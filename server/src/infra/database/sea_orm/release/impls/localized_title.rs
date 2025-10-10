@@ -4,7 +4,7 @@ use sea_orm::{
     ColumnTrait, DatabaseTransaction, DbErr, EntityTrait, QueryFilter,
 };
 
-use crate::domain::shared::model::NewLocalizedTitle;
+use crate::domain::shared::NewLocalizedTitle;
 
 pub(crate) async fn create_release_localized_title(
     release_id: i32,

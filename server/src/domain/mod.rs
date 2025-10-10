@@ -1,10 +1,12 @@
 pub mod artist;
 pub mod artist_image_queue;
+pub mod auth;
 pub mod correction;
 pub mod event;
 pub mod image;
 pub mod image_queue;
 pub mod label;
+pub mod markdown;
 pub mod model;
 pub mod release;
 pub mod shared;

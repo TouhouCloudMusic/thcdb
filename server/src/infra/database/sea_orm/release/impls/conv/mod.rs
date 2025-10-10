@@ -3,15 +3,15 @@ use itertools::Itertools;
 
 use super::RelatedEntities;
 use crate::domain;
-use crate::domain::credit_role::model::CreditRoleRef;
-use crate::domain::event::model::SimpleEvent;
-use crate::domain::label::model::SimpleLabel;
-use crate::domain::release::model::{
+use crate::domain::credit_role::CreditRoleRef;
+use crate::domain::event::SimpleEvent;
+use crate::domain::label::SimpleLabel;
+use crate::domain::release::{
     CatalogNumber, Release, ReleaseArtist, ReleaseCredit, ReleaseDisc,
     ReleaseTrack,
 };
-use crate::domain::shared::model::DateWithPrecision;
-use crate::domain::song::model::SongRef;
+use crate::domain::shared::DateWithPrecision;
+use crate::domain::song::SongRef;
 use crate::infra::database::sea_orm::cache::LanguageCacheMap;
 
 #[cfg(test)]
@@ -103,7 +103,7 @@ fn conv_catalog_numbers(
 fn conv_localized_titles(
     loc_titles: &[entity::release_localized_title::Model],
     languages: &LanguageCacheMap,
-) -> Vec<crate::domain::shared::model::LocalizedTitle> {
+) -> Vec<crate::domain::shared::LocalizedTitle> {
     loc_titles
         .iter()
         .map(|lt| {
@@ -116,7 +116,7 @@ fn conv_localized_titles(
                 .1
                 .clone();
 
-            crate::domain::shared::model::LocalizedTitle {
+            crate::domain::shared::LocalizedTitle {
                 language,
                 title: lt.title.clone(),
             }

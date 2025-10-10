@@ -4,7 +4,7 @@ use serde::Deserialize;
 use utoipa::ToSchema;
 
 use crate::domain::correction::CorrectionEntity;
-use crate::domain::shared::model::EntityIdent;
+use crate::domain::shared::EntityIdent;
 
 #[derive(Deserialize, ToSchema)]
 pub struct NewTag {

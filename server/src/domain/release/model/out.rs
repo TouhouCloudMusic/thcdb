@@ -3,10 +3,10 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::domain::credit_role::CreditRoleRef;
-use crate::domain::event::model::SimpleEvent;
-use crate::domain::label::model::SimpleLabel;
-use crate::domain::shared::model::{DateWithPrecision, LocalizedTitle};
-use crate::domain::song::model::SongRef;
+use crate::domain::event::SimpleEvent;
+use crate::domain::label::SimpleLabel;
+use crate::domain::shared::{DateWithPrecision, LocalizedTitle};
+use crate::domain::song::SongRef;
 
 #[serde_with::apply(
     Vec    => #[serde(skip_serializing_if = "Vec::is_empty")],

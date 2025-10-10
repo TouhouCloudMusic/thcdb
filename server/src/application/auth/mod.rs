@@ -4,13 +4,11 @@ use axum::http::StatusCode;
 use axum_login::{AuthUser, AuthnBackend, UserId};
 use macros::{ApiError, IntoErrorSchema};
 
-use crate::domain::model::auth::{
-    AuthCredential, AuthnError, ValidateCredsError,
-};
-use crate::domain::repository::{Transaction, TransactionManager};
+use crate::domain::auth::{AuthCredential, AuthnError, ValidateCredsError};
 use crate::domain::user::{
     TxRepo, User, {self},
 };
+use crate::domain::{Transaction, TransactionManager};
 use crate::infra;
 use crate::infra::error::Error;
 

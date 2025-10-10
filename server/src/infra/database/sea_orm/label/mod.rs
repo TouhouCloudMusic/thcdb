@@ -1,131 +1,18 @@
 use entity::{
     label, label_founder, label_founder_history, label_history,
-    label_localized_name, label_localized_name_history, language,
+    label_localized_name, label_localized_name_history,
 };
-use itertools::{Itertools, izip};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
-    EntityTrait, IntoActiveValue, LoaderTrait, QueryFilter, QueryOrder,
+    ActiveModelTrait, DatabaseTransaction, DbErr, EntityTrait, IntoActiveValue,
 };
-use sea_query::extension::postgres::PgBinOper;
-use sea_query::{ExprTrait, Func};
 use snafu::ResultExt;
 
-use crate::domain::label::model::{Label, NewLabel};
-use crate::domain::label::{Repo, TxRepo};
-use crate::domain::repository::Connection;
-use crate::domain::shared::model::{
-    DateWithPrecision, LocalizedName, NewLocalizedName,
-};
+use crate::domain::Connection;
+use crate::domain::label::{NewLabel, TxRepo};
+use crate::domain::shared::NewLocalizedName;
 
 mod impls;
-
-impl<T> Repo for T
-where
-    T: Connection,
-    T::Conn: ConnectionTrait,
-{
-    async fn find_by_id(
-        &self,
-        id: i32,
-    ) -> Result<Option<Label>, Box<dyn std::error::Error + Send + Sync>> {
-        let select = label::Entity::find().filter(label::Column::Id.eq(id));
-        find_many_impl(select, self.conn())
-            .await
-            .map(|x| x.into_iter().next())
-            .boxed()
-    }
-
-    async fn find_by_keyword(
-        &self,
-        keyword: &str,
-    ) -> Result<Vec<Label>, Box<dyn std::error::Error + Send + Sync>> {
-        let search_term = Func::lower(keyword);
-
-        let select = label::Entity::find()
-            .filter(
-                Func::lower(label::Column::Name.into_expr())
-                    .binary(PgBinOper::Similarity, search_term.clone()),
-            )
-            .order_by_asc(
-                Func::lower(label::Column::Name.into_expr())
-                    .binary(PgBinOper::SimilarityDistance, search_term),
-            );
-        find_many_impl(select, self.conn()).await.boxed()
-    }
-}
-
-async fn find_many_impl(
-    select: sea_orm::Select<label::Entity>,
-    db: &impl ConnectionTrait,
-) -> Result<Vec<Label>, DbErr> {
-    let labels = select.all(db).await?;
-
-    let founders = labels.load_many(label_founder::Entity, db).await?;
-
-    let localized_names =
-        labels.load_many(label_localized_name::Entity, db).await?;
-
-    let langs = language::Entity::find()
-        .filter(
-            language::Column::Id.is_in(
-                localized_names
-                    .iter()
-                    .flat_map(|x| x.iter().map(|x| x.language_id)),
-            ),
-        )
-        .all(db)
-        .await?;
-
-    let res = izip!(labels, founders, localized_names)
-        .map(|(label, founders, names)| {
-            let founded_date =
-                match (label.founded_date, label.founded_date_precision) {
-                    (Some(date), precision) => Some(DateWithPrecision {
-                        value: date,
-                        precision,
-                    }),
-                    _ => None,
-                };
-
-            let dissolved_date =
-                match (label.dissolved_date, label.dissolved_date_precision) {
-                    (Some(date), precision) => Some(DateWithPrecision {
-                        value: date,
-                        precision,
-                    }),
-                    _ => None,
-                };
-
-            let founders = founders.into_iter().map(|x| x.artist_id).collect();
-
-            let localized_names = names
-                .into_iter()
-                .map(|model| LocalizedName {
-                    name: model.name,
-                    language: langs
-                        .iter()
-                        .find(|y| y.id == model.language_id)
-                        .unwrap()
-                        .clone()
-                        .into(),
-                })
-                .collect();
-
-            Label {
-                id: label.id,
-                name: label.name,
-                founded_date,
-                dissolved_date,
-                founders,
-                localized_names,
-            }
-        })
-        .collect_vec();
-
-    Ok(res)
-}
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(

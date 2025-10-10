@@ -4,10 +4,8 @@ use macros::{ApiError, IntoErrorSchema};
 
 use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
 use crate::domain::event::NewEvent;
-use crate::domain::repository::TransactionManager;
-use crate::domain::{ValidationError, event};
+use crate::domain::{TransactionManager, ValidationError, event};
 use crate::infra;
-use crate::infra::error::Error;
 
 #[derive(Clone)]
 pub struct Service<R> {
@@ -59,25 +57,6 @@ where
 {
     default fn from(err: E) -> Self {
         Self::Infra { source: err.into() }
-    }
-}
-
-impl<R> Service<R>
-where
-    R: event::Repo,
-{
-    pub async fn find_by_id(
-        &self,
-        id: i32,
-    ) -> Result<Option<event::Event>, Error> {
-        Ok(event::Repo::find_by_id(&self.repo, id).await?)
-    }
-
-    pub async fn find_by_keyword(
-        &self,
-        keyword: &str,
-    ) -> Result<Vec<event::Event>, Error> {
-        Ok(event::Repo::find_by_keyword(&self.repo, keyword).await?)
     }
 }
 

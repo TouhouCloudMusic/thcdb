@@ -31,7 +31,7 @@ pub struct CreditRole {
 use entity::enums::EntityType;
 
 use crate::domain::correction::CorrectionEntity;
-use crate::domain::shared::model::EntityIdent;
+use crate::domain::shared::EntityIdent;
 
 #[derive(Deserialize, ToSchema)]
 pub struct NewCreditRole {

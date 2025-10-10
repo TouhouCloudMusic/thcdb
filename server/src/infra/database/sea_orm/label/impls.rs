@@ -1,5 +1,7 @@
 use entity::correction_revision;
-use sea_orm::{IntoActiveModel, ModelTrait, QueryOrder};
+use sea_orm::{
+    ColumnTrait, IntoActiveModel, ModelTrait, QueryFilter, QueryOrder,
+};
 
 use super::*;
 

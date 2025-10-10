@@ -5,9 +5,8 @@ use sea_orm::{
 };
 
 use super::impls::*;
-use crate::domain::release::model::NewRelease;
-use crate::domain::release::repo::TxRepo;
-use crate::domain::repository::Connection;
+use crate::domain::Connection;
+use crate::domain::release::{NewRelease, TxRepo};
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(

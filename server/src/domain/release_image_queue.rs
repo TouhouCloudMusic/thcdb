@@ -2,7 +2,7 @@ use entity::release_image_queue::Model as DbModel;
 use entity::sea_orm_active_enums::ReleaseImageType;
 use macros::AutoMapper;
 
-use super::repository::Connection;
+use super::Connection;
 
 #[derive(Debug, Clone, PartialEq, Eq, AutoMapper)]
 #[mapper(from(DbModel), into(DbModel))]
