@@ -2,7 +2,7 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
     fenix = {
-      url = "github:nix-community/fenix";
+      url = "github:nix-community/fenix/monthly";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flake-utils = {
@@ -42,15 +42,17 @@
       {
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
-            openssl
-          ];
-          nativeBuildInputs = with pkgs; [
-            (pkgs.fenix.fromToolchainFile {
-              file = ./rust-toolchain.toml;
-              sha256 = "sha256-NQWRE6M1zz9tCTfBgYXFXqBqDN0xMbRTFOAJgIx/Hao=";
-            })
-            mold
+            (pkgs.fenix.complete.withComponents [
+              "cargo"
+              "clippy"
+              "rust-analyzer"
+              "rust-src"
+              "rustc-codegen-cranelift-preview"
+              "rustfmt"
+            ])
             clang
+            mold
+            openssl
             pkg-config
           ];
           packages = with pkgs; [
