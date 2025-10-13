@@ -10,6 +10,7 @@ use super::extract::CurrentUser;
 use super::state::{
     ArcAppState, {self},
 };
+use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::Message;
 use crate::application;
 use crate::application::correction::NewCorrectionDto;
@@ -22,10 +23,13 @@ type Service = state::ReleaseService;
 const TAG: &str = "Release";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::new()
-        .routes(routes!(create_release))
-        .routes(routes!(update_release))
-        .routes(routes!(upload_release_cover_art))
+    AppRouter::new()
+        .with_private(|r| {
+            r.routes(routes!(create_release))
+                .routes(routes!(update_release))
+                .routes(routes!(upload_release_cover_art))
+        })
+        .finish()
 }
 
 #[utoipa::path(

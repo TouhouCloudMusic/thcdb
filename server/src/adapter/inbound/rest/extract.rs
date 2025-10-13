@@ -5,7 +5,7 @@ use axum::http::request::Parts;
 use axum::response::IntoResponse;
 
 mod auth;
-pub use auth::CurrentUser;
+pub use auth::*;
 mod json;
 
 #[trait_variant::make(Send)]

@@ -60,6 +60,115 @@ pub use extract::CurrentUser;
     ))
 )]
 struct ApiDoc;
+fn basic_security_requirement() -> utoipa::openapi::security::SecurityRequirement
+{
+    utoipa::openapi::security::SecurityRequirement::new(
+        Basic::SCHEME,
+        Vec::<String>::new(),
+    )
+}
+
+#[derive(OpenApi)]
+#[openapi(modifiers(&BasicSecurityModifier))]
+pub struct PrivateDoc;
+
+pub struct BasicSecurityModifier;
+
+impl utoipa::Modify for BasicSecurityModifier {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        let components = openapi
+            .components
+            .get_or_insert_with(utoipa::openapi::Components::new);
+
+        if !components.security_schemes.contains_key(Basic::SCHEME) {
+            components.add_security_scheme(
+                Basic::SCHEME,
+                utoipa::openapi::security::SecurityScheme::Http(
+                    utoipa::openapi::security::HttpBuilder::new()
+                        .scheme(
+                            utoipa::openapi::security::HttpAuthScheme::Basic,
+                        )
+                        .build(),
+                ),
+            );
+        }
+
+        for path_item in openapi.paths.paths.values_mut() {
+            let operations = [
+                &mut path_item.get,
+                &mut path_item.put,
+                &mut path_item.post,
+                &mut path_item.delete,
+                &mut path_item.options,
+                &mut path_item.head,
+                &mut path_item.patch,
+                &mut path_item.trace,
+            ];
+
+            for operation in operations.into_iter().flatten() {
+                let requirement = basic_security_requirement();
+
+                match operation.security.as_mut() {
+                    Some(requirements) => {
+                        if !requirements
+                            .iter()
+                            .any(|existing| existing == &requirement)
+                        {
+                            requirements.push(requirement);
+                        }
+                    }
+                    None => {
+                        operation.security = Some(vec![requirement]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub struct AppRouter<S>
+where
+    S: Clone + Send + Sync + 'static,
+{
+    public: OpenApiRouter<S>,
+    private: OpenApiRouter<S>,
+}
+
+impl<S> AppRouter<S>
+where
+    S: Clone + Send + Sync + 'static,
+{
+    pub fn new() -> Self {
+        Self {
+            public: OpenApiRouter::new(),
+            private: OpenApiRouter::with_openapi(PrivateDoc::openapi()),
+        }
+    }
+
+    pub fn with_public<F>(mut self, f: F) -> Self
+    where
+        F: FnOnce(OpenApiRouter<S>) -> OpenApiRouter<S>,
+    {
+        self.public = f(self.public);
+        self
+    }
+
+    pub fn with_private<F>(mut self, f: F) -> Self
+    where
+        F: FnOnce(OpenApiRouter<S>) -> OpenApiRouter<S>,
+    {
+        self.private = f(self.private);
+        self
+    }
+
+    pub fn finish(mut self) -> OpenApiRouter<S> {
+        utoipa::Modify::modify(
+            &BasicSecurityModifier,
+            self.private.get_openapi_mut(),
+        );
+        OpenApiRouter::new().merge(self.public).merge(self.private)
+    }
+}
 
 pub async fn listen(
     listener: TcpListener,
@@ -182,17 +291,6 @@ macro_rules! data {
 	};
 }
 pub(crate) use data;
-
-macro_rules! router_new {
-    () => {};
-    ($($name:ident),*) => {
-        OpenApiRouter::new()
-        $(
-            .routes(utoipa_axum::routes!($name))
-        )*
-    }
-}
-use router_new;
 
 #[cfg(test)]
 mod test {

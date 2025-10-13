@@ -7,6 +7,7 @@ use super::extract::CurrentUser;
 use super::state::{
     ArcAppState, {self},
 };
+use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::{self};
 use crate::application::correction::NewCorrectionDto;
 use crate::application::tag::{CreateError, UpsertCorrectionError};
@@ -16,9 +17,12 @@ use crate::infra::error::Error;
 const TAG: &str = "Tag";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::new()
-        .routes(routes!(create_tag))
-        .routes(routes!(upsert_tag_correction))
+    AppRouter::new()
+        .with_private(|r| {
+            r.routes(routes!(create_tag))
+                .routes(routes!(upsert_tag_correction))
+        })
+        .finish()
 }
 
 #[utoipa::path(

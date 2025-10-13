@@ -7,16 +7,18 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::api_response::Data;
-use crate::adapter::inbound::rest::data;
 use crate::adapter::inbound::rest::state::ArcAppState;
+use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::model::UserRoleEnum;
 use crate::domain::shared::Language;
 use crate::infra::error::Error;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::new()
-        .routes(routes!(language_list))
-        .routes(routes!(user_roles))
+    AppRouter::new()
+        .with_public(|r| {
+            r.routes(routes!(language_list)).routes(routes!(user_roles))
+        })
+        .finish()
 }
 
 data! {

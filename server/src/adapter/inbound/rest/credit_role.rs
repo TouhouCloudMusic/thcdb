@@ -4,6 +4,7 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::extract::CurrentUser;
+use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::Message;
 use crate::adapter::inbound::rest::state::{ArcAppState, CreditRoleService};
 use crate::application::correction::NewCorrectionDto;
@@ -13,9 +14,12 @@ use crate::domain::credit_role::NewCreditRole;
 const TAG: &str = "Credit Role";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::new()
-        .routes(routes!(create_credit_role))
-        .routes(routes!(upsert_credit_role_correction))
+    AppRouter::new()
+        .with_private(|r| {
+            r.routes(routes!(create_credit_role))
+                .routes(routes!(upsert_credit_role_correction))
+        })
+        .finish()
 }
 
 #[utoipa::path(

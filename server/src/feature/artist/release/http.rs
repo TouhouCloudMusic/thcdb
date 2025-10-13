@@ -7,8 +7,8 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::api_response::Data;
-use crate::adapter::inbound::rest::data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
+use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::artist_release::{
     Appearance, AppearanceQuery, Credit, CreditQuery, Discography,
     DiscographyQuery,
@@ -19,11 +19,14 @@ use crate::infra::error::Error;
 const TAG: &str = "Artist";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::new()
-        .routes(routes!(find_artist_discographies_init))
-        .routes(routes!(find_artist_discographies_by_type))
-        .routes(routes!(find_artist_appearances))
-        .routes(routes!(get_artist_credits))
+    AppRouter::new()
+        .with_public(|r| {
+            r.routes(routes!(find_artist_discographies_init))
+                .routes(routes!(find_artist_discographies_by_type))
+                .routes(routes!(find_artist_appearances))
+                .routes(routes!(get_artist_credits))
+        })
+        .finish()
 }
 
 data!(

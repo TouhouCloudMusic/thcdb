@@ -4,14 +4,16 @@ use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::adapter::inbound::rest::CurrentUser;
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
+use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain::correction::{self, CorrectionFilter};
 use crate::infra::error::Error;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::new().routes(routes!(pending_correction))
+    AppRouter::new()
+        .with_private(|r| r.routes(routes!(pending_correction)))
+        .finish()
 }
 
 #[derive(Deserialize, ToSchema)]

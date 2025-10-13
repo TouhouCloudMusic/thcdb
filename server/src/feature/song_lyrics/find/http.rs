@@ -7,17 +7,20 @@ use utoipa_axum::routes;
 
 use super::repo::{self, FindManyFilter, FindOneFilter};
 use crate::adapter::inbound::rest::api_response::Data;
-use crate::adapter::inbound::rest::data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
+use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::song_lyrics::SongLyrics;
 use crate::infra::error::Error;
 
 const TAG: &str = "Song Lyrics";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::new()
-        .routes(routes!(find_one_song_lyrics))
-        .routes(routes!(find_many_song_lyrics))
+    AppRouter::new()
+        .with_public(|r| {
+            r.routes(routes!(find_one_song_lyrics))
+                .routes(routes!(find_many_song_lyrics))
+        })
+        .finish()
 }
 
 data! {

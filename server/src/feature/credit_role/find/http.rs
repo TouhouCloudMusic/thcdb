@@ -7,8 +7,8 @@ use utoipa_axum::routes;
 
 use super::repo::{self, CommonFilter, FindManyFilter};
 use crate::adapter::inbound::rest::api_response::Data;
-use crate::adapter::inbound::rest::data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
+use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::credit_role::{CreditRole, CreditRoleSummary};
 use crate::domain::query_kind;
 use crate::infra::error::Error;
@@ -16,9 +16,12 @@ use crate::infra::error::Error;
 const TAG: &str = "Credit Role";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::new()
-        .routes(routes!(find_many_credit_roles_summary))
-        .routes(routes!(find_credit_role_by_id))
+    AppRouter::new()
+        .with_public(|r| {
+            r.routes(routes!(find_many_credit_roles_summary))
+                .routes(routes!(find_credit_role_by_id))
+        })
+        .finish()
 }
 
 data! {

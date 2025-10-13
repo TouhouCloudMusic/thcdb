@@ -1,3 +1,4 @@
+use std::cmp::max;
 use std::convert::Infallible;
 use std::env;
 use std::sync::Arc;
@@ -99,7 +100,7 @@ pub fn limit_layer(
     use tower_governor::governor::GovernorConfigBuilder;
 
     let config = GovernorConfigBuilder::default()
-        .per_millisecond(1000 / req_per_sec)
+        .per_nanosecond(max(1000000 / req_per_sec, 1))
         .burst_size(burst_size)
         .finish()
         .unwrap();

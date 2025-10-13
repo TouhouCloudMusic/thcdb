@@ -118,9 +118,11 @@ pub struct AuthCredential {
 
 impl AuthCredential {
     pub fn try_new(
-        username: String,
-        password: String,
+        username: impl Into<String>,
+        password: impl Into<String>,
     ) -> Result<Self, ValidateCredsError> {
+        let username = username.into();
+        let password = password.into();
         validate_username(&username)?;
         validate_password(&password)?;
         Ok(Self {

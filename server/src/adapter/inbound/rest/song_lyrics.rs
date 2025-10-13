@@ -1,12 +1,13 @@
 use axum::Json;
 use axum::extract::{Path, State};
 use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
 
 use super::extract::CurrentUser;
-use super::router_new;
 use super::state::{
     ArcAppState, {self},
 };
+use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::Message;
 use crate::application::correction::NewCorrectionDto;
 use crate::application::song_lyrics::{CreateError, UpsertCorrectionError};
@@ -15,7 +16,12 @@ use crate::domain::song_lyrics::NewSongLyrics;
 const TAG: &str = "Song Lyrics";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    router_new![create_song_lyrics, update_song_lyrics]
+    AppRouter::new()
+        .with_private(|r| {
+            r.routes(routes!(create_song_lyrics))
+                .routes(routes!(update_song_lyrics))
+        })
+        .finish()
 }
 
 #[utoipa::path(

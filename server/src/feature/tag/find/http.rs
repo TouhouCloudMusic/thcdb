@@ -6,17 +6,20 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::api_response::Data;
-use crate::adapter::inbound::rest::data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
+use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::tag::Tag;
 use crate::infra::error::Error;
 
 const TAG: &str = "Tag";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::new()
-        .routes(routes!(find_tag_by_id))
-        .routes(routes!(find_tag_by_keyword))
+    AppRouter::new()
+        .with_public(|r| {
+            r.routes(routes!(find_tag_by_id))
+                .routes(routes!(find_tag_by_keyword))
+        })
+        .finish()
 }
 
 data! {

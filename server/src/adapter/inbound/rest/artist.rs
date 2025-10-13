@@ -11,6 +11,7 @@ use super::extract::CurrentUser;
 use super::state::{
     ArcAppState, {self},
 };
+use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::{IntoApiResponse, Message};
 use crate::application::artist_image::{
     ArtistProfileImageInput, {self},
@@ -24,10 +25,13 @@ use crate::infra::error::Error;
 const TAG: &str = "Artist";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::new()
-        .routes(routes!(create_artist))
-        .routes(routes!(upsert_artist_correction))
-        .routes(routes!(upload_artist_profile_image))
+    AppRouter::new()
+        .with_private(|r| {
+            r.routes(routes!(create_artist))
+                .routes(routes!(upsert_artist_correction))
+                .routes(routes!(upload_artist_profile_image))
+        })
+        .finish()
 }
 
 #[utoipa::path(

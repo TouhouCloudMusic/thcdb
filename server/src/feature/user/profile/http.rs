@@ -4,9 +4,9 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::adapter::inbound::rest::CurrentUser;
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
+use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain;
 use crate::domain::user::UserProfile;
 use crate::infra::error::Error;
@@ -21,9 +21,10 @@ pub struct DataUserProfile {
 }
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::new()
-        .routes(routes!(profile))
-        .routes(routes!(profile_with_name))
+    AppRouter::new()
+        .with_public(|r| r.routes(routes!(profile_with_name)))
+        .with_private(|r| r.routes(routes!(profile)))
+        .finish()
 }
 
 #[utoipa::path(

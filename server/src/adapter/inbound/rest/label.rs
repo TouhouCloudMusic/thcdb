@@ -6,6 +6,7 @@ use utoipa_axum::routes;
 use super::extract::CurrentUser;
 use super::state;
 use super::state::ArcAppState;
+use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::Message;
 use crate::application::correction::NewCorrectionDto;
 use crate::application::label::{CreateError, UpsertCorrectionError};
@@ -14,9 +15,12 @@ use crate::domain::label::NewLabel;
 const TAG: &str = "Label";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::new()
-        .routes(routes!(create_label))
-        .routes(routes!(upsert_label_correction))
+    AppRouter::new()
+        .with_private(|r| {
+            r.routes(routes!(create_label))
+                .routes(routes!(upsert_label_correction))
+        })
+        .finish()
 }
 
 #[utoipa::path(

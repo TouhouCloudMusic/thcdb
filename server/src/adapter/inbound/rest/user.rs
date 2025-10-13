@@ -10,6 +10,7 @@ use super::extract::CurrentUser;
 use super::state::{
     ArcAppState, AuthSession, {self},
 };
+use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::{
     self, Data, IntoApiResponse, Message,
 };
@@ -28,13 +29,15 @@ use crate::infra::error::Error;
 const TAG: &str = "User";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    OpenApiRouter::new()
-        .routes(routes!(upload_profile_banner))
-        .routes(routes!(upload_avatar))
-        .routes(routes!(sign_out))
-        .routes(routes!(update_bio))
-        .routes(routes!(sign_in))
-        .routes(routes!(sign_up))
+    AppRouter::new()
+        .with_public(|r| r.routes(routes!(sign_in)).routes(routes!(sign_up)))
+        .with_private(|r| {
+            r.routes(routes!(upload_profile_banner))
+                .routes(routes!(upload_avatar))
+                .routes(routes!(sign_out))
+                .routes(routes!(update_bio))
+        })
+        .finish()
 }
 
 #[utoipa::path(
