@@ -1,40 +1,42 @@
 FROM debian:bookworm-slim AS base
 RUN apt-get update && apt-get install -y curl
 
-FROM base AS wild
-RUN curl -L https://github.com/davidlattimore/wild/releases/download/0.6.0/wild-linker-0.6.0-x86_64-unknown-linux-gnu.tar.gz | tar -xz -C /usr/local/bin/ --strip-components=1
+FROM base AS builder
 
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-FROM rust:slim-bookworm AS builder
-
-RUN rustup toolchain install nightly-x86_64-unknown-linux-gnu && \
-    rustup default nightly
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     clang \
-    lld \
     libssl-dev \
     pkg-config \
     git \
-    libgit2-dev
+    libgit2-dev \
+    mold
+
+RUN rustup update \
+&& rustup override set nightly \
+&& rustup component add rustc-codegen-cranelift-preview --toolchain nightly \
+&& rustup target add x86_64-unknown-linux-gnu --toolchain nightly
+
+ENV RUSTFLAGS="-Clink-arg=--ld-path=mold -Zthreads=0 -Zshare-generics=y"
+ENV CARGO_INCREMENTAL=0
 
 COPY . .
-COPY --from=wild /usr/local/bin/wild /usr/local/bin/wild
 
-ENV RUSTFLAGS="-Clink-arg=--ld-path=wild -Zthreads=0 -Zshare-generics=y"
-ENV CARGO_INCREMENTAL=0
 # TODO: configure debug or release build
-RUN --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/usr/local/cargo/git \
-    cargo build
+RUN --mount=type=cache,id=cargo_regi,target=/root/.cargo/registry \
+    --mount=type=cache,id=cargo_git,target=/root/.cargo/git \
+    --mount=type=cache,id=target,target=/app/target \
+    cargo build \
+    && mv /app/target/debug/thcdb_rs /root
 
 FROM debian:bookworm-slim AS runtime
 
-WORKDIR /app
-
-COPY --from=builder /app/target/debug/thcdb_rs /app/thcdb_rs
+COPY --from=builder /root/thcdb_rs /root/thcdb_rs
 COPY ./config.toml .
 
-ENTRYPOINT ["/app/thcdb_rs"]
+ENTRYPOINT ["/root/thcdb_rs"]

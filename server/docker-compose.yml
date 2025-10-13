@@ -3,11 +3,11 @@ services:
     image: postgres:18-alpine
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-appuser}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-appuser}
-      POSTGRES_DB: ${POSTGRES_DB:-appdb}
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: appuser
+      POSTGRES_DB: appdb
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-appuser} -d ${POSTGRES_DB:-appdb}"]
+      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -36,10 +36,11 @@ services:
       redis:
         condition: service_healthy
     environment:
-      SESSION_SECURE: ${SESSION_SECURE:-false}
-      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-changeme}"
+      SESSION_SECURE: false
+      ADMIN_PASSWORD: changeme
+      middleware::limit::req_per_sec: 1000000
 
-      DATABASE_URL: "postgres://${POSTGRES_USER:-appuser}:${POSTGRES_PASSWORD:-appuser}@db:5432/${POSTGRES_DB:-appdb}"
+      DATABASE_URL: "postgres://appuser:appuser@db:5432/appdb"
       REDIS_URL: "redis://redis:6379"
     ports:
       - "12345:12345"
