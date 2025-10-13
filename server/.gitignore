@@ -3,6 +3,8 @@
 .env
 .envrc
 .idea
+.hypothesis
+schemathesis-report
 config.dev.ron
 public
 target

@@ -1,0 +1,10 @@
+base-url                = "http://localhost:12345"
+generation.max-examples = 500
+request-timeout         = 3
+workers                 = "auto"
+
+[auth]
+basic = { username = "Admin", password = "changeme" }
+
+[reports.har]
+enabled = true
