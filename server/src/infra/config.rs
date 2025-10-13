@@ -32,7 +32,10 @@ impl Config {
     pub fn init() -> Self {
         config::Config::builder()
             .add_source(config::File::with_name("config"))
-            .add_source(config::Environment::default())
+            .add_source(
+                config::Environment::with_convert_case(config::Case::Snake)
+                    .separator("::"),
+            )
             .pipe(|cfg| {
                 #[cfg(debug_assertions)]
                 let cfg = cfg.add_source(
