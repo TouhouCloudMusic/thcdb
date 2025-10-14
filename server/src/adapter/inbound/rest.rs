@@ -8,13 +8,14 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{Json, Router};
 use flow::{Pipe, TapMut};
+use headers::authorization::{Basic, Credentials};
 use maud::{DOCTYPE, html};
 use middleware::append_global_middlewares;
 use state::{ArcAppState, AuthSession};
 use tokio::net::TcpListener;
 use tokio::signal;
 use tower_http::services::ServeDir;
-use utoipa::OpenApi;
+use utoipa::{OpenApi, PartialSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 use utoipa_scalar::{Scalar, Servable};
@@ -24,6 +25,7 @@ use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::feature;
 use crate::feature::artist::find::repo::CommonFilter as ArtistCommonFilter;
 use crate::infra::state::AppState;
+use crate::utils::openapi::ContentType;
 
 pub mod api_response;
 mod artist;
@@ -40,8 +42,92 @@ mod song_lyrics;
 pub mod state;
 mod tag;
 mod user;
-pub use error::ApiError;
 pub use extract::CurrentUser;
+
+#[allow(unused_imports)]
+pub use self::error::ApiError;
+
+struct DefaultErrorResponseModifier;
+
+impl DefaultErrorResponseModifier {
+    const DEFAULT_KEY: &'static str = "default";
+
+    fn fallback_response() -> utoipa::openapi::Response {
+        let mut response = api_response::Error::response_def();
+        Self::ensure_text(&mut response);
+        response
+    }
+
+    fn ensure_default(responses: &mut utoipa::openapi::response::Responses) {
+        match responses.responses.entry(Self::DEFAULT_KEY.to_string()) {
+            std::collections::btree_map::Entry::Vacant(entry) => {
+                entry.insert(utoipa::openapi::RefOr::T(
+                    Self::fallback_response(),
+                ));
+            }
+            std::collections::btree_map::Entry::Occupied(mut entry) => {
+                match entry.get_mut() {
+                    utoipa::openapi::RefOr::T(response) => {
+                        Self::ensure_json(response);
+                        Self::ensure_text(response);
+                    }
+                    utoipa::openapi::RefOr::Ref(_) => {
+                        entry.insert(utoipa::openapi::RefOr::T(
+                            Self::fallback_response(),
+                        ));
+                    }
+                }
+            }
+        }
+    }
+
+    fn ensure_json(response: &mut utoipa::openapi::Response) {
+        let key = ContentType::Json.into();
+        if response.content.contains_key(&key) {
+            return;
+        }
+
+        if let Some(content) = api_response::Error::response_def()
+            .content
+            .get(&key)
+            .cloned()
+        {
+            response.content.insert(key, content);
+        }
+    }
+
+    fn ensure_text(response: &mut utoipa::openapi::Response) {
+        let key = ContentType::Text.into();
+        response.content.entry(key).or_insert_with(|| {
+            utoipa::openapi::ContentBuilder::new()
+                .schema(String::schema().into())
+                .build()
+        });
+    }
+}
+
+impl utoipa::Modify for DefaultErrorResponseModifier {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        for path_item in openapi.paths.paths.values_mut() {
+            let operations = [
+                &mut path_item.get,
+                &mut path_item.put,
+                &mut path_item.post,
+                &mut path_item.delete,
+                &mut path_item.options,
+                &mut path_item.head,
+                &mut path_item.patch,
+                &mut path_item.trace,
+            ];
+
+            for operation in operations.into_iter().flatten() {
+                let responses = &mut operation.responses;
+
+                Self::ensure_default(responses);
+            }
+        }
+    }
+}
 
 #[derive(OpenApi)]
 #[openapi(
@@ -57,9 +143,12 @@ pub use extract::CurrentUser;
     components(schemas(
         correction::HandleCorrectionMethod,
         ArtistCommonFilter,
-    ))
+        api_response::Error,
+    )),
+    modifiers(&DefaultErrorResponseModifier)
 )]
 struct ApiDoc;
+
 fn basic_security_requirement() -> utoipa::openapi::security::SecurityRequirement
 {
     utoipa::openapi::security::SecurityRequirement::new(
@@ -210,7 +299,9 @@ fn router(state: ArcAppState) -> Router {
         .merge(credit_role::router())
         .routes(routes!(health_check));
 
-    let (router, api_doc) = api_router.split_for_parts();
+    let (router, mut api_doc) = api_router.split_for_parts();
+
+    utoipa::Modify::modify(&DefaultErrorResponseModifier, &mut api_doc);
 
     let doc_router = router
         .merge(Scalar::with_url("/docs", api_doc.clone()))
@@ -296,6 +387,9 @@ pub(crate) use data;
 mod test {
     use std::path::PathBuf;
 
+    use utoipa::Modify;
+    use utoipa::openapi::RefOr;
+
     use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 
     #[test]
@@ -304,5 +398,47 @@ mod test {
         let gen_path = format!("/{}", image_path.to_string_lossy());
 
         assert_eq!(gen_path, "/public/image");
+    }
+
+    #[test]
+    fn default_fallback_added() {
+        use utoipa::openapi::OpenApiBuilder;
+        use utoipa::openapi::path::{
+            HttpMethod, OperationBuilder, PathItemBuilder, PathsBuilder,
+        };
+        use utoipa::openapi::response::ResponseBuilder;
+
+        let operation = OperationBuilder::new()
+            .response("200", ResponseBuilder::new().build())
+            .response("401", ResponseBuilder::new().build())
+            .build();
+
+        let path_item = PathItemBuilder::new()
+            .operation(HttpMethod::Post, operation)
+            .build();
+        let paths = PathsBuilder::new().path("/demo", path_item).build();
+
+        let mut doc = OpenApiBuilder::new().paths(paths).build();
+
+        Modify::modify(&super::DefaultErrorResponseModifier, &mut doc);
+
+        let operation = doc
+            .paths
+            .paths
+            .get("/demo")
+            .and_then(|item| item.post.as_ref())
+            .expect("operation present");
+
+        let responses = &operation.responses.responses;
+
+        let default = responses
+            .get("default")
+            .expect("default response is inserted");
+        if let RefOr::T(response) = default {
+            assert!(response.content.contains_key("application/json"));
+            assert!(response.content.contains_key("text/plain"));
+        } else {
+            panic!("default response should be inline");
+        }
     }
 }
