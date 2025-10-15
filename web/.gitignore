@@ -1,4 +1,5 @@
 # Environment
+.direnv
 .envrc
 .env.local
 
