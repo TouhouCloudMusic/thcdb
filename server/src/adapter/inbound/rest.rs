@@ -51,9 +51,22 @@ struct DefaultErrorResponseModifier;
 
 impl DefaultErrorResponseModifier {
     const DEFAULT_KEY: &'static str = "default";
+    const TOO_MANY_REQUESTS_KEY: &'static str = "429";
 
     fn fallback_response() -> utoipa::openapi::Response {
         let mut response = api_response::Error::response_def();
+        Self::ensure_text(&mut response);
+        response
+    }
+
+    fn too_many_requests_response() -> utoipa::openapi::Response {
+        let mut response = utoipa::openapi::ResponseBuilder::new()
+            .description(
+                StatusCode::TOO_MANY_REQUESTS
+                    .canonical_reason()
+                    .unwrap_or("Too Many Requests"),
+            )
+            .build();
         Self::ensure_text(&mut response);
         response
     }
@@ -74,6 +87,33 @@ impl DefaultErrorResponseModifier {
                     utoipa::openapi::RefOr::Ref(_) => {
                         entry.insert(utoipa::openapi::RefOr::T(
                             Self::fallback_response(),
+                        ));
+                    }
+                }
+            }
+        }
+    }
+
+    fn ensure_too_many_requests(
+        responses: &mut utoipa::openapi::response::Responses,
+    ) {
+        match responses
+            .responses
+            .entry(Self::TOO_MANY_REQUESTS_KEY.to_string())
+        {
+            std::collections::btree_map::Entry::Vacant(entry) => {
+                entry.insert(utoipa::openapi::RefOr::T(
+                    Self::too_many_requests_response(),
+                ));
+            }
+            std::collections::btree_map::Entry::Occupied(mut entry) => {
+                match entry.get_mut() {
+                    utoipa::openapi::RefOr::T(response) => {
+                        Self::ensure_text(response);
+                    }
+                    utoipa::openapi::RefOr::Ref(_) => {
+                        entry.insert(utoipa::openapi::RefOr::T(
+                            Self::too_many_requests_response(),
                         ));
                     }
                 }
@@ -124,6 +164,7 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
                 let responses = &mut operation.responses;
 
                 Self::ensure_default(responses);
+                Self::ensure_too_many_requests(responses);
             }
         }
     }
@@ -439,6 +480,14 @@ mod test {
             assert!(response.content.contains_key("text/plain"));
         } else {
             panic!("default response should be inline");
+        }
+
+        let too_many_requests =
+            responses.get("429").expect("429 response is inserted");
+        if let RefOr::T(response) = too_many_requests {
+            assert!(response.content.contains_key("text/plain"));
+        } else {
+            panic!("429 response should be inline");
         }
     }
 }
