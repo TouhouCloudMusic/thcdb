@@ -14,7 +14,7 @@ services:
       - backend
 
   redis:
-    image: valkey/valkey:8-alpine
+    image: valkey/valkey:9-alpine@sha256:b4ee67d73e00393e712accc72cfd7003b87d0fcd63f0eba798b23251bfc9c394
     restart: always
     command: valkey-server --save 60 1 --loglevel warning
     healthcheck:
