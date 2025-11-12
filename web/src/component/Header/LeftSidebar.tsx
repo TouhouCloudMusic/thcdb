@@ -9,6 +9,7 @@ import {
 	MixerHorizontalIcon,
 	TargetIcon,
 	CrumpledPaperIcon,
+	HomeIcon,
 } from "solid-radix-icons"
 
 import { ListItem, Sidebar } from "~/component/Sidebar"
@@ -22,6 +23,10 @@ export function LeftSidebar() {
 	const { t } = useLingui()
 	// TODO: Icons
 	const LIST_ITEMS: ListItemContent[] = [
+		{
+			icon: HomeIcon,
+			text: t`Home`,
+		},
 		{
 			icon: TargetIcon,
 			text: t`Recommandation`,
