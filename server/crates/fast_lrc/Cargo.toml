@@ -4,7 +4,7 @@ name    = "fast-lrc"
 version = "0.1.0"
 
 [dependencies]
-atoi_simd = "0.16.1"
+atoi_simd = "0.17.0"
 memchr = "2.7.5"
 smallvec = { version = "1.15.1", features = [
     "union",
