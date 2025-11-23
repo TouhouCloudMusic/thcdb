@@ -3,7 +3,6 @@ import tanstackQuery from "@tanstack/eslint-plugin-query"
 import prettier from "eslint-config-prettier"
 import oxlint from "eslint-plugin-oxlint"
 import globals from "globals"
-import tslint from "typescript-eslint"
 
 import { tsConfig, tsxConfigArray } from "./config/eslint/index.js"
 

@@ -1,5 +1,6 @@
 import JsxA11y from "eslint-plugin-jsx-a11y"
 import Solid from "eslint-plugin-solid"
+import tslint from "typescript-eslint"
 
 /**
  * @type {import("eslint").Linter.RulesRecord}
@@ -68,6 +69,7 @@ export const tsConfig = {
  * @type {import("eslint").Linter.Config[]}
  */
 export const tsxConfigArray = [
+    ...tslint.configs.recommended,
 	// solid
 	{
 		files: ["src/**/*.tsx"],
