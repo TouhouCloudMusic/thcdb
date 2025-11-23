@@ -1,6 +1,5 @@
 // oxlint-disable no-magic-numbers
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query"
-import { SolidQueryDevtools } from "@tanstack/solid-query-devtools"
 import type { ParentProps } from "solid-js"
 
 export const QUERY_CLIENT = new QueryClient({
@@ -16,7 +15,6 @@ export const QUERY_CLIENT = new QueryClient({
 export function TanStackProvider(props: ParentProps) {
 	return (
 		<QueryClientProvider client={QUERY_CLIENT}>
-			<SolidQueryDevtools initialIsOpen={false} />
 			{props.children}
 		</QueryClientProvider>
 	)

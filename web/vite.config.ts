@@ -1,6 +1,7 @@
 import { lingui as linguiSolidPlugin } from "@lingui-solid/vite-plugin"
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
 import tailwindcss from "@tailwindcss/vite"
+import { devtools } from "@tanstack/devtools-vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
@@ -30,6 +31,8 @@ export default defineConfig(({ mode }) => {
 
 	return {
 		plugins: [
+			devtools(),
+
 			tanstackRouter({
 				target: "solid",
 				autoCodeSplitting: true,

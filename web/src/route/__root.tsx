@@ -1,10 +1,10 @@
 import * as meta from "@solidjs/meta"
 import { Title } from "@solidjs/meta"
 import { createRootRoute, Outlet } from "@tanstack/solid-router"
-import { TanStackRouterDevtools } from "@tanstack/solid-router-devtools"
 import type { ParentProps } from "solid-js"
 
 import { Header } from "~/component/Header"
+import { Devtools } from "~/component/devtools"
 import { NotFound } from "~/view/NotFound"
 import { InternalServerError } from "~/view/error/InternalServerError"
 
@@ -18,7 +18,7 @@ function RouteTree() {
 	return (
 		<Layout>
 			<Outlet />
-			<TanStackRouterDevtools />
+			<Devtools />
 		</Layout>
 	)
 }
