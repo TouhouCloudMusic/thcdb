@@ -53,7 +53,7 @@
 		"valibot": "1.2.0"
 	},
 	"devDependencies": {
-		"@ark/attest": "^0.48.2",
+		"@ark/attest": "^0.55.0",
 		"@chromatic-com/storybook": "^4.1.1",
 		"@eslint/js": "^9.33.0",
 		"@faker-js/faker": "^9.9.0",

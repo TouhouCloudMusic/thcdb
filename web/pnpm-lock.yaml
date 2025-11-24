@@ -130,8 +130,8 @@ importers:
         version: 1.2.0(typescript@5.9.2)
     devDependencies:
       '@ark/attest':
-        specifier: ^0.48.2
-        version: 0.48.2(typescript@5.9.2)
+        specifier: ^0.55.0
+        version: 0.55.0(typescript@5.9.2)
       '@chromatic-com/storybook':
         specifier: ^4.1.1
         version: 4.1.3(storybook@9.1.16(@testing-library/dom@10.4.1)(prettier@3.6.2)(vite@7.1.11(@types/node@24.5.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)))
@@ -341,20 +341,26 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@ark/attest@0.48.2':
-    resolution: {integrity: sha512-3k+PRxQSXk55Dqhghg+B+Ftpk+le+s2TBJpFoFRBseTOL0FNjZmXFuy9ZNBXCTGVT7nAUDBZrcmz+AAMQNr+Bw==}
+  '@ark/attest@0.55.0':
+    resolution: {integrity: sha512-RAgVU6sgpChOPB1vGdOd+8D3/mUsJ3Me+adARqz008yuNLs2+Om7Av4ML8OKscVMDjDNntzSluYr1nTr/0U92A==}
     hasBin: true
     peerDependencies:
       typescript: '*'
 
-  '@ark/fs@0.46.0':
-    resolution: {integrity: sha512-lBW6Vv6dZ74Gcc+zvJP8gjZACMo5o6hEuOvAtX6EJ5xNYBmX7nrXQaDdRfQNGDzgaX5UHGqi/vxk5moK94K7Yw==}
+  '@ark/fs@0.55.0':
+    resolution: {integrity: sha512-ILtCmyEwKero2qYyBZXIQlnk5L4evnbZ+teFuuomUKLsgJ4ZM1Dl/jufTE4eNb5ku0irNkkflMMjJFZFa8rBTQ==}
 
   '@ark/schema@0.46.0':
     resolution: {integrity: sha512-c2UQdKgP2eqqDArfBqQIJppxJHvNNXuQPeuSPlDML4rjw+f1cu0qAlzOG4b8ujgm9ctIDWwhpyw6gjG5ledIVQ==}
 
+  '@ark/schema@0.55.0':
+    resolution: {integrity: sha512-IlSIc0FmLKTDGr4I/FzNHauMn0MADA6bCjT1wauu4k6MyxhC1R9gz0olNpIRvK7lGGDwtc/VO0RUDNvVQW5WFg==}
+
   '@ark/util@0.46.0':
     resolution: {integrity: sha512-JPy/NGWn/lvf1WmGCPw2VGpBg5utZraE84I7wli18EDF3p3zc/e9WolT35tINeZO3l7C77SjqRJeAUoT0CvMRg==}
+
+  '@ark/util@0.55.0':
+    resolution: {integrity: sha512-aWFNK7aqSvqFtVsl1xmbTjGbg91uqtJV7Za76YGNEwIO4qLjMfyY8flmmbhooYMuqPCO2jyxu8hve943D+w3bA==}
 
   '@asamuzakjp/css-color@3.2.0':
     resolution: {integrity: sha512-K1A6z8tS3XsmCMM86xoWdn7Fkdn9m6RSVtocUrJYIwZnFVkng/PvkEoWtOWmP+Scc6saYWHWZYbndEEXxl24jw==}
@@ -1460,8 +1466,8 @@ packages:
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
 
-  '@prettier/sync@0.5.5':
-    resolution: {integrity: sha512-6BMtNr7aQhyNcGzmumkL0tgr1YQGfm9d7ZdmRpWqWuqpc9vZBind4xMe5NMiRECOhjuSiWHfBWLBnXkpeE90bw==}
+  '@prettier/sync@0.6.1':
+    resolution: {integrity: sha512-yF9G8vK/LYUTF3Cijd7VC9La3b20F20/J/fgoR4H0B8JGOWnZVZX6+I6+vODPosjmMcpdlUV+gUqJQZp3kLOcw==}
     peerDependencies:
       prettier: '*'
 
@@ -2547,8 +2553,14 @@ packages:
     resolution: {integrity: sha512-COROpnaoap1E2F000S62r6A60uHZnmlvomhfyT2DlTcrY1OrBKn2UhH7qn5wTC9zMvD0AY7csdPSNwKP+7WiQw==}
     engines: {node: '>= 0.4'}
 
+  arkregex@0.0.3:
+    resolution: {integrity: sha512-bU21QJOJEFJK+BPNgv+5bVXkvRxyAvgnon75D92newgHxkBJTgiFwQxusyViYyJkETsddPlHyspshDQcCzmkNg==}
+
   arktype@2.1.20:
     resolution: {integrity: sha512-IZCEEXaJ8g+Ijd59WtSYwtjnqXiwM8sWQ5EjGamcto7+HVN9eK0C4p0zDlCuAwWhpqr6fIBkxPuYDl4/Mcj/+Q==}
+
+  arktype@2.1.27:
+    resolution: {integrity: sha512-enctOHxI4SULBv/TDtCVi5M8oLd4J5SVlPUblXDzSsOYQNMzmVbUosGBnJuZDKmFlN5Ie0/QVEuTE+Z5X1UhsQ==}
 
   array-buffer-byte-length@1.0.2:
     resolution: {integrity: sha512-LHE+8BuR7RYGDKvnrmcuSq3tDcKv9OFEXQt/HpbZhY7V6h0zlUXutnAD82GiFx9rdieCMjkvtcsPqBwgUl1Iiw==}
@@ -3826,8 +3838,8 @@ packages:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
     engines: {node: '>=10'}
 
-  make-synchronized@0.4.2:
-    resolution: {integrity: sha512-EwEJSg8gSGLicKXp/VzNi1tvzhdmNBxOzslkkJSoNUCQFZKH/NIUIp7xlfN+noaHrz4BJDN73gne8IHnjl/F/A==}
+  make-synchronized@0.8.0:
+    resolution: {integrity: sha512-DZu4lwc0ffoFz581BSQa/BJl+1ZqIkoRQ+VejMlH0VrP4E86StAODnZujZ4sepumQj8rcP7wUnUBGM8Gu+zKUA==}
 
   map-or-similar@1.5.0:
     resolution: {integrity: sha512-0aF7ZmVon1igznGI4VS30yugpduQW3y3GkcgGJOp7d8x8QrizhigUxjI/m2UojsXXto+jLAH3KSz+xOJTiORjg==}
@@ -4212,11 +4224,6 @@ packages:
         optional: true
       prettier-plugin-svelte:
         optional: true
-
-  prettier@3.5.3:
-    resolution: {integrity: sha512-QQtaxnoDJeAkDvDKWCLiwIXkTgRhwYDEQCghU9Z6q03iyek/rxRh/2lC3HB7P8sWT2xC/y5JDctPLBIGzHKbhw==}
-    engines: {node: '>=14'}
-    hasBin: true
 
   prettier@3.6.2:
     resolution: {integrity: sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==}
@@ -5156,26 +5163,32 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.30
 
-  '@ark/attest@0.48.2(typescript@5.9.2)':
+  '@ark/attest@0.55.0(typescript@5.9.2)':
     dependencies:
-      '@ark/fs': 0.46.0
-      '@ark/util': 0.46.0
-      '@prettier/sync': 0.5.5(prettier@3.5.3)
+      '@ark/fs': 0.55.0
+      '@ark/util': 0.55.0
+      '@prettier/sync': 0.6.1(prettier@3.6.2)
       '@typescript/analyze-trace': 0.10.1
       '@typescript/vfs': 1.6.1(typescript@5.9.2)
-      arktype: 2.1.20
-      prettier: 3.5.3
+      arktype: 2.1.27
+      prettier: 3.6.2
       typescript: 5.9.2
     transitivePeerDependencies:
       - supports-color
 
-  '@ark/fs@0.46.0': {}
+  '@ark/fs@0.55.0': {}
 
   '@ark/schema@0.46.0':
     dependencies:
       '@ark/util': 0.46.0
 
+  '@ark/schema@0.55.0':
+    dependencies:
+      '@ark/util': 0.55.0
+
   '@ark/util@0.46.0': {}
+
+  '@ark/util@0.55.0': {}
 
   '@asamuzakjp/css-color@3.2.0':
     dependencies:
@@ -6285,10 +6298,10 @@ snapshots:
 
   '@popperjs/core@2.11.8': {}
 
-  '@prettier/sync@0.5.5(prettier@3.5.3)':
+  '@prettier/sync@0.6.1(prettier@3.6.2)':
     dependencies:
-      make-synchronized: 0.4.2
-      prettier: 3.5.3
+      make-synchronized: 0.8.0
+      prettier: 3.6.2
 
   '@redocly/ajv@8.11.3':
     dependencies:
@@ -7402,7 +7415,7 @@ snapshots:
 
   '@typescript/vfs@1.6.1(typescript@5.9.2)':
     dependencies:
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.3
       typescript: 5.9.2
     transitivePeerDependencies:
       - supports-color
@@ -7571,10 +7584,20 @@ snapshots:
 
   aria-query@5.3.2: {}
 
+  arkregex@0.0.3:
+    dependencies:
+      '@ark/util': 0.55.0
+
   arktype@2.1.20:
     dependencies:
       '@ark/schema': 0.46.0
       '@ark/util': 0.46.0
+
+  arktype@2.1.27:
+    dependencies:
+      '@ark/schema': 0.55.0
+      '@ark/util': 0.55.0
+      arkregex: 0.0.3
 
   array-buffer-byte-length@1.0.2:
     dependencies:
@@ -9009,7 +9032,7 @@ snapshots:
     dependencies:
       semver: 7.7.3
 
-  make-synchronized@0.4.2: {}
+  make-synchronized@0.8.0: {}
 
   map-or-similar@1.5.0: {}
 
@@ -9355,8 +9378,6 @@ snapshots:
       prettier: 3.6.2
     optionalDependencies:
       '@trivago/prettier-plugin-sort-imports': 5.2.2(prettier@3.6.2)
-
-  prettier@3.5.3: {}
 
   prettier@3.6.2: {}
 
