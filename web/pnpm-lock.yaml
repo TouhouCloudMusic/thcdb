@@ -13,7 +13,7 @@ importers:
         version: 1.7.4
       '@formisch/solid':
         specifier: ^0.4.0
-        version: 0.4.0(solid-js@1.9.9)(typescript@5.9.2)(valibot@1.1.0(typescript@5.9.2))
+        version: 0.4.0(solid-js@1.9.9)(typescript@5.9.2)(valibot@1.2.0(typescript@5.9.2))
       '@kobalte/core':
         specifier: ^0.13.11
         version: 0.13.11(solid-js@1.9.9)
@@ -126,8 +126,8 @@ importers:
         specifier: ^3.3.1
         version: 3.3.1
       valibot:
-        specifier: 1.1.0
-        version: 1.1.0(typescript@5.9.2)
+        specifier: 1.2.0
+        version: 1.2.0(typescript@5.9.2)
     devDependencies:
       '@ark/attest':
         specifier: ^0.48.2
@@ -5018,8 +5018,8 @@ packages:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
 
-  valibot@1.1.0:
-    resolution: {integrity: sha512-Nk8lX30Qhu+9txPYTwM0cFlWLdPFsFr6LblzqIySfbZph9+BFsAHsNvHOymEviUepeIW6KFHzpX8TKhbptBXXw==}
+  valibot@1.2.0:
+    resolution: {integrity: sha512-mm1rxUsmOxzrwnX5arGS+U4T25RdvpPjPN4yR0u9pUBov9+zGVtO84tif1eY4r6zWxVxu3KzIyknJy3rxfRZZg==}
     peerDependencies:
       typescript: '>=5'
     peerDependenciesMeta:
@@ -5998,10 +5998,10 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@formisch/solid@0.4.0(solid-js@1.9.9)(typescript@5.9.2)(valibot@1.1.0(typescript@5.9.2))':
+  '@formisch/solid@0.4.0(solid-js@1.9.9)(typescript@5.9.2)(valibot@1.2.0(typescript@5.9.2))':
     dependencies:
       solid-js: 1.9.9
-      valibot: 1.1.0(typescript@5.9.2)
+      valibot: 1.2.0(typescript@5.9.2)
     optionalDependencies:
       typescript: 5.9.2
 
@@ -6312,7 +6312,7 @@ snapshots:
   '@modular-forms/solid@0.25.1(solid-js@1.9.9)(typescript@5.9.2)':
     dependencies:
       solid-js: 1.9.9
-      valibot: 1.1.0(typescript@5.9.2)
+      valibot: 1.2.0(typescript@5.9.2)
     transitivePeerDependencies:
       - typescript
 
@@ -10329,7 +10329,7 @@ snapshots:
 
   uuid@9.0.1: {}
 
-  valibot@1.1.0(typescript@5.9.2):
+  valibot@1.2.0(typescript@5.9.2):
     optionalDependencies:
       typescript: 5.9.2
 
