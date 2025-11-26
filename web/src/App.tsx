@@ -4,10 +4,14 @@ import { createRouter, RouterProvider } from "@tanstack/solid-router"
 
 import { routeTree } from "./routeTree.gen"
 import { StateProvider } from "./state"
+import { QUERY_CLIENT } from "./state/tanstack"
 import { NotFound } from "./view/NotFound"
 
 const router = createRouter({
 	routeTree,
+	context: {
+		queryClient: QUERY_CLIENT,
+	},
 	// We use tanstack query, so we don't need the built-in cache of tanstack router
 	defaultPreloadStaleTime: 0,
 	defaultNotFoundComponent: () => <NotFound />,
