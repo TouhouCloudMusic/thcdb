@@ -33,7 +33,6 @@ data! {
     path = "/song/{id}",
     responses(
         (status = 200, body = DataOptionSong),
-        Error
     ),
 )]
 async fn find_song_by_id(
@@ -55,7 +54,6 @@ struct KwQuery {
     params(KwQuery),
     responses(
         (status = 200, body = DataVecSong),
-        Error
     ),
 )]
 async fn find_song_by_keyword(

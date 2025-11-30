@@ -33,7 +33,6 @@ data! {
     path = "/event/{id}",
     responses(
         (status = 200, body = DataOptionEvent),
-        Error
     ),
 )]
 async fn find_event_by_id(
@@ -57,7 +56,6 @@ struct KeywordQuery {
     ),
     responses(
         (status = 200, body = DataVecEvent),
-        Error
     ),
 )]
 async fn find_event_by_keyword(

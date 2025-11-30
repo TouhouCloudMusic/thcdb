@@ -33,8 +33,6 @@ data! {
     path = "/tag/{id}",
     responses(
         (status = 200, body = DataOptionTag),
-        (status = 401),
-        Error
     ),
 )]
 async fn find_tag_by_id(
@@ -56,8 +54,6 @@ struct KwArgs {
     params(KwArgs),
     responses(
         (status = 200, body = DataVecTag),
-        (status = 401),
-        Error
     ),
 )]
 async fn find_tag_by_keyword(

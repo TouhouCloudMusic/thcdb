@@ -34,7 +34,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     path = "/release/{id}",
     responses(
         (status = 200, body = DataOptionRelease),
-        Error,
     ),
 )]
 async fn find_release_by_id(
@@ -56,7 +55,6 @@ struct KwQuery {
     params(KwQuery),
     responses(
         (status = 200, body = DataVecRelease),
-        Error,
     ),
 )]
 async fn find_release_by_keyword(

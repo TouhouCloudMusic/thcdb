@@ -47,7 +47,6 @@ impl From<KwQuery> for FindManyFilter {
     params(KwQuery),
     responses(
         (status = 200, body = DataVecCreditRoleSummary),
-        Error
     )
 )]
 async fn find_many_credit_roles_summary(
@@ -72,7 +71,6 @@ async fn find_many_credit_roles_summary(
     ),
     responses(
         (status = 200, body = DataOptionCreditRole),
-        Error
     ),
 )]
 async fn find_credit_role_by_id(

@@ -31,7 +31,6 @@ data! {
     path = "/languages",
     responses(
         (status = 200, body = DataVecLanguage),
-        Error
     ),
 )]
 async fn language_list(
@@ -50,7 +49,6 @@ async fn language_list(
     path = "/user-roles",
     responses(
         (status = 200, body = DataVecUserRole),
-        Error
     ),
 )]
 async fn user_roles(

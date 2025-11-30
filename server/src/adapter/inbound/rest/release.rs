@@ -39,8 +39,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     request_body = NewCorrectionDto<NewRelease>,
     responses(
 		(status = 200, body = Message),
-        (status = 401),
-		CreateError
     ),
 )]
 async fn create_release(
@@ -60,8 +58,6 @@ async fn create_release(
     request_body = NewCorrectionDto<NewRelease>,
     responses(
 		(status = 200, body = Message),
-        (status = 401),
-		UpsertCorrectionError
     ),
 )]
 async fn update_release(
@@ -94,8 +90,6 @@ pub struct ReleaseCoverArtFormData {
     request_body = ReleaseCoverArtFormData,
     responses(
         (status = 200, body = Message),
-        (status = 401),
-        application::release_image::Error
     )
 )]
 

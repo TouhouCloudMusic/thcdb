@@ -61,8 +61,6 @@ struct PendingCorrectionPath {
     params(PendingCorrectionPath),
     responses(
         (status = 200, body = Data<Option<i32>>),
-        (status = 401),
-        Error
     ),
 )]
 async fn pending_correction(

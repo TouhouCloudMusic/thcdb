@@ -62,7 +62,6 @@ impl AppearanceQueryDto {
     ),
     responses(
         (status = 200, body = DataPaginatedAppearance),
-        Error
     ),
 )]
 async fn find_artist_appearances(
@@ -102,7 +101,6 @@ impl CreditQueryDto {
     ),
     responses(
         (status = 200, body = DataPaginatedCredit),
-        Error
     ),
 )]
 async fn get_artist_credits(
@@ -144,7 +142,6 @@ impl DiscographyQueryDto {
     ),
     responses(
         (status = 200, body = DataPaginatedDiscography),
-        Error
     ),
 )]
 async fn find_artist_discographies_by_type(
@@ -202,7 +199,6 @@ data! {
     ),
     responses(
         (status = 200, body = DataInitDiscography),
-        Error
     ),
 )]
 async fn find_artist_discographies_init(

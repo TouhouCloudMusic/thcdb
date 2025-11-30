@@ -37,7 +37,6 @@ data!(
     ),
     responses(
         (status = 200, body = DataOptionArtist),
-        Error
     ),
 )]
 async fn find_artist_by_id(
@@ -71,7 +70,6 @@ impl From<FindManyFilterDto> for FindManyFilter {
     ),
     responses(
         (status = 200, body = DataVecArtist),
-        Error
     ),
 )]
 async fn find_many_artist(

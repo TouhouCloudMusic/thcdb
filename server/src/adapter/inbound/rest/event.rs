@@ -32,8 +32,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     request_body = NewCorrectionDto<NewEvent>,
     responses(
         (status = 200, body = Message),
-        (status = 401),
-        CreateError
     ),
 )]
 async fn create_event(
@@ -53,8 +51,6 @@ async fn create_event(
     request_body = NewEvent,
     responses(
         (status = 200, body = Message),
-        (status = 401),
-        event::UpsertCorrectionError
     ),
 )]
 async fn upsert_event_correction(

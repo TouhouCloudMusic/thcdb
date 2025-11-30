@@ -30,8 +30,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     request_body = NewCorrectionDto<NewSong>,
     responses(
 		(status = 200, body = Message),
-        (status = 401),
-        CreateError
     ),
 )]
 async fn create_song(
@@ -51,8 +49,6 @@ async fn create_song(
     request_body = NewCorrectionDto<NewSong>,
     responses(
 		(status = 200, body = Message),
-        (status = 401),
-        UpsertCorrectionError
     ),
 )]
 async fn update_song(

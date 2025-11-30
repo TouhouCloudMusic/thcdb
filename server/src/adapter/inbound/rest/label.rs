@@ -30,8 +30,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     request_body = NewCorrectionDto<NewLabel>,
     responses(
         (status = 200, body = Message),
-        (status = 401),
-        CreateError
     ),
 )]
 
@@ -52,8 +50,6 @@ async fn create_label(
     request_body = NewCorrectionDto<NewLabel>,
     responses(
         (status = 200, body = Message),
-        (status = 401),
-        UpsertCorrectionError
     ),
 )]
 async fn upsert_label_correction(

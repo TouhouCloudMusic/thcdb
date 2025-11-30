@@ -33,8 +33,6 @@ data! {
     path = "/label/{id}",
     responses(
         (status = 200, body = DataOptionLabel),
-        (status = 401),
-        Error
     ),
 )]
 async fn find_label_by_id(
@@ -56,8 +54,6 @@ struct KwArgs {
     params(KwArgs),
     responses(
         (status = 200, body = DataVecLabel),
-        (status = 401),
-        Error
     ),
 )]
 async fn find_label_by_keyword(

@@ -63,7 +63,6 @@ impl From<FindManySongLyricsQuery> for FindManyFilter {
     params(FindOneSongLyricsQuery),
     responses(
         (status = 200, body = DataOptionSongLyrics),
-        Error
     ),
 )]
 async fn find_one_song_lyrics(
@@ -80,7 +79,6 @@ async fn find_one_song_lyrics(
     params(FindManySongLyricsQuery),
     responses(
         (status = 200, body = DataVecSongLyrics),
-        Error
     ),
 )]
 async fn find_many_song_lyrics(

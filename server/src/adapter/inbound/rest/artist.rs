@@ -17,10 +17,7 @@ use crate::application::artist_image::{
     ArtistProfileImageInput, {self},
 };
 use crate::application::correction::NewCorrectionDto;
-use crate::application::error::Unauthorized;
-use crate::domain;
 use crate::domain::artist::NewArtist;
-use crate::infra::error::Error;
 
 const TAG: &str = "Artist";
 
@@ -41,8 +38,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     request_body = NewCorrectionDto<NewArtist>,
     responses(
         (status = 200, body = Message),
-        Error,
-        domain::artist::ValidationError
     ),
 )]
 // #[axum::debug_handler]
@@ -68,9 +63,6 @@ async fn create_artist(
     request_body = NewCorrectionDto<NewArtist>,
     responses(
         (status = 200, body = Message),
-        Error,
-        domain::artist::ValidationError,
-        Unauthorized
     ),
 )]
 async fn upsert_artist_correction(
@@ -108,7 +100,6 @@ pub struct ArtistProfileImageFormData {
     path = "/artist/{id}/profile-image",
     responses(
         (status = 200, body = Message),
-        artist_image::Error
     )
 )]
 async fn upload_artist_profile_image(

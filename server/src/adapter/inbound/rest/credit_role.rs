@@ -29,8 +29,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     request_body = NewCorrectionDto<NewCreditRole>,
     responses(
         (status = 200, body = Message),
-        (status = 401),
-        CreateError
     ),
 )]
 async fn create_credit_role(
@@ -51,8 +49,6 @@ async fn create_credit_role(
     request_body = NewCorrectionDto<NewCreditRole>,
     responses(
         (status = 200, body = Message),
-        (status = 401),
-        UpsertCorrectionError
     ),
 )]
 async fn upsert_credit_role_correction(

@@ -13,7 +13,6 @@ use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::{
     Message, {self},
 };
-use crate::application;
 use crate::domain::TransactionManager;
 use crate::domain::correction::ApproveCorrectionContext;
 use crate::infra::error::Error;
@@ -46,8 +45,6 @@ struct HandleCorrectionQuery {
     ),
 	responses(
 		(status = 200, body = Message),
-		(status = 401),
-		application::correction::Error
 	),
 )]
 // TODO: Better name
