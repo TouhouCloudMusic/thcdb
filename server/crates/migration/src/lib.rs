@@ -44,6 +44,7 @@ migrations![
     m20250918_080000_make_song_credit_role_optional,
     m20250928_235900_add_event_location,
     m20251001_090000_fix_event_validate_date,
+    m20251202_000000_create_tag_vote,
 ];
 
 macro_rules! migration {

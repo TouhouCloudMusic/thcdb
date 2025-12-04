@@ -8,6 +8,7 @@ pub mod release;
 pub mod song;
 pub mod song_lyrics;
 pub mod tag;
+mod tag_vote;
 pub mod user;
 
 use utoipa_axum::router::OpenApiRouter;
@@ -26,5 +27,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .merge(song::router())
         .merge(song_lyrics::router())
         .merge(tag::router())
+        .merge(tag_vote::router())
         .merge(user::router())
 }

@@ -37,6 +37,7 @@ mod constant;
 mod domain;
 mod feature;
 mod infra;
+mod shared;
 mod utils;
 
 use std::sync::Arc;

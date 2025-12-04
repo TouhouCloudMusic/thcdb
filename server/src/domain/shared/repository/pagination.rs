@@ -1,4 +1,3 @@
-#![expect(clippy::option_if_let_else)]
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -29,3 +28,6 @@ pub struct Cursor {
     pub at: i32,
     pub limit: u8,
 }
+
+pub const DEFAULT_LIMIT: u32 = 20;
+pub const MAX_LIMIT: u32 = 100;
