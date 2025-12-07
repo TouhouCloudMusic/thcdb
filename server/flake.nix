@@ -74,6 +74,7 @@
             rusty-hook
             dprint
             just
+            sea-orm-cli
           ];
         };
       }

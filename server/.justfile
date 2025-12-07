@@ -24,7 +24,7 @@ pre-push: check
 default: fmt && fix
 
 __rm_entites:
-  rm crates/entity/src/entities/*
+  rm -f crates/entity/src/entities/*
 
 __generate:
   sea-orm-cli generate entity \
