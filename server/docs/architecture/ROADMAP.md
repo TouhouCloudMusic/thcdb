@@ -2,6 +2,41 @@
 
 本文档汇总所有待实现功能的开发计划。
 
+**快速导航（功能树）**:
+
+- [功能完成状态](#功能完成状态)
+  - [Artist](./artist/design)
+  - [Release](./docs/architecture/release/design.md)
+  - [Song](./song/design.md)
+  - [Event](./event/design.md)
+  - [Label](./label/design.md)
+  - [Tag](./tag/design.md)
+  - Credit Role
+  - Song Lyrics
+  - [User](./user/design.md)
+  - [Correction](./correction/design.md)
+- [第一阶段：核心功能](#第一阶段：核心功能)
+  - [1.1 评论系统](./comment/design.md)
+  - [1.2 搜索功能](./search/design.md)
+  - [1.3 修正系统扩展](./correction/design.md)
+  - [1.4 喜欢系统](./like-and-favorite/design.md)
+  - [1.5 用户权限系统](./user/design.md)
+- [第二阶段：社交功能](#第二阶段：社交功能)
+  - [2.1 用户关注系统](./user/design.md)
+  - [2.2 用户列表系统](./user-lists/design.md)
+  - [2.3 通知系统](./notification/design.md)
+- [第三阶段：管理功能](#第三阶段：管理功能)
+  - [3.1 图片队列系统](./image/design.md)
+  - [3.2 标签系统扩展](./tag/design.md)
+- [第四阶段：数据分析](#第四阶段：数据分析)
+  - [4.1 统计系统](./statistics/design.md)
+  - [4.2 推荐系统](./recommendation/design.md)
+- [第五阶段：高级功能](#第五阶段：高级功能)
+  - [5.1 历史查看 API](./history-tracking/design.md)
+- [依赖关系](#依赖关系)
+- [统计](#统计)
+- [架构指南](#架构指南)
+
 ## 功能完成状态
 
 ### 已完成
@@ -27,16 +62,6 @@
 
 **优先级**: 高 | **状态**: 完全缺失 | **设计文档**: [comment](./comment/)
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/{entity_type}/{entity_id}/comments` | GET | 获取实体评论列表 |
-| `/{entity_type}/{entity_id}/comments` | POST | 创建评论 |
-| `/comment/{id}` | GET/PUT/DELETE | 评论 CRUD |
-| `/comment/{id}/reply` | POST | 回复评论 |
-| `/admin/comments/pending` | GET | 待审核评论 |
-| `/admin/comment/{id}/approve` | POST | 批准评论 |
-| `/admin/comment/{id}/hide` | POST | 隐藏评论 |
-| `/comment/{id}/revisions` | GET | 评论修订历史 |
 
 **实现要点**:
 - `Comment` 域模型，支持线程化回复
@@ -50,15 +75,6 @@
 
 **优先级**: 高 | **状态**: 完全缺失 | **设计文档**: [search](./search/)
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/search` | GET | 全局搜索 |
-| `/search/artists` | GET | 搜索艺人 |
-| `/search/releases` | GET | 搜索发行版本 |
-| `/search/songs` | GET | 搜索歌曲 |
-| `/search/events` | GET | 搜索活动 |
-| `/search/labels` | GET | 搜索厂牌 |
-| `/search/tags` | GET | 搜索标签 |
 
 **实现要点**:
 - 跨语言搜索（中/日/英）
@@ -72,14 +88,6 @@
 
 **优先级**: 高 | **状态**: 部分实现 | **设计文档**: [correction](./correction/)
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/correction/{id}` | GET | 修正详情 |
-| `/correction/{id}/reject` | POST | 拒绝修正 |
-| `/correction/{id}/revisions` | GET | 修正历史版本 |
-| `/correction/{id}/comments` | GET | 修正评论 |
-| `/user/{id}/corrections` | GET | 用户的修正列表 |
-| `/correction/{id}/supersede` | POST | 替代修正 |
 
 **实现要点**:
 - 拒绝功能（含原因记录）
@@ -93,14 +101,6 @@
 
 **优先级**: 高 | **状态**: 完全缺失 | **设计文档**: [like-and-favorite](./like-and-favorite/)
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/{entity_type}/{id}/like` | POST | 喜欢 |
-| `/{entity_type}/{id}/unlike` | POST | 取消喜欢 |
-| `/{entity_type}/{id}/like-status` | GET | 喜欢状态 |
-| `/{entity_type}/{id}/like-count` | GET | 喜欢数量 |
-| `/user/{id}/likes` | GET | 用户喜欢列表 |
-| `/user/{id}/likes/{entity_type}` | GET | 按类型筛选 |
 
 **实现要点**:
 - `user_like` 数据库表
@@ -112,12 +112,6 @@
 
 **优先级**: 高 | **状态**: 部分实现 | **设计文档**: [user](./user/)
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/admin/users` | GET | 用户列表 |
-| `/admin/user/{id}/roles` | GET | 用户角色 |
-| `/admin/user/{id}/roles` | PUT | 修改角色 |
-| `/roles` | GET | 可用角色列表 |
 
 **实现要点**:
 - 权限检查中间件
@@ -132,14 +126,6 @@
 
 **优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [user](./user/)
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/user/{id}/follow` | POST | 关注用户 |
-| `/user/{id}/unfollow` | POST | 取消关注 |
-| `/user/{id}/following` | GET | 关注列表 |
-| `/user/{id}/followers` | GET | 粉丝列表 |
-| `/user/{id}/follow-status` | GET | 关注状态 |
-| `/feed` | GET | 活动流 |
 
 ---
 
@@ -147,15 +133,6 @@
 
 **优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [user-lists](./user-lists/)
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/user/{id}/lists` | GET | 用户的列表 |
-| `/list` | POST | 创建列表 |
-| `/list/{id}` | GET/PUT/DELETE | 列表 CRUD |
-| `/list/{id}/items` | GET/POST | 列表项管理 |
-| `/list/{id}/items/{item_id}` | DELETE | 删除列表项 |
-| `/list/{id}/items/reorder` | POST | 重排序 |
-| `/lists/public` | GET | 公开列表 |
 
 **使用场景**: 播放列表、收藏夹、愿望清单、主题收藏
 
@@ -165,13 +142,6 @@
 
 **优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [notification](./notification/)
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/notifications` | GET | 通知列表 |
-| `/notifications/unread-count` | GET | 未读数量 |
-| `/notifications/{id}/read` | POST | 标记已读 |
-| `/notifications/read-all` | POST | 全部已读 |
-| `/notifications/settings` | GET/PUT | 通知设置 |
 
 **通知类型**:
 - 评论: 被回复、被提及、审核结果
@@ -186,15 +156,6 @@
 
 **优先级**: 中 | **状态**: 部分实现 | **设计文档**: [image](./image/)
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/admin/image-queue` | GET | 待审核队列 |
-| `/admin/image-queue/{id}` | GET | 图片详情 |
-| `/admin/image-queue/{id}/approve` | POST | 批准 |
-| `/admin/image-queue/{id}/reject` | POST | 拒绝 |
-| `/admin/image-queue/{id}/revert` | POST | 撤销 |
-| `/admin/image-queue/pending-count` | GET | 待审核数量 |
-| `/user/{id}/image-queue` | GET | 用户的图片 |
 
 ---
 
@@ -202,15 +163,6 @@
 
 **优先级**: 中 | **状态**: 部分实现 | **设计文档**: [tag](./tag/)
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/{entity_type}/{id}/tags` | GET | 实体的标签 |
-| `/{entity_type}/{id}/tags` | POST | 添加标签 |
-| `/{entity_type}/{id}/tags/{tag_id}` | DELETE | 移除标签 |
-| `/tag/{id}/parents` | GET | 父标签 |
-| `/tag/{id}/children` | GET | 子标签 |
-| `/tag` | POST | 创建标签 |
-| `/tag/{id}` | PUT | 更新标签 |
 
 ---
 
@@ -220,16 +172,6 @@
 
 **优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [statistics](./statistics/)
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/{entity_type}/{id}/view` | POST | 记录浏览 |
-| `/stats/popular/{entity_type}` | GET | 热门内容 |
-| `/stats/popular/{entity_type}/daily` | GET | 日榜 |
-| `/stats/popular/{entity_type}/weekly` | GET | 周榜 |
-| `/stats/popular/{entity_type}/monthly` | GET | 月榜 |
-| `/stats/user/{id}` | GET | 用户贡献统计 |
-| `/stats/contributors` | GET | 贡献者排行 |
-| `/stats/overview` | GET | 系统概览 |
 
 **实现要点**:
 - `entity_view_count` 表
@@ -242,14 +184,6 @@
 
 **优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [recommendation](./recommendation/)
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/song/{id}/similar` | GET | 相似歌曲 |
-| `/release/{id}/similar` | GET | 相似发行版本 |
-| `/artist/{id}/similar` | GET | 相似艺人 |
-| `/artist/{id}/other-releases` | GET | 艺人其他作品 |
-| `/song/{id}/same-release` | GET | 同专辑歌曲 |
-| `/{entity_type}/{id}/recommendations` | GET | 综合推荐 |
 
 **实现要点**:
 - 基于标签的 Jaccard 相似度
@@ -264,10 +198,6 @@
 
 **优先级**: 低 | **状态**: 完全缺失 | **设计文档**: [history-tracking](./history-tracking/)
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/{entity_type}/{id}/corrections` | GET | 实体的修正历史 |
-| `/correction/{id1}/compare/{id2}` | GET | 版本对比 |
 
 **实现要点**:
 - 基于 Correction 系统
