@@ -194,7 +194,7 @@ importers:
         version: 1.132.25(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.7.0)(solid-js@1.9.10)(vite@7.1.11(@types/node@24.5.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)))(vite@7.1.11(@types/node@24.5.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6))
       '@tanstack/solid-devtools':
         specifier: ^0.7.14
-        version: 0.7.14(csstype@3.2.3)(solid-js@1.9.10)
+        version: 0.7.17(csstype@3.2.3)(solid-js@1.9.10)
       '@tanstack/solid-query-devtools':
         specifier: ^5.91.0
         version: 5.91.1(@tanstack/solid-query@5.90.15(solid-js@1.9.10))(solid-js@1.9.10)
@@ -2052,12 +2052,20 @@ packages:
     resolution: {integrity: sha512-LefnH9KE9uRDEWifc3QDcooskA8ikfs41bybDTgpYQpyTUspZnaEdUdya9Hry0KYxZ8nos0S3nNbsP79KHqr6Q==}
     engines: {node: '>=18'}
 
+  '@tanstack/devtools-client@0.0.5':
+    resolution: {integrity: sha512-hsNDE3iu4frt9cC2ppn1mNRnLKo2uc1/1hXAyY9z4UYb+o40M2clFAhiFoo4HngjfGJDV3x18KVVIq7W4Un+zA==}
+    engines: {node: '>=18'}
+
   '@tanstack/devtools-event-bus@0.3.3':
     resolution: {integrity: sha512-lWl88uLAz7ZhwNdLH6A3tBOSEuBCrvnY9Fzr5JPdzJRFdM5ZFdyNWz1Bf5l/F3GU57VodrN0KCFi9OA26H5Kpg==}
     engines: {node: '>=18'}
 
   '@tanstack/devtools-event-client@0.3.5':
     resolution: {integrity: sha512-RL1f5ZlfZMpghrCIdzl6mLOFLTuhqmPNblZgBaeKfdtk5rfbjykurv+VfYydOFXj0vxVIoA2d/zT7xfD7Ph8fw==}
+    engines: {node: '>=18'}
+
+  '@tanstack/devtools-event-client@0.4.0':
+    resolution: {integrity: sha512-RPfGuk2bDZgcu9bAJodvO2lnZeHuz4/71HjZ0bGb/SPg8+lyTA+RLSKQvo7fSmPSi8/vcH3aKQ8EM9ywf1olaw==}
     engines: {node: '>=18'}
 
   '@tanstack/devtools-ui@0.4.4':
@@ -2072,8 +2080,8 @@ packages:
     peerDependencies:
       vite: ^6.0.0 || ^7.0.0
 
-  '@tanstack/devtools@0.8.1':
-    resolution: {integrity: sha512-ZyKX+IJvMaTY0TywdA6r6kbD6V+0dxWQVDGC3jd2q4RP9OMHzpXd0cKreDvqOGrAPtEUXpGBxW0AtsaauDWurQ==}
+  '@tanstack/devtools@0.9.1':
+    resolution: {integrity: sha512-fW/1ewT+g0LgJGraS/Irwle3uRgM1VDwfhi/NP3aGHhGyCDAWJI0+Id9FBzjChQ5BuEU5qD5fdegcFqTZShXHw==}
     engines: {node: '>=18'}
     peerDependencies:
       solid-js: '>=1.9.7'
@@ -2138,8 +2146,8 @@ packages:
     resolution: {integrity: sha512-d9MvyhdPaKN78hQOss89bayiv/HR/7FpVHuKTNGEzzYrBWDVIUBd0yMNaBxQBpTg6NuNxtZ01ZJS5VkbedbzJw==}
     engines: {node: '>=12'}
 
-  '@tanstack/solid-devtools@0.7.14':
-    resolution: {integrity: sha512-hyaB29d1fU2n9v2XeFEB6t2k5gKionK8mxxb9MNtF7qJheZ6z9259jU8OsBdA/f6v2oYck1K1Ia9+ooJsdy4jg==}
+  '@tanstack/solid-devtools@0.7.17':
+    resolution: {integrity: sha512-S8nXefYEKDWVIo7q87pNGSz1zD2rrPlE0yka9PB6uK+uRXxTK7dHviWGzvBTi0k5qtEsLMPPaAo2smdxjbO7MQ==}
     engines: {node: '>=18'}
     peerDependencies:
       solid-js: '>=1.9.7'
@@ -3280,6 +3288,11 @@ packages:
 
   goober@2.1.16:
     resolution: {integrity: sha512-erjk19y1U33+XAMe1VTvIONHYoSqE4iS7BYUZfHaqeohLmnC0FdxEh7rQU+6MZ4OajItzjZFSRtVANrQwNq6/g==}
+    peerDependencies:
+      csstype: ^3.0.10
+
+  goober@2.1.18:
+    resolution: {integrity: sha512-2vFqsaDVIT9Gz7N6kAL++pLpp41l3PfDuusHcjnGLfR6+huZkl6ziX+zgVC3ZxpqWhzH6pyDdGrCeDhMIvwaxw==}
     peerDependencies:
       csstype: ^3.0.10
 
@@ -6892,6 +6905,10 @@ snapshots:
     dependencies:
       '@tanstack/devtools-event-client': 0.3.5
 
+  '@tanstack/devtools-client@0.0.5':
+    dependencies:
+      '@tanstack/devtools-event-client': 0.4.0
+
   '@tanstack/devtools-event-bus@0.3.3':
     dependencies:
       ws: 8.18.3
@@ -6901,10 +6918,12 @@ snapshots:
 
   '@tanstack/devtools-event-client@0.3.5': {}
 
+  '@tanstack/devtools-event-client@0.4.0': {}
+
   '@tanstack/devtools-ui@0.4.4(csstype@3.2.3)(solid-js@1.9.10)':
     dependencies:
       clsx: 2.1.1
-      goober: 2.1.16(csstype@3.2.3)
+      goober: 2.1.18(csstype@3.2.3)
       solid-js: 1.9.10
     transitivePeerDependencies:
       - csstype
@@ -6927,16 +6946,16 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@tanstack/devtools@0.8.1(csstype@3.2.3)(solid-js@1.9.10)':
+  '@tanstack/devtools@0.9.1(csstype@3.2.3)(solid-js@1.9.10)':
     dependencies:
       '@solid-primitives/event-listener': 2.4.3(solid-js@1.9.10)
       '@solid-primitives/keyboard': 1.3.3(solid-js@1.9.10)
       '@solid-primitives/resize-observer': 2.1.3(solid-js@1.9.10)
-      '@tanstack/devtools-client': 0.0.4
+      '@tanstack/devtools-client': 0.0.5
       '@tanstack/devtools-event-bus': 0.3.3
       '@tanstack/devtools-ui': 0.4.4(csstype@3.2.3)(solid-js@1.9.10)
       clsx: 2.1.1
-      goober: 2.1.16(csstype@3.2.3)
+      goober: 2.1.18(csstype@3.2.3)
       solid-js: 1.9.10
     transitivePeerDependencies:
       - bufferutil
@@ -7038,9 +7057,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/solid-devtools@0.7.14(csstype@3.2.3)(solid-js@1.9.10)':
+  '@tanstack/solid-devtools@0.7.17(csstype@3.2.3)(solid-js@1.9.10)':
     dependencies:
-      '@tanstack/devtools': 0.8.1(csstype@3.2.3)(solid-js@1.9.10)
+      '@tanstack/devtools': 0.9.1(csstype@3.2.3)(solid-js@1.9.10)
       solid-js: 1.9.10
     transitivePeerDependencies:
       - bufferutil
@@ -8503,6 +8522,10 @@ snapshots:
   globrex@0.1.2: {}
 
   goober@2.1.16(csstype@3.2.3):
+    dependencies:
+      csstype: 3.2.3
+
+  goober@2.1.18(csstype@3.2.3):
     dependencies:
       csstype: 3.2.3
 
