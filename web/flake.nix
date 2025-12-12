@@ -21,6 +21,14 @@
           inherit system;
         };
 
+        tsgo = pkgs.buildGoModule {
+          src = pkgs.fetchFromGitHub {
+            owner = "microsoft";
+            repo = "typescript-go";
+            rev = "2ad9453";
+            fetchSubmodules = true;
+          };
+        };
       in
       {
         devShell = pkgs.mkShell {
@@ -28,6 +36,8 @@
             nodejs_22
             pnpm
             just
+            oxlint
+            # tsc
           ];
         };
       }
