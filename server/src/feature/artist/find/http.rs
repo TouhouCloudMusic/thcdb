@@ -1,15 +1,18 @@
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::repo::{self, CommonFilter, FindManyFilter};
+use super::{
+    ArtistFilter, CommonFilter, FindManyFilter, PaginationQuery, repo,
+};
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data, state};
 use crate::domain::artist::Artist;
+use crate::domain::shared::Paginated;
 use crate::infra::error::Error;
 
 const TAG: &str = "Artist";
@@ -19,6 +22,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .with_public(|r| {
             r.routes(routes!(find_artist_by_id))
                 .routes(routes!(find_many_artist))
+                .routes(routes!(explore_artist))
         })
         .finish()
 }
@@ -26,6 +30,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 data!(
     DataOptionArtist, Option<Artist>
     DataVecArtist, Vec<Artist>
+    DataPaginatedArtist, Paginated<Artist>
 );
 
 #[utoipa::path(
@@ -82,6 +87,28 @@ async fn find_many_artist(
     >,
 ) -> Result<Data<Vec<Artist>>, Error> {
     repo::find_many(&repo, query.into(), common)
+        .await
+        .bimap_into()
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/artist/explore",
+    params(ArtistFilter, PaginationQuery),
+    responses(
+        (status = 200, body = DataPaginatedArtist),
+        Error,
+    ),
+)]
+async fn explore_artist(
+    State(repo): State<state::SeaOrmRepository>,
+    Query(filter): Query<ArtistFilter>,
+    Query(pagination): Query<PaginationQuery>,
+) -> Result<Data<Paginated<Artist>>, Error> {
+    let normalized = filter.with_sort_defaults();
+    tracing::info!(?normalized, "explore_artist: incoming query");
+    repo::find_by_filter(&repo, normalized, pagination)
         .await
         .bimap_into()
 }

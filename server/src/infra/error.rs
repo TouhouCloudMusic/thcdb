@@ -26,7 +26,7 @@ pub enum Error {
 }
 
 impl Error {
-    pub fn custom(message: &impl ToString) -> Self {
+    pub fn custom(message: &(impl ToString + ?Sized)) -> Self {
         Self::Internal {
             source: Box::new(CustomMsgError(message.to_string())),
         }

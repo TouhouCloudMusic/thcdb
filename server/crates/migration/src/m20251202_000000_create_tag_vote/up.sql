@@ -8,6 +8,7 @@ CREATE TABLE "public"."release_tag_vote" (
 );
 
 CREATE INDEX idx_release_tag_vote_tag_id ON release_tag_vote(tag_id);
+
 CREATE INDEX idx_release_tag_vote_user_id ON release_tag_vote(user_id);
 
 CREATE TABLE "public"."song_tag_vote" (
@@ -20,6 +21,7 @@ CREATE TABLE "public"."song_tag_vote" (
 );
 
 CREATE INDEX idx_song_tag_vote_tag_id ON song_tag_vote(tag_id);
+
 CREATE INDEX idx_song_tag_vote_user_id ON song_tag_vote(user_id);
 
 CREATE TABLE "public"."artist_tag_vote" (
@@ -32,4 +34,5 @@ CREATE TABLE "public"."artist_tag_vote" (
 );
 
 CREATE INDEX idx_artist_tag_vote_tag_id ON artist_tag_vote(tag_id);
+
 CREATE INDEX idx_artist_tag_vote_user_id ON artist_tag_vote(user_id);

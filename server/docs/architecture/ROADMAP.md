@@ -28,6 +28,7 @@
 - [第三阶段：管理功能](#第三阶段：管理功能)
   - [3.1 图片队列系统](./image/design.md)
   - [3.2 标签系统扩展](./tag/design.md)
+  - [3.3 Credit Role Tree](./credit-role/design.md)
 - [第四阶段：数据分析](#第四阶段：数据分析)
   - [4.1 统计系统](./statistics/design.md)
   - [4.2 推荐系统](./recommendation/design.md)
@@ -166,6 +167,18 @@
 
 ---
 
+### 3.3 Credit Role Tree {#credit-role-tree}
+
+**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [credit-role](./credit-role/)
+
+
+**实现要点**:
+- Credit Role 层级树结构（parent_id 字段）
+- 树形浏览 API (`GET /credit-role/tree`)
+- 角色路径查询（面包屑导航）
+
+---
+
 ## 第四阶段：数据分析
 
 ### 4.1 统计系统 {#statistics}
@@ -217,17 +230,6 @@
 推荐系统 ← 标签系统扩展
 历史查看 API ← 修正系统扩展
 ```
-
----
-
-## 统计
-
-| 指标 | 数量 |
-|------|------|
-| 总功能模块 | 13 |
-| 待实现 API 端点 | 89 |
-| 需要创建的数据库表 | 5+ |
-| 需要实现的 Domain 模型 | 20+ |
 
 ---
 

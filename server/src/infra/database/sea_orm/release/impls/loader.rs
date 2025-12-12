@@ -237,8 +237,12 @@ impl RelatedEntities {
                 .into_iter()
                 .enumerate()
                 .map(|(i, len)| {
-                    let slice = &artist_ids_per_track[i..(i + len)];
-                    slice.to_vec()
+                    if artist_ids_per_track.is_empty() {
+                        Vec::new()
+                    } else {
+                        let slice = &artist_ids_per_track[i..(i + len)];
+                        slice.to_vec()
+                    }
                 })
                 .collect()
         };

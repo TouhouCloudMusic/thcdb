@@ -38,30 +38,32 @@ pub(super) fn conv_to_domain_model(
             release_model.recording_date_end,
             release_model.recording_date_end_precision,
         ),
-        artists: conv_artists(&related.artists[index]),
+        artists: conv_artists(related.artists.get(index).map_or(&[], |v| v)),
         catalog_nums: conv_catalog_numbers(
-            &related.catalog_numbers[index],
+            related.catalog_numbers.get(index).map_or(&[], |v| v),
             &related.labels,
         ),
         localized_titles: conv_localized_titles(
-            &related.localized_titles[index],
+            related.localized_titles.get(index).map_or(&[], |v| v),
             related.languages,
         ),
-        discs: conv_discs(&related.discs[index]),
+        discs: conv_discs(related.discs.get(index).map_or(&[], |v| v)),
         tracks: conv_tracks(
-            &related.tracks[index],
+            related.tracks.get(index).map_or(&[], |v| v),
             &related.track_songs,
             &related.track_artists,
-            &related.track_artist_ids[index],
+            related.track_artist_ids.get(index).map_or(&[], |v| v),
         ),
         credits: conv_credits(
-            &related.credits[index],
+            related.credits.get(index).map_or(&[], |v| v),
             &related.credit_artists,
             &related.credit_roles,
         ),
-        events: conv_events(&related.events[index]),
-        cover_art_url: related.cover_arts[index]
-            .clone()
+        events: conv_events(related.events.get(index).map_or(&[], |v| v)),
+        cover_art_url: related
+            .cover_arts
+            .get(index)
+            .and_then(|opt| opt.clone())
             .map(domain::image::Image::from)
             .map(|image| image.url()),
     }

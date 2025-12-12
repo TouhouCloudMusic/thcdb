@@ -2,7 +2,7 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
     fenix = {
-      url = "github:nix-community/fenix/monthly";
+      url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flake-utils = {
@@ -12,7 +12,7 @@
 
   outputs =
     {
-      self,
+    self,
       flake-utils,
       fenix,
       nixpkgs,
@@ -59,11 +59,11 @@
             (pkgs.fenix.complete.withComponents [
               "cargo"
               "clippy"
-              "rust-analyzer"
               "rust-src"
               "rustc-codegen-cranelift-preview"
               "rustfmt"
             ])
+            rust-analyzer-nightly
             clang
             mold
             openssl
@@ -71,7 +71,7 @@
             schemathesis
           ];
           packages = with pkgs; [
-            rusty-hook
+            # rusty-hook
             dprint
             just
             sea-orm-cli

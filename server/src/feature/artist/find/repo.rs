@@ -7,41 +7,20 @@ use entity::{
     artist_membership, artist_membership_role, artist_membership_tenure,
     credit_role, image, language,
 };
-use enumset::EnumSet;
 use itertools::{Itertools, izip};
 use sea_orm::{
     ColumnTrait, Condition, ConnectionTrait, DbErr, EntityTrait,
     FromQueryResult, LoaderTrait, QueryFilter, QueryOrder, Select,
 };
 use sea_query::extension::postgres::PgBinOper;
-use sea_query::{Cond, ExprTrait, Func, SimpleExpr};
-use serde::Deserialize;
-use utoipa::{IntoParams, ToSchema};
+use sea_query::{ExprTrait, Func, SimpleExpr};
 
+use super::{CommonFilter, FindManyFilter};
 use crate::domain::Connection;
-use crate::domain::artist::{Artist, ArtistType, Membership, Tenure};
+use crate::domain::artist::{Artist, Membership, Tenure};
 use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::shared::{LocalizedName, Location};
-
-#[derive(Clone, Debug, Deserialize, ToSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum FindManyFilter {
-    Keyword(String),
-}
-
-#[derive(Clone, Debug, Default, Deserialize, ToSchema, IntoParams)]
-#[schema(as = ArtistCommonFilter)]
-pub struct CommonFilter {
-    #[schema(value_type = HashSet<ArtistType>)]
-    #[param(value_type = HashSet<ArtistType>)]
-    #[serde(default, rename = "artist_type")]
-    pub artist_types: Option<EnumSet<ArtistType>>,
-
-    #[schema(value_type = HashSet<i32>)]
-    #[param(value_type = HashSet<i32>)]
-    #[serde(default)]
-    pub exclusion: Option<Vec<i32>>,
-}
+use crate::infra::database::sea_orm::utils;
 
 pub(super) async fn find_one<R>(
     repo: &R,
@@ -302,43 +281,86 @@ async fn find_many_impl(
     Ok(ret)
 }
 
-impl From<CommonFilter> for SimpleExpr {
-    fn from(value: CommonFilter) -> Self {
-        Cond::all()
-            .add_option(
-                value
-                    .artist_types
-                    .map(|x| artist::Column::ArtistType.is_in(x)),
-            )
-            .add_option(value.exclusion.and_then(|x| {
-                if x.is_empty() {
-                    None
-                } else {
-                    Some(artist::Column::Id.is_not_in(x))
-                }
-            }))
-            .into()
+pub(super) async fn find_by_filter<R>(
+    repo: &R,
+    filter: super::ArtistFilter,
+    pagination: crate::shared::http::PaginationQuery,
+) -> Result<crate::domain::shared::Paginated<Artist>, DbErr>
+where
+    R: Connection,
+    R::Conn: ConnectionTrait,
+{
+    if let (Some(sort_field), Some(sort_direction)) =
+        (filter.sort_field, filter.sort_direction)
+    {
+        return find_sorted_by_correction(
+            repo,
+            filter,
+            sort_field,
+            sort_direction,
+            pagination,
+        )
+        .await;
     }
+
+    let select = filter.into_select();
+    utils::find_many_paginated(
+        select,
+        pagination,
+        artist::Column::Id,
+        |select| find_many_impl(select, repo.conn()),
+        |artist: &Artist| artist.id,
+    )
+    .await
 }
 
-#[cfg(test)]
-mod tests {
-    use sea_query::{PostgresQueryBuilder, QueryBuilder};
+async fn find_sorted_by_correction<R>(
+    repo: &R,
+    filter: super::ArtistFilter,
+    sort_field: crate::shared::http::CorrectionSortField,
+    sort_direction: crate::shared::http::SortDirection,
+    pagination: crate::shared::http::PaginationQuery,
+) -> Result<crate::domain::shared::Paginated<Artist>, DbErr>
+where
+    R: Connection,
+    R::Conn: ConnectionTrait,
+{
+    use entity::enums::EntityType;
 
-    use super::*;
+    use crate::shared::http::SortDirection;
 
-    #[test]
-    fn common_filter_into_expr() {
-        let filter = CommonFilter {
-            artist_types: None,
-            exclusion: None,
-        };
+    let entity_ids =
+        crate::infra::database::sea_orm::utils::correction_sorted_entity_ids(
+            repo.conn(),
+            EntityType::Artist,
+            sort_field,
+            match sort_direction {
+                SortDirection::Asc => sea_orm::Order::Asc,
+                SortDirection::Desc => sea_orm::Order::Desc,
+            },
+        )
+        .await?;
 
-        let expr = SimpleExpr::from(filter);
-
-        let mut str = String::new();
-        PostgresQueryBuilder.prepare_simple_expr(&expr, &mut str);
-
-        assert_eq!(str, "TRUE");
+    if entity_ids.is_empty() {
+        return Ok(crate::domain::shared::Paginated::nothing());
     }
+
+    let mut select = artist::Entity::find()
+        .filter(artist::Column::Id.is_in(entity_ids.clone()));
+
+    if let Some(artist_types) = filter.artist_types {
+        select = select.filter(artist::Column::ArtistType.is_in(artist_types));
+    }
+
+    let mut artists = find_many_impl(select, repo.conn()).await?;
+
+    artists = crate::infra::database::sea_orm::utils::sort_by_id_list(
+        artists,
+        &entity_ids,
+        |artist| artist.id,
+    );
+
+    Ok(utils::paginate_by_id(artists, &pagination, |artist| {
+        artist.id
+    }))
 }

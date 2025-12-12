@@ -23,7 +23,7 @@ use utoipa_scalar::{Scalar, Servable};
 use crate::constant::r#gen::{KT_CONSTANTS, TS_CONSTANTS};
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::feature;
-use crate::feature::artist::find::repo::CommonFilter as ArtistCommonFilter;
+use crate::feature::artist::find::CommonFilter as ArtistCommonFilter;
 use crate::infra::state::AppState;
 use crate::utils::openapi::ContentType;
 

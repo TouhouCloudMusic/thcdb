@@ -13,6 +13,7 @@ use sea_query::{ExprTrait, Func};
 
 use crate::domain::Connection;
 use crate::domain::tag::{AlternativeName, Tag, TagRef, TagRelation};
+use crate::infra::database::sea_orm::utils;
 
 pub(super) async fn find_by_id<R>(
     repo: &R,
@@ -50,6 +51,88 @@ where
         );
 
     find_many_impl(select, repo.conn()).await
+}
+
+pub(super) async fn find_by_filter<R>(
+    repo: &R,
+    filter: super::TagFilter,
+    pagination: crate::shared::http::PaginationQuery,
+) -> Result<crate::domain::shared::Paginated<Tag>, DbErr>
+where
+    R: Connection,
+    R::Conn: ConnectionTrait,
+{
+    if let (Some(sort_field), Some(sort_direction)) =
+        (filter.sort_field, filter.sort_direction)
+    {
+        return find_sorted_by_correction(
+            repo,
+            filter,
+            sort_field,
+            sort_direction,
+            pagination,
+        )
+        .await;
+    }
+
+    let select = filter.into_select();
+    utils::find_many_paginated(
+        select,
+        pagination,
+        tag::Column::Id,
+        |select| find_many_impl(select, repo.conn()),
+        |tag: &Tag| tag.id,
+    )
+    .await
+}
+
+async fn find_sorted_by_correction<R>(
+    repo: &R,
+    filter: super::TagFilter,
+    sort_field: crate::shared::http::CorrectionSortField,
+    sort_direction: crate::shared::http::SortDirection,
+    pagination: crate::shared::http::PaginationQuery,
+) -> Result<crate::domain::shared::Paginated<Tag>, DbErr>
+where
+    R: Connection,
+    R::Conn: ConnectionTrait,
+{
+    use entity::enums::EntityType;
+
+    use crate::shared::http::SortDirection;
+
+    let entity_ids =
+        crate::infra::database::sea_orm::utils::correction_sorted_entity_ids(
+            repo.conn(),
+            EntityType::Tag,
+            sort_field,
+            match sort_direction {
+                SortDirection::Asc => sea_orm::Order::Asc,
+                SortDirection::Desc => sea_orm::Order::Desc,
+            },
+        )
+        .await?;
+
+    if entity_ids.is_empty() {
+        return Ok(crate::domain::shared::Paginated::nothing());
+    }
+
+    let mut select =
+        tag::Entity::find().filter(tag::Column::Id.is_in(entity_ids.clone()));
+
+    if let Some(tag_types) = filter.tag_types {
+        select = select.filter(tag::Column::Type.is_in(tag_types));
+    }
+
+    let mut tags = find_many_impl(select, repo.conn()).await?;
+
+    tags = crate::infra::database::sea_orm::utils::sort_by_id_list(
+        tags,
+        &entity_ids,
+        |tag| tag.id,
+    );
+
+    Ok(utils::paginate_by_id(tags, &pagination, |tag| tag.id))
 }
 
 async fn find_many_impl(
