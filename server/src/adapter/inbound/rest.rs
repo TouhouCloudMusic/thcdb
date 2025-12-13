@@ -25,6 +25,7 @@ use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::feature;
 use crate::feature::artist::find::CommonFilter as ArtistCommonFilter;
 use crate::infra::state::AppState;
+use crate::shared::http::{CorrectionSortField, SortDirection};
 use crate::utils::openapi::ContentType;
 
 pub mod api_response;
@@ -184,6 +185,8 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
     components(schemas(
         correction::HandleCorrectionMethod,
         ArtistCommonFilter,
+        CorrectionSortField,
+        SortDirection,
         api_response::Error,
     )),
     modifiers(&DefaultErrorResponseModifier)
