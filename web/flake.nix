@@ -24,6 +24,7 @@
       {
         devShell = pkgs.mkShell {
           packages = with pkgs; [
+            just-lsp
             nodejs_22
             typescript-go
             pnpm

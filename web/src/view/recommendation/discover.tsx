@@ -1,3 +1,3 @@
 export const RecommendationDiscover = () => {
-    return <div>[UNIMPLEMENTED] Recommendation</div>
+	return <div>[UNIMPLEMENTED] Recommendation</div>
 }

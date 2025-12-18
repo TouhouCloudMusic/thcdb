@@ -1,4 +1,5 @@
 mod i18n '.just/i18n'
+import '.just/api.just'
 
 default:
 	@just --list

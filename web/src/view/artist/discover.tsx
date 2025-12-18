@@ -1,3 +1,3 @@
 export const ArtistDiscover = () => {
-    return <div>[UNIMPLEMENTED] Artist</div>
+	return <div>[UNIMPLEMENTED] Artist</div>
 }

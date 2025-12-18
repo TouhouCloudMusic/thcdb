@@ -1,25 +1,24 @@
 import { Trans, useLingui } from "@lingui-solid/solid/macro"
+import { useNavigate } from "@tanstack/solid-router"
 import type { IconProps } from "@thc/icons"
-import { RankingIcon } from "@thc/icons/custom"
 import type { JSX } from "solid-js"
 import { For } from "solid-js"
 import {
 	CardStackIcon,
+	BookmarkIcon,
 	EnvelopeClosedIcon,
 	MixerHorizontalIcon,
 	TargetIcon,
 	CrumpledPaperIcon,
 	HomeIcon,
 } from "solid-radix-icons"
-import { useNavigate } from "@tanstack/solid-router"
 
 import { ListItem, Sidebar } from "~/component/Sidebar"
-import { cons } from "effect/List"
 
 type ListItemContent = {
 	icon: (props: IconProps) => JSX.Element
-	text: string,
-	to: string,
+	text: string
+	to: string
 }
 
 export function LeftSidebar() {
@@ -38,34 +37,34 @@ export function LeftSidebar() {
 			to: "/recommendation",
 		},
 		{
-			icon: RankingIcon,
-			text: t`Chart`,
-			to: "/chart",
-		},
-		{
-			icon: CardStackIcon,
-			text: t`Song`,
-			to: "/song",
-		},
-		{
 			icon: CrumpledPaperIcon,
 			text: t`Release`,
-			to: "/release",
+			to: "/release/explore",
 		},
 		{
 			icon: MixerHorizontalIcon,
 			text: t`Artist`,
-			to: "/artist",
+			to: "/artist/explore",
 		},
 		{
-			icon: EnvelopeClosedIcon,
-			text: t`Event`,
-			to: "/event",
+			icon: CardStackIcon,
+			text: t`Song`,
+			to: "/song/explore",
 		},
 		{
 			icon: EnvelopeClosedIcon,
 			text: t`Tag`,
-			to: "/tag",
+			to: "/tag/explore",
+		},
+		{
+			icon: EnvelopeClosedIcon,
+			text: t`Event`,
+			to: "/event/explore",
+		},
+		{
+			icon: BookmarkIcon,
+			text: t`Label`,
+			to: "/label/explore",
 		},
 	]
 
@@ -80,7 +79,12 @@ export function LeftSidebar() {
 					<For each={LIST_ITEMS}>
 						{(item) => {
 							return (
-								<ListItem class="w-full" onClick={() => navigate({ to: item.to })}>
+								<ListItem
+									class="w-full"
+									aria-label={item.text}
+									title={item.text}
+									onClick={() => navigate({ to: item.to })}
+								>
 									<item.icon class="mr-3 h-4 w-4" />
 									<span>{item.text}</span>
 								</ListItem>

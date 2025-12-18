@@ -1,7 +1,7 @@
-import { createFileRoute } from '@tanstack/solid-router'
-import { RecommendationDiscover } from '~/view/recommendation/discover'
+import { createFileRoute } from "@tanstack/solid-router"
 
-export const Route = createFileRoute('/recommendation/')({
-  component: RecommendationDiscover,
+import { RecommendationDiscover } from "~/view/recommendation/discover"
+
+export const Route = createFileRoute("/recommendation/")({
+	component: RecommendationDiscover,
 })
-

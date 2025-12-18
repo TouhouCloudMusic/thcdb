@@ -13,7 +13,7 @@ export function PageLayout(props: ParentProps<ComponentProps<"div">>) {
     mx-auto
     border-x-1 border-slate-300
     `)
-	let final_props = mergeProps(props, {
+	const final_props = mergeProps(props, {
 		get class() {
 			return twMerge(CLASS, props.class)
 		},

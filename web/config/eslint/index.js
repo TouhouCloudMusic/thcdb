@@ -69,7 +69,7 @@ export const tsConfig = {
  * @type {import("eslint").Linter.Config[]}
  */
 export const tsxConfigArray = [
-    ...tslint.configs.recommended,
+	...tslint.configs.recommended,
 	// solid
 	{
 		files: ["src/**/*.tsx"],

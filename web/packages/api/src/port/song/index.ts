@@ -2,6 +2,14 @@ import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
 import { adaptApiResult, adaptApiResultMessage } from "../../shared"
 
+export async function explore(options?: Opt<"explore_song">) {
+	const res = await FetchClient.GET("/song/explore", {
+		params: { query: options?.query },
+	})
+
+	return adaptApiResult(res)
+}
+
 export async function findSongById(options: Opt<"find_song_by_id">) {
 	const res = await FetchClient.GET("/song/{id}", {
 		params: { path: options.path },

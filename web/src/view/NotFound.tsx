@@ -15,7 +15,13 @@ export function NotFound() {
 					The page you are looking for does not exist.
 				</p>
 				<p class="mt-1 text-slate-400">
-					Hey you, lost one. why you are here? <a class="text-blue-400 hover:underline" href="/">You should go back...</a>
+					Hey you, lost one. why you are here?{" "}
+					<a
+						class="text-blue-400 hover:underline"
+						href="/"
+					>
+						You should go back...
+					</a>
 				</p>
 			</div>
 		</div>

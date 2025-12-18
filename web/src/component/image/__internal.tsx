@@ -98,7 +98,10 @@ export function Img(props: ImgProps) {
 
 	return (
 		<Show when={!context.isError && props.src}>
-			<img {...img_props} />
+			<img
+				{...img_props}
+				alt={props.alt ?? ""}
+			/>
 		</Show>
 	)
 }

@@ -1,3 +1,3 @@
 export const EventDiscover = () => {
-    return <div>[UNIMPLEMENTED] Event</div>
+	return <div>[UNIMPLEMENTED] Event</div>
 }

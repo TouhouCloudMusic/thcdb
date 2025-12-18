@@ -5,12 +5,12 @@ export function NewMusic() {
 		<div>
 			<div class="mb-4 flex items-center justify-between">
 				<h2 class="text-xl font-bold text-slate-800">最新音乐</h2>
-				<a
-					href="#"
+				<button
+					type="button"
 					class="text-rose-600 hover:text-rose-700 text-sm"
 				>
 					查看更多
-				</a>
+				</button>
 			</div>
 
 			<div class="rounded-lg bg-white p-4 shadow">

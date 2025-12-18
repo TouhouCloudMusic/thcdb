@@ -1,1 +1,2 @@
-export * from "./FormLayout"
+export { FormLayout } from "./FormLayout"
+export { PageLayout } from "./PageLayout"

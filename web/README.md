@@ -10,6 +10,19 @@ Figma 网页设计链接
 
 [如何开始开发](doc/如何开始开发.md)
 
+## 生成 API 代码
+
+在仓库根目录执行：
+
+```bash
+# 二选一：
+# 1) 直接指定 OpenAPI schema 地址
+export API_SCHEMA=http://127.0.0.1:12345/openapi.json
+# 2) 或者只设置服务端地址（默认使用 $VITE_SERVER_URL/openapi.json）
+# export VITE_SERVER_URL=http://127.0.0.1:12345
+just gen-api
+```
+
 ## 命名规范
 
 TODO
