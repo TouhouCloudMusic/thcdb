@@ -66,7 +66,7 @@ export function LabelFoundersField(props: Props) {
 							const result = await ArtistApi.findOne({ path: { id } })
 							return Either.match(result, {
 								onRight: (option) => O.getOrNull(option),
-								onLeft: () => undefined,
+								onLeft: () => {},
 							})
 						}),
 					)

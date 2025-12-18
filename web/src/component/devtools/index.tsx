@@ -1,7 +1,7 @@
 import { TanStackDevtools } from "@tanstack/solid-devtools"
 import { SolidQueryDevtoolsPanel } from "@tanstack/solid-query-devtools"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/solid-router-devtools"
-import { Component } from "solid-js"
+import type { Component } from "solid-js"
 
 export const Devtools: Component<{
 	"open-router-panel"?: boolean

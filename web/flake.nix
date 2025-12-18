@@ -20,20 +20,12 @@
         pkgs = import nixpkgs {
           inherit system;
         };
-
-        tsgo = pkgs.buildGoModule {
-          src = pkgs.fetchFromGitHub {
-            owner = "microsoft";
-            repo = "typescript-go";
-            rev = "2ad9453";
-            fetchSubmodules = true;
-          };
-        };
       in
       {
         devShell = pkgs.mkShell {
           packages = with pkgs; [
             nodejs_22
+            typescript-go
             pnpm
             just
             oxlint
