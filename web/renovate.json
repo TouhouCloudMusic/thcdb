@@ -1,11 +1,6 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"extends": [
-		"config:recommended",
-		":semanticCommitsDisabled",
-		"schedule:weekly"
-	],
-	"prConcurrentLimit": 0,
-	"minimumReleaseAge": "3 days",
-	"baseBranches": ["main"]
+		"github>TouhouCloudMusic/renovate-config"
+	]
 }
