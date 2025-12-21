@@ -1,58 +1,83 @@
-export const recommendedPlaylists = [
+import type { Event, Release, Tag } from "@thc/api"
+
+import { createMockEvents } from "~/mock/event"
+import { createMockReleases } from "~/mock/release"
+import { createMockTags } from "~/mock/tag"
+
+export type HomeAccent = "Reimu" | "Marisa" | "Blue" | "Green" | "Slate"
+
+export type HomeMetric = {
+	label: string
+	value: string
+	hint: string
+}
+
+export const HOME_METRICS: HomeMetric[] = [
+	{ label: "Artists", value: "12,347", hint: "Circles & solo creators" },
+	{ label: "Releases", value: "4,892", hint: "Albums, EPs, singles" },
+	{ label: "Songs", value: "98,201", hint: "Tracks & arrangements" },
+	{ label: "Tags", value: "2,174", hint: "Genres, themes, credits" },
+]
+
+export type HomeNavItem = {
+	title: string
+	description: string
+	to:
+		| "/artist/explore"
+		| "/release/explore"
+		| "/song/explore"
+		| "/tag/explore"
+		| "/event/explore"
+		| "/label/explore"
+	accent: HomeAccent
+	meta: string
+}
+
+export const HOME_NAV_ITEMS: HomeNavItem[] = [
 	{
-		id: 1,
-		title: "秘封俱乐部",
-		coverUrl: "https://placehold.co/200x200/ef5d5d/white?text=秘封俱乐部",
-		creator: "紫妈",
+		title: "Artists",
+		description: "Browse circles and solo creators with filters and sorting.",
+		to: "/artist/explore",
+		accent: "Reimu",
+		meta: "Explore",
 	},
 	{
-		id: 2,
-		title: "幻想乡民谣",
-		coverUrl: "https://placehold.co/200x200/ef5d5d/white?text=幻想乡民谣",
-		creator: "灵梦",
+		title: "Releases",
+		description: "Track albums and compilations, link artists and events.",
+		to: "/release/explore",
+		accent: "Marisa",
+		meta: "Explore",
 	},
 	{
-		id: 3,
-		title: "红魔馆之夜",
-		coverUrl: "https://placehold.co/200x200/ef5d5d/white?text=红魔馆之夜",
-		creator: "蕾米莉亚",
+		title: "Songs",
+		description: "Find tracks by title language, credits, and corrections.",
+		to: "/song/explore",
+		accent: "Blue",
+		meta: "Explore",
 	},
 	{
-		id: 4,
-		title: "妖怪山电音",
-		coverUrl: "https://placehold.co/200x200/ef5d5d/white?text=妖怪山电音",
-		creator: "天子",
+		title: "Tags",
+		description: "Navigate genres, themes and metadata through tag types.",
+		to: "/tag/explore",
+		accent: "Slate",
+		meta: "Explore",
 	},
 	{
-		id: 5,
-		title: "永夜的幻想",
-		coverUrl: "https://placehold.co/200x200/ef5d5d/white?text=永夜的幻想",
-		creator: "辉夜",
+		title: "Events",
+		description: "See conventions and live shows where releases debuted.",
+		to: "/event/explore",
+		accent: "Green",
+		meta: "Explore",
+	},
+	{
+		title: "Labels",
+		description: "Explore labels, imprint history and founded/dissolved dates.",
+		to: "/label/explore",
+		accent: "Slate",
+		meta: "Explore",
 	},
 ]
 
-export const banners = [
-	{
-		id: 1,
-		imageUrl:
-			"https://placehold.co/1200x300/ef5d5d/white?text=东方同音鉴新发布",
-		title: "东方同音鉴新发布",
-	},
-	{
-		id: 2,
-		imageUrl: "https://placehold.co/1200x300/8a2be2/white?text=新专辑上线",
-		title: "新专辑上线",
-	},
-	{
-		id: 3,
-		imageUrl: "https://placehold.co/1200x300/ff69b4/white?text=音乐会回顾",
-		title: "音乐会回顾",
-	},
-]
-
-export const newMusicTracks = Array.from({ length: 6 }).map((_, i) => ({
-	id: i + 1,
-	title: `东方同音鉴曲目 ${i + 1}`,
-	artist: "幻想乡音乐人",
-	coverUrl: `https://placehold.co/100x100/ef5d5d/white?text=${i + 1}`,
-}))
+export const HOME_FEATURED_RELEASES: Release[] = createMockReleases(6, 101)
+export const HOME_TRENDING_TAGS: Tag[] = createMockTags(18, 21)
+export const HOME_UPCOMING_EVENTS: Event[] = createMockEvents(4, 41)
