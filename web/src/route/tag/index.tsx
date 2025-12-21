@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router"
 
-import { TagDiscover } from "~/view/tag/discover"
+import { TagExplore } from "~/view/tag/explore"
 
 export const Route = createFileRoute("/tag/")({
-	component: TagDiscover,
+	component: TagExplore,
 })

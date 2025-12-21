@@ -69,3 +69,51 @@ export const createMockPaginatedTags = (
 		next_cursor: nextCursor,
 	}
 }
+
+export type TagTreeNode = {
+	id: number
+	name: string
+	type: Tag["type"]
+	short_description: Tag["short_description"]
+	children: TagTreeNode[]
+}
+
+type TagTreeParams = {
+	rootCount: number
+	maxDepth: number
+	childCountRange: [number, number]
+	startId?: number
+}
+
+export function createMockTagTree(params: TagTreeParams): TagTreeNode[] {
+	let nextId = params.startId ?? 1
+	let [minChild, maxChild] = params.childCountRange
+
+	let buildNode = (depth: number): TagTreeNode => {
+		let currentId = nextId
+		nextId += 1
+		let base = createMockTag(currentId)
+		let childCount = 0
+
+		if (depth < params.maxDepth) {
+			let span = Math.max(0, maxChild - minChild)
+			let offset = span > 0 ? currentId % (span + 1) : 0
+			childCount = minChild + offset
+		}
+
+		let children =
+			childCount > 0
+				? Array.from({ length: childCount }, () => buildNode(depth + 1))
+				: []
+
+		return {
+			id: base.id,
+			name: base.name,
+			type: base.type,
+			short_description: base.short_description,
+			children,
+		}
+	}
+
+	return Array.from({ length: params.rootCount }, () => buildNode(0))
+}
