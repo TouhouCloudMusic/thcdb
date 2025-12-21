@@ -1,0 +1,54 @@
+/* prettier-ignore  */
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    :root {
+      --black-a1: color(display-p3 0 0 0 / 0.05);
+      --black-a2: color(display-p3 0 0 0 / 0.1);
+      --black-a3: color(display-p3 0 0 0 / 0.15);
+      --black-a4: color(display-p3 0 0 0 / 0.2);
+      --black-a5: color(display-p3 0 0 0 / 0.3);
+      --black-a6: color(display-p3 0 0 0 / 0.4);
+      --black-a7: color(display-p3 0 0 0 / 0.5);
+      --black-a8: color(display-p3 0 0 0 / 0.6);
+      --black-a9: color(display-p3 0 0 0 / 0.7);
+      --black-a10: color(display-p3 0 0 0 / 0.8);
+      --black-a11: color(display-p3 0 0 0 / 0.9);
+      --black-a12: color(display-p3 0 0 0 / 0.95);
+    }
+  }
+}
+/* prettier-ignore */
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    html,
+    html[data-mode="light"] {
+      --slate-a1: color(display-p3 0 0 0 / 0.012);
+      --slate-a2: color(display-p3 0 0 0 / 0.024);
+      --slate-a3: color(display-p3 0 0 0 / 0.063);
+      --slate-a4: color(display-p3 0 0 0 / 0.09);
+      --slate-a5: color(display-p3 0 0 0 / 0.122);
+      --slate-a6: color(display-p3 0 0 0 / 0.153);
+      --slate-a7: color(display-p3 0 0 0 / 0.192);
+      --slate-a8: color(display-p3 0 0 0 / 0.267);
+      --slate-a9: color(display-p3 0 0 0 / 0.447);
+      --slate-a10: color(display-p3 0 0 0 / 0.486);
+      --slate-a11: color(display-p3 0 0 0 / 0.608);
+      --slate-a12: color(display-p3 0 0 0 / 0.875);
+    }
+
+    html[data-mode="dark"] {
+      --slate-a1: color(display-p3 0 0 0 / 0);
+      --slate-a2: color(display-p3 1 1 1 / 0.034);
+      --slate-a3: color(display-p3 1 1 1 / 0.071);
+      --slate-a4: color(display-p3 1 1 1 / 0.105);
+      --slate-a5: color(display-p3 1 1 1 / 0.134);
+      --slate-a6: color(display-p3 1 1 1 / 0.172);
+      --slate-a7: color(display-p3 1 1 1 / 0.231);
+      --slate-a8: color(display-p3 1 1 1 / 0.332);
+      --slate-a9: color(display-p3 1 1 1 / 0.391);
+      --slate-a10: color(display-p3 1 1 1 / 0.445);
+      --slate-a11: color(display-p3 1 1 1 / 0.685);
+      --slate-a12: color(display-p3 1 1 1 / 0.929);
+    }
+  }
+}

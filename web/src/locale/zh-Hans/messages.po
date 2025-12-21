@@ -1,0 +1,167 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2025-05-18 07:19+0800\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: zh-Hans\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#: src/views/artist/edit/index.tsx:239
+msgid "-- Please select artist type --"
+msgstr ""
+
+#: src/views/artist/profile/comp/ArtistInfo.tsx:58
+msgid "Aliases"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:147
+msgid "Are you sure you want to leave this page? Your changes will be lost."
+msgstr ""
+
+#: src/components/Header/LeftSidebar.tsx:44
+msgid "Artist"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:230
+msgid "Artist Type"
+msgstr ""
+
+#: src/views/artist/profile/comp/ArtistInfo.tsx:27
+msgid "Born"
+msgstr ""
+
+#: src/components/Header/LeftSidebar.tsx:32
+msgid "Chart"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:57
+msgid "Create Artist"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:292
+msgid "Current Location"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:306
+msgid "Description"
+msgstr ""
+
+#: src/views/artist/profile/comp/ArtistInfo.tsx:32
+msgid "Died"
+msgstr ""
+
+#: src/views/artist/profile/comp/ArtistInfo.tsx:32
+msgid "Disbanded"
+msgstr ""
+
+#: src/components/Header/LeftSidebar.tsx:60
+msgid "Discover"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:55
+msgid "Edit Artist"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:276
+msgid "End date"
+msgstr ""
+
+#. placeholder {0}: mutation.error.message
+#: src/views/artist/edit/index.tsx:352
+msgid "Error: {0}"
+msgstr ""
+
+#: src/components/Header/LeftSidebar.tsx:48
+msgid "Event"
+msgstr ""
+
+#: src/views/artist/profile/comp/ArtistInfo.tsx:27
+msgid "Formed"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:345
+msgid "Loading"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:65
+msgid "Loading..."
+msgstr ""
+
+#: src/views/artist/profile/comp/ArtistInfo.tsx:104
+msgid "Member Of"
+msgstr ""
+
+#: src/views/artist/profile/comp/ArtistInfo.tsx:106
+msgid "Members"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:210
+msgid "Name"
+msgstr ""
+
+#: src/views/auth/component/AuthForm.tsx:72
+msgid "Password"
+msgstr ""
+
+#: src/components/Header/LeftSidebar.tsx:28
+msgid "Recommandation"
+msgstr ""
+
+#: src/components/Header/LeftSidebar.tsx:40
+msgid "Release"
+msgstr ""
+
+#: src/views/auth/component/AuthForm.tsx:86
+msgid "Repeated Password"
+msgstr ""
+
+#: src/views/auth/component/AuthForm.tsx:36
+#: src/views/auth/component/AuthForm.tsx:104
+#: src/components/Header/index.tsx:153
+msgid "Sign In"
+msgstr "登录"
+
+#: src/views/auth/component/AuthForm.tsx:44
+#: src/views/auth/component/AuthForm.tsx:104
+#: src/components/Header/index.tsx:167
+msgid "Sign Up"
+msgstr "注册"
+
+#: src/components/Header/LeftSidebar.tsx:36
+msgid "Song"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:265
+msgid "Start date"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:286
+msgid "Start Location"
+msgstr ""
+
+#: src/views/artist/edit/index.tsx:345
+msgid "Submit"
+msgstr ""
+
+#: src/components/Header/LeftSidebar.tsx:52
+msgid "Tag"
+msgstr ""
+
+#: src/views/artist/profile/comp/ArtistReleaseInfo.tsx:133
+msgid "This Artist has no releases yet, you can upload them on <0>Upload New Release</0>"
+msgstr ""
+
+#: src/App.tsx:35
+msgid "Touhou Cloud DB"
+msgstr "东方同音鉴"
+
+#: src/App.tsx:39
+msgid "Touhou Cloud DB is an open doujin music database"
+msgstr "东方同音鉴是一个开放的同人音乐数据库"

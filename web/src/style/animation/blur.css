@@ -1,0 +1,26 @@
+@theme {
+	--blur-in-backdrop-blur: 2px;
+	--animate-blur-in: blur-in 200ms ease;
+	--animate-blur-out: blur-out 200ms ease;
+
+	@keyframes blur-in {
+		from {
+			backdrop-filter: blur(0px);
+			opacity: 0;
+		}
+		to {
+			backdrop-filter: blur(var(--blur-in-backdrop-blur));
+			opacity: 1;
+		}
+	}
+	@keyframes blur-out {
+		from {
+			backdrop-filter: blur(var(--blur-out-backdrop-blur));
+			opacity: 1;
+		}
+		to {
+			backdrop-filter: blur(0px);
+			opacity: 0;
+		}
+	}
+}

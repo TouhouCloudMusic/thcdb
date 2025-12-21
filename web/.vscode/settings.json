@@ -1,0 +1,23 @@
+{
+	"files.exclude": {
+		".eslintcache": true
+	},
+	// formatter
+	"[json][jsonc][typescript][typescriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		// Prettier will insert new line so we don't
+		"files.insertFinalNewline": false
+	},
+	"typescript.preferences.importModuleSpecifierEnding": "minimal",
+
+	"typescript.preferences.autoImportSpecifierExcludeRegexes": ["/^__.*$/"],
+	// tailwind
+	"tailwindCSS.classAttributes": ["class", "class:list", ".*class"],
+	"tailwindCSS.experimental.classRegex": [
+		["@tw\\s\\*?\\/?[\\s\\S]+?[']([^']*)"],
+		["@tw\\s\\*?\\/?[\\s\\S]+?[`]([^`]*)"],
+		["@tw\\s\\*?\\/?[\\s\\S]+?[\"]([^\"]*)"]
+	],
+	"tailwindCSS.classFunctions": ["twMerge", "twJoin", "tw"],
+	"tailwindCSS.experimental.configFile": "src/index.css"
+}

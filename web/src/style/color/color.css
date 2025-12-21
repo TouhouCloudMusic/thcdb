@@ -1,0 +1,20 @@
+@import "./palette.css";
+
+@theme inline {
+	--background-color-primary: var(--color-white);
+	--background-color-secondary: var(--color-slate-100);
+	--background-color-tertiary: var(--color-white);
+
+	--text-color-primary: var(--color-slate-900);
+	--text-color-secondary: var(--color-slate-700);
+	--text-color-tertiary: var(--color-slate-600);
+
+	--default-border-color: var(--color-slate-400);
+	--default-icon-color: var(--color-slate-500);
+
+	--color-reimu-650: color-mix(
+		in oklch,
+		var(--color-reimu-600) 50%,
+		var(--color-reimu-500) 50%
+	);
+}

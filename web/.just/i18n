@@ -1,0 +1,8 @@
+default: extract compile
+
+extract:
+	pnpm exec lingui extract
+compile:
+	pnpm exec lingui compile --typescript
+clean:
+	pnpm exec lingui extract --clean

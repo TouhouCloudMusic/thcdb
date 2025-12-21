@@ -1,0 +1,22 @@
+semi = false
+singleAttributePerLine = true
+useTabs = true
+importOrder = [
+	"<THIRD_PARTY_MODULES>",
+	"^[~/]",
+	"^[../]",
+	"^[./]",
+]
+importOrderSeparation = true
+tailwindStylesheet = "./src/index.css"
+plugins = [
+	"@trivago/prettier-plugin-sort-imports",
+	"prettier-plugin-tailwindcss",
+]
+# experimentalTernaries = true
+experimentalOperatorPosition = "start"
+
+[[overrides]]
+files = "*.yaml"
+[overrides.options]
+tabWidth = 2

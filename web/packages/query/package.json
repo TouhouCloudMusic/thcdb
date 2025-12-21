@@ -1,0 +1,12 @@
+{
+	"name": "@thc/query",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"exports": {
+		".": "./src/index.ts"
+	}
+}

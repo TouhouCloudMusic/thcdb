@@ -1,0 +1,6 @@
+export * as SearchDialog from "./__internal"
+export { ArtistSearchDialog } from "./ArtistSearchDialog"
+export { CreditRoleSearchDialog } from "./CreditRoleSearchDialog"
+export { LabelSearchDialog } from "./LabelSearchDialog"
+export { EventSearchDialog } from "./EventSearchDialog"
+export { TagSearchDialog } from "./TagSearchDialog"
