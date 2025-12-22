@@ -1,0 +1,49 @@
+name: GitHub Actions
+run-name: web
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "web/**"
+  workflow_dispatch:
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prettier check
+        run: pnpm exec prettier --check .
+
+      - name: Lint check
+        run: |
+          pnpm exec oxlint -c .oxlintrc.json
+          pnpm exec eslint --cache .
+
+      - name: Run Test
+        run: pnpm exec vitest run
+
+      - name: Build app
+        run: pnpm run build

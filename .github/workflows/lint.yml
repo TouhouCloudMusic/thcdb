@@ -6,11 +6,13 @@ on:
   pull_request:
     branches: ["main"]
     paths:
-      - "crates/**"
-      - "src/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "build.rs"
+      - "server/crates/**"
+      - "server/src/**"
+      - "server/.cargo/**"
+      - "server/Cargo.toml"
+      - "server/Cargo.lock"
+      - "server/build.rs"
+      - "server/rust-toolchain.toml"
   workflow_dispatch:
 
 env:
@@ -26,6 +28,9 @@ jobs:
   rust:
     name: Rust
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
     steps:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
 
@@ -37,7 +42,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('server/Cargo.lock') }}
 
       - name: Check format
         run: cargo fmt --check
