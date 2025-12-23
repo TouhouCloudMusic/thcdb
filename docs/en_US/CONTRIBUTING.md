@@ -12,7 +12,7 @@ To contribute to Touhou Cloud DB, make sure you have the following installed:
 
 ### Rust Toolchain
 
-Our project is written in Rust. You can install it from [rust-lang.org](https://www.rust-lang.org/). Our project uses a specific Rust toolchain configuration that is automatically applied through our [`rust-toolchain.toml`](../../rust-toolchain.toml) file. Key details include:
+Our project is written in Rust. You can install it from [rust-lang.org](https://www.rust-lang.org/). The backend uses a specific Rust toolchain configuration that is automatically applied through our [`server/rust-toolchain.toml`](../../server/rust-toolchain.toml) file. Key details include:
 
 - **Nightly Channel**: We use the Rust nightly channel for access to cutting-edge features
 - **Required Components**:
@@ -64,7 +64,7 @@ cargo install sea-orm-cli
 
 ### Optional Tools
 
-- **Mold** (Unix-like systems only): If you want faster compilation, you can install [Mold](https://github.com/rui314/mold) through your system package manager and uncomment the clang argument in [.cargo/config.toml](../../.cargo/config.toml)
+- **Mold** (Unix-like systems only): If you want faster compilation, you can install [Mold](https://github.com/rui314/mold) through your system package manager and uncomment the clang argument in [`server/.cargo/config.toml`](../../server/.cargo/config.toml)
 
 Note: Windows users should skip this as Mold is not compatible with Windows.
 
@@ -78,7 +78,7 @@ Before you begin contributing, make sure to set the following environment variab
 - `REDIS_URL`: The redis url, usually in the format `redis://username:password@localhost:6379`.
 - `ADMIN_PASSWORD`: The Admin password for the dev only admin account, you can set it to any value for local development.
 
-We recommend creating a `.env` file in the project root to store these variables. This file is git-ignored, allowing you to maintain personal settings without affecting version control.
+We recommend creating a `server/.env` file to store these variables when running the backend locally (outside Docker). This file is git-ignored, allowing you to maintain personal settings without affecting version control.
 
 Example `.env` file:
 
@@ -110,6 +110,6 @@ Our pre-push hook runs automatically whenever you execute `git push` and perform
 - Linting via `cargo clippy`
 - Tests via `cargo test`
 
-These checks are defined in our [`.justfile`](../../.justfile) under the `pre-push` and `check` tasks.
+These checks are defined in our [`server/.justfile`](../../server/.justfile) under the `pre-push` and `check` tasks.
 
 If any check fails, your push will be prevented until the issues are fixed. This ensures that code pushed to the repository maintains our quality standards.

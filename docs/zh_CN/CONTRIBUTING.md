@@ -12,7 +12,7 @@
 
 ### Rust 工具链
 
-本项目使用 Rust 编写。你可以从 [rust-lang.org](https://www.rust-lang.org/) 安装它。我们通过 [`rust-toolchain.toml`](../../rust-toolchain.toml) 文件使用了特定的工具链配置，具体包括：
+本项目后端使用 Rust 编写。你可以从 [rust-lang.org](https://www.rust-lang.org/) 安装它。我们通过 [`server/rust-toolchain.toml`](../../server/rust-toolchain.toml) 文件使用了特定的工具链配置，具体包括：
 
 - **Nightly 渠道**：我们使用 Rust 的 nightly 渠道以获得最新的特性。
 - **必要组件**：
@@ -64,7 +64,7 @@ cargo install sea-orm-cli
 
 ### 可选工具
 
-- **Mold**（仅支持类 Unix 系统）：若想加快编译速度，可通过包管理器安装 [Mold](https://github.com/rui314/mold)，并在 [.cargo/config.toml](../../.cargo/config.toml) 中取消 clang 参数的注释。
+- **Mold**（仅支持类 Unix 系统）：若想加快编译速度，可通过包管理器安装 [Mold](https://github.com/rui314/mold)，并在 [`server/.cargo/config.toml`](../../server/.cargo/config.toml) 中取消 clang 参数的注释。
 
 注意：Windows 用户请跳过此项，Mold 不兼容 Windows。
 
@@ -78,7 +78,7 @@ cargo install sea-orm-cli
 - `REDIS_URL`：Redis 连接地址，例如 `redis://username:password@localhost:6379`
 - `ADMIN_PASSWORD`：开发用管理员账户密码，可自定义设置
 
-建议在项目根目录创建 `.env` 文件来保存这些变量。该文件已加入 `.gitignore`，不会影响版本控制。
+如果你希望在本地直接运行后端（而非通过 Docker），建议创建 `server/.env` 文件来保存这些变量。该文件已加入 `.gitignore`，不会影响版本控制。
 
 示例 `.env` 文件：
 
@@ -110,6 +110,6 @@ ADMIN_PASSWORD=your_secure_password
 - 使用 `cargo clippy` 进行代码 lint 检查
 - 使用 `cargo test` 运行测试
 
-这些检查定义在 [`.justfile`](../../.justfile) 的 `pre-push` 与 `check` 任务中。
+这些检查定义在 [`server/.justfile`](../../server/.justfile) 的 `pre-push` 与 `check` 任务中。
 
 如果有任何检查失败，推送将被中断，直到问题被修复，以确保代码质量。
