@@ -5,13 +5,13 @@
 **快速导航（功能树）**:
 
 - [功能完成状态](#功能完成状态)
-  - [Artist](./artist/design)
-  - [Release](./docs/architecture/release/design.md)
+  - [Artist](./artist/design.md)
+  - [Release](./release/design.md)
   - [Song](./song/design.md)
   - [Event](./event/design.md)
   - [Label](./label/design.md)
   - [Tag](./tag/design.md)
-  - Credit Role
+  - [Credit Role](./credit-role/design.md)
   - Song Lyrics
   - [User](./user/design.md)
   - [Correction](./correction/design.md)
@@ -61,7 +61,7 @@
 
 ### 1.1 评论系统 {#comment}
 
-**优先级**: 高 | **状态**: 完全缺失 | **设计文档**: [comment](./comment/)
+**优先级**: 高 | **状态**: 完全缺失 | **设计文档**: [comment](./comment/design.md)
 
 
 **实现要点**:
@@ -74,7 +74,7 @@
 
 ### 1.2 搜索功能 {#search}
 
-**优先级**: 高 | **状态**: 完全缺失 | **设计文档**: [search](./search/)
+**优先级**: 高 | **状态**: 完全缺失 | **设计文档**: [search](./search/design.md)
 
 
 **实现要点**:
@@ -87,7 +87,7 @@
 
 ### 1.3 修正系统扩展 {#correction}
 
-**优先级**: 高 | **状态**: 部分实现 | **设计文档**: [correction](./correction/)
+**优先级**: 高 | **状态**: 部分实现 | **设计文档**: [correction](./correction/design.md)
 
 
 **实现要点**:
@@ -100,7 +100,7 @@
 
 ### 1.4 喜欢系统 {#like}
 
-**优先级**: 高 | **状态**: 完全缺失 | **设计文档**: [like-and-favorite](./like-and-favorite/)
+**优先级**: 高 | **状态**: 完全缺失 | **设计文档**: [like-and-favorite](./like-and-favorite/design.md)
 
 
 **实现要点**:
@@ -111,7 +111,7 @@
 
 ### 1.5 用户权限系统 {#permission}
 
-**优先级**: 高 | **状态**: 部分实现 | **设计文档**: [user](./user/)
+**优先级**: 高 | **状态**: 部分实现 | **设计文档**: [user](./user/design.md)
 
 
 **实现要点**:
@@ -125,14 +125,14 @@
 
 ### 2.1 用户关注系统 {#following}
 
-**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [user](./user/)
+**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [user](./user/design.md)
 
 
 ---
 
 ### 2.2 用户列表系统 {#user-list}
 
-**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [user-lists](./user-lists/)
+**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [user-lists](./user-lists/design.md)
 
 
 **使用场景**: 播放列表、收藏夹、愿望清单、主题收藏
@@ -141,7 +141,7 @@
 
 ### 2.3 通知系统 {#notification}
 
-**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [notification](./notification/)
+**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [notification](./notification/design.md)
 
 
 **通知类型**:
@@ -155,21 +155,21 @@
 
 ### 3.1 图片队列系统 {#image-queue}
 
-**优先级**: 中 | **状态**: 部分实现 | **设计文档**: [image](./image/)
+**优先级**: 中 | **状态**: 部分实现 | **设计文档**: [image](./image/design.md)
 
 
 ---
 
 ### 3.2 标签系统扩展 {#tag}
 
-**优先级**: 中 | **状态**: 部分实现 | **设计文档**: [tag](./tag/)
+**优先级**: 中 | **状态**: 部分实现 | **设计文档**: [tag](./tag/design.md)
 
 
 ---
 
 ### 3.3 Credit Role Tree {#credit-role-tree}
 
-**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [credit-role](./credit-role/)
+**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [credit-role](./credit-role/design.md)
 
 
 **实现要点**:
@@ -183,7 +183,7 @@
 
 ### 4.1 统计系统 {#statistics}
 
-**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [statistics](./statistics/)
+**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [statistics](./statistics/design.md)
 
 
 **实现要点**:
@@ -195,7 +195,7 @@
 
 ### 4.2 推荐系统 {#recommendation}
 
-**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [recommendation](./recommendation/)
+**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [recommendation](./recommendation/design.md)
 
 
 **实现要点**:
@@ -209,7 +209,7 @@
 
 ### 5.1 历史查看 API {#history}
 
-**优先级**: 低 | **状态**: 完全缺失 | **设计文档**: [history-tracking](./history-tracking/)
+**优先级**: 低 | **状态**: 完全缺失 | **设计文档**: [history-tracking](./history-tracking/design.md)
 
 
 **实现要点**:

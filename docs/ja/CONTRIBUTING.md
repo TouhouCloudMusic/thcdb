@@ -12,7 +12,7 @@ Touhou Cloud DB に貢献する前に、以下のツールがインストール�
 
 ### Rust ツールチェーン
 
-本プロジェクトは Rust で記述されています。[rust-lang.org](https://www.rust-lang.org/) からインストールできます。プロジェクトは [`rust-toolchain.toml`](../../rust-toolchain.toml) を通じて特定のツールチェーン設定を適用します：
+本プロジェクトのバックエンドは Rust で記述されています。[rust-lang.org](https://www.rust-lang.org/) からインストールできます。バックエンドは [`server/rust-toolchain.toml`](../../server/rust-toolchain.toml) を通じて特定のツールチェーン設定を適用します：
 
 - **Nightly チャンネル**：最新機能を利用するために Nightly バージョンを使用しています
 - **必要コンポーネント**：
@@ -78,7 +78,7 @@ cargo install sea-orm-cli
 - `REDIS_URL`: 例：`redis://username:password@localhost:6379`
 - `ADMIN_PASSWORD`: 開発用管理者パスワード（任意の値で OK）
 
-プロジェクトルートに `.env` ファイルを作成し、そこに記述するのが推奨されます（`.gitignore` 済み）。
+Docker ではなくローカルでバックエンドを実行する場合は、`server/.env` ファイルを作成して記述するのが推奨されます（`.gitignore` 済み）。
 
 例 `.env`：
 
@@ -110,6 +110,6 @@ ADMIN_PASSWORD=your_secure_password
 - `cargo clippy` による静的解析
 - `cargo test` によるテスト
 
-これらは [`.justfile`](../../.justfile) に `pre-push` および `check` タスクとして定義されています。
+これらは [`server/.justfile`](../../server/.justfile) に `pre-push` および `check` タスクとして定義されています。
 
 どれかに失敗すると、問題が解決されるまで push はブロックされます。これにより品質が保たれます。
