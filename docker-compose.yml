@@ -1,0 +1,82 @@
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devuser
+      POSTGRES_DB: devdb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - backend
+
+  redis:
+    image: valkey/valkey:9-alpine@sha256:b4ee67d73e00393e712accc72cfd7003b87d0fcd63f0eba798b23251bfc9c394
+    restart: unless-stopped
+    command: valkey-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redisdata:/data
+    networks:
+      - backend
+
+  app:
+    build:
+      context: ./server
+    restart: unless-stopped
+    init: true
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SESSION_SECURE: "false"
+      ADMIN_PASSWORD: changeme
+      middleware::limit::req_per_sec: "1000000"
+      DATABASE_URL: "postgres://appuser:appuser@db:5432/appdb"
+      REDIS_URL: "redis://redis:6379"
+    ports:
+      - "${SERVER_PORT:-12345}:12345"
+    networks:
+      - backend
+
+  web:
+    image: node:22-bookworm-slim
+    restart: unless-stopped
+    init: true
+    working_dir: /app
+    depends_on:
+      app:
+        condition: service_started
+    environment:
+      CI: "true"
+      VITE_SERVER_URL: "http://app:12345"
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    volumes:
+      - ./web:/app
+      - web_node_modules:/app/node_modules
+    command: sh -c "corepack enable && corepack prepare pnpm@10 --activate && pnpm install && pnpm dev --host 0.0.0.0"
+    networks:
+      - backend
+
+networks:
+  backend:
+
+volumes:
+  pgdata:
+  redisdata:
+  web_node_modules:

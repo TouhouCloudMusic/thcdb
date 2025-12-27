@@ -1,0 +1,13 @@
+.git
+.github
+
+server/target
+server/tmp
+
+web/node_modules
+web/dist
+web/.pnpm-store
+
+**/*.log
+.DS_Store
+
