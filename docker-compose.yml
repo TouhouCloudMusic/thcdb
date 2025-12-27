@@ -14,7 +14,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "5432"
     networks:
       - backend
 
@@ -46,7 +46,7 @@ services:
       SESSION_SECURE: "false"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-changeme}"
       middleware::limit::req_per_sec: "1000000"
-      DATABASE_URL: "postgres://appuser:appuser@db:5432/appdb"
+      DATABASE_URL: "postgres://devuser:devuser@db:5432/devdb"
       REDIS_URL: "redis://redis:6379"
     ports:
       - "${SERVER_PORT:-12345}:12345"
