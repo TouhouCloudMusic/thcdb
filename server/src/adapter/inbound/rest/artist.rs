@@ -12,7 +12,10 @@ use super::state::{
     ArcAppState, {self},
 };
 use crate::adapter::inbound::rest::AppRouter;
-use crate::adapter::inbound::rest::api_response::{IntoApiResponse, Message};
+use crate::adapter::inbound::rest::api_response::{
+    Data, IntoApiResponse, Message,
+};
+use crate::application::correction::CorrectionSubmissionResult;
 use crate::application::artist_image::{
     ArtistProfileImageInput, {self},
 };

@@ -1,6 +1,5 @@
 # Environment
 .direnv
-.envrc
 .env.local
 
 # Dependencies

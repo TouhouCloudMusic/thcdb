@@ -1,7 +1,6 @@
 # Local files
 .direnv
 .env
-.envrc
 .idea
 .hypothesis
 schemathesis-report
