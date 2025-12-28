@@ -3,9 +3,9 @@ services:
     image: postgres:18-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: devuser
-      POSTGRES_PASSWORD: devuser
-      POSTGRES_DB: devdb
+      POSTGRES_USER: "${POSTGRES_USER:-devuser}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-devuser}"
+      POSTGRES_DB: "${POSTGRES_DB:-devdb}"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -44,7 +44,7 @@ services:
         condition: service_healthy
     environment:
       SESSION_SECURE: "false"
-      ADMIN_PASSWORD: changeme
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-changeme}"
       middleware::limit::req_per_sec: "1000000"
       DATABASE_URL: "postgres://appuser:appuser@db:5432/appdb"
       REDIS_URL: "redis://redis:6379"
