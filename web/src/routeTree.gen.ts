@@ -49,6 +49,7 @@ import { Route as ReleaseIdEditRouteImport } from './route/release/$id.edit'
 import { Route as LabelIdEditRouteImport } from './route/label/$id.edit'
 import { Route as EventIdEditRouteImport } from './route/event/$id.edit'
 import { Route as ArtistIdEditRouteImport } from './route/artist/$id.edit'
+import { Route as userProfileMockRouteImport } from './route/(user)/profile_.mock'
 import { Route as userProfileEditRouteImport } from './route/(user)/profile_.edit'
 import { Route as userProfileUsernameRouteImport } from './route/(user)/profile_.$username'
 
@@ -252,6 +253,11 @@ const ArtistIdEditRoute = ArtistIdEditRouteImport.update({
   path: '/artist/$id/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const userProfileMockRoute = userProfileMockRouteImport.update({
+  id: '/(user)/profile_/mock',
+  path: '/profile/mock',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const userProfileEditRoute = userProfileEditRouteImport.update({
   id: '/(user)/profile_/edit',
   path: '/profile/edit',
@@ -299,6 +305,7 @@ export interface FileRoutesByFullPath {
   '/tag': typeof TagIndexRoute
   '/profile/$username': typeof userProfileUsernameRoute
   '/profile/edit': typeof userProfileEditRoute
+  '/profile/mock': typeof userProfileMockRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
   '/event/$id/edit': typeof EventIdEditRoute
   '/label/$id/edit': typeof LabelIdEditRoute
@@ -343,6 +350,7 @@ export interface FileRoutesByTo {
   '/tag': typeof TagIndexRoute
   '/profile/$username': typeof userProfileUsernameRoute
   '/profile/edit': typeof userProfileEditRoute
+  '/profile/mock': typeof userProfileMockRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
   '/event/$id/edit': typeof EventIdEditRoute
   '/label/$id/edit': typeof LabelIdEditRoute
@@ -388,6 +396,7 @@ export interface FileRoutesById {
   '/tag/': typeof TagIndexRoute
   '/(user)/profile_/$username': typeof userProfileUsernameRoute
   '/(user)/profile_/edit': typeof userProfileEditRoute
+  '/(user)/profile_/mock': typeof userProfileMockRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
   '/event/$id/edit': typeof EventIdEditRoute
   '/label/$id/edit': typeof LabelIdEditRoute
@@ -434,6 +443,7 @@ export interface FileRouteTypes {
     | '/tag'
     | '/profile/$username'
     | '/profile/edit'
+    | '/profile/mock'
     | '/artist/$id/edit'
     | '/event/$id/edit'
     | '/label/$id/edit'
@@ -478,6 +488,7 @@ export interface FileRouteTypes {
     | '/tag'
     | '/profile/$username'
     | '/profile/edit'
+    | '/profile/mock'
     | '/artist/$id/edit'
     | '/event/$id/edit'
     | '/label/$id/edit'
@@ -522,6 +533,7 @@ export interface FileRouteTypes {
     | '/tag/'
     | '/(user)/profile_/$username'
     | '/(user)/profile_/edit'
+    | '/(user)/profile_/mock'
     | '/artist/$id/edit'
     | '/event/$id/edit'
     | '/label/$id/edit'
@@ -567,6 +579,7 @@ export interface RootRouteChildren {
   TagIndexRoute: typeof TagIndexRoute
   userProfileUsernameRoute: typeof userProfileUsernameRoute
   userProfileEditRoute: typeof userProfileEditRoute
+  userProfileMockRoute: typeof userProfileMockRoute
   ArtistIdEditRoute: typeof ArtistIdEditRoute
   ArtistIdIndexRoute: typeof ArtistIdIndexRoute
 }
@@ -853,6 +866,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof ArtistIdEditRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(user)/profile_/mock': {
+      id: '/(user)/profile_/mock'
+      path: '/profile/mock'
+      fullPath: '/profile/mock'
+      preLoaderRoute: typeof userProfileMockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(user)/profile_/edit': {
       id: '/(user)/profile_/edit'
       path: '/profile/edit'
@@ -961,6 +981,7 @@ const rootRouteChildren: RootRouteChildren = {
   TagIndexRoute: TagIndexRoute,
   userProfileUsernameRoute: userProfileUsernameRoute,
   userProfileEditRoute: userProfileEditRoute,
+  userProfileMockRoute: userProfileMockRoute,
   ArtistIdEditRoute: ArtistIdEditRoute,
   ArtistIdIndexRoute: ArtistIdIndexRoute,
 }
