@@ -8,7 +8,8 @@ use super::state::{
     ArcAppState, {self},
 };
 use crate::adapter::inbound::rest::AppRouter;
-use crate::adapter::inbound::rest::api_response::{self};
+use crate::adapter::inbound::rest::api_response::Data;
+use crate::application::correction::CorrectionSubmissionResult;
 use crate::application::correction::NewCorrectionDto;
 use crate::application::tag::{CreateError, UpsertCorrectionError};
 use crate::domain::tag::NewTag;
@@ -29,16 +30,16 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     path = "/tag",
     request_body = NewCorrectionDto<NewTag>,
     responses(
-		(status = 200, body = api_response::Message),
+		(status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 async fn create_tag(
     CurrentUser(user): CurrentUser,
     State(tag_service): State<state::TagService>,
     Json(dto): Json<NewCorrectionDto<NewTag>>,
-) -> Result<api_response::Message, CreateError> {
-    tag_service.create(dto.with_author(user)).await?;
-    Ok(api_response::Message::ok())
+) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
+    let result = tag_service.create(dto.with_author(user)).await?;
+    Ok(Data::from(result))
 }
 
 #[utoipa::path(
@@ -46,7 +47,7 @@ async fn create_tag(
     path = "/tag/{id}",
     request_body = NewCorrectionDto<NewTag>,
     responses(
-		(status = 200, body = api_response::Message),
+		(status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 async fn upsert_tag_correction(
@@ -54,10 +55,10 @@ async fn upsert_tag_correction(
     State(tag_service): State<state::TagService>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewTag>>,
-) -> Result<api_response::Message, UpsertCorrectionError> {
-    tag_service
+) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
+    let result = tag_service
         .upsert_correction(id, dto.with_author(user))
         .await?;
 
-    Ok(api_response::Message::ok())
+    Ok(Data::from(result))
 }

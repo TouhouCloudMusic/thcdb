@@ -11,7 +11,8 @@ use super::state::{
     ArcAppState, {self},
 };
 use crate::adapter::inbound::rest::AppRouter;
-use crate::adapter::inbound::rest::api_response::Message;
+use crate::adapter::inbound::rest::api_response::{Data, Message};
+use crate::application::correction::CorrectionSubmissionResult;
 use crate::application;
 use crate::application::correction::NewCorrectionDto;
 use crate::application::release::{CreateError, UpsertCorrectionError};
@@ -38,17 +39,17 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     path = "/release",
     request_body = NewCorrectionDto<NewRelease>,
     responses(
-		(status = 200, body = Message),
+		(status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 async fn create_release(
     CurrentUser(user): CurrentUser,
     service: State<Service>,
     Json(dto): Json<NewCorrectionDto<NewRelease>>,
-) -> Result<Message, CreateError> {
-    service.create(dto.with_author(user)).await?;
+) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
+    let result = service.create(dto.with_author(user)).await?;
 
-    Ok(Message::ok())
+    Ok(Data::from(result))
 }
 
 #[utoipa::path(
@@ -57,7 +58,7 @@ async fn create_release(
     path = "/release/{id}",
     request_body = NewCorrectionDto<NewRelease>,
     responses(
-		(status = 200, body = Message),
+		(status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 async fn update_release(
@@ -65,10 +66,10 @@ async fn update_release(
     service: State<Service>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewRelease>>,
-) -> Result<Message, UpsertCorrectionError> {
-    service.upsert_correction(id, dto.with_author(user)).await?;
+) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
+    let result = service.upsert_correction(id, dto.with_author(user)).await?;
 
-    Ok(Message::ok())
+    Ok(Data::from(result))
 }
 
 #[derive(Debug, ToSchema, TryFromMultipart)]

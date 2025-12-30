@@ -1,6 +1,7 @@
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
+use crate::application::correction::CorrectionSubmissionResult;
 use crate::domain::TransactionManager;
 use crate::domain::correction::{
     NewCorrection, NewCorrectionMeta, {self},
@@ -63,7 +64,7 @@ where
     pub async fn create(
         &self,
         correction: NewCorrection<NewSongLyrics>,
-    ) -> Result<(), CreateError> {
+    ) -> Result<CorrectionSubmissionResult, CreateError> {
         // Validate the lyrics data
         correction.data.validate()?;
 
@@ -87,16 +88,31 @@ where
             })
             .await?;
 
+        let correction_id = correction::Repo::find_one(
+            &correction_service.repo,
+            correction::CorrectionFilter::latest(
+                entity_id,
+                entity::enums::EntityType::SongLyrics,
+            ),
+        )
+        .await
+        .map_err(|err| crate::infra::Error::Internal { source: err })?
+        .ok_or_else(|| crate::infra::Error::custom(&"Correction not found"))?
+        .id;
+
         correction_service.repo.commit().await?;
 
-        Ok(())
+        Ok(CorrectionSubmissionResult {
+            correction_id,
+            entity_id,
+        })
     }
 
     pub async fn upsert_correction(
         &self,
         id: i32,
         correction: NewCorrection<NewSongLyrics>,
-    ) -> Result<(), UpsertCorrectionError> {
+    ) -> Result<CorrectionSubmissionResult, UpsertCorrectionError> {
         // Validate the lyrics data
         correction.data.validate()?;
 
@@ -119,8 +135,23 @@ where
             })
             .await?;
 
+        let correction_id = correction::Repo::find_one(
+            &correction_service.repo,
+            correction::CorrectionFilter::latest(
+                id,
+                entity::enums::EntityType::SongLyrics,
+            ),
+        )
+        .await
+        .map_err(|err| crate::infra::Error::Internal { source: err })?
+        .ok_or_else(|| crate::infra::Error::custom(&"Correction not found"))?
+        .id;
+
         correction_service.repo.commit().await?;
 
-        Ok(())
+        Ok(CorrectionSubmissionResult {
+            correction_id,
+            entity_id: id,
+        })
     }
 }

@@ -8,7 +8,8 @@ use super::state::{
     ArcAppState, {self},
 };
 use crate::adapter::inbound::rest::AppRouter;
-use crate::adapter::inbound::rest::api_response::Message;
+use crate::adapter::inbound::rest::api_response::Data;
+use crate::application::correction::CorrectionSubmissionResult;
 use crate::application::correction::NewCorrectionDto;
 use crate::application::song::{CreateError, UpsertCorrectionError};
 use crate::domain::song::NewSong;
@@ -29,17 +30,17 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     path = "/song",
     request_body = NewCorrectionDto<NewSong>,
     responses(
-		(status = 200, body = Message),
+		(status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 async fn create_song(
     CurrentUser(user): CurrentUser,
     State(service): State<state::SongService>,
     Json(dto): Json<NewCorrectionDto<NewSong>>,
-) -> Result<Message, CreateError> {
-    service.create(dto.with_author(user)).await?;
+) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
+    let result = service.create(dto.with_author(user)).await?;
 
-    Ok(Message::ok())
+    Ok(Data::from(result))
 }
 
 #[utoipa::path(
@@ -48,7 +49,7 @@ async fn create_song(
     path = "/song/{id}",
     request_body = NewCorrectionDto<NewSong>,
     responses(
-		(status = 200, body = Message),
+		(status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 async fn update_song(
@@ -56,10 +57,10 @@ async fn update_song(
     State(service): State<state::SongService>,
     Path(song_id): Path<i32>,
     Json(input): Json<NewCorrectionDto<NewSong>>,
-) -> Result<Message, UpsertCorrectionError> {
-    service
+) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
+    let result = service
         .upsert_correction(song_id, input.with_author(user))
         .await?;
 
-    Ok(Message::ok())
+    Ok(Data::from(result))
 }
