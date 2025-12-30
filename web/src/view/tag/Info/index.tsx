@@ -5,6 +5,7 @@ import { Link, Tab } from "~/component/atomic"
 import { Intersperse } from "~/component/data/Intersperse"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
+import { CorrectionHistorySection } from "~/view/correction/Detail"
 
 import { TagInfoPageContext } from "./context"
 import type { TagInfoPageContextValue } from "./context"
@@ -28,6 +29,10 @@ export function TagInfoPage(props: Props) {
 						<TagInfoHeader />
 						<TagInfoDetails />
 						<TagInfoTabs />
+						<CorrectionHistorySection
+							entityType="tag"
+							entityId={props.tag.id}
+						/>
 					</div>
 				</TagInfoPageContext.Provider>
 			</Suspense>

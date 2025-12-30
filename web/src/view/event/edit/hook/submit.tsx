@@ -32,11 +32,11 @@ export function createEventFormSubmission(props: Props) {
 			mutation.mutate(
 				{ type: "Create", data: { ...output, data: normalizedData } },
 				{
-					onSuccess() {
+					onSuccess(result) {
 						void queryClient.invalidateQueries({
 							queryKey: [EventQueryOption.QUERY_KEYS.DETAIL_KEYWORD],
 						})
-						void navigator({ to: "/" })
+						void navigator({ to: `/correction/${result.correction_id}` })
 					},
 					onError(error) {
 						if (import.meta.env.DEV) {
@@ -49,13 +49,17 @@ export function createEventFormSubmission(props: Props) {
 		}
 
 		mutation.mutate(
-			{ type: "Update", id: props.event.id, data: normalizedData },
 			{
-				onSuccess() {
+				type: "Update",
+				id: props.event.id,
+				data: { ...output, data: normalizedData },
+			},
+			{
+				onSuccess(result) {
 					void queryClient.invalidateQueries({
 						queryKey: [EventQueryOption.QUERY_KEYS.DETAIL_ID, props.event.id],
 					})
-					void navigator({ to: `/event/${props.event.id}` })
+					void navigator({ to: `/correction/${result.correction_id}` })
 				},
 				onError(error) {
 					if (import.meta.env.DEV) {

@@ -1,4 +1,5 @@
 export * from "./artist"
+export * from "./correction"
 export * from "./credit"
 export * from "./event"
 export * from "./language"

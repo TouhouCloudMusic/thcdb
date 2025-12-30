@@ -8,6 +8,7 @@ import type { InfiniteQuery } from "~/type/query"
 
 import { ArtistInfo } from "./comp/ArtistInfo"
 import { ArtistReleaseInfo } from "./comp/ArtistReleaseInfo"
+import { CorrectionHistorySection } from "~/view/correction/Detail"
 
 export type ArtistContext = {
 	artist: Artist
@@ -74,6 +75,10 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 						<div>
 							<ArtistReleaseInfo />
 						</div>
+						<CorrectionHistorySection
+							entityType="artist"
+							entityId={props.artist.id}
+						/>
 					</div>
 					{/* <div class="max-w-full wrap-anywhere">
                 {JSON.stringify(props.query.data)}

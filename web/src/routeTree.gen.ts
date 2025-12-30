@@ -23,6 +23,7 @@ import { Route as TagNewRouteImport } from './route/tag/new'
 import { Route as TagMockRouteImport } from './route/tag/mock'
 import { Route as TagExploreRouteImport } from './route/tag/explore'
 import { Route as TagIdRouteImport } from './route/tag/$id'
+import { Route as CorrectionIdRouteImport } from './route/correction/$id'
 import { Route as SongNewRouteImport } from './route/song/new'
 import { Route as SongMockRouteImport } from './route/song/mock'
 import { Route as SongExploreRouteImport } from './route/song/explore'
@@ -121,6 +122,11 @@ const TagExploreRoute = TagExploreRouteImport.update({
 const TagIdRoute = TagIdRouteImport.update({
   id: '/tag/$id',
   path: '/tag/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CorrectionIdRoute = CorrectionIdRouteImport.update({
+  id: '/correction/$id',
+  path: '/correction/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SongNewRoute = SongNewRouteImport.update({
@@ -296,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/tag/explore': typeof TagExploreRoute
   '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
+  '/correction/$id': typeof CorrectionIdRoute
   '/artist': typeof ArtistIndexRoute
   '/chart': typeof ChartIndexRoute
   '/event': typeof EventIndexRoute
@@ -341,6 +348,7 @@ export interface FileRoutesByTo {
   '/tag/explore': typeof TagExploreRoute
   '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
+  '/correction/$id': typeof CorrectionIdRoute
   '/artist': typeof ArtistIndexRoute
   '/chart': typeof ChartIndexRoute
   '/event': typeof EventIndexRoute
@@ -387,6 +395,7 @@ export interface FileRoutesById {
   '/tag/explore': typeof TagExploreRoute
   '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
+  '/correction/$id': typeof CorrectionIdRoute
   '/artist/': typeof ArtistIndexRoute
   '/chart/': typeof ChartIndexRoute
   '/event/': typeof EventIndexRoute
@@ -434,6 +443,7 @@ export interface FileRouteTypes {
     | '/tag/explore'
     | '/tag/mock'
     | '/tag/new'
+    | '/correction/$id'
     | '/artist'
     | '/chart'
     | '/event'
@@ -479,6 +489,7 @@ export interface FileRouteTypes {
     | '/tag/explore'
     | '/tag/mock'
     | '/tag/new'
+    | '/correction/$id'
     | '/artist'
     | '/chart'
     | '/event'
@@ -524,6 +535,7 @@ export interface FileRouteTypes {
     | '/tag/explore'
     | '/tag/mock'
     | '/tag/new'
+    | '/correction/$id'
     | '/artist/'
     | '/chart/'
     | '/event/'
@@ -570,6 +582,7 @@ export interface RootRouteChildren {
   TagExploreRoute: typeof TagExploreRoute
   TagMockRoute: typeof TagMockRoute
   TagNewRoute: typeof TagNewRoute
+  CorrectionIdRoute: typeof CorrectionIdRoute
   ArtistIndexRoute: typeof ArtistIndexRoute
   ChartIndexRoute: typeof ChartIndexRoute
   EventIndexRoute: typeof EventIndexRoute
@@ -682,6 +695,13 @@ declare module '@tanstack/solid-router' {
       path: '/tag/$id'
       fullPath: '/tag/$id'
       preLoaderRoute: typeof TagIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/correction/$id': {
+      id: '/correction/$id'
+      path: '/correction/$id'
+      fullPath: '/correction/$id'
+      preLoaderRoute: typeof CorrectionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/song/new': {
@@ -972,6 +992,7 @@ const rootRouteChildren: RootRouteChildren = {
   TagExploreRoute: TagExploreRoute,
   TagMockRoute: TagMockRoute,
   TagNewRoute: TagNewRoute,
+  CorrectionIdRoute: CorrectionIdRoute,
   ArtistIndexRoute: ArtistIndexRoute,
   ChartIndexRoute: ChartIndexRoute,
   EventIndexRoute: EventIndexRoute,

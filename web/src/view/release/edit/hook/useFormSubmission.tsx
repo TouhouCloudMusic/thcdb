@@ -24,8 +24,8 @@ export function useReleaseFormSubmission(props: Props) {
 			mutation.mutate(
 				{ type: "Create", data },
 				{
-					onSuccess() {
-						void navigator({ to: "/" })
+					onSuccess(result) {
+						void navigator({ to: `/correction/${result.correction_id}` })
 					},
 					onError(error) {
 						if (import.meta.env.DEV) {
@@ -38,8 +38,8 @@ export function useReleaseFormSubmission(props: Props) {
 			mutation.mutate(
 				{ type: "Update", id: props.release.id, data },
 				{
-					onSuccess() {
-						void navigator({ to: `/release/${props.release.id}` })
+					onSuccess(result) {
+						void navigator({ to: `/correction/${result.correction_id}` })
 					},
 					onError(error) {
 						if (import.meta.env.DEV) {

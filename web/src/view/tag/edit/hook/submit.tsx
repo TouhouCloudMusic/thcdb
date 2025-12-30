@@ -25,11 +25,11 @@ export function createTagFormSubmission(props: Props) {
 			mutation.mutate(
 				{ type: "Create", data: output },
 				{
-					onSuccess() {
+					onSuccess(result) {
 						void queryClient.invalidateQueries({
 							queryKey: [TagQueryOption.QUERY_KEYS.DETAIL_KEYWORD],
 						})
-						void navigator({ to: `/` })
+						void navigator({ to: `/correction/${result.correction_id}` })
 					},
 					onError(error) {
 						if (import.meta.env.DEV) {
@@ -44,11 +44,11 @@ export function createTagFormSubmission(props: Props) {
 		mutation.mutate(
 			{ type: "Update", id: props.tag.id, data: output },
 			{
-				onSuccess() {
+				onSuccess(result) {
 					void queryClient.invalidateQueries({
 						queryKey: [TagQueryOption.QUERY_KEYS.DETAIL_ID, props.tag.id],
 					})
-					void navigator({ to: `/tag/${props.tag.id}` })
+					void navigator({ to: `/correction/${result.correction_id}` })
 				},
 				onError(error) {
 					if (import.meta.env.DEV) {
