@@ -16,9 +16,7 @@ export const Route = createFileRoute("/correction/$id")({
 	loader: async ({ params, search }) => {
 		const parsedId = v.parse(EntityId, Number.parseInt(params.id, 10))
 
-		await QUERY_CLIENT.ensureQueryData(
-			CorrectionQueryOption.detail(parsedId),
-		)
+		await QUERY_CLIENT.ensureQueryData(CorrectionQueryOption.detail(parsedId))
 
 		const compareId = search.compare
 		await QUERY_CLIENT.ensureQueryData(

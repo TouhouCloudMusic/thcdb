@@ -8,10 +8,8 @@ import { imgUrl } from "~/utils/adapter/static_file"
 // 默认头像路径
 const DEFAULT_AVATAR = "/Admin.jpg"
 
-export interface Props extends Omit<
-	JSX.ImgHTMLAttributes<HTMLImageElement>,
-	"src" | "onError"
-> {
+export interface Props
+	extends Omit<JSX.ImgHTMLAttributes<HTMLImageElement>, "src" | "onError"> {
 	user?: UserProfile | undefined
 }
 

@@ -5,10 +5,10 @@ import { createContext, Suspense } from "solid-js"
 import { Image } from "~/component/image"
 import { PageLayout } from "~/layout/PageLayout"
 import type { InfiniteQuery } from "~/type/query"
+import { CorrectionHistorySection } from "~/view/correction/Detail"
 
 import { ArtistInfo } from "./comp/ArtistInfo"
 import { ArtistReleaseInfo } from "./comp/ArtistReleaseInfo"
-import { CorrectionHistorySection } from "~/view/correction/Detail"
 
 export type ArtistContext = {
 	artist: Artist

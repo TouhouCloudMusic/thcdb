@@ -4,9 +4,8 @@ import { twMerge } from "tailwind-merge"
 
 import type { SafeOmit } from "~/type"
 
-interface LinkProps<
-	T extends Entity,
-> extends JSX.AnchorHTMLAttributes<HTMLAnchorElement> {
+interface LinkProps<T extends Entity>
+	extends JSX.AnchorHTMLAttributes<HTMLAnchorElement> {
 	to: T["type"]
 	params: SafeOmit<T, "type">
 	children?: JSX.Element

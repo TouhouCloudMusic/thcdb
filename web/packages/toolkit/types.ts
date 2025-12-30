@@ -17,7 +17,7 @@ export type ADTEnum<
 					[K in keyof Head]: Head[K]
 				} & { [K in Exclude<AllKeys, keyof Head>]?: never } extends infer Result
 				? // flatten
-						| {
+					| {
 								[Key in keyof Result]: Result[Key]
 						  }
 						| ADTEnum<Tail, AllKeys>

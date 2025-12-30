@@ -23,7 +23,6 @@ import { Route as TagNewRouteImport } from './route/tag/new'
 import { Route as TagMockRouteImport } from './route/tag/mock'
 import { Route as TagExploreRouteImport } from './route/tag/explore'
 import { Route as TagIdRouteImport } from './route/tag/$id'
-import { Route as CorrectionIdRouteImport } from './route/correction/$id'
 import { Route as SongNewRouteImport } from './route/song/new'
 import { Route as SongMockRouteImport } from './route/song/mock'
 import { Route as SongExploreRouteImport } from './route/song/explore'
@@ -39,6 +38,8 @@ import { Route as EventNewRouteImport } from './route/event/new'
 import { Route as EventMockRouteImport } from './route/event/mock'
 import { Route as EventExploreRouteImport } from './route/event/explore'
 import { Route as EventIdRouteImport } from './route/event/$id'
+import { Route as CorrectionMockRouteImport } from './route/correction/mock'
+import { Route as CorrectionIdRouteImport } from './route/correction/$id'
 import { Route as ArtistNewRouteImport } from './route/artist/new'
 import { Route as ArtistExploreRouteImport } from './route/artist/explore'
 import { Route as userTest_avatar_uploadRouteImport } from './route/(user)/test_avatar_upload'
@@ -124,11 +125,6 @@ const TagIdRoute = TagIdRouteImport.update({
   path: '/tag/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CorrectionIdRoute = CorrectionIdRouteImport.update({
-  id: '/correction/$id',
-  path: '/correction/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SongNewRoute = SongNewRouteImport.update({
   id: '/song/new',
   path: '/song/new',
@@ -202,6 +198,16 @@ const EventExploreRoute = EventExploreRouteImport.update({
 const EventIdRoute = EventIdRouteImport.update({
   id: '/event/$id',
   path: '/event/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CorrectionMockRoute = CorrectionMockRouteImport.update({
+  id: '/correction/mock',
+  path: '/correction/mock',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CorrectionIdRoute = CorrectionIdRouteImport.update({
+  id: '/correction/$id',
+  path: '/correction/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ArtistNewRoute = ArtistNewRouteImport.update({
@@ -283,6 +289,8 @@ export interface FileRoutesByFullPath {
   '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
+  '/correction/$id': typeof CorrectionIdRoute
+  '/correction/mock': typeof CorrectionMockRoute
   '/event/$id': typeof EventIdRouteWithChildren
   '/event/explore': typeof EventExploreRoute
   '/event/mock': typeof EventMockRoute
@@ -302,7 +310,6 @@ export interface FileRoutesByFullPath {
   '/tag/explore': typeof TagExploreRoute
   '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
-  '/correction/$id': typeof CorrectionIdRoute
   '/artist': typeof ArtistIndexRoute
   '/chart': typeof ChartIndexRoute
   '/event': typeof EventIndexRoute
@@ -329,6 +336,8 @@ export interface FileRoutesByTo {
   '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
+  '/correction/$id': typeof CorrectionIdRoute
+  '/correction/mock': typeof CorrectionMockRoute
   '/event/$id': typeof EventIdRouteWithChildren
   '/event/explore': typeof EventExploreRoute
   '/event/mock': typeof EventMockRoute
@@ -348,7 +357,6 @@ export interface FileRoutesByTo {
   '/tag/explore': typeof TagExploreRoute
   '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
-  '/correction/$id': typeof CorrectionIdRoute
   '/artist': typeof ArtistIndexRoute
   '/chart': typeof ChartIndexRoute
   '/event': typeof EventIndexRoute
@@ -376,6 +384,8 @@ export interface FileRoutesById {
   '/(user)/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
+  '/correction/$id': typeof CorrectionIdRoute
+  '/correction/mock': typeof CorrectionMockRoute
   '/event/$id': typeof EventIdRouteWithChildren
   '/event/explore': typeof EventExploreRoute
   '/event/mock': typeof EventMockRoute
@@ -395,7 +405,6 @@ export interface FileRoutesById {
   '/tag/explore': typeof TagExploreRoute
   '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
-  '/correction/$id': typeof CorrectionIdRoute
   '/artist/': typeof ArtistIndexRoute
   '/chart/': typeof ChartIndexRoute
   '/event/': typeof EventIndexRoute
@@ -424,6 +433,8 @@ export interface FileRouteTypes {
     | '/test_avatar_upload'
     | '/artist/explore'
     | '/artist/new'
+    | '/correction/$id'
+    | '/correction/mock'
     | '/event/$id'
     | '/event/explore'
     | '/event/mock'
@@ -443,7 +454,6 @@ export interface FileRouteTypes {
     | '/tag/explore'
     | '/tag/mock'
     | '/tag/new'
-    | '/correction/$id'
     | '/artist'
     | '/chart'
     | '/event'
@@ -470,6 +480,8 @@ export interface FileRouteTypes {
     | '/test_avatar_upload'
     | '/artist/explore'
     | '/artist/new'
+    | '/correction/$id'
+    | '/correction/mock'
     | '/event/$id'
     | '/event/explore'
     | '/event/mock'
@@ -489,7 +501,6 @@ export interface FileRouteTypes {
     | '/tag/explore'
     | '/tag/mock'
     | '/tag/new'
-    | '/correction/$id'
     | '/artist'
     | '/chart'
     | '/event'
@@ -516,6 +527,8 @@ export interface FileRouteTypes {
     | '/(user)/test_avatar_upload'
     | '/artist/explore'
     | '/artist/new'
+    | '/correction/$id'
+    | '/correction/mock'
     | '/event/$id'
     | '/event/explore'
     | '/event/mock'
@@ -535,7 +548,6 @@ export interface FileRouteTypes {
     | '/tag/explore'
     | '/tag/mock'
     | '/tag/new'
-    | '/correction/$id'
     | '/artist/'
     | '/chart/'
     | '/event/'
@@ -563,6 +575,8 @@ export interface RootRouteChildren {
   userTest_avatar_uploadRoute: typeof userTest_avatar_uploadRoute
   ArtistExploreRoute: typeof ArtistExploreRoute
   ArtistNewRoute: typeof ArtistNewRoute
+  CorrectionIdRoute: typeof CorrectionIdRoute
+  CorrectionMockRoute: typeof CorrectionMockRoute
   EventIdRoute: typeof EventIdRouteWithChildren
   EventExploreRoute: typeof EventExploreRoute
   EventMockRoute: typeof EventMockRoute
@@ -582,7 +596,6 @@ export interface RootRouteChildren {
   TagExploreRoute: typeof TagExploreRoute
   TagMockRoute: typeof TagMockRoute
   TagNewRoute: typeof TagNewRoute
-  CorrectionIdRoute: typeof CorrectionIdRoute
   ArtistIndexRoute: typeof ArtistIndexRoute
   ChartIndexRoute: typeof ChartIndexRoute
   EventIndexRoute: typeof EventIndexRoute
@@ -697,13 +710,6 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof TagIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/correction/$id': {
-      id: '/correction/$id'
-      path: '/correction/$id'
-      fullPath: '/correction/$id'
-      preLoaderRoute: typeof CorrectionIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/song/new': {
       id: '/song/new'
       path: '/song/new'
@@ -807,6 +813,20 @@ declare module '@tanstack/solid-router' {
       path: '/event/$id'
       fullPath: '/event/$id'
       preLoaderRoute: typeof EventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/correction/mock': {
+      id: '/correction/mock'
+      path: '/correction/mock'
+      fullPath: '/correction/mock'
+      preLoaderRoute: typeof CorrectionMockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/correction/$id': {
+      id: '/correction/$id'
+      path: '/correction/$id'
+      fullPath: '/correction/$id'
+      preLoaderRoute: typeof CorrectionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/artist/new': {
@@ -973,6 +993,8 @@ const rootRouteChildren: RootRouteChildren = {
   userTest_avatar_uploadRoute: userTest_avatar_uploadRoute,
   ArtistExploreRoute: ArtistExploreRoute,
   ArtistNewRoute: ArtistNewRoute,
+  CorrectionIdRoute: CorrectionIdRoute,
+  CorrectionMockRoute: CorrectionMockRoute,
   EventIdRoute: EventIdRouteWithChildren,
   EventExploreRoute: EventExploreRoute,
   EventMockRoute: EventMockRoute,
@@ -992,7 +1014,6 @@ const rootRouteChildren: RootRouteChildren = {
   TagExploreRoute: TagExploreRoute,
   TagMockRoute: TagMockRoute,
   TagNewRoute: TagNewRoute,
-  CorrectionIdRoute: CorrectionIdRoute,
   ArtistIndexRoute: ArtistIndexRoute,
   ChartIndexRoute: ChartIndexRoute,
   EventIndexRoute: EventIndexRoute,
