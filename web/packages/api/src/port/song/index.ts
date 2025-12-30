@@ -1,6 +1,6 @@
 import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
-import { adaptApiResult, adaptApiResultMessage } from "../../shared"
+import { adaptApiResult } from "../../shared"
 
 export async function explore(options?: Opt<"explore_song">) {
 	const res = await FetchClient.GET("/song/explore", {
@@ -31,7 +31,7 @@ export async function create(options: Opt<"create_song">) {
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }
 
 export async function update(options: Opt<"update_song">) {
@@ -40,5 +40,5 @@ export async function update(options: Opt<"update_song">) {
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }

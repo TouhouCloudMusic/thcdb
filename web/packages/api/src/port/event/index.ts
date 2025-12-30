@@ -3,7 +3,6 @@ import type { Opt } from "../../shared"
 import {
 	adaptApiResult,
 	adaptApiResultOptional,
-	adaptApiResultMessage,
 } from "../../shared"
 
 export async function findEventById(options: Opt<"find_event_by_id">) {
@@ -29,7 +28,7 @@ export async function create(options: Opt<"create_event">) {
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }
 
 export async function upsertCorrection(
@@ -40,5 +39,5 @@ export async function upsertCorrection(
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }

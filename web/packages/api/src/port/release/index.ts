@@ -4,7 +4,6 @@ import type { Opt } from "../../shared"
 import {
 	adaptApiResult,
 	adaptApiResultOptional,
-	adaptApiResultMessage,
 } from "../../shared"
 
 export async function findReleaseById(options: Opt<"find_release_by_id">) {
@@ -30,7 +29,7 @@ export async function create(options: Opt<"create_release">) {
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }
 
 export async function update(options: Opt<"update_release">) {
@@ -39,5 +38,5 @@ export async function update(options: Opt<"update_release">) {
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }
