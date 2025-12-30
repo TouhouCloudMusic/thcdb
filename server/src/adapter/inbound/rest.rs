@@ -45,7 +45,7 @@ mod tag;
 mod user;
 pub use extract::CurrentUser;
 
-#[allow(unused_imports)]
+#[expect(unused_imports, reason = "re-exported for macro use")]
 pub use self::error::ApiError;
 
 struct DefaultErrorResponseModifier;
@@ -183,7 +183,7 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
     ),
     // https://github.com/juhaku/utoipa/issues/1165
     components(schemas(
-        correction::HandleCorrectionMethod,
+        feature::correction::HandleCorrectionMethod,
         ArtistCommonFilter,
         CorrectionSortField,
         SortDirection,
@@ -330,17 +330,7 @@ pub async fn listen(
 
 fn router(state: ArcAppState) -> Router {
     let api_router = OpenApiRouter::with_openapi(ApiDoc::openapi())
-        .merge(artist::router())
         .merge(feature::router())
-        .merge(correction::router())
-        .merge(event::router())
-        .merge(label::router())
-        .merge(release::router())
-        .merge(song::router())
-        .merge(song_lyrics::router())
-        .merge(tag::router())
-        .merge(user::router())
-        .merge(credit_role::router())
         .routes(routes!(health_check));
 
     let (router, mut api_doc) = api_router.split_for_parts();
