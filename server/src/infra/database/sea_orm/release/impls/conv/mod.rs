@@ -63,7 +63,7 @@ pub(super) fn conv_to_domain_model(
         cover_art_url: related
             .cover_arts
             .get(index)
-            .and_then(|opt| opt.clone())
+            .and_then(Clone::clone)
             .map(domain::image::Image::from)
             .map(|image| image.url()),
     }
