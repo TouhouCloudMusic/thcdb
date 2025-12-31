@@ -40,7 +40,7 @@
 		"dayjs": "^1.11.13",
 		"effect": "^3.17.8",
 		"fast-check": "^4.2.0",
-		"marked": "^16.2.0",
+		"marked": "^17.0.0",
 		"marked-footnote": "^1.4.0",
 		"marked-shiki": "^1.2.1",
 		"openapi-fetch": "^0.14.0",
