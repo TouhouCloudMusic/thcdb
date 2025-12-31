@@ -4,8 +4,10 @@ import type { JSX } from "solid-js"
 import { Dialog } from "."
 import { Button } from "../atomic/button"
 
-export interface AlertDialogProps
-	extends Exclude<Dialog.RootProps, "children"> {
+export interface AlertDialogProps extends Exclude<
+	Dialog.RootProps,
+	"children"
+> {
 	title: string
 	trigger: JSX.Element
 	description: string
