@@ -54,7 +54,7 @@ services:
       - backend
 
   web:
-    image: node:22-bookworm-slim
+    image: node:24-bookworm-slim
     restart: unless-stopped
     init: true
     working_dir: /app
