@@ -1,5 +1,6 @@
 export * as ArtistApi from "./artist"
 export * as AuthApi from "./auth"
+export * as CorrectionApi from "./correction"
 export * as CreditApi from "./credit"
 export * as EventApi from "./event"
 export * as LabelApi from "./label"

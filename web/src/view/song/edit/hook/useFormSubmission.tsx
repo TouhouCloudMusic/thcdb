@@ -23,8 +23,8 @@ export function useSongFormSubmission(props: Props) {
 			mutation.mutate(
 				{ type: "Create", data: output },
 				{
-					onSuccess() {
-						void navigator({ to: "/" })
+					onSuccess(result) {
+						void navigator({ to: `/correction/${result.correction_id}` })
 					},
 					onError(error) {
 						if (import.meta.env.DEV) {
@@ -39,8 +39,8 @@ export function useSongFormSubmission(props: Props) {
 		mutation.mutate(
 			{ type: "Update", id: props.song.id, data: output },
 			{
-				onSuccess() {
-					void navigator({ to: `/song/${props.song.id}` })
+				onSuccess(result) {
+					void navigator({ to: `/correction/${result.correction_id}` })
 				},
 				onError(error) {
 					if (import.meta.env.DEV) {

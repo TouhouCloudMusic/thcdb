@@ -2,6 +2,7 @@ use entity::enums::CorrectionStatus;
 use garde::Validate;
 use macros::{ApiError, IntoErrorSchema};
 
+use crate::application::correction::CorrectionSubmissionResult;
 use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
 use crate::domain::event::NewEvent;
 use crate::domain::{TransactionManager, ValidationError, event};
@@ -68,7 +69,7 @@ where
     pub async fn create(
         &self,
         correction: NewCorrection<NewEvent>,
-    ) -> Result<(), CreateError> {
+    ) -> Result<CorrectionSubmissionResult, CreateError> {
         correction.data.validate().map_err(ValidationError::from)?;
 
         let tx_repo = self.repo.begin().await?;
@@ -93,18 +94,33 @@ where
             })
             .await?;
 
+        let correction_id = correction::Repo::find_one(
+            &correction_service.repo,
+            correction::CorrectionFilter::latest(
+                entity_id,
+                entity::enums::EntityType::Event,
+            ),
+        )
+        .await
+        .map_err(|err| infra::Error::Internal { source: err })?
+        .ok_or_else(|| infra::Error::custom(&"Correction not found"))?
+        .id;
+
         let tx_repo = correction_service.repo;
 
         tx_repo.commit().await?;
 
-        Ok(())
+        Ok(CorrectionSubmissionResult {
+            correction_id,
+            entity_id,
+        })
     }
 
     pub async fn upsert_correction(
         &self,
         entity_id: i32,
         correction: NewCorrection<NewEvent>,
-    ) -> Result<(), UpsertCorrectionError> {
+    ) -> Result<CorrectionSubmissionResult, UpsertCorrectionError> {
         correction.data.validate().map_err(ValidationError::from)?;
 
         let tx_repo = self.repo.begin().await?;
@@ -125,10 +141,25 @@ where
             })
             .await?;
 
+        let correction_id = correction::Repo::find_one(
+            &correction_service.repo,
+            correction::CorrectionFilter::latest(
+                entity_id,
+                entity::enums::EntityType::Event,
+            ),
+        )
+        .await
+        .map_err(|err| infra::Error::Internal { source: err })?
+        .ok_or_else(|| infra::Error::custom(&"Correction not found"))?
+        .id;
+
         let tx_repo = correction_service.repo;
 
         tx_repo.commit().await?;
 
-        Ok(())
+        Ok(CorrectionSubmissionResult {
+            correction_id,
+            entity_id,
+        })
     }
 }

@@ -1,5 +1,5 @@
+use axum::http::StatusCode;
 use entity::enums::CorrectionStatus;
-use eros::IntoUnionResult;
 use macros::{ApiError, IntoErrorSchema};
 
 use crate::domain::correction::{
@@ -19,6 +19,16 @@ use super::error::Unauthorized;
 
 #[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
 pub enum Error {
+    #[snafu(display("Correction already approved"))]
+    #[api_error(
+        status_code = StatusCode::CONFLICT,
+    )]
+    AlreadyApproved,
+    #[snafu(display("Correction not found"))]
+    #[api_error(
+        status_code = StatusCode::NOT_FOUND,
+    )]
+    NotFound,
     #[snafu(transparent)]
     Infra { source: infra::Error },
     #[snafu(transparent)]
@@ -52,16 +62,16 @@ where
         &self,
         meta: impl Into<NewCorrectionMeta<T>>,
     ) -> Result<(), Error> {
-        self.repo.create(meta.into()).await?;
+        let _ = self.repo.create(meta.into()).await?;
         Ok(())
     }
 
     pub async fn create2<T: CorrectionEntity>(
         &self,
         meta: impl Into<NewCorrectionMeta<T>>,
-    ) -> Result<(), InfraError> {
-        self.repo.create(meta.into()).await?;
-        Ok(())
+    ) -> Result<i32, InfraError> {
+        let correction_id = self.repo.create(meta.into()).await?;
+        Ok(correction_id)
     }
 
     pub async fn upsert<T: CorrectionEntity>(
@@ -75,7 +85,7 @@ where
                 T::entity_type(),
             ))
             .await?
-            .expect("Correction not found");
+            .ok_or(Error::NotFound)?;
 
         if prev_correction.status == CorrectionStatus::Pending {
             let is_author_or_admin = if meta
@@ -91,7 +101,9 @@ where
                 Err(Unauthorized::new())?;
             }
 
-            self.repo.create(meta).await?;
+            let _ = self.repo.create(meta).await?;
+        } else if prev_correction.status == CorrectionStatus::Approved {
+            return Err(Error::AlreadyApproved);
         } else {
             self.repo.update(prev_correction.id, meta).await?;
         }
@@ -102,44 +114,8 @@ where
     pub async fn upsert2<T: CorrectionEntity>(
         &self,
         meta: NewCorrectionMeta<T>,
-    ) -> eros::UnionResult<(), (InfraError, Unauthorized)> {
-        let prev_correction = self
-            .repo
-            .find_one(CorrectionFilter::latest(
-                meta.entity_id,
-                T::entity_type(),
-            ))
-            .await
-            .map_err(InfraError::from)
-            .union()?
-            .expect("Correction should be founded");
-
-        if prev_correction.status == CorrectionStatus::Pending {
-            let is_author_or_admin = if meta
-                .author
-                .has_roles(&[UserRoleEnum::Admin, UserRoleEnum::Moderator])
-            {
-                true
-            } else {
-                self.repo
-                    .is_author(&meta.author, &prev_correction)
-                    .await
-                    .map_err(InfraError::from)
-                    .union()?
-            };
-
-            if !is_author_or_admin {
-                Err(Unauthorized::new()).union()?;
-            }
-
-            self.repo.create(meta).await
-        } else {
-            self.repo.update(prev_correction.id, meta).await
-        }
-        .map_err(InfraError::from)
-        .union()?;
-
-        Ok(())
+    ) -> Result<(), Error> {
+        self.upsert(meta).await
     }
 }
 

@@ -1,7 +1,9 @@
 use entity::enums::EntityType;
 
+mod diff;
 mod model;
 
+pub use diff::*;
 pub use entity::enums::CorrectionStatus;
 pub use model::*;
 
@@ -82,7 +84,7 @@ pub trait TxRepo: Repo {
     async fn create(
         &self,
         meta: NewCorrectionMeta<impl CorrectionEntity>,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
 
     async fn update(
         &self,

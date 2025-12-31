@@ -1,11 +1,7 @@
 import type { components, operations } from "../../gen"
 import { FetchClient } from "../../http"
 import type { ApiResult, Opt, Query } from "../../shared"
-import {
-	adaptApiResult,
-	adaptApiResultOptional,
-	adaptApiResultMessage,
-} from "../../shared"
+import { adaptApiResult, adaptApiResultOptional } from "../../shared"
 
 export async function findOne(options: Opt<"find_artist_by_id">) {
 	const res = await FetchClient.GET("/artist/{id}", {
@@ -28,7 +24,7 @@ export async function create(options: Opt<"create_artist">) {
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }
 
 export async function upsertCorrection(
@@ -39,7 +35,7 @@ export async function upsertCorrection(
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }
 
 export async function findAppearances(options: Opt<"find_artist_apperances">) {

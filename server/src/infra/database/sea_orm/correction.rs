@@ -84,10 +84,10 @@ impl TxRepo for SeaOrmTxRepo {
     async fn create(
         &self,
         meta: NewCorrectionMeta<impl CorrectionEntity>,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
         let new_correction = entity::correction::ActiveModel {
             id: NotSet,
-            status: Set(CorrectionStatus::Pending),
+            status: Set(meta.status),
             r#type: Set(meta.r#type),
             entity_type: Set(meta.entity_type()),
             entity_id: Set(meta.entity_id),
@@ -119,7 +119,7 @@ impl TxRepo for SeaOrmTxRepo {
         .insert(self.conn())
         .await?;
 
-        Ok(())
+        Ok(correction_id)
     }
 
     async fn update(

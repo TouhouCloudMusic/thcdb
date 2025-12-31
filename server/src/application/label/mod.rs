@@ -1,6 +1,7 @@
 use entity::enums::CorrectionStatus;
 use macros::{ApiError, IntoErrorSchema};
 
+use crate::application::correction::CorrectionSubmissionResult;
 use crate::domain::TransactionManager;
 use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
 use crate::domain::label::{NewLabel, TxRepo};
@@ -57,7 +58,7 @@ where
     pub async fn create(
         &self,
         correction: NewCorrection<NewLabel>,
-    ) -> Result<(), CreateError> {
+    ) -> Result<CorrectionSubmissionResult, CreateError> {
         let tx_repo = self.repo.begin().await?;
 
         let entity_id = TxRepo::create(&tx_repo, &correction.data).await?;
@@ -77,40 +78,67 @@ where
             })
             .await?;
 
+        let correction_id = correction::Repo::find_one(
+            &correction_service.repo,
+            correction::CorrectionFilter::latest(
+                entity_id,
+                entity::enums::EntityType::Label,
+            ),
+        )
+        .await
+        .map_err(|err| infra::Error::Internal { source: err })?
+        .ok_or_else(|| infra::Error::custom(&"Correction not found"))?
+        .id;
+
         correction_service.repo.commit().await?;
 
-        Ok(())
+        Ok(CorrectionSubmissionResult {
+            correction_id,
+            entity_id,
+        })
     }
 
     pub async fn upsert_correction(
         &self,
         id: i32,
         correction: NewCorrection<NewLabel>,
-    ) -> Result<(), UpsertCorrectionError> {
+    ) -> Result<CorrectionSubmissionResult, UpsertCorrectionError> {
         let tx_repo = self.repo.begin().await?;
 
         // Create label history from the data
         let history_id = tx_repo.create_history(&correction.data).await?;
 
-        {
-            let correction_service =
-                super::correction::Service::new(tx_repo.clone());
+        let correction_service = super::correction::Service::new(tx_repo.clone());
 
-            correction_service
-                .upsert(NewCorrectionMeta::<NewLabel> {
-                    author: correction.author,
-                    r#type: correction.r#type,
-                    entity_id: id,
-                    status: CorrectionStatus::Pending,
-                    history_id,
-                    description: correction.description,
-                    phantom: std::marker::PhantomData,
-                })
-                .await?;
-        }
+        correction_service
+            .upsert(NewCorrectionMeta::<NewLabel> {
+                author: correction.author,
+                r#type: correction.r#type,
+                entity_id: id,
+                status: CorrectionStatus::Pending,
+                history_id,
+                description: correction.description,
+                phantom: std::marker::PhantomData,
+            })
+            .await?;
+
+        let correction_id = correction::Repo::find_one(
+            &correction_service.repo,
+            correction::CorrectionFilter::latest(
+                id,
+                entity::enums::EntityType::Label,
+            ),
+        )
+        .await
+        .map_err(|err| infra::Error::Internal { source: err })?
+        .ok_or_else(|| infra::Error::custom(&"Correction not found"))?
+        .id;
 
         tx_repo.commit().await?;
 
-        Ok(())
+        Ok(CorrectionSubmissionResult {
+            correction_id,
+            entity_id: id,
+        })
     }
 }

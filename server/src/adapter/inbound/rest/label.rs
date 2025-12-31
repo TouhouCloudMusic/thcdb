@@ -7,7 +7,8 @@ use super::extract::CurrentUser;
 use super::state;
 use super::state::ArcAppState;
 use crate::adapter::inbound::rest::AppRouter;
-use crate::adapter::inbound::rest::api_response::Message;
+use crate::adapter::inbound::rest::api_response::Data;
+use crate::application::correction::CorrectionSubmissionResult;
 use crate::application::correction::NewCorrectionDto;
 use crate::application::label::{CreateError, UpsertCorrectionError};
 use crate::domain::label::NewLabel;
@@ -29,7 +30,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     path = "/label",
     request_body = NewCorrectionDto<NewLabel>,
     responses(
-        (status = 200, body = Message),
+        (status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 
@@ -37,10 +38,9 @@ async fn create_label(
     CurrentUser(user): CurrentUser,
     label_service: State<state::LabelService>,
     Json(dto): Json<NewCorrectionDto<NewLabel>>,
-) -> Result<Message, CreateError> {
-    label_service.create(dto.with_author(user)).await?;
-
-    Ok(Message::ok())
+) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
+    let result = label_service.create(dto.with_author(user)).await?;
+    Ok(Data::from(result))
 }
 
 #[utoipa::path(
@@ -49,7 +49,7 @@ async fn create_label(
     path = "/label/{id}",
     request_body = NewCorrectionDto<NewLabel>,
     responses(
-        (status = 200, body = Message),
+        (status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 async fn upsert_label_correction(
@@ -57,10 +57,10 @@ async fn upsert_label_correction(
     label_service: State<state::LabelService>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewLabel>>,
-) -> Result<Message, UpsertCorrectionError> {
-    label_service
+) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
+    let result = label_service
         .upsert_correction(id, dto.with_author(user))
         .await?;
 
-    Ok(Message::ok())
+    Ok(Data::from(result))
 }

@@ -15,6 +15,7 @@ node_modules
 # Temp
 gitignore
 .eslintcache
+.tanstack
 
 # System Files
 .DS_Store

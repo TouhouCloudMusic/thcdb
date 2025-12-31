@@ -53,7 +53,7 @@ impl BasicAuthCache {
 static BASIC_AUTH_CACHE: BasicAuthCache = BasicAuthCache::new();
 
 fn fmt_key(username: &str, password: &str) -> String {
-    format!("{}{}", username, password)
+    format!("{username}{password}")
 }
 
 impl<S> FromRequestParts<S> for CurrentUser

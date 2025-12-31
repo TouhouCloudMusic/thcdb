@@ -9,7 +9,8 @@ use super::state::{
     ArcAppState, {self},
 };
 use crate::adapter::inbound::rest::AppRouter;
-use crate::adapter::inbound::rest::api_response::Message;
+use crate::adapter::inbound::rest::api_response::Data;
+use crate::application::correction::CorrectionSubmissionResult;
 use crate::application::correction::NewCorrectionDto;
 use crate::application::event::{self, CreateError};
 use crate::domain::event::NewEvent;
@@ -31,26 +32,26 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     path = "/event",
     request_body = NewCorrectionDto<NewEvent>,
     responses(
-        (status = 200, body = Message),
+        (status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 async fn create_event(
     CurrentUser(user): CurrentUser,
     State(service): State<state::EventService>,
     Json(dto): Json<NewCorrectionDto<NewEvent>>,
-) -> Result<Message, CreateError> {
-    service.create(dto.with_author(user)).await?;
+) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
+    let result = service.create(dto.with_author(user)).await?;
 
-    Ok(Message::ok())
+    Ok(Data::from(result))
 }
 
 #[utoipa::path(
     post,
     tag = TAG,
     path = "/event/{id}",
-    request_body = NewEvent,
+    request_body = NewCorrectionDto<NewEvent>,
     responses(
-        (status = 200, body = Message),
+        (status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 async fn upsert_event_correction(
@@ -58,8 +59,8 @@ async fn upsert_event_correction(
     State(service): State<state::EventService>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewEvent>>,
-) -> Result<Message, event::UpsertCorrectionError> {
-    service.upsert_correction(id, dto.with_author(user)).await?;
+) -> Result<Data<CorrectionSubmissionResult>, event::UpsertCorrectionError> {
+    let result = service.upsert_correction(id, dto.with_author(user)).await?;
 
-    Ok(Message::ok())
+    Ok(Data::from(result))
 }

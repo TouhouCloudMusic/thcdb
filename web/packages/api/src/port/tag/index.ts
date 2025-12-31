@@ -1,10 +1,6 @@
 import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
-import {
-	adaptApiResult,
-	adaptApiResultOptional,
-	adaptApiResultMessage,
-} from "../../shared"
+import { adaptApiResult, adaptApiResultOptional } from "../../shared"
 
 export async function findTagById(options: Opt<"find_tag_by_id">) {
 	const res = await FetchClient.GET("/tag/{id}", {
@@ -27,7 +23,7 @@ export async function create(options: Opt<"create_tag">) {
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }
 
 export async function upsertCorrection(options: Opt<"upsert_tag_correction">) {
@@ -39,5 +35,5 @@ export async function upsertCorrection(options: Opt<"upsert_tag_correction">) {
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }

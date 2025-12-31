@@ -5,7 +5,7 @@ default:
 	@just --list
 
 fmt:
-	pnpm dlx prettier --write \
+	pnpm dlx prettier@3.7 --write \
 	--experimental-cli \
 	"src/**/*.{ts,tsx}" \
 	"packages/**/*.{md,json,ts,tsx}" \

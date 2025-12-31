@@ -1,11 +1,7 @@
 import type { components, operations } from "../../gen"
 import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
-import {
-	adaptApiResult,
-	adaptApiResultOptional,
-	adaptApiResultMessage,
-} from "../../shared"
+import { adaptApiResult, adaptApiResultOptional } from "../../shared"
 
 export async function findReleaseById(options: Opt<"find_release_by_id">) {
 	const res = await FetchClient.GET("/release/{id}", {
@@ -30,7 +26,7 @@ export async function create(options: Opt<"create_release">) {
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }
 
 export async function update(options: Opt<"update_release">) {
@@ -39,5 +35,5 @@ export async function update(options: Opt<"update_release">) {
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }

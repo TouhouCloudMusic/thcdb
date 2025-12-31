@@ -5,6 +5,7 @@ import { createContext, Suspense } from "solid-js"
 import { Image } from "~/component/image"
 import { PageLayout } from "~/layout/PageLayout"
 import type { InfiniteQuery } from "~/type/query"
+import { CorrectionHistorySection } from "~/view/correction/Detail"
 
 import { ArtistInfo } from "./comp/ArtistInfo"
 import { ArtistReleaseInfo } from "./comp/ArtistReleaseInfo"
@@ -74,6 +75,10 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 						<div>
 							<ArtistReleaseInfo />
 						</div>
+						<CorrectionHistorySection
+							entityType="artist"
+							entityId={props.artist.id}
+						/>
 					</div>
 					{/* <div class="max-w-full wrap-anywhere">
                 {JSON.stringify(props.query.data)}

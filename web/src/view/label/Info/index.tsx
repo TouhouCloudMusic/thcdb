@@ -6,6 +6,7 @@ import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
+import { CorrectionHistorySection } from "~/view/correction/Detail"
 
 import { LabelInfoPageContext } from "./context"
 import type { LabelInfoPageContextValue } from "./context"
@@ -28,6 +29,10 @@ export function LabelInfoPage(props: Props) {
 					<div class="flex flex-col gap-y-6">
 						<LabelInfoHeader />
 						<LabelInfoDetails />
+						<CorrectionHistorySection
+							entityType="label"
+							entityId={props.label.id}
+						/>
 					</div>
 				</LabelInfoPageContext.Provider>
 			</Suspense>

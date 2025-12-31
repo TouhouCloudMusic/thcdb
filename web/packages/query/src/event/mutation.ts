@@ -31,7 +31,7 @@ export const getInstance = () =>
 
 			const result = await EventApi.upsertCorrection({
 				path: { id: params.id },
-				body: params.data.data,
+				body: params.data,
 			})
 			return Either.match(result, {
 				onRight: (data) => data,

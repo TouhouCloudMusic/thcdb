@@ -31,10 +31,9 @@ export function useArtistFormSubmission(props: Props) {
 								data: parsed.output,
 							},
 							{
-								onSuccess() {
+								onSuccess(result) {
 									void navigator({
-										// TODO: return id after create
-										to: `/`,
+										to: `/correction/${result.correction_id}`,
 									})
 								},
 								onError() {
@@ -49,10 +48,9 @@ export function useArtistFormSubmission(props: Props) {
 								data: parsed.output,
 							},
 							{
-								onSuccess() {
-									// TODO: navigate to correction page
+								onSuccess(result) {
 									void navigator({
-										to: `/artist/${props.artist.id}`,
+										to: `/correction/${result.correction_id}`,
 									})
 								},
 								onError() {

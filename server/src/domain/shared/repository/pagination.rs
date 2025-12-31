@@ -1,3 +1,4 @@
+#![expect(clippy::option_if_let_else, reason = "macro")]
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 

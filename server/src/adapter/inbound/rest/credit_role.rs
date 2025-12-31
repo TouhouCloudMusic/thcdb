@@ -5,7 +5,8 @@ use utoipa_axum::routes;
 
 use super::extract::CurrentUser;
 use crate::adapter::inbound::rest::AppRouter;
-use crate::adapter::inbound::rest::api_response::Message;
+use crate::adapter::inbound::rest::api_response::Data;
+use crate::application::correction::CorrectionSubmissionResult;
 use crate::adapter::inbound::rest::state::{ArcAppState, CreditRoleService};
 use crate::application::correction::NewCorrectionDto;
 use crate::application::credit_role::{CreateError, UpsertCorrectionError};
@@ -28,18 +29,16 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     path = "/credit-role",
     request_body = NewCorrectionDto<NewCreditRole>,
     responses(
-        (status = 200, body = Message),
+        (status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 async fn create_credit_role(
     CurrentUser(user): CurrentUser,
     State(service): State<CreditRoleService>,
     Json(input): Json<NewCorrectionDto<NewCreditRole>>,
-) -> Result<Message, CreateError> {
-    service
-        .create(input.with_author(user))
-        .await
-        .map(|()| Message::ok())
+) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
+    let result = service.create(input.with_author(user)).await?;
+    Ok(Data::from(result))
 }
 
 #[utoipa::path(
@@ -48,7 +47,7 @@ async fn create_credit_role(
     path = "/credit-role/{id}",
     request_body = NewCorrectionDto<NewCreditRole>,
     responses(
-        (status = 200, body = Message),
+        (status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 async fn upsert_credit_role_correction(
@@ -56,8 +55,8 @@ async fn upsert_credit_role_correction(
     State(service): State<CreditRoleService>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewCreditRole>>,
-) -> Result<Message, UpsertCorrectionError> {
-    service.upsert_correction(id, dto.with_author(user)).await?;
+) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
+    let result = service.upsert_correction(id, dto.with_author(user)).await?;
 
-    Ok(Message::ok())
+    Ok(Data::from(result))
 }

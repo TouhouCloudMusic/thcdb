@@ -1,10 +1,6 @@
 import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
-import {
-	adaptApiResult,
-	adaptApiResultMessage,
-	adaptApiResultOptional,
-} from "../../shared"
+import { adaptApiResult, adaptApiResultOptional } from "../../shared"
 
 export async function findLabelById(options: Opt<"find_label_by_id">) {
 	const res = await FetchClient.GET("/label/{id}", {
@@ -29,7 +25,7 @@ export async function create(options: Opt<"create_label">) {
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }
 
 export async function upsertCorrection(
@@ -40,5 +36,5 @@ export async function upsertCorrection(
 		body: options.body,
 	})
 
-	return adaptApiResultMessage(res)
+	return adaptApiResult(res)
 }
