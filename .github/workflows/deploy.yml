@@ -42,7 +42,7 @@ jobs:
       - uses: mozilla-actions/sccache-action@v0.0.9
 
       - name: Cache Cargo downloads
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
