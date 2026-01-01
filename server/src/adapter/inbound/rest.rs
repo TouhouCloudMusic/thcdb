@@ -22,8 +22,8 @@ use utoipa_scalar::{Scalar, Servable};
 
 use crate::constant::r#gen::{KT_CONSTANTS, TS_CONSTANTS};
 use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
-use crate::feature;
-use crate::feature::artist::find::CommonFilter as ArtistCommonFilter;
+use crate::features;
+use crate::features::artist::find::CommonFilter as ArtistCommonFilter;
 use crate::infra::state::AppState;
 use crate::shared::http::{CorrectionSortField, SortDirection};
 use crate::utils::openapi::ContentType;
@@ -183,7 +183,7 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
     ),
     // https://github.com/juhaku/utoipa/issues/1165
     components(schemas(
-        feature::correction::HandleCorrectionMethod,
+        features::correction::HandleCorrectionMethod,
         ArtistCommonFilter,
         CorrectionSortField,
         SortDirection,
@@ -330,7 +330,7 @@ pub async fn listen(
 
 fn router(state: ArcAppState) -> Router {
     let api_router = OpenApiRouter::with_openapi(ApiDoc::openapi())
-        .merge(feature::router())
+        .merge(features::router())
         .routes(routes!(health_check));
 
     let (router, mut api_doc) = api_router.split_for_parts();

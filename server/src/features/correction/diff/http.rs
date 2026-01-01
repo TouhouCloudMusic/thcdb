@@ -10,7 +10,7 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain::Connection;
 use crate::domain::correction::CorrectionDiff;
-use crate::feature::correction::shared::repo as correction_diff;
+use crate::features::correction::shared::repo as correction_diff;
 use crate::infra::error::Error;
 
 use entity::enums::CorrectionStatus;

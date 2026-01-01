@@ -23,7 +23,7 @@ use crate::application::user_image::{
 use crate::domain::auth::AuthCredential;
 use crate::domain::markdown::Markdown;
 use crate::domain::user::UserProfile;
-use crate::feature::user::profile::{DataUserProfile, load_profile};
+use crate::features::user::profile::{DataUserProfile, load_profile};
 use crate::infra::error::Error;
 
 const TAG: &str = "User";

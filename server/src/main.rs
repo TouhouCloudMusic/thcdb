@@ -35,10 +35,14 @@ mod adapter;
 mod application;
 mod constant;
 mod domain;
-mod feature;
+mod features;
 mod infra;
 mod shared;
 mod utils;
+
+pub mod feature {
+    pub use crate::features::*;
+}
 
 use std::sync::Arc;
 

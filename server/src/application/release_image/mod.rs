@@ -18,7 +18,7 @@ use crate::domain::user::User;
 use crate::domain::{
     Connection, Transaction, TransactionManager, image, image_queue,
 };
-use crate::feature::release::find::repo as release_repo;
+use crate::features::release::find::repo as release_repo;
 use crate::infra;
 
 static RELEASE_COVER_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
