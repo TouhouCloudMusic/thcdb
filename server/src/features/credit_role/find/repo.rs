@@ -1,14 +1,14 @@
 use entity::credit_role;
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, QueryFilter, QueryOrder,
+    ColumnTrait, DbErr, EntityTrait, QueryFilter, QueryOrder,
 };
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 
-use crate::domain::Connection;
-use crate::domain::credit_role::QueryKind;
+use crate::features::credit_role::model::{CreditRole, CreditRoleSummary};
+use crate::infra::database::sea_orm::SeaOrmRepository;
 
 #[derive(Clone, Debug, Default, Deserialize, ToSchema, IntoParams)]
 pub struct CommonFilter {}
@@ -17,34 +17,24 @@ pub enum FindManyFilter {
     Name(String),
 }
 
-pub(super) async fn find_one<R, K>(
-    repo: &R,
+pub(super) async fn find_one(
+    repo: &SeaOrmRepository,
     id: i32,
     common: CommonFilter,
-) -> Result<Option<K::Output>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-    K: QueryKind,
-{
+) -> Result<Option<CreditRole>, DbErr> {
     let _ = common;
 
     credit_role::Entity::find_by_id(id)
-        .one(repo.conn())
+        .one(&repo.conn)
         .await
         .map(|role| role.map(Into::into))
 }
 
-pub(super) async fn find_many<R, K>(
-    repo: &R,
+pub(super) async fn find_many_summary(
+    repo: &SeaOrmRepository,
     filter: FindManyFilter,
     common: CommonFilter,
-) -> Result<Vec<K::Output>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-    K: QueryKind,
-{
+) -> Result<Vec<CreditRoleSummary>, DbErr> {
     let _ = common;
 
     let roles = match filter {
@@ -60,7 +50,7 @@ where
                     Func::lower(credit_role::Column::Name.into_expr())
                         .binary(PgBinOper::SimilarityDistance, search_term),
                 )
-                .all(repo.conn())
+                .all(&repo.conn)
                 .await?
         }
     };

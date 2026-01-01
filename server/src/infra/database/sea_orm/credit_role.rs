@@ -4,12 +4,89 @@ use entity::{
 };
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, IntoActiveValue,
-    QueryFilter, QueryOrder, Set,
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, DbErr, EntityTrait,
+    IntoActiveValue, QueryFilter, QueryOrder, Set,
 };
 
 use crate::domain::credit_role::{NewCreditRole, TxRepo};
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
+
+pub(crate) async fn create_credit_role(
+    data: &NewCreditRole,
+    conn: &impl ConnectionTrait,
+) -> Result<credit_role::Model, DbErr> {
+    let credit_role_model = credit_role::ActiveModel {
+        id: NotSet,
+        name: data.name.to_string().into_active_value(),
+        short_description: data
+            .short_description
+            .clone()
+            .unwrap_or_default()
+            .into_active_value(),
+        description: data
+            .description
+            .clone()
+            .unwrap_or_default()
+            .into_active_value(),
+    };
+
+    let credit_role = credit_role_model.insert(conn).await?;
+
+    if let Some(super_roles) = &data.super_roles && !super_roles.is_empty() {
+        let inheritance_models = super_roles.iter().map(|&super_id| {
+            credit_role_inheritance::ActiveModel {
+                role_id: Set(credit_role.id),
+                super_id: Set(super_id),
+            }
+        });
+
+        credit_role_inheritance::Entity::insert_many(inheritance_models)
+            .exec(conn)
+            .await?;
+    }
+
+    Ok(credit_role)
+}
+
+pub(crate) async fn create_credit_role_history(
+    data: &NewCreditRole,
+    conn: &impl ConnectionTrait,
+) -> Result<credit_role_history::Model, DbErr> {
+    let credit_role_history_model = credit_role_history::ActiveModel {
+        id: NotSet,
+        name: data.name.to_string().into_active_value(),
+        short_description: data
+            .short_description
+            .clone()
+            .unwrap_or_default()
+            .into_active_value(),
+        description: data
+            .description
+            .clone()
+            .unwrap_or_default()
+            .into_active_value(),
+    };
+
+    let credit_role_history = credit_role_history_model.insert(conn).await?;
+
+    if let Some(super_roles) = &data.super_roles && !super_roles.is_empty() {
+        let inheritance_history_models =
+            super_roles.iter().map(|&super_id| {
+                credit_role_inheritance_history::ActiveModel {
+                    history_id: Set(credit_role_history.id),
+                    super_id: Set(super_id),
+                }
+            });
+
+        credit_role_inheritance_history::Entity::insert_many(
+            inheritance_history_models,
+        )
+        .exec(conn)
+        .await?;
+    }
+
+    Ok(credit_role_history)
+}
 
 pub(crate) async fn apply_update_impl(
     correction: entity::correction::Model,
@@ -62,39 +139,7 @@ impl TxRepo for SeaOrmTxRepo {
         &self,
         data: &NewCreditRole,
     ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        let credit_role_model = credit_role::ActiveModel {
-            id: NotSet,
-            name: data.name.to_string().into_active_value(),
-            short_description: data
-                .short_description
-                .clone()
-                .unwrap_or_default()
-                .into_active_value(),
-            description: data
-                .description
-                .clone()
-                .unwrap_or_default()
-                .into_active_value(),
-        };
-
-        let credit_role = credit_role_model.insert(self.conn()).await?;
-
-        // Handle inheritance relationships
-        if let Some(super_roles) = &data.super_roles
-            && !super_roles.is_empty()
-        {
-            let inheritance_models = super_roles.iter().map(|&super_id| {
-                credit_role_inheritance::ActiveModel {
-                    role_id: Set(credit_role.id),
-                    super_id: Set(super_id),
-                }
-            });
-
-            credit_role_inheritance::Entity::insert_many(inheritance_models)
-                .exec(self.conn())
-                .await?;
-        }
-
+        let credit_role = create_credit_role(data, self.conn()).await?;
         Ok(credit_role.id)
     }
 
@@ -102,43 +147,8 @@ impl TxRepo for SeaOrmTxRepo {
         &self,
         data: &NewCreditRole,
     ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        let credit_role_history_model = credit_role_history::ActiveModel {
-            id: NotSet,
-            name: data.name.to_string().into_active_value(),
-            short_description: data
-                .short_description
-                .clone()
-                .unwrap_or_default()
-                .into_active_value(),
-            description: data
-                .description
-                .clone()
-                .unwrap_or_default()
-                .into_active_value(),
-        };
-
         let credit_role_history =
-            credit_role_history_model.insert(self.conn()).await?;
-
-        // Handle inheritance relationships in history
-        if let Some(super_roles) = &data.super_roles
-            && !super_roles.is_empty()
-        {
-            let inheritance_history_models =
-                super_roles.iter().map(|&super_id| {
-                    credit_role_inheritance_history::ActiveModel {
-                        history_id: Set(credit_role_history.id),
-                        super_id: Set(super_id),
-                    }
-                });
-
-            credit_role_inheritance_history::Entity::insert_many(
-                inheritance_history_models,
-            )
-            .exec(self.conn())
-            .await?;
-        }
-
+            create_credit_role_history(data, self.conn()).await?;
         Ok(credit_role_history.id)
     }
 

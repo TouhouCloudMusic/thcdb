@@ -164,14 +164,3 @@ impl FromRef<ArcAppState> for UserImageService {
         Self::new(repo, storage)
     }
 }
-
-pub(crate) type CreditRoleService =
-    application::credit_role::Service<SeaOrmRepository>;
-
-impl FromRef<ArcAppState> for CreditRoleService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        Self {
-            repo: input.sea_orm_repo.clone(),
-        }
-    }
-}

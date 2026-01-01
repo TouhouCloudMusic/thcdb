@@ -30,7 +30,6 @@ use crate::utils::openapi::ContentType;
 
 pub mod api_response;
 mod correction;
-mod credit_role;
 mod error;
 mod event;
 mod extract;

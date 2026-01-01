@@ -9,8 +9,7 @@ use super::repo::{self, CommonFilter, FindManyFilter};
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::domain::credit_role::{CreditRole, CreditRoleSummary};
-use crate::domain::query_kind;
+use crate::features::credit_role::model::{CreditRole, CreditRoleSummary};
 use crate::infra::error::Error;
 
 const TAG: &str = "Credit Role";
@@ -53,13 +52,9 @@ async fn find_many_credit_roles_summary(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KwQuery>,
 ) -> Result<Data<Vec<CreditRoleSummary>>, Error> {
-    repo::find_many::<_, query_kind::Summary>(
-        &repo,
-        query.into(),
-        CommonFilter {},
-    )
-    .await
-    .bimap_into()
+    repo::find_many_summary(&repo, query.into(), CommonFilter {})
+        .await
+        .bimap_into()
 }
 
 #[utoipa::path(
@@ -80,7 +75,5 @@ async fn find_credit_role_by_id(
         CommonFilter,
     >,
 ) -> Result<Data<Option<CreditRole>>, Error> {
-    repo::find_one::<_, query_kind::Full>(&repo, id, common)
-        .await
-        .bimap_into()
+    repo::find_one(&repo, id, common).await.bimap_into()
 }
