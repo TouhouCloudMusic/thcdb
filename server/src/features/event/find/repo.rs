@@ -7,34 +7,26 @@ use sea_orm::{
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
 
-use crate::domain::Connection;
-use crate::domain::event::{AlternativeName, Event};
+use crate::features::event::model::{AlternativeName, Event};
 use crate::domain::shared::{DateWithPrecision, Location};
+use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::database::sea_orm::utils;
 
-pub(super) async fn find_by_id<R>(
-    repo: &R,
+pub(super) async fn find_by_id(
+    repo: &SeaOrmRepository,
     id: i32,
-) -> Result<Option<Event>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Option<Event>, DbErr> {
     let select = event::Entity::find().filter(event::Column::Id.eq(id));
 
-    find_many_impl(select, repo.conn())
+    find_many_impl(select, &repo.conn)
         .await
         .map(|mut events| events.pop())
 }
 
-pub(super) async fn find_by_keyword<R>(
-    repo: &R,
+pub(super) async fn find_by_keyword(
+    repo: &SeaOrmRepository,
     keyword: &str,
-) -> Result<Vec<Event>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Vec<Event>, DbErr> {
     let search_term = Func::lower(keyword);
 
     let selector = event::Entity::find()
@@ -47,18 +39,14 @@ where
                 .binary(PgBinOper::SimilarityDistance, search_term),
         );
 
-    find_many_impl(selector, repo.conn()).await
+    find_many_impl(selector, &repo.conn).await
 }
 
-pub(super) async fn find_by_filter<R>(
-    repo: &R,
+pub(super) async fn find_by_filter(
+    repo: &SeaOrmRepository,
     filter: super::EventFilter,
     pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Event>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<crate::domain::shared::Paginated<Event>, DbErr> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -77,30 +65,26 @@ where
         select,
         pagination,
         event::Column::Id,
-        |select| find_many_impl(select, repo.conn()),
+        |select| find_many_impl(select, &repo.conn),
         |event: &Event| event.id,
     )
     .await
 }
 
-async fn find_sorted_by_correction<R>(
-    repo: &R,
+async fn find_sorted_by_correction(
+    repo: &SeaOrmRepository,
     filter: super::EventFilter,
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Event>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<crate::domain::shared::Paginated<Event>, DbErr> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
 
     let entity_ids =
         crate::infra::database::sea_orm::utils::correction_sorted_entity_ids(
-            repo.conn(),
+            &repo.conn,
             EntityType::Event,
             sort_field,
             match sort_direction {
@@ -124,7 +108,7 @@ where
         select = select.filter(event::Column::StartDate.lte(start_date_to));
     }
 
-    let mut events = find_many_impl(select, repo.conn()).await?;
+    let mut events = find_many_impl(select, &repo.conn).await?;
 
     events = crate::infra::database::sea_orm::utils::sort_by_id_list(
         events,

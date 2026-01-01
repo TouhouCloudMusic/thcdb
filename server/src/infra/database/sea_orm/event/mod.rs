@@ -41,7 +41,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     }
 }
 
-async fn create_event_and_relations(
+pub(crate) async fn create_event_and_relations(
     data: &NewEvent,
     tx: &DatabaseTransaction,
 ) -> Result<event::Model, DbErr> {
@@ -94,7 +94,7 @@ async fn create_event_and_relations(
     Ok(event)
 }
 
-async fn create_event_history_and_relations(
+pub(crate) async fn create_event_history_and_relations(
     data: &NewEvent,
     tx: &DatabaseTransaction,
 ) -> Result<event_history::Model, DbErr> {

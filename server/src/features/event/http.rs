@@ -1,29 +1,29 @@
 use axum::Json;
 use axum::extract::{Path, State};
-// use crate::dto::event::{Event, NewEvent};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::extract::CurrentUser;
-use super::state::{
-    ArcAppState, {self},
-};
-use crate::adapter::inbound::rest::AppRouter;
+use super::error::{CreateError, UpsertCorrectionError};
+use super::model::NewEvent;
+use super::{find, service};
 use crate::adapter::inbound::rest::api_response::Data;
-use crate::application::correction::CorrectionSubmissionResult;
-use crate::application::correction::NewCorrectionDto;
-use crate::application::event::{self, CreateError};
-use crate::domain::event::NewEvent;
+use crate::adapter::inbound::rest::state::{self, ArcAppState};
+use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
+use crate::application::correction::{
+    CorrectionSubmissionResult, NewCorrectionDto,
+};
 
 const TAG: &str = "Event";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    AppRouter::new()
+    let private = AppRouter::new()
         .with_private(|r| {
             r.routes(routes!(create_event))
                 .routes(routes!(upsert_event_correction))
         })
-        .finish()
+        .finish();
+
+    OpenApiRouter::new().merge(find::router()).merge(private)
 }
 
 #[utoipa::path(
@@ -37,10 +37,10 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 )]
 async fn create_event(
     CurrentUser(user): CurrentUser,
-    State(service): State<state::EventService>,
+    State(repo): State<state::SeaOrmRepository>,
     Json(dto): Json<NewCorrectionDto<NewEvent>>,
 ) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
-    let result = service.create(dto.with_author(user)).await?;
+    let result = service::create(&repo, dto.with_author(user)).await?;
 
     Ok(Data::from(result))
 }
@@ -56,11 +56,12 @@ async fn create_event(
 )]
 async fn upsert_event_correction(
     CurrentUser(user): CurrentUser,
-    State(service): State<state::EventService>,
+    State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewEvent>>,
-) -> Result<Data<CorrectionSubmissionResult>, event::UpsertCorrectionError> {
-    let result = service.upsert_correction(id, dto.with_author(user)).await?;
+) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
+    let result =
+        service::upsert_correction(&repo, id, dto.with_author(user)).await?;
 
     Ok(Data::from(result))
 }

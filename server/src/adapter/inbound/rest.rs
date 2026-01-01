@@ -31,7 +31,6 @@ use crate::utils::openapi::ContentType;
 pub mod api_response;
 mod correction;
 mod error;
-mod event;
 mod extract;
 mod label;
 mod middleware;

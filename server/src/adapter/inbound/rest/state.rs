@@ -48,16 +48,6 @@ impl FromRef<ArcAppState> for CorrectionService {
     }
 }
 
-pub(crate) type EventService = application::event::Service<SeaOrmRepository>;
-
-impl FromRef<ArcAppState> for EventService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        Self {
-            repo: input.sea_orm_repo.clone(),
-        }
-    }
-}
-
 pub(crate) type LabelService = application::label::Service<SeaOrmRepository>;
 
 impl FromRef<ArcAppState> for LabelService {
