@@ -32,7 +32,6 @@ pub mod api_response;
 mod correction;
 mod error;
 mod extract;
-mod label;
 mod middleware;
 mod release;
 mod song;

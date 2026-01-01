@@ -7,34 +7,26 @@ use sea_orm::{
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
 
-use crate::domain::Connection;
-use crate::domain::label::Label;
+use crate::features::label::model::Label;
 use crate::domain::shared::{DateWithPrecision, LocalizedName};
+use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::database::sea_orm::utils;
 
-pub(super) async fn find_by_id<R>(
-    repo: &R,
+pub(super) async fn find_by_id(
+    repo: &SeaOrmRepository,
     id: i32,
-) -> Result<Option<Label>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Option<Label>, DbErr> {
     let select = label::Entity::find().filter(label::Column::Id.eq(id));
 
-    find_many_impl(select, repo.conn())
+    find_many_impl(select, &repo.conn)
         .await
         .map(|mut labels| labels.pop())
 }
 
-pub(super) async fn find_by_keyword<R>(
-    repo: &R,
+pub(super) async fn find_by_keyword(
+    repo: &SeaOrmRepository,
     keyword: &str,
-) -> Result<Vec<Label>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Vec<Label>, DbErr> {
     let search_term = Func::lower(keyword);
 
     let select = label::Entity::find()
@@ -47,18 +39,14 @@ where
                 .binary(PgBinOper::SimilarityDistance, search_term),
         );
 
-    find_many_impl(select, repo.conn()).await
+    find_many_impl(select, &repo.conn).await
 }
 
-pub(super) async fn find_by_filter<R>(
-    repo: &R,
+pub(super) async fn find_by_filter(
+    repo: &SeaOrmRepository,
     filter: super::LabelFilter,
     pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Label>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<crate::domain::shared::Paginated<Label>, DbErr> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -77,30 +65,26 @@ where
         select,
         pagination,
         label::Column::Id,
-        |select| find_many_impl(select, repo.conn()),
+        |select| find_many_impl(select, &repo.conn),
         |label: &Label| label.id,
     )
     .await
 }
 
-async fn find_sorted_by_correction<R>(
-    repo: &R,
+async fn find_sorted_by_correction(
+    repo: &SeaOrmRepository,
     filter: super::LabelFilter,
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Label>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<crate::domain::shared::Paginated<Label>, DbErr> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
 
     let entity_ids =
         crate::infra::database::sea_orm::utils::correction_sorted_entity_ids(
-            repo.conn(),
+            &repo.conn,
             EntityType::Label,
             sort_field,
             match sort_direction {
@@ -132,7 +116,7 @@ where
         }
     }
 
-    let mut labels = find_many_impl(select, repo.conn()).await?;
+    let mut labels = find_many_impl(select, &repo.conn).await?;
 
     labels = crate::infra::database::sea_orm::utils::sort_by_id_list(
         labels,
