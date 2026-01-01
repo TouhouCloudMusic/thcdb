@@ -89,7 +89,7 @@ async fn create_history_impl(
 }
 
 /// Apply correction update to song lyrics
-async fn apply_update_impl(
+pub(crate) async fn apply_update_impl(
     correction: entity::correction::Model,
     conn: &impl ConnectionTrait,
 ) -> Result<(), DbErr> {

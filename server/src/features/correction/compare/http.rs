@@ -9,7 +9,6 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::api_response::{self, Data};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
-use crate::domain::Connection;
 use crate::domain::correction::CorrectionDiff;
 use crate::features::correction::shared::repo as correction_diff;
 use crate::infra::error::Error;
@@ -44,7 +43,7 @@ async fn compare_corrections(
     State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Data<CorrectionDiff>, impl IntoResponse> {
     let Some(left) = correction_entity::Entity::find_by_id(id1)
-        .one(repo.conn())
+        .one(&repo.conn)
         .await
         .map_err(Error::from)
         .map_err(IntoResponse::into_response)?
@@ -57,7 +56,7 @@ async fn compare_corrections(
     };
 
     let Some(right) = correction_entity::Entity::find_by_id(id2)
-        .one(repo.conn())
+        .one(&repo.conn)
         .await
         .map_err(Error::from)
         .map_err(IntoResponse::into_response)?
@@ -82,7 +81,7 @@ async fn compare_corrections(
     let left_revision = correction_revision::Entity::find()
         .filter(correction_revision::Column::CorrectionId.eq(id1))
         .order_by_desc(correction_revision::Column::EntityHistoryId)
-        .one(repo.conn())
+        .one(&repo.conn)
         .await
         .map_err(Error::from)
         .map_err(IntoResponse::into_response)?
@@ -97,7 +96,7 @@ async fn compare_corrections(
     let right_revision = correction_revision::Entity::find()
         .filter(correction_revision::Column::CorrectionId.eq(id2))
         .order_by_desc(correction_revision::Column::EntityHistoryId)
-        .one(repo.conn())
+        .one(&repo.conn)
         .await
         .map_err(Error::from)
         .map_err(IntoResponse::into_response)?
@@ -110,7 +109,7 @@ async fn compare_corrections(
         .map_err(IntoResponse::into_response)?;
 
     let left_snapshot = correction_diff::snapshot_for_history(
-        repo.conn(),
+        &repo.conn,
         left.entity_type,
         left_revision.entity_history_id,
     )
@@ -119,7 +118,7 @@ async fn compare_corrections(
     .map_err(IntoResponse::into_response)?;
 
     let right_snapshot = correction_diff::snapshot_for_history(
-        repo.conn(),
+        &repo.conn,
         right.entity_type,
         right_revision.entity_history_id,
     )

@@ -1,3 +1,3 @@
 pub(crate) mod impls;
 mod mapper;
-mod tx_repo;
+pub(crate) mod tx_repo;

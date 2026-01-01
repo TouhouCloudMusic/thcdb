@@ -200,7 +200,7 @@ async fn create_alt_names_history(
     Ok(())
 }
 
-async fn apply_correction(
+pub(crate) async fn apply_correction(
     correction: entity::correction::Model,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {

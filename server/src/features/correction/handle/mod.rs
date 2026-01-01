@@ -1,3 +1,3 @@
 mod http;
 
-pub use http::{router, HandleCorrectionMethod};
+pub use http::router;

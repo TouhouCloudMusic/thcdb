@@ -1,11 +1,64 @@
 use entity::{release, release_history};
 use sea_orm::ActiveValue::Set;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, QueryFilter, QueryOrder,
+    ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityTrait,
+    QueryFilter, QueryOrder,
 };
 
 use super::impls::*;
 use crate::domain::release::{NewRelease, TxRepo};
+
+pub(crate) async fn apply_update(
+    correction: entity::correction::Model,
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let revision = entity::correction_revision::Entity::find()
+        .filter(
+            entity::correction_revision::Column::CorrectionId
+                .eq(correction.id),
+        )
+        .order_by_desc(entity::correction_revision::Column::EntityHistoryId)
+        .one(tx)
+        .await?
+        .ok_or_else(|| {
+            DbErr::Custom("Correction revision not found".to_string())
+        })?;
+
+    let history =
+        release_history::Entity::find_by_id(revision.entity_history_id)
+            .one(tx)
+            .await?
+            .ok_or_else(|| {
+                DbErr::Custom("Release history not found".to_string())
+            })?;
+
+    let update_model = release::ActiveModel {
+        id: Set(correction.entity_id),
+        title: Set(history.title),
+        release_type: Set(history.release_type),
+        release_date: Set(history.release_date),
+        release_date_precision: Set(history.release_date_precision),
+        recording_date_start: Set(history.recording_date_start),
+        recording_date_start_precision: Set(
+            history.recording_date_start_precision,
+        ),
+        recording_date_end: Set(history.recording_date_end),
+        recording_date_end_precision: Set(
+            history.recording_date_end_precision,
+        ),
+    };
+    update_model.update(tx).await?;
+    tokio::try_join!(
+        update_release_artist(correction.entity_id, history.id, tx),
+        update_release_catalog_number(correction.entity_id, history.id, tx),
+        update_release_credit(correction.entity_id, history.id, tx),
+        update_release_event(correction.entity_id, history.id, tx),
+        update_release_localized_title(correction.entity_id, history.id, tx),
+        update_release_track_and_disc(correction.entity_id, history.id, tx),
+    )?;
+
+    Ok(())
+}
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(
@@ -89,74 +142,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
         &self,
         correction: entity::correction::Model,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        // Retrieve the correction history ID
-        let revision = entity::correction_revision::Entity::find()
-            .filter(
-                entity::correction_revision::Column::CorrectionId
-                    .eq(correction.id),
-            )
-            .order_by_desc(entity::correction_revision::Column::EntityHistoryId)
-            .one(self.conn())
-            .await?
-            .ok_or_else(|| {
-                DbErr::Custom("Correction revision not found".to_string())
-            })?;
-
-        // Fetch the release history
-        let history =
-            release_history::Entity::find_by_id(revision.entity_history_id)
-                .one(self.conn())
-                .await?
-                .ok_or_else(|| {
-                    DbErr::Custom("Release history not found".to_string())
-                })?;
-
-        let update_model = release::ActiveModel {
-            id: Set(correction.entity_id),
-            title: Set(history.title),
-            release_type: Set(history.release_type),
-            release_date: Set(history.release_date),
-            release_date_precision: Set(history.release_date_precision),
-            recording_date_start: Set(history.recording_date_start),
-            recording_date_start_precision: Set(
-                history.recording_date_start_precision
-            ),
-            recording_date_end: Set(history.recording_date_end),
-            recording_date_end_precision: Set(
-                history.recording_date_end_precision
-            ),
-        };
-        update_model.update(self.conn()).await?;
-        // Update the release and all related entities
-        tokio::try_join!(
-            update_release_artist(
-                correction.entity_id,
-                history.id,
-                self.conn()
-            ),
-            update_release_catalog_number(
-                correction.entity_id,
-                history.id,
-                self.conn()
-            ),
-            update_release_credit(
-                correction.entity_id,
-                history.id,
-                self.conn()
-            ),
-            update_release_event(correction.entity_id, history.id, self.conn()),
-            update_release_localized_title(
-                correction.entity_id,
-                history.id,
-                self.conn()
-            ),
-            update_release_track_and_disc(
-                correction.entity_id,
-                history.id,
-                self.conn()
-            ),
-        )?;
-
+        apply_update(correction, self.conn()).await?;
         Ok(())
     }
 }

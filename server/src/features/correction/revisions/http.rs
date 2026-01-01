@@ -11,7 +11,6 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::api_response::{self, Data};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
-use crate::domain::Connection;
 use crate::infra::error::Error;
 
 use entity::{correction as correction_entity, correction_revision, user};
@@ -50,7 +49,7 @@ async fn get_correction_revisions(
     State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Data<Vec<CorrectionRevisionSummary>>, impl IntoResponse> {
     let exists = correction_entity::Entity::find_by_id(id)
-        .one(repo.conn())
+        .one(&repo.conn)
         .await
         .map_err(Error::from)
         .map_err(IntoResponse::into_response)?;
@@ -66,7 +65,7 @@ async fn get_correction_revisions(
     let revisions = correction_revision::Entity::find()
         .filter(correction_revision::Column::CorrectionId.eq(id))
         .order_by_desc(correction_revision::Column::EntityHistoryId)
-        .all(repo.conn())
+        .all(&repo.conn)
         .await
         .map_err(Error::from)
         .map_err(IntoResponse::into_response)?;
@@ -81,7 +80,7 @@ async fn get_correction_revisions(
     } else {
         user::Entity::find()
             .filter(user::Column::Id.is_in(author_ids))
-            .all(repo.conn())
+            .all(&repo.conn)
             .await
             .map_err(Error::from)
             .map_err(IntoResponse::into_response)?

@@ -11,7 +11,7 @@ use snafu::ResultExt;
 use crate::domain::label::{NewLabel, TxRepo};
 use crate::domain::shared::NewLocalizedName;
 
-mod impls;
+pub(crate) mod impls;
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(

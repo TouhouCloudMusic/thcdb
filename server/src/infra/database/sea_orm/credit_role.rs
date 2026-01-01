@@ -11,6 +11,52 @@ use sea_orm::{
 use crate::domain::credit_role::{NewCreditRole, TxRepo};
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
 
+pub(crate) async fn apply_update_impl(
+    correction: entity::correction::Model,
+    conn: &impl sea_orm::ConnectionTrait,
+) -> Result<(), DbErr> {
+    let revision = correction_revision::Entity::find()
+        .filter(correction_revision::Column::CorrectionId.eq(correction.id))
+        .order_by_desc(correction_revision::Column::EntityHistoryId)
+        .one(conn)
+        .await?
+        .ok_or_else(|| {
+            DbErr::Custom(
+                "Correction revision not found, this shouldn't happen"
+                    .to_string(),
+            )
+        })?;
+
+    let history =
+        credit_role_history::Entity::find_by_id(revision.entity_history_id)
+            .one(conn)
+            .await?
+            .ok_or_else(|| {
+                DbErr::Custom(
+                    "Credit role history not found, this shouldn't happen"
+                        .to_string(),
+                )
+            })?;
+
+    credit_role::ActiveModel {
+        id: Set(correction.entity_id),
+        name: Set(history.name),
+        short_description: Set(history.short_description),
+        description: Set(history.description),
+    }
+    .update(conn)
+    .await?;
+
+    update_credit_role_inheritance(
+        correction.entity_id,
+        revision.entity_history_id,
+        conn,
+    )
+    .await?;
+
+    Ok(())
+}
+
 impl TxRepo for SeaOrmTxRepo {
     async fn create(
         &self,
@@ -100,39 +146,7 @@ impl TxRepo for SeaOrmTxRepo {
         &self,
         correction: entity::correction::Model,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        // Get the latest correction revision
-        let revision = correction_revision::Entity::find()
-            .filter(correction_revision::Column::CorrectionId.eq(correction.id))
-            .order_by_desc(correction_revision::Column::EntityHistoryId)
-            .one(self.conn())
-            .await?
-            .expect("Correction revision not found, this shouldn't happen");
-
-        // Get the credit role history record
-        let history =
-            credit_role_history::Entity::find_by_id(revision.entity_history_id)
-                .one(self.conn())
-                .await?
-                .expect("Credit role history not found, this shouldn't happen");
-
-        // Update main credit_role table with history data
-        credit_role::ActiveModel {
-            id: Set(correction.entity_id),
-            name: Set(history.name),
-            short_description: Set(history.short_description),
-            description: Set(history.description),
-        }
-        .update(self.conn())
-        .await?;
-
-        // Update credit_role_inheritance relationships using delete+recreate pattern
-        update_credit_role_inheritance(
-            correction.entity_id,
-            revision.entity_history_id,
-            self.conn(),
-        )
-        .await?;
-
+        apply_update_impl(correction, self.conn()).await?;
         Ok(())
     }
 }

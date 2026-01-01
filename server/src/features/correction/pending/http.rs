@@ -7,8 +7,8 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
-use crate::domain::correction::{self, CorrectionFilter};
 use crate::infra::error::Error;
+use crate::features::correction::repo;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
@@ -70,11 +70,7 @@ async fn pending_correction(
     >,
     State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Data<Option<i32>>, Error> {
-    Ok(correction::Repo::find_one(
-        &repo,
-        CorrectionFilter::pending(id, entity_type.into()),
-    )
-    .await?
-    .map(|x| x.id)
-    .into())
+    let correction_id =
+        repo::find_pending_id(&repo, id, entity_type.into()).await?;
+    Ok(Data::from(correction_id))
 }

@@ -8,14 +8,9 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::api_response::{self, Message};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
-use crate::domain::TransactionManager;
-use crate::infra::error::Error;
 
-#[derive(Deserialize, utoipa::ToSchema)]
-pub enum HandleCorrectionMethod {
-    Approve,
-    Reject,
-}
+use crate::features::correction::model::HandleCorrectionMethod;
+use crate::features::correction::service;
 
 #[derive(IntoParams, Deserialize)]
 struct HandleCorrectionQuery {
@@ -43,19 +38,10 @@ async fn handle_correction(
     CurrentUser(user): CurrentUser,
     Path(id): Path<i32>,
     Query(query): Query<HandleCorrectionQuery>,
-    state: State<state::ArcAppState>,
-    State(service): State<state::CorrectionService>,
+    State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Message, impl IntoResponse> {
-    let tx_repo = state
-        .sea_orm_repo
-        .begin()
-        .await
-        .map_err(Error::from)
-        .map_err(IntoResponse::into_response)?;
-
     match query.method {
-        HandleCorrectionMethod::Approve => service
-            .approve(id, user, tx_repo)
+        HandleCorrectionMethod::Approve => service::approve(&repo, id, user)
             .await
             .map_err(IntoResponse::into_response)
             .map(|()| Message::ok()),

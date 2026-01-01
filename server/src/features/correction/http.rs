@@ -2,16 +2,7 @@ use utoipa_axum::router::OpenApiRouter;
 
 use crate::adapter::inbound::rest::state::ArcAppState;
 
-mod compare;
-mod detail;
-mod diff;
-mod handle;
-mod history;
-mod pending;
-mod revisions;
-mod shared;
-
-pub use handle::HandleCorrectionMethod;
+use super::{compare, detail, diff, handle, history, pending, revisions};
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()

@@ -10,7 +10,7 @@ use snafu::ResultExt;
 
 use crate::domain::tag::{NewTag, NewTagRelation, TxRepo};
 
-mod impls;
+pub(crate) mod impls;
 use impls::*;
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {

@@ -13,7 +13,7 @@ use snafu::ResultExt;
 use crate::domain::shared::NewLocalizedName;
 use crate::domain::song::{NewSong, NewSongCredit, TxRepo};
 
-mod impls;
+pub(crate) mod impls;
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(

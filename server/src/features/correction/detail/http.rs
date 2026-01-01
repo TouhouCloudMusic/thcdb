@@ -7,7 +7,6 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::api_response::{self, Data};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
-use crate::domain::Connection;
 use crate::domain::correction::Correction;
 use crate::infra::error::Error;
 
@@ -34,7 +33,7 @@ async fn get_correction(
     State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Data<Correction>, impl IntoResponse> {
     let Some(model) = correction_entity::Entity::find_by_id(id)
-        .one(repo.conn())
+        .one(&repo.conn)
         .await
         .map_err(Error::from)
         .map_err(IntoResponse::into_response)?

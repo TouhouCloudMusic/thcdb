@@ -9,7 +9,6 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
-use crate::domain::Connection;
 use crate::infra::error::Error;
 
 use entity::enums::CorrectionStatus;
@@ -94,7 +93,7 @@ async fn entity_corrections(
         .filter(correction_entity::Column::Status.eq(CorrectionStatus::Approved))
         .order_by_desc(correction_entity::Column::HandledAt)
         .order_by_desc(correction_entity::Column::CreatedAt)
-        .all(repo.conn())
+        .all(&repo.conn)
         .await?;
 
     if corrections.is_empty() {
@@ -107,7 +106,7 @@ async fn entity_corrections(
         .filter(correction_revision::Column::CorrectionId.is_in(correction_ids.clone()))
         .order_by_asc(correction_revision::Column::CorrectionId)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
-        .all(repo.conn())
+        .all(&repo.conn)
         .await?;
 
     let mut revision_map = HashMap::new();
@@ -122,7 +121,7 @@ async fn entity_corrections(
 
     let authors = user::Entity::find()
         .filter(user::Column::Id.is_in(author_ids))
-        .all(repo.conn())
+        .all(&repo.conn)
         .await?;
 
     let author_map = authors
