@@ -5,7 +5,7 @@ use sea_query::{Cond, SimpleExpr};
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 
-use crate::domain::artist::ArtistType;
+use crate::features::artist::model::ArtistType;
 pub use crate::shared::http::{
     CorrectionSortField, PaginationQuery, SortDirection,
 };

@@ -16,39 +16,31 @@ use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func, SimpleExpr};
 
 use super::{CommonFilter, FindManyFilter};
-use crate::domain::Connection;
-use crate::domain::artist::{Artist, Membership, Tenure};
 use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::shared::{LocalizedName, Location};
+use crate::features::artist::model::{Artist, Membership, Tenure};
 use crate::infra::database::sea_orm::utils;
+use crate::infra::database::sea_orm::SeaOrmRepository;
 
-pub(super) async fn find_one<R>(
-    repo: &R,
+pub(super) async fn find_one(
+    repo: &SeaOrmRepository,
     id: i32,
     common: CommonFilter,
-) -> Result<Option<Artist>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Option<Artist>, DbErr> {
     let select = artist::Entity::find()
         .filter(artist::Column::Id.eq(id))
         .filter(SimpleExpr::from(common));
 
-    find_many_impl(select, repo.conn())
+    find_many_impl(select, &repo.conn)
         .await
         .map(|x| x.into_iter().next())
 }
 
-pub(super) async fn find_many<R>(
-    repo: &R,
+pub(super) async fn find_many(
+    repo: &SeaOrmRepository,
     filter: FindManyFilter,
     common: CommonFilter,
-) -> Result<Vec<Artist>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Vec<Artist>, DbErr> {
     let FindManyFilter::Keyword(keyword) = &filter;
 
     let search_term = Func::lower(keyword);
@@ -64,7 +56,7 @@ where
                 .binary(PgBinOper::SimilarityDistance, search_term),
         );
 
-    find_many_impl(select, repo.conn()).await
+    find_many_impl(select, &repo.conn).await
 }
 
 #[derive(FromQueryResult)]
@@ -281,15 +273,11 @@ async fn find_many_impl(
     Ok(ret)
 }
 
-pub(super) async fn find_by_filter<R>(
-    repo: &R,
+pub(super) async fn find_by_filter(
+    repo: &SeaOrmRepository,
     filter: super::ArtistFilter,
     pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Artist>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<crate::domain::shared::Paginated<Artist>, DbErr> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -308,30 +296,26 @@ where
         select,
         pagination,
         artist::Column::Id,
-        |select| find_many_impl(select, repo.conn()),
+        |select| find_many_impl(select, &repo.conn),
         |artist: &Artist| artist.id,
     )
     .await
 }
 
-async fn find_sorted_by_correction<R>(
-    repo: &R,
+async fn find_sorted_by_correction(
+    repo: &SeaOrmRepository,
     filter: super::ArtistFilter,
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Artist>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<crate::domain::shared::Paginated<Artist>, DbErr> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
 
     let entity_ids =
         crate::infra::database::sea_orm::utils::correction_sorted_entity_ids(
-            repo.conn(),
+            &repo.conn,
             EntityType::Artist,
             sort_field,
             match sort_direction {
@@ -352,7 +336,7 @@ where
         select = select.filter(artist::Column::ArtistType.is_in(artist_types));
     }
 
-    let mut artists = find_many_impl(select, repo.conn()).await?;
+    let mut artists = find_many_impl(select, &repo.conn).await?;
 
     artists = crate::infra::database::sea_orm::utils::sort_by_id_list(
         artists,

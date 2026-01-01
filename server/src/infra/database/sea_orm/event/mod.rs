@@ -10,7 +10,6 @@ use sea_orm::{
 };
 use snafu::ResultExt;
 
-use crate::domain::Connection;
 use crate::domain::event::{NewEvent, TxRepo};
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {

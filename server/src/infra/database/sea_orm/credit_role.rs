@@ -8,7 +8,6 @@ use sea_orm::{
     QueryFilter, QueryOrder, Set,
 };
 
-use crate::domain::Connection;
 use crate::domain::credit_role::{NewCreditRole, TxRepo};
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
 

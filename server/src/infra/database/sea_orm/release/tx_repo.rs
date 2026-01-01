@@ -5,7 +5,6 @@ use sea_orm::{
 };
 
 use super::impls::*;
-use crate::domain::Connection;
 use crate::domain::release::{NewRelease, TxRepo};
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {

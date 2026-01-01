@@ -29,7 +29,6 @@ use crate::shared::http::{CorrectionSortField, SortDirection};
 use crate::utils::openapi::ContentType;
 
 pub mod api_response;
-mod artist;
 mod correction;
 mod credit_role;
 mod error;

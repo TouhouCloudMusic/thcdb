@@ -10,7 +10,7 @@ use crate::domain::error::InfraWhatever;
 use crate::domain::model::UserRoleEnum;
 use crate::domain::{Connection, Transaction, TransactionManager};
 
-mod artist;
+pub(crate) mod artist;
 mod artist_image_queue;
 pub(crate) mod artist_release;
 pub(crate) mod cache;
@@ -41,6 +41,11 @@ pub struct SeaOrmRepository {
 impl SeaOrmRepository {
     pub const fn new(conn: sea_orm::DatabaseConnection) -> Self {
         Self { conn }
+    }
+
+    pub async fn begin_tx(&self) -> Result<SeaOrmTxRepo, DbErr> {
+        let tx = self.conn.begin().await?;
+        Ok(SeaOrmTxRepo::new(tx))
     }
 }
 
@@ -86,6 +91,38 @@ impl TransactionManager for SeaOrmRepository {
 pub struct SeaOrmTxRepo {
     // Make this can be cloned
     tx: Arc<sea_orm::DatabaseTransaction>,
+}
+
+impl SeaOrmTxRepo {
+    pub(crate) fn new(tx: sea_orm::DatabaseTransaction) -> Self {
+        Self { tx: Arc::new(tx) }
+    }
+
+    pub(crate) fn conn(&self) -> &DatabaseTransaction {
+        &self.tx
+    }
+
+    pub(crate) async fn commit(
+        self,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        Arc::try_unwrap(self.tx)
+            .map_err(|tx| {
+                let wc = Arc::weak_count(&tx);
+                let sc = Arc::strong_count(&tx);
+                let msg = format!(
+                    "Cannot commit transaction: \
+                    multiple references to the transaction exist, \
+                    current weak count: {wc}, strong count: {sc}"
+                );
+                InfraWhatever::from(msg)
+            })
+            .boxed()?
+            .commit()
+            .await
+            .boxed()?;
+
+        Ok(())
+    }
 }
 
 impl Connection for SeaOrmTxRepo {

@@ -11,8 +11,8 @@ use super::{
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data, state};
-use crate::domain::artist::Artist;
 use crate::domain::shared::Paginated;
+use crate::features::artist::model::Artist;
 use crate::infra::error::Error;
 
 const TAG: &str = "Artist";

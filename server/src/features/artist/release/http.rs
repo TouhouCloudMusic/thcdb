@@ -9,12 +9,12 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::domain::artist_release::{
+use crate::domain::{Cursor, Paginated};
+use crate::infra::error::Error;
+use crate::features::artist::model::{
     Appearance, AppearanceQuery, Credit, CreditQuery, Discography,
     DiscographyQuery,
 };
-use crate::domain::{Cursor, Paginated};
-use crate::infra::error::Error;
 
 const TAG: &str = "Artist";
 

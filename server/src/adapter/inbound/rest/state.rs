@@ -32,7 +32,6 @@ pub(crate) type AuthService = application::auth::AuthService<SeaOrmRepository>;
 
 pub(crate) type AuthSession = axum_login::AuthSession<AuthService>;
 
-pub(crate) type ArtistService = application::artist::Service<SeaOrmRepository>;
 pub(crate) type ArtistImageService =
     application::artist_image::Service<SeaOrmRepository, GenericFileStorage>;
 pub(crate) type ReleaseImageService =
@@ -124,14 +123,6 @@ impl FromRef<ArcAppState> for SeaOrmRepository {
 impl FromRef<ArcAppState> for UserProfileService {
     fn from_ref(input: &ArcAppState) -> Self {
         Self::new(input.sea_orm_repo.clone())
-    }
-}
-
-impl FromRef<ArcAppState> for ArtistService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        ArtistService {
-            conn: input.sea_orm_repo.clone(),
-        }
     }
 }
 

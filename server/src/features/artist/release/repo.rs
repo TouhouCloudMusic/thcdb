@@ -1,41 +1,28 @@
-use sea_orm::ConnectionTrait;
-
-use crate::domain::artist_release::{
+use crate::features::artist::model::{
     Appearance, AppearanceQuery, Credit, CreditQuery, Discography,
     DiscographyQuery,
 };
-use crate::domain::{Connection, Paginated};
+use crate::domain::Paginated;
 use crate::infra::database::sea_orm::artist_release as infra;
+use crate::infra::database::sea_orm::SeaOrmRepository;
 
-pub(super) async fn appearance<R>(
-    repo: &R,
+pub(super) async fn appearance(
+    repo: &SeaOrmRepository,
     query: AppearanceQuery,
-) -> Result<Paginated<Appearance>, sea_orm::DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Paginated<Appearance>, sea_orm::DbErr> {
     infra::appearance(repo, query).await
 }
 
-pub(super) async fn credit<R>(
-    repo: &R,
+pub(super) async fn credit(
+    repo: &SeaOrmRepository,
     query: CreditQuery,
-) -> Result<Paginated<Credit>, sea_orm::DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Paginated<Credit>, sea_orm::DbErr> {
     infra::credit(repo, query).await
 }
 
-pub(super) async fn discography<R>(
-    repo: &R,
+pub(super) async fn discography(
+    repo: &SeaOrmRepository,
     query: DiscographyQuery,
-) -> Result<Paginated<Discography>, sea_orm::DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Paginated<Discography>, sea_orm::DbErr> {
     infra::discography(repo, query).await
 }

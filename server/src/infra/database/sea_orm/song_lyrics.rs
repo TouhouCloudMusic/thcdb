@@ -7,7 +7,6 @@ use sea_orm::{
 use snafu::ResultExt;
 
 use super::SeaOrmTxRepo;
-use crate::domain::Connection;
 use crate::domain::song_lyrics::{NewSongLyrics, TxRepo};
 
 impl TxRepo for SeaOrmTxRepo {

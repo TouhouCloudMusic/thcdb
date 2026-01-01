@@ -6,30 +6,33 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::extract::CurrentUser;
-use super::state::{
-    ArcAppState, {self},
-};
+use super::error::{CreateError, UpsertCorrectionError};
+use super::model::NewArtist;
+use super::{find, release, service};
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::{Data, Message};
-use crate::application::artist::{CreateError, UpsertCorrectionError};
-use crate::application::correction::CorrectionSubmissionResult;
-use crate::application::artist_image::{
-    ArtistProfileImageInput, {self},
+use crate::adapter::inbound::rest::CurrentUser;
+use crate::adapter::inbound::rest::state::{self, ArcAppState};
+use crate::application::artist_image::{self, ArtistProfileImageInput};
+use crate::application::correction::{
+    CorrectionSubmissionResult, NewCorrectionDto,
 };
-use crate::application::correction::NewCorrectionDto;
-use crate::domain::artist::NewArtist;
 
 const TAG: &str = "Artist";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    AppRouter::new()
+    let private = AppRouter::new()
         .with_private(|r| {
             r.routes(routes!(create_artist))
                 .routes(routes!(upsert_artist_correction))
                 .routes(routes!(upload_artist_profile_image))
         })
-        .finish()
+        .finish();
+
+    OpenApiRouter::new()
+        .merge(find::router())
+        .merge(release::router())
+        .merge(private)
 }
 
 #[utoipa::path(
@@ -41,13 +44,12 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         (status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
-// #[axum::debug_handler]
 async fn create_artist(
     CurrentUser(user): CurrentUser,
-    State(service): State<state::ArtistService>,
+    State(repo): State<state::SeaOrmRepository>,
     Json(input): Json<NewCorrectionDto<NewArtist>>,
 ) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
-    let result = service.create(input.with_author(user)).await?;
+    let result = service::create(&repo, input.with_author(user)).await?;
     Ok(Data::from(result))
 }
 
@@ -62,13 +64,12 @@ async fn create_artist(
 )]
 async fn upsert_artist_correction(
     CurrentUser(user): CurrentUser,
-    State(service): State<state::ArtistService>,
+    State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewArtist>>,
 ) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
-    let result = service
-        .upsert_correction(id, dto.with_author(user))
-        .await?;
+    let result =
+        service::upsert_correction(&repo, id, dto.with_author(user)).await?;
     Ok(Data::from(result))
 }
 

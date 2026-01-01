@@ -10,7 +10,6 @@ use sea_orm::{
 };
 use snafu::ResultExt;
 
-use crate::domain::Connection;
 use crate::domain::shared::NewLocalizedName;
 use crate::domain::song::{NewSong, NewSongCredit, TxRepo};
 
