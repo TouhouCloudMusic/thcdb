@@ -12,11 +12,10 @@ use super::{find, service};
 use crate::adapter::inbound::rest::api_response::{Data, Message};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
-use crate::application;
 use crate::application::correction::{
     CorrectionSubmissionResult, NewCorrectionDto,
 };
-use crate::application::release_image::ReleaseCoverArtInput;
+use crate::features::release_image::{self, ReleaseCoverArtInput};
 
 const TAG: &str = "Release";
 
@@ -98,7 +97,7 @@ async fn upload_release_cover_art(
     State(service): State<state::ReleaseImageService>,
     Path(id): Path<i32>,
     TypedMultipart(form): TypedMultipart<ReleaseCoverArtFormData>,
-) -> Result<Message, application::release_image::Error> {
+) -> Result<Message, release_image::Error> {
     let dto = ReleaseCoverArtInput {
         bytes: form.data.contents,
         user,
