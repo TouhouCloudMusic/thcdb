@@ -7,5 +7,4 @@ mod service;
 pub mod find;
 mod release;
 
-pub use error::{CreateError, UpsertCorrectionError};
 pub use http::router;

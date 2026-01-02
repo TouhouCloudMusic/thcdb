@@ -1,10 +1,2 @@
-pub mod artist;
 pub mod correction;
-pub mod credit_role;
 pub mod error;
-pub mod event;
-pub mod label;
-pub mod release;
-pub mod song;
-pub mod song_lyrics;
-pub mod tag;

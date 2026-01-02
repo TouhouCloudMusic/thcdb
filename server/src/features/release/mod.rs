@@ -6,5 +6,4 @@ mod service;
 
 pub mod find;
 
-pub use error::{CreateError, UpsertCorrectionError};
 pub use http::router;

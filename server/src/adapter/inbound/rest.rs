@@ -28,7 +28,6 @@ use crate::shared::http::{CorrectionSortField, SortDirection};
 use crate::utils::openapi::ContentType;
 
 pub mod api_response;
-mod correction;
 mod error;
 mod extract;
 mod middleware;

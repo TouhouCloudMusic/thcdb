@@ -4,9 +4,7 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 
 use crate::application::{self};
-pub(crate) use crate::infra::database::sea_orm::{
-    SeaOrmRepository, SeaOrmTxRepo,
-};
+pub(crate) use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::singleton::FS_IMAGE_BASE_PATH;
 use crate::infra::state::AppState;
 use crate::infra::storage::{GenericFileStorage, GenericFileStorageConfig};
