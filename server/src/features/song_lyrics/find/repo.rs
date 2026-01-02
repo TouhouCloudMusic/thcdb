@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
 use entity::song_lyrics;
-use sea_orm::{ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 
-use crate::domain::Connection;
 use crate::domain::shared::Language;
-use crate::domain::song_lyrics::SongLyrics;
+use crate::features::song_lyrics::model::SongLyrics;
+use crate::infra::database::sea_orm::SeaOrmRepository;
 
 #[derive(Clone, Debug)]
 pub enum FindOneFilter {
@@ -21,13 +21,10 @@ pub enum FindManyFilter {
 }
 use crate::infra::database::sea_orm::cache::LANGUAGE_CACHE;
 
-pub(super) async fn find_one<R>(
-    repo: &R,
+pub(super) async fn find_one(
+    repo: &SeaOrmRepository,
     filter: FindOneFilter,
 ) -> Result<Option<SongLyrics>, sea_orm::DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
 {
     let condition = match filter {
         FindOneFilter::Id { id } => song_lyrics::Column::Id.eq(id),
@@ -41,24 +38,21 @@ where
 
     let model = song_lyrics::Entity::find()
         .filter(condition)
-        .one(repo.conn())
+        .one(&repo.conn)
         .await?;
 
     if let Some(model) = model {
-        let lang_cache = LANGUAGE_CACHE.get_or_init(repo.conn()).await?;
+        let lang_cache = LANGUAGE_CACHE.get_or_init(&repo.conn).await?;
         Ok(Some(map_song_lyrics(model, lang_cache)))
     } else {
         Ok(None)
     }
 }
 
-pub(super) async fn find_many<R>(
-    repo: &R,
+pub(super) async fn find_many(
+    repo: &SeaOrmRepository,
     filter: FindManyFilter,
 ) -> Result<Vec<SongLyrics>, sea_orm::DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
 {
     let condition = match filter {
         FindManyFilter::Song { song_id } => {
@@ -74,14 +68,14 @@ where
 
     let models = song_lyrics::Entity::find()
         .filter(condition)
-        .all(repo.conn())
+        .all(&repo.conn)
         .await?;
 
     if models.is_empty() {
         return Ok(vec![]);
     }
 
-    let lang_cache = LANGUAGE_CACHE.get_or_init(repo.conn()).await?;
+    let lang_cache = LANGUAGE_CACHE.get_or_init(&repo.conn).await?;
 
     Ok(models
         .into_iter()

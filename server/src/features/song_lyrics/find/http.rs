@@ -9,7 +9,7 @@ use super::repo::{self, FindManyFilter, FindOneFilter};
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::domain::song_lyrics::SongLyrics;
+use crate::features::song_lyrics::model::SongLyrics;
 use crate::infra::error::Error;
 
 const TAG: &str = "Song Lyrics";

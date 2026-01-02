@@ -33,7 +33,6 @@ mod correction;
 mod error;
 mod extract;
 mod middleware;
-mod song_lyrics;
 pub mod state;
 mod tag;
 mod user;

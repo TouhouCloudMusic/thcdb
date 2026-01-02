@@ -50,7 +50,7 @@ async fn unset_song_main_lyrics(
 }
 
 /// Create new song lyrics record
-async fn create_lyrics_impl(
+pub(crate) async fn create_lyrics_impl(
     lyrics: &NewSongLyrics,
     conn: &impl ConnectionTrait,
 ) -> Result<i32, DbErr> {
@@ -72,7 +72,7 @@ async fn create_lyrics_impl(
 }
 
 /// Create history record for song lyrics
-async fn create_history_impl(
+pub(crate) async fn create_history_impl(
     lyrics: &NewSongLyrics,
     conn: &impl ConnectionTrait,
 ) -> Result<i32, DbErr> {
