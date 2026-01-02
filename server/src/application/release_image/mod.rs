@@ -98,7 +98,7 @@ where
             release_id,
         } = dto;
 
-        if !release_repo::exists(&self.repo, release_id)
+        if !release_repo::exists(self.repo.conn(), release_id)
             .await
             .map_err(Error::from)?
         {

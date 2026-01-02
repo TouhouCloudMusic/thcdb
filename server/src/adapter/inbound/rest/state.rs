@@ -48,17 +48,6 @@ impl FromRef<ArcAppState> for CorrectionService {
     }
 }
 
-pub(crate) type ReleaseService =
-    application::release::Service<SeaOrmRepository>;
-
-impl FromRef<ArcAppState> for ReleaseService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        Self {
-            repo: input.sea_orm_repo.clone(),
-        }
-    }
-}
-
 pub(crate) type SongService = application::song::Service<SeaOrmRepository>;
 
 impl FromRef<ArcAppState> for SongService {

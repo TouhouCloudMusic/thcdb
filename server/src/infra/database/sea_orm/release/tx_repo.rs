@@ -8,6 +8,56 @@ use sea_orm::{
 use super::impls::*;
 use crate::domain::release::{NewRelease, TxRepo};
 
+pub(crate) async fn create_release_with_relations(
+    data: &NewRelease,
+    tx: &DatabaseTransaction,
+) -> Result<i32, DbErr> {
+    let release = release::ActiveModel::from(data).insert(tx).await?;
+
+    tokio::try_join!(
+        create_release_artist(release.id, &data.artists, tx),
+        create_release_catalog_number(release.id, &data.catalog_nums, tx),
+        create_release_credit(release.id, &data.credits, tx),
+        create_release_event(release.id, &data.events, tx),
+        create_release_localized_title(release.id, &data.localized_titles, tx)
+    )?;
+
+    let discs = create_release_disc(release.id, &data.discs, tx).await?;
+    create_release_track(release.id, &data.tracks, &discs, tx).await?;
+
+    Ok(release.id)
+}
+
+pub(crate) async fn create_release_history_with_relations(
+    data: &NewRelease,
+    tx: &DatabaseTransaction,
+) -> Result<i32, DbErr> {
+    let history = release_history::ActiveModel::from(data).insert(tx).await?;
+
+    tokio::try_join!(
+        create_release_artist_history(history.id, &data.artists, tx),
+        create_release_catalog_number_history(
+            history.id,
+            &data.catalog_nums,
+            tx
+        ),
+        create_release_credit_history(history.id, &data.credits, tx),
+        create_release_event_history(history.id, &data.events, tx),
+        create_release_localized_title_history(
+            history.id,
+            &data.localized_titles,
+            tx
+        )
+    )?;
+
+    let disc_histories =
+        create_release_disc_history(history.id, &data.discs, tx).await?;
+    create_release_track_history(history.id, &data.tracks, &disc_histories, tx)
+        .await?;
+
+    Ok(history.id)
+}
+
 pub(crate) async fn apply_update(
     correction: entity::correction::Model,
     tx: &DatabaseTransaction,
@@ -65,77 +115,14 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
         &self,
         data: &NewRelease,
     ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        let release =
-            release::ActiveModel::from(data).insert(self.conn()).await?;
-
-        tokio::try_join!(
-            create_release_artist(release.id, &data.artists, self.conn()),
-            create_release_catalog_number(
-                release.id,
-                &data.catalog_nums,
-                self.conn()
-            ),
-            create_release_credit(release.id, &data.credits, self.conn()),
-            create_release_event(release.id, &data.events, self.conn()),
-            create_release_localized_title(
-                release.id,
-                &data.localized_titles,
-                self.conn()
-            )
-        )?;
-
-        let discs =
-            create_release_disc(release.id, &data.discs, self.conn()).await?;
-        create_release_track(release.id, &data.tracks, &discs, self.conn())
-            .await?;
-
-        Ok(release.id)
+        Ok(create_release_with_relations(data, self.conn()).await?)
     }
 
     async fn create_history(
         &self,
         data: &NewRelease,
     ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        let history = release_history::ActiveModel::from(data)
-            .insert(self.conn())
-            .await?;
-
-        tokio::try_join!(
-            create_release_artist_history(
-                history.id,
-                &data.artists,
-                self.conn()
-            ),
-            create_release_catalog_number_history(
-                history.id,
-                &data.catalog_nums,
-                self.conn()
-            ),
-            create_release_credit_history(
-                history.id,
-                &data.credits,
-                self.conn()
-            ),
-            create_release_event_history(history.id, &data.events, self.conn()),
-            create_release_localized_title_history(
-                history.id,
-                &data.localized_titles,
-                self.conn()
-            )
-        )?;
-
-        let disc_histories =
-            create_release_disc_history(history.id, &data.discs, self.conn())
-                .await?;
-        create_release_track_history(
-            history.id,
-            &data.tracks,
-            &disc_histories,
-            self.conn(),
-        )
-        .await?;
-
-        Ok(history.id)
+        Ok(create_release_history_with_relations(data, self.conn()).await?)
     }
 
     async fn apply_update(

@@ -6,31 +6,30 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::extract::CurrentUser;
-use super::state::{
-    ArcAppState, {self},
-};
-use crate::adapter::inbound::rest::AppRouter;
+use super::error::{CreateError, UpsertCorrectionError};
+use super::model::NewRelease;
+use super::{find, service};
 use crate::adapter::inbound::rest::api_response::{Data, Message};
-use crate::application::correction::CorrectionSubmissionResult;
+use crate::adapter::inbound::rest::state::{self, ArcAppState};
+use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::application;
-use crate::application::correction::NewCorrectionDto;
-use crate::application::release::{CreateError, UpsertCorrectionError};
+use crate::application::correction::{
+    CorrectionSubmissionResult, NewCorrectionDto,
+};
 use crate::application::release_image::ReleaseCoverArtInput;
-use crate::domain::release::NewRelease;
-
-type Service = state::ReleaseService;
 
 const TAG: &str = "Release";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    AppRouter::new()
+    let private = AppRouter::new()
         .with_private(|r| {
             r.routes(routes!(create_release))
                 .routes(routes!(update_release))
                 .routes(routes!(upload_release_cover_art))
         })
-        .finish()
+        .finish();
+
+    OpenApiRouter::new().merge(find::router()).merge(private)
 }
 
 #[utoipa::path(
@@ -39,15 +38,15 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     path = "/release",
     request_body = NewCorrectionDto<NewRelease>,
     responses(
-		(status = 200, body = Data<CorrectionSubmissionResult>),
+        (status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 async fn create_release(
     CurrentUser(user): CurrentUser,
-    service: State<Service>,
+    State(repo): State<state::SeaOrmRepository>,
     Json(dto): Json<NewCorrectionDto<NewRelease>>,
 ) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
-    let result = service.create(dto.with_author(user)).await?;
+    let result = service::create(&repo, dto.with_author(user)).await?;
 
     Ok(Data::from(result))
 }
@@ -58,16 +57,17 @@ async fn create_release(
     path = "/release/{id}",
     request_body = NewCorrectionDto<NewRelease>,
     responses(
-		(status = 200, body = Data<CorrectionSubmissionResult>),
+        (status = 200, body = Data<CorrectionSubmissionResult>),
     ),
 )]
 async fn update_release(
     CurrentUser(user): CurrentUser,
-    service: State<Service>,
+    State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewRelease>>,
 ) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
-    let result = service.upsert_correction(id, dto.with_author(user)).await?;
+    let result = service::upsert_correction(&repo, id, dto.with_author(user))
+        .await?;
 
     Ok(Data::from(result))
 }
@@ -93,7 +93,6 @@ pub struct ReleaseCoverArtFormData {
         (status = 200, body = Message),
     )
 )]
-
 async fn upload_release_cover_art(
     CurrentUser(user): CurrentUser,
     State(service): State<state::ReleaseImageService>,
