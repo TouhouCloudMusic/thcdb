@@ -32,8 +32,7 @@ pub(crate) type AuthService = crate::features::auth::Service;
 
 pub(crate) type AuthSession = axum_login::AuthSession<AuthService>;
 
-pub(crate) type ArtistImageService =
-    application::artist_image::Service<SeaOrmRepository, GenericFileStorage>;
+pub(crate) type ArtistImageService = crate::features::artist_image::Service;
 pub(crate) type ReleaseImageService =
     application::release_image::Service<SeaOrmRepository, GenericFileStorage>;
 

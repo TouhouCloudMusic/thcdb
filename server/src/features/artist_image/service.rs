@@ -1,11 +1,10 @@
 use std::sync::LazyLock;
 
 use ::image::ImageFormat;
-use bytes::Bytes;
 use bytesize::ByteSize;
-use macros::{ApiError, IntoErrorSchema};
-use snafu::Snafu;
 
+use super::error::Error;
+use super::model::ArtistProfileImageInput;
 use crate::constant::{
     ARTIST_PROFILE_IMAGE_MAX_HEIGHT, ARTIST_PROFILE_IMAGE_MAX_RATIO,
     ARTIST_PROFILE_IMAGE_MAX_WIDTH, ARTIST_PROFILE_IMAGE_MIN_HEIGHT,
@@ -14,12 +13,10 @@ use crate::constant::{
 use crate::domain::artist_image_queue::{
     ArtistImageQueue, {self},
 };
-use crate::domain::image::{
-    AsyncFileStorage, CreateImageMeta, ParseOption, Parser,
-};
-use crate::domain::user::User;
-use crate::domain::{Transaction, TransactionManager, image, image_queue};
-use crate::infra;
+use crate::domain::image::{CreateImageMeta, ParseOption, Parser};
+use crate::domain::{image, image_queue};
+use crate::infra::database::sea_orm::SeaOrmRepository;
+use crate::infra::storage::GenericFileStorage;
 
 static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
     let opt = ParseOption::builder()
@@ -36,41 +33,16 @@ static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
     Parser::new(opt)
 });
 
-#[derive(Debug, Snafu, ApiError, IntoErrorSchema)]
-pub enum Error {
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
-    #[snafu(transparent)]
-    Service { source: image::Error },
+pub struct Service {
+    repo: SeaOrmRepository,
+    storage: GenericFileStorage,
 }
 
-impl<A> From<A> for Error
-where
-    A: Into<infra::Error>,
-{
-    default fn from(err: A) -> Self {
-        Self::Infra { source: err.into() }
-    }
-}
-
-pub struct Service<Repo, Storage> {
-    repo: Repo,
-    storage: Storage,
-}
-
-impl<Repo, TxRepo, Storage> Service<Repo, Storage>
-where
-    Repo: TransactionManager<TransactionRepository = TxRepo>,
-    // Perhaps these repos should be separated, but there is no need for this in the foreseeable future.
-    TxRepo: Clone
-        + Transaction
-        + image::TxRepo
-        + image_queue::Repo
-        + artist_image_queue::Repository,
-    Storage: AsyncFileStorage + Clone,
-{
-    /// Warn: Make sure inner transaction is wrapped in Arc
-    pub const fn new(repo: Repo, storage: Storage) -> Self {
+impl Service {
+    pub const fn new(
+        repo: SeaOrmRepository,
+        storage: GenericFileStorage,
+    ) -> Self {
         Self { repo, storage }
     }
 
@@ -84,7 +56,7 @@ where
             artist_id,
         } = dto;
 
-        let tx_repo = self.repo.begin().await?;
+        let tx_repo = self.repo.begin_tx().await?;
 
         let image_service =
             image::Service::new(tx_repo.clone(), self.storage.clone());
@@ -115,11 +87,4 @@ where
 
         Ok(())
     }
-}
-
-pub struct ArtistProfileImageInput {
-    pub bytes: Bytes,
-    #[doc(alias = "uploaded_by")]
-    pub user: User,
-    pub artist_id: i32,
 }

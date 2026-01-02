@@ -13,7 +13,7 @@ use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::{Data, Message};
 use crate::adapter::inbound::rest::CurrentUser;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::application::artist_image::{self, ArtistProfileImageInput};
+use crate::features::artist_image::{self, ArtistProfileImageInput};
 use crate::application::correction::{
     CorrectionSubmissionResult, NewCorrectionDto,
 };
