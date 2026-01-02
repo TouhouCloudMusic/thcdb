@@ -41,7 +41,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     }
 }
 
-async fn create_tag_impl(
+pub(crate) async fn create_tag_impl(
     data: &NewTag,
     tx: &DatabaseTransaction,
 ) -> Result<tag::Model, DbErr> {
@@ -74,7 +74,7 @@ async fn create_tag_impl(
     Ok(tag)
 }
 
-async fn create_history_impl(
+pub(crate) async fn create_history_impl(
     data: &NewTag,
     tx: &DatabaseTransaction,
 ) -> Result<tag_history::Model, DbErr> {

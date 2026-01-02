@@ -48,16 +48,6 @@ impl FromRef<ArcAppState> for CorrectionService {
     }
 }
 
-pub(crate) type TagService = application::tag::Service<SeaOrmRepository>;
-
-impl FromRef<ArcAppState> for TagService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        Self {
-            repo: input.sea_orm_repo.clone(),
-        }
-    }
-}
-
 pub(crate) type UserImageService =
     application::user_image::Service<SeaOrmRepository, GenericFileStorage>;
 pub(crate) type UserProfileService = user_profile::Service<SeaOrmRepository>;

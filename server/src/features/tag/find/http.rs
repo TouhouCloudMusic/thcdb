@@ -10,7 +10,7 @@ use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::Paginated;
-use crate::domain::tag::Tag;
+use crate::features::tag::model::Tag;
 use crate::infra::error::Error;
 
 const TAG: &str = "Tag";

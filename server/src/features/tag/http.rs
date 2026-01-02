@@ -3,30 +3,31 @@ use axum::extract::{Path, State};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::extract::CurrentUser;
-use super::state::{
-    ArcAppState, {self},
-};
-use crate::adapter::inbound::rest::AppRouter;
+use super::error::{CreateError, UpsertCorrectionError};
+use super::model::NewTag;
+use super::{find, service};
 use crate::adapter::inbound::rest::api_response::Data;
-use crate::application::correction::CorrectionSubmissionResult;
-use crate::application::correction::NewCorrectionDto;
-use crate::application::tag::{CreateError, UpsertCorrectionError};
-use crate::domain::tag::NewTag;
+use crate::adapter::inbound::rest::state::{self, ArcAppState};
+use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
+use crate::application::correction::{
+    CorrectionSubmissionResult, NewCorrectionDto,
+};
 
 const TAG: &str = "Tag";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
-    AppRouter::new()
+    let private = AppRouter::new()
         .with_private(|r| {
-            r.routes(routes!(create_tag))
-                .routes(routes!(upsert_tag_correction))
+            r.routes(routes!(create_tag)).routes(routes!(upsert_tag_correction))
         })
-        .finish()
+        .finish();
+
+    OpenApiRouter::new().merge(find::router()).merge(private)
 }
 
 #[utoipa::path(
     post,
+    tag = TAG,
     path = "/tag",
     request_body = NewCorrectionDto<NewTag>,
     responses(
@@ -35,15 +36,16 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 )]
 async fn create_tag(
     CurrentUser(user): CurrentUser,
-    State(tag_service): State<state::TagService>,
+    State(repo): State<state::SeaOrmRepository>,
     Json(dto): Json<NewCorrectionDto<NewTag>>,
 ) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
-    let result = tag_service.create(dto.with_author(user)).await?;
+    let result = service::create(&repo, dto.with_author(user)).await?;
     Ok(Data::from(result))
 }
 
 #[utoipa::path(
     post,
+    tag = TAG,
     path = "/tag/{id}",
     request_body = NewCorrectionDto<NewTag>,
     responses(
@@ -52,13 +54,11 @@ async fn create_tag(
 )]
 async fn upsert_tag_correction(
     CurrentUser(user): CurrentUser,
-    State(tag_service): State<state::TagService>,
+    State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewTag>>,
 ) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
-    let result = tag_service
-        .upsert_correction(id, dto.with_author(user))
+    let result = service::upsert_correction(&repo, id, dto.with_author(user))
         .await?;
-
     Ok(Data::from(result))
 }

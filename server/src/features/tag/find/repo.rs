@@ -11,33 +11,26 @@ use sea_query::extension::postgres::PgBinOper::{
 };
 use sea_query::{ExprTrait, Func};
 
-use crate::domain::Connection;
-use crate::domain::tag::{AlternativeName, Tag, TagRef, TagRelation};
+use crate::domain::tag::{AlternativeName, TagRef, TagRelation};
+use crate::features::tag::model::Tag;
+use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::database::sea_orm::utils;
 
-pub(super) async fn find_by_id<R>(
-    repo: &R,
+pub(super) async fn find_by_id(
+    repo: &SeaOrmRepository,
     id: i32,
-) -> Result<Option<Tag>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Option<Tag>, DbErr> {
     let select = tag::Entity::find().filter(tag::Column::Id.eq(id));
 
-    find_many_impl(select, repo.conn())
+    find_many_impl(select, &repo.conn)
         .await
         .map(|mut tags| tags.pop())
 }
 
-pub(super) async fn find_by_keyword<R>(
-    repo: &R,
+pub(super) async fn find_by_keyword(
+    repo: &SeaOrmRepository,
     keyword: &str,
-) -> Result<Vec<Tag>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Vec<Tag>, DbErr> {
     let search_term = Func::lower(keyword);
 
     let select = tag::Entity::find()
@@ -50,18 +43,14 @@ where
                 .binary(SimilarityDistance, search_term),
         );
 
-    find_many_impl(select, repo.conn()).await
+    find_many_impl(select, &repo.conn).await
 }
 
-pub(super) async fn find_by_filter<R>(
-    repo: &R,
+pub(super) async fn find_by_filter(
+    repo: &SeaOrmRepository,
     filter: super::TagFilter,
     pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Tag>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<crate::domain::shared::Paginated<Tag>, DbErr> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -80,30 +69,26 @@ where
         select,
         pagination,
         tag::Column::Id,
-        |select| find_many_impl(select, repo.conn()),
+        |select| find_many_impl(select, &repo.conn),
         |tag: &Tag| tag.id,
     )
     .await
 }
 
-async fn find_sorted_by_correction<R>(
-    repo: &R,
+async fn find_sorted_by_correction(
+    repo: &SeaOrmRepository,
     filter: super::TagFilter,
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Tag>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<crate::domain::shared::Paginated<Tag>, DbErr> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
 
     let entity_ids =
         crate::infra::database::sea_orm::utils::correction_sorted_entity_ids(
-            repo.conn(),
+            &repo.conn,
             EntityType::Tag,
             sort_field,
             match sort_direction {
@@ -124,7 +109,7 @@ where
         select = select.filter(tag::Column::Type.is_in(tag_types));
     }
 
-    let mut tags = find_many_impl(select, repo.conn()).await?;
+    let mut tags = find_many_impl(select, &repo.conn).await?;
 
     tags = crate::infra::database::sea_orm::utils::sort_by_id_list(
         tags,
