@@ -34,7 +34,6 @@ mod error;
 mod extract;
 mod middleware;
 pub mod state;
-mod user;
 pub use extract::CurrentUser;
 
 #[expect(unused_imports, reason = "re-exported for macro use")]
