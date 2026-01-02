@@ -13,6 +13,7 @@ pub mod song_lyrics;
 pub mod tag;
 mod tag_vote;
 pub mod user;
+pub mod user_image;
 
 use utoipa_axum::router::OpenApiRouter;
 

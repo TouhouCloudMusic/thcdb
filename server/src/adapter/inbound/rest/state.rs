@@ -46,8 +46,7 @@ impl FromRef<ArcAppState> for CorrectionService {
     }
 }
 
-pub(crate) type UserImageService =
-    application::user_image::Service<SeaOrmRepository, GenericFileStorage>;
+pub(crate) type UserImageService = crate::features::user_image::Service;
 pub(crate) type UserProfileService = user_profile::Service<SeaOrmRepository>;
 
 impl FromRef<ArcAppState> for SeaOrmRepository {

@@ -1,16 +1,9 @@
-use macros::{ApiError, IntoErrorSchema};
-
-use crate::domain::TransactionManager;
-use crate::domain::image::{
-    AsyncFileStorage, CreateImageMeta, Parser, TxRepo as ImageTxRepo,
-    ValidationError, {self},
-};
-use crate::domain::user::{
-    User, {self},
-};
-
-mod model;
-pub use model::*;
+use super::error::Error;
+use crate::domain::image::{CreateImageMeta, Parser};
+use crate::domain::user::{self, User};
+use crate::domain::image;
+use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
+use crate::infra::storage::GenericFileStorage;
 
 mod parser {
     use std::sync::LazyLock;
@@ -56,51 +49,27 @@ mod parser {
     });
 }
 
-#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
-
-pub enum Error {
-    #[snafu(transparent)]
-    Infra { source: crate::infra::Error },
-    #[snafu(transparent)]
-    ImageService { source: image::Error },
-    #[snafu(transparent)]
-    Validate { source: ValidationError },
-}
-
-impl<E> From<E> for Error
-where
-    E: Into<crate::infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
-    }
-}
-
 #[derive(Clone)]
-pub struct Service<R, S> {
-    repo: R,
-    storage: S,
+pub struct Service {
+    repo: SeaOrmRepository,
+    storage: GenericFileStorage,
 }
 
-impl<R, S> Service<R, S> {
-    pub const fn new(repo: R, storage: S) -> Self {
+impl Service {
+    pub const fn new(
+        repo: SeaOrmRepository,
+        storage: GenericFileStorage,
+    ) -> Self {
         Self { repo, storage }
     }
-}
 
-impl<Repo, TxRepo, Storage> Service<Repo, Storage>
-where
-    Repo: TransactionManager<TransactionRepository = TxRepo>,
-    TxRepo: Clone + user::TxRepo + image::Repo + ImageTxRepo,
-    Storage: Clone + AsyncFileStorage,
-{
     pub async fn upload_avatar(
         &self,
         user: User,
         buffer: &[u8],
     ) -> Result<(), Error> {
         update_user_image(
-            self.repo.begin().await?,
+            self.repo.begin_tx().await?,
             self.storage.clone(),
             user,
             buffer,
@@ -117,7 +86,7 @@ where
         buffer: &[u8],
     ) -> Result<User, Error> {
         update_user_image(
-            self.repo.begin().await?,
+            self.repo.begin_tx().await?,
             self.storage.clone(),
             user,
             buffer,
@@ -128,9 +97,9 @@ where
     }
 }
 
-async fn update_user_image<TxRepo, Storage, F>(
-    tx: TxRepo,
-    storage: Storage,
+async fn update_user_image<F>(
+    tx: SeaOrmTxRepo,
+    storage: GenericFileStorage,
     mut user: User,
     buffer: &[u8],
     parser: &'static Parser,
@@ -138,12 +107,9 @@ async fn update_user_image<TxRepo, Storage, F>(
 ) -> Result<User, Error>
 where
     F: FnOnce(&mut User) -> &mut Option<i32>,
-    TxRepo: Clone + user::TxRepo + image::Repo + ImageTxRepo,
-    Storage: Clone + AsyncFileStorage,
 {
     let image_service = image::Service::new(tx.clone(), storage);
 
-    // Create new image
     let new_image = image_service
         .create(
             buffer,
@@ -166,7 +132,7 @@ where
 
     drop(image_service);
 
-    let user = tx.update(user).await?;
+    let user = user::TxRepo::update(&tx, user).await?;
     tx.commit().await?;
 
     Ok(user)

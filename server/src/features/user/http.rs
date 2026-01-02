@@ -16,7 +16,7 @@ use crate::adapter::inbound::rest::state::{
 };
 use crate::adapter::inbound::rest::CurrentUser;
 use crate::features::auth::{SessionBackendError, SignInError};
-use crate::application::user_image::{
+use crate::features::user_image::{
     Error as UserImageError, UploadAvatar, UploadProfileBanner,
 };
 use crate::domain::auth::AuthCredential;
