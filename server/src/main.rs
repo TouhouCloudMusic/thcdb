@@ -22,13 +22,11 @@
 )]
 #![feature(
     bool_to_result,
-    error_generic_member_access,
     min_specialization,
     new_range_api,
     return_type_notation,
     trait_alias,
-    try_blocks,
-    variant_count
+    try_blocks
 )]
 
 mod adapter;

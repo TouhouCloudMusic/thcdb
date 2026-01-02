@@ -7,6 +7,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{Json, Router};
+use flow::{Pipe, TapMut};
 use headers::authorization::{Basic, Credentials};
 use maud::{DOCTYPE, html};
 use middleware::append_global_middlewares;
@@ -330,22 +331,22 @@ fn router(state: ArcAppState) -> Router {
         .merge(Scalar::with_url("/docs", api_doc.clone()))
         .route("/openapi.json", get(async move || Json(api_doc)));
 
-    let router = Router::new()
+    Router::new()
         .route("/", get(home_page))
         .merge(doc_router)
         .merge(static_dir())
-        .merge(constant_files());
-
-    let router = append_global_middlewares(router, &state);
-
-    router.with_state(state)
+        .merge(constant_files())
+        .pipe(|this| append_global_middlewares(this, &state))
+        .with_state(state)
 }
 
 async fn home_page(session: AuthSession) -> impl IntoResponse {
-    let mut hello_msg = String::from("Welcome to touhou cloud music");
-    if let Some(user) = session.user {
-        hello_msg = format!("{hello_msg}, {}", user.name);
-    }
+    let hello_msg =
+        String::from("Welcome to touhou cloud music").tap_mut(|s| {
+            if let Some(user) = session.user {
+                *s = format!("{s}, {}", user.name);
+            }
+        });
 
     html! {
         (DOCTYPE)

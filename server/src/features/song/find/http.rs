@@ -1,4 +1,5 @@
 use axum::extract::{Path, Query, State};
+use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -42,10 +43,7 @@ async fn find_song_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
 ) -> Result<Data<Option<Song>>, Error> {
-    super::repo::find_by_id(&repo, id)
-        .await
-        .map(Into::into)
-        .map_err(Into::into)
+    super::repo::find_by_id(&repo, id).await.bimap_into()
 }
 
 #[derive(Deserialize, ToSchema, IntoParams)]
@@ -68,8 +66,7 @@ async fn find_song_by_keyword(
 ) -> Result<Data<Vec<Song>>, Error> {
     super::repo::find_by_keyword(&repo, &query.keyword)
         .await
-        .map(Into::into)
-        .map_err(Into::into)
+        .bimap_into()
 }
 
 #[utoipa::path(
@@ -91,6 +88,5 @@ async fn explore_song(
     tracing::info!(?normalized, "explore_song: incoming query");
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
-        .map(Into::into)
-        .map_err(Into::into)
+        .bimap_into()
 }

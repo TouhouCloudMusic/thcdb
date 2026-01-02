@@ -1,4 +1,5 @@
 use entity::image_queue as db;
+use libfp::FunctorExt;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ConnectionTrait, EntityTrait, IntoActiveModel,
@@ -20,7 +21,7 @@ where
         db::Entity::insert(model.into_active_model())
             .exec_with_returning(self.conn())
             .await
-            .map(Into::into)
+            .fmap_into()
             .boxed()
     }
 

@@ -1,4 +1,5 @@
 use axum::extract::{Path, Query, State};
+use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -53,8 +54,7 @@ async fn find_many_credit_roles_summary(
 ) -> Result<Data<Vec<CreditRoleSummary>>, Error> {
     repo::find_many_summary(&repo, query.into(), CommonFilter {})
         .await
-        .map(Into::into)
-        .map_err(Into::into)
+        .bimap_into()
 }
 
 #[utoipa::path(
@@ -75,8 +75,5 @@ async fn find_credit_role_by_id(
         CommonFilter,
     >,
 ) -> Result<Data<Option<CreditRole>>, Error> {
-    repo::find_one(&repo, id, common)
-        .await
-        .map(Into::into)
-        .map_err(Into::into)
+    repo::find_one(&repo, id, common).await.bimap_into()
 }

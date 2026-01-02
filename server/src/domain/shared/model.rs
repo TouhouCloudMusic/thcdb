@@ -7,7 +7,7 @@ use utoipa::ToSchema;
 
 mod pub_use_below {}
 pub use entity::sea_orm_active_enums::DatePrecision;
-use crate::utils::validation::Len;
+use libfp::Len;
 
 use crate::constant::{ENTITY_IDENT_MAX_LEN, ENTITY_IDENT_MIN_LEN};
 use crate::utils::validation::{InvalidLen, LenCheck};

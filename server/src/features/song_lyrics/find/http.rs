@@ -1,4 +1,5 @@
 use axum::extract::{Query, State};
+use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -68,10 +69,7 @@ async fn find_one_song_lyrics(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<FindOneSongLyricsQuery>,
 ) -> Result<Data<Option<SongLyrics>>, Error> {
-    repo::find_one(&repo, query.into())
-        .await
-        .map(Into::into)
-        .map_err(Into::into)
+    repo::find_one(&repo, query.into()).await.bimap_into()
 }
 
 #[utoipa::path(
@@ -87,8 +85,5 @@ async fn find_many_song_lyrics(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<FindManySongLyricsQuery>,
 ) -> Result<Data<Vec<SongLyrics>>, Error> {
-    repo::find_many(&repo, query.into())
-        .await
-        .map(Into::into)
-        .map_err(Into::into)
+    repo::find_many(&repo, query.into()).await.bimap_into()
 }

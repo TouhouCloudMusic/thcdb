@@ -8,6 +8,7 @@ use entity::{
     song_language, song_localized_title, song_lyrics,
 };
 use itertools::{Itertools, izip};
+use libfp::FunctorExt;
 use sea_orm::{
     ColumnTrait, ConnectionTrait, DbErr, EntityTrait, JoinType, LoaderTrait,
     QueryFilter, QueryOrder, QuerySelect, RelationTrait, Select,
@@ -163,7 +164,7 @@ async fn find_many_impl(
             song_releases,
             lyrics,
         )| {
-            let artists = song_artists.into_iter().map(Into::into).collect();
+            let artists = song_artists.fmap_into();
 
             let releases = song_releases
                 .into_iter()

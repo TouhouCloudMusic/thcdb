@@ -5,6 +5,7 @@ use entity::{
     release_track, release_track_artist,
 };
 use itertools::{Itertools, izip};
+use libfp::FunctorExt;
 use sea_orm::JoinType::*;
 use sea_orm::prelude::*;
 use sea_orm::{ConnectionTrait, DbErr, QuerySelect, QueryTrait};
@@ -190,7 +191,7 @@ impl From<ArtistReleaseIR> for Discography {
             cover_url,
         }: ArtistReleaseIR,
     ) -> Self {
-        let artist = artists.into_iter().map(Into::into).collect();
+        let artist = artists.fmap_into();
 
         let release_date = DateWithPrecision::from_option(
             release.release_date,
@@ -249,7 +250,7 @@ fn into_artist_credits(
              }| {
                 let roles = into_credit_roles(release_credits, credit_roles);
 
-                let artist = artists.into_iter().map(Into::into).collect();
+                let artist = artists.fmap_into();
 
                 Credit {
                     title: release.title,

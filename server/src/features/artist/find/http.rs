@@ -1,4 +1,5 @@
 use axum::extract::{Path, Query, State};
+use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -50,10 +51,7 @@ async fn find_artist_by_id(
         CommonFilter,
     >,
 ) -> Result<Data<Option<Artist>>, Error> {
-    repo::find_one(&repo, id, common)
-        .await
-        .map(Into::into)
-        .map_err(Into::into)
+    repo::find_one(&repo, id, common).await.bimap_into()
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -90,8 +88,7 @@ async fn find_many_artist(
 ) -> Result<Data<Vec<Artist>>, Error> {
     repo::find_many(&repo, query.into(), common)
         .await
-        .map(Into::into)
-        .map_err(Into::into)
+        .bimap_into()
 }
 
 #[utoipa::path(
@@ -113,6 +110,5 @@ async fn explore_artist(
     tracing::info!(?normalized, "explore_artist: incoming query");
     repo::find_by_filter(&repo, normalized, pagination)
         .await
-        .map(Into::into)
-        .map_err(Into::into)
+        .bimap_into()
 }

@@ -1,10 +1,6 @@
 use std::fmt::Display;
 
-pub trait Len {
-    type Unit;
-
-    fn len(&self) -> Self::Unit;
-}
+use libfp::Len;
 
 pub struct InvalidLen<T: Len> {
     received: T::Unit,

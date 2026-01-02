@@ -3,6 +3,8 @@ members = [
     ".",
     "crates/collection_ext",
     "crates/entity",
+    "crates/flow",
+    "crates/libfp",
     "crates/macros",
     "crates/migration",
     "crates/proc_macros",
@@ -13,6 +15,8 @@ members = [
 collection_ext = { path = "crates/collection_ext" }
 entity         = { path = "crates/entity" }
 fast-lrc       = { path = "crates/fast_lrc" }
+flow           = { path = "crates/flow" }
+libfp          = { path = "crates/libfp" }
 macros         = { path = "crates/macros" }
 migration      = { path = "crates/migration" }
 proc_macros    = { path = "crates/proc_macros" }
@@ -76,6 +80,8 @@ version = "0.1.0"
 [dependencies]
 collection_ext.workspace = true
 entity.workspace         = true
+flow.workspace           = true
+libfp.workspace          = true
 macros.workspace         = true
 migration.workspace      = true
 #
