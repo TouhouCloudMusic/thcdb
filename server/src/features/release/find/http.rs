@@ -1,5 +1,4 @@
 use axum::extract::{Path, Query, State};
-use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -46,7 +45,8 @@ async fn find_release_by_id(
 ) -> Result<Data<Option<Release>>, Error> {
     repo::find_one(&repo, FindReleaseFilter::Id(id))
         .await
-        .bimap_into()
+        .map(Into::into)
+        .map_err(Into::into)
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -69,7 +69,8 @@ async fn find_release_by_keyword(
 ) -> Result<Data<Vec<Release>>, Error> {
     repo::find_many(&repo, FindReleaseFilter::Keyword(query.keyword))
         .await
-        .bimap_into()
+        .map(Into::into)
+        .map_err(Into::into)
 }
 
 #[utoipa::path(
@@ -91,5 +92,6 @@ async fn explore_release(
     tracing::info!(?normalized, "explore_release: incoming query");
     repo::find_by_filter(&repo, normalized, pagination)
         .await
-        .bimap_into()
+        .map(Into::into)
+        .map_err(Into::into)
 }

@@ -1,4 +1,3 @@
-use flow::Pipe;
 use nestify::nest;
 use serde::Deserialize;
 
@@ -30,20 +29,19 @@ impl Copy for LimitMiddleware {}
 
 impl Config {
     pub fn init() -> Self {
-        config::Config::builder()
+        let builder = config::Config::builder()
             .add_source(config::File::with_name("config"))
             .add_source(
                 config::Environment::with_convert_case(config::Case::Snake)
                     .separator("::"),
-            )
-            .pipe(|cfg| {
-                #[cfg(debug_assertions)]
-                let cfg = cfg.add_source(
-                    config::File::with_name("config.dev").required(false),
-                );
+            );
 
-                cfg
-            })
+        #[cfg(debug_assertions)]
+        let builder = builder.add_source(
+            config::File::with_name("config.dev").required(false),
+        );
+
+        builder
             .build()
             .expect("Failed to build config")
             .try_deserialize()

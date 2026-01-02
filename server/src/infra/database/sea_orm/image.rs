@@ -1,5 +1,4 @@
 use entity::image::Model;
-use libfp::FunctorExt;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityTrait, IntoActiveModel,
@@ -24,7 +23,7 @@ where
             .filter(entity::image::Column::Id.eq(id))
             .one(self.conn())
             .await
-            .map(FunctorExt::fmap_into)
+            .map(|model| model.map(Into::into))
             .boxed()
     }
 
@@ -36,7 +35,7 @@ where
             .filter(entity::image::Column::Filename.eq(filename))
             .one(self.conn())
             .await
-            .map(FunctorExt::fmap_into)
+            .map(|model| model.map(Into::into))
             .boxed()
     }
 }
@@ -83,7 +82,7 @@ impl image::TxRepo for SeaOrmTxRepo {
     ) -> Result<Image, Box<dyn std::error::Error + Send + Sync>> {
         save_impl(self.conn(), new_image.into_active_model())
             .await
-            .fmap_into()
+            .map(Into::into)
             .boxed()
     }
 

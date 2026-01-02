@@ -1,6 +1,5 @@
 use axum::extract::{Path, Query, State};
 use entity::enums::ReleaseType;
-use libfp::BifunctorExt;
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -71,7 +70,8 @@ async fn find_artist_appearances(
 ) -> Result<Data<Paginated<Appearance>>, Error> {
     super::repo::appearance(&repo, dto.into_query(id))
         .await
-        .bimap_into()
+        .map(Into::into)
+        .map_err(Into::into)
 }
 
 #[derive(Deserialize, IntoParams, ToSchema)]
@@ -110,7 +110,8 @@ async fn get_artist_credits(
 ) -> Result<Data<Paginated<Credit>>, Error> {
     super::repo::credit(&repo, dto.into_query(id))
         .await
-        .bimap_into()
+        .map(Into::into)
+        .map_err(Into::into)
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -151,7 +152,8 @@ async fn find_artist_discographies_by_type(
 ) -> Result<Data<Paginated<Discography>>, Error> {
     super::repo::discography(&repo, dto.into_query(id))
         .await
-        .bimap_into()
+        .map(Into::into)
+        .map_err(Into::into)
 }
 
 #[derive(Deserialize, IntoParams)]

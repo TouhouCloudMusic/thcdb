@@ -1,5 +1,4 @@
 use axum::extract::{Path, Query, State};
-use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -43,7 +42,10 @@ async fn find_event_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
 ) -> Result<Data<Option<Event>>, Error> {
-    super::repo::find_by_id(&repo, id).await.bimap_into()
+    super::repo::find_by_id(&repo, id)
+        .await
+        .map(Into::into)
+        .map_err(Into::into)
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -68,7 +70,8 @@ async fn find_event_by_keyword(
 ) -> Result<Data<Vec<Event>>, Error> {
     super::repo::find_by_keyword(&repo, &query.keyword)
         .await
-        .bimap_into()
+        .map(Into::into)
+        .map_err(Into::into)
 }
 
 #[utoipa::path(
@@ -90,5 +93,6 @@ async fn explore_event(
     tracing::info!(?normalized, "explore_event: incoming query");
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
-        .bimap_into()
+        .map(Into::into)
+        .map_err(Into::into)
 }

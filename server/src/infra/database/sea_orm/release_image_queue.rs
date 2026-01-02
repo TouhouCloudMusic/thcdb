@@ -1,5 +1,4 @@
 use entity::release_image_queue;
-use libfp::FunctorExt;
 use sea_orm::{EntityTrait, IntoActiveModel};
 use snafu::ResultExt;
 
@@ -17,7 +16,7 @@ impl Repo for SeaOrmTxRepo {
         )
         .exec_with_returning(self.conn())
         .await
-        .fmap_into()
+        .map(Into::into)
         .boxed()
     }
 }

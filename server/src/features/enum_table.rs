@@ -1,7 +1,6 @@
 use axum::extract::State;
 use entity::{language, role};
 use itertools::Itertools;
-use libfp::FunctorExt;
 use sea_orm::EntityTrait;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
@@ -39,7 +38,9 @@ async fn language_list(
     let res: Vec<Language> = language::Entity::find()
         .all(&state.database)
         .await?
-        .fmap_into();
+        .into_iter()
+        .map(Into::into)
+        .collect();
 
     Ok(res.into())
 }

@@ -1586,10 +1586,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "flow"
-version = "0.1.0"
-
-[[package]]
 name = "flume"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2616,10 +2612,6 @@ name = "libc"
 version = "0.2.175"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a82ae493e598baaea5209805c49bbf2ea7de956d50d7da0da1164f9c6d28543"
-
-[[package]]
-name = "libfp"
-version = "0.1.0"
 
 [[package]]
 name = "libfuzzer-sys"
@@ -5104,7 +5096,6 @@ dependencies = [
  "entity",
  "enumset",
  "eros",
- "flow",
  "fred",
  "frunk",
  "futures-util",
@@ -5115,7 +5106,6 @@ dependencies = [
  "iso8601-duration",
  "itertools 0.14.0",
  "lettre",
- "libfp",
  "macros",
  "maud",
  "migration",
