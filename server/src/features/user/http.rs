@@ -6,22 +6,19 @@ use axum_typed_multipart::TypedMultipart;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::features::user_profile::{DataUserProfile, load_profile};
-use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::{
     self, Data, IntoApiResponse, Message,
 };
-use crate::adapter::inbound::rest::state::{
-    self, ArcAppState, AuthSession,
-};
-use crate::adapter::inbound::rest::CurrentUser;
+use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
+use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
+use crate::domain::auth::AuthCredential;
+use crate::domain::markdown::Markdown;
+use crate::domain::user::UserProfile;
 use crate::features::auth::{SessionBackendError, SignInError};
 use crate::features::user_image::{
     Error as UserImageError, UploadAvatar, UploadProfileBanner,
 };
-use crate::domain::auth::AuthCredential;
-use crate::domain::markdown::Markdown;
-use crate::domain::user::UserProfile;
+use crate::features::user_profile::{DataUserProfile, load_profile};
 use crate::infra::error::Error;
 
 const TAG: &str = "User";

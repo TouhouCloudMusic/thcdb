@@ -11,7 +11,9 @@ pub enum CreateError {
     #[snafu(transparent)]
     Infra { source: infra::Error },
     #[snafu(transparent)]
-    Validation { source: crate::domain::song_lyrics::ValidationError },
+    Validation {
+        source: crate::domain::song_lyrics::ValidationError,
+    },
 }
 
 impl<E> From<E> for CreateError
@@ -32,7 +34,9 @@ pub enum UpsertCorrectionError {
     #[snafu(transparent)]
     Infra { source: infra::Error },
     #[snafu(transparent)]
-    Validation { source: crate::domain::song_lyrics::ValidationError },
+    Validation {
+        source: crate::domain::song_lyrics::ValidationError,
+    },
 }
 
 impl<E> From<E> for UpsertCorrectionError

@@ -32,7 +32,9 @@ pub(crate) async fn create_credit_role(
 
     let credit_role = credit_role_model.insert(conn).await?;
 
-    if let Some(super_roles) = &data.super_roles && !super_roles.is_empty() {
+    if let Some(super_roles) = &data.super_roles
+        && !super_roles.is_empty()
+    {
         let inheritance_models = super_roles.iter().map(|&super_id| {
             credit_role_inheritance::ActiveModel {
                 role_id: Set(credit_role.id),
@@ -69,14 +71,15 @@ pub(crate) async fn create_credit_role_history(
 
     let credit_role_history = credit_role_history_model.insert(conn).await?;
 
-    if let Some(super_roles) = &data.super_roles && !super_roles.is_empty() {
-        let inheritance_history_models =
-            super_roles.iter().map(|&super_id| {
-                credit_role_inheritance_history::ActiveModel {
-                    history_id: Set(credit_role_history.id),
-                    super_id: Set(super_id),
-                }
-            });
+    if let Some(super_roles) = &data.super_roles
+        && !super_roles.is_empty()
+    {
+        let inheritance_history_models = super_roles.iter().map(|&super_id| {
+            credit_role_inheritance_history::ActiveModel {
+                history_id: Set(credit_role_history.id),
+                super_id: Set(super_id),
+            }
+        });
 
         credit_role_inheritance_history::Entity::insert_many(
             inheritance_history_models,

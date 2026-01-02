@@ -1,7 +1,7 @@
 use super::error::Error;
+use crate::domain::image;
 use crate::domain::image::{CreateImageMeta, Parser};
 use crate::domain::user::{self, User};
-use crate::domain::image;
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::infra::storage::GenericFileStorage;
 

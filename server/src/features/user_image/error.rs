@@ -1,6 +1,8 @@
 use macros::{ApiError, IntoErrorSchema};
 
-use crate::domain::image::{ValidationError, {self}};
+use crate::domain::image::{
+    ValidationError, {self},
+};
 
 #[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
 pub enum Error {

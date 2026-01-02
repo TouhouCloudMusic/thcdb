@@ -24,8 +24,7 @@ use crate::infra::database::sea_orm::cache::LANGUAGE_CACHE;
 pub(super) async fn find_one(
     repo: &SeaOrmRepository,
     filter: FindOneFilter,
-) -> Result<Option<SongLyrics>, sea_orm::DbErr>
-{
+) -> Result<Option<SongLyrics>, sea_orm::DbErr> {
     let condition = match filter {
         FindOneFilter::Id { id } => song_lyrics::Column::Id.eq(id),
         FindOneFilter::SongAndLang {
@@ -52,8 +51,7 @@ pub(super) async fn find_one(
 pub(super) async fn find_many(
     repo: &SeaOrmRepository,
     filter: FindManyFilter,
-) -> Result<Vec<SongLyrics>, sea_orm::DbErr>
-{
+) -> Result<Vec<SongLyrics>, sea_orm::DbErr> {
     let condition = match filter {
         FindManyFilter::Song { song_id } => {
             song_lyrics::Column::SongId.eq(song_id)

@@ -1,7 +1,7 @@
 use chrono::{DateTime, FixedOffset};
+use entity::enums::{CorrectionStatus, CorrectionType, EntityType};
 use serde::Serialize;
 use utoipa::ToSchema;
-use entity::enums::{CorrectionStatus, CorrectionType, EntityType};
 
 use super::CorrectionEntity;
 use crate::domain::user::User;

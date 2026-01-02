@@ -7,9 +7,8 @@ use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
 
 use crate::features::release::model::Release;
-use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::database::sea_orm::release::impls::find_many_impl;
-use crate::infra::database::sea_orm::utils;
+use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
 
 #[derive(Clone, Debug)]
 pub enum FindReleaseFilter {

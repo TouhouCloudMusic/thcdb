@@ -25,8 +25,7 @@ impl Service {
         &self,
         creds: AuthCredential,
     ) -> Result<User, SignInError> {
-        let user = repo::find_by_name(&self.repo.conn, &creds.username)
-            .await?;
+        let user = repo::find_by_name(&self.repo.conn, &creds.username).await?;
 
         creds
             .verify_credentials(user.as_ref().map(|u| u.password.as_str()))

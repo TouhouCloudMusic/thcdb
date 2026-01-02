@@ -8,7 +8,6 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::api_response::{self, Message};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
-
 use crate::features::correction::model::HandleCorrectionMethod;
 use crate::features::correction::service;
 

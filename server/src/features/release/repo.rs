@@ -1,8 +1,8 @@
 use sea_orm::DbErr;
 
 use crate::features::release::model::NewRelease;
-use crate::infra::database::sea_orm::release::tx_repo as release_tx;
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
+use crate::infra::database::sea_orm::release::tx_repo as release_tx;
 
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,

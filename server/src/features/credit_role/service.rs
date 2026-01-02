@@ -13,8 +13,7 @@ pub async fn create(
 ) -> Result<CorrectionSubmissionResult, CreateError> {
     let tx_repo = repo.begin_tx().await.map_err(infra::Error::from)?;
 
-    let entity_id =
-        super::repo::create(&tx_repo, &correction.data).await?;
+    let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
 
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;

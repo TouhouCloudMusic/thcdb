@@ -9,8 +9,8 @@ use super::{EventFilter, PaginationQuery};
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::event::model::Event;
 use crate::domain::shared::Paginated;
+use crate::features::event::model::Event;
 use crate::infra::error::Error;
 
 const TAG: &str = "Event";

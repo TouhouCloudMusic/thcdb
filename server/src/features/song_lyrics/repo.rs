@@ -1,8 +1,9 @@
 use sea_orm::DbErr;
 
 use crate::features::song_lyrics::model::NewSongLyrics;
-use crate::infra::database::sea_orm::song_lyrics as lyrics_impls;
-use crate::infra::database::sea_orm::SeaOrmTxRepo;
+use crate::infra::database::sea_orm::{
+    SeaOrmTxRepo, song_lyrics as lyrics_impls,
+};
 
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,

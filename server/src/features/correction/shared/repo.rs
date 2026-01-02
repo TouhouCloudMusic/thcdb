@@ -41,7 +41,10 @@ pub async fn snapshot_for_history(
     }
 }
 
-pub fn diff_snapshots(before: &Value, after: &Value) -> Vec<CorrectionDiffEntry> {
+pub fn diff_snapshots(
+    before: &Value,
+    after: &Value,
+) -> Vec<CorrectionDiffEntry> {
     let mut entries = Vec::new();
     diff_walk("", Some(before), Some(after), &mut entries);
     entries
@@ -64,12 +67,7 @@ fn diff_walk(
                 } else {
                     format!("{path}.{key}")
                 };
-                diff_walk(
-                    &next,
-                    before_map.get(key),
-                    after_map.get(key),
-                    out,
-                );
+                diff_walk(&next, before_map.get(key), after_map.get(key), out);
             }
         }
         (Some(Value::Array(before_arr)), Some(Value::Array(after_arr))) => {
@@ -332,7 +330,9 @@ async fn snapshot_release(
     let history = release_history::Entity::find_by_id(history_id)
         .one(db)
         .await?
-        .ok_or_else(|| DbErr::Custom("Release history not found".to_string()))?;
+        .ok_or_else(|| {
+            DbErr::Custom("Release history not found".to_string())
+        })?;
 
     let artists = release_artist_history::Entity::find()
         .filter(release_artist_history::Column::HistoryId.eq(history_id))
@@ -359,7 +359,9 @@ async fn snapshot_release(
         .collect::<Vec<_>>();
 
     let localized_titles = release_localized_title_history::Entity::find()
-        .filter(release_localized_title_history::Column::HistoryId.eq(history_id))
+        .filter(
+            release_localized_title_history::Column::HistoryId.eq(history_id),
+        )
         .order_by_asc(release_localized_title_history::Column::LanguageId)
         .all(db)
         .await?
@@ -373,7 +375,9 @@ async fn snapshot_release(
         .collect::<Vec<_>>();
 
     let catalog_numbers = release_catalog_number_history::Entity::find()
-        .filter(release_catalog_number_history::Column::HistoryId.eq(history_id))
+        .filter(
+            release_catalog_number_history::Column::HistoryId.eq(history_id),
+        )
         .order_by_asc(release_catalog_number_history::Column::Id)
         .all(db)
         .await?
@@ -387,14 +391,9 @@ async fn snapshot_release(
         .all(db)
         .await?;
 
-    let tracks = discs
-        .load_many(release_track_history::Entity, db)
-        .await?;
+    let tracks = discs.load_many(release_track_history::Entity, db).await?;
 
-    let track_lengths = tracks
-        .iter()
-        .map(Vec::len)
-        .collect::<Vec<_>>();
+    let track_lengths = tracks.iter().map(Vec::len).collect::<Vec<_>>();
 
     let flat_tracks = tracks.into_iter().flatten().collect::<Vec<_>>();
     let flat_track_artists = flat_tracks
@@ -593,7 +592,9 @@ async fn snapshot_event(
         .ok_or_else(|| DbErr::Custom("Event history not found".to_string()))?;
 
     let alternative_names = event_alternative_name_history::Entity::find()
-        .filter(event_alternative_name_history::Column::HistoryId.eq(history_id))
+        .filter(
+            event_alternative_name_history::Column::HistoryId.eq(history_id),
+        )
         .order_by_asc(event_alternative_name_history::Column::Id)
         .all(db)
         .await?
@@ -629,7 +630,9 @@ async fn snapshot_song_lyrics(
     let history = song_lyrics_history::Entity::find_by_id(history_id)
         .one(db)
         .await?
-        .ok_or_else(|| DbErr::Custom("Song lyrics history not found".to_string()))?;
+        .ok_or_else(|| {
+            DbErr::Custom("Song lyrics history not found".to_string())
+        })?;
 
     Ok(json!({
         "language_id": history.language_id,
@@ -645,7 +648,9 @@ async fn snapshot_credit_role(
     let history = credit_role_history::Entity::find_by_id(history_id)
         .one(db)
         .await?
-        .ok_or_else(|| DbErr::Custom("Credit role history not found".to_string()))?;
+        .ok_or_else(|| {
+            DbErr::Custom("Credit role history not found".to_string())
+        })?;
 
     let inherits = credit_role_inheritance_history::Entity::find()
         .filter(

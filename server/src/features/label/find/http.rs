@@ -9,8 +9,8 @@ use super::{LabelFilter, PaginationQuery};
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::label::model::Label;
 use crate::domain::shared::Paginated;
+use crate::features::label::model::Label;
 use crate::infra::error::Error;
 
 const TAG: &str = "Label";

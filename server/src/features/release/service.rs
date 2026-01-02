@@ -12,14 +12,16 @@ pub async fn create(
     repo: &SeaOrmRepository,
     correction: NewCorrection<NewRelease>,
 ) -> Result<CorrectionSubmissionResult, CreateError> {
-    correction.data.validate().map_err(|e| CreateError::Validation {
-        message: e.to_string(),
-    })?;
+    correction
+        .data
+        .validate()
+        .map_err(|e| CreateError::Validation {
+            message: e.to_string(),
+        })?;
 
     let tx_repo = repo.begin_tx().await.map_err(infra::Error::from)?;
 
-    let entity_id =
-        super::repo::create(&tx_repo, &correction.data).await?;
+    let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;
 

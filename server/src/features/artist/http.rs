@@ -9,14 +9,13 @@ use utoipa_axum::routes;
 use super::error::{CreateError, UpsertCorrectionError};
 use super::model::NewArtist;
 use super::{find, release, service};
-use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::{Data, Message};
-use crate::adapter::inbound::rest::CurrentUser;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::features::artist_image::{self, ArtistProfileImageInput};
+use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::application::correction::{
     CorrectionSubmissionResult, NewCorrectionDto,
 };
+use crate::features::artist_image::{self, ArtistProfileImageInput};
 
 const TAG: &str = "Artist";
 

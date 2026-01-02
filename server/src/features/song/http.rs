@@ -59,8 +59,8 @@ async fn update_song(
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewSong>>,
 ) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
-    let result = service::upsert_correction(&repo, id, dto.with_author(user))
-        .await?;
+    let result =
+        service::upsert_correction(&repo, id, dto.with_author(user)).await?;
 
     Ok(Data::from(result))
 }

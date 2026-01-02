@@ -1,8 +1,7 @@
 use sea_orm::DbErr;
 
 use crate::features::tag::model::NewTag;
-use crate::infra::database::sea_orm::tag as tag_impls;
-use crate::infra::database::sea_orm::SeaOrmTxRepo;
+use crate::infra::database::sea_orm::{SeaOrmTxRepo, tag as tag_impls};
 
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,

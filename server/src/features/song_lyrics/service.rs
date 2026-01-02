@@ -2,9 +2,7 @@ use entity::enums::CorrectionStatus;
 
 use crate::application::correction::CorrectionSubmissionResult;
 use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
-use crate::features::song_lyrics::error::{
-    CreateError, UpsertCorrectionError,
-};
+use crate::features::song_lyrics::error::{CreateError, UpsertCorrectionError};
 use crate::features::song_lyrics::model::NewSongLyrics;
 use crate::infra;
 use crate::infra::database::sea_orm::SeaOrmRepository;
@@ -20,8 +18,7 @@ pub async fn create(
 
     let tx_repo = repo.begin_tx().await.map_err(infra::Error::from)?;
 
-    let entity_id =
-        super::repo::create(&tx_repo, &correction.data).await?;
+    let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;
 

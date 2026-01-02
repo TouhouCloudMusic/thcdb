@@ -1,6 +1,8 @@
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use entity::{correction as correction_entity, correction_revision};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -12,9 +14,6 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain::correction::CorrectionDiff;
 use crate::features::correction::shared::repo as correction_diff;
 use crate::infra::error::Error;
-
-use entity::{correction as correction_entity, correction_revision};
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
 #[derive(Deserialize, IntoParams)]
 struct CompareCorrectionPath {

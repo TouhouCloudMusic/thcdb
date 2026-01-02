@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
 use axum::extract::{Path, State};
+use entity::enums::CorrectionStatus;
+use entity::{correction as correction_entity, correction_revision, user};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -10,10 +13,6 @@ use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::infra::error::Error;
-
-use entity::enums::CorrectionStatus;
-use entity::{correction as correction_entity, correction_revision, user};
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
 #[derive(Deserialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]
@@ -83,14 +82,18 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 )]
 async fn entity_corrections(
     CurrentUser(_user): CurrentUser,
-    Path(EntityCorrectionsPath { entity_type, id }): Path<EntityCorrectionsPath>,
+    Path(EntityCorrectionsPath { entity_type, id }): Path<
+        EntityCorrectionsPath,
+    >,
     State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Data<Vec<CorrectionHistoryItem>>, Error> {
     let entity_type = entity::enums::EntityType::from(entity_type);
     let corrections = correction_entity::Entity::find()
         .filter(correction_entity::Column::EntityId.eq(id))
         .filter(correction_entity::Column::EntityType.eq(entity_type))
-        .filter(correction_entity::Column::Status.eq(CorrectionStatus::Approved))
+        .filter(
+            correction_entity::Column::Status.eq(CorrectionStatus::Approved),
+        )
         .order_by_desc(correction_entity::Column::HandledAt)
         .order_by_desc(correction_entity::Column::CreatedAt)
         .all(&repo.conn)
@@ -100,10 +103,14 @@ async fn entity_corrections(
         return Ok(Data::from(Vec::new()));
     }
 
-    let correction_ids = corrections.iter().map(|model| model.id).collect::<Vec<_>>();
+    let correction_ids =
+        corrections.iter().map(|model| model.id).collect::<Vec<_>>();
 
     let revisions = correction_revision::Entity::find()
-        .filter(correction_revision::Column::CorrectionId.is_in(correction_ids.clone()))
+        .filter(
+            correction_revision::Column::CorrectionId
+                .is_in(correction_ids.clone()),
+        )
         .order_by_asc(correction_revision::Column::CorrectionId)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .all(&repo.conn)
@@ -111,7 +118,9 @@ async fn entity_corrections(
 
     let mut revision_map = HashMap::new();
     for revision in revisions {
-        revision_map.entry(revision.correction_id).or_insert(revision);
+        revision_map
+            .entry(revision.correction_id)
+            .or_insert(revision);
     }
 
     let author_ids = revision_map

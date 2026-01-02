@@ -7,8 +7,8 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
-use crate::infra::error::Error;
 use crate::features::correction::repo;
+use crate::infra::error::Error;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()

@@ -19,8 +19,7 @@ use super::{CommonFilter, FindManyFilter};
 use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::shared::{LocalizedName, Location};
 use crate::features::artist::model::{Artist, Membership, Tenure};
-use crate::infra::database::sea_orm::utils;
-use crate::infra::database::sea_orm::SeaOrmRepository;
+use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
 
 pub(super) async fn find_one(
     repo: &SeaOrmRepository,

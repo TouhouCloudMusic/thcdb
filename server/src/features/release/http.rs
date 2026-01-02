@@ -65,8 +65,8 @@ async fn update_release(
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewRelease>>,
 ) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
-    let result = service::upsert_correction(&repo, id, dto.with_author(user))
-        .await?;
+    let result =
+        service::upsert_correction(&repo, id, dto.with_author(user)).await?;
 
     Ok(Data::from(result))
 }

@@ -28,9 +28,8 @@ use crate::domain::shared::Language;
 use crate::domain::song::{LocalizedTitle, SongCredit};
 use crate::domain::song_lyrics::SongLyrics;
 use crate::features::song::model::Song;
-use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::database::sea_orm::cache::LANGUAGE_CACHE;
-use crate::infra::database::sea_orm::utils;
+use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
 use crate::shared::http::{CorrectionSortField, SortDirection};
 
 pub(super) async fn find_by_id(

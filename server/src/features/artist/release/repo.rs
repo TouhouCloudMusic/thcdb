@@ -1,10 +1,11 @@
+use crate::domain::Paginated;
 use crate::features::artist::model::{
     Appearance, AppearanceQuery, Credit, CreditQuery, Discography,
     DiscographyQuery,
 };
-use crate::domain::Paginated;
-use crate::infra::database::sea_orm::artist_release as infra;
-use crate::infra::database::sea_orm::SeaOrmRepository;
+use crate::infra::database::sea_orm::{
+    SeaOrmRepository, artist_release as infra,
+};
 
 pub(super) async fn appearance(
     repo: &SeaOrmRepository,

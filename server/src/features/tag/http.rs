@@ -18,7 +18,8 @@ const TAG: &str = "Tag";
 pub fn router() -> OpenApiRouter<ArcAppState> {
     let private = AppRouter::new()
         .with_private(|r| {
-            r.routes(routes!(create_tag)).routes(routes!(upsert_tag_correction))
+            r.routes(routes!(create_tag))
+                .routes(routes!(upsert_tag_correction))
         })
         .finish();
 
@@ -58,7 +59,7 @@ async fn upsert_tag_correction(
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewTag>>,
 ) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
-    let result = service::upsert_correction(&repo, id, dto.with_author(user))
-        .await?;
+    let result =
+        service::upsert_correction(&repo, id, dto.with_author(user)).await?;
     Ok(Data::from(result))
 }

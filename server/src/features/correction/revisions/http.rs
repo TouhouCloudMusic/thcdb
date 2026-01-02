@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use entity::{correction as correction_entity, correction_revision, user};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 use serde::Serialize;
 use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
@@ -12,9 +14,6 @@ use crate::adapter::inbound::rest::api_response::{self, Data};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::infra::error::Error;
-
-use entity::{correction as correction_entity, correction_revision, user};
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
 #[derive(Clone, Serialize, ToSchema)]
 struct CorrectionUserSummary {

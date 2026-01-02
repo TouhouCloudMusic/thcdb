@@ -64,8 +64,7 @@ pub(crate) async fn apply_update(
 ) -> Result<(), DbErr> {
     let revision = entity::correction_revision::Entity::find()
         .filter(
-            entity::correction_revision::Column::CorrectionId
-                .eq(correction.id),
+            entity::correction_revision::Column::CorrectionId.eq(correction.id),
         )
         .order_by_desc(entity::correction_revision::Column::EntityHistoryId)
         .one(tx)
@@ -90,12 +89,10 @@ pub(crate) async fn apply_update(
         release_date_precision: Set(history.release_date_precision),
         recording_date_start: Set(history.recording_date_start),
         recording_date_start_precision: Set(
-            history.recording_date_start_precision,
+            history.recording_date_start_precision
         ),
         recording_date_end: Set(history.recording_date_end),
-        recording_date_end_precision: Set(
-            history.recording_date_end_precision,
-        ),
+        recording_date_end_precision: Set(history.recording_date_end_precision),
     };
     update_model.update(tx).await?;
     tokio::try_join!(

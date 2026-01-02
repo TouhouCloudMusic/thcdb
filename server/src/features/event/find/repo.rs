@@ -7,10 +7,9 @@ use sea_orm::{
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
 
-use crate::features::event::model::{AlternativeName, Event};
 use crate::domain::shared::{DateWithPrecision, Location};
-use crate::infra::database::sea_orm::SeaOrmRepository;
-use crate::infra::database::sea_orm::utils;
+use crate::features::event::model::{AlternativeName, Event};
+use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
 
 pub(super) async fn find_by_id(
     repo: &SeaOrmRepository,

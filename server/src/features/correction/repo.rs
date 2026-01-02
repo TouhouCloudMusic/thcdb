@@ -1,16 +1,15 @@
 use chrono::Utc;
-use entity::correction as correction_entity;
 use entity::enums::{CorrectionStatus, CorrectionUserType, EntityType};
-use entity::correction_user;
+use entity::{correction as correction_entity, correction_user};
 use sea_orm::ActiveValue::Set;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter,
     QueryOrder,
 };
 
+use crate::domain::model::CorrectionApprover;
 use crate::infra;
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
-use crate::domain::model::CorrectionApprover;
 
 pub async fn find_pending_id(
     repo: &SeaOrmRepository,
@@ -38,7 +37,9 @@ pub async fn approve(
         .one(tx_repo.conn())
         .await?
         .ok_or_else(|| {
-            infra::Error::custom(&"Correction not found, but it should not happen")
+            infra::Error::custom(
+                &"Correction not found, but it should not happen",
+            )
         })?;
 
     correction_user::Entity::insert(correction_user::ActiveModel {

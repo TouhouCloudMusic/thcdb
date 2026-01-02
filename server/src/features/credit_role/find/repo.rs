@@ -1,7 +1,5 @@
 use entity::credit_role;
-use sea_orm::{
-    ColumnTrait, DbErr, EntityTrait, QueryFilter, QueryOrder,
-};
+use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter, QueryOrder};
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
 use serde::Deserialize;

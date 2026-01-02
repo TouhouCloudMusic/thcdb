@@ -1,6 +1,8 @@
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use entity::correction as correction_entity;
+use sea_orm::EntityTrait;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -9,9 +11,6 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain::correction::Correction;
 use crate::infra::error::Error;
-
-use entity::correction as correction_entity;
-use sea_orm::EntityTrait;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
