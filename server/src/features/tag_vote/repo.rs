@@ -3,54 +3,45 @@ use sea_query::{Alias, Expr, Order, Query, SimpleExpr};
 
 use super::Error;
 use super::model::{EntityType, Score, TagAggregate, TagAggregateFieldName};
-use crate::domain::Connection;
 use crate::domain::shared::Paginated;
+use crate::infra::database::sea_orm::SeaOrmRepository;
 
-pub async fn entity_exists<R>(
-    repo: &R,
+pub async fn entity_exists(
+    repo: &SeaOrmRepository,
     entity_type: EntityType,
     entity_id: i32,
-) -> Result<bool, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<bool, DbErr> {
     let table_name = entity_type.entity_table_name();
     let sql = format!("SELECT 1 FROM {table_name} WHERE id = $1 LIMIT 1");
     let stmt = sea_orm::Statement::from_sql_and_values(
-        repo.conn().get_database_backend(),
+        repo.conn.get_database_backend(),
         sql,
         [entity_id.into()],
     );
 
-    Ok(repo.conn().query_one(stmt).await?.is_some())
+    Ok(repo.conn.query_one(stmt).await?.is_some())
 }
 
-pub async fn tag_exists<R>(repo: &R, tag_id: i32) -> Result<bool, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+pub async fn tag_exists(
+    repo: &SeaOrmRepository,
+    tag_id: i32,
+) -> Result<bool, DbErr> {
     // TODO: use exist after update to sea orm 2.0
     let exists = entity::tag::Entity::find_by_id(tag_id)
-        .one(repo.conn())
+        .one(&repo.conn)
         .await?
         .is_some();
     Ok(exists)
 }
 
-pub async fn upsert<R>(
-    repo: &R,
+pub async fn upsert(
+    repo: &SeaOrmRepository,
     entity_type: EntityType,
     entity_id: i32,
     tag_id: i32,
     user_id: i32,
     score: Score,
-) -> Result<(), Error>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<(), Error> {
     if !entity_exists(repo, entity_type, entity_id).await? {
         return Err(Error::EntityNotFound(
             entity_type.entity_name(),
@@ -74,7 +65,7 @@ where
     );
 
     let stmt = sea_orm::Statement::from_sql_and_values(
-        repo.conn().get_database_backend(),
+        repo.conn.get_database_backend(),
         sql,
         [
             entity_id.into(),
@@ -84,21 +75,17 @@ where
         ],
     );
 
-    repo.conn().execute(stmt).await?;
+    repo.conn.execute(stmt).await?;
     Ok(())
 }
 
-pub async fn delete<R>(
-    repo: &R,
+pub async fn delete(
+    repo: &SeaOrmRepository,
     entity_type: EntityType,
     entity_id: i32,
     tag_id: i32,
     user_id: i32,
-) -> Result<(), DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<(), DbErr> {
     let table_name = entity_type.vote_table_name();
     let entity_id_col = entity_type.entity_id_column();
 
@@ -110,27 +97,23 @@ where
     );
 
     let stmt = sea_orm::Statement::from_sql_and_values(
-        repo.conn().get_database_backend(),
+        repo.conn.get_database_backend(),
         sql,
         [entity_id.into(), tag_id.into(), user_id.into()],
     );
 
-    repo.conn().execute(stmt).await?;
+    repo.conn.execute(stmt).await?;
     Ok(())
 }
 
-pub async fn get_tags<R>(
-    repo: &R,
+pub async fn get_tags(
+    repo: &SeaOrmRepository,
     entity_type: EntityType,
     entity_id: i32,
     user_id: Option<i32>,
     cursor: Option<i32>,
     limit: u32,
-) -> Result<Paginated<TagAggregate>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Paginated<TagAggregate>, DbErr> {
     // TODO: Remove alias after update sea query to 1.0
     let vote_table = Alias::new(entity_type.vote_table_name());
     let entity_id_col = Alias::new(entity_type.entity_id_column());
@@ -201,11 +184,11 @@ where
             .to_owned();
     }
 
-    let builder = repo.conn().get_database_backend();
+    let builder = repo.conn.get_database_backend();
     let stmt = builder.build(&query);
 
     let mut items = TagAggregate::find_by_statement(stmt)
-        .all(repo.conn())
+        .all(&repo.conn)
         .await?;
 
     let next_cursor = if items.len() > limit as usize {
