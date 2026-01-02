@@ -1,4 +1,5 @@
 pub mod artist;
+pub mod auth;
 pub mod correction;
 pub mod credit_role;
 pub mod enum_table;

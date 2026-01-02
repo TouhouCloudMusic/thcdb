@@ -15,9 +15,7 @@ use crate::adapter::inbound::rest::state::{
     self, ArcAppState, AuthSession,
 };
 use crate::adapter::inbound::rest::CurrentUser;
-use crate::application::auth::{
-    AuthServiceTrait, SessionBackendError, SignInError,
-};
+use crate::features::auth::{SessionBackendError, SignInError};
 use crate::application::user_image::{
     Error as UserImageError, UploadAvatar, UploadProfileBanner,
 };

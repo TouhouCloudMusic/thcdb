@@ -12,7 +12,7 @@ use moka::future::Cache;
 use rapidhash::fast::SeedableState as RapidState;
 
 use crate::adapter::inbound::rest::state;
-use crate::application::auth::{AuthnBackendError, SignInError};
+use crate::features::auth::{AuthnBackendError, SignInError};
 use crate::domain::auth::{AuthCredential, AuthnError};
 use crate::domain::user::User;
 

@@ -28,7 +28,7 @@ impl ArcAppState {
     }
 }
 
-pub(crate) type AuthService = application::auth::AuthService<SeaOrmRepository>;
+pub(crate) type AuthService = crate::features::auth::Service;
 
 pub(crate) type AuthSession = axum_login::AuthSession<AuthService>;
 
