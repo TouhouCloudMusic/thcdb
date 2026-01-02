@@ -20,41 +20,34 @@ use sea_query::{ExprTrait, Func};
 use tokio::try_join;
 
 use super::filter::SongFilter;
-use crate::domain::Connection;
 use crate::domain::artist::SimpleArtist;
 use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::image::Image;
 use crate::domain::release::SimpleRelease;
 use crate::domain::shared::Language;
-use crate::domain::song::{LocalizedTitle, Song, SongCredit};
+use crate::domain::song::{LocalizedTitle, SongCredit};
 use crate::domain::song_lyrics::SongLyrics;
+use crate::features::song::model::Song;
+use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::database::sea_orm::cache::LANGUAGE_CACHE;
 use crate::infra::database::sea_orm::utils;
 use crate::shared::http::{CorrectionSortField, SortDirection};
 
-pub(super) async fn find_by_id<R>(
-    repo: &R,
+pub(super) async fn find_by_id(
+    repo: &SeaOrmRepository,
     id: i32,
-) -> Result<Option<Song>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Option<Song>, DbErr> {
     let select = song::Entity::find().filter(Id.eq(id));
 
-    find_many_impl(select, repo.conn())
+    find_many_impl(select, &repo.conn)
         .await
         .map(|mut songs| songs.pop())
 }
 
-pub(super) async fn find_by_keyword<R>(
-    repo: &R,
+pub(super) async fn find_by_keyword(
+    repo: &SeaOrmRepository,
     keyword: &str,
-) -> Result<Vec<Song>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Vec<Song>, DbErr> {
     let search_term = Func::lower(keyword);
 
     let select = song::Entity::find()
@@ -67,18 +60,14 @@ where
                 .binary(SimilarityDistance, search_term),
         );
 
-    find_many_impl(select, repo.conn()).await
+    find_many_impl(select, &repo.conn).await
 }
 
-pub(super) async fn find_by_filter<R>(
-    repo: &R,
+pub(super) async fn find_by_filter(
+    repo: &SeaOrmRepository,
     filter: SongFilter,
     pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Song>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<crate::domain::shared::Paginated<Song>, DbErr> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -97,7 +86,7 @@ where
         select,
         pagination,
         song::Column::Id,
-        |select| find_many_impl(select, repo.conn()),
+        |select| find_many_impl(select, &repo.conn),
         |song: &Song| song.id,
     )
     .await
@@ -361,22 +350,18 @@ fn build_song_lyrics(
         .collect()
 }
 
-async fn find_sorted_by_correction<R>(
-    repo: &R,
+async fn find_sorted_by_correction(
+    repo: &SeaOrmRepository,
     filter: SongFilter,
     sort_field: CorrectionSortField,
     sort_direction: SortDirection,
     pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Song>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<crate::domain::shared::Paginated<Song>, DbErr> {
     use entity::enums::EntityType;
 
     let entity_ids =
         crate::infra::database::sea_orm::utils::correction_sorted_entity_ids(
-            repo.conn(),
+            &repo.conn,
             EntityType::Song,
             sort_field,
             match sort_direction {
@@ -394,7 +379,7 @@ where
         .into_select()
         .filter(song::Column::Id.is_in(entity_ids.clone()));
 
-    let mut songs = find_many_impl(select, repo.conn()).await?;
+    let mut songs = find_many_impl(select, &repo.conn).await?;
 
     songs = crate::infra::database::sea_orm::utils::sort_by_id_list(
         songs,
