@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use axum::extract::FromRef;
 
-use crate::application::{self, user_profile};
+use crate::application::{self};
 pub(crate) use crate::infra::database::sea_orm::{
     SeaOrmRepository, SeaOrmTxRepo,
 };
@@ -47,7 +47,7 @@ impl FromRef<ArcAppState> for CorrectionService {
 }
 
 pub(crate) type UserImageService = crate::features::user_image::Service;
-pub(crate) type UserProfileService = user_profile::Service<SeaOrmRepository>;
+pub(crate) type UserProfileService = crate::features::user_profile::Service;
 
 impl FromRef<ArcAppState> for SeaOrmRepository {
     fn from_ref(input: &ArcAppState) -> Self {

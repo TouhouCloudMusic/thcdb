@@ -8,4 +8,3 @@ pub mod release;
 pub mod song;
 pub mod song_lyrics;
 pub mod tag;
-pub mod user_profile;

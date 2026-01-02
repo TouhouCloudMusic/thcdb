@@ -6,7 +6,7 @@ use axum_typed_multipart::TypedMultipart;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::profile::{DataUserProfile, load_profile};
+use crate::features::user_profile::{DataUserProfile, load_profile};
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::{
     self, Data, IntoApiResponse, Message,

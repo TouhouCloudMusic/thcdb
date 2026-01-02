@@ -14,6 +14,7 @@ pub mod tag;
 mod tag_vote;
 pub mod user;
 pub mod user_image;
+pub mod user_profile;
 
 use utoipa_axum::router::OpenApiRouter;
 
@@ -33,4 +34,5 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .merge(tag::router())
         .merge(tag_vote::router())
         .merge(user::router())
+        .merge(user_profile::router())
 }

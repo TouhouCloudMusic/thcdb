@@ -1,29 +1,22 @@
-use libfp::BifunctorExt;
-
-use crate::domain::user;
-use crate::domain::user::{User, UserProfile};
+use crate::domain::user::{ProfileRepository, User, UserProfile};
+use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::error::Error;
 
 #[derive(Clone)]
-pub struct Service<R> {
-    repo: R,
+pub struct Service {
+    repo: SeaOrmRepository,
 }
 
-impl<R> Service<R> {
-    pub const fn new(repo: R) -> Self {
+impl Service {
+    pub const fn new(repo: SeaOrmRepository) -> Self {
         Self { repo }
     }
-}
 
-impl<R> Service<R>
-where
-    R: user::ProfileRepository,
-{
     pub async fn find_by_name(
         &self,
         name: &str,
     ) -> Result<Option<UserProfile>, Error> {
-        self.repo.find_by_name(name).await.bimap_into()
+        self.repo.find_by_name(name).await.map_err(Error::from)
     }
 
     pub async fn with_following(
@@ -34,6 +27,6 @@ where
         self.repo
             .with_following(profile, current_user)
             .await
-            .bimap_into()
+            .map_err(Error::from)
     }
 }
