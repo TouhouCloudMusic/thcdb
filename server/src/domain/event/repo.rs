@@ -1,7 +1,6 @@
 use super::model::NewEvent;
-use crate::domain::{Connection, Transaction};
 
-pub trait TxRepo: Connection + Transaction
+pub trait TxRepo
 where
     Self::apply_update(..): Send,
 {

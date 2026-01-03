@@ -1,19 +1,13 @@
 use entity::image_queue as db;
 use libfp::FunctorExt;
 use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::{
-    ActiveModelTrait, ConnectionTrait, EntityTrait, IntoActiveModel,
-};
+use sea_orm::{ActiveModelTrait, EntityTrait, IntoActiveModel};
 use snafu::ResultExt;
 
-use crate::domain::Connection;
 use crate::domain::image_queue::{ImageQueue, NewImageQueue, Repo};
+use crate::infra::database::sea_orm::SeaOrmTxRepo;
 
-impl<T> Repo for T
-where
-    T: Connection,
-    T::Conn: ConnectionTrait,
-{
+impl Repo for SeaOrmTxRepo {
     async fn create(
         &self,
         model: NewImageQueue,

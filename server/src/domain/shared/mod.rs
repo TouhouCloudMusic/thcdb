@@ -1,7 +1,7 @@
 mod model;
-mod repository;
+mod pagination;
 pub use model::*;
-pub use repository::*;
+pub use pagination::*;
 
 pub mod query_kind {
     pub struct Ref;

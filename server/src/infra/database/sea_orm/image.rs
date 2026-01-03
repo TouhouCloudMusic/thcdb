@@ -2,20 +2,41 @@ use entity::image::Model;
 use libfp::FunctorExt;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, EntityTrait, IntoActiveModel,
-    IntoActiveValue, QueryFilter,
+    ColumnTrait, EntityTrait, IntoActiveModel, IntoActiveValue, QueryFilter,
 };
 use snafu::ResultExt;
 
+use crate::domain::image;
 use crate::domain::image::{Image, NewImage};
-use crate::domain::{Connection, image};
-use crate::infra::database::sea_orm::SeaOrmTxRepo;
+use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
 
-impl<T> image::Repo for T
-where
-    T: Connection,
-    T::Conn: ConnectionTrait,
-{
+impl image::Repo for SeaOrmRepository {
+    async fn find_by_id(
+        &self,
+        id: i32,
+    ) -> Result<Option<Image>, Box<dyn std::error::Error + Send + Sync>> {
+        entity::image::Entity::find()
+            .filter(entity::image::Column::Id.eq(id))
+            .one(&self.conn)
+            .await
+            .map(FunctorExt::fmap_into)
+            .boxed()
+    }
+
+    async fn find_by_filename(
+        &self,
+        filename: &str,
+    ) -> Result<Option<Image>, Box<dyn std::error::Error + Send + Sync>> {
+        entity::image::Entity::find()
+            .filter(entity::image::Column::Filename.eq(filename))
+            .one(&self.conn)
+            .await
+            .map(FunctorExt::fmap_into)
+            .boxed()
+    }
+}
+
+impl image::Repo for SeaOrmTxRepo {
     async fn find_by_id(
         &self,
         id: i32,

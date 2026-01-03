@@ -2,6 +2,7 @@ use entity::enums::CorrectionStatus;
 
 use crate::application::correction::CorrectionSubmissionResult;
 use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
+use crate::features::correction::service as correction_service;
 use crate::features::label::error::{CreateError, UpsertCorrectionError};
 use crate::features::label::model::NewLabel;
 use crate::infra;
@@ -17,11 +18,9 @@ pub async fn create(
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;
 
-    let correction_service =
-        crate::application::correction::Service::new(tx_repo);
-
-    let correction_id = correction_service
-        .create2(NewCorrectionMeta::<NewLabel> {
+    let correction_id = correction_service::create2(
+        &tx_repo,
+        NewCorrectionMeta::<NewLabel> {
             author: correction.author,
             r#type: correction.r#type,
             entity_id,
@@ -29,15 +28,12 @@ pub async fn create(
             history_id,
             description: correction.description,
             phantom: std::marker::PhantomData,
-        })
-        .await
-        .map_err(|source| CreateError::Infra { source })?;
+        },
+    )
+    .await
+    .map_err(|source| CreateError::Infra { source })?;
 
-    correction_service
-        .repo
-        .commit()
-        .await
-        .map_err(infra::Error::from)?;
+    tx_repo.commit().await.map_err(infra::Error::from)?;
 
     Ok(CorrectionSubmissionResult {
         correction_id,
@@ -55,11 +51,9 @@ pub async fn upsert_correction(
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;
 
-    let correction_service =
-        crate::application::correction::Service::new(tx_repo);
-
-    correction_service
-        .upsert(NewCorrectionMeta::<NewLabel> {
+    correction_service::upsert(
+        &tx_repo,
+        NewCorrectionMeta::<NewLabel> {
             author: correction.author,
             r#type: correction.r#type,
             entity_id: id,
@@ -67,12 +61,13 @@ pub async fn upsert_correction(
             history_id,
             description: correction.description,
             phantom: std::marker::PhantomData,
-        })
-        .await
-        .map_err(|source| UpsertCorrectionError::Correction { source })?;
+        },
+    )
+    .await
+    .map_err(|source| UpsertCorrectionError::Correction { source })?;
 
     let correction_id = correction::Repo::find_one(
-        &correction_service.repo,
+        &tx_repo,
         correction::CorrectionFilter::latest(
             id,
             entity::enums::EntityType::Label,
@@ -84,11 +79,7 @@ pub async fn upsert_correction(
     .ok_or_else(|| infra::Error::custom(&"Correction not found"))?
     .id;
 
-    correction_service
-        .repo
-        .commit()
-        .await
-        .map_err(infra::Error::from)?;
+    tx_repo.commit().await.map_err(infra::Error::from)?;
 
     Ok(CorrectionSubmissionResult {
         correction_id,

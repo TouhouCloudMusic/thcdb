@@ -8,7 +8,7 @@ mod model;
 mod pending;
 mod repo;
 mod revisions;
-mod service;
+pub mod service;
 mod shared;
 
 pub use http::router;

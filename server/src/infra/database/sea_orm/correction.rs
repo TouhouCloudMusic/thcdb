@@ -8,8 +8,7 @@ use sea_orm::{
     PaginatorTrait, QueryFilter, QueryOrder, QueryTrait,
 };
 
-use super::SeaOrmTxRepo;
-use crate::domain::Connection;
+use super::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::domain::artist::TxRepo as _;
 use crate::domain::correction::{
     ApproveCorrectionContext, Correction, CorrectionEntity, CorrectionFilter,
@@ -25,11 +24,58 @@ use crate::domain::song_lyrics::TxRepo as _;
 use crate::domain::tag::TxRepo as _;
 use crate::infra;
 
-impl<T> Repo for T
-where
-    T: Connection,
-    T::Conn: sea_orm::ConnectionTrait,
-{
+impl Repo for SeaOrmRepository {
+    async fn find_one(
+        &self,
+        filter: CorrectionFilter,
+    ) -> Result<Option<Correction>, Box<dyn std::error::Error + Send + Sync>>
+    {
+        let ret = Entity::find()
+            .filter(Column::EntityId.eq(filter.entity_id))
+            .filter(Column::EntityType.eq(filter.entity_type))
+            .apply_if(filter.status, |query, status| match status {
+                CorrectionFilterStatus::Many(many) => {
+                    query.filter(Column::Status.is_in(many))
+                }
+                CorrectionFilterStatus::One(one) => {
+                    query.filter(Column::Status.eq(one))
+                }
+            })
+            .order_by_desc(Column::CreatedAt)
+            .one(&self.conn)
+            .await?
+            .map(|model| Correction {
+                id: model.id,
+                status: model.status,
+                r#type: model.r#type,
+                entity_id: model.entity_id,
+                entity_type: model.entity_type,
+                created_at: model.created_at,
+                handled_at: model.handled_at,
+            });
+        Ok(ret)
+    }
+
+    async fn is_author(
+        &self,
+        user: &crate::domain::user::User,
+        correction: &Correction,
+    ) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
+        let correction_id = correction.id;
+        let count = correction_user::Entity::find()
+            .filter(correction_user::Column::CorrectionId.eq(correction_id))
+            .filter(correction_user::Column::UserId.eq(user.id))
+            .filter(
+                correction_user::Column::UserType
+                    .eq(CorrectionUserType::Author),
+            )
+            .count(&self.conn)
+            .await?;
+        Ok(count != 0)
+    }
+}
+
+impl Repo for SeaOrmTxRepo {
     async fn find_one(
         &self,
         filter: CorrectionFilter,

@@ -104,7 +104,7 @@ mod test {
     use tracing_test::traced_test;
 
     use super::*;
-    use crate::adapter::inbound::rest::ApiError;
+    use crate::adapter::inbound::rest::error::ApiError;
 
     // https://github.com/dbrgn/tracing-test/issues/48
     // This bug causes errors with line breaks cannot be captured

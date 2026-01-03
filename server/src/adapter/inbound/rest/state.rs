@@ -3,7 +3,6 @@ use std::sync::Arc;
 
 use axum::extract::FromRef;
 
-use crate::application::{self};
 pub(crate) use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::singleton::FS_IMAGE_BASE_PATH;
 use crate::infra::state::AppState;
@@ -32,17 +31,6 @@ pub(crate) type AuthSession = axum_login::AuthSession<AuthService>;
 
 pub(crate) type ArtistImageService = crate::features::artist_image::Service;
 pub(crate) type ReleaseImageService = crate::features::release_image::Service;
-
-pub(crate) type CorrectionService =
-    application::correction::Service<SeaOrmRepository>;
-
-impl FromRef<ArcAppState> for CorrectionService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        Self {
-            repo: input.sea_orm_repo.clone(),
-        }
-    }
-}
 
 pub(crate) type UserImageService = crate::features::user_image::Service;
 pub(crate) type UserProfileService = crate::features::user_profile::Service;

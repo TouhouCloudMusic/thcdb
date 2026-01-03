@@ -1,7 +1,5 @@
 use super::model::NewArtist;
-use crate::domain::Transaction;
-
-pub trait TxRepo: Transaction
+pub trait TxRepo
 where
     Self::apply_update(..): Send,
 {

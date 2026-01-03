@@ -29,14 +29,11 @@ use crate::shared::http::{CorrectionSortField, SortDirection};
 use crate::utils::openapi::ContentType;
 
 pub mod api_response;
-mod error;
+pub(crate) mod error;
 mod extract;
 mod middleware;
 pub mod state;
 pub use extract::CurrentUser;
-
-#[expect(unused_imports, reason = "re-exported for macro use")]
-pub use self::error::ApiError;
 
 struct DefaultErrorResponseModifier;
 
