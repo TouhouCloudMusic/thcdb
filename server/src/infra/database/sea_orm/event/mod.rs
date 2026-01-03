@@ -10,7 +10,6 @@ use sea_orm::{
 };
 use snafu::ResultExt;
 
-use crate::domain::Connection;
 use crate::domain::event::{NewEvent, TxRepo};
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
@@ -42,7 +41,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     }
 }
 
-async fn create_event_and_relations(
+pub(crate) async fn create_event_and_relations(
     data: &NewEvent,
     tx: &DatabaseTransaction,
 ) -> Result<event::Model, DbErr> {
@@ -95,7 +94,7 @@ async fn create_event_and_relations(
     Ok(event)
 }
 
-async fn create_event_history_and_relations(
+pub(crate) async fn create_event_history_and_relations(
     data: &NewEvent,
     tx: &DatabaseTransaction,
 ) -> Result<event_history::Model, DbErr> {
@@ -201,7 +200,7 @@ async fn create_alt_names_history(
     Ok(())
 }
 
-async fn apply_correction(
+pub(crate) async fn apply_correction(
     correction: entity::correction::Model,
     tx: &DatabaseTransaction,
 ) -> Result<(), DbErr> {

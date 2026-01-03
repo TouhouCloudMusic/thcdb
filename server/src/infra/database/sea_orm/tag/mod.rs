@@ -8,10 +8,9 @@ use sea_orm::{
 };
 use snafu::ResultExt;
 
-use crate::domain::Connection;
 use crate::domain::tag::{NewTag, NewTagRelation, TxRepo};
 
-mod impls;
+pub(crate) mod impls;
 use impls::*;
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
@@ -42,7 +41,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     }
 }
 
-async fn create_tag_impl(
+pub(crate) async fn create_tag_impl(
     data: &NewTag,
     tx: &DatabaseTransaction,
 ) -> Result<tag::Model, DbErr> {
@@ -75,7 +74,7 @@ async fn create_tag_impl(
     Ok(tag)
 }
 
-async fn create_history_impl(
+pub(crate) async fn create_history_impl(
     data: &NewTag,
     tx: &DatabaseTransaction,
 ) -> Result<tag_history::Model, DbErr> {

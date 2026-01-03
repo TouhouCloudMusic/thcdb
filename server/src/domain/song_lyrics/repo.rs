@@ -1,8 +1,6 @@
 use super::model::NewSongLyrics;
-use crate::domain::Transaction;
-
 /// Transaction repository trait for song lyrics operations
-pub trait TxRepo: Transaction
+pub trait TxRepo
 where
     Self::apply_update(..): Send,
 {

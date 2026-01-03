@@ -1,7 +1,6 @@
 use super::{Image, NewImage};
-use crate::domain::{Connection, Transaction};
 
-pub trait Repo: Connection {
+pub trait Repo {
     async fn find_by_id(
         &self,
         id: i32,
@@ -13,7 +12,7 @@ pub trait Repo: Connection {
     ) -> Result<Option<Image>, Box<dyn std::error::Error + Send + Sync>>;
 }
 
-pub trait TxRepo: Transaction + Repo {
+pub trait TxRepo: Repo {
     async fn create(
         &self,
         new_image: &NewImage,

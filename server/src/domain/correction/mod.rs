@@ -7,7 +7,6 @@ pub use diff::*;
 pub use entity::enums::CorrectionStatus;
 pub use model::*;
 
-use super::Transaction;
 use super::model::CorrectionApprover;
 use super::user::User;
 use crate::infra;
@@ -47,7 +46,7 @@ impl CorrectionFilter {
     }
 }
 
-pub trait Repo: super::Connection {
+pub trait Repo {
     async fn find_one(
         &self,
         filter: CorrectionFilter,
@@ -102,7 +101,7 @@ pub trait TxRepo: Repo {
         Ctx: ApproveCorrectionContext;
 }
 
-pub trait CorrectionEntityRepo<T>: Transaction
+pub trait CorrectionEntityRepo<T>
 where
     T: CorrectionEntity,
 {

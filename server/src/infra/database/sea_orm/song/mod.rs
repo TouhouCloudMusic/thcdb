@@ -10,11 +10,10 @@ use sea_orm::{
 };
 use snafu::ResultExt;
 
-use crate::domain::Connection;
 use crate::domain::shared::NewLocalizedName;
 use crate::domain::song::{NewSong, NewSongCredit, TxRepo};
 
-mod impls;
+pub(crate) mod impls;
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(
@@ -44,7 +43,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     }
 }
 
-async fn create_song_and_relations(
+pub(crate) async fn create_song_and_relations(
     data: &NewSong,
     tx: &DatabaseTransaction,
 ) -> Result<song::Model, DbErr> {
@@ -75,7 +74,7 @@ async fn create_song_and_relations(
     Ok(song)
 }
 
-async fn create_song_history_and_relations(
+pub(crate) async fn create_song_history_and_relations(
     data: &NewSong,
     tx: &DatabaseTransaction,
 ) -> Result<song_history::Model, DbErr> {

@@ -3,7 +3,6 @@ use utoipa::ToSchema;
 
 use super::auth::AuthCredential;
 use super::model::{UserRole, UserRoleEnum};
-use super::{Connection, Transaction};
 use crate::infra::error::Error;
 
 #[serde_with::apply(
@@ -67,7 +66,7 @@ impl TryFrom<AuthCredential> for NewUser {
 }
 
 #[trait_variant::make(Send)]
-pub trait Repository: Connection {
+pub trait Repository {
     async fn find_by_id(
         &self,
         id: i32,
@@ -80,7 +79,7 @@ pub trait Repository: Connection {
 }
 
 #[trait_variant::make(Send)]
-pub trait TxRepo: Transaction {
+pub trait TxRepo {
     async fn create(
         &self,
         user: NewUser,
@@ -91,7 +90,7 @@ pub trait TxRepo: Transaction {
     ) -> Result<User, Box<dyn std::error::Error + Send + Sync>>;
 }
 
-pub trait ProfileRepository: Connection {
+pub trait ProfileRepository {
     async fn find_by_name(
         &self,
         name: &str,

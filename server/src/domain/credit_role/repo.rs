@@ -1,7 +1,7 @@
 use entity::credit_role::Model as DbCreditRole;
 
 use super::model::*;
-use crate::domain::{Transaction, *};
+use crate::domain::*;
 
 pub trait QueryKind {
     type Output: From<DbCreditRole>;
@@ -17,7 +17,7 @@ impl QueryKind for query_kind::Full {
     type Output = CreditRole;
 }
 
-pub trait TxRepo: Transaction
+pub trait TxRepo
 where
     Self::apply_update(..): Send,
 {

@@ -1,33 +1,30 @@
 use std::sync::Arc;
 
 use entity::user_role;
-use sea_orm::{
-    DatabaseConnection, DatabaseTransaction, DbErr, TransactionTrait,
-};
+use sea_orm::{DatabaseTransaction, DbErr, TransactionTrait};
 use snafu::ResultExt;
 
 use crate::domain::error::InfraWhatever;
 use crate::domain::model::UserRoleEnum;
-use crate::domain::{Connection, Transaction, TransactionManager};
 
-mod artist;
+pub(crate) mod artist;
 mod artist_image_queue;
 pub(crate) mod artist_release;
 pub(crate) mod cache;
 mod correction;
-mod credit_role;
+pub(crate) mod credit_role;
 pub mod enum_table;
-mod event;
+pub(crate) mod event;
 pub mod ext;
 mod image;
 mod image_queue;
-mod label;
+pub(crate) mod label;
 pub(crate) mod release;
 mod release_image;
 mod release_image_queue;
-mod song;
-mod song_lyrics;
-mod tag;
+pub(crate) mod song;
+pub(crate) mod song_lyrics;
+pub(crate) mod tag;
 mod user;
 pub mod utils;
 
@@ -42,43 +39,10 @@ impl SeaOrmRepository {
     pub const fn new(conn: sea_orm::DatabaseConnection) -> Self {
         Self { conn }
     }
-}
 
-impl Connection for SeaOrmRepository {
-    type Conn = DatabaseConnection;
-
-    fn conn(&self) -> &Self::Conn {
-        &self.conn
-    }
-}
-
-impl TransactionManager for SeaOrmRepository {
-    type TransactionRepository = SeaOrmTxRepo;
-
-    async fn begin(
-        &self,
-    ) -> Result<
-        Self::TransactionRepository,
-        Box<dyn std::error::Error + Send + Sync>,
-    > {
+    pub async fn begin_tx(&self) -> Result<SeaOrmTxRepo, DbErr> {
         let tx = self.conn.begin().await?;
-        let tx = Arc::new(tx);
-        Ok(Self::TransactionRepository { tx })
-    }
-
-    async fn run<F, T>(
-        &self,
-        f: F,
-    ) -> Result<T, Box<dyn std::error::Error + Send + Sync>>
-    where
-        F: AsyncFnOnce(
-                &Self::TransactionRepository,
-            )
-                -> Result<T, Box<dyn std::error::Error + Send + Sync>>
-            + Send,
-        T: Send,
-    {
-        run_transaction_impl(self, f).await
+        Ok(SeaOrmTxRepo::new(tx))
     }
 }
 
@@ -88,47 +52,16 @@ pub struct SeaOrmTxRepo {
     tx: Arc<sea_orm::DatabaseTransaction>,
 }
 
-impl Connection for SeaOrmTxRepo {
-    type Conn = DatabaseTransaction;
+impl SeaOrmTxRepo {
+    pub(crate) fn new(tx: sea_orm::DatabaseTransaction) -> Self {
+        Self { tx: Arc::new(tx) }
+    }
 
-    fn conn(&self) -> &Self::Conn {
+    pub(crate) fn conn(&self) -> &DatabaseTransaction {
         &self.tx
     }
-}
 
-impl TransactionManager for SeaOrmTxRepo {
-    type TransactionRepository = Self;
-
-    async fn begin(
-        &self,
-    ) -> Result<
-        Self::TransactionRepository,
-        Box<dyn std::error::Error + Send + Sync>,
-    > {
-        let save_point = self.tx.begin().await.boxed()?;
-        Ok(Self {
-            tx: Arc::new(save_point),
-        })
-    }
-
-    async fn run<F, T>(
-        &self,
-        f: F,
-    ) -> Result<T, Box<dyn std::error::Error + Send + Sync>>
-    where
-        F: AsyncFnOnce(
-                &Self::TransactionRepository,
-            )
-                -> Result<T, Box<dyn std::error::Error + Send + Sync>>
-            + Send,
-        T: Send,
-    {
-        run_transaction_impl(self, f).await
-    }
-}
-
-impl Transaction for SeaOrmTxRepo {
-    async fn commit(
+    pub(crate) async fn commit(
         self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         Arc::try_unwrap(self.tx)
@@ -160,20 +93,4 @@ impl TryFrom<user_role::Model> for UserRoleEnum {
             .map_err(String::from)
             .map_err(DbErr::Custom)
     }
-}
-
-async fn run_transaction_impl<C, F, T, E>(tx: &C, f: F) -> Result<T, E>
-where
-    C: TransactionManager,
-    F: AsyncFnOnce(&C::TransactionRepository) -> Result<T, E> + Send,
-    T: Send,
-    E: Send + From<Box<dyn std::error::Error + Send + Sync>>,
-{
-    let repo = tx.begin().await?;
-
-    let ret = f(&repo).await;
-
-    repo.commit().await?;
-
-    ret
 }
