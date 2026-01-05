@@ -8,7 +8,8 @@ use sea_orm::{
     IntoActiveValue, QueryFilter, QueryOrder, Set,
 };
 
-use crate::domain::credit_role::{NewCreditRole, TxRepo};
+use crate::domain::credit_role::NewCreditRole;
+use crate::features::credit_role::TxRepo;
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
 
 pub(crate) async fn create_credit_role(

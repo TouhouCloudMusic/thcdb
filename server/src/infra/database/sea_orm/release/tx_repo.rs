@@ -6,7 +6,8 @@ use sea_orm::{
 };
 
 use super::impls::*;
-use crate::domain::release::{NewRelease, TxRepo};
+use crate::domain::release::NewRelease;
+use crate::features::release::TxRepo;
 
 pub(crate) async fn create_release_with_relations(
     data: &NewRelease,

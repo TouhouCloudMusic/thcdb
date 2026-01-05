@@ -7,9 +7,7 @@ pub use diff::*;
 pub use entity::enums::CorrectionStatus;
 pub use model::*;
 
-use super::model::CorrectionApprover;
 use super::user::User;
-use crate::infra;
 use crate::infra::error::Error;
 
 pub trait CorrectionEntity {
@@ -59,26 +57,6 @@ pub trait Repo {
     ) -> Result<bool, Box<dyn std::error::Error + Send + Sync>>;
 }
 
-pub trait ApproveCorrectionContext: Send + Sync {
-    type ArtistRepo: super::artist::TxRepo;
-    type ReleaseRepo: super::release::TxRepo;
-    type SongRepo: super::song::TxRepo;
-    type LabelRepo: super::label::TxRepo;
-    type EventRepo: super::event::TxRepo;
-    type TagRepo: super::tag::TxRepo;
-    type SongLyricsRepo: super::song_lyrics::TxRepo;
-    type CreditRoleRepo: super::credit_role::TxRepo;
-
-    fn artist_repo(self) -> Self::ArtistRepo;
-    fn release_repo(self) -> Self::ReleaseRepo;
-    fn song_repo(self) -> Self::SongRepo;
-    fn label_repo(self) -> Self::LabelRepo;
-    fn event_repo(self) -> Self::EventRepo;
-    fn tag_repo(self) -> Self::TagRepo;
-    fn song_lyrics_repo(self) -> Self::SongLyricsRepo;
-    fn credit_role_repo(self) -> Self::CreditRoleRepo;
-}
-
 pub trait TxRepo: Repo {
     async fn create(
         &self,
@@ -91,14 +69,6 @@ pub trait TxRepo: Repo {
         meta: NewCorrectionMeta<impl CorrectionEntity>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
 
-    async fn approve<Ctx>(
-        &self,
-        correction_id: i32,
-        approver: CorrectionApprover,
-        context: Ctx,
-    ) -> Result<(), infra::Error>
-    where
-        Ctx: ApproveCorrectionContext;
 }
 
 pub trait CorrectionEntityRepo<T>

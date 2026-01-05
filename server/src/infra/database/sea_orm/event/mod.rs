@@ -10,7 +10,8 @@ use sea_orm::{
 };
 use snafu::ResultExt;
 
-use crate::domain::event::{NewEvent, TxRepo};
+use crate::domain::event::NewEvent;
+use crate::features::event::TxRepo;
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(

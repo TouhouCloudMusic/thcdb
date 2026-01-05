@@ -8,7 +8,8 @@ use sea_orm::{
 };
 use snafu::ResultExt;
 
-use crate::domain::tag::{NewTag, NewTagRelation, TxRepo};
+use crate::domain::tag::{NewTag, NewTagRelation};
+use crate::features::tag::TxRepo;
 
 pub(crate) mod impls;
 use impls::*;

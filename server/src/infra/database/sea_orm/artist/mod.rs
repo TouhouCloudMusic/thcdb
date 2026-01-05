@@ -1,7 +1,8 @@
 use snafu::ResultExt;
 
 use super::SeaOrmTxRepo;
-use crate::domain::artist::{NewArtist, TxRepo};
+use crate::domain::artist::NewArtist;
+use crate::features::artist::TxRepo;
 
 pub(crate) mod impls;
 

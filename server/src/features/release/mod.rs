@@ -1,9 +1,10 @@
 mod error;
 mod http;
 mod model;
-mod repo;
+pub(crate) mod repo;
 mod service;
 
 pub mod find;
 
 pub use http::router;
+pub(crate) use repo::TxRepo;

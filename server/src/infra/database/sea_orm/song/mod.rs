@@ -11,7 +11,8 @@ use sea_orm::{
 use snafu::ResultExt;
 
 use crate::domain::shared::NewLocalizedName;
-use crate::domain::song::{NewSong, NewSongCredit, TxRepo};
+use crate::domain::song::{NewSong, NewSongCredit};
+use crate::features::song::TxRepo;
 
 pub(crate) mod impls;
 

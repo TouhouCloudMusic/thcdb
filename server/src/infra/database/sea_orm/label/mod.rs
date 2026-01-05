@@ -8,7 +8,8 @@ use sea_orm::{
 };
 use snafu::ResultExt;
 
-use crate::domain::label::{NewLabel, TxRepo};
+use crate::domain::label::NewLabel;
+use crate::features::label::TxRepo;
 use crate::domain::shared::NewLocalizedName;
 
 pub(crate) mod impls;
