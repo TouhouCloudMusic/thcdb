@@ -31,10 +31,3 @@ impl ReleaseImageQueue {
         }
     }
 }
-
-pub trait Repo {
-    async fn create(
-        &self,
-        queue_entry: ReleaseImageQueue,
-    ) -> Result<ReleaseImageQueue, Box<dyn std::error::Error + Send + Sync>>;
-}

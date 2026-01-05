@@ -19,10 +19,3 @@ impl ArtistImageQueue {
         }
     }
 }
-
-pub trait Repository {
-    async fn create(
-        &self,
-        queue: ArtistImageQueue,
-    ) -> Result<ArtistImageQueue, Box<dyn std::error::Error + Send + Sync>>;
-}

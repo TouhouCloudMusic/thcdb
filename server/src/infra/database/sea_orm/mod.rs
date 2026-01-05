@@ -4,7 +4,7 @@ use entity::user_role;
 use sea_orm::{DatabaseTransaction, DbErr, TransactionTrait};
 use snafu::ResultExt;
 
-use crate::domain::error::InfraWhatever;
+use crate::infra::whatever::InfraWhatever;
 use crate::domain::model::UserRoleEnum;
 
 pub(crate) mod artist;
@@ -20,7 +20,6 @@ mod image;
 mod image_queue;
 pub(crate) mod label;
 pub(crate) mod release;
-mod release_image;
 mod release_image_queue;
 pub(crate) mod song;
 pub(crate) mod song_lyrics;

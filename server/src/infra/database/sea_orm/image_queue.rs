@@ -4,7 +4,8 @@ use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{ActiveModelTrait, EntityTrait, IntoActiveModel};
 use snafu::ResultExt;
 
-use crate::domain::image_queue::{ImageQueue, NewImageQueue, Repo};
+use crate::domain::image_queue::{ImageQueue, NewImageQueue};
+use crate::features::image_queue::Repo;
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
 
 impl Repo for SeaOrmTxRepo {

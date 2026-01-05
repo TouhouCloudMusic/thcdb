@@ -2,10 +2,11 @@ use entity::artist_image_queue as db;
 use sea_orm::{EntityTrait, IntoActiveModel};
 use snafu::ResultExt;
 
-use crate::domain::artist_image_queue::{ArtistImageQueue, Repository};
+use crate::domain::artist_image_queue::ArtistImageQueue;
+use crate::features::artist_image_queue::Repo;
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
 
-impl Repository for SeaOrmTxRepo {
+impl Repo for SeaOrmTxRepo {
     async fn create(
         &self,
         queue: ArtistImageQueue,

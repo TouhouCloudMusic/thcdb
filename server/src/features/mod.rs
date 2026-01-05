@@ -1,13 +1,16 @@
 pub mod artist;
 pub mod artist_image;
+pub(crate) mod artist_image_queue;
 pub mod auth;
 pub mod correction;
 pub mod credit_role;
 pub mod enum_table;
 pub mod event;
+pub(crate) mod image_queue;
 pub mod label;
 pub mod release;
 pub mod release_image;
+pub(crate) mod release_image_queue;
 pub mod song;
 pub mod song_lyrics;
 pub mod tag;

@@ -10,11 +10,12 @@ use crate::constant::{
     ARTIST_PROFILE_IMAGE_MAX_WIDTH, ARTIST_PROFILE_IMAGE_MIN_HEIGHT,
     ARTIST_PROFILE_IMAGE_MIN_RATIO, ARTIST_PROFILE_IMAGE_MIN_WIDTH,
 };
-use crate::domain::artist_image_queue::{
-    ArtistImageQueue, {self},
-};
+use crate::domain::artist_image_queue::ArtistImageQueue;
+use crate::domain::image;
 use crate::domain::image::{CreateImageMeta, ParseOption, Parser};
-use crate::domain::{image, image_queue};
+use crate::domain::image_queue::NewImageQueue;
+use crate::features::artist_image_queue::Repo as ArtistImageQueueRepo;
+use crate::features::image_queue::Repo as ImageQueueRepo;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::storage::GenericFileStorage;
 
@@ -70,16 +71,14 @@ impl Service {
             )
             .await?;
 
-        let new_image_queue = image_queue::NewImageQueue::new(&user, &image);
+        let new_image_queue = NewImageQueue::new(&user, &image);
 
-        let image_queue =
-            image_queue::Repo::create(&tx_repo, new_image_queue).await?;
+        let image_queue = ImageQueueRepo::create(&tx_repo, new_image_queue).await?;
 
         let artist_image_queue =
             ArtistImageQueue::profile(artist_id, image_queue.id);
 
-        artist_image_queue::Repository::create(&tx_repo, artist_image_queue)
-            .await?;
+        ArtistImageQueueRepo::create(&tx_repo, artist_image_queue).await?;
 
         drop(image_service);
 

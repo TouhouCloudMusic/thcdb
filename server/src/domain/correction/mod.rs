@@ -8,7 +8,6 @@ pub use entity::enums::CorrectionStatus;
 pub use model::*;
 
 use super::user::User;
-use crate::infra::error::Error;
 
 pub trait CorrectionEntity {
     fn entity_type() -> EntityType;
@@ -69,13 +68,4 @@ pub trait TxRepo: Repo {
         meta: NewCorrectionMeta<impl CorrectionEntity>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
 
-}
-
-pub trait CorrectionEntityRepo<T>
-where
-    T: CorrectionEntity,
-{
-    async fn create(&self, data: &T) -> Result<i32, Error>;
-
-    async fn create_history(&self, data: &T) -> Result<i32, Error>;
 }
