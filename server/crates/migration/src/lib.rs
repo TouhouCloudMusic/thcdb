@@ -45,6 +45,7 @@ migrations![
     m20250928_235900_add_event_location,
     m20251001_090000_fix_event_validate_date,
     m20251202_000000_create_tag_vote,
+    m20260106_000000_fix_pg_trgm_lower_indexes,
 ];
 
 macro_rules! migration {
