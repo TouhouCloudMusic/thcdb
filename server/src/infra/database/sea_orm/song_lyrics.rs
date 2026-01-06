@@ -7,8 +7,8 @@ use sea_orm::{
 use snafu::ResultExt;
 
 use super::SeaOrmTxRepo;
-use crate::domain::Connection;
-use crate::domain::song_lyrics::{NewSongLyrics, TxRepo};
+use crate::domain::song_lyrics::NewSongLyrics;
+use crate::features::song_lyrics::TxRepo;
 
 impl TxRepo for SeaOrmTxRepo {
     async fn create(
@@ -51,7 +51,7 @@ async fn unset_song_main_lyrics(
 }
 
 /// Create new song lyrics record
-async fn create_lyrics_impl(
+pub(crate) async fn create_lyrics_impl(
     lyrics: &NewSongLyrics,
     conn: &impl ConnectionTrait,
 ) -> Result<i32, DbErr> {
@@ -73,7 +73,7 @@ async fn create_lyrics_impl(
 }
 
 /// Create history record for song lyrics
-async fn create_history_impl(
+pub(crate) async fn create_history_impl(
     lyrics: &NewSongLyrics,
     conn: &impl ConnectionTrait,
 ) -> Result<i32, DbErr> {
@@ -90,7 +90,7 @@ async fn create_history_impl(
 }
 
 /// Apply correction update to song lyrics
-async fn apply_update_impl(
+pub(crate) async fn apply_update_impl(
     correction: entity::correction::Model,
     conn: &impl ConnectionTrait,
 ) -> Result<(), DbErr> {

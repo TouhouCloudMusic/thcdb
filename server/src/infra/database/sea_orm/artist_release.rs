@@ -15,7 +15,8 @@ use crate::domain::artist_release::*;
 use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::image::Image;
 use crate::domain::shared::DateWithPrecision;
-use crate::domain::{Connection, Cursor, Paginated};
+use crate::domain::{Cursor, Paginated};
+use crate::infra::database::sea_orm::SeaOrmRepository;
 
 struct ArtistReleaseIR {
     release: release::Model,
@@ -30,35 +31,27 @@ struct CreditIR {
     release_credits: Vec<release_credit::Model>,
 }
 
-pub(crate) async fn appearance<R>(
-    repo: &R,
+pub(crate) async fn appearance(
+    repo: &SeaOrmRepository,
     query: AppearanceQuery,
-) -> Result<Paginated<Appearance>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Paginated<Appearance>, DbErr> {
     find_artist_releases(
         appearance_select(query.artist_id),
         query.pagination,
-        repo.conn(),
+        &repo.conn,
     )
     .await
     .map(|x| x.map_items(Into::into))
 }
 
-pub(crate) async fn credit<R>(
-    repo: &R,
+pub(crate) async fn credit(
+    repo: &SeaOrmRepository,
     query: CreditQuery,
-) -> Result<Paginated<Credit>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Paginated<Credit>, DbErr> {
     let releases_and_artists = find_artist_releases(
         credit_select(query.artist_id),
         query.pagination,
-        repo.conn(),
+        &repo.conn,
     )
     .await?;
 
@@ -79,7 +72,7 @@ where
         .load_many(
             release_credit::Entity::find()
                 .filter(release_credit::Column::ArtistId.eq(query.artist_id)),
-            repo.conn(),
+            &repo.conn,
         )
         .await?;
 
@@ -91,7 +84,7 @@ where
 
     let credit_roles = credit_role::Entity::find()
         .filter(credit_role::Column::Id.is_in(role_ids))
-        .all(repo.conn())
+        .all(&repo.conn)
         .await?;
 
     let credit_irs = izip!(releases, artists, cover_urls, release_credits)
@@ -108,20 +101,16 @@ where
     Ok(Paginated { items, next_cursor })
 }
 
-pub(crate) async fn discography<R>(
-    repo: &R,
+pub(crate) async fn discography(
+    repo: &SeaOrmRepository,
     query: DiscographyQuery,
-) -> Result<Paginated<Discography>, DbErr>
-where
-    R: Connection,
-    R::Conn: ConnectionTrait,
-{
+) -> Result<Paginated<Discography>, DbErr> {
     let select = release::Entity::find()
         .filter(release::Column::ReleaseType.eq(query.release_type))
         .filter(release_artist::Column::ArtistId.eq(query.artist_id))
         .left_join(release_artist::Entity);
 
-    find_artist_releases(select, query.pagination, repo.conn())
+    find_artist_releases(select, query.pagination, &repo.conn)
         .await
         .map(|x| x.map_items(Into::into))
 }

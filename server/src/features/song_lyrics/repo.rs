@@ -1,0 +1,44 @@
+use sea_orm::DbErr;
+
+use crate::features::song_lyrics::model::NewSongLyrics;
+use crate::infra::database::sea_orm::{
+    SeaOrmTxRepo, song_lyrics as lyrics_impls,
+};
+
+/// Transaction repository trait for song lyrics operations
+pub trait TxRepo
+where
+    Self::apply_update(..): Send,
+{
+    /// Create new song lyrics
+    async fn create(
+        &self,
+        lyrics: &NewSongLyrics,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
+
+    /// Create history record for song lyrics
+    async fn create_history(
+        &self,
+        lyrics: &NewSongLyrics,
+    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
+
+    /// Apply correction update to song lyrics
+    async fn apply_update(
+        &self,
+        correction: entity::correction::Model,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+}
+
+pub(super) async fn create(
+    repo: &SeaOrmTxRepo,
+    data: &NewSongLyrics,
+) -> Result<i32, DbErr> {
+    lyrics_impls::create_lyrics_impl(data, repo.conn()).await
+}
+
+pub(super) async fn create_history(
+    repo: &SeaOrmTxRepo,
+    data: &NewSongLyrics,
+) -> Result<i32, DbErr> {
+    lyrics_impls::create_history_impl(data, repo.conn()).await
+}

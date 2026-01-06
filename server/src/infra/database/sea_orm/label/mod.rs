@@ -8,11 +8,11 @@ use sea_orm::{
 };
 use snafu::ResultExt;
 
-use crate::domain::Connection;
-use crate::domain::label::{NewLabel, TxRepo};
+use crate::domain::label::NewLabel;
+use crate::features::label::TxRepo;
 use crate::domain::shared::NewLocalizedName;
 
-mod impls;
+pub(crate) mod impls;
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(
@@ -44,7 +44,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     }
 }
 
-async fn save_label_and_link_relations(
+pub(crate) async fn save_label_and_link_relations(
     data: &NewLabel,
     tx: &DatabaseTransaction,
 ) -> Result<label::Model, DbErr> {
@@ -78,7 +78,7 @@ async fn save_label_and_link_relations(
     Ok(label)
 }
 
-async fn save_label_history_and_link_relations(
+pub(crate) async fn save_label_history_and_link_relations(
     data: &NewLabel,
     tx: &DatabaseTransaction,
 ) -> Result<label_history::Model, DbErr> {

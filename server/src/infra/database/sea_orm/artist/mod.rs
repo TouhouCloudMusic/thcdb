@@ -1,10 +1,10 @@
 use snafu::ResultExt;
 
 use super::SeaOrmTxRepo;
-use crate::domain::Connection;
-use crate::domain::artist::{NewArtist, TxRepo};
+use crate::domain::artist::NewArtist;
+use crate::features::artist::TxRepo;
 
-mod impls;
+pub(crate) mod impls;
 
 impl TxRepo for SeaOrmTxRepo {
     async fn create(

@@ -2,8 +2,6 @@ use entity::release_image_queue::Model as DbModel;
 use entity::sea_orm_active_enums::ReleaseImageType;
 use macros::AutoMapper;
 
-use super::Connection;
-
 #[derive(Debug, Clone, PartialEq, Eq, AutoMapper)]
 #[mapper(from(DbModel), into(DbModel))]
 pub struct ReleaseImageQueue {
@@ -32,11 +30,4 @@ impl ReleaseImageQueue {
             r#type: ReleaseImageType::Cover,
         }
     }
-}
-
-pub trait Repo: Connection {
-    async fn create(
-        &self,
-        queue_entry: ReleaseImageQueue,
-    ) -> Result<ReleaseImageQueue, Box<dyn std::error::Error + Send + Sync>>;
 }

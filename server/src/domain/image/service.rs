@@ -9,7 +9,6 @@ use entity::enums::StorageBackend;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 use macros::ApiError;
 
-use crate::domain::Transaction;
 use crate::domain::image::{Image, NewImage};
 use crate::infra::{self};
 
@@ -408,7 +407,7 @@ impl<R, S> Service<R, S> {
 
 impl<Repo, Storage> Service<Repo, Storage>
 where
-    Repo: super::Repo,
+    Repo: super::Repo + Sync,
     Storage: AsyncFileStorage,
 {
     pub async fn find_by_id(&self, id: i32) -> Result<Option<Image>, Error> {
@@ -429,7 +428,7 @@ pub struct CreateImageMeta {
 
 impl<Tx, Storage> Service<Tx, Storage>
 where
-    Tx: Transaction + super::Repo + super::repository::TxRepo,
+    Tx: super::Repo + super::repository::TxRepo + Sync,
     Storage: AsyncFileStorage,
 {
     pub async fn create(

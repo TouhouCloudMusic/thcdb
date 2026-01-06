@@ -17,7 +17,6 @@ use sea_orm_migration::prelude::Alias;
 
 use super::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::domain;
-use crate::domain::Connection;
 use crate::domain::model::UserRoleEnum;
 use crate::domain::user::{
     NewUser, User, UserProfile, {self},
@@ -28,7 +27,7 @@ impl user::Repository for SeaOrmRepository {
         &self,
         id: i32,
     ) -> Result<Option<User>, Box<dyn std::error::Error + Send + Sync>> {
-        Ok(find_many_impl(entity::user::Column::Id.eq(id), self.conn())
+        Ok(find_many_impl(entity::user::Column::Id.eq(id), &self.conn)
             .await?
             .into_iter()
             .next())
@@ -39,7 +38,7 @@ impl user::Repository for SeaOrmRepository {
         name: &str,
     ) -> Result<Option<User>, Box<dyn std::error::Error + Send + Sync>> {
         Ok(
-            find_many_impl(entity::user::Column::Name.eq(name), self.conn())
+            find_many_impl(entity::user::Column::Name.eq(name), &self.conn)
                 .await?
                 .into_iter()
                 .next(),

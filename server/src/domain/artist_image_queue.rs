@@ -2,8 +2,6 @@ use entity::artist_image_queue::Model as DbModel;
 use entity::sea_orm_active_enums::ArtistImageType;
 use macros::AutoMapper;
 
-use super::Connection;
-
 #[derive(AutoMapper)]
 #[mapper(from(DbModel), into(DbModel))]
 pub struct ArtistImageQueue {
@@ -20,11 +18,4 @@ impl ArtistImageQueue {
             r#type: ArtistImageType::Profile,
         }
     }
-}
-
-pub trait Repository: Connection {
-    async fn create(
-        &self,
-        queue: ArtistImageQueue,
-    ) -> Result<ArtistImageQueue, Box<dyn std::error::Error + Send + Sync>>;
 }

@@ -2,8 +2,6 @@ use entity::release_image::Model as DbModel;
 use entity::sea_orm_active_enums::ReleaseImageType;
 use macros::AutoMapper;
 
-use super::Connection;
-
 #[derive(Debug, Clone, PartialEq, Eq, AutoMapper)]
 #[mapper(from(DbModel), into(DbModel))]
 pub struct ReleaseImage {
@@ -32,11 +30,4 @@ impl ReleaseImage {
             r#type: ReleaseImageType::Cover,
         }
     }
-}
-
-pub trait Repo: Connection {
-    async fn create(
-        &self,
-        image: ReleaseImage,
-    ) -> Result<ReleaseImage, Box<dyn std::error::Error + Send + Sync>>;
 }
