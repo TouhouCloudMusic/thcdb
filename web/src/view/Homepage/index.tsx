@@ -38,6 +38,10 @@ const ACCENT = {
 } satisfies Record<HomeNavItem["accent"], { badge: string; ring: string }>
 
 export function HomePage() {
+	return <HomeLanding />
+}
+
+function HomeLanding() {
 	return (
 		<PageLayout class="p-8">
 			<div class="flex flex-col gap-10">

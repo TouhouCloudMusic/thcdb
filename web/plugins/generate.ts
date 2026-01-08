@@ -39,5 +39,10 @@ async function generateConstants(base_url: string) {
 
 	const content = await response.text()
 
-	return fs.writeFile("src/constant/server.ts", content)
+	const targetPath = "src/constant/server.ts"
+
+	let existing = await fs.readFile(targetPath, "utf8").catch(() => undefined)
+	if (existing === content) return
+
+	return fs.writeFile(targetPath, content)
 }

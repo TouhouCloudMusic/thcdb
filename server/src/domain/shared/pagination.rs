@@ -8,6 +8,12 @@ pub struct Paginated<T> {
     pub next_cursor: Option<i32>,
 }
 
+impl<T> Default for Paginated<T> {
+    fn default() -> Self {
+        Self::nothing()
+    }
+}
+
 impl<T> Paginated<T> {
     pub const fn nothing() -> Self {
         Self {

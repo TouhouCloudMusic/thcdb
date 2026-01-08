@@ -73,7 +73,8 @@ impl Service {
 
         let new_image_queue = NewImageQueue::new(&user, &image);
 
-        let image_queue = ImageQueueRepo::create(&tx_repo, new_image_queue).await?;
+        let image_queue =
+            ImageQueueRepo::create(&tx_repo, new_image_queue).await?;
 
         let artist_image_queue =
             ArtistImageQueue::profile(artist_id, image_queue.id);

@@ -11,13 +11,13 @@ use crate::constant::{
     RELEASE_COVER_IMAGE_MAX_WIDTH, RELEASE_COVER_IMAGE_MIN_HEIGHT,
     RELEASE_COVER_IMAGE_MIN_RATIO, RELEASE_COVER_IMAGE_MIN_WIDTH,
 };
+use crate::domain::image;
 use crate::domain::image::{CreateImageMeta, ParseOption, Parser};
 use crate::domain::image_queue::NewImageQueue;
 use crate::domain::release_image_queue::ReleaseImageQueue;
-use crate::domain::image;
 use crate::features::image_queue::Repo as ImageQueueRepo;
-use crate::features::release_image_queue::Repo as ReleaseImageQueueRepo;
 use crate::features::release::find::repo as release_repo;
+use crate::features::release_image_queue::Repo as ReleaseImageQueueRepo;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::storage::GenericFileStorage;
 
@@ -84,7 +84,8 @@ impl Service {
 
         let release_image_queue_entry =
             ReleaseImageQueue::cover(release_id, image_queue_entry.id);
-        ReleaseImageQueueRepo::create(&tx_repo, release_image_queue_entry).await?;
+        ReleaseImageQueueRepo::create(&tx_repo, release_image_queue_entry)
+            .await?;
 
         drop(image_service);
 

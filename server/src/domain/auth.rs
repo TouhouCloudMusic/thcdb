@@ -183,24 +183,20 @@ async fn verify_password(
     input: &str,
 ) -> Result<(), AuthnError> {
     let bytes = input.as_bytes().to_owned();
-    tokio::task::spawn_blocking(move || {
+    let verify_result = tokio::task::spawn_blocking(move || {
         let hash = PasswordHash::new(&password_hash)?;
-
-        let verify_result = Argon2::default().verify_password(&bytes, &hash);
-
-        match verify_result {
-            Ok(()) => Ok(()),
-            Err(err) => match err {
-                password_hash::Error::Password => {
-                    Err(AuthnError::authentication_failed())
-                }
-                other => Err(other.into()),
-            },
-        }
+        Argon2::default().verify_password(&bytes, &hash)
     })
-    .await??;
+    .await
+    .map_err(AuthnError::from)?;
 
-    Ok(())
+    match verify_result {
+        Ok(()) => Ok(()),
+        Err(password_hash::Error::Password) => {
+            Err(AuthnError::authentication_failed())
+        }
+        Err(other) => Err(other.into()),
+    }
 }
 
 fn validate_username(username: &str) -> Result<(), ValidateCredsError> {

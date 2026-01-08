@@ -6,4 +6,3 @@ pub trait Repo {
         queue: ArtistImageQueue,
     ) -> Result<ArtistImageQueue, Box<dyn std::error::Error + Send + Sync>>;
 }
-

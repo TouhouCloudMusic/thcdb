@@ -174,6 +174,7 @@ where
 }
 
 impl Error {
+    // TODO: Remove this trait
     #[expect(private_bounds)]
     pub fn new(err: impl IntoError) -> Self {
         err.into_error()
@@ -187,6 +188,17 @@ impl Error {
             status: Status::Err,
             message: err.to_string(),
             status_code: err.as_status_code(),
+        }
+    }
+
+    pub fn from_err_and_code(
+        err: impl ToString,
+        status_code: impl Into<StatusCode>,
+    ) -> Self {
+        Self {
+            status: Status::Err,
+            message: err.to_string(),
+            status_code: status_code.into(),
         }
     }
 

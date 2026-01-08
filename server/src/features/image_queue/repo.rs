@@ -11,4 +11,3 @@ pub trait Repo {
         model: ImageQueue,
     ) -> Result<ImageQueue, Box<dyn std::error::Error + Send + Sync>>;
 }
-

@@ -1,15 +1,16 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
-import { Link } from "@tanstack/solid-router"
+import { Link, useNavigate } from "@tanstack/solid-router"
 import type { UserProfile } from "@thc/api"
 import {
 	BellAlertIcon,
 	BellIcon,
 	BellSlashIcon,
 } from "@thc/icons/heroicons/24/outline"
-import { createMemo, Match, Show, Switch } from "solid-js"
+import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
 import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
 
 import { Button } from "~/component/atomic/button"
+import { Select } from "~/component/atomic/form/select"
 import { NotificationState, useCurrentUser } from "~/state/user"
 import { createClickOutside } from "~/utils/solid/createClickOutside"
 
@@ -20,6 +21,27 @@ import { LeftSidebar } from "./LeftSidebar"
 import { RightSidebar } from "./RightSidebar"
 
 const HEADER_BTN_CLASS = "size-fit p-1 m-auto"
+
+type EntityFilter =
+	| "all"
+	| "artist"
+	| "event"
+	| "label"
+	| "release"
+	| "song"
+	| "tag"
+
+let isEntityFilter = (value: string): value is EntityFilter => {
+	return (
+		value === "all"
+		|| value === "artist"
+		|| value === "event"
+		|| value === "label"
+		|| value === "release"
+		|| value === "song"
+		|| value === "tag"
+	)
+}
 
 export function Header() {
 	return (
@@ -99,13 +121,80 @@ function AuthenticatedContent(props: { user: UserProfile }) {
 }
 
 function SearchBar() {
+	const navigate = useNavigate()
+	let inputRef: HTMLInputElement | undefined
+
+	let [entity, setEntity] = createSignal<EntityFilter>("all")
+	let [showFilter, setShowFilter] = createSignal(false)
+
+	let submit = (e: Event) => {
+		e.preventDefault()
+		let value = inputRef?.value?.trim() ?? ""
+		if (!value) return
+		let selected = entity()
+		if (selected === "all") {
+			navigate({ to: "/search", search: { q: value } })
+		} else {
+			navigate({
+				to: "/search",
+				search: { q: value, entity: selected, tab: selected },
+			})
+		}
+	}
+
 	return (
-		<div class="ml-36 grid w-fit items-center">
-			<input
-				class={`mr-auto h-7 w-96 rounded-xs bg-slate-100 pl-7 outline-transparent duration-200 hover:outline hover:outline-reimu-600 focus:bg-white focus:outline-[1.5px] focus:outline-reimu-600`}
-			/>
-			<MagnifyingGlassIcon class={"absolute col-start-1 ml-2 size-4"} />
-		</div>
+		<form
+			class="ml-36 w-fit"
+			role="search"
+			onSubmit={submit}
+		>
+			<div
+				class="relative grid w-96 items-center"
+				onFocusIn={() => setShowFilter(true)}
+				onFocusOut={(e) => {
+					let next = e.relatedTarget
+					if (next instanceof Node && e.currentTarget.contains(next)) return
+					setShowFilter(false)
+				}}
+			>
+				<input
+					ref={(el) => {
+						inputRef = el
+					}}
+					type="search"
+					placeholder="Search artists, releases, songs…"
+					class="mr-auto h-7 w-full rounded-xs bg-slate-100 pl-7 outline-transparent duration-200 hover:outline hover:outline-reimu-600 focus:bg-white focus:outline-[1.5px] focus:outline-reimu-600"
+				/>
+				<MagnifyingGlassIcon class="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
+
+				<Show when={showFilter()}>
+					<div class="absolute left-0 top-full z-50 mt-2 w-full rounded-sm border border-slate-200 bg-white p-2 shadow-md">
+						<div class="flex items-center justify-between gap-3">
+							<div class="text-[11px] font-medium tracking-[0.18em] text-slate-500">
+								FILTER
+							</div>
+							<Select
+								value={entity()}
+								onChange={(e) => {
+									let value = e.currentTarget.value
+									if (!isEntityFilter(value)) return
+									setEntity(value)
+								}}
+								class="h-7 w-40 text-sm"
+							>
+								<Select.Option value="all">All</Select.Option>
+								<Select.Option value="artist">Artist</Select.Option>
+								<Select.Option value="event">Event</Select.Option>
+								<Select.Option value="label">Label</Select.Option>
+								<Select.Option value="release">Release</Select.Option>
+								<Select.Option value="song">Song</Select.Option>
+								<Select.Option value="tag">Tag</Select.Option>
+							</Select>
+						</div>
+					</div>
+				</Show>
+			</div>
+		</form>
 	)
 }
 

@@ -4,8 +4,8 @@ use entity::user_role;
 use sea_orm::{DatabaseTransaction, DbErr, TransactionTrait};
 use snafu::ResultExt;
 
-use crate::infra::whatever::InfraWhatever;
 use crate::domain::model::UserRoleEnum;
+use crate::infra::whatever::InfraWhatever;
 
 pub(crate) mod artist;
 mod artist_image_queue;

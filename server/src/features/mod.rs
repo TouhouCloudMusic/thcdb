@@ -11,6 +11,7 @@ pub mod label;
 pub mod release;
 pub mod release_image;
 pub(crate) mod release_image_queue;
+pub mod search;
 pub mod song;
 pub mod song_lyrics;
 pub mod tag;
@@ -32,6 +33,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .merge(event::router())
         .merge(label::router())
         .merge(release::router())
+        .merge(search::router())
         .merge(song::router())
         .merge(song_lyrics::router())
         .merge(tag::router())
