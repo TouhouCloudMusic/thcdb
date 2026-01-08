@@ -1,8 +1,8 @@
 use entity::credit_role::Model as DbCreditRole;
 use sea_orm::DbErr;
 
-use crate::features::credit_role::model::NewCreditRole;
 use crate::domain::shared::query_kind;
+use crate::features::credit_role::model::NewCreditRole;
 use crate::infra::database::sea_orm::{
     SeaOrmTxRepo, credit_role as credit_role_impls,
 };

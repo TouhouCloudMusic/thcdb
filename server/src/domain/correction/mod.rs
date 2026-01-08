@@ -67,5 +67,4 @@ pub trait TxRepo: Repo {
         id: i32,
         meta: NewCorrectionMeta<impl CorrectionEntity>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
-
 }

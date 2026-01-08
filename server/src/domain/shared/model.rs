@@ -10,6 +10,7 @@ pub use entity::sea_orm_active_enums::DatePrecision;
 use libfp::Len;
 
 use crate::constant::{ENTITY_IDENT_MAX_LEN, ENTITY_IDENT_MIN_LEN};
+use crate::shared::error::MessageValidationError;
 use crate::utils::validation::{InvalidLen, LenCheck};
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, ToSchema)]
@@ -64,6 +65,72 @@ impl Len for EntityIdent {
 impl LenCheck for EntityIdent {
     const MIN: Self::Unit = ENTITY_IDENT_MIN_LEN;
     const MAX: Self::Unit = ENTITY_IDENT_MAX_LEN;
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct SearchTermConfig {
+    pub min_len: usize,
+    pub max_len: usize,
+}
+
+impl SearchTermConfig {
+    pub const DEFAULT: Self = Self {
+        min_len: 1,
+        max_len: 256,
+    };
+    pub const fn new(min_len: usize, max_len: usize) -> Self {
+        Self { min_len, max_len }
+    }
+
+    fn validate(&self, value: &str) -> Result<String, MessageValidationError> {
+        let trimmed = value.trim();
+        let len = trimmed.chars().take(self.max_len + 1).count();
+        if len < self.min_len {
+            return Err(MessageValidationError::new(format!(
+                "keyword must be at least {} characters",
+                self.min_len
+            )));
+        }
+        if len > self.max_len {
+            return Err(MessageValidationError::new("keyword is too long"));
+        }
+        Ok(trimmed.to_owned())
+    }
+}
+
+impl Default for SearchTermConfig {
+    fn default() -> Self {
+        Self::DEFAULT
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct SearchTerm(String);
+
+impl SearchTerm {
+    pub fn try_new(
+        value: impl Into<String>,
+        config: SearchTermConfig,
+    ) -> Result<Self, MessageValidationError> {
+        let validated = config.validate(&value.into())?;
+        Ok(Self(validated))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::fmt::Display for SearchTerm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl AsRef<str> for SearchTerm {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
 }
 
 #[derive(AutoMapper, Clone, Debug, Serialize, ToSchema)]

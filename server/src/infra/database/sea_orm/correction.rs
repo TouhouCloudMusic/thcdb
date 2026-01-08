@@ -1,7 +1,6 @@
 use entity::correction::{Column, Entity};
-use entity::correction_revision;
 use entity::enums::CorrectionUserType;
-use entity::correction_user;
+use entity::{correction_revision, correction_user};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel,
@@ -175,5 +174,4 @@ impl TxRepo for SeaOrmTxRepo {
 
         Ok(())
     }
-
 }
