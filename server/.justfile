@@ -1,6 +1,5 @@
 set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 set dotenv-load := true
-set dotenv-required := true
 set positional-arguments
 
 fmt:
