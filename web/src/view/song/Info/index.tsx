@@ -1,4 +1,3 @@
-import { Trans } from "@lingui-solid/solid/macro"
 import type { Song } from "@thc/api"
 import { createContext, Show, Suspense } from "solid-js"
 
@@ -71,20 +70,20 @@ function SongInfoTabs() {
 					value={"Release"}
 					class={TRIGGER_CLASS}
 				>
-					<Trans>Release</Trans>
+					Release
 				</Tab.Trigger>
 				<Tab.Trigger
 					value={"Credits"}
 					class={TRIGGER_CLASS}
 				>
-					<Trans>Credits</Trans>
+					Credits
 				</Tab.Trigger>
 				<Show when={ctx.song.lyrics}>
 					<Tab.Trigger
 						value={"Lyrics"}
 						class={TRIGGER_CLASS}
 					>
-						<Trans>Lyrics</Trans>
+						Lyrics
 					</Tab.Trigger>
 				</Show>
 				<Tab.Indicator />

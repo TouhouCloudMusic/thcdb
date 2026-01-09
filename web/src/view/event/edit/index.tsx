@@ -1,5 +1,4 @@
 import { Form, createForm, getInput } from "@formisch/solid"
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import { useBlocker } from "@tanstack/solid-router"
 import type { JSX } from "solid-js"
 import { createEffect, Show } from "solid-js"
@@ -36,9 +35,9 @@ function PageHeader(props: { type: Props["type"] }) {
 				<h1 class="text-2xl font-light tracking-tight">
 					<Show
 						when={props.type === "new"}
-						fallback={<Trans>Edit Event</Trans>}
+						fallback="Edit Event"
 					>
-						<Trans>Create Event</Trans>
+						Create Event
 					</Show>
 				</h1>
 			</div>
@@ -47,7 +46,6 @@ function PageHeader(props: { type: Props["type"] }) {
 }
 
 function FormContent(props: Props) {
-	const { t } = useLingui()
 	const initialValues = toEventFormInitValue(props)
 	const { handleSubmit, mutation } = createEventFormSubmission(props)
 
@@ -68,7 +66,7 @@ function FormContent(props: Props) {
 			if (form.isSubmitted || !form.isDirty) return false
 
 			const stay = confirm(
-				t`Are you sure you want to leave this page? Your changes will be lost.`,
+				"Are you sure you want to leave this page? Your changes will be lost.",
 			)
 			return !stay
 		},

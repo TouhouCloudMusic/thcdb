@@ -1,5 +1,4 @@
 import { Form, createForm, getAllErrors, getInput } from "@formisch/solid"
-import { useLingui } from "@lingui-solid/solid/macro"
 import { useBlocker } from "@tanstack/solid-router"
 import type { JSX } from "solid-js"
 import { createEffect, Show } from "solid-js"
@@ -44,7 +43,6 @@ function PageHeader(props: { type: Props["type"] }) {
 }
 
 function FormContent(props: Props) {
-	const { t } = useLingui()
 	const initialValues = useSongFormInitialValues(props)
 
 	const form = createForm({
@@ -66,7 +64,7 @@ function FormContent(props: Props) {
 			if (form.isSubmitted || !form.isDirty) return false
 
 			const stay = confirm(
-				t`Are you sure you want to leave this page? Your changes will be lost.`,
+				"Are you sure you want to leave this page? Your changes will be lost.",
 			)
 			return !stay
 		},

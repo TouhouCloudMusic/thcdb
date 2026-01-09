@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import { useNavigate } from "@tanstack/solid-router"
 import type { IconProps } from "@thc/icons"
 import type { JSX } from "solid-js"
@@ -22,48 +21,47 @@ type ListItemContent = {
 }
 
 export function LeftSidebar() {
-	const { t } = useLingui()
 	const navigate = useNavigate()
 	// TODO: Icons
 	const LIST_ITEMS: ListItemContent[] = [
 		{
 			icon: HomeIcon,
-			text: t`Home`,
+			text: "Home",
 			to: "/",
 		},
 		{
 			icon: TargetIcon,
-			text: t`Recommandation`,
+			text: "Recommandation",
 			to: "/recommendation",
 		},
 		{
 			icon: CrumpledPaperIcon,
-			text: t`Release`,
+			text: "Release",
 			to: "/release/explore",
 		},
 		{
 			icon: MixerHorizontalIcon,
-			text: t`Artist`,
+			text: "Artist",
 			to: "/artist/explore",
 		},
 		{
 			icon: CardStackIcon,
-			text: t`Song`,
+			text: "Song",
 			to: "/song/explore",
 		},
 		{
 			icon: EnvelopeClosedIcon,
-			text: t`Tag`,
+			text: "Tag",
 			to: "/tag/explore",
 		},
 		{
 			icon: EnvelopeClosedIcon,
-			text: t`Event`,
+			text: "Event",
 			to: "/event/explore",
 		},
 		{
 			icon: BookmarkIcon,
-			text: t`Label`,
+			text: "Label",
 			to: "/label/explore",
 		},
 	]
@@ -71,9 +69,7 @@ export function LeftSidebar() {
 	return (
 		<Sidebar class="flex w-64 flex-col p-4">
 			<div class="mt-2 flex flex-col space-y-2">
-				<h3 class="ml-2 text-xs font-semibold text-slate-600">
-					<Trans>Discover</Trans>
-				</h3>
+				<h3 class="ml-2 text-xs font-semibold text-slate-600">Discover</h3>
 
 				<ul class="space-y-1 pr-2">
 					<For each={LIST_ITEMS}>

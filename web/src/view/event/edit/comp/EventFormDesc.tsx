@@ -1,5 +1,4 @@
 import { Field } from "@formisch/solid"
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import type { EventMutation } from "@thc/query"
 import { For } from "solid-js"
 import { twMerge } from "tailwind-merge"
@@ -16,7 +15,6 @@ type Props = {
 
 export function EventFormDesc(props: Props) {
 	const { formStore } = useEventForm()
-	const { t } = useLingui()
 
 	return (
 		<div class={twMerge("flex flex-col gap-4", props.class)}>
@@ -26,9 +24,7 @@ export function EventFormDesc(props: Props) {
 			>
 				{(field) => (
 					<InputField.Root>
-						<InputField.Label>
-							<Trans>Correction Description</Trans>
-						</InputField.Label>
+						<InputField.Label>Correction Description</InputField.Label>
 						<InputField.Textarea
 							{...field.props}
 							value={field.input ?? ""}
@@ -63,7 +59,7 @@ export function EventFormDesc(props: Props) {
 			<div class="flex flex-col">
 				<FormComp.ErrorMessage class="text-lg">
 					{props.mutation.isError
-						? t`Error: ${props.mutation.error.message}`
+						? `Error: ${props.mutation.error.message}`
 						: undefined}
 				</FormComp.ErrorMessage>
 			</div>

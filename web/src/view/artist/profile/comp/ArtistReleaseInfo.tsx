@@ -1,5 +1,4 @@
 /* @refresh skip */
-import { Trans } from "@lingui-solid/solid/macro"
 import type {
 	ArtistCredit,
 	CreditRoleRef,
@@ -138,15 +137,13 @@ function DiscographyTab() {
 			when={existingTypes().length}
 			fallback={
 				<div class="m-auto flex min-h-16 items-center place-self-center pl-4 whitespace-pre text-secondary">
-					<Trans>
-						This Artist has no releases yet, you can upload them on{" "}
-						<a
-							href="TODO"
-							class="text-blue-600"
-						>
-							Upload New Release
-						</a>
-					</Trans>
+					This Artist has no releases yet, you can upload them on{" "}
+					<a
+						href="TODO"
+						class="text-blue-600"
+					>
+						Upload New Release
+					</a>
 				</div>
 			}
 		>

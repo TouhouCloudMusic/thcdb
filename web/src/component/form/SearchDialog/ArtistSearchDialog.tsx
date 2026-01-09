@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Artist, ArtistCommonFilter } from "@thc/api"
 import { ArtistQueryOption } from "@thc/query"
@@ -50,7 +49,7 @@ export function ArtistSearchDialog(
 
 	return (
 		<EntitySearchDialog
-			title={<Trans>Search Artist</Trans>}
+			title="Search Artist"
 			trigger={
 				<Dialog.Trigger
 					as={Button}

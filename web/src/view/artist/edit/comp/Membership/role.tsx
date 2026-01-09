@@ -1,6 +1,5 @@
 // @refresh-reload
 // oxlint-disable max-lines-per-function
-import { useLingui } from "@lingui-solid/solid/macro"
 import * as M from "@modular-forms/solid"
 import { useQuery } from "@tanstack/solid-query"
 import type { CreditRoleSummary } from "@thc/api"
@@ -17,7 +16,6 @@ import { useArtistForm } from "../../context"
 
 export function MembershipRoleField(props: { index: number }): JSX.Element {
 	const SEARCH_DEBOUNCE_MS = 300
-	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
 	let [searchTerm, setSearchTerm] = createSignal("")
@@ -71,9 +69,6 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 
 	return (
 		<div class="row-start-2">
-			{/* <div class="text-primary">
-				<Trans>Roles</Trans>
-			</div> */}
 			<Suspense>
 				<Combobox.Root
 					options={options()}
@@ -109,9 +104,9 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 								)}
 							</For>
 							<Combobox.MultiInput
-								placeholder={t`Search roles...`}
+								placeholder="Search roles..."
 								value={searchTerm()}
-								aria-label={t`Search credit role`}
+								aria-label="Search credit role"
 								class="flex-1 pl-1"
 								onInput={(e) => setSearchTermDebounced(e.currentTarget.value)}
 							/>
@@ -135,8 +130,6 @@ function RoleBadge(props: {
 	role: CreditRoleSummary
 	removeRole: () => void
 }) {
-	const { t } = useLingui()
-
 	let { formStore } = useArtistForm()
 	return (
 		<M.Field
@@ -155,8 +148,8 @@ function RoleBadge(props: {
 					<button
 						type="button"
 						class="text-slate-600"
-						aria-label={t`Remove role`}
-						title={t`Remove role`}
+						aria-label="Remove role"
+						title="Remove role"
 						onClick={() => props.removeRole()}
 					>
 						<Cross1Icon class="size-4" />

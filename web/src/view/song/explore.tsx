@@ -1,4 +1,3 @@
-import { useLingui } from "@lingui-solid/solid/macro"
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import type { LocalizedTitle, SimpleArtist, Song } from "@thc/api"
@@ -13,6 +12,7 @@ import {
 } from "~/component/feature/entity_explore"
 import { PageLayout } from "~/layout"
 import { createMockPaginatedSongs } from "~/mock/song"
+import { useI18N } from "~/state/i18n"
 import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
@@ -178,7 +178,7 @@ export const SongExplore = () => {
 	const search = route.useSearch()
 	const scrollDirection = useScrollDirection()
 
-	const { i18n } = useLingui()
+	const i18n = useI18N()
 
 	const navigate = useNavigate({ from: "/song/explore" })
 
@@ -263,7 +263,7 @@ export const SongExplore = () => {
 
 				<SongExploreList
 					songs={songs()}
-					locale={i18n().locale}
+					locale={i18n.locale()}
 					isFetchingNextPage={songsQuery.isFetchingNextPage}
 					hasNextPage={songsQuery.hasNextPage}
 					limit={search().limit}

@@ -1,5 +1,4 @@
 /* @refresh skip */
-import { Trans } from "@lingui-solid/solid/macro"
 import { createSignal, For } from "solid-js"
 
 import { assertContext } from "~/utils/solid/assertContext"
@@ -22,7 +21,7 @@ export function SongInfoLyrics() {
 					for="lyrics-language-select"
 					class="text-xs font-medium tracking-widest text-secondary uppercase"
 				>
-					<Trans>Language</Trans>
+					Language
 				</label>
 				<select
 					id="lyrics-language-select"

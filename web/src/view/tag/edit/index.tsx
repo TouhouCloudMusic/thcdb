@@ -1,10 +1,9 @@
 /* @refresh reload */
-import { Form, createForm, getInput } from "@formisch/solid"
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
+import { Form, createForm } from "@formisch/solid"
 import { useBlocker } from "@tanstack/solid-router"
 import type { Tag } from "@thc/api"
 import type { JSX } from "solid-js"
-import { createEffect, Show } from "solid-js"
+import { Show } from "solid-js"
 
 import { FormActionBar } from "~/component/form"
 import { NewTagCorrection } from "~/domain/tag"
@@ -46,9 +45,9 @@ function PageHeader(props: { type: Props["type"] }) {
 				<h1 class="text-2xl font-light tracking-tight">
 					<Show
 						when={props.type === "new"}
-						fallback={<Trans>Edit Tag</Trans>}
+						fallback="Edit Tag"
 					>
-						<Trans>Create Tag</Trans>
+						Create Tag
 					</Show>
 				</h1>
 			</div>
@@ -57,7 +56,6 @@ function PageHeader(props: { type: Props["type"] }) {
 }
 
 function FormContent(props: Props) {
-	const { t } = useLingui()
 	const initialValues = toTagFormInitValue(props)
 	const { handleSubmit, mutation } = createTagFormSubmission(props)
 
@@ -71,7 +69,7 @@ function FormContent(props: Props) {
 			if (form.isSubmitted || !form.isDirty) return false
 
 			const stay = confirm(
-				t`Are you sure you want to leave this page? Your changes will be lost.`,
+				"Are you sure you want to leave this page? Your changes will be lost.",
 			)
 			return !stay
 		},

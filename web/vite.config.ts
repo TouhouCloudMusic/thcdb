@@ -1,4 +1,3 @@
-import { lingui as linguiSolidPlugin } from "@lingui-solid/vite-plugin"
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
 import tailwindcss from "@tailwindcss/vite"
 import { devtools } from "@tanstack/devtools-vite"
@@ -39,7 +38,6 @@ export default defineConfig(({ mode }) => {
 				routesDirectory: "src/route",
 			}),
 			babelMacrosPlugin(),
-			linguiSolidPlugin(),
 			solidPlugin(),
 			tailwindcss(),
 			tsconfigPaths(),

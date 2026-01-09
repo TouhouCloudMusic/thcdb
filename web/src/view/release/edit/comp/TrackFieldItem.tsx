@@ -1,5 +1,4 @@
 import { Field, remove, setInput } from "@formisch/solid"
-import { Trans } from "@lingui-solid/solid/macro"
 import type { ReleaseTrack, SimpleArtist, Song } from "@thc/api"
 import { For } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -218,9 +217,7 @@ function TrackArtistsField(props: {
 	return (
 		<div class="flex flex-col gap-2 pl-1">
 			<div class="flex items-center justify-between gap-2">
-				<FormComp.Label class="m-0">
-					<Trans>Track Artists</Trans>
-				</FormComp.Label>
+				<FormComp.Label class="m-0">Track Artists</FormComp.Label>
 				<ArtistSearchDialog
 					onSelect={props.onAdd}
 					dataFilter={(a: SimpleArtist) => !props.hasArtist(a)}

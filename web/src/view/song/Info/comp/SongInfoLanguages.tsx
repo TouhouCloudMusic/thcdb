@@ -1,5 +1,4 @@
 /* @refresh skip */
-import { Trans } from "@lingui-solid/solid/macro"
 import { For, Show } from "solid-js"
 
 import { assertContext } from "~/utils/solid/assertContext"
@@ -14,7 +13,7 @@ export function SongInfoLanguages() {
 			<div>
 				{/* TODO: Replace Info.Label with this */}
 				<div class="text-xs font-medium tracking-wider text-tertiary">
-					<Trans>Languages</Trans>
+					Languages
 				</div>
 				<div class="flex flex-wrap gap-x-4 gap-y-1">
 					<For each={ctx.song.languages}>

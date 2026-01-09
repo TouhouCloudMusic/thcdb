@@ -1,6 +1,5 @@
 /* @refresh reload */
 // oxlint-disable max-lines-per-function
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import * as M from "@modular-forms/solid"
 import type { JSX } from "solid-js"
 import { For } from "solid-js"
@@ -34,9 +33,7 @@ export function TenureFieldArray(props: { index: number }): JSX.Element {
 	return (
 		<div class="row-start-3 space-y-2">
 			<div class="flex items-center justify-between">
-				<span class="font-light">
-					<Trans>Tenures</Trans>
-				</span>
+				<span class="font-light">Tenures</span>
 				<Button
 					variant="Tertiary"
 					size="Sm"
@@ -81,7 +78,6 @@ function TenureEntry(props: {
 	onRemove: () => void
 }) {
 	const { formStore } = useArtistForm()
-	const { t } = useLingui()
 
 	let errors = () => computeTenureError(formStore, props.membershipIndex)
 
@@ -100,7 +96,7 @@ function TenureEntry(props: {
 									{...fieldProps}
 									type="number"
 									class="no-spinner"
-									placeholder={idx == 0 ? t`Join year` : t`Leave year`}
+									placeholder={idx == 0 ? "Join year" : "Leave year"}
 									value={field.value ?? undefined}
 								/>
 								<InputField.Error>{field.error}</InputField.Error>
@@ -116,8 +112,8 @@ function TenureEntry(props: {
 				type="button"
 				onClick={props.onRemove}
 				class="p-2"
-				aria-label={t`Remove tenure entry`}
-				title={t`Remove tenure entry`}
+				aria-label="Remove tenure entry"
+				title="Remove tenure entry"
 			>
 				<Cross1Icon />
 			</Button>
@@ -139,7 +135,6 @@ function computeTenureError(
 	const tenures = M.getValues(formStore, `data.memberships.${index}.tenure`, {
 		shouldActive: false,
 	})
-	const { t } = useLingui()
 
 	if (tenures.length === 0) return []
 
@@ -150,9 +145,9 @@ function computeTenureError(
 		if (!tenure) continue
 		if (tenure.leave_year && tenure.join_year) {
 			if (tenure.leave_year < tenure.join_year) {
-				res.push(t`Leave year cannot be earlier than join year`)
+				res.push("Leave year cannot be earlier than join year")
 			} else if (tenure.leave_year === tenure.join_year) {
-				res.push(t`Leave year cannot be the same as join year`)
+				res.push("Leave year cannot be the same as join year")
 			}
 		}
 
@@ -161,9 +156,9 @@ function computeTenureError(
 			if (!prevTenure) continue
 			if (prevTenure.leave_year && tenure.join_year) {
 				if (tenure.join_year < prevTenure.leave_year) {
-					res.push(t`Join year cannot be earlier than previous leave year`)
+					res.push("Join year cannot be earlier than previous leave year")
 				} else if (tenure.join_year === prevTenure.leave_year) {
-					res.push(t`Join year cannot be the same as previous leave year`)
+					res.push("Join year cannot be the same as previous leave year")
 				}
 			}
 		}

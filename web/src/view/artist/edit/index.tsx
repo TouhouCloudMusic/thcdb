@@ -1,5 +1,4 @@
 /* @refresh reload */
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import * as M from "@modular-forms/solid"
 import { createForm } from "@modular-forms/solid"
 import { useBlocker } from "@tanstack/solid-router"
@@ -39,13 +38,7 @@ export function EditArtistPage(props: Props): JSX.Element {
 	return (
 		<PageLayout class="grid grid-rows-[auto_1fr_auto]">
 			<PageHeader type={props.type} />
-			<Suspense
-				fallback={
-					<div>
-						<Trans>Loading...</Trans>
-					</div>
-				}
-			>
+			<Suspense fallback={<div>Loading...</div>}>
 				<Form {...props} />
 			</Suspense>
 		</PageLayout>
@@ -69,9 +62,9 @@ function PageHeader(props: { type: Props["type"] }) {
 				<h1 class="text-2xl font-light">
 					<Show
 						when={props.type === "new"}
-						fallback={<Trans>Edit Artist</Trans>}
+						fallback="Edit Artist"
 					>
-						<Trans>Create Artist</Trans>
+						Create Artist
 					</Show>
 				</h1>
 			</div>
@@ -80,7 +73,6 @@ function PageHeader(props: { type: Props["type"] }) {
 }
 
 function Form(props: Props) {
-	const { t } = useLingui()
 	const initialValues = useArtistFormInitialValues(props)
 	const { handleSubmit, mutation } = useArtistFormSubmission(props)
 
@@ -94,7 +86,7 @@ function Form(props: Props) {
 			if (formStore.submitted || !formStore.dirty) return false
 
 			const stay = confirm(
-				t`Are you sure you want to leave this page? Your changes will be lost.`,
+				"Are you sure you want to leave this page? Your changes will be lost.",
 			)
 			return !stay
 		},

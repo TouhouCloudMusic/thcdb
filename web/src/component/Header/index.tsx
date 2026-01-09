@@ -1,5 +1,4 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
-import { useLingui } from "@lingui-solid/solid/macro"
 import { Link } from "@tanstack/solid-router"
 import type { UserProfile } from "@thc/api"
 import {
@@ -135,7 +134,6 @@ function NotificationButton() {
 function UnauthenticatedButtons() {
 	// @tw
 	const BTN_CLASS = "py-1 px-3 text-sm"
-	const { t } = useLingui()
 
 	return (
 		<div class="grid grid-cols-2 gap-3">
@@ -150,7 +148,7 @@ function UnauthenticatedButtons() {
 						type: "sign_in",
 					}}
 				>
-					{t`Sign In`}
+					Sign In
 				</Link>
 			</Button>
 			<Button
@@ -164,7 +162,7 @@ function UnauthenticatedButtons() {
 						type: "sign_up",
 					}}
 				>
-					{t`Sign Up`}
+					Sign Up
 				</Link>
 			</Button>
 		</div>

@@ -1,4 +1,3 @@
-import { useLingui } from "@lingui-solid/solid/macro"
 import type { Artist } from "@thc/api"
 import type { Component } from "solid-js"
 import { For, Show } from "solid-js"
@@ -12,6 +11,7 @@ import {
 } from "~/component/feature/entity_explore"
 import { ARTIST_TYPES } from "~/domain/artist/constants"
 import { DateWithPrecision } from "~/domain/shared"
+import { useI18N } from "~/state/i18n"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 
 const getArtistAvatarText = (artist: Artist) => {
@@ -67,10 +67,10 @@ type ArtistItemProps = {
 
 export const ArtistItem: Component<ArtistItemProps> = (props) => {
 	const locationText = () => formatLocation(props.artist.current_location)
-	const { i18n } = useLingui()
+	const i18n = useI18N()
 
 	const preferredLanguageCode = () => {
-		const locale = i18n().locale
+		const locale = i18n.locale()
 		return locale.split("-")[0] ?? locale
 	}
 	const preferredLocalizedName = () => {

@@ -1,5 +1,4 @@
 /* @refresh skip */
-import { useLingui } from "@lingui-solid/solid/macro"
 import { useNavigate } from "@tanstack/solid-router"
 import type { Artist } from "@thc/api"
 import type { ParentProps } from "solid-js"
@@ -13,7 +12,6 @@ import { assertContext } from "~/utils/solid/assertContext"
 import { ArtistContext } from ".."
 
 export function ArtistInfo() {
-	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 	const navigator = useNavigate()
 
@@ -24,13 +22,11 @@ export function ArtistInfo() {
 				<Show when={context.artist.artist_type !== "Unknown"}>
 					<DateInfo
 						value={context.artist.start_date}
-						label={context.artist.artist_type == "Solo" ? t`Born` : t`Formed`}
+						label={context.artist.artist_type == "Solo" ? "Born" : "Formed"}
 					/>
 					<DateInfo
 						value={context.artist.end_date}
-						label={
-							context.artist.artist_type == "Solo" ? t`Died` : t`Disbanded`
-						}
+						label={context.artist.artist_type == "Solo" ? "Died" : "Disbanded"}
 					/>
 				</Show>
 				<Location location={context.artist.start_location} />
@@ -57,12 +53,11 @@ export function ArtistInfo() {
 }
 
 function Aliases() {
-	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 	const aliases = createMemo(() => getInfoAliases(context.artist))
 	return (
 		<div>
-			<InfoLabel>{t`Aliases`}</InfoLabel>
+			<InfoLabel>Aliases</InfoLabel>
 			<ul class="flex flex-row gap-1">
 				<For each={aliases()}>
 					{(alias, index) => (
@@ -103,13 +98,12 @@ function DateInfo(props: { value?: Artist["start_date"]; label: string }) {
 }
 
 function Membership() {
-	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 	const label = createMemo(() => {
 		if (context.artist.artist_type === "Solo") {
-			return t`Member Of`
+			return "Member Of"
 		} else if (context.artist.artist_type === "Multiple") {
-			return t`Members`
+			return "Members"
 		}
 	})
 	return (

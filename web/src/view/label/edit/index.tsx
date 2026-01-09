@@ -1,6 +1,5 @@
 /* @refresh reload */
 import { Form, createForm } from "@formisch/solid"
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import { useBlocker } from "@tanstack/solid-router"
 import type { JSX } from "solid-js"
 import { Show } from "solid-js"
@@ -29,17 +28,15 @@ export function EditLabelPage(props: Props): JSX.Element {
 }
 
 function PageHeader(props: { type: Props["type"] }) {
-	const { t } = useLingui()
-
 	return (
 		<div class="border-b-1 border-slate-300 p-8">
 			<div class="flex items-center gap-4">
 				<h1 class="text-2xl font-light tracking-tight">
 					<Show
 						when={props.type === "new"}
-						fallback={<Trans>Edit Label</Trans>}
+						fallback="Edit Label"
 					>
-						{t`Create Label`}
+						Create Label
 					</Show>
 				</h1>
 			</div>
@@ -48,7 +45,6 @@ function PageHeader(props: { type: Props["type"] }) {
 }
 
 function FormContent(props: Props) {
-	const { t } = useLingui()
 	const initialValues = toLabelFormInitValue(props)
 	const { handleSubmit, mutation } = createLabelFormSubmission(props)
 
@@ -62,7 +58,7 @@ function FormContent(props: Props) {
 			if (form.isSubmitted || !form.isDirty) return false
 
 			const stay = confirm(
-				t`Are you sure you want to leave this page? Your changes will be lost.`,
+				"Are you sure you want to leave this page? Your changes will be lost.",
 			)
 			return !stay
 		},

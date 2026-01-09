@@ -1,5 +1,4 @@
 import { FieldArray, getInput, insert, setInput } from "@formisch/solid"
-import { Trans } from "@lingui-solid/solid/macro"
 import type { ReleaseTrack } from "@thc/api"
 import { For, createMemo, createSignal } from "solid-js"
 import {
@@ -56,7 +55,7 @@ export function ReleaseTracksField(props: {
 								each={visibleTrackIndices()}
 								fallback={
 									<li class="flex h-32 items-center justify-center rounded text-secondary">
-										<Trans>No tracks under this disc.</Trans>
+										No tracks under this disc.
 									</li>
 								}
 							>
@@ -141,9 +140,7 @@ function TrackHeader(props: {
 	return (
 		<div class="mb-4 flex flex-col gap-2">
 			<div class="flex items-center justify-between">
-				<FormComp.Label class="m-0">
-					<Trans>Tracks</Trans>
-				</FormComp.Label>
+				<FormComp.Label class="m-0">Tracks</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"

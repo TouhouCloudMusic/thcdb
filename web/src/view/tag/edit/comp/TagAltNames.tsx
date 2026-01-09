@@ -1,5 +1,4 @@
 import { Field, FieldArray, getErrors, insert, remove } from "@formisch/solid"
-import { Trans } from "@lingui-solid/solid/macro"
 import { For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
@@ -31,9 +30,7 @@ export function TagFormAltNamesField(props: Props) {
 	return (
 		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">
-					<Trans>Alternative Names</Trans>
-				</FormComp.Label>
+				<FormComp.Label class="m-0">Alternative Names</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"

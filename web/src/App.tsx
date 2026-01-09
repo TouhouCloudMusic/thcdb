@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import { Meta, Title } from "@solidjs/meta"
 import { createRouter, RouterProvider } from "@tanstack/solid-router"
 
@@ -34,15 +33,12 @@ export default function App() {
 }
 
 function Metas() {
-	const { t } = useLingui()
 	return (
 		<>
-			<Title>
-				<Trans>Touhou Cloud DB</Trans>
-			</Title>
+			<Title>Touhou Cloud DB</Title>
 			<Meta
 				name="description"
-				content={t`Touhou Cloud DB is an open doujin music database`}
+				content="Touhou Cloud DB is an open doujin music database"
 			/>
 		</>
 	)

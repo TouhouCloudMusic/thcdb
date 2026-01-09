@@ -1,5 +1,4 @@
 import { Field } from "@formisch/solid"
-import { Trans } from "@lingui-solid/solid/macro"
 import type { LabelMutation } from "@thc/query"
 import { For } from "solid-js"
 import { twMerge } from "tailwind-merge"
@@ -25,9 +24,7 @@ export function LabelFormDesc(props: Props) {
 			>
 				{(field) => (
 					<InputField.Root>
-						<InputField.Label>
-							<Trans>Correction Description</Trans>
-						</InputField.Label>
+						<InputField.Label>Correction Description</InputField.Label>
 						<InputField.Textarea
 							{...field.props}
 							value={field.input ?? ""}

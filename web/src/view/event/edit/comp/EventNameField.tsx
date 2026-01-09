@@ -1,5 +1,4 @@
 import { Field } from "@formisch/solid"
-import { Trans } from "@lingui-solid/solid/macro"
 import { For } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
@@ -21,9 +20,7 @@ export function EventNameField(props: Props) {
 		>
 			{(field) => (
 				<InputField.Root class={twMerge("flex flex-col", props.class)}>
-					<InputField.Label>
-						<Trans>Name</Trans>
-					</InputField.Label>
+					<InputField.Label>Name</InputField.Label>
 					<InputField.Input
 						{...field.props}
 						value={field.input ?? ""}

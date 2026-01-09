@@ -1,4 +1,3 @@
-import { useLingui } from "@lingui-solid/solid/macro"
 import * as M from "@modular-forms/solid"
 
 import { FormComp } from "~/component/atomic/form"
@@ -8,12 +7,11 @@ import { useArtistForm } from "../context"
 
 export function ArtistFormDateFields() {
 	const { formStore } = useArtistForm()
-	const { t } = useLingui()
 
 	return (
 		<>
 			<div>
-				<FormComp.Label>{t`Start date`}</FormComp.Label>
+				<FormComp.Label>Start date</FormComp.Label>
 				<div class="flex gap-4">
 					<DateWithPrecision
 						setValue={(v) => {
@@ -27,7 +25,7 @@ export function ArtistFormDateFields() {
 			</div>
 
 			<div>
-				<FormComp.Label>{t`End date`}</FormComp.Label>
+				<FormComp.Label>End date</FormComp.Label>
 				<div class="flex gap-4">
 					<DateWithPrecision
 						setValue={(v) => {

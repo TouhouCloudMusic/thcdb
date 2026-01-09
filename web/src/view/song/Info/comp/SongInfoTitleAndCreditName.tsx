@@ -1,5 +1,4 @@
 /* @refresh skip */
-import { Trans } from "@lingui-solid/solid/macro"
 import { Link } from "@tanstack/solid-router"
 import { createMemo, For, Match, Show, Switch } from "solid-js"
 
@@ -37,7 +36,7 @@ export function SongInfoTitleAndCreditName() {
 					<div>
 						{/* TODO: use Info.Label */}
 						<div class="text-xs font-medium tracking-wider text-tertiary">
-							<Trans>Artist</Trans>
+							Artist
 						</div>
 						<ul class="flex flex-wrap gap-x-4 gap-y-1">
 							<For each={context.song.artists}>

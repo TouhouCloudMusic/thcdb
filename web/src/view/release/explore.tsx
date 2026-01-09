@@ -1,4 +1,3 @@
-import { useLingui } from "@lingui-solid/solid/macro"
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import type { ReleaseType } from "@thc/api"
@@ -6,6 +5,7 @@ import type { ReleaseType } from "@thc/api"
 import { RELEASE_TYPES } from "~/domain/release/constants"
 import { PageLayout } from "~/layout"
 import { createMockPaginatedReleases } from "~/mock/release"
+import { useI18N } from "~/state/i18n"
 import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 import {
@@ -23,7 +23,7 @@ export const ReleaseExplore = () => {
 	const search = route.useSearch()
 	const scrollDirection = useScrollDirection()
 
-	const { i18n } = useLingui()
+	const i18n = useI18N()
 
 	const navigate = useNavigate({ from: "/release/explore" })
 
@@ -110,7 +110,7 @@ export const ReleaseExplore = () => {
 
 				<ReleaseExploreList
 					releases={releases()}
-					locale={i18n().locale}
+					locale={i18n.locale()}
 					isLoading={releasesQuery.isLoading}
 					isFetchingNextPage={releasesQuery.isFetchingNextPage}
 					hasNextPage={releasesQuery.hasNextPage}

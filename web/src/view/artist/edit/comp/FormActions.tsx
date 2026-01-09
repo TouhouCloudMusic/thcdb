@@ -1,11 +1,9 @@
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import * as M from "@modular-forms/solid"
 import type { ArtistMutation } from "@thc/query"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
-import type { NewArtistCorrection } from "~/domain/artist/schema"
 
 import { useArtistForm } from "../context"
 
@@ -15,7 +13,6 @@ type ArtistFormFormActionsProps = {
 
 export function ArtistFormActions(props: ArtistFormFormActionsProps) {
 	const { formStore } = useArtistForm()
-	const { t } = useLingui()
 
 	return (
 		<>
@@ -25,9 +22,7 @@ export function ArtistFormActions(props: ArtistFormFormActionsProps) {
 			>
 				{(field, fieldProps) => (
 					<InputField.Root>
-						<InputField.Label>
-							<Trans>Description</Trans>
-						</InputField.Label>
+						<InputField.Label>Description</InputField.Label>
 						<InputField.Textarea
 							{...fieldProps}
 							id={field.name}
@@ -61,8 +56,8 @@ export function ArtistFormActions(props: ArtistFormFormActionsProps) {
 					disabled={props.mutation.isPending || formStore.submitting}
 				>
 					{props.mutation.isPending || formStore.submitting
-						? t`Loading`
-						: t`Submit`}
+						? "Loading"
+						: "Submit"}
 				</Button>
 
 				<FormComp.ErrorMessage>
@@ -70,7 +65,7 @@ export function ArtistFormActions(props: ArtistFormFormActionsProps) {
 				</FormComp.ErrorMessage>
 				<FormComp.ErrorMessage class="text-lg">
 					{props.mutation.isError
-						? t`Error: ${props.mutation.error.message}`
+						? `Error: ${props.mutation.error.message}`
 						: undefined}
 				</FormComp.ErrorMessage>
 			</div>

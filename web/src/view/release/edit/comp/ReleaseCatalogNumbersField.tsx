@@ -1,5 +1,4 @@
 import { Field, FieldArray, insert, remove, setInput } from "@formisch/solid"
-import { Trans } from "@lingui-solid/solid/macro"
 import type { Label, SimpleLabel } from "@thc/api"
 import { For, Show } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -49,9 +48,7 @@ export function ReleaseCatalogNumbersField(props: {
 	return (
 		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">
-					<Trans>Catalog Numbers</Trans>
-				</FormComp.Label>
+				<FormComp.Label class="m-0">Catalog Numbers</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"
@@ -107,7 +104,7 @@ export function ReleaseCatalogNumbersField(props: {
 														when={labels[idx()]}
 														fallback={
 															<span class="text-tertiary">
-																<Trans>No label selected</Trans>
+																No label selected
 															</span>
 														}
 													>

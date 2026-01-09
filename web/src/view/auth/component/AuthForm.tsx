@@ -1,5 +1,4 @@
 import { Tabs } from "@kobalte/core/tabs"
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import { Field, Form } from "@modular-forms/solid"
 import type { FormStore } from "@modular-forms/solid"
 import { Show } from "solid-js"
@@ -15,7 +14,6 @@ import { UserNameField, PasswordField } from "./Field"
 export function AuthForm() {
 	const { mode, setMode, formStore, handleSubmit } = useAuthForm()
 
-	const { t } = useLingui()
 	return (
 		<div class="flex h-[calc(100vh-16rem)] items-center justify-center">
 			<div class="bg-whit flex w-96 flex-col rounded-2xl p-8 shadow-md">
@@ -33,7 +31,7 @@ export function AuthForm() {
 							variant="Tertiary"
 							class="rounded-r-none py-2"
 						>
-							<Trans>Sign In</Trans>
+							Sign In
 						</Tabs.Trigger>
 						<Tabs.Trigger
 							as={Button}
@@ -41,7 +39,7 @@ export function AuthForm() {
 							variant="Tertiary"
 							class="rounded-l-none py-2"
 						>
-							<Trans>Sign Up</Trans>
+							Sign Up
 						</Tabs.Trigger>
 						<Tabs.Indicator class="absolute bottom-0 h-[2px] bg-reimu-600 transition-all duration-200" />
 					</Tabs.List>
@@ -69,7 +67,7 @@ export function AuthForm() {
 					>
 						{(field, props) => (
 							<PasswordField
-								label={t`Password`}
+								label="Password"
 								field={field}
 								props={props}
 							/>
@@ -83,7 +81,7 @@ export function AuthForm() {
 						>
 							{(field, props) => (
 								<PasswordField
-									label={t`Repeated Password`}
+									label="Repeated Password"
 									field={field}
 									props={props}
 								/>
@@ -103,7 +101,7 @@ export function AuthForm() {
 						color="Reimu"
 						class="mt-2 w-full shadow-lg"
 					>
-						{mode() == "sign_in" ? t`Sign In` : t`Sign Up`}
+						{mode() == "sign_in" ? "Sign In" : "Sign Up"}
 					</Button>
 				</Form>
 			</div>

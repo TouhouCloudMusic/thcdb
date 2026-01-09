@@ -6,7 +6,6 @@ import {
 	getInput,
 	setInput,
 } from "@formisch/solid"
-import { Trans, useLingui } from "@lingui-solid/solid/macro"
 import { useBlocker } from "@tanstack/solid-router"
 import type { JSX } from "solid-js"
 import { createEffect, For, Show } from "solid-js"
@@ -57,7 +56,6 @@ function PageHeader(props: { type: Props["type"] }) {
 
 // oxlint-disable-next-line max-lines-per-function
 function FormContent(props: Props) {
-	const { t } = useLingui()
 	const initialValues = useReleaseFormInitialValues(props)
 
 	const form = createForm({
@@ -79,7 +77,7 @@ function FormContent(props: Props) {
 			if (form.isSubmitted || !form.isDirty) return false
 
 			const stay = confirm(
-				t`Are you sure you want to leave this page? Your changes will be lost.`,
+				"Are you sure you want to leave this page? Your changes will be lost.",
 			)
 			return !stay
 		},
@@ -110,17 +108,17 @@ function FormContent(props: Props) {
 					[
 						{
 							key: "release_date",
-							label: t`Release date`,
+							label: "Release date",
 							class: "row-start-4",
 						},
 						{
 							key: "recording_date_start",
-							label: t`Recording start`,
+							label: "Recording start",
 							class: "row-start-5",
 						},
 						{
 							key: "recording_date_end",
-							label: t`Recording end`,
+							label: "Recording end",
 							class: "row-start-6",
 						},
 					] as const
@@ -191,7 +189,7 @@ function FormContent(props: Props) {
 						variant="Tertiary"
 						onClick={() => history.back()}
 					>
-						<Trans>Back</Trans>
+						Back
 					</Button>
 					<Button
 						variant="Primary"
@@ -204,7 +202,7 @@ function FormContent(props: Props) {
 							}
 						}}
 					>
-						<Trans>{form.isSubmitting ? "Submitting" : "Submit"}</Trans>
+						{form.isSubmitting ? "Submitting" : "Submit"}
 					</Button>
 				</div>
 			</div>

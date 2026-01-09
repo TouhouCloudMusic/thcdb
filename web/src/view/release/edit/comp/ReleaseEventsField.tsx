@@ -1,6 +1,5 @@
 // 事件字段（受控组件）
 import { Field, insert, remove } from "@formisch/solid"
-import { Trans } from "@lingui-solid/solid/macro"
 import type { SimpleEvent } from "@thc/api"
 import { For } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -37,9 +36,7 @@ export function ReleaseEventsField(props: {
 	return (
 		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">
-					<Trans>Events</Trans>
-				</FormComp.Label>
+				<FormComp.Label class="m-0">Events</FormComp.Label>
 				<div class="flex gap-2">
 					<EventSearchDialog
 						onSelect={addEvent}

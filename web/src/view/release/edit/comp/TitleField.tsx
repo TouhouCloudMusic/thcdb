@@ -1,6 +1,5 @@
 // 标题字段
 import { Field } from "@formisch/solid"
-import { Trans } from "@lingui-solid/solid/macro"
 import { twMerge } from "tailwind-merge"
 
 import { FormComp } from "~/component/atomic/form"
