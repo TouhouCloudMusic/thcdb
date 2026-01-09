@@ -54,7 +54,7 @@ services:
       - backend
 
   web:
-    image: node:22-bookworm-slim
+    image: node:24-bookworm-slim
     restart: unless-stopped
     init: true
     working_dir: /app
@@ -68,8 +68,9 @@ services:
       - "${WEB_PORT:-3000}:3000"
     volumes:
       - ./web:/app
-      - web_node_modules:/app/node_modules
-    command: sh -c "corepack enable && corepack prepare pnpm@10 --activate && pnpm install && pnpm dev --host 0.0.0.0"
+      - node_modules:/app/node_modules
+      - pnpm-store:/pnpm-store
+    command: sh -c "corepack enable && corepack prepare pnpm@10 --activate && pnpm install --frozen-lockfile --store-dir /pnpm-store && pnpm dev --host 0.0.0.0"
     networks:
       - backend
 
@@ -79,4 +80,5 @@ networks:
 volumes:
   pgdata:
   redisdata:
-  web_node_modules:
+  pnpm-store:
+  node_modules:
