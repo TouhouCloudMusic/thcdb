@@ -307,8 +307,8 @@ importers:
         specifier: ^2.11.8
         version: 2.11.10(@testing-library/jest-dom@6.7.0)(solid-js@1.9.10)(vite@7.1.11(@types/node@24.5.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6))
       vite-tsconfig-paths:
-        specifier: ^5.1.4
-        version: 5.1.4(typescript@5.9.3)(vite@7.1.11(@types/node@24.5.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6))
+        specifier: ^6.0.0
+        version: 6.0.3(typescript@5.9.3)(vite@7.1.11(@types/node@24.5.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6))
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@24.5.2)(@vitest/browser@3.2.4)(jiti@2.6.1)(jsdom@26.1.0)(lightningcss@1.30.2)(tsx@4.20.6)
@@ -4948,8 +4948,8 @@ packages:
       '@testing-library/jest-dom':
         optional: true
 
-  vite-tsconfig-paths@5.1.4:
-    resolution: {integrity: sha512-cYj0LRuLV2c2sMqhqhGpaO3LretdtMn/BVX4cPLanIZuwwrkVl+lK84E/miEXkCHWXuq65rhNN4rXsBcOB3S4w==}
+  vite-tsconfig-paths@6.0.3:
+    resolution: {integrity: sha512-7bL7FPX/DSviaZGYUKowWF1AiDVWjMjxNbE8lyaVGDezkedWqfGhlnQ4BZXre0ZN5P4kAgIJfAlgFDVyjrCIyg==}
     peerDependencies:
       vite: '*'
     peerDependenciesMeta:
@@ -7286,7 +7286,7 @@ snapshots:
       '@typescript-eslint/types': 8.40.0
       '@typescript-eslint/typescript-estree': 8.40.0(typescript@5.9.3)
       '@typescript-eslint/visitor-keys': 8.40.0
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.3
       eslint: 9.33.0(jiti@2.6.1)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -7296,7 +7296,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/tsconfig-utils': 8.40.0(typescript@5.9.3)
       '@typescript-eslint/types': 8.40.0
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.3
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
@@ -7350,7 +7350,7 @@ snapshots:
       '@typescript-eslint/tsconfig-utils': 8.40.0(typescript@5.9.3)
       '@typescript-eslint/types': 8.40.0
       '@typescript-eslint/visitor-keys': 8.40.0
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.3
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
@@ -10133,7 +10133,7 @@ snapshots:
   vite-node@3.2.4(@types/node@24.5.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6):
     dependencies:
       cac: 6.7.14
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.3
       es-module-lexer: 1.7.0
       pathe: 2.0.3
       vite: 7.1.11(@types/node@24.5.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)
@@ -10177,9 +10177,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  vite-tsconfig-paths@5.1.4(typescript@5.9.3)(vite@7.1.11(@types/node@24.5.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)):
+  vite-tsconfig-paths@6.0.3(typescript@5.9.3)(vite@7.1.11(@types/node@24.5.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)):
     dependencies:
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.3
       globrex: 0.1.2
       tsconfck: 3.1.6(typescript@5.9.3)
     optionalDependencies:
