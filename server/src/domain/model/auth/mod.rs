@@ -1,4 +1,6 @@
+pub use permission::*;
 pub use user_role::*;
+mod permission;
 mod user_role;
 #[expect(unused_imports)]
 pub use verfication_code::*;
@@ -8,10 +10,3 @@ mod verfication_code;
 use crate::domain::user::User;
 
 pub struct CorrectionApprover(pub User);
-
-impl CorrectionApprover {
-    pub fn from_user(user: User) -> Option<Self> {
-        user.has_roles(&[UserRoleEnum::Admin, UserRoleEnum::Moderator])
-            .then_some(Self(user))
-    }
-}

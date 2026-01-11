@@ -4,6 +4,7 @@ use sea_orm::{
 use strum::IntoEnumIterator;
 
 use crate::domain::model::UserRoleEnum;
+use crate::infra::authz::sync_permissions;
 use crate::infra::database::sea_orm::utils::upsert_admin_acc;
 
 mod user_role;
@@ -17,6 +18,7 @@ enum LookupTableCheckResult<T> {
 
 pub async fn sync_enum_table(db: &DatabaseConnection) -> Result<(), DbErr> {
     UserRoleEnum::check_and_sync(db).await?;
+    sync_permissions(db).await?;
 
     upsert_admin_acc(db).await;
 

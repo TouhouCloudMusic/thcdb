@@ -5,9 +5,10 @@ use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::adapter::inbound::rest::api_response::{self, Message};
+use crate::adapter::inbound::rest::api_response::Message;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
+use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz};
+use crate::domain::model::CorrectionManage;
 use crate::features::correction::model::HandleCorrectionMethod;
 use crate::features::correction::service;
 
@@ -38,14 +39,17 @@ async fn handle_correction(
     Path(id): Path<i32>,
     Query(query): Query<HandleCorrectionQuery>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Message, impl IntoResponse> {
+) -> Result<Message, axum::response::Response> {
+    authz::ensure_permission::<CorrectionManage>(&repo.conn, user.id).await?;
+
     match query.method {
         HandleCorrectionMethod::Approve => service::approve(&repo, id, user)
             .await
             .map_err(IntoResponse::into_response)
             .map(|()| Message::ok()),
-        HandleCorrectionMethod::Reject => {
-            Err(api_response::Error::new("Not implemented").into_response())
-        }
+        HandleCorrectionMethod::Reject => service::reject(&repo, id, user)
+            .await
+            .map_err(IntoResponse::into_response)
+            .map(|()| Message::ok()),
     }
 }

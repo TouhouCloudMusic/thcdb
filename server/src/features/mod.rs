@@ -1,3 +1,4 @@
+pub mod admin;
 pub mod artist;
 pub mod artist_image;
 pub(crate) mod artist_image_queue;
@@ -26,6 +27,7 @@ use crate::adapter::inbound::rest::state::ArcAppState;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
+        .merge(admin::router())
         .merge(artist::router())
         .merge(correction::router())
         .merge(credit_role::router())

@@ -17,9 +17,7 @@ use tower_governor::key_extractor::PeerIpKeyExtractor;
 use tower_http::cors::{Any, CorsLayer};
 use tower_sessions_redis_store::RedisStore;
 
-use super::state::{
-    ArcAppState, {self},
-};
+use super::state::{self, ArcAppState};
 use crate::infra::singleton::APP_CONFIG;
 
 pub trait AxumLayerBounds = where
