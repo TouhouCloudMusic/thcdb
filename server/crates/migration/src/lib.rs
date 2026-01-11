@@ -46,6 +46,8 @@ migrations![
     m20251001_090000_fix_event_validate_date,
     m20251202_000000_create_tag_vote,
     m20260106_000000_fix_pg_trgm_lower_indexes,
+    m20260111_000000_create_permission_tables,
+    m20260111_000001_create_role_change_audit,
 ];
 
 macro_rules! migration {

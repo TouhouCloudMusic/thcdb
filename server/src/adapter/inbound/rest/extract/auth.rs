@@ -2,8 +2,8 @@ use std::sync::OnceLock;
 use std::time::Duration;
 
 use axum::extract::FromRequestParts;
-use axum::http::StatusCode;
 use axum::http::request::Parts;
+use axum::http::{StatusCode, header};
 use axum::response::IntoResponse;
 use axum_extra::typed_header::TypedHeader;
 use headers::Authorization;
@@ -16,6 +16,7 @@ use crate::domain::auth::{AuthCredential, AuthnError};
 use crate::domain::user::User;
 use crate::features::auth::{AuthnBackendError, SignInError};
 
+#[derive(Clone)]
 pub struct CurrentUser(pub User);
 
 const BASIC_AUTH_TTL: Duration = Duration::from_secs(30 * 60);
@@ -66,6 +67,10 @@ where
         parts: &mut Parts,
         _state: &S,
     ) -> Result<Self, Self::Rejection> {
+        if let Some(user) = parts.extensions.get::<Self>().cloned() {
+            return Ok(user);
+        }
+
         let session = parts
             .extensions
             .get::<state::AuthSession>()
@@ -76,7 +81,13 @@ where
             })?;
 
         if let Some(user) = session.user {
-            return Ok(Self(user));
+            let user = Self(user);
+            parts.extensions.insert(user.clone());
+            return Ok(user);
+        }
+
+        if !parts.headers.contains_key(header::AUTHORIZATION) {
+            return Err(StatusCode::UNAUTHORIZED.into_response());
         }
 
         let TypedHeader(Authorization(basic)) =
@@ -87,7 +98,9 @@ where
         let key = fmt_key(basic.username(), basic.password());
 
         if let Some(user) = BASIC_AUTH_CACHE.lookup(&key).await {
-            return Ok(Self(user));
+            let user = Self(user);
+            parts.extensions.insert(user.clone());
+            return Ok(user);
         }
 
         let creds =
@@ -99,7 +112,9 @@ where
         match session.authenticate(creds).await {
             Ok(Some(user)) => {
                 BASIC_AUTH_CACHE.store(key, &user).await;
-                Ok(Self(user))
+                let user = Self(user);
+                parts.extensions.insert(user.clone());
+                Ok(user)
             }
             Ok(None) => Err(StatusCode::UNAUTHORIZED.into_response()),
             Err(err) => {

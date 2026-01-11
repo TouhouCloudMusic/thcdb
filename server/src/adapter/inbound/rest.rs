@@ -29,10 +29,12 @@ use crate::shared::http::{CorrectionSortField, SortDirection};
 use crate::utils::openapi::ContentType;
 
 pub mod api_response;
+pub(crate) mod authz;
 pub(crate) mod error;
 mod extract;
 mod middleware;
 pub mod state;
+
 pub use extract::CurrentUser;
 
 struct DefaultErrorResponseModifier;
