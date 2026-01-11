@@ -1,7 +1,7 @@
 // 事件字段（受控组件）
 import { Field, insert, remove } from "@formisch/solid"
 import type { SimpleEvent } from "@thc/api"
-import { For } from "solid-js"
+import { For, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
@@ -19,17 +19,17 @@ export function ReleaseEventsField(props: {
 	initEvents?: SimpleEvent[]
 	class?: string
 }) {
-	const [events, setEvents] = createStore<SimpleEvent[]>([
-		...(props.initEvents ?? []),
-	])
+	const [events, setEvents] = createStore<SimpleEvent[]>(
+		untrack(() => [...(props.initEvents ?? [])]),
+	)
 
 	const addEvent = (e: SimpleEvent) => {
-		if (events.some((x) => x.id === e.id)) return
+		if (untrack(() => events.some((x) => x.id === e.id))) return
 		insert(props.of, { path: ["data", "events"], initialInput: e.id })
 		setEvents(events.length, e)
 	}
 
-	const removeEventAt = (idx: number) => () => {
+	const removeEventAt = (idx: number) => {
 		remove(props.of, { path: ["data", "events"], at: idx })
 		setEvents((list) => list.toSpliced(idx, 1))
 	}
@@ -69,7 +69,7 @@ export function ReleaseEventsField(props: {
 							<Button
 								variant="Tertiary"
 								size="Sm"
-								onClick={removeEventAt(idx())}
+								onClick={() => removeEventAt(idx())}
 							>
 								<Cross1Icon />
 							</Button>

@@ -7,7 +7,7 @@ import {
 	setInput,
 } from "@formisch/solid"
 import type { Tag, TagRef, TagRelationType } from "@thc/api"
-import { For, Show } from "solid-js"
+import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
@@ -31,7 +31,7 @@ export function TagFormRelationsField(props: Props) {
 	const { formStore, tag } = useTagForm()
 
 	const [tagRefs, setTagRefs] = createStore<(TagRef | undefined)[]>(
-		tag?.relations?.map((relation) => relation.tag) ?? [],
+		untrack(() => tag?.relations?.map((relation) => relation.tag) ?? []),
 	)
 
 	const isRelationExists = (candidate: Tag, ignoreIndex?: number) => {
@@ -49,12 +49,12 @@ export function TagFormRelationsField(props: Props) {
 		setTagRefs(tagRefs.length, undefined)
 	}
 
-	const removeRelationAt = (index: number) => () => {
+	const removeRelationAt = (index: number) => {
 		remove(formStore, { path: ["data", "relations"], at: index })
 		setTagRefs((list) => list.toSpliced(index, 1))
 	}
 
-	const setTagAt = (index: number) => (selected: Tag) => {
+	const setTagAt = (index: number, selected: Tag) => {
 		if (isRelationExists(selected, index)) return
 		setTagRefs(index, () => TagM.toTagRef(selected))
 		setInput(formStore, {
@@ -93,9 +93,10 @@ export function TagFormRelationsField(props: Props) {
 									index={idx()}
 									formStore={formStore}
 									tagRef={tagRefs[idx()]}
-									onSelectTag={setTagAt(idx())}
-									onRemove={removeRelationAt(idx())}
-									dataFilter={(tag) => !isRelationExists(tag, idx())}
+									tagRefs={tagRefs}
+									tagId={tag?.id}
+									onSelectTag={(tag) => setTagAt(idx(), tag)}
+									onRemove={() => removeRelationAt(idx())}
 								/>
 							)}
 						</For>
@@ -110,12 +111,26 @@ type RelationRowProps = {
 	index: number
 	formStore: TagFormStore
 	tagRef: TagRef | undefined
+	tagRefs: (TagRef | undefined)[]
+	tagId: number | undefined
 	onSelectTag: (tag: Tag) => void
 	onRemove: () => void
-	dataFilter: (tag: Tag) => boolean
 }
 
 function RelationRow(props: RelationRowProps) {
+	const dataFilter = createMemo(() => {
+		const ignoreIndex = props.index
+		const relationIds = new Set(
+			props.tagRefs
+				.map((entry, idx) => (idx === ignoreIndex ? undefined : entry?.id))
+				.filter((id): id is number => typeof id === "number"),
+		)
+		const currentTagId = props.tagId
+		return (candidate: Tag) => {
+			if (currentTagId && candidate.id === currentTagId) return false
+			return !relationIds.has(candidate.id)
+		}
+	})
 	return (
 		<li class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-x-2 gap-y-1">
 			<div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2">
@@ -125,7 +140,7 @@ function RelationRow(props: RelationRowProps) {
 				/>
 				<TagSearchDialog
 					onSelect={props.onSelectTag}
-					dataFilter={props.dataFilter}
+					dataFilter={dataFilter()}
 					icon={<Pencil1Icon class="size-4" />}
 				/>
 			</div>

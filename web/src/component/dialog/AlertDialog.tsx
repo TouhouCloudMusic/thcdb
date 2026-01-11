@@ -20,13 +20,13 @@ export interface AlertDialogProps extends Exclude<
 }
 
 export function AlertDialog(props: AlertDialogProps) {
-	let handleDismiss = (e: Event) => {
+	const handleDismiss = (e: Event) => {
 		if (props.dismissible === false) {
 			e.preventDefault()
 		}
 	}
 
-	let [_, root_props] = splitProps(props, [
+	const [_, root_props] = splitProps(props, [
 		"title",
 		"trigger",
 		"description",

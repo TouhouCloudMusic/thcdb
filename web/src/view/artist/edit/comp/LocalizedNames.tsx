@@ -9,19 +9,18 @@ import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
 import { FieldArrayFallback } from "~/component/form"
 import { LanguageCombobox } from "~/component/form/stateful/LanguageCombobox"
-import type { NewArtistCorrection } from "~/domain/artist/schema"
 
 import { useArtistForm } from "../context"
 
 export function ArtistFormLocalizedNames() {
 	const { formStore } = useArtistForm()
 
-	let insert = () =>
+	const insert = () =>
 		M.insert(formStore, "data.localized_names", {
 			// @ts-expect-error
 			value: { language_id: undefined, name: "" },
 		})
-	let remove = (idx: number) =>
+	const remove = (idx: number) =>
 		M.remove(formStore, "data.localized_names", {
 			at: idx,
 		})
@@ -92,7 +91,7 @@ export function ArtistFormLocalizedNames() {
 
 function createOnLangChange(index: number) {
 	const { formStore } = useArtistForm()
-	let onChange = (v: Language | null) => {
+	const onChange = (v: Language | null) => {
 		if (v) {
 			M.setValue(formStore, `data.localized_names.${index}.language_id`, v.id)
 		} else {

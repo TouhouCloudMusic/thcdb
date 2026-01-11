@@ -7,7 +7,7 @@ import {
 	setInput,
 } from "@formisch/solid"
 import type { Language, LocalizedName } from "@thc/api"
-import { For } from "solid-js"
+import { For, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
@@ -36,7 +36,9 @@ export function LabelLocalizedNamesField(props: Props) {
 	const { formStore } = useLabelForm()
 
 	const [languages, setLanguages] = createStore<(Language | undefined)[]>(
-		(props.initLocalizedNames ?? []).map((item) => item.language),
+		untrack(() =>
+			(props.initLocalizedNames ?? []).map((item) => item.language),
+		),
 	)
 
 	const addLocalizedName = () => {

@@ -91,7 +91,6 @@ function RouteComponent() {
 						},
 						async next() {
 							await appearances.fetchNextPage()
-							return
 						},
 						get isLoading() {
 							return appearances.isLoading
@@ -106,7 +105,6 @@ function RouteComponent() {
 						},
 						async next() {
 							await credits.fetchNextPage()
-							return
 						},
 						get isLoading() {
 							return credits.isLoading

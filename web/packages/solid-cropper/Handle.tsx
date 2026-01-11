@@ -11,5 +11,5 @@ export type HandleProps = {
 
 export function Handle(props: HandleProps) {
 	// @ts-expect-error
-	return <cropper-handle {...props} />
+	return <cropper-handle {...props}></cropper-handle>
 }

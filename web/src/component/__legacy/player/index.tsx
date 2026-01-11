@@ -8,8 +8,14 @@ type Song = {
 	duration: number
 }
 
+const formatTime = (seconds: number) => {
+	const mins = Math.floor(seconds / 60)
+	const secs = Math.floor(seconds % 60)
+	return `${mins}:${secs.toString().padStart(2, "0")}`
+}
+
 export function Player() {
-	const [currentSong, setCurrentSong] = createSignal<Song | null>({
+	const [currentSong] = createSignal<Song | null>({
 		id: 1,
 		title: "幻想乡之歌",
 		artist: "ZUN",
@@ -18,17 +24,11 @@ export function Player() {
 	})
 
 	const [isPlaying, setIsPlaying] = createSignal(false)
-	const [currentTime, setCurrentTime] = createSignal(0)
-	const [volume, setVolume] = createSignal(80)
+	const [currentTime] = createSignal(0)
+	const [volume] = createSignal(80)
 
 	const togglePlay = () => {
 		setIsPlaying(!isPlaying())
-	}
-
-	const formatTime = (seconds: number) => {
-		const mins = Math.floor(seconds / 60)
-		const secs = Math.floor(seconds % 60)
-		return `${mins}:${secs.toString().padStart(2, "0")}`
 	}
 
 	return (
@@ -65,7 +65,7 @@ export function Player() {
 											strokeLinejoin="round"
 											strokeWidth={2}
 											d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-										/>
+										></path>
 									</svg>
 								</button>
 							</>
@@ -89,7 +89,7 @@ export function Player() {
 									strokeLinejoin="round"
 									strokeWidth={2}
 									d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"
-								/>
+								></path>
 							</svg>
 						</button>
 
@@ -112,7 +112,7 @@ export function Player() {
 											strokeLinejoin="round"
 											strokeWidth={2}
 											d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-										/>
+										></path>
 									</svg>
 								}
 							>
@@ -128,7 +128,7 @@ export function Player() {
 										strokeLinejoin="round"
 										strokeWidth={2}
 										d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
+									></path>
 								</svg>
 							</Show>
 						</button>
@@ -146,7 +146,7 @@ export function Player() {
 									strokeLinejoin="round"
 									strokeWidth={2}
 									d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"
-								/>
+								></path>
 							</svg>
 						</button>
 					</div>
@@ -184,7 +184,7 @@ export function Player() {
 								strokeLinejoin="round"
 								strokeWidth={2}
 								d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-							/>
+							></path>
 						</svg>
 					</button>
 
@@ -208,7 +208,7 @@ export function Player() {
 								strokeLinejoin="round"
 								strokeWidth={2}
 								d="M4 8h16M4 16h16"
-							/>
+							></path>
 						</svg>
 					</button>
 				</div>

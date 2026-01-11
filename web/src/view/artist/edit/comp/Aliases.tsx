@@ -14,9 +14,9 @@ import { ArtistSearchDialog } from "~/component/form/SearchDialog"
 import { useArtistForm } from "../context"
 
 export const ArtistFormAliasesField = () => {
-	let [aliases, setAliases] = createStore<Artist[]>([])
+	const [aliases, setAliases] = createStore<Artist[]>([])
 
-	let handleSelect = (artist: Artist) => {
+	const handleSelect = (artist: Artist) => {
 		if (!aliases.some((x) => x.id == artist.id)) {
 			setAliases(
 				produce((s) => {
@@ -26,7 +26,7 @@ export const ArtistFormAliasesField = () => {
 		}
 	}
 
-	let handleRemove = (idx: number) => {
+	const handleRemove = (idx: number) => {
 		setAliases(
 			produce((s) => {
 				s.splice(idx, 1)
@@ -34,14 +34,14 @@ export const ArtistFormAliasesField = () => {
 		)
 	}
 
-	let { formStore } = useArtistForm()
+	const { formStore } = useArtistForm()
 
-	let filter = createMemo<ArtistCommonFilter>(() => {
-		let exclusion = aliases.map((x) => x.id)
-		let ty = M.getValue(formStore, "data.artist_type", {
+	const filter = createMemo<ArtistCommonFilter>(() => {
+		const exclusion = aliases.map((x) => x.id)
+		const ty = M.getValue(formStore, "data.artist_type", {
 			shouldActive: false,
 		})
-		let artist_type = ty ? [ty] : undefined
+		const artist_type = ty ? [ty] : undefined
 		return {
 			artist_type,
 			exclusion,
@@ -86,7 +86,7 @@ type AliasListItemProps = {
 }
 
 const AliasListItem = (props: AliasListItemProps) => {
-	let { formStore } = useArtistForm()
+	const { formStore } = useArtistForm()
 	return (
 		<li class="grid h-fit grid-cols-[1fr_auto]">
 			<M.Field

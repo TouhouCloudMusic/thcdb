@@ -24,32 +24,21 @@ export function format(duration: Duration | nil, option?: FormatOption) {
 
 	const precision = option?.precision ?? Precision.Sec
 
-	if (precision === Precision.Milli) {
-		const secStr =
-			seconds.toString().padStart(2, "0") + "." + ms.toString().padStart(3, "0")
-		if (hours > 0) {
-			const minStr = minutes.toString().padStart(2, "0")
-			return `${hours}:${minStr}:${secStr}`
-		}
-		return `${minutes}:${secStr}`
-	}
+	let buf = ""
 
-	// seconds precision (default) or minutes precision
-	if (precision === Precision.Min) {
-		// For minutes precision, drop seconds and milliseconds.
-		if (hours > 0) {
-			const minStr = minutes.toString().padStart(2, "0")
-			return `${hours}:${minStr}`
-		}
-		return `${minutes}`
-	}
-
-	// default: seconds precision
-	const secStr = seconds.toString().padStart(2, "0")
 	if (hours > 0) {
-		const minStr = minutes.toString().padStart(2, "0")
-		return `${hours}:${minStr}:${secStr}`
-	} else {
-		return `${minutes}:${secStr}`
+		buf += hours.toString()
 	}
+
+	buf += minutes.toString().padStart(2, "0")
+
+	if (precision !== Precision.Min) {
+		buf += seconds.toString().padStart(2, "0")
+	}
+
+	if (precision === Precision.Milli) {
+		buf += ms.toString().padStart(3, "0")
+	}
+
+	return buf
 }

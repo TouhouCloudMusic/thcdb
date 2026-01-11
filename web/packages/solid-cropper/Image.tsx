@@ -56,5 +56,5 @@ export interface ImageElement extends CropperElement, ImageProps {
 
 export function Image(props: ImageProps) {
 	// @ts-expect-error
-	return <cropper-image {...props} />
+	return <cropper-image {...props}></cropper-image>
 }

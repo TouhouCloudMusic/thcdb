@@ -8,7 +8,7 @@ const LINK_CLASS =
 export type LinkProps = LinkComponentProps<"a">
 
 export function Link(props: LinkProps) {
-	let className = () => twMerge(LINK_CLASS, props.class)
+	const className = () => twMerge(LINK_CLASS, props.class)
 
 	return (
 		<RouterLink

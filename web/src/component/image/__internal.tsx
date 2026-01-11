@@ -1,14 +1,11 @@
-import type { JSX, ParentProps } from "solid-js"
+import type { ComponentProps, JSX, ParentProps } from "solid-js"
 import {
 	mergeProps,
 	createContext,
 	useContext,
 	Show,
 	createEffect,
-	splitProps,
-	createMemo,
 } from "solid-js"
-import type { ComponentProps } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Portal } from "solid-js/web"
 import { twMerge } from "tailwind-merge"
@@ -35,8 +32,7 @@ type ImageContext = {
 
 const ImageContext = createContext<ImageContext>()
 
-type RootOpt = {}
-type RootProps = ParentProps & RootOpt
+type RootProps = ParentProps
 
 export function Root(props: RootProps) {
 	const [store, setStore] = createStore<ImageContext>({

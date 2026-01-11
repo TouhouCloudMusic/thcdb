@@ -33,13 +33,13 @@ export const createMockArtist = (
 		to: new Date("2015-12-31"),
 	})
 	const startDateValue = startDate.toISOString().slice(0, 10)
-	const shouldHaveEndDate = 0 === id % 6
+	const shouldHaveEndDate = id % 6 === 0
 	const endDate = shouldHaveEndDate
 		? faker.date.between({ from: startDate, to: new Date("2025-12-31") })
 		: undefined
 	const endDateValue = endDate?.toISOString().slice(0, 10)
 
-	const hasProfileImage = 0 === id % 4
+	const hasProfileImage = id % 4 === 0
 	const profileImageUrl = hasProfileImage ? "/avatar.png" : undefined
 
 	return {
@@ -84,7 +84,7 @@ export const createMockPaginatedArtists = (
 
 	let allArtists = createMockArtists(MOCK_TOTAL, 1)
 
-	if (artist_type && 0 < artist_type.length) {
+	if (artist_type && artist_type.length > 0) {
 		allArtists = allArtists.filter((a) => artist_type.includes(a.artist_type))
 	}
 
@@ -92,7 +92,7 @@ export const createMockPaginatedArtists = (
 		allArtists.sort((a, b) => {
 			const aValue = a.id
 			const bValue = b.id
-			return "desc" === sort_direction ? bValue - aValue : aValue - bValue
+			return sort_direction === "desc" ? bValue - aValue : aValue - bValue
 		})
 	}
 

@@ -13,9 +13,9 @@ const defaultStyle = `flex place-content-center items-center`
 export function ThemeButton(
 	props: Omit<ComponentProps<"button">, "onClick" | "children" | "color">,
 ) {
-	let theme_ctx = useTheme()
+	const theme_ctx = useTheme()
 
-	let class_list = createMemo(() => twMerge(defaultStyle, props.class))
+	const class_list = createMemo(() => twMerge(defaultStyle, props.class))
 
 	return (
 		<Switch>

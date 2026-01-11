@@ -25,8 +25,8 @@ export function ChartFilter(props: Props): JSX.Element {
 	const UL_CLASS = "grid grid-cols-subgrid items-baseline col-span-2"
 	const DELIMITER = "OR"
 
-	let [_, card_props] = splitProps(props, ["pos_tags", "neg_tags", "class"])
-	let cls = createMemo(() => twMerge(CLASS, props.class))
+	const [_, card_props] = splitProps(props, ["pos_tags", "neg_tags", "class"])
+	const cls = createMemo(() => twMerge(CLASS, props.class))
 
 	return (
 		<Card

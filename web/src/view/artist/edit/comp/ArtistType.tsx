@@ -3,7 +3,6 @@ import type { ArtistType } from "@thc/api"
 import { For } from "solid-js"
 
 import { FormComp } from "~/component/atomic/form"
-import type { NewArtistCorrection } from "~/domain/artist/schema"
 
 import { useArtistForm } from "../context"
 

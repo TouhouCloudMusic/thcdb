@@ -7,7 +7,7 @@ import {
 	getErrors,
 } from "@formisch/solid"
 import type { Language, LocalizedTitle } from "@thc/api"
-import { For } from "solid-js"
+import { For, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
@@ -25,27 +25,30 @@ export function SongLocalizedTitlesField(props: {
 	initLocalizedTitles?: LocalizedTitle[]
 	class?: string
 }) {
+	const formStore = createMemo(() => props.of)
 	const [languages, setLanguages] = createStore<(Language | undefined)[]>(
-		(props.initLocalizedTitles ?? []).map((item) => item.language),
+		untrack(() =>
+			(props.initLocalizedTitles ?? []).map((item) => item.language),
+		),
 	)
 
 	const addLocalizedTitle = () => {
-		insert(props.of, {
+		insert(formStore(), {
 			path: ["data", "localized_titles"],
 		})
 		setLanguages(languages.length, undefined)
 	}
 
-	const removeLocalizedTitleAt = (index: number) => () => {
-		remove(props.of, { path: ["data", "localized_titles"], at: index })
+	const removeLocalizedTitleAt = (index: number) => {
+		remove(formStore(), { path: ["data", "localized_titles"], at: index })
 		setLanguages((list) => list.toSpliced(index, 1))
 	}
 
-	const setLanguageAt = (index: number) => (lang: Language | null) => {
+	const setLanguageAt = (index: number, lang: Language | null) => {
 		if (!lang) return
 
 		setLanguages(index, lang)
-		setInput(props.of, {
+		setInput(formStore(), {
 			path: ["data", "localized_titles", index, "language_id"],
 			input: lang.id,
 		})
@@ -78,8 +81,8 @@ export function SongLocalizedTitlesField(props: {
 									of={props.of}
 									index={idx()}
 									language={languages[idx()]}
-									onSelectLanguage={setLanguageAt(idx())}
-									onRemove={removeLocalizedTitleAt(idx())}
+									onSelectLanguage={(lang) => setLanguageAt(idx(), lang)}
+									onRemove={() => removeLocalizedTitleAt(idx())}
 								/>
 							)}
 						</For>

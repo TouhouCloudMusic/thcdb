@@ -16,8 +16,8 @@ const ListContext = createContext<ComboboxListContext>()
 const useListContext = (): ComboboxListContext => assertContext(ListContext)
 
 function ListContextProvider(props: ParentProps): JSX.Element {
-	let [store, setStore] = createStore([] as HTMLElement[])
-	let value = {
+	const [store, setStore] = createStore([] as HTMLElement[])
+	const value = {
 		all() {
 			return store
 		},

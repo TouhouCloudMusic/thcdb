@@ -4,10 +4,10 @@
 		"browser": true
 	},
 	"ignorePatterns": [
-		"src/locale/**",
 		"**.gen.ts",
 		"packages/api/**/gen.ts",
-		"src/style/color/convert.ts"
+		"src/style/color/convert.ts",
+		"**/*.d.ts"
 	],
 	"categories": {
 		"correctness": "error",
@@ -19,6 +19,7 @@
 		"nursery": "warn"
 	},
 	"plugins": ["import", "jsx-a11y", "oxc", "promise", "typescript", "unicorn"],
+	"jsPlugins": ["eslint-plugin-solid"],
 	"settings": {
 		"jsx-a11y": {
 			"attributes": {
@@ -27,7 +28,6 @@
 			"polymorphicPropName": "as"
 		}
 	},
-
 	"rules": {
 		"array-callback-return": [
 			"off",
@@ -36,6 +36,7 @@
 			}
 		],
 		"arrow-body-style": "off",
+		"capitalized-comments": "off",
 		"curly": "off",
 		"eqeqeq": ["off", "smart"],
 		"func-names": "off",
@@ -50,7 +51,7 @@
 		"init-declarations": "off",
 		"max-depth": ["warn", 4],
 		"max-lines": [
-			"warn",
+			"off",
 			{
 				"max": 300,
 				"skipBlankLines": true,
@@ -58,7 +59,7 @@
 			}
 		],
 		"max-lines-per-function": [
-			"warn",
+			"off",
 			{
 				"IIFEs": false,
 				"max": 100,
@@ -66,6 +67,7 @@
 				"skipComments": true
 			}
 		],
+		"max-statements": "off",
 		"max-nested-callbacks": ["warn", 10],
 		"max-params": [
 			"warn",
@@ -74,8 +76,10 @@
 			}
 		],
 		"new-cap": "off",
+		"no-alert": "off",
 		"no-async-await": "off",
 		"no-continue": "off",
+		"no-console": "off",
 		"no-constructor-return": "off",
 		// Disable this, as type import is not recognized.
 		// We use the import plugin instead.
@@ -87,6 +91,8 @@
 				"allow": ["constructor", "privateConstructors", "protectedConstructors"]
 			}
 		],
+		"no-inline-comments": "off",
+		"no-warning-comments": "off",
 		"no-magic-numbers": [
 			"off",
 			{
@@ -94,7 +100,13 @@
 				"ignoreArrayIndexes": true
 			}
 		],
-		"no-plusplus": ["warn", { "allowForLoopAfterthoughts": true }],
+		"no-nested-ternary": "off",
+		"no-plusplus": [
+			"warn",
+			{
+				"allowForLoopAfterthoughts": true
+			}
+		],
 		"no-ternary": "off",
 		"no-undefined": "off",
 		"no-unused-vars": "warn",
@@ -102,38 +114,43 @@
 		"prefer-destructuring": "off",
 		"sort-imports": "off", // We use prettier plugin
 		"sort-keys": "off",
-
 		"import/exports-last": "off",
 		"import/group-exports": "off",
 		"import/max-dependencies": "off",
 		"import/no-anonymous-default-export": "off",
 		"import/no-cycle": "off",
 		"import/no-namespace": "off",
-		"import/no-unassigned-imports": [
+		"import/no-unassigned-import": [
 			"error",
-			{ "allow": ["cropperjs", "**/*.css"] }
+			{
+				"allow": ["cropperjs", "**/*.css"]
+			}
 		],
 		"import/prefer-default-export": "off",
 		"import/no-named-export": "off",
-
 		"oxc/no-barrel-file": "off",
 		"oxc/no-const-enum": "off",
 		"oxc/no-optional-chaining": "off",
 		"oxc/no-rest-spread-properties": "off",
-
 		"promise/prefer-await-to-then": "off",
 		"promise/prefer-await-to-callbacks": "off",
-
+		"promise/avoid-new": "off",
 		"typescript/ban-ts-comment": "off",
 		"typescript/consistent-type-definitions": "off",
 		"typescript/explicit-function-return-type": "off",
 		"typescript/explicit-module-boundary-types": "off",
 		"typescript/no-non-null-assertion": "off",
+		"typescript/no-empty-object-type": [
+			"warn",
+			{
+				"allowInterfaces": "with-single-extends"
+			}
+		],
 		"typescript/prefer-enum-initializers": "off",
-
+		"unicorn/catch-error-name": "off",
 		"unicorn/explicit-length-check": "off",
 		"unicorn/filename-case": [
-			"warn",
+			"off",
 			{
 				"cases": {
 					"camelCase": true,
@@ -144,15 +161,32 @@
 		],
 		"unicorn/no-anonymous-default-export": "off",
 		"unicorn/no-array-reduce": "off",
+		"unicorn/no-array-callback-reference": "off",
 		"unicorn/no-array-method-this-argument": "off",
 		// Dupe
 		"unicorn/no-nested-ternary": "off",
+		"unicorn/no-null": "off",
+		"unicorn/no-useless-undefined": [
+			"warn",
+			{
+				"checkArguments": false
+			}
+		],
 		"unicorn/numeric-separators-style": "off",
-		"unicorn/prefer-spread": "off"
+		"unicorn/prefer-spread": "off",
+
+		"solid/reactivity": "error",
+		"solid/self-closing-comp": [
+			"warn",
+			{
+				"component": "all",
+				"html": "void"
+			}
+		]
 	},
 	"overrides": [
 		{
-			"files": ["*.stories.tsx"],
+			"files": ["*.stories.tsx", "eslint.config.js"],
 			"rules": {
 				"no-magic-numbers": "off",
 				"import/no-default-export": "off"

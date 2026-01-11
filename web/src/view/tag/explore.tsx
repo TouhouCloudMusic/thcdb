@@ -12,28 +12,28 @@ const MAX_DEPTH = 4
 const MOCK_DELAY_RANGE_MS = [200, 600]
 const TREE_HEADING_ID = "tag-tree-title"
 
-let sleep = (ms: number) => {
+const sleep = (ms: number) => {
 	return new Promise<void>((resolve) => {
 		setTimeout(resolve, ms)
 	})
 }
 
-let mockDelayMs = () => {
-	let min = MOCK_DELAY_RANGE_MS[0] ?? 0
-	let max = MOCK_DELAY_RANGE_MS[1] ?? min
-	let span = Math.max(0, max - min)
+const mockDelayMs = () => {
+	const min = MOCK_DELAY_RANGE_MS[0] ?? 0
+	const max = MOCK_DELAY_RANGE_MS[1] ?? min
+	const span = Math.max(0, max - min)
 	return min + Math.floor(Math.random() * (span + 1))
 }
 
 export function TagExplore() {
-	let [expandedIdsOverride, setExpandedIdsOverride] =
+	const [expandedIdsOverride, setExpandedIdsOverride] =
 		createSignal<Set<number> | null>(null)
-	let [activeTreeItemId, setActiveTreeItemId] = createSignal<number | null>(
+	const [activeTreeItemId, setActiveTreeItemId] = createSignal<number | null>(
 		null,
 	)
 	const treeItemRefs = new Map<number, HTMLLIElement>()
 
-	let queryOptions = () => ({
+	const queryOptions = () => ({
 		queryKey: ["tag::tree", ROOT_COUNT, MAX_DEPTH, DEFAULT_DEPTH],
 		queryFn: async () => {
 			await sleep(mockDelayMs())
@@ -45,20 +45,20 @@ export function TagExplore() {
 		},
 	})
 
-	let treeQuery = useQuery(queryOptions)
-	let nodes = () => treeQuery.data ?? []
-	let seededExpandedIds = createMemo(() =>
+	const treeQuery = useQuery(queryOptions)
+	const nodes = () => treeQuery.data ?? []
+	const seededExpandedIds = createMemo(() =>
 		collectExpandedIds(nodes(), DEFAULT_DEPTH),
 	)
-	let expandedIds = createMemo(
+	const expandedIds = createMemo(
 		() => expandedIdsOverride() ?? seededExpandedIds(),
 	)
-	let treeIndex = createMemo(() => buildTagTreeIndex(nodes()))
-	let visibleIds = createMemo(() =>
+	const treeIndex = createMemo(() => buildTagTreeIndex(nodes()))
+	const visibleIds = createMemo(() =>
 		collectVisibleNodeIds(nodes(), expandedIds()),
 	)
-	let visibleIdSet = createMemo(() => new Set(visibleIds()))
-	let resolvedActiveTreeItemId = createMemo(() =>
+	const visibleIdSet = createMemo(() => new Set(visibleIds()))
+	const resolvedActiveTreeItemId = createMemo(() =>
 		resolveActiveTreeId(
 			activeTreeItemId(),
 			visibleIds(),
@@ -67,15 +67,15 @@ export function TagExplore() {
 		),
 	)
 
-	let toggleExpanded = (id: number, depth: number, expanded: boolean) => {
+	const toggleExpanded = (id: number, depth: number, expanded: boolean) => {
 		setExpandedIdsOverride((prev) => {
-			let base = prev ?? seededExpandedIds()
+			const base = prev ?? seededExpandedIds()
 
-			if (0 === depth && expanded) {
+			if (depth === 0 && expanded) {
 				return new Set<number>()
 			}
 
-			let next = new Set(base)
+			const next = new Set(base)
 			if (next.has(id)) {
 				next.delete(id)
 			} else {
@@ -85,60 +85,61 @@ export function TagExplore() {
 		})
 	}
 
-	let focusTreeItem = (id: number) => {
+	const focusTreeItem = (id: number) => {
 		setActiveTreeItemId(id)
 		queueMicrotask(() => {
 			treeItemRefs.get(id)?.focus()
 		})
 	}
 
-	let handleTreeKeyDown = (id: number, event: KeyboardEvent) => {
-		let key = event.key
-		let ids = visibleIds()
-		let currentIndex = ids.indexOf(id)
+	// oxlint-disable-next-line complexity
+	const handleTreeKeyDown = (id: number, event: KeyboardEvent) => {
+		const key = event.key
+		const ids = visibleIds()
+		const currentIndex = ids.indexOf(id)
 
-		if ("ArrowDown" === key) {
+		if (key === "ArrowDown") {
 			if (currentIndex < 0 || currentIndex >= ids.length - 1) return
 			event.preventDefault()
-			let nextId = ids[currentIndex + 1]
-			if (undefined === nextId) return
+			const nextId = ids[currentIndex + 1]
+			if (nextId === undefined) return
 			focusTreeItem(nextId)
 			return
 		}
 
-		if ("ArrowUp" === key) {
+		if (key === "ArrowUp") {
 			if (currentIndex <= 0) return
 			event.preventDefault()
-			let prevId = ids[currentIndex - 1]
-			if (undefined === prevId) return
+			const prevId = ids[currentIndex - 1]
+			if (prevId === undefined) return
 			focusTreeItem(prevId)
 			return
 		}
 
-		if ("Home" === key) {
-			let firstId = ids[0]
-			if (undefined === firstId) return
+		if (key === "Home") {
+			const firstId = ids[0]
+			if (firstId === undefined) return
 			event.preventDefault()
 			focusTreeItem(firstId)
 			return
 		}
 
-		if ("End" === key) {
-			let lastId = ids[ids.length - 1]
-			if (undefined === lastId) return
+		if (key === "End") {
+			const lastId = ids.at(-1)
+			if (lastId === undefined) return
 			event.preventDefault()
 			focusTreeItem(lastId)
 			return
 		}
 
-		let node = treeIndex().nodeById.get(id)
+		const node = treeIndex().nodeById.get(id)
 		if (!node) return
 
-		let hasChildren = node.children.length > 0
-		let expanded = hasChildren && expandedIds().has(id)
-		let depth = treeIndex().depthById.get(id) ?? 0
+		const hasChildren = node.children.length > 0
+		const expanded = hasChildren && expandedIds().has(id)
+		const depth = treeIndex().depthById.get(id) ?? 0
 
-		if ("ArrowRight" === key) {
+		if (key === "ArrowRight") {
 			if (!hasChildren) return
 			event.preventDefault()
 
@@ -147,13 +148,13 @@ export function TagExplore() {
 				return
 			}
 
-			let firstChildId = node.children[0]?.id
-			if (undefined === firstChildId) return
+			const firstChildId = node.children[0]?.id
+			if (firstChildId === undefined) return
 			focusTreeItem(firstChildId)
 			return
 		}
 
-		if ("ArrowLeft" === key) {
+		if (key === "ArrowLeft") {
 			event.preventDefault()
 
 			if (expanded) {
@@ -161,13 +162,13 @@ export function TagExplore() {
 				return
 			}
 
-			let parentId = treeIndex().parentById.get(id)
-			if (null == parentId) return
+			const parentId = treeIndex().parentById.get(id)
+			if (parentId === null || parentId === undefined) return
 			focusTreeItem(parentId)
 		}
 	}
 
-	let setActiveTreeItem = (id: number) => {
+	const setActiveTreeItem = (id: number) => {
 		setActiveTreeItemId(id)
 	}
 
@@ -219,8 +220,8 @@ type TagTreeListProps = {
 }
 
 function TagTreeList(props: TagTreeListProps) {
-	let listRole = () => (0 === props.depth ? "tree" : "group")
-	let labelledBy = () => (0 === props.depth ? TREE_HEADING_ID : undefined)
+	const listRole = () => (props.depth === 0 ? "tree" : "group")
+	const labelledBy = () => (props.depth === 0 ? TREE_HEADING_ID : undefined)
 
 	return (
 		<ul
@@ -262,26 +263,26 @@ type TagTreeNodeProps = {
 }
 
 function TagTreeNode(props: TagTreeNodeProps) {
-	let hasChildren = () => props.node.children.length > 0
-	let isExpanded = () => hasChildren() && props.expandedIds().has(props.node.id)
-	let children = () => props.node.children
-	let indentStyle = () => ({ "padding-left": `${props.depth * 16}px` })
-	let toggleLabel = () => (isExpanded() ? "Collapse" : "Expand")
-	let isActive = () => props.activeId() === props.node.id
-	let tabIndex = () => (isActive() ? 0 : -1)
-	let ariaExpanded = () => (hasChildren() ? isExpanded() : undefined)
+	const hasChildren = () => props.node.children.length > 0
+	const isExpanded = () => hasChildren() && props.expandedIds().has(props.node.id)
+	const children = () => props.node.children
+	const indentStyle = () => ({ "padding-left": `${props.depth * 16}px` })
+	const toggleLabel = () => (isExpanded() ? "Collapse" : "Expand")
+	const isActive = () => props.activeId() === props.node.id
+	const tabIndex = () => (isActive() ? 0 : -1)
+	const ariaExpanded = () => (hasChildren() ? isExpanded() : undefined)
 
-	let toggleNode = () => {
+	const toggleNode = () => {
 		if (!hasChildren()) return
 		props.onToggle(props.node.id, props.depth, isExpanded())
 	}
 
-	let handleFocusIn = () => {
+	const handleFocusIn = () => {
 		props.setActiveId(props.node.id)
 	}
 
-	let handleKeyDown = (event: KeyboardEvent) => {
-		if ("Enter" === event.key && event.target === event.currentTarget) {
+	const handleKeyDown = (event: KeyboardEvent) => {
+		if (event.key === "Enter" && event.target === event.currentTarget) {
 			event.preventDefault()
 			linkRef?.click()
 			return
@@ -290,7 +291,7 @@ function TagTreeNode(props: TagTreeNodeProps) {
 		props.onKeyDown(props.node.id, event)
 	}
 
-	let setItemRef = (element: HTMLLIElement) => {
+	const setItemRef = (element: HTMLLIElement) => {
 		props.itemRefs.set(props.node.id, element)
 		onCleanup(() => {
 			props.itemRefs.delete(props.node.id)
@@ -298,13 +299,13 @@ function TagTreeNode(props: TagTreeNodeProps) {
 	}
 
 	let linkRef: HTMLAnchorElement | undefined
-	let setLinkRef = (element: HTMLAnchorElement) => {
+	const setLinkRef = (element: HTMLAnchorElement) => {
 		linkRef = element
 	}
 
 	return (
 		<li
-			ref={setItemRef}
+			ref={(element) => setItemRef(element)}
 			role="treeitem"
 			tabIndex={tabIndex()}
 			aria-level={props.depth + 1}
@@ -321,7 +322,7 @@ function TagTreeNode(props: TagTreeNodeProps) {
 			>
 				<Show
 					when={hasChildren()}
-					fallback={<span class="inline-flex h-5 w-5" />}
+					fallback={<span class="inline-flex h-5 w-5"></span>}
 				>
 					<button
 						type="button"
@@ -381,26 +382,26 @@ type TagTreeSkeletonItemProps = {
 }
 
 function TagTreeSkeletonItem(props: TagTreeSkeletonItemProps) {
-	let indentStyle = () => ({ "padding-left": `${props.depth * 16}px` })
-	let mainStyle = () => ({ width: `${props.width}px` })
-	let subWidth = () => Math.max(80, props.width - 48)
-	let subStyle = () => ({ width: `${subWidth()}px` })
+	const indentStyle = () => ({ "padding-left": `${props.depth * 16}px` })
+	const mainStyle = () => ({ width: `${props.width}px` })
+	const subWidth = () => Math.max(80, props.width - 48)
+	const subStyle = () => ({ width: `${subWidth()}px` })
 
 	return (
 		<div
 			class="flex items-start gap-2"
 			style={indentStyle()}
 		>
-			<div class="mt-1 h-4 w-4 rounded bg-slate-200" />
+			<div class="mt-1 h-4 w-4 rounded bg-slate-200"></div>
 			<div class="flex flex-col gap-2">
 				<div
 					class="h-4 rounded bg-slate-200"
 					style={mainStyle()}
-				/>
+				></div>
 				<div
 					class="h-3 rounded bg-slate-100"
 					style={subStyle()}
-				/>
+				></div>
 			</div>
 		</div>
 	)
@@ -439,7 +440,7 @@ function collectExpandedIds(
 	maxDepth: number,
 ): Set<number> {
 	const expanded = new Set<number>()
-	let walk = (items: TagTreeNode[], depth: number) => {
+	const walk = (items: TagTreeNode[], depth: number) => {
 		if (depth >= maxDepth) return
 		for (const item of items) {
 			if (item.children.length > 0) {
@@ -458,12 +459,12 @@ type TagTreeIndex = {
 	depthById: Map<number, number>
 }
 
-let buildTagTreeIndex = (roots: TagTreeNode[]): TagTreeIndex => {
+const buildTagTreeIndex = (roots: TagTreeNode[]): TagTreeIndex => {
 	const nodeById = new Map<number, TagTreeNode>()
 	const parentById = new Map<number, number | null>()
 	const depthById = new Map<number, number>()
 
-	let walk = (items: TagTreeNode[], parentId: number | null, depth: number) => {
+	const walk = (items: TagTreeNode[], parentId: number | null, depth: number) => {
 		for (const item of items) {
 			nodeById.set(item.id, item)
 			parentById.set(item.id, parentId)
@@ -481,12 +482,12 @@ let buildTagTreeIndex = (roots: TagTreeNode[]): TagTreeIndex => {
 	}
 }
 
-let collectVisibleNodeIds = (
+const collectVisibleNodeIds = (
 	roots: TagTreeNode[],
 	expandedIds: Set<number>,
 ): number[] => {
 	const ids: number[] = []
-	let walk = (items: TagTreeNode[]) => {
+	const walk = (items: TagTreeNode[]) => {
 		for (const item of items) {
 			ids.push(item.id)
 			if (item.children.length > 0 && expandedIds.has(item.id)) {
@@ -499,21 +500,21 @@ let collectVisibleNodeIds = (
 	return ids
 }
 
-let resolveActiveTreeId = (
+const resolveActiveTreeId = (
 	activeId: number | null,
 	visibleIds: readonly number[],
 	visibleIdSet: ReadonlySet<number>,
 	parentById: ReadonlyMap<number, number | null>,
 ): number | null => {
-	let fallbackId = visibleIds[0] ?? null
-	if (null == fallbackId) return null
-	if (null == activeId) return fallbackId
+	const fallbackId = visibleIds[0] ?? null
+	if (fallbackId === null || fallbackId === undefined) return null
+	if (activeId === null || activeId === undefined) return fallbackId
 	if (visibleIdSet.has(activeId)) return activeId
 
 	let currentId = activeId
 	while (true) {
-		let parentId = parentById.get(currentId)
-		if (null == parentId) break
+		const parentId = parentById.get(currentId)
+		if (parentId === null || parentId === undefined) break
 		if (visibleIdSet.has(parentId)) return parentId
 		currentId = parentId
 	}

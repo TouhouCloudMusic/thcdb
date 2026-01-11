@@ -10,7 +10,7 @@ import { ReleaseInfoPageContext } from "../context"
 export function ReleaseInfoCredits() {
 	const ctx = assertContext(ReleaseInfoPageContext)
 
-	let grouped = () =>
+	const grouped = () =>
 		groupByArtist(ctx.release.credits ?? []).toSorted((a, b) =>
 			a.artist.name.localeCompare(b.artist.name),
 		)
@@ -33,7 +33,7 @@ type GroupedReleaseCredit = {
 
 function groupByArtist(credits: ReleaseCredit[]): GroupedReleaseCredit[] {
 	return credits.reduce<GroupedReleaseCredit[]>((ret, credit) => {
-		let existing = ret.find((g) => g.artist.id === credit.artist.id)
+		const existing = ret.find((g) => g.artist.id === credit.artist.id)
 		if (existing) {
 			existing.items.push({ role: credit.role, on: credit.on })
 		} else {

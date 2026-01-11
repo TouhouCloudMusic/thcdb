@@ -22,13 +22,13 @@ type LabelExploreSearch = {
 }
 
 const getDissolvedSelectValue = (value: boolean | undefined) => {
-	if (undefined === value) return ""
+	if (value === undefined) return ""
 	return value ? "true" : "false"
 }
 
 const parseDissolvedSelectValue = (value: string): boolean | undefined => {
-	if ("" === value) return undefined
-	return "true" === value
+	if (value === "") return undefined
+	return value === "true"
 }
 
 const createLabelExploreInfiniteQueryOptions = (

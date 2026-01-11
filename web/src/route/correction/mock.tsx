@@ -75,10 +75,9 @@ const APPROVED_UPDATE: MockScenarioData = {
 	},
 	history: MOCK_CORRECTION_HISTORY.map((item) =>
 		item.id === MOCK_CORRECTION_ID
-			? {
-					...item,
+			? Object.assign(item, {
 					handled_at: HANDLED_AT,
-				}
+				})
 			: item,
 	),
 }
@@ -92,10 +91,9 @@ const REJECTED_UPDATE: MockScenarioData = {
 	},
 	history: MOCK_CORRECTION_HISTORY.map((item) =>
 		item.id === MOCK_CORRECTION_ID
-			? {
-					...item,
+			? Object.assign(item, {
 					handled_at: HANDLED_AT,
-				}
+				})
 			: item,
 	),
 }
@@ -278,18 +276,17 @@ function RouteComponent() {
 			?? SCENARIOS[0],
 	)
 
-	seedCorrectionQueries(activeScenarioKey())
 	createEffect(() => seedCorrectionQueries(activeScenarioKey()))
 
 	const compareIds = createMemo(() => {
 		const compareEntries = Object.keys(activeScenario().data.compare)
 		return compareEntries
-			.map((value) => Number(value))
+			.map(Number)
 			.filter((value) => Number.isFinite(value))
 			.toSorted((a, b) => b - a)
 	})
 
-	let setScenario = (key: ScenarioKey) => {
+	const setScenario = (key: ScenarioKey) => {
 		void navigate({
 			to: "/correction/mock",
 			search: (prev) => ({
@@ -300,7 +297,7 @@ function RouteComponent() {
 		})
 	}
 
-	let setCompare = (value: number | undefined) => {
+	const setCompare = (value: number | undefined) => {
 		void navigate({
 			to: "/correction/mock",
 			search: (prev) => ({
@@ -310,7 +307,7 @@ function RouteComponent() {
 		})
 	}
 
-	let onCompareInputChange = (event: Event) => {
+	const onCompareInputChange = (event: Event) => {
 		const currentTarget = event.currentTarget
 		if (!(currentTarget instanceof HTMLInputElement)) return
 
@@ -319,9 +316,9 @@ function RouteComponent() {
 		setCompare(Number.isFinite(next ?? Number.NaN) ? next : undefined)
 	}
 
-	let toggleCollapsed = () => setCollapsed((prev) => !prev)
+	const toggleCollapsed = () => setCollapsed((prev) => !prev)
 
-	let reset = () => {
+	const reset = () => {
 		void navigate({
 			to: "/correction/mock",
 			search: () => ({

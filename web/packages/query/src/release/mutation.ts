@@ -10,28 +10,21 @@ type Params =
 export const getInstance = () =>
 	useMutation(() => ({
 		mutationFn: async (params: Params) => {
-			if (params.type === "Create") {
-				const result = await ReleaseApi.create({
-					body: params.data,
-				})
-				return Either.match(result, {
-					onRight: (data) => data,
-					onLeft: (error) => {
-						throw error
-					},
-				})
-			} else {
-				const result = await ReleaseApi.update({
-					path: { id: params.id },
-					body: params.data,
-				})
-				return Either.match(result, {
-					onRight: (data) => data,
-					onLeft: (error) => {
-						throw error
-					},
-				})
-			}
+			const result =
+				params.type === "Create"
+					? await ReleaseApi.create({
+							body: params.data,
+						})
+					: await ReleaseApi.update({
+							path: { id: params.id },
+							body: params.data,
+						})
+			return Either.match(result, {
+				onRight: (data) => data,
+				onLeft: (error) => {
+					throw error
+				},
+			})
 		},
 		mutationKey: ["release::mutate"],
 		throwOnError: true,

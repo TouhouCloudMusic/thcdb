@@ -21,5 +21,5 @@ export type SelectionProps = {
 
 export function Selection(props: ParentProps<SelectionProps>) {
 	// @ts-expect-error
-	return <cropper-selection {...props} />
+	return <cropper-selection {...props}></cropper-selection>
 }

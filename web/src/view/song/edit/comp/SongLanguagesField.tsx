@@ -24,8 +24,13 @@ export function SongLanguagesField(props: {
 	initLanguages?: Language[]
 	class?: string
 }) {
-	let selectedLanguages = createMemo(() => {
+	const selectedLanguages = createMemo(() => {
 		return getInput(props.of, { path: ["data", "languages"] })
+	})
+	const selectedLanguageIds = createMemo(() => new Set(selectedLanguages()))
+	const languageFilter = createMemo(() => {
+		const ids = selectedLanguageIds()
+		return (lang: Language) => !ids.has(lang.id)
 	})
 
 	const addLanguage = () => {
@@ -34,15 +39,13 @@ export function SongLanguagesField(props: {
 		})
 	}
 
-	const removeLanguageAt = (index: number) => () => {
+	const removeLanguageAt = (index: number) => {
 		remove(props.of, { path: ["data", "languages"], at: index })
 	}
 
-	const setLanguageAt = (index: number) => (lang: Language | null) => {
+	const setLanguageAt = (index: number, lang: Language | null) => {
 		if (!lang) return
-		const alreadySelected = selectedLanguages().some(
-			(entry) => entry === lang.id,
-		)
+		const alreadySelected = selectedLanguageIds().has(lang.id)
 		if (alreadySelected) return
 
 		setInput(props.of, {
@@ -85,10 +88,8 @@ export function SongLanguagesField(props: {
 										{(field) => (
 											<>
 												<LanguageCombobox
-													onChange={setLanguageAt(idx())}
-													filter={(lang) => {
-														return !selectedLanguages().includes(lang.id)
-													}}
+													onChange={(lang) => setLanguageAt(idx(), lang)}
+													filter={languageFilter()}
 												/>
 												<input
 													{...field.props}
@@ -99,7 +100,7 @@ export function SongLanguagesField(props: {
 												<Button
 													variant="Tertiary"
 													class="aspect-square"
-													onClick={removeLanguageAt(idx())}
+													onClick={() => removeLanguageAt(idx())}
 												>
 													<Cross1Icon class="mx-auto" />
 												</Button>

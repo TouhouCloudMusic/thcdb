@@ -10,28 +10,21 @@ type Params =
 export const getInstance = () =>
 	useMutation(() => ({
 		mutationFn: async (params: Params) => {
-			if (params.type === "Create") {
-				const result = await TagApi.create({
-					body: params.data,
-				})
-				return Either.match(result, {
-					onRight: (data) => data,
-					onLeft: (error) => {
-						throw error
-					},
-				})
-			} else {
-				const result = await TagApi.upsertCorrection({
-					path: { id: params.id },
-					body: params.data,
-				})
-				return Either.match(result, {
-					onRight: (data) => data,
-					onLeft: (error) => {
-						throw error
-					},
-				})
-			}
+			const result =
+				params.type === "Create"
+					? await TagApi.create({
+							body: params.data,
+						})
+					: await TagApi.upsertCorrection({
+							path: { id: params.id },
+							body: params.data,
+						})
+			return Either.match(result, {
+				onRight: (data) => data,
+				onLeft: (error) => {
+					throw error
+				},
+			})
 		},
 		mutationKey: ["tag::mutate"],
 		throwOnError: true,

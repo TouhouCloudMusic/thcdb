@@ -1,7 +1,8 @@
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import type { Event } from "@thc/api"
-import { type Component, For, Show } from "solid-js"
+import { For, Show } from "solid-js"
+import type { Component } from "solid-js"
 
 import { Link } from "~/component/atomic"
 import { Input } from "~/component/atomic/Input"
@@ -20,12 +21,12 @@ const route = getRouteApi("/event/explore")
 
 const EventItemSkeleton: Component = () => (
 	<div class="animate-pulse border-b border-slate-200 py-4">
-		<div class="mb-2 h-5 w-2/3 rounded bg-slate-200" />
+		<div class="mb-2 h-5 w-2/3 rounded bg-slate-200"></div>
 		<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-			<div class="h-4 w-28 rounded bg-slate-100" />
-			<div class="h-4 w-40 rounded bg-slate-100" />
+			<div class="h-4 w-28 rounded bg-slate-100"></div>
+			<div class="h-4 w-40 rounded bg-slate-100"></div>
 		</div>
-		<div class="mt-2 h-4 w-3/5 rounded bg-slate-100" />
+		<div class="mt-2 h-4 w-3/5 rounded bg-slate-100"></div>
 	</div>
 )
 
@@ -50,7 +51,7 @@ const formatEventLocation = (event: Event) => {
 	if (location.province) parts.push(location.province)
 	if (location.city) parts.push(location.city)
 
-	if (0 === parts.length) return
+	if (parts.length === 0) return
 	return parts.join(", ")
 }
 
@@ -83,7 +84,7 @@ const EventItem: Component<EventItemProps> = (props) => {
 							)}
 						</Show>
 
-						<Show when={0 < alternativeNameCount()}>
+						<Show when={alternativeNameCount() > 0}>
 							<span class="text-slate-300">·</span>
 							<span>{alternativeNameCount()} AKAs</span>
 						</Show>
@@ -161,7 +162,7 @@ type EventExploreListProps = {
 function EventExploreList(props: EventExploreListProps) {
 	return (
 		<>
-			<Show when={!props.isLoading && 0 === props.events.length}>
+			<Show when={!props.isLoading && props.events.length === 0}>
 				<div class="py-8 text-sm text-slate-400">No events</div>
 			</Show>
 
@@ -172,7 +173,7 @@ function EventExploreList(props: EventExploreListProps) {
 			<div
 				ref={props.setSentinelRef}
 				class="h-1"
-			/>
+			></div>
 
 			<Show when={props.isFetchingNextPage || props.isLoading}>
 				<div class="flex flex-col">
@@ -182,7 +183,7 @@ function EventExploreList(props: EventExploreListProps) {
 				</div>
 			</Show>
 
-			<Show when={!props.hasNextPage && 0 < props.events.length}>
+			<Show when={!props.hasNextPage && props.events.length > 0}>
 				<div class="flex justify-center py-4 text-sm text-slate-400">
 					No more events
 				</div>
@@ -245,7 +246,7 @@ export const EventExplore = () => {
 		key: "start_date_from" | "start_date_to",
 		value: string,
 	) => {
-		const nextValue = 0 < value.length ? value : undefined
+		const nextValue = value.length > 0 ? value : undefined
 
 		navigate({
 			to: "/event/explore",

@@ -28,8 +28,8 @@ type Story = StoryObj<typeof AlertDialog>
 // 基础对话框示例
 export const Default: Story = {
 	render: (args) => {
-		let [open, setOpen] = createSignal(false)
-		let close = () => {
+		const [open, setOpen] = createSignal(false)
+		const close = () => {
 			setOpen(false)
 		}
 		return (

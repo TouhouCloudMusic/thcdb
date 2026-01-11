@@ -44,9 +44,9 @@ function normalizeLocation(location?: EventLocation | null): Location {
 }
 
 export function toEventFormInitValue(
-	props: EventFormInitProps,
+	input: EventFormInitProps,
 ): NewEventCorrection {
-	if (props.type === "new") {
+	if (input.type === "new") {
 		return {
 			type: "Create",
 			description: "",
@@ -66,14 +66,14 @@ export function toEventFormInitValue(
 		type: "Update",
 		description: "",
 		data: {
-			name: props.event.name,
-			short_description: props.event.short_description ?? undefined,
-			description: props.event.description ?? undefined,
-			start_date: DateWithPrecision.toInput(props.event.start_date),
-			end_date: DateWithPrecision.toInput(props.event.end_date),
+			name: input.event.name,
+			short_description: input.event.short_description ?? undefined,
+			description: input.event.description ?? undefined,
+			start_date: DateWithPrecision.toInput(input.event.start_date),
+			end_date: DateWithPrecision.toInput(input.event.end_date),
 			alternative_names:
-				props.event.alternative_names?.map((alt) => alt.name) ?? [],
-			location: normalizeLocation(props.event.location),
+				input.event.alternative_names?.map((alt) => alt.name) ?? [],
+			location: normalizeLocation(input.event.location),
 		},
 	}
 }

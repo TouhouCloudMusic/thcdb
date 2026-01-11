@@ -1,4 +1,5 @@
-import { For, type Component, createMemo } from "solid-js"
+import { For, createMemo } from "solid-js"
+import type { Component } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
 import { tw } from "~/utils"

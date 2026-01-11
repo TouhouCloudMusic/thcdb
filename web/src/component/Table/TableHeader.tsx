@@ -1,5 +1,7 @@
-import { flexRender, type HeaderGroup } from "@tanstack/solid-table"
-import { For, ParentComponent } from "solid-js"
+import { flexRender } from "@tanstack/solid-table"
+import type { HeaderGroup } from "@tanstack/solid-table"
+import { For } from "solid-js"
+import type { ParentComponent } from "solid-js"
 
 const HeaderCell: ParentComponent = (props) => {
 	return <th>{props.children}</th>
@@ -9,9 +11,7 @@ const HeaderRow: ParentComponent = (props) => {
 	return <tr>{props.children}</tr>
 }
 
-export const TableHeader = <T extends unknown>(props: {
-	headerGroup: HeaderGroup<T>[]
-}) => {
+export const TableHeader = <T,>(props: { headerGroup: HeaderGroup<T>[] }) => {
 	return (
 		<thead>
 			<For each={props.headerGroup}>

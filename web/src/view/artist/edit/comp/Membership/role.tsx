@@ -18,34 +18,34 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 	const SEARCH_DEBOUNCE_MS = 300
 	const { formStore } = useArtistForm()
 
-	let [searchTerm, setSearchTerm] = createSignal("")
+	const [searchTerm, setSearchTerm] = createSignal("")
 
-	let searchTermTrimmed = createMemo(() => {
+	const searchTermTrimmed = createMemo(() => {
 		const kw = searchTerm().trim()
 		return kw.length > 1 ? kw : undefined
 	})
 
-	let setSearchTermDebounced = debounce(SEARCH_DEBOUNCE_MS, (val: string) =>
+	const setSearchTermDebounced = debounce(SEARCH_DEBOUNCE_MS, (val: string) =>
 		setSearchTerm(val),
 	)
 
-	let [roles, setRoles] = createStore<CreditRoleSummary[]>([])
+	const [roles, setRoles] = createStore<CreditRoleSummary[]>([])
 
-	let rolesQuery = useQuery(() => ({
+	const rolesQuery = useQuery(() => ({
 		...CreditRoleQueryOption.findByKeyword(searchTermTrimmed()!),
 		placeholderData: id,
 		enabled: Boolean(searchTermTrimmed()?.length),
 	}))
 
-	let options = createMemo(() => {
-		let data = rolesQuery.data ?? []
+	const options = createMemo(() => {
+		const data = rolesQuery.data ?? []
 
 		return data.filter((role) => !roles.some((x) => x.id === role.id))
 	})
 
-	let path = () => `data.memberships.${props.index}.roles` as const
+	const path = () => `data.memberships.${props.index}.roles` as const
 
-	let addRole = (role: CreditRoleSummary) => {
+	const addRole = (role: CreditRoleSummary) => {
 		setRoles(
 			produce((roles) => {
 				roles.push(role)
@@ -56,7 +56,7 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 		})
 	}
 
-	let removeRole = (index: number) => {
+	const removeRole = (index: number) => {
 		setRoles(
 			produce((s) => {
 				s.splice(index, 1)
@@ -130,7 +130,7 @@ function RoleBadge(props: {
 	role: CreditRoleSummary
 	removeRole: () => void
 }) {
-	let { formStore } = useArtistForm()
+	const { formStore } = useArtistForm()
 	return (
 		<M.Field
 			of={formStore}

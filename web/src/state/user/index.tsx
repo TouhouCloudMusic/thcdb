@@ -94,7 +94,7 @@ const UserContext = createContext<UserStore>()
 export const useCurrentUser = () => assertContext(UserContext, "UserContext")
 
 export function UserContextProvider(props: ParentProps) {
-	let store = new UserStore(undefined)
+	const store = new UserStore(undefined)
 	onMount(() => {
 		void store.trySignIn()
 	})

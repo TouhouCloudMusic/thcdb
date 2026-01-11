@@ -116,6 +116,7 @@ async function createMarked() {
 		.use(markedFootnote())
 
 	return {
+		// oxlint-disable-next-line require-await
 		async render(text: string) {
 			return marked.parse(text)
 		},

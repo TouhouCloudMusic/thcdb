@@ -62,10 +62,10 @@ function LabelInfoHeader() {
 
 function LabelInfoDetails() {
 	const ctx = assertContext(LabelInfoPageContext)
-	let hasLocalizedNames = () => ctx.label.localized_names.length > 0
-	let hasFounders = () => ctx.label.founders.length > 0
-	let founded = () => DateWithPrecision.display(ctx.label.founded_date)
-	let dissolved = () => DateWithPrecision.display(ctx.label.dissolved_date)
+	const hasLocalizedNames = () => ctx.label.localized_names.length > 0
+	const hasFounders = () => ctx.label.founders.length > 0
+	const founded = () => DateWithPrecision.display(ctx.label.founded_date)
+	const dissolved = () => DateWithPrecision.display(ctx.label.dissolved_date)
 
 	return (
 		<div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">

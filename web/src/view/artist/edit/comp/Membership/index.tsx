@@ -18,7 +18,7 @@ import { MembershipRoleField } from "./role"
 import { TenureFieldArray } from "./tenure"
 
 function createMembershipStore() {
-	let [membershipStore, setMembershipStore] = createStore([] as Artist[])
+	const [membershipStore, setMembershipStore] = createStore([] as Artist[])
 
 	return {
 		get inner() {
@@ -47,26 +47,26 @@ function createMembershipStore() {
 }
 
 export function ArtistFormMembership(): JSX.Element {
-	let context = useArtistForm()
-	let { formStore } = context
+	const context = useArtistForm()
+	const { formStore } = context
 
-	let membership = createMembershipStore()
-	let type = createMemo(() => M.getValue(formStore, "data.artist_type"))
+	const membership = createMembershipStore()
+	const type = createMemo(() => M.getValue(formStore, "data.artist_type"))
 
-	let isDisabled = createMemo(() => {
+	const isDisabled = createMemo(() => {
 		return !type() || type() === "Unknown"
 	})
 
-	let exclusion = createMemo(() => {
-		let arr = membership.inner.map((x) => x.id)
+	const exclusion = createMemo(() => {
+		const arr = membership.inner.map((x) => x.id)
 		if (context.artistId) {
 			arr.push(context.artistId)
 		}
 		return arr
 	})
 
-	let filter = createMemo<ArtistCommonFilter>(() => {
-		let ty = type()
+	const filter = createMemo<ArtistCommonFilter>(() => {
+		const ty = type()
 		return {
 			artist_type: ty ? [ty] : undefined,
 			exclusion: exclusion(),

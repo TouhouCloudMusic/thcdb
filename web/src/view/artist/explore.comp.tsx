@@ -27,7 +27,7 @@ const formatArtistDateRange = (artist: Artist) => {
 }
 
 const isDefinedString = (value: string | null | undefined): value is string => {
-	return "string" === typeof value && 0 < value.length
+	return typeof value === "string" && value.length > 0
 }
 
 const formatLocation = (value: Artist["current_location"] | undefined) => {
@@ -35,26 +35,26 @@ const formatLocation = (value: Artist["current_location"] | undefined) => {
 	const parts = [value.country, value.province, value.city].filter(
 		isDefinedString,
 	)
-	if (0 === parts.length) return
+	if (parts.length === 0) return
 	return parts.join(" / ")
 }
 
 export const ArtistItemSkeleton: Component = () => (
 	<div class="animate-pulse border-b border-slate-200 py-4">
 		<div class="flex gap-3">
-			<div class="h-12 w-12 shrink-0 rounded-full bg-slate-200" />
+			<div class="h-12 w-12 shrink-0 rounded-full bg-slate-200"></div>
 			<div class="min-w-0 flex-1">
 				<div class="mb-2 flex items-center gap-2">
-					<div class="h-5 w-1/3 rounded bg-slate-200" />
-					<div class="h-5 w-16 rounded bg-slate-100" />
+					<div class="h-5 w-1/3 rounded bg-slate-200"></div>
+					<div class="h-5 w-16 rounded bg-slate-100"></div>
 				</div>
 				<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-					<div class="h-4 w-36 rounded bg-slate-100" />
-					<div class="h-4 w-32 rounded bg-slate-100" />
+					<div class="h-4 w-36 rounded bg-slate-100"></div>
+					<div class="h-4 w-32 rounded bg-slate-100"></div>
 				</div>
 				<div class="mt-2 flex flex-wrap items-center gap-1">
-					<div class="h-4 w-24 rounded bg-slate-100" />
-					<div class="h-4 w-28 rounded bg-slate-100" />
+					<div class="h-4 w-24 rounded bg-slate-100"></div>
+					<div class="h-4 w-28 rounded bg-slate-100"></div>
 				</div>
 			</div>
 		</div>
@@ -196,7 +196,7 @@ type ArtistExploreListProps = {
 export const ArtistExploreList: Component<ArtistExploreListProps> = (props) => {
 	return (
 		<>
-			<Show when={!props.isLoading && 0 === props.artists.length}>
+			<Show when={!props.isLoading && props.artists.length === 0}>
 				<div class="py-8 text-sm text-slate-400">No artists</div>
 			</Show>
 
@@ -209,7 +209,7 @@ export const ArtistExploreList: Component<ArtistExploreListProps> = (props) => {
 			<div
 				ref={props.setSentinelRef}
 				class="h-1"
-			/>
+			></div>
 
 			<Show when={props.isFetchingNextPage || props.isLoading}>
 				<div class="flex flex-col">
@@ -219,7 +219,7 @@ export const ArtistExploreList: Component<ArtistExploreListProps> = (props) => {
 				</div>
 			</Show>
 
-			<Show when={!props.hasNextPage && 0 < props.artists.length}>
+			<Show when={!props.hasNextPage && props.artists.length > 0}>
 				<div class="flex justify-center py-4 text-sm text-slate-400">
 					No more artists
 				</div>

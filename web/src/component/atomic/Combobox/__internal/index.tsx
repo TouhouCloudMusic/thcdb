@@ -13,7 +13,7 @@ import {
 } from "./scroll"
 
 function ComboboxScrollProvider(props: { children: JSX.Element }) {
-	let contextValue = createComboboxScrollContext()
+	const contextValue = createComboboxScrollContext()
 	return (
 		<ComboboxScrollContext.Provider value={contextValue}>
 			{props.children}
@@ -289,7 +289,7 @@ export type ItemProps = ComponentProps<typeof Combobox.Item<"li">>
 export function Item(props: ItemProps): JSX.Element {
 	const scrollContext = useComboboxScroll()
 
-	let [itemRef, setItemRef] = createSignal<HTMLElement>()
+	const [itemRef, setItemRef] = createSignal<HTMLElement>()
 
 	const finalProps = mergeProps(props, {
 		get class() {
@@ -305,7 +305,7 @@ export function Item(props: ItemProps): JSX.Element {
 	})
 
 	createEffect(() => {
-		let ref = itemRef()
+		const ref = itemRef()
 		if (!ref) return
 
 		const observer = new MutationObserver(() => {

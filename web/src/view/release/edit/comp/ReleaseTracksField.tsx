@@ -201,19 +201,19 @@ type DiscNameDialogProps = {
 }
 
 function EditDiscNameDialog(props: DiscNameDialogProps) {
-	let [open, setOpen] = createSignal(false)
-	let [name, setName] = createSignal("")
+	const [open, setOpen] = createSignal(false)
+	const [name, setName] = createSignal("")
 
-	let syncOpen = (state: boolean) => {
+	const syncOpen = (state: boolean) => {
 		setOpen(state)
 		if (state) {
-			let initial = props.currentName().trim()
+			const initial = props.currentName().trim()
 			setName(initial)
 		}
 	}
 
-	let confirm = () => {
-		let next = name().trim()
+	const confirm = () => {
+		const next = name().trim()
 		props.onConfirm(next)
 		setOpen(false)
 	}
@@ -242,7 +242,7 @@ function EditDiscNameDialog(props: DiscNameDialogProps) {
 								placeholder="Disc name"
 								value={name()}
 								onInput={(e: Event) => {
-									let value = (e.target as HTMLInputElement).value
+									const value = (e.target as HTMLInputElement).value
 									setName(value)
 								}}
 							/>

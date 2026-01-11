@@ -31,7 +31,7 @@ type EntityFilter =
 	| "song"
 	| "tag"
 
-let isEntityFilter = (value: string): value is EntityFilter => {
+const isEntityFilter = (value: string): value is EntityFilter => {
 	return (
 		value === "all"
 		|| value === "artist"
@@ -92,8 +92,8 @@ export function Header() {
 }
 
 function AuthenticatedContent(props: { user: UserProfile }) {
-	let [show, setShow, setRef] = createClickOutside()
-	let close = () => setShow(false)
+	const [show, setShow, setRef] = createClickOutside()
+	const close = () => setShow(false)
 	return (
 		<>
 			<div class="grid h-8 w-8 place-items-center">
@@ -124,14 +124,14 @@ function SearchBar() {
 	const navigate = useNavigate()
 	let inputRef: HTMLInputElement | undefined
 
-	let [entity, setEntity] = createSignal<EntityFilter>("all")
-	let [showFilter, setShowFilter] = createSignal(false)
+	const [entity, setEntity] = createSignal<EntityFilter>("all")
+	const [showFilter, setShowFilter] = createSignal(false)
 
-	let submit = (e: Event) => {
+	const submit = (e: Event) => {
 		e.preventDefault()
-		let value = inputRef?.value?.trim() ?? ""
+		const value = inputRef?.value?.trim() ?? ""
 		if (!value) return
-		let selected = entity()
+		const selected = entity()
 		if (selected === "all") {
 			navigate({ to: "/search", search: { q: value } })
 		} else {
@@ -152,7 +152,7 @@ function SearchBar() {
 				class="relative grid w-96 items-center"
 				onFocusIn={() => setShowFilter(true)}
 				onFocusOut={(e) => {
-					let next = e.relatedTarget
+					const next = e.relatedTarget
 					if (next instanceof Node && e.currentTarget.contains(next)) return
 					setShowFilter(false)
 				}}
@@ -176,7 +176,7 @@ function SearchBar() {
 							<Select
 								value={entity()}
 								onChange={(e) => {
-									let value = e.currentTarget.value
+									const value = e.currentTarget.value
 									if (!isEntityFilter(value)) return
 									setEntity(value)
 								}}
@@ -199,7 +199,7 @@ function SearchBar() {
 }
 
 function NotificationButton() {
-	let notification_state = createMemo(() => useCurrentUser().notification_state)
+	const notification_state = createMemo(() => useCurrentUser().notification_state)
 	return (
 		<Button
 			variant="Tertiary"

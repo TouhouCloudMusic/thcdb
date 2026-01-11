@@ -15,14 +15,14 @@ export type Props = (
 	& JSX.HTMLAttributes<HTMLSpanElement>
 
 export function Divider(props: Props) {
-	let direction_class = () => {
+	const direction_class = () => {
 		if (props.vertical) {
 			return "w-[0.5px] h-full"
 		}
 		return "h-[0.5px] w-full"
 	}
 
-	let [_, other_props] = splitProps(props, ["class"])
+	const [_, other_props] = splitProps(props, ["class"])
 
 	return (
 		<span

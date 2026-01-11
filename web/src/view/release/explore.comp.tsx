@@ -23,10 +23,10 @@ const getLocalizedTitle = (
 const ReleaseItemSkeleton: Component = () => (
 	<div class="animate-pulse border-b border-slate-200 py-4">
 		<div class="flex gap-3">
-			<div class="h-14 w-14 shrink-0 rounded-md border border-slate-200 bg-slate-100" />
+			<div class="h-14 w-14 shrink-0 rounded-md border border-slate-200 bg-slate-100"></div>
 			<div class="min-w-0 flex-1">
-				<div class="mb-2 h-5 w-2/3 rounded bg-slate-200" />
-				<div class="h-4 w-1/2 rounded bg-slate-100" />
+				<div class="mb-2 h-5 w-2/3 rounded bg-slate-200"></div>
+				<div class="h-4 w-1/2 rounded bg-slate-100"></div>
 			</div>
 		</div>
 	</div>
@@ -49,15 +49,15 @@ function ReleaseMeta(props: ReleaseMetaProps) {
 		const catalogs = props.release.catalog_nums ?? []
 		const values = catalogs.slice(0, 2).map((c) => c.catalog_number)
 		const hiddenCount = Math.max(0, catalogs.length - values.length)
-		const suffix = 0 < hiddenCount ? ` +${hiddenCount}` : ""
-		return 0 < values.length ? `${values.join(", ")}${suffix}` : undefined
+		const suffix = hiddenCount > 0 ? ` +${hiddenCount}` : ""
+		return values.length > 0 ? `${values.join(", ")}${suffix}` : undefined
 	}
 
 	const firstEvent = () => props.release.events?.[0]
 
 	return (
 		<div class="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
-			<Show when={0 < artists().length}>
+			<Show when={artists().length > 0}>
 				<For each={visibleArtists()}>
 					{(artist, idx) => (
 						<>
@@ -74,7 +74,7 @@ function ReleaseMeta(props: ReleaseMetaProps) {
 						</>
 					)}
 				</For>
-				<Show when={0 < remainingArtists()}>
+				<Show when={remainingArtists() > 0}>
 					<span class="text-slate-400">+{remainingArtists()}</span>
 				</Show>
 			</Show>
@@ -222,7 +222,7 @@ export type ReleaseExploreListProps = {
 export function ReleaseExploreList(props: ReleaseExploreListProps) {
 	return (
 		<>
-			<Show when={!props.isLoading && 0 === props.releases.length}>
+			<Show when={!props.isLoading && props.releases.length === 0}>
 				<div class="py-8 text-sm text-slate-400">No releases</div>
 			</Show>
 
@@ -240,7 +240,7 @@ export function ReleaseExploreList(props: ReleaseExploreListProps) {
 			<div
 				ref={props.setSentinelRef}
 				class="h-1"
-			/>
+			></div>
 
 			<Show when={props.isFetchingNextPage || props.isLoading}>
 				<div class="flex flex-col">
@@ -250,7 +250,7 @@ export function ReleaseExploreList(props: ReleaseExploreListProps) {
 				</div>
 			</Show>
 
-			<Show when={!props.hasNextPage && 0 < props.releases.length}>
+			<Show when={!props.hasNextPage && props.releases.length > 0}>
 				<div class="flex justify-center py-4 text-sm text-slate-400">
 					No more releases
 				</div>

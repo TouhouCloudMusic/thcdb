@@ -90,7 +90,7 @@ export const tsxConfigArray = [
 	// a11y
 	{
 		files: ["src/**/*.tsx"],
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		 
 		...JsxA11y.flatConfigs.strict,
 		settings: {
 			"jsx-a11y": {
@@ -106,9 +106,9 @@ export const tsxConfigArray = [
 				},
 			},
 		},
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+		 
 		rules: {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+			 
 			...JsxA11y.flatConfigs.strict.rules,
 		},
 	},

@@ -26,11 +26,4 @@ export type ADTEnum<
 		: never
 	: never
 
-type ADTTest1 = ADTEnum<[{ a: string }, { b: number }]>
-// 期望 -> { a: string; b?: never } | { a?: never; b: number }
-
-type ADTTest2 = ADTEnum<
-	[{ a: string; share: number }, { b: number; share?: number }]
->
-
 export type nil = null | undefined

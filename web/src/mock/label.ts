@@ -67,7 +67,9 @@ export const createMockPaginatedLabels = (
 
 	if (is_dissolved !== undefined) {
 		allLabels = allLabels.filter((label) =>
-			is_dissolved ? !!label.dissolved_date : !label.dissolved_date,
+			is_dissolved
+				? label.dissolved_date !== undefined && label.dissolved_date !== null
+				: label.dissolved_date === undefined || label.dissolved_date === null,
 		)
 	}
 

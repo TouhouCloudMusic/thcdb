@@ -548,6 +548,9 @@ function roleColor(role: UserRoleEnum): AppColor {
 		case "User": {
 			return "Slate"
 		}
+		default: {
+			return "Slate"
+		}
 	}
 }
 
@@ -569,6 +572,9 @@ function accentDotClass(accent: AppColor) {
 			return "bg-slate-700"
 		}
 		case "Slate": {
+			return "bg-slate-700"
+		}
+		default: {
 			return "bg-slate-700"
 		}
 	}

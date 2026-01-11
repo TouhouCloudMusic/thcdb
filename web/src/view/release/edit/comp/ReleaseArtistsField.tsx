@@ -1,7 +1,6 @@
 import { Field, getErrors, insert, remove } from "@formisch/solid"
 import type { SimpleArtist } from "@thc/api"
-import { complement } from "@thc/toolkit"
-import { For } from "solid-js"
+import { For, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
@@ -19,12 +18,17 @@ export function ReleaseArtistsField(props: {
 	initArtists?: SimpleArtist[]
 	class?: string
 }) {
-	const [artists, setArtists] = createStore<SimpleArtist[]>([
-		...(props.initArtists ?? []),
-	])
+	const [artists, setArtists] = createStore<SimpleArtist[]>(
+		untrack(() => [...(props.initArtists ?? [])]),
+	)
 
 	const contain = (artist: SimpleArtist) =>
 		artists.some((a) => a.id === artist.id)
+
+	const dataFilter = createMemo(() => {
+		const ids = new Set(artists.map((artist) => artist.id))
+		return (artist: SimpleArtist) => !ids.has(artist.id)
+	})
 
 	const addArtist = (artist: SimpleArtist) => {
 		if (contain(artist)) return
@@ -32,7 +36,7 @@ export function ReleaseArtistsField(props: {
 		setArtists(artists.length, { id: artist.id, name: artist.name })
 	}
 
-	const removeArtistAt = (idx: number) => () => {
+	const removeArtistAt = (idx: number) => {
 		remove(props.of, { path: ["data", "artists"], at: idx })
 		setArtists((list) => list.toSpliced(idx, 1))
 	}
@@ -44,7 +48,7 @@ export function ReleaseArtistsField(props: {
 				<div class="flex gap-2">
 					<ArtistSearchDialog
 						onSelect={addArtist}
-						dataFilter={complement(contain)}
+						dataFilter={dataFilter()}
 						icon={<PlusIcon class="size-4 text-slate-600" />}
 					/>
 				</div>
@@ -84,7 +88,7 @@ export function ReleaseArtistsField(props: {
 							<Button
 								variant="Tertiary"
 								size="Sm"
-								onClick={removeArtistAt(idx())}
+								onClick={() => removeArtistAt(idx())}
 							>
 								<Cross1Icon />
 							</Button>

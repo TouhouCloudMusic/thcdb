@@ -17,9 +17,9 @@ import { useCurrentUser } from "~/state/user"
 import { createClickOutside } from "~/utils/solid/createClickOutside"
 
 export function EditProfile() {
-	let user_ctx = useCurrentUser()
+	const user_ctx = useCurrentUser()
 
-	let user = createMutable(user_ctx.user!)
+	const user = createMutable(user_ctx.user!)
 
 	return (
 		<PageLayout>
@@ -51,11 +51,11 @@ const UploadAvatarFormSchema = v.object({
 })
 
 function UploadAvatarFormDialog() {
-	let [_, __] = createForm({
+	const [_, __] = createForm({
 		validate: valiForm(UploadAvatarFormSchema),
 	})
-	let [show, setShow, ref] = createClickOutside()
-	let close = () => setShow(false)
+	const [show, setShow, ref] = createClickOutside()
+	const close = () => setShow(false)
 	setShow(true)
 	return (
 		<>
@@ -92,11 +92,11 @@ export function UploadAvatarFormContent(props: {
     rounded-md
   `
 
-	let [_, { Form, Field }] = createForm({
+	const [_, { Form, Field }] = createForm({
 		validate: valiForm(UploadAvatarFormSchema),
 	})
 
-	let [showDragZone, setShowDragZone] = createSignal(true)
+	const [showDragZone, setShowDragZone] = createSignal(true)
 
 	return (
 		<Card
@@ -184,8 +184,8 @@ export function UploadAvatarFormContent(props: {
 }
 
 function UploadAvatarFormCanvas(props: { file: File }) {
-	let url = createMemo(() => {
-		let url = globalThis.URL.createObjectURL(props.file)
+	const url = createMemo(() => {
+		const url = globalThis.URL.createObjectURL(props.file)
 
 		onCleanup(() => globalThis.URL.revokeObjectURL(url))
 

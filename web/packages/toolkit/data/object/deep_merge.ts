@@ -1,3 +1,6 @@
+/* oxlint-disable typescript-eslint/no-explicit-any
+ , typescript-eslint/no-empty-object-type
+ , typescript-eslint/ban-types */
 type Eq<A, B> = A extends B ? (B extends A ? true : false) : false
 
 type PlainObject = Record<string, unknown>
@@ -98,4 +101,4 @@ type IsOk = Eq<
 		f: number[]
 	}
 >
-const isOk: IsOk = true
+const _isOk: IsOk = true
