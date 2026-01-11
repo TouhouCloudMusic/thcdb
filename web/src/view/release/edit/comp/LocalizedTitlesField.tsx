@@ -61,7 +61,7 @@ export function LocalizedTitlesField(props: {
 }
 
 function LocalizedTitleItem(props: { index: number; of: ReleaseFormStore }) {
-	let onLangChange = (v: Language | null) => {
+	const onLangChange = (v: Language | null) => {
 		setInput(props.of, {
 			path: ["data", "localized_titles", props.index, "language_id"],
 			input: v?.id as unknown as number,

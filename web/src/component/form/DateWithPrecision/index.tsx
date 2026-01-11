@@ -1,6 +1,6 @@
 import { DateExt } from "@thc/toolkit/data"
 import dayjs from "dayjs"
-import { createEffect, createMemo, on } from "solid-js"
+import { createEffect, createMemo, on, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
 
 import { InputField } from "~/component/atomic/form/Input"
@@ -46,7 +46,6 @@ function getPrecision(store: Store) {
 	if (store.y) {
 		return "Year"
 	}
-	return
 }
 
 function valueToStore(value?: TDateWithPrecision.In): Store {
@@ -63,7 +62,9 @@ function valueToStore(value?: TDateWithPrecision.In): Store {
 }
 
 export function DateWithPrecision(props: DateWithPrecisionProps) {
-	const [store, setStore] = createStore<Store>(valueToStore(props.value))
+	const [store, setStore] = createStore<Store>(
+		untrack(() => valueToStore(props.value)),
+	)
 
 	const maxDay = createMemo(() =>
 		store.y && store.m
@@ -72,19 +73,16 @@ export function DateWithPrecision(props: DateWithPrecisionProps) {
 	)
 
 	const setYear = (val?: number) => {
-		if (val && val > THIS_YEAR) {
-			val = THIS_YEAR
-		}
-		setStore("y", val)
+		const nextVal = val && val > THIS_YEAR ? THIS_YEAR : val
+		setStore("y", nextVal)
 	}
 	const setMonth = (val?: number) => {
 		setStore("m", val)
 	}
 	const setDay = (val?: number) => {
-		if (val && val > maxDay()!) {
-			val = maxDay()
-		}
-		setStore("d", val)
+		const max = maxDay()
+		const nextVal = val && max && val > max ? max : val
+		setStore("d", nextVal)
 	}
 
 	const date = createMemo(() => {
@@ -120,7 +118,7 @@ export function DateWithPrecision(props: DateWithPrecisionProps) {
 		}),
 	)
 
-	let klass = createMemo(() => props.class)
+	const klass = createMemo(() => props.class)
 
 	return (
 		<>

@@ -43,8 +43,8 @@ export function EventInfoPage(props: EventInfoPageProps) {
 function EventInfoHeader() {
 	const ctx = assertContext(EventInfoPageContext)
 
-	let alternativeNames = () => ctx.event.alternative_names ?? []
-	let hasAlternativeNames = () => alternativeNames().length > 0
+	const alternativeNames = () => ctx.event.alternative_names ?? []
+	const hasAlternativeNames = () => alternativeNames().length > 0
 	return (
 		<>
 			<header class="space-y-2">
@@ -89,7 +89,7 @@ function EventInfoHeader() {
 const TRIGGER_CLASS = "py-4"
 function EventInfoTabs() {
 	const ctx = assertContext(EventInfoPageContext)
-	let hasDescription = () => Boolean(ctx.event.description)
+	const hasDescription = () => Boolean(ctx.event.description)
 	return (
 		<Show when={hasDescription()}>
 			<Tab.Root>

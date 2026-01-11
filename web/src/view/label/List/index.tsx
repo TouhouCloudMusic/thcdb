@@ -76,9 +76,9 @@ type ItemProps = {
 }
 
 function LabelListItem(props: ItemProps) {
-	let founded = () => DateWithPrecision.display(props.label.founded_date)
-	let dissolved = () => DateWithPrecision.display(props.label.dissolved_date)
-	let hasDates = () => Boolean(founded() || dissolved())
+	const founded = () => DateWithPrecision.display(props.label.founded_date)
+	const dissolved = () => DateWithPrecision.display(props.label.dissolved_date)
+	const hasDates = () => Boolean(founded() || dissolved())
 
 	return (
 		<li class="flex items-center justify-between gap-4 p-4">

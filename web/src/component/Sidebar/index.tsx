@@ -33,8 +33,8 @@ export function ListItem(props: ParentProps<ButtonProps>) {
     [&_svg]:size-4 [&_svg]:text-slate-600
   `
 
-	let [_, other_props] = splitProps(props, ["class"])
-	let tw_class = createMemo(() => twMerge(CLASS, props.class))
+	const [_, other_props] = splitProps(props, ["class"])
+	const tw_class = createMemo(() => twMerge(CLASS, props.class))
 	return (
 		<Button
 			{...other_props}

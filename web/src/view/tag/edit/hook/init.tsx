@@ -11,8 +11,8 @@ type Props =
 			tag: Tag
 	  }
 
-export function toTagFormInitValue(props: Props): NewTagCorrection {
-	return props.type === "new"
+export function toTagFormInitValue(input: Props): NewTagCorrection {
+	return input.type === "new"
 		? {
 				type: "Create",
 				description: "",
@@ -30,13 +30,13 @@ export function toTagFormInitValue(props: Props): NewTagCorrection {
 				type: "Update",
 				description: "",
 				data: {
-					name: props.tag.name,
-					type: props.tag.type,
-					short_description: props.tag.short_description ?? undefined,
-					description: props.tag.description ?? undefined,
-					alt_names: props.tag.alt_names?.map((alt) => alt.name) ?? [],
+					name: input.tag.name,
+					type: input.tag.type,
+					short_description: input.tag.short_description ?? undefined,
+					description: input.tag.description ?? undefined,
+					alt_names: input.tag.alt_names?.map((alt) => alt.name) ?? [],
 					relations:
-						props.tag.relations?.map((relation) => ({
+						input.tag.relations?.map((relation) => ({
 							related_tag_id: relation.tag.id,
 							type: relation.type,
 						})) ?? [],

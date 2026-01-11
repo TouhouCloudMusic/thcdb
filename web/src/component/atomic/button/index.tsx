@@ -46,19 +46,19 @@ export function Button(props: Props) {
 	// @tw
 	const BUTTON_COMMON_STYLES = `rounded-sm transition-all font-medium p-1`
 	const DEFAULT_COLOR: AppColor = "Gray"
-	let variant_color = match.in<Variant>().match({
+	const variant_color = match.in<Variant>().match({
 		"'Primary'": () => PrimaryColor[props.color ?? DEFAULT_COLOR],
 		"'Tertiary'": () => TertiaryColor[props.color ?? DEFAULT_COLOR],
 		default: () => SecondaryColor[props.color ?? DEFAULT_COLOR],
 	})
 
-	let final_props: Props = mergeProps({ type: "button" as const }, props, {
+	const final_props: Props = mergeProps({ type: "button" as const }, props, {
 		get class() {
-			let size_class = props.size ? SizeClass[props.size] : undefined
-			let variant = props.variant ?? "Secondary"
+			const size_class = props.size ? SizeClass[props.size] : undefined
+			const variant = props.variant ?? "Secondary"
 
-			let variant_class = VariantClass[variant]
-			let color_class = variant_color(variant)
+			const variant_class = VariantClass[variant]
+			const color_class = variant_color(variant)
 
 			return twMerge(
 				BUTTON_COMMON_STYLES,

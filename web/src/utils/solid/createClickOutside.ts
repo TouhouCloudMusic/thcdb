@@ -9,13 +9,13 @@ import { createEffect, createSignal, onCleanup } from "solid-js"
  *  * the setter of the element
  */
 export function createClickOutside() {
-	let [show, setShow] = createSignal(false)
+	const [show, setShow] = createSignal(false)
 
-	let [ref, setRef] = createSignal<HTMLElement | undefined>()
+	const [ref, setRef] = createSignal<HTMLElement | undefined>()
 
-	let callback = (event: MouseEvent) => {
+	const callback = (event: MouseEvent) => {
 		if (event.type == "mouseup") return
-		let isInside = ref() ? event.composedPath().includes(ref()!) : false
+		const isInside = ref() ? event.composedPath().includes(ref()!) : false
 		if (!isInside) {
 			setShow(false)
 		}

@@ -44,7 +44,7 @@ const TAB_META = {
 	},
 } satisfies Record<SearchTab, { label: string }>
 
-let isSearchTab = (value: string): value is SearchTab => {
+const isSearchTab = (value: string): value is SearchTab => {
 	return (
 		value === "artist"
 		|| value === "release"
@@ -59,23 +59,23 @@ export function SearchPage() {
 	const search = route.useSearch()
 	const navigate = useNavigate({ from: "/search" })
 
-	let term = createMemo(() => (search().q ?? "").trim())
-	let entity = createMemo<SearchEntity>(() => {
-		let value = search().entity
+	const term = createMemo(() => (search().q ?? "").trim())
+	const entity = createMemo<SearchEntity>(() => {
+		const value = search().entity
 		if (value === "all") return value
 		if (value && isSearchTab(value)) return value
 		return "all"
 	})
-	let requestedTab = createMemo<SearchTab | undefined>(() => search().tab)
+	const requestedTab = createMemo<SearchTab | undefined>(() => search().tab)
 
-	let patchSearch = (patch: { tab?: SearchTab }) => {
+	const patchSearch = (patch: { tab?: SearchTab }) => {
 		navigate({
 			to: "/search",
 			search: { ...search(), ...patch },
 		})
 	}
 
-	let enabled = () => term().length > 0
+	const enabled = () => term().length > 0
 
 	return (
 		<PageLayout class="p-8 pt-6">
@@ -125,9 +125,9 @@ function SearchResults(props: {
 	requestedTab: () => SearchTab | undefined
 	onTabChange: (tab: SearchTab) => void
 }) {
-	let enabled = () => props.term().length > 0
+	const enabled = () => props.term().length > 0
 
-	let isEnabledTab = (tab: SearchTab) => {
+	const isEnabledTab = (tab: SearchTab) => {
 		if (!enabled()) return false
 		if (props.entity() === "all") return true
 		return props.entity() === tab
@@ -152,14 +152,14 @@ function SearchResults(props: {
 		SearchQueryOption.tags(props.term(), LIMIT, isEnabledTab("tag")),
 	)
 
-	let artists = () => artistsQuery.data?.pages.flatMap((p) => p.items) ?? []
-	let events = () => eventsQuery.data?.pages.flatMap((p) => p.items) ?? []
-	let labels = () => labelsQuery.data?.pages.flatMap((p) => p.items) ?? []
-	let releases = () => releasesQuery.data?.pages.flatMap((p) => p.items) ?? []
-	let songs = () => songsQuery.data?.pages.flatMap((p) => p.items) ?? []
-	let tags = () => tagsQuery.data?.pages.flatMap((p) => p.items) ?? []
+	const artists = () => artistsQuery.data?.pages.flatMap((p) => p.items) ?? []
+	const events = () => eventsQuery.data?.pages.flatMap((p) => p.items) ?? []
+	const labels = () => labelsQuery.data?.pages.flatMap((p) => p.items) ?? []
+	const releases = () => releasesQuery.data?.pages.flatMap((p) => p.items) ?? []
+	const songs = () => songsQuery.data?.pages.flatMap((p) => p.items) ?? []
+	const tags = () => tagsQuery.data?.pages.flatMap((p) => p.items) ?? []
 
-	let itemCount = (tab: SearchTab) => {
+	const itemCount = (tab: SearchTab) => {
 		if (tab === "artist") return artists().length
 		if (tab === "event") return events().length
 		if (tab === "label") return labels().length
@@ -168,7 +168,7 @@ function SearchResults(props: {
 		return tags().length
 	}
 
-	let isLoadingTab = (tab: SearchTab) => {
+	const isLoadingTab = (tab: SearchTab) => {
 		if (tab === "artist") return artistsQuery.isLoading
 		if (tab === "event") return eventsQuery.isLoading
 		if (tab === "label") return labelsQuery.isLoading
@@ -177,7 +177,7 @@ function SearchResults(props: {
 		return tagsQuery.isLoading
 	}
 
-	let isLoadingAny = () => {
+	const isLoadingAny = () => {
 		return (
 			artistsQuery.isLoading
 			|| eventsQuery.isLoading
@@ -188,8 +188,8 @@ function SearchResults(props: {
 		)
 	}
 
-	let visibleTabs = createMemo<SearchTab[]>(() => {
-		let currentEntity = props.entity()
+	const visibleTabs = createMemo<SearchTab[]>(() => {
+		const currentEntity = props.entity()
 		if (currentEntity !== "all") {
 			if (!isSearchTab(currentEntity)) return []
 			if (itemCount(currentEntity) > 0) return [currentEntity]
@@ -211,11 +211,11 @@ function SearchResults(props: {
 		).filter((tab) => itemCount(tab) > 0)
 	})
 
-	let activeTab = createMemo<SearchTab | undefined>(() => {
-		let visible = visibleTabs()
+	const activeTab = createMemo<SearchTab | undefined>(() => {
+		const visible = visibleTabs()
 		if (visible.length === 0) return
 
-		let requested = props.requestedTab()
+		const requested = props.requestedTab()
 		if (requested && visible.includes(requested)) return requested
 		return visible[0]
 	})
@@ -405,7 +405,7 @@ function SearchResults(props: {
 type EmptyStateVariant = "compact" | "fill"
 
 function EmptyState(props: { text: string; variant?: EmptyStateVariant }) {
-	let variant = () => {
+	const variant = () => {
 		if (props.variant === "fill") {
 			return "grid flex-1 place-items-center p-8"
 		}
@@ -466,7 +466,7 @@ function ResultList<T>(props: ResultListProps<T>) {
 			<div
 				ref={props.setSentinelRef}
 				class="h-1"
-			/>
+			></div>
 
 			<Show when={props.isFetchingNextPage || props.isLoading}>
 				<div class="overflow-hidden rounded-md border border-slate-200 bg-white shadow-xs">
@@ -490,12 +490,12 @@ function ResultList<T>(props: ResultListProps<T>) {
 function RowSkeleton() {
 	return (
 		<div class="flex animate-pulse items-center gap-3 px-4 py-3">
-			<div class="size-9 shrink-0 rounded-full bg-slate-200" />
+			<div class="size-9 shrink-0 rounded-full bg-slate-200"></div>
 			<div class="min-w-0 flex-1">
-				<div class="h-4 w-2/5 rounded bg-slate-200" />
-				<div class="mt-2 h-3 w-1/4 rounded bg-slate-100" />
+				<div class="h-4 w-2/5 rounded bg-slate-200"></div>
+				<div class="mt-2 h-3 w-1/4 rounded bg-slate-100"></div>
 			</div>
-			<div class="h-3 w-10 rounded bg-slate-100" />
+			<div class="h-3 w-10 rounded bg-slate-100"></div>
 		</div>
 	)
 }
@@ -526,7 +526,7 @@ function ArtistRow(props: { artist: SimpleArtist }) {
 }
 
 function ReleaseRow(props: { release: SimpleRelease }) {
-	let coverUrl = () => props.release.cover_art_url ?? undefined
+	const coverUrl = () => props.release.cover_art_url ?? undefined
 
 	return (
 		<Link

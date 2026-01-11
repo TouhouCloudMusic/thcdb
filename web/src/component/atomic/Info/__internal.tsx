@@ -40,7 +40,7 @@ type LabelProps = ParentProps<ComponentProps<"div">>
 const LABEL_CLASS = "text-sm text-tertiary tracking-wide"
 
 export function Label(props: LabelProps) {
-	let finalProps = mergeProps(props, {
+	const finalProps = mergeProps(props, {
 		get class() {
 			if (props.class) {
 				return twMerge(LABEL_CLASS, props.class)
@@ -57,7 +57,7 @@ type DetailProps = ParentProps<ComponentProps<"div">>
 const DETAIL_CLASS = "text-slate-900"
 
 export function Detail(props: DetailProps) {
-	let finalProps = mergeProps(props, {
+	const finalProps = mergeProps(props, {
 		get class() {
 			if (props.class) {
 				return twMerge(DETAIL_CLASS, props.class)

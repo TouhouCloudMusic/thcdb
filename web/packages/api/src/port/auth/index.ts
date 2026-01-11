@@ -1,6 +1,5 @@
-import type { components, operations } from "../../gen"
 import { FetchClient } from "../../http"
-import type { ApiResult, Opt } from "../../shared"
+import type { Opt } from "../../shared"
 import { adaptApiResult, adaptApiResultMessage } from "../../shared"
 
 export async function signin(options: Opt<"sign_in">) {

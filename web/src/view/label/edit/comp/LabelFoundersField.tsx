@@ -2,7 +2,7 @@ import { Field, getErrors, insert, remove } from "@formisch/solid"
 import type { SimpleArtist } from "@thc/api"
 import { ArtistApi } from "@thc/api"
 import { Either, Option as O } from "effect"
-import { For, createEffect, createSignal, on } from "solid-js"
+import { For, createEffect, createSignal, on, untrack } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 
@@ -27,7 +27,9 @@ export function LabelFoundersField(props: Props) {
 	const { formStore } = useLabelForm()
 
 	const [founders, setFounders] = createSignal<FounderEntry[]>(
-		props.initFounderIds?.map((id) => ({ id, name: `#${id}` })) ?? [],
+		untrack(
+			() => props.initFounderIds?.map((id) => ({ id, name: `#${id}` })) ?? [],
+		),
 	)
 
 	const contain = (artist: SimpleArtist) =>
@@ -65,7 +67,9 @@ export function LabelFoundersField(props: Props) {
 							const result = await ArtistApi.findOne({ path: { id } })
 							return Either.match(result, {
 								onRight: (option) => O.getOrNull(option),
-								onLeft: () => {},
+								onLeft: (err) => {
+									console.error(err)
+								},
 							})
 						}),
 					)

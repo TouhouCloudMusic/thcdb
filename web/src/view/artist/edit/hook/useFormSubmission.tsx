@@ -23,7 +23,7 @@ export function useArtistFormSubmission(props: Props) {
 	const handleSubmit: M.SubmitHandler<NewArtistCorrection> = (data) => {
 		const parsed = v.safeParse(NewArtistCorrectionSchema, data)
 		if (parsed.success) {
-			let _ =
+			const _ =
 				props.type == "new"
 					? mutation.mutate(
 							{

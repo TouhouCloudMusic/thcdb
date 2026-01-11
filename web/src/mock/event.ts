@@ -31,21 +31,21 @@ export const createMockEvent = (
 	const durationDays = faker.number.int({ min: 0, max: 2 })
 	const endDate = new Date(startDate)
 	endDate.setDate(endDate.getDate() + durationDays)
-	const hasEndDate = 0 < durationDays
+	const hasEndDate = durationDays > 0
 
-	const hasShortDescription = 0 !== faker.number.int({ min: 0, max: 2 })
+	const hasShortDescription = faker.number.int({ min: 0, max: 2 }) !== 0
 	const shortDescription = hasShortDescription
 		? faker.helpers.arrayElement(EVENT_SHORT_DESCRIPTIONS)
 		: undefined
 
-	const hasLocation = 0 !== faker.number.int({ min: 0, max: 2 })
+	const hasLocation = faker.number.int({ min: 0, max: 2 }) !== 0
 	const location = hasLocation
 		? faker.helpers.arrayElement(EVENT_LOCATIONS)
 		: undefined
 
 	const alternativeNameCount = faker.number.int({ min: 0, max: 2 })
 	const alternativeNames =
-		0 < alternativeNameCount
+		alternativeNameCount > 0
 			? Array.from({ length: alternativeNameCount }, (_, idx) => ({
 					id: faker.number.int({ min: 1, max: 1000 }),
 					name: `${name} ${idx + 1}`,
@@ -104,7 +104,7 @@ export const createMockPaginatedEvents = (
 	allEvents.sort((a, b) => {
 		const aValue = a.id
 		const bValue = b.id
-		return "desc" === sort_direction ? bValue - aValue : aValue - bValue
+		return sort_direction === "desc" ? bValue - aValue : aValue - bValue
 	})
 
 	const startIdx = cursor

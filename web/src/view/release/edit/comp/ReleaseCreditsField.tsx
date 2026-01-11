@@ -2,7 +2,7 @@ import { Field, getInput, insert, remove, setInput } from "@formisch/solid"
 import type { ReleaseCredit, SimpleArtist } from "@thc/api"
 import { pick } from "@thc/toolkit/data"
 import type { JSX } from "solid-js"
-import { createMemo, For } from "solid-js"
+import { createMemo, For, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
@@ -23,7 +23,7 @@ function createReleaseCreditsState(p: {
 	initCredits?: ReleaseCredit[]
 }) {
 	const [meta, setMeta] = createStore(
-		p.initCredits?.map(pick(["artist", "role"])) ?? [],
+		untrack(() => p.initCredits?.map(pick(["artist", "role"])) ?? []),
 	)
 
 	const addCreditRow = () => {
@@ -31,12 +31,12 @@ function createReleaseCreditsState(p: {
 		setMeta(meta.length, {})
 	}
 
-	const removeCreditRowAt = (idx: number) => () => {
+	const removeCreditRowAt = (idx: number) => {
 		remove(p.of, { path: ["data", "credits"], at: idx })
 		setMeta((list) => list.toSpliced(idx, 1))
 	}
 
-	const setCreditArtistAt = (idx: number) => (a: SimpleArtist) => {
+	const setCreditArtistAt = (idx: number, a: SimpleArtist) => {
 		setMeta(idx, (row) => ({ ...row, artist: a }))
 		setInput(p.of, {
 			path: ["data", "credits", idx, "artist_id"],
@@ -44,14 +44,13 @@ function createReleaseCreditsState(p: {
 		})
 	}
 
-	const setCreditRoleAt =
-		(idx: number) => (r: { id: number; name: string }) => {
-			setMeta(idx, (row) => ({ ...row, role: r }))
-			setInput(p.of, {
-				path: ["data", "credits", idx, "role_id"],
-				input: r.id,
-			})
-		}
+	const setCreditRoleAt = (idx: number, r: { id: number; name: string }) => {
+		setMeta(idx, (row) => ({ ...row, role: r }))
+		setInput(p.of, {
+			path: ["data", "credits", idx, "role_id"],
+			input: r.id,
+		})
+	}
 
 	return {
 		meta,
@@ -161,34 +160,33 @@ function ReleaseCreditTracks(props: {
 		return `Disc ${discIndex + 1} Track ${withinDisc}`
 	}
 
-	let currValue = () =>
+	const currValue = () =>
 		getInput(props.of, {
 			path: ["data", "credits", props.index, "on"],
 		})
 
-	let getChecked = (idx: number) => currValue()?.includes(idx) ?? false
-	let updateInput =
-		(idx: number) =>
-		(
-			e: Event & {
-				currentTarget: HTMLInputElement
-				target: HTMLInputElement
-			},
-		) => {
-			let prev = currValue() ?? []
+	const getChecked = (idx: number) => currValue()?.includes(idx) ?? false
+	const updateInput = (
+		idx: number,
+		e: Event & {
+			currentTarget: HTMLInputElement
+			target: HTMLInputElement
+		},
+	) => {
+		let prev = currValue() ?? []
 
-			if (e.currentTarget.checked) {
-				if (prev.includes(idx)) return
-				prev.push(idx)
-			} else {
-				if (!prev.includes(idx)) return
-				prev = prev.filter((i) => i !== idx)
-			}
-			setInput(props.of, {
-				path: ["data", "credits", props.index, "on"],
-				input: prev,
-			})
+		if (e.currentTarget.checked) {
+			if (prev.includes(idx)) return
+			prev.push(idx)
+		} else {
+			if (!prev.includes(idx)) return
+			prev = prev.filter((i) => i !== idx)
 		}
+		setInput(props.of, {
+			path: ["data", "credits", props.index, "on"],
+			input: prev,
+		})
+	}
 
 	return (
 		<div class="flex flex-col gap-1">
@@ -198,7 +196,7 @@ function ReleaseCreditTracks(props: {
 					<label class="flex items-center gap-2 text-sm">
 						<input
 							checked={getChecked(trackIdx)}
-							onChange={updateInput(trackIdx)}
+							onChange={(e) => updateInput(trackIdx, e)}
 							class="h-4 w-4"
 							type="checkbox"
 						/>
@@ -266,8 +264,8 @@ export function ReleaseCreditsField(props: {
 		setCreditArtistAt,
 		setCreditRoleAt,
 	} = createReleaseCreditsState({
-		of: props.of,
-		initCredits: props.initCredits,
+		of: untrack(() => props.of),
+		initCredits: untrack(() => props.initCredits),
 	})
 
 	const creditRows = createMemo(
@@ -318,9 +316,9 @@ export function ReleaseCreditsField(props: {
 							role={meta[idx()]?.role}
 							index={idx()}
 							sortedTrackIndices={sortedTrackIndices()}
-							onRemove={removeCreditRowAt(idx())}
-							onSelectArtist={setCreditArtistAt(idx())}
-							onSelectRole={setCreditRoleAt(idx())}
+							onRemove={() => removeCreditRowAt(idx())}
+							onSelectArtist={(artist) => setCreditArtistAt(idx(), artist)}
+							onSelectRole={(role) => setCreditRoleAt(idx(), role)}
 						/>
 					)}
 				</For>

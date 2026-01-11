@@ -87,21 +87,21 @@ type TagTreeParams = {
 
 export function createMockTagTree(params: TagTreeParams): TagTreeNode[] {
 	let nextId = params.startId ?? 1
-	let [minChild, maxChild] = params.childCountRange
+	const [minChild, maxChild] = params.childCountRange
 
-	let buildNode = (depth: number): TagTreeNode => {
-		let currentId = nextId
+	const buildNode = (depth: number): TagTreeNode => {
+		const currentId = nextId
 		nextId += 1
-		let base = createMockTag(currentId)
+		const base = createMockTag(currentId)
 		let childCount = 0
 
 		if (depth < params.maxDepth) {
-			let span = Math.max(0, maxChild - minChild)
-			let offset = span > 0 ? currentId % (span + 1) : 0
+			const span = Math.max(0, maxChild - minChild)
+			const offset = span > 0 ? currentId % (span + 1) : 0
 			childCount = minChild + offset
 		}
 
-		let children =
+		const children =
 			childCount > 0
 				? Array.from({ length: childCount }, () => buildNode(depth + 1))
 				: []

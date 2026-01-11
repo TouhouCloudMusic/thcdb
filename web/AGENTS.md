@@ -15,7 +15,6 @@
 ## Coding Style
 
 - 除非用户要求，否则不要添加任何评论
-- 使用let来定义变量和lambada表达式，使用const定义常量，使用function来定义一般函数和组件
 - 对于隐式捕获外部状态的函数（闭包，通过参数传递不算做隐式捕获外部状态），必须使用lambda定义，禁止使用`function`定义。
 
 ### Solid JS

@@ -31,8 +31,8 @@ export const generatePlugin = (
 })
 
 async function generateConstants(base_url: string) {
-	let url = new URL("constant.ts", base_url)
-	let response = await fetch(url)
+	const url = new URL("constant.ts", base_url)
+	const response = await fetch(url)
 	if (!response.ok) {
 		throw new Error(`Failed to fetch ${url}: ${response.statusText}`)
 	}
@@ -41,7 +41,9 @@ async function generateConstants(base_url: string) {
 
 	const targetPath = "src/constant/server.ts"
 
-	let existing = await fs.readFile(targetPath, "utf8").catch(() => undefined)
+	const existing = await fs
+		.readFile(targetPath, "utf8")
+		.catch((e) => console.error(e))
 	if (existing === content) return
 
 	return fs.writeFile(targetPath, content)

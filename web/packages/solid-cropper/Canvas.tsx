@@ -1,5 +1,5 @@
 import "cropperjs"
-import type { ComponentProps, ParentProps } from "solid-js"
+import type { ComponentProps } from "solid-js"
 
 export interface CanvasProps extends ComponentProps<"canvas"> {
 	/**
@@ -26,5 +26,5 @@ export interface CanvasProps extends ComponentProps<"canvas"> {
 
 export function Canvas(props: CanvasProps) {
 	// @ts-expect-error
-	return <cropper-canvas {...props} />
+	return <cropper-canvas {...props}></cropper-canvas>
 }

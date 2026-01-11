@@ -10,7 +10,7 @@ export function StickyFilterBar(
 	}>,
 ) {
 	const translateClass = () =>
-		"down" === props.scrollDirection() ? "-translate-y-full" : "translate-y-0"
+		props.scrollDirection() === "down" ? "-translate-y-full" : "translate-y-0"
 
 	const wrapperClass = () =>
 		twMerge(

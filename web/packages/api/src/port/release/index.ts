@@ -1,4 +1,3 @@
-import type { components, operations } from "../../gen"
 import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
 import { adaptApiResult, adaptApiResultOptional } from "../../shared"

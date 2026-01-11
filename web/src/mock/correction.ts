@@ -21,6 +21,7 @@ function createMockUser(id: number, name: string): CorrectionUserSummary {
 	}
 }
 
+// oxlint-disable-next-line max-params
 function createMockHistoryItem(
 	id: number,
 	type: CorrectionType,

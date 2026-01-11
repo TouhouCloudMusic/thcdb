@@ -13,9 +13,9 @@ export type LabelFormInitProps =
 	  }
 
 export function toLabelFormInitValue(
-	props: LabelFormInitProps,
+	input: LabelFormInitProps,
 ): NewLabelCorrection {
-	if (props.type === "new") {
+	if (input.type === "new") {
 		return {
 			type: "Create",
 			description: "",
@@ -33,14 +33,14 @@ export function toLabelFormInitValue(
 		type: "Update",
 		description: "",
 		data: {
-			name: props.label.name,
-			localized_names: props.label.localized_names.map((item) => ({
+			name: input.label.name,
+			localized_names: input.label.localized_names.map((item) => ({
 				language_id: item.language.id,
 				name: item.name,
 			})),
-			founded_date: DateWithPrecision.toInput(props.label.founded_date),
-			dissolved_date: DateWithPrecision.toInput(props.label.dissolved_date),
-			founders: props.label.founders ?? [],
+			founded_date: DateWithPrecision.toInput(input.label.founded_date),
+			dissolved_date: DateWithPrecision.toInput(input.label.dissolved_date),
+			founders: input.label.founders ?? [],
 		},
 	}
 }

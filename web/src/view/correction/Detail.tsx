@@ -89,7 +89,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 		return items.filter((item) => item.id !== props.correctionId)
 	})
 
-	let onCompareChange = (event: Event) => {
+	const onCompareChange = (event: Event) => {
 		const currentTarget = event.currentTarget
 		if (!(currentTarget instanceof HTMLSelectElement)) return
 
@@ -224,7 +224,7 @@ type DiffEntriesProps = {
 }
 
 function DiffEntries(props: DiffEntriesProps) {
-	let entries = () => props.changes ?? []
+	const entries = () => props.changes ?? []
 
 	return (
 		<Switch>
@@ -309,7 +309,7 @@ type RevisionEntriesProps = {
 }
 
 function RevisionEntries(props: RevisionEntriesProps) {
-	let entries = () => props.revisions ?? []
+	const entries = () => props.revisions ?? []
 
 	return (
 		<Switch>
@@ -492,8 +492,8 @@ type CorrectionHeaderProps = {
 }
 
 function CorrectionHeader(props: CorrectionHeaderProps) {
-	let entityRoute = () => ENTITY_ROUTE_MAP[props.correction.entity_type]
-	let entityLabel = () => formatEntityType(props.correction.entity_type)
+	const entityRoute = () => ENTITY_ROUTE_MAP[props.correction.entity_type]
+	const entityLabel = () => formatEntityType(props.correction.entity_type)
 
 	return (
 		<header class="space-y-4">

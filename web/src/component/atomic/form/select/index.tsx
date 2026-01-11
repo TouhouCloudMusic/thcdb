@@ -6,18 +6,18 @@ import { INPUT_CLASSNAME } from "../../Input"
 
 type SelectProps = ComponentProps<"select">
 function SelectImpl(props: SelectProps) {
-	let finalProps = mergeProps(props, {
+	const finalProps = mergeProps(props, {
 		get class() {
 			return twMerge(INPUT_CLASSNAME, "font-light px-1", props.class)
 		},
 	})
 
-	return <select {...finalProps} />
+	return <select {...finalProps}></select>
 }
 
 type OptionProps = ComponentProps<"option">
 function Option(props: OptionProps) {
-	return <option {...props} />
+	return <option {...props}></option>
 }
 
 export const Select = /*#__PURE__*/ Object.assign(SelectImpl, { Option })

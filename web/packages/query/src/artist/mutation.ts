@@ -9,28 +9,21 @@ type Parmas =
 export const getInstance = () =>
 	useMutation(() => ({
 		mutationFn: async (params: Parmas) => {
-			if (params.type === "Create") {
-				const result = await ArtistApi.create({
-					body: params.data,
-				})
-				return Either.match(result, {
-					onRight: (data) => data,
-					onLeft: (error) => {
-						throw error
-					},
-				})
-			} else {
-				const result = await ArtistApi.upsertCorrection({
-					path: { id: params.id },
-					body: params.data,
-				})
-				return Either.match(result, {
-					onRight: (data) => data,
-					onLeft: (error) => {
-						throw error
-					},
-				})
-			}
+			const result =
+				params.type === "Create"
+					? await ArtistApi.create({
+							body: params.data,
+						})
+					: await ArtistApi.upsertCorrection({
+							path: { id: params.id },
+							body: params.data,
+						})
+			return Either.match(result, {
+				onRight: (data) => data,
+				onLeft: (error) => {
+					throw error
+				},
+			})
 		},
 		mutationKey: [`artist::mutate`],
 		throwOnError: true,

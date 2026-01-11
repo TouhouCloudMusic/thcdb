@@ -1,13 +1,13 @@
 import type { PolymorphicProps } from "@kobalte/core"
-import { Popover } from "@kobalte/core/popover"
-import type { PopoverArrowProps } from "@kobalte/core/popover"
 import type {
+	PopoverArrowProps,
 	PopoverCloseButtonProps,
 	PopoverContentProps,
 	PopoverDescriptionProps,
-	PopoverTitleProps,
 	PopoverRootProps,
+	PopoverTitleProps,
 } from "@kobalte/core/popover"
+import { Popover } from "@kobalte/core/popover"
 import { mergeProps } from "solid-js"
 import type { ValidComponent } from "solid-js"
 import { twMerge } from "tailwind-merge"
@@ -41,7 +41,7 @@ export function Content<T extends ValidComponent = "div">(
     origin-(--kb-popper-content-transform-origin)
   `
 
-	let local_props = mergeProps(props, {
+	const local_props = mergeProps(props, {
 		get class() {
 			return twMerge(CLASS, props["class"])
 		},
@@ -81,7 +81,7 @@ export function Title<T extends ValidComponent = "h2">(
 ) {
 	const CLASS = "font-medium"
 
-	let local_props = mergeProps(props, {
+	const local_props = mergeProps(props, {
 		get class() {
 			return twMerge(CLASS, props["class"])
 		},
@@ -99,7 +99,7 @@ export function Description<T extends ValidComponent = "p">(
 ) {
 	const CLASS = "my-2 pr-2 text-sm text-slate-800"
 
-	let local_props = mergeProps(props, {
+	const local_props = mergeProps(props, {
 		get class() {
 			return twMerge(CLASS, props["class"])
 		},

@@ -5,7 +5,7 @@ default:
 	@just --list
 
 fmt:
-	pnpm dlx prettier@3.7 --write \
+	pnpm exec prettier --write \
 	--experimental-cli \
 	"src/**/*.{ts,tsx}" \
 	"packages/**/*.{md,json,ts,tsx}" \
@@ -14,12 +14,12 @@ fmt:
 	"*.{md,json,js,ts,html}"
 
 eslint +FLAGS="":
-	pnpm dlx eslint --cache {{FLAGS}}
+	pnpm exec eslint --cache {{FLAGS}}
 
 esfix: (eslint "--fix")
 
 oxlint +FLAGS="":
-	pnpm dlx oxlint -c .oxlintrc.json {{FLAGS}}
+	pnpm exec oxlint {{FLAGS}}
 
 oxfix: (oxlint "--fix")
 

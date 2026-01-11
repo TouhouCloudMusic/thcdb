@@ -5,7 +5,7 @@ import type { TagTreeNode } from "~/mock/tag"
 
 function getMaxDepth(nodes: TagTreeNode[]): number {
 	let maxDepth = 0
-	let walk = (items: TagTreeNode[], depth: number) => {
+	const walk = (items: TagTreeNode[], depth: number) => {
 		if (depth > maxDepth) maxDepth = depth
 		for (const item of items) {
 			if (item.children.length > 0) {
@@ -17,8 +17,8 @@ function getMaxDepth(nodes: TagTreeNode[]): number {
 	return maxDepth
 }
 
-let suite = () => {
-	let testDepth = () => {
+const suite = () => {
+	const testDepth = () => {
 		const maxDepth = 2
 		const tree = createMockTagTree({
 			rootCount: 1,
@@ -30,7 +30,7 @@ let suite = () => {
 		expect(getMaxDepth(tree)).toBe(maxDepth)
 	}
 
-	let testRootCount = () => {
+	const testRootCount = () => {
 		const tree = createMockTagTree({
 			rootCount: 3,
 			maxDepth: 0,

@@ -80,8 +80,8 @@ function TagInfoDetails() {
 const TRIGGER_CLASS = "py-4"
 function TagInfoTabs() {
 	const ctx = assertContext(TagInfoPageContext)
-	let hasDesc = () => Boolean(ctx.tag.description)
-	let hasRelations = () =>
+	const hasDesc = () => Boolean(ctx.tag.description)
+	const hasRelations = () =>
 		Boolean(ctx.tag.relations && ctx.tag.relations.length > 0)
 	return (
 		<Tab.Root>
@@ -139,7 +139,7 @@ function TagInfoDescription() {
 
 function TagInfoRelations() {
 	const ctx = assertContext(TagInfoPageContext)
-	let list = () => ctx.tag.relations ?? []
+	const list = () => ctx.tag.relations ?? []
 	return (
 		<div class="space-y-4">
 			<ul class="divide-y divide-slate-300 overflow-hidden rounded-md border border-slate-300">

@@ -1,4 +1,4 @@
-import { createContext } from "solid-js"
+import { createContext, untrack } from "solid-js"
 import type { ParentProps } from "solid-js"
 
 import { assertContext } from "~/utils/solid/assertContext"
@@ -16,8 +16,9 @@ const EventEditFormContext = createContext<EventEditFormContextValue>()
 export function EventFormProvider(
 	props: ParentProps<{ value: EventEditFormContextValue }>,
 ) {
+	const value = untrack(() => props.value)
 	return (
-		<EventEditFormContext.Provider value={props.value}>
+		<EventEditFormContext.Provider value={value}>
 			{props.children}
 		</EventEditFormContext.Provider>
 	)

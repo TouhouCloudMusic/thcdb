@@ -1,6 +1,6 @@
 import { Field, getErrors, insert, remove, setInput } from "@formisch/solid"
 import type { CreditRoleRef, SimpleArtist, SongCredit } from "@thc/api"
-import { For, Show } from "solid-js"
+import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Cross1Icon, PlusIcon, Pencil1Icon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
@@ -20,36 +20,40 @@ export function SongCreditsField(props: {
 	initCredits?: SongCredit[]
 	class?: string
 }) {
+	const formStore = createMemo(() => props.of)
 	const [meta, setMeta] = createStore<CreditMeta[]>(
-		props.initCredits?.map((credit) => ({
-			artist: credit.artist,
-			role: credit.role ?? undefined,
-		})) ?? [],
+		untrack(
+			() =>
+				props.initCredits?.map((credit) => ({
+					artist: credit.artist,
+					role: credit.role ?? undefined,
+				})) ?? [],
+		),
 	)
 
 	const addCredit = () => {
-		insert(props.of, {
+		insert(formStore(), {
 			path: ["data", "credits"],
 		})
 		setMeta(meta.length, {})
 	}
 
-	const removeCreditAt = (idx: number) => () => {
-		remove(props.of, { path: ["data", "credits"], at: idx })
+	const removeCreditAt = (idx: number) => {
+		remove(formStore(), { path: ["data", "credits"], at: idx })
 		setMeta((list) => list.toSpliced(idx, 1))
 	}
 
-	const setArtistAt = (idx: number) => (artist: SimpleArtist) => {
+	const setArtistAt = (idx: number, artist: SimpleArtist) => {
 		setMeta(idx, (entry) => ({ ...entry, artist }))
-		setInput(props.of, {
+		setInput(formStore(), {
 			path: ["data", "credits", idx, "artist_id"],
 			input: artist.id,
 		})
 	}
 
-	const setRoleAt = (idx: number) => (role: CreditRoleRef) => {
+	const setRoleAt = (idx: number, role: CreditRoleRef) => {
 		setMeta(idx, (entry) => ({ ...entry, role }))
-		setInput(props.of, {
+		setInput(formStore(), {
 			path: ["data", "credits", idx, "role_id"],
 			input: role.id,
 		})
@@ -80,9 +84,9 @@ export function SongCreditsField(props: {
 							of={props.of}
 							entry={meta[idx()]}
 							index={idx()}
-							onSelectArtist={setArtistAt(idx())}
-							onSelectRole={setRoleAt(idx())}
-							onRemove={removeCreditAt(idx())}
+							onSelectArtist={(artist) => setArtistAt(idx(), artist)}
+							onSelectRole={(role) => setRoleAt(idx(), role)}
+							onRemove={() => removeCreditAt(idx())}
 						/>
 					)}
 				</For>

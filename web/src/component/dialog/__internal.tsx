@@ -42,7 +42,7 @@ export function Overlay<T extends ValidComponent = "div">(
     data-blur:animate-blur-out data-blur:data-expanded:animate-blur-in
     `
 
-	let local_props = mergeProps(props, {
+	const local_props = mergeProps(props, {
 		get class() {
 			return twMerge(CLASS, props["class"])
 		},
@@ -66,7 +66,7 @@ const CONTENT_CLASS = `
 export function Content<T extends ValidComponent = "div">(
 	props: ContentProps<T>,
 ) {
-	let local_props = mergeProps(props, {
+	const local_props = mergeProps(props, {
 		get class() {
 			return twMerge(CONTENT_CLASS, props["class"])
 		},
@@ -94,7 +94,7 @@ export function Title<T extends ValidComponent = "h2">(
 ) {
 	const CLASS = "font-medium"
 
-	let local_props = mergeProps(props, {
+	const local_props = mergeProps(props, {
 		get class() {
 			return twMerge(CLASS, props["class"])
 		},
@@ -108,7 +108,7 @@ export function Description<T extends ValidComponent = "p">(
 ) {
 	const CLASS = "mt-2 pr-2 text-sm text-slate-800"
 
-	let local_props = mergeProps(props, {
+	const local_props = mergeProps(props, {
 		get class() {
 			return twMerge(CLASS, props["class"])
 		},

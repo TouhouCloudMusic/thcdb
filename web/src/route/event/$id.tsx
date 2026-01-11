@@ -13,7 +13,7 @@ export const Route = createFileRoute("/event/$id")({
 	component: RouteComponent,
 	loader: async ({ params }) => {
 		const parsedId = v.parse(EntityId, Number.parseInt(params.id, 10))
-		let data = await QUERY_CLIENT.ensureQueryData(
+		const data = await QUERY_CLIENT.ensureQueryData(
 			EventQueryOption.findById(parsedId),
 		)
 		if (O.isNone(data)) {

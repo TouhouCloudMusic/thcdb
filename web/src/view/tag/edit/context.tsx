@@ -1,5 +1,5 @@
 import type { Tag } from "@thc/api"
-import { createContext } from "solid-js"
+import { createContext, untrack } from "solid-js"
 import type { ParentProps } from "solid-js"
 
 import { assertContext } from "~/utils/solid/assertContext"
@@ -16,8 +16,9 @@ const TagEditFormContext = createContext<TagEditFormContextValue>()
 export function TagFormProvider(
 	props: ParentProps<{ value: TagEditFormContextValue }>,
 ) {
+	const value = untrack(() => props.value)
 	return (
-		<TagEditFormContext.Provider value={props.value}>
+		<TagEditFormContext.Provider value={value}>
 			{props.children}
 		</TagEditFormContext.Provider>
 	)

@@ -1,4 +1,4 @@
-/* eslint-disable jsx-a11y/label-has-associated-control */
+ 
 import { mergeProps } from "solid-js"
 import type { ComponentProps } from "solid-js"
 import { twMerge } from "tailwind-merge"

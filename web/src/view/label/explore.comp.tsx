@@ -32,20 +32,20 @@ const getLabelDateLine = (label: Label) => {
 export const LabelItemSkeleton: Component = () => (
 	<div class="animate-pulse border-b border-slate-200 py-4">
 		<div class="flex gap-3">
-			<div class="h-12 w-12 shrink-0 rounded-full bg-slate-200" />
+			<div class="h-12 w-12 shrink-0 rounded-full bg-slate-200"></div>
 			<div class="min-w-0 flex-1">
 				<div class="mb-2 flex items-center gap-2">
-					<div class="h-5 w-1/2 rounded bg-slate-200" />
-					<div class="h-5 w-16 rounded bg-slate-100" />
+					<div class="h-5 w-1/2 rounded bg-slate-200"></div>
+					<div class="h-5 w-16 rounded bg-slate-100"></div>
 				</div>
 				<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-					<div class="h-4 w-28 rounded bg-slate-100" />
-					<div class="h-4 w-24 rounded bg-slate-100" />
-					<div class="h-4 w-20 rounded bg-slate-100" />
+					<div class="h-4 w-28 rounded bg-slate-100"></div>
+					<div class="h-4 w-24 rounded bg-slate-100"></div>
+					<div class="h-4 w-20 rounded bg-slate-100"></div>
 				</div>
 				<div class="mt-2 flex flex-wrap items-center gap-1">
-					<div class="h-4 w-20 rounded bg-slate-100" />
-					<div class="h-4 w-24 rounded bg-slate-100" />
+					<div class="h-4 w-20 rounded bg-slate-100"></div>
+					<div class="h-4 w-24 rounded bg-slate-100"></div>
 				</div>
 			</div>
 		</div>
@@ -95,7 +95,7 @@ export const LabelItem: Component<LabelItemProps> = (props) => {
 						<span>Founders {props.label.founders?.length ?? 0}</span>
 					</div>
 
-					<Show when={0 < visibleLocalizedNames().length}>
+					<Show when={visibleLocalizedNames().length > 0}>
 						<div class="mt-2 flex flex-wrap items-center gap-1">
 							<For each={visibleLocalizedNames()}>
 								{(item) => (
@@ -104,7 +104,7 @@ export const LabelItem: Component<LabelItemProps> = (props) => {
 									</span>
 								)}
 							</For>
-							<Show when={0 < extraLocalizedCount()}>
+							<Show when={extraLocalizedCount() > 0}>
 								<span class="bg-slate-50 rounded-md border border-slate-200 px-1.5 py-0.5 text-xs text-slate-600">
 									+{extraLocalizedCount()}
 								</span>
@@ -205,7 +205,7 @@ type LabelExploreListProps = {
 export const LabelExploreList: Component<LabelExploreListProps> = (props) => {
 	return (
 		<>
-			<Show when={!props.isLoading && 0 === props.labels.length}>
+			<Show when={!props.isLoading && props.labels.length === 0}>
 				<div class="py-8 text-sm text-slate-400">No labels</div>
 			</Show>
 
@@ -216,7 +216,7 @@ export const LabelExploreList: Component<LabelExploreListProps> = (props) => {
 			<div
 				ref={props.setSentinelRef}
 				class="h-1"
-			/>
+			></div>
 
 			<Show when={props.isFetchingNextPage || props.isLoading}>
 				<div class="flex flex-col">
@@ -226,7 +226,7 @@ export const LabelExploreList: Component<LabelExploreListProps> = (props) => {
 				</div>
 			</Show>
 
-			<Show when={!props.hasNextPage && 0 < props.labels.length}>
+			<Show when={!props.hasNextPage && props.labels.length > 0}>
 				<div class="flex justify-center py-4 text-sm text-slate-400">
 					No more labels
 				</div>

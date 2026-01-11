@@ -15,9 +15,9 @@ import { useArtistForm } from "../../context"
 export function TenureFieldArray(props: { index: number }): JSX.Element {
 	const { formStore } = useArtistForm()
 
-	let path = () => `data.memberships.${props.index}.tenure` as const
+	const path = () => `data.memberships.${props.index}.tenure` as const
 
-	let tenures = {
+	const tenures = {
 		add: () => {
 			M.insert(formStore, path(), {
 				value: {},
@@ -79,7 +79,7 @@ function TenureEntry(props: {
 }) {
 	const { formStore } = useArtistForm()
 
-	let errors = () => computeTenureError(formStore, props.membershipIndex)
+	const errors = () => computeTenureError(formStore, props.membershipIndex)
 
 	return (
 		<li class="grid grid-cols-[1fr_auto] items-center p-1.5">
@@ -138,10 +138,10 @@ function computeTenureError(
 
 	if (tenures.length === 0) return []
 
-	let res: string[] = []
+	const res: string[] = []
 
 	for (let i = 0; i < tenures.length; i++) {
-		let tenure = tenures[i]
+		const tenure = tenures[i]
 		if (!tenure) continue
 		if (tenure.leave_year && tenure.join_year) {
 			if (tenure.leave_year < tenure.join_year) {
@@ -152,7 +152,7 @@ function computeTenureError(
 		}
 
 		if (i > 0) {
-			let prevTenure = tenures[i - 1]
+			const prevTenure = tenures[i - 1]
 			if (!prevTenure) continue
 			if (prevTenure.leave_year && tenure.join_year) {
 				if (tenure.join_year < prevTenure.leave_year) {

@@ -1,6 +1,6 @@
 import { Field, FieldArray, insert, remove, setInput } from "@formisch/solid"
 import type { Label, SimpleLabel } from "@thc/api"
-import { For, Show } from "solid-js"
+import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
@@ -20,25 +20,26 @@ export function ReleaseCatalogNumbersField(props: {
 	initCatalogLabels?: (SimpleLabel | undefined)[]
 	class?: string
 }) {
-	const [labels, setLabels] = createStore<(SimpleLabel | undefined)[]>([
-		...(props.initCatalogLabels ?? []),
-	])
+	const formStore = createMemo(() => props.of)
+	const [labels, setLabels] = createStore<(SimpleLabel | undefined)[]>(
+		untrack(() => [...(props.initCatalogLabels ?? [])]),
+	)
 
 	const addCatalogNumber = () => {
-		insert(props.of, {
+		insert(formStore(), {
 			path: ["data", "catalog_nums"],
 			initialInput: { catalog_number: "", label_id: undefined },
 		})
 		setLabels(labels.length, undefined)
 	}
 
-	const removeCatalogNumberAt = (idx: number) => () => {
-		remove(props.of, { path: ["data", "catalog_nums"], at: idx })
+	const removeCatalogNumberAt = (idx: number) => {
+		remove(formStore(), { path: ["data", "catalog_nums"], at: idx })
 		setLabels((list) => list.toSpliced(idx, 1))
 	}
 
-	const setCatalogLabelAt = (idx: number) => (label: Label) => {
-		setInput(props.of, {
+	const setCatalogLabelAt = (idx: number, label: Label) => {
+		setInput(formStore(), {
 			path: ["data", "catalog_nums", idx, "label_id"],
 			input: label.id,
 		})
@@ -113,7 +114,7 @@ export function ReleaseCatalogNumbersField(props: {
 												</div>
 
 												<LabelSearchDialog
-													onSelect={setCatalogLabelAt(idx())}
+													onSelect={(label) => setCatalogLabelAt(idx(), label)}
 													icon={<Pencil1Icon />}
 												/>
 											</>
@@ -124,7 +125,7 @@ export function ReleaseCatalogNumbersField(props: {
 										variant="Tertiary"
 										size="Sm"
 										class="p-2"
-										onClick={removeCatalogNumberAt(idx())}
+										onClick={() => removeCatalogNumberAt(idx())}
 									>
 										<Cross1Icon />
 									</Button>

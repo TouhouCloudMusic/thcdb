@@ -7,7 +7,7 @@ type Color = {
 	colors: string[]
 }
 
-let colors: Color[] = [
+const colors: Color[] = [
 	{
 		name: "slate",
 		colors: [
@@ -80,7 +80,7 @@ let colors: Color[] = [
 	},
 ]
 
-let cssOverride = colors
+const _cssOverride = colors
 	.flatMap((color) =>
 		color.colors.map((hex, index) => ({
 			[`--color-${color.name.toLowerCase()}-${(index + 1) * 100}`]: hex,
@@ -91,7 +91,7 @@ let cssOverride = colors
 function Palette() {
 	return (
 		<div
-			// style={cssOverride}
+			// style={_cssOverride}
 			class="flex flex-col gap-8"
 		>
 			<div class="grid w-fit grid-cols-[1fr_auto]">

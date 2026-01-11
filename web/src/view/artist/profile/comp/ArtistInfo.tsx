@@ -3,7 +3,6 @@ import { useNavigate } from "@tanstack/solid-router"
 import type { Artist } from "@thc/api"
 import type { ParentProps } from "solid-js"
 import { createMemo, Show, For } from "solid-js"
-import { ArrowLeftIcon } from "solid-radix-icons"
 
 import { Button } from "~/component/atomic/button"
 import { DateWithPrecision } from "~/domain/shared"
@@ -42,7 +41,7 @@ export function ArtistInfo() {
 				size="Sm"
 				onClick={() => {
 					void navigator({
-						to: "/artist/" + context.artist.id + "/edit",
+						to: `/artist/${context.artist.id}/edit`,
 					})
 				}}
 			>
@@ -174,7 +173,7 @@ type InfoAlias = {
 }
 
 function getInfoAliases(artist: Artist): InfoAlias[] {
-	let arr: InfoAlias[] = []
+	const arr: InfoAlias[] = []
 
 	if (artist.aliases) {
 		for (const aliasId of artist.aliases) {

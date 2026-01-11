@@ -1,6 +1,6 @@
 import { Field, remove, setInput } from "@formisch/solid"
 import type { ReleaseTrack, SimpleArtist, Song } from "@thc/api"
-import { For } from "solid-js"
+import { For, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "solid-radix-icons"
 
@@ -18,10 +18,12 @@ export function TrackItem(props: {
 	of: ReleaseFormStore
 	initTrack?: ReleaseTrack
 }) {
-	const [track, setTrack] = createStore({
-		song: props.initTrack?.song,
-		artists: props.initTrack?.artists ?? [],
-	})
+	const [track, setTrack] = createStore(
+		untrack(() => ({
+			song: props.initTrack?.song,
+			artists: props.initTrack?.artists ?? [],
+		})),
+	)
 
 	const onRemoveTrack = () =>
 		remove(props.of, { path: ["data", "tracks"], at: props.index })
@@ -43,7 +45,7 @@ export function TrackItem(props: {
 			input: nextIds,
 		})
 	}
-	const onRemoveArtistAt = (idx: number) => () => {
+	const onRemoveArtistAt = (idx: number) => {
 		const next = track.artists.toSpliced(idx, 1)
 		setTrack("artists", next)
 		setInput(props.of, {
@@ -211,7 +213,7 @@ function RemoveTrackButton(props: { onRemove: () => void }) {
 function TrackArtistsField(props: {
 	artists: SimpleArtist[]
 	onAdd: (a: SimpleArtist) => void
-	onRemoveAt: (i: number) => () => void
+	onRemoveAt: (i: number) => void
 	hasArtist: (a: SimpleArtist) => boolean
 }) {
 	return (
@@ -233,7 +235,7 @@ function TrackArtistsField(props: {
 							<Button
 								variant="Tertiary"
 								size="Sm"
-								onClick={props.onRemoveAt(idx())}
+								onClick={() => props.onRemoveAt(idx())}
 							>
 								<Cross1Icon />
 							</Button>

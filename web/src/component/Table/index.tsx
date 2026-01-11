@@ -1,12 +1,10 @@
-import { type Table as TableType } from "@tanstack/solid-table"
-import { JSX } from "solid-js"
+import type { Table as TableType } from "@tanstack/solid-table"
+import type { JSX } from "solid-js"
 
 import { TableBody } from "./TableBody"
 import { TableHeader } from "./TableHeader"
 
-export const Table = <T extends unknown>(props: {
-	table: TableType<T>
-}): JSX.Element => {
+export const Table = <T,>(props: { table: TableType<T> }): JSX.Element => {
 	const table = () => props.table
 
 	return (

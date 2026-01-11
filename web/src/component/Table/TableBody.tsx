@@ -1,9 +1,8 @@
-import { flexRender, type RowModel } from "@tanstack/solid-table"
+import { flexRender } from "@tanstack/solid-table"
+import type { RowModel } from "@tanstack/solid-table"
 import { For } from "solid-js"
 
-export const TableBody = <T extends unknown>(props: {
-	rowModel: RowModel<T>
-}) => {
+export const TableBody = <T,>(props: { rowModel: RowModel<T> }) => {
 	return (
 		<tbody>
 			<For each={props.rowModel.rows}>

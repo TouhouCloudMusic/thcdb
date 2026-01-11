@@ -8,11 +8,11 @@ import { PageLayout } from "~/layout/PageLayout"
 import {
 	HOME_FEATURED_RELEASES,
 	HOME_METRICS,
-	type HomeNavItem,
 	HOME_NAV_ITEMS,
 	HOME_TRENDING_TAGS,
 	HOME_UPCOMING_EVENTS,
 } from "~/view/Homepage/mock"
+import type { HomeNavItem } from "~/view/Homepage/mock"
 
 const ACCENT = {
 	Reimu: {
@@ -105,7 +105,7 @@ function HomeLanding() {
 				</section>
 
 				<Card class="relative overflow-hidden border border-slate-300 p-6 shadow-xs">
-					<div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-100 via-primary to-white opacity-80" />
+					<div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-100 via-primary to-white opacity-80"></div>
 					<div class="relative flex flex-col justify-between gap-6 md:flex-row md:items-center">
 						<div class="flex flex-col gap-2">
 							<h2 class="text-xl font-light tracking-tight text-slate-900">
@@ -154,7 +154,7 @@ function HomeLanding() {
 function HomeHero() {
 	return (
 		<section class="relative overflow-hidden rounded-md border border-slate-300 bg-gradient-to-br from-reimu-100 via-primary to-marisa-100 shadow-xs">
-			<div class="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.65)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.65)_1px,transparent_1px)] [background-size:22px_22px] opacity-55" />
+			<div class="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.65)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.65)_1px,transparent_1px)] [background-size:22px_22px] opacity-55"></div>
 			<div class="relative grid gap-8 p-8 lg:grid-cols-[1.1fr_0.9fr]">
 				<div class="flex flex-col gap-6">
 					<div class="flex items-center gap-3">
@@ -230,7 +230,7 @@ function HomeHero() {
 							<div class="flex items-center justify-between gap-4">
 								<div class="text-sm text-slate-700">Mock-powered UI</div>
 								<div class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs text-slate-700 ring-1 ring-slate-200 ring-inset">
-									<span class="inline-block size-1.5 rounded-full bg-reimu-600" />
+									<span class="inline-block size-1.5 rounded-full bg-reimu-600"></span>
 									Preview
 								</div>
 							</div>
@@ -282,7 +282,7 @@ function ExploreCard(props: ExploreCardProps) {
 						<div
 							class={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs ring-1 ring-inset ${ACCENT[props.item.accent].badge}`}
 						>
-							<span class="inline-block size-1.5 rounded-full bg-current opacity-70" />
+							<span class="inline-block size-1.5 rounded-full bg-current opacity-70"></span>
 							{props.item.meta}
 						</div>
 						<div class="text-base font-medium text-slate-900">
@@ -307,9 +307,9 @@ type ReleaseCardProps = {
 }
 
 function ReleaseCard(props: ReleaseCardProps) {
-	let artistsLabel = () => formatArtists(props.release.artists)
-	let releaseDate = () => displayReleaseDate(props.release.release_date)
-	let coverUrl = () => props.release.cover_art_url ?? undefined
+	const artistsLabel = () => formatArtists(props.release.artists)
+	const releaseDate = () => displayReleaseDate(props.release.release_date)
+	const coverUrl = () => props.release.cover_art_url ?? undefined
 
 	return (
 		<Card class="border border-slate-300 p-0 shadow-xs transition-shadow duration-150 hover:shadow-md motion-reduce:transition-none">
@@ -440,8 +440,8 @@ type EventRowProps = {
 }
 
 function EventRow(props: EventRowProps) {
-	let dateLabel = () => displayEventDate(props.event)
-	let locationLabel = () => formatEventLocation(props.event)
+	const dateLabel = () => displayEventDate(props.event)
+	const locationLabel = () => formatEventLocation(props.event)
 
 	return (
 		<li class="flex items-start justify-between gap-4 p-4">
@@ -487,18 +487,18 @@ function displayReleaseDate(date: Release["release_date"] | null | undefined) {
 }
 
 function displayEventDate(event: Event) {
-	let start = event.start_date?.value
+	const start = event.start_date?.value
 	if (!start) return
 
-	let end = event.end_date?.value
+	const end = event.end_date?.value
 	if (!end || start === end) return start
 	return `${start}–${end}`
 }
 
 function formatEventLocation(event: Event) {
-	let location = event.location
+	const location = event.location
 	if (!location) return
-	let parts = [location.city, location.province, location.country].filter(
+	const parts = [location.city, location.province, location.country].filter(
 		Boolean,
 	)
 	return parts.join(", ")

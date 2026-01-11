@@ -49,7 +49,7 @@ export function createComboboxScrollContext(): ComboboxScrollContextValue {
 	})
 
 	onMount(() => {
-		let handleKeyDown = (e: KeyboardEvent) => {
+		const handleKeyDown = (e: KeyboardEvent) => {
 			if (!isTargetKey(e)) return
 			if (e.code === "ArrowUp") {
 				delayedSetBehaviorUp()
@@ -58,7 +58,7 @@ export function createComboboxScrollContext(): ComboboxScrollContextValue {
 			}
 		}
 
-		let handleKeyUp = (e: KeyboardEvent) => {
+		const handleKeyUp = (e: KeyboardEvent) => {
 			if (!isTargetKey(e)) return
 			if (e.code === "ArrowUp") {
 				delayedSetBehaviorUp.cancel()

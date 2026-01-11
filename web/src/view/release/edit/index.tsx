@@ -65,7 +65,7 @@ function FormContent(props: Props) {
 
 	if (import.meta.env.DEV) {
 		createEffect(() => {
-			let val = getInput(form)
+			const val = getInput(form)
 			console.log(val)
 		})
 	}
@@ -197,7 +197,7 @@ function FormContent(props: Props) {
 						class={form.isSubmitting ? "cursor-wait opacity-80" : ""}
 						onClick={() => {
 							if (import.meta.env.DEV) {
-								let errs = getAllErrors(form)
+								const errs = getAllErrors(form)
 								console.log(errs)
 							}
 						}}

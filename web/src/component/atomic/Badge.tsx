@@ -22,11 +22,11 @@ const COLOR_CLASS: Record<AppColor, string> = {
 }
 
 export function Badge(props: Props) {
-	let [local, otherProps] = splitProps(props, ["class", "children", "color"])
+	const [local, otherProps] = splitProps(props, ["class", "children", "color"])
 
-	let finalProps = mergeProps(otherProps, {
+	const finalProps = mergeProps(otherProps, {
 		get class() {
-			let colorClass = COLOR_CLASS[local.color ?? DEFAULT_COLOR]
+			const colorClass = COLOR_CLASS[local.color ?? DEFAULT_COLOR]
 
 			if (local.class) {
 				return twMerge(BASE_CLASS, colorClass, local.class)
@@ -38,7 +38,7 @@ export function Badge(props: Props) {
 
 	return (
 		<div {...finalProps}>
-			<span class="inline-block size-1.5 rounded-full bg-current opacity-70" />
+			<span class="inline-block size-1.5 rounded-full bg-current opacity-70"></span>
 			{local.children}
 		</div>
 	)

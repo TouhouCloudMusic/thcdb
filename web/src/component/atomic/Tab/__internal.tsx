@@ -83,7 +83,7 @@ export function Trigger(
 	)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+ 
 export function Content<T>(
 	props: PolymorphicProps<"div", K_Tab.TabsContentProps<"div">> & { value: T },
 ) {

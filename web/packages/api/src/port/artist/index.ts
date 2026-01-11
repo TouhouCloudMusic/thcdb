@@ -1,6 +1,5 @@
-import type { components, operations } from "../../gen"
 import { FetchClient } from "../../http"
-import type { ApiResult, Opt, Query } from "../../shared"
+import type { Opt } from "../../shared"
 import { adaptApiResult, adaptApiResultOptional } from "../../shared"
 
 export async function findOne(options: Opt<"find_artist_by_id">) {

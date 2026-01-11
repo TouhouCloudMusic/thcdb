@@ -108,7 +108,12 @@
 		"vitest": "^4.0.16"
 	},
 	"eslintConfig": {
-		"extends": ["plugin:storybook/recommended"]
+		"extends": [
+			"plugin:storybook/recommended"
+		]
 	},
-	"trustedDependencies": ["@tailwindcss/oxide", "esbuild"]
+	"trustedDependencies": [
+		"@tailwindcss/oxide",
+		"esbuild"
+	]
 }
