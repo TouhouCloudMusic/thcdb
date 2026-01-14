@@ -52,7 +52,7 @@ pub struct ImageQueue {
     pub reverted_at: Option<DateTimeWithTimeZone>,
     pub reverted_by: Option<i32>,
     pub created_at: DateTimeWithTimeZone,
-    pub creaded_by: i32,
+    pub created_by: i32,
 }
 
 impl ImageQueue {
@@ -113,7 +113,7 @@ impl ImageQueue {
         // Users also can cancel their image uploads
         let has_permission = user_roles.intersects(&required_roles)
             || action == ImageQueueActionEnum::Cancel
-                && user.id == self.creaded_by;
+                && user.id == self.created_by;
 
         has_permission.ok_or(Error::PermissionDenied)
     }
@@ -122,14 +122,14 @@ impl ImageQueue {
 #[derive(Debug, Clone, Copy)]
 pub struct NewImageQueue {
     pub image_id: i32,
-    pub creaded_by: i32,
+    pub created_by: i32,
 }
 
 impl NewImageQueue {
     pub const fn new(user: &User, image: &Image) -> Self {
         Self {
             image_id: image.id,
-            creaded_by: user.id,
+            created_by: user.id,
         }
     }
 }

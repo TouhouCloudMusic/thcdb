@@ -1,19 +1,22 @@
- 
-import { mergeProps } from "solid-js"
-import type { ComponentProps } from "solid-js"
+import { splitProps } from "solid-js"
+import type { ComponentProps, ParentProps } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
-export type LabelProps = ComponentProps<"label">
+export type LabelProps = ParentProps<ComponentProps<"label">>
 
 // @tw
 export const LABEL_CLASSNAME = "font-light text-lg mb-2 block"
 
 export function Label(props: LabelProps) {
-	const localProps = mergeProps(props, {
-		get class() {
-			return twMerge(LABEL_CLASSNAME, props.class)
-		},
-	})
+	const [local, otherProps] = splitProps(props, ["class", "for", "children"])
 
-	return <label {...localProps}></label>
+	return (
+		<label
+			{...otherProps}
+			for={local.for}
+			class={twMerge(LABEL_CLASSNAME, local.class)}
+		>
+			{local.children}
+		</label>
+	)
 }

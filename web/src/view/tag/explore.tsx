@@ -264,7 +264,8 @@ type TagTreeNodeProps = {
 
 function TagTreeNode(props: TagTreeNodeProps) {
 	const hasChildren = () => props.node.children.length > 0
-	const isExpanded = () => hasChildren() && props.expandedIds().has(props.node.id)
+	const isExpanded = () =>
+		hasChildren() && props.expandedIds().has(props.node.id)
 	const children = () => props.node.children
 	const indentStyle = () => ({ "padding-left": `${props.depth * 16}px` })
 	const toggleLabel = () => (isExpanded() ? "Collapse" : "Expand")
@@ -464,7 +465,11 @@ const buildTagTreeIndex = (roots: TagTreeNode[]): TagTreeIndex => {
 	const parentById = new Map<number, number | null>()
 	const depthById = new Map<number, number>()
 
-	const walk = (items: TagTreeNode[], parentId: number | null, depth: number) => {
+	const walk = (
+		items: TagTreeNode[],
+		parentId: number | null,
+		depth: number,
+	) => {
 		for (const item of items) {
 			nodeById.set(item.id, item)
 			parentById.set(item.id, parentId)

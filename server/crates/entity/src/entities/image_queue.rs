@@ -19,7 +19,7 @@ pub struct Model {
     pub reverted_at: Option<DateTimeWithTimeZone>,
     pub reverted_by: Option<i32>,
     pub created_at: DateTimeWithTimeZone,
-    pub creaded_by: i32,
+    pub created_by: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -38,7 +38,7 @@ pub enum Relation {
     ReleaseImageQueue,
     #[sea_orm(
         belongs_to = "super::user::Entity",
-        from = "Column::CreadedBy",
+        from = "Column::CreatedBy",
         to = "super::user::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"

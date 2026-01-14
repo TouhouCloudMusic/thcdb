@@ -22,6 +22,7 @@ export class UserStore {
 	private isLoading = false
 
 	async trySignIn() {
+		this.isLoading = true
 		const result = await UserApi.profile()
 
 		this.isLoading = false
@@ -59,6 +60,10 @@ export class UserStore {
 
 	get is_signed_in() {
 		return this.user !== undefined
+	}
+
+	get is_loading() {
+		return this.isLoading
 	}
 
 	sign_in(ctx: UserContext) {
