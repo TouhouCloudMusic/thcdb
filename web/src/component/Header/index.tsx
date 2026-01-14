@@ -199,7 +199,9 @@ function SearchBar() {
 }
 
 function NotificationButton() {
-	const notification_state = createMemo(() => useCurrentUser().notification_state)
+	const notification_state = createMemo(
+		() => useCurrentUser().notification_state,
+	)
 	return (
 		<Button
 			variant="Tertiary"

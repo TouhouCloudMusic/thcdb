@@ -90,7 +90,7 @@ export const tsxConfigArray = [
 	// a11y
 	{
 		files: ["src/**/*.tsx"],
-		 
+
 		...JsxA11y.flatConfigs.strict,
 		settings: {
 			"jsx-a11y": {
@@ -106,9 +106,8 @@ export const tsxConfigArray = [
 				},
 			},
 		},
-		 
+
 		rules: {
-			 
 			...JsxA11y.flatConfigs.strict.rules,
 		},
 	},

@@ -23,12 +23,19 @@ export const Size = {
 	},
 }
 
-export type Variant = "Primary" | "Secondary" | "Tertiary"
+export type Variant =
+	| "Primary"
+	| "Secondary"
+	| "Tertiary"
+	| "PrimaryV2"
+	| "SecondaryV2"
 export const Variant = {
 	*iter() {
 		yield "Primary" as Variant
 		yield "Secondary"
 		yield "Tertiary"
+		yield "PrimaryV2"
+		yield "SecondaryV2"
 	},
 	// TODO: remove default value
 	default(): Variant {
@@ -44,9 +51,12 @@ export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export function Button(props: Props) {
 	// @tw
-	const BUTTON_COMMON_STYLES = `rounded-sm transition-all font-medium p-1`
+	const BUTTON_COMMON_STYLES =
+		"inline-flex items-center justify-center gap-2 rounded-sm font-medium select-none whitespace-nowrap outline-1 outline-transparent -outline-offset-1 focus:outline-reimu-600 disabled:pointer-events-none transition-colors duration-100"
 	const DEFAULT_COLOR: AppColor = "Gray"
 	const variant_color = match.in<Variant>().match({
+		"'PrimaryV2'": () => PrimaryV2Color[props.color ?? DEFAULT_COLOR],
+		"'SecondaryV2'": () => SecondaryV2Color[props.color ?? DEFAULT_COLOR],
 		"'Primary'": () => PrimaryColor[props.color ?? DEFAULT_COLOR],
 		"'Tertiary'": () => TertiaryColor[props.color ?? DEFAULT_COLOR],
 		default: () => SecondaryColor[props.color ?? DEFAULT_COLOR],
@@ -54,8 +64,9 @@ export function Button(props: Props) {
 
 	const final_props: Props = mergeProps({ type: "button" as const }, props, {
 		get class() {
-			const size_class = props.size ? SizeClass[props.size] : undefined
 			const variant = props.variant ?? "Secondary"
+			const size = props.size ?? (variant.endsWith("V2") ? "Md" : undefined)
+			const size_class = size ? SizeClass[size] : undefined
 
 			const variant_class = VariantClass[variant]
 			const color_class = variant_color(variant)
@@ -65,6 +76,7 @@ export function Button(props: Props) {
 				size_class,
 				variant_class,
 				color_class,
+				"disabled:opacity-50",
 				props.class,
 			)
 		},
@@ -90,6 +102,8 @@ const VariantClass = {
 	Secondary: `shadow-xs shadow-slate-100`,
 	// @tw
 	Tertiary: `bg-primary hover:bg-slate-100 active:bg-slate-200 disabled:bg-secondary disabled:hover:bg-secondary disabled:active:bg-secondary`,
+	PrimaryV2: "border shadow-xs shadow-slate-950/10",
+	SecondaryV2: "border shadow-xs shadow-slate-950/5",
 }
 
 const PrimaryColor: Record<AppColor, string> = {
@@ -128,6 +142,45 @@ const PrimaryColor: Record<AppColor, string> = {
 		`
     bg-green-700 hover:bg-green-600 active:bg-green-500 disabled:bg-green-700/500
     dark:disabled:bg-green-600`,
+}
+
+const PrimaryV2Color: Record<AppColor, string> = {
+	Gray:
+		// @tw
+		`
+    bg-slate-100 hover:bg-slate-200 active:bg-slate-300
+    border-slate-400 text-slate-700
+    `,
+	Slate:
+		// @tw
+		`
+    bg-slate-100 hover:bg-slate-200 active:bg-slate-300
+    border-slate-400 text-slate-700
+    `,
+	Blue:
+		// @tw
+		`
+    bg-blue-100 hover:bg-blue-200 active:bg-blue-300
+    border-blue-300 text-blue-700
+    `,
+	Reimu:
+		// @tw
+		`
+    bg-reimu-100 hover:bg-reimu-200 active:bg-reimu-300
+    border-reimu-300 text-reimu-700
+    `,
+	Marisa:
+		// @tw
+		`
+    bg-marisa-100 hover:bg-marisa-200 active:bg-marisa-300
+    border-marisa-300 text-marisa-800
+    `,
+	Green:
+		// @tw
+		`
+    bg-green-100 hover:bg-green-200 active:bg-green-300
+    border-green-300 text-green-800
+    `,
 }
 
 const SecondaryColor: Record<AppColor, string> = {
@@ -172,6 +225,51 @@ const SecondaryColor: Record<AppColor, string> = {
 		bg-slate-100 hover:bg-slate-900 active:bg-slate-900
 		dark:hover:bg-slate-900/90 dark:active:bg-slate-900/80
 		`,
+}
+
+const SecondaryV2Color: Record<AppColor, string> = {
+	Gray:
+		// @tw
+		`
+    bg-white border-slate-400 text-slate-600
+    hover:bg-slate-50 hover:border-slate-500 active:bg-slate-100
+    disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
+    `,
+	Slate:
+		// @tw
+		`
+    bg-white border-slate-400 text-slate-600
+    hover:bg-slate-50 hover:border-slate-500 active:bg-slate-100
+    disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
+    `,
+	Blue:
+		// @tw
+		`
+    bg-white border-blue-300 text-blue-600
+    hover:bg-blue-50 hover:border-blue-400 active:bg-blue-100
+    disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
+    `,
+	Reimu:
+		// @tw
+		`
+    bg-white border-reimu-300 text-reimu-600
+    hover:bg-reimu-50 hover:border-reimu-400 active:bg-reimu-100
+    disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
+    `,
+	Marisa:
+		// @tw
+		`
+    bg-white border-marisa-300 text-marisa-600
+    hover:bg-marisa-100 hover:border-marisa-400 active:bg-marisa-200
+    disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
+    `,
+	Green:
+		// @tw
+		`
+    bg-white border-green-300 text-green-600
+    hover:bg-green-50 hover:border-green-400 active:bg-green-100
+    disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
+    `,
 }
 
 const TertiaryColor: Record<AppColor, string> = {

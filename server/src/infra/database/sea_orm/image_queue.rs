@@ -44,7 +44,7 @@ impl IntoActiveModel<db::ActiveModel> for NewImageQueue {
             reverted_at: NotSet,
             reverted_by: NotSet,
             created_at: NotSet,
-            creaded_by: Set(self.creaded_by),
+            created_by: Set(self.created_by),
         }
     }
 }
