@@ -1,0 +1,52 @@
+# syntax=docker/dockerfile:1.7
+
+ARG DEBIAN_VERSION=bookworm
+ARG RUST_IMAGE=rustlang/rust:nightly-${DEBIAN_VERSION}
+
+FROM ${RUST_IMAGE} AS builder
+WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    clang \
+    git \
+    libgit2-dev \
+    libssl-dev \
+    pkg-config \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY . ./
+
+RUN rm -f rust-toolchain.toml rust-toolchain
+
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+  --mount=type=cache,target=/usr/local/cargo/git \
+  --mount=type=cache,target=/app/target \
+  cargo build --release --features release \
+  && install -Dm755 /app/target/release/thcdb_rs /out/thcdb_rs
+
+FROM debian:${DEBIAN_VERSION}-slim AS runtime
+WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libgit2-1.5 \
+    libssl3 \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd -r app \
+  && useradd -r -g app -u 10001 app
+
+COPY --from=builder /out/thcdb_rs /app/thcdb_rs
+COPY ./config.toml /app/config.toml
+
+RUN mkdir -p /app/public/image \
+  && chown -R app:app /app
+
+USER app
+EXPOSE 12345
+
+ENV RUST_LOG=info
+ENTRYPOINT ["/app/thcdb_rs"]
+
