@@ -1,6 +1,6 @@
 # Correction (修正) 模块
 
-> **实现状态**: ⚠️ 部分完成 | [查看路线图](../ROADMAP.md#correction)
+> **实现状态**: ⚠️ 部分完成（已支持拒绝与权限控制） | [查看路线图](../ROADMAP.md#correction)
 
 修正系统通过结构化的审核流程实现协作编辑和数据库内容质量控制。
 
@@ -27,7 +27,7 @@
 
 - **Pending**: 等待审核
 - **Approved**: 已接受并应用
-- **Rejected**: 已拒绝并说明原因
+- **Rejected**: 已拒绝（当前实现未包含拒绝原因字段）
 - **Superseded**: 被新修正替代
 
 ### CorrectionType
@@ -81,7 +81,7 @@
 
 - 授权批准者做出最终决定
 - 批准的修正应用到数据库
-- 拒绝的修正包含解释说明
+- 拒绝的修正会被标记为 `Rejected`（当前未实现拒绝原因字段）
 - 状态更新并记录时间戳
 
 ### 4. 应用
@@ -98,16 +98,21 @@
 | 端点 | 方法 | 状态 | 说明 |
 |------|------|------|------|
 | `/correction` | POST | ✅ | 创建修正 |
-| `/correction/{id}/approve` | POST | ✅ | 批准修正 |
-| `/corrections/pending` | GET | ✅ | 待处理列表 |
+| `/correction/{id}` | GET | ✅ | 修正详情 |
+| `/correction/{id}/revisions` | GET | ✅ | 修正历史版本（列表） |
+| `/correction/{id}/diff` | GET | ✅ | 与最近一次已批准版本的 diff |
+| `/correction/{id1}/compare/{id2}` | GET | ✅ | 修正之间的对比 |
+| `/correction/{id}` | POST | ✅ | 处理修正（`method=Approve|Reject`，需要 `correction.manage`） |
+| `/{entity_type}/{id}/pending-correction` | GET | ✅ | 查询某实体是否存在待处理修正（返回 correction id） |
 
 ### 待实现
 
 | 端点 | 方法 | 说明 |
 |------|------|------|
-| `/correction/{id}` | GET | 修正详情 |
-| `/correction/{id}/reject` | POST | 拒绝修正 |
-| `/correction/{id}/revisions` | GET | 修正历史版本 |
 | `/correction/{id}/comments` | GET | 修正评论 |
 | `/user/{id}/corrections` | GET | 用户的修正列表 |
 | `/correction/{id}/supersede` | POST | 替代修正 |
+
+### 备注
+
+- 审批/拒绝通过统一接口 `POST /correction/{id}?method=...` 完成；该接口会校验 `correction.manage` 权限。
