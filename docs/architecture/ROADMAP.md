@@ -52,8 +52,8 @@
 | Tag | 查询、投票 | 垂直切片 |
 | Credit Role | 查询 | 整洁架构 |
 | Song Lyrics | 查询 | 整洁架构 |
-| User | 注册、登录、登出、资料管理 | 整洁架构 |
-| Correction | 创建、批准 | 整洁架构 |
+| User | 注册、登录、登出、资料管理、角色/权限（基础） | 整洁架构 |
+| Correction | 创建、查看、批准、拒绝、修订历史（列表） | 整洁架构 |
 
 ---
 
@@ -87,13 +87,14 @@
 
 ### 1.3 修正系统扩展 {#correction}
 
-**优先级**: 高 | **状态**: 部分实现 | **设计文档**: [correction](./correction/design.md)
+**优先级**: 高 | **状态**: 部分实现（已支持拒绝与统一处理接口） | **设计文档**: [correction](./correction/design.md)
 
 
 **实现要点**:
-- 拒绝功能（含原因记录）
-- 审核员分配
-- Merge 类型支持
+- ✅ 拒绝功能（通过 `POST /correction/{id}?method=Reject`）
+- ✅ 权限控制：审批/拒绝需要 `correction.manage`（默认 Admin/Moderator）
+- ⏳ 审核员分配
+- ⏳ Merge 类型支持
 - 依赖: 通知系统
 
 ---
@@ -111,13 +112,16 @@
 
 ### 1.5 用户权限系统 {#permission}
 
-**优先级**: 高 | **状态**: 部分实现 | **设计文档**: [user](./user/design.md)
+**优先级**: 高 | **状态**: 部分实现（基础 RBAC + 管理 API 已实现） | **设计文档**: [user](./user/design.md)
 
 
 **实现要点**:
-- 权限检查中间件
-- 角色: 普通用户、贡献者、编辑者、管理员
-- 专业角色: 音乐专家、图片管理员、社区管理员
+- ✅ 权限/角色表：`permission`、`role_permission`、`user_role`
+- ✅ 启动时同步默认权限映射（与 `UserRoleEnum` 一致）
+- ✅ 权限检查：`ensure_permission::<P>`
+- ✅ 管理 API：`GET /admin/users`、`PUT /admin/user/{id}/roles`（含变更审计）
+- ⏳ 角色/权限扩展（contributor/editor 等）与更细粒度权限
+- ⏳ 补齐鉴权边界（例如 `/image-queue` 列表与 `pending-count` 目前仅要求登录）
 
 ---
 
@@ -155,8 +159,15 @@
 
 ### 3.1 图片队列系统 {#image-queue}
 
-**优先级**: 中 | **状态**: 部分实现 | **设计文档**: [image](./image/design.md)
+**优先级**: 中 | **状态**: 部分实现（管理 API + 页面已实现） | **设计文档**: [image](./image/design.md)
 
+
+**实现要点**:
+- ✅ 管理端：队列列表 `GET /image-queue`、待处理数量 `GET /image-queue/pending-count`
+- ✅ 管理端：详情 `GET /image-queue/{id}`、处理 `POST /image-queue/{id}?method=...`
+- ✅ 用户侧：`GET /user/{id}/image-queue`（本人可看；他人需 `image.queue.manage`）
+- ✅ 权限控制：详情/处理需要 `image.queue.manage`（默认 Admin/Moderator）
+- ⏳ 通知：审核结果通知上传者（依赖通知系统）
 
 ---
 

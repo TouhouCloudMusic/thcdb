@@ -1,6 +1,6 @@
 # Image (图片) 模块
 
-> **实现状态**: ⚠️ 部分完成 | [查看路线图](../ROADMAP.md#image-queue)
+> **实现状态**: ⚠️ 部分完成（图片队列管理 API/页面已实现，仍缺少部分管理细节） | [查看路线图](../ROADMAP.md#image-queue)
 
 图片系统管理 THCDB 中的所有视觉媒体，包括存储、元数据、审核队列和与各种实体的关联。
 
@@ -30,7 +30,7 @@
 
 - **Pending**: 等待审核
 - **Approved**: 已接受并发布
-- **Rejected**: 已拒绝并说明原因
+- **Rejected**: 已拒绝（当前实现未包含拒绝原因字段）
 - **Cancelled**: 过期取消
 - **Reverted**: 曾被接受但被管理员撤销
 
@@ -77,15 +77,13 @@
 | `/release/{id}/image` | POST | ✅ | 提交作品图片 |
 | `/profile-banner` | POST | ✅ | 上传 profile banner |
 | `/avatar` | POST | ✅ | 上传头像 |
+| `/image-queue` | GET | ✅ | 图片队列列表（支持分页与筛选） |
+| `/image-queue/pending-count` | GET | ✅ | 待审核数量 |
+| `/image-queue/{id}` | GET | ✅ | 图片队列详情（需要 `image.queue.manage`） |
+| `/image-queue/{id}` | POST | ✅ | 处理队列（`method=Approve|Reject|Revert`，需要 `image.queue.manage`） |
+| `/user/{id}/image-queue` | GET | ✅ | 用户的图片队列（本人可看；他人需 `image.queue.manage`） |
 
-### 待实现
+### 备注
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/admin/image-queue` | GET | 待审核队列 |
-| `/admin/image-queue/{id}` | GET | 图片详情 |
-| `/admin/image-queue/{id}/approve` | POST | 批准 |
-| `/admin/image-queue/{id}/reject` | POST | 拒绝 |
-| `/admin/image-queue/{id}/revert` | POST | 撤销 |
-| `/admin/image-queue/pending-count` | GET | 待审核数量 |
-| `/user/{id}/image-queue` | GET | 用户的图片 |
+- 当前实现中，`/image-queue` 与 `/image-queue/pending-count` 仅要求登录；详情与处理接口会校验 `image.queue.manage`。
+- 前端页面：`/image-queue/`（管理列表）、`/image-queue/{id}`（详情/处理）、`/user/{id}/image-queue`（用户队列），另有 `/image-queue/mock` 页面用于开发调试。

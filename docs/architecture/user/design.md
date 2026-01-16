@@ -1,6 +1,6 @@
 # User (用户) 模块
 
-> **实现状态**: ⚠️ 部分完成 | [查看路线图](../ROADMAP.md#permission)
+> **实现状态**: ⚠️ 部分完成（基础权限系统已实现，关注系统待实现） | [查看路线图](../ROADMAP.md#permission)
 
 用户实体，代表系统中的注册用户账户和个人资料。包含权限管理和关注系统。
 
@@ -30,16 +30,27 @@
 
 ### 权限级别
 
-- **普通用户** - 基本浏览和评论权限
-- **贡献者** - 可以提交修正和建议
-- **编辑者** - 可以审核和批准修正
-- **管理员** - 完整的系统管理权限
+- **User** - 普通用户（默认）
+- **Moderator** - 具备内容审核与图片队列管理权限
+- **Admin** - 完整的系统管理权限（含用户与角色管理）
 
-### 专业角色
+### 权限模型（RBAC）
 
-- **音乐专家** - 特定流派或时期的专家
-- **图片管理员** - 管理图片上传和审核
-- **社区管理员** - 管理用户互动和内容
+系统采用「角色 → 权限」映射：
+
+- `permission`：权限定义（`name` + `description`）
+- `role_permission`：角色与权限的多对多关系
+- `user_role`：用户与角色关系
+- `user_role_change_audit`：用户角色变更审计记录
+
+当前内置权限（`permission.name`）：
+
+| 权限名 | 含义 |
+|---|---|
+| `correction.manage` | 审批/拒绝修正 |
+| `image.queue.manage` | 管理图片队列（查看详情、处理） |
+| `admin.user.read` | 读取用户列表 |
+| `admin.user.role.write` | 修改用户角色 |
 
 ## 关注系统
 
@@ -80,13 +91,13 @@
 | `/avatar` | POST | ✅ | 上传头像 |
 | `/profile-banner` | POST | ✅ | 上传横幅 |
 
-### 权限管理 (待实现)
+### 权限管理
 
 | 端点 | 方法 | 状态 | 说明 |
 |------|------|------|------|
-| `/admin/users` | GET | ❌ | 用户列表 |
-| `/admin/user/{id}/roles` | GET | ❌ | 用户角色 |
-| `/admin/user/{id}/roles` | PUT | ❌ | 修改角色 |
+| `/admin/users` | GET | ✅ | 用户列表（含角色） |
+| `/admin/user/{id}/roles` | GET | ❌ | 用户角色（可由 `/admin/users` 间接获取；如需单独接口再补） |
+| `/admin/user/{id}/roles` | PUT | ✅ | 修改角色（`roles`: `user`/`moderator`/`admin`） |
 | `/roles` | GET | ❌ | 可用角色列表 |
 
 ### 关注系统 (待实现)
