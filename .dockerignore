@@ -1,5 +1,7 @@
 .git
 .github
+.direnv
+node_modules
 
 server/target
 server/tmp
@@ -10,4 +12,3 @@ web/.pnpm-store
 
 **/*.log
 .DS_Store
-

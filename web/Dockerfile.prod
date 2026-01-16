@@ -1,0 +1,22 @@
+# syntax=docker/dockerfile:1.7
+
+ARG NODE_VERSION=24
+ARG DEBIAN_VERSION=bookworm
+
+FROM node:${NODE_VERSION}-${DEBIAN_VERSION}-slim AS builder
+WORKDIR /app
+
+COPY . ./
+
+ENV CI=true
+
+RUN corepack enable \
+  && corepack prepare pnpm@10 --activate \
+  && pnpm install --frozen-lockfile \
+  && pnpm build
+
+FROM nginx:1.27-alpine AS runtime
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist/ /usr/share/nginx/html/
+
+EXPOSE 80
