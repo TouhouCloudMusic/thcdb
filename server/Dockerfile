@@ -7,6 +7,10 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 ENV PATH="/root/.cargo/bin:${PATH}"
 
+RUN cargo install cargo-binstall
+
+RUN cargo binstall wild-linker
+
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
@@ -22,7 +26,7 @@ RUN rustup update \
 && rustup component add rustc-codegen-cranelift-preview --toolchain nightly \
 && rustup target add x86_64-unknown-linux-gnu --toolchain nightly
 
-ENV RUSTFLAGS="-Clink-arg=--ld-path=mold -Zthreads=0 -Zshare-generics=y"
+ENV RUSTFLAGS="-Clink-arg=--ld-path=wild -Zshare-generics=y"
 ENV CARGO_INCREMENTAL=0
 
 COPY . .
