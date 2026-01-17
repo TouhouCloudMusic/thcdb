@@ -21,7 +21,6 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             set -euo pipefail
-            mkdir "$HOME/thcdb"
             cd "$HOME/thcdb"
 
             git fetch origin main
