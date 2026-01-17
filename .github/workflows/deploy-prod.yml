@@ -1,5 +1,4 @@
-name: Deploy (prod)
-
+name: Deploy
 on:
   push:
     branches: [main]
@@ -22,12 +21,11 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             set -euo pipefail
+            mkdir "$HOME/thcdb"
             cd "$HOME/thcdb"
 
             git fetch origin main
-            git reset --hard origin/main
 
-            # Build first to avoid downtime if build fails
             docker compose -f docker-compose.prod.yml build --pull
             docker compose -f docker-compose.prod.yml down --remove-orphans
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
