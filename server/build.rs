@@ -1,14 +1,23 @@
 use std::fs;
+use std::path::PathBuf;
 
 use quote::ToTokens;
+use snafu::Whatever;
+use snafu::prelude::*;
 use syn::{BinOp, Expr, Item, Lit, parse_file};
 
-fn main() {
+#[snafu::report]
+fn main() -> Result<(), Whatever> {
     const LINE_BREAK: char = '\n';
+    const CONSTANTS_MODULE: &str = "src/constant.rs";
 
-    let rust_module_path = "src/constant.rs";
-    let content = fs::read_to_string(rust_module_path).unwrap();
-    let ast = parse_file(&content).unwrap();
+    let content =
+        fs::read_to_string(CONSTANTS_MODULE).with_whatever_context(|_| {
+            format!("Failed to read {CONSTANTS_MODULE}")
+        })?;
+    let ast = parse_file(&content).with_whatever_context(|_| {
+        format!("Failed to parse constants from {CONSTANTS_MODULE}")
+    })?;
 
     let comment_msg = "Auto-generated from thcdb server\n\n";
 
@@ -21,6 +30,7 @@ fn main() {
     );
 
     let mut ts_content = Vec::new();
+    let mut ts_file_lines = Vec::new();
     let mut kt_content = Vec::new();
 
     for ast_item in ast.items {
@@ -51,6 +61,9 @@ fn main() {
                         }
                         _ => None,
                     } {
+                        ts_file_lines.push(format!(
+                            "export const {ident} = {str}{LINE_BREAK}",
+                        ));
                         ts_content.push(format!(
                             r##"r#"export const {ident} = {str}{LINE_BREAK}"#"##,
                         ));
@@ -106,10 +119,39 @@ fn main() {
 
     content.push('\n');
 
-    fs::create_dir_all("src/constant").expect("Create dir failed");
-    fs::write(out_dir, content.trim()).expect("Failed to write file");
+    fs::create_dir_all("src/constant").with_whatever_context(|_| {
+        "Failed to create src/constant".to_string()
+    })?;
+    fs::write(out_dir, content.trim())
+        .with_whatever_context(|_| format!("Failed to write {out_dir}"))?;
 
-    println!("cargo:rerun-if-changed={rust_module_path}");
+    let manifest_dir = PathBuf::from(
+        std::env::var("CARGO_MANIFEST_DIR").with_whatever_context(|_| {
+            "Missing CARGO_MANIFEST_DIR".to_string()
+        })?,
+    );
+    let web_root = manifest_dir.join("../web");
+    if !web_root.exists() {
+        whatever!("web directory not found at {}", web_root.display());
+    }
+    let web_ts_path = web_root.join("src/constant/server.ts");
+    let parent = web_ts_path.parent().with_whatever_context(|| {
+        format!("Missing parent for {}", web_ts_path.display())
+    })?;
+    fs::create_dir_all(parent).with_whatever_context(|_| {
+        format!("Failed to create {}", parent.display())
+    })?;
+    let mut ts_file = String::new();
+    ts_file.push_str(&format!("// {comment_msg}"));
+    ts_file_lines.iter().for_each(|line| ts_file.push_str(line));
+    fs::write(&web_ts_path, ts_file).with_whatever_context(|_| {
+        format!("Failed to write {}", web_ts_path.display())
+    })?;
+
+    println!("cargo:rerun-if-changed={CONSTANTS_MODULE}");
+    println!("cargo:rerun-if-changed=../web/src/constant/server.ts");
+
+    Ok(())
 }
 
 fn eval_binexpr(expr: &Expr) -> i64 {

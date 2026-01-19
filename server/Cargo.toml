@@ -21,6 +21,7 @@ macros         = { path = "crates/macros" }
 migration      = { path = "crates/migration" }
 proc_macros    = { path = "crates/proc_macros" }
 # external
+snafu = "0.8"
 argon2 = "0.5"
 axum = { version = "0.8", features = [
     "macros",
@@ -70,6 +71,7 @@ utoipa = { version = "5", features = [
 [build-dependencies]
 dotenvy.workspace = true
 quote.workspace   = true
+snafu.workspace   = true
 syn.workspace     = true
 
 [package]
@@ -168,7 +170,7 @@ serde_with = { version = "3.12.0", features = [
     "chrono_0_4",
 ] }
 smart-default = "0.7.1"
-snafu = "0.8"
+snafu.workspace = true
 strum = { version = "0.27", features = [
     "derive",
 ] }
