@@ -10,7 +10,6 @@ import solidPlugin from "vite-plugin-solid"
 import tsconfigPaths from "vite-tsconfig-paths"
 import { defineProject } from "vitest/config"
 
-import { generatePlugin } from "./plugins/generate"
 
 const dirname =
 	typeof __dirname == "undefined"
@@ -41,7 +40,6 @@ export default defineConfig(({ mode }) => {
 			solidPlugin(),
 			tailwindcss(),
 			tsconfigPaths(),
-			generatePlugin(SERVER_URL, isTest),
 		],
 		server: {
 			port: 3000,

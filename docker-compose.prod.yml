@@ -32,8 +32,8 @@ services:
 
   server:
     build:
-      context: ./server
-      dockerfile: Dockerfile.prod
+      context: .
+      dockerfile: server/Dockerfile.prod
     restart: unless-stopped
     init: true
     depends_on:
