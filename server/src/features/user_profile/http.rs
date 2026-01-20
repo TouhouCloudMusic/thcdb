@@ -4,11 +4,12 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::adapter::inbound::rest::api_response::Data;
+use crate::adapter::inbound::rest::api_response::{Data, Message};
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain;
 use crate::domain::user::UserProfile;
+use crate::features::user_profile::FollowResult;
 
 const TAG: &str = "User";
 
@@ -22,7 +23,11 @@ pub struct DataUserProfile {
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
         .with_public(|r| r.routes(routes!(profile_with_name)))
-        .with_private(|r| r.routes(routes!(profile)))
+        .with_private(|r| {
+            r.routes(routes!(profile))
+                .routes(routes!(follow_user))
+                .routes(routes!(unfollow_user))
+        })
         .finish()
 }
 
@@ -39,6 +44,66 @@ async fn profile(
     State(service): State<state::UserProfileService>,
 ) -> Result<Data<UserProfile>, impl IntoResponse> {
     load_profile(&service, &user.name, Some(&user)).await
+}
+
+#[utoipa::path(
+    post,
+    tag = TAG,
+    path = "/user/{id}/follow",
+    responses(
+        (status = 200, body = Message),
+    ),
+)]
+async fn follow_user(
+    CurrentUser(user): CurrentUser,
+    Path(id): Path<i32>,
+    State(service): State<state::UserProfileService>,
+    State(notification): State<state::NotificationService>,
+) -> Result<Message, axum::response::Response> {
+    let res = service
+        .follow(user.id, id)
+        .await
+        .map_err(IntoResponse::into_response)?;
+
+    if res == FollowResult::AlreadyFollowing {
+        return Ok(Message::ok());
+    }
+
+    notification
+        .create_best_effort(
+            id,
+            crate::domain::model::NotificationKindEnum::NewFollower,
+            crate::domain::model::NotificationTargetTypeEnum::User,
+            user.id,
+            crate::features::notification::NotificationPayload {
+                summary: Some(format!("{} started following you", user.name)),
+                target_url: Some(format!("/profile/{}", user.name)),
+            },
+        )
+        .await;
+
+    Ok(Message::ok())
+}
+
+#[utoipa::path(
+    delete,
+    tag = TAG,
+    path = "/user/{id}/follow",
+    responses(
+        (status = 200, body = Message),
+    ),
+)]
+async fn unfollow_user(
+    CurrentUser(user): CurrentUser,
+    Path(id): Path<i32>,
+    State(service): State<state::UserProfileService>,
+) -> Result<Message, axum::response::Response> {
+    let _ = service
+        .unfollow(user.id, id)
+        .await
+        .map_err(IntoResponse::into_response)?;
+
+    Ok(Message::ok())
 }
 
 #[utoipa::path(
@@ -69,10 +134,14 @@ pub async fn load_profile(
         .ok_or_else(|| axum::http::StatusCode::NOT_FOUND.into_response())?;
 
     if let Some(current_user) = current_user {
-        service
-            .with_following(&mut profile, current_user)
-            .await
-            .map_err(IntoResponse::into_response)?;
+        if current_user.name != profile.name {
+            service
+                .with_following(&mut profile, current_user)
+                .await
+                .map_err(IntoResponse::into_response)?;
+        } else {
+            profile.settings = Some(current_user.settings.clone());
+        }
     }
 
     Ok(profile.into())

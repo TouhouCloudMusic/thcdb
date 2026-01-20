@@ -1,17 +1,23 @@
 use std::time::Duration;
 
+use chrono::Utc;
 use fred::prelude::{Client, ClientLike, ListInterface, Options};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 
-use super::storage::file::REMOVE_FILE_FAIELD_KEY;
+use super::storage::file::REMOVE_FILE_FAILED_KEY;
+use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::utils::retry_async;
 
 pub struct Worker {
     pub redis_pool: fred::prelude::Pool,
+    pub repo: SeaOrmRepository,
+    pub notification_retention_days: i64,
 }
 
 impl Worker {
     pub fn init(self) {
         init_remove_file(self.redis_pool);
+        init_notification_cleanup(self.repo, self.notification_retention_days);
     }
 }
 
@@ -26,7 +32,7 @@ fn init_remove_file(redis_pool: fred::prelude::Pool) {
         tracing::info!("File removal worker started");
         loop {
             match client
-                .brpop::<Option<String>, _>(REMOVE_FILE_FAIELD_KEY, 0.0)
+                .brpop::<Option<String>, _>(REMOVE_FILE_FAILED_KEY, 0.0)
                 .await
             {
                 Ok(Some(path)) => {
@@ -43,7 +49,7 @@ fn init_remove_file(redis_pool: fred::prelude::Pool) {
                                     999,
                                     async move || {
                                         pool.lpush::<String, _, _>(
-                                            REMOVE_FILE_FAIELD_KEY,
+                                            REMOVE_FILE_FAILED_KEY,
                                             path.clone(),
                                         )
                                         .await
@@ -60,6 +66,40 @@ fn init_remove_file(redis_pool: fred::prelude::Pool) {
                     tokio::time::sleep(Duration::from_secs(1)).await;
                 }
             }
+        }
+    });
+}
+
+fn init_notification_cleanup(repo: SeaOrmRepository, retention_days: i64) {
+    tokio::spawn(async move {
+        tracing::info!(
+            retention_days = retention_days,
+            "Notification cleanup worker started",
+        );
+
+        loop {
+            let cutoff: chrono::DateTime<chrono::FixedOffset> =
+                (Utc::now() - chrono::Duration::days(retention_days)).into();
+
+            match entity::notification::Entity::delete_many()
+                .filter(entity::notification::Column::CreatedAt.lt(cutoff))
+                .exec(&repo.conn)
+                .await
+            {
+                Ok(res) => {
+                    if res.rows_affected > 0 {
+                        tracing::info!(
+                            deleted = res.rows_affected,
+                            "Expired notifications deleted"
+                        );
+                    }
+                }
+                Err(err) => {
+                    tracing::error!(?err, "Failed to cleanup notifications");
+                }
+            }
+
+            tokio::time::sleep(Duration::from_hours(24)).await;
         }
     });
 }

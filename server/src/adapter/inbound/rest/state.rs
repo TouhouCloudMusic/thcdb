@@ -4,6 +4,7 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 
 pub(crate) use crate::infra::database::sea_orm::SeaOrmRepository;
+use crate::infra::notification::NotificationHub;
 use crate::infra::singleton::FS_IMAGE_BASE_PATH;
 use crate::infra::state::AppState;
 use crate::infra::storage::{GenericFileStorage, GenericFileStorageConfig};
@@ -34,6 +35,7 @@ pub(crate) type ReleaseImageService = crate::features::release_image::Service;
 
 pub(crate) type UserImageService = crate::features::user_image::Service;
 pub(crate) type UserProfileService = crate::features::user_profile::Service;
+pub(crate) type NotificationService = crate::features::notification::Service;
 
 impl FromRef<ArcAppState> for SeaOrmRepository {
     fn from_ref(input: &ArcAppState) -> Self {
@@ -83,5 +85,17 @@ impl FromRef<ArcAppState> for UserImageService {
             redis_pool: input.redis_pool(),
         });
         Self::new(repo, storage)
+    }
+}
+
+impl FromRef<ArcAppState> for NotificationHub {
+    fn from_ref(input: &ArcAppState) -> Self {
+        input.notification_hub.clone()
+    }
+}
+
+impl FromRef<ArcAppState> for NotificationService {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self::new(input.sea_orm_repo.clone(), input.notification_hub.clone())
     }
 }

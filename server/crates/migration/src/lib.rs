@@ -49,6 +49,10 @@ migrations![
     m20260111_000000_create_permission_tables,
     m20260111_000001_create_role_change_audit,
     m20260114_000000_fix_image_queue_created_by,
+    m20260120_000000_create_notification_tables,
+    m20260120_000001_seed_notification_kind,
+    m20260120_000002_seed_entity_type,
+    m20260121_000000_user_settings_json,
 ];
 
 macro_rules! migration {

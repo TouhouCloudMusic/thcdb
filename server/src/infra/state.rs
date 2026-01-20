@@ -5,6 +5,7 @@ use sea_orm::DatabaseConnection;
 use super::config::Config;
 use super::database::get_connection;
 use super::database::sea_orm::SeaOrmRepository;
+use super::notification::NotificationHub;
 use super::redis::Pool;
 
 #[derive(Clone)]
@@ -16,6 +17,8 @@ pub struct AppState {
     pub transport: AsyncSmtpTransport<Tokio1Executor>,
 
     pub sea_orm_repo: SeaOrmRepository,
+
+    pub notification_hub: NotificationHub,
 }
 
 impl AppState {
@@ -38,6 +41,7 @@ impl AppState {
             redis_pool,
             transport,
             sea_orm_repo: SeaOrmRepository::new(conn.clone()),
+            notification_hub: NotificationHub::new(),
         }
     }
 }

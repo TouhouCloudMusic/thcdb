@@ -8,7 +8,7 @@ use super::FsStorage;
 use crate::domain::image::{AsyncFileStorage, Image, NewImage};
 use crate::utils::retry_async;
 
-pub const REMOVE_FILE_FAIELD_KEY: &str = "remove_file_failed_queue";
+pub const REMOVE_FILE_FAILED_KEY: &str = "remove_file_failed_queue";
 
 #[derive(Clone)]
 pub struct GenericFileStorage {
@@ -80,5 +80,5 @@ async fn enqueue_delete_task(
     path: &Path,
 ) -> FredResult<()> {
     let path_str = path.to_str().expect("Failed to serialize pathbuf");
-    pool.lpush(REMOVE_FILE_FAIELD_KEY, path_str).await
+    pool.lpush(REMOVE_FILE_FAILED_KEY, path_str).await
 }

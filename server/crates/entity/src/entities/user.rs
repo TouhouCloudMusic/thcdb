@@ -19,6 +19,8 @@ pub struct Model {
     pub profile_banner_id: Option<i32>,
     #[sea_orm(column_type = "Text", nullable)]
     pub bio: Option<String>,
+    #[sea_orm(column_type = "JsonBinary")]
+    pub settings: Json,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -27,6 +29,8 @@ pub enum Relation {
     ArtistTagVote,
     #[sea_orm(has_many = "super::comment::Entity")]
     Comment,
+    #[sea_orm(has_many = "super::notification::Entity")]
+    Notification,
     #[sea_orm(has_many = "super::correction_revision::Entity")]
     CorrectionRevision,
     #[sea_orm(has_many = "super::correction_user::Entity")]
@@ -66,6 +70,12 @@ impl Related<super::artist_tag_vote::Entity> for Entity {
 impl Related<super::comment::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Comment.def()
+    }
+}
+
+impl Related<super::notification::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Notification.def()
     }
 }
 

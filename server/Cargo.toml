@@ -21,11 +21,11 @@ macros         = { path = "crates/macros" }
 migration      = { path = "crates/migration" }
 proc_macros    = { path = "crates/proc_macros" }
 # external
-snafu = "0.8"
 argon2 = "0.5"
 axum = { version = "0.8", features = [
     "macros",
     "multipart",
+    "ws",
 ] }
 axum-login = { version = "0.18" }
 chrono = "0.4"
@@ -51,6 +51,7 @@ sea-query = "0.32.6"
 serde = { version = "1", features = [
     "derive",
 ] }
+snafu = "0.8"
 syn = { version = "2.0.98", features = [
     "full",
 ] }
@@ -114,6 +115,7 @@ config = { version = "0.15.8", features = [
     "toml",
     "convert-case",
 ], default-features = false }
+dashmap = "6.1.0"
 derive_more = { version = "2.0.1", features = [
     "display",
     "from",

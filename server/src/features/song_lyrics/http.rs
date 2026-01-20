@@ -57,12 +57,21 @@ async fn create_song_lyrics(
 async fn update_song_lyrics(
     CurrentUser(user): CurrentUser,
     State(repo): State<state::SeaOrmRepository>,
+    State(notification): State<state::NotificationService>,
     Path(lyrics_id): Path<i32>,
     Json(input): Json<NewCorrectionDto<NewSongLyrics>>,
 ) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
+    let user_id = user.id;
     let result =
         service::upsert_correction(&repo, lyrics_id, input.with_author(user))
             .await?;
+
+    notification
+        .notify_correction_needs_review_best_effort(
+            result.correction_id,
+            &[user_id],
+        )
+        .await;
 
     Ok(Data::from(result))
 }

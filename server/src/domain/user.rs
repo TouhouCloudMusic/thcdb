@@ -1,4 +1,5 @@
 use serde::Serialize;
+use serde_json::Value;
 use utoipa::ToSchema;
 
 use super::auth::AuthCredential;
@@ -25,6 +26,8 @@ pub struct UserProfile {
     pub is_following: Option<bool>,
 
     pub bio: Option<String>,
+
+    pub settings: Option<Value>,
 }
 
 #[derive(Clone, Debug)]
@@ -37,6 +40,7 @@ pub struct User {
     pub last_login: chrono::DateTime<chrono::FixedOffset>,
     pub roles: Vec<UserRole>,
     pub bio: Option<String>,
+    pub settings: Value,
 }
 
 impl User {
