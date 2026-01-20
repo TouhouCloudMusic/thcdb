@@ -10,6 +10,10 @@ nest! {
         pub app: pub struct App {
             pub port: u16,
         },
+        pub notification: pub struct Notification {
+            #[serde(default = "default_notification_retention_days")]
+            pub retention_days: i64,
+        },
         pub email: pub struct Email {
             pub creds: pub struct EmailCreds {
                 pub username: String,
@@ -27,6 +31,10 @@ nest! {
 }
 
 impl Copy for LimitMiddleware {}
+
+const fn default_notification_retention_days() -> i64 {
+    90
+}
 
 impl Config {
     pub fn init() -> Self {

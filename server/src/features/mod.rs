@@ -9,6 +9,7 @@ pub mod enum_table;
 pub mod event;
 pub(crate) mod image_queue;
 pub mod label;
+pub mod notification;
 pub mod release;
 pub mod release_image;
 pub(crate) mod release_image_queue;
@@ -35,6 +36,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .merge(event::router())
         .merge(image_queue::router())
         .merge(label::router())
+        .merge(notification::router())
         .merge(release::router())
         .merge(search::router())
         .merge(song::router())

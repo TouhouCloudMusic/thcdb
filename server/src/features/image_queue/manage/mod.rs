@@ -3,8 +3,8 @@ mod repo;
 
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
-pub use http::router;
 pub(crate) use http::HandleImageQueueMethod;
+pub use http::router;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 

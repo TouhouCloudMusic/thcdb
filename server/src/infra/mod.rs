@@ -5,6 +5,7 @@ pub mod email;
 pub mod error;
 pub mod logger;
 pub mod mapper;
+pub mod notification;
 pub mod redis;
 pub mod singleton;
 pub mod state;

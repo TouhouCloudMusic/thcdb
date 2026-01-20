@@ -1,5 +1,5 @@
 import type { UserProfile } from "@thc/api"
-import { UserApi, AuthApi } from "@thc/api"
+import { UserApi, AuthApi, NotificationApi } from "@thc/api"
 import { Either as E, Option } from "effect"
 import type { ParentProps } from "solid-js"
 import { createContext, onMount } from "solid-js"
@@ -14,12 +14,24 @@ export const enum NotificationState {
 	Muted,
 }
 
+const getObject = (x: unknown): Record<string, unknown> | undefined => {
+	if (typeof x !== "object" || x === null) return
+	if (Array.isArray(x)) return
+	return x as Record<string, unknown>
+}
+
 export class UserStore {
 	constructor(private ctx: UserContext) {
 		return createMutable(this)
 	}
 
 	private isLoading = false
+	private notificationUnreadCount = 0
+	private notificationSocket: WebSocket | undefined = undefined
+	private notificationReconnectDelayMs = 1000
+	private notificationReconnectTimer:
+		| ReturnType<typeof globalThis.setTimeout>
+		| undefined = undefined
 
 	async trySignIn() {
 		this.isLoading = true
@@ -37,17 +49,37 @@ export class UserStore {
 					this.ctx = {
 						user,
 					}
+					void this.refreshNotifications()
+					this.connectNotificationSocket()
 				})
 			},
 		})
 	}
 
 	get notification_state() {
-		if (this.ctx?.config?.mute_notifications === true) {
-			return NotificationState.Muted
+		if (!this.ctx?.user) {
+			return NotificationState.None
 		}
-		if (this.ctx?.notifications?.length) {
+		if (this.notificationUnreadCount > 0) {
 			return NotificationState.Unread
+		}
+
+		const settings = getObject(this.ctx.user.settings)
+		const notification = settings
+			? getObject(settings["notification"])
+			: undefined
+		const getBool = (key: string, defaultVal: boolean) => {
+			const v = notification?.[key]
+			return typeof v === "boolean" ? v : defaultVal
+		}
+
+		if (
+			getBool("comment_reply_enabled", true) === false
+			&& getBool("comment_mention_enabled", true) === false
+			&& getBool("correction_status_enabled", true) === false
+			&& getBool("new_follower_enabled", true) === false
+		) {
+			return NotificationState.Muted
 		}
 		return NotificationState.None
 	}
@@ -68,29 +100,97 @@ export class UserStore {
 
 	sign_in(ctx: UserContext) {
 		this.ctx = ctx
+		void this.refreshNotifications()
+		this.connectNotificationSocket()
 	}
 
 	async sign_out() {
 		const result = await AuthApi.signout()
 
 		this.ctx = undefined
+		this.notificationUnreadCount = 0
+		this.disconnectNotificationSocket()
 		E.mapLeft(result, (error) => {
 			dbg("Sign out failed", error)
 
 			throw error
 		})
 	}
-}
 
-export type UserConfig = {
-	mute_notifications: boolean
+	private disconnectNotificationSocket() {
+		if (this.notificationReconnectTimer !== undefined) {
+			globalThis.clearTimeout(this.notificationReconnectTimer)
+			this.notificationReconnectTimer = undefined
+		}
+		if (this.notificationSocket) {
+			this.notificationSocket.close()
+			this.notificationSocket = undefined
+		}
+		this.notificationReconnectDelayMs = 1000
+	}
+
+	private connectNotificationSocket() {
+		if (!this.ctx?.user) return
+		if (
+			this.notificationSocket
+			&& (this.notificationSocket.readyState === WebSocket.OPEN
+				|| this.notificationSocket.readyState === WebSocket.CONNECTING)
+		) {
+			return
+		}
+
+		const origin = globalThis.location?.origin
+		if (!origin) return
+		const url = new globalThis.URL("/api/ws/notifications", origin)
+		url.protocol = url.protocol === "https:" ? "wss:" : "ws:"
+
+		const ws = new globalThis.WebSocket(url.toString())
+		this.notificationSocket = ws
+
+		ws.addEventListener("open", () => {
+			this.notificationReconnectDelayMs = 1000
+		})
+
+		ws.addEventListener("message", (evt) => {
+			try {
+				const msg = JSON.parse(String(evt.data)) as {
+					type?: unknown
+					data?: unknown
+				}
+				if (msg.type === "Notification") {
+					this.notificationUnreadCount += 1
+				}
+			} catch {
+				// Ignore invalid messages.
+			}
+		})
+
+		ws.addEventListener("close", () => {
+			if (!this.ctx?.user) return
+			if (this.notificationReconnectTimer !== undefined) return
+
+			const delay = this.notificationReconnectDelayMs
+			this.notificationReconnectDelayMs = Math.min(delay * 2, 30_000)
+
+			this.notificationReconnectTimer = globalThis.setTimeout(() => {
+				this.notificationReconnectTimer = undefined
+				this.connectNotificationSocket()
+			}, delay)
+		})
+	}
+
+	private async refreshNotifications() {
+		const unread = await NotificationApi.unreadCount()
+
+		E.map(unread, (count) => {
+			this.notificationUnreadCount = count
+		})
+	}
 }
 
 export type UserContext =
 	| {
 			user: UserProfile
-			notifications?: unknown[]
-			config?: UserConfig
 	  }
 	| undefined
 

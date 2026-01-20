@@ -4,22 +4,6 @@
  */
 
 export type paths = {
-    "/{entity_type}/{id}/pending-correction": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["pending_correction"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/{entity_type}/{id}/corrections": {
         parameters: {
             query?: never;
@@ -28,6 +12,22 @@ export type paths = {
             cookie?: never;
         };
         get: operations["entity_corrections"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/{entity_type}/{id}/pending-correction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["pending_correction"];
         put?: never;
         post?: never;
         delete?: never;
@@ -60,6 +60,38 @@ export type paths = {
             cookie?: never;
         };
         get: operations["get_tags"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/user/{id}/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["set_user_roles"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["admin_users"];
         put?: never;
         post?: never;
         delete?: never;
@@ -228,22 +260,6 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/correction/{id}/revisions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["get_correction_revisions"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/correction/{id}/diff": {
         parameters: {
             query?: never;
@@ -252,6 +268,22 @@ export type paths = {
             cookie?: never;
         };
         get: operations["get_correction_diff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/correction/{id}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_correction_revisions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -388,6 +420,54 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/image-queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["pending_image_queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/image-queue/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["image_queue_detail"];
+        put?: never;
+        post: operations["handle_image_queue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/image-queue/pending-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["pending_image_queue_count"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/label": {
         parameters: {
             query?: never;
@@ -444,6 +524,70 @@ export type paths = {
             cookie?: never;
         };
         get: operations["language_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["notification_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["notification_mark_read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["notification_read_all"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["notification_unread_count"];
         put?: never;
         post?: never;
         delete?: never;
@@ -572,6 +716,118 @@ export type paths = {
             cookie?: never;
         };
         get: operations["explore_release"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search_all"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search/artist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search_artist"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search/event": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search_event"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search/label": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search_label"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search_release"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search/song": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search_song"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search/tag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search_tag"];
         put?: never;
         post?: never;
         delete?: never;
@@ -788,6 +1044,54 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/user/{id}/follow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["follow_user"];
+        delete: operations["unfollow_user"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/user/{id}/image-queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["user_image_queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ws/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["notification_ws"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 };
 export type webhooks = Record<string, never>;
 export type components = {
@@ -821,6 +1125,13 @@ export type components = {
             artist_type?: components["schemas"]["ArtistType"][];
             exclusion?: number[];
         };
+        ArtistImageQueueTarget: {
+            /** Format: int32 */
+            artist_id: number;
+            type: components["schemas"]["ArtistImageType"];
+        };
+        /** @enum {string} */
+        ArtistImageType: "Profile";
         ArtistReleaseArtist: {
             /** Format: int32 */
             id: number;
@@ -836,34 +1147,32 @@ export type components = {
             catalog_number: string;
             label?: null | components["schemas"]["SimpleLabel"];
         };
-        /** @enum {string} */
-        CorrectionSortField: "created_at" | "handled_at";
         Correction: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: int32 */
+            entity_id: number;
+            entity_type: components["schemas"]["EntityType"];
+            /** Format: date-time */
+            handled_at?: string | null;
             /** Format: int32 */
             id: number;
             status: components["schemas"]["CorrectionStatus"];
             type: components["schemas"]["CorrectionType"];
-            entity_type: components["schemas"]["EntityType"];
-            /** Format: int32 */
-            entity_id: number;
-            /** Format: date-time */
-            created_at: string;
-            /** Format: date-time */
-            handled_at?: string | null;
         };
         CorrectionDiff: {
-            /** Format: int32 */
-            entity_id: number;
-            entity_type: components["schemas"]["EntityType"];
             /** Format: int32 */
             base_correction_id?: number | null;
             /** Format: int32 */
             base_history_id?: number | null;
+            changes: components["schemas"]["CorrectionDiffEntry"][];
+            /** Format: int32 */
+            entity_id: number;
+            entity_type: components["schemas"]["EntityType"];
             /** Format: int32 */
             target_correction_id: number;
             /** Format: int32 */
             target_history_id: number;
-            changes: components["schemas"]["CorrectionDiffEntry"][];
         };
         CorrectionDiffEntry: {
             after?: string | null;
@@ -871,22 +1180,24 @@ export type components = {
             path: string;
         };
         CorrectionHistoryItem: {
+            author: components["schemas"]["CorrectionUserSummary"];
+            /** Format: date-time */
+            created_at: string;
+            description: string;
+            /** Format: date-time */
+            handled_at?: string | null;
             /** Format: int32 */
             id: number;
             type: components["schemas"]["CorrectionType"];
-            /** Format: date-time */
-            created_at: string;
-            /** Format: date-time */
-            handled_at?: string | null;
-            author: components["schemas"]["CorrectionUserSummary"];
-            description: string;
         };
         CorrectionRevisionSummary: {
-            /** Format: int32 */
-            entity_history_id: number;
             author: components["schemas"]["CorrectionUserSummary"];
             description: string;
+            /** Format: int32 */
+            entity_history_id: number;
         };
+        /** @enum {string} */
+        CorrectionSortField: "created_at" | "handled_at";
         /** @enum {string} */
         CorrectionStatus: "Pending" | "Approved" | "Rejected";
         CorrectionSubmissionResult: {
@@ -895,13 +1206,13 @@ export type components = {
             /** Format: int32 */
             entity_id: number;
         };
+        /** @enum {string} */
+        CorrectionType: "Create" | "Update" | "Delete";
         CorrectionUserSummary: {
             /** Format: int32 */
             id: number;
             name: string;
         };
-        /** @enum {string} */
-        CorrectionType: "Create" | "Update" | "Delete";
         CreditRole: {
             description: string;
             /** Format: int32 */
@@ -909,8 +1220,6 @@ export type components = {
             name: string;
             short_description: string;
         };
-        /** @enum {string} */
-        EntityType: "Artist" | "Label" | "Release" | "Song" | "Tag" | "Event" | "SongLyrics" | "CreditRole";
         CreditRoleRef: {
             /** Format: int32 */
             id: number;
@@ -922,29 +1231,83 @@ export type components = {
             name: string;
             short_description: string;
         };
+        Data_Correction: {
+            data: {
+                /** Format: date-time */
+                created_at: string;
+                /** Format: int32 */
+                entity_id: number;
+                entity_type: components["schemas"]["EntityType"];
+                /** Format: date-time */
+                handled_at?: string | null;
+                /** Format: int32 */
+                id: number;
+                status: components["schemas"]["CorrectionStatus"];
+                type: components["schemas"]["CorrectionType"];
+            };
+            /** @enum {string} */
+            status: "Ok";
+        };
+        Data_CorrectionDiff: {
+            data: {
+                /** Format: int32 */
+                base_correction_id?: number | null;
+                /** Format: int32 */
+                base_history_id?: number | null;
+                changes: components["schemas"]["CorrectionDiffEntry"][];
+                /** Format: int32 */
+                entity_id: number;
+                entity_type: components["schemas"]["EntityType"];
+                /** Format: int32 */
+                target_correction_id: number;
+                /** Format: int32 */
+                target_history_id: number;
+            };
+            /** @enum {string} */
+            status: "Ok";
+        };
+        Data_CorrectionSubmissionResult: {
+            data: {
+                /** Format: int32 */
+                correction_id: number;
+                /** Format: int32 */
+                entity_id: number;
+            };
+            /** @enum {string} */
+            status: "Ok";
+        };
         Data_Option_i32: {
             data: null | number;
             /** @enum {string} */
             status: "Ok";
         };
-        DataCorrection: {
-            data: components["schemas"]["Correction"];
-            status: string;
+        Data_Vec_CorrectionHistoryItem: {
+            data: {
+                author: components["schemas"]["CorrectionUserSummary"];
+                /** Format: date-time */
+                created_at: string;
+                description: string;
+                /** Format: date-time */
+                handled_at?: string | null;
+                /** Format: int32 */
+                id: number;
+                type: components["schemas"]["CorrectionType"];
+            }[];
+            /** @enum {string} */
+            status: "Ok";
         };
-        DataCorrectionDiff: {
-            data: components["schemas"]["CorrectionDiff"];
-            status: string;
+        Data_Vec_CorrectionRevisionSummary: {
+            data: {
+                author: components["schemas"]["CorrectionUserSummary"];
+                description: string;
+                /** Format: int32 */
+                entity_history_id: number;
+            }[];
+            /** @enum {string} */
+            status: "Ok";
         };
-        DataCorrectionHistoryItemList: {
-            data: components["schemas"]["CorrectionHistoryItem"][];
-            status: string;
-        };
-        DataCorrectionRevisionSummaryList: {
-            data: components["schemas"]["CorrectionRevisionSummary"][];
-            status: string;
-        };
-        DataCorrectionSubmissionResult: {
-            data: components["schemas"]["CorrectionSubmissionResult"];
+        DataImageQueueDetail: {
+            data: components["schemas"]["ImageQueueDetail"];
             status: string;
         };
         DataInitDiscography: {
@@ -1007,12 +1370,40 @@ export type components = {
             data: components["schemas"]["Paginated_Label"];
             status: string;
         };
+        DataPaginatedNotificationItem: {
+            data: components["schemas"]["Paginated_NotificationItem"];
+            status: string;
+        };
+        DataPaginatedPendingImageQueueItem: {
+            data: components["schemas"]["Paginated_PendingImageQueueItem"];
+            status: string;
+        };
         DataPaginatedRelease: {
             data: components["schemas"]["Paginated_Release"];
             status: string;
         };
+        DataPaginatedSimpleArtist: {
+            data: components["schemas"]["Paginated_SimpleArtist"];
+            status: string;
+        };
+        DataPaginatedSimpleEvent: {
+            data: components["schemas"]["Paginated_SimpleEvent"];
+            status: string;
+        };
+        DataPaginatedSimpleLabel: {
+            data: components["schemas"]["Paginated_SimpleLabel"];
+            status: string;
+        };
+        DataPaginatedSimpleRelease: {
+            data: components["schemas"]["Paginated_SimpleRelease"];
+            status: string;
+        };
         DataPaginatedSong: {
             data: components["schemas"]["Paginated_Song"];
+            status: string;
+        };
+        DataPaginatedSongRef: {
+            data: components["schemas"]["Paginated_SongRef"];
             status: string;
         };
         DataPaginatedTag: {
@@ -1023,8 +1414,38 @@ export type components = {
             data: components["schemas"]["Paginated_TagAggregate"];
             status: string;
         };
+        DataPaginatedTagRef: {
+            data: components["schemas"]["Paginated_TagRef"];
+            status: string;
+        };
+        DataPaginatedUserImageQueueItem: {
+            data: components["schemas"]["Paginated_UserImageQueueItem"];
+            status: string;
+        };
+        DataPaginatedUserSummary: {
+            data: components["schemas"]["Paginated_UserSummary"];
+            status: string;
+        };
+        DataPendingImageQueueCount: {
+            /** Format: int64 */
+            data: number;
+            status: string;
+        };
+        DataSearchResponse: {
+            data: components["schemas"]["SearchResponse"];
+            status: string;
+        };
+        DataUnreadCount: {
+            /** Format: int64 */
+            data: number;
+            status: string;
+        };
         DataUserProfile: {
             data: components["schemas"]["UserProfile"];
+            status: string;
+        };
+        DataUserRoles: {
+            data: components["schemas"]["UserRole"][];
             status: string;
         };
         DataVecArtist: {
@@ -1079,6 +1500,8 @@ export type components = {
             tag_id: number;
         };
         EntityIdent: string;
+        /** @enum {string} */
+        EntityType: "Artist" | "Label" | "Release" | "Song" | "Tag" | "Event" | "SongLyrics" | "CreditRole";
         Error: {
             message: string;
             /** @enum {string} */
@@ -1097,11 +1520,45 @@ export type components = {
         };
         /** @enum {string} */
         HandleCorrectionMethod: "Approve" | "Reject";
+        /** @enum {string} */
+        HandleImageQueueMethod: "Approve" | "Reject" | "Revert";
         /**
          * @example 2
          * @enum {string}
          */
         i16: "Veto" | "Low" | "Medium" | "High";
+        ImageQueueDetail: {
+            artist?: null | components["schemas"]["ArtistImageQueueTarget"];
+            /** Format: date-time */
+            created_at: string;
+            created_by: components["schemas"]["UserSummary"];
+            /** Format: date-time */
+            handled_at?: string | null;
+            handled_by?: null | components["schemas"]["UserSummary"];
+            /** Format: int32 */
+            id: number;
+            image?: null | components["schemas"]["ImageSummary"];
+            /** Format: int32 */
+            image_id?: number | null;
+            release?: null | components["schemas"]["ReleaseImageQueueTarget"];
+            /** Format: date-time */
+            reverted_at?: string | null;
+            reverted_by?: null | components["schemas"]["UserSummary"];
+            status: components["schemas"]["ImageQueueStatus"];
+        };
+        /** @enum {string} */
+        ImageQueueStatus: "Pending" | "Approved" | "Rejected" | "Cancelled" | "Reverted";
+        /** @enum {string} */
+        ImageQueueType: "artist" | "release";
+        ImageSummary: {
+            directory: string;
+            filename: string;
+            /** Format: int32 */
+            id: number;
+            /** Format: date-time */
+            uploaded_at: string;
+            uploaded_by: components["schemas"]["UserSummary"];
+        };
         InitDiscography: {
             album: components["schemas"]["Paginated_Discography"];
             compilation: components["schemas"]["Paginated_Discography"];
@@ -1459,6 +1916,36 @@ export type components = {
             /** Format: int32 */
             next_cursor?: number | null;
         };
+        Paginated_NotificationItem: {
+            items: {
+                /** Format: date-time */
+                created_at: string;
+                /** Format: int32 */
+                id: number;
+                is_read: boolean;
+                notification_kind: string;
+                payload: unknown;
+                /** Format: int32 */
+                target_id: number;
+                target_type: string;
+            }[];
+            /** Format: int32 */
+            next_cursor?: number | null;
+        };
+        Paginated_PendingImageQueueItem: {
+            items: {
+                /** Format: date-time */
+                created_at: string;
+                created_by: components["schemas"]["UserSummary"];
+                /** Format: int32 */
+                id: number;
+                /** Format: int32 */
+                image_id?: number | null;
+                status: components["schemas"]["ImageQueueStatus"];
+            }[];
+            /** Format: int32 */
+            next_cursor?: number | null;
+        };
         Paginated_Release: {
             items: {
                 artists?: components["schemas"]["ReleaseArtist"][];
@@ -1480,6 +1967,43 @@ export type components = {
             /** Format: int32 */
             next_cursor?: number | null;
         };
+        Paginated_SimpleArtist: {
+            items: {
+                /** Format: int32 */
+                id: number;
+                name: string;
+            }[];
+            /** Format: int32 */
+            next_cursor?: number | null;
+        };
+        Paginated_SimpleEvent: {
+            items: {
+                /** Format: int32 */
+                id: number;
+                name: string;
+            }[];
+            /** Format: int32 */
+            next_cursor?: number | null;
+        };
+        Paginated_SimpleLabel: {
+            items: {
+                /** Format: int32 */
+                id: number;
+                name: string;
+            }[];
+            /** Format: int32 */
+            next_cursor?: number | null;
+        };
+        Paginated_SimpleRelease: {
+            items: {
+                cover_art_url?: string | null;
+                /** Format: int32 */
+                id: number;
+                title: string;
+            }[];
+            /** Format: int32 */
+            next_cursor?: number | null;
+        };
         Paginated_Song: {
             items: {
                 artists?: components["schemas"]["SimpleArtist"][];
@@ -1490,6 +2014,15 @@ export type components = {
                 localized_titles?: components["schemas"]["LocalizedTitle"][];
                 lyrics?: components["schemas"]["SongLyrics"][];
                 releases?: components["schemas"]["SimpleRelease"][];
+                title: string;
+            }[];
+            /** Format: int32 */
+            next_cursor?: number | null;
+        };
+        Paginated_SongRef: {
+            items: {
+                /** Format: int32 */
+                id: number;
                 title: string;
             }[];
             /** Format: int32 */
@@ -1520,6 +2053,45 @@ export type components = {
                 relevance: number;
                 /** Format: int32 */
                 user_vote?: number | null;
+            }[];
+            /** Format: int32 */
+            next_cursor?: number | null;
+        };
+        Paginated_TagRef: {
+            items: {
+                /** Format: int32 */
+                id: number;
+                name: string;
+                type: components["schemas"]["TagType"];
+            }[];
+            /** Format: int32 */
+            next_cursor?: number | null;
+        };
+        Paginated_UserImageQueueItem: {
+            items: {
+                /** Format: date-time */
+                created_at: string;
+                /** Format: date-time */
+                handled_at?: string | null;
+                handled_by?: null | components["schemas"]["UserSummary"];
+                /** Format: int32 */
+                id: number;
+                /** Format: int32 */
+                image_id?: number | null;
+                /** Format: date-time */
+                reverted_at?: string | null;
+                reverted_by?: null | components["schemas"]["UserSummary"];
+                status: components["schemas"]["ImageQueueStatus"];
+            }[];
+            /** Format: int32 */
+            next_cursor?: number | null;
+        };
+        Paginated_UserSummary: {
+            items: {
+                /** Format: int32 */
+                id: number;
+                name: string;
+                roles: components["schemas"]["UserRole"][];
             }[];
             /** Format: int32 */
             next_cursor?: number | null;
@@ -1560,6 +2132,13 @@ export type components = {
             id: number;
             name?: string | null;
         };
+        ReleaseImageQueueTarget: {
+            /** Format: int32 */
+            release_id: number;
+            type: components["schemas"]["ReleaseImageType"];
+        };
+        /** @enum {string} */
+        ReleaseImageType: "Cover";
         ReleaseTrack: {
             artists?: components["schemas"]["ReleaseArtist"][];
             /** Format: int32 */
@@ -1577,6 +2156,17 @@ export type components = {
         };
         /** @enum {string} */
         ReleaseType: "Album" | "Ep" | "Single" | "Compilation" | "Demo" | "Other";
+        SearchResponse: {
+            artists: components["schemas"]["Paginated_SimpleArtist"];
+            events: components["schemas"]["Paginated_SimpleEvent"];
+            labels: components["schemas"]["Paginated_SimpleLabel"];
+            releases: components["schemas"]["Paginated_SimpleRelease"];
+            songs: components["schemas"]["Paginated_SongRef"];
+            tags: components["schemas"]["Paginated_TagRef"];
+        };
+        SetUserRolesRequest: {
+            roles: string[];
+        };
         SimpleArtist: {
             /** Format: int32 */
             id: number;
@@ -1679,6 +2269,7 @@ export type components = {
             last_login: string;
             name: string;
             roles?: components["schemas"]["UserRole"][];
+            settings?: unknown;
         };
         UserRole: {
             /** Format: int32 */
@@ -1687,6 +2278,11 @@ export type components = {
         };
         /** @enum {string} */
         UserRoleEnum: "Admin" | "Moderator" | "User";
+        UserSummary: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+        };
         VoteBody: {
             score: components["schemas"]["i16"];
             /** Format: int32 */
@@ -1702,30 +2298,32 @@ export type components = {
 export type AlternativeName = components['schemas']['AlternativeName'];
 export type Artist = components['schemas']['Artist'];
 export type ArtistCommonFilter = components['schemas']['ArtistCommonFilter'];
+export type ArtistImageQueueTarget = components['schemas']['ArtistImageQueueTarget'];
+export type ArtistImageType = components['schemas']['ArtistImageType'];
 export type ArtistReleaseArtist = components['schemas']['ArtistReleaseArtist'];
 export type ArtistType = components['schemas']['ArtistType'];
 export type AuthCredential = components['schemas']['AuthCredential'];
 export type CatalogNumber = components['schemas']['CatalogNumber'];
-export type CorrectionSortField = components['schemas']['CorrectionSortField'];
 export type Correction = components['schemas']['Correction'];
 export type CorrectionDiff = components['schemas']['CorrectionDiff'];
 export type CorrectionDiffEntry = components['schemas']['CorrectionDiffEntry'];
 export type CorrectionHistoryItem = components['schemas']['CorrectionHistoryItem'];
 export type CorrectionRevisionSummary = components['schemas']['CorrectionRevisionSummary'];
+export type CorrectionSortField = components['schemas']['CorrectionSortField'];
 export type CorrectionStatus = components['schemas']['CorrectionStatus'];
 export type CorrectionSubmissionResult = components['schemas']['CorrectionSubmissionResult'];
-export type CorrectionUserSummary = components['schemas']['CorrectionUserSummary'];
 export type CorrectionType = components['schemas']['CorrectionType'];
+export type CorrectionUserSummary = components['schemas']['CorrectionUserSummary'];
 export type CreditRole = components['schemas']['CreditRole'];
 export type CreditRoleRef = components['schemas']['CreditRoleRef'];
 export type CreditRoleSummary = components['schemas']['CreditRoleSummary'];
-export type EntityType = components['schemas']['EntityType'];
+export type DataCorrection = components['schemas']['Data_Correction'];
+export type DataCorrectionDiff = components['schemas']['Data_CorrectionDiff'];
+export type DataCorrectionSubmissionResult = components['schemas']['Data_CorrectionSubmissionResult'];
 export type DataOptionI32 = components['schemas']['Data_Option_i32'];
-export type DataCorrection = components['schemas']['DataCorrection'];
-export type DataCorrectionDiff = components['schemas']['DataCorrectionDiff'];
-export type DataCorrectionHistoryItemList = components['schemas']['DataCorrectionHistoryItemList'];
-export type DataCorrectionRevisionSummaryList = components['schemas']['DataCorrectionRevisionSummaryList'];
-export type DataCorrectionSubmissionResult = components['schemas']['DataCorrectionSubmissionResult'];
+export type DataVecCorrectionHistoryItem = components['schemas']['Data_Vec_CorrectionHistoryItem'];
+export type DataVecCorrectionRevisionSummary = components['schemas']['Data_Vec_CorrectionRevisionSummary'];
+export type DataImageQueueDetail = components['schemas']['DataImageQueueDetail'];
 export type DataInitDiscography = components['schemas']['DataInitDiscography'];
 export type DataOptionArtist = components['schemas']['DataOptionArtist'];
 export type DataOptionCreditRole = components['schemas']['DataOptionCreditRole'];
@@ -1741,11 +2339,25 @@ export type DataPaginatedCredit = components['schemas']['DataPaginatedCredit'];
 export type DataPaginatedDiscography = components['schemas']['DataPaginatedDiscography'];
 export type DataPaginatedEvent = components['schemas']['DataPaginatedEvent'];
 export type DataPaginatedLabel = components['schemas']['DataPaginatedLabel'];
+export type DataPaginatedNotificationItem = components['schemas']['DataPaginatedNotificationItem'];
+export type DataPaginatedPendingImageQueueItem = components['schemas']['DataPaginatedPendingImageQueueItem'];
 export type DataPaginatedRelease = components['schemas']['DataPaginatedRelease'];
+export type DataPaginatedSimpleArtist = components['schemas']['DataPaginatedSimpleArtist'];
+export type DataPaginatedSimpleEvent = components['schemas']['DataPaginatedSimpleEvent'];
+export type DataPaginatedSimpleLabel = components['schemas']['DataPaginatedSimpleLabel'];
+export type DataPaginatedSimpleRelease = components['schemas']['DataPaginatedSimpleRelease'];
 export type DataPaginatedSong = components['schemas']['DataPaginatedSong'];
+export type DataPaginatedSongRef = components['schemas']['DataPaginatedSongRef'];
 export type DataPaginatedTag = components['schemas']['DataPaginatedTag'];
 export type DataPaginatedTagAggregate = components['schemas']['DataPaginatedTagAggregate'];
+export type DataPaginatedTagRef = components['schemas']['DataPaginatedTagRef'];
+export type DataPaginatedUserImageQueueItem = components['schemas']['DataPaginatedUserImageQueueItem'];
+export type DataPaginatedUserSummary = components['schemas']['DataPaginatedUserSummary'];
+export type DataPendingImageQueueCount = components['schemas']['DataPendingImageQueueCount'];
+export type DataSearchResponse = components['schemas']['DataSearchResponse'];
+export type DataUnreadCount = components['schemas']['DataUnreadCount'];
 export type DataUserProfile = components['schemas']['DataUserProfile'];
+export type DataUserRoles = components['schemas']['DataUserRoles'];
 export type DataVecArtist = components['schemas']['DataVecArtist'];
 export type DataVecCreditRoleSummary = components['schemas']['DataVecCreditRoleSummary'];
 export type DataVecEvent = components['schemas']['DataVecEvent'];
@@ -1760,10 +2372,16 @@ export type DatePrecision = components['schemas']['DatePrecision'];
 export type DateWithPrecision = components['schemas']['DateWithPrecision'];
 export type DeleteVoteBody = components['schemas']['DeleteVoteBody'];
 export type EntityIdent = components['schemas']['EntityIdent'];
+export type EntityType = components['schemas']['EntityType'];
 export type Error = components['schemas']['Error'];
 export type Event = components['schemas']['Event'];
 export type HandleCorrectionMethod = components['schemas']['HandleCorrectionMethod'];
+export type HandleImageQueueMethod = components['schemas']['HandleImageQueueMethod'];
 export type I16 = components['schemas']['i16'];
+export type ImageQueueDetail = components['schemas']['ImageQueueDetail'];
+export type ImageQueueStatus = components['schemas']['ImageQueueStatus'];
+export type ImageQueueType = components['schemas']['ImageQueueType'];
+export type ImageSummary = components['schemas']['ImageSummary'];
 export type InitDiscography = components['schemas']['InitDiscography'];
 export type Label = components['schemas']['Label'];
 export type Language = components['schemas']['Language'];
@@ -1802,17 +2420,31 @@ export type PaginatedCredit = components['schemas']['Paginated_Credit'];
 export type PaginatedDiscography = components['schemas']['Paginated_Discography'];
 export type PaginatedEvent = components['schemas']['Paginated_Event'];
 export type PaginatedLabel = components['schemas']['Paginated_Label'];
+export type PaginatedNotificationItem = components['schemas']['Paginated_NotificationItem'];
+export type PaginatedPendingImageQueueItem = components['schemas']['Paginated_PendingImageQueueItem'];
 export type PaginatedRelease = components['schemas']['Paginated_Release'];
+export type PaginatedSimpleArtist = components['schemas']['Paginated_SimpleArtist'];
+export type PaginatedSimpleEvent = components['schemas']['Paginated_SimpleEvent'];
+export type PaginatedSimpleLabel = components['schemas']['Paginated_SimpleLabel'];
+export type PaginatedSimpleRelease = components['schemas']['Paginated_SimpleRelease'];
 export type PaginatedSong = components['schemas']['Paginated_Song'];
+export type PaginatedSongRef = components['schemas']['Paginated_SongRef'];
 export type PaginatedTag = components['schemas']['Paginated_Tag'];
 export type PaginatedTagAggregate = components['schemas']['Paginated_TagAggregate'];
+export type PaginatedTagRef = components['schemas']['Paginated_TagRef'];
+export type PaginatedUserImageQueueItem = components['schemas']['Paginated_UserImageQueueItem'];
+export type PaginatedUserSummary = components['schemas']['Paginated_UserSummary'];
 export type Release = components['schemas']['Release'];
 export type ReleaseArtist = components['schemas']['ReleaseArtist'];
 export type ReleaseCoverArtFormData = components['schemas']['ReleaseCoverArtFormData'];
 export type ReleaseCredit = components['schemas']['ReleaseCredit'];
 export type ReleaseDisc = components['schemas']['ReleaseDisc'];
+export type ReleaseImageQueueTarget = components['schemas']['ReleaseImageQueueTarget'];
+export type ReleaseImageType = components['schemas']['ReleaseImageType'];
 export type ReleaseTrack = components['schemas']['ReleaseTrack'];
 export type ReleaseType = components['schemas']['ReleaseType'];
+export type SearchResponse = components['schemas']['SearchResponse'];
+export type SetUserRolesRequest = components['schemas']['SetUserRolesRequest'];
 export type SimpleArtist = components['schemas']['SimpleArtist'];
 export type SimpleEvent = components['schemas']['SimpleEvent'];
 export type SimpleLabel = components['schemas']['SimpleLabel'];
@@ -1833,9 +2465,54 @@ export type UploadProfileBanner = components['schemas']['UploadProfileBanner'];
 export type UserProfile = components['schemas']['UserProfile'];
 export type UserRole = components['schemas']['UserRole'];
 export type UserRoleEnum = components['schemas']['UserRoleEnum'];
+export type UserSummary = components['schemas']['UserSummary'];
 export type VoteBody = components['schemas']['VoteBody'];
 export type $defs = Record<string, never>;
 export interface operations {
+    entity_corrections: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity_type: "artist" | "label" | "release" | "song" | "tag" | "event" | "song-lyrics" | "credit-role";
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_Vec_CorrectionHistoryItem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     pending_correction: {
         parameters: {
             query?: never;
@@ -1854,223 +2531,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Data_Option_i32"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
-    entity_corrections: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                entity_type: "artist" | "label" | "release" | "song" | "tag" | "event" | "song-lyrics" | "credit-role";
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataCorrectionHistoryItemList"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
-    get_correction: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataCorrection"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
-    get_correction_revisions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataCorrectionRevisionSummaryList"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
-    get_correction_diff: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataCorrectionDiff"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
-    compare_corrections: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id1: number;
-                id2: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataCorrectionDiff"];
                 };
             };
             /** @description Too Many Requests */
@@ -2245,6 +2705,98 @@ export interface operations {
             };
         };
     };
+    set_user_roles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetUserRolesRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataUserRoles"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    admin_users: {
+        parameters: {
+            query?: {
+                cursor?: number | null;
+                keyword?: string | null;
+                limit?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedUserSummary"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     find_many_artist: {
         parameters: {
             query: {
@@ -2308,7 +2860,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -2401,7 +2953,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -2628,7 +3180,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Message"];
                 };
             };
             /** @description Too Many Requests */
@@ -2744,7 +3296,50 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    get_correction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_Correction"];
                 };
             };
             /** @description Too Many Requests */
@@ -2789,7 +3384,137 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    get_correction_diff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_CorrectionDiff"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    get_correction_revisions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_Vec_CorrectionRevisionSummary"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    compare_corrections: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id1: number;
+                id2: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_CorrectionDiff"];
                 };
             };
             /** @description Too Many Requests */
@@ -2834,7 +3559,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -2924,7 +3649,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -3055,7 +3780,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -3145,7 +3870,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -3283,6 +4008,181 @@ export interface operations {
             };
         };
     };
+    pending_image_queue: {
+        parameters: {
+            query?: {
+                cursor?: number | null;
+                limit?: number | null;
+                status?: null | components["schemas"]["ImageQueueStatus"];
+                type?: null | components["schemas"]["ImageQueueType"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedPendingImageQueueItem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    image_queue_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataImageQueueDetail"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    handle_image_queue: {
+        parameters: {
+            query: {
+                method: components["schemas"]["HandleImageQueueMethod"];
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    pending_image_queue_count: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPendingImageQueueCount"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     find_label_by_keyword: {
         parameters: {
             query: {
@@ -3344,7 +4244,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -3434,7 +4334,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -3575,6 +4475,175 @@ export interface operations {
             };
         };
     };
+    notification_list: {
+        parameters: {
+            query?: {
+                cursor?: number | null;
+                limit?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedNotificationItem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    notification_mark_read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    notification_read_all: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    notification_unread_count: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataUnreadCount"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     profile: {
         parameters: {
             query?: never;
@@ -3634,7 +4703,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Message"];
                 };
             };
             /** @description Too Many Requests */
@@ -3722,7 +4791,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Message"];
                 };
             };
             /** @description Too Many Requests */
@@ -3810,7 +4879,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -3900,7 +4969,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -3947,7 +5016,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Message"];
                 };
             };
             /** @description Too Many Requests */
@@ -4028,6 +5097,326 @@ export interface operations {
                         /** @enum {string} */
                         status: "Err";
                     };
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    search_all: {
+        parameters: {
+            query: {
+                limit?: number | null;
+                search_term: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataSearchResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    search_artist: {
+        parameters: {
+            query: {
+                /** @description Cursor is an offset for stable pagination in relevance ordering. */
+                cursor?: number | null;
+                limit?: number | null;
+                search_term: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedSimpleArtist"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    search_event: {
+        parameters: {
+            query: {
+                /** @description Cursor is an offset for stable pagination in relevance ordering. */
+                cursor?: number | null;
+                limit?: number | null;
+                search_term: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedSimpleEvent"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    search_label: {
+        parameters: {
+            query: {
+                /** @description Cursor is an offset for stable pagination in relevance ordering. */
+                cursor?: number | null;
+                limit?: number | null;
+                search_term: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedSimpleLabel"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    search_release: {
+        parameters: {
+            query: {
+                /** @description Cursor is an offset for stable pagination in relevance ordering. */
+                cursor?: number | null;
+                limit?: number | null;
+                search_term: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedSimpleRelease"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    search_song: {
+        parameters: {
+            query: {
+                /** @description Cursor is an offset for stable pagination in relevance ordering. */
+                cursor?: number | null;
+                limit?: number | null;
+                search_term: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedSongRef"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    search_tag: {
+        parameters: {
+            query: {
+                /** @description Cursor is an offset for stable pagination in relevance ordering. */
+                cursor?: number | null;
+                limit?: number | null;
+                search_term: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedTagRef"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
                 };
             };
             default: {
@@ -4237,7 +5626,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -4326,7 +5715,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -4373,7 +5762,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -4506,7 +5895,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -4665,7 +6054,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -4755,7 +6144,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataCorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -4894,8 +6283,181 @@ export interface operations {
             };
         };
     };
+    follow_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    unfollow_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    user_image_queue: {
+        parameters: {
+            query?: {
+                cursor?: number | null;
+                limit?: number | null;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedUserImageQueueItem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    notification_ws: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            101: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
 }
 export enum ApiPaths {
+    set_user_roles = "/admin/user/{id}/roles",
+    admin_users = "/admin/users",
     find_many_artist = "/artist",
     create_artist = "/artist",
     explore_artist = "/artist/explore",
@@ -4907,11 +6469,11 @@ export enum ApiPaths {
     find_artist_discographies_init = "/artist/{id}/discographies/init",
     upload_artist_profile_image = "/artist/{id}/profile-image",
     upload_avatar = "/avatar",
-    handle_correction = "/correction/{id}",
-    get_correction = "/correction/{id}",
-    get_correction_revisions = "/correction/{id}/revisions",
-    get_correction_diff = "/correction/{id}/diff",
     compare_corrections = "/correction/{id1}/compare/{id2}",
+    get_correction = "/correction/{id}",
+    handle_correction = "/correction/{id}",
+    get_correction_diff = "/correction/{id}/diff",
+    get_correction_revisions = "/correction/{id}/revisions",
     create_credit_role = "/credit-role",
     find_many_credit_roles_summary = "/credit-role/summary",
     find_credit_role_by_id = "/credit-role/{id}",
@@ -4922,12 +6484,20 @@ export enum ApiPaths {
     find_event_by_id = "/event/{id}",
     upsert_event_correction = "/event/{id}",
     health_check = "/health_check",
+    pending_image_queue = "/image-queue",
+    pending_image_queue_count = "/image-queue/pending-count",
+    image_queue_detail = "/image-queue/{id}",
+    handle_image_queue = "/image-queue/{id}",
     find_label_by_keyword = "/label",
     create_label = "/label",
     explore_label = "/label/explore",
     find_label_by_id = "/label/{id}",
     upsert_label_correction = "/label/{id}",
     language_list = "/languages",
+    notification_list = "/notifications",
+    notification_read_all = "/notifications/read-all",
+    notification_unread_count = "/notifications/unread-count",
+    notification_mark_read = "/notifications/{id}/read",
     profile = "/profile",
     upload_profile_banner = "/profile-banner",
     update_bio = "/profile/bio",
@@ -4938,6 +6508,13 @@ export enum ApiPaths {
     find_release_by_id = "/release/{id}",
     update_release = "/release/{id}",
     upload_release_cover_art = "/release/{id}/cover-art",
+    search_all = "/search",
+    search_artist = "/search/artist",
+    search_event = "/search/event",
+    search_label = "/search/label",
+    search_release = "/search/release",
+    search_song = "/search/song",
+    search_tag = "/search/tag",
     sign_in = "/sign-in",
     sign_out = "/sign-out",
     sign_up = "/sign-up",
@@ -4956,6 +6533,10 @@ export enum ApiPaths {
     find_tag_by_id = "/tag/{id}",
     upsert_tag_correction = "/tag/{id}",
     user_roles = "/user-roles",
+    follow_user = "/user/{id}/follow",
+    unfollow_user = "/user/{id}/follow",
+    user_image_queue = "/user/{id}/image-queue",
+    notification_ws = "/ws/notifications",
     entity_corrections = "/{entity_type}/{id}/corrections",
     pending_correction = "/{entity_type}/{id}/pending-correction",
     vote_tag = "/{entity_type}/{id}/tag-vote",

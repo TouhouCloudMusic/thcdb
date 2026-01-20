@@ -57,11 +57,20 @@ async fn create_event(
 async fn upsert_event_correction(
     CurrentUser(user): CurrentUser,
     State(repo): State<state::SeaOrmRepository>,
+    State(notification): State<state::NotificationService>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewEvent>>,
 ) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
+    let user_id = user.id;
     let result =
         service::upsert_correction(&repo, id, dto.with_author(user)).await?;
+
+    notification
+        .notify_correction_needs_review_best_effort(
+            result.correction_id,
+            &[user_id],
+        )
+        .await;
 
     Ok(Data::from(result))
 }

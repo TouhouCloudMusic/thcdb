@@ -140,6 +140,7 @@ impl From<entity::user::Model> for User {
             last_login: value.last_login,
             roles: vec![],
             bio: value.bio,
+            settings: value.settings,
         }
     }
 }
@@ -154,6 +155,7 @@ impl IntoActiveModel<ActiveModel> for User {
             last_login: Set(self.last_login),
             profile_banner_id: Set(self.profile_banner_id),
             bio: Set(self.bio),
+            settings: Set(self.settings),
         }
     }
 }
@@ -168,6 +170,7 @@ impl From<NewUser> for ActiveModel {
             last_login: NotSet,
             profile_banner_id: NotSet,
             bio: NotSet,
+            settings: NotSet,
         }
     }
 }
@@ -255,6 +258,7 @@ impl user::ProfileRepository for SeaOrmRepository {
                         .try_collect()?,
                     is_following: None,
                     bio: profile.bio,
+                    settings: None,
                 })
             }
         }

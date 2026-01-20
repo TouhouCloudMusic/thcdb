@@ -4,6 +4,7 @@ use axum::response::IntoResponse;
 use entity::sea_orm_active_enums::{
     ArtistImageType, ImageQueueStatus, ReleaseImageType,
 };
+use sea_orm::EntityTrait;
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -280,21 +281,72 @@ async fn handle_image_queue(
     Path(id): Path<i32>,
     Query(query): Query<HandleImageQueueQuery>,
     State(repo): State<state::SeaOrmRepository>,
+    State(notification): State<state::NotificationService>,
 ) -> Result<Message, axum::response::Response> {
     authz::ensure_permission::<ImageQueueManage>(&repo.conn, user.id).await?;
 
+    let queue = entity::image_queue::Entity::find_by_id(id)
+        .one(&repo.conn)
+        .await
+        .map_err(crate::infra::error::Error::from)
+        .map_err(IntoResponse::into_response)?;
+
+    let (created_by, image_id) = match queue {
+        Some(model) => (model.created_by, model.image_id),
+        None => return Err(super::Error::NotFound.into_response()),
+    };
+
+    let image_id =
+        image_id.ok_or_else(|| super::Error::InvalidEntry.into_response())?;
+
     match query.method {
-        HandleImageQueueMethod::Approve => repo::approve(&repo, user.id, id)
-            .await
-            .map(|()| Message::ok())
-            .map_err(IntoResponse::into_response),
-        HandleImageQueueMethod::Reject => repo::reject(&repo, user.id, id)
-            .await
-            .map(|()| Message::ok())
-            .map_err(IntoResponse::into_response),
-        HandleImageQueueMethod::Revert => repo::revert(&repo, user.id, id)
-            .await
-            .map(|()| Message::ok())
-            .map_err(IntoResponse::into_response),
+        HandleImageQueueMethod::Approve => {
+            repo::approve(&repo, user.id, id)
+                .await
+                .map_err(IntoResponse::into_response)?;
+
+            notification
+                .notify_image_status_best_effort(
+                    created_by,
+                    image_id,
+                    crate::domain::model::NotificationKindEnum::ImageApproved,
+                    Some("Your image was approved".to_owned()),
+                )
+                .await;
+
+            Ok(Message::ok())
+        }
+        HandleImageQueueMethod::Reject => {
+            repo::reject(&repo, user.id, id)
+                .await
+                .map_err(IntoResponse::into_response)?;
+
+            notification
+                .notify_image_status_best_effort(
+                    created_by,
+                    image_id,
+                    crate::domain::model::NotificationKindEnum::ImageRejected,
+                    Some("Your image was rejected".to_owned()),
+                )
+                .await;
+
+            Ok(Message::ok())
+        }
+        HandleImageQueueMethod::Revert => {
+            repo::revert(&repo, user.id, id)
+                .await
+                .map_err(IntoResponse::into_response)?;
+
+            notification
+                .notify_image_status_best_effort(
+                    created_by,
+                    image_id,
+                    crate::domain::model::NotificationKindEnum::ImageReverted,
+                    Some("Your image was reverted".to_owned()),
+                )
+                .await;
+
+            Ok(Message::ok())
+        }
     }
 }

@@ -1,6 +1,9 @@
 [app]
 port = 12345
 
+[notification]
+retention_days = 90
+
 [email]
 host = "todo"
 

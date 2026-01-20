@@ -39,17 +39,40 @@ async fn handle_correction(
     Path(id): Path<i32>,
     Query(query): Query<HandleCorrectionQuery>,
     State(repo): State<state::SeaOrmRepository>,
+    State(notification): State<state::NotificationService>,
 ) -> Result<Message, axum::response::Response> {
     authz::ensure_permission::<CorrectionManage>(&repo.conn, user.id).await?;
 
     match query.method {
-        HandleCorrectionMethod::Approve => service::approve(&repo, id, user)
-            .await
-            .map_err(IntoResponse::into_response)
-            .map(|()| Message::ok()),
-        HandleCorrectionMethod::Reject => service::reject(&repo, id, user)
-            .await
-            .map_err(IntoResponse::into_response)
-            .map(|()| Message::ok()),
+        HandleCorrectionMethod::Approve => {
+            service::approve(&repo, id, user)
+                .await
+                .map_err(IntoResponse::into_response)?;
+
+            notification
+                .notify_correction_status_best_effort(
+                    id,
+                    crate::domain::model::NotificationKindEnum::CorrectionApproved,
+                    Some("Your correction was approved".to_owned()),
+                )
+                .await;
+
+            Ok(Message::ok())
+        }
+        HandleCorrectionMethod::Reject => {
+            service::reject(&repo, id, user)
+                .await
+                .map_err(IntoResponse::into_response)?;
+
+            notification
+                .notify_correction_status_best_effort(
+                    id,
+                    crate::domain::model::NotificationKindEnum::CorrectionRejected,
+                    Some("Your correction was rejected".to_owned()),
+                )
+                .await;
+
+            Ok(Message::ok())
+        }
     }
 }

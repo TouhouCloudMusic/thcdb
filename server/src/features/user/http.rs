@@ -60,7 +60,7 @@ async fn sign_up(
         .await
         .map_err(|e| SessionBackendError::from(e).into_response())?;
 
-    load_profile(&use_case, &user.name, None).await
+    load_profile(&use_case, &user.name, Some(&user)).await
 }
 
 #[utoipa::path(
@@ -93,7 +93,7 @@ async fn sign_in(
         .map_err(SessionBackendError::from)
         .map_err(IntoResponse::into_response)?;
 
-    load_profile(&use_case, &user.name, None).await
+    load_profile(&use_case, &user.name, Some(&user)).await
 }
 
 #[utoipa::path(

@@ -104,7 +104,7 @@ where
     Entity::Model: IntoActiveModel<Entity::ActiveModel>,
     Enum: ValidateLookupTable<Entity = Entity> + PartialEq<Entity::Model>,
 {
-    let models = Entity::find().all(db).await.unwrap();
+    let models = Entity::find().all(db).await?;
 
     if models.is_empty() {
         return Ok(LookupTableCheckResult::Empty);
@@ -120,17 +120,13 @@ where
         }
     }
 
-    let unsync = || {
-        models.iter().all(|model| {
-            Enum::try_from_model(model).map_or(true, |r#enum| r#enum == *model)
-        })
-    };
+    // Treat extra/unknown rows as allowed, but ensure every enum variant exists in the table.
+    let missing_any =
+        Enum::iter().any(|r#enum| !models.iter().any(|model| r#enum == *model));
 
-    let res = if Enum::iter().count() != models.len() && unsync() {
+    Ok(if missing_any {
         LookupTableCheckResult::Unsync
     } else {
         LookupTableCheckResult::Ok
-    };
-
-    Ok(res)
+    })
 }
