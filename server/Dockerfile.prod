@@ -6,6 +6,9 @@ ARG RUST_IMAGE=rustlang/rust:nightly-${DEBIAN_VERSION}
 FROM ${RUST_IMAGE} AS builder
 WORKDIR /app
 
+ENV RUSTUP_HOME=/usr/local/rustup
+ENV PATH=/usr/local/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/bin:/usr/local/cargo/bin:$PATH
+
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     clang \
@@ -39,7 +42,7 @@ RUN groupadd -r app \
   && useradd -r -g app -u 10001 app
 
 COPY --from=builder /out/thcdb_rs /app/thcdb_rs
-COPY ./config.toml /app/config.toml
+COPY ./server/config.toml /app/config.toml
 
 RUN mkdir -p /app/public/image \
   && chown -R app:app /app
@@ -49,4 +52,3 @@ EXPOSE 12345
 
 ENV RUST_LOG=info
 ENTRYPOINT ["/app/thcdb_rs"]
-
