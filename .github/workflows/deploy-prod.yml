@@ -24,6 +24,7 @@ jobs:
             cd "$HOME/thcdb"
 
             git fetch origin main
+            git reset --hard origin/main
 
             docker compose -f docker-compose.prod.yml build --pull
             docker compose -f docker-compose.prod.yml down --remove-orphans
