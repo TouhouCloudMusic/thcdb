@@ -131,25 +131,29 @@ fn main() -> Result<(), Whatever> {
         })?,
     );
     let web_root = manifest_dir.join("../web");
-    if !web_root.exists() {
-        whatever!("web directory not found at {}", web_root.display());
+    if web_root.exists() {
+        let web_ts_path = web_root.join("src/constant/server.ts");
+        let parent = web_ts_path.parent().with_whatever_context(|| {
+            format!("Missing parent for {}", web_ts_path.display())
+        })?;
+        fs::create_dir_all(parent).with_whatever_context(|_| {
+            format!("Failed to create {}", parent.display())
+        })?;
+        let mut ts_file = String::new();
+        ts_file.push_str(&format!("// {comment_msg}"));
+        ts_file_lines.iter().for_each(|line| ts_file.push_str(line));
+        fs::write(&web_ts_path, ts_file).with_whatever_context(|_| {
+            format!("Failed to write {}", web_ts_path.display())
+        })?;
+        println!("cargo:rerun-if-changed=../web/src/constant/server.ts");
+    } else {
+        println!(
+            "cargo:warning=web directory not found at {}, skipping TS constants generation",
+            web_root.display()
+        );
     }
-    let web_ts_path = web_root.join("src/constant/server.ts");
-    let parent = web_ts_path.parent().with_whatever_context(|| {
-        format!("Missing parent for {}", web_ts_path.display())
-    })?;
-    fs::create_dir_all(parent).with_whatever_context(|_| {
-        format!("Failed to create {}", parent.display())
-    })?;
-    let mut ts_file = String::new();
-    ts_file.push_str(&format!("// {comment_msg}"));
-    ts_file_lines.iter().for_each(|line| ts_file.push_str(line));
-    fs::write(&web_ts_path, ts_file).with_whatever_context(|_| {
-        format!("Failed to write {}", web_ts_path.display())
-    })?;
 
     println!("cargo:rerun-if-changed={CONSTANTS_MODULE}");
-    println!("cargo:rerun-if-changed=../web/src/constant/server.ts");
 
     Ok(())
 }

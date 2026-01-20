@@ -42,7 +42,7 @@ RUN groupadd -r app \
   && useradd -r -g app -u 10001 app
 
 COPY --from=builder /out/thcdb_rs /app/thcdb_rs
-COPY ./server/config.toml /app/config.toml
+COPY ./config.toml /app/config.toml
 
 RUN mkdir -p /app/public/image \
   && chown -R app:app /app
