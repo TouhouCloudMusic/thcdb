@@ -26,9 +26,9 @@ const Password = v.pipe(
 	),
 	v.check(
 		(input) => !PASSWORD_WHITESPACE_REGEX.test(input),
-		"Password must not contain whitespace or control characters",
+		"Password contains invalid or whitespace characters",
 	),
-	v.regex(PASSWORD_REGEX, "Password contains invalid characters"),
+	v.regex(PASSWORD_REGEX, "Password contains invalid or whitespace characters"),
 )
 
 export const SignUp = v.pipe(

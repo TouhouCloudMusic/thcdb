@@ -16,7 +16,10 @@ use snafu::Snafu;
 use utoipa::ToSchema;
 
 use crate::adapter::inbound::rest::api_response::{Error, IntoApiResponse};
-use crate::constant::{USER_NAME_REGEX_STR, USER_PASSWORD_REGEX_STR};
+use crate::constant::{
+    USER_NAME_REGEX_STR, USER_PASSWORD_MAX_LENGTH, USER_PASSWORD_MIN_LENGTH,
+    USER_PASSWORD_REGEX_STR,
+};
 use crate::infra::singleton::ARGON2_HASHER;
 
 #[derive(Debug, Snafu, ApiError)]
@@ -88,8 +91,12 @@ impl From<ValidateCredsErrorKind> for ValidateCredsError {
 pub enum ValidateCredsErrorKind {
     #[display("Invalid username")]
     InvalidUserName,
-    #[display("Invalid Password")]
-    InvalidPassword,
+    #[display("Password must be at least 8 characters")]
+    PasswordTooShort,
+    #[display("Password must be at most 64 characters")]
+    PasswordTooLong,
+    #[display("Password contains invalid or whitespace characters")]
+    PasswordInvalidCharacters,
     #[display("Password is too weak")]
     PasswordTooWeak,
 }
@@ -224,20 +231,33 @@ fn validate_password(password: &str) -> Result<(), ValidateCredsError> {
     static USER_PASSWORD_REGEX: LazyLock<Regex> =
         LazyLock::new(|| Regex::new(USER_PASSWORD_REGEX_STR).unwrap());
 
-    if USER_PASSWORD_REGEX.is_match(password) {
-        let result = zxcvbn(password, &[]);
+    let password_len = password.chars().count();
+    if password_len < USER_PASSWORD_MIN_LENGTH as usize {
+        return Err(PasswordTooShort.into());
+    }
+    if password_len > USER_PASSWORD_MAX_LENGTH as usize {
+        return Err(PasswordTooLong.into());
+    }
+    if password
+        .chars()
+        .any(|c| c.is_control() || c.is_whitespace())
+    {
+        return Err(PasswordInvalidCharacters.into());
+    }
+    if !USER_PASSWORD_REGEX.is_match(password) {
+        return Err(PasswordInvalidCharacters.into());
+    }
 
-        #[cfg(test)]
-        {
-            println!("password: {password}, score: {}", result.score());
-        }
+    let result = zxcvbn(password, &[]);
 
-        match result.score() {
-            Score::Three | Score::Four => Ok(()),
-            _ => Err(PasswordTooWeak.into()),
-        }
-    } else {
-        Err(InvalidPassword.into())
+    #[cfg(test)]
+    {
+        println!("password: {password}, score: {}", result.score());
+    }
+
+    match result.score() {
+        Score::Three | Score::Four => Ok(()),
+        _ => Err(PasswordTooWeak.into()),
     }
 }
 
