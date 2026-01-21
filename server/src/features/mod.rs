@@ -7,6 +7,7 @@ pub mod correction;
 pub mod credit_role;
 pub mod enum_table;
 pub mod event;
+pub mod home;
 pub(crate) mod image_queue;
 pub mod label;
 pub mod notification;
@@ -34,6 +35,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .merge(credit_role::router())
         .merge(enum_table::router())
         .merge(event::router())
+        .merge(home::router())
         .merge(image_queue::router())
         .merge(label::router())
         .merge(notification::router())
