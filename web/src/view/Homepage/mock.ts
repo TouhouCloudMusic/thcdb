@@ -6,17 +6,35 @@ import { createMockTags } from "~/mock/tag"
 
 export type HomeAccent = "Reimu" | "Marisa" | "Blue" | "Green" | "Slate"
 
+export type HomeMetricKey =
+	| "artists_count"
+	| "releases_count"
+	| "songs_count"
+	| "tags_count"
+
 export type HomeMetric = {
+	key: HomeMetricKey
 	label: string
-	value: string
 	hint: string
 }
 
 export const HOME_METRICS: HomeMetric[] = [
-	{ label: "Artists", value: "12,347", hint: "Circles & solo creators" },
-	{ label: "Releases", value: "4,892", hint: "Albums, EPs, singles" },
-	{ label: "Songs", value: "98,201", hint: "Tracks & arrangements" },
-	{ label: "Tags", value: "2,174", hint: "Genres, themes, credits" },
+	{
+		key: "artists_count",
+		label: "Artists",
+		hint: "Circles & solo creators",
+	},
+	{
+		key: "releases_count",
+		label: "Releases",
+		hint: "Albums, EPs, singles",
+	},
+	{
+		key: "songs_count",
+		label: "Songs",
+		hint: "Tracks & arrangements",
+	},
+	{ key: "tags_count", label: "Tags", hint: "Genres, themes, credits" },
 ]
 
 export type HomeNavItem = {

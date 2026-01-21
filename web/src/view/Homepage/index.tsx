@@ -1,5 +1,7 @@
+import { useQuery } from "@tanstack/solid-query"
 import type { Event, Release, Tag } from "@thc/api"
-import { For, Show } from "solid-js"
+import { HomeQueryOption } from "@thc/query"
+import { ErrorBoundary, For, Show } from "solid-js"
 
 import { Card } from "~/component/atomic/Card"
 import { Link } from "~/component/atomic/Link"
@@ -36,6 +38,8 @@ const ACCENT = {
 		ring: "ring-slate-200 hover:ring-slate-300",
 	},
 } satisfies Record<HomeNavItem["accent"], { badge: string; ring: string }>
+
+const COUNT_FORMATTER = new Intl.NumberFormat("en-US")
 
 export function HomePage() {
 	return <HomeLanding />
@@ -152,6 +156,20 @@ function HomeLanding() {
 }
 
 function HomeHero() {
+	const metadataQuery = useQuery(() => HomeQueryOption.metadata())
+	const metrics = () =>
+		HOME_METRICS.map((metric) => ({
+			label: metric.label,
+			hint: metric.hint,
+			value: formatCount(metadataQuery.data?.[metric.key]),
+		}))
+	const fallbackMetrics = () =>
+		HOME_METRICS.map((metric) => ({
+			label: metric.label,
+			hint: metric.hint,
+			value: "—",
+		}))
+
 	return (
 		<section class="relative overflow-hidden rounded-md border border-slate-300 bg-gradient-to-br from-reimu-100 via-primary to-marisa-100 shadow-xs">
 			<div class="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.65)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.65)_1px,transparent_1px)] [background-size:22px_22px] opacity-55"></div>
@@ -183,45 +201,20 @@ function HomeHero() {
 							direction.
 						</p>
 					</div>
-
-					<div class="flex flex-wrap items-center gap-3">
-						<Link
-							to="/release/explore"
-							class="no-underline hover:no-underline"
-						>
-							<Button
-								variant="Primary"
-								color="Reimu"
-								class="px-5"
-							>
-								Explore Releases
-							</Button>
-						</Link>
-						<Link
-							to="/song/explore"
-							class="no-underline hover:no-underline"
-						>
-							<Button
-								variant="Secondary"
-								color="Slate"
-								class="px-5"
-							>
-								Explore Songs
-							</Button>
-						</Link>
-						<Link
-							to="/tag/explore"
-							class="text-sm text-slate-700 no-underline hover:text-slate-900 hover:no-underline"
-						>
-							Browse tags →
-						</Link>
-					</div>
 				</div>
 
 				<div class="grid content-start gap-3 sm:grid-cols-2 lg:grid-cols-1">
-					<For each={HOME_METRICS}>
-						{(metric) => <MetricCard metric={metric} />}
-					</For>
+					<ErrorBoundary
+						fallback={() => (
+							<For each={fallbackMetrics()}>
+								{(metric) => <MetricCard metric={metric} />}
+							</For>
+						)}
+					>
+						<For each={metrics()}>
+							{(metric) => <MetricCard metric={metric} />}
+						</For>
+					</ErrorBoundary>
 					<Card class="border border-slate-300 bg-white/70 p-4 shadow-xs backdrop-blur-sm">
 						<div class="flex flex-col gap-2">
 							<div class="text-xs font-medium tracking-[0.18em] text-slate-500">
@@ -275,7 +268,7 @@ function ExploreCard(props: ExploreCardProps) {
 			class="group block no-underline hover:no-underline"
 		>
 			<Card
-				class={`flex h-full flex-col justify-between gap-4 border border-slate-300 p-5 shadow-xs ring-1 transition-all duration-150 ring-inset motion-reduce:transition-none ${ACCENT[props.item.accent].ring} hover:-translate-y-0.5 hover:shadow-md motion-reduce:hover:translate-y-0`}
+				class={`flex h-full flex-col justify-between gap-4 rounded-none border border-slate-300 p-5 shadow-xs ring-1 transition-all duration-150 ring-inset motion-reduce:transition-none ${ACCENT[props.item.accent].ring} hover:-translate-y-0.5 hover:shadow-sm motion-reduce:hover:translate-y-0`}
 			>
 				<div class="flex items-start justify-between gap-4">
 					<div class="flex flex-col gap-2">
@@ -375,7 +368,12 @@ function TrendingTagsCard(props: TrendingTagsCardProps) {
 			<div class="flex items-end justify-between gap-6">
 				<div class="flex flex-col gap-1">
 					<h3 class="text-lg font-light tracking-tight text-slate-900">
-						Trending Tags
+						<Link
+							to="/tag/explore"
+							class="inline-flex text-slate-900 hover:text-slate-700 hover:underline"
+						>
+							Trending Tags
+						</Link>
 					</h3>
 					<p class="text-sm text-slate-600">A quick hop into tag pages.</p>
 				</div>
@@ -414,7 +412,12 @@ function UpcomingEventsCard(props: UpcomingEventsCardProps) {
 			<div class="flex items-end justify-between gap-6">
 				<div class="flex flex-col gap-1">
 					<h3 class="text-lg font-light tracking-tight text-slate-900">
-						Upcoming Events
+						<Link
+							to="/event/explore"
+							class="inline-flex text-slate-900 hover:text-slate-700 hover:underline"
+						>
+							Upcoming Events
+						</Link>
 					</h3>
 					<p class="text-sm text-slate-600">
 						Conventions and live shows — mocked for now.
@@ -477,6 +480,11 @@ function formatArtists(artists: { name: string }[] | undefined) {
 		.slice(0, 3)
 		.map((a) => a.name)
 		.join(" · ")
+}
+
+function formatCount(value: number | undefined) {
+	if (value === undefined) return "—"
+	return COUNT_FORMATTER.format(value)
 }
 
 function displayReleaseDate(date: Release["release_date"] | null | undefined) {

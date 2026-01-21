@@ -85,7 +85,7 @@ function handleErrorResult<E extends ErrResponse | undefined>(
 	}
 }
 
-type FetchResponse<T, E> = ADTEnum<
+export type FetchResponse<T, E> = ADTEnum<
 	[
 		{
 			data: OkResponse<T>
@@ -96,6 +96,51 @@ type FetchResponse<T, E> = ADTEnum<
 	]
 > & {
 	response: Response
+}
+
+export function isErrResponse(data: unknown): data is ErrResponse {
+	if (!data || typeof data !== "object") return false
+	const d = data as { status?: unknown; message?: unknown }
+	return d.status === "Err" && typeof d.message === "string"
+}
+
+function isOkResponse<T>(data: unknown): data is OkResponse<T> {
+	if (!data || typeof data !== "object") return false
+	const d = data as { status?: unknown; data?: unknown }
+	return d.status === "Ok" && Object.hasOwn(data, "data")
+}
+
+function toErrResponse(message: string): ErrResponse {
+	return {
+		status: "Err",
+		message,
+	}
+}
+
+export async function adaptFetchResponseFromResponse<T>(
+	response: Response,
+): Promise<FetchResponse<T, ErrResponse>> {
+	const text = await response.text()
+
+	if (!text) {
+		return { error: toErrResponse(response.statusText), response }
+	}
+
+	try {
+		const json: unknown = JSON.parse(text)
+
+		if (isErrResponse(json)) {
+			return { error: json, response }
+		}
+
+		if (isOkResponse<T>(json)) {
+			return { data: json, response }
+		}
+
+		return { error: toErrResponse("Unexpected JSON response"), response }
+	} catch {
+		return { error: toErrResponse(text), response }
+	}
 }
 
 export function adaptApi<T, E>(res: FetchResponse<T, E>) {
