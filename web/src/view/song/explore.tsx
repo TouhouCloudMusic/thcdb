@@ -7,10 +7,10 @@ import { For, Show } from "solid-js"
 import type { Component } from "solid-js"
 
 import { Link } from "~/component/atomic"
-import { Button } from "~/component/atomic/button"
 import { Select } from "~/component/atomic/form/select"
 import {
 	CorrectionSortFieldSelect,
+	EmptyExplorePlaceholder,
 	OrderBySelect,
 	StickyFilterBar,
 } from "~/component/feature/entity_explore"
@@ -135,6 +135,7 @@ function SongExploreFilterBar(props: SongExploreFilterBarProps) {
 type SongExploreListProps = {
 	songs: Song[]
 	locale: string
+	isLoading: boolean
 	isFetchingNextPage: boolean
 	hasNextPage: boolean
 	limit: number
@@ -144,6 +145,13 @@ type SongExploreListProps = {
 function SongExploreList(props: SongExploreListProps) {
 	return (
 		<>
+			<Show when={!props.isLoading && props.songs.length === 0}>
+				<EmptyExplorePlaceholder
+					title="No songs found"
+					action={{ to: "/song/new" }}
+				/>
+			</Show>
+
 			<div class="flex flex-col">
 				<For each={props.songs}>
 					{(song: Song) => (
@@ -261,8 +269,11 @@ export const SongExplore = () => {
 					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
 						Explore Songs
 					</h1>
-					<Link to="/song/new">
-						<Button variant="Primary">Create Song</Button>
+					<Link
+						to="/song/new"
+						class="text-sm font-light text-primary"
+					>
+						Create song
 					</Link>
 				</div>
 
@@ -279,6 +290,7 @@ export const SongExplore = () => {
 				<SongExploreList
 					songs={songs()}
 					locale={i18n.locale()}
+					isLoading={songsQuery.isLoading}
 					isFetchingNextPage={songsQuery.isFetchingNextPage}
 					hasNextPage={songsQuery.hasNextPage}
 					limit={search().limit}

@@ -5,7 +5,6 @@ import type { ReleaseType } from "@thc/api"
 import { Either } from "effect"
 
 import { Link } from "~/component/atomic"
-import { Button } from "~/component/atomic/button"
 import { RELEASE_TYPES } from "~/domain/release/constants"
 import { PageLayout } from "~/layout"
 import { useI18N } from "~/state/i18n"
@@ -108,8 +107,11 @@ export const ReleaseExplore = () => {
 					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
 						Explore Releases
 					</h1>
-					<Link to="/release/new">
-						<Button variant="Primary">Create Release</Button>
+					<Link
+						to="/release/new"
+						class="text-sm font-light text-primary"
+					>
+						Create release
 					</Link>
 				</div>
 

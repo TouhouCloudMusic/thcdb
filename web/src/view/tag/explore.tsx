@@ -5,7 +5,7 @@ import { Either } from "effect"
 import { createMemo, createSignal, For, onCleanup, Show } from "solid-js"
 
 import { Link } from "~/component/atomic"
-import { Button } from "~/component/atomic/button"
+import { EmptyExplorePlaceholder } from "~/component/feature/entity_explore"
 import { PageLayout } from "~/layout"
 
 const DEFAULT_DEPTH = 2
@@ -180,8 +180,11 @@ export function TagExplore() {
 					>
 						Tag Tree
 					</h1>
-					<Link to="/tag/new">
-						<Button variant="Primary">Create Tag</Button>
+					<Link
+						to="/tag/new"
+						class="text-sm font-light text-primary"
+					>
+						Create tag
 					</Link>
 				</div>
 				<Show
@@ -190,7 +193,12 @@ export function TagExplore() {
 				>
 					<Show
 						when={nodes().length > 0}
-						fallback={<div class="text-sm text-tertiary">No tags</div>}
+						fallback={
+							<EmptyExplorePlaceholder
+								title="No tags found"
+								action={{ to: "/tag/new" }}
+							/>
+						}
 					>
 						<div class="p-3">
 							<TagTreeList
