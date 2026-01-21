@@ -2,6 +2,14 @@ import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
 import { adaptApiResult, adaptApiResultOptional } from "../../shared"
 
+export async function explore(options?: Opt<"explore_label">) {
+	const res = await FetchClient.GET("/label/explore", {
+		params: { query: options?.query },
+	})
+
+	return adaptApiResult(res)
+}
+
 export async function findLabelById(options: Opt<"find_label_by_id">) {
 	const res = await FetchClient.GET("/label/{id}", {
 		params: { path: options.path },

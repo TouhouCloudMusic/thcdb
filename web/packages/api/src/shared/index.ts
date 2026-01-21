@@ -26,10 +26,10 @@ type RawResponse = {
 export type ApiResponse<T> = OkResponse<T> | MessageResponse | ErrResponse
 export type ApiResponseNonExhaustive<T> = ApiResponse<T> & RawResponse
 
-export type ApiError<E> =
+export type ApiError<_E = unknown> =
 	| {
 			type: "Server"
-			error: E
+			error: string
 	  }
 	| {
 			type: "Response"
@@ -47,35 +47,34 @@ type RestErrorResponse<E> = {
 	response: Response
 }
 
-function serverError<E>(error: E) {
-	return {
-		type: "Server",
-		error,
-	} as const
-}
-
-function responseError<E>(error: E) {
-	return {
-		type: "Response",
-		error,
-	} as const
+const extractErrorMessage = (error: unknown): string => {
+	if (typeof error === "string") return error
+	if (typeof error === "object" && error !== null && "message" in error) {
+		const message = error.message
+		if (typeof message === "string") return message
+	}
+	return "Unknown server error"
 }
 
 function handleError<E>(res: RestErrorResponse<E>) {
 	if (res.error) {
-		return serverError(res.error)
+		return {
+			type: "Server",
+			error: extractErrorMessage(res.error),
+		} as const
 	} else {
-		return responseError(res.response.statusText)
+		return {
+			type: "Response",
+			error: res.response.statusText,
+		} as const
 	}
 }
 
-function handleErrorResult<E extends ErrResponse | undefined>(
-	res: RestErrorResponse<E>,
-) {
+function handleErrorResult<E>(res: RestErrorResponse<E>) {
 	if (res.error) {
 		return E.left({
 			type: "Server",
-			error: res.error.message,
+			error: extractErrorMessage(res.error),
 		} as const)
 	} else {
 		return E.left({
@@ -151,9 +150,7 @@ export function adaptApi<T, E>(res: FetchResponse<T, E>) {
 	}
 }
 
-export function adaptApiResult<T, E extends ErrResponse | undefined>(
-	res: FetchResponse<T, E>,
-) {
+export function adaptApiResult<T, E>(res: FetchResponse<T, E>) {
 	return E.gen(function* () {
 		if (!res.data) {
 			yield* handleErrorResult(res)
@@ -163,9 +160,7 @@ export function adaptApiResult<T, E extends ErrResponse | undefined>(
 	})
 }
 
-export function adaptApiResultOptional<T, E extends ErrResponse | undefined>(
-	res: FetchResponse<T, E>,
-) {
+export function adaptApiResultOptional<T, E>(res: FetchResponse<T, E>) {
 	return E.gen(function* () {
 		if (!res.data) {
 			yield* handleErrorResult(res)
@@ -190,9 +185,7 @@ type FetchMessageResponse<E> = ADTEnum<
 	response: Response
 }
 
-export function adaptApiResultMessage<E extends ErrResponse | undefined>(
-	res: FetchMessageResponse<E>,
-) {
+export function adaptApiResultMessage<E>(res: FetchMessageResponse<E>) {
 	return E.gen(function* () {
 		if (!res.data) {
 			yield* handleErrorResult(res)

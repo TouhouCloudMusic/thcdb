@@ -1,8 +1,11 @@
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
+import { LabelApi } from "@thc/api"
+import { Either } from "effect"
 
+import { Link } from "~/component/atomic"
+import { Button } from "~/component/atomic/button"
 import { PageLayout } from "~/layout"
-import { createMockPaginatedLabels } from "~/mock/label"
 import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 import {
@@ -43,21 +46,28 @@ const createLabelExploreInfiniteQueryOptions = (
 		search().order_by,
 		search().limit,
 	],
-	queryFn: ({ pageParam }: { pageParam: number }) => {
+	queryFn: async ({ pageParam }: { pageParam: number }) => {
 		const snapshot = search()
-		return createMockPaginatedLabels({
-			limit: snapshot.limit,
-			cursor: pageParam,
-			is_dissolved: snapshot.is_dissolved,
-			founded_date_from: snapshot.founded_date_from,
-			founded_date_to: snapshot.founded_date_to,
-			sort_field: snapshot.sort_by,
-			sort_direction: snapshot.order_by,
-		})
+		return Either.getOrThrowWith(
+			await LabelApi.explore({
+				query: {
+					limit: snapshot.limit,
+					cursor: pageParam,
+					is_dissolved: snapshot.is_dissolved,
+					founded_date_from: snapshot.founded_date_from,
+					founded_date_to: snapshot.founded_date_to,
+					sort_field: snapshot.sort_by,
+					sort_direction: snapshot.order_by,
+				},
+			}),
+			(error) => {
+				throw error
+			},
+		)
 	},
 	initialPageParam: 0,
-	getNextPageParam: (lastPage: { next_cursor: number | null }) =>
-		lastPage.next_cursor,
+	getNextPageParam: (lastPage: { next_cursor?: number | null }) =>
+		lastPage.next_cursor ?? null,
 })
 
 export const LabelExplore = () => {
@@ -89,9 +99,14 @@ export const LabelExplore = () => {
 	return (
 		<PageLayout class="p-8">
 			<div class="flex flex-col gap-6">
-				<h1 class="text-2xl font-light tracking-tighter text-slate-900">
-					Explore Labels
-				</h1>
+				<div class="flex items-center justify-between gap-4">
+					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
+						Explore Labels
+					</h1>
+					<Link to="/label/new">
+						<Button variant="Primary">Create Label</Button>
+					</Link>
+				</div>
 
 				<LabelExploreFilterBar
 					scrollDirection={scrollDirection}

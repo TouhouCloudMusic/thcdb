@@ -1,10 +1,13 @@
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
+import { SongApi } from "@thc/api"
 import type { LocalizedTitle, SimpleArtist, Song } from "@thc/api"
+import { Either } from "effect"
 import { For, Show } from "solid-js"
 import type { Component } from "solid-js"
 
 import { Link } from "~/component/atomic"
+import { Button } from "~/component/atomic/button"
 import { Select } from "~/component/atomic/form/select"
 import {
 	CorrectionSortFieldSelect,
@@ -12,7 +15,6 @@ import {
 	StickyFilterBar,
 } from "~/component/feature/entity_explore"
 import { PageLayout } from "~/layout"
-import { createMockPaginatedSongs } from "~/mock/song"
 import { useI18N } from "~/state/i18n"
 import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
@@ -191,17 +193,24 @@ export const SongExplore = () => {
 			search().order_by,
 			search().limit,
 		],
-		queryFn: ({ pageParam }) => {
-			return createMockPaginatedSongs({
-				limit: search().limit,
-				cursor: pageParam,
-				language_id: search().language_id,
-				sort_field: search().sort_by,
-				sort_direction: search().order_by,
-			})
+		queryFn: async ({ pageParam }) => {
+			return Either.getOrThrowWith(
+				await SongApi.explore({
+					query: {
+						limit: search().limit,
+						cursor: pageParam,
+						language_id: search().language_id,
+						sort_field: search().sort_by,
+						sort_direction: search().order_by,
+					},
+				}),
+				(error) => {
+					throw error
+				},
+			)
 		},
 		initialPageParam: 0,
-		getNextPageParam: (lastPage) => lastPage.next_cursor,
+		getNextPageParam: (lastPage) => lastPage.next_cursor ?? null,
 	}))
 
 	const songs = () => songsQuery.data?.pages.flatMap((p) => p.items) ?? []
@@ -248,9 +257,14 @@ export const SongExplore = () => {
 	return (
 		<PageLayout class="p-8">
 			<div class="flex flex-col gap-6">
-				<h1 class="text-2xl font-light tracking-tighter text-slate-900">
-					Explore Songs
-				</h1>
+				<div class="flex items-center justify-between gap-4">
+					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
+						Explore Songs
+					</h1>
+					<Link to="/song/new">
+						<Button variant="Primary">Create Song</Button>
+					</Link>
+				</div>
 
 				<SongExploreFilterBar
 					scrollDirection={scrollDirection}

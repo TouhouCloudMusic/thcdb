@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/solid-query"
-import type { Event, Release, Tag } from "@thc/api"
+import type { Artist, Event, Release, Tag } from "@thc/api"
 import { HomeQueryOption } from "@thc/query"
 import { ErrorBoundary, For, Show } from "solid-js"
 
 import { Card } from "~/component/atomic/Card"
 import { Link } from "~/component/atomic/Link"
-import { Button } from "~/component/atomic/button"
 import { PageLayout } from "~/layout/PageLayout"
 import {
 	HOME_FEATURED_RELEASES,
+	HOME_LATEST_ARTISTS,
 	HOME_METRICS,
 	HOME_NAV_ITEMS,
 	HOME_TRENDING_TAGS,
@@ -83,9 +83,6 @@ function HomeLanding() {
 								<h2 class="text-xl font-light tracking-tight text-slate-900">
 									Latest Releases
 								</h2>
-								<p class="text-sm text-slate-600">
-									A small mock slice — cover, artists, types and dates.
-								</p>
 							</div>
 							<Link
 								to="/release/explore"
@@ -100,6 +97,8 @@ function HomeLanding() {
 								{(release) => <ReleaseCard release={release} />}
 							</For>
 						</div>
+
+						<LatestArtistsCard artists={HOME_LATEST_ARTISTS} />
 					</div>
 
 					<div class="flex flex-col gap-4">
@@ -107,49 +106,6 @@ function HomeLanding() {
 						<UpcomingEventsCard events={HOME_UPCOMING_EVENTS} />
 					</div>
 				</section>
-
-				<Card class="relative overflow-hidden border border-slate-300 p-6 shadow-xs">
-					<div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-100 via-primary to-white opacity-80"></div>
-					<div class="relative flex flex-col justify-between gap-6 md:flex-row md:items-center">
-						<div class="flex flex-col gap-2">
-							<h2 class="text-xl font-light tracking-tight text-slate-900">
-								Help us keep the index accurate.
-							</h2>
-							<p class="max-w-2xl text-sm text-slate-600">
-								THCDB is built around credits and relationships. Sign up to
-								start editing, tagging and linking entries.
-							</p>
-						</div>
-						<div class="flex flex-wrap items-center gap-3">
-							<Link
-								to="/auth"
-								search={{ type: "sign_up" }}
-								class="no-underline hover:no-underline"
-							>
-								<Button
-									variant="Primary"
-									color="Reimu"
-									class="px-5"
-								>
-									Create account
-								</Button>
-							</Link>
-							<Link
-								to="/auth"
-								search={{ type: "sign_in" }}
-								class="no-underline hover:no-underline"
-							>
-								<Button
-									variant="Secondary"
-									color="Slate"
-									class="px-5"
-								>
-									Sign in
-								</Button>
-							</Link>
-						</div>
-					</div>
-				</Card>
 			</div>
 		</PageLayout>
 	)
@@ -192,14 +148,13 @@ function HomeHero() {
 					</div>
 
 					<div class="flex flex-col gap-3">
-						<h1 class="text-4xl font-light tracking-tighter text-slate-900 sm:text-5xl">
-							Find releases, track credits, map relationships.
+						<h1 class="text-5xl font-light tracking-tighter text-primary ">
+							Explore doujin music
 						</h1>
-						<p class="max-w-2xl text-base leading-relaxed text-slate-700">
-							A clean, entity-first workspace for artists, songs, tags and
-							events. This page uses mock data, but follows the final layout
-							direction.
-						</p>
+						<h2 class="text-secondary text-xl">
+							Contribute what’s missing and help keep the database accurate for
+							everyone.
+						</h2>
 					</div>
 				</div>
 
@@ -358,6 +313,93 @@ function ReleaseCard(props: ReleaseCardProps) {
 	)
 }
 
+type LatestArtistsCardProps = {
+	artists: Artist[]
+}
+
+function LatestArtistsCard(props: LatestArtistsCardProps) {
+	return (
+		<Card class="relative overflow-hidden border border-slate-300 bg-linear-to-br from-white via-slate-50 to-reimu-100/40 p-5 shadow-xs">
+			<div class="flex items-end justify-between gap-6">
+				<div class="flex flex-col gap-1">
+					<h3 class="text-lg font-light tracking-tight text-slate-900">
+						<Link
+							to="/artist/explore"
+							class="inline-flex text-slate-900 hover:text-slate-700 hover:underline"
+						>
+							Latest Artists
+						</Link>
+					</h3>
+				</div>
+				<Link
+					to="/artist/explore"
+					class="text-sm text-slate-600 no-underline hover:text-slate-900 hover:no-underline"
+				>
+					Explore →
+				</Link>
+			</div>
+
+			<div class="mt-4 grid grid-cols-[repeat(3,5rem)] gap-3">
+				<For each={props.artists.slice(0, 6)}>
+					{(artist) => <ArtistTile artist={artist} />}
+				</For>
+			</div>
+		</Card>
+	)
+}
+
+type ArtistTileProps = {
+	artist: Artist
+}
+
+function ArtistTile(props: ArtistTileProps) {
+	const avatarUrl = () => props.artist.profile_image_url ?? undefined
+	const initials = () => props.artist.name.trim().slice(0, 1).toUpperCase()
+
+	return (
+		<Link
+			to="/artist/$id"
+			params={{ id: props.artist.id.toString() }}
+			class="group inline-flex no-underline hover:no-underline"
+		>
+			<Card class="relative flex w-20 flex-col items-center gap-3 rounded-none border border-slate-200 bg-white/70 p-3 shadow-xs ring-1 ring-white/70 ring-inset transition-all duration-150 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white/85 hover:shadow-sm motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+				<div class="absolute right-2 top-2 font-mono text-[10px] text-slate-400 opacity-0 transition-opacity duration-150 group-hover:opacity-100 motion-reduce:transition-none">
+					→
+				</div>
+
+				<div class="rounded-full bg-white p-1 shadow-xs ring-1 ring-slate-200 ring-inset">
+					<Show
+						when={avatarUrl()}
+						fallback={
+							<div class="grid size-14 place-items-center rounded-full bg-gradient-to-br from-reimu-100 to-marisa-100 text-xs font-semibold tracking-wide text-slate-700">
+								{initials()}
+							</div>
+						}
+					>
+						{(src) => (
+							<img
+								src={src()}
+								alt=""
+								loading="lazy"
+								class="size-14 rounded-full bg-slate-100 object-cover"
+							/>
+						)}
+					</Show>
+				</div>
+
+				<div class="flex w-full flex-col items-center gap-1">
+					<div class="text-center text-xs font-medium leading-snug text-slate-900 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden">
+						{props.artist.name}
+					</div>
+					<div class="text-[10px] text-slate-500">
+						{props.artist.artist_type}
+					</div>
+				</div>
+			</Card>
+		</Link>
+	)
+}
+
 type TrendingTagsCardProps = {
 	tags: Tag[]
 }
@@ -375,7 +417,6 @@ function TrendingTagsCard(props: TrendingTagsCardProps) {
 							Trending Tags
 						</Link>
 					</h3>
-					<p class="text-sm text-slate-600">A quick hop into tag pages.</p>
 				</div>
 				<Link
 					to="/tag/explore"
@@ -419,9 +460,6 @@ function UpcomingEventsCard(props: UpcomingEventsCardProps) {
 							Upcoming Events
 						</Link>
 					</h3>
-					<p class="text-sm text-slate-600">
-						Conventions and live shows — mocked for now.
-					</p>
 				</div>
 				<Link
 					to="/event/explore"

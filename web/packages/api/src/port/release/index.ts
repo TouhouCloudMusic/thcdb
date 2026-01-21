@@ -2,6 +2,14 @@ import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
 import { adaptApiResult, adaptApiResultOptional } from "../../shared"
 
+export async function explore(options?: Opt<"explore_release">) {
+	const res = await FetchClient.GET("/release/explore", {
+		params: { query: options?.query },
+	})
+
+	return adaptApiResult(res)
+}
+
 export async function findReleaseById(options: Opt<"find_release_by_id">) {
 	const res = await FetchClient.GET("/release/{id}", {
 		params: { path: options.path },
