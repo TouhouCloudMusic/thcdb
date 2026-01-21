@@ -4,7 +4,7 @@ export function NewMusic() {
 	return (
 		<div>
 			<div class="mb-4 flex items-center justify-between">
-				<h2 class="text-xl font-bold text-slate-800">最新音乐</h2>
+				<h2 class="text-xl font-bold text-primary">最新音乐</h2>
 				<button
 					type="button"
 					class="text-rose-600 hover:text-rose-700 text-sm"
@@ -26,12 +26,12 @@ export function NewMusic() {
 									/>
 								</div>
 								<div class="ml-3 flex-1 overflow-hidden">
-									<h4 class="truncate text-sm font-medium text-slate-800">
+									<h4 class="truncate text-sm font-medium text-primary">
 										东方同音鉴曲目 {i() + 1}
 									</h4>
-									<p class="truncate text-xs text-slate-500">幻想乡音乐人</p>
+									<p class="truncate text-xs text-tertiary">幻想乡音乐人</p>
 								</div>
-								<button class="hover:text-rose-600 p-2 text-slate-400">
+								<button class="hover:text-rose-600 p-2 text-tertiary">
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
 										class="h-5 w-5"

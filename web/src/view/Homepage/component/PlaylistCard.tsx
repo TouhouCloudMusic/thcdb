@@ -18,10 +18,10 @@ export function PlaylistCard(props: PlaylistCardProps) {
 				/>
 			</div>
 			<div class="p-3">
-				<h3 class="hover:text-rose-600 line-clamp-2 text-sm font-medium text-slate-800">
+				<h3 class="hover:text-rose-600 line-clamp-2 text-sm font-medium text-primary">
 					{props.playlist.title}
 				</h3>
-				<p class="mt-1 text-xs text-slate-500">by {props.playlist.creator}</p>
+				<p class="mt-1 text-xs text-tertiary">by {props.playlist.creator}</p>
 			</div>
 		</div>
 	)
