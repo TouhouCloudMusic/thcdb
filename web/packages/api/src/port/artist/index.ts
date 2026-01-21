@@ -2,6 +2,14 @@ import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
 import { adaptApiResult, adaptApiResultOptional } from "../../shared"
 
+export async function explore(options?: Opt<"explore_artist">) {
+	const res = await FetchClient.GET("/artist/explore", {
+		params: { query: options?.query },
+	})
+
+	return adaptApiResult(res)
+}
+
 export async function findOne(options: Opt<"find_artist_by_id">) {
 	const res = await FetchClient.GET("/artist/{id}", {
 		params: { path: options.path, query: options.query },
@@ -37,7 +45,7 @@ export async function upsertCorrection(
 	return adaptApiResult(res)
 }
 
-export async function findAppearances(options: Opt<"find_artist_apperances">) {
+export async function findAppearances(options: Opt<"find_artist_appearances">) {
 	const res = await FetchClient.GET("/artist/{id}/appearances", {
 		params: options,
 	})

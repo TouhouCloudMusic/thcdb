@@ -1,10 +1,13 @@
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
+import { ReleaseApi } from "@thc/api"
 import type { ReleaseType } from "@thc/api"
+import { Either } from "effect"
 
+import { Link } from "~/component/atomic"
+import { Button } from "~/component/atomic/button"
 import { RELEASE_TYPES } from "~/domain/release/constants"
 import { PageLayout } from "~/layout"
-import { createMockPaginatedReleases } from "~/mock/release"
 import { useI18N } from "~/state/i18n"
 import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
@@ -37,17 +40,24 @@ export const ReleaseExplore = () => {
 			search().order_by,
 			search().limit,
 		],
-		queryFn: ({ pageParam }) => {
-			return createMockPaginatedReleases({
-				limit: search().limit,
-				cursor: pageParam,
-				release_type: search().release_type,
-				sort_field: search().sort_by,
-				sort_direction: search().order_by,
-			})
+		queryFn: async ({ pageParam }) => {
+			return Either.getOrThrowWith(
+				await ReleaseApi.explore({
+					query: {
+						limit: search().limit,
+						cursor: pageParam,
+						release_type: search().release_type,
+						sort_field: search().sort_by,
+						sort_direction: search().order_by,
+					},
+				}),
+				(error) => {
+					throw error
+				},
+			)
 		},
 		initialPageParam: 0,
-		getNextPageParam: (lastPage) => lastPage.next_cursor,
+		getNextPageParam: (lastPage) => lastPage.next_cursor ?? null,
 	}))
 
 	const releases = () => releasesQuery.data?.pages.flatMap((p) => p.items) ?? []
@@ -94,9 +104,14 @@ export const ReleaseExplore = () => {
 	return (
 		<PageLayout class="p-8">
 			<div class="flex flex-col gap-6">
-				<h1 class="text-2xl font-light tracking-tighter text-slate-900">
-					Explore Releases
-				</h1>
+				<div class="flex items-center justify-between gap-4">
+					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
+						Explore Releases
+					</h1>
+					<Link to="/release/new">
+						<Button variant="Primary">Create Release</Button>
+					</Link>
+				</div>
 
 				<ReleaseExploreFilterBar
 					scrollDirection={scrollDirection}

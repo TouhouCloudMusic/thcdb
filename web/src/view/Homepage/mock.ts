@@ -1,5 +1,6 @@
-import type { Event, Release, Tag } from "@thc/api"
+import type { Artist, Event, Release, Tag } from "@thc/api"
 
+import { createMockArtists } from "~/mock/artist"
 import { createMockEvents } from "~/mock/event"
 import { createMockReleases } from "~/mock/release"
 import { createMockTags } from "~/mock/tag"
@@ -97,5 +98,6 @@ export const HOME_NAV_ITEMS: HomeNavItem[] = [
 ]
 
 export const HOME_FEATURED_RELEASES: Release[] = createMockReleases(6, 101)
+export const HOME_LATEST_ARTISTS: Artist[] = createMockArtists(6, 201)
 export const HOME_TRENDING_TAGS: Tag[] = createMockTags(18, 21)
 export const HOME_UPCOMING_EVENTS: Event[] = createMockEvents(4, 41)

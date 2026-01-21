@@ -2,6 +2,14 @@ import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
 import { adaptApiResult, adaptApiResultOptional } from "../../shared"
 
+export async function explore(options?: Opt<"explore_tag">) {
+	const res = await FetchClient.GET("/tag/explore", {
+		params: { query: options?.query },
+	})
+
+	return adaptApiResult(res)
+}
+
 export async function findTagById(options: Opt<"find_tag_by_id">) {
 	const res = await FetchClient.GET("/tag/{id}", {
 		params: { path: options.path },

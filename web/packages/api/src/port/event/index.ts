@@ -2,6 +2,14 @@ import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
 import { adaptApiResult, adaptApiResultOptional } from "../../shared"
 
+export async function explore(options?: Opt<"explore_event">) {
+	const res = await FetchClient.GET("/event/explore", {
+		params: { query: options?.query },
+	})
+
+	return adaptApiResult(res)
+}
+
 export async function findEventById(options: Opt<"find_event_by_id">) {
 	const res = await FetchClient.GET("/event/{id}", {
 		params: { path: options.path },

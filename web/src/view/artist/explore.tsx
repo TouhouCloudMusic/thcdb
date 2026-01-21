@@ -1,10 +1,13 @@
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
+import { ArtistApi } from "@thc/api"
 import type { ArtistType } from "@thc/api"
+import { Either } from "effect"
 
+import { Link } from "~/component/atomic"
+import { Button } from "~/component/atomic/button"
 import { ARTIST_TYPES } from "~/domain/artist/constants"
 import { PageLayout } from "~/layout"
-import { createMockPaginatedArtists } from "~/mock/artist"
 import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 import {
@@ -39,19 +42,26 @@ const createArtistExploreInfiniteQueryOptions = (
 		search().order_by,
 		search().limit,
 	],
-	queryFn: ({ pageParam }: { pageParam: number }) => {
+	queryFn: async ({ pageParam }: { pageParam: number }) => {
 		const snapshot = search()
-		return createMockPaginatedArtists({
-			limit: snapshot.limit,
-			cursor: pageParam,
-			artist_type: snapshot.artist_type,
-			sort_field: snapshot.sort_by,
-			sort_direction: snapshot.order_by,
-		})
+		return Either.getOrThrowWith(
+			await ArtistApi.explore({
+				query: {
+					limit: snapshot.limit,
+					cursor: pageParam,
+					artist_type: snapshot.artist_type,
+					sort_field: snapshot.sort_by,
+					sort_direction: snapshot.order_by,
+				},
+			}),
+			(error) => {
+				throw error
+			},
+		)
 	},
 	initialPageParam: 0,
-	getNextPageParam: (lastPage: { next_cursor: number | null }) =>
-		lastPage.next_cursor,
+	getNextPageParam: (lastPage: { next_cursor?: number | null }) =>
+		lastPage.next_cursor ?? null,
 })
 
 export const ArtistExplore = () => {
@@ -84,9 +94,14 @@ export const ArtistExplore = () => {
 	return (
 		<PageLayout class="p-8">
 			<div class="flex flex-col gap-6">
-				<h1 class="text-2xl font-light tracking-tighter text-slate-900">
-					Explore Artists
-				</h1>
+				<div class="flex items-center justify-between gap-4">
+					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
+						Explore Artists
+					</h1>
+					<Link to="/artist/new">
+						<Button variant="Primary">Create Artist</Button>
+					</Link>
+				</div>
 
 				<ArtistExploreFilterBar
 					scrollDirection={scrollDirection}

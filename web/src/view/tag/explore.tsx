@@ -1,29 +1,17 @@
 import { useQuery } from "@tanstack/solid-query"
+import { TagApi } from "@thc/api"
+import type { Tag } from "@thc/api"
+import { Either } from "effect"
 import { createMemo, createSignal, For, onCleanup, Show } from "solid-js"
 
 import { Link } from "~/component/atomic"
+import { Button } from "~/component/atomic/button"
 import { PageLayout } from "~/layout"
-import { createMockTagTree } from "~/mock/tag"
-import type { TagTreeNode } from "~/mock/tag"
 
 const DEFAULT_DEPTH = 2
 const ROOT_COUNT = 6
 const MAX_DEPTH = 4
-const MOCK_DELAY_RANGE_MS = [200, 600]
 const TREE_HEADING_ID = "tag-tree-title"
-
-const sleep = (ms: number) => {
-	return new Promise<void>((resolve) => {
-		setTimeout(resolve, ms)
-	})
-}
-
-const mockDelayMs = () => {
-	const min = MOCK_DELAY_RANGE_MS[0] ?? 0
-	const max = MOCK_DELAY_RANGE_MS[1] ?? min
-	const span = Math.max(0, max - min)
-	return min + Math.floor(Math.random() * (span + 1))
-}
 
 export function TagExplore() {
 	const [expandedIdsOverride, setExpandedIdsOverride] =
@@ -36,12 +24,22 @@ export function TagExplore() {
 	const queryOptions = () => ({
 		queryKey: ["tag::tree", ROOT_COUNT, MAX_DEPTH, DEFAULT_DEPTH],
 		queryFn: async () => {
-			await sleep(mockDelayMs())
-			return createMockTagTree({
-				rootCount: ROOT_COUNT,
-				maxDepth: MAX_DEPTH,
-				childCountRange: [1, 3],
+			const res = await TagApi.explore({
+				query: { cursor: 0, limit: ROOT_COUNT },
 			})
+			const paginated = Either.getOrThrowWith(res, (error) => {
+				throw error
+			})
+
+			return paginated.items.map(
+				(tag): TagTreeNode => ({
+					id: tag.id,
+					name: tag.name,
+					type: tag.type,
+					short_description: tag.short_description,
+					children: [],
+				}),
+			)
 		},
 	})
 
@@ -99,7 +97,7 @@ export function TagExplore() {
 		const currentIndex = ids.indexOf(id)
 
 		if (key === "ArrowDown") {
-			if (currentIndex < 0 || currentIndex >= ids.length - 1) return
+			if (currentIndex === -1 || currentIndex >= ids.length - 1) return
 			event.preventDefault()
 			const nextId = ids[currentIndex + 1]
 			if (nextId === undefined) return
@@ -175,12 +173,17 @@ export function TagExplore() {
 	return (
 		<PageLayout class="p-8">
 			<div class="flex flex-col gap-6">
-				<h1
-					id={TREE_HEADING_ID}
-					class="text-2xl font-light tracking-tight text-slate-900"
-				>
-					Tag Tree
-				</h1>
+				<div class="flex items-center justify-between gap-4">
+					<h1
+						id={TREE_HEADING_ID}
+						class="text-2xl font-light tracking-tight text-slate-900"
+					>
+						Tag Tree
+					</h1>
+					<Link to="/tag/new">
+						<Button variant="Primary">Create Tag</Button>
+					</Link>
+				</div>
 				<Show
 					when={!treeQuery.isLoading}
 					fallback={<TagTreeSkeleton />}
@@ -217,6 +220,14 @@ type TagTreeListProps = {
 	setActiveId: (id: number) => void
 	onKeyDown: (id: number, event: KeyboardEvent) => void
 	itemRefs: Map<number, HTMLLIElement>
+}
+
+type TagTreeNode = {
+	id: number
+	name: string
+	type: Tag["type"]
+	short_description: Tag["short_description"]
+	children: TagTreeNode[]
 }
 
 function TagTreeList(props: TagTreeListProps) {

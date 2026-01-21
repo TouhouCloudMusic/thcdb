@@ -1,18 +1,20 @@
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
+import { EventApi } from "@thc/api"
 import type { Event } from "@thc/api"
+import { Either } from "effect"
 import { For, Show } from "solid-js"
 import type { Component } from "solid-js"
 
 import { Link } from "~/component/atomic"
 import { Input } from "~/component/atomic/Input"
+import { Button } from "~/component/atomic/button"
 import {
 	OrderBySelect,
 	StickyFilterBar,
 } from "~/component/feature/entity_explore"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout"
-import { createMockPaginatedEvents } from "~/mock/event"
 import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
@@ -206,17 +208,24 @@ export const EventExplore = () => {
 			search().order_by,
 			search().limit,
 		],
-		queryFn: ({ pageParam }) => {
-			return createMockPaginatedEvents({
-				limit: search().limit,
-				cursor: pageParam,
-				start_date_from: search().start_date_from,
-				start_date_to: search().start_date_to,
-				sort_direction: search().order_by,
-			})
+		queryFn: async ({ pageParam }) => {
+			return Either.getOrThrowWith(
+				await EventApi.explore({
+					query: {
+						limit: search().limit,
+						cursor: pageParam,
+						start_date_from: search().start_date_from,
+						start_date_to: search().start_date_to,
+						sort_direction: search().order_by,
+					},
+				}),
+				(error) => {
+					throw error
+				},
+			)
 		},
 		initialPageParam: 0,
-		getNextPageParam: (lastPage) => lastPage.next_cursor,
+		getNextPageParam: (lastPage) => lastPage.next_cursor ?? null,
 	}))
 
 	const events = () => eventsQuery.data?.pages.flatMap((p) => p.items) ?? []
@@ -260,9 +269,14 @@ export const EventExplore = () => {
 	return (
 		<PageLayout class="p-8">
 			<div class="flex flex-col gap-6">
-				<h1 class="text-2xl font-light tracking-tighter text-slate-900">
-					Explore Events
-				</h1>
+				<div class="flex items-center justify-between gap-4">
+					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
+						Explore Events
+					</h1>
+					<Link to="/event/new">
+						<Button variant="Primary">Create Event</Button>
+					</Link>
+				</div>
 
 				<EventExploreFilterBar
 					scrollDirection={scrollDirection}
