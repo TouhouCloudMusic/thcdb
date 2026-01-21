@@ -4,7 +4,6 @@ import { LabelApi } from "@thc/api"
 import { Either } from "effect"
 
 import { Link } from "~/component/atomic"
-import { Button } from "~/component/atomic/button"
 import { PageLayout } from "~/layout"
 import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
@@ -103,8 +102,11 @@ export const LabelExplore = () => {
 					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
 						Explore Labels
 					</h1>
-					<Link to="/label/new">
-						<Button variant="Primary">Create Label</Button>
+					<Link
+						to="/label/new"
+						class="text-sm font-light text-primary"
+					>
+						Create label
 					</Link>
 				</div>
 

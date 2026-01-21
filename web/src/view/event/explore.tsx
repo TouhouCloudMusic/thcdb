@@ -8,8 +8,8 @@ import type { Component } from "solid-js"
 
 import { Link } from "~/component/atomic"
 import { Input } from "~/component/atomic/Input"
-import { Button } from "~/component/atomic/button"
 import {
+	EmptyExplorePlaceholder,
 	OrderBySelect,
 	StickyFilterBar,
 } from "~/component/feature/entity_explore"
@@ -165,7 +165,10 @@ function EventExploreList(props: EventExploreListProps) {
 	return (
 		<>
 			<Show when={!props.isLoading && props.events.length === 0}>
-				<div class="py-8 text-sm text-slate-400">No events</div>
+				<EmptyExplorePlaceholder
+					title="No events found"
+					action={{ to: "/event/new" }}
+				/>
 			</Show>
 
 			<div class="flex flex-col">
@@ -273,8 +276,11 @@ export const EventExplore = () => {
 					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
 						Explore Events
 					</h1>
-					<Link to="/event/new">
-						<Button variant="Primary">Create Event</Button>
+					<Link
+						to="/event/new"
+						class="text-sm font-light text-primary"
+					>
+						Create event
 					</Link>
 				</div>
 

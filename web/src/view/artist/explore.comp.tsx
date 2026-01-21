@@ -6,6 +6,7 @@ import { Link } from "~/component/atomic"
 import { Select } from "~/component/atomic/form/select"
 import {
 	CorrectionSortFieldSelect,
+	EmptyExplorePlaceholder,
 	OrderBySelect,
 	StickyFilterBar,
 } from "~/component/feature/entity_explore"
@@ -197,7 +198,10 @@ export const ArtistExploreList: Component<ArtistExploreListProps> = (props) => {
 	return (
 		<>
 			<Show when={!props.isLoading && props.artists.length === 0}>
-				<div class="py-8 text-sm text-slate-400">No artists</div>
+				<EmptyExplorePlaceholder
+					title="No artists found"
+					action={{ to: "/artist/new" }}
+				/>
 			</Show>
 
 			<div class="flex flex-col">

@@ -6,6 +6,7 @@ import { Link } from "~/component/atomic"
 import { Select } from "~/component/atomic/form/select"
 import {
 	CorrectionSortFieldSelect,
+	EmptyExplorePlaceholder,
 	OrderBySelect,
 	StickyFilterBar,
 } from "~/component/feature/entity_explore"
@@ -223,7 +224,10 @@ export function ReleaseExploreList(props: ReleaseExploreListProps) {
 	return (
 		<>
 			<Show when={!props.isLoading && props.releases.length === 0}>
-				<div class="py-8 text-sm text-slate-400">No releases</div>
+				<EmptyExplorePlaceholder
+					title="No releases found"
+					action={{ to: "/release/new" }}
+				/>
 			</Show>
 
 			<div class="flex flex-col">

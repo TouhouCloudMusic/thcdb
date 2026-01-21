@@ -5,7 +5,6 @@ import type { ArtistType } from "@thc/api"
 import { Either } from "effect"
 
 import { Link } from "~/component/atomic"
-import { Button } from "~/component/atomic/button"
 import { ARTIST_TYPES } from "~/domain/artist/constants"
 import { PageLayout } from "~/layout"
 import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
@@ -98,8 +97,11 @@ export const ArtistExplore = () => {
 					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
 						Explore Artists
 					</h1>
-					<Link to="/artist/new">
-						<Button variant="Primary">Create Artist</Button>
+					<Link
+						to="/artist/new"
+						class="text-sm font-light text-primary"
+					>
+						Create artist
 					</Link>
 				</div>
 

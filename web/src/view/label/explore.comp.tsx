@@ -7,6 +7,7 @@ import { Input } from "~/component/atomic/Input"
 import { Select } from "~/component/atomic/form/select"
 import {
 	CorrectionSortFieldSelect,
+	EmptyExplorePlaceholder,
 	OrderBySelect,
 	StickyFilterBar,
 } from "~/component/feature/entity_explore"
@@ -206,7 +207,10 @@ export const LabelExploreList: Component<LabelExploreListProps> = (props) => {
 	return (
 		<>
 			<Show when={!props.isLoading && props.labels.length === 0}>
-				<div class="py-8 text-sm text-slate-400">No labels</div>
+				<EmptyExplorePlaceholder
+					title="No labels found"
+					action={{ to: "/label/new" }}
+				/>
 			</Show>
 
 			<div class="flex flex-col">
