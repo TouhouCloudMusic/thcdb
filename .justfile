@@ -1,10 +1,7 @@
-set shell := ["bash", "-euo", "pipefail", "-c"]
+# set shell := ["bash", "-euo", "pipefail", "-c"]
 set dotenv-load := true
 
 dev:
-	docker compose -f docker-compose.yml up --remove-orphans
-
-rebuild:
 	docker compose -f docker-compose.yml up --build --force-recreate --remove-orphans
 
 down:
