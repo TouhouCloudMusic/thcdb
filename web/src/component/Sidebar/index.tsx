@@ -14,8 +14,9 @@ export function Sidebar(
 	return (
 		<div
 			ref={props.ref}
+			tabindex={-1}
 			class={twMerge(
-				"ml-auto flex h-full w-60 overflow-auto border-t-1 border-t-reimu-600 bg-primary",
+				"ml-auto flex h-full w-60 overflow-auto border-t border-t-reimu-600 bg-primary",
 				props.class,
 			)}
 		>
@@ -26,7 +27,7 @@ export function Sidebar(
 
 export function ListItem(props: ParentProps<ButtonProps>) {
 	const CLASS = `
-    flex items-center
+    flex items-center justify-start text-left w-full
     py-1 px-1
     font-light font-inter text-sm text-slate-700
     *:mx-1

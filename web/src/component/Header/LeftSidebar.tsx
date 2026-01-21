@@ -31,7 +31,7 @@ export function LeftSidebar() {
 		},
 		{
 			icon: TargetIcon,
-			text: "Recommandation",
+			text: "Recommendation",
 			to: "/recommendation",
 		},
 		{
@@ -67,28 +67,26 @@ export function LeftSidebar() {
 	]
 
 	return (
-		<Sidebar class="flex w-64 flex-col p-4">
-			<div class="mt-2 flex flex-col space-y-2">
-				<h3 class="ml-2 text-xs font-semibold text-slate-600">Discover</h3>
+		<Sidebar class="flex w-64 flex-col gap-2 p-4">
+			<h3 class="ml-2 text-sm text-secondary ">Explore</h3>
 
-				<ul class="space-y-1 pr-2">
-					<For each={LIST_ITEMS}>
-						{(item) => {
-							return (
-								<ListItem
-									class="w-full"
-									aria-label={item.text}
-									title={item.text}
-									onClick={() => navigate({ to: item.to })}
-								>
-									<item.icon class="mr-3 h-4 w-4" />
-									<span>{item.text}</span>
-								</ListItem>
-							)
-						}}
-					</For>
-				</ul>
-			</div>
+			<ul class="space-y-1 pr-2">
+				<For each={LIST_ITEMS}>
+					{(item) => {
+						return (
+							<ListItem
+								class="w-full"
+								aria-label={item.text}
+								title={item.text}
+								onClick={() => navigate({ to: item.to })}
+							>
+								<item.icon class="mr-3 h-4 w-4" />
+								<span>{item.text}</span>
+							</ListItem>
+						)
+					}}
+				</For>
+			</ul>
 		</Sidebar>
 	)
 }
