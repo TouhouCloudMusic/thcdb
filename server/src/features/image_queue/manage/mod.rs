@@ -4,6 +4,7 @@ mod repo;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 pub use http::router;
+pub(crate) use http::HandleImageQueueMethod;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -12,7 +13,7 @@ use crate::infra::error::Error as InfraError;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]
-enum ImageQueueType {
+pub(crate) enum ImageQueueType {
     Artist,
     Release,
 }

@@ -173,6 +173,9 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
     // https://github.com/juhaku/utoipa/issues/1165
     components(schemas(
         features::correction::HandleCorrectionMethod,
+        features::image_queue::HandleImageQueueMethod,
+        features::image_queue::ImageQueueType,
+        entity::sea_orm_active_enums::ImageQueueStatus,
         ArtistCommonFilter,
         CorrectionSortField,
         SortDirection,
@@ -191,7 +194,19 @@ fn basic_security_requirement() -> utoipa::openapi::security::SecurityRequiremen
 }
 
 #[derive(OpenApi)]
-#[openapi(modifiers(&BasicSecurityModifier))]
+#[openapi(
+    components(schemas(
+        features::correction::HandleCorrectionMethod,
+        features::image_queue::HandleImageQueueMethod,
+        features::image_queue::ImageQueueType,
+        entity::sea_orm_active_enums::ImageQueueStatus,
+        ArtistCommonFilter,
+        CorrectionSortField,
+        SortDirection,
+        api_response::Error,
+    )),
+    modifiers(&BasicSecurityModifier)
+)]
 pub struct PrivateDoc;
 
 pub struct BasicSecurityModifier;

@@ -35,7 +35,7 @@ struct ImageQueueFilterQuery {
 }
 
 #[derive(Deserialize, ToSchema)]
-pub enum HandleImageQueueMethod {
+pub(crate) enum HandleImageQueueMethod {
     Approve,
     Reject,
     Revert,
