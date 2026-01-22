@@ -13,9 +13,13 @@ export const Route = createFileRoute("/release/$id")({
 	component: RouteComponent,
 	loader: async ({ params }) => {
 		const parsedId = v.parse(EntityId, Number.parseInt(params.id, 10))
-		return await QUERY_CLIENT.ensureQueryData(
+		const data = await QUERY_CLIENT.ensureQueryData(
 			ReleaseQueryOption.findById(parsedId),
 		)
+		if (O.isNone(data)) {
+			throw notFound()
+		}
+		return data
 	},
 })
 
@@ -25,7 +29,7 @@ function RouteComponent() {
 	const query = useQuery(() => ReleaseQueryOption.findById(releaseId))
 
 	return (
-		<Show when={query.data && O.getOrThrowWith(query.data, () => notFound())}>
+		<Show when={query.data && O.getOrUndefined(query.data)}>
 			{(release) => <ReleaseInfoPage release={release()} />}
 		</Show>
 	)

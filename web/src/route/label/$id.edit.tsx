@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/solid-query"
-import { createFileRoute, useNavigate } from "@tanstack/solid-router"
+import { createFileRoute, notFound, useNavigate } from "@tanstack/solid-router"
 import { LabelQueryOption } from "@thc/query"
 import { Option as O } from "effect"
 import { createEffect, Show } from "solid-js"
@@ -14,9 +14,13 @@ export const Route = createFileRoute("/label/$id/edit")({
 	loader: async ({ params: { id } }) => {
 		const parsedId = v.parse(EntityId, Number.parseInt(id, 10))
 
-		return await QUERY_CLIENT.ensureQueryData(
+		const data = await QUERY_CLIENT.ensureQueryData(
 			LabelQueryOption.findById(parsedId),
 		)
+		if (O.isNone(data)) {
+			throw notFound()
+		}
+		return data
 	},
 })
 

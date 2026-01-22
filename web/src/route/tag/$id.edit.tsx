@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/solid-query"
-import { createFileRoute, useNavigate } from "@tanstack/solid-router"
+import { createFileRoute, notFound, useNavigate } from "@tanstack/solid-router"
 import { TagQueryOption } from "@thc/query"
 import { Option as O } from "effect"
 import { createEffect, Show } from "solid-js"
@@ -14,7 +14,13 @@ export const Route = createFileRoute("/tag/$id/edit")({
 	loader: async ({ params: { id } }) => {
 		const parsedId = v.parse(EntityId, Number.parseInt(id, 10))
 
-		return await QUERY_CLIENT.ensureQueryData(TagQueryOption.findById(parsedId))
+		const data = await QUERY_CLIENT.ensureQueryData(
+			TagQueryOption.findById(parsedId),
+		)
+		if (O.isNone(data)) {
+			throw notFound()
+		}
+		return data
 	},
 })
 

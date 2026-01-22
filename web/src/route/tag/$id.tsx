@@ -13,7 +13,13 @@ export const Route = createFileRoute("/tag/$id")({
 	component: RouteComponent,
 	loader: async ({ params }) => {
 		const parsedId = v.parse(EntityId, Number.parseInt(params.id, 10))
-		return await QUERY_CLIENT.ensureQueryData(TagQueryOption.findById(parsedId))
+		const data = await QUERY_CLIENT.ensureQueryData(
+			TagQueryOption.findById(parsedId),
+		)
+		if (O.isNone(data)) {
+			throw notFound()
+		}
+		return data
 	},
 })
 
