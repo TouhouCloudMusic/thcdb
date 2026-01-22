@@ -8,24 +8,50 @@ CREATE TABLE IF NOT EXISTS "public"."notification_setting" (
   PRIMARY KEY ("user_id")
 );
 
-INSERT INTO "public"."notification_setting" (
-  "user_id",
-  "comment_reply_enabled",
-  "comment_mention_enabled",
-  "correction_status_enabled",
-  "new_follower_enabled",
-  "email_enabled"
-)
+INSERT INTO
+  "public"."notification_setting" (
+    "user_id",
+    "comment_reply_enabled",
+    "comment_mention_enabled",
+    "correction_status_enabled",
+    "new_follower_enabled",
+    "email_enabled"
+  )
 SELECT
   u."id" AS "user_id",
-  COALESCE((u."settings"->'notification'->>'comment_reply_enabled')::boolean, TRUE),
-  COALESCE((u."settings"->'notification'->>'comment_mention_enabled')::boolean, TRUE),
-  COALESCE((u."settings"->'notification'->>'correction_status_enabled')::boolean, TRUE),
-  COALESCE((u."settings"->'notification'->>'new_follower_enabled')::boolean, TRUE),
-  COALESCE((u."settings"->'notification'->>'email_enabled')::boolean, FALSE)
-FROM "public"."user" u
-ON CONFLICT ("user_id") DO NOTHING;
+  COALESCE(
+    (
+      u."settings" -> 'notification' ->> 'comment_reply_enabled'
+    )::boolean,
+    TRUE
+  ),
+  COALESCE(
+    (
+      u."settings" -> 'notification' ->> 'comment_mention_enabled'
+    )::boolean,
+    TRUE
+  ),
+  COALESCE(
+    (
+      u."settings" -> 'notification' ->> 'correction_status_enabled'
+    )::boolean,
+    TRUE
+  ),
+  COALESCE(
+    (
+      u."settings" -> 'notification' ->> 'new_follower_enabled'
+    )::boolean,
+    TRUE
+  ),
+  COALESCE(
+    (
+      u."settings" -> 'notification' ->> 'email_enabled'
+    )::boolean,
+    FALSE
+  )
+FROM
+  "public"."user" u ON CONFLICT ("user_id") DO NOTHING;
 
-ALTER TABLE "public"."user"
-DROP COLUMN IF EXISTS "settings";
-
+ALTER TABLE
+  "public"."user"
+  DROP COLUMN IF EXISTS "settings";
