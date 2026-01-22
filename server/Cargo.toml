@@ -187,7 +187,7 @@ tower-http = { version = "0.6.2", features = [
     "cors",
 ] }
 tower-sessions-redis-store = "0.16.0"
-tower_governor = "0.7.0"
+tower_governor = "0.8.0"
 tracing.workspace = true
 tracing-subscriber.workspace = true
 tracing-test = "0.2.5"
