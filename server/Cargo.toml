@@ -134,7 +134,7 @@ futures-util = "0.3"
 garde = { version = "0.22.0", features = [
     "full",
 ] }
-governor = "0.8.0"
+governor = "0.10.0"
 headers = "0.4"
 image = "0.25"
 iso8601-duration = { version = "0.2", features = [
