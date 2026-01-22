@@ -18,9 +18,13 @@ export const Route = createFileRoute("/artist/$id/")({
 	loader: async ({ params: { id } }) => {
 		const parsedId = v.parse(EntityId, Number.parseInt(id, 10))
 
-		return await QUERY_CLIENT.ensureQueryData(
+		const data = await QUERY_CLIENT.ensureQueryData(
 			ArtistQueryOption.findById(parsedId),
 		)
+		if (O.isNone(data)) {
+			throw notFound()
+		}
+		return data
 	},
 	// errorComponent: () => {
 	// 	return <Navigate to="/" />
