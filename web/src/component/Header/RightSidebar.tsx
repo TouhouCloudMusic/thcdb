@@ -69,7 +69,7 @@ export function RightSidebar(props: Props) {
 					</ListItem>
 					<ListItem>
 						<CubeIcon />
-						<span>Recommandations</span>
+						<span>Recommendations</span>
 					</ListItem>
 				</div>
 				<Divider
