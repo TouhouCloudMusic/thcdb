@@ -1,5 +1,5 @@
-import { useNavigate } from "@tanstack/solid-router"
 import type { IconProps } from "@thc/icons"
+import type { LinkComponentProps } from "@tanstack/solid-router"
 import type { JSX } from "solid-js"
 import { For } from "solid-js"
 import {
@@ -17,11 +17,10 @@ import { ListItem, Sidebar } from "~/component/Sidebar"
 type ListItemContent = {
 	icon: (props: IconProps) => JSX.Element
 	text: string
-	to: string
+	to: LinkComponentProps<"a">["to"]
 }
 
 export function LeftSidebar() {
-	const navigate = useNavigate()
 	// TODO: Icons
 	const LIST_ITEMS: ListItemContent[] = [
 		{
@@ -78,7 +77,7 @@ export function LeftSidebar() {
 								class="w-full"
 								aria-label={item.text}
 								title={item.text}
-								onClick={() => navigate({ to: item.to })}
+								to={item.to}
 							>
 								<item.icon class="mr-3 h-4 w-4" />
 								<span>{item.text}</span>

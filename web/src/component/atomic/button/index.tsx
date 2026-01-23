@@ -49,36 +49,49 @@ export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
 	color?: AppColor
 }
 
-export function Button(props: Props) {
-	// @tw
-	const BUTTON_COMMON_STYLES =
-		"inline-flex items-center justify-center gap-2 rounded-sm font-medium select-none whitespace-nowrap outline-1 outline-transparent -outline-offset-1 focus:outline-reimu-600 disabled:pointer-events-none transition-colors duration-100"
-	const DEFAULT_COLOR: AppColor = "Gray"
-	const variant_color = match.in<Variant>().match({
-		"'PrimaryV2'": () => PrimaryV2Color[props.color ?? DEFAULT_COLOR],
-		"'SecondaryV2'": () => SecondaryV2Color[props.color ?? DEFAULT_COLOR],
-		"'Primary'": () => PrimaryColor[props.color ?? DEFAULT_COLOR],
-		"'Tertiary'": () => TertiaryColor[props.color ?? DEFAULT_COLOR],
-		default: () => SecondaryColor[props.color ?? DEFAULT_COLOR],
-	})
+const BUTTON_COMMON_STYLES =
+	"inline-flex items-center justify-center gap-2 rounded-sm font-medium select-none whitespace-nowrap outline-1 outline-transparent -outline-offset-1 focus:outline-reimu-600 disabled:pointer-events-none transition-colors duration-100"
+const DEFAULT_COLOR: AppColor = "Gray"
 
+const getVariantColorClass = (variant: Variant, color: AppColor) =>
+	match.in<Variant>().match({
+		"'PrimaryV2'": () => PrimaryV2Color[color],
+		"'SecondaryV2'": () => SecondaryV2Color[color],
+		"'Primary'": () => PrimaryColor[color],
+		"'Tertiary'": () => TertiaryColor[color],
+		default: () => SecondaryColor[color],
+	})(variant)
+
+export type ButtonClassProps = Pick<Props, "variant" | "size" | "color" | "class">
+
+export const ButtonClass_new = (options: ButtonClassProps) => {
+	const variant = options.variant ?? "Secondary"
+	const size = options.size ?? (variant.endsWith("V2") ? "Md" : undefined)
+	const size_class = size ? SizeClass[size] : undefined
+
+	const color = options.color ?? DEFAULT_COLOR
+	const variant_class = VariantClass[variant]
+	const color_class = getVariantColorClass(variant, color)
+
+	return twMerge(
+		BUTTON_COMMON_STYLES,
+		size_class,
+		variant_class,
+		color_class,
+		"disabled:opacity-50",
+		options.class,
+	)
+}
+
+export function Button(props: Props) {
 	const final_props: Props = mergeProps({ type: "button" as const }, props, {
 		get class() {
-			const variant = props.variant ?? "Secondary"
-			const size = props.size ?? (variant.endsWith("V2") ? "Md" : undefined)
-			const size_class = size ? SizeClass[size] : undefined
-
-			const variant_class = VariantClass[variant]
-			const color_class = variant_color(variant)
-
-			return twMerge(
-				BUTTON_COMMON_STYLES,
-				size_class,
-				variant_class,
-				color_class,
-				"disabled:opacity-50",
-				props.class,
-			)
+			return ButtonClass_new({
+				variant: props.variant,
+				size: props.size,
+				color: props.color,
+				class: props.class,
+			})
 		},
 	})
 
