@@ -5,6 +5,7 @@ import { Option as O } from "effect"
 import { createEffect, Show } from "solid-js"
 import * as v from "valibot"
 
+import { AuthGuard } from "~/component/route"
 import { EntityId } from "~/domain/shared"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { EditEventPage } from "~/view/event/edit"
@@ -38,13 +39,15 @@ function RouteComponent() {
 	})
 
 	return (
-		<Show when={query.data}>
-			{(eventOption) => (
-				<EditEventPage
-					type="edit"
-					event={O.getOrThrow(eventOption())}
-				/>
-			)}
-		</Show>
+		<AuthGuard>
+			<Show when={query.data}>
+				{(eventOption) => (
+					<EditEventPage
+						type="edit"
+						event={O.getOrThrow(eventOption())}
+					/>
+				)}
+			</Show>
+		</AuthGuard>
 	)
 }

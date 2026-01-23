@@ -4,6 +4,7 @@ import { SongQueryOption } from "@thc/query"
 import { createEffect, Show } from "solid-js"
 import * as v from "valibot"
 
+import { AuthGuard } from "~/component/route"
 import { EntityId } from "~/domain/shared"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { EditSongPage } from "~/view/song/edit"
@@ -33,13 +34,15 @@ function RouteComponent() {
 	})
 
 	return (
-		<Show when={query.data}>
-			{(song) => (
-				<EditSongPage
-					type="edit"
-					song={song()}
-				/>
-			)}
-		</Show>
+		<AuthGuard>
+			<Show when={query.data}>
+				{(song) => (
+					<EditSongPage
+						type="edit"
+						song={song()}
+					/>
+				)}
+			</Show>
+		</AuthGuard>
 	)
 }

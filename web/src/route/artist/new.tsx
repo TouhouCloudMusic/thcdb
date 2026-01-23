@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/solid-router"
 
+import { AuthGuard } from "~/component/route"
 import { EditArtistPage } from "~/view/artist/edit"
 
 export const Route = createFileRoute("/artist/new")({
@@ -7,5 +8,9 @@ export const Route = createFileRoute("/artist/new")({
 })
 
 function RouteComponent() {
-	return <EditArtistPage type="new" />
+	return (
+		<AuthGuard>
+			<EditArtistPage type="new" />
+		</AuthGuard>
+	)
 }
