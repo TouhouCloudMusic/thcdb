@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/solid-router"
 import type { Ref } from "solid-js"
 import {
 	BookmarkIcon,
@@ -49,11 +48,9 @@ export function RightSidebar(props: Props) {
 					horizontal
 				/>
 				<div class="flex flex-col">
-					<ListItem>
+					<ListItem to="/profile">
 						<PersonIcon />
-						<span>
-							<Link to="/profile">Profile</Link>
-						</span>
+						<span>Profile</span>
 					</ListItem>
 					<ListItem>
 						<BookmarkIcon />
