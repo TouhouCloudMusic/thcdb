@@ -16,8 +16,26 @@ type RouteContext = {
 export const Route = createRootRouteWithContext<RouteContext>()({
 	component: RouteTree,
 	notFoundComponent: NotFound,
-	errorComponent: (e) => <InternalServerError msg={e.error.stack} />,
+	errorComponent: (e) => <InternalServerError msg={getErrorMessage(e.error)} />,
 })
+
+const getErrorMessage = (error: unknown) => {
+	if (error instanceof Error) {
+		return error.stack ?? error.message
+	}
+	if (typeof error === "string") return error
+	if (typeof error === "object" && error !== null) {
+		const message = Reflect.get(error, "message")
+		if (typeof message === "string" && message) return message
+		const fallback = Reflect.get(error, "error")
+		if (typeof fallback === "string" && fallback) return fallback
+	}
+	try {
+		return JSON.stringify(error)
+	} catch {
+		return "Unknown error"
+	}
+}
 
 function RouteTree() {
 	return (
