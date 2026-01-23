@@ -3,6 +3,7 @@ use std::convert::Infallible;
 use std::env;
 use std::sync::Arc;
 
+use axum::body::Body;
 use axum::extract::{FromRef, Request};
 use axum::response::IntoResponse;
 use axum::routing::Route;
@@ -92,6 +93,7 @@ pub fn limit_layer(
 ) -> GovernorLayer<
     PeerIpKeyExtractor,
     governor::middleware::NoOpMiddleware<QuantaInstant>,
+    Body,
 > {
     use std::time::Duration;
 
@@ -125,7 +127,5 @@ pub fn limit_layer(
         }
     });
 
-    GovernorLayer {
-        config: governor_conf,
-    }
+    GovernorLayer::new(governor_conf)
 }
