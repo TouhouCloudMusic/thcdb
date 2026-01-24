@@ -1,4 +1,4 @@
-import * as M from "@modular-forms/solid"
+import { Field, FieldArray, insert, remove } from "@formisch/solid"
 import { For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 
@@ -12,27 +12,33 @@ import { useArtistForm } from "../context"
 
 export function ArtistFormLinks() {
 	const { formStore } = useArtistForm()
+
+	const addLink = () => {
+		insert(formStore, { path: ["data", "links"], initialInput: "" })
+	}
+
+	const removeLinkAt = (index: number) => () => {
+		remove(formStore, { path: ["data", "links"], at: index })
+	}
+
 	return (
-		<M.FieldArray
-			of={formStore}
-			name="data.links"
-		>
-			{(fieldArray) => (
-				<div class="flex min-h-32 w-96 flex-col">
-					<div class="mb-4 flex place-content-between items-center gap-4">
-						<FormComp.Label class="m-0">Links</FormComp.Label>
-						<Button
-							variant="Tertiary"
-							class="h-max p-2"
-							onClick={() => {
-								M.insert(formStore, "data.links", {
-									value: "", // Default value for a new link
-								})
-							}}
-						>
-							<PlusIcon class="size-4" />
-						</Button>
-					</div>
+		<div class="flex min-h-32 w-96 flex-col">
+			<div class="mb-4 flex place-content-between items-center gap-4">
+				<FormComp.Label class="m-0">Links</FormComp.Label>
+				<Button
+					variant="Tertiary"
+					class="h-max p-2"
+					onClick={addLink}
+				>
+					<PlusIcon class="size-4" />
+				</Button>
+			</div>
+
+			<FieldArray
+				of={formStore}
+				path={["data", "links"]}
+			>
+				{(fieldArray) => (
 					<ul class="flex h-full flex-col gap-2">
 						<For
 							each={fieldArray.items}
@@ -41,32 +47,30 @@ export function ArtistFormLinks() {
 							{(_, idx) => (
 								<>
 									<li class="flex gap-2">
-										<M.Field
+										<Field
 											of={formStore}
-											name={`data.links.${idx()}`}
+											path={["data", "links", idx()]}
 										>
-											{(field, fieldProps) => (
+											{(field) => (
 												<InputField.Root class="grow">
 													<InputField.Input
-														{...fieldProps}
-														id={field.name}
+														{...field.props}
+														id={field.path.join(".")}
 														type="url"
 														placeholder="Url"
-														value={field.value}
+														value={field.input ?? ""}
 													/>
-													<InputField.Error>{field.error}</InputField.Error>
+													<InputField.Error>
+														{field.errors?.[0]}
+													</InputField.Error>
 												</InputField.Root>
 											)}
-										</M.Field>
+										</Field>
 										<Button
 											variant="Tertiary"
 											size="Sm"
 											class="row-span-2 w-fit"
-											onClick={() => {
-												M.remove(formStore, "data.links", {
-													at: idx(),
-												})
-											}}
+											onClick={removeLinkAt(idx())}
 										>
 											<Cross1Icon />
 										</Button>
@@ -78,8 +82,8 @@ export function ArtistFormLinks() {
 							)}
 						</For>
 					</ul>
-				</div>
-			)}
-		</M.FieldArray>
+				)}
+			</FieldArray>
+		</div>
 	)
 }

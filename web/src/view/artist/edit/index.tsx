@@ -1,6 +1,5 @@
 /* @refresh reload */
-import * as M from "@modular-forms/solid"
-import { createForm } from "@modular-forms/solid"
+import { Form, createForm } from "@formisch/solid"
 import { useBlocker } from "@tanstack/solid-router"
 import type { Artist } from "@thc/api"
 import type { JSX } from "solid-js"
@@ -8,6 +7,7 @@ import { Show, Suspense } from "solid-js"
 import { ArrowLeftIcon } from "solid-radix-icons"
 
 import { Button } from "~/component/atomic/button"
+import { FormActionBar } from "~/component/form"
 import { NewArtistCorrection } from "~/domain/artist/schema"
 import { PageLayout } from "~/layout/PageLayout"
 
@@ -39,7 +39,7 @@ export function EditArtistPage(props: Props): JSX.Element {
 		<PageLayout class="grid grid-rows-[auto_1fr_auto]">
 			<PageHeader type={props.type} />
 			<Suspense fallback={<div>Loading...</div>}>
-				<Form {...props} />
+				<FormContent {...props} />
 			</Suspense>
 		</PageLayout>
 	)
@@ -72,18 +72,19 @@ function PageHeader(props: { type: Props["type"] }) {
 	)
 }
 
-function Form(props: Props) {
+function FormContent(props: Props) {
 	const initialValues = useArtistFormInitialValues(props)
 	const { handleSubmit, mutation } = useArtistFormSubmission(props)
 
-	const [formStore, { Form }] = createForm<NewArtistCorrection>({
-		validate: M.valiForm(NewArtistCorrection),
-		initialValues,
+	const form = createForm({
+		schema: NewArtistCorrection,
+		initialInput: initialValues,
 	})
+	const isSubmitting = () => mutation.isPending || form.isSubmitting
 
 	useBlocker({
 		shouldBlockFn() {
-			if (formStore.submitted || !formStore.dirty) return false
+			if (form.isSubmitted || !form.isDirty) return false
 
 			const stay = confirm(
 				"Are you sure you want to leave this page? Your changes will be lost.",
@@ -100,33 +101,39 @@ function Form(props: Props) {
 						return props.artist.id
 					}
 				},
-				formStore,
+				formStore: form,
 			}}
 		>
 			<Form
-				class="flex grow flex-col space-y-8 px-8 pt-8"
-				shouldActive={false}
-				onSubmit={handleSubmit}
+				of={form}
+				class="flex grow flex-col"
+				onSubmit={(output) => handleSubmit(output)}
 			>
-				<ArtistFormNameField />
+				<div class="flex flex-col space-y-8 p-8 pb-0">
+					<ArtistFormNameField />
 
-				<ArtistFormArtistTypeField />
+					<ArtistFormArtistTypeField />
 
-				<ArtistFormLocalizedNames />
+					<ArtistFormLocalizedNames />
 
-				<ArtistFormAliasesField />
+					<ArtistFormAliasesField />
 
-				<ArtistFormTextAliases />
+					<ArtistFormTextAliases />
 
-				<ArtistFormDateFields />
+					<ArtistFormDateFields />
 
-				<ArtistFormLocationFields />
+					<ArtistFormLocationFields />
 
-				<ArtistFormMembership />
+					<ArtistFormMembership />
 
-				<ArtistFormLinks />
+					<ArtistFormLinks />
 
-				<ArtistFormActions mutation={mutation} />
+					<ArtistFormActions mutation={mutation} />
+				</div>
+				<FormActionBar
+					submitting={isSubmitting()}
+					disabled={isSubmitting()}
+				/>
 			</Form>
 		</ArtistFormProvider>
 	)

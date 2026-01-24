@@ -1,4 +1,4 @@
-import * as M from "@modular-forms/solid"
+import { setInput } from "@formisch/solid"
 
 import { Location } from "~/component/form/Location"
 
@@ -12,13 +12,13 @@ export function ArtistFormLocationFields() {
 			<Location
 				label="Start Location"
 				setValue={(v) => {
-					M.setValue(formStore, "data.start_location", v)
+					setInput(formStore, { path: ["data", "start_location"], input: v })
 				}}
 			/>
 			<Location
 				label="Current Location"
 				setValue={(v) => {
-					M.setValue(formStore, "data.current_location", v)
+					setInput(formStore, { path: ["data", "current_location"], input: v })
 				}}
 			/>
 		</>

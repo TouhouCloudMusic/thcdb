@@ -1,4 +1,4 @@
-import type { FieldStore, FieldElementProps } from "@modular-forms/solid"
+import type { FieldStore } from "@formisch/solid"
 import type { JSX, ParentProps } from "solid-js"
 import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
 import { CheckIcon, Cross1Icon } from "solid-radix-icons"
@@ -9,7 +9,18 @@ import {
 	USER_PASSWORD_MIN_LENGTH,
 	USER_PASSWORD_REGEX_STR,
 } from "~/constant/server"
-import type { SignIn, SignUp } from "~/domain/auth"
+import * as AuthSchema from "~/domain/auth/schema"
+
+type SignInSchema = typeof AuthSchema.SignIn
+type SignUpSchema = typeof AuthSchema.SignUp
+
+type UserNameFieldStore =
+	| FieldStore<SignInSchema, ["username"]>
+	| FieldStore<SignUpSchema, ["username"]>
+type PasswordFieldStore =
+	| FieldStore<SignInSchema, ["password"]>
+	| FieldStore<SignUpSchema, ["password"]>
+	| FieldStore<SignUpSchema, ["repeated_password"]>
 
 export function FieldLayout(
 	props: ParentProps<{
@@ -57,18 +68,16 @@ const PASSWORD_ALLOWED_SYMBOLS = (() => {
 		.replaceAll("\\", "")
 })()
 
-export function PasswordField<
-	T extends "password" | "repeated_password",
->(props: {
+export function PasswordField(props: {
 	label: string
-	field: T extends "password" ? FieldStore<SignIn, T> : FieldStore<SignUp, T>
-	props: FieldElementProps<SignUp, T>
+	field: PasswordFieldStore
 	showRequirementHint?: boolean
 	hintText?: string
 }) {
 	const [requirementsOpen, setRequirementsOpen] = createSignal(false)
+	const id = () => props.field.path.join(".")
 
-	const value = createMemo(() => props.field.value ?? "")
+	const value = createMemo(() => props.field.input ?? "")
 	const active = createMemo(() => value().length > 0)
 	const showRequirementCard = createMemo(
 		() => (props.showRequirementHint ?? false) && requirementsOpen(),
@@ -133,21 +142,22 @@ export function PasswordField<
 	return (
 		<FieldLayout
 			label={props.label}
-			for={props.field.name}
-			error={props.field.error}
+			for={id()}
+			error={props.field.errors?.[0]}
 			hint={hintTextElement()}
 		>
 			<div class="relative">
 				<InputField.Input
-					{...props.props}
+					{...props.field.props}
 					class="h-9 w-full"
 					type="password"
-					id={props.field.name}
+					id={id()}
+					value={props.field.input ?? ""}
 					onFocus={() => {
 						setRequirementsOpen(true)
 					}}
 					onBlur={(e) => {
-						props.props.onBlur?.(e)
+						props.field.props.onBlur?.(e)
 						setRequirementsOpen(false)
 					}}
 				/>
@@ -183,21 +193,19 @@ export function PasswordField<
 	)
 }
 
-export function UserNameField(props: {
-	field: FieldStore<SignIn, "username">
-	props: FieldElementProps<SignIn, "username">
-}) {
+export function UserNameField(props: { field: UserNameFieldStore }) {
 	return (
 		<FieldLayout
 			label="Username"
 			for="username"
-			error={props.field.error}
+			error={props.field.errors?.[0]}
 		>
 			<InputField.Input
-				{...props.props}
+				{...props.field.props}
 				class="h-9 w-full"
 				type="text"
 				id="username"
+				value={props.field.input ?? ""}
 			/>
 		</FieldLayout>
 	)

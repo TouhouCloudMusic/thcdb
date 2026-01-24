@@ -1,6 +1,6 @@
 /* @refresh reload */
 // oxlint-disable max-lines-per-function
-import * as M from "@modular-forms/solid"
+import { Field, FieldArray, getInput, insert, remove } from "@formisch/solid"
 import type { JSX } from "solid-js"
 import { For } from "solid-js"
 import { Cross1Icon } from "solid-radix-icons"
@@ -8,23 +8,22 @@ import { Cross1Icon } from "solid-radix-icons"
 import { FormComp } from "~/component/atomic"
 import { Button } from "~/component/atomic/button"
 import { InputField } from "~/component/atomic/form/Input"
-import type { NewArtistCorrection } from "~/domain/artist/schema"
 
 import { useArtistForm } from "../../context"
 
 export function TenureFieldArray(props: { index: number }): JSX.Element {
 	const { formStore } = useArtistForm()
 
-	const path = () => `data.memberships.${props.index}.tenure` as const
-
 	const tenures = {
 		add: () => {
-			M.insert(formStore, path(), {
-				value: {},
+			insert(formStore, {
+				path: ["data", "memberships", props.index, "tenure"],
+				initialInput: {},
 			})
 		},
 		remove: (index: number) => {
-			M.remove(formStore, path(), {
+			remove(formStore, {
+				path: ["data", "memberships", props.index, "tenure"],
 				at: index,
 			})
 		},
@@ -45,9 +44,9 @@ export function TenureFieldArray(props: { index: number }): JSX.Element {
 				</Button>
 			</div>
 
-			<M.FieldArray
+			<FieldArray
 				of={formStore}
-				name={path()}
+				path={["data", "memberships", props.index, "tenure"]}
 			>
 				{(fieldArray) => (
 					<>
@@ -62,10 +61,14 @@ export function TenureFieldArray(props: { index: number }): JSX.Element {
 								)}
 							</For>
 						</ul>
-						<FormComp.ErrorMessage>{fieldArray.error}</FormComp.ErrorMessage>
+						<For each={fieldArray.errors ?? []}>
+							{(error) => (
+								<FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>
+							)}
+						</For>
 					</>
 				)}
-			</M.FieldArray>
+			</FieldArray>
 		</div>
 	)
 }
@@ -85,24 +88,30 @@ function TenureEntry(props: {
 		<li class="grid grid-cols-[1fr_auto] items-center p-1.5">
 			<div class="flex w-full items-center justify-between gap-2">
 				{TYPE.map((kind, idx) => (
-					<M.Field
+					<Field
 						of={formStore}
-						name={`data.memberships.${props.membershipIndex}.tenure.${props.entryIndex}.${kind}`}
-						type="number"
+						path={[
+							"data",
+							"memberships",
+							props.membershipIndex,
+							"tenure",
+							props.entryIndex,
+							kind,
+						]}
 					>
-						{(field, fieldProps) => (
+						{(field) => (
 							<InputField.Root class="w-32 flex-1">
 								<InputField.Input
-									{...fieldProps}
+									{...field.props}
 									type="number"
 									class="no-spinner"
 									placeholder={idx == 0 ? "Join year" : "Leave year"}
-									value={field.value ?? undefined}
+									value={field.input ?? undefined}
 								/>
-								<InputField.Error>{field.error}</InputField.Error>
+								<InputField.Error>{field.errors?.[0]}</InputField.Error>
 							</InputField.Root>
 						)}
-					</M.Field>
+					</Field>
 				)).toSpliced(1, 0, <span class="text-secondary">-</span>)}
 			</div>
 
@@ -128,13 +137,14 @@ function TenureEntry(props: {
 }
 
 function computeTenureError(
-	formStore: M.FormStore<NewArtistCorrection>,
+	formStore: Parameters<typeof getInput>[0],
 	index: number,
-	// t: (v: TemplateStringsArray) => string,
 ): string[] {
-	const tenures = M.getValues(formStore, `data.memberships.${index}.tenure`, {
-		shouldActive: false,
+	const tenuresRaw = getInput(formStore, {
+		path: ["data", "memberships", index, "tenure"],
 	})
+
+	const tenures = Array.isArray(tenuresRaw) ? tenuresRaw : []
 
 	if (tenures.length === 0) return []
 
@@ -142,22 +152,38 @@ function computeTenureError(
 
 	for (let i = 0; i < tenures.length; i++) {
 		const tenure = tenures[i]
-		if (!tenure) continue
-		if (tenure.leave_year && tenure.join_year) {
-			if (tenure.leave_year < tenure.join_year) {
+		if (!tenure || typeof tenure !== "object") continue
+
+		const join_year = Reflect.get(tenure, "join_year") as
+			| number
+			| null
+			| undefined
+		const leave_year = Reflect.get(tenure, "leave_year") as
+			| number
+			| null
+			| undefined
+
+		if (leave_year && join_year) {
+			if (leave_year < join_year) {
 				res.push("Leave year cannot be earlier than join year")
-			} else if (tenure.leave_year === tenure.join_year) {
+			} else if (leave_year === join_year) {
 				res.push("Leave year cannot be the same as join year")
 			}
 		}
 
 		if (i > 0) {
 			const prevTenure = tenures[i - 1]
-			if (!prevTenure) continue
-			if (prevTenure.leave_year && tenure.join_year) {
-				if (tenure.join_year < prevTenure.leave_year) {
+			if (!prevTenure || typeof prevTenure !== "object") continue
+
+			const prevLeave = Reflect.get(prevTenure, "leave_year") as
+				| number
+				| null
+				| undefined
+
+			if (prevLeave && join_year) {
+				if (join_year < prevLeave) {
 					res.push("Join year cannot be earlier than previous leave year")
-				} else if (tenure.join_year === prevTenure.leave_year) {
+				} else if (join_year === prevLeave) {
 					res.push("Join year cannot be the same as previous leave year")
 				}
 			}

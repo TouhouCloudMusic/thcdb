@@ -1,6 +1,6 @@
+import { Form, createForm, getErrors, reset, setInput } from "@formisch/solid"
 import { Dialog as K_Dialog } from "@kobalte/core"
 import { FileField } from "@kobalte/core/file-field"
-import { createForm, valiForm } from "@modular-forms/solid"
 import { Option } from "effect"
 import { Cropper } from "solid-cropper"
 import type { Setter, ValidComponent } from "solid-js"
@@ -51,9 +51,6 @@ const UploadAvatarFormSchema = v.object({
 })
 
 function UploadAvatarFormDialog() {
-	const [_, __] = createForm({
-		validate: valiForm(UploadAvatarFormSchema),
-	})
 	const [show, setShow, ref] = createClickOutside()
 	const close = () => setShow(false)
 	setShow(true)
@@ -92,8 +89,8 @@ export function UploadAvatarFormContent(props: {
     rounded-md
   `
 
-	const [_, { Form, Field }] = createForm({
-		validate: valiForm(UploadAvatarFormSchema),
+	const form = createForm({
+		schema: UploadAvatarFormSchema,
 	})
 
 	const [showDragZone, setShowDragZone] = createSignal(true)
@@ -103,12 +100,25 @@ export function UploadAvatarFormContent(props: {
 			ref={props.ref}
 			class="h-128 w-96"
 		>
-			<Form class="size-full">
+			<Form
+				of={form}
+				class="size-full"
+				onSubmit={() => undefined}
+			>
 				<FileField
 					class="flex size-full flex-col"
 					multiple={false}
 					onFileChange={(details) => {
-						setShowDragZone(!(details.acceptedFiles.length > 0))
+						const hasFile = details.acceptedFiles.length > 0
+						setShowDragZone(!hasFile)
+						if (hasFile) {
+							setInput(form, {
+								path: ["data"],
+								input: details.acceptedFiles[0],
+							})
+						} else {
+							reset(form, { path: ["data"] })
+						}
 					}}
 				>
 					<FileField.Label class="text-center text-lg font-medium">
@@ -166,17 +176,10 @@ export function UploadAvatarFormContent(props: {
 							/>
 						</FileField.Dropzone>
 					</Show>
-					<Field
-						name="data"
-						type="File"
-					>
-						{(field, props) => (
-							<>
-								<FileField.HiddenInput {...props} />
-								<FileField.ErrorMessage>{field.error}</FileField.ErrorMessage>
-							</>
-						)}
-					</Field>
+					<FileField.HiddenInput />
+					<FileField.ErrorMessage>
+						{getErrors(form, { path: ["data"] })[0]}
+					</FileField.ErrorMessage>
 				</FileField>
 			</Form>
 		</Card>

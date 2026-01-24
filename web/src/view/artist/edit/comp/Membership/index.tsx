@@ -1,5 +1,5 @@
 /* @refresh reload */
-import * as M from "@modular-forms/solid"
+import { Field, getInput, insert, remove } from "@formisch/solid"
 import type { Artist, ArtistCommonFilter } from "@thc/api"
 import { createMemo } from "solid-js"
 import type { JSX } from "solid-js"
@@ -51,7 +51,9 @@ export function ArtistFormMembership(): JSX.Element {
 	const { formStore } = context
 
 	const membership = createMembershipStore()
-	const type = createMemo(() => M.getValue(formStore, "data.artist_type"))
+	const type = createMemo(() =>
+		getInput(formStore, { path: ["data", "artist_type"] }),
+	)
 
 	const isDisabled = createMemo(() => {
 		return !type() || type() === "Unknown"
@@ -73,12 +75,25 @@ export function ArtistFormMembership(): JSX.Element {
 		}
 	})
 
+	const addMembership = (artist: Artist) => {
+		membership.push(artist)
+		insert(formStore, {
+			path: ["data", "memberships"],
+			initialInput: { artist_id: artist.id, roles: [], tenure: [] },
+		})
+	}
+
+	const removeMembershipAt = (index: number) => () => {
+		membership.remove(index)
+		remove(formStore, { path: ["data", "memberships"], at: index })
+	}
+
 	return (
 		<div class="grid min-h-32 w-96 min-w-fit grid-cols-1">
 			<div class="mb-2 flex items-center justify-between">
 				<FormComp.Label class="m-0">Membership</FormComp.Label>
 				<ArtistSearchDialog
-					onSelect={membership.push}
+					onSelect={addMembership}
 					disabled={isDisabled()}
 					queryFilter={filter()}
 					dataFilter={(artist) =>
@@ -105,7 +120,7 @@ export function ArtistFormMembership(): JSX.Element {
 					{(artist, idx) => (
 						<MembershipListItem
 							index={idx()}
-							onRemove={() => membership.remove(idx())}
+							onRemove={removeMembershipAt(idx())}
 							artist={artist}
 						/>
 					)}
@@ -129,18 +144,17 @@ function MembershipListItem(props: MembershipListItemProps) {
 	const { formStore } = useArtistForm()
 	return (
 		<li class="flex flex-col gap-2">
-			<M.Field
+			<Field
 				of={formStore}
-				name={`data.memberships.${props.index}.artist_id`}
-				type="number"
+				path={["data", "memberships", props.index, "artist_id"]}
 			>
-				{(field, fieldProps) => (
+				{(field) => (
 					<>
 						<input
-							{...fieldProps}
+							{...field.props}
 							type="number"
 							hidden
-							value={field.value}
+							value={field.input ?? props.artist.id}
 						/>
 						<div class="grid grid-cols-[1fr_auto] items-center">
 							<div>{props.artist.name}</div>
@@ -155,7 +169,7 @@ function MembershipListItem(props: MembershipListItemProps) {
 						</div>
 					</>
 				)}
-			</M.Field>
+			</Field>
 
 			<MembershipRoleField index={props.index} />
 

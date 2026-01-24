@@ -1,5 +1,5 @@
-import type { IconProps } from "@thc/icons"
 import type { LinkComponentProps } from "@tanstack/solid-router"
+import type { IconProps } from "@thc/icons"
 import type { JSX } from "solid-js"
 import { For } from "solid-js"
 import {

@@ -1,4 +1,4 @@
-import * as M from "@modular-forms/solid"
+import { Field } from "@formisch/solid"
 
 import { InputField } from "~/component/atomic/form/Input"
 
@@ -8,22 +8,22 @@ export function ArtistFormNameField() {
 	const { formStore } = useArtistForm()
 
 	return (
-		<M.Field
-			name="data.name"
+		<Field
 			of={formStore}
+			path={["data", "name"]}
 		>
-			{(field, fieldProps) => (
+			{(field) => (
 				<InputField.Root class="w-96">
 					<InputField.Label>Name</InputField.Label>
 					<InputField.Input
-						{...fieldProps}
+						{...field.props}
 						type="text"
 						id="name"
-						value={field.value}
+						value={field.input ?? ""}
 					/>
-					<InputField.Error>{field.error}</InputField.Error>
+					<InputField.Error>{field.errors?.[0]}</InputField.Error>
 				</InputField.Root>
 			)}
-		</M.Field>
+		</Field>
 	)
 }

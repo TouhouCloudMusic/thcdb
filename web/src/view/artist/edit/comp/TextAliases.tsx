@@ -1,4 +1,4 @@
-import * as M from "@modular-forms/solid"
+import { Field, FieldArray, insert, remove } from "@formisch/solid"
 import { For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 
@@ -12,27 +12,33 @@ import { useArtistForm } from "../context"
 
 export function ArtistFormTextAliases() {
 	const { formStore } = useArtistForm()
+
+	const addTextAlias = () => {
+		insert(formStore, { path: ["data", "text_aliases"], initialInput: "" })
+	}
+
+	const removeTextAliasAt = (index: number) => () => {
+		remove(formStore, { path: ["data", "text_aliases"], at: index })
+	}
+
 	return (
-		<M.FieldArray
-			of={formStore}
-			name="data.text_aliases"
-		>
-			{(fieldArray) => (
-				<div class="flex min-h-32 w-96 flex-col">
-					<div class="mb-4 flex place-content-between items-center gap-4">
-						<FormComp.Label class="m-0">Text Aliases</FormComp.Label>
-						<Button
-							variant="Tertiary"
-							class="h-max p-2"
-							onClick={() => {
-								M.insert(formStore, "data.text_aliases", {
-									value: "", // Default for new text alias
-								})
-							}}
-						>
-							<PlusIcon class="size-4" />
-						</Button>
-					</div>
+		<div class="flex min-h-32 w-96 flex-col">
+			<div class="mb-4 flex place-content-between items-center gap-4">
+				<FormComp.Label class="m-0">Text Aliases</FormComp.Label>
+				<Button
+					variant="Tertiary"
+					class="h-max p-2"
+					onClick={addTextAlias}
+				>
+					<PlusIcon class="size-4" />
+				</Button>
+			</div>
+
+			<FieldArray
+				of={formStore}
+				path={["data", "text_aliases"]}
+			>
+				{(fieldArray) => (
 					<ul class="flex h-full flex-col gap-2">
 						<For
 							each={fieldArray.items}
@@ -41,31 +47,29 @@ export function ArtistFormTextAliases() {
 							{(_, idx) => (
 								<>
 									<li class="flex gap-2">
-										<M.Field
+										<Field
 											of={formStore}
-											name={`data.text_aliases.${idx()}`}
+											path={["data", "text_aliases", idx()]}
 										>
-											{(field, fieldProps) => (
+											{(field) => (
 												<InputField.Root class="grow">
 													<InputField.Input
-														{...fieldProps}
-														id={field.name}
+														{...field.props}
+														id={field.path.join(".")}
 														placeholder="Name"
-														value={field.value}
+														value={field.input ?? ""}
 													/>
-													<InputField.Error>{field.error}</InputField.Error>
+													<InputField.Error>
+														{field.errors?.[0]}
+													</InputField.Error>
 												</InputField.Root>
 											)}
-										</M.Field>
+										</Field>
 										<Button
 											variant="Tertiary"
 											size="Sm"
 											class="row-span-2 w-fit"
-											onClick={() => {
-												M.remove(formStore, "data.text_aliases", {
-													at: idx(),
-												})
-											}}
+											onClick={removeTextAliasAt(idx())}
 										>
 											<Cross1Icon />
 										</Button>
@@ -77,8 +81,8 @@ export function ArtistFormTextAliases() {
 							)}
 						</For>
 					</ul>
-				</div>
-			)}
-		</M.FieldArray>
+				)}
+			</FieldArray>
+		</div>
 	)
 }

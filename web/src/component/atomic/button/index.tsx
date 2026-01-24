@@ -62,7 +62,10 @@ const getVariantColorClass = (variant: Variant, color: AppColor) =>
 		default: () => SecondaryColor[color],
 	})(variant)
 
-export type ButtonClassProps = Pick<Props, "variant" | "size" | "color" | "class">
+export type ButtonClassProps = Pick<
+	Props,
+	"variant" | "size" | "color" | "class"
+>
 
 export const ButtonClass_new = (options: ButtonClassProps) => {
 	const variant = options.variant ?? "Secondary"
