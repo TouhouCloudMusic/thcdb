@@ -10,8 +10,8 @@ import { useBlocker } from "@tanstack/solid-router"
 import type { JSX } from "solid-js"
 import { createEffect, For, Show } from "solid-js"
 
-import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
+import { FormActionBar } from "~/component/form"
 import { DateWithPrecision } from "~/component/form/DateWithPrecision"
 import { NewReleaseCorrection as NewReleaseCorrectionSchema } from "~/domain/release"
 import { PageLayout } from "~/layout/PageLayout"
@@ -71,6 +71,12 @@ function FormContent(props: Props) {
 	}
 
 	const { handleSubmit } = useReleaseFormSubmission(props)
+	const handleSubmitClick = () => {
+		if (import.meta.env.DEV) {
+			const errs = getAllErrors(form)
+			console.log(errs)
+		}
+	}
 
 	useBlocker({
 		shouldBlockFn() {
@@ -183,29 +189,11 @@ function FormContent(props: Props) {
 				/>
 				<div></div>
 			</div>
-			<div class="sticky bottom-0 col-span-full mt-12 flex justify-end border-t border-slate-300 bg-white p-4">
-				<div class="grid grid-cols-2 gap-2">
-					<Button
-						variant="Tertiary"
-						onClick={() => history.back()}
-					>
-						Back
-					</Button>
-					<Button
-						variant="Primary"
-						type="submit"
-						class={form.isSubmitting ? "cursor-wait opacity-80" : ""}
-						onClick={() => {
-							if (import.meta.env.DEV) {
-								const errs = getAllErrors(form)
-								console.log(errs)
-							}
-						}}
-					>
-						{form.isSubmitting ? "Submitting" : "Submit"}
-					</Button>
-				</div>
-			</div>
+			<FormActionBar
+				submitting={form.isSubmitting}
+				class="mt-12"
+				onSubmit={handleSubmitClick}
+			/>
 		</Form>
 	)
 }

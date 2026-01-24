@@ -1,42 +1,67 @@
-import * as M from "@modular-forms/solid"
+import { Field, setInput } from "@formisch/solid"
+import { For, createMemo } from "solid-js"
 
 import { FormComp } from "~/component/atomic/form"
 import { DateWithPrecision } from "~/component/form/DateWithPrecision"
 
 import { useArtistForm } from "../context"
 
+type DateFieldKey = "start_date" | "end_date"
+
+type DateFieldDescriptor = {
+	key: DateFieldKey
+	label: string
+}
+
 export function ArtistFormDateFields() {
 	const { formStore } = useArtistForm()
 
-	return (
-		<>
-			<div>
-				<FormComp.Label>Start date</FormComp.Label>
-				<div class="flex gap-4">
-					<DateWithPrecision
-						setValue={(v) => {
-							M.setValue(formStore, "data.start_date", v)
-						}}
-					/>
-				</div>
-				<FormComp.ErrorMessage>
-					{M.getError(formStore, "data.start_date", { shouldActive: false })}
-				</FormComp.ErrorMessage>
-			</div>
+	const fields: DateFieldDescriptor[] = [
+		{ key: "start_date", label: "Start date" },
+		{ key: "end_date", label: "End date" },
+	]
 
-			<div>
-				<FormComp.Label>End date</FormComp.Label>
-				<div class="flex gap-4">
-					<DateWithPrecision
-						setValue={(v) => {
-							M.setValue(formStore, "data.end_date", v)
-						}}
-					/>
-				</div>
-				<FormComp.ErrorMessage>
-					{M.getError(formStore, "data.end_date", { shouldActive: false })}
-				</FormComp.ErrorMessage>
-			</div>
-		</>
+	return (
+		<For each={fields}>
+			{(descriptor) => (
+				<Field
+					of={formStore}
+					path={["data", descriptor.key]}
+				>
+					{(field) => {
+						const currentValue = createMemo(() => {
+							const input = field.input
+							if (!input) return
+							const { value, precision } = input
+							if (!(value instanceof Date) || !precision) return
+							return { value, precision }
+						})
+
+						return (
+							<div>
+								<FormComp.Label>{descriptor.label}</FormComp.Label>
+								<div class="flex gap-4">
+									<DateWithPrecision
+										value={currentValue()}
+										setValue={(value) =>
+											setInput(formStore, {
+												path: ["data", descriptor.key],
+												// @ts-expect-error upstream formisch typing
+												input: value,
+											})
+										}
+									/>
+								</div>
+								<For each={field.errors ?? []}>
+									{(error) => (
+										<FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>
+									)}
+								</For>
+							</div>
+						)
+					}}
+				</Field>
+			)}
+		</For>
 	)
 }

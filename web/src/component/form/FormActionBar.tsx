@@ -7,6 +7,7 @@ type Props = {
 	submitting: boolean
 	disabled?: boolean
 	onBack?: () => void
+	onSubmit?: () => void
 }
 
 export function FormActionBar(props: Props) {
@@ -45,6 +46,7 @@ export function FormActionBar(props: Props) {
 						props.submitting ? "cursor-wait opacity-80" : "",
 					)}
 					disabled={props.disabled}
+					onClick={props.onSubmit}
 				>
 					{props.submitting ? submittingLabel : submitLabel}
 				</Button>

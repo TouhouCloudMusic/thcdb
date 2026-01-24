@@ -1,13 +1,15 @@
-import type { FormStore } from "@modular-forms/solid"
+import type { FormStore } from "@formisch/solid"
 import { createContext } from "solid-js"
 import type { ParentProps } from "solid-js"
 
-import type { NewArtistCorrection } from "~/domain/artist"
+import { NewArtistCorrection } from "~/domain/artist"
 import { assertContext } from "~/utils/solid/assertContext"
+
+type ArtistFormSchema = typeof NewArtistCorrection
 
 export type ArtistEditFormContextValue = {
 	artistId: number | undefined
-	formStore: FormStore<NewArtistCorrection>
+	formStore: FormStore<ArtistFormSchema>
 }
 
 const ArtistEditFormContext = createContext<ArtistEditFormContextValue>()

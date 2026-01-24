@@ -1,7 +1,7 @@
-import * as M from "@modular-forms/solid"
+import { Field } from "@formisch/solid"
 import type { ArtistMutation } from "@thc/query"
+import { For } from "solid-js"
 
-import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
 
@@ -16,53 +16,45 @@ export function ArtistFormActions(props: ArtistFormFormActionsProps) {
 
 	return (
 		<>
-			<M.Field
-				name="description"
+			<Field
 				of={formStore}
+				path={["description"]}
 			>
-				{(field, fieldProps) => (
+				{(field) => (
 					<InputField.Root>
 						<InputField.Label>Description</InputField.Label>
 						<InputField.Textarea
-							{...fieldProps}
-							id={field.name}
+							{...field.props}
+							id={field.path.join(".")}
+							value={field.input ?? ""}
 						/>
-						<InputField.Error>{field.error}</InputField.Error>
+						<InputField.Error>{field.errors?.[0]}</InputField.Error>
 					</InputField.Root>
 				)}
-			</M.Field>
+			</Field>
 
-			<M.Field
-				name="type"
+			<Field
 				of={formStore}
+				path={["type"]}
 			>
-				{(field, fieldProps) => (
+				{(field) => (
 					<InputField.Root>
 						<InputField.Input
-							{...fieldProps}
+							{...field.props}
 							hidden
-							id={field.name}
-							value={field.value}
+							id={field.path.join(".")}
+							value={field.input ?? ""}
 						/>
-						<InputField.Error>{field.error}</InputField.Error>
+						<InputField.Error>{field.errors?.[0]}</InputField.Error>
 					</InputField.Root>
 				)}
-			</M.Field>
+			</Field>
 
 			<div class="flex flex-col">
-				<Button
-					variant="Primary"
-					type="submit"
-					disabled={props.mutation.isPending || formStore.submitting}
-				>
-					{props.mutation.isPending || formStore.submitting
-						? "Loading"
-						: "Submit"}
-				</Button>
+				<For each={formStore.errors ?? []}>
+					{(error) => <FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>}
+				</For>
 
-				<FormComp.ErrorMessage>
-					{formStore.response.message}
-				</FormComp.ErrorMessage>
 				<FormComp.ErrorMessage class="text-lg">
 					{props.mutation.isError
 						? `Error: ${props.mutation.error.message}`

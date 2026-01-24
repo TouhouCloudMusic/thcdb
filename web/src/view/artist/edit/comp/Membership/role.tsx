@@ -1,6 +1,6 @@
 // @refresh-reload
 // oxlint-disable max-lines-per-function
-import * as M from "@modular-forms/solid"
+import { Field, insert, remove } from "@formisch/solid"
 import { useQuery } from "@tanstack/solid-query"
 import type { CreditRoleSummary } from "@thc/api"
 import { CreditRoleQueryOption } from "@thc/query"
@@ -43,16 +43,16 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 		return data.filter((role) => !roles.some((x) => x.id === role.id))
 	})
 
-	const path = () => `data.memberships.${props.index}.roles` as const
-
 	const addRole = (role: CreditRoleSummary) => {
 		setRoles(
 			produce((roles) => {
 				roles.push(role)
 			}),
 		)
-		M.insert(formStore, path(), {
-			value: role.id,
+
+		insert(formStore, {
+			path: ["data", "memberships", props.index, "roles"],
+			initialInput: role.id,
 		})
 	}
 
@@ -62,7 +62,8 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 				s.splice(index, 1)
 			}),
 		)
-		M.remove(formStore, path(), {
+		remove(formStore, {
+			path: ["data", "memberships", props.index, "roles"],
 			at: index,
 		})
 	}
@@ -96,9 +97,9 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 							<For each={roles}>
 								{(role, index) => (
 									<RoleBadge
+										membershipIndex={props.index}
 										role={role}
 										index={index()}
-										path={path()}
 										removeRole={() => removeRole(index())}
 									/>
 								)}
@@ -125,24 +126,30 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 }
 
 function RoleBadge(props: {
-	path: `data.memberships.${number}.roles`
+	membershipIndex: number
 	index: number
 	role: CreditRoleSummary
 	removeRole: () => void
 }) {
 	const { formStore } = useArtistForm()
 	return (
-		<M.Field
+		<Field
 			of={formStore}
-			name={`${props.path}.${props.index}`}
+			path={[
+				"data",
+				"memberships",
+				props.membershipIndex,
+				"roles",
+				props.index,
+			]}
 		>
-			{(field, fieldProps) => (
+			{(field) => (
 				<li class="flex items-center space-x-1 rounded border border-slate-300 px-2 py-1 hover:border-reimu-600">
 					<input
-						{...fieldProps}
+						{...field.props}
 						type="number"
 						hidden
-						value={field.value}
+						value={field.input ?? props.role.id}
 					/>
 					<span>{props.role.name}</span>
 					<button
@@ -156,6 +163,6 @@ function RoleBadge(props: {
 					</button>
 				</li>
 			)}
-		</M.Field>
+		</Field>
 	)
 }

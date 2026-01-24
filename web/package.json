@@ -14,7 +14,6 @@
 		"@floating-ui/dom": "^1.7.4",
 		"@formisch/solid": "^0.7.5",
 		"@kobalte/core": "^0.13.11",
-		"@modular-forms/solid": "^0.25.1",
 		"@shikijs/markdown-it": "^3.21.0",
 		"@shikijs/transformers": "^3.21.0",
 		"@solid-primitives/destructure": "^0.2.2",

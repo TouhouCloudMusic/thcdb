@@ -1,4 +1,4 @@
-import * as M from "@modular-forms/solid"
+import { Field } from "@formisch/solid"
 import type { ArtistType } from "@thc/api"
 import { For } from "solid-js"
 
@@ -10,17 +10,16 @@ export function ArtistFormArtistTypeField() {
 	const { formStore } = useArtistForm()
 
 	return (
-		<M.Field
-			name="data.artist_type"
-			type="string"
+		<Field
 			of={formStore}
+			path={["data", "artist_type"]}
 		>
-			{(field, fieldProps) => (
+			{(field) => (
 				<div class="flex flex-col">
 					<FormComp.Label for="artist_type">Artist Type</FormComp.Label>
 					<div class="w-fit rounded-sm border border-slate-300 font-light">
 						<select
-							{...fieldProps}
+							{...field.props}
 							id="artist_type"
 							class="box-border h-8 w-full min-w-max rounded px-1 whitespace-nowrap focus:outline-2 focus:outline-reimu-600"
 						>
@@ -29,7 +28,7 @@ export function ArtistFormArtistTypeField() {
 								{(type) => (
 									<option
 										value={type}
-										selected={field.value == type}
+										selected={field.input == type}
 									>
 										{type}
 									</option>
@@ -39,6 +38,6 @@ export function ArtistFormArtistTypeField() {
 					</div>
 				</div>
 			)}
-		</M.Field>
+		</Field>
 	)
 }

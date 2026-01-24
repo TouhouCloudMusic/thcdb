@@ -1,4 +1,4 @@
-import * as M from "@modular-forms/solid"
+import { Field, getInput, insert, remove } from "@formisch/solid"
 import type { Artist, ArtistCommonFilter } from "@thc/api"
 import { createMemo } from "solid-js"
 import { createStore, produce } from "solid-js/store"
@@ -16,14 +16,18 @@ import { useArtistForm } from "../context"
 export const ArtistFormAliasesField = () => {
 	const [aliases, setAliases] = createStore<Artist[]>([])
 
+	const { formStore } = useArtistForm()
+
 	const handleSelect = (artist: Artist) => {
-		if (!aliases.some((x) => x.id == artist.id)) {
-			setAliases(
-				produce((s) => {
-					s.push(artist)
-				}),
-			)
-		}
+		if (aliases.some((x) => x.id == artist.id)) return
+
+		setAliases(
+			produce((s) => {
+				s.push(artist)
+			}),
+		)
+
+		insert(formStore, { path: ["data", "aliases"], initialInput: artist.id })
 	}
 
 	const handleRemove = (idx: number) => {
@@ -32,15 +36,12 @@ export const ArtistFormAliasesField = () => {
 				s.splice(idx, 1)
 			}),
 		)
+		remove(formStore, { path: ["data", "aliases"], at: idx })
 	}
-
-	const { formStore } = useArtistForm()
 
 	const filter = createMemo<ArtistCommonFilter>(() => {
 		const exclusion = aliases.map((x) => x.id)
-		const ty = M.getValue(formStore, "data.artist_type", {
-			shouldActive: false,
-		})
+		const ty = getInput(formStore, { path: ["data", "artist_type"] })
 		const artist_type = ty ? [ty] : undefined
 		return {
 			artist_type,
@@ -87,24 +88,25 @@ type AliasListItemProps = {
 
 const AliasListItem = (props: AliasListItemProps) => {
 	const { formStore } = useArtistForm()
+
 	return (
 		<li class="grid h-fit grid-cols-[1fr_auto]">
-			<M.Field
+			<Field
 				of={formStore}
-				name={`data.aliases.${props.index}`}
+				path={["data", "aliases", props.index]}
 			>
-				{(field, fieldProps) => (
+				{(field) => (
 					<>
 						<input
-							{...fieldProps}
+							{...field.props}
 							type="number"
 							hidden
-							value={field.value}
+							value={field.input ?? props.artist.id}
 						/>
 						<div>{props.artist.name}</div>
 					</>
 				)}
-			</M.Field>
+			</Field>
 
 			<Button
 				variant="Tertiary"

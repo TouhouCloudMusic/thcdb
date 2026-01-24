@@ -1,4 +1,11 @@
-import * as M from "@modular-forms/solid"
+import {
+	Field,
+	FieldArray,
+	insert,
+	remove,
+	reset,
+	setInput,
+} from "@formisch/solid"
 import type { Language } from "@thc/api"
 import { For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
@@ -15,33 +22,35 @@ import { useArtistForm } from "../context"
 export function ArtistFormLocalizedNames() {
 	const { formStore } = useArtistForm()
 
-	const insert = () =>
-		M.insert(formStore, "data.localized_names", {
-			// @ts-expect-error
-			value: { language_id: undefined, name: "" },
+	const addLocalizedName = () => {
+		insert(formStore, {
+			path: ["data", "localized_names"],
+			initialInput: { language_id: undefined, name: "" },
 		})
-	const remove = (idx: number) =>
-		M.remove(formStore, "data.localized_names", {
-			at: idx,
-		})
+	}
+
+	const removeLocalizedNameAt = (index: number) => () => {
+		remove(formStore, { path: ["data", "localized_names"], at: index })
+	}
 
 	return (
-		<M.FieldArray
-			of={formStore}
-			name="data.localized_names"
-		>
-			{(fieldArray) => (
-				<div class="flex min-h-32 w-96 flex-col">
-					<div class="mb-4 flex place-content-between items-center gap-4">
-						<FormComp.Label class="m-0">Localized Names</FormComp.Label>
-						<Button
-							variant="Tertiary"
-							class="h-max p-2"
-							onClick={insert}
-						>
-							<PlusIcon class="size-4" />
-						</Button>
-					</div>
+		<div class="flex min-h-32 w-96 flex-col">
+			<div class="mb-4 flex place-content-between items-center gap-4">
+				<FormComp.Label class="m-0">Localized Names</FormComp.Label>
+				<Button
+					variant="Tertiary"
+					class="h-max p-2"
+					onClick={addLocalizedName}
+				>
+					<PlusIcon class="size-4" />
+				</Button>
+			</div>
+
+			<FieldArray
+				of={formStore}
+				path={["data", "localized_names"]}
+			>
+				{(fieldArray) => (
 					<ul class="flex h-full flex-col gap-2">
 						<For
 							each={fieldArray.items}
@@ -49,22 +58,22 @@ export function ArtistFormLocalizedNames() {
 						>
 							{(_, idx) => (
 								<li class="grid grid-cols-[1fr_auto] grid-rows-2 gap-2">
-									<M.Field
+									<Field
 										of={formStore}
-										name={`data.localized_names.${idx()}.name`}
+										path={["data", "localized_names", idx(), "name"]}
 									>
-										{(field, fieldProps) => (
+										{(field) => (
 											<InputField.Root class="row-start-2">
 												<InputField.Input
-													{...fieldProps}
-													id={field.name}
+													{...field.props}
+													id={field.path.join(".")}
 													placeholder="Name"
-													value={field.value}
+													value={field.input ?? ""}
 												/>
-												<InputField.Error>{field.error}</InputField.Error>
+												<InputField.Error>{field.errors?.[0]}</InputField.Error>
 											</InputField.Root>
 										)}
-									</M.Field>
+									</Field>
 
 									{/* TODO: form init value */}
 									<LanguageCombobox onChange={createOnLangChange(idx())} />
@@ -72,7 +81,7 @@ export function ArtistFormLocalizedNames() {
 										variant="Tertiary"
 										size="Sm"
 										class="row-span-2 w-fit"
-										onClick={() => remove(idx())}
+										onClick={removeLocalizedNameAt(idx())}
 									>
 										<Cross1Icon />
 									</Button>
@@ -83,9 +92,9 @@ export function ArtistFormLocalizedNames() {
 							)}
 						</For>
 					</ul>
-				</div>
-			)}
-		</M.FieldArray>
+				)}
+			</FieldArray>
+		</div>
 	)
 }
 
@@ -93,9 +102,14 @@ function createOnLangChange(index: number) {
 	const { formStore } = useArtistForm()
 	const onChange = (v: Language | null) => {
 		if (v) {
-			M.setValue(formStore, `data.localized_names.${index}.language_id`, v.id)
+			setInput(formStore, {
+				path: ["data", "localized_names", index, "language_id"],
+				input: v.id,
+			})
 		} else {
-			M.reset(formStore, `data.localized_names.${index}.language_id`)
+			reset(formStore, {
+				path: ["data", "localized_names", index, "language_id"],
+			})
 		}
 	}
 	return onChange

@@ -1,11 +1,9 @@
+import { Field, Form } from "@formisch/solid"
 import { Tabs } from "@kobalte/core/tabs"
-import { Field, Form } from "@modular-forms/solid"
-import type { FormStore } from "@modular-forms/solid"
 import { For, Show } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
-import type { SignIn, SignUp } from "~/domain/auth"
 
 import type { AuthFormMode } from "../store"
 import { useAuthForm } from "../store"
@@ -15,7 +13,15 @@ const isAuthFormMode = (value: string): value is AuthFormMode =>
 	value === "sign_in" || value === "sign_up"
 
 export function AuthForm() {
-	const { mode, setMode, formStore, handleSubmit } = useAuthForm()
+	const {
+		mode,
+		setMode,
+		signInForm,
+		signUpForm,
+		submitError,
+		handleSignIn,
+		handleSignUp,
+	} = useAuthForm()
 
 	return (
 		<div class="relative min-h-full overflow-hidden bg-linear-to-br from-reimu-100 via-primary to-marisa-100">
@@ -121,68 +127,102 @@ export function AuthForm() {
 								</Tabs.List>
 							</Tabs>
 
-							<Form
-								of={formStore() as FormStore<SignIn>}
-								datatype="application/json"
-								onSubmit={handleSubmit}
-								class="w-full space-y-6"
-							>
-								<Field
-									of={formStore() as FormStore<SignIn>}
-									name="username"
-								>
-									{(field, props) => (
-										<UserNameField
-											field={field}
-											props={props}
-										/>
-									)}
-								</Field>
-								<Field
-									of={formStore() as FormStore<SignIn>}
-									name="password"
-								>
-									{(field, props) => (
-										<PasswordField
-											label="Password"
-											field={field}
-											props={props}
-											showRequirementHint={mode() === "sign_up"}
-										/>
-									)}
-								</Field>
-
-								<Show when={mode() === "sign_up"}>
-									<Field
-										of={formStore() as FormStore<SignUp>}
-										name="repeated_password"
+							<Show
+								when={mode() === "sign_in"}
+								fallback={
+									<Form
+										of={signUpForm}
+										onSubmit={handleSignUp}
+										class="w-full space-y-6"
 									>
-										{(field, props) => (
+										<Field
+											of={signUpForm}
+											path={["username"]}
+										>
+											{(field) => <UserNameField field={field} />}
+										</Field>
+										<Field
+											of={signUpForm}
+											path={["password"]}
+										>
+											{(field) => (
+												<PasswordField
+													label="Password"
+													field={field}
+													showRequirementHint
+												/>
+											)}
+										</Field>
+										<Field
+											of={signUpForm}
+											path={["repeated_password"]}
+										>
+											{(field) => (
+												<PasswordField
+													label="Repeat password"
+													field={field}
+												/>
+											)}
+										</Field>
+
+										{/* TODO: Rememeber me */}
+
+										<FormComp.ErrorMessage>
+											{submitError()}
+										</FormComp.ErrorMessage>
+
+										<Button
+											type="submit"
+											variant="Primary"
+											color="Reimu"
+											size="Sm"
+											class="mt-1 h-9 w-full"
+											disabled={signUpForm.isSubmitting}
+										>
+											Sign Up
+										</Button>
+									</Form>
+								}
+							>
+								<Form
+									of={signInForm}
+									onSubmit={handleSignIn}
+									class="w-full space-y-6"
+								>
+									<Field
+										of={signInForm}
+										path={["username"]}
+									>
+										{(field) => <UserNameField field={field} />}
+									</Field>
+									<Field
+										of={signInForm}
+										path={["password"]}
+									>
+										{(field) => (
 											<PasswordField
-												label="Repeat password"
+												label="Password"
 												field={field}
-												props={props}
 											/>
 										)}
 									</Field>
-								</Show>
 
-								{/* TODO: Rememeber me */}
+									{/* TODO: Rememeber me */}
 
-								<FormComp.ErrorMessage>
-									{formStore().response.message}
-								</FormComp.ErrorMessage>
+									<FormComp.ErrorMessage>{submitError()}</FormComp.ErrorMessage>
 
-								<Button
-									type="submit"
-									variant="Primary"
-									color="Reimu"
-									size="Sm"
-									class="mt-1 h-9 w-full"
-								>
-									{mode() === "sign_in" ? "Sign In" : "Sign Up"}
-								</Button>
-							</Form>
+									<Button
+										type="submit"
+										variant="Primary"
+										color="Reimu"
+										size="Sm"
+										class="mt-1 h-9 w-full"
+										disabled={signInForm.isSubmitting}
+									>
+										Sign In
+									</Button>
+								</Form>
+							</Show>
 						</div>
 					</div>
 				</div>
