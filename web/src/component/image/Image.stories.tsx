@@ -24,7 +24,15 @@ export const Default: Story = {
 				height={300}
 				src="https://th.bing.com/th/id/OIP.1JqzUmtCX3Ng-8i-n5_kHgAAAA?w=120&h=104&c=7&bgcl=de1aa5&r=0&o=6&dpr=1.5&pid=13.1"
 			/>
-			<Image.Fallback />
+			<Image.Fallback>
+				{(state) => (
+					<div class="flex h-[300px] w-[300px] items-center justify-center bg-slate-100">
+						<span class="text-sm text-slate-500">
+							{state === Image.State.Loading ? "Loading..." : "No Image"}
+						</span>
+					</div>
+				)}
+			</Image.Fallback>
 		</Image.Root>
 	),
 	args: {},
@@ -41,7 +49,15 @@ export const ErrorState: Story = {
 				height={300}
 				src=""
 			/>
-			<Image.Fallback />
+			<Image.Fallback>
+				{(state) => (
+					<div class="flex h-[300px] w-[300px] items-center justify-center bg-slate-100">
+						<span class="text-sm text-slate-500">
+							{state === Image.State.Loading ? "Loading..." : "No Image"}
+						</span>
+					</div>
+				)}
+			</Image.Fallback>
 		</Image.Root>
 	),
 }
@@ -63,7 +79,15 @@ export const WithPreview: Story = {
 					onClick={() => setOpen(true)}
 					src="https://th.bing.com/th/id/OIP.1JqzUmtCX3Ng-8i-n5_kHgAAAA?w=120&h=104&c=7&bgcl=de1aa5&r=0&o=6&dpr=1.5&pid=13.1"
 				/>
-				<Image.Fallback />
+				<Image.Fallback>
+					{(state) => (
+						<div class="flex h-[300px] w-[300px] items-center justify-center bg-slate-100">
+							<span class="text-sm text-slate-500">
+								{state === Image.State.Loading ? "Loading..." : "No Image"}
+							</span>
+						</div>
+					)}
+				</Image.Fallback>
 				<Image.Preview
 					open={open()}
 					close={() => setOpen(false)}

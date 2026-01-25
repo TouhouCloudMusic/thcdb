@@ -63,11 +63,14 @@ const mockData: Release = {
 	catalog_nums: [
 		{
 			catalog_number: "TH06",
-			label_id: 1,
+			label: {
+				id: 1,
+				name: "Team Shanghai Alice",
+			},
 		},
 		{
 			catalog_number: "TEAM-SHA-001",
-			label_id: undefined,
+			label: null,
 		},
 	],
 	discs: [

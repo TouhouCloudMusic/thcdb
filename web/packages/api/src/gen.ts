@@ -1514,7 +1514,7 @@ export type components = {
             /** Format: int32 */
             id: number;
             location?: components["schemas"]["Location"];
-            name?: string;
+            name: string;
             short_description?: string;
             start_date?: null | components["schemas"]["DateWithPrecision"];
         };
@@ -1896,7 +1896,7 @@ export type components = {
                 /** Format: int32 */
                 id: number;
                 location?: components["schemas"]["Location"];
-                name?: string;
+                name: string;
                 short_description?: string;
                 start_date?: null | components["schemas"]["DateWithPrecision"];
             }[];

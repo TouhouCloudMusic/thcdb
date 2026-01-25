@@ -13,12 +13,15 @@ const searchSchema = v.object({
 export const Route = createFileRoute("/correction/$id")({
 	component: RouteComponent,
 	validateSearch: searchSchema,
-	loader: async ({ params, search }) => {
+	loaderDeps: ({ search }) => ({
+		compareId: search.compare,
+	}),
+	loader: async ({ params, deps }) => {
 		const parsedId = v.parse(EntityId, Number.parseInt(params.id, 10))
 
 		await QUERY_CLIENT.ensureQueryData(CorrectionQueryOption.detail(parsedId))
 
-		const compareId = search.compare
+		const compareId = deps.compareId
 		await QUERY_CLIENT.ensureQueryData(
 			compareId && compareId !== parsedId
 				? CorrectionQueryOption.compare(compareId, parsedId)
@@ -34,12 +37,21 @@ export const Route = createFileRoute("/correction/$id")({
 function RouteComponent() {
 	const params = Route.useParams()
 	const search = Route.useSearch()
+	const navigate = Route.useNavigate()
 	const correctionId = v.parse(EntityId, Number.parseInt(params().id, 10))
 
 	return (
 		<CorrectionDetailPage
 			correctionId={correctionId}
 			compareId={search().compare}
+			onCompareIdChange={(value) =>
+				void navigate({
+					search: (prev) => ({
+						...prev,
+						compare: value,
+					}),
+				})
+			}
 		/>
 	)
 }

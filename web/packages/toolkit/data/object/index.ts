@@ -9,9 +9,7 @@ export function merge<T extends object>(
 
 export function fromEntries<K extends PropertyKey, V>(
 	entries: [K, V][],
-): {
-	[key in K]: V
-} {
+): Record<K, V> {
 	return Object.fromEntries(entries) as Record<K, V>
 }
 

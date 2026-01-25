@@ -10,6 +10,7 @@ import { Button } from "~/component/atomic/button"
 import { InputField } from "~/component/atomic/form/Input"
 
 import { useArtistForm } from "../../context"
+import type { ArtistEditFormContextValue } from "../../context"
 
 export function TenureFieldArray(props: { index: number }): JSX.Element {
 	const { formStore } = useArtistForm()
@@ -137,7 +138,7 @@ function TenureEntry(props: {
 }
 
 function computeTenureError(
-	formStore: Parameters<typeof getInput>[0],
+	formStore: ArtistEditFormContextValue["formStore"],
 	index: number,
 ): string[] {
 	const tenuresRaw = getInput(formStore, {

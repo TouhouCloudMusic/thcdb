@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { toEventFormInitValue } from "./init"
 import type { EventWithLocation } from "./init"
 
-describe("toEventFormInitValue", () => {
+describe(toEventFormInitValue, () => {
 	it("returns default values for new form", () => {
 		const result = toEventFormInitValue({ type: "new" })
 

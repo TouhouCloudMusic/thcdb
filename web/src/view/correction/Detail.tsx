@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/solid-query"
-import { useNavigate } from "@tanstack/solid-router"
 import type {
 	Correction,
 	CorrectionDiffEntry,
@@ -33,6 +32,7 @@ const SECTION_TITLE_CLASS =
 type CorrectionDetailPageProps = {
 	correctionId: number
 	compareId?: number | null
+	onCompareIdChange: (value: number | undefined) => void
 }
 
 type CorrectionEntityType =
@@ -46,7 +46,6 @@ type CorrectionEntityType =
 	| "credit-role"
 
 export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
-	const navigate = useNavigate()
 	const correctionQuery = useQuery(() =>
 		CorrectionQueryOption.detail(props.correctionId),
 	)
@@ -95,12 +94,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 
 		const value = currentTarget.value
 		const next = value ? Number(value) : undefined
-		void navigate({
-			search: (prev) => ({
-				...prev,
-				compare: next,
-			}),
-		})
+		props.onCompareIdChange(next)
 	}
 
 	return (
@@ -592,14 +586,17 @@ const ENTITY_HISTORY_MAP: Record<EntityType, CorrectionEntityType> = {
 	CreditRole: "credit-role",
 }
 
-const ENTITY_ROUTE_MAP: Partial<Record<EntityType, string>> = {
+const ENTITY_ROUTE_MAP = {
 	Artist: "/artist/$id",
 	Label: "/label/$id",
 	Release: "/release/$id",
 	Song: "/song/$id",
 	Tag: "/tag/$id",
 	Event: "/event/$id",
-}
+	// TODO: Add route
+	SongLyrics: "/",
+	CreditRole: "/",
+} as const
 
 function formatEntityType(entityType: EntityType) {
 	if (entityType === "SongLyrics") return "Song lyrics"

@@ -81,6 +81,7 @@
 		"no-continue": "off",
 		"no-console": "off",
 		"no-constructor-return": "off",
+		"no-control-regex": "off",
 		// Disable this, as type import is not recognized.
 		// We use the import plugin instead.
 		"no-duplicate-imports": "off",
@@ -147,6 +148,7 @@
 			}
 		],
 		"typescript/prefer-enum-initializers": "off",
+		"unicorn/no-zero-fractions": "off",
 		"unicorn/catch-error-name": "off",
 		"unicorn/explicit-length-check": "off",
 		"unicorn/filename-case": [
