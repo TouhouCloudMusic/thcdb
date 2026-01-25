@@ -2,13 +2,26 @@ import { Title } from "@solidjs/meta"
 
 export function InternalServerError(props: { msg?: string | undefined }) {
 	return (
-		<main class="w-5xl py-32">
-			<Title>Internal Server Error</Title>
-			<img
-				src="/img/status_code/500.png"
-				alt="500 Internal Server Error"
-			/>
-			<div>{props.msg}</div>
-		</main>
+		<div class="flex size-full py-32">
+			<Title>500 Internal Server Error</Title>
+			<div class="m-auto text-center">
+				<img
+					class="m-auto w-1/3"
+					src="/img/status_code/500.png"
+					alt="500 Internal Server Error"
+				/>
+				<h1 class="mt-4 text-4xl">500 Internal Server Error</h1>
+				<p class="mt-2 break-words text-slate-600">{props.msg}</p>
+				<p class="mt-1 text-slate-400">
+					<button
+						type="button"
+						class="text-blue-400 hover:underline"
+						onClick={() => history.back()}
+					>
+						Go back...
+					</button>
+				</p>
+			</div>
+		</div>
 	)
 }

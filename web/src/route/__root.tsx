@@ -21,7 +21,7 @@ export const Route = createRootRouteWithContext<RouteContext>()({
 
 const getErrorMessage = (error: unknown) => {
 	if (error instanceof Error) {
-		return error.stack ?? error.message
+		return error.message ?? error.stack ?? "Unknown error"
 	}
 	if (typeof error === "string") return error
 	if (typeof error === "object" && error !== null) {
@@ -31,7 +31,10 @@ const getErrorMessage = (error: unknown) => {
 		if (typeof fallback === "string" && fallback) return fallback
 	}
 	try {
-		return JSON.stringify(error)
+		return JSON.stringify(
+			error,
+			(key, value) => (key === "stack" ? undefined : value),
+		)
 	} catch {
 		return "Unknown error"
 	}
