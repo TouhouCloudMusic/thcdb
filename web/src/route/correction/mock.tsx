@@ -476,6 +476,7 @@ function RouteComponent() {
 			<CorrectionDetailPage
 				correctionId={MOCK_CORRECTION_ID}
 				compareId={search().compare}
+				onCompareIdChange={setCompare}
 			/>
 		</>
 	)

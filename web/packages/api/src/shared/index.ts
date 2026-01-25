@@ -230,5 +230,5 @@ type MakeOpt<
 	T extends Record<string, unknown> | undefined,
 > =
 	AreAllKeysOptional<T> extends true
-		? { [key in Key]?: T }
-		: { [key in Key]: T }
+		? Partial<Record<Key, T>>
+		: Record<Key, T>

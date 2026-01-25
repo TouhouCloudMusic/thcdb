@@ -3,7 +3,7 @@ import type { Artist } from "@thc/api"
 import { ArtistMutation } from "@thc/query"
 import type { InferOutput } from "valibot"
 
-import { NewArtistCorrection } from "~/domain/artist/schema"
+import type { NewArtistCorrection } from "~/domain/artist/schema"
 
 type Props =
 	| {

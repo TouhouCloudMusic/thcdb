@@ -73,7 +73,7 @@ const artistArb: fc.Arbitrary<Artist> = fc.record({
 	memberships: opt(fc.array(membershipArb)),
 })
 
-describe("useArtistFormInitialValues", () => {
+describe(useArtistFormInitialValues, () => {
 	it("returns correct initial values for new artist", () => {
 		const result = useArtistFormInitialValues({ type: "new" })
 

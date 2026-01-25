@@ -122,6 +122,7 @@ export interface CropperSelection extends CropperElement, Selection {
 	$reset(): CropperSelection
 	$clear(): CropperSelection
 	$render(): CropperSelection
+	// @ts-expect-error
 	$toCanvas(options?: CanvasOptions): Promise<HTMLCanvasElement>
 }
 
@@ -147,6 +148,7 @@ export interface CropperCrosshair extends CropperElement {
 // CropperViewer interface
 export interface CropperViewer extends CropperElement {
 	// Properties
+	// @ts-expect-error
 	resize: ResizeDirection
 	selection: string
 	slottable: boolean
@@ -160,7 +162,9 @@ export interface Cropper {
 	container: Element
 
 	// Methods
+	// @ts-expect-error
 	getCropperCanvas(): CropperCanvas | null
+	// @ts-expect-error
 	getCropperImage(): CropperImage | null
 	getCropperSelection(): CropperSelection | null
 	getCropperSelections(): NodeListOf<CropperSelection> | null

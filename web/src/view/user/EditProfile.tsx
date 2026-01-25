@@ -103,7 +103,9 @@ export function UploadAvatarFormContent(props: {
 			<Form
 				of={form}
 				class="size-full"
-				onSubmit={() => undefined}
+				onSubmit={(event) => {
+					event.preventDefault()
+				}}
 			>
 				<FileField
 					class="flex size-full flex-col"
@@ -112,10 +114,11 @@ export function UploadAvatarFormContent(props: {
 						const hasFile = details.acceptedFiles.length > 0
 						setShowDragZone(!hasFile)
 						if (hasFile) {
-							setInput(form, {
-								path: ["data"],
-								input: details.acceptedFiles[0],
-							})
+								setInput(form, {
+									path: ["data"],
+									// @ts-expect-error
+									input: details.acceptedFiles[0],
+								})
 						} else {
 							reset(form, { path: ["data"] })
 						}
@@ -178,7 +181,7 @@ export function UploadAvatarFormContent(props: {
 					</Show>
 					<FileField.HiddenInput />
 					<FileField.ErrorMessage>
-						{getErrors(form, { path: ["data"] })[0]}
+						{getErrors(form, { path: ["data"] })?.[0]}
 					</FileField.ErrorMessage>
 				</FileField>
 			</Form>

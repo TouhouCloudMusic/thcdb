@@ -45,4 +45,4 @@ const suite = () => {
 	it("creates roots", testRootCount)
 }
 
-describe("createMockTagTree", suite)
+describe(createMockTagTree, suite)

@@ -15,7 +15,7 @@ export type ADTEnum<
 		? Tail extends Record<string, unknown>[]
 			? {
 					[K in keyof Head]: Head[K]
-				} & { [K in Exclude<AllKeys, keyof Head>]?: never } extends infer Result
+				} & Partial<Record<Exclude<AllKeys, keyof Head>, never>> extends infer Result
 				? // flatten
 						| {
 								[Key in keyof Result]: Result[Key]

@@ -76,6 +76,7 @@
 		"@types/markdown-it": "^14.1.2",
 		"@types/markdown-it-footnote": "^3.0.4",
 		"@vitest/browser": "^4.0.16",
+		"@vitest/browser-playwright": "^4.0.17",
 		"babel-preset-solid": "^1.9.10",
 		"eslint": "^9.39.2",
 		"eslint-config-prettier": "^10.1.8",

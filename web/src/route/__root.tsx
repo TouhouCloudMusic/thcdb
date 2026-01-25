@@ -31,9 +31,8 @@ const getErrorMessage = (error: unknown) => {
 		if (typeof fallback === "string" && fallback) return fallback
 	}
 	try {
-		return JSON.stringify(
-			error,
-			(key, value) => (key === "stack" ? undefined : value),
+		return JSON.stringify(error, (key, value) =>
+			key === "stack" ? undefined : value,
 		)
 	} catch {
 		return "Unknown error"

@@ -13,7 +13,7 @@ export const SignIn = v.object({
 export type SignIn = v.InferInput<typeof SignIn>
 
 const PASSWORD_REGEX = new RegExp(USER_PASSWORD_REGEX_STR)
-const PASSWORD_WHITESPACE_REGEX = /[\s\x00-\x1F\x7F]/
+const PASSWORD_WHITESPACE_REGEX = /[\s\u0000-\u001F\u007F]/
 const Password = v.pipe(
 	v.string(),
 	v.minLength(

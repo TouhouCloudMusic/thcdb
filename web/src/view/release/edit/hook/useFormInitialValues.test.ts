@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest"
 
 import { useReleaseFormInitialValues } from "./useFormInitialValues"
 
-describe("useReleaseFormInitialValues", () => {
+describe(useReleaseFormInitialValues, () => {
 	it("returns correct initial values for new release", () => {
 		const result = useReleaseFormInitialValues({ type: "new" })
 

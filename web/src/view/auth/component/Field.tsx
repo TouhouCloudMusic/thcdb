@@ -9,7 +9,7 @@ import {
 	USER_PASSWORD_MIN_LENGTH,
 	USER_PASSWORD_REGEX_STR,
 } from "~/constant/server"
-import * as AuthSchema from "~/domain/auth/schema"
+import type * as AuthSchema from "~/domain/auth/schema"
 
 type SignInSchema = typeof AuthSchema.SignIn
 type SignUpSchema = typeof AuthSchema.SignUp

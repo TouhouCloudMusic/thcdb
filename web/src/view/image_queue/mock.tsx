@@ -612,10 +612,11 @@ function DetailPanel(props: {
 					<div class="p-4">
 						<div class="grid gap-6">
 							<div class="flex items-center justify-between gap-3 border-b border-slate-200 pb-4">
-								<a
-									href="#"
-									onClick={(e) => {
-										e.preventDefault()
+								<button
+									type="button"
+									disabled={!props.prevId}
+									onClick={() => {
+										if (!props.prevId) return
 										props.onPrev()
 									}}
 									class={twMerge(
@@ -624,11 +625,12 @@ function DetailPanel(props: {
 									)}
 								>
 									&lt; Prev
-								</a>
-								<a
-									href="#"
-									onClick={(e) => {
-										e.preventDefault()
+								</button>
+								<button
+									type="button"
+									disabled={!props.nextId}
+									onClick={() => {
+										if (!props.nextId) return
 										props.onNext()
 									}}
 									class={twMerge(
@@ -637,7 +639,7 @@ function DetailPanel(props: {
 									)}
 								>
 									Next &gt;
-								</a>
+								</button>
 							</div>
 
 							<div class="rounded-sm border border-slate-200 bg-slate-50 p-4">

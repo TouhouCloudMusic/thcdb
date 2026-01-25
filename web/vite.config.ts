@@ -2,6 +2,7 @@ import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
 import tailwindcss from "@tailwindcss/vite"
 import { devtools } from "@tanstack/devtools-vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
+import { playwright } from "@vitest/browser-playwright"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { defineConfig, loadEnv } from "vite"
@@ -21,8 +22,6 @@ export default defineConfig(({ mode }) => {
 	// oxlint-disable-next-line no-undef
 	const env = loadEnv(mode, process.cwd())
 	// oxlint-disable-next-line no-undef
-
-	const isTest = mode == "test"
 
 	const SERVER_URL = env["VITE_SERVER_URL"]
 
@@ -78,7 +77,7 @@ export default defineConfig(({ mode }) => {
 							// Enable browser-based testing for UI components
 							enabled: true,
 							headless: true,
-							provider: "playwright",
+							provider: playwright(),
 							instances: [{ browser: "chromium" }],
 						},
 						// This setup file applies Storybook project annotations for Vitest
