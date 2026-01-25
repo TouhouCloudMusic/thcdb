@@ -7,7 +7,7 @@ import { QUERY_CLIENT } from "~/state/tanstack"
 import { CorrectionDetailPage } from "~/view/correction/Detail"
 
 const searchSchema = v.object({
-	compare: v.optional(v.number()),
+	compare: v.fallback(v.optional(v.number()), undefined),
 })
 
 export const Route = createFileRoute("/correction/$id")({
