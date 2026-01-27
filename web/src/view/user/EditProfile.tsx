@@ -114,11 +114,11 @@ export function UploadAvatarFormContent(props: {
 						const hasFile = details.acceptedFiles.length > 0
 						setShowDragZone(!hasFile)
 						if (hasFile) {
-								setInput(form, {
-									path: ["data"],
-									// @ts-expect-error
-									input: details.acceptedFiles[0],
-								})
+							setInput(form, {
+								path: ["data"],
+								// @ts-expect-error
+								input: details.acceptedFiles[0],
+							})
 						} else {
 							reset(form, { path: ["data"] })
 						}
