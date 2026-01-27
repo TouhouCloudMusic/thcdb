@@ -3,8 +3,6 @@ import type { Component } from "solid-js"
 import { For, Show } from "solid-js"
 
 import { Link } from "~/component/atomic"
-import { Input } from "~/component/atomic/Input"
-import { Select } from "~/component/atomic/form/select"
 import {
 	CorrectionSortFieldSelect,
 	EmptyExplorePlaceholder,
@@ -120,14 +118,6 @@ export const LabelItem: Component<LabelItemProps> = (props) => {
 
 type LabelExploreFilterBarProps = {
 	scrollDirection: () => ScrollDirection
-	dissolvedValue: string
-	onDissolvedChange: (value: string) => void
-	foundedDateFrom: string
-	foundedDateTo: string
-	onFoundedDateChange: (
-		key: "founded_date_from" | "founded_date_to",
-		value: string,
-	) => void
 	sortBy: "created_at" | "handled_at" | undefined
 	onSortByChange: (value: "created_at" | "handled_at") => void
 	orderBy: "asc" | "desc" | undefined
@@ -140,46 +130,6 @@ export const LabelExploreFilterBar: Component<LabelExploreFilterBarProps> = (
 	return (
 		<StickyFilterBar scrollDirection={props.scrollDirection}>
 			<div class="flex flex-wrap items-center gap-4">
-				<div class="flex items-center gap-2">
-					<span class="text-sm text-slate-500">Dissolved</span>
-					<Select
-						value={props.dissolvedValue}
-						onChange={(e) => props.onDissolvedChange(e.currentTarget.value)}
-					>
-						<Select.Option value="">All</Select.Option>
-						<Select.Option value="false">Active</Select.Option>
-						<Select.Option value="true">Dissolved</Select.Option>
-					</Select>
-				</div>
-
-				<div class="flex items-center gap-2">
-					<span class="text-sm text-slate-500">From</span>
-					<Input
-						type="date"
-						value={props.foundedDateFrom}
-						onChange={(e) =>
-							props.onFoundedDateChange(
-								"founded_date_from",
-								e.currentTarget.value,
-							)
-						}
-					/>
-				</div>
-
-				<div class="flex items-center gap-2">
-					<span class="text-sm text-slate-500">To</span>
-					<Input
-						type="date"
-						value={props.foundedDateTo}
-						onChange={(e) =>
-							props.onFoundedDateChange(
-								"founded_date_to",
-								e.currentTarget.value,
-							)
-						}
-					/>
-				</div>
-
 				<CorrectionSortFieldSelect
 					value={props.sortBy}
 					onChange={props.onSortByChange}
