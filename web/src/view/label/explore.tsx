@@ -15,22 +15,9 @@ import {
 const route = getRouteApi("/label/explore")
 
 type LabelExploreSearch = {
-	is_dissolved?: boolean
-	founded_date_from?: string
-	founded_date_to?: string
 	sort_by?: "created_at" | "handled_at"
 	order_by?: "asc" | "desc"
 	limit: number
-}
-
-const getDissolvedSelectValue = (value: boolean | undefined) => {
-	if (value === undefined) return ""
-	return value ? "true" : "false"
-}
-
-const parseDissolvedSelectValue = (value: string): boolean | undefined => {
-	if (value === "") return undefined
-	return value === "true"
 }
 
 const createLabelExploreInfiniteQueryOptions = (
@@ -38,9 +25,6 @@ const createLabelExploreInfiniteQueryOptions = (
 ) => ({
 	queryKey: [
 		"label::explore",
-		search().is_dissolved,
-		search().founded_date_from,
-		search().founded_date_to,
 		search().sort_by,
 		search().order_by,
 		search().limit,
@@ -52,9 +36,6 @@ const createLabelExploreInfiniteQueryOptions = (
 				query: {
 					limit: snapshot.limit,
 					cursor: pageParam,
-					is_dissolved: snapshot.is_dissolved,
-					founded_date_from: snapshot.founded_date_from,
-					founded_date_to: snapshot.founded_date_to,
 					sort_field: snapshot.sort_by,
 					sort_direction: snapshot.order_by,
 				},
@@ -112,17 +93,6 @@ export const LabelExplore = () => {
 
 				<LabelExploreFilterBar
 					scrollDirection={scrollDirection}
-					dissolvedValue={getDissolvedSelectValue(search().is_dissolved)}
-					onDissolvedChange={(value) =>
-						applySearchPatch({
-							is_dissolved: parseDissolvedSelectValue(value),
-						})
-					}
-					foundedDateFrom={search().founded_date_from ?? ""}
-					foundedDateTo={search().founded_date_to ?? ""}
-					onFoundedDateChange={(key, value) =>
-						applySearchPatch({ [key]: value || undefined })
-					}
 					sortBy={search().sort_by}
 					onSortByChange={(value) => applySearchPatch({ sort_by: value })}
 					orderBy={search().order_by}
