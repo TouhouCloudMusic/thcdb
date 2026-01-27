@@ -8,6 +8,28 @@ import { createMutable } from "solid-js/store"
 import { dbg } from "~/utils/log"
 import { assertContext } from "~/utils/solid/assertContext"
 
+const SIGNED_IN_KEY = "is_signed_in"
+
+function SignedInHint_check() {
+	try {
+		return globalThis.localStorage.getItem(SIGNED_IN_KEY) === "1"
+	} catch {
+		return false
+	}
+}
+
+function SignedInHint_set(value: boolean) {
+	try {
+		if (value) {
+			globalThis.localStorage.setItem(SIGNED_IN_KEY, "1")
+		} else {
+			globalThis.localStorage.removeItem(SIGNED_IN_KEY)
+		}
+	} catch {
+		void 0
+	}
+}
+
 export const enum NotificationState {
 	None,
 	Unread,
@@ -34,24 +56,23 @@ export class UserStore {
 		| undefined = undefined
 
 	async trySignIn() {
+		if (!SignedInHint_check()) return
+
 		this.isLoading = true
 		const result = await UserApi.profile()
-
 		this.isLoading = false
 
 		E.match(result, {
 			onLeft: (_) => {
-				// TODO: handle error
+				SignedInHint_set(false)
 			},
-
 			onRight: (right) => {
-				Option.map(right, (user) => {
-					this.ctx = {
-						user,
-					}
-					void this.refreshNotifications()
-					this.connectNotificationSocket()
-				})
+				const user = Option.getOrUndefined(right)
+				if (!user) {
+					SignedInHint_set(false)
+					return
+				}
+				this.sign_in({ user })
 			},
 		})
 	}
@@ -100,6 +121,7 @@ export class UserStore {
 
 	sign_in(ctx: UserContext) {
 		this.ctx = ctx
+		SignedInHint_set(ctx?.user !== undefined)
 		void this.refreshNotifications()
 		this.connectNotificationSocket()
 	}
@@ -108,6 +130,7 @@ export class UserStore {
 		const result = await AuthApi.signout()
 
 		this.ctx = undefined
+		SignedInHint_set(false)
 		this.notificationUnreadCount = 0
 		this.disconnectNotificationSocket()
 		E.mapLeft(result, (error) => {

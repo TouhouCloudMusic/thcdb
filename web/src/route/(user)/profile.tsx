@@ -13,12 +13,16 @@ export const Route = createFileRoute("/(user)/profile")({
 
 function RouteComponent() {
 	const userCtx = useCurrentUser()
-	const query = useQuery(() =>
-		UserQuery.profileOption({
+	const query = useQuery(() => {
+		const base = UserQuery.profileOption({
 			"params.username": undefined,
 			current_user: userCtx.user,
-		}),
-	)
+		})
+		return {
+			...base,
+			enabled: userCtx.user !== undefined,
+		}
+	})
 
 	return (
 		<AuthGuard>
