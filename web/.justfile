@@ -6,12 +6,11 @@ default:
 
 fmt:
 	pnpm exec prettier --write \
-	--experimental-cli \
-	"src/**/*.{ts,tsx}" \
-	"packages/**/*.{md,json,ts,tsx}" \
-	"./{.storybook,.vscode,config,doc,plugins}/**/*" \
-	".github/**/*.yml" \
-	"*.{md,json,js,ts,html}"
+	--experimental-cli .
+
+fmt-check:
+	pnpm exec prettier --check \
+	--experimental-cli .
 
 eslint +FLAGS="":
 	pnpm exec eslint --cache {{FLAGS}}
@@ -30,7 +29,7 @@ fix: oxfix esfix
 quickfix: oxfix
 
 test:
-	pnpm dlx vitest
+	pnpm exec vitest
 
 check:
   pnpm tsgo -p .
