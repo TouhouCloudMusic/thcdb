@@ -16,34 +16,34 @@ jobs:
       run:
         working-directory: web
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-      - name: Set up Node
-        uses: actions/setup-node@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: pnpm
           cache-dependency-path: web/pnpm-lock.yaml
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
+      - uses: extractions/setup-just@v3
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Prettier check
-        run: pnpm exec prettier --check .
+        run: just fmt-check
 
+      - name: Type check
+        run: just check
+        
       - name: Lint check
-        run: |
-          pnpm exec oxlint -c .oxlintrc.json
-          pnpm exec eslint --cache .
+        run: just lint
 
       - name: Run Test
-        run: pnpm exec vitest run
+        run: just test
 
       - name: Build app
         run: pnpm run build
