@@ -1,5 +1,6 @@
 import "cropperjs"
-import type { ParentProps } from "solid-js"
+import { mergeProps } from "solid-js"
+import type { JSX, ParentProps } from "solid-js"
 
 export type SelectionProps = {
 	x?: number
@@ -17,9 +18,21 @@ export type SelectionProps = {
 	keyboard?: boolean
 	outlined?: boolean
 	precise?: boolean
+	onChange?: JSX.EventHandlerUnion<HTMLElement, CustomEvent>
 }
 
 export function Selection(props: ParentProps<SelectionProps>) {
-	// @ts-expect-error
-	return <cropper-selection {...props}></cropper-selection>
+	const localProps = mergeProps(props, {
+		get "aspect-ratio"() {
+			return props.aspectRatio
+		},
+		get "initial-aspect-ratio"() {
+			return props.initialAspectRatio
+		},
+		get "initial-coverage"() {
+			return props.initialCoverage
+		},
+	})
+
+	return <cropper-selection {...localProps}></cropper-selection>
 }

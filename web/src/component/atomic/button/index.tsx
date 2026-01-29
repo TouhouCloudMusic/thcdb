@@ -53,6 +53,11 @@ const BUTTON_COMMON_STYLES =
 	"inline-flex items-center justify-center gap-2 rounded-sm font-medium select-none whitespace-nowrap outline-1 outline-transparent -outline-offset-1 focus:outline-reimu-600 disabled:pointer-events-none transition-colors duration-100"
 const DEFAULT_COLOR: AppColor = "Gray"
 
+const PRIMARY_DISABLED_CLASS =
+	"disabled:bg-slate-200/70 disabled:text-slate-700 disabled:shadow-none"
+const PRIMARY_DISABLED_DARK_CLASS =
+	"dark:disabled:bg-slate-800/60 dark:disabled:text-slate-400"
+
 const getVariantColorClass = (variant: Variant, color: AppColor) =>
 	match.in<Variant>().match({
 		"'PrimaryV2'": () => PrimaryV2Color[color],
@@ -75,13 +80,17 @@ export const ButtonClass_new = (options: ButtonClassProps) => {
 	const color = options.color ?? DEFAULT_COLOR
 	const variant_class = VariantClass[variant]
 	const color_class = getVariantColorClass(variant, color)
+	const disabled_class =
+		variant === "Primary"
+			? `${PRIMARY_DISABLED_CLASS} ${PRIMARY_DISABLED_DARK_CLASS}`
+			: undefined
 
 	return twMerge(
 		BUTTON_COMMON_STYLES,
 		size_class,
 		variant_class,
 		color_class,
-		"disabled:opacity-50",
+		disabled_class,
 		options.class,
 	)
 }
@@ -126,38 +135,34 @@ const PrimaryColor: Record<AppColor, string> = {
 	Gray:
 		// @tw
 		`
-    bg-slate-900 hover:bg-slate-900 active:bg-slate-800 disabled:bg-slate-800
+    bg-slate-900 hover:bg-slate-900 active:bg-slate-800
     `,
 	Slate:
 		// @tw
 		`
-    bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-700/500
-    dark:disabled:bg-slate-600
+    bg-slate-700 hover:bg-slate-600 active:bg-slate-500
     `,
 	Blue:
 		// @tw
 		`
-    bg-blue-700 hover:bg-blue-600 active:bg-blue-500 disabled:bg-blue-700/500
-    dark:disabled:bg-blue-600
+    bg-blue-700 hover:bg-blue-600 active:bg-blue-500
     `,
 	Reimu:
 		// @tw
 		`
     bg-reimu-600
-		hover:bg-reimu-650 active:bg-reimu-500 disabled:bg-reimu-700/500
-    dark:disabled:bg-reimu-600
+    hover:bg-reimu-650 active:bg-reimu-500
     `,
 	Marisa:
 		// @tw
 		`
-    bg-marisa-700 hover:bg-marisa-600 active:bg-marisa-500 disabled:bg-marisa-700/500
-    dark:disabled:bg-marisa-600
+    bg-marisa-700 hover:bg-marisa-600 active:bg-marisa-500
     `,
 	Green:
 		// @tw
 		`
-    bg-green-700 hover:bg-green-600 active:bg-green-500 disabled:bg-green-700/500
-    dark:disabled:bg-green-600`,
+    bg-green-700 hover:bg-green-600 active:bg-green-500
+    `,
 }
 
 const PrimaryV2Color: Record<AppColor, string> = {

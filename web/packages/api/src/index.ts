@@ -13,4 +13,4 @@ export type {
 	ReleaseImageQueueTarget,
 	ReleaseImageType,
 	UserSummary,
-} from "./type"
+} from "./gen"

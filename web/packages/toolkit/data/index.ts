@@ -5,6 +5,7 @@ export * as StrExt from "./string"
 export * as MapExt from "./map"
 export * as ArrExt from "./array"
 export * as DateExt from "./date"
+export * as NumExt from "./number"
 export { pick } from "./object"
 
 export function any(...args: boolean[]): boolean {

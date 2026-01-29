@@ -2,9 +2,9 @@ import type { LocalizedTitle, Release } from "@thc/api"
 import type { Component } from "solid-js"
 import { For, Show } from "solid-js"
 
+import { Pagination } from "~/component/Pagination"
 import { Link } from "~/component/atomic"
 import { Select } from "~/component/atomic/form/select"
-import { Pagination } from "~/component/Pagination"
 import {
 	CorrectionSortFieldSelect,
 	EmptyExplorePlaceholder,
