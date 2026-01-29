@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/solid-query"
+import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { ArtistApi } from "@thc/api"
 import type { ArtistType } from "@thc/api"
@@ -7,7 +7,6 @@ import { Either } from "effect"
 import { Link } from "~/component/atomic"
 import { ARTIST_TYPES } from "~/domain/artist/constants"
 import { PageLayout } from "~/layout"
-import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 import {
 	ArtistExploreFilterBar,
@@ -21,6 +20,7 @@ type ArtistExploreSearch = {
 	sort_by?: "created_at" | "handled_at"
 	order_by?: "asc" | "desc"
 	limit: number
+	page: number
 }
 
 const isArtistType = (value: string): value is ArtistType => {
@@ -31,23 +31,22 @@ const parseArtistTypeFilterValue = (value: string) => {
 	if (isArtistType(value)) return [value]
 }
 
-const createArtistExploreInfiniteQueryOptions = (
-	search: () => ArtistExploreSearch,
-) => ({
+const createArtistExploreQueryOptions = (search: () => ArtistExploreSearch) => ({
 	queryKey: [
 		"artist::explore",
+		search().page,
 		search().artist_type,
 		search().sort_by,
 		search().order_by,
 		search().limit,
 	],
-	queryFn: async ({ pageParam }: { pageParam: number }) => {
+	queryFn: async () => {
 		const snapshot = search()
 		return Either.getOrThrowWith(
 			await ArtistApi.explore({
 				query: {
 					limit: snapshot.limit,
-					cursor: pageParam,
+					page: snapshot.page,
 					artist_type: snapshot.artist_type,
 					sort_field: snapshot.sort_by,
 					sort_direction: snapshot.order_by,
@@ -58,9 +57,6 @@ const createArtistExploreInfiniteQueryOptions = (
 			},
 		)
 	},
-	initialPageParam: 0,
-	getNextPageParam: (lastPage: { next_cursor?: number | null }) =>
-		lastPage.next_cursor ?? null,
 })
 
 export const ArtistExplore = () => {
@@ -68,27 +64,26 @@ export const ArtistExplore = () => {
 	const scrollDirection = useScrollDirection()
 	const navigate = useNavigate({ from: "/artist/explore" })
 
-	const applySearchPatch = (patch: Partial<ArtistExploreSearch>) => {
+	const applyFilterPatch = (patch: Partial<ArtistExploreSearch>) => {
 		navigate({
 			to: "/artist/explore",
-			search: { ...search(), ...patch },
+			search: { ...search(), ...patch, page: 1 },
 		})
 	}
 
 	const artistTypeValue = () => search().artist_type?.[0] ?? ""
 
-	const artistsQuery = useInfiniteQuery(() =>
-		createArtistExploreInfiniteQueryOptions(search),
-	)
+	const artistsQuery = useQuery(() => createArtistExploreQueryOptions(search))
 
-	const artists = () => artistsQuery.data?.pages.flatMap((p) => p.items) ?? []
+	const artists = () => artistsQuery.data?.items ?? []
+	const totalPages = () => artistsQuery.data?.total_pages ?? 0
 
-	const setSentinelRef = useIntersectionSentinel<HTMLDivElement>({
-		enabled: () => artistsQuery.hasNextPage && !artistsQuery.isFetchingNextPage,
-		onIntersect: () => {
-			void artistsQuery.fetchNextPage()
-		},
-	})
+	const setPage = (page: number) => {
+		navigate({
+			to: "/artist/explore",
+			search: { ...search(), page },
+		})
+	}
 
 	return (
 		<PageLayout class="p-8">
@@ -109,23 +104,24 @@ export const ArtistExplore = () => {
 					scrollDirection={scrollDirection}
 					artistTypeValue={artistTypeValue()}
 					onArtistTypeChange={(value) => {
-						applySearchPatch({
+						applyFilterPatch({
 							artist_type: parseArtistTypeFilterValue(value),
 						})
 					}}
 					sortBy={search().sort_by}
-					onSortByChange={(value) => applySearchPatch({ sort_by: value })}
+					onSortByChange={(value) => applyFilterPatch({ sort_by: value })}
 					orderBy={search().order_by}
-					onOrderByChange={(value) => applySearchPatch({ order_by: value })}
+					onOrderByChange={(value) => applyFilterPatch({ order_by: value })}
 				/>
 
 				<ArtistExploreList
 					artists={artists()}
 					isLoading={artistsQuery.isLoading}
-					isFetchingNextPage={artistsQuery.isFetchingNextPage}
-					hasNextPage={artistsQuery.hasNextPage}
+					isFetching={artistsQuery.isFetching}
 					limit={search().limit}
-					setSentinelRef={setSentinelRef}
+					page={search().page}
+					totalPages={totalPages()}
+					onPageChange={setPage}
 				/>
 			</div>
 		</PageLayout>

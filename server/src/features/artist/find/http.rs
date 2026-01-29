@@ -5,13 +5,11 @@ use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::{
-    ArtistFilter, CommonFilter, FindManyFilter, PaginationQuery, repo,
-};
+use super::{ArtistFilter, CommonFilter, FindManyFilter, PageQuery, repo};
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data, state};
-use crate::domain::shared::Paginated;
+use crate::domain::shared::PageResponse;
 use crate::features::artist::model::Artist;
 use crate::infra::error::Error;
 
@@ -30,7 +28,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 data!(
     DataOptionArtist, Option<Artist>
     DataVecArtist, Vec<Artist>
-    DataPaginatedArtist, Paginated<Artist>
+    DataPageArtist, PageResponse<Artist>
 );
 
 #[utoipa::path(
@@ -95,17 +93,17 @@ async fn find_many_artist(
     get,
     tag = TAG,
     path = "/artist/explore",
-    params(ArtistFilter, PaginationQuery),
+    params(ArtistFilter, PageQuery),
     responses(
-        (status = 200, body = DataPaginatedArtist),
+        (status = 200, body = DataPageArtist),
         Error,
     ),
 )]
 async fn explore_artist(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<ArtistFilter>,
-    Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<Paginated<Artist>>, Error> {
+    Query(pagination): Query<PageQuery>,
+) -> Result<Data<PageResponse<Artist>>, Error> {
     let normalized = filter.with_sort_defaults();
     tracing::info!(?normalized, "explore_artist: incoming query");
     repo::find_by_filter(&repo, normalized, pagination)

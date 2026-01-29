@@ -1,7 +1,7 @@
 import { Either as E } from "effect"
 
 import type { ApiError } from "../../shared"
-import type { NotificationItem, Paginated } from "../../type"
+import type { CursorPage, NotificationItem } from "../../type"
 
 // TODO: Refactor adapter
 type ApiResult<T> = E.Either<T, ApiError<string>>
@@ -120,7 +120,7 @@ const postMessage = async (
 
 export async function list(options: {
 	query?: { cursor?: number; limit?: number }
-}): Promise<ApiResult<Paginated<NotificationItem>>> {
+}): Promise<ApiResult<CursorPage<NotificationItem>>> {
 	return await getData("/notifications", options.query)
 }
 

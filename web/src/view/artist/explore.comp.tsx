@@ -4,6 +4,7 @@ import { For, Show } from "solid-js"
 
 import { Link } from "~/component/atomic"
 import { Select } from "~/component/atomic/form/select"
+import { Pagination } from "~/component/Pagination"
 import {
 	CorrectionSortFieldSelect,
 	EmptyExplorePlaceholder,
@@ -188,10 +189,11 @@ export const ArtistExploreFilterBar: Component<ArtistExploreFilterBarProps> = (
 type ArtistExploreListProps = {
 	artists: Artist[]
 	isLoading: boolean
-	isFetchingNextPage: boolean
-	hasNextPage: boolean
+	isFetching: boolean
 	limit: number
-	setSentinelRef: (el: HTMLDivElement) => void
+	page: number
+	totalPages: number
+	onPageChange: (page: number) => void
 }
 
 export const ArtistExploreList: Component<ArtistExploreListProps> = (props) => {
@@ -210,12 +212,7 @@ export const ArtistExploreList: Component<ArtistExploreListProps> = (props) => {
 				</For>
 			</div>
 
-			<div
-				ref={props.setSentinelRef}
-				class="h-1"
-			></div>
-
-			<Show when={props.isFetchingNextPage || props.isLoading}>
+			<Show when={props.isFetching || props.isLoading}>
 				<div class="flex flex-col">
 					<For each={Array.from({ length: props.limit })}>
 						{() => <ArtistItemSkeleton />}
@@ -223,9 +220,13 @@ export const ArtistExploreList: Component<ArtistExploreListProps> = (props) => {
 				</div>
 			</Show>
 
-			<Show when={!props.hasNextPage && props.artists.length > 0}>
-				<div class="flex justify-center py-4 text-sm text-slate-400">
-					No more artists
+			<Show when={props.totalPages > 1}>
+				<div class="flex justify-center py-6">
+					<Pagination
+						current={props.page}
+						total={props.totalPages}
+						onPageChange={props.onPageChange}
+					/>
 				</div>
 			</Show>
 		</>

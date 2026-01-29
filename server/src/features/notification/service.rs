@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::domain::model::{NotificationKindEnum, NotificationTargetTypeEnum};
-use crate::domain::shared::Paginated;
+use crate::domain::shared::CursorResponse;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::error::Error;
 use crate::infra::notification::NotificationHub;
@@ -103,7 +103,7 @@ impl Service {
         user_id: i32,
         limit: u32,
         cursor: Option<i32>,
-    ) -> Result<Paginated<notification::Model>, Error> {
+    ) -> Result<CursorResponse<notification::Model>, Error> {
         let mut select = notification::Entity::find()
             .filter(notification::Column::RecipientUserId.eq(user_id))
             .order_by_desc(notification::Column::Id);
@@ -129,7 +129,7 @@ impl Service {
             None
         };
 
-        Ok(Paginated {
+        Ok(CursorResponse {
             items: models,
             next_cursor,
         })

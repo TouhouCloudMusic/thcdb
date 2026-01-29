@@ -12,7 +12,7 @@ use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
 use crate::domain::model::ImageQueueManage;
-use crate::domain::shared::Paginated;
+use crate::domain::shared::CursorResponse;
 use crate::features::image_queue::shared::{UserSummary, load_users};
 use crate::infra::error::Error as InfraError;
 use crate::shared::http::PaginationQuery;
@@ -20,7 +20,7 @@ use crate::shared::http::PaginationQuery;
 const TAG: &str = "Image Queue";
 
 data! {
-    DataPaginatedUserImageQueueItem, Paginated<UserImageQueueItem>
+    DataPaginatedUserImageQueueItem, CursorResponse<UserImageQueueItem>
 }
 
 #[derive(Serialize, ToSchema)]
@@ -36,8 +36,8 @@ struct UserImageQueueItem {
 }
 
 impl UserImageQueueItem {
-    fn new(
-        model: image_queue_entity::Model,
+    const fn new(
+        model: &image_queue_entity::Model,
         handled_by: Option<UserSummary>,
         reverted_by: Option<UserSummary>,
     ) -> Self {
@@ -74,7 +74,8 @@ async fn user_image_queue(
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
     Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<Paginated<UserImageQueueItem>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<UserImageQueueItem>>, axum::response::Response>
+{
     if user.id != id {
         authz::ensure_permission::<ImageQueueManage>(&repo.conn, user.id)
             .await?;
@@ -127,9 +128,9 @@ async fn user_image_queue(
             let handled_by = model.handled_by.map(resolve_user);
             let reverted_by = model.reverted_by.map(resolve_user);
 
-            UserImageQueueItem::new(model, handled_by, reverted_by)
+            UserImageQueueItem::new(&model, handled_by, reverted_by)
         })
         .collect();
 
-    Ok(Data::from(Paginated { items, next_cursor }))
+    Ok(Data::from(CursorResponse { items, next_cursor }))
 }

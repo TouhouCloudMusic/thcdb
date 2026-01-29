@@ -5,11 +5,11 @@ use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::{PaginationQuery, TagFilter};
+use super::{PageQuery, TagFilter};
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::domain::shared::Paginated;
+use crate::domain::shared::PageResponse;
 use crate::features::tag::model::Tag;
 use crate::infra::error::Error;
 
@@ -28,7 +28,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 data! {
     DataOptionTag, Option<Tag>
     DataVecTag, Vec<Tag>
-    DataPaginatedTag, Paginated<Tag>
+    DataPageTag, PageResponse<Tag>
 }
 
 #[utoipa::path(
@@ -73,17 +73,17 @@ async fn find_tag_by_keyword(
     get,
     tag = TAG,
     path = "/tag/explore",
-    params(TagFilter, PaginationQuery),
+    params(TagFilter, PageQuery),
     responses(
-        (status = 200, body = DataPaginatedTag),
+        (status = 200, body = DataPageTag),
         Error,
     ),
 )]
 async fn explore_tag(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<TagFilter>,
-    Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<Paginated<Tag>>, Error> {
+    Query(pagination): Query<PageQuery>,
+) -> Result<Data<PageResponse<Tag>>, Error> {
     let normalized = filter.with_sort_defaults();
     tracing::info!(?normalized, "explore_tag: incoming query");
     super::repo::find_by_filter(&repo, normalized, pagination)

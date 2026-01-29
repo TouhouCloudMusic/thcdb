@@ -25,7 +25,7 @@ export function TagExplore() {
 		queryKey: ["tag::tree", ROOT_COUNT, MAX_DEPTH, DEFAULT_DEPTH],
 		queryFn: async () => {
 			const res = await TagApi.explore({
-				query: { cursor: 0, limit: ROOT_COUNT },
+				query: { page: 1, limit: ROOT_COUNT },
 			})
 			const paginated = Either.getOrThrowWith(res, (error) => {
 				throw error

@@ -6,9 +6,7 @@ use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 
 use crate::features::artist::model::ArtistType;
-pub use crate::shared::http::{
-    CorrectionSortField, PaginationQuery, SortDirection,
-};
+pub use crate::shared::http::{CorrectionSortField, PageQuery, SortDirection};
 
 #[derive(Clone, Debug, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]

@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/solid-query"
+import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { EventApi } from "@thc/api"
 import type { Event } from "@thc/api"
@@ -6,6 +6,7 @@ import { Either } from "effect"
 import { For, Show } from "solid-js"
 import type { Component } from "solid-js"
 
+import { Pagination } from "~/component/Pagination"
 import { Link } from "~/component/atomic"
 import { Input } from "~/component/atomic/Input"
 import {
@@ -15,7 +16,6 @@ import {
 } from "~/component/feature/entity_explore"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout"
-import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 
@@ -155,10 +155,11 @@ function EventExploreFilterBar(props: EventExploreFilterBarProps) {
 type EventExploreListProps = {
 	events: Event[]
 	isLoading: boolean
-	isFetchingNextPage: boolean
-	hasNextPage: boolean
+	isFetching: boolean
 	limit: number
-	setSentinelRef: (el: HTMLDivElement | undefined) => void
+	page: number
+	totalPages: number
+	onPageChange: (page: number) => void
 }
 
 function EventExploreList(props: EventExploreListProps) {
@@ -175,12 +176,7 @@ function EventExploreList(props: EventExploreListProps) {
 				<For each={props.events}>{(event) => <EventItem event={event} />}</For>
 			</div>
 
-			<div
-				ref={props.setSentinelRef}
-				class="h-1"
-			></div>
-
-			<Show when={props.isFetchingNextPage || props.isLoading}>
+			<Show when={props.isFetching || props.isLoading}>
 				<div class="flex flex-col">
 					<For each={Array.from({ length: props.limit })}>
 						{() => <EventItemSkeleton />}
@@ -188,9 +184,13 @@ function EventExploreList(props: EventExploreListProps) {
 				</div>
 			</Show>
 
-			<Show when={!props.hasNextPage && props.events.length > 0}>
-				<div class="flex justify-center py-4 text-sm text-slate-400">
-					No more events
+			<Show when={props.totalPages > 1}>
+				<div class="flex justify-center py-6">
+					<Pagination
+						current={props.page}
+						total={props.totalPages}
+						onPageChange={props.onPageChange}
+					/>
 				</div>
 			</Show>
 		</>
@@ -203,20 +203,21 @@ export const EventExplore = () => {
 
 	const navigate = useNavigate({ from: "/event/explore" })
 
-	const eventsQuery = useInfiniteQuery(() => ({
+	const eventsQuery = useQuery(() => ({
 		queryKey: [
 			"event::explore",
+			search().page,
 			search().start_date_from,
 			search().start_date_to,
 			search().order_by,
 			search().limit,
 		],
-		queryFn: async ({ pageParam }) => {
+		queryFn: async () => {
 			return Either.getOrThrowWith(
 				await EventApi.explore({
 					query: {
 						limit: search().limit,
-						cursor: pageParam,
+						page: search().page,
 						start_date_from: search().start_date_from,
 						start_date_to: search().start_date_to,
 						sort_direction: search().order_by,
@@ -227,18 +228,17 @@ export const EventExplore = () => {
 				},
 			)
 		},
-		initialPageParam: 0,
-		getNextPageParam: (lastPage) => lastPage.next_cursor ?? null,
 	}))
 
-	const events = () => eventsQuery.data?.pages.flatMap((p) => p.items) ?? []
+	const events = () => eventsQuery.data?.items ?? []
+	const totalPages = () => eventsQuery.data?.total_pages ?? 0
 
-	const setSentinelRef = useIntersectionSentinel<HTMLDivElement>({
-		enabled: () => eventsQuery.hasNextPage && !eventsQuery.isFetchingNextPage,
-		onIntersect: () => {
-			void eventsQuery.fetchNextPage()
-		},
-	})
+	const setPage = (page: number) => {
+		navigate({
+			to: "/event/explore",
+			search: { ...search(), page },
+		})
+	}
 
 	const updateOrderBy = (value: "asc" | "desc" | undefined) => {
 		navigate({
@@ -246,6 +246,7 @@ export const EventExplore = () => {
 			search: {
 				...search(),
 				order_by: value,
+				page: 1,
 			},
 		})
 	}
@@ -265,6 +266,7 @@ export const EventExplore = () => {
 			search: {
 				...search(),
 				[key]: nextValue,
+				page: 1,
 			},
 		})
 	}
@@ -296,10 +298,11 @@ export const EventExplore = () => {
 				<EventExploreList
 					events={events()}
 					isLoading={eventsQuery.isLoading}
-					isFetchingNextPage={eventsQuery.isFetchingNextPage}
-					hasNextPage={eventsQuery.hasNextPage}
+					isFetching={eventsQuery.isFetching}
 					limit={search().limit}
-					setSentinelRef={setSentinelRef}
+					page={search().page}
+					totalPages={totalPages()}
+					onPageChange={setPage}
 				/>
 			</div>
 		</PageLayout>

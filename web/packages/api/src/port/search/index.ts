@@ -11,18 +11,18 @@ import type {
 import type { ErrResponse, OkResponse } from "../../shared"
 import { adaptApiResult } from "../../shared"
 
-type Paginated<T> = {
+type CursorPage<T> = {
 	items: T[]
 	next_cursor: number | null
 }
 
 type SearchAllResponse = {
-	artists: Paginated<SimpleArtist>
-	releases: Paginated<SimpleRelease>
-	songs: Paginated<SongRef>
-	events: Paginated<SimpleEvent>
-	labels: Paginated<SimpleLabel>
-	tags: Paginated<TagRef>
+	artists: CursorPage<SimpleArtist>
+	releases: CursorPage<SimpleRelease>
+	songs: CursorPage<SongRef>
+	events: CursorPage<SimpleEvent>
+	labels: CursorPage<SimpleLabel>
+	tags: CursorPage<TagRef>
 }
 
 type SearchAllQuery = {
@@ -52,7 +52,9 @@ type SearchPaths = {
 			parameters: { query: SearchSingleQuery }
 			responses: {
 				200: {
-					content: { "application/json": OkResponse<Paginated<SimpleArtist>> }
+					content: {
+						"application/json": OkResponse<CursorPage<SimpleArtist>>
+					}
 				}
 				400: { content: { "application/json": ErrResponse } }
 				500: { content: { "application/json": ErrResponse } }
@@ -64,7 +66,9 @@ type SearchPaths = {
 			parameters: { query: SearchSingleQuery }
 			responses: {
 				200: {
-					content: { "application/json": OkResponse<Paginated<SimpleRelease>> }
+					content: {
+						"application/json": OkResponse<CursorPage<SimpleRelease>>
+					}
 				}
 				400: { content: { "application/json": ErrResponse } }
 				500: { content: { "application/json": ErrResponse } }
@@ -75,7 +79,9 @@ type SearchPaths = {
 		get: {
 			parameters: { query: SearchSingleQuery }
 			responses: {
-				200: { content: { "application/json": OkResponse<Paginated<SongRef>> } }
+				200: {
+					content: { "application/json": OkResponse<CursorPage<SongRef>> }
+				}
 				400: { content: { "application/json": ErrResponse } }
 				500: { content: { "application/json": ErrResponse } }
 			}
@@ -86,7 +92,7 @@ type SearchPaths = {
 			parameters: { query: SearchSingleQuery }
 			responses: {
 				200: {
-					content: { "application/json": OkResponse<Paginated<SimpleEvent>> }
+					content: { "application/json": OkResponse<CursorPage<SimpleEvent>> }
 				}
 				400: { content: { "application/json": ErrResponse } }
 				500: { content: { "application/json": ErrResponse } }
@@ -98,7 +104,7 @@ type SearchPaths = {
 			parameters: { query: SearchSingleQuery }
 			responses: {
 				200: {
-					content: { "application/json": OkResponse<Paginated<SimpleLabel>> }
+					content: { "application/json": OkResponse<CursorPage<SimpleLabel>> }
 				}
 				400: { content: { "application/json": ErrResponse } }
 				500: { content: { "application/json": ErrResponse } }
@@ -109,7 +115,7 @@ type SearchPaths = {
 		get: {
 			parameters: { query: SearchSingleQuery }
 			responses: {
-				200: { content: { "application/json": OkResponse<Paginated<TagRef>> } }
+				200: { content: { "application/json": OkResponse<CursorPage<TagRef>> } }
 				400: { content: { "application/json": ErrResponse } }
 				500: { content: { "application/json": ErrResponse } }
 			}

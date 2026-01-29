@@ -134,13 +134,13 @@ pub async fn load_profile(
         .ok_or_else(|| axum::http::StatusCode::NOT_FOUND.into_response())?;
 
     if let Some(current_user) = current_user {
-        if current_user.name != profile.name {
+        if current_user.name == profile.name {
+            profile.settings = Some(current_user.settings.clone());
+        } else {
             service
                 .with_following(&mut profile, current_user)
                 .await
                 .map_err(IntoResponse::into_response)?;
-        } else {
-            profile.settings = Some(current_user.settings.clone());
         }
     }
 

@@ -13,7 +13,7 @@ use crate::domain::artist::SimpleArtist;
 use crate::domain::event::SimpleEvent;
 use crate::domain::label::SimpleLabel;
 use crate::domain::release::SimpleRelease;
-use crate::domain::shared::{Paginated, SearchTerm, SearchTermConfig};
+use crate::domain::shared::{CursorResponse, SearchTerm, SearchTermConfig};
 use crate::domain::song::SongRef;
 use crate::domain::tag::TagRef;
 use crate::infra::error::Error as InfraError;
@@ -88,12 +88,12 @@ fn normalize_limit(limit: Option<u32>) -> u32 {
 
 #[derive(Serialize, ToSchema)]
 pub struct SearchResponse {
-    pub artists: Paginated<SimpleArtist>,
-    pub releases: Paginated<SimpleRelease>,
-    pub songs: Paginated<SongRef>,
-    pub events: Paginated<SimpleEvent>,
-    pub labels: Paginated<SimpleLabel>,
-    pub tags: Paginated<TagRef>,
+    pub artists: CursorResponse<SimpleArtist>,
+    pub releases: CursorResponse<SimpleRelease>,
+    pub songs: CursorResponse<SongRef>,
+    pub events: CursorResponse<SimpleEvent>,
+    pub labels: CursorResponse<SimpleLabel>,
+    pub tags: CursorResponse<TagRef>,
 }
 
 impl SearchResponse {
@@ -127,12 +127,12 @@ impl SearchResponse {
 
 data! {
     DataSearchResponse, SearchResponse
-    DataPaginatedSimpleArtist, Paginated<SimpleArtist>
-    DataPaginatedSimpleRelease, Paginated<SimpleRelease>
-    DataPaginatedSongRef, Paginated<SongRef>
-    DataPaginatedSimpleEvent, Paginated<SimpleEvent>
-    DataPaginatedSimpleLabel, Paginated<SimpleLabel>
-    DataPaginatedTagRef, Paginated<TagRef>
+    DataPaginatedSimpleArtist, CursorResponse<SimpleArtist>
+    DataPaginatedSimpleRelease, CursorResponse<SimpleRelease>
+    DataPaginatedSongRef, CursorResponse<SongRef>
+    DataPaginatedSimpleEvent, CursorResponse<SimpleEvent>
+    DataPaginatedSimpleLabel, CursorResponse<SimpleLabel>
+    DataPaginatedTagRef, CursorResponse<TagRef>
 }
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
@@ -197,7 +197,7 @@ async fn search_all(
 async fn search_artist(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<Paginated<SimpleArtist>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<SimpleArtist>>, axum::response::Response> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
@@ -237,7 +237,7 @@ async fn search_artist(
 async fn search_release(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<Paginated<SimpleRelease>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<SimpleRelease>>, axum::response::Response> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
@@ -277,7 +277,7 @@ async fn search_release(
 async fn search_song(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<Paginated<SongRef>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<SongRef>>, axum::response::Response> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
@@ -317,7 +317,7 @@ async fn search_song(
 async fn search_event(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<Paginated<SimpleEvent>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<SimpleEvent>>, axum::response::Response> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
@@ -357,7 +357,7 @@ async fn search_event(
 async fn search_label(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<Paginated<SimpleLabel>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<SimpleLabel>>, axum::response::Response> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
@@ -397,7 +397,7 @@ async fn search_label(
 async fn search_tag(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<Paginated<TagRef>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<TagRef>>, axum::response::Response> {
     let ValidSearchSingleQuery {
         search_term,
         limit,

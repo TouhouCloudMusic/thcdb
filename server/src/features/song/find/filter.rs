@@ -7,9 +7,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::{DisplayFromStr, OneOrMany, serde_as};
 use utoipa::{IntoParams, ToSchema};
 
-pub use crate::shared::http::{
-    CorrectionSortField, PaginationQuery, SortDirection,
-};
+pub use crate::shared::http::{CorrectionSortField, PageQuery, SortDirection};
 
 #[serde_as]
 #[derive(

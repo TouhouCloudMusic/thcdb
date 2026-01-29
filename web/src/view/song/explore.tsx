@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/solid-query"
+import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { SongApi } from "@thc/api"
 import type { LocalizedTitle, SimpleArtist, Song } from "@thc/api"
@@ -6,6 +6,7 @@ import { Either } from "effect"
 import { For, Show } from "solid-js"
 import type { Component } from "solid-js"
 
+import { Pagination } from "~/component/Pagination"
 import { Link } from "~/component/atomic"
 import { Select } from "~/component/atomic/form/select"
 import {
@@ -16,7 +17,6 @@ import {
 } from "~/component/feature/entity_explore"
 import { PageLayout } from "~/layout"
 import { useI18N } from "~/state/i18n"
-import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 
@@ -136,10 +136,11 @@ type SongExploreListProps = {
 	songs: Song[]
 	locale: string
 	isLoading: boolean
-	isFetchingNextPage: boolean
-	hasNextPage: boolean
+	isFetching: boolean
 	limit: number
-	setSentinelRef: (el: HTMLDivElement | undefined) => void
+	page: number
+	totalPages: number
+	onPageChange: (page: number) => void
 }
 
 function SongExploreList(props: SongExploreListProps) {
@@ -163,12 +164,7 @@ function SongExploreList(props: SongExploreListProps) {
 				</For>
 			</div>
 
-			<div
-				ref={props.setSentinelRef}
-				class="h-1"
-			></div>
-
-			<Show when={props.isFetchingNextPage}>
+			<Show when={props.isFetching || props.isLoading}>
 				<div class="flex flex-col">
 					<For each={Array.from({ length: props.limit })}>
 						{() => <SongItemSkeleton />}
@@ -176,9 +172,13 @@ function SongExploreList(props: SongExploreListProps) {
 				</div>
 			</Show>
 
-			<Show when={!props.hasNextPage && props.songs.length > 0}>
-				<div class="flex justify-center py-4 text-sm text-slate-400">
-					No more songs
+			<Show when={props.totalPages > 1}>
+				<div class="flex justify-center py-6">
+					<Pagination
+						current={props.page}
+						total={props.totalPages}
+						onPageChange={props.onPageChange}
+					/>
 				</div>
 			</Show>
 		</>
@@ -193,20 +193,21 @@ export const SongExplore = () => {
 
 	const navigate = useNavigate({ from: "/song/explore" })
 
-	const songsQuery = useInfiniteQuery(() => ({
+	const songsQuery = useQuery(() => ({
 		queryKey: [
 			"song::explore",
+			search().page,
 			search().language_id,
 			search().sort_by,
 			search().order_by,
 			search().limit,
 		],
-		queryFn: async ({ pageParam }) => {
+		queryFn: async () => {
 			return Either.getOrThrowWith(
 				await SongApi.explore({
 					query: {
 						limit: search().limit,
-						cursor: pageParam,
+						page: search().page,
 						language_id: search().language_id,
 						sort_field: search().sort_by,
 						sort_direction: search().order_by,
@@ -217,18 +218,20 @@ export const SongExplore = () => {
 				},
 			)
 		},
-		initialPageParam: 0,
-		getNextPageParam: (lastPage) => lastPage.next_cursor ?? null,
 	}))
 
-	const songs = () => songsQuery.data?.pages.flatMap((p) => p.items) ?? []
+	const songs = () => songsQuery.data?.items ?? []
+	const totalPages = () => songsQuery.data?.total_pages ?? 0
 
-	const setSentinelRef = useIntersectionSentinel<HTMLDivElement>({
-		enabled: () => songsQuery.hasNextPage && !songsQuery.isFetchingNextPage,
-		onIntersect: () => {
-			void songsQuery.fetchNextPage()
-		},
-	})
+	const setPage = (page: number) => {
+		navigate({
+			to: "/song/explore",
+			search: {
+				...search(),
+				page,
+			},
+		})
+	}
 
 	const updateFilter = (
 		key: "sort_by" | "order_by",
@@ -239,6 +242,7 @@ export const SongExplore = () => {
 			search: {
 				...search(),
 				[key]: value || undefined,
+				page: 1,
 			},
 		})
 	}
@@ -258,6 +262,7 @@ export const SongExplore = () => {
 			search: {
 				...search(),
 				language_id: Number.isNaN(parsed) ? undefined : [parsed],
+				page: 1,
 			},
 		})
 	}
@@ -291,10 +296,11 @@ export const SongExplore = () => {
 					songs={songs()}
 					locale={i18n.locale()}
 					isLoading={songsQuery.isLoading}
-					isFetchingNextPage={songsQuery.isFetchingNextPage}
-					hasNextPage={songsQuery.hasNextPage}
+					isFetching={songsQuery.isFetching}
 					limit={search().limit}
-					setSentinelRef={setSentinelRef}
+					page={search().page}
+					totalPages={totalPages()}
+					onPageChange={setPage}
 				/>
 			</div>
 		</PageLayout>

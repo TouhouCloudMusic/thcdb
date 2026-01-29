@@ -15,8 +15,8 @@ use sea_orm::{
 use crate::constant::ADMIN_USERNAME;
 use crate::domain::auth::hash_password;
 use crate::domain::model::UserRoleEnum;
-use crate::domain::shared::Paginated;
-use crate::shared::http::{CorrectionSortField, PaginationQuery};
+use crate::domain::shared::{CursorResponse, PageResponse};
+use crate::shared::http::{CorrectionSortField, PageQuery, PaginationQuery};
 
 pub async fn correction_sorted_entity_ids(
     db: &impl ConnectionTrait,
@@ -151,7 +151,7 @@ pub fn paginate_by_id<T>(
     items: Vec<T>,
     pagination: &PaginationQuery,
     get_id: impl Fn(&T) -> i32,
-) -> Paginated<T> {
+) -> CursorResponse<T> {
     let limit = pagination.limit() as usize;
 
     let items: Vec<T> = if let Some(cursor) = pagination.cursor {
@@ -171,7 +171,7 @@ pub fn paginate_by_id<T>(
         None
     };
 
-    Paginated { items, next_cursor }
+    CursorResponse { items, next_cursor }
 }
 
 pub async fn find_many_paginated<E, D, Fut>(
@@ -180,7 +180,7 @@ pub async fn find_many_paginated<E, D, Fut>(
     id_column: E::Column,
     fetch: impl FnOnce(Select<E>) -> Fut,
     get_id: impl Fn(&D) -> i32,
-) -> Result<Paginated<D>, DbErr>
+) -> Result<CursorResponse<D>, DbErr>
 where
     E: EntityTrait,
     E::Column: ColumnTrait,
@@ -211,5 +211,87 @@ where
         None
     };
 
-    Ok(Paginated { items, next_cursor })
+    Ok(CursorResponse { items, next_cursor })
+}
+
+pub async fn find_many_page<E, D, Fut>(
+    db: &impl ConnectionTrait,
+    mut select: Select<E>,
+    pagination: PageQuery,
+    id_column: E::Column,
+    fetch: impl FnOnce(Select<E>) -> Fut,
+) -> Result<PageResponse<D>, DbErr>
+where
+    E: EntityTrait,
+    E::Model: sea_orm::FromQueryResult + Send + Sync + 'static,
+    E::Column: ColumnTrait,
+    Fut: Future<Output = Result<Vec<D>, DbErr>>,
+{
+    use sea_orm::{QueryOrder, QuerySelect};
+
+    let page = pagination.page();
+    let page_size = pagination.limit();
+
+    let total_items = select.clone().count(db).await?;
+    let total_pages = if total_items == 0 {
+        0
+    } else {
+        let pages = total_items.div_ceil(u64::from(page_size));
+        u32::try_from(pages).unwrap_or(u32::MAX)
+    };
+
+    // Ensure stable ordering for offset pagination.
+    select = select.order_by_asc(id_column);
+
+    let offset =
+        u64::from(page.saturating_sub(1)).saturating_mul(u64::from(page_size));
+    select = select.offset(offset).limit(u64::from(page_size));
+
+    let items = fetch(select).await?;
+
+    Ok(PageResponse {
+        items,
+        page,
+        page_size,
+        total_items,
+        total_pages,
+    })
+}
+
+pub fn page_from_items<T>(
+    items: Vec<T>,
+    pagination: &PageQuery,
+) -> PageResponse<T> {
+    let page = pagination.page();
+    let page_size = pagination.limit();
+
+    let total_items = items.len() as u64;
+    let total_pages = if total_items == 0 {
+        0
+    } else {
+        let pages = total_items.div_ceil(u64::from(page_size));
+        u32::try_from(pages).unwrap_or(u32::MAX)
+    };
+
+    let offset =
+        u64::from(page.saturating_sub(1)).saturating_mul(u64::from(page_size));
+    let start = usize::try_from(offset).unwrap_or(usize::MAX);
+
+    let items = if start >= items.len() {
+        vec![]
+    } else {
+        items
+            .into_iter()
+            .skip(start)
+            .take(page_size as usize)
+            .collect()
+    };
+
+    PageResponse {
+        items,
+        page,
+        page_size,
+        total_items,
+        total_pages,
+    }
 }

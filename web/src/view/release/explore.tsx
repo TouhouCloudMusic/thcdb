@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/solid-query"
+import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { ReleaseApi } from "@thc/api"
 import type { ReleaseType } from "@thc/api"
@@ -8,7 +8,6 @@ import { Link } from "~/component/atomic"
 import { RELEASE_TYPES } from "~/domain/release/constants"
 import { PageLayout } from "~/layout"
 import { useI18N } from "~/state/i18n"
-import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 import {
 	ReleaseExploreFilterBar,
@@ -31,20 +30,21 @@ export const ReleaseExplore = () => {
 
 	const releaseType = () => search().release_type?.[0]
 
-	const releasesQuery = useInfiniteQuery(() => ({
+	const releasesQuery = useQuery(() => ({
 		queryKey: [
 			"release::explore",
+			search().page,
 			search().release_type,
 			search().sort_by,
 			search().order_by,
 			search().limit,
 		],
-		queryFn: async ({ pageParam }) => {
+		queryFn: async () => {
 			return Either.getOrThrowWith(
 				await ReleaseApi.explore({
 					query: {
 						limit: search().limit,
-						cursor: pageParam,
+						page: search().page,
 						release_type: search().release_type,
 						sort_field: search().sort_by,
 						sort_direction: search().order_by,
@@ -55,19 +55,20 @@ export const ReleaseExplore = () => {
 				},
 			)
 		},
-		initialPageParam: 0,
-		getNextPageParam: (lastPage) => lastPage.next_cursor ?? null,
 	}))
 
-	const releases = () => releasesQuery.data?.pages.flatMap((p) => p.items) ?? []
+	const releases = () => releasesQuery.data?.items ?? []
+	const totalPages = () => releasesQuery.data?.total_pages ?? 0
 
-	const setSentinelRef = useIntersectionSentinel<HTMLDivElement>({
-		enabled: () =>
-			releasesQuery.hasNextPage && !releasesQuery.isFetchingNextPage,
-		onIntersect: () => {
-			void releasesQuery.fetchNextPage()
-		},
-	})
+	const setPage = (page: number) => {
+		navigate({
+			to: "/release/explore",
+			search: {
+				...search(),
+				page,
+			},
+		})
+	}
 
 	const updateFilter = (
 		key: "sort_by" | "order_by",
@@ -78,6 +79,7 @@ export const ReleaseExplore = () => {
 			search: {
 				...search(),
 				[key]: value || undefined,
+				page: 1,
 			},
 		})
 	}
@@ -96,6 +98,7 @@ export const ReleaseExplore = () => {
 			search: {
 				...search(),
 				release_type: isReleaseType(value) ? [value] : undefined,
+				page: 1,
 			},
 		})
 	}
@@ -129,10 +132,11 @@ export const ReleaseExplore = () => {
 					releases={releases()}
 					locale={i18n.locale()}
 					isLoading={releasesQuery.isLoading}
-					isFetchingNextPage={releasesQuery.isFetchingNextPage}
-					hasNextPage={releasesQuery.hasNextPage}
+					isFetching={releasesQuery.isFetching}
 					limit={search().limit}
-					setSentinelRef={setSentinelRef}
+					page={search().page}
+					totalPages={totalPages()}
+					onPageChange={setPage}
 				/>
 			</div>
 		</PageLayout>

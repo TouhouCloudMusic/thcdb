@@ -65,8 +65,8 @@ pub(super) async fn find_by_keyword(
 pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: SongFilter,
-    pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Song>, DbErr> {
+    pagination: crate::shared::http::PageQuery,
+) -> Result<crate::domain::shared::PageResponse<Song>, DbErr> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -81,12 +81,12 @@ pub(super) async fn find_by_filter(
     }
 
     let select: Select<song::Entity> = filter.into_select();
-    utils::find_many_paginated(
+    utils::find_many_page(
+        &repo.conn,
         select,
         pagination,
         song::Column::Id,
         |select| find_many_impl(select, &repo.conn),
-        |song: &Song| song.id,
     )
     .await
 }
@@ -354,8 +354,8 @@ async fn find_sorted_by_correction(
     filter: SongFilter,
     sort_field: CorrectionSortField,
     sort_direction: SortDirection,
-    pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Song>, DbErr> {
+    pagination: crate::shared::http::PageQuery,
+) -> Result<crate::domain::shared::PageResponse<Song>, DbErr> {
     use entity::enums::EntityType;
 
     let entity_ids =
@@ -371,7 +371,7 @@ async fn find_sorted_by_correction(
         .await?;
 
     if entity_ids.is_empty() {
-        return Ok(crate::domain::shared::Paginated::nothing());
+        return Ok(utils::page_from_items(vec![], &pagination));
     }
 
     let select = filter
@@ -386,7 +386,7 @@ async fn find_sorted_by_correction(
         |song| song.id,
     );
 
-    Ok(utils::paginate_by_id(songs, &pagination, |song| song.id))
+    Ok(utils::page_from_items(songs, &pagination))
 }
 
 #[cfg(test)]

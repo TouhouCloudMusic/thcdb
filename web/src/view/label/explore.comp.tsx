@@ -3,6 +3,7 @@ import type { Component } from "solid-js"
 import { For, Show } from "solid-js"
 
 import { Link } from "~/component/atomic"
+import { Pagination } from "~/component/Pagination"
 import {
 	CorrectionSortFieldSelect,
 	EmptyExplorePlaceholder,
@@ -147,10 +148,11 @@ export const LabelExploreFilterBar: Component<LabelExploreFilterBarProps> = (
 type LabelExploreListProps = {
 	labels: Label[]
 	isLoading: boolean
-	isFetchingNextPage: boolean
-	hasNextPage: boolean
+	isFetching: boolean
 	limit: number
-	setSentinelRef: (el: HTMLDivElement) => void
+	page: number
+	totalPages: number
+	onPageChange: (page: number) => void
 }
 
 export const LabelExploreList: Component<LabelExploreListProps> = (props) => {
@@ -167,12 +169,7 @@ export const LabelExploreList: Component<LabelExploreListProps> = (props) => {
 				<For each={props.labels}>{(label) => <LabelItem label={label} />}</For>
 			</div>
 
-			<div
-				ref={props.setSentinelRef}
-				class="h-1"
-			></div>
-
-			<Show when={props.isFetchingNextPage || props.isLoading}>
+			<Show when={props.isFetching || props.isLoading}>
 				<div class="flex flex-col">
 					<For each={Array.from({ length: props.limit })}>
 						{() => <LabelItemSkeleton />}
@@ -180,9 +177,13 @@ export const LabelExploreList: Component<LabelExploreListProps> = (props) => {
 				</div>
 			</Show>
 
-			<Show when={!props.hasNextPage && props.labels.length > 0}>
-				<div class="flex justify-center py-4 text-sm text-slate-400">
-					No more labels
+			<Show when={props.totalPages > 1}>
+				<div class="flex justify-center py-6">
+					<Pagination
+						current={props.page}
+						total={props.totalPages}
+						onPageChange={props.onPageChange}
+					/>
 				</div>
 			</Show>
 		</>

@@ -6,7 +6,7 @@ import { SongExplore } from "~/view/song/explore"
 const DEFAULT_LIMIT = 10
 
 const exploreSearch = v.object({
-	cursor: v.fallback(v.optional(v.pipe(v.number(), v.minValue(0))), undefined),
+	page: v.fallback(v.pipe(v.number(), v.minValue(1)), 1),
 	limit: v.fallback(v.pipe(v.number(), v.minValue(1)), DEFAULT_LIMIT),
 	language_id: v.optional(v.array(v.number())),
 	sort_by: v.fallback(

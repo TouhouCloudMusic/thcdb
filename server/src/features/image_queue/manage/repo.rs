@@ -14,7 +14,7 @@ use sea_orm::{
 };
 
 use super::{Error, ImageQueueType};
-use crate::domain::shared::Paginated;
+use crate::domain::shared::CursorResponse;
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::infra::error::Error as InfraError;
 
@@ -36,7 +36,7 @@ pub async fn find_pending(
     cursor: Option<i32>,
     status: Option<ImageQueueStatus>,
     queue_type: Option<ImageQueueType>,
-) -> Result<Paginated<image_queue_entity::Model>, InfraError> {
+) -> Result<CursorResponse<image_queue_entity::Model>, InfraError> {
     let select = image_queue_entity::Entity::find()
         .order_by_desc(image_queue_entity::Column::Id)
         .apply_if(status, |query, status| {
@@ -76,7 +76,7 @@ pub async fn find_pending(
         None
     };
 
-    Ok(Paginated {
+    Ok(CursorResponse {
         items: models,
         next_cursor,
     })

@@ -4,6 +4,7 @@ import { For, Show } from "solid-js"
 
 import { Link } from "~/component/atomic"
 import { Select } from "~/component/atomic/form/select"
+import { Pagination } from "~/component/Pagination"
 import {
 	CorrectionSortFieldSelect,
 	EmptyExplorePlaceholder,
@@ -214,10 +215,11 @@ export type ReleaseExploreListProps = {
 	releases: Release[]
 	locale: string
 	isLoading: boolean
-	isFetchingNextPage: boolean
-	hasNextPage: boolean
+	isFetching: boolean
 	limit: number
-	setSentinelRef: (el: HTMLDivElement | undefined) => void
+	page: number
+	totalPages: number
+	onPageChange: (page: number) => void
 }
 
 export function ReleaseExploreList(props: ReleaseExploreListProps) {
@@ -241,12 +243,7 @@ export function ReleaseExploreList(props: ReleaseExploreListProps) {
 				</For>
 			</div>
 
-			<div
-				ref={props.setSentinelRef}
-				class="h-1"
-			></div>
-
-			<Show when={props.isFetchingNextPage || props.isLoading}>
+			<Show when={props.isFetching || props.isLoading}>
 				<div class="flex flex-col">
 					<For each={Array.from({ length: props.limit })}>
 						{() => <ReleaseItemSkeleton />}
@@ -254,9 +251,13 @@ export function ReleaseExploreList(props: ReleaseExploreListProps) {
 				</div>
 			</Show>
 
-			<Show when={!props.hasNextPage && props.releases.length > 0}>
-				<div class="flex justify-center py-4 text-sm text-slate-400">
-					No more releases
+			<Show when={props.totalPages > 1}>
+				<div class="flex justify-center py-6">
+					<Pagination
+						current={props.page}
+						total={props.totalPages}
+						onPageChange={props.onPageChange}
+					/>
 				</div>
 			</Show>
 		</>

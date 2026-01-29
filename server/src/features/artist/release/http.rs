@@ -9,7 +9,7 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::domain::{Cursor, Paginated};
+use crate::domain::{Cursor, CursorResponse};
 use crate::features::artist::model::{
     Appearance, AppearanceQuery, Credit, CreditQuery, Discography,
     DiscographyQuery,
@@ -30,9 +30,9 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 }
 
 data!(
-    DataPaginatedDiscography, Paginated<Discography>
-    DataPaginatedAppearance, Paginated<Appearance>
-    DataPaginatedCredit, Paginated<Credit>
+    DataPaginatedDiscography, CursorResponse<Discography>
+    DataPaginatedAppearance, CursorResponse<Appearance>
+    DataPaginatedCredit, CursorResponse<Credit>
 );
 
 #[derive(Deserialize, IntoParams)]
@@ -68,7 +68,7 @@ async fn find_artist_appearances(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<AppearanceQueryDto>,
-) -> Result<Data<Paginated<Appearance>>, Error> {
+) -> Result<Data<CursorResponse<Appearance>>, Error> {
     super::repo::appearance(&repo, dto.into_query(id))
         .await
         .bimap_into()
@@ -107,7 +107,7 @@ async fn get_artist_credits(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<CreditQueryDto>,
-) -> Result<Data<Paginated<Credit>>, Error> {
+) -> Result<Data<CursorResponse<Credit>>, Error> {
     super::repo::credit(&repo, dto.into_query(id))
         .await
         .bimap_into()
@@ -148,7 +148,7 @@ async fn find_artist_discographies_by_type(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<DiscographyQueryDto>,
-) -> Result<Data<Paginated<Discography>>, Error> {
+) -> Result<Data<CursorResponse<Discography>>, Error> {
     super::repo::discography(&repo, dto.into_query(id))
         .await
         .bimap_into()
@@ -178,12 +178,12 @@ impl InitDiscographyQueryDto {
 
 #[derive(Serialize, ToSchema)]
 struct InitDiscography {
-    album: Paginated<Discography>,
-    ep: Paginated<Discography>,
-    compilation: Paginated<Discography>,
-    single: Paginated<Discography>,
-    demo: Paginated<Discography>,
-    other: Paginated<Discography>,
+    album: CursorResponse<Discography>,
+    ep: CursorResponse<Discography>,
+    compilation: CursorResponse<Discography>,
+    single: CursorResponse<Discography>,
+    demo: CursorResponse<Discography>,
+    other: CursorResponse<Discography>,
 }
 
 data! {

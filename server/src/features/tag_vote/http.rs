@@ -10,12 +10,12 @@ use super::{Error, repo};
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
-use crate::domain::shared::Paginated;
+use crate::domain::shared::CursorResponse;
 use crate::shared::http::PaginationQuery;
 
 const TAG: &str = "TagVote";
 
-data!(DataPaginatedTagAggregate, Paginated<TagAggregate>);
+data!(DataPaginatedTagAggregate, CursorResponse<TagAggregate>);
 
 #[derive(Deserialize, IntoParams)]
 struct TagVotePath {
@@ -100,7 +100,7 @@ async fn get_tags(
     State(repo): State<state::SeaOrmRepository>,
     Path(TagVotePath { entity_type, id }): Path<TagVotePath>,
     Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<Paginated<TagAggregate>>, Error> {
+) -> Result<Data<CursorResponse<TagAggregate>>, Error> {
     let user_id = session.user.as_ref().map(|u| u.id);
     let tags = repo::get_tags(
         &repo,

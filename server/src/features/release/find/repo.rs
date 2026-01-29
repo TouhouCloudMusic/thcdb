@@ -73,8 +73,8 @@ fn filter_into_select(filter: FindReleaseFilter) -> Select<release::Entity> {
 pub(crate) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::ReleaseFilter,
-    pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Release>, DbErr> {
+    pagination: crate::shared::http::PageQuery,
+) -> Result<crate::domain::shared::PageResponse<Release>, DbErr> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -89,12 +89,12 @@ pub(crate) async fn find_by_filter(
     }
 
     let select = filter.into_select();
-    utils::find_many_paginated(
+    utils::find_many_page(
+        &repo.conn,
         select,
         pagination,
         release::Column::Id,
         |select| find_many_impl(select, &repo.conn),
-        |release: &Release| release.id,
     )
     .await
 }
@@ -104,8 +104,8 @@ async fn find_sorted_by_correction(
     filter: super::ReleaseFilter,
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
-    pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Release>, DbErr> {
+    pagination: crate::shared::http::PageQuery,
+) -> Result<crate::domain::shared::PageResponse<Release>, DbErr> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
@@ -123,7 +123,7 @@ async fn find_sorted_by_correction(
         .await?;
 
     if entity_ids.is_empty() {
-        return Ok(crate::domain::shared::Paginated::nothing());
+        return Ok(utils::page_from_items(vec![], &pagination));
     }
 
     let mut select = release::Entity::find()
@@ -142,7 +142,5 @@ async fn find_sorted_by_correction(
         |release| release.id,
     );
 
-    Ok(utils::paginate_by_id(releases, &pagination, |release| {
-        release.id
-    }))
+    Ok(utils::page_from_items(releases, &pagination))
 }

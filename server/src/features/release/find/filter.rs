@@ -5,9 +5,7 @@ use serde::Deserialize;
 use serde_with::{OneOrMany, serde_as};
 use utoipa::{IntoParams, ToSchema};
 
-pub use crate::shared::http::{
-    CorrectionSortField, PaginationQuery, SortDirection,
-};
+pub use crate::shared::http::{CorrectionSortField, PageQuery, SortDirection};
 
 #[serde_as]
 #[derive(Clone, Debug, Default, Deserialize, ToSchema, IntoParams)]

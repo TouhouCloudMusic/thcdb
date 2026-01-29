@@ -86,12 +86,12 @@
 
 ```rust
 struct SearchResponse {
-    artists: Paginated<SimpleArtist>,
-    releases: Paginated<SimpleRelease>,
-    songs: Paginated<SongRef>,
-    events: Paginated<SimpleEvent>,
-    labels: Paginated<SimpleLabel>,
-    tags: Paginated<TagRef>,
+    artists: CursorResponse<SimpleArtist>,
+    releases: CursorResponse<SimpleRelease>,
+    songs: CursorResponse<SongRef>,
+    events: CursorResponse<SimpleEvent>,
+    labels: CursorResponse<SimpleLabel>,
+    tags: CursorResponse<TagRef>,
 }
 ```
 
@@ -131,7 +131,7 @@ struct SearchResponse {
 
 ## 1.3 分页协议（`limit/cursor`）
 
-为了复用现有分页设施（`Paginated<T> { items, next_cursor }`），MVP 采用基于主表 `id` 的 cursor 分页，并对“多实体”与“单实体”分两类语义。
+为了复用现有分页设施（`CursorResponse<T> { items, next_cursor }`），MVP 采用基于主表 `id` 的 cursor 分页，并对“多实体”与“单实体”分两类语义。
 
 为避免在实现中反复写「`type` 数量 vs `cursor` 是否允许」的分支判断，建议将 HTTP Query 的“原始参数”先解析为 DTO，再 **校验并提升为类型安全的枚举**：一旦进入业务层，`cursor` 的可用性由 enum 结构强制保证。
 
@@ -192,7 +192,7 @@ MVP 返回结构稳定、可扩展：
 
 - 顶层响应与其他 REST API 一致，使用统一 `ApiResponse` 包装（当前实现为 `Data<T>`）：`{ "status": "Ok", "data": SearchResponse }`
 - `SearchResponse` 固定包含 `artists/releases/songs/events/labels/tags` 六个分组字段
-- 每个分组使用 `Paginated<T>`：
+- 每个分组使用 `CursorResponse<T>`：
   - 必含：`items`（数组）
   - 必含：`next_cursor`（int 或 null）
 - `items` 的元素类型：MVP 使用轻量视图模型（`Simple*`/`*Ref`），用于搜索结果列表展示；需要详情时由客户端再用 `id` 调用各实体详情端点。

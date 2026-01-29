@@ -14,7 +14,7 @@ use crate::domain::artist::SimpleArtist;
 use crate::domain::event::SimpleEvent;
 use crate::domain::label::SimpleLabel;
 use crate::domain::release::SimpleRelease;
-use crate::domain::shared::Paginated;
+use crate::domain::shared::CursorResponse;
 use crate::domain::song::SongRef;
 use crate::domain::tag::TagRef;
 use crate::infra::database::sea_orm::SeaOrmRepository;
@@ -104,9 +104,9 @@ fn paginate_offset<T>(
     mut items: Vec<T>,
     limit: u32,
     cursor: i32,
-) -> Paginated<T> {
+) -> CursorResponse<T> {
     if items.len() <= limit as usize {
-        return Paginated {
+        return CursorResponse {
             items,
             next_cursor: None,
         };
@@ -114,7 +114,7 @@ fn paginate_offset<T>(
 
     items.pop();
 
-    Paginated {
+    CursorResponse {
         items,
         next_cursor: Some(cursor + i32::try_from(limit).unwrap_or(i32::MAX)),
     }
@@ -157,7 +157,7 @@ pub async fn search_artists(
     search_term: &str,
     limit: u32,
     cursor: i32,
-) -> Result<Paginated<SimpleArtist>, DbErr> {
+) -> Result<CursorResponse<SimpleArtist>, DbErr> {
     let db = &repo.conn;
     let ranked_alias = Alias::new(SEARCH_ALIAS_RANKED);
     let id_alias = Alias::new(SEARCH_ALIAS_ID);
@@ -214,7 +214,7 @@ pub async fn search_releases(
     search_term: &str,
     limit: u32,
     cursor: i32,
-) -> Result<Paginated<SimpleRelease>, DbErr> {
+) -> Result<CursorResponse<SimpleRelease>, DbErr> {
     let db = &repo.conn;
     let ranked_alias = Alias::new(SEARCH_ALIAS_RANKED);
     let id_alias = Alias::new(SEARCH_ALIAS_ID);
@@ -272,7 +272,7 @@ pub async fn search_songs(
     search_term: &str,
     limit: u32,
     cursor: i32,
-) -> Result<Paginated<SongRef>, DbErr> {
+) -> Result<CursorResponse<SongRef>, DbErr> {
     let db = &repo.conn;
     let ranked_alias = Alias::new(SEARCH_ALIAS_RANKED);
     let id_alias = Alias::new(SEARCH_ALIAS_ID);
@@ -329,7 +329,7 @@ pub async fn search_events(
     search_term: &str,
     limit: u32,
     cursor: i32,
-) -> Result<Paginated<SimpleEvent>, DbErr> {
+) -> Result<CursorResponse<SimpleEvent>, DbErr> {
     let db = &repo.conn;
     let ranked_alias = Alias::new(SEARCH_ALIAS_RANKED);
     let id_alias = Alias::new(SEARCH_ALIAS_ID);
@@ -386,7 +386,7 @@ pub async fn search_labels(
     search_term: &str,
     limit: u32,
     cursor: i32,
-) -> Result<Paginated<SimpleLabel>, DbErr> {
+) -> Result<CursorResponse<SimpleLabel>, DbErr> {
     let db = &repo.conn;
     let ranked_alias = Alias::new(SEARCH_ALIAS_RANKED);
     let id_alias = Alias::new(SEARCH_ALIAS_ID);
@@ -443,7 +443,7 @@ pub async fn search_tags(
     search_term: &str,
     limit: u32,
     cursor: i32,
-) -> Result<Paginated<TagRef>, DbErr> {
+) -> Result<CursorResponse<TagRef>, DbErr> {
     let db = &repo.conn;
     let ranked_alias = Alias::new(SEARCH_ALIAS_RANKED);
     let id_alias = Alias::new(SEARCH_ALIAS_ID);

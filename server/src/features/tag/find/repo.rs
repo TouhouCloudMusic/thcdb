@@ -48,8 +48,8 @@ pub(super) async fn find_by_keyword(
 pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::TagFilter,
-    pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Tag>, DbErr> {
+    pagination: crate::shared::http::PageQuery,
+) -> Result<crate::domain::shared::PageResponse<Tag>, DbErr> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -64,12 +64,12 @@ pub(super) async fn find_by_filter(
     }
 
     let select = filter.into_select();
-    utils::find_many_paginated(
+    utils::find_many_page(
+        &repo.conn,
         select,
         pagination,
         tag::Column::Id,
         |select| find_many_impl(select, &repo.conn),
-        |tag: &Tag| tag.id,
     )
     .await
 }
@@ -79,8 +79,8 @@ async fn find_sorted_by_correction(
     filter: super::TagFilter,
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
-    pagination: crate::shared::http::PaginationQuery,
-) -> Result<crate::domain::shared::Paginated<Tag>, DbErr> {
+    pagination: crate::shared::http::PageQuery,
+) -> Result<crate::domain::shared::PageResponse<Tag>, DbErr> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
@@ -98,7 +98,7 @@ async fn find_sorted_by_correction(
         .await?;
 
     if entity_ids.is_empty() {
-        return Ok(crate::domain::shared::Paginated::nothing());
+        return Ok(utils::page_from_items(vec![], &pagination));
     }
 
     let mut select =
@@ -116,7 +116,7 @@ async fn find_sorted_by_correction(
         |tag| tag.id,
     );
 
-    Ok(utils::paginate_by_id(tags, &pagination, |tag| tag.id))
+    Ok(utils::page_from_items(tags, &pagination))
 }
 
 async fn find_many_impl(
