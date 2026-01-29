@@ -343,14 +343,14 @@ export interface FileRoutesByFullPath {
   '/tag/explore': typeof TagExploreRoute
   '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
-  '/artist': typeof ArtistIndexRoute
-  '/chart': typeof ChartIndexRoute
-  '/event': typeof EventIndexRoute
-  '/image-queue': typeof ImageQueueIndexRoute
-  '/label': typeof LabelIndexRoute
-  '/recommendation': typeof RecommendationIndexRoute
-  '/release': typeof ReleaseIndexRoute
-  '/tag': typeof TagIndexRoute
+  '/artist/': typeof ArtistIndexRoute
+  '/chart/': typeof ChartIndexRoute
+  '/event/': typeof EventIndexRoute
+  '/image-queue/': typeof ImageQueueIndexRoute
+  '/label/': typeof LabelIndexRoute
+  '/recommendation/': typeof RecommendationIndexRoute
+  '/release/': typeof ReleaseIndexRoute
+  '/tag/': typeof TagIndexRoute
   '/profile/$username': typeof userProfileUsernameRoute
   '/profile/edit': typeof userProfileEditRoute
   '/profile/mock': typeof userProfileMockRoute
@@ -361,7 +361,7 @@ export interface FileRoutesByFullPath {
   '/song/$id/edit': typeof SongIdEditRoute
   '/tag/$id/edit': typeof TagIdEditRoute
   '/user/$id/image-queue': typeof UserIdImageQueueRoute
-  '/artist/$id': typeof ArtistIdIndexRoute
+  '/artist/$id/': typeof ArtistIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -502,14 +502,14 @@ export interface FileRouteTypes {
     | '/tag/explore'
     | '/tag/mock'
     | '/tag/new'
-    | '/artist'
-    | '/chart'
-    | '/event'
-    | '/image-queue'
-    | '/label'
-    | '/recommendation'
-    | '/release'
-    | '/tag'
+    | '/artist/'
+    | '/chart/'
+    | '/event/'
+    | '/image-queue/'
+    | '/label/'
+    | '/recommendation/'
+    | '/release/'
+    | '/tag/'
     | '/profile/$username'
     | '/profile/edit'
     | '/profile/mock'
@@ -520,7 +520,7 @@ export interface FileRouteTypes {
     | '/song/$id/edit'
     | '/tag/$id/edit'
     | '/user/$id/image-queue'
-    | '/artist/$id'
+    | '/artist/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -708,56 +708,56 @@ declare module '@tanstack/solid-router' {
     '/tag/': {
       id: '/tag/'
       path: '/tag'
-      fullPath: '/tag'
+      fullPath: '/tag/'
       preLoaderRoute: typeof TagIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/release/': {
       id: '/release/'
       path: '/release'
-      fullPath: '/release'
+      fullPath: '/release/'
       preLoaderRoute: typeof ReleaseIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recommendation/': {
       id: '/recommendation/'
       path: '/recommendation'
-      fullPath: '/recommendation'
+      fullPath: '/recommendation/'
       preLoaderRoute: typeof RecommendationIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/label/': {
       id: '/label/'
       path: '/label'
-      fullPath: '/label'
+      fullPath: '/label/'
       preLoaderRoute: typeof LabelIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/image-queue/': {
       id: '/image-queue/'
       path: '/image-queue'
-      fullPath: '/image-queue'
+      fullPath: '/image-queue/'
       preLoaderRoute: typeof ImageQueueIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/event/': {
       id: '/event/'
       path: '/event'
-      fullPath: '/event'
+      fullPath: '/event/'
       preLoaderRoute: typeof EventIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chart/': {
       id: '/chart/'
       path: '/chart'
-      fullPath: '/chart'
+      fullPath: '/chart/'
       preLoaderRoute: typeof ChartIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/artist/': {
       id: '/artist/'
       path: '/artist'
-      fullPath: '/artist'
+      fullPath: '/artist/'
       preLoaderRoute: typeof ArtistIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -953,7 +953,7 @@ declare module '@tanstack/solid-router' {
     '/artist/$id/': {
       id: '/artist/$id/'
       path: '/artist/$id'
-      fullPath: '/artist/$id'
+      fullPath: '/artist/$id/'
       preLoaderRoute: typeof ArtistIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }

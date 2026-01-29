@@ -11,7 +11,7 @@ use crate::adapter::inbound::rest::api_response::{Data, Message};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
 use crate::domain::model::{NotificationKindEnum, NotificationTargetTypeEnum};
-use crate::domain::shared::Paginated;
+use crate::domain::shared::CursorResponse;
 use crate::features::notification::ws;
 use crate::infra::notification::NotificationHub;
 use crate::shared::http::PaginationQuery;
@@ -19,7 +19,7 @@ use crate::shared::http::PaginationQuery;
 const TAG: &str = "Notification";
 
 data! {
-    DataPaginatedNotificationItem, Paginated<NotificationItem>
+    DataPaginatedNotificationItem, CursorResponse<NotificationItem>
     DataUnreadCount, u64
 }
 
@@ -57,7 +57,7 @@ async fn notification_list(
     CurrentUser(user): CurrentUser,
     State(service): State<state::NotificationService>,
     Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<Paginated<NotificationItem>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<NotificationItem>>, axum::response::Response> {
     let limit = pagination.limit();
     let cursor = pagination.cursor;
     let paginated = service
@@ -81,7 +81,7 @@ async fn notification_list(
         }
     });
 
-    Ok(Data::from(Paginated {
+    Ok(Data::from(CursorResponse {
         items: items.collect(),
         next_cursor: paginated.next_cursor,
     }))

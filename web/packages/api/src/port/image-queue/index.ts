@@ -2,14 +2,16 @@ import { Either as E } from "effect"
 
 import type { ApiError } from "../../shared"
 import type {
+	CursorPage,
+	PendingImageQueueItem,
+	UserImageQueueItem,
+} from "../../type"
+import type {
 	HandleImageQueueMethod,
 	ImageQueueDetail,
 	ImageQueueStatus,
 	ImageQueueType,
-	Paginated,
-	PendingImageQueueItem,
-	UserImageQueueItem,
-} from "../../type"
+} from "../../gen"
 
 type ApiResult<T> = E.Either<T, ApiError<string>>
 
@@ -159,7 +161,7 @@ export async function list(options: {
 		type?: ImageQueueType
 		status?: ImageQueueStatus
 	}
-}): Promise<ApiResult<Paginated<PendingImageQueueItem>>> {
+}): Promise<ApiResult<CursorPage<PendingImageQueueItem>>> {
 	return await getData("/image-queue", options.query)
 }
 
@@ -194,6 +196,6 @@ export async function userQueue(options: {
 		cursor?: number
 		limit?: number
 	}
-}): Promise<ApiResult<Paginated<UserImageQueueItem>>> {
+}): Promise<ApiResult<CursorPage<UserImageQueueItem>>> {
 	return await getData(`/user/${options.path.id}/image-queue`, options.query)
 }

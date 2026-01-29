@@ -5,11 +5,11 @@ use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::{EventFilter, PaginationQuery};
+use super::{EventFilter, PageQuery};
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::domain::shared::Paginated;
+use crate::domain::shared::PageResponse;
 use crate::features::event::model::Event;
 use crate::infra::error::Error;
 
@@ -28,7 +28,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 data! {
     DataOptionEvent, Option<Event>
     DataVecEvent, Vec<Event>
-    DataPaginatedEvent, Paginated<Event>
+    DataPageEvent, PageResponse<Event>
 }
 
 #[utoipa::path(
@@ -75,17 +75,17 @@ async fn find_event_by_keyword(
     get,
     tag = TAG,
     path = "/event/explore",
-    params(EventFilter, PaginationQuery),
+    params(EventFilter, PageQuery),
     responses(
-        (status = 200, body = DataPaginatedEvent),
+        (status = 200, body = DataPageEvent),
         Error,
     ),
 )]
 async fn explore_event(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<EventFilter>,
-    Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<Paginated<Event>>, Error> {
+    Query(pagination): Query<PageQuery>,
+) -> Result<Data<PageResponse<Event>>, Error> {
     let normalized = filter.with_sort_defaults();
     tracing::info!(?normalized, "explore_event: incoming query");
     super::repo::find_by_filter(&repo, normalized, pagination)

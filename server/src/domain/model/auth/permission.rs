@@ -53,7 +53,7 @@ permission_defs! {
 macro_rules! default_permissions_for_role {
     ($($role:ident => [$($permission:ident),* $(,)?];)+) => {
         impl UserRoleEnum {
-            pub fn default_permissions(self) -> &'static [&'static str] {
+            pub const fn default_permissions(self) -> &'static [&'static str] {
                 match self {
                     $(
                         UserRoleEnum::$role => &[

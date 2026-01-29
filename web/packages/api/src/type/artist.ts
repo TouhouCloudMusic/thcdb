@@ -1,3 +1,3 @@
-import type { PaginatedCredit } from "../gen"
+import type { CursorResponseCredit } from "../gen"
 
-export type ArtistCredit = PaginatedCredit["items"][number]
+export type ArtistCredit = CursorResponseCredit["items"][number]

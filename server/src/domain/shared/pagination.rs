@@ -3,31 +3,36 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 #[derive(Serialize, Deserialize, ToSchema)]
-pub struct Paginated<T> {
+pub struct CursorResponse<T> {
     pub items: Vec<T>,
     pub next_cursor: Option<i32>,
 }
 
-impl<T> Default for Paginated<T> {
+impl<T> Default for CursorResponse<T> {
     fn default() -> Self {
-        Self::nothing()
-    }
-}
-
-impl<T> Paginated<T> {
-    pub const fn nothing() -> Self {
         Self {
-            items: vec![],
+            items: Vec::new(),
             next_cursor: None,
         }
     }
+}
 
-    pub fn map_items<U>(self, f: impl Fn(T) -> U) -> Paginated<U> {
-        Paginated {
+impl<T> CursorResponse<T> {
+    pub fn map<U>(self, f: impl Fn(T) -> U) -> CursorResponse<U> {
+        CursorResponse {
             items: self.items.into_iter().map(f).collect(),
             next_cursor: self.next_cursor,
         }
     }
+}
+
+#[derive(Serialize, Deserialize, ToSchema)]
+pub struct PageResponse<T> {
+    pub items: Vec<T>,
+    pub page: u32,
+    pub page_size: u32,
+    pub total_items: u64,
+    pub total_pages: u32,
 }
 
 #[derive(Clone, Copy)]

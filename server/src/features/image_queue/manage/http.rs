@@ -17,14 +17,14 @@ use crate::adapter::inbound::rest::{
     AppRouter, CurrentUser, api_response, authz, data,
 };
 use crate::domain::model::ImageQueueManage;
-use crate::domain::shared::Paginated;
+use crate::domain::shared::CursorResponse;
 use crate::features::image_queue::shared::{UserSummary, load_users};
 use crate::shared::http::PaginationQuery;
 
 const TAG: &str = "Image Queue";
 
 data! {
-    DataPaginatedPendingImageQueueItem, Paginated<PendingImageQueueItem>
+    DataPaginatedPendingImageQueueItem, CursorResponse<PendingImageQueueItem>
     DataPendingImageQueueCount, u64
     DataImageQueueDetail, ImageQueueDetail
 }
@@ -118,7 +118,8 @@ async fn pending_image_queue(
     State(repo): State<state::SeaOrmRepository>,
     Query(pagination): Query<PaginationQuery>,
     Query(filter): Query<ImageQueueFilterQuery>,
-) -> Result<Data<Paginated<PendingImageQueueItem>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<PendingImageQueueItem>>, axum::response::Response>
+{
     let limit = pagination.limit();
     let cursor = pagination.cursor;
 
@@ -148,7 +149,7 @@ async fn pending_image_queue(
                     .cloned()
                     .unwrap_or_else(|| UserSummary::unknown(model.created_by)),
             });
-    let items = Paginated {
+    let items = CursorResponse {
         items: items.collect(),
         next_cursor: paginated.next_cursor,
     };

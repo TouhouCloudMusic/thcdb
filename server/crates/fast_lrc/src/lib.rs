@@ -259,34 +259,52 @@ fn parse_timestamp(bytes: &[u8]) -> Option<usize> {
     let min_str = &bytes[..colon_idx];
     let sec_and_milli_str = &bytes[colon_idx + 1..];
 
-    let minutes = atoi_simd::parse::<usize>(min_str).ok()? as usize;
+    let minutes =
+        atoi_simd::parse::<usize, false, false>(min_str).ok()? as usize;
 
     let len = sec_and_milli_str.len();
     let (seconds, millis) = match len {
-        2 => (atoi_simd::parse::<usize>(sec_and_milli_str).ok()?, 0),
+        2 => (
+            atoi_simd::parse::<usize, false, false>(sec_and_milli_str).ok()?,
+            0,
+        ),
         4 => {
-            let secounds =
-                atoi_simd::parse::<usize>(&sec_and_milli_str[..2]).ok()?;
-            let millis =
-                atoi_simd::parse::<usize>(&sec_and_milli_str[3..]).ok()? * 100;
+            let secounds = atoi_simd::parse::<usize, false, false>(
+                &sec_and_milli_str[..2],
+            )
+            .ok()?;
+            let millis = atoi_simd::parse::<usize, false, false>(
+                &sec_and_milli_str[3..],
+            )
+            .ok()?
+                * 100;
             // let millis = millis ;
 
             (secounds, millis)
         }
         5 => {
-            let secounds =
-                atoi_simd::parse::<usize>(&sec_and_milli_str[..2]).ok()?;
-            let millis =
-                atoi_simd::parse::<usize>(&sec_and_milli_str[3..]).ok()? * 10;
+            let secounds = atoi_simd::parse::<usize, false, false>(
+                &sec_and_milli_str[..2],
+            )
+            .ok()?;
+            let millis = atoi_simd::parse::<usize, false, false>(
+                &sec_and_milli_str[3..],
+            )
+            .ok()?
+                * 10;
             // let millis = millis ;
 
             (secounds, millis)
         }
         6 => {
-            let secounds =
-                atoi_simd::parse::<usize>(&sec_and_milli_str[..2]).ok()?;
-            let millis =
-                atoi_simd::parse::<usize>(&sec_and_milli_str[3..]).ok()?;
+            let secounds = atoi_simd::parse::<usize, false, false>(
+                &sec_and_milli_str[..2],
+            )
+            .ok()?;
+            let millis = atoi_simd::parse::<usize, false, false>(
+                &sec_and_milli_str[3..],
+            )
+            .ok()?;
 
             (secounds, millis)
         }

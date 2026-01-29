@@ -6,11 +6,11 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::repo::{self, FindReleaseFilter};
-use super::{PaginationQuery, ReleaseFilter};
+use super::{PageQuery, ReleaseFilter};
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::domain::shared::Paginated;
+use crate::domain::shared::PageResponse;
 use crate::features::release::model::Release;
 use crate::infra::error::Error;
 
@@ -19,7 +19,7 @@ const TAG: &str = "Release";
 data!(
     DataOptionRelease, Option<Release>
     DataVecRelease, Vec<Release>
-    DataPaginatedRelease, Paginated<Release>
+    DataPageRelease, PageResponse<Release>
 );
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
@@ -76,17 +76,17 @@ async fn find_release_by_keyword(
     get,
     tag = TAG,
     path = "/release/explore",
-    params(ReleaseFilter, PaginationQuery),
+    params(ReleaseFilter, PageQuery),
     responses(
-        (status = 200, body = DataPaginatedRelease),
+        (status = 200, body = DataPageRelease),
         Error,
     ),
 )]
 async fn explore_release(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<ReleaseFilter>,
-    Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<Paginated<Release>>, Error> {
+    Query(pagination): Query<PageQuery>,
+) -> Result<Data<PageResponse<Release>>, Error> {
     let normalized = filter.with_sort_defaults();
     tracing::info!(?normalized, "explore_release: incoming query");
     repo::find_by_filter(&repo, normalized, pagination)

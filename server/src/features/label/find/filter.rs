@@ -4,9 +4,7 @@ use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, Select};
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 
-pub use crate::shared::http::{
-    CorrectionSortField, PaginationQuery, SortDirection,
-};
+pub use crate::shared::http::{CorrectionSortField, PageQuery, SortDirection};
 
 #[derive(Clone, Debug, Default, Deserialize, ToSchema, IntoParams)]
 #[schema(as = LabelFilter)]

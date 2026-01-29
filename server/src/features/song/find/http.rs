@@ -5,11 +5,11 @@ use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::{PaginationQuery, SongFilter};
+use super::{PageQuery, SongFilter};
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::domain::shared::Paginated;
+use crate::domain::shared::PageResponse;
 use crate::features::song::model::Song;
 use crate::infra::error::Error;
 
@@ -28,7 +28,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 data! {
     DataOptionSong, Option<Song>
     DataVecSong, Vec<Song>
-    DataPaginatedSong, Paginated<Song>
+    DataPageSong, PageResponse<Song>
 }
 
 #[utoipa::path(
@@ -73,17 +73,17 @@ async fn find_song_by_keyword(
     get,
     tag = TAG,
     path = "/song/explore",
-    params(SongFilter, PaginationQuery),
+    params(SongFilter, PageQuery),
     responses(
-        (status = 200, body = DataPaginatedSong),
+        (status = 200, body = DataPageSong),
         Error
     ),
 )]
 async fn explore_song(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<SongFilter>,
-    Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<Paginated<Song>>, Error> {
+    Query(pagination): Query<PageQuery>,
+) -> Result<Data<PageResponse<Song>>, Error> {
     let normalized = filter.with_sort_defaults();
     tracing::info!(?normalized, "explore_song: incoming query");
     super::repo::find_by_filter(&repo, normalized, pagination)

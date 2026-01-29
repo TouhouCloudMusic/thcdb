@@ -3,7 +3,7 @@ mod sorting;
 
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-pub use pagination::PaginationQuery;
+pub use pagination::{PageQuery, PaginationQuery};
 use snafu::Report;
 pub use sorting::{CorrectionSortField, SortDirection, apply_sort_defaults};
 

@@ -15,7 +15,7 @@ use crate::domain::artist_release::*;
 use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::image::Image;
 use crate::domain::shared::DateWithPrecision;
-use crate::domain::{Cursor, Paginated};
+use crate::domain::{Cursor, CursorResponse};
 use crate::infra::database::sea_orm::SeaOrmRepository;
 
 struct ArtistReleaseIR {
@@ -34,20 +34,20 @@ struct CreditIR {
 pub(crate) async fn appearance(
     repo: &SeaOrmRepository,
     query: AppearanceQuery,
-) -> Result<Paginated<Appearance>, DbErr> {
+) -> Result<CursorResponse<Appearance>, DbErr> {
     find_artist_releases(
         appearance_select(query.artist_id),
         query.pagination,
         &repo.conn,
     )
     .await
-    .map(|x| x.map_items(Into::into))
+    .map(|x| x.map(Into::into))
 }
 
 pub(crate) async fn credit(
     repo: &SeaOrmRepository,
     query: CreditQuery,
-) -> Result<Paginated<Credit>, DbErr> {
+) -> Result<CursorResponse<Credit>, DbErr> {
     let releases_and_artists = find_artist_releases(
         credit_select(query.artist_id),
         query.pagination,
@@ -55,7 +55,7 @@ pub(crate) async fn credit(
     )
     .await?;
 
-    let Paginated { items, next_cursor } = releases_and_artists;
+    let CursorResponse { items, next_cursor } = releases_and_artists;
 
     let (releases, (artists, cover_urls)): (Vec<_>, (Vec<_>, Vec<_>)) = items
         .into_iter()
@@ -98,13 +98,13 @@ pub(crate) async fn credit(
 
     let items = into_artist_credits(credit_irs, &credit_roles);
 
-    Ok(Paginated { items, next_cursor })
+    Ok(CursorResponse { items, next_cursor })
 }
 
 pub(crate) async fn discography(
     repo: &SeaOrmRepository,
     query: DiscographyQuery,
-) -> Result<Paginated<Discography>, DbErr> {
+) -> Result<CursorResponse<Discography>, DbErr> {
     let select = release::Entity::find()
         .filter(release::Column::ReleaseType.eq(query.release_type))
         .filter(release_artist::Column::ArtistId.eq(query.artist_id))
@@ -112,14 +112,14 @@ pub(crate) async fn discography(
 
     find_artist_releases(select, query.pagination, &repo.conn)
         .await
-        .map(|x| x.map_items(Into::into))
+        .map(|x| x.map(Into::into))
 }
 
 async fn find_artist_releases(
     select: Select<release::Entity>,
     pagination: Cursor,
     db: &impl ConnectionTrait,
-) -> Result<Paginated<ArtistReleaseIR>, DbErr> {
+) -> Result<CursorResponse<ArtistReleaseIR>, DbErr> {
     let mut cursor = select.cursor_by(release::Column::Id);
 
     cursor.after(pagination.at);
@@ -138,7 +138,7 @@ async fn find_artist_releases(
         Some(last_release_id) => has_more.then_some(last_release_id),
         // Should never happen
         None => {
-            return Ok(Paginated::nothing());
+            return Ok(CursorResponse::default());
         }
     };
 
@@ -169,7 +169,7 @@ async fn find_artist_releases(
         })
         .collect_vec();
 
-    Ok(Paginated { items, next_cursor })
+    Ok(CursorResponse { items, next_cursor })
 }
 
 impl From<ArtistReleaseIR> for Discography {

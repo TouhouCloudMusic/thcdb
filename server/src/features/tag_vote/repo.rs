@@ -3,7 +3,7 @@ use sea_query::{Alias, Expr, Order, Query, SimpleExpr};
 
 use super::Error;
 use super::model::{EntityType, Score, TagAggregate, TagAggregateFieldName};
-use crate::domain::shared::Paginated;
+use crate::domain::shared::CursorResponse;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 
 pub async fn entity_exists(
@@ -113,7 +113,7 @@ pub async fn get_tags(
     user_id: Option<i32>,
     cursor: Option<i32>,
     limit: u32,
-) -> Result<Paginated<TagAggregate>, DbErr> {
+) -> Result<CursorResponse<TagAggregate>, DbErr> {
     // TODO: Remove alias after update sea query to 1.0
     let vote_table = Alias::new(entity_type.vote_table_name());
     let entity_id_col = Alias::new(entity_type.entity_id_column());
@@ -198,5 +198,5 @@ pub async fn get_tags(
         None
     };
 
-    Ok(Paginated { items, next_cursor })
+    Ok(CursorResponse { items, next_cursor })
 }

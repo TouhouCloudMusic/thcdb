@@ -19,7 +19,7 @@ use crate::adapter::inbound::rest::{
     AppRouter, CurrentUser, api_response, authz, data,
 };
 use crate::domain::model::{AdminUserRead, AdminWrite, UserRole, UserRoleEnum};
-use crate::domain::shared::{DEFAULT_LIMIT, MAX_LIMIT, Paginated};
+use crate::domain::shared::{CursorResponse, DEFAULT_LIMIT, MAX_LIMIT};
 use crate::infra::error::Error as InfraError;
 
 const TAG: &str = "Admin";
@@ -48,7 +48,7 @@ pub struct AdminUsersQuery {
 }
 
 data! {
-    DataPaginatedUserSummary, Paginated<UserSummary>
+    DataPaginatedUserSummary, CursorResponse<UserSummary>
     DataUserRoles, Vec<UserRole>
 }
 
@@ -67,7 +67,7 @@ async fn admin_users(
     CurrentUser(user): CurrentUser,
     Query(query): Query<AdminUsersQuery>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<Paginated<UserSummary>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<UserSummary>>, axum::response::Response> {
     authz::ensure_permission::<AdminUserRead>(&repo.conn, user.id).await?;
 
     let limit = query.limit.unwrap_or(DEFAULT_LIMIT).clamp(1, MAX_LIMIT);
@@ -122,7 +122,7 @@ async fn admin_users(
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
 
-    Ok(Data::new(Paginated { items, next_cursor }))
+    Ok(Data::new(CursorResponse { items, next_cursor }))
 }
 
 #[derive(Deserialize, ToSchema)]

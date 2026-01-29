@@ -3,7 +3,7 @@ import type {
 	ImageQueueDetail,
 	ImageQueueStatus,
 	ImageQueueType,
-	Paginated,
+	CursorPage,
 	PendingImageQueueItem,
 	UserImageQueueItem,
 } from "@thc/api"
@@ -101,6 +101,6 @@ export function userQueue(userId: number, limit: number) {
 	})
 }
 
-export type ImageQueuePage = Paginated<PendingImageQueueItem>
-export type UserImageQueuePage = Paginated<UserImageQueueItem>
+export type ImageQueuePage = CursorPage<PendingImageQueueItem>
+export type UserImageQueuePage = CursorPage<UserImageQueueItem>
 export type ImageQueueEntry = ImageQueueDetail
