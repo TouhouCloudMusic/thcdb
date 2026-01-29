@@ -1,17 +1,17 @@
 import { Either as E } from "effect"
 
-import type { ApiError } from "../../shared"
-import type {
-	CursorPage,
-	PendingImageQueueItem,
-	UserImageQueueItem,
-} from "../../type"
 import type {
 	HandleImageQueueMethod,
 	ImageQueueDetail,
 	ImageQueueStatus,
 	ImageQueueType,
 } from "../../gen"
+import type { ApiError } from "../../shared"
+import type {
+	CursorPage,
+	PendingImageQueueItem,
+	UserImageQueueItem,
+} from "../../type"
 
 type ApiResult<T> = E.Either<T, ApiError<string>>
 

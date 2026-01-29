@@ -2,8 +2,8 @@ import type { Label } from "@thc/api"
 import type { Component } from "solid-js"
 import { For, Show } from "solid-js"
 
-import { Link } from "~/component/atomic"
 import { Pagination } from "~/component/Pagination"
+import { Link } from "~/component/atomic"
 import {
 	CorrectionSortFieldSelect,
 	EmptyExplorePlaceholder,

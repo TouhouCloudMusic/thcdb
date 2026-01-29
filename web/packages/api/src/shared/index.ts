@@ -142,6 +142,35 @@ export async function adaptFetchResponseFromResponse<T>(
 	}
 }
 
+export async function adaptFetchMessageResponseFromResponse(
+	response: Response,
+): Promise<FetchMessageResponse<ErrResponse>> {
+	const text = await response.text()
+
+	if (!text) {
+		return { error: toErrResponse(response.statusText), response }
+	}
+
+	try {
+		const json: unknown = JSON.parse(text)
+
+		if (isErrResponse(json)) {
+			return { error: json, response }
+		}
+
+		if (typeof json === "object" && json !== null && "message" in json) {
+			const message = json.message
+			if (typeof message === "string") {
+				return { data: { message }, response }
+			}
+		}
+
+		return { error: toErrResponse("Unexpected JSON response"), response }
+	} catch {
+		return { error: toErrResponse(text), response }
+	}
+}
+
 export function adaptApi<T, E>(res: FetchResponse<T, E>) {
 	if (res.data) {
 		return res.data

@@ -1,5 +1,5 @@
-import { adaptApiResult, adaptFetchResponseFromResponse } from "../../shared"
 import type { HomeMetadata } from "../../gen"
+import { adaptApiResult, adaptFetchResponseFromResponse } from "../../shared"
 
 export async function metadata() {
 	const response = await fetch("/api/home/metadata", {

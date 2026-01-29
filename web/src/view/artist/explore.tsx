@@ -31,7 +31,9 @@ const parseArtistTypeFilterValue = (value: string) => {
 	if (isArtistType(value)) return [value]
 }
 
-const createArtistExploreQueryOptions = (search: () => ArtistExploreSearch) => ({
+const createArtistExploreQueryOptions = (
+	search: () => ArtistExploreSearch,
+) => ({
 	queryKey: [
 		"artist::explore",
 		search().page,

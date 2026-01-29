@@ -1,4 +1,5 @@
 import "cropperjs"
+import type { JSX } from "solid-js"
 
 export type CropperCrosshairProps = {
 	centered?: boolean
@@ -7,6 +8,5 @@ export type CropperCrosshairProps = {
 }
 
 export function CropperCrosshair(props: CropperCrosshairProps) {
-	// @ts-expect-error
 	return <cropper-crosshair {...props}></cropper-crosshair>
 }

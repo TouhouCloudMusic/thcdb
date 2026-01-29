@@ -20,9 +20,7 @@ type LabelExploreSearch = {
 	page: number
 }
 
-const createLabelExploreQueryOptions = (
-	search: () => LabelExploreSearch,
-) => ({
+const createLabelExploreQueryOptions = (search: () => LabelExploreSearch) => ({
 	queryKey: [
 		"label::explore",
 		search().page,
