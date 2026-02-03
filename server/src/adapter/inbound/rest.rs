@@ -332,14 +332,23 @@ pub async fn listen(
     Ok(())
 }
 
-fn router(state: ArcAppState) -> Router {
-    let api_router = OpenApiRouter::with_openapi(ApiDoc::openapi())
+fn openapi_router() -> OpenApiRouter<ArcAppState> {
+    let mut router = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .merge(features::router())
         .routes(routes!(health_check));
 
-    let (router, mut api_doc) = api_router.split_for_parts();
+    let openapi = router.get_openapi_mut();
+    utoipa::Modify::modify(&DefaultErrorResponseModifier, openapi);
 
-    utoipa::Modify::modify(&DefaultErrorResponseModifier, &mut api_doc);
+    router
+}
+
+pub fn generate_openapi() -> utoipa::openapi::OpenApi {
+    openapi_router().to_openapi()
+}
+
+fn router(state: ArcAppState) -> Router {
+    let (router, api_doc) = openapi_router().split_for_parts();
 
     let doc_router = router
         .merge(Scalar::with_url("/docs", api_doc.clone()))
@@ -352,6 +361,19 @@ fn router(state: ArcAppState) -> Router {
         .merge(constant_files())
         .pipe(|this| append_global_middlewares(this, &state))
         .with_state(state)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn generates_valid_openapi_with_health_check() {
+        let openapi = generate_openapi();
+        assert!(openapi.paths.paths.contains_key("/health_check"));
+        serde_json::to_string(&openapi)
+            .expect("openapi should serialize to JSON");
+    }
 }
 
 async fn home_page(session: AuthSession) -> impl IntoResponse {
