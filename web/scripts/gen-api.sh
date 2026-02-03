@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
 
 schema=$1
-if [[ -z $schema ]]; then 
-  echo "API_SCHEMA 不能为空（或设置 VITE_SERVER_URL）" >&2
-  exit 1
-fi 
+if [[ -z $schema ]]; then
+  mkdir -p tmp
+  schema="./tmp/openapi.json"
+  cargo run --manifest-path ../server/Cargo.toml -- --openapi $schema
+fi
 rm -f packages/api/src/gen.ts
 pnpm exec openapi-typescript $schema \
   -o packages/api/src/gen.ts \

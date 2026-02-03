@@ -31,6 +31,7 @@
 
 mod adapter;
 mod application;
+mod cli;
 mod constant;
 mod domain;
 mod features;
@@ -38,6 +39,7 @@ mod infra;
 mod shared;
 mod utils;
 
+use std::fs;
 use std::sync::Arc;
 
 use infra::logger::Logger;
@@ -46,6 +48,7 @@ use infra::state::AppState;
 use snafu::{ResultExt, Whatever};
 
 use self::infra::worker::Worker;
+use crate::cli::CliArgs;
 
 #[cfg(all(feature = "release", unix))]
 mod alloc {
@@ -57,6 +60,19 @@ mod alloc {
 #[tokio::main]
 #[snafu::report]
 async fn main() -> Result<(), Whatever> {
+    let cli = CliArgs::parse()?;
+
+    if let Some(path) = cli.openapi_out {
+        let openapi = adapter::inbound::rest::generate_openapi();
+        let json = serde_json::to_string_pretty(&openapi)
+            .whatever_context("Failed to serialize OpenAPI schema")?;
+
+        fs::write(&path, json)
+            .whatever_context("Failed to write OpenAPI schema file")?;
+
+        return Ok(());
+    }
+
     // Load .env file if exists
     let _ = dotenvy::dotenv();
     Logger::init();

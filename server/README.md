@@ -26,6 +26,16 @@ Touhou Cloud DB is a collaborative platform for tagging and organizing doujin mu
 - **Caching**: Redis
 - **API**: RESTful endpoints with OpenAPI documentation
 
+## OpenAPI Schema
+
+Generate the OpenAPI schema JSON without running the server:
+
+```bash
+cargo run -- --openapi openapi.json
+```
+
+The output matches the schema served at `/openapi.json` when the server is running.
+
 ## Contribute to Touhou Cloud DB
 
 Our project team consists of two main groups: skilled programmers who have limited availability, and passionate doujin music fans who have time but may lack technical skills. As our developers contribute when they can, many music enthusiasts have taken the initiative to learn programming and are building the prototype from scratch. Progress is steady, and our commitment to this project remains strong.
