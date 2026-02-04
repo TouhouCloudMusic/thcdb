@@ -470,6 +470,10 @@ pub async fn search_tags(
             (tag::Entity, tag::Column::Name),
             (tag::Entity, tag::Column::Type),
         ])
+        .expr_as(
+            Expr::col((tag::Entity, tag::Column::Type)).cast_as("text"),
+            tag::Column::Type,
+        )
         .from_subquery(ranked, ranked_alias.clone())
         .inner_join(
             tag::Entity,

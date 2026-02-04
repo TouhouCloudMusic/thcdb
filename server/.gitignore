@@ -13,3 +13,4 @@ src/constant/gen.rs
 
 # Rustc ICE log
 rustc*
+logs.txt
