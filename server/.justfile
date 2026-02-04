@@ -1,4 +1,4 @@
-set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
+set windows-shell := ["sh.exe","-c"]
 set dotenv-load := true
 set positional-arguments
 
