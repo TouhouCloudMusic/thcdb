@@ -12,7 +12,7 @@
 	},
 	"dependencies": {
 		"@floating-ui/dom": "^1.7.4",
-		"@formisch/solid": "^0.7.5",
+		"@formisch/solid": "^0.8.0",
 		"@kobalte/core": "^0.13.11",
 		"@shikijs/markdown-it": "^3.21.0",
 		"@shikijs/transformers": "^3.21.0",
