@@ -224,6 +224,12 @@ opt-level = 3
 [profile.ra]
 # incremental = false
 inherits = "dev"
+[profile.debug-mode]
+codegen-backend = "llvm"
+debug           = 2
+inherits        = "dev"
+opt-level       = 0
+strip           = "none"
 
 [profile.release]
 codegen-units   = 1
