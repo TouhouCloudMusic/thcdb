@@ -30,3 +30,4 @@ Thumbs.db
 dist
 
 src/stories
+/.env
