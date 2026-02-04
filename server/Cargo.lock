@@ -1554,9 +1554,9 @@ checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 
 [[package]]
 name = "eros"
-version = "0.2.2"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b7a7fb2d60ab65e9832cd17d03a38555af0cd1c270b1c9343aac86648afe09c"
+checksum = "ad9341cedb6ffac3baaa65b22605e5029015e67efb1e5304eeaa90e8f6200874"
 
 [[package]]
 name = "errno"
