@@ -32,6 +32,7 @@
     "@thc/icons": "workspace:*",
     "@thc/query": "workspace:*",
     "@thc/toolkit": "workspace:*",
+    "@typescript/native-preview": "7.0.0-dev.20260205.1",
     "@vitest/coverage-v8": "^4.0.16",
     "arktype": "^2.1.29",
     "cropperjs": "^2.1.0",
