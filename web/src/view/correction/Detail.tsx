@@ -353,7 +353,7 @@ type CorrectionHistorySectionProps = {
 }
 
 export function CorrectionHistorySection(props: CorrectionHistorySectionProps) {
-	// @ts-ignore
+	// @ts-expect-error
 	const historyQuery = useQuery(() => {
 		if (props.items) {
 			return {

@@ -8,6 +8,6 @@ export type CropperCrosshairProps = {
 }
 
 export function CropperCrosshair(props: CropperCrosshairProps) {
-	// @ts-ignore
+	// @ts-expect-error
 	return <cropper-crosshair {...props}></cropper-crosshair>
 }

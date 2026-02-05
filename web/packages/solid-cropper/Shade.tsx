@@ -11,6 +11,6 @@ export interface ShadeProps extends JSX.HTMLAttributes<HTMLElement> {
 }
 
 export function Shade(props: ShadeProps) {
-	// @ts-ignore
+	// @ts-expect-error
 	return <cropper-shade {...props}></cropper-shade>
 }

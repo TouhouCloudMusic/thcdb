@@ -1,9 +1,9 @@
 import type { JSX } from "solid-js"
 
 import { Dialog } from "."
-// @ts-ignore
+// @ts-expect-error
 import { ImageCropper } from "../form/ImageCropper"
-// @ts-ignore
+// @ts-expect-error
 import type { ImageDropProps } from "../form/ImageCropper"
 
 export type ImageUploadDialogProps = {

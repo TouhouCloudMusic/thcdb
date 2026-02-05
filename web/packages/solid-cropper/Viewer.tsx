@@ -10,6 +10,6 @@ export type ViewerProps = {
 }
 
 export function Viewer(props: ViewerProps) {
-	// @ts-ignore
+	// @ts-expect-error
 	return <cropper-viewer {...props}></cropper-viewer>
 }

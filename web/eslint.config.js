@@ -29,7 +29,14 @@ export default [
 	// jsx
 	...tsxConfigArray,
 	{
-		ignores: ["eslint.config.js", "src/**/openapi.ts", "dist/", "packages/**"],
+		ignores: [
+			"eslint.config.js",
+			"src/**/openapi.ts",
+			"dist/",
+			"packages/**",
+			".storybook/",
+			"src/component/__legacy/",
+		],
 	},
 	...oxlint.buildFromOxlintConfigFile("./.oxlintrc.json"),
 ]

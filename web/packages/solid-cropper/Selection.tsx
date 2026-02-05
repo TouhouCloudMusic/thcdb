@@ -34,6 +34,6 @@ export function Selection(props: ParentProps<SelectionProps>) {
 		},
 	})
 
-	// @ts-ignore
+	// @ts-expect-error
 	return <cropper-selection {...localProps}></cropper-selection>
 }
