@@ -1,19 +1,5 @@
-import "cropperjs";
-import type { JSX } from "solid-js";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import "cropperjs"
+import type { JSX } from "solid-js"
 
 export type InitialCenterSize = "contain" | "cover"
 

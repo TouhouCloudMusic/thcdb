@@ -1,24 +1,10 @@
-import type { JSX } from "solid-js";
+import type { JSX } from "solid-js"
 
-
-
-import { Dialog } from ".";
+import { Dialog } from "."
 // @ts-ignore
-import { ImageCropper } from "../form/ImageCropper";
+import { ImageCropper } from "../form/ImageCropper"
 // @ts-ignore
-import type { ImageDropProps } from "../form/ImageCropper";
-
-
-
-
-
-
-
-
-
-
-
-
+import type { ImageDropProps } from "../form/ImageCropper"
 
 export type ImageUploadDialogProps = {
 	title: JSX.Element

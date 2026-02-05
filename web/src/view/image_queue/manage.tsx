@@ -1,38 +1,21 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/solid-query";
-import { getRouteApi, useNavigate } from "@tanstack/solid-router";
-import type { ImageQueueStatus, ImageQueueType, PendingImageQueueItem } from "@thc/api";
-import { ImageQueueQueryOption } from "@thc/query";
-import { createMemo, For, Match, Show, Switch } from "solid-js";
-import { twMerge } from "tailwind-merge";
+import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
+import { getRouteApi, useNavigate } from "@tanstack/solid-router"
+import type {
+	ImageQueueStatus,
+	ImageQueueType,
+	PendingImageQueueItem,
+} from "@thc/api"
+import { ImageQueueQueryOption } from "@thc/query"
+import { createMemo, For, Match, Show, Switch } from "solid-js"
+import { twMerge } from "tailwind-merge"
 
-
-
-import { Badge } from "~/component/atomic/Badge";
-import { Link } from "~/component/atomic/Link";
-import { Select } from "~/component/atomic/form/select";
-import { StickyFilterBar } from "~/component/feature/entity_explore";
-import { PageLayout } from "~/layout";
-import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel";
-import { useScrollDirection } from "~/utils/solid/useScrollDirection";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import { Badge } from "~/component/atomic/Badge"
+import { Link } from "~/component/atomic/Link"
+import { Select } from "~/component/atomic/form/select"
+import { StickyFilterBar } from "~/component/feature/entity_explore"
+import { PageLayout } from "~/layout"
+import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
+import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 
 const route = getRouteApi("/image-queue/")
 
