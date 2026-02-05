@@ -1,5 +1,6 @@
 import { defineConfig } from "@hey-api/openapi-ts"
 import path from "node:path"
+import process from "node:process"
 
 const serverUrl = process.env["VITE_SERVER_URL"]
 const inputPath =

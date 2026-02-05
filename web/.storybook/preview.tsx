@@ -1,4 +1,4 @@
-import type { Preview } from "storybook-solidjs"
+import type { Preview } from "storybook-solidjs-vite"
 
 // oxlint-disable-next-line no-unassigned-import
 import "../src/index.css"
