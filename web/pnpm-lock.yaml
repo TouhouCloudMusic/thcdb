@@ -154,8 +154,8 @@ importers:
         specifier: ^4.1.18
         version: 4.1.18(rolldown-vite@7.3.1(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0))
       '@tanstack/devtools-vite':
-        specifier: ^0.4.1
-        version: 0.4.1(rolldown-vite@7.3.1(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0))
+        specifier: ^0.5.0
+        version: 0.5.0(rolldown-vite@7.3.1(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0))
       '@tanstack/eslint-plugin-query':
         specifier: ^5.91.2
         version: 5.91.4(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
@@ -1502,8 +1502,8 @@ packages:
     peerDependencies:
       solid-js: '>=1.9.7'
 
-  '@tanstack/devtools-vite@0.4.1':
-    resolution: {integrity: sha512-PkMOomcWnl/pUkCqIjqL/csjPHtkMVBirDpJVOZR7XJZDxo5CuD7B+3KsujFCF4Dsn6QYlae97gCZvxi/CB76Q==}
+  '@tanstack/devtools-vite@0.5.0':
+    resolution: {integrity: sha512-Ew+ZdTnmTlVjm4q+/XY/dolx/E1BWMYpiRDyU/MXqHf5epri4MLl5C4UZJaO+ZuUCsKPpsW+ufoM99E2Z4rhug==}
     engines: {node: '>=18'}
     peerDependencies:
       vite: ^6.0.0 || ^7.0.0
@@ -5510,7 +5510,7 @@ snapshots:
     transitivePeerDependencies:
       - csstype
 
-  '@tanstack/devtools-vite@0.4.1(rolldown-vite@7.3.1(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0))':
+  '@tanstack/devtools-vite@0.5.0(rolldown-vite@7.3.1(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0))':
     dependencies:
       '@babel/core': 7.29.0
       '@babel/generator': 7.29.1
