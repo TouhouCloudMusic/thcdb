@@ -1,9 +1,9 @@
-import type { StorybookConfig } from "storybook-solidjs-vite"
-import { mergeConfig } from "vite"
+import type { StorybookConfig } from "storybook-solidjs-vite";
+import { mergeConfig } from "vite";
 
 const config: StorybookConfig = {
 	framework: "storybook-solidjs-vite",
-	stories: ["../src/component/**/*.stories.@(ts|tsx)"],
+	stories: ["../src/component/!(__legacy|dialog)/**/*.stories.@(ts|tsx)"],
 	addons: [
 		"@storybook/addon-onboarding",
 		"@storybook/addon-docs",
