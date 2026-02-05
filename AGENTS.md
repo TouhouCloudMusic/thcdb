@@ -34,6 +34,10 @@ This repository has two main applications:
 - Server (Rust): Axum, SeaORM, PostgreSQL, Redis, Utoipa (OpenAPI)
 - Web (React): React, TypeScript, Vite, TanStack Router, TanStack Query
 
+## Subproject Guidelines
+- `server/AGENTS.md`: Server-specific structure, conventions, and commands.
+- `web/AGENTS.md`: Web-specific structure, conventions, and commands.
+
 ## Common Commands
 - Root
   - `just dev`: Start full stack via Docker Compose.
