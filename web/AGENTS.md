@@ -1,18 +1,54 @@
-# Agent Guidelines
+# Web Repository Guidelines
 
-完成修改了代码的任务后，你需要:
+## 概览
+本文件仅描述 `web/` 前端。前端采用 Solid.js + TypeScript，构建工具为 Vite，路由与数据请求分别使用 TanStack Router / TanStack Query。
 
-- 运行 `just fmt` 格式化代码
-- 运行 `pnpm tsgo -p . --pretty false` 检查类型错误
-- 运行 `pnpm oxlint -f stylish` 检查代码风格
+## 项目结构
+```
+web/
+├── src/               # 应用主要代码（页面、组件、状态、路由等）
+│   ├── component      # 通用组件
+│   ├── domain         # 领域模型与校验 schema
+│   ├── layout         # 布局组件
+│   ├── route          # 路由页面
+│   ├── state          # 全局状态与数据层
+│   ├── style          # 样式与主题
+│   └── view           # 业务视图/页面模块
+├── packages/          # 共享包
+│   ├── api            # 生成的后端 API SDK 与适配器
+│   ├── query          # 基于 API 的 TanStack Query 封装
+│   ├── toolkit        # 通用工具函数集合
+│   └── icons          # 自定义图标集合
+├── public/            # 静态资源
+├── doc/               # 开发文档
+├── package.json
+├── pnpm-workspace.yaml
+├── vite.config.ts
+├── tsconfig.json
+├── eslint.config.js
+└── .justfile          # 开发命令
+```
+src 说明：`src/` 为前端应用的主要代码（页面、组件、状态、路由等）。
 
-## Command
+## 技术栈（主要）
+- 框架：Solid.js
+- 语言：TypeScript
+- 构建：Vite
+- 路由：TanStack Router
+- 数据请求：TanStack Query
+- 规范：ESLint + Oxlint + Prettier
+- 测试：Vitest
 
-`pnpm tsgo -p . --pretty false`: 快速的类型检查，以紧凑格式输出。
-`just fmt`: 格式化代码。
-`pnpm vitest run <filename>`: 测试单个文件。
+## 常用命令
+- `just fmt`：Prettier 格式化。
+- `just fmt-check`：Prettier 检查。
+- `just lint`：运行 `oxlint` + `eslint`。
+- `just fix`：自动修复 lint。
+- `just check`：类型检查（`pnpm tsgo -p .`）。
+- `just test`：运行 `vitest`。
+- `pnpm vitest run <filename>`：测试单个文件。
 
-## Coding Style
+## 编码规范
 
 - 除非用户要求，否则不要添加任何评论
 - 使用import type {...} 而不是 import { type ... } 来导入类型
@@ -35,28 +71,6 @@
 - 在导入时，使用单独的`import type { .. }`来导入类型
 - 禁止使用`as $type`进行类型断言
 - 避免不必要的类型标注。在标注类型前，首先寻找是否已经存在定义了的类型别名
-
-## 架构
-
-- packages/api
-
-  生成的后端api sdk和适配器
-
-- packages/query
-
-  将后端api封装为tanstack query
-
-- packages/toolkit
-
-  工具函数集合
-
-- packages/icon
-
-  自定义图标集合
-
-- src
-
-  app的主要代码
 
 ## 生成的文件
 
