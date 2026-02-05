@@ -1,10 +1,24 @@
-import eslint from "@eslint/js"
-import tanstackQuery from "@tanstack/eslint-plugin-query"
-import oxlint from "eslint-plugin-oxlint"
-import { globalIgnores } from "eslint/config"
-import globals from "globals"
+import eslint from "@eslint/js";
+import tanstackQuery from "@tanstack/eslint-plugin-query";
+import oxlint from "eslint-plugin-oxlint";
+import { globalIgnores } from "eslint/config";
+import globals from "globals";
 
-import { tsConfig, tsxConfigArray } from "./config/eslint/index.js"
+
+
+import { tsConfig, tsxConfigArray } from "./config/eslint/index.js";
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * @type {import('eslint').Linter.Config[]}
@@ -36,6 +50,8 @@ export default [
 			"packages/**",
 			".storybook/",
 			"src/component/__legacy/",
+			"**.stories.tsx",
+			"**.config.ts",
 		],
 	},
 	...oxlint.buildFromOxlintConfigFile("./.oxlintrc.json"),
