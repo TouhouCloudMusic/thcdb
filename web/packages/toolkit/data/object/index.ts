@@ -18,7 +18,7 @@ export const pick =
 		keys: Keys,
 	) =>
 	(obj: A): Pick<A, Keys[number]> => {
-		let ret = {} as Pick<A, Keys[number]>
+		const ret = {} as Pick<A, Keys[number]>
 		for (const key of keys) {
 			ret[key] = obj[key]
 		}

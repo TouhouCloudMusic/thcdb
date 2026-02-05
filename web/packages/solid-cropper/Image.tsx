@@ -1,5 +1,19 @@
-import "cropperjs"
-import type { JSX } from "solid-js"
+import "cropperjs";
+import type { JSX } from "solid-js";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export type InitialCenterSize = "contain" | "cover"
 
@@ -24,9 +38,10 @@ export interface ImageProps {
 
 export function Image(props: ImageProps) {
 	return (
+		// @ts-ignore
 		<cropper-image
 			{...props}
 			initial-center-size={props.initialCenterSize}
-		></cropper-image>
+		/>
 	)
 }

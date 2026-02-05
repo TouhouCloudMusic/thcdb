@@ -34,5 +34,6 @@ export function Selection(props: ParentProps<SelectionProps>) {
 		},
 	})
 
+	// @ts-ignore
 	return <cropper-selection {...localProps}></cropper-selection>
 }

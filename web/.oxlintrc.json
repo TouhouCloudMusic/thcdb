@@ -32,7 +32,7 @@
 		"array-callback-return": [
 			"off",
 			{
-				"allowImplicitReturn": true
+				"allowImplicit": true
 			}
 		],
 		"arrow-body-style": "off",

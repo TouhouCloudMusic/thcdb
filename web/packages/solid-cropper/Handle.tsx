@@ -11,5 +11,6 @@ export type HandleProps = {
 }
 
 export function Handle(props: HandleProps) {
+	// @ts-ignore
 	return <cropper-handle {...props}></cropper-handle>
 }

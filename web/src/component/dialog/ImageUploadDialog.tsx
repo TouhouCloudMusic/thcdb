@@ -1,8 +1,24 @@
-import type { JSX } from "solid-js"
+import type { JSX } from "solid-js";
 
-import { Dialog } from "."
-import { ImageCropper } from "../form/ImageCropper"
-import type { ImageDropProps } from "../form/ImageCropper"
+
+
+import { Dialog } from ".";
+// @ts-ignore
+import { ImageCropper } from "../form/ImageCropper";
+// @ts-ignore
+import type { ImageDropProps } from "../form/ImageCropper";
+
+
+
+
+
+
+
+
+
+
+
+
 
 export type ImageUploadDialogProps = {
 	title: JSX.Element
@@ -30,7 +46,7 @@ export function ImageUploadDialog(props: ImageUploadDialogProps) {
 								type: "square",
 							},
 						}}
-						onSave={(state) => {
+						onSave={(state: any) => {
 							props.onImageSave(state)
 						}}
 					/>

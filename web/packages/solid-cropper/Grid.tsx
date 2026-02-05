@@ -11,5 +11,6 @@ export type GridProps = {
 }
 
 export function Grid(props: GridProps) {
+	// @ts-ignore
 	return <cropper-grid {...props}></cropper-grid>
 }

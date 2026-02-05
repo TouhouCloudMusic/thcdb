@@ -76,6 +76,7 @@ export function ListItem(props: ListItemProps) {
 	)
 
 	if (isLinkProps(other_props)) {
+		// eslint-disable-next-line solid/components-return-once
 		return (
 			<RouterLink
 				{...other_props}
