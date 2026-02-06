@@ -12,10 +12,10 @@ import { Select } from "~/component/atomic/form/select"
 import {
 	CorrectionSortFieldSelect,
 	EmptyExplorePlaceholder,
+	ExplorePageLayout,
 	OrderBySelect,
 	StickyFilterBar,
 } from "~/component/feature/entity_explore"
-import { PageLayout } from "~/layout"
 import { useI18N } from "~/state/i18n"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
@@ -98,24 +98,40 @@ type SongExploreFilterBarProps = {
 }
 
 function SongExploreFilterBar(props: SongExploreFilterBarProps) {
+	const languageOptions = () => ["", ...LANGUAGE_OPTIONS.map((lang) => lang.id.toString())]
+
+	const languageLabel = (value: string) => {
+		if (value === "") return "All"
+		return LANGUAGE_OPTIONS.find((lang) => lang.id.toString() === value)?.label ?? value
+	}
+
 	return (
 		<StickyFilterBar scrollDirection={props.scrollDirection}>
 			<div class="flex items-center gap-4">
 				<div class="flex items-center gap-2">
 					<span class="text-sm text-slate-500">Language</span>
-					<Select
+					<Select.Root<string>
+						options={languageOptions()}
 						value={props.languageId}
-						onChange={(e) => props.onLanguageChange(e.currentTarget.value)}
+						onChange={(value) => props.onLanguageChange(value ?? "")}
+						itemComponent={(optionProps) => (
+							<Select.Item item={optionProps.item}>
+								{languageLabel(optionProps.item.rawValue)}
+							</Select.Item>
+						)}
 					>
-						<Select.Option value="">All</Select.Option>
-						<For each={LANGUAGE_OPTIONS}>
-							{(lang) => (
-								<Select.Option value={lang.id.toString()}>
-									{lang.label}
-								</Select.Option>
-							)}
-						</For>
-					</Select>
+						<Select.Trigger>
+							<Select.Value<string>>
+								{(state) => languageLabel(state.selectedOption() ?? "")}
+							</Select.Value>
+							<Select.Icon />
+						</Select.Trigger>
+						<Select.Portal>
+							<Select.Content>
+								<Select.Listbox />
+							</Select.Content>
+						</Select.Portal>
+					</Select.Root>
 				</div>
 
 				<CorrectionSortFieldSelect
@@ -268,41 +284,30 @@ export const SongExplore = () => {
 	}
 
 	return (
-		<PageLayout class="p-8">
-			<div class="flex flex-col gap-6">
-				<div class="flex items-center justify-between gap-4">
-					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
-						Explore Songs
-					</h1>
-					<Link
-						to="/song/new"
-						class="text-sm font-light text-primary"
-					>
-						Create song
-					</Link>
-				</div>
+		<ExplorePageLayout
+			title="Explore Songs"
+			action={{ to: "/song/new", label: "Create song" }}
+		>
+			<SongExploreFilterBar
+				scrollDirection={scrollDirection}
+				languageId={search().language_id?.[0]?.toString() ?? ""}
+				sortBy={search().sort_by}
+				orderBy={search().order_by}
+				onLanguageChange={updateLanguageId}
+				onSortByChange={setSortBy}
+				onOrderByChange={setOrderBy}
+			/>
 
-				<SongExploreFilterBar
-					scrollDirection={scrollDirection}
-					languageId={search().language_id?.[0]?.toString() ?? ""}
-					sortBy={search().sort_by}
-					orderBy={search().order_by}
-					onLanguageChange={updateLanguageId}
-					onSortByChange={setSortBy}
-					onOrderByChange={setOrderBy}
-				/>
-
-				<SongExploreList
-					songs={songs()}
-					locale={i18n.locale()}
-					isLoading={songsQuery.isLoading}
-					isFetching={songsQuery.isFetching}
-					limit={search().limit}
-					page={search().page}
-					totalPages={totalPages()}
-					onPageChange={setPage}
-				/>
-			</div>
-		</PageLayout>
+			<SongExploreList
+				songs={songs()}
+				locale={i18n.locale()}
+				isLoading={songsQuery.isLoading}
+				isFetching={songsQuery.isFetching}
+				limit={search().limit}
+				page={search().page}
+				totalPages={totalPages()}
+				onPageChange={setPage}
+			/>
+		</ExplorePageLayout>
 	)
 }

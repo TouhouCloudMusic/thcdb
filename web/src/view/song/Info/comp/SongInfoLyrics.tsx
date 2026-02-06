@@ -1,6 +1,8 @@
 /* @refresh skip */
 import { createSignal, For } from "solid-js"
 
+import { Select } from "~/component/atomic/form/select"
+
 import { assertContext } from "~/utils/solid/assertContext"
 
 import { SongInfoPageContext } from ".."
@@ -10,37 +12,48 @@ export function SongInfoLyrics() {
 
 	const lyricsList = () => ctx.song.lyrics
 	const langs = () => ctx.song.lyrics?.map((x) => x.language)
-	const [activeLang, setActiveLang] = createSignal(
-		lyricsList()?.find((x) => x.is_main)!.language.id,
-	)
+	const firstLangId = () => lyricsList()?.find((x) => x.is_main)?.language.id
+	const langOptions = () => langs()?.map((lang) => lang.id.toString()) ?? []
+	const getLangName = (value: string) =>
+		langs()?.find((lang) => lang.id.toString() === value)?.name ?? value
+
+	const [activeLang, setActiveLang] = createSignal(firstLangId() ?? 0)
 
 	return (
 		<div class="space-y-8 p-6">
 			<div class="flex items-baseline gap-6">
 				<label
-					for="lyrics-language-select"
 					class="text-xs font-medium tracking-widest text-secondary uppercase"
 				>
 					Language
 				</label>
-				<select
-					id="lyrics-language-select"
-					class="border-0 border-b border-slate-400 px-1 py-2 text-sm font-light tracking-wide text-secondary transition-all duration-150 focus:outline-none"
-					onChange={(e) => {
-						setActiveLang(Number.parseInt(e.target.value, 10))
+				<Select.Root<string>
+					options={langOptions()}
+					value={(activeLang() || firstLangId() || 0).toString()}
+					onChange={(value) => {
+						if (value === null) return
+						setActiveLang(Number.parseInt(value, 10))
 					}}
+					itemComponent={(props) => (
+						<Select.Item item={props.item}>{getLangName(props.item.rawValue)}</Select.Item>
+					)}
 				>
-					<For each={langs()}>
-						{(lang) => (
-							<option
-								value={lang.id}
-								selected={lang.id == activeLang()}
-							>
-								{lang.name}
-							</option>
-						)}
-					</For>
-				</select>
+					<Select.Trigger class="h-auto min-h-8 border-0 border-b border-slate-400 rounded-none px-1 py-2 text-sm tracking-wide text-secondary focus:outline-none">
+						<Select.Value<string>>
+							{(state) =>
+								getLangName(
+									state.selectedOption() ?? (activeLang() || firstLangId() || 0).toString(),
+								)
+							}
+						</Select.Value>
+						<Select.Icon />
+					</Select.Trigger>
+					<Select.Portal>
+						<Select.Content>
+							<Select.Listbox />
+						</Select.Content>
+					</Select.Portal>
+				</Select.Root>
 			</div>
 
 			<div>
