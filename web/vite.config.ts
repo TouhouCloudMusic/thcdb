@@ -17,6 +17,14 @@ const dirname =
 		: // oxlint-disable-next-line no-undef
 			__dirname
 
+const isHttps = (url: string | undefined) => {
+	if (!url) {
+		return false
+	}
+
+	return new URL(url).protocol == "https:"
+}
+
 // oxlint-disable-next-line no-default-export
 export default defineConfig(({ mode }) => {
 	// oxlint-disable-next-line no-undef
@@ -45,7 +53,7 @@ export default defineConfig(({ mode }) => {
 				"/api": {
 					target: SERVER_URL,
 					changeOrigin: true,
-					secure: false,
+					secure: isHttps(SERVER_URL),
 					rewrite: (path) => path.replace(/^\/api/, ""),
 				},
 			},
