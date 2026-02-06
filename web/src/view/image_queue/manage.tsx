@@ -75,8 +75,7 @@ const statusTone = (status: ImageQueueStatus) => {
 export function ImageQueueManagePage() {
 	const search = route.useSearch()
 	const scrollDirection = useScrollDirection()
-	// @ts-expect-error
-	const navigate = useNavigate({ from: "/image-queue" })
+	const navigate = useNavigate({ from: "/image-queue/" })
 
 	const filters = createMemo<ManageFilters>(() => ({
 		type: search().type,
@@ -121,7 +120,6 @@ export function ImageQueueManagePage() {
 
 		void navigate({
 			to: "/image-queue",
-			// @ts-expect-error
 			search: nextSearch,
 		})
 	}

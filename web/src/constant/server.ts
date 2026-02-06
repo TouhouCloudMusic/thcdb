@@ -22,7 +22,7 @@ export const USER_PROFILE_BANNER_MAX_HEIGHT = 500
 export const USER_PROFILE_BANNER_MIN_HEIGHT = 200
 export const USER_NAME_MIN_LENGTH = 1
 export const USER_NAME_MAX_LENGTH = 64
-export const USER_NAME_REGEX_STR = String.raw`^[\p{L}\p{N}_]{1,64}$`
+export const USER_NAME_REGEX_STR = "^[p{L}p{N}_]{1,64}$"
 export const USER_PASSWORD_MIN_LENGTH = 8
 export const USER_PASSWORD_MAX_LENGTH = 64
 export const USER_PASSWORD_REGEX_STR = "^[A-Za-z\\d`~!@#$%^&*()\\-_=+]{8,64}$"

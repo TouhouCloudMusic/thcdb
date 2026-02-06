@@ -1,3 +1,4 @@
+set windows-shell := ["sh.exe","-c"]
 set shell := ["bash", "-lc"]
 
 SERVER_URL := env("VITE_SERVER_URL", "")

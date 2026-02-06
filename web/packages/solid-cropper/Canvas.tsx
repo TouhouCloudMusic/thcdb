@@ -25,6 +25,5 @@ export interface CanvasProps extends ComponentProps<"canvas"> {
 }
 
 export function Canvas(props: CanvasProps) {
-	// @ts-expect-error
-	return <cropper-canvas {...props}></cropper-canvas>
+	return <cropper-canvas {...(props as any)}></cropper-canvas>
 }

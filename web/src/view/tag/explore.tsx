@@ -326,7 +326,6 @@ function TagTreeNode(props: TagTreeNodeProps) {
 	return (
 		<li
 			ref={(element) => setItemRef(element)}
-			/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role */
 			role="treeitem"
 			tabIndex={tabIndex()}
 			aria-level={props.depth + 1}

@@ -4,7 +4,7 @@ import { createMemo, splitProps } from "solid-js"
 import type { ParentProps, Ref } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
-import { Button, ButtonClass_new } from "../atomic/button"
+import { ButtonClass_new } from "../atomic/button"
 import type { Props as ButtonProps } from "../atomic/button"
 
 export function Sidebar(
@@ -31,23 +31,7 @@ type ListItemStyleProps = Pick<
 	ButtonProps,
 	"class" | "size" | "color" | "variant"
 >
-type ListItemLinkProps = ParentProps<
-	LinkComponentProps<"a"> & ListItemStyleProps
->
-type ListItemButtonProps = ParentProps<ButtonProps>
-type ListItemProps = ListItemLinkProps | ListItemButtonProps
-type ListItemOtherProps = Omit<
-	ListItemProps,
-	"class" | "size" | "color" | "variant"
->
-type ListItemLinkOtherProps = Omit<
-	ListItemLinkProps,
-	"class" | "size" | "color" | "variant"
->
-
-const isLinkProps = (
-	value: ListItemOtherProps,
-): value is ListItemLinkOtherProps => "to" in value
+type ListItemProps = ParentProps<LinkComponentProps<"a"> & ListItemStyleProps>
 
 const LIST_ITEM_CLASS = `
   flex items-center justify-start text-left w-full
@@ -75,22 +59,9 @@ export function ListItem(props: ListItemProps) {
 		),
 	)
 
-	if (isLinkProps(other_props)) {
-		// eslint-disable-next-line solid/components-return-once
-		return (
-			<RouterLink
-				{...other_props}
-				class={tw_class()}
-			/>
-		)
-	}
-
 	return (
-		<Button
-			{...other_props}
-			variant="Tertiary"
-			size={style_props.size}
-			color={style_props.color}
+		<RouterLink
+			{...(other_props as LinkComponentProps<"a">)}
 			class={tw_class()}
 		/>
 	)

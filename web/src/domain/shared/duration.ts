@@ -28,13 +28,10 @@ export function format(duration: Duration | nil, option?: FormatOption) {
 		return (hours * 60 + minutes).toString()
 	}
 
-	let buf = ""
+	const mm = minutes.toString().padStart(2, "0")
+	const ss = seconds.toString().padStart(2, "0")
 
-	if (hours > 0) {
-		buf = `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
-	} else {
-		buf = `${minutes}:${seconds.toString().padStart(2, "0")}`
-	}
+	let buf = hours > 0 ? `${hours}:${mm}:${ss}` : `${minutes}:${ss}`
 
 	if (precision === Precision.Milli) {
 		buf += `.${ms.toString().padStart(3, "0")}`

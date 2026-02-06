@@ -1,6 +1,5 @@
 .husky
 .storybook
-package.json
 
 dist
 node_modules

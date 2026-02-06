@@ -24,11 +24,9 @@ export interface ImageProps {
 
 export function Image(props: ImageProps) {
 	return (
-		// @ts-expect-error
 		<cropper-image
 			{...props}
 			initial-center-size={props.initialCenterSize}
-			// @ts-expect-error
 		></cropper-image>
 	)
 }

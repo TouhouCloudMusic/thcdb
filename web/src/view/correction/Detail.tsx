@@ -353,7 +353,6 @@ type CorrectionHistorySectionProps = {
 }
 
 export function CorrectionHistorySection(props: CorrectionHistorySectionProps) {
-	// @ts-expect-error
 	const historyQuery = useQuery(() => {
 		if (props.items) {
 			return {
@@ -363,7 +362,7 @@ export function CorrectionHistorySection(props: CorrectionHistorySectionProps) {
 					props.entityType,
 					props.entityId,
 					props.items,
-				],
+				] as any[],
 				queryFn: () => props.items ?? [],
 				enabled: false,
 			}

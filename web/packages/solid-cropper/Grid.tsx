@@ -11,6 +11,5 @@ export type GridProps = {
 }
 
 export function Grid(props: GridProps) {
-	// @ts-expect-error
 	return <cropper-grid {...props}></cropper-grid>
 }

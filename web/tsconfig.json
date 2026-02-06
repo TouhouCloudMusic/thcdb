@@ -9,11 +9,5 @@
 		"types": ["vite/client", "@testing-library/jest-dom", "vitest/importMeta"]
 	},
 
-	"exclude": [
-		"node_modules",
-		"dist",
-		"public",
-		"src/component/__legacy/",
-		"packages"
-	]
+	"exclude": ["node_modules", "dist", "public", "src/component/__legacy/"]
 }
