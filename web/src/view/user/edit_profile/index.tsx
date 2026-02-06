@@ -182,18 +182,18 @@ function AppearanceCard(props: {
 				<div class="text-xs font-medium tracking-[0.22em] text-slate-600">
 					APPEARANCE
 				</div>
-					<Button
-						size="Sm"
-						variant="SecondaryV2"
-						class="px-3"
-						disabled={props.banner.isUploading}
-						onClick={handleEditBanner}
-					>
-						<Switch>
-							<Match when={props.banner.isUploading}>Uploading…</Match>
-							<Match when={!props.banner.isUploading}>Update banner</Match>
-						</Switch>
-					</Button>
+				<Button
+					size="Sm"
+					variant="SecondaryV2"
+					class="px-3"
+					disabled={props.banner.isUploading}
+					onClick={handleEditBanner}
+				>
+					<Switch>
+						<Match when={props.banner.isUploading}>Uploading…</Match>
+						<Match when={!props.banner.isUploading}>Update banner</Match>
+					</Switch>
+				</Button>
 			</div>
 
 			<section class="border-b border-slate-300">
@@ -233,9 +233,7 @@ function AppearanceCard(props: {
 						>
 							<Switch>
 								<Match when={props.avatar.isUploading}>Uploading…</Match>
-								<Match when={!props.avatar.isUploading}>
-									Update avatar
-								</Match>
+								<Match when={!props.avatar.isUploading}>Update avatar</Match>
 							</Switch>
 						</Button>
 					</div>
@@ -253,8 +251,7 @@ function BioEditorCard(props: { bio: EditProfileBioStore }) {
 		return formatDateTime(value)
 	})
 
-	const isDisabled = () =>
-		!props.bio.isDirty || props.bio.isSaving
+	const isDisabled = () => !props.bio.isDirty || props.bio.isSaving
 
 	const handleInput: JSX.EventHandlerUnion<HTMLTextAreaElement, InputEvent> = (
 		evt,
@@ -301,33 +298,33 @@ function BioEditorCard(props: { bio: EditProfileBioStore }) {
 
 				<div class="grid grid-cols-2 gap-2 size-fit ml-auto mt-2">
 					<Button
-							variant="SecondaryV2"
-							size="Sm"
-							class="px-3"
-							disabled={isDisabled()}
-							onClick={() => {
-								if (isDisabled()) return
-								props.bio.onReset()
-							}}
-						>
+						variant="SecondaryV2"
+						size="Sm"
+						class="px-3"
+						disabled={isDisabled()}
+						onClick={() => {
+							if (isDisabled()) return
+							props.bio.onReset()
+						}}
+					>
 						Discard
 					</Button>
 					<Button
 						variant="Primary"
 						color="Reimu"
 						size="Sm"
-							class="px-4"
-							disabled={isDisabled()}
-							onClick={() => {
-								if (isDisabled()) return
-								void props.bio.onSave()
-							}}
-						>
-							<Switch>
-								<Match when={props.bio.isSaving}>Saving…</Match>
-								<Match when={!props.bio.isSaving}>Save bio</Match>
-							</Switch>
-						</Button>
+						class="px-4"
+						disabled={isDisabled()}
+						onClick={() => {
+							if (isDisabled()) return
+							void props.bio.onSave()
+						}}
+					>
+						<Switch>
+							<Match when={props.bio.isSaving}>Saving…</Match>
+							<Match when={!props.bio.isSaving}>Save bio</Match>
+						</Switch>
+					</Button>
 				</div>
 			</div>
 		</Card>

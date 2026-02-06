@@ -66,7 +66,6 @@ export function toEventFormInitValue(
 		type: "Update",
 		description: "",
 		data: {
-			// @ts-expect-error
 			name: input.event.name,
 			short_description: input.event.short_description ?? undefined,
 			description: input.event.description ?? undefined,

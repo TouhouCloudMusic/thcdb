@@ -7,7 +7,16 @@ on:
       - main
     paths:
       - "web/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "web/**"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   web:
@@ -32,6 +41,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install chromium --with-deps
 
       - name: Prettier check
         run: just fmt-check

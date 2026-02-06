@@ -17,7 +17,7 @@ export function useReleaseFormInitialValues(
 				description: "",
 				data: {
 					title: "",
-					release_type: "" as unknown as never,
+					release_type: undefined as unknown as never,
 					release_date: undefined,
 					recording_date_start: undefined,
 					recording_date_end: undefined,

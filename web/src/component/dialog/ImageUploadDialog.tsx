@@ -30,7 +30,7 @@ export function ImageUploadDialog(props: ImageUploadDialogProps) {
 								type: "square",
 							},
 						}}
-						onSave={(state) => {
+						onSave={(state: any) => {
 							props.onImageSave(state)
 						}}
 					/>

@@ -25,5 +25,7 @@ export interface CanvasProps extends ComponentProps<"canvas"> {
 }
 
 export function Canvas(props: CanvasProps) {
+	// TODO: cropper-canvas 接受的 HTMLElement 与 Solid 定义的 HTMLCanvasElement 类型不匹配
+	// @ts-expect-error
 	return <cropper-canvas {...props}></cropper-canvas>
 }

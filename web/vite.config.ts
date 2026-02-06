@@ -59,7 +59,7 @@ export default defineConfig(({ mode }) => {
 					test: {
 						name: "unit",
 						globals: true,
-						include: ["./src/**/*.test.{ts,tsx}", "./tsconfig.json"],
+						include: ["./src/**/*.test.{ts,tsx}"],
 					},
 					plugins: [tsconfigPaths()],
 				}),
@@ -70,9 +70,11 @@ export default defineConfig(({ mode }) => {
 						storybookTest({
 							configDir: path.join(dirname, ".storybook"),
 						}),
+						tsconfigPaths(),
 					],
 					test: {
 						name: "storybook",
+						exclude: ["src/component/__legacy/**"],
 						browser: {
 							// Enable browser-based testing for UI components
 							enabled: true,

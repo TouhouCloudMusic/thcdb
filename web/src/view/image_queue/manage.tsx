@@ -75,7 +75,7 @@ const statusTone = (status: ImageQueueStatus) => {
 export function ImageQueueManagePage() {
 	const search = route.useSearch()
 	const scrollDirection = useScrollDirection()
-	const navigate = useNavigate({ from: "/image-queue" })
+	const navigate = useNavigate({ from: "/image-queue/" })
 
 	const filters = createMemo<ManageFilters>(() => ({
 		type: search().type,

@@ -24,20 +24,17 @@ export function format(duration: Duration | nil, option?: FormatOption) {
 
 	const precision = option?.precision ?? Precision.Sec
 
-	let buf = ""
-
-	if (hours > 0) {
-		buf += hours.toString()
+	if (precision === Precision.Min) {
+		return (hours * 60 + minutes).toString()
 	}
 
-	buf += minutes.toString().padStart(2, "0")
+	const mm = minutes.toString().padStart(2, "0")
+	const ss = seconds.toString().padStart(2, "0")
 
-	if (precision !== Precision.Min) {
-		buf += seconds.toString().padStart(2, "0")
-	}
+	let buf = hours > 0 ? `${hours}:${mm}:${ss}` : `${minutes}:${ss}`
 
 	if (precision === Precision.Milli) {
-		buf += ms.toString().padStart(3, "0")
+		buf += `.${ms.toString().padStart(3, "0")}`
 	}
 
 	return buf
