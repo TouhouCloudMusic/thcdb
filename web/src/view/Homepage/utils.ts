@@ -4,7 +4,7 @@ import { DateWithPrecision } from "~/domain/shared"
 
 const COUNT_FORMATTER = new Intl.NumberFormat("en-US")
 
-const formatArtists = (artists: { name: string }[] | undefined) => {
+export const formatArtists = (artists: { name: string }[] | undefined) => {
 	if (!artists || artists.length === 0) return "Unknown artist"
 	return artists
 		.slice(0, 3)
@@ -12,18 +12,18 @@ const formatArtists = (artists: { name: string }[] | undefined) => {
 		.join(" · ")
 }
 
-const formatCount = (value: number | undefined) => {
+export const formatCount = (value: number | undefined) => {
 	if (value === undefined) return "—"
 	return COUNT_FORMATTER.format(value)
 }
 
-const displayReleaseDate = (
+export const displayReleaseDate = (
 	date: Release["release_date"] | null | undefined,
 ) => {
 	return DateWithPrecision.display(date)
 }
 
-const displayEventDate = (event: Event) => {
+export const displayEventDate = (event: Event) => {
 	const start = event.start_date?.value
 	if (!start) return
 
@@ -32,19 +32,11 @@ const displayEventDate = (event: Event) => {
 	return `${start} - ${end}`
 }
 
-const formatEventLocation = (event: Event) => {
+export const formatEventLocation = (event: Event) => {
 	const location = event.location
 	if (!location) return
 	const parts = [location.city, location.province, location.country].filter(
 		Boolean,
 	)
 	return parts.join(", ")
-}
-
-export {
-	displayEventDate,
-	displayReleaseDate,
-	formatArtists,
-	formatCount,
-	formatEventLocation,
 }
