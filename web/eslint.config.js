@@ -46,6 +46,7 @@ export default [
 			"src/component/__legacy/",
 			"**/*.stories.tsx",
 			"**/*.config.ts",
+			"**/*.gen.ts",
 			"src/constant/server.ts",
 		],
 	},
