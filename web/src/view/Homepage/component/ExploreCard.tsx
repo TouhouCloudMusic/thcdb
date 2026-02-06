@@ -29,36 +29,36 @@ type ExploreCardProps = {
 	item: HomeNavItem
 }
 
-const ExploreCard = (props: ExploreCardProps) => (
-	<Link
-		to={props.item.to}
-		class="group block no-underline hover:no-underline"
-	>
-		<Card
-			class={`flex h-full flex-col justify-between gap-4 rounded-none border border-slate-300 p-5 shadow-xs ring-1 transition-all duration-150 ring-inset motion-reduce:transition-none ${ACCENT[props.item.accent].ring} hover:-translate-y-0.5 hover:shadow-sm motion-reduce:hover:translate-y-0`}
+export function ExploreCard(props: ExploreCardProps) {
+	return (
+		<Link
+			to={props.item.to}
+			class="group block no-underline hover:no-underline"
 		>
-			<div class="flex items-start justify-between gap-4">
-				<div class="flex flex-col gap-2">
-					<div
-						class={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs ring-1 ring-inset ${ACCENT[props.item.accent].badge}`}
-					>
-						<span class="inline-block size-1.5 rounded-full bg-current opacity-70"></span>
-						{props.item.meta}
+			<Card
+				class={`flex h-full flex-col justify-between gap-4 rounded-none border border-slate-300 p-5 shadow-xs ring-1 transition-all duration-150 ring-inset motion-reduce:transition-none ${ACCENT[props.item.accent].ring} hover:-translate-y-0.5 hover:shadow-sm motion-reduce:hover:translate-y-0`}
+			>
+				<div class="flex items-start justify-between gap-4">
+					<div class="flex flex-col gap-2">
+						<div
+							class={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs ring-1 ring-inset ${ACCENT[props.item.accent].badge}`}
+						>
+							<span class="inline-block size-1.5 rounded-full bg-current opacity-70"></span>
+							{props.item.meta}
+						</div>
+						<div class="text-base font-medium text-primary">
+							{props.item.title}
+						</div>
 					</div>
-					<div class="text-base font-medium text-primary">
-						{props.item.title}
+					<div class="font-mono text-xs text-tertiary transition-colors duration-150 group-hover:text-secondary motion-reduce:transition-none">
+						→
 					</div>
 				</div>
-				<div class="font-mono text-xs text-tertiary transition-colors duration-150 group-hover:text-secondary motion-reduce:transition-none">
-					→
+
+				<div class="text-sm leading-relaxed text-secondary">
+					{props.item.description}
 				</div>
-			</div>
-
-			<div class="text-sm leading-relaxed text-secondary">
-				{props.item.description}
-			</div>
-		</Card>
-	</Link>
-)
-
-export { ExploreCard }
+			</Card>
+		</Link>
+	)
+}
