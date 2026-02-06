@@ -7,7 +7,7 @@
 		"**.gen.ts",
 		"packages/api/**/gen.ts",
 		"src/style/color/convert.ts",
-		"**/*.d.ts"
+		"src/constant/server.ts"
 	],
 	"categories": {
 		"correctness": "error",
@@ -29,6 +29,7 @@
 		}
 	},
 	"rules": {
+		"unicorn/require-module-specifiers": "off",
 		"array-callback-return": [
 			"off",
 			{

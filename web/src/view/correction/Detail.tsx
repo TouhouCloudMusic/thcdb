@@ -363,6 +363,7 @@ export function CorrectionHistorySection(props: CorrectionHistorySectionProps) {
 					props.entityId,
 					props.items,
 				] as any[],
+				// TODO: 搞明白是什么问题
 				queryFn: () => props.items ?? [],
 				enabled: false,
 			}
