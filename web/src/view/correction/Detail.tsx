@@ -15,6 +15,7 @@ import { twMerge } from "tailwind-merge"
 import { Card } from "~/component/atomic/Card"
 import { INPUT_LIKE_BASE_CLASS } from "~/component/atomic/Input"
 import { Link } from "~/component/atomic/Link"
+import { Select } from "~/component/atomic/form/select"
 import { PageLayout } from "~/layout/PageLayout"
 
 const DATE_FORMAT = new Intl.DateTimeFormat(undefined, {
@@ -88,13 +89,16 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 		return items.filter((item) => item.id !== props.correctionId)
 	})
 
-	const onCompareChange = (event: Event) => {
-		const currentTarget = event.currentTarget
-		if (!(currentTarget instanceof HTMLSelectElement)) return
+	const compareSelectOptions = createMemo(() => [
+		"",
+		...compareOptions().map((item) => item.id.toString()),
+	])
 
-		const value = currentTarget.value
-		const next = value ? Number(value) : undefined
-		props.onCompareIdChange(next)
+	const getCompareLabel = (value: string) => {
+		if (value === "") return "Previous approved baseline"
+		const target = compareOptions().find((item) => item.id.toString() === value)
+		if (!target) return value
+		return `#${target.id} ${target.type} (${formatTimestamp(target.handled_at ?? target.created_at)})`
 	}
 
 	return (
@@ -141,24 +145,36 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 									<span class="text-[11px] font-medium tracking-[0.22em] text-slate-500">
 										COMPARE
 									</span>
-									<select
-										class={twMerge(
-											INPUT_LIKE_BASE_CLASS,
-											"h-9 min-w-52 px-2 text-sm",
+									<Select.Root<string>
+										options={compareSelectOptions()}
+										value={(activeCompareId() ?? "").toString()}
+										onChange={(value) => {
+											const next = value ? Number(value) : undefined
+											props.onCompareIdChange(next)
+										}}
+										itemComponent={(props) => (
+											<Select.Item item={props.item}>
+												{getCompareLabel(props.item.rawValue)}
+											</Select.Item>
 										)}
-										value={activeCompareId() ?? ""}
-										onChange={onCompareChange}
 									>
-										<option value="">Previous approved baseline</option>
-										<For each={compareOptions()}>
-											{(item) => (
-												<option value={item.id}>
-													#{item.id} {item.type} (
-													{formatTimestamp(item.handled_at ?? item.created_at)})
-												</option>
+										<Select.Trigger
+											class={twMerge(
+												INPUT_LIKE_BASE_CLASS,
+												"h-9 min-w-52 px-2 text-sm",
 											)}
-										</For>
-									</select>
+										>
+											<Select.Value<string>>
+												{(state) => getCompareLabel(state.selectedOption() ?? "")}
+											</Select.Value>
+											<Select.Icon />
+										</Select.Trigger>
+										<Select.Portal>
+											<Select.Content>
+												<Select.Listbox />
+											</Select.Content>
+										</Select.Portal>
+									</Select.Root>
 								</label>
 							</div>
 

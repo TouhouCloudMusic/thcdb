@@ -5,8 +5,10 @@ import { Either } from "effect"
 import { createMemo, createSignal, For, onCleanup, Show } from "solid-js"
 
 import { Link } from "~/component/atomic"
-import { EmptyExplorePlaceholder } from "~/component/feature/entity_explore"
-import { PageLayout } from "~/layout"
+import {
+	EmptyExplorePlaceholder,
+	ExplorePageLayout,
+} from "~/component/feature/entity_explore"
 
 const DEFAULT_DEPTH = 2
 const ROOT_COUNT = 6
@@ -171,51 +173,39 @@ export function TagExplore() {
 	}
 
 	return (
-		<PageLayout class="p-8">
-			<div class="flex flex-col gap-6">
-				<div class="flex items-center justify-between gap-4">
-					<h1
-						id={TREE_HEADING_ID}
-						class="text-2xl font-light tracking-tight text-slate-900"
-					>
-						Tag Tree
-					</h1>
-					<Link
-						to="/tag/new"
-						class="text-sm font-light text-primary"
-					>
-						Create tag
-					</Link>
-				</div>
+		<ExplorePageLayout
+			title="Tag Tree"
+			titleId={TREE_HEADING_ID}
+			action={{ to: "/tag/new", label: "Create tag" }}
+		>
+			<Show
+				when={!treeQuery.isLoading}
+				fallback={<TagTreeSkeleton />}
+			>
 				<Show
-					when={!treeQuery.isLoading}
-					fallback={<TagTreeSkeleton />}
+					when={nodes().length > 0}
+					fallback={
+						<EmptyExplorePlaceholder
+							title="No tags found"
+							action={{ to: "/tag/new" }}
+						/>
+					}
 				>
-					<Show
-						when={nodes().length > 0}
-						fallback={
-							<EmptyExplorePlaceholder
-								title="No tags found"
-								action={{ to: "/tag/new" }}
-							/>
-						}
-					>
-						<div class="p-3">
-							<TagTreeList
-								nodes={nodes()}
-								depth={0}
-								expandedIds={expandedIds}
-								onToggle={toggleExpanded}
-								activeId={resolvedActiveTreeItemId}
-								setActiveId={setActiveTreeItem}
-								onKeyDown={handleTreeKeyDown}
-								itemRefs={treeItemRefs}
-							/>
-						</div>
-					</Show>
+					<div class="p-3">
+						<TagTreeList
+							nodes={nodes()}
+							depth={0}
+							expandedIds={expandedIds}
+							onToggle={toggleExpanded}
+							activeId={resolvedActiveTreeItemId}
+							setActiveId={setActiveTreeItem}
+							onKeyDown={handleTreeKeyDown}
+							itemRefs={treeItemRefs}
+						/>
+					</div>
 				</Show>
-			</div>
-		</PageLayout>
+			</Show>
+		</ExplorePageLayout>
 	)
 }
 

@@ -4,9 +4,8 @@ import { ArtistApi } from "@thc/api"
 import type { ArtistType } from "@thc/api"
 import { Either } from "effect"
 
-import { Link } from "~/component/atomic"
+import { ExplorePageLayout } from "~/component/feature/entity_explore"
 import { ARTIST_TYPES } from "~/domain/artist/constants"
-import { PageLayout } from "~/layout"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 import {
 	ArtistExploreFilterBar,
@@ -88,44 +87,33 @@ export const ArtistExplore = () => {
 	}
 
 	return (
-		<PageLayout class="p-8">
-			<div class="flex flex-col gap-6">
-				<div class="flex items-center justify-between gap-4">
-					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
-						Explore Artists
-					</h1>
-					<Link
-						to="/artist/new"
-						class="text-sm font-light text-primary"
-					>
-						Create artist
-					</Link>
-				</div>
+		<ExplorePageLayout
+			title="Explore Artists"
+			action={{ to: "/artist/new", label: "Create artist" }}
+		>
+			<ArtistExploreFilterBar
+				scrollDirection={scrollDirection}
+				artistTypeValue={artistTypeValue()}
+				onArtistTypeChange={(value) => {
+					applyFilterPatch({
+						artist_type: parseArtistTypeFilterValue(value),
+					})
+				}}
+				sortBy={search().sort_by}
+				onSortByChange={(value) => applyFilterPatch({ sort_by: value })}
+				orderBy={search().order_by}
+				onOrderByChange={(value) => applyFilterPatch({ order_by: value })}
+			/>
 
-				<ArtistExploreFilterBar
-					scrollDirection={scrollDirection}
-					artistTypeValue={artistTypeValue()}
-					onArtistTypeChange={(value) => {
-						applyFilterPatch({
-							artist_type: parseArtistTypeFilterValue(value),
-						})
-					}}
-					sortBy={search().sort_by}
-					onSortByChange={(value) => applyFilterPatch({ sort_by: value })}
-					orderBy={search().order_by}
-					onOrderByChange={(value) => applyFilterPatch({ order_by: value })}
-				/>
-
-				<ArtistExploreList
-					artists={artists()}
-					isLoading={artistsQuery.isLoading}
-					isFetching={artistsQuery.isFetching}
-					limit={search().limit}
-					page={search().page}
-					totalPages={totalPages()}
-					onPageChange={setPage}
-				/>
-			</div>
-		</PageLayout>
+			<ArtistExploreList
+				artists={artists()}
+				isLoading={artistsQuery.isLoading}
+				isFetching={artistsQuery.isFetching}
+				limit={search().limit}
+				page={search().page}
+				totalPages={totalPages()}
+				onPageChange={setPage}
+			/>
+		</ExplorePageLayout>
 	)
 }

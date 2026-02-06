@@ -26,6 +26,10 @@ const DATE_TIME = new Intl.DateTimeFormat(undefined, {
 
 const TYPE_OPTIONS = ["artist", "release"] as const satisfies ImageQueueType[]
 
+const TYPE_FILTER_OPTIONS = ["", ...TYPE_OPTIONS] as const
+
+const STATUS_FILTER_OPTIONS = ["pending", "all"] as const
+
 const STATUS_FILTERS = ["pending", "all"] as const
 
 type StatusFilter = (typeof STATUS_FILTERS)[number]
@@ -37,6 +41,11 @@ const isImageQueueType = (value: string): value is ImageQueueType =>
 
 const isStatusFilter = (value: string): value is StatusFilter =>
 	STATUS_FILTERS.some((v) => v === value)
+
+const getTypeLabel = (value: string) => (value === "" ? "All" : value)
+
+const getStatusLabel = (value: StatusFilter) =>
+	value === "pending" ? "Pending" : "All"
 
 const formatDateTime = (value: string) => {
 	const date = new Date(value)
@@ -162,30 +171,59 @@ export function ImageQueueManagePage() {
 						<div class="flex flex-wrap items-center gap-4">
 							<div class="flex items-center gap-2">
 								<span class="text-sm text-slate-500">Type</span>
-								<Select
+								<Select.Root<string>
+									options={TYPE_FILTER_OPTIONS as unknown as string[]}
 									value={filters().type ?? ""}
-									onChange={(e) => updateSearch("type", e.currentTarget.value)}
+									onChange={(value) => updateSearch("type", value ?? "")}
+									itemComponent={(props) => (
+										<Select.Item item={props.item}>
+											{getTypeLabel(props.item.rawValue)}
+										</Select.Item>
+									)}
 								>
-									<Select.Option value="">All</Select.Option>
-									<For each={TYPE_OPTIONS}>
-										{(type) => (
-											<Select.Option value={type}>{type}</Select.Option>
-										)}
-									</For>
-								</Select>
+									<Select.Trigger>
+										<Select.Value<string>>
+											{(state) => getTypeLabel(state.selectedOption() ?? "")}
+										</Select.Value>
+										<Select.Icon />
+									</Select.Trigger>
+									<Select.Portal>
+										<Select.Content>
+											<Select.Listbox />
+										</Select.Content>
+									</Select.Portal>
+								</Select.Root>
 							</div>
 
 							<div class="flex items-center gap-2">
 								<span class="text-sm text-slate-500">Status</span>
-								<Select
+								<Select.Root<StatusFilter>
+									options={STATUS_FILTER_OPTIONS as unknown as StatusFilter[]}
 									value={filters().status}
-									onChange={(e) =>
-										updateSearch("status", e.currentTarget.value)
-									}
+									onChange={(value) => {
+										if (value === null) return
+										updateSearch("status", value)
+									}}
+									itemComponent={(props) => (
+										<Select.Item item={props.item}>
+											{getStatusLabel(props.item.rawValue)}
+										</Select.Item>
+									)}
 								>
-									<Select.Option value="pending">Pending</Select.Option>
-									<Select.Option value="all">All</Select.Option>
-								</Select>
+									<Select.Trigger>
+										<Select.Value<StatusFilter>>
+											{(state) =>
+												getStatusLabel(state.selectedOption() ?? "pending")
+											}
+										</Select.Value>
+										<Select.Icon />
+									</Select.Trigger>
+									<Select.Portal>
+										<Select.Content>
+											<Select.Listbox />
+										</Select.Content>
+									</Select.Portal>
+								</Select.Root>
 							</div>
 						</div>
 

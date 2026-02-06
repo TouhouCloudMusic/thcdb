@@ -3,8 +3,7 @@ import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { LabelApi } from "@thc/api"
 import { Either } from "effect"
 
-import { Link } from "~/component/atomic"
-import { PageLayout } from "~/layout"
+import { ExplorePageLayout } from "~/component/feature/entity_explore"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 import {
 	LabelExploreFilterBar,
@@ -72,38 +71,27 @@ export const LabelExplore = () => {
 	}
 
 	return (
-		<PageLayout class="p-8">
-			<div class="flex flex-col gap-6">
-				<div class="flex items-center justify-between gap-4">
-					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
-						Explore Labels
-					</h1>
-					<Link
-						to="/label/new"
-						class="text-sm font-light text-primary"
-					>
-						Create label
-					</Link>
-				</div>
+		<ExplorePageLayout
+			title="Explore Labels"
+			action={{ to: "/label/new", label: "Create label" }}
+		>
+			<LabelExploreFilterBar
+				scrollDirection={scrollDirection}
+				sortBy={search().sort_by}
+				onSortByChange={(value) => applyFilterPatch({ sort_by: value })}
+				orderBy={search().order_by}
+				onOrderByChange={(value) => applyFilterPatch({ order_by: value })}
+			/>
 
-				<LabelExploreFilterBar
-					scrollDirection={scrollDirection}
-					sortBy={search().sort_by}
-					onSortByChange={(value) => applyFilterPatch({ sort_by: value })}
-					orderBy={search().order_by}
-					onOrderByChange={(value) => applyFilterPatch({ order_by: value })}
-				/>
-
-				<LabelExploreList
-					labels={labels()}
-					isLoading={labelsQuery.isLoading}
-					isFetching={labelsQuery.isFetching}
-					limit={search().limit}
-					page={search().page}
-					totalPages={totalPages()}
-					onPageChange={setPage}
-				/>
-			</div>
-		</PageLayout>
+			<LabelExploreList
+				labels={labels()}
+				isLoading={labelsQuery.isLoading}
+				isFetching={labelsQuery.isFetching}
+				limit={search().limit}
+				page={search().page}
+				totalPages={totalPages()}
+				onPageChange={setPage}
+			/>
+		</ExplorePageLayout>
 	)
 }

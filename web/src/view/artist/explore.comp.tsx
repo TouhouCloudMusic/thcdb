@@ -156,20 +156,37 @@ type ArtistExploreFilterBarProps = {
 export const ArtistExploreFilterBar: Component<ArtistExploreFilterBarProps> = (
 	props,
 ) => {
+	const typeOptions = () => ["", ...ARTIST_TYPES]
+
+	const typeLabel = (value: string) => (value === "" ? "All" : value)
+
 	return (
 		<StickyFilterBar scrollDirection={props.scrollDirection}>
 			<div class="flex flex-wrap items-center gap-4">
 				<div class="flex items-center gap-2">
 					<span class="text-sm text-slate-500">Type</span>
-					<Select
+					<Select.Root<string>
+						options={typeOptions()}
 						value={props.artistTypeValue}
-						onChange={(e) => props.onArtistTypeChange(e.currentTarget.value)}
+						onChange={(value) => props.onArtistTypeChange(value ?? "")}
+						itemComponent={(optionProps) => (
+							<Select.Item item={optionProps.item}>
+								{typeLabel(optionProps.item.rawValue)}
+							</Select.Item>
+						)}
 					>
-						<Select.Option value="">All</Select.Option>
-						<For each={ARTIST_TYPES}>
-							{(type) => <Select.Option value={type}>{type}</Select.Option>}
-						</For>
-					</Select>
+						<Select.Trigger>
+							<Select.Value<string>>
+								{(state) => typeLabel(state.selectedOption() ?? "")}
+							</Select.Value>
+							<Select.Icon />
+						</Select.Trigger>
+						<Select.Portal>
+							<Select.Content>
+								<Select.Listbox />
+							</Select.Content>
+						</Select.Portal>
+					</Select.Root>
 				</div>
 
 				<CorrectionSortFieldSelect

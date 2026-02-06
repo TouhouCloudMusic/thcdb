@@ -11,11 +11,11 @@ import { Link } from "~/component/atomic"
 import { Input } from "~/component/atomic/Input"
 import {
 	EmptyExplorePlaceholder,
+	ExplorePageLayout,
 	OrderBySelect,
 	StickyFilterBar,
 } from "~/component/feature/entity_explore"
 import { DateWithPrecision } from "~/domain/shared"
-import { PageLayout } from "~/layout"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 
@@ -272,39 +272,28 @@ export const EventExplore = () => {
 	}
 
 	return (
-		<PageLayout class="p-8">
-			<div class="flex flex-col gap-6">
-				<div class="flex items-center justify-between gap-4">
-					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
-						Explore Events
-					</h1>
-					<Link
-						to="/event/new"
-						class="text-sm font-light text-primary"
-					>
-						Create event
-					</Link>
-				</div>
+		<ExplorePageLayout
+			title="Explore Events"
+			action={{ to: "/event/new", label: "Create event" }}
+		>
+			<EventExploreFilterBar
+				scrollDirection={scrollDirection}
+				startDateFrom={search().start_date_from}
+				startDateTo={search().start_date_to}
+				orderBy={search().order_by}
+				onChangeStartDate={updateStartDate}
+				onChangeOrderBy={setOrderBy}
+			/>
 
-				<EventExploreFilterBar
-					scrollDirection={scrollDirection}
-					startDateFrom={search().start_date_from}
-					startDateTo={search().start_date_to}
-					orderBy={search().order_by}
-					onChangeStartDate={updateStartDate}
-					onChangeOrderBy={setOrderBy}
-				/>
-
-				<EventExploreList
-					events={events()}
-					isLoading={eventsQuery.isLoading}
-					isFetching={eventsQuery.isFetching}
-					limit={search().limit}
-					page={search().page}
-					totalPages={totalPages()}
-					onPageChange={setPage}
-				/>
-			</div>
-		</PageLayout>
+			<EventExploreList
+				events={events()}
+				isLoading={eventsQuery.isLoading}
+				isFetching={eventsQuery.isFetching}
+				limit={search().limit}
+				page={search().page}
+				totalPages={totalPages()}
+				onPageChange={setPage}
+			/>
+		</ExplorePageLayout>
 	)
 }
