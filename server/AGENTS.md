@@ -1,50 +1,64 @@
-# Server 模块（Rust 后端）
+# Server/Backend Project Guidelines
 
-本文件面向在 `server/` 目录工作的开发者与自动化 Agent：快速说明本模块的 `just` 命令用法，以及代码的基本分层/结构，便于快速定位入口与职责边界。
+## 项目结构
+```
+server/
+├── src/
+│   ├── main.rs            # 服务入口（可输出 OpenAPI）
+│   ├── cli.rs             # CLI 参数
+│   ├── adapter/
+│   │   └── inbound/rest/  # REST 接入层（含 OpenAPI 生成）
+│   ├── application/
+│   ├── domain/
+│   ├── features/
+│   ├── infra/
+│   ├── shared/
+│   ├── utils/
+│   └── constant/
+├── crates/
+│   ├── entity/            # SeaORM Entities（通常由 `just generate` 生成）
+│   ├── migration/         # 数据库迁移（`just migrate ...`）
+│   ├── collection_ext/
+│   ├── fast_lrc/
+│   ├── flow/
+│   ├── libfp/
+│   ├── macros/
+│   └── proc_macros/
+├── Cargo.toml
+├── rust-toolchain.toml    # nightly toolchain（含 fmt/clippy 组件）
+├── config.toml            # 运行配置示例
+├── docker-compose.yml
+└── .justfile              # 开发命令入口
+```
 
-## `just` 命令（本目录的 `.justfile`）
+## 代码架构（迁移中）
 
-在本目录执行 `just --list` 查看可用任务。
+当前处于从整洁架构（adapter/application/domain/infra）迁移到垂直切片（feature-first）的中间态：存量代码沿用原分层，新功能优先按垂直切片落地
 
-### 常用任务
+- 新功能优先放在 `src/features/<feature>/`（或简单场景用 `src/features/<feature>.rs`），对外暴露 `router()`；在 `src/features/mod.rs` 添加 `pub mod <feature>;` 并在 `router()` 里 `.merge(<feature>::router())`。
+- feature 内建议按职责拆分 `http.rs`（axum handler + utoipa 注解）、`service.rs`（用例/事务编排）、`repo.rs`（DB 读写封装）、`model.rs`/`error.rs`；尽量保持 slice 自包含，跨 feature 复用优先下沉到 `domain/` 或 `shared/`。
+- HTTP 入口在 `src/adapter/inbound/rest.rs`：OpenAPI + middleware + 路由组装（通过 `features::router()`）；需要区分公私有接口时使用 `AppRouter`。
 
-- `just fmt`：格式化（`taplo fmt`、`dprint fmt`、`cargo fmt`）。
-- `just fix`：自动修复（`cargo fix --workspace ...`、`cargo clippy --fix --workspace ...`）。
-- `just check`：检查（格式化 check + `cargo clippy` + `cargo test`），用于 CI/提交前自检。
+## 常用命令
 
-### 数据库相关
+以下命令需要在 `server/` 目录执行（见 `server/.justfile`）：
 
-- `just generate`：重新生成 SeaORM Entities。
-  - 会先删除 `crates/entity/src/entities/*`，再调用 `sea-orm-cli generate entity ...` 生成。
-  - 需要安装 `sea-orm-cli`，并且环境变量/配置能连接到数据库。
-- `just migrate <args...>`：运行迁移命令，等同执行 `cargo run -p migration <args...>`。
+- `just fmt`：格式化。
+- `just fix`：自动修复。
+- `just check`：fmt check + clippy + test。
+- `just generate`：生成 SeaORM entities（需 `sea-orm-cli` 且可连数据库）。
+- `just migrate <args>`：运行迁移（如 `just migrate up`）。
+- `just converge`：生成覆盖率（tarpaulin）。
+- `cargo run -- --openapi ./openapi.json`：输出 OpenAPI schema。
 
-### 覆盖率
+## 编码规范
 
-- `just converge`：运行 `cargo tarpaulin --workspace ...`（排除生成的 entities），用于生成覆盖率报告。
+- lint 抑制：优先使用 `#[expect(...)]`（必要时补 `reason = "..."`），避免随意新增 `#[allow(...)]`；仓库已开启 `clippy::allow_attributes` 提醒，新增 `allow` 需要有明确理由。
+- 错误处理：沿用现有 `snafu` 的 `ResultExt/whatever_context` 风格，为失败添加上下文。
 
-## 基本架构（如何快速找代码）
+## 生成的文件/目录
 
-### 分层/目录结构（从外到内）
+以下内容通常由命令生成，禁止手动编辑：
 
-- `src/adapter/`：I/O 边界（HTTP REST、请求提取、错误映射、返回结构）。
-  - REST 入口在 `src/adapter/inbound/rest.rs`，并拆分到 `src/adapter/inbound/rest/*`（middleware、extract、error 等）。
-- `src/application/`：用例/应用服务层（编排 domain 与 infra；处理跨聚合流程与错误语义）。
-- `src/domain/`：领域模型与核心规则（尽量保持可测试、少依赖）。
-- `src/infra/`：基础设施（配置、日志、数据库、Redis、邮件、存储、后台任务等）。
-- `src/shared/`：跨层共享类型（例如统一错误）。
-- `src/features`：垂直切片功能层。
-- `src/utils/`：通用工具（OpenAPI、校验等）。
-
-### Workspace crates（与主程序的关系）
-
-- 主程序包：`thcdb_rs`（本目录 `Cargo.toml` 的 `[package]`）
-- `crates/entity/`：SeaORM Entities（通常由 `just generate` 生成）
-- `crates/migration/`：数据库迁移（通常由 `just migrate ...` 运行）
-- 其他 crate：`flow/`、`macros/`、`proc_macros/`、`libfp/` 等，按需被主程序/其它 crate 依赖
-
-
-## Coding style
-
-- 一些警告是可接受的，例如在未来可能被使用时的unused
-- 应当使用expect而不是allow来抑制警告
+- `crates/entity/src/entities/`：SeaORM entities（`just generate` 生成）
+- `openapi.json`（或任意 OpenAPI 输出文件）：由 `cargo run -- --openapi <path>` 生成

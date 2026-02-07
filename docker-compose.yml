@@ -46,7 +46,7 @@ services:
       SESSION_SECURE: "false"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-changeme}"
       middleware::limit::req_per_sec: "1000000"
-      DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+      DATABASE_URL: "postgres://${POSTGRES_USER:-devuser}:${POSTGRES_PASSWORD:-devuser}@db:5432/${POSTGRES_DB:-devdb}"
       REDIS_URL: "redis://redis:6379"
     ports:
       - "${SERVER_PORT:-12345}:12345"
