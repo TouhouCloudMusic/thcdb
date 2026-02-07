@@ -1,9 +1,11 @@
 # Web Repository Guidelines
 
 ## 概览
+
 本文件仅描述 `web/` 前端。前端采用 Solid.js + TypeScript，构建工具为 Vite，路由与数据请求分别使用 TanStack Router / TanStack Query。
 
 ## 项目结构
+
 ```
 web/
 ├── src/               # 应用主要代码（页面、组件、状态、路由等）
@@ -28,9 +30,11 @@ web/
 ├── eslint.config.js
 └── .justfile          # 开发命令
 ```
+
 src 说明：`src/` 为前端应用的主要代码（页面、组件、状态、路由等）。
 
 ## 技术栈（主要）
+
 - 框架：Solid.js
 - 语言：TypeScript
 - 构建：Vite
@@ -40,6 +44,7 @@ src 说明：`src/` 为前端应用的主要代码（页面、组件、状态、
 - 测试：Vitest
 
 ## 常用命令
+
 - `just fmt`：Prettier 格式化。
 - `just fmt-check`：Prettier 检查。
 - `just lint`：运行 `oxlint` + `eslint`。
