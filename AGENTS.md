@@ -1,70 +1,57 @@
 # Repository Guidelines
 
-## Repository Layout
-This repository has two main applications: 
-- `server/`: Rust backend
-- `web/`: Solid.JS frontend
-
 ## Project Structure
 ```
 .
+├── .github/                # CI workflows, issue templates
+│   └── workflows/
+├── docs/                   # Architecture and roadmap documentation
 ├── server/                 # Backend service and Rust workspace
-│   ├── src/                # Backend source code
+│   ├── src/                # Axum app, CLI entrypoints
 │   ├── crates/             # Workspace crates (entity, migration, etc.)
-│   ├── README.md
-│   ├── Dockerfile
+│   │   ├── entity/
+│   │   └── migration/
+│   ├── AGENTS.md           # Server-specific structure, conventions, commands
 │   ├── Cargo.toml
+│   ├── config.toml         # Server runtime config
+│   ├── Dockerfile          # Dev Dockerfile
+│   ├── Dockerfile.prod     # Production Dockerfile
 │   ├── rust-toolchain.toml
 │   └── .justfile
-├── web/                    # Frontend app and shared packages
+├── web/                    # Frontend app and shared packages (pnpm workspace)
 │   ├── src/                # Frontend application code
-│   ├── packages/           # Shared packages (api, query, toolkit, icons)
-│   ├── public              # Static assets
-│   ├── README.md
+│   ├── packages/           # Shared packages (api, query, toolkit, icons, ...)
+│   ├── public/             # Static assets
+│   ├── AGENTS.md           # Web-specific structure, conventions, commands
+│   ├── Dockerfile.prod     # Production Dockerfile
+│   ├── nginx.conf          # Reverse proxy / static hosting config
 │   ├── package.json
+│   ├── pnpm-lock.yaml
+│   ├── pnpm-workspace.yaml
+│   ├── tsconfig.json
+│   ├── openapi-ts.config.ts
 │   ├── vite.config.ts
 │   └── .justfile
-├── docs/                   # Architecture and roadmap documentation
+├── .env.example
+├── .env.prod.example
 ├── docker-compose.yml
+├── docker-compose.prod.yml
+├── flake.nix               # Nix dev environment
+├── flake.lock
 ├── README.md
+├── renovate.json
 └── .justfile
 ```
 
-## Key Technologies
-- Server (Rust): Axum, SeaORM, PostgreSQL, Redis, Utoipa (OpenAPI)
-- Web (React): React, TypeScript, Vite, TanStack Router, TanStack Query
-
-## Subproject Guidelines
-- `server/AGENTS.md`: Server-specific structure, conventions, and commands.
-- `web/AGENTS.md`: Web-specific structure, conventions, and commands.
+## Quickstart
+- Start dev stack: `just dev`
+- Web: `http://127.0.0.1:${WEB_PORT:-3000}`
+- Server: `http://127.0.0.1:${SERVER_PORT:-12345}` (OpenAPI: `/openapi.json`)
+- Stop: `just down`
 
 ## Common Commands
 - Root
   - `just dev`: Start full stack via Docker Compose.
   - `just server`: Start backend only via Docker Compose.
+  - `just down`: Stop stack and remove local images.
   - `just compose <args>`: Pass-through to Docker Compose.
-- Backend (`server/`)
-  - `just fmt`: Format Rust/TOML.
-  - `just fix`: Auto-fix with `cargo fix` and `cargo clippy --fix`.
-  - `just check`: Format checks + `cargo clippy` + `cargo test`.
-  - `just generate`: Regenerate SeaORM entities (requires DB access).
-  - `just migrate <args>`: Run migrations (e.g., `just migrate up`).
-- Frontend (`web/`)
-  - `just fmt` / `just fmt-check`: Run Prettier.
-  - `just lint` / `just fix`: Lint with `oxlint` + `eslint`.
-  - `just check`: Type check (`pnpm tsgo -p .`).
-  - `just test`: Run `vitest`.
-
-## OpenAPI Generation
-From repo root:
-```
-# Option A: Generate via running server CLI
-# cargo run --manifest-path ./server/Cargo.toml -- --openapi ./tmp/openapi.json
-# export API_SCHEMA=./tmp/openapi.json
-
-# Option B: Use a running server
-export API_SCHEMA=http://127.0.0.1:12345/openapi.json
-# or: export VITE_SERVER_URL=http://127.0.0.1:12345
-
-just gen-api
-```
