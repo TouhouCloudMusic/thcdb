@@ -25,15 +25,6 @@ server/
 └── .justfile          # 开发命令
 ```
 
-## 技术栈
-- Web 框架：Axum
-- ORM：SeaORM
-- 数据库：PostgreSQL
-- 缓存：Redis（fred）
-- OpenAPI：Utoipa + Scalar
-- 异步运行时：Tokio
-- 错误处理：Snafu
-
 ## 常用命令
 - `just fmt`：格式化（`taplo fmt`、`dprint fmt`、`cargo fmt`）。
 - `just fix`：自动修复（`cargo fix --workspace ...`、`cargo clippy --fix --workspace ...`）。

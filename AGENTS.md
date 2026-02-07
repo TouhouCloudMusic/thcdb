@@ -3,7 +3,7 @@
 ## Repository Layout
 This repository has two main applications: 
 - `server/`: Rust backend
-- `web/`: React frontend
+- `web/`: Solid.JS frontend
 
 ## Project Structure
 ```
