@@ -12,8 +12,8 @@ importers:
         specifier: ^1.7.4
         version: 1.7.5
       '@formisch/solid':
-        specifier: ^0.8.0
-        version: 0.8.0(solid-js@1.9.11)(typescript@5.9.3)(valibot@1.2.0(typescript@5.9.3))
+        specifier: ^0.9.0
+        version: 0.9.0(solid-js@1.9.11)(typescript@5.9.3)(valibot@1.2.0(typescript@5.9.3))
       '@kobalte/core':
         specifier: ^0.13.11
         version: 0.13.11(solid-js@1.9.11)
@@ -790,8 +790,8 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@formisch/solid@0.8.0':
-    resolution: {integrity: sha512-UDYwmSMQZ+LjSPBOtfQ8Cl+bMa/dNDH/SRLm94qP0TNKHTqmfhSDvTDMeFoA/A/Xj31WlnYOfSHYPh+zhHX1dQ==}
+  '@formisch/solid@0.9.0':
+    resolution: {integrity: sha512-tY8BRU529fl7sfxqcVl/GwuESFpk4b1tFWtre6tXwRCQlC+V24VrYKXWK8WfyuNWehABvZy3Zy7PjFlUv2xyoQ==}
     peerDependencies:
       solid-js: ^1.6.0
       typescript: '>=5'
@@ -5040,7 +5040,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@formisch/solid@0.8.0(solid-js@1.9.11)(typescript@5.9.3)(valibot@1.2.0(typescript@5.9.3))':
+  '@formisch/solid@0.9.0(solid-js@1.9.11)(typescript@5.9.3)(valibot@1.2.0(typescript@5.9.3))':
     dependencies:
       solid-js: 1.9.11
       valibot: 1.2.0(typescript@5.9.3)
