@@ -9,9 +9,9 @@ use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::infra::error::Error;
 
 #[derive(Deserialize, ToSchema)]
@@ -67,7 +67,7 @@ struct CorrectionHistoryItem {
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
-        .with_private(|r| r.routes(routes!(entity_corrections)))
+        .with_public(|r| r.routes(routes!(entity_corrections)))
         .finish()
 }
 
@@ -81,7 +81,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     ),
 )]
 async fn entity_corrections(
-    CurrentUser(_user): CurrentUser,
     Path(EntityCorrectionsPath { entity_type, id }): Path<
         EntityCorrectionsPath,
     >,
