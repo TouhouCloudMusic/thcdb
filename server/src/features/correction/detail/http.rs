@@ -6,15 +6,15 @@ use sea_orm::EntityTrait;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::{self, Data};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain::correction::Correction;
 use crate::infra::error::Error;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
-        .with_private(|r| r.routes(routes!(get_correction)))
+        .with_public(|r| r.routes(routes!(get_correction)))
         .finish()
 }
 
@@ -27,7 +27,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     ),
 )]
 async fn get_correction(
-    CurrentUser(_user): CurrentUser,
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Data<Correction>, impl IntoResponse> {

@@ -8,16 +8,16 @@ use serde_json::{Map, Value};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::api_response::{self, Data};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain::correction::CorrectionDiff;
 use crate::features::correction::shared::repo as correction_diff;
 use crate::infra::error::Error;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
-        .with_private(|r| r.routes(routes!(get_correction_diff)))
+        .with_public(|r| r.routes(routes!(get_correction_diff)))
         .finish()
 }
 
@@ -30,7 +30,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     ),
 )]
 async fn get_correction_diff(
-    CurrentUser(_user): CurrentUser,
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Data<CorrectionDiff>, impl IntoResponse> {
