@@ -6,110 +6,81 @@
     <a href="../ja/CONTRIBUTING.md">日本語</a>
 </h2>
 
-## 前提条件
+## 目次
 
-Touhou Cloud DB に貢献する前に、以下のツールがインストールされていることを確認してください：
+- [開発](#development)
+- [Commit 規約](#commit-convention)
 
-### Rust ツールチェーン
+## <a id="development"></a>開発
 
-本プロジェクトのバックエンドは Rust で記述されています。[rust-lang.org](https://www.rust-lang.org/) からインストールできます。バックエンドは [`server/rust-toolchain.toml`](../../server/rust-toolchain.toml) を通じて特定のツールチェーン設定を適用します：
+### Docker で開発環境を実行（推奨）
 
-- **Nightly チャンネル**：最新機能を利用するために Nightly バージョンを使用しています
-- **必要コンポーネント**：
-
-  - `rustfmt`: コードの整形
-  - `clippy`: コードの静的解析
-  - `rustc-codegen-cranelift-preview`: 高速ビルドのため
-
-初回ビルド時に自動的にインストールされます。手動で確認・更新も可能です。
-
-[rustup](https://rustup.rs/) の使用を推奨します。インストール後、以下のコマンドで確認できます：
+リポジトリのルートで実行してください：
 
 ```bash
-# 現在のツールチェーンを確認
-rustup show
-
-# ツールチェーンを更新
-rustup update
+# 必要に応じて env を更新
+cp .env.example .env
+just dev
 ```
 
-### 補助ツール
+デフォルトのアクセス先：
 
-以下のツールも利用しています：
+- フロントエンド：`http://127.0.0.1:3000`
+- バックエンド：`http://127.0.0.1:12345`
 
-- **Taplo**: [Taplo](https://taplo.tamasfe.dev/) は TOML ファイルの整形・Lint 用です。
+サービスを停止：
 
 ```bash
-cargo install taplo-cli
+just down
 ```
 
-- **Just**: [Just](https://github.com/casey/just) は便利なコマンドランナーです。共通タスクを簡単に実行できます。
+### ローカルで個別に実行
+
+#### フロントエンド
+
+パッケージ管理には pnpm を使用します。
+
+フロントエンドをローカルで直接実行したい場合は、`web/.env` に以下を追加することを推奨します：
 
 ```bash
-cargo install just
+# web/.env
+VITE_SERVER_URL=http://127.0.0.1:12345
 ```
 
-利用可能なコマンドは `just --list` で確認できます。
+`web/.env.example` をそのままコピーして開始することもできます。
 
-- **Sea Orm CLI**: データベースからエンティティを自動生成します。
+#### バックエンド
 
-```bash
-cargo install sea-orm-cli
-```
+##### 前提条件
 
-### データベース・キャッシュ
+- rust
+- [Just](https://github.com/casey/just) Task runner
+- [Taplo](https://taplo.tamasfe.dev/) Toml formatter
+- sea-orm-cli
+- PostgreSQL
+- Redis
 
-- **PostgreSQL**：メインデータベースとして [PostgreSQL](https://www.postgresql.org/) を使用しています。インストール方法は公式ガイドを参照してください。
-- **Redis**：キャッシュシステムとして [Redis](https://redis.io/) を使用しています。
+##### 設定
 
-### 任意ツール
+バックエンドをローカルで直接実行したい場合、次の環境変数を設定する必要があります：
 
-- **Mold**（Unix 系 OS 限定）：ビルドを高速化する [Mold](https://github.com/rui314/mold) をインストールし、`.cargo/config.toml` の該当箇所を有効化すると便利です。
+- `DATABASE_URL`（必須）：データベース接続文字列。例：`postgres://username:password@localhost:5432/database_name`
+- `REDIS_URL`（必須）：Redis 接続アドレス。例：`redis://username:password@localhost:6379`
+- `ADMIN_PASSWORD`（必須）：開発用管理者アカウントのパスワード（バックエンド起動時に管理者アカウントの初期化/更新に使用）
 
-※ Windows では使用できません。
+##### 設定ファイルと環境変数の上書きルール
 
-## 環境構成
+バックエンド設定は `server/config.toml` から読み込まれ、環境変数で上書きできます。
 
-### 環境変数
+- トップレベルのフィールドは同名の変数を直接使用します（例：`DATABASE_URL`、`REDIS_URL`）。
+- ネストしたフィールドは階層を `::` で区切ります（例：`middleware::limit::req_per_sec`、`app::port`）。
 
-開発前に以下の環境変数を設定してください：
+現行コードでの優先順位：
 
-- `DATABASE_URL`: 例：`postgres://username:password@localhost:5432/database_name`
-- `REDIS_URL`: 例：`redis://username:password@localhost:6379`
-- `ADMIN_PASSWORD`: 開発用管理者パスワード（任意の値で OK）
+1. `config.toml`
+2. 環境変数
+3. `config.dev.toml`（`debug` ビルド時のみ、かつファイルが存在する場合）
 
-Docker ではなくローカルでバックエンドを実行する場合は、`server/.env` ファイルを作成して記述するのが推奨されます（`.gitignore` 済み）。
+### <a id="commit-convention"></a>Commit 規約
 
-例 `.env`：
-
-```bash
-# データベース接続（複数形式に対応）
-# フォーマット1：ユーザー名・パスワードあり
-DATABASE_URL=postgres://youmu:password@localhost:5432/touhou_cloud_db
-
-# フォーマット2：OSユーザーでの認証
-# DATABASE_URL=postgres://youmu@localhost:5432/touhou_cloud_db
-
-# フォーマット3：現在のシステムユーザー
-# DATABASE_URL=postgres://localhost:5432/touhou_cloud_db
-
-# Redis（通常はローカル接続で十分）
-REDIS_URL=redis://localhost:6379
-
-# 開発用の管理者アカウント
-ADMIN_PASSWORD=your_secure_password
-```
-
-### Pre-Push フック
-
-`cargo test` を一度実行することで pre-push フックが有効になります。
-
-このフックは `git push` 実行時に以下をチェックします：
-
-- `taplo fmt --check` および `cargo fmt --check` によるコード整形確認
-- `cargo clippy` による静的解析
-- `cargo test` によるテスト
-
-これらは [`server/.justfile`](../../server/.justfile) に `pre-push` および `check` タスクとして定義されています。
-
-どれかに失敗すると、問題が解決されるまで push はブロックされます。これにより品質が保たれます。
+命令形で、先頭を大文字にしてください。
