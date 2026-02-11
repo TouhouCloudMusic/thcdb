@@ -6,17 +6,16 @@ import { ObjExt } from "@thc/toolkit/data"
 import { Option as O } from "effect"
 import { createEffect, Show } from "solid-js"
 import { createStore, produce } from "solid-js/store"
-import * as v from "valibot"
 
 import { RELEASE_TYPES } from "~/domain/release"
-import { EntityId } from "~/domain/shared"
+import { EntityId_fromStr } from "~/domain/shared"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { ArtistProfilePage } from "~/view/artist/profile"
 
 export const Route = createFileRoute("/artist/$id/")({
 	component: RouteComponent,
 	loader: async ({ params: { id } }) => {
-		const parsedId = v.parse(EntityId, Number.parseInt(id, 10))
+		const parsedId = EntityId_fromStr(id)
 
 		const data = await QUERY_CLIENT.ensureQueryData(
 			ArtistQueryOption.findById(parsedId),

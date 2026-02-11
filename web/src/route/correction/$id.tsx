@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/solid-router"
 import { CorrectionQueryOption } from "@thc/query"
 import * as v from "valibot"
 
-import { EntityId } from "~/domain/shared"
+import { EntityId_fromStr } from "~/domain/shared"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { CorrectionDetailPage } from "~/view/correction/Detail"
 
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/correction/$id")({
 		compareId: search.compare,
 	}),
 	loader: async ({ params, deps }) => {
-		const parsedId = v.parse(EntityId, Number.parseInt(params.id, 10))
+		const parsedId = EntityId_fromStr(params.id)
 
 		await QUERY_CLIENT.ensureQueryData(CorrectionQueryOption.detail(parsedId))
 
@@ -38,7 +38,7 @@ function RouteComponent() {
 	const params = Route.useParams()
 	const search = Route.useSearch()
 	const navigate = Route.useNavigate()
-	const correctionId = v.parse(EntityId, Number.parseInt(params().id, 10))
+	const correctionId = EntityId_fromStr(params().id)
 
 	return (
 		<CorrectionDetailPage

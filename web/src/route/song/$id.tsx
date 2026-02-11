@@ -1,16 +1,15 @@
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import { SongQueryOption } from "@thc/query"
-import * as v from "valibot"
 
-import { EntityId } from "~/domain/shared"
+import { EntityId_fromStr } from "~/domain/shared"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { SongInfoPage } from "~/view/song/Info"
 
 export const Route = createFileRoute("/song/$id")({
 	component: RouteComponent,
 	loader: async ({ params }) => {
-		const parsedId = v.parse(EntityId, Number.parseInt(params.id, 10))
+		const parsedId = EntityId_fromStr(params.id)
 		return await QUERY_CLIENT.ensureQueryData(
 			SongQueryOption.findById(parsedId),
 		)
@@ -23,7 +22,7 @@ export const Route = createFileRoute("/song/$id")({
 
 function RouteComponent() {
 	const params = Route.useParams()
-	const songId = v.parse(EntityId, Number.parseInt(params().id, 10))
+	const songId = EntityId_fromStr(params().id)
 	const query = useQuery(() => SongQueryOption.findById(songId))
 
 	return (
