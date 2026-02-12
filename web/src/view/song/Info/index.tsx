@@ -4,7 +4,7 @@ import { createContext, Show, Suspense } from "solid-js"
 import { Tab } from "~/component/atomic"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
-import { CorrectionHistorySection } from "~/view/correction/Detail"
+import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { SongInfoCoverImage } from "./comp/SongInfoCoverImage"
 import { SongInfoCredit } from "./comp/SongInfoCredit"
@@ -42,10 +42,9 @@ export function SongInfoPage(props: SongInfoPageProps) {
 						</div>
 						<div class="col-span-full">
 							<SongInfoTabs />
-							<CorrectionHistorySection
+							<EntityCorrectionMetadataSection
 								entityType="song"
 								entityId={props.song.id}
-								class="mt-8"
 							/>
 						</div>
 					</div>

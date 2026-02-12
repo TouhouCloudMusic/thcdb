@@ -5,7 +5,7 @@ import { createContext, Suspense } from "solid-js"
 import { Image } from "~/component/image"
 import { PageLayout } from "~/layout/PageLayout"
 import type { InfiniteQuery } from "~/type/query"
-import { CorrectionHistorySection } from "~/view/correction/Detail"
+import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { ArtistInfo } from "./comp/ArtistInfo"
 import { ArtistReleaseInfo } from "./comp/ArtistReleaseInfo"
@@ -75,7 +75,7 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 						<div>
 							<ArtistReleaseInfo />
 						</div>
-						<CorrectionHistorySection
+						<EntityCorrectionMetadataSection
 							entityType="artist"
 							entityId={props.artist.id}
 						/>

@@ -4,7 +4,7 @@ import { Show, Suspense } from "solid-js"
 import { Tab } from "~/component/atomic"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
-import { CorrectionHistorySection } from "~/view/correction/Detail"
+import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { ReleaseInfoCoverImage } from "./comp/ReleaseInfoCoverImage"
 import { ReleaseInfoCredits } from "./comp/ReleaseInfoCredits"
@@ -36,10 +36,9 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 						</div>
 						<div class="col-span-full">
 							<ReleaseInfoTabs />
-							<CorrectionHistorySection
+							<EntityCorrectionMetadataSection
 								entityType="release"
 								entityId={props.release.id}
-								class="mt-8"
 							/>
 						</div>
 					</div>

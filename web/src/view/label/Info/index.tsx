@@ -1,12 +1,11 @@
 import type { Label } from "@thc/api"
 import { Show, Suspense } from "solid-js"
 
-import { Link } from "~/component/atomic"
 import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
-import { CorrectionHistorySection } from "~/view/correction/Detail"
+import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { LabelInfoPageContext } from "./context"
 import type { LabelInfoPageContextValue } from "./context"
@@ -29,7 +28,7 @@ export function LabelInfoPage(props: Props) {
 					<div class="flex flex-col gap-y-6">
 						<LabelInfoHeader />
 						<LabelInfoDetails />
-						<CorrectionHistorySection
+						<EntityCorrectionMetadataSection
 							entityType="label"
 							entityId={props.label.id}
 						/>
@@ -43,19 +42,10 @@ export function LabelInfoPage(props: Props) {
 function LabelInfoHeader() {
 	const ctx = assertContext(LabelInfoPageContext)
 	return (
-		<header class="flex items-start justify-between gap-4">
-			<div class="space-y-2">
-				<h1 class="text-3xl leading-tight font-light tracking-tight text-primary">
-					{ctx.label.name}
-				</h1>
-			</div>
-			<Link
-				to="/label/$id/edit"
-				params={{ id: ctx.label.id.toString() }}
-				class="text-sm"
-			>
-				Edit
-			</Link>
+		<header>
+			<h1 class="text-3xl leading-tight font-light tracking-tight text-primary">
+				{ctx.label.name}
+			</h1>
 		</header>
 	)
 }

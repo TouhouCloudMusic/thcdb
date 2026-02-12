@@ -9,7 +9,7 @@ import { EntityId_fromStr } from "~/domain/shared"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { EditLabelPage } from "~/view/label/edit"
 
-export const Route = createFileRoute("/label/$id/edit")({
+export const Route = createFileRoute("/label/$id_/edit")({
 	component: RouteComponent,
 	loader: async ({ params: { id } }) => {
 		const parsedId = EntityId_fromStr(id)
