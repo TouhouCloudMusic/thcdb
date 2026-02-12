@@ -6,7 +6,7 @@ import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
-import { CorrectionHistorySection } from "~/view/correction/Detail"
+import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { EventInfoPageContext } from "./context"
 import type { EventInfoPageContextValue } from "./context"
@@ -29,7 +29,7 @@ export function EventInfoPage(props: EventInfoPageProps) {
 					<div class="flex flex-col gap-y-6">
 						<EventInfoHeader />
 						<EventInfoTabs />
-						<CorrectionHistorySection
+						<EntityCorrectionMetadataSection
 							entityType="event"
 							entityId={props.event.id}
 						/>
