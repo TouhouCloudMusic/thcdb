@@ -60,6 +60,11 @@ export default defineConfig(({ mode }) => {
 		},
 		build: {
 			target: "esnext",
+			rolldownOptions: {
+				experimental: {
+					lazyBarrel: true,
+				},
+			},
 		},
 		test: {
 			projects: [
