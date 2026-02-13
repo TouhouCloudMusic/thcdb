@@ -66,25 +66,62 @@ web/
 - 函数的定义方式对齐Rust: 顶级或不捕获任何局部变量的，以function定义。捕获局部变量的，使用const定义闭包。
 - 对于可空值，使用 `??` 而不是 `||`
 - 禁止使用嵌套层级超过2的三元表达式
+- 代码需要能够流畅的从上往下阅读，因此：
+  - 定义必须先于使用
+  - 避免上下跳转的控制流或内容
 
 ### JSX
 
-- 顶级组件必须使用 `function` 定义
-- 不要在 JSX 表达式中内联过于复杂的函数
+- 组件必须使用 `function` 定义
 
 ### Typescript
 
 - 优先使用 `type` 而不是 `interface` 来声明类型
-- 在导入时，使用单独的 `import type { ... }` 来导入类型（不要用 `import { type ... }`）
+- 在导入时，必须使用单独的 `import type { ... }` 来导入类型, 不要用 `import { type ... }`
 - 避免不必要的类型标注：在标注类型前，先寻找是否已经存在定义了的类型别名
-- 为了可读性和局域性，组件的 Props 定义及相关内容（例如常量）需要放在组件上方，而不是文件顶部
-
+- 为了可读性和局域性，组件的 Props 定义及相关内容（例如常量）需要放在组件上方，而不是文件顶部, 除非它们在其他地方也被使用
+  
 ### Solid JS
 
 - 不要解构 `props`，这会破坏 Solid 的响应式系统
 - 使用 Solid 的 `<Switch>`/`<Match>` 进行多分支条件渲染；简单显隐可用 `<Show>`
 - 禁止在 `createEffect` 中调用任意 `setSignal`（例如 `setXxx`）。如需根据其他信号变化“重置/派生”值，优先使用派生状态（`createMemo`）表达，避免通过 effect 进行命令式重置
 - 不要使用 `classList`
+
+### Tailwind CSS
+
+twMerge和twJoin是两个用于合并Tailwind CSS类名的工具。twMerge会智能地合并类名，避免重复和冲突，而twJoin则简单地连接类名，不进行任何优化。
+当场景简单时（即已知所有的类名），使用twJoin，否则使用twMerge以避免潜在的类名冲突和冗余。
+twMerge和twJoin都接受false作为参数，因此在条件类名时，可以直接传入条件表达式，例如：
+
+```tsx
+twMerge(
+  "base-class",
+  condition && "conditional-class"
+)
+```
+
+而不是
+
+```tsx
+twMerge(
+  "base-class",
+  condition ? "conditional-class" : ""
+)
+```
+
+#### v3 -> v4
+
+Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是替换列表：
+
+- break-words -> wrap-break-word
+
+#### 设计系统
+
+优先使用设计系统定义的样式，如：
+- 颜色：`text-primary`、`bg-secondary` 等
+
+不要使用自定义设置，如`text-[11px]`
 
 ## 生成的文件
 
