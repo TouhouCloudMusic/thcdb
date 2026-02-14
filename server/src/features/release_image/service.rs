@@ -7,9 +7,8 @@ use super::error::Error;
 use super::model::ReleaseCoverArtInput;
 use crate::application::error::EntityNotFound;
 use crate::constant::{
-    RELEASE_COVER_IMAGE_MAX_HEIGHT, RELEASE_COVER_IMAGE_MAX_RATIO,
-    RELEASE_COVER_IMAGE_MAX_WIDTH, RELEASE_COVER_IMAGE_MIN_HEIGHT,
-    RELEASE_COVER_IMAGE_MIN_RATIO, RELEASE_COVER_IMAGE_MIN_WIDTH,
+    RELEASE_COVER_IMAGE_MAX_HEIGHT, RELEASE_COVER_IMAGE_MAX_WIDTH,
+    RELEASE_COVER_IMAGE_MIN_HEIGHT, RELEASE_COVER_IMAGE_MIN_WIDTH,
 };
 use crate::domain::image;
 use crate::domain::image::{CreateImageMeta, ParseOption, Parser};
@@ -31,7 +30,6 @@ static RELEASE_COVER_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
         .height_range(
             RELEASE_COVER_IMAGE_MIN_HEIGHT..=RELEASE_COVER_IMAGE_MAX_HEIGHT,
         )
-        .ratio(RELEASE_COVER_IMAGE_MIN_RATIO..=RELEASE_COVER_IMAGE_MAX_RATIO)
         .build()
         .into_parser()
 });

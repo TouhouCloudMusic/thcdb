@@ -21,16 +21,12 @@ mod share {
     pub const ARTIST_PROFILE_IMAGE_MAX_WIDTH: u32 = 4096;
     pub const ARTIST_PROFILE_IMAGE_MIN_HEIGHT: u32 = 256;
     pub const ARTIST_PROFILE_IMAGE_MAX_HEIGHT: u32 = 4096;
-    pub const ARTIST_PROFILE_IMAGE_MIN_RATIO: f64 = 1.0;
-    pub const ARTIST_PROFILE_IMAGE_MAX_RATIO: f64 = 2.0;
 
     // Release
     pub const RELEASE_COVER_IMAGE_MIN_WIDTH: u32 = 256;
     pub const RELEASE_COVER_IMAGE_MAX_WIDTH: u32 = 4096;
     pub const RELEASE_COVER_IMAGE_MIN_HEIGHT: u32 = 256;
     pub const RELEASE_COVER_IMAGE_MAX_HEIGHT: u32 = 4096;
-    pub const RELEASE_COVER_IMAGE_MIN_RATIO: f64 = 1.0;
-    pub const RELEASE_COVER_IMAGE_MAX_RATIO: f64 = 1.0;
 
     // User
     pub const AVATAR_MAX_FILE_SIZE: u64 = 10 * 1024 * 1024; // 10 mib

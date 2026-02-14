@@ -6,9 +6,8 @@ use bytesize::ByteSize;
 use super::error::Error;
 use super::model::ArtistProfileImageInput;
 use crate::constant::{
-    ARTIST_PROFILE_IMAGE_MAX_HEIGHT, ARTIST_PROFILE_IMAGE_MAX_RATIO,
-    ARTIST_PROFILE_IMAGE_MAX_WIDTH, ARTIST_PROFILE_IMAGE_MIN_HEIGHT,
-    ARTIST_PROFILE_IMAGE_MIN_RATIO, ARTIST_PROFILE_IMAGE_MIN_WIDTH,
+    ARTIST_PROFILE_IMAGE_MAX_HEIGHT, ARTIST_PROFILE_IMAGE_MAX_WIDTH,
+    ARTIST_PROFILE_IMAGE_MIN_HEIGHT, ARTIST_PROFILE_IMAGE_MIN_WIDTH,
 };
 use crate::domain::artist_image_queue::ArtistImageQueue;
 use crate::domain::image;
@@ -29,7 +28,6 @@ static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
         .height_range(
             ARTIST_PROFILE_IMAGE_MIN_HEIGHT..=ARTIST_PROFILE_IMAGE_MAX_HEIGHT,
         )
-        .ratio(ARTIST_PROFILE_IMAGE_MIN_RATIO..=ARTIST_PROFILE_IMAGE_MAX_RATIO)
         .build();
     Parser::new(opt)
 });
