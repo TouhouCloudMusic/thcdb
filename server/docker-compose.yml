@@ -40,7 +40,7 @@ services:
     environment:
       SESSION_SECURE: false
       ADMIN_PASSWORD: changeme
-      middleware::limit::req_per_sec: 1000000
+      MIDDLEWARE__LIMIT__REQ_PER_SEC: 1000000
 
       DATABASE_URL: "postgres://appuser:appuser@db:5432/appdb"
       REDIS_URL: "redis://redis:6379"

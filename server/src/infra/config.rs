@@ -42,7 +42,7 @@ impl Config {
             .add_source(config::File::with_name("config"))
             .add_source(
                 config::Environment::with_convert_case(config::Case::Snake)
-                    .separator("::"),
+                    .separator("__"),
             )
             .pipe(|cfg| {
                 #[cfg(debug_assertions)]
