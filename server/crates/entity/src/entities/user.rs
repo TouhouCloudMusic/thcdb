@@ -12,10 +12,14 @@ pub struct Model {
     pub id: i32,
     #[sea_orm(column_type = "Text", unique)]
     pub name: String,
+    #[sea_orm(column_type = "Text", unique)]
+    pub email: String,
+    pub email_verified: bool,
     #[sea_orm(column_type = "Text")]
     pub password: String,
     pub avatar_id: Option<i32>,
     pub last_login: DateTimeWithTimeZone,
+    pub created_at: DateTimeWithTimeZone,
     pub profile_banner_id: Option<i32>,
     #[sea_orm(column_type = "Text", nullable)]
     pub bio: Option<String>,
@@ -57,6 +61,8 @@ pub enum Relation {
     SongTagVote,
     #[sea_orm(has_many = "super::user_list::Entity")]
     UserList,
+    #[sea_orm(has_one = "super::user_email_verification::Entity")]
+    UserEmailVerification,
     #[sea_orm(has_many = "super::user_role::Entity")]
     UserRole,
 }
@@ -112,6 +118,12 @@ impl Related<super::user_list::Entity> for Entity {
 impl Related<super::user_role::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::UserRole.def()
+    }
+}
+
+impl Related<super::user_email_verification::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::UserEmailVerification.def()
     }
 }
 

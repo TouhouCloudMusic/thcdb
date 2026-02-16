@@ -98,11 +98,17 @@ type SongExploreFilterBarProps = {
 }
 
 function SongExploreFilterBar(props: SongExploreFilterBarProps) {
-	const languageOptions = () => ["", ...LANGUAGE_OPTIONS.map((lang) => lang.id.toString())]
+	const languageOptions = () => [
+		"",
+		...LANGUAGE_OPTIONS.map((lang) => lang.id.toString()),
+	]
 
 	const languageLabel = (value: string) => {
 		if (value === "") return "All"
-		return LANGUAGE_OPTIONS.find((lang) => lang.id.toString() === value)?.label ?? value
+		return (
+			LANGUAGE_OPTIONS.find((lang) => lang.id.toString() === value)?.label
+			?? value
+		)
 	}
 
 	return (

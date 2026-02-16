@@ -13,14 +13,17 @@ import type * as AuthSchema from "~/domain/auth/schema"
 
 type SignInSchema = typeof AuthSchema.SignIn
 type SignUpSchema = typeof AuthSchema.SignUp
+type VerifyEmailSchema = typeof AuthSchema.VerifyEmail
 
 type UserNameFieldStore =
 	| FieldStore<SignInSchema, ["username"]>
 	| FieldStore<SignUpSchema, ["username"]>
+type EmailFieldStore = FieldStore<SignUpSchema, ["email"]>
 type PasswordFieldStore =
 	| FieldStore<SignInSchema, ["password"]>
 	| FieldStore<SignUpSchema, ["password"]>
 	| FieldStore<SignUpSchema, ["repeated_password"]>
+type VerificationCodeFieldStore = FieldStore<VerifyEmailSchema, ["code"]>
 
 export function FieldLayout(
 	props: ParentProps<{
@@ -205,6 +208,44 @@ export function UserNameField(props: { field: UserNameFieldStore }) {
 				class="h-9 w-full"
 				type="text"
 				id="username"
+				value={props.field.input ?? ""}
+			/>
+		</FieldLayout>
+	)
+}
+
+export function EmailField(props: { field: EmailFieldStore }) {
+	return (
+		<FieldLayout
+			label="Email"
+			for="email"
+			error={props.field.errors?.[0]}
+		>
+			<InputField.Input
+				{...props.field.props}
+				class="h-9 w-full"
+				type="email"
+				id="email"
+				value={props.field.input ?? ""}
+			/>
+		</FieldLayout>
+	)
+}
+
+export function VerificationCodeField(props: {
+	field: VerificationCodeFieldStore
+}) {
+	return (
+		<FieldLayout
+			label="Verification code"
+			for="code"
+			error={props.field.errors?.[0]}
+		>
+			<InputField.Input
+				{...props.field.props}
+				class="h-9 w-full"
+				type="text"
+				id="code"
 				value={props.field.input ?? ""}
 			/>
 		</FieldLayout>

@@ -18,6 +18,24 @@ export async function signup(options: Opt<"sign_up">) {
 	return adaptApiResult(res)
 }
 
+export async function verifyEmail(options: Opt<"verify_email">) {
+	const res = await FetchClient.POST("/verify-email", {
+		body: options.body,
+	})
+
+	return adaptApiResult(res)
+}
+
+export async function resendVerificationEmail(
+	options: Opt<"resend_verification_email">,
+) {
+	const res = await FetchClient.POST("/resend-verification-email", {
+		body: options.body,
+	})
+
+	return adaptApiResult(res)
+}
+
 export async function signout() {
 	const res = await FetchClient.GET("/sign-out", {})
 

@@ -740,6 +740,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/resend-verification-email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resend_verification_email"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/search": {
         parameters: {
             query?: never;
@@ -1086,6 +1102,22 @@ export type paths = {
         get: operations["user_image_queue"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/verify-email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["verify_email"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1604,8 +1636,16 @@ export type components = {
             data: number;
             status: string;
         };
+        DataResendVerificationEmailResponse: {
+            data: components["schemas"]["ResendVerificationEmailResponse"];
+            status: string;
+        };
         DataSearchResponse: {
             data: components["schemas"]["SearchResponse"];
+            status: string;
+        };
+        DataSignUpResponse: {
+            data: components["schemas"]["SignUpResponse"];
             status: string;
         };
         DataUnreadCount: {
@@ -2222,6 +2262,15 @@ export type components = {
         };
         /** @enum {string} */
         ReleaseType: "Album" | "Ep" | "Single" | "Compilation" | "Demo" | "Other";
+        ResendVerificationEmailRequest: {
+            email: string;
+        };
+        ResendVerificationEmailResponse: {
+            /** Format: int64 */
+            resend_cooldown_seconds: number;
+            /** Format: int64 */
+            verification_code_expires_minutes: number;
+        };
         SearchResponse: {
             artists: components["schemas"]["CursorResponse_SimpleArtist"];
             events: components["schemas"]["CursorResponse_SimpleEvent"];
@@ -2232,6 +2281,19 @@ export type components = {
         };
         SetUserRolesRequest: {
             roles: string[];
+        };
+        SignUpRequest: {
+            email: string;
+            password: string;
+            username: string;
+        };
+        SignUpResponse: {
+            /** Format: int64 */
+            resend_cooldown_seconds: number;
+            /** Format: int64 */
+            signup_expires_hours: number;
+            /** Format: int64 */
+            verification_code_expires_minutes: number;
         };
         SimpleArtist: {
             /** Format: int32 */
@@ -2349,6 +2411,10 @@ export type components = {
             id: number;
             name: string;
         };
+        VerifyEmailRequest: {
+            code: string;
+            email: string;
+        };
         VoteBody: {
             score: components["schemas"]["i16"];
             /** Format: int32 */
@@ -2434,7 +2500,9 @@ export type DataPaginatedTagRef = components['schemas']['DataPaginatedTagRef'];
 export type DataPaginatedUserImageQueueItem = components['schemas']['DataPaginatedUserImageQueueItem'];
 export type DataPaginatedUserSummary = components['schemas']['DataPaginatedUserSummary'];
 export type DataPendingImageQueueCount = components['schemas']['DataPendingImageQueueCount'];
+export type DataResendVerificationEmailResponse = components['schemas']['DataResendVerificationEmailResponse'];
 export type DataSearchResponse = components['schemas']['DataSearchResponse'];
+export type DataSignUpResponse = components['schemas']['DataSignUpResponse'];
 export type DataUnreadCount = components['schemas']['DataUnreadCount'];
 export type DataUserProfile = components['schemas']['DataUserProfile'];
 export type DataUserRoles = components['schemas']['DataUserRoles'];
@@ -2511,8 +2579,12 @@ export type ReleaseImageQueueTarget = components['schemas']['ReleaseImageQueueTa
 export type ReleaseImageType = components['schemas']['ReleaseImageType'];
 export type ReleaseTrack = components['schemas']['ReleaseTrack'];
 export type ReleaseType = components['schemas']['ReleaseType'];
+export type ResendVerificationEmailRequest = components['schemas']['ResendVerificationEmailRequest'];
+export type ResendVerificationEmailResponse = components['schemas']['ResendVerificationEmailResponse'];
 export type SearchResponse = components['schemas']['SearchResponse'];
 export type SetUserRolesRequest = components['schemas']['SetUserRolesRequest'];
+export type SignUpRequest = components['schemas']['SignUpRequest'];
+export type SignUpResponse = components['schemas']['SignUpResponse'];
 export type SimpleArtist = components['schemas']['SimpleArtist'];
 export type SimpleEvent = components['schemas']['SimpleEvent'];
 export type SimpleLabel = components['schemas']['SimpleLabel'];
@@ -2534,6 +2606,7 @@ export type UserProfile = components['schemas']['UserProfile'];
 export type UserRole = components['schemas']['UserRole'];
 export type UserRoleEnum = components['schemas']['UserRoleEnum'];
 export type UserSummary = components['schemas']['UserSummary'];
+export type VerifyEmailRequest = components['schemas']['VerifyEmailRequest'];
 export type VoteBody = components['schemas']['VoteBody'];
 export type $defs = Record<string, never>;
 export interface operations {
@@ -5223,6 +5296,51 @@ export interface operations {
             };
         };
     };
+    resend_verification_email: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResendVerificationEmailRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataResendVerificationEmailResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     search_all: {
         parameters: {
             query: {
@@ -5638,7 +5756,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AuthCredential"];
+                "application/json": components["schemas"]["SignUpRequest"];
             };
         };
         responses: {
@@ -5647,7 +5765,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataUserProfile"];
+                    "application/json": components["schemas"]["DataSignUpResponse"];
                 };
             };
             /** @description Too Many Requests */
@@ -6524,6 +6642,51 @@ export interface operations {
             };
         };
     };
+    verify_email: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyEmailRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataUserProfile"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     notification_ws: {
         parameters: {
             query?: never;
@@ -6618,6 +6781,7 @@ export enum ApiPaths {
     find_release_by_id = "/release/{id}",
     update_release = "/release/{id}",
     upload_release_cover_art = "/release/{id}/cover-art",
+    resend_verification_email = "/resend-verification-email",
     search_all = "/search",
     search_artist = "/search/artist",
     search_event = "/search/event",
@@ -6646,6 +6810,7 @@ export enum ApiPaths {
     follow_user = "/user/{id}/follow",
     unfollow_user = "/user/{id}/follow",
     user_image_queue = "/user/{id}/image-queue",
+    verify_email = "/verify-email",
     notification_ws = "/ws/notifications",
     entity_corrections = "/{entity_type}/{id}/corrections",
     pending_correction = "/{entity_type}/{id}/pending-correction",

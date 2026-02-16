@@ -26,7 +26,8 @@
     new_range_api,
     return_type_notation,
     trait_alias,
-    try_blocks
+    try_blocks,
+    if_let_guard
 )]
 
 mod adapter;
@@ -79,7 +80,9 @@ async fn main() -> Result<(), Whatever> {
 
     tracing::info!("Starting server");
 
-    let state = AppState::init(&APP_CONFIG).await;
+    let state = AppState::init(&APP_CONFIG)
+        .await
+        .whatever_context("Failed to initialize app state")?;
 
     Worker {
         redis_pool: state.redis_pool(),

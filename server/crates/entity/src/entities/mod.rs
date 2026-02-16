@@ -88,6 +88,7 @@ pub mod tag_history;
 pub mod tag_relation;
 pub mod tag_relation_history;
 pub mod user;
+pub mod user_email_verification;
 pub mod user_following;
 pub mod user_list;
 pub mod user_list_item;

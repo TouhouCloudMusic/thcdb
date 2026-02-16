@@ -100,7 +100,7 @@ pub fn limit_layer(
     use tower_governor::governor::GovernorConfigBuilder;
 
     let config = GovernorConfigBuilder::default()
-        .per_nanosecond(max(1000000 / req_per_sec, 1))
+        .per_nanosecond(max(1_000_000_000 / req_per_sec, 1))
         .burst_size(burst_size)
         .finish()
         .unwrap();
@@ -114,7 +114,7 @@ pub fn limit_layer(
 
     let governor_limiter = governor_conf.limiter().clone();
 
-    let interval = Duration::from_secs(60);
+    let interval = Duration::from_mins(1);
 
     std::thread::spawn(move || {
         loop {

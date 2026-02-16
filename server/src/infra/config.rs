@@ -2,6 +2,13 @@ use flow::Pipe;
 use nestify::nest;
 use serde::Deserialize;
 
+#[derive(Clone, Copy, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum EmailSecurity {
+    Smtps,
+    Starttls,
+}
+
 nest! {
     #[derive(Clone, Deserialize)]*
     pub struct Config {
@@ -20,6 +27,11 @@ nest! {
                 pub password: String,
             },
             pub host: String,
+            #[serde(default = "default_email_port")]
+            pub port: u16,
+            #[serde(default = "default_email_security")]
+            pub security: EmailSecurity,
+            pub from: String,
         },
         pub middleware: pub struct Middleware {
             pub limit: pub struct LimitMiddleware {
@@ -34,6 +46,14 @@ impl Copy for LimitMiddleware {}
 
 const fn default_notification_retention_days() -> i64 {
     90
+}
+
+const fn default_email_port() -> u16 {
+    587
+}
+
+const fn default_email_security() -> EmailSecurity {
+    EmailSecurity::Starttls
 }
 
 impl Config {

@@ -53,6 +53,8 @@ migrations![
     m20260120_000001_seed_notification_kind,
     m20260120_000002_seed_entity_type,
     m20260121_000000_user_settings_json,
+    m20260209_000000_add_user_email_verification,
+    m20260223_000000_user_role_on_delete_cascade,
 ];
 
 macro_rules! migration {

@@ -63,12 +63,13 @@ web/
 
 - 常量和不捕获局部变量的函数应当提升到模块顶级，避免重复创建以提升性能
 - 在定义的地方export item而不是在集合导出
-- 函数的定义方式对齐Rust: 顶级或不捕获任何局部变量的，以function定义。捕获局部变量的，使用const定义闭包。
+- 函数的定义方式对齐Rust: 顶级或不捕获任何局部变量的，以function定义。在函数内部，且同时捕获局部变量(不包括常量)的，使用const定义闭包。
 - 对于可空值，使用 `??` 而不是 `||`
 - 禁止使用嵌套层级超过2的三元表达式
 - 代码需要能够流畅的从上往下阅读，因此：
   - 定义必须先于使用
   - 避免上下跳转的控制流或内容
+- 使用globalThis, 而不是window/global
 
 ### JSX
 
@@ -80,7 +81,7 @@ web/
 - 在导入时，必须使用单独的 `import type { ... }` 来导入类型, 不要用 `import { type ... }`
 - 避免不必要的类型标注：在标注类型前，先寻找是否已经存在定义了的类型别名
 - 为了可读性和局域性，组件的 Props 定义及相关内容（例如常量）需要放在组件上方，而不是文件顶部, 除非它们在其他地方也被使用
-  
+
 ### Solid JS
 
 - 不要解构 `props`，这会破坏 Solid 的响应式系统
@@ -95,19 +96,13 @@ twMerge和twJoin是两个用于合并Tailwind CSS类名的工具。twMerge会智
 twMerge和twJoin都接受false作为参数，因此在条件类名时，可以直接传入条件表达式，例如：
 
 ```tsx
-twMerge(
-  "base-class",
-  condition && "conditional-class"
-)
+twMerge("base-class", condition && "conditional-class")
 ```
 
 而不是
 
 ```tsx
-twMerge(
-  "base-class",
-  condition ? "conditional-class" : ""
-)
+twMerge("base-class", condition ? "conditional-class" : "")
 ```
 
 #### v3 -> v4
@@ -115,10 +110,12 @@ twMerge(
 Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是替换列表：
 
 - break-words -> wrap-break-word
+- [background-*:<value>] -> bg-\*-[<value>] # 同样适用于fg
 
 #### 设计系统
 
 优先使用设计系统定义的样式，如：
+
 - 颜色：`text-primary`、`bg-secondary` 等
 
 不要使用自定义设置，如`text-[11px]`
@@ -132,3 +129,14 @@ Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是�
 - `packages/server-sdk/src/`（由 `@hey-api/openapi-ts` 生成，配置见 `openapi-ts.config.ts`）
 
 如果你的任务需要更新这些文件，运行更新命令或暂停你的工作，并要求用户在本地重新生成它们后再继续。
+
+## Browser Automation
+
+Use `agent-browser` for web automation. Run `agent-browser --help` for all commands.
+
+Core workflow:
+
+1. `agent-browser open <url>` - Navigate to page
+2. `agent-browser snapshot -i` - Get interactive elements with refs (@e1, @e2)
+3. `agent-browser click @e1` / `fill @e2 "text"` - Interact using refs
+4. Re-snapshot after page changes

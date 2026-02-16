@@ -19,7 +19,7 @@ use crate::features::auth::{AuthnBackendError, SignInError};
 #[derive(Clone)]
 pub struct CurrentUser(pub User);
 
-const BASIC_AUTH_TTL: Duration = Duration::from_secs(30 * 60);
+const BASIC_AUTH_TTL: Duration = Duration::from_mins(30);
 const BASIC_AUTH_CAPACITY: u64 = 100;
 
 struct BasicAuthCache(OnceLock<Cache<String, User, RapidState<'static>>>);
@@ -57,6 +57,14 @@ fn fmt_key(username: &str, password: &str) -> String {
     format!("{username}{password}")
 }
 
+fn ensure_email_verified(user: User) -> Result<User, axum::response::Response> {
+    if user.email_verified {
+        Ok(user)
+    } else {
+        Err(StatusCode::UNAUTHORIZED.into_response())
+    }
+}
+
 impl<S> FromRequestParts<S> for CurrentUser
 where
     S: Send + Sync,
@@ -68,6 +76,9 @@ where
         _state: &S,
     ) -> Result<Self, Self::Rejection> {
         if let Some(user) = parts.extensions.get::<Self>().cloned() {
+            if !user.0.email_verified {
+                return Err(StatusCode::UNAUTHORIZED.into_response());
+            }
             return Ok(user);
         }
 
@@ -81,6 +92,7 @@ where
             })?;
 
         if let Some(user) = session.user {
+            let user = ensure_email_verified(user)?;
             let user = Self(user);
             parts.extensions.insert(user.clone());
             return Ok(user);
@@ -98,6 +110,13 @@ where
         let key = fmt_key(basic.username(), basic.password());
 
         if let Some(user) = BASIC_AUTH_CACHE.lookup(&key).await {
+            let user = match ensure_email_verified(user) {
+                Ok(user) => user,
+                Err(rejection) => {
+                    BASIC_AUTH_CACHE.remove(&key).await;
+                    return Err(rejection);
+                }
+            };
             let user = Self(user);
             parts.extensions.insert(user.clone());
             return Ok(user);
@@ -111,6 +130,7 @@ where
 
         match session.authenticate(creds).await {
             Ok(Some(user)) => {
+                let user = ensure_email_verified(user)?;
                 BASIC_AUTH_CACHE.store(key, &user).await;
                 let user = Self(user);
                 parts.extensions.insert(user.clone());
@@ -132,6 +152,7 @@ where
                             SignInError::Authn {
                                 source: AuthnError::AuthenticationFailed { .. }
                             } | SignInError::Validate { .. }
+                                | SignInError::EmailNotVerified
                         ),
                         AuthnBackendError::Internal { .. } => false,
                     },

@@ -42,14 +42,22 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
       SESSION_SECURE: "false"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-changeme}"
-      middleware::limit::req_per_sec: "1000000"
+      MIDDLEWARE__LIMIT__REQ_PER_SEC: "1000000"
       DATABASE_URL: "postgres://${POSTGRES_USER:-devuser}:${POSTGRES_PASSWORD:-devuser}@db:5432/${POSTGRES_DB:-devdb}"
       REDIS_URL: "redis://redis:6379"
     ports:
       - "${SERVER_PORT:-12345}:12345"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:12345/health_check"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
     networks:
       - backend
 
@@ -60,7 +68,7 @@ services:
     working_dir: /app
     depends_on:
       app:
-        condition: service_started
+        condition: service_healthy
     environment:
       CI: "true"
       VITE_SERVER_URL: "http://app:12345"

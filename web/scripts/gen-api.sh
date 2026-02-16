@@ -5,7 +5,7 @@ schema=$1
 if [[ -z $schema ]]; then
   mkdir -p tmp
   schema="./tmp/openapi.json"
-  cargo run --manifest-path ../server/Cargo.toml -- --openapi $schema
+  (cd ../server && cargo run -- --openapi ../web/tmp/openapi.json)
 fi
 rm -f packages/api/src/gen.ts
 pnpm exec openapi-typescript $schema \

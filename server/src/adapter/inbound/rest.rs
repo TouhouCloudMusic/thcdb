@@ -32,7 +32,7 @@ pub mod api_response;
 pub(crate) mod authz;
 pub(crate) mod error;
 mod extract;
-mod middleware;
+pub(crate) mod middleware;
 pub mod state;
 
 pub use extract::CurrentUser;

@@ -58,3 +58,20 @@ impl ValidationError<MessageError> {
 }
 
 pub type MessageValidationError = ValidationError<MessageError>;
+
+#[derive(Debug, Clone, derive_more::Display, derive_more::Error)]
+#[display("{message}")]
+pub struct InvalidInput {
+    message: String,
+}
+
+impl InvalidInput {
+    pub fn new(message: &impl ToString) -> Self {
+        let message = message.to_string();
+        Self { message }
+    }
+
+    pub fn as_status_code(&self) -> StatusCode {
+        StatusCode::BAD_REQUEST
+    }
+}

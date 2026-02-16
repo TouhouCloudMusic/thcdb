@@ -32,4 +32,3 @@ just gen-api
 ## 命名规范
 
 TODO
-
