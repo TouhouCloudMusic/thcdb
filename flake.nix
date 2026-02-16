@@ -10,14 +10,16 @@
     flake-utils = {
       url = "github:numtide/flake-utils";
     };
+    llm-agents.url = "github:numtide/llm-agents.nix";
   };
 
   outputs =
-    {
+    inputs@{
       self,
       fenix,
       nixpkgs,
       flake-utils,
+      ...
     }:
     (flake-utils.lib.eachDefaultSystem (
       system:
@@ -26,6 +28,7 @@
           inherit system;
           overlays = [
             fenix.overlays.default
+            inputs.llm-agents.overlays.default
           ];
         };
 
@@ -44,6 +47,10 @@
       in
       {
         devShell = pkgs.mkShell {
+          nativeBuildInputs = with pkgs; [
+            playwright
+            playwright-driver.browsers
+          ];
           buildInputs = with pkgs; [
             (pkgs.fenix.complete.withComponents [
               "cargo"
@@ -58,6 +65,7 @@
             openssl
             pkg-config
             schemathesis
+            llm-agents.agent-browser
           ];
           packages = with pkgs; [
             dprint
@@ -69,6 +77,11 @@
             pnpm
             oxlint
           ];
+          shellHook = ''
+            export PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}
+            export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+            export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu-24.04"
+          '';
         };
       }
     ));

@@ -30,10 +30,13 @@ export type ApiError<_E = unknown> =
 	| {
 			type: "Server"
 			error: string
+			statusCode?: number
+			detail?: _E
 	  }
 	| {
 			type: "Response"
 			error: string
+			statusCode?: number
 	  }
 
 export type ApiResult<T, E = ErrResponse> = E.Either<T, ApiError<E>>
@@ -61,11 +64,14 @@ function handleError<E>(res: RestErrorResponse<E>) {
 		return {
 			type: "Server",
 			error: extractErrorMessage(res.error),
+			statusCode: res.response.status,
+			detail: res.error,
 		} as const
 	} else {
 		return {
 			type: "Response",
 			error: res.response.statusText,
+			statusCode: res.response.status,
 		} as const
 	}
 }
@@ -75,11 +81,14 @@ function handleErrorResult<E>(res: RestErrorResponse<E>) {
 		return E.left({
 			type: "Server",
 			error: extractErrorMessage(res.error),
+			statusCode: res.response.status,
+			detail: res.error,
 		} as const)
 	} else {
 		return E.left({
 			type: "Response",
 			error: res.response.statusText,
+			statusCode: res.response.status,
 		} as const)
 	}
 }

@@ -2,7 +2,6 @@
 import { createSignal, For } from "solid-js"
 
 import { Select } from "~/component/atomic/form/select"
-
 import { assertContext } from "~/utils/solid/assertContext"
 
 import { SongInfoPageContext } from ".."
@@ -22,9 +21,7 @@ export function SongInfoLyrics() {
 	return (
 		<div class="space-y-8 p-6">
 			<div class="flex items-baseline gap-6">
-				<label
-					class="text-xs font-medium tracking-widest text-secondary uppercase"
-				>
+				<label class="text-xs font-medium tracking-widest text-secondary uppercase">
 					Language
 				</label>
 				<Select.Root<string>
@@ -35,14 +32,17 @@ export function SongInfoLyrics() {
 						setActiveLang(Number.parseInt(value, 10))
 					}}
 					itemComponent={(props) => (
-						<Select.Item item={props.item}>{getLangName(props.item.rawValue)}</Select.Item>
+						<Select.Item item={props.item}>
+							{getLangName(props.item.rawValue)}
+						</Select.Item>
 					)}
 				>
 					<Select.Trigger class="h-auto min-h-8 border-0 border-b border-slate-400 rounded-none px-1 py-2 text-sm tracking-wide text-secondary focus:outline-none">
 						<Select.Value<string>>
 							{(state) =>
 								getLangName(
-									state.selectedOption() ?? (activeLang() || firstLangId() || 0).toString(),
+									state.selectedOption()
+										?? (activeLang() || firstLangId() || 0).toString(),
 								)
 							}
 						</Select.Value>

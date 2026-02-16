@@ -181,7 +181,9 @@ function RelationRow(props: RelationRowProps) {
 							/>
 							<Select.Trigger class="w-full">
 								<Select.Value<"" | TagRelationType>>
-									{(state) => getRelationTypeLabel(state.selectedOption() ?? "")}
+									{(state) =>
+										getRelationTypeLabel(state.selectedOption() ?? "")
+									}
 								</Select.Value>
 								<Select.Icon />
 							</Select.Trigger>

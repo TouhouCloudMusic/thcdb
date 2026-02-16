@@ -1,4 +1,4 @@
-export const id = <A,>(x: A): A => x
+export const id = <A>(x: A): A => x
 // oxlint-disable max-params
 // eslint-disable no-magic-numbers
 export function pipe<A, B>(x: A, fn: (x: A) => B): B
@@ -140,7 +140,7 @@ export function pipe(x: unknown, ...fns: ((x: unknown) => unknown)[]): unknown {
  * complement :: (a -> false) -> (a -> true)
  */
 export const complement =
-	<A,>(f: (x: A) => boolean) =>
+	<A>(f: (x: A) => boolean) =>
 	(x: A) =>
 		!f(x)
 

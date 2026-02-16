@@ -118,6 +118,7 @@ config = { version = "0.15.8", features = [
 dashmap = "6.1.0"
 derive_more = { version = "2.0.1", features = [
     "display",
+    "error",
     "from",
     "into",
 ] }

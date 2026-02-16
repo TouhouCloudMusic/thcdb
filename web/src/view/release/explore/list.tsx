@@ -1,5 +1,5 @@
-import type { LocalizedTitle, Release } from "@thc/api"
 import { Link as RouterLink } from "@tanstack/solid-router"
+import type { LocalizedTitle, Release } from "@thc/api"
 import { For, Match, Show, Switch } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"

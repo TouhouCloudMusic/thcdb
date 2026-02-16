@@ -15,6 +15,7 @@ pub mod release;
 pub mod release_image;
 pub(crate) mod release_image_queue;
 pub mod search;
+pub mod shared;
 pub mod song;
 pub mod song_lyrics;
 pub mod tag;

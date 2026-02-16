@@ -6,7 +6,12 @@ import { Select } from "~/component/atomic/form/select"
 
 import { useArtistForm } from "../context"
 
-const ARTIST_TYPE_OPTIONS: ("" | ArtistType)[] = ["", "Solo", "Multiple", "Unknown"]
+const ARTIST_TYPE_OPTIONS: ("" | ArtistType)[] = [
+	"",
+	"Solo",
+	"Multiple",
+	"Unknown",
+]
 
 const getArtistTypeLabel = (value: string) =>
 	value === "" ? "-- Please select artist type --" : value
