@@ -1,5 +1,4 @@
 import "cropperjs"
-import type { JSX } from "solid-js"
 
 export type CropperCrosshairProps = {
 	centered?: boolean
