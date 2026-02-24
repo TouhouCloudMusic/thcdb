@@ -90,7 +90,8 @@ function FormContent(props: Props) {
 		>
 			<Form
 				of={form}
-				onSubmit={(output) => handleSubmit(output)}
+				// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
+				onSubmit={(output, _) => handleSubmit(output)}
 			>
 				<div class="grid grid-cols-1 space-y-8 gap-x-2 p-8 pb-0 *:col-span-full lg:grid-cols-12">
 					<TagFormNameField class="lg:col-end-6" />

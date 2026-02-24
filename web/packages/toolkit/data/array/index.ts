@@ -11,7 +11,7 @@ export const mapOrDefault: {
 export const dedupeBy: {
 	<T>(self: T[], f: (x: T) => unknown): T[]
 	<T>(f: (x: T) => unknown): (self: T[]) => T[]
-} = dual(2, <T>(self: T[], f: (x: T) => unknown): T[] => {
+} = dual(2, <T,>(self: T[], f: (x: T) => unknown): T[] => {
 	const seen = new Set<unknown>()
 	const result: T[] = []
 
@@ -31,7 +31,6 @@ export const dedupeByKey: {
 	<T, K extends keyof T>(self: T[], key: K): T[]
 	<T, K extends keyof T>(key: K): (self: T[]) => T[]
 } = dual(2, <T, K extends keyof T>(self: T[], key: K): T[] => {
-	return []
 	const seen = new Set<T[K]>()
 	const result: T[] = []
 

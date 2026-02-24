@@ -29,6 +29,7 @@
 		}
 	},
 	"rules": {
+		"no-eq-null": "off",
 		"unicorn/require-module-specifiers": "off",
 		"array-callback-return": [
 			"off",
@@ -122,6 +123,7 @@
 		"import/no-anonymous-default-export": "off",
 		"import/no-cycle": "off",
 		"import/no-namespace": "off",
+		"import/unambiguous": "off",
 		"import/no-unassigned-import": [
 			"error",
 			{
@@ -163,6 +165,7 @@
 			}
 		],
 		"unicorn/no-anonymous-default-export": "off",
+		"unicorn/no-array-sort": "off",
 		"unicorn/no-array-reduce": "off",
 		"unicorn/no-array-callback-reference": "off",
 		"unicorn/no-array-method-this-argument": "off",
@@ -176,7 +179,16 @@
 			}
 		],
 		"unicorn/numeric-separators-style": "off",
+		"unicorn/prefer-default-parameters": "off",
 		"unicorn/prefer-spread": "off",
+
+		"jsx-a11y/label-has-associated-control": [
+			"error",
+			{
+				"controlComponents": ["Select.Trigger"],
+				"depth": 3
+			}
+		],
 
 		"solid/reactivity": "error",
 		"solid/self-closing-comp": [
@@ -189,10 +201,11 @@
 	},
 	"overrides": [
 		{
-			"files": ["*.stories.tsx", "eslint.config.js"],
+			"files": ["*.stories.tsx", "*.config.{js,ts}"],
 			"rules": {
 				"no-magic-numbers": "off",
-				"import/no-default-export": "off"
+				"import/no-default-export": "off",
+				"import/no-nodejs-modules": "off"
 			}
 		},
 		{

@@ -171,19 +171,19 @@ function DiffEntries(props: DiffEntriesProps) {
 									<div class="min-w-0">
 										<div
 											class="truncate font-mono text-xs text-secondary"
-											title={entry().path}
+											title={entry.path}
 										>
-											{entry().path}
+											{entry.path}
 										</div>
 									</div>
 									<DiffValue
 										label="Before"
-										value={entry().before}
+										value={entry.before}
 										variant="before"
 									/>
 									<DiffValue
 										label="After"
-										value={entry().after}
+										value={entry.after}
 										variant="after"
 									/>
 								</li>
@@ -224,11 +224,11 @@ function RevisionEntries(props: RevisionEntriesProps) {
 										REVISION {index() + 1}
 									</div>
 									<div class="text-xs text-tertiary">
-										{revision().author.name}
+										{revision.author.name}
 									</div>
 								</div>
 								<div class="text-sm text-primary">
-									{revision().description || "No description"}
+									{revision.description || "No description"}
 								</div>
 							</li>
 						)}

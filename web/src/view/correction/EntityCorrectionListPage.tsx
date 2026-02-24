@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/solid-query"
 import { CorrectionQueryOption } from "@thc/query"
 
 import { Link } from "~/component/atomic/Link"
-import { ButtonClass_new } from "~/component/atomic/button"
 import { PageLayout } from "~/layout/PageLayout"
 
 import { CorrectionHistorySection } from "./CorrectionHistorySection"
@@ -50,7 +49,6 @@ export function EntityCorrectionListPage(props: EntityCorrectionListPageProps) {
 				</header>
 				<CorrectionHistorySection
 					items={historyQuery.data ?? []}
-					isLoading={historyQuery.isLoading}
 				/>
 			</div>
 		</PageLayout>

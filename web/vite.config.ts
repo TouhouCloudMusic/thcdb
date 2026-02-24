@@ -45,6 +45,7 @@ export default defineConfig(({ mode }) => {
 			babelMacrosPlugin(),
 			solidPlugin(),
 			tailwindcss(),
+			// TODO: vite 8 resolve.tsconfigPaths
 			tsconfigPaths(),
 		],
 		server: {
@@ -54,7 +55,7 @@ export default defineConfig(({ mode }) => {
 					target: SERVER_URL,
 					changeOrigin: true,
 					secure: isHttps(SERVER_URL),
-					rewrite: (path) => path.replace(/^\/api/, ""),
+					rewrite: (url) => url.replace(/^\/api/, ""),
 				},
 			},
 		},

@@ -153,12 +153,12 @@ type ArtistExploreFilterBarProps = {
 	onOrderByChange: (value: "asc" | "desc") => void
 }
 
-export const ArtistExploreFilterBar: Component<ArtistExploreFilterBarProps> = (
-	props,
-) => {
-	const typeOptions = () => ["", ...ARTIST_TYPES]
+function typeLabel(value: string) {
+	return value === "" ? "All" : value
+}
 
-	const typeLabel = (value: string) => (value === "" ? "All" : value)
+export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
+	const typeOptions = () => ["", ...ARTIST_TYPES]
 
 	return (
 		<StickyFilterBar scrollDirection={props.scrollDirection}>
