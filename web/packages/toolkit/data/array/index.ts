@@ -11,7 +11,7 @@ export const mapOrDefault: {
 export const dedupeBy: {
 	<T>(self: T[], f: (x: T) => unknown): T[]
 	<T>(f: (x: T) => unknown): (self: T[]) => T[]
-} = dual(2, <T,>(self: T[], f: (x: T) => unknown): T[] => {
+} = dual(2, <T>(self: T[], f: (x: T) => unknown): T[] => {
 	const seen = new Set<unknown>()
 	const result: T[] = []
 

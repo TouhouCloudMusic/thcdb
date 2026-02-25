@@ -21,11 +21,6 @@
 		"@solid-primitives/memo": "^1.4.3",
 		"@solidjs/meta": "^0.29.4",
 		"@solidjs/router": "^0.15.4",
-		"@storybook/addon-a11y": "^10.2.6",
-		"@storybook/addon-docs": "^10.2.6",
-		"@storybook/addon-links": "^10.2.6",
-		"@storybook/addon-onboarding": "^10.2.6",
-		"@storybook/addon-vitest": "^10.2.6",
 		"@tanstack/solid-query": "^5.90.19",
 		"@tanstack/solid-router": "^1.146.2",
 		"@tanstack/solid-table": "^8.21.3",
@@ -57,10 +52,15 @@
 	},
 	"devDependencies": {
 		"@ark/attest": "^0.56.0",
-		"@chromatic-com/storybook": "^5.0.0",
+		"@chromatic-com/storybook": "^5.0.1",
 		"@eslint/js": "^9.39.2",
 		"@faker-js/faker": "^10.2.0",
 		"@hey-api/openapi-ts": "0.91.1",
+		"@storybook/addon-a11y": "^10.2.12",
+		"@storybook/addon-docs": "^10.2.12",
+		"@storybook/addon-links": "^10.2.12",
+		"@storybook/addon-onboarding": "^10.2.12",
+		"@storybook/addon-vitest": "^10.2.12",
 		"@solidjs/testing-library": "^0.8.10",
 		"@tailwindcss/forms": "^0.5.11",
 		"@tailwindcss/vite": "^4.1.18",
@@ -84,7 +84,7 @@
 		"eslint-plugin-jsx-a11y": "^6.10.2",
 		"eslint-plugin-oxlint": "^1.38.0",
 		"eslint-plugin-solid": "^0.14.5",
-		"eslint-plugin-storybook": "^10.2.6",
+		"eslint-plugin-storybook": "^10.2.12",
 		"globals": "^17.0.0",
 		"hotscript": "^1.0.13",
 		"husky": "^9.1.7",
@@ -95,7 +95,7 @@
 		"prettier": "^3.7.4",
 		"prettier-plugin-tailwindcss": "^0.7.2",
 		"solid-devtools": "^0.34.4",
-		"storybook": "^10.2.6",
+		"storybook": "^10.2.12",
 		"storybook-solidjs-vite": "^10.0.9",
 		"tailwindcss": "^4.1.18",
 		"typescript": "^5.9.3",
@@ -107,7 +107,12 @@
 		"vitest": "^4.0.16"
 	},
 	"eslintConfig": {
-		"extends": ["plugin:storybook/recommended"]
+		"extends": [
+			"plugin:storybook/recommended"
+		]
 	},
-	"trustedDependencies": ["@tailwindcss/oxide", "esbuild"]
+	"trustedDependencies": [
+		"@tailwindcss/oxide",
+		"esbuild"
+	]
 }
