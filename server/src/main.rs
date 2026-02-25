@@ -26,8 +26,7 @@
     new_range_api,
     return_type_notation,
     trait_alias,
-    try_blocks,
-    if_let_guard
+    try_blocks
 )]
 
 mod adapter;

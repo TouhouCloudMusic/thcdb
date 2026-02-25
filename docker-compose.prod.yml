@@ -49,9 +49,6 @@ services:
 
       DATABASE_URL: "postgres://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:?POSTGRES_DB is required}"
       REDIS_URL: "redis://redis:6379"
-
-      EMAIL__CREDS__PASSWORD: "${EMAIL__CREDS__PASSWORD:?EMAIL__CREDS__PASSWORD is required}"
-      EMAIL__FROM: "${EMAIL__FROM:?EMAIL__FROM is required}"
     volumes:
       - publicdata:/app/public
     healthcheck:
