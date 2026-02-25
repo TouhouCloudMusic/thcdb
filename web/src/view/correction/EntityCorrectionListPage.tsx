@@ -47,9 +47,7 @@ export function EntityCorrectionListPage(props: EntityCorrectionListPageProps) {
 						</Link>
 					</div>
 				</header>
-				<CorrectionHistorySection
-					items={historyQuery.data ?? []}
-				/>
+				<CorrectionHistorySection items={historyQuery.data ?? []} />
 			</div>
 		</PageLayout>
 	)
