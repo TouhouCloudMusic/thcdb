@@ -28,6 +28,10 @@ where
     }
 }
 
+pub(crate) trait AuthRejection {
+    fn is_auth_rejection(&self) -> bool;
+}
+
 pub struct TryState<S>(pub S);
 
 impl<In, Out> FromRequestParts<In> for TryState<Out>

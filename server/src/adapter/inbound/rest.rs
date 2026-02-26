@@ -35,6 +35,7 @@ mod extract;
 pub(crate) mod middleware;
 pub mod state;
 
+pub(crate) use extract::AuthRejection;
 pub use extract::CurrentUser;
 
 struct DefaultErrorResponseModifier;

@@ -1,6 +1,5 @@
 use std::fmt::Display;
 
-use itertools::Itertools;
 use rand::Rng;
 
 #[derive(Debug)]
@@ -20,7 +19,11 @@ impl<const N: usize> VerificationCode<N> {
 
 impl<const N: usize> Display for VerificationCode<N> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.digits.iter().join(""))
+        for digit in self.digits {
+            digit.fmt(f)?;
+        }
+
+        Ok(())
     }
 }
 
