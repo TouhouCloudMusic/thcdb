@@ -1,3 +1,4 @@
+use std::hash::{Hash, Hasher};
 use std::sync::OnceLock;
 use std::time::Duration;
 
@@ -11,10 +12,9 @@ use headers::authorization::Basic;
 use moka::future::Cache;
 use rapidhash::fast::SeedableState as RapidState;
 
-use crate::adapter::inbound::rest::state;
-use crate::domain::auth::{AuthCredential, AuthnError};
+use crate::adapter::inbound::rest::{AuthRejection, state};
+use crate::domain::auth::AuthCredential;
 use crate::domain::user::User;
-use crate::features::auth::{AuthnBackendError, SignInError};
 
 #[derive(Clone)]
 pub struct CurrentUser(pub User);
@@ -22,14 +22,16 @@ pub struct CurrentUser(pub User);
 const BASIC_AUTH_TTL: Duration = Duration::from_mins(30);
 const BASIC_AUTH_CAPACITY: u64 = 100;
 
-struct BasicAuthCache(OnceLock<Cache<String, User, RapidState<'static>>>);
+type BasicAuthKey = u64;
+
+struct BasicAuthCache(OnceLock<Cache<BasicAuthKey, User, RapidState<'static>>>);
 
 impl BasicAuthCache {
     const fn new() -> Self {
         Self(OnceLock::new())
     }
 
-    fn cache(&self) -> &Cache<String, User, RapidState<'static>> {
+    fn cache(&self) -> &Cache<BasicAuthKey, User, RapidState<'static>> {
         self.0.get_or_init(|| {
             Cache::builder()
                 .time_to_live(BASIC_AUTH_TTL)
@@ -38,23 +40,28 @@ impl BasicAuthCache {
         })
     }
 
-    async fn lookup(&self, key: &str) -> Option<User> {
-        self.cache().get(key).await
+    async fn lookup(&self, key: BasicAuthKey) -> Option<User> {
+        self.cache().get(&key).await
     }
 
-    async fn store(&self, key: String, user: &User) {
+    async fn store(&self, key: BasicAuthKey, user: &User) {
         self.cache().insert(key, user.clone()).await;
     }
 
-    async fn remove(&self, key: &str) {
-        let _ = self.cache().remove(key).await;
+    async fn remove(&self, key: BasicAuthKey) {
+        let _ = self.cache().remove(&key).await;
     }
 }
 
 static BASIC_AUTH_CACHE: BasicAuthCache = BasicAuthCache::new();
 
-fn fmt_key(username: &str, password: &str) -> String {
-    format!("{username}{password}")
+fn cache_key(username: &str, password: &str) -> BasicAuthKey {
+    // Avoid collisions like ("ab","c") vs ("a","bc") and keep passwords out of cache keys.
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    username.hash(&mut hasher);
+    0u8.hash(&mut hasher);
+    password.hash(&mut hasher);
+    hasher.finish()
 }
 
 fn ensure_email_verified(user: User) -> Result<User, axum::response::Response> {
@@ -107,13 +114,13 @@ where
                 .await
                 .map_err(IntoResponse::into_response)?;
 
-        let key = fmt_key(basic.username(), basic.password());
+        let key = cache_key(basic.username(), basic.password());
 
-        if let Some(user) = BASIC_AUTH_CACHE.lookup(&key).await {
+        if let Some(user) = BASIC_AUTH_CACHE.lookup(key).await {
             let user = match ensure_email_verified(user) {
                 Ok(user) => user,
                 Err(rejection) => {
-                    BASIC_AUTH_CACHE.remove(&key).await;
+                    BASIC_AUTH_CACHE.remove(key).await;
                     return Err(rejection);
                 }
             };
@@ -135,26 +142,12 @@ where
             }
             Ok(None) => Err(StatusCode::UNAUTHORIZED.into_response()),
             Err(err) => {
-                let is_auth_error = match &err {
+                let is_auth_rejection = match &err {
                     axum_login::Error::Session(_) => false,
-                    axum_login::Error::Backend(err) => match err {
-                        AuthnBackendError::Authn { source } => {
-                            matches!(
-                                source,
-                                AuthnError::AuthenticationFailed { .. }
-                            )
-                        }
-                        AuthnBackendError::SignIn { source } => matches!(
-                            source,
-                            SignInError::Authn {
-                                source: AuthnError::AuthenticationFailed { .. }
-                            } | SignInError::Validate { .. }
-                                | SignInError::EmailNotVerified
-                        ),
-                        AuthnBackendError::Internal { .. } => false,
-                    },
+                    axum_login::Error::Backend(err) => err.is_auth_rejection(),
                 };
-                if is_auth_error {
+
+                if is_auth_rejection {
                     Err(StatusCode::UNAUTHORIZED.into_response())
                 } else {
                     tracing::error!(?err, "Basic authentication failed");

@@ -32,6 +32,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .merge(admin::router())
         .merge(artist::router())
+        .merge(auth::router())
         .merge(correction::router())
         .merge(credit_role::router())
         .merge(enum_table::router())
