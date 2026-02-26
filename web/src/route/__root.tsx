@@ -4,6 +4,7 @@ import type { QueryClient } from "@tanstack/solid-query"
 import { createRootRouteWithContext, Outlet } from "@tanstack/solid-router"
 import type { ParentProps } from "solid-js"
 
+import { Footer } from "~/component/Footer"
 import { Header } from "~/component/Header"
 import { Devtools } from "~/component/devtools"
 import { NotFound } from "~/view/NotFound"
@@ -81,7 +82,7 @@ function Layout(props: ParentProps) {
 			/>
 			<Header />
 			<main>{props.children}</main>
-			<footer class="h-[300px] bg-slate-900 pt-10"></footer>
+			<Footer />
 		</div>
 	)
 }
