@@ -1,6 +1,9 @@
 # set shell := ["bash", "-euo", "pipefail", "-c"]
 set dotenv-load := true
 
+init:
+	prek install
+
 dev:
 	docker compose -f docker-compose.yml up --build --force-recreate --remove-orphans
 

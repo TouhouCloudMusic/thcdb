@@ -6,12 +6,15 @@
     <a href="../ja/CONTRIBUTING.md">日本語</a>
 </h2>
 
-## 目次
+## 開発
 
-- [開発](#development)
-- [Commit 規約](#commit-convention)
+### 環境の初期化
 
-## <a id="development"></a>開発
+```bash
+just init
+```
+
+これにより git hooks がインストールされます。
 
 ### Docker で開発環境を実行（推奨）
 
@@ -81,6 +84,6 @@ VITE_SERVER_URL=http://127.0.0.1:12345
 2. 環境変数
 3. `config.dev.toml`（`debug` ビルド時のみ、かつファイルが存在する場合）
 
-### <a id="commit-convention"></a>Commit 規約
+## Commit 規約
 
 命令形で、先頭を大文字にしてください。

@@ -24,6 +24,24 @@
     (flake-utils.lib.eachDefaultSystem (
       system:
       let
+        prekOverlay = final: prev: {
+          prek = prev.rustPlatform.buildRustPackage (finalAttrs: {
+            pname = "prek";
+            version = "0.3.3";
+
+            src = prev.fetchFromGitHub {
+              owner = "j178";
+              repo = "prek";
+              tag = "v${finalAttrs.version}";
+              hash = "sha256-qeJtdPwWOV43RN0sLHU7TP15ajI1o53SoyNP8/sQA04=";
+            };
+
+            cargoHash = "sha256-Wb+Ld1tgqc2jcbBHh8hNGZ4amAY8rSRik3VNJEmGc/w=";
+            doCheck = false;
+            doInstallCheck = false;
+          });
+        };
+
         pkgs = import nixpkgs {
           inherit system;
           overlays = [
@@ -70,12 +88,13 @@
           packages = with pkgs; [
             dprint
             just
-            sea-orm-cli
             just-lsp
             nodejs_22
-            typescript-go
-            pnpm
             oxlint
+            pnpm
+            prek
+            sea-orm-cli
+            typescript-go
           ];
           shellHook = ''
             export PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}
