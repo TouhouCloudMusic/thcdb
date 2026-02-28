@@ -17,7 +17,8 @@ export function useReleaseFormInitialValues(
 				description: "",
 				data: {
 					title: "",
-					release_type: undefined as unknown as never,
+					// @ts-expect-error init with undefined
+					release_type: undefined,
 					release_date: undefined,
 					recording_date_start: undefined,
 					recording_date_end: undefined,

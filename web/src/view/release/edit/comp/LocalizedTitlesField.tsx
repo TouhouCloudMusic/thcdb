@@ -64,7 +64,8 @@ function LocalizedTitleItem(props: { index: number; of: ReleaseFormStore }) {
 	const onLangChange = (v: Language | null) => {
 		setInput(props.of, {
 			path: ["data", "localized_titles", props.index, "language_id"],
-			input: v?.id as unknown as number,
+			// @ts-expect-error
+			input: v?.id,
 		})
 	}
 
@@ -79,7 +80,7 @@ function LocalizedTitleItem(props: { index: number; of: ReleaseFormStore }) {
 						<InputField.Input
 							{...field.props}
 							placeholder="Title"
-							value={field.input as string | undefined}
+							value={field.input}
 						/>
 						<InputField.Error>
 							{field.errors ? field.errors[0] : undefined}

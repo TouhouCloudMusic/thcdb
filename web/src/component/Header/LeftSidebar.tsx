@@ -17,7 +17,7 @@ import { ListItem, Sidebar } from "~/component/Sidebar"
 type ListItemContent = {
 	icon: (props: IconProps) => JSX.Element
 	text: string
-	to: LinkComponentProps<"a">["to"]
+	to: LinkComponentProps["to"]
 }
 
 export function LeftSidebar() {

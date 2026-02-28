@@ -1,5 +1,4 @@
 // @refresh-reload
-// oxlint-disable max-lines-per-function
 import { Field, insert, remove } from "@formisch/solid"
 import { useQuery } from "@tanstack/solid-query"
 import type { CreditRoleSummary } from "@thc/api"

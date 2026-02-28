@@ -10,9 +10,7 @@ export const Route = createFileRoute("/song/$id")({
 	component: RouteComponent,
 	loader: async ({ params }) => {
 		const parsedId = EntityId_fromStr(params.id)
-		return await QUERY_CLIENT.ensureQueryData(
-			SongQueryOption.findById(parsedId),
-		)
+		return QUERY_CLIENT.ensureQueryData(SongQueryOption.findById(parsedId))
 	},
 
 	// Optional: Add error component and pending component as in artist route if desired

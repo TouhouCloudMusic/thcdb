@@ -30,7 +30,6 @@ export const Route = createFileRoute("/artist/$id/")({
 	// },
 })
 
-// oxlint-disable-next-line max-lines-per-function
 function RouteComponent() {
 	const params = Route.useParams()
 	const artistId = Number.parseInt(params().id, 10)

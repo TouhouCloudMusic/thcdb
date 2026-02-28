@@ -84,9 +84,12 @@ export function UserImageQueuePage(props: Props) {
 							variant="SecondaryV2"
 							size="Sm"
 							color="Slate"
-							onClick={() =>
-								navigate({ to: "/image-queue", search: { status: "pending" } })
-							}
+							onClick={() => {
+								void navigate({
+									to: "/image-queue",
+									search: { status: "pending" },
+								})
+							}}
 						>
 							Go to moderation
 						</Button>

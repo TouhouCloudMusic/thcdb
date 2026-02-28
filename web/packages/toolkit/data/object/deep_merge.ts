@@ -1,6 +1,9 @@
 /* oxlint-disable typescript-eslint/no-explicit-any
  , typescript-eslint/no-empty-object-type
- , typescript-eslint/ban-types */
+ , typescript-eslint/ban-types
+ , typescript-eslint/no-unsafe-assignment
+ , typescript-eslint/no-unsafe-return
+ , typescript-eslint/no-unsafe-type-assertion */
 type Eq<A, B> = A extends B ? (B extends A ? true : false) : false
 
 type PlainObject = Record<string, unknown>
@@ -52,9 +55,7 @@ export function deepMerge<
 function mergeTwoMut(target: PlainObject, source: PlainObject): any {
 	for (const key in source) {
 		if (isPlainObject(source[key]) && !Array.isArray(source)) {
-			if (!target[key]) {
-				target[key] = {}
-			}
+			target[key] ??= {}
 			mergeTwoMut(target[key] as PlainObject, source[key])
 		} else {
 			target[key] = source[key]

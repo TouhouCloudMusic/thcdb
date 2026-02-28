@@ -8,7 +8,7 @@ import { Profile } from "~/view/user/Profile"
 
 export const Route = createFileRoute("/(user)/profile_/$username")({
 	component: RouteComponent,
-	loader: ({ params: { username } }) =>
+	loader: async ({ params: { username } }) =>
 		QUERY_CLIENT.ensureQueryData(
 			UserQuery.profileOption({
 				"params.username": username,

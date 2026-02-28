@@ -2,6 +2,7 @@ import * as meta from "@solidjs/meta"
 import { Title } from "@solidjs/meta"
 import type { QueryClient } from "@tanstack/solid-query"
 import { createRootRouteWithContext, Outlet } from "@tanstack/solid-router"
+import { ObjExt } from "@thc/toolkit/data"
 import type { ParentProps } from "solid-js"
 
 import { Footer } from "~/component/Footer"
@@ -36,15 +37,15 @@ const getErrorMessage = (error: unknown) => {
 		return error.message ?? error.stack ?? "Unknown error"
 	}
 	if (typeof error === "string") return error
-	if (typeof error === "object" && error !== null) {
-		const message = Reflect.get(error, "message")
-		if (typeof message === "string" && message) return message
-		const fallback = Reflect.get(error, "error")
-		if (typeof fallback === "string" && fallback) return fallback
+	if (ObjExt.isRecord(error)) {
+		const message = error["message"]
+		if (typeof message === "string" && message.length > 0) return message
+		const fallback = error["error"]
+		if (typeof fallback === "string" && fallback.length > 0) return fallback
 	}
 	try {
 		return JSON.stringify(error, (key, value) =>
-			key === "stack" ? undefined : value,
+			key === "stack" ? undefined : (value as unknown),
 		)
 	} catch {
 		return "Unknown error"

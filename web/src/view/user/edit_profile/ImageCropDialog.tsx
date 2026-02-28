@@ -1,4 +1,5 @@
 import { FileField } from "@kobalte/core/file-field"
+import { unknownToError } from "@thc/toolkit"
 import { CropperSelection } from "cropperjs"
 import { Cropper } from "solid-cropper"
 import type { JSX, ParentProps } from "solid-js"
@@ -291,7 +292,7 @@ export function Root(props: RootProps) {
 						canvas.toBlob(resolve, outputType)
 					}
 				} catch (err) {
-					reject(err)
+					reject(unknownToError(err))
 				}
 			})
 		} catch (err) {

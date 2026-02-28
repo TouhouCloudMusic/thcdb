@@ -19,7 +19,6 @@ const Email = v.pipe(
 )
 
 const PASSWORD_REGEX = new RegExp(USER_PASSWORD_REGEX_STR)
-// eslint-disable-next-line no-control-regex
 const PASSWORD_WHITESPACE_REGEX = /[\s\u0000-\u001F\u007F]/
 const Password = v.pipe(
 	v.string(),

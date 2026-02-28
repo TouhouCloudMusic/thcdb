@@ -41,9 +41,7 @@ async function generateConstants(base_url: string) {
 
 	const targetPath = "src/constant/server.ts"
 
-	const existing = await fs
-		.readFile(targetPath, "utf8")
-		.catch((e) => console.error(e))
+	const existing = await fs.readFile(targetPath, "utf8").catch(console.error)
 	if (existing === content) return
 
 	return fs.writeFile(targetPath, content)

@@ -1,6 +1,5 @@
 import type { If } from "./control_flow"
 
-// oxlint-disable no-magic-numbers
 export * from "./data"
 export * from "./control_flow"
 

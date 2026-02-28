@@ -234,14 +234,14 @@ export const EventExplore = () => {
 	const totalPages = () => eventsQuery.data?.total_pages ?? 0
 
 	const setPage = (page: number) => {
-		navigate({
+		void navigate({
 			to: "/event/explore",
 			search: { ...search(), page },
 		})
 	}
 
 	const updateOrderBy = (value: "asc" | "desc" | undefined) => {
-		navigate({
+		void navigate({
 			to: "/event/explore",
 			search: {
 				...search(),
@@ -261,7 +261,7 @@ export const EventExplore = () => {
 	) => {
 		const nextValue = value.length > 0 ? value : undefined
 
-		navigate({
+		void navigate({
 			to: "/event/explore",
 			search: {
 				...search(),

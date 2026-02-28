@@ -17,7 +17,6 @@ export function profileOption({
 	current_user,
 }: Option) {
 	return queryOptions({
-		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: ["profile", params_username ?? current_user?.name].filter(
 			Boolean,
 		),

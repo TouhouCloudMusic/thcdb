@@ -66,7 +66,7 @@ function TagInfoDetails() {
 				<span class="text-tertiary">AKAs</span>
 				<ul class="flex flex-wrap whitespace-pre">
 					<Intersperse
-						of={ctx.tag.alt_names!}
+						of={ctx.tag.alt_names}
 						with={<span>, </span>}
 					>
 						{(x) => <li class="text-secondary">{x.name}</li>}

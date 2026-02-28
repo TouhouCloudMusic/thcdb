@@ -1,3 +1,4 @@
+import { ObjExt } from "@thc/toolkit/data"
 import { Either as E } from "effect"
 
 import type {
@@ -17,10 +18,10 @@ type ApiResult<T> = E.Either<T, ApiError<string>>
 
 const ORIGIN = globalThis.location?.origin ?? "http://localhost:3000"
 
-const buildUrl = (
+function buildUrl(
 	path: string,
 	query?: Record<string, string | number | null | undefined>,
-) => {
+): string {
 	const url = new globalThis.URL(`/api${path}`, ORIGIN)
 
 	if (query) {
@@ -33,10 +34,10 @@ const buildUrl = (
 	return url.toString()
 }
 
-const requestJson = async (input: RequestInfo, init?: RequestInit) => {
+async function requestJson(input: RequestInfo, init?: RequestInit) {
 	try {
 		const res = await globalThis.fetch(input, init)
-		const json = await res.json().catch(() => null)
+		const json: unknown = await res.json().catch(() => null)
 
 		return { res, json }
 	} catch (e) {
@@ -48,60 +49,69 @@ const requestJson = async (input: RequestInfo, init?: RequestInit) => {
 	}
 }
 
-const expectData = <T>(json: unknown): T | undefined => {
-	if (typeof json !== "object" || json === null) {
-		return undefined
-	}
-
-	if (Reflect.get(json, "status") !== "Ok") {
-		return undefined
-	}
-
-	if (!Reflect.has(json, "data")) {
-		return undefined
-	}
-
-	return Reflect.get(json, "data")
+type OkDataResponse<T> = {
+	status: "Ok"
+	data: T
 }
 
-const expectMessage = (json: unknown): string | undefined => {
-	if (typeof json !== "object" || json === null) {
-		return undefined
-	}
-
-	if (Reflect.get(json, "status") !== "Ok") {
-		return undefined
-	}
-
-	if (!Reflect.has(json, "message")) {
-		return undefined
-	}
-
-	const message = Reflect.get(json, "message")
-	return typeof message === "string" ? message : undefined
+type OkMessageResponse = {
+	status: "Ok"
+	message: string
 }
 
-const extractServerError = (json: unknown): string | undefined => {
-	if (typeof json !== "object" || json === null) {
-		return undefined
-	}
-
-	if (Reflect.get(json, "status") !== "Err") {
-		return undefined
-	}
-
-	if (!Reflect.has(json, "message")) {
-		return undefined
-	}
-
-	const message = Reflect.get(json, "message")
-	return typeof message === "string" ? message : undefined
+type ErrMessageResponse = {
+	status: "Err"
+	message: string
 }
 
-const getData = async <T>(
+function isOkDataResponse<T>(json: unknown): json is OkDataResponse<T> {
+	return ObjExt.isRecord(json) && json["status"] === "Ok" && "data" in json
+}
+
+function isOkMessageResponse(json: unknown): json is OkMessageResponse {
+	return (
+		ObjExt.isRecord(json)
+		&& json["status"] === "Ok"
+		&& typeof json["message"] === "string"
+	)
+}
+
+function isErrMessageResponse(json: unknown): json is ErrMessageResponse {
+	return (
+		ObjExt.isRecord(json)
+		&& json["status"] === "Err"
+		&& typeof json["message"] === "string"
+	)
+}
+
+function expectData<T>(json: unknown): T | undefined {
+	if (!isOkDataResponse<T>(json)) {
+		return undefined
+	}
+
+	return json.data
+}
+
+function expectMessage(json: unknown): string | undefined {
+	if (!isOkMessageResponse(json)) {
+		return undefined
+	}
+
+	return json.message
+}
+
+function extractServerError(json: unknown): string | undefined {
+	if (!isErrMessageResponse(json)) {
+		return undefined
+	}
+
+	return json.message
+}
+
+async function getData<T>(
 	path: string,
 	query?: Record<string, string | number | null | undefined>,
-): Promise<ApiResult<T>> => {
+): Promise<ApiResult<T>> {
 	const { res, json, error } = await requestJson(buildUrl(path, query), {
 		method: "GET",
 		credentials: "include",
@@ -126,10 +136,10 @@ const getData = async <T>(
 	return E.right(data)
 }
 
-const postMessage = async (
+async function postMessage(
 	path: string,
 	query?: Record<string, string | number | null | undefined>,
-): Promise<ApiResult<string>> => {
+): Promise<ApiResult<string>> {
 	const { res, json, error } = await requestJson(buildUrl(path, query), {
 		method: "POST",
 		credentials: "include",
@@ -162,11 +172,16 @@ export async function list(options: {
 		status?: ImageQueueStatus
 	}
 }): Promise<ApiResult<CursorPage<PendingImageQueueItem>>> {
-	return await getData("/image-queue", options.query)
+	const result = await getData<CursorPage<PendingImageQueueItem>>(
+		"/image-queue",
+		options.query,
+	)
+	return result
 }
 
 export async function pendingCount(): Promise<ApiResult<number>> {
-	return await getData("/image-queue/pending-count")
+	const result = await getData<number>("/image-queue/pending-count")
+	return result
 }
 
 export async function detail(options: {
@@ -174,7 +189,10 @@ export async function detail(options: {
 		id: number
 	}
 }): Promise<ApiResult<ImageQueueDetail>> {
-	return await getData(`/image-queue/${options.path.id}`)
+	const result = await getData<ImageQueueDetail>(
+		`/image-queue/${options.path.id}`,
+	)
+	return result
 }
 
 export async function handle(options: {
@@ -185,7 +203,11 @@ export async function handle(options: {
 		method: HandleImageQueueMethod
 	}
 }): Promise<ApiResult<string>> {
-	return await postMessage(`/image-queue/${options.path.id}`, options.query)
+	const result = await postMessage(
+		`/image-queue/${options.path.id}`,
+		options.query,
+	)
+	return result
 }
 
 export async function userQueue(options: {
@@ -197,5 +219,9 @@ export async function userQueue(options: {
 		limit?: number
 	}
 }): Promise<ApiResult<CursorPage<UserImageQueueItem>>> {
-	return await getData(`/user/${options.path.id}/image-queue`, options.query)
+	const result = await getData<CursorPage<UserImageQueueItem>>(
+		`/user/${options.path.id}/image-queue`,
+		options.query,
+	)
+	return result
 }

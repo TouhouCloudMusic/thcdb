@@ -13,9 +13,7 @@ export const Route = createFileRoute("/song/$id_/edit")({
 	loader: async ({ params: { id } }) => {
 		const parsedId = EntityId_fromStr(id)
 
-		return await QUERY_CLIENT.ensureQueryData(
-			SongQueryOption.findById(parsedId),
-		)
+		return QUERY_CLIENT.ensureQueryData(SongQueryOption.findById(parsedId))
 	},
 })
 

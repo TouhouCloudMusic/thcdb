@@ -7,6 +7,7 @@ import {
 	ImageQueueQueryOption,
 	ReleaseQueryOption,
 } from "@thc/query"
+import { ObjExt } from "@thc/toolkit/data"
 import { Option as O } from "effect"
 import { createMemo, Match, Show, Switch } from "solid-js"
 import type { ParentProps } from "solid-js"
@@ -66,30 +67,30 @@ type Props = {
 }
 
 const extractErrorMessage = (error: unknown) => {
-	if (typeof error !== "object" || error === null) return
+	if (!ObjExt.isRecord(error)) return
 
-	const apiError = Reflect.get(error, "error")
+	const apiError = error["error"]
 	if (typeof apiError === "string") return apiError
 
-	const message = Reflect.get(error, "message")
+	const message = error["message"]
 	if (typeof message === "string") return message
 }
 
 const extractInfiniteQueryIds = (data: unknown): number[] => {
-	if (typeof data !== "object" || data === null) return []
+	if (!ObjExt.isRecord(data)) return []
 
-	const pages = Reflect.get(data, "pages")
+	const pages = data["pages"]
 	if (!Array.isArray(pages)) return []
 
 	const ids: number[] = []
 	for (const page of pages) {
-		if (typeof page !== "object" || page === null) continue
-		const items = Reflect.get(page, "items")
+		if (!ObjExt.isRecord(page)) continue
+		const items = page["items"]
 		if (!Array.isArray(items)) continue
 
 		for (const item of items) {
-			if (typeof item !== "object" || item === null) continue
-			const id = Reflect.get(item, "id")
+			if (!ObjExt.isRecord(item)) continue
+			const id = item["id"]
 			if (typeof id === "number") ids.push(id)
 		}
 	}
@@ -410,7 +411,7 @@ function DiffImageCard(props: {
 						{(state) => (
 							<div class="absolute inset-0 grid place-items-center text-sm text-slate-400">
 								<Switch>
-									<Match when={props.error || state === Image.State.Error}>
+									<Match when={props.error ?? state === Image.State.Error}>
 										Failed to load
 									</Match>
 									<Match when={props.loading}>Loading…</Match>

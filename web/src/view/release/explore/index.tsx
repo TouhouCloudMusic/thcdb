@@ -23,8 +23,10 @@ type ReleaseExploreQuery = {
 	isLoading: boolean
 }
 
+// typescript cannot infer return type of use search
+const _use_search_result = () => route.useSearch()
 type ReleaseExploreStoreDeps = {
-	search: ReturnType<typeof route.useSearch>
+	search: ReturnType<typeof _use_search_result>
 	navigate: ReturnType<typeof route.useNavigate>
 	i18n: ReturnType<typeof useI18N>
 	releasesQuery: ReleaseExploreQuery
@@ -54,7 +56,7 @@ function createReleaseExploreStores(
 			return search().display_type
 		},
 		setReleaseType: (value) => {
-			navigate({
+			void navigate({
 				to: ".",
 				search: (prev) => ({
 					...prev,
@@ -64,7 +66,7 @@ function createReleaseExploreStores(
 			})
 		},
 		setSortBy: (value) => {
-			navigate({
+			void navigate({
 				to: ".",
 				search: (prev) => ({
 					...prev,
@@ -74,7 +76,7 @@ function createReleaseExploreStores(
 			})
 		},
 		setOrderBy: (value) => {
-			navigate({
+			void navigate({
 				to: ".",
 				search: (prev) => ({
 					...prev,
@@ -84,7 +86,7 @@ function createReleaseExploreStores(
 			})
 		},
 		setDisplayType: (value) => {
-			navigate({
+			void navigate({
 				to: ".",
 				search: (prev) => ({ ...prev, display_type: value }),
 			})
@@ -108,7 +110,7 @@ function createReleaseExploreStores(
 			return search().page
 		},
 		setPage: (page: number) => {
-			navigate({
+			void navigate({
 				search: (prev) => ({ ...prev, page }),
 			})
 		},

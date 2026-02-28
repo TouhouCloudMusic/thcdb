@@ -312,7 +312,7 @@ function RouteComponent() {
 		if (!(currentTarget instanceof HTMLInputElement)) return
 
 		const raw = currentTarget.value.trim()
-		const next = raw ? Number(raw) : undefined
+		const next = raw.length > 0 ? Number(raw) : undefined
 		setCompare(Number.isFinite(next ?? Number.NaN) ? next : undefined)
 	}
 

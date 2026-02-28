@@ -15,7 +15,7 @@ function TrackItem(props: { track: ReleaseTrack }) {
 				{props.track.track_number}
 			</span>
 			<div>
-				<div>{props.track.display_title || props.track.song.title}</div>
+				<div>{props.track.display_title ?? props.track.song.title}</div>
 				<Show when={props.track.artists && props.track.artists.length > 0}>
 					<span class="whitespace-pre"> - </span>
 					<div class="text-gray-600 text-sm">

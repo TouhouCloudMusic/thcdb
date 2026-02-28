@@ -1,4 +1,3 @@
-// oxlint-disable max-lines-per-function
 import { For } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 

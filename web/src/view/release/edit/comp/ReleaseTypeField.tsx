@@ -16,7 +16,7 @@ export function ReleaseTypeField(props: {
 	of: ReleaseFormStore
 	class?: string
 }) {
-	const typeOptions = ["", ...RELEASE_TYPES] as const
+	const typeOptions = ["", ...RELEASE_TYPES] as ["", ...typeof RELEASE_TYPES]
 
 	return (
 		<Field
@@ -26,20 +26,16 @@ export function ReleaseTypeField(props: {
 			{(field) => (
 				<div class={twMerge("flex flex-col", props.class)}>
 					<FormComp.Label>Release Type</FormComp.Label>
-					<Select.Root<string>
+					<Select.Root<(typeof typeOptions)[number]>
 						name={field.props.name}
 						value={field.input ?? ""}
-						onChange={(value = "") => {
-							field.onInput(
-								value === ""
-									? undefined
-									: (value as (typeof RELEASE_TYPES)[number]),
-							)
+						onChange={(value) => {
+							field.onInput(value || undefined)
 						}}
-						options={typeOptions as unknown as string[]}
-						itemComponent={(props) => (
-							<Select.Item item={props.item}>
-								{getTypeLabel(props.item.rawValue)}
+						options={typeOptions}
+						itemComponent={(itemProps) => (
+							<Select.Item item={itemProps.item}>
+								{getTypeLabel(itemProps.item.rawValue)}
 							</Select.Item>
 						)}
 					>

@@ -66,7 +66,7 @@ export const ArtistExplore = () => {
 	const navigate = useNavigate({ from: "/artist/explore" })
 
 	const applyFilterPatch = (patch: Partial<ArtistExploreSearch>) => {
-		navigate({
+		void navigate({
 			to: "/artist/explore",
 			search: { ...search(), ...patch, page: 1 },
 		})
@@ -80,7 +80,7 @@ export const ArtistExplore = () => {
 	const totalPages = () => artistsQuery.data?.total_pages ?? 0
 
 	const setPage = (page: number) => {
-		navigate({
+		void navigate({
 			to: "/artist/explore",
 			search: { ...search(), page },
 		})

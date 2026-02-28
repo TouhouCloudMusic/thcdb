@@ -161,7 +161,7 @@ function RelationRow(props: RelationRowProps) {
 						<Select.Root<"" | TagRelationType>
 							name={field.props.name}
 							class="w-full"
-							value={(field.input ?? "") as "" | TagRelationType}
+							value={field.input ?? ""}
 							onChange={(value) => {
 								const next = value ?? ""
 								field.onInput(next === "" ? undefined : next)
