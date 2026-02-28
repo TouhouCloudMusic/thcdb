@@ -1,6 +1,7 @@
 default_install_hook_types = ["pre-push"]
 default_stages = ["pre-push"]
 fail_fast = true
+exclude = "^server/docs/"
 
 [[repos]]
 repo = "builtin"
