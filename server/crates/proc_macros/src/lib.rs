@@ -1,5 +1,3 @@
-#![feature(if_let_guard)]
-
 use error::*;
 use from_ref_arc::derive_from_ref_arc_impl;
 use proc_macro::TokenStream;
