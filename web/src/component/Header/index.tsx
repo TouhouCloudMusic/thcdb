@@ -129,12 +129,12 @@ function SearchBar() {
 	const submit = (e: Event) => {
 		e.preventDefault()
 		const value = inputRef?.value?.trim() ?? ""
-		if (!value) return
+		if (value.length === 0) return
 		const selected = entity()
 		if (selected === "all") {
-			navigate({ to: "/search", search: { q: value } })
+			void navigate({ to: "/search", search: { q: value } })
 		} else {
-			navigate({
+			void navigate({
 				to: "/search",
 				search: { q: value, entity: selected, tab: selected },
 			})

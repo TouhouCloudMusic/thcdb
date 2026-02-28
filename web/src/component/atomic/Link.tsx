@@ -4,7 +4,7 @@ import { twMerge } from "tailwind-merge"
 
 const LINK_CLASS = "text-primary underline-offset-4 transition-colors"
 
-export type LinkProps = LinkComponentProps<"a"> & {
+export type LinkProps = LinkComponentProps & {
 	/**
 	 * Whether the underline shows on hover.
 	 * Default: `true`

@@ -52,7 +52,7 @@ export const LabelExplore = () => {
 	const navigate = useNavigate({ from: "/label/explore" })
 
 	const applyFilterPatch = (patch: Partial<LabelExploreSearch>) => {
-		navigate({
+		void navigate({
 			to: "/label/explore",
 			search: { ...search(), ...patch, page: 1 },
 		})
@@ -64,7 +64,7 @@ export const LabelExplore = () => {
 	const totalPages = () => labelsQuery.data?.total_pages ?? 0
 
 	const setPage = (page: number) => {
-		navigate({
+		void navigate({
 			to: "/label/explore",
 			search: { ...search(), page },
 		})

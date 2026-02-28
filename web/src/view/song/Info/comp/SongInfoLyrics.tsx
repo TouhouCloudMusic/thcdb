@@ -16,7 +16,10 @@ export function SongInfoLyrics() {
 	const getLangName = (value: string) =>
 		langs()?.find((lang) => lang.id.toString() === value)?.name ?? value
 
-	const [activeLang, setActiveLang] = createSignal(firstLangId() ?? 0)
+	const [activeLang, setActiveLang] = createSignal<number | undefined>(
+		firstLangId(),
+	)
+	const selectedLangId = () => activeLang() ?? firstLangId() ?? 0
 
 	return (
 		<div class="space-y-8 p-6">
@@ -26,7 +29,7 @@ export function SongInfoLyrics() {
 				</span>
 				<Select.Root<string>
 					options={langOptions()}
-					value={(activeLang() || firstLangId() || 0).toString()}
+					value={selectedLangId().toString()}
 					onChange={(value) => {
 						if (value === null) return
 						setActiveLang(Number.parseInt(value, 10))
@@ -44,8 +47,7 @@ export function SongInfoLyrics() {
 						<Select.Value<string>>
 							{(state) =>
 								getLangName(
-									state.selectedOption()
-										?? (activeLang() || firstLangId() || 0).toString(),
+									state.selectedOption() ?? selectedLangId().toString(),
 								)
 							}
 						</Select.Value>

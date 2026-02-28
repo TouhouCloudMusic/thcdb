@@ -65,7 +65,9 @@ export function VerifyEmailForm(props: VerifyEmailFormProps) {
 					variant="Secondary"
 					size="Sm"
 					class="h-9"
-					onClick={() => props.handleResendVerificationEmail()}
+					onClick={() => {
+						void props.handleResendVerificationEmail()
+					}}
 					disabled={
 						props.verifyEmailForm.isSubmitting
 						|| props.isResendingVerificationEmail()
@@ -84,7 +86,7 @@ export function VerifyEmailForm(props: VerifyEmailFormProps) {
 					type="button"
 					class="text-secondary underline underline-offset-2"
 					onClick={() => {
-						return nav({
+						void nav({
 							to: "/auth",
 							search: { type: "sign_in" },
 						})

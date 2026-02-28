@@ -29,16 +29,7 @@ export class ThemeStore {
 
 	public set(theme: AppTheme): void {
 		this.signal[1](theme)
-
-		switch (theme) {
-			case AppTheme.Dark: {
-				this.setDocumentTheme()
-				break
-			}
-			default: {
-				this.setDocumentTheme()
-			}
-		}
+		this.setDocumentTheme()
 	}
 
 	setDocumentTheme() {
@@ -61,11 +52,11 @@ export function ThemeProvider(props: ParentProps) {
 
 function toString(theme: AppTheme) {
 	switch (theme) {
+		case AppTheme.Light: {
+			return "light"
+		}
 		case AppTheme.Dark: {
 			return "dark"
-		}
-		default: {
-			return "light"
 		}
 	}
 }

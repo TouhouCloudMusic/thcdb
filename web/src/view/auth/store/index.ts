@@ -13,8 +13,6 @@ export type AuthFormMode = "sign_in" | "sign_up" | "verify_email"
 
 const RouteApi = getRouteApi("/auth")
 
-const VERIFICATION_RESEND_COOLDOWN_SECONDS = 60
-
 type OnAuthError = (message: string) => void
 
 type EitherRight<T> =
@@ -64,7 +62,6 @@ function VerifyEmailFlowState_update(
 	state: VerifyEmailFlowState,
 	event: VerifyEmailFlowEvent,
 ): VerifyEmailFlowState {
-	// oxlint-disable-next-line default-case
 	switch (event.type) {
 		case "sync": {
 			if (event.mode !== "verify_email") return { type: "inactive" }
@@ -125,9 +122,9 @@ async function executeSignIn(params: {
 		onLeft: (error) => {
 			params.onError(error.error)
 		},
-		onRight: (data) => {
-			if (!data) return
-			return params.onSuccess(data)
+		onRight: async (data) => {
+			if (data === null || data === undefined) return
+			await params.onSuccess(data)
 		},
 	})
 }
@@ -149,8 +146,8 @@ async function executeSignUp(params: {
 		onLeft: (error) => {
 			params.onError(error.error)
 		},
-		onRight: (data) => {
-			return params.onSuccess(data, params.values.email)
+		onRight: async (data) => {
+			await params.onSuccess(data, params.values.email)
 		},
 	})
 }
@@ -172,9 +169,9 @@ async function executeVerifyEmail(params: {
 		onLeft: (error) => {
 			params.onError(error.error)
 		},
-		onRight: (data) => {
-			if (!data) return
-			return params.onSuccess(data)
+		onRight: async (data) => {
+			if (data === null || data === undefined) return
+			await params.onSuccess(data)
 		},
 	})
 }
@@ -254,29 +251,30 @@ export function useAuthForm() {
 	const isResendingVerificationEmail = () =>
 		verifyEmailFlowState().type === "resending"
 
-	const handleSignIn = (values: v.InferOutput<typeof AuthSchema.SignIn>) =>
-		executeSignIn({
+	async function handleSignIn(values: v.InferOutput<typeof AuthSchema.SignIn>) {
+		await executeSignIn({
 			values,
 			onError: setSubmitError,
-			onSuccess: (data) => {
+			onSuccess: async (data) => {
 				userCtx.sign_in({ user: data })
-				return nav({ to: "/" })
+				await nav({ to: "/" })
 			},
 		})
+	}
 
-	const handleSignUp = (values: v.InferOutput<typeof AuthSchema.SignUp>) =>
-		executeSignUp({
+	async function handleSignUp(values: v.InferOutput<typeof AuthSchema.SignUp>) {
+		await executeSignUp({
 			values,
 			onError: setSubmitError,
-			onSuccess: (data, email) => {
+			onSuccess: async (data, email) => {
 				setVerifyEmailFlowState((state) =>
 					VerifyEmailFlowState_update(state, {
 						type: "seed_after_signup",
 						email,
-						cooldownSeconds: VERIFICATION_RESEND_COOLDOWN_SECONDS,
+						cooldownSeconds: data.resend_cooldown_seconds,
 					}),
 				)
-				return nav({
+				await nav({
 					to: "/auth",
 					search: {
 						type: "verify_email",
@@ -285,23 +283,24 @@ export function useAuthForm() {
 				})
 			},
 		})
+	}
 
-	const handleVerifyEmail = (
+	async function handleVerifyEmail(
 		values: v.InferOutput<typeof AuthSchema.VerifyEmail>,
-	) => {
+	) {
 		const email = verifyEmailFlowState().email
-		if (!email) {
+		if (email === undefined) {
 			setSubmitError("Missing signup email, please sign up again")
 			return
 		}
 
-		return executeVerifyEmail({
+		await executeVerifyEmail({
 			values,
 			email,
 			onError: setSubmitError,
-			onSuccess: (data) => {
+			onSuccess: async (data) => {
 				userCtx.sign_in({ user: data })
-				return nav({ to: "/" })
+				await nav({ to: "/" })
 			},
 		})
 	}
@@ -324,7 +323,7 @@ export function useAuthForm() {
 			body: { email },
 		})
 
-		return Either.match(result, {
+		Either.match(result, {
 			onLeft: (error) => {
 				setSubmitError(error.error)
 				setVerifyEmailFlowState((state) =>
@@ -332,19 +331,11 @@ export function useAuthForm() {
 				)
 			},
 			onRight: (data) => {
-				if (!data) {
-					setVerifyEmailFlowState((state) =>
-						VerifyEmailFlowState_update(state, {
-							type: "resend_failed",
-						}),
-					)
-					return
-				}
 				setSubmitInfo("If eligible, a verification code has been sent.")
 				setVerifyEmailFlowState((state) =>
 					VerifyEmailFlowState_update(state, {
 						type: "resend_success",
-						cooldownSeconds: VERIFICATION_RESEND_COOLDOWN_SECONDS,
+						cooldownSeconds: data.resend_cooldown_seconds,
 					}),
 				)
 			},

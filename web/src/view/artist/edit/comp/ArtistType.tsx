@@ -30,7 +30,7 @@ export function ArtistFormArtistTypeField() {
 					<div class="w-fit rounded-sm border border-slate-300 font-light">
 						<Select.Root<"" | ArtistType>
 							name={field.props.name}
-							value={(field.input ?? "") as "" | ArtistType}
+							value={field.input ?? ""}
 							onChange={(value) => {
 								const next = value ?? ""
 								field.onInput(next === "" ? undefined : next)

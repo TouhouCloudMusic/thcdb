@@ -246,7 +246,7 @@ export const SongExplore = () => {
 	const totalPages = () => songsQuery.data?.total_pages ?? 0
 
 	const setPage = (page: number) => {
-		navigate({
+		void navigate({
 			to: "/song/explore",
 			search: {
 				...search(),
@@ -259,11 +259,11 @@ export const SongExplore = () => {
 		key: "sort_by" | "order_by",
 		value: string | undefined,
 	) => {
-		navigate({
+		void navigate({
 			to: "/song/explore",
 			search: {
 				...search(),
-				[key]: value || undefined,
+				[key]: value ?? undefined,
 				page: 1,
 			},
 		})
@@ -279,7 +279,7 @@ export const SongExplore = () => {
 
 	const updateLanguageId = (value: string) => {
 		const parsed = Number.parseInt(value, 10)
-		navigate({
+		void navigate({
 			to: "/song/explore",
 			search: {
 				...search(),

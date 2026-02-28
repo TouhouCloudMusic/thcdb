@@ -13,9 +13,12 @@ import { PageLayout } from "~/layout/PageLayout"
 export function LabelListPage() {
 	const [searchKeyword, setSearchKeyword] = createSignal("")
 
-	const onInput = debounce(300, (e: Event) => {
-		setSearchKeyword((e.target as HTMLInputElement).value)
-	})
+	const onInput = debounce(
+		300,
+		(e: Event & { currentTarget: HTMLInputElement }) => {
+			setSearchKeyword(e.currentTarget.value)
+		},
+	)
 
 	const searchTerm = createMemo(() => {
 		const keyword = searchKeyword().trim()
@@ -78,7 +81,7 @@ type ItemProps = {
 function LabelListItem(props: ItemProps) {
 	const founded = () => DateWithPrecision.display(props.label.founded_date)
 	const dissolved = () => DateWithPrecision.display(props.label.dissolved_date)
-	const hasDates = () => Boolean(founded() || dissolved())
+	const hasDates = () => Boolean(founded() ?? dissolved())
 
 	return (
 		<li class="flex items-center justify-between gap-4 p-4">

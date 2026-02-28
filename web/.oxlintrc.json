@@ -6,8 +6,10 @@
 	"ignorePatterns": [
 		"**.gen.ts",
 		"packages/api/**/gen.ts",
+		"config/eslint/index.js",
 		"src/style/color/convert.ts",
-		"src/constant/server.ts"
+		"src/constant/server.ts",
+		"src/component/__legacy"
 	],
 	"categories": {
 		"correctness": "error",
@@ -29,6 +31,26 @@
 		}
 	},
 	"rules": {
+		// Replaced by typescript/switch-exhaustiveness-check
+		"default-case": "off",
+		// We use typescript alternative
+		"require-await": "off",
+		"typescript/no-confusing-void-expression": [
+			"warn",
+			{
+				"ignoreArrowShorthand": true
+			}
+		],
+		"typescript/only-throw-error": [
+			"off",
+			{
+				"allow": ["notFound"]
+			}
+		],
+		"func-style": "off",
+		// We use modern js
+		"unicorn/prefer-reflect-apply": "off",
+		"no-use-before-define": "off",
 		"no-eq-null": "off",
 		"unicorn/require-module-specifiers": "off",
 		"array-callback-return": [
@@ -42,13 +64,6 @@
 		"curly": "off",
 		"eqeqeq": ["off", "smart"],
 		"func-names": "off",
-		"func-style": [
-			"error",
-			"declaration",
-			{
-				"allowArrowFunctions": true
-			}
-		],
 		"id-length": "off",
 		"init-declarations": "off",
 		"max-depth": ["warn", 4],
@@ -150,7 +165,30 @@
 				"allowInterfaces": "with-single-extends"
 			}
 		],
+		"typescript/promise-function-async": [
+			"warn",
+			{
+				"checkArrowFunctions": false
+			}
+		],
 		"typescript/prefer-enum-initializers": "off",
+		"prefer-nullish-coalescing": [
+			"warn",
+			{
+				"ignorePrimitives": true
+			}
+		],
+		"typescript/strict-boolean-expressions": [
+			"warn",
+			{
+				"allowAny": true,
+				"allowString": true,
+				"allowNullableObject": true,
+				"allowNullableString": true,
+				"allowNullableNumber": true,
+				"allowNullableBoolean": true
+			}
+		],
 		"unicorn/no-zero-fractions": "off",
 		"unicorn/catch-error-name": "off",
 		"unicorn/explicit-length-check": "off",
@@ -201,7 +239,7 @@
 	},
 	"overrides": [
 		{
-			"files": ["*.stories.tsx", "*.config.{js,ts}"],
+			"files": [".storybook/*", "*.stories.tsx", "*.config.{js,ts}"],
 			"rules": {
 				"no-magic-numbers": "off",
 				"import/no-default-export": "off",
@@ -223,6 +261,12 @@
 			"rules": {
 				"no-console": "off",
 				"no-magic-numbers": "off"
+			}
+		},
+		{
+			"files": ["config/eslint/index.js", "eslint.config.js"],
+			"rules": {
+				"typescript/no-unsafe-member-access": "off"
 			}
 		}
 	]

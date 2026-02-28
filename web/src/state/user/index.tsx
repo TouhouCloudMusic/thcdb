@@ -1,11 +1,12 @@
 import type { UserProfile } from "@thc/api"
 import { UserApi, AuthApi, NotificationApi } from "@thc/api"
+import { ObjExt } from "@thc/toolkit/data"
 import { Either as E, Option } from "effect"
 import type { ParentProps } from "solid-js"
 import { createContext, onMount } from "solid-js"
 import { createMutable } from "solid-js/store"
+import * as v from "valibot"
 
-import { dbg } from "~/utils/log"
 import { assertContext } from "~/utils/solid/assertContext"
 
 const SIGNED_IN_KEY = "is_signed_in"
@@ -36,10 +37,15 @@ export const enum NotificationState {
 	Muted,
 }
 
+const NotificationSocketMessageSchema = v.object({
+	type: v.optional(v.string()),
+	data: v.optional(v.unknown()),
+})
+
 const getObject = (x: unknown): Record<string, unknown> | undefined => {
-	if (typeof x !== "object" || x === null) return
-	if (Array.isArray(x)) return
-	return x as Record<string, unknown>
+	if (ObjExt.isRecord(x)) {
+		return x
+	}
 }
 
 export class UserStore {
@@ -95,10 +101,10 @@ export class UserStore {
 		}
 
 		if (
-			getBool("comment_reply_enabled", true) === false
-			&& getBool("comment_mention_enabled", true) === false
-			&& getBool("correction_status_enabled", true) === false
-			&& getBool("new_follower_enabled", true) === false
+			!getBool("comment_reply_enabled", true)
+			&& !getBool("comment_mention_enabled", true)
+			&& !getBool("correction_status_enabled", true)
+			&& !getBool("new_follower_enabled", true)
 		) {
 			return NotificationState.Muted
 		}
@@ -134,7 +140,7 @@ export class UserStore {
 		this.notificationUnreadCount = 0
 		this.disconnectNotificationSocket()
 		E.mapLeft(result, (error) => {
-			dbg("Sign out failed", error)
+			console.debug("Sign out failed", error)
 
 			throw error
 		})
@@ -176,11 +182,13 @@ export class UserStore {
 
 		ws.addEventListener("message", (evt) => {
 			try {
-				const msg = JSON.parse(String(evt.data)) as {
-					type?: unknown
-					data?: unknown
-				}
-				if (msg.type === "Notification") {
+				const parsed = v.safeParse(
+					NotificationSocketMessageSchema,
+					JSON.parse(String(evt.data)),
+				)
+				if (!parsed.success) return
+
+				if (parsed.output.type === "Notification") {
 					this.notificationUnreadCount += 1
 				}
 			} catch {

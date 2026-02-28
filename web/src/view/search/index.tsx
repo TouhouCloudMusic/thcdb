@@ -69,7 +69,7 @@ export function SearchPage() {
 	const requestedTab = createMemo<SearchTab | undefined>(() => search().tab)
 
 	const patchSearch = (patch: { tab?: SearchTab }) => {
-		navigate({
+		void navigate({
 			to: "/search",
 			search: { ...search(), ...patch },
 		})

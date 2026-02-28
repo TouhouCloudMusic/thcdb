@@ -24,13 +24,10 @@ import {
 
 const ACTION_USER = { id: 901, name: "Moderator" } as const
 
-const STATUS_FILTERS = ["pending", "all"] as const
+const TYPE_FILTER_OPTIONS = ["", ...MOCK_IMAGE_QUEUE_TYPES]
 
-const TYPE_FILTER_OPTIONS = ["", ...MOCK_IMAGE_QUEUE_TYPES] as const
-
-const STATUS_FILTER_OPTIONS = ["pending", "all"] as const
-
-type StatusFilter = (typeof STATUS_FILTERS)[number]
+type StatusFilter = ("pending" | "all")[number]
+const STATUS_FILTERS: StatusFilter[] = ["pending", "all"]
 
 const isStatusFilter = (value: string): value is StatusFilter =>
 	STATUS_FILTERS.some((v) => v === value)
@@ -307,7 +304,7 @@ export function ImageQueueMockPage() {
 						<div class="flex items-center gap-2">
 							<span class="text-sm text-slate-500">Type</span>
 							<Select.Root<string>
-								options={TYPE_FILTER_OPTIONS as unknown as string[]}
+								options={TYPE_FILTER_OPTIONS}
 								value={typeFilter() ?? ""}
 								onChange={(value) => resetFilter("type", value ?? "")}
 								itemComponent={(props) => (
@@ -333,7 +330,7 @@ export function ImageQueueMockPage() {
 						<div class="flex items-center gap-2">
 							<span class="text-sm text-slate-500">Status</span>
 							<Select.Root<StatusFilter>
-								options={STATUS_FILTER_OPTIONS as unknown as StatusFilter[]}
+								options={STATUS_FILTERS}
 								value={statusFilter()}
 								onChange={(value) => {
 									if (value === null) return

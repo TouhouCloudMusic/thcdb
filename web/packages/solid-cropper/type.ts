@@ -162,10 +162,10 @@ export interface Cropper {
 	container: Element
 
 	// Methods
-	// @ts-expect-error
-	getCropperCanvas(): CropperCanvas | null
-	// @ts-expect-error
-	getCropperImage(): CropperImage | null
+	// // @ts-expect-error
+	// getCropperCanvas(): CropperCanvas | null
+	// // @ts-expect-error
+	// getCropperImage(): CropperImage | null
 	getCropperSelection(): CropperSelection | null
 	getCropperSelections(): NodeListOf<CropperSelection> | null
 }

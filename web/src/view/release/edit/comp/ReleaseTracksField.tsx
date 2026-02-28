@@ -77,7 +77,6 @@ export function ReleaseTracksField(props: {
 	)
 }
 
-// oxlint-disable-next-line max-lines-per-function
 function TrackHeader(props: {
 	of: ReleaseFormStore
 	selectedDisc: () => number
@@ -102,7 +101,7 @@ function TrackHeader(props: {
 
 	const currentDiscName = createMemo(() => {
 		const d = discs()[props.selectedDisc()]
-		if (d && d.name && d.name.length > 0) return d.name
+		if (d?.name && d.name.length > 0) return d.name
 		return `Disc ${props.selectedDisc() + 1}`
 	})
 
@@ -241,8 +240,8 @@ function EditDiscNameDialog(props: DiscNameDialogProps) {
 							<InputField.Input
 								placeholder="Disc name"
 								value={name()}
-								onInput={(e: Event) => {
-									const value = (e.target as HTMLInputElement).value
+								onInput={(e) => {
+									const value = e.currentTarget.value
 									setName(value)
 								}}
 							/>

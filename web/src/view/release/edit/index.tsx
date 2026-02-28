@@ -54,7 +54,6 @@ function PageHeader(props: { type: Props["type"] }) {
 	)
 }
 
-// oxlint-disable-next-line max-lines-per-function
 function FormContent(props: Props) {
 	const initialValues = useReleaseFormInitialValues(props)
 
@@ -140,7 +139,6 @@ function FormContent(props: Props) {
 									setInput(form, {
 										path: ["data", it.key],
 										// TODO: Upstream formisch error
-										// oxlint-disable-next-line no-null
 										input: v ?? null,
 									})
 								}

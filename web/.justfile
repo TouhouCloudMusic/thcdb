@@ -18,7 +18,7 @@ eslint +FLAGS="":
 esfix: (eslint "--fix")
 
 oxlint +FLAGS="":
-	pnpm exec oxlint {{FLAGS}}
+	pnpm exec oxlint --type-aware --type-check --report-unused-disable-directives {{FLAGS}}
 
 oxfix: (oxlint "--fix")
 
@@ -32,4 +32,4 @@ test:
 	pnpm exec vitest
 
 check:
-  pnpm tsgo -p .
+  pnpm exec oxlint --type-aware --type-check --report-unused-disable-directives

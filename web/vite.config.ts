@@ -25,11 +25,9 @@ const isHttps = (url: string | undefined) => {
 	return new URL(url).protocol == "https:"
 }
 
-// oxlint-disable-next-line no-default-export
 export default defineConfig(({ mode }) => {
 	// oxlint-disable-next-line no-undef
 	const env = loadEnv(mode, process.cwd())
-	// oxlint-disable-next-line no-undef
 
 	const SERVER_URL = env["VITE_SERVER_URL"]
 
@@ -96,9 +94,7 @@ export default defineConfig(({ mode }) => {
 							provider: playwright(),
 							instances: [{ browser: "chromium" }],
 						},
-						// This setup file applies Storybook project annotations for Vitest
-						// More info at: https://storybook.js.org/docs/api/portable-stories/portable-stories-vitest#setprojectannotations
-						setupFiles: [".storybook/vitest.setup.ts"],
+						setupFiles: ["./.storybook/vitest.setup.ts"],
 					},
 				}),
 			],

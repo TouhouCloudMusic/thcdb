@@ -14,7 +14,6 @@ import { LabelSearchDialog } from "~/component/form/SearchDialog"
 import { LabelInfo } from "./EntityInfo"
 import type { ReleaseFormStore } from "./types"
 
-// oxlint-disable-next-line max-lines-per-function
 export function ReleaseCatalogNumbersField(props: {
 	of: ReleaseFormStore
 	initCatalogLabels?: (SimpleLabel | undefined)[]

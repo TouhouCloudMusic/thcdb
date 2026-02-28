@@ -1,13 +1,8 @@
-// oxlint-disable require-param
-// oxlint-disable require-returns
 // oxlint-disable max-params
-// oxlint-disable no-magic-numbers
-// oxlint-disable prefer-reflect-apply
 // oxlint-disable prefer-rest-params
 // oxlint-disable no-explicit-any
-// oxlint-disable no-undef
-// oxlint-disable func-names
-// oxlint-disable func-style
+// oxlint-disable typescript-eslint/no-unsafe-return
+// oxlint-disable typescript-eslint/no-unsafe-type-assertion
 
 /**
  * MIT License

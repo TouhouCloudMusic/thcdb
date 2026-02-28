@@ -47,6 +47,7 @@
           overlays = [
             fenix.overlays.default
             inputs.llm-agents.overlays.default
+            prekOverlay
           ];
         };
 
@@ -90,7 +91,6 @@
             just
             just-lsp
             nodejs_22
-            oxlint
             pnpm
             prek
             sea-orm-cli

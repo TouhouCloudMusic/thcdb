@@ -40,9 +40,7 @@ type RootProps<T extends ValidComponent = "div"> = PolymorphicProps<
 export function Root<T extends ValidComponent = "div">(props: RootProps<T>) {
 	const localProps = mergeProps(props, {
 		get class() {
-			return props["class"]
-				? twMerge(TEXT_INPUT_CLASS, props["class"])
-				: TEXT_INPUT_CLASS
+			return twMerge(TEXT_INPUT_CLASS, props["class"])
 		},
 	})
 

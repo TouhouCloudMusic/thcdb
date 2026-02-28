@@ -15,10 +15,11 @@ export const Route = createFileRoute("/(user)/test_avatar_upload")({
 const ORIGIN = globalThis.location?.origin ?? "http://localhost:3000"
 const assetUrl = (path: string) => new URL(path, ORIGIN).href
 
-const delay = (ms: number) =>
-	new Promise<void>((resolve) => {
+async function delay(ms: number) {
+	await new Promise<void>((resolve) => {
 		globalThis.setTimeout(resolve, ms)
 	})
+}
 
 function RouteComponent() {
 	const [user, setUser] = createSignal<UserProfile>({

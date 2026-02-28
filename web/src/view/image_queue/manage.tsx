@@ -25,26 +25,24 @@ const DATE_TIME = new Intl.DateTimeFormat(undefined, {
 })
 
 const TYPE_OPTIONS = ["artist", "release"] as const satisfies ImageQueueType[]
-
-const TYPE_FILTER_OPTIONS = ["", ...TYPE_OPTIONS] as const
-
-const STATUS_FILTER_OPTIONS = ["pending", "all"] as const
-
-const STATUS_FILTERS = ["pending", "all"] as const
-
-type StatusFilter = (typeof STATUS_FILTERS)[number]
+const TYPE_FILTER_OPTIONS = ["", ...TYPE_OPTIONS] as [
+	"",
+	...typeof TYPE_OPTIONS,
+]
+type StatusFilterKind = "pending" | "all"
+const STATUS_FILTER_OPTIONS: StatusFilterKind[] = ["pending", "all"]
 
 const PAGE_SIZE = 20
 
 const isImageQueueType = (value: string): value is ImageQueueType =>
 	TYPE_OPTIONS.some((v) => v === value)
 
-const isStatusFilter = (value: string): value is StatusFilter =>
-	STATUS_FILTERS.some((v) => v === value)
+const isStatusFilter = (value: string): value is StatusFilterKind =>
+	STATUS_FILTER_OPTIONS.some((v) => v === value)
 
 const getTypeLabel = (value: string) => (value === "" ? "All" : value)
 
-const getStatusLabel = (value: StatusFilter) =>
+const getStatusLabel = (value: StatusFilterKind) =>
 	value === "pending" ? "Pending" : "All"
 
 const formatDateTime = (value: string) => {
@@ -55,7 +53,7 @@ const formatDateTime = (value: string) => {
 
 type ManageFilters = {
 	type?: ImageQueueType
-	status: StatusFilter
+	status: StatusFilterKind
 }
 
 const statusTone = (status: ImageQueueStatus) => {
@@ -172,7 +170,7 @@ export function ImageQueueManagePage() {
 							<div class="flex items-center gap-2">
 								<span class="text-sm text-slate-500">Type</span>
 								<Select.Root<string>
-									options={TYPE_FILTER_OPTIONS as unknown as string[]}
+									options={TYPE_FILTER_OPTIONS}
 									value={filters().type ?? ""}
 									onChange={(value) => updateSearch("type", value ?? "")}
 									itemComponent={(props) => (
@@ -197,8 +195,8 @@ export function ImageQueueManagePage() {
 
 							<div class="flex items-center gap-2">
 								<span class="text-sm text-slate-500">Status</span>
-								<Select.Root<StatusFilter>
-									options={STATUS_FILTER_OPTIONS as unknown as StatusFilter[]}
+								<Select.Root<StatusFilterKind>
+									options={STATUS_FILTER_OPTIONS}
 									value={filters().status}
 									onChange={(value) => {
 										if (value === null) return
@@ -211,7 +209,7 @@ export function ImageQueueManagePage() {
 									)}
 								>
 									<Select.Trigger>
-										<Select.Value<StatusFilter>>
+										<Select.Value<StatusFilterKind>>
 											{(state) =>
 												getStatusLabel(state.selectedOption() ?? "pending")
 											}

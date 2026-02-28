@@ -5,6 +5,12 @@ import { clampRectToBounds } from "./cropperGeometry"
 import type { Rect } from "./cropperGeometry"
 
 const patchedSelections = new WeakSet<CropperSelection>()
+type CropperSelectionChangeDetail = {
+	x?: number
+	y?: number
+	width?: number
+	height?: number
+}
 
 const normalizeSizeToRatioCover = (
 	width: number,
@@ -37,10 +43,12 @@ export const ensureCropperSelectionChangeBounded = (options: {
 		if (adjusting) return
 		if (!(event instanceof CustomEvent)) return
 
-		const xValue = NumExt.toFinite(event.detail?.x)
-		const yValue = NumExt.toFinite(event.detail?.y)
-		const widthValue = NumExt.toFinite(event.detail?.width) ?? 0
-		const heightValue = NumExt.toFinite(event.detail?.height) ?? 0
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+		const detail = event.detail as CropperSelectionChangeDetail | undefined
+		const xValue = NumExt.toFinite(detail?.x)
+		const yValue = NumExt.toFinite(detail?.y)
+		const widthValue = NumExt.toFinite(detail?.width) ?? 0
+		const heightValue = NumExt.toFinite(detail?.height) ?? 0
 		if (xValue === undefined || yValue === undefined) return
 		if (widthValue <= 0 || heightValue <= 0) return
 

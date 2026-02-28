@@ -22,7 +22,7 @@ export function ReleaseInfoDetails() {
 
 			<Show
 				when={
-					ctx.release.recording_date_start || ctx.release.recording_date_end
+					ctx.release.recording_date_start ?? ctx.release.recording_date_end
 				}
 			>
 				<span class="text-tertiary">Recorded</span>

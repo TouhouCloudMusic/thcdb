@@ -22,7 +22,6 @@ export function Markdown(props: Props) {
 
 	return (
 		<div
-			// eslint-disable-next-line solid/no-innerhtml
 			innerHTML={parsed()}
 			class="markdown"
 		></div>

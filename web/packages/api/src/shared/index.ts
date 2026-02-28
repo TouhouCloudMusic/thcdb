@@ -130,7 +130,7 @@ export async function adaptFetchResponseFromResponse<T>(
 ): Promise<FetchResponse<T, ErrResponse>> {
 	const text = await response.text()
 
-	if (!text) {
+	if (text == "") {
 		return { error: toErrResponse(response.statusText), response }
 	}
 
@@ -156,7 +156,7 @@ export async function adaptFetchMessageResponseFromResponse(
 ): Promise<FetchMessageResponse<ErrResponse>> {
 	const text = await response.text()
 
-	if (!text) {
+	if (text == "") {
 		return { error: toErrResponse(response.statusText), response }
 	}
 

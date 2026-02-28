@@ -1,4 +1,3 @@
-// oxlint-disable no-magic-numbers
 import type { Artist } from "@thc/api"
 import fc from "fast-check"
 import { describe, it, expect } from "vitest"
@@ -25,7 +24,6 @@ const dateWithPrecisionOutArb = fc.record({
 	precision: datePrecisionArb,
 })
 
-// oxlint-disable-next-line no-useless-undefined
 const opt = <T>(arb: fc.Arbitrary<T>) => fc.oneof(fc.constant(undefined), arb)
 
 const locationArb = fc.record({

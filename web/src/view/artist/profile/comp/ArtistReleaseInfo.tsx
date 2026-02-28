@@ -60,14 +60,14 @@ function Inner() {
 				<For
 					each={TABS.filter((tab) => {
 						switch (tab) {
+							case "Discography": {
+								return true
+							}
 							case "Appearance": {
-								return context.appearances.data.length
+								return context.appearances.data.length > 0
 							}
 							case "Credit": {
-								return context.credits.data.length
-							}
-							default: {
-								return true
+								return context.credits.data.length > 0
 							}
 						}
 					})}
@@ -100,7 +100,9 @@ function Inner() {
 					class="p-6"
 					data={context.appearances.data}
 					hasNext={context.appearances.hasNext}
-					next={() => context.appearances.next()}
+					next={() => {
+						void context.appearances.next()
+					}}
 				>
 					{(props) => <DiscographyItem {...props} />}
 				</ArtistReleaseList>
@@ -113,7 +115,9 @@ function Inner() {
 					class="p-6"
 					data={context.credits.data}
 					hasNext={context.credits.hasNext}
-					next={() => context.credits.next()}
+					next={() => {
+						void context.credits.next()
+					}}
 				>
 					{(props) => <CreditItem {...props} />}
 				</ArtistReleaseList>
@@ -170,7 +174,9 @@ function DiscographyTab() {
 					class="p-6"
 					data={context.discographies.data[selectedType()]}
 					hasNext={context.discographies.hasNext(selectedType())}
-					next={() => context.discographies.next(selectedType())}
+					next={() => {
+						void context.discographies.next(selectedType())
+					}}
 				>
 					{(props) => <DiscographyItem {...props} />}
 				</ArtistReleaseList>
@@ -182,7 +188,7 @@ function DiscographyTab() {
 function ArtistReleaseList<T extends Discography | CreditRoleRef>(props: {
 	data?: T[] | undefined
 	hasNext: boolean
-	next: () => Promise<void>
+	next: () => void
 	class?: string
 	children: (props: { item: T }) => JSX.Element
 }) {
@@ -196,7 +202,7 @@ function ArtistReleaseList<T extends Discography | CreditRoleRef>(props: {
 				<div class="flex w-full justify-center">
 					<Button
 						variant="Tertiary"
-						onClick={props.next}
+						onClick={() => props.next()}
 						class="px-16 font-normal"
 					>
 						Load More

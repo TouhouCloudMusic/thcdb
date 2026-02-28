@@ -31,7 +31,7 @@ export function TagFormTypeField(props: Props) {
 					<FormComp.Label>Tag Type</FormComp.Label>
 					<Select.Root<"" | TagType>
 						name={field.props.name}
-						value={(field.input ?? "") as "" | TagType}
+						value={field.input ?? ""}
 						onChange={(value) => {
 							const next = value ?? ""
 							field.onInput(next === "" ? undefined : next)
