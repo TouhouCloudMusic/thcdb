@@ -1,36 +1,5 @@
 # Server/Backend Project Guidelines
 
-## 项目结构
-```
-server/
-├── src/
-│   ├── main.rs            # 服务入口（可输出 OpenAPI）
-│   ├── cli.rs             # CLI 参数
-│   ├── adapter/
-│   │   └── inbound/rest/  # REST 接入层（含 OpenAPI 生成）
-│   ├── application/
-│   ├── domain/
-│   ├── features/
-│   ├── infra/
-│   ├── shared/
-│   ├── utils/
-│   └── constant/
-├── crates/
-│   ├── entity/            # SeaORM Entities（通常由 `just generate` 生成）
-│   ├── migration/         # 数据库迁移（`just migrate ...`）
-│   ├── collection_ext/
-│   ├── fast_lrc/
-│   ├── flow/
-│   ├── libfp/
-│   ├── macros/
-│   └── proc_macros/
-├── Cargo.toml
-├── rust-toolchain.toml    # nightly toolchain（含 fmt/clippy 组件）
-├── config.toml            # 运行配置示例
-├── docker-compose.yml
-└── .justfile              # 开发命令入口
-```
-
 ## 代码架构（迁移中）
 
 当前处于从整洁架构（adapter/application/domain/infra）迁移到垂直切片（feature-first）的中间态：存量代码沿用原分层，新功能优先按垂直切片落地
@@ -47,8 +16,6 @@ server/
 - `just fix`：自动修复。
 - `just check`：fmt check + clippy + test。
 - `just generate`：生成 SeaORM entities（需 `sea-orm-cli` 且可连数据库）。
-- `just migrate <args>`：运行迁移（如 `just migrate up`）。
-- `just converge`：生成覆盖率（tarpaulin）。
 - `cargo run -- --openapi ./openapi.json`：输出 OpenAPI schema。
 
 ## 编码规范
