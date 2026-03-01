@@ -8,10 +8,9 @@ const authSearchSchema = v.object({
 		v.picklist(["sign_in", "sign_up", "verify_email"]),
 		"sign_in",
 	),
-	email: v.optional(v.string()),
 })
 
-export const Route = createFileRoute("/auth")({
+export const Route = createFileRoute("/auth/")({
 	component: RouteComponent,
 	validateSearch: authSearchSchema,
 })

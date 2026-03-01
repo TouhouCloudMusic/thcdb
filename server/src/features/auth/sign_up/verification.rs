@@ -1,5 +1,3 @@
-use argon2::Argon2;
-use argon2::password_hash::{PasswordHash, PasswordVerifier};
 use chrono::{Duration, Utc};
 use lettre::message::{Mailbox, Message as EmailMessage};
 
@@ -54,24 +52,6 @@ impl From<SendVerificationEmailError> for ResendVerificationEmailError {
                 ResendVerificationEmailError::Infra { source }
             }
         }
-    }
-}
-
-pub(super) async fn verify_secret(
-    secret_hash: String,
-    input: &str,
-) -> Result<bool, Error> {
-    let bytes = input.as_bytes().to_owned();
-    let verify_result = tokio::task::spawn_blocking(move || {
-        let hash = PasswordHash::new(&secret_hash)?;
-        Argon2::default().verify_password(&bytes, &hash)
-    })
-    .await?;
-
-    match verify_result {
-        Ok(()) => Ok(true),
-        Err(argon2::password_hash::Error::Password) => Ok(false),
-        Err(other) => Err(other.into()),
     }
 }
 

@@ -86,6 +86,7 @@ async fn main() -> Result<(), Whatever> {
     Worker {
         redis_pool: state.redis_pool(),
         repo: state.sea_orm_repo.clone(),
+        mailer: state.mailer.clone(),
         notification_retention_days: APP_CONFIG.notification.retention_days,
     }
     .init();

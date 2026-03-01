@@ -181,11 +181,50 @@ pub(crate) async fn set_email_verified(
     .update(tx)
     .await?;
 
-    let _ = user_email_verification::Entity::delete_by_id(user_id)
-        .exec(tx)
-        .await?;
+    clear_email_verification(tx, user_id).await?;
 
     load_user(tx, model).await
+}
+
+pub(crate) async fn set_password(
+    conn: &impl ConnectionTrait,
+    user_id: i32,
+    password_hash: String,
+) -> Result<(), DbErr> {
+    user::ActiveModel {
+        id: Set(user_id),
+        password: Set(password_hash),
+        ..Default::default()
+    }
+    .update(conn)
+    .await?;
+
+    Ok(())
+}
+
+pub(crate) async fn clear_email_verification(
+    conn: &impl ConnectionTrait,
+    user_id: i32,
+) -> Result<(), DbErr> {
+    let _ = user_email_verification::Entity::delete_by_id(user_id)
+        .exec(conn)
+        .await?;
+
+    Ok(())
+}
+
+pub(crate) async fn clear_email_verification_if_hash_matches(
+    conn: &impl ConnectionTrait,
+    user_id: i32,
+    hash: &str,
+) -> Result<bool, DbErr> {
+    let res = user_email_verification::Entity::delete_many()
+        .filter(user_email_verification::Column::UserId.eq(user_id))
+        .filter(user_email_verification::Column::Hash.eq(hash))
+        .exec(conn)
+        .await?;
+
+    Ok(res.rows_affected != 0)
 }
 
 async fn load_user(

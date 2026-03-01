@@ -36,6 +36,8 @@ import type {
 	SignUpRequest,
 	VerifyEmailDefaultOne,
 	VerifyEmailRequest,
+	VerifyResetCodeDefaultOne,
+	VerifyResetCodeRequest,
 } from "./touhouCloudDB.schemas"
 import { UserRoleEnum } from "./touhouCloudDB.schemas"
 import type {
@@ -43,6 +45,7 @@ import type {
 	DataResendVerificationEmailResponse,
 	DataSignUpResponse,
 	DataUserProfile,
+	DataVerifyResetCodeResponse,
 	Message,
 } from "./touhouCloudDB.schemas"
 
@@ -947,6 +950,135 @@ export const useVerifyEmail = <
 > => {
 	return useMutation(() => getVerifyEmailMutationOptions(options), queryClient)
 }
+export type verifyResetCodeResponse200 = {
+	data: DataVerifyResetCodeResponse
+	status: 200
+}
+
+export type verifyResetCodeResponse429 = {
+	data: string
+	status: 429
+}
+
+export type verifyResetCodeResponseDefaultApplicationJson = {
+	data: VerifyResetCodeDefaultOne
+	status: Exclude<HTTPStatusCodes, 200 | 429>
+}
+
+export type verifyResetCodeResponseDefaultTextPlain = {
+	data: string
+	status: Exclude<HTTPStatusCodes, 200 | 429>
+}
+
+export type verifyResetCodeResponseSuccess = verifyResetCodeResponse200 & {
+	headers: Headers
+}
+export type verifyResetCodeResponseError = (
+	| verifyResetCodeResponse429
+	| verifyResetCodeResponseDefaultApplicationJson
+	| verifyResetCodeResponseDefaultTextPlain
+) & {
+	headers: Headers
+}
+
+export type verifyResetCodeResponse =
+	| verifyResetCodeResponseSuccess
+	| verifyResetCodeResponseError
+
+export const getVerifyResetCodeUrl = () => {
+	return `/api/verify-reset-code`
+}
+
+export const verifyResetCode = async (
+	verifyResetCodeRequest: VerifyResetCodeRequest,
+	options?: RequestInit,
+): Promise<verifyResetCodeResponse> => {
+	const res = await fetch(getVerifyResetCodeUrl(), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(verifyResetCodeRequest),
+	})
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+	const data: verifyResetCodeResponse["data"] = body ? JSON.parse(body) : {}
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as verifyResetCodeResponse
+}
+
+export const getVerifyResetCodeMutationOptions = <
+	TError = string | VerifyResetCodeDefaultOne,
+	TContext = unknown,
+>(options?: {
+	mutation?: UseMutationOptions<
+		Awaited<ReturnType<typeof verifyResetCode>>,
+		TError,
+		{ data: VerifyResetCodeRequest },
+		TContext
+	>
+	fetch?: RequestInit
+}): SolidMutationOptions<
+	Awaited<ReturnType<typeof verifyResetCode>>,
+	TError,
+	{ data: VerifyResetCodeRequest },
+	TContext
+> => {
+	const mutationKey = ["verifyResetCode"]
+	const { mutation: mutationOptions, fetch: fetchOptions } = options
+		? options.mutation
+			&& "mutationKey" in options.mutation
+			&& options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, fetch: undefined }
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof verifyResetCode>>,
+		{ data: VerifyResetCodeRequest }
+	> = (props) => {
+		const { data } = props ?? {}
+
+		return verifyResetCode(data, fetchOptions)
+	}
+
+	return { mutationFn, ...mutationOptions }
+}
+
+export type VerifyResetCodeMutationResult = NonNullable<
+	Awaited<ReturnType<typeof verifyResetCode>>
+>
+export type VerifyResetCodeMutationBody = VerifyResetCodeRequest
+export type VerifyResetCodeMutationError = string | VerifyResetCodeDefaultOne
+
+export const useVerifyResetCode = <
+	TError = string | VerifyResetCodeDefaultOne,
+	TContext = unknown,
+>(
+	options?: {
+		mutation?: UseMutationOptions<
+			Awaited<ReturnType<typeof verifyResetCode>>,
+			TError,
+			{ data: VerifyResetCodeRequest },
+			TContext
+		>
+		fetch?: RequestInit
+	},
+	queryClient?: () => QueryClient,
+): UseMutationResult<
+	Awaited<ReturnType<typeof verifyResetCode>>,
+	TError,
+	{ data: VerifyResetCodeRequest },
+	TContext
+> => {
+	return useMutation(
+		() => getVerifyResetCodeMutationOptions(options),
+		queryClient,
+	)
+}
 
 export const getForgotPasswordResponseMock = (
 	overrideResponse: Partial<Extract<DataForgotPasswordResponse, object>> = {},
@@ -1090,6 +1222,18 @@ export const getVerifyEmailResponseMock = (
 			undefined,
 		]),
 		settings: faker.helpers.arrayElement([{}, undefined]),
+	},
+	...overrideResponse,
+})
+
+export const getVerifyResetCodeResponseMock = (
+	overrideResponse: Partial<Extract<DataVerifyResetCodeResponse, object>> = {},
+): DataVerifyResetCodeResponse => ({
+	status: faker.string.alpha({ length: { min: 10, max: 20 } }),
+	data: {
+		key: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		key_expires_minutes: faker.number.int(),
+		key_expires_at: faker.date.past().toISOString().slice(0, 19) + "Z",
 	},
 	...overrideResponse,
 })
@@ -1263,6 +1407,30 @@ export const getVerifyEmailMockHandler = (
 		options,
 	)
 }
+
+export const getVerifyResetCodeMockHandler = (
+	overrideResponse?:
+		| DataVerifyResetCodeResponse
+		| ((
+				info: Parameters<Parameters<typeof http.post>[1]>[0],
+		  ) => Promise<DataVerifyResetCodeResponse> | DataVerifyResetCodeResponse),
+	options?: RequestHandlerOptions,
+) => {
+	return http.post(
+		"*/verify-reset-code",
+		async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+			return HttpResponse.json(
+				overrideResponse !== undefined
+					? typeof overrideResponse === "function"
+						? await overrideResponse(info)
+						: overrideResponse
+					: getVerifyResetCodeResponseMock(),
+				{ status: 200 },
+			)
+		},
+		options,
+	)
+}
 export const getAuthMock = () => [
 	getForgotPasswordMockHandler(),
 	getResendVerificationEmailMockHandler(),
@@ -1271,4 +1439,5 @@ export const getAuthMock = () => [
 	getSignOutMockHandler(),
 	getSignUpMockHandler(),
 	getVerifyEmailMockHandler(),
+	getVerifyResetCodeMockHandler(),
 ]

@@ -1131,6 +1131,17 @@ export interface DataVecUserRole {
 	data: UserRoleEnum[]
 }
 
+export interface VerifyResetCodeResponse {
+	key: string
+	key_expires_minutes: number
+	key_expires_at: string
+}
+
+export interface DataVerifyResetCodeResponse {
+	status: string
+	data: VerifyResetCodeResponse
+}
+
 export type DataCorrectionStatus =
 	(typeof DataCorrectionStatus)[keyof typeof DataCorrectionStatus]
 
@@ -1639,8 +1650,8 @@ export interface ResendVerificationEmailRequest {
 }
 
 export interface ResetPasswordRequest {
-	email: string
-	code: string
+	/** @maxLength 64 */
+	key: string
 	password: string
 }
 
@@ -1679,6 +1690,16 @@ export interface UploadProfileBanner {
 
 export interface VerifyEmailRequest {
 	email: string
+	code: string
+}
+
+export interface VerifyResetCodeRequest {
+	email: string
+	/**
+	 * @minLength 6
+	 * @maxLength 6
+	 * @pattern ^\d{6}$
+	 */
 	code: string
 }
 
@@ -3230,6 +3251,18 @@ export const VerifyEmailDefaultOneStatus = {
 
 export type VerifyEmailDefaultOne = {
 	status: VerifyEmailDefaultOneStatus
+	message: string
+}
+
+export type VerifyResetCodeDefaultOneStatus =
+	(typeof VerifyResetCodeDefaultOneStatus)[keyof typeof VerifyResetCodeDefaultOneStatus]
+
+export const VerifyResetCodeDefaultOneStatus = {
+	Err: "Err",
+} as const
+
+export type VerifyResetCodeDefaultOne = {
+	status: VerifyResetCodeDefaultOneStatus
 	message: string
 }
 

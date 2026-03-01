@@ -6,7 +6,7 @@ repo = "local"
 [[repos.hooks]]
 id = "web-prettier"
 name = "web prettier"
-entry = "pnpm exec prettier --check --ignore-unknown"
+entry = "pnpm exec prettier --check --ignore-unknown --experimental-cli"
 language = "system"
 types_or = [
     "css",

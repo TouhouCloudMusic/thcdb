@@ -1,6 +1,5 @@
 use std::cmp::max;
 use std::convert::Infallible;
-use std::env;
 use std::sync::Arc;
 
 use axum::body::Body;
@@ -55,12 +54,7 @@ fn auth_layer(state: &ArcAppState) -> impl AxumLayerBounds {
     let session_layer = SessionManagerLayer::new(session_store)
         .with_name("session_token")
         .with_expiry(Expiry::OnInactivity(Duration::days(30)))
-        .with_secure(
-            env::var("SESSION_SECURE")
-                .as_deref()
-                .unwrap_or("true")
-                .eq_ignore_ascii_case("true"),
-        );
+        .with_secure(APP_CONFIG.middleware.session_secure);
 
     AuthManagerLayerBuilder::new(
         state::AuthService::from_ref(state),

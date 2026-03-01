@@ -11,8 +11,6 @@ init:
 fmt:
     taplo fmt
     just --fmt --unstable
-
-fmt-all: fmt
     cd server && just fmt
     cd web && just fmt
 

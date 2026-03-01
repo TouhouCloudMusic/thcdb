@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './route/__root'
 import { Route as SearchRouteImport } from './route/search'
-import { Route as AuthRouteImport } from './route/auth'
 import { Route as AboutRouteImport } from './route/about'
 import { Route as IndexRouteImport } from './route/index'
 import { Route as TagIndexRouteImport } from './route/tag/index'
@@ -20,6 +19,7 @@ import { Route as LabelIndexRouteImport } from './route/label/index'
 import { Route as ImageQueueIndexRouteImport } from './route/image-queue/index'
 import { Route as EventIndexRouteImport } from './route/event/index'
 import { Route as ChartIndexRouteImport } from './route/chart/index'
+import { Route as AuthIndexRouteImport } from './route/auth/index'
 import { Route as ArtistIndexRouteImport } from './route/artist/index'
 import { Route as TagNewRouteImport } from './route/tag/new'
 import { Route as TagMockRouteImport } from './route/tag/mock'
@@ -44,6 +44,7 @@ import { Route as EventExploreRouteImport } from './route/event/explore'
 import { Route as EventIdRouteImport } from './route/event/$id'
 import { Route as CorrectionMockRouteImport } from './route/correction/mock'
 import { Route as CorrectionIdRouteImport } from './route/correction/$id'
+import { Route as AuthForgotPasswordRouteImport } from './route/auth/forgot-password'
 import { Route as ArtistNewRouteImport } from './route/artist/new'
 import { Route as ArtistExploreRouteImport } from './route/artist/explore'
 import { Route as userTest_avatar_uploadRouteImport } from './route/(user)/test_avatar_upload'
@@ -69,11 +70,6 @@ import { Route as userProfileUsernameRouteImport } from './route/(user)/profile_
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -119,6 +115,11 @@ const EventIndexRoute = EventIndexRouteImport.update({
 const ChartIndexRoute = ChartIndexRouteImport.update({
   id: '/chart/',
   path: '/chart/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthIndexRoute = AuthIndexRouteImport.update({
+  id: '/auth/',
+  path: '/auth/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ArtistIndexRoute = ArtistIndexRouteImport.update({
@@ -241,6 +242,11 @@ const CorrectionIdRoute = CorrectionIdRouteImport.update({
   path: '/correction/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/auth/forgot-password',
+  path: '/auth/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArtistNewRoute = ArtistNewRouteImport.update({
   id: '/artist/new',
   path: '/artist/new',
@@ -350,12 +356,12 @@ const userProfileUsernameRoute = userProfileUsernameRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/auth': typeof AuthRoute
   '/search': typeof SearchRoute
   '/profile': typeof userProfileRoute
   '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/correction/$id': typeof CorrectionIdRoute
   '/correction/mock': typeof CorrectionMockRoute
   '/event/$id': typeof EventIdRoute
@@ -380,6 +386,7 @@ export interface FileRoutesByFullPath {
   '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
   '/artist/': typeof ArtistIndexRoute
+  '/auth/': typeof AuthIndexRoute
   '/chart/': typeof ChartIndexRoute
   '/event/': typeof EventIndexRoute
   '/image-queue/': typeof ImageQueueIndexRoute
@@ -408,12 +415,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/auth': typeof AuthRoute
   '/search': typeof SearchRoute
   '/profile': typeof userProfileRoute
   '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/correction/$id': typeof CorrectionIdRoute
   '/correction/mock': typeof CorrectionMockRoute
   '/event/$id': typeof EventIdRoute
@@ -438,6 +445,7 @@ export interface FileRoutesByTo {
   '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
   '/artist': typeof ArtistIndexRoute
+  '/auth': typeof AuthIndexRoute
   '/chart': typeof ChartIndexRoute
   '/event': typeof EventIndexRoute
   '/image-queue': typeof ImageQueueIndexRoute
@@ -467,12 +475,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/auth': typeof AuthRoute
   '/search': typeof SearchRoute
   '/(user)/profile': typeof userProfileRoute
   '/(user)/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/correction/$id': typeof CorrectionIdRoute
   '/correction/mock': typeof CorrectionMockRoute
   '/event/$id': typeof EventIdRoute
@@ -497,6 +505,7 @@ export interface FileRoutesById {
   '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
   '/artist/': typeof ArtistIndexRoute
+  '/auth/': typeof AuthIndexRoute
   '/chart/': typeof ChartIndexRoute
   '/event/': typeof EventIndexRoute
   '/image-queue/': typeof ImageQueueIndexRoute
@@ -527,12 +536,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
-    | '/auth'
     | '/search'
     | '/profile'
     | '/test_avatar_upload'
     | '/artist/explore'
     | '/artist/new'
+    | '/auth/forgot-password'
     | '/correction/$id'
     | '/correction/mock'
     | '/event/$id'
@@ -557,6 +566,7 @@ export interface FileRouteTypes {
     | '/tag/mock'
     | '/tag/new'
     | '/artist/'
+    | '/auth/'
     | '/chart/'
     | '/event/'
     | '/image-queue/'
@@ -585,12 +595,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
-    | '/auth'
     | '/search'
     | '/profile'
     | '/test_avatar_upload'
     | '/artist/explore'
     | '/artist/new'
+    | '/auth/forgot-password'
     | '/correction/$id'
     | '/correction/mock'
     | '/event/$id'
@@ -615,6 +625,7 @@ export interface FileRouteTypes {
     | '/tag/mock'
     | '/tag/new'
     | '/artist'
+    | '/auth'
     | '/chart'
     | '/event'
     | '/image-queue'
@@ -643,12 +654,12 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
-    | '/auth'
     | '/search'
     | '/(user)/profile'
     | '/(user)/test_avatar_upload'
     | '/artist/explore'
     | '/artist/new'
+    | '/auth/forgot-password'
     | '/correction/$id'
     | '/correction/mock'
     | '/event/$id'
@@ -673,6 +684,7 @@ export interface FileRouteTypes {
     | '/tag/mock'
     | '/tag/new'
     | '/artist/'
+    | '/auth/'
     | '/chart/'
     | '/event/'
     | '/image-queue/'
@@ -702,12 +714,12 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  AuthRoute: typeof AuthRoute
   SearchRoute: typeof SearchRoute
   userProfileRoute: typeof userProfileRoute
   userTest_avatar_uploadRoute: typeof userTest_avatar_uploadRoute
   ArtistExploreRoute: typeof ArtistExploreRoute
   ArtistNewRoute: typeof ArtistNewRoute
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   CorrectionIdRoute: typeof CorrectionIdRoute
   CorrectionMockRoute: typeof CorrectionMockRoute
   EventIdRoute: typeof EventIdRoute
@@ -732,6 +744,7 @@ export interface RootRouteChildren {
   TagMockRoute: typeof TagMockRoute
   TagNewRoute: typeof TagNewRoute
   ArtistIndexRoute: typeof ArtistIndexRoute
+  AuthIndexRoute: typeof AuthIndexRoute
   ChartIndexRoute: typeof ChartIndexRoute
   EventIndexRoute: typeof EventIndexRoute
   ImageQueueIndexRoute: typeof ImageQueueIndexRoute
@@ -765,13 +778,6 @@ declare module '@tanstack/solid-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -835,6 +841,13 @@ declare module '@tanstack/solid-router' {
       path: '/chart'
       fullPath: '/chart/'
       preLoaderRoute: typeof ChartIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/': {
+      id: '/auth/'
+      path: '/auth'
+      fullPath: '/auth/'
+      preLoaderRoute: typeof AuthIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/artist/': {
@@ -1005,6 +1018,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof CorrectionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/forgot-password': {
+      id: '/auth/forgot-password'
+      path: '/auth/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/artist/new': {
       id: '/artist/new'
       path: '/artist/new'
@@ -1158,12 +1178,12 @@ declare module '@tanstack/solid-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  AuthRoute: AuthRoute,
   SearchRoute: SearchRoute,
   userProfileRoute: userProfileRoute,
   userTest_avatar_uploadRoute: userTest_avatar_uploadRoute,
   ArtistExploreRoute: ArtistExploreRoute,
   ArtistNewRoute: ArtistNewRoute,
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   CorrectionIdRoute: CorrectionIdRoute,
   CorrectionMockRoute: CorrectionMockRoute,
   EventIdRoute: EventIdRoute,
@@ -1188,6 +1208,7 @@ const rootRouteChildren: RootRouteChildren = {
   TagMockRoute: TagMockRoute,
   TagNewRoute: TagNewRoute,
   ArtistIndexRoute: ArtistIndexRoute,
+  AuthIndexRoute: AuthIndexRoute,
   ChartIndexRoute: ChartIndexRoute,
   EventIndexRoute: EventIndexRoute,
   ImageQueueIndexRoute: ImageQueueIndexRoute,

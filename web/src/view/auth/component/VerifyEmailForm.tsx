@@ -1,12 +1,12 @@
 import { Field, Form } from "@formisch/solid"
-import { useNavigate } from "@tanstack/solid-router"
 import { Show } from "solid-js"
 
+import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 
 import type { useAuthForm } from "../store"
-import { VerificationCodeField } from "./Field"
+import { VerificationCodeField } from "./VerificationCodeField"
 
 type AuthFormState = ReturnType<typeof useAuthForm>
 type VerifyEmailFormProps = Pick<
@@ -22,8 +22,6 @@ type VerifyEmailFormProps = Pick<
 >
 
 export function VerifyEmailForm(props: VerifyEmailFormProps) {
-	const nav = useNavigate()
-
 	return (
 		<Form
 			of={props.verifyEmailForm}
@@ -82,18 +80,13 @@ export function VerifyEmailForm(props: VerifyEmailFormProps) {
 
 			<div class="text-sm text-tertiary">
 				Already have an account?{" "}
-				<button
-					type="button"
+				<Link
+					to="/auth"
+					search={{ type: "sign_in" }}
 					class="text-secondary underline underline-offset-2"
-					onClick={() => {
-						void nav({
-							to: "/auth",
-							search: { type: "sign_in" },
-						})
-					}}
 				>
 					Sign in
-				</button>
+				</Link>
 			</div>
 		</Form>
 	)

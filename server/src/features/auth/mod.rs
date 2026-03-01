@@ -1,6 +1,7 @@
 mod email;
 mod error;
 mod http;
+pub(crate) mod password_reset;
 mod repo;
 mod service;
 mod session;

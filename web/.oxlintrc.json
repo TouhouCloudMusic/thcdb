@@ -32,6 +32,12 @@
 		}
 	},
 	"rules": {
+		// Temporary off
+		"import/no-relative-parent-imports": "off",
+		// In practice, we rarely mutate function inputs.
+		// The codebase generally favors a functional style, so this rule
+		// is too intrusive. We therefore disable it.
+		"typescript/prefer-readonly-parameter-types": "off",
 		// Replaced by typescript/switch-exhaustiveness-check
 		"default-case": "off",
 		// We use typescript alternative
@@ -220,7 +226,6 @@
 		"unicorn/numeric-separators-style": "off",
 		"unicorn/prefer-default-parameters": "off",
 		"unicorn/prefer-spread": "off",
-
 		"jsx-a11y/label-has-associated-control": [
 			"error",
 			{
@@ -228,7 +233,6 @@
 				"depth": 3
 			}
 		],
-
 		"solid/reactivity": "error",
 		"solid/self-closing-comp": [
 			"warn",
@@ -245,6 +249,10 @@
 				"no-magic-numbers": "off",
 				"import/no-default-export": "off",
 				"import/no-nodejs-modules": "off"
+			},
+			"env": {
+				"node": true,
+				"es6": true
 			}
 		},
 		{
@@ -254,6 +262,7 @@
 				"max-lines-per-function": "off",
 				"unicorn/no-null": "off",
 				"unicorn/no-useless-undefined": "off",
+				"vitest/no-importing-vitest-globals": "off",
 				"vitest/prefer-to-be-truthy": "off"
 			}
 		},
