@@ -1,6 +1,9 @@
 include = [
     "**/*.toml",
 ]
+exclude = [
+    "node_modules/**",
+]
 
 [formatting]
 align_entries       = true
@@ -8,5 +11,5 @@ allowed_blank_lines = 1
 array_auto_collapse = false
 compact_arrays      = false
 crlf                = false
-indent_string       = '    '
-reorder_keys        = true
+indent_string       = "    "
+reorder_keys        = false

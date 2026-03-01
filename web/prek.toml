@@ -8,14 +8,24 @@ id = "web-prettier"
 name = "web prettier"
 entry = "pnpm exec prettier --check --ignore-unknown"
 language = "system"
-types_or = ["css", "html", "javascript", "json", "jsx", "markdown", "scss", "ts", "tsx", "yaml"]
-stages = ["pre-commit"]
+types_or = [
+    "css",
+    "html",
+    "javascript",
+    "json",
+    "jsx",
+    "markdown",
+    "scss",
+    "ts",
+    "tsx",
+    "yaml",
+]
+stages = [ "pre-commit" ]
 
 [[repos.hooks]]
-id = "web-check"
-name = "web check"
-entry = "just check"
+id       = "web-check"
+name     = "web check"
+entry    = "just check"
 language = "system"
-types_or = ["javascript", "jsx", "ts", "tsx"]
-stages = ["pre-push"]
-
+types_or = [ "javascript", "jsx", "ts", "tsx" ]
+stages   = [ "pre-push" ]
