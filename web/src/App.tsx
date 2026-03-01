@@ -1,3 +1,4 @@
+/* @refresh reload */
 import { Meta, Title } from "@solidjs/meta"
 import { createRouter, RouterProvider } from "@tanstack/solid-router"
 

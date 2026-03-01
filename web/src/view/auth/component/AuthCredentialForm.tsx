@@ -2,11 +2,14 @@ import { Field, Form } from "@formisch/solid"
 import { Tabs } from "@kobalte/core/tabs"
 import { For, Show } from "solid-js"
 
+import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 
 import type { AuthFormMode, useAuthForm } from "../store"
-import { EmailField, PasswordField, UserNameField } from "./Field"
+import { EmailField } from "./EmailField"
+import { PasswordField } from "./PasswordField"
+import { UserNameField } from "./UserNameField"
 
 type AuthFormState = ReturnType<typeof useAuthForm>
 type AuthCredentialFormProps = Pick<
@@ -23,14 +26,14 @@ type AuthCredentialFormProps = Pick<
 const isAuthFormMode = (value: string): value is AuthFormMode =>
 	value === "sign_in" || value === "sign_up"
 
-const getTabsValue = (mode: AuthFormMode) =>
-	mode === "sign_up" ? "sign_up" : "sign_in"
-
+const FORM_STYLE = "w-full flex flex-col"
 export function AuthCredentialForm(props: AuthCredentialFormProps) {
+	const isSignIn = () => props.mode() === "sign_in"
+
 	return (
 		<>
 			<Tabs
-				value={getTabsValue(props.mode())}
+				value={props.mode()}
 				onChange={(value) => {
 					if (!isAuthFormMode(value)) return
 					props.setMode(value)
@@ -53,12 +56,12 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 			</Tabs>
 
 			<Show
-				when={props.mode() === "sign_in"}
+				when={isSignIn()}
 				fallback={
 					<Form
 						of={props.signUpForm}
 						onSubmit={props.handleSignUp}
-						class="w-full space-y-6"
+						class={FORM_STYLE}
 					>
 						<Field
 							of={props.signUpForm}
@@ -66,12 +69,19 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 						>
 							{(field) => <UserNameField field={field} />}
 						</Field>
+
 						<Field
 							of={props.signUpForm}
 							path={["email"]}
 						>
-							{(field) => <EmailField field={field} />}
+							{(field) => (
+								<EmailField
+									field={field}
+									class="mt-4"
+								/>
+							)}
 						</Field>
+
 						<Field
 							of={props.signUpForm}
 							path={["password"]}
@@ -81,9 +91,11 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 									label="Password"
 									field={field}
 									showRequirementHint
+									class="mt-4"
 								/>
 							)}
 						</Field>
+
 						<Field
 							of={props.signUpForm}
 							path={["repeated_password"]}
@@ -92,18 +104,18 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 								<PasswordField
 									label="Repeat password"
 									field={field}
+									class="mt-4"
 								/>
 							)}
 						</Field>
 
 						<FormComp.ErrorMessage>{props.submitError()}</FormComp.ErrorMessage>
-
 						<Button
 							type="submit"
 							variant="Primary"
 							color="Reimu"
 							size="Sm"
-							class="mt-1 h-9 w-full"
+							class="mt-6 h-9 w-full"
 							disabled={props.signUpForm.isSubmitting}
 						>
 							Sign Up
@@ -114,7 +126,7 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 				<Form
 					of={props.signInForm}
 					onSubmit={props.handleSignIn}
-					class="w-full space-y-6"
+					class={FORM_STYLE}
 				>
 					<Field
 						of={props.signInForm}
@@ -122,6 +134,7 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 					>
 						{(field) => <UserNameField field={field} />}
 					</Field>
+
 					<Field
 						of={props.signInForm}
 						path={["password"]}
@@ -130,18 +143,26 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 							<PasswordField
 								label="Password"
 								field={field}
+								showRequirementHint
+								class="mt-4"
 							/>
 						)}
 					</Field>
 
-					<FormComp.ErrorMessage>{props.submitError()}</FormComp.ErrorMessage>
+					<Link
+						to="/auth/forgot-password"
+						class="text-secondary text-sm self-end mt-4"
+					>
+						Forgot password?
+					</Link>
 
+					<FormComp.ErrorMessage>{props.submitError()}</FormComp.ErrorMessage>
 					<Button
 						type="submit"
 						variant="Primary"
 						color="Reimu"
 						size="Sm"
-						class="mt-1 h-9 w-full"
+						class="mt-6 h-9 w-full"
 						disabled={props.signInForm.isSubmitting}
 					>
 						Sign In

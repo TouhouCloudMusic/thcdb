@@ -428,7 +428,7 @@ async fn health_check() -> impl IntoResponse {
 }
 
 macro_rules! data {
-	($($name:ident, $type:ty $(, $as:ident)? $(,)?)*) => {
+    ($($name:ident, $type:ty $(,)?)*) => {
         $(
             #[derive(utoipa::ToSchema)]
             #[allow(clippy::allow_attributes,dead_code)]
@@ -439,8 +439,21 @@ macro_rules! data {
                 )]
                 data: $type
             }
-        ) *
-	};
+        )*
+    };
+    ($vis:vis, $($name:ident, $type:ty $(,)?)*) => {
+        $(
+            #[derive(utoipa::ToSchema)]
+            #[allow(clippy::allow_attributes,dead_code)]
+            $vis struct $name {
+                status: String,
+                #[schema(
+                    required = true,
+                )]
+                data: $type
+            }
+        )*
+    };
 }
 pub(crate) use data;
 

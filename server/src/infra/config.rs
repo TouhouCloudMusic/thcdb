@@ -34,6 +34,8 @@ nest! {
             pub from: String,
         },
         pub middleware: pub struct Middleware {
+            #[serde(default = "default_session_secure")]
+            pub session_secure: bool,
             pub limit: pub struct LimitMiddleware {
                 pub req_per_sec: u64,
                 pub burst_size: u32,
@@ -54,6 +56,10 @@ const fn default_email_port() -> u16 {
 
 const fn default_email_security() -> EmailSecurity {
     EmailSecurity::Starttls
+}
+
+const fn default_session_secure() -> bool {
+    true
 }
 
 impl Config {

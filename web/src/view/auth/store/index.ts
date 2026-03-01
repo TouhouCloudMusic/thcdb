@@ -9,9 +9,17 @@ import type * as v from "valibot"
 import * as AuthSchema from "~/domain/auth/schema"
 import { useCurrentUser } from "~/state/user"
 
+import {
+	clearVerificationEmail,
+	getVerificationEmail,
+	saveVerificationEmail,
+} from "../verify_email/session"
+import { updateVerifyEmailState } from "../verify_email/state"
+import type { VerifyEmailState } from "../verify_email/state"
+
 export type AuthFormMode = "sign_in" | "sign_up" | "verify_email"
 
-const RouteApi = getRouteApi("/auth")
+const RouteApi = getRouteApi("/auth/")
 
 type OnAuthError = (message: string) => void
 
@@ -26,89 +34,9 @@ type VerifyEmailData = NonNullable<
 	EitherRight<Awaited<ReturnType<typeof AuthApi.verifyEmail>>>
 >
 
-type VerifyEmailFlowState =
-	| { type: "inactive"; email?: undefined; seconds?: undefined }
-	| {
-			type: "missing_session"
-			email?: undefined
-			seconds?: undefined
-	  }
-	| { type: "ready"; email: string; seconds?: undefined }
-	| { type: "resending"; email: string; seconds?: undefined }
-	| { type: "cooldown"; email: string; seconds: number }
-
-type VerifyEmailFlowEvent =
-	| {
-			type: "sync"
-			mode: AuthFormMode
-			email: string | undefined
-	  }
-	| {
-			type: "seed_after_signup"
-			email: string
-			cooldownSeconds: number
-	  }
-	| { type: "start_resend" }
-	| { type: "resend_failed" }
-	| { type: "resend_success"; cooldownSeconds: number }
-	| { type: "tick" }
-
 const resolveAuthFormMode = (value: string | undefined): AuthFormMode => {
 	if (value === "sign_up" || value === "verify_email") return value
 	return "sign_in"
-}
-
-function VerifyEmailFlowState_update(
-	state: VerifyEmailFlowState,
-	event: VerifyEmailFlowEvent,
-): VerifyEmailFlowState {
-	switch (event.type) {
-		case "sync": {
-			if (event.mode !== "verify_email") return { type: "inactive" }
-			if (!event.email) return { type: "missing_session" }
-
-			if (
-				(state.type === "ready"
-					|| state.type === "resending"
-					|| state.type === "cooldown")
-				&& state.email === event.email
-			) {
-				return state
-			}
-
-			return { type: "ready", email: event.email }
-		}
-		case "seed_after_signup": {
-			return {
-				type: "cooldown",
-				email: event.email,
-				seconds: event.cooldownSeconds,
-			}
-		}
-		case "start_resend": {
-			if (state.type !== "ready") return state
-			return { type: "resending", email: state.email }
-		}
-		case "resend_failed": {
-			if (state.type !== "resending") return state
-			return { type: "ready", email: state.email }
-		}
-		case "resend_success": {
-			if (state.type !== "resending") return state
-			return {
-				type: "cooldown",
-				email: state.email,
-				seconds: event.cooldownSeconds,
-			}
-		}
-		case "tick": {
-			if (state.type !== "cooldown") return state
-			if (state.seconds <= 1) {
-				return { type: "ready", email: state.email }
-			}
-			return { ...state, seconds: state.seconds - 1 }
-		}
-	}
 }
 
 async function executeSignIn(params: {
@@ -123,7 +51,6 @@ async function executeSignIn(params: {
 			params.onError(error.error)
 		},
 		onRight: async (data) => {
-			if (data === null || data === undefined) return
 			await params.onSuccess(data)
 		},
 	})
@@ -170,7 +97,6 @@ async function executeVerifyEmail(params: {
 			params.onError(error.error)
 		},
 		onRight: async (data) => {
-			if (data === null || data === undefined) return
 			await params.onSuccess(data)
 		},
 	})
@@ -200,14 +126,8 @@ export function useAuthForm() {
 
 	const [submitError, setSubmitError] = createSignal<string>()
 	const [submitInfo, setSubmitInfo] = createSignal<string>()
-	const [verifyEmailFlowState, setVerifyEmailFlowState] =
-		createSignal<VerifyEmailFlowState>({ type: "inactive" })
-
-	const getVerificationEmail = () => {
-		const email = searchParams().email?.trim()
-		if (!email) return
-		return email
-	}
+	const [verifyEmailState, setVerifyEmailState] =
+		createSignal<VerifyEmailState>({ type: "inactive" })
 
 	createEffect(() => {
 		mode()
@@ -217,23 +137,21 @@ export function useAuthForm() {
 
 	createEffect(() => {
 		const currentMode = mode()
-		const email = getVerificationEmail()
-		setVerifyEmailFlowState((state) =>
-			VerifyEmailFlowState_update(state, {
+		setVerifyEmailState((state) =>
+			updateVerifyEmailState(state, {
 				type: "sync",
 				mode: currentMode,
-				email,
 			}),
 		)
 	})
 
 	createEffect(() => {
-		const state = verifyEmailFlowState()
+		const state = verifyEmailState()
 		if (state.type !== "cooldown") return
 
 		const timer = setInterval(() => {
-			setVerifyEmailFlowState((current) =>
-				VerifyEmailFlowState_update(current, { type: "tick" }),
+			setVerifyEmailState((current) =>
+				updateVerifyEmailState(current, { type: "tick" }),
 			)
 		}, 1000)
 
@@ -243,19 +161,24 @@ export function useAuthForm() {
 	})
 
 	const resendCooldownSeconds = () => {
-		const state = verifyEmailFlowState()
+		const state = verifyEmailState()
 		if (state.type !== "cooldown") return 0
 		return state.seconds
 	}
 
 	const isResendingVerificationEmail = () =>
-		verifyEmailFlowState().type === "resending"
+		verifyEmailState().type === "resending"
+	const isMissingVerifyEmailSession = () =>
+		verifyEmailState().type === "missing_session"
 
 	async function handleSignIn(values: v.InferOutput<typeof AuthSchema.SignIn>) {
 		await executeSignIn({
 			values,
-			onError: setSubmitError,
+			onError(message) {
+				setSubmitError(message)
+			},
 			onSuccess: async (data) => {
+				clearVerificationEmail()
 				userCtx.sign_in({ user: data })
 				await nav({ to: "/" })
 			},
@@ -265,10 +188,13 @@ export function useAuthForm() {
 	async function handleSignUp(values: v.InferOutput<typeof AuthSchema.SignUp>) {
 		await executeSignUp({
 			values,
-			onError: setSubmitError,
+			onError(message) {
+				setSubmitError(message)
+			},
 			onSuccess: async (data, email) => {
-				setVerifyEmailFlowState((state) =>
-					VerifyEmailFlowState_update(state, {
+				saveVerificationEmail(email)
+				setVerifyEmailState((state) =>
+					updateVerifyEmailState(state, {
 						type: "seed_after_signup",
 						email,
 						cooldownSeconds: data.resend_cooldown_seconds,
@@ -278,7 +204,6 @@ export function useAuthForm() {
 					to: "/auth",
 					search: {
 						type: "verify_email",
-						email,
 					},
 				})
 			},
@@ -288,7 +213,7 @@ export function useAuthForm() {
 	async function handleVerifyEmail(
 		values: v.InferOutput<typeof AuthSchema.VerifyEmail>,
 	) {
-		const email = verifyEmailFlowState().email
+		const email = verifyEmailState().email
 		if (email === undefined) {
 			setSubmitError("Missing signup email, please sign up again")
 			return
@@ -297,8 +222,11 @@ export function useAuthForm() {
 		await executeVerifyEmail({
 			values,
 			email,
-			onError: setSubmitError,
+			onError(message) {
+				setSubmitError(message)
+			},
 			onSuccess: async (data) => {
+				clearVerificationEmail()
 				userCtx.sign_in({ user: data })
 				await nav({ to: "/" })
 			},
@@ -306,7 +234,7 @@ export function useAuthForm() {
 	}
 
 	const handleResendVerificationEmail = async () => {
-		const email = verifyEmailFlowState().email
+		const email = verifyEmailState().email
 		if (!email) {
 			setSubmitError("Missing signup email, please sign up again")
 			return
@@ -315,8 +243,8 @@ export function useAuthForm() {
 
 		setSubmitError(undefined)
 		setSubmitInfo(undefined)
-		setVerifyEmailFlowState((state) =>
-			VerifyEmailFlowState_update(state, { type: "start_resend" }),
+		setVerifyEmailState((state) =>
+			updateVerifyEmailState(state, { type: "start_resend" }),
 		)
 
 		const result = await AuthApi.resendVerificationEmail({
@@ -326,14 +254,14 @@ export function useAuthForm() {
 		Either.match(result, {
 			onLeft: (error) => {
 				setSubmitError(error.error)
-				setVerifyEmailFlowState((state) =>
-					VerifyEmailFlowState_update(state, { type: "resend_failed" }),
+				setVerifyEmailState((state) =>
+					updateVerifyEmailState(state, { type: "resend_failed" }),
 				)
 			},
 			onRight: (data) => {
 				setSubmitInfo("If eligible, a verification code has been sent.")
-				setVerifyEmailFlowState((state) =>
-					VerifyEmailFlowState_update(state, {
+				setVerifyEmailState((state) =>
+					updateVerifyEmailState(state, {
 						type: "resend_success",
 						cooldownSeconds: data.resend_cooldown_seconds,
 					}),
@@ -350,6 +278,7 @@ export function useAuthForm() {
 		verifyEmailForm,
 		resendCooldownSeconds,
 		isResendingVerificationEmail,
+		isMissingVerifyEmailSession,
 		verificationEmail: getVerificationEmail,
 		submitError,
 		submitInfo,

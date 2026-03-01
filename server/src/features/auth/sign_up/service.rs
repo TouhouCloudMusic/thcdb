@@ -5,14 +5,13 @@ use sea_orm::{ActiveModelTrait, TransactionTrait};
 
 use super::verification::{
     SendVerificationEmailError, build_verification_email_message,
-    is_unverified_signup_expired, verify_secret,
+    is_unverified_signup_expired,
 };
 use crate::domain::auth::{
     AuthCredential, HashedPassword, ResendVerificationEmailRequest,
     ResendVerificationEmailResponse, SignUpRequest, SignUpResponse,
     VERIFICATION_CODE_EXPIRES_MINUTES,
     VERIFICATION_CODE_RESEND_COOLDOWN_SECONDS, VerifyEmailRequest,
-    hash_password,
 };
 use crate::domain::model::VerificationCode;
 use crate::domain::user::{NewUser, User};
@@ -22,6 +21,7 @@ use crate::features::auth::{
 };
 use crate::infra::error::Error;
 use crate::shared::error::InvalidInput;
+use crate::shared::secret::hash;
 
 const VERIFICATION_CODE_MAX_FAILED_ATTEMPTS: i32 = 10;
 
@@ -39,7 +39,7 @@ impl Service {
 
         let mut creds = AuthCredential::try_new(username, password)?;
         let username = creds.username.clone();
-        let password_hash = creds.password_hash()?;
+        let password_hash = creds.password_hash().await?;
 
         if let Some(response) = self
             .resolve_signup_with_existing_email(
@@ -123,7 +123,14 @@ impl Service {
             return Err(VerifyEmailError::InvalidOrExpiredCode);
         }
 
-        let ok = verify_secret(verification.hash.clone(), &code).await?;
+        let ok = crate::shared::secret::verify(
+            verification.hash.clone(),
+            code.into_bytes(),
+        )
+        .await
+        .map_err(|err| {
+            Error::custom(&format!("Failed to verify email code: {err}"))
+        })?;
         if !ok {
             repo::increment_email_verification_failed_attempts(
                 &self.repo.conn,
@@ -276,19 +283,73 @@ impl Service {
             (now + Duration::minutes(VERIFICATION_CODE_EXPIRES_MINUTES)).into();
 
         let code = VerificationCode::<6>::new().to_string();
-        let code_hash = hash_password(&code).map_err(Error::from)?;
+        let code_hash = hash(&code).await.map_err(|err| {
+            Error::custom(&format!("Failed to hash verification code: {err}"))
+        })?;
 
-        self.send_verification_email(&user.email, &code).await?;
-
-        let _ = repo::set_email_verification(
+        repo::set_email_verification(
             &self.repo.conn,
             user.id,
-            code_hash,
+            code_hash.clone(),
             expires_at,
             sent_at,
         )
         .await
-        .map_err(Error::from)?;
+        .map(|_| ())
+        .map_err(Error::from)
+        .map_err(SendVerificationEmailError::from)?;
+
+        let send_failure =
+            match self.send_verification_email(&user.email, &code).await {
+                Ok(()) => None,
+                Err(SendVerificationEmailError::Unavailable) => {
+                    Some(VerificationEmailSendFailure::Unavailable)
+                }
+                Err(SendVerificationEmailError::InvalidEmail(_)) => {
+                    Some(VerificationEmailSendFailure::InvalidRecipient)
+                }
+                Err(err) => return Err(err),
+            };
+
+        if let Some(send_failure) = send_failure {
+            match repo::clear_email_verification_if_hash_matches(
+                &self.repo.conn,
+                user.id,
+                &code_hash,
+            )
+            .await
+            .map_err(Error::from)
+            {
+                Ok(true) => {}
+                Ok(false) => {
+                    tracing::warn!(
+                        user_id = user.id,
+                        "Skipped clearing verification code after email failure because a newer code already exists"
+                    );
+                }
+                Err(cleanup_err) => {
+                    tracing::error!(
+                        user_id = user.id,
+                        "Failed to clear verification code after email failure: {cleanup_err}"
+                    );
+                }
+            }
+
+            return Err(match send_failure {
+                VerificationEmailSendFailure::Unavailable => {
+                    SendVerificationEmailError::Unavailable
+                }
+                VerificationEmailSendFailure::InvalidRecipient => {
+                    SendVerificationEmailError::InvalidEmail(InvalidEmail::new(
+                        &user.email,
+                        InvalidInput::new(&format!(
+                            "Invalid verification email recipient address: {}",
+                            user.email
+                        )),
+                    ))
+                }
+            });
+        }
 
         Ok(())
     }
@@ -324,4 +385,9 @@ impl Service {
             }
         }
     }
+}
+
+enum VerificationEmailSendFailure {
+    Unavailable,
+    InvalidRecipient,
 }

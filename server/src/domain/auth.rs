@@ -3,10 +3,7 @@ use std::borrow::Cow;
 use std::sync::LazyLock;
 
 use argon2::Argon2;
-use argon2::password_hash::rand_core::OsRng;
-use argon2::password_hash::{
-    self, PasswordHash, PasswordHasher, PasswordVerifier, SaltString,
-};
+use argon2::password_hash::{self, PasswordHash, PasswordVerifier};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use derive_more::Display;
@@ -17,13 +14,13 @@ use snafu::Snafu;
 use utoipa::ToSchema;
 
 use crate::adapter::inbound::rest::api_response::{
-    ApiError as ApiErrorTrait, Error, IntoApiResponse,
+    ApiError as ApiErrorTrait, Error,
 };
 use crate::constant::{
     USER_NAME_REGEX_STR, USER_PASSWORD_MAX_LENGTH, USER_PASSWORD_MIN_LENGTH,
     USER_PASSWORD_REGEX_STR,
 };
-use crate::infra::singleton::ARGON2_HASHER;
+use crate::shared::secret;
 
 pub const VERIFICATION_CODE_EXPIRES_MINUTES: i64 = 10;
 pub const VERIFICATION_CODE_RESEND_COOLDOWN_SECONDS: i64 = 60;
@@ -126,17 +123,6 @@ pub enum ValidateCredsErrorKind {
 
 use ValidateCredsErrorKind::*;
 
-#[derive(Debug, Snafu, ApiError)]
-
-pub enum HasherError {
-    #[snafu(display("Failed to hash password: {source}"))]
-    #[api_error(status_code = StatusCode::INTERNAL_SERVER_ERROR)]
-    HashPasswordFailed {
-        source: password_hash::Error,
-        backtrace: Backtrace,
-    },
-}
-
 #[derive(Clone, Deserialize, ToSchema)]
 pub struct SignUpRequest {
     pub username: String,
@@ -189,7 +175,6 @@ impl Default for ResendVerificationEmailResponse {
     }
 }
 
-#[expect(clippy::unsafe_derive_deserialize, reason = "skipped")]
 #[derive(Clone, Deserialize, ToSchema)]
 pub struct AuthCredential {
     pub username: String,
@@ -202,7 +187,7 @@ pub struct AuthCredential {
 #[display("{_0}")]
 pub struct HashedPassword<'a>(Cow<'a, str>);
 
-impl<'a> HashedPassword<'a> {
+impl HashedPassword<'_> {
     pub fn as_str(&self) -> &str {
         self.0.as_ref()
     }
@@ -248,11 +233,16 @@ impl AuthCredential {
         Ok(())
     }
 
-    pub fn password_hash(
+    pub async fn password_hash(
         &mut self,
-    ) -> Result<HashedPassword<'_>, password_hash::errors::Error> {
+    ) -> Result<HashedPassword<'_>, crate::infra::Error> {
         if self.hash.is_none() {
-            self.hash = Some(hash_password(&self.password)?);
+            self.hash =
+                Some(secret::hash(&self.password).await.map_err(|err| {
+                    crate::infra::Error::custom(&format!(
+                        "Failed to hash password: {err}"
+                    ))
+                })?);
         }
 
         let hash = self.hash.as_deref().expect("hash set above; qed");
@@ -264,23 +254,17 @@ impl AuthCredential {
         &self,
         hash: Option<&str>,
     ) -> Result<(), AuthnError> {
-        let dummy_password = || hash_password("dummy_password");
+        let password_hash = match hash {
+            Some(hash) => hash.to_owned(),
+            None => secret::hash("dummy_password").await.map_err(|err| {
+                crate::infra::Error::custom(&format!(
+                    "Failed to hash dummy password: {err}"
+                ))
+            })?,
+        };
 
-        verify_password(
-            hash.unwrap_or(&dummy_password()?).to_owned(),
-            &self.password,
-        )
-        .await
+        verify_password(password_hash, &self.password).await
     }
-}
-
-// TODO: convert error, password_hash::Error is badly designed
-pub fn hash_password(pwd: &str) -> password_hash::Result<String> {
-    let salt = SaltString::generate(&mut OsRng);
-
-    let res = ARGON2_HASHER.hash_password(pwd.as_bytes(), &salt)?;
-
-    Ok(res.to_string())
 }
 
 /// Return `[Err(AuthnError::AuthenticationFailed)]` if password is incorrect
@@ -325,7 +309,9 @@ fn validate_username(username: &str) -> Result<(), ValidateCredsError> {
 /// - A-z
 /// - 0-9
 /// - `~!@#$%^&*()-_=+`
-fn validate_password(password: &str) -> Result<(), ValidateCredsError> {
+pub(crate) fn validate_password(
+    password: &str,
+) -> Result<(), ValidateCredsError> {
     use zxcvbn::{Score, zxcvbn};
 
     static USER_PASSWORD_REGEX: LazyLock<Regex> =
@@ -361,13 +347,6 @@ fn validate_password(password: &str) -> Result<(), ValidateCredsError> {
     }
 }
 
-impl IntoApiResponse for HasherError {
-    fn into_api_response(self) -> axum::response::Response {
-        tracing::error!("Hasher error: {}", self);
-        Error::from_api_error(&self).into_response()
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -375,7 +354,7 @@ mod test {
     #[tokio::test]
     async fn verify_password() {
         let password = "Password123123!";
-        let hash = hash_password(password).unwrap();
+        let hash = secret::hash(password).await.unwrap();
 
         let res = super::verify_password(hash, password).await.is_ok();
 
@@ -390,7 +369,7 @@ mod test {
             password: pwd.clone(),
             hash: None,
         }
-        .verify_credentials(Some(&hash_password(&pwd).unwrap()))
+        .verify_credentials(Some(&secret::hash(&pwd).await.unwrap()))
         .await
         .is_ok();
 
@@ -415,7 +394,7 @@ mod test {
     #[tokio::test]
     async fn sign_in_allows_weak_password() {
         let password = "Password123!";
-        let hash = hash_password(password).unwrap();
+        let hash = secret::hash(password).await.unwrap();
 
         let creds = AuthCredential::from_sign_in("Alice", password);
         let res = creds.verify_credentials(Some(&hash)).await.is_ok();

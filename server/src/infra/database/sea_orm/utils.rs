@@ -12,10 +12,10 @@ use sea_orm::{
 };
 
 use crate::constant::ADMIN_USERNAME;
-use crate::domain::auth::hash_password;
 use crate::domain::model::UserRoleEnum;
 use crate::domain::shared::{CursorResponse, PageResponse};
 use crate::shared::http::{CorrectionSortField, PageQuery, PaginationQuery};
+use crate::shared::secret::hash;
 
 pub async fn correction_sorted_entity_ids(
     db: &impl ConnectionTrait,
@@ -60,10 +60,11 @@ pub async fn correction_sorted_entity_ids(
 }
 
 pub async fn upsert_admin_acc(db: &DatabaseConnection) {
-    let password = hash_password(
-        &env::var("ADMIN_PASSWORD").expect("Env var ADMIN_PASSWORD is not set"),
-    )
-    .unwrap();
+    let admin_password = env::var("ADMIN_PASSWORD")
+        .unwrap_or_else(admin_password_fallback);
+    let password = hash(&admin_password)
+        .await
+        .expect("Failed to hash ADMIN_PASSWORD");
     let admin_email = env::var("ADMIN_EMAIL")
         .ok()
         .map(|v| v.trim().to_lowercase())
@@ -133,6 +134,15 @@ pub async fn upsert_admin_acc(db: &DatabaseConnection) {
     }
     .await
     .expect("Failed to upsert admin account");
+}
+
+fn admin_password_fallback
+    }
+
+    #[cfg(not(test))]
+    {
+        panic!("Env var ADMIN_PASSWORD is not set");
+    }
 }
 
 pub fn sort_by_id_list<T>(

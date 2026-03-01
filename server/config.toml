@@ -5,7 +5,7 @@ port = 12345
 retention_days = 90
 
 [email]
-from     = "noreply@switchsystem.eu.org"
+from     = "admin@switchsystem.eu.org"
 host     = "smtp.resend.com"
 port     = 587
 security = "starttls"

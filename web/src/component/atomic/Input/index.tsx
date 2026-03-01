@@ -14,6 +14,7 @@ export const INPUT_LIKE_BASE_CLASS = tw(`
 	aria-invalid:border-reimu-600
 
 	disabled:bg-slate-100
+	disabled:text-slate-400
 
 	outline-1 outline-transparent -outline-offset-1
 	focus:outline-reimu-600

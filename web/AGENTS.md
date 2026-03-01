@@ -1,6 +1,13 @@
+# 代码检查
+
+完成任务后，运行`just check`检查
+build 的检查很宽松，不要使用build来进行检查
+你应当通过类型系统和单元测试来确认修改是否有效
+禁止使用`tsc --no-emit`, oxlint的检查更快速，完善
+
 # 编码规范
 
-完成任务后，基于编码规范审阅改动，如果需要，运行`just check`检查。
+完成任务后，基于编码规范审阅改动。
 
 - 除非用户要求，否则不要添加注释
 
@@ -39,6 +46,7 @@
 ## JSX
 
 - 组件必须使用 `function` 定义
+- 禁止使用button作为link
 
 ## Typescript
 
@@ -93,7 +101,7 @@ Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是�
 - `packages/api/src/gen.ts`（运行 `just gen-api` 生成）
 - `src/orval/`（SDK 已从 openapi-fetch 迁移为由 Orval 生成，配置见 `orval.config.ts`）. 旧代码保留，新代码使用orval生成的sdk.
 
-如果你的任务需要更新这些文件，运行更新命令或暂停你的工作，并要求用户在本地重新生成它们后再继续。
+如果你的任务需要更新这些文件，当你可以手动更新时：运行更新命令，否则，暂停你的工作，要求用户在本地重新生成它们后再继续。
 
 # Browser Automation
 

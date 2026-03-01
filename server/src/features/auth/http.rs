@@ -1,6 +1,6 @@
 use utoipa_axum::router::OpenApiRouter;
 
-use super::{session, sign_up};
+use super::{password_reset, session, sign_up};
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, middleware};
 
@@ -12,6 +12,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 
     let auth_public_router = OpenApiRouter::new()
         .merge(session::public_router())
+        .merge(password_reset::router())
         .merge(sign_up::router())
         .layer(auth_limit_layer);
 

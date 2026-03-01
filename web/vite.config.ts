@@ -14,8 +14,7 @@ import { defineProject } from "vitest/config"
 const dirname =
 	typeof __dirname == "undefined"
 		? path.dirname(fileURLToPath(import.meta.url))
-		: // oxlint-disable-next-line no-undef
-			__dirname
+		: __dirname
 
 const isHttps = (url: string | undefined) => {
 	if (!url) {
@@ -26,7 +25,6 @@ const isHttps = (url: string | undefined) => {
 }
 
 export default defineConfig(({ mode }) => {
-	// oxlint-disable-next-line no-undef
 	const env = loadEnv(mode, process.cwd())
 
 	const SERVER_URL = env["VITE_SERVER_URL"]

@@ -90,7 +90,7 @@
 		"jsdom": "^27.4.0",
 		"knip": "^5.85.0",
 		"openapi-typescript": "^7.10.1",
-		"oxlint": "^1.38.0",
+		"oxlint": "^1.51.0",
 		"oxlint-tsgolint": "^0.15.0",
 		"playwright": "^1.57.0",
 		"prettier": "^3.7.4",

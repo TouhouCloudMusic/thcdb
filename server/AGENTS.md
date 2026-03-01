@@ -1,5 +1,9 @@
 # Server/Backend Project Guidelines
 
+## 代码检查
+
+完成任务后应当运行cargo clippy
+
 ## 代码架构（迁移中）
 
 当前处于从整洁架构（adapter/application/domain/infra）迁移到垂直切片（feature-first）的中间态：存量代码沿用原分层，新功能优先按垂直切片落地

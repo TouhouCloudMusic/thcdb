@@ -1,8 +1,10 @@
-import { Show } from "solid-js"
+import { Navigate } from "@tanstack/solid-router"
+import { Match, Switch } from "solid-js"
 
 import type { AuthFormMode } from "../store"
 import { useAuthForm } from "../store"
 import { AuthCredentialForm } from "./AuthCredentialForm"
+import { AuthLeftPanel } from "./AuthLeftPanel"
 import { VerifyEmailForm } from "./VerifyEmailForm"
 
 type AuthFormCopy = {
@@ -38,50 +40,7 @@ export function AuthForm() {
 		<div class="h-full relative overflow-hidden bg-linear-to-br from-reimu-100 via-primary to-marisa-100">
 			<div class="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.65)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.65)_1px,transparent_1px)] bg-size-[22px_22px] opacity-55"></div>
 			<div class="grid h-full w-full items-stretch lg:grid-cols-[1.05fr_0.95fr]">
-				<div class="hidden lg:flex flex-col justify-center gap-6 px-8 py-12  xl:px-14">
-					<div class="flex gap-3">
-						<img
-							src="/logo.svg"
-							alt=""
-							class="h-10 w-10"
-						/>
-						<div class="flex flex-col leading-none">
-							<div class="text-xs font-medium tracking-[0.22em] text-secondary">
-								TOUHOU CLOUD DB
-							</div>
-							<div class="text-xs text-tertiary">
-								Lorem ipsum dolor sit amet consectetur
-							</div>
-						</div>
-					</div>
-
-					<div class="flex flex-col gap-3">
-						<h1 class="text-5xl font-light tracking-tighter text-primary">
-							Lorem ipsum dolor sit amet consectetur
-						</h1>
-						<h2 class="text-xl text-tertiary">
-							Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-							Exercitationem earum ipsam tempora, aut fugiat
-						</h2>
-					</div>
-
-					<div class="grid gap-3 pt-2 text-sm text-secondary">
-						<div class="flex items-center gap-2">
-							<span class="inline-block size-1.5 rounded-full bg-reimu-600"></span>
-							<span>
-								Add missing entries (artists, releases, songs, events)
-							</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<span class="inline-block size-1.5 rounded-full bg-reimu-600"></span>
-							<span>Submit corrections and keep metadata clean</span>
-						</div>
-						<div class="flex items-center gap-2">
-							<span class="inline-block size-1.5 rounded-full bg-reimu-600"></span>
-							<span>Sync your contributions across devices</span>
-						</div>
-					</div>
-				</div>
+				<AuthLeftPanel />
 
 				<div class="flex flex-col justify-center border-t border-slate-300 bg-primary/70 px-4 py-12 backdrop-blur-sm sm:px-8 lg:border-l lg:border-t-0 xl:px-14">
 					<div class="mx-auto w-full max-w-[420px]">
@@ -108,12 +67,25 @@ export function AuthForm() {
 							<div class="text-sm text-tertiary">{copy().description}</div>
 						</div>
 
-						<Show
-							when={mode() === "verify_email"}
-							fallback={<AuthCredentialForm {...authForm} />}
-						>
-							<VerifyEmailForm {...authForm} />
-						</Show>
+						<Switch>
+							<Match
+								when={
+									mode() === "verify_email"
+									&& authForm.isMissingVerifyEmailSession()
+								}
+							>
+								<Navigate
+									to="/auth"
+									search={{ type: "sign_up" }}
+								/>
+							</Match>
+							<Match when={mode() === "verify_email"}>
+								<VerifyEmailForm {...authForm} />
+							</Match>
+							<Match when={true}>
+								<AuthCredentialForm {...authForm} />
+							</Match>
+						</Switch>
 					</div>
 				</div>
 			</div>
