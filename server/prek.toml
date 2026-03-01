@@ -18,7 +18,7 @@ name = "server cargo clippy"
 entry = "cargo clippy --all-targets --all-features" 
 language = "system"
 pass_filenames = false
-files = "^(src/|crates/|Cargo\\.toml|Cargo\\.lock|build\\.rs|rust-toolchain\\.toml)"
+types = ["rust"]
 stages = ["pre-push"]
 
 [[repos.hooks]]
@@ -27,5 +27,5 @@ name = "server cargo test"
 entry = "cargo test --quiet"
 language = "system"
 pass_filenames = false
-files = "^(src/|crates/|Cargo\\.toml|Cargo\\.lock|build\\.rs|rust-toolchain\\.toml)"
+types = ["rust"]
 stages = ["pre-push"]
