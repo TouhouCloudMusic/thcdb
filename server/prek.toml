@@ -4,28 +4,28 @@ fail_fast = true
 repo = "local"
 
 [[repos.hooks]]
-id = "server-cargo-fmt"
-name = "server cargo fmt"
-entry = "cargo fmt --all -- --check"
-language = "system"
+id             = "server-cargo-fmt"
+name           = "server cargo fmt"
+entry          = "cargo fmt --all -- --check"
+language       = "system"
+pass_filenames = false
+types          = [ "rust" ]
+stages         = [ "pre-push" ]
+
+[[repos.hooks]]
+id             = "server-cargo-clippy"
+name           = "server cargo clippy"
+entry          = "cargo clippy --all-targets --all-features"
+language       = "system"
 pass_filenames = false
 types = ["rust"]
 stages = ["pre-push"]
 
 [[repos.hooks]]
-id = "server-cargo-clippy"
-name = "server cargo clippy"
-entry = "cargo clippy --all-targets --all-features" 
-language = "system"
-pass_filenames = false
-types = ["rust"]
-stages = ["pre-push"]
-
-[[repos.hooks]]
-id = "server-cargo-test"
-name = "server cargo test"
-entry = "cargo test --quiet"
-language = "system"
+id             = "server-cargo-test"
+name           = "server cargo test"
+entry          = "cargo test --quiet"
+language       = "system"
 pass_filenames = false
 types = ["rust"]
 stages = ["pre-push"]

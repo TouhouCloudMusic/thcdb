@@ -4,6 +4,13 @@ set dotenv-load := true
 init:
 	prek install
 
+fmt:
+	taplo fmt
+
+fmt-all: fmt
+	cd server && just fmt
+	cd web && just fmt
+
 dev:
 	docker compose -f docker-compose.yml up --build --force-recreate --remove-orphans
 
