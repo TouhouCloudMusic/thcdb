@@ -91,7 +91,7 @@ Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是�
 
 - `src/routeTree.gen.ts`（TanStack Router 自动生成）
 - `packages/api/src/gen.ts`（运行 `just gen-api` 生成）
-- `packages/server-sdk/src/`（由 `@hey-api/openapi-ts` 生成，配置见 `openapi-ts.config.ts`）
+- `src/orval/`（SDK 已从 openapi-fetch 迁移为由 Orval 生成，配置见 `orval.config.ts`）. 旧代码保留，新代码使用orval生成的sdk.
 
 如果你的任务需要更新这些文件，运行更新命令或暂停你的工作，并要求用户在本地重新生成它们后再继续。
 
