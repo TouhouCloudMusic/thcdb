@@ -131,7 +131,9 @@ export const getFindSongByKeywordUrl = (params: FindSongByKeywordParams) => {
 
 	const stringifiedParams = normalizedParams.toString()
 
-	return stringifiedParams.length > 0 ? `/song?${stringifiedParams}` : `/song`
+	return stringifiedParams.length > 0
+		? `/api/song?${stringifiedParams}`
+		: `/api/song`
 }
 
 export const findSongByKeyword = async (
@@ -156,7 +158,7 @@ export const findSongByKeyword = async (
 export const getFindSongByKeywordQueryKey = (
 	params?: FindSongByKeywordParams,
 ) => {
-	return [`/song`, ...(params ? [params] : [])] as const
+	return [`/api/song`, ...(params ? [params] : [])] as const
 }
 
 export const getFindSongByKeywordQueryOptions = <
@@ -256,7 +258,7 @@ export type createSongResponse =
 	| createSongResponseError
 
 export const getCreateSongUrl = () => {
-	return `/song`
+	return `/api/song`
 }
 
 export const createSong = async (
@@ -405,8 +407,8 @@ export const getExploreSongUrl = (params?: ExploreSongParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/song/explore?${stringifiedParams}`
-		: `/song/explore`
+		? `/api/song/explore?${stringifiedParams}`
+		: `/api/song/explore`
 }
 
 export const exploreSong = async (
@@ -429,7 +431,7 @@ export const exploreSong = async (
 }
 
 export const getExploreSongQueryKey = (params?: ExploreSongParams) => {
-	return [`/song/explore`, ...(params ? [params] : [])] as const
+	return [`/api/song/explore`, ...(params ? [params] : [])] as const
 }
 
 export const getExploreSongQueryOptions = <
@@ -525,7 +527,7 @@ export type findSongByIdResponse =
 	| findSongByIdResponseError
 
 export const getFindSongByIdUrl = (id: number) => {
-	return `/song/${id}`
+	return `/api/song/${id}`
 }
 
 export const findSongById = async (
@@ -548,7 +550,7 @@ export const findSongById = async (
 }
 
 export const getFindSongByIdQueryKey = (id: number) => {
-	return [`/song/${id}`] as const
+	return [`/api/song/${id}`] as const
 }
 
 export const getFindSongByIdQueryOptions = <
@@ -640,7 +642,7 @@ export type updateSongResponse =
 	| updateSongResponseError
 
 export const getUpdateSongUrl = (id: number) => {
-	return `/song/${id}`
+	return `/api/song/${id}`
 }
 
 export const updateSong = async (

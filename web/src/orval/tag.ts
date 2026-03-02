@@ -131,7 +131,9 @@ export const getFindTagByKeywordUrl = (params: FindTagByKeywordParams) => {
 
 	const stringifiedParams = normalizedParams.toString()
 
-	return stringifiedParams.length > 0 ? `/tag?${stringifiedParams}` : `/tag`
+	return stringifiedParams.length > 0
+		? `/api/tag?${stringifiedParams}`
+		: `/api/tag`
 }
 
 export const findTagByKeyword = async (
@@ -156,7 +158,7 @@ export const findTagByKeyword = async (
 export const getFindTagByKeywordQueryKey = (
 	params?: FindTagByKeywordParams,
 ) => {
-	return [`/tag`, ...(params ? [params] : [])] as const
+	return [`/api/tag`, ...(params ? [params] : [])] as const
 }
 
 export const getFindTagByKeywordQueryOptions = <
@@ -256,7 +258,7 @@ export type createTagResponse =
 	| createTagResponseError
 
 export const getCreateTagUrl = () => {
-	return `/tag`
+	return `/api/tag`
 }
 
 export const createTag = async (
@@ -401,8 +403,8 @@ export const getExploreTagUrl = (params?: ExploreTagParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/tag/explore?${stringifiedParams}`
-		: `/tag/explore`
+		? `/api/tag/explore?${stringifiedParams}`
+		: `/api/tag/explore`
 }
 
 export const exploreTag = async (
@@ -425,7 +427,7 @@ export const exploreTag = async (
 }
 
 export const getExploreTagQueryKey = (params?: ExploreTagParams) => {
-	return [`/tag/explore`, ...(params ? [params] : [])] as const
+	return [`/api/tag/explore`, ...(params ? [params] : [])] as const
 }
 
 export const getExploreTagQueryOptions = <
@@ -521,7 +523,7 @@ export type findTagByIdResponse =
 	| findTagByIdResponseError
 
 export const getFindTagByIdUrl = (id: number) => {
-	return `/tag/${id}`
+	return `/api/tag/${id}`
 }
 
 export const findTagById = async (
@@ -544,7 +546,7 @@ export const findTagById = async (
 }
 
 export const getFindTagByIdQueryKey = (id: number) => {
-	return [`/tag/${id}`] as const
+	return [`/api/tag/${id}`] as const
 }
 
 export const getFindTagByIdQueryOptions = <
@@ -637,7 +639,7 @@ export type upsertTagCorrectionResponse =
 	| upsertTagCorrectionResponseError
 
 export const getUpsertTagCorrectionUrl = (id: number) => {
-	return `/tag/${id}`
+	return `/api/tag/${id}`
 }
 
 export const upsertTagCorrection = async (

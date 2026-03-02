@@ -124,7 +124,7 @@ export type forgotPasswordResponse =
 	| forgotPasswordResponseError
 
 export const getForgotPasswordUrl = () => {
-	return `/forgot-password`
+	return `/api/forgot-password`
 }
 
 export const forgotPassword = async (
@@ -254,7 +254,7 @@ export type resendVerificationEmailResponse =
 	| resendVerificationEmailResponseError
 
 export const getResendVerificationEmailUrl = () => {
-	return `/resend-verification-email`
+	return `/api/resend-verification-email`
 }
 
 export const resendVerificationEmail = async (
@@ -387,7 +387,7 @@ export type resetPasswordResponse =
 	| resetPasswordResponseError
 
 export const getResetPasswordUrl = () => {
-	return `/reset-password`
+	return `/api/reset-password`
 }
 
 export const resetPassword = async (
@@ -514,7 +514,7 @@ export type signInResponseError = (
 export type signInResponse = signInResponseSuccess | signInResponseError
 
 export const getSignInUrl = () => {
-	return `/sign-in`
+	return `/api/sign-in`
 }
 
 export const signIn = async (
@@ -634,7 +634,7 @@ export type signOutResponseError = (
 export type signOutResponse = signOutResponseSuccess | signOutResponseError
 
 export const getSignOutUrl = () => {
-	return `/sign-out`
+	return `/api/sign-out`
 }
 
 export const signOut = async (
@@ -652,7 +652,7 @@ export const signOut = async (
 }
 
 export const getSignOutQueryKey = () => {
-	return [`/sign-out`] as const
+	return [`/api/sign-out`] as const
 }
 
 export const getSignOutQueryOptions = <
@@ -735,7 +735,7 @@ export type signUpResponseError = (
 export type signUpResponse = signUpResponseSuccess | signUpResponseError
 
 export const getSignUpUrl = () => {
-	return `/sign-up`
+	return `/api/sign-up`
 }
 
 export const signUp = async (
@@ -857,7 +857,7 @@ export type verifyEmailResponse =
 	| verifyEmailResponseError
 
 export const getVerifyEmailUrl = () => {
-	return `/verify-email`
+	return `/api/verify-email`
 }
 
 export const verifyEmail = async (

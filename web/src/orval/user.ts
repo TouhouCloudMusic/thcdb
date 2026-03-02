@@ -114,7 +114,7 @@ export type uploadAvatarResponse =
 	| uploadAvatarResponseError
 
 export const getUploadAvatarUrl = () => {
-	return `/avatar`
+	return `/api/avatar`
 }
 
 export const uploadAvatar = async (
@@ -240,7 +240,7 @@ export type profileResponseError = (
 export type profileResponse = profileResponseSuccess | profileResponseError
 
 export const getProfileUrl = () => {
-	return `/profile`
+	return `/api/profile`
 }
 
 export const profile = async (
@@ -258,7 +258,7 @@ export const profile = async (
 }
 
 export const getProfileQueryKey = () => {
-	return [`/profile`] as const
+	return [`/api/profile`] as const
 }
 
 export const getProfileQueryOptions = <
@@ -344,7 +344,7 @@ export type uploadProfileBannerResponse =
 	| uploadProfileBannerResponseError
 
 export const getUploadProfileBannerUrl = () => {
-	return `/profile-banner`
+	return `/api/profile-banner`
 }
 
 export const uploadProfileBanner = async (
@@ -477,7 +477,7 @@ export type updateBioResponse =
 	| updateBioResponseError
 
 export const getUpdateBioUrl = () => {
-	return `/profile/bio`
+	return `/api/profile/bio`
 }
 
 export const updateBio = async (
@@ -599,7 +599,7 @@ export type profileWithNameResponse =
 	| profileWithNameResponseError
 
 export const getProfileWithNameUrl = (name: string) => {
-	return `/profile/${name}`
+	return `/api/profile/${name}`
 }
 
 export const profileWithName = async (
@@ -622,7 +622,7 @@ export const profileWithName = async (
 }
 
 export const getProfileWithNameQueryKey = (name: string) => {
-	return [`/profile/${name}`] as const
+	return [`/api/profile/${name}`] as const
 }
 
 export const getProfileWithNameQueryOptions = <
@@ -722,7 +722,7 @@ export type followUserResponse =
 	| followUserResponseError
 
 export const getFollowUserUrl = (id: number) => {
-	return `/user/${id}/follow`
+	return `/api/user/${id}/follow`
 }
 
 export const followUser = async (
@@ -846,7 +846,7 @@ export type unfollowUserResponse =
 	| unfollowUserResponseError
 
 export const getUnfollowUserUrl = (id: number) => {
-	return `/user/${id}/follow`
+	return `/api/user/${id}/follow`
 }
 
 export const unfollowUser = async (

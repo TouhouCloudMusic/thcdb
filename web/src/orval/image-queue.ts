@@ -138,8 +138,8 @@ export const getPendingImageQueueUrl = (params?: PendingImageQueueParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/image-queue?${stringifiedParams}`
-		: `/image-queue`
+		? `/api/image-queue?${stringifiedParams}`
+		: `/api/image-queue`
 }
 
 export const pendingImageQueue = async (
@@ -164,7 +164,7 @@ export const pendingImageQueue = async (
 export const getPendingImageQueueQueryKey = (
 	params?: PendingImageQueueParams,
 ) => {
-	return [`/image-queue`, ...(params ? [params] : [])] as const
+	return [`/api/image-queue`, ...(params ? [params] : [])] as const
 }
 
 export const getPendingImageQueueQueryOptions = <
@@ -265,7 +265,7 @@ export type pendingImageQueueCountResponse =
 	| pendingImageQueueCountResponseError
 
 export const getPendingImageQueueCountUrl = () => {
-	return `/image-queue/pending-count`
+	return `/api/image-queue/pending-count`
 }
 
 export const pendingImageQueueCount = async (
@@ -289,7 +289,7 @@ export const pendingImageQueueCount = async (
 }
 
 export const getPendingImageQueueCountQueryKey = () => {
-	return [`/image-queue/pending-count`] as const
+	return [`/api/image-queue/pending-count`] as const
 }
 
 export const getPendingImageQueueCountQueryOptions = <
@@ -387,7 +387,7 @@ export type imageQueueDetailResponse =
 	| imageQueueDetailResponseError
 
 export const getImageQueueDetailUrl = (id: number) => {
-	return `/image-queue/${id}`
+	return `/api/image-queue/${id}`
 }
 
 export const imageQueueDetail = async (
@@ -410,7 +410,7 @@ export const imageQueueDetail = async (
 }
 
 export const getImageQueueDetailQueryKey = (id: number) => {
-	return [`/image-queue/${id}`] as const
+	return [`/api/image-queue/${id}`] as const
 }
 
 export const getImageQueueDetailQueryOptions = <
@@ -524,8 +524,8 @@ export const getHandleImageQueueUrl = (
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/image-queue/${id}?${stringifiedParams}`
-		: `/image-queue/${id}`
+		? `/api/image-queue/${id}?${stringifiedParams}`
+		: `/api/image-queue/${id}`
 }
 
 export const handleImageQueue = async (
@@ -667,8 +667,8 @@ export const getUserImageQueueUrl = (
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/user/${id}/image-queue?${stringifiedParams}`
-		: `/user/${id}/image-queue`
+		? `/api/user/${id}/image-queue?${stringifiedParams}`
+		: `/api/user/${id}/image-queue`
 }
 
 export const userImageQueue = async (
@@ -695,7 +695,7 @@ export const getUserImageQueueQueryKey = (
 	id: number,
 	params?: UserImageQueueParams,
 ) => {
-	return [`/user/${id}/image-queue`, ...(params ? [params] : [])] as const
+	return [`/api/user/${id}/image-queue`, ...(params ? [params] : [])] as const
 }
 
 export const getUserImageQueueQueryOptions = <

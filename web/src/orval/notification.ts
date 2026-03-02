@@ -125,8 +125,8 @@ export const getNotificationListUrl = (params?: NotificationListParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/notifications?${stringifiedParams}`
-		: `/notifications`
+		? `/api/notifications?${stringifiedParams}`
+		: `/api/notifications`
 }
 
 export const notificationList = async (
@@ -151,7 +151,7 @@ export const notificationList = async (
 export const getNotificationListQueryKey = (
 	params?: NotificationListParams,
 ) => {
-	return [`/notifications`, ...(params ? [params] : [])] as const
+	return [`/api/notifications`, ...(params ? [params] : [])] as const
 }
 
 export const getNotificationListQueryOptions = <
@@ -252,7 +252,7 @@ export type notificationReadAllResponse =
 	| notificationReadAllResponseError
 
 export const getNotificationReadAllUrl = () => {
-	return `/notifications/read-all`
+	return `/api/notifications/read-all`
 }
 
 export const notificationReadAll = async (
@@ -379,7 +379,7 @@ export type notificationUnreadCountResponse =
 	| notificationUnreadCountResponseError
 
 export const getNotificationUnreadCountUrl = () => {
-	return `/notifications/unread-count`
+	return `/api/notifications/unread-count`
 }
 
 export const notificationUnreadCount = async (
@@ -403,7 +403,7 @@ export const notificationUnreadCount = async (
 }
 
 export const getNotificationUnreadCountQueryKey = () => {
-	return [`/notifications/unread-count`] as const
+	return [`/api/notifications/unread-count`] as const
 }
 
 export const getNotificationUnreadCountQueryOptions = <
@@ -502,7 +502,7 @@ export type notificationMarkReadResponse =
 	| notificationMarkReadResponseError
 
 export const getNotificationMarkReadUrl = (id: number) => {
-	return `/notifications/${id}/read`
+	return `/api/notifications/${id}/read`
 }
 
 export const notificationMarkRead = async (
@@ -628,7 +628,7 @@ export type notificationWsResponseError = (
 export type notificationWsResponse = notificationWsResponseError
 
 export const getNotificationWsUrl = () => {
-	return `/ws/notifications`
+	return `/api/ws/notifications`
 }
 
 export const notificationWs = async (
@@ -650,7 +650,7 @@ export const notificationWs = async (
 }
 
 export const getNotificationWsQueryKey = () => {
-	return [`/ws/notifications`] as const
+	return [`/api/ws/notifications`] as const
 }
 
 export const getNotificationWsQueryOptions = <

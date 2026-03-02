@@ -133,7 +133,9 @@ export const getFindLabelByKeywordUrl = (params: FindLabelByKeywordParams) => {
 
 	const stringifiedParams = normalizedParams.toString()
 
-	return stringifiedParams.length > 0 ? `/label?${stringifiedParams}` : `/label`
+	return stringifiedParams.length > 0
+		? `/api/label?${stringifiedParams}`
+		: `/api/label`
 }
 
 export const findLabelByKeyword = async (
@@ -158,7 +160,7 @@ export const findLabelByKeyword = async (
 export const getFindLabelByKeywordQueryKey = (
 	params?: FindLabelByKeywordParams,
 ) => {
-	return [`/label`, ...(params ? [params] : [])] as const
+	return [`/api/label`, ...(params ? [params] : [])] as const
 }
 
 export const getFindLabelByKeywordQueryOptions = <
@@ -258,7 +260,7 @@ export type createLabelResponse =
 	| createLabelResponseError
 
 export const getCreateLabelUrl = () => {
-	return `/label`
+	return `/api/label`
 }
 
 export const createLabel = async (
@@ -407,8 +409,8 @@ export const getExploreLabelUrl = (params?: ExploreLabelParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/label/explore?${stringifiedParams}`
-		: `/label/explore`
+		? `/api/label/explore?${stringifiedParams}`
+		: `/api/label/explore`
 }
 
 export const exploreLabel = async (
@@ -431,7 +433,7 @@ export const exploreLabel = async (
 }
 
 export const getExploreLabelQueryKey = (params?: ExploreLabelParams) => {
-	return [`/label/explore`, ...(params ? [params] : [])] as const
+	return [`/api/label/explore`, ...(params ? [params] : [])] as const
 }
 
 export const getExploreLabelQueryOptions = <
@@ -527,7 +529,7 @@ export type findLabelByIdResponse =
 	| findLabelByIdResponseError
 
 export const getFindLabelByIdUrl = (id: number) => {
-	return `/label/${id}`
+	return `/api/label/${id}`
 }
 
 export const findLabelById = async (
@@ -550,7 +552,7 @@ export const findLabelById = async (
 }
 
 export const getFindLabelByIdQueryKey = (id: number) => {
-	return [`/label/${id}`] as const
+	return [`/api/label/${id}`] as const
 }
 
 export const getFindLabelByIdQueryOptions = <
@@ -643,7 +645,7 @@ export type upsertLabelCorrectionResponse =
 	| upsertLabelCorrectionResponseError
 
 export const getUpsertLabelCorrectionUrl = (id: number) => {
-	return `/label/${id}`
+	return `/api/label/${id}`
 }
 
 export const upsertLabelCorrection = async (

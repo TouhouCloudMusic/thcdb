@@ -6,6 +6,7 @@
 	"ignorePatterns": [
 		"**.gen.ts",
 		"packages/api/**/gen.ts",
+		"src/orval/**",
 		"config/eslint/index.js",
 		"src/style/color/convert.ts",
 		"src/constant/server.ts",

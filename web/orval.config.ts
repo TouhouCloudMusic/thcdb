@@ -7,6 +7,7 @@ export default defineConfig({
 			target: "src/orval",
 			mode: "tags",
 			client: "solid-query",
+			baseUrl: "/api",
 			prettier: true,
 			clean: true,
 			mock: true,

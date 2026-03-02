@@ -148,8 +148,8 @@ export const getFindManyArtistUrl = (params: FindManyArtistParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/artist?${stringifiedParams}`
-		: `/artist`
+		? `/api/artist?${stringifiedParams}`
+		: `/api/artist`
 }
 
 export const findManyArtist = async (
@@ -172,7 +172,7 @@ export const findManyArtist = async (
 }
 
 export const getFindManyArtistQueryKey = (params?: FindManyArtistParams) => {
-	return [`/artist`, ...(params ? [params] : [])] as const
+	return [`/api/artist`, ...(params ? [params] : [])] as const
 }
 
 export const getFindManyArtistQueryOptions = <
@@ -264,7 +264,7 @@ export type createArtistResponse =
 	| createArtistResponseError
 
 export const getCreateArtistUrl = () => {
-	return `/artist`
+	return `/api/artist`
 }
 
 export const createArtist = async (
@@ -413,8 +413,8 @@ export const getExploreArtistUrl = (params?: ExploreArtistParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/artist/explore?${stringifiedParams}`
-		: `/artist/explore`
+		? `/api/artist/explore?${stringifiedParams}`
+		: `/api/artist/explore`
 }
 
 export const exploreArtist = async (
@@ -437,7 +437,7 @@ export const exploreArtist = async (
 }
 
 export const getExploreArtistQueryKey = (params?: ExploreArtistParams) => {
-	return [`/artist/explore`, ...(params ? [params] : [])] as const
+	return [`/api/artist/explore`, ...(params ? [params] : [])] as const
 }
 
 export const getExploreArtistQueryOptions = <
@@ -555,8 +555,8 @@ export const getFindArtistByIdUrl = (
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/artist/${id}?${stringifiedParams}`
-		: `/artist/${id}`
+		? `/api/artist/${id}?${stringifiedParams}`
+		: `/api/artist/${id}`
 }
 
 export const findArtistById = async (
@@ -583,7 +583,7 @@ export const getFindArtistByIdQueryKey = (
 	id: number,
 	params?: FindArtistByIdParams,
 ) => {
-	return [`/artist/${id}`, ...(params ? [params] : [])] as const
+	return [`/api/artist/${id}`, ...(params ? [params] : [])] as const
 }
 
 export const getFindArtistByIdQueryOptions = <
@@ -678,7 +678,7 @@ export type upsertArtistCorrectionResponse =
 	| upsertArtistCorrectionResponseError
 
 export const getUpsertArtistCorrectionUrl = (id: number) => {
-	return `/artist/${id}`
+	return `/api/artist/${id}`
 }
 
 export const upsertArtistCorrection = async (
@@ -827,8 +827,8 @@ export const getFindArtistAppearancesUrl = (
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/artist/${id}/appearances?${stringifiedParams}`
-		: `/artist/${id}/appearances`
+		? `/api/artist/${id}/appearances?${stringifiedParams}`
+		: `/api/artist/${id}/appearances`
 }
 
 export const findArtistAppearances = async (
@@ -857,7 +857,7 @@ export const getFindArtistAppearancesQueryKey = (
 	id: number,
 	params?: FindArtistAppearancesParams,
 ) => {
-	return [`/artist/${id}/appearances`, ...(params ? [params] : [])] as const
+	return [`/api/artist/${id}/appearances`, ...(params ? [params] : [])] as const
 }
 
 export const getFindArtistAppearancesQueryOptions = <
@@ -976,8 +976,8 @@ export const getGetArtistCreditsUrl = (
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/artist/${id}/credits?${stringifiedParams}`
-		: `/artist/${id}/credits`
+		? `/api/artist/${id}/credits?${stringifiedParams}`
+		: `/api/artist/${id}/credits`
 }
 
 export const getArtistCredits = async (
@@ -1004,7 +1004,7 @@ export const getGetArtistCreditsQueryKey = (
 	id: number,
 	params?: GetArtistCreditsParams,
 ) => {
-	return [`/artist/${id}/credits`, ...(params ? [params] : [])] as const
+	return [`/api/artist/${id}/credits`, ...(params ? [params] : [])] as const
 }
 
 export const getGetArtistCreditsQueryOptions = <
@@ -1121,8 +1121,8 @@ export const getFindArtistDiscographiesByTypeUrl = (
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/artist/${id}/discographies?${stringifiedParams}`
-		: `/artist/${id}/discographies`
+		? `/api/artist/${id}/discographies?${stringifiedParams}`
+		: `/api/artist/${id}/discographies`
 }
 
 export const findArtistDiscographiesByType = async (
@@ -1151,7 +1151,10 @@ export const getFindArtistDiscographiesByTypeQueryKey = (
 	id: number,
 	params?: FindArtistDiscographiesByTypeParams,
 ) => {
-	return [`/artist/${id}/discographies`, ...(params ? [params] : [])] as const
+	return [
+		`/api/artist/${id}/discographies`,
+		...(params ? [params] : []),
+	] as const
 }
 
 export const getFindArtistDiscographiesByTypeQueryOptions = <
@@ -1275,8 +1278,8 @@ export const getFindArtistDiscographiesInitUrl = (
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/artist/${id}/discographies/init?${stringifiedParams}`
-		: `/artist/${id}/discographies/init`
+		? `/api/artist/${id}/discographies/init?${stringifiedParams}`
+		: `/api/artist/${id}/discographies/init`
 }
 
 export const findArtistDiscographiesInit = async (
@@ -1306,7 +1309,7 @@ export const getFindArtistDiscographiesInitQueryKey = (
 	params?: FindArtistDiscographiesInitParams,
 ) => {
 	return [
-		`/artist/${id}/discographies/init`,
+		`/api/artist/${id}/discographies/init`,
 		...(params ? [params] : []),
 	] as const
 }
@@ -1418,7 +1421,7 @@ export type uploadArtistProfileImageResponse =
 	| uploadArtistProfileImageResponseError
 
 export const getUploadArtistProfileImageUrl = (id: number) => {
-	return `/artist/${id}/profile-image`
+	return `/api/artist/${id}/profile-image`
 }
 
 export const uploadArtistProfileImage = async (

@@ -133,7 +133,9 @@ export const getFindEventByKeywordUrl = (params: FindEventByKeywordParams) => {
 
 	const stringifiedParams = normalizedParams.toString()
 
-	return stringifiedParams.length > 0 ? `/event?${stringifiedParams}` : `/event`
+	return stringifiedParams.length > 0
+		? `/api/event?${stringifiedParams}`
+		: `/api/event`
 }
 
 export const findEventByKeyword = async (
@@ -158,7 +160,7 @@ export const findEventByKeyword = async (
 export const getFindEventByKeywordQueryKey = (
 	params?: FindEventByKeywordParams,
 ) => {
-	return [`/event`, ...(params ? [params] : [])] as const
+	return [`/api/event`, ...(params ? [params] : [])] as const
 }
 
 export const getFindEventByKeywordQueryOptions = <
@@ -258,7 +260,7 @@ export type createEventResponse =
 	| createEventResponseError
 
 export const getCreateEventUrl = () => {
-	return `/event`
+	return `/api/event`
 }
 
 export const createEvent = async (
@@ -407,8 +409,8 @@ export const getExploreEventUrl = (params?: ExploreEventParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/event/explore?${stringifiedParams}`
-		: `/event/explore`
+		? `/api/event/explore?${stringifiedParams}`
+		: `/api/event/explore`
 }
 
 export const exploreEvent = async (
@@ -431,7 +433,7 @@ export const exploreEvent = async (
 }
 
 export const getExploreEventQueryKey = (params?: ExploreEventParams) => {
-	return [`/event/explore`, ...(params ? [params] : [])] as const
+	return [`/api/event/explore`, ...(params ? [params] : [])] as const
 }
 
 export const getExploreEventQueryOptions = <
@@ -527,7 +529,7 @@ export type findEventByIdResponse =
 	| findEventByIdResponseError
 
 export const getFindEventByIdUrl = (id: number) => {
-	return `/event/${id}`
+	return `/api/event/${id}`
 }
 
 export const findEventById = async (
@@ -550,7 +552,7 @@ export const findEventById = async (
 }
 
 export const getFindEventByIdQueryKey = (id: number) => {
-	return [`/event/${id}`] as const
+	return [`/api/event/${id}`] as const
 }
 
 export const getFindEventByIdQueryOptions = <
@@ -643,7 +645,7 @@ export type upsertEventCorrectionResponse =
 	| upsertEventCorrectionResponseError
 
 export const getUpsertEventCorrectionUrl = (id: number) => {
-	return `/event/${id}`
+	return `/api/event/${id}`
 }
 
 export const upsertEventCorrection = async (

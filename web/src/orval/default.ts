@@ -109,7 +109,7 @@ export type healthCheckResponse =
 	| healthCheckResponseError
 
 export const getHealthCheckUrl = () => {
-	return `/health_check`
+	return `/api/health_check`
 }
 
 export const healthCheck = async (
@@ -131,7 +131,7 @@ export const healthCheck = async (
 }
 
 export const getHealthCheckQueryKey = () => {
-	return [`/health_check`] as const
+	return [`/api/health_check`] as const
 }
 
 export const getHealthCheckQueryOptions = <
@@ -216,7 +216,7 @@ export type homeMetadataResponse =
 	| homeMetadataResponseError
 
 export const getHomeMetadataUrl = () => {
-	return `/home/metadata`
+	return `/api/home/metadata`
 }
 
 export const homeMetadata = async (
@@ -238,7 +238,7 @@ export const homeMetadata = async (
 }
 
 export const getHomeMetadataQueryKey = () => {
-	return [`/home/metadata`] as const
+	return [`/api/home/metadata`] as const
 }
 
 export const getHomeMetadataQueryOptions = <
@@ -326,7 +326,7 @@ export type languageListResponse =
 	| languageListResponseError
 
 export const getLanguageListUrl = () => {
-	return `/languages`
+	return `/api/languages`
 }
 
 export const languageList = async (
@@ -348,7 +348,7 @@ export const languageList = async (
 }
 
 export const getLanguageListQueryKey = () => {
-	return [`/languages`] as const
+	return [`/api/languages`] as const
 }
 
 export const getLanguageListQueryOptions = <
@@ -436,7 +436,7 @@ export type userRolesResponse =
 	| userRolesResponseError
 
 export const getUserRolesUrl = () => {
-	return `/user-roles`
+	return `/api/user-roles`
 }
 
 export const userRoles = async (
@@ -454,7 +454,7 @@ export const userRoles = async (
 }
 
 export const getUserRolesQueryKey = () => {
-	return [`/user-roles`] as const
+	return [`/api/user-roles`] as const
 }
 
 export const getUserRolesQueryOptions = <
