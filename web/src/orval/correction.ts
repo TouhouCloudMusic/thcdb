@@ -125,7 +125,7 @@ export type compareCorrectionsResponse =
 	| compareCorrectionsResponseError
 
 export const getCompareCorrectionsUrl = (id1: number, id2: number) => {
-	return `/correction/${id1}/compare/${id2}`
+	return `/api/correction/${id1}/compare/${id2}`
 }
 
 export const compareCorrections = async (
@@ -149,7 +149,7 @@ export const compareCorrections = async (
 }
 
 export const getCompareCorrectionsQueryKey = (id1: number, id2: number) => {
-	return [`/correction/${id1}/compare/${id2}`] as const
+	return [`/api/correction/${id1}/compare/${id2}`] as const
 }
 
 export const getCompareCorrectionsQueryOptions = <
@@ -251,7 +251,7 @@ export type getCorrectionResponse =
 	| getCorrectionResponseError
 
 export const getGetCorrectionUrl = (id: number) => {
-	return `/correction/${id}`
+	return `/api/correction/${id}`
 }
 
 export const getCorrection = async (
@@ -274,7 +274,7 @@ export const getCorrection = async (
 }
 
 export const getGetCorrectionQueryKey = (id: number) => {
-	return [`/correction/${id}`] as const
+	return [`/api/correction/${id}`] as const
 }
 
 export const getGetCorrectionQueryOptions = <
@@ -380,8 +380,8 @@ export const getHandleCorrectionUrl = (
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/correction/${id}?${stringifiedParams}`
-		: `/correction/${id}`
+		? `/api/correction/${id}?${stringifiedParams}`
+		: `/api/correction/${id}`
 }
 
 export const handleCorrection = async (
@@ -509,7 +509,7 @@ export type getCorrectionDiffResponse =
 	| getCorrectionDiffResponseError
 
 export const getGetCorrectionDiffUrl = (id: number) => {
-	return `/correction/${id}/diff`
+	return `/api/correction/${id}/diff`
 }
 
 export const getCorrectionDiff = async (
@@ -532,7 +532,7 @@ export const getCorrectionDiff = async (
 }
 
 export const getGetCorrectionDiffQueryKey = (id: number) => {
-	return [`/correction/${id}/diff`] as const
+	return [`/api/correction/${id}/diff`] as const
 }
 
 export const getGetCorrectionDiffQueryOptions = <
@@ -633,7 +633,7 @@ export type getCorrectionRevisionsResponse =
 	| getCorrectionRevisionsResponseError
 
 export const getGetCorrectionRevisionsUrl = (id: number) => {
-	return `/correction/${id}/revisions`
+	return `/api/correction/${id}/revisions`
 }
 
 export const getCorrectionRevisions = async (
@@ -658,7 +658,7 @@ export const getCorrectionRevisions = async (
 }
 
 export const getGetCorrectionRevisionsQueryKey = (id: number) => {
-	return [`/correction/${id}/revisions`] as const
+	return [`/api/correction/${id}/revisions`] as const
 }
 
 export const getGetCorrectionRevisionsQueryOptions = <
@@ -771,7 +771,7 @@ export const getEntityCorrectionsUrl = (
 		| "credit-role",
 	id: number,
 ) => {
-	return `/${entityType}/${id}/corrections`
+	return `/api/${entityType}/${id}/corrections`
 }
 
 export const entityCorrections = async (
@@ -814,7 +814,7 @@ export const getEntityCorrectionsQueryKey = (
 		| "credit-role",
 	id: number,
 ) => {
-	return [`/${entityType}/${id}/corrections`] as const
+	return [`/api/${entityType}/${id}/corrections`] as const
 }
 
 export const getEntityCorrectionsQueryOptions = <
@@ -944,7 +944,7 @@ export const getPendingCorrectionUrl = (
 		| "credit-role",
 	id: number,
 ) => {
-	return `/${entityType}/${id}/pending-correction`
+	return `/api/${entityType}/${id}/pending-correction`
 }
 
 export const pendingCorrection = async (
@@ -987,7 +987,7 @@ export const getPendingCorrectionQueryKey = (
 		| "credit-role",
 	id: number,
 ) => {
-	return [`/${entityType}/${id}/pending-correction`] as const
+	return [`/api/${entityType}/${id}/pending-correction`] as const
 }
 
 export const getPendingCorrectionQueryOptions = <

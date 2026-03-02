@@ -117,7 +117,7 @@ export const getVoteTagUrl = (
 	entityType: "artist" | "release" | "song",
 	id: number,
 ) => {
-	return `/${entityType}/${id}/tag-vote`
+	return `/api/${entityType}/${id}/tag-vote`
 }
 
 export const voteTag = async (
@@ -244,7 +244,7 @@ export const getDeleteVoteUrl = (
 	entityType: "artist" | "release" | "song",
 	id: number,
 ) => {
-	return `/${entityType}/${id}/tag-vote`
+	return `/api/${entityType}/${id}/tag-vote`
 }
 
 export const deleteVote = async (
@@ -405,8 +405,8 @@ export const getGetTagsUrl = (
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/${entityType}/${id}/tags?${stringifiedParams}`
-		: `/${entityType}/${id}/tags`
+		? `/api/${entityType}/${id}/tags?${stringifiedParams}`
+		: `/api/${entityType}/${id}/tags`
 }
 
 export const getTags = async (
@@ -431,7 +431,7 @@ export const getGetTagsQueryKey = (
 	id: number,
 	params?: GetTagsParams,
 ) => {
-	return [`/${entityType}/${id}/tags`, ...(params ? [params] : [])] as const
+	return [`/api/${entityType}/${id}/tags`, ...(params ? [params] : [])] as const
 }
 
 export const getGetTagsQueryOptions = <

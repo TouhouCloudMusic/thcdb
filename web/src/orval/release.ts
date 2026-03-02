@@ -140,8 +140,8 @@ export const getFindReleaseByKeywordUrl = (
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/release?${stringifiedParams}`
-		: `/release`
+		? `/api/release?${stringifiedParams}`
+		: `/api/release`
 }
 
 export const findReleaseByKeyword = async (
@@ -168,7 +168,7 @@ export const findReleaseByKeyword = async (
 export const getFindReleaseByKeywordQueryKey = (
 	params?: FindReleaseByKeywordParams,
 ) => {
-	return [`/release`, ...(params ? [params] : [])] as const
+	return [`/api/release`, ...(params ? [params] : [])] as const
 }
 
 export const getFindReleaseByKeywordQueryOptions = <
@@ -270,7 +270,7 @@ export type createReleaseResponse =
 	| createReleaseResponseError
 
 export const getCreateReleaseUrl = () => {
-	return `/release`
+	return `/api/release`
 }
 
 export const createRelease = async (
@@ -422,8 +422,8 @@ export const getExploreReleaseUrl = (params?: ExploreReleaseParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/release/explore?${stringifiedParams}`
-		: `/release/explore`
+		? `/api/release/explore?${stringifiedParams}`
+		: `/api/release/explore`
 }
 
 export const exploreRelease = async (
@@ -446,7 +446,7 @@ export const exploreRelease = async (
 }
 
 export const getExploreReleaseQueryKey = (params?: ExploreReleaseParams) => {
-	return [`/release/explore`, ...(params ? [params] : [])] as const
+	return [`/api/release/explore`, ...(params ? [params] : [])] as const
 }
 
 export const getExploreReleaseQueryOptions = <
@@ -550,7 +550,7 @@ export type findReleaseByIdResponse =
 	| findReleaseByIdResponseError
 
 export const getFindReleaseByIdUrl = (id: number) => {
-	return `/release/${id}`
+	return `/api/release/${id}`
 }
 
 export const findReleaseById = async (
@@ -573,7 +573,7 @@ export const findReleaseById = async (
 }
 
 export const getFindReleaseByIdQueryKey = (id: number) => {
-	return [`/release/${id}`] as const
+	return [`/api/release/${id}`] as const
 }
 
 export const getFindReleaseByIdQueryOptions = <
@@ -673,7 +673,7 @@ export type updateReleaseResponse =
 	| updateReleaseResponseError
 
 export const getUpdateReleaseUrl = (id: number) => {
-	return `/release/${id}`
+	return `/api/release/${id}`
 }
 
 export const updateRelease = async (
@@ -804,7 +804,7 @@ export type uploadReleaseCoverArtResponse =
 	| uploadReleaseCoverArtResponseError
 
 export const getUploadReleaseCoverArtUrl = (id: number) => {
-	return `/release/${id}/cover-art`
+	return `/api/release/${id}/cover-art`
 }
 
 export const uploadReleaseCoverArt = async (

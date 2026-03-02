@@ -127,8 +127,8 @@ export const getFindOneSongLyricsUrl = (params: FindOneSongLyricsParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/song-lyrics?${stringifiedParams}`
-		: `/song-lyrics`
+		? `/api/song-lyrics?${stringifiedParams}`
+		: `/api/song-lyrics`
 }
 
 export const findOneSongLyrics = async (
@@ -153,7 +153,7 @@ export const findOneSongLyrics = async (
 export const getFindOneSongLyricsQueryKey = (
 	params?: FindOneSongLyricsParams,
 ) => {
-	return [`/song-lyrics`, ...(params ? [params] : [])] as const
+	return [`/api/song-lyrics`, ...(params ? [params] : [])] as const
 }
 
 export const getFindOneSongLyricsQueryOptions = <
@@ -253,7 +253,7 @@ export type createSongLyricsResponse =
 	| createSongLyricsResponseError
 
 export const getCreateSongLyricsUrl = () => {
-	return `/song-lyrics`
+	return `/api/song-lyrics`
 }
 
 export const createSongLyrics = async (
@@ -394,8 +394,8 @@ export const getFindManySongLyricsUrl = (params: FindManySongLyricsParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/song-lyrics/many?${stringifiedParams}`
-		: `/song-lyrics/many`
+		? `/api/song-lyrics/many?${stringifiedParams}`
+		: `/api/song-lyrics/many`
 }
 
 export const findManySongLyrics = async (
@@ -420,7 +420,7 @@ export const findManySongLyrics = async (
 export const getFindManySongLyricsQueryKey = (
 	params?: FindManySongLyricsParams,
 ) => {
-	return [`/song-lyrics/many`, ...(params ? [params] : [])] as const
+	return [`/api/song-lyrics/many`, ...(params ? [params] : [])] as const
 }
 
 export const getFindManySongLyricsQueryOptions = <
@@ -520,7 +520,7 @@ export type updateSongLyricsResponse =
 	| updateSongLyricsResponseError
 
 export const getUpdateSongLyricsUrl = (id: number) => {
-	return `/song-lyrics/${id}`
+	return `/api/song-lyrics/${id}`
 }
 
 export const updateSongLyrics = async (

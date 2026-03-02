@@ -134,8 +134,8 @@ export const getSearchAllUrl = (params: SearchAllParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/search?${stringifiedParams}`
-		: `/search`
+		? `/api/search?${stringifiedParams}`
+		: `/api/search`
 }
 
 export const searchAll = async (
@@ -154,7 +154,7 @@ export const searchAll = async (
 }
 
 export const getSearchAllQueryKey = (params?: SearchAllParams) => {
-	return [`/search`, ...(params ? [params] : [])] as const
+	return [`/api/search`, ...(params ? [params] : [])] as const
 }
 
 export const getSearchAllQueryOptions = <
@@ -257,8 +257,8 @@ export const getSearchArtistUrl = (params: SearchArtistParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/search/artist?${stringifiedParams}`
-		: `/search/artist`
+		? `/api/search/artist?${stringifiedParams}`
+		: `/api/search/artist`
 }
 
 export const searchArtist = async (
@@ -281,7 +281,7 @@ export const searchArtist = async (
 }
 
 export const getSearchArtistQueryKey = (params?: SearchArtistParams) => {
-	return [`/search/artist`, ...(params ? [params] : [])] as const
+	return [`/api/search/artist`, ...(params ? [params] : [])] as const
 }
 
 export const getSearchArtistQueryOptions = <
@@ -384,8 +384,8 @@ export const getSearchEventUrl = (params: SearchEventParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/search/event?${stringifiedParams}`
-		: `/search/event`
+		? `/api/search/event?${stringifiedParams}`
+		: `/api/search/event`
 }
 
 export const searchEvent = async (
@@ -408,7 +408,7 @@ export const searchEvent = async (
 }
 
 export const getSearchEventQueryKey = (params?: SearchEventParams) => {
-	return [`/search/event`, ...(params ? [params] : [])] as const
+	return [`/api/search/event`, ...(params ? [params] : [])] as const
 }
 
 export const getSearchEventQueryOptions = <
@@ -511,8 +511,8 @@ export const getSearchLabelUrl = (params: SearchLabelParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/search/label?${stringifiedParams}`
-		: `/search/label`
+		? `/api/search/label?${stringifiedParams}`
+		: `/api/search/label`
 }
 
 export const searchLabel = async (
@@ -535,7 +535,7 @@ export const searchLabel = async (
 }
 
 export const getSearchLabelQueryKey = (params?: SearchLabelParams) => {
-	return [`/search/label`, ...(params ? [params] : [])] as const
+	return [`/api/search/label`, ...(params ? [params] : [])] as const
 }
 
 export const getSearchLabelQueryOptions = <
@@ -638,8 +638,8 @@ export const getSearchReleaseUrl = (params: SearchReleaseParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/search/release?${stringifiedParams}`
-		: `/search/release`
+		? `/api/search/release?${stringifiedParams}`
+		: `/api/search/release`
 }
 
 export const searchRelease = async (
@@ -662,7 +662,7 @@ export const searchRelease = async (
 }
 
 export const getSearchReleaseQueryKey = (params?: SearchReleaseParams) => {
-	return [`/search/release`, ...(params ? [params] : [])] as const
+	return [`/api/search/release`, ...(params ? [params] : [])] as const
 }
 
 export const getSearchReleaseQueryOptions = <
@@ -765,8 +765,8 @@ export const getSearchSongUrl = (params: SearchSongParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/search/song?${stringifiedParams}`
-		: `/search/song`
+		? `/api/search/song?${stringifiedParams}`
+		: `/api/search/song`
 }
 
 export const searchSong = async (
@@ -789,7 +789,7 @@ export const searchSong = async (
 }
 
 export const getSearchSongQueryKey = (params?: SearchSongParams) => {
-	return [`/search/song`, ...(params ? [params] : [])] as const
+	return [`/api/search/song`, ...(params ? [params] : [])] as const
 }
 
 export const getSearchSongQueryOptions = <
@@ -892,8 +892,8 @@ export const getSearchTagUrl = (params: SearchTagParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/search/tag?${stringifiedParams}`
-		: `/search/tag`
+		? `/api/search/tag?${stringifiedParams}`
+		: `/api/search/tag`
 }
 
 export const searchTag = async (
@@ -912,7 +912,7 @@ export const searchTag = async (
 }
 
 export const getSearchTagQueryKey = (params?: SearchTagParams) => {
-	return [`/search/tag`, ...(params ? [params] : [])] as const
+	return [`/api/search/tag`, ...(params ? [params] : [])] as const
 }
 
 export const getSearchTagQueryOptions = <

@@ -112,7 +112,7 @@ export type setUserRolesResponse =
 	| setUserRolesResponseError
 
 export const getSetUserRolesUrl = (id: number) => {
-	return `/admin/user/${id}/roles`
+	return `/api/admin/user/${id}/roles`
 }
 
 export const setUserRoles = async (
@@ -250,8 +250,8 @@ export const getAdminUsersUrl = (params?: AdminUsersParams) => {
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/admin/users?${stringifiedParams}`
-		: `/admin/users`
+		? `/api/admin/users?${stringifiedParams}`
+		: `/api/admin/users`
 }
 
 export const adminUsers = async (
@@ -274,7 +274,7 @@ export const adminUsers = async (
 }
 
 export const getAdminUsersQueryKey = (params?: AdminUsersParams) => {
-	return [`/admin/users`, ...(params ? [params] : [])] as const
+	return [`/api/admin/users`, ...(params ? [params] : [])] as const
 }
 
 export const getAdminUsersQueryOptions = <

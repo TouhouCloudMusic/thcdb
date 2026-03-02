@@ -115,7 +115,7 @@ export type createCreditRoleResponse =
 	| createCreditRoleResponseError
 
 export const getCreateCreditRoleUrl = () => {
-	return `/credit-role`
+	return `/api/credit-role`
 }
 
 export const createCreditRole = async (
@@ -258,8 +258,8 @@ export const getFindManyCreditRolesSummaryUrl = (
 	const stringifiedParams = normalizedParams.toString()
 
 	return stringifiedParams.length > 0
-		? `/credit-role/summary?${stringifiedParams}`
-		: `/credit-role/summary`
+		? `/api/credit-role/summary?${stringifiedParams}`
+		: `/api/credit-role/summary`
 }
 
 export const findManyCreditRolesSummary = async (
@@ -286,7 +286,7 @@ export const findManyCreditRolesSummary = async (
 export const getFindManyCreditRolesSummaryQueryKey = (
 	params?: FindManyCreditRolesSummaryParams,
 ) => {
-	return [`/credit-role/summary`, ...(params ? [params] : [])] as const
+	return [`/api/credit-role/summary`, ...(params ? [params] : [])] as const
 }
 
 export const getFindManyCreditRolesSummaryQueryOptions = <
@@ -393,7 +393,7 @@ export type findCreditRoleByIdResponse =
 	| findCreditRoleByIdResponseError
 
 export const getFindCreditRoleByIdUrl = (id: number) => {
-	return `/credit-role/${id}`
+	return `/api/credit-role/${id}`
 }
 
 export const findCreditRoleById = async (
@@ -416,7 +416,7 @@ export const findCreditRoleById = async (
 }
 
 export const getFindCreditRoleByIdQueryKey = (id: number) => {
-	return [`/credit-role/${id}`] as const
+	return [`/api/credit-role/${id}`] as const
 }
 
 export const getFindCreditRoleByIdQueryOptions = <
@@ -517,7 +517,7 @@ export type upsertCreditRoleCorrectionResponse =
 	| upsertCreditRoleCorrectionResponseError
 
 export const getUpsertCreditRoleCorrectionUrl = (id: number) => {
-	return `/credit-role/${id}`
+	return `/api/credit-role/${id}`
 }
 
 export const upsertCreditRoleCorrection = async (
