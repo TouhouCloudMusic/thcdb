@@ -11,10 +11,14 @@ fmt-all: fmt
 	cd server && just fmt
 	cd web && just fmt
 
-dev:
+build-toolchain-images:
+	docker build -f server/Dockerfile.toolchain --target rust-builder -t thcdb/rust-builder:nightly-bookworm server
+	docker build -f server/Dockerfile.toolchain --target wild-linker-builder -t thcdb/wild-linker-builder:nightly-bookworm server
+
+dev: build-toolchain-images
 	docker compose -f docker-compose.yml up --build --force-recreate --remove-orphans
 
-server:
+server: build-toolchain-images
 	docker compose -f docker-compose.yml up app --build --force-recreate --remove-orphans
 
 down *args:

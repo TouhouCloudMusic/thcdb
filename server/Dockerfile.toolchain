@@ -1,0 +1,22 @@
+# syntax=docker/dockerfile:1.20
+
+ARG DEBIAN_VERSION=bookworm
+ARG RUST_IMAGE=rustlang/rust:nightly-${DEBIAN_VERSION}
+
+FROM ${RUST_IMAGE} AS rust-builder
+ENV CARGO_INCREMENTAL=0
+ENV RUSTUP_PERMIT_COPY_RENAME=1
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    clang \
+    git \
+    libgit2-dev \
+    libssl-dev \
+    pkg-config \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN rustup component add --toolchain nightly rustc-codegen-cranelift-preview
+
+FROM rust-builder AS wild-linker-builder
+RUN cargo install --locked wild-linker
