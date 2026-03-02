@@ -1,22 +1,17 @@
 # syntax=docker/dockerfile:1.20
 
 ARG DEBIAN_VERSION=bookworm
-ARG RUST_IMAGE=rustlang/rust:nightly-${DEBIAN_VERSION}
+ARG RUST_BUILDER_IMAGE=thcdb/rust-builder:nightly-bookworm
+ARG WILD_LINKER_IMAGE=thcdb/wild-linker-builder:nightly-bookworm
 
-FROM ${RUST_IMAGE} AS builder
+FROM ${WILD_LINKER_IMAGE} AS wild-linker-builder
+
+FROM ${RUST_BUILDER_IMAGE} AS builder
 WORKDIR /app
 
-ENV RUSTUP_HOME=/usr/local/rustup
-ENV PATH=/usr/local/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/bin:/usr/local/cargo/bin:$PATH
+COPY --from=wild-linker-builder /usr/local/cargo/bin/wild /usr/local/cargo/bin/wild
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
-    clang \
-    git \
-    libgit2-dev \
-    libssl-dev \
-    pkg-config \
-  && rm -rf /var/lib/apt/lists/*
+ENV RUSTFLAGS="-Clink-arg=--ld-path=wild -Zshare-generics=y"
 
 COPY . ./
 
