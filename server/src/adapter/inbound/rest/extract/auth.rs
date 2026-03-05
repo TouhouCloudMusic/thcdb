@@ -123,10 +123,7 @@ where
         }
 
         let creds =
-            match AuthCredential::try_new(basic.username(), basic.password()) {
-                Ok(creds) => creds,
-                Err(e) => Err(e.into_response())?,
-            };
+            AuthCredential::from_sign_in(basic.username(), basic.password());
 
         match session.authenticate(creds).await {
             Ok(Some(user)) => {
