@@ -230,6 +230,17 @@ impl AuthCredential {
         })
     }
 
+    pub fn from_sign_in(
+        username: impl Into<String>,
+        password: impl Into<String>,
+    ) -> Self {
+        Self {
+            username: username.into(),
+            password: password.into(),
+            hash: None,
+        }
+    }
+
     pub fn validate(&self) -> Result<(), ValidateCredsError> {
         validate_username(&self.username)?;
         validate_password(&self.password)?;
@@ -397,6 +408,17 @@ mod test {
         .verify_credentials(None)
         .await
         .is_err();
+
+        assert!(res);
+    }
+
+    #[tokio::test]
+    async fn sign_in_allows_weak_password() {
+        let password = "Password123!";
+        let hash = hash_password(password).unwrap();
+
+        let creds = AuthCredential::from_sign_in("Alice", password);
+        let res = creds.verify_credentials(Some(&hash)).await.is_ok();
 
         assert!(res);
     }
