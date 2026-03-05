@@ -5,7 +5,6 @@ use utoipa::ToSchema;
 use crate::domain::artist::SimpleArtist;
 use crate::domain::correction::CorrectionEntity;
 use crate::domain::credit_role::CreditRoleRef;
-use crate::domain::release::SimpleRelease;
 use crate::domain::shared::{EntityIdent, Language, NewLocalizedName};
 use crate::domain::song_lyrics::SongLyrics;
 
@@ -17,11 +16,23 @@ pub struct Song {
     pub id: i32,
     pub title: String,
     pub artists: Vec<SimpleArtist>,
-    pub releases: Vec<SimpleRelease>,
+    pub releases: Vec<SongRelease>,
     pub credits: Vec<SongCredit>,
     pub languages: Vec<Language>,
     pub localized_titles: Vec<LocalizedTitle>,
     pub lyrics: Vec<SongLyrics>,
+}
+
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
+#[derive(Clone, Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
+pub struct SongRelease {
+    pub id: i32,
+    pub title: String,
+    pub track_number: Option<String>,
+    pub cover_art_url: Option<String>,
 }
 
 #[derive(Clone, Debug, ToSchema, Serialize)]
