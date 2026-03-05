@@ -4,8 +4,8 @@ use entity::enums::StorageBackend;
 use entity::sea_orm_active_enums::ReleaseImageType;
 use entity::song::Column::{Id, Title};
 use entity::{
-    artist, image, release_image, song, song_artist, song_credit,
-    song_language, song_localized_title, song_lyrics,
+    artist, image, release_image, release_track, song, song_artist,
+    song_credit, song_language, song_localized_title, song_lyrics,
 };
 use itertools::{Itertools, izip};
 use libfp::FunctorExt;
@@ -23,9 +23,8 @@ use super::filter::SongFilter;
 use crate::domain::artist::SimpleArtist;
 use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::image::Image;
-use crate::domain::release::SimpleRelease;
 use crate::domain::shared::Language;
-use crate::domain::song::{LocalizedTitle, SongCredit};
+use crate::domain::song::{LocalizedTitle, SongCredit, SongRelease};
 use crate::domain::song_lyrics::SongLyrics;
 use crate::features::song::model::Song;
 use crate::infra::database::sea_orm::cache::LANGUAGE_CACHE;
@@ -107,6 +106,7 @@ async fn find_many_impl(
         song_langs_list,
         localized_titles_list,
         song_releases_list,
+        song_release_tracks_list,
         song_lyrics_list,
     ) = try_join!(
         songs.load_many_to_many(artist::Entity, song_artist::Entity, db),
@@ -118,6 +118,7 @@ async fn find_many_impl(
             entity::release_track::Entity,
             db,
         ),
+        songs.load_many(release_track::Entity, db),
         songs.load_many(song_lyrics::Entity, db),
     )?;
 
@@ -151,6 +152,7 @@ async fn find_many_impl(
         song_langs_list,
         localized_titles_list,
         song_releases_list,
+        song_release_tracks_list,
         song_lyrics_list,
     )
     .map(
@@ -161,15 +163,32 @@ async fn find_many_impl(
             song_languages,
             localized_titles,
             song_releases,
+            song_release_tracks,
             lyrics,
         )| {
             let artists = song_artists.fmap_into();
 
+            let track_number_by_release_id = song_release_tracks
+                .into_iter()
+                .sorted_by_key(|track| track.id)
+                .filter_map(|track| {
+                    track
+                        .track_number
+                        .map(|track_number| (track.release_id, track_number))
+                })
+                .fold(HashMap::new(), |mut map, (release_id, track_number)| {
+                    map.entry(release_id).or_insert(track_number);
+                    map
+                });
+
             let releases = song_releases
                 .into_iter()
-                .map(|release| SimpleRelease {
+                .map(|release| SongRelease {
                     id: release.id,
                     title: release.title,
+                    track_number: track_number_by_release_id
+                        .get(&release.id)
+                        .cloned(),
                     cover_art_url: release_cover_art_urls
                         .get(&release.id)
                         .cloned(),
