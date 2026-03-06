@@ -34,8 +34,8 @@ quickfix: oxfix
 test:
     pnpm exec vitest
 
-check:
-    pnpm exec oxlint --type-aware --type-check --report-unused-disable-directives
+check +FILES="":
+    pnpm exec oxlint --type-aware --type-check --report-unused-disable-directives {{ FILES }}
 
 generate:
     pnpm exec orval
