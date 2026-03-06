@@ -1,1 +1,2 @@
-entity/src/entities
+crates/entity/src/entities
+openapi.json
