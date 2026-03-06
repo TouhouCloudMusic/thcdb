@@ -1,5 +1,6 @@
 # set shell := ["bash", "-euo", "pipefail", "-c"]
 set dotenv-load := true
+set positional-arguments := true
 
 init:
 	prek install
@@ -16,9 +17,15 @@ build-toolchain-images:
 	docker build -f server/Dockerfile.toolchain --target wild-linker-builder -t thcdb/wild-linker-builder:nightly-bookworm server
 
 dev: build-toolchain-images
+	docker compose -f docker-compose.yml up --build --remove-orphans
+
+dev-fresh: build-toolchain-images
 	docker compose -f docker-compose.yml up --build --force-recreate --remove-orphans
 
 server: build-toolchain-images
+	docker compose -f docker-compose.yml up app --build --remove-orphans
+
+server-fresh: build-toolchain-images
 	docker compose -f docker-compose.yml up app --build --force-recreate --remove-orphans
 
 down *args:
