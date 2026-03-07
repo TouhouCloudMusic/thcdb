@@ -1,0 +1,42 @@
+services:
+  test-db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: testdb
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    tmpfs:
+      - /var/lib/postgresql/data
+    ports:
+      - "${TEST_DB_PORT:-55432}:5432"
+    networks:
+      - test-backend
+
+  test-redis:
+    image: valkey/valkey:9-alpine@sha256:b4ee67d73e00393e712accc72cfd7003b87d0fcd63f0eba798b23251bfc9c394
+    restart: unless-stopped
+    command: valkey-server --save '' --appendonly no --loglevel warning
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    tmpfs:
+      - /data
+    ports:
+      - "${TEST_REDIS_PORT:-56379}:6379"
+    networks:
+      - test-backend
+
+networks:
+  test-backend:

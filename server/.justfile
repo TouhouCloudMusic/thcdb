@@ -1,46 +1,51 @@
-set windows-shell := ["sh.exe","-c"]
+set windows-shell := ["sh.exe", "-c"]
 set dotenv-load := true
-set positional-arguments
+set positional-arguments := true
+
+mod test-env '.just/test-env.just'
 
 fmt:
-  taplo fmt
-  dprint fmt
-  cargo fmt
+    taplo fmt
+    dprint fmt
+    cargo fmt
 
 fix:
-  cargo fix          --workspace --allow-dirty --allow-staged
-  cargo clippy --fix --workspace --allow-dirty --allow-staged
+    cargo fix          --workspace --allow-dirty --allow-staged
+    cargo clippy --fix --workspace --allow-dirty --allow-staged
 
 check:
-  taplo fmt --check
-  dprint check
-  cargo fmt --check
-  cargo clippy
-  cargo test
+    taplo fmt --check
+    dprint check
+    cargo fmt --check
+    cargo clippy
+    cargo test
+
+test-db:
+    just test-env
+    cargo test --features db-tests
+    just test-env down
 
 pre-push: check
 
 default: fmt && fix
 
 __rm_entites:
-  rm -f crates/entity/src/entities/*
+    rm -f crates/entity/src/entities/*
 
 __generate:
-  sea-orm-cli generate entity \
-  -o crates/entity/src/entities \
-  --with-prelude=none \
-  --with-serde=both \
-  --enum-extra-derives Copy \
-  --enum-extra-derives enumset::EnumSetType \
-  --enum-extra-derives utoipa::ToSchema \
-  --enum-extra-attributes="enumset(no_super_impls), enumset(serialize_repr = \"list\")"
-
+    sea-orm-cli generate entity \
+    -o crates/entity/src/entities \
+    --with-prelude=none \
+    --with-serde=both \
+    --enum-extra-derives Copy \
+    --enum-extra-derives enumset::EnumSetType \
+    --enum-extra-derives utoipa::ToSchema \
+    --enum-extra-attributes="enumset(no_super_impls), enumset(serialize_repr = \"list\")"
 
 generate: __rm_entites __generate
 
 @migrate *args:
-  cargo run -p migration "$@"
-
+    cargo run -p migration "$@"
 
 converge:
-  cargo tarpaulin --workspace --exclude-files crates/entity/src/entities/*
+    cargo tarpaulin --workspace --exclude-files crates/entity/src/entities/*
