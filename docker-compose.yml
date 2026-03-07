@@ -32,7 +32,7 @@ services:
     networks:
       - backend
 
-  app:
+  server:
     build:
       context: ./server
     restart: unless-stopped
@@ -67,11 +67,11 @@ services:
     init: true
     working_dir: /app
     depends_on:
-      app:
+      server:
         condition: service_healthy
     environment:
       CI: "true"
-      VITE_SERVER_URL: "http://app:12345"
+      VITE_SERVER_URL: "http://server:12345"
     ports:
       - "${WEB_PORT:-3000}:3000"
     volumes:
