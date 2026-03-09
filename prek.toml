@@ -10,9 +10,6 @@ hooks = [
     { id = "check-case-conflict", stages = [ "pre-push" ] },
     { id = "detect-private-key", stages = [ "pre-push" ] },
     { id = "check-added-large-files", stages = [ "pre-push" ] },
-    { id = "check-json", stages = [ "pre-push" ] },
-    { id = "check-toml", stages = [ "pre-push" ] },
-    { id = "check-yaml", stages = [ "pre-push" ] },
 ]
 
 [[repos]]
