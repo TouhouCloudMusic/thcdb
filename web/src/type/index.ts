@@ -1,7 +1,7 @@
 import type { If } from "./control_flow"
 
-export * from "./data"
-export * from "./control_flow"
+export type * from "./data"
+export type * from "./control_flow"
 
 type Not<B extends boolean> = B extends true ? false : true
 type And<A extends boolean, B extends boolean> = A extends true ? B : false

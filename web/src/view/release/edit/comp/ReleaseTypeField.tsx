@@ -47,7 +47,7 @@ export function ReleaseTypeField(props: {
 						/>
 						<Select.Trigger class="h-auto min-h-9 rounded border border-slate-400 px-2 py-1 text-lg font-light">
 							<Select.Value<string>>
-								{(state) => getTypeLabel(state.selectedOption() ?? "")}
+								{(state) => getTypeLabel(state.selectedOption())}
 							</Select.Value>
 							<Select.Icon />
 						</Select.Trigger>

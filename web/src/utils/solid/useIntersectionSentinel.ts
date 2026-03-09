@@ -6,7 +6,9 @@ type Options = {
 	onIntersect: () => void
 }
 
-export function useIntersectionSentinel<T extends Element>(options: Options) {
+export function useIntersectionSentinel<T extends Element>(
+	options: Options & { target?: T },
+): (el: T | undefined) => void {
 	let observer: IntersectionObserver | undefined
 	let target: T | undefined
 

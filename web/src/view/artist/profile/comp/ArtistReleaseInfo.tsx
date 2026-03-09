@@ -27,8 +27,6 @@ import { ArtistContext } from ".."
 
 // TODO: Add links after other pages are completed
 
-type ArtistReleaseType = (typeof TABS)[number]
-
 const TABS = ["Discography", "Appearance", "Credit"] as const
 export function ArtistReleaseInfo() {
 	const context = assertContext(ArtistContext)
@@ -86,13 +84,13 @@ function Inner() {
 				<Tab.Indicator />
 			</Tab.List>
 
-			<Tab.Content<ArtistReleaseType>
+			<Tab.Content
 				value="Discography"
 				class="w-full border-t border-slate-300"
 			>
 				<DiscographyTab />
 			</Tab.Content>
-			<Tab.Content<ArtistReleaseType>
+			<Tab.Content
 				value="Appearance"
 				class="w-full border-t border-slate-300"
 			>
@@ -107,7 +105,7 @@ function Inner() {
 					{(props) => <DiscographyItem {...props} />}
 				</ArtistReleaseList>
 			</Tab.Content>
-			<Tab.Content<ArtistReleaseType>
+			<Tab.Content
 				value="Credit"
 				class="w-full border-t border-slate-300"
 			>

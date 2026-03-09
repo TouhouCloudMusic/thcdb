@@ -28,19 +28,27 @@ export const dedupeBy: {
 })
 
 export const dedupeByKey: {
-	<T, K extends keyof T>(self: T[], key: K): T[]
-	<T, K extends keyof T>(key: K): (self: T[]) => T[]
-} = dual(2, <T, K extends keyof T>(self: T[], key: K): T[] => {
-	const seen = new Set<T[K]>()
-	const result: T[] = []
+	<T extends Record<K, unknown>, K extends PropertyKey>(self: T[], key: K): T[]
+	<T extends Record<K, unknown>, K extends PropertyKey>(
+		key: K,
+	): (self: T[]) => T[]
+} = dual(
+	2,
+	<T extends Record<K, unknown>, K extends PropertyKey>(
+		self: T[],
+		key: K,
+	): T[] => {
+		const seen = new Set<T[keyof T]>()
+		const result: T[] = []
 
-	for (const item of self) {
-		const value = item[key]
-		if (!seen.has(value)) {
-			seen.add(value)
-			result.push(item)
+		for (const item of self) {
+			const value = item[key]
+			if (!seen.has(value)) {
+				seen.add(value)
+				result.push(item)
+			}
 		}
-	}
 
-	return result
-})
+		return result
+	},
+)

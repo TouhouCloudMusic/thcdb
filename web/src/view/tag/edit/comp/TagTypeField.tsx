@@ -37,9 +37,9 @@ export function TagFormTypeField(props: Props) {
 							field.onInput(next === "" ? undefined : next)
 						}}
 						options={TAG_TYPE_VALUE_OPTIONS}
-						itemComponent={(props) => (
-							<Select.Item item={props.item}>
-								{getTypeLabel(props.item.rawValue)}
+						itemComponent={(itemProps) => (
+							<Select.Item item={itemProps.item}>
+								{getTypeLabel(itemProps.item.rawValue)}
 							</Select.Item>
 						)}
 					>
@@ -51,7 +51,7 @@ export function TagFormTypeField(props: Props) {
 						/>
 						<Select.Trigger>
 							<Select.Value<string>>
-								{(state) => getTypeLabel(state.selectedOption() ?? "")}
+								{(state) => getTypeLabel(state.selectedOption())}
 							</Select.Value>
 							<Select.Icon />
 						</Select.Trigger>

@@ -315,7 +315,7 @@ export function ImageQueueMockPage() {
 							>
 								<Select.Trigger>
 									<Select.Value<string>>
-										{(state) => getTypeLabel(state.selectedOption() ?? "")}
+										{(state) => getTypeLabel(state.selectedOption())}
 									</Select.Value>
 									<Select.Icon />
 								</Select.Trigger>
@@ -344,9 +344,7 @@ export function ImageQueueMockPage() {
 							>
 								<Select.Trigger>
 									<Select.Value<StatusFilter>>
-										{(state) =>
-											getStatusLabel(state.selectedOption() ?? "pending")
-										}
+										{(state) => getStatusLabel(state.selectedOption())}
 									</Select.Value>
 									<Select.Icon />
 								</Select.Trigger>

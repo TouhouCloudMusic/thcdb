@@ -177,7 +177,7 @@ export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 					>
 						<Select.Trigger>
 							<Select.Value<string>>
-								{(state) => typeLabel(state.selectedOption() ?? "")}
+								{(state) => typeLabel(state.selectedOption())}
 							</Select.Value>
 							<Select.Icon />
 						</Select.Trigger>

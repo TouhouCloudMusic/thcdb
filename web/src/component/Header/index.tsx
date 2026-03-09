@@ -128,7 +128,7 @@ function SearchBar() {
 
 	const submit = (e: Event) => {
 		e.preventDefault()
-		const value = inputRef?.value?.trim() ?? ""
+		const value = inputRef?.value.trim() ?? ""
 		if (value.length === 0) return
 		const selected = entity()
 		if (selected === "all") {
@@ -187,9 +187,7 @@ function SearchBar() {
 							>
 								<Select.Trigger class="h-7 w-40 text-sm">
 									<Select.Value<EntityFilter>>
-										{(state) =>
-											StrExt.capitalize(state.selectedOption() ?? "all")
-										}
+										{(state) => StrExt.capitalize(state.selectedOption())}
 									</Select.Value>
 									<Select.Icon />
 								</Select.Trigger>

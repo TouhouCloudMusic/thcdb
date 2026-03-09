@@ -61,7 +61,7 @@ export function appearances(id: number) {
 			})
 		},
 		initialPageParam: 0,
-		getNextPageParam: (last) => last?.next_cursor,
+		getNextPageParam: (last) => last.next_cursor,
 		throwOnError: true,
 	})
 }
@@ -128,7 +128,7 @@ export function discography(id: number, releaseType: ReleaseType) {
 				},
 			})
 		},
-		getNextPageParam: (last) => last?.next_cursor,
+		getNextPageParam: (last) => last.next_cursor,
 		initialPageParam: 0,
 		throwOnError: true,
 	})

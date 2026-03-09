@@ -50,7 +50,7 @@ export function ArtistFormArtistTypeField() {
 							/>
 							<Select.Trigger class="box-border h-8 w-full min-w-max rounded px-1 whitespace-nowrap focus:outline-2 focus:outline-reimu-600">
 								<Select.Value<"" | ArtistType>>
-									{(state) => getArtistTypeLabel(state.selectedOption() ?? "")}
+									{(state) => getArtistTypeLabel(state.selectedOption())}
 								</Select.Value>
 								<Select.Icon />
 							</Select.Trigger>

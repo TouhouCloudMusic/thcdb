@@ -71,7 +71,7 @@ const EventItem: Component<EventItemProps> = (props) => {
 						params={{ id: props.event.id.toString() }}
 						class="block truncate text-slate-900 no-underline hover:underline"
 					>
-						{props.event.name ?? `Event #${props.event.id}`}
+						{props.event.name}
 					</Link>
 
 					<div class="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">

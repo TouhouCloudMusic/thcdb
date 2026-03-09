@@ -18,13 +18,7 @@ export const generatePlugin = (
 			await generateConstants(base_url)
 			console.log("File generated successfully")
 		} catch (error) {
-			let msg
-
-			if (error instanceof Error) {
-				msg = error.stack
-			} else {
-				msg = error
-			}
+			const msg = error instanceof Error ? error.stack : error
 			console.error("Failed to generate file:", msg)
 		}
 	},

@@ -11,10 +11,7 @@ import solidPlugin from "vite-plugin-solid"
 import tsconfigPaths from "vite-tsconfig-paths"
 import { defineProject } from "vitest/config"
 
-const dirname =
-	typeof __dirname == "undefined"
-		? path.dirname(fileURLToPath(import.meta.url))
-		: __dirname
+const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const isHttps = (url: string | undefined) => {
 	if (!url) {

@@ -155,8 +155,8 @@ function computeTenureError(
 		const tenure = tenures[i]
 		if (!ObjExt.isRecord(tenure)) continue
 
-		const joinYear = tenure["join_year"]
-		const leaveYear = tenure["leave_year"]
+		const joinYear = tenure.join_year
+		const leaveYear = tenure.leave_year
 
 		if (typeof leaveYear === "number" && typeof joinYear === "number") {
 			if (leaveYear < joinYear) {
@@ -170,7 +170,7 @@ function computeTenureError(
 			const prevTenure = tenures[i - 1]
 			if (!ObjExt.isRecord(prevTenure)) continue
 
-			const prevLeave = prevTenure["leave_year"]
+			const prevLeave = prevTenure.leave_year
 
 			if (typeof prevLeave === "number" && typeof joinYear === "number") {
 				if (joinYear < prevLeave) {

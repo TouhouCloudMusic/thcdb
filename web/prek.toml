@@ -23,9 +23,10 @@ types_or = [
 stages = [ "pre-commit" ]
 
 [[repos.hooks]]
-id       = "web-check"
-name     = "web check"
-entry    = "just check"
-language = "system"
-types_or = [ "javascript", "jsx", "ts", "tsx" ]
-stages   = [ "pre-push" ]
+id             = "web-check"
+name           = "web check"
+entry          = "just check"
+language       = "system"
+pass_filenames = false
+types_or       = [ "javascript", "jsx", "ts", "tsx" ]
+stages         = [ "pre-commit", "pre-push" ]

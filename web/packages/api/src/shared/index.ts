@@ -181,11 +181,7 @@ export async function adaptFetchMessageResponseFromResponse(
 }
 
 export function adaptApi<T, E>(res: FetchResponse<T, E>) {
-	if (res.data) {
-		return res.data
-	} else {
-		return handleError(res)
-	}
+	return res.data ?? handleError(res)
 }
 
 export function adaptApiResult<T, E>(res: FetchResponse<T, E>) {

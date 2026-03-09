@@ -181,7 +181,7 @@ export function ImageQueueManagePage() {
 								>
 									<Select.Trigger>
 										<Select.Value<string>>
-											{(state) => getTypeLabel(state.selectedOption() ?? "")}
+											{(state) => getTypeLabel(state.selectedOption())}
 										</Select.Value>
 										<Select.Icon />
 									</Select.Trigger>
@@ -210,9 +210,7 @@ export function ImageQueueManagePage() {
 								>
 									<Select.Trigger>
 										<Select.Value<StatusFilterKind>>
-											{(state) =>
-												getStatusLabel(state.selectedOption() ?? "pending")
-											}
+											{(state) => getStatusLabel(state.selectedOption())}
 										</Select.Value>
 										<Select.Icon />
 									</Select.Trigger>

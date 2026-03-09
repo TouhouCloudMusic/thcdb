@@ -167,9 +167,9 @@ export function Root(props: RootProps) {
 		clearFileState()
 	}
 
-	const syncOpen = (state: boolean) => {
-		props.syncOpen(state)
-		if (!state) {
+	const syncOpen = (isOpen: boolean) => {
+		props.syncOpen(isOpen)
+		if (!isOpen) {
 			clearLocalState()
 		}
 	}

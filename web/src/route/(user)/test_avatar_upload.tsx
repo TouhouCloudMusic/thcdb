@@ -12,7 +12,7 @@ export const Route = createFileRoute("/(user)/test_avatar_upload")({
 	component: RouteComponent,
 })
 
-const ORIGIN = globalThis.location?.origin ?? "http://localhost:3000"
+const ORIGIN = globalThis.location.origin
 const assetUrl = (path: string) => new URL(path, ORIGIN).href
 
 async function delay(ms: number) {

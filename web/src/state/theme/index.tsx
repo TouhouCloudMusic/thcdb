@@ -9,7 +9,7 @@ export enum AppTheme {
 }
 
 export class ThemeStore {
-	private signal: Signal<AppTheme>
+	private readonly signal: Signal<AppTheme>
 
 	constructor(theme: AppTheme) {
 		this.signal = createSignal(theme)

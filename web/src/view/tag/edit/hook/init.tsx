@@ -32,8 +32,8 @@ export function toTagFormInitValue(input: Props): NewTagCorrection {
 				data: {
 					name: input.tag.name,
 					type: input.tag.type,
-					short_description: input.tag.short_description ?? undefined,
-					description: input.tag.description ?? undefined,
+					short_description: input.tag.short_description,
+					description: input.tag.description,
 					alt_names: input.tag.alt_names?.map((alt) => alt.name) ?? [],
 					relations:
 						input.tag.relations?.map((relation) => ({

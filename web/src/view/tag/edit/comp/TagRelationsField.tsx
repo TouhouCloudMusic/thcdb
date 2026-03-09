@@ -103,7 +103,7 @@ export function TagFormRelationsField(props: Props) {
 									tagRef={tagRefs[idx()]}
 									tagRefs={tagRefs}
 									tagId={tag?.id}
-									onSelectTag={(tag) => setTagAt(idx(), tag)}
+									onSelectTag={(selectedTag) => setTagAt(idx(), selectedTag)}
 									onRemove={() => removeRelationAt(idx())}
 								/>
 							)}
@@ -167,9 +167,9 @@ function RelationRow(props: RelationRowProps) {
 								field.onInput(next === "" ? undefined : next)
 							}}
 							options={TAG_RELATION_TYPE_OPTIONS}
-							itemComponent={(props) => (
-								<Select.Item item={props.item}>
-									{getRelationTypeLabel(props.item.rawValue)}
+							itemComponent={(itemProps) => (
+								<Select.Item item={itemProps.item}>
+									{getRelationTypeLabel(itemProps.item.rawValue)}
 								</Select.Item>
 							)}
 						>
@@ -181,9 +181,7 @@ function RelationRow(props: RelationRowProps) {
 							/>
 							<Select.Trigger class="w-full">
 								<Select.Value<"" | TagRelationType>>
-									{(state) =>
-										getRelationTypeLabel(state.selectedOption() ?? "")
-									}
+									{(state) => getRelationTypeLabel(state.selectedOption())}
 								</Select.Value>
 								<Select.Icon />
 							</Select.Trigger>

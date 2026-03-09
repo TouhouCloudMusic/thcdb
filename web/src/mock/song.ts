@@ -42,14 +42,12 @@ export const createMockSong = (id: number, override?: Partial<Song>): Song => {
 		languages = [LANG_EN]
 	}
 
-	const localizedTitles = languages?.map((lang) => ({
+	const localizedTitles = languages.map((lang) => ({
 		language: lang,
 		title: lang.code === "ja" ? jaTitle : enTitle,
 	}))
 
-	const title = languages?.some((lang) => lang.code === "ja")
-		? jaTitle
-		: enTitle
+	const title = languages.some((lang) => lang.code === "ja") ? jaTitle : enTitle
 
 	return {
 		id,

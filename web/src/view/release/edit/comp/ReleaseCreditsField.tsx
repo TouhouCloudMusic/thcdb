@@ -268,8 +268,8 @@ export function ReleaseCreditsField(props: {
 		initCredits: untrack(() => props.initCredits),
 	})
 
-	const creditRows = createMemo(
-		() => getInput(props.of, { path: ["data", "credits"] }) ?? [],
+	const creditRows = createMemo(() =>
+		getInput(props.of, { path: ["data", "credits"] }),
 	)
 
 	const sortedTrackIndices = createMemo(() => {
@@ -277,7 +277,7 @@ export function ReleaseCreditsField(props: {
 
 		const counters = new Map<number, number>()
 		const within = tracks.map((t) => {
-			const discIdx = t?.disc_index ?? 0
+			const discIdx = t.disc_index ?? 0
 			const currIdx = counters.get(discIdx) ?? 0
 			counters.set(discIdx, currIdx + 1)
 			return currIdx + 1
