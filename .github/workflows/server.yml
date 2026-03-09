@@ -1,4 +1,4 @@
-name: Lint
+name: Server
 
 on:
   # push:
@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: ["main"]
     paths:
+      - ".github/workflows/server.yml"
       - "server/crates/**"
       - "server/src/**"
       - "server/.cargo/**"
@@ -55,3 +56,54 @@ jobs:
 
       - name: Run test
         run: cargo test --quiet
+
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    needs: rust
+    env:
+      TEST_DATABASE_URL: postgres://testuser:testpass@127.0.0.1:55432/testdb
+      TEST_REDIS_URL: redis://127.0.0.1:56379
+      TEST_DB_PORT: 55432
+      TEST_REDIS_PORT: 56379
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U testuser -d testdb"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+      redis:
+        image: valkey/valkey:9-alpine
+        ports:
+          - 56379:6379
+        options: >-
+          --health-cmd "valkey-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
+
+      - uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Cache Cargo downloads
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('server/Cargo.lock') }}
+
+      - name: Run integration test
+        run: cargo test --quiet --features integration-test

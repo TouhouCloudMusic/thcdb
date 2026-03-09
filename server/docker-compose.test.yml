@@ -23,7 +23,7 @@ services:
       - test-backend
 
   test-redis:
-    image: valkey/valkey:9-alpine@sha256:b4ee67d73e00393e712accc72cfd7003b87d0fcd63f0eba798b23251bfc9c394
+    image: valkey/valkey:9-alpine
     restart: unless-stopped
     command: valkey-server --save '' --appendonly no --loglevel warning
     healthcheck:

@@ -20,9 +20,9 @@ check:
     cargo clippy
     cargo test
 
-test-db:
+integration-test:
     just test-env
-    cargo test --features db-tests
+    cargo test --features integration-test
     just test-env down
 
 pre-push: check

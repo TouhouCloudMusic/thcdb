@@ -838,7 +838,7 @@ mod unit_tests {
 }
 
 // TODO : Refactor env
-#[cfg(all(test, feature = "db-tests"))]
+#[cfg(all(test, feature = "integration-test"))]
 mod tests {
     use std::sync::Arc;
 
@@ -848,9 +848,9 @@ mod tests {
 
     use super::*;
     use crate::domain::user::NewUser;
-    use crate::infra::database::get_connection;
     use crate::infra::database::sea_orm::SeaOrmRepository;
     use crate::infra::email::Mailer;
+    use crate::infra::integration_test::{test_connection, test_redis_url};
     use crate::infra::redis::Pool as RedisPool;
 
     fn build_failing_mailer() -> Mailer {
@@ -862,28 +862,6 @@ mod tests {
             .build();
         let from: Mailbox = "admin@example.com".parse().unwrap();
         Mailer::new(transport, from)
-    }
-
-    fn test_database_url() -> String {
-        std::env::var("TEST_DATABASE_URL")
-            .ok()
-            .or_else(|| std::env::var("DATABASE_URL").ok())
-            .unwrap_or_else(|| {
-                let port = std::env::var("TEST_DB_PORT")
-                    .unwrap_or_else(|_| "55432".to_string());
-                format!("postgres://testuser:testpass@127.0.0.1:{port}/testdb")
-            })
-    }
-
-    fn test_redis_url() -> String {
-        std::env::var("TEST_REDIS_URL")
-            .ok()
-            .or_else(|| std::env::var("REDIS_URL").ok())
-            .unwrap_or_else(|| {
-                let port = std::env::var("TEST_REDIS_PORT")
-                    .unwrap_or_else(|_| "56379".to_string());
-                format!("redis://127.0.0.1:{port}")
-            })
     }
 
     async fn create_verified_user(
@@ -917,8 +895,7 @@ mod tests {
 
     #[tokio::test]
     async fn forgot_password_does_not_leak_email_service_failures() {
-        let url = test_database_url();
-        let conn = get_connection(&url).await;
+        let conn = test_connection().await;
         let service = build_test_service(&conn).await;
 
         let user = create_verified_user(&conn).await;
@@ -948,8 +925,7 @@ mod tests {
 
     #[tokio::test]
     async fn verify_reset_code_too_many_attempts_is_indistinguishable() {
-        let url = test_database_url();
-        let conn = get_connection(&url).await;
+        let conn = test_connection().await;
         let service = build_test_service(&conn).await;
 
         let user = create_verified_user(&conn).await;
@@ -995,8 +971,7 @@ mod tests {
 
     #[tokio::test]
     async fn verify_reset_code_returns_at_most_one_key_when_racing() {
-        let url = test_database_url();
-        let conn = get_connection(&url).await;
+        let conn = test_connection().await;
         let service = build_test_service(&conn).await;
 
         let user = create_verified_user(&conn).await;
@@ -1072,8 +1047,7 @@ mod tests {
 
     #[tokio::test]
     async fn verify_reset_code_counts_each_invalid_attempt_when_racing() {
-        let url = test_database_url();
-        let conn = get_connection(&url).await;
+        let conn = test_connection().await;
         let service = build_test_service(&conn).await;
 
         let user = create_verified_user(&conn).await;
@@ -1167,8 +1141,7 @@ mod tests {
 
     #[tokio::test]
     async fn reset_password_invalid_key_format_is_rejected() {
-        let url = test_database_url();
-        let conn = get_connection(&url).await;
+        let conn = test_connection().await;
         let service = build_test_service(&conn).await;
 
         let err = service
@@ -1186,8 +1159,7 @@ mod tests {
 
     #[tokio::test]
     async fn reset_password_unknown_key_does_not_clear_existing_state() {
-        let url = test_database_url();
-        let conn = get_connection(&url).await;
+        let conn = test_connection().await;
         let service = build_test_service(&conn).await;
 
         let user = create_verified_user(&conn).await;
@@ -1229,8 +1201,7 @@ mod tests {
 
     #[tokio::test]
     async fn restore_consumed_password_reset_key_preserves_original_expiry() {
-        let url = test_database_url();
-        let conn = get_connection(&url).await;
+        let conn = test_connection().await;
         let service = build_test_service(&conn).await;
 
         let user = create_verified_user(&conn).await;
@@ -1279,8 +1250,7 @@ mod tests {
 
     #[tokio::test]
     async fn reset_password_consumes_same_key_atomically() {
-        let url = test_database_url();
-        let conn = get_connection(&url).await;
+        let conn = test_connection().await;
         let service = build_test_service(&conn).await;
 
         let user = create_verified_user(&conn).await;

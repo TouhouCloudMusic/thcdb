@@ -137,3 +137,26 @@ pub(super) fn init(worker: &Worker) {
         }
     });
 }
+
+#[cfg(test)]
+mod tests {
+    use fred::types::Value;
+
+    use super::*;
+
+    #[test]
+    fn converts_brpop_reply() {
+        let payload = r#"{"user_id":1}"#.to_string();
+        let reply = Value::Array(vec![
+            PASSWORD_RESET_EMAIL_QUEUE_KEY.into(),
+            payload.clone().into(),
+        ]);
+
+        let reply: Option<(String, String)> = reply.convert().unwrap();
+
+        assert_eq!(
+            reply,
+            Some((PASSWORD_RESET_EMAIL_QUEUE_KEY.to_string(), payload))
+        );
+    }
+}
