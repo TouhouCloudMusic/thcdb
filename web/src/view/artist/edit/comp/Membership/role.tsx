@@ -44,8 +44,8 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 
 	const addRole = (role: CreditRoleSummary) => {
 		setRoles(
-			produce((roles) => {
-				roles.push(role)
+			produce((prev) => {
+				prev.push(role)
 			}),
 		)
 
@@ -80,10 +80,10 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 							addRole(role)
 						}
 					}}
-					itemComponent={(props) => (
-						<Combobox.Item item={props.item}>
+					itemComponent={(itemProps) => (
+						<Combobox.Item item={itemProps.item}>
 							<Combobox.ItemLabel>
-								{props.item.rawValue.name}
+								{itemProps.item.rawValue.name}
 							</Combobox.ItemLabel>
 							<Combobox.ItemIndicator>
 								<CheckIcon />

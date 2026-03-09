@@ -7,7 +7,7 @@ import type { CursorPage, NotificationItem } from "../../type"
 // TODO: Refactor adapter
 type ApiResult<T> = E.Either<T, ApiError<string>>
 
-const ORIGIN = globalThis.location?.origin ?? "http://localhost:3000"
+const ORIGIN = globalThis.location.origin
 
 const buildUrl = (
 	path: string,
@@ -75,11 +75,6 @@ const isErrMessageResponse = (json: unknown): json is ErrMessageResponse => {
 	)
 }
 
-const expectData = <T>(json: unknown): T | undefined => {
-	if (!isOkDataResponse<T>(json)) return undefined
-	return json.data
-}
-
 const expectMessage = (json: unknown): string | undefined => {
 	if (!isOkMessageResponse(json)) return undefined
 	return json.message
@@ -100,7 +95,7 @@ const getData = async <T>(
 	})
 
 	if (!res) {
-		return E.left({ type: "Response", error: error ?? "Request failed" })
+		return E.left({ type: "Response", error })
 	}
 
 	if (!res.ok) {
@@ -110,12 +105,11 @@ const getData = async <T>(
 		})
 	}
 
-	const data = expectData<T>(json)
-	if (data === undefined) {
+	if (!isOkDataResponse<T>(json)) {
 		return E.left({ type: "Response", error: "Invalid response shape" })
 	}
 
-	return E.right(data)
+	return E.right(json.data)
 }
 
 const postMessage = async (
@@ -128,7 +122,7 @@ const postMessage = async (
 	})
 
 	if (!res) {
-		return E.left({ type: "Response", error: error ?? "Request failed" })
+		return E.left({ type: "Response", error })
 	}
 
 	if (!res.ok) {

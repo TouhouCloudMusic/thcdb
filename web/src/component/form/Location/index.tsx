@@ -26,9 +26,9 @@ export function Location(props: LocationProps) {
 						},
 					]}
 				>
-					{(props) => (
+					{(item) => (
 						<InputField.Root>
-							<InputField.Input placeholder={props.name} />
+							<InputField.Input placeholder={item.name} />
 						</InputField.Root>
 					)}
 				</For>

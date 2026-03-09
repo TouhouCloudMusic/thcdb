@@ -180,5 +180,5 @@ export function eq<A>(a: A, b?: A): boolean | ((b: A) => boolean) {
 		return a === b
 	}
 
-	return (b: A) => a === b
+	return (other: A) => a === other
 }

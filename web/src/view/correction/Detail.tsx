@@ -358,9 +358,9 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 											const next = value ? Number(value) : undefined
 											props.onCompareIdChange(next)
 										}}
-										itemComponent={(props) => (
-											<Select.Item item={props.item}>
-												{getCompareLabel(props.item.rawValue)}
+										itemComponent={(itemProps) => (
+											<Select.Item item={itemProps.item}>
+												{getCompareLabel(itemProps.item.rawValue)}
 											</Select.Item>
 										)}
 									>
@@ -371,9 +371,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 											)}
 										>
 											<Select.Value<string>>
-												{(state) =>
-													getCompareLabel(state.selectedOption() ?? "")
-												}
+												{(state) => getCompareLabel(state.selectedOption())}
 											</Select.Value>
 											<Select.Icon />
 										</Select.Trigger>

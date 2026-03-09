@@ -49,7 +49,10 @@ const getObject = (x: unknown): Record<string, unknown> | undefined => {
 }
 
 export class UserStore {
-	constructor(private ctx: UserContext) {
+	private ctx: UserContext
+
+	constructor(ctx: UserContext) {
+		this.ctx = ctx
 		return createMutable(this)
 	}
 
@@ -96,8 +99,8 @@ export class UserStore {
 			? getObject(settings["notification"])
 			: undefined
 		const getBool = (key: string, defaultVal: boolean) => {
-			const v = notification?.[key]
-			return typeof v === "boolean" ? v : defaultVal
+			const value = notification?.[key]
+			return typeof value === "boolean" ? value : defaultVal
 		}
 
 		if (
@@ -168,8 +171,7 @@ export class UserStore {
 			return
 		}
 
-		const origin = globalThis.location?.origin
-		if (!origin) return
+		const origin = globalThis.location.origin
 		const url = new globalThis.URL("/api/ws/notifications", origin)
 		url.protocol = url.protocol === "https:" ? "wss:" : "ws:"
 

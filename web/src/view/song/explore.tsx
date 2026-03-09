@@ -128,7 +128,7 @@ function SongExploreFilterBar(props: SongExploreFilterBarProps) {
 					>
 						<Select.Trigger>
 							<Select.Value<string>>
-								{(state) => languageLabel(state.selectedOption() ?? "")}
+								{(state) => languageLabel(state.selectedOption())}
 							</Select.Value>
 							<Select.Icon />
 						</Select.Trigger>

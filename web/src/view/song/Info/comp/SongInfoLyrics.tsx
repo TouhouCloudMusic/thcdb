@@ -45,11 +45,7 @@ export function SongInfoLyrics() {
 						class="h-auto min-h-8 border-0 border-b border-slate-400 rounded-none px-1 py-2 text-sm tracking-wide text-secondary focus:outline-none"
 					>
 						<Select.Value<string>>
-							{(state) =>
-								getLangName(
-									state.selectedOption() ?? selectedLangId().toString(),
-								)
-							}
+							{(state) => getLangName(state.selectedOption())}
 						</Select.Value>
 						<Select.Icon />
 					</Select.Trigger>

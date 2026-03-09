@@ -65,11 +65,11 @@ function RouteComponent() {
 
 	for (const type of RELEASE_TYPES) {
 		createEffect(() => {
-			const query = discography[type]
-			if (query.isSuccess) {
+			const discographyQuery = discography[type]
+			if (discographyQuery.isSuccess) {
 				setDiscographyMap(
 					produce((v) => {
-						const lastPage = query.data.pages.at(-1)
+						const lastPage = discographyQuery.data.pages.at(-1)
 						if (lastPage) {
 							v[type].push(...lastPage.items)
 						}

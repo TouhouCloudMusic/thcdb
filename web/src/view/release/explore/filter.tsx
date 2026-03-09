@@ -109,7 +109,7 @@ function ReleaseTypeSelect(props: { store: ReleaseExploreFilterStore }) {
 			defaultValue="All"
 			triggerClass="w-32"
 			onChange={(value) => {
-				if (!value || value === "All") {
+				if (value === "All") {
 					props.store.setReleaseType(undefined)
 				} else {
 					props.store.setReleaseType(value)

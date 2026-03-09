@@ -521,14 +521,14 @@ const resolveActiveTreeId = (
 	parentById: ReadonlyMap<number, number | null>,
 ): number | null => {
 	const fallbackId = visibleIds[0] ?? null
-	if (fallbackId === null || fallbackId === undefined) return null
-	if (activeId === null || activeId === undefined) return fallbackId
+	if (fallbackId === null) return null
+	if (activeId === null) return fallbackId
 	if (visibleIdSet.has(activeId)) return activeId
 
 	let currentId = activeId
-	while (true) {
+	for (;;) {
 		const parentId = parentById.get(currentId)
-		if (parentId === null || parentId === undefined) break
+		if (parentId == null) break
 		if (visibleIdSet.has(parentId)) return parentId
 		currentId = parentId
 	}

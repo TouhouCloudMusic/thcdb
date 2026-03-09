@@ -57,7 +57,7 @@ type LabelItemProps = {
 }
 
 export const LabelItem: Component<LabelItemProps> = (props) => {
-	const localizedNames = () => props.label.localized_names ?? []
+	const localizedNames = () => props.label.localized_names
 	const visibleLocalizedNames = () => localizedNames().slice(0, 2)
 	const extraLocalizedCount = () => Math.max(0, localizedNames().length - 2)
 	const dateLine = () => getLabelDateLine(props.label)
@@ -92,7 +92,7 @@ export const LabelItem: Component<LabelItemProps> = (props) => {
 					<div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
 						<span>{dateLine()}</span>
 						<span class="text-slate-300">·</span>
-						<span>Founders {props.label.founders?.length ?? 0}</span>
+						<span>Founders {props.label.founders.length}</span>
 					</div>
 
 					<Show when={visibleLocalizedNames().length > 0}>

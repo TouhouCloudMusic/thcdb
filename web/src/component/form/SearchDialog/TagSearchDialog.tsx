@@ -47,7 +47,7 @@ export function TagSearchDialog(props: TagSearchDialogProps): JSX.Element {
 
 	const items = createMemo(() => {
 		if (!tagsQuery.isSuccess) return [] as Tag[]
-		const list = tagsQuery.data ?? []
+		const list = tagsQuery.data
 		if (props.dataFilter) {
 			return list.filter(props.dataFilter)
 		}

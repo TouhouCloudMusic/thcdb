@@ -17,7 +17,7 @@ type MockCase = {
 	data: UserProfile
 }
 
-const ORIGIN = globalThis.location?.origin ?? "http://localhost:3000"
+const ORIGIN = globalThis.location.origin
 const assetUrl = (path: string) => new URL(path, ORIGIN).href
 
 const CASES = [

@@ -39,7 +39,7 @@ export function EventLocationField(props: Props) {
 						>
 							{(field) => {
 								const handleInput: typeof field.props.onInput = (event) => {
-									field.props.onInput?.(event)
+									field.props.onInput(event)
 									const nextValue = sanitize(event.currentTarget.value)
 									const currentLocation = getInput(formStore, {
 										path: ["data", "location"],

@@ -165,6 +165,8 @@
 		"typescript/consistent-type-definitions": "off",
 		"typescript/explicit-function-return-type": "off",
 		"typescript/explicit-module-boundary-types": "off",
+		"typescript/consistent-return": "off",
+		"typescript/strict-void-return": "off",
 		"typescript/no-non-null-assertion": "off",
 		"typescript/no-empty-object-type": [
 			"warn",
@@ -214,6 +216,7 @@
 		"unicorn/no-array-reduce": "off",
 		"unicorn/no-array-callback-reference": "off",
 		"unicorn/no-array-method-this-argument": "off",
+		"unicorn/prefer-ternary": ["warn", "only-single-line"],
 		// Dupe
 		"unicorn/no-nested-ternary": "off",
 		"unicorn/no-null": "off",
@@ -269,6 +272,7 @@
 		{
 			"files": ["plugins/*.ts"],
 			"rules": {
+				"import/no-nodejs-modules": "off",
 				"no-console": "off",
 				"no-magic-numbers": "off"
 			}
