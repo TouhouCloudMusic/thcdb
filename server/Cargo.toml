@@ -249,4 +249,4 @@ panic           = "abort"
 release = [
     "tikv-jemallocator",
 ]
-db-tests = [  ]
+integration-test = [  ]

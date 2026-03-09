@@ -61,7 +61,7 @@ pub async fn correction_sorted_entity_ids(
 
 pub async fn upsert_admin_acc(db: &DatabaseConnection) {
     let admin_password = env::var("ADMIN_PASSWORD")
-        .unwrap_or_else(admin_password_fallback);
+        .unwrap_or_else(|_| admin_password_fallback());
     let password = hash(&admin_password)
         .await
         .expect("Failed to hash ADMIN_PASSWORD");
@@ -136,7 +136,10 @@ pub async fn upsert_admin_acc(db: &DatabaseConnection) {
     .expect("Failed to upsert admin account");
 }
 
-fn admin_password_fallback
+fn admin_password_fallback() -> String {
+    #[cfg(test)]
+    {
+        "changeme".to_string()
     }
 
     #[cfg(not(test))]

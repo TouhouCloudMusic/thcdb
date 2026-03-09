@@ -5,8 +5,8 @@ use sea_orm::DatabaseConnection;
 use snafu::{FromString, ResultExt, Whatever};
 
 use super::config::{Config, EmailSecurity};
-use super::database::get_connection;
 use super::database::sea_orm::SeaOrmRepository;
+use super::database::{get_connection, init_database};
 use super::email::Mailer;
 use super::notification::NotificationHub;
 use super::redis::Pool;
@@ -27,6 +27,7 @@ pub struct AppState {
 impl AppState {
     pub async fn init(config: &Config) -> Result<Self, Whatever> {
         let conn = get_connection(&config.database_url).await;
+        init_database(&conn).await;
         let redis_pool = Pool::init(&config.redis_url).await.inner;
         let smtp_conf = &config.email;
 

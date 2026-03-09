@@ -3,6 +3,8 @@ pub mod config;
 pub mod database;
 pub mod email;
 pub mod error;
+#[cfg(all(test, feature = "integration-test"))]
+pub(crate) mod integration_test;
 pub mod logger;
 pub mod mapper;
 pub mod notification;

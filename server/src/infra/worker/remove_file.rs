@@ -60,3 +60,23 @@ pub(super) fn init(worker: &Worker) {
         }
     });
 }
+
+#[cfg(test)]
+mod tests {
+    use fred::types::Value;
+
+    use super::*;
+
+    #[test]
+    fn brpop_reply_converts_to_queue_and_path() {
+        let path = "/tmp/example".to_string();
+        let reply = Value::Array(vec![
+            REMOVE_FILE_FAILED_KEY.into(),
+            path.clone().into(),
+        ]);
+
+        let reply: Option<(String, String)> = reply.convert().unwrap();
+
+        assert_eq!(reply, Some((REMOVE_FILE_FAILED_KEY.to_string(), path)));
+    }
+}
