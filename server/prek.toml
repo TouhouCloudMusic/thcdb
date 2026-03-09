@@ -27,5 +27,5 @@ name           = "server cargo test"
 entry          = "cargo test --quiet"
 language       = "system"
 pass_filenames = false
-types = ["rust"]
-stages = ["pre-push"]
+types          = [ "rust" ]
+stages         = [ "pre-push" ]
