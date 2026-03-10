@@ -27,6 +27,6 @@ id             = "web-check"
 name           = "web check"
 entry          = "just check"
 language       = "system"
-pass_filenames = false
+pass_filenames = true
 types_or       = [ "javascript", "jsx", "ts", "tsx" ]
 stages         = [ "pre-commit", "pre-push" ]
