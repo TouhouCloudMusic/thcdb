@@ -1,6 +1,6 @@
 use lettre::message::{Mailbox, Message as EmailMessage};
 
-use super::model::PASSWORD_RESET_CODE_EXPIRES_MINUTES;
+use super::service::PASSWORD_RESET_CODE_EXPIRES_MINUTES;
 use crate::domain::model::VerificationCode;
 use crate::features::auth::InvalidEmail;
 

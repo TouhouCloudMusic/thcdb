@@ -1,6 +1,5 @@
 mod error;
 mod http;
-mod model;
 mod service;
 mod verification;
 

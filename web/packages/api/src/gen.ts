@@ -2361,17 +2361,16 @@ export type components = {
             verification_code_expires_minutes: number;
         };
         ResetPasswordRequest: {
-            key: string;
             password: string;
         };
         SearchResponse: {
-            artists: components["schemas"]["CursorResponse_SimpleArtist"];
-            events: components["schemas"]["CursorResponse_SimpleEvent"];
-            labels: components["schemas"]["CursorResponse_SimpleLabel"];
-            releases: components["schemas"]["CursorResponse_SimpleRelease"];
-            songs: components["schemas"]["CursorResponse_SongRef"];
-            tags: components["schemas"]["CursorResponse_TagRef"];
-        };
+        artists: components["schemas"]["CursorResponse_SimpleArtist"];
+        events: components["schemas"]["CursorResponse_SimpleEvent"];
+        labels: components["schemas"]["CursorResponse_SimpleLabel"];
+        releases: components["schemas"]["CursorResponse_SimpleRelease"];
+        songs: components["schemas"]["CursorResponse_SongRef"];
+        tags: components["schemas"]["CursorResponse_TagRef"];
+    };
         SetUserRolesRequest: {
             roles: string[];
         };

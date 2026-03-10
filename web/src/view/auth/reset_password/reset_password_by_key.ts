@@ -1,7 +1,9 @@
+import { Effect, pipe } from "effect"
+
 import type { ResetPasswordRequest } from "~/orval/touhouCloudDB.schemas"
 
-import { getApiErrorMessage, REQUEST_FAILED_MESSAGE } from "./response"
-import type { AuthApiResponse } from "./response"
+import type { AuthApiResponse, RequestFailedError } from "./response"
+import { ensureSuccessResponse, getResetPasswordErrorMessage } from "./response"
 import type { ResetPasswordUiStore } from "./store"
 
 const INVALID_OR_EXPIRED_RESET_KEY_MESSAGE = "Invalid or expired reset key"
@@ -9,42 +11,50 @@ const INVALID_OR_EXPIRED_RESET_KEY_MESSAGE = "Invalid or expired reset key"
 export type ResetPasswordByKeyFn = (
 	req: ResetPasswordRequest,
 	options?: RequestInit,
-) => Promise<AuthApiResponse>
+) => Effect.Effect<AuthApiResponse, RequestFailedError>
 
 export async function resetPasswordByKey(args: {
 	password: string
 	resetPasswordByKey: ResetPasswordByKeyFn
 	onInvalidResetKey?(): void | Promise<void>
-	onSuccess(): void | Promise<void>
+	onSuccess(): Promise<void>
 	uiStore: ResetPasswordUiStore
 }) {
 	const { password, uiStore } = args
 
 	uiStore.startResetPassword()
 
-	try {
-		const res = await args.resetPasswordByKey({
-			key: "",
-			password,
-		})
+	await Effect.runPromise(
+		pipe(
+			Effect.gen(function* () {
+				const response = yield* args.resetPasswordByKey({
+					password,
+				})
 
-		if (res.status !== 200) {
-			const message = getApiErrorMessage(res.data)
+				yield* ensureSuccessResponse(response)
+				yield* Effect.promise(() => args.onSuccess())
+			}),
+			Effect.catchAll((error) =>
+				Effect.gen(function* () {
+					const message = getResetPasswordErrorMessage(error)
 
-			if (
-				message === INVALID_OR_EXPIRED_RESET_KEY_MESSAGE
-				&& args.onInvalidResetKey
-			) {
-				await args.onInvalidResetKey()
-			}
+					if (
+						message === INVALID_OR_EXPIRED_RESET_KEY_MESSAGE
+						&& args.onInvalidResetKey
+					) {
+						yield* Effect.tryPromise({
+							try: async () => {
+								await args.onInvalidResetKey!()
+							},
+							catch: () => error,
+						})
+					}
 
-			uiStore.endResetPasswordWithError(message)
-			return
-		}
-	} catch {
-		uiStore.endResetPasswordWithError(REQUEST_FAILED_MESSAGE)
-		return
-	}
-
-	await args.onSuccess()
+					yield* Effect.sync(() => {
+						uiStore.endResetPasswordWithError(message)
+					})
+				}),
+			),
+		),
+	)
 }

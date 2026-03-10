@@ -12,13 +12,6 @@ use serde::{Deserialize, Serialize};
 use super::error::{
     ForgotPasswordError, ResetPasswordError, VerifyResetCodeError,
 };
-use super::model::{
-    ForgotPasswordRequest, ForgotPasswordResponse,
-    PASSWORD_RESET_CODE_EXPIRES_MINUTES,
-    PASSWORD_RESET_CODE_RESEND_COOLDOWN_SECONDS,
-    PASSWORD_RESET_KEY_EXPIRES_MINUTES, ResetPasswordRequest,
-    VerifyResetCodeRequest,
-};
 use super::verification::{
     SendPasswordResetEmailError, build_password_reset_email_message,
 };
@@ -31,8 +24,11 @@ use crate::shared::error::InvalidInput;
 use crate::shared::secret;
 
 const PASSWORD_RESET_CODE_MAX_FAILED_ATTEMPTS: i32 = 10;
+pub(super) const PASSWORD_RESET_CODE_EXPIRES_MINUTES: i64 = 10;
+const PASSWORD_RESET_CODE_RESEND_COOLDOWN_SECONDS: i64 = 60;
 const PASSWORD_RESET_KEY_RANDOM_BYTES_LEN: usize = 24;
 const PASSWORD_RESET_KEY_MAX_LEN: usize = 64;
+const PASSWORD_RESET_KEY_EXPIRES_MINUTES: i64 = 5;
 pub(crate) const PASSWORD_RESET_EMAIL_QUEUE_KEY: &str =
     "auth:password-reset:email";
 
@@ -165,10 +161,44 @@ pub(crate) struct PasswordResetEmailJob {
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct VerifiedResetPasswordSession {
+pub(super) struct ForgotPasswordCommand {
+    pub email: String,
+}
+
+#[derive(Clone, Debug)]
+pub(super) struct ForgotPasswordResult {
+    pub verification_code_expires_minutes: i64,
+    pub resend_cooldown_seconds: i64,
+}
+
+impl Default for ForgotPasswordResult {
+    fn default() -> Self {
+        Self {
+            verification_code_expires_minutes:
+                PASSWORD_RESET_CODE_EXPIRES_MINUTES,
+            resend_cooldown_seconds:
+                PASSWORD_RESET_CODE_RESEND_COOLDOWN_SECONDS,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub(super) struct VerifyResetCodeCommand {
+    pub email: String,
+    pub code: String,
+}
+
+#[derive(Clone, Debug)]
+pub(super) struct VerifiedResetPasswordSession {
     pub key: String,
     pub key_expires_minutes: i64,
     pub key_expires_at: DateTime<FixedOffset>,
+}
+
+#[derive(Clone, Debug)]
+pub(super) struct ResetPasswordCommand {
+    pub key: String,
+    pub password: String,
 }
 
 impl ConsumedPasswordResetKey {
@@ -199,10 +229,10 @@ impl StoredPasswordResetState {
 }
 
 impl Service {
-    pub async fn forgot_password(
+    pub(super) async fn forgot_password(
         &self,
-        ForgotPasswordRequest { email }: ForgotPasswordRequest,
-    ) -> Result<ForgotPasswordResponse, ForgotPasswordError> {
+        ForgotPasswordCommand { email }: ForgotPasswordCommand,
+    ) -> Result<ForgotPasswordResult, ForgotPasswordError> {
         let email = Email::parse(&email)
             .map_err(|source| ForgotPasswordError::InvalidEmail { source })?;
 
@@ -212,7 +242,7 @@ impl Service {
         let code_hash = secret::hash(&code.to_string()).await?;
 
         let Some(user) = self.find_verified_user_by_email(&email).await? else {
-            return Ok(ForgotPasswordResponse::default());
+            return Ok(ForgotPasswordResult::default());
         };
 
         let existing_state =
@@ -222,7 +252,7 @@ impl Service {
         if let Some(state) = existing_state.as_ref()
             && state.state.is_in_code_resend_cooldown(now)
         {
-            return Ok(ForgotPasswordResponse::default());
+            return Ok(ForgotPasswordResult::default());
         }
 
         let next_state = StoredPasswordResetState::from_state(
@@ -236,7 +266,7 @@ impl Service {
             )
             .await?;
         if !saved {
-            return Ok(ForgotPasswordResponse::default());
+            return Ok(ForgotPasswordResult::default());
         }
 
         let queued = self
@@ -281,12 +311,12 @@ impl Service {
             return Err(err.into());
         }
 
-        Ok(ForgotPasswordResponse::default())
+        Ok(ForgotPasswordResult::default())
     }
 
-    pub async fn verify_reset_code(
+    pub(super) async fn verify_reset_code(
         &self,
-        VerifyResetCodeRequest { email, code }: VerifyResetCodeRequest,
+        VerifyResetCodeCommand { email, code }: VerifyResetCodeCommand,
     ) -> Result<VerifiedResetPasswordSession, VerifyResetCodeError> {
         let email = Email::parse(&email)
             .map_err(|source| VerifyResetCodeError::InvalidEmail { source })?;
@@ -362,12 +392,12 @@ impl Service {
         }
     }
 
-    pub async fn reset_password(
+    pub(super) async fn reset_password(
         &self,
-        ResetPasswordRequest {
+        ResetPasswordCommand {
             key: reset_key,
             password,
-        }: ResetPasswordRequest,
+        }: ResetPasswordCommand,
     ) -> Result<(), ResetPasswordError> {
         if reset_key.len() > PASSWORD_RESET_KEY_MAX_LEN {
             return Err(ResetPasswordError::InvalidOrExpiredResetKey);
@@ -901,13 +931,13 @@ mod tests {
         let user = create_verified_user(&conn).await;
 
         let existing = service
-            .forgot_password(ForgotPasswordRequest {
+            .forgot_password(ForgotPasswordCommand {
                 email: user.email.clone(),
             })
             .await
             .unwrap();
         let missing = service
-            .forgot_password(ForgotPasswordRequest {
+            .forgot_password(ForgotPasswordCommand {
                 email: "missing@example.com".to_string(),
             })
             .await
@@ -956,7 +986,7 @@ mod tests {
         }
 
         let err = service
-            .verify_reset_code(VerifyResetCodeRequest {
+            .verify_reset_code(VerifyResetCodeCommand {
                 email: user.email.clone(),
                 code: "000000".to_string(),
             })
@@ -994,7 +1024,7 @@ mod tests {
         let first = async move {
             first_barrier.wait().await;
             first_service
-                .verify_reset_code(VerifyResetCodeRequest {
+                .verify_reset_code(VerifyResetCodeCommand {
                     email: first_email,
                     code: first_code,
                 })
@@ -1007,7 +1037,7 @@ mod tests {
         let second = async move {
             second_barrier.wait().await;
             second_service
-                .verify_reset_code(VerifyResetCodeRequest {
+                .verify_reset_code(VerifyResetCodeCommand {
                     email: second_email,
                     code,
                 })
@@ -1068,7 +1098,7 @@ mod tests {
         let first = async move {
             first_barrier.wait().await;
             first_service
-                .verify_reset_code(VerifyResetCodeRequest {
+                .verify_reset_code(VerifyResetCodeCommand {
                     email: first_email,
                     code: "000000".to_string(),
                 })
@@ -1081,7 +1111,7 @@ mod tests {
         let second = async move {
             second_barrier.wait().await;
             second_service
-                .verify_reset_code(VerifyResetCodeRequest {
+                .verify_reset_code(VerifyResetCodeCommand {
                     email: second_email,
                     code: "000000".to_string(),
                 })
@@ -1094,7 +1124,7 @@ mod tests {
         let third = async move {
             third_barrier.wait().await;
             third_service
-                .verify_reset_code(VerifyResetCodeRequest {
+                .verify_reset_code(VerifyResetCodeCommand {
                     email: third_email,
                     code: "000000".to_string(),
                 })
@@ -1107,7 +1137,7 @@ mod tests {
         let fourth = async move {
             fourth_barrier.wait().await;
             fourth_service
-                .verify_reset_code(VerifyResetCodeRequest {
+                .verify_reset_code(VerifyResetCodeCommand {
                     email: fourth_email,
                     code: "000000".to_string(),
                 })
@@ -1145,7 +1175,7 @@ mod tests {
         let service = build_test_service(&conn).await;
 
         let err = service
-            .reset_password(ResetPasswordRequest {
+            .reset_password(ResetPasswordCommand {
                 key: "invalid".to_string(),
                 password: "m10KSGDckKrX38Vm".to_string(),
             })
@@ -1178,7 +1208,7 @@ mod tests {
             .unwrap();
 
         let err = service
-            .reset_password(ResetPasswordRequest {
+            .reset_password(ResetPasswordCommand {
                 key: generate_password_reset_token(
                     PASSWORD_RESET_KEY_RANDOM_BYTES_LEN,
                 ),
@@ -1271,7 +1301,7 @@ mod tests {
         let barrier = Arc::new(Barrier::new(3));
         let first_service = service.clone();
         let first_barrier = barrier.clone();
-        let first_request = ResetPasswordRequest {
+        let first_request = ResetPasswordCommand {
             key: reset_key.clone(),
             password: "m10KSGDckKrX38Vm".to_string(),
         };
@@ -1282,7 +1312,7 @@ mod tests {
 
         let second_service = service.clone();
         let second_barrier = barrier.clone();
-        let second_request = ResetPasswordRequest {
+        let second_request = ResetPasswordCommand {
             key: reset_key,
             password: "m10KSGDckKrX38Vm".to_string(),
         };
