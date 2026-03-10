@@ -48,7 +48,7 @@ type ImageCropDialogActions = {
 }
 
 type ImageCropDialogMeta = {
-	ratio: number
+	ratio: number | undefined
 	error?: string
 	busy: boolean
 	canSave: boolean
@@ -66,7 +66,7 @@ const useImageCropDialog = () =>
 const DROPZONE_CLASS =
 	"flex h-56 items-center justify-center rounded-md border-2 border-dashed border-slate-300 bg-white text-slate-600"
 
-const formatBytes = (bytes: number) => {
+function formatBytes(bytes: number) {
 	if (!Number.isFinite(bytes)) return ""
 	if (bytes < 1024) return `${bytes} B`
 	const kb = bytes / 1024
@@ -75,44 +75,60 @@ const formatBytes = (bytes: number) => {
 	return `${mb.toFixed(1)} MB`
 }
 
-const isSupportedImageType = (file: File) =>
-	file.type === "image/png" || file.type === "image/jpeg"
+function isSupportedImageType(file: File) {
+	return file.type === "image/png" || file.type === "image/jpeg"
+}
 
-const validateImageFile = (file: File) => {
+type FileSizeRange = {
+	min: number
+	max: number
+}
+
+const DEFAULT_FILE_SIZE_RANGE: FileSizeRange = {
+	min: AVATAR_MIN_FILE_SIZE,
+	max: AVATAR_MAX_FILE_SIZE,
+}
+
+function validateImageFile(
+	file: File,
+	fileSizeRange: FileSizeRange,
+): string | undefined {
 	if (!isSupportedImageType(file)) {
 		return "Only PNG/JPEG images are supported."
 	}
 
-	if (file.size < AVATAR_MIN_FILE_SIZE) {
-		return `File is too small. Minimum is ${formatBytes(AVATAR_MIN_FILE_SIZE)}.`
+	if (file.size < fileSizeRange.min) {
+		return `File is too small. Minimum is ${formatBytes(fileSizeRange.min)}.`
 	}
 
-	if (file.size > AVATAR_MAX_FILE_SIZE) {
-		return `File is too large. Maximum is ${formatBytes(AVATAR_MAX_FILE_SIZE)}.`
+	if (file.size > fileSizeRange.max) {
+		return `File is too large. Maximum is ${formatBytes(fileSizeRange.max)}.`
 	}
+
+	return undefined
 }
 
-const computeOutputSizeFromSelection = (options: {
+function computeOutputSizeFromSelection(options: {
 	host: HTMLDivElement
 	selection: CropperSelection
 	computeOutputSize: (
 		rawWidth: number,
 		rawHeight: number,
 	) => OutputSize | undefined
-}): OutputSize | undefined => {
+}): OutputSize | undefined {
 	const selectionWidth = options.selection.width
 	const selectionHeight = options.selection.height
 	if (!Number.isFinite(selectionWidth) || !Number.isFinite(selectionHeight))
-		return
-	if (selectionWidth <= 0 || selectionHeight <= 0) return
+		return undefined
+	if (selectionWidth <= 0 || selectionHeight <= 0) return undefined
 
 	const scale = getImageScale(options.host)
-	if (!scale) return
+	if (!scale) return undefined
 
 	const rawWidth = selectionWidth / scale.scaleX
 	const rawHeight = selectionHeight / scale.scaleY
-	if (!Number.isFinite(rawWidth) || rawWidth <= 0) return
-	if (!Number.isFinite(rawHeight) || rawHeight <= 0) return
+	if (!Number.isFinite(rawWidth) || rawWidth <= 0) return undefined
+	if (!Number.isFinite(rawHeight) || rawHeight <= 0) return undefined
 
 	return options.computeOutputSize(rawWidth, rawHeight)
 }
@@ -120,7 +136,8 @@ const computeOutputSizeFromSelection = (options: {
 export type RootProps = ParentProps & {
 	open: boolean
 	syncOpen: (state: boolean) => void
-	ratio: number
+	ratio?: number
+	fileSizeRange?: FileSizeRange
 	computeOutputSize: ComputeOutputSize
 	busy: boolean
 	error?: string | undefined
@@ -131,6 +148,7 @@ export type RootProps = ParentProps & {
 export function Root(props: RootProps) {
 	const [cropperRoot, setCropperRoot] = createSignal<HTMLDivElement>()
 	const [isSelectionReady, setSelectionReady] = createSignal(false)
+	const fileSizeRange = () => props.fileSizeRange ?? DEFAULT_FILE_SIZE_RANGE
 
 	let lastObjectUrl: string | undefined
 	let isClampQueued = false
@@ -183,7 +201,7 @@ export function Root(props: RootProps) {
 			return
 		}
 
-		const validationError = validateImageFile(file)
+		const validationError = validateImageFile(file, fileSizeRange())
 		if (validationError) {
 			clearFileState()
 			setState("localError", validationError)
@@ -303,7 +321,7 @@ export function Root(props: RootProps) {
 			return { ok: false as const, message: "Crop failed." }
 		}
 
-		if (blob.size > AVATAR_MAX_FILE_SIZE) {
+		if (blob.size > fileSizeRange().max) {
 			return {
 				ok: false as const,
 				message: `Cropped image is too large (${formatBytes(blob.size)}). Try a smaller crop or use a smaller source image.`,
@@ -401,7 +419,9 @@ export function Root(props: RootProps) {
 		clearLocalState,
 		handleSave,
 		handleImageTransform,
-		setCropperRoot,
+		setCropperRoot: (root) => {
+			setCropperRoot(root)
+		},
 		get ratio() {
 			return props.ratio
 		},
