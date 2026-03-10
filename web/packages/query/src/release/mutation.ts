@@ -3,6 +3,8 @@ import type { NewCorrectionNewRelease } from "@thc/api"
 import { ReleaseApi } from "@thc/api"
 import { Either } from "effect"
 
+import { toMutationError } from "../shared/error"
+
 type Params =
 	| { type: "Create"; data: NewCorrectionNewRelease }
 	| { type: "Update"; id: number; data: NewCorrectionNewRelease }
@@ -22,10 +24,33 @@ export const getInstance = () =>
 			return Either.match(result, {
 				onRight: (data) => data,
 				onLeft: (error) => {
-					throw error
+					throw toMutationError(error)
 				},
 			})
 		},
 		mutationKey: ["release::mutate"],
+		throwOnError: true,
+	}))
+
+type UploadCoverArtParams = {
+	id: number
+	file: File
+}
+
+export const getUploadCoverArtInstance = () =>
+	useMutation(() => ({
+		mutationFn: async (params: UploadCoverArtParams) => {
+			const result = await ReleaseApi.uploadCoverArt({
+				releaseId: params.id,
+				file: params.file,
+			})
+			return Either.match(result, {
+				onRight: (data) => data,
+				onLeft: (error) => {
+					throw toMutationError(error, "Upload failed.")
+				},
+			})
+		},
+		mutationKey: ["release::cover-art::upload"],
 		throwOnError: true,
 	}))

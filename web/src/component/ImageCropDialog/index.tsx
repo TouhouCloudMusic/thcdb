@@ -22,6 +22,8 @@ import { assertContext } from "~/utils/solid/assertContext"
 
 import { getImageBounds, getImageScale } from "./cropperImageUtils"
 import { ensureCropperSelectionChangeBounded } from "./cropperSelectionPatch"
+import type { FileSizeRange } from "./utils"
+import { formatBytes, validateImageFile } from "./utils"
 
 type OutputSize = { width: number; height: number }
 type ComputeOutputSize = (
@@ -66,46 +68,9 @@ const useImageCropDialog = () =>
 const DROPZONE_CLASS =
 	"flex h-56 items-center justify-center rounded-md border-2 border-dashed border-slate-300 bg-white text-slate-600"
 
-function formatBytes(bytes: number) {
-	if (!Number.isFinite(bytes)) return ""
-	if (bytes < 1024) return `${bytes} B`
-	const kb = bytes / 1024
-	if (kb < 1024) return `${kb.toFixed(1)} KB`
-	const mb = kb / 1024
-	return `${mb.toFixed(1)} MB`
-}
-
-function isSupportedImageType(file: File) {
-	return file.type === "image/png" || file.type === "image/jpeg"
-}
-
-type FileSizeRange = {
-	min: number
-	max: number
-}
-
 const DEFAULT_FILE_SIZE_RANGE: FileSizeRange = {
 	min: AVATAR_MIN_FILE_SIZE,
 	max: AVATAR_MAX_FILE_SIZE,
-}
-
-function validateImageFile(
-	file: File,
-	fileSizeRange: FileSizeRange,
-): string | undefined {
-	if (!isSupportedImageType(file)) {
-		return "Only PNG/JPEG images are supported."
-	}
-
-	if (file.size < fileSizeRange.min) {
-		return `File is too small. Minimum is ${formatBytes(fileSizeRange.min)}.`
-	}
-
-	if (file.size > fileSizeRange.max) {
-		return `File is too large. Maximum is ${formatBytes(fileSizeRange.max)}.`
-	}
-
-	return undefined
 }
 
 function computeOutputSizeFromSelection(options: {
@@ -283,7 +248,11 @@ export function Root(props: RootProps) {
 			computeOutputSize,
 		})
 		if (!outputSize) {
-			return { ok: false as const, message: "Failed to compute output size." }
+			return {
+				ok: false as const,
+				message:
+					"Selected crop cannot satisfy the required dimensions. Adjust the crop area.",
+			}
 		}
 
 		let canvas: unknown
@@ -487,6 +456,7 @@ type ContentProps = ParentProps
 
 function Content(props: ContentProps) {
 	const context = useImageCropDialog()
+	const errorMessage = () => context.localError ?? context.error
 
 	return (
 		<div class="flex flex-col gap-2 p-4">
@@ -553,15 +523,7 @@ function Content(props: ContentProps) {
 			</FileField>
 			<div class="grid grid-cols-[1fr_auto]">
 				<div class="flex flex-col text-sm">
-					<Show when={context.error}>
-						{(error) => (
-							<div class="rounded-md border border-reimu-200 bg-reimu-50 px-3 py-2 text-sm text-reimu-800">
-								{error()}
-							</div>
-						)}
-					</Show>
-
-					<Show when={context.localError}>
+					<Show when={errorMessage()}>
 						{(error) => (
 							<div class="rounded-md border border-reimu-200 bg-reimu-50 px-3 py-2 text-sm text-reimu-800">
 								{error()}

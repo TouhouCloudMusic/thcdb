@@ -1231,7 +1231,6 @@ export const getVerifyResetCodeResponseMock = (
 ): DataVerifyResetCodeResponse => ({
 	status: faker.string.alpha({ length: { min: 10, max: 20 } }),
 	data: {
-		key: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		key_expires_minutes: faker.number.int(),
 		key_expires_at: faker.date.past().toISOString().slice(0, 19) + "Z",
 	},

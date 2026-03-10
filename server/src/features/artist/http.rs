@@ -15,6 +15,7 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::application::correction::{
     CorrectionSubmissionResult, NewCorrectionDto,
 };
+use crate::domain::image::CurrentImageMetadata;
 use crate::features::artist_image::{self, ArtistProfileImageInput};
 
 const TAG: &str = "Artist";
@@ -24,6 +25,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .with_private(|r| {
             r.routes(routes!(create_artist))
                 .routes(routes!(upsert_artist_correction))
+                .routes(routes!(get_artist_profile_image_metadata))
                 .routes(routes!(upload_artist_profile_image))
         })
         .finish();
@@ -82,13 +84,30 @@ async fn upsert_artist_correction(
     Ok(Data::from(result))
 }
 
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/artist/{id}/profile-image",
+    responses(
+        (status = 200, body = Data<Option<CurrentImageMetadata>>),
+    )
+)]
+async fn get_artist_profile_image_metadata(
+    CurrentUser(_user): CurrentUser,
+    State(service): State<state::ArtistImageService>,
+    Path(id): Path<i32>,
+) -> Result<Data<Option<CurrentImageMetadata>>, artist_image::Error> {
+    let metadata = service.get_profile_image_metadata(id).await?;
+    Ok(Data::from(metadata))
+}
+
 #[derive(Debug, ToSchema, TryFromMultipart)]
 pub struct ArtistProfileImageFormData {
-    #[form_data(limit = "10MiB")]
+    #[form_data(limit = "100MiB")]
     #[schema(
         value_type = String,
         format = Binary,
-        maximum = 10485760,
+        maximum = 104857600,
         minimum = 1024
     )]
     pub data: FieldData<Bytes>,
@@ -98,6 +117,10 @@ pub struct ArtistProfileImageFormData {
     post,
     tag = TAG,
     path = "/artist/{id}/profile-image",
+    request_body(
+        content_type = "multipart/form-data",
+        content = ArtistProfileImageFormData,
+    ),
     responses(
         (status = 200, body = Message),
     )

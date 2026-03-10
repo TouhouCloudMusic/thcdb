@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/solid-query"
 import { CorrectionQueryOption } from "@thc/query"
 import { pipe } from "@thc/toolkit"
 import { ArrExt } from "@thc/toolkit/data"
+import type { JSX } from "solid-js"
 import { Suspense } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
@@ -41,7 +42,7 @@ function EntityContributors(props: EntityContributorsProps) {
 
 const LINK_CLASS = twMerge(
 	ButtonClass_new({
-		variant: "Primary",
+		variant: "SecondaryV2",
 		size: "Sm",
 	}),
 )
@@ -49,6 +50,7 @@ const LINK_CLASS = twMerge(
 type EntityCorrectionMetadataSectionProps = {
 	entityType: EntityDetailType
 	entityId: number
+	trailingAction?: JSX.Element
 }
 
 export function EntityCorrectionMetadataSection(
@@ -73,7 +75,7 @@ export function EntityCorrectionMetadataSection(
 				)}
 			/>
 			{/* TODO: Improve button style */}
-			<div class="grid grid-cols-2 w-fit gap-1">
+			<div class="flex w-fit items-center gap-1">
 				<Link
 					to={correctionsRoute()}
 					params={{ id: props.entityId.toString() }}
@@ -93,6 +95,7 @@ export function EntityCorrectionMetadataSection(
 				>
 					Update {entityLabel()}
 				</Link>
+				{props.trailingAction}
 			</div>
 		</div>
 	)

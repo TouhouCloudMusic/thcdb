@@ -1,6 +1,11 @@
 import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
-import { adaptApiResult, adaptApiResultOptional } from "../../shared"
+import {
+	adaptApiResult,
+	adaptApiResultMessage,
+	adaptApiResultOptional,
+	adaptFetchMessageResponseFromResponse,
+} from "../../shared"
 
 export async function explore(options?: Opt<"explore_artist">) {
 	const res = await FetchClient.GET("/artist/explore", {
@@ -79,4 +84,26 @@ export async function findDiscographiesInit(
 	})
 
 	return adaptApiResult(res)
+}
+
+export async function uploadProfileImage(options: {
+	artistId: number
+	file: File
+}) {
+	const body = new FormData()
+	body.append("data", options.file)
+
+	const response = await fetch(
+		`/api/artist/${options.artistId}/profile-image`,
+		{
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+			},
+			body,
+		},
+	)
+
+	const res = await adaptFetchMessageResponseFromResponse(response)
+	return adaptApiResultMessage(res)
 }

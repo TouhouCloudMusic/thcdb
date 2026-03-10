@@ -2,6 +2,8 @@ import type { Release } from "@thc/api"
 import { Show, Suspense } from "solid-js"
 
 import { Tab } from "~/component/atomic"
+import { Link } from "~/component/atomic/Link"
+import { ButtonClass_new } from "~/component/atomic/button"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
@@ -16,6 +18,13 @@ import { ReleaseInfoPageContext } from "./context"
 type ReleaseInfoPageProps = {
 	release: Release
 }
+
+const UPLOAD_LINK_CLASS = ButtonClass_new({
+	variant: "SecondaryV2",
+	size: "Sm",
+	color: "Slate",
+	class: "w-fit px-3",
+})
 
 export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 	const contextValue: ReleaseInfoPageContext = {
@@ -33,6 +42,14 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 						<div class="flex flex-col gap-y-4">
 							<ReleaseInfoTitleAndArtist />
 							<ReleaseInfoDetails />
+							<Link
+								to="/release/$id/image-upload"
+								params={{ id: props.release.id.toString() }}
+								class={UPLOAD_LINK_CLASS}
+								underline={false}
+							>
+								Upload cover
+							</Link>
 						</div>
 						<div class="col-span-full">
 							<ReleaseInfoTabs />

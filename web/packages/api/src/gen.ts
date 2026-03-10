@@ -203,7 +203,7 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["get_artist_profile_image_metadata"];
         put?: never;
         post: operations["upload_artist_profile_image"];
         delete?: never;
@@ -398,6 +398,22 @@ export type paths = {
         get: operations["explore_event"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/forgot-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["forgot_password"];
         delete?: never;
         options?: never;
         head?: never;
@@ -715,7 +731,7 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["get_release_cover_art_metadata"];
         put?: never;
         post: operations["upload_release_cover_art"];
         delete?: never;
@@ -750,6 +766,22 @@ export type paths = {
         get?: never;
         put?: never;
         post: operations["resend_verification_email"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reset_password"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1124,6 +1156,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/verify-reset-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["verify_reset_code"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ws/notifications": {
         parameters: {
             query?: never;
@@ -1180,6 +1228,10 @@ export type components = {
         };
         /** @enum {string} */
         ArtistImageType: "Profile";
+        ArtistProfileImageFormData: {
+            /** Format: binary */
+            data: string;
+        };
         ArtistReleaseArtist: {
             /** Format: int32 */
             id: number;
@@ -1278,6 +1330,11 @@ export type components = {
             id: number;
             name: string;
             short_description: string;
+        };
+        CurrentImageMetadata: {
+            /** Format: date-time */
+            uploaded_at: string;
+            uploaded_by: components["schemas"]["ImageUploaderSummary"];
         };
         CursorResponse_Credit: {
             items: {
@@ -1477,6 +1534,15 @@ export type components = {
             /** @enum {string} */
             status: "Ok";
         };
+        Data_Option_CurrentImageMetadata: {
+            data: null | {
+                /** Format: date-time */
+                uploaded_at: string;
+                uploaded_by: components["schemas"]["ImageUploaderSummary"];
+            };
+            /** @enum {string} */
+            status: "Ok";
+        };
         Data_Option_i32: {
             data: null | number;
             /** @enum {string} */
@@ -1506,6 +1572,10 @@ export type components = {
             }[];
             /** @enum {string} */
             status: "Ok";
+        };
+        DataForgotPasswordResponse: {
+            data: components["schemas"]["ForgotPasswordResponse"];
+            status: string;
         };
         DataHomeMetadata: {
             data: components["schemas"]["HomeMetadata"];
@@ -1701,6 +1771,10 @@ export type components = {
             data: components["schemas"]["UserRoleEnum"][];
             status: string;
         };
+        DataVerifyResetCodeResponse: {
+            data: components["schemas"]["VerifyResetCodeResponse"];
+            status: string;
+        };
         /** @enum {string} */
         DatePrecision: "Day" | "Month" | "Year";
         DateWithPrecision: {
@@ -1730,6 +1804,15 @@ export type components = {
             name: string;
             short_description?: string;
             start_date?: null | components["schemas"]["DateWithPrecision"];
+        };
+        ForgotPasswordRequest: {
+            email: string;
+        };
+        ForgotPasswordResponse: {
+            /** Format: int64 */
+            resend_cooldown_seconds: number;
+            /** Format: int64 */
+            verification_code_expires_minutes: number;
         };
         /** @enum {string} */
         HandleCorrectionMethod: "Approve" | "Reject";
@@ -1781,6 +1864,11 @@ export type components = {
             /** Format: date-time */
             uploaded_at: string;
             uploaded_by: components["schemas"]["UserSummary"];
+        };
+        ImageUploaderSummary: {
+            /** Format: int32 */
+            id: number;
+            name: string;
         };
         InitDiscography: {
             album: components["schemas"]["CursorResponse_Discography"];
@@ -2170,7 +2258,7 @@ export type components = {
                 languages?: components["schemas"]["Language"][];
                 localized_titles?: components["schemas"]["LocalizedTitle"][];
                 lyrics?: components["schemas"]["SongLyrics"][];
-                releases?: components["schemas"]["SimpleRelease"][];
+                releases?: components["schemas"]["SongRelease"][];
                 title: string;
             }[];
             /** Format: int32 */
@@ -2271,6 +2359,10 @@ export type components = {
             /** Format: int64 */
             verification_code_expires_minutes: number;
         };
+        ResetPasswordRequest: {
+            key: string;
+            password: string;
+        };
         SearchResponse: {
             artists: components["schemas"]["CursorResponse_SimpleArtist"];
             events: components["schemas"]["CursorResponse_SimpleEvent"];
@@ -2310,12 +2402,6 @@ export type components = {
             id: number;
             name: string;
         };
-        SimpleRelease: {
-            cover_art_url?: string | null;
-            /** Format: int32 */
-            id: number;
-            title: string;
-        };
         Song: {
             artists?: components["schemas"]["SimpleArtist"][];
             credits?: components["schemas"]["SongCredit"][];
@@ -2324,7 +2410,7 @@ export type components = {
             languages?: components["schemas"]["Language"][];
             localized_titles?: components["schemas"]["LocalizedTitle"][];
             lyrics?: components["schemas"]["SongLyrics"][];
-            releases?: components["schemas"]["SimpleRelease"][];
+            releases?: components["schemas"]["SongRelease"][];
             title: string;
         };
         SongCredit: {
@@ -2344,6 +2430,13 @@ export type components = {
             /** Format: int32 */
             id: number;
             title: string;
+        };
+        SongRelease: {
+            cover_art_url?: string | null;
+            /** Format: int32 */
+            id: number;
+            title: string;
+            track_number?: string | null;
         };
         /** @enum {string} */
         SortDirection: "asc" | "desc";
@@ -2415,6 +2508,16 @@ export type components = {
             code: string;
             email: string;
         };
+        VerifyResetCodeRequest: {
+            code: string;
+            email: string;
+        };
+        VerifyResetCodeResponse: {
+            /** Format: date-time */
+            key_expires_at: string;
+            /** Format: int64 */
+            key_expires_minutes: number;
+        };
         VoteBody: {
             score: components["schemas"]["i16"];
             /** Format: int32 */
@@ -2432,6 +2535,7 @@ export type Artist = components['schemas']['Artist'];
 export type ArtistCommonFilter = components['schemas']['ArtistCommonFilter'];
 export type ArtistImageQueueTarget = components['schemas']['ArtistImageQueueTarget'];
 export type ArtistImageType = components['schemas']['ArtistImageType'];
+export type ArtistProfileImageFormData = components['schemas']['ArtistProfileImageFormData'];
 export type ArtistReleaseArtist = components['schemas']['ArtistReleaseArtist'];
 export type ArtistType = components['schemas']['ArtistType'];
 export type AuthCredential = components['schemas']['AuthCredential'];
@@ -2449,6 +2553,7 @@ export type CorrectionUserSummary = components['schemas']['CorrectionUserSummary
 export type CreditRole = components['schemas']['CreditRole'];
 export type CreditRoleRef = components['schemas']['CreditRoleRef'];
 export type CreditRoleSummary = components['schemas']['CreditRoleSummary'];
+export type CurrentImageMetadata = components['schemas']['CurrentImageMetadata'];
 export type CursorResponseCredit = components['schemas']['CursorResponse_Credit'];
 export type CursorResponseDiscography = components['schemas']['CursorResponse_Discography'];
 export type CursorResponseNotificationItem = components['schemas']['CursorResponse_NotificationItem'];
@@ -2465,9 +2570,11 @@ export type CursorResponseUserSummary = components['schemas']['CursorResponse_Us
 export type DataCorrection = components['schemas']['Data_Correction'];
 export type DataCorrectionDiff = components['schemas']['Data_CorrectionDiff'];
 export type DataCorrectionSubmissionResult = components['schemas']['Data_CorrectionSubmissionResult'];
+export type DataOptionCurrentImageMetadata = components['schemas']['Data_Option_CurrentImageMetadata'];
 export type DataOptionI32 = components['schemas']['Data_Option_i32'];
 export type DataVecCorrectionHistoryItem = components['schemas']['Data_Vec_CorrectionHistoryItem'];
 export type DataVecCorrectionRevisionSummary = components['schemas']['Data_Vec_CorrectionRevisionSummary'];
+export type DataForgotPasswordResponse = components['schemas']['DataForgotPasswordResponse'];
 export type DataHomeMetadata = components['schemas']['DataHomeMetadata'];
 export type DataImageQueueDetail = components['schemas']['DataImageQueueDetail'];
 export type DataInitDiscography = components['schemas']['DataInitDiscography'];
@@ -2516,6 +2623,7 @@ export type DataVecSong = components['schemas']['DataVecSong'];
 export type DataVecSongLyrics = components['schemas']['DataVecSongLyrics'];
 export type DataVecTag = components['schemas']['DataVecTag'];
 export type DataVecUserRole = components['schemas']['DataVecUserRole'];
+export type DataVerifyResetCodeResponse = components['schemas']['DataVerifyResetCodeResponse'];
 export type DatePrecision = components['schemas']['DatePrecision'];
 export type DateWithPrecision = components['schemas']['DateWithPrecision'];
 export type DeleteVoteBody = components['schemas']['DeleteVoteBody'];
@@ -2523,6 +2631,8 @@ export type EntityIdent = components['schemas']['EntityIdent'];
 export type EntityType = components['schemas']['EntityType'];
 export type Error = components['schemas']['Error'];
 export type Event = components['schemas']['Event'];
+export type ForgotPasswordRequest = components['schemas']['ForgotPasswordRequest'];
+export type ForgotPasswordResponse = components['schemas']['ForgotPasswordResponse'];
 export type HandleCorrectionMethod = components['schemas']['HandleCorrectionMethod'];
 export type HandleImageQueueMethod = components['schemas']['HandleImageQueueMethod'];
 export type HomeMetadata = components['schemas']['HomeMetadata'];
@@ -2531,6 +2641,7 @@ export type ImageQueueDetail = components['schemas']['ImageQueueDetail'];
 export type ImageQueueStatus = components['schemas']['ImageQueueStatus'];
 export type ImageQueueType = components['schemas']['ImageQueueType'];
 export type ImageSummary = components['schemas']['ImageSummary'];
+export type ImageUploaderSummary = components['schemas']['ImageUploaderSummary'];
 export type InitDiscography = components['schemas']['InitDiscography'];
 export type Label = components['schemas']['Label'];
 export type Language = components['schemas']['Language'];
@@ -2581,6 +2692,7 @@ export type ReleaseTrack = components['schemas']['ReleaseTrack'];
 export type ReleaseType = components['schemas']['ReleaseType'];
 export type ResendVerificationEmailRequest = components['schemas']['ResendVerificationEmailRequest'];
 export type ResendVerificationEmailResponse = components['schemas']['ResendVerificationEmailResponse'];
+export type ResetPasswordRequest = components['schemas']['ResetPasswordRequest'];
 export type SearchResponse = components['schemas']['SearchResponse'];
 export type SetUserRolesRequest = components['schemas']['SetUserRolesRequest'];
 export type SignUpRequest = components['schemas']['SignUpRequest'];
@@ -2588,11 +2700,11 @@ export type SignUpResponse = components['schemas']['SignUpResponse'];
 export type SimpleArtist = components['schemas']['SimpleArtist'];
 export type SimpleEvent = components['schemas']['SimpleEvent'];
 export type SimpleLabel = components['schemas']['SimpleLabel'];
-export type SimpleRelease = components['schemas']['SimpleRelease'];
 export type Song = components['schemas']['Song'];
 export type SongCredit = components['schemas']['SongCredit'];
 export type SongLyrics = components['schemas']['SongLyrics'];
 export type SongRef = components['schemas']['SongRef'];
+export type SongRelease = components['schemas']['SongRelease'];
 export type SortDirection = components['schemas']['SortDirection'];
 export type Tag = components['schemas']['Tag'];
 export type TagRef = components['schemas']['TagRef'];
@@ -2607,6 +2719,8 @@ export type UserRole = components['schemas']['UserRole'];
 export type UserRoleEnum = components['schemas']['UserRoleEnum'];
 export type UserSummary = components['schemas']['UserSummary'];
 export type VerifyEmailRequest = components['schemas']['VerifyEmailRequest'];
+export type VerifyResetCodeRequest = components['schemas']['VerifyResetCodeRequest'];
+export type VerifyResetCodeResponse = components['schemas']['VerifyResetCodeResponse'];
 export type VoteBody = components['schemas']['VoteBody'];
 export type $defs = Record<string, never>;
 export interface operations {
@@ -3305,7 +3419,7 @@ export interface operations {
             };
         };
     };
-    upload_artist_profile_image: {
+    get_artist_profile_image_metadata: {
         parameters: {
             query?: never;
             header?: never;
@@ -3315,6 +3429,53 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_Option_CurrentImageMetadata"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    upload_artist_profile_image: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["ArtistProfileImageFormData"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -4093,6 +4254,51 @@ export interface operations {
                         /** @enum {string} */
                         status: "Err";
                     };
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    forgot_password: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPasswordRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataForgotPasswordResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
                 };
             };
             default: {
@@ -5178,6 +5384,49 @@ export interface operations {
             };
         };
     };
+    get_release_cover_art_metadata: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_Option_CurrentImageMetadata"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     upload_release_cover_art: {
         parameters: {
             query?: never;
@@ -5189,7 +5438,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReleaseCoverArtFormData"];
+                "multipart/form-data": components["schemas"]["ReleaseCoverArtFormData"];
             };
         };
         responses: {
@@ -5315,6 +5564,51 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DataResendVerificationEmailResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    reset_password: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
                 };
             };
             /** @description Too Many Requests */
@@ -6687,6 +6981,51 @@ export interface operations {
             };
         };
     };
+    verify_reset_code: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyResetCodeRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataVerifyResetCodeResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     notification_ws: {
         parameters: {
             query?: never;
@@ -6739,6 +7078,7 @@ export enum ApiPaths {
     get_artist_credits = "/artist/{id}/credits",
     find_artist_discographies_by_type = "/artist/{id}/discographies",
     find_artist_discographies_init = "/artist/{id}/discographies/init",
+    get_artist_profile_image_metadata = "/artist/{id}/profile-image",
     upload_artist_profile_image = "/artist/{id}/profile-image",
     upload_avatar = "/avatar",
     compare_corrections = "/correction/{id1}/compare/{id2}",
@@ -6755,6 +7095,7 @@ export enum ApiPaths {
     explore_event = "/event/explore",
     find_event_by_id = "/event/{id}",
     upsert_event_correction = "/event/{id}",
+    forgot_password = "/forgot-password",
     health_check = "/health_check",
     home_metadata = "/home/metadata",
     pending_image_queue = "/image-queue",
@@ -6780,8 +7121,10 @@ export enum ApiPaths {
     explore_release = "/release/explore",
     find_release_by_id = "/release/{id}",
     update_release = "/release/{id}",
+    get_release_cover_art_metadata = "/release/{id}/cover-art",
     upload_release_cover_art = "/release/{id}/cover-art",
     resend_verification_email = "/resend-verification-email",
+    reset_password = "/reset-password",
     search_all = "/search",
     search_artist = "/search/artist",
     search_event = "/search/event",
@@ -6811,6 +7154,7 @@ export enum ApiPaths {
     unfollow_user = "/user/{id}/follow",
     user_image_queue = "/user/{id}/image-queue",
     verify_email = "/verify-email",
+    verify_reset_code = "/verify-reset-code",
     notification_ws = "/ws/notifications",
     entity_corrections = "/{entity_type}/{id}/corrections",
     pending_correction = "/{entity_type}/{id}/pending-correction",

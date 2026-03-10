@@ -21,6 +21,7 @@ mod share {
     pub const ARTIST_PROFILE_IMAGE_MAX_WIDTH: u32 = 4096;
     pub const ARTIST_PROFILE_IMAGE_MIN_HEIGHT: u32 = 256;
     pub const ARTIST_PROFILE_IMAGE_MAX_HEIGHT: u32 = 4096;
+    pub const ARTIST_PROFILE_IMAGE_MAX_FILE_SIZE: u64 = 100 * 1024 * 1024;
 
     // Release
     pub const RELEASE_COVER_IMAGE_MIN_WIDTH: u32 = 256;

@@ -15,6 +15,7 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::application::correction::{
     CorrectionSubmissionResult, NewCorrectionDto,
 };
+use crate::domain::image::CurrentImageMetadata;
 use crate::features::release_image::{self, ReleaseCoverArtInput};
 
 const TAG: &str = "Release";
@@ -23,6 +24,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     let private = AppRouter::new()
         .with_private(|r| {
             r.routes(routes!(create_release))
+                .routes(routes!(get_release_cover_art_metadata))
                 .routes(routes!(update_release))
                 .routes(routes!(upload_release_cover_art))
         })
@@ -80,6 +82,23 @@ async fn update_release(
     Ok(Data::from(result))
 }
 
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/release/{id}/cover-art",
+    responses(
+        (status = 200, body = Data<Option<CurrentImageMetadata>>),
+    )
+)]
+async fn get_release_cover_art_metadata(
+    CurrentUser(_user): CurrentUser,
+    State(service): State<state::ReleaseImageService>,
+    Path(id): Path<i32>,
+) -> Result<Data<Option<CurrentImageMetadata>>, release_image::Error> {
+    let metadata = service.get_cover_art_metadata(id).await?;
+    Ok(Data::from(metadata))
+}
+
 #[derive(Debug, ToSchema, TryFromMultipart)]
 pub struct ReleaseCoverArtFormData {
     #[form_data(limit = "10MiB")]
@@ -96,7 +115,10 @@ pub struct ReleaseCoverArtFormData {
     post,
     tag = TAG,
     path = "/release/{id}/cover-art",
-    request_body = ReleaseCoverArtFormData,
+    request_body(
+        content_type = "multipart/form-data",
+        content = ReleaseCoverArtFormData,
+    ),
     responses(
         (status = 200, body = Message),
     )

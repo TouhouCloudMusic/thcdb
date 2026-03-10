@@ -66,16 +66,6 @@ type Props = {
 	entryId: number
 }
 
-const extractErrorMessage = (error: unknown) => {
-	if (!ObjExt.isRecord(error)) return
-
-	const apiError = error["error"]
-	if (typeof apiError === "string") return apiError
-
-	const message = error["message"]
-	if (typeof message === "string") return message
-}
-
 const extractInfiniteQueryIds = (data: unknown): number[] => {
 	if (!ObjExt.isRecord(data)) return []
 
@@ -137,7 +127,11 @@ export function ImageQueueDetailPage(props: Props) {
 
 	const mutationErrorMessage = createMemo(() => {
 		if (!mutation.isError) return
-		return extractErrorMessage(mutation.error)
+		const error = mutation.error
+		if (error instanceof Error) {
+			return error.message || "Request failed."
+		}
+		return "Request failed."
 	})
 
 	const cachedNeighbor = createMemo(() => {
