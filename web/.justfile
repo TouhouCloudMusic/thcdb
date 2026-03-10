@@ -36,6 +36,3 @@ test:
 
 check +FILES="":
     pnpm exec oxlint --type-aware --type-check --report-unused-disable-directives {{ FILES }}
-
-generate:
-    pnpm exec orval

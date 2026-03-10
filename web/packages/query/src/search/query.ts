@@ -3,7 +3,7 @@ import type {
 	SimpleArtist,
 	SimpleEvent,
 	SimpleLabel,
-	SimpleRelease,
+	SongRelease,
 	SongRef,
 	TagRef,
 } from "@thc/api"
@@ -182,7 +182,7 @@ export function tags(
 
 export type SearchResultItem =
 	| SimpleArtist
-	| SimpleRelease
+	| SongRelease
 	| SongRef
 	| SimpleEvent
 	| SimpleLabel

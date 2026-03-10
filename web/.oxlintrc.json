@@ -247,15 +247,24 @@
 	},
 	"overrides": [
 		{
-			"files": [".storybook/*", "*.stories.tsx", "*.config.{js,ts}"],
-			"rules": {
-				"no-magic-numbers": "off",
-				"import/no-default-export": "off",
-				"import/no-nodejs-modules": "off"
-			},
+			"files": [
+				".storybook/*",
+				"plugins/*.ts",
+				"scripts/*.ts",
+				"config/eslint/index.js",
+				"*.stories.tsx",
+				"*.config.{js,ts}"
+			],
 			"env": {
 				"node": true,
 				"es6": true
+			},
+			"rules": {
+				"no-magic-numbers": "off",
+				"import/no-default-export": "off",
+				"import/no-nodejs-modules": "off",
+				"no-console": "off",
+				"typescript/no-unsafe-member-access": "off"
 			}
 		},
 		{
@@ -267,20 +276,6 @@
 				"unicorn/no-useless-undefined": "off",
 				"vitest/no-importing-vitest-globals": "off",
 				"vitest/prefer-to-be-truthy": "off"
-			}
-		},
-		{
-			"files": ["plugins/*.ts"],
-			"rules": {
-				"import/no-nodejs-modules": "off",
-				"no-console": "off",
-				"no-magic-numbers": "off"
-			}
-		},
-		{
-			"files": ["config/eslint/index.js", "eslint.config.js"],
-			"rules": {
-				"typescript/no-unsafe-member-access": "off"
 			}
 		}
 	]
