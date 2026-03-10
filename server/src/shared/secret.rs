@@ -56,3 +56,43 @@ pub fn verify(
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn hash_and_verify_correct_password_returns_true() {
+        let password = "CorrectPassword1!";
+        let hashed = hash(password).await.unwrap();
+        let result =
+            verify(hashed, password.as_bytes().to_vec()).await.unwrap();
+        assert!(result, "verify should return true for the correct password");
+    }
+
+    #[tokio::test]
+    async fn hash_and_verify_wrong_password_returns_false() {
+        let password = "CorrectPassword1!";
+        let hashed = hash(password).await.unwrap();
+        let result = verify(hashed, "WrongPassword1!".as_bytes().to_vec())
+            .await
+            .unwrap();
+        assert!(
+            !result,
+            "verify should return false for an incorrect password"
+        );
+    }
+
+    #[tokio::test]
+    async fn verify_with_invalid_hash_returns_error_not_false() {
+        let result = verify(
+            "this-is-not-a-valid-argon2-hash".to_owned(),
+            "anypassword".as_bytes().to_vec(),
+        )
+        .await;
+        assert!(
+            result.is_err(),
+            "verify should propagate a parse error instead of returning false"
+        );
+    }
+}
