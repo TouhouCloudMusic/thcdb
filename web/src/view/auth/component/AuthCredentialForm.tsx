@@ -9,7 +9,8 @@ import { FormComp } from "~/component/atomic/form"
 import type { AuthFormMode, useAuthForm } from "../store"
 import { EmailField } from "./EmailField"
 import { PasswordField } from "./PasswordField"
-import { UserNameField } from "./UserNameField"
+import { SignInIdentifierField } from "./SignInIdentifierField"
+import { UsernameField } from "./UsernameField"
 
 type AuthFormState = ReturnType<typeof useAuthForm>
 type AuthCredentialFormProps = Pick<
@@ -67,7 +68,7 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 							of={props.signUpForm}
 							path={["username"]}
 						>
-							{(field) => <UserNameField field={field} />}
+							{(field) => <UsernameField field={field} />}
 						</Field>
 
 						<Field
@@ -130,9 +131,9 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 				>
 					<Field
 						of={props.signInForm}
-						path={["username"]}
+						path={["identifier"]}
 					>
-						{(field) => <UserNameField field={field} />}
+						{(field) => <SignInIdentifierField field={field} />}
 					</Field>
 
 					<Field

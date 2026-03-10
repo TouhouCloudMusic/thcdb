@@ -44,7 +44,12 @@ async function executeSignIn(params: {
 	onError: OnAuthError
 	onSuccess: (data: SignInData) => void | Promise<void>
 }) {
-	const result = await AuthApi.signin({ body: params.values })
+	const result = await AuthApi.signin({
+		body: {
+			username: params.values.identifier,
+			password: params.values.password,
+		},
+	})
 
 	return Either.match(result, {
 		onLeft: (error) => {

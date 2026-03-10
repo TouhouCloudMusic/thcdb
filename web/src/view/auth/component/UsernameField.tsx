@@ -4,18 +4,18 @@ import { InputField } from "~/component/atomic/form/Input"
 
 import { FieldLayout } from "./FieldLayout"
 
-type UserNameFieldStore = {
+type UsernameFieldStore = {
 	errors: [string, ...string[]] | null
 	input?: string
 	props: FieldElementProps
 }
 
-type UserNameFieldProps = {
-	field: UserNameFieldStore
+type UsernameFieldProps = {
+	field: UsernameFieldStore
 	class?: string
 }
 
-export function UserNameField(props: UserNameFieldProps) {
+export function UsernameField(props: UsernameFieldProps) {
 	return (
 		<FieldLayout
 			label="Username"
