@@ -4,7 +4,7 @@ import type {
 	SimpleArtist,
 	SimpleEvent,
 	SimpleLabel,
-	SimpleRelease,
+	SongRelease,
 	SongRef,
 	TagRef,
 } from "../../gen"
@@ -18,7 +18,7 @@ type CursorPage<T> = {
 
 type SearchAllResponse = {
 	artists: CursorPage<SimpleArtist>
-	releases: CursorPage<SimpleRelease>
+	releases: CursorPage<SongRelease>
 	songs: CursorPage<SongRef>
 	events: CursorPage<SimpleEvent>
 	labels: CursorPage<SimpleLabel>
@@ -67,7 +67,7 @@ type SearchPaths = {
 			responses: {
 				200: {
 					content: {
-						"application/json": OkResponse<CursorPage<SimpleRelease>>
+						"application/json": OkResponse<CursorPage<SongRelease>>
 					}
 				}
 				400: { content: { "application/json": ErrResponse } }

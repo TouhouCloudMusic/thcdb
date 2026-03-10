@@ -1,10 +1,10 @@
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import type {
-	CursorResponseSimpleRelease,
 	SimpleArtist,
 	SimpleEvent,
 	SimpleLabel,
+	SongRelease,
 	SongRef,
 	TagRef,
 } from "@thc/api"
@@ -20,7 +20,6 @@ import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 
 type SearchTab = "artist" | "event" | "label" | "release" | "song" | "tag"
 type SearchEntity = "all" | SearchTab
-type SimpleRelease = CursorResponseSimpleRelease["items"][number]
 
 const route = getRouteApi("/search")
 const LIMIT = 20
@@ -527,7 +526,7 @@ function ArtistRow(props: { artist: SimpleArtist }) {
 	)
 }
 
-function ReleaseRow(props: { release: SimpleRelease }) {
+function ReleaseRow(props: { release: SongRelease }) {
 	const coverUrl = () => imgUrl(props.release.cover_art_url)
 
 	return (

@@ -33,7 +33,7 @@
 		"arktype": "^2.1.29",
 		"cropperjs": "^2.1.0",
 		"dayjs": "^1.11.19",
-		"effect": "^3.19.14",
+		"effect": "^3.19.19",
 		"fast-check": "^4.5.3",
 		"marked": "^17.0.1",
 		"marked-footnote": "^1.4.0",
@@ -53,6 +53,8 @@
 	"devDependencies": {
 		"@ark/attest": "^0.56.0",
 		"@chromatic-com/storybook": "^5.0.1",
+		"@effect/platform": "^0.94.5",
+		"@effect/platform-node": "^0.104.1",
 		"@eslint/js": "^9.39.2",
 		"@faker-js/faker": "^10.2.0",
 		"@solidjs/testing-library": "^0.8.10",
