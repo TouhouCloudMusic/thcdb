@@ -5,7 +5,7 @@ use super::error::{
 };
 use crate::domain::auth::{AuthCredential, AuthnError};
 use crate::domain::user::{self, User};
-use crate::features::auth::{Service, repo};
+use crate::features::auth::{Email, Service, repo};
 use crate::infra::error::Error;
 
 impl Service {
@@ -13,7 +13,14 @@ impl Service {
         &self,
         creds: AuthCredential,
     ) -> Result<User, SignInError> {
-        let user = repo::find_by_name(&self.repo.conn, &creds.username).await?;
+        let user = match SignInIdentifier::parse(&creds.username) {
+            SignInIdentifier::Email(email) => {
+                repo::find_by_email(&self.repo.conn, &email).await?
+            }
+            SignInIdentifier::Username(username) => {
+                repo::find_by_name(&self.repo.conn, &username).await?
+            }
+        };
 
         creds
             .verify_credentials(user.as_ref().map(|u| u.password.as_str()))
@@ -26,6 +33,20 @@ impl Service {
         }
 
         Ok(user)
+    }
+}
+
+enum SignInIdentifier {
+    Email(Email),
+    Username(String),
+}
+
+impl SignInIdentifier {
+    fn parse(input: &str) -> Self {
+        Email::parse(input).map_or_else(
+            |_| Self::Username(input.to_string()),
+            Self::Email,
+        )
     }
 }
 
@@ -74,5 +95,27 @@ impl AuthnBackend for Service {
         repo::find_by_id(&self.repo.conn, *user_id)
             .await
             .map_err(|e| Error::from(e).into())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SignInIdentifier;
+
+    #[test]
+    fn parses_email_identifier() {
+        let identifier = SignInIdentifier::parse("Alice@example.com");
+
+        assert!(matches!(identifier, SignInIdentifier::Email(_)));
+    }
+
+    #[test]
+    fn keeps_non_email_identifier_as_username() {
+        let identifier = SignInIdentifier::parse("Alice");
+
+        assert!(matches!(
+            identifier,
+            SignInIdentifier::Username(username) if username == "Alice"
+        ));
     }
 }

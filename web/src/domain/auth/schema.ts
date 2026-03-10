@@ -7,7 +7,7 @@ import {
 } from "~/constant/server"
 
 export const SignIn = v.object({
-	username: v.string(),
+	identifier: v.string(),
 	password: v.string(),
 })
 export type SignIn = v.InferInput<typeof SignIn>
