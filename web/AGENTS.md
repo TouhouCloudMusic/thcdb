@@ -102,6 +102,10 @@ Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是�
 - 优先写操作、状态、约束本身，不要补充产品价值、流程宣传或类似 SaaS landing page 的解释
 - 避免使用类似 “seamless”、“manage your”、“becoming public”、“queued for moderation” 这类偏营销或产品包装的表达
 
+## Effect
+
+不要使用`.pipe`方法，而是使用`pipe`函数，保证缩进一致以提升可读性
+
 # 生成的文件
 
 以下是生成的文件和目录，禁止手动修改：
@@ -114,7 +118,7 @@ Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是�
 schema 来源优先级：命令参数 > `API_SCHEMA` > `$VITE_SERVER_URL/openapi.json` > 通过 server CLI 本地生成 `./tmp/openapi.json`。
 旧代码仍使用 `@thc/api`，新代码使用 Orval 生成的 SDK。
 
-如果你的任务需要更新这些文件，当你可以手动更新时：运行更新命令，否则，暂停你的工作，要求用户在本地重新生成它们后再继续。
+如果你的任务需要更新这些文件，当你可以通过命令更新时：运行更新命令，否则，暂停你的工作，要求用户在本地重新生成它们后再继续。
 
 # Browser Automation
 
