@@ -3,6 +3,7 @@ import { MathExt } from "@thc/toolkit"
 import type { JSX } from "solid-js"
 import { createMemo, Match, Show, Switch } from "solid-js"
 
+import * as ImageCropDialog from "~/component/ImageCropDialog"
 import { Badge } from "~/component/atomic/Badge"
 import { Card } from "~/component/atomic/Card"
 import { Link } from "~/component/atomic/Link"
@@ -18,7 +19,6 @@ import {
 import { PageLayout } from "~/layout/PageLayout"
 import { imgUrl } from "~/utils/adapter/static_file"
 
-import * as ImageCropDialog from "./ImageCropDialog"
 import type {
 	EditProfileBioStore,
 	EditProfileImageStore,
