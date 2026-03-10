@@ -50,12 +50,13 @@ type RestErrorResponse<E> = {
 	response: Response
 }
 
-const extractErrorMessage = (error: unknown): string => {
+function extractErrorMessage(error: unknown): string {
 	if (typeof error === "string") return error
 	if (typeof error === "object" && error !== null && "message" in error) {
 		const message = error.message
 		if (typeof message === "string") return message
 	}
+
 	return "Unknown server error"
 }
 

@@ -55,12 +55,14 @@ import { Route as TagIdEditRouteImport } from './route/tag/$id_.edit'
 import { Route as TagIdCorrectionsRouteImport } from './route/tag/$id_.corrections'
 import { Route as SongIdEditRouteImport } from './route/song/$id_.edit'
 import { Route as SongIdCorrectionsRouteImport } from './route/song/$id_.corrections'
+import { Route as ReleaseIdImageUploadRouteImport } from './route/release/$id_.image-upload'
 import { Route as ReleaseIdEditRouteImport } from './route/release/$id_.edit'
 import { Route as ReleaseIdCorrectionsRouteImport } from './route/release/$id_.corrections'
 import { Route as LabelIdEditRouteImport } from './route/label/$id_.edit'
 import { Route as LabelIdCorrectionsRouteImport } from './route/label/$id_.corrections'
 import { Route as EventIdEditRouteImport } from './route/event/$id_.edit'
 import { Route as EventIdCorrectionsRouteImport } from './route/event/$id_.corrections'
+import { Route as ArtistIdImageUploadRouteImport } from './route/artist/$id_.image-upload'
 import { Route as ArtistIdEditRouteImport } from './route/artist/$id_.edit'
 import { Route as ArtistIdCorrectionsRouteImport } from './route/artist/$id_.corrections'
 import { Route as userProfileMockRouteImport } from './route/(user)/profile_.mock'
@@ -297,6 +299,11 @@ const SongIdCorrectionsRoute = SongIdCorrectionsRouteImport.update({
   path: '/song/$id/corrections',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReleaseIdImageUploadRoute = ReleaseIdImageUploadRouteImport.update({
+  id: '/release/$id_/image-upload',
+  path: '/release/$id/image-upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReleaseIdEditRoute = ReleaseIdEditRouteImport.update({
   id: '/release/$id_/edit',
   path: '/release/$id/edit',
@@ -325,6 +332,11 @@ const EventIdEditRoute = EventIdEditRouteImport.update({
 const EventIdCorrectionsRoute = EventIdCorrectionsRouteImport.update({
   id: '/event/$id_/corrections',
   path: '/event/$id/corrections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArtistIdImageUploadRoute = ArtistIdImageUploadRouteImport.update({
+  id: '/artist/$id_/image-upload',
+  path: '/artist/$id/image-upload',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ArtistIdEditRoute = ArtistIdEditRouteImport.update({
@@ -399,12 +411,14 @@ export interface FileRoutesByFullPath {
   '/profile/mock': typeof userProfileMockRoute
   '/artist/$id/corrections': typeof ArtistIdCorrectionsRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
+  '/artist/$id/image-upload': typeof ArtistIdImageUploadRoute
   '/event/$id/corrections': typeof EventIdCorrectionsRoute
   '/event/$id/edit': typeof EventIdEditRoute
   '/label/$id/corrections': typeof LabelIdCorrectionsRoute
   '/label/$id/edit': typeof LabelIdEditRoute
   '/release/$id/corrections': typeof ReleaseIdCorrectionsRoute
   '/release/$id/edit': typeof ReleaseIdEditRoute
+  '/release/$id/image-upload': typeof ReleaseIdImageUploadRoute
   '/song/$id/corrections': typeof SongIdCorrectionsRoute
   '/song/$id/edit': typeof SongIdEditRoute
   '/tag/$id/corrections': typeof TagIdCorrectionsRoute
@@ -458,12 +472,14 @@ export interface FileRoutesByTo {
   '/profile/mock': typeof userProfileMockRoute
   '/artist/$id/corrections': typeof ArtistIdCorrectionsRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
+  '/artist/$id/image-upload': typeof ArtistIdImageUploadRoute
   '/event/$id/corrections': typeof EventIdCorrectionsRoute
   '/event/$id/edit': typeof EventIdEditRoute
   '/label/$id/corrections': typeof LabelIdCorrectionsRoute
   '/label/$id/edit': typeof LabelIdEditRoute
   '/release/$id/corrections': typeof ReleaseIdCorrectionsRoute
   '/release/$id/edit': typeof ReleaseIdEditRoute
+  '/release/$id/image-upload': typeof ReleaseIdImageUploadRoute
   '/song/$id/corrections': typeof SongIdCorrectionsRoute
   '/song/$id/edit': typeof SongIdEditRoute
   '/tag/$id/corrections': typeof TagIdCorrectionsRoute
@@ -518,12 +534,14 @@ export interface FileRoutesById {
   '/(user)/profile_/mock': typeof userProfileMockRoute
   '/artist/$id_/corrections': typeof ArtistIdCorrectionsRoute
   '/artist/$id_/edit': typeof ArtistIdEditRoute
+  '/artist/$id_/image-upload': typeof ArtistIdImageUploadRoute
   '/event/$id_/corrections': typeof EventIdCorrectionsRoute
   '/event/$id_/edit': typeof EventIdEditRoute
   '/label/$id_/corrections': typeof LabelIdCorrectionsRoute
   '/label/$id_/edit': typeof LabelIdEditRoute
   '/release/$id_/corrections': typeof ReleaseIdCorrectionsRoute
   '/release/$id_/edit': typeof ReleaseIdEditRoute
+  '/release/$id_/image-upload': typeof ReleaseIdImageUploadRoute
   '/song/$id_/corrections': typeof SongIdCorrectionsRoute
   '/song/$id_/edit': typeof SongIdEditRoute
   '/tag/$id_/corrections': typeof TagIdCorrectionsRoute
@@ -579,12 +597,14 @@ export interface FileRouteTypes {
     | '/profile/mock'
     | '/artist/$id/corrections'
     | '/artist/$id/edit'
+    | '/artist/$id/image-upload'
     | '/event/$id/corrections'
     | '/event/$id/edit'
     | '/label/$id/corrections'
     | '/label/$id/edit'
     | '/release/$id/corrections'
     | '/release/$id/edit'
+    | '/release/$id/image-upload'
     | '/song/$id/corrections'
     | '/song/$id/edit'
     | '/tag/$id/corrections'
@@ -638,12 +658,14 @@ export interface FileRouteTypes {
     | '/profile/mock'
     | '/artist/$id/corrections'
     | '/artist/$id/edit'
+    | '/artist/$id/image-upload'
     | '/event/$id/corrections'
     | '/event/$id/edit'
     | '/label/$id/corrections'
     | '/label/$id/edit'
     | '/release/$id/corrections'
     | '/release/$id/edit'
+    | '/release/$id/image-upload'
     | '/song/$id/corrections'
     | '/song/$id/edit'
     | '/tag/$id/corrections'
@@ -697,12 +719,14 @@ export interface FileRouteTypes {
     | '/(user)/profile_/mock'
     | '/artist/$id_/corrections'
     | '/artist/$id_/edit'
+    | '/artist/$id_/image-upload'
     | '/event/$id_/corrections'
     | '/event/$id_/edit'
     | '/label/$id_/corrections'
     | '/label/$id_/edit'
     | '/release/$id_/corrections'
     | '/release/$id_/edit'
+    | '/release/$id_/image-upload'
     | '/song/$id_/corrections'
     | '/song/$id_/edit'
     | '/tag/$id_/corrections'
@@ -757,12 +781,14 @@ export interface RootRouteChildren {
   userProfileMockRoute: typeof userProfileMockRoute
   ArtistIdCorrectionsRoute: typeof ArtistIdCorrectionsRoute
   ArtistIdEditRoute: typeof ArtistIdEditRoute
+  ArtistIdImageUploadRoute: typeof ArtistIdImageUploadRoute
   EventIdCorrectionsRoute: typeof EventIdCorrectionsRoute
   EventIdEditRoute: typeof EventIdEditRoute
   LabelIdCorrectionsRoute: typeof LabelIdCorrectionsRoute
   LabelIdEditRoute: typeof LabelIdEditRoute
   ReleaseIdCorrectionsRoute: typeof ReleaseIdCorrectionsRoute
   ReleaseIdEditRoute: typeof ReleaseIdEditRoute
+  ReleaseIdImageUploadRoute: typeof ReleaseIdImageUploadRoute
   SongIdCorrectionsRoute: typeof SongIdCorrectionsRoute
   SongIdEditRoute: typeof SongIdEditRoute
   TagIdCorrectionsRoute: typeof TagIdCorrectionsRoute
@@ -1095,6 +1121,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof SongIdCorrectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/release/$id_/image-upload': {
+      id: '/release/$id_/image-upload'
+      path: '/release/$id/image-upload'
+      fullPath: '/release/$id/image-upload'
+      preLoaderRoute: typeof ReleaseIdImageUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/release/$id_/edit': {
       id: '/release/$id_/edit'
       path: '/release/$id/edit'
@@ -1135,6 +1168,13 @@ declare module '@tanstack/solid-router' {
       path: '/event/$id/corrections'
       fullPath: '/event/$id/corrections'
       preLoaderRoute: typeof EventIdCorrectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/artist/$id_/image-upload': {
+      id: '/artist/$id_/image-upload'
+      path: '/artist/$id/image-upload'
+      fullPath: '/artist/$id/image-upload'
+      preLoaderRoute: typeof ArtistIdImageUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/artist/$id_/edit': {
@@ -1221,12 +1261,14 @@ const rootRouteChildren: RootRouteChildren = {
   userProfileMockRoute: userProfileMockRoute,
   ArtistIdCorrectionsRoute: ArtistIdCorrectionsRoute,
   ArtistIdEditRoute: ArtistIdEditRoute,
+  ArtistIdImageUploadRoute: ArtistIdImageUploadRoute,
   EventIdCorrectionsRoute: EventIdCorrectionsRoute,
   EventIdEditRoute: EventIdEditRoute,
   LabelIdCorrectionsRoute: LabelIdCorrectionsRoute,
   LabelIdEditRoute: LabelIdEditRoute,
   ReleaseIdCorrectionsRoute: ReleaseIdCorrectionsRoute,
   ReleaseIdEditRoute: ReleaseIdEditRoute,
+  ReleaseIdImageUploadRoute: ReleaseIdImageUploadRoute,
   SongIdCorrectionsRoute: SongIdCorrectionsRoute,
   SongIdEditRoute: SongIdEditRoute,
   TagIdCorrectionsRoute: TagIdCorrectionsRoute,

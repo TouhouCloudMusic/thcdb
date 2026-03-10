@@ -2,6 +2,8 @@
 import type { Artist, ArtistCredit, Discography, ReleaseType } from "@thc/api"
 import { createContext, Suspense } from "solid-js"
 
+import { Link } from "~/component/atomic/Link"
+import { ButtonClass_new } from "~/component/atomic/button"
 import { Image } from "~/component/image"
 import { PageLayout } from "~/layout/PageLayout"
 import type { InfiniteQuery } from "~/type/query"
@@ -9,6 +11,11 @@ import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrect
 
 import { ArtistInfo } from "./comp/ArtistInfo"
 import { ArtistReleaseInfo } from "./comp/ArtistReleaseInfo"
+
+const UPLOAD_LINK_CLASS = ButtonClass_new({
+	variant: "SecondaryV2",
+	size: "Sm",
+})
 
 export type ArtistContext = {
 	artist: Artist
@@ -70,7 +77,9 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 								</Image.Fallback>
 								<Image.Img src={props.artist.profile_image_url ?? undefined} />
 							</Image.Root>
-							<ArtistInfo />
+							<div class="flex flex-col gap-4">
+								<ArtistInfo />
+							</div>
 						</div>
 						<div>
 							<ArtistReleaseInfo />
@@ -78,6 +87,16 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 						<EntityCorrectionMetadataSection
 							entityType="artist"
 							entityId={props.artist.id}
+							trailingAction={
+								<Link
+									to="/artist/$id/image-upload"
+									params={{ id: props.artist.id.toString() }}
+									class={UPLOAD_LINK_CLASS}
+									underline={false}
+								>
+									Upload image
+								</Link>
+							}
 						/>
 					</div>
 					{/* <div class="max-w-full wrap-anywhere">

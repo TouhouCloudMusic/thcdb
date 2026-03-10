@@ -1,14 +1,16 @@
+use std::collections::HashMap;
+
 use entity::enums::ReleaseImageType;
 use entity::release;
 use itertools::Itertools;
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, LoaderTrait, QueryFilter,
+    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, FromQueryResult,
+    LoaderTrait, QueryFilter, QueryOrder,
 };
 
 use crate::infra::database::sea_orm::cache::{
     LANGUAGE_CACHE, LanguageCacheMap,
 };
-use crate::infra::database::sea_orm::ext::maybe_loader::MaybeLoader;
 
 pub(super) struct RelatedEntities {
     pub(super) artists: Vec<Vec<entity::artist::Model>>,
@@ -43,6 +45,13 @@ struct TrackDetails {
     songs: Vec<entity::song::Model>,
     artists: Vec<entity::artist::Model>,
     artist_ids: Vec<Vec<Vec<i32>>>,
+}
+
+#[derive(FromQueryResult)]
+struct ReleaseCoverArt {
+    release_id: i32,
+    #[sea_orm(nested)]
+    image: entity::image::Model,
 }
 
 impl RelatedEntities {
@@ -258,21 +267,31 @@ impl RelatedEntities {
         releases: &[release::Model],
         db: &impl ConnectionTrait,
     ) -> Result<Vec<Option<entity::image::Model>>, DbErr> {
-        let release_images = releases
-            .load_many(
-                entity::release_image::Entity::find().filter(
-                    entity::release_image::Column::Type
-                        .eq(ReleaseImageType::Cover),
-                ),
-                db,
+        let release_ids =
+            releases.iter().map(|release| release.id).collect_vec();
+
+        let mut cover_art_by_release = entity::release_image::Entity::find()
+            .filter(
+                entity::release_image::Column::ReleaseId
+                    .is_in(release_ids.iter().copied()),
             )
+            .filter(
+                entity::release_image::Column::Type.eq(ReleaseImageType::Cover),
+            )
+            .left_join(entity::image::Entity)
+            .order_by_desc(entity::image::Column::UploadedAt)
+            .into_model::<ReleaseCoverArt>()
+            .all(db)
             .await?
             .into_iter()
-            .map(|x| x.into_iter().next())
-            .collect_vec();
+            .fold(HashMap::new(), |mut acc, cover_art| {
+                acc.entry(cover_art.release_id).or_insert(cover_art.image);
+                acc
+            });
 
-        release_images
-            .maybe_load_one(entity::image::Entity, db)
-            .await
+        Ok(releases
+            .iter()
+            .map(|release| cover_art_by_release.remove(&release.id))
+            .collect())
     }
 }

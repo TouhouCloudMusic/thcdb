@@ -31,6 +31,7 @@ import type {
 	FindReleaseByIdDefaultOne,
 	FindReleaseByKeywordDefaultOne,
 	FindReleaseByKeywordParams,
+	GetReleaseCoverArtMetadataDefaultOne,
 	NewCorrectionNewRelease,
 	ReleaseCoverArtFormData,
 	UpdateReleaseDefaultOne,
@@ -39,6 +40,7 @@ import type {
 import { DatePrecision, ReleaseType } from "./touhouCloudDB.schemas"
 import type {
 	DataCorrectionSubmissionResult,
+	DataOptionCurrentImageMetadata,
 	DataOptionRelease,
 	DataPageRelease,
 	DataVecRelease,
@@ -767,6 +769,135 @@ export const useUpdateRelease = <
 		queryClient,
 	)
 }
+export type getReleaseCoverArtMetadataResponse200 = {
+	data: DataOptionCurrentImageMetadata
+	status: 200
+}
+
+export type getReleaseCoverArtMetadataResponse429 = {
+	data: string
+	status: 429
+}
+
+export type getReleaseCoverArtMetadataResponseDefaultApplicationJson = {
+	data: GetReleaseCoverArtMetadataDefaultOne
+	status: Exclude<HTTPStatusCodes, 200 | 429>
+}
+
+export type getReleaseCoverArtMetadataResponseDefaultTextPlain = {
+	data: string
+	status: Exclude<HTTPStatusCodes, 200 | 429>
+}
+
+export type getReleaseCoverArtMetadataResponseSuccess =
+	getReleaseCoverArtMetadataResponse200 & {
+		headers: Headers
+	}
+export type getReleaseCoverArtMetadataResponseError = (
+	| getReleaseCoverArtMetadataResponse429
+	| getReleaseCoverArtMetadataResponseDefaultApplicationJson
+	| getReleaseCoverArtMetadataResponseDefaultTextPlain
+) & {
+	headers: Headers
+}
+
+export type getReleaseCoverArtMetadataResponse =
+	| getReleaseCoverArtMetadataResponseSuccess
+	| getReleaseCoverArtMetadataResponseError
+
+export const getGetReleaseCoverArtMetadataUrl = (id: number) => {
+	return `/api/release/${id}/cover-art`
+}
+
+export const getReleaseCoverArtMetadata = async (
+	id: number,
+	options?: RequestInit,
+): Promise<getReleaseCoverArtMetadataResponse> => {
+	const res = await fetch(getGetReleaseCoverArtMetadataUrl(id), {
+		...options,
+		method: "GET",
+	})
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+	const data: getReleaseCoverArtMetadataResponse["data"] = body
+		? JSON.parse(body)
+		: {}
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getReleaseCoverArtMetadataResponse
+}
+
+export const getGetReleaseCoverArtMetadataQueryKey = (id: number) => {
+	return [`/api/release/${id}/cover-art`] as const
+}
+
+export const getGetReleaseCoverArtMetadataQueryOptions = <
+	TData = Awaited<ReturnType<typeof getReleaseCoverArtMetadata>>,
+	TError = string | GetReleaseCoverArtMetadataDefaultOne,
+>(
+	id: number,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getReleaseCoverArtMetadata>>,
+				TError,
+				TData
+			>
+		>
+		fetch?: RequestInit
+	},
+) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+	const queryKey = getGetReleaseCoverArtMetadataQueryKey(id)
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getReleaseCoverArtMetadata>>
+	> = ({ signal }) =>
+		getReleaseCoverArtMetadata(id, { signal, ...fetchOptions })
+
+	return { queryKey, queryFn, enabled: !!id, ...queryOptions }
+}
+
+export type GetReleaseCoverArtMetadataQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getReleaseCoverArtMetadata>>
+>
+export type GetReleaseCoverArtMetadataQueryError =
+	| string
+	| GetReleaseCoverArtMetadataDefaultOne
+
+export function useGetReleaseCoverArtMetadata<
+	TData = Awaited<ReturnType<typeof getReleaseCoverArtMetadata>>,
+	TError = string | GetReleaseCoverArtMetadataDefaultOne,
+>(
+	id: number,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getReleaseCoverArtMetadata>>,
+				TError,
+				TData
+			>
+		>
+		fetch?: RequestInit
+	},
+	queryClient?: () => QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>
+} {
+	const queryOptions = getGetReleaseCoverArtMetadataQueryOptions(id, options)
+
+	const query = useQuery(
+		() => getGetReleaseCoverArtMetadataQueryOptions(id, options),
+		queryClient,
+	)
+
+	return Object.assign(query, { queryKey: queryOptions.queryKey }) as any
+}
+
 export type uploadReleaseCoverArtResponse200 = {
 	data: Message
 	status: 200
@@ -812,11 +943,13 @@ export const uploadReleaseCoverArt = async (
 	releaseCoverArtFormData: ReleaseCoverArtFormData,
 	options?: RequestInit,
 ): Promise<uploadReleaseCoverArtResponse> => {
+	const formData = new FormData()
+	formData.append(`data`, releaseCoverArtFormData.data)
+
 	const res = await fetch(getUploadReleaseCoverArtUrl(id), {
 		...options,
 		method: "POST",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(releaseCoverArtFormData),
+		body: formData,
 	})
 
 	const body = [204, 205, 304].includes(res.status) ? null : await res.text()
@@ -1518,6 +1651,25 @@ export const getUpdateReleaseResponseMock = (
 	...overrideResponse,
 })
 
+export const getGetReleaseCoverArtMetadataResponseMock = (
+	overrideResponse: Partial<
+		Extract<DataOptionCurrentImageMetadata, object>
+	> = {},
+): DataOptionCurrentImageMetadata => ({
+	status: faker.helpers.arrayElement(["Ok"] as const),
+	data: faker.helpers.arrayElement([
+		null,
+		{
+			uploaded_at: faker.date.past().toISOString().slice(0, 19) + "Z",
+			uploaded_by: {
+				id: faker.number.int(),
+				name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+			},
+		},
+	]),
+	...overrideResponse,
+})
+
 export const getUploadReleaseCoverArtResponseMock = (
 	overrideResponse: Partial<Extract<Message, object>> = {},
 ): Message => ({
@@ -1650,6 +1802,32 @@ export const getUpdateReleaseMockHandler = (
 	)
 }
 
+export const getGetReleaseCoverArtMetadataMockHandler = (
+	overrideResponse?:
+		| DataOptionCurrentImageMetadata
+		| ((
+				info: Parameters<Parameters<typeof http.get>[1]>[0],
+		  ) =>
+				| Promise<DataOptionCurrentImageMetadata>
+				| DataOptionCurrentImageMetadata),
+	options?: RequestHandlerOptions,
+) => {
+	return http.get(
+		"*/release/:id/cover-art",
+		async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+			return HttpResponse.json(
+				overrideResponse !== undefined
+					? typeof overrideResponse === "function"
+						? await overrideResponse(info)
+						: overrideResponse
+					: getGetReleaseCoverArtMetadataResponseMock(),
+				{ status: 200 },
+			)
+		},
+		options,
+	)
+}
+
 export const getUploadReleaseCoverArtMockHandler = (
 	overrideResponse?:
 		| Message
@@ -1679,5 +1857,6 @@ export const getReleaseMock = () => [
 	getExploreReleaseMockHandler(),
 	getFindReleaseByIdMockHandler(),
 	getUpdateReleaseMockHandler(),
+	getGetReleaseCoverArtMetadataMockHandler(),
 	getUploadReleaseCoverArtMockHandler(),
 ]

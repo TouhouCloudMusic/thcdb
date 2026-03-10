@@ -1,10 +1,10 @@
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import type {
+	CursorResponseSimpleRelease,
 	SimpleArtist,
 	SimpleEvent,
 	SimpleLabel,
-	SimpleRelease,
 	SongRef,
 	TagRef,
 } from "@thc/api"
@@ -19,6 +19,7 @@ import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 
 type SearchTab = "artist" | "event" | "label" | "release" | "song" | "tag"
 type SearchEntity = "all" | SearchTab
+type SimpleRelease = CursorResponseSimpleRelease["items"][number]
 
 const route = getRouteApi("/search")
 const LIMIT = 20

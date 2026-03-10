@@ -112,6 +112,14 @@ export interface ArtistImageQueueTarget {
 	type: ArtistImageType
 }
 
+export interface ArtistProfileImageFormData {
+	/**
+	 * @minimum 1024
+	 * @maximum 104857600
+	 */
+	data: Blob
+}
+
 export interface ArtistReleaseArtist {
 	id: number
 	name: string
@@ -239,6 +247,16 @@ export interface CreditRoleSummary {
 	id: number
 	name: string
 	short_description: string
+}
+
+export interface ImageUploaderSummary {
+	id: number
+	name: string
+}
+
+export interface CurrentImageMetadata {
+	uploaded_at: string
+	uploaded_by: ImageUploaderSummary
 }
 
 export type ReleaseType = (typeof ReleaseType)[keyof typeof ReleaseType]
@@ -668,9 +686,11 @@ export interface SimpleArtist {
 	name: string
 }
 
-export interface SimpleRelease {
+export interface SongRelease {
 	id: number
 	title: string
+	/** @nullable */
+	track_number?: string | null
 	/** @nullable */
 	cover_art_url?: string | null
 }
@@ -692,7 +712,7 @@ export interface Song {
 	id: number
 	title: string
 	artists?: SimpleArtist[]
-	releases?: SimpleRelease[]
+	releases?: SongRelease[]
 	credits?: SongCredit[]
 	languages?: Language[]
 	localized_titles?: LocalizedTitle[]
@@ -879,7 +899,7 @@ export type PageResponseSongItemsItem = {
 	id: number
 	title: string
 	artists?: SimpleArtist[]
-	releases?: SimpleRelease[]
+	releases?: SongRelease[]
 	credits?: SongCredit[]
 	languages?: Language[]
 	localized_titles?: LocalizedTitle[]
@@ -1132,7 +1152,6 @@ export interface DataVecUserRole {
 }
 
 export interface VerifyResetCodeResponse {
-	key: string
 	key_expires_minutes: number
 	key_expires_at: string
 }
@@ -1204,6 +1223,23 @@ export type DataCorrectionSubmissionResultData = {
 export interface DataCorrectionSubmissionResult {
 	status: DataCorrectionSubmissionResultStatus
 	data: DataCorrectionSubmissionResultData
+}
+
+export type DataOptionCurrentImageMetadataStatus =
+	(typeof DataOptionCurrentImageMetadataStatus)[keyof typeof DataOptionCurrentImageMetadataStatus]
+
+export const DataOptionCurrentImageMetadataStatus = {
+	Ok: "Ok",
+} as const
+
+export type DataOptionCurrentImageMetadataData = null | {
+	uploaded_at: string
+	uploaded_by: ImageUploaderSummary
+}
+
+export interface DataOptionCurrentImageMetadata {
+	status: DataOptionCurrentImageMetadataStatus
+	data: DataOptionCurrentImageMetadataData
 }
 
 export type DataOptionI32Status =
@@ -1952,6 +1988,18 @@ export type FindArtistDiscographiesInitDefaultOne = {
 	message: string
 }
 
+export type GetArtistProfileImageMetadataDefaultOneStatus =
+	(typeof GetArtistProfileImageMetadataDefaultOneStatus)[keyof typeof GetArtistProfileImageMetadataDefaultOneStatus]
+
+export const GetArtistProfileImageMetadataDefaultOneStatus = {
+	Err: "Err",
+} as const
+
+export type GetArtistProfileImageMetadataDefaultOne = {
+	status: GetArtistProfileImageMetadataDefaultOneStatus
+	message: string
+}
+
 export type UploadArtistProfileImageDefaultOneStatus =
 	(typeof UploadArtistProfileImageDefaultOneStatus)[keyof typeof UploadArtistProfileImageDefaultOneStatus]
 
@@ -2649,6 +2697,18 @@ export const UpdateReleaseDefaultOneStatus = {
 
 export type UpdateReleaseDefaultOne = {
 	status: UpdateReleaseDefaultOneStatus
+	message: string
+}
+
+export type GetReleaseCoverArtMetadataDefaultOneStatus =
+	(typeof GetReleaseCoverArtMetadataDefaultOneStatus)[keyof typeof GetReleaseCoverArtMetadataDefaultOneStatus]
+
+export const GetReleaseCoverArtMetadataDefaultOneStatus = {
+	Err: "Err",
+} as const
+
+export type GetReleaseCoverArtMetadataDefaultOne = {
+	status: GetReleaseCoverArtMetadataDefaultOneStatus
 	message: string
 }
 

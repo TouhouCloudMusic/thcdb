@@ -23,6 +23,7 @@ import { HttpResponse, http } from "msw"
 import type { RequestHandlerOptions } from "msw"
 
 import type {
+	ArtistProfileImageFormData,
 	CreateArtistDefaultOne,
 	ExploreArtist400,
 	ExploreArtist500,
@@ -40,6 +41,7 @@ import type {
 	FindManyArtistParams,
 	GetArtistCreditsDefaultOne,
 	GetArtistCreditsParams,
+	GetArtistProfileImageMetadataDefaultOne,
 	NewCorrectionNewArtist,
 	UploadArtistProfileImageDefaultOne,
 	UpsertArtistCorrectionDefaultOne,
@@ -50,6 +52,7 @@ import type {
 	DataCorrectionSubmissionResult,
 	DataInitDiscography,
 	DataOptionArtist,
+	DataOptionCurrentImageMetadata,
 	DataPageArtist,
 	DataPaginatedAppearance,
 	DataPaginatedCredit,
@@ -1384,6 +1387,135 @@ export function useFindArtistDiscographiesInit<
 	return Object.assign(query, { queryKey: queryOptions.queryKey }) as any
 }
 
+export type getArtistProfileImageMetadataResponse200 = {
+	data: DataOptionCurrentImageMetadata
+	status: 200
+}
+
+export type getArtistProfileImageMetadataResponse429 = {
+	data: string
+	status: 429
+}
+
+export type getArtistProfileImageMetadataResponseDefaultApplicationJson = {
+	data: GetArtistProfileImageMetadataDefaultOne
+	status: Exclude<HTTPStatusCodes, 200 | 429>
+}
+
+export type getArtistProfileImageMetadataResponseDefaultTextPlain = {
+	data: string
+	status: Exclude<HTTPStatusCodes, 200 | 429>
+}
+
+export type getArtistProfileImageMetadataResponseSuccess =
+	getArtistProfileImageMetadataResponse200 & {
+		headers: Headers
+	}
+export type getArtistProfileImageMetadataResponseError = (
+	| getArtistProfileImageMetadataResponse429
+	| getArtistProfileImageMetadataResponseDefaultApplicationJson
+	| getArtistProfileImageMetadataResponseDefaultTextPlain
+) & {
+	headers: Headers
+}
+
+export type getArtistProfileImageMetadataResponse =
+	| getArtistProfileImageMetadataResponseSuccess
+	| getArtistProfileImageMetadataResponseError
+
+export const getGetArtistProfileImageMetadataUrl = (id: number) => {
+	return `/api/artist/${id}/profile-image`
+}
+
+export const getArtistProfileImageMetadata = async (
+	id: number,
+	options?: RequestInit,
+): Promise<getArtistProfileImageMetadataResponse> => {
+	const res = await fetch(getGetArtistProfileImageMetadataUrl(id), {
+		...options,
+		method: "GET",
+	})
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text()
+
+	const data: getArtistProfileImageMetadataResponse["data"] = body
+		? JSON.parse(body)
+		: {}
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getArtistProfileImageMetadataResponse
+}
+
+export const getGetArtistProfileImageMetadataQueryKey = (id: number) => {
+	return [`/api/artist/${id}/profile-image`] as const
+}
+
+export const getGetArtistProfileImageMetadataQueryOptions = <
+	TData = Awaited<ReturnType<typeof getArtistProfileImageMetadata>>,
+	TError = string | GetArtistProfileImageMetadataDefaultOne,
+>(
+	id: number,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getArtistProfileImageMetadata>>,
+				TError,
+				TData
+			>
+		>
+		fetch?: RequestInit
+	},
+) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {}
+
+	const queryKey = getGetArtistProfileImageMetadataQueryKey(id)
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getArtistProfileImageMetadata>>
+	> = ({ signal }) =>
+		getArtistProfileImageMetadata(id, { signal, ...fetchOptions })
+
+	return { queryKey, queryFn, enabled: !!id, ...queryOptions }
+}
+
+export type GetArtistProfileImageMetadataQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getArtistProfileImageMetadata>>
+>
+export type GetArtistProfileImageMetadataQueryError =
+	| string
+	| GetArtistProfileImageMetadataDefaultOne
+
+export function useGetArtistProfileImageMetadata<
+	TData = Awaited<ReturnType<typeof getArtistProfileImageMetadata>>,
+	TError = string | GetArtistProfileImageMetadataDefaultOne,
+>(
+	id: number,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getArtistProfileImageMetadata>>,
+				TError,
+				TData
+			>
+		>
+		fetch?: RequestInit
+	},
+	queryClient?: () => QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>
+} {
+	const queryOptions = getGetArtistProfileImageMetadataQueryOptions(id, options)
+
+	const query = useQuery(
+		() => getGetArtistProfileImageMetadataQueryOptions(id, options),
+		queryClient,
+	)
+
+	return Object.assign(query, { queryKey: queryOptions.queryKey }) as any
+}
+
 export type uploadArtistProfileImageResponse200 = {
 	data: Message
 	status: 200
@@ -1426,11 +1558,16 @@ export const getUploadArtistProfileImageUrl = (id: number) => {
 
 export const uploadArtistProfileImage = async (
 	id: number,
+	artistProfileImageFormData: ArtistProfileImageFormData,
 	options?: RequestInit,
 ): Promise<uploadArtistProfileImageResponse> => {
+	const formData = new FormData()
+	formData.append(`data`, artistProfileImageFormData.data)
+
 	const res = await fetch(getUploadArtistProfileImageUrl(id), {
 		...options,
 		method: "POST",
+		body: formData,
 	})
 
 	const body = [204, 205, 304].includes(res.status) ? null : await res.text()
@@ -1452,14 +1589,14 @@ export const getUploadArtistProfileImageMutationOptions = <
 	mutation?: UseMutationOptions<
 		Awaited<ReturnType<typeof uploadArtistProfileImage>>,
 		TError,
-		{ id: number },
+		{ id: number; data: ArtistProfileImageFormData },
 		TContext
 	>
 	fetch?: RequestInit
 }): SolidMutationOptions<
 	Awaited<ReturnType<typeof uploadArtistProfileImage>>,
 	TError,
-	{ id: number },
+	{ id: number; data: ArtistProfileImageFormData },
 	TContext
 > => {
 	const mutationKey = ["uploadArtistProfileImage"]
@@ -1473,11 +1610,11 @@ export const getUploadArtistProfileImageMutationOptions = <
 
 	const mutationFn: MutationFunction<
 		Awaited<ReturnType<typeof uploadArtistProfileImage>>,
-		{ id: number }
+		{ id: number; data: ArtistProfileImageFormData }
 	> = (props) => {
-		const { id } = props ?? {}
+		const { id, data } = props ?? {}
 
-		return uploadArtistProfileImage(id, fetchOptions)
+		return uploadArtistProfileImage(id, data, fetchOptions)
 	}
 
 	return { mutationFn, ...mutationOptions }
@@ -1486,7 +1623,7 @@ export const getUploadArtistProfileImageMutationOptions = <
 export type UploadArtistProfileImageMutationResult = NonNullable<
 	Awaited<ReturnType<typeof uploadArtistProfileImage>>
 >
-
+export type UploadArtistProfileImageMutationBody = ArtistProfileImageFormData
 export type UploadArtistProfileImageMutationError =
 	| string
 	| UploadArtistProfileImageDefaultOne
@@ -1499,7 +1636,7 @@ export const useUploadArtistProfileImage = <
 		mutation?: UseMutationOptions<
 			Awaited<ReturnType<typeof uploadArtistProfileImage>>,
 			TError,
-			{ id: number },
+			{ id: number; data: ArtistProfileImageFormData },
 			TContext
 		>
 		fetch?: RequestInit
@@ -1508,7 +1645,7 @@ export const useUploadArtistProfileImage = <
 ): UseMutationResult<
 	Awaited<ReturnType<typeof uploadArtistProfileImage>>,
 	TError,
-	{ id: number },
+	{ id: number; data: ArtistProfileImageFormData },
 	TContext
 > => {
 	return useMutation(
@@ -2451,6 +2588,25 @@ export const getFindArtistDiscographiesInitResponseMock = (
 	...overrideResponse,
 })
 
+export const getGetArtistProfileImageMetadataResponseMock = (
+	overrideResponse: Partial<
+		Extract<DataOptionCurrentImageMetadata, object>
+	> = {},
+): DataOptionCurrentImageMetadata => ({
+	status: faker.helpers.arrayElement(["Ok"] as const),
+	data: faker.helpers.arrayElement([
+		null,
+		{
+			uploaded_at: faker.date.past().toISOString().slice(0, 19) + "Z",
+			uploaded_by: {
+				id: faker.number.int(),
+				name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+			},
+		},
+	]),
+	...overrideResponse,
+})
+
 export const getUploadArtistProfileImageResponseMock = (
 	overrideResponse: Partial<Extract<Message, object>> = {},
 ): Message => ({
@@ -2679,6 +2835,32 @@ export const getFindArtistDiscographiesInitMockHandler = (
 	)
 }
 
+export const getGetArtistProfileImageMetadataMockHandler = (
+	overrideResponse?:
+		| DataOptionCurrentImageMetadata
+		| ((
+				info: Parameters<Parameters<typeof http.get>[1]>[0],
+		  ) =>
+				| Promise<DataOptionCurrentImageMetadata>
+				| DataOptionCurrentImageMetadata),
+	options?: RequestHandlerOptions,
+) => {
+	return http.get(
+		"*/artist/:id/profile-image",
+		async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+			return HttpResponse.json(
+				overrideResponse !== undefined
+					? typeof overrideResponse === "function"
+						? await overrideResponse(info)
+						: overrideResponse
+					: getGetArtistProfileImageMetadataResponseMock(),
+				{ status: 200 },
+			)
+		},
+		options,
+	)
+}
+
 export const getUploadArtistProfileImageMockHandler = (
 	overrideResponse?:
 		| Message
@@ -2712,5 +2894,6 @@ export const getArtistMock = () => [
 	getGetArtistCreditsMockHandler(),
 	getFindArtistDiscographiesByTypeMockHandler(),
 	getFindArtistDiscographiesInitMockHandler(),
+	getGetArtistProfileImageMetadataMockHandler(),
 	getUploadArtistProfileImageMockHandler(),
 ]

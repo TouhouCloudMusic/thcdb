@@ -1,7 +1,9 @@
 use chrono::NaiveDate;
 use derive_more::{Display, Into};
 use entity::language::Model as DbLanguage;
+use entity::user as user_entity;
 use macros::AutoMapper;
+use sea_orm::DerivePartialModel;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -145,6 +147,13 @@ pub struct Language {
 #[derive(Clone, Debug, Serialize, ToSchema)]
 pub struct LocalizedName {
     pub language: Language,
+    pub name: String,
+}
+
+#[derive(Clone, Debug, Serialize, ToSchema, DerivePartialModel)]
+#[sea_orm(entity = "user_entity::Entity", from_query_result)]
+pub struct ImageUploaderSummary {
+    pub id: i32,
     pub name: String,
 }
 

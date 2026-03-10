@@ -84,6 +84,7 @@ Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是�
 
 - break-words -> wrap-break-word
 - [background-*:<value>] -> bg-\*-[<value>] # 同样适用于fg
+- `*-gradient-to-*` -> `*-linear-to-*`
 
 ### 设计系统
 
@@ -92,6 +93,12 @@ Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是�
 - 颜色：`text-primary`、`bg-secondary` 等
 
 不要使用自定义设置，如`text-[11px]`
+
+## UI 文案
+
+- 默认使用克制、直接、偏工具界面的文案风格
+- 优先写操作、状态、约束本身，不要补充产品价值、流程宣传或类似 SaaS landing page 的解释
+- 避免使用类似 “seamless”、“manage your”、“becoming public”、“queued for moderation” 这类偏营销或产品包装的表达
 
 # 生成的文件
 

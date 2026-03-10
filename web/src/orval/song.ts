@@ -771,6 +771,13 @@ export const getFindSongByKeywordResponseMock = (
 			).map(() => ({
 				id: faker.number.int(),
 				title: faker.string.alpha({ length: { min: 10, max: 20 } }),
+				track_number: faker.helpers.arrayElement([
+					faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					undefined,
+				]),
 				cover_art_url: faker.helpers.arrayElement([
 					faker.helpers.arrayElement([
 						faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -894,6 +901,13 @@ export const getExploreSongResponseMock = (
 				).map(() => ({
 					id: faker.number.int(),
 					title: faker.string.alpha({ length: { min: 10, max: 20 } }),
+					track_number: faker.helpers.arrayElement([
+						faker.helpers.arrayElement([
+							faker.string.alpha({ length: { min: 10, max: 20 } }),
+							null,
+						]),
+						undefined,
+					]),
 					cover_art_url: faker.helpers.arrayElement([
 						faker.helpers.arrayElement([
 							faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -1007,6 +1021,13 @@ export const getFindSongByIdResponseSongMock = (
 			).map(() => ({
 				id: faker.number.int(),
 				title: faker.string.alpha({ length: { min: 10, max: 20 } }),
+				track_number: faker.helpers.arrayElement([
+					faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					undefined,
+				]),
 				cover_art_url: faker.helpers.arrayElement([
 					faker.helpers.arrayElement([
 						faker.string.alpha({ length: { min: 10, max: 20 } }),
