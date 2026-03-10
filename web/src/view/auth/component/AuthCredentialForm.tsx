@@ -132,7 +132,12 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 						of={props.signInForm}
 						path={["username"]}
 					>
-						{(field) => <UserNameField field={field} />}
+						{(field) => (
+							<UserNameField
+								field={field}
+								label="Username or Email"
+							/>
+						)}
 					</Field>
 
 					<Field

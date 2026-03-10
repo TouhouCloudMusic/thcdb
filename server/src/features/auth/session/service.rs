@@ -5,7 +5,7 @@ use super::error::{
 };
 use crate::domain::auth::{AuthCredential, AuthnError};
 use crate::domain::user::{self, User};
-use crate::features::auth::{Service, repo};
+use crate::features::auth::{Email, Service, repo};
 use crate::infra::error::Error;
 
 impl Service {
@@ -13,7 +13,12 @@ impl Service {
         &self,
         creds: AuthCredential,
     ) -> Result<User, SignInError> {
-        let user = repo::find_by_name(&self.repo.conn, &creds.username).await?;
+        let email = Email::parse(&creds.username).ok();
+        let user = if let Some(email) = email {
+            repo::find_by_email(&self.repo.conn, &email).await?
+        } else {
+            repo::find_by_name(&self.repo.conn, &creds.username).await?
+        };
 
         creds
             .verify_credentials(user.as_ref().map(|u| u.password.as_str()))

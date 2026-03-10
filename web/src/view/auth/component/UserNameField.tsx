@@ -12,13 +12,14 @@ type UserNameFieldStore = {
 
 type UserNameFieldProps = {
 	field: UserNameFieldStore
+	label?: string
 	class?: string
 }
 
 export function UserNameField(props: UserNameFieldProps) {
 	return (
 		<FieldLayout
-			label="Username"
+			label={props.label ?? "Username"}
 			error={props.field.errors?.[0]}
 			class={props.class}
 		>
