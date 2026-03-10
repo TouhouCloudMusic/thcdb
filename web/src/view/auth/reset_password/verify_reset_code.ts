@@ -1,54 +1,53 @@
+import { Effect, pipe } from "effect"
+
 import type { VerifyResetCodeRequest } from "~/orval/touhouCloudDB.schemas"
 
+import type { AuthApiResponse, RequestFailedError } from "./response"
 import {
-	extractResetPasswordSession,
-	getApiErrorMessage,
-	REQUEST_FAILED_MESSAGE,
+	decodeResetPasswordSession,
+	ensureSuccessResponse,
+	getResetPasswordErrorMessage,
 } from "./response"
-import type { AuthApiResponse } from "./response"
 import type { ResetPasswordSession } from "./session"
 import type { ResetPasswordUiStore } from "./store"
 
 export type VerifyResetCodeFn = (
 	req: VerifyResetCodeRequest,
 	options?: RequestInit,
-) => Promise<AuthApiResponse>
+) => Effect.Effect<AuthApiResponse, RequestFailedError>
 
 export async function verifyResetCode(args: {
 	email: string
 	code: string
 	verifyResetCode: VerifyResetCodeFn
-	onSuccess(session: ResetPasswordSession): void | Promise<void>
+	onSuccess(session: ResetPasswordSession): Promise<void>
 	uiStore: ResetPasswordUiStore
 }) {
 	const { email, code, uiStore } = args
-	let session: ResetPasswordSession
 
 	uiStore.startVerifyCode()
 
-	try {
-		const res = await args.verifyResetCode({
-			email,
-			code,
-		})
+	await Effect.runPromise(
+		pipe(
+			Effect.gen(function* () {
+				const response = yield* args.verifyResetCode({
+					email,
+					code,
+				})
+				const responseBody = yield* ensureSuccessResponse(response)
+				const session: ResetPasswordSession =
+					yield* decodeResetPasswordSession(responseBody)
 
-		if (res.status !== 200) {
-			uiStore.endVerifyCodeWithError(getApiErrorMessage(res.data))
-			return
-		}
-
-		const nextSession = extractResetPasswordSession(res.data)
-		if (nextSession === undefined) {
-			uiStore.endVerifyCodeWithError(REQUEST_FAILED_MESSAGE)
-			return
-		}
-
-		session = nextSession
-	} catch {
-		uiStore.endVerifyCodeWithError(REQUEST_FAILED_MESSAGE)
-		return
-	}
-
-	await args.onSuccess(session)
-	uiStore.endVerifyCodeWithSuccess()
+				yield* Effect.promise(() => args.onSuccess(session))
+				yield* Effect.sync(() => {
+					uiStore.endVerifyCodeWithSuccess()
+				})
+			}),
+			Effect.catchAll((error) =>
+				Effect.sync(() => {
+					uiStore.endVerifyCodeWithError(getResetPasswordErrorMessage(error))
+				}),
+			),
+		),
+	)
 }

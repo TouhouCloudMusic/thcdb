@@ -1,3 +1,5 @@
+import { Effect, Schema } from "effect"
+
 import type { ResetPasswordSession } from "./session"
 
 export const REQUEST_FAILED_MESSAGE = "Request failed"
@@ -7,14 +9,30 @@ export type AuthApiResponse = {
 	data: unknown
 }
 
-type ApiErrorBody = {
-	status: "Err"
+export type RequestFailedError = {
+	_tag: "RequestFailedError"
+}
+
+export type ResponseStatusError = {
+	_tag: "ResponseStatusError"
 	message: string
 }
 
-type ApiSuccessBody = {
-	status: "Ok"
-	data: unknown
+export type InvalidResponseError = {
+	_tag: "InvalidResponseError"
+}
+
+export type ResetPasswordFlowError =
+	| InvalidResponseError
+	| RequestFailedError
+	| ResponseStatusError
+
+export const REQUEST_FAILED_ERROR: RequestFailedError = {
+	_tag: "RequestFailedError",
+}
+
+const INVALID_RESPONSE_ERROR: InvalidResponseError = {
+	_tag: "InvalidResponseError",
 }
 
 type ForgotPasswordPayload = {
@@ -22,53 +40,34 @@ type ForgotPasswordPayload = {
 	resendCooldownSeconds: number
 }
 
-function isRecord(input: unknown): input is Record<string, unknown> {
-	return typeof input === "object" && input !== null
-}
+const ApiErrorBodySchema = Schema.Struct({
+	status: Schema.Literal("Err"),
+	message: Schema.String,
+})
 
-function getNumber(input: unknown): number | undefined {
-	if (typeof input !== "number" || !Number.isFinite(input)) return undefined
-	return input
-}
+const ApiSuccessEnvelopeSchema = Schema.Struct({
+	status: Schema.Literal("Ok"),
+	data: Schema.Unknown,
+})
 
-function getString(input: unknown): string | undefined {
-	if (typeof input !== "string") return undefined
+const ForgotPasswordPayloadSchema = Schema.Struct({
+	verification_code_expires_minutes: Schema.Number,
+	resend_cooldown_seconds: Schema.Number,
+})
 
-	const trimmed = input.trim()
-	if (trimmed.length === 0) return undefined
+const ResetPasswordSessionPayloadSchema = Schema.Struct({
+	key_expires_minutes: Schema.Number,
+	key_expires_at: Schema.String,
+})
 
-	return trimmed
-}
-
-function parseApiSuccessBody(input: unknown): ApiSuccessBody | null {
-	if (!isRecord(input)) return null
-	if (input["status"] !== "Ok") return null
-	if (!("data" in input)) return null
-
-	return {
-		status: "Ok",
-		data: input["data"],
-	}
-}
-
-function parseApiErrorBody(input: unknown): ApiErrorBody | null {
-	if (!isRecord(input)) return null
-	if (!("status" in input) || !("message" in input)) return null
-	if (input["status"] !== "Err") return null
-	if (typeof input["message"] !== "string") return null
-
-	const message = input["message"].trim()
-	if (message.length === 0) return null
-
-	return { status: "Err", message }
-}
-
-function parseExpiresAtMs(input: unknown): number | undefined {
-	const value = getString(input)
-	if (value === undefined) return undefined
-
-	const expiresAtMs = Date.parse(value)
-	return Number.isFinite(expiresAtMs) ? expiresAtMs : undefined
+function decodeUnknownWithSchema<A, I>(
+	schema: Schema.Schema<A, I>,
+	input: unknown,
+) {
+	return Effect.try({
+		try: () => Schema.decodeUnknownSync(schema)(input),
+		catch: () => INVALID_RESPONSE_ERROR,
+	})
 }
 
 export function getApiErrorMessage(input: unknown): string {
@@ -77,46 +76,68 @@ export function getApiErrorMessage(input: unknown): string {
 		return message.length > 0 ? message : REQUEST_FAILED_MESSAGE
 	}
 
-	return parseApiErrorBody(input)?.message ?? REQUEST_FAILED_MESSAGE
+	const result = Schema.decodeUnknownEither(ApiErrorBodySchema)(input)
+	if (result._tag === "Left") return REQUEST_FAILED_MESSAGE
+
+	const message = result.right.message.trim()
+	return message.length > 0 ? message : REQUEST_FAILED_MESSAGE
 }
 
-export function extractForgotPasswordPayload(
-	input: unknown,
-): ForgotPasswordPayload | undefined {
-	const envelope = parseApiSuccessBody(input)
-	if (envelope === null || !isRecord(envelope.data)) return undefined
-
-	const verificationCodeExpiresMinutes = getNumber(
-		envelope.data["verification_code_expires_minutes"],
-	)
-	const resendCooldownSeconds = getNumber(
-		envelope.data["resend_cooldown_seconds"],
-	)
-
-	if (
-		verificationCodeExpiresMinutes === undefined
-		|| resendCooldownSeconds === undefined
-	) {
-		return undefined
-	}
-
-	return { verificationCodeExpiresMinutes, resendCooldownSeconds }
+export function getResetPasswordErrorMessage(error: ResetPasswordFlowError) {
+	if (error._tag === "ResponseStatusError") return error.message
+	return REQUEST_FAILED_MESSAGE
 }
 
-export function extractResetPasswordSession(
-	input: unknown,
-): ResetPasswordSession | undefined {
-	const envelope = parseApiSuccessBody(input)
-	if (envelope === null || !isRecord(envelope.data)) return undefined
-
-	const keyExpiresMinutes = getNumber(envelope.data["key_expires_minutes"])
-	const expiresAtMs = parseExpiresAtMs(envelope.data["key_expires_at"])
-	if (keyExpiresMinutes === undefined || expiresAtMs === undefined) {
-		return undefined
+export function ensureSuccessResponse(response: AuthApiResponse) {
+	if (response.status === 200) {
+		return Effect.succeed(response.data)
 	}
 
-	return {
-		keyExpiresMinutes,
-		expiresAtMs,
-	}
+	return Effect.fail<ResetPasswordFlowError>({
+		_tag: "ResponseStatusError",
+		message: getApiErrorMessage(response.data),
+	})
+}
+
+export function decodeForgotPasswordPayload(input: unknown) {
+	return Effect.flatMap(
+		decodeUnknownWithSchema(ApiSuccessEnvelopeSchema, input),
+		(envelope) =>
+			Effect.map(
+				decodeUnknownWithSchema(ForgotPasswordPayloadSchema, envelope.data),
+				(data): ForgotPasswordPayload => ({
+					verificationCodeExpiresMinutes:
+						data.verification_code_expires_minutes,
+					resendCooldownSeconds: data.resend_cooldown_seconds,
+				}),
+			),
+	)
+}
+
+export function decodeResetPasswordSession(input: unknown) {
+	return Effect.flatMap(
+		decodeUnknownWithSchema(ApiSuccessEnvelopeSchema, input),
+		(envelope) =>
+			Effect.flatMap(
+				decodeUnknownWithSchema(
+					ResetPasswordSessionPayloadSchema,
+					envelope.data,
+				),
+				(data) =>
+					Effect.try({
+						try: (): ResetPasswordSession => {
+							const expiresAtMs = Date.parse(data.key_expires_at)
+							if (!Number.isFinite(expiresAtMs)) {
+								throw new TypeError("Invalid reset password session expiry")
+							}
+
+							return {
+								keyExpiresMinutes: data.key_expires_minutes,
+								expiresAtMs,
+							}
+						},
+						catch: () => INVALID_RESPONSE_ERROR,
+					}),
+			),
+	)
 }

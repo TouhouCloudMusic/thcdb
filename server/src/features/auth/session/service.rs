@@ -43,10 +43,8 @@ enum SignInIdentifier {
 
 impl SignInIdentifier {
     fn parse(input: &str) -> Self {
-        Email::parse(input).map_or_else(
-            |_| Self::Username(input.to_string()),
-            Self::Email,
-        )
+        Email::parse(input)
+            .map_or_else(|_| Self::Username(input.to_string()), Self::Email)
     }
 }
 

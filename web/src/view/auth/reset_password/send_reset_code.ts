@@ -1,17 +1,19 @@
+import { Effect, pipe } from "effect"
+
 import type { ForgotPasswordRequest } from "~/orval/touhouCloudDB.schemas"
 
+import type { AuthApiResponse, RequestFailedError } from "./response"
 import {
-	extractForgotPasswordPayload,
-	getApiErrorMessage,
-	REQUEST_FAILED_MESSAGE,
+	decodeForgotPasswordPayload,
+	ensureSuccessResponse,
+	getResetPasswordErrorMessage,
 } from "./response"
-import type { AuthApiResponse } from "./response"
 import type { ResetPasswordUiStore } from "./store"
 
 export type ForgotPasswordFn = (
 	req: ForgotPasswordRequest,
 	options?: RequestInit,
-) => Promise<AuthApiResponse>
+) => Effect.Effect<AuthApiResponse, RequestFailedError>
 
 export async function sendResetCode(args: {
 	email: string
@@ -23,26 +25,26 @@ export async function sendResetCode(args: {
 
 	uiStore.startSendCode()
 
-	try {
-		const res = await args.forgotPassword({ email })
+	await Effect.runPromise(
+		pipe(
+			Effect.gen(function* () {
+				const response = yield* args.forgotPassword({ email })
+				const responseBody = yield* ensureSuccessResponse(response)
+				const data = yield* decodeForgotPasswordPayload(responseBody)
 
-		if (res.status !== 200) {
-			uiStore.endSendCodeWithError(getApiErrorMessage(res.data))
-			return
-		}
-
-		const data = extractForgotPasswordPayload(res.data)
-		if (data === undefined) {
-			uiStore.endSendCodeWithError(REQUEST_FAILED_MESSAGE)
-			return
-		}
-
-		args.startCooldown(data.resendCooldownSeconds)
-		uiStore.setVerificationCodeExpiresMinutes(
-			data.verificationCodeExpiresMinutes,
-		)
-		uiStore.endSendCodeWithSuccess()
-	} catch {
-		uiStore.endSendCodeWithError(REQUEST_FAILED_MESSAGE)
-	}
+				yield* Effect.sync(() => {
+					args.startCooldown(data.resendCooldownSeconds)
+					uiStore.setVerificationCodeExpiresMinutes(
+						data.verificationCodeExpiresMinutes,
+					)
+					uiStore.endSendCodeWithSuccess()
+				})
+			}),
+			Effect.catchAll((error) =>
+				Effect.sync(() => {
+					uiStore.endSendCodeWithError(getResetPasswordErrorMessage(error))
+				}),
+			),
+		),
+	)
 }

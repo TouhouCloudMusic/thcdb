@@ -1686,8 +1686,6 @@ export interface ResendVerificationEmailRequest {
 }
 
 export interface ResetPasswordRequest {
-	/** @maxLength 64 */
-	key: string
 	password: string
 }
 

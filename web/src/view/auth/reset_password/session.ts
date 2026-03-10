@@ -1,3 +1,4 @@
+import { Schema } from "effect"
 import { createSignal } from "solid-js"
 
 const RESET_PASSWORD_EMAIL_KEY = "reset_password_email"
@@ -8,20 +9,10 @@ export type ResetPasswordSession = {
 	expiresAtMs: number
 }
 
-function isRecord(input: unknown): input is Record<string, unknown> {
-	return typeof input === "object" && input !== null
-}
-
-function isResetPasswordSession(input: unknown): input is ResetPasswordSession {
-	if (!isRecord(input)) return false
-
-	return (
-		typeof input["keyExpiresMinutes"] === "number"
-		&& Number.isFinite(input["keyExpiresMinutes"])
-		&& typeof input["expiresAtMs"] === "number"
-		&& Number.isFinite(input["expiresAtMs"])
-	)
-}
+const ResetPasswordSessionSchema = Schema.Struct({
+	keyExpiresMinutes: Schema.Number,
+	expiresAtMs: Schema.Number,
+})
 
 function loadStoredString(key: string): string | undefined {
 	let value: string | null
@@ -59,7 +50,8 @@ function normalizeResetPasswordSession(
 	session: ResetPasswordSession,
 ): ResetPasswordSession | undefined {
 	const normalizedSession =
-		isResetPasswordSession(session) && session.expiresAtMs > Date.now()
+		Schema.is(ResetPasswordSessionSchema)(session)
+		&& session.expiresAtMs > Date.now()
 			? session
 			: undefined
 
@@ -77,7 +69,7 @@ const storedResetPasswordSession: ResetPasswordSession | undefined = (():
 
 	try {
 		const parsed: unknown = JSON.parse(stored)
-		if (isResetPasswordSession(parsed)) {
+		if (Schema.is(ResetPasswordSessionSchema)(parsed)) {
 			return normalizeResetPasswordSession(parsed)
 		}
 	} catch {
