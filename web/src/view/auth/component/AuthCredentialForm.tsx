@@ -144,7 +144,6 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 							<PasswordField
 								label="Password"
 								field={field}
-								showRequirementHint
 								class="mt-4"
 							/>
 						)}
