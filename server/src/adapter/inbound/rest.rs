@@ -25,10 +25,8 @@ use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::features;
 use crate::features::artist::find::CommonFilter as ArtistCommonFilter;
 use crate::infra::state::AppState;
-use crate::shared::http::{CorrectionSortField, SortDirection};
+use crate::shared::http::{CorrectionSortField, SortDirection, api_response};
 use crate::utils::openapi::ContentType;
-
-pub mod api_response;
 pub(crate) mod authz;
 pub(crate) mod error;
 mod extract;

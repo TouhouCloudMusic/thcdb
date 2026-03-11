@@ -8,8 +8,8 @@ pub use http::router;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::adapter::inbound::rest::api_response::Error as ApiError;
 use crate::infra::error::Error as InfraError;
+use crate::shared::http::api_response::Error as ApiError;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]

@@ -6,7 +6,6 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::repo;
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::artist::SimpleArtist;
@@ -19,6 +18,7 @@ use crate::domain::tag::TagRef;
 use crate::infra::error::Error as InfraError;
 use crate::shared;
 use crate::shared::error::MessageValidationError as ValidationError;
+use crate::shared::http::api_response::Data;
 
 #[derive(Clone, Debug, Deserialize, IntoParams)]
 #[serde(deny_unknown_fields)]

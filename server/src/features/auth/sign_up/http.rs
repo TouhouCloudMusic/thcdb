@@ -8,7 +8,6 @@ use super::super::session::SessionBackendError;
 use super::super::shared::{
     DataResendVerificationEmailResponse, DataSignUpResponse, TAG,
 };
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::domain::auth::{
     ResendVerificationEmailRequest, ResendVerificationEmailResponse,
@@ -16,6 +15,7 @@ use crate::domain::auth::{
 };
 use crate::domain::user::UserProfile;
 use crate::features::user_profile::{DataUserProfile, load_profile};
+use crate::shared::http::api_response::Data;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()

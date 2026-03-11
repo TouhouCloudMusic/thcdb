@@ -7,7 +7,6 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::service::Service;
-use crate::adapter::inbound::rest::api_response::{Data, Message};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
 use crate::domain::model::{NotificationKindEnum, NotificationTargetTypeEnum};
@@ -15,6 +14,7 @@ use crate::domain::shared::CursorResponse;
 use crate::features::notification::ws;
 use crate::infra::notification::NotificationHub;
 use crate::shared::http::PaginationQuery;
+use crate::shared::http::api_response::{Data, Message};
 
 const TAG: &str = "Notification";
 

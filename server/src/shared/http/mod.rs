@@ -7,7 +7,7 @@ pub use pagination::{PageQuery, PaginationQuery};
 use snafu::Report;
 pub use sorting::{CorrectionSortField, SortDirection, apply_sort_defaults};
 
-use crate::adapter::inbound::rest::api_response;
+pub mod api_response;
 
 #[derive(Debug)]
 pub struct Error<E: snafu::Error> {

@@ -11,15 +11,13 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::{ImageQueueType, repo};
-use crate::adapter::inbound::rest::api_response::{Data, Message};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::adapter::inbound::rest::{
-    AppRouter, CurrentUser, api_response, authz, data,
-};
+use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
 use crate::domain::model::ImageQueueManage;
 use crate::domain::shared::CursorResponse;
 use crate::features::image_queue::shared::{UserSummary, load_users};
 use crate::shared::http::PaginationQuery;
+use crate::shared::http::api_response::{self, Data, Message};
 
 const TAG: &str = "Image Queue";
 

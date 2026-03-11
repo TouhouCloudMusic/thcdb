@@ -6,12 +6,12 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::{ArtistFilter, CommonFilter, FindManyFilter, PageQuery, repo};
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data, state};
 use crate::domain::shared::PageResponse;
 use crate::features::artist::model::Artist;
 use crate::infra::error::Error;
+use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Artist";
 
