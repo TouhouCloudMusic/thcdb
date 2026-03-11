@@ -13,14 +13,13 @@ use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::adapter::inbound::rest::{
-    AppRouter, CurrentUser, api_response, authz, data,
-};
+use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
 use crate::domain::model::{AdminUserRead, AdminWrite, UserRole, UserRoleEnum};
 use crate::domain::shared::{CursorResponse, DEFAULT_LIMIT, MAX_LIMIT};
 use crate::infra::error::Error as InfraError;
+use crate::shared::http::api_response;
+use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Admin";
 

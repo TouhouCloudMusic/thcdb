@@ -2,9 +2,9 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use sea_orm::ConnectionTrait;
 
-use crate::adapter::inbound::rest::api_response;
 use crate::domain::model::PermissionMarker;
 use crate::infra::authz;
+use crate::shared::http::api_response;
 
 pub async fn ensure_permission<P: PermissionMarker>(
     db: &impl ConnectionTrait,

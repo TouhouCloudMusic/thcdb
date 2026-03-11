@@ -4,12 +4,10 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use macros::ApiError;
 
-use crate::adapter::inbound::rest::api_response::{
-    self, ApiError as ApiErrorTrait,
-};
 use crate::domain::auth::{AuthnError, ValidateCredsError};
 use crate::infra;
 use crate::infra::error::Error;
+use crate::shared::http::api_response::{self, ApiError as ApiErrorTrait};
 
 #[derive(Debug, snafu::Snafu)]
 pub enum SignInError {

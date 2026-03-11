@@ -8,7 +8,6 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
 use crate::domain::model::ImageQueueManage;
@@ -16,6 +15,7 @@ use crate::domain::shared::CursorResponse;
 use crate::features::image_queue::shared::{UserSummary, load_users};
 use crate::infra::error::Error as InfraError;
 use crate::shared::http::PaginationQuery;
+use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Image Queue";
 

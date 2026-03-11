@@ -4,7 +4,6 @@ use axum_typed_multipart::TypedMultipart;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::adapter::inbound::rest::api_response::{self, Message};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain::markdown::Markdown;
@@ -12,6 +11,7 @@ use crate::features::user_image::{
     Error as UserImageError, UploadAvatar, UploadProfileBanner,
 };
 use crate::infra::error::Error;
+use crate::shared::http::api_response::{self, Message};
 
 const TAG: &str = "User";
 

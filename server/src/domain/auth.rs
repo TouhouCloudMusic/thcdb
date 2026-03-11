@@ -13,13 +13,11 @@ use serde::{Deserialize, Serialize};
 use snafu::Snafu;
 use utoipa::ToSchema;
 
-use crate::adapter::inbound::rest::api_response::{
-    ApiError as ApiErrorTrait, Error,
-};
 use crate::constant::{
     USER_NAME_REGEX_STR, USER_PASSWORD_MAX_LENGTH, USER_PASSWORD_MIN_LENGTH,
     USER_PASSWORD_REGEX_STR,
 };
+use crate::shared::http::api_response::{ApiError as ApiErrorTrait, Error};
 use crate::shared::secret;
 
 pub const VERIFICATION_CODE_EXPIRES_MINUTES: i64 = 10;

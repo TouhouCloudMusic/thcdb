@@ -2,11 +2,9 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use derive_more::Display;
 
-use crate::adapter::inbound::rest::api_response::{
-    self, ApiError as ApiErrorTrait,
-};
 use crate::domain::auth::ValidateCredsError;
 use crate::infra;
+use crate::shared::http::api_response::{self, ApiError as ApiErrorTrait};
 
 #[derive(Debug, Display, derive_more::Error)]
 #[display("Invalid email: {email}.\n{source}")]

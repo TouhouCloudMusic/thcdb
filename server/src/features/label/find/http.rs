@@ -6,12 +6,12 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::{LabelFilter, PageQuery};
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::label::model::Label;
 use crate::infra::error::Error;
+use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Label";
 

@@ -10,9 +10,9 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::AppRouter;
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::infra::error::Error;
+use crate::shared::http::api_response::Data;
 
 #[derive(Deserialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]

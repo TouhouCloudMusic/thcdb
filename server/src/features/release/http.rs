@@ -9,7 +9,6 @@ use utoipa_axum::routes;
 use super::error::{CreateError, UpsertCorrectionError};
 use super::model::NewRelease;
 use super::{find, service};
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::application::correction::{
@@ -17,6 +16,7 @@ use crate::application::correction::{
 };
 use crate::domain::image::CurrentImageMetadata;
 use crate::features::release_image::{self, ReleaseCoverArtInput};
+use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Release";
 

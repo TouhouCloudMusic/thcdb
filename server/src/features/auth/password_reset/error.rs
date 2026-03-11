@@ -3,10 +3,10 @@ use std::panic::Location;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 
-use crate::adapter::inbound::rest::api_response::{self, ApiError as _};
 use crate::domain::auth::ValidateCredsError;
 use crate::features::auth::InvalidEmail;
 use crate::infra;
+use crate::shared::http::api_response::{self, ApiError as _};
 
 const INTERNAL_ERROR_MESSAGE: &str = "Internal server error";
 

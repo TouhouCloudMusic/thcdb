@@ -4,12 +4,12 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::adapter::inbound::rest::api_response::{Data, Message};
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain;
 use crate::domain::user::UserProfile;
 use crate::features::user_profile::FollowResult;
+use crate::shared::http::api_response::{Data, Message};
 
 const TAG: &str = "User";
 

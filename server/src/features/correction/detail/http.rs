@@ -7,10 +7,10 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::AppRouter;
-use crate::adapter::inbound::rest::api_response::{self, Data};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::domain::correction::Correction;
 use crate::infra::error::Error;
+use crate::shared::http::api_response::{self, Data};
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()

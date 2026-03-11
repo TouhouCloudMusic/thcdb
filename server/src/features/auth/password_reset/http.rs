@@ -16,10 +16,10 @@ use super::service::{
     ForgotPasswordCommand, ForgotPasswordResult, ResetPasswordCommand,
     VerifiedResetPasswordSession, VerifyResetCodeCommand,
 };
-use crate::adapter::inbound::rest::api_response::{Data, Message};
 use crate::adapter::inbound::rest::data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::infra::singleton::APP_CONFIG;
+use crate::shared::http::api_response::{Data, Message};
 
 const RESET_PASSWORD_COOKIE_NAME: &str = "reset_password_session";
 

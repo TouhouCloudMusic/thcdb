@@ -6,7 +6,7 @@ use macros::ApiError;
 use sea_orm::DbErr;
 
 use super::database::error::FkViolation;
-use crate::adapter::inbound::rest::api_response::{
+use crate::shared::http::api_response::{
     ApiError as ApiErrorTrait, IntoApiResponse, default_into_api_response_impl,
 };
 
@@ -114,7 +114,7 @@ impl utoipa::IntoResponses for Error {
         std::string::String,
         utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
     > {
-        use crate::adapter::inbound::rest::api_response::ErrResponseDef;
+        use crate::shared::http::api_response::ErrResponseDef;
 
         Self::build_err_responses().into()
     }
