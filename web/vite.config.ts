@@ -8,7 +8,6 @@ import { fileURLToPath } from "node:url"
 import { defineConfig, loadEnv } from "vite"
 import babelMacrosPlugin from "vite-plugin-babel-macros"
 import solidPlugin from "vite-plugin-solid"
-import tsconfigPaths from "vite-tsconfig-paths"
 import { defineProject } from "vitest/config"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -39,7 +38,6 @@ export default defineConfig(({ mode }) => {
 			solidPlugin(),
 			tailwindcss(),
 			// TODO: vite 8 resolve.tsconfigPaths
-			tsconfigPaths(),
 		],
 		server: {
 			port: 3000,
@@ -51,6 +49,10 @@ export default defineConfig(({ mode }) => {
 					rewrite: (url) => url.replace(/^\/api/, ""),
 				},
 			},
+			forwardConsole: true,
+		},
+		resolve: {
+			tsconfigPaths: true,
 		},
 		build: {
 			target: "esnext",
@@ -68,7 +70,6 @@ export default defineConfig(({ mode }) => {
 						globals: true,
 						include: ["./src/**/*.test.{ts,tsx}"],
 					},
-					plugins: [tsconfigPaths()],
 				}),
 				defineProject({
 					plugins: [
@@ -77,7 +78,6 @@ export default defineConfig(({ mode }) => {
 						storybookTest({
 							configDir: path.join(dirname, ".storybook"),
 						}),
-						tsconfigPaths(),
 					],
 					test: {
 						name: "storybook",
