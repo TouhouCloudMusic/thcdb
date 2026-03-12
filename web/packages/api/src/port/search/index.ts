@@ -4,12 +4,12 @@ import type {
 	SimpleArtist,
 	SimpleEvent,
 	SimpleLabel,
+	SongRelease,
 	SongRef,
 	TagRef,
 } from "../../gen"
 import type { ErrResponse, OkResponse } from "../../shared"
 import { adaptApiResult } from "../../shared"
-import type { SongRelease } from "../../type"
 
 type CursorPage<T> = {
 	items: T[]
