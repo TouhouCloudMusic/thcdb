@@ -6,8 +6,8 @@ import type {
 	PendingImageQueueItem,
 } from "@thc/api"
 import { ImageQueueQueryOption } from "@thc/query"
+import { StrExt } from "@thc/toolkit/data"
 import { createMemo, For, Match, Show, Switch } from "solid-js"
-import { twMerge } from "tailwind-merge"
 
 import { Badge } from "~/component/atomic/Badge"
 import { Link } from "~/component/atomic/Link"
@@ -24,74 +24,228 @@ const DATE_TIME = new Intl.DateTimeFormat(undefined, {
 	timeStyle: "short",
 })
 
-const TYPE_OPTIONS = ["artist", "release"] as const satisfies ImageQueueType[]
-const TYPE_FILTER_OPTIONS = ["", ...TYPE_OPTIONS] as [
-	"",
-	...typeof TYPE_OPTIONS,
+export const TYPE_OPTIONS = [
+	"artist",
+	"release",
+] as const satisfies ImageQueueType[]
+type TypeFilterKind = "all" | ImageQueueType
+type TypeFilterOption = {
+	value: TypeFilterKind
+	label: string
+}
+
+function getTypeFilterLabel(value: TypeFilterKind) {
+	return value === "all" ? "All" : StrExt.capitalize(value)
+}
+
+const TYPE_FILTER_OPTIONS: TypeFilterOption[] = [
+	{ value: "all", label: getTypeFilterLabel("all") },
+	...TYPE_OPTIONS.map((value) => ({
+		value,
+		label: getTypeFilterLabel(value),
+	})),
 ]
-type StatusFilterKind = "pending" | "all"
-const STATUS_FILTER_OPTIONS: StatusFilterKind[] = ["pending", "all"]
+
+export type StatusFilterKind = "pending" | "all"
+export const STATUS_FILTER_OPTIONS: StatusFilterKind[] = ["pending", "all"]
 
 const PAGE_SIZE = 20
 
-const isImageQueueType = (value: string): value is ImageQueueType =>
-	TYPE_OPTIONS.some((v) => v === value)
+const STATUS_TONES = {
+	Pending: { color: "Marisa", label: "Pending" },
+	Approved: { color: "Green", label: "Approved" },
+	Rejected: { color: "Reimu", label: "Rejected" },
+	Cancelled: { color: "Slate", label: "Cancelled" },
+	Reverted: { color: "Blue", label: "Reverted" },
+} as const satisfies Record<
+	ImageQueueStatus,
+	{
+		color: "Marisa" | "Green" | "Reimu" | "Slate" | "Blue"
+		label: string
+	}
+>
 
-const isStatusFilter = (value: string): value is StatusFilterKind =>
-	STATUS_FILTER_OPTIONS.some((v) => v === value)
-
-const getTypeLabel = (value: string) => (value === "" ? "All" : value)
-
-const getStatusLabel = (value: StatusFilterKind) =>
-	value === "pending" ? "Pending" : "All"
-
-const formatDateTime = (value: string) => {
-	const date = new Date(value)
-	if (Number.isNaN(date.getTime())) return value
-	return DATE_TIME.format(date)
+function getQueueItemAriaLabel(item: PendingImageQueueItem) {
+	return `View image queue item #${item.id}`
 }
 
-type ManageFilters = {
+export type ManageFilters = {
 	type?: ImageQueueType
 	status: StatusFilterKind
 }
 
-const statusTone = (status: ImageQueueStatus) => {
-	switch (status) {
-		case "Pending": {
-			return { color: "Marisa", label: "PENDING" } as const
-		}
-		case "Approved": {
-			return { color: "Green", label: "APPROVED" } as const
-		}
-		case "Rejected": {
-			return { color: "Reimu", label: "REJECTED" } as const
-		}
-		case "Cancelled": {
-			return { color: "Slate", label: "CANCELLED" } as const
-		}
-		case "Reverted": {
-			return { color: "Blue", label: "REVERTED" } as const
-		}
-		default: {
-			return { color: "Slate", label: "UNKNOWN" } as const
-		}
-	}
+export type ImageQueueManagePageContentProps = {
+	filters: ManageFilters
+	pendingCount?: number
+	items: PendingImageQueueItem[]
+	isListLoading: boolean
+	isListError: boolean
+	isFetchingNextPage: boolean
+	hasNextPage: boolean
+	onTypeChange: (value: TypeFilterKind) => void
+	onStatusChange: (value: StatusFilterKind) => void
+	onLoadNextPage: () => void
+}
+
+const QUEUE_LIST_CONTAINER_CLASS = "divide-y divide-slate-200 pt-2"
+export function ImageQueueManagePageContent(
+	props: ImageQueueManagePageContentProps,
+) {
+	const scrollDirection = useScrollDirection()
+	const setSentinelRef = useIntersectionSentinel<HTMLDivElement>({
+		enabled: () => props.hasNextPage && !props.isFetchingNextPage,
+		onIntersect: () => props.onLoadNextPage(),
+	})
+
+	return (
+		<PageLayout class="flex flex-col p-8">
+			<header class="flex flex-col gap-y-2">
+				<div class="text-xs font-medium tracking-[0.2em] text-tertiary">
+					MODERATION
+				</div>
+				<h1 class="text-2xl font-light tracking-tight text-primary">
+					Image Queue
+				</h1>
+			</header>
+
+			<section class="rounded-sm bg-white ">
+				<StickyFilterBar
+					scrollDirection={scrollDirection}
+					class="border-slate-300"
+				>
+					<div class="flex gap-x-4">
+						<div class="flex items-center gap-2">
+							<span class="text-sm text-tertiary">Type</span>
+							<Select.Root<TypeFilterOption>
+								class="min-w-24"
+								options={TYPE_FILTER_OPTIONS}
+								optionValue="value"
+								optionTextValue="label"
+								value={TYPE_FILTER_OPTIONS.find(
+									(option) => option.value === (props.filters.type ?? "all"),
+								)}
+								onChange={(option) =>
+									props.onTypeChange(option?.value ?? "all")
+								}
+								itemComponent={(itemProps) => (
+									<Select.Item item={itemProps.item}>
+										{itemProps.item.rawValue.label}
+									</Select.Item>
+								)}
+							>
+								<Select.Trigger class="w-full">
+									<Select.Value<TypeFilterOption>>
+										{(state) => state.selectedOption().label}
+									</Select.Value>
+									<Select.Icon />
+								</Select.Trigger>
+								<Select.Portal>
+									<Select.Content>
+										<Select.Listbox />
+									</Select.Content>
+								</Select.Portal>
+							</Select.Root>
+						</div>
+
+						<div class="flex items-center gap-2">
+							<span class="text-sm text-tertiary">Status</span>
+							<Select.Root<StatusFilterKind>
+								options={STATUS_FILTER_OPTIONS}
+								value={props.filters.status}
+								onChange={(value) =>
+									props.onStatusChange(value ?? props.filters.status)
+								}
+								itemComponent={(itemProps) => (
+									<Select.Item item={itemProps.item}>
+										{StrExt.capitalize(itemProps.item.rawValue)}
+									</Select.Item>
+								)}
+							>
+								<Select.Trigger>
+									<Select.Value<StatusFilterKind>>
+										{(state) => StrExt.capitalize(state.selectedOption())}
+									</Select.Value>
+									<Select.Icon />
+								</Select.Trigger>
+								<Select.Portal>
+									<Select.Content>
+										<Select.Listbox />
+									</Select.Content>
+								</Select.Portal>
+							</Select.Root>
+						</div>
+					</div>
+				</StickyFilterBar>
+
+				<Switch>
+					<Match when={props.isListLoading}>
+						<div class={QUEUE_LIST_CONTAINER_CLASS}>
+							<For each={Array.from({ length: PAGE_SIZE })}>
+								{() => <RowSkeleton />}
+							</For>
+						</div>
+					</Match>
+
+					<Match when={props.isListError}>
+						<div class="p-6 text-sm text-reimu-700">
+							Failed to load image queue.
+						</div>
+					</Match>
+
+					<Match
+						when={
+							!props.isListLoading
+							&& !props.isListError
+							&& props.items.length > 0
+						}
+					>
+						<div class={QUEUE_LIST_CONTAINER_CLASS}>
+							<For each={props.items}>{(item) => <QueueRow item={item} />}</For>
+						</div>
+					</Match>
+
+					<Match when={props.items.length === 0}>
+						<div class="p-10">
+							<div class="text-sm font-medium text-primary">
+								No entries found
+							</div>
+							<div class="mt-1 text-sm text-tertiary">
+								No entries match the current filters.
+							</div>
+						</div>
+					</Match>
+				</Switch>
+
+				<div
+					ref={setSentinelRef}
+					class="h-1"
+				></div>
+
+				<Show when={props.isFetchingNextPage}>
+					<div class={QUEUE_LIST_CONTAINER_CLASS}>
+						<For each={Array.from({ length: Math.min(10, PAGE_SIZE) })}>
+							{() => <RowSkeleton />}
+						</For>
+					</div>
+				</Show>
+
+				<Show when={!props.hasNextPage && props.items.length > 0}>
+					<div class="border-t border-slate-200 px-4 py-8 text-center text-sm text-tertiary">
+						No more entries
+					</div>
+				</Show>
+			</section>
+		</PageLayout>
+	)
 }
 
 export function ImageQueueManagePage() {
 	const search = route.useSearch()
-	const scrollDirection = useScrollDirection()
 	const navigate = useNavigate({ from: "/image-queue/" })
-
 	const filters = createMemo<ManageFilters>(() => ({
 		type: search().type,
 		status: search().status,
 	}))
-
-	const statusFilter = createMemo<ImageQueueStatus | undefined>(() => {
-		return filters().status === "pending" ? "Pending" : undefined
-	})
 
 	const pendingCountQuery = useQuery(() => ImageQueueQueryOption.pendingCount())
 
@@ -99,250 +253,89 @@ export function ImageQueueManagePage() {
 		ImageQueueQueryOption.list({
 			limit: PAGE_SIZE,
 			type: filters().type,
-			status: statusFilter(),
+			status: filters().status === "pending" ? "Pending" : undefined,
 		}),
 	)
 
-	const items = () => listQuery.data?.pages.flatMap((p) => p.items) ?? []
-
-	const setSentinelRef = useIntersectionSentinel<HTMLDivElement>({
-		enabled: () => listQuery.hasNextPage && !listQuery.isFetchingNextPage,
-		onIntersect: () => {
-			void listQuery.fetchNextPage()
-		},
-	})
-
-	const updateSearch = (key: "type" | "status", next: string | undefined) => {
-		const nextSearch = { ...search() }
-
-		if (key === "type") {
-			nextSearch.type =
-				typeof next === "string" && isImageQueueType(next) ? next : undefined
-		}
-
-		if (key === "status") {
-			nextSearch.status =
-				typeof next === "string" && isStatusFilter(next) ? next : "pending"
-		}
-
-		void navigate({
-			to: "/image-queue",
-			search: nextSearch,
-		})
-	}
-
 	return (
-		<PageLayout class="p-8">
-			<div class="flex flex-col gap-6">
-				<header class="flex flex-wrap items-start justify-between gap-6">
-					<div class="min-w-0">
-						<div class="text-xs font-medium tracking-[0.22em] text-slate-500">
-							MODERATION
-						</div>
-						<h1 class="mt-2 text-3xl font-light tracking-tighter text-slate-900">
-							Image Queue
-						</h1>
-					</div>
-
-					<div class="flex flex-wrap items-stretch gap-4">
-						<div class="rounded-sm border border-slate-300 bg-white/80 p-4 shadow-xs">
-							<div class="text-[11px] font-medium tracking-[0.18em] text-slate-500">
-								PENDING
-							</div>
-							<div class="mt-2 flex items-baseline gap-3">
-								<div class="text-4xl font-semibold tracking-tight text-slate-900">
-									<Show
-										when={pendingCountQuery.data !== undefined}
-										fallback={<span class="opacity-30">—</span>}
-									>
-										{pendingCountQuery.data}
-									</Show>
-								</div>
-								<div class="text-sm text-slate-500">items</div>
-							</div>
-						</div>
-					</div>
-				</header>
-
-				<StickyFilterBar scrollDirection={scrollDirection}>
-					<div class="flex flex-wrap items-center justify-between gap-4">
-						<div class="flex flex-wrap items-center gap-4">
-							<div class="flex items-center gap-2">
-								<span class="text-sm text-slate-500">Type</span>
-								<Select.Root<string>
-									options={TYPE_FILTER_OPTIONS}
-									value={filters().type ?? ""}
-									onChange={(value) => updateSearch("type", value ?? "")}
-									itemComponent={(props) => (
-										<Select.Item item={props.item}>
-											{getTypeLabel(props.item.rawValue)}
-										</Select.Item>
-									)}
-								>
-									<Select.Trigger>
-										<Select.Value<string>>
-											{(state) => getTypeLabel(state.selectedOption())}
-										</Select.Value>
-										<Select.Icon />
-									</Select.Trigger>
-									<Select.Portal>
-										<Select.Content>
-											<Select.Listbox />
-										</Select.Content>
-									</Select.Portal>
-								</Select.Root>
-							</div>
-
-							<div class="flex items-center gap-2">
-								<span class="text-sm text-slate-500">Status</span>
-								<Select.Root<StatusFilterKind>
-									options={STATUS_FILTER_OPTIONS}
-									value={filters().status}
-									onChange={(value) => {
-										if (value === null) return
-										updateSearch("status", value)
-									}}
-									itemComponent={(props) => (
-										<Select.Item item={props.item}>
-											{getStatusLabel(props.item.rawValue)}
-										</Select.Item>
-									)}
-								>
-									<Select.Trigger>
-										<Select.Value<StatusFilterKind>>
-											{(state) => getStatusLabel(state.selectedOption())}
-										</Select.Value>
-										<Select.Icon />
-									</Select.Trigger>
-									<Select.Portal>
-										<Select.Content>
-											<Select.Listbox />
-										</Select.Content>
-									</Select.Portal>
-								</Select.Root>
-							</div>
-						</div>
-
-						<div class="flex items-center gap-2">
-							<span class="text-xs font-medium tracking-[0.22em] text-slate-400">
-								{items().length} SHOWN
-							</span>
-						</div>
-					</div>
-				</StickyFilterBar>
-
-				<section class="overflow-hidden rounded-sm border border-slate-300 bg-white shadow-xs">
-					<div class="grid grid-cols-[4rem_1fr_12rem_12rem_9rem] items-center border-b border-slate-200 bg-slate-50 px-4 py-3 text-[11px] font-medium tracking-[0.18em] text-slate-500">
-						<div>ID</div>
-						<div>CREATED BY</div>
-						<div>IMAGE</div>
-						<div>CREATED</div>
-						<div>STATUS</div>
-					</div>
-
-					<Switch>
-						<Match when={listQuery.isLoading}>
-							<div class="divide-y divide-slate-100">
-								<For each={Array.from({ length: PAGE_SIZE })}>
-									{() => <RowSkeleton />}
-								</For>
-							</div>
-						</Match>
-
-						<Match when={listQuery.isError}>
-							<div class="p-6 text-sm text-reimu-700">
-								Failed to load image queue.
-							</div>
-						</Match>
-
-						<Match when={items().length === 0}>
-							<div class="p-10">
-								<div class="text-sm font-medium text-slate-900">
-									No entries found
-								</div>
-								<div class="mt-1 text-sm text-slate-500">
-									Try changing the filters or come back later.
-								</div>
-							</div>
-						</Match>
-
-						<Match when={true}>
-							<div class="divide-y divide-slate-100">
-								<For each={items()}>{(item) => <QueueRow item={item} />}</For>
-							</div>
-						</Match>
-					</Switch>
-
-					<div
-						ref={setSentinelRef}
-						class="h-1"
-					></div>
-
-					<Show when={listQuery.isFetchingNextPage}>
-						<div class="divide-y divide-slate-100 border-t border-slate-100">
-							<For each={Array.from({ length: Math.min(10, PAGE_SIZE) })}>
-								{() => <RowSkeleton />}
-							</For>
-						</div>
-					</Show>
-
-					<Show when={!listQuery.hasNextPage && items().length > 0}>
-						<div class="border-t border-slate-100 px-4 py-4 text-center text-sm text-slate-400">
-							No more entries
-						</div>
-					</Show>
-				</section>
-			</div>
-		</PageLayout>
+		<ImageQueueManagePageContent
+			filters={filters()}
+			pendingCount={pendingCountQuery.data}
+			items={listQuery.data?.pages.flatMap((page) => page.items) ?? []}
+			isListLoading={listQuery.isLoading}
+			isListError={listQuery.isError}
+			isFetchingNextPage={listQuery.isFetchingNextPage}
+			hasNextPage={listQuery.hasNextPage}
+			onTypeChange={(value) => {
+				void navigate({
+					to: "/image-queue",
+					search: {
+						...search(),
+						type: value === "all" ? undefined : value,
+					},
+				})
+			}}
+			onStatusChange={(value) => {
+				void navigate({
+					to: "/image-queue",
+					search: {
+						...search(),
+						status: value,
+					},
+				})
+			}}
+			onLoadNextPage={() => {
+				void listQuery.fetchNextPage()
+			}}
+		/>
 	)
 }
 
 function QueueRow(props: { item: PendingImageQueueItem }) {
-	const tone = () => statusTone(props.item.status)
-	const imageId = () =>
-		props.item.image_id === null ? "—" : props.item.image_id.toString()
-	const createdAt = () => formatDateTime(props.item.created_at)
-
-	const rowClass = () =>
-		twMerge(
-			"grid grid-cols-[4rem_1fr_12rem_12rem_9rem] items-center px-4 py-3 text-sm",
-			"hover:bg-slate-50",
-		)
+	const tone = createMemo(() => STATUS_TONES[props.item.status])
+	const createdAtLabel = createMemo(() => {
+		const createdAt = new Date(props.item.created_at)
+		return Number.isNaN(createdAt.getTime())
+			? props.item.created_at
+			: DATE_TIME.format(createdAt)
+	})
 
 	return (
-		<div class={rowClass()}>
-			<div class="font-mono text-xs text-slate-600">
-				<Link
-					to="/image-queue/$id"
-					params={{ id: props.item.id.toString() }}
-					class="text-slate-900 no-underline hover:underline"
-				>
-					{props.item.id}
-				</Link>
-			</div>
+		<div class="relative rounded-sm isolate">
+			<Link
+				to="/image-queue/$id"
+				params={{ id: props.item.id.toString() }}
+				aria-label={getQueueItemAriaLabel(props.item)}
+				class="absolute inset-0 rounded-sm no-underline"
+			/>
 
-			<div class="min-w-0">
-				<div class="flex min-w-0 items-center gap-2">
+			<div class="pointer-events-none grid grid-cols-2 grid-rows-2 gap-y-2 px-1 py-4 ">
+				<div class="grid grid-cols-subgrid grid-rows-subgrid row-span-2">
+					<div class="flex flex-wrap items-baseline gap-2">
+						<span class="font-mono text-xs text-tertiary">
+							#{props.item.id}
+						</span>
+						<Badge
+							color={tone().color}
+							class="px-2 py-0.5"
+						>
+							{tone().label}
+						</Badge>
+					</div>
+
 					<Link
 						to="/user/$id/image-queue"
 						params={{ id: props.item.created_by.id.toString() }}
-						class="truncate text-slate-900 no-underline hover:underline"
+						class="pointer-events-auto relative z-10 truncate text-sm text-secondary size-fit"
 					>
 						{props.item.created_by.name}
 					</Link>
 				</div>
-			</div>
 
-			<div class="text-sm text-slate-500">{imageId()}</div>
-			<div class="text-sm text-slate-500">{createdAt()}</div>
-
-			<div class="justify-self-start">
-				<Badge
-					color={tone().color}
-					class="px-2 py-0.5"
-				>
-					{tone().label}
-				</Badge>
+				<div class="grid grid-cols-subgrid grid-rows-subgrid justify-items-end text-sm text-slate-600 row-span-2">
+					<div>Created at</div>
+					<div>{createdAtLabel()}</div>
+				</div>
 			</div>
 		</div>
 	)
@@ -350,12 +343,15 @@ function QueueRow(props: { item: PendingImageQueueItem }) {
 
 function RowSkeleton() {
 	return (
-		<div class="grid animate-pulse grid-cols-[4rem_1fr_12rem_12rem_9rem] items-center px-4 py-3">
-			<div class="h-4 w-20 rounded bg-slate-200"></div>
-			<div class="h-4 w-64 rounded bg-slate-200"></div>
-			<div class="h-4 w-24 rounded bg-slate-100"></div>
-			<div class="h-4 w-32 rounded bg-slate-100"></div>
-			<div class="h-5 w-24 rounded-full bg-slate-200"></div>
+		<div class="grid animate-pulse gap-3 px-4 py-4 md:grid-cols-[minmax(0,1fr)_11rem] md:items-center">
+			<div>
+				<div class="h-5 w-40 rounded bg-slate-200"></div>
+				<div class="mt-2 h-4 w-56 rounded bg-slate-100"></div>
+			</div>
+			<div class="flex justify-between gap-3 md:block md:text-right">
+				<div class="ml-auto h-3 w-16 rounded bg-slate-100"></div>
+				<div class="mt-2 ml-auto h-4 w-28 rounded bg-slate-200"></div>
+			</div>
 		</div>
 	)
 }
