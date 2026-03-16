@@ -36,7 +36,6 @@ import { Route as ReleaseIdRouteImport } from './route/release/$id'
 import { Route as LabelNewRouteImport } from './route/label/new'
 import { Route as LabelExploreRouteImport } from './route/label/explore'
 import { Route as LabelIdRouteImport } from './route/label/$id'
-import { Route as ImageQueueMockRouteImport } from './route/image-queue/mock'
 import { Route as ImageQueueIdRouteImport } from './route/image-queue/$id'
 import { Route as EventNewRouteImport } from './route/event/new'
 import { Route as EventMockRouteImport } from './route/event/mock'
@@ -202,11 +201,6 @@ const LabelExploreRoute = LabelExploreRouteImport.update({
 const LabelIdRoute = LabelIdRouteImport.update({
   id: '/label/$id',
   path: '/label/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ImageQueueMockRoute = ImageQueueMockRouteImport.update({
-  id: '/image-queue/mock',
-  path: '/image-queue/mock',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ImageQueueIdRoute = ImageQueueIdRouteImport.update({
@@ -381,7 +375,6 @@ export interface FileRoutesByFullPath {
   '/event/mock': typeof EventMockRoute
   '/event/new': typeof EventNewRoute
   '/image-queue/$id': typeof ImageQueueIdRoute
-  '/image-queue/mock': typeof ImageQueueMockRoute
   '/label/$id': typeof LabelIdRoute
   '/label/explore': typeof LabelExploreRoute
   '/label/new': typeof LabelNewRoute
@@ -442,7 +435,6 @@ export interface FileRoutesByTo {
   '/event/mock': typeof EventMockRoute
   '/event/new': typeof EventNewRoute
   '/image-queue/$id': typeof ImageQueueIdRoute
-  '/image-queue/mock': typeof ImageQueueMockRoute
   '/label/$id': typeof LabelIdRoute
   '/label/explore': typeof LabelExploreRoute
   '/label/new': typeof LabelNewRoute
@@ -504,7 +496,6 @@ export interface FileRoutesById {
   '/event/mock': typeof EventMockRoute
   '/event/new': typeof EventNewRoute
   '/image-queue/$id': typeof ImageQueueIdRoute
-  '/image-queue/mock': typeof ImageQueueMockRoute
   '/label/$id': typeof LabelIdRoute
   '/label/explore': typeof LabelExploreRoute
   '/label/new': typeof LabelNewRoute
@@ -567,7 +558,6 @@ export interface FileRouteTypes {
     | '/event/mock'
     | '/event/new'
     | '/image-queue/$id'
-    | '/image-queue/mock'
     | '/label/$id'
     | '/label/explore'
     | '/label/new'
@@ -628,7 +618,6 @@ export interface FileRouteTypes {
     | '/event/mock'
     | '/event/new'
     | '/image-queue/$id'
-    | '/image-queue/mock'
     | '/label/$id'
     | '/label/explore'
     | '/label/new'
@@ -689,7 +678,6 @@ export interface FileRouteTypes {
     | '/event/mock'
     | '/event/new'
     | '/image-queue/$id'
-    | '/image-queue/mock'
     | '/label/$id'
     | '/label/explore'
     | '/label/new'
@@ -751,7 +739,6 @@ export interface RootRouteChildren {
   EventMockRoute: typeof EventMockRoute
   EventNewRoute: typeof EventNewRoute
   ImageQueueIdRoute: typeof ImageQueueIdRoute
-  ImageQueueMockRoute: typeof ImageQueueMockRoute
   LabelIdRoute: typeof LabelIdRoute
   LabelExploreRoute: typeof LabelExploreRoute
   LabelNewRoute: typeof LabelNewRoute
@@ -986,13 +973,6 @@ declare module '@tanstack/solid-router' {
       path: '/label/$id'
       fullPath: '/label/$id'
       preLoaderRoute: typeof LabelIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/image-queue/mock': {
-      id: '/image-queue/mock'
-      path: '/image-queue/mock'
-      fullPath: '/image-queue/mock'
-      preLoaderRoute: typeof ImageQueueMockRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/image-queue/$id': {
@@ -1231,7 +1211,6 @@ const rootRouteChildren: RootRouteChildren = {
   EventMockRoute: EventMockRoute,
   EventNewRoute: EventNewRoute,
   ImageQueueIdRoute: ImageQueueIdRoute,
-  ImageQueueMockRoute: ImageQueueMockRoute,
   LabelIdRoute: LabelIdRoute,
   LabelExploreRoute: LabelExploreRoute,
   LabelNewRoute: LabelNewRoute,
