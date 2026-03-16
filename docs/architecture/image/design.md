@@ -86,4 +86,4 @@
 ### 备注
 
 - 当前实现中，`/image-queue` 与 `/image-queue/pending-count` 仅要求登录；详情与处理接口会校验 `image.queue.manage`。
-- 前端页面：`/image-queue/`（管理列表）、`/image-queue/{id}`（详情/处理）、`/user/{id}/image-queue`（用户队列），另有 `/image-queue/mock` 页面用于开发调试。
+- 前端页面：`/image-queue/`（管理列表）、`/image-queue/{id}`（详情/处理）、`/user/{id}/image-queue`（用户队列）。
