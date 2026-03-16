@@ -85,6 +85,7 @@ Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是�
 - break-words -> wrap-break-word
 - [background-*:<value>] -> bg-\*-[<value>] # 同样适用于fg
 - `*-gradient-to-*` -> `*-linear-to-*`
+- `outline-offset-[-<number>px]` -> `-outline-offset-<number>`
 
 ### 设计系统
 
@@ -92,7 +93,7 @@ Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是�
 
 - 颜色：`text-primary`、`bg-secondary` 等
 
-不要使用自定义设置，如`text-[11px]`
+不要使用自定义设置，如`text-[11px]`, `tracking-[0.22em]`
 
 ## UI 文案
 

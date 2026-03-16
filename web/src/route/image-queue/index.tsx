@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/solid-router"
 import * as v from "valibot"
 
-import { AuthGuard } from "~/component/route"
 import { ImageQueueManagePage } from "~/view/image_queue/manage"
 
 const DEFAULT_STATUS = "pending"
@@ -17,9 +16,5 @@ export const Route = createFileRoute("/image-queue/")({
 })
 
 function RouteComponent() {
-	return (
-		<AuthGuard>
-			<ImageQueueManagePage />
-		</AuthGuard>
-	)
+	return <ImageQueueManagePage />
 }
