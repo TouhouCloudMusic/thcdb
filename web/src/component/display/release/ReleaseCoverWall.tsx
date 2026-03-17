@@ -1,6 +1,7 @@
 import { For } from "solid-js"
 
 import { Image } from "~/component/image"
+import { imgUrl } from "~/utils/adapter/static_file"
 
 export type ReleaseCoverWallProps = {
 	releases: ReleaseCoverWallRelease[]
@@ -20,7 +21,7 @@ export function ReleaseCoverWall(props: ReleaseCoverWallProps) {
 					<div class="aspect-square overflow-hidden">
 						<Image.Root>
 							<Image.Img
-								src={release.cover_art_url ?? undefined}
+								src={imgUrl(release.cover_art_url)}
 								alt={release.title}
 								class="h-full w-full object-cover"
 							/>

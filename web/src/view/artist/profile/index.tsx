@@ -7,6 +7,7 @@ import { ButtonClass_new } from "~/component/atomic/button"
 import { Image } from "~/component/image"
 import { PageLayout } from "~/layout/PageLayout"
 import type { InfiniteQuery } from "~/type/query"
+import { imgUrl } from "~/utils/adapter/static_file"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { ArtistInfo } from "./comp/ArtistInfo"
@@ -44,6 +45,7 @@ export type ArtistProfilePageProps = {
 }
 
 export function ArtistProfilePage(props: ArtistProfilePageProps) {
+	const profileImageUrl = () => imgUrl(props.artist.profile_image_url)
 	const contextValue: ArtistContext = {
 		get artist() {
 			return props.artist
@@ -75,7 +77,7 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 										)
 									}
 								</Image.Fallback>
-								<Image.Img src={props.artist.profile_image_url ?? undefined} />
+								<Image.Img src={profileImageUrl()} />
 							</Image.Root>
 							<div class="flex flex-col gap-4">
 								<ArtistInfo />
