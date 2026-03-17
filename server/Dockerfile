@@ -24,13 +24,15 @@ RUN --mount=type=cache,id=cargo_regi,target=/root/.cargo/registry \
 
 FROM debian:${DEBIAN_VERSION}-slim AS runtime
 
+WORKDIR /app
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /root/thcdb_rs /root/thcdb_rs
-COPY ./config.toml .
+COPY --from=builder /root/thcdb_rs /app/thcdb_rs
+COPY ./config.toml /app/config.toml
 
-ENTRYPOINT ["/root/thcdb_rs"]
+ENTRYPOINT ["/app/thcdb_rs"]

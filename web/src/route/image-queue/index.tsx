@@ -6,7 +6,7 @@ import { ImageQueueManagePage } from "~/view/image_queue/manage"
 const DEFAULT_STATUS = "pending"
 
 const searchSchema = v.object({
-	type: v.optional(v.picklist(["artist", "release"])),
+	type: v.fallback(v.optional(v.picklist(["artist", "release"])), undefined),
 	status: v.fallback(v.picklist(["pending", "all"]), DEFAULT_STATUS),
 })
 

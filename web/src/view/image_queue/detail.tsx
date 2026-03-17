@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
-import { useNavigate } from "@tanstack/solid-router"
 import type { ImageQueueDetail, ImageQueueStatus } from "@thc/api"
 import {
 	ArtistQueryOption,
@@ -9,14 +8,16 @@ import {
 } from "@thc/query"
 import { ObjExt } from "@thc/toolkit/data"
 import { Option as O } from "effect"
-import { createMemo, Match, Show, Switch } from "solid-js"
-import type { ParentProps } from "solid-js"
+import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
+import type { JSX } from "solid-js"
 
 import { Badge } from "~/component/atomic/Badge"
 import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
+import { AlertDialog } from "~/component/dialog/AlertDialog"
 import { Image } from "~/component/image"
 import { PageLayout } from "~/layout"
+import { useCurrentUser } from "~/state/user"
 import { imgUrl } from "~/utils/adapter/static_file"
 
 const DATE_TIME = new Intl.DateTimeFormat(undefined, {
@@ -24,37 +25,39 @@ const DATE_TIME = new Intl.DateTimeFormat(undefined, {
 	timeStyle: "short",
 })
 
-const statusTone = (status: ImageQueueStatus) => {
+const LABEL_CLASS = "text-xs text-tertiary"
+
+function statusTone(status: ImageQueueStatus) {
 	switch (status) {
 		case "Pending": {
-			return { color: "Marisa", label: "PENDING" } as const
+			return { color: "Marisa", label: "Pending" } as const
 		}
 		case "Approved": {
-			return { color: "Green", label: "APPROVED" } as const
+			return { color: "Green", label: "Approved" } as const
 		}
 		case "Rejected": {
-			return { color: "Reimu", label: "REJECTED" } as const
+			return { color: "Reimu", label: "Rejected" } as const
 		}
 		case "Cancelled": {
-			return { color: "Slate", label: "CANCELLED" } as const
+			return { color: "Slate", label: "Cancelled" } as const
 		}
 		case "Reverted": {
-			return { color: "Blue", label: "REVERTED" } as const
+			return { color: "Blue", label: "Reverted" } as const
 		}
 		default: {
-			return { color: "Slate", label: "UNKNOWN" } as const
+			return { color: "Slate", label: "Unknown" } as const
 		}
 	}
 }
 
-const formatDateTime = (value: string | null | undefined) => {
+function formatDateTime(value: string | null | undefined) {
 	if (!value) return "—"
 	const date = new Date(value)
 	if (Number.isNaN(date.getTime())) return value
 	return DATE_TIME.format(date)
 }
 
-const imagePath = (detail: ImageQueueDetail) => {
+function imagePath(detail: ImageQueueDetail) {
 	const image = detail.image
 	if (!image) return
 	const dir = image.directory.replaceAll(/\/+$/g, "")
@@ -62,11 +65,71 @@ const imagePath = (detail: ImageQueueDetail) => {
 	return `${dir}/${image.filename}`
 }
 
+function getTargetMeta(detail: ImageQueueDetail) {
+	if (detail.artist) {
+		return {
+			label: "Artist",
+			id: detail.artist.artist_id,
+			type: detail.artist.type,
+			imageLabel: "profile image",
+			to: "/artist/$id" as const,
+		}
+	}
+
+	if (detail.release) {
+		return {
+			label: "Release",
+			id: detail.release.release_id,
+			type: detail.release.type,
+			imageLabel: "cover image",
+			to: "/release/$id" as const,
+		}
+	}
+}
+
+function hasImageQueueManagePermission(
+	roles: { name: string }[] | null | undefined,
+) {
+	return (
+		roles?.some((role) => role.name === "Admin" || role.name === "Moderator")
+		?? false
+	)
+}
+
 type Props = {
 	entryId: number
 }
 
-const extractInfiniteQueryIds = (data: unknown): number[] => {
+export type ImageQueueDetailPageContentProps = {
+	detail?: ImageQueueDetail
+	isLoading: boolean
+	isError: boolean
+	canManage: boolean
+	isBusy: boolean
+	mutationErrorMessage?: string
+	backLink:
+		| {
+				to: "/image-queue"
+				search: { status: "pending" }
+		  }
+		| {
+				to: "/user/$id/image-queue"
+				params: { id: string }
+		  }
+	onApprove: () => void
+	onReject: () => void
+	onRevert: () => void
+	cachedNeighbor?: {
+		prev?: number
+		next?: number
+	}
+	targetName?: string
+	currentSrc?: string
+	currentLoading: boolean
+	currentError: boolean
+}
+
+function extractInfiniteQueryIds(data: unknown): number[] {
 	if (!ObjExt.isRecord(data)) return []
 
 	const pages = data["pages"]
@@ -89,21 +152,32 @@ const extractInfiniteQueryIds = (data: unknown): number[] => {
 }
 
 export function ImageQueueDetailPage(props: Props) {
-	const navigate = useNavigate()
 	const queryClient = useQueryClient()
+	const userCtx = useCurrentUser()
 	const detailQuery = useQuery(() =>
 		ImageQueueQueryOption.detail(props.entryId),
 	)
 	const mutation = ImageQueueMutation.getHandleInstance()
-
-	const detail = createMemo(() => detailQuery.data)
-	const tone = createMemo(() =>
-		detail() ? statusTone(detail()!.status) : statusTone("Pending"),
+	const canManage = createMemo(() =>
+		hasImageQueueManagePermission(userCtx.user?.roles),
 	)
 
-	const onBack = () => {
-		void navigate({ to: "/image-queue", search: { status: "pending" } })
-	}
+	const detail = createMemo(() => detailQuery.data)
+	const targetInfo = useTargetInfo(() => detail())
+
+	const backLink = createMemo<ImageQueueDetailPageContentProps["backLink"]>(
+		() => {
+			const userId = detail()?.created_by.id
+			if (!canManage() && userId !== undefined) {
+				return {
+					to: "/user/$id/image-queue",
+					params: { id: userId.toString() },
+				}
+			}
+
+			return { to: "/image-queue", search: { status: "pending" } }
+		},
+	)
 
 	const refresh = () => {
 		void queryClient.invalidateQueries({ queryKey: ["image-queue::detail"] })
@@ -112,6 +186,20 @@ export function ImageQueueDetailPage(props: Props) {
 			queryKey: ["image-queue::pending-count"],
 		})
 		void queryClient.invalidateQueries({ queryKey: ["image-queue::user"] })
+
+		const artistId = detail()?.artist?.artist_id
+		if (artistId !== undefined) {
+			void queryClient.invalidateQueries({
+				queryKey: ["artist::profile", artistId],
+			})
+		}
+
+		const releaseId = detail()?.release?.release_id
+		if (releaseId !== undefined) {
+			void queryClient.invalidateQueries({
+				queryKey: ["release::info", releaseId],
+			})
+		}
 	}
 
 	const handle = (method: "Approve" | "Reject" | "Revert") => {
@@ -155,145 +243,241 @@ export function ImageQueueDetailPage(props: Props) {
 	})
 
 	return (
-		<PageLayout class="p-8">
-			<div class="flex flex-col gap-6">
-				<header class="flex flex-wrap items-center justify-between gap-4">
-					<div class="min-w-0">
-						<div class="flex flex-wrap items-center gap-3">
-							<Button
-								variant="SecondaryV2"
-								size="Sm"
-								color="Slate"
-								onClick={onBack}
-							>
-								Back
-							</Button>
-							<div class="text-xs font-medium tracking-[0.22em] text-slate-500">
-								IMAGE QUEUE
-							</div>
-							<Show when={detail()}>
-								<Badge
-									color={tone().color}
-									class="px-2 py-0.5"
-								>
-									{tone().label}
-								</Badge>
-							</Show>
-						</div>
-						<h1 class="mt-3 text-2xl font-light tracking-tight text-slate-900">
-							Entry {props.entryId}
-						</h1>
-						<div class="mt-2 flex items-center gap-4">
-							<Show
-								when={cachedNeighbor()?.prev}
-								fallback={
-									<span class="font-mono text-xs text-slate-300">
-										&lt; Prev
-									</span>
-								}
-							>
-								{(id) => (
-									<Link
-										to="/image-queue/$id"
-										params={{ id: id().toString() }}
-										class="font-mono text-xs text-slate-500 no-underline hover:text-slate-900 hover:underline"
-									>
-										&lt; Prev
-									</Link>
-								)}
-							</Show>
+		<ImageQueueDetailPageContent
+			detail={detail()}
+			isLoading={detailQuery.isLoading}
+			isError={detailQuery.isError}
+			canManage={canManage()}
+			isBusy={mutation.isPending}
+			mutationErrorMessage={mutationErrorMessage()}
+			backLink={backLink()}
+			onApprove={() => handle("Approve")}
+			onReject={() => handle("Reject")}
+			onRevert={() => handle("Revert")}
+			cachedNeighbor={cachedNeighbor()}
+			targetName={targetInfo.name()}
+			currentSrc={targetInfo.currentSrc()}
+			currentLoading={targetInfo.currentLoading()}
+			currentError={targetInfo.currentError()}
+		/>
+	)
+}
 
-							<Show
-								when={cachedNeighbor()?.next}
-								fallback={
-									<span class="font-mono text-xs text-slate-300">
-										Next &gt;
-									</span>
-								}
-							>
-								{(id) => (
-									<Link
-										to="/image-queue/$id"
-										params={{ id: id().toString() }}
-										class="font-mono text-xs text-slate-500 no-underline hover:text-slate-900 hover:underline"
-									>
-										Next &gt;
-									</Link>
-								)}
-							</Show>
-						</div>
-					</div>
+export function ImageQueueDetailPageContent(
+	props: ImageQueueDetailPageContentProps,
+) {
+	const surfaceCardClass =
+		"rounded-sm border border-slate-300 bg-primary shadow-xs"
+	const tone = () =>
+		props.detail ? statusTone(props.detail.status) : statusTone("Pending")
 
-					<div class="flex flex-wrap items-center gap-3">
-						<Button
-							variant="SecondaryV2"
-							size="Sm"
-							color="Slate"
-							onClick={refresh}
-						>
-							Refresh
-						</Button>
-					</div>
-				</header>
-
-				<Switch>
-					<Match when={detailQuery.isLoading}>
-						<div class="rounded-sm border border-slate-300 bg-white p-6 shadow-xs">
-							<div class="text-sm text-slate-500">Loading…</div>
-						</div>
-					</Match>
-
-					<Match when={detailQuery.isError}>
-						<div class="rounded-sm border border-slate-300 bg-white p-6 shadow-xs">
-							<div class="text-sm text-reimu-700">
-								Failed to load image queue entry.
-							</div>
-						</div>
-					</Match>
-
-					<Match when={detail()}>
-						{(data) => (
-							<div class="grid gap-6">
-								<DiffPanel detail={data()} />
-
-								<div class="grid gap-6 xl:grid-cols-2">
-									<TargetPanel detail={data()} />
-									<AuditPanel detail={data()} />
-								</div>
-
-								<ActionPanel
-									detail={data()}
-									isBusy={mutation.isPending}
-									onApprove={() => handle("Approve")}
-									onReject={() => handle("Reject")}
-									onRevert={() => handle("Revert")}
-									errorMessage={mutationErrorMessage()}
-								/>
-							</div>
-						)}
-					</Match>
-				</Switch>
+	return (
+		<PageLayout class="flex flex-col gap-2 p-8">
+			<div class="flex flex-wrap items-center gap-2">
+				<Link
+					{...props.backLink}
+					underline={false}
+					class="inline-flex items-center text-sm text-secondary hover:text-primary"
+				>
+					<span aria-hidden="true">←</span>
+				</Link>
+				<div class="text-xs font-medium tracking-wider text-tertiary">
+					IMAGE QUEUE
+				</div>
 			</div>
+
+			<Switch>
+				<Match when={props.isLoading}>
+					<div class={`${surfaceCardClass} p-6 text-sm text-secondary`}>
+						Loading…
+					</div>
+				</Match>
+
+				<Match when={props.isError}>
+					<div class={`${surfaceCardClass} p-6 text-sm text-reimu-700`}>
+						Failed to load image queue entry.
+					</div>
+				</Match>
+
+				<Match when={props.detail}>
+					{(data) => {
+						const queuedPath = imagePath(data())
+						const queuedSrc = queuedPath ? imgUrl(queuedPath) : undefined
+
+						return (
+							<div class="grid grid-cols-[minmax(0,1fr)_16rem] gap-4">
+								<header class="grid grid-cols-[auto_minmax(0,1fr)_16rem] gap-2 col-span-2 items-baseline">
+									<Badge
+										color={tone().color}
+										class="self-baseline-last text-sm"
+									>
+										{tone().label}
+									</Badge>
+									<h1 class="text-2xl font-light tracking-tight text-primary">
+										<Show
+											when={getTargetMeta(data())}
+											fallback="Image queue"
+										>
+											{(target) => (
+												<>
+													Update request for{" "}
+													<Link
+														to={target().to}
+														params={{ id: target().id.toString() }}
+													>
+														{props.targetName
+															?? `${target().label} #${target().id}`}
+													</Link>
+													&apos;s {target().imageLabel}
+												</>
+											)}
+										</Show>
+									</h1>
+									<nav class="flex justify-between gap-4 text-xs text-secondary items-baseline">
+										<NeighborLink
+											entryId={props.cachedNeighbor?.prev}
+											direction="prev"
+										/>
+										<NeighborLink
+											entryId={props.cachedNeighbor?.next}
+											direction="next"
+										/>
+									</nav>
+								</header>
+								<div class="grid gap-4 md:contents">
+									<section class="grid content-start gap-2">
+										<div class="grid gap-2 grid-cols-2">
+											<DiffImageCard
+												title="Current"
+												src={props.currentSrc}
+												alt="Current target image"
+												loading={props.currentLoading}
+												error={props.currentError}
+											/>
+											<DiffImageCard
+												title="Queued"
+												src={queuedSrc}
+												alt="Queued upload preview"
+											/>
+										</div>
+									</section>
+									<aside class="grid content-start gap-2">
+										<div class="flex flex-col gap-2">
+											<ActionPanel
+												canManage={props.canManage}
+												detail={data()}
+												isBusy={props.isBusy}
+												onApprove={props.onApprove}
+												onReject={props.onReject}
+												onRevert={props.onRevert}
+												errorMessage={props.mutationErrorMessage}
+											/>
+											<div class="grid gap-y-2">
+												<InfoField label="Submitted by">
+													<Link
+														to="/user/$id/image-queue"
+														params={{ id: data().created_by.id.toString() }}
+														class="text-sm"
+													>
+														{data().created_by.name}
+													</Link>
+												</InfoField>
+												<InfoField label="Created">
+													<div class="text-primary text-sm">
+														{formatDateTime(data().created_at)}
+													</div>
+												</InfoField>
+												<Show when={data().handled_by ?? data().handled_at}>
+													<InfoField label="Handled">
+														<Show when={data().handled_by}>
+															{(user) => (
+																<Link
+																	to="/user/$id/image-queue"
+																	params={{ id: user().id.toString() }}
+																	class="text-sm"
+																>
+																	{user().name}
+																</Link>
+															)}
+														</Show>
+														<Show when={data().handled_at}>
+															<div class="text-primary text-sm">
+																{formatDateTime(data().handled_at)}
+															</div>
+														</Show>
+													</InfoField>
+												</Show>
+												<Show when={data().reverted_by ?? data().reverted_at}>
+													<InfoField label="Reverted">
+														<Show when={data().reverted_by}>
+															{(user) => (
+																<Link
+																	to="/user/$id/image-queue"
+																	params={{ id: user().id.toString() }}
+																	class="text-sm"
+																>
+																	{user().name}
+																</Link>
+															)}
+														</Show>
+														<Show when={data().reverted_at}>
+															<div class="text-primary text-sm">
+																{formatDateTime(data().reverted_at)}
+															</div>
+														</Show>
+													</InfoField>
+												</Show>
+											</div>
+										</div>
+									</aside>
+								</div>
+							</div>
+						)
+					}}
+				</Match>
+			</Switch>
 		</PageLayout>
 	)
 }
 
-function PanelShell(props: ParentProps<{ title: string }>) {
+function NeighborLink(props: { entryId?: number; direction: "prev" | "next" }) {
+	const isPrev = () => props.direction === "prev"
+	const content = () => (
+		<>
+			<Show when={isPrev()}>
+				<span aria-hidden="true">&lt; </span>
+			</Show>
+			<span class="underline-offset-4 group-hover:underline">
+				{isPrev() ? "Prev" : "Next"}
+			</span>
+			<Show when={!isPrev()}>
+				<span aria-hidden="true"> &gt;</span>
+			</Show>
+		</>
+	)
+
 	return (
-		<section class="overflow-hidden rounded-sm border border-slate-300 bg-white shadow-xs">
-			<div class="flex items-center justify-between gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3">
-				<div class="text-[11px] font-medium tracking-[0.18em] text-slate-500">
-					{props.title}
-				</div>
-			</div>
-			<div class="p-4">{props.children}</div>
-		</section>
+		<Show
+			when={props.entryId}
+			fallback={<span class="text-tertiary">{content()}</span>}
+		>
+			{(id) => (
+				<Link
+					to="/image-queue/$id"
+					params={{ id: id().toString() }}
+					underline={false}
+					class="text-center h-full group text-secondary hover:text-primary"
+				>
+					{content()}
+				</Link>
+			)}
+		</Show>
 	)
 }
 
-const useTargetCurrentImage = (detail: () => ImageQueueDetail) => {
-	const artistId = createMemo(() => detail().artist?.artist_id)
-	const releaseId = createMemo(() => detail().release?.release_id)
+function useTargetInfo(detail: () => ImageQueueDetail | undefined) {
+	const artistId = createMemo(() => detail()?.artist?.artist_id)
+	const releaseId = createMemo(() => detail()?.release?.release_id)
 
 	const artistQuery = useQuery(() => {
 		const id = artistId() ?? 0
@@ -311,19 +495,35 @@ const useTargetCurrentImage = (detail: () => ImageQueueDetail) => {
 		}
 	})
 
-	const currentSrc = createMemo(() => {
+	const name = createMemo(() => {
 		if (artistId() !== undefined) {
 			const artist = artistQuery.data
 				? O.getOrUndefined(artistQuery.data)
 				: undefined
-			return artist?.profile_image_url ?? undefined
+			return artist?.name
 		}
 
 		if (releaseId() !== undefined) {
 			const release = releaseQuery.data
 				? O.getOrUndefined(releaseQuery.data)
 				: undefined
-			return release?.cover_art_url ?? undefined
+			return release?.title
+		}
+	})
+
+	const currentSrc = createMemo(() => {
+		if (artistId() !== undefined) {
+			const artist = artistQuery.data
+				? O.getOrUndefined(artistQuery.data)
+				: undefined
+			return imgUrl(artist?.profile_image_url)
+		}
+
+		if (releaseId() !== undefined) {
+			const release = releaseQuery.data
+				? O.getOrUndefined(releaseQuery.data)
+				: undefined
+			return imgUrl(release?.cover_art_url)
 		}
 	})
 
@@ -339,71 +539,32 @@ const useTargetCurrentImage = (detail: () => ImageQueueDetail) => {
 		return false
 	})
 
-	return { currentSrc, currentLoading, currentError }
-}
-
-function DiffPanel(props: { detail: ImageQueueDetail }) {
-	const queuedSrc = createMemo(() => {
-		const path = imagePath(props.detail)
-		if (!path) return
-		return imgUrl(path)
-	})
-
-	const { currentSrc, currentLoading, currentError } = useTargetCurrentImage(
-		() => props.detail,
-	)
-
-	return (
-		<section class="overflow-hidden rounded-sm border border-slate-300 bg-white shadow-xs">
-			<div class="flex items-center justify-between gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3">
-				<div class="text-[11px] font-medium tracking-[0.18em] text-slate-500">
-					DIFF
-				</div>
-			</div>
-
-			<div class="p-4">
-				<div class="grid gap-4 md:grid-cols-2">
-					<DiffImageCard
-						title="CURRENT"
-						src={currentSrc()}
-						alt="Current target image"
-						loading={currentLoading()}
-						error={currentError()}
-					/>
-					<DiffImageCard
-						title="QUEUED"
-						src={queuedSrc()}
-						alt="Queued upload preview"
-					/>
-				</div>
-			</div>
-		</section>
-	)
+	return { name, currentSrc, currentLoading, currentError }
 }
 
 function DiffImageCard(props: {
 	title: string
+	headerRight?: JSX.Element
 	src: string | undefined
 	alt: string
 	loading?: boolean
 	error?: boolean
 }) {
 	return (
-		<div class="space-y-2">
-			<div class="flex items-center justify-between gap-3">
-				<div class="text-[11px] font-medium tracking-[0.18em] text-slate-500">
-					{props.title}
-				</div>
+		<section class="grid gap-2">
+			<header class="flex items-center justify-between gap-3">
+				<h2 class={LABEL_CLASS}>{props.title}</h2>
+				{props.headerRight}
 				<Show when={props.loading}>
-					<div class="text-xs text-slate-400">Loading…</div>
+					<div class="text-xs text-tertiary">Loading…</div>
 				</Show>
-			</div>
+			</header>
 
 			<Image.Root>
-				<div class="relative isolate aspect-square overflow-hidden rounded-sm border border-slate-200 bg-slate-100">
+				<div class="relative aspect-4/3 overflow-hidden rounded-sm border border-slate-200 bg-secondary">
 					<Image.Fallback>
 						{(state) => (
-							<div class="absolute inset-0 grid place-items-center text-sm text-slate-400">
+							<div class="absolute inset-0 grid place-items-center text-sm text-tertiary">
 								<Switch>
 									<Match when={props.error ?? state === Image.State.Error}>
 										Failed to load
@@ -422,120 +583,69 @@ function DiffImageCard(props: {
 					/>
 				</div>
 			</Image.Root>
-		</div>
+		</section>
 	)
 }
 
-function TargetPanel(props: { detail: ImageQueueDetail }) {
-	const artist = createMemo(() => props.detail.artist)
-	const release = createMemo(() => props.detail.release)
+type InfoFieldProps = {
+	label: string
+	children: JSX.Element
+}
 
+function InfoField(props: InfoFieldProps) {
 	return (
-		<PanelShell title="TARGET">
-			<Switch>
-				<Match when={artist()}>
-					{(target) => (
-						<div class="space-y-3 text-sm">
-							<div class="flex items-center justify-between gap-3">
-								<div class="text-slate-500">Artist</div>
-								<Link
-									to="/artist/$id"
-									params={{ id: target().artist_id.toString() }}
-									class="font-mono text-slate-900 no-underline hover:underline"
-								>
-									{target().artist_id}
-								</Link>
-							</div>
-							<div class="flex items-center justify-between gap-3">
-								<div class="text-slate-500">Type</div>
-								<div class="font-mono text-slate-900">{target().type}</div>
-							</div>
-						</div>
-					)}
-				</Match>
-
-				<Match when={release()}>
-					{(target) => (
-						<div class="space-y-3 text-sm">
-							<div class="flex items-center justify-between gap-3">
-								<div class="text-slate-500">Release</div>
-								<Link
-									to="/release/$id"
-									params={{ id: target().release_id.toString() }}
-									class="font-mono text-slate-900 no-underline hover:underline"
-								>
-									{target().release_id}
-								</Link>
-							</div>
-							<div class="flex items-center justify-between gap-3">
-								<div class="text-slate-500">Type</div>
-								<div class="font-mono text-slate-900">{target().type}</div>
-							</div>
-						</div>
-					)}
-				</Match>
-
-				<Match when={true}>
-					<div class="text-sm text-slate-500">No target info.</div>
-				</Match>
-			</Switch>
-		</PanelShell>
+		<section class="grid gap-1">
+			<h2 class={LABEL_CLASS}>{props.label}</h2>
+			{props.children}
+		</section>
 	)
 }
 
-function AuditPanel(props: { detail: ImageQueueDetail }) {
+type ConfirmActionButtonProps = {
+	title: string
+	description: string
+	confirmText: string
+	color: "Green" | "Reimu"
+	disabled: boolean
+	onConfirm: () => void
+	children: string
+}
+
+function ConfirmActionButton(props: ConfirmActionButtonProps) {
+	const [open, setOpen] = createSignal(false)
+
+	const confirm = () => {
+		setOpen(false)
+		props.onConfirm()
+	}
+
 	return (
-		<PanelShell title="AUDIT">
-			<div class="grid gap-4 text-sm">
-				<div class="grid gap-1 rounded-sm border border-slate-200 bg-slate-50 p-3">
-					<div class="text-xs font-medium tracking-[0.18em] text-slate-500">
-						CREATED
-					</div>
-					<div class="text-slate-900">{props.detail.created_by.name}</div>
-					<div class="text-slate-500">
-						{formatDateTime(props.detail.created_at)}
-					</div>
-				</div>
-
-				<div class="grid gap-1 rounded-sm border border-slate-200 bg-slate-50 p-3">
-					<div class="text-xs font-medium tracking-[0.18em] text-slate-500">
-						HANDLED
-					</div>
-					<div class="text-slate-900">
-						<Show
-							when={props.detail.handled_by}
-							fallback={<span class="text-slate-400">—</span>}
-						>
-							{props.detail.handled_by?.name}
-						</Show>
-					</div>
-					<div class="text-slate-500">
-						{formatDateTime(props.detail.handled_at)}
-					</div>
-				</div>
-
-				<div class="grid gap-1 rounded-sm border border-slate-200 bg-slate-50 p-3">
-					<div class="text-xs font-medium tracking-[0.18em] text-slate-500">
-						REVERTED
-					</div>
-					<div class="text-slate-900">
-						<Show
-							when={props.detail.reverted_by}
-							fallback={<span class="text-slate-400">—</span>}
-						>
-							{props.detail.reverted_by?.name}
-						</Show>
-					</div>
-					<div class="text-slate-500">
-						{formatDateTime(props.detail.reverted_at)}
-					</div>
-				</div>
-			</div>
-		</PanelShell>
+		<AlertDialog
+			open={open()}
+			onOpenChange={setOpen}
+			title={props.title}
+			description={props.description}
+			confirmText={props.confirmText}
+			cancelText="Cancel"
+			onCancel={() => setOpen(false)}
+			onConfirm={confirm}
+			trigger={
+				<Button
+					variant="Primary"
+					color={props.color}
+					size="Sm"
+					disabled={props.disabled}
+					class="w-full"
+				>
+					{props.children}
+				</Button>
+			}
+		/>
 	)
 }
 
 function ActionPanel(props: {
+	canManage: boolean
 	detail: ImageQueueDetail
 	isBusy: boolean
 	onApprove: () => void
@@ -543,76 +653,71 @@ function ActionPanel(props: {
 	onRevert: () => void
 	errorMessage?: string
 }) {
-	const status = createMemo(() => props.detail.status)
-	const canApprove = createMemo(() => status() === "Pending")
-	const canReject = createMemo(() => status() === "Pending")
-	const canRevert = createMemo(() => status() === "Approved")
-
-	const pendingActions = () => (
-		<div class="grid grid-cols-2 gap-3">
-			<Button
-				variant="PrimaryV2"
-				color="Green"
-				disabled={props.isBusy || !canApprove()}
-				class="w-full justify-center"
-				onClick={() => props.onApprove()}
-			>
-				Approve
-			</Button>
-			<Button
-				variant="PrimaryV2"
-				color="Reimu"
-				disabled={props.isBusy || !canReject()}
-				class="w-full justify-center"
-				onClick={() => props.onReject()}
-			>
-				Reject
-			</Button>
-		</div>
-	)
-
-	const approvedActions = () => (
-		<div class="grid grid-cols-2 gap-3">
-			<Button
-				variant="PrimaryV2"
-				color="Blue"
-				disabled={props.isBusy || !canRevert()}
-				class="col-span-2 w-full justify-center"
-				onClick={() => props.onRevert()}
-			>
-				Revert
-			</Button>
-		</div>
-	)
+	const status = () => props.detail.status
+	const isPending = () => status() === "Pending"
+	const isApproved = () => status() === "Approved"
 
 	return (
-		<section class="overflow-hidden rounded-sm border border-slate-300 bg-white shadow-xs">
-			<div class="flex items-center justify-between gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3">
-				<div class="text-[11px] font-medium tracking-[0.18em] text-slate-500">
-					ACTIONS
-				</div>
+		<section class="grid gap-2">
+			<div class="flex items-center justify-between gap-3">
+				<div class={LABEL_CLASS}>Actions</div>
 				<Show when={props.isBusy}>
-					<div class="text-xs text-slate-500">Working…</div>
+					<div class="text-xs text-secondary">Working…</div>
 				</Show>
 			</div>
 
-			<div class="p-4">
-				<Switch>
-					<Match when={status() === "Pending"}>{pendingActions()}</Match>
-					<Match when={status() === "Approved"}>{approvedActions()}</Match>
-					<Match when={true}>
-						<div class="text-sm text-slate-500">
-							No actions available for this status.
-						</div>
-					</Match>
-				</Switch>
-
-				<Show when={props.errorMessage}>
-					<div class="mt-4 rounded-sm border border-reimu-200 bg-reimu-50 px-3 py-2 text-sm text-reimu-800">
-						{props.errorMessage}
+			<Switch>
+				<Match when={!props.canManage}>
+					<div class="text-sm text-secondary">
+						No actions available for this account.
 					</div>
-				</Show>
-			</div>
+				</Match>
+				<Match when={isPending()}>
+					<div class="grid grid-cols-2 gap-2">
+						<ConfirmActionButton
+							title="Approve image?"
+							description="This will mark the queued image as approved."
+							confirmText="Approve"
+							color="Green"
+							disabled={props.isBusy || !isPending()}
+							onConfirm={props.onApprove}
+						>
+							Approve
+						</ConfirmActionButton>
+						<ConfirmActionButton
+							title="Reject image?"
+							description="This will mark the queued image as rejected."
+							confirmText="Reject"
+							color="Reimu"
+							disabled={props.isBusy || !isPending()}
+							onConfirm={props.onReject}
+						>
+							Reject
+						</ConfirmActionButton>
+					</div>
+				</Match>
+				<Match when={isApproved()}>
+					<Button
+						variant="Primary"
+						color="Blue"
+						size="Sm"
+						disabled={props.isBusy || !isApproved()}
+						class="w-full"
+						onClick={() => props.onRevert()}
+					>
+						Revert
+					</Button>
+				</Match>
+				<Match when={true}>
+					<div class="text-sm text-secondary">No actions available.</div>
+				</Match>
+			</Switch>
+
+			<Show when={props.errorMessage}>
+				<div class="rounded-sm border border-reimu-200 bg-reimu-50 px-3 py-2 text-sm text-reimu-800">
+					{props.errorMessage}
+				</div>
+			</Show>
 		</section>
 	)
 }
