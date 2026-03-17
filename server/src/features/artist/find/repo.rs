@@ -8,9 +8,8 @@ use entity::{
 };
 use itertools::{Itertools, izip};
 use sea_orm::{
-    ColumnTrait, Condition, ConnectionTrait, DbErr, EntityTrait,
-    FromQueryResult, LoaderTrait, PaginatorTrait, QueryFilter, QueryOrder,
-    QuerySelect, Select,
+    ColumnTrait, Condition, ConnectionTrait, DbErr, EntityTrait, LoaderTrait,
+    PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Select,
 };
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func, SimpleExpr};
@@ -72,14 +71,6 @@ pub(crate) async fn exists(
         .map(|count: u64| count > 0)
 }
 
-#[derive(FromQueryResult)]
-struct ArtistImage {
-    artist_id: i32,
-    #[sea_orm(nested)]
-    image: image::Model,
-    r#type: ArtistImageType,
-}
-
 #[expect(clippy::too_many_lines, reason = "TODO")]
 async fn find_many_impl(
     select: Select<artist::Entity>,
@@ -104,18 +95,21 @@ async fn find_many_impl(
 
     let artist_images = artist_image::Entity::find()
         .filter(artist_image::Column::ArtistId.is_in(ids.iter().copied()))
-        .left_join(image::Entity)
+        .find_also_related(image::Entity)
         .order_by_desc(image::Column::UploadedAt)
-        .into_model::<ArtistImage>()
         .all(db)
         .await?;
 
     let mut images_map: HashMap<i32, Vec<_>> = artist_images.into_iter().fold(
         HashMap::new(),
-        |mut acc, artist_image| {
+        |mut acc, (artist_image, image)| {
+            let Some(image) = image else {
+                return acc;
+            };
+
             acc.entry(artist_image.artist_id)
                 .or_default()
-                .push(artist_image);
+                .push((artist_image.r#type, image));
             acc
         },
     );
@@ -249,8 +243,8 @@ async fn find_many_impl(
 
             let profile_image = image
                 .iter()
-                .find(|x| x.r#type == ArtistImageType::Profile)
-                .map(|artist_image| Image::from(artist_image.image.clone()));
+                .find(|(image_type, _)| *image_type == ArtistImageType::Profile)
+                .map(|(_, image)| Image::from(image.clone()));
             let profile_image_url =
                 profile_image.as_ref().map(crate::domain::image::Image::url);
 

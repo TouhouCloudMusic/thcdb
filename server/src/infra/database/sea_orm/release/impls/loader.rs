@@ -4,8 +4,8 @@ use entity::enums::ReleaseImageType;
 use entity::release;
 use itertools::Itertools;
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, FromQueryResult,
-    LoaderTrait, QueryFilter, QueryOrder,
+    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, LoaderTrait, QueryFilter,
+    QueryOrder,
 };
 
 use crate::infra::database::sea_orm::cache::{
@@ -45,13 +45,6 @@ struct TrackDetails {
     songs: Vec<entity::song::Model>,
     artists: Vec<entity::artist::Model>,
     artist_ids: Vec<Vec<Vec<i32>>>,
-}
-
-#[derive(FromQueryResult)]
-struct ReleaseCoverArt {
-    release_id: i32,
-    #[sea_orm(nested)]
-    image: entity::image::Model,
 }
 
 impl RelatedEntities {
@@ -278,14 +271,17 @@ impl RelatedEntities {
             .filter(
                 entity::release_image::Column::Type.eq(ReleaseImageType::Cover),
             )
-            .left_join(entity::image::Entity)
+            .find_also_related(entity::image::Entity)
             .order_by_desc(entity::image::Column::UploadedAt)
-            .into_model::<ReleaseCoverArt>()
             .all(db)
             .await?
             .into_iter()
-            .fold(HashMap::new(), |mut acc, cover_art| {
-                acc.entry(cover_art.release_id).or_insert(cover_art.image);
+            .fold(HashMap::new(), |mut acc, (release_image, image)| {
+                let Some(image) = image else {
+                    return acc;
+                };
+
+                acc.entry(release_image.release_id).or_insert(image);
                 acc
             });
 
