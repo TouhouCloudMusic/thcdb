@@ -1,5 +1,6 @@
 /* @refresh skip */
 import { Image } from "~/component/image"
+import { imgUrl } from "~/utils/adapter/static_file"
 import { assertContext } from "~/utils/solid/assertContext"
 
 import { SongInfoPageContext } from ".."
@@ -10,6 +11,7 @@ import { SongInfoPageContext } from ".."
 //
 export function SongInfoCoverImage() {
 	const context = assertContext(SongInfoPageContext)
+	const coverUrl = () => imgUrl(context.song.releases?.[0]?.cover_art_url)
 	return (
 		<Image.Root>
 			<div class="isolate size-64 overflow-hidden bg-slate-100">
@@ -21,7 +23,7 @@ export function SongInfoCoverImage() {
 					}
 				</Image.Fallback>
 				<Image.Img
-					src={context.song.releases?.[0]?.cover_art_url ?? undefined}
+					src={coverUrl()}
 					class="size-full object-cover"
 				/>
 			</div>

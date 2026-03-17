@@ -6,6 +6,7 @@ import { Pagination } from "~/component/Pagination"
 import { Link } from "~/component/atomic"
 import { EmptyExplorePlaceholder } from "~/component/feature/entity_explore"
 import { DateWithPrecision } from "~/domain/shared"
+import { imgUrl } from "~/utils/adapter/static_file"
 
 export type DisplayType = "wall" | "list"
 
@@ -144,6 +145,7 @@ function ReleaseWallItem(props: ReleaseWallItemProps) {
 
 	const releaseDate = () =>
 		DateWithPrecision.display(props.release.release_date)
+	const coverUrl = () => imgUrl(props.release.cover_art_url)
 
 	return (
 		<div>
@@ -154,7 +156,7 @@ function ReleaseWallItem(props: ReleaseWallItemProps) {
 			>
 				<div class="aspect-square">
 					<Show
-						when={props.release.cover_art_url}
+						when={coverUrl()}
 						fallback={
 							<div class="grid h-full w-full place-items-center text-xs text-slate-400 no-underline">
 								No Cover Art
@@ -208,6 +210,7 @@ function ReleaseItem(props: ReleaseItemProps) {
 	const displayTitle = () => localizedTitle() ?? props.release.title
 	const originalTitle = () =>
 		localizedTitle() ? props.release.title : undefined
+	const coverUrl = () => imgUrl(props.release.cover_art_url)
 
 	return (
 		<div class="border-b border-slate-200 py-4 last:border-b-0">
@@ -218,7 +221,7 @@ function ReleaseItem(props: ReleaseItemProps) {
 						params={{ id: props.release.id.toString() }}
 						class="h-14 w-14 shrink-0 overflow-hidden rounded-md border border-slate-200 bg-slate-100 no-underline"
 					>
-						<Show when={props.release.cover_art_url}>
+						<Show when={coverUrl()}>
 							{(src) => (
 								<img
 									src={src()}

@@ -14,6 +14,7 @@ import {
 import { ARTIST_TYPES } from "~/domain/artist/constants"
 import { DateWithPrecision } from "~/domain/shared"
 import { useI18N } from "~/state/i18n"
+import { imgUrl } from "~/utils/adapter/static_file"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 
 const getArtistAvatarText = (artist: Artist) => {
@@ -70,6 +71,7 @@ type ArtistItemProps = {
 export const ArtistItem: Component<ArtistItemProps> = (props) => {
 	const locationText = () => formatLocation(props.artist.current_location)
 	const i18n = useI18N()
+	const profileImageUrl = () => imgUrl(props.artist.profile_image_url)
 
 	const preferredLanguageCode = () => {
 		const locale = i18n.locale()
@@ -93,7 +95,7 @@ export const ArtistItem: Component<ArtistItemProps> = (props) => {
 					params={{ id: props.artist.id.toString() }}
 					class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 text-sm font-medium text-slate-700 no-underline hover:border-slate-300 hover:no-underline focus-visible:ring-2 focus-visible:ring-slate-200"
 				>
-					<Show when={props.artist.profile_image_url}>
+					<Show when={profileImageUrl()}>
 						{(src) => (
 							<img
 								src={src()}
@@ -103,7 +105,7 @@ export const ArtistItem: Component<ArtistItemProps> = (props) => {
 							/>
 						)}
 					</Show>
-					<Show when={!props.artist.profile_image_url}>
+					<Show when={!profileImageUrl()}>
 						{getArtistAvatarText(props.artist)}
 					</Show>
 				</Link>

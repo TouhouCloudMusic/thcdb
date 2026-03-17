@@ -6,6 +6,7 @@ import { For, Show, Suspense } from "solid-js"
 
 import { Card } from "~/component/atomic/Card"
 import { Link } from "~/component/atomic/Link"
+import { imgUrl } from "~/utils/adapter/static_file"
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 
@@ -26,7 +27,7 @@ const formatArtistType = (artistType: Artist["artist_type"]) => {
 }
 
 function ArtistTile(props: ArtistTileProps) {
-	const avatarUrl = () => props.artist.profile_image_url ?? undefined
+	const avatarUrl = () => imgUrl(props.artist.profile_image_url)
 	const initials = () => props.artist.name.trim().slice(0, 1).toUpperCase()
 	const artistHrefParams = () => ({ id: props.artist.id.toString() })
 	const typeText = () => formatArtistType(props.artist.artist_type)

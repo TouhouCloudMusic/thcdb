@@ -3,6 +3,7 @@ import { Show } from "solid-js"
 
 import { Card } from "~/component/atomic/Card"
 import { Link } from "~/component/atomic/Link"
+import { imgUrl } from "~/utils/adapter/static_file"
 import { displayReleaseDate, formatArtists } from "~/view/Homepage/utils"
 
 type ReleaseCardProps = {
@@ -12,7 +13,7 @@ type ReleaseCardProps = {
 export function ReleaseCard(props: ReleaseCardProps) {
 	const artistsLabel = () => formatArtists(props.release.artists)
 	const releaseDate = () => displayReleaseDate(props.release.release_date)
-	const coverUrl = () => props.release.cover_art_url ?? undefined
+	const coverUrl = () => imgUrl(props.release.cover_art_url)
 
 	return (
 		<Card class="flex h-full flex-col overflow-hidden rounded-none border border-slate-300 p-0 shadow-xs transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
