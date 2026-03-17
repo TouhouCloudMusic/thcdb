@@ -86,6 +86,7 @@ Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是�
 - [background-*:<value>] -> bg-\*-[<value>] # 同样适用于fg
 - `*-gradient-to-*` -> `*-linear-to-*`
 - `outline-offset-[-<number>px]` -> `-outline-offset-<number>`
+- `aspect-[x/y]` -> `aspect-x/y`
 
 ### 设计系统
 

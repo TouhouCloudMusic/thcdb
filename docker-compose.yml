@@ -52,6 +52,8 @@ services:
       REDIS_URL: "redis://redis:6379"
     ports:
       - "${SERVER_PORT:-12345}:12345"
+    volumes:
+      - server_public:/app/public
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:12345/health_check"]
       interval: 5s
@@ -90,3 +92,4 @@ volumes:
   redisdata:
   pnpm-store:
   node_modules:
+  server_public:

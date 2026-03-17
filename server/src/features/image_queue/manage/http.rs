@@ -189,8 +189,6 @@ async fn image_queue_detail(
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Data<ImageQueueDetail>, axum::response::Response> {
-    authz::ensure_permission::<ImageQueueManage>(&repo.conn, user.id).await?;
-
     let detail = repo::find_detail(&repo, id)
         .await
         .map_err(IntoResponse::into_response)?
@@ -201,6 +199,11 @@ async fn image_queue_detail(
             )
             .into_response()
         })?;
+
+    if detail.queue.created_by != user.id {
+        authz::ensure_permission::<ImageQueueManage>(&repo.conn, user.id)
+            .await?;
+    }
 
     let image = detail.image;
 
