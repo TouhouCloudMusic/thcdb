@@ -44,7 +44,7 @@ function RouteComponent() {
 	const navigate = useNavigate()
 	const store = createEntityImageUploadStore({
 		onUpload: async (file: File) => {
-			await uploadMutation.mutateAsync({ id: releaseId, file })
+			const entryId = await uploadMutation.mutateAsync({ id: releaseId, file })
 
 			void queryClient.invalidateQueries({
 				queryKey: ["release::info", releaseId],
@@ -56,8 +56,8 @@ function RouteComponent() {
 			void queryClient.invalidateQueries({ queryKey: ["image-queue::user"] })
 
 			await navigate({
-				to: "/image-queue",
-				search: { status: "pending" },
+				to: "/image-queue/$id",
+				params: { id: entryId.toString() },
 			})
 		},
 	})
