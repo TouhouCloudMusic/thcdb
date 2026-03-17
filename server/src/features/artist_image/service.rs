@@ -4,9 +4,7 @@ use ::image::ImageFormat;
 use bytesize::ByteSize;
 use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{artist_image, image as image_entity, user as user_entity};
-use sea_orm::{
-    ColumnTrait, EntityTrait, FromQueryResult, QueryFilter, QueryOrder,
-};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
 use super::error::Error;
 use super::model::ArtistProfileImageInput;
@@ -44,12 +42,6 @@ static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
         .build();
     Parser::new(opt)
 });
-
-#[derive(FromQueryResult)]
-struct CurrentArtistImage {
-    #[sea_orm(nested)]
-    image: image_entity::Model,
-}
 
 pub struct Service {
     repo: SeaOrmRepository,
@@ -113,15 +105,13 @@ impl Service {
         &self,
         artist_id: i32,
     ) -> Result<Option<CurrentImageMetadata>, Error> {
-        let image = artist_image::Entity::find()
+        let image = image_entity::Entity::find()
+            .inner_join(artist_image::Entity)
             .filter(artist_image::Column::ArtistId.eq(artist_id))
             .filter(artist_image::Column::Type.eq(ArtistImageType::Profile))
-            .left_join(image_entity::Entity)
             .order_by_desc(image_entity::Column::UploadedAt)
-            .into_model::<CurrentArtistImage>()
             .one(&self.repo.conn)
-            .await?
-            .map(|model| model.image);
+            .await?;
 
         let Some(image) = image else {
             return Ok(None);
