@@ -56,7 +56,7 @@ impl Service {
     pub async fn upload_cover_art(
         &self,
         dto: ReleaseCoverArtInput,
-    ) -> Result<(), Error> {
+    ) -> Result<i32, Error> {
         let ReleaseCoverArtInput {
             bytes,
             user,
@@ -95,7 +95,7 @@ impl Service {
 
         tx_repo.commit().await?;
 
-        Ok(())
+        Ok(image_queue_entry.id)
     }
 
     pub async fn get_cover_art_metadata(

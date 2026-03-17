@@ -2,9 +2,8 @@ import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
 import {
 	adaptApiResult,
-	adaptApiResultMessage,
 	adaptApiResultOptional,
-	adaptFetchMessageResponseFromResponse,
+	adaptFetchResponseFromResponse,
 } from "../../shared"
 
 export async function explore(options?: Opt<"explore_artist">) {
@@ -104,6 +103,6 @@ export async function uploadProfileImage(options: {
 		},
 	)
 
-	const res = await adaptFetchMessageResponseFromResponse(response)
-	return adaptApiResultMessage(res)
+	const res = await adaptFetchResponseFromResponse<number>(response)
+	return adaptApiResult(res)
 }

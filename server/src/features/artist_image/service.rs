@@ -59,7 +59,7 @@ impl Service {
     pub async fn upload_profile_image(
         &self,
         dto: ArtistProfileImageInput,
-    ) -> Result<(), Error> {
+    ) -> Result<i32, Error> {
         let ArtistProfileImageInput {
             bytes,
             user,
@@ -98,7 +98,7 @@ impl Service {
 
         tx_repo.commit().await?;
 
-        Ok(())
+        Ok(image_queue.id)
     }
 
     pub async fn get_profile_image_metadata(

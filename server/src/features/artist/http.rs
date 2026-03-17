@@ -9,7 +9,7 @@ use utoipa_axum::routes;
 use super::error::{CreateError, UpsertCorrectionError};
 use super::model::NewArtist;
 use super::{find, release, service};
-use crate::adapter::inbound::rest::api_response::{Data, Message};
+use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::application::correction::{
@@ -122,7 +122,7 @@ pub struct ArtistProfileImageFormData {
         content = ArtistProfileImageFormData,
     ),
     responses(
-        (status = 200, body = Message),
+        (status = 200, body = Data<i32>),
     )
 )]
 async fn upload_artist_profile_image(
@@ -130,13 +130,13 @@ async fn upload_artist_profile_image(
     State(service): State<state::ArtistImageService>,
     Path(id): Path<i32>,
     TypedMultipart(form): TypedMultipart<ArtistProfileImageFormData>,
-) -> Result<Message, artist_image::Error> {
+) -> Result<Data<i32>, artist_image::Error> {
     let data = form.data.contents;
     let dto = ArtistProfileImageInput {
         bytes: data,
         user,
         artist_id: id,
     };
-    service.upload_profile_image(dto).await?;
-    Ok(Message::ok())
+    let entry_id = service.upload_profile_image(dto).await?;
+    Ok(Data::from(entry_id))
 }

@@ -9,7 +9,7 @@ use utoipa_axum::routes;
 use super::error::{CreateError, UpsertCorrectionError};
 use super::model::NewRelease;
 use super::{find, service};
-use crate::adapter::inbound::rest::api_response::{Data, Message};
+use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::application::correction::{
@@ -120,7 +120,7 @@ pub struct ReleaseCoverArtFormData {
         content = ReleaseCoverArtFormData,
     ),
     responses(
-        (status = 200, body = Message),
+        (status = 200, body = Data<i32>),
     )
 )]
 async fn upload_release_cover_art(
@@ -128,12 +128,12 @@ async fn upload_release_cover_art(
     State(service): State<state::ReleaseImageService>,
     Path(id): Path<i32>,
     TypedMultipart(form): TypedMultipart<ReleaseCoverArtFormData>,
-) -> Result<Message, release_image::Error> {
+) -> Result<Data<i32>, release_image::Error> {
     let dto = ReleaseCoverArtInput {
         bytes: form.data.contents,
         user,
         release_id: id,
     };
-    service.upload_cover_art(dto).await?;
-    Ok(Message::ok())
+    let entry_id = service.upload_cover_art(dto).await?;
+    Ok(Data::from(entry_id))
 }
