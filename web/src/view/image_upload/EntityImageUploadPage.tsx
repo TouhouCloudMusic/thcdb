@@ -172,7 +172,7 @@ function ImageUploadActions(props: ImageUploadActionsProps) {
 
 export function EntityImageUploadPage(props: EntityImageUploadPageProps) {
 	return (
-		<PageLayout class="p-4">
+		<PageLayout class="p-8">
 			<div class="w-full space-y-6">
 				<header class="space-y-4">
 					<Link
