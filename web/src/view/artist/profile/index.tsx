@@ -67,18 +67,23 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 				<ArtistContext.Provider value={contextValue}>
 					<div class="flex flex-col space-y-8">
 						<div class="grid h-fit grid-cols-[auto_1fr] space-x-8">
-							<Image.Root>
-								<Image.Fallback>
-									{(state) =>
-										state == Image.State.Error ? (
-											<div class="size-64 bg-slate-100"></div>
-										) : (
-											<></>
-										)
-									}
-								</Image.Fallback>
-								<Image.Img src={profileImageUrl()} />
-							</Image.Root>
+							<div class="size-64 shrink-0 overflow-hidden rounded bg-slate-100">
+								<Image.Root>
+									<Image.Fallback>
+										{(state) =>
+											state == Image.State.Error ? (
+												<div class="size-full bg-slate-100"></div>
+											) : (
+												<></>
+											)
+										}
+									</Image.Fallback>
+									<Image.Img
+										src={profileImageUrl()}
+										class="size-full"
+									/>
+								</Image.Root>
+							</div>
 							<div class="flex flex-col gap-4">
 								<ArtistInfo />
 							</div>
