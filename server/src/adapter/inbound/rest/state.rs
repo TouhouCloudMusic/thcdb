@@ -26,6 +26,15 @@ impl ArcAppState {
     }
 }
 
+impl From<&ArcAppState> for GenericFileStorage {
+    fn from(input: &ArcAppState) -> Self {
+        Self::new(GenericFileStorageConfig {
+            fs_base_path: FS_IMAGE_BASE_PATH.to_path_buf(),
+            remove_file_queue: input.remove_file_queue.clone(),
+        })
+    }
+}
+
 pub(crate) type AuthService = crate::features::auth::Service;
 
 pub(crate) type AuthSession = axum_login::AuthSession<AuthService>;
@@ -55,40 +64,26 @@ impl FromRef<ArcAppState> for AuthService {
             input.sea_orm_repo.clone(),
             input.mailer.clone(),
             input.redis_pool(),
+            input.password_reset_email_queue.clone(),
         )
     }
 }
 
 impl FromRef<ArcAppState> for ReleaseImageService {
     fn from_ref(input: &ArcAppState) -> Self {
-        let repo = input.sea_orm_repo.clone();
-        let storage = GenericFileStorage::new(GenericFileStorageConfig {
-            fs_base_path: FS_IMAGE_BASE_PATH.to_path_buf(),
-            redis_pool: input.redis_pool(),
-        });
-        Self::new(repo, storage)
+        Self::new(input.sea_orm_repo.clone(), input.into())
     }
 }
 
 impl FromRef<ArcAppState> for ArtistImageService {
     fn from_ref(input: &ArcAppState) -> Self {
-        let repo = input.sea_orm_repo.clone();
-        let storage = GenericFileStorage::new(GenericFileStorageConfig {
-            fs_base_path: FS_IMAGE_BASE_PATH.to_path_buf(),
-            redis_pool: input.redis_pool(),
-        });
-        Self::new(repo, storage)
+        Self::new(input.sea_orm_repo.clone(), input.into())
     }
 }
 
 impl FromRef<ArcAppState> for UserImageService {
     fn from_ref(input: &ArcAppState) -> Self {
-        let repo = input.sea_orm_repo.clone();
-        let storage = GenericFileStorage::new(GenericFileStorageConfig {
-            fs_base_path: FS_IMAGE_BASE_PATH.to_path_buf(),
-            redis_pool: input.redis_pool(),
-        });
-        Self::new(repo, storage)
+        Self::new(input.sea_orm_repo.clone(), input.into())
     }
 }
 

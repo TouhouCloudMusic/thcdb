@@ -1,9 +1,10 @@
 use std::panic::Location;
 
+use apalis::prelude::Storage;
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use chrono::{DateTime, Duration, FixedOffset, Utc};
-use fred::prelude::{KeysInterface, ListInterface, LuaInterface};
+use fred::prelude::{KeysInterface, LuaInterface};
 use lettre::message::Mailbox;
 use rand::Rng;
 use sea_orm::DbErr;
@@ -29,8 +30,7 @@ const PASSWORD_RESET_CODE_RESEND_COOLDOWN_SECONDS: i64 = 60;
 const PASSWORD_RESET_KEY_RANDOM_BYTES_LEN: usize = 24;
 const PASSWORD_RESET_KEY_MAX_LEN: usize = 64;
 const PASSWORD_RESET_KEY_EXPIRES_MINUTES: i64 = 5;
-pub(crate) const PASSWORD_RESET_EMAIL_QUEUE_KEY: &str =
-    "auth:password-reset:email";
+pub(crate) const PASSWORD_RESET_EMAIL_KEY: &str = "auth:password-reset:email";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 enum PasswordResetState {
@@ -468,18 +468,16 @@ impl Service {
         &self,
         job: PasswordResetEmailJob,
     ) -> Result<(), Error> {
-        let payload = serde_json::to_string(&job).map_err(Error::internal)?;
-        self.redis_pool
-            .lpush::<(), _, _>(PASSWORD_RESET_EMAIL_QUEUE_KEY, payload)
-            .await
-            .map_err(|err| {
-                tracing::error!(
-                    error = ?err,
-                    user_id = job.user_id,
-                    "Failed to enqueue password reset email job"
-                );
-                Error::internal(err)
-            })?;
+        let user_id = job.user_id;
+        let mut queue = self.password_reset_email_queue.clone();
+        queue.push(job).await.map_err(|err| {
+            tracing::error!(
+                error = ?err,
+                user_id = user_id,
+                "Failed to enqueue password reset email job"
+            );
+            Error::internal(err)
+        })?;
 
         Ok(())
     }
@@ -919,8 +917,13 @@ mod tests {
 
     async fn build_test_service(conn: &sea_orm::DatabaseConnection) -> Service {
         let repo = SeaOrmRepository::new(conn.clone());
-        let redis_pool = RedisPool::init(&test_redis_url()).await.inner;
-        Service::new(repo, build_failing_mailer(), redis_pool)
+        let redis_url = test_redis_url();
+        let redis_pool = RedisPool::init(&redis_url).await.inner;
+        let queue =
+            crate::infra::worker::password_reset_email_queue(&redis_url)
+                .await
+                .unwrap();
+        Service::new(repo, build_failing_mailer(), redis_pool, queue)
     }
 
     #[tokio::test]
