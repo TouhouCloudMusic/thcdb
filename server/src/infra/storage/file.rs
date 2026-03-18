@@ -1,36 +1,37 @@
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
+use apalis::prelude::Storage;
 use entity::enums::StorageBackend;
-use fred::prelude::{FredResult, ListInterface};
 
 use super::FsStorage;
 use crate::domain::image::{AsyncFileStorage, Image, NewImage};
+use crate::infra::worker::{RemoveFileJob, RemoveFileQueue};
 use crate::utils::retry_async;
 
-pub const REMOVE_FILE_FAILED_KEY: &str = "remove_file_failed_queue";
+pub const REMOVE_FILE_STREAM_KEY: &str = "storage:remove-file";
 
 #[derive(Clone)]
 pub struct GenericFileStorage {
     fs: FsStorage,
-    redis_pool: fred::prelude::Pool,
+    remove_file_queue: RemoveFileQueue,
 }
 
 pub struct GenericFileStorageConfig {
     pub fs_base_path: PathBuf,
-    pub redis_pool: fred::prelude::Pool,
+    pub remove_file_queue: RemoveFileQueue,
 }
 
 impl GenericFileStorage {
     pub fn new(
         GenericFileStorageConfig {
             fs_base_path,
-            redis_pool,
+            remove_file_queue,
         }: GenericFileStorageConfig,
     ) -> Self {
         Self {
             fs: FsStorage::new(fs_base_path),
-            redis_pool,
+            remove_file_queue,
         }
     }
 }
@@ -55,13 +56,13 @@ impl AsyncFileStorage for GenericFileStorage {
                     Err(e) => {
                         let final_path =
                             self.fs.prepend_prefix(image.full_path());
-                        let pool = self.redis_pool.clone();
+                        let queue = self.remove_file_queue.clone();
                         tokio::spawn(async move {
                             retry_async(
                                 Duration::from_millis(500),
                                 5,
                                 async move || {
-                                    enqueue_delete_task(&pool, &final_path)
+                                    enqueue_delete_task(&queue, &final_path)
                                         .await
                                 },
                             )
@@ -76,9 +77,18 @@ impl AsyncFileStorage for GenericFileStorage {
 }
 
 async fn enqueue_delete_task(
-    pool: &fred::prelude::Pool,
+    queue: &RemoveFileQueue,
     path: &Path,
-) -> FredResult<()> {
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let path_str = path.to_str().expect("Failed to serialize pathbuf");
-    pool.lpush(REMOVE_FILE_FAILED_KEY, path_str).await
+    let mut queue = queue.clone();
+    queue
+        .push(RemoveFileJob {
+            path: path_str.to_string(),
+        })
+        .await
+        .map(|_task_id| ())
+        .map_err(|err| {
+            Box::new(err) as Box<dyn std::error::Error + Send + Sync>
+        })
 }

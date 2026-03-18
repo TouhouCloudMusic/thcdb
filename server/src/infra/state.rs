@@ -10,6 +10,10 @@ use super::database::{get_connection, init_database};
 use super::email::Mailer;
 use super::notification::NotificationHub;
 use super::redis::Pool;
+use super::worker::{
+    PasswordResetEmailQueue, RemoveFileQueue, password_reset_email_queue,
+    remove_file_queue,
+};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -22,6 +26,10 @@ pub struct AppState {
     pub sea_orm_repo: SeaOrmRepository,
 
     pub notification_hub: NotificationHub,
+
+    pub password_reset_email_queue: PasswordResetEmailQueue,
+
+    pub remove_file_queue: RemoveFileQueue,
 }
 
 impl AppState {
@@ -29,6 +37,20 @@ impl AppState {
         let conn = get_connection(&config.database_url).await;
         init_database(&conn).await;
         let redis_pool = Pool::init(&config.redis_url).await.inner;
+        let password_reset_email_queue =
+            password_reset_email_queue(&config.redis_url)
+                .await
+                .map_err(|err| {
+                    Whatever::without_source(format!(
+                        "Failed to initialize password reset queue: {err}"
+                    ))
+                })?;
+        let remove_file_queue =
+            remove_file_queue(&config.redis_url).await.map_err(|err| {
+                Whatever::without_source(format!(
+                    "Failed to initialize remove file queue: {err}"
+                ))
+            })?;
         let smtp_conf = &config.email;
 
         if smtp_conf.port == 0 {
@@ -76,6 +98,8 @@ impl AppState {
             mailer: Mailer::new(transport, from),
             sea_orm_repo: SeaOrmRepository::new(conn.clone()),
             notification_hub: NotificationHub::new(),
+            password_reset_email_queue,
+            remove_file_queue,
         })
     }
 }

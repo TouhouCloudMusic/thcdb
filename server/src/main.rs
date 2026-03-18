@@ -88,6 +88,8 @@ async fn main() -> Result<(), Whatever> {
         repo: state.sea_orm_repo.clone(),
         mailer: state.mailer.clone(),
         notification_retention_days: APP_CONFIG.notification.retention_days,
+        password_reset_email_queue: state.password_reset_email_queue.clone(),
+        remove_file_queue: state.remove_file_queue.clone(),
     }
     .init();
 

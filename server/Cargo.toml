@@ -89,6 +89,9 @@ macros.workspace         = true
 migration.workspace      = true
 #
 ammonia = "4.0.0"
+apalis = { version = "0.7.4", features = [ "limit", "retry" ] }
+apalis-cron = "0.7.4"
+apalis-redis = "0.7.4"
 argon2.features = [
     "std",
 ]
