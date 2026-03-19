@@ -2,10 +2,10 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use snafu::Snafu;
 
-use crate::adapter::inbound::rest::api_response::Error as ApiError;
 use crate::application::error::EntityNotFound;
 use crate::domain::image;
 use crate::infra;
+use crate::shared::http::api_response::Error as ApiError;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
