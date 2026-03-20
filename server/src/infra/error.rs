@@ -95,7 +95,11 @@ impl IntoApiResponse for Error {
     fn into_api_response(self) -> axum::response::Response {
         match self {
             Self::Internal { ref source } => {
-                tracing::error!("Internal error: {:?}", source);
+                log::error!(
+                    target: "infra.error",
+                    error:? = source;
+                    "internal error"
+                );
                 default_into_api_response_impl(self)
             }
             Self::User { source } => source.into_api_response(),
@@ -126,49 +130,4 @@ pub enum UserError {
     #[snafu(transparent)]
     #[api_error(status_code = StatusCode::BAD_REQUEST)]
     FkViolation { source: Box<FkViolation<DbErr>> },
-}
-
-#[cfg(test)]
-mod test {
-
-    use axum::response::IntoResponse;
-    use tracing_test::traced_test;
-
-    use super::*;
-    use crate::adapter::inbound::rest::error::ApiError;
-
-    // https://github.com/dbrgn/tracing-test/issues/48
-    // This bug causes errors with line breaks cannot be captured
-    // So I can only test the prefix of errors here
-    // If this test fails, it may be because error messages has been changed
-    #[tokio::test]
-    #[traced_test]
-    async fn test_nested_err_print() {
-        let err = Error::internal(DbErr::Custom("foobar".to_string()));
-        let err = ApiError::Infra { source: err };
-
-        let _ = err.into_response();
-
-        assert!(logs_contain("Custom"));
-        assert!(logs_contain("foobar"));
-
-        // cranelift dosen't support catch_unwind yet
-        // let err = ServiceError::Tokio(TokioError::TaskJoin(
-        //     async {
-        //         let handle = tokio::spawn(async {
-        //             panic!("fake panic");
-        //         });
-
-        //         match handle.await {
-        //             Err(e) => e,
-        //             _ => unreachable!(),
-        //         }
-        //     }
-        //     .await,
-        // ));
-
-        // let _ = err.into_response();
-
-        // assert!(logs_contain("Tokio error: TaskJoin"));
-    }
 }

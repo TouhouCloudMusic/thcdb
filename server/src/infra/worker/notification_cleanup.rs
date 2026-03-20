@@ -31,14 +31,19 @@ pub(super) async fn handle(
     {
         Ok(res) => {
             if res.rows_affected > 0 {
-                tracing::info!(
-                    deleted = res.rows_affected,
-                    "Expired notifications deleted"
+                log::info!(
+                    target: "infra.worker.notification_cleanup",
+                    deleted = res.rows_affected;
+                    "expired notifications deleted"
                 );
             }
         }
         Err(err) => {
-            tracing::error!(?err, "Failed to cleanup notifications");
+            log::error!(
+                target: "infra.worker.notification_cleanup",
+                error:? = err;
+                "failed to clean up notifications"
+            );
         }
     }
 }

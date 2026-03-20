@@ -113,7 +113,7 @@ pub fn limit_layer(
     std::thread::spawn(move || {
         loop {
             std::thread::sleep(interval);
-            // tracing::info!(
+            // log::info!(
             //     "rate limiting storage size: {}",
             //     governor_limiter.len()
             // );

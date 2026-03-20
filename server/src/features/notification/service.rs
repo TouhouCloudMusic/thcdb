@@ -221,11 +221,12 @@ impl Service {
             .notify_correction_status(correction_id, kind, summary)
             .await
         {
-            tracing::error!(
-                ?err,
-                correction_id,
-                kind = %kind,
-                "notification failed"
+            log::error!(
+                target: "features.notification.service",
+                correction_id = correction_id,
+                kind:% = kind,
+                error:? = err;
+                "failed to notify correction status"
             );
         }
     }
@@ -274,7 +275,12 @@ impl Service {
             .notify_correction_needs_review(correction_id, exclude_user_ids)
             .await
         {
-            tracing::error!(?err, correction_id, "notification failed");
+            log::error!(
+                target: "features.notification.service",
+                correction_id = correction_id,
+                error:? = err;
+                "failed to notify correction review"
+            );
         }
     }
 
@@ -312,12 +318,13 @@ impl Service {
             .notify_image_status(created_by, image_id, kind, summary)
             .await
         {
-            tracing::error!(
-                ?err,
-                created_by,
-                image_id,
-                kind = %kind,
-                "notification failed"
+            log::error!(
+                target: "features.notification.service",
+                created_by = created_by,
+                image_id = image_id,
+                kind:% = kind,
+                error:? = err;
+                "failed to notify image status"
             );
         }
     }
@@ -334,13 +341,14 @@ impl Service {
             .create(recipient_user_id, kind, target_type, target_id, payload)
             .await
         {
-            tracing::error!(
-                ?err,
-                recipient_user_id,
-                kind = %kind,
-                target_type = %target_type,
-                target_id,
-                "notification failed"
+            log::error!(
+                target: "features.notification.service",
+                recipient_user_id = recipient_user_id,
+                kind:% = kind,
+                target_type:% = target_type,
+                target_id = target_id,
+                error:? = err;
+                "failed to create notification"
             );
         }
     }

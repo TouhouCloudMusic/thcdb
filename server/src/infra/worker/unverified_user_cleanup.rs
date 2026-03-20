@@ -33,7 +33,11 @@ pub(super) async fn handle(
     {
         Ok(user_ids) => user_ids,
         Err(err) => {
-            tracing::error!(?err, "Failed to query expired unverified users");
+            log::error!(
+                target: "infra.worker.unverified_user_cleanup",
+                error:? = err;
+                "failed to query expired unverified users"
+            );
             return;
         }
     };
@@ -49,14 +53,19 @@ pub(super) async fn handle(
     {
         Ok(res) => {
             if res.rows_affected > 0 {
-                tracing::info!(
-                    deleted = res.rows_affected,
-                    "Expired unverified users deleted"
+                log::info!(
+                    target: "infra.worker.unverified_user_cleanup",
+                    deleted = res.rows_affected;
+                    "expired unverified users deleted"
                 );
             }
         }
         Err(err) => {
-            tracing::error!(?err, "Failed to delete expired unverified users");
+            log::error!(
+                target: "infra.worker.unverified_user_cleanup",
+                error:? = err;
+                "failed to delete expired unverified users"
+            );
         }
     }
 }

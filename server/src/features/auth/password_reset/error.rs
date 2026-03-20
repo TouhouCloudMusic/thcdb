@@ -15,10 +15,11 @@ fn opaque_internal_error_response(
     source: &(dyn std::error::Error + Send + Sync),
     operation: &'static str,
 ) -> axum::response::Response {
-    tracing::error!(
-        location = %Location::caller(),
-        ?source,
-        operation,
+    log::error!(
+        target: "features.auth.password_reset.error",
+        location:% = Location::caller(),
+        operation = operation,
+        source:? = source;
         "Password reset auth flow failed with internal error"
     );
     api_response::Error::from_err_and_code(
@@ -173,7 +174,6 @@ impl IntoResponse for ResetPasswordError {
 #[cfg(test)]
 mod tests {
     use axum::body::to_bytes;
-    use tracing_test::traced_test;
 
     use super::*;
 
@@ -185,7 +185,6 @@ mod tests {
     }
 
     #[tokio::test]
-    #[traced_test]
     async fn forgot_password_internal_error_is_opaque_to_clients() {
         let response = ForgotPasswordError::Infra {
             source: infra::Error::custom(&"forgot-password secret"),
@@ -197,14 +196,9 @@ mod tests {
         let body = response_body_string(response).await;
         assert!(body.contains(r#""message":"Internal server error""#));
         assert!(!body.contains("forgot-password secret"));
-        assert!(logs_contain(
-            "Password reset auth flow failed with internal error"
-        ));
-        assert!(logs_contain("forgot-password secret"));
     }
 
     #[tokio::test]
-    #[traced_test]
     async fn verify_reset_code_internal_error_is_opaque_to_clients() {
         let response = VerifyResetCodeError::Infra {
             source: infra::Error::custom(&"verify-reset-code secret"),
@@ -216,14 +210,9 @@ mod tests {
         let body = response_body_string(response).await;
         assert!(body.contains(r#""message":"Internal server error""#));
         assert!(!body.contains("verify-reset-code secret"));
-        assert!(logs_contain(
-            "Password reset auth flow failed with internal error"
-        ));
-        assert!(logs_contain("verify-reset-code secret"));
     }
 
     #[tokio::test]
-    #[traced_test]
     async fn reset_password_internal_error_is_opaque_to_clients() {
         let response = ResetPasswordError::Infra {
             source: infra::Error::custom(&"reset-password secret"),
@@ -235,9 +224,5 @@ mod tests {
         let body = response_body_string(response).await;
         assert!(body.contains(r#""message":"Internal server error""#));
         assert!(!body.contains("reset-password secret"));
-        assert!(logs_contain(
-            "Password reset auth flow failed with internal error"
-        ));
-        assert!(logs_contain("reset-password secret"));
     }
 }

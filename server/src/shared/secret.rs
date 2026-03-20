@@ -20,10 +20,20 @@ pub fn hash(
         })
         .await
         .inspect_err(|e| {
-            tracing::error!(location = %Location::caller(), error = %e);
+            log::error!(
+                target: "shared.secret",
+                location:% = Location::caller(),
+                error:% = e;
+                "hash task failed"
+            );
         })?
         .map_err(|e| {
-            tracing::error!(location = %Location::caller(), error = %e);
+            log::error!(
+                target: "shared.secret",
+                location:% = Location::caller(),
+                error:% = e;
+                "hash failed"
+            );
             Box::new(e).into()
         })
     }
@@ -43,14 +53,24 @@ pub fn verify(
         })
         .await
         .inspect_err(|e| {
-            tracing::error!(location = %Location::caller(), error = %e);
+            log::error!(
+                target: "shared.secret",
+                location:% = Location::caller(),
+                error:% = e;
+                "verify task failed"
+            );
         })?;
 
         match verify_result {
             Ok(()) => Ok(true),
             Err(argon2::password_hash::Error::Password) => Ok(false),
             Err(other) => {
-                tracing::error!(location = %Location::caller(), error = %other);
+                log::error!(
+                    target: "shared.secret",
+                    location:% = Location::caller(),
+                    error:% = other;
+                    "verify failed"
+                );
                 Err(Box::new(other).into())
             }
         }

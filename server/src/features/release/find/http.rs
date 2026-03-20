@@ -88,7 +88,11 @@ async fn explore_release(
     Query(pagination): Query<PageQuery>,
 ) -> Result<Data<PageResponse<Release>>, Error> {
     let normalized = filter.with_sort_defaults();
-    tracing::info!(?normalized, "explore_release: incoming query");
+    log::info!(
+        target: "features.release.find.http",
+        normalized:? = normalized;
+        "incoming explore query"
+    );
     repo::find_by_filter(&repo, normalized, pagination)
         .await
         .bimap_into()

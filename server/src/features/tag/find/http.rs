@@ -85,7 +85,11 @@ async fn explore_tag(
     Query(pagination): Query<PageQuery>,
 ) -> Result<Data<PageResponse<Tag>>, Error> {
     let normalized = filter.with_sort_defaults();
-    tracing::info!(?normalized, "explore_tag: incoming query");
+    log::info!(
+        target: "features.tag.find.http",
+        normalized:? = normalized;
+        "incoming explore query"
+    );
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
         .bimap_into()

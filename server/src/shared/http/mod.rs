@@ -42,7 +42,11 @@ where
     E: snafu::Error,
 {
     fn into_response(self) -> axum::response::Response {
-        tracing::error!("{}", self.source);
+        log::error!(
+            target: "shared.http",
+            error:% = self.source;
+            "request failed"
+        );
         let msg = self.source.to_string();
         api_response::Error::from_err_and_code(msg, self.status_code)
             .into_response()

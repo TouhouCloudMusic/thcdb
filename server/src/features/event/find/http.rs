@@ -87,7 +87,11 @@ async fn explore_event(
     Query(pagination): Query<PageQuery>,
 ) -> Result<Data<PageResponse<Event>>, Error> {
     let normalized = filter.with_sort_defaults();
-    tracing::info!(?normalized, "explore_event: incoming query");
+    log::info!(
+        target: "features.event.find.http",
+        normalized:? = normalized;
+        "incoming explore query"
+    );
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
         .bimap_into()

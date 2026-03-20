@@ -29,7 +29,7 @@ impl Pool {
         pool.init().await.unwrap();
 
         let pong: String = pool.ping(None).await.unwrap();
-        tracing::info!("Connected to redis, {}!", pong);
+        log::info!(target: "infra.redis", pong = pong; "connected to redis");
 
         Self { inner: pool }
     }

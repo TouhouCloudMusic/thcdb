@@ -127,15 +127,15 @@ impl Worker {
         let monitor = Monitor::new()
             .register(
                 WorkerBuilder::new("remove_file")
-                    .enable_tracing()
                     .data(shared.clone())
+                    .enable_tracing()
                     .backend(remove_file_queue)
                     .build_fn(remove_file::handle),
             )
             .register(
                 WorkerBuilder::new("unverified_user_cleanup")
-                    .enable_tracing()
                     .data(shared.clone())
+                    .enable_tracing()
                     .backend(CronStream::new(
                         unverified_user_cleanup::schedule(),
                     ))
@@ -143,22 +143,26 @@ impl Worker {
             )
             .register(
                 WorkerBuilder::new("password_reset_email")
-                    .enable_tracing()
                     .data(shared.clone())
+                    .enable_tracing()
                     .backend(password_reset_email_queue)
                     .build_fn(password_reset_email::handle),
             )
             .register(
                 WorkerBuilder::new("notification_cleanup")
-                    .enable_tracing()
                     .data(shared)
+                    .enable_tracing()
                     .backend(CronStream::new(notification_cleanup::schedule()))
                     .build_fn(notification_cleanup::handle),
             );
 
         tokio::spawn(async move {
             if let Err(err) = monitor.run().await {
-                tracing::error!(error = %err, "Worker monitor stopped");
+                log::error!(
+                    target: "infra.worker",
+                    error:% = err;
+                    "worker monitor stopped"
+                );
             }
         });
     }
