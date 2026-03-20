@@ -85,7 +85,11 @@ async fn explore_song(
     Query(pagination): Query<PageQuery>,
 ) -> Result<Data<PageResponse<Song>>, Error> {
     let normalized = filter.with_sort_defaults();
-    tracing::info!(?normalized, "explore_song: incoming query");
+    log::info!(
+        target: "features.song.find.http",
+        normalized:? = normalized;
+        "incoming explore query"
+    );
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
         .bimap_into()

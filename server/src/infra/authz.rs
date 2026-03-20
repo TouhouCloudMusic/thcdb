@@ -46,11 +46,12 @@ async fn sync_permission_defs(db: &impl ConnectionTrait) -> Result<(), DbErr> {
         let db_desc = model.description.as_deref();
         let code_desc = expected_def.description;
         if db_desc != code_desc {
-            tracing::info!(
-                permission = model.name,
-                db_description = ?db_desc,
-                code_description = ?code_desc,
-                "Updating permission description"
+            log::info!(
+                target: "infra.authz",
+                permission = model.name.as_str(),
+                db_description:? = db_desc,
+                code_description:? = code_desc;
+                "updating permission description"
             );
 
             permission::Entity::update_many()
@@ -73,9 +74,10 @@ async fn sync_permission_defs(db: &impl ConnectionTrait) -> Result<(), DbErr> {
         .collect::<Vec<_>>();
 
     if !missing_names.is_empty() {
-        tracing::info!(
-            permissions = ?missing_names,
-            "Inserting missing permissions"
+        log::info!(
+            target: "infra.authz",
+            permissions:? = missing_names;
+            "inserting missing permissions"
         );
 
         let missing = missing_names
@@ -93,9 +95,10 @@ async fn sync_permission_defs(db: &impl ConnectionTrait) -> Result<(), DbErr> {
     }
 
     if !unknown_permission_ids.is_empty() {
-        tracing::warn!(
-            permissions = ?unknown_permission_names,
-            "Deleting unknown permissions"
+        log::warn!(
+            target: "infra.authz",
+            permissions:? = unknown_permission_names;
+            "deleting unknown permissions"
         );
 
         let deleted_role_permissions = role_permission::Entity::delete_many()
@@ -114,11 +117,15 @@ async fn sync_permission_defs(db: &impl ConnectionTrait) -> Result<(), DbErr> {
             .exec_with_returning(db)
             .await?;
 
-        tracing::warn!(
+        log::warn!(
+            target: "infra.authz",
             role_permissions_deleted = deleted_role_permissions.rows_affected,
             permissions_deleted = deleted_permissions.len(),
-            permissions = ?deleted_permissions.iter().map(|m| &m.name).collect::<Vec<_>>(),
-            "Deleted unknown permissions"
+            permissions:? = deleted_permissions
+                .iter()
+                .map(|m| &m.name)
+                .collect::<Vec<_>>();
+            "deleted unknown permissions"
         );
     }
 

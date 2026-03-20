@@ -85,7 +85,11 @@ async fn explore_label(
     Query(pagination): Query<PageQuery>,
 ) -> Result<Data<PageResponse<Label>>, Error> {
     let normalized = filter.with_sort_defaults();
-    tracing::info!(?normalized, "explore_label: incoming query");
+    log::info!(
+        target: "features.label.find.http",
+        normalized:? = normalized;
+        "incoming explore query"
+    );
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
         .bimap_into()

@@ -68,7 +68,11 @@ pub(super) fn build_verification_email_message(
             "Your verification code is {code}. It expires in {VERIFICATION_CODE_EXPIRES_MINUTES} minutes."
         ))
         .map_err(|err| {
-            tracing::error!("Failed to build verification email: {err}");
+            log::error!(
+                target: "features.auth.sign_up.verification",
+                error:% = err;
+                "failed to build verification email"
+            );
             SendVerificationEmailError::Unavailable
         })
 }

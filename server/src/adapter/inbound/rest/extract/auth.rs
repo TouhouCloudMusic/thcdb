@@ -94,7 +94,11 @@ where
             .get::<state::AuthSession>()
             .cloned()
             .ok_or_else(|| {
-                tracing::error!("The AuthSession was not found");
+                log::error!(
+                    target: "adapter.rest.extract.auth",
+                    extension = "AuthSession";
+                    "auth session not found in request extensions"
+                );
                 StatusCode::INTERNAL_SERVER_ERROR.into_response()
             })?;
 
@@ -150,7 +154,11 @@ where
                 if is_auth_rejection {
                     Err(StatusCode::UNAUTHORIZED.into_response())
                 } else {
-                    tracing::error!(?err, "Basic authentication failed");
+                    log::error!(
+                        target: "adapter.rest.extract.auth",
+                        error:? = err;
+                        "basic authentication failed"
+                    );
                     Err(StatusCode::INTERNAL_SERVER_ERROR.into_response())
                 }
             }

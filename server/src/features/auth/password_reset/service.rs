@@ -280,10 +280,11 @@ impl Service {
             })
             .await;
         if let Err(err) = queued {
-            tracing::warn!(
+            log::warn!(
+                target: "features.auth.password_reset.service",
                 user_id = user.id,
-                error = ?err,
-                "Failed to enqueue password reset email"
+                error:? = err;
+                "failed to enqueue password reset email"
             );
             match self
                 .rollback_password_reset_state(
@@ -295,16 +296,18 @@ impl Service {
             {
                 Ok(true) => {}
                 Ok(false) => {
-                    tracing::warn!(
-                        user_id = user.id,
-                        "Skipped rolling back password reset state after queue failure because a newer state already exists"
+                    log::warn!(
+                        target: "features.auth.password_reset.service",
+                        user_id = user.id;
+                        "skipped rolling back password reset state after queue failure because a newer state already exists"
                     );
                 }
                 Err(cleanup_err) => {
-                    tracing::error!(
+                    log::error!(
+                        target: "features.auth.password_reset.service",
                         user_id = user.id,
-                        error = ?cleanup_err,
-                        "Failed to roll back password reset state after queue failure"
+                        error:? = cleanup_err;
+                        "failed to roll back password reset state after queue failure"
                     );
                 }
             }
@@ -426,10 +429,11 @@ impl Service {
                     )
                     .await
                 {
-                    tracing::error!(
+                    log::error!(
+                        target: "features.auth.password_reset.service",
                         user_id = consumed_user_id,
-                        error = ?restore_err,
-                        "Failed to restore consumed password reset key after user lookup failure"
+                        error:? = restore_err;
+                        "failed to restore consumed password reset key after user lookup failure"
                     );
                 }
                 return Err(err.into());
@@ -443,10 +447,11 @@ impl Service {
                 .restore_consumed_password_reset_key(consumed, &reset_key_hash)
                 .await
             {
-                tracing::error!(
+                log::error!(
+                    target: "features.auth.password_reset.service",
                     user_id = consumed_user_id,
-                    error = ?restore_err,
-                    "Failed to restore consumed password reset key after password update failure"
+                    error:? = restore_err;
+                    "failed to restore consumed password reset key after password update failure"
                 );
             }
             return Err(err.into());
@@ -471,10 +476,11 @@ impl Service {
         let user_id = job.user_id;
         let mut queue = self.password_reset_email_queue.clone();
         queue.push(job).await.map_err(|err| {
-            tracing::error!(
-                error = ?err,
+            log::error!(
+                target: "features.auth.password_reset.service",
                 user_id = user_id,
-                "Failed to enqueue password reset email job"
+                error:? = err;
+                "failed to enqueue password reset email job"
             );
             Error::internal(err)
         })?;
@@ -515,11 +521,12 @@ impl Service {
                 serde_json::from_str(&payload)
                     .map(|state| StoredPasswordResetState { payload, state })
                     .map_err(|err| {
-                        tracing::error!(
-                            location = %Location::caller(),
-                            ?err,
-                            user_id,
-                            "Failed to deserialize password reset state"
+                        log::error!(
+                            target: "features.auth.password_reset.service",
+                            location:% = Location::caller(),
+                            user_id = user_id,
+                            error:? = err;
+                            "failed to deserialize password reset state"
                         );
                         Error::internal(err)
                     })
@@ -540,18 +547,20 @@ impl Service {
             )
             .await
             .map_err(|err| {
-                tracing::error!(
-                    error = ?err,
-                    "Failed to atomically consume password reset key"
+                log::error!(
+                    target: "features.auth.password_reset.service",
+                    error:? = err;
+                    "failed to atomically consume password reset key"
                 );
                 Error::internal(err)
             })?;
 
         ConsumedPasswordResetKey::parse_payload(&payload).map_err(|err| {
-            tracing::error!(
-                location = %Location::caller(),
-                error = ?err,
-                "Failed to parse consumed password reset key payload"
+            log::error!(
+                target: "features.auth.password_reset.service",
+                location:% = Location::caller(),
+                error:? = err;
+                "failed to parse consumed password reset key payload"
             );
             Error::Internal { source: err }
         })
@@ -582,9 +591,10 @@ impl Service {
             return Ok(());
         }
 
-        tracing::warn!(
-            user_id = consumed.user_id,
-            "Skipped restoring consumed password reset key because a newer state already exists"
+        log::warn!(
+            target: "features.auth.password_reset.service",
+            user_id = consumed.user_id;
+            "skipped restoring consumed password reset key because a newer state already exists"
         );
         Ok(())
     }
@@ -628,10 +638,11 @@ impl Service {
             )
             .await
             .map_err(|err| {
-                tracing::error!(
-                    error = ?err,
-                    user_id,
-                    "Failed to atomically increment password reset failed attempts"
+                log::error!(
+                    target: "features.auth.password_reset.service",
+                    user_id = user_id,
+                    error:? = err;
+                    "failed to atomically increment password reset failed attempts"
                 );
                 Error::internal(err)
             })?;
@@ -699,10 +710,11 @@ impl Service {
             )
             .await
             .map_err(|err| {
-                tracing::error!(
-                    error = ?err,
-                    user_id,
-                    "Failed to compare-and-swap password reset state"
+                log::error!(
+                    target: "features.auth.password_reset.service",
+                    user_id = user_id,
+                    error:? = err;
+                    "failed to compare-and-swap password reset state"
                 );
                 Error::internal(err)
             })?;
@@ -725,10 +737,11 @@ impl Service {
             )
             .await
             .map_err(|err| {
-                tracing::error!(
-                    error = ?err,
-                    user_id,
-                    "Failed to compare-and-clear password reset state"
+                log::error!(
+                    target: "features.auth.password_reset.service",
+                    user_id = user_id,
+                    error:? = err;
+                    "failed to compare-and-clear password reset state"
                 );
                 Error::internal(err)
             })?;
@@ -745,8 +758,10 @@ impl Service {
         let to: Mailbox = match to.parse() {
             Ok(v) => v,
             Err(err) => {
-                tracing::error!(
-                    "Invalid password reset recipient address: {err}"
+                log::error!(
+                    target: "features.auth.password_reset.service",
+                    error:% = err;
+                    "invalid password reset recipient address"
                 );
                 return Err(SendPasswordResetEmailError::InvalidEmail(
                     InvalidEmail::new(
@@ -764,7 +779,11 @@ impl Service {
         match self.mailer.send(message).await {
             Ok(()) => Ok(()),
             Err(err) => {
-                tracing::error!("Failed to send password reset email: {err}");
+                log::error!(
+                    target: "features.auth.password_reset.service",
+                    error:% = err;
+                    "failed to send password reset email"
+                );
                 Err(SendPasswordResetEmailError::Unavailable)
             }
         }
@@ -781,10 +800,11 @@ pub(crate) async fn password_reset_email_job_is_current(
     {
         Ok(payload) => payload,
         Err(err) => {
-            tracing::error!(
-                error = ?err,
+            log::error!(
+                target: "features.auth.password_reset.service",
                 user_id = job.user_id,
-                "Failed to load password reset state while processing email job"
+                error:? = err;
+                "failed to load password reset state while processing email job"
             );
             return false;
         }
@@ -797,10 +817,11 @@ pub(crate) async fn password_reset_email_job_is_current(
     let state = match serde_json::from_str::<PasswordResetState>(&payload) {
         Ok(state) => state,
         Err(err) => {
-            tracing::error!(
-                error = ?err,
+            log::error!(
+                target: "features.auth.password_reset.service",
                 user_id = job.user_id,
-                "Failed to deserialize password reset state while processing email job"
+                error:? = err;
+                "failed to deserialize password reset state while processing email job"
             );
             return false;
         }

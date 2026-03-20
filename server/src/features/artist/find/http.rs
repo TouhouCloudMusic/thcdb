@@ -105,7 +105,11 @@ async fn explore_artist(
     Query(pagination): Query<PageQuery>,
 ) -> Result<Data<PageResponse<Artist>>, Error> {
     let normalized = filter.with_sort_defaults();
-    tracing::info!(?normalized, "explore_artist: incoming query");
+    log::info!(
+        target: "features.artist.find.http",
+        normalized:? = normalized;
+        "incoming explore query"
+    );
     repo::find_by_filter(&repo, normalized, pagination)
         .await
         .bimap_into()

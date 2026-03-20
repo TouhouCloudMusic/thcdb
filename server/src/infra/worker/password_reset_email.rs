@@ -30,10 +30,11 @@ pub(super) async fn handle(
     let to: Mailbox = match job.email.parse() {
         Ok(to) => to,
         Err(err) => {
-            tracing::error!(
-                error = %err,
+            log::error!(
+                target: "infra.worker.password_reset_email",
                 user_id = job.user_id,
-                "Invalid password reset recipient address"
+                error:% = err;
+                "invalid password reset recipient address"
             );
             return Ok(());
         }
@@ -41,9 +42,10 @@ pub(super) async fn handle(
     let Some(code) =
         crate::domain::model::VerificationCode::<6>::parse(&job.code)
     else {
-        tracing::error!(
-            user_id = job.user_id,
-            "Invalid password reset code in email job"
+        log::error!(
+            target: "infra.worker.password_reset_email",
+            user_id = job.user_id;
+            "invalid password reset code in email job"
         );
         return Ok(());
     };
@@ -54,20 +56,22 @@ pub(super) async fn handle(
     ) {
         Ok(message) => message,
         Err(err) => {
-            tracing::error!(
-                error = ?err,
+            log::error!(
+                target: "infra.worker.password_reset_email",
                 user_id = job.user_id,
-                "Failed to build password reset email message"
+                error:? = err;
+                "failed to build password reset email message"
             );
             return Ok(());
         }
     };
 
     if let Err(err) = state.mailer.send(message).await {
-        tracing::error!(
-            error = %err,
+        log::error!(
+            target: "infra.worker.password_reset_email",
             user_id = job.user_id,
-            "Failed to send password reset email"
+            error:% = err;
+            "failed to send password reset email"
         );
         let user_id = job.user_id;
         let mut queue = state.password_reset_email_queue.clone();
@@ -81,10 +85,11 @@ pub(super) async fn handle(
         )
         .await
         .map_err(|push_err| {
-            tracing::error!(
-                error = ?push_err,
-                user_id,
-                "Failed to reschedule password reset email job"
+            log::error!(
+                target: "infra.worker.password_reset_email",
+                user_id = user_id,
+                error:? = push_err;
+                "failed to reschedule password reset email job"
             );
             std::io::Error::other(push_err.to_string())
         });

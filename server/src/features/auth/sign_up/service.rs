@@ -322,15 +322,18 @@ impl Service {
             {
                 Ok(true) => {}
                 Ok(false) => {
-                    tracing::warn!(
-                        user_id = user.id,
-                        "Skipped clearing verification code after email failure because a newer code already exists"
+                    log::warn!(
+                        target: "features.auth.sign_up.service",
+                        user_id = user.id;
+                        "skipped clearing verification code after email failure because a newer code already exists"
                     );
                 }
                 Err(cleanup_err) => {
-                    tracing::error!(
+                    log::error!(
+                        target: "features.auth.sign_up.service",
                         user_id = user.id,
-                        "Failed to clear verification code after email failure: {cleanup_err}"
+                        error:% = cleanup_err;
+                        "failed to clear verification code after email failure"
                     );
                 }
             }
@@ -363,7 +366,12 @@ impl Service {
         let to: Mailbox = match to.parse() {
             Ok(v) => v,
             Err(err) => {
-                tracing::error!("Invalid to address {to}: {err}");
+                log::error!(
+                    target: "features.auth.sign_up.service",
+                    to = to,
+                    error:% = err;
+                    "invalid verification email recipient address"
+                );
                 return Err(SendVerificationEmailError::InvalidEmail(
                     InvalidEmail::new(
                         to,
@@ -380,7 +388,11 @@ impl Service {
         match self.mailer.send(message).await {
             Ok(()) => Ok(()),
             Err(err) => {
-                tracing::error!("Failed to send verification email: {err}");
+                log::error!(
+                    target: "features.auth.sign_up.service",
+                    error:% = err;
+                    "failed to send verification email"
+                );
                 Err(SendVerificationEmailError::Unavailable)
             }
         }

@@ -23,7 +23,11 @@ pub(crate) fn build_password_reset_email_message(
             "Your password reset code is {code}. It expires in {PASSWORD_RESET_CODE_EXPIRES_MINUTES} minutes."
         ))
         .map_err(|err| {
-            tracing::error!("Failed to build password reset email: {err}");
+            log::error!(
+                target: "features.auth.password_reset.verification",
+                error:% = err;
+                "failed to build password reset email"
+            );
             SendPasswordResetEmailError::Unavailable
         })
 }

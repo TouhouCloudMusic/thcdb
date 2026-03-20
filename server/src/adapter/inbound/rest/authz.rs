@@ -13,7 +13,12 @@ pub async fn ensure_permission<P: PermissionMarker>(
     let has_permission = authz::user_has_permission::<P>(db, user_id)
         .await
         .map_err(|err| {
-            tracing::error!(?err, "Failed to check permission");
+            log::error!(
+                target: "adapter.rest.authz",
+                user_id = user_id,
+                error:? = err;
+                "failed to check permission"
+            );
             api_response::Error::from_err_and_code(
                 "Database Error",
                 StatusCode::INTERNAL_SERVER_ERROR,

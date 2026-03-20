@@ -20,12 +20,21 @@ pub(super) async fn handle(
     attempt: Attempt,
     context: RedisContext,
 ) -> Result<(), std::io::Error> {
-    tracing::info!("Deleting file: {}", job.path);
+    log::info!(
+        target: "infra.worker.remove_file",
+        path = job.path.as_str();
+        "deleting file"
+    );
     match tokio::fs::remove_file(&job.path).await {
         Ok(()) => Ok(()),
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(()),
         Err(err) => {
-            tracing::error!("Failed to delete {}: {}", job.path, err);
+            log::error!(
+                target: "infra.worker.remove_file",
+                path = job.path.as_str(),
+                error:% = err;
+                "failed to delete file"
+            );
             let path = job.path.clone();
             let mut queue = state.remove_file_queue.clone();
             reschedule_job(
@@ -38,10 +47,11 @@ pub(super) async fn handle(
             )
             .await
             .map_err(|push_err| {
-                tracing::error!(
-                    error = ?push_err,
-                    path,
-                    "Failed to reschedule remove file job"
+                log::error!(
+                    target: "infra.worker.remove_file",
+                    path = path.as_str(),
+                    error:? = push_err;
+                    "failed to reschedule remove file job"
                 );
                 std::io::Error::other(push_err.to_string())
             })
