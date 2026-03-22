@@ -10,6 +10,7 @@ use axum::{Router, http};
 use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
+use fastrace_axum::FastraceLayer;
 use governor::clock::QuantaInstant;
 use tower::{Layer, Service};
 use tower_governor::GovernorLayer;
@@ -45,6 +46,7 @@ where
         .layer(auth_layer(state))
         .layer(limit_layer)
         .layer(cors_layer())
+        .layer(FastraceLayer::default())
 }
 
 fn auth_layer(state: &ArcAppState) -> impl AxumLayerBounds {
