@@ -11,7 +11,6 @@ import solidPlugin from "vite-plugin-solid"
 import { defineProject } from "vitest/config"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
-
 const isHttps = (url: string | undefined) => {
 	if (!url) {
 		return false
@@ -65,6 +64,9 @@ export default defineConfig(({ mode }) => {
 		test: {
 			projects: [
 				defineProject({
+					resolve: {
+						tsconfigPaths: true,
+					},
 					test: {
 						name: "unit",
 						globals: true,
@@ -79,6 +81,9 @@ export default defineConfig(({ mode }) => {
 							configDir: path.join(dirname, ".storybook"),
 						}),
 					],
+					resolve: {
+						tsconfigPaths: true,
+					},
 					test: {
 						name: "storybook",
 						exclude: ["src/component/__legacy/**"],
