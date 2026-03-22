@@ -39,6 +39,7 @@ log = "0.4"
 quote = "1.0.38"
 rand = "0.9.0"
 fastrace = { version = "0.7", features = [ "enable" ] }
+fastrace-axum = "0.2.0"
 fastrace-opentelemetry = "0.16.0"
 fastrace-tracing = "0.1.1"
 logforth = { version = "0.29.1", features = [
@@ -157,6 +158,7 @@ derive_more = { version = "2.0.1", features = [
 dotenvy.workspace = true
 enumset.workspace = true
 fastrace.workspace = true
+fastrace-axum.workspace = true
 fastrace-opentelemetry.workspace = true
 fastrace-tracing.workspace = true
 fred = { version = "10.0", features = [ "i-scripts" ] }
