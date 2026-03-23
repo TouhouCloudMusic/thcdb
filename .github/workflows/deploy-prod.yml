@@ -3,7 +3,11 @@ on:
   push:
     branches: [main]
     paths:
+      - '.github/workflows/deploy-prod.yml'
+      - '.justfile'
+      - 'docker-compose.prod.yml'
       - 'server/**'
+      - 'server/Dockerfile.toolchain'
       - 'web/**'
       - '!**/*.md'
       - '!**/docs/**'
