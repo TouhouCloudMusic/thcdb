@@ -72,6 +72,114 @@ fn ensure_email_verified(user: User) -> Result<User, axum::response::Response> {
     }
 }
 
+fn cache_current_user(
+    parts: &mut Parts,
+    user: User,
+) -> Result<CurrentUser, axum::response::Response> {
+    let user = ensure_email_verified(user)?;
+    let user = CurrentUser(user);
+    parts.extensions.insert(user.clone());
+    Ok(user)
+}
+
+fn auth_session(
+    parts: &Parts,
+) -> Result<state::AuthSession, axum::response::Response> {
+    parts
+        .extensions
+        .get::<state::AuthSession>()
+        .cloned()
+        .ok_or_else(|| {
+            log::error!(
+                target: "adapter.rest.extract.auth",
+                extension = "AuthSession";
+                "auth session not found in request extensions"
+            );
+            StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        })
+}
+
+async fn resolve_basic_auth_user(
+    parts: &mut Parts,
+    session: state::AuthSession,
+) -> Result<Option<CurrentUser>, axum::response::Response> {
+    if !parts.headers.contains_key(header::AUTHORIZATION) {
+        return Ok(None);
+    }
+
+    let TypedHeader(Authorization(basic)) =
+        TypedHeader::<Authorization<Basic>>::from_request_parts(parts, &())
+            .await
+            .map_err(IntoResponse::into_response)?;
+
+    let key = cache_key(basic.username(), basic.password());
+
+    if let Some(user) = BASIC_AUTH_CACHE.lookup(key).await {
+        let user = match cache_current_user(parts, user) {
+            Ok(user) => user,
+            Err(rejection) => {
+                BASIC_AUTH_CACHE.remove(key).await;
+                return Err(rejection);
+            }
+        };
+
+        return Ok(Some(user));
+    }
+
+    let creds =
+        AuthCredential::from_sign_in(basic.username(), basic.password());
+
+    match session.authenticate(creds).await {
+        Ok(Some(user)) => {
+            let user = ensure_email_verified(user)?;
+            BASIC_AUTH_CACHE.store(key, &user).await;
+            let user = CurrentUser(user);
+            parts.extensions.insert(user.clone());
+            Ok(Some(user))
+        }
+        Ok(None) => Err(StatusCode::UNAUTHORIZED.into_response()),
+        Err(err) => {
+            let is_auth_rejection = match &err {
+                axum_login::Error::Session(_) => false,
+                axum_login::Error::Backend(err) => err.is_auth_rejection(),
+            };
+
+            if is_auth_rejection {
+                Err(StatusCode::UNAUTHORIZED.into_response())
+            } else {
+                log::error!(
+                    target: "adapter.rest.extract.auth",
+                    error:? = err;
+                    "basic authentication failed"
+                );
+                Err(StatusCode::INTERNAL_SERVER_ERROR.into_response())
+            }
+        }
+    }
+}
+
+pub(crate) async fn preload_current_user(parts: &mut Parts) {
+    if parts.extensions.get::<CurrentUser>().is_some() {
+        return;
+    }
+
+    if parts
+        .extensions
+        .get::<state::AuthSession>()
+        .and_then(|session| session.user.as_ref())
+        .is_some()
+    {
+        return;
+    }
+
+    let Some(session) = parts.extensions.get::<state::AuthSession>().cloned()
+    else {
+        return;
+    };
+
+    let _ = resolve_basic_auth_user(parts, session).await;
+}
+
 impl<S> FromRequestParts<S> for CurrentUser
 where
     S: Send + Sync,
@@ -89,79 +197,15 @@ where
             return Ok(user);
         }
 
-        let session = parts
-            .extensions
-            .get::<state::AuthSession>()
-            .cloned()
-            .ok_or_else(|| {
-                log::error!(
-                    target: "adapter.rest.extract.auth",
-                    extension = "AuthSession";
-                    "auth session not found in request extensions"
-                );
-                StatusCode::INTERNAL_SERVER_ERROR.into_response()
-            })?;
+        let session = auth_session(parts)?;
 
         if let Some(user) = session.user {
-            let user = ensure_email_verified(user)?;
-            let user = Self(user);
-            parts.extensions.insert(user.clone());
+            let user = cache_current_user(parts, user)?;
             return Ok(user);
         }
 
-        if !parts.headers.contains_key(header::AUTHORIZATION) {
-            return Err(StatusCode::UNAUTHORIZED.into_response());
-        }
-
-        let TypedHeader(Authorization(basic)) =
-            TypedHeader::<Authorization<Basic>>::from_request_parts(parts, &())
-                .await
-                .map_err(IntoResponse::into_response)?;
-
-        let key = cache_key(basic.username(), basic.password());
-
-        if let Some(user) = BASIC_AUTH_CACHE.lookup(key).await {
-            let user = match ensure_email_verified(user) {
-                Ok(user) => user,
-                Err(rejection) => {
-                    BASIC_AUTH_CACHE.remove(key).await;
-                    return Err(rejection);
-                }
-            };
-            let user = Self(user);
-            parts.extensions.insert(user.clone());
-            return Ok(user);
-        }
-
-        let creds =
-            AuthCredential::from_sign_in(basic.username(), basic.password());
-
-        match session.authenticate(creds).await {
-            Ok(Some(user)) => {
-                let user = ensure_email_verified(user)?;
-                BASIC_AUTH_CACHE.store(key, &user).await;
-                let user = Self(user);
-                parts.extensions.insert(user.clone());
-                Ok(user)
-            }
-            Ok(None) => Err(StatusCode::UNAUTHORIZED.into_response()),
-            Err(err) => {
-                let is_auth_rejection = match &err {
-                    axum_login::Error::Session(_) => false,
-                    axum_login::Error::Backend(err) => err.is_auth_rejection(),
-                };
-
-                if is_auth_rejection {
-                    Err(StatusCode::UNAUTHORIZED.into_response())
-                } else {
-                    log::error!(
-                        target: "adapter.rest.extract.auth",
-                        error:? = err;
-                        "basic authentication failed"
-                    );
-                    Err(StatusCode::INTERNAL_SERVER_ERROR.into_response())
-                }
-            }
-        }
+        resolve_basic_auth_user(parts, session)
+            .await?
+            .ok_or_else(|| StatusCode::UNAUTHORIZED.into_response())
     }
 }

@@ -1,9 +1,7 @@
-use std::cmp::max;
 use std::convert::Infallible;
-use std::sync::Arc;
 
-use axum::body::Body;
 use axum::extract::{FromRef, Request};
+use axum::middleware::{Next, from_fn};
 use axum::response::IntoResponse;
 use axum::routing::Route;
 use axum::{Router, http};
@@ -11,15 +9,17 @@ use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use fastrace_axum::FastraceLayer;
-use governor::clock::QuantaInstant;
 use tower::{Layer, Service};
-use tower_governor::GovernorLayer;
-use tower_governor::key_extractor::PeerIpKeyExtractor;
 use tower_http::cors::{Any, CorsLayer};
 use tower_sessions_redis_store::RedisStore;
 
+use super::extract;
 use super::state::{self, ArcAppState};
 use crate::infra::singleton::APP_CONFIG;
+
+mod limit;
+
+pub(crate) use limit::limit_layer;
 
 pub trait AxumLayerBounds = where
     Self: Layer<Route> + Clone + Send + Sync + 'static + Sized,
@@ -44,6 +44,7 @@ where
 
     router
         .layer(auth_layer(state))
+        .layer(from_fn(preload_current_user))
         .layer(limit_layer)
         .layer(cors_layer())
         .layer(FastraceLayer::default())
@@ -82,46 +83,11 @@ fn cors_layer() -> CorsLayer {
         .allow_headers(Any)
 }
 
-#[bon::builder]
-pub fn limit_layer(
-    req_per_sec: u64,
-    burst_size: u32,
-) -> GovernorLayer<
-    PeerIpKeyExtractor,
-    governor::middleware::NoOpMiddleware<QuantaInstant>,
-    Body,
-> {
-    use std::time::Duration;
-
-    use tower_governor::governor::GovernorConfigBuilder;
-
-    let config = GovernorConfigBuilder::default()
-        .per_nanosecond(max(1_000_000_000 / req_per_sec, 1))
-        .burst_size(burst_size)
-        .finish()
-        .unwrap();
-
-    let governor_conf: Arc<
-        tower_governor::governor::GovernorConfig<
-            PeerIpKeyExtractor,
-            governor::middleware::NoOpMiddleware<QuantaInstant>,
-        >,
-    > = Arc::new(config);
-
-    let governor_limiter = governor_conf.limiter().clone();
-
-    let interval = Duration::from_mins(1);
-
-    std::thread::spawn(move || {
-        loop {
-            std::thread::sleep(interval);
-            // log::info!(
-            //     "rate limiting storage size: {}",
-            //     governor_limiter.len()
-            // );
-            governor_limiter.retain_recent();
-        }
-    });
-
-    GovernorLayer::new(governor_conf)
+async fn preload_current_user(
+    req: Request,
+    next: Next,
+) -> axum::response::Response {
+    let (mut parts, body) = req.into_parts();
+    extract::preload_current_user(&mut parts).await;
+    next.run(Request::from_parts(parts, body)).await
 }
