@@ -1,5 +1,9 @@
-#[rustfmt::skip]
-pub mod r#gen;
+pub mod r#gen {
+    #[allow(unused_imports)]
+    use super::*;
+
+    include!(concat!(env!("OUT_DIR"), "/constant_gen.rs"));
+}
 
 pub const PUBLIC_DIR: &str = "public";
 pub const IMAGE_DIR: &str = "image";

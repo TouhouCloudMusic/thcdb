@@ -8,9 +8,6 @@ config.dev.ron
 public
 target
 
-# Generated files
-src/constant/gen.rs
-
 # Rustc ICE log
 rustc*
 logs.txt
