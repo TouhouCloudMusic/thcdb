@@ -17,3 +17,7 @@ username = "resend"
 [middleware.limit]
 burst_size  = 8
 req_per_sec = 5
+
+[middleware.limit.pre_auth]
+burst_size  = 32
+req_per_sec = 20
