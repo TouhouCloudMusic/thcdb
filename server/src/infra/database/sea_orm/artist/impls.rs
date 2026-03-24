@@ -388,7 +388,7 @@ async fn create_artist_artist_membership(
 
         let role_models = new_artist_memberships
             .iter()
-            .zip(todo_roles.into_iter())
+            .zip(todo_roles)
             .flat_map(|(artist_membership, roles)| {
                 roles.into_iter().map(|mut active_model| {
                     active_model.membership_id = Set(artist_membership.id);
@@ -398,7 +398,7 @@ async fn create_artist_artist_membership(
 
         let join_leave_models = new_artist_memberships
             .iter()
-            .zip(todo_tenures.into_iter())
+            .zip(todo_tenures)
             .flat_map(|(artist_membership, join_leaves)| {
                 join_leaves.into_iter().map(|mut active_model| {
                     active_model.membership_id = Set(artist_membership.id);
@@ -472,7 +472,7 @@ async fn create_artist_artist_membership_history(
 
         let role_models = new_artist_memberships
             .iter()
-            .zip(todo_roles.into_iter())
+            .zip(todo_roles)
             .flat_map(|(artist_membership_history, roles)| {
                 roles.into_iter().map(|mut active_model| {
                     active_model.membership_history_id =
@@ -483,7 +483,7 @@ async fn create_artist_artist_membership_history(
 
         let join_leave_models = new_artist_memberships
             .iter()
-            .zip(todo_join_leaves.into_iter())
+            .zip(todo_join_leaves)
             .flat_map(|(history, join_leaves)| {
                 join_leaves.into_iter().map(|mut active_model| {
                     active_model.membership_history_id = Set(history.id);
