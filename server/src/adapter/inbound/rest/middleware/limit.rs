@@ -14,6 +14,42 @@ use crate::adapter::inbound::rest::{CurrentUser, state};
 use crate::domain::model::UserRoleEnum;
 
 #[bon::builder]
+pub(crate) fn pre_auth_limit_layer(
+    req_per_sec: u64,
+    burst_size: u32,
+) -> GovernorLayer<
+    PreAuthRateLimitKeyExtractor,
+    NoOpMiddleware<QuantaInstant>,
+    Body,
+> {
+    use std::time::Duration;
+
+    use tower_governor::governor::GovernorConfigBuilder;
+
+    let config = GovernorConfigBuilder::default()
+        .per_nanosecond(max(1_000_000_000 / req_per_sec, 1))
+        .burst_size(burst_size)
+        .key_extractor(PreAuthRateLimitKeyExtractor)
+        .finish()
+        .unwrap();
+
+    let governor_conf = Arc::new(config);
+
+    let governor_limiter = governor_conf.limiter().clone();
+
+    let interval = Duration::from_mins(1);
+
+    std::thread::spawn(move || {
+        loop {
+            std::thread::sleep(interval);
+            governor_limiter.retain_recent();
+        }
+    });
+
+    GovernorLayer::new(governor_conf)
+}
+
+#[bon::builder]
 pub(crate) fn limit_layer(
     req_per_sec: u64,
     burst_size: u32,
@@ -62,6 +98,24 @@ impl RateLimitKey {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) struct RateLimitKeyExtractor;
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) struct PreAuthRateLimitKeyExtractor;
+
+impl KeyExtractor for PreAuthRateLimitKeyExtractor {
+    type Key = RateLimitKey;
+
+    fn extract<T>(
+        &self,
+        req: &http::Request<T>,
+    ) -> Result<Self::Key, GovernorError> {
+        if is_loopback_request(req) {
+            return Ok(RateLimitKey::bypass());
+        }
+
+        PeerIpKeyExtractor.extract(req).map(RateLimitKey::Client)
+    }
+}
+
 impl KeyExtractor for RateLimitKeyExtractor {
     type Key = RateLimitKey;
 
@@ -77,26 +131,30 @@ impl KeyExtractor for RateLimitKeyExtractor {
     }
 }
 
+fn peer_ip<T>(req: &http::Request<T>) -> Option<IpAddr> {
+    req.extensions()
+        .get::<axum::extract::ConnectInfo<SocketAddr>>()
+        .map(|addr| addr.ip())
+}
+
+fn is_loopback_request<T>(req: &http::Request<T>) -> bool {
+    peer_ip(req).is_some_and(|ip| ip.is_loopback())
+}
+
+fn has_admin_user<T>(req: &http::Request<T>) -> bool {
+    req.extensions()
+        .get::<CurrentUser>()
+        .map(|CurrentUser(user)| user)
+        .or_else(|| {
+            req.extensions()
+                .get::<state::AuthSession>()
+                .and_then(|session| session.user.as_ref())
+        })
+        .is_some_and(|user| user.has_roles(&[UserRoleEnum::Admin]))
+}
+
 fn should_bypass_limit<T>(req: &http::Request<T>) -> bool {
-    fn peer_ip<T>(req: &http::Request<T>) -> Option<IpAddr> {
-        req.extensions()
-            .get::<axum::extract::ConnectInfo<SocketAddr>>()
-            .map(|addr| addr.ip())
-    }
-
-    fn has_admin_user<T>(req: &http::Request<T>) -> bool {
-        req.extensions()
-            .get::<CurrentUser>()
-            .map(|CurrentUser(user)| user)
-            .or_else(|| {
-                req.extensions()
-                    .get::<state::AuthSession>()
-                    .and_then(|session| session.user.as_ref())
-            })
-            .is_some_and(|user| user.has_roles(&[UserRoleEnum::Admin]))
-    }
-
-    peer_ip(req).is_some_and(|ip| ip.is_loopback()) || has_admin_user(req)
+    is_loopback_request(req) || has_admin_user(req)
 }
 
 #[cfg(test)]
@@ -183,5 +241,30 @@ mod tests {
         );
 
         assert!(!should_bypass_limit(&req));
+    }
+
+    #[test]
+    fn pre_auth_limiter_only_bypasses_loopback_requests() {
+        let loopback_req = request(
+            "/api/health",
+            Some(SocketAddr::from(([127, 0, 0, 1], 12345))),
+            Some(current_user(UserRoleEnum::Admin)),
+        );
+        let remote_admin_req = request(
+            "/api/health",
+            Some(SocketAddr::from(([192, 168, 1, 10], 12345))),
+            Some(current_user(UserRoleEnum::Admin)),
+        );
+
+        assert!(matches!(
+            PreAuthRateLimitKeyExtractor.extract(&loopback_req),
+            Ok(RateLimitKey::Bypass(_))
+        ));
+        assert_eq!(
+            PreAuthRateLimitKeyExtractor
+                .extract(&remote_admin_req)
+                .unwrap(),
+            RateLimitKey::Client(IpAddr::from([192, 168, 1, 10]))
+        );
     }
 }
