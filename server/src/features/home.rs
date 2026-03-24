@@ -13,6 +13,7 @@ use crate::infra::error::Error;
 use crate::shared::http::api_response::Data;
 
 #[derive(Serialize, ToSchema)]
+#[expect(clippy::struct_field_names)]
 pub struct HomeMetadata {
     pub artists_count: u64,
     pub releases_count: u64,

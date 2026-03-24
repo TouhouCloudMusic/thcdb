@@ -70,8 +70,4 @@ impl InvalidInput {
         let message = message.to_string();
         Self { message }
     }
-
-    pub fn as_status_code(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
 }

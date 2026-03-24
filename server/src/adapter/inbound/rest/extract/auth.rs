@@ -13,6 +13,7 @@ use crate::domain::user::User;
 #[derive(Clone)]
 pub struct CurrentUser(pub User);
 
+#[expect(clippy::result_large_err)]
 fn ensure_email_verified(user: User) -> Result<User, axum::response::Response> {
     if user.email_verified {
         Ok(user)
@@ -21,6 +22,7 @@ fn ensure_email_verified(user: User) -> Result<User, axum::response::Response> {
     }
 }
 
+#[expect(clippy::result_large_err)]
 fn cache_current_user(
     parts: &mut Parts,
     user: User,
@@ -31,6 +33,7 @@ fn cache_current_user(
     Ok(user)
 }
 
+#[expect(clippy::result_large_err)]
 fn auth_session(
     parts: &Parts,
 ) -> Result<state::AuthSession, axum::response::Response> {
