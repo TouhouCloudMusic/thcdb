@@ -38,26 +38,28 @@ function Aliases() {
 	const context = assertContext(ArtistContext)
 	const aliases = createMemo(() => getInfoAliases(context.artist))
 	return (
-		<div>
-			<InfoLabel>Aliases</InfoLabel>
-			<ul class="flex flex-row gap-1">
-				<For each={aliases()}>
-					{(alias, index) => (
-						<>
-							<li>
-								<Show
-									when={alias.id}
-									fallback={alias.name}
-								>
-									{alias.id}
-								</Show>
-								<Show when={aliases().length - 1 > index()}>{", "}</Show>
-							</li>
-						</>
-					)}
-				</For>
-			</ul>
-		</div>
+		<Show when={aliases().length > 0}>
+			<div>
+				<InfoLabel>Aliases</InfoLabel>
+				<ul class="flex flex-row gap-1">
+					<For each={aliases()}>
+						{(alias, index) => (
+							<>
+								<li>
+									<Show
+										when={alias.id}
+										fallback={alias.name}
+									>
+										{alias.id}
+									</Show>
+									<Show when={aliases().length - 1 > index()}>{", "}</Show>
+								</li>
+							</>
+						)}
+					</For>
+				</ul>
+			</div>
+		</Show>
 	)
 }
 
