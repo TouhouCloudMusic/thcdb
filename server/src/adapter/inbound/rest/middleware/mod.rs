@@ -5,16 +5,17 @@ use axum::middleware::{Next, from_fn};
 use axum::response::IntoResponse;
 use axum::routing::Route;
 use axum::{Router, http};
-use axum_login::AuthManagerLayerBuilder;
 use axum_login::tower_sessions::cookie::time::Duration;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
+use axum_login::{AuthManagerLayer, AuthManagerLayerBuilder};
 use fastrace_axum::FastraceLayer;
-use tower::{Layer, Service};
+use tower::{Layer, Service, ServiceBuilder};
 use tower_http::cors::{Any, CorsLayer};
 use tower_sessions_redis_store::RedisStore;
 
 use super::extract;
 use super::state::{self, ArcAppState};
+use crate::features;
 use crate::infra::singleton::APP_CONFIG;
 
 mod limit;
@@ -42,15 +43,20 @@ where
         .burst_size(conf.burst_size)
         .call();
 
-    router
-        .layer(auth_layer(state))
-        .layer(from_fn(preload_current_user))
-        .layer(limit_layer)
-        .layer(cors_layer())
-        .layer(FastraceLayer::default())
+    router.layer(
+        ServiceBuilder::new()
+            .layer(FastraceLayer::default())
+            .layer(cors_layer())
+            .layer(auth_layer(state))
+            .layer(from_fn(preload_current_user))
+            .layer(limit_layer),
+    )
 }
 
-fn auth_layer(state: &ArcAppState) -> impl AxumLayerBounds {
+fn auth_layer(
+    state: &ArcAppState,
+) -> AuthManagerLayer<features::auth::Service, RedisStore<fred::clients::Pool>>
+{
     let pool = state.redis_pool();
     let session_store = RedisStore::new(pool);
 
