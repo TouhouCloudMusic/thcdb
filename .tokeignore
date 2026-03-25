@@ -1,6 +1,1 @@
-server/crates/entity/src/entities
-server/openapi.json
-web/src/routeTree.gen.ts
-web/packages/api/src/gen.ts
-web/src/orval
-web/tmp/openapi.json
+tools/thbwiki-import/seed.static.json

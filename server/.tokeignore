@@ -1,2 +1,3 @@
 crates/entity/src/entities
+Cargo.lock
 openapi.json
