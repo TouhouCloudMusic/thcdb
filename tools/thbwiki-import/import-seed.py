@@ -10,12 +10,14 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import base64
 import json
 import os
 import sys
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Awaitable, Callable, Literal
 from urllib.parse import urlsplit, urlunsplit
 
 import httpx
@@ -25,7 +27,11 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_SEED = SCRIPT_DIR / "seed.static.json"
 DEFAULT_ENV = (SCRIPT_DIR / "../../.env").resolve()
 DEFAULT_API_BASE = "http://localhost:12345"
+DEFAULT_CONCURRENCY = 5
+DEFAULT_REQ_PER_SEC = 5
 REQUEST_TIMEOUT_SECONDS = 30.0
+RETRY_DELAYS_SECONDS = (0.5, 1.0, 2.0)
+RETRYABLE_STATUS_CODES = {429, 502, 503, 504}
 VALID_RELEASE_TYPES = {
     "Album",
     "Ep",
@@ -35,9 +41,49 @@ VALID_RELEASE_TYPES = {
     "Other",
 }
 
+ImportStatus = Literal["created", "skipped", "failed"]
+
+
+@dataclass(slots=True)
+class ImportTaskResult:
+    status: ImportStatus
+    item_key: str | int | None
+    entity_id: int | None = None
+    stdout_text: str | None = None
+    stderr_text: str | None = None
+
+
+class AsyncRateLimiter:
+    def __init__(self, req_per_sec: float) -> None:
+        self._interval = 1.0 / req_per_sec
+        self._next_ready = 0.0
+        self._lock = asyncio.Lock()
+
+    async def acquire(self) -> None:
+        async with self._lock:
+            now = asyncio.get_running_loop().time()
+            if now < self._next_ready:
+                await asyncio.sleep(self._next_ready - now)
+                now = self._next_ready
+            self._next_ready = max(now, self._next_ready) + self._interval
+
 
 def is_int(value: Any) -> bool:
     return type(value) is int
+
+
+def positive_int(value: str) -> int:
+    parsed = int(value, 10)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return parsed
+
+
+def positive_float(value: str) -> float:
+    parsed = float(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("must be a positive number")
+    return parsed
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -72,6 +118,18 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--admin-pass",
         default=None,
         help="Admin password (overrides .env)",
+    )
+    parser.add_argument(
+        "--concurrency",
+        type=positive_int,
+        default=DEFAULT_CONCURRENCY,
+        help=f"Max in-flight items per stage (default: {DEFAULT_CONCURRENCY})",
+    )
+    parser.add_argument(
+        "--req-per-sec",
+        type=positive_float,
+        default=DEFAULT_REQ_PER_SEC,
+        help=f"Client-side request start rate limit (default: {DEFAULT_REQ_PER_SEC:g})",
     )
     args = parser.parse_args(argv)
     args.run_mode = args.mode == "run"
@@ -406,46 +464,96 @@ def unwrap_api_data(payload: Any) -> Any:
     return payload
 
 
-def get_json(
-    client: httpx.Client,
-    base_url: str,
+def log_info(message: str) -> None:
+    print(f"[info] {message}", file=sys.stderr)
+
+
+async def request_json(
+    client: httpx.AsyncClient,
+    limiter: AsyncRateLimiter,
+    method: str,
+    endpoint: str,
+    params: dict[str, Any] | None = None,
+    payload: dict[str, Any] | None = None,
+    auth_header: str = "",
+) -> Any:
+    headers: dict[str, str] = {}
+    if auth_header:
+        headers["Authorization"] = auth_header
+    if payload is not None:
+        headers["Content-Type"] = "application/json"
+
+    retry_on_request_error = method == "GET"
+    retryable_status_codes = {429}
+    if method == "GET":
+        retryable_status_codes = RETRYABLE_STATUS_CODES
+
+    max_attempts = len(RETRY_DELAYS_SECONDS) + 1
+    for attempt in range(max_attempts):
+        await limiter.acquire()
+        try:
+            response = await client.request(
+                method,
+                endpoint,
+                params=params,
+                headers=headers or None,
+                json=payload,
+            )
+        except httpx.RequestError as err:
+            if retry_on_request_error and attempt < len(RETRY_DELAYS_SECONDS):
+                delay = RETRY_DELAYS_SECONDS[attempt]
+                log_info(
+                    f"[retry] method={method} endpoint={endpoint} reason={type(err).__name__} attempt={attempt + 1} delay={delay}s"
+                )
+                await asyncio.sleep(delay)
+                continue
+            raise RuntimeError(f"{type(err).__name__} at {endpoint}: {err}") from err
+
+        text = response.text
+        parsed = try_parse_json(text) if text else None
+        if response.is_error:
+            if response.status_code in retryable_status_codes and attempt < len(
+                RETRY_DELAYS_SECONDS
+            ):
+                delay = RETRY_DELAYS_SECONDS[attempt]
+                log_info(
+                    f"[retry] method={method} endpoint={endpoint} status={response.status_code} attempt={attempt + 1} delay={delay}s"
+                )
+                await asyncio.sleep(delay)
+                continue
+            message = json.dumps(parsed, ensure_ascii=False) if parsed is not None else text
+            raise RuntimeError(
+                f"HTTP {response.status_code} {response.reason_phrase} at {endpoint}: {message}"
+            )
+        return unwrap_api_data(parsed)
+
+    raise RuntimeError(f"request exhausted retries at {endpoint}")
+
+
+async def get_json(
+    client: httpx.AsyncClient,
+    limiter: AsyncRateLimiter,
     endpoint: str,
     params: dict[str, Any] | None = None,
 ) -> Any:
-    response = client.get(f"{base_url}{endpoint}", params=params)
-    text = response.text
-    parsed = try_parse_json(text) if text else None
-    if response.is_error:
-        message = json.dumps(parsed, ensure_ascii=False) if parsed is not None else text
-        raise RuntimeError(
-            f"HTTP {response.status_code} {response.reason_phrase} at {endpoint}: {message}"
-        )
-    return unwrap_api_data(parsed)
+    return await request_json(client, limiter, "GET", endpoint, params=params)
 
 
-def post_json(
-    client: httpx.Client,
-    base_url: str,
+async def post_json(
+    client: httpx.AsyncClient,
+    limiter: AsyncRateLimiter,
     endpoint: str,
     payload: dict[str, Any],
     auth_header: str,
 ) -> Any:
-    response = client.post(
-        f"{base_url}{endpoint}",
-        headers={
-            "Authorization": auth_header,
-            "Content-Type": "application/json",
-        },
-        json=payload,
+    return await request_json(
+        client,
+        limiter,
+        "POST",
+        endpoint,
+        payload=payload,
+        auth_header=auth_header,
     )
-    text = response.text
-    parsed = try_parse_json(text) if text else None
-    if response.is_error:
-        message = json.dumps(parsed, ensure_ascii=False) if parsed is not None else text
-        raise RuntimeError(
-            f"HTTP {response.status_code} {response.reason_phrase} at {endpoint}: {message}"
-        )
-    return unwrap_api_data(parsed)
 
 
 def normalize_lookup_text(value: str) -> str:
@@ -502,10 +610,12 @@ def build_song_expected_release_keys(
     return expected
 
 
-def find_existing_artist_id(
-    client: httpx.Client, base_url: str, artist_name: str
+async def find_existing_artist_id(
+    client: httpx.AsyncClient,
+    limiter: AsyncRateLimiter,
+    artist_name: str,
 ) -> int | None:
-    response_data = get_json(client, base_url, "/artist", params={"keyword": artist_name})
+    response_data = await get_json(client, limiter, "/artist", params={"keyword": artist_name})
     if not isinstance(response_data, list):
         return None
 
@@ -528,13 +638,13 @@ def find_existing_artist_id(
     return None
 
 
-def find_existing_song_id(
-    client: httpx.Client,
-    base_url: str,
+async def find_existing_song_id(
+    client: httpx.AsyncClient,
+    limiter: AsyncRateLimiter,
     song_title: str,
     expected_release_keys: set[tuple[str, str | None]],
 ) -> int | None:
-    response_data = get_json(client, base_url, "/song", params={"keyword": song_title})
+    response_data = await get_json(client, limiter, "/song", params={"keyword": song_title})
     if not isinstance(response_data, list):
         return None
 
@@ -661,9 +771,7 @@ def release_expected_title_signature(
             raise RuntimeError("release has invalid track.thb_song_id")
         song_title = song_title_by_thb_song_id.get(thb_song_id)
         if not isinstance(song_title, str):
-            raise RuntimeError(
-                f"missing song title for thb_song_id={thb_song_id}"
-            )
+            raise RuntimeError(f"missing song title for thb_song_id={thb_song_id}")
 
         disc_no = track.get("disc_no")
         if not is_int(disc_no) or disc_no <= 0:
@@ -781,16 +889,16 @@ def release_existing_title_signature(
     return tuple(sorted(artist_ids)), tuple(sorted(tracks_signature))
 
 
-def find_existing_release_id(
-    client: httpx.Client,
-    base_url: str,
+async def find_existing_release_id(
+    client: httpx.AsyncClient,
+    limiter: AsyncRateLimiter,
     release: dict[str, Any],
     song_id_by_thb_song_id: dict[int, int],
     song_title_by_thb_song_id: dict[int, str],
     artist_id_by_name: dict[str, int],
 ) -> int | None:
     title = release["title"]
-    response_data = get_json(client, base_url, "/release", params={"keyword": title})
+    response_data = await get_json(client, limiter, "/release", params={"keyword": title})
     if not isinstance(response_data, list):
         return None
 
@@ -846,7 +954,273 @@ def extract_entity_id(response_body: Any) -> int | None:
     return None
 
 
-def main(argv: list[str]) -> int:
+def serialize_plan(method: str, url: str, body: dict[str, Any]) -> str:
+    return json.dumps(
+        {
+            "method": method,
+            "url": url,
+            "body": body,
+        },
+        ensure_ascii=False,
+    )
+
+
+async def process_artist(
+    artist: dict[str, Any],
+    client: httpx.AsyncClient,
+    limiter: AsyncRateLimiter,
+    api_base: str,
+    dry_run: bool,
+    auth_header: str,
+) -> ImportTaskResult:
+    name = artist["name"].strip()
+    try:
+        existing_id = await find_existing_artist_id(client, limiter, name)
+        if is_int(existing_id):
+            return ImportTaskResult(
+                status="skipped",
+                item_key=name,
+                entity_id=existing_id,
+                stderr_text=f"[info] [artist][skip] circle={name} artist_id={existing_id}",
+            )
+
+        if dry_run:
+            return ImportTaskResult(
+                status="created",
+                item_key=name,
+                stdout_text=serialize_plan(
+                    "POST", f"{api_base}/artist", build_artist_payload(name)
+                ),
+                stderr_text=f"[info] [artist][plan] circle={name}",
+            )
+
+        response_body = await post_json(
+            client, limiter, "/artist", build_artist_payload(name), auth_header
+        )
+        entity_id = extract_entity_id(response_body)
+        if not is_int(entity_id):
+            raise RuntimeError(
+                f"cannot extract entity_id from /artist response for circle={name}"
+            )
+        return ImportTaskResult(
+            status="created",
+            item_key=name,
+            entity_id=entity_id,
+            stderr_text=f"[info] [artist][created] circle={name} artist_id={entity_id}",
+        )
+    except Exception as err:
+        return ImportTaskResult(
+            status="failed",
+            item_key=name,
+            stderr_text=f"[artist][failed] circle={name} error={err}",
+        )
+
+
+async def process_song(
+    song: dict[str, Any],
+    client: httpx.AsyncClient,
+    limiter: AsyncRateLimiter,
+    api_base: str,
+    dry_run: bool,
+    auth_header: str,
+    expected_release_keys: set[tuple[str, str | None]],
+) -> ImportTaskResult:
+    thb_song_id = song["thb_song_id"]
+    title = song["title"]
+    try:
+        existing_id = await find_existing_song_id(
+            client, limiter, title, expected_release_keys
+        )
+        if is_int(existing_id):
+            return ImportTaskResult(
+                status="skipped",
+                item_key=thb_song_id,
+                entity_id=existing_id,
+                stderr_text=(
+                    f"[info] [song][skip] thb_song_id={thb_song_id} "
+                    f"title={title} song_id={existing_id}"
+                ),
+            )
+
+        if dry_run:
+            return ImportTaskResult(
+                status="created",
+                item_key=thb_song_id,
+                stdout_text=serialize_plan(
+                    "POST", f"{api_base}/song", build_song_payload(song)
+                ),
+                stderr_text=(
+                    f"[info] [song][plan] thb_song_id={thb_song_id} title={title}"
+                ),
+            )
+
+        response_body = await post_json(
+            client, limiter, "/song", build_song_payload(song), auth_header
+        )
+        entity_id = extract_entity_id(response_body)
+        if not is_int(entity_id):
+            raise RuntimeError(
+                "cannot extract entity_id from /song response "
+                f"for thb_song_id={thb_song_id}"
+            )
+        return ImportTaskResult(
+            status="created",
+            item_key=thb_song_id,
+            entity_id=entity_id,
+            stderr_text=(
+                f"[info] [song][created] thb_song_id={thb_song_id} "
+                f"title={title} song_id={entity_id}"
+            ),
+        )
+    except Exception as err:
+        return ImportTaskResult(
+            status="failed",
+            item_key=thb_song_id,
+            stderr_text=(
+                f"[song][failed] thb_song_id={thb_song_id} title={title} error={err}"
+            ),
+        )
+
+
+async def process_release(
+    release: dict[str, Any],
+    client: httpx.AsyncClient,
+    limiter: AsyncRateLimiter,
+    api_base: str,
+    dry_run: bool,
+    auth_header: str,
+    song_id_by_thb_song_id: dict[int, int],
+    song_title_by_thb_song_id: dict[int, str],
+    artist_id_by_name: dict[str, int],
+) -> ImportTaskResult:
+    thb_album_id = release["thb_album_id"]
+    title = release["title"]
+    try:
+        existing_id = await find_existing_release_id(
+            client,
+            limiter,
+            release,
+            song_id_by_thb_song_id,
+            song_title_by_thb_song_id,
+            artist_id_by_name,
+        )
+        if is_int(existing_id):
+            return ImportTaskResult(
+                status="skipped",
+                item_key=thb_album_id,
+                entity_id=existing_id,
+                stderr_text=(
+                    f"[info] [release][skip] thb_album_id={thb_album_id} "
+                    f"title={title} release_id={existing_id}"
+                ),
+            )
+
+        if dry_run:
+            return ImportTaskResult(
+                status="created",
+                item_key=thb_album_id,
+                stdout_text=serialize_plan(
+                    "POST",
+                    f"{api_base}/release",
+                    build_release_payload_plan(
+                        release, song_id_by_thb_song_id, artist_id_by_name
+                    ),
+                ),
+                stderr_text=(
+                    f"[info] [release][plan] thb_album_id={thb_album_id} title={title}"
+                ),
+            )
+
+        response_body = await post_json(
+            client,
+            limiter,
+            "/release",
+            build_release_payload(release, song_id_by_thb_song_id, artist_id_by_name),
+            auth_header,
+        )
+        entity_id = extract_entity_id(response_body)
+        if not is_int(entity_id):
+            raise RuntimeError(
+                "cannot extract entity_id from /release response "
+                f"for thb_album_id={thb_album_id}"
+            )
+        return ImportTaskResult(
+            status="created",
+            item_key=thb_album_id,
+            entity_id=entity_id,
+            stderr_text=(
+                f"[info] [release][created] thb_album_id={thb_album_id} "
+                f"title={title} release_id={entity_id}"
+            ),
+        )
+    except Exception as err:
+        return ImportTaskResult(
+            status="failed",
+            item_key=thb_album_id,
+            stderr_text=(
+                f"[release][failed] thb_album_id={thb_album_id} title={title} error={err}"
+            ),
+        )
+
+
+async def run_stage(
+    items: list[Any],
+    concurrency: int,
+    worker: Callable[[Any], Awaitable[ImportTaskResult]],
+    key_fn: Callable[[Any], Any] | None = None,
+) -> list[ImportTaskResult]:
+    semaphore = asyncio.Semaphore(concurrency)
+    keyed_locks: dict[Any, asyncio.Lock] = {}
+
+    async def run_one(item: Any) -> ImportTaskResult:
+        if key_fn is None:
+            async with semaphore:
+                return await worker(item)
+
+        key = key_fn(item)
+        item_lock = keyed_locks.get(key)
+        if item_lock is None:
+            item_lock = asyncio.Lock()
+            keyed_locks[key] = item_lock
+
+        async with item_lock:
+            async with semaphore:
+                return await worker(item)
+
+    tasks = [asyncio.create_task(run_one(item)) for item in items]
+    results: list[ImportTaskResult] = []
+    try:
+        for task in asyncio.as_completed(tasks):
+            result = await task
+            if result.stderr_text is not None:
+                print(result.stderr_text, file=sys.stderr)
+            if result.stdout_text is not None:
+                print(result.stdout_text)
+            results.append(result)
+    finally:
+        pending_tasks = [task for task in tasks if not task.done()]
+        for task in pending_tasks:
+            task.cancel()
+        if pending_tasks:
+            await asyncio.gather(*pending_tasks, return_exceptions=True)
+    return results
+
+
+def count_results(results: list[ImportTaskResult]) -> tuple[int, int, int]:
+    created = 0
+    skipped = 0
+    failed = 0
+    for result in results:
+        if result.status == "created":
+            created += 1
+        elif result.status == "skipped":
+            skipped += 1
+        else:
+            failed += 1
+    return created, skipped, failed
+
+
+async def async_main(argv: list[str]) -> int:
     options = parse_args(argv)
     seed = read_json(DEFAULT_SEED)
     validate_seed(seed)
@@ -868,148 +1242,81 @@ def main(argv: list[str]) -> int:
         auth_header = (
             f"Basic {base64.b64encode(f'{admin_user}:{admin_pass}'.encode()).decode()}"
         )
+
     artist_id_by_name: dict[str, int] = {}
     song_id_by_thb_song_id: dict[int, int] = {}
     song_expected_release_keys = build_song_expected_release_keys(seed)
 
-    artist_created = 0
-    artist_skipped = 0
-    artist_failed = 0
-    song_created = 0
-    song_skipped = 0
-    song_failed = 0
-    release_created = 0
-    release_skipped = 0
-    release_failed = 0
+    log_info(
+        "start "
+        f"mode={'dry-run' if dry_run else 'run'} "
+        f"api_base={options.api_base} "
+        f"seed={DEFAULT_SEED} "
+        f"concurrency={options.concurrency} "
+        f"req_per_sec={options.req_per_sec:g}"
+    )
 
-    with httpx.Client(timeout=REQUEST_TIMEOUT_SECONDS) as client:
-        for artist in seed["artists"]:
-            name = artist["name"].strip()
-            try:
-                existing_id = find_existing_artist_id(client, options.api_base, name)
-                if is_int(existing_id):
-                    artist_id_by_name[name] = existing_id
-                    artist_skipped += 1
-                    continue
+    limiter = AsyncRateLimiter(options.req_per_sec)
+    limits = httpx.Limits(
+        max_connections=options.concurrency,
+        max_keepalive_connections=options.concurrency,
+    )
 
-                if dry_run:
-                    print(
-                        json.dumps(
-                            {
-                                "method": "POST",
-                                "url": f"{options.api_base}/artist",
-                                "body": build_artist_payload(name),
-                            },
-                            ensure_ascii=False,
-                        )
-                    )
-                    artist_created += 1
-                    continue
+    async with httpx.AsyncClient(
+        base_url=options.api_base,
+        timeout=REQUEST_TIMEOUT_SECONDS,
+        limits=limits,
+    ) as client:
+        artist_results = await run_stage(
+            seed["artists"],
+            options.concurrency,
+            lambda artist: process_artist(
+                artist, client, limiter, options.api_base, dry_run, auth_header
+            ),
+            lambda artist: normalize_lookup_text(artist["name"]),
+        )
+        artist_created, artist_skipped, artist_failed = count_results(artist_results)
+        for result in artist_results:
+            if is_int(result.entity_id) and isinstance(result.item_key, str):
+                artist_id_by_name[result.item_key] = result.entity_id
 
-                payload = build_artist_payload(name)
-                response_body = post_json(client, options.api_base, "/artist", payload, auth_header)
-                entity_id = extract_entity_id(response_body)
-                if not is_int(entity_id):
-                    raise RuntimeError(
-                        f"cannot extract entity_id from /artist response for circle={name}"
-                    )
-                artist_id_by_name[name] = entity_id
-                artist_created += 1
-            except Exception as err:
-                artist_failed += 1
-                print(f"[artist][failed] circle={name} error={err}", file=sys.stderr)
+        song_results = await run_stage(
+            seed["songs"],
+            options.concurrency,
+            lambda song: process_song(
+                song,
+                client,
+                limiter,
+                options.api_base,
+                dry_run,
+                auth_header,
+                song_expected_release_keys.get(song["thb_song_id"], set()),
+            ),
+            lambda song: normalize_lookup_text(song["title"]),
+        )
+        song_created, song_skipped, song_failed = count_results(song_results)
+        for result in song_results:
+            if is_int(result.entity_id) and is_int(result.item_key):
+                song_id_by_thb_song_id[result.item_key] = result.entity_id
 
-        for song in seed["songs"]:
-            try:
-                existing_id = find_existing_song_id(
-                    client,
-                    options.api_base,
-                    song["title"],
-                    song_expected_release_keys.get(song["thb_song_id"], set()),
-                )
-                if is_int(existing_id):
-                    song_id_by_thb_song_id[song["thb_song_id"]] = existing_id
-                    song_skipped += 1
-                    continue
+        release_results = await run_stage(
+            seed["releases"],
+            options.concurrency,
+            lambda release: process_release(
+                release,
+                client,
+                limiter,
+                options.api_base,
+                dry_run,
+                auth_header,
+                song_id_by_thb_song_id,
+                song_title_by_thb_song_id,
+                artist_id_by_name,
+            ),
+            lambda release: normalize_lookup_text(release["title"]),
+        )
+        release_created, release_skipped, release_failed = count_results(release_results)
 
-                if dry_run:
-                    print(
-                        json.dumps(
-                            {
-                                "method": "POST",
-                                "url": f"{options.api_base}/song",
-                                "body": build_song_payload(song),
-                            },
-                            ensure_ascii=False,
-                        )
-                    )
-                    song_created += 1
-                    continue
-
-                payload = build_song_payload(song)
-                response_body = post_json(client, options.api_base, "/song", payload, auth_header)
-                entity_id = extract_entity_id(response_body)
-                if not is_int(entity_id):
-                    raise RuntimeError(
-                        "cannot extract entity_id from /song response "
-                        f"for thb_song_id={song['thb_song_id']}"
-                    )
-                song_id_by_thb_song_id[song["thb_song_id"]] = entity_id
-                song_created += 1
-            except Exception as err:
-                song_failed += 1
-                print(
-                    f"[song][failed] thb_song_id={song['thb_song_id']} title={song['title']} error={err}",
-                    file=sys.stderr,
-                )
-
-        for release in seed["releases"]:
-            try:
-                existing_id = find_existing_release_id(
-                    client,
-                    options.api_base,
-                    release,
-                    song_id_by_thb_song_id,
-                    song_title_by_thb_song_id,
-                    artist_id_by_name,
-                )
-                if is_int(existing_id):
-                    release_skipped += 1
-                    continue
-
-                if dry_run:
-                    print(
-                        json.dumps(
-                            {
-                                "method": "POST",
-                                "url": f"{options.api_base}/release",
-                                "body": build_release_payload_plan(
-                                    release, song_id_by_thb_song_id, artist_id_by_name
-                                ),
-                            },
-                            ensure_ascii=False,
-                        )
-                    )
-                    release_created += 1
-                    continue
-
-                payload = build_release_payload(
-                    release, song_id_by_thb_song_id, artist_id_by_name
-                )
-                response_body = post_json(client, options.api_base, "/release", payload, auth_header)
-                entity_id = extract_entity_id(response_body)
-                if not is_int(entity_id):
-                    raise RuntimeError(
-                        "cannot extract entity_id from /release response "
-                        f"for thb_album_id={release['thb_album_id']}"
-                    )
-                release_created += 1
-            except Exception as err:
-                release_failed += 1
-                print(
-                    f"[release][failed] thb_album_id={release['thb_album_id']} title={release['title']} error={err}",
-                    file=sys.stderr,
-                )
     if dry_run:
         print(
             f"artists create={artist_created} skip={artist_skipped} failed={artist_failed}",
@@ -1037,6 +1344,14 @@ def main(argv: list[str]) -> int:
     if song_failed > 0 or release_failed > 0:
         return 1
     return 0
+
+
+def main(argv: list[str]) -> int:
+    try:
+        return asyncio.run(async_main(argv))
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        log_info("interrupted by user")
+        return 130
 
 
 if __name__ == "__main__":
