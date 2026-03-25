@@ -17,6 +17,7 @@ import {
 import { Dynamic } from "solid-js/web"
 import { twJoin, twMerge } from "tailwind-merge"
 
+import { Link } from "~/component/atomic/Link"
 import { Tab } from "~/component/atomic/Tab"
 import { Button } from "~/component/atomic/button"
 import { RELEASE_TYPES } from "~/domain/release"
@@ -251,7 +252,7 @@ function DiscographyItem(props: { item: Discography }) {
 		return "N/A"
 	}
 	return (
-		<ItemLayout>
+		<ItemLayout releaseId={props.item.release_id}>
 			<ItemTitle>{props.item.title}</ItemTitle>
 			<ItemSubTitle>{subtitle()}</ItemSubTitle>
 		</ItemLayout>
@@ -260,7 +261,7 @@ function DiscographyItem(props: { item: Discography }) {
 
 function CreditItem(props: { item: ArtistCredit }) {
 	return (
-		<ItemLayout>
+		<ItemLayout releaseId={props.item.release_id}>
 			<div class="flex whitespace-pre">
 				<ItemTitle>{props.item.title}</ItemTitle>
 				{" · "}
@@ -297,11 +298,24 @@ function CreditItem(props: { item: ArtistCredit }) {
 	)
 }
 
-function ItemLayout(props: ParentProps) {
-	return (
-		<li class="flex h-16 space-x-4">
+function ItemLayout(props: ParentProps<{ releaseId: number }>) {
+	const content = () => (
+		<>
 			<div class="size-16 rounded bg-secondary"></div>
 			<div class="grid grid-rows-2 items-center">{props.children}</div>
+		</>
+	)
+
+	return (
+		<li>
+			<Link
+				to="/release/$id"
+				params={{ id: props.releaseId.toString() }}
+				underline={false}
+				class="flex h-16 w-full space-x-4 rounded-md -mx-2 px-2 text-inherit hover:bg-slate-50"
+			>
+				{content()}
+			</Link>
 		</li>
 	)
 }

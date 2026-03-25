@@ -40,12 +40,12 @@ import type {
 import { DatePrecision, ReleaseType } from "./touhouCloudDB.schemas"
 import type {
 	DataCorrectionSubmissionResult,
+	DataI32,
 	DataOptionCurrentImageMetadata,
 	DataOptionRelease,
 	DataPageRelease,
 	DataVecRelease,
 	DateWithPrecision,
-	Message,
 	Release,
 	SimpleLabel,
 } from "./touhouCloudDB.schemas"
@@ -899,7 +899,7 @@ export function useGetReleaseCoverArtMetadata<
 }
 
 export type uploadReleaseCoverArtResponse200 = {
-	data: Message
+	data: DataI32
 	status: 200
 }
 
@@ -1671,10 +1671,10 @@ export const getGetReleaseCoverArtMetadataResponseMock = (
 })
 
 export const getUploadReleaseCoverArtResponseMock = (
-	overrideResponse: Partial<Extract<Message, object>> = {},
-): Message => ({
+	overrideResponse: Partial<Extract<DataI32, object>> = {},
+): DataI32 => ({
 	status: faker.helpers.arrayElement(["Ok"] as const),
-	message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+	data: faker.number.int(),
 	...overrideResponse,
 })
 
@@ -1830,10 +1830,10 @@ export const getGetReleaseCoverArtMetadataMockHandler = (
 
 export const getUploadReleaseCoverArtMockHandler = (
 	overrideResponse?:
-		| Message
+		| DataI32
 		| ((
 				info: Parameters<Parameters<typeof http.post>[1]>[0],
-		  ) => Promise<Message> | Message),
+		  ) => Promise<DataI32> | DataI32),
 	options?: RequestHandlerOptions,
 ) => {
 	return http.post(

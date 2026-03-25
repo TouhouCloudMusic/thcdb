@@ -271,6 +271,7 @@ export const ReleaseType = {
 } as const
 
 export type CursorResponseCreditItemsItem = {
+	release_id: number
 	title: string
 	artist: ArtistReleaseArtist[]
 	/** @nullable */
@@ -287,6 +288,7 @@ export interface CursorResponseCredit {
 }
 
 export type CursorResponseDiscographyItemsItem = {
+	release_id: number
 	title: string
 	/** @nullable */
 	cover_url?: string | null
@@ -1292,6 +1294,17 @@ export type DataVecCorrectionRevisionSummaryDataItem = {
 export interface DataVecCorrectionRevisionSummary {
 	status: DataVecCorrectionRevisionSummaryStatus
 	data: DataVecCorrectionRevisionSummaryDataItem[]
+}
+
+export type DataI32Status = (typeof DataI32Status)[keyof typeof DataI32Status]
+
+export const DataI32Status = {
+	Ok: "Ok",
+} as const
+
+export interface DataI32 {
+	status: DataI32Status
+	data: number
 }
 
 export interface DeleteVoteBody {
