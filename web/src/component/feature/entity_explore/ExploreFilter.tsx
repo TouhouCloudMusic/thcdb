@@ -15,6 +15,14 @@ type ExploreFilterProps<T extends string> = {
 }
 
 export function ExploreFilter<T extends string>(props: ExploreFilterProps<T>) {
+	const selectedOption = () => {
+		const option = props.options.find((option) => option.value === props.value)
+		return (
+			option
+			?? props.options.find((option) => option.value === props.defaultValue)
+		)
+	}
+
 	return (
 		<div class="flex items-center gap-2">
 			<span class="text-sm text-tertiary">{props.label}</span>
@@ -22,7 +30,7 @@ export function ExploreFilter<T extends string>(props: ExploreFilterProps<T>) {
 				options={props.options}
 				optionValue="value"
 				optionTextValue="label"
-				value={props.options.find((x) => x.value == props.value)}
+				value={selectedOption()}
 				onChange={(option) => {
 					if (option === null) return
 					props.onChange(option.value)
@@ -35,7 +43,7 @@ export function ExploreFilter<T extends string>(props: ExploreFilterProps<T>) {
 			>
 				<Select.Trigger class={props.triggerClass}>
 					<Select.Value<ExploreFilterOption<T>>>
-						{(state) => state.selectedOption().label}
+						{() => selectedOption()?.label ?? ""}
 					</Select.Value>
 					<Select.Icon />
 				</Select.Trigger>
