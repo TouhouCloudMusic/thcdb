@@ -35,7 +35,7 @@ services:
   server:
     build:
       context: ./server
-    restart: unless-stopped
+    restart: on-failure:3
     init: true
     depends_on:
       db:
