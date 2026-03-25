@@ -35,8 +35,10 @@ services:
   server:
     build:
       context: ./server
+      dockerfile: Dockerfile.dev
     restart: on-failure:3
     init: true
+    working_dir: /app
     depends_on:
       db:
         condition: service_healthy
@@ -53,13 +55,18 @@ services:
     ports:
       - "${SERVER_PORT:-12345}:12345"
     volumes:
+      - ./server:/app
+      - cargo_registry:/usr/local/cargo/registry
+      - cargo_git:/usr/local/cargo/git
+      - server_target:/app/target
       - server_public:/app/public
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:12345/health_check"]
       interval: 5s
       timeout: 3s
       retries: 12
-      start_period: 10s
+      start_period: 120s
+    command: cargo watch -x run
     networks:
       - backend
 
@@ -88,8 +95,11 @@ networks:
   backend:
 
 volumes:
+  cargo_git:
+  cargo_registry:
   pgdata:
   redisdata:
   pnpm-store:
   node_modules:
   server_public:
+  server_target:
