@@ -1,16 +1,28 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
 import { createFileRoute, notFound } from "@tanstack/solid-router"
-import type { ReleaseType, Discography } from "@thc/api"
+import type { Discography, InitDiscography, ReleaseType } from "@thc/api"
+import { ArtistApi } from "@thc/api"
 import { ArtistQueryOption } from "@thc/query"
 import { ObjExt } from "@thc/toolkit/data"
-import { Option as O } from "effect"
-import { createEffect, Show } from "solid-js"
-import { createStore, produce } from "solid-js/store"
+import { Either, Option as O } from "effect"
+import { Show } from "solid-js"
+import { createStore } from "solid-js/store"
 
 import { RELEASE_TYPES } from "~/domain/release"
 import { EntityId_fromStr } from "~/domain/shared"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { ArtistProfilePage } from "~/view/artist/profile"
+
+const DISCOGRAPHY_PAGE_LIMIT = 10
+
+const INIT_DISCOGRAPHY_KEYS = {
+	Album: "album",
+	Compilation: "compilation",
+	Demo: "demo",
+	Ep: "ep",
+	Other: "other",
+	Single: "single",
+} satisfies Record<ReleaseType, keyof InitDiscography>
 
 export const Route = createFileRoute("/artist/$id/")({
 	component: RouteComponent,
@@ -47,36 +59,70 @@ function RouteComponent() {
 		ArtistQueryOption.discographyInit(artistId),
 	)
 
-	const [discographyMap, setDiscographyMap] = createStore(
-		ObjExt.fromEntries(RELEASE_TYPES.map((ty) => [ty, [] as Discography[]])),
+	const [extraDiscographies, setExtraDiscographies] = createStore(
+		ObjExt.fromEntries(
+			RELEASE_TYPES.map((type) => [
+				type,
+				{
+					items: [] as Discography[],
+					isLoading: false,
+					nextCursor: undefined as number | null | undefined,
+				},
+			]),
+		),
 	)
 
-	const discography = ObjExt.fromEntries(
-		RELEASE_TYPES.map((type) => [
-			type,
-			useInfiniteQuery(() =>
-				ObjExt.merge(ArtistQueryOption.discography(artistId, type), {
-					initialPageParam: 0,
-					getNextPageParam: (x) => x.next_cursor,
-				}),
-			),
-		]),
-	)
+	const getInitDiscography = (type: ReleaseType) => {
+		const data = initDiscographies.data
+		if (!data) return
 
-	for (const type of RELEASE_TYPES) {
-		createEffect(() => {
-			const discographyQuery = discography[type]
-			if (discographyQuery.isSuccess) {
-				setDiscographyMap(
-					produce((v) => {
-						const lastPage = discographyQuery.data.pages.at(-1)
-						if (lastPage) {
-							v[type].push(...lastPage.items)
-						}
-					}),
-				)
-			}
-		})
+		return data[INIT_DISCOGRAPHY_KEYS[type]]
+	}
+
+	const getDiscographyItems = (type: ReleaseType) => {
+		const initialItems = getInitDiscography(type)?.items ?? []
+		return initialItems.concat(extraDiscographies[type].items)
+	}
+
+	const getDiscographyNextCursor = (type: ReleaseType) => {
+		const nextCursor = extraDiscographies[type].nextCursor
+		if (nextCursor !== undefined) {
+			return nextCursor
+		}
+
+		return getInitDiscography(type)?.next_cursor
+	}
+
+	const loadMoreDiscographies = async (type: ReleaseType): Promise<void> => {
+		if (extraDiscographies[type].isLoading) return
+
+		const cursor = getDiscographyNextCursor(type)
+		if (cursor == null) return
+
+		setExtraDiscographies(type, "isLoading", true)
+
+		try {
+			const result = await ArtistApi.findDiscographiesByType({
+				path: { id: artistId },
+				query: {
+					cursor,
+					release_type: type,
+					limit: DISCOGRAPHY_PAGE_LIMIT,
+				},
+			})
+
+			const data = Either.match(result, {
+				onRight: (value) => value,
+				onLeft: (error) => {
+					throw error
+				},
+			})
+
+			setExtraDiscographies(type, "items", (items) => items.concat(data.items))
+			setExtraDiscographies(type, "nextCursor", data.next_cursor)
+		} finally {
+			setExtraDiscographies(type, "isLoading", false)
+		}
 	}
 
 	return (
@@ -114,15 +160,15 @@ function RouteComponent() {
 					}}
 					discographies={{
 						get data() {
-							return discographyMap
+							return ObjExt.fromEntries(
+								RELEASE_TYPES.map((type) => [type, getDiscographyItems(type)]),
+							)
 						},
 						hasNext(type: ReleaseType) {
-							return discography[type].hasNextPage
+							return getDiscographyNextCursor(type) != null
 						},
 						async next(type: ReleaseType): Promise<void> {
-							if (discography[type].isFetchingNextPage) return
-
-							await discography[type].fetchNextPage()
+							await loadMoreDiscographies(type)
 						},
 						get isLoading() {
 							return initDiscographies.isLoading

@@ -126,7 +126,8 @@ function Inner() {
 
 function DiscographyTab() {
 	const context = assertContext(ArtistContext)
-	const [selectedType, setSelectedType] = createSignal<ReleaseType>("Album")
+	const [selectedTypeInput, setSelectedTypeInput] =
+		createSignal<ReleaseType>("Album")
 
 	const existingTypes = createMemo(() => {
 		return RELEASE_TYPES.filter(
@@ -134,9 +135,18 @@ function DiscographyTab() {
 		)
 	})
 
+	const selectedType = createMemo<ReleaseType | undefined>(() => {
+		const current = selectedTypeInput()
+		if (existingTypes().includes(current)) {
+			return current
+		}
+
+		return existingTypes()[0]
+	})
+
 	return (
 		<Show
-			when={existingTypes().length}
+			when={selectedType()}
 			fallback={
 				<div class="m-auto flex min-h-16 items-center place-self-center pl-4 whitespace-pre text-secondary">
 					This Artist has no releases yet, you can upload them on{" "}
@@ -149,36 +159,39 @@ function DiscographyTab() {
 				</div>
 			}
 		>
-			<div class="grid grid-cols-[auto_1fr]">
-				<Tab.Root
-					orientation="vertical"
-					onChange={setSelectedType}
-				>
-					<Tab.List class="space-y-2 px-2 pt-6">
-						<For each={existingTypes()}>
-							{(type) => (
-								<Tab.Trigger
-									value={type}
-									class="flex h-10 items-center justify-center rounded-md px-2 text-center font-normal text-secondary outline-2 outline-offset-2 outline-transparent focus-visible:outline-slate-300 data-selected:bg-slate-100"
-								>
-									{type}
-								</Tab.Trigger>
-							)}
-						</For>
-					</Tab.List>
-				</Tab.Root>
+			{(type) => (
+				<div class="grid grid-cols-[auto_1fr]">
+					<Tab.Root
+						orientation="vertical"
+						value={type()}
+						onChange={setSelectedTypeInput}
+					>
+						<Tab.List class="space-y-2 px-2 pt-6">
+							<For each={existingTypes()}>
+								{(releaseType) => (
+									<Tab.Trigger
+										value={releaseType}
+										class="flex h-10 items-center justify-center rounded-md px-2 text-center font-normal text-secondary outline-2 outline-offset-2 outline-transparent focus-visible:outline-slate-300 data-selected:bg-slate-100"
+									>
+										{releaseType}
+									</Tab.Trigger>
+								)}
+							</For>
+						</Tab.List>
+					</Tab.Root>
 
-				<ArtistReleaseList
-					class="p-6"
-					data={context.discographies.data[selectedType()]}
-					hasNext={context.discographies.hasNext(selectedType())}
-					next={() => {
-						void context.discographies.next(selectedType())
-					}}
-				>
-					{(props) => <DiscographyItem {...props} />}
-				</ArtistReleaseList>
-			</div>
+					<ArtistReleaseList
+						class="p-6"
+						data={context.discographies.data[type()]}
+						hasNext={context.discographies.hasNext(type())}
+						next={() => {
+							void context.discographies.next(type())
+						}}
+					>
+						{(props) => <DiscographyItem {...props} />}
+					</ArtistReleaseList>
+				</div>
+			)}
 		</Show>
 	)
 }

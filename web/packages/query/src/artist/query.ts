@@ -1,11 +1,6 @@
-import {
-	infiniteQueryOptions,
-	queryOptions,
-	useQuery,
-} from "@tanstack/solid-query"
+import { infiniteQueryOptions, queryOptions } from "@tanstack/solid-query"
 import type { ArtistCommonFilter, ReleaseType } from "@thc/api"
 import { ArtistApi } from "@thc/api"
-import { StrExt } from "@thc/toolkit/data"
 import { Either, identity } from "effect"
 
 export function findById(id: number, filter?: ArtistCommonFilter) {
@@ -106,12 +101,6 @@ export function discography(id: number, releaseType: ReleaseType) {
 	return infiniteQueryOptions({
 		queryKey: ["artist::discographies", id, releaseType],
 		queryFn: async (context) => {
-			if (context.pageParam === 0) {
-				const query = useQuery(() => discographyInit(id))
-				const res = await query.promise
-				return res[StrExt.toLowerCase(releaseType)]
-			}
-
 			const result = await ArtistApi.findDiscographiesByType({
 				path: { id },
 				query: {
