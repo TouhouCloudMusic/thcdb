@@ -50,6 +50,7 @@ import { ArtistType, DatePrecision, ReleaseType } from "./touhouCloudDB.schemas"
 import type {
 	Artist,
 	DataCorrectionSubmissionResult,
+	DataI32,
 	DataInitDiscography,
 	DataOptionArtist,
 	DataOptionCurrentImageMetadata,
@@ -59,7 +60,6 @@ import type {
 	DataPaginatedDiscography,
 	DataVecArtist,
 	DateWithPrecision,
-	Message,
 } from "./touhouCloudDB.schemas"
 
 export type HTTPStatusCode1xx = 100 | 101 | 102 | 103
@@ -1517,7 +1517,7 @@ export function useGetArtistProfileImageMetadata<
 }
 
 export type uploadArtistProfileImageResponse200 = {
-	data: Message
+	data: DataI32
 	status: 200
 }
 
@@ -2210,6 +2210,7 @@ export const getFindArtistAppearancesResponseMock = (
 			{ length: faker.number.int({ min: 1, max: 10 }) },
 			(_, i) => i + 1,
 		).map(() => ({
+			release_id: faker.number.int(),
 			title: faker.string.alpha({ length: { min: 10, max: 20 } }),
 			cover_url: faker.helpers.arrayElement([
 				faker.helpers.arrayElement([
@@ -2261,6 +2262,7 @@ export const getGetArtistCreditsResponseMock = (
 			{ length: faker.number.int({ min: 1, max: 10 }) },
 			(_, i) => i + 1,
 		).map(() => ({
+			release_id: faker.number.int(),
 			title: faker.string.alpha({ length: { min: 10, max: 20 } }),
 			artist: Array.from(
 				{ length: faker.number.int({ min: 1, max: 10 }) },
@@ -2319,6 +2321,7 @@ export const getFindArtistDiscographiesByTypeResponseMock = (
 			{ length: faker.number.int({ min: 1, max: 10 }) },
 			(_, i) => i + 1,
 		).map(() => ({
+			release_id: faker.number.int(),
 			title: faker.string.alpha({ length: { min: 10, max: 20 } }),
 			cover_url: faker.helpers.arrayElement([
 				faker.helpers.arrayElement([
@@ -2373,6 +2376,7 @@ export const getFindArtistDiscographiesInitResponseMock = (
 				{ length: faker.number.int({ min: 1, max: 10 }) },
 				(_, i) => i + 1,
 			).map(() => ({
+				release_id: faker.number.int(),
 				title: faker.string.alpha({ length: { min: 10, max: 20 } }),
 				cover_url: faker.helpers.arrayElement([
 					faker.helpers.arrayElement([
@@ -2409,6 +2413,7 @@ export const getFindArtistDiscographiesInitResponseMock = (
 				{ length: faker.number.int({ min: 1, max: 10 }) },
 				(_, i) => i + 1,
 			).map(() => ({
+				release_id: faker.number.int(),
 				title: faker.string.alpha({ length: { min: 10, max: 20 } }),
 				cover_url: faker.helpers.arrayElement([
 					faker.helpers.arrayElement([
@@ -2445,6 +2450,7 @@ export const getFindArtistDiscographiesInitResponseMock = (
 				{ length: faker.number.int({ min: 1, max: 10 }) },
 				(_, i) => i + 1,
 			).map(() => ({
+				release_id: faker.number.int(),
 				title: faker.string.alpha({ length: { min: 10, max: 20 } }),
 				cover_url: faker.helpers.arrayElement([
 					faker.helpers.arrayElement([
@@ -2481,6 +2487,7 @@ export const getFindArtistDiscographiesInitResponseMock = (
 				{ length: faker.number.int({ min: 1, max: 10 }) },
 				(_, i) => i + 1,
 			).map(() => ({
+				release_id: faker.number.int(),
 				title: faker.string.alpha({ length: { min: 10, max: 20 } }),
 				cover_url: faker.helpers.arrayElement([
 					faker.helpers.arrayElement([
@@ -2517,6 +2524,7 @@ export const getFindArtistDiscographiesInitResponseMock = (
 				{ length: faker.number.int({ min: 1, max: 10 }) },
 				(_, i) => i + 1,
 			).map(() => ({
+				release_id: faker.number.int(),
 				title: faker.string.alpha({ length: { min: 10, max: 20 } }),
 				cover_url: faker.helpers.arrayElement([
 					faker.helpers.arrayElement([
@@ -2553,6 +2561,7 @@ export const getFindArtistDiscographiesInitResponseMock = (
 				{ length: faker.number.int({ min: 1, max: 10 }) },
 				(_, i) => i + 1,
 			).map(() => ({
+				release_id: faker.number.int(),
 				title: faker.string.alpha({ length: { min: 10, max: 20 } }),
 				cover_url: faker.helpers.arrayElement([
 					faker.helpers.arrayElement([
@@ -2608,10 +2617,10 @@ export const getGetArtistProfileImageMetadataResponseMock = (
 })
 
 export const getUploadArtistProfileImageResponseMock = (
-	overrideResponse: Partial<Extract<Message, object>> = {},
-): Message => ({
+	overrideResponse: Partial<Extract<DataI32, object>> = {},
+): DataI32 => ({
 	status: faker.helpers.arrayElement(["Ok"] as const),
-	message: faker.string.alpha({ length: { min: 10, max: 20 } }),
+	data: faker.number.int(),
 	...overrideResponse,
 })
 
@@ -2863,10 +2872,10 @@ export const getGetArtistProfileImageMetadataMockHandler = (
 
 export const getUploadArtistProfileImageMockHandler = (
 	overrideResponse?:
-		| Message
+		| DataI32
 		| ((
 				info: Parameters<Parameters<typeof http.post>[1]>[0],
-		  ) => Promise<Message> | Message),
+		  ) => Promise<DataI32> | DataI32),
 	options?: RequestHandlerOptions,
 ) => {
 	return http.post(

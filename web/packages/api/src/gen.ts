@@ -1,5 +1,3 @@
-
-
 export type paths = {
     "/{entity_type}/{id}/corrections": {
         parameters: {
@@ -1338,6 +1336,8 @@ export type components = {
                 artist: components["schemas"]["ArtistReleaseArtist"][];
                 cover_url?: string | null;
                 release_date?: null | components["schemas"]["DateWithPrecision"];
+                /** Format: int32 */
+                release_id: number;
                 release_type: components["schemas"]["ReleaseType"];
                 roles: components["schemas"]["CreditRoleRef"][];
                 title: string;
@@ -1350,6 +1350,8 @@ export type components = {
                 artist: components["schemas"]["ArtistReleaseArtist"][];
                 cover_url?: string | null;
                 release_date?: null | components["schemas"]["DateWithPrecision"];
+                /** Format: int32 */
+                release_id: number;
                 release_type: components["schemas"]["ReleaseType"];
                 title: string;
             }[];
@@ -1531,6 +1533,12 @@ export type components = {
             /** @enum {string} */
             status: "Ok";
         };
+        Data_i32: {
+            /** Format: int32 */
+            data: number;
+            /** @enum {string} */
+            status: "Ok";
+        };
         Data_Option_CurrentImageMetadata: {
             data: null | {
                 /** Format: date-time */
@@ -1569,10 +1577,6 @@ export type components = {
             }[];
             /** @enum {string} */
             status: "Ok";
-        };
-        DataForgotPasswordResponse: {
-            data: components["schemas"]["ForgotPasswordResponse"];
-            status: string;
         };
         DataForgotPasswordResponse: {
             data: components["schemas"]["ForgotPasswordResponse"];
@@ -2364,13 +2368,13 @@ export type components = {
             password: string;
         };
         SearchResponse: {
-        artists: components["schemas"]["CursorResponse_SimpleArtist"];
-        events: components["schemas"]["CursorResponse_SimpleEvent"];
-        labels: components["schemas"]["CursorResponse_SimpleLabel"];
-        releases: components["schemas"]["CursorResponse_SimpleRelease"];
-        songs: components["schemas"]["CursorResponse_SongRef"];
-        tags: components["schemas"]["CursorResponse_TagRef"];
-    };
+            artists: components["schemas"]["CursorResponse_SimpleArtist"];
+            events: components["schemas"]["CursorResponse_SimpleEvent"];
+            labels: components["schemas"]["CursorResponse_SimpleLabel"];
+            releases: components["schemas"]["CursorResponse_SimpleRelease"];
+            songs: components["schemas"]["CursorResponse_SongRef"];
+            tags: components["schemas"]["CursorResponse_TagRef"];
+        };
         SetUserRolesRequest: {
             roles: string[];
         };
@@ -2570,6 +2574,7 @@ export type CursorResponseUserSummary = components['schemas']['CursorResponse_Us
 export type DataCorrection = components['schemas']['Data_Correction'];
 export type DataCorrectionDiff = components['schemas']['Data_CorrectionDiff'];
 export type DataCorrectionSubmissionResult = components['schemas']['Data_CorrectionSubmissionResult'];
+export type DataI32 = components['schemas']['Data_i32'];
 export type DataOptionCurrentImageMetadata = components['schemas']['Data_Option_CurrentImageMetadata'];
 export type DataOptionI32 = components['schemas']['Data_Option_i32'];
 export type DataVecCorrectionHistoryItem = components['schemas']['Data_Vec_CorrectionHistoryItem'];
@@ -3482,7 +3487,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Message"];
+                    "application/json": components["schemas"]["Data_i32"];
                 };
             };
             /** @description Too Many Requests */
@@ -5447,7 +5452,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Message"];
+                    "application/json": components["schemas"]["Data_i32"];
                 };
             };
             /** @description Too Many Requests */

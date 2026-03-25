@@ -9,6 +9,7 @@ pub type Appearance = Discography;
 
 #[derive(Serialize, ToSchema)]
 pub struct Credit {
+    pub release_id: i32,
     pub title: String,
     pub artist: Vec<ArtistReleaseArtist>,
     pub cover_url: Option<String>,
@@ -19,6 +20,7 @@ pub struct Credit {
 
 #[derive(Serialize, ToSchema)]
 pub struct Discography {
+    pub release_id: i32,
     pub title: String,
     pub cover_url: Option<String>,
     pub artist: Vec<ArtistReleaseArtist>,
