@@ -1,7 +1,6 @@
 use std::convert::Infallible;
 
 use axum::extract::{FromRef, Request};
-use axum::middleware::{Next, from_fn};
 use axum::response::IntoResponse;
 use axum::routing::Route;
 use axum::{Router, http};
@@ -13,14 +12,13 @@ use tower::{Layer, Service, ServiceBuilder};
 use tower_http::cors::{Any, CorsLayer};
 use tower_sessions_redis_store::RedisStore;
 
-use super::extract;
 use super::state::{self, ArcAppState};
 use crate::features;
 use crate::infra::singleton::APP_CONFIG;
 
 mod limit;
 
-pub(crate) use limit::{limit_layer, pre_auth_limit_layer};
+pub(crate) use limit::limit_layer;
 
 pub trait AxumLayerBounds = where
     Self: Layer<Route> + Clone + Send + Sync + 'static + Sized,
@@ -42,18 +40,12 @@ where
         .req_per_sec(conf.req_per_sec)
         .burst_size(conf.burst_size)
         .call();
-    let pre_auth_limit_layer = pre_auth_limit_layer()
-        .req_per_sec(conf.pre_auth.req_per_sec)
-        .burst_size(conf.pre_auth.burst_size)
-        .call();
 
     router.layer(
         ServiceBuilder::new()
             .layer(FastraceLayer::default())
             .layer(cors_layer())
-            .layer(pre_auth_limit_layer)
             .layer(auth_layer(state))
-            .layer(from_fn(preload_current_user))
             .layer(limit_layer),
     )
 }
@@ -92,13 +84,4 @@ fn cors_layer() -> CorsLayer {
         .allow_origin(origins)
         .allow_methods(methods)
         .allow_headers(Any)
-}
-
-async fn preload_current_user(
-    req: Request,
-    next: Next,
-) -> axum::response::Response {
-    let (mut parts, body) = req.into_parts();
-    extract::preload_current_user(&mut parts).await;
-    next.run(Request::from_parts(parts, body)).await
 }
