@@ -1,0 +1,7 @@
+ARG RUST_BUILDER_IMAGE=thcdb/rust-builder:nightly-bookworm
+
+FROM ${RUST_BUILDER_IMAGE}
+
+WORKDIR /app
+
+CMD ["cargo", "watch", "-x", "run"]
