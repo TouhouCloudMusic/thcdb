@@ -2,6 +2,7 @@ import type { ReleaseArtist, ReleaseTrack } from "@thc/api"
 import { For, Show } from "solid-js"
 
 import { Divider } from "~/component/atomic/Divider"
+import { Link } from "~/component/atomic/Link"
 import { Intersperse } from "~/component/data/Intersperse"
 import { Duration } from "~/domain/shared"
 import { assertContext } from "~/utils/solid/assertContext"
@@ -15,7 +16,12 @@ function TrackItem(props: { track: ReleaseTrack }) {
 				{props.track.track_number}
 			</span>
 			<div>
-				<div>{props.track.display_title ?? props.track.song.title}</div>
+				<Link
+					to="/song/$id"
+					params={{ id: props.track.song.id.toString() }}
+				>
+					{props.track.display_title ?? props.track.song.title}
+				</Link>
 				<Show when={props.track.artists && props.track.artists.length > 0}>
 					<span class="whitespace-pre"> - </span>
 					<div class="text-gray-600 text-sm">
