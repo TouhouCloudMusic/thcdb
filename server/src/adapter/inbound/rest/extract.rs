@@ -5,7 +5,6 @@ use axum::http::request::Parts;
 use axum::response::IntoResponse;
 
 mod auth;
-pub(crate) use auth::preload_current_user;
 pub use auth::*;
 mod json;
 

@@ -39,29 +39,12 @@ nest! {
             pub limit: pub struct LimitMiddleware {
                 pub req_per_sec: u64,
                 pub burst_size: u32,
-                #[serde(default)]
-                pub pre_auth: pub struct PreAuthLimitMiddleware {
-                    #[serde(default = "default_pre_auth_req_per_sec")]
-                    pub req_per_sec: u64,
-                    #[serde(default = "default_pre_auth_burst_size")]
-                    pub burst_size: u32,
-                }
             }
         }
     }
 }
 
 impl Copy for LimitMiddleware {}
-impl Copy for PreAuthLimitMiddleware {}
-
-impl Default for PreAuthLimitMiddleware {
-    fn default() -> Self {
-        Self {
-            req_per_sec: default_pre_auth_req_per_sec(),
-            burst_size: default_pre_auth_burst_size(),
-        }
-    }
-}
 
 const fn default_notification_retention_days() -> i64 {
     90
@@ -77,14 +60,6 @@ const fn default_email_security() -> EmailSecurity {
 
 const fn default_session_secure() -> bool {
     true
-}
-
-const fn default_pre_auth_req_per_sec() -> u64 {
-    20
-}
-
-const fn default_pre_auth_burst_size() -> u32 {
-    32
 }
 
 impl Config {
