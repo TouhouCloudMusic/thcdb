@@ -1,18 +1,15 @@
 import type { Release } from "@thc/api"
-import { Show, Suspense } from "solid-js"
+import { Suspense } from "solid-js"
 
-import { Tab } from "~/component/atomic"
 import { Link } from "~/component/atomic/Link"
 import { ButtonClass_new } from "~/component/atomic/button"
 import { PageLayout } from "~/layout/PageLayout"
-import { assertContext } from "~/utils/solid/assertContext"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
+import { ReleaseInfoTabs } from "./ReleaseInfoTabs"
 import { ReleaseInfoCoverImage } from "./comp/ReleaseInfoCoverImage"
-import { ReleaseInfoCredits } from "./comp/ReleaseInfoCredits"
 import { ReleaseInfoDetails } from "./comp/ReleaseInfoDetails"
 import { ReleaseInfoTitleAndArtist } from "./comp/ReleaseInfoTitleAndArtist"
-import { ReleaseInfoTracks } from "./comp/ReleaseInfoTracks"
 import { ReleaseInfoPageContext } from "./context"
 
 type ReleaseInfoPageProps = {
@@ -42,7 +39,7 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 							<ReleaseInfoDetails />
 						</div>
 						<div class="col-span-full">
-							<ReleaseInfoTabs />
+							<ReleaseInfoTabs release={props.release} />
 							<EntityCorrectionMetadataSection
 								entityType="release"
 								entityId={props.release.id}
@@ -62,49 +59,5 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 				</ReleaseInfoPageContext.Provider>
 			</Suspense>
 		</PageLayout>
-	)
-}
-
-const TRIGGER_CLASS = "py-4"
-function ReleaseInfoTabs() {
-	const ctx = assertContext(ReleaseInfoPageContext)
-	return (
-		<Tab.Root>
-			<div class="border-b border-slate-300 px-4">
-				<Tab.List class="grid-cols-2 gap-12">
-					<Show when={ctx.release.tracks && ctx.release.tracks.length > 0}>
-						<Tab.Trigger
-							value={"Tracks"}
-							class={TRIGGER_CLASS}
-						>
-							Tracks
-						</Tab.Trigger>
-					</Show>
-					<Show when={ctx.release.credits && ctx.release.credits.length > 0}>
-						<Tab.Trigger
-							value={"Credits"}
-							class={TRIGGER_CLASS}
-						>
-							Credits
-						</Tab.Trigger>
-					</Show>
-					<Tab.Indicator />
-				</Tab.List>
-			</div>
-			<Show when={ctx.release.tracks?.length}>
-				<Tab.Content
-					value="Tracks"
-					class="p-4"
-				>
-					<ReleaseInfoTracks />
-				</Tab.Content>
-			</Show>
-			<Tab.Content
-				value="Credits"
-				class="p-4"
-			>
-				<ReleaseInfoCredits />
-			</Tab.Content>
-		</Tab.Root>
 	)
 }

@@ -1,13 +1,10 @@
-import type { ReleaseArtist, ReleaseTrack } from "@thc/api"
+import type { Release, ReleaseArtist, ReleaseTrack } from "@thc/api"
 import { For, Show } from "solid-js"
 
 import { Divider } from "~/component/atomic/Divider"
 import { Link } from "~/component/atomic/Link"
 import { Intersperse } from "~/component/data/Intersperse"
 import { Duration } from "~/domain/shared"
-import { assertContext } from "~/utils/solid/assertContext"
-
-import { ReleaseInfoPageContext } from "../context"
 
 function TrackItem(props: { track: ReleaseTrack }) {
 	return (
@@ -62,25 +59,25 @@ function TrackList(props: { tracks?: ReleaseTrack[] }) {
 	)
 }
 
-export function ReleaseInfoTracks() {
-	const ctx = assertContext(ReleaseInfoPageContext)
+type ReleaseInfoTracksProps = {
+	discs?: Release["discs"] | null
+	tracks?: ReleaseTrack[] | null
+}
+
+export function ReleaseInfoTracks(props: ReleaseInfoTracksProps) {
 	return (
 		<Show
-			when={
-				ctx.release.discs
-				&& ctx.release.discs.length > 0
-				&& ctx.release.discs[0]?.name
-			}
-			fallback={<TrackList tracks={ctx.release.tracks} />}
+			when={props.discs && props.discs.length > 0 && props.discs[0]?.name}
+			fallback={<TrackList tracks={props.tracks ?? undefined} />}
 		>
-			<For each={ctx.release.discs}>
+			<For each={props.discs}>
 				{(disc, index) => (
 					<div>
 						<h4 class="mb-2 tracking-tight">
 							{disc.name ?? `Disc ${index() + 1}`}
 						</h4>
 						<TrackList
-							tracks={ctx.release.tracks?.filter((t) => t.disc_id == disc.id)}
+							tracks={props.tracks?.filter((track) => track.disc_id == disc.id)}
 						/>
 					</div>
 				)}

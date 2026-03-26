@@ -16,10 +16,14 @@ type ExploreFilterProps<T extends string> = {
 
 export function ExploreFilter<T extends string>(props: ExploreFilterProps<T>) {
 	const selectedOption = () => {
-		const option = props.options.find((option) => option.value === props.value)
+		const option = props.options.find(
+			(candidate) => candidate.value === props.value,
+		)
 		return (
 			option
-			?? props.options.find((option) => option.value === props.defaultValue)
+			?? props.options.find(
+				(candidate) => candidate.value === props.defaultValue,
+			)
 		)
 	}
 

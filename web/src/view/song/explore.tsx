@@ -1,13 +1,12 @@
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { SongApi } from "@thc/api"
-import type { LocalizedTitle, SimpleArtist, Song } from "@thc/api"
+import type { Song } from "@thc/api"
 import { Either } from "effect"
 import { For, Show } from "solid-js"
 import type { Component } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
-import { Link } from "~/component/atomic"
 import { Select } from "~/component/atomic/form/select"
 import {
 	CorrectionSortFieldSelect,
@@ -19,6 +18,7 @@ import {
 import { useI18N } from "~/state/i18n"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
+import { SongItem } from "~/view/song/SongItem"
 
 const route = getRouteApi("/song/explore")
 
@@ -33,59 +33,6 @@ const SongItemSkeleton: Component = () => (
 		<div class="h-4 w-1/4 rounded bg-slate-100"></div>
 	</div>
 )
-
-type SongItemProps = {
-	song: Song
-	locale: string
-}
-
-const SongItem: Component<SongItemProps> = (props) => {
-	const localizedTitle = () =>
-		props.song.localized_titles?.find(
-			(v: LocalizedTitle) => v.language.code === props.locale,
-		)?.title
-
-	const displayTitle = () => localizedTitle() ?? props.song.title
-	const originalTitle = () => (localizedTitle() ? props.song.title : undefined)
-
-	return (
-		<div class="border-b border-slate-200 py-3 last:border-b-0">
-			<div class="flex min-w-0 items-baseline gap-2">
-				<Link
-					to="/song/$id"
-					params={{ id: props.song.id.toString() }}
-					class="truncate text-slate-900 no-underline hover:underline"
-				>
-					{displayTitle()}
-				</Link>
-				<Show when={originalTitle()}>
-					<span class="truncate text-sm text-slate-400">{originalTitle()}</span>
-				</Show>
-			</div>
-
-			<Show when={props.song.artists && props.song.artists.length > 0}>
-				<div class="mt-1 text-sm text-slate-500">
-					<For each={props.song.artists}>
-						{(artist: SimpleArtist, idx) => (
-							<>
-								<Link
-									to="/artist/$id"
-									params={{ id: artist.id.toString() }}
-									class="text-slate-500 no-underline hover:underline"
-								>
-									{artist.name}
-								</Link>
-								<Show when={idx() < (props.song.artists?.length ?? 0) - 1}>
-									<span class="text-slate-300">, </span>
-								</Show>
-							</>
-						)}
-					</For>
-				</div>
-			</Show>
-		</div>
-	)
-}
 
 type SongExploreFilterBarProps = {
 	scrollDirection: () => ScrollDirection
@@ -177,7 +124,7 @@ function SongExploreList(props: SongExploreListProps) {
 
 			<div class="flex flex-col">
 				<For each={props.songs}>
-					{(song: Song) => (
+					{(song) => (
 						<SongItem
 							song={song}
 							locale={props.locale}

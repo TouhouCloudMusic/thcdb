@@ -29,17 +29,10 @@ const formatArtistDateRange = (artist: Artist) => {
 	return `${start} - ${end}`
 }
 
-const isDefinedString = (value: string | null | undefined): value is string => {
-	return typeof value === "string" && value.length > 0
-}
-
-const formatLocation = (value: Artist["current_location"] | undefined) => {
-	if (!value) return
-	const parts = [value.country, value.province, value.city].filter(
-		isDefinedString,
-	)
-	if (parts.length === 0) return
-	return parts.join(" / ")
+function formatArtistTypeLabel(value: string) {
+	if (value === "") return "All"
+	if (value === "Multiple") return "Group"
+	return value
 }
 
 export const ArtistItemSkeleton: Component = () => (
@@ -69,7 +62,6 @@ type ArtistItemProps = {
 }
 
 export const ArtistItem: Component<ArtistItemProps> = (props) => {
-	const locationText = () => formatLocation(props.artist.current_location)
 	const i18n = useI18N()
 	const profileImageUrl = () => imgUrl(props.artist.profile_image_url)
 
@@ -128,16 +120,12 @@ export const ArtistItem: Component<ArtistItemProps> = (props) => {
 						</div>
 
 						<div class="shrink-0 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-600">
-							{props.artist.artist_type}
+							{formatArtistTypeLabel(props.artist.artist_type)}
 						</div>
 					</div>
 
-					<div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
+					<div class="mt-1 text-sm text-slate-500">
 						<span>{formatArtistDateRange(props.artist)}</span>
-						<Show when={locationText()}>
-							<span class="text-slate-300">·</span>
-							<span>{locationText()}</span>
-						</Show>
 					</div>
 				</div>
 			</div>
@@ -155,10 +143,6 @@ type ArtistExploreFilterBarProps = {
 	onOrderByChange: (value: "asc" | "desc") => void
 }
 
-function typeLabel(value: string) {
-	return value === "" ? "All" : value
-}
-
 export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 	const typeOptions = () => ["", ...ARTIST_TYPES]
 
@@ -173,13 +157,13 @@ export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 						onChange={(value) => props.onArtistTypeChange(value ?? "")}
 						itemComponent={(optionProps) => (
 							<Select.Item item={optionProps.item}>
-								{typeLabel(optionProps.item.rawValue)}
+								{formatArtistTypeLabel(optionProps.item.rawValue)}
 							</Select.Item>
 						)}
 					>
 						<Select.Trigger>
 							<Select.Value<string>>
-								{(state) => typeLabel(state.selectedOption())}
+								{(state) => formatArtistTypeLabel(state.selectedOption())}
 							</Select.Value>
 							<Select.Icon />
 						</Select.Trigger>

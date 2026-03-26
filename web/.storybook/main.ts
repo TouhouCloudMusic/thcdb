@@ -36,5 +36,8 @@ export default defineMain({
 			},
 		})
 	},
-	stories: ["../src/component/!(__legacy|dialog)/**/*.stories.@(ts|tsx)"],
+	stories: [
+		"../src/component/!(__legacy|dialog)/**/*.stories.@(ts|tsx)",
+		"../src/view/**/*.stories.@(ts|tsx)",
+	],
 })

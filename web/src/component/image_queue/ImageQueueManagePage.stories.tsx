@@ -1,15 +1,8 @@
-import { QueryClient } from "@tanstack/solid-query"
-import {
-	createMemoryHistory,
-	createRouter,
-	RouterContextProvider,
-} from "@tanstack/solid-router"
 import type { ImageQueueType } from "@thc/api"
 import { createMemo, createSignal, Show } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { routeTree } from "~/routeTree.gen"
-import { StoryLayout } from "~/utils/adapter/storybook"
+import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import {
 	ImageQueueManagePageContent,
 	STATUS_FILTER_OPTIONS,
@@ -20,16 +13,6 @@ import type { StatusFilterKind } from "~/view/image_queue/manage"
 import { PENDING_COUNT, STORY_ENTRIES } from "./ImageQueueManagePage.story-data"
 
 const PAGE_SIZE = 20
-const ROUTER = createRouter({
-	routeTree,
-	history: createMemoryHistory({
-		initialEntries: ["/image-queue/?status=all&type=release"],
-	}),
-	context: {
-		queryClient: new QueryClient(),
-	},
-	defaultPreloadStaleTime: 0,
-})
 
 type ImageQueueSearch = {
 	status: StatusFilterKind
@@ -40,16 +23,12 @@ type StoryRootProps = ImageQueueSearch
 
 function StoryRoot(props: StoryRootProps) {
 	return (
-		<RouterContextProvider router={ROUTER}>
-			{() => (
-				<Show
-					when={{ status: props.status, type: props.type }}
-					keyed
-				>
-					{(filters) => <StoryScene initialFilters={filters} />}
-				</Show>
-			)}
-		</RouterContextProvider>
+		<Show
+			when={{ status: props.status, type: props.type }}
+			keyed
+		>
+			{(filters) => <StoryScene initialFilters={filters} />}
+		</Show>
 	)
 }
 
@@ -106,8 +85,12 @@ function StoryScene(props: { initialFilters: ImageQueueSearch }) {
 const meta = {
 	title: "Page/ImageQueueManagePage",
 	component: StoryRoot,
+	decorators: [withStoryRouter],
 	parameters: {
 		layout: StoryLayout.FullScreen,
+		tanstackRouter: {
+			initialEntry: "/image-queue/?status=all&type=release",
+		},
 	},
 	argTypes: {
 		status: {
