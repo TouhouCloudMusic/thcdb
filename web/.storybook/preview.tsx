@@ -11,7 +11,15 @@ export default definePreview({
 		actions: {
 			argTypesRegex: "^on.*",
 		},
+		backgrounds: {
+			options: {
+				studio: { name: "Studio", value: "#edf2f7" },
+				paper: { name: "Paper", value: "#f7f4ec" },
+				ink: { name: "Ink", value: "#0f172a" },
+			},
+		},
 		controls: {
+			disableSaveFromUI: true,
 			matchers: {
 				color: /(background|color)$/i,
 				date: /Date$/i,
