@@ -51,9 +51,10 @@ use crate::cli::CliArgs;
 
 #[cfg(all(feature = "release", unix))]
 mod alloc {
-    use tikv_jemallocator::Jemalloc;
+    use mimalloc::MiMalloc;
+
     #[global_allocator]
-    static GLOBAL: Jemalloc = Jemalloc;
+    static GLOBAL: MiMalloc = MiMalloc;
 }
 
 #[tokio::main]
