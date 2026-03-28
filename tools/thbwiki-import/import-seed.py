@@ -16,6 +16,7 @@ import json
 import os
 import sys
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Literal
 from urllib.parse import urlsplit, urlunsplit
@@ -198,6 +199,34 @@ def resolve_release_type(release: dict[str, Any]) -> str:
     return value
 
 
+def build_release_date_payload(
+    release: dict[str, Any],
+) -> dict[str, str] | None:
+    raw_release_date = release.get("release_date")
+    if raw_release_date is None:
+        return None
+
+    if not isinstance(raw_release_date, str) or not raw_release_date.strip():
+        thb_album_id = release.get("thb_album_id")
+        raise RuntimeError(
+            f"invalid release_date for thb_album_id={thb_album_id}: {raw_release_date!r}"
+        )
+
+    normalized = raw_release_date.strip()
+    try:
+        date.fromisoformat(normalized)
+    except ValueError as err:
+        thb_album_id = release.get("thb_album_id")
+        raise RuntimeError(
+            f"invalid release_date for thb_album_id={thb_album_id}: {normalized!r}"
+        ) from err
+
+    return {
+        "value": normalized,
+        "precision": "Day",
+    }
+
+
 def validate_seed(seed: Any) -> None:
     if not isinstance(seed, dict):
         raise RuntimeError("seed file must be a JSON object")
@@ -253,6 +282,7 @@ def validate_seed(seed: Any) -> None:
             )
 
         resolve_release_type(release)
+        build_release_date_payload(release)
 
         tracks = release.get("tracks")
         if not isinstance(tracks, list) or len(tracks) == 0:
@@ -361,7 +391,7 @@ def build_release_payload(
         "data": {
             "title": release["title"].strip(),
             "release_type": resolve_release_type(release),
-            "release_date": None,
+            "release_date": build_release_date_payload(release),
             "recording_date_start": None,
             "recording_date_end": None,
             "artists": release_artists,
@@ -373,8 +403,7 @@ def build_release_payload(
             "tracks": mapped_tracks,
         },
         "description": (
-            f"seed:thb_album_id={release['thb_album_id']};"
-            f"wiki={release.get('wiki_url') or ''};source=THBWiki"
+            f"seed:thb_album_id={release['thb_album_id']};source=THBWiki"
         ),
         "type": "Create",
     }
@@ -432,7 +461,7 @@ def build_release_payload_plan(
         "data": {
             "title": release["title"].strip(),
             "release_type": resolve_release_type(release),
-            "release_date": None,
+            "release_date": build_release_date_payload(release),
             "recording_date_start": None,
             "recording_date_end": None,
             "artists": release_artists,
@@ -444,8 +473,7 @@ def build_release_payload_plan(
             "tracks": mapped_tracks,
         },
         "description": (
-            f"seed:thb_album_id={release['thb_album_id']};"
-            f"wiki={release.get('wiki_url') or ''};source=THBWiki"
+            f"seed:thb_album_id={release['thb_album_id']};source=THBWiki"
         ),
         "type": "Create",
     }
@@ -676,7 +704,14 @@ async def find_existing_song_id(
             matched_ids.append((entity_id, release_keys))
 
     if len(matched_ids) == 1:
-        return matched_ids[0][0]
+        entity_id, release_keys = matched_ids[0]
+        if not expected_release_keys:
+            return entity_id
+        if not release_keys:
+            return entity_id
+        if release_keys.intersection(expected_release_keys):
+            return entity_id
+        return None
 
     if len(matched_ids) > 1 and expected_release_keys:
         by_release_keys = [
@@ -695,11 +730,6 @@ async def find_existing_song_id(
         if len(by_release_keys) == 1:
             return by_release_keys[0][0]
         if len(by_release_keys) > 1:
-            common_release_keys = set.intersection(
-                *(release_keys for _, release_keys in by_release_keys)
-            )
-            if common_release_keys:
-                return min(entity_id for entity_id, _ in by_release_keys)
             raise RuntimeError(
                 f"ambiguous song match for title={song_title} with release relation"
             )

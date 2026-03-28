@@ -1,8 +1,11 @@
 {
   "meta": {
     "source": "THBWiki",
-    "xlsx_file": "【THBWiki】东方同人专辑音乐检索列表（17.2万首）更新时间：2024年3月30日.xlsx",
+    "xlsx_file": "【THBWiki】东方同人专辑音乐检索列表（17.2万首）更新时间：2024年3月30日.xlsb",
     "xlsx_updated_at": "2024-03-30",
+    "source_file_format": "xlsb",
+    "source_file_title": "东方同人专辑音乐检索列表（17.2万首）",
+    "source_file_updated_label": "更新时间：2024年3月30日",
     "sheet": "THBWiki东方同人专辑音乐列表 (17.2万)",
     "selector": "manual_hot_albums_v1",
     "selected_albums": [
@@ -6714,8 +6717,6 @@
     {
       "thb_album_id": 20070,
       "title": "IOSYS ALL TIME TOHO BEST COLLECTION",
-      "wiki_url": "https://thwiki.cc/IOSYS_ALL_TIME_TOHO_BEST_COLLECTION",
-      "release_year": 2023,
       "release_date": "2023-04-29",
       "circle_names": [
         "IOSYS"
@@ -7084,8 +7085,6 @@
     {
       "thb_album_id": 6381,
       "title": "Grimoire of IOSYS – 東方BEST ALBUM vol.2",
-      "wiki_url": "https://thwiki.cc/Grimoire_of_IOSYS_%E2%80%93_%E6%9D%B1%E6%96%B9BEST_ALBUM_vol.2",
-      "release_year": 2012,
       "release_date": "2012-02-28",
       "circle_names": [
         "IOSYS"
@@ -7405,8 +7404,6 @@
     {
       "thb_album_id": 7565,
       "title": "Grimoire of IOSYS - 東方BEST ALBUM vol.3 -",
-      "wiki_url": "https://thwiki.cc/Grimoire_of_IOSYS_-_%E6%9D%B1%E6%96%B9BEST_ALBUM_vol.3_-",
-      "release_year": 2012,
       "release_date": "2012-11-29",
       "circle_names": [
         "IOSYS"
@@ -7726,8 +7723,6 @@
     {
       "thb_album_id": 17625,
       "title": "IOSYS TOHO MEGAMIX - GENSOKYO SUGOIKYOKU EDITION - Mixed by DJ sada",
-      "wiki_url": "https://thwiki.cc/IOSYS_TOHO_MEGAMIX_-_GENSOKYO_SUGOIKYOKU_EDITION_-_Mixed_by_DJ_sada",
-      "release_year": 2020,
       "release_date": "2020-03-21",
       "circle_names": [
         "IOSYS"
@@ -7949,8 +7944,6 @@
     {
       "thb_album_id": 1381,
       "title": "第7回TAMUSICコンサート～東方編～",
-      "wiki_url": "https://thwiki.cc/%E7%AC%AC7%E5%9B%9ETAMUSIC%E3%82%B3%E3%83%B3%E3%82%B5%E3%83%BC%E3%83%88%EF%BD%9E%E6%9D%B1%E6%96%B9%E7%B7%A8%EF%BD%9E",
-      "release_year": 2008,
       "release_date": "2008-11-01",
       "circle_names": [
         "TAMUSIC"
@@ -8179,8 +8172,6 @@
     {
       "thb_album_id": 1101,
       "title": "音盤文々⑨",
-      "wiki_url": "https://thwiki.cc/%E9%9F%B3%E7%9B%A4%E6%96%87%E3%80%85%E2%91%A8",
-      "release_year": 2008,
       "release_date": "2008-05-24",
       "circle_names": [
         "TAMUSIC"
@@ -8339,8 +8330,6 @@
     {
       "thb_album_id": 18649,
       "title": "フラワリング・ナイト・ピアノ",
-      "wiki_url": "https://thwiki.cc/%E3%83%95%E3%83%A9%E3%83%AF%E3%83%AA%E3%83%B3%E3%82%B0%E3%83%BB%E3%83%8A%E3%82%A4%E3%83%88%E3%83%BB%E3%83%94%E3%82%A2%E3%83%8E",
-      "release_year": 2021,
       "release_date": "2021-08-20",
       "circle_names": [
         "TAMUSIC"
@@ -8499,8 +8488,6 @@
     {
       "thb_album_id": 19912,
       "title": "RHYTHM GAME SELECTION+",
-      "wiki_url": "https://thwiki.cc/RHYTHM_GAME_SELECTION%2B",
-      "release_year": 2022,
       "release_date": "2022-12-30",
       "circle_names": [
         "SOUND HOLIC"
@@ -8764,8 +8751,6 @@
     {
       "thb_album_id": 18651,
       "title": "THE BEST OF RECENT WORKS",
-      "wiki_url": "https://thwiki.cc/THE_BEST_OF_RECENT_WORKS",
-      "release_year": 2021,
       "release_date": "2021-08-20",
       "circle_names": [
         "SOUND HOLIC"
@@ -9015,8 +9000,6 @@
     {
       "thb_album_id": 20396,
       "title": "EUROBEAT HOLIC EXII - NON-STOP MEGA MIX -",
-      "wiki_url": "https://thwiki.cc/EUROBEAT_HOLIC_EXII_-_NON-STOP_MEGA_MIX_-",
-      "release_year": 2023,
       "release_date": "2023-08-12",
       "circle_names": [
         "SOUND HOLIC",
@@ -9267,8 +9250,6 @@
     {
       "thb_album_id": 20383,
       "title": "ALL TIME BEST",
-      "wiki_url": "https://thwiki.cc/ALL_TIME_BEST",
-      "release_year": 2023,
       "release_date": "2023-08-12",
       "circle_names": [
         "SOUND HOLIC"
@@ -9413,8 +9394,6 @@
     {
       "thb_album_id": 8488,
       "title": "BEST OF WiNG",
-      "wiki_url": "https://thwiki.cc/BEST_OF_WiNG",
-      "release_year": 2013,
       "release_date": "2013-05-25",
       "circle_names": [
         "DiGiTAL WiNG"
@@ -9650,8 +9629,6 @@
     {
       "thb_album_id": 14917,
       "title": "HIGH SPEED BEST OF RAVER'S NEST Vol.1",
-      "wiki_url": "https://thwiki.cc/HIGH_SPEED_BEST_OF_RAVER%27S_NEST_Vol.1",
-      "release_year": 2018,
       "release_date": "2018-05-05",
       "circle_names": [
         "DiGiTAL WiNG"
@@ -9845,8 +9822,6 @@
     {
       "thb_album_id": 16700,
       "title": "BEST FESTIVAL OF TOHO DANCE ANTHEM 1st Party",
-      "wiki_url": "https://thwiki.cc/BEST_FESTIVAL_OF_TOHO_DANCE_ANTHEM_1st_Party",
-      "release_year": 2019,
       "release_date": "2019-08-11",
       "circle_names": [
         "DiGiTAL WiNG"
@@ -10012,8 +9987,6 @@
     {
       "thb_album_id": 18034,
       "title": "NONSTOP INTERCEPT phase three",
-      "wiki_url": "https://thwiki.cc/NONSTOP_INTERCEPT_phase_three",
-      "release_year": 2020,
       "release_date": "2020-10-10",
       "circle_names": [
         "DiGiTAL WiNG",
@@ -10180,8 +10153,6 @@
     {
       "thb_album_id": 16142,
       "title": "EastNewSound 10th Special Best",
-      "wiki_url": "https://thwiki.cc/EastNewSound_10th_Special_Best",
-      "release_year": 2018,
       "release_date": "2018-12-29",
       "circle_names": [
         "EastNewSound"
@@ -10893,8 +10864,6 @@
     {
       "thb_album_id": 19970,
       "title": "EastNewSound nayuta Best",
-      "wiki_url": "https://thwiki.cc/EastNewSound_nayuta_Best",
-      "release_year": 2022,
       "release_date": "2022-12-30",
       "circle_names": [
         "EastNewSound"
@@ -11046,8 +11015,6 @@
     {
       "thb_album_id": 20317,
       "title": "EastNewSound 紫咲ほたる Best",
-      "wiki_url": "https://thwiki.cc/EastNewSound_%E7%B4%AB%E5%92%B2%E3%81%BB%E3%81%9F%E3%82%8B_Best",
-      "release_year": 2023,
       "release_date": "2023-05-06",
       "circle_names": [
         "EastNewSound"
@@ -11199,8 +11166,6 @@
     {
       "thb_album_id": 14734,
       "title": "緋色月下、狂咲ノ絶 10th Anniversary",
-      "wiki_url": "https://thwiki.cc/%E7%B7%8B%E8%89%B2%E6%9C%88%E4%B8%8B%E3%80%81%E7%8B%82%E5%92%B2%E3%83%8E%E7%B5%B6_10th_Anniversary",
-      "release_year": 2017,
       "release_date": "2017-12-28",
       "circle_names": [
         "EastNewSound"
@@ -11324,8 +11289,6 @@
     {
       "thb_album_id": 17141,
       "title": "豚BEST4 やわらか10年本仕込",
-      "wiki_url": "https://thwiki.cc/%E8%B1%9ABEST4_%E3%82%84%E3%82%8F%E3%82%89%E3%81%8B10%E5%B9%B4%E6%9C%AC%E4%BB%95%E8%BE%BC",
-      "release_year": 2019,
       "release_date": "2019-10-05",
       "circle_names": [
         "豚乙女"
@@ -11477,8 +11440,6 @@
     {
       "thb_album_id": 13341,
       "title": "豚BEST3　大盛りﾁｬﾚﾝｼﾞ",
-      "wiki_url": "https://thwiki.cc/%E8%B1%9ABEST3_%E5%A4%A7%E7%9B%9B%E3%82%8A%E3%83%81%E3%83%A3%E3%83%AC%E3%83%B3%E3%82%B8",
-      "release_year": 2016,
       "release_date": "2016-12-28",
       "circle_names": [
         "豚乙女"
@@ -11623,8 +11584,6 @@
     {
       "thb_album_id": 20294,
       "title": "豚BEST5 骨までとろける美味しさ",
-      "wiki_url": "https://thwiki.cc/%E8%B1%9ABEST5_%E9%AA%A8%E3%81%BE%E3%81%A7%E3%81%A8%E3%82%8D%E3%81%91%E3%82%8B%E7%BE%8E%E5%91%B3%E3%81%97%E3%81%95",
-      "release_year": 2023,
       "release_date": "2023-05-06",
       "circle_names": [
         "豚乙女"
@@ -11769,8 +11728,6 @@
     {
       "thb_album_id": 11427,
       "title": "東方猫鍵盤 THE BEST",
-      "wiki_url": "https://thwiki.cc/%E6%9D%B1%E6%96%B9%E7%8C%AB%E9%8D%B5%E7%9B%A4_THE_BEST",
-      "release_year": 2015,
       "release_date": "2015-08-13",
       "circle_names": [
         "豚乙女"
@@ -11901,8 +11858,6 @@
     {
       "thb_album_id": 18678,
       "title": "Amateras Records 10th Anniversary Best",
-      "wiki_url": "https://thwiki.cc/Amateras_Records_10th_Anniversary_Best",
-      "release_year": 2021,
       "release_date": "2021-08-27",
       "circle_names": [
         "Amateras Records"
@@ -12131,8 +12086,6 @@
     {
       "thb_album_id": 12529,
       "title": "Amateras Records Extended Selection Vol.1",
-      "wiki_url": "https://thwiki.cc/Amateras_Records_Extended_Selection_Vol.1",
-      "release_year": 2016,
       "release_date": "2016-06-16",
       "circle_names": [
         "Amateras Records"
@@ -12284,8 +12237,6 @@
     {
       "thb_album_id": 15948,
       "title": "Farewell Flower",
-      "wiki_url": "https://thwiki.cc/Farewell_Flower%EF%BC%88Amateras_Records%EF%BC%89",
-      "release_year": 2018,
       "release_date": "2018-12-29",
       "circle_names": [
         "Amateras Records"
@@ -12437,8 +12388,6 @@
     {
       "thb_album_id": 15532,
       "title": "非実在性プラネタリウム",
-      "wiki_url": "https://thwiki.cc/%E9%9D%9E%E5%AE%9F%E5%9C%A8%E6%80%A7%E3%83%97%E3%83%A9%E3%83%8D%E3%82%BF%E3%83%AA%E3%82%A6%E3%83%A0",
-      "release_year": 2018,
       "release_date": "2018-08-09",
       "circle_names": [
         "Pizuya's Cell"
@@ -12660,8 +12609,6 @@
     {
       "thb_album_id": 19737,
       "title": "リザレクションコード",
-      "wiki_url": "https://thwiki.cc/%E3%83%AA%E3%82%B6%E3%83%AC%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3%E3%82%B3%E3%83%BC%E3%83%89",
-      "release_year": 2022,
       "release_date": "2022-10-08",
       "circle_names": [
         "Pizuya's Cell"
@@ -12848,8 +12795,6 @@
     {
       "thb_album_id": 19736,
       "title": "ReloaDEAD",
-      "wiki_url": "https://thwiki.cc/ReloaDEAD",
-      "release_year": 2022,
       "release_date": "2022-10-08",
       "circle_names": [
         "Pizuya's Cell"
@@ -13029,8 +12974,6 @@
     {
       "thb_album_id": 16133,
       "title": "Masquerade Circus",
-      "wiki_url": "https://thwiki.cc/Masquerade_Circus",
-      "release_year": 2018,
       "release_date": "2018-12-29",
       "circle_names": [
         "Pizuya's Cell"
@@ -13196,8 +13139,6 @@
     {
       "thb_album_id": 19473,
       "title": "Hundred Billion Stars",
-      "wiki_url": "https://thwiki.cc/Hundred_Billion_Stars",
-      "release_year": 2022,
       "release_date": "2022-08-13",
       "circle_names": [
         "Alstroemeria Records"
@@ -13272,8 +13213,6 @@
     {
       "thb_album_id": 20868,
       "title": "Next Sanctuary",
-      "wiki_url": "https://thwiki.cc/Next_Sanctuary",
-      "release_year": 2023,
       "release_date": "2023-12-30",
       "circle_names": [
         "Amateras Records"
@@ -13341,8 +13280,6 @@
     {
       "thb_album_id": 20877,
       "title": "RAVER’S NEST 13 TOHO RAVE PARTY",
-      "wiki_url": "https://thwiki.cc/RAVER%27S_NEST_13_TOHO_RAVE_PARTY",
-      "release_year": 2023,
       "release_date": "2023-12-30",
       "circle_names": [
         "DiGiTAL WiNG"
@@ -13431,8 +13368,6 @@
     {
       "thb_album_id": 20946,
       "title": "Engraved Prayer",
-      "wiki_url": "https://thwiki.cc/Engraved_Prayer",
-      "release_year": 2023,
       "release_date": "2023-12-30",
       "circle_names": [
         "EastNewSound"
@@ -13521,8 +13456,6 @@
     {
       "thb_album_id": 20821,
       "title": "EURO BAKAICHIDAI VOL.28",
-      "wiki_url": "https://thwiki.cc/EURO_BAKAICHIDAI_VOL.28",
-      "release_year": 2023,
       "release_date": "2023-12-23",
       "circle_names": [
         "Eurobeat Union"
@@ -13667,8 +13600,6 @@
     {
       "thb_album_id": 20574,
       "title": "TOHO BOOTLEGS 7",
-      "wiki_url": "https://thwiki.cc/TOHO_BOOTLEGS_7",
-      "release_year": 2023,
       "release_date": "2023-10-14",
       "circle_names": [
         "IOSYS"
@@ -13729,8 +13660,6 @@
     {
       "thb_album_id": 19021,
       "title": "セブンティーンVIXI",
-      "wiki_url": "https://thwiki.cc/%E3%82%BB%E3%83%96%E3%83%B3%E3%83%86%E3%82%A3%E3%83%BC%E3%83%B3VIXI",
-      "release_year": 2021,
       "release_date": "2021-12-30",
       "circle_names": [
         "Pizuya's Cell"
@@ -13812,8 +13741,6 @@
     {
       "thb_album_id": 20915,
       "title": "氷精 -CIRNO-",
-      "wiki_url": "https://thwiki.cc/%E6%B0%B7%E7%B2%BE_-CIRNO-",
-      "release_year": 2023,
       "release_date": "2023-12-30",
       "circle_names": [
         "SOUND HOLIC"
@@ -13902,8 +13829,6 @@
     {
       "thb_album_id": 18648,
       "title": "フラワリング・ナイト・ギター",
-      "wiki_url": "https://thwiki.cc/%E3%83%95%E3%83%A9%E3%83%AF%E3%83%AA%E3%83%B3%E3%82%B0%E3%83%BB%E3%83%8A%E3%82%A4%E3%83%88%E3%83%BB%E3%82%AE%E3%82%BF%E3%83%BC",
-      "release_year": 2021,
       "release_date": "2021-08-20",
       "circle_names": [
         "TAMUSIC"
@@ -14062,8 +13987,6 @@
     {
       "thb_album_id": 20899,
       "title": "いとゆゆし",
-      "wiki_url": "https://thwiki.cc/%E3%81%84%E3%81%A8%E3%82%86%E3%82%86%E3%81%97",
-      "release_year": 2023,
       "release_date": "2023-12-30",
       "circle_names": [
         "豚乙女"
@@ -14124,8 +14047,6 @@
     {
       "thb_album_id": 19266,
       "title": "THE GAME",
-      "wiki_url": "https://thwiki.cc/THE_GAME",
-      "release_year": 2022,
       "release_date": "2022-05-07",
       "circle_names": [
         "Alstroemeria Records"
@@ -14221,8 +14142,6 @@
     {
       "thb_album_id": 20679,
       "title": "Legendary Romance",
-      "wiki_url": "https://thwiki.cc/Legendary_Romance",
-      "release_year": 2023,
       "release_date": "2023-11-11",
       "circle_names": [
         "Amateras Records"
@@ -14339,8 +14258,6 @@
     {
       "thb_album_id": 20856,
       "title": "HIGH SPEED BEST OF RAVER'S NEST Vol.4",
-      "wiki_url": "https://thwiki.cc/HIGH_SPEED_BEST_OF_RAVER%27S_NEST_Vol.4",
-      "release_year": 2023,
       "release_date": "2023-12-30",
       "circle_names": [
         "DiGiTAL WiNG"
@@ -14478,8 +14395,6 @@
     {
       "thb_album_id": 20382,
       "title": "Acid Retribution",
-      "wiki_url": "https://thwiki.cc/Acid_Retribution",
-      "release_year": 2023,
       "release_date": "2023-08-12",
       "circle_names": [
         "EastNewSound"
@@ -14540,8 +14455,6 @@
     {
       "thb_album_id": 20816,
       "title": "EURO BAKAICHIDAI VOL.27 Non-Stop TERA Mix",
-      "wiki_url": "https://thwiki.cc/EURO_BAKAICHIDAI_VOL.27_Non-Stop_TERA_Mix",
-      "release_year": 2023,
       "release_date": "2023-12-23",
       "circle_names": [
         "Eurobeat Union"
@@ -14714,8 +14627,6 @@
     {
       "thb_album_id": 20197,
       "title": "TOHO BOOTLEGS 6",
-      "wiki_url": "https://thwiki.cc/TOHO_BOOTLEGS_6",
-      "release_year": 2023,
       "release_date": "2023-05-06",
       "circle_names": [
         "IOSYS"
@@ -14776,8 +14687,6 @@
     {
       "thb_album_id": 19018,
       "title": "オムニコーディアル",
-      "wiki_url": "https://thwiki.cc/%E3%82%AA%E3%83%A0%E3%83%8B%E3%82%B3%E3%83%BC%E3%83%87%E3%82%A3%E3%82%A2%E3%83%AB",
-      "release_year": 2021,
       "release_date": "2021-12-30",
       "circle_names": [
         "Pizuya's Cell"
@@ -14852,8 +14761,6 @@
     {
       "thb_album_id": 20262,
       "title": "虹 -NIJI-",
-      "wiki_url": "https://thwiki.cc/%E8%99%B9_-NIJI-",
-      "release_year": 2023,
       "release_date": "2023-05-06",
       "circle_names": [
         "SOUND HOLIC"
@@ -14942,8 +14849,6 @@
     {
       "thb_album_id": 17658,
       "title": "境界の東方子守唄",
-      "wiki_url": "https://thwiki.cc/%E5%A2%83%E7%95%8C%E3%81%AE%E6%9D%B1%E6%96%B9%E5%AD%90%E5%AE%88%E5%94%84",
-      "release_year": 2020,
       "release_date": "2020-03-21",
       "circle_names": [
         "TAMUSIC"
@@ -14962,8 +14867,6 @@
     {
       "thb_album_id": 19957,
       "title": "彗",
-      "wiki_url": "https://thwiki.cc/%E5%BD%97",
-      "release_year": 2022,
       "release_date": "2022-12-30",
       "circle_names": [
         "豚乙女"
@@ -15031,8 +14934,6 @@
     {
       "thb_album_id": 19000,
       "title": "So Many Colours",
-      "wiki_url": "https://thwiki.cc/So_Many_Colours",
-      "release_year": 2021,
       "release_date": "2021-12-30",
       "circle_names": [
         "Alstroemeria Records"
@@ -15100,8 +15001,6 @@
     {
       "thb_album_id": 20609,
       "title": "恋トラ -Extended Pack 01-",
-      "wiki_url": "https://thwiki.cc/%E6%81%8B%E3%83%88%E3%83%A9_-Extended_Pack_01-",
-      "release_year": 2023,
       "release_date": "2023-10-14",
       "circle_names": [
         "Amateras Records"
@@ -15197,8 +15096,6 @@
     {
       "thb_album_id": 20441,
       "title": "デジウィ MOONLiGHT",
-      "wiki_url": "https://thwiki.cc/%E3%83%87%E3%82%B8%E3%82%A6%E3%82%A3_MOONLiGHT",
-      "release_year": 2023,
       "release_date": "2023-08-12",
       "circle_names": [
         "DiGiTAL WiNG"
@@ -15266,8 +15163,6 @@
     {
       "thb_album_id": 19931,
       "title": "Votive Offering",
-      "wiki_url": "https://thwiki.cc/Votive_Offering",
-      "release_year": 2022,
       "release_date": "2022-12-30",
       "circle_names": [
         "EastNewSound"
@@ -15356,8 +15251,6 @@
     {
       "thb_album_id": 20530,
       "title": "EURO BAKAICHIDAI VOL.26",
-      "wiki_url": "https://thwiki.cc/EURO_BAKAICHIDAI_VOL.26",
-      "release_year": 2023,
       "release_date": "2023-09-30",
       "circle_names": [
         "Eurobeat Union"
@@ -15488,8 +15381,6 @@
     {
       "thb_album_id": 19673,
       "title": "TOHO BOOTLEGS 5",
-      "wiki_url": "https://thwiki.cc/TOHO_BOOTLEGS_5",
-      "release_year": 2022,
       "release_date": "2022-10-08",
       "circle_names": [
         "IOSYS"
@@ -15550,8 +15441,6 @@
     {
       "thb_album_id": 18913,
       "title": "戯言マイクロシリンジ",
-      "wiki_url": "https://thwiki.cc/%E6%88%AF%E8%A8%80%E3%83%9E%E3%82%A4%E3%82%AF%E3%83%AD%E3%82%B7%E3%83%AA%E3%83%B3%E3%82%B8",
-      "release_year": 2021,
       "release_date": "2021-11-27",
       "circle_names": [
         "Pizuya's Cell"
@@ -15633,8 +15522,6 @@
     {
       "thb_album_id": 19893,
       "title": "EUROBEAT HOLIC IV",
-      "wiki_url": "https://thwiki.cc/EUROBEAT_HOLIC_IV",
-      "release_year": 2022,
       "release_date": "2022-12-30",
       "circle_names": [
         "SOUND HOLIC",
@@ -15745,8 +15632,6 @@
     {
       "thb_album_id": 17500,
       "title": "東方弦奏オーケストラ3",
-      "wiki_url": "https://thwiki.cc/%E6%9D%B1%E6%96%B9%E5%BC%A6%E5%A5%8F%E3%82%AA%E3%83%BC%E3%82%B1%E3%82%B9%E3%83%88%E3%83%A9%EF%BC%93",
-      "release_year": 2019,
       "release_date": "2019-12-30",
       "circle_names": [
         "TAMUSIC"
@@ -15835,8 +15720,6 @@
     {
       "thb_album_id": 19531,
       "title": "りていく+",
-      "wiki_url": "https://thwiki.cc/%E3%82%8A%E3%81%A6%E3%81%84%E3%81%8F%2B",
-      "release_year": 2022,
       "release_date": "2022-08-13",
       "circle_names": [
         "豚乙女"
@@ -15960,8 +15843,6 @@
     {
       "thb_album_id": 17911,
       "title": "SIDEbySIDE",
-      "wiki_url": "https://thwiki.cc/SIDEbySIDE%EF%BC%88Alstroemeria_Records%EF%BC%89",
-      "release_year": 2020,
       "release_date": "2020-08-08",
       "circle_names": [
         "Alstroemeria Records",
@@ -16163,8 +16044,6 @@
     {
       "thb_album_id": 20406,
       "title": "Infinity Blossom",
-      "wiki_url": "https://thwiki.cc/Infinity_Blossom",
-      "release_year": 2023,
       "release_date": "2023-08-12",
       "circle_names": [
         "Amateras Records"
@@ -16239,8 +16118,6 @@
     {
       "thb_album_id": 20129,
       "title": "GAME on DiGiTAL WiNG vol.2",
-      "wiki_url": "https://thwiki.cc/GAME_on_DiGiTAL_WiNG_vol.2",
-      "release_year": 2023,
       "release_date": "2023-05-06",
       "circle_names": [
         "DiGiTAL WiNG"
@@ -16336,8 +16213,6 @@
     {
       "thb_album_id": 19896,
       "title": "Fused Anthems",
-      "wiki_url": "https://thwiki.cc/Fused_Anthems",
-      "release_year": 2022,
       "release_date": "2022-12-30",
       "circle_names": [
         "EastNewSound",
@@ -16378,8 +16253,6 @@
     {
       "thb_album_id": 20528,
       "title": "TOHO COLLECTION VOL.5",
-      "wiki_url": "https://thwiki.cc/TOHO_COLLECTION_VOL.5",
-      "release_year": 2023,
       "release_date": "2023-09-30",
       "circle_names": [
         "Eurobeat Union"
@@ -16447,8 +16320,6 @@
     {
       "thb_album_id": 19290,
       "title": "スカーレット警察・総集編 春の特別警戒スペシャル",
-      "wiki_url": "https://thwiki.cc/%E3%82%B9%E3%82%AB%E3%83%BC%E3%83%AC%E3%83%83%E3%83%88%E8%AD%A6%E5%AF%9F%E3%83%BB%E7%B7%8F%E9%9B%86%E7%B7%A8_%E6%98%A5%E3%81%AE%E7%89%B9%E5%88%A5%E8%AD%A6%E6%88%92%E3%82%B9%E3%83%9A%E3%82%B7%E3%83%A3%E3%83%AB",
-      "release_year": 2022,
       "release_date": "2022-05-07",
       "circle_names": [
         "IOSYS"
@@ -16537,8 +16408,6 @@
     {
       "thb_album_id": 18574,
       "title": "クロマトグラフィードミニオン",
-      "wiki_url": "https://thwiki.cc/%E3%82%AF%E3%83%AD%E3%83%9E%E3%83%88%E3%82%B0%E3%83%A9%E3%83%95%E3%82%A3%E3%83%BC%E3%83%89%E3%83%9F%E3%83%8B%E3%82%AA%E3%83%B3",
-      "release_year": 2021,
       "release_date": "2021-07-17",
       "circle_names": [
         "Pizuya's Cell"
@@ -16669,8 +16538,6 @@
     {
       "thb_album_id": 19553,
       "title": "鈴仙 -REISEN-",
-      "wiki_url": "https://thwiki.cc/%E9%88%B4%E4%BB%99_-REISEN-",
-      "release_year": 2022,
       "release_date": "2022-08-13",
       "circle_names": [
         "SOUND HOLIC"
@@ -16759,8 +16626,6 @@
     {
       "thb_album_id": 17484,
       "title": "東方バイオリンロック 秘-HI-",
-      "wiki_url": "https://thwiki.cc/%E6%9D%B1%E6%96%B9%E3%83%90%E3%82%A4%E3%82%AA%E3%83%AA%E3%83%B3%E3%83%AD%E3%83%83%E3%82%AF_%E7%A7%98-HI-",
-      "release_year": 2019,
       "release_date": "2019-12-30",
       "circle_names": [
         "TAMUSIC"
@@ -16856,8 +16721,6 @@
     {
       "thb_album_id": 19338,
       "title": "獣神",
-      "wiki_url": "https://thwiki.cc/%E7%8D%A3%E7%A5%9E",
-      "release_year": 2022,
       "release_date": "2022-05-07",
       "circle_names": [
         "豚乙女"
@@ -16925,8 +16788,6 @@
     {
       "thb_album_id": 17736,
       "title": "IMAGINARY JOURNEY",
-      "wiki_url": "https://thwiki.cc/IMAGINARY_JOURNEY",
-      "release_year": 2020,
       "release_date": "2020-05-04",
       "circle_names": [
         "Alstroemeria Records"
@@ -17008,8 +16869,6 @@
     {
       "thb_album_id": 20276,
       "title": "恋トラ -KOIIRO MASTER TRANCE 02-",
-      "wiki_url": "https://thwiki.cc/%E6%81%8B%E3%83%88%E3%83%A9_-KOIIRO_MASTER_TRANCE_02-",
-      "release_year": 2023,
       "release_date": "2023-05-06",
       "circle_names": [
         "Amateras Records"
@@ -17077,8 +16936,6 @@
     {
       "thb_album_id": 19909,
       "title": "RAVER'S NEST 12 TOHO RAVE PARTY",
-      "wiki_url": "https://thwiki.cc/RAVER%27S_NEST_12_TOHO_RAVE_PARTY",
-      "release_year": 2022,
       "release_date": "2022-12-30",
       "circle_names": [
         "DiGiTAL WiNG"
@@ -17160,8 +17017,6 @@
     {
       "thb_album_id": 19487,
       "title": "OVERDOSE",
-      "wiki_url": "https://thwiki.cc/OVERDOSE%EF%BC%88EastNewSound%EF%BC%89",
-      "release_year": 2022,
       "release_date": "2022-08-13",
       "circle_names": [
         "EastNewSound"
@@ -17285,8 +17140,6 @@
     {
       "thb_album_id": 20073,
       "title": "EURO BAKAICHIDAI VOL.25",
-      "wiki_url": "https://thwiki.cc/EURO_BAKAICHIDAI_VOL.25",
-      "release_year": 2023,
       "release_date": "2023-04-30",
       "circle_names": [
         "Eurobeat Union"
@@ -17417,8 +17270,6 @@
     {
       "thb_album_id": 18671,
       "title": "TOHO BOOTLEGS 4",
-      "wiki_url": "https://thwiki.cc/TOHO_BOOTLEGS_4",
-      "release_year": 2021,
       "release_date": "2021-08-27",
       "circle_names": [
         "IOSYS"
@@ -17493,8 +17344,6 @@
     {
       "thb_album_id": 18401,
       "title": "ミスチェフフライングオブジェクト",
-      "wiki_url": "https://thwiki.cc/%E3%83%9F%E3%82%B9%E3%83%81%E3%82%A7%E3%83%95%E3%83%95%E3%83%A9%E3%82%A4%E3%83%B3%E3%82%B0%E3%82%AA%E3%83%96%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88",
-      "release_year": 2021,
       "release_date": "2021-03-20",
       "circle_names": [
         "Pizuya's Cell"
@@ -17576,8 +17425,6 @@
     {
       "thb_album_id": 19243,
       "title": "NANA HOLIC V",
-      "wiki_url": "https://thwiki.cc/NANA_HOLIC_V",
-      "release_year": 2022,
       "release_date": "2022-05-07",
       "circle_names": [
         "SOUND HOLIC"
@@ -17708,8 +17555,6 @@
     {
       "thb_album_id": 16858,
       "title": "東方四重奏 Holy",
-      "wiki_url": "https://thwiki.cc/%E6%9D%B1%E6%96%B9%E5%9B%9B%E9%87%8D%E5%A5%8F_Holy",
-      "release_year": 2019,
       "release_date": "2019-08-11",
       "circle_names": [
         "TAMUSIC"
@@ -17798,8 +17643,6 @@
     {
       "thb_album_id": 18637,
       "title": "裏ベスト BUTAOTOME Early stages Recommendation",
-      "wiki_url": "https://thwiki.cc/%E8%A3%8F%E3%83%99%E3%82%B9%E3%83%88",
-      "release_year": 2021,
       "release_date": "2021-08-13",
       "circle_names": [
         "豚乙女"
@@ -17923,8 +17766,6 @@
     {
       "thb_album_id": 17614,
       "title": "\"PODIUM\" EPISODE 3 - RETROSPECTIVE -",
-      "wiki_url": "https://thwiki.cc/%22PODIUM%22_EPISODE_3_-_RETROSPECTIVE_-",
-      "release_year": 2020,
       "release_date": "2020-03-21",
       "circle_names": [
         "Alstroemeria Records"
@@ -17978,8 +17819,6 @@
     {
       "thb_album_id": 19916,
       "title": "Solitary Daybreak",
-      "wiki_url": "https://thwiki.cc/Solitary_Daybreak",
-      "release_year": 2022,
       "release_date": "2022-12-30",
       "circle_names": [
         "Amateras Records"
@@ -18054,8 +17893,6 @@
     {
       "thb_album_id": 19650,
       "title": "GAME on DiGiTAL WiNG vol.1",
-      "wiki_url": "https://thwiki.cc/GAME_on_DiGiTAL_WiNG_vol.1",
-      "release_year": 2022,
       "release_date": "2022-10-08",
       "circle_names": [
         "DiGiTAL WiNG"
@@ -18151,8 +17988,6 @@
     {
       "thb_album_id": 19208,
       "title": "EastNewSoundBest vol.4",
-      "wiki_url": "https://thwiki.cc/EastNewSoundBest_vol.4",
-      "release_year": 2022,
       "release_date": "2022-05-07",
       "circle_names": [
         "EastNewSound"
@@ -18241,8 +18076,6 @@
     {
       "thb_album_id": 20072,
       "title": "TOHO COLLECTION VOL.4",
-      "wiki_url": "https://thwiki.cc/TOHO_COLLECTION_VOL.4",
-      "release_year": 2023,
       "release_date": "2023-04-30",
       "circle_names": [
         "Eurobeat Union"
@@ -18310,8 +18143,6 @@
     {
       "thb_album_id": 17634,
       "title": "TOHO BOOTLEGS 3",
-      "wiki_url": "https://thwiki.cc/TOHO_BOOTLEGS_3",
-      "release_year": 2020,
       "release_date": "2020-03-21",
       "circle_names": [
         "IOSYS"
@@ -18372,8 +18203,6 @@
     {
       "thb_album_id": 18245,
       "title": "ネフライト芳翠",
-      "wiki_url": "https://thwiki.cc/%E3%83%8D%E3%83%95%E3%83%A9%E3%82%A4%E3%83%88%E8%8A%B3%E7%BF%A0",
-      "release_year": 2020,
       "release_date": "2020-12-29",
       "circle_names": [
         "Pizuya's Cell"
@@ -18462,8 +18291,6 @@
     {
       "thb_album_id": 18935,
       "title": "EUROBEAT HOLIC' -THE ARCADE-",
-      "wiki_url": "https://thwiki.cc/EUROBEAT_HOLIC%27_-THE_ARCADE-",
-      "release_year": 2021,
       "release_date": "2021-12-24",
       "circle_names": [
         "SOUND HOLIC",
@@ -18553,8 +18380,6 @@
     {
       "thb_album_id": 16844,
       "title": "東方バイオリンロック 紺-KAN-",
-      "wiki_url": "https://thwiki.cc/%E6%9D%B1%E6%96%B9%E3%83%90%E3%82%A4%E3%82%AA%E3%83%AA%E3%83%B3%E3%83%AD%E3%83%83%E3%82%AF_%E7%B4%BA-KAN-",
-      "release_year": 2019,
       "release_date": "2019-08-11",
       "circle_names": [
         "TAMUSIC"
@@ -18643,8 +18468,6 @@
     {
       "thb_album_id": 18422,
       "title": "壺中天",
-      "wiki_url": "https://thwiki.cc/%E5%A3%BA%E4%B8%AD%E5%A4%A9",
-      "release_year": 2021,
       "release_date": "2021-03-20",
       "circle_names": [
         "豚乙女"
@@ -18712,8 +18535,6 @@
     {
       "thb_album_id": 17366,
       "title": "ENCLOSED DANCEHALL",
-      "wiki_url": "https://thwiki.cc/ENCLOSED_DANCEHALL",
-      "release_year": 2019,
       "release_date": "2019-12-30",
       "circle_names": [
         "Alstroemeria Records"
@@ -18795,8 +18616,6 @@
     {
       "thb_album_id": 19753,
       "title": "CODE-G -Midnight Anthems Vol.1-",
-      "wiki_url": "https://thwiki.cc/CODE-G_-Midnight_Anthems_Vol.1-",
-      "release_year": 2022,
       "release_date": "2022-10-22",
       "circle_names": [
         "Amateras Records"
@@ -18871,8 +18690,6 @@
     {
       "thb_album_id": 19524,
       "title": "デジウィ SPiRiT",
-      "wiki_url": "https://thwiki.cc/%E3%83%87%E3%82%B8%E3%82%A6%E3%82%A3_SPiRiT",
-      "release_year": 2022,
       "release_date": "2022-08-13",
       "circle_names": [
         "DiGiTAL WiNG"
@@ -18947,8 +18764,6 @@
     {
       "thb_album_id": 18987,
       "title": "Idolize Religion",
-      "wiki_url": "https://thwiki.cc/Idolize_Religion",
-      "release_year": 2021,
       "release_date": "2021-12-30",
       "circle_names": [
         "EastNewSound"
@@ -19044,8 +18859,6 @@
     {
       "thb_album_id": 19873,
       "title": "TOHO COLLECTION VOL.3",
-      "wiki_url": "https://thwiki.cc/TOHO_COLLECTION_VOL.3",
-      "release_year": 2022,
       "release_date": "2022-12-23",
       "circle_names": [
         "Eurobeat Union"
@@ -19113,8 +18926,6 @@
     {
       "thb_album_id": 17592,
       "title": "東方狛犬歌帖",
-      "wiki_url": "https://thwiki.cc/%E6%9D%B1%E6%96%B9%E7%8B%9B%E7%8A%AC%E6%AD%8C%E5%B8%96",
-      "release_year": 2020,
       "release_date": "2020-02-29",
       "circle_names": [
         "IOSYS"
@@ -19175,8 +18986,6 @@
     {
       "thb_album_id": 18064,
       "title": "シュリーレンの完全反磁性",
-      "wiki_url": "https://thwiki.cc/%E3%82%B7%E3%83%A5%E3%83%AA%E3%83%BC%E3%83%AC%E3%83%B3%E3%81%AE%E5%AE%8C%E5%85%A8%E5%8F%8D%E7%A3%81%E6%80%A7",
-      "release_year": 2020,
       "release_date": "2020-10-10",
       "circle_names": [
         "Pizuya's Cell"
@@ -19272,8 +19081,6 @@
     {
       "thb_album_id": 18223,
       "title": "NANA HOLIC IV",
-      "wiki_url": "https://thwiki.cc/NANA_HOLIC_IV",
-      "release_year": 2020,
       "release_date": "2020-12-24",
       "circle_names": [
         "SOUND HOLIC"
@@ -19404,8 +19211,6 @@
     {
       "thb_album_id": 16823,
       "title": "ピアノのための東方幻想曲集",
-      "wiki_url": "https://thwiki.cc/%E3%83%94%E3%82%A2%E3%83%8E%E3%81%AE%E3%81%9F%E3%82%81%E3%81%AE%E6%9D%B1%E6%96%B9%E5%B9%BB%E6%83%B3%E6%9B%B2%E9%9B%86",
-      "release_year": 2019,
       "release_date": "2019-08-11",
       "circle_names": [
         "TAMUSIC"
@@ -19494,8 +19299,6 @@
     {
       "thb_album_id": 17768,
       "title": "少女煉獄第伍巻",
-      "wiki_url": "https://thwiki.cc/%E5%B0%91%E5%A5%B3%E7%85%89%E7%8D%84_%E7%AC%AC%E4%BA%94%E5%B7%BB",
-      "release_year": 2020,
       "release_date": "2020-05-04",
       "circle_names": [
         "豚乙女"
