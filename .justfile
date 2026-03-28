@@ -7,6 +7,7 @@ mod dev
 
 init:
     prek install
+    cd web && pnpm install
 
 fmt:
     taplo fmt
