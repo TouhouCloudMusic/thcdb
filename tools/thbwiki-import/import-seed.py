@@ -14,6 +14,7 @@ import asyncio
 import base64
 import json
 import os
+import re
 import sys
 from dataclasses import dataclass
 from datetime import date
@@ -58,15 +59,28 @@ class AsyncRateLimiter:
     def __init__(self, req_per_sec: float) -> None:
         self._interval = 1.0 / req_per_sec
         self._next_ready = 0.0
+        self._cooldown_until = 0.0
         self._lock = asyncio.Lock()
 
     async def acquire(self) -> None:
         async with self._lock:
+            loop = asyncio.get_running_loop()
+            now = loop.time()
+            ready_at = max(self._next_ready, self._cooldown_until)
+            if now < ready_at:
+                await asyncio.sleep(ready_at - now)
+                now = loop.time()
+            self._next_ready = max(now, ready_at) + self._interval
+
+    async def backoff(self, delay_seconds: float) -> None:
+        if delay_seconds <= 0:
+            return
+
+        async with self._lock:
             now = asyncio.get_running_loop().time()
-            if now < self._next_ready:
-                await asyncio.sleep(self._next_ready - now)
-                now = self._next_ready
-            self._next_ready = max(now, self._next_ready) + self._interval
+            cooldown_start = max(now, self._next_ready, self._cooldown_until)
+            self._cooldown_until = cooldown_start + delay_seconds
+            self._next_ready = max(self._next_ready, self._cooldown_until)
 
 
 def is_int(value: Any) -> bool:
@@ -496,6 +510,38 @@ def log_info(message: str) -> None:
     print(f"[info] {message}", file=sys.stderr)
 
 
+def parse_retry_delay_seconds(
+    response: httpx.Response,
+    response_text: str,
+    fallback_delay: float,
+) -> float:
+    retry_after = response.headers.get("Retry-After")
+    if retry_after is not None:
+        try:
+            retry_after_seconds = float(retry_after)
+        except ValueError:
+            retry_after_seconds = 0.0
+        if retry_after_seconds > 0:
+            return retry_after_seconds
+
+    reset_after = response.headers.get("X-RateLimit-Reset-After")
+    if reset_after is not None:
+        try:
+            reset_after_seconds = float(reset_after)
+        except ValueError:
+            reset_after_seconds = 0.0
+        if reset_after_seconds > 0:
+            return reset_after_seconds
+
+    match = re.search(r"Wait for ([0-9]+(?:\.[0-9]+)?)s", response_text)
+    if match is not None:
+        wait_seconds = float(match.group(1))
+        if wait_seconds > 0:
+            return wait_seconds
+
+    return fallback_delay
+
+
 async def request_json(
     client: httpx.AsyncClient,
     limiter: AsyncRateLimiter,
@@ -544,10 +590,14 @@ async def request_json(
                 RETRY_DELAYS_SECONDS
             ):
                 delay = RETRY_DELAYS_SECONDS[attempt]
+                if response.status_code == 429:
+                    delay = parse_retry_delay_seconds(response, text, delay)
+                    await limiter.backoff(delay)
+                else:
+                    await asyncio.sleep(delay)
                 log_info(
                     f"[retry] method={method} endpoint={endpoint} status={response.status_code} attempt={attempt + 1} delay={delay}s"
                 )
-                await asyncio.sleep(delay)
                 continue
             message = json.dumps(parsed, ensure_ascii=False) if parsed is not None else text
             raise RuntimeError(
