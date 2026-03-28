@@ -32,6 +32,8 @@ services:
   server:
     build:
       context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
     depends_on:
       db:
         condition: service_healthy
@@ -46,6 +48,12 @@ services:
       REDIS_URL: "redis://redis:6379"
     ports:
       - "12345:12345"
+    volumes:
+      - .:/app
+      - cargo_registry:/usr/local/cargo/registry
+      - cargo_git:/usr/local/cargo/git
+      - server_target:/app/target
+      - server_public:/app/public
     networks:
       - backend
 
@@ -53,5 +61,9 @@ networks:
   backend:
 
 volumes:
+  cargo_git:
+  cargo_registry:
   pgdata:
   redisdata:
+  server_public:
+  server_target:
