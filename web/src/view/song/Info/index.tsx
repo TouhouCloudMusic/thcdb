@@ -71,12 +71,14 @@ function SongInfoTabs() {
 				>
 					Release
 				</Tab.Trigger>
-				<Tab.Trigger
-					value={"Credits"}
-					class={TRIGGER_CLASS}
-				>
-					Credits
-				</Tab.Trigger>
+				<Show when={ctx.song.credits}>
+					<Tab.Trigger
+						value={"Credits"}
+						class={TRIGGER_CLASS}
+					>
+						Credits
+					</Tab.Trigger>
+				</Show>
 				<Show when={ctx.song.lyrics}>
 					<Tab.Trigger
 						value={"Lyrics"}
@@ -90,9 +92,11 @@ function SongInfoTabs() {
 			<Tab.Content value="Release">
 				<SongInfoRelease />
 			</Tab.Content>
-			<Tab.Content value="Credits">
-				<SongInfoCredit />
-			</Tab.Content>
+			<Show when={ctx.song.credits}>
+				<Tab.Content value="Credits">
+					<SongInfoCredit />
+				</Tab.Content>
+			</Show>
 			<Tab.Content value="Lyrics">
 				<SongInfoLyrics />
 			</Tab.Content>
