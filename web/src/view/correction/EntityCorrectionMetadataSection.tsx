@@ -8,37 +8,10 @@ import { twMerge } from "tailwind-merge"
 
 import { Link } from "~/component/atomic/Link"
 import { ButtonClass_new } from "~/component/atomic/button"
-import { Intersperse } from "~/component/data/Intersperse"
 
+import { EntityContributors } from "./EntityContributors"
 import { ENTITY_LABEL_MAP, ENTITY_PAGE_ROUTE_MAP } from "./entityMap"
 import type { EntityDetailType } from "./entityMap"
-
-type Contributor = {
-	id: number
-	name: string
-}
-
-type EntityContributorsProps = {
-	contributors: Contributor[]
-}
-
-function EntityContributors(props: EntityContributorsProps) {
-	return (
-		<div class="flex flex-wrap text-sm">
-			<div class="font-medium text-tertiary whitespace-pre">Contributors: </div>
-			<p class="text-primary wrap-break-word">
-				<Suspense fallback={<>Loading contributors...</>}>
-					<Intersperse
-						of={props.contributors}
-						with={<span class="whitespace-pre">, </span>}
-					>
-						{(contributor) => <span>{contributor.name}</span>}
-					</Intersperse>
-				</Suspense>
-			</p>
-		</div>
-	)
-}
 
 const LINK_CLASS = twMerge(
 	ButtonClass_new({
