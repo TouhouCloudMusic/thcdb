@@ -43,14 +43,14 @@ function RouteComponent() {
 			if (E.isLeft(result)) {
 				throw new Error(result.left.error)
 			}
-			void userCtx.trySignIn()
+			await userCtx.flush()
 		},
 		uploadBanner: async (file) => {
 			const result = await UserApi.uploadProfileBanner(file)
 			if (E.isLeft(result)) {
 				throw new Error(result.left.error)
 			}
-			void userCtx.trySignIn()
+			await userCtx.flush()
 		},
 	})
 

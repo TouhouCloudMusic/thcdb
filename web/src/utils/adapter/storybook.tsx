@@ -61,8 +61,10 @@ export const withStoryRouter = createJSXDecorator((Story, context) => {
 	const router = createStoryRouter([initialEntry])
 
 	return (
-		<RouterContextProvider router={router}>
-			{() => <Story />}
-		</RouterContextProvider>
+		<I18NProvider initialLocale="en">
+			<RouterContextProvider router={router}>
+				{() => <Story />}
+			</RouterContextProvider>
+		</I18NProvider>
 	)
 })

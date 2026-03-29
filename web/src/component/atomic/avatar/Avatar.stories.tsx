@@ -21,6 +21,10 @@ export const Avatar: Story = {
 			avatar_url: baka,
 			name: "baka",
 			last_login: "",
+			stats: {
+				edit_count: 0,
+				vote_count: 0,
+			},
 		},
 	},
 }
@@ -29,6 +33,10 @@ export const Fallback: Story = {
 		user: {
 			name: "Cirno",
 			last_login: "",
+			stats: {
+				edit_count: 0,
+				vote_count: 0,
+			},
 		},
 	},
 }

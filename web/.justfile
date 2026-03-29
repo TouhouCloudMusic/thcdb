@@ -34,5 +34,5 @@ quickfix: oxfix
 test:
     pnpm exec vitest
 
-check +FILES="":
-    pnpm exec oxlint --type-aware --type-check --report-unused-disable-directives {{ FILES }}
+check *files:
+    pnpm exec oxlint --type-aware --type-check --report-unused-disable-directives "$@"

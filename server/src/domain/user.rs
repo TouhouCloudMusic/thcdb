@@ -25,7 +25,19 @@ pub struct UserProfile {
 
     pub bio: Option<String>,
 
+    pub stats: UserProfileStats,
+
     pub settings: Option<Value>,
+}
+
+#[expect(
+    clippy::struct_field_names,
+    reason = "API payload uses explicit *_count field names"
+)]
+#[derive(Clone, ToSchema, Serialize)]
+pub struct UserProfileStats {
+    pub edit_count: u64,
+    pub vote_count: u64,
 }
 
 #[derive(Clone, Debug)]

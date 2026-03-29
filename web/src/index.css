@@ -59,7 +59,7 @@ body,
 	}
 
 	.markdown {
-		@apply m-auto flex flex-col gap-4 p-4 text-slate-900;
+		@apply m-auto flex flex-col gap-4 text-slate-900;
 
 		h1 {
 			@apply text-6xl font-bold text-slate-800;

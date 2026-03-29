@@ -1340,7 +1340,7 @@ export const unfollowUser = <ThrowOnError extends boolean = false>(
 		ThrowOnError
 	>({
 		security: [{ scheme: "basic", type: "http" }],
-		url: "/user/{id}/follow",
+		url: "/profile/{name}/follow",
 		...options,
 	})
 
@@ -1353,7 +1353,7 @@ export const followUser = <ThrowOnError extends boolean = false>(
 		ThrowOnError
 	>({
 		security: [{ scheme: "basic", type: "http" }],
-		url: "/user/{id}/follow",
+		url: "/profile/{name}/follow",
 		...options,
 	})
 

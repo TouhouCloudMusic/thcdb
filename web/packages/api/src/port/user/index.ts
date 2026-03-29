@@ -67,3 +67,33 @@ export async function uploadProfileBanner(file: File) {
 	const res = await adaptFetchMessageResponseFromResponse(response)
 	return adaptApiResultMessage(res)
 }
+
+export async function follow(name: string) {
+	const response = await fetch(
+		`/api/profile/${encodeURIComponent(name)}/follow`,
+		{
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+			},
+		},
+	)
+
+	const res = await adaptFetchMessageResponseFromResponse(response)
+	return adaptApiResultMessage(res)
+}
+
+export async function unfollow(name: string) {
+	const response = await fetch(
+		`/api/profile/${encodeURIComponent(name)}/follow`,
+		{
+			method: "DELETE",
+			headers: {
+				Accept: "application/json",
+			},
+		},
+	)
+
+	const res = await adaptFetchMessageResponseFromResponse(response)
+	return adaptApiResultMessage(res)
+}

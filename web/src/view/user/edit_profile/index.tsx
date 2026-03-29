@@ -135,10 +135,10 @@ export function EditProfileView(props: EditProfileViewProps) {
 
 function EditProfileHeader(props: { isBioDirty: boolean }) {
 	return (
-		<header class="relative overflow-hidden border-b border-slate-300 bg-white/70 px-8 py-6">
+		<header class="relative overflow-hidden border-b border-slate-300 bg-primary/70 px-8 py-6">
 			<div class="pointer-events-none absolute inset-0 opacity-65 bg-[linear-gradient(to_right,rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.06)_1px,transparent_1px)] bg-size-[26px_26px]"></div>
 			<div class="flex justify-between items-center">
-				<h1 class="truncate text-3xl font-light tracking-tight text-slate-900">
+				<h1 class="truncate text-3xl font-light tracking-tight text-primary">
 					Edit profile
 				</h1>
 				<Show when={props.isBioDirty}>
@@ -152,7 +152,7 @@ function EditProfileHeader(props: { isBioDirty: boolean }) {
 
 				<Link
 					to="/profile"
-					class="text-sm text-slate-700 hover:text-slate-900"
+					class="text-sm text-secondary hover:text-primary"
 				>
 					Back to profile
 				</Link>
@@ -217,7 +217,7 @@ function AppearanceCard(props: {
 
 				<div class="px-5 pt-5 pb-6">
 					<div class="grid gap-5 lg:grid-cols-[auto_1fr] lg:items-end">
-						<div class="-mt-14 w-fit relative z-10 rounded-md border border-slate-300 bg-white p-2 shadow-xs">
+						<div class="-mt-14 relative z-10 w-fit rounded-md border border-slate-300 bg-primary p-2 shadow-xs">
 							<Avatar
 								user={props.user}
 								class="size-24"

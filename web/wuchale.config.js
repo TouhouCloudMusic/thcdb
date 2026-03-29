@@ -6,7 +6,16 @@ export default defineConfig({
 	adapters: {
 		main: jsx({
 			files: {
-				ignore: ["**/*.test.ts", "**/*.test.tsx"],
+				ignore: [
+					"**/*.gen.ts",
+					"**/*.test.ts",
+					"**/*.test.tsx",
+					"**/*.stories.ts",
+					"**/*.stories.tsx",
+					"src/hey-api/**",
+					"src/locales/.wuchale/**",
+					"src/locales/*.loader.js",
+				],
 			},
 			loader: "solidjs",
 			variant: "solidjs",

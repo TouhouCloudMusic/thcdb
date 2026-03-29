@@ -46,7 +46,6 @@ import { Route as CorrectionIdRouteImport } from './route/correction/$id'
 import { Route as AuthForgotPasswordRouteImport } from './route/auth/forgot-password'
 import { Route as ArtistNewRouteImport } from './route/artist/new'
 import { Route as ArtistExploreRouteImport } from './route/artist/explore'
-import { Route as userTest_avatar_uploadRouteImport } from './route/(user)/test_avatar_upload'
 import { Route as userProfileRouteImport } from './route/(user)/profile'
 import { Route as ArtistIdIndexRouteImport } from './route/artist/$id.index'
 import { Route as UserIdImageQueueRouteImport } from './route/user/$id.image-queue'
@@ -64,7 +63,6 @@ import { Route as EventIdCorrectionsRouteImport } from './route/event/$id_.corre
 import { Route as ArtistIdImageUploadRouteImport } from './route/artist/$id_.image-upload'
 import { Route as ArtistIdEditRouteImport } from './route/artist/$id_.edit'
 import { Route as ArtistIdCorrectionsRouteImport } from './route/artist/$id_.corrections'
-import { Route as userProfileMockRouteImport } from './route/(user)/profile_.mock'
 import { Route as userProfileEditRouteImport } from './route/(user)/profile_.edit'
 import { Route as userProfileUsernameRouteImport } from './route/(user)/profile_.$username'
 
@@ -253,11 +251,6 @@ const ArtistExploreRoute = ArtistExploreRouteImport.update({
   path: '/artist/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
-const userTest_avatar_uploadRoute = userTest_avatar_uploadRouteImport.update({
-  id: '/(user)/test_avatar_upload',
-  path: '/test_avatar_upload',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const userProfileRoute = userProfileRouteImport.update({
   id: '/(user)/profile',
   path: '/profile',
@@ -343,11 +336,6 @@ const ArtistIdCorrectionsRoute = ArtistIdCorrectionsRouteImport.update({
   path: '/artist/$id/corrections',
   getParentRoute: () => rootRouteImport,
 } as any)
-const userProfileMockRoute = userProfileMockRouteImport.update({
-  id: '/(user)/profile_/mock',
-  path: '/profile/mock',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const userProfileEditRoute = userProfileEditRouteImport.update({
   id: '/(user)/profile_/edit',
   path: '/profile/edit',
@@ -364,7 +352,6 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/search': typeof SearchRoute
   '/profile': typeof userProfileRoute
-  '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -401,7 +388,6 @@ export interface FileRoutesByFullPath {
   '/tag/': typeof TagIndexRoute
   '/profile/$username': typeof userProfileUsernameRoute
   '/profile/edit': typeof userProfileEditRoute
-  '/profile/mock': typeof userProfileMockRoute
   '/artist/$id/corrections': typeof ArtistIdCorrectionsRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
   '/artist/$id/image-upload': typeof ArtistIdImageUploadRoute
@@ -424,7 +410,6 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/search': typeof SearchRoute
   '/profile': typeof userProfileRoute
-  '/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -461,7 +446,6 @@ export interface FileRoutesByTo {
   '/tag': typeof TagIndexRoute
   '/profile/$username': typeof userProfileUsernameRoute
   '/profile/edit': typeof userProfileEditRoute
-  '/profile/mock': typeof userProfileMockRoute
   '/artist/$id/corrections': typeof ArtistIdCorrectionsRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
   '/artist/$id/image-upload': typeof ArtistIdImageUploadRoute
@@ -485,7 +469,6 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/search': typeof SearchRoute
   '/(user)/profile': typeof userProfileRoute
-  '/(user)/test_avatar_upload': typeof userTest_avatar_uploadRoute
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -522,7 +505,6 @@ export interface FileRoutesById {
   '/tag/': typeof TagIndexRoute
   '/(user)/profile_/$username': typeof userProfileUsernameRoute
   '/(user)/profile_/edit': typeof userProfileEditRoute
-  '/(user)/profile_/mock': typeof userProfileMockRoute
   '/artist/$id_/corrections': typeof ArtistIdCorrectionsRoute
   '/artist/$id_/edit': typeof ArtistIdEditRoute
   '/artist/$id_/image-upload': typeof ArtistIdImageUploadRoute
@@ -547,7 +529,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/search'
     | '/profile'
-    | '/test_avatar_upload'
     | '/artist/explore'
     | '/artist/new'
     | '/auth/forgot-password'
@@ -584,7 +565,6 @@ export interface FileRouteTypes {
     | '/tag/'
     | '/profile/$username'
     | '/profile/edit'
-    | '/profile/mock'
     | '/artist/$id/corrections'
     | '/artist/$id/edit'
     | '/artist/$id/image-upload'
@@ -607,7 +587,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/search'
     | '/profile'
-    | '/test_avatar_upload'
     | '/artist/explore'
     | '/artist/new'
     | '/auth/forgot-password'
@@ -644,7 +623,6 @@ export interface FileRouteTypes {
     | '/tag'
     | '/profile/$username'
     | '/profile/edit'
-    | '/profile/mock'
     | '/artist/$id/corrections'
     | '/artist/$id/edit'
     | '/artist/$id/image-upload'
@@ -667,7 +645,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/search'
     | '/(user)/profile'
-    | '/(user)/test_avatar_upload'
     | '/artist/explore'
     | '/artist/new'
     | '/auth/forgot-password'
@@ -704,7 +681,6 @@ export interface FileRouteTypes {
     | '/tag/'
     | '/(user)/profile_/$username'
     | '/(user)/profile_/edit'
-    | '/(user)/profile_/mock'
     | '/artist/$id_/corrections'
     | '/artist/$id_/edit'
     | '/artist/$id_/image-upload'
@@ -728,7 +704,6 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   SearchRoute: typeof SearchRoute
   userProfileRoute: typeof userProfileRoute
-  userTest_avatar_uploadRoute: typeof userTest_avatar_uploadRoute
   ArtistExploreRoute: typeof ArtistExploreRoute
   ArtistNewRoute: typeof ArtistNewRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
@@ -765,7 +740,6 @@ export interface RootRouteChildren {
   TagIndexRoute: typeof TagIndexRoute
   userProfileUsernameRoute: typeof userProfileUsernameRoute
   userProfileEditRoute: typeof userProfileEditRoute
-  userProfileMockRoute: typeof userProfileMockRoute
   ArtistIdCorrectionsRoute: typeof ArtistIdCorrectionsRoute
   ArtistIdEditRoute: typeof ArtistIdEditRoute
   ArtistIdImageUploadRoute: typeof ArtistIdImageUploadRoute
@@ -1045,13 +1019,6 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof ArtistExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(user)/test_avatar_upload': {
-      id: '/(user)/test_avatar_upload'
-      path: '/test_avatar_upload'
-      fullPath: '/test_avatar_upload'
-      preLoaderRoute: typeof userTest_avatar_uploadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/(user)/profile': {
       id: '/(user)/profile'
       path: '/profile'
@@ -1171,13 +1138,6 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof ArtistIdCorrectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(user)/profile_/mock': {
-      id: '/(user)/profile_/mock'
-      path: '/profile/mock'
-      fullPath: '/profile/mock'
-      preLoaderRoute: typeof userProfileMockRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/(user)/profile_/edit': {
       id: '/(user)/profile_/edit'
       path: '/profile/edit'
@@ -1200,7 +1160,6 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   SearchRoute: SearchRoute,
   userProfileRoute: userProfileRoute,
-  userTest_avatar_uploadRoute: userTest_avatar_uploadRoute,
   ArtistExploreRoute: ArtistExploreRoute,
   ArtistNewRoute: ArtistNewRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
@@ -1237,7 +1196,6 @@ const rootRouteChildren: RootRouteChildren = {
   TagIndexRoute: TagIndexRoute,
   userProfileUsernameRoute: userProfileUsernameRoute,
   userProfileEditRoute: userProfileEditRoute,
-  userProfileMockRoute: userProfileMockRoute,
   ArtistIdCorrectionsRoute: ArtistIdCorrectionsRoute,
   ArtistIdEditRoute: ArtistIdEditRoute,
   ArtistIdImageUploadRoute: ArtistIdImageUploadRoute,

@@ -1,4 +1,3 @@
-/* @refresh reload */
 import type { UserProfile, UserRoleEnum } from "@thc/api"
 import type { ComponentProps } from "solid-js"
 import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
@@ -6,7 +5,6 @@ import { twMerge } from "tailwind-merge"
 
 import type { AppColor } from "~/component"
 import { Badge } from "~/component/atomic/Badge"
-import { Card } from "~/component/atomic/Card"
 import { Link } from "~/component/atomic/Link"
 import { Avatar } from "~/component/atomic/avatar"
 import { Button } from "~/component/atomic/button"
@@ -17,6 +15,9 @@ import { imgUrl } from "~/utils/adapter/static_file"
 type Props = {
 	data: UserProfile
 	isCurrentUser: boolean
+	pins: readonly PinItem[]
+	activity: readonly ActivityItem[]
+	action?: ProfileActionProps
 }
 
 const enum UserType {
@@ -28,33 +29,9 @@ const enum UserType {
 type Metric = {
 	label: string
 	value: string
-	hint: string
 }
 
-const MOCK_METRICS: Metric[] = [
-	{
-		label: "Edits",
-		value: "248",
-		hint: "Links · credit fixes · metadata",
-	},
-	{
-		label: "New Entities",
-		value: "31",
-		hint: "Songs · releases · tags",
-	},
-	{
-		label: "Votes",
-		value: "112",
-		hint: "Tag weights & relevance",
-	},
-	{
-		label: "Reviews",
-		value: "19",
-		hint: "Corrections & discussions",
-	},
-]
-
-type ActivityItem = {
+export type ActivityItem = {
 	at: string
 	accent: AppColor
 	action: string
@@ -69,7 +46,7 @@ type ActivityItem = {
 		| { to: "/label/$id"; params: { id: string } }
 }
 
-const MOCK_ACTIVITY: ActivityItem[] = [
+export const DEFAULT_PROFILE_ACTIVITY: readonly ActivityItem[] = [
 	{
 		at: "2025-12-28T10:42:00.000Z",
 		accent: "Reimu",
@@ -112,7 +89,7 @@ const MOCK_ACTIVITY: ActivityItem[] = [
 	},
 ]
 
-type PinItem = {
+export type PinItem = {
 	accent: AppColor
 	kind: string
 	title: string
@@ -127,7 +104,7 @@ type PinItem = {
 		| { to: "/label/$id"; params: { id: string } }
 }
 
-const MOCK_PINS: PinItem[] = [
+export const DEFAULT_PROFILE_PINS: readonly PinItem[] = [
 	{
 		accent: "Reimu",
 		kind: "Release",
@@ -171,7 +148,7 @@ const MOCK_PINS: PinItem[] = [
 		subtitle: "Imprint history · catalogue numbers · distribution",
 		to: { to: "/label/$id", params: { id: "18" } },
 	},
-] satisfies [PinItem, ...PinItem[]]
+] satisfies readonly [PinItem, ...PinItem[]]
 
 export function Profile(props: Props) {
 	const userType = createMemo(() => {
@@ -184,343 +161,361 @@ export function Profile(props: Props) {
 		return UserType.Unfollowed
 	})
 
-	return (
-		<PageLayout class="min-h-full">
-			<div class="flex min-h-full flex-col">
-				<ProfileHero
-					user={props.data}
-					userType={userType()}
-				/>
+	const metrics = createMemo<Metric[]>(() => {
+		return [
+			{
+				label: "Edits",
+				value: String(props.data.stats.edit_count),
+			},
+			{
+				label: "Votes",
+				value: String(props.data.stats.vote_count),
+			},
+		]
+	})
 
-				<div class="border-b border-slate-300 bg-white/70 px-8 py-6">
-					<MetricsStrip metrics={MOCK_METRICS} />
-				</div>
-
-				<div class="p-8">
-					<PinsSection />
-
-					<div class="mt-8 grid gap-6 lg:grid-cols-[0.42fr_0.58fr]">
-						<BioCard user={props.data} />
-						<ActivityCard />
-					</div>
-				</div>
-			</div>
-		</PageLayout>
-	)
-}
-
-function ProfileHero(props: { user: UserProfile; userType: UserType }) {
-	const bannerUrl = createMemo(() => imgUrl(props.user.banner_url))
-	const lastLogin = createMemo(() => formatDateTime(props.user.last_login))
-	const roles = createMemo(() => props.user.roles ?? [])
+	const bannerUrl = createMemo(() => imgUrl(props.data.banner_url))
+	const topRole = createMemo<UserRoleEnum | null>(() => {
+		const roles = props.data.roles ?? []
+		if (roles.length === 0) return null
+		if (roles.some((r) => r.name === "Admin")) return "Admin"
+		if (roles.some((r) => r.name === "Moderator")) return "Moderator"
+		return "User"
+	})
 
 	return (
-		<section class="relative border-b border-slate-300 bg-primary">
-			<div class="relative h-64 overflow-hidden bg-slate-100">
-				<Show when={bannerUrl()}>
+		<PageLayout class="min-h-full bg-primary font-sans pb-12">
+			{/* Simple banner without styling tricks */}
+			<div class="w-full h-32 sm:h-48 lg:h-64 bg-secondary border-b border-slate-200">
+				<Show
+					when={bannerUrl()}
+					fallback={<div class="size-full bg-slate-50"></div>}
+				>
 					{(src) => (
 						<img
 							src={src()}
 							alt="Profile banner"
-							class="absolute inset-0 size-full object-cover object-center"
+							class="size-full object-cover object-center"
 						/>
 					)}
 				</Show>
 			</div>
 
-			<div class="relative px-8 pt-6 pb-7">
-				<div class="grid gap-6 lg:grid-cols-[auto_1fr] lg:items-end">
-					<div class="-mt-16 w-fit">
-						<div class="rounded-md border border-slate-300 bg-white p-2 shadow-xs">
-							<Avatar
-								user={props.user}
-								class="size-28"
+			<div class="mx-auto max-w-[1200px] px-6 sm:px-8 lg:px-12 flex flex-col lg:flex-row gap-12 lg:gap-16 pt-6 lg:pt-0">
+				{/* Standard left sidebar */}
+				<aside class="w-full lg:w-64 xl:w-72 shrink-0 flex flex-col">
+					<div class="lg:-mt-24 sm:-mt-16 mb-5">
+						<Avatar
+							user={props.data}
+							class="size-32 sm:size-40 rounded-full border-4 border-white bg-white ring-1 ring-slate-200"
+						/>
+					</div>
+
+					<h1 class="text-2xl text-primary leading-tight">{props.data.name}</h1>
+
+					<div class="mt-2 flex flex-wrap items-center gap-2">
+						<Show when={topRole()}>
+							{(role) => <RoleBadge role={role()} />}
+						</Show>
+					</div>
+
+					<Show when={props.isCurrentUser || props.action !== undefined}>
+						<div class="mt-6 w-full max-w-[240px] lg:max-w-none">
+							<ProfileActionButton
+								userType={userType()}
+								pendingAction={props.action?.pendingAction}
+								errorMessage={props.action?.errorMessage}
+								onFollow={props.action?.onFollow}
+								onUnfollow={props.action?.onUnfollow}
 							/>
 						</div>
+					</Show>
+
+					<div class="mt-8 text-sm text-secondary">
+						<AboutSection user={props.data} />
 					</div>
 
-					<div class="flex min-w-0 flex-col gap-4">
-						<div class="flex flex-wrap items-start justify-between gap-4">
-							<div class="min-w-0">
-								<h1 class="truncate text-3xl font-light tracking-tight text-slate-900">
-									{props.user.name}
-								</h1>
-								<div class="mt-2 flex flex-wrap items-center gap-2">
-									<For each={roles()}>
-										{(role) => <RoleBadge role={role.name} />}
-									</For>
-								</div>
-							</div>
-
-							<div class="shrink-0">
-								<ProfileActionButton userType={props.userType} />
-							</div>
-						</div>
-
-						<div class="grid gap-3 border-t border-slate-200 pt-4">
-							<div class="flex flex-col gap-1">
-								<div class="text-[11px] font-medium tracking-[0.22em] text-slate-500">
-									LAST LOGIN
-								</div>
-								<div class="font-mono text-sm text-slate-800">
-									{lastLogin()}
-								</div>
-							</div>
-						</div>
+					<div class="mt-8 pt-6 border-t border-slate-100">
+						<MetricsSection metrics={metrics()} />
 					</div>
-				</div>
+				</aside>
+
+				{/* Main content */}
+				<main class="flex-1 min-w-0 flex flex-col gap-14 lg:mt-8">
+					<Show when={props.pins.length > 0}>
+						<PinsSection items={props.pins} />
+					</Show>
+					<ActivitySection items={props.activity} />
+				</main>
 			</div>
-		</section>
+		</PageLayout>
 	)
 }
 
 type ProfileActionButtonProps = {
 	userType: UserType
+	pendingAction?: "follow" | "unfollow"
+	errorMessage?: string
+	onFollow?: () => void
+	onUnfollow?: () => void
 } & ComponentProps<typeof Button>
 
-function ProfileActionButton(props: ProfileActionButtonProps) {
-	const BASE_CLASS = "w-32 px-4"
+type ProfileActionProps = Pick<
+	ProfileActionButtonProps,
+	"pendingAction" | "errorMessage" | "onFollow" | "onUnfollow"
+>
 
+const BUTTON_CLASS = "w-full justify-center text-sm px-4 py-2"
+
+function ProfileActionButton(props: ProfileActionButtonProps) {
 	const [hovering, setHovering] = createSignal(false)
 
 	const onMouseEnter = () => setHovering(true)
 	const onMouseLeave = () => setHovering(false)
 
 	return (
-		<Switch>
-			<Match when={props.userType === UserType.Current}>
-				<Link
-					to="/profile/edit"
-					class="no-underline hover:no-underline"
-				>
-					<Button
-						variant="Secondary"
-						color="Slate"
-						class={twMerge(BASE_CLASS, "justify-center")}
+		<div class="flex flex-col gap-2">
+			<Switch>
+				<Match when={props.userType === UserType.Current}>
+					<Link
+						to="/profile/edit"
+						class="block no-underline hover:no-underline w-full outline-none"
 					>
-						Edit profile
+						<Button
+							variant="SecondaryV2"
+							color="Gray"
+							class={BUTTON_CLASS}
+						>
+							Edit Profile
+						</Button>
+					</Link>
+				</Match>
+
+				<Match when={props.userType === UserType.Unfollowed}>
+					<Button
+						variant="SecondaryV2"
+						color="Slate"
+						class={BUTTON_CLASS}
+						disabled={props.pendingAction !== undefined}
+						onClick={props.onFollow}
+					>
+						{props.pendingAction === "follow" ? "Following..." : "Follow"}
 					</Button>
-				</Link>
-			</Match>
+				</Match>
 
-			<Match when={props.userType === UserType.Unfollowed}>
-				<Button
-					variant="Primary"
-					color="Reimu"
-					class={twMerge(BASE_CLASS, "justify-center")}
-				>
-					Follow
-				</Button>
-			</Match>
+				<Match when={props.userType === UserType.Following}>
+					<Button
+						variant="SecondaryV2"
+						color="Slate"
+						class={BUTTON_CLASS}
+						disabled={props.pendingAction !== undefined}
+						onMouseEnter={onMouseEnter}
+						onMouseLeave={onMouseLeave}
+						onClick={props.onUnfollow}
+					>
+						<Switch>
+							<Match when={props.pendingAction === "unfollow"}>
+								Unfollowing...
+							</Match>
+							<Match when={hovering()}>Unfollow</Match>
+							<Match when={!hovering()}>Following</Match>
+						</Switch>
+					</Button>
+				</Match>
+			</Switch>
 
-			<Match when={props.userType === UserType.Following}>
-				<Button
-					variant="Secondary"
-					color="Reimu"
-					class={twMerge(BASE_CLASS, "justify-center")}
-					onMouseEnter={onMouseEnter}
-					onMouseLeave={onMouseLeave}
-				>
-					<Switch>
-						<Match when={hovering()}>Unfollow</Match>
-						<Match when={!hovering()}>Following</Match>
-					</Switch>
-				</Button>
-			</Match>
-		</Switch>
+			<Show when={props.errorMessage}>
+				<div class="text-sm text-red-600">{props.errorMessage}</div>
+			</Show>
+		</div>
 	)
 }
 
-function BioCard(props: { user: UserProfile }) {
+function AboutSection(props: { user: UserProfile }) {
 	const [mdParsing, setMdParsing] = createSignal(true)
-
 	const bio = createMemo(() => props.user.bio)
 	const shouldPulse = createMemo(() => Boolean(bio()) && mdParsing())
 	const onRendered = () => setMdParsing(false)
 
 	return (
-		<Card class="overflow-hidden border border-slate-300 p-0 shadow-xs">
-			<div class="bg-slate-50 flex items-center justify-between gap-3 border-b border-slate-300 px-5 py-4">
-				<div class="text-xs font-medium tracking-[0.22em] text-slate-600">
-					ABOUT
-				</div>
-			</div>
-
+		<div class="flex flex-col gap-3">
+			<h2 class="text-sm text-primary tracking-wide">About</h2>
 			<div
-				class={twMerge("min-h-36 bg-primary", shouldPulse() && "animate-pulse")}
+				class={twMerge(
+					"prose prose-slate prose-sm leading-relaxed max-w-none text-secondary",
+					shouldPulse() && "animate-pulse opacity-50",
+				)}
 			>
-				<Markdown
-					content={bio()}
-					fallback="这个人什么也没有写哦（"
-					onRendered={onRendered}
-				/>
+				<Show
+					when={bio()}
+					fallback={
+						<span class="text-slate-500 text-sm">No biography provided.</span>
+					}
+				>
+					<Markdown
+						content={bio()}
+						onRendered={onRendered}
+					/>
+				</Show>
 			</div>
-		</Card>
+		</div>
 	)
 }
 
-function MetricsStrip(props: { metrics: Metric[] }) {
+function MetricsSection(props: { metrics: Metric[] }) {
 	return (
-		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+		<div class="flex flex-col gap-3">
 			<For each={props.metrics}>
 				{(metric) => (
-					<Card class="border border-slate-300 bg-white/70 p-4 shadow-xs backdrop-blur-sm">
-						<div class="flex items-baseline justify-between gap-4">
-							<div class="text-sm font-medium text-slate-900">
-								{metric.label}
-							</div>
-							<div class="font-mono text-lg text-slate-900">{metric.value}</div>
-						</div>
-						<div class="mt-1 text-xs text-slate-500">{metric.hint}</div>
-					</Card>
+					<div class="flex items-center justify-between">
+						<span class="text-sm text-slate-600">{metric.label}</span>
+						<span class="text-base text-primary tabular-nums">
+							{metric.value}
+						</span>
+					</div>
 				)}
 			</For>
 		</div>
 	)
 }
 
-function ActivityCard() {
+function PinsSection(props: { items: readonly PinItem[] }) {
 	return (
-		<Card class="border border-slate-300 p-5 shadow-xs">
-			<div class="flex items-center justify-between gap-6">
-				<div class="text-xs font-medium tracking-[0.22em] text-slate-600">
-					ACTIVITY
-				</div>
-				<div class="font-mono text-xs text-slate-400">last 7d</div>
-			</div>
+		<section class="flex flex-col gap-5">
+			<h2 class="text-lg text-primary pb-2 border-b border-slate-100">
+				Highlights
+			</h2>
 
-			<div class="mt-5 grid gap-4">
-				<For each={MOCK_ACTIVITY}>{(item) => <ActivityRow item={item} />}</For>
-			</div>
-		</Card>
-	)
-}
-
-function ActivityRow(props: { item: ActivityItem }) {
-	const timeLabel = createMemo(() => formatDateTime(props.item.at))
-	const dotClass = createMemo(() => accentDotClass(props.item.accent))
-
-	return (
-		<div class="grid grid-cols-[8.75rem_1fr] gap-4">
-			<div class="min-w-0">
-				<div class="font-mono text-xs text-slate-600">{timeLabel()}</div>
-				<div class="mt-1 text-[11px] font-medium tracking-[0.22em] text-slate-400">
-					{props.item.action.toUpperCase()}
-				</div>
-			</div>
-
-			<div class="relative border-l border-slate-200 pl-4">
-				<div
-					class={twMerge(
-						"absolute top-1.5 -left-1 size-2 rounded-full border border-white",
-						dotClass(),
-					)}
-				></div>
-				<div class="flex flex-col gap-1">
-					<ActivityEntity item={props.item} />
-					<div class="text-sm leading-relaxed text-slate-600">
-						{props.item.detail}
-					</div>
-				</div>
-			</div>
-		</div>
-	)
-}
-
-function ActivityEntity(props: { item: ActivityItem }) {
-	const link = createMemo(() => props.item.link)
-
-	return (
-		<div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-			<Show
-				when={link()}
-				fallback={
-					<span class="text-sm font-medium text-slate-900">
-						{props.item.entity}
-					</span>
-				}
-			>
-				{(l) => (
-					<Link
-						to={l().to}
-						params={l().params}
-						class="text-sm font-medium text-slate-900 no-underline hover:text-slate-900 hover:no-underline"
-					>
-						{props.item.entity}
-					</Link>
-				)}
-			</Show>
-		</div>
-	)
-}
-
-function PinsSection() {
-	return (
-		<section class="flex flex-col gap-4">
-			<div class="flex flex-wrap items-end justify-between gap-6">
-				<div class="flex flex-col gap-2">
-					<div class="text-xs font-medium tracking-[0.22em] text-slate-600">
-						PINS
-					</div>
-				</div>
-				<div class="font-mono text-xs text-slate-400">
-					{Math.min(MOCK_PINS.length, 6)} / 6
-				</div>
-			</div>
-
-			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-				<For each={MOCK_PINS.slice(0, 6)}>
-					{(item) => <PinCard item={item} />}
-				</For>
+			<div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+				<For each={props.items}>{(item) => <PinCard item={item} />}</For>
 			</div>
 		</section>
 	)
 }
 
 function PinCard(props: { item: PinItem }) {
-	const dotClass = createMemo(() => accentDotClass(props.item.accent))
-
 	return (
 		<Link
 			to={props.item.to.to}
 			params={props.item.to.params}
-			class="group block no-underline hover:no-underline"
+			class="group flex flex-col h-full bg-primary border border-slate-200 rounded-sm transition-colors hover:border-slate-300 no-underline outline-none overflow-hidden"
 		>
-			<Card class="flex h-full flex-col gap-4 border border-slate-300 bg-white/70 p-5 shadow-xs ring-1 ring-slate-200/60 transition-all duration-150 ring-inset hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-				<div class="flex items-start justify-between gap-3">
-					<div class="min-w-0">
-						<div class="flex items-center gap-2">
-							<span
-								class={twMerge("mt-0.5 inline-block size-2", dotClass())}
-							></span>
-							<div class="text-[11px] font-medium tracking-[0.22em] text-slate-500">
-								{props.item.kind.toUpperCase()}
-							</div>
-						</div>
-						<div class="mt-2 truncate text-sm font-medium text-slate-900">
-							{props.item.title}
-						</div>
-						<div class="mt-1 text-xs leading-relaxed text-slate-500">
-							{props.item.subtitle}
-						</div>
-					</div>
-					<div class="hidden font-mono text-xs text-slate-400 transition-colors duration-150 group-hover:text-slate-700 motion-reduce:transition-none sm:block">
-						→
-					</div>
-				</div>
-
-				<Show when={props.item.coverUrl}>
-					{(src) => (
+			<Show when={props.item.coverUrl}>
+				{(src) => (
+					<div class="aspect-video w-full overflow-hidden bg-slate-50 border-b border-slate-100">
 						<img
 							src={src()}
 							alt=""
 							loading="lazy"
-							class="mt-auto h-28 w-full rounded-sm border border-slate-200 bg-slate-100 object-cover"
+							class="size-full object-cover transition-opacity duration-300 group-hover:opacity-90"
 						/>
-					)}
-				</Show>
-			</Card>
+					</div>
+				)}
+			</Show>
+
+			<Show when={!props.item.coverUrl}>
+				<div class="aspect-video w-full overflow-hidden bg-slate-50 border-b border-slate-100 flex items-center justify-center">
+					<span class="text-slate-400 text-xs font-medium tracking-wide">
+						{props.item.kind}
+					</span>
+				</div>
+			</Show>
+
+			<div class="flex flex-col flex-1 p-4">
+				<div class="flex items-center mb-1">
+					<span class="text-xs font-medium text-slate-500">
+						{props.item.kind}
+					</span>
+				</div>
+				<h3 class="text-base leading-tight text-primary group-hover:text-blue-600 transition-colors line-clamp-2 mb-1">
+					{props.item.title}
+				</h3>
+				<p class="text-sm text-slate-500 line-clamp-2 mt-auto">
+					{props.item.subtitle}
+				</p>
+			</div>
 		</Link>
+	)
+}
+
+function ActivitySection(props: { items: readonly ActivityItem[] }) {
+	return (
+		<section class="flex flex-col gap-5">
+			<h2 class="text-lg text-primary pb-2 border-b border-slate-100">
+				Recent Activity
+			</h2>
+
+			<Show
+				when={props.items.length > 0}
+				fallback={<SectionEmptyState message="No recent activity." />}
+			>
+				<div class="flex flex-col">
+					<For each={props.items}>
+						{(item, index) => (
+							<ActivityRow
+								item={item}
+								isLast={index() === props.items.length - 1}
+							/>
+						)}
+					</For>
+				</div>
+			</Show>
+		</section>
+	)
+}
+
+function SectionEmptyState(props: { message: string }) {
+	return (
+		<div class="border border-slate-200 rounded-sm bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
+			{props.message}
+		</div>
+	)
+}
+
+function ActivityRow(props: { item: ActivityItem; isLast: boolean }) {
+	return (
+		<div
+			class={twMerge(
+				"flex flex-col sm:flex-row gap-2 sm:gap-4 py-4",
+				props.isLast ? "" : "border-b border-slate-100",
+			)}
+		>
+			<div class="w-32 shrink-0 text-sm text-slate-500 sm:pt-0.5">
+				{formatDateTime(props.item.at)}
+			</div>
+
+			<div class="flex-1 min-w-0">
+				<div class="text-[15px] text-primary leading-snug">
+					<span class="text-slate-500 mr-2">{props.item.action}</span>
+					<ActivityEntity item={props.item} />
+				</div>
+
+				<Show when={props.item.detail}>
+					<div class="text-sm text-slate-500 mt-1 truncate">
+						{props.item.detail}
+					</div>
+				</Show>
+			</div>
+		</div>
+	)
+}
+
+function ActivityEntity(props: { item: ActivityItem }) {
+	return (
+		<Show
+			when={props.item.link}
+			fallback={<span class="text-primary">{props.item.entity}</span>}
+		>
+			{(l) => (
+				<Link
+					to={l().to}
+					params={l().params}
+					class="text-primary hover:underline transition-colors"
+				>
+					{props.item.entity}
+				</Link>
+			)}
+		</Show>
 	)
 }
 
@@ -529,7 +524,7 @@ function RoleBadge(props: { role: UserRoleEnum }) {
 		<Show when={props.role !== "User"}>
 			<Badge
 				color={roleColor(props.role)}
-				class="px-3 py-1"
+				class="rounded-sm border border-slate-200 bg-primary px-2 py-0.5 text-xs font-medium"
 			>
 				{props.role}
 			</Badge>
@@ -554,31 +549,11 @@ function roleColor(role: UserRoleEnum): AppColor {
 	}
 }
 
-function accentDotClass(accent: AppColor) {
-	switch (accent) {
-		case "Reimu": {
-			return "bg-reimu-600"
-		}
-		case "Blue": {
-			return "bg-blue-700"
-		}
-		case "Green": {
-			return "bg-green-700"
-		}
-		case "Marisa": {
-			return "bg-marisa-700"
-		}
-		case "Gray": {
-			return "bg-slate-700"
-		}
-		case "Slate": {
-			return "bg-slate-700"
-		}
-		default: {
-			return "bg-slate-700"
-		}
-	}
-}
+const DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
+	month: "short",
+	day: "numeric",
+	year: "numeric",
+})
 
 function formatDateTime(value: string) {
 	const date = new Date(value)
@@ -587,11 +562,5 @@ function formatDateTime(value: string) {
 		return value
 	}
 
-	return new Intl.DateTimeFormat(undefined, {
-		year: "numeric",
-		month: "2-digit",
-		day: "2-digit",
-		hour: "2-digit",
-		minute: "2-digit",
-	}).format(date)
+	return DATE_FORMATTER.format(date)
 }
