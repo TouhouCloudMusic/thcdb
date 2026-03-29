@@ -10,6 +10,12 @@ import * as v from "valibot"
 import { assertContext } from "~/utils/solid/assertContext"
 
 const SIGNED_IN_KEY = "is_signed_in"
+const NOTIFICATION_KEYS = [
+	"comment_reply_enabled",
+	"comment_mention_enabled",
+	"correction_status_enabled",
+	"new_follower_enabled",
+] as const
 
 function SignedInHint_check() {
 	try {
@@ -48,6 +54,19 @@ const getObject = (x: unknown): Record<string, unknown> | undefined => {
 	}
 }
 
+function hasEnabledNotification(
+	preference: Record<string, unknown> | undefined,
+) {
+	return NOTIFICATION_KEYS.some((key) => {
+		const value = preference?.[key]
+		return typeof value === "boolean" ? value : true
+	})
+}
+
+function isUnauthorized(error: { statusCode?: number }) {
+	return error.statusCode === 401
+}
+
 export class UserStore {
 	private ctx: UserContext
 
@@ -65,23 +84,31 @@ export class UserStore {
 		| undefined = undefined
 
 	async trySignIn() {
-		if (!SignedInHint_check()) return
+		if (this.ctx?.user || this.isLoading || !SignedInHint_check()) return
+		await this.flush()
+	}
+
+	async flush() {
+		if (this.isLoading || !SignedInHint_check()) return
 
 		this.isLoading = true
 		const result = await UserApi.profile()
 		this.isLoading = false
 
-		E.match(result, {
-			onLeft: (_) => {
-				SignedInHint_set(false)
+		return E.match(result, {
+			onLeft: (error) => {
+				if (isUnauthorized(error)) {
+					this.clearSession()
+				}
 			},
 			onRight: (right) => {
 				const user = Option.getOrUndefined(right)
 				if (!user) {
-					SignedInHint_set(false)
+					this.clearSession()
 					return
 				}
 				this.sign_in({ user })
+				return user
 			},
 		})
 	}
@@ -98,17 +125,7 @@ export class UserStore {
 		const notification = settings
 			? getObject(settings["notification"])
 			: undefined
-		const getBool = (key: string, defaultVal: boolean) => {
-			const value = notification?.[key]
-			return typeof value === "boolean" ? value : defaultVal
-		}
-
-		if (
-			!getBool("comment_reply_enabled", true)
-			&& !getBool("comment_mention_enabled", true)
-			&& !getBool("correction_status_enabled", true)
-			&& !getBool("new_follower_enabled", true)
-		) {
+		if (!hasEnabledNotification(notification)) {
 			return NotificationState.Muted
 		}
 		return NotificationState.None
@@ -138,15 +155,19 @@ export class UserStore {
 	async sign_out() {
 		const result = await AuthApi.signout()
 
-		this.ctx = undefined
-		SignedInHint_set(false)
-		this.notificationUnreadCount = 0
-		this.disconnectNotificationSocket()
+		this.clearSession()
 		E.mapLeft(result, (error) => {
 			console.debug("Sign out failed", error)
 
 			throw error
 		})
+	}
+
+	private clearSession() {
+		this.ctx = undefined
+		SignedInHint_set(false)
+		this.notificationUnreadCount = 0
+		this.disconnectNotificationSocket()
 	}
 
 	private disconnectNotificationSocket() {
@@ -230,6 +251,29 @@ export type UserContext =
 const UserContext = createContext<UserStore>()
 
 export const useCurrentUser = () => assertContext(UserContext, "UserContext")
+
+export async function ensureCurrentUser() {
+	if (!SignedInHint_check()) {
+		return
+	}
+
+	const result = await UserApi.profile()
+
+	if (E.isLeft(result)) {
+		if (isUnauthorized(result.left)) {
+			SignedInHint_set(false)
+		}
+		return
+	}
+
+	const user = Option.getOrUndefined(result.right)
+
+	if (!user) {
+		SignedInHint_set(false)
+	}
+
+	return user
+}
 
 export function UserContextProvider(props: ParentProps) {
 	const store = new UserStore(undefined)

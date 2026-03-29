@@ -37,21 +37,7 @@ msgstr "Last page"
 msgid "Pagination"
 msgstr "Pagination"
 
-#: src/component/Palette.stories.tsx
-msgid "Text comparison"
-msgstr "Text comparison"
-
-#. 0: color
-#. 0: color
-#: src/component/Palette.stories.tsx
-#: src/component/Palette.stories.tsx
-msgid "Text is {0}"
-msgstr "Text is {0}"
-
-#: src/component/Palette.stories.tsx
-#: src/component/Palette.stories.tsx
 #: src/component/route.tsx
-#: src/route/(user)/profile_.mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
@@ -62,15 +48,12 @@ msgstr "Text is {0}"
 #: src/view/image_queue/user.tsx
 #: src/view/image_queue/user.tsx
 #: src/view/image_queue/user.tsx
+#: src/view/user/Profile.tsx
 #: src/view/user/Profile.tsx
 #: src/view/user/Profile.tsx
 #: src/view/user/Profile.tsx
 msgid "Slate"
 msgstr "Slate"
-
-#: src/component/Palette.stories.tsx
-msgid "Border"
-msgstr "Border"
 
 #: src/component/route.tsx
 msgid "Checking session…"
@@ -99,7 +82,6 @@ msgstr "Sign in"
 #: src/component/dialog/AlertDialog.tsx
 #: src/component/form/FormActionBar.tsx
 #: src/component/route.tsx
-#: src/route/(user)/profile_.mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
@@ -113,7 +95,6 @@ msgstr "Sign in"
 #: src/view/image_upload/EntityImageUploadPage.tsx
 #: src/view/label/List/index.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/user/Profile.tsx
 #: src/view/user/edit_profile/index.tsx
 msgid "Primary"
 msgstr "Primary"
@@ -122,7 +103,6 @@ msgstr "Primary"
 #: src/component/ImageCropDialog/index.tsx
 #: src/component/dialog/AlertDialog.tsx
 #: src/component/route.tsx
-#: src/route/(user)/profile_.mock.tsx
 #: src/route/correction/mock.tsx
 #: src/view/auth/component/AuthCredentialForm.tsx
 #: src/view/auth/component/AuthCredentialForm.tsx
@@ -136,8 +116,6 @@ msgstr "Primary"
 #: src/view/image_upload/EntityImageUploadPage.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 #: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
 #: src/view/user/edit_profile/index.tsx
 msgid "Reimu"
 msgstr "Reimu"
@@ -149,14 +127,11 @@ msgstr "Create account"
 
 #: src/component/atomic/button/index.tsx
 #: src/component/route.tsx
-#: src/route/(user)/profile_.mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
 #: src/view/auth/component/VerifyEmailForm.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
 msgid "Secondary"
 msgstr "Secondary"
 
@@ -207,18 +182,13 @@ msgstr "Japanese"
 msgid "Genre"
 msgstr "Genre"
 
-msgid "Ok"
-msgstr "Ok"
-
 #: src/route/__root.tsx
 msgid "Unknown error"
 msgstr "Unknown error"
 
-#~ msgid "Doujin Cloud DB"
-#~ msgstr "Doujin Cloud DB"
-
 #: src/route/about.tsx
 #: src/route/about.tsx
+#: src/view/user/Profile.tsx
 msgid "About"
 msgstr "About"
 
@@ -240,9 +210,6 @@ msgstr "The page you are looking for does not exist."
 #: src/view/NotFound.tsx
 msgid "Hey you, lost one. why you are here?{0} <0>You should go back...</0>"
 msgstr "Hey you, lost one. why you are here?{0} <0>You should go back...</0>"
-
-#~ msgid "Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempora officia impedit placeat, iusto dolores repudiandae quisquam molestiae nam, corrupti quae debitis reiciendis quos et reprehenderit! Quos possimus aliquid exercitationem delectus?"
-#~ msgstr "Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempora officia impedit placeat, iusto dolores repudiandae quisquam molestiae nam, corrupti quae debitis reiciendis quos et reprehenderit! Quos possimus aliquid exercitationem delectus?"
 
 #. 0: CURRENT_YEAR
 #: src/component/Footer/index.tsx
@@ -310,7 +277,6 @@ msgstr "Explore"
 #: src/component/form/SearchDialog/CreditRoleSearchDialog.tsx
 #: src/component/form/SearchDialog/EventSearchDialog.tsx
 #: src/component/form/SearchDialog/LabelSearchDialog.tsx
-#: src/component/form/SearchDialog/SearchDialog.stories.tsx
 #: src/component/form/SearchDialog/TagSearchDialog.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
@@ -471,6 +437,9 @@ msgstr "Close"
 #: src/view/auth/reset_password/index.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/image_queue/user.tsx
+#: src/view/user/Profile.tsx
+#: src/view/user/Profile.tsx
+#: src/view/user/Profile.tsx
 #: src/view/user/edit_profile/index.tsx
 #: src/view/user/edit_profile/index.tsx
 #: src/view/user/edit_profile/index.tsx
@@ -529,8 +498,6 @@ msgstr "Replace"
 #: src/component/ImageCropDialog/index.tsx
 #: src/component/ImageCropDialog/index.tsx
 #: src/component/__legacy/chart/index.tsx
-#: src/component/form/SearchDialog/SearchDialog.stories.tsx
-#: src/route/(user)/profile_.mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
@@ -580,30 +547,6 @@ msgstr "TanStack Router"
 msgid "TanStack Query"
 msgstr "TanStack Query"
 
-#: src/component/dialog/AlertDialog.stories.tsx
-msgid "打开对话框"
-msgstr "打开对话框"
-
-#: src/component/dialog/AlertDialog.stories.tsx
-msgid "删除项目"
-msgstr "删除项目"
-
-#: src/component/dialog/AlertDialog.stories.tsx
-msgid "自定义按钮文本"
-msgstr "自定义按钮文本"
-
-#: src/component/dialog/AlertDialog.stories.tsx
-msgid "只有确认按钮"
-msgstr "只有确认按钮"
-
-#: src/component/dialog/AlertDialog.stories.tsx
-msgid "不可撤销的对话框"
-msgstr "不可撤销的对话框"
-
-#: src/component/dialog/AlertDialog.stories.tsx
-msgid "背景模糊对话框"
-msgstr "背景模糊对话框"
-
 #: src/component/dialog/AlertDialog.tsx
 msgid "取消"
 msgstr "取消"
@@ -611,14 +554,6 @@ msgstr "取消"
 #: src/component/dialog/AlertDialog.tsx
 msgid "确定"
 msgstr "确定"
-
-#: src/component/dialog/ImageUploadDialog.stories.tsx
-msgid "Upload Image"
-msgstr "Upload Image"
-
-#: src/component/dialog/ImageUploadDialog.stories.tsx
-msgid "Upload Banner Image"
-msgstr "Upload Banner Image"
 
 #. 0: fieldNameWithoutUnderscore()
 #: src/component/dialog/ResetFieldDialog.tsx
@@ -673,12 +608,6 @@ msgstr "Submitting"
 msgid "Back"
 msgstr "Back"
 
-#: src/component/image_upload/EntityImageUploadPage.stories.tsx
-#: src/component/image_upload/EntityImageUploadPage.stories.tsx
-msgid "Failed to read image."
-msgstr "Failed to read image."
-
-#: src/component/image_queue/ImageQueueManagePage.stories.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
@@ -686,46 +615,36 @@ msgstr "Failed to read image."
 msgid "Pending"
 msgstr "Pending"
 
-#: src/component/image_queue/ImageQueueDetailPage.stories.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Approved"
 msgstr "Approved"
 
-#: src/component/image_queue/ImageQueueDetailPage.stories.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Rejected"
 msgstr "Rejected"
 
-#: src/component/image_queue/ImageQueueDetailPage.stories.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Reverted"
 msgstr "Reverted"
 
-#: src/component/image_queue/ImageQueueDetailPage.stories.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Approve"
 msgstr "Approve"
 
-#: src/component/image_queue/ImageQueueDetailPage.stories.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Reject"
 msgstr "Reject"
 
-#: src/component/image_queue/ImageQueueDetailPage.stories.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Revert"
 msgstr "Revert"
-
-#: src/component/image_queue/ImageQueueDetailPage.stories.tsx
-msgid "Story entry not found."
-msgstr "Story entry not found."
 
 #: src/component/navbar/index.tsx
 msgid "推荐"
@@ -763,22 +682,11 @@ msgstr "文章"
 msgid "活动"
 msgstr "活动"
 
-#: src/route/(user)/test_avatar_upload.tsx
-msgid "Hakurei Reimu"
-msgstr "Hakurei Reimu"
-
-#: src/route/(user)/test_avatar_upload.tsx
 #: src/view/image_queue/detail.tsx
+#: src/view/user/Profile.tsx
+#: src/view/user/Profile.tsx
 msgid "Admin"
 msgstr "Admin"
-
-#: src/route/(user)/test_avatar_upload.tsx
-msgid "这是一个 `mock route`：用来测试编辑页的 UI / cropper / 保存逻辑。"
-msgstr "这是一个 `mock route`：用来测试编辑页的 UI / cropper / 保存逻辑。"
-
-#: src/route/(user)/profile_.mock.tsx
-msgid "PROFILE MOCK"
-msgstr "PROFILE MOCK"
 
 #: src/route/correction/mock.tsx
 msgid "CORRECTION LAB"
@@ -1214,6 +1122,8 @@ msgid "Cancelled"
 msgstr "Cancelled"
 
 #: src/view/image_queue/detail.tsx
+#: src/view/user/Profile.tsx
+#: src/view/user/Profile.tsx
 msgid "Moderator"
 msgstr "Moderator"
 
@@ -1557,11 +1467,6 @@ msgstr "Loading profile..."
 msgid "Profile banner"
 msgstr "Profile banner"
 
-#: src/view/user/Profile.tsx
-msgid "LAST LOGIN"
-msgstr "LAST LOGIN"
-
-#: src/view/user/Profile.tsx
 #: src/view/user/edit_profile/index.tsx
 msgid "Edit profile"
 msgstr "Edit profile"
@@ -1579,25 +1484,6 @@ msgid "Following"
 msgstr "Following"
 
 #: src/view/user/Profile.tsx
-msgid "ABOUT"
-msgstr "ABOUT"
-
-#: src/view/user/Profile.tsx
-msgid "这个人什么也没有写哦（"
-msgstr "这个人什么也没有写哦（"
-
-#: src/view/user/Profile.tsx
-msgid "ACTIVITY"
-msgstr "ACTIVITY"
-
-#: src/view/user/Profile.tsx
-msgid "last 7d"
-msgstr "last 7d"
-
-#: src/view/user/Profile.tsx
-msgid "PINS"
-msgstr "PINS"
-
 #: src/view/user/Profile.tsx
 msgid "User"
 msgstr "User"
@@ -1618,7 +1504,6 @@ msgstr "ArrowLeft"
 msgid "v"
 msgstr "v"
 
-#: src/view/tag/explore.stories.tsx
 #: src/view/tag/explore.tsx
 msgid "Tag Tree"
 msgstr "Tag Tree"
@@ -1642,48 +1527,6 @@ msgstr "Negative:"
 #: src/component/__legacy/player/index.tsx
 msgid "幻想乡之歌"
 msgstr "幻想乡之歌"
-
-#: src/component/__legacy/popover/Popover.stories.tsx
-msgid "打开弹窗"
-msgstr "打开弹窗"
-
-#: src/component/__legacy/popover/Popover.stories.tsx
-#: src/component/__legacy/popover/Popover.stories.tsx
-msgid "弹窗标题"
-msgstr "弹窗标题"
-
-#: src/component/__legacy/popover/Popover.stories.tsx
-msgid "这是弹窗内容的描述。"
-msgstr "这是弹窗内容的描述。"
-
-#: src/component/__legacy/popover/Popover.stories.tsx
-#: src/component/__legacy/popover/Popover.stories.tsx
-msgid "关闭"
-msgstr "关闭"
-
-#: src/component/__legacy/popover/Popover.stories.tsx
-msgid "打开自定义内容"
-msgstr "打开自定义内容"
-
-#: src/component/__legacy/popover/Popover.stories.tsx
-msgid "这是一个自定义内容布局。"
-msgstr "这是一个自定义内容布局。"
-
-#: src/component/__legacy/popover/Popover.stories.tsx
-msgid "操作 1"
-msgstr "操作 1"
-
-#: src/component/__legacy/popover/Popover.stories.tsx
-msgid "操作 2"
-msgstr "操作 2"
-
-#: src/component/atomic/Card/Card.stories.tsx
-msgid "This is a card"
-msgstr "This is a card"
-
-#: src/component/atomic/Card/Card.stories.tsx
-msgid "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Non eveniet, ratione porro voluptates dolor eligendi error consequuntur cum provident unde odio recusandae, optio adipisci! Obcaecati, fugit laboriosam. Aut, expedita pariatur!"
-msgstr "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Non eveniet, ratione porro voluptates dolor eligendi error consequuntur cum provident unde odio recusandae, optio adipisci! Obcaecati, fugit laboriosam. Aut, expedita pariatur!"
 
 #: src/component/atomic/button/index.tsx
 msgid "Md"
@@ -1731,40 +1574,6 @@ msgstr "Search..."
 #: src/component/form/SearchDialog/LabelSearchDialog.tsx
 msgid "Search Label"
 msgstr "Search Label"
-
-#: src/component/form/SearchDialog/SearchDialog.stories.tsx
-msgid "Apple"
-msgstr "Apple"
-
-#: src/component/form/SearchDialog/SearchDialog.stories.tsx
-#: src/component/form/SearchDialog/SearchDialog.stories.tsx
-msgid "Fruit"
-msgstr "Fruit"
-
-#: src/component/form/SearchDialog/SearchDialog.stories.tsx
-msgid "Banana"
-msgstr "Banana"
-
-#: src/component/form/SearchDialog/SearchDialog.stories.tsx
-msgid "Carrot"
-msgstr "Carrot"
-
-#: src/component/form/SearchDialog/SearchDialog.stories.tsx
-#: src/component/form/SearchDialog/SearchDialog.stories.tsx
-msgid "Vegetable"
-msgstr "Vegetable"
-
-#: src/component/form/SearchDialog/SearchDialog.stories.tsx
-msgid "Broccoli"
-msgstr "Broccoli"
-
-#: src/component/form/SearchDialog/SearchDialog.stories.tsx
-msgid "添加物品"
-msgstr "添加物品"
-
-#: src/component/form/SearchDialog/SearchDialog.stories.tsx
-msgid "搜索物品..."
-msgstr "搜索物品..."
 
 #: src/component/form/SearchDialog/TagSearchDialog.tsx
 msgid "Search Tag"
@@ -2012,17 +1821,9 @@ msgstr "Already have an account?{0} <0>Sign in</0>"
 msgid "Verification code"
 msgstr "Verification code"
 
-#~ msgid "Missing signup email, please sign up again"
-#~ msgstr "Missing signup email, please sign up again"
-
 #: src/view/auth/store/index.ts
 msgid "If eligible, a verification code has been sent."
 msgstr "If eligible, a verification code has been sent."
-
-#: src/view/auth/reset_password/request.ts
-#: src/view/auth/reset_password/request.ts
-msgid "Content-Type"
-msgstr "Content-Type"
 
 #: src/view/auth/reset_password/index.tsx
 msgid "Change"
@@ -2471,27 +2272,6 @@ msgstr "Location"
 msgid "Short Description"
 msgstr "Short Description"
 
-#~ msgid "Reitaisai"
-#~ msgstr "Reitaisai"
-
-#~ msgid "Touhou convention"
-#~ msgstr "Touhou convention"
-
-#~ msgid "Annual Touhou convention"
-#~ msgstr "Annual Touhou convention"
-
-#~ msgid "例大祭"
-#~ msgstr "例大祭"
-
-#~ msgid "博麗神社例大祭"
-#~ msgstr "博麗神社例大祭"
-
-#~ msgid "Japan"
-#~ msgstr "Japan"
-
-#~ msgid "Tokyo"
-#~ msgstr "Tokyo"
-
 #: src/view/label/edit/comp/LabelDateFields.tsx
 msgid "Founded date"
 msgstr "Founded date"
@@ -2646,30 +2426,6 @@ msgstr "No song selected"
 msgid "Track Artists"
 msgstr "Track Artists"
 
-#~ msgid "Test Release"
-#~ msgstr "Test Release"
-
-#~ msgid "Event X"
-#~ msgstr "Event X"
-
-#~ msgid "Event Y"
-#~ msgstr "Event Y"
-
-#~ msgid "English"
-#~ msgstr "English"
-
-#~ msgid "Disc A"
-#~ msgstr "Disc A"
-
-#~ msgid "Song A"
-#~ msgstr "Song A"
-
-#~ msgid "Song B"
-#~ msgstr "Song B"
-
-#~ msgid "Composer"
-#~ msgstr "Composer"
-
 #: src/view/tag/edit/comp/TagRelationsField.tsx
 msgid "Select tag"
 msgstr "Select tag"
@@ -2732,9 +2488,6 @@ msgstr "Join year cannot be earlier than previous leave year"
 msgid "Join year cannot be the same as previous leave year"
 msgstr "Join year cannot be the same as previous leave year"
 
-#~ msgid "Simplified Chinese"
-#~ msgstr "Simplified Chinese"
-
 #: src/view/auth/component/AuthForm.tsx
 msgid "Use your account to continue."
 msgstr "Use your account to continue."
@@ -2767,5 +2520,42 @@ msgstr "Zulip"
 msgid "Feedback"
 msgstr "Feedback"
 
-#~ msgid "简体中文"
-#~ msgstr "简体中文"
+#: src/view/user/Profile.tsx
+msgid "Edits"
+msgstr "Edits"
+
+#: src/view/user/Profile.tsx
+msgid "Votes"
+msgstr "Votes"
+
+#: src/view/user/Profile.tsx
+msgid "Edit Profile"
+msgstr "Edit Profile"
+
+#: src/view/user/Profile.tsx
+msgid "Highlights"
+msgstr "Highlights"
+
+#: src/view/user/Profile.tsx
+msgid "Recent Activity"
+msgstr "Recent Activity"
+
+#: src/view/user/Profile.tsx
+msgid "No recent activity."
+msgstr "No recent activity."
+
+#: src/view/user/Profile.tsx
+msgid "Gray"
+msgstr "Gray"
+
+#: src/view/user/Profile.tsx
+msgid "Following..."
+msgstr "Following..."
+
+#: src/view/user/Profile.tsx
+msgid "Unfollowing..."
+msgstr "Unfollowing..."
+
+#: src/view/user/Profile.tsx
+msgid "No biography provided."
+msgstr "No biography provided."

@@ -11,7 +11,12 @@ export default defineMain({
 		},
 	},
 	core: {
-		builder: "@storybook/builder-vite",
+		builder: {
+			name: "@storybook/builder-vite",
+			options: {
+				viteConfigPath: "./storybook.vite.config.ts",
+			},
+		},
 	},
 	addons: [
 		"@storybook/addon-onboarding",
@@ -25,17 +30,6 @@ export default defineMain({
 			},
 		},
 	],
-	async viteFinal(config) {
-		const { mergeConfig } = await import("vite")
-		return mergeConfig(config, {
-			optimizeDeps: {
-				include: ["storybook-dark-mode"],
-			},
-			define: {
-				"process.env": {},
-			},
-		})
-	},
 	stories: [
 		"../src/component/!(__legacy|dialog)/**/*.stories.@(ts|tsx)",
 		"../src/view/**/*.stories.@(ts|tsx)",

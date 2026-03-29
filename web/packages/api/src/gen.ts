@@ -687,6 +687,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/profile/{name}/follow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["follow_user"];
+        delete: operations["unfollow_user"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/release": {
         parameters: {
             query?: never;
@@ -1098,22 +1114,6 @@ export type paths = {
         put?: never;
         post?: never;
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/user/{id}/follow": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["follow_user"];
-        delete: operations["unfollow_user"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2494,7 +2494,14 @@ export type components = {
             last_login: string;
             name: string;
             roles?: components["schemas"]["UserRole"][];
+            stats: components["schemas"]["UserProfileStats"];
             settings?: unknown;
+        };
+        UserProfileStats: {
+            /** Format: int64 */
+            edit_count: number;
+            /** Format: int64 */
+            vote_count: number;
         };
         UserRole: {
             /** Format: int32 */
@@ -2720,6 +2727,7 @@ export type Tenure = components['schemas']['Tenure'];
 export type UploadAvatar = components['schemas']['UploadAvatar'];
 export type UploadProfileBanner = components['schemas']['UploadProfileBanner'];
 export type UserProfile = components['schemas']['UserProfile'];
+export type UserProfileStats = components['schemas']['UserProfileStats'];
 export type UserRole = components['schemas']['UserRole'];
 export type UserRoleEnum = components['schemas']['UserRoleEnum'];
 export type UserSummary = components['schemas']['UserSummary'];
@@ -6814,7 +6822,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                name: string;
             };
             cookie?: never;
         };
@@ -6857,7 +6865,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                name: string;
             };
             cookie?: never;
         };
@@ -7121,6 +7129,8 @@ export enum ApiPaths {
     upload_profile_banner = "/profile-banner",
     update_bio = "/profile/bio",
     profile_with_name = "/profile/{name}",
+    follow_user = "/profile/{name}/follow",
+    unfollow_user = "/profile/{name}/follow",
     find_release_by_keyword = "/release",
     create_release = "/release",
     explore_release = "/release/explore",
@@ -7155,8 +7165,6 @@ export enum ApiPaths {
     find_tag_by_id = "/tag/{id}",
     upsert_tag_correction = "/tag/{id}",
     user_roles = "/user-roles",
-    follow_user = "/user/{id}/follow",
-    unfollow_user = "/user/{id}/follow",
     user_image_queue = "/user/{id}/image-queue",
     verify_email = "/verify-email",
     verify_reset_code = "/verify-reset-code",

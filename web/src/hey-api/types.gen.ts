@@ -1337,6 +1337,7 @@ export type UserProfile = {
 	banner_url?: string | null
 	last_login: string
 	roles?: Array<UserRole>
+	stats: UserProfileStats
 	/**
 	 * Whether the querist follows the user. Return `None` if querist is not signed in or it's querist's own profile
 	 */
@@ -3902,10 +3903,10 @@ export type UserRolesResponse = UserRolesResponses[keyof UserRolesResponses]
 export type UnfollowUserData = {
 	body?: never
 	path: {
-		id: number
+		name: string
 	}
 	query?: never
-	url: "/user/{id}/follow"
+	url: "/profile/{name}/follow"
 }
 
 export type UnfollowUserErrors = {
@@ -3931,10 +3932,10 @@ export type UnfollowUserResponse =
 export type FollowUserData = {
 	body?: never
 	path: {
-		id: number
+		name: string
 	}
 	query?: never
-	url: "/user/{id}/follow"
+	url: "/profile/{name}/follow"
 }
 
 export type FollowUserErrors = {

@@ -1,15 +1,11 @@
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
-import tailwindcss from "@tailwindcss/vite"
-import { devtools } from "@tanstack/devtools-vite"
-import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import { playwright } from "@vitest/browser-playwright"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { defineConfig, loadEnv } from "vite"
-import babelMacrosPlugin from "vite-plugin-babel-macros"
-import solidPlugin from "vite-plugin-solid"
 import { defineProject } from "vitest/config"
-import { wuchale } from "wuchale/vite"
+
+import { createAppPlugins } from "./vite.shared"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const isHttps = (url: string | undefined) => {
@@ -26,19 +22,7 @@ export default defineConfig(({ mode }) => {
 	const SERVER_URL = env["VITE_SERVER_URL"]
 
 	return {
-		plugins: [
-			devtools(),
-			wuchale(),
-			tanstackRouter({
-				target: "solid",
-				autoCodeSplitting: true,
-				routesDirectory: "src/route",
-			}),
-			babelMacrosPlugin(),
-			solidPlugin(),
-			tailwindcss(),
-			// TODO: vite 8 resolve.tsconfigPaths
-		],
+		plugins: createAppPlugins({ withWuchale: true }),
 		server: {
 			port: 3000,
 			proxy: {
