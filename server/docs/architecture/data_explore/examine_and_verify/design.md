@@ -1,4 +1,4 @@
-# Correction (修正) 模块
+# examine and verify模块
 
 > **实现状态**: ⚠️ 部分完成（已支持拒绝与权限控制） | [查看路线图](../ROADMAP.md#correction)
 
