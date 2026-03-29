@@ -7,6 +7,7 @@ import {
 import { createJSXDecorator } from "storybook-solidjs-vite"
 
 import { routeTree } from "~/routeTree.gen"
+import { I18NProvider } from "~/state/i18n"
 
 export const enum StoryLayout {
 	Centered = "centered",
@@ -46,6 +47,12 @@ function createStoryRouter(initialEntries = ["/"]) {
 		defaultPreloadStaleTime: 0,
 	})
 }
+
+export const withStoryI18N = createJSXDecorator((Story) => (
+	<I18NProvider initialLocale="en">
+		<Story />
+	</I18NProvider>
+))
 
 export const withStoryRouter = createJSXDecorator((Story, context) => {
 	const initialEntry =

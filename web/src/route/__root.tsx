@@ -1,5 +1,4 @@
 import * as meta from "@solidjs/meta"
-import { Title } from "@solidjs/meta"
 import type { QueryClient } from "@tanstack/solid-query"
 import { createRootRouteWithContext, Outlet } from "@tanstack/solid-router"
 import { ObjExt } from "@thc/toolkit/data"
@@ -75,7 +74,6 @@ function Layout(props: ParentProps) {
 
 	return (
 		<div class="grid h-full grid-rows-[auto_1fr_auto]">
-			<Title>Doujin Cloud DB</Title>
 			<meta.Link
 				rel="shortcut icon"
 				href="/logo.svg"

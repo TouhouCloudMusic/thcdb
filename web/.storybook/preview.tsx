@@ -3,9 +3,11 @@ import addonDocs from "@storybook/addon-docs"
 import { definePreview } from "storybook-solidjs-vite"
 
 import "../src/index.css"
+import { withStoryI18N } from "../src/utils/adapter/storybook"
 
 export default definePreview({
 	addons: [addonDocs(), addonA11y()],
+	decorators: [withStoryI18N],
 	parameters: {
 		// automatically create action args for all props that start with 'on'
 		actions: {

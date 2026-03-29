@@ -36,7 +36,7 @@ type ListItemProps = ParentProps<LinkComponentProps & ListItemStyleProps>
 const LIST_ITEM_CLASS = `
   flex items-center justify-start text-left w-full
   py-1 px-1
-  font-light font-inter text-sm text-slate-700
+  font-light text-sm text-slate-700
   *:mx-1
   [&_svg]:size-4 [&_svg]:text-slate-600
 `

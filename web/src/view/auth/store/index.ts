@@ -33,8 +33,13 @@ type SignUpData = EitherRight<Awaited<ReturnType<typeof AuthApi.signup>>>
 type VerifyEmailData = NonNullable<
 	EitherRight<Awaited<ReturnType<typeof AuthApi.verifyEmail>>>
 >
+// @wc-include
+const AUTH_MESSAGES = {
+	missingSignupEmail: "Missing sign-up email. Create the account again.",
+	verificationEmailSent: "If eligible, a verification code has been sent.",
+}
 
-const resolveAuthFormMode = (value: string | undefined): AuthFormMode => {
+function resolveAuthFormMode(value: string | undefined): AuthFormMode {
 	if (value === "sign_up" || value === "verify_email") return value
 	return "sign_in"
 }
@@ -220,7 +225,7 @@ export function useAuthForm() {
 	) {
 		const email = verifyEmailState().email
 		if (email === undefined) {
-			setSubmitError("Missing signup email, please sign up again")
+			setSubmitError(AUTH_MESSAGES.missingSignupEmail)
 			return
 		}
 
@@ -241,7 +246,7 @@ export function useAuthForm() {
 	const handleResendVerificationEmail = async () => {
 		const email = verifyEmailState().email
 		if (!email) {
-			setSubmitError("Missing signup email, please sign up again")
+			setSubmitError(AUTH_MESSAGES.missingSignupEmail)
 			return
 		}
 		if (isResendingVerificationEmail() || resendCooldownSeconds() > 0) return
@@ -264,7 +269,7 @@ export function useAuthForm() {
 				)
 			},
 			onRight: (data) => {
-				setSubmitInfo("If eligible, a verification code has been sent.")
+				setSubmitInfo(AUTH_MESSAGES.verificationEmailSent)
 				setVerifyEmailState((state) =>
 					updateVerifyEmailState(state, {
 						type: "resend_success",

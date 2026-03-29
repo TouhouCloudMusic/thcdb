@@ -30,6 +30,7 @@
 		"@thc/toolkit": "workspace:*",
 		"@typescript/native-preview": "7.0.0-dev.20260321.1",
 		"@vitest/coverage-v8": "^4.0.16",
+		"@wuchale/jsx": "^0.11.2",
 		"arktype": "^2.1.29",
 		"cropperjs": "^2.1.0",
 		"dayjs": "^1.11.19",
@@ -48,7 +49,8 @@
 		"solid-popper": "^0.3.0",
 		"solid-radix-icons": "^1.0.0",
 		"tailwind-merge": "^3.4.0",
-		"valibot": "1.2.0"
+		"valibot": "1.2.0",
+		"wuchale": "^0.22.6"
 	},
 	"devDependencies": {
 		"@ark/attest": "^0.56.0",
