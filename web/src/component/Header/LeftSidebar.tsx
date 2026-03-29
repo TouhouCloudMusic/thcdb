@@ -12,6 +12,7 @@ import {
 	HomeIcon,
 } from "solid-radix-icons"
 
+import { LocaleSelect } from "~/component/Header/LocaleSelect"
 import { ListItem, Sidebar } from "~/component/Sidebar"
 
 type ListItemContent = {
@@ -25,41 +26,49 @@ export function LeftSidebar() {
 	const LIST_ITEMS: ListItemContent[] = [
 		{
 			icon: HomeIcon,
+			// @wc-include
 			text: "Home",
 			to: "/",
 		},
 		{
 			icon: TargetIcon,
+			// @wc-include
 			text: "Recommendation",
 			to: "/recommendation",
 		},
 		{
 			icon: CrumpledPaperIcon,
+			// @wc-include
 			text: "Release",
 			to: "/release/explore",
 		},
 		{
 			icon: MixerHorizontalIcon,
+			// @wc-include
 			text: "Artist",
 			to: "/artist/explore",
 		},
 		{
 			icon: CardStackIcon,
+			// @wc-include
 			text: "Song",
 			to: "/song/explore",
 		},
 		{
 			icon: EnvelopeClosedIcon,
+			// @wc-include
 			text: "Tag",
 			to: "/tag/explore",
 		},
 		{
 			icon: EnvelopeClosedIcon,
+			// @wc-include
 			text: "Event",
 			to: "/event/explore",
 		},
 		{
 			icon: BookmarkIcon,
+			// @wc-include
 			text: "Label",
 			to: "/label/explore",
 		},
@@ -86,6 +95,14 @@ export function LeftSidebar() {
 					}}
 				</For>
 			</ul>
+
+			<div class="mt-auto space-y-2 px-2">
+				<h3 class="text-sm text-secondary">Settings</h3>
+				<div class="space-y-2">
+					<div class="text-sm text-tertiary">Language</div>
+					<LocaleSelect />
+				</div>
+			</div>
 		</Sidebar>
 	)
 }

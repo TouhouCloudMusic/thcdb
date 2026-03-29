@@ -9,6 +9,7 @@ import { defineConfig, loadEnv } from "vite"
 import babelMacrosPlugin from "vite-plugin-babel-macros"
 import solidPlugin from "vite-plugin-solid"
 import { defineProject } from "vitest/config"
+import { wuchale } from "wuchale/vite"
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const isHttps = (url: string | undefined) => {
@@ -27,7 +28,7 @@ export default defineConfig(({ mode }) => {
 	return {
 		plugins: [
 			devtools(),
-
+			wuchale(),
 			tanstackRouter({
 				target: "solid",
 				autoCodeSplitting: true,

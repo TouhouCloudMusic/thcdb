@@ -12,29 +12,26 @@ type AuthFormCopy = {
 	description: string
 }
 
+// @wc-include
 const AUTH_FORM_COPY: Record<AuthFormMode, AuthFormCopy> = {
 	sign_in: {
-		title: "Welcome back",
-		description: "Sign in to continue.",
+		title: "Sign in",
+		description: "Use your account to continue.",
 	},
 	sign_up: {
-		title: "Create your account",
-		description: "Create an account to join the community.",
+		title: "Create account",
+		description: "Create an account to continue.",
 	},
 	verify_email: {
-		title: "Verify your email",
+		title: "Verify email",
 		description: "Enter the 6-digit code sent to your email.",
 	},
-}
-
-function getAuthFormCopy(mode: AuthFormMode): AuthFormCopy {
-	return AUTH_FORM_COPY[mode]
 }
 
 export function AuthForm() {
 	const authForm = useAuthForm()
 	const mode = authForm.mode
-	const copy = () => getAuthFormCopy(mode())
+	const formCopy = () => AUTH_FORM_COPY[mode()]
 
 	return (
 		<div class="h-full relative overflow-hidden bg-linear-to-br from-reimu-100 via-primary to-marisa-100">
@@ -55,19 +52,19 @@ export function AuthForm() {
 									TOUHOU CLOUD DB
 								</div>
 								<div class="text-xs text-tertiary">
-									Lorem ipsum dolor sit amet consectetur
+									Open doujin music database
 								</div>
 							</div>
 						</div>
 
 						<div class="mb-6 space-y-1">
 							<div class="text-primary text-3xl font-light tracking-tight">
-								{copy().title}
+								{formCopy().title}
 							</div>
-							<div class="text-sm text-tertiary">{copy().description}</div>
+							<div class="text-sm text-tertiary">{formCopy().description}</div>
 						</div>
 
-						<Switch>
+						<Switch fallback={<AuthCredentialForm {...authForm} />}>
 							<Match
 								when={
 									mode() === "verify_email"
@@ -81,9 +78,6 @@ export function AuthForm() {
 							</Match>
 							<Match when={mode() === "verify_email"}>
 								<VerifyEmailForm {...authForm} />
-							</Match>
-							<Match when={true}>
-								<AuthCredentialForm {...authForm} />
 							</Match>
 						</Switch>
 					</div>

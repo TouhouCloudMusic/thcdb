@@ -2,7 +2,6 @@ import type { Artist } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { createMockArtist } from "~/mock/artist"
-import { I18NProvider } from "~/state/i18n"
 import { ENGLISH_LANGUAGE } from "~/storybook/fixtures"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
@@ -38,11 +37,9 @@ type StoryRootProps = {
 
 function StoryRoot(props: StoryRootProps) {
 	return (
-		<I18NProvider>
-			<div class={`w-[520px] bg-primary ${EXPLORE_PAGE_PADDING_CLASS}`}>
-				<ArtistItem artist={props.artist} />
-			</div>
-		</I18NProvider>
+		<div class={`w-[520px] bg-primary ${EXPLORE_PAGE_PADDING_CLASS}`}>
+			<ArtistItem artist={props.artist} />
+		</div>
 	)
 }
 

@@ -2,6 +2,8 @@
 import { Meta, Title } from "@solidjs/meta"
 import { createRouter, RouterProvider } from "@tanstack/solid-router"
 
+import type { AppLocale } from "~/state/i18n"
+
 import { routeTree } from "./routeTree.gen"
 import { StateProvider } from "./state"
 import { QUERY_CLIENT } from "./state/tanstack"
@@ -23,10 +25,14 @@ declare module "@tanstack/solid-router" {
 	}
 }
 
+type AppProps = {
+	initialLocale: AppLocale
+}
+
 // oxlint-disable-next-line no-default-export
-export default function App() {
+export default function App(props: AppProps) {
 	return (
-		<StateProvider>
+		<StateProvider initialLocale={props.initialLocale}>
 			<Metas />
 			<Routes />
 		</StateProvider>
