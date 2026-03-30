@@ -8,7 +8,6 @@
 @theme {
 	--blur-2xs: 2px;
 
-	--font-inter: "Inter", sans-serif;
 	--font-sans:
 		"Geist", "ui-sans-serif", "system-ui", "sans-serif", '"Apple Color Emoji"',
 		'"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"';
