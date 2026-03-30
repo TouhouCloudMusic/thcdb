@@ -18,7 +18,7 @@ type Story = StoryObj<typeof Card>
 
 export const Default: Story = {
 	render: () => (
-		<Card class="m-auto w-96 font-inter">
+		<Card class="m-auto w-96">
 			<h1 class="text-2xl font-semibold">This is a card</h1>
 			<article class="text-secondary">
 				Lorem ipsum, dolor sit amet consectetur adipisicing elit. Non eveniet,
