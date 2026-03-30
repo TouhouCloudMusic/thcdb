@@ -7,6 +7,7 @@ schemathesis-report
 config.dev.ron
 public
 target
+log
 
 # Rustc ICE log
 rustc*
