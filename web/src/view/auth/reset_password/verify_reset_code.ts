@@ -1,6 +1,7 @@
 import { Effect, pipe } from "effect"
 
-import type { VerifyResetCodeRequest } from "~/orval/touhouCloudDB.schemas"
+import type { Options as SdkOptions } from "~/hey-api/sdk.gen"
+import type { VerifyResetCodeData } from "~/hey-api/types.gen"
 
 import type { AuthApiResponse, RequestFailedError } from "./response"
 import {
@@ -12,8 +13,8 @@ import type { ResetPasswordSession } from "./session"
 import type { ResetPasswordUiStore } from "./store"
 
 export type VerifyResetCodeFn = (
-	req: VerifyResetCodeRequest,
-	options?: RequestInit,
+	req: VerifyResetCodeData["body"],
+	options?: SdkOptions<VerifyResetCodeData>,
 ) => Effect.Effect<AuthApiResponse, RequestFailedError>
 
 export async function verifyResetCode(args: {

@@ -1,62 +1,37 @@
 import { Effect } from "effect"
 
 import {
-	getForgotPasswordUrl,
-	getResetPasswordUrl,
-	getVerifyResetCodeUrl,
-} from "~/orval/auth"
+	forgotPassword,
+	resetPassword,
+	verifyResetCode,
+} from "~/hey-api/sdk.gen"
+import type { Options as SdkOptions } from "~/hey-api/sdk.gen"
 import type {
-	ForgotPasswordRequest,
-	ResetPasswordRequest,
-	VerifyResetCodeRequest,
-} from "~/orval/touhouCloudDB.schemas"
+	ForgotPasswordData,
+	ResetPasswordData,
+	VerifyResetCodeData,
+} from "~/hey-api/types.gen"
 
 import type { AuthApiResponse } from "./response"
 import { REQUEST_FAILED_ERROR } from "./response"
 
-const EMPTY_BODY_STATUS_CODES = new Set([204, 205, 304])
-const JSON_CONTENT_TYPE = "application/json"
-
-function buildJsonHeaders(headers?: HeadersInit) {
-	const requestHeaders = new globalThis.Headers(headers)
-	requestHeaders.set("Content-Type", JSON_CONTENT_TYPE)
-	return requestHeaders
+type JsonRequestResult = {
+	data?: unknown
+	error?: unknown
+	response?: Response
 }
 
-function parseResponseBody(
-	body: string | null,
-	contentType: string | null,
-): unknown {
-	if (body === null) return {}
-
-	const trimmedBody = body.trim()
-	if (trimmedBody.length === 0) return {}
-	if (!contentType?.includes(JSON_CONTENT_TYPE)) return trimmedBody
-
-	try {
-		return JSON.parse(trimmedBody)
-	} catch {
-		return trimmedBody
-	}
-}
-
-function postJson(url: string, body: unknown, options?: RequestInit) {
+function postJson(request: Promise<JsonRequestResult>) {
 	return Effect.tryPromise({
 		try: async (): Promise<AuthApiResponse> => {
-			const res = await globalThis.fetch(url, {
-				...options,
-				method: "POST",
-				headers: buildJsonHeaders(options?.headers),
-				body: JSON.stringify(body),
-			})
+			const result = await request
 
-			const responseBody = EMPTY_BODY_STATUS_CODES.has(res.status)
-				? null
-				: await res.text()
-
+			if (!(result.response instanceof globalThis.Response)) {
+				throw REQUEST_FAILED_ERROR
+			}
 			return {
-				status: res.status,
-				data: parseResponseBody(responseBody, res.headers.get("Content-Type")),
+				status: result.response.status,
+				data: result.response.ok ? result.data : result.error,
 			}
 		},
 		catch: () => REQUEST_FAILED_ERROR,
@@ -64,22 +39,22 @@ function postJson(url: string, body: unknown, options?: RequestInit) {
 }
 
 export function requestForgotPassword(
-	request: ForgotPasswordRequest,
-	options?: RequestInit,
+	request: ForgotPasswordData["body"],
+	options?: SdkOptions<ForgotPasswordData>,
 ) {
-	return postJson(getForgotPasswordUrl(), request, options)
+	return postJson(forgotPassword({ ...options, body: request }))
 }
 
 export function requestResetPassword(
-	request: ResetPasswordRequest,
-	options?: RequestInit,
+	request: ResetPasswordData["body"],
+	options?: SdkOptions<ResetPasswordData>,
 ) {
-	return postJson(getResetPasswordUrl(), request, options)
+	return postJson(resetPassword({ ...options, body: request }))
 }
 
 export function requestVerifyResetCode(
-	request: VerifyResetCodeRequest,
-	options?: RequestInit,
+	request: VerifyResetCodeData["body"],
+	options?: SdkOptions<VerifyResetCodeData>,
 ) {
-	return postJson(getVerifyResetCodeUrl(), request, options)
+	return postJson(verifyResetCode({ ...options, body: request }))
 }

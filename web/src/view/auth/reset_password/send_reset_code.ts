@@ -1,6 +1,7 @@
 import { Effect, pipe } from "effect"
 
-import type { ForgotPasswordRequest } from "~/orval/touhouCloudDB.schemas"
+import type { Options as SdkOptions } from "~/hey-api/sdk.gen"
+import type { ForgotPasswordData } from "~/hey-api/types.gen"
 
 import type { AuthApiResponse, RequestFailedError } from "./response"
 import {
@@ -11,8 +12,8 @@ import {
 import type { ResetPasswordUiStore } from "./store"
 
 export type ForgotPasswordFn = (
-	req: ForgotPasswordRequest,
-	options?: RequestInit,
+	req: ForgotPasswordData["body"],
+	options?: SdkOptions<ForgotPasswordData>,
 ) => Effect.Effect<AuthApiResponse, RequestFailedError>
 
 export async function sendResetCode(args: {

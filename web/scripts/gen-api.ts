@@ -1,20 +1,19 @@
-#!/usr/bin/env -S node --disable-warning=ExperimentalWarning --experimental-transform-types
+#!/usr/bin/env -S node --experimental-transform-types
 
 import * as NodeContext from "@effect/platform-node/NodeContext"
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime"
 import * as Command from "@effect/platform/Command"
 import * as FileSystem from "@effect/platform/FileSystem"
 import * as Path from "@effect/platform/Path"
+import { createClient } from "@hey-api/openapi-ts"
 import { Effect } from "effect"
 import { pipe } from "effect/Function"
 import openapiTS, { astToString } from "openapi-typescript"
-import { generate as generateOrval } from "orval"
-
-import { api as orvalProjectConfig } from "../orval.config.js"
 
 const SCHEMA_PATH = "./tmp/openapi.json"
 const OPENAPI_OUTPUT = "./packages/api/src/gen.ts"
-const ORVAL_SENTINEL_OUTPUT = "./src/orval/touhouCloudDB.schemas.ts"
+const HEY_API_OUTPUT = "./src/hey-api"
+const HEY_API_SENTINEL_OUTPUT = `${HEY_API_OUTPUT}/valibot.gen.ts`
 const SERVER_WORKDIR = "../server"
 
 type ServerSchemaSource = {
@@ -128,6 +127,7 @@ function downloadSchema(schemaUrl: string, fs: FileSystem.FileSystem) {
 function runServerOpenapi() {
 	return pipe(
 		Command.make("cargo", "run", "--", "--openapi", "../web/tmp/openapi.json"),
+		Command.env({ CARGO_PROFILE_DEV_CODEGEN_BACKEND: "llvm" }),
 		Command.workingDirectory(SERVER_WORKDIR),
 		Command.stdout("inherit"),
 		Command.stderr("inherit"),
@@ -168,11 +168,28 @@ function generateOpenapiTypes(fs: FileSystem.FileSystem) {
 	)
 }
 
-function generateOrvalOutput() {
-	return Effect.tryPromise({
-		try: () => generateOrval(orvalProjectConfig),
-		catch: toError,
-	})
+function generateHeyApiOutput() {
+	return pipe(
+		Effect.tryPromise({
+			try: () =>
+				createClient({
+					input: SCHEMA_PATH,
+					output: HEY_API_OUTPUT,
+					plugins: [
+						"@hey-api/typescript",
+						"@hey-api/client-fetch",
+						{
+							name: "@hey-api/sdk",
+							responseStyle: "fields",
+						},
+						"@tanstack/solid-query",
+						"valibot",
+					],
+				}),
+			catch: toError,
+		}),
+		Effect.asVoid,
+	)
 }
 
 function toError(cause: unknown) {
@@ -189,8 +206,8 @@ const program = pipe(
 		const schemaSource = resolveSchemaSource(process.argv[2] ?? "")
 		yield* prepareSchema(schemaSource, fs, path)
 		yield* generateOpenapiTypes(fs)
-		yield* generateOrvalOutput()
-		yield* fs.access(path.resolve(ORVAL_SENTINEL_OUTPUT), { readable: true })
+		yield* generateHeyApiOutput()
+		yield* fs.access(path.resolve(HEY_API_SENTINEL_OUTPUT), { readable: true })
 	}),
 	Effect.provide(NodeContext.layer),
 )
