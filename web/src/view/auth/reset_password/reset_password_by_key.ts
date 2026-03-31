@@ -1,6 +1,7 @@
 import { Effect, pipe } from "effect"
 
-import type { ResetPasswordRequest } from "~/orval/touhouCloudDB.schemas"
+import type { Options as SdkOptions } from "~/hey-api/sdk.gen"
+import type { ResetPasswordData } from "~/hey-api/types.gen"
 
 import type { AuthApiResponse, RequestFailedError } from "./response"
 import { ensureSuccessResponse, getResetPasswordErrorMessage } from "./response"
@@ -9,8 +10,8 @@ import type { ResetPasswordUiStore } from "./store"
 const INVALID_OR_EXPIRED_RESET_KEY_MESSAGE = "Invalid or expired reset key"
 
 export type ResetPasswordByKeyFn = (
-	req: ResetPasswordRequest,
-	options?: RequestInit,
+	req: ResetPasswordData["body"],
+	options?: SdkOptions<ResetPasswordData>,
 ) => Effect.Effect<AuthApiResponse, RequestFailedError>
 
 export async function resetPasswordByKey(args: {

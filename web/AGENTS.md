@@ -112,11 +112,11 @@ Tailwind CSS v4 更新了许多用法，你必须使用新的用法，以下是�
 
 - `src/routeTree.gen.ts`（TanStack Router 自动生成）
 - `packages/api/src/gen.ts`
-- `src/orval/`
+- `src/hey-api/`
 
 使用 `just gen-api` 生成 API 相关产物。
 schema 来源优先级：命令参数 > `API_SCHEMA` > `$VITE_SERVER_URL/openapi.json` > 通过 server CLI 本地生成 `./tmp/openapi.json`。
-旧代码仍使用 `@thc/api`，新代码使用 Orval 生成的 SDK。
+旧代码仍使用 `@thc/api`，新代码使用 Hey API 生成的 SDK 和 Valibot schema。
 
 如果你的任务需要更新这些文件，当你可以通过命令更新时：运行更新命令，否则，暂停你的工作，要求用户在本地重新生成它们后再继续。
 
