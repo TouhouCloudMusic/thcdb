@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1.20
 
 ARG DEBIAN_VERSION=bookworm
-ARG RUST_BUILDER_IMAGE=thcdb/rust-builder:nightly-bookworm
-ARG WILD_LINKER_IMAGE=thcdb/wild-linker-builder:nightly-bookworm
+ARG RUST_BUILDER_IMAGE=ghcr.io/touhoucloudmusic/thcdb-rust-builder:main
+ARG WILD_LINKER_IMAGE=ghcr.io/touhoucloudmusic/thcdb-wild-linker-builder:main
 
 FROM ${WILD_LINKER_IMAGE} AS wild-linker-builder
 
