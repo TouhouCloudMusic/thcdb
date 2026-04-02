@@ -32,17 +32,18 @@ type EntityBaseRouteMap = Record<EntityDetailType, EntityDetailRoute>
 type EntityDetailLabelMap = Record<EntityDetailType, string>
 
 function buildBaseRouteMap(labels: EntityDetailLabelMap) {
+	// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 	return Object.fromEntries(
-		// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+		// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 		(Object.keys(labels) as EntityDetailType[]).map((entity) => [
 			entity,
 			`/${entity}/$id`,
 		]),
-		// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 	) as EntityBaseRouteMap
 }
 
 function buildEntityRouteMap(baseRoutes: EntityBaseRouteMap) {
+	// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 	return Object.fromEntries(
 		Object.entries(baseRoutes).map(([entity, baseRoute]) => [
 			entity,
@@ -52,7 +53,6 @@ function buildEntityRouteMap(baseRoutes: EntityBaseRouteMap) {
 				corrections: `${baseRoute}/corrections`,
 			},
 		]),
-		// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 	) as Record<EntityDetailType, EntityRouteSet>
 }
 
