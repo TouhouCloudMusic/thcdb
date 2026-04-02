@@ -81,7 +81,7 @@ async function createMarked() {
 			markedShiki({
 				async highlight(code, lang, props) {
 					if (!highlighter.getLoadedLanguages().some((l) => l === lang)) {
-						// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+						// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 						await highlighter.loadLanguage(lang as unknown as LanguageInput)
 					}
 					return highlighter.codeToHtml(code, {

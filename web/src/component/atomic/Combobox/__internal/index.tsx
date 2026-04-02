@@ -41,7 +41,7 @@ export type LabelProps = ComponentProps<typeof Combobox.Label>
 export function Label(props: LabelProps): JSX.Element {
 	const finalProps = mergeProps(props, {
 		get class() {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 			return twMerge(LABEL_CLASS, props["class"] as string)
 		},
 	})
@@ -136,7 +136,7 @@ export type TriggerProps = ComponentProps<typeof Combobox.Trigger>
 export function Trigger(props: TriggerProps): JSX.Element {
 	const finalProps = mergeProps(props, {
 		get class() {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 			return twMerge(TRIGGER_CLASS, props["class"] as string)
 		},
 	})
@@ -154,7 +154,7 @@ export type IconProps = ComponentProps<typeof Combobox.Icon>
 export function Icon(props: IconProps): JSX.Element {
 	const finalProps = mergeProps(props, {
 		get class() {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 			return twMerge(ICON_CLASS, props["class"] as string)
 		},
 	})
@@ -176,7 +176,7 @@ export type DescriptionProps = ComponentProps<typeof Combobox.Description>
 export function Description(props: DescriptionProps): JSX.Element {
 	const finalProps = mergeProps(props, {
 		get class() {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 			return twMerge(DESCRIPTION_CLASS, props["class"] as string)
 		},
 	})
@@ -194,7 +194,7 @@ export type ErrorMessageProps = ComponentProps<typeof Combobox.ErrorMessage>
 export function ErrorMessage(props: ErrorMessageProps): JSX.Element {
 	const finalProps = mergeProps(props, {
 		get class() {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 			return twMerge(ERROR_MESSAGE_CLASS, props["class"] as string)
 		},
 	})
@@ -231,7 +231,7 @@ export function Content(props: ContentProps): JSX.Element {
 
 	const finalProps = mergeProps(props, {
 		get class() {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 			return twMerge(CONTENT_CLASS, props["class"] as string)
 		},
 		ref(el: HTMLDivElement) {
@@ -256,7 +256,7 @@ export type ArrowProps = ComponentProps<typeof Combobox.Arrow>
 export function Arrow(props: ArrowProps): JSX.Element {
 	const finalProps = mergeProps(props, {
 		get class() {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 			return twMerge(ARROW_CLASS, props["class"] as string)
 		},
 	})

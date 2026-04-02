@@ -1,5 +1,5 @@
 import type { Artist } from "@thc/api"
-import fc from "fast-check"
+import * as fc from "fast-check"
 import { describe, it, expect } from "vitest"
 
 import { useArtistFormInitialValues } from "./useFormInitialValues"

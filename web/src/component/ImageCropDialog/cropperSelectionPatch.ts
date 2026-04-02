@@ -43,7 +43,7 @@ export const ensureCropperSelectionChangeBounded = (options: {
 		if (adjusting) return
 		if (!(event instanceof CustomEvent)) return
 
-		// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+		// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 		const detail = event.detail as CropperSelectionChangeDetail | undefined
 		const xValue = NumExt.toFinite(detail?.x)
 		const yValue = NumExt.toFinite(detail?.y)

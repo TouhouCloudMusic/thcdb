@@ -16,7 +16,7 @@ type TriggerProps = ComponentProps<typeof K_Select.Trigger>
 function Trigger(props: TriggerProps) {
 	const finalProps = mergeProps(props, {
 		get class() {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 			return twMerge(TRIGGER_CLASSNAME, props["class"] as string)
 		},
 	})
@@ -57,7 +57,7 @@ function Content(props: ContentProps): JSX.Element {
 	const finalProps = mergeProps(props, {
 		sameWidth: true,
 		get class() {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 			return twMerge(CONTENT_CLASSNAME, props["class"] as string)
 		},
 	})
@@ -70,7 +70,7 @@ type ListboxProps = ComponentProps<typeof K_Select.Listbox>
 function Listbox(props: ListboxProps): JSX.Element {
 	const finalProps = mergeProps(props, {
 		get class() {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 			return twMerge(LISTBOX_CLASSNAME, props["class"] as string)
 		},
 	})
@@ -84,7 +84,7 @@ type ItemProps = ComponentProps<typeof K_Select.Item>
 function Item(props: ItemProps): JSX.Element {
 	const finalProps = mergeProps(props, {
 		get class() {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 			return twMerge(ITEM_CLASSNAME, props["class"] as string)
 		},
 	})
