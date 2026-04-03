@@ -13,8 +13,8 @@ use entity::{
     release_localized_title_history, release_track_artist_history,
     release_track_history, song_artist_history, song_credit_history,
     song_history, song_language_history, song_localized_title_history,
-    song_lyrics_history, tag_alternative_name_history, tag_history,
-    tag_relation_history,
+    song_lyrics_history, song_relation_history, tag_alternative_name_history,
+    tag_history, tag_relation_history,
 };
 use sea_orm::{
     ColumnTrait, ConnectionTrait, DbErr, EntityTrait, LoaderTrait, QueryFilter,
@@ -531,12 +531,28 @@ async fn snapshot_song(
         .map(|model| model.language_id)
         .collect::<Vec<_>>();
 
+    let relations = song_relation_history::Entity::find()
+        .filter(song_relation_history::Column::HistoryId.eq(history_id))
+        .order_by_asc(song_relation_history::Column::RelatedSongId)
+        .all(db)
+        .await?
+        .into_iter()
+        .map(|model| {
+            json!({
+                "related_song_id": model.related_song_id,
+                "relation_type_id": model.relation_type_id,
+                "description": model.description,
+            })
+        })
+        .collect::<Vec<_>>();
+
     Ok(json!({
         "title": history.title,
         "artists": artists,
         "credits": credits,
         "localized_titles": localized_titles,
         "languages": language_ids,
+        "relations": relations,
     }))
 }
 

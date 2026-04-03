@@ -1384,6 +1384,51 @@ export const vNewSongCredit = v.object({
 	),
 })
 
+export const vNewSongLyrics = v.object({
+	song_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	language_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	content: v.string(),
+	is_main: v.boolean(),
+})
+
+export const vNewSongRelation = v.object({
+	related_song_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	relation_type_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	description: v.string(),
+})
+
 export const vNewCorrectionNewSong = v.object({
 	data: v.object({
 		title: vEntityIdent,
@@ -1421,6 +1466,7 @@ export const vNewCorrectionNewSong = v.object({
 			),
 		),
 		localized_titles: v.nullish(v.array(vNewLocalizedName)),
+		relations: v.nullish(v.array(vNewSongRelation)),
 	}),
 	description: v.string(),
 	type: vCorrectionType,
@@ -1462,29 +1508,7 @@ export const vNewSong = v.object({
 		),
 	),
 	localized_titles: v.nullish(v.array(vNewLocalizedName)),
-})
-
-export const vNewSongLyrics = v.object({
-	song_id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	language_id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	content: v.string(),
-	is_main: v.boolean(),
+	relations: v.nullish(v.array(vNewSongRelation)),
 })
 
 export const vNewTrack = v.object({
@@ -2257,6 +2281,31 @@ export const vDataVecRelease = v.object({
 	data: v.array(vRelease),
 })
 
+export const vSongRelationType = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.string(),
+})
+
+export const vDataVecSongRelationType = v.object({
+	status: v.string(),
+	data: v.array(vSongRelationType),
+})
+
+export const vSongRelation = v.object({
+	song: vSongRef,
+	artist: v.nullish(vSimpleArtist),
+	type: vSongRelationType,
+	description: v.string(),
+})
+
 export const vSongRelease = v.object({
 	id: v.pipe(
 		v.number(),
@@ -2293,6 +2342,7 @@ export const vPageResponseSong = v.object({
 			credits: v.optional(v.array(vSongCredit)),
 			languages: v.optional(v.array(vLanguage)),
 			localized_titles: v.optional(v.array(vLocalizedTitle)),
+			relations: v.optional(v.array(vSongRelation)),
 			lyrics: v.optional(v.array(vSongLyrics)),
 		}),
 	),
@@ -2346,6 +2396,7 @@ export const vSong = v.object({
 	credits: v.optional(v.array(vSongCredit)),
 	languages: v.optional(v.array(vLanguage)),
 	localized_titles: v.optional(v.array(vLocalizedTitle)),
+	relations: v.optional(v.array(vSongRelation)),
 	lyrics: v.optional(v.array(vSongLyrics)),
 })
 
@@ -2827,6 +2878,27 @@ export const vUploadProfileBanner = v.object({
 	data: v.string(),
 })
 
+export const vUserProfileStats = v.object({
+	edit_count: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	vote_count: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+})
+
 export const vUserRoleEnum = v.picklist(["Admin", "Moderator", "User"])
 
 export const vDataVecUserRole = v.object({
@@ -2900,6 +2972,7 @@ export const vUserProfile = v.object({
 	roles: v.optional(v.array(vUserRole)),
 	is_following: v.nullish(v.boolean()),
 	bio: v.nullish(v.string()),
+	stats: vUserProfileStats,
 	settings: v.optional(v.unknown()),
 })
 
@@ -4102,6 +4175,26 @@ export const vProfileWithNameData = v.object({
 
 export const vProfileWithNameResponse = vDataUserProfile
 
+export const vUnfollowUserData = v.object({
+	body: v.optional(v.never()),
+	path: v.object({
+		name: v.string(),
+	}),
+	query: v.optional(v.never()),
+})
+
+export const vUnfollowUserResponse = vMessage
+
+export const vFollowUserData = v.object({
+	body: v.optional(v.never()),
+	path: v.object({
+		name: v.string(),
+	}),
+	query: v.optional(v.never()),
+})
+
+export const vFollowUserResponse = vMessage
+
 export const vFindReleaseByKeywordData = v.object({
 	body: v.optional(v.never()),
 	path: v.optional(v.never()),
@@ -4550,6 +4643,14 @@ export const vUpdateSongLyricsData = v.object({
 
 export const vUpdateSongLyricsResponse = vDataCorrectionSubmissionResult
 
+export const vSongRelationTypesData = v.object({
+	body: v.optional(v.never()),
+	path: v.optional(v.never()),
+	query: v.optional(v.never()),
+})
+
+export const vSongRelationTypesResponse = vDataVecSongRelationType
+
 export const vExploreSongData = v.object({
 	body: v.optional(v.never()),
 	path: v.optional(v.never()),
@@ -4730,48 +4831,6 @@ export const vUserRolesData = v.object({
 })
 
 export const vUserRolesResponse = vDataVecUserRole
-
-export const vUnfollowUserData = v.object({
-	body: v.optional(v.never()),
-	path: v.object({
-		id: v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	}),
-	query: v.optional(v.never()),
-})
-
-export const vUnfollowUserResponse = vMessage
-
-export const vFollowUserData = v.object({
-	body: v.optional(v.never()),
-	path: v.object({
-		id: v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	}),
-	query: v.optional(v.never()),
-})
-
-export const vFollowUserResponse = vMessage
 
 export const vUserImageQueueData = v.object({
 	body: v.optional(v.never()),

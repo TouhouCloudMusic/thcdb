@@ -80,6 +80,8 @@ pub mod song_localized_title_history;
 pub mod song_lyrics;
 pub mod song_lyrics_history;
 pub mod song_relation;
+pub mod song_relation_history;
+pub mod song_relation_type;
 pub mod song_tag_vote;
 pub mod tag;
 pub mod tag_alternative_name;

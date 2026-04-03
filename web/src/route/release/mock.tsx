@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router"
-import type { Release } from "@thc/api"
+import type { CorrectionHistoryItem, Release } from "@thc/api"
 
 import { ReleaseInfoPage } from "~/view/release/Info"
 
@@ -279,10 +279,32 @@ const mockData: Release = {
 	],
 }
 
+const mockCorrectionHistory: CorrectionHistoryItem[] = [
+	{
+		id: 1,
+		type: "Create",
+		created_at: "2026-03-27T09:15:00.000Z",
+		handled_at: "2026-03-27T09:45:00.000Z",
+		author: { id: 2, name: "Hakurei Reimu" },
+		description: "Created the initial release entry.",
+	},
+	{
+		id: 2,
+		type: "Update",
+		created_at: "2026-03-28T04:30:00.000Z",
+		handled_at: null,
+		author: { id: 3, name: "Patchouli Knowledge" },
+		description: "Pending correction for credit metadata.",
+	},
+]
+
 function RouteComponent() {
 	return (
 		<>
-			<ReleaseInfoPage release={mockData} />
+			<ReleaseInfoPage
+				release={mockData}
+				correctionHistory={mockCorrectionHistory}
+			/>
 		</>
 	)
 }

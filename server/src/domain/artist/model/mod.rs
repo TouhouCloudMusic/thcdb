@@ -66,6 +66,7 @@ pub struct Tenure {
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema, AutoMapper)]
+#[cfg_attr(test, derive(PartialEq, Eq))]
 #[mapper(from(entity::artist::Model))]
 pub struct SimpleArtist {
     pub id: i32,

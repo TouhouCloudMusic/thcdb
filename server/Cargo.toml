@@ -252,7 +252,7 @@ zxcvbn = "3.1"
 exn = "0.3.0"
 
 [dev-dependencies]
-rusty-hook = "=0.11.2"
+proptest = "1"
 
 # https://doc.rust-lang.org/cargo/reference/profiles.html
 [profile.dev]

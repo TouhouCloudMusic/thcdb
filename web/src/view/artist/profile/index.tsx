@@ -1,5 +1,11 @@
 /* @refresh skip */
-import type { Artist, ArtistCredit, Discography, ReleaseType } from "@thc/api"
+import type {
+	Artist,
+	ArtistCredit,
+	CorrectionHistoryItem,
+	Discography,
+	ReleaseType,
+} from "@thc/api"
 import { createContext, Suspense } from "solid-js"
 
 import { Link } from "~/component/atomic/Link"
@@ -34,6 +40,7 @@ export const ArtistContext = createContext<ArtistContext>()
 
 export type ArtistProfilePageProps = {
 	artist: Artist
+	correctionHistory: CorrectionHistoryItem[]
 	appearances: InfiniteQuery<Discography>
 	discographies: {
 		data: Record<ReleaseType, Discography[]>
@@ -94,6 +101,7 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 						<EntityCorrectionMetadataSection
 							entityType="artist"
 							entityId={props.artist.id}
+							correctionHistory={props.correctionHistory}
 							trailingAction={
 								<Link
 									to="/artist/$id/image-upload"

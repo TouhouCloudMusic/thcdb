@@ -232,6 +232,9 @@ import type {
 	SignUpData,
 	SignUpErrors,
 	SignUpResponses,
+	SongRelationTypesData,
+	SongRelationTypesErrors,
+	SongRelationTypesResponses,
 	UnfollowUserData,
 	UnfollowUserErrors,
 	UnfollowUserResponses,
@@ -922,6 +925,32 @@ export const profileWithName = <ThrowOnError extends boolean = false>(
 		ThrowOnError
 	>({ url: "/profile/{name}", ...options })
 
+export const unfollowUser = <ThrowOnError extends boolean = false>(
+	options: Options<UnfollowUserData, ThrowOnError>,
+) =>
+	(options.client ?? client).delete<
+		UnfollowUserResponses,
+		UnfollowUserErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/profile/{name}/follow",
+		...options,
+	})
+
+export const followUser = <ThrowOnError extends boolean = false>(
+	options: Options<FollowUserData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		FollowUserResponses,
+		FollowUserErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/profile/{name}/follow",
+		...options,
+	})
+
 export const findReleaseByKeyword = <ThrowOnError extends boolean = false>(
 	options: Options<FindReleaseByKeywordData, ThrowOnError>,
 ) =>
@@ -1226,6 +1255,15 @@ export const updateSongLyrics = <ThrowOnError extends boolean = false>(
 		},
 	})
 
+export const songRelationTypes = <ThrowOnError extends boolean = false>(
+	options?: Options<SongRelationTypesData, ThrowOnError>,
+) =>
+	(options?.client ?? client).get<
+		SongRelationTypesResponses,
+		SongRelationTypesErrors,
+		ThrowOnError
+	>({ url: "/song-relation-types", ...options })
+
 export const exploreSong = <ThrowOnError extends boolean = false>(
 	options?: Options<ExploreSongData, ThrowOnError>,
 ) =>
@@ -1330,32 +1368,6 @@ export const userRoles = <ThrowOnError extends boolean = false>(
 		UserRolesErrors,
 		ThrowOnError
 	>({ url: "/user-roles", ...options })
-
-export const unfollowUser = <ThrowOnError extends boolean = false>(
-	options: Options<UnfollowUserData, ThrowOnError>,
-) =>
-	(options.client ?? client).delete<
-		UnfollowUserResponses,
-		UnfollowUserErrors,
-		ThrowOnError
-	>({
-		security: [{ scheme: "basic", type: "http" }],
-		url: "/profile/{name}/follow",
-		...options,
-	})
-
-export const followUser = <ThrowOnError extends boolean = false>(
-	options: Options<FollowUserData, ThrowOnError>,
-) =>
-	(options.client ?? client).post<
-		FollowUserResponses,
-		FollowUserErrors,
-		ThrowOnError
-	>({
-		security: [{ scheme: "basic", type: "http" }],
-		url: "/profile/{name}/follow",
-		...options,
-	})
 
 export const userImageQueue = <ThrowOnError extends boolean = false>(
 	options: Options<UserImageQueueData, ThrowOnError>,

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router"
-import type { Event } from "@thc/api"
+import type { CorrectionHistoryItem, Event } from "@thc/api"
 
 import { EventInfoPage } from "~/view/event/Info"
 
@@ -33,6 +33,22 @@ const mockData: Event = {
 	],
 }
 
+const mockCorrectionHistory: CorrectionHistoryItem[] = [
+	{
+		id: 1,
+		type: "Create",
+		created_at: "2026-03-27T09:15:00.000Z",
+		handled_at: "2026-03-27T09:45:00.000Z",
+		author: { id: 4, name: "Sakuya Izayoi" },
+		description: "Created the initial event entry.",
+	},
+]
+
 function RouteComponent() {
-	return <EventInfoPage event={mockData} />
+	return (
+		<EventInfoPage
+			event={mockData}
+			correctionHistory={mockCorrectionHistory}
+		/>
+	)
 }

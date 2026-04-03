@@ -1,4 +1,4 @@
-import type { Tag } from "@thc/api"
+import type { CorrectionHistoryItem, Tag } from "@thc/api"
 import { Show, Suspense } from "solid-js"
 
 import { Link, Tab } from "~/component/atomic"
@@ -12,6 +12,7 @@ import type { TagInfoPageContextValue } from "./context"
 
 type Props = {
 	tag: Tag
+	correctionHistory: CorrectionHistoryItem[]
 }
 
 export function TagInfoPage(props: Props) {
@@ -32,6 +33,7 @@ export function TagInfoPage(props: Props) {
 						<EntityCorrectionMetadataSection
 							entityType="tag"
 							entityId={props.tag.id}
+							correctionHistory={props.correctionHistory}
 						/>
 					</div>
 				</TagInfoPageContext.Provider>

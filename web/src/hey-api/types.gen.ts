@@ -518,6 +518,11 @@ export type DataVecSongLyrics = {
 	data: Array<SongLyrics>
 }
 
+export type DataVecSongRelationType = {
+	status: string
+	data: Array<SongRelationType>
+}
+
 export type DataVecTag = {
 	status: string
 	data: Array<Tag>
@@ -871,6 +876,7 @@ export type NewCorrectionNewSong = {
 		credits?: Array<NewSongCredit> | null
 		languages?: Array<number> | null
 		localized_titles?: Array<NewLocalizedName> | null
+		relations?: Array<NewSongRelation> | null
 	}
 	description: string
 	type: CorrectionType
@@ -972,6 +978,7 @@ export type NewSong = {
 	credits?: Array<NewSongCredit> | null
 	languages?: Array<number> | null
 	localized_titles?: Array<NewLocalizedName> | null
+	relations?: Array<NewSongRelation> | null
 }
 
 export type NewSongCredit = {
@@ -984,6 +991,12 @@ export type NewSongLyrics = {
 	language_id: number
 	content: string
 	is_main: boolean
+}
+
+export type NewSongRelation = {
+	related_song_id: number
+	relation_type_id: number
+	description: string
 }
 
 export type NewTag = {
@@ -1107,6 +1120,7 @@ export type PageResponseSong = {
 		credits?: Array<SongCredit>
 		languages?: Array<Language>
 		localized_titles?: Array<LocalizedTitle>
+		relations?: Array<SongRelation>
 		lyrics?: Array<SongLyrics>
 	}>
 	page: number
@@ -1257,6 +1271,7 @@ export type Song = {
 	credits?: Array<SongCredit>
 	languages?: Array<Language>
 	localized_titles?: Array<LocalizedTitle>
+	relations?: Array<SongRelation>
 	lyrics?: Array<SongLyrics>
 }
 
@@ -1276,6 +1291,18 @@ export type SongLyrics = {
 export type SongRef = {
 	id: number
 	title: string
+}
+
+export type SongRelation = {
+	song: SongRef
+	artist?: null | SimpleArtist
+	type: SongRelationType
+	description: string
+}
+
+export type SongRelationType = {
+	id: number
+	name: string
 }
 
 export type SongRelease = {
@@ -1337,13 +1364,18 @@ export type UserProfile = {
 	banner_url?: string | null
 	last_login: string
 	roles?: Array<UserRole>
-	stats: UserProfileStats
 	/**
 	 * Whether the querist follows the user. Return `None` if querist is not signed in or it's querist's own profile
 	 */
 	is_following?: boolean | null
 	bio?: string | null
+	stats: UserProfileStats
 	settings?: unknown
+}
+
+export type UserProfileStats = {
+	edit_count: number
+	vote_count: number
 }
 
 export type UserRole = {
@@ -2864,6 +2896,63 @@ export type ProfileWithNameResponses = {
 export type ProfileWithNameResponse =
 	ProfileWithNameResponses[keyof ProfileWithNameResponses]
 
+export type UnfollowUserData = {
+	body?: never
+	path: {
+		name: string
+	}
+	query?: never
+	url: "/profile/{name}/follow"
+}
+
+export type UnfollowUserErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UnfollowUserError = UnfollowUserErrors[keyof UnfollowUserErrors]
+
+export type UnfollowUserResponses = {
+	200: Message
+}
+
+export type UnfollowUserResponse =
+	UnfollowUserResponses[keyof UnfollowUserResponses]
+
+export type FollowUserData = {
+	body?: never
+	path: {
+		name: string
+	}
+	query?: never
+	url: "/profile/{name}/follow"
+}
+
+export type FollowUserErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type FollowUserError = FollowUserErrors[keyof FollowUserErrors]
+
+export type FollowUserResponses = {
+	200: Message
+}
+
+export type FollowUserResponse = FollowUserResponses[keyof FollowUserResponses]
+
 export type FindReleaseByKeywordData = {
 	body?: never
 	path?: never
@@ -3621,6 +3710,34 @@ export type UpdateSongLyricsResponses = {
 export type UpdateSongLyricsResponse =
 	UpdateSongLyricsResponses[keyof UpdateSongLyricsResponses]
 
+export type SongRelationTypesData = {
+	body?: never
+	path?: never
+	query?: never
+	url: "/song-relation-types"
+}
+
+export type SongRelationTypesErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type SongRelationTypesError =
+	SongRelationTypesErrors[keyof SongRelationTypesErrors]
+
+export type SongRelationTypesResponses = {
+	200: DataVecSongRelationType
+}
+
+export type SongRelationTypesResponse =
+	SongRelationTypesResponses[keyof SongRelationTypesResponses]
+
 export type ExploreSongData = {
 	body?: never
 	path?: never
@@ -3899,63 +4016,6 @@ export type UserRolesResponses = {
 }
 
 export type UserRolesResponse = UserRolesResponses[keyof UserRolesResponses]
-
-export type UnfollowUserData = {
-	body?: never
-	path: {
-		name: string
-	}
-	query?: never
-	url: "/profile/{name}/follow"
-}
-
-export type UnfollowUserErrors = {
-	/**
-	 * Too Many Requests
-	 */
-	429: string
-	default: {
-		status: "Err"
-		message: string
-	}
-}
-
-export type UnfollowUserError = UnfollowUserErrors[keyof UnfollowUserErrors]
-
-export type UnfollowUserResponses = {
-	200: Message
-}
-
-export type UnfollowUserResponse =
-	UnfollowUserResponses[keyof UnfollowUserResponses]
-
-export type FollowUserData = {
-	body?: never
-	path: {
-		name: string
-	}
-	query?: never
-	url: "/profile/{name}/follow"
-}
-
-export type FollowUserErrors = {
-	/**
-	 * Too Many Requests
-	 */
-	429: string
-	default: {
-		status: "Err"
-		message: string
-	}
-}
-
-export type FollowUserError = FollowUserErrors[keyof FollowUserErrors]
-
-export type FollowUserResponses = {
-	200: Message
-}
-
-export type FollowUserResponse = FollowUserResponses[keyof FollowUserResponses]
 
 export type UserImageQueueData = {
 	body?: never

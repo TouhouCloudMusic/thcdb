@@ -6,12 +6,12 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
 )]
-#[sea_orm(table_name = "song_relation")]
+#[sea_orm(table_name = "song_relation_history")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub first_id: i32,
-    pub second_id: i32,
+    pub history_id: i32,
+    pub related_song_id: i32,
     pub relation_type_id: i32,
     #[sea_orm(column_type = "Text")]
     pub description: String,
@@ -21,20 +21,20 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(
         belongs_to = "super::song::Entity",
-        from = "Column::FirstId",
+        from = "Column::RelatedSongId",
         to = "super::song::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    Song2,
+    Song,
     #[sea_orm(
-        belongs_to = "super::song::Entity",
-        from = "Column::SecondId",
-        to = "super::song::Column::Id",
+        belongs_to = "super::song_history::Entity",
+        from = "Column::HistoryId",
+        to = "super::song_history::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
-    Song1,
+    SongHistory,
     #[sea_orm(
         belongs_to = "super::song_relation_type::Entity",
         from = "Column::RelationTypeId",
@@ -43,6 +43,18 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     SongRelationType,
+}
+
+impl Related<super::song::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Song.def()
+    }
+}
+
+impl Related<super::song_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SongHistory.def()
+    }
 }
 
 impl Related<super::song_relation_type::Entity> for Entity {
