@@ -1,8 +1,8 @@
 # 代码检查
 
 完成任务后，运行`just check`检查
-build 的检查很宽松，不要使用build来进行检查
-你应当通过类型系统和单元测试来确认修改是否有效
+JavaScript是动态语言，build的检查很宽松，不要使用build来进行检查，不要构建storybook!
+你应当通过类型系统, linter和单元测试来确认修改是否有效
 禁止使用`tsc --no-emit`, oxlint的检查更快速，完善
 
 # 编码规范
