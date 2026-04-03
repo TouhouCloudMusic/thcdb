@@ -84,6 +84,7 @@ import {
 	signIn,
 	signOut,
 	signUp,
+	songRelationTypes,
 	unfollowUser,
 	updateBio,
 	updateRelease,
@@ -328,6 +329,9 @@ import type {
 	SignUpData,
 	SignUpError,
 	SignUpResponse2,
+	SongRelationTypesData,
+	SongRelationTypesError,
+	SongRelationTypesResponse,
 	UnfollowUserData,
 	UnfollowUserError,
 	UnfollowUserResponse,
@@ -2053,6 +2057,54 @@ export const profileWithNameOptions = (options: Options<ProfileWithNameData>) =>
 		queryKey: profileWithNameQueryKey(options),
 	})
 
+export const unfollowUserMutation = (
+	options?: Partial<Options<UnfollowUserData>>,
+): MutationOptions<
+	UnfollowUserResponse,
+	UnfollowUserError,
+	Options<UnfollowUserData>
+> => {
+	const mutationOptions: MutationOptions<
+		UnfollowUserResponse,
+		UnfollowUserError,
+		Options<UnfollowUserData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await unfollowUser({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const followUserMutation = (
+	options?: Partial<Options<FollowUserData>>,
+): MutationOptions<
+	FollowUserResponse,
+	FollowUserError,
+	Options<FollowUserData>
+> => {
+	const mutationOptions: MutationOptions<
+		FollowUserResponse,
+		FollowUserError,
+		Options<FollowUserData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await followUser({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
 export const findReleaseByKeywordQueryKey = (
 	options: Options<FindReleaseByKeywordData>,
 ) => createQueryKey("findReleaseByKeyword", options)
@@ -2959,6 +3011,31 @@ export const updateSongLyricsMutation = (
 	return mutationOptions
 }
 
+export const songRelationTypesQueryKey = (
+	options?: Options<SongRelationTypesData>,
+) => createQueryKey("songRelationTypes", options)
+
+export const songRelationTypesOptions = (
+	options?: Options<SongRelationTypesData>,
+) =>
+	queryOptions<
+		SongRelationTypesResponse,
+		SongRelationTypesError,
+		SongRelationTypesResponse,
+		ReturnType<typeof songRelationTypesQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await songRelationTypes({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: songRelationTypesQueryKey(options),
+	})
+
 export const exploreSongQueryKey = (options?: Options<ExploreSongData>) =>
 	createQueryKey("exploreSong", options)
 
@@ -3259,54 +3336,6 @@ export const userRolesOptions = (options?: Options<UserRolesData>) =>
 		},
 		queryKey: userRolesQueryKey(options),
 	})
-
-export const unfollowUserMutation = (
-	options?: Partial<Options<UnfollowUserData>>,
-): MutationOptions<
-	UnfollowUserResponse,
-	UnfollowUserError,
-	Options<UnfollowUserData>
-> => {
-	const mutationOptions: MutationOptions<
-		UnfollowUserResponse,
-		UnfollowUserError,
-		Options<UnfollowUserData>
-	> = {
-		mutationFn: async (fnOptions) => {
-			const { data } = await unfollowUser({
-				...options,
-				...fnOptions,
-				throwOnError: true,
-			})
-			return data
-		},
-	}
-	return mutationOptions
-}
-
-export const followUserMutation = (
-	options?: Partial<Options<FollowUserData>>,
-): MutationOptions<
-	FollowUserResponse,
-	FollowUserError,
-	Options<FollowUserData>
-> => {
-	const mutationOptions: MutationOptions<
-		FollowUserResponse,
-		FollowUserError,
-		Options<FollowUserData>
-	> = {
-		mutationFn: async (fnOptions) => {
-			const { data } = await followUser({
-				...options,
-				...fnOptions,
-				throwOnError: true,
-			})
-			return data
-		},
-	}
-	return mutationOptions
-}
 
 export const userImageQueueQueryKey = (options: Options<UserImageQueueData>) =>
 	createQueryKey("userImageQueue", options)

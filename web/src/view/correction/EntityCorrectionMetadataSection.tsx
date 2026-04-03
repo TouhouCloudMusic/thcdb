@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/solid-query"
+import type { CorrectionHistoryItem } from "@thc/api"
 import { CorrectionQueryOption } from "@thc/query"
 import { pipe } from "@thc/toolkit"
 import { ArrExt } from "@thc/toolkit/data"
+import { untrack } from "solid-js"
 import type { JSX } from "solid-js"
-import { Suspense } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
 import { Link } from "~/component/atomic/Link"
@@ -23,26 +24,31 @@ const LINK_CLASS = twMerge(
 type EntityCorrectionMetadataSectionProps = {
 	entityType: EntityDetailType
 	entityId: number
+	correctionHistory?: CorrectionHistoryItem[]
 	trailingAction?: JSX.Element
 }
 
 export function EntityCorrectionMetadataSection(
 	props: EntityCorrectionMetadataSectionProps,
 ) {
-	const historyQuery = useQuery(() =>
-		CorrectionQueryOption.history(props.entityType, props.entityId),
-	)
-
+	const providedCorrectionHistory = untrack(() => props.correctionHistory)
+	const correctionHistoryQuery = providedCorrectionHistory
+		? undefined
+		: useQuery(() =>
+				CorrectionQueryOption.history(props.entityType, props.entityId),
+			)
 	const correctionsRoute = () =>
 		ENTITY_PAGE_ROUTE_MAP[props.entityType].corrections
 	const editRoute = () => ENTITY_PAGE_ROUTE_MAP[props.entityType].edit
 	const entityLabel = () => ENTITY_LABEL_MAP[props.entityType]
+	const correctionHistory = () =>
+		providedCorrectionHistory ?? correctionHistoryQuery?.data ?? []
 
 	return (
 		<div class="flex flex-col gap-2 p-0 pb-0">
 			<EntityContributors
 				contributors={pipe(
-					historyQuery.data,
+					correctionHistory(),
 					ArrExt.mapOrDefault((item) => item.author),
 					ArrExt.dedupeByKey("id"),
 				)}
@@ -55,10 +61,7 @@ export function EntityCorrectionMetadataSection(
 					class={LINK_CLASS}
 					underline={false}
 				>
-					Corrections ·{" "}
-					<Suspense fallback={<>...</>}>
-						{historyQuery.data?.length ?? 0}
-					</Suspense>
+					Corrections · {correctionHistory().length}
 				</Link>
 				<Link
 					to={editRoute()}

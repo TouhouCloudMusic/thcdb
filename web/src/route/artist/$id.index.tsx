@@ -2,7 +2,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
 import { createFileRoute, notFound } from "@tanstack/solid-router"
 import type { Discography, InitDiscography, ReleaseType } from "@thc/api"
 import { ArtistApi } from "@thc/api"
-import { ArtistQueryOption } from "@thc/query"
+import { ArtistQueryOption, CorrectionQueryOption } from "@thc/query"
 import { ObjExt } from "@thc/toolkit/data"
 import { Either, Option as O } from "effect"
 import { Show } from "solid-js"
@@ -29,9 +29,12 @@ export const Route = createFileRoute("/artist/$id/")({
 	loader: async ({ params: { id } }) => {
 		const parsedId = EntityId_fromStr(id)
 
-		const data = await QUERY_CLIENT.ensureQueryData(
-			ArtistQueryOption.findById(parsedId),
-		)
+		const [data] = await Promise.all([
+			QUERY_CLIENT.ensureQueryData(ArtistQueryOption.findById(parsedId)),
+			QUERY_CLIENT.ensureQueryData(
+				CorrectionQueryOption.history("artist", parsedId),
+			),
+		])
 		if (O.isNone(data)) {
 			throw notFound()
 		}
@@ -46,6 +49,9 @@ function RouteComponent() {
 	const params = Route.useParams()
 	const artistId = Number.parseInt(params().id, 10)
 	const query = useQuery(() => ArtistQueryOption.findById(artistId))
+	const correctionHistoryQuery = useQuery(() =>
+		CorrectionQueryOption.history("artist", artistId),
+	)
 
 	const appearances = useInfiniteQuery(() =>
 		ArtistQueryOption.appearances(artistId),
@@ -130,6 +136,7 @@ function RouteComponent() {
 			{(artist) => (
 				<ArtistProfilePage
 					artist={artist()}
+					correctionHistory={correctionHistoryQuery.data ?? []}
 					appearances={{
 						get data() {
 							return appearances.data?.pages.flatMap((p) => p.items) ?? []

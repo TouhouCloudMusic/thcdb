@@ -671,22 +671,6 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/profile/bio": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["update_bio"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/profile/{name}/follow": {
         parameters: {
             query?: never;
@@ -698,6 +682,22 @@ export type paths = {
         put?: never;
         post: operations["follow_user"];
         delete: operations["unfollow_user"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/bio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["update_bio"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1015,6 +1015,22 @@ export type paths = {
             cookie?: never;
         };
         get: operations["find_many_song_lyrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/song-relation-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["song_relation_types"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1768,6 +1784,10 @@ export type components = {
             data: components["schemas"]["SongLyrics"][];
             status: string;
         };
+        DataVecSongRelationType: {
+            data: components["schemas"]["SongRelationType"][];
+            status: string;
+        };
         DataVecTag: {
             data: components["schemas"]["Tag"][];
             status: string;
@@ -2021,6 +2041,7 @@ export type components = {
                 credits?: components["schemas"]["NewSongCredit"][] | null;
                 languages?: number[] | null;
                 localized_titles?: components["schemas"]["NewLocalizedName"][] | null;
+                relations?: components["schemas"]["NewSongRelation"][] | null;
                 title: components["schemas"]["EntityIdent"];
             };
             description: string;
@@ -2117,6 +2138,7 @@ export type components = {
             credits?: components["schemas"]["NewSongCredit"][] | null;
             languages?: number[] | null;
             localized_titles?: components["schemas"]["NewLocalizedName"][] | null;
+            relations?: components["schemas"]["NewSongRelation"][] | null;
             title: components["schemas"]["EntityIdent"];
         };
         NewSongCredit: {
@@ -2132,6 +2154,13 @@ export type components = {
             language_id: number;
             /** Format: int32 */
             song_id: number;
+        };
+        NewSongRelation: {
+            description: string;
+            /** Format: int32 */
+            related_song_id: number;
+            /** Format: int32 */
+            relation_type_id: number;
         };
         NewTag: {
             alt_names?: string[] | null;
@@ -2263,6 +2292,7 @@ export type components = {
                 languages?: components["schemas"]["Language"][];
                 localized_titles?: components["schemas"]["LocalizedTitle"][];
                 lyrics?: components["schemas"]["SongLyrics"][];
+                relations?: components["schemas"]["SongRelation"][];
                 releases?: components["schemas"]["SongRelease"][];
                 title: string;
             }[];
@@ -2414,6 +2444,7 @@ export type components = {
             languages?: components["schemas"]["Language"][];
             localized_titles?: components["schemas"]["LocalizedTitle"][];
             lyrics?: components["schemas"]["SongLyrics"][];
+            relations?: components["schemas"]["SongRelation"][];
             releases?: components["schemas"]["SongRelease"][];
             title: string;
         };
@@ -2434,6 +2465,17 @@ export type components = {
             /** Format: int32 */
             id: number;
             title: string;
+        };
+        SongRelation: {
+            artist?: null | components["schemas"]["SimpleArtist"];
+            description: string;
+            song: components["schemas"]["SongRef"];
+            type: components["schemas"]["SongRelationType"];
+        };
+        SongRelationType: {
+            /** Format: int32 */
+            id: number;
+            name: string;
         };
         SongRelease: {
             cover_art_url?: string | null;
@@ -2494,8 +2536,8 @@ export type components = {
             last_login: string;
             name: string;
             roles?: components["schemas"]["UserRole"][];
-            stats: components["schemas"]["UserProfileStats"];
             settings?: unknown;
+            stats: components["schemas"]["UserProfileStats"];
         };
         UserProfileStats: {
             /** Format: int64 */
@@ -2633,6 +2675,7 @@ export type DataVecLanguage = components['schemas']['DataVecLanguage'];
 export type DataVecRelease = components['schemas']['DataVecRelease'];
 export type DataVecSong = components['schemas']['DataVecSong'];
 export type DataVecSongLyrics = components['schemas']['DataVecSongLyrics'];
+export type DataVecSongRelationType = components['schemas']['DataVecSongRelationType'];
 export type DataVecTag = components['schemas']['DataVecTag'];
 export type DataVecUserRole = components['schemas']['DataVecUserRole'];
 export type DataVerifyResetCodeResponse = components['schemas']['DataVerifyResetCodeResponse'];
@@ -2684,6 +2727,7 @@ export type NewRelease = components['schemas']['NewRelease'];
 export type NewSong = components['schemas']['NewSong'];
 export type NewSongCredit = components['schemas']['NewSongCredit'];
 export type NewSongLyrics = components['schemas']['NewSongLyrics'];
+export type NewSongRelation = components['schemas']['NewSongRelation'];
 export type NewTag = components['schemas']['NewTag'];
 export type NewTagRelation = components['schemas']['NewTagRelation'];
 export type NewTrack = components['schemas']['NewTrack'];
@@ -2716,6 +2760,8 @@ export type Song = components['schemas']['Song'];
 export type SongCredit = components['schemas']['SongCredit'];
 export type SongLyrics = components['schemas']['SongLyrics'];
 export type SongRef = components['schemas']['SongRef'];
+export type SongRelation = components['schemas']['SongRelation'];
+export type SongRelationType = components['schemas']['SongRelationType'];
 export type SongRelease = components['schemas']['SongRelease'];
 export type SortDirection = components['schemas']['SortDirection'];
 export type Tag = components['schemas']['Tag'];
@@ -5174,6 +5220,92 @@ export interface operations {
             };
         };
     };
+    follow_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    unfollow_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     update_bio: {
         parameters: {
             query?: never;
@@ -6366,6 +6498,47 @@ export interface operations {
             };
         };
     };
+    song_relation_types: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataVecSongRelationType"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     find_song_by_id: {
         parameters: {
             query?: never;
@@ -6817,92 +6990,6 @@ export interface operations {
             };
         };
     };
-    follow_user: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                name: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Message"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
-    unfollow_user: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                name: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Message"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
     user_image_queue: {
         parameters: {
             query?: {
@@ -7156,6 +7243,7 @@ export enum ApiPaths {
     create_song_lyrics = "/song-lyrics",
     find_many_song_lyrics = "/song-lyrics/many",
     update_song_lyrics = "/song-lyrics/{id}",
+    song_relation_types = "/song-relation-types",
     explore_song = "/song/explore",
     find_song_by_id = "/song/{id}",
     update_song = "/song/{id}",

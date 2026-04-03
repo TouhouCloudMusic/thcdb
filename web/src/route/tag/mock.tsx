@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router"
-import type { Tag } from "@thc/api"
+import type { CorrectionHistoryItem, Tag } from "@thc/api"
 
 import { TagInfoPage } from "~/view/tag/Info"
 
@@ -30,6 +30,22 @@ const mockData: Tag = {
 	],
 }
 
+const mockCorrectionHistory: CorrectionHistoryItem[] = [
+	{
+		id: 1,
+		type: "Create",
+		created_at: "2026-03-27T09:15:00.000Z",
+		handled_at: "2026-03-27T09:45:00.000Z",
+		author: { id: 1, name: "Kirisame Marisa" },
+		description: "Created the initial tag entry.",
+	},
+]
+
 function RouteComponent() {
-	return <TagInfoPage tag={mockData} />
+	return (
+		<TagInfoPage
+			tag={mockData}
+			correctionHistory={mockCorrectionHistory}
+		/>
+	)
 }

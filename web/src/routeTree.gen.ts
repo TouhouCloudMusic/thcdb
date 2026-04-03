@@ -26,7 +26,6 @@ import { Route as TagMockRouteImport } from './route/tag/mock'
 import { Route as TagExploreRouteImport } from './route/tag/explore'
 import { Route as TagIdRouteImport } from './route/tag/$id'
 import { Route as SongNewRouteImport } from './route/song/new'
-import { Route as SongMockRouteImport } from './route/song/mock'
 import { Route as SongExploreRouteImport } from './route/song/explore'
 import { Route as SongIdRouteImport } from './route/song/$id'
 import { Route as ReleaseNewRouteImport } from './route/release/new'
@@ -149,11 +148,6 @@ const TagIdRoute = TagIdRouteImport.update({
 const SongNewRoute = SongNewRouteImport.update({
   id: '/song/new',
   path: '/song/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SongMockRoute = SongMockRouteImport.update({
-  id: '/song/mock',
-  path: '/song/mock',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SongExploreRoute = SongExploreRouteImport.update({
@@ -371,7 +365,6 @@ export interface FileRoutesByFullPath {
   '/release/new': typeof ReleaseNewRoute
   '/song/$id': typeof SongIdRoute
   '/song/explore': typeof SongExploreRoute
-  '/song/mock': typeof SongMockRoute
   '/song/new': typeof SongNewRoute
   '/tag/$id': typeof TagIdRoute
   '/tag/explore': typeof TagExploreRoute
@@ -429,7 +422,6 @@ export interface FileRoutesByTo {
   '/release/new': typeof ReleaseNewRoute
   '/song/$id': typeof SongIdRoute
   '/song/explore': typeof SongExploreRoute
-  '/song/mock': typeof SongMockRoute
   '/song/new': typeof SongNewRoute
   '/tag/$id': typeof TagIdRoute
   '/tag/explore': typeof TagExploreRoute
@@ -488,7 +480,6 @@ export interface FileRoutesById {
   '/release/new': typeof ReleaseNewRoute
   '/song/$id': typeof SongIdRoute
   '/song/explore': typeof SongExploreRoute
-  '/song/mock': typeof SongMockRoute
   '/song/new': typeof SongNewRoute
   '/tag/$id': typeof TagIdRoute
   '/tag/explore': typeof TagExploreRoute
@@ -548,7 +539,6 @@ export interface FileRouteTypes {
     | '/release/new'
     | '/song/$id'
     | '/song/explore'
-    | '/song/mock'
     | '/song/new'
     | '/tag/$id'
     | '/tag/explore'
@@ -606,7 +596,6 @@ export interface FileRouteTypes {
     | '/release/new'
     | '/song/$id'
     | '/song/explore'
-    | '/song/mock'
     | '/song/new'
     | '/tag/$id'
     | '/tag/explore'
@@ -664,7 +653,6 @@ export interface FileRouteTypes {
     | '/release/new'
     | '/song/$id'
     | '/song/explore'
-    | '/song/mock'
     | '/song/new'
     | '/tag/$id'
     | '/tag/explore'
@@ -723,7 +711,6 @@ export interface RootRouteChildren {
   ReleaseNewRoute: typeof ReleaseNewRoute
   SongIdRoute: typeof SongIdRoute
   SongExploreRoute: typeof SongExploreRoute
-  SongMockRoute: typeof SongMockRoute
   SongNewRoute: typeof SongNewRoute
   TagIdRoute: typeof TagIdRoute
   TagExploreRoute: typeof TagExploreRoute
@@ -877,13 +864,6 @@ declare module '@tanstack/solid-router' {
       path: '/song/new'
       fullPath: '/song/new'
       preLoaderRoute: typeof SongNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/song/mock': {
-      id: '/song/mock'
-      path: '/song/mock'
-      fullPath: '/song/mock'
-      preLoaderRoute: typeof SongMockRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/song/explore': {
@@ -1179,7 +1159,6 @@ const rootRouteChildren: RootRouteChildren = {
   ReleaseNewRoute: ReleaseNewRoute,
   SongIdRoute: SongIdRoute,
   SongExploreRoute: SongExploreRoute,
-  SongMockRoute: SongMockRoute,
   SongNewRoute: SongNewRoute,
   TagIdRoute: TagIdRoute,
   TagExploreRoute: TagExploreRoute,

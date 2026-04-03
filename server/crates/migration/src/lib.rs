@@ -55,6 +55,7 @@ migrations![
     m20260121_000000_user_settings_json,
     m20260209_000000_add_user_email_verification,
     m20260223_000000_user_role_on_delete_cascade,
+    m20260401_000000_create_song_relation_history,
 ];
 
 macro_rules! migration {

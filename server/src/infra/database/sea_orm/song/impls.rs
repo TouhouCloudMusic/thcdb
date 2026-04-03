@@ -1,7 +1,8 @@
 use entity::{
     correction_revision, song, song_artist, song_artist_history, song_credit,
     song_credit_history, song_history, song_language, song_language_history,
-    song_localized_title, song_localized_title_history,
+    song_localized_title, song_localized_title_history, song_relation,
+    song_relation_history,
 };
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
@@ -43,6 +44,7 @@ pub async fn apply_update(
     update_credits(song_id, history_id, tx).await?;
     update_languages(song_id, history_id, tx).await?;
     update_localized_titles(song_id, history_id, tx).await?;
+    update_relations(song_id, history_id, tx).await?;
 
     Ok(())
 }
@@ -183,6 +185,49 @@ async fn update_localized_titles(
     song_localized_title::Entity::insert_many(models)
         .exec(tx)
         .await?;
+
+    Ok(())
+}
+
+async fn update_relations(
+    song_id: i32,
+    history_id: i32,
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    song_relation::Entity::delete_many()
+        .filter(
+            song_relation::Column::FirstId
+                .eq(song_id)
+                .or(song_relation::Column::SecondId.eq(song_id)),
+        )
+        .exec(tx)
+        .await?;
+
+    let relations = song_relation_history::Entity::find()
+        .filter(song_relation_history::Column::HistoryId.eq(history_id))
+        .all(tx)
+        .await?;
+
+    if relations.is_empty() {
+        return Ok(());
+    }
+
+    let models = relations.iter().map(|relation| {
+        let (first_id, second_id) = super::normalize_song_relation_pair(
+            song_id,
+            relation.related_song_id,
+        );
+
+        song_relation::ActiveModel {
+            id: NotSet,
+            first_id: Set(first_id),
+            second_id: Set(second_id),
+            relation_type_id: Set(relation.relation_type_id),
+            description: Set(relation.description.clone()),
+        }
+    });
+
+    song_relation::Entity::insert_many(models).exec(tx).await?;
 
     Ok(())
 }

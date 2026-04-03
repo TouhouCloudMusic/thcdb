@@ -1,4 +1,4 @@
-import type { Event } from "@thc/api"
+import type { CorrectionHistoryItem, Event } from "@thc/api"
 import { Show, Suspense } from "solid-js"
 
 import { Tab } from "~/component/atomic"
@@ -13,6 +13,7 @@ import type { EventInfoPageContextValue } from "./context"
 
 type EventInfoPageProps = {
 	event: Event
+	correctionHistory: CorrectionHistoryItem[]
 }
 
 export function EventInfoPage(props: EventInfoPageProps) {
@@ -32,6 +33,7 @@ export function EventInfoPage(props: EventInfoPageProps) {
 						<EntityCorrectionMetadataSection
 							entityType="event"
 							entityId={props.event.id}
+							correctionHistory={props.correctionHistory}
 						/>
 					</div>
 				</EventInfoPageContext.Provider>

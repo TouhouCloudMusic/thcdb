@@ -55,6 +55,7 @@
 - `song_credit_history` - 歌曲制作人员历史
 - `song_language_history` - 歌曲语言历史
 - `song_localized_title_history` - 歌曲本地化标题历史
+- `song_relation_history` - 歌曲关系历史
 - `song_lyrics_history` - 歌词变更历史
 
 ## API 端点

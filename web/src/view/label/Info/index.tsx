@@ -1,4 +1,4 @@
-import type { Label } from "@thc/api"
+import type { CorrectionHistoryItem, Label } from "@thc/api"
 import { Show, Suspense } from "solid-js"
 
 import { Intersperse } from "~/component/data/Intersperse"
@@ -12,6 +12,7 @@ import type { LabelInfoPageContextValue } from "./context"
 
 type Props = {
 	label: Label
+	correctionHistory: CorrectionHistoryItem[]
 }
 
 export function LabelInfoPage(props: Props) {
@@ -31,6 +32,7 @@ export function LabelInfoPage(props: Props) {
 						<EntityCorrectionMetadataSection
 							entityType="label"
 							entityId={props.label.id}
+							correctionHistory={props.correctionHistory}
 						/>
 					</div>
 				</LabelInfoPageContext.Provider>

@@ -1,4 +1,4 @@
-import type { Release } from "@thc/api"
+import type { CorrectionHistoryItem, Release } from "@thc/api"
 import { Suspense } from "solid-js"
 
 import { Link } from "~/component/atomic/Link"
@@ -14,6 +14,7 @@ import { ReleaseInfoPageContext } from "./context"
 
 type ReleaseInfoPageProps = {
 	release: Release
+	correctionHistory: CorrectionHistoryItem[]
 }
 
 const UPLOAD_LINK_CLASS = ButtonClass_new({
@@ -43,6 +44,7 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 							<EntityCorrectionMetadataSection
 								entityType="release"
 								entityId={props.release.id}
+								correctionHistory={props.correctionHistory}
 								trailingAction={
 									<Link
 										to="/release/$id/image-upload"

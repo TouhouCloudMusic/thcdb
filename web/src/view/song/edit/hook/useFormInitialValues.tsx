@@ -17,6 +17,7 @@ export function useSongFormInitialValues(
 					languages: [],
 					localized_titles: [],
 					credits: [],
+					relations: [],
 				},
 			}
 		: {
@@ -35,6 +36,12 @@ export function useSongFormInitialValues(
 						input.song.credits?.map((credit) => ({
 							artist_id: credit.artist.id,
 							role_id: credit.role?.id ?? undefined,
+						})) ?? [],
+					relations:
+						input.song.relations?.map((relation) => ({
+							related_song_id: relation.song.id,
+							relation_type_id: relation.type.id,
+							description: relation.description,
 						})) ?? [],
 				},
 			}
