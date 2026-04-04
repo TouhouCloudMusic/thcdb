@@ -231,7 +231,7 @@ msgstr "推荐"
 #: src/view/song/Info/index.tsx
 #: src/view/song/Info/index.tsx
 msgid "Release"
-msgstr "专辑"
+msgstr "发行"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/route/artist/$id_.image-upload.tsx
@@ -395,7 +395,7 @@ msgstr "文件太小。最小值为 {0}。"
 #. 0: formatBytes(fileSizeRange.max)
 #: src/component/ImageCropDialog/utils.ts
 msgid "File is too large. Maximum is {0}."
-msgstr "文件太大 最大尺寸是"
+msgstr "文件太大。最大值为 {0}。"
 
 #: src/component/ImageCropDialog/index.tsx
 msgid "ImageCropDialog"
@@ -404,7 +404,7 @@ msgstr "图片裁剪对话框"
 #: src/component/ImageCropDialog/index.tsx
 #: src/component/ImageCropDialog/index.tsx
 msgid "Cropper is not ready yet."
-msgstr "Cropper尚未准备就绪。"
+msgstr "Cropper 尚未准备就绪。"
 
 #: src/component/ImageCropDialog/index.tsx
 msgid "Selected crop cannot satisfy the required dimensions. Adjust the crop area."
@@ -425,7 +425,7 @@ msgstr "裁剪的图像太大（{0}）。尝试较小的裁剪或使用较小的
 #: src/component/ImageCropDialog/index.tsx
 #: src/view/user/edit_profile/store.ts
 msgid "Upload failed."
-msgstr "上传失败"
+msgstr "上传失败。"
 
 #: src/component/ImageCropDialog/index.tsx
 msgid "Close"
@@ -493,7 +493,7 @@ msgstr "小"
 
 #: src/component/ImageCropDialog/index.tsx
 msgid "Replace"
-msgstr "替 换"
+msgstr "替换"
 
 #: src/component/ImageCropDialog/index.tsx
 #: src/component/ImageCropDialog/index.tsx
@@ -583,11 +583,11 @@ msgstr "单击“+”添加新项目"
 
 #: src/component/form/ImageCropper.tsx
 msgid "Image Cropper Placeholder"
-msgstr "图像裁剪器占位符"
+msgstr "图片裁剪器占位符"
 
 #: src/component/form/ImageCropper.tsx
 msgid "Save Image"
-msgstr "保存图像"
+msgstr "保存图片"
 
 #: src/component/image/__internal.tsx
 #: src/view/auth/reset_password/index.tsx
@@ -708,11 +708,11 @@ msgstr "情境"
 
 #: src/route/correction/mock.tsx
 msgid "COMPARE ID"
-msgstr "比较ID"
+msgstr "对比 ID"
 
 #: src/route/correction/mock.tsx
 msgid "QUICK PICKS"
-msgstr "快速挑选"
+msgstr "快捷选项"
 
 #: src/route/correction/mock.tsx
 msgid "none"
@@ -728,11 +728,11 @@ msgstr "蓝色"
 
 #: src/route/correction/mock.tsx
 msgid "No compare baselines."
-msgstr "无比较基线。"
+msgstr "暂无对比基线。"
 
 #: src/route/correction/mock.tsx
 msgid "Route: <0>/correction/mock</0>"
-msgstr "路线： <0>/correction/mock </0>"
+msgstr "路径：<0>/correction/mock</0>"
 
 #: src/route/correction/mock.tsx
 msgid "Correction mock controls"
@@ -757,24 +757,24 @@ msgstr "最新发行"
 
 #: src/view/artist/discover.tsx
 msgid "[UNIMPLEMENTED] Artist"
-msgstr "[未实现]艺术家"
+msgstr "[未实现]艺人"
 
 #: src/view/Homepage/utils.ts
 msgid "Unknown artist"
-msgstr "未知画家"
+msgstr "未知艺人"
 
 #: src/view/artist/explore.tsx
 msgid "Explore Artists"
-msgstr "探索艺术家"
+msgstr "浏览艺人"
 
 #: src/view/artist/explore.tsx
 msgid "Create artist"
-msgstr "创建艺术家"
+msgstr "创建艺人"
 
 #: src/view/artist/explore.comp.tsx
 #: src/view/label/explore.comp.tsx
 msgid "Present"
-msgstr "有"
+msgstr "至今"
 
 #: src/view/artist/explore.comp.tsx
 #: src/view/image_queue/manage.tsx
@@ -783,7 +783,7 @@ msgstr "有"
 #: src/view/release/explore/filter.tsx
 #: src/view/song/explore.tsx
 msgid "All"
-msgstr "所有食谱"
+msgstr "全部"
 
 #: src/view/Homepage/component/ArtistCard.tsx
 #: src/view/artist/explore.comp.tsx
@@ -807,7 +807,7 @@ msgstr "类型"
 
 #: src/view/artist/explore.comp.tsx
 msgid "No artists found"
-msgstr "找不到艺术家。"
+msgstr "未找到艺人。"
 
 #: src/view/correction/CorrectionHistorySection.tsx
 msgid "View diff"
@@ -960,7 +960,7 @@ msgstr "DIFF"
 
 #: src/view/correction/Detail.tsx
 msgid "No diff data."
-msgstr "没有diff数据。"
+msgstr "暂无差异数据。"
 
 #. 0: " "
 #: src/view/correction/Detail.tsx
@@ -1011,7 +1011,7 @@ msgstr "500 内部服务器错误"
 
 #: src/view/error/InternalServerError.tsx
 msgid "Go back..."
-msgstr "返回"
+msgstr "返回上一页..."
 
 #: src/view/correction/entityMap.ts
 msgid "SongLyrics"
@@ -1023,19 +1023,19 @@ msgstr "歌词"
 
 #: src/view/correction/entityMap.ts
 msgid "CreditRole"
-msgstr "信用角色"
+msgstr "署名角色"
 
 #: src/view/correction/entityMap.ts
 msgid "Credit role"
-msgstr "信用角色"
+msgstr "署名角色"
 
 #: src/view/event/discover.tsx
 msgid "[UNIMPLEMENTED] Event"
-msgstr "[未执行]事件"
+msgstr "[未实现]活动"
 
 #: src/view/chart/discover.tsx
 msgid "[UNIMPLEMENTED] Chart"
-msgstr "[未执行]图表"
+msgstr "[未实现]图表"
 
 #: src/view/event/explore.tsx
 msgid "From"
@@ -1043,15 +1043,15 @@ msgstr "从"
 
 #: src/view/event/explore.tsx
 msgid "To"
-msgstr "To"
+msgstr "到"
 
 #: src/view/event/explore.tsx
 msgid "No events found"
-msgstr "未找到任何事件"
+msgstr "未找到活动。"
 
 #: src/view/event/explore.tsx
 msgid "Explore Events"
-msgstr "探索活动"
+msgstr "浏览活动"
 
 #: src/view/event/explore.tsx
 msgid "Create event"
@@ -1066,7 +1066,7 @@ msgstr "当前"
 #: src/view/image_upload/EntityImageUploadPage.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "No image"
-msgstr "没有图像"
+msgstr "暂无图片"
 
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Select another image"
@@ -1074,15 +1074,15 @@ msgstr "选择另一张图片"
 
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Select image"
-msgstr "选择镜像"
+msgstr "选择图片"
 
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Open image queue"
-msgstr "打开图像队列"
+msgstr "打开图片队列"
 
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Dimensions (px)"
-msgstr "LOGO尺寸（像素）"
+msgstr "尺寸（px）"
 
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "File size"
@@ -1094,7 +1094,7 @@ msgstr "格式"
 
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "New"
-msgstr "New"
+msgstr "新图"
 
 #. 0: props.imageLabel
 #: src/view/image_upload/EntityImageUploadPage.tsx
@@ -1134,7 +1134,7 @@ msgstr "请求失败。"
 
 #: src/view/image_queue/detail.tsx
 msgid "IMAGE QUEUE"
-msgstr "图像队列"
+msgstr "图片队列"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
@@ -1145,20 +1145,20 @@ msgstr "加载中…"
 
 #: src/view/image_queue/detail.tsx
 msgid "Failed to load image queue entry."
-msgstr "无法加载图像队列条目。"
+msgstr "无法加载图片队列条目。"
 
 #. 0: " "; 1: target().imageLabel
 #: src/view/image_queue/detail.tsx
 msgid "Update request for{0} <0/> 's {1}"
-msgstr "更新 {0} <0/>的 {1} 的请求"
+msgstr "更新 {0} <0/> 的 {1} 请求"
 
 #: src/view/image_queue/detail.tsx
 msgid "Image queue"
-msgstr "图像队列"
+msgstr "图片队列"
 
 #: src/view/image_queue/detail.tsx
 msgid "Current target image"
-msgstr "当前目标图像"
+msgstr "当前目标图片"
 
 #: src/view/image_queue/detail.tsx
 msgid "Queued"
@@ -1191,11 +1191,11 @@ msgstr "取消"
 
 #: src/view/image_queue/detail.tsx
 msgid "Actions"
-msgstr "动作"
+msgstr "操作"
 
 #: src/view/image_queue/detail.tsx
 msgid "Working…"
-msgstr "Working"
+msgstr "处理中…"
 
 #: src/view/image_queue/detail.tsx
 msgid "No actions available for this account."
@@ -1203,7 +1203,7 @@ msgstr "此帐户没有可用的操作。"
 
 #: src/view/image_queue/detail.tsx
 msgid "Approve image?"
-msgstr "批准图片："
+msgstr "批准这张图片？"
 
 #: src/view/image_queue/detail.tsx
 msgid "This will mark the queued image as approved."
@@ -1211,20 +1211,20 @@ msgstr "这会将排队的图片标记为已批准。"
 
 #: src/view/image_queue/detail.tsx
 msgid "Reject image?"
-msgstr "拒绝图片？"
+msgstr "拒绝这张图片？"
 
 #: src/view/image_queue/detail.tsx
 msgid "This will mark the queued image as rejected."
-msgstr "这会将排队的图像标记为已拒绝。"
+msgstr "这会将排队的图片标记为已拒绝。"
 
 #: src/view/image_queue/detail.tsx
 msgid "No actions available."
-msgstr "有可用的新版本啦！"
+msgstr "没有可用操作。"
 
 #. 0: item.id
 #: src/view/image_queue/manage.tsx
 msgid "View image queue item #{0}"
-msgstr "查看图像队列项目# {0}"
+msgstr "查看图片队列条目 #{0}"
 
 #: src/view/image_queue/manage.tsx
 msgid "MODERATION"
@@ -1240,11 +1240,11 @@ msgstr "状态"
 
 #: src/view/image_queue/manage.tsx
 msgid "Failed to load image queue."
-msgstr "无法加载图像队列。"
+msgstr "无法加载图片队列。"
 
 #: src/view/image_queue/manage.tsx
 msgid "No entries found"
-msgstr "未找到文章"
+msgstr "未找到条目"
 
 #: src/view/image_queue/manage.tsx
 msgid "No entries match the current filters."
@@ -1253,7 +1253,7 @@ msgstr "没有与当前筛选器匹配的条目。"
 #: src/view/image_queue/manage.tsx
 #: src/view/image_queue/user.tsx
 msgid "No more entries"
-msgstr "没有更多内容"
+msgstr "没有更多条目"
 
 #: src/view/image_queue/manage.tsx
 msgid "Created at"
@@ -1261,7 +1261,7 @@ msgstr "创建时间"
 
 #: src/view/recommendation/discover.tsx
 msgid "[UNIMPLEMENTED] Recommendation"
-msgstr "[未执行]建议"
+msgstr "[未实现]推荐"
 
 #: src/view/image_queue/user.tsx
 msgid "USER"
@@ -1269,7 +1269,7 @@ msgstr "用户"
 
 #: src/view/image_queue/user.tsx
 msgid "Image Queue History"
-msgstr "图像队列历史记录"
+msgstr "图片队列历史记录"
 
 #: src/view/image_queue/user.tsx
 msgid "Go to moderation"
@@ -1277,11 +1277,11 @@ msgstr "前往审核"
 
 #: src/view/image_queue/user.tsx
 msgid "ID"
-msgstr "CN"
+msgstr "ID"
 
 #: src/view/image_queue/user.tsx
 msgid "IMAGE"
-msgstr "图像"
+msgstr "图片"
 
 #: src/view/Homepage/component/HomeHero.tsx
 #: src/view/Homepage/component/HomeHero.tsx
@@ -1291,23 +1291,23 @@ msgstr "状态"
 
 #: src/view/image_queue/user.tsx
 msgid "CREATED"
-msgstr "创建"
+msgstr "创建时间"
 
 #: src/view/image_queue/user.tsx
 msgid "HANDLED / REVERTED"
-msgstr "已处理/已还原"
+msgstr "已处理 / 已还原"
 
 #: src/view/image_queue/user.tsx
 msgid "Failed to load user image queue."
-msgstr "加载用户图像队列失败。"
+msgstr "加载用户图片队列失败。"
 
 #: src/view/image_queue/user.tsx
 msgid "No entries yet"
-msgstr "暂无条目。 "
+msgstr "暂无条目。"
 
 #: src/view/image_queue/user.tsx
 msgid "This user has no image queue history."
-msgstr "此用户没有图像队列历史记录。"
+msgstr "此用户没有图片队列历史记录。"
 
 #. 0: " "
 #: src/view/image_queue/user.tsx
@@ -1326,31 +1326,31 @@ msgstr "溶解"
 
 #: src/view/label/explore.comp.tsx
 msgid "Active"
-msgstr "状态"
+msgstr "存续"
 
 #: src/view/label/explore.comp.tsx
 msgid "No labels found"
-msgstr "未找到标签。"
+msgstr "未找到厂牌。"
 
 #: src/view/label/explore.tsx
 msgid "Explore Labels"
-msgstr "浏览标签"
+msgstr "浏览厂牌"
 
 #: src/view/label/explore.tsx
 msgid "Create label"
-msgstr "创建@label"
+msgstr "创建厂牌"
 
 #: src/view/search/index.tsx
 msgid "Type a keyword to search."
-msgstr "输入关键字搜索"
+msgstr "输入关键字搜索。"
 
 #: src/view/search/index.tsx
 msgid "Search result of \" <0/> \""
-msgstr "\"%s\"的搜索结果"
+msgstr "“<0/>”的搜索结果"
 
 #: src/view/search/index.tsx
 msgid "No artists found."
-msgstr "找不到艺术家。"
+msgstr "未找到艺人。"
 
 #: src/view/search/index.tsx
 msgid "No events found."
@@ -1362,11 +1362,11 @@ msgstr "未找到标签。"
 
 #: src/view/search/index.tsx
 msgid "No releases found."
-msgstr "未找到版本。"
+msgstr "未找到发行。"
 
 #: src/view/search/index.tsx
 msgid "No songs found."
-msgstr "找不到歌曲"
+msgstr "未找到歌曲。"
 
 #: src/view/search/index.tsx
 msgid "No tags found."
@@ -1400,7 +1400,7 @@ msgstr "艺人 · {0}"
 #: src/view/search/index.tsx
 #: src/view/search/index.tsx
 msgid "Open →"
-msgstr "打开"
+msgstr "打开 →"
 
 #: src/view/search/index.tsx
 msgid "R"
@@ -1409,12 +1409,12 @@ msgstr "R"
 #. 0: props.release.id
 #: src/view/search/index.tsx
 msgid "Release · {0}"
-msgstr "发出"
+msgstr "发行 · {0}"
 
 #. 0: props.song.id
 #: src/view/search/index.tsx
 msgid "Song · {0}"
-msgstr "Song"
+msgstr "歌曲 · {0}"
 
 #: src/view/search/index.tsx
 msgid "E"
@@ -1423,7 +1423,7 @@ msgstr "E"
 #. 0: props.event.id
 #: src/view/search/index.tsx
 msgid "Event · {0}"
-msgstr "活动· {0}"
+msgstr "活动 · {0}"
 
 #: src/view/search/index.tsx
 msgid "L"
@@ -1432,12 +1432,12 @@ msgstr "L"
 #. 0: props.label.id
 #: src/view/search/index.tsx
 msgid "Label · {0}"
-msgstr "标号"
+msgstr "厂牌 · {0}"
 
 #. 0: props.tag.id
 #: src/view/search/index.tsx
 msgid "Tag · {0}"
-msgstr "标签· {0}"
+msgstr "标签 · {0}"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/song/Info/comp/SongInfoLyrics.tsx
@@ -1448,7 +1448,7 @@ msgstr "语言"
 
 #: src/view/song/explore.tsx
 msgid "No songs found"
-msgstr "找不到歌曲"
+msgstr "未找到歌曲。"
 
 #: src/view/song/explore.tsx
 msgid "Explore Songs"
@@ -1460,12 +1460,12 @@ msgstr "创建歌曲"
 
 #: src/view/user/ProfilePending.tsx
 msgid "Loading profile..."
-msgstr "正在加载个人资料"
+msgstr "正在加载个人资料..."
 
 #: src/view/user/Profile.tsx
 #: src/view/user/edit_profile/index.tsx
 msgid "Profile banner"
-msgstr "简介旗帜"
+msgstr "个人资料横幅"
 
 #: src/view/user/edit_profile/index.tsx
 msgid "Edit profile"
@@ -1490,7 +1490,7 @@ msgstr "用户"
 
 #: src/view/release/discover.tsx
 msgid "[UNIMPLEMENTED] Release"
-msgstr "[UNIMPLEMENTED]发布"
+msgstr "[未实现]发行"
 
 #: src/view/tag/TagTree.tsx
 msgid "ArrowRight"
@@ -1506,11 +1506,11 @@ msgstr "v"
 
 #: src/view/tag/explore.tsx
 msgid "Tag Tree"
-msgstr "标记树"
+msgstr "标签树"
 
 #: src/view/tag/explore.tsx
 msgid "No tags found"
-msgstr "找不到标签"
+msgstr "未找到标签。"
 
 #: src/view/tag/explore.tsx
 msgid "Create tag"
@@ -1564,7 +1564,7 @@ msgstr "搜索活动"
 
 #: src/component/form/SearchDialog/ArtistSearchDialog.tsx
 msgid "Search Artist"
-msgstr "寻找艺术家"
+msgstr "搜索艺人"
 
 #: src/component/form/SearchDialog/EntitySearchDialog.tsx
 #: src/view/release/edit/comp/SongSearchDialog.tsx
@@ -1573,7 +1573,7 @@ msgstr "搜索..."
 
 #: src/component/form/SearchDialog/LabelSearchDialog.tsx
 msgid "Search Label"
-msgstr "搜索标签"
+msgstr "搜索厂牌"
 
 #: src/component/form/SearchDialog/TagSearchDialog.tsx
 msgid "Search Tag"
@@ -1598,7 +1598,7 @@ msgstr "尝试调整筛选器，或 {0} <0>创建</0> {1} 第一个。"
 
 #: src/component/feature/entity_explore/OrderBySelect.tsx
 msgid "Order"
-msgstr "目"
+msgstr "顺序"
 
 #: src/component/feature/entity_explore/OrderBySelect.tsx
 msgid "Descending"
@@ -1613,19 +1613,19 @@ msgstr "升序"
 #: src/view/artist/profile/comp/ArtistInfo.tsx
 #: src/view/artist/profile/comp/ArtistInfo.tsx
 msgid "Solo"
-msgstr "独自一人"
+msgstr "独奏"
 
 #: src/view/Homepage/component/ArtistCard.tsx
 msgid "Solo artist"
-msgstr "独奏艺术家"
+msgstr "独奏艺人"
 
 #: src/view/Homepage/component/LatestArtistsCard.tsx
 msgid "Latest Artists"
-msgstr "最新艺术家"
+msgstr "最新艺人"
 
 #: src/view/Homepage/component/ExploreSection.tsx
 msgid "Explore →"
-msgstr "探索"
+msgstr "浏览 →"
 
 #: src/view/Homepage/component/HomeEmptySlot.tsx
 msgid "No data"
@@ -1710,11 +1710,11 @@ msgstr "热点标签"
 
 #: src/view/artist/edit/index.tsx
 msgid "Create Artist"
-msgstr "创建艺术家"
+msgstr "创建艺人"
 
 #: src/view/artist/edit/index.tsx
 msgid "Edit Artist"
-msgstr "编辑艺术家"
+msgstr "编辑艺人"
 
 #: src/view/artist/edit/index.tsx
 #: src/view/event/edit/index.tsx
@@ -1740,15 +1740,15 @@ msgstr "重复密码"
 
 #: src/view/artist/profile/index.tsx
 msgid "Upload image"
-msgstr "上传图像"
+msgstr "上传图片"
 
 #: src/view/auth/component/AuthLeftPanel.tsx
 msgid "Lorem ipsum dolor sit amet consectetur"
-msgstr "<p>我是宣传文本，单击编辑按钮来改变这个文本。</p>"
+msgstr "补全缺失条目"
 
 #: src/view/auth/component/AuthLeftPanel.tsx
 msgid "Add missing entries (artists, releases, songs, events)"
-msgstr "添加缺少的条目（艺术家、发行、歌曲、活动）"
+msgstr "添加缺少的条目（艺人、发行、歌曲、活动）"
 
 #: src/view/auth/component/AuthLeftPanel.tsx
 msgid "Submit corrections and keep metadata clean"
@@ -1782,11 +1782,11 @@ msgstr "无空格或控制字符"
 #. 0: " "
 #: src/view/auth/component/PasswordField.tsx
 msgid "Allowed: A-Z, a-z, 0-9,{0} <0/>"
-msgstr "允许： A-Z、a-z、0-9、 {0} <0/>"
+msgstr "允许：A-Z、a-z、0-9、{0}<0/>"
 
 #: src/view/auth/component/SignInIdentifierField.tsx
 msgid "Enter your username or email"
-msgstr "输入您的手机/用户名或邮箱"
+msgstr "输入你的用户名或邮箱"
 
 #: src/view/auth/component/SignInIdentifierField.tsx
 msgid "Username / Email"
@@ -1892,7 +1892,7 @@ msgstr "您现在可以使用新密码登录。"
 
 #: src/view/auth/reset_password/response.ts
 msgid "Left"
-msgstr "Left"
+msgstr "左侧"
 
 #: src/view/auth/reset_password/response.ts
 #: src/view/auth/reset_password/response.ts
@@ -1905,7 +1905,7 @@ msgstr "未提供简短说明"
 
 #: src/view/event/Info/index.tsx
 msgid "Date"
-msgstr "更改日期"
+msgstr "日期"
 
 #: src/view/event/Info/index.tsx
 msgid "N/A"
@@ -1918,15 +1918,15 @@ msgstr "AKA"
 
 #: src/view/event/edit/index.tsx
 msgid "Create Event"
-msgstr "创建事件"
+msgstr "创建活动"
 
 #: src/view/event/edit/index.tsx
 msgid "Edit Event"
-msgstr "编辑事件"
+msgstr "编辑活动"
 
 #: src/view/label/Info/index.tsx
 msgid "Founded"
-msgstr "已建立"
+msgstr "成立"
 
 #: src/view/artist/edit/comp/LocalizedNames.tsx
 #: src/view/label/Info/index.tsx
@@ -1941,28 +1941,28 @@ msgstr "创始人"
 
 #: src/view/label/List/index.tsx
 msgid "Labels"
-msgstr "标签"
+msgstr "厂牌"
 
 #: src/view/label/List/index.tsx
 #: src/view/label/edit/index.tsx
 msgid "Create Label"
-msgstr "创建标签"
+msgstr "创建厂牌"
 
 #: src/view/label/List/index.tsx
 msgid "Search label..."
-msgstr "搜索标签"
+msgstr "搜索厂牌..."
 
 #: src/view/label/List/index.tsx
 msgid "No results"
-msgstr "搜不到"
+msgstr "没有结果"
 
 #: src/view/label/List/index.tsx
 msgid "Type at least 2 characters to search."
-msgstr "键入至少2个字符进行搜索。"
+msgstr "至少输入 2 个字符进行搜索。"
 
 #: src/view/label/edit/index.tsx
 msgid "Edit Label"
-msgstr "编辑标签"
+msgstr "编辑厂牌"
 
 #: src/view/release/Info/ReleaseInfoTabs.tsx
 #: src/view/release/Info/ReleaseInfoTabs.tsx
@@ -1992,12 +1992,12 @@ msgstr "编辑歌曲"
 #: src/view/user/edit_profile/index.tsx
 #: src/view/user/edit_profile/index.tsx
 msgid "Update avatar"
-msgstr "上传头像"
+msgstr "更新头像"
 
 #: src/view/user/edit_profile/index.tsx
 #: src/view/user/edit_profile/index.tsx
 msgid "Update banner"
-msgstr "更新Banner"
+msgstr "更新横幅"
 
 #: src/view/user/edit_profile/index.tsx
 msgid "Unsaved"
@@ -2058,11 +2058,11 @@ msgstr "上传封面"
 
 #: src/view/release/explore/index.tsx
 msgid "Explore Releases"
-msgstr "探索版本"
+msgstr "浏览发行"
 
 #: src/view/release/explore/index.tsx
 msgid "Create release"
-msgstr "创建版本"
+msgstr "创建发行"
 
 #: src/view/release/explore/filter.tsx
 msgid "View"
@@ -2070,7 +2070,7 @@ msgstr "查看"
 
 #: src/view/release/explore/filter.tsx
 msgid "Wall"
-msgstr "墙壁"
+msgstr "墙面"
 
 #: src/view/release/explore/filter.tsx
 msgid "List"
@@ -2078,7 +2078,7 @@ msgstr "列表"
 
 #: src/view/release/explore/list.tsx
 msgid "No releases found"
-msgstr "未找到版本"
+msgstr "未找到发行"
 
 #: src/view/tag/edit/index.tsx
 msgid "Create Tag"
@@ -2090,23 +2090,23 @@ msgstr "修改标签"
 
 #: src/view/release/edit/index.tsx
 msgid "Create Release"
-msgstr "创建下达"
+msgstr "创建发行"
 
 #: src/view/release/edit/index.tsx
 msgid "Edit Release"
-msgstr "编辑发布"
+msgstr "编辑发行"
 
 #: src/view/release/edit/index.tsx
 msgid "Release date"
-msgstr "发布日期"
+msgstr "发行日期"
 
 #: src/view/release/edit/index.tsx
 msgid "Recording start"
-msgstr "开始录制："
+msgstr "录制开始"
 
 #: src/view/release/edit/index.tsx
 msgid "Recording end"
-msgstr "录制结束："
+msgstr "录制结束"
 
 #: src/view/tag/Info/index.tsx
 #: src/view/tag/Info/index.tsx
@@ -2142,11 +2142,11 @@ msgstr "别名"
 #: src/view/tag/edit/comp/TagAltNames.tsx
 #: src/view/tag/edit/comp/TagName.tsx
 msgid "Name"
-msgstr "姓名"
+msgstr "名称"
 
 #: src/view/artist/edit/comp/ArtistType.tsx
 msgid "Artist Type"
-msgstr "艺术家分类"
+msgstr "艺人类型"
 
 #: src/view/artist/edit/comp/Date.tsx
 #: src/view/event/edit/comp/EventDateFields.tsx
@@ -2161,7 +2161,7 @@ msgstr "结束日期"
 #: src/view/artist/edit/comp/Links.tsx
 #: src/view/artist/profile/comp/ArtistInfo.tsx
 msgid "Links"
-msgstr "Links"
+msgstr "链接"
 
 #: src/view/artist/edit/comp/Links.tsx
 msgid "Url"
@@ -2178,11 +2178,11 @@ msgstr "错误：{0}"
 
 #: src/view/artist/edit/comp/Locations.tsx
 msgid "Start Location"
-msgstr "开始位置"
+msgstr "起始地点"
 
 #: src/view/artist/edit/comp/Locations.tsx
 msgid "Current Location"
-msgstr "目前位置"
+msgstr "当前位置"
 
 #: src/view/artist/edit/comp/TextAliases.tsx
 msgid "Text Aliases"
@@ -2237,7 +2237,7 @@ msgstr "设备外观"
 
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 msgid "Credit"
-msgstr "贷方"
+msgstr "署名"
 
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 msgid "Album"
@@ -2246,7 +2246,7 @@ msgstr "专辑"
 #. 0: " "
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 msgid "This Artist has no releases yet, you can upload them on{0} <0>Upload New Release</0>"
-msgstr "此艺术家尚未发布任何版本，您可以在 {0} <0>上传新版本</0>上传"
+msgstr "此艺人暂无发行，您可以在 {0} <0>上传新发行</0>"
 
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 msgid "Load More"
@@ -2288,12 +2288,12 @@ msgstr "语言"
 #: src/view/release/edit/comp/ReleaseArtistsField.tsx
 #: src/view/song/edit/comp/SongArtistsField.tsx
 msgid "Artists"
-msgstr "艺术家"
+msgstr "艺人"
 
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 #: src/view/song/edit/comp/SongCreditsField.tsx
 msgid "Select artist"
-msgstr "选择艺术家"
+msgstr "选择艺人"
 
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 #: src/view/song/edit/comp/SongCreditsField.tsx
@@ -2312,51 +2312,51 @@ msgstr "本地化标题"
 #: src/view/song/edit/comp/SongTitleField.tsx
 #: src/view/song/edit/comp/SongTitleField.tsx
 msgid "Title"
-msgstr "Title"
+msgstr "标题"
 
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
 msgid "Released"
-msgstr "已推出"
+msgstr "已发行"
 
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
 msgid "Recorded"
-msgstr "已录"
+msgstr "录制"
 
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
 msgid "Catalog Nums"
-msgstr "目录编号"
+msgstr "目录号"
 
 #: src/view/release/Info/comp/ReleaseInfoTitleAndArtist.tsx
 msgid "by"
-msgstr "依据"
+msgstr "由"
 
 #. 0: index() + 1
 #. 0: props.selectedDisc() + 1
 #: src/view/release/Info/comp/ReleaseInfoTracks.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Disc {0}"
-msgstr "盘号"
+msgstr "碟 {0}"
 
 #: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
 msgid "Catalog Numbers"
-msgstr "唱片编号"
+msgstr "目录号"
 
 #: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
 msgid "Catalog No."
-msgstr "目录编号"
+msgstr "目录号"
 
 #: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
 msgid "No label selected"
-msgstr "未选择标签"
+msgstr "未选择厂牌"
 
 #. 0: discIndex + 1; 1: withinDisc
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 msgid "Disc {0} Track {1}"
-msgstr "光盘 {0} 轨道 {1}"
+msgstr "碟 {0} 曲目 {1}"
 
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 msgid "On Tracks"
-msgstr "跟踪测验"
+msgstr "关联曲目"
 
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "No tracks under this disc."
@@ -2404,7 +2404,7 @@ msgstr "搜索歌曲"
 
 #: src/view/release/edit/comp/ReleaseTypeField.tsx
 msgid "Release Type"
-msgstr "专辑类型"
+msgstr "发行类型"
 
 #: src/view/release/edit/comp/TrackFieldItem.tsx
 msgid "Track number"
@@ -2522,40 +2522,40 @@ msgstr "反馈"
 
 #: src/view/user/Profile.tsx
 msgid "Edits"
-msgstr ""
+msgstr "编辑"
 
 #: src/view/user/Profile.tsx
 msgid "Votes"
-msgstr ""
+msgstr "投票"
 
 #: src/view/user/Profile.tsx
 msgid "Edit Profile"
-msgstr ""
+msgstr "编辑个人资料"
 
 #: src/view/user/Profile.tsx
 msgid "Highlights"
-msgstr ""
+msgstr "精选"
 
 #: src/view/user/Profile.tsx
 msgid "Recent Activity"
-msgstr ""
+msgstr "最近动态"
 
 #: src/view/user/Profile.tsx
 msgid "No recent activity."
-msgstr ""
+msgstr "暂无最近动态。"
 
 #: src/view/user/Profile.tsx
 msgid "Gray"
-msgstr ""
+msgstr "灰色"
 
 #: src/view/user/Profile.tsx
 msgid "Following..."
-msgstr ""
+msgstr "关注中..."
 
 #: src/view/user/Profile.tsx
 msgid "Unfollowing..."
-msgstr ""
+msgstr "取消关注中..."
 
 #: src/view/user/Profile.tsx
 msgid "No biography provided."
-msgstr ""
+msgstr "暂无个人简介。"
