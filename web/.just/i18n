@@ -1,8 +1,10 @@
-default: extract compile
+default: sync
 
-extract:
-	pnpm exec lingui extract
-compile:
-	pnpm exec lingui compile --typescript
-clean:
-	pnpm exec lingui extract --clean
+sync:
+	pnpm exec wuchale --config ../wuchale.config.ts --clean
+
+check:
+	pnpm exec wuchale --config ../wuchale.config.ts check
+
+status:
+	pnpm exec wuchale --config ../wuchale.config.ts status

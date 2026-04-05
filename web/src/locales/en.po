@@ -37,18 +37,6 @@ msgstr "Last page"
 msgid "Pagination"
 msgstr "Pagination"
 
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
-msgid "Slate"
-msgstr "Slate"
-
 #: src/component/route.tsx
 msgid "Checking session…"
 msgstr "Checking session…"
@@ -70,31 +58,10 @@ msgstr "This page requires an authenticated account."
 msgid "Sign in"
 msgstr "Sign in"
 
-#: src/component/atomic/button/index.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-msgid "Primary"
-msgstr "Primary"
-
-#: src/route/correction/mock.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/user/Profile.tsx
-msgid "Reimu"
-msgstr "Reimu"
-
 #: src/component/route.tsx
 #: src/view/auth/component/AuthForm.tsx
 msgid "Create account"
 msgstr "Create account"
-
-#: src/component/atomic/button/index.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-msgid "Secondary"
-msgstr "Secondary"
 
 #: src/mock/artist.ts
 #: src/view/artist/edit/comp/Membership/index.tsx
@@ -223,10 +190,6 @@ msgstr "Label"
 msgid "Explore"
 msgstr "Explore"
 
-#: src/component/Sidebar/index.tsx
-msgid "Tertiary"
-msgstr "Tertiary"
-
 #: src/component/Header/RightSidebar.tsx
 msgid "Profile"
 msgstr "Profile"
@@ -329,29 +292,9 @@ msgstr "Upload failed."
 msgid "Close"
 msgstr "Close"
 
-#: src/view/correction/CorrectionHistorySection.tsx
-msgid "SecondaryV2"
-msgstr "SecondaryV2"
-
-#: src/view/correction/CorrectionHistorySection.tsx
-msgid "Sm"
-msgstr "Sm"
-
 #: src/component/ImageCropDialog/index.tsx
 msgid "Replace"
 msgstr "Replace"
-
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/__legacy/chart/index.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/view/auth/reset_password/index.tsx
-msgid "Xs"
-msgstr "Xs"
 
 #: src/component/ImageCropDialog/index.tsx
 msgid "Remove"
@@ -364,10 +307,6 @@ msgstr "Drop an image here, or pick a file"
 #: src/component/ImageCropDialog/index.tsx
 msgid "Select file"
 msgstr "Select file"
-
-#: src/component/ImageCropDialog/index.tsx
-msgid "PrimaryV2"
-msgstr "PrimaryV2"
 
 #: src/component/ImageCropDialog/index.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
@@ -563,13 +502,6 @@ msgstr "QUICK PICKS"
 #: src/route/correction/mock.tsx
 msgid "none"
 msgstr "none"
-
-#: src/route/correction/mock.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/user/Profile.tsx
-msgid "Blue"
-msgstr "Blue"
 
 #: src/route/correction/mock.tsx
 msgid "No compare baselines."
@@ -944,16 +876,6 @@ msgstr "Edit {0}"
 #: src/view/image_upload/store.ts
 msgid "Submit failed."
 msgstr "Submit failed."
-
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/user.tsx
-msgid "Marisa"
-msgstr "Marisa"
-
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/user.tsx
-msgid "Green"
-msgstr "Green"
 
 #: src/view/image_queue/detail.tsx
 msgid "Cancelled"
@@ -1365,10 +1287,6 @@ msgstr "Negative:"
 #: src/component/__legacy/player/index.tsx
 msgid "幻想乡之歌"
 msgstr "幻想乡之歌"
-
-#: src/component/atomic/button/index.tsx
-msgid "Md"
-msgstr "Md"
 
 #: src/component/form/Location/index.tsx
 msgid "Country / Region"
@@ -1945,18 +1863,6 @@ msgstr "Recording end"
 msgid "Relations"
 msgstr "Relations"
 
-#: src/component/atomic/Combobox/__internal/scroll.ts
-#: src/component/atomic/Combobox/__internal/scroll.ts
-#: src/component/atomic/Combobox/__internal/scroll.ts
-msgid "ArrowUp"
-msgstr "ArrowUp"
-
-#: src/component/atomic/Combobox/__internal/scroll.ts
-#: src/component/atomic/Combobox/__internal/scroll.ts
-#: src/component/atomic/Combobox/__internal/scroll.ts
-msgid "ArrowDown"
-msgstr "ArrowDown"
-
 #: src/view/artist/edit/comp/Aliases.tsx
 #: src/view/artist/profile/comp/ArtistInfo.tsx
 msgid "Aliases"
@@ -2375,10 +2281,6 @@ msgid "No recent activity."
 msgstr "No recent activity."
 
 #: src/view/user/Profile.tsx
-msgid "Gray"
-msgstr "Gray"
-
-#: src/view/user/Profile.tsx
 msgid "Following..."
 msgstr "Following..."
 
@@ -2398,6 +2300,3 @@ msgstr "Corrections · {0}"
 #: src/view/song/edit/comp/SongRelationsField.tsx
 msgid "Select song"
 msgstr "Select song"
-
-#~ msgid "avatar"
-#~ msgstr "avatar"
