@@ -37,18 +37,6 @@ msgstr "最后一页"
 msgid "Pagination"
 msgstr "分页"
 
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
-msgid "Slate"
-msgstr ""
-
 #: src/component/route.tsx
 msgid "Checking session…"
 msgstr "正在检查会话…"
@@ -70,31 +58,10 @@ msgstr "此页面需要已登录账号。"
 msgid "Sign in"
 msgstr "登录"
 
-#: src/component/atomic/button/index.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-msgid "Primary"
-msgstr ""
-
-#: src/route/correction/mock.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/user/Profile.tsx
-msgid "Reimu"
-msgstr ""
-
 #: src/component/route.tsx
 #: src/view/auth/component/AuthForm.tsx
 msgid "Create account"
 msgstr "创建账号"
-
-#: src/component/atomic/button/index.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-msgid "Secondary"
-msgstr ""
 
 #: src/mock/artist.ts
 #: src/view/artist/edit/comp/Membership/index.tsx
@@ -223,10 +190,6 @@ msgstr "厂牌"
 msgid "Explore"
 msgstr "浏览"
 
-#: src/component/Sidebar/index.tsx
-msgid "Tertiary"
-msgstr ""
-
 #: src/component/Header/RightSidebar.tsx
 msgid "Profile"
 msgstr "个人档案"
@@ -329,29 +292,9 @@ msgstr "上传失败。"
 msgid "Close"
 msgstr "关闭"
 
-#: src/view/correction/CorrectionHistorySection.tsx
-msgid "SecondaryV2"
-msgstr ""
-
-#: src/view/correction/CorrectionHistorySection.tsx
-msgid "Sm"
-msgstr ""
-
 #: src/component/ImageCropDialog/index.tsx
 msgid "Replace"
 msgstr "替换"
-
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/__legacy/chart/index.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/view/auth/reset_password/index.tsx
-msgid "Xs"
-msgstr "超小"
 
 #: src/component/ImageCropDialog/index.tsx
 msgid "Remove"
@@ -366,10 +309,6 @@ msgid "Select file"
 msgstr "选择文件"
 
 #: src/component/ImageCropDialog/index.tsx
-msgid "PrimaryV2"
-msgstr "主色 V2"
-
-#: src/component/ImageCropDialog/index.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
 #: src/view/user/edit_profile/index.tsx
 #: src/view/user/edit_profile/index.tsx
@@ -378,7 +317,7 @@ msgstr "上传中…"
 
 #: src/component/ImageCropDialog/index.tsx
 msgid "Save"
-msgstr "确认保存"
+msgstr "保存"
 
 #. 0: props.children
 #: src/component/__legacy/site_title.tsx
@@ -399,7 +338,7 @@ msgstr "取消"
 
 #: src/component/dialog/AlertDialog.tsx
 msgid "确定"
-msgstr "確定"
+msgstr "确定"
 
 #. 0: fieldNameWithoutUnderscore()
 #: src/component/dialog/ResetFieldDialog.tsx
@@ -421,7 +360,7 @@ msgstr "否"
 #: src/component/dialog/ResetFieldDialog.tsx
 #: src/route/correction/mock.tsx
 msgid "Reset"
-msgstr "洗 点"
+msgstr "重置"
 
 #: src/component/form/FieldArrayFallback.tsx
 msgid "Click `+` to add a new item"
@@ -452,7 +391,7 @@ msgstr "正在提交"
 
 #: src/component/form/FormActionBar.tsx
 msgid "Back"
-msgstr "回到"
+msgstr "返回"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
@@ -526,7 +465,7 @@ msgstr "文章"
 
 #: src/component/navbar/index.tsx
 msgid "活动"
-msgstr "and activities"
+msgstr "活动"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/user/Profile.tsx
@@ -565,13 +504,6 @@ msgid "none"
 msgstr "无"
 
 #: src/route/correction/mock.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/user/Profile.tsx
-msgid "Blue"
-msgstr ""
-
-#: src/route/correction/mock.tsx
 msgid "No compare baselines."
 msgstr "暂无对比基线。"
 
@@ -586,7 +518,7 @@ msgstr "校正模拟控件"
 #. 0: songId
 #: src/route/song/$id_.corrections.tsx
 msgid "Song #{0}"
-msgstr "Song"
+msgstr "歌曲 #{0}"
 
 #: src/state/user/index.tsx
 msgid "Notification"
@@ -725,12 +657,12 @@ msgstr "更新"
 #. 0: entityLabel()
 #: src/view/correction/Detail.tsx
 msgid "{0} correction"
-msgstr "校正"
+msgstr "{0} 修订"
 
 #. 0: props.correction.id
 #: src/view/correction/Detail.tsx
 msgid "Correction #{0}"
-msgstr "校正"
+msgstr "修订 #{0}"
 
 #: src/view/correction/Detail.tsx
 msgid "Entity"
@@ -789,7 +721,7 @@ msgstr "未记录任何修订。"
 #. 0: index() + 1
 #: src/view/correction/Detail.tsx
 msgid "REVISION {0}"
-msgstr "修订版 0"
+msgstr "修订版 {0}"
 
 #: src/view/correction/Detail.tsx
 msgid "No description"
@@ -810,7 +742,7 @@ msgstr "暂无差异数据。"
 #. 0: " "
 #: src/view/correction/Detail.tsx
 msgid "<0/>{0} fields"
-msgstr "%0个字段"
+msgstr "<0/>{0} 个字段"
 
 #: src/view/correction/Detail.tsx
 msgid "COMPARE"
@@ -946,16 +878,6 @@ msgid "Submit failed."
 msgstr "提交失败。"
 
 #: src/view/image_queue/detail.tsx
-#: src/view/image_queue/user.tsx
-msgid "Marisa"
-msgstr ""
-
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/user.tsx
-msgid "Green"
-msgstr ""
-
-#: src/view/image_queue/detail.tsx
 msgid "Cancelled"
 msgstr "已取消"
 
@@ -963,7 +885,7 @@ msgstr "已取消"
 #: src/view/user/Profile.tsx
 #: src/view/user/Profile.tsx
 msgid "Moderator"
-msgstr "主持人"
+msgstr "审核员"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
@@ -1366,13 +1288,9 @@ msgstr "阴性："
 msgid "幻想乡之歌"
 msgstr "幻想乡之歌"
 
-#: src/component/atomic/button/index.tsx
-msgid "Md"
-msgstr ""
-
 #: src/component/form/Location/index.tsx
 msgid "Country / Region"
-msgstr "城市/地区"
+msgstr "国家 / 地区"
 
 #: src/component/form/Location/index.tsx
 msgid "Province"
@@ -1487,7 +1405,7 @@ msgstr "贡献缺失的内容，帮助每个人保持数据库的准确性。"
 
 #: src/view/Homepage/component/HomeHero.tsx
 msgid "<0/> Preview"
-msgstr "预览"
+msgstr "<0/> 预览"
 
 #: src/view/Homepage/component/HomeHero.tsx
 msgid "API-powered UI"
@@ -1495,7 +1413,7 @@ msgstr "API驱动的用户界面"
 
 #: src/view/Homepage/component/HomeHero.tsx
 msgid "<0/> Alpha"
-msgstr "Alpha"
+msgstr "<0/> Alpha"
 
 #: src/view/Homepage/component/NewMusic.tsx
 msgid "最新音乐"
@@ -1681,7 +1599,7 @@ msgstr "继续"
 #: src/view/auth/reset_password/index.tsx
 #: src/view/auth/reset_password/index.tsx
 msgid "Back to{0} <0>sign in</0> ."
-msgstr "返回登录"
+msgstr "返回{0}<0>登录</0>。"
 
 #: src/view/auth/reset_password/index.tsx
 msgid "Set a new password"
@@ -1844,12 +1762,12 @@ msgstr "BIO"
 #. 0: count()
 #: src/view/user/edit_profile/index.tsx
 msgid "{0} chars"
-msgstr "字符"
+msgstr "{0} 个字符"
 
 #. 0: label()
 #: src/view/user/edit_profile/index.tsx
 msgid "saved {0}"
-msgstr "已保存。"
+msgstr "已保存 {0}"
 
 #: src/view/user/edit_profile/index.tsx
 msgid "Write something about you."
@@ -1944,18 +1862,6 @@ msgstr "录制结束"
 #: src/view/tag/edit/comp/TagRelationsField.tsx
 msgid "Relations"
 msgstr "关系"
-
-#: src/component/atomic/Combobox/__internal/scroll.ts
-#: src/component/atomic/Combobox/__internal/scroll.ts
-#: src/component/atomic/Combobox/__internal/scroll.ts
-msgid "ArrowUp"
-msgstr "向上箭头"
-
-#: src/component/atomic/Combobox/__internal/scroll.ts
-#: src/component/atomic/Combobox/__internal/scroll.ts
-#: src/component/atomic/Combobox/__internal/scroll.ts
-msgid "ArrowDown"
-msgstr "向下箭头"
 
 #: src/view/artist/edit/comp/Aliases.tsx
 #: src/view/artist/profile/comp/ArtistInfo.tsx
@@ -2375,10 +2281,6 @@ msgid "No recent activity."
 msgstr "暂无最近动态。"
 
 #: src/view/user/Profile.tsx
-msgid "Gray"
-msgstr "灰色"
-
-#: src/view/user/Profile.tsx
 msgid "Following..."
 msgstr "关注中..."
 
@@ -2393,11 +2295,8 @@ msgstr "暂无个人简介。"
 #. 0: correctionHistory().length
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
 msgid "Corrections · {0}"
-msgstr ""
+msgstr "修订 · {0}"
 
 #: src/view/song/edit/comp/SongRelationsField.tsx
 msgid "Select song"
-msgstr ""
-
-#~ msgid "avatar"
-#~ msgstr ""
+msgstr "选择歌曲"
