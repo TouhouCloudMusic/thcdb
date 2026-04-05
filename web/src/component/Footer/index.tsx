@@ -5,8 +5,6 @@ const ZULIP_URL = "https://touhoucloud.zulipchat.com/"
 const GITHUB_ISSUES_URL = `${GITHUB_REPO_URL}/issues`
 const CURRENT_YEAR = new Date().getFullYear()
 const COLUMN_CLASS = "px-2 my-2"
-// @wc-include
-const FOOTER_DESCRIPTION = "Touhou Cloud DB is an open doujin music database"
 const LINK_CLASS =
 	"transition-colors hover:text-white hover:underline underline-offset-4"
 
@@ -16,22 +14,21 @@ type FooterLinkItem = {
 	external?: boolean
 }
 
-// @wc-include
-const BRAND_LINKS: FooterLinkItem[] = [
-	{ label: "GitHub", href: GITHUB_REPO_URL, external: true },
-	{ label: "Zulip", href: ZULIP_URL, external: true },
-	{ label: "Feedback", href: GITHUB_ISSUES_URL, external: true },
-]
-
 function BrandColumn() {
+	const brandLinks: FooterLinkItem[] = [
+		{ label: "GitHub", href: GITHUB_REPO_URL, external: true },
+		{ label: "Zulip", href: ZULIP_URL, external: true },
+		{ label: "Feedback", href: GITHUB_ISSUES_URL, external: true },
+	]
+
 	return (
 		<div class={COLUMN_CLASS}>
 			<div class="text-sm font-semibold tracking-wide">Touhou Cloud DB</div>
 			<p class="mt-2 max-w-prose text-xs leading-relaxed text-slate-400">
-				{FOOTER_DESCRIPTION}
+				{"Touhou Cloud DB is an open doujin music database"}
 			</p>
 			<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-300">
-				<For each={BRAND_LINKS}>
+				<For each={brandLinks}>
 					{(item) => (
 						<a
 							href={item.href}

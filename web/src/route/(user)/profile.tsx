@@ -6,11 +6,7 @@ import { Show } from "solid-js"
 
 import { AuthGuard } from "~/component/route"
 import { useCurrentUser } from "~/state/user"
-import {
-	DEFAULT_PROFILE_ACTIVITY,
-	DEFAULT_PROFILE_PINS,
-	Profile,
-} from "~/view/user/Profile"
+import { Profile } from "~/view/user/Profile"
 
 export const Route = createFileRoute("/(user)/profile")({
 	component: RouteComponent,
@@ -39,8 +35,8 @@ function RouteComponent() {
 						<Profile
 							isCurrentUser
 							data={data}
-							pins={DEFAULT_PROFILE_PINS}
-							activity={DEFAULT_PROFILE_ACTIVITY}
+							pins={[]}
+							activity={[]}
 						/>
 					)
 				}}

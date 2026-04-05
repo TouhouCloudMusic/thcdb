@@ -46,49 +46,6 @@ export type ActivityItem = {
 		| { to: "/label/$id"; params: { id: string } }
 }
 
-export const DEFAULT_PROFILE_ACTIVITY: readonly ActivityItem[] = [
-	{
-		at: "2025-12-28T10:42:00.000Z",
-		accent: "Reimu",
-		action: "Added release",
-		entity: "東方紅魔郷 Arrange Notes — Winter Press",
-		detail: "linked artists · set event · added catalog no.",
-		link: { to: "/release/$id", params: { id: "101" } },
-	},
-	{
-		at: "2025-12-27T23:05:00.000Z",
-		accent: "Blue",
-		action: "Corrected credit",
-		entity: "U.N. Owen was her? (arrange)",
-		detail: "vocalist alias merged · role normalized",
-		link: { to: "/song/$id", params: { id: "9" } },
-	},
-	{
-		at: "2025-12-27T09:14:00.000Z",
-		accent: "Slate",
-		action: "Tagged song",
-		entity: "少女さとり ～ 3rd eye",
-		detail: "genre=Orchestral · theme=Horror · instrument=Piano",
-		link: { to: "/song/$id", params: { id: "12" } },
-	},
-	{
-		at: "2025-12-26T16:22:00.000Z",
-		accent: "Green",
-		action: "Created tag",
-		entity: "Live recording",
-		detail: "type=Recording · used by 6 releases",
-		link: { to: "/tag/$id", params: { id: "21" } },
-	},
-	{
-		at: "2025-12-25T07:40:00.000Z",
-		accent: "Marisa",
-		action: "Linked event",
-		entity: "M3-53 (2025秋)",
-		detail: "connected 4 new releases · fixed venue date",
-		link: { to: "/event/$id", params: { id: "41" } },
-	},
-]
-
 export type PinItem = {
 	accent: AppColor
 	kind: string
@@ -103,52 +60,6 @@ export type PinItem = {
 		| { to: "/event/$id"; params: { id: string } }
 		| { to: "/label/$id"; params: { id: string } }
 }
-
-export const DEFAULT_PROFILE_PINS: readonly PinItem[] = [
-	{
-		accent: "Reimu",
-		kind: "Release",
-		title: "Touhou Cloud Essentials",
-		subtitle: "Compilation · 24 tracks · mock cover",
-		coverUrl: "/img/cover/release/1.png",
-		to: { to: "/release/$id", params: { id: "1" } },
-	},
-	{
-		accent: "Blue",
-		kind: "Song",
-		title: "U.N. Owen was her? (arrange)",
-		subtitle: "Credit map · vocalist aliases · role normalization",
-		to: { to: "/song/$id", params: { id: "9" } },
-	},
-	{
-		accent: "Slate",
-		kind: "Tag",
-		title: "Trance",
-		subtitle: "Genre tag · weighted votes · related sub-tags",
-		to: { to: "/tag/$id", params: { id: "3" } },
-	},
-	{
-		accent: "Green",
-		kind: "Artist",
-		title: "FELT",
-		subtitle: "Circle profile · releases · vocalist credits",
-		to: { to: "/artist/$id", params: { id: "12" } },
-	},
-	{
-		accent: "Marisa",
-		kind: "Event",
-		title: "M3-53 (2025秋)",
-		subtitle: "Event page · release links · location dates",
-		to: { to: "/event/$id", params: { id: "41" } },
-	},
-	{
-		accent: "Slate",
-		kind: "Label",
-		title: "Touhou Arrange Works",
-		subtitle: "Imprint history · catalogue numbers · distribution",
-		to: { to: "/label/$id", params: { id: "18" } },
-	},
-] satisfies readonly [PinItem, ...PinItem[]]
 
 export function Profile(props: Props) {
 	const userType = createMemo(() => {

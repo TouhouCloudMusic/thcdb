@@ -30,7 +30,7 @@ export function ReleaseCoverWall(props: ReleaseCoverWallProps) {
 									state !== Image.State.Ok && (
 										// TODO: Better fallback
 										<div class="flex h-full w-full items-center justify-center bg-slate-200">
-											<span class="text-sm text-slate-500">No Cover Art</span>
+											<span class="text-sm text-slate-500">No cover art</span>
 										</div>
 									)
 								}

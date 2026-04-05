@@ -21,7 +21,7 @@ export function ReleaseCard(props: ReleaseCardProps) {
 				when={coverUrl()}
 				fallback={
 					<div class="grid aspect-4/3 place-items-center bg-slate-100 text-xs text-tertiary ring-1 ring-slate-200 ring-inset">
-						No cover
+						No cover art
 					</div>
 				}
 			>

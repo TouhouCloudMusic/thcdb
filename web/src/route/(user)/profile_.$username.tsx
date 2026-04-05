@@ -8,11 +8,7 @@ import { Show, createSignal } from "solid-js"
 
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { ensureCurrentUser, useCurrentUser } from "~/state/user"
-import {
-	DEFAULT_PROFILE_ACTIVITY,
-	DEFAULT_PROFILE_PINS,
-	Profile,
-} from "~/view/user/Profile"
+import { Profile } from "~/view/user/Profile"
 
 export const Route = createFileRoute("/(user)/profile_/$username")({
 	component: RouteComponent,
@@ -92,12 +88,11 @@ function RouteComponent() {
 					<Profile
 						isCurrentUser={isCurrentUser()}
 						data={data}
-						pins={DEFAULT_PROFILE_PINS}
-						activity={DEFAULT_PROFILE_ACTIVITY}
+						pins={[]}
+						activity={[]}
 						action={
-							!canFollow()
-								? undefined
-								: {
+							canFollow()
+								? {
 										pendingAction: pendingAction(),
 										errorMessage: actionError(),
 										onFollow: () => {
@@ -107,6 +102,7 @@ function RouteComponent() {
 											void submit("unfollow")
 										},
 									}
+								: undefined
 						}
 					/>
 				)

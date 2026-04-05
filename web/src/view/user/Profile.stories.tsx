@@ -6,11 +6,7 @@ import baka from "~/component/atomic/avatar/baka.jpg"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import type { ActivityItem, PinItem } from "./Profile"
-import {
-	DEFAULT_PROFILE_ACTIVITY,
-	DEFAULT_PROFILE_PINS,
-	Profile,
-} from "./Profile"
+import { Profile } from "./Profile"
 
 const ORIGIN = globalThis.location.origin
 
@@ -36,6 +32,35 @@ type StoryRootProps = {
 
 const EXTRA_HIGHLIGHTS: readonly PinItem[] = [
 	{
+		accent: "Reimu",
+		kind: "Release",
+		title: "Touhou Cloud Essentials",
+		subtitle: "Compilation · 24 tracks · mock cover art",
+		coverUrl: "/img/cover/release/1.png",
+		to: { to: "/release/$id", params: { id: "1" } },
+	},
+	{
+		accent: "Blue",
+		kind: "Song",
+		title: "U.N. Owen was her? (arrange)",
+		subtitle: "Credit map · vocalist aliases · role normalization",
+		to: { to: "/song/$id", params: { id: "9" } },
+	},
+	{
+		accent: "Slate",
+		kind: "Tag",
+		title: "Trance",
+		subtitle: "Genre tag · weighted votes · related sub-tags",
+		to: { to: "/tag/$id", params: { id: "3" } },
+	},
+	{
+		accent: "Green",
+		kind: "Artist",
+		title: "FELT",
+		subtitle: "Circle profile · releases · vocalist credits",
+		to: { to: "/artist/$id", params: { id: "12" } },
+	},
+	{
 		accent: "Blue",
 		kind: "Release",
 		title: "Midnight Shrine Broadcast",
@@ -53,6 +78,38 @@ const EXTRA_HIGHLIGHTS: readonly PinItem[] = [
 ] satisfies readonly [PinItem, ...PinItem[]]
 
 const EXTRA_ACTIVITY: readonly ActivityItem[] = [
+	{
+		at: "2025-12-28T10:42:00.000Z",
+		accent: "Reimu",
+		action: "Added release",
+		entity: "東方紅魔郷 Arrange Notes — Winter Press",
+		detail: "linked artists · set event · added catalog no.",
+		link: { to: "/release/$id", params: { id: "101" } },
+	},
+	{
+		at: "2025-12-27T23:05:00.000Z",
+		accent: "Blue",
+		action: "Corrected credit",
+		entity: "U.N. Owen was her? (arrange)",
+		detail: "vocalist alias merged · role normalized",
+		link: { to: "/song/$id", params: { id: "9" } },
+	},
+	{
+		at: "2025-12-27T09:14:00.000Z",
+		accent: "Slate",
+		action: "Tagged song",
+		entity: "少女さとり ～ 3rd eye",
+		detail: "genre=Orchestral · theme=Horror · instrument=Piano",
+		link: { to: "/song/$id", params: { id: "12" } },
+	},
+	{
+		at: "2025-12-26T16:22:00.000Z",
+		accent: "Green",
+		action: "Created tag",
+		entity: "Live recording",
+		detail: "type=Recording · used by 6 releases",
+		link: { to: "/tag/$id", params: { id: "21" } },
+	},
 	{
 		at: "2025-12-24T11:12:00.000Z",
 		accent: "Blue",
@@ -257,10 +314,10 @@ function selectPins(preset: FeedPreset): readonly PinItem[] {
 			return []
 		}
 		case "few": {
-			return DEFAULT_PROFILE_PINS.slice(0, 2)
+			return EXTRA_HIGHLIGHTS.slice(0, 2)
 		}
 		case "many": {
-			return [...DEFAULT_PROFILE_PINS, ...EXTRA_HIGHLIGHTS]
+			return EXTRA_HIGHLIGHTS
 		}
 	}
 }
@@ -271,10 +328,10 @@ function selectActivity(preset: FeedPreset): readonly ActivityItem[] {
 			return []
 		}
 		case "few": {
-			return DEFAULT_PROFILE_ACTIVITY.slice(0, 2)
+			return EXTRA_ACTIVITY.slice(0, 2)
 		}
 		case "many": {
-			return [...DEFAULT_PROFILE_ACTIVITY, ...EXTRA_ACTIVITY]
+			return EXTRA_ACTIVITY
 		}
 	}
 }

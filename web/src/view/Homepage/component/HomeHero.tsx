@@ -103,10 +103,6 @@ export function HomeHero() {
 							<span class="inline-block size-1.5 rounded-full bg-reimu-600"></span>
 							Preview
 						</div>
-						<div class="text-xs text-tertiary">
-							Components follow project tokens: slate base, reimu/marisa
-							accents, subtle borders and shadows.
-						</div>
 					</Card>
 				</div>
 			</div>

@@ -221,12 +221,7 @@
 		// Dupe
 		"unicorn/no-nested-ternary": "off",
 		"unicorn/no-null": "off",
-		"unicorn/no-useless-undefined": [
-			"warn",
-			{
-				"checkArguments": false
-			}
-		],
+		"unicorn/no-useless-undefined": "off",
 		"unicorn/numeric-separators-style": "off",
 		"unicorn/prefer-default-parameters": "off",
 		"unicorn/prefer-spread": "off",

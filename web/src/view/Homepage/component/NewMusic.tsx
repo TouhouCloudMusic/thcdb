@@ -21,7 +21,7 @@ export function NewMusic() {
 								<div class="bg-rose-100 h-10 w-10 flex-shrink-0 overflow-hidden rounded">
 									<img
 										src={`https://placehold.co/100x100/red/white?text=${i() + 1}`}
-										alt="封面"
+										alt="cover art"
 										class="h-full w-full object-cover"
 									/>
 								</div>
