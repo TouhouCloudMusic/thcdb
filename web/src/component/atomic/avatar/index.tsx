@@ -66,7 +66,12 @@ export function Avatar(props: Props) {
 								<img
 									{...otherProps}
 									src={src()}
-									alt={props.alt ?? props.user?.name ?? "avatar"}
+									alt={
+										props.alt
+										?? props.user?.name
+										// @wc-include
+										?? "avatar"
+									}
 									onLoad={handleLoad}
 									onError={handleError}
 									class={twMerge(

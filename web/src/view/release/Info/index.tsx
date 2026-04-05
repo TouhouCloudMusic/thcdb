@@ -52,7 +52,7 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 										class={UPLOAD_LINK_CLASS}
 										underline={false}
 									>
-										Upload cover
+										Upload cover art
 									</Link>
 								}
 							/>

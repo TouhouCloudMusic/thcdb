@@ -81,7 +81,7 @@ function getTargetMeta(detail: ImageQueueDetail) {
 			label: "Release",
 			id: detail.release.release_id,
 			type: detail.release.type,
-			imageLabel: "cover image",
+			imageLabel: "cover art",
 			to: "/release/$id" as const,
 		}
 	}

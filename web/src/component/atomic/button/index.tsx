@@ -136,38 +136,38 @@ const PrimaryColor: Record<AppColor, string> = {
 		// @tw
 		`
     bg-slate-900 hover:bg-slate-900 active:bg-slate-800
-    focus:outline-slate-600
+    focus-visible:outline-slate-600
     `,
 	Slate:
 		// @tw
 		`
     bg-slate-700 hover:bg-slate-600 active:bg-slate-500
-    focus:outline-slate-500
+    focus-visible:outline-slate-500
     `,
 	Blue:
 		// @tw
 		`
     bg-blue-700 hover:bg-blue-600 active:bg-blue-500
-    focus:outline-blue-500
+    focus-visible:outline-blue-500
     `,
 	Reimu:
 		// @tw
 		`
     bg-reimu-600
     hover:bg-reimu-650 active:bg-reimu-500
-    focus:outline-reimu-600
+    focus-visible:outline-reimu-600
     `,
 	Marisa:
 		// @tw
 		`
     bg-marisa-700 hover:bg-marisa-600 active:bg-marisa-500
-    focus:outline-marisa-500
+    focus-visible:outline-marisa-500
     `,
 	Green:
 		// @tw
 		`
     bg-green-700 hover:bg-green-600 active:bg-green-500
-    focus:outline-green-500
+    focus-visible:outline-green-500
     `,
 }
 
@@ -177,42 +177,42 @@ const PrimaryV2Color: Record<AppColor, string> = {
 		`
     bg-slate-100 hover:bg-slate-200 active:bg-slate-300
     border-slate-400 text-slate-700
-    focus:outline-slate-500
+    focus-visible:outline-slate-500
     `,
 	Slate:
 		// @tw
 		`
     bg-slate-100 hover:bg-slate-200 active:bg-slate-300
     border-slate-400 text-slate-700
-    focus:outline-slate-500
+    focus-visible:outline-slate-500
     `,
 	Blue:
 		// @tw
 		`
     bg-blue-100 hover:bg-blue-200 active:bg-blue-300
     border-blue-300 text-blue-700
-    focus:outline-blue-500
+    focus-visible:outline-blue-500
     `,
 	Reimu:
 		// @tw
 		`
     bg-reimu-100 hover:bg-reimu-200 active:bg-reimu-300
     border-reimu-300 text-reimu-700
-    focus:outline-reimu-600
+    focus-visible:outline-reimu-600
     `,
 	Marisa:
 		// @tw
 		`
     bg-marisa-100 hover:bg-marisa-200 active:bg-marisa-300
     border-marisa-300 text-marisa-800
-    focus:outline-marisa-500
+    focus-visible:outline-marisa-500
     `,
 	Green:
 		// @tw
 		`
     bg-green-100 hover:bg-green-200 active:bg-green-300
     border-green-300 text-green-800
-    focus:outline-green-500
+    focus-visible:outline-green-500
     `,
 }
 
@@ -224,21 +224,21 @@ const SecondaryColor: Record<AppColor, string> = {
 		ring-2 ring-inset ring-slate-200
 		text-slate-700	hover:bg-slate-200 active:bg-slate-300 disabled:bg-slate-400
 		dark:hover:bg-slate-100/90 dark:active:bg-slate-100/80
-		focus:outline-slate-500
+		focus-visible:outline-slate-500
 		`,
 	Blue:
 		// @tw
 		`
 		text-blue-700 hover:text-white active:text-white
 		bg-slate-100 hover:bg-blue-800 active:bg-blue-900
-		focus:outline-blue-500
+		focus-visible:outline-blue-500
 		`,
 	Reimu:
 		// @tw
 		`
 		text-reimu-600 hover:text-white active:text-white
 		bg-slate-100 hover:bg-reimu-600 active:bg-reimu-600
-		focus:outline-reimu-600
+		focus-visible:outline-reimu-600
 		`,
 	Marisa:
 		// @tw
@@ -246,7 +246,7 @@ const SecondaryColor: Record<AppColor, string> = {
 		text-marisa-700 hover:text-white active:text-white
 		bg-slate-100 hover:bg-marisa-800 active:bg-marisa-900
 		dark:hover:bg-marisa-900/90 dark:active:bg-marisa-900/80
-		focus:outline-marisa-500
+		focus-visible:outline-marisa-500
 		`,
 	Green:
 		// @tw
@@ -254,7 +254,7 @@ const SecondaryColor: Record<AppColor, string> = {
 		text-green-700 hover:text-white active:text-white
 		bg-slate-100 hover:bg-green-900 active:bg-green-900
 		dark:hover:bg-green-900/90 dark:active:bg-green-900/80
-		focus:outline-green-500
+		focus-visible:outline-green-500
 		`,
 	Slate:
 		// @tw
@@ -262,7 +262,7 @@ const SecondaryColor: Record<AppColor, string> = {
 		text-slate-700 hover:text-white active:text-white
 		bg-slate-100 hover:bg-slate-900 active:bg-slate-900
 		dark:hover:bg-slate-900/90 dark:active:bg-slate-900/80
-		focus:outline-slate-500
+		focus-visible:outline-slate-500
 		`,
 }
 
@@ -273,7 +273,7 @@ const SecondaryV2Color: Record<AppColor, string> = {
     bg-white border-slate-400 text-slate-600
     hover:bg-slate-50 hover:border-slate-500 active:bg-slate-100
     disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
-    focus:outline-slate-500
+    focus-visible:outline-slate-500
     `,
 	Slate:
 		// @tw
@@ -281,7 +281,7 @@ const SecondaryV2Color: Record<AppColor, string> = {
     bg-white border-slate-400 text-slate-600
     hover:bg-slate-50 hover:border-slate-500 active:bg-slate-100
     disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
-    focus:outline-slate-500
+    focus-visible:outline-slate-500
     `,
 	Blue:
 		// @tw
@@ -289,7 +289,7 @@ const SecondaryV2Color: Record<AppColor, string> = {
     bg-white border-blue-300 text-blue-600
     hover:bg-blue-50 hover:border-blue-400 active:bg-blue-100
     disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
-    focus:outline-blue-500
+    focus-visible:outline-blue-500
     `,
 	Reimu:
 		// @tw
@@ -297,7 +297,7 @@ const SecondaryV2Color: Record<AppColor, string> = {
     bg-white border-reimu-300 text-reimu-600
     hover:bg-reimu-50 hover:border-reimu-400 active:bg-reimu-100
     disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
-    focus:outline-reimu-600
+    focus-visible:outline-reimu-600
     `,
 	Marisa:
 		// @tw
@@ -305,7 +305,7 @@ const SecondaryV2Color: Record<AppColor, string> = {
     bg-white border-marisa-300 text-marisa-600
     hover:bg-marisa-100 hover:border-marisa-400 active:bg-marisa-200
     disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
-    focus:outline-marisa-500
+    focus-visible:outline-marisa-500
     `,
 	Green:
 		// @tw
@@ -313,7 +313,7 @@ const SecondaryV2Color: Record<AppColor, string> = {
     bg-white border-green-300 text-green-600
     hover:bg-green-50 hover:border-green-400 active:bg-green-100
     disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400
-    focus:outline-green-500
+    focus-visible:outline-green-500
     `,
 }
 
@@ -323,41 +323,41 @@ const TertiaryColor: Record<AppColor, string> = {
 		`
       text-slate-800 disabled:text-slate-600
       disabled:shadow-xs
-      focus:outline-slate-500
+      focus-visible:outline-slate-500
       `,
 	Blue:
 		// @tw
 		`
       text-blue-700
       disabled:bg-slate-300
-      focus:outline-blue-500
+      focus-visible:outline-blue-500
       `,
 	Reimu:
 		// @tw
 		`
       text-reimu-700
       disabled:bg-slate-300
-      focus:outline-reimu-600
+      focus-visible:outline-reimu-600
       `,
 	Marisa:
 		// @tw
 		`
       text-marisa-700
       disabled:bg-slate-300
-      focus:outline-marisa-500
+      focus-visible:outline-marisa-500
       `,
 	Green:
 		// @tw
 		`
       text-green-700
       disabled:bg-slate-300
-      focus:outline-green-500
+      focus-visible:outline-green-500
       `,
 	Slate:
 		// @tw
 		`
       text-slate-700
       disabled:bg-slate-200
-      focus:outline-slate-500
+      focus-visible:outline-slate-500
       `,
 }

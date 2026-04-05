@@ -37,9 +37,6 @@ msgstr "Last page"
 msgid "Pagination"
 msgstr "Pagination"
 
-#: src/component/route.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
@@ -47,9 +44,6 @@ msgstr "Pagination"
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/user.tsx
 #: src/view/image_queue/user.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
 #: src/view/user/Profile.tsx
 #: src/view/user/Profile.tsx
 msgid "Slate"
@@ -76,47 +70,17 @@ msgstr "This page requires an authenticated account."
 msgid "Sign in"
 msgstr "Sign in"
 
-#: src/component/Header/index.tsx
-#: src/component/ImageCropDialog/index.tsx
 #: src/component/atomic/button/index.tsx
-#: src/component/dialog/AlertDialog.tsx
-#: src/component/form/FormActionBar.tsx
-#: src/component/route.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/label/List/index.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/user/edit_profile/index.tsx
 msgid "Primary"
 msgstr "Primary"
 
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/dialog/AlertDialog.tsx
-#: src/component/route.tsx
 #: src/route/correction/mock.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/user.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
 #: src/view/user/Profile.tsx
-#: src/view/user/edit_profile/index.tsx
 msgid "Reimu"
 msgstr "Reimu"
 
@@ -126,12 +90,9 @@ msgid "Create account"
 msgstr "Create account"
 
 #: src/component/atomic/button/index.tsx
-#: src/component/route.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Secondary"
 msgstr "Secondary"
 
@@ -262,70 +223,7 @@ msgstr "Label"
 msgid "Explore"
 msgstr "Explore"
 
-#: src/component/Header/RightSidebar.tsx
-#: src/component/Header/index.tsx
-#: src/component/Header/index.tsx
-#: src/component/Header/index.tsx
 #: src/component/Sidebar/index.tsx
-#: src/component/__legacy/chart/index.tsx
-#: src/component/__legacy/theme_button.tsx
-#: src/component/__legacy/theme_button.tsx
-#: src/component/dialog/AlertDialog.tsx
-#: src/component/dialog/ResetFieldDialog.tsx
-#: src/component/form/FormActionBar.tsx
-#: src/component/form/SearchDialog/ArtistSearchDialog.tsx
-#: src/component/form/SearchDialog/CreditRoleSearchDialog.tsx
-#: src/component/form/SearchDialog/EventSearchDialog.tsx
-#: src/component/form/SearchDialog/LabelSearchDialog.tsx
-#: src/component/form/SearchDialog/TagSearchDialog.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/view/artist/edit/comp/Aliases.tsx
-#: src/view/artist/edit/comp/Links.tsx
-#: src/view/artist/edit/comp/Links.tsx
-#: src/view/artist/edit/comp/LocalizedNames.tsx
-#: src/view/artist/edit/comp/LocalizedNames.tsx
-#: src/view/artist/edit/comp/Membership/index.tsx
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-#: src/view/artist/edit/comp/TextAliases.tsx
-#: src/view/artist/edit/comp/TextAliases.tsx
-#: src/view/artist/edit/index.tsx
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/event/edit/comp/EventAlternativeNamesField.tsx
-#: src/view/event/edit/comp/EventAlternativeNamesField.tsx
-#: src/view/label/edit/comp/LabelFoundersField.tsx
-#: src/view/label/edit/comp/LabelLocalizedNamesField.tsx
-#: src/view/label/edit/comp/LabelLocalizedNamesField.tsx
-#: src/view/release/edit/comp/LocalizedTitlesField.tsx
-#: src/view/release/edit/comp/LocalizedTitlesField.tsx
-#: src/view/release/edit/comp/ReleaseArtistsField.tsx
-#: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
-#: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
-#: src/view/release/edit/comp/ReleaseCreditsField.tsx
-#: src/view/release/edit/comp/ReleaseCreditsField.tsx
-#: src/view/release/edit/comp/ReleaseEventsField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/SongSearchDialog.tsx
-#: src/view/release/edit/comp/TrackFieldItem.tsx
-#: src/view/release/edit/comp/TrackFieldItem.tsx
-#: src/view/song/edit/comp/SongArtistsField.tsx
-#: src/view/song/edit/comp/SongCreditsField.tsx
-#: src/view/song/edit/comp/SongCreditsField.tsx
-#: src/view/song/edit/comp/SongLanguagesField.tsx
-#: src/view/song/edit/comp/SongLanguagesField.tsx
-#: src/view/song/edit/comp/SongLocalizedTitlesField.tsx
-#: src/view/song/edit/comp/SongLocalizedTitlesField.tsx
-#: src/view/tag/edit/comp/TagAltNames.tsx
-#: src/view/tag/edit/comp/TagAltNames.tsx
-#: src/view/tag/edit/comp/TagRelationsField.tsx
-#: src/view/tag/edit/comp/TagRelationsField.tsx
 msgid "Tertiary"
 msgstr "Tertiary"
 
@@ -431,63 +329,11 @@ msgstr "Upload failed."
 msgid "Close"
 msgstr "Close"
 
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/view/auth/reset_password/index.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
 msgid "SecondaryV2"
 msgstr "SecondaryV2"
 
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/view/artist/edit/comp/Aliases.tsx
-#: src/view/artist/edit/comp/Links.tsx
-#: src/view/artist/edit/comp/LocalizedNames.tsx
-#: src/view/artist/edit/comp/Membership/index.tsx
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-#: src/view/artist/edit/comp/TextAliases.tsx
-#: src/view/artist/edit/index.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
-#: src/view/event/edit/comp/EventAlternativeNamesField.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/label/edit/comp/LabelFoundersField.tsx
-#: src/view/label/edit/comp/LabelLocalizedNamesField.tsx
-#: src/view/release/edit/comp/LocalizedTitlesField.tsx
-#: src/view/release/edit/comp/ReleaseArtistsField.tsx
-#: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
-#: src/view/release/edit/comp/ReleaseCreditsField.tsx
-#: src/view/release/edit/comp/ReleaseEventsField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/TrackFieldItem.tsx
-#: src/view/release/edit/comp/TrackFieldItem.tsx
-#: src/view/song/edit/comp/SongLocalizedTitlesField.tsx
-#: src/view/tag/edit/comp/TagAltNames.tsx
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
 msgid "Sm"
 msgstr "Sm"
 
@@ -720,7 +566,6 @@ msgstr "none"
 
 #: src/route/correction/mock.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/user.tsx
 #: src/view/user/Profile.tsx
 msgid "Blue"
@@ -823,6 +668,7 @@ msgstr "Author"
 #: src/view/event/Info/index.tsx
 #: src/view/event/Info/index.tsx
 #: src/view/event/edit/comp/EventDescriptionField.tsx
+#: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/tag/Info/index.tsx
 #: src/view/tag/Info/index.tsx
 #: src/view/tag/Info/index.tsx
@@ -844,7 +690,6 @@ msgstr "No corrections yet."
 #: src/view/event/Info/index.tsx
 #: src/view/label/Info/index.tsx
 #: src/view/release/Info/index.tsx
-#: src/view/song/Info/index.tsx
 #: src/view/tag/Info/index.tsx
 msgid "Loading..."
 msgstr "Loading..."
@@ -994,11 +839,6 @@ msgstr "Contributors:"
 msgid "Loading contributors..."
 msgstr "Loading contributors..."
 
-#. 0: " "
-#: src/view/correction/EntityCorrectionMetadataSection.tsx
-msgid "Corrections ·{0} <0/>"
-msgstr "Corrections ·{0} <0/>"
-
 #. 0: entityLabel()
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
 msgid "Update {0}"
@@ -1107,11 +947,9 @@ msgstr "Submit failed."
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/user.tsx
-#: src/view/user/edit_profile/index.tsx
 msgid "Marisa"
 msgstr "Marisa"
 
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/user.tsx
 msgid "Green"
@@ -1532,12 +1370,6 @@ msgstr "幻想乡之歌"
 msgid "Md"
 msgstr "Md"
 
-#: src/component/display/release/ReleaseCoverWall.tsx
-#: src/view/release/Info/comp/ReleaseInfoCoverImage.tsx
-#: src/view/release/explore/ReleaseItems.tsx
-msgid "No Cover Art"
-msgstr "No Cover Art"
-
 #: src/component/form/Location/index.tsx
 msgid "Country / Region"
 msgstr "Country / Region"
@@ -1567,7 +1399,6 @@ msgid "Search Artist"
 msgstr "Search Artist"
 
 #: src/component/form/SearchDialog/EntitySearchDialog.tsx
-#: src/view/release/edit/comp/SongSearchDialog.tsx
 msgid "Search..."
 msgstr "Search..."
 
@@ -1659,10 +1490,6 @@ msgid "<0/> Preview"
 msgstr "<0/> Preview"
 
 #: src/view/Homepage/component/HomeHero.tsx
-msgid "Components follow project tokens: slate base, reimu/marisa accents, subtle borders and shadows."
-msgstr "Components follow project tokens: slate base, reimu/marisa accents, subtle borders and shadows."
-
-#: src/view/Homepage/component/HomeHero.tsx
 msgid "API-powered UI"
 msgstr "API-powered UI"
 
@@ -1677,10 +1504,6 @@ msgstr "最新音乐"
 #: src/view/Homepage/component/NewMusic.tsx
 msgid "查看更多"
 msgstr "查看更多"
-
-#: src/view/Homepage/component/NewMusic.tsx
-msgid "封面"
-msgstr "封面"
 
 #. 0: i() + 1
 #: src/view/Homepage/component/NewMusic.tsx
@@ -1697,8 +1520,11 @@ msgid "by {0}"
 msgstr "by {0}"
 
 #: src/view/Homepage/component/ReleaseCard.tsx
-msgid "No cover"
-msgstr "No cover"
+#: src/component/display/release/ReleaseCoverWall.tsx
+#: src/view/release/Info/comp/ReleaseInfoCoverImage.tsx
+#: src/view/release/explore/ReleaseItems.tsx
+msgid "No cover art"
+msgstr "No cover art"
 
 #: src/view/Homepage/component/UpcomingEventsCard.tsx
 msgid "Upcoming Events"
@@ -2053,8 +1879,8 @@ msgid "Tracks"
 msgstr "Tracks"
 
 #: src/view/release/Info/index.tsx
-msgid "Upload cover"
-msgstr "Upload cover"
+msgid "Upload cover art"
+msgstr "Upload cover art"
 
 #: src/view/release/explore/index.tsx
 msgid "Explore Releases"
@@ -2108,6 +1934,10 @@ msgstr "Recording start"
 msgid "Recording end"
 msgstr "Recording end"
 
+#: src/view/song/Info/index.tsx
+#: src/view/song/Info/index.tsx
+#: src/view/song/Info/index.tsx
+#: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/tag/Info/index.tsx
 #: src/view/tag/Info/index.tsx
 #: src/view/tag/Info/index.tsx
@@ -2398,7 +2228,7 @@ msgstr "Confirm"
 msgid "Events"
 msgstr "Events"
 
-#: src/view/release/edit/comp/SongSearchDialog.tsx
+#: src/component/form/SearchDialog/SongSearchDialog.tsx
 msgid "Search Song"
 msgstr "Search Song"
 
@@ -2559,3 +2389,15 @@ msgstr "Unfollowing..."
 #: src/view/user/Profile.tsx
 msgid "No biography provided."
 msgstr "No biography provided."
+
+#. 0: correctionHistory().length
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
+msgid "Corrections · {0}"
+msgstr "Corrections · {0}"
+
+#: src/view/song/edit/comp/SongRelationsField.tsx
+msgid "Select song"
+msgstr "Select song"
+
+#~ msgid "avatar"
+#~ msgstr "avatar"

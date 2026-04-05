@@ -17,7 +17,7 @@ import { ListItem, Sidebar } from "~/component/Sidebar"
 
 type ListItemContent = {
 	icon: (props: IconProps) => JSX.Element
-	text: string
+	readonly text: string
 	to: LinkComponentProps["to"]
 }
 
@@ -27,49 +27,65 @@ export function LeftSidebar() {
 		{
 			icon: HomeIcon,
 			// @wc-include
-			text: "Home",
+			get text() {
+				return "Home"
+			},
 			to: "/",
 		},
 		{
 			icon: TargetIcon,
 			// @wc-include
-			text: "Recommendation",
+			get text() {
+				return "Recommendation"
+			},
 			to: "/recommendation",
 		},
 		{
 			icon: CrumpledPaperIcon,
 			// @wc-include
-			text: "Release",
+			get text() {
+				return "Release"
+			},
 			to: "/release/explore",
 		},
 		{
 			icon: MixerHorizontalIcon,
 			// @wc-include
-			text: "Artist",
+			get text() {
+				return "Artist"
+			},
 			to: "/artist/explore",
 		},
 		{
 			icon: CardStackIcon,
 			// @wc-include
-			text: "Song",
+			get text() {
+				return "Song"
+			},
 			to: "/song/explore",
 		},
 		{
 			icon: EnvelopeClosedIcon,
 			// @wc-include
-			text: "Tag",
+			get text() {
+				return "Tag"
+			},
 			to: "/tag/explore",
 		},
 		{
 			icon: EnvelopeClosedIcon,
 			// @wc-include
-			text: "Event",
+			get text() {
+				return "Event"
+			},
 			to: "/event/explore",
 		},
 		{
 			icon: BookmarkIcon,
 			// @wc-include
-			text: "Label",
+			get text() {
+				return "Label"
+			},
 			to: "/label/explore",
 		},
 	]

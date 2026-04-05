@@ -37,9 +37,6 @@ msgstr "最后一页"
 msgid "Pagination"
 msgstr "分页"
 
-#: src/component/route.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
@@ -47,13 +44,10 @@ msgstr "分页"
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/user.tsx
 #: src/view/image_queue/user.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
 #: src/view/user/Profile.tsx
 #: src/view/user/Profile.tsx
 msgid "Slate"
-msgstr "石板灰"
+msgstr ""
 
 #: src/component/route.tsx
 msgid "Checking session…"
@@ -76,49 +70,19 @@ msgstr "此页面需要已登录账号。"
 msgid "Sign in"
 msgstr "登录"
 
-#: src/component/Header/index.tsx
-#: src/component/ImageCropDialog/index.tsx
 #: src/component/atomic/button/index.tsx
-#: src/component/dialog/AlertDialog.tsx
-#: src/component/form/FormActionBar.tsx
-#: src/component/route.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/label/List/index.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/user/edit_profile/index.tsx
 msgid "Primary"
-msgstr "主色"
+msgstr ""
 
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/dialog/AlertDialog.tsx
-#: src/component/route.tsx
 #: src/route/correction/mock.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/user.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
 #: src/view/user/Profile.tsx
-#: src/view/user/edit_profile/index.tsx
 msgid "Reimu"
-msgstr "灵梦"
+msgstr ""
 
 #: src/component/route.tsx
 #: src/view/auth/component/AuthForm.tsx
@@ -126,14 +90,11 @@ msgid "Create account"
 msgstr "创建账号"
 
 #: src/component/atomic/button/index.tsx
-#: src/component/route.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
 #: src/route/correction/mock.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Secondary"
-msgstr "次色"
+msgstr ""
 
 #: src/mock/artist.ts
 #: src/view/artist/edit/comp/Membership/index.tsx
@@ -262,72 +223,9 @@ msgstr "厂牌"
 msgid "Explore"
 msgstr "浏览"
 
-#: src/component/Header/RightSidebar.tsx
-#: src/component/Header/index.tsx
-#: src/component/Header/index.tsx
-#: src/component/Header/index.tsx
 #: src/component/Sidebar/index.tsx
-#: src/component/__legacy/chart/index.tsx
-#: src/component/__legacy/theme_button.tsx
-#: src/component/__legacy/theme_button.tsx
-#: src/component/dialog/AlertDialog.tsx
-#: src/component/dialog/ResetFieldDialog.tsx
-#: src/component/form/FormActionBar.tsx
-#: src/component/form/SearchDialog/ArtistSearchDialog.tsx
-#: src/component/form/SearchDialog/CreditRoleSearchDialog.tsx
-#: src/component/form/SearchDialog/EventSearchDialog.tsx
-#: src/component/form/SearchDialog/LabelSearchDialog.tsx
-#: src/component/form/SearchDialog/TagSearchDialog.tsx
-#: src/route/correction/mock.tsx
-#: src/route/correction/mock.tsx
-#: src/view/artist/edit/comp/Aliases.tsx
-#: src/view/artist/edit/comp/Links.tsx
-#: src/view/artist/edit/comp/Links.tsx
-#: src/view/artist/edit/comp/LocalizedNames.tsx
-#: src/view/artist/edit/comp/LocalizedNames.tsx
-#: src/view/artist/edit/comp/Membership/index.tsx
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-#: src/view/artist/edit/comp/TextAliases.tsx
-#: src/view/artist/edit/comp/TextAliases.tsx
-#: src/view/artist/edit/index.tsx
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/event/edit/comp/EventAlternativeNamesField.tsx
-#: src/view/event/edit/comp/EventAlternativeNamesField.tsx
-#: src/view/label/edit/comp/LabelFoundersField.tsx
-#: src/view/label/edit/comp/LabelLocalizedNamesField.tsx
-#: src/view/label/edit/comp/LabelLocalizedNamesField.tsx
-#: src/view/release/edit/comp/LocalizedTitlesField.tsx
-#: src/view/release/edit/comp/LocalizedTitlesField.tsx
-#: src/view/release/edit/comp/ReleaseArtistsField.tsx
-#: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
-#: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
-#: src/view/release/edit/comp/ReleaseCreditsField.tsx
-#: src/view/release/edit/comp/ReleaseCreditsField.tsx
-#: src/view/release/edit/comp/ReleaseEventsField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/SongSearchDialog.tsx
-#: src/view/release/edit/comp/TrackFieldItem.tsx
-#: src/view/release/edit/comp/TrackFieldItem.tsx
-#: src/view/song/edit/comp/SongArtistsField.tsx
-#: src/view/song/edit/comp/SongCreditsField.tsx
-#: src/view/song/edit/comp/SongCreditsField.tsx
-#: src/view/song/edit/comp/SongLanguagesField.tsx
-#: src/view/song/edit/comp/SongLanguagesField.tsx
-#: src/view/song/edit/comp/SongLocalizedTitlesField.tsx
-#: src/view/song/edit/comp/SongLocalizedTitlesField.tsx
-#: src/view/tag/edit/comp/TagAltNames.tsx
-#: src/view/tag/edit/comp/TagAltNames.tsx
-#: src/view/tag/edit/comp/TagRelationsField.tsx
-#: src/view/tag/edit/comp/TagRelationsField.tsx
 msgid "Tertiary"
-msgstr "辅色"
+msgstr ""
 
 #: src/component/Header/RightSidebar.tsx
 msgid "Profile"
@@ -431,65 +329,13 @@ msgstr "上传失败。"
 msgid "Close"
 msgstr "关闭"
 
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/view/auth/reset_password/index.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
 msgid "SecondaryV2"
-msgstr "次色 V2"
+msgstr ""
 
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/view/artist/edit/comp/Aliases.tsx
-#: src/view/artist/edit/comp/Links.tsx
-#: src/view/artist/edit/comp/LocalizedNames.tsx
-#: src/view/artist/edit/comp/Membership/index.tsx
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-#: src/view/artist/edit/comp/TextAliases.tsx
-#: src/view/artist/edit/index.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
-#: src/view/event/edit/comp/EventAlternativeNamesField.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/user.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/label/edit/comp/LabelFoundersField.tsx
-#: src/view/label/edit/comp/LabelLocalizedNamesField.tsx
-#: src/view/release/edit/comp/LocalizedTitlesField.tsx
-#: src/view/release/edit/comp/ReleaseArtistsField.tsx
-#: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
-#: src/view/release/edit/comp/ReleaseCreditsField.tsx
-#: src/view/release/edit/comp/ReleaseEventsField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-#: src/view/release/edit/comp/TrackFieldItem.tsx
-#: src/view/release/edit/comp/TrackFieldItem.tsx
-#: src/view/song/edit/comp/SongLocalizedTitlesField.tsx
-#: src/view/tag/edit/comp/TagAltNames.tsx
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
 msgid "Sm"
-msgstr "小"
+msgstr ""
 
 #: src/component/ImageCropDialog/index.tsx
 msgid "Replace"
@@ -720,11 +566,10 @@ msgstr "无"
 
 #: src/route/correction/mock.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/user.tsx
 #: src/view/user/Profile.tsx
 msgid "Blue"
-msgstr "蓝色"
+msgstr ""
 
 #: src/route/correction/mock.tsx
 msgid "No compare baselines."
@@ -823,6 +668,7 @@ msgstr "作者"
 #: src/view/event/Info/index.tsx
 #: src/view/event/Info/index.tsx
 #: src/view/event/edit/comp/EventDescriptionField.tsx
+#: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/tag/Info/index.tsx
 #: src/view/tag/Info/index.tsx
 #: src/view/tag/Info/index.tsx
@@ -844,7 +690,6 @@ msgstr "尚无更正。"
 #: src/view/event/Info/index.tsx
 #: src/view/label/Info/index.tsx
 #: src/view/release/Info/index.tsx
-#: src/view/song/Info/index.tsx
 #: src/view/tag/Info/index.tsx
 msgid "Loading..."
 msgstr "正在載入..."
@@ -994,11 +839,6 @@ msgstr "贡献者:"
 msgid "Loading contributors..."
 msgstr "加载贡献者…"
 
-#. 0: " "
-#: src/view/correction/EntityCorrectionMetadataSection.tsx
-msgid "Corrections ·{0} <0/>"
-msgstr "修正· {0} <0/>"
-
 #. 0: entityLabel()
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
 msgid "Update {0}"
@@ -1107,15 +947,13 @@ msgstr "提交失败。"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/user.tsx
-#: src/view/user/edit_profile/index.tsx
 msgid "Marisa"
-msgstr "魔理沙"
+msgstr ""
 
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/user.tsx
 msgid "Green"
-msgstr "绿色"
+msgstr ""
 
 #: src/view/image_queue/detail.tsx
 msgid "Cancelled"
@@ -1530,13 +1368,7 @@ msgstr "幻想乡之歌"
 
 #: src/component/atomic/button/index.tsx
 msgid "Md"
-msgstr "MD"
-
-#: src/component/display/release/ReleaseCoverWall.tsx
-#: src/view/release/Info/comp/ReleaseInfoCoverImage.tsx
-#: src/view/release/explore/ReleaseItems.tsx
-msgid "No Cover Art"
-msgstr "封面图"
+msgstr ""
 
 #: src/component/form/Location/index.tsx
 msgid "Country / Region"
@@ -1567,7 +1399,6 @@ msgid "Search Artist"
 msgstr "搜索艺人"
 
 #: src/component/form/SearchDialog/EntitySearchDialog.tsx
-#: src/view/release/edit/comp/SongSearchDialog.tsx
 msgid "Search..."
 msgstr "搜索..."
 
@@ -1659,10 +1490,6 @@ msgid "<0/> Preview"
 msgstr "预览"
 
 #: src/view/Homepage/component/HomeHero.tsx
-msgid "Components follow project tokens: slate base, reimu/marisa accents, subtle borders and shadows."
-msgstr "组件遵循项目标记：石板底、reimu/marisa口音、微妙的边框和阴影。"
-
-#: src/view/Homepage/component/HomeHero.tsx
 msgid "API-powered UI"
 msgstr "API驱动的用户界面"
 
@@ -1677,10 +1504,6 @@ msgstr "最新音乐"
 #: src/view/Homepage/component/NewMusic.tsx
 msgid "查看更多"
 msgstr "查看更多..."
-
-#: src/view/Homepage/component/NewMusic.tsx
-msgid "封面"
-msgstr "封面"
 
 #. 0: i() + 1
 #: src/view/Homepage/component/NewMusic.tsx
@@ -1697,8 +1520,11 @@ msgid "by {0}"
 msgstr "由 {0}"
 
 #: src/view/Homepage/component/ReleaseCard.tsx
-msgid "No cover"
-msgstr "没有覆盖"
+#: src/component/display/release/ReleaseCoverWall.tsx
+#: src/view/release/Info/comp/ReleaseInfoCoverImage.tsx
+#: src/view/release/explore/ReleaseItems.tsx
+msgid "No cover art"
+msgstr "没有 cover art"
 
 #: src/view/Homepage/component/UpcomingEventsCard.tsx
 msgid "Upcoming Events"
@@ -2053,8 +1879,8 @@ msgid "Tracks"
 msgstr "曲目数"
 
 #: src/view/release/Info/index.tsx
-msgid "Upload cover"
-msgstr "上传封面"
+msgid "Upload cover art"
+msgstr "上传 cover art"
 
 #: src/view/release/explore/index.tsx
 msgid "Explore Releases"
@@ -2108,6 +1934,10 @@ msgstr "录制开始"
 msgid "Recording end"
 msgstr "录制结束"
 
+#: src/view/song/Info/index.tsx
+#: src/view/song/Info/index.tsx
+#: src/view/song/Info/index.tsx
+#: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/tag/Info/index.tsx
 #: src/view/tag/Info/index.tsx
 #: src/view/tag/Info/index.tsx
@@ -2398,7 +2228,7 @@ msgstr "确认"
 msgid "Events"
 msgstr "活动"
 
-#: src/view/release/edit/comp/SongSearchDialog.tsx
+#: src/component/form/SearchDialog/SongSearchDialog.tsx
 msgid "Search Song"
 msgstr "搜索歌曲"
 
@@ -2559,3 +2389,15 @@ msgstr "取消关注中..."
 #: src/view/user/Profile.tsx
 msgid "No biography provided."
 msgstr "暂无个人简介。"
+
+#. 0: correctionHistory().length
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
+msgid "Corrections · {0}"
+msgstr ""
+
+#: src/view/song/edit/comp/SongRelationsField.tsx
+msgid "Select song"
+msgstr ""
+
+#~ msgid "avatar"
+#~ msgstr ""

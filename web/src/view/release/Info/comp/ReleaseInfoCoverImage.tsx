@@ -15,7 +15,7 @@ export function ReleaseInfoCoverImage() {
 					{(state) => (
 						<div class="flex size-full items-center justify-center bg-slate-100">
 							{state !== Image.State.Loading && (
-								<span class="text-sm text-slate-500">No Cover Art</span>
+								<span class="text-sm text-slate-500">No cover art</span>
 							)}
 						</div>
 					)}
