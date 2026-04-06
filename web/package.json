@@ -48,7 +48,8 @@
 		"solid-radix-icons": "^1.0.0",
 		"tailwind-merge": "^3.4.0",
 		"valibot": "1.2.0",
-		"wuchale": "^0.22.6"
+		"wuchale": "^0.22.6",
+		"zxcvbn": "^4.4.2"
 	},
 	"devDependencies": {
 		"@ark/attest": "^0.56.0",

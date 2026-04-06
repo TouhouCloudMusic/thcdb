@@ -2294,3 +2294,13 @@ msgstr "修订 · {0}"
 #: src/view/song/edit/comp/SongRelationsField.tsx
 msgid "Select song"
 msgstr "选择歌曲"
+
+#~ msgid "Not easy to guess"
+#~ msgstr "不易猜到"
+
+#~ msgid "Password too weak"
+#~ msgstr ""
+
+#: src/view/auth/component/PasswordField.tsx
+msgid "Strong enough"
+msgstr "强度足够"
