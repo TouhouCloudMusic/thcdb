@@ -5,6 +5,7 @@ import {
 	USER_PASSWORD_MIN_LENGTH,
 	USER_PASSWORD_REGEX_STR,
 } from "~/constant/server"
+import { isPasswordStrongEnough } from "~/domain/auth/password_strength"
 
 export const SignIn = v.object({
 	identifier: v.string(),
@@ -42,6 +43,13 @@ const Password = v.pipe(
 		"Password contains invalid or whitespace characters",
 	),
 	v.regex(PASSWORD_REGEX, "Password contains invalid or whitespace characters"),
+	v.rawCheck((context) => {
+		if (!context.dataset.typed) return
+		if (isPasswordStrongEnough(context.dataset.value)) return
+		context.addIssue({
+			message: "Password too weak",
+		})
+	}),
 )
 
 export const SignUp = v.pipe(

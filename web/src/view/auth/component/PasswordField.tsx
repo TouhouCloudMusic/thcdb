@@ -9,6 +9,7 @@ import {
 	USER_PASSWORD_MIN_LENGTH,
 	USER_PASSWORD_REGEX_STR,
 } from "~/constant/server"
+import { isPasswordStrongEnough } from "~/domain/auth/password_strength"
 import { callHandlerUnion } from "~/utils/dom/event"
 
 import { FieldLayout } from "./FieldLayout"
@@ -77,6 +78,10 @@ export function PasswordField(props: PasswordFieldProps) {
 	const allowedCharsOk = createMemo(() =>
 		PASSWORD_ALLOWED_CHARS_REGEX.test(value()),
 	)
+	const strengthOk = createMemo(() => {
+		if (!active()) return false
+		return isPasswordStrongEnough(value())
+	})
 
 	const RequirementRow = (rowProps: { ok: boolean; children: JSX.Element }) => {
 		const state = () => {
@@ -165,6 +170,9 @@ export function PasswordField(props: PasswordFieldProps) {
 										{PASSWORD_ALLOWED_SYMBOLS}
 									</code>
 								</span>
+							</RequirementRow>
+							<RequirementRow ok={strengthOk()}>
+								<span>Strong enough</span>
 							</RequirementRow>
 						</ul>
 					</div>
