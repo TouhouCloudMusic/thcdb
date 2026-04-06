@@ -12,9 +12,9 @@ const LOCALE_OPTIONS = {
 		label: "English",
 		value: "en",
 	},
-	"zh-Hans": {
+	"zh-CN": {
 		label: "简体中文",
-		value: "zh-Hans",
+		value: "zh-CN",
 	},
 } satisfies Record<AppLocale, LocaleOption>
 

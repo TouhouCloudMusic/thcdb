@@ -47,27 +47,27 @@ describe("i18n init", () => {
 
 	it("matches supported locales", () => {
 		expect(matchLocale("en-US")).toBe("en")
-		expect(matchLocale("zh-TW")).toBe("zh-Hans")
+		expect(matchLocale("zh-TW")).toBe("zh-CN")
 		expect(matchLocale("fr-FR")).toBeUndefined()
 	})
 
 	it("resolves browser locales by priority", () => {
-		expect(resolveBrowserLocale(["fr-FR", "zh-CN"], "en-US")).toBe("zh-Hans")
+		expect(resolveBrowserLocale(["fr-FR", "zh-CN"], "en-US")).toBe("zh-CN")
 		expect(resolveBrowserLocale(["fr-FR"], "en-US")).toBe("en")
 		expect(resolveBrowserLocale(["fr-FR"], "de-DE")).toBe(DEFAULT_LOCALE)
 	})
 
 	it("prefers the saved locale", () => {
-		persistLocalePreference("zh-Hans")
+		persistLocalePreference("zh-CN")
 		stubNavigator(["en-US"], "en-US")
 
-		expect(resolveInitialLocale()).toBe("zh-Hans")
+		expect(resolveInitialLocale()).toBe("zh-CN")
 	})
 
 	it("persists the detected browser locale", () => {
 		stubNavigator(["fr-FR", "zh-CN"], "en-US")
 
-		expect(resolveInitialLocale()).toBe("zh-Hans")
-		expect(globalThis.localStorage.getItem("userLang")).toBe("zh-Hans")
+		expect(resolveInitialLocale()).toBe("zh-CN")
+		expect(globalThis.localStorage.getItem("userLang")).toBe("zh-CN")
 	})
 })

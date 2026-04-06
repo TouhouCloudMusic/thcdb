@@ -7,7 +7,7 @@ import { assertContext } from "~/utils/solid/assertContext"
 
 import { persistLocalePreference } from "./init"
 
-export const AppLocale = type(`"en" | "zh-Hans"`)
+export const AppLocale = type(`"en" | "zh-CN"`)
 export type AppLocale = typeof AppLocale.infer
 
 type I18nStore = {
