@@ -12,7 +12,6 @@
     - [data checker](#data-checker)
     - [data manager](#data-manager)
 
-职权图：
 ```mermaid
 graph TB
     subgraph 活动管理图
@@ -32,16 +31,15 @@ graph TB
         management_leader --> management_data_manager --> management_data_checker --> data_modify请求
     end
     subgraph 职权继承图
-        direction BT
+        direction RL
         root
         data_manager[data manager]
         data_checker[data checker]
         data_manager --> user
-        data_manager --部分--> data_checker --> user
-        superintendent --部分--> auditor --> user
+        data_checker --> user
+        auditor --> user
         superintendent --> user
         leader --> user
-        leader --> superintendent
     end
 ```
 ---
@@ -53,22 +51,25 @@ graph TB
 不应可以登录，只可在后台进行调用，对user账户不开放.
 
 ## user
-所有账户的基础权限.
+所有账户的基础权限，本质上是一组权限.
 能力：
-- 评论、发布动态、设置个人资料等.
-- 个性化设置、创建个人歌单、参与内测等.
-- 可以获得任意权限，root权限无法直接或间接的获得.
-- 发出关于data的modify请求.
+- comment：发布评论的权限.
+- gain_permission：获得管理权限的权限.
+- object_rectify：发出关于某个object的修正请求.
+- create_personal_list：创建个人列表，包括收藏夹、歌单等.
 
 ## leader
-授予或卸下user账户除root和leader以外的任何权限.
 本身由root账户授予，并且是user账户.
-具有superintendent权限.
+原则上只有一位.
+职责：对整个网站内容负责，对所有用户进行管理.
+能力：
+- 授予或卸下user账户`auditor`,`superintendent`,`data checker`,`data manager`权限.
+- 封禁某个user账户的`gain_permission`.
 
 ## auditor
 auditor黑名单的user的账户无法获取该权限，有权限的自动卸下权限.
 职能：
-- 对 *评论、动态、用户主页等* 与社交直接相关的信息进行审核，通过compliance audit系统.
+- 对 *评论、用户主页等* 与社交直接相关的信息进行审核，通过compliance audit系统.
 - 可以对user进行时长不大于一个月的封禁或对某项社交功能的时长不大于三个月的禁止.
 - 没有examine and verify的权限.
 
@@ -78,7 +79,7 @@ auditor黑名单的user的账户无法获取该权限，有权限的自动卸下
 - 授予或卸下user账户的auditor权限.
 - 封禁user权限的账户.
 - 将某个auditor权限的账户加入auditor黑名单.
-- 具有auditor的审核权限.
+- 解除封禁某个账户的gain_permission权限.
 
 ## data checker
 data checker黑名单的user无法获取该权限.
@@ -91,5 +92,6 @@ data checker黑名单的user无法获取该权限.
 能力：
 - 授予或卸下user账户的data checker权限.
 - 将某个user加入data checker黑名单.
-- 具有data checker的审查权限.
+- 封禁或解封某个user的object_rectify权限.
 - 对数据进行组织、迁移.
+- 解除封禁某个账户的gain_permission权限.

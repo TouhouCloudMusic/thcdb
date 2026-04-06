@@ -49,13 +49,13 @@ architecture/
 | [Tag](./object/tag/) | ⚠️ 部分完成 | 查询、投票 |
 | [User](./user/) | ⚠️ 部分完成 | 基础功能，权限管理待实现 |
 | [Comment](./user/socialize/comment/) | ❌ 未实现 | |
-| [Examine and Verify](./data_explore/examine_and_verify/) | ⚠️ 部分完成 | 创建、批准，拒绝待实现 |
+| [Examine and Verify](./data_management/examine_and_verify/) | ⚠️ 部分完成 | 创建、批准，拒绝待实现 |
 | [Love](./user/information/attention/love/) & [Favorite](./user/information/attention/favorite/) | ❌ 未实现 | |
 | [Search](./data_explore/search/) | ❌ 未实现 | |
 | [Notification](./user/notification/) | ❌ 未实现 | |
 | [Statistics](./statistics/) | ❌ 未实现 | |
 | [Recommendation](./recommendation/) | ❌ 未实现 | |
-| [History Tracking](./history-tracking/) | ⚠️ 部分完成 | 数据层完成，API 待实现 |
+| [History Tracking](./object//history-tracking/) | ⚠️ 部分完成 | 数据层完成，API 待实现 |
 | [Localization](./localization/) | ✅ 已完成 | 数据层完成 |
 
 ## 架构原则
@@ -76,27 +76,33 @@ feature/{功能名}/
 
 ### 领域驱动设计
 
-代码库遵循 DDD 原则：
+object的代码遵循 DDD 原则：
 
 - **domain/**: 领域模型、repository trait、领域服务
 - **application/**: 应用服务，编排领域逻辑
 - **adapter/inbound/rest/**: HTTP 处理器
 
-### 修正系统
+### Examine and Verify系统
 
-所有核心实体的变更都通过修正系统进行：
+所有核心实体的变更都通过Examine and Verify系统进行：
 
-1. 用户提交修正请求
-2. 审核员审核修正
+1. 用户提交请求
+2. 审核员核实通过
 3. 批准后应用到数据库
 4. 历史记录保存在历史表中
 
 ## Log
-日志结构为
+日志级别有且仅有：Error, Warning, Info, Debug.
+日志默认使用json编码，以json格式储存，每份日志文件寿命为14天.
+日志格式为
 ```
-{yyyymmdd} {hhmmss.SSS} {日志等级}:{invoker:"{发起动作请求的对象类型} : {发起动作请求的对象}", receiver:"{动作所在模块} : {动作}", status:"{动作执行情况}"}.
+{"level":"日志等级","time":"yyyymmddhhmmss.SSS","invoker_type":"发起请求的对象的类型","invoker":"发起请求的对象","receiver_module":"动作所在模块","receiver":"动作","status":"动作执行情况","mistake_point":"错误位置"}
 ```
-日志等级有且仅有：Error, Warning, Info, Debug.
+将换行转义为“\n”，半角引号转义为“\"”，反斜杠转义为“\\”.
+
+## 错误码
+不打断运行的，返回值简单明了的阐述事实即可.
+打断运行的，返回值以`ERR_所在Feature：`开头，然后阐述问题.
 
 ## 快速导航
 
@@ -104,4 +110,4 @@ feature/{功能名}/
 - **共享类型**: 参考 [shared-types.md](./shared-types.md) 了解跨模块类型定义
 - **核心实体**: [Artist](./object/artist/), [Release](./object/release/), [Song](./object/song/)
 - **用户系统**: [User](./user/), [Comment](./user/socialize/comment/), [Love](./user/information/attention/love/), [Favorite](./user/information/attention/favorite/)
-- **数据质量**: [Examine and Verify](./data_explore/examine_and_verify/), [History](./object/history-tracking/)
+- **数据质量**: [Examine and Verify](./data_management/examine_and_verify/), [History](./object/history-tracking/)
