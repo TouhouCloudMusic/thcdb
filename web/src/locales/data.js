@@ -1,3 +1,3 @@
-/** @typedef {('en'|'zh-Hans')} Locale */
+/** @typedef {('en'|'zh-CN')} Locale */
 /** @type {Locale[]} */
-export const locales = ['en','zh-Hans']
+export const locales = ['en','zh-CN']

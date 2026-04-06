@@ -44,7 +44,7 @@ export function matchLocale(language: string): AppLocale | undefined {
 		return "en"
 	}
 	if (language.startsWith("zh")) {
-		return "zh-Hans"
+		return "zh-CN"
 	}
 }
 
@@ -56,5 +56,5 @@ function readSavedLocale(): AppLocale | undefined {
 }
 
 function isAppLocale(locale: string): locale is AppLocale {
-	return locale === "en" || locale === "zh-Hans"
+	return locale === "en" || locale === "zh-CN"
 }

@@ -27,7 +27,7 @@ const jsxHeuristicOpts = {
 const defaultJsxHeuristic = createJsxHeuristic(jsxHeuristicOpts)
 
 export default defineConfig({
-	locales: ["en", "zh-Hans"],
+	locales: ["en", "zh-CN"],
 	adapters: {
 		main: jsx({
 			files: {

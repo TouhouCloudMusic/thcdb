@@ -54,7 +54,7 @@ const mockData: Release = {
 		{
 			language: {
 				id: 3,
-				code: "zh-Hans",
+				code: "zh-CN",
 				name: "Simplified Chinese",
 			},
 			title: "东方红魔乡 ～ the Embodiment of Scarlet Devil",
