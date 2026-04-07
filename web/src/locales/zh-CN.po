@@ -332,14 +332,6 @@ msgstr "TanStack Router"
 msgid "TanStack Query"
 msgstr "TanStack Query"
 
-#: src/component/dialog/AlertDialog.tsx
-msgid "取消"
-msgstr "取消"
-
-#: src/component/dialog/AlertDialog.tsx
-msgid "确定"
-msgstr "确定"
-
 #. 0: fieldNameWithoutUnderscore()
 #: src/component/dialog/ResetFieldDialog.tsx
 msgid "Reset {0} field to initial state"
@@ -944,6 +936,7 @@ msgstr "下一页"
 msgid "Failed to load"
 msgstr "加载失败"
 
+#: src/component/dialog/AlertDialog.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Cancel"
@@ -2126,6 +2119,7 @@ msgstr "重命名光盘"
 msgid "Disc name"
 msgstr "光盘名称"
 
+#: src/component/dialog/AlertDialog.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Confirm"
 msgstr "确认"

@@ -14,15 +14,16 @@ export function ResetFieldDialogTrigger(props: {
 	)
 	return (
 		<AlertDialog
-			trigger={
+			triggerAs={(triggerProps) => (
 				<Button
+					{...triggerProps}
 					variant="Tertiary"
 					class="mr-0.5 aspect-square h-full p-1.5"
 					aria-label={`Reset ${fieldNameWithoutUnderscore()} field to initial state`}
 				>
 					<ArrowPathIcon />
 				</Button>
-			}
+			)}
 			title="Reset field?"
 			description="This cannot be undone."
 			onCancel={() => {

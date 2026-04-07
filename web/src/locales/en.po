@@ -332,14 +332,6 @@ msgstr "TanStack Router"
 msgid "TanStack Query"
 msgstr "TanStack Query"
 
-#: src/component/dialog/AlertDialog.tsx
-msgid "取消"
-msgstr "取消"
-
-#: src/component/dialog/AlertDialog.tsx
-msgid "确定"
-msgstr "确定"
-
 #. 0: fieldNameWithoutUnderscore()
 #: src/component/dialog/ResetFieldDialog.tsx
 msgid "Reset {0} field to initial state"
@@ -944,6 +936,7 @@ msgstr "Next"
 msgid "Failed to load"
 msgstr "Failed to load"
 
+#: src/component/dialog/AlertDialog.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Cancel"
@@ -2126,6 +2119,7 @@ msgstr "Rename Disc"
 msgid "Disc name"
 msgstr "Disc name"
 
+#: src/component/dialog/AlertDialog.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Confirm"
 msgstr "Confirm"
