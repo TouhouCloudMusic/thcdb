@@ -623,14 +623,9 @@ function ConfirmActionButton(props: ConfirmActionButtonProps) {
 		<AlertDialog
 			open={open()}
 			onOpenChange={setOpen}
-			title={props.title}
-			description={props.description}
-			confirmText={props.confirmText}
-			cancelText="Cancel"
-			onCancel={() => setOpen(false)}
-			onConfirm={confirm}
-			trigger={
+			triggerAs={(triggerProps) => (
 				<Button
+					{...triggerProps}
 					variant="Primary"
 					color={props.color}
 					size="Sm"
@@ -639,7 +634,13 @@ function ConfirmActionButton(props: ConfirmActionButtonProps) {
 				>
 					{props.children}
 				</Button>
-			}
+			)}
+			title={props.title}
+			description={props.description}
+			confirmText={props.confirmText}
+			cancelText="Cancel"
+			onCancel={() => setOpen(false)}
+			onConfirm={confirm}
 		/>
 	)
 }
