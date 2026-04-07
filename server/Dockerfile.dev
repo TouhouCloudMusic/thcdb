@@ -26,4 +26,4 @@ COPY . ./
 
 RUN rm -f rust-toolchain.toml rust-toolchain
 
-CMD ["cargo", "watch", "-x", "run"]
+CMD ["cargo", "run"]
