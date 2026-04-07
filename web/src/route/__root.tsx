@@ -1,12 +1,12 @@
 import * as meta from "@solidjs/meta"
 import type { QueryClient } from "@tanstack/solid-query"
 import { createRootRouteWithContext, Outlet } from "@tanstack/solid-router"
-import { ObjExt } from "@thc/toolkit/data"
 import type { ParentProps } from "solid-js"
 
 import { Footer } from "~/component/Footer"
 import { Header } from "~/component/Header"
 import { Devtools } from "~/component/devtools"
+import { getErrorMessage } from "~/utils/getErrorMessage"
 import { NotFound } from "~/view/NotFound"
 import { InternalServerError } from "~/view/error/InternalServerError"
 
@@ -29,26 +29,6 @@ export const Route = createRootRouteWithContext<RouteContext>()({
 	notFoundComponent: NotFound,
 	errorComponent: (e) => <InternalServerError msg={getErrorMessage(e.error)} />,
 })
-
-const getErrorMessage = (error: unknown) => {
-	if (error instanceof Error) {
-		return error.message
-	}
-	if (typeof error === "string") return error
-	if (ObjExt.isRecord(error)) {
-		const message = error["message"]
-		if (typeof message === "string" && message.length > 0) return message
-		const fallback = error["error"]
-		if (typeof fallback === "string" && fallback.length > 0) return fallback
-	}
-	try {
-		return JSON.stringify(error, (key, value) =>
-			key === "stack" ? undefined : (value as unknown),
-		)
-	} catch {
-		return "Unknown error"
-	}
-}
 
 function RouteTree() {
 	return (

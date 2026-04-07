@@ -23,8 +23,12 @@ export default defineConfig(({ mode }) => {
 
 	return {
 		plugins: createAppPlugins({ withWuchale: true }),
+		experimental: {
+			// bundledDev: true,
+		},
 		server: {
 			port: 3000,
+			strictPort: true,
 			proxy: {
 				"/api": {
 					target: SERVER_URL,

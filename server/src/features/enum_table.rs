@@ -3,12 +3,13 @@ use entity::{language, role, song_relation_type};
 use itertools::Itertools;
 use libfp::FunctorExt;
 use sea_orm::{EntityTrait, QueryOrder};
+use strum::IntoEnumIterator;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::domain::model::UserRoleEnum;
+use crate::domain::model::{EditableUserRole, UserRoleEnum};
 use crate::domain::shared::Language;
 use crate::domain::song::SongRelationType;
 use crate::infra::error::Error;
@@ -19,6 +20,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .with_public(|r| {
             r.routes(routes!(language_list))
                 .routes(routes!(user_roles))
+                .routes(routes!(editable_user_roles))
                 .routes(routes!(song_relation_types))
         })
         .finish()
@@ -28,6 +30,7 @@ data! {
     DataVecLanguage, Vec<Language>
     DataVecSongRelationType, Vec<SongRelationType>
     DataVecUserRole, Vec<UserRoleEnum>
+    DataVecEditableUserRole, Vec<EditableUserRole>
 }
 
 #[utoipa::path(
@@ -65,6 +68,19 @@ async fn user_roles(
         .filter_map(|model| UserRoleEnum::try_from(model.id).ok())
         .collect_vec()
         .into())
+}
+
+#[utoipa::path(
+    get,
+    path = "/editable-user-roles",
+    responses(
+        (status = 200, body = DataVecEditableUserRole),
+    ),
+)]
+async fn editable_user_roles(
+    State(_state): State<ArcAppState>,
+) -> Result<Data<Vec<EditableUserRole>>, Error> {
+    Ok(EditableUserRole::iter().collect_vec().into())
 }
 
 #[utoipa::path(

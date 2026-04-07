@@ -274,15 +274,6 @@ export type CursorResponseUserImageQueueItem = {
 	next_cursor?: number | null
 }
 
-export type CursorResponseUserSummary = {
-	items: Array<{
-		id: number
-		name: string
-		roles: Array<UserRole>
-	}>
-	next_cursor?: number | null
-}
-
 export type DataForgotPasswordResponse = {
 	status: string
 	data: ForgotPasswordResponse
@@ -373,6 +364,11 @@ export type DataPageTag = {
 	data: PageResponseTag
 }
 
+export type DataPageUserSummary = {
+	status: string
+	data: PageResponseUserSummary
+}
+
 export type DataPaginatedAppearance = {
 	status: string
 	data: CursorResponseDiscography
@@ -438,11 +434,6 @@ export type DataPaginatedUserImageQueueItem = {
 	data: CursorResponseUserImageQueueItem
 }
 
-export type DataPaginatedUserSummary = {
-	status: string
-	data: CursorResponseUserSummary
-}
-
 export type DataPendingImageQueueCount = {
 	status: string
 	data: number
@@ -486,6 +477,11 @@ export type DataVecArtist = {
 export type DataVecCreditRoleSummary = {
 	status: string
 	data: Array<CreditRoleSummary>
+}
+
+export type DataVecEditableUserRole = {
+	status: string
+	data: Array<EditableUserRoleEnum>
 }
 
 export type DataVecEvent = {
@@ -621,6 +617,8 @@ export type DateWithPrecision = {
 export type DeleteVoteBody = {
 	tag_id: number
 }
+
+export type EditableUserRoleEnum = "Moderator"
 
 export type EntityIdent = string
 
@@ -1145,6 +1143,18 @@ export type PageResponseTag = {
 	total_pages: number
 }
 
+export type PageResponseUserSummary = {
+	items: Array<{
+		id: number
+		name: string
+		roles: Array<UserRole>
+	}>
+	page: number
+	page_size: number
+	total_items: number
+	total_pages: number
+}
+
 export type Release = {
 	id: number
 	title: string
@@ -1233,7 +1243,7 @@ export type SearchResponse = {
 }
 
 export type SetUserRolesRequest = {
-	roles: Array<string>
+	roles: Array<EditableUserRoleEnum>
 }
 
 export type SignUpRequest = {
@@ -1445,9 +1455,9 @@ export type AdminUsersData = {
 	body?: never
 	path?: never
 	query?: {
-		limit?: number | null
-		cursor?: number | null
 		keyword?: string | null
+		limit?: number | null
+		page?: number | null
 	}
 	url: "/admin/users"
 }
@@ -1466,7 +1476,7 @@ export type AdminUsersErrors = {
 export type AdminUsersError = AdminUsersErrors[keyof AdminUsersErrors]
 
 export type AdminUsersResponses = {
-	200: DataPaginatedUserSummary
+	200: DataPageUserSummary
 }
 
 export type AdminUsersResponse = AdminUsersResponses[keyof AdminUsersResponses]
@@ -2122,6 +2132,34 @@ export type UpsertCreditRoleCorrectionResponses = {
 
 export type UpsertCreditRoleCorrectionResponse =
 	UpsertCreditRoleCorrectionResponses[keyof UpsertCreditRoleCorrectionResponses]
+
+export type EditableUserRolesData = {
+	body?: never
+	path?: never
+	query?: never
+	url: "/editable-user-roles"
+}
+
+export type EditableUserRolesErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type EditableUserRolesError =
+	EditableUserRolesErrors[keyof EditableUserRolesErrors]
+
+export type EditableUserRolesResponses = {
+	200: DataVecEditableUserRole
+}
+
+export type EditableUserRolesResponse =
+	EditableUserRolesResponses[keyof EditableUserRolesResponses]
 
 export type FindEventByKeywordData = {
 	body?: never

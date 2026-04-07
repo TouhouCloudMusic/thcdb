@@ -1,7 +1,7 @@
 default: sync
 
 sync:
-	pnpm exec wuchale --config ../wuchale.config.ts --clean
+	pnpm exec wuchale --config ../wuchale.config.ts --clean --log-level warn
 
 check:
 	pnpm exec wuchale --config ../wuchale.config.ts check

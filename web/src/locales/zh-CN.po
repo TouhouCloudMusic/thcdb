@@ -110,7 +110,7 @@ msgstr "日语"
 msgid "Genre"
 msgstr "流派"
 
-#: src/route/__root.tsx
+#: src/utils/getErrorMessage.ts
 msgid "Unknown error"
 msgstr "未知错误"
 
@@ -459,9 +459,7 @@ msgstr "文章"
 msgid "活动"
 msgstr "活动"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
+#: src/component/Header/LeftSidebar.tsx
 msgid "Admin"
 msgstr "管理员"
 
@@ -873,9 +871,7 @@ msgstr "提交失败。"
 msgid "Cancelled"
 msgstr "已取消"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
+#: src/view/admin/users.tsx
 msgid "Moderator"
 msgstr "审核员"
 
@@ -937,6 +933,7 @@ msgid "Failed to load"
 msgstr "加载失败"
 
 #: src/component/dialog/AlertDialog.tsx
+#: src/view/admin/users.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Cancel"
@@ -1028,6 +1025,7 @@ msgstr "图片队列历史记录"
 msgid "Go to moderation"
 msgstr "前往审核"
 
+#: src/view/admin/users.tsx
 #: src/view/image_queue/user.tsx
 msgid "ID"
 msgstr "ID"
@@ -1236,7 +1234,7 @@ msgstr "取消关注"
 msgid "Following"
 msgstr "已关注"
 
-#: src/view/user/Profile.tsx
+#: src/view/admin/users.tsx
 #: src/view/user/Profile.tsx
 msgid "User"
 msgstr "用户"
@@ -1770,6 +1768,7 @@ msgstr "介绍一下自己吧！"
 msgid "Discard"
 msgstr "丢弃"
 
+#: src/view/admin/users.tsx
 #: src/view/user/edit_profile/index.tsx
 msgid "Saving…"
 msgstr "正在保存…"
@@ -2295,12 +2294,76 @@ msgstr "修订 · {0}"
 msgid "Select song"
 msgstr "选择歌曲"
 
-#~ msgid "Not easy to guess"
-#~ msgstr "不易猜到"
-
-#~ msgid "Password too weak"
-#~ msgstr ""
-
 #: src/view/auth/component/PasswordField.tsx
 msgid "Strong enough"
 msgstr "强度足够"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/component/Header/LeftSidebar.tsx
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/admin/users.tsx
+msgid "Users"
+msgstr "用户"
+
+#: src/view/admin/users.tsx
+msgid "View users and update system roles."
+msgstr "查看用户并更新系统角色。"
+
+#: src/view/admin/users.tsx
+msgid "Search by username"
+msgstr "按用户名搜索"
+
+#: src/view/admin/users.tsx
+msgid "Search"
+msgstr "搜索"
+
+#: src/view/admin/users.tsx
+msgid "Clear"
+msgstr "清空"
+
+#: src/view/admin/users.tsx
+msgid "Roles"
+msgstr "角色"
+
+#: src/view/admin/users.tsx
+msgid "Action"
+msgstr "操作"
+
+#: src/view/admin/users.tsx
+msgid "Failed to load users."
+msgstr "加载用户失败。"
+
+#: src/view/admin/users.tsx
+msgid "No users found"
+msgstr "未找到用户"
+
+#: src/view/admin/users.tsx
+msgid "No users match the current filters."
+msgstr "没有用户符合当前筛选条件。"
+
+#: src/view/admin/users.tsx
+#: src/view/admin/users.tsx
+msgid "Edit roles"
+msgstr "编辑角色"
+
+#. 0: props.search.page; 1: props.list.totalPages; 2: props.list.totalItems
+#: src/view/admin/users.tsx
+msgid "Page {0} of {1} <0/> {2} users"
+msgstr "第 {0} 页，共 {1} 页 <0/> {2} 位用户"
+
+#. 0: user().name
+#: src/view/admin/users.tsx
+msgid "Update roles for {0}."
+msgstr "更新 {0} 的角色。"
+
+#: src/view/admin/users.tsx
+msgid "Loading role options…"
+msgstr "正在加载角色选项…"
+
+#: src/view/admin/users.tsx
+msgid "Save roles"
+msgstr "保存角色"
+
+#: src/view/admin/users.tsx
+msgid "Admin Settings"
+msgstr "管理设置"

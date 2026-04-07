@@ -110,7 +110,7 @@ msgstr "Japanese"
 msgid "Genre"
 msgstr "Genre"
 
-#: src/route/__root.tsx
+#: src/utils/getErrorMessage.ts
 msgid "Unknown error"
 msgstr "Unknown error"
 
@@ -459,9 +459,7 @@ msgstr "文章"
 msgid "活动"
 msgstr "活动"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
+#: src/component/Header/LeftSidebar.tsx
 msgid "Admin"
 msgstr "Admin"
 
@@ -873,9 +871,7 @@ msgstr "Submit failed."
 msgid "Cancelled"
 msgstr "Cancelled"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
+#: src/view/admin/users.tsx
 msgid "Moderator"
 msgstr "Moderator"
 
@@ -937,6 +933,7 @@ msgid "Failed to load"
 msgstr "Failed to load"
 
 #: src/component/dialog/AlertDialog.tsx
+#: src/view/admin/users.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Cancel"
@@ -1028,6 +1025,7 @@ msgstr "Image Queue History"
 msgid "Go to moderation"
 msgstr "Go to moderation"
 
+#: src/view/admin/users.tsx
 #: src/view/image_queue/user.tsx
 msgid "ID"
 msgstr "ID"
@@ -1236,7 +1234,7 @@ msgstr "Unfollow"
 msgid "Following"
 msgstr "Following"
 
-#: src/view/user/Profile.tsx
+#: src/view/admin/users.tsx
 #: src/view/user/Profile.tsx
 msgid "User"
 msgstr "User"
@@ -1770,6 +1768,7 @@ msgstr "Write something about you."
 msgid "Discard"
 msgstr "Discard"
 
+#: src/view/admin/users.tsx
 #: src/view/user/edit_profile/index.tsx
 msgid "Saving…"
 msgstr "Saving…"
@@ -2295,12 +2294,76 @@ msgstr "Corrections · {0}"
 msgid "Select song"
 msgstr "Select song"
 
-#~ msgid "Not easy to guess"
-#~ msgstr "Not easy to guess"
-
-#~ msgid "Password too weak"
-#~ msgstr "Password too weak"
-
 #: src/view/auth/component/PasswordField.tsx
 msgid "Strong enough"
 msgstr "Strong enough"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/component/Header/LeftSidebar.tsx
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/admin/users.tsx
+msgid "Users"
+msgstr "Users"
+
+#: src/view/admin/users.tsx
+msgid "View users and update system roles."
+msgstr "View users and update system roles."
+
+#: src/view/admin/users.tsx
+msgid "Search by username"
+msgstr "Search by username"
+
+#: src/view/admin/users.tsx
+msgid "Search"
+msgstr "Search"
+
+#: src/view/admin/users.tsx
+msgid "Clear"
+msgstr "Clear"
+
+#: src/view/admin/users.tsx
+msgid "Roles"
+msgstr "Roles"
+
+#: src/view/admin/users.tsx
+msgid "Action"
+msgstr "Action"
+
+#: src/view/admin/users.tsx
+msgid "Failed to load users."
+msgstr "Failed to load users."
+
+#: src/view/admin/users.tsx
+msgid "No users found"
+msgstr "No users found"
+
+#: src/view/admin/users.tsx
+msgid "No users match the current filters."
+msgstr "No users match the current filters."
+
+#: src/view/admin/users.tsx
+#: src/view/admin/users.tsx
+msgid "Edit roles"
+msgstr "Edit roles"
+
+#. 0: props.search.page; 1: props.list.totalPages; 2: props.list.totalItems
+#: src/view/admin/users.tsx
+msgid "Page {0} of {1} <0/> {2} users"
+msgstr "Page {0} of {1} <0/> {2} users"
+
+#. 0: user().name
+#: src/view/admin/users.tsx
+msgid "Update roles for {0}."
+msgstr "Update roles for {0}."
+
+#: src/view/admin/users.tsx
+msgid "Loading role options…"
+msgstr "Loading role options…"
+
+#: src/view/admin/users.tsx
+msgid "Save roles"
+msgstr "Save roles"
+
+#: src/view/admin/users.tsx
+msgid "Admin Settings"
+msgstr "Admin Settings"

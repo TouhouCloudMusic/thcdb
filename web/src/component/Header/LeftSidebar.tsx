@@ -1,7 +1,7 @@
 import type { LinkComponentProps } from "@tanstack/solid-router"
 import type { IconProps } from "@thc/icons"
 import type { JSX } from "solid-js"
-import { For } from "solid-js"
+import { For, Show } from "solid-js"
 import {
 	CardStackIcon,
 	BookmarkIcon,
@@ -10,10 +10,13 @@ import {
 	TargetIcon,
 	CrumpledPaperIcon,
 	HomeIcon,
+	PersonIcon,
 } from "solid-radix-icons"
 
 import { LocaleSelect } from "~/component/Header/LocaleSelect"
 import { ListItem, Sidebar } from "~/component/Sidebar"
+import { hasAdminRole } from "~/component/route"
+import { useCurrentUser } from "~/state/user"
 
 type ListItemContent = {
 	icon: (props: IconProps) => JSX.Element
@@ -22,6 +25,8 @@ type ListItemContent = {
 }
 
 export function LeftSidebar() {
+	const userCtx = useCurrentUser()
+
 	// TODO: Icons
 	const LIST_ITEMS: ListItemContent[] = [
 		{
@@ -111,6 +116,21 @@ export function LeftSidebar() {
 					}}
 				</For>
 			</ul>
+
+			<Show when={hasAdminRole(userCtx.user?.roles)}>
+				<div class="space-y-1 pr-2">
+					<h3 class="ml-2 text-sm text-secondary">Admin</h3>
+					<ListItem
+						class="w-full"
+						aria-label="Users"
+						title="Users"
+						to="/admin/users"
+					>
+						<PersonIcon class="mr-3 h-4 w-4" />
+						<span>Users</span>
+					</ListItem>
+				</div>
+			</Show>
 
 			<div class="mt-auto space-y-2 px-2">
 				<h3 class="text-sm text-secondary">Settings</h3>
