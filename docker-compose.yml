@@ -47,7 +47,7 @@ services:
     env_file:
       - .env
     environment:
-      SESSION_SECURE: "false"
+      MIDDLEWARE__SESSION_SECURE: "false"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-changeme}"
       MIDDLEWARE__LIMIT__REQ_PER_SEC: "1000000"
       DATABASE_URL: "postgres://${POSTGRES_USER:-devuser}:${POSTGRES_PASSWORD:-devuser}@db:5432/${POSTGRES_DB:-devdb}"

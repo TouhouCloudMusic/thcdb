@@ -42,7 +42,7 @@ services:
     env_file:
       - .env
     environment:
-      SESSION_SECURE: "${SESSION_SECURE:-true}"
+      MIDDLEWARE__SESSION_SECURE: "${SESSION_SECURE:-true}"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}"
 
       DATABASE_URL: "postgres://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:?POSTGRES_DB is required}"
