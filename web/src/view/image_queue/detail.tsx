@@ -16,6 +16,7 @@ import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
 import { Image } from "~/component/image"
+import { USER_ROLE_NAMES } from "~/domain/user/constants"
 import { PageLayout } from "~/layout"
 import { useCurrentUser } from "~/state/user"
 import { imgUrl } from "~/utils/adapter/static_file"
@@ -91,8 +92,11 @@ function hasImageQueueManagePermission(
 	roles: { name: string }[] | null | undefined,
 ) {
 	return (
-		roles?.some((role) => role.name === "Admin" || role.name === "Moderator")
-		?? false
+		roles?.some(
+			(role) =>
+				role.name === USER_ROLE_NAMES.Admin
+				|| role.name === USER_ROLE_NAMES.Moderator,
+		) ?? false
 	)
 }
 

@@ -351,6 +351,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/editable-user-roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["editable_user_roles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/event": {
         parameters: {
             query?: never;
@@ -1494,16 +1510,6 @@ export type components = {
             /** Format: int32 */
             next_cursor?: number | null;
         };
-        CursorResponse_UserSummary: {
-            items: {
-                /** Format: int32 */
-                id: number;
-                name: string;
-                roles: components["schemas"]["UserRole"][];
-            }[];
-            /** Format: int32 */
-            next_cursor?: number | null;
-        };
         Data_Correction: {
             data: {
                 /** Format: date-time */
@@ -1666,6 +1672,10 @@ export type components = {
             data: components["schemas"]["PageResponse_Tag"];
             status: string;
         };
+        DataPageUserSummary: {
+            data: components["schemas"]["PageResponse_UserSummary"];
+            status: string;
+        };
         DataPaginatedAppearance: {
             data: components["schemas"]["CursorResponse_Discography"];
             status: string;
@@ -1718,10 +1728,6 @@ export type components = {
             data: components["schemas"]["CursorResponse_UserImageQueueItem"];
             status: string;
         };
-        DataPaginatedUserSummary: {
-            data: components["schemas"]["CursorResponse_UserSummary"];
-            status: string;
-        };
         DataPendingImageQueueCount: {
             /** Format: int64 */
             data: number;
@@ -1758,6 +1764,10 @@ export type components = {
         };
         DataVecCreditRoleSummary: {
             data: components["schemas"]["CreditRoleSummary"][];
+            status: string;
+        };
+        DataVecEditableUserRole: {
+            data: components["schemas"]["EditableUserRoleEnum"][];
             status: string;
         };
         DataVecEvent: {
@@ -1811,6 +1821,8 @@ export type components = {
             /** Format: int32 */
             tag_id: number;
         };
+        /** @enum {string} */
+        EditableUserRoleEnum: "Moderator";
         EntityIdent: string;
         /** @enum {string} */
         EntityType: "Artist" | "Label" | "Release" | "Song" | "Tag" | "Event" | "SongLyrics" | "CreditRole";
@@ -2325,6 +2337,22 @@ export type components = {
             /** Format: int32 */
             total_pages: number;
         };
+        PageResponse_UserSummary: {
+            items: {
+                /** Format: int32 */
+                id: number;
+                name: string;
+                roles: components["schemas"]["UserRole"][];
+            }[];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            page_size: number;
+            /** Format: int64 */
+            total_items: number;
+            /** Format: int32 */
+            total_pages: number;
+        };
         Release: {
             artists?: components["schemas"]["ReleaseArtist"][];
             catalog_nums?: components["schemas"]["CatalogNumber"][];
@@ -2406,7 +2434,7 @@ export type components = {
             tags: components["schemas"]["CursorResponse_TagRef"];
         };
         SetUserRolesRequest: {
-            roles: string[];
+            roles: components["schemas"]["EditableUserRoleEnum"][];
         };
         SignUpRequest: {
             email: string;
@@ -2619,7 +2647,6 @@ export type CursorResponseSongRef = components['schemas']['CursorResponse_SongRe
 export type CursorResponseTagAggregate = components['schemas']['CursorResponse_TagAggregate'];
 export type CursorResponseTagRef = components['schemas']['CursorResponse_TagRef'];
 export type CursorResponseUserImageQueueItem = components['schemas']['CursorResponse_UserImageQueueItem'];
-export type CursorResponseUserSummary = components['schemas']['CursorResponse_UserSummary'];
 export type DataCorrection = components['schemas']['Data_Correction'];
 export type DataCorrectionDiff = components['schemas']['Data_CorrectionDiff'];
 export type DataCorrectionSubmissionResult = components['schemas']['Data_CorrectionSubmissionResult'];
@@ -2646,6 +2673,7 @@ export type DataPageLabel = components['schemas']['DataPageLabel'];
 export type DataPageRelease = components['schemas']['DataPageRelease'];
 export type DataPageSong = components['schemas']['DataPageSong'];
 export type DataPageTag = components['schemas']['DataPageTag'];
+export type DataPageUserSummary = components['schemas']['DataPageUserSummary'];
 export type DataPaginatedAppearance = components['schemas']['DataPaginatedAppearance'];
 export type DataPaginatedCredit = components['schemas']['DataPaginatedCredit'];
 export type DataPaginatedDiscography = components['schemas']['DataPaginatedDiscography'];
@@ -2659,7 +2687,6 @@ export type DataPaginatedSongRef = components['schemas']['DataPaginatedSongRef']
 export type DataPaginatedTagAggregate = components['schemas']['DataPaginatedTagAggregate'];
 export type DataPaginatedTagRef = components['schemas']['DataPaginatedTagRef'];
 export type DataPaginatedUserImageQueueItem = components['schemas']['DataPaginatedUserImageQueueItem'];
-export type DataPaginatedUserSummary = components['schemas']['DataPaginatedUserSummary'];
 export type DataPendingImageQueueCount = components['schemas']['DataPendingImageQueueCount'];
 export type DataResendVerificationEmailResponse = components['schemas']['DataResendVerificationEmailResponse'];
 export type DataSearchResponse = components['schemas']['DataSearchResponse'];
@@ -2669,6 +2696,7 @@ export type DataUserProfile = components['schemas']['DataUserProfile'];
 export type DataUserRoles = components['schemas']['DataUserRoles'];
 export type DataVecArtist = components['schemas']['DataVecArtist'];
 export type DataVecCreditRoleSummary = components['schemas']['DataVecCreditRoleSummary'];
+export type DataVecEditableUserRole = components['schemas']['DataVecEditableUserRole'];
 export type DataVecEvent = components['schemas']['DataVecEvent'];
 export type DataVecLabel = components['schemas']['DataVecLabel'];
 export type DataVecLanguage = components['schemas']['DataVecLanguage'];
@@ -2682,6 +2710,7 @@ export type DataVerifyResetCodeResponse = components['schemas']['DataVerifyReset
 export type DatePrecision = components['schemas']['DatePrecision'];
 export type DateWithPrecision = components['schemas']['DateWithPrecision'];
 export type DeleteVoteBody = components['schemas']['DeleteVoteBody'];
+export type EditableUserRoleEnum = components['schemas']['EditableUserRoleEnum'];
 export type EntityIdent = components['schemas']['EntityIdent'];
 export type EntityType = components['schemas']['EntityType'];
 export type Error = components['schemas']['Error'];
@@ -2737,6 +2766,7 @@ export type PageResponseLabel = components['schemas']['PageResponse_Label'];
 export type PageResponseRelease = components['schemas']['PageResponse_Release'];
 export type PageResponseSong = components['schemas']['PageResponse_Song'];
 export type PageResponseTag = components['schemas']['PageResponse_Tag'];
+export type PageResponseUserSummary = components['schemas']['PageResponse_UserSummary'];
 export type Release = components['schemas']['Release'];
 export type ReleaseArtist = components['schemas']['ReleaseArtist'];
 export type ReleaseCoverArtFormData = components['schemas']['ReleaseCoverArtFormData'];
@@ -3069,9 +3099,9 @@ export interface operations {
     admin_users: {
         parameters: {
             query?: {
-                cursor?: number | null;
                 keyword?: string | null;
                 limit?: number | null;
+                page?: number | null;
             };
             header?: never;
             path?: never;
@@ -3084,7 +3114,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataPaginatedUserSummary"];
+                    "application/json": components["schemas"]["DataPageUserSummary"];
                 };
             };
             /** @description Too Many Requests */
@@ -4054,6 +4084,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DataVecCreditRoleSummary"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    editable_user_roles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataVecEditableUserRole"];
                 };
             };
             /** @description Too Many Requests */
@@ -7190,6 +7261,7 @@ export enum ApiPaths {
     find_many_credit_roles_summary = "/credit-role/summary",
     find_credit_role_by_id = "/credit-role/{id}",
     upsert_credit_role_correction = "/credit-role/{id}",
+    editable_user_roles = "/editable-user-roles",
     find_event_by_keyword = "/event",
     create_event = "/event",
     explore_event = "/event/explore",

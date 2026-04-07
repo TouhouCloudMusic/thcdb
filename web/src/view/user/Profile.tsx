@@ -9,6 +9,7 @@ import { Link } from "~/component/atomic/Link"
 import { Avatar } from "~/component/atomic/avatar"
 import { Button } from "~/component/atomic/button"
 import { Markdown } from "~/component/markdown"
+import { USER_ROLE_NAMES } from "~/domain/user/constants"
 import { PageLayout } from "~/layout/PageLayout"
 import { imgUrl } from "~/utils/adapter/static_file"
 
@@ -89,9 +90,13 @@ export function Profile(props: Props) {
 	const topRole = createMemo<UserRoleEnum | null>(() => {
 		const roles = props.data.roles ?? []
 		if (roles.length === 0) return null
-		if (roles.some((r) => r.name === "Admin")) return "Admin"
-		if (roles.some((r) => r.name === "Moderator")) return "Moderator"
-		return "User"
+		if (roles.some((role) => role.name === USER_ROLE_NAMES.Admin)) {
+			return USER_ROLE_NAMES.Admin
+		}
+		if (roles.some((role) => role.name === USER_ROLE_NAMES.Moderator)) {
+			return USER_ROLE_NAMES.Moderator
+		}
+		return USER_ROLE_NAMES.User
 	})
 
 	return (

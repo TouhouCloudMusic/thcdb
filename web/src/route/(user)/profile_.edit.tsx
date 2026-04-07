@@ -34,9 +34,7 @@ function RouteComponent() {
 				throw new Error(result.left.error)
 			}
 
-			if (userCtx.user) {
-				userCtx.user.bio = next
-			}
+			userCtx.updateUser((user) => ({ ...user, bio: next }))
 		},
 		uploadAvatar: async (file) => {
 			const result = await UserApi.uploadAvatar(file)

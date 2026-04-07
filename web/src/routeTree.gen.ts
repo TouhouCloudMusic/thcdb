@@ -45,6 +45,7 @@ import { Route as CorrectionIdRouteImport } from './route/correction/$id'
 import { Route as AuthForgotPasswordRouteImport } from './route/auth/forgot-password'
 import { Route as ArtistNewRouteImport } from './route/artist/new'
 import { Route as ArtistExploreRouteImport } from './route/artist/explore'
+import { Route as AdminUsersRouteImport } from './route/admin/users'
 import { Route as userProfileRouteImport } from './route/(user)/profile'
 import { Route as ArtistIdIndexRouteImport } from './route/artist/$id.index'
 import { Route as UserIdImageQueueRouteImport } from './route/user/$id.image-queue'
@@ -245,6 +246,11 @@ const ArtistExploreRoute = ArtistExploreRouteImport.update({
   path: '/artist/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const userProfileRoute = userProfileRouteImport.update({
   id: '/(user)/profile',
   path: '/profile',
@@ -346,6 +352,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/search': typeof SearchRoute
   '/profile': typeof userProfileRoute
+  '/admin/users': typeof AdminUsersRoute
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -403,6 +410,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/search': typeof SearchRoute
   '/profile': typeof userProfileRoute
+  '/admin/users': typeof AdminUsersRoute
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -461,6 +469,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/search': typeof SearchRoute
   '/(user)/profile': typeof userProfileRoute
+  '/admin/users': typeof AdminUsersRoute
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -520,6 +529,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/search'
     | '/profile'
+    | '/admin/users'
     | '/artist/explore'
     | '/artist/new'
     | '/auth/forgot-password'
@@ -577,6 +587,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/search'
     | '/profile'
+    | '/admin/users'
     | '/artist/explore'
     | '/artist/new'
     | '/auth/forgot-password'
@@ -634,6 +645,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/search'
     | '/(user)/profile'
+    | '/admin/users'
     | '/artist/explore'
     | '/artist/new'
     | '/auth/forgot-password'
@@ -692,6 +704,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   SearchRoute: typeof SearchRoute
   userProfileRoute: typeof userProfileRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   ArtistExploreRoute: typeof ArtistExploreRoute
   ArtistNewRoute: typeof ArtistNewRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
@@ -999,6 +1012,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof ArtistExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(user)/profile': {
       id: '/(user)/profile'
       path: '/profile'
@@ -1140,6 +1160,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   SearchRoute: SearchRoute,
   userProfileRoute: userProfileRoute,
+  AdminUsersRoute: AdminUsersRoute,
   ArtistExploreRoute: ArtistExploreRoute,
   ArtistNewRoute: ArtistNewRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
