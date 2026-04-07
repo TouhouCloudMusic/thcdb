@@ -17,7 +17,6 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 RUN cargo install --locked cargo-chef
-RUN cargo install --locked cargo-watch
 
 RUN rustup component add --toolchain nightly rustc-codegen-cranelift-preview
 
