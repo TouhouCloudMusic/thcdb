@@ -177,7 +177,10 @@ function generateHeyApiOutput() {
 					output: HEY_API_OUTPUT,
 					plugins: [
 						"@hey-api/typescript",
-						"@hey-api/client-fetch",
+						{
+							baseUrl: "/api",
+							name: "@hey-api/client-fetch",
+						},
 						{
 							name: "@hey-api/sdk",
 							responseStyle: "fields",
