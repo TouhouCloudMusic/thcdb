@@ -13,7 +13,7 @@ msgstr ""
 "X-Crowdin-File-ID: 9\n"
 "Project-Id-Version: touhou-cloud-db\n"
 "Language-Team: Chinese Simplified\n"
-"PO-Revision-Date: 2026-04-07 05:18\n"
+"PO-Revision-Date: 2026-04-08 05:15\n"
 
 #: src/App.tsx
 #: src/component/Footer/index.tsx
@@ -338,14 +338,6 @@ msgstr ""
 
 #: src/component/devtools/index.tsx
 msgid "TanStack Query"
-msgstr ""
-
-#: src/component/dialog/AlertDialog.tsx
-msgid "取消"
-msgstr ""
-
-#: src/component/dialog/AlertDialog.tsx
-msgid "确定"
 msgstr ""
 
 #. 0: fieldNameWithoutUnderscore()
@@ -952,6 +944,7 @@ msgstr "下一页"
 msgid "Failed to load"
 msgstr "加载失败"
 
+#: src/component/dialog/AlertDialog.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Cancel"
@@ -2134,6 +2127,7 @@ msgstr "重命名光盘"
 msgid "Disc name"
 msgstr "光盘名称"
 
+#: src/component/dialog/AlertDialog.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Confirm"
 msgstr "确认"
