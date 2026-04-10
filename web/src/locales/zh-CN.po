@@ -259,10 +259,6 @@ msgid "File is too large. Maximum is {0}."
 msgstr "文件太大。最大值为 {0}。"
 
 #: src/component/ImageCropDialog/index.tsx
-msgid "ImageCropDialog"
-msgstr "图片裁剪对话框"
-
-#: src/component/ImageCropDialog/index.tsx
 #: src/component/ImageCropDialog/index.tsx
 msgid "Cropper is not ready yet."
 msgstr "Cropper 尚未准备就绪。"
@@ -366,12 +362,6 @@ msgstr "图片裁剪器占位符"
 msgid "Save Image"
 msgstr "保存图片"
 
-#: src/component/image/__internal.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/tag/TagTree.tsx
-msgid "Enter"
-msgstr "进入"
-
 #: src/component/form/FormActionBar.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Submit"
@@ -386,13 +376,9 @@ msgid "Back"
 msgstr "返回"
 
 #: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/manage.tsx
 msgid "Pending"
 msgstr "待定"
 
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Approved"
 msgstr "已批准"
@@ -408,17 +394,14 @@ msgstr "已还原"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
 msgid "Approve"
 msgstr "批准"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
 msgid "Reject"
 msgstr "拒绝"
 
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Revert"
 msgstr "还原"
@@ -513,10 +496,6 @@ msgstr "歌曲 #{0}"
 #: src/state/user/index.tsx
 msgid "Notification"
 msgstr "通知"
-
-#: src/state/user/index.tsx
-msgid "UserContext"
-msgstr "用户上下文"
 
 #: src/view/Homepage/index.tsx
 msgid "Latest Releases"
@@ -628,19 +607,7 @@ msgstr "{0} 更正历史记录"
 msgid "Back to {0}"
 msgstr "返回到 {0}"
 
-#: src/view/artist/edit/hook/useFormInitialValues.tsx
-#: src/view/artist/edit/hook/useFormSubmission.tsx
 #: src/view/correction/EntityCorrectionListPage.tsx
-#: src/view/event/edit/hook/init.tsx
-#: src/view/event/edit/hook/submit.tsx
-#: src/view/label/edit/hook/init.ts
-#: src/view/label/edit/hook/submit.ts
-#: src/view/release/edit/hook/useFormInitialValues.tsx
-#: src/view/release/edit/hook/useFormSubmission.tsx
-#: src/view/song/edit/hook/useFormInitialValues.tsx
-#: src/view/song/edit/hook/useFormSubmission.tsx
-#: src/view/tag/edit/hook/init.tsx
-#: src/view/tag/edit/hook/submit.tsx
 msgid "Update"
 msgstr "更新"
 
@@ -776,16 +743,8 @@ msgid "Go back..."
 msgstr "返回上一页..."
 
 #: src/view/correction/entityMap.ts
-msgid "SongLyrics"
-msgstr "歌词"
-
-#: src/view/correction/entityMap.ts
 msgid "Song lyrics"
 msgstr "歌词"
-
-#: src/view/correction/entityMap.ts
-msgid "CreditRole"
-msgstr "署名角色"
 
 #: src/view/correction/entityMap.ts
 msgid "Credit role"
@@ -1244,14 +1203,6 @@ msgid "[UNIMPLEMENTED] Release"
 msgstr "[未实现]发行"
 
 #: src/view/tag/TagTree.tsx
-msgid "ArrowRight"
-msgstr "向右箭头"
-
-#: src/view/tag/TagTree.tsx
-msgid "ArrowLeft"
-msgstr "向左箭头"
-
-#: src/view/tag/TagTree.tsx
 msgid "v"
 msgstr "v"
 
@@ -1629,11 +1580,6 @@ msgstr "您现在可以使用新密码登录。"
 msgid "Left"
 msgstr "左侧"
 
-#: src/view/auth/reset_password/response.ts
-#: src/view/auth/reset_password/response.ts
-msgid "ResponseStatusError"
-msgstr "ResponseStatusError"
-
 #: src/view/event/Info/index.tsx
 msgid "Short description is not provided"
 msgstr "未提供简短说明"
@@ -1915,21 +1861,6 @@ msgstr "当前位置"
 #: src/view/artist/edit/comp/TextAliases.tsx
 msgid "Text Aliases"
 msgstr "文本别名"
-
-#: src/view/artist/edit/hook/useFormInitialValues.tsx
-#: src/view/artist/edit/hook/useFormSubmission.tsx
-#: src/view/event/edit/hook/init.tsx
-#: src/view/event/edit/hook/submit.tsx
-#: src/view/label/edit/hook/init.ts
-#: src/view/label/edit/hook/submit.ts
-#: src/view/release/edit/hook/useFormInitialValues.tsx
-#: src/view/release/edit/hook/useFormSubmission.tsx
-#: src/view/song/edit/hook/useFormInitialValues.tsx
-#: src/view/song/edit/hook/useFormSubmission.tsx
-#: src/view/tag/edit/hook/init.tsx
-#: src/view/tag/edit/hook/submit.tsx
-msgid "Create"
-msgstr "创建房间"
 
 #: src/view/artist/profile/comp/ArtistInfo.tsx
 msgid "Born"
@@ -2236,10 +2167,6 @@ msgstr "输入发送到你邮箱的 6 位验证码。"
 #: src/view/auth/store/index.ts
 msgid "Missing sign-up email. Create the account again."
 msgstr "缺少注册邮箱，请重新创建账号。"
-
-#: src/component/Footer/index.tsx
-msgid "GitHub"
-msgstr "GitHub"
 
 #: src/component/Footer/index.tsx
 msgid "Zulip"

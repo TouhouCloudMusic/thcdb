@@ -259,10 +259,6 @@ msgid "File is too large. Maximum is {0}."
 msgstr "File is too large. Maximum is {0}."
 
 #: src/component/ImageCropDialog/index.tsx
-msgid "ImageCropDialog"
-msgstr "ImageCropDialog"
-
-#: src/component/ImageCropDialog/index.tsx
 #: src/component/ImageCropDialog/index.tsx
 msgid "Cropper is not ready yet."
 msgstr "Cropper is not ready yet."
@@ -366,12 +362,6 @@ msgstr "Image Cropper Placeholder"
 msgid "Save Image"
 msgstr "Save Image"
 
-#: src/component/image/__internal.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/tag/TagTree.tsx
-msgid "Enter"
-msgstr "Enter"
-
 #: src/component/form/FormActionBar.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Submit"
@@ -386,13 +376,9 @@ msgid "Back"
 msgstr "Back"
 
 #: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/manage.tsx
 msgid "Pending"
 msgstr "Pending"
 
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Approved"
 msgstr "Approved"
@@ -408,17 +394,14 @@ msgstr "Reverted"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
 msgid "Approve"
 msgstr "Approve"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
 msgid "Reject"
 msgstr "Reject"
 
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Revert"
 msgstr "Revert"
@@ -513,10 +496,6 @@ msgstr "Song #{0}"
 #: src/state/user/index.tsx
 msgid "Notification"
 msgstr "Notification"
-
-#: src/state/user/index.tsx
-msgid "UserContext"
-msgstr "UserContext"
 
 #: src/view/Homepage/index.tsx
 msgid "Latest Releases"
@@ -628,19 +607,7 @@ msgstr "{0} correction history"
 msgid "Back to {0}"
 msgstr "Back to {0}"
 
-#: src/view/artist/edit/hook/useFormInitialValues.tsx
-#: src/view/artist/edit/hook/useFormSubmission.tsx
 #: src/view/correction/EntityCorrectionListPage.tsx
-#: src/view/event/edit/hook/init.tsx
-#: src/view/event/edit/hook/submit.tsx
-#: src/view/label/edit/hook/init.ts
-#: src/view/label/edit/hook/submit.ts
-#: src/view/release/edit/hook/useFormInitialValues.tsx
-#: src/view/release/edit/hook/useFormSubmission.tsx
-#: src/view/song/edit/hook/useFormInitialValues.tsx
-#: src/view/song/edit/hook/useFormSubmission.tsx
-#: src/view/tag/edit/hook/init.tsx
-#: src/view/tag/edit/hook/submit.tsx
 msgid "Update"
 msgstr "Update"
 
@@ -776,16 +743,8 @@ msgid "Go back..."
 msgstr "Go back..."
 
 #: src/view/correction/entityMap.ts
-msgid "SongLyrics"
-msgstr "SongLyrics"
-
-#: src/view/correction/entityMap.ts
 msgid "Song lyrics"
 msgstr "Song lyrics"
-
-#: src/view/correction/entityMap.ts
-msgid "CreditRole"
-msgstr "CreditRole"
 
 #: src/view/correction/entityMap.ts
 msgid "Credit role"
@@ -1244,14 +1203,6 @@ msgid "[UNIMPLEMENTED] Release"
 msgstr "[UNIMPLEMENTED] Release"
 
 #: src/view/tag/TagTree.tsx
-msgid "ArrowRight"
-msgstr "ArrowRight"
-
-#: src/view/tag/TagTree.tsx
-msgid "ArrowLeft"
-msgstr "ArrowLeft"
-
-#: src/view/tag/TagTree.tsx
 msgid "v"
 msgstr "v"
 
@@ -1629,11 +1580,6 @@ msgstr "You can now sign in with your new password."
 msgid "Left"
 msgstr "Left"
 
-#: src/view/auth/reset_password/response.ts
-#: src/view/auth/reset_password/response.ts
-msgid "ResponseStatusError"
-msgstr "ResponseStatusError"
-
 #: src/view/event/Info/index.tsx
 msgid "Short description is not provided"
 msgstr "Short description is not provided"
@@ -1915,21 +1861,6 @@ msgstr "Current Location"
 #: src/view/artist/edit/comp/TextAliases.tsx
 msgid "Text Aliases"
 msgstr "Text Aliases"
-
-#: src/view/artist/edit/hook/useFormInitialValues.tsx
-#: src/view/artist/edit/hook/useFormSubmission.tsx
-#: src/view/event/edit/hook/init.tsx
-#: src/view/event/edit/hook/submit.tsx
-#: src/view/label/edit/hook/init.ts
-#: src/view/label/edit/hook/submit.ts
-#: src/view/release/edit/hook/useFormInitialValues.tsx
-#: src/view/release/edit/hook/useFormSubmission.tsx
-#: src/view/song/edit/hook/useFormInitialValues.tsx
-#: src/view/song/edit/hook/useFormSubmission.tsx
-#: src/view/tag/edit/hook/init.tsx
-#: src/view/tag/edit/hook/submit.tsx
-msgid "Create"
-msgstr "Create"
 
 #: src/view/artist/profile/comp/ArtistInfo.tsx
 msgid "Born"
@@ -2236,10 +2167,6 @@ msgstr "Enter the 6-digit code sent to your email."
 #: src/view/auth/store/index.ts
 msgid "Missing sign-up email. Create the account again."
 msgstr "Missing sign-up email. Create the account again."
-
-#: src/component/Footer/index.tsx
-msgid "GitHub"
-msgstr "GitHub"
 
 #: src/component/Footer/index.tsx
 msgid "Zulip"

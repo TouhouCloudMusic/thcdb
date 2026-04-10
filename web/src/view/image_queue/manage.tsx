@@ -253,7 +253,11 @@ export function ImageQueueManagePage() {
 		ImageQueueQueryOption.list({
 			limit: PAGE_SIZE,
 			type: filters().type,
-			status: filters().status === "pending" ? "Pending" : undefined,
+			status:
+				filters().status === "pending"
+					? // @wc-ignore
+						"Pending"
+					: undefined,
 		}),
 	)
 
