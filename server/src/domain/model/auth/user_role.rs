@@ -22,7 +22,19 @@ pub enum UserRoleEnum {
     User = 3,
 }
 
-#[derive(Clone, Copy, EnumIter, Serialize, Deserialize, ToSchema)]
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    EnumIter,
+    Serialize,
+    Deserialize,
+    ToSchema,
+)]
 pub enum EditableUserRole {
     Moderator,
 }

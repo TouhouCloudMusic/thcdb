@@ -22,12 +22,9 @@ type SongSearchDialogProps = {
 export function SongSearchDialog(props: SongSearchDialogProps): JSX.Element {
 	const [searchKeyword, setSearchKeyword] = createSignal("")
 
-	const onInput = debounce(
-		300,
-		(e: Event & { currentTarget: HTMLInputElement }) => {
-			setSearchKeyword(e.currentTarget.value)
-		},
-	)
+	const onInput = debounce(300, (value: string) => {
+		setSearchKeyword(value)
+	})
 
 	const searchTerm = createMemo(() => {
 		const keyword = searchKeyword()

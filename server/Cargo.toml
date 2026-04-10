@@ -252,6 +252,7 @@ zxcvbn = "3.1"
 exn = "0.3.0"
 
 [dev-dependencies]
+fake     = { version = "5.1.0", features = [ "derive" ] }
 proptest = "1"
 
 # https://doc.rust-lang.org/cargo/reference/profiles.html

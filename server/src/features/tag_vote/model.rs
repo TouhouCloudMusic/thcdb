@@ -47,8 +47,7 @@ impl EntityType {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, ToSchema)]
-#[schema(as = i16, example = 2)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, ToSchema)]
 pub enum Score {
     Veto = -3,
     Low = 1,
@@ -62,60 +61,23 @@ impl Score {
     }
 }
 
-impl TryFrom<i16> for Score {
-    type Error = InvalidScore;
-
-    fn try_from(value: i16) -> Result<Self, Self::Error> {
-        match value {
-            -3 => Ok(Self::Veto),
-            1 => Ok(Self::Low),
-            2 => Ok(Self::Medium),
-            3 => Ok(Self::High),
-            _ => Err(InvalidScore),
-        }
-    }
+#[derive(Debug, Clone, Serialize, ToSchema)]
+pub struct TagAggregateVote {
+    pub user_name: String,
+    pub score: i16,
 }
 
-impl<'de> Deserialize<'de> for Score {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = i16::deserialize(deserializer)?;
-        Self::try_from(value).map_err(serde::de::Error::custom)
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct InvalidScore;
-
-impl std::fmt::Display for InvalidScore {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Invalid score, must be -3, 1, 2, or 3")
-    }
-}
-
-impl std::error::Error for InvalidScore {}
-
-#[derive(
-    Debug,
-    Clone,
-    Serialize,
-    ToSchema,
-    sea_orm::FromQueryResult,
-    macros::FieldEnum,
+#[serde_with::apply(
+    Vec => #[serde(skip_serializing_if = "Vec::is_empty")],
+    Option => #[serde(skip_serializing_if = "Option::is_none")]
 )]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct TagAggregate {
     pub id: i32,
     pub name: String,
+    pub short_description: String,
     pub count: i64,
     pub relevance: f64,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub user_vote: Option<i16>,
-}
-
-impl sea_query::Iden for TagAggregateFieldName {
-    fn unquoted(&self, s: &mut dyn std::fmt::Write) {
-        s.write_str(self.as_str()).unwrap();
-    }
+    pub votes: Vec<TagAggregateVote>,
 }

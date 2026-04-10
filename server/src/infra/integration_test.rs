@@ -2,6 +2,8 @@ use sea_orm::DatabaseConnection;
 
 use crate::infra::database::{get_connection, init_database};
 
+pub(crate) mod fixture;
+
 pub fn test_database_url() -> String {
     std::env::var("TEST_DATABASE_URL")
         .ok()

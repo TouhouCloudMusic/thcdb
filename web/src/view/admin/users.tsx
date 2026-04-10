@@ -11,7 +11,7 @@ import { Dialog } from "~/component/dialog"
 import { RoleBadge } from "~/component/features/user/RoleBadge"
 import { hasAdminRole } from "~/component/route"
 import { setUserRoles } from "~/hey-api"
-import type { EditableUserRoleEnum, PageResponseUserSummary } from "~/hey-api"
+import type { EditableUserRole, PageResponseUserSummary } from "~/hey-api"
 import {
 	adminUsersOptions,
 	adminUsersQueryKey,
@@ -31,7 +31,7 @@ const USERS_TABLE_LIST_CLASS = "flex flex-col gap-1"
 const ROLE_EDITOR_LIST_CLASS = "flex flex-col gap-2"
 const ROLE_EDITOR_OPTION_BASE_CLASS =
 	"flex w-full items-start gap-3 rounded-sm border px-3 py-3 text-left outline-1 outline-transparent -outline-offset-1 transition-colors duration-100 disabled:cursor-default disabled:opacity-70"
-const ROLE_DESCRIPTION: Record<EditableUserRoleEnum, string> = {
+const ROLE_DESCRIPTION: Record<EditableUserRole, string> = {
 	Moderator: t`Access moderation tools and review queues.`,
 }
 
@@ -63,13 +63,13 @@ type AdminUsersListState = {
 type AdminUsersRoleEditorDialogState = {
 	user?: AdminUserItem
 	open: boolean
-	roleOptions: EditableUserRoleEnum[]
+	roleOptions: EditableUserRole[]
 	roleOptionsError?: string
-	selectedRoles: EditableUserRoleEnum[]
+	selectedRoles: EditableUserRole[]
 	isSaving: boolean
 	saveError?: string
 	onOpenChange: (open: boolean) => void
-	onRolesChange: (roles: EditableUserRoleEnum[]) => void
+	onRolesChange: (roles: EditableUserRole[]) => void
 	onSave: () => Promise<void>
 }
 
@@ -90,7 +90,7 @@ type AdminUsersTableProps = {
 
 type RoleEditorState = {
 	editingUserId: number | undefined
-	draftRoles: EditableUserRoleEnum[]
+	draftRoles: EditableUserRole[]
 	saveError: string | undefined
 	isSaving: boolean
 }
@@ -106,8 +106,8 @@ function roleEditorOptionClass(selected: boolean) {
 }
 
 function toggleRoleSelection(
-	selectedRoles: EditableUserRoleEnum[],
-	role: EditableUserRoleEnum,
+	selectedRoles: EditableUserRole[],
+	role: EditableUserRole,
 	checked: boolean,
 ) {
 	const nextSelectedRoles = new Set(selectedRoles)
@@ -121,7 +121,7 @@ function toggleRoleSelection(
 	return Array.from(nextSelectedRoles)
 }
 
-function roleDescription(role: EditableUserRoleEnum) {
+function roleDescription(role: EditableUserRole) {
 	return ROLE_DESCRIPTION[role]
 }
 
