@@ -1,22 +1,21 @@
 use std::collections::{HashMap, HashSet};
+use std::env;
 use std::future::Future;
-use std::{env, str};
 
 use entity::{user, user_role};
 use sea_orm::ActiveValue::*;
 use sea_orm::prelude::Expr;
-use sea_orm::sea_query::OnConflict;
 use sea_orm::{
     ColumnTrait, ConnectionTrait, DatabaseConnection, DbErr, EntityTrait,
-    IntoActiveModel, Iterable, PaginatorTrait, QueryFilter, QueryOrder, Select,
+    IntoActiveModel, PaginatorTrait, QueryFilter, QueryOrder, Select,
     TransactionTrait,
 };
 
 use crate::constant::ADMIN_USERNAME;
-use crate::domain::auth::hash_password;
 use crate::domain::model::UserRoleEnum;
 use crate::domain::shared::{CursorResponse, PageResponse};
 use crate::shared::http::{CorrectionSortField, PageQuery, PaginationQuery};
+use crate::shared::secret::hash;
 
 pub async fn correction_sorted_entity_ids(
     db: &impl ConnectionTrait,
@@ -60,58 +59,69 @@ pub async fn correction_sorted_entity_ids(
     Ok(entity_ids)
 }
 
-async fn username_in_use(
-    username: &str,
-    db: &impl ConnectionTrait,
-) -> Result<bool, DbErr> {
-    let user = user::Entity::find()
-        .filter(user::Column::Name.eq(username))
-        .count(db)
-        .await?;
-
-    Ok(user > 0)
-}
-
 pub async fn upsert_admin_acc(db: &DatabaseConnection) {
-    let password = hash_password(
-        &env::var("ADMIN_PASSWORD").expect("Env var ADMIN_PASSWORD is not set"),
-    )
-    .unwrap();
+    let admin_password = env::var("ADMIN_PASSWORD")
+        .unwrap_or_else(|_| admin_password_fallback());
+    let password = hash(&admin_password)
+        .await
+        .expect("Failed to hash ADMIN_PASSWORD");
+    let admin_email = env::var("ADMIN_EMAIL")
+        .ok()
+        .map(|v| v.trim().to_lowercase())
+        .filter(|v| !v.is_empty());
+    let admin_email_placeholder = "admin@localhost".to_string();
 
     async {
         let tx = db.begin().await?;
 
-        if username_in_use(ADMIN_USERNAME, &tx).await? {
-            user::Entity::update_many()
-                .col_expr(user::Column::Password, Expr::value(password))
-                .filter(user::Column::Name.eq(ADMIN_USERNAME))
-                .exec(&tx)
-                .await?;
+        let admin_user = user::Entity::find()
+            .filter(user::Column::Name.eq(ADMIN_USERNAME))
+            .one(&tx)
+            .await?;
 
-            return Ok(());
-        }
+        let admin_id = if let Some(admin_user) = admin_user {
+            let mut update = user::Entity::update_many()
+                .col_expr(user::Column::Password, Expr::value(password.clone()))
+                .col_expr(user::Column::EmailVerified, Expr::value(true))
+                .filter(user::Column::Id.eq(admin_user.id));
 
-        let res = user::Entity::insert(user::ActiveModel {
-            id: NotSet,
-            name: Set(ADMIN_USERNAME.to_string()),
-            password: Set(password),
-            avatar_id: Set(None),
-            profile_banner_id: Set(None),
-            last_login: Set(chrono::Local::now().into()),
-            bio: Set(None),
-            settings: NotSet,
-        })
-        .on_conflict(
-            OnConflict::column(user::Column::Name)
-                .update_columns(user::Column::iter())
-                .to_owned(),
-        )
-        .exec_with_returning(&tx)
-        .await?;
+            if let Some(admin_email) = &admin_email {
+                update = update.col_expr(
+                    user::Column::Email,
+                    Expr::value(admin_email.clone()),
+                );
+            }
+
+            update.exec(&tx).await?;
+
+            admin_user.id
+        } else {
+            let admin_email = admin_email
+                .clone()
+                .unwrap_or_else(|| admin_email_placeholder.clone());
+
+            let res = user::Entity::insert(user::ActiveModel {
+                id: NotSet,
+                name: Set(ADMIN_USERNAME.to_string()),
+                email: Set(admin_email),
+                email_verified: Set(true),
+                password: Set(password),
+                avatar_id: Set(None),
+                profile_banner_id: Set(None),
+                last_login: Set(chrono::Local::now().into()),
+                created_at: NotSet,
+                bio: Set(None),
+                settings: NotSet,
+            })
+            .exec_with_returning(&tx)
+            .await?;
+
+            res.id
+        };
 
         user_role::Entity::insert(
             user_role::Model {
-                user_id: res.id,
+                user_id: admin_id,
                 role_id: UserRoleEnum::Admin.into(),
             }
             .into_active_model(),
@@ -124,6 +134,18 @@ pub async fn upsert_admin_acc(db: &DatabaseConnection) {
     }
     .await
     .expect("Failed to upsert admin account");
+}
+
+fn admin_password_fallback() -> String {
+    #[cfg(test)]
+    {
+        "changeme".to_string()
+    }
+
+    #[cfg(not(test))]
+    {
+        panic!("Env var ADMIN_PASSWORD is not set");
+    }
 }
 
 pub fn sort_by_id_list<T>(

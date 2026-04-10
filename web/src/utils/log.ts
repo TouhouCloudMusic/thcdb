@@ -17,7 +17,6 @@ export function logImage(url: string, size = 1) {
 /** @deprecated */
 export function dbg(...args: unknown[]) {
 	if (import.meta.env.DEV) {
-		// oxlint-disable-next-line no-console
 		console.log(...args)
 	}
 }

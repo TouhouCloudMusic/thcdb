@@ -1,15 +1,12 @@
 import { Show, splitProps } from "solid-js"
-import type { JSX } from "solid-js"
+import type { ComponentProps, JSX } from "solid-js"
 
 import { Dialog } from "."
 import { Button } from "../atomic/button"
 
-export interface AlertDialogProps extends Exclude<
-	Dialog.RootProps,
-	"children"
-> {
+export type AlertDialogProps = Exclude<Dialog.RootProps, "children"> & {
 	title: string
-	trigger: JSX.Element
+	triggerAs: (props: TriggerAsProps) => JSX.Element
 	description: string
 	onCancel: () => void
 	onConfirm: () => void
@@ -19,6 +16,8 @@ export interface AlertDialogProps extends Exclude<
 	dismissible?: boolean | undefined
 }
 
+type TriggerAsProps = Omit<ComponentProps<typeof Button>, "children">
+
 export function AlertDialog(props: AlertDialogProps) {
 	const handleDismiss = (e: Event) => {
 		if (props.dismissible === false) {
@@ -26,20 +25,26 @@ export function AlertDialog(props: AlertDialogProps) {
 		}
 	}
 
-	const [_, root_props] = splitProps(props, [
+	const [local, root_props] = splitProps(props, [
 		"title",
-		"trigger",
+		"triggerAs",
 		"description",
 		"onCancel",
 		"onConfirm",
 		"cancelText",
+		"confirmText",
 		"hideCancel",
 		"dismissible",
-		"children",
 	])
+	const TriggerRenderer = (triggerProps: Dialog.TriggerRenderProps) =>
+		// @ts-expect-error
+		local.triggerAs(triggerProps)
+
 	return (
 		<Dialog.Root {...root_props}>
-			{props.trigger}
+			<Dialog.Trigger
+				as={TriggerRenderer as ComponentProps<typeof Dialog.Trigger>["as"]}
+			/>
 			<Dialog.Portal>
 				<Dialog.Overlay />
 				<Dialog.Content
@@ -48,25 +53,25 @@ export function AlertDialog(props: AlertDialogProps) {
 					onEscapeKeyDown={handleDismiss}
 				>
 					<div>
-						<Dialog.Title class="text-lg">{props.title}</Dialog.Title>
-						<Dialog.Description>{props.description}</Dialog.Description>
+						<Dialog.Title class="text-lg">{local.title}</Dialog.Title>
+						<Dialog.Description>{local.description}</Dialog.Description>
 					</div>
 					<div class="flex justify-end gap-2">
-						<Show when={!props.hideCancel}>
+						<Show when={!local.hideCancel}>
 							<Dialog.CloseButton
 								class="ml-auto"
 								variant="Tertiary"
-								onClick={props.onCancel}
+								onClick={local.onCancel}
 							>
-								{props.cancelText ?? "取消"}
+								{local.cancelText ?? "Cancel"}
 							</Dialog.CloseButton>
 						</Show>
 						<Button
 							variant="Primary"
 							color="Reimu"
-							onClick={props.onConfirm}
+							onClick={local.onConfirm}
 						>
-							{props.confirmText ?? "确定"}
+							{local.confirmText ?? "Confirm"}
 						</Button>
 					</div>
 				</Dialog.Content>

@@ -7,7 +7,7 @@ type EntitySearchDialogProps<T> = {
 	title: JSX.Element
 	trigger: JSX.Element
 	value: string
-	onInput: (e: Event) => void
+	onInput: (e: Event & { currentTarget: HTMLInputElement }) => void
 	onSelect: (item: T) => void
 	items?: T[] | undefined
 	item: (item: T) => JSX.Element

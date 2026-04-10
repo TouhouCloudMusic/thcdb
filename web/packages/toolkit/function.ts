@@ -1,6 +1,33 @@
 export const id = <A>(x: A): A => x
+
+const UNKNOWN_ERROR_MESSAGE = "Unknown error"
+
+export function unknownToError(value: unknown): Error {
+	if (value instanceof Error) {
+		return value
+	}
+
+	if (typeof value === "string") {
+		return new Error(value)
+	}
+
+	if (
+		typeof value === "number"
+		|| typeof value === "boolean"
+		|| typeof value === "bigint"
+		|| typeof value === "symbol"
+	) {
+		return new Error(`${UNKNOWN_ERROR_MESSAGE}: ${String(value)}`)
+	}
+
+	if (value === null || value === undefined) {
+		return new Error(UNKNOWN_ERROR_MESSAGE)
+	}
+
+	return new Error(UNKNOWN_ERROR_MESSAGE)
+}
+
 // oxlint-disable max-params
-// eslint-disable no-magic-numbers
 export function pipe<A, B>(x: A, fn: (x: A) => B): B
 export function pipe<A, B, C>(x: A, fn: (x: A) => B, fn2: (x: B) => C): C
 export function pipe<A, B, C, D>(
@@ -143,3 +170,15 @@ export const complement =
 	<A>(f: (x: A) => boolean) =>
 	(x: A) =>
 		!f(x)
+
+export function eq<A>(a: A, b: A): boolean
+export function eq<A>(a: A): (b: A) => boolean
+export function eq<A>(a: A, b?: A): boolean | ((b: A) => boolean) {
+	const argsLength = arguments.length
+
+	if (argsLength === 2) {
+		return a === b
+	}
+
+	return (other: A) => a === other
+}

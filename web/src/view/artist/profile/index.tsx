@@ -1,14 +1,28 @@
 /* @refresh skip */
-import type { Artist, ArtistCredit, Discography, ReleaseType } from "@thc/api"
+import type {
+	Artist,
+	ArtistCredit,
+	CorrectionHistoryItem,
+	Discography,
+	ReleaseType,
+} from "@thc/api"
 import { createContext, Suspense } from "solid-js"
 
+import { Link } from "~/component/atomic/Link"
+import { ButtonClass_new } from "~/component/atomic/button"
 import { Image } from "~/component/image"
 import { PageLayout } from "~/layout/PageLayout"
 import type { InfiniteQuery } from "~/type/query"
-import { CorrectionHistorySection } from "~/view/correction/Detail"
+import { imgUrl } from "~/utils/adapter/static_file"
+import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { ArtistInfo } from "./comp/ArtistInfo"
 import { ArtistReleaseInfo } from "./comp/ArtistReleaseInfo"
+
+const UPLOAD_LINK_CLASS = ButtonClass_new({
+	variant: "SecondaryV2",
+	size: "Sm",
+})
 
 export type ArtistContext = {
 	artist: Artist
@@ -26,6 +40,7 @@ export const ArtistContext = createContext<ArtistContext>()
 
 export type ArtistProfilePageProps = {
 	artist: Artist
+	correctionHistory: CorrectionHistoryItem[]
 	appearances: InfiniteQuery<Discography>
 	discographies: {
 		data: Record<ReleaseType, Discography[]>
@@ -37,6 +52,7 @@ export type ArtistProfilePageProps = {
 }
 
 export function ArtistProfilePage(props: ArtistProfilePageProps) {
+	const profileImageUrl = () => imgUrl(props.artist.profile_image_url)
 	const contextValue: ArtistContext = {
 		get artist() {
 			return props.artist
@@ -58,26 +74,44 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 				<ArtistContext.Provider value={contextValue}>
 					<div class="flex flex-col space-y-8">
 						<div class="grid h-fit grid-cols-[auto_1fr] space-x-8">
-							<Image.Root>
-								<Image.Fallback>
-									{(state) =>
-										state == Image.State.Error ? (
-											<div class="size-64 bg-slate-100"></div>
-										) : (
-											<></>
-										)
-									}
-								</Image.Fallback>
-								<Image.Img src={props.artist.profile_image_url ?? undefined} />
-							</Image.Root>
-							<ArtistInfo />
+							<div class="size-64 shrink-0 overflow-hidden rounded bg-slate-100">
+								<Image.Root>
+									<Image.Fallback>
+										{(state) =>
+											state == Image.State.Error ? (
+												<div class="size-full bg-slate-100"></div>
+											) : (
+												<></>
+											)
+										}
+									</Image.Fallback>
+									<Image.Img
+										src={profileImageUrl()}
+										class="size-full"
+									/>
+								</Image.Root>
+							</div>
+							<div class="flex flex-col gap-4">
+								<ArtistInfo />
+							</div>
 						</div>
 						<div>
 							<ArtistReleaseInfo />
 						</div>
-						<CorrectionHistorySection
+						<EntityCorrectionMetadataSection
 							entityType="artist"
 							entityId={props.artist.id}
+							correctionHistory={props.correctionHistory}
+							trailingAction={
+								<Link
+									to="/artist/$id/image-upload"
+									params={{ id: props.artist.id.toString() }}
+									class={UPLOAD_LINK_CLASS}
+									underline={false}
+								>
+									Upload image
+								</Link>
+							}
 						/>
 					</div>
 					{/* <div class="max-w-full wrap-anywhere">

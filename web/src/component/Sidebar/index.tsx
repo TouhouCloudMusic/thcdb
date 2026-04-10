@@ -31,12 +31,12 @@ type ListItemStyleProps = Pick<
 	ButtonProps,
 	"class" | "size" | "color" | "variant"
 >
-type ListItemProps = ParentProps<LinkComponentProps<"a"> & ListItemStyleProps>
+type ListItemProps = ParentProps<LinkComponentProps & ListItemStyleProps>
 
 const LIST_ITEM_CLASS = `
   flex items-center justify-start text-left w-full
   py-1 px-1
-  font-light font-inter text-sm text-slate-700
+  font-light text-sm text-slate-700
   *:mx-1
   [&_svg]:size-4 [&_svg]:text-slate-600
 `
@@ -61,7 +61,7 @@ export function ListItem(props: ListItemProps) {
 
 	return (
 		<RouterLink
-			{...(other_props as LinkComponentProps<"a">)}
+			{...(other_props as LinkComponentProps)}
 			class={tw_class()}
 		/>
 	)

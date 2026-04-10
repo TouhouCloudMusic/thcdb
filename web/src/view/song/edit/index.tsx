@@ -11,6 +11,7 @@ import { SongArtistsField } from "./comp/SongArtistsField"
 import { SongCreditsField } from "./comp/SongCreditsField"
 import { SongLanguagesField } from "./comp/SongLanguagesField"
 import { SongLocalizedTitlesField } from "./comp/SongLocalizedTitlesField"
+import { SongRelationsField } from "./comp/SongRelationsField"
 import { SongTitleField } from "./comp/SongTitleField"
 import type { EditSongPageProps as Props } from "./hook/useFormInitialValues"
 import { useSongFormInitialValues } from "./hook/useFormInitialValues"
@@ -73,7 +74,8 @@ function FormContent(props: Props) {
 	return (
 		<Form
 			of={form}
-			onSubmit={(out) => handleSubmit(out)}
+			// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
+			onSubmit={(out, _) => handleSubmit(out)}
 		>
 			<div class="grid grid-cols-5 content-start space-y-8 gap-x-2 px-8 pt-8">
 				<SongTitleField
@@ -107,6 +109,15 @@ function FormContent(props: Props) {
 					of={form}
 					initCredits={props.type === "edit" ? (props.song.credits ?? []) : []}
 					class="col-span-2 row-start-5"
+				/>
+
+				<SongRelationsField
+					of={form}
+					currentSongId={props.type === "edit" ? props.song.id : undefined}
+					initRelations={
+						props.type === "edit" ? (props.song.relations ?? []) : []
+					}
+					class="col-span-3 row-start-2 row-span-4"
 				/>
 			</div>
 			<FormActionBar

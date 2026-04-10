@@ -1,21 +1,23 @@
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, notFound } from "@tanstack/solid-router"
-import { TagQueryOption } from "@thc/query"
+import { CorrectionQueryOption, TagQueryOption } from "@thc/query"
 import { Option as O } from "effect"
 import { Show } from "solid-js"
-import * as v from "valibot"
 
-import { EntityId } from "~/domain/shared"
+import { EntityId_fromStr } from "~/domain/shared"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { TagInfoPage } from "~/view/tag/Info"
 
 export const Route = createFileRoute("/tag/$id")({
 	component: RouteComponent,
 	loader: async ({ params }) => {
-		const parsedId = v.parse(EntityId, Number.parseInt(params.id, 10))
-		const data = await QUERY_CLIENT.ensureQueryData(
-			TagQueryOption.findById(parsedId),
-		)
+		const parsedId = EntityId_fromStr(params.id)
+		const [data] = await Promise.all([
+			QUERY_CLIENT.ensureQueryData(TagQueryOption.findById(parsedId)),
+			QUERY_CLIENT.ensureQueryData(
+				CorrectionQueryOption.history("tag", parsedId),
+			),
+		])
 		if (O.isNone(data)) {
 			throw notFound()
 		}
@@ -25,12 +27,20 @@ export const Route = createFileRoute("/tag/$id")({
 
 function RouteComponent() {
 	const params = Route.useParams()
-	const tagId = v.parse(EntityId, Number.parseInt(params().id, 10))
+	const tagId = EntityId_fromStr(params().id)
 	const query = useQuery(() => TagQueryOption.findById(tagId))
+	const correctionHistoryQuery = useQuery(() =>
+		CorrectionQueryOption.history("tag", tagId),
+	)
 
 	return (
 		<Show when={query.data && O.getOrThrowWith(query.data, () => notFound())}>
-			{(tag) => <TagInfoPage tag={tag()} />}
+			{(tag) => (
+				<TagInfoPage
+					tag={tag()}
+					correctionHistory={correctionHistoryQuery.data ?? []}
+				/>
+			)}
 		</Show>
 	)
 }

@@ -7,11 +7,11 @@ use utoipa_axum::routes;
 
 use super::model::{EntityType, Score, TagAggregate};
 use super::{Error, repo};
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
 use crate::domain::shared::CursorResponse;
 use crate::shared::http::PaginationQuery;
+use crate::shared::http::api_response::Data;
 
 const TAG: &str = "TagVote";
 

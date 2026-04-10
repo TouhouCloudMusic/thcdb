@@ -1,0 +1,25 @@
+default_install_hook_types = [ "pre-commit", "pre-push" ]
+default_stages             = [ "pre-push" ]
+fail_fast                  = true
+exclude                    = "^server/docs/"
+
+[[repos]]
+repo = "builtin"
+hooks = [
+    { id = "check-merge-conflict", stages = [ "pre-push" ] },
+    { id = "check-case-conflict", stages = [ "pre-push" ] },
+    { id = "detect-private-key", stages = [ "pre-push" ] },
+    { id = "check-added-large-files", stages = [ "pre-push" ] },
+]
+
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id             = "toml-fmt-check"
+name           = "toml format check"
+entry          = "taplo fmt --check"
+language       = "system"
+pass_filenames = false
+stages         = [ "pre-push" ]
+types          = [ "toml" ]

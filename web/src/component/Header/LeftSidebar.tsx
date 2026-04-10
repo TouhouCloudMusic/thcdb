@@ -12,12 +12,13 @@ import {
 	HomeIcon,
 } from "solid-radix-icons"
 
+import { LocaleSelect } from "~/component/Header/LocaleSelect"
 import { ListItem, Sidebar } from "~/component/Sidebar"
 
 type ListItemContent = {
 	icon: (props: IconProps) => JSX.Element
-	text: string
-	to: LinkComponentProps<"a">["to"]
+	readonly text: string
+	to: LinkComponentProps["to"]
 }
 
 export function LeftSidebar() {
@@ -25,42 +26,66 @@ export function LeftSidebar() {
 	const LIST_ITEMS: ListItemContent[] = [
 		{
 			icon: HomeIcon,
-			text: "Home",
+			// @wc-include
+			get text() {
+				return "Home"
+			},
 			to: "/",
 		},
 		{
 			icon: TargetIcon,
-			text: "Recommendation",
+			// @wc-include
+			get text() {
+				return "Recommendation"
+			},
 			to: "/recommendation",
 		},
 		{
 			icon: CrumpledPaperIcon,
-			text: "Release",
+			// @wc-include
+			get text() {
+				return "Release"
+			},
 			to: "/release/explore",
 		},
 		{
 			icon: MixerHorizontalIcon,
-			text: "Artist",
+			// @wc-include
+			get text() {
+				return "Artist"
+			},
 			to: "/artist/explore",
 		},
 		{
 			icon: CardStackIcon,
-			text: "Song",
+			// @wc-include
+			get text() {
+				return "Song"
+			},
 			to: "/song/explore",
 		},
 		{
 			icon: EnvelopeClosedIcon,
-			text: "Tag",
+			// @wc-include
+			get text() {
+				return "Tag"
+			},
 			to: "/tag/explore",
 		},
 		{
 			icon: EnvelopeClosedIcon,
-			text: "Event",
+			// @wc-include
+			get text() {
+				return "Event"
+			},
 			to: "/event/explore",
 		},
 		{
 			icon: BookmarkIcon,
-			text: "Label",
+			// @wc-include
+			get text() {
+				return "Label"
+			},
 			to: "/label/explore",
 		},
 	]
@@ -86,6 +111,14 @@ export function LeftSidebar() {
 					}}
 				</For>
 			</ul>
+
+			<div class="mt-auto space-y-2 px-2">
+				<h3 class="text-sm text-secondary">Settings</h3>
+				<div class="space-y-2">
+					<div class="text-sm text-tertiary">Language</div>
+					<LocaleSelect />
+				</div>
+			</div>
 		</Sidebar>
 	)
 }

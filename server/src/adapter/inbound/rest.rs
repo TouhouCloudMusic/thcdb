@@ -25,16 +25,15 @@ use crate::constant::{IMAGE_DIR, PUBLIC_DIR};
 use crate::features;
 use crate::features::artist::find::CommonFilter as ArtistCommonFilter;
 use crate::infra::state::AppState;
-use crate::shared::http::{CorrectionSortField, SortDirection};
+use crate::shared::http::{CorrectionSortField, SortDirection, api_response};
 use crate::utils::openapi::ContentType;
-
-pub mod api_response;
 pub(crate) mod authz;
 pub(crate) mod error;
 mod extract;
-mod middleware;
+pub(crate) mod middleware;
 pub mod state;
 
+pub(crate) use extract::AuthRejection;
 pub use extract::CurrentUser;
 
 struct DefaultErrorResponseModifier;
@@ -427,7 +426,7 @@ async fn health_check() -> impl IntoResponse {
 }
 
 macro_rules! data {
-	($($name:ident, $type:ty $(, $as:ident)? $(,)?)*) => {
+    ($($name:ident, $type:ty $(,)?)*) => {
         $(
             #[derive(utoipa::ToSchema)]
             #[allow(clippy::allow_attributes,dead_code)]
@@ -438,8 +437,21 @@ macro_rules! data {
                 )]
                 data: $type
             }
-        ) *
-	};
+        )*
+    };
+    ($vis:vis, $($name:ident, $type:ty $(,)?)*) => {
+        $(
+            #[derive(utoipa::ToSchema)]
+            #[allow(clippy::allow_attributes,dead_code)]
+            $vis struct $name {
+                status: String,
+                #[schema(
+                    required = true,
+                )]
+                data: $type
+            }
+        )*
+    };
 }
 pub(crate) use data;
 

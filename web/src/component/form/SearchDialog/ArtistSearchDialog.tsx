@@ -24,9 +24,12 @@ export function ArtistSearchDialog(
 ): JSX.Element {
 	const [searchKeyword, setSearchKeyword] = createSignal("")
 
-	const onInput = debounce(300, (e: Event) => {
-		setSearchKeyword((e.target as HTMLInputElement).value)
-	})
+	const onInput = debounce(
+		300,
+		(e: Event & { currentTarget: HTMLInputElement }) => {
+			setSearchKeyword(e.currentTarget.value)
+		},
+	)
 
 	const searchTerm = createMemo(() => {
 		const keyword = searchKeyword().trim()

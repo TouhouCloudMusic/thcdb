@@ -23,7 +23,6 @@
 #![feature(
     bool_to_result,
     min_specialization,
-    new_range_api,
     return_type_notation,
     trait_alias,
     try_blocks
@@ -52,9 +51,10 @@ use crate::cli::CliArgs;
 
 #[cfg(all(feature = "release", unix))]
 mod alloc {
-    use tikv_jemallocator::Jemalloc;
+    use mimalloc::MiMalloc;
+
     #[global_allocator]
-    static GLOBAL: Jemalloc = Jemalloc;
+    static GLOBAL: MiMalloc = MiMalloc;
 }
 
 #[tokio::main]
@@ -77,32 +77,47 @@ async fn main() -> Result<(), Whatever> {
     let _ = dotenvy::dotenv();
     Logger::init();
 
-    tracing::info!("Starting server");
+    log::info!(target: "app", phase = "startup"; "starting server");
 
-    let state = AppState::init(&APP_CONFIG).await;
+    let result = async {
+        let state = AppState::init(&APP_CONFIG)
+            .await
+            .whatever_context("Failed to initialize app state")?;
 
-    Worker {
-        redis_pool: state.redis_pool(),
-        repo: state.sea_orm_repo.clone(),
-        notification_retention_days: APP_CONFIG.notification.retention_days,
-    }
-    .init();
+        Worker {
+            redis_pool: state.redis_pool(),
+            repo: state.sea_orm_repo.clone(),
+            mailer: state.mailer.clone(),
+            notification_retention_days: APP_CONFIG.notification.retention_days,
+            password_reset_email_queue: state
+                .password_reset_email_queue
+                .clone(),
+            remove_file_queue: state.remove_file_queue.clone(),
+        }
+        .init();
 
-    let listener = tokio::net::TcpListener::bind(format!(
-        "0.0.0.0:{}",
-        APP_CONFIG.app.port
-    ))
-    .await
-    .whatever_context("Failed to bind TCP listener")?;
-
-    tracing::info!(
-        "Server listening on http://127.0.0.1:{}",
-        APP_CONFIG.app.port
-    );
-
-    adapter::inbound::rest::listen(listener, Arc::new(state))
+        let listener = tokio::net::TcpListener::bind(format!(
+            "0.0.0.0:{}",
+            APP_CONFIG.app.port
+        ))
         .await
-        .whatever_context("Failed to start REST listener")?;
+        .whatever_context("Failed to bind TCP listener")?;
 
-    Ok(())
+        log::info!(
+            target: "app",
+            port = APP_CONFIG.app.port;
+            "server listening"
+        );
+
+        adapter::inbound::rest::listen(listener, Arc::new(state))
+            .await
+            .whatever_context("Failed to start REST listener")?;
+
+        Ok(())
+    }
+    .await;
+
+    Logger::flush();
+
+    result
 }

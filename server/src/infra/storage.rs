@@ -66,7 +66,12 @@ impl FsStorage {
     ) -> Result<(), std::io::Error> {
         let path = self.prepend_prefix(path);
         let res = tokio::fs::remove_file(&path).await.inspect_err(|e| {
-            tracing::error!("Failed to remove file {:?}, {e}", path);
+            log::error!(
+                target: "infra.storage",
+                path:% = path.display(),
+                error:% = e;
+                "failed to remove file"
+            );
         });
 
         match res {

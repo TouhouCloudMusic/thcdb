@@ -221,7 +221,7 @@ pub struct ParseOption {
 
         ratio
     })]
-    ratio: RangeInclusive<f64>,
+    ratio: Option<RangeInclusive<f64>>,
     /// Target image format, default is WebP
     ///
     /// If the image is not in this format, it will be converted to this format
@@ -314,10 +314,13 @@ impl Parser {
     }
 
     fn validate_ratio(&self, ratio: f64) -> Result<(), InvalidRatio> {
-        self.option
-            .ratio
+        let Some(expected) = self.option.ratio else {
+            return Ok(());
+        };
+
+        expected
             .contains(&ratio)
-            .ok_or(InvalidRatio::new(ratio, self.option.ratio))
+            .ok_or(InvalidRatio::new(ratio, expected))
     }
 
     pub fn parse(&self, bytes: &[u8]) -> Result<ParsedImage, ValidationError> {

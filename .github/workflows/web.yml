@@ -45,15 +45,12 @@ jobs:
       - name: Install Playwright Browsers
         run: pnpm exec playwright install chromium --with-deps
 
-      - name: Prettier check
+      - name: Fmt
         run: just fmt-check
 
-      - name: Type check
+      - name: Check
         run: just check
         
-      - name: Lint check
-        run: just lint
-
       - name: Run Test
         run: just test
 

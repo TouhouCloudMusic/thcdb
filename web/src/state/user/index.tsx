@@ -1,14 +1,21 @@
 import type { UserProfile } from "@thc/api"
 import { UserApi, AuthApi, NotificationApi } from "@thc/api"
+import { ObjExt } from "@thc/toolkit/data"
 import { Either as E, Option } from "effect"
 import type { ParentProps } from "solid-js"
 import { createContext, onMount } from "solid-js"
 import { createMutable } from "solid-js/store"
+import * as v from "valibot"
 
-import { dbg } from "~/utils/log"
 import { assertContext } from "~/utils/solid/assertContext"
 
 const SIGNED_IN_KEY = "is_signed_in"
+const NOTIFICATION_KEYS = [
+	"comment_reply_enabled",
+	"comment_mention_enabled",
+	"correction_status_enabled",
+	"new_follower_enabled",
+] as const
 
 function SignedInHint_check() {
 	try {
@@ -36,14 +43,35 @@ export const enum NotificationState {
 	Muted,
 }
 
+const NotificationSocketMessageSchema = v.object({
+	type: v.optional(v.string()),
+	data: v.optional(v.unknown()),
+})
+
 const getObject = (x: unknown): Record<string, unknown> | undefined => {
-	if (typeof x !== "object" || x === null) return
-	if (Array.isArray(x)) return
-	return x as Record<string, unknown>
+	if (ObjExt.isRecord(x)) {
+		return x
+	}
+}
+
+function hasEnabledNotification(
+	preference: Record<string, unknown> | undefined,
+) {
+	return NOTIFICATION_KEYS.some((key) => {
+		const value = preference?.[key]
+		return typeof value === "boolean" ? value : true
+	})
+}
+
+function isUnauthorized(error: { statusCode?: number }) {
+	return error.statusCode === 401
 }
 
 export class UserStore {
-	constructor(private ctx: UserContext) {
+	private ctx: UserContext
+
+	constructor(ctx: UserContext) {
+		this.ctx = ctx
 		return createMutable(this)
 	}
 
@@ -56,23 +84,31 @@ export class UserStore {
 		| undefined = undefined
 
 	async trySignIn() {
-		if (!SignedInHint_check()) return
+		if (this.ctx?.user || this.isLoading || !SignedInHint_check()) return
+		await this.flush()
+	}
+
+	async flush() {
+		if (this.isLoading || !SignedInHint_check()) return
 
 		this.isLoading = true
 		const result = await UserApi.profile()
 		this.isLoading = false
 
-		E.match(result, {
-			onLeft: (_) => {
-				SignedInHint_set(false)
+		return E.match(result, {
+			onLeft: (error) => {
+				if (isUnauthorized(error)) {
+					this.clearSession()
+				}
 			},
 			onRight: (right) => {
 				const user = Option.getOrUndefined(right)
 				if (!user) {
-					SignedInHint_set(false)
+					this.clearSession()
 					return
 				}
 				this.sign_in({ user })
+				return user
 			},
 		})
 	}
@@ -89,17 +125,7 @@ export class UserStore {
 		const notification = settings
 			? getObject(settings["notification"])
 			: undefined
-		const getBool = (key: string, defaultVal: boolean) => {
-			const v = notification?.[key]
-			return typeof v === "boolean" ? v : defaultVal
-		}
-
-		if (
-			getBool("comment_reply_enabled", true) === false
-			&& getBool("comment_mention_enabled", true) === false
-			&& getBool("correction_status_enabled", true) === false
-			&& getBool("new_follower_enabled", true) === false
-		) {
+		if (!hasEnabledNotification(notification)) {
 			return NotificationState.Muted
 		}
 		return NotificationState.None
@@ -129,15 +155,19 @@ export class UserStore {
 	async sign_out() {
 		const result = await AuthApi.signout()
 
+		this.clearSession()
+		E.mapLeft(result, (error) => {
+			console.debug("Sign out failed", error)
+
+			throw error
+		})
+	}
+
+	private clearSession() {
 		this.ctx = undefined
 		SignedInHint_set(false)
 		this.notificationUnreadCount = 0
 		this.disconnectNotificationSocket()
-		E.mapLeft(result, (error) => {
-			dbg("Sign out failed", error)
-
-			throw error
-		})
 	}
 
 	private disconnectNotificationSocket() {
@@ -162,8 +192,7 @@ export class UserStore {
 			return
 		}
 
-		const origin = globalThis.location?.origin
-		if (!origin) return
+		const origin = globalThis.location.origin
 		const url = new globalThis.URL("/api/ws/notifications", origin)
 		url.protocol = url.protocol === "https:" ? "wss:" : "ws:"
 
@@ -176,11 +205,13 @@ export class UserStore {
 
 		ws.addEventListener("message", (evt) => {
 			try {
-				const msg = JSON.parse(String(evt.data)) as {
-					type?: unknown
-					data?: unknown
-				}
-				if (msg.type === "Notification") {
+				const parsed = v.safeParse(
+					NotificationSocketMessageSchema,
+					JSON.parse(String(evt.data)),
+				)
+				if (!parsed.success) return
+
+				if (parsed.output.type === "Notification") {
 					this.notificationUnreadCount += 1
 				}
 			} catch {
@@ -220,6 +251,29 @@ export type UserContext =
 const UserContext = createContext<UserStore>()
 
 export const useCurrentUser = () => assertContext(UserContext, "UserContext")
+
+export async function ensureCurrentUser() {
+	if (!SignedInHint_check()) {
+		return
+	}
+
+	const result = await UserApi.profile()
+
+	if (E.isLeft(result)) {
+		if (isUnauthorized(result.left)) {
+			SignedInHint_set(false)
+		}
+		return
+	}
+
+	const user = Option.getOrUndefined(result.right)
+
+	if (!user) {
+		SignedInHint_set(false)
+	}
+
+	return user
+}
 
 export function UserContextProvider(props: ParentProps) {
 	const store = new UserStore(undefined)

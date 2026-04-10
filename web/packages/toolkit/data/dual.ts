@@ -1,13 +1,8 @@
-// oxlint-disable require-param
-// oxlint-disable require-returns
 // oxlint-disable max-params
-// oxlint-disable no-magic-numbers
-// oxlint-disable prefer-reflect-apply
 // oxlint-disable prefer-rest-params
 // oxlint-disable no-explicit-any
-// oxlint-disable no-undef
-// oxlint-disable func-names
-// oxlint-disable func-style
+// oxlint-disable typescript-eslint/no-unsafe-return
+// oxlint-disable typescript-eslint/no-unsafe-type-assertion
 
 /**
  * MIT License
@@ -35,22 +30,24 @@
  * Source: https://github.com/Effect-TS/effect
  */
 
-export const dual: {
-	<
-		DataLast extends (...args: any[]) => any,
-		DataFirst extends (...args: any[]) => any,
-	>(
-		arity: Parameters<DataFirst>["length"],
-		body: DataFirst,
-	): DataLast & DataFirst
-	<
-		DataLast extends (...args: any[]) => any,
-		DataFirst extends (...args: any[]) => any,
-	>(
-		isDataFirst: (args: IArguments) => boolean,
-		body: DataFirst,
-	): DataLast & DataFirst
-} = function (arity, body) {
+type Tail<T extends readonly unknown[]> = T extends readonly [
+	unknown,
+	...infer Rest,
+]
+	? Rest
+	: never
+
+type Dual = <DataFirst extends (self: any, ...args: any[]) => any>(
+	arityOrPredicate:
+		| Parameters<DataFirst>["length"]
+		| ((args: IArguments) => boolean),
+	body: DataFirst,
+) => DataFirst
+	& ((
+		...args: Tail<Parameters<DataFirst>>
+	) => (self: Parameters<DataFirst>[0]) => ReturnType<DataFirst>)
+
+export const dual = function (arity, body) {
 	if (typeof arity === "function") {
 		return function () {
 			if (arity(arguments)) {
@@ -124,4 +121,4 @@ export const dual: {
 			}
 		}
 	}
-}
+} as Dual

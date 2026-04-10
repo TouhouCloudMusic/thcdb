@@ -1,7 +1,7 @@
 use entity::{
     song, song_artist, song_artist_history, song_credit, song_credit_history,
     song_history, song_language, song_language_history, song_localized_title,
-    song_localized_title_history,
+    song_localized_title_history, song_relation, song_relation_history,
 };
 use impls::apply_update;
 use sea_orm::ActiveValue::{NotSet, Set};
@@ -11,7 +11,7 @@ use sea_orm::{
 use snafu::ResultExt;
 
 use crate::domain::shared::NewLocalizedName;
-use crate::domain::song::{NewSong, NewSongCredit};
+use crate::domain::song::{NewSong, NewSongCredit, NewSongRelation};
 use crate::features::song::TxRepo;
 
 pub(crate) mod impls;
@@ -72,6 +72,10 @@ pub(crate) async fn create_song_and_relations(
         create_localized_titles(song.id, localized_titles, tx).await?;
     }
 
+    if let Some(relations) = &data.relations {
+        create_relations(song.id, relations, tx).await?;
+    }
+
     Ok(song)
 }
 
@@ -102,6 +106,10 @@ pub(crate) async fn create_song_history_and_relations(
     if let Some(localized_titles) = &data.localized_titles {
         create_localized_title_histories(history.id, localized_titles, tx)
             .await?;
+    }
+
+    if let Some(relations) = &data.relations {
+        create_relation_histories(history.id, relations, tx).await?;
     }
 
     Ok(history)
@@ -290,4 +298,69 @@ async fn create_localized_title_histories(
         .await?;
 
     Ok(())
+}
+
+async fn create_relations(
+    song_id: i32,
+    relations: &[NewSongRelation],
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    if relations.is_empty() {
+        return Ok(());
+    }
+
+    let models = relations.iter().map(|relation| {
+        let (first_id, second_id) =
+            normalize_song_relation_pair(song_id, relation.related_song_id);
+
+        song_relation::ActiveModel {
+            id: NotSet,
+            first_id: Set(first_id),
+            second_id: Set(second_id),
+            relation_type_id: Set(relation.relation_type_id),
+            description: Set(relation.description.clone()),
+        }
+    });
+
+    song_relation::Entity::insert_many(models).exec(tx).await?;
+
+    Ok(())
+}
+
+async fn create_relation_histories(
+    history_id: i32,
+    relations: &[NewSongRelation],
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    if relations.is_empty() {
+        return Ok(());
+    }
+
+    let models =
+        relations
+            .iter()
+            .map(|relation| song_relation_history::ActiveModel {
+                id: NotSet,
+                history_id: Set(history_id),
+                related_song_id: Set(relation.related_song_id),
+                relation_type_id: Set(relation.relation_type_id),
+                description: Set(relation.description.clone()),
+            });
+
+    song_relation_history::Entity::insert_many(models)
+        .exec(tx)
+        .await?;
+
+    Ok(())
+}
+
+pub(crate) const fn normalize_song_relation_pair(
+    first_song_id: i32,
+    second_song_id: i32,
+) -> (i32, i32) {
+    if first_song_id < second_song_id {
+        (first_song_id, second_song_id)
+    } else {
+        (second_song_id, first_song_id)
+    }
 }

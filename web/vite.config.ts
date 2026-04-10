@@ -1,22 +1,13 @@
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
-import tailwindcss from "@tailwindcss/vite"
-import { devtools } from "@tanstack/devtools-vite"
-import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import { playwright } from "@vitest/browser-playwright"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { defineConfig, loadEnv } from "vite"
-import babelMacrosPlugin from "vite-plugin-babel-macros"
-import solidPlugin from "vite-plugin-solid"
-import tsconfigPaths from "vite-tsconfig-paths"
 import { defineProject } from "vitest/config"
 
-const dirname =
-	typeof __dirname == "undefined"
-		? path.dirname(fileURLToPath(import.meta.url))
-		: // oxlint-disable-next-line no-undef
-			__dirname
+import { createAppPlugins } from "./vite.shared"
 
+const dirname = path.dirname(fileURLToPath(import.meta.url))
 const isHttps = (url: string | undefined) => {
 	if (!url) {
 		return false
@@ -25,28 +16,13 @@ const isHttps = (url: string | undefined) => {
 	return new URL(url).protocol == "https:"
 }
 
-// oxlint-disable-next-line no-default-export
 export default defineConfig(({ mode }) => {
-	// oxlint-disable-next-line no-undef
 	const env = loadEnv(mode, process.cwd())
-	// oxlint-disable-next-line no-undef
 
 	const SERVER_URL = env["VITE_SERVER_URL"]
 
 	return {
-		plugins: [
-			devtools(),
-
-			tanstackRouter({
-				target: "solid",
-				autoCodeSplitting: true,
-				routesDirectory: "src/route",
-			}),
-			babelMacrosPlugin(),
-			solidPlugin(),
-			tailwindcss(),
-			tsconfigPaths(),
-		],
+		plugins: createAppPlugins({ withWuchale: true }),
 		server: {
 			port: 3000,
 			proxy: {
@@ -54,22 +30,33 @@ export default defineConfig(({ mode }) => {
 					target: SERVER_URL,
 					changeOrigin: true,
 					secure: isHttps(SERVER_URL),
-					rewrite: (path) => path.replace(/^\/api/, ""),
+					rewrite: (url) => url.replace(/^\/api/, ""),
 				},
 			},
+			forwardConsole: true,
+		},
+		resolve: {
+			tsconfigPaths: true,
 		},
 		build: {
 			target: "esnext",
+			rolldownOptions: {
+				experimental: {
+					lazyBarrel: true,
+				},
+			},
 		},
 		test: {
 			projects: [
 				defineProject({
+					resolve: {
+						tsconfigPaths: true,
+					},
 					test: {
 						name: "unit",
 						globals: true,
 						include: ["./src/**/*.test.{ts,tsx}"],
 					},
-					plugins: [tsconfigPaths()],
 				}),
 				defineProject({
 					plugins: [
@@ -78,8 +65,10 @@ export default defineConfig(({ mode }) => {
 						storybookTest({
 							configDir: path.join(dirname, ".storybook"),
 						}),
-						tsconfigPaths(),
 					],
+					resolve: {
+						tsconfigPaths: true,
+					},
 					test: {
 						name: "storybook",
 						exclude: ["src/component/__legacy/**"],
@@ -90,9 +79,7 @@ export default defineConfig(({ mode }) => {
 							provider: playwright(),
 							instances: [{ browser: "chromium" }],
 						},
-						// This setup file applies Storybook project annotations for Vitest
-						// More info at: https://storybook.js.org/docs/api/portable-stories/portable-stories-vitest#setprojectannotations
-						setupFiles: [".storybook/vitest.setup.ts"],
+						setupFiles: ["./.storybook/vitest.setup.ts"],
 					},
 				}),
 			],

@@ -1,17 +1,18 @@
-import type { Tag } from "@thc/api"
+import type { CorrectionHistoryItem, Tag } from "@thc/api"
 import { Show, Suspense } from "solid-js"
 
 import { Link, Tab } from "~/component/atomic"
 import { Intersperse } from "~/component/data/Intersperse"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
-import { CorrectionHistorySection } from "~/view/correction/Detail"
+import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { TagInfoPageContext } from "./context"
 import type { TagInfoPageContextValue } from "./context"
 
 type Props = {
 	tag: Tag
+	correctionHistory: CorrectionHistoryItem[]
 }
 
 export function TagInfoPage(props: Props) {
@@ -29,9 +30,10 @@ export function TagInfoPage(props: Props) {
 						<TagInfoHeader />
 						<TagInfoDetails />
 						<TagInfoTabs />
-						<CorrectionHistorySection
+						<EntityCorrectionMetadataSection
 							entityType="tag"
 							entityId={props.tag.id}
+							correctionHistory={props.correctionHistory}
 						/>
 					</div>
 				</TagInfoPageContext.Provider>
@@ -66,7 +68,7 @@ function TagInfoDetails() {
 				<span class="text-tertiary">AKAs</span>
 				<ul class="flex flex-wrap whitespace-pre">
 					<Intersperse
-						of={ctx.tag.alt_names!}
+						of={ctx.tag.alt_names}
 						with={<span>, </span>}
 					>
 						{(x) => <li class="text-secondary">{x.name}</li>}

@@ -16,17 +16,17 @@ export const Schema = v.pipe(
 		value: v.date(),
 		precision: DatePrecision,
 	}),
-	v.transform((v) => {
-		if (v.precision === "Year") {
-			v.value.setMonth(0)
-			v.value.setDate(1)
-		} else if (v.precision === "Month") {
-			v.value.setDate(1)
+	v.transform((value) => {
+		if (value.precision === "Year") {
+			value.value.setMonth(0)
+			value.value.setDate(1)
+		} else if (value.precision === "Month") {
+			value.value.setDate(1)
 		}
 
 		return {
-			value: toPlainDate(v.value),
-			precision: v.precision,
+			value: toPlainDate(value.value),
+			precision: value.precision,
 		}
 	}),
 )

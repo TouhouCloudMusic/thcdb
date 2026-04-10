@@ -4,15 +4,15 @@ use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::adapter::inbound::rest::api_response::Data;
+use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::features::correction::repo;
 use crate::infra::error::Error;
+use crate::shared::http::api_response::Data;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
-        .with_private(|r| r.routes(routes!(pending_correction)))
+        .with_public(|r| r.routes(routes!(pending_correction)))
         .finish()
 }
 
@@ -64,7 +64,6 @@ struct PendingCorrectionPath {
     ),
 )]
 async fn pending_correction(
-    CurrentUser(_user): CurrentUser,
     Path(PendingCorrectionPath { entity_type, id }): Path<
         PendingCorrectionPath,
     >,

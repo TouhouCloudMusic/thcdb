@@ -1,21 +1,23 @@
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, notFound } from "@tanstack/solid-router"
-import { ReleaseQueryOption } from "@thc/query"
+import { CorrectionQueryOption, ReleaseQueryOption } from "@thc/query"
 import { Option as O } from "effect"
 import { Show } from "solid-js"
-import * as v from "valibot"
 
-import { EntityId } from "~/domain/shared"
+import { EntityId_fromStr } from "~/domain/shared"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import { ReleaseInfoPage } from "~/view/release/Info"
 
 export const Route = createFileRoute("/release/$id")({
 	component: RouteComponent,
 	loader: async ({ params }) => {
-		const parsedId = v.parse(EntityId, Number.parseInt(params.id, 10))
-		const data = await QUERY_CLIENT.ensureQueryData(
-			ReleaseQueryOption.findById(parsedId),
-		)
+		const parsedId = EntityId_fromStr(params.id)
+		const [data] = await Promise.all([
+			QUERY_CLIENT.ensureQueryData(ReleaseQueryOption.findById(parsedId)),
+			QUERY_CLIENT.ensureQueryData(
+				CorrectionQueryOption.history("release", parsedId),
+			),
+		])
 		if (O.isNone(data)) {
 			throw notFound()
 		}
@@ -25,12 +27,20 @@ export const Route = createFileRoute("/release/$id")({
 
 function RouteComponent() {
 	const params = Route.useParams()
-	const releaseId = v.parse(EntityId, Number.parseInt(params().id, 10))
+	const releaseId = EntityId_fromStr(params().id)
 	const query = useQuery(() => ReleaseQueryOption.findById(releaseId))
+	const correctionHistoryQuery = useQuery(() =>
+		CorrectionQueryOption.history("release", releaseId),
+	)
 
 	return (
 		<Show when={query.data && O.getOrUndefined(query.data)}>
-			{(release) => <ReleaseInfoPage release={release()} />}
+			{(release) => (
+				<ReleaseInfoPage
+					release={release()}
+					correctionHistory={correctionHistoryQuery.data ?? []}
+				/>
+			)}
 		</Show>
 	)
 }

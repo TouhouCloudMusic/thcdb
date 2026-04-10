@@ -6,12 +6,12 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::{PageQuery, TagFilter};
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::tag::model::Tag;
 use crate::infra::error::Error;
+use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Tag";
 
@@ -85,7 +85,11 @@ async fn explore_tag(
     Query(pagination): Query<PageQuery>,
 ) -> Result<Data<PageResponse<Tag>>, Error> {
     let normalized = filter.with_sort_defaults();
-    tracing::info!(?normalized, "explore_tag: incoming query");
+    log::info!(
+        target: "features.tag.find.http",
+        normalized:? = normalized;
+        "incoming explore query"
+    );
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
         .bimap_into()

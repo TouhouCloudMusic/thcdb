@@ -7,7 +7,7 @@ import { imgUrl } from "~/utils/adapter/static_file"
 
 const getAvatarText = (user: UserProfile | undefined) => {
 	const value = user?.name.trim() ?? ""
-	if (!value) return "?"
+	if (value.length === 0) return "?"
 	return value.slice(0, 1).toUpperCase()
 }
 
@@ -66,7 +66,12 @@ export function Avatar(props: Props) {
 								<img
 									{...otherProps}
 									src={src()}
-									alt={props.alt ?? props.user?.name ?? "avatar"}
+									alt={
+										props.alt
+										?? props.user?.name
+										// @wc-include
+										?? "avatar"
+									}
 									onLoad={handleLoad}
 									onError={handleError}
 									class={twMerge(

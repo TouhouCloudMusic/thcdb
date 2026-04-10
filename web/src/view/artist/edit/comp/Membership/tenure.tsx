@@ -1,6 +1,6 @@
 /* @refresh reload */
-// oxlint-disable max-lines-per-function
 import { Field, FieldArray, getInput, insert, remove } from "@formisch/solid"
+import { ObjExt } from "@thc/toolkit/data"
 import type { JSX } from "solid-js"
 import { For } from "solid-js"
 import { Cross1Icon } from "solid-radix-icons"
@@ -153,38 +153,29 @@ function computeTenureError(
 
 	for (let i = 0; i < tenures.length; i++) {
 		const tenure = tenures[i]
-		if (!tenure || typeof tenure !== "object") continue
+		if (!ObjExt.isRecord(tenure)) continue
 
-		const join_year = Reflect.get(tenure, "join_year") as
-			| number
-			| null
-			| undefined
-		const leave_year = Reflect.get(tenure, "leave_year") as
-			| number
-			| null
-			| undefined
+		const joinYear = tenure.join_year
+		const leaveYear = tenure.leave_year
 
-		if (leave_year && join_year) {
-			if (leave_year < join_year) {
+		if (typeof leaveYear === "number" && typeof joinYear === "number") {
+			if (leaveYear < joinYear) {
 				res.push("Leave year cannot be earlier than join year")
-			} else if (leave_year === join_year) {
+			} else if (leaveYear === joinYear) {
 				res.push("Leave year cannot be the same as join year")
 			}
 		}
 
 		if (i > 0) {
 			const prevTenure = tenures[i - 1]
-			if (!prevTenure || typeof prevTenure !== "object") continue
+			if (!ObjExt.isRecord(prevTenure)) continue
 
-			const prevLeave = Reflect.get(prevTenure, "leave_year") as
-				| number
-				| null
-				| undefined
+			const prevLeave = prevTenure.leave_year
 
-			if (prevLeave && join_year) {
-				if (join_year < prevLeave) {
+			if (typeof prevLeave === "number" && typeof joinYear === "number") {
+				if (joinYear < prevLeave) {
 					res.push("Join year cannot be earlier than previous leave year")
-				} else if (join_year === prevLeave) {
+				} else if (joinYear === prevLeave) {
 					res.push("Join year cannot be the same as previous leave year")
 				}
 			}

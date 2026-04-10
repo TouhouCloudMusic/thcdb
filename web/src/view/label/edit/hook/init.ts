@@ -40,7 +40,7 @@ export function toLabelFormInitValue(
 			})),
 			founded_date: DateWithPrecision.toInput(input.label.founded_date),
 			dissolved_date: DateWithPrecision.toInput(input.label.dissolved_date),
-			founders: input.label.founders ?? [],
+			founders: input.label.founders,
 		},
 	}
 }

@@ -35,8 +35,32 @@ enumset = { version = "1.1.7", features = [
     "serde",
 ] }
 itertools = "0.14"
+log = "0.4"
 quote = "1.0.38"
 rand = "0.9.0"
+fastrace = { version = "0.7", features = [ "enable" ] }
+fastrace-axum = "0.2.0"
+fastrace-opentelemetry = "0.16.0"
+fastrace-tracing = "0.1.1"
+logforth = { version = "0.29.1", features = [
+    "bridge-log",
+    "append-fastrace",
+    "append-file",
+    "append-opentelemetry",
+    "diagnostic-fastrace",
+    "layout-text",
+] }
+opentelemetry = { version = "0.31.0", default-features = false, features = [
+    "trace",
+] }
+opentelemetry-otlp = { version = "0.31.0", features = [
+    "http-proto",
+    "logs",
+    "trace",
+], default-features = false }
+opentelemetry_sdk = { version = "0.31.0", default-features = false, features = [
+    "trace",
+] }
 sea-orm = { version = "1.1.10", features = [
     "sqlx-postgres",
     "runtime-tokio-rustls",
@@ -58,9 +82,9 @@ syn = { version = "2.0.98", features = [
 tokio = { version = "1", features = [
     "full",
 ] }
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = [
-    "chrono",
+tracing = { version = "0.1", features = [ "log" ] }
+tracing-subscriber = { version = "0.3", default-features = false, features = [
+    "registry",
 ] }
 utoipa = { version = "5", features = [
     "axum_extras",
@@ -89,6 +113,13 @@ macros.workspace         = true
 migration.workspace      = true
 #
 ammonia = "4.0.0"
+apalis = { version = "0.7.4", features = [
+    "limit",
+    "retry",
+    "tracing",
+], default-features = false }
+apalis-cron = "0.7.4"
+apalis-redis = "0.7.4"
 argon2.features = [
     "std",
 ]
@@ -96,6 +127,7 @@ argon2.workspace = true
 async-trait = { version = "0.1" }
 axum.workspace = true
 axum-extra = { version = "0.12.0", features = [
+    "cookie",
     "query",
     "typed-header",
 ] }
@@ -110,6 +142,7 @@ bytesize = { version = "2.0.1", features = [
     "serde",
 ] }
 chrono.workspace = true
+cookie = "0.18"
 config = { version = "0.15.8", features = [
     "ron",
     "toml",
@@ -118,12 +151,17 @@ config = { version = "0.15.8", features = [
 dashmap = "6.1.0"
 derive_more = { version = "2.0.1", features = [
     "display",
+    "error",
     "from",
     "into",
 ] }
 dotenvy.workspace = true
 enumset.workspace = true
-fred = { version = "10.0" }
+fastrace.workspace = true
+fastrace-axum.workspace = true
+fastrace-opentelemetry.workspace = true
+fastrace-tracing.workspace = true
+fred = { version = "10.0", features = [ "i-scripts" ] }
 frunk = { version = "0.4.3", features = [
     "std",
 ] }
@@ -134,6 +172,7 @@ garde = { version = "0.22.0", features = [
 governor = "0.10.0"
 headers = "0.4"
 image = "0.25"
+inventory = "0.3.19"
 iso8601-duration = { version = "0.2", features = [
     "chrono",
 ] }
@@ -152,6 +191,11 @@ moka = { version = "0.12", features = [
     "future",
 ] }
 nestify = "0.3.3"
+log.workspace = true
+logforth.workspace = true
+opentelemetry.workspace = true
+opentelemetry-otlp.workspace = true
+opentelemetry_sdk.workspace = true
 pico-args = { version = "0.5.0", features = [
     "eq-separator",
 ] }
@@ -167,6 +211,7 @@ sea-orm-migration.workspace = true
 sea-query.workspace = true
 serde.workspace = true
 serde_json = "1.0"
+blake3 = "1"
 serde_repr = "0.1"
 serde_with = { version = "3.12.0", features = [
     "chrono_0_4",
@@ -176,21 +221,19 @@ snafu.workspace = true
 strum = { version = "0.27", features = [
     "derive",
 ] }
-tikv-jemallocator = { version = "0.6.0", optional = true }
+mimalloc = { version = "0.1.43", optional = true, features = [ "v3" ] }
 tokio.workspace = true
 tower = { version = "0.5.2", features = [
     "limit",
 ] }
 tower-http = { version = "0.6.2", features = [
     "fs",
-    "trace",
     "cors",
 ] }
 tower-sessions-redis-store = "0.16.0"
 tower_governor = "0.8.0"
 tracing.workspace = true
 tracing-subscriber.workspace = true
-tracing-test = "0.2.5"
 trait-variant = "0.1.2"
 url = { version = "2.5.4", features = [
     "serde",
@@ -206,9 +249,10 @@ xxhash-rust = { version = "0.8", features = [
     "xxh3",
 ] }
 zxcvbn = "3.1"
+exn = "0.3.0"
 
 [dev-dependencies]
-rusty-hook = "=0.11.2"
+proptest = "1"
 
 # https://doc.rust-lang.org/cargo/reference/profiles.html
 [profile.dev]
@@ -225,11 +269,10 @@ opt-level = 3
 # incremental = false
 inherits = "dev"
 [profile.debug-mode]
-codegen-backend = "llvm"
-debug           = 2
-inherits        = "dev"
-opt-level       = 0
-strip           = "none"
+debug     = 2
+inherits  = "dev"
+opt-level = 0
+strip     = "none"
 
 [profile.release]
 codegen-units   = 1
@@ -241,5 +284,6 @@ panic           = "abort"
 
 [features]
 release = [
-    "tikv-jemallocator",
+    "mimalloc",
 ]
+integration-test = [  ]

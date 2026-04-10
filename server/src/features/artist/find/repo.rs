@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
 
 use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{
@@ -9,14 +8,15 @@ use entity::{
 };
 use itertools::{Itertools, izip};
 use sea_orm::{
-    ColumnTrait, Condition, ConnectionTrait, DbErr, EntityTrait,
-    FromQueryResult, LoaderTrait, QueryFilter, QueryOrder, Select,
+    ColumnTrait, Condition, ConnectionTrait, DbErr, EntityTrait, LoaderTrait,
+    PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Select,
 };
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func, SimpleExpr};
 
 use super::{CommonFilter, FindManyFilter};
 use crate::domain::credit_role::CreditRoleRef;
+use crate::domain::image::Image;
 use crate::domain::shared::{LocalizedName, Location};
 use crate::features::artist::model::{Artist, Membership, Tenure};
 use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
@@ -58,12 +58,17 @@ pub(super) async fn find_many(
     find_many_impl(select, &repo.conn).await
 }
 
-#[derive(FromQueryResult)]
-struct ArtistImage {
-    artist_id: i32,
-    #[sea_orm(nested)]
-    image: image::Model,
-    r#type: ArtistImageType,
+pub(crate) async fn exists(
+    db: &impl ConnectionTrait,
+    id: i32,
+) -> Result<bool, DbErr> {
+    artist::Entity::find()
+        .select_only()
+        .expr(1)
+        .filter(artist::Column::Id.eq(id))
+        .count(db)
+        .await
+        .map(|count: u64| count > 0)
 }
 
 #[expect(clippy::too_many_lines, reason = "TODO")]
@@ -90,17 +95,21 @@ async fn find_many_impl(
 
     let artist_images = artist_image::Entity::find()
         .filter(artist_image::Column::ArtistId.is_in(ids.iter().copied()))
-        .left_join(image::Entity)
-        .into_model::<ArtistImage>()
+        .find_also_related(image::Entity)
+        .order_by_desc(image::Column::UploadedAt)
         .all(db)
         .await?;
 
     let mut images_map: HashMap<i32, Vec<_>> = artist_images.into_iter().fold(
         HashMap::new(),
-        |mut acc, artist_image| {
+        |mut acc, (artist_image, image)| {
+            let Some(image) = image else {
+                return acc;
+            };
+
             acc.entry(artist_image.artist_id)
                 .or_default()
-                .push(artist_image);
+                .push((artist_image.r#type, image));
             acc
         },
     );
@@ -232,15 +241,12 @@ async fn find_many_impl(
                 })
                 .collect();
 
-            let profile_image_url = image
+            let profile_image = image
                 .iter()
-                .find(|x| x.r#type == ArtistImageType::Profile)
-                .map(|x| {
-                    let image = &x.image;
-                    PathBuf::from_iter([&image.directory, &image.filename])
-                        .to_string_lossy()
-                        .to_string()
-                });
+                .find(|(image_type, _)| *image_type == ArtistImageType::Profile)
+                .map(|(_, image)| Image::from(image.clone()));
+            let profile_image_url =
+                profile_image.as_ref().map(crate::domain::image::Image::url);
 
             Artist {
                 id: artist.id,

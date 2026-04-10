@@ -1,6 +1,3 @@
-use std::sync::OnceLock;
-use std::time::Duration;
-
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum::http::{StatusCode, header};
@@ -8,53 +5,21 @@ use axum::response::IntoResponse;
 use axum_extra::typed_header::TypedHeader;
 use headers::Authorization;
 use headers::authorization::Basic;
-use moka::future::Cache;
-use rapidhash::fast::SeedableState as RapidState;
 
-use crate::adapter::inbound::rest::state;
-use crate::domain::auth::{AuthCredential, AuthnError};
+use crate::adapter::inbound::rest::{AuthRejection, state};
+use crate::domain::auth::AuthCredential;
 use crate::domain::user::User;
-use crate::features::auth::{AuthnBackendError, SignInError};
 
 #[derive(Clone)]
 pub struct CurrentUser(pub User);
 
-const BASIC_AUTH_TTL: Duration = Duration::from_secs(30 * 60);
-const BASIC_AUTH_CAPACITY: u64 = 100;
-
-struct BasicAuthCache(OnceLock<Cache<String, User, RapidState<'static>>>);
-
-impl BasicAuthCache {
-    const fn new() -> Self {
-        Self(OnceLock::new())
+#[expect(clippy::result_large_err)]
+fn ensure_email_verified(user: User) -> Result<User, axum::response::Response> {
+    if user.email_verified {
+        Ok(user)
+    } else {
+        Err(StatusCode::UNAUTHORIZED.into_response())
     }
-
-    fn cache(&self) -> &Cache<String, User, RapidState<'static>> {
-        self.0.get_or_init(|| {
-            Cache::builder()
-                .time_to_live(BASIC_AUTH_TTL)
-                .max_capacity(BASIC_AUTH_CAPACITY)
-                .build_with_hasher(RapidState::fixed())
-        })
-    }
-
-    async fn lookup(&self, key: &str) -> Option<User> {
-        self.cache().get(key).await
-    }
-
-    async fn store(&self, key: String, user: &User) {
-        self.cache().insert(key, user.clone()).await;
-    }
-
-    async fn remove(&self, key: &str) {
-        let _ = self.cache().remove(key).await;
-    }
-}
-
-static BASIC_AUTH_CACHE: BasicAuthCache = BasicAuthCache::new();
-
-fn fmt_key(username: &str, password: &str) -> String {
-    format!("{username}{password}")
 }
 
 impl<S> FromRequestParts<S> for CurrentUser
@@ -68,6 +33,9 @@ where
         _state: &S,
     ) -> Result<Self, Self::Rejection> {
         if let Some(user) = parts.extensions.get::<Self>().cloned() {
+            if !user.0.email_verified {
+                return Err(StatusCode::UNAUTHORIZED.into_response());
+            }
             return Ok(user);
         }
 
@@ -76,11 +44,16 @@ where
             .get::<state::AuthSession>()
             .cloned()
             .ok_or_else(|| {
-                tracing::error!("The AuthSession was not found");
+                log::error!(
+                    target: "adapter.rest.extract.auth",
+                    extension = "AuthSession";
+                    "auth session not found in request extensions"
+                );
                 StatusCode::INTERNAL_SERVER_ERROR.into_response()
             })?;
 
         if let Some(user) = session.user {
+            let user = ensure_email_verified(user)?;
             let user = Self(user);
             parts.extensions.insert(user.clone());
             return Ok(user);
@@ -95,51 +68,31 @@ where
                 .await
                 .map_err(IntoResponse::into_response)?;
 
-        let key = fmt_key(basic.username(), basic.password());
-
-        if let Some(user) = BASIC_AUTH_CACHE.lookup(&key).await {
-            let user = Self(user);
-            parts.extensions.insert(user.clone());
-            return Ok(user);
-        }
-
         let creds =
-            match AuthCredential::try_new(basic.username(), basic.password()) {
-                Ok(creds) => creds,
-                Err(e) => Err(e.into_response())?,
-            };
+            AuthCredential::from_sign_in(basic.username(), basic.password());
 
         match session.authenticate(creds).await {
             Ok(Some(user)) => {
-                BASIC_AUTH_CACHE.store(key, &user).await;
+                let user = ensure_email_verified(user)?;
                 let user = Self(user);
                 parts.extensions.insert(user.clone());
                 Ok(user)
             }
             Ok(None) => Err(StatusCode::UNAUTHORIZED.into_response()),
             Err(err) => {
-                let is_auth_error = match &err {
+                let is_auth_rejection = match &err {
                     axum_login::Error::Session(_) => false,
-                    axum_login::Error::Backend(err) => match err {
-                        AuthnBackendError::Authn { source } => {
-                            matches!(
-                                source,
-                                AuthnError::AuthenticationFailed { .. }
-                            )
-                        }
-                        AuthnBackendError::SignIn { source } => matches!(
-                            source,
-                            SignInError::Authn {
-                                source: AuthnError::AuthenticationFailed { .. }
-                            } | SignInError::Validate { .. }
-                        ),
-                        AuthnBackendError::Internal { .. } => false,
-                    },
+                    axum_login::Error::Backend(err) => err.is_auth_rejection(),
                 };
-                if is_auth_error {
+
+                if is_auth_rejection {
                     Err(StatusCode::UNAUTHORIZED.into_response())
                 } else {
-                    tracing::error!(?err, "Basic authentication failed");
+                    log::error!(
+                        target: "adapter.rest.extract.auth",
+                        error:? = err;
+                        "basic authentication failed"
+                    );
                     Err(StatusCode::INTERNAL_SERVER_ERROR.into_response())
                 }
             }

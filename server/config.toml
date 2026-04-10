@@ -5,11 +5,14 @@ port = 12345
 retention_days = 90
 
 [email]
-host = "todo"
+from     = "admin@switchsystem.eu.org"
+host     = "smtp.resend.com"
+port     = 587
+security = "starttls"
 
 [email.creds]
-password = "todo"
-username = "todo"
+username = "resend"
+# password = "" # example: "re_xxxxxxxxxxxxxxxxx"
 
 [middleware.limit]
 burst_size  = 8

@@ -1,7 +1,6 @@
 import { createSignal } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { Dialog } from "."
 import { Button } from "../atomic/button"
 import { AlertDialog } from "./AlertDialog"
 
@@ -38,15 +37,15 @@ export const Default: Story = {
 					{...args}
 					open={open()}
 					onOpenChange={setOpen}
-					onConfirm={close}
-					trigger={
-						<Dialog.Trigger
+					triggerAs={(triggerProps) => (
+						<Button
+							{...triggerProps}
 							variant="Tertiary"
-							as={Button}
 						>
 							打开对话框
-						</Dialog.Trigger>
-					}
+						</Button>
+					)}
+					onConfirm={close}
 				/>
 			</>
 		)
@@ -75,15 +74,15 @@ export const DeleteConfirmation: Story = {
 					{...args}
 					open={open()}
 					onOpenChange={setOpen}
-					trigger={
-						<Dialog.Trigger
+					triggerAs={(triggerProps) => (
+						<Button
+							{...triggerProps}
 							variant="Primary"
 							color="Reimu"
-							as={Button}
 						>
 							删除项目
-						</Dialog.Trigger>
-					}
+						</Button>
+					)}
 					onConfirm={() => handleDelete()}
 				/>
 			</>
@@ -104,7 +103,9 @@ export const CustomButtonText: Story = {
 			<>
 				<AlertDialog
 					{...args}
-					trigger={<Dialog.Trigger as={Button}>自定义按钮文本</Dialog.Trigger>}
+					triggerAs={(triggerProps) => (
+						<Button {...triggerProps}>自定义按钮文本</Button>
+					)}
 					defaultOpen={false}
 				/>
 			</>
@@ -125,14 +126,14 @@ export const NoCancel: Story = {
 			<>
 				<AlertDialog
 					{...args}
-					trigger={
-						<Dialog.Trigger
-							as={Button}
+					triggerAs={(triggerProps) => (
+						<Button
+							{...triggerProps}
 							variant="Primary"
 						>
 							只有确认按钮
-						</Dialog.Trigger>
-					}
+						</Button>
+					)}
 				/>
 			</>
 		)
@@ -153,14 +154,14 @@ export const NonDismissable: Story = {
 				<AlertDialog
 					{...args}
 					dismissible={false}
-					trigger={
-						<Dialog.Trigger
-							as={Button}
+					triggerAs={(triggerProps) => (
+						<Button
+							{...triggerProps}
 							variant="Primary"
 						>
 							不可撤销的对话框
-						</Dialog.Trigger>
-					}
+						</Button>
+					)}
 				/>
 			</>
 		)
@@ -183,14 +184,14 @@ export const BackdropBlurExample: Story = {
 					{...args}
 					open={open()}
 					onOpenChange={setOpen}
-					trigger={
-						<Dialog.Trigger
-							as={Button}
+					triggerAs={(triggerProps) => (
+						<Button
+							{...triggerProps}
 							variant="Primary"
 						>
 							背景模糊对话框
-						</Dialog.Trigger>
-					}
+						</Button>
+					)}
 				/>
 			</>
 		)

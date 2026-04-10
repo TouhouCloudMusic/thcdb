@@ -54,7 +54,6 @@ function PageHeader(props: { type: Props["type"] }) {
 	)
 }
 
-// oxlint-disable-next-line max-lines-per-function
 function FormContent(props: Props) {
 	const initialValues = useReleaseFormInitialValues(props)
 
@@ -92,7 +91,8 @@ function FormContent(props: Props) {
 	return (
 		<Form
 			of={form}
-			onSubmit={(out) => handleSubmit(out)}
+			// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
+			onSubmit={(out, _) => handleSubmit(out)}
 		>
 			<div class="grid grid-cols-5 content-start space-y-8 gap-x-2 px-8 pt-8">
 				<TitleField
@@ -139,7 +139,6 @@ function FormContent(props: Props) {
 									setInput(form, {
 										path: ["data", it.key],
 										// TODO: Upstream formisch error
-										// oxlint-disable-next-line no-null
 										input: v ?? null,
 									})
 								}

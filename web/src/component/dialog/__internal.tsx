@@ -5,8 +5,9 @@ import type {
 	DialogContentProps,
 	DialogDescriptionProps,
 	DialogOverlayProps,
-	DialogTitleProps,
 	DialogRootProps,
+	DialogTitleProps,
+	DialogTriggerRenderProps,
 } from "@kobalte/core/dialog"
 import { mergeProps } from "solid-js"
 import type { ValidComponent } from "solid-js"
@@ -15,6 +16,7 @@ import { twMerge } from "tailwind-merge"
 import { Button } from "~/component/atomic/button"
 
 export type RootProps = DialogRootProps
+export type TriggerRenderProps = DialogTriggerRenderProps
 
 export function Root(props: RootProps) {
 	return <Dialog.Root {...props} />

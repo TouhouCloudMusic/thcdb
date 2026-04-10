@@ -2,6 +2,13 @@ use flow::Pipe;
 use nestify::nest;
 use serde::Deserialize;
 
+#[derive(Clone, Copy, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum EmailSecurity {
+    Smtps,
+    Starttls,
+}
+
 nest! {
     #[derive(Clone, Deserialize)]*
     pub struct Config {
@@ -20,8 +27,15 @@ nest! {
                 pub password: String,
             },
             pub host: String,
+            #[serde(default = "default_email_port")]
+            pub port: u16,
+            #[serde(default = "default_email_security")]
+            pub security: EmailSecurity,
+            pub from: String,
         },
         pub middleware: pub struct Middleware {
+            #[serde(default = "default_session_secure")]
+            pub session_secure: bool,
             pub limit: pub struct LimitMiddleware {
                 pub req_per_sec: u64,
                 pub burst_size: u32,
@@ -36,13 +50,25 @@ const fn default_notification_retention_days() -> i64 {
     90
 }
 
+const fn default_email_port() -> u16 {
+    587
+}
+
+const fn default_email_security() -> EmailSecurity {
+    EmailSecurity::Starttls
+}
+
+const fn default_session_secure() -> bool {
+    true
+}
+
 impl Config {
     pub fn init() -> Self {
         config::Config::builder()
             .add_source(config::File::with_name("config"))
             .add_source(
                 config::Environment::with_convert_case(config::Case::Snake)
-                    .separator("::"),
+                    .separator("__"),
             )
             .pipe(|cfg| {
                 #[cfg(debug_assertions)]

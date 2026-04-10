@@ -2,16 +2,19 @@ import { Link } from "@tanstack/solid-router"
 import type { CreditRoleRef, Release, SimpleArtist } from "@thc/api"
 import { For, Show } from "solid-js"
 
-// Compact grouped list; no global divider to keep dense layout
-import { assertContext } from "~/utils/solid/assertContext"
+type ReleaseCredit = NonNullable<Release["credits"]>[number]
+type GroupedReleaseCredit = {
+	artist: SimpleArtist
+	items: { role: CreditRoleRef; on?: number[] | null | undefined }[]
+}
 
-import { ReleaseInfoPageContext } from "../context"
+type ReleaseInfoCreditsProps = {
+	credits?: Release["credits"] | null
+}
 
-export function ReleaseInfoCredits() {
-	const ctx = assertContext(ReleaseInfoPageContext)
-
+export function ReleaseInfoCredits(props: ReleaseInfoCreditsProps) {
 	const grouped = () =>
-		groupByArtist(ctx.release.credits ?? []).toSorted((a, b) =>
+		groupByArtist(props.credits ?? []).toSorted((a, b) =>
 			a.artist.name.localeCompare(b.artist.name),
 		)
 
@@ -22,13 +25,6 @@ export function ReleaseInfoCredits() {
 			</ul>
 		</Show>
 	)
-}
-
-// Types and grouping (scoped to this view)
-type ReleaseCredit = NonNullable<Release["credits"]>[number]
-type GroupedReleaseCredit = {
-	artist: SimpleArtist
-	items: { role: CreditRoleRef; on?: number[] | null | undefined }[]
 }
 
 function groupByArtist(credits: ReleaseCredit[]): GroupedReleaseCredit[] {

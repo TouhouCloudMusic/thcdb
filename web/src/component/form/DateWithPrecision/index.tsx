@@ -106,11 +106,11 @@ export function DateWithPrecision(props: DateWithPrecisionProps) {
 	)
 
 	createEffect(
-		on(date, (date) => {
+		on(date, (nextDate) => {
 			props.setValue(
-				date
+				nextDate
 					? {
-							value: date,
+							value: nextDate,
 							precision: precision()!,
 						}
 					: undefined,

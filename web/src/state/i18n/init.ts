@@ -1,37 +1,60 @@
-import { AppLocale } from "."
+import type { AppLocale } from "."
 
-const DEFAULT_LANG: AppLocale = "en"
+export const DEFAULT_LOCALE: AppLocale = "en"
 const STORAGE_KEY = "userLang"
 
-export function initUserLang(): AppLocale {
-	const saved = localStorage.getItem(STORAGE_KEY) as AppLocale | null
-	if (AppLocale.allows(saved)) {
-		return saved
+export function persistLocalePreference(locale: AppLocale) {
+	globalThis.localStorage.setItem(STORAGE_KEY, locale)
+}
+
+export function resolveInitialLocale(): AppLocale {
+	const savedLocale = readSavedLocale()
+	if (savedLocale !== undefined) {
+		return savedLocale
 	}
 
-	if (navigator.languages.length > 0) {
-		for (const lang of navigator.languages) {
-			const match = findBestMatch(lang)
-			localStorage.setItem(STORAGE_KEY, match)
+	const detectedLocale = resolveBrowserLocale(
+		globalThis.navigator.languages,
+		globalThis.navigator.language,
+	)
+	persistLocalePreference(detectedLocale)
+
+	return detectedLocale
+}
+
+export function resolveBrowserLocale(
+	languages: readonly string[],
+	fallbackLanguage: string | undefined,
+): AppLocale {
+	for (const language of languages) {
+		const matchedLocale = matchLocale(language)
+		if (matchedLocale !== undefined) {
+			return matchedLocale
 		}
 	}
 
-	if (navigator.language) {
-		const match = findBestMatch(navigator.language)
-		localStorage.setItem(STORAGE_KEY, match)
-	}
+	const fallbackLocale =
+		fallbackLanguage === undefined ? undefined : matchLocale(fallbackLanguage)
 
-	localStorage.setItem(STORAGE_KEY, DEFAULT_LANG)
-	return DEFAULT_LANG
+	return fallbackLocale ?? DEFAULT_LOCALE
 }
 
-function findBestMatch(lang: string) {
-	if (lang.startsWith("en")) {
+export function matchLocale(language: string): AppLocale | undefined {
+	if (language.startsWith("en")) {
 		return "en"
 	}
-	if (lang.startsWith("zh")) {
-		return "zh-Hans"
+	if (language.startsWith("zh")) {
+		return "zh-CN"
 	}
+}
 
-	return "en"
+function readSavedLocale(): AppLocale | undefined {
+	const savedLocale = globalThis.localStorage.getItem(STORAGE_KEY)
+	if (savedLocale !== null && isAppLocale(savedLocale)) {
+		return savedLocale
+	}
+}
+
+function isAppLocale(locale: string): locale is AppLocale {
+	return locale === "en" || locale === "zh-CN"
 }

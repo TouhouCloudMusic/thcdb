@@ -1,28 +1,32 @@
 use axum::extract::State;
-use entity::{language, role};
+use entity::{language, role, song_relation_type};
 use itertools::Itertools;
 use libfp::FunctorExt;
-use sea_orm::EntityTrait;
+use sea_orm::{EntityTrait, QueryOrder};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::model::UserRoleEnum;
 use crate::domain::shared::Language;
+use crate::domain::song::SongRelationType;
 use crate::infra::error::Error;
+use crate::shared::http::api_response::Data;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
         .with_public(|r| {
-            r.routes(routes!(language_list)).routes(routes!(user_roles))
+            r.routes(routes!(language_list))
+                .routes(routes!(user_roles))
+                .routes(routes!(song_relation_types))
         })
         .finish()
 }
 
 data! {
     DataVecLanguage, Vec<Language>
+    DataVecSongRelationType, Vec<SongRelationType>
     DataVecUserRole, Vec<UserRoleEnum>
 }
 
@@ -59,6 +63,26 @@ async fn user_roles(
         .await?
         .iter()
         .filter_map(|model| UserRoleEnum::try_from(model.id).ok())
+        .collect_vec()
+        .into())
+}
+
+#[utoipa::path(
+    get,
+    path = "/song-relation-types",
+    responses(
+        (status = 200, body = DataVecSongRelationType),
+    ),
+)]
+async fn song_relation_types(
+    State(state): State<ArcAppState>,
+) -> Result<Data<Vec<SongRelationType>>, Error> {
+    Ok(song_relation_type::Entity::find()
+        .order_by_asc(song_relation_type::Column::Id)
+        .all(&state.database)
+        .await?
+        .into_iter()
+        .map(Into::into)
         .collect_vec()
         .into())
 }

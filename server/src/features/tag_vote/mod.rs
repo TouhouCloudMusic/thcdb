@@ -7,7 +7,7 @@ use axum::response::{IntoResponse, Response};
 pub use http::router;
 pub use model::InvalidScore;
 
-use crate::adapter::inbound::rest::api_response::Error as ApiError;
+use crate::shared::http::api_response::Error as ApiError;
 
 #[derive(Debug)]
 pub enum Error {

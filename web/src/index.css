@@ -1,12 +1,13 @@
 @import "tailwindcss";
 @import "./style/style.css";
 
+@source not "../locales/";
+
 @custom-variant dark (&:where([data-mode=dark] *));
 
 @theme {
 	--blur-2xs: 2px;
 
-	--font-inter: "Inter", "sans-serif";
 	--font-sans:
 		"Geist", "ui-sans-serif", "system-ui", "sans-serif", '"Apple Color Emoji"',
 		'"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"';
@@ -58,7 +59,7 @@ body,
 	}
 
 	.markdown {
-		@apply m-auto flex flex-col gap-4 p-4 text-slate-900;
+		@apply m-auto flex flex-col gap-4 text-slate-900;
 
 		h1 {
 			@apply text-6xl font-bold text-slate-800;

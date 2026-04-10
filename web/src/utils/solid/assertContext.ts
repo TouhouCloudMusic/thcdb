@@ -13,5 +13,6 @@ export function assertContext<T>(
 		)
 	}
 
+	// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
 	return ctx as NonNullable<T>
 }

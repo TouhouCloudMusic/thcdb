@@ -1,4 +1,4 @@
-use std::backtrace::Backtrace;
+use std::panic::Location;
 
 use axum::http::StatusCode;
 use frunk::{Coprod, Coproduct};
@@ -48,12 +48,13 @@ where
 {
     pub kind: FkViolationKind,
     pub source: T,
-    backtrace: Backtrace,
+    location: &'static Location<'static>,
 }
 
 impl TryFrom<DbErr> for FkViolation<DbErr> {
     type Error = DbErr;
 
+    #[track_caller]
     fn try_from(value: DbErr) -> Result<Self, Self::Error> {
         match value {
             DbErr::Query(RuntimeErr::SqlxError(sqlx::Error::Database(
@@ -63,7 +64,7 @@ impl TryFrom<DbErr> for FkViolation<DbErr> {
                 Ok(FkViolation {
                     kind: FkViolationKind::Auto { entity: table },
                     source: value,
-                    backtrace: Backtrace::capture(),
+                    location: Location::caller(),
                 })
             }
             err => Err(err),

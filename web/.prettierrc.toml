@@ -2,16 +2,16 @@ semi = false
 singleAttributePerLine = true
 useTabs = true
 importOrder = [
-	"<THIRD_PARTY_MODULES>",
-	"^[~/]",
-	"^[../]",
-	"^[./]",
+    "<THIRD_PARTY_MODULES>",
+    "^[~/]",
+    "^[../]",
+    "^[./]",
 ]
 importOrderSeparation = true
 tailwindStylesheet = "./src/index.css"
 plugins = [
-	"@trivago/prettier-plugin-sort-imports",
-	# "prettier-plugin-tailwindcss",
+    "@trivago/prettier-plugin-sort-imports",
+    # "prettier-plugin-tailwindcss",
 ]
 # experimentalTernaries = true
 experimentalOperatorPosition = "start"

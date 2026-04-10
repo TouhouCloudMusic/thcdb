@@ -3,6 +3,8 @@ import type { HandleImageQueueMethod } from "@thc/api"
 import { ImageQueueApi } from "@thc/api"
 import { Either } from "effect"
 
+import { toMutationError } from "../shared/error"
+
 type Params = {
 	id: number
 	method: HandleImageQueueMethod
@@ -20,7 +22,7 @@ export const getHandleInstance = () =>
 			return Either.match(result, {
 				onRight: (data) => data,
 				onLeft: (error) => {
-					throw error
+					throw toMutationError(error)
 				},
 			})
 		},

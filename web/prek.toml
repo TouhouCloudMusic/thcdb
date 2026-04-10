@@ -1,0 +1,47 @@
+fail_fast = true
+
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "web-prettier"
+name = "web prettier"
+entry = "pnpm exec prettier --check --ignore-unknown --experimental-cli"
+language = "system"
+types_or = [
+    "css",
+    "html",
+    "javascript",
+    "json",
+    "jsx",
+    "markdown",
+    "scss",
+    "ts",
+    "tsx",
+    "yaml",
+]
+stages = [ "pre-commit" ]
+
+[[repos.hooks]]
+id             = "web-check"
+name           = "web check"
+entry          = "just check"
+language       = "system"
+pass_filenames = true
+types_or       = [ "javascript", "jsx", "ts", "tsx" ]
+stages         = [ "pre-commit", "pre-push" ]
+
+[[repos.hooks]]
+id = "web-i18n-check"
+name = "web i18n check"
+entry = "just i18n check"
+language = "system"
+pass_filenames = false
+files = { glob = [
+    "src/**/*.{ts,tsx}",
+    "src/locales/**/*.po",
+    "wuchale.config.ts",
+    ".just/i18n",
+    ".justfile",
+] }
+stages = [ "pre-commit", "pre-push" ]

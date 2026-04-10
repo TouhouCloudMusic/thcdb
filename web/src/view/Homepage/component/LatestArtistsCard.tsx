@@ -1,83 +1,16 @@
 import { useQuery } from "@tanstack/solid-query"
 import { ArtistApi } from "@thc/api"
-import type { Artist } from "@thc/api"
 import { Either } from "effect"
 import { For, Show, Suspense } from "solid-js"
 
 import { Card } from "~/component/atomic/Card"
-import { Link } from "~/component/atomic/Link"
+import { ArtistCard } from "~/view/Homepage/component/ArtistCard"
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 
 const MAX_VISIBLE_ARTISTS = 6
 
-type ArtistTileProps = {
-	artist: Artist
-}
-
-type ArtistTileSkeletonProps = {
-	isLoading?: boolean
-}
-
-const formatArtistType = (artistType: Artist["artist_type"]) => {
-	if (artistType === "Solo") return "Solo artist"
-	if (artistType === "Multiple") return "Group"
-	return "Artist"
-}
-
-function ArtistTile(props: ArtistTileProps) {
-	const avatarUrl = () => props.artist.profile_image_url ?? undefined
-	const initials = () => props.artist.name.trim().slice(0, 1).toUpperCase()
-	const artistHrefParams = () => ({ id: props.artist.id.toString() })
-	const typeText = () => formatArtistType(props.artist.artist_type)
-
-	return (
-		<Card class="group flex h-full flex-col gap-3 rounded-none border border-slate-300 bg-white p-3 shadow-none transition-colors duration-150 hover:border-slate-400 hover:bg-slate-50 motion-reduce:transition-none">
-			<Link
-				to="/artist/$id"
-				params={artistHrefParams()}
-				class="block w-full overflow-hidden rounded-full border border-slate-200 bg-slate-100 no-underline hover:no-underline"
-			>
-				<Show
-					when={avatarUrl()}
-					fallback={
-						<div class="grid aspect-square w-full place-items-center rounded-full text-sm font-medium tracking-wide text-secondary">
-							{initials()}
-						</div>
-					}
-				>
-					{(src) => (
-						<img
-							src={src()}
-							alt=""
-							loading="lazy"
-							class="aspect-square w-full rounded-full bg-slate-100 object-cover"
-						/>
-					)}
-				</Show>
-			</Link>
-
-			<div class="flex w-full flex-col gap-1">
-				<Link
-					to="/artist/$id"
-					params={artistHrefParams()}
-					class="text-sm font-medium leading-snug [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden"
-				>
-					{props.artist.name}
-				</Link>
-				<div class="flex items-center gap-1.5 text-[10px] text-tertiary">
-					<span
-						class="h-1 w-1 shrink-0 rounded-full bg-slate-300"
-						aria-hidden="true"
-					></span>
-					<span class="truncate">{typeText()}</span>
-				</div>
-			</div>
-		</Card>
-	)
-}
-
-function ArtistTileSkeleton(props: ArtistTileSkeletonProps) {
+function ArtistTileSkeleton(props: { isLoading?: boolean }) {
 	const pulse = () =>
 		props.isLoading ? "animate-pulse motion-reduce:animate-none" : ""
 
@@ -144,7 +77,7 @@ function LatestArtistsGrid() {
 		>
 			<div class="grid grid-cols-3 gap-3">
 				<For each={visibleArtists()}>
-					{(artist) => <ArtistTile artist={artist} />}
+					{(artist) => <ArtistCard artist={artist} />}
 				</For>
 			</div>
 		</Show>

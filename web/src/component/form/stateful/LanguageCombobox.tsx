@@ -7,7 +7,7 @@ import { Combobox } from "~/component/atomic/Combobox"
 
 // TODO: global singleton
 const useLang = () => useQuery(LanguagesQuery.findAll)
-let langs: ReturnType<typeof useLang>
+let langs: ReturnType<typeof useLang> | undefined
 
 export function LanguageCombobox(props: {
 	onChange: (v: Language | null) => void
@@ -15,19 +15,16 @@ export function LanguageCombobox(props: {
 	value?: Language
 	filter?: (lang: Language) => boolean
 }) {
-	if (!langs) {
-		langs = useLang()
-	}
+	const langQuery = langs ?? (langs = useLang())
 
 	return (
 		<Combobox.Root
 			placeholder={props.placeholder ?? "Select language"}
 			options={
-				// oxlint-disable-next-line no-nested-ternary
-				langs.isSuccess
+				langQuery.isSuccess
 					? props.filter
-						? langs.data.filter(props.filter)
-						: langs.data
+						? langQuery.data.filter(props.filter)
+						: langQuery.data
 					: []
 			}
 			optionValue="id"

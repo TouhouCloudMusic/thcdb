@@ -7,17 +7,16 @@ import { For, Show } from "solid-js"
 import type { Component } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
-import { Link } from "~/component/atomic"
 import { Input } from "~/component/atomic/Input"
 import {
 	EmptyExplorePlaceholder,
+	ExplorePageLayout,
 	OrderBySelect,
 	StickyFilterBar,
 } from "~/component/feature/entity_explore"
-import { DateWithPrecision } from "~/domain/shared"
-import { PageLayout } from "~/layout"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
+import { EventItem } from "~/view/event/EventItem"
 
 const route = getRouteApi("/event/explore")
 
@@ -31,79 +30,6 @@ const EventItemSkeleton: Component = () => (
 		<div class="mt-2 h-4 w-3/5 rounded bg-slate-100"></div>
 	</div>
 )
-
-type EventItemProps = {
-	event: Event
-}
-
-const formatEventDateRange = (event: Event) => {
-	const start = DateWithPrecision.display(event.start_date)
-	const end = DateWithPrecision.display(event.end_date)
-
-	if (start && end) return `${start} - ${end}`
-	return start ?? end
-}
-
-const formatEventLocation = (event: Event) => {
-	const location = event.location
-	if (!location) return
-
-	const parts: string[] = []
-	if (location.country) parts.push(location.country)
-	if (location.province) parts.push(location.province)
-	if (location.city) parts.push(location.city)
-
-	if (parts.length === 0) return
-	return parts.join(", ")
-}
-
-const EventItem: Component<EventItemProps> = (props) => {
-	const dateRange = () => formatEventDateRange(props.event)
-	const location = () => formatEventLocation(props.event)
-	const alternativeNameCount = () => props.event.alternative_names?.length ?? 0
-
-	return (
-		<div class="border-b border-slate-200 py-4 last:border-b-0">
-			<div class="hover:bg-slate-50 -mx-2 rounded-md px-2 py-1 focus-within:ring-2 focus-within:ring-slate-200">
-				<div class="min-w-0">
-					<Link
-						to="/event/$id"
-						params={{ id: props.event.id.toString() }}
-						class="block truncate text-slate-900 no-underline hover:underline"
-					>
-						{props.event.name ?? `Event #${props.event.id}`}
-					</Link>
-
-					<div class="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
-						<Show when={dateRange()}>{(range) => <span>{range()}</span>}</Show>
-
-						<Show when={location()}>
-							{(text) => (
-								<>
-									<span class="text-slate-300">·</span>
-									<span class="truncate">{text()}</span>
-								</>
-							)}
-						</Show>
-
-						<Show when={alternativeNameCount() > 0}>
-							<span class="text-slate-300">·</span>
-							<span>{alternativeNameCount()} AKAs</span>
-						</Show>
-					</div>
-
-					<Show when={props.event.short_description}>
-						{(text) => (
-							<div class="mt-1 line-clamp-1 text-sm text-slate-400">
-								{text()}
-							</div>
-						)}
-					</Show>
-				</div>
-			</div>
-		</div>
-	)
-}
 
 type EventExploreFilterBarProps = {
 	scrollDirection: () => ScrollDirection
@@ -234,14 +160,14 @@ export const EventExplore = () => {
 	const totalPages = () => eventsQuery.data?.total_pages ?? 0
 
 	const setPage = (page: number) => {
-		navigate({
+		void navigate({
 			to: "/event/explore",
 			search: { ...search(), page },
 		})
 	}
 
 	const updateOrderBy = (value: "asc" | "desc" | undefined) => {
-		navigate({
+		void navigate({
 			to: "/event/explore",
 			search: {
 				...search(),
@@ -261,7 +187,7 @@ export const EventExplore = () => {
 	) => {
 		const nextValue = value.length > 0 ? value : undefined
 
-		navigate({
+		void navigate({
 			to: "/event/explore",
 			search: {
 				...search(),
@@ -272,39 +198,28 @@ export const EventExplore = () => {
 	}
 
 	return (
-		<PageLayout class="p-8">
-			<div class="flex flex-col gap-6">
-				<div class="flex items-center justify-between gap-4">
-					<h1 class="text-2xl font-light tracking-tighter text-slate-900">
-						Explore Events
-					</h1>
-					<Link
-						to="/event/new"
-						class="text-sm font-light text-primary"
-					>
-						Create event
-					</Link>
-				</div>
+		<ExplorePageLayout
+			title="Explore Events"
+			action={{ to: "/event/new", label: "Create event" }}
+		>
+			<EventExploreFilterBar
+				scrollDirection={scrollDirection}
+				startDateFrom={search().start_date_from}
+				startDateTo={search().start_date_to}
+				orderBy={search().order_by}
+				onChangeStartDate={updateStartDate}
+				onChangeOrderBy={setOrderBy}
+			/>
 
-				<EventExploreFilterBar
-					scrollDirection={scrollDirection}
-					startDateFrom={search().start_date_from}
-					startDateTo={search().start_date_to}
-					orderBy={search().order_by}
-					onChangeStartDate={updateStartDate}
-					onChangeOrderBy={setOrderBy}
-				/>
-
-				<EventExploreList
-					events={events()}
-					isLoading={eventsQuery.isLoading}
-					isFetching={eventsQuery.isFetching}
-					limit={search().limit}
-					page={search().page}
-					totalPages={totalPages()}
-					onPageChange={setPage}
-				/>
-			</div>
-		</PageLayout>
+			<EventExploreList
+				events={events()}
+				isLoading={eventsQuery.isLoading}
+				isFetching={eventsQuery.isFetching}
+				limit={search().limit}
+				page={search().page}
+				totalPages={totalPages()}
+				onPageChange={setPage}
+			/>
+		</ExplorePageLayout>
 	)
 }

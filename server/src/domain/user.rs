@@ -2,9 +2,7 @@ use serde::Serialize;
 use serde_json::Value;
 use utoipa::ToSchema;
 
-use super::auth::AuthCredential;
 use super::model::{UserRole, UserRoleEnum};
-use crate::infra::error::Error;
 
 #[serde_with::apply(
     Vec    => #[serde(skip_serializing_if = "Vec::is_empty")],
@@ -27,17 +25,51 @@ pub struct UserProfile {
 
     pub bio: Option<String>,
 
+    pub stats: UserProfileStats,
+
     pub settings: Option<Value>,
+}
+
+#[expect(
+    clippy::struct_field_names,
+    reason = "API payload uses explicit *_count field names"
+)]
+#[derive(Clone, ToSchema, Serialize)]
+pub struct UserProfileStats {
+    pub edit_count: u64,
+    pub vote_count: u64,
+}
+
+#[derive(Clone, Debug)]
+pub struct EmailVerification {
+    pub hash: String,
+    pub expires_at: chrono::DateTime<chrono::FixedOffset>,
+    pub sent_at: chrono::DateTime<chrono::FixedOffset>,
+    pub failed_attempts: i32,
+}
+
+impl EmailVerification {
+    pub fn in_resend_cooldown(
+        &self,
+        now: chrono::DateTime<chrono::FixedOffset>,
+        cooldown: chrono::Duration,
+    ) -> bool {
+        now - self.sent_at < cooldown
+    }
 }
 
 #[derive(Clone, Debug)]
 pub struct User {
     pub id: i32,
     pub name: String,
+    pub email: String,
+    pub email_verified: bool,
     pub password: String,
+    pub email_verification: Option<EmailVerification>,
     pub avatar_id: Option<i32>,
     pub profile_banner_id: Option<i32>,
     pub last_login: chrono::DateTime<chrono::FixedOffset>,
+    pub created_at: chrono::DateTime<chrono::FixedOffset>,
     pub roles: Vec<UserRole>,
     pub bio: Option<String>,
     pub settings: Value,
@@ -55,18 +87,9 @@ impl User {
 #[derive(Clone, Debug)]
 pub struct NewUser {
     pub name: String,
+    pub email: String,
+    pub email_verified: bool,
     pub password: String,
-}
-
-impl TryFrom<AuthCredential> for NewUser {
-    type Error = Error;
-
-    fn try_from(mut value: AuthCredential) -> Result<Self, Self::Error> {
-        Ok(Self {
-            password: value.password_hash()?.to_string(),
-            name: value.username,
-        })
-    }
 }
 
 #[trait_variant::make(Send)]

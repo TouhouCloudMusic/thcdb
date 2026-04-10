@@ -6,7 +6,6 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::repo;
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::artist::SimpleArtist;
@@ -19,6 +18,7 @@ use crate::domain::tag::TagRef;
 use crate::infra::error::Error as InfraError;
 use crate::shared;
 use crate::shared::error::MessageValidationError as ValidationError;
+use crate::shared::http::api_response::Data;
 
 #[derive(Clone, Debug, Deserialize, IntoParams)]
 #[serde(deny_unknown_fields)]
@@ -173,13 +173,14 @@ async fn search_all(
             .await
             .map_err(IntoResponse::into_response)?;
 
-    tracing::info!(
-        search_term = %search_term,
+    log::info!(
+        target: "features.search.http",
+        search_term = search_term.as_str(),
         scope = "all",
-        limit,
+        limit = limit,
         cursor = 0,
-        elapsed_ms = start.elapsed().as_millis(),
-        "search: completed"
+        elapsed_ms = start.elapsed().as_millis();
+        "completed search"
     );
 
     Ok(Data::new(response))
@@ -213,13 +214,14 @@ async fn search_artist(
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
 
-    tracing::info!(
-        search_term = %search_term,
+    log::info!(
+        target: "features.search.http",
+        search_term = search_term,
         scope = "artist",
-        limit,
-        cursor,
-        elapsed_ms = start.elapsed().as_millis(),
-        "search: completed"
+        limit = limit,
+        cursor = cursor,
+        elapsed_ms = start.elapsed().as_millis();
+        "completed search"
     );
 
     Ok(Data::new(response))
@@ -253,13 +255,14 @@ async fn search_release(
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
 
-    tracing::info!(
-        search_term = %search_term,
+    log::info!(
+        target: "features.search.http",
+        search_term = search_term,
         scope = "release",
-        limit,
-        cursor,
-        elapsed_ms = start.elapsed().as_millis(),
-        "search: completed"
+        limit = limit,
+        cursor = cursor,
+        elapsed_ms = start.elapsed().as_millis();
+        "completed search"
     );
 
     Ok(Data::new(response))
@@ -293,13 +296,14 @@ async fn search_song(
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
 
-    tracing::info!(
-        search_term = %search_term,
+    log::info!(
+        target: "features.search.http",
+        search_term = search_term,
         scope = "song",
-        limit,
-        cursor,
-        elapsed_ms = start.elapsed().as_millis(),
-        "search: completed"
+        limit = limit,
+        cursor = cursor,
+        elapsed_ms = start.elapsed().as_millis();
+        "completed search"
     );
 
     Ok(Data::new(response))
@@ -333,13 +337,14 @@ async fn search_event(
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
 
-    tracing::info!(
-        search_term = %search_term,
+    log::info!(
+        target: "features.search.http",
+        search_term = search_term,
         scope = "event",
-        limit,
-        cursor,
-        elapsed_ms = start.elapsed().as_millis(),
-        "search: completed"
+        limit = limit,
+        cursor = cursor,
+        elapsed_ms = start.elapsed().as_millis();
+        "completed search"
     );
 
     Ok(Data::new(response))
@@ -373,13 +378,14 @@ async fn search_label(
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
 
-    tracing::info!(
-        search_term = %search_term,
+    log::info!(
+        target: "features.search.http",
+        search_term = search_term,
         scope = "label",
-        limit,
-        cursor,
-        elapsed_ms = start.elapsed().as_millis(),
-        "search: completed"
+        limit = limit,
+        cursor = cursor,
+        elapsed_ms = start.elapsed().as_millis();
+        "completed search"
     );
 
     Ok(Data::new(response))
@@ -413,13 +419,14 @@ async fn search_tag(
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
 
-    tracing::info!(
-        search_term = %search_term,
+    log::info!(
+        target: "features.search.http",
+        search_term = search_term,
         scope = "tag",
-        limit,
-        cursor,
-        elapsed_ms = start.elapsed().as_millis(),
-        "search: completed"
+        limit = limit,
+        cursor = cursor,
+        elapsed_ms = start.elapsed().as_millis();
+        "completed search"
     );
 
     Ok(Data::new(response))

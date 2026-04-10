@@ -1,30 +1,41 @@
 # syntax=docker/dockerfile:1.20
 
 ARG DEBIAN_VERSION=bookworm
-ARG RUST_IMAGE=rustlang/rust:nightly-${DEBIAN_VERSION}
+ARG RUST_BUILDER_IMAGE=ghcr.io/touhoucloudmusic/thcdb-rust-builder:main
+ARG WILD_LINKER_IMAGE=ghcr.io/touhoucloudmusic/thcdb-wild-linker-builder:main
 
-FROM ${RUST_IMAGE} AS builder
+FROM ${WILD_LINKER_IMAGE} AS wild-linker-builder
+
+FROM ${RUST_BUILDER_IMAGE} AS chef
 WORKDIR /app
 
-ENV RUSTUP_HOME=/usr/local/rustup
-ENV PATH=/usr/local/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/bin:/usr/local/cargo/bin:$PATH
+COPY --from=wild-linker-builder /usr/local/cargo/bin/wild /usr/local/cargo/bin/wild
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
-    clang \
-    git \
-    libgit2-dev \
-    libssl-dev \
-    pkg-config \
-  && rm -rf /var/lib/apt/lists/*
+ENV RUSTFLAGS="-Clink-arg=--ld-path=wild -Zshare-generics=y"
+
+FROM chef AS planner
+
+COPY . ./
+
+RUN rm -f rust-toolchain.toml rust-toolchain \
+  && cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS builder
+
+COPY --from=planner /app/recipe.json recipe.json
+
+RUN --mount=type=cache,id=server_cargo_registry,target=/usr/local/cargo/registry \
+  --mount=type=cache,id=server_cargo_git,target=/usr/local/cargo/git \
+  --mount=type=cache,id=server_target_release,target=/app/target \
+  cargo chef cook --release --recipe-path recipe.json --features release
 
 COPY . ./
 
 RUN rm -f rust-toolchain.toml rust-toolchain
 
-RUN --mount=type=cache,target=/usr/local/cargo/registry \
-  --mount=type=cache,target=/usr/local/cargo/git \
-  --mount=type=cache,target=/app/target \
+RUN --mount=type=cache,id=server_cargo_registry,target=/usr/local/cargo/registry \
+  --mount=type=cache,id=server_cargo_git,target=/usr/local/cargo/git \
+  --mount=type=cache,id=server_target_release,target=/app/target \
   cargo build --release --features release \
   && install -Dm755 /app/target/release/thcdb_rs /out/thcdb_rs
 
@@ -34,6 +45,7 @@ WORKDIR /app
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     ca-certificates \
+    curl \
     libgit2-1.5 \
     libssl3 \
   && rm -rf /var/lib/apt/lists/*

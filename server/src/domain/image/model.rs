@@ -7,9 +7,12 @@ use chrono::{DateTime, FixedOffset};
 use entity::enums::StorageBackend;
 use entity::image::Model as DbModel;
 use macros::AutoMapper;
+use serde::Serialize;
+use utoipa::ToSchema;
 use xxhash_rust::xxh3::xxh3_128;
 
 use crate::domain::image::ParsedImage;
+use crate::domain::shared::ImageUploaderSummary;
 
 #[derive(Clone, Debug, AutoMapper, Builder)]
 #[mapper(from(DbModel))]
@@ -47,6 +50,12 @@ impl Image {
                 .to_string(),
         }
     }
+}
+
+#[derive(Clone, Debug, Serialize, ToSchema)]
+pub struct CurrentImageMetadata {
+    pub uploaded_at: DateTime<FixedOffset>,
+    pub uploaded_by: ImageUploaderSummary,
 }
 
 #[derive(Builder, Clone, Debug)]

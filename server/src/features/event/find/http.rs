@@ -6,12 +6,12 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::{EventFilter, PageQuery};
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::event::model::Event;
 use crate::infra::error::Error;
+use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Event";
 
@@ -87,7 +87,11 @@ async fn explore_event(
     Query(pagination): Query<PageQuery>,
 ) -> Result<Data<PageResponse<Event>>, Error> {
     let normalized = filter.with_sort_defaults();
-    tracing::info!(?normalized, "explore_event: incoming query");
+    log::info!(
+        target: "features.event.find.http",
+        normalized:? = normalized;
+        "incoming explore query"
+    );
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
         .bimap_into()

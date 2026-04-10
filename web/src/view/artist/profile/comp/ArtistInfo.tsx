@@ -1,10 +1,8 @@
 /* @refresh skip */
-import { useNavigate } from "@tanstack/solid-router"
 import type { Artist } from "@thc/api"
 import type { ParentProps } from "solid-js"
 import { createMemo, Show, For } from "solid-js"
 
-import { Button } from "~/component/atomic/button"
 import { DateWithPrecision } from "~/domain/shared"
 import { assertContext } from "~/utils/solid/assertContext"
 
@@ -12,8 +10,6 @@ import { ArtistContext } from ".."
 
 export function ArtistInfo() {
 	const context = assertContext(ArtistContext)
-	const navigator = useNavigate()
-
 	return (
 		<div class="flex flex-col">
 			<h1 class="text-xl font-semibold">{context.artist.name}</h1>
@@ -34,19 +30,6 @@ export function ArtistInfo() {
 				<Membership />
 				<Links />
 			</div>
-			{/* Test */}
-			<Button
-				class="mt-4 w-fit"
-				variant="Tertiary"
-				size="Sm"
-				onClick={() => {
-					void navigator({
-						to: `/artist/${context.artist.id}/edit`,
-					})
-				}}
-			>
-				Edit
-			</Button>
 		</div>
 	)
 }
@@ -55,26 +38,28 @@ function Aliases() {
 	const context = assertContext(ArtistContext)
 	const aliases = createMemo(() => getInfoAliases(context.artist))
 	return (
-		<div>
-			<InfoLabel>Aliases</InfoLabel>
-			<ul class="flex flex-row gap-1">
-				<For each={aliases()}>
-					{(alias, index) => (
-						<>
-							<li>
-								<Show
-									when={alias.id}
-									fallback={alias.name}
-								>
-									{alias.id}
-								</Show>
-								<Show when={aliases().length - 1 > index()}>{", "}</Show>
-							</li>
-						</>
-					)}
-				</For>
-			</ul>
-		</div>
+		<Show when={aliases().length > 0}>
+			<div>
+				<InfoLabel>Aliases</InfoLabel>
+				<ul class="flex flex-row gap-1">
+					<For each={aliases()}>
+						{(alias, index) => (
+							<>
+								<li>
+									<Show
+										when={alias.id}
+										fallback={alias.name}
+									>
+										{alias.id}
+									</Show>
+									<Show when={aliases().length - 1 > index()}>{", "}</Show>
+								</li>
+							</>
+						)}
+					</For>
+				</ul>
+			</div>
+		</Show>
 	)
 }
 

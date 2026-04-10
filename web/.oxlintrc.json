@@ -6,8 +6,12 @@
 	"ignorePatterns": [
 		"**.gen.ts",
 		"packages/api/**/gen.ts",
+		"src/orval/**",
+		"config/eslint/index.js",
+		"src/locales/main.loader.js",
 		"src/style/color/convert.ts",
-		"src/constant/server.ts"
+		"src/constant/server.ts",
+		"src/component/__legacy"
 	],
 	"categories": {
 		"correctness": "error",
@@ -29,6 +33,33 @@
 		}
 	},
 	"rules": {
+		// Temporary off
+		"import/no-relative-parent-imports": "off",
+		// In practice, we rarely mutate function inputs.
+		// The codebase generally favors a functional style, so this rule
+		// is too intrusive. We therefore disable it.
+		"typescript/prefer-readonly-parameter-types": "off",
+		// Replaced by typescript/switch-exhaustiveness-check
+		"default-case": "off",
+		// We use typescript alternative
+		"require-await": "off",
+		"typescript/no-confusing-void-expression": [
+			"warn",
+			{
+				"ignoreArrowShorthand": true
+			}
+		],
+		"typescript/only-throw-error": [
+			"off",
+			{
+				"allow": ["notFound"]
+			}
+		],
+		"func-style": "off",
+		// We use modern js
+		"unicorn/prefer-reflect-apply": "off",
+		"no-use-before-define": "off",
+		"no-eq-null": "off",
 		"unicorn/require-module-specifiers": "off",
 		"array-callback-return": [
 			"off",
@@ -41,13 +72,6 @@
 		"curly": "off",
 		"eqeqeq": ["off", "smart"],
 		"func-names": "off",
-		"func-style": [
-			"error",
-			"declaration",
-			{
-				"allowArrowFunctions": true
-			}
-		],
 		"id-length": "off",
 		"init-declarations": "off",
 		"max-depth": ["warn", 4],
@@ -122,6 +146,7 @@
 		"import/no-anonymous-default-export": "off",
 		"import/no-cycle": "off",
 		"import/no-namespace": "off",
+		"import/unambiguous": "off",
 		"import/no-unassigned-import": [
 			"error",
 			{
@@ -141,6 +166,8 @@
 		"typescript/consistent-type-definitions": "off",
 		"typescript/explicit-function-return-type": "off",
 		"typescript/explicit-module-boundary-types": "off",
+		"typescript/consistent-return": "off",
+		"typescript/strict-void-return": "off",
 		"typescript/no-non-null-assertion": "off",
 		"typescript/no-empty-object-type": [
 			"warn",
@@ -148,7 +175,30 @@
 				"allowInterfaces": "with-single-extends"
 			}
 		],
+		"typescript/promise-function-async": [
+			"warn",
+			{
+				"checkArrowFunctions": false
+			}
+		],
 		"typescript/prefer-enum-initializers": "off",
+		"prefer-nullish-coalescing": [
+			"warn",
+			{
+				"ignorePrimitives": true
+			}
+		],
+		"typescript/strict-boolean-expressions": [
+			"warn",
+			{
+				"allowAny": true,
+				"allowString": true,
+				"allowNullableObject": true,
+				"allowNullableString": true,
+				"allowNullableNumber": true,
+				"allowNullableBoolean": true
+			}
+		],
 		"unicorn/no-zero-fractions": "off",
 		"unicorn/catch-error-name": "off",
 		"unicorn/explicit-length-check": "off",
@@ -163,21 +213,25 @@
 			}
 		],
 		"unicorn/no-anonymous-default-export": "off",
+		"unicorn/no-array-sort": "off",
 		"unicorn/no-array-reduce": "off",
 		"unicorn/no-array-callback-reference": "off",
 		"unicorn/no-array-method-this-argument": "off",
+		"unicorn/prefer-ternary": ["warn", "only-single-line"],
 		// Dupe
 		"unicorn/no-nested-ternary": "off",
 		"unicorn/no-null": "off",
-		"unicorn/no-useless-undefined": [
-			"warn",
+		"unicorn/no-useless-undefined": "off",
+		"unicorn/numeric-separators-style": "off",
+		"unicorn/prefer-default-parameters": "off",
+		"unicorn/prefer-spread": "off",
+		"jsx-a11y/label-has-associated-control": [
+			"error",
 			{
-				"checkArguments": false
+				"controlComponents": ["Select.Trigger"],
+				"depth": 3
 			}
 		],
-		"unicorn/numeric-separators-style": "off",
-		"unicorn/prefer-spread": "off",
-
 		"solid/reactivity": "error",
 		"solid/self-closing-comp": [
 			"warn",
@@ -189,10 +243,24 @@
 	},
 	"overrides": [
 		{
-			"files": ["*.stories.tsx", "eslint.config.js"],
+			"files": [
+				".storybook/*",
+				"plugins/*.ts",
+				"scripts/*.ts",
+				"config/eslint/index.js",
+				"*.stories.tsx",
+				"*.config.{js,ts}"
+			],
+			"env": {
+				"node": true,
+				"es6": true
+			},
 			"rules": {
 				"no-magic-numbers": "off",
-				"import/no-default-export": "off"
+				"import/no-default-export": "off",
+				"import/no-nodejs-modules": "off",
+				"no-console": "off",
+				"typescript/no-unsafe-member-access": "off"
 			}
 		},
 		{
@@ -202,14 +270,9 @@
 				"max-lines-per-function": "off",
 				"unicorn/no-null": "off",
 				"unicorn/no-useless-undefined": "off",
+				"vitest/require-test-timeout": "off",
+				"vitest/no-importing-vitest-globals": "off",
 				"vitest/prefer-to-be-truthy": "off"
-			}
-		},
-		{
-			"files": ["plugins/*.ts"],
-			"rules": {
-				"no-console": "off",
-				"no-magic-numbers": "off"
 			}
 		}
 	]

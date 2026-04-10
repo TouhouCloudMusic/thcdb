@@ -1,2 +1,3 @@
-[language-server.rust-analyzer.config.check]
-extraArgs = ["--profile", "ra"] 
+[language-server.rust-analyzer]
+config.cargo.extraArgs = [ "--profile", "ra" ]
+config.check.extraArgs = [ "--profile", "ra" ]

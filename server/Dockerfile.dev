@@ -1,0 +1,29 @@
+# syntax=docker/dockerfile:1.20
+
+ARG RUST_BUILDER_IMAGE=thcdb/rust-builder:nightly-bookworm
+
+FROM ${RUST_BUILDER_IMAGE} AS planner
+
+WORKDIR /app
+
+COPY . ./
+
+RUN rm -f rust-toolchain.toml rust-toolchain \
+    && cargo chef prepare --recipe-path recipe.json
+
+FROM ${RUST_BUILDER_IMAGE}
+
+WORKDIR /app
+
+COPY --from=planner /app/recipe.json recipe.json
+
+RUN --mount=type=cache,id=server_cargo_registry,target=/usr/local/cargo/registry \
+    --mount=type=cache,id=server_cargo_git,target=/usr/local/cargo/git \
+    --mount=type=cache,id=server_target_debug,target=/app/target \
+    cargo chef cook --recipe-path recipe.json
+
+COPY . ./
+
+RUN rm -f rust-toolchain.toml rust-toolchain
+
+CMD ["cargo", "watch", "-x", "run"]

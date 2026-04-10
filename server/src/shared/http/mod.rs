@@ -7,7 +7,7 @@ pub use pagination::{PageQuery, PaginationQuery};
 use snafu::Report;
 pub use sorting::{CorrectionSortField, SortDirection, apply_sort_defaults};
 
-use crate::adapter::inbound::rest::api_response;
+pub mod api_response;
 
 #[derive(Debug)]
 pub struct Error<E: snafu::Error> {
@@ -42,7 +42,11 @@ where
     E: snafu::Error,
 {
     fn into_response(self) -> axum::response::Response {
-        tracing::error!("{}", self.source);
+        log::error!(
+            target: "shared.http",
+            error:% = self.source;
+            "request failed"
+        );
         let msg = self.source.to_string();
         api_response::Error::from_err_and_code(msg, self.status_code)
             .into_response()

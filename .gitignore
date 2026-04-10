@@ -1,3 +1,5 @@
 .direnv/
 .pnpm-store
 node_modules
+.env
+__pycache__

@@ -2,22 +2,18 @@ use std::fmt::Debug;
 
 use argon2::password_hash;
 use axum::http::StatusCode;
-use macros::{ApiError, IntoErrorSchema};
+use macros::ApiError;
 use sea_orm::DbErr;
 
 use super::database::error::FkViolation;
-use crate::adapter::inbound::rest::api_response::{
-    IntoApiResponse, default_into_api_response_impl,
+use crate::shared::http::api_response::{
+    ApiError as ApiErrorTrait, IntoApiResponse, default_into_api_response_impl,
 };
 
 /// Note: Don't impl from for variants
-#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu)]
 pub enum Error {
     #[snafu(transparent)]
-    #[api_error(
-        status_code = StatusCode::INTERNAL_SERVER_ERROR,
-        into_response = self
-    )]
     Internal {
         source: Box<dyn std::error::Error + Send + Sync>,
     },
@@ -78,11 +74,32 @@ impl From<password_hash::Error> for Error {
     }
 }
 
+impl ApiErrorTrait for Error {
+    fn as_status_code(&self) -> StatusCode {
+        match self {
+            Self::Internal { .. } => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::User { source } => source.as_status_code(),
+        }
+    }
+
+    fn all_status_codes() -> impl Iterator<Item = StatusCode>
+    where
+        Self: Sized,
+    {
+        std::iter::once(StatusCode::INTERNAL_SERVER_ERROR)
+            .chain(UserError::all_status_codes())
+    }
+}
+
 impl IntoApiResponse for Error {
     fn into_api_response(self) -> axum::response::Response {
         match self {
             Self::Internal { ref source } => {
-                tracing::error!("Internal error: {:?}", source);
+                log::error!(
+                    target: "infra.error",
+                    error:? = source;
+                    "internal error"
+                );
                 default_into_api_response_impl(self)
             }
             Self::User { source } => source.into_api_response(),
@@ -90,54 +107,27 @@ impl IntoApiResponse for Error {
     }
 }
 
+impl axum::response::IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        self.into_api_response()
+    }
+}
+
+impl utoipa::IntoResponses for Error {
+    fn responses() -> std::collections::BTreeMap<
+        std::string::String,
+        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
+    > {
+        use crate::shared::http::api_response::ErrResponseDef;
+
+        Self::build_err_responses().into()
+    }
+}
+
 #[derive(Debug, snafu::Snafu, ApiError)]
 
 pub enum UserError {
     #[snafu(transparent)]
-    FkViolation { source: FkViolation<DbErr> },
-}
-
-#[cfg(test)]
-mod test {
-
-    use axum::response::IntoResponse;
-    use tracing_test::traced_test;
-
-    use super::*;
-    use crate::adapter::inbound::rest::error::ApiError;
-
-    // https://github.com/dbrgn/tracing-test/issues/48
-    // This bug causes errors with line breaks cannot be captured
-    // So I can only test the prefix of errors here
-    // If this test fails, it may be because error messages has been changed
-    #[tokio::test]
-    #[traced_test]
-    async fn test_nested_err_print() {
-        let err = Error::internal(DbErr::Custom("foobar".to_string()));
-        let err = ApiError::Infra { source: err };
-
-        let _ = err.into_response();
-
-        assert!(logs_contain("Custom"));
-        assert!(logs_contain("foobar"));
-
-        // cranelift dosen't support catch_unwind yet
-        // let err = ServiceError::Tokio(TokioError::TaskJoin(
-        //     async {
-        //         let handle = tokio::spawn(async {
-        //             panic!("fake panic");
-        //         });
-
-        //         match handle.await {
-        //             Err(e) => e,
-        //             _ => unreachable!(),
-        //         }
-        //     }
-        //     .await,
-        // ));
-
-        // let _ = err.into_response();
-
-        // assert!(logs_contain("Tokio error: TaskJoin"));
-    }
+    #[api_error(status_code = StatusCode::BAD_REQUEST)]
+    FkViolation { source: Box<FkViolation<DbErr>> },
 }

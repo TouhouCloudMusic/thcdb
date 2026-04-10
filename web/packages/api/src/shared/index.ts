@@ -30,10 +30,13 @@ export type ApiError<_E = unknown> =
 	| {
 			type: "Server"
 			error: string
+			statusCode?: number
+			detail?: _E
 	  }
 	| {
 			type: "Response"
 			error: string
+			statusCode?: number
 	  }
 
 export type ApiResult<T, E = ErrResponse> = E.Either<T, ApiError<E>>
@@ -47,12 +50,13 @@ type RestErrorResponse<E> = {
 	response: Response
 }
 
-const extractErrorMessage = (error: unknown): string => {
+function extractErrorMessage(error: unknown): string {
 	if (typeof error === "string") return error
 	if (typeof error === "object" && error !== null && "message" in error) {
 		const message = error.message
 		if (typeof message === "string") return message
 	}
+
 	return "Unknown server error"
 }
 
@@ -61,11 +65,14 @@ function handleError<E>(res: RestErrorResponse<E>) {
 		return {
 			type: "Server",
 			error: extractErrorMessage(res.error),
+			statusCode: res.response.status,
+			detail: res.error,
 		} as const
 	} else {
 		return {
 			type: "Response",
 			error: res.response.statusText,
+			statusCode: res.response.status,
 		} as const
 	}
 }
@@ -75,11 +82,14 @@ function handleErrorResult<E>(res: RestErrorResponse<E>) {
 		return E.left({
 			type: "Server",
 			error: extractErrorMessage(res.error),
+			statusCode: res.response.status,
+			detail: res.error,
 		} as const)
 	} else {
 		return E.left({
 			type: "Response",
 			error: res.response.statusText,
+			statusCode: res.response.status,
 		} as const)
 	}
 }
@@ -121,7 +131,7 @@ export async function adaptFetchResponseFromResponse<T>(
 ): Promise<FetchResponse<T, ErrResponse>> {
 	const text = await response.text()
 
-	if (!text) {
+	if (text == "") {
 		return { error: toErrResponse(response.statusText), response }
 	}
 
@@ -147,7 +157,7 @@ export async function adaptFetchMessageResponseFromResponse(
 ): Promise<FetchMessageResponse<ErrResponse>> {
 	const text = await response.text()
 
-	if (!text) {
+	if (text == "") {
 		return { error: toErrResponse(response.statusText), response }
 	}
 
@@ -172,11 +182,7 @@ export async function adaptFetchMessageResponseFromResponse(
 }
 
 export function adaptApi<T, E>(res: FetchResponse<T, E>) {
-	if (res.data) {
-		return res.data
-	} else {
-		return handleError(res)
-	}
+	return res.data ?? handleError(res)
 }
 
 export function adaptApiResult<T, E>(res: FetchResponse<T, E>) {

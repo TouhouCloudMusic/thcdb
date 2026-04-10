@@ -7,6 +7,9 @@ codegen-backend = "cranelift"
 [profile.ra]
 codegen-backend = "llvm"
 
+[profile.debug-mode]
+codegen-backend = "llvm"
+
 [target.x86_64-unknown-linux-gnu]
 linker = "clang"
 rustflags = [

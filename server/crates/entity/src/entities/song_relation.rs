@@ -12,8 +12,7 @@ pub struct Model {
     pub id: i32,
     pub first_id: i32,
     pub second_id: i32,
-    #[sea_orm(column_type = "Text")]
-    pub relation_type: String,
+    pub relation_type_id: i32,
     #[sea_orm(column_type = "Text")]
     pub description: String,
 }
@@ -36,6 +35,20 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Song1,
+    #[sea_orm(
+        belongs_to = "super::song_relation_type::Entity",
+        from = "Column::RelationTypeId",
+        to = "super::song_relation_type::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    SongRelationType,
+}
+
+impl Related<super::song_relation_type::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SongRelationType.def()
+    }
 }
 
 impl ActiveModelBehavior for ActiveModel {}

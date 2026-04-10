@@ -10,6 +10,7 @@ use syn::{BinOp, Expr, Item, Lit, parse_file};
 fn main() -> Result<(), Whatever> {
     const LINE_BREAK: char = '\n';
     const CONSTANTS_MODULE: &str = "src/constant.rs";
+    const GENERATED_MODULE: &str = "constant_gen.rs";
 
     let content =
         fs::read_to_string(CONSTANTS_MODULE).with_whatever_context(|_| {
@@ -61,16 +62,14 @@ fn main() -> Result<(), Whatever> {
                         }
                         _ => None,
                     } {
-                        ts_file_lines.push(format!(
-                            "export const {ident} = {str}{LINE_BREAK}",
-                        ));
-                        ts_content.push(format!(
-                            r##"r#"export const {ident} = {str}{LINE_BREAK}"#"##,
-                        ));
+                        let ts_line =
+                            format!("export const {ident} = {str}{LINE_BREAK}");
+                        let kt_line =
+                            format!("const val {ident} = {str}{LINE_BREAK}");
 
-                        kt_content.push(format!(
-                            r##"r#"const val {ident} = {str}{LINE_BREAK}"#"##
-                        ));
+                        ts_file_lines.push(ts_line.clone());
+                        ts_content.push(rust_string_literal(&ts_line));
+                        kt_content.push(rust_string_literal(&kt_line));
                     } else {
                         ts_content.push(format!(
                             r#"format!("export const {ident} = {{}}{LINE_BREAK}", {})"#,
@@ -87,10 +86,14 @@ fn main() -> Result<(), Whatever> {
         }
     }
 
-    let out_dir = "src/constant/gen.rs";
+    let out_dir = PathBuf::from(
+        std::env::var("OUT_DIR")
+            .with_whatever_context(|_| "Missing OUT_DIR".to_string())?,
+    );
+    let out_path = out_dir.join(GENERATED_MODULE);
 
     let mut content = String::new();
-    content.push_str("#![allow(unused_imports, clippy::all, clippy::needless_raw_string_hashes, clippy::format_push_string)]\nuse std::sync::LazyLock;\nuse crate::constant::*;\n\n");
+    content.push_str("use std::sync::LazyLock;\n\n");
     content.push_str(
         "pub static TS_CONSTANTS: LazyLock<String> = LazyLock::new(||{\n",
     );
@@ -99,7 +102,7 @@ fn main() -> Result<(), Whatever> {
         "\n"
     ));
     ts_content.iter().for_each(|str| {
-        content.push_str(&format!("    tmp.push_str(&{str});\n"));
+        content.push_str(&format!("    tmp.push_str(({str}).as_ref());\n"));
     });
     content.push_str("tmp\n});");
 
@@ -113,17 +116,15 @@ fn main() -> Result<(), Whatever> {
         "\n"
     ));
     kt_content.iter().for_each(|str| {
-        content.push_str(&format!("    tmp.push_str(&{str});\n"));
+        content.push_str(&format!("    tmp.push_str(({str}).as_ref());\n"));
     });
     content.push_str("tmp\n});");
 
     content.push('\n');
 
-    fs::create_dir_all("src/constant").with_whatever_context(|_| {
-        "Failed to create src/constant".to_string()
+    fs::write(&out_path, content.trim()).with_whatever_context(|_| {
+        format!("Failed to write {}", out_path.display())
     })?;
-    fs::write(out_dir, content.trim())
-        .with_whatever_context(|_| format!("Failed to write {out_dir}"))?;
 
     let manifest_dir = PathBuf::from(
         std::env::var("CARGO_MANIFEST_DIR").with_whatever_context(|_| {
@@ -181,4 +182,8 @@ fn eval_binexpr(expr: &Expr) -> i64 {
         }
         _ => panic!("Unsupported expression"),
     }
+}
+
+fn rust_string_literal(value: &str) -> String {
+    format!("{value:?}")
 }

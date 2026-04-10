@@ -2,19 +2,24 @@ use std::sync::LazyLock;
 
 use ::image::ImageFormat;
 use bytesize::ByteSize;
+use entity::enums::ReleaseImageType;
+use entity::{image as image_entity, release_image, user as user_entity};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
 use super::error::Error;
 use super::model::ReleaseCoverArtInput;
 use crate::application::error::EntityNotFound;
 use crate::constant::{
-    RELEASE_COVER_IMAGE_MAX_HEIGHT, RELEASE_COVER_IMAGE_MAX_RATIO,
-    RELEASE_COVER_IMAGE_MAX_WIDTH, RELEASE_COVER_IMAGE_MIN_HEIGHT,
-    RELEASE_COVER_IMAGE_MIN_RATIO, RELEASE_COVER_IMAGE_MIN_WIDTH,
+    RELEASE_COVER_IMAGE_MAX_HEIGHT, RELEASE_COVER_IMAGE_MAX_WIDTH,
+    RELEASE_COVER_IMAGE_MIN_HEIGHT, RELEASE_COVER_IMAGE_MIN_WIDTH,
 };
 use crate::domain::image;
-use crate::domain::image::{CreateImageMeta, ParseOption, Parser};
+use crate::domain::image::{
+    CreateImageMeta, CurrentImageMetadata, ParseOption, Parser,
+};
 use crate::domain::image_queue::NewImageQueue;
 use crate::domain::release_image_queue::ReleaseImageQueue;
+use crate::domain::shared::ImageUploaderSummary;
 use crate::features::image_queue::Repo as ImageQueueRepo;
 use crate::features::release::find::repo as release_repo;
 use crate::features::release_image_queue::Repo as ReleaseImageQueueRepo;
@@ -31,7 +36,6 @@ static RELEASE_COVER_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
         .height_range(
             RELEASE_COVER_IMAGE_MIN_HEIGHT..=RELEASE_COVER_IMAGE_MAX_HEIGHT,
         )
-        .ratio(RELEASE_COVER_IMAGE_MIN_RATIO..=RELEASE_COVER_IMAGE_MAX_RATIO)
         .build()
         .into_parser()
 });
@@ -52,7 +56,7 @@ impl Service {
     pub async fn upload_cover_art(
         &self,
         dto: ReleaseCoverArtInput,
-    ) -> Result<(), Error> {
+    ) -> Result<i32, Error> {
         let ReleaseCoverArtInput {
             bytes,
             user,
@@ -91,6 +95,37 @@ impl Service {
 
         tx_repo.commit().await?;
 
-        Ok(())
+        Ok(image_queue_entry.id)
+    }
+
+    pub async fn get_cover_art_metadata(
+        &self,
+        release_id: i32,
+    ) -> Result<Option<CurrentImageMetadata>, Error> {
+        let image = image_entity::Entity::find()
+            .inner_join(release_image::Entity)
+            .filter(release_image::Column::ReleaseId.eq(release_id))
+            .filter(release_image::Column::Type.eq(ReleaseImageType::Cover))
+            .order_by_desc(image_entity::Column::UploadedAt)
+            .one(&self.repo.conn)
+            .await?;
+
+        let Some(image) = image else {
+            return Ok(None);
+        };
+
+        let uploader = user_entity::Entity::find_by_id(image.uploaded_by)
+            .into_partial_model::<ImageUploaderSummary>()
+            .one(&self.repo.conn)
+            .await?
+            .unwrap_or_else(|| ImageUploaderSummary {
+                id: image.uploaded_by,
+                name: "Unknown".to_string(),
+            });
+
+        Ok(Some(CurrentImageMetadata {
+            uploaded_at: image.uploaded_at,
+            uploaded_by: uploader,
+        }))
     }
 }

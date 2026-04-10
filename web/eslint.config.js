@@ -1,9 +1,7 @@
 import eslint from "@eslint/js"
 import tanstackQuery from "@tanstack/eslint-plugin-query"
-import { rules } from "eslint-config-prettier"
 import jsxA11y from "eslint-plugin-jsx-a11y"
 import oxlint from "eslint-plugin-oxlint"
-import { globalIgnores } from "eslint/config"
 import globals from "globals"
 
 import { tsConfig, tsxConfigArray } from "./config/eslint/index.js"

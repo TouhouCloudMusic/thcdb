@@ -1,14 +1,12 @@
-// TODO: ts 5.9 control flow generics
-export function imgUrl<T extends string | URL>(
-	subDir?: T | null,
-): T extends undefined | null ? undefined | null : string {
-	if (!subDir) {
-		return undefined as T extends undefined | null ? undefined | null : string
+export function imgUrl(subDir?: string | URL | null): string | undefined {
+	if (subDir == null) {
+		return undefined
 	}
-	const base =
-		import.meta.env.VITE_SERVER_URL
-		?? globalThis.location?.origin
-		?? "http://localhost:3000"
-	const url = new URL(subDir, new URL("api/public/image/", base))
-	return url.href as T extends undefined | null ? undefined | null : string
+	if (subDir instanceof URL) {
+		return subDir.href
+	}
+	if (/^[a-z][a-z\\d+.-]*:/i.test(subDir)) {
+		return subDir
+	}
+	return new URL(subDir, `${globalThis.location.origin}/api/public/image/`).href
 }

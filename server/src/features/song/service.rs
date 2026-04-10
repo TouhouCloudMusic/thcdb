@@ -12,6 +12,10 @@ pub async fn create(
     repo: &SeaOrmRepository,
     correction: NewCorrection<NewSong>,
 ) -> Result<CorrectionSubmissionResult, CreateError> {
+    correction
+        .data
+        .validate(None)
+        .map_err(|source| CreateError::Validation { source })?;
     let tx_repo = repo.begin_tx().await.map_err(infra::Error::from)?;
 
     let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
@@ -57,6 +61,10 @@ pub async fn upsert_correction(
     id: i32,
     correction: NewCorrection<NewSong>,
 ) -> Result<CorrectionSubmissionResult, UpsertCorrectionError> {
+    correction
+        .data
+        .validate(Some(id))
+        .map_err(|source| UpsertCorrectionError::Validation { source })?;
     let tx_repo = repo.begin_tx().await.map_err(infra::Error::from)?;
 
     let history_id =

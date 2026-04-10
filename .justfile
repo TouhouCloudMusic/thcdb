@@ -1,16 +1,20 @@
 # set shell := ["bash", "-euo", "pipefail", "-c"]
+
 set dotenv-load := true
+set positional-arguments := true
 
-dev:
-	docker compose -f docker-compose.yml up --build --force-recreate --remove-orphans
+mod dev
 
-server:
-	docker compose -f docker-compose.yml up app --build --force-recreate --remove-orphans
+init:
+    prek install
+    cd web && pnpm install
 
-down:
-	local_images="$$(docker compose -f docker-compose.yml images 2>/dev/null | awk '$$2 ~ /^localhost\\// {print $$2 \":\" $$3}' || true)"; \
-	docker compose -f docker-compose.yml down --remove-orphans; \
-	if [[ -n "$$local_images" ]]; then docker image rm -f $$local_images; fi
+fmt:
+    taplo fmt
+    just --fmt --unstable
+    cd server && just fmt
+    cd web && just fmt
 
-compose *args:
-	docker compose -f docker-compose.yml {{args}}
+build-toolchain-images:
+    docker build -f server/Dockerfile.toolchain --target rust-builder -t thcdb/rust-builder:nightly-bookworm server
+    docker build -f server/Dockerfile.toolchain --target wild-linker-builder -t thcdb/wild-linker-builder:nightly-bookworm server

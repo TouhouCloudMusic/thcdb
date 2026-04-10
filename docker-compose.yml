@@ -32,24 +32,41 @@ services:
     networks:
       - backend
 
-  app:
+  server:
     build:
       context: ./server
-    restart: unless-stopped
+      dockerfile: Dockerfile.dev
+    restart: on-failure:3
     init: true
+    working_dir: /app
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
       SESSION_SECURE: "false"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-changeme}"
-      middleware::limit::req_per_sec: "1000000"
+      MIDDLEWARE__LIMIT__REQ_PER_SEC: "1000000"
       DATABASE_URL: "postgres://${POSTGRES_USER:-devuser}:${POSTGRES_PASSWORD:-devuser}@db:5432/${POSTGRES_DB:-devdb}"
       REDIS_URL: "redis://redis:6379"
     ports:
       - "${SERVER_PORT:-12345}:12345"
+    volumes:
+      - ./server:/app
+      - cargo_registry:/usr/local/cargo/registry
+      - cargo_git:/usr/local/cargo/git
+      - server_target:/app/target
+      - server_public:/app/public
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:12345/health_check"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 120s
+    command: cargo watch -x run
     networks:
       - backend
 
@@ -59,11 +76,11 @@ services:
     init: true
     working_dir: /app
     depends_on:
-      app:
-        condition: service_started
+      server:
+        condition: service_healthy
     environment:
       CI: "true"
-      VITE_SERVER_URL: "http://app:12345"
+      VITE_SERVER_URL: "http://server:12345"
     ports:
       - "${WEB_PORT:-3000}:3000"
     volumes:
@@ -78,7 +95,11 @@ networks:
   backend:
 
 volumes:
+  cargo_git:
+  cargo_registry:
   pgdata:
   redisdata:
   pnpm-store:
   node_modules:
+  server_public:
+  server_target:

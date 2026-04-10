@@ -6,6 +6,9 @@ node_modules
 public
 
 src/assets
+src/locales/.wuchale
+src/locales/data.js
+src/locales/main.loader.js
 src/routeTree.gen.ts
 
 src/style/shadow/shadow_default.css

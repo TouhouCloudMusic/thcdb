@@ -10,25 +10,48 @@
     flake-utils = {
       url = "github:numtide/flake-utils";
     };
+    llm-agents.url = "github:numtide/llm-agents.nix";
   };
 
   outputs =
-    {
+    inputs@{
       self,
       fenix,
       nixpkgs,
       flake-utils,
+      ...
     }:
     (flake-utils.lib.eachDefaultSystem (
       system:
       let
+        prekOverlay = final: prev: {
+          prek = prev.rustPlatform.buildRustPackage (finalAttrs: {
+            pname = "prek";
+            version = "0.3.3";
+
+            src = prev.fetchFromGitHub {
+              owner = "j178";
+              repo = "prek";
+              tag = "v${finalAttrs.version}";
+              hash = "sha256-qeJtdPwWOV43RN0sLHU7TP15ajI1o53SoyNP8/sQA04=";
+            };
+
+            cargoHash = "sha256-Wb+Ld1tgqc2jcbBHh8hNGZ4amAY8rSRik3VNJEmGc/w=";
+            doCheck = false;
+            doInstallCheck = false;
+          });
+        };
+
         pkgs = import nixpkgs {
           inherit system;
           overlays = [
             fenix.overlays.default
+            inputs.llm-agents.overlays.default
+            prekOverlay
           ];
         };
 
+        python = pkgs.python3;
         schemathesis = pkgs.buildFHSEnv {
           name = "schemathesis";
           targetPkgs =
@@ -44,6 +67,10 @@
       in
       {
         devShell = pkgs.mkShell {
+          nativeBuildInputs = with pkgs; [
+            playwright
+            playwright-driver.browsers
+          ];
           buildInputs = with pkgs; [
             (pkgs.fenix.complete.withComponents [
               "cargo"
@@ -58,17 +85,28 @@
             openssl
             pkg-config
             schemathesis
+            llm-agents.agent-browser
           ];
           packages = with pkgs; [
             dprint
             just
-            sea-orm-cli
             just-lsp
             nodejs_22
-            typescript-go
             pnpm
-            oxlint
+            prek
+            sea-orm-cli
+            typescript-go
+            uv
+            python
           ];
+          shellHook = ''
+            export PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}
+            export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+            export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu-24.04"
+
+            export UV_PYTHON_PREFERENCE="only-system";
+            export UV_PYTHON=${python}
+          '';
         };
       }
     ));

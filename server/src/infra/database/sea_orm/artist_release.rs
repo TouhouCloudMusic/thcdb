@@ -188,6 +188,7 @@ impl From<ArtistReleaseIR> for Discography {
         );
 
         Discography {
+            release_id: release.id,
             title: release.title,
             artist,
             release_date,
@@ -242,6 +243,7 @@ fn into_artist_credits(
                 let artist = artists.fmap_into();
 
                 Credit {
+                    release_id: release.id,
                     title: release.title,
                     artist,
                     release_date: DateWithPrecision::from_option(

@@ -7,9 +7,11 @@ import { Cross1Icon, Pencil1Icon, PlusIcon } from "solid-radix-icons"
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
-import { ArtistSearchDialog } from "~/component/form/SearchDialog"
+import {
+	ArtistSearchDialog,
+	SongSearchDialog,
+} from "~/component/form/SearchDialog"
 
-import { SongSearchDialog } from "../comp/SongSearchDialog"
 import { ArtistInfo, SongInfo } from "./EntityInfo"
 import type { ReleaseFormStore } from "./types"
 

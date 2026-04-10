@@ -21,9 +21,12 @@ type TagSearchDialogProps = {
 export function TagSearchDialog(props: TagSearchDialogProps): JSX.Element {
 	const [searchKeyword, setSearchKeyword] = createSignal("")
 
-	const onInput = debounce(300, (e: Event) => {
-		setSearchKeyword((e.target as HTMLInputElement).value)
-	})
+	const onInput = debounce(
+		300,
+		(e: Event & { currentTarget: HTMLInputElement }) => {
+			setSearchKeyword(e.currentTarget.value)
+		},
+	)
 
 	const searchTerm = createMemo(() => {
 		const keyword = searchKeyword().trim()
@@ -44,7 +47,7 @@ export function TagSearchDialog(props: TagSearchDialogProps): JSX.Element {
 
 	const items = createMemo(() => {
 		if (!tagsQuery.isSuccess) return [] as Tag[]
-		const list = tagsQuery.data ?? []
+		const list = tagsQuery.data
 		if (props.dataFilter) {
 			return list.filter(props.dataFilter)
 		}

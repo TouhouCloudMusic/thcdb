@@ -1,5 +1,6 @@
 import type { VoidFn } from "./types"
 
+// oxlint-disable typescript-eslint/no-unsafe-type-assertion
 export type DebouncedFn<Args extends unknown[] = never[]> = {
 	(...args: Args): void
 	cancel(): void
@@ -23,7 +24,6 @@ export function debounce<T extends unknown[]>(
 	arg2?: number | VoidFn<T>,
 	// oxlint-disable-next-line no-explicit-any
 ): any {
-	// oxlint-disable-next-line no-undef
 	const argsLength = arguments.length
 
 	if (argsLength === 2) {

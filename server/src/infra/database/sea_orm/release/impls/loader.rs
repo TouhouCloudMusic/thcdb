@@ -1,14 +1,16 @@
+use std::collections::HashMap;
+
 use entity::enums::ReleaseImageType;
 use entity::release;
 use itertools::Itertools;
 use sea_orm::{
     ColumnTrait, ConnectionTrait, DbErr, EntityTrait, LoaderTrait, QueryFilter,
+    QueryOrder,
 };
 
 use crate::infra::database::sea_orm::cache::{
     LANGUAGE_CACHE, LanguageCacheMap,
 };
-use crate::infra::database::sea_orm::ext::maybe_loader::MaybeLoader;
 
 pub(super) struct RelatedEntities {
     pub(super) artists: Vec<Vec<entity::artist::Model>>,
@@ -258,21 +260,34 @@ impl RelatedEntities {
         releases: &[release::Model],
         db: &impl ConnectionTrait,
     ) -> Result<Vec<Option<entity::image::Model>>, DbErr> {
-        let release_images = releases
-            .load_many(
-                entity::release_image::Entity::find().filter(
-                    entity::release_image::Column::Type
-                        .eq(ReleaseImageType::Cover),
-                ),
-                db,
+        let release_ids =
+            releases.iter().map(|release| release.id).collect_vec();
+
+        let mut cover_art_by_release = entity::release_image::Entity::find()
+            .filter(
+                entity::release_image::Column::ReleaseId
+                    .is_in(release_ids.iter().copied()),
             )
+            .filter(
+                entity::release_image::Column::Type.eq(ReleaseImageType::Cover),
+            )
+            .find_also_related(entity::image::Entity)
+            .order_by_desc(entity::image::Column::UploadedAt)
+            .all(db)
             .await?
             .into_iter()
-            .map(|x| x.into_iter().next())
-            .collect_vec();
+            .fold(HashMap::new(), |mut acc, (release_image, image)| {
+                let Some(image) = image else {
+                    return acc;
+                };
 
-        release_images
-            .maybe_load_one(entity::image::Entity, db)
-            .await
+                acc.entry(release_image.release_id).or_insert(image);
+                acc
+            });
+
+        Ok(releases
+            .iter()
+            .map(|release| cover_art_by_release.remove(&release.id))
+            .collect())
     }
 }

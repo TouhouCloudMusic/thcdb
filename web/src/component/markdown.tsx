@@ -1,11 +1,13 @@
 import { createAsync } from "@solidjs/router"
+import { Show } from "solid-js"
+import type { JSX } from "solid-js"
 
 import type { nil } from "~/type"
 import { useMarkdown } from "~/utils/markdown"
 
 type Props = {
 	content?: string | nil
-	fallback?: string | undefined
+	fallback?: JSX.Element
 	onRendered: () => void
 }
 export function Markdown(props: Props) {
@@ -17,14 +19,20 @@ export function Markdown(props: Props) {
 			props.onRendered()
 			return ret
 		}
-		return props.fallback
+		return ""
 	})
 
 	return (
-		<div
-			// eslint-disable-next-line solid/no-innerhtml
-			innerHTML={parsed()}
-			class="markdown"
-		></div>
+		<Show
+			when={parsed()}
+			fallback={props.fallback}
+		>
+			{(p) => (
+				<div
+					innerHTML={p()}
+					class="markdown"
+				></div>
+			)}
+		</Show>
 	)
 }

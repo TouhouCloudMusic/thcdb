@@ -4,7 +4,7 @@ import type {
 	SimpleArtist,
 	SimpleEvent,
 	SimpleLabel,
-	SimpleRelease,
+	SongRelease,
 	SongRef,
 	TagRef,
 } from "@thc/api"
@@ -15,6 +15,7 @@ import type { JSX } from "solid-js"
 import { Tab } from "~/component/atomic"
 import { Link } from "~/component/atomic/Link"
 import { PageLayout } from "~/layout/PageLayout"
+import { imgUrl } from "~/utils/adapter/static_file"
 import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 
 type SearchTab = "artist" | "event" | "label" | "release" | "song" | "tag"
@@ -69,7 +70,7 @@ export function SearchPage() {
 	const requestedTab = createMemo<SearchTab | undefined>(() => search().tab)
 
 	const patchSearch = (patch: { tab?: SearchTab }) => {
-		navigate({
+		void navigate({
 			to: "/search",
 			search: { ...search(), ...patch },
 		})
@@ -525,8 +526,8 @@ function ArtistRow(props: { artist: SimpleArtist }) {
 	)
 }
 
-function ReleaseRow(props: { release: SimpleRelease }) {
-	const coverUrl = () => props.release.cover_art_url ?? undefined
+function ReleaseRow(props: { release: SongRelease }) {
+	const coverUrl = () => imgUrl(props.release.cover_art_url)
 
 	return (
 		<Link

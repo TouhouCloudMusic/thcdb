@@ -1,3 +1,4 @@
+import { ObjExt } from "@thc/toolkit/data"
 import { Either as E } from "effect"
 
 import type { ApiError } from "../../shared"
@@ -6,7 +7,7 @@ import type { CursorPage, NotificationItem } from "../../type"
 // TODO: Refactor adapter
 type ApiResult<T> = E.Either<T, ApiError<string>>
 
-const ORIGIN = globalThis.location?.origin ?? "http://localhost:3000"
+const ORIGIN = globalThis.location.origin
 
 const buildUrl = (
 	path: string,
@@ -27,7 +28,7 @@ const buildUrl = (
 const requestJson = async (input: RequestInfo, init?: RequestInit) => {
 	try {
 		const res = await globalThis.fetch(input, init)
-		const json = await res.json().catch(() => null)
+		const json: unknown = await res.json().catch(() => null)
 
 		return { res, json }
 	} catch (e) {
@@ -39,27 +40,49 @@ const requestJson = async (input: RequestInfo, init?: RequestInit) => {
 	}
 }
 
-const expectData = <T>(json: unknown): T | undefined => {
-	if (typeof json !== "object" || json === null) return undefined
-	if (Reflect.get(json, "status") !== "Ok") return undefined
-	if (!Reflect.has(json, "data")) return undefined
-	return Reflect.get(json, "data")
+type OkDataResponse<T> = {
+	status: "Ok"
+	data: T
+}
+
+type OkMessageResponse = {
+	status: "Ok"
+	message: string
+}
+
+type ErrMessageResponse = {
+	status: "Err"
+	message: string
+}
+
+const isOkDataResponse = <T>(json: unknown): json is OkDataResponse<T> => {
+	return ObjExt.isRecord(json) && json["status"] === "Ok" && "data" in json
+}
+
+const isOkMessageResponse = (json: unknown): json is OkMessageResponse => {
+	return (
+		ObjExt.isRecord(json)
+		&& json["status"] === "Ok"
+		&& typeof json["message"] === "string"
+	)
+}
+
+const isErrMessageResponse = (json: unknown): json is ErrMessageResponse => {
+	return (
+		ObjExt.isRecord(json)
+		&& json["status"] === "Err"
+		&& typeof json["message"] === "string"
+	)
 }
 
 const expectMessage = (json: unknown): string | undefined => {
-	if (typeof json !== "object" || json === null) return undefined
-	if (Reflect.get(json, "status") !== "Ok") return undefined
-	if (!Reflect.has(json, "message")) return undefined
-	const message = Reflect.get(json, "message")
-	return typeof message === "string" ? message : undefined
+	if (!isOkMessageResponse(json)) return undefined
+	return json.message
 }
 
 const extractServerError = (json: unknown): string | undefined => {
-	if (typeof json !== "object" || json === null) return undefined
-	if (Reflect.get(json, "status") !== "Err") return undefined
-	if (!Reflect.has(json, "message")) return undefined
-	const message = Reflect.get(json, "message")
-	return typeof message === "string" ? message : undefined
+	if (!isErrMessageResponse(json)) return undefined
+	return json.message
 }
 
 const getData = async <T>(
@@ -72,7 +95,7 @@ const getData = async <T>(
 	})
 
 	if (!res) {
-		return E.left({ type: "Response", error: error ?? "Request failed" })
+		return E.left({ type: "Response", error })
 	}
 
 	if (!res.ok) {
@@ -82,12 +105,11 @@ const getData = async <T>(
 		})
 	}
 
-	const data = expectData<T>(json)
-	if (data === undefined) {
+	if (!isOkDataResponse<T>(json)) {
 		return E.left({ type: "Response", error: "Invalid response shape" })
 	}
 
-	return E.right(data)
+	return E.right(json.data)
 }
 
 const postMessage = async (
@@ -100,7 +122,7 @@ const postMessage = async (
 	})
 
 	if (!res) {
-		return E.left({ type: "Response", error: error ?? "Request failed" })
+		return E.left({ type: "Response", error })
 	}
 
 	if (!res.ok) {
@@ -121,19 +143,26 @@ const postMessage = async (
 export async function list(options: {
 	query?: { cursor?: number; limit?: number }
 }): Promise<ApiResult<CursorPage<NotificationItem>>> {
-	return await getData("/notifications", options.query)
+	const result = await getData<CursorPage<NotificationItem>>(
+		"/notifications",
+		options.query,
+	)
+	return result
 }
 
 export async function unreadCount(): Promise<ApiResult<number>> {
-	return await getData("/notifications/unread-count")
+	const result = await getData<number>("/notifications/unread-count")
+	return result
 }
 
 export async function markRead(options: {
 	path: { id: number }
 }): Promise<ApiResult<string>> {
-	return await postMessage(`/notifications/${options.path.id}/read`)
+	const result = await postMessage(`/notifications/${options.path.id}/read`)
+	return result
 }
 
 export async function readAll(): Promise<ApiResult<string>> {
-	return await postMessage("/notifications/read-all")
+	const result = await postMessage("/notifications/read-all")
+	return result
 }

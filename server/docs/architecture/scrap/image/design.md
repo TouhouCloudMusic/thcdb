@@ -79,11 +79,11 @@
 | `/avatar` | POST | ✅ | 上传头像 |
 | `/image-queue` | GET | ✅ | 图片队列列表（支持分页与筛选） |
 | `/image-queue/pending-count` | GET | ✅ | 待审核数量 |
-| `/image-queue/{id}` | GET | ✅ | 图片队列详情（需要 `image.queue.manage`） |
+| `/image-queue/{id}` | GET | ✅ | 图片队列详情（上传者本人可看；他人需 `image.queue.manage`） |
 | `/image-queue/{id}` | POST | ✅ | 处理队列（`method=Approve|Reject|Revert`，需要 `image.queue.manage`） |
 | `/user/{id}/image-queue` | GET | ✅ | 用户的图片队列（本人可看；他人需 `image.queue.manage`） |
 
 ### 备注
 
-- 当前实现中，`/image-queue` 与 `/image-queue/pending-count` 仅要求登录；详情与处理接口会校验 `image.queue.manage`。
-- 前端页面：`/image-queue/`（管理列表）、`/image-queue/{id}`（详情/处理）、`/user/{id}/image-queue`（用户队列），另有 `/image-queue/mock` 页面用于开发调试。
+- 当前实现中，`/image-queue` 与 `/image-queue/pending-count` 仅要求登录；详情接口允许上传者本人查看，处理接口仍会校验 `image.queue.manage`。
+- 前端页面：`/image-queue/`（管理列表）、`/image-queue/{id}`（详情/处理）、`/user/{id}/image-queue`（用户队列）。

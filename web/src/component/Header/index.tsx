@@ -6,6 +6,7 @@ import {
 	BellIcon,
 	BellSlashIcon,
 } from "@thc/icons/heroicons/24/outline"
+import { StrExt } from "@thc/toolkit/data"
 import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
 import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
 
@@ -31,17 +32,15 @@ type EntityFilter =
 	| "song"
 	| "tag"
 
-const isEntityFilter = (value: string): value is EntityFilter => {
-	return (
-		value === "all"
-		|| value === "artist"
-		|| value === "event"
-		|| value === "label"
-		|| value === "release"
-		|| value === "song"
-		|| value === "tag"
-	)
-}
+const ENTITY_FILTER_OPTIONS: EntityFilter[] = [
+	"all",
+	"artist",
+	"event",
+	"label",
+	"release",
+	"song",
+	"tag",
+] as const
 
 export function Header() {
 	return (
@@ -129,13 +128,13 @@ function SearchBar() {
 
 	const submit = (e: Event) => {
 		e.preventDefault()
-		const value = inputRef?.value?.trim() ?? ""
-		if (!value) return
+		const value = inputRef?.value.trim() ?? ""
+		if (value.length === 0) return
 		const selected = entity()
 		if (selected === "all") {
-			navigate({ to: "/search", search: { q: value } })
+			void navigate({ to: "/search", search: { q: value } })
 		} else {
-			navigate({
+			void navigate({
 				to: "/search",
 				search: { q: value, entity: selected, tab: selected },
 			})
@@ -173,23 +172,31 @@ function SearchBar() {
 							<div class="text-[11px] font-medium tracking-[0.18em] text-slate-500">
 								FILTER
 							</div>
-							<Select
+							<Select.Root
+								options={ENTITY_FILTER_OPTIONS}
 								value={entity()}
-								onChange={(e) => {
-									const value = e.currentTarget.value
-									if (!isEntityFilter(value)) return
+								onChange={(value) => {
+									if (value === null) return
 									setEntity(value)
 								}}
-								class="h-7 w-40 text-sm"
+								itemComponent={(props) => (
+									<Select.Item item={props.item}>
+										{StrExt.capitalize(props.item.rawValue)}
+									</Select.Item>
+								)}
 							>
-								<Select.Option value="all">All</Select.Option>
-								<Select.Option value="artist">Artist</Select.Option>
-								<Select.Option value="event">Event</Select.Option>
-								<Select.Option value="label">Label</Select.Option>
-								<Select.Option value="release">Release</Select.Option>
-								<Select.Option value="song">Song</Select.Option>
-								<Select.Option value="tag">Tag</Select.Option>
-							</Select>
+								<Select.Trigger class="h-7 w-40 text-sm">
+									<Select.Value<EntityFilter>>
+										{(state) => StrExt.capitalize(state.selectedOption())}
+									</Select.Value>
+									<Select.Icon />
+								</Select.Trigger>
+								<Select.Portal>
+									<Select.Content>
+										<Select.Listbox />
+									</Select.Content>
+								</Select.Portal>
+							</Select.Root>
 						</div>
 					</div>
 				</Show>

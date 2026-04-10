@@ -1,5 +1,4 @@
 // @refresh-reload
-// oxlint-disable max-lines-per-function
 import { Field, insert, remove } from "@formisch/solid"
 import { useQuery } from "@tanstack/solid-query"
 import type { CreditRoleSummary } from "@thc/api"
@@ -45,8 +44,8 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 
 	const addRole = (role: CreditRoleSummary) => {
 		setRoles(
-			produce((roles) => {
-				roles.push(role)
+			produce((prev) => {
+				prev.push(role)
 			}),
 		)
 
@@ -81,10 +80,10 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 							addRole(role)
 						}
 					}}
-					itemComponent={(props) => (
-						<Combobox.Item item={props.item}>
+					itemComponent={(itemProps) => (
+						<Combobox.Item item={itemProps.item}>
 							<Combobox.ItemLabel>
-								{props.item.rawValue.name}
+								{itemProps.item.rawValue.name}
 							</Combobox.ItemLabel>
 							<Combobox.ItemIndicator>
 								<CheckIcon />

@@ -1,9 +1,23 @@
-import type { StorybookConfig } from "storybook-solidjs-vite";
-import { mergeConfig } from "vite";
+import { defineMain } from "storybook-solidjs-vite"
 
-const config: StorybookConfig = {
-	framework: "storybook-solidjs-vite",
-	stories: ["../src/component/!(__legacy|dialog)/**/*.stories.@(ts|tsx)"],
+export default defineMain({
+	framework: {
+		name: "storybook-solidjs-vite",
+		options: {
+			// docgen: {
+			// Enabled by default, but you can configure or disable it:
+			//  see https://github.com/styleguidist/react-docgen-typescript#options
+			// },
+		},
+	},
+	core: {
+		builder: {
+			name: "@storybook/builder-vite",
+			options: {
+				viteConfigPath: "./storybook.vite.config.ts",
+			},
+		},
+	},
 	addons: [
 		"@storybook/addon-onboarding",
 		"@storybook/addon-docs",
@@ -16,26 +30,8 @@ const config: StorybookConfig = {
 			},
 		},
 	],
-	// oxlint-disable-next-line require-await
-	async viteFinal(config) {
-		return mergeConfig(config, {
-			define: {
-				"process.env": {},
-			},
-		})
-	},
-	docs: {
-		autodocs: true,
-	},
-	typescript: {
-		reactDocgen: "react-docgen-typescript",
-		reactDocgenTypescriptOptions: {
-			shouldExtractLiteralValuesFromEnum: true,
-			propFilter: (prop) =>
-				prop.parent ? !/node_modules/.test(prop.parent.fileName) : true,
-		},
-	},
-}
-
-// oxlint-disable-next-line no-default-export
-export default config
+	stories: [
+		"../src/component/!(__legacy|dialog)/**/*.stories.@(ts|tsx)",
+		"../src/view/**/*.stories.@(ts|tsx)",
+	],
+})

@@ -1,7 +1,7 @@
 use entity::user_following;
 use sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, Set};
 
-use crate::domain::user::{ProfileRepository, User, UserProfile};
+use crate::domain::user::{ProfileRepository, Repository, User, UserProfile};
 use crate::features::user_profile::{FollowResult, UnfollowResult};
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::error::Error;
@@ -20,7 +20,9 @@ impl Service {
         &self,
         name: &str,
     ) -> Result<Option<UserProfile>, Error> {
-        self.repo.find_by_name(name).await.map_err(Error::from)
+        ProfileRepository::find_by_name(&self.repo, name)
+            .await
+            .map_err(Error::from)
     }
 
     pub async fn with_following(
@@ -30,6 +32,15 @@ impl Service {
     ) -> Result<(), Error> {
         self.repo
             .with_following(profile, current_user)
+            .await
+            .map_err(Error::from)
+    }
+
+    pub async fn find_user_by_name(
+        &self,
+        name: &str,
+    ) -> Result<Option<User>, Error> {
+        Repository::find_by_name(&self.repo, name)
             .await
             .map_err(Error::from)
     }

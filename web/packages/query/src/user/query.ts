@@ -1,26 +1,41 @@
 import { useQuery, queryOptions } from "@tanstack/solid-query"
 import type { UserProfile } from "@thc/api"
 import { UserApi } from "@thc/api"
-import { Either, Option } from "effect"
+import { Either, identity, Option as EffectOption } from "effect"
 
-export type Option = {
+export type ProfileQueryOption = {
 	"params.username"?: string | undefined
 	current_user?: UserProfile | undefined
+	viewer_name?: string | undefined
 }
 
-export function profile(opt: Option) {
+export function profile(opt: ProfileQueryOption) {
 	return useQuery(() => profileOption(opt))
+}
+
+export function profileQueryKey({
+	"params.username": params_username,
+	current_user,
+	viewer_name,
+}: ProfileQueryOption) {
+	return [
+		"profile",
+		params_username ?? current_user?.name ?? "__self__",
+		current_user?.name ?? viewer_name ?? "__anonymous__",
+	] as const
 }
 
 export function profileOption({
 	"params.username": params_username,
 	current_user,
-}: Option) {
+	viewer_name,
+}: ProfileQueryOption) {
 	return queryOptions({
-		// eslint-disable-next-line @tanstack/query/exhaustive-deps
-		queryKey: ["profile", params_username ?? current_user?.name].filter(
-			Boolean,
-		),
+		queryKey: profileQueryKey({
+			"params.username": params_username,
+			current_user,
+			viewer_name,
+		}),
 		queryFn: async () => {
 			if (current_user) return current_user
 
@@ -30,8 +45,8 @@ export function profileOption({
 					})
 				: await UserApi.profile()
 
-			return Either.match(result, {
-				onRight: Option.getOrUndefined,
+			return Either.match(Either.map(result, EffectOption.getOrUndefined), {
+				onRight: identity,
 				onLeft: (error) => {
 					throw error
 				},

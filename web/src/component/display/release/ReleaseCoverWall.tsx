@@ -1,6 +1,7 @@
 import { For } from "solid-js"
 
 import { Image } from "~/component/image"
+import { imgUrl } from "~/utils/adapter/static_file"
 
 export type ReleaseCoverWallProps = {
 	releases: ReleaseCoverWallRelease[]
@@ -20,7 +21,7 @@ export function ReleaseCoverWall(props: ReleaseCoverWallProps) {
 					<div class="aspect-square overflow-hidden">
 						<Image.Root>
 							<Image.Img
-								src={release.cover_art_url ?? undefined}
+								src={imgUrl(release.cover_art_url)}
 								alt={release.title}
 								class="h-full w-full object-cover"
 							/>
@@ -29,7 +30,7 @@ export function ReleaseCoverWall(props: ReleaseCoverWallProps) {
 									state !== Image.State.Ok && (
 										// TODO: Better fallback
 										<div class="flex h-full w-full items-center justify-center bg-slate-200">
-											<span class="text-sm text-slate-500">No Cover Art</span>
+											<span class="text-sm text-slate-500">No cover art</span>
 										</div>
 									)
 								}

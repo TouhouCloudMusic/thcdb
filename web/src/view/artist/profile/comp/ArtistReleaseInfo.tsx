@@ -17,6 +17,7 @@ import {
 import { Dynamic } from "solid-js/web"
 import { twJoin, twMerge } from "tailwind-merge"
 
+import { Link } from "~/component/atomic/Link"
 import { Tab } from "~/component/atomic/Tab"
 import { Button } from "~/component/atomic/button"
 import { RELEASE_TYPES } from "~/domain/release"
@@ -26,8 +27,6 @@ import { assertContext } from "~/utils/solid/assertContext"
 import { ArtistContext } from ".."
 
 // TODO: Add links after other pages are completed
-
-type ArtistReleaseType = (typeof TABS)[number]
 
 const TABS = ["Discography", "Appearance", "Credit"] as const
 export function ArtistReleaseInfo() {
@@ -60,14 +59,14 @@ function Inner() {
 				<For
 					each={TABS.filter((tab) => {
 						switch (tab) {
+							case "Discography": {
+								return true
+							}
 							case "Appearance": {
-								return context.appearances.data.length
+								return context.appearances.data.length > 0
 							}
 							case "Credit": {
-								return context.credits.data.length
-							}
-							default: {
-								return true
+								return context.credits.data.length > 0
 							}
 						}
 					})}
@@ -86,13 +85,13 @@ function Inner() {
 				<Tab.Indicator />
 			</Tab.List>
 
-			<Tab.Content<ArtistReleaseType>
+			<Tab.Content
 				value="Discography"
 				class="w-full border-t border-slate-300"
 			>
 				<DiscographyTab />
 			</Tab.Content>
-			<Tab.Content<ArtistReleaseType>
+			<Tab.Content
 				value="Appearance"
 				class="w-full border-t border-slate-300"
 			>
@@ -100,12 +99,14 @@ function Inner() {
 					class="p-6"
 					data={context.appearances.data}
 					hasNext={context.appearances.hasNext}
-					next={() => context.appearances.next()}
+					next={() => {
+						void context.appearances.next()
+					}}
 				>
 					{(props) => <DiscographyItem {...props} />}
 				</ArtistReleaseList>
 			</Tab.Content>
-			<Tab.Content<ArtistReleaseType>
+			<Tab.Content
 				value="Credit"
 				class="w-full border-t border-slate-300"
 			>
@@ -113,7 +114,9 @@ function Inner() {
 					class="p-6"
 					data={context.credits.data}
 					hasNext={context.credits.hasNext}
-					next={() => context.credits.next()}
+					next={() => {
+						void context.credits.next()
+					}}
 				>
 					{(props) => <CreditItem {...props} />}
 				</ArtistReleaseList>
@@ -124,7 +127,8 @@ function Inner() {
 
 function DiscographyTab() {
 	const context = assertContext(ArtistContext)
-	const [selectedType, setSelectedType] = createSignal<ReleaseType>("Album")
+	const [selectedTypeInput, setSelectedTypeInput] =
+		createSignal<ReleaseType>("Album")
 
 	const existingTypes = createMemo(() => {
 		return RELEASE_TYPES.filter(
@@ -132,9 +136,18 @@ function DiscographyTab() {
 		)
 	})
 
+	const selectedType = createMemo<ReleaseType | undefined>(() => {
+		const current = selectedTypeInput()
+		if (existingTypes().includes(current)) {
+			return current
+		}
+
+		return existingTypes()[0]
+	})
+
 	return (
 		<Show
-			when={existingTypes().length}
+			when={selectedType()}
 			fallback={
 				<div class="m-auto flex min-h-16 items-center place-self-center pl-4 whitespace-pre text-secondary">
 					This Artist has no releases yet, you can upload them on{" "}
@@ -147,34 +160,39 @@ function DiscographyTab() {
 				</div>
 			}
 		>
-			<div class="grid grid-cols-[auto_1fr]">
-				<Tab.Root
-					orientation="vertical"
-					onChange={setSelectedType}
-				>
-					<Tab.List class="space-y-2 px-2 pt-6">
-						<For each={existingTypes()}>
-							{(type) => (
-								<Tab.Trigger
-									value={type}
-									class="flex h-10 items-center justify-center rounded-md px-2 text-center font-normal text-secondary outline-2 outline-offset-2 outline-transparent focus-visible:outline-slate-300 data-selected:bg-slate-100"
-								>
-									{type}
-								</Tab.Trigger>
-							)}
-						</For>
-					</Tab.List>
-				</Tab.Root>
+			{(type) => (
+				<div class="grid grid-cols-[auto_1fr]">
+					<Tab.Root
+						orientation="vertical"
+						value={type()}
+						onChange={setSelectedTypeInput}
+					>
+						<Tab.List class="space-y-2 px-2 pt-6">
+							<For each={existingTypes()}>
+								{(releaseType) => (
+									<Tab.Trigger
+										value={releaseType}
+										class="flex h-10 items-center justify-center rounded-md px-2 text-center font-normal text-secondary outline-2 outline-offset-2 outline-transparent focus-visible:outline-slate-300 data-selected:bg-slate-100"
+									>
+										{releaseType}
+									</Tab.Trigger>
+								)}
+							</For>
+						</Tab.List>
+					</Tab.Root>
 
-				<ArtistReleaseList
-					class="p-6"
-					data={context.discographies.data[selectedType()]}
-					hasNext={context.discographies.hasNext(selectedType())}
-					next={() => context.discographies.next(selectedType())}
-				>
-					{(props) => <DiscographyItem {...props} />}
-				</ArtistReleaseList>
-			</div>
+					<ArtistReleaseList
+						class="p-6"
+						data={context.discographies.data[type()]}
+						hasNext={context.discographies.hasNext(type())}
+						next={() => {
+							void context.discographies.next(type())
+						}}
+					>
+						{(props) => <DiscographyItem {...props} />}
+					</ArtistReleaseList>
+				</div>
+			)}
 		</Show>
 	)
 }
@@ -182,7 +200,7 @@ function DiscographyTab() {
 function ArtistReleaseList<T extends Discography | CreditRoleRef>(props: {
 	data?: T[] | undefined
 	hasNext: boolean
-	next: () => Promise<void>
+	next: () => void
 	class?: string
 	children: (props: { item: T }) => JSX.Element
 }) {
@@ -196,7 +214,7 @@ function ArtistReleaseList<T extends Discography | CreditRoleRef>(props: {
 				<div class="flex w-full justify-center">
 					<Button
 						variant="Tertiary"
-						onClick={props.next}
+						onClick={() => props.next()}
 						class="px-16 font-normal"
 					>
 						Load More
@@ -234,7 +252,7 @@ function DiscographyItem(props: { item: Discography }) {
 		return "N/A"
 	}
 	return (
-		<ItemLayout>
+		<ItemLayout releaseId={props.item.release_id}>
 			<ItemTitle>{props.item.title}</ItemTitle>
 			<ItemSubTitle>{subtitle()}</ItemSubTitle>
 		</ItemLayout>
@@ -243,7 +261,7 @@ function DiscographyItem(props: { item: Discography }) {
 
 function CreditItem(props: { item: ArtistCredit }) {
 	return (
-		<ItemLayout>
+		<ItemLayout releaseId={props.item.release_id}>
 			<div class="flex whitespace-pre">
 				<ItemTitle>{props.item.title}</ItemTitle>
 				{" · "}
@@ -280,11 +298,24 @@ function CreditItem(props: { item: ArtistCredit }) {
 	)
 }
 
-function ItemLayout(props: ParentProps) {
-	return (
-		<li class="flex h-16 space-x-4">
+function ItemLayout(props: ParentProps<{ releaseId: number }>) {
+	const content = () => (
+		<>
 			<div class="size-16 rounded bg-secondary"></div>
 			<div class="grid grid-rows-2 items-center">{props.children}</div>
+		</>
+	)
+
+	return (
+		<li>
+			<Link
+				to="/release/$id"
+				params={{ id: props.releaseId.toString() }}
+				underline={false}
+				class="flex h-16 w-full space-x-4 rounded-md -mx-2 px-2 text-inherit hover:bg-slate-50"
+			>
+				{content()}
+			</Link>
 		</li>
 	)
 }

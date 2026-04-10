@@ -1,4 +1,3 @@
-/* @refresh reload */
 import { Form, createForm } from "@formisch/solid"
 import { useBlocker } from "@tanstack/solid-router"
 import type { Artist } from "@thc/api"
@@ -47,7 +46,7 @@ export function EditArtistPage(props: Props): JSX.Element {
 
 function PageHeader(props: { type: Props["type"] }) {
 	return (
-		<div class="border-b-1 border-slate-300 p-8">
+		<div class="border-b border-slate-300 p-8">
 			<div class="flex items-center gap-4">
 				<Button
 					class="size-6 p-0"
@@ -107,7 +106,8 @@ function FormContent(props: Props) {
 			<Form
 				of={form}
 				class="flex grow flex-col"
-				onSubmit={(output) => handleSubmit(output)}
+				// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
+				onSubmit={(output, _) => handleSubmit(output)}
 			>
 				<div class="flex flex-col space-y-8 p-8 pb-0">
 					<ArtistFormNameField />

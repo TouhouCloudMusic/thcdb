@@ -82,7 +82,11 @@ export function RightSidebar(props: Props) {
 						<GearIcon />
 						<span>Settings</span>
 					</ListItem>
-					<ListItem onClick={() => userCtx.sign_out()}>
+					<ListItem
+						onClick={() => {
+							void userCtx.sign_out()
+						}}
+					>
 						<ExitIcon />
 						<span>Sign Out</span>
 					</ListItem>

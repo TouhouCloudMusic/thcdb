@@ -103,7 +103,7 @@
 - ✅ 管理端：队列列表 `GET /image-queue`、待处理数量 `GET /image-queue/pending-count`
 - ✅ 管理端：详情 `GET /image-queue/{id}`、处理 `POST /image-queue/{id}?method=...`
 - ✅ 用户侧：`GET /user/{id}/image-queue`（本人可看；他人需 `image.queue.manage`）
-- ✅ 权限控制：详情/处理需要 `image.queue.manage`（默认 Admin/Moderator）
+- ✅ 权限控制：详情允许上传者本人查看；处理仍需要 `image.queue.manage`（默认 Admin/Moderator）
 - ⏳ 通知：审核结果通知上传者（依赖通知系统）
 
 ---

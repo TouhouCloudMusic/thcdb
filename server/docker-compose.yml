@@ -29,9 +29,11 @@ services:
     networks:
       - backend
 
-  app:
+  server:
     build:
       context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
     depends_on:
       db:
         condition: service_healthy
@@ -40,12 +42,18 @@ services:
     environment:
       SESSION_SECURE: false
       ADMIN_PASSWORD: changeme
-      middleware::limit::req_per_sec: 1000000
+      MIDDLEWARE__LIMIT__REQ_PER_SEC: 1000000
 
       DATABASE_URL: "postgres://appuser:appuser@db:5432/appdb"
       REDIS_URL: "redis://redis:6379"
     ports:
       - "12345:12345"
+    volumes:
+      - .:/app
+      - cargo_registry:/usr/local/cargo/registry
+      - cargo_git:/usr/local/cargo/git
+      - server_target:/app/target
+      - server_public:/app/public
     networks:
       - backend
 
@@ -53,5 +61,9 @@ networks:
   backend:
 
 volumes:
+  cargo_git:
+  cargo_registry:
   pgdata:
   redisdata:
+  server_public:
+  server_target:

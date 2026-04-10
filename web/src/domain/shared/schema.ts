@@ -10,6 +10,10 @@ export const EntityId = v.pipe(
 	v.minValue(1),
 	v.maxValue(i32_MAX),
 )
+
+export const EntityId_fromStr = (str: string) =>
+	v.parse(EntityId, Number.parseInt(str, 10))
+
 export const EntityIdent = v.pipe(
 	v.string(),
 	v.minLength(ENTITY_IDENT_MIN_LEN),

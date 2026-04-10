@@ -14,6 +14,7 @@ import {
 import { ARTIST_TYPES } from "~/domain/artist/constants"
 import { DateWithPrecision } from "~/domain/shared"
 import { useI18N } from "~/state/i18n"
+import { imgUrl } from "~/utils/adapter/static_file"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 
 const getArtistAvatarText = (artist: Artist) => {
@@ -28,17 +29,10 @@ const formatArtistDateRange = (artist: Artist) => {
 	return `${start} - ${end}`
 }
 
-const isDefinedString = (value: string | null | undefined): value is string => {
-	return typeof value === "string" && value.length > 0
-}
-
-const formatLocation = (value: Artist["current_location"] | undefined) => {
-	if (!value) return
-	const parts = [value.country, value.province, value.city].filter(
-		isDefinedString,
-	)
-	if (parts.length === 0) return
-	return parts.join(" / ")
+function formatArtistTypeLabel(value: string) {
+	if (value === "") return "All"
+	if (value === "Multiple") return "Group"
+	return value
 }
 
 export const ArtistItemSkeleton: Component = () => (
@@ -68,8 +62,8 @@ type ArtistItemProps = {
 }
 
 export const ArtistItem: Component<ArtistItemProps> = (props) => {
-	const locationText = () => formatLocation(props.artist.current_location)
 	const i18n = useI18N()
+	const profileImageUrl = () => imgUrl(props.artist.profile_image_url)
 
 	const preferredLanguageCode = () => {
 		const locale = i18n.locale()
@@ -93,7 +87,7 @@ export const ArtistItem: Component<ArtistItemProps> = (props) => {
 					params={{ id: props.artist.id.toString() }}
 					class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 text-sm font-medium text-slate-700 no-underline hover:border-slate-300 hover:no-underline focus-visible:ring-2 focus-visible:ring-slate-200"
 				>
-					<Show when={props.artist.profile_image_url}>
+					<Show when={profileImageUrl()}>
 						{(src) => (
 							<img
 								src={src()}
@@ -103,7 +97,7 @@ export const ArtistItem: Component<ArtistItemProps> = (props) => {
 							/>
 						)}
 					</Show>
-					<Show when={!props.artist.profile_image_url}>
+					<Show when={!profileImageUrl()}>
 						{getArtistAvatarText(props.artist)}
 					</Show>
 				</Link>
@@ -126,16 +120,12 @@ export const ArtistItem: Component<ArtistItemProps> = (props) => {
 						</div>
 
 						<div class="shrink-0 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-600">
-							{props.artist.artist_type}
+							{formatArtistTypeLabel(props.artist.artist_type)}
 						</div>
 					</div>
 
-					<div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
+					<div class="mt-1 text-sm text-slate-500">
 						<span>{formatArtistDateRange(props.artist)}</span>
-						<Show when={locationText()}>
-							<span class="text-slate-300">·</span>
-							<span>{locationText()}</span>
-						</Show>
 					</div>
 				</div>
 			</div>
@@ -153,23 +143,36 @@ type ArtistExploreFilterBarProps = {
 	onOrderByChange: (value: "asc" | "desc") => void
 }
 
-export const ArtistExploreFilterBar: Component<ArtistExploreFilterBarProps> = (
-	props,
-) => {
+export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
+	const typeOptions = () => ["", ...ARTIST_TYPES]
+
 	return (
 		<StickyFilterBar scrollDirection={props.scrollDirection}>
 			<div class="flex flex-wrap items-center gap-4">
 				<div class="flex items-center gap-2">
 					<span class="text-sm text-slate-500">Type</span>
-					<Select
+					<Select.Root<string>
+						options={typeOptions()}
 						value={props.artistTypeValue}
-						onChange={(e) => props.onArtistTypeChange(e.currentTarget.value)}
+						onChange={(value) => props.onArtistTypeChange(value ?? "")}
+						itemComponent={(optionProps) => (
+							<Select.Item item={optionProps.item}>
+								{formatArtistTypeLabel(optionProps.item.rawValue)}
+							</Select.Item>
+						)}
 					>
-						<Select.Option value="">All</Select.Option>
-						<For each={ARTIST_TYPES}>
-							{(type) => <Select.Option value={type}>{type}</Select.Option>}
-						</For>
-					</Select>
+						<Select.Trigger>
+							<Select.Value<string>>
+								{(state) => formatArtistTypeLabel(state.selectedOption())}
+							</Select.Value>
+							<Select.Icon />
+						</Select.Trigger>
+						<Select.Portal>
+							<Select.Content>
+								<Select.Listbox />
+							</Select.Content>
+						</Select.Portal>
+					</Select.Root>
 				</div>
 
 				<CorrectionSortFieldSelect

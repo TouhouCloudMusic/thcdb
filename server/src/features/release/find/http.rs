@@ -7,12 +7,12 @@ use utoipa_axum::routes;
 
 use super::repo::{self, FindReleaseFilter};
 use super::{PageQuery, ReleaseFilter};
-use crate::adapter::inbound::rest::api_response::Data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::release::model::Release;
 use crate::infra::error::Error;
+use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Release";
 
@@ -88,7 +88,11 @@ async fn explore_release(
     Query(pagination): Query<PageQuery>,
 ) -> Result<Data<PageResponse<Release>>, Error> {
     let normalized = filter.with_sort_defaults();
-    tracing::info!(?normalized, "explore_release: incoming query");
+    log::info!(
+        target: "features.release.find.http",
+        normalized:? = normalized;
+        "incoming explore query"
+    );
     repo::find_by_filter(&repo, normalized, pagination)
         .await
         .bimap_into()

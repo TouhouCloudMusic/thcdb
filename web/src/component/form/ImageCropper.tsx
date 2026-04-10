@@ -1,5 +1,5 @@
 export type ImageDropProps = {
-	croppieOption?: any
+	croppieOption?: unknown
 	onSave: (base64: string) => void
 }
 

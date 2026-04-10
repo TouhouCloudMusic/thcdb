@@ -1,11 +1,9 @@
 use std::backtrace::Backtrace;
+use std::borrow::Cow;
 use std::sync::LazyLock;
 
 use argon2::Argon2;
-use argon2::password_hash::rand_core::OsRng;
-use argon2::password_hash::{
-    self, PasswordHash, PasswordHasher, PasswordVerifier, SaltString,
-};
+use argon2::password_hash::{self, PasswordHash, PasswordVerifier};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use derive_more::Display;
@@ -15,29 +13,31 @@ use serde::{Deserialize, Serialize};
 use snafu::Snafu;
 use utoipa::ToSchema;
 
-use crate::adapter::inbound::rest::api_response::{Error, IntoApiResponse};
 use crate::constant::{
     USER_NAME_REGEX_STR, USER_PASSWORD_MAX_LENGTH, USER_PASSWORD_MIN_LENGTH,
     USER_PASSWORD_REGEX_STR,
 };
-use crate::infra::singleton::ARGON2_HASHER;
+use crate::shared::http::api_response::{ApiError as ApiErrorTrait, Error};
+use crate::shared::secret;
 
-#[derive(Debug, Snafu, ApiError)]
+pub const VERIFICATION_CODE_EXPIRES_MINUTES: i64 = 10;
+pub const VERIFICATION_CODE_RESEND_COOLDOWN_SECONDS: i64 = 60;
+pub const SIGNUP_EXPIRES_HOURS: i64 = 24;
 
+#[derive(Debug, Snafu)]
 pub enum AuthnError {
     #[snafu(display("Incorrect username or password"))]
-    #[api_error(status_code = StatusCode::UNAUTHORIZED)]
-    AuthenticationFailed { backtrace: Backtrace },
+    AuthenticationFailed {
+        location: &'static std::panic::Location<'static>,
+    },
     #[snafu(transparent)]
     Infra { source: crate::infra::Error },
     #[snafu(display("Password hash error: {source}"))]
-    #[api_error(status_code = StatusCode::INTERNAL_SERVER_ERROR)]
     PasswordHash {
         source: password_hash::Error,
         backtrace: Backtrace,
     },
     #[snafu(display("Join error: {source}"))]
-    #[api_error(status_code = StatusCode::INTERNAL_SERVER_ERROR)]
     Join {
         source: tokio::task::JoinError,
         backtrace: Backtrace,
@@ -45,10 +45,28 @@ pub enum AuthnError {
 }
 
 impl AuthnError {
-    pub fn authentication_failed() -> Self {
-        Self::AuthenticationFailed {
-            backtrace: Backtrace::capture(),
+    pub(crate) fn status_code(&self) -> StatusCode {
+        match self {
+            AuthnError::AuthenticationFailed { .. } => StatusCode::UNAUTHORIZED,
+            AuthnError::Infra { source } => source.as_status_code(),
+            AuthnError::PasswordHash { .. } | AuthnError::Join { .. } => {
+                StatusCode::INTERNAL_SERVER_ERROR
+            }
         }
+    }
+
+    #[track_caller]
+    pub const fn authentication_failed() -> Self {
+        Self::AuthenticationFailed {
+            location: std::panic::Location::caller(),
+        }
+    }
+}
+
+impl IntoResponse for AuthnError {
+    fn into_response(self) -> axum::response::Response {
+        let status_code = self.status_code();
+        Error::from_err_and_code(self, status_code).into_response()
     }
 }
 
@@ -103,24 +121,80 @@ pub enum ValidateCredsErrorKind {
 
 use ValidateCredsErrorKind::*;
 
-#[derive(Debug, Snafu, ApiError)]
-
-pub enum HasherError {
-    #[snafu(display("Failed to hash password: {source}"))]
-    #[api_error(status_code = StatusCode::INTERNAL_SERVER_ERROR)]
-    HashPasswordFailed {
-        source: password_hash::Error,
-        backtrace: Backtrace,
-    },
+#[derive(Clone, Deserialize, ToSchema)]
+pub struct SignUpRequest {
+    pub username: String,
+    pub email: String,
+    pub password: String,
 }
 
-#[expect(clippy::unsafe_derive_deserialize, reason = "skipped")]
-#[derive(Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Clone, Serialize, ToSchema)]
+pub struct SignUpResponse {
+    pub verification_code_expires_minutes: i64,
+    pub resend_cooldown_seconds: i64,
+    pub signup_expires_hours: i64,
+}
+
+impl Default for SignUpResponse {
+    fn default() -> Self {
+        Self {
+            verification_code_expires_minutes:
+                VERIFICATION_CODE_EXPIRES_MINUTES,
+            resend_cooldown_seconds: VERIFICATION_CODE_RESEND_COOLDOWN_SECONDS,
+            signup_expires_hours: SIGNUP_EXPIRES_HOURS,
+        }
+    }
+}
+
+#[derive(Clone, Deserialize, ToSchema)]
+pub struct VerifyEmailRequest {
+    pub email: String,
+    pub code: String,
+}
+
+#[derive(Clone, Deserialize, ToSchema)]
+pub struct ResendVerificationEmailRequest {
+    pub email: String,
+}
+
+#[derive(Clone, Serialize, ToSchema)]
+pub struct ResendVerificationEmailResponse {
+    pub verification_code_expires_minutes: i64,
+    pub resend_cooldown_seconds: i64,
+}
+
+impl Default for ResendVerificationEmailResponse {
+    fn default() -> Self {
+        Self {
+            verification_code_expires_minutes:
+                VERIFICATION_CODE_EXPIRES_MINUTES,
+            resend_cooldown_seconds: VERIFICATION_CODE_RESEND_COOLDOWN_SECONDS,
+        }
+    }
+}
+
+#[derive(Clone, Deserialize, ToSchema)]
 pub struct AuthCredential {
     pub username: String,
     pub password: String,
     #[serde(skip)]
     hash: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Display)]
+#[display("{_0}")]
+pub struct HashedPassword<'a>(Cow<'a, str>);
+
+impl HashedPassword<'_> {
+    pub fn as_str(&self) -> &str {
+        self.0.as_ref()
+    }
+}
+
+impl<'a> From<HashedPassword<'a>> for String {
+    fn from(value: HashedPassword<'a>) -> Self {
+        value.0.into_owned()
+    }
 }
 
 impl AuthCredential {
@@ -139,6 +213,17 @@ impl AuthCredential {
         })
     }
 
+    pub fn from_sign_in(
+        username: impl Into<String>,
+        password: impl Into<String>,
+    ) -> Self {
+        Self {
+            username: username.into(),
+            password: password.into(),
+            hash: None,
+        }
+    }
+
     pub fn validate(&self) -> Result<(), ValidateCredsError> {
         validate_username(&self.username)?;
         validate_password(&self.password)?;
@@ -146,41 +231,38 @@ impl AuthCredential {
         Ok(())
     }
 
-    pub fn password_hash(
+    pub async fn password_hash(
         &mut self,
-    ) -> Result<&str, password_hash::errors::Error> {
-        let hash = if let Some(ref existing) = self.hash {
-            existing
-        } else {
-            let new_hash = hash_password(&self.password)?;
-            self.hash = Some(new_hash);
-            // SAFETY: hash set above
-            unsafe { self.hash.as_ref().unwrap_unchecked() }
-        };
+    ) -> Result<HashedPassword<'_>, crate::infra::Error> {
+        if self.hash.is_none() {
+            self.hash =
+                Some(secret::hash(&self.password).await.map_err(|err| {
+                    crate::infra::Error::custom(&format!(
+                        "Failed to hash password: {err}"
+                    ))
+                })?);
+        }
 
-        Ok(hash)
+        let hash = self.hash.as_deref().expect("hash set above; qed");
+
+        Ok(HashedPassword(Cow::Borrowed(hash)))
     }
 
     pub async fn verify_credentials(
         &self,
         hash: Option<&str>,
     ) -> Result<(), AuthnError> {
-        let dummy_password = || hash_password("dummy_password");
+        let password_hash = match hash {
+            Some(hash) => hash.to_owned(),
+            None => secret::hash("dummy_password").await.map_err(|err| {
+                crate::infra::Error::custom(&format!(
+                    "Failed to hash dummy password: {err}"
+                ))
+            })?,
+        };
 
-        verify_password(
-            hash.unwrap_or(&dummy_password()?).to_owned(),
-            &self.password,
-        )
-        .await
+        verify_password(password_hash, &self.password).await
     }
-}
-
-pub fn hash_password(pwd: &str) -> password_hash::Result<String> {
-    let salt = SaltString::generate(&mut OsRng);
-
-    let res = ARGON2_HASHER.hash_password(pwd.as_bytes(), &salt)?;
-
-    Ok(res.to_string())
 }
 
 /// Return `[Err(AuthnError::AuthenticationFailed)]` if password is incorrect
@@ -225,7 +307,9 @@ fn validate_username(username: &str) -> Result<(), ValidateCredsError> {
 /// - A-z
 /// - 0-9
 /// - `~!@#$%^&*()-_=+`
-fn validate_password(password: &str) -> Result<(), ValidateCredsError> {
+pub(crate) fn validate_password(
+    password: &str,
+) -> Result<(), ValidateCredsError> {
     use zxcvbn::{Score, zxcvbn};
 
     static USER_PASSWORD_REGEX: LazyLock<Regex> =
@@ -261,13 +345,6 @@ fn validate_password(password: &str) -> Result<(), ValidateCredsError> {
     }
 }
 
-impl IntoApiResponse for HasherError {
-    fn into_api_response(self) -> axum::response::Response {
-        tracing::error!("Hasher error: {}", self);
-        Error::from_api_error(&self).into_response()
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -275,7 +352,7 @@ mod test {
     #[tokio::test]
     async fn verify_password() {
         let password = "Password123123!";
-        let hash = hash_password(password).unwrap();
+        let hash = secret::hash(password).await.unwrap();
 
         let res = super::verify_password(hash, password).await.is_ok();
 
@@ -290,7 +367,7 @@ mod test {
             password: pwd.clone(),
             hash: None,
         }
-        .verify_credentials(Some(&hash_password(&pwd).unwrap()))
+        .verify_credentials(Some(&secret::hash(&pwd).await.unwrap()))
         .await
         .is_ok();
 
@@ -308,6 +385,17 @@ mod test {
         .verify_credentials(None)
         .await
         .is_err();
+
+        assert!(res);
+    }
+
+    #[tokio::test]
+    async fn sign_in_allows_weak_password() {
+        let password = "Password123!";
+        let hash = secret::hash(password).await.unwrap();
+
+        let creds = AuthCredential::from_sign_in("Alice", password);
+        let res = creds.verify_credentials(Some(&hash)).await.is_ok();
 
         assert!(res);
     }

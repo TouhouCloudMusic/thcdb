@@ -57,15 +57,12 @@ type LabelItemProps = {
 }
 
 export const LabelItem: Component<LabelItemProps> = (props) => {
-	const localizedNames = () => props.label.localized_names ?? []
-	const visibleLocalizedNames = () => localizedNames().slice(0, 2)
-	const extraLocalizedCount = () => Math.max(0, localizedNames().length - 2)
 	const dateLine = () => getLabelDateLine(props.label)
 	const statusText = () => getLabelStatusText(props.label)
 
 	return (
 		<div class="border-b border-slate-200 py-4 last:border-b-0">
-			<div class="flex gap-3">
+			<div class="flex items-center gap-3">
 				<Link
 					to="/label/$id"
 					params={{ id: props.label.id.toString() }}
@@ -91,26 +88,7 @@ export const LabelItem: Component<LabelItemProps> = (props) => {
 
 					<div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
 						<span>{dateLine()}</span>
-						<span class="text-slate-300">·</span>
-						<span>Founders {props.label.founders?.length ?? 0}</span>
 					</div>
-
-					<Show when={visibleLocalizedNames().length > 0}>
-						<div class="mt-2 flex flex-wrap items-center gap-1">
-							<For each={visibleLocalizedNames()}>
-								{(item) => (
-									<span class="bg-slate-50 max-w-full rounded-md border border-slate-200 px-1.5 py-0.5 text-xs text-slate-600">
-										{item.language.name}: {item.name}
-									</span>
-								)}
-							</For>
-							<Show when={extraLocalizedCount() > 0}>
-								<span class="bg-slate-50 rounded-md border border-slate-200 px-1.5 py-0.5 text-xs text-slate-600">
-									+{extraLocalizedCount()}
-								</span>
-							</Show>
-						</div>
-					</Show>
 				</div>
 			</div>
 		</div>

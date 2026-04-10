@@ -27,6 +27,14 @@ type Props = {
 
 const TAG_RELATION_TYPES: TagRelationType[] = ["Inherit", "Derive"]
 
+const TAG_RELATION_TYPE_OPTIONS: ("" | TagRelationType)[] = [
+	"",
+	...TAG_RELATION_TYPES,
+]
+
+const getRelationTypeLabel = (value: string) =>
+	value === "" ? "-- Select relation type --" : value
+
 export function TagFormRelationsField(props: Props) {
 	const { formStore, tag } = useTagForm()
 
@@ -95,7 +103,7 @@ export function TagFormRelationsField(props: Props) {
 									tagRef={tagRefs[idx()]}
 									tagRefs={tagRefs}
 									tagId={tag?.id}
-									onSelectTag={(tag) => setTagAt(idx(), tag)}
+									onSelectTag={(selectedTag) => setTagAt(idx(), selectedTag)}
 									onRemove={() => removeRelationAt(idx())}
 								/>
 							)}
@@ -150,16 +158,39 @@ function RelationRow(props: RelationRowProps) {
 			>
 				{(field) => (
 					<div class="flex flex-col">
-						<Select
-							{...field.props}
+						<Select.Root<"" | TagRelationType>
+							name={field.props.name}
 							class="w-full"
 							value={field.input ?? ""}
+							onChange={(value) => {
+								const next = value ?? ""
+								field.onInput(next === "" ? undefined : next)
+							}}
+							options={TAG_RELATION_TYPE_OPTIONS}
+							itemComponent={(itemProps) => (
+								<Select.Item item={itemProps.item}>
+									{getRelationTypeLabel(itemProps.item.rawValue)}
+								</Select.Item>
+							)}
 						>
-							<Select.Option value="">-- Select relation type --</Select.Option>
-							<For each={TAG_RELATION_TYPES}>
-								{(type) => <Select.Option value={type}>{type}</Select.Option>}
-							</For>
-						</Select>
+							<Select.HiddenSelect
+								onChange={field.props.onChange}
+								onInput={field.props.onInput}
+								onBlur={field.props.onBlur}
+								onFocus={field.props.onFocus}
+							/>
+							<Select.Trigger class="w-full">
+								<Select.Value<"" | TagRelationType>>
+									{(state) => getRelationTypeLabel(state.selectedOption())}
+								</Select.Value>
+								<Select.Icon />
+							</Select.Trigger>
+							<Select.Portal>
+								<Select.Content>
+									<Select.Listbox />
+								</Select.Content>
+							</Select.Portal>
+						</Select.Root>
 						<For each={field.errors}>
 							{(error) => (
 								<FormComp.ErrorMessage>{error}</FormComp.ErrorMessage>
