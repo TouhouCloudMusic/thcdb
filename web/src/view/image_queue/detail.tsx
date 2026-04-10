@@ -273,7 +273,12 @@ export function ImageQueueDetailPageContent(
 	const surfaceCardClass =
 		"rounded-sm border border-slate-300 bg-primary shadow-xs"
 	const tone = () =>
-		props.detail ? statusTone(props.detail.status) : statusTone("Pending")
+		props.detail
+			? statusTone(props.detail.status)
+			: statusTone(
+					// @wc-ignore
+					"Pending",
+				)
 
 	return (
 		<PageLayout class="flex flex-col gap-2 p-8">
@@ -659,8 +664,14 @@ function ActionPanel(props: {
 	errorMessage?: string
 }) {
 	const status = () => props.detail.status
-	const isPending = () => status() === "Pending"
-	const isApproved = () => status() === "Approved"
+	const isPending = () =>
+		status()
+		// @wc-ignore
+		=== "Pending"
+	const isApproved = () =>
+		status()
+		// @wc-ignore
+		=== "Approved"
 
 	return (
 		<section class="grid gap-2">
