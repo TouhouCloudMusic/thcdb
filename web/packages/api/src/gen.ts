@@ -1475,8 +1475,10 @@ export type components = {
                 name: string;
                 /** Format: double */
                 relevance: number;
+                short_description: string;
                 /** Format: int32 */
                 user_vote?: number | null;
+                votes?: components["schemas"]["TagAggregateVote"][];
             }[];
             /** Format: int32 */
             next_cursor?: number | null;
@@ -1767,7 +1769,7 @@ export type components = {
             status: string;
         };
         DataVecEditableUserRole: {
-            data: components["schemas"]["EditableUserRoleEnum"][];
+            data: components["schemas"]["EditableUserRole"][];
             status: string;
         };
         DataVecEvent: {
@@ -1822,7 +1824,7 @@ export type components = {
             tag_id: number;
         };
         /** @enum {string} */
-        EditableUserRoleEnum: "Moderator";
+        EditableUserRole: "Moderator";
         EntityIdent: string;
         /** @enum {string} */
         EntityType: "Artist" | "Label" | "Release" | "Song" | "Tag" | "Event" | "SongLyrics" | "CreditRole";
@@ -1865,11 +1867,6 @@ export type components = {
             /** Format: int64 */
             tags_count: number;
         };
-        /**
-         * @example 2
-         * @enum {string}
-         */
-        i16: "Veto" | "Low" | "Medium" | "High";
         ImageQueueDetail: {
             artist?: null | components["schemas"]["ArtistImageQueueTarget"];
             /** Format: date-time */
@@ -2425,6 +2422,8 @@ export type components = {
         ResetPasswordRequest: {
             password: string;
         };
+        /** @enum {string} */
+        Score: "Veto" | "Low" | "Medium" | "High";
         SearchResponse: {
             artists: components["schemas"]["CursorResponse_SimpleArtist"];
             events: components["schemas"]["CursorResponse_SimpleEvent"];
@@ -2434,7 +2433,7 @@ export type components = {
             tags: components["schemas"]["CursorResponse_TagRef"];
         };
         SetUserRolesRequest: {
-            roles: components["schemas"]["EditableUserRoleEnum"][];
+            roles: components["schemas"]["EditableUserRole"][];
         };
         SignUpRequest: {
             email: string;
@@ -2524,6 +2523,11 @@ export type components = {
             short_description: string;
             type: components["schemas"]["TagType"];
         };
+        TagAggregateVote: {
+            /** Format: int32 */
+            score: number;
+            user_name: string;
+        };
         TagRef: {
             /** Format: int32 */
             id: number;
@@ -2600,7 +2604,7 @@ export type components = {
             key_expires_minutes: number;
         };
         VoteBody: {
-            score: components["schemas"]["i16"];
+            score: components["schemas"]["Score"];
             /** Format: int32 */
             tag_id: number;
         };
@@ -2710,7 +2714,7 @@ export type DataVerifyResetCodeResponse = components['schemas']['DataVerifyReset
 export type DatePrecision = components['schemas']['DatePrecision'];
 export type DateWithPrecision = components['schemas']['DateWithPrecision'];
 export type DeleteVoteBody = components['schemas']['DeleteVoteBody'];
-export type EditableUserRoleEnum = components['schemas']['EditableUserRoleEnum'];
+export type EditableUserRole = components['schemas']['EditableUserRole'];
 export type EntityIdent = components['schemas']['EntityIdent'];
 export type EntityType = components['schemas']['EntityType'];
 export type Error = components['schemas']['Error'];
@@ -2720,7 +2724,6 @@ export type ForgotPasswordResponse = components['schemas']['ForgotPasswordRespon
 export type HandleCorrectionMethod = components['schemas']['HandleCorrectionMethod'];
 export type HandleImageQueueMethod = components['schemas']['HandleImageQueueMethod'];
 export type HomeMetadata = components['schemas']['HomeMetadata'];
-export type I16 = components['schemas']['i16'];
 export type ImageQueueDetail = components['schemas']['ImageQueueDetail'];
 export type ImageQueueStatus = components['schemas']['ImageQueueStatus'];
 export type ImageQueueType = components['schemas']['ImageQueueType'];
@@ -2779,6 +2782,7 @@ export type ReleaseType = components['schemas']['ReleaseType'];
 export type ResendVerificationEmailRequest = components['schemas']['ResendVerificationEmailRequest'];
 export type ResendVerificationEmailResponse = components['schemas']['ResendVerificationEmailResponse'];
 export type ResetPasswordRequest = components['schemas']['ResetPasswordRequest'];
+export type Score = components['schemas']['Score'];
 export type SearchResponse = components['schemas']['SearchResponse'];
 export type SetUserRolesRequest = components['schemas']['SetUserRolesRequest'];
 export type SignUpRequest = components['schemas']['SignUpRequest'];
@@ -2795,6 +2799,7 @@ export type SongRelationType = components['schemas']['SongRelationType'];
 export type SongRelease = components['schemas']['SongRelease'];
 export type SortDirection = components['schemas']['SortDirection'];
 export type Tag = components['schemas']['Tag'];
+export type TagAggregateVote = components['schemas']['TagAggregateVote'];
 export type TagRef = components['schemas']['TagRef'];
 export type TagRelation = components['schemas']['TagRelation'];
 export type TagRelationType = components['schemas']['TagRelationType'];

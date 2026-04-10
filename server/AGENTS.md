@@ -25,3 +25,4 @@
 
 - lint 抑制：使用 `#[expect(...)]`（必要时补 `reason = "..."`），禁止 `#[allow(...)]`；仓库已启用 `clippy::allow_attributes` ，违反会出现警告。
 - 使用`From`/`Into` trait 而不是单独的转换函数
+- 构造查询时优先使用 Sea Query，而不是直接拼写原始 SQL 字符串；仅在 Sea Query 无法合理表达且有明确理由时，才使用原始 SQL。

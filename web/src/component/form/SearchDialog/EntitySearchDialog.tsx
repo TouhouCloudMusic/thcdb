@@ -8,7 +8,7 @@ type EntitySearchDialogProps<T> = {
 	title: JSX.Element
 	trigger: JSX.Element
 	value: string
-	onInput: (e: Event & { currentTarget: HTMLInputElement }) => void
+	onInput: (value: string) => void
 	onSelect: (item: T) => void
 	items?: T[] | undefined
 	item: (item: T) => JSX.Element
@@ -26,7 +26,7 @@ export function EntitySearchDialog<T>(
 					<SearchDialog.Input
 						placeholder={t`Search...`}
 						value={props.value}
-						onInput={props.onInput}
+						onInput={(event) => props.onInput(event.currentTarget.value)}
 						class="h-9 w-full"
 					/>
 				</div>

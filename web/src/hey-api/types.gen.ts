@@ -244,9 +244,11 @@ export type CursorResponseTagAggregate = {
 	items: Array<{
 		id: number
 		name: string
+		short_description: string
 		count: number
 		relevance: number
 		user_vote?: number | null
+		votes?: Array<TagAggregateVote>
 	}>
 	next_cursor?: number | null
 }
@@ -481,7 +483,7 @@ export type DataVecCreditRoleSummary = {
 
 export type DataVecEditableUserRole = {
 	status: string
-	data: Array<EditableUserRoleEnum>
+	data: Array<EditableUserRole>
 }
 
 export type DataVecEvent = {
@@ -618,7 +620,7 @@ export type DeleteVoteBody = {
 	tag_id: number
 }
 
-export type EditableUserRoleEnum = "Moderator"
+export type EditableUserRole = "Moderator"
 
 export type EntityIdent = string
 
@@ -1233,6 +1235,8 @@ export type ResetPasswordRequest = {
 	password: string
 }
 
+export type Score = "Veto" | "Low" | "Medium" | "High"
+
 export type SearchResponse = {
 	artists: CursorResponseSimpleArtist
 	releases: CursorResponseSimpleRelease
@@ -1243,7 +1247,7 @@ export type SearchResponse = {
 }
 
 export type SetUserRolesRequest = {
-	roles: Array<EditableUserRoleEnum>
+	roles: Array<EditableUserRole>
 }
 
 export type SignUpRequest = {
@@ -1334,6 +1338,11 @@ export type Tag = {
 	relations?: Array<TagRelation>
 }
 
+export type TagAggregateVote = {
+	user_name: string
+	score: number
+}
+
 export type TagRef = {
 	id: number
 	name: string
@@ -1417,10 +1426,8 @@ export type VerifyResetCodeResponse = {
 
 export type VoteBody = {
 	tag_id: number
-	score: I16
+	score: Score
 }
-
-export type I16 = "Veto" | "Low" | "Medium" | "High"
 
 export type SetUserRolesData = {
 	body: SetUserRolesRequest

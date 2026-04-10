@@ -1,3 +1,5 @@
+use std::collections::BTreeSet;
+
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
@@ -143,7 +145,7 @@ async fn admin_users(
 
 #[derive(Deserialize, ToSchema)]
 pub struct SetUserRolesRequest {
-    pub roles: Vec<EditableUserRole>,
+    pub roles: BTreeSet<EditableUserRole>,
 }
 
 #[utoipa::path(

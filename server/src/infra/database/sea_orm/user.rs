@@ -461,50 +461,20 @@ async fn find_profile_stats(
 mod tests {
     use chrono::Utc;
     use entity::enums::{
-        ArtistType, CorrectionStatus, CorrectionType, CorrectionUserType,
-        DatePrecision, EntityType, ReleaseType, TagType,
+        CorrectionStatus, CorrectionType, CorrectionUserType, EntityType,
     };
     use entity::{
-        artist, artist_tag_vote, correction, correction_user, release,
-        release_tag_vote, song, song_tag_vote, tag, user, user_role,
+        artist_tag_vote, correction, correction_user, release_tag_vote,
+        song_tag_vote,
     };
     use sea_orm::ActiveValue::{NotSet, Set};
     use sea_orm::{DatabaseConnection, EntityTrait};
 
     use super::SeaOrmRepository;
-    use crate::domain::model::UserRoleEnum;
+    use crate::infra::integration_test::fixture::{
+        MockArtist, MockRelease, MockSong, MockTag, MockUser,
+    };
     use crate::infra::integration_test::test_connection;
-
-    async fn create_user(
-        conn: &DatabaseConnection,
-        label: &str,
-    ) -> user::Model {
-        let suffix = Utc::now().timestamp_nanos_opt().unwrap_or_default();
-        let user = user::Entity::insert(user::ActiveModel {
-            id: NotSet,
-            name: Set(format!("{label}_{suffix}")),
-            email: Set(format!("{label}_{suffix}@example.com")),
-            email_verified: Set(true),
-            password: Set("password_hash".to_string()),
-            avatar_id: Set(None),
-            last_login: Set(Utc::now().into()),
-            created_at: Set(Utc::now().into()),
-            profile_banner_id: Set(None),
-            bio: Set(None),
-            settings: Set(serde_json::json!({})),
-        })
-        .exec_with_returning(conn)
-        .await
-        .unwrap();
-        user_role::Entity::insert(user_role::ActiveModel {
-            user_id: Set(user.id),
-            role_id: Set(UserRoleEnum::User.into()),
-        })
-        .exec(conn)
-        .await
-        .unwrap();
-        user
-    }
 
     async fn create_correction(
         conn: &DatabaseConnection,
@@ -526,65 +496,37 @@ mod tests {
         .unwrap()
     }
 
+    #[expect(
+        clippy::too_many_lines,
+        reason = "integration scenario keeps profile stats setup serial"
+    )]
     #[tokio::test]
     async fn find_by_name_includes_profile_stats_from_approved_edits_and_votes()
     {
         let conn = test_connection().await;
         let repo = SeaOrmRepository::new(conn.clone());
 
-        let user = create_user(&conn, "profile_stats_user").await;
-        let other_user = create_user(&conn, "profile_stats_other").await;
+        let user = MockUser::with_label("profile_stats_user")
+            .insert(&conn)
+            .await
+            .unwrap();
+        let other_user = MockUser::with_label("profile_stats_other")
+            .insert(&conn)
+            .await
+            .unwrap();
 
-        let tagged_artist = artist::Entity::insert(artist::ActiveModel {
-            id: NotSet,
-            name: Set("stats artist".to_string()),
-            artist_type: Set(ArtistType::Solo),
-            text_alias: Set(None),
-            start_date: Set(None),
-            start_date_precision: Set(None),
-            end_date: Set(None),
-            end_date_precision: Set(None),
-            current_location_country: Set(None),
-            current_location_province: Set(None),
-            current_location_city: Set(None),
-            start_location_country: Set(None),
-            start_location_province: Set(None),
-            start_location_city: Set(None),
-        })
-        .exec_with_returning(&conn)
-        .await
-        .unwrap();
-        let tagged_release = release::Entity::insert(release::ActiveModel {
-            id: NotSet,
-            title: Set("stats release".to_string()),
-            release_type: Set(ReleaseType::Album),
-            release_date: Set(None),
-            release_date_precision: Set(DatePrecision::Day),
-            recording_date_start: Set(None),
-            recording_date_start_precision: Set(DatePrecision::Day),
-            recording_date_end: Set(None),
-            recording_date_end_precision: Set(DatePrecision::Day),
-        })
-        .exec_with_returning(&conn)
-        .await
-        .unwrap();
-        let tagged_song = song::Entity::insert(song::ActiveModel {
-            id: NotSet,
-            title: Set("stats song".to_string()),
-        })
-        .exec_with_returning(&conn)
-        .await
-        .unwrap();
-        let tagged_tag = tag::Entity::insert(tag::ActiveModel {
-            id: NotSet,
-            name: Set("stats-tag".to_string()),
-            r#type: Set(TagType::Genre),
-            short_description: Set("stats short".to_string()),
-            description: Set("stats description".to_string()),
-        })
-        .exec_with_returning(&conn)
-        .await
-        .unwrap();
+        let tagged_artist = MockArtist::named("stats artist")
+            .insert(&conn)
+            .await
+            .unwrap();
+        let tagged_release = MockRelease::titled("stats release")
+            .insert(&conn)
+            .await
+            .unwrap();
+        let tagged_song =
+            MockSong::titled("stats song").insert(&conn).await.unwrap();
+        let tagged_tag =
+            MockTag::named("stats-tag").insert(&conn).await.unwrap();
 
         let counted_create = create_correction(
             &conn,

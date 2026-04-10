@@ -83,6 +83,14 @@ msgstr "Add disc"
 msgid "Add missing entries (artists, releases, songs, events)"
 msgstr "Add missing entries (artists, releases, songs, events)"
 
+#: src/view/entity_tags/EntityTagsSection.tsx
+msgid "Add tag"
+msgstr "Add tag"
+
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+msgid "Add Tag"
+msgstr "Add Tag"
+
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Add track"
 msgstr "Add track"
@@ -690,6 +698,10 @@ msgstr "HANDLED / REVERTED"
 msgid "Handled At"
 msgstr "Handled At"
 
+#: src/view/entity_tags/model.ts
+msgid "High"
+msgstr "High"
+
 #: src/component/Header/LeftSidebar.tsx
 msgid "Home"
 msgstr "Home"
@@ -820,6 +832,10 @@ msgstr "Loading diff..."
 msgid "Loading revisions..."
 msgstr "Loading revisions..."
 
+#: src/view/entity_tags/EntityTagsSection.tsx
+msgid "Loading tags..."
+msgstr "Loading tags..."
+
 #: src/view/artist/edit/index.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
@@ -855,9 +871,21 @@ msgstr "Localized Titles"
 msgid "Location"
 msgstr "Location"
 
+#: src/view/entity_tags/model.ts
+msgid "Low"
+msgstr "Low"
+
 #: src/view/song/Info/index.tsx
 msgid "Lyrics"
 msgstr "Lyrics"
+
+#: src/view/entity_tags/EntityTagsSection.tsx
+msgid "Manage Tags"
+msgstr "Manage Tags"
+
+#: src/view/entity_tags/model.ts
+msgid "Medium"
+msgstr "Medium"
 
 #: src/view/artist/profile/comp/ArtistInfo.tsx
 msgid "Member Of"
@@ -1112,6 +1140,10 @@ msgstr "No tags found"
 msgid "No tags found."
 msgstr "No tags found."
 
+#: src/view/entity_tags/EntityTagsSection.tsx
+msgid "No tags yet"
+msgstr "No tags yet"
+
 #: src/view/admin/users.tsx
 msgid "No users found"
 msgstr "No users found"
@@ -1349,6 +1381,10 @@ msgstr "Released"
 msgid "Releases"
 msgstr "Releases"
 
+#: src/view/entity_tags/EntityTagsSection.tsx
+msgid "Remove"
+msgstr "Remove"
+
 #: src/view/artist/edit/comp/Membership/role.tsx
 #: src/view/artist/edit/comp/Membership/role.tsx
 msgid "Remove role"
@@ -1489,6 +1525,10 @@ msgstr "Search Song"
 #: src/component/form/SearchDialog/TagSearchDialog.tsx
 msgid "Search Tag"
 msgstr "Search Tag"
+
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+msgid "Search tag..."
+msgstr "Search tag..."
 
 #: src/component/form/SearchDialog/EntitySearchDialog.tsx
 msgid "Search..."

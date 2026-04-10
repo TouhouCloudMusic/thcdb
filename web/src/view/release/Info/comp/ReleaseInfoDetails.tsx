@@ -11,7 +11,7 @@ export function ReleaseInfoDetails() {
 	const ctx = assertContext(ReleaseInfoPageContext)
 
 	return (
-		<div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">
+		<div class="contents text-sm">
 			<div class="text-tertiary">{t`Type`}</div>
 			<div>{ctx.release.release_type}</div>
 			<Show when={ctx.release.release_date}>

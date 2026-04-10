@@ -15,6 +15,7 @@ import { twMerge } from "tailwind-merge"
 
 import { FormComp, Select } from "~/component/atomic"
 import { Button } from "~/component/atomic/button"
+import { Dialog } from "~/component/dialog"
 import { FieldArrayFallback } from "~/component/form"
 import { TagSearchDialog } from "~/component/form/SearchDialog"
 import { TagM } from "~/domain/tag"
@@ -150,7 +151,15 @@ function RelationRow(props: RelationRowProps) {
 				<TagSearchDialog
 					onSelect={props.onSelectTag}
 					dataFilter={dataFilter()}
-					icon={<Pencil1Icon class="size-4" />}
+					trigger={
+						<Dialog.Trigger
+							as={Button}
+							variant="Tertiary"
+							class="h-max p-2"
+						>
+							<Pencil1Icon class="size-4" />
+						</Dialog.Trigger>
+					}
 				/>
 			</div>
 			<Field

@@ -6,6 +6,7 @@ import { Link } from "~/component/atomic/Link"
 import { ButtonClass_new } from "~/component/atomic/button"
 import { PageLayout } from "~/layout/PageLayout"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
+import { EntityTagsSectionContainer } from "~/view/entity_tags/EntityTagsSection"
 
 import { ReleaseInfoTabs } from "./ReleaseInfoTabs"
 import { ReleaseInfoCoverImage } from "./comp/ReleaseInfoCoverImage"
@@ -38,7 +39,14 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 						<ReleaseInfoCoverImage />
 						<div class="flex flex-col gap-y-4">
 							<ReleaseInfoTitleAndArtist />
-							<ReleaseInfoDetails />
+							<div class="grid items-baseline grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">
+								<ReleaseInfoDetails />
+								<EntityTagsSectionContainer
+									class="contents"
+									entityType="release"
+									entityId={props.release.id}
+								/>
+							</div>
 						</div>
 						<div class="col-span-full">
 							<ReleaseInfoTabs release={props.release} />

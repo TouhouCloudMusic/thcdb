@@ -6,6 +6,7 @@ import { Tab } from "~/component/atomic"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
+import { EntityTagsSectionContainer } from "~/view/entity_tags/EntityTagsSection"
 
 import { SongInfoCoverImage } from "./comp/SongInfoCoverImage"
 import { SongInfoCredit } from "./comp/SongInfoCredit"
@@ -41,6 +42,10 @@ export function SongInfoPage(props: SongInfoPageProps) {
 					<div class="flex flex-col gap-y-4">
 						<SongInfoTitleAndCreditName />
 						<SongInfoLanguages />
+						<EntityTagsSectionContainer
+							entityType="song"
+							entityId={props.song.id}
+						/>
 					</div>
 					<div class="col-span-full flex flex-col gap-8">
 						<SongInfoTabs />

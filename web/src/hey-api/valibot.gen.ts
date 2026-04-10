@@ -413,67 +413,6 @@ export const vCursorResponseSongRef = v.object({
 	),
 })
 
-export const vCursorResponseTagAggregate = v.object({
-	items: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			name: v.string(),
-			count: v.pipe(
-				v.union([v.number(), v.string(), v.bigint()]),
-				v.transform((x) => BigInt(x)),
-				v.minValue(
-					BigInt("-9223372036854775808"),
-					"Invalid value: Expected int64 to be >= -9223372036854775808",
-				),
-				v.maxValue(
-					BigInt("9223372036854775807"),
-					"Invalid value: Expected int64 to be <= 9223372036854775807",
-				),
-			),
-			relevance: v.number(),
-			user_vote: v.nullish(
-				v.pipe(
-					v.number(),
-					v.integer(),
-					v.minValue(
-						-2147483648,
-						"Invalid value: Expected int32 to be >= -2147483648",
-					),
-					v.maxValue(
-						2147483647,
-						"Invalid value: Expected int32 to be <= 2147483647",
-					),
-				),
-			),
-		}),
-	),
-	next_cursor: v.nullish(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-})
-
 export const vDataOptionCreditRole = v.object({
 	status: v.string(),
 	data: v.nullable(vCreditRole),
@@ -507,11 +446,6 @@ export const vDataPaginatedSimpleRelease = v.object({
 export const vDataPaginatedSongRef = v.object({
 	status: v.string(),
 	data: vCursorResponseSongRef,
-})
-
-export const vDataPaginatedTagAggregate = v.object({
-	status: v.string(),
-	data: vCursorResponseTagAggregate,
 })
 
 export const vDataPendingImageQueueCount = v.object({
@@ -672,11 +606,11 @@ export const vDeleteVoteBody = v.object({
 	),
 })
 
-export const vEditableUserRoleEnum = v.picklist(["Moderator"])
+export const vEditableUserRole = v.picklist(["Moderator"])
 
 export const vDataVecEditableUserRole = v.object({
 	status: v.string(),
-	data: v.array(vEditableUserRoleEnum),
+	data: v.array(vEditableUserRole),
 })
 
 export const vEntityIdent = v.string()
@@ -2000,8 +1934,10 @@ export const vResetPasswordRequest = v.object({
 	password: v.string(),
 })
 
+export const vScore = v.picklist(["Veto", "Low", "Medium", "High"])
+
 export const vSetUserRolesRequest = v.object({
-	roles: v.array(vEditableUserRoleEnum),
+	roles: v.array(vEditableUserRole),
 })
 
 export const vSignUpRequest = v.object({
@@ -2418,6 +2354,87 @@ export const vDataVecSong = v.object({
 })
 
 export const vSortDirection = v.picklist(["asc", "desc"])
+
+export const vTagAggregateVote = v.object({
+	user_name: v.string(),
+	score: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vCursorResponseTagAggregate = v.object({
+	items: v.array(
+		v.object({
+			id: v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+			name: v.string(),
+			short_description: v.string(),
+			count: v.pipe(
+				v.union([v.number(), v.string(), v.bigint()]),
+				v.transform((x) => BigInt(x)),
+				v.minValue(
+					BigInt("-9223372036854775808"),
+					"Invalid value: Expected int64 to be >= -9223372036854775808",
+				),
+				v.maxValue(
+					BigInt("9223372036854775807"),
+					"Invalid value: Expected int64 to be <= 9223372036854775807",
+				),
+			),
+			relevance: v.number(),
+			user_vote: v.nullish(
+				v.pipe(
+					v.number(),
+					v.integer(),
+					v.minValue(
+						-2147483648,
+						"Invalid value: Expected int32 to be >= -2147483648",
+					),
+					v.maxValue(
+						2147483647,
+						"Invalid value: Expected int32 to be <= 2147483647",
+					),
+				),
+			),
+			votes: v.optional(v.array(vTagAggregateVote)),
+		}),
+	),
+	next_cursor: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+})
+
+export const vDataPaginatedTagAggregate = v.object({
+	status: v.string(),
+	data: vCursorResponseTagAggregate,
+})
 
 export const vTagRelationType = v.picklist(["Inherit", "Derive"])
 
@@ -3215,8 +3232,6 @@ export const vDataVerifyResetCodeResponse = v.object({
 	data: vVerifyResetCodeResponse,
 })
 
-export const vI16 = v.picklist(["Veto", "Low", "Medium", "High"])
-
 export const vVoteBody = v.object({
 	tag_id: v.pipe(
 		v.number(),
@@ -3227,7 +3242,7 @@ export const vVoteBody = v.object({
 		),
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
-	score: vI16,
+	score: vScore,
 })
 
 export const vSetUserRolesBody = vSetUserRolesRequest
