@@ -47,10 +47,10 @@ graph LR
     recommendation_sort[推荐系统排序]
     filter[过滤]
     output[输出]
-    input --- get_object_type_data --> condition_sort;
     input --- search --> filter --> had_sort_condition?;
     had_sort_condition? --有--> condition_sort --> output;
     had_sort_condition? --无--> recommendation_sort --> output;
+    input --- get_object_type_data --> recommendation_sort;
 ```
 ---
 
