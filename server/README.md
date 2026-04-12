@@ -10,6 +10,8 @@
 
 Touhou Cloud DB is a collaborative platform for tagging and organizing doujin music. Our goal is to build an open-access database that provides comprehensive information on hundreds of thousands of tracks. It offers a user-friendly, visually appealing front-end interface for users to search, browse, and edit information about music with ease.
 
+This project uses the [The 3-Clause BSD License](./LICENSE).
+
 ## Features
 
 - **Artist Management**: Track information about doujin music artists and circles

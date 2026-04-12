@@ -36,45 +36,29 @@ graph LR
 graph LR
     search[请求]
     sort_program[排序]
-    recommend[推荐系统]
-    filter[filter]
+    filter[过滤]
     output[输出]
-    recommend --> sort_program
     search --> filter --> sort_program --> output;
 ```
----
 
 ## new and delete
-增加**不存在的object**或删去**已存在的object**，任何请求都需要经过examine_and_verify。
+增加**不存在的object**或删去**已存在的object**，任何请求都需要经过examine_and_verify，除了root账户.
 权限要求：
 - 请求：**data manager**.
 - 操作：**root**.
-### 工作流程
-对于new：
-- 如果对象存在，则
-    1. 记录Warning等级日志.
-    2. 返回给调用者.
-- 如果传入的字段与传入的object类型的字段格式不符，则
-    1. 记录Warning等级日志.
-    2. 返回给调用者.
-- 如果对象不存在且传入的字段与传入的object类型的字段格式相符，则
-    1. 分配一个RFC4122 UUID v4作为这个字段的UUID.
-    2. 存入对应object类型的表.
-    3. 记录INFO等级日志.
-    4. 返回字段的UUID.
-
-对于delete：
-- 如果delete的对象不存在，则
-    1. 记录Warning等级日志.
-    2. 返回给调用者.
-- 如果delete的对象存在，则
-    1. 删除表中UUID所对应的行.
-    2. 记录INFO等级日志.
-    3. 返回给调用者.
-
+### 接口
 只对外暴露创建请求接口，当创建请求的用户为root时，直接执行操作.
+#### new的请求参数
+- 创建的类型.
+只接受object有的类型.
+- 创建的内容.
+一组键值对.
+#### delete的请求参数
 
----
+### 错误处理
+#### new
+如果请求的类型不存在，则返回`No_request_type`.
+#### delete
 
 ## modify
 修改**已存在的object**的数据片段，任何请求都需要经过examine_and_verify。
@@ -86,8 +70,6 @@ graph LR
 如果modify的object类型不存在请求的表键，则返回值，记录Warning等级日志，执行情况为"failure! "{对象}" did not have "{表键}"".
 如果modify的对象存在且object类型请求的表键存在，则执行.
 执行完记录INFO等级日志，执行情况为"success, {对象}:{表键} "{旧值}"->"{新值}"".
-
----
 
 ## examine and verify
 设计文档：[examine_and_verify](./examine_and_verify/design.md)
