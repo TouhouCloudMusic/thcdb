@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { SongApi } from "@thc/api"
@@ -51,7 +52,7 @@ function SongExploreFilterBar(props: SongExploreFilterBarProps) {
 	]
 
 	const languageLabel = (value: string) => {
-		if (value === "") return "All"
+		if (value === "") return t`All`
 		return (
 			LANGUAGE_OPTIONS.find((lang) => lang.id.toString() === value)?.label
 			?? value
@@ -62,7 +63,7 @@ function SongExploreFilterBar(props: SongExploreFilterBarProps) {
 		<StickyFilterBar scrollDirection={props.scrollDirection}>
 			<div class="flex items-center gap-4">
 				<div class="flex items-center gap-2">
-					<span class="text-sm text-slate-500">Language</span>
+					<span class="text-sm text-slate-500">{t`Language`}</span>
 					<Select.Root<string>
 						options={languageOptions()}
 						value={props.languageId}
@@ -117,7 +118,7 @@ function SongExploreList(props: SongExploreListProps) {
 		<>
 			<Show when={!props.isLoading && props.songs.length === 0}>
 				<EmptyExplorePlaceholder
-					title="No songs found"
+					title={t`No songs found`}
 					action={{ to: "/song/new" }}
 				/>
 			</Show>
@@ -238,8 +239,8 @@ export const SongExplore = () => {
 
 	return (
 		<ExplorePageLayout
-			title="Explore Songs"
-			action={{ to: "/song/new", label: "Create song" }}
+			title={t`Explore Songs`}
+			action={{ to: "/song/new", label: t`Create song` }}
 		>
 			<SongExploreFilterBar
 				scrollDirection={scrollDirection}

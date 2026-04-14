@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import type { ImageQueueDetail, ImageQueueStatus } from "@thc/api"
 import {
@@ -31,22 +32,22 @@ const LABEL_CLASS = "text-xs text-tertiary"
 function statusTone(status: ImageQueueStatus) {
 	switch (status) {
 		case "Pending": {
-			return { color: "Marisa", label: "Pending" } as const
+			return { color: "Marisa", label: t`Pending` } as const
 		}
 		case "Approved": {
-			return { color: "Green", label: "Approved" } as const
+			return { color: "Green", label: t`Approved` } as const
 		}
 		case "Rejected": {
-			return { color: "Reimu", label: "Rejected" } as const
+			return { color: "Reimu", label: t`Rejected` } as const
 		}
 		case "Cancelled": {
-			return { color: "Slate", label: "Cancelled" } as const
+			return { color: "Slate", label: t`Cancelled` } as const
 		}
 		case "Reverted": {
-			return { color: "Blue", label: "Reverted" } as const
+			return { color: "Blue", label: t`Reverted` } as const
 		}
 		default: {
-			return { color: "Slate", label: "Unknown" } as const
+			return { color: "Slate", label: t`Unknown` } as const
 		}
 	}
 }
@@ -69,20 +70,20 @@ function imagePath(detail: ImageQueueDetail) {
 function getTargetMeta(detail: ImageQueueDetail) {
 	if (detail.artist) {
 		return {
-			label: "Artist",
+			label: t`Artist`,
 			id: detail.artist.artist_id,
 			type: detail.artist.type,
-			imageLabel: "profile image",
+			imageLabel: t`profile image`,
 			to: "/artist/$id" as const,
 		}
 	}
 
 	if (detail.release) {
 		return {
-			label: "Release",
+			label: t`Release`,
 			id: detail.release.release_id,
 			type: detail.release.type,
-			imageLabel: "cover art",
+			imageLabel: t`cover art`,
 			to: "/release/$id" as const,
 		}
 	}
@@ -221,9 +222,9 @@ export function ImageQueueDetailPage(props: Props) {
 		if (!mutation.isError) return
 		const error = mutation.error
 		if (error instanceof Error) {
-			return error.message || "Request failed."
+			return error.message || t`Request failed.`
 		}
-		return "Request failed."
+		return t`Request failed.`
 	})
 
 	const cachedNeighbor = createMemo(() => {
@@ -325,7 +326,7 @@ export function ImageQueueDetailPageContent(
 									<h1 class="text-2xl font-light tracking-tight text-primary">
 										<Show
 											when={getTargetMeta(data())}
-											fallback="Image queue"
+											fallback={t`Image queue`}
 										>
 											{(target) => (
 												<>
@@ -357,16 +358,16 @@ export function ImageQueueDetailPageContent(
 									<section class="grid content-start gap-2">
 										<div class="grid gap-2 grid-cols-2">
 											<DiffImageCard
-												title="Current"
+												title={t`Current`}
 												src={props.currentSrc}
-												alt="Current target image"
+												alt={t`Current target image`}
 												loading={props.currentLoading}
 												error={props.currentError}
 											/>
 											<DiffImageCard
-												title="Queued"
+												title={t`Queued`}
 												src={queuedSrc}
-												alt="Queued upload preview"
+												alt={t`Queued upload preview`}
 											/>
 										</div>
 									</section>
@@ -382,7 +383,7 @@ export function ImageQueueDetailPageContent(
 												errorMessage={props.mutationErrorMessage}
 											/>
 											<div class="grid gap-y-2">
-												<InfoField label="Submitted by">
+												<InfoField label={t`Submitted by`}>
 													<Link
 														to="/user/$id/image-queue"
 														params={{ id: data().created_by.id.toString() }}
@@ -391,13 +392,13 @@ export function ImageQueueDetailPageContent(
 														{data().created_by.name}
 													</Link>
 												</InfoField>
-												<InfoField label="Created">
+												<InfoField label={t`Created`}>
 													<div class="text-primary text-sm">
 														{formatDateTime(data().created_at)}
 													</div>
 												</InfoField>
 												<Show when={data().handled_by ?? data().handled_at}>
-													<InfoField label="Handled">
+													<InfoField label={t`Handled`}>
 														<Show when={data().handled_by}>
 															{(user) => (
 																<Link
@@ -417,7 +418,7 @@ export function ImageQueueDetailPageContent(
 													</InfoField>
 												</Show>
 												<Show when={data().reverted_by ?? data().reverted_at}>
-													<InfoField label="Reverted">
+													<InfoField label={t`Reverted`}>
 														<Show when={data().reverted_by}>
 															{(user) => (
 																<Link
@@ -457,7 +458,7 @@ function NeighborLink(props: { entryId?: number; direction: "prev" | "next" }) {
 				<span aria-hidden="true">&lt; </span>
 			</Show>
 			<span class="underline-offset-4 group-hover:underline">
-				{isPrev() ? "Prev" : "Next"}
+				{isPrev() ? t`Prev` : t`Next`}
 			</span>
 			<Show when={!isPrev()}>
 				<span aria-hidden="true"> &gt;</span>
@@ -565,7 +566,7 @@ function DiffImageCard(props: {
 				<h2 class={LABEL_CLASS}>{props.title}</h2>
 				{props.headerRight}
 				<Show when={props.loading}>
-					<div class="text-xs text-tertiary">Loading…</div>
+					<div class="text-xs text-tertiary">{t`Loading…`}</div>
 				</Show>
 			</header>
 
@@ -578,9 +579,9 @@ function DiffImageCard(props: {
 									<Match when={props.error ?? state === Image.State.Error}>
 										Failed to load
 									</Match>
-									<Match when={props.loading}>Loading…</Match>
-									<Match when={!props.src}>No image</Match>
-									<Match when={true}>Loading…</Match>
+									<Match when={props.loading}>{t`Loading…`}</Match>
+									<Match when={!props.src}>{t`No image`}</Match>
+									<Match when={true}>{t`Loading…`}</Match>
 								</Switch>
 							</div>
 						)}
@@ -647,7 +648,7 @@ function ConfirmActionButton(props: ConfirmActionButtonProps) {
 			title={props.title}
 			description={props.description}
 			confirmText={props.confirmText}
-			cancelText="Cancel"
+			cancelText={t`Cancel`}
 			onCancel={() => setOpen(false)}
 			onConfirm={confirm}
 		/>
@@ -676,39 +677,43 @@ function ActionPanel(props: {
 	return (
 		<section class="grid gap-2">
 			<div class="flex items-center justify-between gap-3">
-				<div class={LABEL_CLASS}>Actions</div>
+				<div class={LABEL_CLASS}>{t`Actions`}</div>
 				<Show when={props.isBusy}>
-					<div class="text-xs text-secondary">Working…</div>
+					<div class="text-xs text-secondary">{t`Working…`}</div>
 				</Show>
 			</div>
 
 			<Switch>
 				<Match when={!props.canManage}>
 					<div class="text-sm text-secondary">
-						No actions available for this account.
+						{t`No actions available for this account.`}
 					</div>
 				</Match>
 				<Match when={isPending()}>
 					<div class="grid grid-cols-2 gap-2">
 						<ConfirmActionButton
-							title="Approve image?"
-							description="This will mark the queued image as approved."
-							confirmText="Approve"
+							title={t`Approve image?`}
+							description={t({
+								message: "This will mark the queued image as approved.",
+							})}
+							confirmText={t`Approve`}
 							color="Green"
 							disabled={props.isBusy || !isPending()}
 							onConfirm={props.onApprove}
 						>
-							Approve
+							{t`Approve`}
 						</ConfirmActionButton>
 						<ConfirmActionButton
-							title="Reject image?"
-							description="This will mark the queued image as rejected."
-							confirmText="Reject"
+							title={t`Reject image?`}
+							description={t({
+								message: "This will mark the queued image as rejected.",
+							})}
+							confirmText={t`Reject`}
 							color="Reimu"
 							disabled={props.isBusy || !isPending()}
 							onConfirm={props.onReject}
 						>
-							Reject
+							{t`Reject`}
 						</ConfirmActionButton>
 					</div>
 				</Match>
@@ -721,11 +726,11 @@ function ActionPanel(props: {
 						class="w-full"
 						onClick={() => props.onRevert()}
 					>
-						Revert
+						{t`Revert`}
 					</Button>
 				</Match>
 				<Match when={true}>
-					<div class="text-sm text-secondary">No actions available.</div>
+					<div class="text-sm text-secondary">{t`No actions available.`}</div>
 				</Match>
 			</Switch>
 

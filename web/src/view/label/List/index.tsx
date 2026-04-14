@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Label } from "@thc/api"
 import { LabelQueryOption } from "@thc/query"
@@ -35,15 +36,15 @@ export function LabelListPage() {
 		<PageLayout class="p-8">
 			<div class="flex flex-col gap-y-6">
 				<div class="flex items-center justify-between gap-4">
-					<h1 class="text-2xl font-light tracking-tight">Labels</h1>
+					<h1 class="text-2xl font-light tracking-tight">{t`Labels`}</h1>
 					<Link to="/label/new">
-						<Button variant="Primary">Create Label</Button>
+						<Button variant="Primary">{t`Create Label`}</Button>
 					</Link>
 				</div>
 
 				<div class="flex items-center gap-3">
 					<Input
-						placeholder="Search label..."
+						placeholder={t`Search label...`}
 						value={searchKeyword()}
 						onInput={onInput}
 						class="h-9 w-full max-w-md"
@@ -62,7 +63,9 @@ export function LabelListPage() {
 						<ul class="divide-y divide-slate-300 overflow-hidden rounded-md border border-slate-300">
 							<For
 								each={labelsQuery.data}
-								fallback={<li class="p-4 text-sm text-tertiary">No results</li>}
+								fallback={
+									<li class="p-4 text-sm text-tertiary">{t`No results`}</li>
+								}
 							>
 								{(label) => <LabelListItem label={label} />}
 							</For>

@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro"
+
 import { ExploreFilter } from "~/component/feature/entity_explore/ExploreFilter"
 
 export type CorrectionSortField = "created_at" | "handled_at"
@@ -8,13 +10,13 @@ export function CorrectionSortFieldSelect(props: {
 }) {
 	return (
 		<ExploreFilter
-			label="Sort by"
+			label={t`Sort by`}
 			value={props.value}
 			defaultValue="created_at"
 			onChange={props.onChange}
 			options={[
-				{ value: "created_at", label: "Created At" },
-				{ value: "handled_at", label: "Handled At" },
+				{ value: "created_at", label: t`Created At` },
+				{ value: "handled_at", label: t`Handled At` },
 			]}
 		/>
 	)

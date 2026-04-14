@@ -1,4 +1,5 @@
 import { Field } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { twMerge } from "tailwind-merge"
 
 import { InputField } from "~/component/atomic/form/Input"
@@ -19,7 +20,7 @@ export function EventDescriptionField(props: Props) {
 		>
 			{(field) => (
 				<InputField.Root class={twMerge("flex flex-col", props.class)}>
-					<InputField.Label>Description</InputField.Label>
+					<InputField.Label>{t`Description`}</InputField.Label>
 					<InputField.Textarea
 						{...field.props}
 						value={field.input ?? ""}

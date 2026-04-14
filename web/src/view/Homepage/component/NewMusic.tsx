@@ -1,15 +1,16 @@
+import { t } from "@lingui/core/macro"
 import { For } from "solid-js"
 
 export function NewMusic() {
 	return (
 		<div>
 			<div class="mb-4 flex items-center justify-between">
-				<h2 class="text-xl font-bold text-primary">最新音乐</h2>
+				<h2 class="text-xl font-bold text-primary">{t`最新音乐`}</h2>
 				<button
 					type="button"
 					class="text-rose-600 hover:text-rose-700 text-sm"
 				>
-					查看更多
+					{t`View more`}
 				</button>
 			</div>
 
@@ -21,15 +22,17 @@ export function NewMusic() {
 								<div class="bg-rose-100 h-10 w-10 flex-shrink-0 overflow-hidden rounded">
 									<img
 										src={`https://placehold.co/100x100/red/white?text=${i() + 1}`}
-										alt="cover art"
+										alt={t`cover art`}
 										class="h-full w-full object-cover"
 									/>
 								</div>
 								<div class="ml-3 flex-1 overflow-hidden">
 									<h4 class="truncate text-sm font-medium text-primary">
-										东方同音鉴曲目 {i() + 1}
+										{t`Touhou Cloud DB track`} {i() + 1}
 									</h4>
-									<p class="truncate text-xs text-tertiary">幻想乡音乐人</p>
+									<p class="truncate text-xs text-tertiary">
+										{t`幻想乡音乐人`}
+									</p>
 								</div>
 								<button class="hover:text-rose-600 p-2 text-tertiary">
 									<svg

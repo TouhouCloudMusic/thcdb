@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { UserProfile, UserRoleEnum } from "@thc/api"
 import type { ComponentProps } from "solid-js"
 import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
@@ -76,11 +77,11 @@ export function Profile(props: Props) {
 	const metrics = createMemo<Metric[]>(() => {
 		return [
 			{
-				label: "Edits",
+				label: t`Edits`,
 				value: String(props.data.stats.edit_count),
 			},
 			{
-				label: "Votes",
+				label: t`Votes`,
 				value: String(props.data.stats.vote_count),
 			},
 		]
@@ -110,7 +111,7 @@ export function Profile(props: Props) {
 					{(src) => (
 						<img
 							src={src()}
-							alt="Profile banner"
+							alt={t`Profile banner`}
 							class="size-full object-cover object-center"
 						/>
 					)}
@@ -215,7 +216,7 @@ function ProfileActionButton(props: ProfileActionButtonProps) {
 						disabled={props.pendingAction !== undefined}
 						onClick={props.onFollow}
 					>
-						{props.pendingAction === "follow" ? "Following..." : "Follow"}
+						{props.pendingAction === "follow" ? t`Following...` : t`Follow`}
 					</Button>
 				</Match>
 
@@ -233,8 +234,8 @@ function ProfileActionButton(props: ProfileActionButtonProps) {
 							<Match when={props.pendingAction === "unfollow"}>
 								Unfollowing...
 							</Match>
-							<Match when={hovering()}>Unfollow</Match>
-							<Match when={!hovering()}>Following</Match>
+							<Match when={hovering()}>{t`Unfollow`}</Match>
+							<Match when={!hovering()}>{t`Following`}</Match>
 						</Switch>
 					</Button>
 				</Match>
@@ -255,7 +256,7 @@ function AboutSection(props: { user: UserProfile }) {
 
 	return (
 		<div class="flex flex-col gap-3">
-			<h2 class="text-sm text-primary tracking-wide">About</h2>
+			<h2 class="text-sm text-primary tracking-wide">{t`About`}</h2>
 			<div
 				class={twMerge(
 					"prose prose-slate prose-sm leading-relaxed max-w-none text-secondary",
@@ -265,7 +266,9 @@ function AboutSection(props: { user: UserProfile }) {
 				<Show
 					when={bio()}
 					fallback={
-						<span class="text-slate-500 text-sm">No biography provided.</span>
+						<span class="text-slate-500 text-sm">
+							{t`No biography provided.`}
+						</span>
 					}
 				>
 					<Markdown
@@ -363,7 +366,7 @@ function ActivitySection(props: { items: readonly ActivityItem[] }) {
 
 			<Show
 				when={props.items.length > 0}
-				fallback={<SectionEmptyState message="No recent activity." />}
+				fallback={<SectionEmptyState message={t`No recent activity.`} />}
 			>
 				<div class="flex flex-col">
 					<For each={props.items}>

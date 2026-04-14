@@ -1,4 +1,5 @@
 /* @refresh skip */
+import { t } from "@lingui/core/macro"
 import type {
 	Artist,
 	ArtistCredit,
@@ -70,7 +71,7 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 	return (
 		<PageLayout class="p-9">
 			{/* TODO: fallback */}
-			<Suspense fallback={<div>Loading...</div>}>
+			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<ArtistContext.Provider value={contextValue}>
 					<div class="flex flex-col space-y-8">
 						<div class="grid h-fit grid-cols-[auto_1fr] space-x-8">

@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { ObjExt } from "@thc/toolkit/data"
 
 export function getErrorMessage(error: unknown) {
@@ -26,6 +27,6 @@ export function getErrorMessage(error: unknown) {
 			key === "stack" ? undefined : (value as unknown),
 		)
 	} catch {
-		return "Unknown error"
+		return t`Unknown error`
 	}
 }

@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { CorrectionHistoryItem, Tag } from "@thc/api"
 import { Show, Suspense } from "solid-js"
 
@@ -24,7 +25,7 @@ export function TagInfoPage(props: Props) {
 
 	return (
 		<PageLayout class="p-8">
-			<Suspense fallback={<div>Loading...</div>}>
+			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<TagInfoPageContext.Provider value={contextValue}>
 					<div class="flex flex-col gap-y-6">
 						<TagInfoHeader />
@@ -62,10 +63,10 @@ function TagInfoDetails() {
 	const ctx = assertContext(TagInfoPageContext)
 	return (
 		<div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">
-			<div class="text-tertiary">Type</div>
+			<div class="text-tertiary">{t`Type`}</div>
 			<div>{ctx.tag.type}</div>
 			<Show when={ctx.tag.alt_names && ctx.tag.alt_names.length > 0}>
-				<span class="text-tertiary">AKAs</span>
+				<span class="text-tertiary">{t`AKAs`}</span>
 				<ul class="flex flex-wrap whitespace-pre">
 					<Intersperse
 						of={ctx.tag.alt_names}
@@ -80,6 +81,7 @@ function TagInfoDetails() {
 }
 
 const TRIGGER_CLASS = "py-4"
+
 function TagInfoTabs() {
 	const ctx = assertContext(TagInfoPageContext)
 	const hasDesc = () => Boolean(ctx.tag.description)

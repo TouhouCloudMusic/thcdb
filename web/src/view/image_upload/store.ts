@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { onCleanup } from "solid-js"
 import { createStore } from "solid-js/store"
 
@@ -33,7 +34,7 @@ function getSubmitErrorMessage(error: unknown) {
 		return error.message
 	}
 
-	return "Submit failed."
+	return t`Submit failed.`
 }
 
 function revokeDraftPreviewUrl(url: string | undefined, shouldRevoke: boolean) {

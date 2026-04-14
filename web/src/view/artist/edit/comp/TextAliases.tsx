@@ -1,4 +1,5 @@
 import { Field, FieldArray, insert, remove } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 
@@ -24,7 +25,7 @@ export function ArtistFormTextAliases() {
 	return (
 		<div class="flex min-h-32 w-96 flex-col">
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Text Aliases</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Text Aliases`}</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"
@@ -56,7 +57,7 @@ export function ArtistFormTextAliases() {
 													<InputField.Input
 														{...field.props}
 														id={field.path.join(".")}
-														placeholder="Name"
+														placeholder={t`Name`}
 														value={field.input ?? ""}
 													/>
 													<InputField.Error>

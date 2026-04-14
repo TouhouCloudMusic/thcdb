@@ -6,6 +6,7 @@ import {
 	remove,
 	setInput,
 } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Song, SongRef, SongRelation } from "@thc/api"
 import { For, Show, createMemo, untrack } from "solid-js"
@@ -93,7 +94,7 @@ export function SongRelationsField(props: Props) {
 	return (
 		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Relations</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Relations`}</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"
@@ -183,7 +184,7 @@ function RelationRow(props: RelationRowProps) {
 			<div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2">
 				<Show
 					when={props.songRef?.title}
-					fallback={<span class="text-tertiary">Select song</span>}
+					fallback={<span class="text-tertiary">{t`Select song`}</span>}
 				>
 					{(value) => <span class="text-primary">{value()}</span>}
 				</Show>
@@ -246,7 +247,7 @@ function RelationRow(props: RelationRowProps) {
 						<input
 							{...field.props}
 							class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm text-primary"
-							placeholder="Description"
+							placeholder={t`Description`}
 							value={field.input ?? ""}
 						/>
 						<For each={field.errors}>

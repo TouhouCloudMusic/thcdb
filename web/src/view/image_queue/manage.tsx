@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import type {
@@ -34,40 +35,76 @@ type TypeFilterOption = {
 	label: string
 }
 
-function getTypeFilterLabel(value: TypeFilterKind) {
-	return value === "all" ? "All" : StrExt.capitalize(value)
+function typeFilterLabel(value: TypeFilterKind) {
+	return value === "all" ? t`All` : StrExt.capitalize(value)
 }
 
 const TYPE_FILTER_OPTIONS: TypeFilterOption[] = [
-	{ value: "all", label: getTypeFilterLabel("all") },
-	...TYPE_OPTIONS.map((value) => ({
-		value,
-		label: getTypeFilterLabel(value),
-	})),
+	{
+		value: "all",
+		get label() {
+			return typeFilterLabel("all")
+		},
+	},
+	{
+		value: "artist",
+		get label() {
+			return typeFilterLabel("artist")
+		},
+	},
+	{
+		value: "release",
+		get label() {
+			return typeFilterLabel("release")
+		},
+	},
 ]
 
 export type StatusFilterKind = "pending" | "all"
 export const STATUS_FILTER_OPTIONS: StatusFilterKind[] = ["pending", "all"]
 
 const PAGE_SIZE = 20
-
 const STATUS_TONES = {
-	Pending: { color: "Marisa", label: "Pending" },
-	Approved: { color: "Green", label: "Approved" },
-	Rejected: { color: "Reimu", label: "Rejected" },
-	Cancelled: { color: "Slate", label: "Cancelled" },
-	Reverted: { color: "Blue", label: "Reverted" },
+	Pending: {
+		color: "Marisa",
+		get label() {
+			return t`Pending`
+		},
+	},
+	Approved: {
+		color: "Green",
+		get label() {
+			return t`Approved`
+		},
+	},
+	Rejected: {
+		color: "Reimu",
+		get label() {
+			return t`Rejected`
+		},
+	},
+	Cancelled: {
+		color: "Slate",
+		get label() {
+			return t`Cancelled`
+		},
+	},
+	Reverted: {
+		color: "Blue",
+		get label() {
+			return t`Reverted`
+		},
+	},
 } as const satisfies Record<
 	ImageQueueStatus,
 	{
 		color: "Marisa" | "Green" | "Reimu" | "Slate" | "Blue"
-		label: string
+		readonly label: string
 	}
 >
 
-function getQueueItemAriaLabel(item: PendingImageQueueItem) {
-	return `View image queue item #${item.id}`
-}
+const queueItemAriaLabel = (item: PendingImageQueueItem) =>
+	t`View image queue item #${item.id}`
 
 export type ManageFilters = {
 	type?: ImageQueueType
@@ -101,10 +138,10 @@ export function ImageQueueManagePageContent(
 		<PageLayout class="flex flex-col p-8">
 			<header class="flex flex-col gap-y-2">
 				<div class="text-xs font-medium tracking-[0.2em] text-tertiary">
-					MODERATION
+					{t`MODERATION`}
 				</div>
 				<h1 class="text-2xl font-light tracking-tight text-primary">
-					Image Queue
+					{t`Image Queue`}
 				</h1>
 			</header>
 
@@ -115,7 +152,7 @@ export function ImageQueueManagePageContent(
 				>
 					<div class="flex gap-x-4">
 						<div class="flex items-center gap-2">
-							<span class="text-sm text-tertiary">Type</span>
+							<span class="text-sm text-tertiary">{t`Type`}</span>
 							<Select.Root<TypeFilterOption>
 								class="min-w-24"
 								options={TYPE_FILTER_OPTIONS}
@@ -148,7 +185,7 @@ export function ImageQueueManagePageContent(
 						</div>
 
 						<div class="flex items-center gap-2">
-							<span class="text-sm text-tertiary">Status</span>
+							<span class="text-sm text-tertiary">{t`Status`}</span>
 							<Select.Root<StatusFilterKind>
 								options={STATUS_FILTER_OPTIONS}
 								value={props.filters.status}
@@ -188,7 +225,7 @@ export function ImageQueueManagePageContent(
 
 					<Match when={props.isListError}>
 						<div class="p-6 text-sm text-reimu-700">
-							Failed to load image queue.
+							{t`Failed to load image queue.`}
 						</div>
 					</Match>
 
@@ -207,10 +244,10 @@ export function ImageQueueManagePageContent(
 					<Match when={props.items.length === 0}>
 						<div class="p-10">
 							<div class="text-sm font-medium text-primary">
-								No entries found
+								{t`No entries found`}
 							</div>
 							<div class="mt-1 text-sm text-tertiary">
-								No entries match the current filters.
+								{t`No entries match the current filters.`}
 							</div>
 						</div>
 					</Match>
@@ -231,7 +268,7 @@ export function ImageQueueManagePageContent(
 
 				<Show when={!props.hasNextPage && props.items.length > 0}>
 					<div class="border-t border-slate-200 px-4 py-8 text-center text-sm text-tertiary">
-						No more entries
+						{t`No more entries`}
 					</div>
 				</Show>
 			</section>
@@ -309,7 +346,7 @@ function QueueRow(props: { item: PendingImageQueueItem }) {
 			<Link
 				to="/image-queue/$id"
 				params={{ id: props.item.id.toString() }}
-				aria-label={getQueueItemAriaLabel(props.item)}
+				aria-label={queueItemAriaLabel(props.item)}
 				class="absolute inset-0 rounded-sm no-underline"
 			/>
 
@@ -337,7 +374,7 @@ function QueueRow(props: { item: PendingImageQueueItem }) {
 				</div>
 
 				<div class="grid grid-cols-subgrid grid-rows-subgrid justify-items-end text-sm text-slate-600 row-span-2">
-					<div>Created at</div>
+					<div>{t`Created at`}</div>
 					<div>{createdAtLabel()}</div>
 				</div>
 			</div>

@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { Link } from "@tanstack/solid-router"
 import { createMemo, Show } from "solid-js"
 
@@ -26,7 +27,7 @@ export function ReleaseInfoTitleAndArtist() {
 				</Show>
 			</div>
 			<div class="flex items-center">
-				<span class="mr-2 text-tertiary">by</span>
+				<span class="mr-2 text-tertiary">{t`by`}</span>
 				<Intersperse
 					of={ctx.release.artists}
 					with={<span class="whitespace-pre">, </span>}

@@ -1,4 +1,5 @@
 import { Field, getErrors, insert, remove } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { SimpleArtist } from "@thc/api"
 import { ArtistApi } from "@thc/api"
 import { Either, Option as O } from "effect"
@@ -93,7 +94,7 @@ export function LabelFoundersField(props: Props) {
 	return (
 		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Founders</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Founders`}</FormComp.Label>
 				<ArtistSearchDialog
 					onSelect={addFounder}
 					icon={<PlusIcon class="size-4" />}

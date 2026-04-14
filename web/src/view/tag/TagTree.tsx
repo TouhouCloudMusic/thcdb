@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { Tag } from "@thc/api"
 import { createMemo, createSignal, For, onCleanup, Show } from "solid-js"
 
@@ -239,7 +240,7 @@ function TagTreeItem(props: TagTreeItemProps) {
 	const indentStyle = () => ({
 		"padding-left": `${props.depth * INDENT_SIZE}px`,
 	})
-	const toggleLabel = () => (isExpanded() ? "Collapse" : "Expand")
+	const toggleLabel = () => (isExpanded() ? t`Collapse` : t`Expand`)
 	const isActive = () => props.activeId() === props.node.id
 	const tabIndex = () => (isActive() ? 0 : -1)
 	const ariaExpanded = () => (hasChildren() ? isExpanded() : undefined)

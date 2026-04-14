@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { JSX } from "solid-js"
 import { For, Suspense } from "solid-js"
 
@@ -23,7 +24,7 @@ export function EntitySearchDialog<T>(
 				<div class="mb-6 space-y-4">
 					<SearchDialog.Label>{props.title}</SearchDialog.Label>
 					<SearchDialog.Input
-						placeholder={"Search..."}
+						placeholder={t`Search...`}
 						value={props.value}
 						onInput={props.onInput}
 						class="h-9 w-full"

@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Tag } from "@thc/api"
 import { TagQueryOption } from "@thc/query"
@@ -56,7 +57,7 @@ export function TagSearchDialog(props: TagSearchDialogProps): JSX.Element {
 
 	return (
 		<EntitySearchDialog
-			title="Search Tag"
+			title={t`Search Tag`}
 			trigger={
 				<Dialog.Trigger
 					as={Button}

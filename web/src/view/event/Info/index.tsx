@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { CorrectionHistoryItem, Event } from "@thc/api"
 import { Show, Suspense } from "solid-js"
 
@@ -25,7 +26,7 @@ export function EventInfoPage(props: EventInfoPageProps) {
 
 	return (
 		<PageLayout class="p-8">
-			<Suspense fallback={<div>Loading...</div>}>
+			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<EventInfoPageContext.Provider value={contextValue}>
 					<div class="flex flex-col gap-y-6">
 						<EventInfoHeader />
@@ -58,11 +59,11 @@ function EventInfoHeader() {
 				</p>
 			</header>
 			<div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
-				<span class="text-tertiary">Date</span>
+				<span class="text-tertiary">{t`Date`}</span>
 
 				<Show
 					when={ctx.event.start_date}
-					fallback={<span>N/A</span>}
+					fallback={<span>{t`N/A`}</span>}
 				>
 					<div>
 						<span>{DateWithPrecision.display(ctx.event.start_date)}</span>
@@ -73,7 +74,7 @@ function EventInfoHeader() {
 					</div>
 				</Show>
 				<Show when={hasAlternativeNames()}>
-					<span class="text-tertiary">AKAs</span>
+					<span class="text-tertiary">{t`AKAs`}</span>
 					<ul class="flex flex-wrap gap-0.5 whitespace-pre">
 						<Intersperse
 							of={alternativeNames()}
@@ -89,6 +90,7 @@ function EventInfoHeader() {
 }
 
 const TRIGGER_CLASS = "py-4"
+
 function EventInfoTabs() {
 	const ctx = assertContext(EventInfoPageContext)
 	const hasDescription = () => Boolean(ctx.event.description)

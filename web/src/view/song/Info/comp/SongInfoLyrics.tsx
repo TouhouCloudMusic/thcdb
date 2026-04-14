@@ -1,4 +1,5 @@
 /* @refresh skip */
+import { t } from "@lingui/core/macro"
 import { createSignal } from "solid-js"
 
 import { Select } from "~/component/atomic/form/select"
@@ -41,7 +42,7 @@ export function SongInfoLyrics() {
 					)}
 				>
 					<Select.Trigger
-						aria-label="Language"
+						aria-label={t`Language`}
 						class="h-auto min-h-8 border-0 border-b border-slate-400 rounded-none px-1 py-2 text-sm tracking-wide text-secondary focus:outline-none"
 					>
 						<Select.Value<string>>

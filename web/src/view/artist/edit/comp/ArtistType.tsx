@@ -1,4 +1,5 @@
 import { Field } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { ArtistType } from "@thc/api"
 
 import { FormComp } from "~/component/atomic/form"
@@ -26,7 +27,7 @@ export function ArtistFormArtistTypeField() {
 		>
 			{(field) => (
 				<div class="flex flex-col">
-					<FormComp.Label>Artist Type</FormComp.Label>
+					<FormComp.Label>{t`Artist Type`}</FormComp.Label>
 					<div class="w-fit rounded-sm border border-slate-300 font-light">
 						<Select.Root<"" | ArtistType>
 							name={field.props.name}

@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { createMemo, For, Match, Show, Switch } from "solid-js"
@@ -31,7 +32,7 @@ const ROLE_EDITOR_LIST_CLASS = "flex flex-col gap-2"
 const ROLE_EDITOR_OPTION_BASE_CLASS =
 	"flex w-full items-start gap-3 rounded-sm border px-3 py-3 text-left outline-1 outline-transparent -outline-offset-1 transition-colors duration-100 disabled:cursor-default disabled:opacity-70"
 const ROLE_DESCRIPTION: Record<EditableUserRoleEnum, string> = {
-	Moderator: "Access moderation tools and review queues.",
+	Moderator: t`Access moderation tools and review queues.`,
 }
 
 type AdminUserItem = PageResponseUserSummary["items"][number]
@@ -339,8 +340,10 @@ export function AdminUsersPage() {
 		<PageLayout class="p-8">
 			<div class="flex flex-col gap-6">
 				<header class="flex flex-col flex-wrap items-start justify-between gap-2">
-					<p class="text-sm text-tertiary">Admin Settings</p>
-					<h1 class="text-2xl font-light tracking-tight text-primary">Users</h1>
+					<p class="text-sm text-tertiary">{t`Admin Settings`}</p>
+					<h1 class="text-2xl font-light tracking-tight text-primary">
+						{t`Users`}
+					</h1>
 					<p class="text-sm text-tertiary">
 						View users and update system roles.
 					</p>
@@ -361,7 +364,7 @@ export function AdminUsersPage() {
 							}}
 							type="search"
 							name="keyword"
-							placeholder="Search by username"
+							placeholder={t`Search by username`}
 							class="min-w-72 flex-1 rounded-sm border border-slate-300 bg-primary px-3 py-2 text-sm text-primary outline-none transition-colors focus:border-slate-400"
 						/>
 						<Button
@@ -405,10 +408,10 @@ function AdminUsersTable(props: AdminUsersTableProps) {
 				<div
 					class={`${USERS_TABLE_GRID_CLASS} px-4 py-3 text-sm font-medium text-tertiary`}
 				>
-					<div>ID</div>
-					<div>User</div>
-					<div>Roles</div>
-					<div class="text-right">Action</div>
+					<div>{t`ID`}</div>
+					<div>{t`User`}</div>
+					<div>{t`Roles`}</div>
+					<div class="text-right">{t`Action`}</div>
 				</div>
 
 				<Switch
@@ -435,15 +438,17 @@ function AdminUsersTable(props: AdminUsersTableProps) {
 
 					<Match when={props.list.isError}>
 						<div class="px-4 py-10 text-sm text-reimu-700">
-							{props.list.errorMessage ?? "Failed to load users."}
+							{props.list.errorMessage ?? t`Failed to load users.`}
 						</div>
 					</Match>
 
 					<Match when={!props.list.isLoading && props.list.users.length === 0}>
 						<div class="px-4 py-10">
-							<div class="text-sm font-medium text-primary">No users found</div>
+							<div class="text-sm font-medium text-primary">
+								{t`No users found`}
+							</div>
 							<div class="mt-1 text-sm text-tertiary">
-								No users match the current filters.
+								{t`No users match the current filters.`}
 							</div>
 						</div>
 					</Match>
@@ -453,9 +458,9 @@ function AdminUsersTable(props: AdminUsersTableProps) {
 			<Show when={props.list.totalPages > 1}>
 				<div class="flex flex-wrap items-center justify-between gap-3 px-4 py-4">
 					<div class="text-sm text-tertiary">
-						Page {props.search.page} of {props.list.totalPages}
+						{t`Page ${props.search.page} of ${props.list.totalPages}`}
 						<span class="mx-2 text-slate-300">•</span>
-						{props.list.totalItems} users
+						{t`${props.list.totalItems} users`}
 					</div>
 
 					<Pagination
@@ -614,7 +619,7 @@ function RoleEditorDialog(props: RoleEditorDialogProps) {
 							>
 								<Show
 									when={props.dialog.isSaving}
-									fallback="Save roles"
+									fallback={t`Save roles`}
 								>
 									Saving…
 								</Show>

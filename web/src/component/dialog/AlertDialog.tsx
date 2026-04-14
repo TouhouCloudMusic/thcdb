@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { Show, splitProps } from "solid-js"
 import type { ComponentProps, JSX } from "solid-js"
 
@@ -64,7 +65,7 @@ export function AlertDialog(props: AlertDialogProps) {
 								size="Sm"
 								onClick={local.onCancel}
 							>
-								{local.cancelText ?? "Cancel"}
+								{local.cancelText ?? t`Cancel`}
 							</Dialog.CloseButton>
 						</Show>
 						<Button
@@ -73,7 +74,7 @@ export function AlertDialog(props: AlertDialogProps) {
 							size="Sm"
 							onClick={local.onConfirm}
 						>
-							{local.confirmText ?? "Confirm"}
+							{local.confirmText ?? t`Confirm`}
 						</Button>
 					</div>
 				</Dialog.Content>

@@ -1,16 +1,17 @@
+import { t } from "@lingui/core/macro"
 import { Title } from "@solidjs/meta"
 
 export function InternalServerError(props: { msg?: string | undefined }) {
 	return (
 		<div class="flex size-full py-32">
-			<Title>500 Internal Server Error</Title>
+			<Title>{t`500 Internal Server Error`}</Title>
 			<div class="m-auto text-center">
 				<img
 					class="m-auto w-1/3"
 					src="/img/status_code/500.png"
-					alt="500 Internal Server Error"
+					alt={t`500 Internal Server Error`}
 				/>
-				<h1 class="mt-4 text-4xl">500 Internal Server Error</h1>
+				<h1 class="mt-4 text-4xl">{t`500 Internal Server Error`}</h1>
 				<p class="mt-2 break-words text-slate-600">{props.msg}</p>
 				<p class="mt-1 text-slate-400">
 					<button

@@ -1,10 +1,10 @@
+import { lingui } from "@lingui/vite-plugin"
 import tailwindcss from "@tailwindcss/vite"
 import { devtools } from "@tanstack/devtools-vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import type { PluginOption } from "vite"
 import babelMacrosPlugin from "vite-plugin-babel-macros"
 import solidPlugin from "vite-plugin-solid"
-import { wuchale } from "wuchale/vite"
 
 function compactPlugins(
 	plugins: (PluginOption | false | null | undefined)[],
@@ -14,12 +14,10 @@ function compactPlugins(
 	})
 }
 
-export function createAppPlugins(options: {
-	withWuchale: boolean
-}): PluginOption[] {
+export function createAppPlugins(): PluginOption[] {
 	return compactPlugins([
 		devtools(),
-		options.withWuchale && wuchale(),
+		lingui(),
 		tanstackRouter({
 			target: "solid",
 			autoCodeSplitting: true,

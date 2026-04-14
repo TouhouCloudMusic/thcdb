@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type {
 	Correction,
@@ -98,7 +99,7 @@ function CorrectionHeader(props: CorrectionHeaderProps) {
 					<span>
 						{props.correction.handled_at
 							? formatTimestamp(props.correction.handled_at)
-							: "Not handled"}
+							: t`Not handled`}
 					</span>
 				</div>
 			</div>
@@ -146,10 +147,12 @@ function DiffEntries(props: DiffEntriesProps) {
 	return (
 		<Switch>
 			<Match when={props.isLoading}>
-				<div class="px-4 py-3 text-sm text-tertiary">Loading diff...</div>
+				<div class="px-4 py-3 text-sm text-tertiary">{t`Loading diff...`}</div>
 			</Match>
 			<Match when={entries().length === 0}>
-				<div class="px-4 py-3 text-sm text-tertiary">No changes detected.</div>
+				<div class="px-4 py-3 text-sm text-tertiary">
+					{t`No changes detected.`}
+				</div>
 			</Match>
 			<Match when={true}>
 				<div>
@@ -177,12 +180,12 @@ function DiffEntries(props: DiffEntriesProps) {
 										</div>
 									</div>
 									<DiffValue
-										label="Before"
+										label={t`Before`}
 										value={entry.before}
 										variant="before"
 									/>
 									<DiffValue
-										label="After"
+										label={t`After`}
 										value={entry.after}
 										variant="after"
 									/>
@@ -207,7 +210,9 @@ function RevisionEntries(props: RevisionEntriesProps) {
 	return (
 		<Switch>
 			<Match when={props.isLoading}>
-				<div class="px-4 py-3 text-sm text-tertiary">Loading revisions...</div>
+				<div class="px-4 py-3 text-sm text-tertiary">
+					{t`Loading revisions...`}
+				</div>
 			</Match>
 			<Match when={entries().length === 0}>
 				<div class="px-4 py-3 text-sm text-tertiary">
@@ -301,7 +306,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 	])
 
 	const getCompareLabel = (value: string) => {
-		if (value === "") return "Previous approved baseline"
+		if (value === "") return t`Previous approved baseline`
 		const target = compareOptions().find((item) => item.id.toString() === value)
 		if (!target) return value
 		return `#${target.id} ${target.type} (${formatTimestamp(target.handled_at ?? target.created_at)})`
@@ -311,7 +316,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 		<PageLayout class="p-8">
 			<Show
 				when={correctionQuery.data}
-				fallback={<div class="text-sm text-tertiary">Loading...</div>}
+				fallback={<div class="text-sm text-tertiary">{t`Loading...`}</div>}
 			>
 				{(correction) => (
 					<div class="flex flex-col gap-6">
@@ -319,13 +324,15 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 						<Card class={SECTION_CARD_CLASS}>
 							<div class={SECTION_HEADER_CLASS}>
 								<div class="min-w-0 space-y-1">
-									<div class={SECTION_TITLE_CLASS}>DIFF</div>
+									<div class={SECTION_TITLE_CLASS}>{t`DIFF`}</div>
 									<Switch>
 										<Match when={diffQuery.isLoading}>
-											<div class="text-xs text-tertiary">Loading...</div>
+											<div class="text-xs text-tertiary">{t`Loading...`}</div>
 										</Match>
 										<Match when={!diffQuery.data}>
-											<div class="text-xs text-tertiary">No diff data.</div>
+											<div class="text-xs text-tertiary">
+												{t`No diff data.`}
+											</div>
 										</Match>
 										<Match when={true}>
 											<div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-tertiary">
@@ -393,7 +400,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 						<div class="grid gap-6 lg:grid-cols-2">
 							<Card class={SECTION_CARD_CLASS}>
 								<div class={SECTION_HEADER_CLASS}>
-									<div class={SECTION_TITLE_CLASS}>REVISIONS</div>
+									<div class={SECTION_TITLE_CLASS}>{t`REVISIONS`}</div>
 									<Show when={!revisionsQuery.isLoading}>
 										<span class="font-mono text-xs text-slate-400">
 											{revisionsQuery.data?.length ?? 0} items
@@ -408,7 +415,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 
 							<Card class={SECTION_CARD_CLASS}>
 								<div class={SECTION_HEADER_CLASS}>
-									<div class={SECTION_TITLE_CLASS}>CORRECTIONS</div>
+									<div class={SECTION_TITLE_CLASS}>{t`CORRECTIONS`}</div>
 									<Show when={!historyQuery.isLoading}>
 										<span class="font-mono text-xs text-slate-400">
 											{historyQuery.data?.length ?? 0} items

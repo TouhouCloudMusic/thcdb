@@ -39,6 +39,7 @@ export default [
 			"src/**/openapi.ts",
 			"dist/",
 			"packages/",
+			"vendor/",
 			".storybook/",
 			"plugins/",
 			"src/component/__legacy/",

@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro"
+
 export type FileSizeRange = {
 	min: number
 	max: number
@@ -23,7 +25,7 @@ export function validateImageFile(
 	fileSizeRange: FileSizeRange,
 ): string | undefined {
 	if (!isSupportedImageType(file)) {
-		return "Only PNG/JPEG images are supported."
+		return t`Only PNG/JPEG images are supported.`
 	}
 
 	if (file.size < fileSizeRange.min) {

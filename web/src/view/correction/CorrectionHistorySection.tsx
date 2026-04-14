@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { CorrectionHistoryItem } from "@thc/api"
 import { For, Suspense } from "solid-js"
 import { twMerge } from "tailwind-merge"
@@ -49,7 +50,7 @@ function CorrectionHistoryItemEntry(props: CorrectionHistoryItemProps) {
 				<For
 					each={[
 						[
-							"Author",
+							t`Author`,
 							<Link
 								to={"/profile/$username"}
 								params={{
@@ -60,7 +61,7 @@ function CorrectionHistoryItemEntry(props: CorrectionHistoryItemProps) {
 								{props.item.author.name}
 							</Link>,
 						],
-						["Description", props.item.description],
+						[t`Description`, props.item.description],
 					]}
 				>
 					{(item) => (
@@ -84,7 +85,9 @@ type CorrectionHistorySectionProps = {
 export function CorrectionHistorySection(props: CorrectionHistorySectionProps) {
 	return (
 		<section class={twMerge("space-y-2", props.class)}>
-			<Suspense fallback={<div class="text-sm text-tertiary">Loading...</div>}>
+			<Suspense
+				fallback={<div class="text-sm text-tertiary">{t`Loading...`}</div>}
+			>
 				<ul class="divide-y divide-slate-200 overflow-hidden bg-primary">
 					<For
 						each={props.items}

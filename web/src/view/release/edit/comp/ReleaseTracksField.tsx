@@ -1,4 +1,5 @@
 import { FieldArray, getInput, insert, setInput } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { ReleaseTrack } from "@thc/api"
 import { For, createMemo, createSignal } from "solid-js"
 import {
@@ -139,12 +140,12 @@ function TrackHeader(props: {
 	return (
 		<div class="mb-4 flex flex-col gap-2">
 			<div class="flex items-center justify-between">
-				<FormComp.Label class="m-0">Tracks</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Tracks`}</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"
 					onClick={onAddTrack}
-					title="Add track"
+					title={t`Add track`}
 				>
 					<PlusIcon class="size-4" />
 				</Button>
@@ -154,7 +155,7 @@ function TrackHeader(props: {
 					variant="Tertiary"
 					class="h-max p-2"
 					onClick={onPrevDisc}
-					title="Previous disc"
+					title={t`Previous disc`}
 				>
 					<ArrowLeftIcon class="size-4" />
 				</Button>
@@ -176,7 +177,7 @@ function TrackHeader(props: {
 						size="Sm"
 						onClick={onAddDisc}
 						class="p-2"
-						title="Add disc"
+						title={t`Add disc`}
 					>
 						<PlusIcon class="size-4" />
 					</Button>
@@ -185,7 +186,7 @@ function TrackHeader(props: {
 					variant="Tertiary"
 					class="p-2"
 					onClick={onNextDisc}
-					title="Next disc"
+					title={t`Next disc`}
 				>
 					<ArrowRightIcon class="size-4" />
 				</Button>
@@ -227,18 +228,18 @@ function EditDiscNameDialog(props: DiscNameDialogProps) {
 				variant="Tertiary"
 				class="h-full p-2"
 				size="Sm"
-				title="Rename disc"
+				title={t`Rename disc`}
 			>
 				<Pencil1Icon class="size-4" />
 			</Dialog.Trigger>
 			<Dialog.Portal>
 				<Dialog.Overlay />
 				<Dialog.Content class="w-full max-w-sm rounded p-4">
-					<Dialog.Title class="text-lg">Rename Disc</Dialog.Title>
+					<Dialog.Title class="text-lg">{t`Rename Disc`}</Dialog.Title>
 					<div class="mt-4 space-y-2">
 						<InputField.Root>
 							<InputField.Input
-								placeholder="Disc name"
+								placeholder={t`Disc name`}
 								value={name()}
 								onInput={(e) => {
 									const value = e.currentTarget.value
@@ -248,7 +249,9 @@ function EditDiscNameDialog(props: DiscNameDialogProps) {
 						</InputField.Root>
 					</div>
 					<div class="mt-4 flex justify-end gap-2">
-						<Dialog.CloseButton variant="Tertiary">Cancel</Dialog.CloseButton>
+						<Dialog.CloseButton variant="Tertiary">
+							{t`Cancel`}
+						</Dialog.CloseButton>
 						<Button
 							variant="Primary"
 							color="Reimu"

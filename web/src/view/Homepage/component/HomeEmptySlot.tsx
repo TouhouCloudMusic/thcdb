@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { twMerge } from "tailwind-merge"
 
 type HomeEmptySlotProps = {
@@ -15,7 +16,7 @@ export function HomeEmptySlot(props: HomeEmptySlotProps) {
 		<div class={className()}>
 			<div class="inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-xs font-medium text-tertiary">
 				<span class="inline-block size-1.5 rounded-full bg-slate-300"></span>
-				{props.label ?? "No data"}
+				{props.label ?? t`No data`}
 			</div>
 		</div>
 	)

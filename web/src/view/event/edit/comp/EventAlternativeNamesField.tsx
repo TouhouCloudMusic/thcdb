@@ -1,4 +1,5 @@
 import { Field, FieldArray, getErrors, insert, remove } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
@@ -30,7 +31,7 @@ export function EventAlternativeNamesField(props: Props) {
 	return (
 		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Alternative Names</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Alternative Names`}</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"
@@ -63,7 +64,7 @@ export function EventAlternativeNamesField(props: Props) {
 												<InputField.Input
 													{...field.props}
 													value={field.input ?? ""}
-													placeholder="Name"
+													placeholder={t`Name`}
 												/>
 												<InputField.Error>
 													{field.errors ? field.errors[0] : undefined}

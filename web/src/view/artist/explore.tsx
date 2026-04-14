@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { ArtistApi } from "@thc/api"
@@ -23,7 +24,7 @@ type ArtistExploreSearch = {
 }
 
 const isArtistType = (value: string): value is ArtistType => {
-	return ARTIST_TYPES.some((t) => t === value)
+	return ARTIST_TYPES.some((artistType) => artistType === value)
 }
 
 const parseArtistTypeFilterValue = (value: string) => {
@@ -88,8 +89,8 @@ export const ArtistExplore = () => {
 
 	return (
 		<ExplorePageLayout
-			title="Explore Artists"
-			action={{ to: "/artist/new", label: "Create artist" }}
+			title={t`Explore Artists`}
+			action={{ to: "/artist/new", label: t`Create artist` }}
 		>
 			<ArtistExploreFilterBar
 				scrollDirection={scrollDirection}

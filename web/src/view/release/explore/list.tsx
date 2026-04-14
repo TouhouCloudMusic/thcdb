@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { Release } from "@thc/api"
 import { For, Match, Show, Switch } from "solid-js"
 
@@ -85,7 +86,7 @@ export function ReleaseExploreList(props: ReleaseExploreListProps) {
 		<>
 			<Show when={!props.store.isLoading && props.store.releases.length === 0}>
 				<EmptyExplorePlaceholder
-					title="No releases found"
+					title={t`No releases found`}
 					action={{ to: "/release/new" }}
 				/>
 			</Show>

@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { Label } from "@thc/api"
 import type { Component } from "solid-js"
 import { For, Show } from "solid-js"
@@ -20,7 +21,7 @@ const getLabelAvatarText = (label: Label) => {
 }
 
 const getLabelStatusText = (label: Label) => {
-	return label.dissolved_date ? "Dissolved" : "Active"
+	return label.dissolved_date ? t`Dissolved` : t`Active`
 }
 
 const getLabelDateLine = (label: Label) => {
@@ -138,7 +139,7 @@ export const LabelExploreList: Component<LabelExploreListProps> = (props) => {
 		<>
 			<Show when={!props.isLoading && props.labels.length === 0}>
 				<EmptyExplorePlaceholder
-					title="No labels found"
+					title={t`No labels found`}
 					action={{ to: "/label/new" }}
 				/>
 			</Show>

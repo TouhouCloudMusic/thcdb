@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { LinkComponentProps } from "@tanstack/solid-router"
 import type { IconProps } from "@thc/icons"
 import type { JSX } from "solid-js"
@@ -33,7 +34,7 @@ export function LeftSidebar() {
 			icon: HomeIcon,
 			// @wc-include
 			get text() {
-				return "Home"
+				return t`Home`
 			},
 			to: "/",
 		},
@@ -41,7 +42,7 @@ export function LeftSidebar() {
 			icon: TargetIcon,
 			// @wc-include
 			get text() {
-				return "Recommendation"
+				return t`Recommendation`
 			},
 			to: "/recommendation",
 		},
@@ -49,7 +50,7 @@ export function LeftSidebar() {
 			icon: CrumpledPaperIcon,
 			// @wc-include
 			get text() {
-				return "Release"
+				return t`Release`
 			},
 			to: "/release/explore",
 		},
@@ -57,7 +58,7 @@ export function LeftSidebar() {
 			icon: MixerHorizontalIcon,
 			// @wc-include
 			get text() {
-				return "Artist"
+				return t`Artist`
 			},
 			to: "/artist/explore",
 		},
@@ -65,7 +66,7 @@ export function LeftSidebar() {
 			icon: CardStackIcon,
 			// @wc-include
 			get text() {
-				return "Song"
+				return t`Song`
 			},
 			to: "/song/explore",
 		},
@@ -73,7 +74,7 @@ export function LeftSidebar() {
 			icon: EnvelopeClosedIcon,
 			// @wc-include
 			get text() {
-				return "Tag"
+				return t`Tag`
 			},
 			to: "/tag/explore",
 		},
@@ -81,7 +82,7 @@ export function LeftSidebar() {
 			icon: EnvelopeClosedIcon,
 			// @wc-include
 			get text() {
-				return "Event"
+				return t`Event`
 			},
 			to: "/event/explore",
 		},
@@ -89,7 +90,7 @@ export function LeftSidebar() {
 			icon: BookmarkIcon,
 			// @wc-include
 			get text() {
-				return "Label"
+				return t`Label`
 			},
 			to: "/label/explore",
 		},
@@ -97,7 +98,7 @@ export function LeftSidebar() {
 
 	return (
 		<Sidebar class="flex w-64 flex-col gap-2 p-4">
-			<h3 class="ml-2 text-sm text-secondary ">Explore</h3>
+			<h3 class="ml-2 text-sm text-secondary ">{t`Explore`}</h3>
 
 			<ul class="space-y-1 pr-2">
 				<For each={LIST_ITEMS}>
@@ -119,23 +120,23 @@ export function LeftSidebar() {
 
 			<Show when={hasAdminRole(userCtx.user?.roles)}>
 				<div class="space-y-1 pr-2">
-					<h3 class="ml-2 text-sm text-secondary">Admin</h3>
+					<h3 class="ml-2 text-sm text-secondary">{t`Admin`}</h3>
 					<ListItem
 						class="w-full"
-						aria-label="Users"
-						title="Users"
+						aria-label={t`Users`}
+						title={t`Users`}
 						to="/admin/users"
 					>
 						<PersonIcon class="mr-3 h-4 w-4" />
-						<span>Users</span>
+						<span>{t`Users`}</span>
 					</ListItem>
 				</div>
 			</Show>
 
 			<div class="mt-auto space-y-2 px-2">
-				<h3 class="text-sm text-secondary">Settings</h3>
+				<h3 class="text-sm text-secondary">{t`Settings`}</h3>
 				<div class="space-y-2">
-					<div class="text-sm text-tertiary">Language</div>
+					<div class="text-sm text-tertiary">{t`Language`}</div>
 					<LocaleSelect />
 				</div>
 			</div>

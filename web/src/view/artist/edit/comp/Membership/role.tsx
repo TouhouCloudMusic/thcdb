@@ -1,5 +1,6 @@
 // @refresh-reload
 import { Field, insert, remove } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { CreditRoleSummary } from "@thc/api"
 import { CreditRoleQueryOption } from "@thc/query"
@@ -104,9 +105,9 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 								)}
 							</For>
 							<Combobox.MultiInput
-								placeholder="Search roles..."
+								placeholder={t`Search roles...`}
 								value={searchTerm()}
-								aria-label="Search credit role"
+								aria-label={t`Search credit role`}
 								class="flex-1 pl-1"
 								onInput={(e) => setSearchTermDebounced(e.currentTarget.value)}
 							/>
@@ -154,8 +155,8 @@ function RoleBadge(props: {
 					<button
 						type="button"
 						class="text-slate-600"
-						aria-label="Remove role"
-						title="Remove role"
+						aria-label={t`Remove role`}
+						title={t`Remove role`}
 						onClick={() => props.removeRole()}
 					>
 						<Cross1Icon class="size-4" />

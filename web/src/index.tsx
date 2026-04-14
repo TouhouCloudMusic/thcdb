@@ -1,14 +1,12 @@
 /* @refresh reload */
 import { render } from "solid-js/web"
-import { loadLocale } from "wuchale/load-utils"
 
 import App from "./App"
 import "./index.css"
-import * as mainLoader from "./locales/main.loader.js"
 import { resolveInitialLocale } from "./state/i18n/init"
+import { loadLocale } from "./state/i18n/runtime"
 
 const root = document.querySelector("#root")
-void mainLoader
 
 if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
 	throw new Error(

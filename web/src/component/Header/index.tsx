@@ -1,4 +1,5 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
+import { t } from "@lingui/core/macro"
 import { Link, useNavigate } from "@tanstack/solid-router"
 import type { UserProfile } from "@thc/api"
 import {
@@ -161,7 +162,7 @@ function SearchBar() {
 						inputRef = el
 					}}
 					type="search"
-					placeholder="Search artists, releases, songs…"
+					placeholder={t`Search artists, releases, songs…`}
 					class="mr-auto h-7 w-full rounded-xs bg-slate-100 pl-7 outline-transparent duration-200 hover:outline hover:outline-reimu-600 focus:bg-white focus:outline-[1.5px] focus:outline-reimu-600"
 				/>
 				<MagnifyingGlassIcon class="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
@@ -246,7 +247,7 @@ function UnauthenticatedButtons() {
 						type: "sign_in",
 					}}
 				>
-					Sign In
+					{t`Sign In`}
 				</Link>
 			</Button>
 			<Button
@@ -260,7 +261,7 @@ function UnauthenticatedButtons() {
 						type: "sign_up",
 					}}
 				>
-					Sign Up
+					{t`Sign Up`}
 				</Link>
 			</Button>
 		</div>

@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { ReleaseType } from "@thc/api"
 
 import {
@@ -28,7 +29,7 @@ function ReleaseExploreViewPicker(props: ReleaseExploreViewPickerProps) {
 
 	return (
 		<div class="ml-auto flex items-center gap-2">
-			<span class="text-sm text-slate-500">View</span>
+			<span class="text-sm text-slate-500">{t`View`}</span>
 			<div class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 p-1">
 				<button
 					type="button"
@@ -103,7 +104,7 @@ const SELECT_OPTIONS: { value: ReleaseType | "All"; label: string }[] = [
 function ReleaseTypeSelect(props: { store: ReleaseExploreFilterStore }) {
 	return (
 		<ExploreFilter
-			label="Type"
+			label={t`Type`}
 			options={SELECT_OPTIONS}
 			value={props.store.releaseType ?? "All"}
 			defaultValue="All"

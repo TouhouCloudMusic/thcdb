@@ -1,4 +1,5 @@
 import type { FieldElementProps } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { JSX } from "solid-js"
 import { createSignal } from "solid-js"
 
@@ -27,7 +28,7 @@ export function VerificationCodeField(props: VerificationCodeFieldProps) {
 
 	return (
 		<FieldLayout
-			label="Verification code"
+			label={t`Verification code`}
 			error={
 				props.hideError || isEditing() ? undefined : props.field.errors?.[0]
 			}

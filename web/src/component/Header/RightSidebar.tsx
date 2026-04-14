@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { Ref } from "solid-js"
 import {
 	BookmarkIcon,
@@ -50,23 +51,23 @@ export function RightSidebar(props: Props) {
 				<div class="flex flex-col">
 					<ListItem to="/profile">
 						<PersonIcon />
-						<span>Profile</span>
+						<span>{t`Profile`}</span>
 					</ListItem>
 					<ListItem>
 						<BookmarkIcon />
-						<span>Collections</span>
+						<span>{t`Collections`}</span>
 					</ListItem>
 					<ListItem>
 						<HeartIcon />
-						<span>Favorites</span>
+						<span>{t`Favorites`}</span>
 					</ListItem>
 					<ListItem>
 						<ReaderIcon />
-						<span>Lists</span>
+						<span>{t`Lists`}</span>
 					</ListItem>
 					<ListItem>
 						<CubeIcon />
-						<span>Recommendations</span>
+						<span>{t`Recommendations`}</span>
 					</ListItem>
 				</div>
 				<Divider
@@ -76,11 +77,11 @@ export function RightSidebar(props: Props) {
 				<div class="flex flex-col">
 					<ListItem>
 						<Pencil2Icon />
-						<span>Support</span>
+						<span>{t`Support`}</span>
 					</ListItem>
 					<ListItem>
 						<GearIcon />
-						<span>Settings</span>
+						<span>{t`Settings`}</span>
 					</ListItem>
 					<ListItem
 						onClick={() => {
@@ -88,7 +89,7 @@ export function RightSidebar(props: Props) {
 						}}
 					>
 						<ExitIcon />
-						<span>Sign Out</span>
+						<span>{t`Sign Out`}</span>
 					</ListItem>
 				</div>
 			</Sidebar>

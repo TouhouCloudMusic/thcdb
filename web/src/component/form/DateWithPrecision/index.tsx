@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { DateExt } from "@thc/toolkit/data"
 import dayjs from "dayjs"
 import { createEffect, createMemo, on, untrack } from "solid-js"
@@ -126,7 +127,7 @@ export function DateWithPrecision(props: DateWithPrecisionProps) {
 				<InputField.Input
 					class="no-spinner"
 					onInput={onInput(setYear)}
-					placeholder="Year"
+					placeholder={t`Year`}
 					type="number"
 					value={store.y}
 				/>
@@ -136,7 +137,7 @@ export function DateWithPrecision(props: DateWithPrecisionProps) {
 					class="no-spinner"
 					disabled={!store.y}
 					onInput={onInput(setMonth)}
-					placeholder="Month"
+					placeholder={t`Month`}
 					type="number"
 					value={store.m}
 				/>
@@ -146,7 +147,7 @@ export function DateWithPrecision(props: DateWithPrecisionProps) {
 					class="no-spinner"
 					disabled={!store.m}
 					onInput={onInput(setDay)}
-					placeholder="Day"
+					placeholder={t`Day`}
 					type="number"
 					value={store.d}
 				/>

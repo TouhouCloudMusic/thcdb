@@ -1,4 +1,5 @@
 import { Field } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { TagType } from "@thc/api"
 import { For } from "solid-js"
 import { twMerge } from "tailwind-merge"
@@ -28,7 +29,7 @@ export function TagFormTypeField(props: Props) {
 		>
 			{(field) => (
 				<div class={twMerge("flex flex-col", props.class)}>
-					<FormComp.Label>Tag Type</FormComp.Label>
+					<FormComp.Label>{t`Tag Type`}</FormComp.Label>
 					<Select.Root<"" | TagType>
 						name={field.props.name}
 						value={field.input ?? ""}

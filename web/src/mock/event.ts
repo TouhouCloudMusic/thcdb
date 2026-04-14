@@ -57,7 +57,10 @@ export const createMockEvent = (
 		name,
 		start_date: { precision: "Day", value: startDateValue },
 		end_date: hasEndDate
-			? { precision: "Day", value: endDate.toISOString().slice(0, 10) }
+			? {
+					precision: "Day",
+					value: endDate.toISOString().slice(0, 10),
+				}
 			: undefined,
 		short_description: shortDescription,
 		location,

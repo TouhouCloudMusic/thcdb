@@ -6,113 +6,52 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
 
-#: src/App.tsx
-#: src/component/Footer/index.tsx
-msgid "Touhou Cloud DB"
-msgstr "Touhou Cloud DB"
+#: src/view/artist/discover.tsx
+msgid "[UNIMPLEMENTED] Artist"
+msgstr "[未实现]艺人"
 
-#: src/App.tsx
-#: src/component/Footer/index.tsx
-msgid "Touhou Cloud DB is an open doujin music database"
-msgstr "Touhou Cloud DB 是一个开放的东方同人音乐数据库"
+#: src/view/chart/discover.tsx
+msgid "[UNIMPLEMENTED] Chart"
+msgstr "[未实现]图表"
 
-#: src/component/Pagination.tsx
-msgid "First page"
-msgstr "第一页"
+#: src/view/event/discover.tsx
+msgid "[UNIMPLEMENTED] Event"
+msgstr "[未实现]活动"
 
-#: src/component/Pagination.tsx
-msgid "Previous page"
-msgstr "上一页"
+#: src/view/recommendation/discover.tsx
+msgid "[UNIMPLEMENTED] Recommendation"
+msgstr "[未实现]推荐"
 
-#: src/component/Pagination.tsx
-msgid "Next page"
-msgstr "下一页"
+#: src/view/release/discover.tsx
+msgid "[UNIMPLEMENTED] Release"
+msgstr "[未实现]发行"
 
-#: src/component/Pagination.tsx
-msgid "Last page"
-msgstr "最后一页"
+#. placeholder {0}: props.list.totalItems
+#: src/view/admin/users.tsx
+msgid "{0} users"
+msgstr "{0} 位用户"
 
-#: src/component/Pagination.tsx
-msgid "Pagination"
-msgstr "分页"
+#: src/view/entity_tags/EntityTagsSection.tsx
+msgid "{count} votes · relevance {relevance}"
+msgstr "{count} 票 · 相关度 {relevance}"
+#: src/view/NotFound.tsx
+#: src/view/NotFound.tsx
+#: src/view/NotFound.tsx
+msgid "404 Not Found"
+msgstr "404 未找到"
 
-#: src/component/route.tsx
-msgid "Checking session…"
-msgstr "正在检查会话…"
-
-#: src/component/route.tsx
-msgid "AUTH REQUIRED"
-msgstr "需要登录"
-
-#: src/component/route.tsx
-msgid "Sign in to continue"
-msgstr "登录后继续"
-
-#: src/component/route.tsx
-msgid "This page requires an authenticated account."
-msgstr "此页面需要已登录账号。"
-
-#: src/component/route.tsx
-#: src/view/auth/component/AuthForm.tsx
-msgid "Sign in"
-msgstr "登录"
-
-#: src/component/route.tsx
-#: src/view/auth/component/AuthForm.tsx
-msgid "Create account"
-msgstr "创建账号"
-
-#: src/mock/artist.ts
-#: src/view/artist/edit/comp/Membership/index.tsx
-#: src/view/artist/edit/hook/useFormInitialValues.tsx
-#: src/view/artist/explore.comp.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/label/explore.comp.tsx
-msgid "Unknown"
-msgstr "未知"
-
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/mock/artist.ts
-#: src/mock/artist.ts
-#: src/mock/event.ts
-#: src/mock/event.ts
-#: src/mock/label.ts
-#: src/mock/label.ts
-#: src/mock/release.ts
-msgid "Day"
-msgstr "日"
-
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/domain/shared/date_with_precision.ts
-#: src/mock/release.ts
-msgid "Month"
-msgstr "月"
-
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/domain/shared/date_with_precision.ts
-#: src/mock/release.ts
-msgid "Year"
-msgstr "年"
-
-#: src/mock/release.ts
-msgid "Japanese"
-msgstr "日语"
-
-#: src/mock/tag.ts
-msgid "Genre"
-msgstr "流派"
-
-#: src/utils/getErrorMessage.ts
-msgid "Unknown error"
-msgstr "未知错误"
+#: src/view/error/InternalServerError.tsx
+#: src/view/error/InternalServerError.tsx
+#: src/view/error/InternalServerError.tsx
+msgid "500 Internal Server Error"
+msgstr "500 内部服务器错误"
 
 #: src/route/about.tsx
 #: src/route/about.tsx
@@ -120,152 +59,330 @@ msgstr "未知错误"
 msgid "About"
 msgstr "软件简介"
 
-#: src/utils/dateTime.ts
-#: src/view/correction/Detail.tsx
-msgid "None"
-msgstr "无"
+#: src/view/admin/users.tsx
+msgid "Access moderation tools and review queues."
+msgstr "可访问审核工具和队列。"
 
-#: src/view/NotFound.tsx
-#: src/view/NotFound.tsx
-msgid "404 Not Found"
-msgstr "404 未找到"
+#: src/view/admin/users.tsx
+msgid "Action"
+msgstr "操作"
 
-#: src/view/NotFound.tsx
-msgid "The page you are looking for does not exist."
-msgstr "你正在寻找的页面不存在。"
-
-#. 0: " "
-#: src/view/NotFound.tsx
-msgid "Hey you, lost one. why you are here?{0} <0>You should go back...</0>"
-msgstr "你似乎迷路了。{0} <0>返回上一页…</0>"
-
-#. 0: CURRENT_YEAR
-#: src/component/Footer/index.tsx
-msgid "© {0} THCDB"
-msgstr "© {0} THCDB"
-
-#: src/component/Header/LeftSidebar.tsx
-msgid "Home"
-msgstr "首页"
-
-#: src/component/Header/LeftSidebar.tsx
-msgid "Recommendation"
-msgstr "推荐"
-
-#: src/component/Header/LeftSidebar.tsx
-#: src/route/release/$id_.image-upload.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-msgid "Release"
-msgstr "发行"
+msgid "Actions"
+msgstr "操作"
+
+#: src/view/label/explore.comp.tsx
+msgid "Active"
+msgstr "存续"
+
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Add disc"
+msgstr "添加光盘"
+
+#: src/view/auth/component/AuthLeftPanel.tsx
+msgid "Add missing entries (artists, releases, songs, events)"
+msgstr "添加缺少的条目（艺人、发行、歌曲、活动）"
+
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Add track"
+msgstr "添加曲目"
+
+#: src/view/auth/component/AuthLeftPanel.tsx
+msgid "Add what is missing and keep entries consistent across the database."
+msgstr "补充缺失内容，并保持数据库条目一致。"
 
 #: src/component/Header/LeftSidebar.tsx
-#: src/route/artist/$id_.image-upload.tsx
+msgid "Admin"
+msgstr "管理员"
+
+#: src/view/admin/users.tsx
+msgid "Admin Settings"
+msgstr "管理设置"
+
+#: src/view/correction/Detail.tsx
+msgid "After"
+msgstr "之后"
+
+#: src/view/event/Info/index.tsx
+#: src/view/tag/Info/index.tsx
+msgid "AKAs"
+msgstr "AKA"
+
+#: src/view/Homepage/mock.ts
+msgid "Albums, EPs, singles"
+msgstr "专辑、EP、单曲"
+
+#: src/view/artist/edit/comp/Aliases.tsx
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Aliases"
+msgstr "别名"
+
+#: src/view/artist/explore.comp.tsx
+#: src/view/image_queue/manage.tsx
+#: src/view/song/explore.tsx
+msgid "All"
+msgstr "全部"
+
+#: src/view/Homepage/component/HomeHero.tsx
+msgid "Alpha"
+msgstr "早期版本"
+
+#: src/view/auth/component/VerifyEmailForm.tsx
+msgid "Already have an account?"
+msgstr "已经有账号了？"
+
+#: src/view/event/edit/comp/EventAlternativeNamesField.tsx
+#: src/view/tag/edit/comp/TagAltNames.tsx
+msgid "Alternative Names"
+msgstr "替代名称"
+
+#: src/view/Homepage/component/HomeHero.tsx
+msgid "API-powered UI"
+msgstr "API驱动的用户界面"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Approve"
+msgstr "批准"
+
+#: src/view/image_queue/detail.tsx
+msgid "Approve image?"
+msgstr "批准这张图片？"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/manage.tsx
+msgid "Approved"
+msgstr "已批准"
+
+#: src/view/image_queue/user.tsx
+msgid "APPROVED"
+msgstr "已批准"
+
+#: src/view/artist/edit/index.tsx
+#: src/view/event/edit/index.tsx
+#: src/view/label/edit/index.tsx
+#: src/view/release/edit/index.tsx
+#: src/view/song/edit/index.tsx
+#: src/view/tag/edit/index.tsx
+msgid "Are you sure you want to leave this page? Your changes will be lost."
+msgstr "您确定要离开此页面吗？您的更改将丢失。"
+
+#: src/component/Header/LeftSidebar.tsx
 #: src/view/Homepage/component/ArtistCard.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/song/Info/comp/SongInfoTitleAndCreditName.tsx
+#: src/view/search/index.tsx
 msgid "Artist"
 msgstr "艺人"
 
-#: src/component/Header/LeftSidebar.tsx
-msgid "Song"
-msgstr "歌曲"
+#: src/domain/song/schema.ts
+msgid "Artist not selected"
+msgstr "未选择艺人"
 
-#: src/component/Header/LeftSidebar.tsx
-msgid "Tag"
-msgstr "标签"
+#: src/view/artist/edit/comp/ArtistType.tsx
+msgid "Artist Type"
+msgstr "艺人类型"
 
-#: src/component/Header/LeftSidebar.tsx
-msgid "Event"
-msgstr "活动"
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/release/edit/comp/ReleaseArtistsField.tsx
+#: src/view/search/index.tsx
+#: src/view/song/edit/comp/SongArtistsField.tsx
+msgid "Artists"
+msgstr "艺人"
 
-#: src/component/Header/LeftSidebar.tsx
-msgid "Label"
-msgstr "厂牌"
+#: src/component/feature/entity_explore/OrderBySelect.tsx
+msgid "Ascending"
+msgstr "升序"
 
-#: src/component/Header/LeftSidebar.tsx
-msgid "Explore"
-msgstr "浏览"
+#: src/component/route.tsx
+msgid "AUTH REQUIRED"
+msgstr "需要登录"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Profile"
-msgstr "个人档案"
+#: src/view/correction/CorrectionHistorySection.tsx
+msgid "Author"
+msgstr "作者"
+
+#: src/component/form/FormActionBar.tsx
+msgid "Back"
+msgstr "返回"
+
+#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/index.tsx
+msgid "Back to"
+msgstr "返回"
+
+#: src/view/correction/Detail.tsx
+msgid "Before"
+msgstr "之前"
+
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Born"
+msgstr "出生"
+
+#: src/view/Homepage/mock.ts
+msgid "Browse circles and solo creators with filters and sorting."
+msgstr "浏览社团与个人创作者，并支持筛选和排序。"
+
+#: src/view/Homepage/component/PlaylistCard.tsx
+#: src/view/release/Info/comp/ReleaseInfoTitleAndArtist.tsx
+msgid "by"
+msgstr "由"
+
+#: src/component/dialog/AlertDialog.tsx
+#: src/view/image_queue/detail.tsx
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Cancel"
+msgstr "取消"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/manage.tsx
+msgid "Cancelled"
+msgstr "已取消"
+
+#: src/view/image_queue/user.tsx
+msgid "CANCELLED"
+msgstr "已取消"
+
+#: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
+msgid "Catalog No."
+msgstr "目录号"
+
+#: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
+msgid "Catalog Numbers"
+msgstr "目录号"
+
+#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
+msgid "Catalog Nums"
+msgstr "目录号"
+
+#: src/component/route.tsx
+msgid "Checking session…"
+msgstr "正在检查会话…"
+
+#: src/view/Homepage/mock.ts
+msgid "Circles & solo creators"
+msgstr "社团与个人创作者"
+
+#: src/component/form/Location/index.tsx
+msgid "City"
+msgstr "城市"
+
+#: src/route/correction/mock.tsx
+#: src/view/tag/TagTree.tsx
+msgid "Collapse"
+msgstr "折叠"
 
 #: src/component/Header/RightSidebar.tsx
 msgid "Collections"
 msgstr "收藏集"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Favorites"
-msgstr "收藏"
+#: src/component/dialog/AlertDialog.tsx
+msgid "Confirm"
+msgstr "确认"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Lists"
-msgstr "清单"
+#: src/view/auth/reset_password/index.tsx
+msgid "Continue"
+msgstr "继续"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Recommendations"
-msgstr "建议"
+#: src/view/auth/component/AuthLeftPanel.tsx
+msgid "Contribute touhou music metadata"
+msgstr "完善东方同人音乐元数据"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Support"
-msgstr "技术支持"
+#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeHero.tsx
+msgid "Contribute what’s missing and help keep the database accurate for everyone."
+msgstr "补充缺失内容，帮助所有人维护准确的数据库。"
 
-#: src/component/Header/LeftSidebar.tsx
-#: src/component/Header/RightSidebar.tsx
-msgid "Settings"
-msgstr "设置"
+#: src/view/correction/EntityContributors.tsx
+msgid "Contributors:"
+msgstr "贡献者："
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Sign Out"
-msgstr "注销"
+#: src/view/event/edit/comp/EventFormDesc.tsx
+#: src/view/label/edit/comp/LabelFormDesc.tsx
+#: src/view/tag/edit/comp/TagFormActions.tsx
+msgid "Correction Description"
+msgstr "更正说明"
 
-#: src/component/Header/index.tsx
-msgid "Search artists, releases, songs…"
-msgstr "搜索艺人、专辑、歌曲…"
+#: src/route/correction/mock.tsx
+msgid "Correction mock controls"
+msgstr "校正模拟控件"
 
-#: src/component/Header/index.tsx
-msgid "FILTER"
-msgstr "筛选"
+#: src/view/correction/Detail.tsx
+msgid "CORRECTIONS"
+msgstr "归正"
 
-#: src/component/Header/index.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-msgid "Sign In"
-msgstr "登录"
+#: src/component/form/Location/index.tsx
+msgid "Country / Region"
+msgstr "国家 / 地区"
 
-#: src/component/Header/index.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-msgid "Sign Up"
-msgstr "注册"
+#: src/route/release/$id_.image-upload.tsx
+#: src/view/Homepage/component/NewMusic.tsx
+#: src/view/image_queue/detail.tsx
+msgid "cover art"
+msgstr "封面图"
 
-#: src/component/ImageCropDialog/utils.ts
-msgid "Only PNG/JPEG images are supported."
-msgstr "仅支持PNG/JPEG图像。"
+#: src/component/route.tsx
+#: src/view/auth/component/AuthForm.tsx
+msgid "Create account"
+msgstr "创建账号"
 
-#. 0: formatBytes(fileSizeRange.min)
-#: src/component/ImageCropDialog/utils.ts
-msgid "File is too small. Minimum is {0}."
-msgstr "文件太小。最小值为 {0}。"
+#: src/view/auth/component/AuthForm.tsx
+msgid "Create an account to continue."
+msgstr "创建账号以继续。"
 
-#. 0: formatBytes(fileSizeRange.max)
-#: src/component/ImageCropDialog/utils.ts
-msgid "File is too large. Maximum is {0}."
-msgstr "文件太大。最大值为 {0}。"
+#: src/view/artist/explore.tsx
+msgid "Create artist"
+msgstr "创建艺人"
 
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-msgid "Cropper is not ready yet."
-msgstr "Cropper 尚未准备就绪。"
+#: src/view/event/explore.tsx
+msgid "Create event"
+msgstr "创建事件"
 
-#: src/component/ImageCropDialog/index.tsx
-msgid "Selected crop cannot satisfy the required dimensions. Adjust the crop area."
-msgstr "所选裁剪无法满足所需的尺寸。调整裁剪区域。"
+#: src/view/label/explore.tsx
+msgid "Create label"
+msgstr "创建厂牌"
+
+#: src/view/label/List/index.tsx
+msgid "Create Label"
+msgstr "创建厂牌"
+
+#: src/view/release/explore/index.tsx
+msgid "Create release"
+msgstr "创建发行"
+
+#: src/view/song/explore.tsx
+msgid "Create song"
+msgstr "创建歌曲"
+
+#: src/view/tag/explore.tsx
+msgid "Create tag"
+msgstr "创建标签"
+
+#: src/view/image_queue/detail.tsx
+msgid "Created"
+msgstr "已创建"
+
+#: src/view/image_queue/user.tsx
+msgid "CREATED"
+msgstr "创建时间"
+
+#: src/view/image_queue/manage.tsx
+msgid "Created at"
+msgstr "创建时间"
+
+#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
+msgid "Created At"
+msgstr "创建于"
+
+#: src/view/correction/entityMap.ts
+msgid "Credit role"
+msgstr "署名角色"
+
+#: src/view/release/edit/comp/ReleaseCreditsField.tsx
+#: src/view/song/edit/comp/SongCreditsField.tsx
+#: src/view/song/Info/index.tsx
+msgid "Credits"
+msgstr "信用"
 
 #: src/component/ImageCropDialog/index.tsx
 #: src/component/ImageCropDialog/index.tsx
@@ -274,312 +391,434 @@ msgstr "所选裁剪无法满足所需的尺寸。调整裁剪区域。"
 msgid "Crop failed."
 msgstr "裁剪失败。"
 
-#. 0: formatBytes(blob.size)
 #: src/component/ImageCropDialog/index.tsx
-msgid "Cropped image is too large ({0}). Try a smaller crop or use a smaller source image."
-msgstr "裁剪的图像太大（{0}）。尝试较小的裁剪或使用较小的源图像。"
+#: src/component/ImageCropDialog/index.tsx
+msgid "Cropper is not ready yet."
+msgstr "Cropper 尚未准备就绪。"
 
-#: src/component/ImageCropDialog/index.tsx
-#: src/view/user/edit_profile/store.ts
-msgid "Upload failed."
-msgstr "上传失败。"
-
-#: src/component/ImageCropDialog/index.tsx
-msgid "Close"
-msgstr "关闭"
-
-#: src/component/ImageCropDialog/index.tsx
-msgid "Replace"
-msgstr "替换"
-
-#: src/component/ImageCropDialog/index.tsx
-msgid "Remove"
-msgstr "移除"
-
-#: src/component/ImageCropDialog/index.tsx
-msgid "Drop an image here, or pick a file"
-msgstr "将图像拖放到此处，或选择一个文件"
-
-#: src/component/ImageCropDialog/index.tsx
-msgid "Select file"
-msgstr "选择文件"
-
-#: src/component/ImageCropDialog/index.tsx
+#: src/view/image_queue/detail.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
-msgid "Uploading…"
-msgstr "上传中…"
+msgid "Current"
+msgstr "当前"
 
-#: src/component/ImageCropDialog/index.tsx
-msgid "Save"
-msgstr "保存"
+#: src/view/artist/edit/comp/Locations.tsx
+msgid "Current Location"
+msgstr "当前位置"
 
-#. 0: props.children
-#: src/component/__legacy/site_title.tsx
-msgid "{0} - Doujin Cloud DB"
-msgstr "{0} - 同人云数据库"
+#: src/view/image_queue/detail.tsx
+msgid "Current target image"
+msgstr "当前目标图片"
 
-#: src/component/devtools/index.tsx
-msgid "TanStack Router"
-msgstr "TanStack Router"
+#: src/view/event/Info/index.tsx
+msgid "Date"
+msgstr "日期"
 
-#: src/component/devtools/index.tsx
-msgid "TanStack Query"
-msgstr "TanStack Query"
+#: src/component/form/DateWithPrecision/index.tsx
+msgid "Day"
+msgstr "日"
 
 #. 0: fieldNameWithoutUnderscore()
 #: src/component/dialog/ResetFieldDialog.tsx
 msgid "Reset {0} field to initial state"
 msgstr "将 {0} 字段重置为初始状态"
+#: src/component/feature/entity_explore/OrderBySelect.tsx
+msgid "Descending"
+msgstr "降序"
 
-#: src/component/dialog/ResetFieldDialog.tsx
-msgid "Reset field?"
-msgstr "重置数据字段"
+#: src/view/artist/edit/comp/FormActions.tsx
+#: src/view/correction/CorrectionHistorySection.tsx
+#: src/view/event/edit/comp/EventDescriptionField.tsx
+#: src/view/song/edit/comp/SongRelationsField.tsx
+#: src/view/tag/edit/comp/TagDescription.tsx
+msgid "Description"
+msgstr "描述"
 
-#: src/component/dialog/ResetFieldDialog.tsx
-msgid "This cannot be undone."
-msgstr "此操作无法撤消。"
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Died"
+msgstr "死亡"
 
-#: src/component/dialog/ResetFieldDialog.tsx
-msgid "No"
-msgstr "否"
+#: src/view/correction/Detail.tsx
+msgid "DIFF"
+msgstr "差异"
 
-#: src/component/dialog/ResetFieldDialog.tsx
-#: src/route/correction/mock.tsx
-msgid "Reset"
-msgstr "重置"
-
-#: src/component/form/FieldArrayFallback.tsx
-msgid "Click `+` to add a new item"
-msgstr "单击“+”添加新项目"
-
-#: src/component/form/ImageCropper.tsx
-msgid "Image Cropper Placeholder"
-msgstr "图片裁剪器占位符"
-
-#: src/component/form/ImageCropper.tsx
-msgid "Save Image"
-msgstr "保存图片"
-
-#: src/component/form/FormActionBar.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Submit"
-msgstr "提交"
+msgid "Dimensions (px)"
+msgstr "尺寸（px）"
 
-#: src/component/form/FormActionBar.tsx
-msgid "Submitting"
-msgstr "正在提交"
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Disbanded"
+msgstr "已解散"
 
-#: src/component/form/FormActionBar.tsx
-msgid "Back"
-msgstr "返回"
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Disc name"
+msgstr "光盘名称"
 
-#: src/view/image_queue/detail.tsx
-msgid "Pending"
-msgstr "待定"
+#: src/view/release/edit/comp/TrackFieldItem.tsx
+msgid "Display title"
+msgstr "显示标题"
 
-#: src/view/image_queue/detail.tsx
-msgid "Approved"
-msgstr "已批准"
+#: src/view/label/explore.comp.tsx
+#: src/view/label/Info/index.tsx
+msgid "Dissolved"
+msgstr "溶解"
 
-#: src/view/image_queue/detail.tsx
-msgid "Rejected"
-msgstr "已拒绝"
+#: src/view/label/edit/comp/LabelDateFields.tsx
+msgid "Dissolved date"
+msgstr "解散日期"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Reverted"
-msgstr "已还原"
+#: src/view/entity_tags/model.ts
+msgid "Downvote"
+msgstr "反对"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Approve"
-msgstr "批准"
+#: src/domain/song/schema.ts
+msgid "Duplicate related song"
+msgstr "存在重复的关联歌曲"
+#: src/view/release/edit/comp/TrackFieldItem.tsx
+msgid "Duration (ms)"
+msgstr "时长（毫秒）"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Reject"
-msgstr "拒绝"
+#: src/view/artist/edit/index.tsx
+msgid "Edit Artist"
+msgstr "编辑艺人"
 
-#: src/view/image_queue/detail.tsx
-msgid "Revert"
-msgstr "还原"
+#: src/view/event/edit/index.tsx
+msgid "Edit Event"
+msgstr "编辑活动"
 
-#: src/component/navbar/index.tsx
-msgid "推荐"
-msgstr "推荐"
+#: src/view/label/edit/index.tsx
+msgid "Edit Label"
+msgstr "编辑厂牌"
 
-#: src/component/navbar/index.tsx
-msgid "歌单"
-msgstr "歌单"
+#: src/view/release/edit/index.tsx
+msgid "Edit Release"
+msgstr "编辑发行"
 
-#: src/component/navbar/index.tsx
-msgid "排行榜"
-msgstr "排行榜"
+#: src/view/song/edit/index.tsx
+msgid "Edit Song"
+msgstr "编辑歌曲"
 
-#: src/component/navbar/index.tsx
-msgid "歌手"
-msgstr "歌手"
+#: src/view/tag/edit/index.tsx
+msgid "Edit Tag"
+msgstr "修改标签"
 
-#: src/component/navbar/index.tsx
-msgid "专辑"
-msgstr "专辑"
+#: src/view/user/Profile.tsx
+msgid "Edits"
+msgstr "编辑"
 
-#: src/component/navbar/index.tsx
-msgid "同人社团"
-msgstr "同人社团"
+#: src/view/auth/component/EmailField.tsx
+msgid "Email"
+msgstr "电子邮箱"
 
-#: src/component/navbar/index.tsx
-msgid "视频"
-msgstr "视频"
+#: src/domain/auth/schema.ts
+#: src/view/auth/reset_password/index.tsx
+msgid "Email is required"
+msgstr "邮箱为必填项"
 
-#: src/component/navbar/index.tsx
-msgid "文章"
-msgstr "文章"
+#: src/view/artist/edit/comp/Date.tsx
+#: src/view/event/edit/comp/EventDateFields.tsx
+msgid "End date"
+msgstr "结束日期"
 
-#: src/component/navbar/index.tsx
-msgid "活动"
-msgstr "活动"
+#: src/view/auth/component/AuthForm.tsx
+msgid "Enter the 6-digit code sent to your email."
+msgstr "输入发送到你邮箱的 6 位验证码。"
+
+#. placeholder {0}: email()
+#: src/view/auth/component/VerifyEmailForm.tsx
+msgid "Enter the code for {0}. If you did not receive one, use Resend."
+msgstr "输入发送到 {0} 的验证码。如果没有收到，请使用“重新发送”。"
+
+#: src/view/auth/component/VerifyEmailForm.tsx
+#~ msgid "Enter the code for {email}. If you did not receive one, use Resend."
+#~ msgstr "输入发送到 {email} 的验证码。如果没有收到，请使用“重新发送”。"
+
+#: src/view/auth/component/SignInIdentifierField.tsx
+msgid "Enter your username or email"
+msgstr "输入你的用户名或邮箱"
 
 #: src/component/Header/LeftSidebar.tsx
-msgid "Admin"
-msgstr "管理员"
+#: src/view/search/index.tsx
+msgid "Event"
+msgstr "活动"
 
-#: src/route/correction/mock.tsx
-msgid "CORRECTION LAB"
-msgstr "矫正实验室"
+#: src/view/Homepage/mock.ts
+#: src/view/release/edit/comp/ReleaseEventsField.tsx
+#: src/view/search/index.tsx
+msgid "Events"
+msgstr "活动"
 
 #: src/route/correction/mock.tsx
 #: src/view/tag/TagTree.tsx
 msgid "Expand"
 msgstr "展开"
 
-#: src/route/correction/mock.tsx
-#: src/view/tag/TagTree.tsx
-msgid "Collapse"
-msgstr "折叠"
-
-#: src/route/correction/mock.tsx
-msgid "SCENARIO"
-msgstr "情境"
-
-#: src/route/correction/mock.tsx
-msgid "COMPARE ID"
-msgstr "对比 ID"
-
-#: src/route/correction/mock.tsx
-msgid "QUICK PICKS"
-msgstr "快捷选项"
-
-#: src/route/correction/mock.tsx
-msgid "none"
-msgstr "无"
-
-#: src/route/correction/mock.tsx
-msgid "No compare baselines."
-msgstr "暂无对比基线。"
-
-#: src/route/correction/mock.tsx
-msgid "Route: <0>/correction/mock</0>"
-msgstr "路径：<0>/correction/mock</0>"
-
-#: src/route/correction/mock.tsx
-msgid "Correction mock controls"
-msgstr "校正模拟控件"
-
-#. 0: songId
-#: src/route/song/$id_.corrections.tsx
-msgid "Song #{0}"
-msgstr "歌曲 #{0}"
-
-#: src/state/user/index.tsx
-msgid "Notification"
-msgstr "通知"
-
-#: src/view/Homepage/index.tsx
-msgid "Latest Releases"
-msgstr "最新发行"
-
-#: src/view/artist/discover.tsx
-msgid "[UNIMPLEMENTED] Artist"
-msgstr "[未实现]艺人"
-
-#: src/view/Homepage/utils.ts
-msgid "Unknown artist"
-msgstr "未知艺人"
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/Homepage/component/ExploreSection.tsx
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+msgid "Explore"
+msgstr "浏览"
 
 #: src/view/artist/explore.tsx
 msgid "Explore Artists"
 msgstr "浏览艺人"
 
-#: src/view/artist/explore.tsx
-msgid "Create artist"
-msgstr "创建艺人"
+#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeHero.tsx
+msgid "Explore doujin music"
+msgstr "探索同人音乐"
 
-#: src/view/artist/explore.comp.tsx
-#: src/view/label/explore.comp.tsx
-msgid "Present"
-msgstr "至今"
+#: src/view/event/explore.tsx
+msgid "Explore Events"
+msgstr "浏览活动"
 
-#: src/view/artist/explore.comp.tsx
-#: src/view/image_queue/manage.tsx
-#: src/view/release/explore/filter.tsx
-#: src/view/release/explore/filter.tsx
-#: src/view/release/explore/filter.tsx
+#: src/view/label/explore.tsx
+msgid "Explore Labels"
+msgstr "浏览厂牌"
+
+#: src/view/Homepage/mock.ts
+msgid "Explore labels, imprint history and founded/dissolved dates."
+msgstr "浏览厂牌、分支历史，以及成立与解散日期。"
+
+#: src/view/release/explore/index.tsx
+msgid "Explore Releases"
+msgstr "浏览发行"
+
 #: src/view/song/explore.tsx
-msgid "All"
-msgstr "全部"
+msgid "Explore Songs"
+msgstr "探索歌曲"
 
-#: src/view/Homepage/component/ArtistCard.tsx
-#: src/view/artist/explore.comp.tsx
+#: src/view/image_queue/manage.tsx
+msgid "Failed to load image queue."
+msgstr "加载图片队列失败。"
+
+#: src/view/image_queue/user.tsx
+msgid "Failed to load user image queue."
+msgstr "加载用户图片队列失败。"
+
+#: src/view/admin/users.tsx
+msgid "Failed to load users."
+msgstr "加载用户失败。"
+
+#: src/component/Header/RightSidebar.tsx
+msgid "Favorites"
+msgstr "收藏"
+
+#: src/component/Footer/index.tsx
+msgid "Feedback"
+msgstr "反馈"
+
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "File size"
+msgstr "文件大小"
+
+#: src/view/Homepage/mock.ts
+msgid "Find tracks by title language, credits, and corrections."
+msgstr "按标题语言、参与信息和更正记录查找曲目。"
+
+#: src/component/Pagination.tsx
+msgid "First page"
+msgstr "第一页"
+
+#: src/view/user/Profile.tsx
+msgid "Follow"
+msgstr "关注"
+
+#: src/view/user/Profile.tsx
+msgid "Following"
+msgstr "已关注"
+
+#: src/view/user/Profile.tsx
+msgid "Following..."
+msgstr "关注中..."
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Forgot password"
+msgstr "忘记密码"
+
+#: src/view/auth/component/AuthCredentialForm.tsx
+msgid "Forgot password?"
+msgstr "忘记密码？"
+
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "Formats"
+msgstr "格式"
+
 #: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Multiple"
-msgstr "多项"
+msgid "Formed"
+msgstr "成立"
 
-#: src/view/Homepage/component/ArtistCard.tsx
+#: src/view/label/Info/index.tsx
+msgid "Founded"
+msgstr "成立"
+
+#: src/view/label/edit/comp/LabelDateFields.tsx
+msgid "Founded date"
+msgstr "成立日期"
+
+#: src/view/label/edit/comp/LabelFoundersField.tsx
+#: src/view/label/Info/index.tsx
+msgid "Founders"
+msgstr "创始人"
+
+#: src/view/event/explore.tsx
+msgid "From"
+msgstr "从"
+
+#: src/view/Homepage/mock.ts
+msgid "Genres, themes, credits"
+msgstr "流派、主题、参与信息"
+
 #: src/view/artist/explore.comp.tsx
+#: src/view/Homepage/component/ArtistCard.tsx
 msgid "Group"
 msgstr "组别"
 
-#: src/view/artist/explore.comp.tsx
-#: src/view/correction/Detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Handled"
+msgstr "子程序"
+
+#: src/view/image_queue/user.tsx
+msgid "HANDLED / REVERTED"
+msgstr "已处理 / 已还原"
+
+#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
+msgid "Handled At"
+msgstr "处理时间"
+
+#: src/component/Header/LeftSidebar.tsx
+msgid "Home"
+msgstr "首页"
+
+#: src/view/admin/users.tsx
+#: src/view/image_queue/user.tsx
+msgid "ID"
+msgstr "编号"
+
+#: src/view/auth/store/index.ts
+msgid "If eligible, a verification code has been sent."
+msgstr "如果条件满足，验证码已发送。"
+
+#: src/view/image_queue/user.tsx
+msgid "IMAGE"
+msgstr "图片"
+
+#: src/component/form/ImageCropper.tsx
+msgid "Image Cropper Placeholder"
+msgstr "图片裁剪器占位符"
+
+#: src/view/image_queue/detail.tsx
+msgid "Image queue"
+msgstr "图片队列"
+
 #: src/view/image_queue/manage.tsx
-#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
-#: src/view/release/explore/filter.tsx
-#: src/view/tag/Info/index.tsx
-msgid "Type"
-msgstr "类型"
+msgid "Image Queue"
+msgstr "图片队列"
 
-#: src/view/artist/explore.comp.tsx
-msgid "No artists found"
-msgstr "未找到艺人。"
+#: src/domain/auth/schema.ts
+#: src/view/auth/reset_password/index.tsx
+msgid "Invalid email"
+msgstr "邮箱格式无效"
 
-#: src/view/correction/CorrectionHistorySection.tsx
-msgid "View diff"
-msgstr "显示对比"
+#: src/view/auth/reset_password/reset_password_by_key.ts
+msgid "Invalid or expired reset key"
+msgstr "重置密钥无效或已过期"
 
-#: src/view/correction/CorrectionHistorySection.tsx
-msgid "Author"
-msgstr "作者"
+#: src/domain/auth/schema.ts
+#: src/view/auth/reset_password/index.tsx
+msgid "Invalid verification code"
+msgstr "验证码无效"
 
-#: src/view/artist/edit/comp/FormActions.tsx
-#: src/view/correction/CorrectionHistorySection.tsx
-#: src/view/event/Info/index.tsx
-#: src/view/event/Info/index.tsx
-#: src/view/event/Info/index.tsx
-#: src/view/event/edit/comp/EventDescriptionField.tsx
-#: src/view/song/edit/comp/SongRelationsField.tsx
-#: src/view/tag/Info/index.tsx
-#: src/view/tag/Info/index.tsx
-#: src/view/tag/Info/index.tsx
-#: src/view/tag/edit/comp/TagDescription.tsx
-msgid "Description"
-msgstr "描述"
+#: src/mock/release.ts
+msgid "Japanese"
+msgstr "日语"
 
-#: src/view/correction/CorrectionHistorySection.tsx
-msgid "No corrections yet."
-msgstr "尚无更正。"
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Join year"
+msgstr "加入年份"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Join year cannot be earlier than previous leave year"
+msgstr "入职年份不能早于上一休假年份"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Join year cannot be the same as previous leave year"
+msgstr "入职年份不能与上一休假年份相同"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/search/index.tsx
+msgid "Label"
+msgstr "厂牌"
+
+#: src/view/Homepage/mock.ts
+#: src/view/label/List/index.tsx
+#: src/view/search/index.tsx
+msgid "Labels"
+msgstr "厂牌"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/song/explore.tsx
+#: src/view/song/Info/comp/SongInfoLyrics.tsx
+msgid "Language"
+msgstr "语言"
+
+#: src/domain/shared/schema.ts
+#: src/domain/song/schema.ts
+msgid "Language not selected"
+msgstr "未选择语言"
+
+#: src/view/song/edit/comp/SongLanguagesField.tsx
+msgid "Languages"
+msgstr "语言"
+
+#: src/component/Pagination.tsx
+msgid "Last page"
+msgstr "最后一页"
+
+#: src/view/Homepage/component/LatestArtistsCard.tsx
+msgid "Latest Artists"
+msgstr "最新艺人"
+
+#: src/view/Homepage/index.tsx
+msgid "Latest Releases"
+msgstr "最新发行"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Leave year"
+msgstr "离开年份"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Leave year cannot be earlier than join year"
+msgstr "请假年份不能早于加入年份"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Leave year cannot be the same as join year"
+msgstr "请假年份不能与加入年份相同"
+
+#: src/view/artist/edit/comp/Links.tsx
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Links"
+msgstr "链接"
+
+#: src/component/Header/RightSidebar.tsx
+msgid "Lists"
+msgstr "清单"
+
+#: src/view/correction/EntityContributors.tsx
+msgid "Loading contributors..."
+msgstr "加载贡献者…"
+
+#: src/view/correction/Detail.tsx
+msgid "Loading diff..."
+msgstr "加载"
+
+#: src/view/correction/Detail.tsx
+msgid "Loading revisions..."
+msgstr "正在加载修订..."
 
 #: src/view/artist/edit/index.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
@@ -595,289 +834,42 @@ msgstr "尚无更正。"
 msgid "Loading..."
 msgstr "正在載入..."
 
-#. 0: entityLabel()
-#: src/view/correction/EntityCorrectionListPage.tsx
-msgid "{0} correction history"
-msgstr "{0} 更正历史记录"
-
-#. 0: entityLabel()
-#. 0: props.entityName
-#: src/view/correction/EntityCorrectionListPage.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Back to {0}"
-msgstr "返回到 {0}"
-
-#: src/view/correction/EntityCorrectionListPage.tsx
-msgid "Update"
-msgstr "更新"
-
-#. 0: entityLabel()
-#: src/view/correction/Detail.tsx
-msgid "{0} correction"
-msgstr "{0} 修订"
-
-#. 0: props.correction.id
-#: src/view/correction/Detail.tsx
-msgid "Correction #{0}"
-msgstr "修订 #{0}"
-
-#: src/view/correction/Detail.tsx
-msgid "Entity"
-msgstr "实体"
-
-#: src/view/correction/Detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Created"
-msgstr "已创建"
-
-#: src/view/correction/Detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Handled"
-msgstr "子程序"
-
-#: src/view/correction/Detail.tsx
-msgid "Not handled"
-msgstr "未处理"
-
-#: src/view/correction/Detail.tsx
-msgid "Loading diff..."
-msgstr "加载"
-
-#: src/view/correction/Detail.tsx
-msgid "No changes detected."
-msgstr "未检测到任何更改"
-
-#: src/view/correction/Detail.tsx
-msgid "FIELD"
-msgstr "现场"
-
-#: src/view/correction/Detail.tsx
-msgid "BEFORE"
-msgstr "之前"
-
-#: src/view/correction/Detail.tsx
-msgid "AFTER"
-msgstr "之后"
-
-#: src/view/correction/Detail.tsx
-msgid "Before"
-msgstr "之前"
-
-#: src/view/correction/Detail.tsx
-msgid "After"
-msgstr "之后"
-
-#: src/view/correction/Detail.tsx
-msgid "Loading revisions..."
-msgstr "正在加载修订..."
-
-#: src/view/correction/Detail.tsx
-msgid "No revisions recorded."
-msgstr "未记录任何修订。"
-
-#. 0: index() + 1
-#: src/view/correction/Detail.tsx
-msgid "REVISION {0}"
-msgstr "修订版 {0}"
-
-#: src/view/correction/Detail.tsx
-msgid "No description"
-msgstr "无说明"
-
-#: src/view/correction/Detail.tsx
-msgid "Previous approved baseline"
-msgstr "先前批准的基线"
-
-#: src/view/correction/Detail.tsx
-msgid "DIFF"
-msgstr "DIFF"
-
-#: src/view/correction/Detail.tsx
-msgid "No diff data."
-msgstr "暂无差异数据。"
-
-#. 0: " "
-#: src/view/correction/Detail.tsx
-msgid "<0/>{0} fields"
-msgstr "<0/>{0} 个字段"
-
-#: src/view/correction/Detail.tsx
-msgid "COMPARE"
-msgstr "COMPARE"
-
-#: src/view/correction/Detail.tsx
-msgid "REVISIONS"
-msgstr "修订"
-
-#. 0: revisionsQuery.data?.length ?? 0
-#. 0: historyQuery.data?.length ?? 0
-#: src/view/correction/Detail.tsx
-#: src/view/correction/Detail.tsx
-msgid "{0} items"
-msgstr "{0} 个项目"
-
-#: src/view/correction/Detail.tsx
-msgid "CORRECTIONS"
-msgstr "归正"
-
-#: src/view/correction/EntityContributors.tsx
-msgid "Contributors:"
-msgstr "贡献者:"
-
-#: src/view/correction/EntityContributors.tsx
-msgid "Loading contributors..."
-msgstr "加载贡献者…"
-
-#. 0: entityLabel()
-#: src/view/correction/EntityCorrectionMetadataSection.tsx
-msgid "Update {0}"
-msgstr "更新 {0}"
-
-#: src/view/error/InternalServerError.tsx
-#: src/view/error/InternalServerError.tsx
-msgid "500 Internal Server Error"
-msgstr "500 内部服务器错误"
-
-#: src/view/error/InternalServerError.tsx
-msgid "Go back..."
-msgstr "返回上一页..."
-
-#: src/view/correction/entityMap.ts
-msgid "Song lyrics"
-msgstr "歌词"
-
-#: src/view/correction/entityMap.ts
-msgid "Credit role"
-msgstr "署名角色"
-
-#: src/view/event/discover.tsx
-msgid "[UNIMPLEMENTED] Event"
-msgstr "[未实现]活动"
-
-#: src/view/chart/discover.tsx
-msgid "[UNIMPLEMENTED] Chart"
-msgstr "[未实现]图表"
-
-#: src/view/event/explore.tsx
-msgid "From"
-msgstr "从"
-
-#: src/view/event/explore.tsx
-msgid "To"
-msgstr "到"
-
-#: src/view/event/explore.tsx
-msgid "No events found"
-msgstr "未找到活动。"
-
-#: src/view/event/explore.tsx
-msgid "Explore Events"
-msgstr "浏览活动"
-
-#: src/view/event/explore.tsx
-msgid "Create event"
-msgstr "创建事件"
-
-#: src/view/image_queue/detail.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Current"
-msgstr "当前"
-
-#: src/view/image_queue/detail.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "No image"
-msgstr "暂无图片"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Select another image"
-msgstr "选择另一张图片"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Select image"
-msgstr "选择图片"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Open image queue"
-msgstr "打开图片队列"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Dimensions (px)"
-msgstr "尺寸（px）"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "File size"
-msgstr "文件大小"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Formats"
-msgstr "格式"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "New"
-msgstr "新图"
-
-#. 0: props.imageLabel
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Edit {0}"
-msgstr "编辑{0}"
-
-#: src/view/image_upload/store.ts
-msgid "Submit failed."
-msgstr "提交失败。"
-
-#: src/view/image_queue/detail.tsx
-msgid "Cancelled"
-msgstr "已取消"
-
-#: src/view/admin/users.tsx
-msgid "Moderator"
-msgstr "审核员"
-
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Request failed."
-msgstr "请求失败。"
-
-#: src/view/image_queue/detail.tsx
-msgid "IMAGE QUEUE"
-msgstr "图片队列"
-
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Loading…"
 msgstr "加载中…"
 
-#: src/view/image_queue/detail.tsx
-msgid "Failed to load image queue entry."
-msgstr "无法加载图片队列条目。"
+#: src/view/artist/edit/comp/LocalizedNames.tsx
+#: src/view/label/edit/comp/LabelLocalizedNamesField.tsx
+#: src/view/label/Info/index.tsx
+msgid "Localized Names"
+msgstr "本地化名称"
 
-#. 0: " "; 1: target().imageLabel
-#: src/view/image_queue/detail.tsx
-msgid "Update request for{0} <0/> 's {1}"
-msgstr "更新 {0} <0/> 的 {1} 请求"
+#: src/view/release/edit/comp/LocalizedTitlesField.tsx
+#: src/view/song/edit/comp/SongLocalizedTitlesField.tsx
+msgid "Localized Titles"
+msgstr "本地化标题"
 
-#: src/view/image_queue/detail.tsx
-msgid "Image queue"
-msgstr "图片队列"
+#: src/view/event/edit/comp/EventLocationField.tsx
+msgid "Location"
+msgstr "位置"
 
-#: src/view/image_queue/detail.tsx
-msgid "Current target image"
-msgstr "当前目标图片"
+#: src/view/song/Info/index.tsx
+msgid "Lyrics"
+msgstr "歌词"
 
-#: src/view/image_queue/detail.tsx
-msgid "Queued"
-msgstr "已在队列中"
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Member Of"
+msgstr "成员 "
 
-#: src/view/image_queue/detail.tsx
-msgid "Queued upload preview"
-msgstr "排队上传预览"
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Members"
+msgstr "成员"
 
-#: src/view/image_queue/detail.tsx
-msgid "Submitted by"
-msgstr "提交人"
+#: src/view/artist/edit/comp/Membership/index.tsx
+msgid "Membership"
+msgstr "成员关系"
 
 #: src/view/image_queue/detail.tsx
 msgid "Prev"
@@ -934,877 +926,21 @@ msgstr "没有可用操作。"
 #: src/view/image_queue/manage.tsx
 msgid "View image queue item #{0}"
 msgstr "查看图片队列条目 #{0}"
+#: src/view/auth/store/index.ts
+msgid "Missing sign-up email. Create the account again."
+msgstr "缺少注册邮箱，请重新创建账号。"
 
 #: src/view/image_queue/manage.tsx
 msgid "MODERATION"
 msgstr "审核"
 
-#: src/view/image_queue/manage.tsx
-msgid "Image Queue"
-msgstr "图片队列"
-
-#: src/view/image_queue/manage.tsx
-msgid "Status"
-msgstr "状态"
-
-#: src/view/image_queue/manage.tsx
-msgid "Failed to load image queue."
-msgstr "无法加载图片队列。"
-
-#: src/view/image_queue/manage.tsx
-msgid "No entries found"
-msgstr "未找到条目"
-
-#: src/view/image_queue/manage.tsx
-msgid "No entries match the current filters."
-msgstr "没有与当前筛选器匹配的条目。"
-
-#: src/view/image_queue/manage.tsx
-#: src/view/image_queue/user.tsx
-msgid "No more entries"
-msgstr "没有更多条目"
-
-#: src/view/image_queue/manage.tsx
-msgid "Created at"
-msgstr "创建时间"
-
-#: src/view/recommendation/discover.tsx
-msgid "[UNIMPLEMENTED] Recommendation"
-msgstr "[未实现]推荐"
-
-#: src/view/image_queue/user.tsx
-msgid "USER"
-msgstr "用户"
-
-#: src/view/image_queue/user.tsx
-msgid "Image Queue History"
-msgstr "图片队列历史记录"
-
-#: src/view/image_queue/user.tsx
-msgid "Go to moderation"
-msgstr "前往审核"
-
-#: src/view/admin/users.tsx
-#: src/view/image_queue/user.tsx
-msgid "ID"
-msgstr "ID"
-
-#: src/view/image_queue/user.tsx
-msgid "IMAGE"
-msgstr "图片"
-
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/image_queue/user.tsx
-msgid "STATUS"
-msgstr "状态"
-
-#: src/view/image_queue/user.tsx
-msgid "CREATED"
-msgstr "创建时间"
-
-#: src/view/image_queue/user.tsx
-msgid "HANDLED / REVERTED"
-msgstr "已处理 / 已还原"
-
-#: src/view/image_queue/user.tsx
-msgid "Failed to load user image queue."
-msgstr "加载用户图片队列失败。"
-
-#: src/view/image_queue/user.tsx
-msgid "No entries yet"
-msgstr "暂无条目。"
-
-#: src/view/image_queue/user.tsx
-msgid "This user has no image queue history."
-msgstr "此用户没有图片队列历史记录。"
-
-#. 0: " "
-#: src/view/image_queue/user.tsx
-msgid "Handled:{0} <0/> <1/>"
-msgstr "已处理： {0} <0/> <1/>"
-
-#. 0: " "
-#: src/view/image_queue/user.tsx
-msgid "Reverted:{0} <0/> <1/>"
-msgstr "已还原： {0} <0/> <1/>"
-
-#: src/view/label/Info/index.tsx
-#: src/view/label/explore.comp.tsx
-msgid "Dissolved"
-msgstr "溶解"
-
-#: src/view/label/explore.comp.tsx
-msgid "Active"
-msgstr "存续"
-
-#: src/view/label/explore.comp.tsx
-msgid "No labels found"
-msgstr "未找到厂牌。"
-
-#: src/view/label/explore.tsx
-msgid "Explore Labels"
-msgstr "浏览厂牌"
-
-#: src/view/label/explore.tsx
-msgid "Create label"
-msgstr "创建厂牌"
-
-#: src/view/search/index.tsx
-msgid "Type a keyword to search."
-msgstr "输入关键字搜索。"
-
-#: src/view/search/index.tsx
-msgid "Search result of \" <0/> \""
-msgstr "“<0/>”的搜索结果"
-
-#: src/view/search/index.tsx
-msgid "No artists found."
-msgstr "未找到艺人。"
-
-#: src/view/search/index.tsx
-msgid "No events found."
-msgstr "未找到活动。"
-
-#: src/view/search/index.tsx
-msgid "No labels found."
-msgstr "未找到标签。"
-
-#: src/view/search/index.tsx
-msgid "No releases found."
-msgstr "未找到发行。"
-
-#: src/view/search/index.tsx
-msgid "No songs found."
-msgstr "未找到歌曲。"
-
-#: src/view/search/index.tsx
-msgid "No tags found."
-msgstr "未找到标签。"
-
-#: src/view/search/index.tsx
-msgid "No results found."
-msgstr "未找到结果。"
-
-#: src/view/search/index.tsx
-msgid "Searching…"
-msgstr "正在搜索…"
-
-#: src/view/search/index.tsx
-msgid "No more results"
-msgstr "没有更多结果了"
-
-#: src/view/search/index.tsx
-msgid "A"
-msgstr "A"
-
-#. 0: props.artist.id
-#: src/view/search/index.tsx
-msgid "Artist · {0}"
-msgstr "艺人 · {0}"
-
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-msgid "Open →"
-msgstr "打开 →"
-
-#: src/view/search/index.tsx
-msgid "R"
-msgstr "R"
-
-#. 0: props.release.id
-#: src/view/search/index.tsx
-msgid "Release · {0}"
-msgstr "发行 · {0}"
-
-#. 0: props.song.id
-#: src/view/search/index.tsx
-msgid "Song · {0}"
-msgstr "歌曲 · {0}"
-
-#: src/view/search/index.tsx
-msgid "E"
-msgstr "E"
-
-#. 0: props.event.id
-#: src/view/search/index.tsx
-msgid "Event · {0}"
-msgstr "活动 · {0}"
-
-#: src/view/search/index.tsx
-msgid "L"
-msgstr "L"
-
-#. 0: props.label.id
-#: src/view/search/index.tsx
-msgid "Label · {0}"
-msgstr "厂牌 · {0}"
-
-#. 0: props.tag.id
-#: src/view/search/index.tsx
-msgid "Tag · {0}"
-msgstr "标签 · {0}"
-
-#: src/component/Header/LeftSidebar.tsx
-#: src/view/song/Info/comp/SongInfoLyrics.tsx
-#: src/view/song/Info/comp/SongInfoLyrics.tsx
-#: src/view/song/explore.tsx
-msgid "Language"
-msgstr "语言"
-
-#: src/view/song/explore.tsx
-msgid "No songs found"
-msgstr "未找到歌曲。"
-
-#: src/view/song/explore.tsx
-msgid "Explore Songs"
-msgstr "探索歌曲"
-
-#: src/view/song/explore.tsx
-msgid "Create song"
-msgstr "创建歌曲"
-
-#: src/view/user/ProfilePending.tsx
-msgid "Loading profile..."
-msgstr "正在加载个人资料..."
-
-#: src/view/user/Profile.tsx
-#: src/view/user/edit_profile/index.tsx
-msgid "Profile banner"
-msgstr "个人资料横幅"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "Edit profile"
-msgstr "编辑个人资料"
-
-#: src/view/user/Profile.tsx
-msgid "Follow"
-msgstr "关注"
-
-#: src/view/user/Profile.tsx
-msgid "Unfollow"
-msgstr "取消关注"
-
-#: src/view/user/Profile.tsx
-msgid "Following"
-msgstr "已关注"
-
-#: src/view/admin/users.tsx
-#: src/view/user/Profile.tsx
-msgid "User"
-msgstr "用户"
-
-#: src/view/release/discover.tsx
-msgid "[UNIMPLEMENTED] Release"
-msgstr "[未实现]发行"
-
-#: src/view/tag/TagTree.tsx
-msgid "v"
-msgstr "v"
-
-#: src/view/tag/explore.tsx
-msgid "Tag Tree"
-msgstr "标签树"
-
-#: src/view/tag/explore.tsx
-msgid "No tags found"
-msgstr "未找到标签。"
-
-#: src/view/tag/explore.tsx
-msgid "Create tag"
-msgstr "创建标签"
-
-#: src/component/__legacy/chart/index.tsx
-msgid "Positive:"
-msgstr "阳性："
-
-#: src/component/__legacy/chart/index.tsx
-msgid "Negative:"
-msgstr "阴性："
-
-#: src/component/__legacy/player/index.tsx
-msgid "幻想乡之歌"
-msgstr "幻想乡之歌"
-
-#: src/component/form/Location/index.tsx
-msgid "Country / Region"
-msgstr "国家 / 地区"
-
-#: src/component/form/Location/index.tsx
-msgid "Province"
-msgstr "省"
-
-#: src/component/form/Location/index.tsx
-msgid "City"
-msgstr "城市"
-
-#: src/component/form/stateful/LanguageCombobox.tsx
-msgid "Select language"
-msgstr "选择语言"
-
-#: src/component/form/SearchDialog/CreditRoleSearchDialog.tsx
-msgid "Search Role"
-msgstr "搜索角色"
-
-#: src/component/form/SearchDialog/EventSearchDialog.tsx
-msgid "Search Event"
-msgstr "搜索活动"
-
-#: src/component/form/SearchDialog/ArtistSearchDialog.tsx
-msgid "Search Artist"
-msgstr "搜索艺人"
-
-#: src/component/form/SearchDialog/EntitySearchDialog.tsx
-msgid "Search..."
-msgstr "搜索..."
-
-#: src/component/form/SearchDialog/LabelSearchDialog.tsx
-msgid "Search Label"
-msgstr "搜索厂牌"
-
-#: src/component/form/SearchDialog/TagSearchDialog.tsx
-msgid "Search Tag"
-msgstr "搜索标签"
-
-#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
-msgid "Sort by"
-msgstr "排序方式"
-
-#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
-msgid "Created At"
-msgstr "创建于"
-
-#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
-msgid "Handled At"
-msgstr "处理时间"
-
-#. 0: " "; 1: " "
-#: src/component/feature/entity_explore/EmptyExplorePlaceholder.tsx
-msgid "Try adjusting the filters, or{0} <0>create</0>{1} the first one."
-msgstr "尝试调整筛选器，或 {0} <0>创建</0> {1} 第一个。"
-
-#: src/component/feature/entity_explore/OrderBySelect.tsx
-msgid "Order"
-msgstr "顺序"
-
-#: src/component/feature/entity_explore/OrderBySelect.tsx
-msgid "Descending"
-msgstr "降序"
-
-#: src/component/feature/entity_explore/OrderBySelect.tsx
-msgid "Ascending"
-msgstr "升序"
-
-#: src/view/Homepage/component/ArtistCard.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Solo"
-msgstr "独奏"
-
-#: src/view/Homepage/component/ArtistCard.tsx
-msgid "Solo artist"
-msgstr "独奏艺人"
-
-#: src/view/Homepage/component/LatestArtistsCard.tsx
-msgid "Latest Artists"
-msgstr "最新艺人"
-
-#: src/view/Homepage/component/ExploreSection.tsx
-msgid "Explore →"
-msgstr "浏览 →"
-
-#: src/view/Homepage/component/HomeEmptySlot.tsx
-msgid "No data"
-msgstr "无数据"
-
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/auth/component/AuthForm.tsx
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "TOUHOU CLOUD DB"
-msgstr "TOUHOU CLOUD DB"
-
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/auth/component/AuthForm.tsx
-msgid "Open doujin music database"
-msgstr "开放的东方同人音乐数据库"
-
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Explore doujin music"
-msgstr "探索同人音乐"
-
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Contribute what’s missing and help keep the database accurate for everyone."
-msgstr "贡献缺失的内容，帮助每个人保持数据库的准确性。"
-
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "<0/> Preview"
-msgstr "<0/> 预览"
-
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "API-powered UI"
-msgstr "API驱动的用户界面"
-
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "<0/> Alpha"
-msgstr "<0/> Alpha"
-
-#: src/view/Homepage/component/NewMusic.tsx
-msgid "最新音乐"
-msgstr "最新音乐"
-
-#: src/view/Homepage/component/NewMusic.tsx
-msgid "查看更多"
-msgstr "查看更多..."
-
-#. 0: i() + 1
-#: src/view/Homepage/component/NewMusic.tsx
-msgid "东方同音鉴曲目 {0}"
-msgstr "东方同音鉴曲目 {0}"
-
-#: src/view/Homepage/component/NewMusic.tsx
-msgid "幻想乡音乐人"
-msgstr "幻想乡音乐人"
-
-#. 0: props.playlist.creator
-#: src/view/Homepage/component/PlaylistCard.tsx
-msgid "by {0}"
-msgstr "由 {0}"
-
-#: src/view/Homepage/component/ReleaseCard.tsx
-#: src/component/display/release/ReleaseCoverWall.tsx
-#: src/view/release/Info/comp/ReleaseInfoCoverImage.tsx
-#: src/view/release/explore/ReleaseItems.tsx
-msgid "No cover art"
-msgstr "没有 cover art"
-
-#: src/view/Homepage/component/UpcomingEventsCard.tsx
-msgid "Upcoming Events"
-msgstr "即将举行的活动"
-
-#: src/view/Homepage/component/TrendingTagsCard.tsx
-msgid "Trending Tags"
-msgstr "热点标签"
-
-#: src/view/artist/edit/index.tsx
-msgid "Create Artist"
-msgstr "创建艺人"
-
-#: src/view/artist/edit/index.tsx
-msgid "Edit Artist"
-msgstr "编辑艺人"
-
-#: src/view/artist/edit/index.tsx
-#: src/view/event/edit/index.tsx
-#: src/view/label/edit/index.tsx
-#: src/view/release/edit/index.tsx
-#: src/view/song/edit/index.tsx
-#: src/view/tag/edit/index.tsx
-msgid "Are you sure you want to leave this page? Your changes will be lost."
-msgstr "您确定要离开此页面吗？您的更改将丢失。"
-
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-msgid "Password"
-msgstr "密码"
-
-#: src/view/auth/component/AuthCredentialForm.tsx
-msgid "Forgot password?"
-msgstr "忘记密码？"
-
-#: src/view/auth/component/AuthCredentialForm.tsx
-msgid "Repeat password"
-msgstr "重复密码"
-
-#: src/view/artist/profile/index.tsx
-msgid "Upload image"
-msgstr "上传图片"
-
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Lorem ipsum dolor sit amet consectetur"
-msgstr "补全缺失条目"
-
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Add missing entries (artists, releases, songs, events)"
-msgstr "添加缺少的条目（艺人、发行、歌曲、活动）"
-
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Submit corrections and keep metadata clean"
-msgstr "提交更正并保持元数据干净"
-
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Sync your contributions across devices"
-msgstr "跨设备同步您的贡献"
-
-#: src/view/auth/component/EmailField.tsx
-msgid "Email"
-msgstr "电子邮箱"
-
-#: src/view/auth/component/UsernameField.tsx
-msgid "Username"
-msgstr "用户名"
-
-#: src/view/auth/component/PasswordField.tsx
-msgid "PASSWORD REQUIREMENTS"
-msgstr "密码要求"
-
-#. 0: USER_PASSWORD_MIN_LENGTH; 1: USER_PASSWORD_MAX_LENGTH
-#: src/view/auth/component/PasswordField.tsx
-msgid "{0}-{1} characters"
-msgstr "{0} - {1} 个字符"
-
-#: src/view/auth/component/PasswordField.tsx
-msgid "No spaces or control characters"
-msgstr "无空格或控制字符"
-
-#. 0: " "
-#: src/view/auth/component/PasswordField.tsx
-msgid "Allowed: A-Z, a-z, 0-9,{0} <0/>"
-msgstr "允许：A-Z、a-z、0-9、{0}<0/>"
-
-#: src/view/auth/component/SignInIdentifierField.tsx
-msgid "Enter your username or email"
-msgstr "输入你的用户名或邮箱"
-
-#: src/view/auth/component/SignInIdentifierField.tsx
-msgid "Username / Email"
-msgstr "用户名 / 邮箱"
-
-#. 0: props.verificationEmail()
-#: src/view/auth/component/VerifyEmailForm.tsx
-msgid "Enter the code for {0}. If you did not receive one, use Resend."
-msgstr "输入发送到 {0} 的验证码。如果没有收到，请使用“重新发送”。"
-
-#: src/view/auth/component/VerifyEmailForm.tsx
-msgid "Verify Email"
-msgstr "验证邮箱"
-
-#. 0: props.resendCooldownSeconds()
-#. 0: props.uiStore.state.cooldownSeconds
-#: src/view/auth/component/VerifyEmailForm.tsx
-#: src/view/auth/reset_password/index.tsx
-msgid "Resend ({0}s)"
-msgstr "重新发送（{0} 秒）"
-
-#: src/view/auth/component/VerifyEmailForm.tsx
-msgid "Resend"
-msgstr "重新发送"
-
-#. 0: " "
-#: src/view/auth/component/VerifyEmailForm.tsx
-msgid "Already have an account?{0} <0>Sign in</0>"
-msgstr "已有账号？{0} <0>登录</0>"
-
-#: src/view/auth/component/VerificationCodeField.tsx
-msgid "Verification code"
-msgstr "验证码"
-
-#: src/view/auth/store/index.ts
-msgid "If eligible, a verification code has been sent."
-msgstr "如果条件满足，验证码已发送。"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Change"
-msgstr "改"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Forgot password"
-msgstr "忘记密码"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Sending..."
-msgstr "发送中……"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Resend code"
-msgstr "重新发送代码"
-
-#. 0: props.uiStore.state.verificationCodeExpiresMinutes; 1: " "
-#: src/view/auth/reset_password/index.tsx
-msgid "Codes expire in {0}{1} minutes."
-msgstr "代码将在 {0} {1}分钟后过期。"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Continue"
-msgstr "继续"
-
-#. 0: " "
-#. 0: " "
-#: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
-msgid "Back to{0} <0>sign in</0> ."
-msgstr "返回{0}<0>登录</0>。"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Set a new password"
-msgstr "设置新密码"
-
-#. 0: formatMinuteCount(props.resetKeyExpiresMinutes)
-#: src/view/auth/reset_password/index.tsx
-msgid "This is valid for {0}."
-msgstr "这对 {0} 有效。"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "New password"
-msgstr "新密码"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Repeat new password"
-msgstr "重复新密码"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Reset password"
-msgstr "重置密码"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Password reset complete"
-msgstr "密码重置完成"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Your password has been updated successfully."
-msgstr "您的密码已成功更新"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "You can now sign in with your new password."
-msgstr "您现在可以使用新密码登录。"
-
-#: src/view/auth/reset_password/response.ts
-msgid "Left"
-msgstr "左侧"
-
-#: src/view/event/Info/index.tsx
-msgid "Short description is not provided"
-msgstr "未提供简短说明"
-
-#: src/view/event/Info/index.tsx
-msgid "Date"
-msgstr "日期"
+#: src/component/form/DateWithPrecision/index.tsx
+msgid "Month"
+msgstr "月"
 
 #: src/view/event/Info/index.tsx
 msgid "N/A"
 msgstr "无"
-
-#: src/view/event/Info/index.tsx
-#: src/view/tag/Info/index.tsx
-msgid "AKAs"
-msgstr "AKA"
-
-#: src/view/event/edit/index.tsx
-msgid "Create Event"
-msgstr "创建活动"
-
-#: src/view/event/edit/index.tsx
-msgid "Edit Event"
-msgstr "编辑活动"
-
-#: src/view/label/Info/index.tsx
-msgid "Founded"
-msgstr "成立"
-
-#: src/view/artist/edit/comp/LocalizedNames.tsx
-#: src/view/label/Info/index.tsx
-#: src/view/label/edit/comp/LabelLocalizedNamesField.tsx
-msgid "Localized Names"
-msgstr "本地化名称"
-
-#: src/view/label/Info/index.tsx
-#: src/view/label/edit/comp/LabelFoundersField.tsx
-msgid "Founders"
-msgstr "创始人"
-
-#: src/view/label/List/index.tsx
-msgid "Labels"
-msgstr "厂牌"
-
-#: src/view/label/List/index.tsx
-#: src/view/label/edit/index.tsx
-msgid "Create Label"
-msgstr "创建厂牌"
-
-#: src/view/label/List/index.tsx
-msgid "Search label..."
-msgstr "搜索厂牌..."
-
-#: src/view/label/List/index.tsx
-msgid "No results"
-msgstr "没有结果"
-
-#: src/view/label/List/index.tsx
-msgid "Type at least 2 characters to search."
-msgstr "至少输入 2 个字符进行搜索。"
-
-#: src/view/label/edit/index.tsx
-msgid "Edit Label"
-msgstr "编辑厂牌"
-
-#: src/view/release/Info/ReleaseInfoTabs.tsx
-#: src/view/release/Info/ReleaseInfoTabs.tsx
-#: src/view/release/Info/ReleaseInfoTabs.tsx
-#: src/view/release/edit/comp/ReleaseCreditsField.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/edit/comp/SongCreditsField.tsx
-msgid "Credits"
-msgstr "信用"
-
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-msgid "Lyrics"
-msgstr "歌词"
-
-#: src/view/song/edit/index.tsx
-msgid "Create Song"
-msgstr "创建歌曲"
-
-#: src/view/song/edit/index.tsx
-msgid "Edit Song"
-msgstr "编辑歌曲"
-
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
-msgid "Update avatar"
-msgstr "更新头像"
-
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
-msgid "Update banner"
-msgstr "更新横幅"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "Unsaved"
-msgstr "未保存"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "Back to profile"
-msgstr "返回到个人资料"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "APPEARANCE"
-msgstr "外观"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "BIO"
-msgstr "BIO"
-
-#. 0: count()
-#: src/view/user/edit_profile/index.tsx
-msgid "{0} chars"
-msgstr "{0} 个字符"
-
-#. 0: label()
-#: src/view/user/edit_profile/index.tsx
-msgid "saved {0}"
-msgstr "已保存 {0}"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "Write something about you."
-msgstr "介绍一下自己吧！"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "Discard"
-msgstr "丢弃"
-
-#: src/view/admin/users.tsx
-#: src/view/user/edit_profile/index.tsx
-msgid "Saving…"
-msgstr "正在保存…"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "Save bio"
-msgstr "保存个人简介"
-
-#: src/view/user/edit_profile/store.ts
-msgid "Save failed."
-msgstr "保存失败."
-
-#: src/view/release/Info/ReleaseInfoTabs.tsx
-#: src/view/release/Info/ReleaseInfoTabs.tsx
-#: src/view/release/Info/ReleaseInfoTabs.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "Tracks"
-msgstr "曲目数"
-
-#: src/view/release/Info/index.tsx
-msgid "Upload cover art"
-msgstr "上传 cover art"
-
-#: src/view/release/explore/index.tsx
-msgid "Explore Releases"
-msgstr "浏览发行"
-
-#: src/view/release/explore/index.tsx
-msgid "Create release"
-msgstr "创建发行"
-
-#: src/view/release/explore/filter.tsx
-msgid "View"
-msgstr "查看"
-
-#: src/view/release/explore/filter.tsx
-msgid "Wall"
-msgstr "墙面"
-
-#: src/view/release/explore/filter.tsx
-msgid "List"
-msgstr "列表"
-
-#: src/view/release/explore/list.tsx
-msgid "No releases found"
-msgstr "未找到发行"
-
-#: src/view/tag/edit/index.tsx
-msgid "Create Tag"
-msgstr "创建标签"
-
-#: src/view/tag/edit/index.tsx
-msgid "Edit Tag"
-msgstr "修改标签"
-
-#: src/view/release/edit/index.tsx
-msgid "Create Release"
-msgstr "创建发行"
-
-#: src/view/release/edit/index.tsx
-msgid "Edit Release"
-msgstr "编辑发行"
-
-#: src/view/release/edit/index.tsx
-msgid "Release date"
-msgstr "发行日期"
-
-#: src/view/release/edit/index.tsx
-msgid "Recording start"
-msgstr "录制开始"
-
-#: src/view/release/edit/index.tsx
-msgid "Recording end"
-msgstr "录制结束"
-
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/edit/comp/SongRelationsField.tsx
-#: src/view/tag/Info/index.tsx
-#: src/view/tag/Info/index.tsx
-#: src/view/tag/Info/index.tsx
-#: src/view/tag/edit/comp/TagRelationsField.tsx
-msgid "Relations"
-msgstr "关系"
-
-#: src/view/artist/edit/comp/Aliases.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Aliases"
-msgstr "别名"
 
 #: src/view/artist/edit/comp/ArtistName.tsx
 #: src/view/artist/edit/comp/LocalizedNames.tsx
@@ -1818,151 +954,771 @@ msgstr "别名"
 msgid "Name"
 msgstr "名称"
 
-#: src/view/artist/edit/comp/ArtistType.tsx
-msgid "Artist Type"
-msgstr "艺人类型"
+#: src/domain/event/schema.ts
+#: src/domain/event/schema.ts
+#: src/domain/shared/schema.ts
+#: src/domain/tag/schema.ts
+#: src/domain/tag/schema.ts
+msgid "Name is required and must be non-empty"
+msgstr "名称为必填项且不能为空"
 
-#: src/view/artist/edit/comp/Date.tsx
-#: src/view/event/edit/comp/EventDateFields.tsx
-msgid "Start date"
-msgstr "起始日期"
+#: src/view/Homepage/mock.ts
+msgid "Navigate genres, themes and metadata through tag types."
+msgstr "通过标签类型浏览流派、主题和元数据。"
 
-#: src/view/artist/edit/comp/Date.tsx
-#: src/view/event/edit/comp/EventDateFields.tsx
-msgid "End date"
-msgstr "结束日期"
+#: src/component/__legacy/chart/index.tsx
+msgid "Negative:"
+msgstr "负向："
 
-#: src/view/artist/edit/comp/Links.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Links"
-msgstr "链接"
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "New"
+msgstr "新图"
 
-#: src/view/artist/edit/comp/Links.tsx
-msgid "Url"
-msgstr "URL"
+#: src/view/auth/reset_password/index.tsx
+msgid "New password"
+msgstr "新密码"
 
-#. 0: props.mutation.error.message
-#. 0: props.mutation.error.message
-#. 0: props.mutation.error.message
-#: src/view/artist/edit/comp/FormActions.tsx
-#: src/view/event/edit/comp/EventFormDesc.tsx
-#: src/view/tag/edit/comp/TagFormActions.tsx
-msgid "Error: {0}"
-msgstr "错误：{0}"
+#: src/view/image_queue/detail.tsx
+msgid "Next"
+msgstr "下一页"
 
-#: src/view/artist/edit/comp/Locations.tsx
-msgid "Start Location"
-msgstr "起始地点"
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Next disc"
+msgstr "下一张光盘"
 
-#: src/view/artist/edit/comp/Locations.tsx
-msgid "Current Location"
-msgstr "当前位置"
+#: src/component/Pagination.tsx
+msgid "Next page"
+msgstr "下一页"
 
-#: src/view/artist/edit/comp/TextAliases.tsx
-msgid "Text Aliases"
-msgstr "文本别名"
+#: src/view/image_queue/detail.tsx
+msgid "No actions available for this account."
+msgstr "当前账号无可用操作。"
 
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Born"
-msgstr "出生"
+#: src/view/image_queue/detail.tsx
+msgid "No actions available."
+msgstr "没有可用操作。"
 
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Formed"
-msgstr "成立"
+#: src/view/artist/explore.comp.tsx
+msgid "No artists found"
+msgstr "未找到艺人。"
 
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Died"
-msgstr "死亡"
+#: src/view/search/index.tsx
+msgid "No artists found."
+msgstr "未找到艺人。"
 
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Disbanded"
-msgstr "已解散"
+#: src/view/user/Profile.tsx
+msgid "No biography provided."
+msgstr "暂无个人简介。"
 
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Member Of"
-msgstr "成员 "
+#: src/view/correction/Detail.tsx
+msgid "No changes detected."
+msgstr "未检测到任何更改"
 
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Members"
-msgstr "成员"
+#: src/component/display/release/ReleaseCoverWall.tsx
+#: src/view/Homepage/component/ReleaseCard.tsx
+#: src/view/release/explore/ReleaseItems.tsx
+#: src/view/release/Info/comp/ReleaseInfoCoverImage.tsx
+msgid "No cover art"
+msgstr "没有 cover art"
 
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-msgid "Discography"
-msgstr "唱片目录"
+#: src/view/Homepage/component/HomeEmptySlot.tsx
+msgid "No data"
+msgstr "暂无数据"
 
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-msgid "Appearance"
-msgstr "设备外观"
+#: src/view/correction/Detail.tsx
+msgid "No diff data."
+msgstr "暂无差异数据。"
 
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-msgid "Credit"
-msgstr "署名"
+#: src/view/image_queue/manage.tsx
+msgid "No entries found"
+msgstr "未找到条目"
 
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-msgid "Album"
-msgstr "专辑"
+#: src/view/image_queue/manage.tsx
+msgid "No entries match the current filters."
+msgstr "没有条目符合当前筛选条件。"
 
-#. 0: " "
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-msgid "This Artist has no releases yet, you can upload them on{0} <0>Upload New Release</0>"
-msgstr "此艺人暂无发行，您可以在 {0} <0>上传新发行</0>"
+#: src/view/image_queue/user.tsx
+msgid "No entries yet"
+msgstr "暂无条目"
 
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-msgid "Load More"
-msgstr "加载更多"
+#: src/view/event/explore.tsx
+msgid "No events found"
+msgstr "未找到活动。"
 
-#: src/view/event/edit/comp/EventAlternativeNamesField.tsx
-#: src/view/tag/edit/comp/TagAltNames.tsx
-msgid "Alternative Names"
-msgstr "替代名称"
+#: src/view/search/index.tsx
+msgid "No events found."
+msgstr "未找到活动。"
 
-#: src/view/event/edit/comp/EventFormDesc.tsx
-#: src/view/label/edit/comp/LabelFormDesc.tsx
-#: src/view/tag/edit/comp/TagFormActions.tsx
-msgid "Correction Description"
-msgstr "更正说明"
+#: src/view/image_queue/detail.tsx
+#: src/view/image_upload/EntityImageUploadPage.tsx
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "No image"
+msgstr "暂无图片"
 
-#: src/view/event/edit/comp/EventLocationField.tsx
-msgid "Location"
-msgstr "位置"
+#: src/view/label/explore.comp.tsx
+msgid "No labels found"
+msgstr "未找到厂牌。"
 
-#: src/view/event/edit/comp/EventShortDescriptionField.tsx
-#: src/view/tag/edit/comp/TagShortDescription.tsx
-msgid "Short Description"
-msgstr "简要说明"
+#: src/view/search/index.tsx
+msgid "No labels found."
+msgstr "未找到标签。"
 
-#: src/view/label/edit/comp/LabelDateFields.tsx
-msgid "Founded date"
-msgstr "成立日期"
+#: src/view/image_queue/manage.tsx
+#: src/view/image_queue/user.tsx
+msgid "No more entries"
+msgstr "没有更多条目了"
 
-#: src/view/label/edit/comp/LabelDateFields.tsx
-msgid "Dissolved date"
-msgstr "解散日期"
+#: src/view/user/Profile.tsx
+msgid "No recent activity."
+msgstr "暂无最近动态。"
 
-#: src/view/song/Info/comp/SongInfoLanguages.tsx
-#: src/view/song/edit/comp/SongLanguagesField.tsx
-msgid "Languages"
-msgstr "语言"
+#: src/view/release/explore/list.tsx
+msgid "No releases found"
+msgstr "未找到发行"
 
-#: src/view/release/edit/comp/ReleaseArtistsField.tsx
-#: src/view/song/edit/comp/SongArtistsField.tsx
-msgid "Artists"
-msgstr "艺人"
+#: src/view/search/index.tsx
+msgid "No releases found."
+msgstr "未找到发行。"
+
+#: src/view/label/List/index.tsx
+msgid "No results"
+msgstr "没有结果"
+
+#: src/view/search/index.tsx
+msgid "No results found."
+msgstr "未找到结果。"
+
+#: src/view/release/edit/comp/TrackFieldItem.tsx
+msgid "No song selected"
+msgstr "未选择歌曲"
+
+#: src/view/song/explore.tsx
+msgid "No songs found"
+msgstr "未找到歌曲。"
+
+#: src/view/search/index.tsx
+msgid "No songs found."
+msgstr "未找到歌曲。"
+
+#: src/view/auth/component/PasswordField.tsx
+msgid "No spaces or control characters"
+msgstr "无空格或控制字符"
+
+#: src/view/tag/explore.tsx
+msgid "No tags found"
+msgstr "未找到标签。"
+
+#: src/view/search/index.tsx
+msgid "No tags found."
+msgstr "未找到标签。"
+
+#: src/view/admin/users.tsx
+msgid "No users found"
+msgstr "未找到用户"
+
+#: src/view/admin/users.tsx
+msgid "No users match the current filters."
+msgstr "没有用户符合当前筛选条件。"
+
+#: src/utils/dateTime.ts
+msgid "None"
+msgstr "无"
+
+#: src/view/correction/Detail.tsx
+msgid "Not handled"
+msgstr "未处理"
+
+#: src/view/release/edit/comp/ReleaseCreditsField.tsx
+msgid "On Tracks"
+msgstr "关联曲目"
+
+#: src/component/ImageCropDialog/utils.ts
+msgid "Only PNG/JPEG images are supported."
+msgstr "仅支持PNG/JPEG图像。"
+
+#: src/view/search/index.tsx
+#: src/view/search/index.tsx
+#: src/view/search/index.tsx
+#: src/view/search/index.tsx
+#: src/view/search/index.tsx
+#: src/view/search/index.tsx
+msgid "Open"
+msgstr "打开"
+
+#: src/view/auth/component/AuthForm.tsx
+#: src/view/auth/component/AuthLeftPanel.tsx
+#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeHero.tsx
+msgid "Open doujin music database"
+msgstr "开放的同人音乐数据库"
+
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "Open image queue"
+msgstr "打开图片队列"
+
+#: src/component/__legacy/chart/index.tsx
+msgid "OR"
+msgstr "或"
+
+#: src/component/feature/entity_explore/OrderBySelect.tsx
+msgid "Order"
+msgstr "顺序"
+
+#. placeholder {0}: props.search.page
+#. placeholder {1}: props.list.totalPages
+#: src/view/admin/users.tsx
+msgid "Page {0} of {1}"
+msgstr "第 {0} / {1} 页"
+
+#: src/component/Pagination.tsx
+msgid "Pagination"
+msgstr "分页"
+
+#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/component/AuthCredentialForm.tsx
+msgid "Password"
+msgstr "密码"
+
+#: src/domain/auth/schema.ts
+#: src/domain/auth/schema.ts
+msgid "Password contains invalid or whitespace characters"
+msgstr "密码包含无效字符或空白字符"
+
+#: src/domain/auth/schema.ts
+#: src/domain/auth/schema.ts
+msgid "Password mismatch"
+msgstr "两次输入的密码不一致"
+
+#: src/domain/auth/schema.ts
+msgid "Password must be at least {USER_PASSWORD_MIN_LENGTH} characters"
+msgstr "密码长度至少为 {USER_PASSWORD_MIN_LENGTH} 个字符"
+
+#: src/domain/auth/schema.ts
+msgid "Password must be at most {USER_PASSWORD_MAX_LENGTH} characters"
+msgstr "密码长度最多为 {USER_PASSWORD_MAX_LENGTH} 个字符"
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Password reset complete"
+msgstr "密码重置完成"
+
+#: src/domain/auth/schema.ts
+msgid "Password too weak"
+msgstr "密码强度过弱"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/manage.tsx
+msgid "Pending"
+msgstr "待定"
+
+#: src/view/image_queue/user.tsx
+msgid "PENDING"
+msgstr "待处理"
+
+#: src/component/__legacy/chart/index.tsx
+msgid "Positive:"
+msgstr "正向："
+
+#: src/view/image_queue/detail.tsx
+msgid "Prev"
+msgstr "上一页"
+
+#: src/view/Homepage/component/HomeHero.tsx
+msgid "Preview"
+msgstr "预览版"
+
+#: src/view/correction/Detail.tsx
+msgid "Previous approved baseline"
+msgstr "先前批准的基线"
+
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Previous disc"
+msgstr "上一张光盘"
+
+#: src/component/Pagination.tsx
+msgid "Previous page"
+msgstr "上一页"
+
+#: src/component/Header/RightSidebar.tsx
+msgid "Profile"
+msgstr "个人档案"
+
+#: src/view/user/edit_profile/index.tsx
+#: src/view/user/Profile.tsx
+msgid "Profile banner"
+msgstr "个人资料横幅"
+
+#: src/route/artist/$id_.image-upload.tsx
+#: src/view/image_queue/detail.tsx
+msgid "profile image"
+msgstr "头像图"
+
+#: src/component/form/Location/index.tsx
+msgid "Province"
+msgstr "省"
+
+#: src/view/image_queue/detail.tsx
+msgid "Queued"
+msgstr "已在队列中"
+
+#: src/view/image_queue/detail.tsx
+msgid "Queued upload preview"
+msgstr "排队上传预览"
+
+#: src/component/Header/LeftSidebar.tsx
+msgid "Recommendation"
+msgstr "推荐"
+
+#: src/component/Header/RightSidebar.tsx
+msgid "Recommendations"
+msgstr "建议"
+
+#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
+msgid "Recorded"
+msgstr "录制"
+
+#: src/view/release/edit/index.tsx
+msgid "Recording end"
+msgstr "录制结束"
+
+#: src/view/release/edit/index.tsx
+msgid "Recording start"
+msgstr "录制开始"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Reject"
+msgstr "拒绝"
+
+#: src/view/image_queue/detail.tsx
+msgid "Reject image?"
+msgstr "拒绝这张图片？"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/manage.tsx
+msgid "Rejected"
+msgstr "已拒绝"
+
+#: src/view/image_queue/user.tsx
+msgid "REJECTED"
+msgstr "已拒绝"
+
+#: src/domain/song/schema.ts
+msgid "Related song not selected"
+msgstr "未选择关联歌曲"
+
+#: src/domain/tag/schema.ts
+msgid "Relation type is required"
+msgstr "关联类型为必填项"
+
+#: src/domain/song/schema.ts
+msgid "Relation type not selected"
+msgstr "未选择关联类型"
+
+#: src/view/song/edit/comp/SongRelationsField.tsx
+#: src/view/song/Info/index.tsx
+#: src/view/tag/edit/comp/TagRelationsField.tsx
+msgid "Relations"
+msgstr "关系"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/image_queue/detail.tsx
+#: src/view/search/index.tsx
+#: src/view/song/Info/index.tsx
+msgid "Release"
+msgstr "发行"
+
+#: src/view/release/edit/index.tsx
+msgid "Release date"
+msgstr "发行日期"
+
+#: src/domain/release/schema.ts
+msgid "Release must have artists"
+msgstr "发行必须包含至少一位艺人"
+
+#: src/view/release/edit/comp/ReleaseTypeField.tsx
+msgid "Release Type"
+msgstr "发行类型"
+
+#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
+msgid "Released"
+msgstr "已发行"
+
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/search/index.tsx
+msgid "Releases"
+msgstr "发行"
+
+#: src/view/artist/edit/comp/Membership/role.tsx
+#: src/view/artist/edit/comp/Membership/role.tsx
+msgid "Remove role"
+msgstr "删除角色"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Remove tenure entry"
+msgstr "删除任期条目"
+
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Rename disc"
+msgstr "重命名光盘"
+
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Rename Disc"
+msgstr "重命名光盘"
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Repeat new password"
+msgstr "重复新密码"
+
+#: src/view/auth/component/AuthCredentialForm.tsx
+msgid "Repeat password"
+msgstr "重复密码"
+
+#: src/view/auth/reset_password/response.ts
+msgid "Request failed"
+msgstr "请求失败"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Request failed."
+msgstr "请求失败。"
+
+#: src/view/auth/component/VerifyEmailForm.tsx
+msgid "Resend"
+msgstr "重新发送"
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Resend code"
+msgstr "重新发送代码"
+
+#: src/component/dialog/ResetFieldDialog.tsx
+msgid "Reset field?"
+msgstr "重置数据字段"
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Reset password"
+msgstr "重置密码"
+
+#: src/view/image_queue/detail.tsx
+msgid "Revert"
+msgstr "撤回"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/manage.tsx
+msgid "Reverted"
+msgstr "已还原"
+
+#: src/view/image_queue/user.tsx
+msgid "REVERTED"
+msgstr "已撤回"
+
+#: src/view/correction/Detail.tsx
+msgid "REVISIONS"
+msgstr "修订"
+
+#: src/view/admin/users.tsx
+msgid "Roles"
+msgstr "角色"
+
+#: src/component/ImageCropDialog/index.tsx
+msgid "Save"
+msgstr "保存"
+
+#: src/view/user/edit_profile/index.tsx
+msgid "Save bio"
+msgstr "保存个人简介"
+
+#: src/view/user/edit_profile/store.ts
+msgid "Save failed."
+msgstr "保存失败."
+
+#: src/view/admin/users.tsx
+msgid "Save roles"
+msgstr "保存角色"
+
+#: src/view/user/edit_profile/index.tsx
+msgid "Saving…"
+msgstr "正在保存…"
+
+#: src/component/form/SearchDialog/ArtistSearchDialog.tsx
+msgid "Search Artist"
+msgstr "搜索艺人"
+
+#: src/component/Header/index.tsx
+msgid "Search artists, releases, songs…"
+msgstr "搜索艺人、专辑、歌曲…"
+
+#: src/view/admin/users.tsx
+msgid "Search by username"
+msgstr "按用户名搜索"
+
+#: src/view/artist/edit/comp/Membership/role.tsx
+msgid "Search credit role"
+msgstr "搜索信用角色"
+
+#: src/component/form/SearchDialog/EventSearchDialog.tsx
+msgid "Search Event"
+msgstr "搜索活动"
+
+#: src/component/form/SearchDialog/LabelSearchDialog.tsx
+msgid "Search Label"
+msgstr "搜索厂牌"
+
+#: src/view/label/List/index.tsx
+msgid "Search label..."
+msgstr "搜索厂牌..."
+
+#: src/view/search/index.tsx
+msgid "Search result of"
+msgstr "搜索结果："
+
+#: src/component/form/SearchDialog/CreditRoleSearchDialog.tsx
+msgid "Search Role"
+msgstr "搜索角色"
+
+#: src/view/artist/edit/comp/Membership/role.tsx
+msgid "Search roles..."
+msgstr "搜索角色..."
+
+#: src/component/form/SearchDialog/SongSearchDialog.tsx
+msgid "Search Song"
+msgstr "搜索歌曲"
+
+#: src/component/form/SearchDialog/TagSearchDialog.tsx
+msgid "Search Tag"
+msgstr "搜索标签"
+
+#: src/component/form/SearchDialog/EntitySearchDialog.tsx
+msgid "Search..."
+msgstr "搜索..."
+
+#: src/view/search/index.tsx
+msgid "Searching…"
+msgstr "正在搜索…"
+
+#: src/view/Homepage/mock.ts
+msgid "See conventions and live shows where releases debuted."
+msgstr "查看发行首次出现的展会与现场活动。"
+
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "Select another image"
+msgstr "选择另一张图片"
 
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 #: src/view/song/edit/comp/SongCreditsField.tsx
 msgid "Select artist"
 msgstr "选择艺人"
 
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "Select image"
+msgstr "选择图片"
+
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 #: src/view/song/edit/comp/SongCreditsField.tsx
 msgid "Select role"
 msgstr "选择角色"
 
-#: src/view/release/edit/comp/LocalizedTitlesField.tsx
-#: src/view/song/edit/comp/SongLocalizedTitlesField.tsx
-msgid "Localized Titles"
-msgstr "本地化标题"
+#: src/view/song/edit/comp/SongRelationsField.tsx
+msgid "Select song"
+msgstr "选择歌曲"
+
+#: src/view/tag/edit/comp/TagRelationsField.tsx
+msgid "Select tag"
+msgstr "选择标签"
+
+#: src/component/ImageCropDialog/index.tsx
+msgid "Selected crop cannot satisfy the required dimensions. Adjust the crop area."
+msgstr "所选裁剪无法满足所需的尺寸。调整裁剪区域。"
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Sending..."
+msgstr "发送中……"
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Set a new password"
+msgstr "设置新密码"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/component/Header/RightSidebar.tsx
+msgid "Settings"
+msgstr "设置"
+
+#: src/view/event/edit/comp/EventShortDescriptionField.tsx
+#: src/view/tag/edit/comp/TagShortDescription.tsx
+msgid "Short Description"
+msgstr "简要说明"
+
+#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/index.tsx
+msgid "sign in"
+msgstr "登录"
+
+#: src/component/route.tsx
+#: src/view/auth/component/AuthForm.tsx
+#: src/view/auth/component/VerifyEmailForm.tsx
+msgid "Sign in"
+msgstr "登录"
+
+#: src/component/Header/index.tsx
+#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/component/AuthCredentialForm.tsx
+msgid "Sign In"
+msgstr "登录"
+
+#: src/component/route.tsx
+msgid "Sign in to continue"
+msgstr "登录后继续"
+
+#: src/component/Header/RightSidebar.tsx
+msgid "Sign Out"
+msgstr "注销"
+
+#: src/component/Header/index.tsx
+#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/component/AuthCredentialForm.tsx
+msgid "Sign Up"
+msgstr "注册"
+
+#: src/view/Homepage/component/ArtistCard.tsx
+msgid "Solo artist"
+msgstr "独奏艺人"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/search/index.tsx
+msgid "Song"
+msgstr "歌曲"
+
+#: src/view/correction/entityMap.ts
+msgid "Song lyrics"
+msgstr "歌词"
+
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/search/index.tsx
+msgid "Songs"
+msgstr "歌曲"
+
+#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
+msgid "Sort by"
+msgstr "排序方式"
+
+#: src/view/artist/edit/comp/Date.tsx
+#: src/view/event/edit/comp/EventDateFields.tsx
+msgid "Start date"
+msgstr "起始日期"
+
+#: src/view/artist/edit/comp/Locations.tsx
+msgid "Start Location"
+msgstr "起始地点"
+
+#: src/view/image_queue/manage.tsx
+msgid "Status"
+msgstr "状态"
+
+#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/image_queue/user.tsx
+msgid "STATUS"
+msgstr "状态"
+
+#: src/view/auth/component/PasswordField.tsx
+msgid "Strong enough"
+msgstr "强度足够"
+
+#: src/component/form/FormActionBar.tsx
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "Submit"
+msgstr "提交"
+
+#: src/view/auth/component/AuthLeftPanel.tsx
+msgid "Submit corrections and keep metadata clean"
+msgstr "提交更正并保持元数据干净"
+
+#: src/view/image_upload/store.ts
+msgid "Submit failed."
+msgstr "提交失败。"
+
+#: src/view/image_queue/detail.tsx
+msgid "Submitted by"
+msgstr "提交人"
+
+#: src/component/form/FormActionBar.tsx
+msgid "Submitting"
+msgstr "正在提交"
+
+#: src/component/Header/RightSidebar.tsx
+msgid "Support"
+msgstr "技术支持"
+
+#: src/view/auth/component/AuthLeftPanel.tsx
+msgid "Sync your contributions across devices"
+msgstr "跨设备同步您的贡献"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/search/index.tsx
+msgid "Tag"
+msgstr "标签"
+
+#: src/domain/tag/schema.ts
+msgid "Tag not selected"
+msgstr "未选择标签"
+
+#: src/view/tag/explore.tsx
+msgid "Tag Tree"
+msgstr "标签树"
+
+#: src/view/tag/edit/comp/TagTypeField.tsx
+msgid "Tag Type"
+msgstr "标签类型"
+#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/search/index.tsx
+msgid "Tags"
+msgstr "标签"
+
+#: src/component/devtools/index.tsx
+msgid "TanStack Query"
+msgstr "TanStack Query"
+
+#: src/component/devtools/index.tsx
+msgid "TanStack Router"
+msgstr "TanStack Router"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Tenures"
+msgstr "任期"
+
+#: src/view/artist/edit/comp/TextAliases.tsx
+msgid "Text Aliases"
+msgstr "文本别名"
+
+#: src/component/dialog/ResetFieldDialog.tsx
+msgid "This cannot be undone."
+msgstr "此操作无法撤消。"
+
+#. placeholder {0}: formatMinuteCount(props.resetKeyExpiresMinutes)
+#: src/view/auth/reset_password/index.tsx
+msgid "This is valid for {0}."
+msgstr "有效期为 {0}。"
+
+#: src/component/route.tsx
+msgid "This page requires an authenticated account."
+msgstr "此页面需要已登录账号。"
+
+#: src/view/image_queue/user.tsx
+msgid "This user has no image queue history."
+msgstr "该用户暂无图片队列历史。"
+
+#: src/view/image_queue/detail.tsx
+msgid "This will mark the queued image as approved."
+msgstr "这会将排队的图片标记为已批准。"
+
+#: src/view/image_queue/detail.tsx
+msgid "This will mark the queued image as rejected."
+msgstr "这会将排队的图片标记为已拒绝。"
 
 #: src/view/release/edit/comp/LocalizedTitlesField.tsx
 #: src/view/release/edit/comp/TitleField.tsx
@@ -1973,28 +1729,27 @@ msgstr "本地化标题"
 msgid "Title"
 msgstr "标题"
 
-#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
-msgid "Released"
-msgstr "已发行"
+#: src/domain/song/schema.ts
+msgid "Title is required and must be non-empty"
+msgstr "标题为必填项且不能为空"
 
-#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
-msgid "Recorded"
-msgstr "录制"
+#: src/view/event/explore.tsx
+msgid "To"
+msgstr "到"
 
-#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
-msgid "Catalog Nums"
-msgstr "目录号"
+#: src/App.tsx
+#: src/component/Footer/index.tsx
+msgid "Touhou Cloud DB"
+msgstr "Touhou Cloud DB"
 
-#: src/view/release/Info/comp/ReleaseInfoTitleAndArtist.tsx
-msgid "by"
-msgstr "由"
+#: src/App.tsx
+#: src/component/Footer/index.tsx
+msgid "Touhou Cloud DB is an open doujin music database"
+msgstr "Touhou Cloud DB 是一个开放的东方同人音乐数据库"
 
-#. 0: index() + 1
-#. 0: props.selectedDisc() + 1
-#: src/view/release/Info/comp/ReleaseInfoTracks.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "Disc {0}"
-msgstr "碟 {0}"
+#: src/view/Homepage/component/NewMusic.tsx
+msgid "Touhou Cloud DB track"
+msgstr "Touhou Cloud DB 曲目"
 
 #: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
 msgid "Catalog Numbers"
@@ -2081,149 +1836,110 @@ msgstr "时长（毫秒）"
 #: src/view/release/edit/comp/TrackFieldItem.tsx
 msgid "No song selected"
 msgstr "未选择歌曲"
+#: src/view/Homepage/mock.ts
+msgid "Track albums and compilations, link artists and events."
+msgstr "整理专辑与合辑，并关联艺人和活动。"
 
 #: src/view/release/edit/comp/TrackFieldItem.tsx
 msgid "Track Artists"
 msgstr "曲目艺人"
 
-#: src/view/tag/edit/comp/TagRelationsField.tsx
-msgid "Select tag"
-msgstr "选择标签"
+#: src/view/release/edit/comp/TrackFieldItem.tsx
+msgid "Track number"
+msgstr "曲目编号"
 
-#: src/view/tag/edit/comp/TagTypeField.tsx
-msgid "Tag Type"
-msgstr "标签类型"
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Tracks"
+msgstr "曲目数"
 
-#: src/view/artist/edit/comp/Membership/index.tsx
-msgid "Membership"
-msgstr "成员关系"
+#: src/view/Homepage/mock.ts
+msgid "Tracks & arrangements"
+msgstr "曲目与编曲"
 
-#: src/view/artist/edit/comp/Membership/role.tsx
-msgid "Search roles..."
-msgstr "搜索角色..."
+#: src/view/Homepage/component/TrendingTagsCard.tsx
+msgid "Trending Tags"
+msgstr "热点标签"
 
-#: src/view/artist/edit/comp/Membership/role.tsx
-msgid "Search credit role"
-msgstr "搜索信用角色"
+#: src/view/artist/explore.comp.tsx
+#: src/view/image_queue/manage.tsx
+#: src/view/release/explore/filter.tsx
+#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
+#: src/view/tag/Info/index.tsx
+msgid "Type"
+msgstr "类型"
 
-#: src/view/artist/edit/comp/Membership/role.tsx
-#: src/view/artist/edit/comp/Membership/role.tsx
-msgid "Remove role"
-msgstr "删除角色"
+#: src/view/search/index.tsx
+msgid "Type a keyword to search."
+msgstr "输入关键字搜索。"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Tenures"
-msgstr "任期"
+#: src/view/user/Profile.tsx
+msgid "Unfollow"
+msgstr "取消关注"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Add Tenure"
-msgstr "添加保有期"
+#: src/view/image_queue/detail.tsx
+msgid "Unknown"
+msgstr "未知"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Join year"
-msgstr "加入年份"
+#: src/view/image_queue/user.tsx
+msgid "UNKNOWN"
+msgstr "未知"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Leave year"
-msgstr "离开年份"
+#: src/view/Homepage/utils.ts
+msgid "Unknown artist"
+msgstr "未知艺人"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Remove tenure entry"
-msgstr "删除任期条目"
+#: src/utils/getErrorMessage.ts
+msgid "Unknown error"
+msgstr "未知错误"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Leave year cannot be earlier than join year"
-msgstr "请假年份不能早于加入年份"
+#: src/view/Homepage/component/UpcomingEventsCard.tsx
+msgid "Upcoming Events"
+msgstr "即将举行的活动"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Leave year cannot be the same as join year"
-msgstr "请假年份不能与加入年份相同"
+#: src/view/user/edit_profile/index.tsx
+#: src/view/user/edit_profile/index.tsx
+msgid "Update avatar"
+msgstr "更新头像"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Join year cannot be earlier than previous leave year"
-msgstr "入职年份不能早于上一休假年份"
+#: src/view/user/edit_profile/index.tsx
+#: src/view/user/edit_profile/index.tsx
+msgid "Update banner"
+msgstr "更新横幅"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Join year cannot be the same as previous leave year"
-msgstr "入职年份不能与上一休假年份相同"
+#: src/view/release/Info/index.tsx
+msgid "Upload cover art"
+msgstr "上传封面图"
+
+#: src/component/ImageCropDialog/index.tsx
+#: src/view/user/edit_profile/store.ts
+msgid "Upload failed."
+msgstr "上传失败。"
+
+#: src/component/ImageCropDialog/index.tsx
+#: src/view/user/edit_profile/index.tsx
+#: src/view/user/edit_profile/index.tsx
+msgid "Uploading…"
+msgstr "上传中…"
+
+#: src/view/artist/edit/comp/Links.tsx
+msgid "Url"
+msgstr "URL"
 
 #: src/view/auth/component/AuthForm.tsx
 msgid "Use your account to continue."
 msgstr "使用你的账号继续。"
 
-#: src/view/auth/component/AuthForm.tsx
-msgid "Create an account to continue."
-msgstr "创建账号后继续。"
+#: src/view/admin/users.tsx
+msgid "User"
+msgstr "用户"
 
-#: src/view/auth/component/AuthForm.tsx
-msgid "Verify email"
-msgstr "验证邮箱"
+#: src/view/auth/component/UsernameField.tsx
+msgid "Username"
+msgstr "用户名"
 
-#: src/view/auth/component/AuthForm.tsx
-msgid "Enter the 6-digit code sent to your email."
-msgstr "输入发送到你邮箱的 6 位验证码。"
-
-#: src/view/auth/store/index.ts
-msgid "Missing sign-up email. Create the account again."
-msgstr "缺少注册邮箱，请重新创建账号。"
-
-#: src/component/Footer/index.tsx
-msgid "Zulip"
-msgstr "Zulip"
-
-#: src/component/Footer/index.tsx
-msgid "Feedback"
-msgstr "反馈"
-
-#: src/view/user/Profile.tsx
-msgid "Edits"
-msgstr "编辑"
-
-#: src/view/user/Profile.tsx
-msgid "Votes"
-msgstr "投票"
-
-#: src/view/user/Profile.tsx
-msgid "Edit Profile"
-msgstr "编辑个人资料"
-
-#: src/view/user/Profile.tsx
-msgid "Highlights"
-msgstr "精选"
-
-#: src/view/user/Profile.tsx
-msgid "Recent Activity"
-msgstr "最近动态"
-
-#: src/view/user/Profile.tsx
-msgid "No recent activity."
-msgstr "暂无最近动态。"
-
-#: src/view/user/Profile.tsx
-msgid "Following..."
-msgstr "关注中..."
-
-#: src/view/user/Profile.tsx
-msgid "Unfollowing..."
-msgstr "取消关注中..."
-
-#: src/view/user/Profile.tsx
-msgid "No biography provided."
-msgstr "暂无个人简介。"
-
-#. 0: correctionHistory().length
-#: src/view/correction/EntityCorrectionMetadataSection.tsx
-msgid "Corrections · {0}"
-msgstr "修订 · {0}"
-
-#: src/view/song/edit/comp/SongRelationsField.tsx
-msgid "Select song"
-msgstr "选择歌曲"
-
-#: src/view/auth/component/PasswordField.tsx
-msgid "Strong enough"
-msgstr "强度足够"
+#: src/view/auth/component/SignInIdentifierField.tsx
+msgid "Username / Email"
+msgstr "用户名 / 邮箱"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/component/Header/LeftSidebar.tsx
@@ -2232,65 +1948,114 @@ msgstr "强度足够"
 msgid "Users"
 msgstr "用户"
 
-#: src/view/admin/users.tsx
-msgid "View users and update system roles."
-msgstr "查看用户并更新系统角色。"
+#: src/view/auth/component/VerificationCodeField.tsx
+msgid "Verification code"
+msgstr "验证码"
 
-#: src/view/admin/users.tsx
-msgid "Search by username"
-msgstr "按用户名搜索"
+#: src/domain/auth/schema.ts
+#: src/domain/auth/schema.ts
+#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/index.tsx
+msgid "Verification code must be 6 digits"
+msgstr "验证码必须为 6 位数字"
 
-#: src/view/admin/users.tsx
-msgid "Search"
-msgstr "搜索"
+#: src/view/auth/component/AuthForm.tsx
+msgid "Verify email"
+msgstr "验证邮箱"
 
-#: src/view/admin/users.tsx
-msgid "Clear"
-msgstr "清空"
+#: src/view/auth/component/VerifyEmailForm.tsx
+msgid "Verify Email"
+msgstr "验证邮箱"
 
-#: src/view/admin/users.tsx
-msgid "Roles"
-msgstr "角色"
+#: src/view/release/explore/filter.tsx
+msgid "View"
+msgstr "查看"
 
-#: src/view/admin/users.tsx
-msgid "Action"
-msgstr "操作"
+#. placeholder {0}: item.id
+#: src/view/image_queue/manage.tsx
+msgid "View image queue item #{0}"
+msgstr "查看图片队列条目 #{0}"
 
-#: src/view/admin/users.tsx
-msgid "Failed to load users."
-msgstr "加载用户失败。"
+#: src/view/Homepage/component/NewMusic.tsx
+msgid "View more"
+msgstr "查看更多"
 
-#: src/view/admin/users.tsx
-msgid "No users found"
-msgstr "未找到用户"
+#: src/view/user/Profile.tsx
+msgid "Votes"
+msgstr "投票"
 
-#: src/view/admin/users.tsx
-msgid "No users match the current filters."
-msgstr "没有用户符合当前筛选条件。"
+#: src/view/image_queue/detail.tsx
+msgid "Working…"
+msgstr "处理中…"
 
-#: src/view/admin/users.tsx
-#: src/view/admin/users.tsx
-msgid "Edit roles"
-msgstr "编辑角色"
+#: src/view/user/edit_profile/index.tsx
+msgid "Write something about you."
+msgstr "介绍一下自己吧！"
 
-#. 0: props.search.page; 1: props.list.totalPages; 2: props.list.totalItems
-#: src/view/admin/users.tsx
-msgid "Page {0} of {1} <0/> {2} users"
-msgstr "第 {0} 页，共 {1} 页 <0/> {2} 位用户"
+#: src/component/form/DateWithPrecision/index.tsx
+msgid "Year"
+msgstr "年"
 
-#. 0: user().name
-#: src/view/admin/users.tsx
-msgid "Update roles for {0}."
-msgstr "更新 {0} 的角色。"
+#: src/view/auth/reset_password/index.tsx
+msgid "You can now sign in with your new password."
+msgstr "现在你可以使用新密码登录。"
 
-#: src/view/admin/users.tsx
-msgid "Loading role options…"
-msgstr "正在加载角色选项…"
+#: src/view/auth/reset_password/index.tsx
+msgid "Your password has been updated successfully."
+msgstr "您的密码已成功更新"
 
-#: src/view/admin/users.tsx
-msgid "Save roles"
-msgstr "保存角色"
+#: src/view/auth/reset_password/index.tsx
+msgid "Your reset session is no longer valid. Verify a new code to continue."
+msgstr "当前重置会话已失效，请重新验证验证码后继续。"
 
-#: src/view/admin/users.tsx
-msgid "Admin Settings"
-msgstr "管理设置"
+#: src/component/Footer/index.tsx
+msgid "Zulip"
+msgstr "Zulip"
+
+#: src/component/navbar/index.tsx
+msgid "专辑"
+msgstr "专辑"
+
+#: src/view/Homepage/component/NewMusic.tsx
+msgid "最新音乐"
+msgstr "最新音乐"
+
+#: src/component/navbar/index.tsx
+msgid "同人社团"
+msgstr "同人社团"
+
+#: src/component/__legacy/player/index.tsx
+msgid "幻想乡之歌"
+msgstr "幻想乡之歌"
+
+#: src/view/Homepage/component/NewMusic.tsx
+msgid "幻想乡音乐人"
+msgstr "幻想乡音乐人"
+
+#: src/component/navbar/index.tsx
+msgid "排行榜"
+msgstr "排行榜"
+
+#: src/component/navbar/index.tsx
+msgid "推荐"
+msgstr "推荐"
+
+#: src/component/navbar/index.tsx
+msgid "文章"
+msgstr "文章"
+
+#: src/component/navbar/index.tsx
+msgid "歌单"
+msgstr "歌单"
+
+#: src/component/navbar/index.tsx
+msgid "歌手"
+msgstr "歌手"
+
+#: src/component/navbar/index.tsx
+msgid "活动"
+msgstr "活动"
+
+#: src/component/navbar/index.tsx
+msgid "视频"
+msgstr "视频"
