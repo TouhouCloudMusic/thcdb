@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { Link as RouterLink } from "@tanstack/solid-router"
 import type { LocalizedTitle, Release } from "@thc/api"
 import { For, Show } from "solid-js"
@@ -122,7 +123,7 @@ export function ReleaseWallItem(props: ReleaseWallItemProps) {
 						when={coverUrl()}
 						fallback={
 							<div class="grid h-full w-full place-items-center text-xs text-slate-400 no-underline">
-								No cover art
+								{t`No cover art`}
 							</div>
 						}
 					>

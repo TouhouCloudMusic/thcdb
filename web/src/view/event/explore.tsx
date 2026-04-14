@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { EventApi } from "@thc/api"
@@ -48,7 +49,7 @@ function EventExploreFilterBar(props: EventExploreFilterBarProps) {
 		<StickyFilterBar scrollDirection={props.scrollDirection}>
 			<div class="flex flex-wrap items-center gap-4">
 				<div class="flex items-center gap-2">
-					<span class="text-sm text-slate-500">From</span>
+					<span class="text-sm text-slate-500">{t`From`}</span>
 					<Input
 						type="date"
 						value={props.startDateFrom ?? ""}
@@ -59,7 +60,7 @@ function EventExploreFilterBar(props: EventExploreFilterBarProps) {
 				</div>
 
 				<div class="flex items-center gap-2">
-					<span class="text-sm text-slate-500">To</span>
+					<span class="text-sm text-slate-500">{t`To`}</span>
 					<Input
 						type="date"
 						value={props.startDateTo ?? ""}
@@ -93,7 +94,7 @@ function EventExploreList(props: EventExploreListProps) {
 		<>
 			<Show when={!props.isLoading && props.events.length === 0}>
 				<EmptyExplorePlaceholder
-					title="No events found"
+					title={t`No events found`}
 					action={{ to: "/event/new" }}
 				/>
 			</Show>
@@ -199,8 +200,8 @@ export const EventExplore = () => {
 
 	return (
 		<ExplorePageLayout
-			title="Explore Events"
-			action={{ to: "/event/new", label: "Create event" }}
+			title={t`Explore Events`}
+			action={{ to: "/event/new", label: t`Create event` }}
 		>
 			<EventExploreFilterBar
 				scrollDirection={scrollDirection}

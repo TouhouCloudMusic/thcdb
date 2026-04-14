@@ -1,4 +1,5 @@
 import { Form, createForm } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { useBlocker } from "@tanstack/solid-router"
 import type { Artist } from "@thc/api"
 import type { JSX } from "solid-js"
@@ -37,7 +38,7 @@ export function EditArtistPage(props: Props): JSX.Element {
 	return (
 		<PageLayout class="grid grid-rows-[auto_1fr_auto]">
 			<PageHeader type={props.type} />
-			<Suspense fallback={<div>Loading...</div>}>
+			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<FormContent {...props} />
 			</Suspense>
 		</PageLayout>
@@ -61,7 +62,7 @@ function PageHeader(props: { type: Props["type"] }) {
 				<h1 class="text-2xl font-light">
 					<Show
 						when={props.type === "new"}
-						fallback="Edit Artist"
+						fallback={t`Edit Artist`}
 					>
 						Create Artist
 					</Show>
@@ -86,7 +87,10 @@ function FormContent(props: Props) {
 			if (form.isSubmitted || !form.isDirty) return false
 
 			const stay = confirm(
-				"Are you sure you want to leave this page? Your changes will be lost.",
+				t({
+					message:
+						"Are you sure you want to leave this page? Your changes will be lost.",
+				}),
 			)
 			return !stay
 		},

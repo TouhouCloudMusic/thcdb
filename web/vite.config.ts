@@ -20,9 +20,10 @@ export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd())
 
 	const SERVER_URL = env["VITE_SERVER_URL"]
+	const testPlugins = createAppPlugins()
 
 	return {
-		plugins: createAppPlugins({ withWuchale: true }),
+		plugins: createAppPlugins(),
 		experimental: {
 			// bundledDev: true,
 		},
@@ -53,6 +54,7 @@ export default defineConfig(({ mode }) => {
 		test: {
 			projects: [
 				defineProject({
+					plugins: testPlugins,
 					resolve: {
 						tsconfigPaths: true,
 					},
@@ -60,10 +62,12 @@ export default defineConfig(({ mode }) => {
 						name: "unit",
 						globals: true,
 						include: ["./src/**/*.test.{ts,tsx}"],
+						setupFiles: ["./src/test/vitest.setup.ts"],
 					},
 				}),
 				defineProject({
 					plugins: [
+						...testPlugins,
 						// The plugin will run tests for the stories defined in your Storybook config
 						// See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
 						storybookTest({

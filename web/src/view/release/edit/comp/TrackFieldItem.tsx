@@ -1,4 +1,5 @@
 import { Field, remove, setInput } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { ReleaseTrack, SimpleArtist, Song } from "@thc/api"
 import { For, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -99,7 +100,7 @@ function TrackNumInput(props: { index: number; of: ReleaseFormStore }) {
 				<InputField.Root>
 					<InputField.Input
 						{...field.props}
-						placeholder="Track number"
+						placeholder={t`Track number`}
 						value={field.input ?? undefined}
 					/>
 					<InputField.Error>
@@ -121,7 +122,7 @@ function DisplayTitleInput(props: { index: number; of: ReleaseFormStore }) {
 				<InputField.Root>
 					<InputField.Input
 						{...field.props}
-						placeholder="Display title"
+						placeholder={t`Display title`}
 						value={field.input ?? undefined}
 					/>
 					<InputField.Error>
@@ -145,7 +146,7 @@ function DurationInput(props: { index: number; of: ReleaseFormStore }) {
 						{...field.props}
 						class="no-spinner"
 						type="number"
-						placeholder="Duration (ms)"
+						placeholder={t`Duration (ms)`}
 						value={field.input ?? undefined}
 					/>
 					<InputField.Error>
@@ -181,7 +182,7 @@ function TrackSongPicker(props: {
 							{props.song() ? (
 								<SongInfo value={props.song()!} />
 							) : (
-								<span class="text-slate-400">No song selected</span>
+								<span class="text-slate-400">{t`No song selected`}</span>
 							)}
 						</div>
 						<For each={field.errors}>
@@ -221,7 +222,7 @@ function TrackArtistsField(props: {
 	return (
 		<div class="flex flex-col gap-2 pl-1">
 			<div class="flex items-center justify-between gap-2">
-				<FormComp.Label class="m-0">Track Artists</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Track Artists`}</FormComp.Label>
 				<ArtistSearchDialog
 					onSelect={props.onAdd}
 					dataFilter={(a: SimpleArtist) => !props.hasArtist(a)}

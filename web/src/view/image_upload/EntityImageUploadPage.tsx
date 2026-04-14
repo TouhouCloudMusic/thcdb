@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { For, Show } from "solid-js"
 import { twJoin } from "tailwind-merge"
 
@@ -99,10 +100,10 @@ type CurrentImageFigureProps = {
 function CurrentImageFigure(props: CurrentImageFigureProps) {
 	return (
 		<PreviewFigure
-			label="Current"
+			label={t`Current`}
 			src={props.src}
 			alt={`${props.entityName} current ${props.imageLabel}`}
-			emptyText="No image"
+			emptyText={t`No image`}
 			class={props.class}
 		/>
 	)
@@ -118,7 +119,7 @@ type ImageUploadActionsProps = {
 }
 
 function getSelectImageButtonLabel(hasDraft: boolean) {
-	return hasDraft ? "Select another image" : "Select image"
+	return hasDraft ? t`Select another image` : t`Select image`
 }
 
 function ImageUploadActions(props: ImageUploadActionsProps) {
@@ -147,7 +148,7 @@ function ImageUploadActions(props: ImageUploadActionsProps) {
 			>
 				<Show
 					when={props.isUploading}
-					fallback="Submit"
+					fallback={t`Submit`}
 				>
 					Uploading…
 				</Show>
@@ -163,7 +164,7 @@ function ImageUploadActions(props: ImageUploadActionsProps) {
 				underline={false}
 				class="inline-flex items-center justify-center gap-2 text-sm text-secondary hover:text-primary"
 			>
-				<span>Open image queue</span>
+				<span>{t`Open image queue`}</span>
 				<span aria-hidden="true">→</span>
 			</Link>
 		</section>
@@ -205,15 +206,15 @@ export function EntityImageUploadPage(props: EntityImageUploadPageProps) {
 						<For
 							each={[
 								{
-									label: "Dimensions (px)",
+									label: t`Dimensions (px)`,
 									value: formatDimensionRange(props.dimensionRange),
 								},
 								{
-									label: "File size",
+									label: t`File size`,
 									value: `${formatBytes(props.fileSizeRange.min)}–${formatBytes(props.fileSizeRange.max)}`,
 								},
 								{
-									label: "Formats",
+									label: t`Formats`,
 									value: "PNG, JPEG",
 								},
 							]}
@@ -236,10 +237,10 @@ export function EntityImageUploadPage(props: EntityImageUploadPageProps) {
 						class="order-2 lg:order-1"
 					/>
 					<PreviewFigure
-						label="New"
+						label={t`New`}
 						src={props.store.draftPreviewUrl}
 						alt={`${props.entityName} new ${props.imageLabel}`}
-						emptyText="No image"
+						emptyText={t`No image`}
 						class="order-3 lg:order-2"
 					/>
 					<ImageUploadActions

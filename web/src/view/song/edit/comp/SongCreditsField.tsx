@@ -1,4 +1,5 @@
 import { Field, getErrors, insert, remove, setInput } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { CreditRoleRef, SimpleArtist, SongCredit } from "@thc/api"
 import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -62,7 +63,7 @@ export function SongCreditsField(props: {
 	return (
 		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Credits</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Credits`}</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"
@@ -107,7 +108,7 @@ function CreditRow(props: {
 		<li class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-x-2 gap-y-1">
 			<div class="grid grid-cols-[1fr_auto] items-center gap-x-2">
 				<CreditEntityLabel
-					placeholder="Select artist"
+					placeholder={t`Select artist`}
 					value={props.entry?.artist?.name}
 				/>
 				<ArtistSearchDialog
@@ -117,7 +118,7 @@ function CreditRow(props: {
 			</div>
 			<div class="grid grid-cols-[1fr_auto] items-center gap-x-2">
 				<CreditEntityLabel
-					placeholder="Select role"
+					placeholder={t`Select role`}
 					value={props.entry?.role?.name}
 				/>
 				<CreditRoleSearchDialog

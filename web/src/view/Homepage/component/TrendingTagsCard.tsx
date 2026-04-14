@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { TagApi } from "@thc/api"
 import { Either } from "effect"
@@ -90,7 +91,7 @@ export function TrendingTagsCard() {
 	return (
 		<Card class="p-5 shadow-none">
 			<ExploreSection
-				title="Trending Tags"
+				title={t`Trending Tags`}
 				to="/tag/explore"
 			>
 				<Suspense fallback={<TrendingTagsChipsSkeleton />}>

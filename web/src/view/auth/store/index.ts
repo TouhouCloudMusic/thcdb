@@ -1,4 +1,5 @@
 import { createForm } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { createWritableMemo } from "@solid-primitives/memo"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { AuthApi } from "@thc/api"
@@ -33,10 +34,13 @@ type SignUpData = EitherRight<Awaited<ReturnType<typeof AuthApi.signup>>>
 type VerifyEmailData = NonNullable<
 	EitherRight<Awaited<ReturnType<typeof AuthApi.verifyEmail>>>
 >
-// @wc-include
 const AUTH_MESSAGES = {
-	missingSignupEmail: "Missing sign-up email. Create the account again.",
-	verificationEmailSent: "If eligible, a verification code has been sent.",
+	get missingSignupEmail() {
+		return t`Missing sign-up email. Create the account again.`
+	},
+	get verificationEmailSent() {
+		return t`If eligible, a verification code has been sent.`
+	},
 }
 
 function resolveAuthFormMode(value: string | undefined): AuthFormMode {

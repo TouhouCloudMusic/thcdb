@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { EntityType } from "@thc/api"
 
 export type CorrectionHistoryEntityType =
@@ -95,7 +96,7 @@ export const ENTITY_ROUTE_MAP = {
 } as const satisfies Record<EntityType, EntityDetailRoute | "/">
 
 export function formatEntityType(entityType: EntityType) {
-	if (entityType === "SongLyrics") return "Song lyrics"
-	if (entityType === "CreditRole") return "Credit role"
+	if (entityType === "SongLyrics") return t`Song lyrics`
+	if (entityType === "CreditRole") return t`Credit role`
 	return entityType
 }

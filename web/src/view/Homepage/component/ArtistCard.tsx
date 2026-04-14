@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { Artist } from "@thc/api"
 import { Show } from "solid-js"
 
@@ -10,9 +11,9 @@ type ArtistCardProps = {
 }
 
 function formatArtistType(artistType: Artist["artist_type"]) {
-	if (artistType === "Solo") return "Solo artist"
-	if (artistType === "Multiple") return "Group"
-	return "Artist"
+	if (artistType === "Solo") return t`Solo artist`
+	if (artistType === "Multiple") return t`Group`
+	return t`Artist`
 }
 
 export function ArtistCard(props: ArtistCardProps) {

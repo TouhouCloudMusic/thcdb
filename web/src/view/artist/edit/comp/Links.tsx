@@ -1,4 +1,5 @@
 import { Field, FieldArray, insert, remove } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 
@@ -24,7 +25,7 @@ export function ArtistFormLinks() {
 	return (
 		<div class="flex min-h-32 w-96 flex-col">
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Links</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Links`}</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"
@@ -57,7 +58,7 @@ export function ArtistFormLinks() {
 														{...field.props}
 														id={field.path.join(".")}
 														type="url"
-														placeholder="Url"
+														placeholder={t`Url`}
 														value={field.input ?? ""}
 													/>
 													<InputField.Error>

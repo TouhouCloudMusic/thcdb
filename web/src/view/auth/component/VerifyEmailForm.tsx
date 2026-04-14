@@ -1,4 +1,5 @@
 import { Field, Form } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { Show } from "solid-js"
 
 import { Link } from "~/component/atomic/Link"
@@ -29,10 +30,11 @@ export function VerifyEmailForm(props: VerifyEmailFormProps) {
 			class="w-full space-y-6"
 		>
 			<Show when={props.verificationEmail()}>
-				<div class="text-sm text-secondary">
-					Enter the code for {props.verificationEmail()}. If you did not receive
-					one, use Resend.
-				</div>
+				{(email) => (
+					<div class="text-sm text-secondary">
+						{t`Enter the code for ${email()}. If you did not receive one, use Resend.`}
+					</div>
+				)}
 			</Show>
 
 			<Field
@@ -56,7 +58,7 @@ export function VerifyEmailForm(props: VerifyEmailFormProps) {
 					class="h-9 w-full"
 					disabled={props.verifyEmailForm.isSubmitting}
 				>
-					Verify Email
+					{t`Verify Email`}
 				</Button>
 				<Button
 					type="button"
@@ -74,18 +76,18 @@ export function VerifyEmailForm(props: VerifyEmailFormProps) {
 				>
 					{props.resendCooldownSeconds() > 0
 						? `Resend (${props.resendCooldownSeconds()}s)`
-						: "Resend"}
+						: t`Resend`}
 				</Button>
 			</div>
 
 			<div class="text-sm text-tertiary">
-				Already have an account?{" "}
+				{t`Already have an account?`}{" "}
 				<Link
 					to="/auth"
 					search={{ type: "sign_in" }}
 					class="text-secondary underline underline-offset-2"
 				>
-					Sign in
+					{t`Sign in`}
 				</Link>
 			</div>
 		</Form>

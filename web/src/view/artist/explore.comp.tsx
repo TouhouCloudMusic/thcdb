@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { Artist } from "@thc/api"
 import type { Component } from "solid-js"
 import { For, Show } from "solid-js"
@@ -30,8 +31,8 @@ const formatArtistDateRange = (artist: Artist) => {
 }
 
 function formatArtistTypeLabel(value: string) {
-	if (value === "") return "All"
-	if (value === "Multiple") return "Group"
+	if (value === "") return t`All`
+	if (value === "Multiple") return t`Group`
 	return value
 }
 
@@ -150,7 +151,7 @@ export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 		<StickyFilterBar scrollDirection={props.scrollDirection}>
 			<div class="flex flex-wrap items-center gap-4">
 				<div class="flex items-center gap-2">
-					<span class="text-sm text-slate-500">Type</span>
+					<span class="text-sm text-slate-500">{t`Type`}</span>
 					<Select.Root<string>
 						options={typeOptions()}
 						value={props.artistTypeValue}
@@ -204,7 +205,7 @@ export const ArtistExploreList: Component<ArtistExploreListProps> = (props) => {
 		<>
 			<Show when={!props.isLoading && props.artists.length === 0}>
 				<EmptyExplorePlaceholder
-					title="No artists found"
+					title={t`No artists found`}
 					action={{ to: "/artist/new" }}
 				/>
 			</Show>

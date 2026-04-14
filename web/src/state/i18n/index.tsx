@@ -1,14 +1,13 @@
-import { type } from "arktype"
+import { I18nProvider as LinguiProvider } from "@lingui/solid"
 import type { ParentProps } from "solid-js"
 import { createContext, createSignal } from "solid-js"
-import { loadLocale } from "wuchale/load-utils"
 
 import { assertContext } from "~/utils/solid/assertContext"
 
 import { persistLocalePreference } from "./init"
+import { i18n, loadLocale } from "./runtime"
 
-export const AppLocale = type(`"en" | "zh-CN"`)
-export type AppLocale = typeof AppLocale.infer
+export type AppLocale = "en" | "zh-CN"
 
 type I18nStore = {
 	locale: () => AppLocale
@@ -38,15 +37,17 @@ export function I18NProvider(props: ParentProps<{ initialLocale: AppLocale }>) {
 	setDocumentLang(props.initialLocale)
 
 	return (
-		<I18nContext.Provider
-			value={{
-				locale,
-				isSwitchingLocale,
-				setLocale: setLocaleValue,
-			}}
-		>
-			{props.children}
-		</I18nContext.Provider>
+		<LinguiProvider i18n={i18n}>
+			<I18nContext.Provider
+				value={{
+					locale,
+					isSwitchingLocale,
+					setLocale: setLocaleValue,
+				}}
+			>
+				{props.children}
+			</I18nContext.Provider>
+		</LinguiProvider>
 	)
 }
 

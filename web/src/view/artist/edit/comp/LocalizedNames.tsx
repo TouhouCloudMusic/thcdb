@@ -6,6 +6,7 @@ import {
 	reset,
 	setInput,
 } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { Language } from "@thc/api"
 import { For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
@@ -36,7 +37,7 @@ export function ArtistFormLocalizedNames() {
 	return (
 		<div class="flex min-h-32 w-96 flex-col">
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Localized Names</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Localized Names`}</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"
@@ -67,7 +68,7 @@ export function ArtistFormLocalizedNames() {
 												<InputField.Input
 													{...field.props}
 													id={field.path.join(".")}
-													placeholder="Name"
+													placeholder={t`Name`}
 													value={field.input ?? ""}
 												/>
 												<InputField.Error>{field.errors?.[0]}</InputField.Error>

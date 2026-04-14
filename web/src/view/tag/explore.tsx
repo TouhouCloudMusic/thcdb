@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { TagApi } from "@thc/api"
 import { Either } from "effect"
@@ -41,9 +42,9 @@ export function TagExplore() {
 
 	return (
 		<ExplorePageLayout
-			title="Tag Tree"
+			title={t`Tag Tree`}
 			titleId={TREE_HEADING_ID}
-			action={{ to: "/tag/new", label: "Create tag" }}
+			action={{ to: "/tag/new", label: t`Create tag` }}
 		>
 			<Show
 				when={!treeQuery.isLoading}
@@ -53,7 +54,7 @@ export function TagExplore() {
 					when={nodes().length > 0}
 					fallback={
 						<EmptyExplorePlaceholder
-							title="No tags found"
+							title={t`No tags found`}
 							action={{ to: "/tag/new" }}
 						/>
 					}

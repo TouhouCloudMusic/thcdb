@@ -1,4 +1,5 @@
 import { Field } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { For } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
@@ -25,7 +26,7 @@ export function ReleaseTypeField(props: {
 		>
 			{(field) => (
 				<div class={twMerge("flex flex-col", props.class)}>
-					<FormComp.Label>Release Type</FormComp.Label>
+					<FormComp.Label>{t`Release Type`}</FormComp.Label>
 					<Select.Root<(typeof typeOptions)[number]>
 						name={field.props.name}
 						value={field.input ?? ""}

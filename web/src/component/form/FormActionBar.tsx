@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { twJoin, twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
@@ -19,9 +20,9 @@ export function FormActionBar(props: Props) {
 		}
 	}
 
-	const submitLabel = "Submit"
-	const submittingLabel = "Submitting"
-	const backLabel = "Back"
+	const submitLabel = t`Submit`
+	const submittingLabel = t`Submitting`
+	const backLabel = t`Back`
 
 	return (
 		<div

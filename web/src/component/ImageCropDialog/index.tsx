@@ -1,4 +1,5 @@
 import { FileField } from "@kobalte/core/file-field"
+import { t } from "@lingui/core/macro"
 import { unknownToError } from "@thc/toolkit"
 import { CropperSelection } from "cropperjs"
 import { Cropper } from "solid-cropper"
@@ -232,12 +233,18 @@ export function Root(props: RootProps) {
 	const getCroppedFile = async () => {
 		const host = cropperRoot()
 		if (!host) {
-			return { ok: false as const, message: "Cropper is not ready yet." }
+			return {
+				ok: false as const,
+				message: t`Cropper is not ready yet.`,
+			}
 		}
 
 		const selection = host.querySelector("cropper-selection")
 		if (!(selection instanceof CropperSelection)) {
-			return { ok: false as const, message: "Cropper is not ready yet." }
+			return {
+				ok: false as const,
+				message: t`Cropper is not ready yet.`,
+			}
 		}
 
 		const computeOutputSize = props.computeOutputSize
@@ -250,8 +257,10 @@ export function Root(props: RootProps) {
 		if (!outputSize) {
 			return {
 				ok: false as const,
-				message:
-					"Selected crop cannot satisfy the required dimensions. Adjust the crop area.",
+				message: t({
+					message:
+						"Selected crop cannot satisfy the required dimensions. Adjust the crop area.",
+				}),
 			}
 		}
 
@@ -259,11 +268,15 @@ export function Root(props: RootProps) {
 		try {
 			canvas = await selection.$toCanvas(outputSize)
 		} catch (err) {
-			return { ok: false as const, message: "Crop failed.", cause: err }
+			return {
+				ok: false as const,
+				message: t`Crop failed.`,
+				cause: err,
+			}
 		}
 
 		if (!(canvas instanceof HTMLCanvasElement)) {
-			return { ok: false as const, message: "Crop failed." }
+			return { ok: false as const, message: t`Crop failed.` }
 		}
 
 		const outputType = state.inputFileType
@@ -283,11 +296,15 @@ export function Root(props: RootProps) {
 				}
 			})
 		} catch (err) {
-			return { ok: false as const, message: "Crop failed.", cause: err }
+			return {
+				ok: false as const,
+				message: t`Crop failed.`,
+				cause: err,
+			}
 		}
 
 		if (!blob) {
-			return { ok: false as const, message: "Crop failed." }
+			return { ok: false as const, message: t`Crop failed.` }
 		}
 
 		if (blob.size > fileSizeRange().max) {
@@ -319,7 +336,7 @@ export function Root(props: RootProps) {
 			if (err instanceof Error && err.message) {
 				setState("localError", err.message)
 			} else {
-				setState("localError", "Upload failed.")
+				setState("localError", t`Upload failed.`)
 			}
 		}
 	}
@@ -543,8 +560,8 @@ function Content(props: ContentProps) {
 					}}
 				>
 					<Switch>
-						<Match when={context.busy}>Uploading…</Match>
-						<Match when={!context.busy}>Save</Match>
+						<Match when={context.busy}>{t`Uploading…`}</Match>
+						<Match when={!context.busy}>{t`Save`}</Match>
 					</Switch>
 				</Button>
 			</div>

@@ -1,4 +1,5 @@
 import { Field, getInput, insert, remove, setInput } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { ReleaseCredit, SimpleArtist } from "@thc/api"
 import { pick } from "@thc/toolkit/data"
 import type { JSX } from "solid-js"
@@ -72,7 +73,7 @@ function ReleaseCreditArtist(props: {
 			{props.artist ? (
 				<ArtistInfo value={props.artist} />
 			) : (
-				<span class="text-tertiary">Select artist</span>
+				<span class="text-tertiary">{t`Select artist`}</span>
 			)}
 
 			<Field
@@ -115,7 +116,7 @@ function ReleaseCreditRole(props: {
 			{props.role ? (
 				<CreditRoleInfo value={props.role} />
 			) : (
-				<span class="text-tertiary">Select role</span>
+				<span class="text-tertiary">{t`Select role`}</span>
 			)}
 			<Field
 				of={props.of}
@@ -190,7 +191,7 @@ function ReleaseCreditTracks(props: {
 
 	return (
 		<div class="flex flex-col gap-1">
-			<FormComp.Label>On Tracks</FormComp.Label>
+			<FormComp.Label>{t`On Tracks`}</FormComp.Label>
 			<For each={props.sortedTrackIndices}>
 				{(trackIdx) => (
 					<label class="flex items-center gap-2 text-sm">
@@ -276,8 +277,8 @@ export function ReleaseCreditsField(props: {
 		const tracks = getInput(props.of, { path: ["data", "tracks"] })
 
 		const counters = new Map<number, number>()
-		const within = tracks.map((t) => {
-			const discIdx = t.disc_index ?? 0
+		const within = tracks.map((track) => {
+			const discIdx = track.disc_index ?? 0
 			const currIdx = counters.get(discIdx) ?? 0
 			counters.set(discIdx, currIdx + 1)
 			return currIdx + 1
@@ -295,7 +296,7 @@ export function ReleaseCreditsField(props: {
 	return (
 		<div class={twMerge("flex min-h-32 w-full flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Credits</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Credits`}</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"

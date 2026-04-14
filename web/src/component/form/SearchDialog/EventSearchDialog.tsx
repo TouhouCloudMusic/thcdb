@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Event as TEvent } from "@thc/api"
 import { EventQueryOption } from "@thc/query"
@@ -42,7 +43,7 @@ export function EventSearchDialog(props: Props): JSX.Element {
 
 	return (
 		<EntitySearchDialog
-			title="Search Event"
+			title={t`Search Event`}
 			trigger={
 				<Dialog.Trigger
 					as={Button}

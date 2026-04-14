@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { ArtistApi } from "@thc/api"
 import { Either } from "effect"
@@ -88,7 +89,7 @@ export function LatestArtistsCard() {
 	return (
 		<Card class="relative overflow-hidden bg-transparent p-0 shadow-none">
 			<ExploreSection
-				title="Latest Artists"
+				title={t`Latest Artists`}
 				to="/artist/explore"
 			>
 				<Suspense fallback={<LatestArtistsGridSkeleton />}>

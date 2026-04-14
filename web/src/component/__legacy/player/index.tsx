@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { createSignal, Show } from "solid-js"
 
 type Song = {
@@ -17,7 +18,7 @@ const formatTime = (seconds: number) => {
 export function Player() {
 	const [currentSong] = createSignal<Song | null>({
 		id: 1,
-		title: "幻想乡之歌",
+		title: t`幻想乡之歌`,
 		artist: "ZUN",
 		coverUrl: "https://placehold.co/60x60/red/white?text=ZUN",
 		duration: 180,

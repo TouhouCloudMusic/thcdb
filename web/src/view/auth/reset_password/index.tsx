@@ -6,6 +6,7 @@ import {
 	setErrors,
 	setInput,
 } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { Link, Navigate, useNavigate } from "@tanstack/solid-router"
 import type { JSX } from "solid-js"
 import {
@@ -72,17 +73,17 @@ type ResetPasswordValues = v.InferOutput<typeof ResetPasswordSchema>
 
 const RESET_PASSWORD_EMAIL_SCHEMA = pipe(
 	string(),
-	minLength(1, "Email is required"),
-	emailSchema("Invalid email"),
+	minLength(1, t`Email is required`),
+	emailSchema(t`Invalid email`),
 )
 const RESET_PASSWORD_CODE_SCHEMA = pipe(
 	string(),
-	minLength(6, "Verification code must be 6 digits"),
-	maxLength(6, "Verification code must be 6 digits"),
-	regex(/^\d{6}$/, "Invalid verification code"),
+	minLength(6, t`Verification code must be 6 digits`),
+	maxLength(6, t`Verification code must be 6 digits`),
+	regex(/^\d{6}$/, t`Invalid verification code`),
 )
-const RESET_SESSION_REQUIRED_MESSAGE =
-	"Your reset session is no longer valid. Verify a new code to continue."
+const resetSessionRequiredMessage = () =>
+	t`Your reset session is no longer valid. Verify a new code to continue.`
 
 function formatMinuteCount(minutes: number) {
 	return `${minutes} minute${minutes === 1 ? "" : "s"}`
@@ -306,7 +307,7 @@ function ForgotPasswordVerifyView(props: {
 	}
 
 	return buildAuthLayout({
-		title: "Forgot password",
+		title: t`Forgot password`,
 		body: (
 			<Form
 				of={form}
@@ -360,10 +361,10 @@ function ForgotPasswordVerifyView(props: {
 												}}
 											>
 												{props.uiStore.state.isSendingCode
-													? "Sending..."
+													? t`Sending...`
 													: props.uiStore.isCoolingDown()
 														? `Resend (${props.uiStore.state.cooldownSeconds}s)`
-														: "Resend code"}
+														: t`Resend code`}
 											</Button>
 										</div>
 										<FormComp.ErrorMessage>
@@ -422,17 +423,17 @@ function ForgotPasswordVerifyView(props: {
 						}
 					}}
 				>
-					Continue
+					{t`Continue`}
 				</Button>
 
 				<div class="text-sm text-tertiary mt-4">
-					Back to{" "}
+					{t`Back to`}{" "}
 					<Link
 						to="/auth"
 						search={{ type: "sign_in" }}
 						class="text-secondary underline underline-offset-2"
 					>
-						sign in
+						{t`sign in`}
 					</Link>
 					.
 				</div>
@@ -510,9 +511,9 @@ function ResetPasswordWithKeyView(props: {
 	}
 
 	return buildAuthLayout({
-		title: "Set a new password",
+		title: t`Set a new password`,
 		description: (
-			<>This is valid for {formatMinuteCount(props.resetKeyExpiresMinutes)}.</>
+			<>{t`This is valid for ${formatMinuteCount(props.resetKeyExpiresMinutes)}.`}</>
 		),
 		body: (
 			<Form
@@ -526,7 +527,7 @@ function ResetPasswordWithKeyView(props: {
 				>
 					{(field) => (
 						<PasswordField
-							label="New password"
+							label={t`New password`}
 							field={field}
 							showRequirementHint
 						/>
@@ -539,7 +540,7 @@ function ResetPasswordWithKeyView(props: {
 				>
 					{(field) => (
 						<PasswordField
-							label="Repeat new password"
+							label={t`Repeat new password`}
 							field={field}
 							class="mt-4"
 						/>
@@ -558,7 +559,7 @@ function ResetPasswordWithKeyView(props: {
 					class="h-9 w-full mt-8"
 					disabled={form.isSubmitting}
 				>
-					Reset password
+					{t`Reset password`}
 				</Button>
 			</Form>
 		),
@@ -571,21 +572,21 @@ function ResetPasswordSuccessView() {
 	})
 
 	return buildAuthLayout({
-		title: "Password reset complete",
-		description: <>Your password has been updated successfully.</>,
+		title: t`Password reset complete`,
+		description: <>{t`Your password has been updated successfully.`}</>,
 		body: (
 			<div class="space-y-4">
 				<div class="text-sm text-tertiary">
-					You can now sign in with your new password.
+					{t`You can now sign in with your new password.`}
 				</div>
 				<div class="text-sm text-tertiary">
-					Back to{" "}
+					{t`Back to`}{" "}
 					<Link
 						to="/auth"
 						search={{ type: "sign_in" }}
 						class="text-secondary underline underline-offset-2"
 					>
-						sign in
+						{t`sign in`}
 					</Link>
 					.
 				</div>
@@ -628,7 +629,7 @@ export function ResetPasswordPage(props: Props) {
 					<ForgotPasswordVerifyView
 						sessionWarning={
 							shouldShowResetSessionWarning()
-								? RESET_SESSION_REQUIRED_MESSAGE
+								? resetSessionRequiredMessage()
 								: undefined
 						}
 						uiStore={uiStore}

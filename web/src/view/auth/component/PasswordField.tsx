@@ -1,4 +1,5 @@
 import type { FieldElementProps } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { JSX } from "solid-js"
 import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
 import { CheckIcon, Cross1Icon } from "solid-radix-icons"
@@ -161,7 +162,7 @@ export function PasswordField(props: PasswordFieldProps) {
 								</span>
 							</RequirementRow>
 							<RequirementRow ok={noWhitespaceOk()}>
-								<span>No spaces or control characters</span>
+								<span>{t`No spaces or control characters`}</span>
 							</RequirementRow>
 							<RequirementRow ok={allowedCharsOk()}>
 								<span>
@@ -172,7 +173,7 @@ export function PasswordField(props: PasswordFieldProps) {
 								</span>
 							</RequirementRow>
 							<RequirementRow ok={strengthOk()}>
-								<span>Strong enough</span>
+								<span>{t`Strong enough`}</span>
 							</RequirementRow>
 						</ul>
 					</div>

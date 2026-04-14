@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { For } from "solid-js"
 
 const GITHUB_REPO_URL = "https://github.com/TouhouCloudMusic/thcdb"
@@ -17,15 +18,21 @@ type FooterLinkItem = {
 function BrandColumn() {
 	const brandLinks: FooterLinkItem[] = [
 		{ label: "GitHub", href: GITHUB_REPO_URL, external: true },
-		{ label: "Zulip", href: ZULIP_URL, external: true },
-		{ label: "Feedback", href: GITHUB_ISSUES_URL, external: true },
+		{ label: t`Zulip`, href: ZULIP_URL, external: true },
+		{
+			label: t`Feedback`,
+			href: GITHUB_ISSUES_URL,
+			external: true,
+		},
 	]
 
 	return (
 		<div class={COLUMN_CLASS}>
-			<div class="text-sm font-semibold tracking-wide">Touhou Cloud DB</div>
+			<div class="text-sm font-semibold tracking-wide">
+				{t`Touhou Cloud DB`}
+			</div>
 			<p class="mt-2 max-w-prose text-xs leading-relaxed text-slate-400">
-				{"Touhou Cloud DB is an open doujin music database"}
+				{t`Touhou Cloud DB is an open doujin music database`}
 			</p>
 			<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-300">
 				<For each={brandLinks}>

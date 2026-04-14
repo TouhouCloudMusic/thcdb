@@ -6,6 +6,7 @@ import {
 	getInput,
 	setInput,
 } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { useBlocker } from "@tanstack/solid-router"
 import type { JSX } from "solid-js"
 import { createEffect, For, Show } from "solid-js"
@@ -44,7 +45,7 @@ function PageHeader(props: { type: Props["type"] }) {
 				<h1 class="text-2xl font-light">
 					<Show
 						when={props.type === "new"}
-						fallback={<>Edit Release</>}
+						fallback={<>{t`Edit Release`}</>}
 					>
 						Create Release
 					</Show>
@@ -82,7 +83,10 @@ function FormContent(props: Props) {
 			if (form.isSubmitted || !form.isDirty) return false
 
 			const stay = confirm(
-				"Are you sure you want to leave this page? Your changes will be lost.",
+				t({
+					message:
+						"Are you sure you want to leave this page? Your changes will be lost.",
+				}),
 			)
 			return !stay
 		},
@@ -114,17 +118,17 @@ function FormContent(props: Props) {
 					[
 						{
 							key: "release_date",
-							label: "Release date",
+							label: t`Release date`,
 							class: "row-start-4",
 						},
 						{
 							key: "recording_date_start",
-							label: "Recording start",
+							label: t`Recording start`,
 							class: "row-start-5",
 						},
 						{
 							key: "recording_date_end",
-							label: "Recording end",
+							label: t`Recording end`,
 							class: "row-start-6",
 						},
 					] as const

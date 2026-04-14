@@ -1,6 +1,8 @@
-const AUTH_LEFT_PANEL_TITLE = "Lorem ipsum dolor sit amet consectetur"
-const AUTH_LEFT_PANEL_DESCRIPTION =
-	"Lorem ipsum dolor sit, amet consectetur adipisicing elit. Exercitationem earum ipsam tempora, aut fugiat"
+import { t } from "@lingui/core/macro"
+
+const AUTH_LEFT_PANEL_TITLE = () => t`Contribute touhou music metadata`
+const AUTH_LEFT_PANEL_DESCRIPTION = () =>
+	t`Add what is missing and keep entries consistent across the database.`
 
 export function AuthLeftPanel() {
 	return (
@@ -16,30 +18,34 @@ export function AuthLeftPanel() {
 						TOUHOU CLOUD DB
 					</div>
 					<div class="text-xs text-tertiary">
-						Lorem ipsum dolor sit amet consectetur
+						{t`Open doujin music database`}
 					</div>
 				</div>
 			</div>
 
 			<div class="flex flex-col gap-3">
 				<h1 class="text-5xl font-light tracking-tighter text-primary">
-					{AUTH_LEFT_PANEL_TITLE}
+					{AUTH_LEFT_PANEL_TITLE()}
 				</h1>
-				<h2 class="text-xl text-tertiary">{AUTH_LEFT_PANEL_DESCRIPTION}</h2>
+				<h2 class="text-xl text-tertiary">{AUTH_LEFT_PANEL_DESCRIPTION()}</h2>
 			</div>
 
 			<div class="grid gap-3 pt-2 text-sm text-secondary">
 				<div class="flex items-center gap-2">
 					<span class="inline-block size-1.5 rounded-full bg-reimu-600"></span>
-					<span>Add missing entries (artists, releases, songs, events)</span>
+					<span>
+						{t({
+							message: "Add missing entries (artists, releases, songs, events)",
+						})}
+					</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<span class="inline-block size-1.5 rounded-full bg-reimu-600"></span>
-					<span>Submit corrections and keep metadata clean</span>
+					<span>{t`Submit corrections and keep metadata clean`}</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<span class="inline-block size-1.5 rounded-full bg-reimu-600"></span>
-					<span>Sync your contributions across devices</span>
+					<span>{t`Sync your contributions across devices`}</span>
 				</div>
 			</div>
 		</div>

@@ -1,37 +1,36 @@
+import { useLingui } from "@lingui/solid/macro"
 import { Navigate } from "@tanstack/solid-router"
-import { Match, Switch } from "solid-js"
+import { Match, Switch, createMemo } from "solid-js"
 
-import type { AuthFormMode } from "../store"
 import { useAuthForm } from "../store"
 import { AuthCredentialForm } from "./AuthCredentialForm"
 import { AuthLeftPanel } from "./AuthLeftPanel"
 import { VerifyEmailForm } from "./VerifyEmailForm"
 
-type AuthFormCopy = {
-	title: string
-	description: string
-}
-
-// @wc-include
-const AUTH_FORM_COPY: Record<AuthFormMode, AuthFormCopy> = {
-	sign_in: {
-		title: "Sign in",
-		description: "Use your account to continue.",
-	},
-	sign_up: {
-		title: "Create account",
-		description: "Create an account to continue.",
-	},
-	verify_email: {
-		title: "Verify email",
-		description: "Enter the 6-digit code sent to your email.",
-	},
-}
-
 export function AuthForm() {
+	const { t } = useLingui()
 	const authForm = useAuthForm()
 	const mode = authForm.mode
-	const formCopy = () => AUTH_FORM_COPY[mode()]
+	const formCopy = createMemo(() => {
+		if (mode() === "sign_up") {
+			return {
+				title: t`Create account`,
+				description: t`Create an account to continue.`,
+			}
+		}
+
+		if (mode() === "verify_email") {
+			return {
+				title: t`Verify email`,
+				description: t`Enter the 6-digit code sent to your email.`,
+			}
+		}
+
+		return {
+			title: t`Sign in`,
+			description: t`Use your account to continue.`,
+		}
+	})
 
 	return (
 		<div class="h-full relative overflow-hidden bg-linear-to-br from-reimu-100 via-primary to-marisa-100">
@@ -52,7 +51,7 @@ export function AuthForm() {
 									TOUHOU CLOUD DB
 								</div>
 								<div class="text-xs text-tertiary">
-									Open doujin music database
+									{t`Open doujin music database`}
 								</div>
 							</div>
 						</div>

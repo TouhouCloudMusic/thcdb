@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { Accessor } from "solid-js"
 import { createStore } from "solid-js/store"
 
@@ -73,7 +74,7 @@ function createImageStore(
 				setState("error", err.message)
 				throw err
 			}
-			const msg = "Upload failed."
+			const msg = t`Upload failed.`
 			setState("error", msg)
 			throw new Error(msg, { cause: err })
 		} finally {
@@ -153,7 +154,7 @@ export const createEditProfileStore = (
 					if (err instanceof Error && err.message) {
 						setBioState("error", err.message)
 					} else {
-						setBioState("error", "Save failed.")
+						setBioState("error", t`Save failed.`)
 					}
 				} finally {
 					setBioState("isSaving", false)

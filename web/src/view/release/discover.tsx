@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro"
+
 export const ReleaseDiscover = () => {
-	return <div>[UNIMPLEMENTED] Release</div>
+	return <div>{t`[UNIMPLEMENTED] Release`}</div>
 }

@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { For, createMemo } from "solid-js"
 import type { Component } from "solid-js"
 import { twMerge } from "tailwind-merge"
@@ -79,14 +80,14 @@ export const Pagination: Component<PaginationProps> = (props) => {
 	return (
 		<nav
 			class={paginaterClass()}
-			aria-label="Pagination"
+			aria-label={t`Pagination`}
 		>
 			<button
 				type="button"
 				class={SQUARE_ITEM_CLASS}
 				onClick={() => props.onPageChange(1)}
 				disabled={!canPrev()}
-				aria-label="First page"
+				aria-label={t`First page`}
 			>
 				{"<<"}
 			</button>
@@ -96,7 +97,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
 				class={SQUARE_ITEM_CLASS}
 				onClick={() => props.onPageChange(props.current - 1)}
 				disabled={!canPrev()}
-				aria-label="Previous page"
+				aria-label={t`Previous page`}
 			>
 				{"<"}
 			</button>
@@ -120,7 +121,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
 				class={SQUARE_ITEM_CLASS}
 				onClick={() => props.onPageChange(props.current + 1)}
 				disabled={!canNext()}
-				aria-label="Next page"
+				aria-label={t`Next page`}
 			>
 				{">"}
 			</button>
@@ -130,7 +131,7 @@ export const Pagination: Component<PaginationProps> = (props) => {
 				class={SQUARE_ITEM_CLASS}
 				onClick={() => props.onPageChange(props.total)}
 				disabled={!canNext()}
-				aria-label="Last page"
+				aria-label={t`Last page`}
 			>
 				{">>"}
 			</button>

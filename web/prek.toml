@@ -30,18 +30,3 @@ language       = "system"
 pass_filenames = true
 types_or       = [ "javascript", "jsx", "ts", "tsx" ]
 stages         = [ "pre-commit", "pre-push" ]
-
-[[repos.hooks]]
-id = "web-i18n-check"
-name = "web i18n check"
-entry = "just i18n check"
-language = "system"
-pass_filenames = false
-files = { glob = [
-    "src/**/*.{ts,tsx}",
-    "src/locales/**/*.po",
-    "wuchale.config.ts",
-    ".just/i18n",
-    ".justfile",
-] }
-stages = [ "pre-commit", "pre-push" ]

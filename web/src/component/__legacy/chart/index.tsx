@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { Accessor, JSX } from "solid-js"
 import { createMemo, For, Show, splitProps } from "solid-js"
 import { PlusIcon } from "solid-radix-icons"
@@ -23,7 +24,7 @@ export function ChartFilter(props: Props): JSX.Element {
 	const CLASS = "w-72 text-secondary text-sm grid grid-cols-[auto_1fr]"
 	// @tw
 	const UL_CLASS = "grid grid-cols-subgrid items-baseline col-span-2"
-	const DELIMITER = "OR"
+	const DELIMITER = t`OR`
 
 	const [_, card_props] = splitProps(props, ["pos_tags", "neg_tags", "class"])
 	const cls = createMemo(() => twMerge(CLASS, props.class))
@@ -34,7 +35,7 @@ export function ChartFilter(props: Props): JSX.Element {
 			class={cls()}
 		>
 			<ul class={UL_CLASS}>
-				<span>Positive: </span>
+				<span>{t`Positive:`} </span>
 				<TagGroups
 					data={props.pos_tags}
 					delimiter={DELIMITER}
@@ -47,7 +48,7 @@ export function ChartFilter(props: Props): JSX.Element {
 				</TagGroups>
 			</ul>
 			<ul class={UL_CLASS}>
-				<span>Negative: </span>
+				<span>{t`Negative:`} </span>
 				<TagGroups
 					data={props.neg_tags}
 					delimiter={DELIMITER}

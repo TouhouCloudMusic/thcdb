@@ -1,4 +1,5 @@
 import { Field, setInput } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { For, createMemo } from "solid-js"
 
 import { FormComp } from "~/component/atomic/form"
@@ -17,8 +18,8 @@ export function ArtistFormDateFields() {
 	const { formStore } = useArtistForm()
 
 	const fields: DateFieldDescriptor[] = [
-		{ key: "start_date", label: "Start date" },
-		{ key: "end_date", label: "End date" },
+		{ key: "start_date", label: t`Start date` },
+		{ key: "end_date", label: t`End date` },
 	]
 
 	return (

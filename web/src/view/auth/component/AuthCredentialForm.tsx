@@ -1,5 +1,6 @@
 import { Field, Form } from "@formisch/solid"
 import { Tabs } from "@kobalte/core/tabs"
+import { t } from "@lingui/core/macro"
 import { For, Show } from "solid-js"
 
 import { Link } from "~/component/atomic/Link"
@@ -28,6 +29,21 @@ const isAuthFormMode = (value: string): value is AuthFormMode =>
 	value === "sign_in" || value === "sign_up"
 
 const FORM_STYLE = "w-full flex flex-col"
+const AUTH_TAB_ITEMS = [
+	{
+		get label() {
+			return t`Sign In`
+		},
+		value: "sign_in" as const,
+	},
+	{
+		get label() {
+			return t`Sign Up`
+		},
+		value: "sign_up" as const,
+	},
+]
+
 export function AuthCredentialForm(props: AuthCredentialFormProps) {
 	const isSignIn = () => props.mode() === "sign_in"
 
@@ -42,13 +58,13 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 				class="mb-6"
 			>
 				<Tabs.List class="relative grid grid-cols-2 rounded-lg bg-secondary p-1.5 ring-1 ring-slate-200">
-					<For each={["Sign In", "Sign Up"]}>
-						{(value) => (
+					<For each={AUTH_TAB_ITEMS}>
+						{(item) => (
 							<Tabs.Trigger
-								value={value == "Sign In" ? "sign_in" : "sign_up"}
+								value={item.value}
 								class="relative z-10 rounded-md px-4 py-2.5 text-sm  text-tertiary outline-none transition-colors duration-150 focus-visible:outline focus-visible:outline-reimu-600 data-selected:text-primary"
 							>
-								{value}
+								{item.label}
 							</Tabs.Trigger>
 						)}
 					</For>
@@ -89,7 +105,7 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 						>
 							{(field) => (
 								<PasswordField
-									label="Password"
+									label={t`Password`}
 									field={field}
 									showRequirementHint
 									class="mt-4"
@@ -103,7 +119,7 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 						>
 							{(field) => (
 								<PasswordField
-									label="Repeat password"
+									label={t`Repeat password`}
 									field={field}
 									class="mt-4"
 								/>
@@ -119,7 +135,7 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 							class="mt-6 h-9 w-full"
 							disabled={props.signUpForm.isSubmitting}
 						>
-							Sign Up
+							{t`Sign Up`}
 						</Button>
 					</Form>
 				}
@@ -142,7 +158,7 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 					>
 						{(field) => (
 							<PasswordField
-								label="Password"
+								label={t`Password`}
 								field={field}
 								class="mt-4"
 							/>
@@ -153,7 +169,7 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 						to="/auth/forgot-password"
 						class="text-secondary text-sm self-end mt-4"
 					>
-						Forgot password?
+						{t`Forgot password?`}
 					</Link>
 
 					<FormComp.ErrorMessage>{props.submitError()}</FormComp.ErrorMessage>
@@ -165,7 +181,7 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 						class="mt-6 h-9 w-full"
 						disabled={props.signInForm.isSubmitting}
 					>
-						Sign In
+						{t`Sign In`}
 					</Button>
 				</Form>
 			</Show>

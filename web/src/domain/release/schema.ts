@@ -51,7 +51,7 @@ export const NewRelease = v.object({
 	localized_titles: v.array(NewLocalizedTitle),
 	artists: v.pipe(
 		v.array(EntityId),
-		v.minLength(1, "release must have artists"),
+		v.minLength(1, "Release must have artists"),
 	),
 	events: v.array(EntityId),
 	catalog_nums: v.array(CatalogNumber),

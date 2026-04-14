@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi } from "@tanstack/solid-router"
 import { ReleaseApi } from "@thc/api"
@@ -170,8 +171,8 @@ export function ReleaseExplore() {
 
 	return (
 		<ExplorePageLayout
-			title="Explore Releases"
-			action={{ to: "/release/new", label: "Create release" }}
+			title={t`Explore Releases`}
+			action={{ to: "/release/new", label: t`Create release` }}
 		>
 			<ReleaseExploreFilterBar
 				scrollDirection={scrollDirection}

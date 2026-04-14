@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Song } from "@thc/api"
 import { SongQueryOption } from "@thc/query"
@@ -47,7 +48,7 @@ export function SongSearchDialog(props: SongSearchDialogProps): JSX.Element {
 
 	return (
 		<EntitySearchDialog
-			title="Search Song"
+			title={t`Search Song`}
 			trigger={
 				<Dialog.Trigger
 					as={Button}

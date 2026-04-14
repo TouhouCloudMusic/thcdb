@@ -1,4 +1,5 @@
 import { Field } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { twMerge } from "tailwind-merge"
 
 import { FormComp } from "~/component/atomic/form"
@@ -14,10 +15,10 @@ export function SongTitleField(props: { of: SongFormStore; class?: string }) {
 		>
 			{(field) => (
 				<InputField.Root class={twMerge("flex flex-col", props.class)}>
-					<FormComp.Label>Title</FormComp.Label>
+					<FormComp.Label>{t`Title`}</FormComp.Label>
 					<InputField.Input
 						{...field.props}
-						placeholder="Title"
+						placeholder={t`Title`}
 						value={field.input ?? undefined}
 					/>
 					<InputField.Error>

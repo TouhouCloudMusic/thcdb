@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Label } from "@thc/api"
 import { LabelQueryOption } from "@thc/query"
@@ -40,7 +41,7 @@ export function LabelSearchDialog(props: LabelSearchDialogProps): JSX.Element {
 
 	return (
 		<EntitySearchDialog
-			title="Search Label"
+			title={t`Search Label`}
 			trigger={
 				<Dialog.Trigger
 					as={Button}

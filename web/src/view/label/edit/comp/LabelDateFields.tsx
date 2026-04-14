@@ -1,4 +1,5 @@
 import { Field, setInput } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { For, createMemo } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
@@ -20,8 +21,8 @@ export function LabelDateFields(props: Props) {
 	const { formStore } = useLabelForm()
 
 	const fields: DateFieldDescriptor[] = [
-		{ key: "founded_date", label: "Founded date" },
-		{ key: "dissolved_date", label: "Dissolved date" },
+		{ key: "founded_date", label: t`Founded date` },
+		{ key: "dissolved_date", label: t`Dissolved date` },
 	]
 
 	return (

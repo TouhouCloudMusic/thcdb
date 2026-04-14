@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { CorrectionHistoryItem, Release } from "@thc/api"
 import { Suspense } from "solid-js"
 
@@ -31,7 +32,7 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 
 	return (
 		<PageLayout class="p-8">
-			<Suspense fallback={<div>Loading...</div>}>
+			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<ReleaseInfoPageContext.Provider value={contextValue}>
 					<div class="grid grid-cols-[auto_1fr] gap-8">
 						<ReleaseInfoCoverImage />
@@ -52,7 +53,7 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 										class={UPLOAD_LINK_CLASS}
 										underline={false}
 									>
-										Upload cover art
+										{t`Upload cover art`}
 									</Link>
 								}
 							/>

@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { LabelApi } from "@thc/api"
@@ -72,8 +73,8 @@ export const LabelExplore = () => {
 
 	return (
 		<ExplorePageLayout
-			title="Explore Labels"
-			action={{ to: "/label/new", label: "Create label" }}
+			title={t`Explore Labels`}
+			action={{ to: "/label/new", label: t`Create label` }}
 		>
 			<LabelExploreFilterBar
 				scrollDirection={scrollDirection}

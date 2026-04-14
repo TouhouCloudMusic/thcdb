@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { CreditRoleRef } from "@thc/api"
 import { CreditRoleQueryOption } from "@thc/query"
@@ -40,7 +41,7 @@ export function CreditRoleSearchDialog(props: Props): JSX.Element {
 
 	return (
 		<EntitySearchDialog
-			title="Search Role"
+			title={t`Search Role`}
 			trigger={
 				<Dialog.Trigger
 					as={Button}

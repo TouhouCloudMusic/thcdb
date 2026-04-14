@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { Navigate } from "@tanstack/solid-router"
 import type { ParentProps } from "solid-js"
 import { Show } from "solid-js"
@@ -18,7 +19,7 @@ function SessionLoading() {
 	return (
 		<div class="grid min-h-[60vh] place-items-center px-6 py-14">
 			<div class="rounded-sm border border-slate-300 bg-white px-5 py-4 text-sm text-slate-500 shadow-xs">
-				Checking session…
+				{t`Checking session…`}
 			</div>
 		</div>
 	)
@@ -29,13 +30,13 @@ function AuthRequired() {
 		<div class="grid min-h-[60vh] place-items-center px-6 py-14">
 			<div class="w-full max-w-md rounded-sm border border-slate-300 bg-white p-6 shadow-xs">
 				<div class="text-xs font-medium tracking-[0.22em] text-slate-500">
-					AUTH REQUIRED
+					{t`AUTH REQUIRED`}
 				</div>
 				<div class="mt-3 text-lg font-light text-slate-900">
-					Sign in to continue
+					{t`Sign in to continue`}
 				</div>
 				<div class="mt-1 text-sm text-slate-500">
-					This page requires an authenticated account.
+					{t`This page requires an authenticated account.`}
 				</div>
 
 				<div class="mt-5 flex flex-wrap gap-3">
@@ -48,7 +49,7 @@ function AuthRequired() {
 							variant="Primary"
 							color="Reimu"
 						>
-							Sign in
+							{t`Sign in`}
 						</Button>
 					</Link>
 					<Link
@@ -60,7 +61,7 @@ function AuthRequired() {
 							variant="Secondary"
 							color="Slate"
 						>
-							Create account
+							{t`Create account`}
 						</Button>
 					</Link>
 				</div>

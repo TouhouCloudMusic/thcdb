@@ -1,10 +1,9 @@
 default: sync
 
+[no-cd]
 sync:
-	pnpm exec wuchale --config ../wuchale.config.ts --clean --log-level warn
+	pnpm exec lingui extract --config ./lingui.config.ts --clean
 
-check:
-	pnpm exec wuchale --config ../wuchale.config.ts check
-
+[no-cd]
 status:
-	pnpm exec wuchale --config ../wuchale.config.ts status
+	pnpm exec lingui extract --config ./lingui.config.ts --clean --verbose

@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro"
+
 export const ArtistDiscover = () => {
-	return <div>[UNIMPLEMENTED] Artist</div>
+	return <div>{t`[UNIMPLEMENTED] Artist`}</div>
 }

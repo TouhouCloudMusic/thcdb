@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { CorrectionHistoryItem, Song } from "@thc/api"
 import { createContext, Show } from "solid-js"
 
@@ -72,33 +73,33 @@ function SongInfoTabs() {
 		<Tab.Root>
 			<Tab.List class="mx-4 gap-12 border-b border-slate-200">
 				<Tab.Trigger
-					value={"Release"}
+					value="Release"
 					class={TRIGGER_CLASS}
 				>
-					Release
+					{t`Release`}
 				</Tab.Trigger>
 				<Show when={hasCredits()}>
 					<Tab.Trigger
-						value={"Credits"}
+						value="Credits"
 						class={TRIGGER_CLASS}
 					>
-						Credits
+						{t`Credits`}
 					</Tab.Trigger>
 				</Show>
 				<Show when={hasLyrics()}>
 					<Tab.Trigger
-						value={"Lyrics"}
+						value="Lyrics"
 						class={TRIGGER_CLASS}
 					>
-						Lyrics
+						{t`Lyrics`}
 					</Tab.Trigger>
 				</Show>
 				<Show when={hasRelations()}>
 					<Tab.Trigger
-						value={"Relations"}
+						value="Relations"
 						class={TRIGGER_CLASS}
 					>
-						Relations
+						{t`Relations`}
 					</Tab.Trigger>
 				</Show>
 				<Tab.Indicator />

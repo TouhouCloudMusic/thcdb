@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { createSignal, For } from "solid-js"
 
 type NavItem = {
@@ -8,15 +9,15 @@ type NavItem = {
 
 export function Navbar() {
 	const [items, setItems] = createSignal<NavItem[]>([
-		{ id: "recommend", label: "推荐", active: true },
-		{ id: "playlist", label: "歌单" },
-		{ id: "rank", label: "排行榜" },
-		{ id: "artist", label: "歌手" },
-		{ id: "album", label: "专辑" },
-		{ id: "doujin", label: "同人社团" },
-		{ id: "video", label: "视频" },
-		{ id: "article", label: "文章" },
-		{ id: "event", label: "活动" },
+		{ id: "recommend", label: t`推荐`, active: true },
+		{ id: "playlist", label: t`歌单` },
+		{ id: "rank", label: t`排行榜` },
+		{ id: "artist", label: t`歌手` },
+		{ id: "album", label: t`专辑` },
+		{ id: "doujin", label: t`同人社团` },
+		{ id: "video", label: t`视频` },
+		{ id: "article", label: t`文章` },
+		{ id: "event", label: t`活动` },
 	])
 
 	const setActive = (id: string) => {

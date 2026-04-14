@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { Effect, pipe } from "effect"
 
 import type { Options as SdkOptions } from "~/hey-api/sdk.gen"
@@ -7,7 +8,7 @@ import type { AuthApiResponse, RequestFailedError } from "./response"
 import { ensureSuccessResponse, getResetPasswordErrorMessage } from "./response"
 import type { ResetPasswordUiStore } from "./store"
 
-const INVALID_OR_EXPIRED_RESET_KEY_MESSAGE = "Invalid or expired reset key"
+const invalidOrExpiredResetKeyMessage = () => t`Invalid or expired reset key`
 
 export type ResetPasswordByKeyFn = (
 	req: ResetPasswordData["body"],
@@ -40,7 +41,7 @@ export async function resetPasswordByKey(args: {
 					const message = getResetPasswordErrorMessage(error)
 
 					if (
-						message === INVALID_OR_EXPIRED_RESET_KEY_MESSAGE
+						message === invalidOrExpiredResetKeyMessage()
 						&& args.onInvalidResetKey
 					) {
 						yield* Effect.tryPromise({
