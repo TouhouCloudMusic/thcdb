@@ -21,7 +21,7 @@ services:
   redis:
     image: valkey/valkey:9-alpine@sha256:b4ee67d73e00393e712accc72cfd7003b87d0fcd63f0eba798b23251bfc9c394
     restart: unless-stopped
-    command: valkey-server --save 60 1 --loglevel warning
+    command: valkey-server --save 60 1 --appendonly yes --appendfsync everysec --loglevel warning
     healthcheck:
       test: ["CMD", "valkey-cli", "ping"]
       interval: 10s
