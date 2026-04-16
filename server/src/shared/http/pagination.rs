@@ -12,7 +12,7 @@ pub struct PaginationQuery {
 
 impl PaginationQuery {
     pub fn limit(&self) -> u32 {
-        self.limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT)
+        self.limit.unwrap_or(DEFAULT_LIMIT).clamp(1, MAX_LIMIT)
     }
 }
 
@@ -26,7 +26,7 @@ pub struct PageQuery {
 
 impl PageQuery {
     pub fn limit(&self) -> u32 {
-        self.limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT)
+        self.limit.unwrap_or(DEFAULT_LIMIT).clamp(1, MAX_LIMIT)
     }
 
     pub fn page(&self) -> u32 {
