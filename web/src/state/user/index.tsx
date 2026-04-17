@@ -76,7 +76,9 @@ export class UserStore {
 
 	constructor(ctx: UserContext) {
 		const [userState, setUserState] = createSignal(ctx?.user)
-		const [isLoadingState, setIsLoadingState] = createSignal(false)
+		const [isLoadingState, setIsLoadingState] = createSignal(
+			ctx?.user === undefined && SignedInHint_check(),
+		)
 		const [notificationUnreadCountState, setNotificationUnreadCountState] =
 			createSignal(0)
 
@@ -93,17 +95,8 @@ export class UserStore {
 		| ReturnType<typeof globalThis.setTimeout>
 		| undefined = undefined
 
-	async trySignIn() {
-		if (this.user || this.is_loading || !SignedInHint_check()) return
-		await this.flush()
-	}
-
-	async flush() {
-		if (this.is_loading || !SignedInHint_check()) return
-
-		this.setIsLoadingState(true)
+	private async loadCurrentUser() {
 		const result = await UserApi.profile()
-		this.setIsLoadingState(false)
 
 		return E.match(result, {
 			onLeft: (error) => {
@@ -121,6 +114,28 @@ export class UserStore {
 				return user
 			},
 		})
+	}
+
+	async trySignIn() {
+		if (this.user || !this.isLoadingState()) return
+
+		try {
+			return await this.loadCurrentUser()
+		} finally {
+			this.setIsLoadingState(false)
+		}
+	}
+
+	async flush() {
+		if (this.isLoadingState() || !SignedInHint_check()) return
+
+		this.setIsLoadingState(true)
+
+		try {
+			return await this.loadCurrentUser()
+		} finally {
+			this.setIsLoadingState(false)
+		}
 	}
 
 	get notification_state() {
