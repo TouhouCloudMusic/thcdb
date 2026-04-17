@@ -128,6 +128,17 @@
 			}
 		],
 		"no-nested-ternary": "off",
+		"no-restricted-imports": [
+			"error",
+			{
+				"paths": [
+					{
+						"name": "@huliiiiii/lingui-solid/macro",
+						"message": "Import Solid macros from @lingui/solid/macro. The aliased package name is not resolvable from app source."
+					}
+				]
+			}
+		],
 		"no-plusplus": [
 			"warn",
 			{
