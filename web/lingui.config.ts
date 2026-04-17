@@ -5,6 +5,9 @@ import { defineConfig } from "@lingui/solid/config"
 export default defineConfig({
 	locales: ["en", "zh-CN"],
 	sourceLocale: "en",
+	macro: {
+		jsxPackage: ["@lingui/solid/macro"],
+	},
 	format: formatter({
 		lineNumbers: false,
 		origins: true,
@@ -25,8 +28,7 @@ export default defineConfig({
 	],
 	extractors: [createBabelExtractor()],
 	runtimeConfigModule: {
-		i18n: ["~/state/i18n/runtime", "i18n"],
-		useLingui: ["~/state/i18n/runtime", "useLingui"],
-		Trans: ["~/state/i18n/runtime", "Trans"],
+		useLingui: ["@lingui/solid", "useLingui"],
+		Trans: ["@lingui/solid", "Trans"],
 	},
 })
