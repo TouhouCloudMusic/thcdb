@@ -50,6 +50,8 @@
             prekOverlay
           ];
         };
+        webPackage = builtins.fromJSON (builtins.readFile ./web/package.json);
+        webPlaywrightVersion = webPackage.devDependencies.playwright;
 
         python = pkgs.python3;
         schemathesis = pkgs.buildFHSEnv {
@@ -65,10 +67,10 @@
           '';
         };
       in
+      assert pkgs.playwright-driver.version == webPlaywrightVersion;
       {
         devShell = pkgs.mkShell {
           nativeBuildInputs = with pkgs; [
-            playwright
             playwright-driver.browsers
           ];
           buildInputs = with pkgs; [
@@ -100,6 +102,7 @@
             python
           ];
           shellHook = ''
+            export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
             export PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}
             export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
             export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu-24.04"
