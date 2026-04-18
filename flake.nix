@@ -90,6 +90,7 @@
             llm-agents.agent-browser
           ];
           packages = with pkgs; [
+            actionlint
             dprint
             just
             just-lsp
