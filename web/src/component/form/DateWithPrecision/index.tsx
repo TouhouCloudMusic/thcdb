@@ -1,14 +1,12 @@
 import { t } from "@lingui/core/macro"
-import { DateExt } from "@thc/toolkit/data"
-import dayjs from "dayjs"
 import { createEffect, createMemo, on, untrack } from "solid-js"
-import { createStore } from "solid-js/store"
+import { createStore, produce } from "solid-js/store"
 
 import { InputField } from "~/component/atomic/form/Input"
-import type {
-	DatePrecision,
-	DateWithPrecision as TDateWithPrecision,
-} from "~/domain/shared"
+import type { DateWithPrecision as TDateWithPrecision } from "~/domain/shared"
+
+import type { Store } from "./state"
+import { setDay, setMonth, setYear, storeToValue, valueToStore } from "./state"
 
 export interface DateWithPrecisionProps {
 	class?: string
@@ -16,140 +14,77 @@ export interface DateWithPrecisionProps {
 	setValue(val?: TDateWithPrecision.In): void
 }
 
-interface Store {
-	y?: number
-	m?: number
-	d?: number
-}
-
-const THIS_YEAR = new Date().getFullYear()
-
-function onInput(f: (value?: number) => void) {
-	return (
-		e: InputEvent & {
-			currentTarget: HTMLInputElement
-			target: Element
-		},
-	) => {
-		const value = Number.parseInt(e.currentTarget.value, 10)
-
-		f(value)
-	}
-}
-
-function getPrecision(store: Store) {
-	if (store.d) {
-		return "Day"
-	}
-	if (store.m) {
-		return "Month"
-	}
-	if (store.y) {
-		return "Year"
-	}
-}
-
-function valueToStore(value?: TDateWithPrecision.In): Store {
-	if (!value) {
-		return {}
-	}
-
-	const year = value.value.getFullYear()
-	const month =
-		value.precision === "Year" ? undefined : value.value.getMonth() + 1
-	const day = value.precision === "Day" ? value.value.getDate() : undefined
-
-	return { y: year, m: month, d: day }
-}
-
 export function DateWithPrecision(props: DateWithPrecisionProps) {
 	const [store, setStore] = createStore<Store>(
 		untrack(() => valueToStore(props.value)),
 	)
 
-	const maxDay = createMemo(() =>
-		store.y && store.m
-			? dayjs(`${store.y}-${store.m}`).daysInMonth()
-			: undefined,
-	)
+	const currentValue = createMemo(() => storeToValue(store))
 
-	const setYear = (val?: number) => {
-		const nextVal = val && val > THIS_YEAR ? THIS_YEAR : val
-		setStore("y", nextVal)
-	}
-	const setMonth = (val?: number) => {
-		setStore("m", val)
-	}
-	const setDay = (val?: number) => {
-		const max = maxDay()
-		const nextVal = val && max && val > max ? max : val
-		setStore("d", nextVal)
+	const applyStore = (next: Store) => {
+		setStore(
+			produce((draft) => {
+				draft.year = next.year
+				draft.month = next.month
+				draft.day = next.day
+			}),
+		)
 	}
 
-	const date = createMemo(() => {
-		if (!store.y) return
-		const year = store.y
-		const month = store.m ?? 1
-		const day = store.d ?? 1
-		return DateExt.fromYMD(year, month, day)
-	})
+	const setYearRaw = (raw: string) => applyStore(setYear(store, raw))
 
-	const precision = createMemo<DatePrecision | undefined>(() =>
-		getPrecision(store),
-	)
+	const setMonthRaw = (raw: string) => applyStore(setMonth(store, raw))
+
+	const setDayRaw = (raw: string) => applyStore(setDay(store, raw))
+
+	const applyValue = (next?: TDateWithPrecision.In) =>
+		applyStore(valueToStore(next))
 
 	createEffect(
 		on(
 			() => props.value,
-			(value) => setStore(valueToStore(value)),
+			(next) => applyValue(next),
 			{ defer: true },
 		),
 	)
 
-	createEffect(
-		on(date, (nextDate) => {
-			props.setValue(
-				nextDate
-					? {
-							value: nextDate,
-							precision: precision()!,
-						}
-					: undefined,
-			)
-		}),
-	)
-
-	const klass = createMemo(() => props.class)
+	createEffect(on(currentValue, (next) => props.setValue(next)))
 
 	return (
 		<>
-			<InputField.Root class={klass()}>
+			<InputField.Root class={props.class}>
 				<InputField.Input
-					class="no-spinner"
-					onInput={onInput(setYear)}
+					inputMode="numeric"
+					maxLength={4}
+					onInput={(e) => setYearRaw(e.currentTarget.value)}
+					pattern="[0-9]*"
 					placeholder={t`Year`}
-					type="number"
-					value={store.y}
+					type="text"
+					value={store.year ?? ""}
 				/>
 			</InputField.Root>
-			<InputField.Root class={klass()}>
+			<InputField.Root class={props.class}>
 				<InputField.Input
-					class="no-spinner"
-					disabled={!store.y}
-					onInput={onInput(setMonth)}
+					disabled={store.year === undefined}
+					inputMode="numeric"
+					maxLength={2}
+					onInput={(e) => setMonthRaw(e.currentTarget.value)}
+					pattern="[0-9]*"
 					placeholder={t`Month`}
-					type="number"
-					value={store.m}
+					type="text"
+					value={store.month ?? ""}
 				/>
 			</InputField.Root>
-			<InputField.Root class={klass()}>
+			<InputField.Root class={props.class}>
 				<InputField.Input
-					class="no-spinner"
-					disabled={!store.m}
-					onInput={onInput(setDay)}
+					disabled={store.year === undefined || store.month === undefined}
+					inputMode="numeric"
+					maxLength={2}
+					onInput={(e) => setDayRaw(e.currentTarget.value)}
+					pattern="[0-9]*"
 					placeholder={t`Day`}
-					type="number"
-					value={store.d}
+					type="text"
+					value={store.day ?? ""}
 				/>
 			</InputField.Root>
 		</>

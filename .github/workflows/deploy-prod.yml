@@ -21,81 +21,65 @@ env:
   REGISTRY: ghcr.io
   SERVER_IMAGE: ghcr.io/touhoucloudmusic/thcdb-server
   WEB_IMAGE: ghcr.io/touhoucloudmusic/thcdb-web
-  RUST_BUILDER_IMAGE: ghcr.io/touhoucloudmusic/thcdb-rust-builder
-  WILD_LINKER_IMAGE: ghcr.io/touhoucloudmusic/thcdb-wild-linker-builder
+  RUST_BUILDER_IMAGE: &rust_builder_image ghcr.io/touhoucloudmusic/thcdb-rust-builder
+  WILD_LINKER_IMAGE: &wild_linker_image ghcr.io/touhoucloudmusic/thcdb-wild-linker-builder
 
 permissions:
   contents: read
   packages: write
 
 jobs:
-  build-rust-builder-image:
+  build-toolchain-images:
+    name: Build ${{ matrix.name }} image
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: rust builder
+            target: rust-builder
+            image: *rust_builder_image
+            cache_scope: rust-builder
+          - name: wild linker
+            target: wild-linker-builder
+            image: *wild_linker_image
+            cache_scope: wild-linker-builder
     steps:
-      - uses: actions/checkout@v6
+      - &checkout
+        uses: actions/checkout@v6
 
-      - uses: docker/setup-buildx-action@v3
+      - &setup_buildx
+        uses: docker/setup-buildx-action@v3
 
-      - uses: docker/login-action@v3
+      - &docker_login
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Build rust builder image
+      - name: Build ${{ matrix.name }} image
         uses: docker/build-push-action@v6
         with:
           context: server
           file: server/Dockerfile.toolchain
-          target: rust-builder
+          target: ${{ matrix.target }}
           push: true
           tags: |
-            ${{ env.RUST_BUILDER_IMAGE }}:${{ github.sha }}
-            ${{ env.RUST_BUILDER_IMAGE }}:main
-          cache-from: type=gha,scope=rust-builder
-          cache-to: type=gha,scope=rust-builder,mode=max
-
-  build-wild-linker-image:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-
-      - name: Build wild linker image
-        uses: docker/build-push-action@v6
-        with:
-          context: server
-          file: server/Dockerfile.toolchain
-          target: wild-linker-builder
-          push: true
-          tags: |
-            ${{ env.WILD_LINKER_IMAGE }}:${{ github.sha }}
-            ${{ env.WILD_LINKER_IMAGE }}:main
-          cache-from: type=gha,scope=wild-linker-builder
-          cache-to: type=gha,scope=wild-linker-builder,mode=max
+            ${{ matrix.image }}:${{ github.sha }}
+            ${{ matrix.image }}:main
+          cache-from: type=gha,scope=${{ matrix.cache_scope }}
+          cache-to: type=gha,scope=${{ matrix.cache_scope }},mode=max
 
   build-server-image:
     runs-on: ubuntu-latest
-    needs:
-      - build-rust-builder-image
-      - build-wild-linker-image
+    needs: build-toolchain-images
     steps:
-      - uses: actions/checkout@v6
+      - *checkout
 
-      - uses: docker/setup-buildx-action@v3
+      - *setup_buildx
 
-      - uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+      - *docker_login
 
       - name: Build server image
         uses: docker/build-push-action@v6
@@ -115,15 +99,11 @@ jobs:
   build-web-image:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - *checkout
 
-      - uses: docker/setup-buildx-action@v3
+      - *setup_buildx
 
-      - uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+      - *docker_login
 
       - name: Build web image
         uses: docker/build-push-action@v6

@@ -36,7 +36,10 @@ export function createEventFormSubmission(props: Props) {
 						void queryClient.invalidateQueries({
 							queryKey: [EventQueryOption.QUERY_KEYS.DETAIL_KEYWORD],
 						})
-						void navigator({ to: `/correction/${result.correction_id}` })
+						void navigator({
+							to: "/correction/$id",
+							params: { id: result.correction_id.toString() },
+						})
 					},
 					onError(error) {
 						if (import.meta.env.DEV) {
@@ -59,7 +62,10 @@ export function createEventFormSubmission(props: Props) {
 					void queryClient.invalidateQueries({
 						queryKey: [EventQueryOption.QUERY_KEYS.DETAIL_ID, props.event.id],
 					})
-					void navigator({ to: `/correction/${result.correction_id}` })
+					void navigator({
+						to: "/correction/$id",
+						params: { id: result.correction_id.toString() },
+					})
 				},
 				onError(error) {
 					if (import.meta.env.DEV) {
