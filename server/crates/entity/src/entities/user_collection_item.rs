@@ -8,11 +8,12 @@ use super::sea_orm_active_enums::EntityType;
 #[derive(
     Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
 )]
-#[sea_orm(table_name = "user_list_item")]
+#[sea_orm(table_name = "user_collection_item")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub user_list_id: i32,
+    pub user_collection_id: i32,
+    pub position: i32,
     pub entity_id: Option<i32>,
     pub entity_type: EntityType,
     #[sea_orm(column_type = "Text", nullable)]
@@ -22,18 +23,18 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::user_list::Entity",
-        from = "Column::UserListId",
-        to = "super::user_list::Column::Id",
+        belongs_to = "super::user_collection::Entity",
+        from = "Column::UserCollectionId",
+        to = "super::user_collection::Column::Id",
         on_update = "Cascade",
         on_delete = "Cascade"
     )]
-    UserList,
+    UserCollection,
 }
 
-impl Related<super::user_list::Entity> for Entity {
+impl Related<super::user_collection::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::UserList.def()
+        Relation::UserCollection.def()
     }
 }
 

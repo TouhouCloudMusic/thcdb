@@ -57,6 +57,7 @@ migrations![
     m20260223_000000_user_role_on_delete_cascade,
     m20260401_000000_create_song_relation_history,
     m20260415_000000_fix_tag_alternative_name_fkeys,
+    m20260418_000000_add_user_collection_item_position,
 ];
 
 macro_rules! migration {

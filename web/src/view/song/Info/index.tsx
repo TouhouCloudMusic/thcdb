@@ -5,6 +5,7 @@ import { createContext, Show } from "solid-js"
 import { Tab } from "~/component/atomic"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
+import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 import { EntityTagsSectionContainer } from "~/view/entity_tags/EntityTagsSection"
 
@@ -46,6 +47,12 @@ export function SongInfoPage(props: SongInfoPageProps) {
 							entityType="song"
 							entityId={props.song.id}
 						/>
+						<div class="border-t border-slate-200 pt-4">
+							<AddToUserCollectionButton
+								entityType="Song"
+								entityId={props.song.id}
+							/>
+						</div>
 					</div>
 					<div class="col-span-full flex flex-col gap-8">
 						<SongInfoTabs />

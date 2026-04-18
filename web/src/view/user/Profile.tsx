@@ -1,3 +1,4 @@
+import { Tabs } from "@kobalte/core/tabs"
 import { t } from "@lingui/core/macro"
 import type { UserProfile, UserRoleEnum } from "@thc/api"
 import type { ComponentProps } from "solid-js"
@@ -11,15 +12,28 @@ import { Avatar } from "~/component/atomic/avatar"
 import { Button } from "~/component/atomic/button"
 import { Markdown } from "~/component/markdown"
 import { USER_ROLE_NAMES } from "~/domain/user/constants"
+import type { UserCollection } from "~/hey-api"
 import { PageLayout } from "~/layout/PageLayout"
 import { imgUrl } from "~/utils/adapter/static_file"
+import { CollectionFormDialog } from "~/view/collection/CollectionFormDialog"
+
+type ProfileTabValue = "collections" | "activity"
+type ProfileTabState = {
+	value: ProfileTabValue
+	onChange: (value: ProfileTabValue) => void
+}
 
 type Props = {
 	data: UserProfile
 	isCurrentUser: boolean
 	pins: readonly PinItem[]
 	activity: readonly ActivityItem[]
+	tab?: ProfileTabState
 	action?: ProfileActionProps
+	collections: readonly UserCollection[]
+	hasMoreCollections: boolean
+	isFetchingMoreCollections: boolean
+	onLoadMoreCollections: () => void
 }
 
 const enum UserType {
@@ -32,6 +46,9 @@ type Metric = {
 	label: string
 	value: string
 }
+
+type CollectionVisibilityFilter = "all" | "public" | "private"
+type CollectionSortValue = "newest" | "name" | "items"
 
 export type ActivityItem = {
 	at: string
@@ -62,6 +79,66 @@ export type PinItem = {
 		| { to: "/event/$id"; params: { id: string } }
 		| { to: "/label/$id"; params: { id: string } }
 }
+
+const PROFILE_TAB_ITEMS = [
+	{
+		get label() {
+			return t`Activity`
+		},
+		value: "activity" as const,
+	},
+	{
+		get label() {
+			return t`Collections`
+		},
+		value: "collections" as const,
+	},
+]
+
+const COLLECTION_VISIBILITY_FILTERS = [
+	{
+		get label() {
+			return t`All`
+		},
+		value: "all" as const,
+	},
+	{
+		get label() {
+			return t`Public`
+		},
+		value: "public" as const,
+	},
+	{
+		get label() {
+			return t`Private`
+		},
+		value: "private" as const,
+	},
+]
+
+const COLLECTION_SORT_OPTIONS = [
+	{
+		get label() {
+			return t`Newest`
+		},
+		value: "newest" as const,
+	},
+	{
+		get label() {
+			return t`Name`
+		},
+		value: "name" as const,
+	},
+	{
+		get label() {
+			return t`Item count`
+		},
+		value: "items" as const,
+	},
+]
+
+const COLLECTION_TOOL_CONTROL_CLASS =
+	"h-9 rounded-md border border-slate-400 bg-primary px-3 text-sm text-primary outline-none transition-colors placeholder:text-secondary hover:border-slate-500 focus:border-slate-500 focus:ring-1 focus:ring-slate-400"
 
 export function Profile(props: Props) {
 	const userType = createMemo(() => {
@@ -159,10 +236,19 @@ export function Profile(props: Props) {
 
 				{/* Main content */}
 				<main class="flex-1 min-w-0 flex flex-col gap-14 lg:mt-8">
+					<CollectionsAndActivitySection
+						defaultValue={props.tab?.value ?? "activity"}
+						tab={props.tab}
+						collections={props.collections}
+						hasMoreCollections={props.hasMoreCollections}
+						isFetchingMoreCollections={props.isFetchingMoreCollections}
+						onLoadMoreCollections={props.onLoadMoreCollections}
+						isCurrentUser={props.isCurrentUser}
+						activity={props.activity}
+					/>
 					<Show when={props.pins.length > 0}>
 						<PinsSection items={props.pins} />
 					</Show>
-					<ActivitySection items={props.activity} />
 				</main>
 			</div>
 		</PageLayout>
@@ -317,7 +403,7 @@ function PinCard(props: { item: PinItem }) {
 		<Link
 			to={props.item.to.to}
 			params={props.item.to.params}
-			class="group flex flex-col h-full bg-primary border border-slate-200 rounded-sm transition-colors hover:border-slate-300 no-underline outline-none overflow-hidden"
+			class="group flex flex-col h-full bg-primary border border-slate-200 rounded-md transition-colors hover:border-slate-300 no-underline outline-none overflow-hidden"
 		>
 			<Show when={props.item.coverUrl}>
 				{(src) => (
@@ -357,35 +443,75 @@ function PinCard(props: { item: PinItem }) {
 	)
 }
 
-function ActivitySection(props: { items: readonly ActivityItem[] }) {
-	return (
-		<section class="flex flex-col gap-5">
-			<h2 class="text-lg text-primary pb-2 border-b border-slate-100">
-				Recent Activity
-			</h2>
+function toProfileTabValue(value: string): ProfileTabValue {
+	if (value === "collections") return "collections"
+	return "activity"
+}
 
-			<Show
-				when={props.items.length > 0}
-				fallback={<SectionEmptyState message={t`No recent activity.`} />}
+function CollectionsAndActivitySection(props: {
+	defaultValue: ProfileTabValue
+	tab?: ProfileTabState
+	collections: readonly UserCollection[]
+	hasMoreCollections: boolean
+	isFetchingMoreCollections: boolean
+	onLoadMoreCollections: () => void
+	isCurrentUser: boolean
+	activity: readonly ActivityItem[]
+}) {
+	const onTabChange = (value: string) => {
+		props.tab?.onChange(toProfileTabValue(value))
+	}
+
+	return (
+		<section>
+			<Tabs
+				defaultValue={props.defaultValue}
+				value={props.tab?.value}
+				onChange={props.tab === undefined ? undefined : onTabChange}
+				class="flex flex-col gap-5"
 			>
-				<div class="flex flex-col">
-					<For each={props.items}>
-						{(item, index) => (
-							<ActivityRow
-								item={item}
-								isLast={index() === props.items.length - 1}
-							/>
+				<Tabs.List class="relative grid w-full grid-cols-2 rounded-xl bg-secondary p-1 ring-1 ring-slate-200 sm:w-[320px]">
+					<For each={PROFILE_TAB_ITEMS}>
+						{(item) => (
+							<Tabs.Trigger
+								as="button"
+								value={item.value}
+								class="relative z-10 flex min-w-0 items-center justify-center rounded-lg px-4 py-2.5 text-sm text-tertiary outline-none transition-colors duration-150 hover:text-primary focus-visible:outline focus-visible:outline-reimu-600 data-selected:text-primary"
+							>
+								{item.label}
+							</Tabs.Trigger>
 						)}
 					</For>
-				</div>
-			</Show>
+					<Tabs.Indicator class="absolute inset-y-1 rounded-lg bg-primary shadow-xs ring-1 ring-slate-200 transition-all duration-200" />
+				</Tabs.List>
+
+				<Tabs.Content
+					value="activity"
+					class="outline-none"
+				>
+					<ActivityPanel items={props.activity} />
+				</Tabs.Content>
+
+				<Tabs.Content
+					value="collections"
+					class="outline-none"
+				>
+					<CollectionsPanel
+						items={props.collections}
+						hasMoreItems={props.hasMoreCollections}
+						isFetchingMoreItems={props.isFetchingMoreCollections}
+						onLoadMore={props.onLoadMoreCollections}
+						isCurrentUser={props.isCurrentUser}
+					/>
+				</Tabs.Content>
+			</Tabs>
 		</section>
 	)
 }
 
 function SectionEmptyState(props: { message: string }) {
 	return (
-		<div class="border border-slate-200 rounded-sm bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
+		<div class="border border-slate-200 rounded-md bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
 			{props.message}
 		</div>
 	)
@@ -443,11 +569,248 @@ function RoleBadge(props: { role: UserRoleEnum }) {
 		<Show when={props.role !== "User"}>
 			<Badge
 				color={roleColor(props.role)}
-				class="rounded-sm border border-slate-200 bg-primary px-2 py-0.5 text-xs font-medium"
+				class="rounded-md border border-slate-200 bg-primary shadow-xs shadow-slate-950/5 px-2 py-0.5 text-xs font-medium"
 			>
 				{props.role}
 			</Badge>
 		</Show>
+	)
+}
+
+function CollectionsPanel(props: {
+	items: readonly UserCollection[]
+	hasMoreItems: boolean
+	isFetchingMoreItems: boolean
+	onLoadMore: () => void
+	isCurrentUser: boolean
+}) {
+	const [collectionFormOpen, setCollectionFormOpen] = createSignal(false)
+	const [searchQuery, setSearchQuery] = createSignal("")
+	const [visibilityFilter, setVisibilityFilter] =
+		createSignal<CollectionVisibilityFilter>("all")
+	const [sortValue, setSortValue] = createSignal<CollectionSortValue>("newest")
+
+	const visibleItems = createMemo(() => {
+		const keyword = searchQuery().trim().toLocaleLowerCase()
+		const visibility = visibilityFilter()
+		const sort = sortValue()
+
+		const items = props.items
+			.filter((item) => {
+				if (visibility === "public") return item.is_public
+				if (visibility === "private") return !item.is_public
+				return true
+			})
+			.filter((item) => {
+				if (keyword.length === 0) return true
+				return `${item.name} ${item.description}`
+					.toLocaleLowerCase()
+					.includes(keyword)
+			})
+
+		return [...items].sort((a, b) => compareCollections(a, b, sort))
+	})
+
+	const emptyMessage = createMemo(() => {
+		if (props.items.length > 0) return t`No collections match your filters`
+		if (props.isCurrentUser) return t`You haven't created any collections yet`
+		return t`No collections found`
+	})
+
+	return (
+		<div class="flex flex-col gap-5">
+			<div class="flex flex-col gap-3 border-b border-slate-200 pb-4 lg:flex-row lg:items-center lg:justify-between">
+				<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+					<input
+						type="search"
+						value={searchQuery()}
+						placeholder={t`Search collections`}
+						aria-label={t`Search collections`}
+						onInput={(e) => setSearchQuery(e.currentTarget.value)}
+						class={twMerge(COLLECTION_TOOL_CONTROL_CLASS, "w-full sm:w-56")}
+					/>
+				</div>
+
+				<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+					<select
+						value={visibilityFilter()}
+						aria-label={t`Filter collections`}
+						onChange={(e) =>
+							setVisibilityFilter(
+								toCollectionVisibilityFilter(e.currentTarget.value),
+							)
+						}
+						class={twMerge(COLLECTION_TOOL_CONTROL_CLASS, "sm:w-36")}
+					>
+						<For each={COLLECTION_VISIBILITY_FILTERS}>
+							{(option) => <option value={option.value}>{option.label}</option>}
+						</For>
+					</select>
+
+					<select
+						value={sortValue()}
+						aria-label={t`Sort collections`}
+						onChange={(e) =>
+							setSortValue(toCollectionSortValue(e.currentTarget.value))
+						}
+						class={twMerge(COLLECTION_TOOL_CONTROL_CLASS, "sm:w-40")}
+					>
+						<For each={COLLECTION_SORT_OPTIONS}>
+							{(option) => <option value={option.value}>{option.label}</option>}
+						</For>
+					</select>
+
+					<Show when={props.isCurrentUser}>
+						<Button
+							variant="SecondaryV2"
+							color="Slate"
+							size="Sm"
+							class="h-9 px-3"
+							onClick={() => setCollectionFormOpen(true)}
+						>
+							{t`New collection`}
+						</Button>
+					</Show>
+				</div>
+			</div>
+
+			<Show
+				when={visibleItems().length > 0}
+				fallback={<SectionEmptyState message={emptyMessage()} />}
+			>
+				<ul class="divide-y divide-slate-100 border-y border-slate-200">
+					<For each={visibleItems()}>
+						{(item) => <CollectionRow item={item} />}
+					</For>
+				</ul>
+			</Show>
+
+			<Show when={props.hasMoreItems || props.isFetchingMoreItems}>
+				<div class="flex justify-center">
+					<Button
+						variant="SecondaryV2"
+						color="Slate"
+						size="Sm"
+						disabled={props.isFetchingMoreItems}
+						onClick={props.onLoadMore}
+					>
+						{props.isFetchingMoreItems ? t`Loading...` : t`Load more`}
+					</Button>
+				</div>
+			</Show>
+
+			<Show when={collectionFormOpen()}>
+				<CollectionFormDialog
+					open={collectionFormOpen()}
+					onOpenChange={setCollectionFormOpen}
+				/>
+			</Show>
+		</div>
+	)
+}
+
+function toCollectionVisibilityFilter(
+	value: string,
+): CollectionVisibilityFilter {
+	switch (value) {
+		case "public": {
+			return "public"
+		}
+		case "private": {
+			return "private"
+		}
+		default: {
+			return "all"
+		}
+	}
+}
+
+function toCollectionSortValue(value: string): CollectionSortValue {
+	switch (value) {
+		case "name": {
+			return "name"
+		}
+		case "items": {
+			return "items"
+		}
+		default: {
+			return "newest"
+		}
+	}
+}
+
+function compareCollections(
+	a: UserCollection,
+	b: UserCollection,
+	sort: CollectionSortValue,
+): number {
+	switch (sort) {
+		case "name": {
+			return a.name.localeCompare(b.name)
+		}
+		case "items": {
+			return b.item_count - a.item_count
+		}
+		case "newest": {
+			return b.id - a.id
+		}
+	}
+}
+
+function ActivityPanel(props: { items: readonly ActivityItem[] }) {
+	return (
+		<Show
+			when={props.items.length > 0}
+			fallback={<SectionEmptyState message={t`No activity`} />}
+		>
+			<div class="flex flex-col">
+				<For each={props.items}>
+					{(item, index) => (
+						<ActivityRow
+							item={item}
+							isLast={index() === props.items.length - 1}
+						/>
+					)}
+				</For>
+			</div>
+		</Show>
+	)
+}
+
+function CollectionRow(props: { item: UserCollection }) {
+	return (
+		<li>
+			<Link
+				to="/collection/$id"
+				params={{ id: props.item.id.toString() }}
+				underline={false}
+				class="group grid gap-3 px-1 py-4 no-underline outline-none transition-colors hover:bg-slate-50 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-3"
+			>
+				<div class="min-w-0">
+					<div class="flex min-w-0 items-baseline gap-2">
+						<h3 class="truncate text-[15px] font-medium text-slate-900 transition-colors group-hover:text-sky-700">
+							{props.item.name}
+						</h3>
+						<span class="text-xs text-tertiary">
+							{props.item.is_public ? t`Public` : t`Private`}
+						</span>
+					</div>
+					<p class="mt-1 line-clamp-1 text-sm text-slate-500">
+						{props.item.description || t`No description`}
+					</p>
+				</div>
+
+				<div class="flex items-center gap-4 text-xs text-slate-500 sm:justify-end">
+					<span class="tabular-nums">
+						{props.item.item_count}{" "}
+						{props.item.item_count === 1 ? t`item` : t`items`}
+					</span>
+					<span class="text-slate-300 transition-colors group-hover:text-slate-500">
+						&gt;
+					</span>
+				</div>
+			</Link>
+		</li>
 	)
 }
 

@@ -1,0 +1,1 @@
+super::migration!(m20260418_000000_add_user_collection_item_position);

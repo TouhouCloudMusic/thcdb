@@ -394,6 +394,10 @@ function StoryRoot(props: StoryRootProps) {
 
 	return (
 		<Profile
+			collections={[]}
+			hasMoreCollections={false}
+			isFetchingMoreCollections={false}
+			onLoadMoreCollections={() => undefined}
 			data={state().data}
 			isCurrentUser={state().isCurrentUser}
 			pins={state().pins}

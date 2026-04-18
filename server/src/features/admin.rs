@@ -89,27 +89,17 @@ async fn admin_users(
             .filter(Func::lower(user::Column::Name.into_expr()).like(pattern));
     }
 
-    let page = pagination.page();
-    let page_size = pagination.limit();
     let total_items = select
         .clone()
         .count(&repo.conn)
         .await
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
-    let total_pages = if total_items == 0 {
-        0
-    } else {
-        let pages = total_items.div_ceil(u64::from(page_size));
-        u32::try_from(pages).unwrap_or(u32::MAX)
-    };
-    let offset =
-        u64::from(page.saturating_sub(1)).saturating_mul(u64::from(page_size));
 
     let models = select
         .order_by_asc(user::Column::Id)
-        .offset(offset)
-        .limit(u64::from(page_size))
+        .offset(pagination.offset())
+        .limit(u64::from(pagination.limit()))
         .find_with_related(user_role::Entity)
         .all(&repo.conn)
         .await
@@ -134,13 +124,7 @@ async fn admin_users(
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
 
-    Ok(Data::new(PageResponse {
-        items,
-        page,
-        page_size,
-        total_items,
-        total_pages,
-    }))
+    Ok(Data::new(pagination.to_response(items, total_items)))
 }
 
 #[derive(Deserialize, ToSchema)]

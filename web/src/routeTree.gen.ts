@@ -42,6 +42,7 @@ import { Route as EventExploreRouteImport } from './route/event/explore'
 import { Route as EventIdRouteImport } from './route/event/$id'
 import { Route as CorrectionMockRouteImport } from './route/correction/mock'
 import { Route as CorrectionIdRouteImport } from './route/correction/$id'
+import { Route as CollectionIdRouteImport } from './route/collection/$id'
 import { Route as AuthForgotPasswordRouteImport } from './route/auth/forgot-password'
 import { Route as ArtistNewRouteImport } from './route/artist/new'
 import { Route as ArtistExploreRouteImport } from './route/artist/explore'
@@ -231,6 +232,11 @@ const CorrectionIdRoute = CorrectionIdRouteImport.update({
   path: '/correction/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CollectionIdRoute = CollectionIdRouteImport.update({
+  id: '/collection/$id',
+  path: '/collection/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   id: '/auth/forgot-password',
   path: '/auth/forgot-password',
@@ -356,6 +362,7 @@ export interface FileRoutesByFullPath {
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/collection/$id': typeof CollectionIdRoute
   '/correction/$id': typeof CorrectionIdRoute
   '/correction/mock': typeof CorrectionMockRoute
   '/event/$id': typeof EventIdRoute
@@ -414,6 +421,7 @@ export interface FileRoutesByTo {
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/collection/$id': typeof CollectionIdRoute
   '/correction/$id': typeof CorrectionIdRoute
   '/correction/mock': typeof CorrectionMockRoute
   '/event/$id': typeof EventIdRoute
@@ -473,6 +481,7 @@ export interface FileRoutesById {
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/collection/$id': typeof CollectionIdRoute
   '/correction/$id': typeof CorrectionIdRoute
   '/correction/mock': typeof CorrectionMockRoute
   '/event/$id': typeof EventIdRoute
@@ -533,6 +542,7 @@ export interface FileRouteTypes {
     | '/artist/explore'
     | '/artist/new'
     | '/auth/forgot-password'
+    | '/collection/$id'
     | '/correction/$id'
     | '/correction/mock'
     | '/event/$id'
@@ -591,6 +601,7 @@ export interface FileRouteTypes {
     | '/artist/explore'
     | '/artist/new'
     | '/auth/forgot-password'
+    | '/collection/$id'
     | '/correction/$id'
     | '/correction/mock'
     | '/event/$id'
@@ -649,6 +660,7 @@ export interface FileRouteTypes {
     | '/artist/explore'
     | '/artist/new'
     | '/auth/forgot-password'
+    | '/collection/$id'
     | '/correction/$id'
     | '/correction/mock'
     | '/event/$id'
@@ -708,6 +720,7 @@ export interface RootRouteChildren {
   ArtistExploreRoute: typeof ArtistExploreRoute
   ArtistNewRoute: typeof ArtistNewRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
+  CollectionIdRoute: typeof CollectionIdRoute
   CorrectionIdRoute: typeof CorrectionIdRoute
   CorrectionMockRoute: typeof CorrectionMockRoute
   EventIdRoute: typeof EventIdRoute
@@ -991,6 +1004,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof CorrectionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/collection/$id': {
+      id: '/collection/$id'
+      path: '/collection/$id'
+      fullPath: '/collection/$id'
+      preLoaderRoute: typeof CollectionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/forgot-password': {
       id: '/auth/forgot-password'
       path: '/auth/forgot-password'
@@ -1164,6 +1184,7 @@ const rootRouteChildren: RootRouteChildren = {
   ArtistExploreRoute: ArtistExploreRoute,
   ArtistNewRoute: ArtistNewRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
+  CollectionIdRoute: CollectionIdRoute,
   CorrectionIdRoute: CorrectionIdRoute,
   CorrectionMockRoute: CorrectionMockRoute,
   EventIdRoute: EventIdRoute,

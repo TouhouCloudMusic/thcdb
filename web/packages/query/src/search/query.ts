@@ -180,6 +180,35 @@ export function tags(
 	})
 }
 
+export function userCollections(
+	search_term: string,
+	limit = DEFAULT_LIMIT,
+	enabled = true,
+) {
+	return infiniteQueryOptions({
+		queryKey: ["search::userCollection", search_term, limit],
+		queryFn: async (context) => {
+			const result = await SearchApi.searchUserCollections({
+				keyword: search_term,
+				limit,
+				page: context.pageParam,
+			})
+
+			return Either.match(result, {
+				onRight: identity,
+				onLeft: (error) => {
+					throw error
+				},
+			})
+		},
+		initialPageParam: 1,
+		getNextPageParam: (last) =>
+			last.page < last.total_pages ? last.page + 1 : undefined,
+		throwOnError: true,
+		enabled,
+	})
+}
+
 export type SearchResultItem =
 	| SimpleArtist
 	| SongRelease

@@ -58,6 +58,13 @@ export type ArtistReleaseArtist = {
 	name: string
 }
 
+export type ArtistSummary = {
+	id: number
+	name: string
+	artist_type: ArtistType
+	profile_image_url?: string | null
+}
+
 export type ArtistType = "Solo" | "Multiple" | "Unknown"
 
 export type AuthCredential = {
@@ -125,6 +132,12 @@ export type CorrectionType = "Create" | "Update" | "Delete"
 export type CorrectionUserSummary = {
 	id: number
 	name: string
+}
+
+export type CreateUserCollectionItemRequest = {
+	entity_id: number
+	entity_type: UserCollectionItemEntityType
+	description?: string | null
 }
 
 export type CreditRole = {
@@ -366,6 +379,16 @@ export type DataPageTag = {
 	data: PageResponseTag
 }
 
+export type DataPageUserCollection = {
+	status: string
+	data: PageResponseUserCollection
+}
+
+export type DataPageUserCollectionItemDetail = {
+	status: string
+	data: PageResponseUserCollectionItemDetail
+}
+
 export type DataPageUserSummary = {
 	status: string
 	data: PageResponseUserSummary
@@ -459,6 +482,16 @@ export type DataSignUpResponse = {
 export type DataUnreadCount = {
 	status: string
 	data: number
+}
+
+export type DataUserCollection = {
+	status: string
+	data: UserCollection
+}
+
+export type DataUserCollectionItem = {
+	status: string
+	data: UserCollectionItem
 }
 
 export type DataUserProfile = {
@@ -624,6 +657,29 @@ export type EditableUserRole = "Moderator"
 
 export type EntityIdent = string
 
+/**
+ * Discriminated union of entity summaries, tagged by `entity_type`.
+ */
+export type EntitySummary =
+	| (ArtistSummary & {
+			entity_type: "Artist"
+	  })
+	| (ReleaseSummary & {
+			entity_type: "Release"
+	  })
+	| (SongSummary & {
+			entity_type: "Song"
+	  })
+	| (TagSummary & {
+			entity_type: "Tag"
+	  })
+	| (EventSummary & {
+			entity_type: "Event"
+	  })
+	| (LabelSummary & {
+			entity_type: "Label"
+	  })
+
 export type EntityType =
 	| "Artist"
 	| "Label"
@@ -648,6 +704,12 @@ export type Event = {
 	start_date?: null | DateWithPrecision
 	end_date?: null | DateWithPrecision
 	alternative_names?: Array<AlternativeName>
+}
+
+export type EventSummary = {
+	id: number
+	name: string
+	start_date?: null | DateWithPrecision
 }
 
 export type ForgotPasswordRequest = {
@@ -723,6 +785,11 @@ export type Label = {
 	dissolved_date?: null | DateWithPrecision
 	founders: Array<number>
 	localized_names: Array<LocalizedName>
+}
+
+export type LabelSummary = {
+	id: number
+	name: string
 }
 
 export type Language = {
@@ -1022,6 +1089,8 @@ export type NewTrack = {
 	artists: Array<number>
 }
 
+export type NonEmptyString = string
+
 export type PageResponseArtist = {
 	items: Array<{
 		id: number
@@ -1145,6 +1214,36 @@ export type PageResponseTag = {
 	total_pages: number
 }
 
+export type PageResponseUserCollection = {
+	items: Array<{
+		id: number
+		owner: UserCollectionOwner
+		name: string
+		description: string
+		is_public: boolean
+		item_count: number
+	}>
+	page: number
+	page_size: number
+	total_items: number
+	total_pages: number
+}
+
+export type PageResponseUserCollectionItemDetail = {
+	items: Array<{
+		id: number
+		entity_id?: number | null
+		entity_type: EntityType
+		description?: string | null
+		position: number
+		entity?: null | EntitySummary
+	}>
+	page: number
+	page_size: number
+	total_items: number
+	total_pages: number
+}
+
 export type PageResponseUserSummary = {
 	items: Array<{
 		id: number
@@ -1201,6 +1300,15 @@ export type ReleaseImageQueueTarget = {
 
 export type ReleaseImageType = "Cover"
 
+export type ReleaseSummary = {
+	id: number
+	title: string
+	release_type: ReleaseType
+	release_date?: null | DateWithPrecision
+	cover_art_url?: string | null
+	artists?: Array<SimpleArtist>
+}
+
 export type ReleaseTrack = {
 	id: number
 	track_number?: string | null
@@ -1221,6 +1329,10 @@ export type ReleaseType =
 	| "Compilation"
 	| "Demo"
 	| "Other"
+
+export type ReorderUserCollectionItemsRequest = {
+	item_ids: Array<number>
+}
 
 export type ResendVerificationEmailRequest = {
 	email: string
@@ -1326,6 +1438,13 @@ export type SongRelease = {
 	cover_art_url?: string | null
 }
 
+export type SongSummary = {
+	id: number
+	title: string
+	artists?: Array<SimpleArtist>
+	cover_art_url?: string | null
+}
+
 export type SortDirection = "asc" | "desc"
 
 export type Tag = {
@@ -1356,6 +1475,12 @@ export type TagRelation = {
 
 export type TagRelationType = "Inherit" | "Derive"
 
+export type TagSummary = {
+	id: number
+	name: string
+	tag_type: TagType
+}
+
 export type TagType = "Descriptor" | "Genre" | "Movement" | "Scene"
 
 export type Tenure = {
@@ -1369,6 +1494,42 @@ export type UploadAvatar = {
 
 export type UploadProfileBanner = {
 	data: Blob | File
+}
+
+export type UserCollection = {
+	id: number
+	owner: UserCollectionOwner
+	name: string
+	description: string
+	is_public: boolean
+	item_count: number
+}
+
+export type UserCollectionItem = {
+	id: number
+	entity_id?: number | null
+	entity_type: EntityType
+	description?: string | null
+	position: number
+}
+
+export type UserCollectionItemEntityType =
+	| "Artist"
+	| "Label"
+	| "Release"
+	| "Song"
+	| "Tag"
+	| "Event"
+
+export type UserCollectionMutationRequest = {
+	name: NonEmptyString
+	description: string
+	is_public: boolean
+}
+
+export type UserCollectionOwner = {
+	id: number
+	name: string
 }
 
 export type UserProfile = {
@@ -1463,8 +1624,8 @@ export type AdminUsersData = {
 	path?: never
 	query?: {
 		keyword?: string | null
-		limit?: number | null
-		page?: number | null
+		limit?: number
+		page?: number
 	}
 	url: "/admin/users"
 }
@@ -1554,8 +1715,8 @@ export type ExploreArtistData = {
 		artist_type?: Array<ArtistType> | null
 		sort_field?: null | CorrectionSortField
 		sort_direction?: null | SortDirection
-		limit?: number | null
-		page?: number | null
+		limit?: number
+		page?: number
 	}
 	url: "/artist/explore"
 }
@@ -1869,6 +2030,335 @@ export type UploadAvatarResponses = {
 
 export type UploadAvatarResponse =
 	UploadAvatarResponses[keyof UploadAvatarResponses]
+
+export type CreateUserCollectionData = {
+	body: UserCollectionMutationRequest
+	path?: never
+	query?: never
+	url: "/collection"
+}
+
+export type CreateUserCollectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type CreateUserCollectionError =
+	CreateUserCollectionErrors[keyof CreateUserCollectionErrors]
+
+export type CreateUserCollectionResponses = {
+	200: DataUserCollection
+}
+
+export type CreateUserCollectionResponse =
+	CreateUserCollectionResponses[keyof CreateUserCollectionResponses]
+
+export type DeleteUserCollectionData = {
+	body?: never
+	path: {
+		/**
+		 * Collection id
+		 */
+		id: number
+	}
+	query?: never
+	url: "/collection/{id}"
+}
+
+export type DeleteUserCollectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type DeleteUserCollectionError =
+	DeleteUserCollectionErrors[keyof DeleteUserCollectionErrors]
+
+export type DeleteUserCollectionResponses = {
+	200: Message
+}
+
+export type DeleteUserCollectionResponse =
+	DeleteUserCollectionResponses[keyof DeleteUserCollectionResponses]
+
+export type UserCollectionDetailData = {
+	body?: never
+	path: {
+		/**
+		 * Collection id
+		 */
+		id: number
+	}
+	query?: never
+	url: "/collection/{id}"
+}
+
+export type UserCollectionDetailErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UserCollectionDetailError =
+	UserCollectionDetailErrors[keyof UserCollectionDetailErrors]
+
+export type UserCollectionDetailResponses = {
+	200: DataUserCollection
+}
+
+export type UserCollectionDetailResponse =
+	UserCollectionDetailResponses[keyof UserCollectionDetailResponses]
+
+export type UpdateUserCollectionData = {
+	body: UserCollectionMutationRequest
+	path: {
+		/**
+		 * Collection id
+		 */
+		id: number
+	}
+	query?: never
+	url: "/collection/{id}"
+}
+
+export type UpdateUserCollectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UpdateUserCollectionError =
+	UpdateUserCollectionErrors[keyof UpdateUserCollectionErrors]
+
+export type UpdateUserCollectionResponses = {
+	200: DataUserCollection
+}
+
+export type UpdateUserCollectionResponse =
+	UpdateUserCollectionResponses[keyof UpdateUserCollectionResponses]
+
+export type UserCollectionItemsData = {
+	body?: never
+	path: {
+		/**
+		 * Collection id
+		 */
+		id: number
+	}
+	query?: {
+		limit?: number
+		page?: number
+	}
+	url: "/collection/{id}/items"
+}
+
+export type UserCollectionItemsErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UserCollectionItemsError =
+	UserCollectionItemsErrors[keyof UserCollectionItemsErrors]
+
+export type UserCollectionItemsResponses = {
+	200: DataPageUserCollectionItemDetail
+}
+
+export type UserCollectionItemsResponse =
+	UserCollectionItemsResponses[keyof UserCollectionItemsResponses]
+
+export type CreateUserCollectionItemData = {
+	body: CreateUserCollectionItemRequest
+	path: {
+		/**
+		 * Collection id
+		 */
+		id: number
+	}
+	query?: never
+	url: "/collection/{id}/items"
+}
+
+export type CreateUserCollectionItemErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type CreateUserCollectionItemError =
+	CreateUserCollectionItemErrors[keyof CreateUserCollectionItemErrors]
+
+export type CreateUserCollectionItemResponses = {
+	200: DataUserCollectionItem
+}
+
+export type CreateUserCollectionItemResponse =
+	CreateUserCollectionItemResponses[keyof CreateUserCollectionItemResponses]
+
+export type ReorderUserCollectionItemsData = {
+	body: ReorderUserCollectionItemsRequest
+	path: {
+		/**
+		 * Collection id
+		 */
+		id: number
+	}
+	query?: never
+	url: "/collection/{id}/items/reorder"
+}
+
+export type ReorderUserCollectionItemsErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type ReorderUserCollectionItemsError =
+	ReorderUserCollectionItemsErrors[keyof ReorderUserCollectionItemsErrors]
+
+export type ReorderUserCollectionItemsResponses = {
+	200: Message
+}
+
+export type ReorderUserCollectionItemsResponse =
+	ReorderUserCollectionItemsResponses[keyof ReorderUserCollectionItemsResponses]
+
+export type DeleteUserCollectionItemData = {
+	body?: never
+	path: {
+		/**
+		 * Collection id
+		 */
+		id: number
+		/**
+		 * Collection item id
+		 */
+		item_id: number
+	}
+	query?: never
+	url: "/collection/{id}/items/{item_id}"
+}
+
+export type DeleteUserCollectionItemErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type DeleteUserCollectionItemError =
+	DeleteUserCollectionItemErrors[keyof DeleteUserCollectionItemErrors]
+
+export type DeleteUserCollectionItemResponses = {
+	200: Message
+}
+
+export type DeleteUserCollectionItemResponse =
+	DeleteUserCollectionItemResponses[keyof DeleteUserCollectionItemResponses]
+
+export type PublicUserCollectionsData = {
+	body?: never
+	path?: never
+	query?: {
+		limit?: number
+		page?: number
+	}
+	url: "/collections/public"
+}
+
+export type PublicUserCollectionsErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type PublicUserCollectionsError =
+	PublicUserCollectionsErrors[keyof PublicUserCollectionsErrors]
+
+export type PublicUserCollectionsResponses = {
+	200: DataPageUserCollection
+}
+
+export type PublicUserCollectionsResponse =
+	PublicUserCollectionsResponses[keyof PublicUserCollectionsResponses]
+
+export type SearchUserCollectionsData = {
+	body?: never
+	path?: never
+	query: {
+		keyword: NonEmptyString
+		limit?: number
+		page?: number
+	}
+	url: "/collections/search"
+}
+
+export type SearchUserCollectionsErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type SearchUserCollectionsError =
+	SearchUserCollectionsErrors[keyof SearchUserCollectionsErrors]
+
+export type SearchUserCollectionsResponses = {
+	200: DataPageUserCollection
+}
+
+export type SearchUserCollectionsResponse =
+	SearchUserCollectionsResponses[keyof SearchUserCollectionsResponses]
 
 export type CompareCorrectionsData = {
 	body?: never
@@ -2233,8 +2723,8 @@ export type ExploreEventData = {
 		start_date_to?: string | null
 		sort_field?: null | CorrectionSortField
 		sort_direction?: null | SortDirection
-		limit?: number | null
-		page?: number | null
+		limit?: number
+		page?: number
 	}
 	url: "/event/explore"
 }
@@ -2409,8 +2899,8 @@ export type PendingImageQueueData = {
 	body?: never
 	path?: never
 	query?: {
-		limit?: number | null
-		cursor?: number | null
+		limit?: number
+		cursor?: number
 		type?: null | ImageQueueType
 		status?: null | ImageQueueStatus
 	}
@@ -2594,8 +3084,8 @@ export type ExploreLabelData = {
 		is_dissolved?: boolean | null
 		sort_field?: null | CorrectionSortField
 		sort_direction?: null | SortDirection
-		limit?: number | null
-		page?: number | null
+		limit?: number
+		page?: number
 	}
 	url: "/label/explore"
 }
@@ -2718,8 +3208,8 @@ export type NotificationListData = {
 	body?: never
 	path?: never
 	query?: {
-		limit?: number | null
-		cursor?: number | null
+		limit?: number
+		cursor?: number
 	}
 	url: "/notifications"
 }
@@ -3062,8 +3552,8 @@ export type ExploreReleaseData = {
 		release_type?: Array<ReleaseType> | null
 		sort_field?: null | CorrectionSortField
 		sort_direction?: null | SortDirection
-		limit?: number | null
-		page?: number | null
+		limit?: number
+		page?: number
 	}
 	url: "/release/explore"
 }
@@ -3790,8 +4280,8 @@ export type ExploreSongData = {
 		language_id?: Array<number> | null
 		sort_field?: null | CorrectionSortField
 		sort_direction?: null | SortDirection
-		limit?: number | null
-		page?: number | null
+		limit?: number
+		page?: number
 	}
 	url: "/song/explore"
 }
@@ -3944,8 +4434,8 @@ export type ExploreTagData = {
 		tag_type?: Array<TagType> | null
 		sort_field?: null | CorrectionSortField
 		sort_direction?: null | SortDirection
-		limit?: number | null
-		page?: number | null
+		limit?: number
+		page?: number
 	}
 	url: "/tag/explore"
 }
@@ -4068,8 +4558,8 @@ export type UserImageQueueData = {
 		id: number
 	}
 	query?: {
-		limit?: number | null
-		cursor?: number | null
+		limit?: number
+		cursor?: number
 	}
 	url: "/user/{id}/image-queue"
 }
@@ -4094,6 +4584,42 @@ export type UserImageQueueResponses = {
 
 export type UserImageQueueResponse =
 	UserImageQueueResponses[keyof UserImageQueueResponses]
+
+export type UserCollectionsData = {
+	body?: never
+	path: {
+		/**
+		 * Username
+		 */
+		username: NonEmptyString
+	}
+	query?: {
+		limit?: number
+		page?: number
+	}
+	url: "/user/{username}/collections"
+}
+
+export type UserCollectionsErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UserCollectionsError =
+	UserCollectionsErrors[keyof UserCollectionsErrors]
+
+export type UserCollectionsResponses = {
+	200: DataPageUserCollection
+}
+
+export type UserCollectionsResponse =
+	UserCollectionsResponses[keyof UserCollectionsResponses]
 
 export type VerifyEmailData = {
 	body: VerifyEmailRequest
@@ -4326,8 +4852,8 @@ export type GetTagsData = {
 		id: number
 	}
 	query?: {
-		limit?: number | null
-		cursor?: number | null
+		limit?: number
+		cursor?: number
 	}
 	url: "/{entity_type}/{id}/tags"
 }

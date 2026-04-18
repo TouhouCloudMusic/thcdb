@@ -5,6 +5,7 @@ import { Suspense } from "solid-js"
 import { Link } from "~/component/atomic/Link"
 import { ButtonClass_new } from "~/component/atomic/button"
 import { PageLayout } from "~/layout/PageLayout"
+import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 import { EntityTagsSectionContainer } from "~/view/entity_tags/EntityTagsSection"
 
@@ -44,6 +45,12 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 								<EntityTagsSectionContainer
 									class="contents"
 									entityType="release"
+									entityId={props.release.id}
+								/>
+							</div>
+							<div class="border-t border-slate-200 pt-4">
+								<AddToUserCollectionButton
+									entityType="Release"
 									entityId={props.release.id}
 								/>
 							</div>

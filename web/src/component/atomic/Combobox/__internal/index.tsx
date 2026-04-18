@@ -1,4 +1,6 @@
 import { Combobox } from "@kobalte/core"
+import type { ComboboxContentProps } from "@kobalte/core/combobox"
+import type { PolymorphicProps } from "@kobalte/core/polymorphic"
 import { createSignal, mergeProps, createEffect, onCleanup } from "solid-js"
 import type { ComponentProps, JSX, ValidComponent } from "solid-js"
 import { CaretSortIcon } from "solid-radix-icons"
@@ -224,20 +226,18 @@ export const CONTENT_CLASS = tw(`
 
 `)
 
-export type ContentProps = ComponentProps<typeof Combobox.Content>
+export type ContentProps = PolymorphicProps<"div", ComboboxContentProps<"div">>
 
 export function Content(props: ContentProps): JSX.Element {
 	const scrollContext = useComboboxScroll()
 
 	const finalProps = mergeProps(props, {
 		get class() {
-			// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
-			return twMerge(CONTENT_CLASS, props["class"] as string)
+			return twMerge(CONTENT_CLASS, props.class)
 		},
 		ref(el: HTMLDivElement) {
 			scrollContext.setScrollContainer(el)
 			if (typeof props.ref === "function") {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 				props.ref(el)
 			}
 		},

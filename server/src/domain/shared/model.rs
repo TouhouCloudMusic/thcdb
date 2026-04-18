@@ -135,6 +135,51 @@ impl AsRef<str> for SearchTerm {
     }
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, ToSchema)]
+#[schema(value_type = String, pattern = "^.+$")]
+pub struct NonEmptyString(String);
+
+impl NonEmptyString {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::ops::Deref for NonEmptyString {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_str()
+    }
+}
+
+impl AsRef<str> for NonEmptyString {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl From<NonEmptyString> for String {
+    fn from(s: NonEmptyString) -> Self {
+        s.0
+    }
+}
+
+impl<'de> Deserialize<'de> for NonEmptyString {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+
+        if value.is_empty() {
+            return Err(serde::de::Error::custom("must not be empty"));
+        }
+
+        Ok(Self(value))
+    }
+}
+
 #[derive(AutoMapper, Clone, Debug, Serialize, ToSchema)]
 #[mapper(from(DbLanguage))]
 #[cfg_attr(test, derive(PartialEq, Eq))]

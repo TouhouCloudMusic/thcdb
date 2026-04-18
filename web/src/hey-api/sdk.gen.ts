@@ -37,6 +37,18 @@ import type {
 	CreateTagData,
 	CreateTagErrors,
 	CreateTagResponses,
+	CreateUserCollectionData,
+	CreateUserCollectionErrors,
+	CreateUserCollectionItemData,
+	CreateUserCollectionItemErrors,
+	CreateUserCollectionItemResponses,
+	CreateUserCollectionResponses,
+	DeleteUserCollectionData,
+	DeleteUserCollectionErrors,
+	DeleteUserCollectionItemData,
+	DeleteUserCollectionItemErrors,
+	DeleteUserCollectionItemResponses,
+	DeleteUserCollectionResponses,
 	DeleteVoteData,
 	DeleteVoteErrors,
 	DeleteVoteResponses,
@@ -196,6 +208,12 @@ import type {
 	ProfileWithNameData,
 	ProfileWithNameErrors,
 	ProfileWithNameResponses,
+	PublicUserCollectionsData,
+	PublicUserCollectionsErrors,
+	PublicUserCollectionsResponses,
+	ReorderUserCollectionItemsData,
+	ReorderUserCollectionItemsErrors,
+	ReorderUserCollectionItemsResponses,
 	ResendVerificationEmailData,
 	ResendVerificationEmailErrors,
 	ResendVerificationEmailResponses,
@@ -223,6 +241,9 @@ import type {
 	SearchTagData,
 	SearchTagErrors,
 	SearchTagResponses,
+	SearchUserCollectionsData,
+	SearchUserCollectionsErrors,
+	SearchUserCollectionsResponses,
 	SetUserRolesData,
 	SetUserRolesErrors,
 	SetUserRolesResponses,
@@ -253,6 +274,9 @@ import type {
 	UpdateSongLyricsErrors,
 	UpdateSongLyricsResponses,
 	UpdateSongResponses,
+	UpdateUserCollectionData,
+	UpdateUserCollectionErrors,
+	UpdateUserCollectionResponses,
 	UploadArtistProfileImageData,
 	UploadArtistProfileImageErrors,
 	UploadArtistProfileImageResponses,
@@ -280,6 +304,15 @@ import type {
 	UpsertTagCorrectionData,
 	UpsertTagCorrectionErrors,
 	UpsertTagCorrectionResponses,
+	UserCollectionDetailData,
+	UserCollectionDetailErrors,
+	UserCollectionDetailResponses,
+	UserCollectionItemsData,
+	UserCollectionItemsErrors,
+	UserCollectionItemsResponses,
+	UserCollectionsData,
+	UserCollectionsErrors,
+	UserCollectionsResponses,
 	UserImageQueueData,
 	UserImageQueueErrors,
 	UserImageQueueResponses,
@@ -496,6 +529,138 @@ export const uploadAvatar = <ThrowOnError extends boolean = false>(
 			...options.headers,
 		},
 	})
+
+export const createUserCollection = <ThrowOnError extends boolean = false>(
+	options: Options<CreateUserCollectionData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		CreateUserCollectionResponses,
+		CreateUserCollectionErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/collection",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})
+
+export const deleteUserCollection = <ThrowOnError extends boolean = false>(
+	options: Options<DeleteUserCollectionData, ThrowOnError>,
+) =>
+	(options.client ?? client).delete<
+		DeleteUserCollectionResponses,
+		DeleteUserCollectionErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/collection/{id}",
+		...options,
+	})
+
+export const userCollectionDetail = <ThrowOnError extends boolean = false>(
+	options: Options<UserCollectionDetailData, ThrowOnError>,
+) =>
+	(options.client ?? client).get<
+		UserCollectionDetailResponses,
+		UserCollectionDetailErrors,
+		ThrowOnError
+	>({ url: "/collection/{id}", ...options })
+
+export const updateUserCollection = <ThrowOnError extends boolean = false>(
+	options: Options<UpdateUserCollectionData, ThrowOnError>,
+) =>
+	(options.client ?? client).put<
+		UpdateUserCollectionResponses,
+		UpdateUserCollectionErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/collection/{id}",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})
+
+export const userCollectionItems = <ThrowOnError extends boolean = false>(
+	options: Options<UserCollectionItemsData, ThrowOnError>,
+) =>
+	(options.client ?? client).get<
+		UserCollectionItemsResponses,
+		UserCollectionItemsErrors,
+		ThrowOnError
+	>({ url: "/collection/{id}/items", ...options })
+
+export const createUserCollectionItem = <ThrowOnError extends boolean = false>(
+	options: Options<CreateUserCollectionItemData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		CreateUserCollectionItemResponses,
+		CreateUserCollectionItemErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/collection/{id}/items",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})
+
+export const reorderUserCollectionItems = <
+	ThrowOnError extends boolean = false,
+>(
+	options: Options<ReorderUserCollectionItemsData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		ReorderUserCollectionItemsResponses,
+		ReorderUserCollectionItemsErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/collection/{id}/items/reorder",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})
+
+export const deleteUserCollectionItem = <ThrowOnError extends boolean = false>(
+	options: Options<DeleteUserCollectionItemData, ThrowOnError>,
+) =>
+	(options.client ?? client).delete<
+		DeleteUserCollectionItemResponses,
+		DeleteUserCollectionItemErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/collection/{id}/items/{item_id}",
+		...options,
+	})
+
+export const publicUserCollections = <ThrowOnError extends boolean = false>(
+	options?: Options<PublicUserCollectionsData, ThrowOnError>,
+) =>
+	(options?.client ?? client).get<
+		PublicUserCollectionsResponses,
+		PublicUserCollectionsErrors,
+		ThrowOnError
+	>({ url: "/collections/public", ...options })
+
+export const searchUserCollections = <ThrowOnError extends boolean = false>(
+	options: Options<SearchUserCollectionsData, ThrowOnError>,
+) =>
+	(options.client ?? client).get<
+		SearchUserCollectionsResponses,
+		SearchUserCollectionsErrors,
+		ThrowOnError
+	>({ url: "/collections/search", ...options })
 
 export const compareCorrections = <ThrowOnError extends boolean = false>(
 	options: Options<CompareCorrectionsData, ThrowOnError>,
@@ -1394,6 +1559,15 @@ export const userImageQueue = <ThrowOnError extends boolean = false>(
 		url: "/user/{id}/image-queue",
 		...options,
 	})
+
+export const userCollections = <ThrowOnError extends boolean = false>(
+	options: Options<UserCollectionsData, ThrowOnError>,
+) =>
+	(options.client ?? client).get<
+		UserCollectionsResponses,
+		UserCollectionsErrors,
+		ThrowOnError
+	>({ url: "/user/{username}/collections", ...options })
 
 export const verifyEmail = <ThrowOnError extends boolean = false>(
 	options: Options<VerifyEmailData, ThrowOnError>,

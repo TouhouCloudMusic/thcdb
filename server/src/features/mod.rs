@@ -21,6 +21,7 @@ pub mod song_lyrics;
 pub mod tag;
 mod tag_vote;
 pub mod user;
+pub mod user_collection;
 pub mod user_image;
 pub mod user_profile;
 
@@ -48,5 +49,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .merge(tag::router())
         .merge(tag_vote::router())
         .merge(user::router())
+        .merge(user_collection::router())
         .merge(user_profile::router())
 }

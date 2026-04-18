@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
 )]
-#[sea_orm(table_name = "user_list")]
+#[sea_orm(table_name = "user_collection")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
@@ -28,8 +28,8 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     User,
-    #[sea_orm(has_many = "super::user_list_item::Entity")]
-    UserListItem,
+    #[sea_orm(has_many = "super::user_collection_item::Entity")]
+    UserCollectionItem,
 }
 
 impl Related<super::user::Entity> for Entity {
@@ -38,9 +38,9 @@ impl Related<super::user::Entity> for Entity {
     }
 }
 
-impl Related<super::user_list_item::Entity> for Entity {
+impl Related<super::user_collection_item::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::UserListItem.def()
+        Relation::UserCollectionItem.def()
     }
 }
 

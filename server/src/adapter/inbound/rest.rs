@@ -178,6 +178,8 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
         ArtistCommonFilter,
         CorrectionSortField,
         SortDirection,
+        crate::domain::shared::NonEmptyString,
+
         api_response::Error,
     )),
     modifiers(&DefaultErrorResponseModifier)
@@ -202,6 +204,8 @@ fn basic_security_requirement() -> utoipa::openapi::security::SecurityRequiremen
         ArtistCommonFilter,
         CorrectionSortField,
         SortDirection,
+        crate::domain::shared::NonEmptyString,
+
         api_response::Error,
     )),
     modifiers(&BasicSecurityModifier)

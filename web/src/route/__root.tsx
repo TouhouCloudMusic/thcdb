@@ -6,6 +6,7 @@ import type { ParentProps } from "solid-js"
 import { Footer } from "~/component/Footer"
 import { Header } from "~/component/Header"
 import { Devtools } from "~/component/devtools"
+import { AppToastRegion } from "~/component/toast"
 import { getErrorMessage } from "~/utils/getErrorMessage"
 import { NotFound } from "~/view/NotFound"
 import { InternalServerError } from "~/view/error/InternalServerError"
@@ -34,6 +35,7 @@ function RouteTree() {
 	return (
 		<Layout>
 			<Outlet />
+			<AppToastRegion />
 			<Devtools />
 		</Layout>
 	)

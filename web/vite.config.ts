@@ -29,6 +29,7 @@ export default defineConfig(({ mode }) => {
 		},
 		server: {
 			port: 3000,
+			host: "127.0.0.1",
 			strictPort: true,
 			proxy: {
 				"/api": {
@@ -42,6 +43,9 @@ export default defineConfig(({ mode }) => {
 		},
 		resolve: {
 			tsconfigPaths: true,
+		},
+		optimizeDeps: {
+			include: ["solid-radix-icons"],
 		},
 		build: {
 			target: "esnext",
