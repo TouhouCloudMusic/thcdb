@@ -4,6 +4,7 @@ import type {
 	SimpleArtist,
 	SimpleEvent,
 	SimpleLabel,
+	PageResponseUserCollection,
 	SongRelease,
 	SongRef,
 	TagRef,
@@ -34,6 +35,12 @@ type SearchSingleQuery = {
 	search_term: string
 	limit?: number
 	cursor?: number
+}
+
+type UserCollectionSearchQuery = {
+	keyword: string
+	limit?: number
+	page?: number
 }
 
 type SearchPaths = {
@@ -121,6 +128,20 @@ type SearchPaths = {
 			}
 		}
 	}
+	"/collections/search": {
+		get: {
+			parameters: { query: UserCollectionSearchQuery }
+			responses: {
+				200: {
+					content: {
+						"application/json": OkResponse<PageResponseUserCollection>
+					}
+				}
+				400: { content: { "application/json": ErrResponse } }
+				500: { content: { "application/json": ErrResponse } }
+			}
+		}
+	}
 }
 
 const SearchFetchClient = createFetchClient<SearchPaths>({ baseUrl: "/api" })
@@ -175,6 +196,14 @@ export async function searchLabel(query: SearchSingleQuery) {
 
 export async function searchTag(query: SearchSingleQuery) {
 	const res = await SearchFetchClient.GET("/search/tag", {
+		params: { query },
+	})
+
+	return adaptApiResult(res)
+}
+
+export async function searchUserCollections(query: UserCollectionSearchQuery) {
+	const res = await SearchFetchClient.GET("/collections/search", {
 		params: { query },
 	})
 

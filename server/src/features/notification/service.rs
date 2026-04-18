@@ -101,7 +101,7 @@ impl Service {
     pub async fn list(
         &self,
         user_id: i32,
-        limit: u32,
+        limit: u8,
         cursor: Option<i32>,
     ) -> Result<CursorResponse<notification::Model>, Error> {
         let mut select = notification::Entity::find()
@@ -118,9 +118,9 @@ impl Service {
             .await
             .map_err(Error::from)?;
 
-        let has_next = models.len() > limit as usize;
+        let has_next = models.len() > usize::from(limit);
         if has_next {
-            models.truncate(limit as usize);
+            models.truncate(usize::from(limit));
         }
 
         let next_cursor = if has_next {

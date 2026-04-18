@@ -32,7 +32,7 @@ enum QueueTarget {
 
 pub async fn find_pending(
     repo: &SeaOrmRepository,
-    limit: u32,
+    limit: u8,
     cursor: Option<i32>,
     status: Option<ImageQueueStatus>,
     queue_type: Option<ImageQueueType>,
@@ -65,9 +65,9 @@ pub async fn find_pending(
         .await
         .map_err(InfraError::from)?;
 
-    let has_next = models.len() > limit as usize;
+    let has_next = models.len() > usize::from(limit);
     if has_next {
-        models.truncate(limit as usize);
+        models.truncate(usize::from(limit));
     }
 
     let next_cursor = if has_next {

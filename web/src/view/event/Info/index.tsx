@@ -7,6 +7,7 @@ import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
+import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { EventInfoPageContext } from "./context"
@@ -29,7 +30,13 @@ export function EventInfoPage(props: EventInfoPageProps) {
 			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<EventInfoPageContext.Provider value={contextValue}>
 					<div class="flex flex-col gap-y-6">
-						<EventInfoHeader />
+						<div class="flex flex-col gap-y-4">
+							<EventInfoHeader />
+							<AddToUserCollectionButton
+								entityType="Event"
+								entityId={props.event.id}
+							/>
+						</div>
 						<EventInfoTabs />
 						<EntityCorrectionMetadataSection
 							entityType="event"

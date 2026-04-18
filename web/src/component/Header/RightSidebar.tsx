@@ -6,10 +6,8 @@ import {
 	CubeIcon,
 	ExitIcon,
 	GearIcon,
-	HeartIcon,
 	Pencil2Icon,
 	PersonIcon,
-	ReaderIcon,
 } from "solid-radix-icons"
 
 import { ListItem, Sidebar } from "~/component/Sidebar"
@@ -53,17 +51,12 @@ export function RightSidebar(props: Props) {
 						<PersonIcon />
 						<span>{t`Profile`}</span>
 					</ListItem>
-					<ListItem>
+					<ListItem
+						to="/profile"
+						search={{ tab: "collections" }}
+					>
 						<BookmarkIcon />
 						<span>{t`Collections`}</span>
-					</ListItem>
-					<ListItem>
-						<HeartIcon />
-						<span>{t`Favorites`}</span>
-					</ListItem>
-					<ListItem>
-						<ReaderIcon />
-						<span>{t`Lists`}</span>
 					</ListItem>
 					<ListItem>
 						<CubeIcon />

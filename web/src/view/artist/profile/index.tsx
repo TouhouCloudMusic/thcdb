@@ -15,6 +15,7 @@ import { Image } from "~/component/image"
 import { PageLayout } from "~/layout/PageLayout"
 import type { InfiniteQuery } from "~/type/query"
 import { imgUrl } from "~/utils/adapter/static_file"
+import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { ArtistInfo } from "./comp/ArtistInfo"
@@ -94,6 +95,12 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 							</div>
 							<div class="flex flex-col gap-4">
 								<ArtistInfo />
+								<div class="border-t border-slate-200 pt-4">
+									<AddToUserCollectionButton
+										entityType="Artist"
+										entityId={props.artist.id}
+									/>
+								</div>
 							</div>
 						</div>
 						<div>

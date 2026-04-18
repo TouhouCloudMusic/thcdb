@@ -75,7 +75,7 @@ export function EntityTagsSectionContainer(
 	const voteMutation = useMutation(() => voteTagMutation())
 	const removeMutation = useMutation(() => deleteVoteMutation())
 	const tags = createMemo(() =>
-		sortEntityTags(tagsQuery.data?.data?.items ?? []),
+		sortEntityTags(tagsQuery.data?.data.items ?? []),
 	)
 	const dataFilter = createMemo(() => createEntityTagFilter(tags()))
 

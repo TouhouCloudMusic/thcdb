@@ -59,8 +59,8 @@ pub enum Relation {
     ReleaseTagVote,
     #[sea_orm(has_many = "super::song_tag_vote::Entity")]
     SongTagVote,
-    #[sea_orm(has_many = "super::user_list::Entity")]
-    UserList,
+    #[sea_orm(has_many = "super::user_collection::Entity")]
+    UserCollection,
     #[sea_orm(has_one = "super::user_email_verification::Entity")]
     UserEmailVerification,
     #[sea_orm(has_many = "super::user_role::Entity")]
@@ -109,9 +109,9 @@ impl Related<super::song_tag_vote::Entity> for Entity {
     }
 }
 
-impl Related<super::user_list::Entity> for Entity {
+impl Related<super::user_collection::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::UserList.def()
+        Relation::UserCollection.def()
     }
 }
 

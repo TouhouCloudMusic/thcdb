@@ -68,6 +68,21 @@ export const vArtistCommonFilter = v.object({
 	),
 })
 
+export const vArtistSummary = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.string(),
+	artist_type: vArtistType,
+	profile_image_url: v.nullish(v.string()),
+})
+
 export const vAuthCredential = v.object({
 	username: v.string(),
 	password: v.string(),
@@ -824,6 +839,20 @@ export const vError = v.object({
 	message: v.string(),
 })
 
+export const vEventSummary = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.string(),
+	start_date: v.nullish(vDateWithPrecision),
+})
+
 export const vForgotPasswordRequest = v.object({
 	email: v.string(),
 })
@@ -948,6 +977,19 @@ export const vDataOptionCurrentImageMetadata = v.object({
 			uploaded_by: vImageUploaderSummary,
 		}),
 	),
+})
+
+export const vLabelSummary = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.string(),
 })
 
 export const vLanguage = v.object({
@@ -1500,6 +1542,8 @@ export const vNewTrack = v.object({
 	),
 })
 
+export const vNonEmptyString = v.pipe(v.string(), v.regex(/^.+$/))
+
 export const vPageResponseEvent = v.object({
 	items: v.array(
 		v.object({
@@ -1525,10 +1569,13 @@ export const vPageResponseEvent = v.object({
 		}),
 	),
 	page: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 	page_size: v.pipe(
 		v.number(),
@@ -1546,10 +1593,13 @@ export const vPageResponseEvent = v.object({
 		),
 	),
 	total_pages: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 })
 
@@ -1594,10 +1644,13 @@ export const vPageResponseLabel = v.object({
 		}),
 	),
 	page: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 	page_size: v.pipe(
 		v.number(),
@@ -1615,10 +1668,13 @@ export const vPageResponseLabel = v.object({
 		),
 	),
 	total_pages: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 })
 
@@ -1894,6 +1950,23 @@ export const vNewRelease = v.object({
 	tracks: v.array(vNewTrack),
 })
 
+export const vReorderUserCollectionItemsRequest = v.object({
+	item_ids: v.array(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+})
+
 export const vResendVerificationEmailRequest = v.object({
 	email: v.string(),
 })
@@ -2001,6 +2074,23 @@ export const vSimpleArtist = v.object({
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
 	name: v.string(),
+})
+
+export const vReleaseSummary = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	title: v.string(),
+	release_type: vReleaseType,
+	release_date: v.nullish(vDateWithPrecision),
+	cover_art_url: v.nullish(v.string()),
+	artists: v.optional(v.array(vSimpleArtist)),
 })
 
 export const vSimpleEvent = v.object({
@@ -2156,10 +2246,13 @@ export const vPageResponseRelease = v.object({
 		}),
 	),
 	page: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 	page_size: v.pipe(
 		v.number(),
@@ -2177,10 +2270,13 @@ export const vPageResponseRelease = v.object({
 		),
 	),
 	total_pages: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 })
 
@@ -2290,10 +2386,13 @@ export const vPageResponseSong = v.object({
 		}),
 	),
 	page: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 	page_size: v.pipe(
 		v.number(),
@@ -2311,10 +2410,13 @@ export const vPageResponseSong = v.object({
 		),
 	),
 	total_pages: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 })
 
@@ -2351,6 +2453,21 @@ export const vDataOptionSong = v.object({
 export const vDataVecSong = v.object({
 	status: v.string(),
 	data: v.array(vSong),
+})
+
+export const vSongSummary = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	title: v.string(),
+	artists: v.optional(v.array(vSimpleArtist)),
+	cover_art_url: v.nullish(v.string()),
 })
 
 export const vSortDirection = v.picklist(["asc", "desc"])
@@ -2572,10 +2689,13 @@ export const vPageResponseTag = v.object({
 		}),
 	),
 	page: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 	page_size: v.pipe(
 		v.number(),
@@ -2593,10 +2713,13 @@ export const vPageResponseTag = v.object({
 		),
 	),
 	total_pages: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 })
 
@@ -2631,6 +2754,148 @@ export const vDataOptionTag = v.object({
 export const vDataVecTag = v.object({
 	status: v.string(),
 	data: v.array(vTag),
+})
+
+export const vTagSummary = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.string(),
+	tag_type: vTagType,
+})
+
+/**
+ * Discriminated union of entity summaries, tagged by `entity_type`.
+ */
+export const vEntitySummary = v.union([
+	v.intersect([
+		vArtistSummary,
+		v.object({
+			entity_type: v.picklist(["Artist"]),
+		}),
+	]),
+	v.intersect([
+		vReleaseSummary,
+		v.object({
+			entity_type: v.picklist(["Release"]),
+		}),
+	]),
+	v.intersect([
+		vSongSummary,
+		v.object({
+			entity_type: v.picklist(["Song"]),
+		}),
+	]),
+	v.intersect([
+		vTagSummary,
+		v.object({
+			entity_type: v.picklist(["Tag"]),
+		}),
+	]),
+	v.intersect([
+		vEventSummary,
+		v.object({
+			entity_type: v.picklist(["Event"]),
+		}),
+	]),
+	v.intersect([
+		vLabelSummary,
+		v.object({
+			entity_type: v.picklist(["Label"]),
+		}),
+	]),
+])
+
+export const vPageResponseUserCollectionItemDetail = v.object({
+	items: v.array(
+		v.object({
+			id: v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+			entity_id: v.nullish(
+				v.pipe(
+					v.number(),
+					v.integer(),
+					v.minValue(
+						-2147483648,
+						"Invalid value: Expected int32 to be >= -2147483648",
+					),
+					v.maxValue(
+						2147483647,
+						"Invalid value: Expected int32 to be <= 2147483647",
+					),
+				),
+			),
+			entity_type: vEntityType,
+			description: v.nullish(v.string()),
+			position: v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+			entity: v.nullish(vEntitySummary),
+		}),
+	),
+	page: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	page_size: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(0),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	total_items: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	total_pages: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+})
+
+export const vDataPageUserCollectionItemDetail = v.object({
+	status: v.string(),
+	data: vPageResponseUserCollectionItemDetail,
 })
 
 export const vTenure = v.object({
@@ -2861,10 +3126,13 @@ export const vPageResponseArtist = v.object({
 		}),
 	),
 	page: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 	page_size: v.pipe(
 		v.number(),
@@ -2882,10 +3150,13 @@ export const vPageResponseArtist = v.object({
 		),
 	),
 	total_pages: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 })
 
@@ -2900,6 +3171,190 @@ export const vUploadAvatar = v.object({
 
 export const vUploadProfileBanner = v.object({
 	data: v.string(),
+})
+
+export const vUserCollectionItem = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	entity_id: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+	entity_type: vEntityType,
+	description: v.nullish(v.string()),
+	position: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vDataUserCollectionItem = v.object({
+	status: v.string(),
+	data: vUserCollectionItem,
+})
+
+export const vUserCollectionItemEntityType = v.picklist([
+	"Artist",
+	"Label",
+	"Release",
+	"Song",
+	"Tag",
+	"Event",
+])
+
+export const vCreateUserCollectionItemRequest = v.object({
+	entity_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	entity_type: vUserCollectionItemEntityType,
+	description: v.nullish(v.string()),
+})
+
+export const vUserCollectionMutationRequest = v.object({
+	name: vNonEmptyString,
+	description: v.string(),
+	is_public: v.boolean(),
+})
+
+export const vUserCollectionOwner = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.string(),
+})
+
+export const vPageResponseUserCollection = v.object({
+	items: v.array(
+		v.object({
+			id: v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+			owner: vUserCollectionOwner,
+			name: v.string(),
+			description: v.string(),
+			is_public: v.boolean(),
+			item_count: v.pipe(
+				v.union([v.number(), v.string(), v.bigint()]),
+				v.transform((x) => BigInt(x)),
+				v.minValue(BigInt(0)),
+				v.maxValue(
+					BigInt("9223372036854775807"),
+					"Invalid value: Expected int64 to be <= 9223372036854775807",
+				),
+			),
+		}),
+	),
+	page: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	page_size: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(0),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	total_items: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	total_pages: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+})
+
+export const vDataPageUserCollection = v.object({
+	status: v.string(),
+	data: vPageResponseUserCollection,
+})
+
+export const vUserCollection = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	owner: vUserCollectionOwner,
+	name: v.string(),
+	description: v.string(),
+	is_public: v.boolean(),
+	item_count: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+})
+
+export const vDataUserCollection = v.object({
+	status: v.string(),
+	data: vUserCollection,
 })
 
 export const vUserProfileStats = v.object({
@@ -2968,10 +3423,13 @@ export const vPageResponseUserSummary = v.object({
 		}),
 	),
 	page: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 	page_size: v.pipe(
 		v.number(),
@@ -2989,10 +3447,13 @@ export const vPageResponseUserSummary = v.object({
 		),
 	),
 	total_pages: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
 	),
 })
 
@@ -3263,18 +3724,15 @@ export const vSetUserRolesResponse = vDataUserRoles
 
 export const vAdminUsersQuery = v.object({
 	keyword: v.nullish(v.string()),
-	limit: v.nullish(
+	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
 	),
-	page: v.nullish(
+	page: v.optional(
 		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(1),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
 		),
 	),
 })
@@ -3312,18 +3770,15 @@ export const vExploreArtistQuery = v.object({
 	artist_type: v.nullish(v.array(vArtistType)),
 	sort_field: v.nullish(vCorrectionSortField),
 	sort_direction: v.nullish(vSortDirection),
-	limit: v.nullish(
+	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
 	),
-	page: v.nullish(
+	page: v.optional(
 		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(1),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
 		),
 	),
 })
@@ -3535,6 +3990,171 @@ export const vUploadAvatarBody = vUploadAvatar
 
 export const vUploadAvatarResponse = vMessage
 
+export const vCreateUserCollectionBody = vUserCollectionMutationRequest
+
+export const vCreateUserCollectionResponse = vDataUserCollection
+
+export const vDeleteUserCollectionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vDeleteUserCollectionResponse = vMessage
+
+export const vUserCollectionDetailPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vUserCollectionDetailResponse = vDataUserCollection
+
+export const vUpdateUserCollectionBody = vUserCollectionMutationRequest
+
+export const vUpdateUserCollectionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vUpdateUserCollectionResponse = vDataUserCollection
+
+export const vUserCollectionItemsPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vUserCollectionItemsQuery = v.object({
+	limit: v.optional(
+		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
+	),
+	page: v.optional(
+		v.pipe(
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
+		),
+	),
+})
+
+export const vUserCollectionItemsResponse = vDataPageUserCollectionItemDetail
+
+export const vCreateUserCollectionItemBody = vCreateUserCollectionItemRequest
+
+export const vCreateUserCollectionItemPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vCreateUserCollectionItemResponse = vDataUserCollectionItem
+
+export const vReorderUserCollectionItemsBody =
+	vReorderUserCollectionItemsRequest
+
+export const vReorderUserCollectionItemsPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vReorderUserCollectionItemsResponse = vMessage
+
+export const vDeleteUserCollectionItemPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	item_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vDeleteUserCollectionItemResponse = vMessage
+
+export const vPublicUserCollectionsQuery = v.object({
+	limit: v.optional(
+		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
+	),
+	page: v.optional(
+		v.pipe(
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
+		),
+	),
+})
+
+export const vPublicUserCollectionsResponse = vDataPageUserCollection
+
+export const vSearchUserCollectionsQuery = v.object({
+	keyword: vNonEmptyString,
+	limit: v.optional(
+		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
+	),
+	page: v.optional(
+		v.pipe(
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
+		),
+	),
+})
+
+export const vSearchUserCollectionsResponse = vDataPageUserCollection
+
 export const vCompareCorrectionsPath = v.object({
 	id1: v.pipe(
 		v.number(),
@@ -3676,18 +4296,15 @@ export const vExploreEventQuery = v.object({
 	start_date_to: v.nullish(v.pipe(v.string(), v.isoDate())),
 	sort_field: v.nullish(vCorrectionSortField),
 	sort_direction: v.nullish(vSortDirection),
-	limit: v.nullish(
+	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
 	),
-	page: v.nullish(
+	page: v.optional(
 		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(1),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
 		),
 	),
 })
@@ -3731,10 +4348,10 @@ export const vForgotPasswordResponse2 = vDataForgotPasswordResponse
 export const vHomeMetadataResponse = vDataHomeMetadata
 
 export const vPendingImageQueueQuery = v.object({
-	limit: v.nullish(
+	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
 	),
-	cursor: v.nullish(
+	cursor: v.optional(
 		v.pipe(
 			v.number(),
 			v.integer(),
@@ -3804,18 +4421,15 @@ export const vExploreLabelQuery = v.object({
 	is_dissolved: v.nullish(v.boolean()),
 	sort_field: v.nullish(vCorrectionSortField),
 	sort_direction: v.nullish(vSortDirection),
-	limit: v.nullish(
+	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
 	),
-	page: v.nullish(
+	page: v.optional(
 		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(1),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
 		),
 	),
 })
@@ -3855,10 +4469,10 @@ export const vUpsertLabelCorrectionResponse = vDataCorrectionSubmissionResult
 export const vLanguageListResponse = vDataVecLanguage
 
 export const vNotificationListQuery = v.object({
-	limit: v.nullish(
+	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
 	),
-	cursor: v.nullish(
+	cursor: v.optional(
 		v.pipe(
 			v.number(),
 			v.integer(),
@@ -3936,18 +4550,15 @@ export const vExploreReleaseQuery = v.object({
 	release_type: v.nullish(v.array(vReleaseType)),
 	sort_field: v.nullish(vCorrectionSortField),
 	sort_direction: v.nullish(vSortDirection),
-	limit: v.nullish(
+	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
 	),
-	page: v.nullish(
+	page: v.optional(
 		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(1),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
 		),
 	),
 })
@@ -4269,18 +4880,15 @@ export const vExploreSongQuery = v.object({
 	),
 	sort_field: v.nullish(vCorrectionSortField),
 	sort_direction: v.nullish(vSortDirection),
-	limit: v.nullish(
+	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
 	),
-	page: v.nullish(
+	page: v.optional(
 		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(1),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
 		),
 	),
 })
@@ -4331,18 +4939,15 @@ export const vExploreTagQuery = v.object({
 	tag_type: v.nullish(v.array(vTagType)),
 	sort_field: v.nullish(vCorrectionSortField),
 	sort_direction: v.nullish(vSortDirection),
-	limit: v.nullish(
+	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
 	),
-	page: v.nullish(
+	page: v.optional(
 		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(1),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
 		),
 	),
 })
@@ -4394,10 +4999,10 @@ export const vUserImageQueuePath = v.object({
 })
 
 export const vUserImageQueueQuery = v.object({
-	limit: v.nullish(
+	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
 	),
-	cursor: v.nullish(
+	cursor: v.optional(
 		v.pipe(
 			v.number(),
 			v.integer(),
@@ -4414,6 +5019,26 @@ export const vUserImageQueueQuery = v.object({
 })
 
 export const vUserImageQueueResponse = vDataPaginatedUserImageQueueItem
+
+export const vUserCollectionsPath = v.object({
+	username: vNonEmptyString,
+})
+
+export const vUserCollectionsQuery = v.object({
+	limit: v.optional(
+		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
+	),
+	page: v.optional(
+		v.pipe(
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
+		),
+	),
+})
+
+export const vUserCollectionsResponse = vDataPageUserCollection
 
 export const vVerifyEmailBody = vVerifyEmailRequest
 
@@ -4520,10 +5145,10 @@ export const vGetTagsPath = v.object({
 })
 
 export const vGetTagsQuery = v.object({
-	limit: v.nullish(
+	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
 	),
-	cursor: v.nullish(
+	cursor: v.optional(
 		v.pipe(
 			v.number(),
 			v.integer(),

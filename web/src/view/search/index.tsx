@@ -8,6 +8,7 @@ import type {
 	SongRelease,
 	SongRef,
 	TagRef,
+	UserCollection,
 } from "@thc/api"
 import { SearchQueryOption } from "@thc/query"
 import { createMemo, For, Show } from "solid-js"
@@ -19,7 +20,14 @@ import { PageLayout } from "~/layout/PageLayout"
 import { imgUrl } from "~/utils/adapter/static_file"
 import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
 
-type SearchTab = "artist" | "event" | "label" | "release" | "song" | "tag"
+type SearchTab =
+	| "artist"
+	| "event"
+	| "label"
+	| "release"
+	| "song"
+	| "tag"
+	| "user_collection"
 type SearchEntity = "all" | SearchTab
 
 const route = getRouteApi("/search")
@@ -56,6 +64,11 @@ const TAB_META = {
 			return t`Tags`
 		},
 	},
+	user_collection: {
+		get label() {
+			return t`Collections`
+		},
+	},
 } satisfies Record<SearchTab, { readonly label: string }>
 
 const isSearchTab = (value: string): value is SearchTab => {
@@ -66,6 +79,7 @@ const isSearchTab = (value: string): value is SearchTab => {
 		|| value === "event"
 		|| value === "label"
 		|| value === "tag"
+		|| value === "user_collection"
 	)
 }
 
@@ -165,6 +179,13 @@ function SearchResults(props: {
 	const tagsQuery = useInfiniteQuery(() =>
 		SearchQueryOption.tags(props.term(), LIMIT, isEnabledTab("tag")),
 	)
+	const userCollectionsQuery = useInfiniteQuery(() =>
+		SearchQueryOption.userCollections(
+			props.term(),
+			LIMIT,
+			isEnabledTab("user_collection"),
+		),
+	)
 
 	const artists = () => artistsQuery.data?.pages.flatMap((p) => p.items) ?? []
 	const events = () => eventsQuery.data?.pages.flatMap((p) => p.items) ?? []
@@ -172,6 +193,8 @@ function SearchResults(props: {
 	const releases = () => releasesQuery.data?.pages.flatMap((p) => p.items) ?? []
 	const songs = () => songsQuery.data?.pages.flatMap((p) => p.items) ?? []
 	const tags = () => tagsQuery.data?.pages.flatMap((p) => p.items) ?? []
+	const userCollections = (): UserCollection[] =>
+		userCollectionsQuery.data?.pages.flatMap((p) => p.items) ?? []
 
 	const itemCount = (tab: SearchTab) => {
 		if (tab === "artist") return artists().length
@@ -179,6 +202,7 @@ function SearchResults(props: {
 		if (tab === "label") return labels().length
 		if (tab === "release") return releases().length
 		if (tab === "song") return songs().length
+		if (tab === "user_collection") return userCollections().length
 		return tags().length
 	}
 
@@ -188,6 +212,7 @@ function SearchResults(props: {
 		if (tab === "label") return labelsQuery.isLoading
 		if (tab === "release") return releasesQuery.isLoading
 		if (tab === "song") return songsQuery.isLoading
+		if (tab === "user_collection") return userCollectionsQuery.isLoading
 		return tagsQuery.isLoading
 	}
 
@@ -199,6 +224,7 @@ function SearchResults(props: {
 			|| releasesQuery.isLoading
 			|| songsQuery.isLoading
 			|| tagsQuery.isLoading
+			|| userCollectionsQuery.isLoading
 		)
 	}
 
@@ -216,11 +242,12 @@ function SearchResults(props: {
 		return (
 			[
 				"artist",
-				"event",
-				"label",
 				"release",
 				"song",
+				"event",
+				"label",
 				"tag",
+				"user_collection",
 			] satisfies SearchTab[]
 		).filter((tab) => itemCount(tab) > 0)
 	})
@@ -293,6 +320,18 @@ function SearchResults(props: {
 			void tagsQuery.fetchNextPage()
 		},
 	})
+
+	const setUserCollectionsSentinelRef = useIntersectionSentinel<HTMLDivElement>(
+		{
+			enabled: () =>
+				activeTab() === "user_collection"
+				&& userCollectionsQuery.hasNextPage
+				&& !userCollectionsQuery.isFetchingNextPage,
+			onIntersect: () => {
+				void userCollectionsQuery.fetchNextPage()
+			},
+		},
+	)
 
 	return (
 		<Show
@@ -409,6 +448,28 @@ function SearchResults(props: {
 						setSentinelRef={setTagsSentinelRef}
 						emptyText={t`No tags found.`}
 						renderItem={(item) => <TagRow tag={item} />}
+					/>
+				</Tab.Content>
+
+				<Tab.Content value="user_collection">
+					<ResultList
+						items={userCollections()}
+						isLoading={userCollectionsQuery.isLoading}
+						isFetchingNextPage={userCollectionsQuery.isFetchingNextPage}
+						hasNextPage={userCollectionsQuery.hasNextPage}
+						limit={LIMIT}
+						setSentinelRef={setUserCollectionsSentinelRef}
+						emptyText={t`No collections found.`}
+						renderItem={(item) => (
+							<Link
+								to="/collection/$id"
+								params={{ id: String(item.id) }}
+								underline={false}
+								class="flex flex-col gap-1 border-b border-slate-100 px-4 py-3 last:border-0 hover:bg-slate-50"
+							>
+								<span class="font-medium text-slate-900">{item.name}</span>
+							</Link>
+						)}
 					/>
 				</Tab.Content>
 			</Tab.Root>

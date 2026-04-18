@@ -251,53 +251,27 @@ where
 {
     use sea_orm::{QueryOrder, QuerySelect};
 
-    let page = pagination.page();
-    let page_size = pagination.limit();
-
     let total_items = select.clone().count(db).await?;
-    let total_pages = if total_items == 0 {
-        0
-    } else {
-        let pages = total_items.div_ceil(u64::from(page_size));
-        u32::try_from(pages).unwrap_or(u32::MAX)
-    };
 
     // Ensure stable ordering for offset pagination.
     select = select.order_by_asc(id_column);
 
-    let offset =
-        u64::from(page.saturating_sub(1)).saturating_mul(u64::from(page_size));
-    select = select.offset(offset).limit(u64::from(page_size));
+    select = select
+        .offset(pagination.offset())
+        .limit(u64::from(pagination.limit()));
 
     let items = fetch(select).await?;
 
-    Ok(PageResponse {
-        items,
-        page,
-        page_size,
-        total_items,
-        total_pages,
-    })
+    Ok(pagination.to_response(items, total_items))
 }
 
 pub fn page_from_items<T>(
     items: Vec<T>,
     pagination: &PageQuery,
 ) -> PageResponse<T> {
-    let page = pagination.page();
-    let page_size = pagination.limit();
-
     let total_items = items.len() as u64;
-    let total_pages = if total_items == 0 {
-        0
-    } else {
-        let pages = total_items.div_ceil(u64::from(page_size));
-        u32::try_from(pages).unwrap_or(u32::MAX)
-    };
 
-    let offset =
-        u64::from(page.saturating_sub(1)).saturating_mul(u64::from(page_size));
-    let start = usize::try_from(offset).unwrap_or(usize::MAX);
+    let start = usize::try_from(pagination.offset()).unwrap_or(usize::MAX);
 
     let items = if start >= items.len() {
         vec![]
@@ -305,15 +279,9 @@ pub fn page_from_items<T>(
         items
             .into_iter()
             .skip(start)
-            .take(page_size as usize)
+            .take(usize::from(pagination.limit()))
             .collect()
     };
 
-    PageResponse {
-        items,
-        page,
-        page_size,
-        total_items,
-        total_pages,
-    }
+    pagination.to_response(items, total_items)
 }

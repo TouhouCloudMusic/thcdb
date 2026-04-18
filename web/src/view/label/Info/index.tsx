@@ -6,6 +6,7 @@ import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
+import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { LabelInfoPageContext } from "./context"
@@ -30,6 +31,10 @@ export function LabelInfoPage(props: Props) {
 					<div class="flex flex-col gap-y-6">
 						<LabelInfoHeader />
 						<LabelInfoDetails />
+						<AddToUserCollectionButton
+							entityType="Label"
+							entityId={props.label.id}
+						/>
 						<EntityCorrectionMetadataSection
 							entityType="label"
 							entityId={props.label.id}

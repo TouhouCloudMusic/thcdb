@@ -140,7 +140,7 @@ pub async fn get_tags(
     entity_id: i32,
     user_id: Option<i32>,
     cursor: Option<i32>,
-    limit: u32,
+    limit: u8,
 ) -> Result<CursorResponse<TagAggregate>, DbErr> {
     // TODO: Remove alias after update sea query to 1.0
     let vote_table = Alias::new(entity_type.vote_table_name());

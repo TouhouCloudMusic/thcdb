@@ -39,6 +39,19 @@ pub(crate) type AuthService = crate::features::auth::Service;
 
 pub(crate) type AuthSession = axum_login::AuthSession<AuthService>;
 
+pub(crate) trait AuthSessionExt {
+    fn verified_user_id(&self) -> Option<i32>;
+}
+
+impl AuthSessionExt for AuthSession {
+    fn verified_user_id(&self) -> Option<i32> {
+        self.user
+            .as_ref()
+            .filter(|user| user.email_verified)
+            .map(|user| user.id)
+    }
+}
+
 pub(crate) type ArtistImageService = crate::features::artist_image::Service;
 pub(crate) type ReleaseImageService = crate::features::release_image::Service;
 

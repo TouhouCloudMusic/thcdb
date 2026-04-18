@@ -6,6 +6,7 @@ import { Link, Tab } from "~/component/atomic"
 import { Intersperse } from "~/component/data/Intersperse"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
+import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { TagInfoPageContext } from "./context"
@@ -30,6 +31,10 @@ export function TagInfoPage(props: Props) {
 					<div class="flex flex-col gap-y-6">
 						<TagInfoHeader />
 						<TagInfoDetails />
+						<AddToUserCollectionButton
+							entityType="Tag"
+							entityId={props.tag.id}
+						/>
 						<TagInfoTabs />
 						<EntityCorrectionMetadataSection
 							entityType="tag"

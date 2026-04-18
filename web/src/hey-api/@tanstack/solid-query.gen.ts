@@ -18,6 +18,10 @@ import {
 	createSong,
 	createSongLyrics,
 	createTag,
+	createUserCollection,
+	createUserCollectionItem,
+	deleteUserCollection,
+	deleteUserCollectionItem,
 	deleteVote,
 	editableUserRoles,
 	entityCorrections,
@@ -72,6 +76,8 @@ import {
 	pendingImageQueueCount,
 	profile,
 	profileWithName,
+	publicUserCollections,
+	reorderUserCollectionItems,
 	resendVerificationEmail,
 	resetPassword,
 	searchAll,
@@ -81,6 +87,7 @@ import {
 	searchRelease,
 	searchSong,
 	searchTag,
+	searchUserCollections,
 	setUserRoles,
 	signIn,
 	signOut,
@@ -91,6 +98,7 @@ import {
 	updateRelease,
 	updateSong,
 	updateSongLyrics,
+	updateUserCollection,
 	uploadArtistProfileImage,
 	uploadAvatar,
 	uploadProfileBanner,
@@ -100,6 +108,9 @@ import {
 	upsertEventCorrection,
 	upsertLabelCorrection,
 	upsertTagCorrection,
+	userCollectionDetail,
+	userCollectionItems,
+	userCollections,
 	userImageQueue,
 	userRoles,
 	verifyEmail,
@@ -137,6 +148,18 @@ import type {
 	CreateTagData,
 	CreateTagError,
 	CreateTagResponse,
+	CreateUserCollectionData,
+	CreateUserCollectionError,
+	CreateUserCollectionItemData,
+	CreateUserCollectionItemError,
+	CreateUserCollectionItemResponse,
+	CreateUserCollectionResponse,
+	DeleteUserCollectionData,
+	DeleteUserCollectionError,
+	DeleteUserCollectionItemData,
+	DeleteUserCollectionItemError,
+	DeleteUserCollectionItemResponse,
+	DeleteUserCollectionResponse,
 	DeleteVoteData,
 	DeleteVoteError,
 	EditableUserRolesData,
@@ -294,6 +317,12 @@ import type {
 	ProfileWithNameData,
 	ProfileWithNameError,
 	ProfileWithNameResponse,
+	PublicUserCollectionsData,
+	PublicUserCollectionsError,
+	PublicUserCollectionsResponse,
+	ReorderUserCollectionItemsData,
+	ReorderUserCollectionItemsError,
+	ReorderUserCollectionItemsResponse,
 	ResendVerificationEmailData,
 	ResendVerificationEmailError,
 	ResendVerificationEmailResponse2,
@@ -321,6 +350,9 @@ import type {
 	SearchTagData,
 	SearchTagError,
 	SearchTagResponse,
+	SearchUserCollectionsData,
+	SearchUserCollectionsError,
+	SearchUserCollectionsResponse,
 	SetUserRolesData,
 	SetUserRolesError,
 	SetUserRolesResponse,
@@ -351,6 +383,9 @@ import type {
 	UpdateSongLyricsError,
 	UpdateSongLyricsResponse,
 	UpdateSongResponse,
+	UpdateUserCollectionData,
+	UpdateUserCollectionError,
+	UpdateUserCollectionResponse,
 	UploadArtistProfileImageData,
 	UploadArtistProfileImageError,
 	UploadArtistProfileImageResponse,
@@ -378,6 +413,15 @@ import type {
 	UpsertTagCorrectionData,
 	UpsertTagCorrectionError,
 	UpsertTagCorrectionResponse,
+	UserCollectionDetailData,
+	UserCollectionDetailError,
+	UserCollectionDetailResponse,
+	UserCollectionItemsData,
+	UserCollectionItemsError,
+	UserCollectionItemsResponse,
+	UserCollectionsData,
+	UserCollectionsError,
+	UserCollectionsResponse,
 	UserImageQueueData,
 	UserImageQueueError,
 	UserImageQueueResponse,
@@ -526,7 +570,6 @@ export const adminUsersInfiniteOptions = (options?: Options<AdminUsersData>) =>
 		InfiniteData<AdminUsersResponse>,
 		QueryKey<Options<AdminUsersData>>,
 		| number
-		| null
 		| Pick<
 				QueryKey<Options<AdminUsersData>>[0],
 				"body" | "headers" | "path" | "query"
@@ -642,7 +685,6 @@ export const exploreArtistInfiniteOptions = (
 		InfiniteData<ExploreArtistResponse>,
 		QueryKey<Options<ExploreArtistData>>,
 		| number
-		| null
 		| Pick<
 				QueryKey<Options<ExploreArtistData>>[0],
 				"body" | "headers" | "path" | "query"
@@ -1036,6 +1078,391 @@ export const uploadAvatarMutation = (
 	return mutationOptions
 }
 
+export const createUserCollectionMutation = (
+	options?: Partial<Options<CreateUserCollectionData>>,
+): MutationOptions<
+	CreateUserCollectionResponse,
+	CreateUserCollectionError,
+	Options<CreateUserCollectionData>
+> => {
+	const mutationOptions: MutationOptions<
+		CreateUserCollectionResponse,
+		CreateUserCollectionError,
+		Options<CreateUserCollectionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await createUserCollection({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const deleteUserCollectionMutation = (
+	options?: Partial<Options<DeleteUserCollectionData>>,
+): MutationOptions<
+	DeleteUserCollectionResponse,
+	DeleteUserCollectionError,
+	Options<DeleteUserCollectionData>
+> => {
+	const mutationOptions: MutationOptions<
+		DeleteUserCollectionResponse,
+		DeleteUserCollectionError,
+		Options<DeleteUserCollectionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await deleteUserCollection({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const userCollectionDetailQueryKey = (
+	options: Options<UserCollectionDetailData>,
+) => createQueryKey("userCollectionDetail", options)
+
+export const userCollectionDetailOptions = (
+	options: Options<UserCollectionDetailData>,
+) =>
+	queryOptions<
+		UserCollectionDetailResponse,
+		UserCollectionDetailError,
+		UserCollectionDetailResponse,
+		ReturnType<typeof userCollectionDetailQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await userCollectionDetail({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: userCollectionDetailQueryKey(options),
+	})
+
+export const updateUserCollectionMutation = (
+	options?: Partial<Options<UpdateUserCollectionData>>,
+): MutationOptions<
+	UpdateUserCollectionResponse,
+	UpdateUserCollectionError,
+	Options<UpdateUserCollectionData>
+> => {
+	const mutationOptions: MutationOptions<
+		UpdateUserCollectionResponse,
+		UpdateUserCollectionError,
+		Options<UpdateUserCollectionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await updateUserCollection({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const userCollectionItemsQueryKey = (
+	options: Options<UserCollectionItemsData>,
+) => createQueryKey("userCollectionItems", options)
+
+export const userCollectionItemsOptions = (
+	options: Options<UserCollectionItemsData>,
+) =>
+	queryOptions<
+		UserCollectionItemsResponse,
+		UserCollectionItemsError,
+		UserCollectionItemsResponse,
+		ReturnType<typeof userCollectionItemsQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await userCollectionItems({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: userCollectionItemsQueryKey(options),
+	})
+
+export const userCollectionItemsInfiniteQueryKey = (
+	options: Options<UserCollectionItemsData>,
+): QueryKey<Options<UserCollectionItemsData>> =>
+	createQueryKey("userCollectionItems", options, true)
+
+export const userCollectionItemsInfiniteOptions = (
+	options: Options<UserCollectionItemsData>,
+) =>
+	infiniteQueryOptions<
+		UserCollectionItemsResponse,
+		UserCollectionItemsError,
+		InfiniteData<UserCollectionItemsResponse>,
+		QueryKey<Options<UserCollectionItemsData>>,
+		| number
+		| Pick<
+				QueryKey<Options<UserCollectionItemsData>>[0],
+				"body" | "headers" | "path" | "query"
+		  >
+	>(
+		// @ts-ignore
+		{
+			queryFn: async ({ pageParam, queryKey, signal }) => {
+				// @ts-ignore
+				const page: Pick<
+					QueryKey<Options<UserCollectionItemsData>>[0],
+					"body" | "headers" | "path" | "query"
+				> =
+					typeof pageParam === "object"
+						? pageParam
+						: {
+								query: {
+									page: pageParam,
+								},
+							}
+				const params = createInfiniteParams(queryKey, page)
+				const { data } = await userCollectionItems({
+					...options,
+					...params,
+					signal,
+					throwOnError: true,
+				})
+				return data
+			},
+			queryKey: userCollectionItemsInfiniteQueryKey(options),
+		},
+	)
+
+export const createUserCollectionItemMutation = (
+	options?: Partial<Options<CreateUserCollectionItemData>>,
+): MutationOptions<
+	CreateUserCollectionItemResponse,
+	CreateUserCollectionItemError,
+	Options<CreateUserCollectionItemData>
+> => {
+	const mutationOptions: MutationOptions<
+		CreateUserCollectionItemResponse,
+		CreateUserCollectionItemError,
+		Options<CreateUserCollectionItemData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await createUserCollectionItem({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const reorderUserCollectionItemsMutation = (
+	options?: Partial<Options<ReorderUserCollectionItemsData>>,
+): MutationOptions<
+	ReorderUserCollectionItemsResponse,
+	ReorderUserCollectionItemsError,
+	Options<ReorderUserCollectionItemsData>
+> => {
+	const mutationOptions: MutationOptions<
+		ReorderUserCollectionItemsResponse,
+		ReorderUserCollectionItemsError,
+		Options<ReorderUserCollectionItemsData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await reorderUserCollectionItems({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const deleteUserCollectionItemMutation = (
+	options?: Partial<Options<DeleteUserCollectionItemData>>,
+): MutationOptions<
+	DeleteUserCollectionItemResponse,
+	DeleteUserCollectionItemError,
+	Options<DeleteUserCollectionItemData>
+> => {
+	const mutationOptions: MutationOptions<
+		DeleteUserCollectionItemResponse,
+		DeleteUserCollectionItemError,
+		Options<DeleteUserCollectionItemData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await deleteUserCollectionItem({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const publicUserCollectionsQueryKey = (
+	options?: Options<PublicUserCollectionsData>,
+) => createQueryKey("publicUserCollections", options)
+
+export const publicUserCollectionsOptions = (
+	options?: Options<PublicUserCollectionsData>,
+) =>
+	queryOptions<
+		PublicUserCollectionsResponse,
+		PublicUserCollectionsError,
+		PublicUserCollectionsResponse,
+		ReturnType<typeof publicUserCollectionsQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await publicUserCollections({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: publicUserCollectionsQueryKey(options),
+	})
+
+export const publicUserCollectionsInfiniteQueryKey = (
+	options?: Options<PublicUserCollectionsData>,
+): QueryKey<Options<PublicUserCollectionsData>> =>
+	createQueryKey("publicUserCollections", options, true)
+
+export const publicUserCollectionsInfiniteOptions = (
+	options?: Options<PublicUserCollectionsData>,
+) =>
+	infiniteQueryOptions<
+		PublicUserCollectionsResponse,
+		PublicUserCollectionsError,
+		InfiniteData<PublicUserCollectionsResponse>,
+		QueryKey<Options<PublicUserCollectionsData>>,
+		| number
+		| Pick<
+				QueryKey<Options<PublicUserCollectionsData>>[0],
+				"body" | "headers" | "path" | "query"
+		  >
+	>(
+		// @ts-ignore
+		{
+			queryFn: async ({ pageParam, queryKey, signal }) => {
+				// @ts-ignore
+				const page: Pick<
+					QueryKey<Options<PublicUserCollectionsData>>[0],
+					"body" | "headers" | "path" | "query"
+				> =
+					typeof pageParam === "object"
+						? pageParam
+						: {
+								query: {
+									page: pageParam,
+								},
+							}
+				const params = createInfiniteParams(queryKey, page)
+				const { data } = await publicUserCollections({
+					...options,
+					...params,
+					signal,
+					throwOnError: true,
+				})
+				return data
+			},
+			queryKey: publicUserCollectionsInfiniteQueryKey(options),
+		},
+	)
+
+export const searchUserCollectionsQueryKey = (
+	options: Options<SearchUserCollectionsData>,
+) => createQueryKey("searchUserCollections", options)
+
+export const searchUserCollectionsOptions = (
+	options: Options<SearchUserCollectionsData>,
+) =>
+	queryOptions<
+		SearchUserCollectionsResponse,
+		SearchUserCollectionsError,
+		SearchUserCollectionsResponse,
+		ReturnType<typeof searchUserCollectionsQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await searchUserCollections({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: searchUserCollectionsQueryKey(options),
+	})
+
+export const searchUserCollectionsInfiniteQueryKey = (
+	options: Options<SearchUserCollectionsData>,
+): QueryKey<Options<SearchUserCollectionsData>> =>
+	createQueryKey("searchUserCollections", options, true)
+
+export const searchUserCollectionsInfiniteOptions = (
+	options: Options<SearchUserCollectionsData>,
+) =>
+	infiniteQueryOptions<
+		SearchUserCollectionsResponse,
+		SearchUserCollectionsError,
+		InfiniteData<SearchUserCollectionsResponse>,
+		QueryKey<Options<SearchUserCollectionsData>>,
+		| number
+		| Pick<
+				QueryKey<Options<SearchUserCollectionsData>>[0],
+				"body" | "headers" | "path" | "query"
+		  >
+	>(
+		// @ts-ignore
+		{
+			queryFn: async ({ pageParam, queryKey, signal }) => {
+				// @ts-ignore
+				const page: Pick<
+					QueryKey<Options<SearchUserCollectionsData>>[0],
+					"body" | "headers" | "path" | "query"
+				> =
+					typeof pageParam === "object"
+						? pageParam
+						: {
+								query: {
+									page: pageParam,
+								},
+							}
+				const params = createInfiniteParams(queryKey, page)
+				const { data } = await searchUserCollections({
+					...options,
+					...params,
+					signal,
+					throwOnError: true,
+				})
+				return data
+			},
+			queryKey: searchUserCollectionsInfiniteQueryKey(options),
+		},
+	)
+
 export const compareCorrectionsQueryKey = (
 	options: Options<CompareCorrectionsData>,
 ) => createQueryKey("compareCorrections", options)
@@ -1365,7 +1792,6 @@ export const exploreEventInfiniteOptions = (
 		InfiniteData<ExploreEventResponse>,
 		QueryKey<Options<ExploreEventData>>,
 		| number
-		| null
 		| Pick<
 				QueryKey<Options<ExploreEventData>>[0],
 				"body" | "headers" | "path" | "query"
@@ -1552,7 +1978,6 @@ export const pendingImageQueueInfiniteOptions = (
 		InfiniteData<PendingImageQueueResponse>,
 		QueryKey<Options<PendingImageQueueData>>,
 		| number
-		| null
 		| Pick<
 				QueryKey<Options<PendingImageQueueData>>[0],
 				"body" | "headers" | "path" | "query"
@@ -1745,7 +2170,6 @@ export const exploreLabelInfiniteOptions = (
 		InfiniteData<ExploreLabelResponse>,
 		QueryKey<Options<ExploreLabelData>>,
 		| number
-		| null
 		| Pick<
 				QueryKey<Options<ExploreLabelData>>[0],
 				"body" | "headers" | "path" | "query"
@@ -1886,7 +2310,6 @@ export const notificationListInfiniteOptions = (
 		InfiniteData<NotificationListResponse>,
 		QueryKey<Options<NotificationListData>>,
 		| number
-		| null
 		| Pick<
 				QueryKey<Options<NotificationListData>>[0],
 				"body" | "headers" | "path" | "query"
@@ -2219,7 +2642,6 @@ export const exploreReleaseInfiniteOptions = (
 		InfiniteData<ExploreReleaseResponse>,
 		QueryKey<Options<ExploreReleaseData>>,
 		| number
-		| null
 		| Pick<
 				QueryKey<Options<ExploreReleaseData>>[0],
 				"body" | "headers" | "path" | "query"
@@ -3101,7 +3523,6 @@ export const exploreSongInfiniteOptions = (
 		InfiniteData<ExploreSongResponse>,
 		QueryKey<Options<ExploreSongData>>,
 		| number
-		| null
 		| Pick<
 				QueryKey<Options<ExploreSongData>>[0],
 				"body" | "headers" | "path" | "query"
@@ -3264,7 +3685,6 @@ export const exploreTagInfiniteOptions = (options?: Options<ExploreTagData>) =>
 		InfiniteData<ExploreTagResponse>,
 		QueryKey<Options<ExploreTagData>>,
 		| number
-		| null
 		| Pick<
 				QueryKey<Options<ExploreTagData>>[0],
 				"body" | "headers" | "path" | "query"
@@ -3402,7 +3822,6 @@ export const userImageQueueInfiniteOptions = (
 		InfiniteData<UserImageQueueResponse>,
 		QueryKey<Options<UserImageQueueData>>,
 		| number
-		| null
 		| Pick<
 				QueryKey<Options<UserImageQueueData>>[0],
 				"body" | "headers" | "path" | "query"
@@ -3433,6 +3852,76 @@ export const userImageQueueInfiniteOptions = (
 				return data
 			},
 			queryKey: userImageQueueInfiniteQueryKey(options),
+		},
+	)
+
+export const userCollectionsQueryKey = (
+	options: Options<UserCollectionsData>,
+) => createQueryKey("userCollections", options)
+
+export const userCollectionsOptions = (options: Options<UserCollectionsData>) =>
+	queryOptions<
+		UserCollectionsResponse,
+		UserCollectionsError,
+		UserCollectionsResponse,
+		ReturnType<typeof userCollectionsQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await userCollections({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: userCollectionsQueryKey(options),
+	})
+
+export const userCollectionsInfiniteQueryKey = (
+	options: Options<UserCollectionsData>,
+): QueryKey<Options<UserCollectionsData>> =>
+	createQueryKey("userCollections", options, true)
+
+export const userCollectionsInfiniteOptions = (
+	options: Options<UserCollectionsData>,
+) =>
+	infiniteQueryOptions<
+		UserCollectionsResponse,
+		UserCollectionsError,
+		InfiniteData<UserCollectionsResponse>,
+		QueryKey<Options<UserCollectionsData>>,
+		| number
+		| Pick<
+				QueryKey<Options<UserCollectionsData>>[0],
+				"body" | "headers" | "path" | "query"
+		  >
+	>(
+		// @ts-ignore
+		{
+			queryFn: async ({ pageParam, queryKey, signal }) => {
+				// @ts-ignore
+				const page: Pick<
+					QueryKey<Options<UserCollectionsData>>[0],
+					"body" | "headers" | "path" | "query"
+				> =
+					typeof pageParam === "object"
+						? pageParam
+						: {
+								query: {
+									page: pageParam,
+								},
+							}
+				const params = createInfiniteParams(queryKey, page)
+				const { data } = await userCollections({
+					...options,
+					...params,
+					signal,
+					throwOnError: true,
+				})
+				return data
+			},
+			queryKey: userCollectionsInfiniteQueryKey(options),
 		},
 	)
 
@@ -3629,7 +4118,6 @@ export const getTagsInfiniteOptions = (options: Options<GetTagsData>) =>
 		InfiniteData<GetTagsResponse>,
 		QueryKey<Options<GetTagsData>>,
 		| number
-		| null
 		| Pick<
 				QueryKey<Options<GetTagsData>>[0],
 				"body" | "headers" | "path" | "query"
