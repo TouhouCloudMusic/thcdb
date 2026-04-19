@@ -1,118 +1,76 @@
 # examine and verify模块
 
-> **实现状态**: ⚠️ 部分完成（已支持拒绝与权限控制） | [查看路线图](../ROADMAP.md#correction)
+对数据的create、delete、modify请求（组）进行审核.
+可配合[user_comment](../../user/socialize/comment/design.md)系统提升审核协作能力.
+**提案的数据结构**：
+- UID.
+类型为整数，默认延续最后一条的UID序列，如果没有则从1开始.
+- 提交者.
+发起请求的主体，类型为整数，记录发起请求的user的UID.
+- 请求的描述.
+类型为字符串.
+- 请求.
+类型为数组，内容为请求（组）.
 
-修正系统通过结构化的审核流程实现协作编辑和数据库内容质量控制。
+请求为数组，元素为键值对，内容如下：
+- 执行顺序.
+键名为`execution_order`，键值类型为整数.
+- 请求类型.
+键名为`type`，键值为`create`、`delete`、`modify`中的一个.
+- 请求内容.
+键名为`operate`，键值为请求的操作.
 
-## 系统概述
+请求按`执行顺序`的值升序执行.
 
-修正系统包含三个主要实体：
+---
+**职能**：
+- [获取请求内容](#获取请求内容)
+- [通过](#通过)
+- [打回](#打回)
 
-- **correction**: 主要修正记录
-- **correction_revision**: 修正的历史修订版本
-- **correction_user**: 修正的用户角色和权限
+该模块依赖于版本控制系统.
 
-## Correction 实体
+---
 
-修正记录包含以下信息：
+## 获取请求内容
+接收一个UID.
+返回`UID`对应的提案的除`UID`以外的字段.
+### 参数规范
+`UID`必须在`提案表`中存在.
+### 错误处理
+如果`UID`不存在对应的`提案`，则返回`unknown_proposal`.
 
-- **Status / 状态**: 修正的当前状态 (CorrectionStatus)
-- **CorrectionType / 修正类型**: [跳到细致解释的链接](#CorrectionType)
-- **Target Entity / 目标实体**: 被修正的实体类型和标识
-- **Timestamps / 时间信息**: 创建时间和处理时间
 
-### CorrectionStatus
+## 通过
+接收两个键值对，内容如下：
+- 提案UID.
+键名为`proposalUID`，键值为通过的提案的`UID`.
+- 审批人.
+键名为`approver`，键值为通过的人的`UID`.
+### 参数规范
+`提案UID`必须在提案表中有对应的`提案`.
+`审批人`必须在user表中有对应的`user`.
+### 工作流程
+1. 对`提案UID`对应的`提案`上读写锁，不对整张表上锁.
+2. 执行`提案UID`对应的`提案`中的`请求`的`请求类型`调用函数，并传入`请求内容`.
+3. 结合版本控制系统，产生一个history.
+4. 删除`提案UID`对应的`提案`.
+### 错误处理
+如果`提案UID`不存在对应的`提案`，则返回`unknown_proposal`.
+如果`审批人`在user表中不存在对应的`user`，则返回`unknown_account`.
 
-表示修正的当前状态：
-
-- **Pending**: 等待审核
-- **Approved**: 已接受并应用
-- **Rejected**: 已拒绝（当前实现未包含拒绝原因字段）
-- **Superseded**: 被新修正替代
-
-### CorrectionType
-
-表示修正的操作类型：
-
-- **Create**: 添加新实体
-- **Update**: 修改现有实体
-- **Delete**: 删除实体
-- **Merge**: 合并重复实体
-
-### 可修正的实体
-
-修正可以应用于各种实体类型，见 [EntityType](../shared-types.md#entitytype)。
-
-## CorrectionRevision 实体
-
-修正的历史修订版本，包含：
-
-- **修正引用**: 所属的修正记录
-- **历史快照**: 实体在该版本的状态
-- **作者**: 创建此修订版本的用户
-- **描述**: 变更说明
-
-## CorrectionUser 实体
-
-记录用户在修正中的角色：
-
-- **Author**: 创建修正
-- **Reviewer**: 分配审核
-- **Approver**: 批准修正
-- **Watcher**: 订阅更新
-
-## 工作流程
-
-### 1. 提交
-
-- 用户识别需要修正的内容
-- 创建修正并提出变更建议
-- 提供描述和理由
-- 系统分配唯一 ID 并设置状态为 `Pending`
-
-### 2. 审核
-
-- 合格的审核员检查修正
-- 可能要求额外信息
-- 可以批准、拒绝或要求修改
-- 通过评论系统进行讨论
-
-### 3. 决定
-
-- 授权批准者做出最终决定
-- 批准的修正应用到数据库
-- 拒绝的修正会被标记为 `Rejected`（当前未实现拒绝原因字段）
-- 状态更新并记录时间戳
-
-### 4. 应用
-
-- 批准的修正修改目标实体
-- 历史状态保存在历史表中
-- 向相关用户发送通知
-- 修正标记为 `Approved`
-
-## API 端点
-
-### 已实现
-
-| 端点 | 方法 | 状态 | 说明 |
-|------|------|------|------|
-| `/correction` | POST | ✅ | 创建修正 |
-| `/correction/{id}` | GET | ✅ | 修正详情 |
-| `/correction/{id}/revisions` | GET | ✅ | 修正历史版本（列表） |
-| `/correction/{id}/diff` | GET | ✅ | 与最近一次已批准版本的 diff |
-| `/correction/{id1}/compare/{id2}` | GET | ✅ | 修正之间的对比 |
-| `/correction/{id}` | POST | ✅ | 处理修正（`method=Approve|Reject`，需要 `correction.manage`） |
-| `/{entity_type}/{id}/pending-correction` | GET | ✅ | 查询某实体是否存在待处理修正（返回 correction id） |
-
-### 待实现
-
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/correction/{id}/comments` | GET | 修正评论 |
-| `/user/{id}/corrections` | GET | 用户的修正列表 |
-| `/correction/{id}/supersede` | POST | 替代修正 |
-
-### 备注
-
-- 审批/拒绝通过统一接口 `POST /correction/{id}?method=...` 完成；该接口会校验 `correction.manage` 权限。
+## 打回
+接收两个键值对，内容如下：
+- 提案UID.
+键名为`proposalUID`，键值为打回的提案的`UID`.
+- 打回原因.
+键名为`reason`，键值类型为字符串.
+### 参数规范
+`提案UID`必须在提案表中有对应的`提案`.
+`打回原因`允许为空.
+### 工作流程
+1. 对`提案UID`对应的`提案`上读写锁，不对整张表上锁.
+2. 返回`打回原因`.
+3. 删除`提案UID`对应的`提案`.
+### 错误处理
+如果`提案UID`不存在对应的`提案`，则返回`unknown_proposal`.

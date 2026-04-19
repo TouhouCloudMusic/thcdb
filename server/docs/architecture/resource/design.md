@@ -1,6 +1,6 @@
-# object
+# resource
 
-对object的结构进行描述，每个object类别都有独立的表.
+对resource的结构进行描述，每个resource类别都有独立的表.
 
 ---
 ## 功能

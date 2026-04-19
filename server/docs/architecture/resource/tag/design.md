@@ -1,4 +1,4 @@
-# object Tag模块
+# resource Tag模块
 
 > **实现状态**: ⚠️ 部分完成 | [查看路线图](../ROADMAP.md#tag)
 

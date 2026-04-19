@@ -5,13 +5,13 @@
 ---
 **功能树**:
 - [已开发功能](#已开发功能)
-  - [Artist](./object/artist/design.md)
-  - [Release](./object/release/design.md)
-  - [Song](./object/song/design.md)
-  - [Event](./object/event/design.md)
-  - [Label](./object/label/design.md)
-  - [Tag](./object/tag/design.md)
-  - [Credit Role](./object/credit-role/design.md)
+  - [Artist](./resource/artist/design.md)
+  - [Release](./resource/release/design.md)
+  - [Song](./resource/song/design.md)
+  - [Event](./resource/event/design.md)
+  - [Label](./resource/label/design.md)
+  - [Tag](./resource/tag/design.md)
+  - [Credit Role](./resource/credit-role/design.md)
   - Song Lyrics
   - User
   - [examine and verify](./data_explore/examine_and_verify/design.md)
@@ -21,13 +21,13 @@
     - [data explore系统](./data_explore/design.md)
   - [第一阶段：中心功能](#中心功能)
     - [用户attention系统](./architecture/user/information/attention)
-    - [object](./object/design.md)
+    - [resource](./resource/design.md)
   - [第二阶段：边沿功能](#边沿功能)
     - [用户社交系统](./user/socialize/design.md)
   - [第三阶段：外延功能](#外延功能)
     - [站内数据统计系统](./statistics/design.md)
     - [推荐系统](./recommendation/design.md)
-    - [object的历史信息](./history-tracking/design.md)
+    - [resource的历史信息](./history-tracking/design.md)
 - [依赖关系](#依赖关系)
 ---
 
@@ -68,8 +68,8 @@
 职能简述：
 用户的关注、歌单、收藏夹等数据。
 
-#### object
-设计文档：[object](./object/design.md)
+#### resource
+设计文档：[resource](./resource/design.md)
 职能简述：
 歌曲、艺术家、歌单等数据。
 
@@ -88,24 +88,24 @@
 
 #### 推荐系统
 
-#### object的历史信息
+#### resource的历史信息
 
 ---
 ## 依赖关系
 
 ```mermaid
 graph LR;
-  object的历史信息[object的历史信息]
-  object[object]
+  resource的历史信息[resource的历史信息]
+  resource[resource]
   推荐系统[推荐系统]
   用户attention系统[用户attention系统]
   用户社交系统[用户社交系统]
   站内数据统计系统[站内数据统计系统]
   Q[data explore系统] --> P[用户权限系统]
-  object的历史信息 --> object;
-  object的历史信息 --> Q;
-  object --> Q;
-  用户attention系统 --> object;
+  resource的历史信息 --> resource;
+  resource的历史信息 --> Q;
+  resource --> Q;
+  用户attention系统 --> resource;
   用户社交系统 --> Q;
   站内数据统计系统 --> Q;
   推荐系统 --> 用户attention系统;
