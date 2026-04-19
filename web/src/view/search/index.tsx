@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import type {
@@ -26,24 +27,36 @@ const LIMIT = 20
 
 const TAB_META = {
 	artist: {
-		label: "Artists",
+		get label() {
+			return t`Artists`
+		},
 	},
 	event: {
-		label: "Events",
+		get label() {
+			return t`Events`
+		},
 	},
 	label: {
-		label: "Labels",
+		get label() {
+			return t`Labels`
+		},
 	},
 	release: {
-		label: "Releases",
+		get label() {
+			return t`Releases`
+		},
 	},
 	song: {
-		label: "Songs",
+		get label() {
+			return t`Songs`
+		},
 	},
 	tag: {
-		label: "Tags",
+		get label() {
+			return t`Tags`
+		},
 	},
-} satisfies Record<SearchTab, { label: string }>
+} satisfies Record<SearchTab, { readonly label: string }>
 
 const isSearchTab = (value: string): value is SearchTab => {
 	return (
@@ -89,7 +102,7 @@ export function SearchPage() {
 				<div class="flex min-h-0 flex-1 flex-col">
 					<Show
 						when={enabled()}
-						fallback={<EmptyState text="Type a keyword to search." />}
+						fallback={<EmptyState text={t`Type a keyword to search.`} />}
 					>
 						<SearchResults
 							term={term}
@@ -111,7 +124,7 @@ function SearchHeader(props: { enabled: boolean; term: string }) {
 		<div class="flex flex-col border-b border-slate-200 pb-4">
 			<Show when={props.enabled}>
 				<div class="text-3xl leading-tight font-extralight tracking-tighter text-primary">
-					Search result of &quot;
+					{t`Search result of`} &quot;
 					<span class="tracking-tight">{props.term}</span>
 					&quot;
 				</div>
@@ -289,13 +302,13 @@ function SearchResults(props: {
 					when={!isLoadingAny()}
 					fallback={
 						<EmptyState
-							text="Searching…"
+							text={t`Searching…`}
 							variant="fill"
 						/>
 					}
 				>
 					<EmptyState
-						text="No results found."
+						text={t`No results found.`}
 						variant="fill"
 					/>
 				</Show>
@@ -329,7 +342,7 @@ function SearchResults(props: {
 						hasNextPage={artistsQuery.hasNextPage}
 						limit={LIMIT}
 						setSentinelRef={setArtistsSentinelRef}
-						emptyText="No artists found."
+						emptyText={t`No artists found.`}
 						renderItem={(item) => <ArtistRow artist={item} />}
 					/>
 				</Tab.Content>
@@ -342,7 +355,7 @@ function SearchResults(props: {
 						hasNextPage={eventsQuery.hasNextPage}
 						limit={LIMIT}
 						setSentinelRef={setEventsSentinelRef}
-						emptyText="No events found."
+						emptyText={t`No events found.`}
 						renderItem={(item) => <EventRow event={item} />}
 					/>
 				</Tab.Content>
@@ -355,7 +368,7 @@ function SearchResults(props: {
 						hasNextPage={labelsQuery.hasNextPage}
 						limit={LIMIT}
 						setSentinelRef={setLabelsSentinelRef}
-						emptyText="No labels found."
+						emptyText={t`No labels found.`}
 						renderItem={(item) => <LabelRow label={item} />}
 					/>
 				</Tab.Content>
@@ -368,7 +381,7 @@ function SearchResults(props: {
 						hasNextPage={releasesQuery.hasNextPage}
 						limit={LIMIT}
 						setSentinelRef={setReleasesSentinelRef}
-						emptyText="No releases found."
+						emptyText={t`No releases found.`}
 						renderItem={(item) => <ReleaseRow release={item} />}
 					/>
 				</Tab.Content>
@@ -381,7 +394,7 @@ function SearchResults(props: {
 						hasNextPage={songsQuery.hasNextPage}
 						limit={LIMIT}
 						setSentinelRef={setSongsSentinelRef}
-						emptyText="No songs found."
+						emptyText={t`No songs found.`}
 						renderItem={(item) => <SongRow song={item} />}
 					/>
 				</Tab.Content>
@@ -394,7 +407,7 @@ function SearchResults(props: {
 						hasNextPage={tagsQuery.hasNextPage}
 						limit={LIMIT}
 						setSentinelRef={setTagsSentinelRef}
-						emptyText="No tags found."
+						emptyText={t`No tags found.`}
 						renderItem={(item) => <TagRow tag={item} />}
 					/>
 				</Tab.Content>
@@ -516,11 +529,11 @@ function ArtistRow(props: { artist: SimpleArtist }) {
 					{props.artist.name}
 				</div>
 				<div class="mt-0.5 text-xs text-slate-500">
-					Artist · {props.artist.id}
+					{t`Artist`} · {props.artist.id}
 				</div>
 			</div>
 			<div class="text-xs text-slate-400 transition-colors duration-150 group-hover:text-slate-700 motion-reduce:transition-none">
-				Open →
+				{t`Open`} →
 			</div>
 		</Link>
 	)
@@ -557,11 +570,11 @@ function ReleaseRow(props: { release: SongRelease }) {
 					{props.release.title}
 				</div>
 				<div class="mt-0.5 text-xs text-slate-500">
-					Release · {props.release.id}
+					{t`Release`} · {props.release.id}
 				</div>
 			</div>
 			<div class="text-xs text-slate-400 transition-colors duration-150 group-hover:text-slate-700 motion-reduce:transition-none">
-				Open →
+				{t`Open`} →
 			</div>
 		</Link>
 	)
@@ -581,10 +594,12 @@ function SongRow(props: { song: SongRef }) {
 				<div class="truncate text-sm font-medium text-slate-900">
 					{props.song.title}
 				</div>
-				<div class="mt-0.5 text-xs text-slate-500">Song · {props.song.id}</div>
+				<div class="mt-0.5 text-xs text-slate-500">
+					{t`Song`} · {props.song.id}
+				</div>
 			</div>
 			<div class="text-xs text-slate-400 transition-colors duration-150 group-hover:text-slate-700 motion-reduce:transition-none">
-				Open →
+				{t`Open`} →
 			</div>
 		</Link>
 	)
@@ -605,11 +620,11 @@ function EventRow(props: { event: SimpleEvent }) {
 					{props.event.name}
 				</div>
 				<div class="mt-0.5 text-xs text-slate-500">
-					Event · {props.event.id}
+					{t`Event`} · {props.event.id}
 				</div>
 			</div>
 			<div class="text-xs text-slate-400 transition-colors duration-150 group-hover:text-slate-700 motion-reduce:transition-none">
-				Open →
+				{t`Open`} →
 			</div>
 		</Link>
 	)
@@ -630,11 +645,11 @@ function LabelRow(props: { label: SimpleLabel }) {
 					{props.label.name}
 				</div>
 				<div class="mt-0.5 text-xs text-slate-500">
-					Label · {props.label.id}
+					{t`Label`} · {props.label.id}
 				</div>
 			</div>
 			<div class="text-xs text-slate-400 transition-colors duration-150 group-hover:text-slate-700 motion-reduce:transition-none">
-				Open →
+				{t`Open`} →
 			</div>
 		</Link>
 	)
@@ -659,10 +674,12 @@ function TagRow(props: { tag: TagRef }) {
 						{props.tag.type}
 					</div>
 				</div>
-				<div class="mt-0.5 text-xs text-slate-500">Tag · {props.tag.id}</div>
+				<div class="mt-0.5 text-xs text-slate-500">
+					{t`Tag`} · {props.tag.id}
+				</div>
 			</div>
 			<div class="text-xs text-slate-400 transition-colors duration-150 group-hover:text-slate-700 motion-reduce:transition-none">
-				Open →
+				{t`Open`} →
 			</div>
 		</Link>
 	)

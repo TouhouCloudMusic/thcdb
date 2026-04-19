@@ -2,9 +2,8 @@ import type { UserProfile } from "@thc/api"
 import { UserApi, AuthApi, NotificationApi } from "@thc/api"
 import { ObjExt } from "@thc/toolkit/data"
 import { Either as E, Option } from "effect"
-import type { ParentProps } from "solid-js"
-import { createContext, onMount } from "solid-js"
-import { createMutable } from "solid-js/store"
+import type { Accessor, ParentProps, Setter } from "solid-js"
+import { createContext, createSignal, onMount } from "solid-js"
 import * as v from "valibot"
 
 import { assertContext } from "~/utils/solid/assertContext"
@@ -68,32 +67,36 @@ function isUnauthorized(error: { statusCode?: number }) {
 }
 
 export class UserStore {
-	private ctx: UserContext
+	private readonly userState: Accessor<UserProfile | undefined>
+	private readonly setUserState: Setter<UserProfile | undefined>
+	private readonly isLoadingState: Accessor<boolean>
+	private readonly setIsLoadingState: Setter<boolean>
+	private readonly notificationUnreadCountState: Accessor<number>
+	private readonly setNotificationUnreadCountState: Setter<number>
 
 	constructor(ctx: UserContext) {
-		this.ctx = ctx
-		return createMutable(this)
-	}
+		const [userState, setUserState] = createSignal(ctx?.user)
+		const [isLoadingState, setIsLoadingState] = createSignal(
+			ctx?.user === undefined && SignedInHint_check(),
+		)
+		const [notificationUnreadCountState, setNotificationUnreadCountState] =
+			createSignal(0)
 
-	private isLoading = false
-	private notificationUnreadCount = 0
+		this.userState = userState
+		this.setUserState = setUserState
+		this.isLoadingState = isLoadingState
+		this.setIsLoadingState = setIsLoadingState
+		this.notificationUnreadCountState = notificationUnreadCountState
+		this.setNotificationUnreadCountState = setNotificationUnreadCountState
+	}
 	private notificationSocket: WebSocket | undefined = undefined
 	private notificationReconnectDelayMs = 1000
 	private notificationReconnectTimer:
 		| ReturnType<typeof globalThis.setTimeout>
 		| undefined = undefined
 
-	async trySignIn() {
-		if (this.ctx?.user || this.isLoading || !SignedInHint_check()) return
-		await this.flush()
-	}
-
-	async flush() {
-		if (this.isLoading || !SignedInHint_check()) return
-
-		this.isLoading = true
+	private async loadCurrentUser() {
 		const result = await UserApi.profile()
-		this.isLoading = false
 
 		return E.match(result, {
 			onLeft: (error) => {
@@ -113,15 +116,38 @@ export class UserStore {
 		})
 	}
 
+	async trySignIn() {
+		if (this.user || !this.isLoadingState()) return
+
+		try {
+			return await this.loadCurrentUser()
+		} finally {
+			this.setIsLoadingState(false)
+		}
+	}
+
+	async flush() {
+		if (this.isLoadingState() || !SignedInHint_check()) return
+
+		this.setIsLoadingState(true)
+
+		try {
+			return await this.loadCurrentUser()
+		} finally {
+			this.setIsLoadingState(false)
+		}
+	}
+
 	get notification_state() {
-		if (!this.ctx?.user) {
+		const user = this.user
+		if (!user) {
 			return NotificationState.None
 		}
-		if (this.notificationUnreadCount > 0) {
+		if (this.notificationUnreadCountState() > 0) {
 			return NotificationState.Unread
 		}
 
-		const settings = getObject(this.ctx.user.settings)
+		const settings = getObject(user.settings)
 		const notification = settings
 			? getObject(settings["notification"])
 			: undefined
@@ -132,9 +158,7 @@ export class UserStore {
 	}
 
 	get user() {
-		if (this.ctx) {
-			return this.ctx.user
-		}
+		return this.userState()
 	}
 
 	get is_signed_in() {
@@ -142,14 +166,18 @@ export class UserStore {
 	}
 
 	get is_loading() {
-		return this.isLoading
+		return this.isLoadingState()
 	}
 
 	sign_in(ctx: UserContext) {
-		this.ctx = ctx
+		this.setUserState(ctx?.user)
 		SignedInHint_set(ctx?.user !== undefined)
 		void this.refreshNotifications()
 		this.connectNotificationSocket()
+	}
+
+	updateUser(updater: (user: UserProfile) => UserProfile) {
+		this.setUserState((user) => (user ? updater(user) : user))
 	}
 
 	async sign_out() {
@@ -164,9 +192,9 @@ export class UserStore {
 	}
 
 	private clearSession() {
-		this.ctx = undefined
+		this.setUserState(undefined)
 		SignedInHint_set(false)
-		this.notificationUnreadCount = 0
+		this.setNotificationUnreadCountState(0)
 		this.disconnectNotificationSocket()
 	}
 
@@ -183,7 +211,7 @@ export class UserStore {
 	}
 
 	private connectNotificationSocket() {
-		if (!this.ctx?.user) return
+		if (!this.user) return
 		if (
 			this.notificationSocket
 			&& (this.notificationSocket.readyState === WebSocket.OPEN
@@ -212,7 +240,7 @@ export class UserStore {
 				if (!parsed.success) return
 
 				if (parsed.output.type === "Notification") {
-					this.notificationUnreadCount += 1
+					this.setNotificationUnreadCountState((count) => count + 1)
 				}
 			} catch {
 				// Ignore invalid messages.
@@ -220,7 +248,7 @@ export class UserStore {
 		})
 
 		ws.addEventListener("close", () => {
-			if (!this.ctx?.user) return
+			if (!this.user) return
 			if (this.notificationReconnectTimer !== undefined) return
 
 			const delay = this.notificationReconnectDelayMs
@@ -237,7 +265,7 @@ export class UserStore {
 		const unread = await NotificationApi.unreadCount()
 
 		E.map(unread, (count) => {
-			this.notificationUnreadCount = count
+			this.setNotificationUnreadCountState(count)
 		})
 	}
 }

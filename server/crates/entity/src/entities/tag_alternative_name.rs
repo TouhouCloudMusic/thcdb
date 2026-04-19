@@ -21,7 +21,7 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(
         belongs_to = "super::language::Entity",
-        from = "Column::TagId",
+        from = "Column::LanguageId",
         to = "super::language::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
@@ -29,7 +29,7 @@ pub enum Relation {
     Language,
     #[sea_orm(
         belongs_to = "super::tag::Entity",
-        from = "Column::LanguageId",
+        from = "Column::TagId",
         to = "super::tag::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"

@@ -23,3 +23,13 @@ language       = "system"
 pass_filenames = false
 stages         = [ "pre-push" ]
 types          = [ "toml" ]
+
+[[repos.hooks]]
+id             = "github-actions-actionlint"
+name           = "github actions actionlint"
+entry          = "actionlint"
+language       = "system"
+files          = "^\\.github/workflows/.*\\.ya?ml$"
+pass_filenames = true
+stages         = [ "pre-push" ]
+types          = [ "yaml" ]

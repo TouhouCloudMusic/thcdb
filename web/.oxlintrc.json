@@ -6,6 +6,7 @@
 	"ignorePatterns": [
 		"**.gen.ts",
 		"packages/api/**/gen.ts",
+		"vendor/**",
 		"src/orval/**",
 		"config/eslint/index.js",
 		"src/locales/main.loader.js",
@@ -127,6 +128,17 @@
 			}
 		],
 		"no-nested-ternary": "off",
+		"no-restricted-imports": [
+			"error",
+			{
+				"paths": [
+					{
+						"name": "@huliiiiii/lingui-solid/macro",
+						"message": "Import Solid macros from @lingui/solid/macro. The aliased package name is not resolvable from app source."
+					}
+				]
+			}
+		],
 		"no-plusplus": [
 			"warn",
 			{

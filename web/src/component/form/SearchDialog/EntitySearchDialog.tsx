@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { JSX } from "solid-js"
 import { For, Suspense } from "solid-js"
 
@@ -7,7 +8,7 @@ type EntitySearchDialogProps<T> = {
 	title: JSX.Element
 	trigger: JSX.Element
 	value: string
-	onInput: (e: Event & { currentTarget: HTMLInputElement }) => void
+	onInput: (value: string) => void
 	onSelect: (item: T) => void
 	items?: T[] | undefined
 	item: (item: T) => JSX.Element
@@ -23,9 +24,9 @@ export function EntitySearchDialog<T>(
 				<div class="mb-6 space-y-4">
 					<SearchDialog.Label>{props.title}</SearchDialog.Label>
 					<SearchDialog.Input
-						placeholder={"Search..."}
+						placeholder={t`Search...`}
 						value={props.value}
-						onInput={props.onInput}
+						onInput={(event) => props.onInput(event.currentTarget.value)}
 						class="h-9 w-full"
 					/>
 				</div>

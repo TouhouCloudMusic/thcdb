@@ -1,4 +1,5 @@
 import { Field, getInput, setInput } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { For } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
@@ -29,7 +30,7 @@ export function EventLocationField(props: Props) {
 
 	return (
 		<div class={twMerge("flex flex-col gap-2", props.class)}>
-			<FormComp.Label>Location</FormComp.Label>
+			<FormComp.Label>{t`Location`}</FormComp.Label>
 			<div class="flex flex-wrap gap-4">
 				<For each={DESCRIPTORS}>
 					{(descriptor) => (

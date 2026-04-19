@@ -1,4 +1,5 @@
 import { Field, FieldArray, insert, remove, setInput } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { Language } from "@thc/api"
 import { For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
@@ -19,7 +20,7 @@ export function LocalizedTitlesField(props: {
 	return (
 		<div class={twMerge("flex min-h-32 w-full flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Localized Titles</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Localized Titles`}</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"
@@ -79,7 +80,7 @@ function LocalizedTitleItem(props: { index: number; of: ReleaseFormStore }) {
 					<InputField.Root>
 						<InputField.Input
 							{...field.props}
-							placeholder="Title"
+							placeholder={t`Title`}
 							value={field.input}
 						/>
 						<InputField.Error>

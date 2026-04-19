@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro"
+
 type PlaylistCardProps = {
 	playlist: {
 		id: number
@@ -21,7 +23,9 @@ export function PlaylistCard(props: PlaylistCardProps) {
 				<h3 class="hover:text-rose-600 line-clamp-2 text-sm font-medium text-primary">
 					{props.playlist.title}
 				</h3>
-				<p class="mt-1 text-xs text-tertiary">by {props.playlist.creator}</p>
+				<p class="mt-1 text-xs text-tertiary">
+					{t`by`} {props.playlist.creator}
+				</p>
 			</div>
 		</div>
 	)

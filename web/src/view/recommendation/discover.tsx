@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro"
+
 export const RecommendationDiscover = () => {
-	return <div>[UNIMPLEMENTED] Recommendation</div>
+	return <div>{t`[UNIMPLEMENTED] Recommendation`}</div>
 }

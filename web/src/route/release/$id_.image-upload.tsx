@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute, notFound, useNavigate } from "@tanstack/solid-router"
 import { ReleaseMutation, ReleaseQueryOption } from "@thc/query"
@@ -70,7 +71,7 @@ function RouteComponent() {
 						entityLabel="Release"
 						entityId={releaseId.toString()}
 						entityName={release().title}
-						imageLabel="cover art"
+						imageLabel={t`cover art`}
 						imageUrl={release().cover_art_url}
 						dimensionRange={{
 							width: {

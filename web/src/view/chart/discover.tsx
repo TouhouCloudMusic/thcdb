@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro"
+
 export const ChartDiscover = () => {
-	return <div>[UNIMPLEMENTED] Chart</div>
+	return <div>{t`[UNIMPLEMENTED] Chart`}</div>
 }

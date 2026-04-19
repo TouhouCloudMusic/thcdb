@@ -6,113 +6,52 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
 
-#: src/App.tsx
-#: src/component/Footer/index.tsx
-msgid "Touhou Cloud DB"
-msgstr "Touhou Cloud DB"
+#: src/view/artist/discover.tsx
+msgid "[UNIMPLEMENTED] Artist"
+msgstr "[UNIMPLEMENTED] Artist"
 
-#: src/App.tsx
-#: src/component/Footer/index.tsx
-msgid "Touhou Cloud DB is an open doujin music database"
-msgstr "Touhou Cloud DB is an open doujin music database"
+#: src/view/chart/discover.tsx
+msgid "[UNIMPLEMENTED] Chart"
+msgstr "[UNIMPLEMENTED] Chart"
 
-#: src/component/Pagination.tsx
-msgid "First page"
-msgstr "First page"
+#: src/view/event/discover.tsx
+msgid "[UNIMPLEMENTED] Event"
+msgstr "[UNIMPLEMENTED] Event"
 
-#: src/component/Pagination.tsx
-msgid "Previous page"
-msgstr "Previous page"
+#: src/view/recommendation/discover.tsx
+msgid "[UNIMPLEMENTED] Recommendation"
+msgstr "[UNIMPLEMENTED] Recommendation"
 
-#: src/component/Pagination.tsx
-msgid "Next page"
-msgstr "Next page"
+#: src/view/release/discover.tsx
+msgid "[UNIMPLEMENTED] Release"
+msgstr "[UNIMPLEMENTED] Release"
 
-#: src/component/Pagination.tsx
-msgid "Last page"
-msgstr "Last page"
+#. placeholder {0}: props.list.totalItems
+#: src/view/admin/users.tsx
+msgid "{0} users"
+msgstr "{0} users"
 
-#: src/component/Pagination.tsx
-msgid "Pagination"
-msgstr "Pagination"
+#: src/view/entity_tags/EntityTagsSection.tsx
+msgid "{count} votes · relevance {relevance}"
+msgstr "{count} votes · relevance {relevance}"
+#: src/view/NotFound.tsx
+#: src/view/NotFound.tsx
+#: src/view/NotFound.tsx
+msgid "404 Not Found"
+msgstr "404 Not Found"
 
-#: src/component/route.tsx
-msgid "Checking session…"
-msgstr "Checking session…"
-
-#: src/component/route.tsx
-msgid "AUTH REQUIRED"
-msgstr "AUTH REQUIRED"
-
-#: src/component/route.tsx
-msgid "Sign in to continue"
-msgstr "Sign in to continue"
-
-#: src/component/route.tsx
-msgid "This page requires an authenticated account."
-msgstr "This page requires an authenticated account."
-
-#: src/component/route.tsx
-#: src/view/auth/component/AuthForm.tsx
-msgid "Sign in"
-msgstr "Sign in"
-
-#: src/component/route.tsx
-#: src/view/auth/component/AuthForm.tsx
-msgid "Create account"
-msgstr "Create account"
-
-#: src/mock/artist.ts
-#: src/view/artist/edit/comp/Membership/index.tsx
-#: src/view/artist/edit/hook/useFormInitialValues.tsx
-#: src/view/artist/explore.comp.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/label/explore.comp.tsx
-msgid "Unknown"
-msgstr "Unknown"
-
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/mock/artist.ts
-#: src/mock/artist.ts
-#: src/mock/event.ts
-#: src/mock/event.ts
-#: src/mock/label.ts
-#: src/mock/label.ts
-#: src/mock/release.ts
-msgid "Day"
-msgstr "Day"
-
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/domain/shared/date_with_precision.ts
-#: src/mock/release.ts
-msgid "Month"
-msgstr "Month"
-
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/component/form/DateWithPrecision/index.tsx
-#: src/domain/shared/date_with_precision.ts
-#: src/mock/release.ts
-msgid "Year"
-msgstr "Year"
-
-#: src/mock/release.ts
-msgid "Japanese"
-msgstr "Japanese"
-
-#: src/mock/tag.ts
-msgid "Genre"
-msgstr "Genre"
-
-#: src/route/__root.tsx
-msgid "Unknown error"
-msgstr "Unknown error"
+#: src/view/error/InternalServerError.tsx
+#: src/view/error/InternalServerError.tsx
+#: src/view/error/InternalServerError.tsx
+msgid "500 Internal Server Error"
+msgstr "500 Internal Server Error"
 
 #: src/route/about.tsx
 #: src/route/about.tsx
@@ -120,156 +59,338 @@ msgstr "Unknown error"
 msgid "About"
 msgstr "About"
 
-#: src/utils/dateTime.ts
-#: src/view/correction/Detail.tsx
-msgid "None"
-msgstr "None"
+#: src/view/admin/users.tsx
+msgid "Access moderation tools and review queues."
+msgstr "Access moderation tools and review queues."
 
-#: src/view/NotFound.tsx
-#: src/view/NotFound.tsx
-msgid "404 Not Found"
-msgstr "404 Not Found"
+#: src/view/admin/users.tsx
+msgid "Action"
+msgstr "Action"
 
-#: src/view/NotFound.tsx
-msgid "The page you are looking for does not exist."
-msgstr "The page you are looking for does not exist."
-
-#. 0: " "
-#: src/view/NotFound.tsx
-msgid "Hey you, lost one. why you are here?{0} <0>You should go back...</0>"
-msgstr "Hey you, lost one. why you are here?{0} <0>You should go back...</0>"
-
-#. 0: CURRENT_YEAR
-#: src/component/Footer/index.tsx
-msgid "© {0} THCDB"
-msgstr "© {0} THCDB"
-
-#: src/component/Header/LeftSidebar.tsx
-msgid "Home"
-msgstr "Home"
-
-#: src/component/Header/LeftSidebar.tsx
-msgid "Recommendation"
-msgstr "Recommendation"
-
-#: src/component/Header/LeftSidebar.tsx
-#: src/route/release/$id_.image-upload.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-msgid "Release"
-msgstr "Release"
+msgid "Actions"
+msgstr "Actions"
+
+#: src/view/label/explore.comp.tsx
+msgid "Active"
+msgstr "Active"
+
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Add disc"
+msgstr "Add disc"
+
+#: src/view/auth/component/AuthLeftPanel.tsx
+msgid "Add missing entries (artists, releases, songs, events)"
+msgstr "Add missing entries (artists, releases, songs, events)"
+
+#: src/view/entity_tags/EntityTagsSection.tsx
+msgid "Add tag"
+msgstr "Add tag"
+
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+msgid "Add Tag"
+msgstr "Add Tag"
+
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Add track"
+msgstr "Add track"
+
+#: src/view/auth/component/AuthLeftPanel.tsx
+msgid "Add what is missing and keep entries consistent across the database."
+msgstr "Add what is missing and keep entries consistent across the database."
 
 #: src/component/Header/LeftSidebar.tsx
-#: src/route/artist/$id_.image-upload.tsx
+msgid "Admin"
+msgstr "Admin"
+
+#: src/view/admin/users.tsx
+msgid "Admin Settings"
+msgstr "Admin Settings"
+
+#: src/view/correction/Detail.tsx
+msgid "After"
+msgstr "After"
+
+#: src/view/event/Info/index.tsx
+#: src/view/tag/Info/index.tsx
+msgid "AKAs"
+msgstr "AKAs"
+
+#: src/view/Homepage/mock.ts
+msgid "Albums, EPs, singles"
+msgstr "Albums, EPs, singles"
+
+#: src/view/artist/edit/comp/Aliases.tsx
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Aliases"
+msgstr "Aliases"
+
+#: src/view/artist/explore.comp.tsx
+#: src/view/image_queue/manage.tsx
+#: src/view/song/explore.tsx
+msgid "All"
+msgstr "All"
+
+#: src/view/Homepage/component/HomeHero.tsx
+msgid "Alpha"
+msgstr "Alpha"
+
+#: src/view/auth/component/VerifyEmailForm.tsx
+msgid "Already have an account?"
+msgstr "Already have an account?"
+
+#: src/view/event/edit/comp/EventAlternativeNamesField.tsx
+#: src/view/tag/edit/comp/TagAltNames.tsx
+msgid "Alternative Names"
+msgstr "Alternative Names"
+
+#: src/view/Homepage/component/HomeHero.tsx
+msgid "API-powered UI"
+msgstr "API-powered UI"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Approve"
+msgstr "Approve"
+
+#: src/view/image_queue/detail.tsx
+msgid "Approve image?"
+msgstr "Approve image?"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/manage.tsx
+msgid "Approved"
+msgstr "Approved"
+
+#: src/view/image_queue/user.tsx
+msgid "APPROVED"
+msgstr "APPROVED"
+
+#: src/view/artist/edit/index.tsx
+#: src/view/event/edit/index.tsx
+#: src/view/label/edit/index.tsx
+#: src/view/release/edit/index.tsx
+#: src/view/song/edit/index.tsx
+#: src/view/tag/edit/index.tsx
+msgid "Are you sure you want to leave this page? Your changes will be lost."
+msgstr "Are you sure you want to leave this page? Your changes will be lost."
+
+#: src/component/Header/LeftSidebar.tsx
 #: src/view/Homepage/component/ArtistCard.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/song/Info/comp/SongInfoTitleAndCreditName.tsx
+#: src/view/search/index.tsx
 msgid "Artist"
 msgstr "Artist"
 
-#: src/component/Header/LeftSidebar.tsx
-msgid "Song"
-msgstr "Song"
+#: src/domain/song/schema.ts
+msgid "Artist not selected"
+msgstr "Artist not selected"
 
-#: src/component/Header/LeftSidebar.tsx
-msgid "Tag"
-msgstr "Tag"
+#: src/view/artist/edit/comp/ArtistType.tsx
+msgid "Artist Type"
+msgstr "Artist Type"
 
-#: src/component/Header/LeftSidebar.tsx
-msgid "Event"
-msgstr "Event"
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/release/edit/comp/ReleaseArtistsField.tsx
+#: src/view/search/index.tsx
+#: src/view/song/edit/comp/SongArtistsField.tsx
+msgid "Artists"
+msgstr "Artists"
 
-#: src/component/Header/LeftSidebar.tsx
-msgid "Label"
-msgstr "Label"
+#: src/component/feature/entity_explore/OrderBySelect.tsx
+msgid "Ascending"
+msgstr "Ascending"
 
-#: src/component/Header/LeftSidebar.tsx
-msgid "Explore"
-msgstr "Explore"
+#: src/component/route.tsx
+msgid "AUTH REQUIRED"
+msgstr "AUTH REQUIRED"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Profile"
-msgstr "Profile"
+#: src/view/correction/CorrectionHistorySection.tsx
+msgid "Author"
+msgstr "Author"
+
+#: src/component/form/FormActionBar.tsx
+msgid "Back"
+msgstr "Back"
+
+#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/index.tsx
+msgid "Back to"
+msgstr "Back to"
+
+#: src/view/correction/Detail.tsx
+msgid "Before"
+msgstr "Before"
+
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Born"
+msgstr "Born"
+
+#: src/view/Homepage/mock.ts
+msgid "Browse circles and solo creators with filters and sorting."
+msgstr "Browse circles and solo creators with filters and sorting."
+
+#: src/view/Homepage/component/PlaylistCard.tsx
+#: src/view/release/Info/comp/ReleaseInfoTitleAndArtist.tsx
+msgid "by"
+msgstr "by"
+
+#: src/component/dialog/AlertDialog.tsx
+#: src/view/image_queue/detail.tsx
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Cancel"
+msgstr "Cancel"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/manage.tsx
+msgid "Cancelled"
+msgstr "Cancelled"
+
+#: src/view/image_queue/user.tsx
+msgid "CANCELLED"
+msgstr "CANCELLED"
+
+#: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
+msgid "Catalog No."
+msgstr "Catalog No."
+
+#: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
+msgid "Catalog Numbers"
+msgstr "Catalog Numbers"
+
+#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
+msgid "Catalog Nums"
+msgstr "Catalog Nums"
+
+#: src/component/route.tsx
+msgid "Checking session…"
+msgstr "Checking session…"
+
+#: src/view/Homepage/mock.ts
+msgid "Circles & solo creators"
+msgstr "Circles & solo creators"
+
+#: src/component/form/Location/index.tsx
+msgid "City"
+msgstr "City"
+
+#: src/route/correction/mock.tsx
+#: src/view/tag/TagTree.tsx
+msgid "Collapse"
+msgstr "Collapse"
 
 #: src/component/Header/RightSidebar.tsx
 msgid "Collections"
 msgstr "Collections"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Favorites"
-msgstr "Favorites"
+#: src/component/dialog/AlertDialog.tsx
+msgid "Confirm"
+msgstr "Confirm"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Lists"
-msgstr "Lists"
+#: src/view/auth/reset_password/index.tsx
+msgid "Continue"
+msgstr "Continue"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Recommendations"
-msgstr "Recommendations"
+#: src/view/auth/component/AuthLeftPanel.tsx
+msgid "Contribute touhou music metadata"
+msgstr "Contribute touhou music metadata"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Support"
-msgstr "Support"
+#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeHero.tsx
+msgid "Contribute what’s missing and help keep the database accurate for everyone."
+msgstr "Contribute what’s missing and help keep the database accurate for everyone."
 
-#: src/component/Header/LeftSidebar.tsx
-#: src/component/Header/RightSidebar.tsx
-msgid "Settings"
-msgstr "Settings"
+#: src/view/correction/EntityContributors.tsx
+msgid "Contributors:"
+msgstr "Contributors:"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Sign Out"
-msgstr "Sign Out"
+#: src/view/event/edit/comp/EventFormDesc.tsx
+#: src/view/label/edit/comp/LabelFormDesc.tsx
+#: src/view/tag/edit/comp/TagFormActions.tsx
+msgid "Correction Description"
+msgstr "Correction Description"
 
-#: src/component/Header/index.tsx
-msgid "Search artists, releases, songs…"
-msgstr "Search artists, releases, songs…"
+#: src/route/correction/mock.tsx
+msgid "Correction mock controls"
+msgstr "Correction mock controls"
 
-#: src/component/Header/index.tsx
-msgid "FILTER"
-msgstr "FILTER"
+#: src/view/correction/Detail.tsx
+msgid "CORRECTIONS"
+msgstr "CORRECTIONS"
 
-#: src/component/Header/index.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-msgid "Sign In"
-msgstr "Sign In"
+#: src/component/form/Location/index.tsx
+msgid "Country / Region"
+msgstr "Country / Region"
 
-#: src/component/Header/index.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-msgid "Sign Up"
-msgstr "Sign Up"
+#: src/route/release/$id_.image-upload.tsx
+#: src/view/Homepage/component/NewMusic.tsx
+#: src/view/image_queue/detail.tsx
+msgid "cover art"
+msgstr "cover art"
 
-#: src/component/ImageCropDialog/utils.ts
-msgid "Only PNG/JPEG images are supported."
-msgstr "Only PNG/JPEG images are supported."
+#: src/component/route.tsx
+#: src/view/auth/component/AuthForm.tsx
+msgid "Create account"
+msgstr "Create account"
 
-#. 0: formatBytes(fileSizeRange.min)
-#: src/component/ImageCropDialog/utils.ts
-msgid "File is too small. Minimum is {0}."
-msgstr "File is too small. Minimum is {0}."
+#: src/view/auth/component/AuthForm.tsx
+msgid "Create an account to continue."
+msgstr "Create an account to continue."
 
-#. 0: formatBytes(fileSizeRange.max)
-#: src/component/ImageCropDialog/utils.ts
-msgid "File is too large. Maximum is {0}."
-msgstr "File is too large. Maximum is {0}."
+#: src/view/artist/explore.tsx
+msgid "Create artist"
+msgstr "Create artist"
 
-#: src/component/ImageCropDialog/index.tsx
-msgid "ImageCropDialog"
-msgstr "ImageCropDialog"
+#: src/view/event/explore.tsx
+msgid "Create event"
+msgstr "Create event"
 
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-msgid "Cropper is not ready yet."
-msgstr "Cropper is not ready yet."
+#: src/view/label/explore.tsx
+msgid "Create label"
+msgstr "Create label"
 
-#: src/component/ImageCropDialog/index.tsx
-msgid "Selected crop cannot satisfy the required dimensions. Adjust the crop area."
-msgstr "Selected crop cannot satisfy the required dimensions. Adjust the crop area."
+#: src/view/label/List/index.tsx
+msgid "Create Label"
+msgstr "Create Label"
+
+#: src/view/release/explore/index.tsx
+msgid "Create release"
+msgstr "Create release"
+
+#: src/view/song/explore.tsx
+msgid "Create song"
+msgstr "Create song"
+
+#: src/view/tag/explore.tsx
+msgid "Create tag"
+msgstr "Create tag"
+
+#: src/view/image_queue/detail.tsx
+msgid "Created"
+msgstr "Created"
+
+#: src/view/image_queue/user.tsx
+msgid "CREATED"
+msgstr "CREATED"
+
+#: src/view/image_queue/manage.tsx
+msgid "Created at"
+msgstr "Created at"
+
+#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
+msgid "Created At"
+msgstr "Created At"
+
+#: src/view/correction/entityMap.ts
+msgid "Credit role"
+msgstr "Credit role"
+
+#: src/view/release/edit/comp/ReleaseCreditsField.tsx
+#: src/view/song/edit/comp/SongCreditsField.tsx
+#: src/view/song/Info/index.tsx
+msgid "Credits"
+msgstr "Credits"
 
 #: src/component/ImageCropDialog/index.tsx
 #: src/component/ImageCropDialog/index.tsx
@@ -278,331 +399,442 @@ msgstr "Selected crop cannot satisfy the required dimensions. Adjust the crop ar
 msgid "Crop failed."
 msgstr "Crop failed."
 
-#. 0: formatBytes(blob.size)
 #: src/component/ImageCropDialog/index.tsx
-msgid "Cropped image is too large ({0}). Try a smaller crop or use a smaller source image."
-msgstr "Cropped image is too large ({0}). Try a smaller crop or use a smaller source image."
+#: src/component/ImageCropDialog/index.tsx
+msgid "Cropper is not ready yet."
+msgstr "Cropper is not ready yet."
 
-#: src/component/ImageCropDialog/index.tsx
-#: src/view/user/edit_profile/store.ts
-msgid "Upload failed."
-msgstr "Upload failed."
-
-#: src/component/ImageCropDialog/index.tsx
-msgid "Close"
-msgstr "Close"
-
-#: src/component/ImageCropDialog/index.tsx
-msgid "Replace"
-msgstr "Replace"
-
-#: src/component/ImageCropDialog/index.tsx
-msgid "Remove"
-msgstr "Remove"
-
-#: src/component/ImageCropDialog/index.tsx
-msgid "Drop an image here, or pick a file"
-msgstr "Drop an image here, or pick a file"
-
-#: src/component/ImageCropDialog/index.tsx
-msgid "Select file"
-msgstr "Select file"
-
-#: src/component/ImageCropDialog/index.tsx
+#: src/view/image_queue/detail.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
-msgid "Uploading…"
-msgstr "Uploading…"
+msgid "Current"
+msgstr "Current"
 
-#: src/component/ImageCropDialog/index.tsx
-msgid "Save"
-msgstr "Save"
+#: src/view/artist/edit/comp/Locations.tsx
+msgid "Current Location"
+msgstr "Current Location"
 
-#. 0: props.children
-#: src/component/__legacy/site_title.tsx
-msgid "{0} - Doujin Cloud DB"
-msgstr "{0} - Doujin Cloud DB"
+#: src/view/image_queue/detail.tsx
+msgid "Current target image"
+msgstr "Current target image"
 
-#: src/component/devtools/index.tsx
-msgid "TanStack Router"
-msgstr "TanStack Router"
+#: src/view/event/Info/index.tsx
+msgid "Date"
+msgstr "Date"
 
-#: src/component/devtools/index.tsx
-msgid "TanStack Query"
-msgstr "TanStack Query"
+#: src/component/form/DateWithPrecision/index.tsx
+msgid "Day"
+msgstr "Day"
 
 #. 0: fieldNameWithoutUnderscore()
 #: src/component/dialog/ResetFieldDialog.tsx
 msgid "Reset {0} field to initial state"
 msgstr "Reset {0} field to initial state"
+#: src/component/feature/entity_explore/OrderBySelect.tsx
+msgid "Descending"
+msgstr "Descending"
 
-#: src/component/dialog/ResetFieldDialog.tsx
-msgid "Reset field?"
-msgstr "Reset field?"
+#: src/view/artist/edit/comp/FormActions.tsx
+#: src/view/correction/CorrectionHistorySection.tsx
+#: src/view/event/edit/comp/EventDescriptionField.tsx
+#: src/view/song/edit/comp/SongRelationsField.tsx
+#: src/view/tag/edit/comp/TagDescription.tsx
+msgid "Description"
+msgstr "Description"
 
-#: src/component/dialog/ResetFieldDialog.tsx
-msgid "This cannot be undone."
-msgstr "This cannot be undone."
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Died"
+msgstr "Died"
 
-#: src/component/dialog/ResetFieldDialog.tsx
-msgid "No"
-msgstr "No"
+#: src/view/correction/Detail.tsx
+msgid "DIFF"
+msgstr "DIFF"
 
-#: src/component/dialog/ResetFieldDialog.tsx
-#: src/route/correction/mock.tsx
-msgid "Reset"
-msgstr "Reset"
-
-#: src/component/form/FieldArrayFallback.tsx
-msgid "Click `+` to add a new item"
-msgstr "Click `+` to add a new item"
-
-#: src/component/form/ImageCropper.tsx
-msgid "Image Cropper Placeholder"
-msgstr "Image Cropper Placeholder"
-
-#: src/component/form/ImageCropper.tsx
-msgid "Save Image"
-msgstr "Save Image"
-
-#: src/component/image/__internal.tsx
-#: src/view/auth/reset_password/index.tsx
-#: src/view/tag/TagTree.tsx
-msgid "Enter"
-msgstr "Enter"
-
-#: src/component/form/FormActionBar.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Submit"
-msgstr "Submit"
+msgid "Dimensions (px)"
+msgstr "Dimensions (px)"
 
-#: src/component/form/FormActionBar.tsx
-msgid "Submitting"
-msgstr "Submitting"
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Disbanded"
+msgstr "Disbanded"
 
-#: src/component/form/FormActionBar.tsx
-msgid "Back"
-msgstr "Back"
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Disc name"
+msgstr "Disc name"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/manage.tsx
-msgid "Pending"
-msgstr "Pending"
+#: src/view/release/edit/comp/TrackFieldItem.tsx
+msgid "Display title"
+msgstr "Display title"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Approved"
-msgstr "Approved"
+#: src/view/label/explore.comp.tsx
+#: src/view/label/Info/index.tsx
+msgid "Dissolved"
+msgstr "Dissolved"
 
-#: src/view/image_queue/detail.tsx
-msgid "Rejected"
-msgstr "Rejected"
+#: src/view/label/edit/comp/LabelDateFields.tsx
+msgid "Dissolved date"
+msgstr "Dissolved date"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Reverted"
-msgstr "Reverted"
+#: src/view/entity_tags/model.ts
+msgid "Downvote"
+msgstr "Downvote"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Approve"
-msgstr "Approve"
+#: src/domain/song/schema.ts
+msgid "Duplicate related song"
+msgstr "Duplicate related song"
+#: src/view/release/edit/comp/TrackFieldItem.tsx
+msgid "Duration (ms)"
+msgstr "Duration (ms)"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Reject"
-msgstr "Reject"
+#: src/view/artist/edit/index.tsx
+msgid "Edit Artist"
+msgstr "Edit Artist"
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Revert"
-msgstr "Revert"
+#: src/view/event/edit/index.tsx
+msgid "Edit Event"
+msgstr "Edit Event"
 
-#: src/component/navbar/index.tsx
-msgid "推荐"
-msgstr "推荐"
+#: src/view/label/edit/index.tsx
+msgid "Edit Label"
+msgstr "Edit Label"
 
-#: src/component/navbar/index.tsx
-msgid "歌单"
-msgstr "歌单"
+#: src/view/release/edit/index.tsx
+msgid "Edit Release"
+msgstr "Edit Release"
 
-#: src/component/navbar/index.tsx
-msgid "排行榜"
-msgstr "排行榜"
+#: src/view/song/edit/index.tsx
+msgid "Edit Song"
+msgstr "Edit Song"
 
-#: src/component/navbar/index.tsx
-msgid "歌手"
-msgstr "歌手"
+#: src/view/tag/edit/index.tsx
+msgid "Edit Tag"
+msgstr "Edit Tag"
 
-#: src/component/navbar/index.tsx
-msgid "专辑"
-msgstr "专辑"
-
-#: src/component/navbar/index.tsx
-msgid "同人社团"
-msgstr "同人社团"
-
-#: src/component/navbar/index.tsx
-msgid "视频"
-msgstr "视频"
-
-#: src/component/navbar/index.tsx
-msgid "文章"
-msgstr "文章"
-
-#: src/component/navbar/index.tsx
-msgid "活动"
-msgstr "活动"
-
-#: src/view/image_queue/detail.tsx
 #: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
-msgid "Admin"
-msgstr "Admin"
+msgid "Edits"
+msgstr "Edits"
 
-#: src/route/correction/mock.tsx
-msgid "CORRECTION LAB"
-msgstr "CORRECTION LAB"
+#: src/view/auth/component/EmailField.tsx
+msgid "Email"
+msgstr "Email"
+
+#: src/domain/auth/schema.ts
+#: src/view/auth/reset_password/index.tsx
+msgid "Email is required"
+msgstr "Email is required"
+
+#: src/view/artist/edit/comp/Date.tsx
+#: src/view/event/edit/comp/EventDateFields.tsx
+msgid "End date"
+msgstr "End date"
+
+#: src/view/auth/component/AuthForm.tsx
+msgid "Enter the 6-digit code sent to your email."
+msgstr "Enter the 6-digit code sent to your email."
+
+#. placeholder {0}: email()
+#: src/view/auth/component/VerifyEmailForm.tsx
+msgid "Enter the code for {0}. If you did not receive one, use Resend."
+msgstr "Enter the code for {0}. If you did not receive one, use Resend."
+
+#: src/view/auth/component/VerifyEmailForm.tsx
+#~ msgid "Enter the code for {email}. If you did not receive one, use Resend."
+#~ msgstr "Enter the code for {email}. If you did not receive one, use Resend."
+
+#: src/view/auth/component/SignInIdentifierField.tsx
+msgid "Enter your username or email"
+msgstr "Enter your username or email"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/search/index.tsx
+msgid "Event"
+msgstr "Event"
+
+#: src/view/Homepage/mock.ts
+#: src/view/release/edit/comp/ReleaseEventsField.tsx
+#: src/view/search/index.tsx
+msgid "Events"
+msgstr "Events"
 
 #: src/route/correction/mock.tsx
 #: src/view/tag/TagTree.tsx
 msgid "Expand"
 msgstr "Expand"
 
-#: src/route/correction/mock.tsx
-#: src/view/tag/TagTree.tsx
-msgid "Collapse"
-msgstr "Collapse"
-
-#: src/route/correction/mock.tsx
-msgid "SCENARIO"
-msgstr "SCENARIO"
-
-#: src/route/correction/mock.tsx
-msgid "COMPARE ID"
-msgstr "COMPARE ID"
-
-#: src/route/correction/mock.tsx
-msgid "QUICK PICKS"
-msgstr "QUICK PICKS"
-
-#: src/route/correction/mock.tsx
-msgid "none"
-msgstr "none"
-
-#: src/route/correction/mock.tsx
-msgid "No compare baselines."
-msgstr "No compare baselines."
-
-#: src/route/correction/mock.tsx
-msgid "Route: <0>/correction/mock</0>"
-msgstr "Route: <0>/correction/mock</0>"
-
-#: src/route/correction/mock.tsx
-msgid "Correction mock controls"
-msgstr "Correction mock controls"
-
-#. 0: songId
-#: src/route/song/$id_.corrections.tsx
-msgid "Song #{0}"
-msgstr "Song #{0}"
-
-#: src/state/user/index.tsx
-msgid "Notification"
-msgstr "Notification"
-
-#: src/state/user/index.tsx
-msgid "UserContext"
-msgstr "UserContext"
-
-#: src/view/Homepage/index.tsx
-msgid "Latest Releases"
-msgstr "Latest Releases"
-
-#: src/view/artist/discover.tsx
-msgid "[UNIMPLEMENTED] Artist"
-msgstr "[UNIMPLEMENTED] Artist"
-
-#: src/view/Homepage/utils.ts
-msgid "Unknown artist"
-msgstr "Unknown artist"
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/Homepage/component/ExploreSection.tsx
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+msgid "Explore"
+msgstr "Explore"
 
 #: src/view/artist/explore.tsx
 msgid "Explore Artists"
 msgstr "Explore Artists"
 
-#: src/view/artist/explore.tsx
-msgid "Create artist"
-msgstr "Create artist"
+#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeHero.tsx
+msgid "Explore doujin music"
+msgstr "Explore doujin music"
 
-#: src/view/artist/explore.comp.tsx
-#: src/view/label/explore.comp.tsx
-msgid "Present"
-msgstr "Present"
+#: src/view/event/explore.tsx
+msgid "Explore Events"
+msgstr "Explore Events"
 
-#: src/view/artist/explore.comp.tsx
-#: src/view/image_queue/manage.tsx
-#: src/view/release/explore/filter.tsx
-#: src/view/release/explore/filter.tsx
-#: src/view/release/explore/filter.tsx
+#: src/view/label/explore.tsx
+msgid "Explore Labels"
+msgstr "Explore Labels"
+
+#: src/view/Homepage/mock.ts
+msgid "Explore labels, imprint history and founded/dissolved dates."
+msgstr "Explore labels, imprint history and founded/dissolved dates."
+
+#: src/view/release/explore/index.tsx
+msgid "Explore Releases"
+msgstr "Explore Releases"
+
 #: src/view/song/explore.tsx
-msgid "All"
-msgstr "All"
+msgid "Explore Songs"
+msgstr "Explore Songs"
 
-#: src/view/Homepage/component/ArtistCard.tsx
-#: src/view/artist/explore.comp.tsx
+#: src/view/image_queue/manage.tsx
+msgid "Failed to load image queue."
+msgstr "Failed to load image queue."
+
+#: src/view/image_queue/user.tsx
+msgid "Failed to load user image queue."
+msgstr "Failed to load user image queue."
+
+#: src/view/admin/users.tsx
+msgid "Failed to load users."
+msgstr "Failed to load users."
+
+#: src/component/Header/RightSidebar.tsx
+msgid "Favorites"
+msgstr "Favorites"
+
+#: src/component/Footer/index.tsx
+msgid "Feedback"
+msgstr "Feedback"
+
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "File size"
+msgstr "File size"
+
+#: src/view/Homepage/mock.ts
+msgid "Find tracks by title language, credits, and corrections."
+msgstr "Find tracks by title language, credits, and corrections."
+
+#: src/component/Pagination.tsx
+msgid "First page"
+msgstr "First page"
+
+#: src/view/user/Profile.tsx
+msgid "Follow"
+msgstr "Follow"
+
+#: src/view/user/Profile.tsx
+msgid "Following"
+msgstr "Following"
+
+#: src/view/user/Profile.tsx
+msgid "Following..."
+msgstr "Following..."
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Forgot password"
+msgstr "Forgot password"
+
+#: src/view/auth/component/AuthCredentialForm.tsx
+msgid "Forgot password?"
+msgstr "Forgot password?"
+
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "Formats"
+msgstr "Formats"
+
 #: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Multiple"
-msgstr "Multiple"
+msgid "Formed"
+msgstr "Formed"
 
-#: src/view/Homepage/component/ArtistCard.tsx
+#: src/view/label/Info/index.tsx
+msgid "Founded"
+msgstr "Founded"
+
+#: src/view/label/edit/comp/LabelDateFields.tsx
+msgid "Founded date"
+msgstr "Founded date"
+
+#: src/view/label/edit/comp/LabelFoundersField.tsx
+#: src/view/label/Info/index.tsx
+msgid "Founders"
+msgstr "Founders"
+
+#: src/view/event/explore.tsx
+msgid "From"
+msgstr "From"
+
+#: src/view/Homepage/mock.ts
+msgid "Genres, themes, credits"
+msgstr "Genres, themes, credits"
+
 #: src/view/artist/explore.comp.tsx
+#: src/view/Homepage/component/ArtistCard.tsx
 msgid "Group"
 msgstr "Group"
 
-#: src/view/artist/explore.comp.tsx
-#: src/view/correction/Detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Handled"
+msgstr "Handled"
+
+#: src/view/image_queue/user.tsx
+msgid "HANDLED / REVERTED"
+msgstr "HANDLED / REVERTED"
+
+#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
+msgid "Handled At"
+msgstr "Handled At"
+
+#: src/view/entity_tags/model.ts
+msgid "High"
+msgstr "High"
+
+#: src/component/Header/LeftSidebar.tsx
+msgid "Home"
+msgstr "Home"
+
+#: src/view/admin/users.tsx
+#: src/view/image_queue/user.tsx
+msgid "ID"
+msgstr "ID"
+
+#: src/view/auth/store/index.ts
+msgid "If eligible, a verification code has been sent."
+msgstr "If eligible, a verification code has been sent."
+
+#: src/view/image_queue/user.tsx
+msgid "IMAGE"
+msgstr "IMAGE"
+
+#: src/component/form/ImageCropper.tsx
+msgid "Image Cropper Placeholder"
+msgstr "Image Cropper Placeholder"
+
+#: src/view/image_queue/detail.tsx
+msgid "Image queue"
+msgstr "Image queue"
+
 #: src/view/image_queue/manage.tsx
-#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
-#: src/view/release/explore/filter.tsx
-#: src/view/tag/Info/index.tsx
-msgid "Type"
-msgstr "Type"
+msgid "Image Queue"
+msgstr "Image Queue"
 
-#: src/view/artist/explore.comp.tsx
-msgid "No artists found"
-msgstr "No artists found"
+#: src/domain/auth/schema.ts
+#: src/view/auth/reset_password/index.tsx
+msgid "Invalid email"
+msgstr "Invalid email"
 
-#: src/view/correction/CorrectionHistorySection.tsx
-msgid "View diff"
-msgstr "View diff"
+#: src/view/auth/reset_password/reset_password_by_key.ts
+msgid "Invalid or expired reset key"
+msgstr "Invalid or expired reset key"
 
-#: src/view/correction/CorrectionHistorySection.tsx
-msgid "Author"
-msgstr "Author"
+#: src/domain/auth/schema.ts
+#: src/view/auth/reset_password/index.tsx
+msgid "Invalid verification code"
+msgstr "Invalid verification code"
 
-#: src/view/artist/edit/comp/FormActions.tsx
-#: src/view/correction/CorrectionHistorySection.tsx
-#: src/view/event/Info/index.tsx
-#: src/view/event/Info/index.tsx
-#: src/view/event/Info/index.tsx
-#: src/view/event/edit/comp/EventDescriptionField.tsx
-#: src/view/song/edit/comp/SongRelationsField.tsx
-#: src/view/tag/Info/index.tsx
-#: src/view/tag/Info/index.tsx
-#: src/view/tag/Info/index.tsx
-#: src/view/tag/edit/comp/TagDescription.tsx
-msgid "Description"
-msgstr "Description"
+#: src/mock/release.ts
+msgid "Japanese"
+msgstr "Japanese"
 
-#: src/view/correction/CorrectionHistorySection.tsx
-msgid "No corrections yet."
-msgstr "No corrections yet."
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Join year"
+msgstr "Join year"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Join year cannot be earlier than previous leave year"
+msgstr "Join year cannot be earlier than previous leave year"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Join year cannot be the same as previous leave year"
+msgstr "Join year cannot be the same as previous leave year"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/search/index.tsx
+msgid "Label"
+msgstr "Label"
+
+#: src/view/Homepage/mock.ts
+#: src/view/label/List/index.tsx
+#: src/view/search/index.tsx
+msgid "Labels"
+msgstr "Labels"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/song/explore.tsx
+#: src/view/song/Info/comp/SongInfoLyrics.tsx
+msgid "Language"
+msgstr "Language"
+
+#: src/domain/shared/schema.ts
+#: src/domain/song/schema.ts
+msgid "Language not selected"
+msgstr "Language not selected"
+
+#: src/view/song/edit/comp/SongLanguagesField.tsx
+msgid "Languages"
+msgstr "Languages"
+
+#: src/component/Pagination.tsx
+msgid "Last page"
+msgstr "Last page"
+
+#: src/view/Homepage/component/LatestArtistsCard.tsx
+msgid "Latest Artists"
+msgstr "Latest Artists"
+
+#: src/view/Homepage/index.tsx
+msgid "Latest Releases"
+msgstr "Latest Releases"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Leave year"
+msgstr "Leave year"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Leave year cannot be earlier than join year"
+msgstr "Leave year cannot be earlier than join year"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Leave year cannot be the same as join year"
+msgstr "Leave year cannot be the same as join year"
+
+#: src/view/artist/edit/comp/Links.tsx
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Links"
+msgstr "Links"
+
+#: src/component/Header/RightSidebar.tsx
+msgid "Lists"
+msgstr "Lists"
+
+#: src/view/correction/EntityContributors.tsx
+msgid "Loading contributors..."
+msgstr "Loading contributors..."
+
+#: src/view/correction/Detail.tsx
+msgid "Loading diff..."
+msgstr "Loading diff..."
+
+#: src/view/correction/Detail.tsx
+msgid "Loading revisions..."
+msgstr "Loading revisions..."
+
+#: src/view/entity_tags/EntityTagsSection.tsx
+msgid "Loading tags..."
+msgstr "Loading tags..."
 
 #: src/view/artist/edit/index.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
@@ -618,311 +850,54 @@ msgstr "No corrections yet."
 msgid "Loading..."
 msgstr "Loading..."
 
-#. 0: entityLabel()
-#: src/view/correction/EntityCorrectionListPage.tsx
-msgid "{0} correction history"
-msgstr "{0} correction history"
-
-#. 0: entityLabel()
-#. 0: props.entityName
-#: src/view/correction/EntityCorrectionListPage.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Back to {0}"
-msgstr "Back to {0}"
-
-#: src/view/artist/edit/hook/useFormInitialValues.tsx
-#: src/view/artist/edit/hook/useFormSubmission.tsx
-#: src/view/correction/EntityCorrectionListPage.tsx
-#: src/view/event/edit/hook/init.tsx
-#: src/view/event/edit/hook/submit.tsx
-#: src/view/label/edit/hook/init.ts
-#: src/view/label/edit/hook/submit.ts
-#: src/view/release/edit/hook/useFormInitialValues.tsx
-#: src/view/release/edit/hook/useFormSubmission.tsx
-#: src/view/song/edit/hook/useFormInitialValues.tsx
-#: src/view/song/edit/hook/useFormSubmission.tsx
-#: src/view/tag/edit/hook/init.tsx
-#: src/view/tag/edit/hook/submit.tsx
-msgid "Update"
-msgstr "Update"
-
-#. 0: entityLabel()
-#: src/view/correction/Detail.tsx
-msgid "{0} correction"
-msgstr "{0} correction"
-
-#. 0: props.correction.id
-#: src/view/correction/Detail.tsx
-msgid "Correction #{0}"
-msgstr "Correction #{0}"
-
-#: src/view/correction/Detail.tsx
-msgid "Entity"
-msgstr "Entity"
-
-#: src/view/correction/Detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Created"
-msgstr "Created"
-
-#: src/view/correction/Detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Handled"
-msgstr "Handled"
-
-#: src/view/correction/Detail.tsx
-msgid "Not handled"
-msgstr "Not handled"
-
-#: src/view/correction/Detail.tsx
-msgid "Loading diff..."
-msgstr "Loading diff..."
-
-#: src/view/correction/Detail.tsx
-msgid "No changes detected."
-msgstr "No changes detected."
-
-#: src/view/correction/Detail.tsx
-msgid "FIELD"
-msgstr "FIELD"
-
-#: src/view/correction/Detail.tsx
-msgid "BEFORE"
-msgstr "BEFORE"
-
-#: src/view/correction/Detail.tsx
-msgid "AFTER"
-msgstr "AFTER"
-
-#: src/view/correction/Detail.tsx
-msgid "Before"
-msgstr "Before"
-
-#: src/view/correction/Detail.tsx
-msgid "After"
-msgstr "After"
-
-#: src/view/correction/Detail.tsx
-msgid "Loading revisions..."
-msgstr "Loading revisions..."
-
-#: src/view/correction/Detail.tsx
-msgid "No revisions recorded."
-msgstr "No revisions recorded."
-
-#. 0: index() + 1
-#: src/view/correction/Detail.tsx
-msgid "REVISION {0}"
-msgstr "REVISION {0}"
-
-#: src/view/correction/Detail.tsx
-msgid "No description"
-msgstr "No description"
-
-#: src/view/correction/Detail.tsx
-msgid "Previous approved baseline"
-msgstr "Previous approved baseline"
-
-#: src/view/correction/Detail.tsx
-msgid "DIFF"
-msgstr "DIFF"
-
-#: src/view/correction/Detail.tsx
-msgid "No diff data."
-msgstr "No diff data."
-
-#. 0: " "
-#: src/view/correction/Detail.tsx
-msgid "<0/>{0} fields"
-msgstr "<0/>{0} fields"
-
-#: src/view/correction/Detail.tsx
-msgid "COMPARE"
-msgstr "COMPARE"
-
-#: src/view/correction/Detail.tsx
-msgid "REVISIONS"
-msgstr "REVISIONS"
-
-#. 0: revisionsQuery.data?.length ?? 0
-#. 0: historyQuery.data?.length ?? 0
-#: src/view/correction/Detail.tsx
-#: src/view/correction/Detail.tsx
-msgid "{0} items"
-msgstr "{0} items"
-
-#: src/view/correction/Detail.tsx
-msgid "CORRECTIONS"
-msgstr "CORRECTIONS"
-
-#: src/view/correction/EntityContributors.tsx
-msgid "Contributors:"
-msgstr "Contributors:"
-
-#: src/view/correction/EntityContributors.tsx
-msgid "Loading contributors..."
-msgstr "Loading contributors..."
-
-#. 0: entityLabel()
-#: src/view/correction/EntityCorrectionMetadataSection.tsx
-msgid "Update {0}"
-msgstr "Update {0}"
-
-#: src/view/error/InternalServerError.tsx
-#: src/view/error/InternalServerError.tsx
-msgid "500 Internal Server Error"
-msgstr "500 Internal Server Error"
-
-#: src/view/error/InternalServerError.tsx
-msgid "Go back..."
-msgstr "Go back..."
-
-#: src/view/correction/entityMap.ts
-msgid "SongLyrics"
-msgstr "SongLyrics"
-
-#: src/view/correction/entityMap.ts
-msgid "Song lyrics"
-msgstr "Song lyrics"
-
-#: src/view/correction/entityMap.ts
-msgid "CreditRole"
-msgstr "CreditRole"
-
-#: src/view/correction/entityMap.ts
-msgid "Credit role"
-msgstr "Credit role"
-
-#: src/view/event/discover.tsx
-msgid "[UNIMPLEMENTED] Event"
-msgstr "[UNIMPLEMENTED] Event"
-
-#: src/view/chart/discover.tsx
-msgid "[UNIMPLEMENTED] Chart"
-msgstr "[UNIMPLEMENTED] Chart"
-
-#: src/view/event/explore.tsx
-msgid "From"
-msgstr "From"
-
-#: src/view/event/explore.tsx
-msgid "To"
-msgstr "To"
-
-#: src/view/event/explore.tsx
-msgid "No events found"
-msgstr "No events found"
-
-#: src/view/event/explore.tsx
-msgid "Explore Events"
-msgstr "Explore Events"
-
-#: src/view/event/explore.tsx
-msgid "Create event"
-msgstr "Create event"
-
-#: src/view/image_queue/detail.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Current"
-msgstr "Current"
-
-#: src/view/image_queue/detail.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "No image"
-msgstr "No image"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Select another image"
-msgstr "Select another image"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Select image"
-msgstr "Select image"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Open image queue"
-msgstr "Open image queue"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Dimensions (px)"
-msgstr "Dimensions (px)"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "File size"
-msgstr "File size"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Formats"
-msgstr "Formats"
-
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "New"
-msgstr "New"
-
-#. 0: props.imageLabel
-#: src/view/image_upload/EntityImageUploadPage.tsx
-msgid "Edit {0}"
-msgstr "Edit {0}"
-
-#: src/view/image_upload/store.ts
-msgid "Submit failed."
-msgstr "Submit failed."
-
-#: src/view/image_queue/detail.tsx
-msgid "Cancelled"
-msgstr "Cancelled"
-
-#: src/view/image_queue/detail.tsx
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
-msgid "Moderator"
-msgstr "Moderator"
-
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
-msgid "Request failed."
-msgstr "Request failed."
-
-#: src/view/image_queue/detail.tsx
-msgid "IMAGE QUEUE"
-msgstr "IMAGE QUEUE"
-
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Loading…"
 msgstr "Loading…"
 
-#: src/view/image_queue/detail.tsx
-msgid "Failed to load image queue entry."
-msgstr "Failed to load image queue entry."
+#: src/view/artist/edit/comp/LocalizedNames.tsx
+#: src/view/label/edit/comp/LabelLocalizedNamesField.tsx
+#: src/view/label/Info/index.tsx
+msgid "Localized Names"
+msgstr "Localized Names"
 
-#. 0: " "; 1: target().imageLabel
-#: src/view/image_queue/detail.tsx
-msgid "Update request for{0} <0/> 's {1}"
-msgstr "Update request for{0} <0/> 's {1}"
+#: src/view/release/edit/comp/LocalizedTitlesField.tsx
+#: src/view/song/edit/comp/SongLocalizedTitlesField.tsx
+msgid "Localized Titles"
+msgstr "Localized Titles"
 
-#: src/view/image_queue/detail.tsx
-msgid "Image queue"
-msgstr "Image queue"
+#: src/view/event/edit/comp/EventLocationField.tsx
+msgid "Location"
+msgstr "Location"
 
-#: src/view/image_queue/detail.tsx
-msgid "Current target image"
-msgstr "Current target image"
+#: src/view/entity_tags/model.ts
+msgid "Low"
+msgstr "Low"
 
-#: src/view/image_queue/detail.tsx
-msgid "Queued"
-msgstr "Queued"
+#: src/view/song/Info/index.tsx
+msgid "Lyrics"
+msgstr "Lyrics"
 
-#: src/view/image_queue/detail.tsx
-msgid "Queued upload preview"
-msgstr "Queued upload preview"
+#: src/view/entity_tags/EntityTagsSection.tsx
+msgid "Manage Tags"
+msgstr "Manage Tags"
 
-#: src/view/image_queue/detail.tsx
-msgid "Submitted by"
-msgstr "Submitted by"
+#: src/view/entity_tags/model.ts
+msgid "Medium"
+msgstr "Medium"
+
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Member Of"
+msgstr "Member Of"
+
+#: src/view/artist/profile/comp/ArtistInfo.tsx
+msgid "Members"
+msgstr "Members"
+
+#: src/view/artist/edit/comp/Membership/index.tsx
+msgid "Membership"
+msgstr "Membership"
 
 #: src/view/image_queue/detail.tsx
 msgid "Prev"
@@ -937,6 +912,7 @@ msgid "Failed to load"
 msgstr "Failed to load"
 
 #: src/component/dialog/AlertDialog.tsx
+#: src/view/admin/users.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Cancel"
@@ -978,888 +954,21 @@ msgstr "No actions available."
 #: src/view/image_queue/manage.tsx
 msgid "View image queue item #{0}"
 msgstr "View image queue item #{0}"
+#: src/view/auth/store/index.ts
+msgid "Missing sign-up email. Create the account again."
+msgstr "Missing sign-up email. Create the account again."
 
 #: src/view/image_queue/manage.tsx
 msgid "MODERATION"
 msgstr "MODERATION"
 
-#: src/view/image_queue/manage.tsx
-msgid "Image Queue"
-msgstr "Image Queue"
-
-#: src/view/image_queue/manage.tsx
-msgid "Status"
-msgstr "Status"
-
-#: src/view/image_queue/manage.tsx
-msgid "Failed to load image queue."
-msgstr "Failed to load image queue."
-
-#: src/view/image_queue/manage.tsx
-msgid "No entries found"
-msgstr "No entries found"
-
-#: src/view/image_queue/manage.tsx
-msgid "No entries match the current filters."
-msgstr "No entries match the current filters."
-
-#: src/view/image_queue/manage.tsx
-#: src/view/image_queue/user.tsx
-msgid "No more entries"
-msgstr "No more entries"
-
-#: src/view/image_queue/manage.tsx
-msgid "Created at"
-msgstr "Created at"
-
-#: src/view/recommendation/discover.tsx
-msgid "[UNIMPLEMENTED] Recommendation"
-msgstr "[UNIMPLEMENTED] Recommendation"
-
-#: src/view/image_queue/user.tsx
-msgid "USER"
-msgstr "USER"
-
-#: src/view/image_queue/user.tsx
-msgid "Image Queue History"
-msgstr "Image Queue History"
-
-#: src/view/image_queue/user.tsx
-msgid "Go to moderation"
-msgstr "Go to moderation"
-
-#: src/view/image_queue/user.tsx
-msgid "ID"
-msgstr "ID"
-
-#: src/view/image_queue/user.tsx
-msgid "IMAGE"
-msgstr "IMAGE"
-
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/image_queue/user.tsx
-msgid "STATUS"
-msgstr "STATUS"
-
-#: src/view/image_queue/user.tsx
-msgid "CREATED"
-msgstr "CREATED"
-
-#: src/view/image_queue/user.tsx
-msgid "HANDLED / REVERTED"
-msgstr "HANDLED / REVERTED"
-
-#: src/view/image_queue/user.tsx
-msgid "Failed to load user image queue."
-msgstr "Failed to load user image queue."
-
-#: src/view/image_queue/user.tsx
-msgid "No entries yet"
-msgstr "No entries yet"
-
-#: src/view/image_queue/user.tsx
-msgid "This user has no image queue history."
-msgstr "This user has no image queue history."
-
-#. 0: " "
-#: src/view/image_queue/user.tsx
-msgid "Handled:{0} <0/> <1/>"
-msgstr "Handled:{0} <0/> <1/>"
-
-#. 0: " "
-#: src/view/image_queue/user.tsx
-msgid "Reverted:{0} <0/> <1/>"
-msgstr "Reverted:{0} <0/> <1/>"
-
-#: src/view/label/Info/index.tsx
-#: src/view/label/explore.comp.tsx
-msgid "Dissolved"
-msgstr "Dissolved"
-
-#: src/view/label/explore.comp.tsx
-msgid "Active"
-msgstr "Active"
-
-#: src/view/label/explore.comp.tsx
-msgid "No labels found"
-msgstr "No labels found"
-
-#: src/view/label/explore.tsx
-msgid "Explore Labels"
-msgstr "Explore Labels"
-
-#: src/view/label/explore.tsx
-msgid "Create label"
-msgstr "Create label"
-
-#: src/view/search/index.tsx
-msgid "Type a keyword to search."
-msgstr "Type a keyword to search."
-
-#: src/view/search/index.tsx
-msgid "Search result of \" <0/> \""
-msgstr "Search result of \" <0/> \""
-
-#: src/view/search/index.tsx
-msgid "No artists found."
-msgstr "No artists found."
-
-#: src/view/search/index.tsx
-msgid "No events found."
-msgstr "No events found."
-
-#: src/view/search/index.tsx
-msgid "No labels found."
-msgstr "No labels found."
-
-#: src/view/search/index.tsx
-msgid "No releases found."
-msgstr "No releases found."
-
-#: src/view/search/index.tsx
-msgid "No songs found."
-msgstr "No songs found."
-
-#: src/view/search/index.tsx
-msgid "No tags found."
-msgstr "No tags found."
-
-#: src/view/search/index.tsx
-msgid "No results found."
-msgstr "No results found."
-
-#: src/view/search/index.tsx
-msgid "Searching…"
-msgstr "Searching…"
-
-#: src/view/search/index.tsx
-msgid "No more results"
-msgstr "No more results"
-
-#: src/view/search/index.tsx
-msgid "A"
-msgstr "A"
-
-#. 0: props.artist.id
-#: src/view/search/index.tsx
-msgid "Artist · {0}"
-msgstr "Artist · {0}"
-
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-msgid "Open →"
-msgstr "Open →"
-
-#: src/view/search/index.tsx
-msgid "R"
-msgstr "R"
-
-#. 0: props.release.id
-#: src/view/search/index.tsx
-msgid "Release · {0}"
-msgstr "Release · {0}"
-
-#. 0: props.song.id
-#: src/view/search/index.tsx
-msgid "Song · {0}"
-msgstr "Song · {0}"
-
-#: src/view/search/index.tsx
-msgid "E"
-msgstr "E"
-
-#. 0: props.event.id
-#: src/view/search/index.tsx
-msgid "Event · {0}"
-msgstr "Event · {0}"
-
-#: src/view/search/index.tsx
-msgid "L"
-msgstr "L"
-
-#. 0: props.label.id
-#: src/view/search/index.tsx
-msgid "Label · {0}"
-msgstr "Label · {0}"
-
-#. 0: props.tag.id
-#: src/view/search/index.tsx
-msgid "Tag · {0}"
-msgstr "Tag · {0}"
-
-#: src/component/Header/LeftSidebar.tsx
-#: src/view/song/Info/comp/SongInfoLyrics.tsx
-#: src/view/song/Info/comp/SongInfoLyrics.tsx
-#: src/view/song/explore.tsx
-msgid "Language"
-msgstr "Language"
-
-#: src/view/song/explore.tsx
-msgid "No songs found"
-msgstr "No songs found"
-
-#: src/view/song/explore.tsx
-msgid "Explore Songs"
-msgstr "Explore Songs"
-
-#: src/view/song/explore.tsx
-msgid "Create song"
-msgstr "Create song"
-
-#: src/view/user/ProfilePending.tsx
-msgid "Loading profile..."
-msgstr "Loading profile..."
-
-#: src/view/user/Profile.tsx
-#: src/view/user/edit_profile/index.tsx
-msgid "Profile banner"
-msgstr "Profile banner"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "Edit profile"
-msgstr "Edit profile"
-
-#: src/view/user/Profile.tsx
-msgid "Follow"
-msgstr "Follow"
-
-#: src/view/user/Profile.tsx
-msgid "Unfollow"
-msgstr "Unfollow"
-
-#: src/view/user/Profile.tsx
-msgid "Following"
-msgstr "Following"
-
-#: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
-msgid "User"
-msgstr "User"
-
-#: src/view/release/discover.tsx
-msgid "[UNIMPLEMENTED] Release"
-msgstr "[UNIMPLEMENTED] Release"
-
-#: src/view/tag/TagTree.tsx
-msgid "ArrowRight"
-msgstr "ArrowRight"
-
-#: src/view/tag/TagTree.tsx
-msgid "ArrowLeft"
-msgstr "ArrowLeft"
-
-#: src/view/tag/TagTree.tsx
-msgid "v"
-msgstr "v"
-
-#: src/view/tag/explore.tsx
-msgid "Tag Tree"
-msgstr "Tag Tree"
-
-#: src/view/tag/explore.tsx
-msgid "No tags found"
-msgstr "No tags found"
-
-#: src/view/tag/explore.tsx
-msgid "Create tag"
-msgstr "Create tag"
-
-#: src/component/__legacy/chart/index.tsx
-msgid "Positive:"
-msgstr "Positive:"
-
-#: src/component/__legacy/chart/index.tsx
-msgid "Negative:"
-msgstr "Negative:"
-
-#: src/component/__legacy/player/index.tsx
-msgid "幻想乡之歌"
-msgstr "幻想乡之歌"
-
-#: src/component/form/Location/index.tsx
-msgid "Country / Region"
-msgstr "Country / Region"
-
-#: src/component/form/Location/index.tsx
-msgid "Province"
-msgstr "Province"
-
-#: src/component/form/Location/index.tsx
-msgid "City"
-msgstr "City"
-
-#: src/component/form/stateful/LanguageCombobox.tsx
-msgid "Select language"
-msgstr "Select language"
-
-#: src/component/form/SearchDialog/CreditRoleSearchDialog.tsx
-msgid "Search Role"
-msgstr "Search Role"
-
-#: src/component/form/SearchDialog/EventSearchDialog.tsx
-msgid "Search Event"
-msgstr "Search Event"
-
-#: src/component/form/SearchDialog/ArtistSearchDialog.tsx
-msgid "Search Artist"
-msgstr "Search Artist"
-
-#: src/component/form/SearchDialog/EntitySearchDialog.tsx
-msgid "Search..."
-msgstr "Search..."
-
-#: src/component/form/SearchDialog/LabelSearchDialog.tsx
-msgid "Search Label"
-msgstr "Search Label"
-
-#: src/component/form/SearchDialog/TagSearchDialog.tsx
-msgid "Search Tag"
-msgstr "Search Tag"
-
-#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
-msgid "Sort by"
-msgstr "Sort by"
-
-#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
-msgid "Created At"
-msgstr "Created At"
-
-#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
-msgid "Handled At"
-msgstr "Handled At"
-
-#. 0: " "; 1: " "
-#: src/component/feature/entity_explore/EmptyExplorePlaceholder.tsx
-msgid "Try adjusting the filters, or{0} <0>create</0>{1} the first one."
-msgstr "Try adjusting the filters, or{0} <0>create</0>{1} the first one."
-
-#: src/component/feature/entity_explore/OrderBySelect.tsx
-msgid "Order"
-msgstr "Order"
-
-#: src/component/feature/entity_explore/OrderBySelect.tsx
-msgid "Descending"
-msgstr "Descending"
-
-#: src/component/feature/entity_explore/OrderBySelect.tsx
-msgid "Ascending"
-msgstr "Ascending"
-
-#: src/view/Homepage/component/ArtistCard.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Solo"
-msgstr "Solo"
-
-#: src/view/Homepage/component/ArtistCard.tsx
-msgid "Solo artist"
-msgstr "Solo artist"
-
-#: src/view/Homepage/component/LatestArtistsCard.tsx
-msgid "Latest Artists"
-msgstr "Latest Artists"
-
-#: src/view/Homepage/component/ExploreSection.tsx
-msgid "Explore →"
-msgstr "Explore →"
-
-#: src/view/Homepage/component/HomeEmptySlot.tsx
-msgid "No data"
-msgstr "No data"
-
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/auth/component/AuthForm.tsx
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "TOUHOU CLOUD DB"
-msgstr "TOUHOU CLOUD DB"
-
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/auth/component/AuthForm.tsx
-msgid "Open doujin music database"
-msgstr "Open doujin music database"
-
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Explore doujin music"
-msgstr "Explore doujin music"
-
-#: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Contribute what’s missing and help keep the database accurate for everyone."
-msgstr "Contribute what’s missing and help keep the database accurate for everyone."
-
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "<0/> Preview"
-msgstr "<0/> Preview"
-
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "API-powered UI"
-msgstr "API-powered UI"
-
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "<0/> Alpha"
-msgstr "<0/> Alpha"
-
-#: src/view/Homepage/component/NewMusic.tsx
-msgid "最新音乐"
-msgstr "最新音乐"
-
-#: src/view/Homepage/component/NewMusic.tsx
-msgid "查看更多"
-msgstr "查看更多"
-
-#. 0: i() + 1
-#: src/view/Homepage/component/NewMusic.tsx
-msgid "东方同音鉴曲目 {0}"
-msgstr "东方同音鉴曲目 {0}"
-
-#: src/view/Homepage/component/NewMusic.tsx
-msgid "幻想乡音乐人"
-msgstr "幻想乡音乐人"
-
-#. 0: props.playlist.creator
-#: src/view/Homepage/component/PlaylistCard.tsx
-msgid "by {0}"
-msgstr "by {0}"
-
-#: src/view/Homepage/component/ReleaseCard.tsx
-#: src/component/display/release/ReleaseCoverWall.tsx
-#: src/view/release/Info/comp/ReleaseInfoCoverImage.tsx
-#: src/view/release/explore/ReleaseItems.tsx
-msgid "No cover art"
-msgstr "No cover art"
-
-#: src/view/Homepage/component/UpcomingEventsCard.tsx
-msgid "Upcoming Events"
-msgstr "Upcoming Events"
-
-#: src/view/Homepage/component/TrendingTagsCard.tsx
-msgid "Trending Tags"
-msgstr "Trending Tags"
-
-#: src/view/artist/edit/index.tsx
-msgid "Create Artist"
-msgstr "Create Artist"
-
-#: src/view/artist/edit/index.tsx
-msgid "Edit Artist"
-msgstr "Edit Artist"
-
-#: src/view/artist/edit/index.tsx
-#: src/view/event/edit/index.tsx
-#: src/view/label/edit/index.tsx
-#: src/view/release/edit/index.tsx
-#: src/view/song/edit/index.tsx
-#: src/view/tag/edit/index.tsx
-msgid "Are you sure you want to leave this page? Your changes will be lost."
-msgstr "Are you sure you want to leave this page? Your changes will be lost."
-
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-msgid "Password"
-msgstr "Password"
-
-#: src/view/auth/component/AuthCredentialForm.tsx
-msgid "Forgot password?"
-msgstr "Forgot password?"
-
-#: src/view/auth/component/AuthCredentialForm.tsx
-msgid "Repeat password"
-msgstr "Repeat password"
-
-#: src/view/artist/profile/index.tsx
-msgid "Upload image"
-msgstr "Upload image"
-
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Lorem ipsum dolor sit amet consectetur"
-msgstr "Lorem ipsum dolor sit amet consectetur"
-
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Add missing entries (artists, releases, songs, events)"
-msgstr "Add missing entries (artists, releases, songs, events)"
-
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Submit corrections and keep metadata clean"
-msgstr "Submit corrections and keep metadata clean"
-
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Sync your contributions across devices"
-msgstr "Sync your contributions across devices"
-
-#: src/view/auth/component/EmailField.tsx
-msgid "Email"
-msgstr "Email"
-
-#: src/view/auth/component/UsernameField.tsx
-msgid "Username"
-msgstr "Username"
-
-#: src/view/auth/component/PasswordField.tsx
-msgid "PASSWORD REQUIREMENTS"
-msgstr "PASSWORD REQUIREMENTS"
-
-#. 0: USER_PASSWORD_MIN_LENGTH; 1: USER_PASSWORD_MAX_LENGTH
-#: src/view/auth/component/PasswordField.tsx
-msgid "{0}-{1} characters"
-msgstr "{0}-{1} characters"
-
-#: src/view/auth/component/PasswordField.tsx
-msgid "No spaces or control characters"
-msgstr "No spaces or control characters"
-
-#. 0: " "
-#: src/view/auth/component/PasswordField.tsx
-msgid "Allowed: A-Z, a-z, 0-9,{0} <0/>"
-msgstr "Allowed: A-Z, a-z, 0-9,{0} <0/>"
-
-#: src/view/auth/component/SignInIdentifierField.tsx
-msgid "Enter your username or email"
-msgstr "Enter your username or email"
-
-#: src/view/auth/component/SignInIdentifierField.tsx
-msgid "Username / Email"
-msgstr "Username / Email"
-
-#. 0: props.verificationEmail()
-#: src/view/auth/component/VerifyEmailForm.tsx
-msgid "Enter the code for {0}. If you did not receive one, use Resend."
-msgstr "Enter the code for {0}. If you did not receive one, use Resend."
-
-#: src/view/auth/component/VerifyEmailForm.tsx
-msgid "Verify Email"
-msgstr "Verify Email"
-
-#. 0: props.resendCooldownSeconds()
-#. 0: props.uiStore.state.cooldownSeconds
-#: src/view/auth/component/VerifyEmailForm.tsx
-#: src/view/auth/reset_password/index.tsx
-msgid "Resend ({0}s)"
-msgstr "Resend ({0}s)"
-
-#: src/view/auth/component/VerifyEmailForm.tsx
-msgid "Resend"
-msgstr "Resend"
-
-#. 0: " "
-#: src/view/auth/component/VerifyEmailForm.tsx
-msgid "Already have an account?{0} <0>Sign in</0>"
-msgstr "Already have an account?{0} <0>Sign in</0>"
-
-#: src/view/auth/component/VerificationCodeField.tsx
-msgid "Verification code"
-msgstr "Verification code"
-
-#: src/view/auth/store/index.ts
-msgid "If eligible, a verification code has been sent."
-msgstr "If eligible, a verification code has been sent."
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Change"
-msgstr "Change"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Forgot password"
-msgstr "Forgot password"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Sending..."
-msgstr "Sending..."
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Resend code"
-msgstr "Resend code"
-
-#. 0: props.uiStore.state.verificationCodeExpiresMinutes; 1: " "
-#: src/view/auth/reset_password/index.tsx
-msgid "Codes expire in {0}{1} minutes."
-msgstr "Codes expire in {0}{1} minutes."
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Continue"
-msgstr "Continue"
-
-#. 0: " "
-#. 0: " "
-#: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
-msgid "Back to{0} <0>sign in</0> ."
-msgstr "Back to{0} <0>sign in</0> ."
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Set a new password"
-msgstr "Set a new password"
-
-#. 0: formatMinuteCount(props.resetKeyExpiresMinutes)
-#: src/view/auth/reset_password/index.tsx
-msgid "This is valid for {0}."
-msgstr "This is valid for {0}."
-
-#: src/view/auth/reset_password/index.tsx
-msgid "New password"
-msgstr "New password"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Repeat new password"
-msgstr "Repeat new password"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Reset password"
-msgstr "Reset password"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Password reset complete"
-msgstr "Password reset complete"
-
-#: src/view/auth/reset_password/index.tsx
-msgid "Your password has been updated successfully."
-msgstr "Your password has been updated successfully."
-
-#: src/view/auth/reset_password/index.tsx
-msgid "You can now sign in with your new password."
-msgstr "You can now sign in with your new password."
-
-#: src/view/auth/reset_password/response.ts
-msgid "Left"
-msgstr "Left"
-
-#: src/view/auth/reset_password/response.ts
-#: src/view/auth/reset_password/response.ts
-msgid "ResponseStatusError"
-msgstr "ResponseStatusError"
-
-#: src/view/event/Info/index.tsx
-msgid "Short description is not provided"
-msgstr "Short description is not provided"
-
-#: src/view/event/Info/index.tsx
-msgid "Date"
-msgstr "Date"
+#: src/component/form/DateWithPrecision/index.tsx
+msgid "Month"
+msgstr "Month"
 
 #: src/view/event/Info/index.tsx
 msgid "N/A"
 msgstr "N/A"
-
-#: src/view/event/Info/index.tsx
-#: src/view/tag/Info/index.tsx
-msgid "AKAs"
-msgstr "AKAs"
-
-#: src/view/event/edit/index.tsx
-msgid "Create Event"
-msgstr "Create Event"
-
-#: src/view/event/edit/index.tsx
-msgid "Edit Event"
-msgstr "Edit Event"
-
-#: src/view/label/Info/index.tsx
-msgid "Founded"
-msgstr "Founded"
-
-#: src/view/artist/edit/comp/LocalizedNames.tsx
-#: src/view/label/Info/index.tsx
-#: src/view/label/edit/comp/LabelLocalizedNamesField.tsx
-msgid "Localized Names"
-msgstr "Localized Names"
-
-#: src/view/label/Info/index.tsx
-#: src/view/label/edit/comp/LabelFoundersField.tsx
-msgid "Founders"
-msgstr "Founders"
-
-#: src/view/label/List/index.tsx
-msgid "Labels"
-msgstr "Labels"
-
-#: src/view/label/List/index.tsx
-#: src/view/label/edit/index.tsx
-msgid "Create Label"
-msgstr "Create Label"
-
-#: src/view/label/List/index.tsx
-msgid "Search label..."
-msgstr "Search label..."
-
-#: src/view/label/List/index.tsx
-msgid "No results"
-msgstr "No results"
-
-#: src/view/label/List/index.tsx
-msgid "Type at least 2 characters to search."
-msgstr "Type at least 2 characters to search."
-
-#: src/view/label/edit/index.tsx
-msgid "Edit Label"
-msgstr "Edit Label"
-
-#: src/view/release/Info/ReleaseInfoTabs.tsx
-#: src/view/release/Info/ReleaseInfoTabs.tsx
-#: src/view/release/Info/ReleaseInfoTabs.tsx
-#: src/view/release/edit/comp/ReleaseCreditsField.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/edit/comp/SongCreditsField.tsx
-msgid "Credits"
-msgstr "Credits"
-
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-msgid "Lyrics"
-msgstr "Lyrics"
-
-#: src/view/song/edit/index.tsx
-msgid "Create Song"
-msgstr "Create Song"
-
-#: src/view/song/edit/index.tsx
-msgid "Edit Song"
-msgstr "Edit Song"
-
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
-msgid "Update avatar"
-msgstr "Update avatar"
-
-#: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
-msgid "Update banner"
-msgstr "Update banner"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "Unsaved"
-msgstr "Unsaved"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "Back to profile"
-msgstr "Back to profile"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "APPEARANCE"
-msgstr "APPEARANCE"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "BIO"
-msgstr "BIO"
-
-#. 0: count()
-#: src/view/user/edit_profile/index.tsx
-msgid "{0} chars"
-msgstr "{0} chars"
-
-#. 0: label()
-#: src/view/user/edit_profile/index.tsx
-msgid "saved {0}"
-msgstr "saved {0}"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "Write something about you."
-msgstr "Write something about you."
-
-#: src/view/user/edit_profile/index.tsx
-msgid "Discard"
-msgstr "Discard"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "Saving…"
-msgstr "Saving…"
-
-#: src/view/user/edit_profile/index.tsx
-msgid "Save bio"
-msgstr "Save bio"
-
-#: src/view/user/edit_profile/store.ts
-msgid "Save failed."
-msgstr "Save failed."
-
-#: src/view/release/Info/ReleaseInfoTabs.tsx
-#: src/view/release/Info/ReleaseInfoTabs.tsx
-#: src/view/release/Info/ReleaseInfoTabs.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "Tracks"
-msgstr "Tracks"
-
-#: src/view/release/Info/index.tsx
-msgid "Upload cover art"
-msgstr "Upload cover art"
-
-#: src/view/release/explore/index.tsx
-msgid "Explore Releases"
-msgstr "Explore Releases"
-
-#: src/view/release/explore/index.tsx
-msgid "Create release"
-msgstr "Create release"
-
-#: src/view/release/explore/filter.tsx
-msgid "View"
-msgstr "View"
-
-#: src/view/release/explore/filter.tsx
-msgid "Wall"
-msgstr "Wall"
-
-#: src/view/release/explore/filter.tsx
-msgid "List"
-msgstr "List"
-
-#: src/view/release/explore/list.tsx
-msgid "No releases found"
-msgstr "No releases found"
-
-#: src/view/tag/edit/index.tsx
-msgid "Create Tag"
-msgstr "Create Tag"
-
-#: src/view/tag/edit/index.tsx
-msgid "Edit Tag"
-msgstr "Edit Tag"
-
-#: src/view/release/edit/index.tsx
-msgid "Create Release"
-msgstr "Create Release"
-
-#: src/view/release/edit/index.tsx
-msgid "Edit Release"
-msgstr "Edit Release"
-
-#: src/view/release/edit/index.tsx
-msgid "Release date"
-msgstr "Release date"
-
-#: src/view/release/edit/index.tsx
-msgid "Recording start"
-msgstr "Recording start"
-
-#: src/view/release/edit/index.tsx
-msgid "Recording end"
-msgstr "Recording end"
-
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/Info/index.tsx
-#: src/view/song/edit/comp/SongRelationsField.tsx
-#: src/view/tag/Info/index.tsx
-#: src/view/tag/Info/index.tsx
-#: src/view/tag/Info/index.tsx
-#: src/view/tag/edit/comp/TagRelationsField.tsx
-msgid "Relations"
-msgstr "Relations"
-
-#: src/view/artist/edit/comp/Aliases.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Aliases"
-msgstr "Aliases"
 
 #: src/view/artist/edit/comp/ArtistName.tsx
 #: src/view/artist/edit/comp/LocalizedNames.tsx
@@ -1873,166 +982,783 @@ msgstr "Aliases"
 msgid "Name"
 msgstr "Name"
 
-#: src/view/artist/edit/comp/ArtistType.tsx
-msgid "Artist Type"
-msgstr "Artist Type"
+#: src/domain/event/schema.ts
+#: src/domain/event/schema.ts
+#: src/domain/shared/schema.ts
+#: src/domain/tag/schema.ts
+#: src/domain/tag/schema.ts
+msgid "Name is required and must be non-empty"
+msgstr "Name is required and must be non-empty"
 
-#: src/view/artist/edit/comp/Date.tsx
-#: src/view/event/edit/comp/EventDateFields.tsx
-msgid "Start date"
-msgstr "Start date"
+#: src/view/Homepage/mock.ts
+msgid "Navigate genres, themes and metadata through tag types."
+msgstr "Navigate genres, themes and metadata through tag types."
 
-#: src/view/artist/edit/comp/Date.tsx
-#: src/view/event/edit/comp/EventDateFields.tsx
-msgid "End date"
-msgstr "End date"
+#: src/component/__legacy/chart/index.tsx
+msgid "Negative:"
+msgstr "Negative:"
 
-#: src/view/artist/edit/comp/Links.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Links"
-msgstr "Links"
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "New"
+msgstr "New"
 
-#: src/view/artist/edit/comp/Links.tsx
-msgid "Url"
-msgstr "Url"
+#: src/view/auth/reset_password/index.tsx
+msgid "New password"
+msgstr "New password"
 
-#. 0: props.mutation.error.message
-#. 0: props.mutation.error.message
-#. 0: props.mutation.error.message
-#: src/view/artist/edit/comp/FormActions.tsx
-#: src/view/event/edit/comp/EventFormDesc.tsx
-#: src/view/tag/edit/comp/TagFormActions.tsx
-msgid "Error: {0}"
-msgstr "Error: {0}"
+#: src/view/image_queue/detail.tsx
+msgid "Next"
+msgstr "Next"
 
-#: src/view/artist/edit/comp/Locations.tsx
-msgid "Start Location"
-msgstr "Start Location"
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Next disc"
+msgstr "Next disc"
 
-#: src/view/artist/edit/comp/Locations.tsx
-msgid "Current Location"
-msgstr "Current Location"
+#: src/component/Pagination.tsx
+msgid "Next page"
+msgstr "Next page"
 
-#: src/view/artist/edit/comp/TextAliases.tsx
-msgid "Text Aliases"
-msgstr "Text Aliases"
+#: src/view/image_queue/detail.tsx
+msgid "No actions available for this account."
+msgstr "No actions available for this account."
 
-#: src/view/artist/edit/hook/useFormInitialValues.tsx
-#: src/view/artist/edit/hook/useFormSubmission.tsx
-#: src/view/event/edit/hook/init.tsx
-#: src/view/event/edit/hook/submit.tsx
-#: src/view/label/edit/hook/init.ts
-#: src/view/label/edit/hook/submit.ts
-#: src/view/release/edit/hook/useFormInitialValues.tsx
-#: src/view/release/edit/hook/useFormSubmission.tsx
-#: src/view/song/edit/hook/useFormInitialValues.tsx
-#: src/view/song/edit/hook/useFormSubmission.tsx
-#: src/view/tag/edit/hook/init.tsx
-#: src/view/tag/edit/hook/submit.tsx
-msgid "Create"
-msgstr "Create"
+#: src/view/image_queue/detail.tsx
+msgid "No actions available."
+msgstr "No actions available."
 
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Born"
-msgstr "Born"
+#: src/view/artist/explore.comp.tsx
+msgid "No artists found"
+msgstr "No artists found"
 
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Formed"
-msgstr "Formed"
+#: src/view/search/index.tsx
+msgid "No artists found."
+msgstr "No artists found."
 
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Died"
-msgstr "Died"
+#: src/view/user/Profile.tsx
+msgid "No biography provided."
+msgstr "No biography provided."
 
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Disbanded"
-msgstr "Disbanded"
+#: src/view/correction/Detail.tsx
+msgid "No changes detected."
+msgstr "No changes detected."
 
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Member Of"
-msgstr "Member Of"
+#: src/component/display/release/ReleaseCoverWall.tsx
+#: src/view/Homepage/component/ReleaseCard.tsx
+#: src/view/release/explore/ReleaseItems.tsx
+#: src/view/release/Info/comp/ReleaseInfoCoverImage.tsx
+msgid "No cover art"
+msgstr "No cover art"
 
-#: src/view/artist/profile/comp/ArtistInfo.tsx
-msgid "Members"
-msgstr "Members"
+#: src/view/Homepage/component/HomeEmptySlot.tsx
+msgid "No data"
+msgstr "No data"
 
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-msgid "Discography"
-msgstr "Discography"
+#: src/view/correction/Detail.tsx
+msgid "No diff data."
+msgstr "No diff data."
 
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-msgid "Appearance"
-msgstr "Appearance"
+#: src/view/image_queue/manage.tsx
+msgid "No entries found"
+msgstr "No entries found"
 
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-msgid "Credit"
-msgstr "Credit"
+#: src/view/image_queue/manage.tsx
+msgid "No entries match the current filters."
+msgstr "No entries match the current filters."
 
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-msgid "Album"
-msgstr "Album"
+#: src/view/image_queue/user.tsx
+msgid "No entries yet"
+msgstr "No entries yet"
 
-#. 0: " "
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-msgid "This Artist has no releases yet, you can upload them on{0} <0>Upload New Release</0>"
-msgstr "This Artist has no releases yet, you can upload them on{0} <0>Upload New Release</0>"
+#: src/view/event/explore.tsx
+msgid "No events found"
+msgstr "No events found"
 
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-msgid "Load More"
-msgstr "Load More"
+#: src/view/search/index.tsx
+msgid "No events found."
+msgstr "No events found."
 
-#: src/view/event/edit/comp/EventAlternativeNamesField.tsx
-#: src/view/tag/edit/comp/TagAltNames.tsx
-msgid "Alternative Names"
-msgstr "Alternative Names"
+#: src/view/image_queue/detail.tsx
+#: src/view/image_upload/EntityImageUploadPage.tsx
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "No image"
+msgstr "No image"
 
-#: src/view/event/edit/comp/EventFormDesc.tsx
-#: src/view/label/edit/comp/LabelFormDesc.tsx
-#: src/view/tag/edit/comp/TagFormActions.tsx
-msgid "Correction Description"
-msgstr "Correction Description"
+#: src/view/label/explore.comp.tsx
+msgid "No labels found"
+msgstr "No labels found"
 
-#: src/view/event/edit/comp/EventLocationField.tsx
-msgid "Location"
-msgstr "Location"
+#: src/view/search/index.tsx
+msgid "No labels found."
+msgstr "No labels found."
 
-#: src/view/event/edit/comp/EventShortDescriptionField.tsx
-#: src/view/tag/edit/comp/TagShortDescription.tsx
-msgid "Short Description"
-msgstr "Short Description"
+#: src/view/image_queue/manage.tsx
+#: src/view/image_queue/user.tsx
+msgid "No more entries"
+msgstr "No more entries"
 
-#: src/view/label/edit/comp/LabelDateFields.tsx
-msgid "Founded date"
-msgstr "Founded date"
+#: src/view/user/Profile.tsx
+msgid "No recent activity."
+msgstr "No recent activity."
 
-#: src/view/label/edit/comp/LabelDateFields.tsx
-msgid "Dissolved date"
-msgstr "Dissolved date"
+#: src/view/release/explore/list.tsx
+msgid "No releases found"
+msgstr "No releases found"
 
-#: src/view/song/Info/comp/SongInfoLanguages.tsx
-#: src/view/song/edit/comp/SongLanguagesField.tsx
-msgid "Languages"
-msgstr "Languages"
+#: src/view/search/index.tsx
+msgid "No releases found."
+msgstr "No releases found."
 
-#: src/view/release/edit/comp/ReleaseArtistsField.tsx
-#: src/view/song/edit/comp/SongArtistsField.tsx
-msgid "Artists"
-msgstr "Artists"
+#: src/view/label/List/index.tsx
+msgid "No results"
+msgstr "No results"
+
+#: src/view/search/index.tsx
+msgid "No results found."
+msgstr "No results found."
+
+#: src/view/release/edit/comp/TrackFieldItem.tsx
+msgid "No song selected"
+msgstr "No song selected"
+
+#: src/view/song/explore.tsx
+msgid "No songs found"
+msgstr "No songs found"
+
+#: src/view/search/index.tsx
+msgid "No songs found."
+msgstr "No songs found."
+
+#: src/view/auth/component/PasswordField.tsx
+msgid "No spaces or control characters"
+msgstr "No spaces or control characters"
+
+#: src/view/tag/explore.tsx
+msgid "No tags found"
+msgstr "No tags found"
+
+#: src/view/search/index.tsx
+msgid "No tags found."
+msgstr "No tags found."
+
+#: src/view/entity_tags/EntityTagsSection.tsx
+msgid "No tags yet"
+msgstr "No tags yet"
+
+#: src/view/admin/users.tsx
+msgid "No users found"
+msgstr "No users found"
+
+#: src/view/admin/users.tsx
+msgid "No users match the current filters."
+msgstr "No users match the current filters."
+
+#: src/utils/dateTime.ts
+msgid "None"
+msgstr "None"
+
+#: src/view/correction/Detail.tsx
+msgid "Not handled"
+msgstr "Not handled"
+
+#: src/view/release/edit/comp/ReleaseCreditsField.tsx
+msgid "On Tracks"
+msgstr "On Tracks"
+
+#: src/component/ImageCropDialog/utils.ts
+msgid "Only PNG/JPEG images are supported."
+msgstr "Only PNG/JPEG images are supported."
+
+#: src/view/search/index.tsx
+#: src/view/search/index.tsx
+#: src/view/search/index.tsx
+#: src/view/search/index.tsx
+#: src/view/search/index.tsx
+#: src/view/search/index.tsx
+msgid "Open"
+msgstr "Open"
+
+#: src/view/auth/component/AuthForm.tsx
+#: src/view/auth/component/AuthLeftPanel.tsx
+#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeHero.tsx
+msgid "Open doujin music database"
+msgstr "Open doujin music database"
+
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "Open image queue"
+msgstr "Open image queue"
+
+#: src/component/__legacy/chart/index.tsx
+msgid "OR"
+msgstr "OR"
+
+#: src/component/feature/entity_explore/OrderBySelect.tsx
+msgid "Order"
+msgstr "Order"
+
+#. placeholder {0}: props.search.page
+#. placeholder {1}: props.list.totalPages
+#: src/view/admin/users.tsx
+msgid "Page {0} of {1}"
+msgstr "Page {0} of {1}"
+
+#: src/component/Pagination.tsx
+msgid "Pagination"
+msgstr "Pagination"
+
+#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/component/AuthCredentialForm.tsx
+msgid "Password"
+msgstr "Password"
+
+#: src/domain/auth/schema.ts
+#: src/domain/auth/schema.ts
+msgid "Password contains invalid or whitespace characters"
+msgstr "Password contains invalid or whitespace characters"
+
+#: src/domain/auth/schema.ts
+#: src/domain/auth/schema.ts
+msgid "Password mismatch"
+msgstr "Password mismatch"
+
+#: src/domain/auth/schema.ts
+msgid "Password must be at least {USER_PASSWORD_MIN_LENGTH} characters"
+msgstr "Password must be at least {USER_PASSWORD_MIN_LENGTH} characters"
+
+#: src/domain/auth/schema.ts
+msgid "Password must be at most {USER_PASSWORD_MAX_LENGTH} characters"
+msgstr "Password must be at most {USER_PASSWORD_MAX_LENGTH} characters"
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Password reset complete"
+msgstr "Password reset complete"
+
+#: src/domain/auth/schema.ts
+msgid "Password too weak"
+msgstr "Password too weak"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/manage.tsx
+msgid "Pending"
+msgstr "Pending"
+
+#: src/view/image_queue/user.tsx
+msgid "PENDING"
+msgstr "PENDING"
+
+#: src/component/__legacy/chart/index.tsx
+msgid "Positive:"
+msgstr "Positive:"
+
+#: src/view/image_queue/detail.tsx
+msgid "Prev"
+msgstr "Prev"
+
+#: src/view/Homepage/component/HomeHero.tsx
+msgid "Preview"
+msgstr "Preview"
+
+#: src/view/correction/Detail.tsx
+msgid "Previous approved baseline"
+msgstr "Previous approved baseline"
+
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Previous disc"
+msgstr "Previous disc"
+
+#: src/component/Pagination.tsx
+msgid "Previous page"
+msgstr "Previous page"
+
+#: src/component/Header/RightSidebar.tsx
+msgid "Profile"
+msgstr "Profile"
+
+#: src/view/user/edit_profile/index.tsx
+#: src/view/user/Profile.tsx
+msgid "Profile banner"
+msgstr "Profile banner"
+
+#: src/route/artist/$id_.image-upload.tsx
+#: src/view/image_queue/detail.tsx
+msgid "profile image"
+msgstr "profile image"
+
+#: src/component/form/Location/index.tsx
+msgid "Province"
+msgstr "Province"
+
+#: src/view/image_queue/detail.tsx
+msgid "Queued"
+msgstr "Queued"
+
+#: src/view/image_queue/detail.tsx
+msgid "Queued upload preview"
+msgstr "Queued upload preview"
+
+#: src/component/Header/LeftSidebar.tsx
+msgid "Recommendation"
+msgstr "Recommendation"
+
+#: src/component/Header/RightSidebar.tsx
+msgid "Recommendations"
+msgstr "Recommendations"
+
+#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
+msgid "Recorded"
+msgstr "Recorded"
+
+#: src/view/release/edit/index.tsx
+msgid "Recording end"
+msgstr "Recording end"
+
+#: src/view/release/edit/index.tsx
+msgid "Recording start"
+msgstr "Recording start"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Reject"
+msgstr "Reject"
+
+#: src/view/image_queue/detail.tsx
+msgid "Reject image?"
+msgstr "Reject image?"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/manage.tsx
+msgid "Rejected"
+msgstr "Rejected"
+
+#: src/view/image_queue/user.tsx
+msgid "REJECTED"
+msgstr "REJECTED"
+
+#: src/domain/song/schema.ts
+msgid "Related song not selected"
+msgstr "Related song not selected"
+
+#: src/domain/tag/schema.ts
+msgid "Relation type is required"
+msgstr "Relation type is required"
+
+#: src/domain/song/schema.ts
+msgid "Relation type not selected"
+msgstr "Relation type not selected"
+
+#: src/view/song/edit/comp/SongRelationsField.tsx
+#: src/view/song/Info/index.tsx
+#: src/view/tag/edit/comp/TagRelationsField.tsx
+msgid "Relations"
+msgstr "Relations"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/image_queue/detail.tsx
+#: src/view/search/index.tsx
+#: src/view/song/Info/index.tsx
+msgid "Release"
+msgstr "Release"
+
+#: src/view/release/edit/index.tsx
+msgid "Release date"
+msgstr "Release date"
+
+#: src/domain/release/schema.ts
+msgid "Release must have artists"
+msgstr "Release must have artists"
+
+#: src/view/release/edit/comp/ReleaseTypeField.tsx
+msgid "Release Type"
+msgstr "Release Type"
+
+#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
+msgid "Released"
+msgstr "Released"
+
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/search/index.tsx
+msgid "Releases"
+msgstr "Releases"
+
+#: src/view/entity_tags/EntityTagsSection.tsx
+msgid "Remove"
+msgstr "Remove"
+
+#: src/view/artist/edit/comp/Membership/role.tsx
+#: src/view/artist/edit/comp/Membership/role.tsx
+msgid "Remove role"
+msgstr "Remove role"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Remove tenure entry"
+msgstr "Remove tenure entry"
+
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Rename disc"
+msgstr "Rename disc"
+
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Rename Disc"
+msgstr "Rename Disc"
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Repeat new password"
+msgstr "Repeat new password"
+
+#: src/view/auth/component/AuthCredentialForm.tsx
+msgid "Repeat password"
+msgstr "Repeat password"
+
+#: src/view/auth/reset_password/response.ts
+msgid "Request failed"
+msgstr "Request failed"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Request failed."
+msgstr "Request failed."
+
+#: src/view/auth/component/VerifyEmailForm.tsx
+msgid "Resend"
+msgstr "Resend"
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Resend code"
+msgstr "Resend code"
+
+#: src/component/dialog/ResetFieldDialog.tsx
+msgid "Reset field?"
+msgstr "Reset field?"
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Reset password"
+msgstr "Reset password"
+
+#: src/view/image_queue/detail.tsx
+msgid "Revert"
+msgstr "Revert"
+
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/detail.tsx
+#: src/view/image_queue/manage.tsx
+msgid "Reverted"
+msgstr "Reverted"
+
+#: src/view/image_queue/user.tsx
+msgid "REVERTED"
+msgstr "REVERTED"
+
+#: src/view/correction/Detail.tsx
+msgid "REVISIONS"
+msgstr "REVISIONS"
+
+#: src/view/admin/users.tsx
+msgid "Roles"
+msgstr "Roles"
+
+#: src/component/ImageCropDialog/index.tsx
+msgid "Save"
+msgstr "Save"
+
+#: src/view/user/edit_profile/index.tsx
+msgid "Save bio"
+msgstr "Save bio"
+
+#: src/view/user/edit_profile/store.ts
+msgid "Save failed."
+msgstr "Save failed."
+
+#: src/view/admin/users.tsx
+msgid "Save roles"
+msgstr "Save roles"
+
+#: src/view/user/edit_profile/index.tsx
+msgid "Saving…"
+msgstr "Saving…"
+
+#: src/component/form/SearchDialog/ArtistSearchDialog.tsx
+msgid "Search Artist"
+msgstr "Search Artist"
+
+#: src/component/Header/index.tsx
+msgid "Search artists, releases, songs…"
+msgstr "Search artists, releases, songs…"
+
+#: src/view/admin/users.tsx
+msgid "Search by username"
+msgstr "Search by username"
+
+#: src/view/artist/edit/comp/Membership/role.tsx
+msgid "Search credit role"
+msgstr "Search credit role"
+
+#: src/component/form/SearchDialog/EventSearchDialog.tsx
+msgid "Search Event"
+msgstr "Search Event"
+
+#: src/component/form/SearchDialog/LabelSearchDialog.tsx
+msgid "Search Label"
+msgstr "Search Label"
+
+#: src/view/label/List/index.tsx
+msgid "Search label..."
+msgstr "Search label..."
+
+#: src/view/search/index.tsx
+msgid "Search result of"
+msgstr "Search result of"
+
+#: src/component/form/SearchDialog/CreditRoleSearchDialog.tsx
+msgid "Search Role"
+msgstr "Search Role"
+
+#: src/view/artist/edit/comp/Membership/role.tsx
+msgid "Search roles..."
+msgstr "Search roles..."
+
+#: src/component/form/SearchDialog/SongSearchDialog.tsx
+msgid "Search Song"
+msgstr "Search Song"
+
+#: src/component/form/SearchDialog/TagSearchDialog.tsx
+msgid "Search Tag"
+msgstr "Search Tag"
+
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+msgid "Search tag..."
+msgstr "Search tag..."
+
+#: src/component/form/SearchDialog/EntitySearchDialog.tsx
+msgid "Search..."
+msgstr "Search..."
+
+#: src/view/search/index.tsx
+msgid "Searching…"
+msgstr "Searching…"
+
+#: src/view/Homepage/mock.ts
+msgid "See conventions and live shows where releases debuted."
+msgstr "See conventions and live shows where releases debuted."
+
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "Select another image"
+msgstr "Select another image"
 
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 #: src/view/song/edit/comp/SongCreditsField.tsx
 msgid "Select artist"
 msgstr "Select artist"
 
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "Select image"
+msgstr "Select image"
+
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 #: src/view/song/edit/comp/SongCreditsField.tsx
 msgid "Select role"
 msgstr "Select role"
 
-#: src/view/release/edit/comp/LocalizedTitlesField.tsx
-#: src/view/song/edit/comp/SongLocalizedTitlesField.tsx
-msgid "Localized Titles"
-msgstr "Localized Titles"
+#: src/view/song/edit/comp/SongRelationsField.tsx
+msgid "Select song"
+msgstr "Select song"
+
+#: src/view/tag/edit/comp/TagRelationsField.tsx
+msgid "Select tag"
+msgstr "Select tag"
+
+#: src/component/ImageCropDialog/index.tsx
+msgid "Selected crop cannot satisfy the required dimensions. Adjust the crop area."
+msgstr "Selected crop cannot satisfy the required dimensions. Adjust the crop area."
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Sending..."
+msgstr "Sending..."
+
+#: src/view/auth/reset_password/index.tsx
+msgid "Set a new password"
+msgstr "Set a new password"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/component/Header/RightSidebar.tsx
+msgid "Settings"
+msgstr "Settings"
+
+#: src/view/event/edit/comp/EventShortDescriptionField.tsx
+#: src/view/tag/edit/comp/TagShortDescription.tsx
+msgid "Short Description"
+msgstr "Short Description"
+
+#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/index.tsx
+msgid "sign in"
+msgstr "sign in"
+
+#: src/component/route.tsx
+#: src/view/auth/component/AuthForm.tsx
+#: src/view/auth/component/VerifyEmailForm.tsx
+msgid "Sign in"
+msgstr "Sign in"
+
+#: src/component/Header/index.tsx
+#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/component/AuthCredentialForm.tsx
+msgid "Sign In"
+msgstr "Sign In"
+
+#: src/component/route.tsx
+msgid "Sign in to continue"
+msgstr "Sign in to continue"
+
+#: src/component/Header/RightSidebar.tsx
+msgid "Sign Out"
+msgstr "Sign Out"
+
+#: src/component/Header/index.tsx
+#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/component/AuthCredentialForm.tsx
+msgid "Sign Up"
+msgstr "Sign Up"
+
+#: src/view/Homepage/component/ArtistCard.tsx
+msgid "Solo artist"
+msgstr "Solo artist"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/search/index.tsx
+msgid "Song"
+msgstr "Song"
+
+#: src/view/correction/entityMap.ts
+msgid "Song lyrics"
+msgstr "Song lyrics"
+
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/search/index.tsx
+msgid "Songs"
+msgstr "Songs"
+
+#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
+msgid "Sort by"
+msgstr "Sort by"
+
+#: src/view/artist/edit/comp/Date.tsx
+#: src/view/event/edit/comp/EventDateFields.tsx
+msgid "Start date"
+msgstr "Start date"
+
+#: src/view/artist/edit/comp/Locations.tsx
+msgid "Start Location"
+msgstr "Start Location"
+
+#: src/view/image_queue/manage.tsx
+msgid "Status"
+msgstr "Status"
+
+#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/image_queue/user.tsx
+msgid "STATUS"
+msgstr "STATUS"
+
+#: src/view/auth/component/PasswordField.tsx
+msgid "Strong enough"
+msgstr "Strong enough"
+
+#: src/component/form/FormActionBar.tsx
+#: src/view/image_upload/EntityImageUploadPage.tsx
+msgid "Submit"
+msgstr "Submit"
+
+#: src/view/auth/component/AuthLeftPanel.tsx
+msgid "Submit corrections and keep metadata clean"
+msgstr "Submit corrections and keep metadata clean"
+
+#: src/view/image_upload/store.ts
+msgid "Submit failed."
+msgstr "Submit failed."
+
+#: src/view/image_queue/detail.tsx
+msgid "Submitted by"
+msgstr "Submitted by"
+
+#: src/component/form/FormActionBar.tsx
+msgid "Submitting"
+msgstr "Submitting"
+
+#: src/component/Header/RightSidebar.tsx
+msgid "Support"
+msgstr "Support"
+
+#: src/view/auth/component/AuthLeftPanel.tsx
+msgid "Sync your contributions across devices"
+msgstr "Sync your contributions across devices"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/search/index.tsx
+msgid "Tag"
+msgstr "Tag"
+
+#: src/domain/tag/schema.ts
+msgid "Tag not selected"
+msgstr "Tag not selected"
+
+#: src/view/tag/explore.tsx
+msgid "Tag Tree"
+msgstr "Tag Tree"
+
+#: src/view/tag/edit/comp/TagTypeField.tsx
+msgid "Tag Type"
+msgstr "Tag Type"
+#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/Homepage/mock.ts
+#: src/view/Homepage/mock.ts
+#: src/view/search/index.tsx
+msgid "Tags"
+msgstr "Tags"
+
+#: src/component/devtools/index.tsx
+msgid "TanStack Query"
+msgstr "TanStack Query"
+
+#: src/component/devtools/index.tsx
+msgid "TanStack Router"
+msgstr "TanStack Router"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Tenures"
+msgstr "Tenures"
+
+#: src/view/artist/edit/comp/TextAliases.tsx
+msgid "Text Aliases"
+msgstr "Text Aliases"
+
+#: src/component/dialog/ResetFieldDialog.tsx
+msgid "This cannot be undone."
+msgstr "This cannot be undone."
+
+#. placeholder {0}: formatMinuteCount(props.resetKeyExpiresMinutes)
+#: src/view/auth/reset_password/index.tsx
+msgid "This is valid for {0}."
+msgstr "This is valid for {0}."
+
+#: src/component/route.tsx
+msgid "This page requires an authenticated account."
+msgstr "This page requires an authenticated account."
+
+#: src/view/image_queue/user.tsx
+msgid "This user has no image queue history."
+msgstr "This user has no image queue history."
+
+#: src/view/image_queue/detail.tsx
+msgid "This will mark the queued image as approved."
+msgstr "This will mark the queued image as approved."
+
+#: src/view/image_queue/detail.tsx
+msgid "This will mark the queued image as rejected."
+msgstr "This will mark the queued image as rejected."
 
 #: src/view/release/edit/comp/LocalizedTitlesField.tsx
 #: src/view/release/edit/comp/TitleField.tsx
@@ -2043,28 +1769,27 @@ msgstr "Localized Titles"
 msgid "Title"
 msgstr "Title"
 
-#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
-msgid "Released"
-msgstr "Released"
+#: src/domain/song/schema.ts
+msgid "Title is required and must be non-empty"
+msgstr "Title is required and must be non-empty"
 
-#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
-msgid "Recorded"
-msgstr "Recorded"
+#: src/view/event/explore.tsx
+msgid "To"
+msgstr "To"
 
-#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
-msgid "Catalog Nums"
-msgstr "Catalog Nums"
+#: src/App.tsx
+#: src/component/Footer/index.tsx
+msgid "Touhou Cloud DB"
+msgstr "Touhou Cloud DB"
 
-#: src/view/release/Info/comp/ReleaseInfoTitleAndArtist.tsx
-msgid "by"
-msgstr "by"
+#: src/App.tsx
+#: src/component/Footer/index.tsx
+msgid "Touhou Cloud DB is an open doujin music database"
+msgstr "Touhou Cloud DB is an open doujin music database"
 
-#. 0: index() + 1
-#. 0: props.selectedDisc() + 1
-#: src/view/release/Info/comp/ReleaseInfoTracks.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "Disc {0}"
-msgstr "Disc {0}"
+#: src/view/Homepage/component/NewMusic.tsx
+msgid "Touhou Cloud DB track"
+msgstr "Touhou Cloud DB track"
 
 #: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
 msgid "Catalog Numbers"
@@ -2151,146 +1876,226 @@ msgstr "Duration (ms)"
 #: src/view/release/edit/comp/TrackFieldItem.tsx
 msgid "No song selected"
 msgstr "No song selected"
+#: src/view/Homepage/mock.ts
+msgid "Track albums and compilations, link artists and events."
+msgstr "Track albums and compilations, link artists and events."
 
 #: src/view/release/edit/comp/TrackFieldItem.tsx
 msgid "Track Artists"
 msgstr "Track Artists"
 
-#: src/view/tag/edit/comp/TagRelationsField.tsx
-msgid "Select tag"
-msgstr "Select tag"
+#: src/view/release/edit/comp/TrackFieldItem.tsx
+msgid "Track number"
+msgstr "Track number"
 
-#: src/view/tag/edit/comp/TagTypeField.tsx
-msgid "Tag Type"
-msgstr "Tag Type"
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "Tracks"
+msgstr "Tracks"
 
-#: src/view/artist/edit/comp/Membership/index.tsx
-msgid "Membership"
-msgstr "Membership"
+#: src/view/Homepage/mock.ts
+msgid "Tracks & arrangements"
+msgstr "Tracks & arrangements"
 
-#: src/view/artist/edit/comp/Membership/role.tsx
-msgid "Search roles..."
-msgstr "Search roles..."
+#: src/view/Homepage/component/TrendingTagsCard.tsx
+msgid "Trending Tags"
+msgstr "Trending Tags"
 
-#: src/view/artist/edit/comp/Membership/role.tsx
-msgid "Search credit role"
-msgstr "Search credit role"
+#: src/view/artist/explore.comp.tsx
+#: src/view/image_queue/manage.tsx
+#: src/view/release/explore/filter.tsx
+#: src/view/release/Info/comp/ReleaseInfoDetails.tsx
+#: src/view/tag/Info/index.tsx
+msgid "Type"
+msgstr "Type"
 
-#: src/view/artist/edit/comp/Membership/role.tsx
-#: src/view/artist/edit/comp/Membership/role.tsx
-msgid "Remove role"
-msgstr "Remove role"
+#: src/view/search/index.tsx
+msgid "Type a keyword to search."
+msgstr "Type a keyword to search."
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Tenures"
-msgstr "Tenures"
+#: src/view/user/Profile.tsx
+msgid "Unfollow"
+msgstr "Unfollow"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Add Tenure"
-msgstr "Add Tenure"
+#: src/view/image_queue/detail.tsx
+msgid "Unknown"
+msgstr "Unknown"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Join year"
-msgstr "Join year"
+#: src/view/image_queue/user.tsx
+msgid "UNKNOWN"
+msgstr "UNKNOWN"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Leave year"
-msgstr "Leave year"
+#: src/view/Homepage/utils.ts
+msgid "Unknown artist"
+msgstr "Unknown artist"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Remove tenure entry"
-msgstr "Remove tenure entry"
+#: src/utils/getErrorMessage.ts
+msgid "Unknown error"
+msgstr "Unknown error"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Leave year cannot be earlier than join year"
-msgstr "Leave year cannot be earlier than join year"
+#: src/view/Homepage/component/UpcomingEventsCard.tsx
+msgid "Upcoming Events"
+msgstr "Upcoming Events"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Leave year cannot be the same as join year"
-msgstr "Leave year cannot be the same as join year"
+#: src/view/user/edit_profile/index.tsx
+#: src/view/user/edit_profile/index.tsx
+msgid "Update avatar"
+msgstr "Update avatar"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Join year cannot be earlier than previous leave year"
-msgstr "Join year cannot be earlier than previous leave year"
+#: src/view/user/edit_profile/index.tsx
+#: src/view/user/edit_profile/index.tsx
+msgid "Update banner"
+msgstr "Update banner"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
-msgid "Join year cannot be the same as previous leave year"
-msgstr "Join year cannot be the same as previous leave year"
+#: src/view/release/Info/index.tsx
+msgid "Upload cover art"
+msgstr "Upload cover art"
+
+#: src/component/ImageCropDialog/index.tsx
+#: src/view/user/edit_profile/store.ts
+msgid "Upload failed."
+msgstr "Upload failed."
+
+#: src/component/ImageCropDialog/index.tsx
+#: src/view/user/edit_profile/index.tsx
+#: src/view/user/edit_profile/index.tsx
+msgid "Uploading…"
+msgstr "Uploading…"
+
+#: src/view/artist/edit/comp/Links.tsx
+msgid "Url"
+msgstr "Url"
 
 #: src/view/auth/component/AuthForm.tsx
 msgid "Use your account to continue."
 msgstr "Use your account to continue."
 
-#: src/view/auth/component/AuthForm.tsx
-msgid "Create an account to continue."
-msgstr "Create an account to continue."
+#: src/view/admin/users.tsx
+msgid "User"
+msgstr "User"
+
+#: src/view/auth/component/UsernameField.tsx
+msgid "Username"
+msgstr "Username"
+
+#: src/view/auth/component/SignInIdentifierField.tsx
+msgid "Username / Email"
+msgstr "Username / Email"
+
+#: src/component/Header/LeftSidebar.tsx
+#: src/component/Header/LeftSidebar.tsx
+#: src/component/Header/LeftSidebar.tsx
+#: src/view/admin/users.tsx
+msgid "Users"
+msgstr "Users"
+
+#: src/view/auth/component/VerificationCodeField.tsx
+msgid "Verification code"
+msgstr "Verification code"
+
+#: src/domain/auth/schema.ts
+#: src/domain/auth/schema.ts
+#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/index.tsx
+msgid "Verification code must be 6 digits"
+msgstr "Verification code must be 6 digits"
 
 #: src/view/auth/component/AuthForm.tsx
 msgid "Verify email"
 msgstr "Verify email"
 
-#: src/view/auth/component/AuthForm.tsx
-msgid "Enter the 6-digit code sent to your email."
-msgstr "Enter the 6-digit code sent to your email."
+#: src/view/auth/component/VerifyEmailForm.tsx
+msgid "Verify Email"
+msgstr "Verify Email"
 
-#: src/view/auth/store/index.ts
-msgid "Missing sign-up email. Create the account again."
-msgstr "Missing sign-up email. Create the account again."
+#: src/view/release/explore/filter.tsx
+msgid "View"
+msgstr "View"
 
-#: src/component/Footer/index.tsx
-msgid "GitHub"
-msgstr "GitHub"
+#. placeholder {0}: item.id
+#: src/view/image_queue/manage.tsx
+msgid "View image queue item #{0}"
+msgstr "View image queue item #{0}"
 
-#: src/component/Footer/index.tsx
-msgid "Zulip"
-msgstr "Zulip"
-
-#: src/component/Footer/index.tsx
-msgid "Feedback"
-msgstr "Feedback"
-
-#: src/view/user/Profile.tsx
-msgid "Edits"
-msgstr "Edits"
+#: src/view/Homepage/component/NewMusic.tsx
+msgid "View more"
+msgstr "View more"
 
 #: src/view/user/Profile.tsx
 msgid "Votes"
 msgstr "Votes"
 
-#: src/view/user/Profile.tsx
-msgid "Edit Profile"
-msgstr "Edit Profile"
+#: src/view/image_queue/detail.tsx
+msgid "Working…"
+msgstr "Working…"
 
-#: src/view/user/Profile.tsx
-msgid "Highlights"
-msgstr "Highlights"
+#: src/view/user/edit_profile/index.tsx
+msgid "Write something about you."
+msgstr "Write something about you."
 
-#: src/view/user/Profile.tsx
-msgid "Recent Activity"
-msgstr "Recent Activity"
+#: src/component/form/DateWithPrecision/index.tsx
+msgid "Year"
+msgstr "Year"
 
-#: src/view/user/Profile.tsx
-msgid "No recent activity."
-msgstr "No recent activity."
+#: src/view/auth/reset_password/index.tsx
+msgid "You can now sign in with your new password."
+msgstr "You can now sign in with your new password."
 
-#: src/view/user/Profile.tsx
-msgid "Following..."
-msgstr "Following..."
+#: src/view/auth/reset_password/index.tsx
+msgid "Your password has been updated successfully."
+msgstr "Your password has been updated successfully."
 
-#: src/view/user/Profile.tsx
-msgid "Unfollowing..."
-msgstr "Unfollowing..."
+#: src/view/auth/reset_password/index.tsx
+msgid "Your reset session is no longer valid. Verify a new code to continue."
+msgstr "Your reset session is no longer valid. Verify a new code to continue."
 
-#: src/view/user/Profile.tsx
-msgid "No biography provided."
-msgstr "No biography provided."
+#: src/component/Footer/index.tsx
+msgid "Zulip"
+msgstr "Zulip"
 
-#. 0: correctionHistory().length
-#: src/view/correction/EntityCorrectionMetadataSection.tsx
-msgid "Corrections · {0}"
-msgstr "Corrections · {0}"
+#: src/component/navbar/index.tsx
+msgid "专辑"
+msgstr "专辑"
 
-#: src/view/song/edit/comp/SongRelationsField.tsx
-msgid "Select song"
-msgstr "Select song"
+#: src/view/Homepage/component/NewMusic.tsx
+msgid "最新音乐"
+msgstr "最新音乐"
+
+#: src/component/navbar/index.tsx
+msgid "同人社团"
+msgstr "同人社团"
+
+#: src/component/__legacy/player/index.tsx
+msgid "幻想乡之歌"
+msgstr "幻想乡之歌"
+
+#: src/view/Homepage/component/NewMusic.tsx
+msgid "幻想乡音乐人"
+msgstr "幻想乡音乐人"
+
+#: src/component/navbar/index.tsx
+msgid "排行榜"
+msgstr "排行榜"
+
+#: src/component/navbar/index.tsx
+msgid "推荐"
+msgstr "推荐"
+
+#: src/component/navbar/index.tsx
+msgid "文章"
+msgstr "文章"
+
+#: src/component/navbar/index.tsx
+msgid "歌单"
+msgstr "歌单"
+
+#: src/component/navbar/index.tsx
+msgid "歌手"
+msgstr "歌手"
+
+#: src/component/navbar/index.tsx
+msgid "活动"
+msgstr "活动"
+
+#: src/component/navbar/index.tsx
+msgid "视频"
+msgstr "视频"

@@ -24,7 +24,10 @@ export function useSongFormSubmission(props: Props) {
 				{ type: "Create", data: output },
 				{
 					onSuccess(result) {
-						void navigator({ to: `/correction/${result.correction_id}` })
+						void navigator({
+							to: "/correction/$id",
+							params: { id: result.correction_id.toString() },
+						})
 					},
 					onError(error) {
 						if (import.meta.env.DEV) {
@@ -40,7 +43,10 @@ export function useSongFormSubmission(props: Props) {
 			{ type: "Update", id: props.song.id, data: output },
 			{
 				onSuccess(result) {
-					void navigator({ to: `/correction/${result.correction_id}` })
+					void navigator({
+						to: "/correction/$id",
+						params: { id: result.correction_id.toString() },
+					})
 				},
 				onError(error) {
 					if (import.meta.env.DEV) {

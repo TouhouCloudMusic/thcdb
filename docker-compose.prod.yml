@@ -19,7 +19,7 @@ services:
   redis:
     image: valkey/valkey:9-alpine@sha256:b4ee67d73e00393e712accc72cfd7003b87d0fcd63f0eba798b23251bfc9c394
     restart: unless-stopped
-    command: valkey-server --save 60 1 --loglevel warning
+    command: valkey-server --save 60 1 --appendonly yes --appendfsync everysec --loglevel warning
     healthcheck:
       test: ["CMD", "valkey-cli", "ping"]
       interval: 10s
@@ -42,7 +42,7 @@ services:
     env_file:
       - .env
     environment:
-      SESSION_SECURE: "${SESSION_SECURE:-true}"
+      MIDDLEWARE__SESSION_SECURE: "${SESSION_SECURE:-true}"
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}"
 
       DATABASE_URL: "postgres://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:?POSTGRES_DB is required}"

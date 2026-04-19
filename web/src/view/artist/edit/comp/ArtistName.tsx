@@ -1,4 +1,5 @@
 import { Field } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 
 import { InputField } from "~/component/atomic/form/Input"
 
@@ -14,7 +15,7 @@ export function ArtistFormNameField() {
 		>
 			{(field) => (
 				<InputField.Root class="w-96">
-					<InputField.Label>Name</InputField.Label>
+					<InputField.Label>{t`Name`}</InputField.Label>
 					<InputField.Input
 						{...field.props}
 						type="text"

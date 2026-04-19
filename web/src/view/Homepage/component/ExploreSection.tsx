@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { JSX } from "solid-js"
 
 import { Link } from "~/component/atomic/Link"
@@ -20,7 +21,7 @@ export function ExploreSection(props: ExploreSectionProps) {
 					to={props.to}
 					class="text-sm text-tertiary no-underline hover:text-primary hover:no-underline"
 				>
-					Explore →
+					{t`Explore`} →
 				</Link>
 			</div>
 

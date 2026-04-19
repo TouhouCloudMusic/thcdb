@@ -1,4 +1,5 @@
 import { Field, getErrors, insert, remove } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { SimpleArtist } from "@thc/api"
 import { For, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -44,7 +45,7 @@ export function ReleaseArtistsField(props: {
 	return (
 		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Artists</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Artists`}</FormComp.Label>
 				<div class="flex gap-2">
 					<ArtistSearchDialog
 						onSelect={addArtist}

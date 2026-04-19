@@ -1,4 +1,5 @@
 import type { FieldElementProps } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { JSX } from "solid-js"
 import { createSignal } from "solid-js"
 
@@ -26,7 +27,7 @@ export function EmailField(props: EmailFieldProps) {
 
 	return (
 		<FieldLayout
-			label="Email"
+			label={t`Email`}
 			error={isEditing() ? undefined : props.field.errors?.[0]}
 			class={props.class}
 		>

@@ -1,5 +1,6 @@
 /* @refresh reload */
 import { Field, getInput, insert, remove } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { Artist, ArtistCommonFilter } from "@thc/api"
 import { createMemo } from "solid-js"
 import type { JSX } from "solid-js"
@@ -91,7 +92,7 @@ export function ArtistFormMembership(): JSX.Element {
 	return (
 		<div class="grid min-h-32 w-96 min-w-fit grid-cols-1">
 			<div class="mb-2 flex items-center justify-between">
-				<FormComp.Label class="m-0">Membership</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Membership`}</FormComp.Label>
 				<ArtistSearchDialog
 					onSelect={addMembership}
 					disabled={isDisabled()}

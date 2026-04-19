@@ -7,6 +7,7 @@ import {
 import { createJSXDecorator } from "storybook-solidjs-vite"
 
 import { routeTree } from "~/routeTree.gen"
+import { StateProvider } from "~/state"
 import { I18NProvider } from "~/state/i18n"
 
 export const enum StoryLayout {
@@ -54,6 +55,12 @@ export const withStoryI18N = createJSXDecorator((Story) => (
 	</I18NProvider>
 ))
 
+export const withStoryState = createJSXDecorator((Story) => (
+	<StateProvider initialLocale="en">
+		<Story />
+	</StateProvider>
+))
+
 export const withStoryRouter = createJSXDecorator((Story, context) => {
 	const initialEntry =
 		(context.parameters as StoryRouterParameters).tanstackRouter?.initialEntry
@@ -61,10 +68,8 @@ export const withStoryRouter = createJSXDecorator((Story, context) => {
 	const router = createStoryRouter([initialEntry])
 
 	return (
-		<I18NProvider initialLocale="en">
-			<RouterContextProvider router={router}>
-				{() => <Story />}
-			</RouterContextProvider>
-		</I18NProvider>
+		<RouterContextProvider router={router}>
+			{() => <Story />}
+		</RouterContextProvider>
 	)
 })

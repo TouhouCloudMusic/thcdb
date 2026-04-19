@@ -25,7 +25,10 @@ export function useReleaseFormSubmission(props: Props) {
 				{ type: "Create", data },
 				{
 					onSuccess(result) {
-						void navigator({ to: `/correction/${result.correction_id}` })
+						void navigator({
+							to: "/correction/$id",
+							params: { id: result.correction_id.toString() },
+						})
 					},
 					onError(error) {
 						if (import.meta.env.DEV) {
@@ -39,7 +42,10 @@ export function useReleaseFormSubmission(props: Props) {
 				{ type: "Update", id: props.release.id, data },
 				{
 					onSuccess(result) {
-						void navigator({ to: `/correction/${result.correction_id}` })
+						void navigator({
+							to: "/correction/$id",
+							params: { id: result.correction_id.toString() },
+						})
 					},
 					onError(error) {
 						if (import.meta.env.DEV) {

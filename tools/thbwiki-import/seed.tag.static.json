@@ -1,0 +1,274 @@
+{
+  "tags": [
+    {
+      "name": "Symphonic Rock",
+      "type": "Genre",
+      "short_description": "Rock driven by orchestral arrangement and dramatic structure.",
+      "description": "Suitable for tracks that combine a rock band core with symphonic strings, brass, choir, or cinematic orchestration.",
+      "alt_names": [
+        "Symphonic-Rock"
+      ]
+    },
+    {
+      "name": "Electronic",
+      "type": "Genre",
+      "short_description": "Electronic production centered on synths, sequencing, and digital timbre.",
+      "description": "General-purpose electronic music tag for tracks built around synthesizers, programmed rhythm, and digital sound design.",
+      "alt_names": [
+        "Electronica"
+      ]
+    },
+    {
+      "name": "Eurobeat",
+      "type": "Genre",
+      "short_description": "High-tempo dance music with bright synth leads and driving rhythm.",
+      "description": "Useful for fast, energetic dance tracks with four-on-the-floor pulse, layered synth hooks, and a strong club-oriented feel."
+    },
+    {
+      "name": "Jazz Fusion",
+      "type": "Genre",
+      "short_description": "Jazz language blended with rock, funk, or modern electric instrumentation.",
+      "description": "Appropriate for tracks that combine jazz harmony and improvisational texture with electric instrumentation and groove-heavy rhythm sections.",
+      "alt_names": [
+        "Fusion"
+      ]
+    },
+    {
+      "name": "Folk",
+      "type": "Genre",
+      "short_description": "Folk-oriented writing with acoustic texture and traditional melodic flavor.",
+      "description": "Can be used for tracks led by acoustic instruments, dance-like traditional rhythm, or regionally inflected melodic phrasing."
+    },
+    {
+      "name": "Progressive Rock",
+      "type": "Genre",
+      "short_description": "Rock with long-form structure, shifting meter, and expanded harmonic scope.",
+      "description": "Suitable for tracks that emphasize suite-like development, technical arrangement, and frequent structural change.",
+      "alt_names": [
+        "Prog Rock"
+      ]
+    },
+    {
+      "name": "Power Metal",
+      "type": "Genre",
+      "short_description": "Melodic metal built around speed, uplift, and prominent lead guitar.",
+      "description": "Useful for energetic metal tracks with bright harmonized riffs, double-kick drive, and anthem-like melodic hooks."
+    },
+    {
+      "name": "Melodic Death Metal",
+      "type": "Genre",
+      "short_description": "Death metal intensity shaped by strong melodic riff writing.",
+      "description": "Appropriate for tracks that combine aggressive drumming and distorted guitar tone with pronounced lead melody and harmonic motion.",
+      "alt_names": [
+        "Melodeath"
+      ]
+    },
+    {
+      "name": "Post-rock",
+      "type": "Genre",
+      "short_description": "Atmospheric rock focused on gradual build, texture, and dynamic arc.",
+      "description": "Use for instrumental or semi-instrumental tracks that emphasize layering, expansion, and emotional crescendo over verse-chorus form."
+    },
+    {
+      "name": "Shoegaze",
+      "type": "Genre",
+      "short_description": "Dense guitar texture with haze, reverb, and submerged vocal presence.",
+      "description": "Fits tracks led by layered effects-heavy guitar walls, soft-focus harmony, and immersive wash-like timbre."
+    },
+    {
+      "name": "Trance",
+      "type": "Genre",
+      "short_description": "Melodic dance music built on repetition, build-up, and release.",
+      "description": "Use for tracks with extended synth motion, driving pulse, and tension-release phrasing aimed at a euphoric club feel."
+    },
+    {
+      "name": "House",
+      "type": "Genre",
+      "short_description": "Four-on-the-floor dance music with groove-centered structure.",
+      "description": "Appropriate for tracks organized around steady kick pulse, loop-based layering, and dancefloor-oriented rhythmic flow."
+    },
+    {
+      "name": "Drum and Bass",
+      "type": "Genre",
+      "short_description": "Fast breakbeat-driven electronic music with active bass movement.",
+      "description": "Useful for tracks built from chopped or rolling break rhythms, sub-bass pressure, and high-energy forward motion.",
+      "alt_names": [
+        "DnB"
+      ]
+    },
+    {
+      "name": "Hardcore",
+      "type": "Genre",
+      "short_description": "High-intensity dance music with aggressive rhythm and impact.",
+      "description": "Use for tracks that push tempo, transient attack, and relentless pulse toward an extreme club sound."
+    },
+    {
+      "name": "Ambient",
+      "type": "Genre",
+      "short_description": "Atmosphere-first music centered on space, tone, and sustain.",
+      "description": "Appropriate for pieces that prioritize texture, resonance, and environmental mood over strong beat or melody."
+    },
+    {
+      "name": "Orchestral",
+      "type": "Genre",
+      "short_description": "Music led by orchestral writing, ensemble color, and cinematic scope.",
+      "description": "Use for tracks whose primary identity comes from strings, brass, woodwinds, percussion, or concert-style ensemble arrangement."
+    },
+    {
+      "name": "Chiptune",
+      "type": "Genre",
+      "short_description": "Music using chip-like synthesis or game-console timbral language.",
+      "description": "Fits tracks that foreground square-wave leads, retro digital tone, and intentionally game-like sound palette.",
+      "alt_names": [
+        "8-bit"
+      ]
+    },
+    {
+      "name": "Piano Solo",
+      "type": "Genre",
+      "short_description": "Solo piano presentation with no other defining instrumental layer.",
+      "description": "Use for tracks whose arrangement is carried almost entirely by a single piano performance."
+    },
+    {
+      "name": "String Quartet",
+      "type": "Genre",
+      "short_description": "Chamber writing for a small string ensemble texture.",
+      "description": "Appropriate for arrangements centered on intimate, contrapuntal, and ensemble-based string interplay."
+    },
+    {
+      "name": "Bossa Nova",
+      "type": "Genre",
+      "short_description": "Soft syncopated groove associated with Brazilian jazz-pop idiom.",
+      "description": "Useful for laid-back tracks driven by gentle syncopation, light harmonic color, and understated rhythmic sway."
+    },
+    {
+      "name": "Swing",
+      "type": "Genre",
+      "short_description": "Jazz-derived groove with bounced rhythm and danceable momentum.",
+      "description": "Use for tracks that lean on swung subdivision, brass or reed phrasing, and a lively big-band or combo feel."
+    },
+    {
+      "name": "Tango",
+      "type": "Genre",
+      "short_description": "Rhythmic dramatic style with sharp phrasing and dance tension.",
+      "description": "Suitable for tracks that use clipped articulation, dramatic cadence, and a strongly shaped push-pull rhythmic character."
+    },
+    {
+      "name": "Waltz",
+      "type": "Genre",
+      "short_description": "Triple-meter dance character with rotating lyrical motion.",
+      "description": "Appropriate for tracks clearly organized around a 3-beat pulse and flowing circular phrase shape."
+    },
+    {
+      "name": "March",
+      "type": "Genre",
+      "short_description": "Processional style built on regular step-like pulse and clear accent.",
+      "description": "Use for music that evokes parade, military, or ceremonial momentum through strong metric regularity."
+    },
+    {
+      "name": "Ballad",
+      "type": "Genre",
+      "short_description": "Song-focused slow or moderate style emphasizing lyrical melody and emotional delivery.",
+      "description": "Useful for tracks whose primary identity is a broad vocal line, steady harmony, and expressive pacing."
+    },
+    {
+      "name": "Touhou Arrange",
+      "type": "Movement",
+      "short_description": "Fan arrangement practice centered on Touhou Project source material.",
+      "description": "Marks music created within the arrange tradition around Touhou melodies, motifs, and derivative reinterpretation."
+    },
+    {
+      "name": "Game Music Arrangement",
+      "type": "Movement",
+      "short_description": "Arrangement culture built around reinterpretation of game soundtrack material.",
+      "description": "Use for works whose identity is shaped by arranging, reharmonizing, or stylistically recasting existing game music."
+    },
+    {
+      "name": "Doujin Music",
+      "type": "Scene",
+      "short_description": "Independent fan and creator scene around self-published music works.",
+      "description": "Useful for works or styles closely associated with doujin circles, convention culture, and self-published releases."
+    },
+    {
+      "name": "Club-oriented",
+      "type": "Scene",
+      "short_description": "Music framed by DJ, dancefloor, or nightlife playback context.",
+      "description": "Use when a track's arrangement and pacing are strongly aimed at club play, mixing, or dancefloor energy."
+    },
+    {
+      "name": "Live-band Arrange",
+      "type": "Scene",
+      "short_description": "Arrangement style oriented toward live players and stage performance.",
+      "description": "Appropriate for tracks that clearly read as ensemble-performed rather than primarily sequenced in the studio."
+    },
+    {
+      "name": "Vocal",
+      "type": "Descriptor",
+      "short_description": "Track includes a sung vocal performance.",
+      "description": "Use when vocals are a defining audible element rather than a small incidental sample or spoken excerpt."
+    },
+    {
+      "name": "Instrumental",
+      "type": "Descriptor",
+      "short_description": "Track has no lead vocal and is primarily instrumental.",
+      "description": "Use for pieces carried by melody, arrangement, or improvisation without a sung top-line."
+    },
+    {
+      "name": "Piano-led",
+      "type": "Descriptor",
+      "short_description": "Piano is the dominant lead or accompaniment instrument.",
+      "description": "Applies when piano defines the track's texture, harmonic motion, or melodic focus.",
+      "alt_names": [
+        "Piano Driven"
+      ]
+    },
+    {
+      "name": "Guitar-led",
+      "type": "Descriptor",
+      "short_description": "Guitar is the main lead, riff, or timbral anchor.",
+      "description": "Use when guitar defines the track's melodic identity, groove, or surface texture."
+    },
+    {
+      "name": "String-led",
+      "type": "Descriptor",
+      "short_description": "String section or string ensemble is the dominant color.",
+      "description": "Appropriate when violin, viola, cello, or broader string writing shapes the core listening impression."
+    },
+    {
+      "name": "Choir",
+      "type": "Descriptor",
+      "short_description": "Choral texture is a major element of the arrangement.",
+      "description": "Use for tracks with layered group vocals, chant, or ensemble voice used as a principal timbral force."
+    },
+    {
+      "name": "Fast-paced",
+      "type": "Descriptor",
+      "short_description": "Track presents a clearly high-speed rhythmic feel.",
+      "description": "Useful when rapid pulse, dense note activity, or aggressive momentum is central to the track's character."
+    },
+    {
+      "name": "Atmospheric",
+      "type": "Descriptor",
+      "short_description": "Track emphasizes mood, space, and immersive texture.",
+      "description": "Use when the listening impression is defined more by environment and tone than by direct hook or rhythmic force."
+    },
+    {
+      "name": "Melancholic",
+      "type": "Descriptor",
+      "short_description": "Track projects reflective, wistful, or sorrow-tinged affect.",
+      "description": "Appropriate for pieces whose melodic contour, harmony, and pacing strongly suggest sadness or longing."
+    },
+    {
+      "name": "Aggressive",
+      "type": "Descriptor",
+      "short_description": "Track presents forceful attack, intensity, and forward pressure.",
+      "description": "Use when distortion, rhythmic strike, or performance attitude creates a clearly confrontational sonic feel."
+    },
+    {
+      "name": "Cinematic",
+      "type": "Descriptor",
+      "short_description": "Track evokes soundtrack-like scale, pacing, or dramatic framing.",
+      "description": "Useful for music that feels scene-setting, narrative, or visually staged through orchestration and dynamic arc."
+    }
+  ]
+}

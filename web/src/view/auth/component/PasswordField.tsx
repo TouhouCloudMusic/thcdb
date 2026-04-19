@@ -1,4 +1,5 @@
 import type { FieldElementProps } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { JSX } from "solid-js"
 import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
 import { CheckIcon, Cross1Icon } from "solid-radix-icons"
@@ -9,6 +10,7 @@ import {
 	USER_PASSWORD_MIN_LENGTH,
 	USER_PASSWORD_REGEX_STR,
 } from "~/constant/server"
+import { isPasswordStrongEnough } from "~/domain/auth/password_strength"
 import { callHandlerUnion } from "~/utils/dom/event"
 
 import { FieldLayout } from "./FieldLayout"
@@ -77,6 +79,10 @@ export function PasswordField(props: PasswordFieldProps) {
 	const allowedCharsOk = createMemo(() =>
 		PASSWORD_ALLOWED_CHARS_REGEX.test(value()),
 	)
+	const strengthOk = createMemo(() => {
+		if (!active()) return false
+		return isPasswordStrongEnough(value())
+	})
 
 	const RequirementRow = (rowProps: { ok: boolean; children: JSX.Element }) => {
 		const state = () => {
@@ -156,7 +162,7 @@ export function PasswordField(props: PasswordFieldProps) {
 								</span>
 							</RequirementRow>
 							<RequirementRow ok={noWhitespaceOk()}>
-								<span>No spaces or control characters</span>
+								<span>{t`No spaces or control characters`}</span>
 							</RequirementRow>
 							<RequirementRow ok={allowedCharsOk()}>
 								<span>
@@ -165,6 +171,9 @@ export function PasswordField(props: PasswordFieldProps) {
 										{PASSWORD_ALLOWED_SYMBOLS}
 									</code>
 								</span>
+							</RequirementRow>
+							<RequirementRow ok={strengthOk()}>
+								<span>{t`Strong enough`}</span>
 							</RequirementRow>
 						</ul>
 					</div>

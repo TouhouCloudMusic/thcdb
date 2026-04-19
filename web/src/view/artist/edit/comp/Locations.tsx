@@ -1,4 +1,5 @@
 import { setInput } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 
 import { Location } from "~/component/form/Location"
 
@@ -10,14 +11,14 @@ export function ArtistFormLocationFields() {
 	return (
 		<>
 			<Location
-				label="Start Location"
+				label={t`Start Location`}
 				setValue={(v) => {
 					// @ts-expect-error formisch inference still treats optional input as null-only.
 					setInput(formStore, { path: ["data", "start_location"], input: v })
 				}}
 			/>
 			<Location
-				label="Current Location"
+				label={t`Current Location`}
 				setValue={(v) => {
 					// @ts-expect-error formisch inference still treats optional input as null-only.
 					setInput(formStore, { path: ["data", "current_location"], input: v })

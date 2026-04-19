@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { UserProfile } from "@thc/api"
 import { MathExt } from "@thc/toolkit"
 import type { JSX } from "solid-js"
@@ -112,7 +113,7 @@ export function EditProfileView(props: EditProfileViewProps) {
 				busy={props.store.avatar.isUploading}
 				error={props.store.avatar.error}
 				onSave={props.store.avatar.onUpload}
-				title="Update avatar"
+				title={t`Update avatar`}
 			>
 				<ImageCropDialog.Canvas class="h-96" />
 			</ImageCropDialog.Root>
@@ -125,7 +126,7 @@ export function EditProfileView(props: EditProfileViewProps) {
 				busy={props.store.banner.isUploading}
 				error={props.store.banner.error}
 				onSave={props.store.banner.onUpload}
-				title="Update banner"
+				title={t`Update banner`}
 			>
 				<ImageCropDialog.Canvas class="h-80" />
 			</ImageCropDialog.Root>
@@ -190,8 +191,8 @@ function AppearanceCard(props: {
 					onClick={handleEditBanner}
 				>
 					<Switch>
-						<Match when={props.banner.isUploading}>Uploading…</Match>
-						<Match when={!props.banner.isUploading}>Update banner</Match>
+						<Match when={props.banner.isUploading}>{t`Uploading…`}</Match>
+						<Match when={!props.banner.isUploading}>{t`Update banner`}</Match>
 					</Switch>
 				</Button>
 			</div>
@@ -207,7 +208,7 @@ function AppearanceCard(props: {
 						{(src) => (
 							<img
 								src={src()}
-								alt="Profile banner"
+								alt={t`Profile banner`}
 								class="absolute inset-0 size-full object-cover"
 							/>
 						)}
@@ -232,8 +233,10 @@ function AppearanceCard(props: {
 							onClick={handleEditAvatar}
 						>
 							<Switch>
-								<Match when={props.avatar.isUploading}>Uploading…</Match>
-								<Match when={!props.avatar.isUploading}>Update avatar</Match>
+								<Match when={props.avatar.isUploading}>{t`Uploading…`}</Match>
+								<Match when={!props.avatar.isUploading}>
+									{t`Update avatar`}
+								</Match>
 							</Switch>
 						</Button>
 					</div>
@@ -283,7 +286,7 @@ function BioEditorCard(props: { bio: EditProfileBioStore }) {
 					<InputField.Textarea
 						value={props.bio.value}
 						onInput={handleInput}
-						placeholder="Write something about you."
+						placeholder={t`Write something about you.`}
 						class="min-h-48"
 					/>
 				</InputField.Root>
@@ -321,8 +324,8 @@ function BioEditorCard(props: { bio: EditProfileBioStore }) {
 						}}
 					>
 						<Switch>
-							<Match when={props.bio.isSaving}>Saving…</Match>
-							<Match when={!props.bio.isSaving}>Save bio</Match>
+							<Match when={props.bio.isSaving}>{t`Saving…`}</Match>
+							<Match when={!props.bio.isSaving}>{t`Save bio`}</Match>
 						</Switch>
 					</Button>
 				</div>

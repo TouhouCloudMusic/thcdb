@@ -9,6 +9,7 @@ target/
 # Development files
 .vscode/
 .idea/
+log
 *.log
 *.md
 docs/

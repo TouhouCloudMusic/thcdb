@@ -7,6 +7,7 @@ import {
 	remove,
 	setInput,
 } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { Language } from "@thc/api"
 import { createMemo, For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
@@ -57,7 +58,7 @@ export function SongLanguagesField(props: {
 	return (
 		<div class={twMerge("flex flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Languages</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Languages`}</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"

@@ -1,4 +1,5 @@
 /* @refresh skip */
+import { t } from "@lingui/core/macro"
 import type {
 	ArtistCredit,
 	CreditRoleRef,
@@ -29,11 +30,12 @@ import { ArtistContext } from ".."
 // TODO: Add links after other pages are completed
 
 const TABS = ["Discography", "Appearance", "Credit"] as const
+
 export function ArtistReleaseInfo() {
 	const context = assertContext(ArtistContext)
 
 	return (
-		<Suspense fallback={<div>Loading...</div>}>
+		<Suspense fallback={<div>{t`Loading...`}</div>}>
 			<Show
 				when={
 					!(
@@ -42,7 +44,7 @@ export function ArtistReleaseInfo() {
 						|| context.credits.isLoading
 					)
 				}
-				fallback={<div>Loading...</div>}
+				fallback={<div>{t`Loading...`}</div>}
 			>
 				<Inner />
 			</Show>

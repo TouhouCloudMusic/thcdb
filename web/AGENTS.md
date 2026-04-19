@@ -37,7 +37,7 @@ JavaScript是动态语言，build的检查很宽松，不要使用build来进行
   ```
 
 - 对于可空值，使用 `??` 而不是 `||`
-- 禁止使用嵌套层级超过2的三元表达式
+- 三元表达式的嵌套层级不要超过2
 - 代码需要能够流畅的从上往下阅读，因此：
   - 定义必须先于使用
   - 避免上下跳转的控制流或内容
@@ -60,6 +60,7 @@ JavaScript是动态语言，build的检查很宽松，不要使用build来进行
 - 不要解构 `props`，这会破坏 Solid 的响应式系统
 - 使用 Solid 的 `<Switch>`/`<Match>` 进行多分支条件渲染；简单显隐可用 `<Show>`
 - 禁止在 `createEffect` 中调用任意 `setSignal`（例如 `setXxx`）。如需根据其他信号变化“重置/派生”值，优先使用派生状态（`createMemo`）表达，避免通过 effect 进行命令式重置
+- 对 `createStore` 的更新，统一使用 `produce` 而不是路径方法，如`setStore("path", value)`
 - 不要使用 `classList`
 
 ## Tailwind CSS

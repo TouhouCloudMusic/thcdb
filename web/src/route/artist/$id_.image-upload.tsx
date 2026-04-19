@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute, notFound, useNavigate } from "@tanstack/solid-router"
 import { ArtistMutation, ArtistQueryOption } from "@thc/query"
@@ -70,7 +71,7 @@ function RouteComponent() {
 						entityLabel="Artist"
 						entityId={artistId.toString()}
 						entityName={artist().name}
-						imageLabel="profile image"
+						imageLabel={t`profile image`}
 						imageUrl={artist().profile_image_url}
 						dimensionRange={{
 							width: {

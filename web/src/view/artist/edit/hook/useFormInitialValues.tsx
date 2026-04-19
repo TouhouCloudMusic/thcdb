@@ -19,7 +19,7 @@ export function useArtistFormInitialValues(props: Props): NewArtistCorrection {
 				description: "",
 				data: {
 					name: "",
-					artist_type: "Unknown" as const,
+					artist_type: "Unknown",
 					localized_names: [],
 					aliases: [],
 					text_aliases: [],

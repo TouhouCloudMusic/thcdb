@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { TanStackDevtools } from "@tanstack/solid-devtools"
 import { SolidQueryDevtoolsPanel } from "@tanstack/solid-query-devtools"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/solid-router-devtools"
@@ -11,12 +12,12 @@ export const Devtools: Component<{
 		<TanStackDevtools
 			plugins={[
 				{
-					name: "TanStack Router",
+					name: t`TanStack Router`,
 					render: <TanStackRouterDevtoolsPanel />,
 					defaultOpen: props["open-router-panel"] ?? false,
 				},
 				{
-					name: "TanStack Query",
+					name: t`TanStack Query`,
 					render: <SolidQueryDevtoolsPanel />,
 					defaultOpen: props["open-query-panel"] ?? false,
 				},

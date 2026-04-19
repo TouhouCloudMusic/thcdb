@@ -1,4 +1,5 @@
 import { Field } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { ArtistMutation } from "@thc/query"
 import { For } from "solid-js"
 
@@ -22,7 +23,7 @@ export function ArtistFormActions(props: ArtistFormFormActionsProps) {
 			>
 				{(field) => (
 					<InputField.Root>
-						<InputField.Label>Description</InputField.Label>
+						<InputField.Label>{t`Description`}</InputField.Label>
 						<InputField.Textarea
 							{...field.props}
 							id={field.path.join(".")}

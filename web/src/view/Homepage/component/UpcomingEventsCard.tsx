@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { EventApi } from "@thc/api"
 import type { Event } from "@thc/api"
@@ -67,7 +68,7 @@ export function UpcomingEventsCard() {
 	return (
 		<Card class="p-5 shadow-none">
 			<ExploreSection
-				title="Upcoming Events"
+				title={t`Upcoming Events`}
 				to="/event/explore"
 			>
 				<Suspense fallback={<UpcomingEventsListSkeleton />}>

@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import type { ComponentProps } from "solid-js"
 import { Suspense } from "solid-js"
 
@@ -17,9 +18,11 @@ type EntityContributorsProps = {
 export function EntityContributors(props: EntityContributorsProps) {
 	return (
 		<div class={props.class ?? "flex flex-wrap text-sm"}>
-			<div class="font-medium text-tertiary whitespace-pre">Contributors: </div>
+			<div class="font-medium text-tertiary whitespace-pre">
+				{t`Contributors:`}{" "}
+			</div>
 			<p class="text-primary wrap-break-word">
-				<Suspense fallback={<>Loading contributors...</>}>
+				<Suspense fallback={<>{t`Loading contributors...`}</>}>
 					<Intersperse
 						of={props.contributors}
 						with={<span class="whitespace-pre">, </span>}

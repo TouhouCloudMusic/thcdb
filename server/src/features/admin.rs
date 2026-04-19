@@ -1,3 +1,5 @@
+use std::collections::BTreeSet;
+
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
@@ -7,7 +9,10 @@ use entity::{user, user_role, user_role_change_audit};
 use itertools::Itertools;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::sea_query::{ExprTrait, Func};
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
+use sea_orm::{
+    ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder,
+    QuerySelect,
+};
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -15,11 +20,13 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
-use crate::domain::model::{AdminUserRead, AdminWrite, UserRole, UserRoleEnum};
-use crate::domain::shared::{CursorResponse, DEFAULT_LIMIT, MAX_LIMIT};
+use crate::domain::model::{
+    AdminUserRead, AdminWrite, EditableUserRole, UserRole, UserRoleEnum,
+};
+use crate::domain::shared::PageResponse;
 use crate::infra::error::Error as InfraError;
-use crate::shared::http::api_response;
 use crate::shared::http::api_response::Data;
+use crate::shared::http::{PageQuery, api_response};
 
 const TAG: &str = "Admin";
 
@@ -40,14 +47,12 @@ pub struct UserSummary {
 }
 
 #[derive(Deserialize, IntoParams)]
-pub struct AdminUsersQuery {
-    pub limit: Option<u32>,
-    pub cursor: Option<i32>,
+pub struct AdminUsersFilter {
     pub keyword: Option<String>,
 }
 
 data! {
-    DataPaginatedUserSummary, CursorResponse<UserSummary>
+    DataPageUserSummary, PageResponse<UserSummary>
     DataUserRoles, Vec<UserRole>
 }
 
@@ -56,32 +61,27 @@ data! {
     tag = TAG,
     path = "/admin/users",
     params(
-        AdminUsersQuery
+        AdminUsersFilter,
+        PageQuery
     ),
     responses(
-        (status = 200, body = DataPaginatedUserSummary),
+        (status = 200, body = DataPageUserSummary),
     ),
 )]
 async fn admin_users(
     CurrentUser(user): CurrentUser,
-    Query(query): Query<AdminUsersQuery>,
+    Query(filter): Query<AdminUsersFilter>,
+    Query(pagination): Query<PageQuery>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<CursorResponse<UserSummary>>, axum::response::Response> {
+) -> Result<Data<PageResponse<UserSummary>>, axum::response::Response> {
     authz::ensure_permission::<AdminUserRead>(&repo.conn, user.id).await?;
 
-    let limit = query.limit.unwrap_or(DEFAULT_LIMIT).clamp(1, MAX_LIMIT);
-    let cursor = query.cursor.unwrap_or(0).max(0);
-    let keyword = query
+    let keyword = filter
         .keyword
         .as_deref()
-        .map(str::trim)
         .filter(|s| !s.is_empty())
         .map(str::to_lowercase);
-
-    let mut select = user::Entity::find()
-        .order_by_asc(user::Column::Id)
-        .offset(u64::try_from(cursor).unwrap_or(0))
-        .limit(u64::from(limit.saturating_add(1)));
+    let mut select = user::Entity::find();
 
     if let Some(keyword) = keyword {
         let pattern = format!("%{keyword}%");
@@ -89,19 +89,32 @@ async fn admin_users(
             .filter(Func::lower(user::Column::Name.into_expr()).like(pattern));
     }
 
-    let mut models = select
+    let page = pagination.page();
+    let page_size = pagination.limit();
+    let total_items = select
+        .clone()
+        .count(&repo.conn)
+        .await
+        .map_err(InfraError::from)
+        .map_err(IntoResponse::into_response)?;
+    let total_pages = if total_items == 0 {
+        0
+    } else {
+        let pages = total_items.div_ceil(u64::from(page_size));
+        u32::try_from(pages).unwrap_or(u32::MAX)
+    };
+    let offset =
+        u64::from(page.saturating_sub(1)).saturating_mul(u64::from(page_size));
+
+    let models = select
+        .order_by_asc(user::Column::Id)
+        .offset(offset)
+        .limit(u64::from(page_size))
         .find_with_related(user_role::Entity)
         .all(&repo.conn)
         .await
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
-
-    let next_cursor = if models.len() > limit as usize {
-        models.pop();
-        Some(cursor.saturating_add(i32::try_from(limit).unwrap_or(i32::MAX)))
-    } else {
-        None
-    };
 
     let items = models
         .into_iter()
@@ -121,12 +134,18 @@ async fn admin_users(
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
 
-    Ok(Data::new(CursorResponse { items, next_cursor }))
+    Ok(Data::new(PageResponse {
+        items,
+        page,
+        page_size,
+        total_items,
+        total_pages,
+    }))
 }
 
 #[derive(Deserialize, ToSchema)]
 pub struct SetUserRolesRequest {
-    pub roles: Vec<String>,
+    pub roles: BTreeSet<EditableUserRole>,
 }
 
 #[utoipa::path(
@@ -145,43 +164,6 @@ async fn set_user_roles(
     Json(req): Json<SetUserRolesRequest>,
 ) -> Result<Data<Vec<UserRole>>, axum::response::Response> {
     authz::ensure_permission::<AdminWrite>(&repo.conn, actor.id).await?;
-
-    if req.roles.is_empty() {
-        return Err(api_response::Error::from_err_and_code(
-            "roles must not be empty",
-            StatusCode::BAD_REQUEST,
-        )
-        .into_response());
-    }
-
-    let mut new_roles = Vec::<UserRoleEnum>::new();
-    for raw in req.roles {
-        let raw = raw.trim();
-        if raw.is_empty() {
-            return Err(api_response::Error::from_err_and_code(
-                "role must not be empty",
-                StatusCode::BAD_REQUEST,
-            )
-            .into_response());
-        }
-
-        let role = match raw.to_ascii_lowercase().as_str() {
-            "admin" => UserRoleEnum::Admin,
-            "moderator" => UserRoleEnum::Moderator,
-            "user" => UserRoleEnum::User,
-            _ => {
-                return Err(api_response::Error::from_err_and_code(
-                    format!("Unknown role: {raw}"),
-                    StatusCode::BAD_REQUEST,
-                )
-                .into_response());
-            }
-        };
-
-        if !new_roles.contains(&role) {
-            new_roles.push(role);
-        }
-    }
 
     let tx_repo = repo
         .begin_tx()
@@ -217,28 +199,47 @@ async fn set_user_roles(
 
     user_role::Entity::delete_many()
         .filter(user_role::Column::UserId.eq(id))
+        .filter(
+            user_role::Column::RoleId.is_in(EditableUserRole::all_role_ids()),
+        )
         .exec(tx_repo.conn())
         .await
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
 
-    let new_role_models = new_roles
+    let new_role_models = req
+        .roles
         .iter()
         .copied()
         .map(|role| user_role::ActiveModel {
             user_id: Set(id),
-            role_id: Set(role.into()),
+            role_id: Set(UserRoleEnum::from(role).into()),
         })
         .collect_vec();
 
-    user_role::Entity::insert_many(new_role_models)
-        .exec(tx_repo.conn())
+    if !new_role_models.is_empty() {
+        user_role::Entity::insert_many(new_role_models)
+            .exec(tx_repo.conn())
+            .await
+            .map_err(InfraError::from)
+            .map_err(IntoResponse::into_response)?;
+    }
+
+    let new_roles = user_role::Entity::find()
+        .filter(user_role::Column::UserId.eq(id))
+        .all(tx_repo.conn())
         .await
+        .map_err(InfraError::from)
+        .map_err(IntoResponse::into_response)?
+        .into_iter()
+        .map(UserRole::try_from)
+        .collect::<Result<Vec<_>, _>>()
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
 
     let old_role_names = old_roles.iter().map(|r| r.name.clone()).collect_vec();
-    let new_role_names = new_roles.iter().map(ToString::to_string).collect();
+    let new_role_names =
+        new_roles.iter().map(|role| role.name.clone()).collect();
 
     user_role_change_audit::Entity::insert(
         user_role_change_audit::ActiveModel {
@@ -261,7 +262,5 @@ async fn set_user_roles(
         .map_err(InfraError::from)
         .map_err(IntoResponse::into_response)?;
 
-    Ok(Data::new(
-        new_roles.into_iter().map(UserRole::from).collect(),
-    ))
+    Ok(Data::new(new_roles))
 }

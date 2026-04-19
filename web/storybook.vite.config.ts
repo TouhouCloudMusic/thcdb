@@ -3,7 +3,7 @@ import { defineConfig } from "vite"
 import { createAppPlugins } from "./vite.shared"
 
 export default defineConfig({
-	plugins: createAppPlugins({ withWuchale: false }),
+	plugins: createAppPlugins(),
 	resolve: {
 		tsconfigPaths: true,
 	},

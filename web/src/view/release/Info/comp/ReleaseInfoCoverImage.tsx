@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro"
+
 import { Image } from "~/component/image"
 import { imgUrl } from "~/utils/adapter/static_file"
 import { assertContext } from "~/utils/solid/assertContext"
@@ -15,7 +17,7 @@ export function ReleaseInfoCoverImage() {
 					{(state) => (
 						<div class="flex size-full items-center justify-center bg-slate-100">
 							{state !== Image.State.Loading && (
-								<span class="text-sm text-slate-500">No cover art</span>
+								<span class="text-sm text-slate-500">{t`No cover art`}</span>
 							)}
 						</div>
 					)}

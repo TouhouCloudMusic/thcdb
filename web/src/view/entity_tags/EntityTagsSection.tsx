@@ -1,0 +1,361 @@
+import { t } from "@lingui/core/macro"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
+import type { Tag } from "@thc/api"
+import type { JSX } from "solid-js"
+import { For, Show, createMemo, createSignal } from "solid-js"
+import { Cross1Icon, Pencil1Icon, PlusIcon } from "solid-radix-icons"
+import { twMerge } from "tailwind-merge"
+
+import { Link } from "~/component/atomic/Link"
+import { Button } from "~/component/atomic/button"
+import { Dialog } from "~/component/dialog"
+import {
+	deleteVoteMutation,
+	getTagsOptions,
+	getTagsQueryKey,
+	voteTagMutation,
+} from "~/hey-api/@tanstack/solid-query.gen"
+import { useCurrentUser } from "~/state/user"
+
+import { EntityTagAddDialog } from "./EntityTagAddDialog"
+import {
+	ENTITY_TAG_VOTE_OPTIONS,
+	createEntityTagFilter,
+	scoreFromUserVote,
+	sortEntityTags,
+} from "./model"
+import type {
+	EntityTagAggregate,
+	EntityTagVoteValue,
+	EntityTaggableType,
+} from "./model"
+
+type EntityTagsSectionContainerProps = {
+	class?: string
+	entityType: EntityTaggableType
+	entityId: number
+}
+
+const TAG_QUERY_LIMIT = 100
+
+type ManageTagsDialogProps = {
+	tags: EntityTagAggregate[]
+	isSignedIn: boolean
+	dataFilter?: (tag: Tag) => boolean
+	pendingKey?: string
+	onVote: (tagId: number, score: EntityTagVoteValue) => Promise<void>
+	onRemoveVote: (tagId: number) => Promise<void>
+	trigger: JSX.Element
+}
+
+type EntityTagRowProps = {
+	tag: EntityTagAggregate
+	isSignedIn: boolean
+	pendingKey?: string
+	onVote: (tagId: number, score: EntityTagVoteValue) => Promise<void>
+	onRemoveVote: (tagId: number) => Promise<void>
+}
+
+export function EntityTagsSectionContainer(
+	props: EntityTagsSectionContainerProps,
+) {
+	const userCtx = useCurrentUser()
+	const queryClient = useQueryClient()
+	const [pendingKey, setPendingKey] = createSignal<string>()
+	const tagsRequest = createMemo(() => ({
+		path: {
+			entity_type: props.entityType,
+			id: props.entityId,
+		},
+		query: {
+			limit: TAG_QUERY_LIMIT,
+		},
+	}))
+	const tagsQuery = useQuery(() => getTagsOptions(tagsRequest()))
+	const voteMutation = useMutation(() => voteTagMutation())
+	const removeMutation = useMutation(() => deleteVoteMutation())
+	const tags = createMemo(() =>
+		sortEntityTags(tagsQuery.data?.data?.items ?? []),
+	)
+	const dataFilter = createMemo(() => createEntityTagFilter(tags()))
+
+	const invalidateTags = async () => {
+		await queryClient.invalidateQueries({
+			queryKey: getTagsQueryKey(tagsRequest()),
+		})
+	}
+
+	const vote = async (tagId: number, score: EntityTagVoteValue) => {
+		setPendingKey(`vote:${tagId}`)
+		try {
+			await voteMutation.mutateAsync({
+				path: tagsRequest().path,
+				body: {
+					tag_id: tagId,
+					score,
+				},
+			})
+			await invalidateTags()
+		} finally {
+			setPendingKey(undefined)
+		}
+	}
+
+	const removeVote = async (tagId: number) => {
+		setPendingKey(`remove:${tagId}`)
+		try {
+			await removeMutation.mutateAsync({
+				path: tagsRequest().path,
+				body: {
+					tag_id: tagId,
+				},
+			})
+			await invalidateTags()
+		} finally {
+			setPendingKey(undefined)
+		}
+	}
+
+	return (
+		<EntityTagsSection
+			class={props.class}
+			tags={tags()}
+			isSignedIn={userCtx.is_signed_in}
+			isLoading={tagsQuery.isLoading}
+			dataFilter={dataFilter()}
+			pendingKey={pendingKey()}
+			onVote={vote}
+			onRemoveVote={removeVote}
+		/>
+	)
+}
+
+export type EntityTagsSectionProps = {
+	class?: string
+	tags: EntityTagAggregate[]
+	isSignedIn: boolean
+	isLoading: boolean
+	dataFilter?: (tag: Tag) => boolean
+	pendingKey?: string
+	onVote: (tagId: number, score: EntityTagVoteValue) => Promise<void>
+	onRemoveVote: (tagId: number) => Promise<void>
+}
+
+export function EntityTagsSection(props: EntityTagsSectionProps) {
+	return (
+		<div class={props.class ?? "flex items-start gap-4 text-sm"}>
+			<div class="shrink-0 text-tertiary">{t`Tags`}</div>
+			<Show
+				when={!props.isLoading}
+				fallback={<div class="text-tertiary">{t`Loading tags...`}</div>}
+			>
+				<Show
+					when={props.tags.length}
+					fallback={
+						<div class="flex items-center gap-3">
+							<div class="text-xs text-tertiary">{t`No tags yet`}</div>
+							<Show when={props.isSignedIn}>
+								<ManageTagsDialog
+									tags={props.tags}
+									isSignedIn={props.isSignedIn}
+									dataFilter={props.dataFilter}
+									pendingKey={props.pendingKey}
+									onVote={props.onVote}
+									onRemoveVote={props.onRemoveVote}
+									trigger={
+										<Dialog.Trigger
+											as={Button}
+											variant="Tertiary"
+											class="flex h-8 w-8 items-center justify-center p-0"
+										>
+											<PlusIcon class="size-4" />
+										</Dialog.Trigger>
+									}
+								/>
+							</Show>
+						</div>
+					}
+				>
+					<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+						<For each={props.tags}>
+							{(tag) => (
+								<Link
+									to="/tag/$id"
+									params={{ id: tag.id.toString() }}
+									class="text-primary underline-offset-4 transition-colors hover:underline"
+								>
+									{tag.name}
+								</Link>
+							)}
+						</For>
+						<Show when={props.isSignedIn}>
+							<ManageTagsDialog
+								tags={props.tags}
+								isSignedIn={props.isSignedIn}
+								dataFilter={props.dataFilter}
+								pendingKey={props.pendingKey}
+								onVote={props.onVote}
+								onRemoveVote={props.onRemoveVote}
+								trigger={
+									<Dialog.Trigger
+										as={Button}
+										variant="Tertiary"
+										class="flex h-8 w-8 items-center justify-center p-0"
+									>
+										<Pencil1Icon class="size-4" />
+									</Dialog.Trigger>
+								}
+							/>
+						</Show>
+					</div>
+				</Show>
+			</Show>
+		</div>
+	)
+}
+
+function ManageTagsDialog(props: ManageTagsDialogProps) {
+	return (
+		<Dialog.Root>
+			{props.trigger}
+			<Dialog.Portal>
+				<Dialog.Overlay data-blur />
+				<Dialog.Content class="flex min-h-[60vh] w-full max-w-4xl flex-col rounded-md bg-white p-6 shadow-xl">
+					<div class="mb-2 flex shrink-0 items-center gap-4">
+						<Dialog.Title class="text-xl font-light tracking-tight">{t`Manage Tags`}</Dialog.Title>
+						<div class="rounded bg-slate-100 px-2 py-0.5 text-sm font-medium text-tertiary">
+							{props.tags.length}
+						</div>
+						<div class="flex-1"></div>
+						<Show when={props.isSignedIn}>
+							<EntityTagAddDialog
+								dataFilter={props.dataFilter}
+								pendingKey={props.pendingKey}
+								onVote={props.onVote}
+								trigger={
+									<Dialog.Trigger
+										as={Button}
+										variant="SecondaryV2"
+										size="Sm"
+									>
+										<PlusIcon class="size-4" />
+										{t`Add tag`}
+									</Dialog.Trigger>
+								}
+							/>
+						</Show>
+						<Dialog.CloseButton
+							variant="Tertiary"
+							class="flex h-8 w-8 items-center justify-center p-0 text-slate-500"
+						>
+							<Cross1Icon class="size-4" />
+						</Dialog.CloseButton>
+					</div>
+					<ul class="min-h-0 flex-1 overflow-y-auto divide-y divide-slate-100">
+						<For each={props.tags}>
+							{(tag) => (
+								<EntityTagRow
+									tag={tag}
+									isSignedIn={props.isSignedIn}
+									pendingKey={props.pendingKey}
+									onVote={props.onVote}
+									onRemoveVote={props.onRemoveVote}
+								/>
+							)}
+						</For>
+					</ul>
+				</Dialog.Content>
+			</Dialog.Portal>
+		</Dialog.Root>
+	)
+}
+
+function EntityTagRow(props: EntityTagRowProps) {
+	const votes = () => props.tag.votes ?? []
+	const votePending = (value: EntityTagVoteValue) =>
+		props.pendingKey === `vote:${props.tag.id}`
+		&& scoreFromUserVote(props.tag.user_vote) !== value
+	const isPending = () =>
+		props.pendingKey === `vote:${props.tag.id}`
+		|| props.pendingKey === `remove:${props.tag.id}`
+
+	return (
+		<li class="flex flex-wrap items-center justify-between gap-4 py-3">
+			<div class="min-w-0 flex-1 space-y-1">
+				<Link
+					to="/tag/$id"
+					params={{ id: props.tag.id.toString() }}
+					class="text-lg font-light text-primary"
+				>
+					{props.tag.name}
+				</Link>
+				<Show when={props.tag.short_description}>
+					<div class="line-clamp-2 text-sm text-tertiary">
+						{props.tag.short_description}
+					</div>
+				</Show>
+				<div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-tertiary">
+					<div>{formatTagSummary(props.tag.count, props.tag.relevance)}</div>
+				</div>
+				<Show when={votes().length > 0}>
+					<div class="mt-2 flex flex-col gap-1 text-xs text-tertiary">
+						<For each={votes()}>
+							{(vote) => (
+								<div>
+									<span class="font-medium">{vote.user_name}</span> voted{" "}
+									<span class="font-medium">{vote.score}</span>
+								</div>
+							)}
+						</For>
+					</div>
+				</Show>
+			</div>
+			<Show when={props.isSignedIn}>
+				<div class="flex shrink-0 flex-wrap items-center gap-2">
+					<For each={ENTITY_TAG_VOTE_OPTIONS}>
+						{(option) => (
+							<Button
+								size="Sm"
+								variant={
+									props.tag.user_vote === option.userVote
+										? "PrimaryV2"
+										: "SecondaryV2"
+								}
+								disabled={isPending()}
+								onClick={() => void props.onVote(props.tag.id, option.value)}
+								class={twMerge(
+									"min-w-16",
+									votePending(option.value) && "opacity-70",
+								)}
+							>
+								{option.label}
+							</Button>
+						)}
+					</For>
+					<Show
+						when={
+							props.tag.user_vote !== null && props.tag.user_vote !== undefined
+						}
+					>
+						<Button
+							size="Sm"
+							variant="Tertiary"
+							disabled={isPending()}
+							onClick={() => void props.onRemoveVote(props.tag.id)}
+							class="flex h-8 w-8 items-center justify-center p-0 text-slate-500"
+							title={t`Remove`}
+						>
+							<Cross1Icon class="size-4" />
+						</Button>
+					</Show>
+				</div>
+			</Show>
+		</li>
+	)
+}
+
+function formatTagSummary(count: number, relevance: number) {
+	return t`${{ count }} votes · relevance ${{
+		relevance: relevance.toFixed(2),
+	}}`
+}

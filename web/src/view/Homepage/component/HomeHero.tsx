@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { HomeQueryOption } from "@thc/query"
 import { ErrorBoundary, For, Suspense } from "solid-js"
@@ -22,15 +23,17 @@ function MetricCard(props: MetricCardProps) {
 	)
 }
 
-const FALLBACK_METRICS = HOME_METRICS.map((metric) => ({
-	label: metric.label,
-	hint: metric.hint,
-	value: "—",
-}))
+function getFallbackMetrics() {
+	return HOME_METRICS.map((metric) => ({
+		label: metric.label,
+		hint: metric.hint,
+		value: "—",
+	}))
+}
 
 function HomeHeroMetricsFallback() {
 	return (
-		<For each={FALLBACK_METRICS}>
+		<For each={getFallbackMetrics()}>
 			{(metric) => <MetricCard metric={metric} />}
 		</For>
 	)
@@ -77,18 +80,17 @@ export function HomeHero() {
 								TOUHOU CLOUD DB
 							</div>
 							<div class="text-xs text-tertiary">
-								Open doujin music database
+								{t`Open doujin music database`}
 							</div>
 						</div>
 					</div>
 
 					<div class="flex flex-col gap-3">
 						<h1 class="text-5xl font-light tracking-tighter text-primary ">
-							Explore doujin music
+							{t`Explore doujin music`}
 						</h1>
 						<h2 class="text-secondary text-xl">
-							Contribute what’s missing and help keep the database accurate for
-							everyone.
+							{t`Contribute what’s missing and help keep the database accurate for everyone.`}
 						</h2>
 					</div>
 				</div>
@@ -97,11 +99,11 @@ export function HomeHero() {
 					<HomeHeroMetrics />
 					<Card class="flex flex-col gap-2 border border-slate-300 bg-white/70 p-4 shadow-xs backdrop-blur-sm">
 						<div class="text-xs font-medium tracking-[0.18em] text-tertiary">
-							STATUS
+							{t`STATUS`}
 						</div>
 						<div class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs text-secondary ring-1 ring-slate-200 ring-inset">
 							<span class="inline-block size-1.5 rounded-full bg-reimu-600"></span>
-							Preview
+							{t`Preview`}
 						</div>
 					</Card>
 				</div>
@@ -127,35 +129,34 @@ export function HomeHeroSkeleton() {
 								TOUHOU CLOUD DB
 							</div>
 							<div class="text-xs text-tertiary">
-								Open doujin music database
+								{t`Open doujin music database`}
 							</div>
 						</div>
 					</div>
 
 					<div class="flex flex-col gap-3">
 						<h1 class="text-5xl font-light tracking-tighter text-primary ">
-							Explore doujin music
+							{t`Explore doujin music`}
 						</h1>
 						<h2 class="text-secondary text-xl">
-							Contribute what’s missing and help keep the database accurate for
-							everyone.
+							{t`Contribute what’s missing and help keep the database accurate for everyone.`}
 						</h2>
 					</div>
 				</div>
 
 				<div class="grid content-start gap-3 sm:grid-cols-2 lg:grid-cols-1">
-					<For each={FALLBACK_METRICS}>
+					<For each={getFallbackMetrics()}>
 						{(metric) => <MetricCard metric={metric} />}
 					</For>
 					<Card class="flex flex-col gap-2 border border-slate-300 bg-white/70 p-4 shadow-xs backdrop-blur-sm">
 						<div class="text-xs font-medium tracking-[0.18em] text-tertiary">
-							STATUS
+							{t`STATUS`}
 						</div>
 						<div class="flex items-center justify-between gap-4">
-							<div class="text-sm text-secondary">API-powered UI</div>
+							<div class="text-sm text-secondary">{t`API-powered UI`}</div>
 							<div class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs text-secondary ring-1 ring-slate-200 ring-inset">
 								<span class="inline-block size-1.5 rounded-full bg-reimu-600"></span>
-								Alpha
+								{t`Alpha`}
 							</div>
 						</div>
 					</Card>

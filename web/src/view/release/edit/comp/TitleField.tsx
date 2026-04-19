@@ -1,5 +1,6 @@
 // 标题字段
 import { Field } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { twMerge } from "tailwind-merge"
 
 import { FormComp } from "~/component/atomic/form"
@@ -15,11 +16,11 @@ export function TitleField(props: { of: ReleaseFormStore; class?: string }) {
 		>
 			{(field) => (
 				<InputField.Root class={twMerge("flex flex-col", props.class)}>
-					<FormComp.Label>Title</FormComp.Label>
+					<FormComp.Label>{t`Title`}</FormComp.Label>
 					<InputField.Input
 						{...field.props}
 						class="mr-2"
-						placeholder="Title"
+						placeholder={t`Title`}
 						value={field.input ?? undefined}
 					/>
 					<InputField.Error>

@@ -6,6 +6,7 @@ import {
 	remove,
 	setInput,
 } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { Language, LocalizedName } from "@thc/api"
 import { For, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -66,7 +67,7 @@ export function LabelLocalizedNamesField(props: Props) {
 	return (
 		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Localized Names</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Localized Names`}</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"
@@ -114,7 +115,7 @@ function LocalizedNameItem(props: LocalizedNameItemProps) {
 					<InputField.Root>
 						<InputField.Input
 							{...field.props}
-							placeholder="Name"
+							placeholder={t`Name`}
 							value={field.input ?? ""}
 						/>
 					</InputField.Root>

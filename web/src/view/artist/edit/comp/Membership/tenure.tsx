@@ -1,5 +1,6 @@
 /* @refresh reload */
 import { Field, FieldArray, getInput, insert, remove } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import { ObjExt } from "@thc/toolkit/data"
 import type { JSX } from "solid-js"
 import { For } from "solid-js"
@@ -33,7 +34,7 @@ export function TenureFieldArray(props: { index: number }): JSX.Element {
 	return (
 		<div class="row-start-3 space-y-2">
 			<div class="flex items-center justify-between">
-				<span class="font-light">Tenures</span>
+				<span class="font-light">{t`Tenures`}</span>
 				<Button
 					variant="Tertiary"
 					size="Sm"
@@ -106,7 +107,7 @@ function TenureEntry(props: {
 									{...field.props}
 									type="number"
 									class="no-spinner"
-									placeholder={idx == 0 ? "Join year" : "Leave year"}
+									placeholder={idx == 0 ? t`Join year` : t`Leave year`}
 									value={field.input ?? undefined}
 								/>
 								<InputField.Error>{field.errors?.[0]}</InputField.Error>
@@ -122,8 +123,8 @@ function TenureEntry(props: {
 				type="button"
 				onClick={props.onRemove}
 				class="p-2"
-				aria-label="Remove tenure entry"
-				title="Remove tenure entry"
+				aria-label={t`Remove tenure entry`}
+				title={t`Remove tenure entry`}
 			>
 				<Cross1Icon />
 			</Button>
@@ -160,9 +161,9 @@ function computeTenureError(
 
 		if (typeof leaveYear === "number" && typeof joinYear === "number") {
 			if (leaveYear < joinYear) {
-				res.push("Leave year cannot be earlier than join year")
+				res.push(t`Leave year cannot be earlier than join year`)
 			} else if (leaveYear === joinYear) {
-				res.push("Leave year cannot be the same as join year")
+				res.push(t`Leave year cannot be the same as join year`)
 			}
 		}
 
@@ -174,9 +175,17 @@ function computeTenureError(
 
 			if (typeof prevLeave === "number" && typeof joinYear === "number") {
 				if (joinYear < prevLeave) {
-					res.push("Join year cannot be earlier than previous leave year")
+					res.push(
+						t({
+							message: "Join year cannot be earlier than previous leave year",
+						}),
+					)
 				} else if (joinYear === prevLeave) {
-					res.push("Join year cannot be the same as previous leave year")
+					res.push(
+						t({
+							message: "Join year cannot be the same as previous leave year",
+						}),
+					)
 				}
 			}
 		}

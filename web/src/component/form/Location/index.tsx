@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { For } from "solid-js"
 
 import { FormComp } from "~/component/atomic/form"
@@ -16,13 +17,13 @@ export function Location(props: LocationProps) {
 				<For
 					each={[
 						{
-							name: "Country / Region",
+							name: t`Country / Region`,
 						},
 						{
-							name: "Province",
+							name: t`Province`,
 						},
 						{
-							name: "City",
+							name: t`City`,
 						},
 					]}
 				>

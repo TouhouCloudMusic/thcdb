@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import type {
 	Correction,
@@ -333,7 +334,7 @@ function RouteComponent() {
 			<div class="fixed right-4 bottom-4 z-50 max-w-[calc(100vw-2rem)]">
 				<div
 					role="region"
-					aria-label="Correction mock controls"
+					aria-label={t`Correction mock controls`}
 					class="flex max-w-[420px] flex-col gap-3 rounded-md border border-slate-300 bg-white/85 p-3 shadow-[0_30px_80px_-50px_rgba(0,0,0,0.35)] ring-1 ring-slate-200/60 backdrop-blur-md ring-inset"
 				>
 					<div class="flex items-center justify-between gap-3">
@@ -359,7 +360,7 @@ function RouteComponent() {
 							aria-expanded={!collapsed()}
 							onClick={toggleCollapsed}
 						>
-							{collapsed() ? "Expand" : "Collapse"}
+							{collapsed() ? t`Expand` : t`Collapse`}
 						</Button>
 					</div>
 

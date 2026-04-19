@@ -19,6 +19,7 @@ import {
 	createSongLyrics,
 	createTag,
 	deleteVote,
+	editableUserRoles,
 	entityCorrections,
 	exploreArtist,
 	exploreEvent,
@@ -138,6 +139,9 @@ import type {
 	CreateTagResponse,
 	DeleteVoteData,
 	DeleteVoteError,
+	EditableUserRolesData,
+	EditableUserRolesError,
+	EditableUserRolesResponse,
 	EntityCorrectionsData,
 	EntityCorrectionsError,
 	EntityCorrectionsResponse,
@@ -540,7 +544,7 @@ export const adminUsersInfiniteOptions = (options?: Options<AdminUsersData>) =>
 						? pageParam
 						: {
 								query: {
-									cursor: pageParam,
+									page: pageParam,
 								},
 							}
 				const params = createInfiniteParams(queryKey, page)
@@ -1250,6 +1254,31 @@ export const upsertCreditRoleCorrectionMutation = (
 	}
 	return mutationOptions
 }
+
+export const editableUserRolesQueryKey = (
+	options?: Options<EditableUserRolesData>,
+) => createQueryKey("editableUserRoles", options)
+
+export const editableUserRolesOptions = (
+	options?: Options<EditableUserRolesData>,
+) =>
+	queryOptions<
+		EditableUserRolesResponse,
+		EditableUserRolesError,
+		EditableUserRolesResponse,
+		ReturnType<typeof editableUserRolesQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await editableUserRoles({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: editableUserRolesQueryKey(options),
+	})
 
 export const findEventByKeywordQueryKey = (
 	options: Options<FindEventByKeywordData>,

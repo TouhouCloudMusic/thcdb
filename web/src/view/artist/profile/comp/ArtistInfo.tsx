@@ -1,10 +1,12 @@
 /* @refresh skip */
+import { t } from "@lingui/core/macro"
 import type { Artist } from "@thc/api"
 import type { ParentProps } from "solid-js"
 import { createMemo, Show, For } from "solid-js"
 
 import { DateWithPrecision } from "~/domain/shared"
 import { assertContext } from "~/utils/solid/assertContext"
+import { EntityTagsSectionContainer } from "~/view/entity_tags/EntityTagsSection"
 
 import { ArtistContext } from ".."
 
@@ -17,11 +19,13 @@ export function ArtistInfo() {
 				<Show when={context.artist.artist_type !== "Unknown"}>
 					<DateInfo
 						value={context.artist.start_date}
-						label={context.artist.artist_type == "Solo" ? "Born" : "Formed"}
+						label={context.artist.artist_type == "Solo" ? t`Born` : t`Formed`}
 					/>
 					<DateInfo
 						value={context.artist.end_date}
-						label={context.artist.artist_type == "Solo" ? "Died" : "Disbanded"}
+						label={
+							context.artist.artist_type == "Solo" ? t`Died` : t`Disbanded`
+						}
 					/>
 				</Show>
 				<Location location={context.artist.start_location} />
@@ -29,6 +33,10 @@ export function ArtistInfo() {
 				<Aliases />
 				<Membership />
 				<Links />
+				<EntityTagsSectionContainer
+					entityType="artist"
+					entityId={context.artist.id}
+				/>
 			</div>
 		</div>
 	)
@@ -40,7 +48,7 @@ function Aliases() {
 	return (
 		<Show when={aliases().length > 0}>
 			<div>
-				<InfoLabel>Aliases</InfoLabel>
+				<InfoLabel>{t`Aliases`}</InfoLabel>
 				<ul class="flex flex-row gap-1">
 					<For each={aliases()}>
 						{(alias, index) => (
@@ -85,9 +93,9 @@ function Membership() {
 	const context = assertContext(ArtistContext)
 	const label = createMemo(() => {
 		if (context.artist.artist_type === "Solo") {
-			return "Member Of"
+			return t`Member Of`
 		} else if (context.artist.artist_type === "Multiple") {
-			return "Members"
+			return t`Members`
 		}
 	})
 	return (
@@ -114,7 +122,7 @@ function Links() {
 	return (
 		<Show when={context.artist.links?.length}>
 			<div>
-				<InfoLabel>Links</InfoLabel>
+				<InfoLabel>{t`Links`}</InfoLabel>
 				<ul>
 					<For each={context.artist.links}>
 						{(link) => (

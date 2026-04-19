@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { Title } from "@solidjs/meta"
 import { createFileRoute } from "@tanstack/solid-router"
 
@@ -8,8 +9,8 @@ export const Route = createFileRoute("/about")({
 function About() {
 	return (
 		<>
-			<Title>About</Title>
-			<h1>About</h1>
+			<Title>{t`About`}</Title>
+			<h1>{t`About`}</h1>
 		</>
 	)
 }

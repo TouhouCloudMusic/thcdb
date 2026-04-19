@@ -244,9 +244,11 @@ export type CursorResponseTagAggregate = {
 	items: Array<{
 		id: number
 		name: string
+		short_description: string
 		count: number
 		relevance: number
 		user_vote?: number | null
+		votes?: Array<TagAggregateVote>
 	}>
 	next_cursor?: number | null
 }
@@ -270,15 +272,6 @@ export type CursorResponseUserImageQueueItem = {
 		handled_by?: null | UserSummary
 		reverted_at?: string | null
 		reverted_by?: null | UserSummary
-	}>
-	next_cursor?: number | null
-}
-
-export type CursorResponseUserSummary = {
-	items: Array<{
-		id: number
-		name: string
-		roles: Array<UserRole>
 	}>
 	next_cursor?: number | null
 }
@@ -373,6 +366,11 @@ export type DataPageTag = {
 	data: PageResponseTag
 }
 
+export type DataPageUserSummary = {
+	status: string
+	data: PageResponseUserSummary
+}
+
 export type DataPaginatedAppearance = {
 	status: string
 	data: CursorResponseDiscography
@@ -438,11 +436,6 @@ export type DataPaginatedUserImageQueueItem = {
 	data: CursorResponseUserImageQueueItem
 }
 
-export type DataPaginatedUserSummary = {
-	status: string
-	data: CursorResponseUserSummary
-}
-
 export type DataPendingImageQueueCount = {
 	status: string
 	data: number
@@ -486,6 +479,11 @@ export type DataVecArtist = {
 export type DataVecCreditRoleSummary = {
 	status: string
 	data: Array<CreditRoleSummary>
+}
+
+export type DataVecEditableUserRole = {
+	status: string
+	data: Array<EditableUserRole>
 }
 
 export type DataVecEvent = {
@@ -621,6 +619,8 @@ export type DateWithPrecision = {
 export type DeleteVoteBody = {
 	tag_id: number
 }
+
+export type EditableUserRole = "Moderator"
 
 export type EntityIdent = string
 
@@ -1145,6 +1145,18 @@ export type PageResponseTag = {
 	total_pages: number
 }
 
+export type PageResponseUserSummary = {
+	items: Array<{
+		id: number
+		name: string
+		roles: Array<UserRole>
+	}>
+	page: number
+	page_size: number
+	total_items: number
+	total_pages: number
+}
+
 export type Release = {
 	id: number
 	title: string
@@ -1223,6 +1235,8 @@ export type ResetPasswordRequest = {
 	password: string
 }
 
+export type Score = "Veto" | "Low" | "Medium" | "High"
+
 export type SearchResponse = {
 	artists: CursorResponseSimpleArtist
 	releases: CursorResponseSimpleRelease
@@ -1233,7 +1247,7 @@ export type SearchResponse = {
 }
 
 export type SetUserRolesRequest = {
-	roles: Array<string>
+	roles: Array<EditableUserRole>
 }
 
 export type SignUpRequest = {
@@ -1324,6 +1338,11 @@ export type Tag = {
 	relations?: Array<TagRelation>
 }
 
+export type TagAggregateVote = {
+	user_name: string
+	score: number
+}
+
 export type TagRef = {
 	id: number
 	name: string
@@ -1407,10 +1426,8 @@ export type VerifyResetCodeResponse = {
 
 export type VoteBody = {
 	tag_id: number
-	score: I16
+	score: Score
 }
-
-export type I16 = "Veto" | "Low" | "Medium" | "High"
 
 export type SetUserRolesData = {
 	body: SetUserRolesRequest
@@ -1445,9 +1462,9 @@ export type AdminUsersData = {
 	body?: never
 	path?: never
 	query?: {
-		limit?: number | null
-		cursor?: number | null
 		keyword?: string | null
+		limit?: number | null
+		page?: number | null
 	}
 	url: "/admin/users"
 }
@@ -1466,7 +1483,7 @@ export type AdminUsersErrors = {
 export type AdminUsersError = AdminUsersErrors[keyof AdminUsersErrors]
 
 export type AdminUsersResponses = {
-	200: DataPaginatedUserSummary
+	200: DataPageUserSummary
 }
 
 export type AdminUsersResponse = AdminUsersResponses[keyof AdminUsersResponses]
@@ -2122,6 +2139,34 @@ export type UpsertCreditRoleCorrectionResponses = {
 
 export type UpsertCreditRoleCorrectionResponse =
 	UpsertCreditRoleCorrectionResponses[keyof UpsertCreditRoleCorrectionResponses]
+
+export type EditableUserRolesData = {
+	body?: never
+	path?: never
+	query?: never
+	url: "/editable-user-roles"
+}
+
+export type EditableUserRolesErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type EditableUserRolesError =
+	EditableUserRolesErrors[keyof EditableUserRolesErrors]
+
+export type EditableUserRolesResponses = {
+	200: DataVecEditableUserRole
+}
+
+export type EditableUserRolesResponse =
+	EditableUserRolesResponses[keyof EditableUserRolesResponses]
 
 export type FindEventByKeywordData = {
 	body?: never

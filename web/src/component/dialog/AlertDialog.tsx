@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { Show, splitProps } from "solid-js"
 import type { ComponentProps, JSX } from "solid-js"
 
@@ -48,7 +49,7 @@ export function AlertDialog(props: AlertDialogProps) {
 			<Dialog.Portal>
 				<Dialog.Overlay />
 				<Dialog.Content
-					class={`shadow-2 flex h-48 w-96 flex-col place-content-between`}
+					class="shadow-2 flex h-48 w-96 flex-col justify-between rounded-md p-6"
 					onPointerDownOutside={handleDismiss}
 					onEscapeKeyDown={handleDismiss}
 				>
@@ -61,17 +62,19 @@ export function AlertDialog(props: AlertDialogProps) {
 							<Dialog.CloseButton
 								class="ml-auto"
 								variant="Tertiary"
+								size="Sm"
 								onClick={local.onCancel}
 							>
-								{local.cancelText ?? "Cancel"}
+								{local.cancelText ?? t`Cancel`}
 							</Dialog.CloseButton>
 						</Show>
 						<Button
 							variant="Primary"
 							color="Reimu"
+							size="Sm"
 							onClick={local.onConfirm}
 						>
-							{local.confirmText ?? "Confirm"}
+							{local.confirmText ?? t`Confirm`}
 						</Button>
 					</div>
 				</Dialog.Content>

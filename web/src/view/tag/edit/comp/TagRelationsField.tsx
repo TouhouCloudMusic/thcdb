@@ -6,6 +6,7 @@ import {
 	remove,
 	setInput,
 } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { Tag, TagRef, TagRelationType } from "@thc/api"
 import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -14,6 +15,7 @@ import { twMerge } from "tailwind-merge"
 
 import { FormComp, Select } from "~/component/atomic"
 import { Button } from "~/component/atomic/button"
+import { Dialog } from "~/component/dialog"
 import { FieldArrayFallback } from "~/component/form"
 import { TagSearchDialog } from "~/component/form/SearchDialog"
 import { TagM } from "~/domain/tag"
@@ -74,7 +76,7 @@ export function TagFormRelationsField(props: Props) {
 	return (
 		<div class={twMerge("flex min-h-32 flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Relations</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Relations`}</FormComp.Label>
 				<Button
 					variant="Tertiary"
 					class="h-max p-2"
@@ -144,12 +146,20 @@ function RelationRow(props: RelationRowProps) {
 			<div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2">
 				<RelationTagLabel
 					value={props.tagRef?.name}
-					placeholder="Select tag"
+					placeholder={t`Select tag`}
 				/>
 				<TagSearchDialog
 					onSelect={props.onSelectTag}
 					dataFilter={dataFilter()}
-					icon={<Pencil1Icon class="size-4" />}
+					trigger={
+						<Dialog.Trigger
+							as={Button}
+							variant="Tertiary"
+							class="h-max p-2"
+						>
+							<Pencil1Icon class="size-4" />
+						</Dialog.Trigger>
+					}
 				/>
 			</div>
 			<Field

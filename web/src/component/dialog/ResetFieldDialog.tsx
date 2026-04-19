@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { ArrowPathIcon } from "@thc/icons/heroicons/24/outline"
 import { createMemo } from "solid-js"
 
@@ -24,8 +25,8 @@ export function ResetFieldDialogTrigger(props: {
 					<ArrowPathIcon />
 				</Button>
 			)}
-			title="Reset field?"
-			description="This cannot be undone."
+			title={t`Reset field?`}
+			description={t`This cannot be undone.`}
 			onCancel={() => {
 				console.log("Cancel")
 			}}

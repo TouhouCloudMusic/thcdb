@@ -1,4 +1,5 @@
 import type { FieldElementProps } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 
 import { InputField } from "~/component/atomic/form/Input"
 
@@ -18,7 +19,7 @@ type SignInIdentifierFieldProps = {
 export function SignInIdentifierField(props: SignInIdentifierFieldProps) {
 	return (
 		<FieldLayout
-			label="Username / Email"
+			label={t`Username / Email`}
 			error={props.field.errors?.[0]}
 			class={props.class}
 		>
@@ -28,7 +29,7 @@ export function SignInIdentifierField(props: SignInIdentifierFieldProps) {
 				type="text"
 				id="identifier"
 				value={props.field.input ?? ""}
-				placeholder="Enter your username or email"
+				placeholder={t`Enter your username or email`}
 			/>
 		</FieldLayout>
 	)

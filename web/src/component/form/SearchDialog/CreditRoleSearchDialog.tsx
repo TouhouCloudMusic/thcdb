@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { CreditRoleRef } from "@thc/api"
 import { CreditRoleQueryOption } from "@thc/query"
@@ -20,12 +21,9 @@ type Props = {
 export function CreditRoleSearchDialog(props: Props): JSX.Element {
 	const [searchKeyword, setSearchKeyword] = createSignal("")
 
-	const onInput = debounce(
-		300,
-		(e: Event & { currentTarget: HTMLInputElement }) => {
-			setSearchKeyword(e.currentTarget.value)
-		},
-	)
+	const onInput = debounce(300, (value: string) => {
+		setSearchKeyword(value)
+	})
 
 	const searchTerm = createMemo(() => {
 		const keyword = searchKeyword().trim()
@@ -40,7 +38,7 @@ export function CreditRoleSearchDialog(props: Props): JSX.Element {
 
 	return (
 		<EntitySearchDialog
-			title="Search Role"
+			title={t`Search Role`}
 			trigger={
 				<Dialog.Trigger
 					as={Button}

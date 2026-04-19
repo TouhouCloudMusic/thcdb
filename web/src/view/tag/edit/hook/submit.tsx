@@ -29,7 +29,10 @@ export function createTagFormSubmission(props: Props) {
 						void queryClient.invalidateQueries({
 							queryKey: [TagQueryOption.QUERY_KEYS.DETAIL_KEYWORD],
 						})
-						void navigator({ to: `/correction/${result.correction_id}` })
+						void navigator({
+							to: "/correction/$id",
+							params: { id: result.correction_id.toString() },
+						})
 					},
 					onError(error) {
 						if (import.meta.env.DEV) {
@@ -48,7 +51,10 @@ export function createTagFormSubmission(props: Props) {
 					void queryClient.invalidateQueries({
 						queryKey: [TagQueryOption.QUERY_KEYS.DETAIL_ID, props.tag.id],
 					})
-					void navigator({ to: `/correction/${result.correction_id}` })
+					void navigator({
+						to: "/correction/$id",
+						params: { id: result.correction_id.toString() },
+					})
 				},
 				onError(error) {
 					if (import.meta.env.DEV) {

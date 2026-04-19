@@ -1,6 +1,6 @@
 use sea_orm::DbErr;
-use serde::Serialize;
-use strum::{EnumCount, EnumIter, EnumString};
+use serde::{Deserialize, Serialize};
+use strum::{EnumCount, EnumIter, EnumString, IntoEnumIterator};
 use utoipa::ToSchema;
 
 #[derive(
@@ -20,6 +20,23 @@ pub enum UserRoleEnum {
     Admin = 1,
     Moderator = 2,
     User = 3,
+}
+
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    EnumIter,
+    Serialize,
+    Deserialize,
+    ToSchema,
+)]
+pub enum EditableUserRole {
+    Moderator,
 }
 
 impl From<UserRoleEnum> for i32 {
@@ -45,15 +62,20 @@ impl TryFrom<i32> for UserRoleEnum {
     }
 }
 
-impl From<UserRole> for UserRoleEnum {
-    fn from(val: UserRole) -> Self {
-        (&val).into()
+impl From<EditableUserRole> for UserRoleEnum {
+    fn from(value: EditableUserRole) -> Self {
+        match value {
+            EditableUserRole::Moderator => UserRoleEnum::Moderator,
+        }
     }
 }
 
-impl From<&UserRole> for UserRoleEnum {
-    fn from(val: &UserRole) -> Self {
-        Self::try_from(val.id).expect("Invalid user role id from database")
+impl EditableUserRole {
+    pub fn all_role_ids() -> Vec<i32> {
+        Self::iter()
+            .map(UserRoleEnum::from)
+            .map(i32::from)
+            .collect()
     }
 }
 
@@ -79,5 +101,17 @@ impl From<UserRoleEnum> for UserRole {
             id: value.into(),
             name: value.to_string(),
         }
+    }
+}
+
+impl From<UserRole> for UserRoleEnum {
+    fn from(val: UserRole) -> Self {
+        (&val).into()
+    }
+}
+
+impl From<&UserRole> for UserRoleEnum {
+    fn from(val: &UserRole) -> Self {
+        Self::try_from(val.id).expect("Invalid user role id from database")
     }
 }

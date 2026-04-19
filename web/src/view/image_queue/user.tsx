@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
 import type { ImageQueueStatus, UserImageQueueItem } from "@thc/api"
@@ -20,22 +21,22 @@ const PAGE_SIZE = 20
 const statusTone = (status: ImageQueueStatus) => {
 	switch (status) {
 		case "Pending": {
-			return { color: "Marisa", label: "PENDING" } as const
+			return { color: "Marisa", label: t`PENDING` } as const
 		}
 		case "Approved": {
-			return { color: "Green", label: "APPROVED" } as const
+			return { color: "Green", label: t`APPROVED` } as const
 		}
 		case "Rejected": {
-			return { color: "Reimu", label: "REJECTED" } as const
+			return { color: "Reimu", label: t`REJECTED` } as const
 		}
 		case "Cancelled": {
-			return { color: "Slate", label: "CANCELLED" } as const
+			return { color: "Slate", label: t`CANCELLED` } as const
 		}
 		case "Reverted": {
-			return { color: "Blue", label: "REVERTED" } as const
+			return { color: "Blue", label: t`REVERTED` } as const
 		}
 		default: {
-			return { color: "Slate", label: "UNKNOWN" } as const
+			return { color: "Slate", label: t`UNKNOWN` } as const
 		}
 	}
 }
@@ -98,11 +99,11 @@ export function UserImageQueuePage(props: Props) {
 
 				<section class="overflow-hidden rounded-sm border border-slate-300 bg-white shadow-xs">
 					<div class="grid grid-cols-[4rem_10rem_9rem_12rem_1fr] items-center border-b border-slate-200 bg-slate-50 px-4 py-3 text-[11px] font-medium tracking-[0.18em] text-slate-500">
-						<div>ID</div>
-						<div>IMAGE</div>
-						<div>STATUS</div>
-						<div>CREATED</div>
-						<div>HANDLED / REVERTED</div>
+						<div>{t`ID`}</div>
+						<div>{t`IMAGE`}</div>
+						<div>{t`STATUS`}</div>
+						<div>{t`CREATED`}</div>
+						<div>{t`HANDLED / REVERTED`}</div>
 					</div>
 
 					<Switch>
@@ -116,17 +117,17 @@ export function UserImageQueuePage(props: Props) {
 
 						<Match when={listQuery.isError}>
 							<div class="p-6 text-sm text-reimu-700">
-								Failed to load user image queue.
+								{t`Failed to load user image queue.`}
 							</div>
 						</Match>
 
 						<Match when={items().length === 0}>
 							<div class="p-10">
 								<div class="text-sm font-medium text-slate-900">
-									No entries yet
+									{t`No entries yet`}
 								</div>
 								<div class="mt-1 text-sm text-slate-500">
-									This user has no image queue history.
+									{t`This user has no image queue history.`}
 								</div>
 							</div>
 						</Match>
@@ -155,7 +156,7 @@ export function UserImageQueuePage(props: Props) {
 
 					<Show when={!listQuery.hasNextPage && items().length > 0}>
 						<div class="border-t border-slate-100 px-4 py-4 text-center text-sm text-slate-400">
-							No more entries
+							{t`No more entries`}
 						</div>
 					</Show>
 				</section>

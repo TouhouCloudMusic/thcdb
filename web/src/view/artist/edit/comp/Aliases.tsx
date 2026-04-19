@@ -1,4 +1,5 @@
 import { Field, getInput, insert, remove } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 import type { Artist, ArtistCommonFilter } from "@thc/api"
 import { createMemo } from "solid-js"
 import { createStore, produce } from "solid-js/store"
@@ -52,7 +53,7 @@ export const ArtistFormAliasesField = () => {
 	return (
 		<div class="flex min-h-32 w-96 flex-col">
 			<div class="mb-4 flex place-content-between items-center gap-4">
-				<FormComp.Label class="m-0">Aliases</FormComp.Label>
+				<FormComp.Label class="m-0">{t`Aliases`}</FormComp.Label>
 				<div class="flex gap-2">
 					<ArtistSearchDialog
 						onSelect={handleSelect}

@@ -40,6 +40,9 @@ import type {
 	DeleteVoteData,
 	DeleteVoteErrors,
 	DeleteVoteResponses,
+	EditableUserRolesData,
+	EditableUserRolesErrors,
+	EditableUserRolesResponses,
 	EntityCorrectionsData,
 	EntityCorrectionsErrors,
 	EntityCorrectionsResponses,
@@ -297,7 +300,8 @@ import type {
 export type Options<
 	TData extends TDataShape = TDataShape,
 	ThrowOnError extends boolean = boolean,
-> = Options2<TData, ThrowOnError> & {
+	TResponse = unknown,
+> = Options2<TData, ThrowOnError, TResponse> & {
 	/**
 	 * You can provide a client instance returned by `createClient()` instead of
 	 * individual options. This might be also useful if you want to implement a
@@ -597,6 +601,15 @@ export const upsertCreditRoleCorrection = <
 			...options.headers,
 		},
 	})
+
+export const editableUserRoles = <ThrowOnError extends boolean = false>(
+	options?: Options<EditableUserRolesData, ThrowOnError>,
+) =>
+	(options?.client ?? client).get<
+		EditableUserRolesResponses,
+		EditableUserRolesErrors,
+		ThrowOnError
+	>({ url: "/editable-user-roles", ...options })
 
 export const findEventByKeyword = <ThrowOnError extends boolean = false>(
 	options: Options<FindEventByKeywordData, ThrowOnError>,

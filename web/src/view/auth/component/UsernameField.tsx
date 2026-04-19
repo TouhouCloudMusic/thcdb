@@ -1,4 +1,5 @@
 import type { FieldElementProps } from "@formisch/solid"
+import { t } from "@lingui/core/macro"
 
 import { InputField } from "~/component/atomic/form/Input"
 
@@ -18,7 +19,7 @@ type UsernameFieldProps = {
 export function UsernameField(props: UsernameFieldProps) {
 	return (
 		<FieldLayout
-			label="Username"
+			label={t`Username`}
 			error={props.field.errors?.[0]}
 			class={props.class}
 		>
