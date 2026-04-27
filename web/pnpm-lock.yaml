@@ -184,8 +184,8 @@ importers:
         specifier: ^4.1.18
         version: 4.1.18(vite@8.0.8(@types/node@25.0.3)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))
       '@tanstack/devtools-vite':
-        specifier: ^0.5.0
-        version: 0.5.0(vite@8.0.8(@types/node@25.0.3)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))
+        specifier: ^0.6.0
+        version: 0.6.0(vite@8.0.8(@types/node@25.0.3)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))
       '@tanstack/eslint-plugin-query':
         specifier: ^5.91.2
         version: 5.91.5(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
@@ -403,10 +403,6 @@ packages:
     resolution: {integrity: sha512-3EwLFhZ38J4VyIP6WNtt2kUdW9dokXA9Cr4IVIFHuCpZ3H8/YFOl5JjZHisrn1fATPBmKKqXzDFvh9fUwHz6CQ==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/generator@7.28.6':
-    resolution: {integrity: sha512-lOoVRwADj8hjf7al89tvQ2a1lf53Z+7tiXMgpZJL3maQPDxh0DgLMN62B2MKUOFcoodBHLMbDM6WAbKgNy5Suw==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/generator@7.29.1':
     resolution: {integrity: sha512-qsaF+9Qcm2Qv8SRIMMscAvG4O3lJ0F1GuMo5HR/Bp02LopNgnZBC/EkbevHFeGs4ls/oPz9v+Bsmzbkbe+0dUw==}
     engines: {node: '>=6.9.0'}
@@ -477,11 +473,6 @@ packages:
 
   '@babel/parser@7.28.5':
     resolution: {integrity: sha512-KKBU1VGYR7ORr3At5HAtUQ+TV3SzRCXmA/8OdDZiLDBIZxVyzXuztPjfLd3BV1PRAQGCMWWSHYhL0F8d5uHBDQ==}
-    engines: {node: '>=6.0.0'}
-    hasBin: true
-
-  '@babel/parser@7.28.6':
-    resolution: {integrity: sha512-TeR9zWR18BvbfPmGbLampPMW+uW1NZnJlRuuHso8i87QZNq2JRF9i6RgxRqtEq+wQGsS19NNTWr2duhnE49mfQ==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -2358,13 +2349,26 @@ packages:
     resolution: {integrity: sha512-hsNDE3iu4frt9cC2ppn1mNRnLKo2uc1/1hXAyY9z4UYb+o40M2clFAhiFoo4HngjfGJDV3x18KVVIq7W4Un+zA==}
     engines: {node: '>=18'}
 
+  '@tanstack/devtools-client@0.0.6':
+    resolution: {integrity: sha512-f85ZJXJnDIFOoykG/BFIixuAevJovCvJF391LPs6YjBAPhGYC50NWlx1y4iF/UmK5/cCMx+/JqI5SBOz7FanQQ==}
+    engines: {node: '>=18'}
+
   '@tanstack/devtools-event-bus@0.4.0':
     resolution: {integrity: sha512-1t+/csFuDzi+miDxAOh6Xv7VDE80gJEItkTcAZLjV5MRulbO/W8ocjHLI2Do/p2r2/FBU0eKCRTpdqvXaYoHpQ==}
+    engines: {node: '>=18'}
+
+  '@tanstack/devtools-event-bus@0.4.1':
+    resolution: {integrity: sha512-cNnJ89Q021Zf883rlbBTfsaxTfi2r73/qejGtyTa7ksErF3hyDyAq1aTbo5crK9dAL7zSHh9viKY1BtMls1QOA==}
     engines: {node: '>=18'}
 
   '@tanstack/devtools-event-client@0.4.0':
     resolution: {integrity: sha512-RPfGuk2bDZgcu9bAJodvO2lnZeHuz4/71HjZ0bGb/SPg8+lyTA+RLSKQvo7fSmPSi8/vcH3aKQ8EM9ywf1olaw==}
     engines: {node: '>=18'}
+
+  '@tanstack/devtools-event-client@0.4.3':
+    resolution: {integrity: sha512-OZI6QyULw0FI0wjgmeYzCIfbgPsOEzwJtCpa69XrfLMtNXLGnz3d/dIabk7frg0TmHo+Ah49w5I4KC7Tufwsvw==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   '@tanstack/devtools-ui@0.4.4':
     resolution: {integrity: sha512-5xHXFyX3nom0UaNfiOM92o6ziaHjGo3mcSGe2HD5Xs8dWRZNpdZ0Smd0B9ddEhy0oB+gXyMzZgUJb9DmrZV0Mg==}
@@ -2372,11 +2376,12 @@ packages:
     peerDependencies:
       solid-js: '>=1.9.7'
 
-  '@tanstack/devtools-vite@0.5.0':
-    resolution: {integrity: sha512-Ew+ZdTnmTlVjm4q+/XY/dolx/E1BWMYpiRDyU/MXqHf5epri4MLl5C4UZJaO+ZuUCsKPpsW+ufoM99E2Z4rhug==}
+  '@tanstack/devtools-vite@0.6.0':
+    resolution: {integrity: sha512-h0r0ct7zlrgjkhmn4QW6wRjgUXd4JMs+r7gtx+BXo9f5H9Y+jtUdtvC0rnZcPto6gw/9yMUq7yOmMK5qDWRExg==}
     engines: {node: '>=18'}
+    hasBin: true
     peerDependencies:
-      vite: ^6.0.0 || ^7.0.0
+      vite: ^6.0.0 || ^7.0.0 || ^8.0.0
 
   '@tanstack/devtools@0.10.5':
     resolution: {integrity: sha512-aptV4sMcdEn/zB8zqNqKSKi8pLzfB7BhdP2MuVmyfWgBDYNchqJjhviaxEXW3tJTolbWwc30o+jszwqxOIcIaA==}
@@ -5736,7 +5741,7 @@ snapshots:
       '@babel/helpers': 7.28.4
       '@babel/parser': 7.29.2
       '@babel/template': 7.28.6
-      '@babel/traverse': 7.28.5
+      '@babel/traverse': 7.29.0
       '@babel/types': 7.29.0
       '@jridgewell/remapping': 2.3.5
       convert-source-map: 2.0.0
@@ -5756,7 +5761,7 @@ snapshots:
       '@babel/helpers': 7.28.6
       '@babel/parser': 7.29.2
       '@babel/template': 7.28.6
-      '@babel/traverse': 7.28.6
+      '@babel/traverse': 7.29.0
       '@babel/types': 7.29.0
       '@jridgewell/remapping': 2.3.5
       convert-source-map: 2.0.0
@@ -5788,14 +5793,6 @@ snapshots:
       - supports-color
 
   '@babel/generator@7.28.5':
-    dependencies:
-      '@babel/parser': 7.29.2
-      '@babel/types': 7.29.0
-      '@jridgewell/gen-mapping': 0.3.13
-      '@jridgewell/trace-mapping': 0.3.31
-      jsesc: 3.1.0
-
-  '@babel/generator@7.28.6':
     dependencies:
       '@babel/parser': 7.29.2
       '@babel/types': 7.29.0
@@ -5893,10 +5890,6 @@ snapshots:
       '@babel/types': 7.29.0
 
   '@babel/parser@7.28.5':
-    dependencies:
-      '@babel/types': 7.29.0
-
-  '@babel/parser@7.28.6':
     dependencies:
       '@babel/types': 7.29.0
 
@@ -7532,6 +7525,10 @@ snapshots:
     dependencies:
       '@tanstack/devtools-event-client': 0.4.0
 
+  '@tanstack/devtools-client@0.0.6':
+    dependencies:
+      '@tanstack/devtools-event-client': 0.4.3
+
   '@tanstack/devtools-event-bus@0.4.0':
     dependencies:
       ws: 8.19.0
@@ -7539,7 +7536,16 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
+  '@tanstack/devtools-event-bus@0.4.1':
+    dependencies:
+      ws: 8.19.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   '@tanstack/devtools-event-client@0.4.0': {}
+
+  '@tanstack/devtools-event-client@0.4.3': {}
 
   '@tanstack/devtools-ui@0.4.4(csstype@3.2.3)(solid-js@1.9.12)':
     dependencies:
@@ -7549,18 +7555,18 @@ snapshots:
     transitivePeerDependencies:
       - csstype
 
-  '@tanstack/devtools-vite@0.5.0(vite@8.0.8(@types/node@25.0.3)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))':
+  '@tanstack/devtools-vite@0.6.0(vite@8.0.8(@types/node@25.0.3)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))':
     dependencies:
-      '@babel/core': 7.28.6
-      '@babel/generator': 7.28.6
-      '@babel/parser': 7.28.6
-      '@babel/traverse': 7.28.6
-      '@babel/types': 7.28.6
-      '@tanstack/devtools-client': 0.0.5
-      '@tanstack/devtools-event-bus': 0.4.0
+      '@babel/core': 7.29.0
+      '@babel/generator': 7.29.1
+      '@babel/parser': 7.29.2
+      '@babel/traverse': 7.29.0
+      '@babel/types': 7.29.0
+      '@tanstack/devtools-client': 0.0.6
+      '@tanstack/devtools-event-bus': 0.4.1
       chalk: 5.6.2
       launch-editor: 2.12.0
-      picomatch: 4.0.3
+      picomatch: 4.0.4
       vite: 8.0.8(@types/node@25.0.3)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
     transitivePeerDependencies:
       - bufferutil
@@ -8342,7 +8348,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.29.0
       '@babel/parser': 7.29.2
-      '@babel/traverse': 7.28.6
+      '@babel/traverse': 7.29.0
       '@babel/types': 7.29.0
     transitivePeerDependencies:
       - supports-color
