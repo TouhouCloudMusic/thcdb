@@ -3,7 +3,10 @@ import addonDocs from "@storybook/addon-docs"
 import { definePreview } from "storybook-solidjs-vite"
 
 import "../src/index.css"
+import { loadLocale } from "../src/state/i18n/runtime"
 import { withStoryState } from "../src/utils/adapter/storybook"
+
+await loadLocale("en")
 
 export default definePreview({
 	addons: [addonDocs(), addonA11y()],

@@ -7,9 +7,6 @@ export default defineConfig({
 	resolve: {
 		tsconfigPaths: true,
 	},
-	optimizeDeps: {
-		include: ["storybook-dark-mode"],
-	},
 	define: {
 		"process.env": {},
 	},
