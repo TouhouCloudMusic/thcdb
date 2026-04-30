@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { EventApi } from "@thc/api"
@@ -45,6 +45,7 @@ type EventExploreFilterBarProps = {
 }
 
 function EventExploreFilterBar(props: EventExploreFilterBarProps) {
+	const { t } = useLingui()
 	return (
 		<StickyFilterBar scrollDirection={props.scrollDirection}>
 			<div class="flex flex-wrap items-center gap-4">
@@ -90,6 +91,7 @@ type EventExploreListProps = {
 }
 
 function EventExploreList(props: EventExploreListProps) {
+	const { t } = useLingui()
 	return (
 		<>
 			<Show when={!props.isLoading && props.events.length === 0}>
@@ -125,6 +127,7 @@ function EventExploreList(props: EventExploreListProps) {
 }
 
 export const EventExplore = () => {
+	const { t } = useLingui()
 	const search = route.useSearch()
 	const scrollDirection = useScrollDirection()
 

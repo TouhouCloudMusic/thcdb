@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For } from "solid-js"
 
 import { FormComp } from "~/component/atomic/form"
@@ -10,6 +10,7 @@ export type LocationProps = {
 	setValue(val?: LocationType): void
 }
 export function Location(props: LocationProps) {
+	const { t } = useLingui()
 	return (
 		<div>
 			<FormComp.Label>{props.label}</FormComp.Label>

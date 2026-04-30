@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import type {
@@ -35,31 +35,6 @@ type TypeFilterOption = {
 	label: string
 }
 
-function typeFilterLabel(value: TypeFilterKind) {
-	return value === "all" ? t`All` : StrExt.capitalize(value)
-}
-
-const TYPE_FILTER_OPTIONS: TypeFilterOption[] = [
-	{
-		value: "all",
-		get label() {
-			return typeFilterLabel("all")
-		},
-	},
-	{
-		value: "artist",
-		get label() {
-			return typeFilterLabel("artist")
-		},
-	},
-	{
-		value: "release",
-		get label() {
-			return typeFilterLabel("release")
-		},
-	},
-]
-
 export type StatusFilterKind = "pending" | "all"
 export const STATUS_FILTER_OPTIONS: StatusFilterKind[] = ["pending", "all"]
 
@@ -67,44 +42,25 @@ const PAGE_SIZE = 20
 const STATUS_TONES = {
 	Pending: {
 		color: "Marisa",
-		get label() {
-			return t`Pending`
-		},
 	},
 	Approved: {
 		color: "Green",
-		get label() {
-			return t`Approved`
-		},
 	},
 	Rejected: {
 		color: "Reimu",
-		get label() {
-			return t`Rejected`
-		},
 	},
 	Cancelled: {
 		color: "Slate",
-		get label() {
-			return t`Cancelled`
-		},
 	},
 	Reverted: {
 		color: "Blue",
-		get label() {
-			return t`Reverted`
-		},
 	},
 } as const satisfies Record<
 	ImageQueueStatus,
 	{
 		color: "Marisa" | "Green" | "Reimu" | "Slate" | "Blue"
-		readonly label: string
 	}
 >
-
-const queueItemAriaLabel = (item: PendingImageQueueItem) =>
-	t`View image queue item #${item.id}`
 
 export type ManageFilters = {
 	type?: ImageQueueType
@@ -128,7 +84,22 @@ const QUEUE_LIST_CONTAINER_CLASS = "divide-y divide-slate-200 pt-2"
 export function ImageQueueManagePageContent(
 	props: ImageQueueManagePageContentProps,
 ) {
+	const { t } = useLingui()
 	const scrollDirection = useScrollDirection()
+	const typeFilterOptions = createMemo<TypeFilterOption[]>(() => [
+		{
+			value: "all",
+			label: t`All`,
+		},
+		{
+			value: "artist",
+			label: StrExt.capitalize("artist"),
+		},
+		{
+			value: "release",
+			label: StrExt.capitalize("release"),
+		},
+	])
 	const setSentinelRef = useIntersectionSentinel<HTMLDivElement>({
 		enabled: () => props.hasNextPage && !props.isFetchingNextPage,
 		onIntersect: () => props.onLoadNextPage(),
@@ -155,10 +126,10 @@ export function ImageQueueManagePageContent(
 							<span class="text-sm text-tertiary">{t`Type`}</span>
 							<Select.Root<TypeFilterOption>
 								class="min-w-24"
-								options={TYPE_FILTER_OPTIONS}
+								options={typeFilterOptions()}
 								optionValue="value"
 								optionTextValue="label"
-								value={TYPE_FILTER_OPTIONS.find(
+								value={typeFilterOptions().find(
 									(option) => option.value === (props.filters.type ?? "all"),
 								)}
 								onChange={(option) =>
@@ -333,7 +304,9 @@ export function ImageQueueManagePage() {
 }
 
 function QueueRow(props: { item: PendingImageQueueItem }) {
+	const { t } = useLingui()
 	const tone = createMemo(() => STATUS_TONES[props.item.status])
+	const ariaLabel = () => t`View image queue item #${props.item.id}`
 	const createdAtLabel = createMemo(() => {
 		const createdAt = new Date(props.item.created_at)
 		return Number.isNaN(createdAt.getTime())
@@ -346,7 +319,7 @@ function QueueRow(props: { item: PendingImageQueueItem }) {
 			<Link
 				to="/image-queue/$id"
 				params={{ id: props.item.id.toString() }}
-				aria-label={queueItemAriaLabel(props.item)}
+				aria-label={ariaLabel()}
 				class="absolute inset-0 rounded-sm no-underline"
 			/>
 
@@ -360,7 +333,7 @@ function QueueRow(props: { item: PendingImageQueueItem }) {
 							color={tone().color}
 							class="px-2 py-0.5"
 						>
-							{tone().label}
+							<ImageQueueStatusLabel status={props.item.status} />
 						</Badge>
 					</div>
 
@@ -380,6 +353,32 @@ function QueueRow(props: { item: PendingImageQueueItem }) {
 			</div>
 		</div>
 	)
+}
+
+function ImageQueueStatusLabel(props: { status: ImageQueueStatus }) {
+	const { t } = useLingui()
+
+	const label = () => {
+		switch (props.status) {
+			case "Pending": {
+				return t`Pending`
+			}
+			case "Approved": {
+				return t`Approved`
+			}
+			case "Rejected": {
+				return t`Rejected`
+			}
+			case "Cancelled": {
+				return t`Cancelled`
+			}
+			case "Reverted": {
+				return t`Reverted`
+			}
+		}
+	}
+
+	return <>{label()}</>
 }
 
 function RowSkeleton() {

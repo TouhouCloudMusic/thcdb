@@ -1,4 +1,3 @@
-import { t } from "@lingui/core/macro"
 import type { Accessor } from "solid-js"
 import { createStore } from "solid-js/store"
 
@@ -7,6 +6,8 @@ export type EditProfileStoreOptions = {
 	saveBio: (next: string) => Promise<void>
 	uploadAvatar: (file: File) => Promise<void>
 	uploadBanner: (file: File) => Promise<void>
+	uploadFailedMessage?: string
+	saveFailedMessage?: string
 }
 
 export type EditProfileBioState = {
@@ -52,6 +53,7 @@ type BioState = {
 
 function createImageStore(
 	upload: (file: File) => Promise<void>,
+	uploadFailedMessage: string,
 ): EditProfileImageStore {
 	const [state, setState] = createStore<EditProfileImageState>({
 		isOpen: false,
@@ -74,9 +76,8 @@ function createImageStore(
 				setState("error", err.message)
 				throw err
 			}
-			const msg = t`Upload failed.`
-			setState("error", msg)
-			throw new Error(msg, { cause: err })
+			setState("error", uploadFailedMessage)
+			throw new Error(uploadFailedMessage, { cause: err })
 		} finally {
 			setState("isUploading", false)
 		}
@@ -154,14 +155,20 @@ export const createEditProfileStore = (
 					if (err instanceof Error && err.message) {
 						setBioState("error", err.message)
 					} else {
-						setBioState("error", t`Save failed.`)
+						setBioState("error", options.saveFailedMessage ?? "Save failed.")
 					}
 				} finally {
 					setBioState("isSaving", false)
 				}
 			},
 		},
-		avatar: createImageStore(options.uploadAvatar),
-		banner: createImageStore(options.uploadBanner),
+		avatar: createImageStore(
+			options.uploadAvatar,
+			options.uploadFailedMessage ?? "Upload failed.",
+		),
+		banner: createImageStore(
+			options.uploadBanner,
+			options.uploadFailedMessage ?? "Upload failed.",
+		),
 	}
 }

@@ -1,5 +1,5 @@
 /* @refresh skip */
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type {
 	ArtistCredit,
 	CreditRoleRef,
@@ -32,6 +32,7 @@ import { ArtistContext } from ".."
 const TABS = ["Discography", "Appearance", "Credit"] as const
 
 export function ArtistReleaseInfo() {
+	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 
 	return (

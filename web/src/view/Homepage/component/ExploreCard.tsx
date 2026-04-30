@@ -1,3 +1,5 @@
+import { useLingui } from "@lingui/solid/macro"
+
 import { Card } from "~/component/atomic/Card"
 import { Link } from "~/component/atomic/Link"
 import type { HomeNavItem } from "~/view/Homepage/mock"
@@ -30,6 +32,51 @@ type ExploreCardProps = {
 }
 
 export function ExploreCard(props: ExploreCardProps) {
+	const { t } = useLingui()
+	const title = () => {
+		switch (props.item.to) {
+			case "/artist/explore": {
+				return t`Artists`
+			}
+			case "/release/explore": {
+				return t`Releases`
+			}
+			case "/song/explore": {
+				return t`Songs`
+			}
+			case "/tag/explore": {
+				return t`Tags`
+			}
+			case "/event/explore": {
+				return t`Events`
+			}
+			case "/label/explore": {
+				return t`Labels`
+			}
+		}
+	}
+	const description = () => {
+		switch (props.item.to) {
+			case "/artist/explore": {
+				return t`Browse circles and solo creators with filters and sorting.`
+			}
+			case "/release/explore": {
+				return t`Track albums and compilations, link artists and events.`
+			}
+			case "/song/explore": {
+				return t`Find tracks by title language, credits, and corrections.`
+			}
+			case "/tag/explore": {
+				return t`Navigate genres, themes and metadata through tag types.`
+			}
+			case "/event/explore": {
+				return t`See conventions and live shows where releases debuted.`
+			}
+			case "/label/explore": {
+				return t`Explore labels, imprint history and founded/dissolved dates.`
+			}
+		}
+	}
 	return (
 		<Link
 			to={props.item.to}
@@ -44,11 +91,9 @@ export function ExploreCard(props: ExploreCardProps) {
 							class={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs ring-1 ring-inset ${ACCENT[props.item.accent].badge}`}
 						>
 							<span class="inline-block size-1.5 rounded-full bg-current opacity-70"></span>
-							{props.item.meta}
+							{t`Explore`}
 						</div>
-						<div class="text-base font-medium text-primary">
-							{props.item.title}
-						</div>
+						<div class="text-base font-medium text-primary">{title()}</div>
 					</div>
 					<div class="font-mono text-xs text-tertiary transition-colors duration-150 group-hover:text-secondary motion-reduce:transition-none">
 						→
@@ -56,7 +101,7 @@ export function ExploreCard(props: ExploreCardProps) {
 				</div>
 
 				<div class="text-sm leading-relaxed text-secondary">
-					{props.item.description}
+					{description()}
 				</div>
 			</Card>
 		</Link>

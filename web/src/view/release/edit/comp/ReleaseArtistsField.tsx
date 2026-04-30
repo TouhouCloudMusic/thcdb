@@ -1,5 +1,5 @@
 import { Field, getErrors, insert, remove } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { SimpleArtist } from "@thc/api"
 import { For, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -19,6 +19,7 @@ export function ReleaseArtistsField(props: {
 	initArtists?: SimpleArtist[]
 	class?: string
 }) {
+	const { t } = useLingui()
 	const [artists, setArtists] = createStore<SimpleArtist[]>(
 		untrack(() => [...(props.initArtists ?? [])]),
 	)

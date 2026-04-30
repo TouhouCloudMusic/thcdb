@@ -1,5 +1,5 @@
 import { Field, getErrors, insert, remove, setInput } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { CreditRoleRef, SimpleArtist, SongCredit } from "@thc/api"
 import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -21,6 +21,7 @@ export function SongCreditsField(props: {
 	initCredits?: SongCredit[]
 	class?: string
 }) {
+	const { t } = useLingui()
 	const formStore = createMemo(() => props.of)
 	const [meta, setMeta] = createStore<CreditMeta[]>(
 		untrack(
@@ -104,6 +105,7 @@ function CreditRow(props: {
 	onSelectRole: (role: CreditRoleRef) => void
 	onRemove: () => void
 }) {
+	const { t } = useLingui()
 	return (
 		<li class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-x-2 gap-y-1">
 			<div class="grid grid-cols-[1fr_auto] items-center gap-x-2">

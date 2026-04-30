@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { createMemo, For, Match, Show, Switch } from "solid-js"
@@ -31,10 +31,6 @@ const USERS_TABLE_LIST_CLASS = "flex flex-col gap-1"
 const ROLE_EDITOR_LIST_CLASS = "flex flex-col gap-2"
 const ROLE_EDITOR_OPTION_BASE_CLASS =
 	"flex w-full items-start gap-3 rounded-sm border px-3 py-3 text-left outline-1 outline-transparent -outline-offset-1 transition-colors duration-100 disabled:cursor-default disabled:opacity-70"
-const ROLE_DESCRIPTION: Record<EditableUserRole, string> = {
-	Moderator: t`Access moderation tools and review queues.`,
-}
-
 type AdminUserItem = PageResponseUserSummary["items"][number]
 
 type AdminUsersSearch = {
@@ -121,11 +117,8 @@ function toggleRoleSelection(
 	return Array.from(nextSelectedRoles)
 }
 
-function roleDescription(role: EditableUserRole) {
-	return ROLE_DESCRIPTION[role]
-}
-
 function useAdminUsersRoleEditor(users: Accessor<AdminUserItem[]>) {
+	const { t } = useLingui()
 	const queryClient = useQueryClient()
 	const userCtx = useCurrentUser()
 
@@ -177,7 +170,7 @@ function useAdminUsersRoleEditor(users: Accessor<AdminUserItem[]>) {
 		},
 		get roleOptionsError() {
 			return roleOptionsQuery.isError
-				? getErrorMessage(roleOptionsQuery.error)
+				? getErrorMessage(roleOptionsQuery.error, t`Unknown error`)
 				: undefined
 		},
 		get selectedRoles() {
@@ -237,7 +230,7 @@ function useAdminUsersRoleEditor(users: Accessor<AdminUserItem[]>) {
 			} catch (error) {
 				setRoleEditorState(
 					produce((draft) => {
-						draft.saveError = getErrorMessage(error)
+						draft.saveError = getErrorMessage(error, t`Unknown error`)
 					}),
 				)
 			} finally {
@@ -257,6 +250,7 @@ function useAdminUsersRoleEditor(users: Accessor<AdminUserItem[]>) {
 }
 
 export function AdminUsersPage() {
+	const { t } = useLingui()
 	const search = route.useSearch()
 	const navigate = useNavigate({ from: "/admin/users" })
 	let keywordInputRef: HTMLInputElement | undefined
@@ -324,7 +318,9 @@ export function AdminUsersPage() {
 			return usersQuery.isError
 		},
 		get errorMessage() {
-			return usersQuery.isError ? getErrorMessage(usersQuery.error) : undefined
+			return usersQuery.isError
+				? getErrorMessage(usersQuery.error, t`Unknown error`)
+				: undefined
 		},
 		get totalPages() {
 			return usersData()?.total_pages ?? 0
@@ -402,6 +398,7 @@ export function AdminUsersPage() {
 }
 
 function AdminUsersTable(props: AdminUsersTableProps) {
+	const { t } = useLingui()
 	return (
 		<div class="flex flex-col gap-4">
 			<div class="flex flex-col">
@@ -507,7 +504,19 @@ function AdminUsersRow(props: {
 	)
 }
 
+function RoleDescription(props: { role: EditableUserRole }) {
+	const { t } = useLingui()
+
+	const label = () =>
+		({
+			Moderator: t`Access moderation tools and review queues.`,
+		})[props.role]
+
+	return <>{label()}</>
+}
+
 function RoleEditorDialog(props: RoleEditorDialogProps) {
+	const { t } = useLingui()
 	const canSave = () => !props.dialog.isSaving && !props.dialog.roleOptionsError
 
 	const preventDismiss = (event: Event) => {
@@ -581,7 +590,7 @@ function RoleEditorDialog(props: RoleEditorDialogProps) {
 														<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 															<RoleBadge role={role} />
 															<div class="min-w-0 text-sm text-tertiary">
-																{roleDescription(role)}
+																<RoleDescription role={role} />
 															</div>
 														</div>
 													</div>

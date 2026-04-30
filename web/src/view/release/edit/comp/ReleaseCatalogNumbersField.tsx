@@ -1,5 +1,5 @@
 import { Field, FieldArray, insert, remove, setInput } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Label, SimpleLabel } from "@thc/api"
 import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -20,6 +20,7 @@ export function ReleaseCatalogNumbersField(props: {
 	initCatalogLabels?: (SimpleLabel | undefined)[]
 	class?: string
 }) {
+	const { t } = useLingui()
 	const formStore = createMemo(() => props.of)
 	const [labels, setLabels] = createStore<(SimpleLabel | undefined)[]>(
 		untrack(() => [...(props.initCatalogLabels ?? [])]),

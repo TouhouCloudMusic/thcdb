@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { ComponentProps } from "solid-js"
 import { Suspense } from "solid-js"
 
@@ -16,6 +16,7 @@ type EntityContributorsProps = {
 }
 
 export function EntityContributors(props: EntityContributorsProps) {
+	const { t } = useLingui()
 	return (
 		<div class={props.class ?? "flex flex-wrap text-sm"}>
 			<div class="font-medium text-tertiary whitespace-pre">

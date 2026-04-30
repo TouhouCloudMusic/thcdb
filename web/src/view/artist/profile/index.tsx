@@ -1,5 +1,5 @@
 /* @refresh skip */
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type {
 	Artist,
 	ArtistCredit,
@@ -54,6 +54,7 @@ export type ArtistProfilePageProps = {
 }
 
 export function ArtistProfilePage(props: ArtistProfilePageProps) {
+	const { t } = useLingui()
 	const profileImageUrl = () => imgUrl(props.artist.profile_image_url)
 	const contextValue: ArtistContext = {
 		get artist() {

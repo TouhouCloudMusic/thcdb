@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { createSignal, Show } from "solid-js"
 import { PlusIcon } from "solid-radix-icons"
 
@@ -14,6 +14,7 @@ type Props = {
 }
 
 export function AddToUserCollectionButton(props: Props) {
+	const { t } = useLingui()
 	const [open, setOpen] = createSignal(false)
 
 	return (

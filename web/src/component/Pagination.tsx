@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For, createMemo } from "solid-js"
 import type { Component } from "solid-js"
 import { twMerge } from "tailwind-merge"
@@ -67,6 +67,7 @@ const buildNearbyPages = (
 }
 
 export const Pagination: Component<PaginationProps> = (props) => {
+	const { t } = useLingui()
 	const paginaterClass = () => twMerge(PAGINATER_CLASS, props.class)
 
 	const nearbyCount = () => props.nearbyCount ?? 7

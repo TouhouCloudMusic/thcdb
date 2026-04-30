@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Release } from "@thc/api"
 import { For, Match, Show, Switch } from "solid-js"
 
@@ -82,6 +82,7 @@ export type ReleaseExploreListProps = {
 }
 
 export function ReleaseExploreList(props: ReleaseExploreListProps) {
+	const { t } = useLingui()
 	return (
 		<>
 			<Show when={!props.store.isLoading && props.store.releases.length === 0}>

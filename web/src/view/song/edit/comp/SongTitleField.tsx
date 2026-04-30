@@ -1,5 +1,5 @@
 import { Field } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { twMerge } from "tailwind-merge"
 
 import { FormComp } from "~/component/atomic/form"
@@ -8,6 +8,7 @@ import { InputField } from "~/component/atomic/form/Input"
 import type { SongFormStore } from "./types"
 
 export function SongTitleField(props: { of: SongFormStore; class?: string }) {
+	const { t } = useLingui()
 	return (
 		<Field
 			of={props.of}

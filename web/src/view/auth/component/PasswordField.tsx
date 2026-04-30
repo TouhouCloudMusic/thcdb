@@ -1,5 +1,5 @@
 import type { FieldElementProps } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { JSX } from "solid-js"
 import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
 import { CheckIcon, Cross1Icon } from "solid-radix-icons"
@@ -59,6 +59,7 @@ function hasWhitespaceOrControl(input: string) {
 }
 
 export function PasswordField(props: PasswordFieldProps) {
+	const { t } = useLingui()
 	const [requirementsOpen, setRequirementsOpen] = createSignal(false)
 	const id = () => props.field.path.join(".")
 

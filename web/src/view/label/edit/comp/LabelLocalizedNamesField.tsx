@@ -6,7 +6,7 @@ import {
 	remove,
 	setInput,
 } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Language, LocalizedName } from "@thc/api"
 import { For, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -34,6 +34,7 @@ type LocalizedNameItemProps = {
 }
 
 export function LabelLocalizedNamesField(props: Props) {
+	const { t } = useLingui()
 	const { formStore } = useLabelForm()
 
 	const [languages, setLanguages] = createStore<(Language | undefined)[]>(
@@ -103,6 +104,7 @@ export function LabelLocalizedNamesField(props: Props) {
 }
 
 function LocalizedNameItem(props: LocalizedNameItemProps) {
+	const { t } = useLingui()
 	const { formStore } = useLabelForm()
 
 	return (

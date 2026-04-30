@@ -1,5 +1,5 @@
 import type { FieldElementProps } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { JSX } from "solid-js"
 import { createSignal } from "solid-js"
 
@@ -24,6 +24,7 @@ type VerificationCodeFieldProps = {
 }
 
 export function VerificationCodeField(props: VerificationCodeFieldProps) {
+	const { t } = useLingui()
 	const [isEditing, setIsEditing] = createSignal(false)
 
 	return (

@@ -1,5 +1,5 @@
 import { Field } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { twMerge } from "tailwind-merge"
 
 import { InputField } from "~/component/atomic/form/Input"
@@ -11,6 +11,7 @@ type Props = {
 }
 
 export function EventDescriptionField(props: Props) {
+	const { t } = useLingui()
 	const { formStore } = useEventForm()
 
 	return (

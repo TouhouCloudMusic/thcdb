@@ -1,5 +1,5 @@
 import { Field, getInput, insert, remove, setInput } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { ReleaseCredit, SimpleArtist } from "@thc/api"
 import { pick } from "@thc/toolkit/data"
 import type { JSX } from "solid-js"
@@ -68,6 +68,7 @@ function ReleaseCreditArtist(props: {
 	index: number
 	onSelectArtist: (a: SimpleArtist) => void
 }): JSX.Element {
+	const { t } = useLingui()
 	return (
 		<>
 			{props.artist ? (
@@ -111,6 +112,7 @@ function ReleaseCreditRole(props: {
 	index: number
 	onSelectRole: (r: { id: number; name: string }) => void
 }): JSX.Element {
+	const { t } = useLingui()
 	return (
 		<>
 			{props.role ? (
@@ -151,6 +153,7 @@ function ReleaseCreditTracks(props: {
 	index: number
 	sortedTrackIndices: number[]
 }): JSX.Element {
+	const { t } = useLingui()
 	const renderTrackLabel = (tIndex: number) => {
 		const tracks = getInput(props.of, { path: ["data", "tracks"] })
 		const discIndex = tracks[tIndex]?.disc_index ?? 0
@@ -258,6 +261,7 @@ export function ReleaseCreditsField(props: {
 	initCredits?: ReleaseCredit[]
 	class?: string
 }): JSX.Element {
+	const { t } = useLingui()
 	const {
 		meta,
 		addCreditRow,

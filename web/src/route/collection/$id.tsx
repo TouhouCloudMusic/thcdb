@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/solid-query"
 import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import { Match, Switch } from "solid-js"
@@ -26,6 +26,7 @@ export const Route = createFileRoute("/collection/$id")({
 })
 
 function RouteComponent() {
+	const { t } = useLingui()
 	const params = Route.useParams()
 	const navigate = useNavigate()
 	const id = () => Number(params().id)

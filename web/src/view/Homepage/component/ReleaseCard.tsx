@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Release } from "@thc/api"
 import { Show } from "solid-js"
 
@@ -12,7 +12,9 @@ type ReleaseCardProps = {
 }
 
 export function ReleaseCard(props: ReleaseCardProps) {
-	const artistsLabel = () => formatArtists(props.release.artists)
+	const { t } = useLingui()
+	const artistsLabel = () =>
+		formatArtists(props.release.artists, t`Unknown artist`)
 	const releaseDate = () => displayReleaseDate(props.release.release_date)
 	const coverUrl = () => imgUrl(props.release.cover_art_url)
 

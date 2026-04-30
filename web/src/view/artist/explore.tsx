@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { ArtistApi } from "@thc/api"
@@ -62,6 +62,7 @@ const createArtistExploreQueryOptions = (
 })
 
 export const ArtistExplore = () => {
+	const { t } = useLingui()
 	const search = route.useSearch()
 	const scrollDirection = useScrollDirection()
 	const navigate = useNavigate({ from: "/artist/explore" })

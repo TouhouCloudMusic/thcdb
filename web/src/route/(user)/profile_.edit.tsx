@@ -1,3 +1,4 @@
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import { UserApi } from "@thc/api"
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/(user)/profile_/edit")({
 })
 
 function RouteComponent() {
+	const { t } = useLingui()
 	const userCtx = useCurrentUser()
 	const query = useQuery(() =>
 		UserQuery.profileOption({
@@ -28,6 +30,8 @@ function RouteComponent() {
 	const baseBio = () => query.data?.bio ?? ""
 	const store = createEditProfileStore({
 		baseBio,
+		uploadFailedMessage: t`Upload failed.`,
+		saveFailedMessage: t`Save failed.`,
 		saveBio: async (next) => {
 			const result = await UserApi.updateBio(next)
 			if (E.isLeft(result)) {

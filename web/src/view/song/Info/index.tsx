@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Song } from "@thc/api"
 import { createContext, Show } from "solid-js"
 
@@ -75,6 +75,7 @@ export function SongInfoPage(props: SongInfoPageProps) {
 
 const TRIGGER_CLASS = "py-4"
 function SongInfoTabs() {
+	const { t } = useLingui()
 	const ctx = assertContext(SongInfoPageContext)
 	const hasCredits = () =>
 		Boolean(ctx.song.credits && ctx.song.credits.length > 0)

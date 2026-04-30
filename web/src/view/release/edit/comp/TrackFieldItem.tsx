@@ -1,5 +1,5 @@
 import { Field, remove, setInput } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { ReleaseTrack, SimpleArtist, Song } from "@thc/api"
 import { For, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -91,6 +91,7 @@ export function TrackItem(props: {
 }
 
 function TrackNumInput(props: { index: number; of: ReleaseFormStore }) {
+	const { t } = useLingui()
 	return (
 		<Field
 			of={props.of}
@@ -113,6 +114,7 @@ function TrackNumInput(props: { index: number; of: ReleaseFormStore }) {
 }
 
 function DisplayTitleInput(props: { index: number; of: ReleaseFormStore }) {
+	const { t } = useLingui()
 	return (
 		<Field
 			of={props.of}
@@ -135,6 +137,7 @@ function DisplayTitleInput(props: { index: number; of: ReleaseFormStore }) {
 }
 
 function DurationInput(props: { index: number; of: ReleaseFormStore }) {
+	const { t } = useLingui()
 	return (
 		<Field
 			of={props.of}
@@ -164,6 +167,7 @@ function TrackSongPicker(props: {
 	song: () => Song | undefined
 	onSelect: (s: Song) => void
 }) {
+	const { t } = useLingui()
 	return (
 		<div class="grid grid-cols-[1fr_auto] items-center gap-2 pl-1">
 			<Field
@@ -219,6 +223,7 @@ function TrackArtistsField(props: {
 	onRemoveAt: (i: number) => void
 	hasArtist: (a: SimpleArtist) => boolean
 }) {
+	const { t } = useLingui()
 	return (
 		<div class="flex flex-col gap-2 pl-1">
 			<div class="flex items-center justify-between gap-2">

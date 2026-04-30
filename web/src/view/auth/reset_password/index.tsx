@@ -6,7 +6,7 @@ import {
 	setErrors,
 	setInput,
 } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { Link, Navigate, useNavigate } from "@tanstack/solid-router"
 import type { JSX } from "solid-js"
 import {
@@ -70,34 +70,58 @@ type Props = {
 
 type VerifyResetCodeValues = v.InferOutput<typeof VerifyResetCodeSchema>
 type ResetPasswordValues = v.InferOutput<typeof ResetPasswordSchema>
+type ResetPasswordEmailSchemaMessages = {
+	required: string
+	invalid: string
+}
+type ResetPasswordCodeSchemaMessages = {
+	length: string
+	invalid: string
+}
 
-const RESET_PASSWORD_EMAIL_SCHEMA = pipe(
-	string(),
-	minLength(1, t`Email is required`),
-	emailSchema(t`Invalid email`),
-)
-const RESET_PASSWORD_CODE_SCHEMA = pipe(
-	string(),
-	minLength(6, t`Verification code must be 6 digits`),
-	maxLength(6, t`Verification code must be 6 digits`),
-	regex(/^\d{6}$/, t`Invalid verification code`),
-)
-const resetSessionRequiredMessage = () =>
-	t`Your reset session is no longer valid. Verify a new code to continue.`
+function createResetPasswordEmailSchema(
+	messages: ResetPasswordEmailSchemaMessages,
+) {
+	return pipe(
+		string(),
+		minLength(1, messages.required),
+		emailSchema(messages.invalid),
+	)
+}
+
+function createResetPasswordCodeSchema(
+	messages: ResetPasswordCodeSchemaMessages,
+) {
+	return pipe(
+		string(),
+		minLength(6, messages.length),
+		maxLength(6, messages.length),
+		regex(/^\d{6}$/, messages.invalid),
+	)
+}
 
 function formatMinuteCount(minutes: number) {
 	return `${minutes} minute${minutes === 1 ? "" : "s"}`
 }
 
-function getEmailErrors(input: string): [string, ...string[]] | null {
-	const result = safeParse(RESET_PASSWORD_EMAIL_SCHEMA, input.trim())
+function getEmailErrors(
+	input: string,
+	messages: ResetPasswordEmailSchemaMessages,
+): [string, ...string[]] | null {
+	const result = safeParse(
+		createResetPasswordEmailSchema(messages),
+		input.trim(),
+	)
 	if (result.success) return null
 	const issue = result.issues[0]
 	return [issue.message]
 }
 
-function getCodeErrors(input: string): [string, ...string[]] | null {
-	const result = safeParse(RESET_PASSWORD_CODE_SCHEMA, input)
+function getCodeErrors(
+	input: string,
+	messages: ResetPasswordCodeSchemaMessages,
+): [string, ...string[]] | null {
+	const result = safeParse(createResetPasswordCodeSchema(messages), input)
 	if (result.success) return null
 	const issue = result.issues[0]
 	return [issue.message]
@@ -164,6 +188,7 @@ function ForgotPasswordVerifyView(props: {
 	sessionWarning?: string
 	uiStore: ReturnType<typeof createResetPasswordUiStore>
 }) {
+	const { t } = useLingui()
 	onMount(() => {
 		clearResetPasswordSession()
 		clearResetPasswordSuccess()
@@ -184,8 +209,17 @@ function ForgotPasswordVerifyView(props: {
 	const emailValue = () => getInput(form).email
 	const codeValue = () => getInput(form).code ?? ""
 	const trimmedEmailValue = () => emailValue()?.trim() ?? ""
-	const emailErrors = () => getEmailErrors(trimmedEmailValue())
-	const codeErrors = () => getCodeErrors(codeValue())
+	const emailSchemaMessages = () => ({
+		required: t`Email is required`,
+		invalid: t`Invalid email`,
+	})
+	const codeSchemaMessages = () => ({
+		length: t`Verification code must be 6 digits`,
+		invalid: t`Invalid verification code`,
+	})
+	const emailErrors = () =>
+		getEmailErrors(trimmedEmailValue(), emailSchemaMessages())
+	const codeErrors = () => getCodeErrors(codeValue(), codeSchemaMessages())
 	const isEmailValid = () => emailErrors() === null
 	const isCodeValid = () => codeErrors() === null
 	const isVerifyStep = () =>
@@ -273,6 +307,7 @@ function ForgotPasswordVerifyView(props: {
 			forgotPassword: requestForgotPassword,
 			startCooldown,
 			uiStore: props.uiStore,
+			requestFailedMessage: t`Request failed`,
 		})
 	}
 
@@ -283,6 +318,7 @@ function ForgotPasswordVerifyView(props: {
 			email,
 			code: values.code,
 			verifyResetCode: requestVerifyResetCode,
+			requestFailedMessage: t`Request failed`,
 			onSuccess: async (session) => {
 				saveResetPasswordEmail(email)
 				saveResetPasswordSession(session)
@@ -447,6 +483,7 @@ function ResetPasswordWithKeyView(props: {
 	expiresAtMs: number
 	uiStore: ReturnType<typeof createResetPasswordUiStore>
 }) {
+	const { t } = useLingui()
 	const nav = useNavigate()
 	let expiryTimer: ReturnType<typeof globalThis.setTimeout> | undefined
 	const form = createForm({
@@ -497,6 +534,8 @@ function ResetPasswordWithKeyView(props: {
 				clearResetPasswordSuccess()
 			},
 			resetPasswordByKey: requestResetPassword,
+			requestFailedMessage: t`Request failed`,
+			invalidOrExpiredResetKeyMessage: t`Invalid or expired reset key`,
 			onSuccess: async () => {
 				markResetPasswordSuccess()
 				await nav({
@@ -567,6 +606,7 @@ function ResetPasswordWithKeyView(props: {
 }
 
 function ResetPasswordSuccessView() {
+	const { t } = useLingui()
 	onMount(() => {
 		clearResetPasswordSession()
 	})
@@ -596,6 +636,7 @@ function ResetPasswordSuccessView() {
 }
 
 export function ResetPasswordPage(props: Props) {
+	const { t } = useLingui()
 	const userStore = useCurrentUser()
 	const uiStore = createResetPasswordUiStore()
 	const isResetStep = () => props.step === "reset"
@@ -629,7 +670,7 @@ export function ResetPasswordPage(props: Props) {
 					<ForgotPasswordVerifyView
 						sessionWarning={
 							shouldShowResetSessionWarning()
-								? resetSessionRequiredMessage()
+								? t`Your reset session is no longer valid. Verify a new code to continue.`
 								: undefined
 						}
 						uiStore={uiStore}

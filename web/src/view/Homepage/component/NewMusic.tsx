@@ -1,7 +1,8 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For } from "solid-js"
 
 export function NewMusic() {
+	const { t } = useLingui()
 	return (
 		<div>
 			<div class="mb-4 flex items-center justify-between">

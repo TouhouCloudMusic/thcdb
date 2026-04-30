@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Artist } from "@thc/api"
 import { Show } from "solid-js"
 
@@ -10,17 +10,10 @@ type ArtistCardProps = {
 	artist: Artist
 }
 
-function formatArtistType(artistType: Artist["artist_type"]) {
-	if (artistType === "Solo") return t`Solo artist`
-	if (artistType === "Multiple") return t`Group`
-	return t`Artist`
-}
-
 export function ArtistCard(props: ArtistCardProps) {
 	const avatarUrl = () => imgUrl(props.artist.profile_image_url)
 	const initials = () => props.artist.name.trim().slice(0, 1).toUpperCase()
 	const artistHrefParams = () => ({ id: props.artist.id.toString() })
-	const typeText = () => formatArtistType(props.artist.artist_type)
 
 	return (
 		<Card class="group flex h-full flex-col gap-3 rounded-none border border-slate-300 bg-white p-3 shadow-none transition-colors duration-150 hover:border-slate-400 hover:bg-slate-50 motion-reduce:transition-none">
@@ -61,9 +54,23 @@ export function ArtistCard(props: ArtistCardProps) {
 						class="h-1 w-1 shrink-0 rounded-full bg-slate-300"
 						aria-hidden="true"
 					></span>
-					<span class="truncate">{typeText()}</span>
+					<span class="truncate">
+						<ArtistTypeText artistType={props.artist.artist_type} />
+					</span>
 				</div>
 			</div>
 		</Card>
 	)
+}
+
+function ArtistTypeText(props: { artistType: Artist["artist_type"] }) {
+	const { t } = useLingui()
+
+	const label = () => {
+		if (props.artistType === "Solo") return t`Solo artist`
+		if (props.artistType === "Multiple") return t`Group`
+		return t`Artist`
+	}
+
+	return <>{label()}</>
 }

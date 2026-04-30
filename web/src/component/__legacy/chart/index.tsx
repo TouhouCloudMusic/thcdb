@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Accessor, JSX } from "solid-js"
 import { createMemo, For, Show, splitProps } from "solid-js"
 import { PlusIcon } from "solid-radix-icons"
@@ -21,6 +21,7 @@ export type Props = {
 } & CardProps
 
 export function ChartFilter(props: Props): JSX.Element {
+	const { t } = useLingui()
 	const CLASS = "w-72 text-secondary text-sm grid grid-cols-[auto_1fr]"
 	// @tw
 	const UL_CLASS = "grid grid-cols-subgrid items-baseline col-span-2"

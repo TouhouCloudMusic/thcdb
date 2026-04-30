@@ -1,10 +1,11 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { HomeQueryOption } from "@thc/query"
 import { ErrorBoundary, For, Suspense } from "solid-js"
 
 import { Card } from "~/component/atomic/Card"
 import { HOME_METRICS } from "~/view/Homepage/mock"
+import type { HomeMetricKey } from "~/view/Homepage/mock"
 import { formatCount } from "~/view/Homepage/utils"
 
 type MetricCardProps = {
@@ -23,28 +24,67 @@ function MetricCard(props: MetricCardProps) {
 	)
 }
 
-function getFallbackMetrics() {
+function useHomeMetricText() {
+	const { t } = useLingui()
+	const label = (key: HomeMetricKey) => {
+		switch (key) {
+			case "artists_count": {
+				return t`Artists`
+			}
+			case "releases_count": {
+				return t`Releases`
+			}
+			case "songs_count": {
+				return t`Songs`
+			}
+			case "tags_count": {
+				return t`Tags`
+			}
+		}
+	}
+	const hint = (key: HomeMetricKey) => {
+		switch (key) {
+			case "artists_count": {
+				return t`Circles & solo creators`
+			}
+			case "releases_count": {
+				return t`Albums, EPs, singles`
+			}
+			case "songs_count": {
+				return t`Tracks & arrangements`
+			}
+			case "tags_count": {
+				return t`Genres, themes, credits`
+			}
+		}
+	}
+	return { label, hint }
+}
+
+function getFallbackMetrics(text: ReturnType<typeof useHomeMetricText>) {
 	return HOME_METRICS.map((metric) => ({
-		label: metric.label,
-		hint: metric.hint,
+		label: text.label(metric.key),
+		hint: text.hint(metric.key),
 		value: "—",
 	}))
 }
 
 function HomeHeroMetricsFallback() {
+	const metricText = useHomeMetricText()
 	return (
-		<For each={getFallbackMetrics()}>
+		<For each={getFallbackMetrics(metricText)}>
 			{(metric) => <MetricCard metric={metric} />}
 		</For>
 	)
 }
 
 function HomeHeroMetricsContent() {
+	const metricText = useHomeMetricText()
 	const metadataQuery = useQuery(() => HomeQueryOption.metadata())
 	const metrics = () =>
 		HOME_METRICS.map((metric) => ({
-			label: metric.label,
-			hint: metric.hint,
+			label: metricText.label(metric.key),
+			hint: metricText.hint(metric.key),
 			value: formatCount(metadataQuery.data?.[metric.key]),
 		}))
 
@@ -64,6 +104,7 @@ function HomeHeroMetrics() {
 }
 
 export function HomeHero() {
+	const { t } = useLingui()
 	return (
 		<section class="relative overflow-hidden rounded-md border border-slate-300 bg-linear-to-br from-reimu-100 via-primary to-marisa-100 shadow-xs">
 			<div class="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.65)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.65)_1px,transparent_1px)] bg-size-[22px_22px] opacity-55"></div>
@@ -113,6 +154,8 @@ export function HomeHero() {
 }
 
 export function HomeHeroSkeleton() {
+	const { t } = useLingui()
+	const metricText = useHomeMetricText()
 	return (
 		<section class="relative overflow-hidden rounded-md border border-slate-300 bg-linear-to-br from-reimu-100 via-primary to-marisa-100 shadow-xs">
 			<div class="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.65)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.65)_1px,transparent_1px)] bg-size-[22px_22px] opacity-55"></div>
@@ -145,7 +188,7 @@ export function HomeHeroSkeleton() {
 				</div>
 
 				<div class="grid content-start gap-3 sm:grid-cols-2 lg:grid-cols-1">
-					<For each={getFallbackMetrics()}>
+					<For each={getFallbackMetrics(metricText)}>
 						{(metric) => <MetricCard metric={metric} />}
 					</For>
 					<Card class="flex flex-col gap-2 border border-slate-300 bg-white/70 p-4 shadow-xs backdrop-blur-sm">

@@ -1,11 +1,12 @@
 import { Field } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 
 import { InputField } from "~/component/atomic/form/Input"
 
 import { useArtistForm } from "../context"
 
 export function ArtistFormNameField() {
+	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
 	return (

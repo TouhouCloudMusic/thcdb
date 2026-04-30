@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { createSignal, For, Match, Show, Switch } from "solid-js"
 
 import { Link } from "~/component/atomic/Link"
@@ -34,6 +34,7 @@ type Props = {
 }
 
 export function CollectionDetailPage(props: Props) {
+	const { t } = useLingui()
 	const userCtx = useCurrentUser()
 	const isOwner = () => userCtx.user?.name === props.collection.owner.name
 

@@ -1,6 +1,6 @@
 /* @refresh reload */
 import { Field, FieldArray, getInput, insert, remove } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { ObjExt } from "@thc/toolkit/data"
 import type { JSX } from "solid-js"
 import { For } from "solid-js"
@@ -13,7 +13,15 @@ import { InputField } from "~/component/atomic/form/Input"
 import { useArtistForm } from "../../context"
 import type { ArtistEditFormContextValue } from "../../context"
 
+type TenureErrorMessages = {
+	leaveBeforeJoin: string
+	leaveSameAsJoin: string
+	joinBeforePreviousLeave: string
+	joinSameAsPreviousLeave: string
+}
+
 export function TenureFieldArray(props: { index: number }): JSX.Element {
+	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
 	const tenures = {
@@ -82,9 +90,22 @@ function TenureEntry(props: {
 	entryIndex: number
 	onRemove: () => void
 }) {
+	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
-	const errors = () => computeTenureError(formStore, props.membershipIndex)
+	const errorMessages = () => ({
+		leaveBeforeJoin: t`Leave year cannot be earlier than join year`,
+		leaveSameAsJoin: t`Leave year cannot be the same as join year`,
+		joinBeforePreviousLeave: t({
+			message: "Join year cannot be earlier than previous leave year",
+		}),
+		joinSameAsPreviousLeave: t({
+			message: "Join year cannot be the same as previous leave year",
+		}),
+	})
+
+	const errors = () =>
+		computeTenureError(formStore, props.membershipIndex, errorMessages())
 
 	return (
 		<li class="grid grid-cols-[1fr_auto] items-center p-1.5">
@@ -141,6 +162,7 @@ function TenureEntry(props: {
 function computeTenureError(
 	formStore: ArtistEditFormContextValue["formStore"],
 	index: number,
+	messages: TenureErrorMessages,
 ): string[] {
 	const tenuresRaw = getInput(formStore, {
 		path: ["data", "memberships", index, "tenure"],
@@ -161,9 +183,9 @@ function computeTenureError(
 
 		if (typeof leaveYear === "number" && typeof joinYear === "number") {
 			if (leaveYear < joinYear) {
-				res.push(t`Leave year cannot be earlier than join year`)
+				res.push(messages.leaveBeforeJoin)
 			} else if (leaveYear === joinYear) {
-				res.push(t`Leave year cannot be the same as join year`)
+				res.push(messages.leaveSameAsJoin)
 			}
 		}
 
@@ -175,17 +197,9 @@ function computeTenureError(
 
 			if (typeof prevLeave === "number" && typeof joinYear === "number") {
 				if (joinYear < prevLeave) {
-					res.push(
-						t({
-							message: "Join year cannot be earlier than previous leave year",
-						}),
-					)
+					res.push(messages.joinBeforePreviousLeave)
 				} else if (joinYear === prevLeave) {
-					res.push(
-						t({
-							message: "Join year cannot be the same as previous leave year",
-						}),
-					)
+					res.push(messages.joinSameAsPreviousLeave)
 				}
 			}
 		}

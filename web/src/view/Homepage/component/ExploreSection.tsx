@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { JSX } from "solid-js"
 
 import { Link } from "~/component/atomic/Link"
@@ -11,6 +11,7 @@ type ExploreSectionProps = {
 }
 
 export function ExploreSection(props: ExploreSectionProps) {
+	const { t } = useLingui()
 	return (
 		<div class="flex flex-col gap-4">
 			<div class="flex items-center justify-between">

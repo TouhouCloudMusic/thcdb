@@ -1,5 +1,5 @@
 import { Field } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { TagType } from "@thc/api"
 import { For } from "solid-js"
 import { twMerge } from "tailwind-merge"
@@ -20,6 +20,7 @@ type Props = {
 }
 
 export function TagFormTypeField(props: Props) {
+	const { t } = useLingui()
 	const { formStore } = useTagForm()
 
 	return (

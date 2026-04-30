@@ -1,6 +1,6 @@
 /* @refresh reload */
 import { Field, getInput, insert, remove } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Artist, ArtistCommonFilter } from "@thc/api"
 import { createMemo } from "solid-js"
 import type { JSX } from "solid-js"
@@ -48,6 +48,7 @@ function createMembershipStore() {
 }
 
 export function ArtistFormMembership(): JSX.Element {
+	const { t } = useLingui()
 	const context = useArtistForm()
 	const { formStore } = context
 

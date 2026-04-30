@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Artist } from "@thc/api"
 import type { Component } from "solid-js"
 import { For, Show } from "solid-js"
@@ -28,12 +28,6 @@ const formatArtistDateRange = (artist: Artist) => {
 	const start = DateWithPrecision.display(artist.start_date) ?? "Unknown"
 	const end = DateWithPrecision.display(artist.end_date) ?? "Present"
 	return `${start} - ${end}`
-}
-
-function formatArtistTypeLabel(value: string) {
-	if (value === "") return t`All`
-	if (value === "Multiple") return t`Group`
-	return value
 }
 
 export const ArtistItemSkeleton: Component = () => (
@@ -121,7 +115,7 @@ export const ArtistItem: Component<ArtistItemProps> = (props) => {
 						</div>
 
 						<div class="shrink-0 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-600">
-							{formatArtistTypeLabel(props.artist.artist_type)}
+							<ArtistTypeLabel value={props.artist.artist_type} />
 						</div>
 					</div>
 
@@ -132,6 +126,18 @@ export const ArtistItem: Component<ArtistItemProps> = (props) => {
 			</div>
 		</div>
 	)
+}
+
+function ArtistTypeLabel(props: { value: string }) {
+	const { t } = useLingui()
+
+	const label = () => {
+		if (props.value === "") return t`All`
+		if (props.value === "Multiple") return t`Group`
+		return props.value
+	}
+
+	return <>{label()}</>
 }
 
 type ArtistExploreFilterBarProps = {
@@ -145,6 +151,7 @@ type ArtistExploreFilterBarProps = {
 }
 
 export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
+	const { t } = useLingui()
 	const typeOptions = () => ["", ...ARTIST_TYPES]
 
 	return (
@@ -158,13 +165,13 @@ export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 						onChange={(value) => props.onArtistTypeChange(value ?? "")}
 						itemComponent={(optionProps) => (
 							<Select.Item item={optionProps.item}>
-								{formatArtistTypeLabel(optionProps.item.rawValue)}
+								<ArtistTypeLabel value={optionProps.item.rawValue} />
 							</Select.Item>
 						)}
 					>
 						<Select.Trigger>
 							<Select.Value<string>>
-								{(state) => formatArtistTypeLabel(state.selectedOption())}
+								{(state) => <ArtistTypeLabel value={state.selectedOption()} />}
 							</Select.Value>
 							<Select.Icon />
 						</Select.Trigger>
@@ -201,6 +208,7 @@ type ArtistExploreListProps = {
 }
 
 export const ArtistExploreList: Component<ArtistExploreListProps> = (props) => {
+	const { t } = useLingui()
 	return (
 		<>
 			<Show when={!props.isLoading && props.artists.length === 0}>

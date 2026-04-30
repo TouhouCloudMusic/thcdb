@@ -1,5 +1,5 @@
 import { Tabs } from "@kobalte/core/tabs"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { UserProfile, UserRoleEnum } from "@thc/api"
 import type { ComponentProps } from "solid-js"
 import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
@@ -82,57 +82,33 @@ export type PinItem = {
 
 const PROFILE_TAB_ITEMS = [
 	{
-		get label() {
-			return t`Activity`
-		},
 		value: "activity" as const,
 	},
 	{
-		get label() {
-			return t`Collections`
-		},
 		value: "collections" as const,
 	},
 ]
 
 const COLLECTION_VISIBILITY_FILTERS = [
 	{
-		get label() {
-			return t`All`
-		},
 		value: "all" as const,
 	},
 	{
-		get label() {
-			return t`Public`
-		},
 		value: "public" as const,
 	},
 	{
-		get label() {
-			return t`Private`
-		},
 		value: "private" as const,
 	},
 ]
 
 const COLLECTION_SORT_OPTIONS = [
 	{
-		get label() {
-			return t`Newest`
-		},
 		value: "newest" as const,
 	},
 	{
-		get label() {
-			return t`Name`
-		},
 		value: "name" as const,
 	},
 	{
-		get label() {
-			return t`Item count`
-		},
 		value: "items" as const,
 	},
 ]
@@ -141,6 +117,7 @@ const COLLECTION_TOOL_CONTROL_CLASS =
 	"h-9 rounded-md border border-slate-400 bg-primary px-3 text-sm text-primary outline-none transition-colors placeholder:text-secondary hover:border-slate-500 focus:border-slate-500 focus:ring-1 focus:ring-slate-400"
 
 export function Profile(props: Props) {
+	const { t } = useLingui()
 	const userType = createMemo(() => {
 		if (props.isCurrentUser) {
 			return UserType.Current
@@ -271,6 +248,7 @@ type ProfileActionProps = Pick<
 const BUTTON_CLASS = "w-full justify-center text-sm px-4 py-2"
 
 function ProfileActionButton(props: ProfileActionButtonProps) {
+	const { t } = useLingui()
 	const [hovering, setHovering] = createSignal(false)
 
 	const onMouseEnter = () => setHovering(true)
@@ -335,6 +313,7 @@ function ProfileActionButton(props: ProfileActionButtonProps) {
 }
 
 function AboutSection(props: { user: UserProfile }) {
+	const { t } = useLingui()
 	const [mdParsing, setMdParsing] = createSignal(true)
 	const bio = createMemo(() => props.user.bio)
 	const shouldPulse = createMemo(() => Boolean(bio()) && mdParsing())
@@ -478,7 +457,7 @@ function CollectionsAndActivitySection(props: {
 								value={item.value}
 								class="relative z-10 flex min-w-0 items-center justify-center rounded-lg px-4 py-2.5 text-sm text-tertiary outline-none transition-colors duration-150 hover:text-primary focus-visible:outline focus-visible:outline-reimu-600 data-selected:text-primary"
 							>
-								{item.label}
+								<ProfileTabLabel value={item.value} />
 							</Tabs.Trigger>
 						)}
 					</For>
@@ -507,6 +486,23 @@ function CollectionsAndActivitySection(props: {
 			</Tabs>
 		</section>
 	)
+}
+
+function ProfileTabLabel(props: { value: ProfileTabValue }) {
+	const { t } = useLingui()
+
+	const label = () => {
+		switch (props.value) {
+			case "activity": {
+				return t`Activity`
+			}
+			case "collections": {
+				return t`Collections`
+			}
+		}
+	}
+
+	return <>{label()}</>
 }
 
 function SectionEmptyState(props: { message: string }) {
@@ -584,6 +580,7 @@ function CollectionsPanel(props: {
 	onLoadMore: () => void
 	isCurrentUser: boolean
 }) {
+	const { t } = useLingui()
 	const [collectionFormOpen, setCollectionFormOpen] = createSignal(false)
 	const [searchQuery, setSearchQuery] = createSignal("")
 	const [visibilityFilter, setVisibilityFilter] =
@@ -643,7 +640,11 @@ function CollectionsPanel(props: {
 						class={twMerge(COLLECTION_TOOL_CONTROL_CLASS, "sm:w-36")}
 					>
 						<For each={COLLECTION_VISIBILITY_FILTERS}>
-							{(option) => <option value={option.value}>{option.label}</option>}
+							{(option) => (
+								<option value={option.value}>
+									<CollectionVisibilityFilterLabel value={option.value} />
+								</option>
+							)}
 						</For>
 					</select>
 
@@ -656,7 +657,11 @@ function CollectionsPanel(props: {
 						class={twMerge(COLLECTION_TOOL_CONTROL_CLASS, "sm:w-40")}
 					>
 						<For each={COLLECTION_SORT_OPTIONS}>
-							{(option) => <option value={option.value}>{option.label}</option>}
+							{(option) => (
+								<option value={option.value}>
+									<CollectionSortLabel value={option.value} />
+								</option>
+							)}
 						</For>
 					</select>
 
@@ -709,6 +714,48 @@ function CollectionsPanel(props: {
 	)
 }
 
+function CollectionVisibilityFilterLabel(props: {
+	value: CollectionVisibilityFilter
+}) {
+	const { t } = useLingui()
+
+	const label = () => {
+		switch (props.value) {
+			case "all": {
+				return t`All`
+			}
+			case "public": {
+				return t`Public`
+			}
+			case "private": {
+				return t`Private`
+			}
+		}
+	}
+
+	return <>{label()}</>
+}
+
+function CollectionSortLabel(props: { value: CollectionSortValue }) {
+	const { t } = useLingui()
+
+	const label = () => {
+		switch (props.value) {
+			case "newest": {
+				return t`Newest`
+			}
+			case "name": {
+				return t`Name`
+			}
+			case "items": {
+				return t`Item count`
+			}
+		}
+	}
+
+	return <>{label()}</>
+}
+
 function toCollectionVisibilityFilter(
 	value: string,
 ): CollectionVisibilityFilter {
@@ -758,6 +805,7 @@ function compareCollections(
 }
 
 function ActivityPanel(props: { items: readonly ActivityItem[] }) {
+	const { t } = useLingui()
 	return (
 		<Show
 			when={props.items.length > 0}
@@ -778,6 +826,7 @@ function ActivityPanel(props: { items: readonly ActivityItem[] }) {
 }
 
 function CollectionRow(props: { item: UserCollection }) {
+	const { t } = useLingui()
 	return (
 		<li>
 			<Link

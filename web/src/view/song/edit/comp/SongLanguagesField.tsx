@@ -7,7 +7,7 @@ import {
 	remove,
 	setInput,
 } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Language } from "@thc/api"
 import { createMemo, For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
@@ -25,6 +25,7 @@ export function SongLanguagesField(props: {
 	initLanguages?: Language[]
 	class?: string
 }) {
+	const { t } = useLingui()
 	const selectedLanguages = createMemo(() => {
 		return getInput(props.of, { path: ["data", "languages"] })
 	})

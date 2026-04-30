@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 
 import { ExploreFilter } from "~/component/feature/entity_explore/ExploreFilter"
 
@@ -8,6 +8,7 @@ export function CorrectionSortFieldSelect(props: {
 	value: CorrectionSortField | undefined
 	onChange: (value: CorrectionSortField) => void
 }) {
+	const { t } = useLingui()
 	return (
 		<ExploreFilter
 			label={t`Sort by`}

@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { ArtistApi } from "@thc/api"
 import { Either } from "effect"
@@ -86,6 +86,7 @@ function LatestArtistsGrid() {
 }
 
 export function LatestArtistsCard() {
+	const { t } = useLingui()
 	return (
 		<Card class="relative overflow-hidden bg-transparent p-0 shadow-none">
 			<ExploreSection

@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { ReleaseType } from "@thc/api"
 
 import {
@@ -18,6 +18,7 @@ type ReleaseExploreViewPickerProps = {
 }
 
 function ReleaseExploreViewPicker(props: ReleaseExploreViewPickerProps) {
+	const { t } = useLingui()
 	const viewButtonClass = (value: DisplayType) => {
 		const isSelected = () => props.displayType === value
 		const selectedClass = isSelected()
@@ -102,6 +103,7 @@ const SELECT_OPTIONS: { value: ReleaseType | "All"; label: string }[] = [
 ]
 
 function ReleaseTypeSelect(props: { store: ReleaseExploreFilterStore }) {
+	const { t } = useLingui()
 	return (
 		<ExploreFilter
 			label={t`Type`}

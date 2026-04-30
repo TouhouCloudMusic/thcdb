@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { Match, Show, Switch } from "solid-js"
 import { ArrowDownIcon, ArrowUpIcon } from "solid-radix-icons"
 
@@ -9,7 +9,6 @@ import { DateWithPrecision } from "~/domain/shared"
 import type {
 	ArtistSummary,
 	EntitySummary,
-	EntityType,
 	EventSummary,
 	LabelSummary,
 	PageResponseUserCollectionItemDetail,
@@ -269,18 +268,36 @@ function EntityContent(props: { summary: EntitySummary }) {
 	)
 }
 
-const ENTITY_TYPE_LABELS: Record<EntityType, () => string> = {
-	Artist: () => t`Artist`,
-	Label: () => t`Label`,
-	Release: () => t`Release`,
-	Song: () => t`Song`,
-	Tag: () => t`Tag`,
-	Event: () => t`Event`,
-	SongLyrics: () => "SongLyrics",
-	CreditRole: () => "CreditRole",
-}
-
 export function CollectionItemCard(props: Props) {
+	const { t } = useLingui()
+	const entityTypeLabel = () => {
+		switch (props.item.entity_type) {
+			case "Artist": {
+				return t`Artist`
+			}
+			case "Label": {
+				return t`Label`
+			}
+			case "Release": {
+				return t`Release`
+			}
+			case "Song": {
+				return t`Song`
+			}
+			case "Tag": {
+				return t`Tag`
+			}
+			case "Event": {
+				return t`Event`
+			}
+			case "CreditRole": {
+				return t`Credit role`
+			}
+			case "SongLyrics": {
+				return t`Song lyrics`
+			}
+		}
+	}
 	return (
 		<li class="flex flex-col gap-3 rounded-sm border border-slate-300 bg-primary p-4 shadow-xs transition-shadow hover:shadow-md">
 			<div class="flex flex-col gap-3 w-full">
@@ -290,9 +307,7 @@ export function CollectionItemCard(props: Props) {
 						{props.item.position + 1}
 					</span>
 					{/* Entity type label */}
-					<span class="text-xs text-tertiary">
-						{ENTITY_TYPE_LABELS[props.item.entity_type]()}
-					</span>
+					<span class="text-xs text-tertiary">{entityTypeLabel()}</span>
 					<Show when={props.isEditing}>
 						<div class="ml-auto flex shrink-0 items-center gap-1">
 							<button

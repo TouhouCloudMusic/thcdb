@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For } from "solid-js"
 
 import { Image } from "~/component/image"
@@ -15,6 +15,7 @@ type ReleaseCoverWallRelease = {
 }
 
 export function ReleaseCoverWall(props: ReleaseCoverWallProps) {
+	const { t } = useLingui()
 	return (
 		<For each={props.releases}>
 			{(release) => (

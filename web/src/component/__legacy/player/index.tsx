@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { createSignal, Show } from "solid-js"
 
 type Song = {
@@ -16,6 +16,7 @@ const formatTime = (seconds: number) => {
 }
 
 export function Player() {
+	const { t } = useLingui()
 	const [currentSong] = createSignal<Song | null>({
 		id: 1,
 		title: t`幻想乡之歌`,

@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { SongApi } from "@thc/api"
@@ -46,6 +46,7 @@ type SongExploreFilterBarProps = {
 }
 
 function SongExploreFilterBar(props: SongExploreFilterBarProps) {
+	const { t } = useLingui()
 	const languageOptions = () => [
 		"",
 		...LANGUAGE_OPTIONS.map((lang) => lang.id.toString()),
@@ -114,6 +115,7 @@ type SongExploreListProps = {
 }
 
 function SongExploreList(props: SongExploreListProps) {
+	const { t } = useLingui()
 	return (
 		<>
 			<Show when={!props.isLoading && props.songs.length === 0}>
@@ -156,6 +158,7 @@ function SongExploreList(props: SongExploreListProps) {
 }
 
 export const SongExplore = () => {
+	const { t } = useLingui()
 	const search = route.useSearch()
 	const scrollDirection = useScrollDirection()
 

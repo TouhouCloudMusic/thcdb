@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Song } from "@thc/api"
 import { SongQueryOption } from "@thc/query"
@@ -20,6 +20,7 @@ type SongSearchDialogProps = {
 }
 
 export function SongSearchDialog(props: SongSearchDialogProps): JSX.Element {
+	const { t } = useLingui()
 	const [searchKeyword, setSearchKeyword] = createSignal("")
 
 	const onInput = debounce(300, (value: string) => {

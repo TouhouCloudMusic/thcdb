@@ -1,5 +1,5 @@
 import { Field, getErrors, insert, remove } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { SimpleArtist } from "@thc/api"
 import { ArtistApi } from "@thc/api"
 import { Either, Option as O } from "effect"
@@ -25,6 +25,7 @@ type Props = {
 }
 
 export function LabelFoundersField(props: Props) {
+	const { t } = useLingui()
 	const { formStore } = useLabelForm()
 
 	const [founders, setFounders] = createSignal<FounderEntry[]>(

@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { ReleaseApi } from "@thc/api"
 import { Either } from "effect"
@@ -104,6 +104,7 @@ function LatestReleasesGrid() {
 }
 
 export function HomePage() {
+	const { t } = useLingui()
 	return (
 		<PageLayout class="p-8">
 			<div class="flex flex-col gap-10">

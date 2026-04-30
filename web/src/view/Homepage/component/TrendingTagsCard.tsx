@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { TagApi } from "@thc/api"
 import { Either } from "effect"
@@ -88,6 +88,7 @@ function TrendingTagsChips() {
 }
 
 export function TrendingTagsCard() {
+	const { t } = useLingui()
 	return (
 		<Card class="p-5 shadow-none">
 			<ExploreSection

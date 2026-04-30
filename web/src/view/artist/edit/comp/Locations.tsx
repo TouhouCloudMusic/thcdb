@@ -1,11 +1,12 @@
 import { setInput } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 
 import { Location } from "~/component/form/Location"
 
 import { useArtistForm } from "../context"
 
 export function ArtistFormLocationFields() {
+	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
 	return (

@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { twJoin, twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
@@ -12,6 +12,7 @@ type Props = {
 }
 
 export function FormActionBar(props: Props) {
+	const { t } = useLingui()
 	const handleBack = () => {
 		if (props.onBack) {
 			props.onBack()

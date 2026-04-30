@@ -1,8 +1,4 @@
-import { t } from "@lingui/core/macro"
-
-const AUTH_LEFT_PANEL_TITLE = () => t`Contribute touhou music metadata`
-const AUTH_LEFT_PANEL_DESCRIPTION = () =>
-	t`Add what is missing and keep entries consistent across the database.`
+import { Trans } from "@lingui/solid/macro"
 
 export function AuthLeftPanel() {
 	return (
@@ -18,34 +14,42 @@ export function AuthLeftPanel() {
 						TOUHOU CLOUD DB
 					</div>
 					<div class="text-xs text-tertiary">
-						{t`Open doujin music database`}
+						<Trans>Open doujin music database</Trans>
 					</div>
 				</div>
 			</div>
 
 			<div class="flex flex-col gap-3">
 				<h1 class="text-5xl font-light tracking-tighter text-primary">
-					{AUTH_LEFT_PANEL_TITLE()}
+					<Trans>Contribute touhou music metadata</Trans>
 				</h1>
-				<h2 class="text-xl text-tertiary">{AUTH_LEFT_PANEL_DESCRIPTION()}</h2>
+				<h2 class="text-xl text-tertiary">
+					<Trans>
+						Add what is missing and keep entries consistent across the database.
+					</Trans>
+				</h2>
 			</div>
 
 			<div class="grid gap-3 pt-2 text-sm text-secondary">
 				<div class="flex items-center gap-2">
 					<span class="inline-block size-1.5 rounded-full bg-reimu-600"></span>
 					<span>
-						{t({
-							message: "Add missing entries (artists, releases, songs, events)",
-						})}
+						<Trans>
+							Add missing entries (artists, releases, songs, events)
+						</Trans>
 					</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<span class="inline-block size-1.5 rounded-full bg-reimu-600"></span>
-					<span>{t`Submit corrections and keep metadata clean`}</span>
+					<span>
+						<Trans>Submit corrections and keep metadata clean</Trans>
+					</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<span class="inline-block size-1.5 rounded-full bg-reimu-600"></span>
-					<span>{t`Sync your contributions across devices`}</span>
+					<span>
+						<Trans>Sync your contributions across devices</Trans>
+					</span>
 				</div>
 			</div>
 		</div>

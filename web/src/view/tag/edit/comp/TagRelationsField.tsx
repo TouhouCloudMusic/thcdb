@@ -6,7 +6,7 @@ import {
 	remove,
 	setInput,
 } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Tag, TagRef, TagRelationType } from "@thc/api"
 import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -38,6 +38,7 @@ const getRelationTypeLabel = (value: string) =>
 	value === "" ? "-- Select relation type --" : value
 
 export function TagFormRelationsField(props: Props) {
+	const { t } = useLingui()
 	const { formStore, tag } = useTagForm()
 
 	const [tagRefs, setTagRefs] = createStore<(TagRef | undefined)[]>(
@@ -128,6 +129,7 @@ type RelationRowProps = {
 }
 
 function RelationRow(props: RelationRowProps) {
+	const { t } = useLingui()
 	const dataFilter = createMemo(() => {
 		const ignoreIndex = props.index
 		const relationIds = new Set(

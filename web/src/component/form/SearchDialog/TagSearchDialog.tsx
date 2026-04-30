@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Tag } from "@thc/api"
 import type { JSX } from "solid-js"
 import { PlusIcon } from "solid-radix-icons"
@@ -13,6 +13,7 @@ type TagSearchDialogProps = {
 }
 
 export function TagSearchDialog(props: TagSearchDialogProps): JSX.Element {
+	const { t } = useLingui()
 	const { searchKeyword, onInput, items } = useTagSearch(() => props.dataFilter)
 
 	return (

@@ -1,5 +1,5 @@
 import { Form, createForm, getAllErrors, getInput } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useBlocker } from "@tanstack/solid-router"
 import type { JSX } from "solid-js"
 import { createEffect, Show } from "solid-js"
@@ -28,6 +28,7 @@ export function EditSongPage(props: Props): JSX.Element {
 }
 
 function PageHeader(props: { type: Props["type"] }) {
+	const { t } = useLingui()
 	return (
 		<div class="border-b-1 border-slate-300 p-8">
 			<div class="flex items-center gap-4">
@@ -45,6 +46,7 @@ function PageHeader(props: { type: Props["type"] }) {
 }
 
 function FormContent(props: Props) {
+	const { t } = useLingui()
 	const initialValues = useSongFormInitialValues(props)
 
 	const form = createForm({

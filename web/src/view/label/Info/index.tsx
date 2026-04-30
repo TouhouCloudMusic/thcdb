@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Label } from "@thc/api"
 import { Show, Suspense } from "solid-js"
 
@@ -18,6 +18,7 @@ type Props = {
 }
 
 export function LabelInfoPage(props: Props) {
+	const { t } = useLingui()
 	const contextValue: LabelInfoPageContextValue = {
 		get label() {
 			return props.label
@@ -59,6 +60,7 @@ function LabelInfoHeader() {
 }
 
 function LabelInfoDetails() {
+	const { t } = useLingui()
 	const ctx = assertContext(LabelInfoPageContext)
 	const hasLocalizedNames = () => ctx.label.localized_names.length > 0
 	const hasFounders = () => ctx.label.founders.length > 0

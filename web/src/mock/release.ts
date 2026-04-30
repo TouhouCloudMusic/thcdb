@@ -1,5 +1,4 @@
 import { faker } from "@faker-js/faker"
-import { t } from "@lingui/core/macro"
 import type { Release } from "@thc/api"
 
 import { RELEASE_TYPES } from "~/domain/release/constants"
@@ -78,7 +77,7 @@ export const createMockRelease = (
 	const localizedTitles = hasLocalizedTitle
 		? [
 				{
-					language: { id: 1, code: "ja", name: t`Japanese` },
+					language: { id: 1, code: "ja", name: "Japanese" },
 					title: `【JP】${title}`,
 				},
 			]

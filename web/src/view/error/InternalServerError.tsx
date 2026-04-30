@@ -1,7 +1,8 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { Title } from "@solidjs/meta"
 
 export function InternalServerError(props: { msg?: string | undefined }) {
+	const { t } = useLingui()
 	return (
 		<div class="flex size-full py-32">
 			<Title>{t`500 Internal Server Error`}</Title>

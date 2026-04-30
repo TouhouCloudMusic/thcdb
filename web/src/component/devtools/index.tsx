@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { TanStackDevtools } from "@tanstack/solid-devtools"
 import { SolidQueryDevtoolsPanel } from "@tanstack/solid-query-devtools"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/solid-router-devtools"
@@ -8,6 +8,7 @@ export const Devtools: Component<{
 	"open-router-panel"?: boolean
 	"open-query-panel"?: boolean
 }> = (props) => {
+	const { t } = useLingui()
 	return (
 		<TanStackDevtools
 			plugins={[

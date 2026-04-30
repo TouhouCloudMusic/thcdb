@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { TagApi } from "@thc/api"
 import { Either } from "effect"
@@ -16,6 +16,7 @@ const MAX_DEPTH = 4
 const TREE_HEADING_ID = "tag-tree-title"
 
 export function TagExplore() {
+	const { t } = useLingui()
 	const treeQuery = useQuery(() => ({
 		queryKey: ["tag::tree", ROOT_COUNT, MAX_DEPTH],
 		queryFn: async () => {

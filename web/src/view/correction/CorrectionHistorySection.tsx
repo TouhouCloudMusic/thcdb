@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem } from "@thc/api"
 import { For, Suspense } from "solid-js"
 import { twMerge } from "tailwind-merge"
@@ -14,6 +14,7 @@ type CorrectionHistoryItemProps = {
 }
 
 function CorrectionHistoryItemEntry(props: CorrectionHistoryItemProps) {
+	const { t } = useLingui()
 	return (
 		<li
 			class={twMerge(
@@ -27,7 +28,10 @@ function CorrectionHistoryItemEntry(props: CorrectionHistoryItemProps) {
 				</div>
 
 				<div class="h-full self-center ml-auto text-xs text-tertiary">
-					{formatTimestamp(props.item.handled_at ?? props.item.created_at)}
+					{formatTimestamp(
+						props.item.handled_at ?? props.item.created_at,
+						t`None`,
+					)}
 				</div>
 				<Link
 					to="/correction/$id"
@@ -83,6 +87,7 @@ type CorrectionHistorySectionProps = {
 }
 
 export function CorrectionHistorySection(props: CorrectionHistorySectionProps) {
+	const { t } = useLingui()
 	return (
 		<section class={twMerge("space-y-2", props.class)}>
 			<Suspense
