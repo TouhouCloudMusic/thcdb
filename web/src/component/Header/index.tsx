@@ -1,5 +1,5 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { Link, useNavigate } from "@tanstack/solid-router"
 import type { UserProfile } from "@thc/api"
 import {
@@ -121,6 +121,7 @@ function AuthenticatedContent(props: { user: UserProfile }) {
 }
 
 function SearchBar() {
+	const { t } = useLingui()
 	const navigate = useNavigate()
 	let inputRef: HTMLInputElement | undefined
 
@@ -231,6 +232,7 @@ function NotificationButton() {
 }
 
 function UnauthenticatedButtons() {
+	const { t } = useLingui()
 	// @tw
 	const BTN_CLASS = "py-1 px-3 text-sm"
 

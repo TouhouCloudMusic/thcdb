@@ -1,12 +1,14 @@
-import { t } from "@lingui/core/macro"
 import type { Event, Release } from "@thc/api"
 
 import { DateWithPrecision } from "~/domain/shared"
 
 const COUNT_FORMATTER = new Intl.NumberFormat("en-US")
 
-export const formatArtists = (artists: { name: string }[] | undefined) => {
-	if (!artists || artists.length === 0) return t`Unknown artist`
+export const formatArtists = (
+	artists: { name: string }[] | undefined,
+	unknownArtistLabel: string,
+) => {
+	if (!artists || artists.length === 0) return unknownArtistLabel
 	return artists
 		.slice(0, 3)
 		.map((artist) => artist.name)

@@ -1,5 +1,5 @@
 import { Field } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { ArtistType } from "@thc/api"
 
 import { FormComp } from "~/component/atomic/form"
@@ -18,6 +18,7 @@ const getArtistTypeLabel = (value: string) =>
 	value === "" ? "-- Please select artist type --" : value
 
 export function ArtistFormArtistTypeField() {
+	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
 	return (

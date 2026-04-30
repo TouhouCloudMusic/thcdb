@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { createSignal, For } from "solid-js"
 
 type NavItem = {
@@ -8,6 +8,7 @@ type NavItem = {
 }
 
 export function Navbar() {
+	const { t } = useLingui()
 	const [items, setItems] = createSignal<NavItem[]>([
 		{ id: "recommend", label: t`推荐`, active: true },
 		{ id: "playlist", label: t`歌单` },

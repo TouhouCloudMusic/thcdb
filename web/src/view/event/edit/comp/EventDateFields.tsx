@@ -1,5 +1,5 @@
 import { Field, setInput } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For, createMemo } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
@@ -20,6 +20,7 @@ type DateFieldDescriptor = {
 }
 
 export function EventDateFields(props: Props) {
+	const { t } = useLingui()
 	const { formStore } = useEventForm()
 
 	const fields: DateFieldDescriptor[] = [

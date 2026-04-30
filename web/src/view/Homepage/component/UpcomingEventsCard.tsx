@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { EventApi } from "@thc/api"
 import type { Event } from "@thc/api"
@@ -65,6 +65,7 @@ function UpcomingEventsListEmpty() {
 }
 
 export function UpcomingEventsCard() {
+	const { t } = useLingui()
 	return (
 		<Card class="p-5 shadow-none">
 			<ExploreSection

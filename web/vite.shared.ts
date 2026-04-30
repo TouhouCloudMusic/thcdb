@@ -1,9 +1,9 @@
-import { lingui } from "@lingui/vite-plugin"
+import { lingui, linguiTransformerBabelPreset } from "@lingui/vite-plugin"
+import babel from "@rolldown/plugin-babel"
 import tailwindcss from "@tailwindcss/vite"
 import { devtools } from "@tanstack/devtools-vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import type { PluginOption } from "vite"
-import babelMacrosPlugin from "vite-plugin-babel-macros"
 import solidPlugin from "vite-plugin-solid"
 
 function compactPlugins(
@@ -23,7 +23,9 @@ export function createAppPlugins(): PluginOption[] {
 			autoCodeSplitting: true,
 			routesDirectory: "src/route",
 		}),
-		babelMacrosPlugin(),
+		babel({
+			presets: [linguiTransformerBabelPreset()],
+		}),
 		solidPlugin(),
 		tailwindcss(),
 	])

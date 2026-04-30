@@ -1,5 +1,5 @@
 /* @refresh skip */
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { createSignal } from "solid-js"
 
 import { Select } from "~/component/atomic/form/select"
@@ -8,6 +8,7 @@ import { assertContext } from "~/utils/solid/assertContext"
 import { SongInfoPageContext } from ".."
 
 export function SongInfoLyrics() {
+	const { t } = useLingui()
 	const ctx = assertContext(SongInfoPageContext)
 
 	const lyricsList = () => ctx.song.lyrics

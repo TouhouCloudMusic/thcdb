@@ -1,5 +1,5 @@
 import { Field, FieldArray, insert, remove, setInput } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Language } from "@thc/api"
 import { For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
@@ -17,6 +17,7 @@ export function LocalizedTitlesField(props: {
 	of: ReleaseFormStore
 	class?: string
 }) {
+	const { t } = useLingui()
 	return (
 		<div class={twMerge("flex min-h-32 w-full flex-col", props.class)}>
 			<div class="mb-4 flex place-content-between items-center gap-4">
@@ -62,6 +63,7 @@ export function LocalizedTitlesField(props: {
 }
 
 function LocalizedTitleItem(props: { index: number; of: ReleaseFormStore }) {
+	const { t } = useLingui()
 	const onLangChange = (v: Language | null) => {
 		setInput(props.of, {
 			path: ["data", "localized_titles", props.index, "language_id"],

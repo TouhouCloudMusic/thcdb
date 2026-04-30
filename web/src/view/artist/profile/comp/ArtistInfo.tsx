@@ -1,5 +1,5 @@
 /* @refresh skip */
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Artist } from "@thc/api"
 import type { ParentProps } from "solid-js"
 import { createMemo, Show, For } from "solid-js"
@@ -11,6 +11,7 @@ import { EntityTagsSectionContainer } from "~/view/entity_tags/EntityTagsSection
 import { ArtistContext } from ".."
 
 export function ArtistInfo() {
+	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 	return (
 		<div class="flex flex-col">
@@ -43,6 +44,7 @@ export function ArtistInfo() {
 }
 
 function Aliases() {
+	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 	const aliases = createMemo(() => getInfoAliases(context.artist))
 	return (
@@ -90,6 +92,7 @@ function DateInfo(props: { value?: Artist["start_date"]; label: string }) {
 }
 
 function Membership() {
+	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 	const label = createMemo(() => {
 		if (context.artist.artist_type === "Solo") {
@@ -118,6 +121,7 @@ function Membership() {
 }
 
 function Links() {
+	const { t } = useLingui()
 	const context = assertContext(ArtistContext)
 	return (
 		<Show when={context.artist.links?.length}>

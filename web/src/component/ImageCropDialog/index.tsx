@@ -1,5 +1,5 @@
 import { FileField } from "@kobalte/core/file-field"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { unknownToError } from "@thc/toolkit"
 import { CropperSelection } from "cropperjs"
 import { Cropper } from "solid-cropper"
@@ -112,6 +112,7 @@ export type RootProps = ParentProps & {
 }
 
 export function Root(props: RootProps) {
+	const { t } = useLingui()
 	const [cropperRoot, setCropperRoot] = createSignal<HTMLDivElement>()
 	const [isSelectionReady, setSelectionReady] = createSignal(false)
 	const fileSizeRange = () => props.fileSizeRange ?? DEFAULT_FILE_SIZE_RANGE
@@ -167,7 +168,11 @@ export function Root(props: RootProps) {
 			return
 		}
 
-		const validationError = validateImageFile(file, fileSizeRange())
+		const validationError = validateImageFile(file, fileSizeRange(), {
+			unsupportedType: t`Only PNG/JPEG images are supported.`,
+			tooSmall: (minimum) => t`File is too small. Minimum is ${{ minimum }}.`,
+			tooLarge: (maximum) => t`File is too large. Maximum is ${{ maximum }}.`,
+		})
 		if (validationError) {
 			clearFileState()
 			setState("localError", validationError)
@@ -472,6 +477,7 @@ function Header(props: HeaderProps) {
 type ContentProps = ParentProps
 
 function Content(props: ContentProps) {
+	const { t } = useLingui()
 	const context = useImageCropDialog()
 	const errorMessage = () => context.localError ?? context.error
 

@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import type { Tag } from "@thc/api"
 import type { JSX } from "solid-js"
@@ -142,6 +142,7 @@ export type EntityTagsSectionProps = {
 }
 
 export function EntityTagsSection(props: EntityTagsSectionProps) {
+	const { t } = useLingui()
 	return (
 		<div class={props.class ?? "flex items-start gap-4 text-sm"}>
 			<div class="shrink-0 text-tertiary">{t`Tags`}</div>
@@ -215,6 +216,7 @@ export function EntityTagsSection(props: EntityTagsSectionProps) {
 }
 
 function ManageTagsDialog(props: ManageTagsDialogProps) {
+	const { t } = useLingui()
 	return (
 		<Dialog.Root>
 			{props.trigger}
@@ -271,6 +273,7 @@ function ManageTagsDialog(props: ManageTagsDialogProps) {
 }
 
 function EntityTagRow(props: EntityTagRowProps) {
+	const { t } = useLingui()
 	const votes = () => props.tag.votes ?? []
 	const votePending = (value: EntityTagVoteValue) =>
 		props.pendingKey === `vote:${props.tag.id}`
@@ -295,7 +298,12 @@ function EntityTagRow(props: EntityTagRowProps) {
 					</div>
 				</Show>
 				<div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-tertiary">
-					<div>{formatTagSummary(props.tag.count, props.tag.relevance)}</div>
+					<div>
+						<TagSummaryText
+							count={props.tag.count}
+							relevance={props.tag.relevance}
+						/>
+					</div>
 				</div>
 				<Show when={votes().length > 0}>
 					<div class="mt-2 flex flex-col gap-1 text-xs text-tertiary">
@@ -328,7 +336,7 @@ function EntityTagRow(props: EntityTagRowProps) {
 									votePending(option.value) && "opacity-70",
 								)}
 							>
-								{option.label}
+								<VoteOptionLabel value={option.value} />
 							</Button>
 						)}
 					</For>
@@ -354,8 +362,36 @@ function EntityTagRow(props: EntityTagRowProps) {
 	)
 }
 
-function formatTagSummary(count: number, relevance: number) {
-	return t`${{ count }} votes · relevance ${{
-		relevance: relevance.toFixed(2),
-	}}`
+function VoteOptionLabel(props: { value: EntityTagVoteValue }) {
+	const { t } = useLingui()
+
+	const label = () => {
+		switch (props.value) {
+			case "High": {
+				return t`High`
+			}
+			case "Medium": {
+				return t`Medium`
+			}
+			case "Low": {
+				return t`Low`
+			}
+			case "Veto": {
+				return t`Downvote`
+			}
+		}
+	}
+
+	return <>{label()}</>
+}
+
+function TagSummaryText(props: { count: number; relevance: number }) {
+	const { t } = useLingui()
+
+	const label = () =>
+		t`${{ count: props.count }} votes · relevance ${{
+			relevance: props.relevance.toFixed(2),
+		}}`
+
+	return <>{label()}</>
 }

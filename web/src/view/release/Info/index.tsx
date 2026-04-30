@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Release } from "@thc/api"
 import { Suspense } from "solid-js"
 
@@ -26,6 +26,7 @@ const UPLOAD_LINK_CLASS = ButtonClass_new({
 })
 
 export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
+	const { t } = useLingui()
 	const contextValue: ReleaseInfoPageContext = {
 		get release() {
 			return props.release

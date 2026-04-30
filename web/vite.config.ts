@@ -45,6 +45,7 @@ export default defineConfig(({ mode }) => {
 			tsconfigPaths: true,
 		},
 		optimizeDeps: {
+			exclude: ["@lingui/core/macro", "@lingui/solid/macro"],
 			include: ["solid-radix-icons"],
 		},
 		build: {

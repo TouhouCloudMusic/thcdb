@@ -23,6 +23,7 @@ export async function verifyResetCode(args: {
 	verifyResetCode: VerifyResetCodeFn
 	onSuccess(session: ResetPasswordSession): Promise<void>
 	uiStore: ResetPasswordUiStore
+	requestFailedMessage: string
 }) {
 	const { email, code, uiStore } = args
 
@@ -35,7 +36,10 @@ export async function verifyResetCode(args: {
 					email,
 					code,
 				})
-				const responseBody = yield* ensureSuccessResponse(response)
+				const responseBody = yield* ensureSuccessResponse(
+					response,
+					args.requestFailedMessage,
+				)
 				const session: ResetPasswordSession =
 					yield* decodeResetPasswordSession(responseBody)
 
@@ -46,7 +50,9 @@ export async function verifyResetCode(args: {
 			}),
 			Effect.catchAll((error) =>
 				Effect.sync(() => {
-					uiStore.endVerifyCodeWithError(getResetPasswordErrorMessage(error))
+					uiStore.endVerifyCodeWithError(
+						getResetPasswordErrorMessage(error, args.requestFailedMessage),
+					)
 				}),
 			),
 		),

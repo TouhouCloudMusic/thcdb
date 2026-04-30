@@ -1,5 +1,5 @@
 import { Field } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { EventMutation } from "@thc/query"
 import { For } from "solid-js"
 import { twMerge } from "tailwind-merge"
@@ -15,6 +15,7 @@ type Props = {
 }
 
 export function EventFormDesc(props: Props) {
+	const { t } = useLingui()
 	const { formStore } = useEventForm()
 
 	return (

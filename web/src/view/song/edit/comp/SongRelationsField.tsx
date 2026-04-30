@@ -6,7 +6,7 @@ import {
 	remove,
 	setInput,
 } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Song, SongRef, SongRelation } from "@thc/api"
 import { For, Show, createMemo, untrack } from "solid-js"
@@ -49,6 +49,7 @@ function parseRelationTypeId(value: string | null | undefined) {
 }
 
 export function SongRelationsField(props: Props) {
+	const { t } = useLingui()
 	const relationTypesQuery = useQuery(() => ({
 		queryKey: ["songRelationTypes"],
 		queryFn: async () => {
@@ -150,6 +151,7 @@ type RelationRowProps = {
 }
 
 function RelationRow(props: RelationRowProps) {
+	const { t } = useLingui()
 	const dataFilter = createMemo(() => {
 		const relatedSongIds = new Set<number>()
 		for (const [index, songRef] of props.songRefs.entries()) {

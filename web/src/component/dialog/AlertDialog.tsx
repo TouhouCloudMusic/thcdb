@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { Show, splitProps } from "solid-js"
 import type { ComponentProps, JSX } from "solid-js"
 
@@ -20,6 +20,7 @@ export type AlertDialogProps = Exclude<Dialog.RootProps, "children"> & {
 type TriggerAsProps = Omit<ComponentProps<typeof Button>, "children">
 
 export function AlertDialog(props: AlertDialogProps) {
+	const { t } = useLingui()
 	const handleDismiss = (e: Event) => {
 		if (props.dismissible === false) {
 			e.preventDefault()

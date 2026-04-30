@@ -130,7 +130,7 @@ msgstr "After"
 msgid "AKAs"
 msgstr "AKAs"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/HomeHero.tsx
 msgid "Albums, EPs, singles"
 msgstr "Albums, EPs, singles"
 
@@ -215,8 +215,8 @@ msgstr "Artist"
 msgid "Artist Type"
 msgstr "Artist Type"
 
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
+#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/release/edit/comp/ReleaseArtistsField.tsx
 #: src/view/search/index.tsx
 #: src/view/song/edit/comp/SongArtistsField.tsx
@@ -252,7 +252,7 @@ msgstr "Before"
 msgid "Born"
 msgstr "Born"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Browse circles and solo creators with filters and sorting."
 msgstr "Browse circles and solo creators with filters and sorting."
 
@@ -294,7 +294,7 @@ msgstr "Catalog Nums"
 msgid "Checking session…"
 msgstr "Checking session…"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/HomeHero.tsx
 msgid "Circles & solo creators"
 msgstr "Circles & solo creators"
 
@@ -431,7 +431,8 @@ msgstr "Created At"
 msgid "Created by"
 msgstr "Created by"
 
-#: src/view/correction/entityMap.ts
+#: src/view/correction/Detail.tsx
+#: src/view/list/ListItemCard.tsx
 msgid "Credit role"
 msgstr "Credit role"
 
@@ -533,7 +534,8 @@ msgstr "Dissolved date"
 msgid "Done"
 msgstr "Done"
 
-#: src/view/entity_tags/model.ts
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+#: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Downvote"
 msgstr "Downvote"
 
@@ -610,7 +612,7 @@ msgstr "Enter your username or email"
 msgid "Event"
 msgstr "Event"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/release/edit/comp/ReleaseEventsField.tsx
 #: src/view/search/index.tsx
 msgid "Events"
@@ -622,13 +624,8 @@ msgid "Expand"
 msgstr "Expand"
 
 #: src/component/Header/LeftSidebar.tsx
+#: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/Homepage/component/ExploreSection.tsx
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
 msgid "Explore"
 msgstr "Explore"
 
@@ -649,7 +646,7 @@ msgstr "Explore Events"
 msgid "Explore Labels"
 msgstr "Explore Labels"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Explore labels, imprint history and founded/dissolved dates."
 msgstr "Explore labels, imprint history and founded/dissolved dates."
 
@@ -689,6 +686,14 @@ msgstr "Failed to load users."
 msgid "Feedback"
 msgstr "Feedback"
 
+#: src/component/ImageCropDialog/index.tsx
+msgid "File is too large. Maximum is {maximum}."
+msgstr "File is too large. Maximum is {maximum}."
+
+#: src/component/ImageCropDialog/index.tsx
+msgid "File is too small. Minimum is {minimum}."
+msgstr "File is too small. Minimum is {minimum}."
+
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "File size"
 msgstr "File size"
@@ -697,7 +702,7 @@ msgstr "File size"
 msgid "Filter collections"
 msgstr "Filter collections"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Find tracks by title language, credits, and corrections."
 msgstr "Find tracks by title language, credits, and corrections."
 
@@ -750,7 +755,7 @@ msgstr "Founders"
 msgid "From"
 msgstr "From"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/HomeHero.tsx
 msgid "Genres, themes, credits"
 msgstr "Genres, themes, credits"
 
@@ -771,7 +776,8 @@ msgstr "HANDLED / REVERTED"
 msgid "Handled At"
 msgstr "Handled At"
 
-#: src/view/entity_tags/model.ts
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+#: src/view/entity_tags/EntityTagsSection.tsx
 msgid "High"
 msgstr "High"
 
@@ -808,7 +814,7 @@ msgstr "Image Queue"
 msgid "Invalid email"
 msgstr "Invalid email"
 
-#: src/view/auth/reset_password/reset_password_by_key.ts
+#: src/view/auth/reset_password/index.tsx
 msgid "Invalid or expired reset key"
 msgstr "Invalid or expired reset key"
 
@@ -834,10 +840,6 @@ msgstr "Item count"
 msgid "items"
 msgstr "items"
 
-#: src/mock/release.ts
-msgid "Japanese"
-msgstr "Japanese"
-
 #: src/view/artist/edit/comp/Membership/tenure.tsx
 msgid "Join year"
 msgstr "Join year"
@@ -856,7 +858,7 @@ msgstr "Join year cannot be the same as previous leave year"
 msgid "Label"
 msgstr "Label"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/label/List/index.tsx
 #: src/view/search/index.tsx
 msgid "Labels"
@@ -970,7 +972,8 @@ msgstr "Localized Titles"
 msgid "Location"
 msgstr "Location"
 
-#: src/view/entity_tags/model.ts
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+#: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Low"
 msgstr "Low"
 
@@ -986,7 +989,8 @@ msgstr "Make this collection public"
 msgid "Manage Tags"
 msgstr "Manage Tags"
 
-#: src/view/entity_tags/model.ts
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+#: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Medium"
 msgstr "Medium"
 
@@ -1042,7 +1046,7 @@ msgstr "N/A"
 msgid "Name"
 msgstr "Name"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Navigate genres, themes and metadata through tag types."
 msgstr "Navigate genres, themes and metadata through tag types."
 
@@ -1237,7 +1241,10 @@ msgstr "No users found"
 msgid "No users match the current filters."
 msgstr "No users match the current filters."
 
-#: src/utils/dateTime.ts
+#: src/view/correction/CorrectionHistorySection.tsx
+#: src/view/correction/Detail.tsx
+#: src/view/correction/Detail.tsx
+#: src/view/correction/Detail.tsx
 msgid "None"
 msgstr "None"
 
@@ -1257,7 +1264,7 @@ msgstr "Notifications ({hotkey})"
 msgid "On Tracks"
 msgstr "On Tracks"
 
-#: src/component/ImageCropDialog/utils.ts
+#: src/component/ImageCropDialog/index.tsx
 msgid "Only PNG/JPEG images are supported."
 msgstr "Only PNG/JPEG images are supported."
 
@@ -1447,8 +1454,8 @@ msgstr "Release Type"
 msgid "Released"
 msgstr "Released"
 
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
+#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/search/index.tsx
 msgid "Releases"
 msgstr "Releases"
@@ -1489,7 +1496,9 @@ msgstr "Repeat new password"
 msgid "Repeat password"
 msgstr "Repeat password"
 
-#: src/view/auth/reset_password/response.ts
+#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/index.tsx
 msgid "Request failed"
 msgstr "Request failed"
 
@@ -1545,7 +1554,7 @@ msgstr "Save"
 msgid "Save bio"
 msgstr "Save bio"
 
-#: src/view/user/edit_profile/store.ts
+#: src/route/(user)/profile_.edit.tsx
 msgid "Save failed."
 msgstr "Save failed."
 
@@ -1622,7 +1631,7 @@ msgstr "Search..."
 msgid "Searching…"
 msgstr "Searching…"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "See conventions and live shows where releases debuted."
 msgstr "See conventions and live shows where releases debuted."
 
@@ -1719,12 +1728,13 @@ msgstr "Solo artist"
 msgid "Song"
 msgstr "Song"
 
-#: src/view/correction/entityMap.ts
+#: src/view/correction/Detail.tsx
+#: src/view/list/ListItemCard.tsx
 msgid "Song lyrics"
 msgstr "Song lyrics"
 
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
+#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/search/index.tsx
 msgid "Songs"
 msgstr "Songs"
@@ -1769,7 +1779,8 @@ msgstr "Submit"
 msgid "Submit corrections and keep metadata clean"
 msgstr "Submit corrections and keep metadata clean"
 
-#: src/view/image_upload/store.ts
+#: src/route/artist/$id_.image-upload.tsx
+#: src/route/release/$id_.image-upload.tsx
 msgid "Submit failed."
 msgstr "Submit failed."
 
@@ -1804,8 +1815,8 @@ msgid "Tag Type"
 msgstr "Tag Type"
 
 #: src/view/entity_tags/EntityTagsSection.tsx
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
+#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/search/index.tsx
 msgid "Tags"
 msgstr "Tags"
@@ -1882,7 +1893,7 @@ msgstr "Touhou Cloud DB is an open doujin music database"
 msgid "Touhou Cloud DB track"
 msgstr "Touhou Cloud DB track"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Track albums and compilations, link artists and events."
 msgstr "Track albums and compilations, link artists and events."
 
@@ -1898,7 +1909,7 @@ msgstr "Track number"
 msgid "Tracks"
 msgstr "Tracks"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/HomeHero.tsx
 msgid "Tracks & arrangements"
 msgstr "Tracks & arrangements"
 
@@ -1930,11 +1941,13 @@ msgstr "Unknown"
 msgid "UNKNOWN"
 msgstr "UNKNOWN"
 
-#: src/view/Homepage/utils.ts
+#: src/view/Homepage/component/ReleaseCard.tsx
 msgid "Unknown artist"
 msgstr "Unknown artist"
 
-#: src/utils/getErrorMessage.ts
+#: src/view/admin/users.tsx
+#: src/view/admin/users.tsx
+#: src/view/admin/users.tsx
 msgid "Unknown error"
 msgstr "Unknown error"
 
@@ -1957,7 +1970,7 @@ msgid "Upload cover art"
 msgstr "Upload cover art"
 
 #: src/component/ImageCropDialog/index.tsx
-#: src/view/user/edit_profile/store.ts
+#: src/route/(user)/profile_.edit.tsx
 msgid "Upload failed."
 msgstr "Upload failed."
 
@@ -1999,7 +2012,6 @@ msgid "Verification code"
 msgstr "Verification code"
 
 #: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
 msgid "Verification code must be 6 digits"
 msgstr "Verification code must be 6 digits"
 
@@ -2015,7 +2027,7 @@ msgstr "Verify Email"
 msgid "View"
 msgstr "View"
 
-#. placeholder {0}: item.id
+#. placeholder {0}: props.item.id
 #: src/view/image_queue/manage.tsx
 msgid "View image queue item #{0}"
 msgstr "View image queue item #{0}"

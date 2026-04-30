@@ -1,5 +1,5 @@
 import { Field, FieldArray, getErrors, insert, remove } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
@@ -16,6 +16,7 @@ type Props = {
 }
 
 export function TagFormAltNamesField(props: Props) {
+	const { t } = useLingui()
 	const { formStore } = useTagForm()
 
 	const addAltName = () => {

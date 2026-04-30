@@ -6,7 +6,7 @@ import {
 	setInput,
 	getErrors,
 } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Language, LocalizedTitle } from "@thc/api"
 import { For, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -26,6 +26,7 @@ export function SongLocalizedTitlesField(props: {
 	initLocalizedTitles?: LocalizedTitle[]
 	class?: string
 }) {
+	const { t } = useLingui()
 	const formStore = createMemo(() => props.of)
 	const [languages, setLanguages] = createStore<(Language | undefined)[]>(
 		untrack(() =>
@@ -101,6 +102,7 @@ function LocalizedTitleItem(props: {
 	onSelectLanguage: (lang: Language | null) => void
 	onRemove: () => void
 }) {
+	const { t } = useLingui()
 	return (
 		<li class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] grid-rows-[auto_auto] items-stretch gap-x-2 gap-y-1">
 			<Field

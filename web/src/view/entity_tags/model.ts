@@ -1,5 +1,3 @@
-import { t } from "@lingui/core/macro"
-
 import type { CursorResponseTagAggregate, Score, Tag } from "~/hey-api"
 
 export type EntityTaggableType = "artist" | "release" | "song"
@@ -7,37 +5,24 @@ export type EntityTaggableType = "artist" | "release" | "song"
 export type EntityTagVoteValue = Score
 
 export type EntityTagVoteOption = {
-	label: string
 	value: EntityTagVoteValue
 	userVote: -3 | 1 | 2 | 3
 }
 
 export const ENTITY_TAG_VOTE_OPTIONS: EntityTagVoteOption[] = [
 	{
-		get label() {
-			return t`High`
-		},
 		value: "High",
 		userVote: 3,
 	},
 	{
-		get label() {
-			return t`Medium`
-		},
 		value: "Medium",
 		userVote: 2,
 	},
 	{
-		get label() {
-			return t`Low`
-		},
 		value: "Low",
 		userVote: 1,
 	},
 	{
-		get label() {
-			return t`Downvote`
-		},
 		value: "Veto",
 		userVote: -3,
 	},

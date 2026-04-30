@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Label } from "@thc/api"
 import type { Component } from "solid-js"
 import { For, Show } from "solid-js"
@@ -18,10 +18,6 @@ const getLabelAvatarText = (label: Label) => {
 	const value = label.name.trim()
 	if (!value) return "?"
 	return value.slice(0, 1).toUpperCase()
-}
-
-const getLabelStatusText = (label: Label) => {
-	return label.dissolved_date ? t`Dissolved` : t`Active`
 }
 
 const getLabelDateLine = (label: Label) => {
@@ -59,7 +55,6 @@ type LabelItemProps = {
 
 export const LabelItem: Component<LabelItemProps> = (props) => {
 	const dateLine = () => getLabelDateLine(props.label)
-	const statusText = () => getLabelStatusText(props.label)
 
 	return (
 		<div class="border-b border-slate-200 py-4 last:border-b-0">
@@ -83,7 +78,7 @@ export const LabelItem: Component<LabelItemProps> = (props) => {
 						</Link>
 
 						<div class="shrink-0 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-600">
-							{statusText()}
+							<LabelStatusText label={props.label} />
 						</div>
 					</div>
 
@@ -94,6 +89,13 @@ export const LabelItem: Component<LabelItemProps> = (props) => {
 			</div>
 		</div>
 	)
+}
+
+function LabelStatusText(props: { label: Label }) {
+	const { t } = useLingui()
+	const label = () => (props.label.dissolved_date ? t`Dissolved` : t`Active`)
+
+	return <>{label()}</>
 }
 
 type LabelExploreFilterBarProps = {
@@ -135,6 +137,7 @@ type LabelExploreListProps = {
 }
 
 export const LabelExploreList: Component<LabelExploreListProps> = (props) => {
+	const { t } = useLingui()
 	return (
 		<>
 			<Show when={!props.isLoading && props.labels.length === 0}>

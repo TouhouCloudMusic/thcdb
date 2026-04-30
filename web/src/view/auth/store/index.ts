@@ -1,5 +1,5 @@
 import { createForm } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { createWritableMemo } from "@solid-primitives/memo"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { AuthApi } from "@thc/api"
@@ -34,14 +34,6 @@ type SignUpData = EitherRight<Awaited<ReturnType<typeof AuthApi.signup>>>
 type VerifyEmailData = NonNullable<
 	EitherRight<Awaited<ReturnType<typeof AuthApi.verifyEmail>>>
 >
-const AUTH_MESSAGES = {
-	get missingSignupEmail() {
-		return t`Missing sign-up email. Create the account again.`
-	},
-	get verificationEmailSent() {
-		return t`If eligible, a verification code has been sent.`
-	},
-}
 
 function resolveAuthFormMode(value: string | undefined): AuthFormMode {
 	if (value === "sign_up" || value === "verify_email") return value
@@ -117,6 +109,7 @@ async function executeVerifyEmail(params: {
 }
 
 export function useAuthForm() {
+	const { t } = useLingui()
 	const userCtx = useCurrentUser()
 	const nav = useNavigate()
 	const searchParams = RouteApi.useSearch()
@@ -184,6 +177,10 @@ export function useAuthForm() {
 		verifyEmailState().type === "resending"
 	const isMissingVerifyEmailSession = () =>
 		verifyEmailState().type === "missing_session"
+	const missingSignupEmailMessage = () =>
+		t`Missing sign-up email. Create the account again.`
+	const verificationEmailSentMessage = () =>
+		t`If eligible, a verification code has been sent.`
 
 	async function handleSignIn(values: v.InferOutput<typeof AuthSchema.SignIn>) {
 		await executeSignIn({
@@ -229,7 +226,7 @@ export function useAuthForm() {
 	) {
 		const email = verifyEmailState().email
 		if (email === undefined) {
-			setSubmitError(AUTH_MESSAGES.missingSignupEmail)
+			setSubmitError(missingSignupEmailMessage())
 			return
 		}
 
@@ -250,7 +247,7 @@ export function useAuthForm() {
 	const handleResendVerificationEmail = async () => {
 		const email = verifyEmailState().email
 		if (!email) {
-			setSubmitError(AUTH_MESSAGES.missingSignupEmail)
+			setSubmitError(missingSignupEmailMessage())
 			return
 		}
 		if (isResendingVerificationEmail() || resendCooldownSeconds() > 0) return
@@ -273,7 +270,7 @@ export function useAuthForm() {
 				)
 			},
 			onRight: (data) => {
-				setSubmitInfo(AUTH_MESSAGES.verificationEmailSent)
+				setSubmitInfo(verificationEmailSentMessage())
 				setVerifyEmailState((state) =>
 					updateVerifyEmailState(state, {
 						type: "resend_success",

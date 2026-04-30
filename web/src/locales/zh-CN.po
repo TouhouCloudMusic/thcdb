@@ -130,7 +130,7 @@ msgstr "之后"
 msgid "AKAs"
 msgstr "AKA"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/HomeHero.tsx
 msgid "Albums, EPs, singles"
 msgstr "专辑、EP、单曲"
 
@@ -215,8 +215,8 @@ msgstr "艺人"
 msgid "Artist Type"
 msgstr "艺人类型"
 
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
+#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/release/edit/comp/ReleaseArtistsField.tsx
 #: src/view/search/index.tsx
 #: src/view/song/edit/comp/SongArtistsField.tsx
@@ -252,7 +252,7 @@ msgstr "之前"
 msgid "Born"
 msgstr "出生"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Browse circles and solo creators with filters and sorting."
 msgstr "浏览社团与个人创作者，并支持筛选和排序。"
 
@@ -294,7 +294,7 @@ msgstr "目录号"
 msgid "Checking session…"
 msgstr "正在检查会话…"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/HomeHero.tsx
 msgid "Circles & solo creators"
 msgstr "社团与个人创作者"
 
@@ -431,7 +431,8 @@ msgstr "创建于"
 msgid "Created by"
 msgstr "创建者"
 
-#: src/view/correction/entityMap.ts
+#: src/view/correction/Detail.tsx
+#: src/view/list/ListItemCard.tsx
 msgid "Credit role"
 msgstr "署名角色"
 
@@ -533,7 +534,8 @@ msgstr "解散日期"
 msgid "Done"
 msgstr "完成"
 
-#: src/view/entity_tags/model.ts
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+#: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Downvote"
 msgstr "反对"
 
@@ -610,7 +612,7 @@ msgstr "输入你的用户名或邮箱"
 msgid "Event"
 msgstr "活动"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/release/edit/comp/ReleaseEventsField.tsx
 #: src/view/search/index.tsx
 msgid "Events"
@@ -622,13 +624,8 @@ msgid "Expand"
 msgstr "展开"
 
 #: src/component/Header/LeftSidebar.tsx
+#: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/Homepage/component/ExploreSection.tsx
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
 msgid "Explore"
 msgstr "浏览"
 
@@ -649,7 +646,7 @@ msgstr "浏览活动"
 msgid "Explore Labels"
 msgstr "浏览厂牌"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Explore labels, imprint history and founded/dissolved dates."
 msgstr "浏览厂牌、分支历史，以及成立与解散日期。"
 
@@ -689,6 +686,14 @@ msgstr "加载用户失败。"
 msgid "Feedback"
 msgstr "反馈"
 
+#: src/component/ImageCropDialog/index.tsx
+msgid "File is too large. Maximum is {maximum}."
+msgstr "文件太大。最大为 {maximum}。"
+
+#: src/component/ImageCropDialog/index.tsx
+msgid "File is too small. Minimum is {minimum}."
+msgstr "文件太小。最小为 {minimum}。"
+
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "File size"
 msgstr "文件大小"
@@ -697,7 +702,7 @@ msgstr "文件大小"
 msgid "Filter collections"
 msgstr "筛选收藏集"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Find tracks by title language, credits, and corrections."
 msgstr "按标题语言、参与信息和更正记录查找曲目。"
 
@@ -750,7 +755,7 @@ msgstr "创始人"
 msgid "From"
 msgstr "从"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/HomeHero.tsx
 msgid "Genres, themes, credits"
 msgstr "流派、主题、参与信息"
 
@@ -771,7 +776,8 @@ msgstr "已处理 / 已还原"
 msgid "Handled At"
 msgstr "处理时间"
 
-#: src/view/entity_tags/model.ts
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+#: src/view/entity_tags/EntityTagsSection.tsx
 msgid "High"
 msgstr "高"
 
@@ -808,7 +814,7 @@ msgstr "图片队列"
 msgid "Invalid email"
 msgstr "邮箱格式无效"
 
-#: src/view/auth/reset_password/reset_password_by_key.ts
+#: src/view/auth/reset_password/index.tsx
 msgid "Invalid or expired reset key"
 msgstr "重置密钥无效或已过期"
 
@@ -834,10 +840,6 @@ msgstr "条目数"
 msgid "items"
 msgstr "个条目"
 
-#: src/mock/release.ts
-msgid "Japanese"
-msgstr "日语"
-
 #: src/view/artist/edit/comp/Membership/tenure.tsx
 msgid "Join year"
 msgstr "加入年份"
@@ -856,7 +858,7 @@ msgstr "入职年份不能与上一休假年份相同"
 msgid "Label"
 msgstr "厂牌"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/label/List/index.tsx
 #: src/view/search/index.tsx
 msgid "Labels"
@@ -970,7 +972,8 @@ msgstr "本地化标题"
 msgid "Location"
 msgstr "位置"
 
-#: src/view/entity_tags/model.ts
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+#: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Low"
 msgstr "低"
 
@@ -986,7 +989,8 @@ msgstr "公开此收藏集"
 msgid "Manage Tags"
 msgstr "管理标签"
 
-#: src/view/entity_tags/model.ts
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+#: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Medium"
 msgstr "中"
 
@@ -1042,7 +1046,7 @@ msgstr "无"
 msgid "Name"
 msgstr "名称"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Navigate genres, themes and metadata through tag types."
 msgstr "通过标签类型浏览流派、主题和元数据。"
 
@@ -1237,7 +1241,10 @@ msgstr "未找到用户"
 msgid "No users match the current filters."
 msgstr "没有用户符合当前筛选条件。"
 
-#: src/utils/dateTime.ts
+#: src/view/correction/CorrectionHistorySection.tsx
+#: src/view/correction/Detail.tsx
+#: src/view/correction/Detail.tsx
+#: src/view/correction/Detail.tsx
 msgid "None"
 msgstr "无"
 
@@ -1257,7 +1264,7 @@ msgstr "通知（{hotkey}）"
 msgid "On Tracks"
 msgstr "关联曲目"
 
-#: src/component/ImageCropDialog/utils.ts
+#: src/component/ImageCropDialog/index.tsx
 msgid "Only PNG/JPEG images are supported."
 msgstr "仅支持PNG/JPEG图像。"
 
@@ -1447,8 +1454,8 @@ msgstr "发行类型"
 msgid "Released"
 msgstr "已发行"
 
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
+#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/search/index.tsx
 msgid "Releases"
 msgstr "发行"
@@ -1489,7 +1496,9 @@ msgstr "重复新密码"
 msgid "Repeat password"
 msgstr "重复密码"
 
-#: src/view/auth/reset_password/response.ts
+#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/index.tsx
 msgid "Request failed"
 msgstr "请求失败"
 
@@ -1545,7 +1554,7 @@ msgstr "保存"
 msgid "Save bio"
 msgstr "保存个人简介"
 
-#: src/view/user/edit_profile/store.ts
+#: src/route/(user)/profile_.edit.tsx
 msgid "Save failed."
 msgstr "保存失败."
 
@@ -1622,7 +1631,7 @@ msgstr "搜索..."
 msgid "Searching…"
 msgstr "正在搜索…"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "See conventions and live shows where releases debuted."
 msgstr "查看发行首次出现的展会与现场活动。"
 
@@ -1719,12 +1728,13 @@ msgstr "独奏艺人"
 msgid "Song"
 msgstr "歌曲"
 
-#: src/view/correction/entityMap.ts
+#: src/view/correction/Detail.tsx
+#: src/view/list/ListItemCard.tsx
 msgid "Song lyrics"
 msgstr "歌词"
 
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
+#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/search/index.tsx
 msgid "Songs"
 msgstr "歌曲"
@@ -1769,7 +1779,8 @@ msgstr "提交"
 msgid "Submit corrections and keep metadata clean"
 msgstr "提交更正并保持元数据干净"
 
-#: src/view/image_upload/store.ts
+#: src/route/artist/$id_.image-upload.tsx
+#: src/route/release/$id_.image-upload.tsx
 msgid "Submit failed."
 msgstr "提交失败。"
 
@@ -1804,8 +1815,8 @@ msgid "Tag Type"
 msgstr "标签类型"
 
 #: src/view/entity_tags/EntityTagsSection.tsx
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
+#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/search/index.tsx
 msgid "Tags"
 msgstr "标签"
@@ -1882,7 +1893,7 @@ msgstr "Touhou Cloud DB 是一个开放的东方同人音乐数据库"
 msgid "Touhou Cloud DB track"
 msgstr "Touhou Cloud DB 曲目"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Track albums and compilations, link artists and events."
 msgstr "整理专辑与合辑，并关联艺人和活动。"
 
@@ -1898,7 +1909,7 @@ msgstr "曲目编号"
 msgid "Tracks"
 msgstr "曲目数"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/HomeHero.tsx
 msgid "Tracks & arrangements"
 msgstr "曲目与编曲"
 
@@ -1930,11 +1941,13 @@ msgstr "未知"
 msgid "UNKNOWN"
 msgstr "未知"
 
-#: src/view/Homepage/utils.ts
+#: src/view/Homepage/component/ReleaseCard.tsx
 msgid "Unknown artist"
 msgstr "未知艺人"
 
-#: src/utils/getErrorMessage.ts
+#: src/view/admin/users.tsx
+#: src/view/admin/users.tsx
+#: src/view/admin/users.tsx
 msgid "Unknown error"
 msgstr "未知错误"
 
@@ -1957,7 +1970,7 @@ msgid "Upload cover art"
 msgstr "上传封面图"
 
 #: src/component/ImageCropDialog/index.tsx
-#: src/view/user/edit_profile/store.ts
+#: src/route/(user)/profile_.edit.tsx
 msgid "Upload failed."
 msgstr "上传失败。"
 
@@ -1999,7 +2012,6 @@ msgid "Verification code"
 msgstr "验证码"
 
 #: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
 msgid "Verification code must be 6 digits"
 msgstr "验证码必须为 6 位数字"
 
@@ -2015,7 +2027,7 @@ msgstr "验证邮箱"
 msgid "View"
 msgstr "查看"
 
-#. placeholder {0}: item.id
+#. placeholder {0}: props.item.id
 #: src/view/image_queue/manage.tsx
 msgid "View image queue item #{0}"
 msgstr "查看图片队列条目 #{0}"

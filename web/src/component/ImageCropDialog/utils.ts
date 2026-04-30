@@ -1,11 +1,15 @@
-import { t } from "@lingui/core/macro"
-
 export type FileSizeRange = {
 	min: number
 	max: number
 }
 
 type FileLike = Pick<File, "size" | "type">
+
+type ValidateImageFileMessages = {
+	unsupportedType: string
+	tooSmall: (minimum: string) => string
+	tooLarge: (maximum: string) => string
+}
 
 function isSupportedImageType(file: FileLike) {
 	return file.type === "image/png" || file.type === "image/jpeg"
@@ -23,16 +27,17 @@ export function formatBytes(bytes: number) {
 export function validateImageFile(
 	file: FileLike,
 	fileSizeRange: FileSizeRange,
+	messages: ValidateImageFileMessages,
 ): string | undefined {
 	if (!isSupportedImageType(file)) {
-		return t`Only PNG/JPEG images are supported.`
+		return messages.unsupportedType
 	}
 
 	if (file.size < fileSizeRange.min) {
-		return `File is too small. Minimum is ${formatBytes(fileSizeRange.min)}.`
+		return messages.tooSmall(formatBytes(fileSizeRange.min))
 	}
 
 	if (file.size > fileSizeRange.max) {
-		return `File is too large. Maximum is ${formatBytes(fileSizeRange.max)}.`
+		return messages.tooLarge(formatBytes(fileSizeRange.max))
 	}
 }

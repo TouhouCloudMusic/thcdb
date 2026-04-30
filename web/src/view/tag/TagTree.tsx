@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Tag } from "@thc/api"
 import { createMemo, createSignal, For, onCleanup, Show } from "solid-js"
 
@@ -234,6 +234,7 @@ type TagTreeItemProps = {
 }
 
 function TagTreeItem(props: TagTreeItemProps) {
+	const { t } = useLingui()
 	const hasChildren = () => props.node.children.length > 0
 	const isExpanded = () =>
 		hasChildren() && props.expandedIds().has(props.node.id)

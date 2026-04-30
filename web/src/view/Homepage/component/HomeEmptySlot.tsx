@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { twMerge } from "tailwind-merge"
 
 type HomeEmptySlotProps = {
@@ -10,6 +10,7 @@ const BASE_CLASS =
 	"grid min-h-24 place-items-center rounded-none bg-gradient-to-br from-white/75 via-slate-50/55 to-white/70"
 
 export function HomeEmptySlot(props: HomeEmptySlotProps) {
+	const { t } = useLingui()
 	const className = () => twMerge(BASE_CLASS, props.class)
 
 	return (

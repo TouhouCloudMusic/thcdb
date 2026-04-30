@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For } from "solid-js"
 
 const GITHUB_REPO_URL = "https://github.com/TouhouCloudMusic/thcdb"
@@ -16,6 +16,7 @@ type FooterLinkItem = {
 }
 
 function BrandColumn() {
+	const { t } = useLingui()
 	const brandLinks: FooterLinkItem[] = [
 		{ label: "GitHub", href: GITHUB_REPO_URL, external: true },
 		{ label: t`Zulip`, href: ZULIP_URL, external: true },

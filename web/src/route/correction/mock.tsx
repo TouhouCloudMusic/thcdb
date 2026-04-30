@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import type {
 	Correction,
@@ -260,6 +260,7 @@ function seedCorrectionQueries(scenarioKey?: ScenarioKey) {
 }
 
 function RouteComponent() {
+	const { t } = useLingui()
 	const search = Route.useSearch()
 	const navigate = useNavigate()
 	const [collapsed, setCollapsed] = createSignal(false)

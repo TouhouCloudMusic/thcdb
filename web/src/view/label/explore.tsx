@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import { LabelApi } from "@thc/api"
@@ -47,6 +47,7 @@ const createLabelExploreQueryOptions = (search: () => LabelExploreSearch) => ({
 })
 
 export const LabelExplore = () => {
+	const { t } = useLingui()
 	const search = route.useSearch()
 	const scrollDirection = useScrollDirection()
 

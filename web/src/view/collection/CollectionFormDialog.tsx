@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useMutation } from "@tanstack/solid-query"
 import { createSignal, Show, untrack } from "solid-js"
 
@@ -20,6 +20,7 @@ type Props = {
 }
 
 export function CollectionFormDialog(props: Props) {
+	const { t } = useLingui()
 	const [name, setName] = createSignal(
 		untrack(() => props.collection?.name ?? ""),
 	)

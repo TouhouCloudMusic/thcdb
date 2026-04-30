@@ -1,5 +1,5 @@
 import { Field, getInput, setInput } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
@@ -26,6 +26,7 @@ function sanitize(input: string): string | undefined {
 }
 
 export function EventLocationField(props: Props) {
+	const { t } = useLingui()
 	const { formStore } = useEventForm()
 
 	return (

@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Label } from "@thc/api"
 import { LabelQueryOption } from "@thc/query"
@@ -19,6 +19,7 @@ type LabelSearchDialogProps = {
 }
 
 export function LabelSearchDialog(props: LabelSearchDialogProps): JSX.Element {
+	const { t } = useLingui()
 	const [searchKeyword, setSearchKeyword] = createSignal("")
 
 	const onInput = debounce(300, (value: string) => {

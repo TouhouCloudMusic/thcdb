@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 
 import { Image } from "~/component/image"
 import { imgUrl } from "~/utils/adapter/static_file"
@@ -7,6 +7,7 @@ import { assertContext } from "~/utils/solid/assertContext"
 import { ReleaseInfoPageContext } from "../context"
 
 export function ReleaseInfoCoverImage() {
+	const { t } = useLingui()
 	const ctx = assertContext(ReleaseInfoPageContext)
 	const coverUrl = () => imgUrl(ctx.release.cover_art_url)
 

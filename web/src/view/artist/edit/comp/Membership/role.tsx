@@ -1,6 +1,6 @@
 // @refresh-reload
 import { Field, insert, remove } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { CreditRoleSummary } from "@thc/api"
 import { CreditRoleQueryOption } from "@thc/query"
@@ -15,6 +15,7 @@ import { Combobox } from "~/component/atomic/Combobox"
 import { useArtistForm } from "../../context"
 
 export function MembershipRoleField(props: { index: number }): JSX.Element {
+	const { t } = useLingui()
 	const SEARCH_DEBOUNCE_MS = 300
 	const { formStore } = useArtistForm()
 
@@ -131,6 +132,7 @@ function RoleBadge(props: {
 	role: CreditRoleSummary
 	removeRole: () => void
 }) {
+	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 	return (
 		<Field

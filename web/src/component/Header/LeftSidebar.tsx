@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { LinkComponentProps } from "@tanstack/solid-router"
 import type { IconProps } from "@thc/icons"
 import type { JSX } from "solid-js"
@@ -26,6 +26,7 @@ type ListItemContent = {
 }
 
 export function LeftSidebar() {
+	const { t } = useLingui()
 	const userCtx = useCurrentUser()
 
 	// TODO: Icons

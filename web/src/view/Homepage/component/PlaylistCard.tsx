@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 
 type PlaylistCardProps = {
 	playlist: {
@@ -10,6 +10,7 @@ type PlaylistCardProps = {
 }
 
 export function PlaylistCard(props: PlaylistCardProps) {
+	const { t } = useLingui()
 	return (
 		<div class="overflow-hidden rounded-lg bg-white shadow transition-shadow hover:shadow-md">
 			<div class="aspect-square overflow-hidden">

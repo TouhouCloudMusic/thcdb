@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Artist, ArtistCommonFilter } from "@thc/api"
 import { ArtistQueryOption } from "@thc/query"
@@ -23,6 +23,7 @@ type ArtistSearchDialogProps = {
 export function ArtistSearchDialog(
 	props: ArtistSearchDialogProps,
 ): JSX.Element {
+	const { t } = useLingui()
 	const [searchKeyword, setSearchKeyword] = createSignal("")
 
 	const onInput = debounce(300, (value: string) => {

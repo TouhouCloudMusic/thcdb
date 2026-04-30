@@ -1,5 +1,5 @@
 import { Field } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { ArtistMutation } from "@thc/query"
 import { For } from "solid-js"
 
@@ -13,6 +13,7 @@ type ArtistFormFormActionsProps = {
 }
 
 export function ArtistFormActions(props: ArtistFormFormActionsProps) {
+	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
 	return (

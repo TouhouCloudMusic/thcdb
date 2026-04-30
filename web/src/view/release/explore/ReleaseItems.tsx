@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { Link as RouterLink } from "@tanstack/solid-router"
 import type { LocalizedTitle, Release } from "@thc/api"
 import { For, Show } from "solid-js"
@@ -90,6 +90,7 @@ type ReleaseWallItemProps = {
 }
 
 export function ReleaseWallItem(props: ReleaseWallItemProps) {
+	const { t } = useLingui()
 	const displayTitle = () =>
 		getLocalizedTitle(props.release.localized_titles, props.locale)
 		?? props.release.title

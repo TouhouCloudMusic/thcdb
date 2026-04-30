@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Tag } from "@thc/api"
 import type { JSX } from "solid-js"
 import { For, Show, Suspense, createSignal } from "solid-js"
@@ -18,9 +18,33 @@ type EntityTagAddDialogProps = {
 	onVote: (tagId: number, score: EntityTagVoteValue) => Promise<void>
 }
 
+function VoteOptionLabel(props: { value: EntityTagVoteValue }) {
+	const { t } = useLingui()
+
+	const label = () => {
+		switch (props.value) {
+			case "High": {
+				return t`High`
+			}
+			case "Medium": {
+				return t`Medium`
+			}
+			case "Low": {
+				return t`Low`
+			}
+			case "Veto": {
+				return t`Downvote`
+			}
+		}
+	}
+
+	return <>{label()}</>
+}
+
 export function EntityTagAddDialog(
 	props: EntityTagAddDialogProps,
 ): JSX.Element {
+	const { t } = useLingui()
 	const [open, setOpen] = createSignal(false)
 	const { searchKeyword, onInput, items, reset } = useTagSearch(
 		() => props.dataFilter,
@@ -90,7 +114,7 @@ export function EntityTagAddDialog(
 																isPending() && "opacity-70",
 															)}
 														>
-															{option.label}
+															<VoteOptionLabel value={option.value} />
 														</Button>
 													)}
 												</For>

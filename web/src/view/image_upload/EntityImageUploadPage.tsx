@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For, Show } from "solid-js"
 import { twJoin } from "tailwind-merge"
 
@@ -98,6 +98,7 @@ type CurrentImageFigureProps = {
 }
 
 function CurrentImageFigure(props: CurrentImageFigureProps) {
+	const { t } = useLingui()
 	return (
 		<PreviewFigure
 			label={t`Current`}
@@ -118,11 +119,8 @@ type ImageUploadActionsProps = {
 	class?: string
 }
 
-function getSelectImageButtonLabel(hasDraft: boolean) {
-	return hasDraft ? t`Select another image` : t`Select image`
-}
-
 function ImageUploadActions(props: ImageUploadActionsProps) {
+	const { t } = useLingui()
 	return (
 		<section class={twJoin("grid content-start gap-3", props.class)}>
 			<Button
@@ -133,7 +131,7 @@ function ImageUploadActions(props: ImageUploadActionsProps) {
 				disabled={props.isUploading}
 				onClick={props.onOpen}
 			>
-				{getSelectImageButtonLabel(props.hasDraft)}
+				{props.hasDraft ? t`Select another image` : t`Select image`}
 			</Button>
 
 			<Button
@@ -172,6 +170,7 @@ function ImageUploadActions(props: ImageUploadActionsProps) {
 }
 
 export function EntityImageUploadPage(props: EntityImageUploadPageProps) {
+	const { t } = useLingui()
 	return (
 		<PageLayout class="p-8">
 			<div class="w-full space-y-6">

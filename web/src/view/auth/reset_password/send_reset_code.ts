@@ -21,6 +21,7 @@ export async function sendResetCode(args: {
 	forgotPassword: ForgotPasswordFn
 	startCooldown(seconds: number): void
 	uiStore: ResetPasswordUiStore
+	requestFailedMessage: string
 }) {
 	const { email, uiStore } = args
 
@@ -30,7 +31,10 @@ export async function sendResetCode(args: {
 		pipe(
 			Effect.gen(function* () {
 				const response = yield* args.forgotPassword({ email })
-				const responseBody = yield* ensureSuccessResponse(response)
+				const responseBody = yield* ensureSuccessResponse(
+					response,
+					args.requestFailedMessage,
+				)
 				const data = yield* decodeForgotPasswordPayload(responseBody)
 
 				yield* Effect.sync(() => {
@@ -43,7 +47,9 @@ export async function sendResetCode(args: {
 			}),
 			Effect.catchAll((error) =>
 				Effect.sync(() => {
-					uiStore.endSendCodeWithError(getResetPasswordErrorMessage(error))
+					uiStore.endSendCodeWithError(
+						getResetPasswordErrorMessage(error, args.requestFailedMessage),
+					)
 				}),
 			),
 		),

@@ -1,5 +1,5 @@
 import { Form, createForm } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useBlocker } from "@tanstack/solid-router"
 import type { Artist } from "@thc/api"
 import type { JSX } from "solid-js"
@@ -35,6 +35,7 @@ type Props =
 	  }
 
 export function EditArtistPage(props: Props): JSX.Element {
+	const { t } = useLingui()
 	return (
 		<PageLayout class="grid grid-rows-[auto_1fr_auto]">
 			<PageHeader type={props.type} />
@@ -46,6 +47,7 @@ export function EditArtistPage(props: Props): JSX.Element {
 }
 
 function PageHeader(props: { type: Props["type"] }) {
+	const { t } = useLingui()
 	return (
 		<div class="border-b border-slate-300 p-8">
 			<div class="flex items-center gap-4">
@@ -73,6 +75,7 @@ function PageHeader(props: { type: Props["type"] }) {
 }
 
 function FormContent(props: Props) {
+	const { t } = useLingui()
 	const initialValues = useArtistFormInitialValues(props)
 	const { handleSubmit, mutation } = useArtistFormSubmission(props)
 

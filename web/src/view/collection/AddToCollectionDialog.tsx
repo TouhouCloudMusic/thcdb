@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useInfiniteQuery, useMutation } from "@tanstack/solid-query"
 import type {
 	InfiniteData,
@@ -61,6 +61,7 @@ type CollectionFieldProps = {
 }
 
 function CollectionField(props: CollectionFieldProps) {
+	const { t } = useLingui()
 	const isInitialCollectionsLoading = () =>
 		props.collectionsQuery.isFetching && !props.collectionsQuery.isSuccess
 	const canSelectCollection = () =>
@@ -154,6 +155,7 @@ type NoteFieldProps = {
 }
 
 function NoteField(props: NoteFieldProps) {
+	const { t } = useLingui()
 	return (
 		<div class="flex flex-col gap-1">
 			<label class="mb-1 text-sm font-medium text-slate-700">
@@ -193,6 +195,7 @@ function invalidateUserCollectionQueries(
 }
 
 export function AddToCollectionDialog(props: Props) {
+	const { t } = useLingui()
 	const userCtx = useCurrentUser()
 
 	const [formStore, setFormStore] = createStore<FormState>({

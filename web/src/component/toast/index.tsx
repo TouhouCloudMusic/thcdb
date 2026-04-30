@@ -1,5 +1,5 @@
 import * as Toast from "@kobalte/core/toast"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { JSX } from "solid-js"
 import { Show, splitProps } from "solid-js"
 import {
@@ -71,10 +71,6 @@ const TOAST_TONE_STYLES = {
 	},
 } satisfies Record<ToastTone, ToastToneStyle>
 
-function getToastRegionLabel() {
-	return t`Notifications ({hotkey})`
-}
-
 export function showToast(options: ShowToastOptions) {
 	return Toast.toaster.show((props) => (
 		<AppToast
@@ -97,9 +93,10 @@ export function showErrorToast(options: Omit<ShowToastOptions, "tone">) {
 }
 
 export function AppToastRegion() {
+	const { t } = useLingui()
 	return (
 		<Toast.Region
-			aria-label={getToastRegionLabel()}
+			aria-label={t`Notifications ({hotkey})`}
 			duration={3600}
 			limit={3}
 			class="fixed right-4 top-4 z-50 w-[min(380px,calc(100vw-2rem))]"

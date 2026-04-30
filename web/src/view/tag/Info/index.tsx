@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Tag } from "@thc/api"
 import { Show, Suspense } from "solid-js"
 
@@ -18,6 +18,7 @@ type Props = {
 }
 
 export function TagInfoPage(props: Props) {
+	const { t } = useLingui()
 	const contextValue: TagInfoPageContextValue = {
 		get tag() {
 			return props.tag
@@ -65,6 +66,7 @@ function TagInfoHeader() {
 }
 
 function TagInfoDetails() {
+	const { t } = useLingui()
 	const ctx = assertContext(TagInfoPageContext)
 	return (
 		<div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">

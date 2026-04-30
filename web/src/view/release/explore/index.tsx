@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi } from "@tanstack/solid-router"
 import { ReleaseApi } from "@thc/api"
@@ -127,6 +127,7 @@ function createReleaseExploreStores(
 }
 
 export function ReleaseExplore() {
+	const { t } = useLingui()
 	const scrollDirection = useScrollDirection()
 	const i18n = useI18N()
 

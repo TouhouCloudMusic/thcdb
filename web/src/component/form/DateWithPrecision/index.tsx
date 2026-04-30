@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { createEffect, createMemo, on, untrack } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 
@@ -15,6 +15,7 @@ export interface DateWithPrecisionProps {
 }
 
 export function DateWithPrecision(props: DateWithPrecisionProps) {
+	const { t } = useLingui()
 	const [store, setStore] = createStore<Store>(
 		untrack(() => valueToStore(props.value)),
 	)

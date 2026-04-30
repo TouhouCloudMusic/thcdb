@@ -1,5 +1,5 @@
 import { FieldArray, getInput, insert, setInput } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { ReleaseTrack } from "@thc/api"
 import { For, createMemo, createSignal } from "solid-js"
 import {
@@ -83,6 +83,7 @@ function TrackHeader(props: {
 	selectedDisc: () => number
 	setSelectedDisc: (n: number) => void
 }) {
+	const { t } = useLingui()
 	const discs = createMemo(() =>
 		getInput(props.of, { path: ["data", "discs"] }),
 	)
@@ -201,6 +202,7 @@ type DiscNameDialogProps = {
 }
 
 function EditDiscNameDialog(props: DiscNameDialogProps) {
+	const { t } = useLingui()
 	const [open, setOpen] = createSignal(false)
 	const [name, setName] = createSignal("")
 

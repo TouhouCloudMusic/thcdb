@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Event as TEvent } from "@thc/api"
 import { EventQueryOption } from "@thc/query"
@@ -21,6 +21,7 @@ type Props = {
 }
 
 export function EventSearchDialog(props: Props): JSX.Element {
+	const { t } = useLingui()
 	const [searchKeyword, setSearchKeyword] = createSignal("")
 
 	const onInput = debounce(300, (value: string) => {

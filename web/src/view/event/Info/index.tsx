@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Event } from "@thc/api"
 import { Show, Suspense } from "solid-js"
 
@@ -19,6 +19,7 @@ type EventInfoPageProps = {
 }
 
 export function EventInfoPage(props: EventInfoPageProps) {
+	const { t } = useLingui()
 	const contextValue: EventInfoPageContextValue = {
 		get event() {
 			return props.event
@@ -51,6 +52,7 @@ export function EventInfoPage(props: EventInfoPageProps) {
 }
 
 function EventInfoHeader() {
+	const { t } = useLingui()
 	const ctx = assertContext(EventInfoPageContext)
 
 	const alternativeNames = () => ctx.event.alternative_names ?? []

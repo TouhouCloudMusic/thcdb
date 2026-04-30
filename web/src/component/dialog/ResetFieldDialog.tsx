@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { ArrowPathIcon } from "@thc/icons/heroicons/24/outline"
 import { createMemo } from "solid-js"
 
@@ -10,6 +10,7 @@ export function ResetFieldDialogTrigger(props: {
 	fieldName: string
 	onReset: () => void
 }) {
+	const { t } = useLingui()
 	const fieldNameWithoutUnderscore = createMemo(() =>
 		props.fieldName.replaceAll("_", " "),
 	)

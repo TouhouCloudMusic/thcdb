@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type {
 	Correction,
@@ -35,8 +35,14 @@ type CorrectionHeaderProps = {
 }
 
 function CorrectionHeader(props: CorrectionHeaderProps) {
+	const { t } = useLingui()
 	const entityRoute = () => ENTITY_ROUTE_MAP[props.correction.entity_type]
-	const entityLabel = () => formatEntityType(props.correction.entity_type)
+	const entityTypeLabels = () => ({
+		songLyrics: t`Song lyrics`,
+		creditRole: t`Credit role`,
+	})
+	const entityLabel = () =>
+		formatEntityType(props.correction.entity_type, entityTypeLabels())
 
 	return (
 		<header class="space-y-4">
@@ -90,7 +96,7 @@ function CorrectionHeader(props: CorrectionHeaderProps) {
 					<div class="text-xs font-medium tracking-widest text-tertiary uppercase">
 						Created
 					</div>
-					<span>{formatTimestamp(props.correction.created_at)}</span>
+					<span>{formatTimestamp(props.correction.created_at, t`None`)}</span>
 				</div>
 				<div class="space-y-1">
 					<div class="text-xs font-medium tracking-widest text-tertiary uppercase">
@@ -98,7 +104,7 @@ function CorrectionHeader(props: CorrectionHeaderProps) {
 					</div>
 					<span>
 						{props.correction.handled_at
-							? formatTimestamp(props.correction.handled_at)
+							? formatTimestamp(props.correction.handled_at, t`None`)
 							: t`Not handled`}
 					</span>
 				</div>
@@ -142,6 +148,7 @@ type DiffEntriesProps = {
 }
 
 function DiffEntries(props: DiffEntriesProps) {
+	const { t } = useLingui()
 	const entries = () => props.changes ?? []
 
 	return (
@@ -205,6 +212,7 @@ type RevisionEntriesProps = {
 }
 
 function RevisionEntries(props: RevisionEntriesProps) {
+	const { t } = useLingui()
 	const entries = () => props.revisions ?? []
 
 	return (
@@ -258,6 +266,7 @@ type CorrectionDetailPageProps = {
 }
 
 export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
+	const { t } = useLingui()
 	const correctionQuery = useQuery(() =>
 		CorrectionQueryOption.detail(props.correctionId),
 	)
@@ -309,7 +318,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 		if (value === "") return t`Previous approved baseline`
 		const target = compareOptions().find((item) => item.id.toString() === value)
 		if (!target) return value
-		return `#${target.id} ${target.type} (${formatTimestamp(target.handled_at ?? target.created_at)})`
+		return `#${target.id} ${target.type} (${formatTimestamp(target.handled_at ?? target.created_at, t`None`)})`
 	}
 
 	return (

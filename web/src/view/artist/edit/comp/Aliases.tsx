@@ -1,5 +1,5 @@
 import { Field, getInput, insert, remove } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Artist, ArtistCommonFilter } from "@thc/api"
 import { createMemo } from "solid-js"
 import { createStore, produce } from "solid-js/store"
@@ -15,6 +15,7 @@ import { ArtistSearchDialog } from "~/component/form/SearchDialog"
 import { useArtistForm } from "../context"
 
 export const ArtistFormAliasesField = () => {
+	const { t } = useLingui()
 	const [aliases, setAliases] = createStore<Artist[]>([])
 
 	const { formStore } = useArtistForm()

@@ -1,5 +1,5 @@
 import { Field, setInput } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For, createMemo } from "solid-js"
 
 import { FormComp } from "~/component/atomic/form"
@@ -15,6 +15,7 @@ type DateFieldDescriptor = {
 }
 
 export function ArtistFormDateFields() {
+	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
 	const fields: DateFieldDescriptor[] = [

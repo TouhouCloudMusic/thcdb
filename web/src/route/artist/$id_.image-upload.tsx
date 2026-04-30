@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute, notFound, useNavigate } from "@tanstack/solid-router"
 import { ArtistMutation, ArtistQueryOption } from "@thc/query"
@@ -37,6 +37,7 @@ export const Route = createFileRoute("/artist/$id_/image-upload")({
 })
 
 function RouteComponent() {
+	const { t } = useLingui()
 	const params = Route.useParams()
 	const artistId = EntityId_fromStr(params().id)
 	const query = useQuery(() => ArtistQueryOption.findById(artistId))
@@ -44,6 +45,7 @@ function RouteComponent() {
 	const queryClient = useQueryClient()
 	const navigate = useNavigate()
 	const store = createEntityImageUploadStore({
+		submitFailedMessage: t`Submit failed.`,
 		onUpload: async (file: File) => {
 			const entryId = await uploadMutation.mutateAsync({ id: artistId, file })
 

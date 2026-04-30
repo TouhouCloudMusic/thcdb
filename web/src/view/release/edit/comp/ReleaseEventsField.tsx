@@ -1,6 +1,6 @@
 // 事件字段（受控组件）
 import { Field, insert, remove } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { SimpleEvent } from "@thc/api"
 import { For, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
@@ -20,6 +20,7 @@ export function ReleaseEventsField(props: {
 	initEvents?: SimpleEvent[]
 	class?: string
 }) {
+	const { t } = useLingui()
 	const [events, setEvents] = createStore<SimpleEvent[]>(
 		untrack(() => [...(props.initEvents ?? [])]),
 	)

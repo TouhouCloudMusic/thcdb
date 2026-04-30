@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { Navigate } from "@tanstack/solid-router"
 import type { ParentProps } from "solid-js"
 import { Show } from "solid-js"
@@ -16,6 +16,7 @@ export function hasAdminRole(
 }
 
 function SessionLoading() {
+	const { t } = useLingui()
 	return (
 		<div class="grid min-h-[60vh] place-items-center px-6 py-14">
 			<div class="rounded-sm border border-slate-300 bg-white px-5 py-4 text-sm text-slate-500 shadow-xs">
@@ -26,6 +27,7 @@ function SessionLoading() {
 }
 
 function AuthRequired() {
+	const { t } = useLingui()
 	return (
 		<div class="grid min-h-[60vh] place-items-center px-6 py-14">
 			<div class="w-full max-w-md rounded-sm border border-slate-300 bg-white p-6 shadow-xs">

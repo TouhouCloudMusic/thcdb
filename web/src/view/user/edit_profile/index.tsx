@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { UserProfile } from "@thc/api"
 import { MathExt } from "@thc/toolkit"
 import type { JSX } from "solid-js"
@@ -91,6 +91,7 @@ const computeBannerOutputSize = (
 }
 
 export function EditProfileView(props: EditProfileViewProps) {
+	const { t } = useLingui()
 	return (
 		<PageLayout class="grid min-h-dvh grid-rows-[auto_1fr]">
 			<EditProfileHeader isBioDirty={props.store.bio.isDirty} />
@@ -167,6 +168,7 @@ function AppearanceCard(props: {
 	avatar: EditProfileImageStore
 	banner: EditProfileImageStore
 }) {
+	const { t } = useLingui()
 	const bannerUrl = createMemo(() => imgUrl(props.user.banner_url))
 	const handleEditBanner = () => {
 		if (props.banner.isUploading) return
@@ -247,6 +249,7 @@ function AppearanceCard(props: {
 }
 
 function BioEditorCard(props: { bio: EditProfileBioStore }) {
+	const { t } = useLingui()
 	const count = createMemo(() => props.bio.value.length)
 	const savedAt = createMemo(() => {
 		const value = props.bio.savedAt

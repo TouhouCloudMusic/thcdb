@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { Show } from "solid-js"
 
 import { Intersperse } from "~/component/data/Intersperse"
@@ -8,6 +8,7 @@ import { assertContext } from "~/utils/solid/assertContext"
 import { ReleaseInfoPageContext } from "../context"
 
 export function ReleaseInfoDetails() {
+	const { t } = useLingui()
 	const ctx = assertContext(ReleaseInfoPageContext)
 
 	return (

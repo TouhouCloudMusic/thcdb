@@ -1,9 +1,6 @@
-import { t } from "@lingui/core/macro"
 import { Effect, Schema } from "effect"
 
 import type { ResetPasswordSession } from "./session"
-
-const requestFailedMessage = () => t`Request failed`
 
 export type AuthApiResponse = {
 	status: number
@@ -71,32 +68,41 @@ function decodeUnknownWithSchema<A, I>(
 	})
 }
 
-export function getApiErrorMessage(input: unknown): string {
+export function getApiErrorMessage(
+	input: unknown,
+	requestFailedMessage: string,
+): string {
 	if (typeof input === "string") {
 		const message = input.trim()
-		return message.length > 0 ? message : requestFailedMessage()
+		return message.length > 0 ? message : requestFailedMessage
 	}
 
 	const result = Schema.decodeUnknownEither(ApiErrorBodySchema)(input)
-	if (result._tag === "Left") return requestFailedMessage()
+	if (result._tag === "Left") return requestFailedMessage
 
 	const message = result.right.message.trim()
-	return message.length > 0 ? message : requestFailedMessage()
+	return message.length > 0 ? message : requestFailedMessage
 }
 
-export function getResetPasswordErrorMessage(error: ResetPasswordFlowError) {
+export function getResetPasswordErrorMessage(
+	error: ResetPasswordFlowError,
+	requestFailedMessage: string,
+) {
 	if (error._tag === "ResponseStatusError") return error.message
-	return requestFailedMessage()
+	return requestFailedMessage
 }
 
-export function ensureSuccessResponse(response: AuthApiResponse) {
+export function ensureSuccessResponse(
+	response: AuthApiResponse,
+	requestFailedMessage: string,
+) {
 	if (response.status === 200) {
 		return Effect.succeed(response.data)
 	}
 
 	return Effect.fail<ResetPasswordFlowError>({
 		_tag: "ResponseStatusError",
-		message: getApiErrorMessage(response.data),
+		message: getApiErrorMessage(response.data, requestFailedMessage),
 	})
 }
 

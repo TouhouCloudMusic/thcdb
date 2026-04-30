@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Ref } from "solid-js"
 import {
 	BookmarkIcon,
@@ -23,6 +23,7 @@ export type Props = {
 }
 
 export function RightSidebar(props: Props) {
+	const { t } = useLingui()
 	const userCtx = useCurrentUser()
 
 	return (

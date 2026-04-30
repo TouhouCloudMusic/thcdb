@@ -1,5 +1,5 @@
 import { Field, FieldArray, insert, remove } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 
@@ -12,6 +12,7 @@ import { FieldArrayFallback } from "~/component/form"
 import { useArtistForm } from "../context"
 
 export function ArtistFormTextAliases() {
+	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
 	const addTextAlias = () => {

@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { Link } from "@tanstack/solid-router"
 import { createMemo, Show } from "solid-js"
 
@@ -9,6 +9,7 @@ import { assertContext } from "~/utils/solid/assertContext"
 import { ReleaseInfoPageContext } from "../context"
 
 export function ReleaseInfoTitleAndArtist() {
+	const { t } = useLingui()
 	const ctx = assertContext(ReleaseInfoPageContext)
 
 	const preferredLocalizedTitle = createMemo(() =>

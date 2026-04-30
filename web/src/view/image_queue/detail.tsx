@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import type { ImageQueueDetail, ImageQueueStatus } from "@thc/api"
 import {
@@ -32,22 +32,22 @@ const LABEL_CLASS = "text-xs text-tertiary"
 function statusTone(status: ImageQueueStatus) {
 	switch (status) {
 		case "Pending": {
-			return { color: "Marisa", label: t`Pending` } as const
+			return { color: "Marisa" } as const
 		}
 		case "Approved": {
-			return { color: "Green", label: t`Approved` } as const
+			return { color: "Green" } as const
 		}
 		case "Rejected": {
-			return { color: "Reimu", label: t`Rejected` } as const
+			return { color: "Reimu" } as const
 		}
 		case "Cancelled": {
-			return { color: "Slate", label: t`Cancelled` } as const
+			return { color: "Slate" } as const
 		}
 		case "Reverted": {
-			return { color: "Blue", label: t`Reverted` } as const
+			return { color: "Blue" } as const
 		}
 		default: {
-			return { color: "Slate", label: t`Unknown` } as const
+			return { color: "Slate" } as const
 		}
 	}
 }
@@ -70,20 +70,18 @@ function imagePath(detail: ImageQueueDetail) {
 function getTargetMeta(detail: ImageQueueDetail) {
 	if (detail.artist) {
 		return {
-			label: t`Artist`,
+			entity: "Artist" as const,
 			id: detail.artist.artist_id,
 			type: detail.artist.type,
-			imageLabel: t`profile image`,
 			to: "/artist/$id" as const,
 		}
 	}
 
 	if (detail.release) {
 		return {
-			label: t`Release`,
+			entity: "Release" as const,
 			id: detail.release.release_id,
 			type: detail.release.type,
-			imageLabel: t`cover art`,
 			to: "/release/$id" as const,
 		}
 	}
@@ -157,6 +155,7 @@ function extractInfiniteQueryIds(data: unknown): number[] {
 }
 
 export function ImageQueueDetailPage(props: Props) {
+	const { t } = useLingui()
 	const queryClient = useQueryClient()
 	const userCtx = useCurrentUser()
 	const detailQuery = useQuery(() =>
@@ -271,6 +270,7 @@ export function ImageQueueDetailPage(props: Props) {
 export function ImageQueueDetailPageContent(
 	props: ImageQueueDetailPageContentProps,
 ) {
+	const { t } = useLingui()
 	const surfaceCardClass =
 		"rounded-sm border border-slate-300 bg-primary shadow-xs"
 	const tone = () =>
@@ -321,7 +321,7 @@ export function ImageQueueDetailPageContent(
 										color={tone().color}
 										class="self-baseline-last text-sm"
 									>
-										{tone().label}
+										<ImageQueueStatusLabel status={data().status} />
 									</Badge>
 									<h1 class="text-2xl font-light tracking-tight text-primary">
 										<Show
@@ -335,10 +335,14 @@ export function ImageQueueDetailPageContent(
 														to={target().to}
 														params={{ id: target().id.toString() }}
 													>
-														{props.targetName
-															?? `${target().label} #${target().id}`}
+														{props.targetName ?? (
+															<>
+																<TargetEntityLabel entity={target().entity} /> #
+																{target().id}
+															</>
+														)}
 													</Link>
-													&apos;s {target().imageLabel}
+													&apos;s <TargetImageLabel entity={target().entity} />
 												</>
 											)}
 										</Show>
@@ -451,6 +455,7 @@ export function ImageQueueDetailPageContent(
 }
 
 function NeighborLink(props: { entryId?: number; direction: "prev" | "next" }) {
+	const { t } = useLingui()
 	const isPrev = () => props.direction === "prev"
 	const content = () => (
 		<>
@@ -560,6 +565,7 @@ function DiffImageCard(props: {
 	loading?: boolean
 	error?: boolean
 }) {
+	const { t } = useLingui()
 	return (
 		<section class="grid gap-2">
 			<header class="flex items-center justify-between gap-3">
@@ -611,6 +617,69 @@ function InfoField(props: InfoFieldProps) {
 	)
 }
 
+function ImageQueueStatusLabel(props: { status: ImageQueueStatus }) {
+	const { t } = useLingui()
+
+	const label = () => {
+		switch (props.status) {
+			case "Pending": {
+				return t`Pending`
+			}
+			case "Approved": {
+				return t`Approved`
+			}
+			case "Rejected": {
+				return t`Rejected`
+			}
+			case "Cancelled": {
+				return t`Cancelled`
+			}
+			case "Reverted": {
+				return t`Reverted`
+			}
+			default: {
+				return t`Unknown`
+			}
+		}
+	}
+
+	return <>{label()}</>
+}
+
+function TargetEntityLabel(props: { entity: "Artist" | "Release" }) {
+	const { t } = useLingui()
+
+	const label = () => {
+		switch (props.entity) {
+			case "Artist": {
+				return t`Artist`
+			}
+			case "Release": {
+				return t`Release`
+			}
+		}
+	}
+
+	return <>{label()}</>
+}
+
+function TargetImageLabel(props: { entity: "Artist" | "Release" }) {
+	const { t } = useLingui()
+
+	const label = () => {
+		switch (props.entity) {
+			case "Artist": {
+				return t`profile image`
+			}
+			case "Release": {
+				return t`cover art`
+			}
+		}
+	}
+
+	return <>{label()}</>
+}
+
 type ConfirmActionButtonProps = {
 	title: string
 	description: string
@@ -622,6 +691,7 @@ type ConfirmActionButtonProps = {
 }
 
 function ConfirmActionButton(props: ConfirmActionButtonProps) {
+	const { t } = useLingui()
 	const [open, setOpen] = createSignal(false)
 
 	const confirm = () => {
@@ -664,6 +734,7 @@ function ActionPanel(props: {
 	onRevert: () => void
 	errorMessage?: string
 }) {
+	const { t } = useLingui()
 	const status = () => props.detail.status
 	const isPending = () =>
 		status()

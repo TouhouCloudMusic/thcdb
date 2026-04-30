@@ -1,7 +1,8 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { Title } from "@solidjs/meta"
 
 export function NotFound() {
+	const { t } = useLingui()
 	return (
 		<div class="flex size-full py-32">
 			<Title>{t`404 Not Found`}</Title>

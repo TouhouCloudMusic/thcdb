@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { JSX } from "solid-js"
 import { For, Suspense } from "solid-js"
 
@@ -17,6 +17,7 @@ type EntitySearchDialogProps<T> = {
 export function EntitySearchDialog<T>(
 	props: EntitySearchDialogProps<T>,
 ): JSX.Element {
+	const { t } = useLingui()
 	return (
 		<SearchDialog.Root>
 			{props.trigger}

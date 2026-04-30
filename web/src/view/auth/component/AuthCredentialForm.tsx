@@ -1,6 +1,6 @@
 import { Field, Form } from "@formisch/solid"
 import { Tabs } from "@kobalte/core/tabs"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For, Show } from "solid-js"
 
 import { Link } from "~/component/atomic/Link"
@@ -31,20 +31,15 @@ const isAuthFormMode = (value: string): value is AuthFormMode =>
 const FORM_STYLE = "w-full flex flex-col"
 const AUTH_TAB_ITEMS = [
 	{
-		get label() {
-			return t`Sign In`
-		},
 		value: "sign_in" as const,
 	},
 	{
-		get label() {
-			return t`Sign Up`
-		},
 		value: "sign_up" as const,
 	},
 ]
 
 export function AuthCredentialForm(props: AuthCredentialFormProps) {
+	const { t } = useLingui()
 	const isSignIn = () => props.mode() === "sign_in"
 
 	return (
@@ -64,7 +59,7 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 								value={item.value}
 								class="relative z-10 rounded-md px-4 py-2.5 text-sm  text-tertiary outline-none transition-colors duration-150 focus-visible:outline focus-visible:outline-reimu-600 data-selected:text-primary"
 							>
-								{item.label}
+								<AuthTabLabel value={item.value} />
 							</Tabs.Trigger>
 						)}
 					</For>
@@ -187,4 +182,21 @@ export function AuthCredentialForm(props: AuthCredentialFormProps) {
 			</Show>
 		</>
 	)
+}
+
+function AuthTabLabel(props: { value: Exclude<AuthFormMode, "verify_email"> }) {
+	const { t } = useLingui()
+
+	const label = () => {
+		switch (props.value) {
+			case "sign_in": {
+				return t`Sign In`
+			}
+			case "sign_up": {
+				return t`Sign Up`
+			}
+		}
+	}
+
+	return <>{label()}</>
 }

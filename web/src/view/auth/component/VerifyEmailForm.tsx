@@ -1,5 +1,5 @@
 import { Field, Form } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { Show } from "solid-js"
 
 import { Link } from "~/component/atomic/Link"
@@ -23,6 +23,7 @@ type VerifyEmailFormProps = Pick<
 >
 
 export function VerifyEmailForm(props: VerifyEmailFormProps) {
+	const { t } = useLingui()
 	return (
 		<Form
 			of={props.verifyEmailForm}

@@ -1,5 +1,5 @@
 import { Field } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
@@ -17,6 +17,7 @@ export function ReleaseTypeField(props: {
 	of: ReleaseFormStore
 	class?: string
 }) {
+	const { t } = useLingui()
 	const typeOptions = ["", ...RELEASE_TYPES] as ["", ...typeof RELEASE_TYPES]
 
 	return (

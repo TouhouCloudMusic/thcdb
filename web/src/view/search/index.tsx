@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
 import type {
@@ -33,44 +33,6 @@ type SearchEntity = "all" | SearchTab
 const route = getRouteApi("/search")
 const LIMIT = 20
 
-const TAB_META = {
-	artist: {
-		get label() {
-			return t`Artists`
-		},
-	},
-	event: {
-		get label() {
-			return t`Events`
-		},
-	},
-	label: {
-		get label() {
-			return t`Labels`
-		},
-	},
-	release: {
-		get label() {
-			return t`Releases`
-		},
-	},
-	song: {
-		get label() {
-			return t`Songs`
-		},
-	},
-	tag: {
-		get label() {
-			return t`Tags`
-		},
-	},
-	user_collection: {
-		get label() {
-			return t`Collections`
-		},
-	},
-} satisfies Record<SearchTab, { readonly label: string }>
-
 const isSearchTab = (value: string): value is SearchTab => {
 	return (
 		value === "artist"
@@ -84,6 +46,7 @@ const isSearchTab = (value: string): value is SearchTab => {
 }
 
 export function SearchPage() {
+	const { t } = useLingui()
 	const search = route.useSearch()
 	const navigate = useNavigate({ from: "/search" })
 
@@ -134,6 +97,7 @@ export function SearchPage() {
 }
 
 function SearchHeader(props: { enabled: boolean; term: string }) {
+	const { t } = useLingui()
 	return (
 		<div class="flex flex-col border-b border-slate-200 pb-4">
 			<Show when={props.enabled}>
@@ -153,6 +117,7 @@ function SearchResults(props: {
 	requestedTab: () => SearchTab | undefined
 	onTabChange: (tab: SearchTab) => void
 }) {
+	const { t } = useLingui()
 	const enabled = () => props.term().length > 0
 
 	const isEnabledTab = (tab: SearchTab) => {
@@ -502,12 +467,44 @@ function TabTrigger(props: { tab: SearchTab; count: number }) {
 			value={props.tab}
 			class="flex items-center gap-2 py-3"
 		>
-			{TAB_META[props.tab].label}
+			<SearchTabLabel tab={props.tab} />
 			<span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-700 ring-1 ring-slate-200 ring-inset">
 				{props.count}
 			</span>
 		</Tab.Trigger>
 	)
+}
+
+function SearchTabLabel(props: { tab: SearchTab }) {
+	const { t } = useLingui()
+
+	const label = () => {
+		switch (props.tab) {
+			case "artist": {
+				return t`Artists`
+			}
+			case "event": {
+				return t`Events`
+			}
+			case "label": {
+				return t`Labels`
+			}
+			case "release": {
+				return t`Releases`
+			}
+			case "song": {
+				return t`Songs`
+			}
+			case "tag": {
+				return t`Tags`
+			}
+			case "user_collection": {
+				return t`Collections`
+			}
+		}
+	}
+
+	return <>{label()}</>
 }
 
 type ResultListProps<T> = {
@@ -576,6 +573,7 @@ function RowSkeleton() {
 }
 
 function ArtistRow(props: { artist: SimpleArtist }) {
+	const { t } = useLingui()
 	return (
 		<Link
 			to="/artist/$id"
@@ -601,6 +599,7 @@ function ArtistRow(props: { artist: SimpleArtist }) {
 }
 
 function ReleaseRow(props: { release: SongRelease }) {
+	const { t } = useLingui()
 	const coverUrl = () => imgUrl(props.release.cover_art_url)
 
 	return (
@@ -642,6 +641,7 @@ function ReleaseRow(props: { release: SongRelease }) {
 }
 
 function SongRow(props: { song: SongRef }) {
+	const { t } = useLingui()
 	return (
 		<Link
 			to="/song/$id"
@@ -667,6 +667,7 @@ function SongRow(props: { song: SongRef }) {
 }
 
 function EventRow(props: { event: SimpleEvent }) {
+	const { t } = useLingui()
 	return (
 		<Link
 			to="/event/$id"
@@ -692,6 +693,7 @@ function EventRow(props: { event: SimpleEvent }) {
 }
 
 function LabelRow(props: { label: SimpleLabel }) {
+	const { t } = useLingui()
 	return (
 		<Link
 			to="/label/$id"
@@ -717,6 +719,7 @@ function LabelRow(props: { label: SimpleLabel }) {
 }
 
 function TagRow(props: { tag: TagRef }) {
+	const { t } = useLingui()
 	return (
 		<Link
 			to="/tag/$id"

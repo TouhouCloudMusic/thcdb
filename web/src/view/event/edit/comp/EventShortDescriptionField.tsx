@@ -1,5 +1,5 @@
 import { Field } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { For } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
@@ -12,6 +12,7 @@ type Props = {
 }
 
 export function EventShortDescriptionField(props: Props) {
+	const { t } = useLingui()
 	const { formStore } = useEventForm()
 
 	return (

@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
 import type { ImageQueueStatus, UserImageQueueItem } from "@thc/api"
@@ -21,22 +21,22 @@ const PAGE_SIZE = 20
 const statusTone = (status: ImageQueueStatus) => {
 	switch (status) {
 		case "Pending": {
-			return { color: "Marisa", label: t`PENDING` } as const
+			return { color: "Marisa" } as const
 		}
 		case "Approved": {
-			return { color: "Green", label: t`APPROVED` } as const
+			return { color: "Green" } as const
 		}
 		case "Rejected": {
-			return { color: "Reimu", label: t`REJECTED` } as const
+			return { color: "Reimu" } as const
 		}
 		case "Cancelled": {
-			return { color: "Slate", label: t`CANCELLED` } as const
+			return { color: "Slate" } as const
 		}
 		case "Reverted": {
-			return { color: "Blue", label: t`REVERTED` } as const
+			return { color: "Blue" } as const
 		}
 		default: {
-			return { color: "Slate", label: t`UNKNOWN` } as const
+			return { color: "Slate" } as const
 		}
 	}
 }
@@ -53,6 +53,7 @@ type Props = {
 }
 
 export function UserImageQueuePage(props: Props) {
+	const { t } = useLingui()
 	const navigate = useNavigate()
 	const listQuery = useInfiniteQuery(() =>
 		ImageQueueQueryOption.userQueue(props.userId, PAGE_SIZE),
@@ -194,7 +195,7 @@ function UserQueueRow(props: { item: UserImageQueueItem }) {
 					color={tone().color}
 					class="px-2 py-0.5"
 				>
-					{tone().label}
+					<UserImageQueueStatusLabel status={props.item.status} />
 				</Badge>
 			</div>
 
@@ -229,6 +230,35 @@ function UserQueueRow(props: { item: UserImageQueueItem }) {
 			</div>
 		</div>
 	)
+}
+
+function UserImageQueueStatusLabel(props: { status: ImageQueueStatus }) {
+	const { t } = useLingui()
+
+	const label = () => {
+		switch (props.status) {
+			case "Pending": {
+				return t`PENDING`
+			}
+			case "Approved": {
+				return t`APPROVED`
+			}
+			case "Rejected": {
+				return t`REJECTED`
+			}
+			case "Cancelled": {
+				return t`CANCELLED`
+			}
+			case "Reverted": {
+				return t`REVERTED`
+			}
+			default: {
+				return t`UNKNOWN`
+			}
+		}
+	}
+
+	return <>{label()}</>
 }
 
 function RowSkeleton() {

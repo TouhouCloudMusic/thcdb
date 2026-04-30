@@ -6,7 +6,7 @@ import {
 	reset,
 	setInput,
 } from "@formisch/solid"
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import type { Language } from "@thc/api"
 import { For } from "solid-js"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
@@ -21,6 +21,7 @@ import { LanguageCombobox } from "~/component/form/stateful/LanguageCombobox"
 import { useArtistForm } from "../context"
 
 export function ArtistFormLocalizedNames() {
+	const { t } = useLingui()
 	const { formStore } = useArtistForm()
 
 	const addLocalizedName = () => {

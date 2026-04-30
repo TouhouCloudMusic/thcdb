@@ -1,7 +1,9 @@
-import { t } from "@lingui/core/macro"
 import { ObjExt } from "@thc/toolkit/data"
 
-export function getErrorMessage(error: unknown) {
+export function getErrorMessage(
+	error: unknown,
+	fallbackMessage = "Unknown error",
+) {
 	if (error instanceof Error) {
 		return error.message
 	}
@@ -27,6 +29,6 @@ export function getErrorMessage(error: unknown) {
 			key === "stack" ? undefined : (value as unknown),
 		)
 	} catch {
-		return t`Unknown error`
+		return fallbackMessage
 	}
 }

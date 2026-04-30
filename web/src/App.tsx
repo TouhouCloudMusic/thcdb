@@ -1,5 +1,5 @@
 /* @refresh reload */
-import { t } from "@lingui/core/macro"
+import { useLingui } from "@lingui/solid/macro"
 import { Meta, Title } from "@solidjs/meta"
 import { createRouter, RouterProvider } from "@tanstack/solid-router"
 
@@ -41,6 +41,7 @@ export default function App(props: AppProps) {
 }
 
 function Metas() {
+	const { t } = useLingui()
 	return (
 		<>
 			<Title>{t`Touhou Cloud DB`}</Title>

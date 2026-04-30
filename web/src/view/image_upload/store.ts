@@ -1,4 +1,3 @@
-import { t } from "@lingui/core/macro"
 import { onCleanup } from "solid-js"
 import { createStore } from "solid-js/store"
 
@@ -6,6 +5,7 @@ export type EntityImageUploadStoreOptions = {
 	onUpload: (file: File) => Promise<void>
 	initialDraftFile?: File
 	initialDraftPreviewUrl?: string
+	submitFailedMessage?: string
 }
 
 export type EntityImageUploadStore = {
@@ -29,12 +29,12 @@ type EntityImageUploadState = {
 	isUploading: boolean
 }
 
-function getSubmitErrorMessage(error: unknown) {
+function getSubmitErrorMessage(error: unknown, submitFailedMessage: string) {
 	if (error instanceof Error && error.message) {
 		return error.message
 	}
 
-	return t`Submit failed.`
+	return submitFailedMessage
 }
 
 function revokeDraftPreviewUrl(url: string | undefined, shouldRevoke: boolean) {
@@ -98,7 +98,13 @@ export function createEntityImageUploadStore(
 		try {
 			await options.onUpload(file)
 		} catch (error) {
-			setState("submitError", getSubmitErrorMessage(error))
+			setState(
+				"submitError",
+				getSubmitErrorMessage(
+					error,
+					options.submitFailedMessage ?? "Submit failed.",
+				),
+			)
 		} finally {
 			setState("isUploading", false)
 		}
