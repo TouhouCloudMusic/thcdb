@@ -8,8 +8,5 @@
 	"license": "MIT",
 	"exports": {
 		".": "./src/index.ts"
-	},
-	"dependencies": {
-		"openapi-typescript": "^7.9.1"
 	}
 }
