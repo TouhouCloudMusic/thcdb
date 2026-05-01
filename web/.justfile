@@ -2,6 +2,8 @@ mod i18n '.just/i18n'
 
 import '.just/api.just'
 
+set positional-arguments
+
 default:
     @just --list
 
