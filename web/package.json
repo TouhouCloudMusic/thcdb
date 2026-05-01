@@ -108,5 +108,10 @@
 	"trustedDependencies": [
 		"@tailwindcss/oxide",
 		"esbuild"
-	]
+	],
+	"pnpm": {
+		"overrides": {
+			"@huliiiiii/lingui-solid>@lingui/core": "6.0.0-next.4"
+		}
+	}
 }
