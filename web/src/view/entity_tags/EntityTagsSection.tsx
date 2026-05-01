@@ -144,7 +144,7 @@ export type EntityTagsSectionProps = {
 export function EntityTagsSection(props: EntityTagsSectionProps) {
 	const { t } = useLingui()
 	return (
-		<div class={props.class ?? "flex items-start gap-4 text-sm"}>
+		<div class={props.class ?? "flex items-baseline gap-4 text-sm"}>
 			<div class="shrink-0 text-tertiary">{t`Tags`}</div>
 			<Show
 				when={!props.isLoading}
