@@ -45,14 +45,16 @@ function ArtistCard(props: { id: number; summary: ArtistSummary }) {
 			class="flex items-center gap-4 no-underline hover:underline group"
 		>
 			<div class="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-slate-100 border border-slate-200">
-				<Show when={props.summary.profile_image_url}>
-					{(url) => (
-						<Image.Img
-							src={imgUrl(url())}
-							class="h-full w-full object-cover"
-						/>
-					)}
-				</Show>
+				<Image.Root>
+					<Show when={props.summary.profile_image_url}>
+						{(url) => (
+							<Image.Img
+								src={imgUrl(url())}
+								class="h-full w-full object-cover"
+							/>
+						)}
+					</Show>
+				</Image.Root>
 			</div>
 			<div class="flex flex-col">
 				<span class="font-medium text-slate-900 group-hover:text-blue-600">
@@ -75,14 +77,16 @@ function ReleaseCard(props: { id: number; summary: ReleaseSummary }) {
 			class="flex items-center gap-4 no-underline hover:underline group"
 		>
 			<div class="h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-slate-100 border border-slate-200">
-				<Show when={props.summary.cover_art_url}>
-					{(url) => (
-						<Image.Img
-							src={imgUrl(url())}
-							class="h-full w-full object-cover"
-						/>
-					)}
-				</Show>
+				<Image.Root>
+					<Show when={props.summary.cover_art_url}>
+						{(url) => (
+							<Image.Img
+								src={imgUrl(url())}
+								class="h-full w-full object-cover"
+							/>
+						)}
+					</Show>
+				</Image.Root>
 			</div>
 			<div class="flex flex-col">
 				<span class="font-medium text-slate-900 group-hover:text-blue-600">
@@ -116,14 +120,16 @@ function SongCard(props: { id: number; summary: SongSummary }) {
 			class="flex items-center gap-4 no-underline hover:underline group"
 		>
 			<div class="h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-slate-100 border border-slate-200">
-				<Show when={props.summary.cover_art_url}>
-					{(url) => (
-						<Image.Img
-							src={imgUrl(url())}
-							class="h-full w-full object-cover"
-						/>
-					)}
-				</Show>
+				<Image.Root>
+					<Show when={props.summary.cover_art_url}>
+						{(url) => (
+							<Image.Img
+								src={imgUrl(url())}
+								class="h-full w-full object-cover"
+							/>
+						)}
+					</Show>
+				</Image.Root>
 			</div>
 			<div class="flex flex-col">
 				<span class="font-medium text-slate-900 group-hover:text-blue-600">
