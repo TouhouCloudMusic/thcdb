@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: touhou-cloud-db\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-04-18 11:23\n"
+"PO-Revision-Date: 2026-05-02 22:34\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "X-Crowdin-Project: touhou-cloud-db\n"
@@ -81,6 +81,14 @@ msgstr "操作"
 msgid "Active"
 msgstr "存续"
 
+#: src/view/user/Profile.tsx
+msgid "Activity"
+msgstr ""
+
+#: src/view/collection/AddToCollectionDialog.tsx
+msgid "Add"
+msgstr ""
+
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Add disc"
 msgstr "添加光盘"
@@ -95,6 +103,11 @@ msgstr ""
 
 #: src/view/entity_tags/EntityTagAddDialog.tsx
 msgid "Add Tag"
+msgstr ""
+
+#: src/view/collection/AddToCollectionDialog.tsx
+#: src/view/collection/AddToUserCollectionButton.tsx
+msgid "Add to Collection"
 msgstr ""
 
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
@@ -122,7 +135,7 @@ msgstr "之后"
 msgid "AKAs"
 msgstr "AKA"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/HomeHero.tsx
 msgid "Albums, EPs, singles"
 msgstr ""
 
@@ -134,6 +147,7 @@ msgstr "别名"
 #: src/view/artist/explore.comp.tsx
 #: src/view/image_queue/manage.tsx
 #: src/view/song/explore.tsx
+#: src/view/user/Profile.tsx
 msgid "All"
 msgstr "全部"
 
@@ -149,6 +163,11 @@ msgstr ""
 #: src/view/tag/edit/comp/TagAltNames.tsx
 msgid "Alternative Names"
 msgstr "替代名称"
+
+#: src/view/collection/AddToCollectionDialog.tsx
+#: src/view/collection/CollectionFormDialog.tsx
+msgid "An error occurred. Please try again."
+msgstr ""
 
 #: src/view/Homepage/component/HomeHero.tsx
 msgid "API-powered UI"
@@ -172,6 +191,10 @@ msgstr "已批准"
 msgid "APPROVED"
 msgstr ""
 
+#: src/view/collection/CollectionDetail.tsx
+msgid "Are you sure you want to delete this collection? This action cannot be undone."
+msgstr ""
+
 #: src/view/artist/edit/index.tsx
 #: src/view/event/edit/index.tsx
 #: src/view/label/edit/index.tsx
@@ -181,23 +204,24 @@ msgstr ""
 msgid "Are you sure you want to leave this page? Your changes will be lost."
 msgstr "您确定要离开此页面吗？您的更改将丢失。"
 
+#: src/view/collection/CollectionItemCard.tsx
+msgid "Are you sure you want to remove this item from the collection?"
+msgstr ""
+
 #: src/component/Header/LeftSidebar.tsx
+#: src/view/collection/CollectionItemCard.tsx
 #: src/view/Homepage/component/ArtistCard.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/search/index.tsx
 msgid "Artist"
 msgstr "艺人"
 
-#: src/domain/song/schema.ts
-msgid "Artist not selected"
-msgstr ""
-
 #: src/view/artist/edit/comp/ArtistType.tsx
 msgid "Artist Type"
 msgstr "艺人类型"
 
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
+#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/release/edit/comp/ReleaseArtistsField.tsx
 #: src/view/search/index.tsx
 #: src/view/song/edit/comp/SongArtistsField.tsx
@@ -233,7 +257,7 @@ msgstr "之前"
 msgid "Born"
 msgstr "出生"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Browse circles and solo creators with filters and sorting."
 msgstr ""
 
@@ -243,6 +267,8 @@ msgid "by"
 msgstr "由"
 
 #: src/component/dialog/AlertDialog.tsx
+#: src/view/collection/AddToCollectionDialog.tsx
+#: src/view/collection/CollectionFormDialog.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Cancel"
@@ -273,7 +299,7 @@ msgstr "目录号"
 msgid "Checking session…"
 msgstr "正在检查会话…"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/HomeHero.tsx
 msgid "Circles & solo creators"
 msgstr ""
 
@@ -286,7 +312,17 @@ msgstr "城市"
 msgid "Collapse"
 msgstr "折叠"
 
+#: src/view/collection/AddToCollectionDialog.tsx
+msgid "Collection"
+msgstr ""
+
+#: src/view/collection/CollectionFormDialog.tsx
+msgid "Collection created"
+msgstr ""
+
 #: src/component/Header/RightSidebar.tsx
+#: src/view/search/index.tsx
+#: src/view/user/Profile.tsx
 msgid "Collections"
 msgstr "收藏集"
 
@@ -335,6 +371,10 @@ msgstr "国家 / 地区"
 msgid "cover art"
 msgstr ""
 
+#: src/view/collection/CollectionFormDialog.tsx
+msgid "Create"
+msgstr ""
+
 #: src/component/route.tsx
 #: src/view/auth/component/AuthForm.tsx
 msgid "Create account"
@@ -347,6 +387,10 @@ msgstr "创建账号后继续。"
 #: src/view/artist/explore.tsx
 msgid "Create artist"
 msgstr "创建艺人"
+
+#: src/view/collection/CollectionFormDialog.tsx
+msgid "Create Collection"
+msgstr ""
 
 #: src/view/event/explore.tsx
 msgid "Create event"
@@ -388,7 +432,12 @@ msgstr "创建时间"
 msgid "Created At"
 msgstr "创建于"
 
-#: src/view/correction/entityMap.ts
+#: src/view/collection/CollectionDetail.tsx
+msgid "Created by"
+msgstr ""
+
+#: src/view/correction/Detail.tsx
+#: src/view/list/ListItemCard.tsx
 msgid "Credit role"
 msgstr "署名角色"
 
@@ -431,16 +480,21 @@ msgstr "日期"
 msgid "Day"
 msgstr "日"
 
-#. 0: fieldNameWithoutUnderscore()
-#: src/component/dialog/ResetFieldDialog.tsx
-msgid "Reset {0} field to initial state"
-msgstr "将 {0} 字段重置为初始状态"
+#: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/CollectionDetail.tsx
+msgid "Delete"
+msgstr ""
+
+#: src/view/collection/CollectionDetail.tsx
+msgid "Delete Collection"
+msgstr ""
 
 #: src/component/feature/entity_explore/OrderBySelect.tsx
 msgid "Descending"
 msgstr "降序"
 
 #: src/view/artist/edit/comp/FormActions.tsx
+#: src/view/collection/CollectionFormDialog.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/event/edit/comp/EventDescriptionField.tsx
 #: src/view/song/edit/comp/SongRelationsField.tsx
@@ -481,12 +535,13 @@ msgstr "溶解"
 msgid "Dissolved date"
 msgstr "解散日期"
 
-#: src/view/entity_tags/model.ts
-msgid "Downvote"
+#: src/view/collection/CollectionDetail.tsx
+msgid "Done"
 msgstr ""
 
-#: src/domain/song/schema.ts
-msgid "Duplicate related song"
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+#: src/view/entity_tags/EntityTagsSection.tsx
+msgid "Downvote"
 msgstr ""
 
 #: src/view/release/edit/comp/TrackFieldItem.tsx
@@ -497,9 +552,18 @@ msgstr "时长（毫秒）"
 msgid "Edit Artist"
 msgstr "编辑艺人"
 
+#: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/CollectionFormDialog.tsx
+msgid "Edit Collection"
+msgstr ""
+
 #: src/view/event/edit/index.tsx
 msgid "Edit Event"
 msgstr "编辑活动"
+
+#: src/view/collection/CollectionDetail.tsx
+msgid "Edit items"
+msgstr ""
 
 #: src/view/label/edit/index.tsx
 msgid "Edit Label"
@@ -525,7 +589,6 @@ msgstr "编辑"
 msgid "Email"
 msgstr "电子邮箱"
 
-#: src/domain/auth/schema.ts
 #: src/view/auth/reset_password/index.tsx
 msgid "Email is required"
 msgstr ""
@@ -544,20 +607,17 @@ msgstr "输入发送到你邮箱的 6 位验证码。"
 msgid "Enter the code for {0}. If you did not receive one, use Resend."
 msgstr "输入发送到 {0} 的验证码。如果没有收到，请使用“重新发送”。"
 
-#: src/view/auth/component/VerifyEmailForm.tsx
-#~ msgid "Enter the code for {email}. If you did not receive one, use Resend."
-#~ msgstr "Enter the code for {email}. If you did not receive one, use Resend."
-
 #: src/view/auth/component/SignInIdentifierField.tsx
 msgid "Enter your username or email"
 msgstr "输入你的用户名或邮箱"
 
 #: src/component/Header/LeftSidebar.tsx
+#: src/view/collection/CollectionItemCard.tsx
 #: src/view/search/index.tsx
 msgid "Event"
 msgstr "活动"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/release/edit/comp/ReleaseEventsField.tsx
 #: src/view/search/index.tsx
 msgid "Events"
@@ -569,13 +629,8 @@ msgid "Expand"
 msgstr "展开"
 
 #: src/component/Header/LeftSidebar.tsx
+#: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/Homepage/component/ExploreSection.tsx
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
 msgid "Explore"
 msgstr "浏览"
 
@@ -596,7 +651,7 @@ msgstr "浏览活动"
 msgid "Explore Labels"
 msgstr "浏览厂牌"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Explore labels, imprint history and founded/dissolved dates."
 msgstr ""
 
@@ -607,6 +662,18 @@ msgstr "浏览发行"
 #: src/view/song/explore.tsx
 msgid "Explore Songs"
 msgstr "探索歌曲"
+
+#: src/route/collection/$id.tsx
+msgid "Failed to load collection details."
+msgstr ""
+
+#: src/view/collection/AddToCollectionDialog.tsx
+msgid "Failed to load collections"
+msgstr ""
+
+#: src/view/collection/AddToCollectionDialog.tsx
+msgid "Failed to load collections."
+msgstr ""
 
 #: src/view/image_queue/manage.tsx
 msgid "Failed to load image queue."
@@ -620,19 +687,27 @@ msgstr "加载用户图片队列失败。"
 msgid "Failed to load users."
 msgstr ""
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Favorites"
-msgstr "收藏"
-
 #: src/component/Footer/index.tsx
 msgid "Feedback"
 msgstr "反馈"
+
+#: src/component/ImageCropDialog/index.tsx
+msgid "File is too large. Maximum is {maximum}."
+msgstr ""
+
+#: src/component/ImageCropDialog/index.tsx
+msgid "File is too small. Minimum is {minimum}."
+msgstr ""
 
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "File size"
 msgstr "文件大小"
 
-#: src/view/Homepage/mock.ts
+#: src/view/user/Profile.tsx
+msgid "Filter collections"
+msgstr ""
+
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Find tracks by title language, credits, and corrections."
 msgstr ""
 
@@ -685,7 +760,7 @@ msgstr "创始人"
 msgid "From"
 msgstr "从"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/HomeHero.tsx
 msgid "Genres, themes, credits"
 msgstr ""
 
@@ -706,7 +781,8 @@ msgstr "已处理 / 已还原"
 msgid "Handled At"
 msgstr "处理时间"
 
-#: src/view/entity_tags/model.ts
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+#: src/view/entity_tags/EntityTagsSection.tsx
 msgid "High"
 msgstr ""
 
@@ -739,23 +815,35 @@ msgstr "图片队列"
 msgid "Image Queue"
 msgstr "图片队列"
 
-#: src/domain/auth/schema.ts
 #: src/view/auth/reset_password/index.tsx
 msgid "Invalid email"
 msgstr ""
 
-#: src/view/auth/reset_password/reset_password_by_key.ts
+#: src/view/auth/reset_password/index.tsx
 msgid "Invalid or expired reset key"
 msgstr ""
 
-#: src/domain/auth/schema.ts
 #: src/view/auth/reset_password/index.tsx
 msgid "Invalid verification code"
 msgstr ""
 
-#: src/mock/release.ts
-msgid "Japanese"
-msgstr "日语"
+#: src/view/collection/CollectionFormDialog.tsx
+msgid "It is now available on your profile"
+msgstr ""
+
+#: src/view/collection/CollectionDetail.tsx
+#: src/view/user/Profile.tsx
+msgid "item"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "Item count"
+msgstr ""
+
+#: src/view/collection/CollectionDetail.tsx
+#: src/view/user/Profile.tsx
+msgid "items"
+msgstr ""
 
 #: src/view/artist/edit/comp/Membership/tenure.tsx
 msgid "Join year"
@@ -770,11 +858,12 @@ msgid "Join year cannot be the same as previous leave year"
 msgstr "入职年份不能与上一休假年份相同"
 
 #: src/component/Header/LeftSidebar.tsx
+#: src/view/collection/CollectionItemCard.tsx
 #: src/view/search/index.tsx
 msgid "Label"
 msgstr "厂牌"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/label/List/index.tsx
 #: src/view/search/index.tsx
 msgid "Labels"
@@ -785,11 +874,6 @@ msgstr "厂牌"
 #: src/view/song/Info/comp/SongInfoLyrics.tsx
 msgid "Language"
 msgstr "语言"
-
-#: src/domain/shared/schema.ts
-#: src/domain/song/schema.ts
-msgid "Language not selected"
-msgstr ""
 
 #: src/view/song/edit/comp/SongLanguagesField.tsx
 msgid "Languages"
@@ -824,9 +908,15 @@ msgstr "请假年份不能与加入年份相同"
 msgid "Links"
 msgstr "链接"
 
-#: src/component/Header/RightSidebar.tsx
-msgid "Lists"
-msgstr "清单"
+#: src/view/collection/AddToCollectionDialog.tsx
+#: src/view/collection/CollectionDetail.tsx
+#: src/view/user/Profile.tsx
+msgid "Load more"
+msgstr ""
+
+#: src/view/collection/AddToCollectionDialog.tsx
+msgid "Loading collections..."
+msgstr ""
 
 #: src/view/correction/EntityContributors.tsx
 msgid "Loading contributors..."
@@ -836,6 +926,10 @@ msgstr "加载贡献者…"
 msgid "Loading diff..."
 msgstr "加载"
 
+#: src/view/collection/CollectionDetail.tsx
+msgid "Loading items..."
+msgstr ""
+
 #: src/view/correction/Detail.tsx
 msgid "Loading revisions..."
 msgstr "正在加载修订..."
@@ -844,10 +938,13 @@ msgstr "正在加载修订..."
 msgid "Loading tags..."
 msgstr ""
 
+#: src/route/collection/$id.tsx
 #: src/view/artist/edit/index.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/artist/profile/index.tsx
+#: src/view/collection/AddToCollectionDialog.tsx
+#: src/view/collection/CollectionDetail.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/Detail.tsx
@@ -855,6 +952,7 @@ msgstr ""
 #: src/view/label/Info/index.tsx
 #: src/view/release/Info/index.tsx
 #: src/view/tag/Info/index.tsx
+#: src/view/user/Profile.tsx
 msgid "Loading..."
 msgstr "正在載入..."
 
@@ -879,7 +977,8 @@ msgstr "本地化标题"
 msgid "Location"
 msgstr "位置"
 
-#: src/view/entity_tags/model.ts
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+#: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Low"
 msgstr ""
 
@@ -887,11 +986,16 @@ msgstr ""
 msgid "Lyrics"
 msgstr "歌词"
 
+#: src/view/collection/CollectionFormDialog.tsx
+msgid "Make this collection public"
+msgstr ""
+
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Manage Tags"
 msgstr ""
 
-#: src/view/entity_tags/model.ts
+#: src/view/entity_tags/EntityTagAddDialog.tsx
+#: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Medium"
 msgstr ""
 
@@ -907,62 +1011,6 @@ msgstr "成员"
 msgid "Membership"
 msgstr "成员关系"
 
-#: src/view/image_queue/detail.tsx
-msgid "Prev"
-msgstr "上一页"
-
-#: src/view/image_queue/detail.tsx
-msgid "Next"
-msgstr "下一页"
-
-#: src/view/image_queue/detail.tsx
-msgid "Failed to load"
-msgstr "加载失败"
-
-#: src/component/dialog/AlertDialog.tsx
-#: src/view/admin/users.tsx
-#: src/view/image_queue/detail.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "Cancel"
-msgstr ""
-
-#: src/view/image_queue/detail.tsx
-msgid "Actions"
-msgstr ""
-
-#: src/view/image_queue/detail.tsx
-msgid "Working…"
-msgstr "处理中…"
-
-#: src/view/image_queue/detail.tsx
-msgid "No actions available for this account."
-msgstr "此帐户没有可用的操作。"
-
-#: src/view/image_queue/detail.tsx
-msgid "Approve image?"
-msgstr ""
-
-#: src/view/image_queue/detail.tsx
-msgid "This will mark the queued image as approved."
-msgstr "这会将排队的图片标记为已批准。"
-
-#: src/view/image_queue/detail.tsx
-msgid "Reject image?"
-msgstr "拒绝这张图片？"
-
-#: src/view/image_queue/detail.tsx
-msgid "This will mark the queued image as rejected."
-msgstr "这会将排队的图片标记为已拒绝。"
-
-#: src/view/image_queue/detail.tsx
-msgid "No actions available."
-msgstr "没有可用操作。"
-
-#. 0: item.id
-#: src/view/image_queue/manage.tsx
-msgid "View image queue item #{0}"
-msgstr "查看图片队列条目 #{0}"
-
 #: src/view/auth/store/index.ts
 msgid "Missing sign-up email. Create the account again."
 msgstr "缺少注册邮箱，请重新创建账号。"
@@ -975,6 +1023,16 @@ msgstr "审核"
 msgid "Month"
 msgstr "月"
 
+#: src/view/collection/CollectionItemCard.tsx
+#: src/view/collection/CollectionItemCard.tsx
+msgid "Move item down"
+msgstr ""
+
+#: src/view/collection/CollectionItemCard.tsx
+#: src/view/collection/CollectionItemCard.tsx
+msgid "Move item up"
+msgstr ""
+
 #: src/view/event/Info/index.tsx
 msgid "N/A"
 msgstr "无"
@@ -982,24 +1040,18 @@ msgstr "无"
 #: src/view/artist/edit/comp/ArtistName.tsx
 #: src/view/artist/edit/comp/LocalizedNames.tsx
 #: src/view/artist/edit/comp/TextAliases.tsx
+#: src/view/collection/CollectionFormDialog.tsx
 #: src/view/event/edit/comp/EventAlternativeNamesField.tsx
 #: src/view/event/edit/comp/EventNameField.tsx
 #: src/view/label/edit/comp/LabelLocalizedNamesField.tsx
 #: src/view/label/edit/comp/LabelNameField.tsx
 #: src/view/tag/edit/comp/TagAltNames.tsx
 #: src/view/tag/edit/comp/TagName.tsx
+#: src/view/user/Profile.tsx
 msgid "Name"
 msgstr "名称"
 
-#: src/domain/event/schema.ts
-#: src/domain/event/schema.ts
-#: src/domain/shared/schema.ts
-#: src/domain/tag/schema.ts
-#: src/domain/tag/schema.ts
-msgid "Name is required and must be non-empty"
-msgstr ""
-
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Navigate genres, themes and metadata through tag types."
 msgstr ""
 
@@ -1011,13 +1063,22 @@ msgstr "阴性："
 msgid "New"
 msgstr "新图"
 
+#: src/view/collection/AddToCollectionDialog.tsx
+#: src/view/user/Profile.tsx
+msgid "New collection"
+msgstr ""
+
 #: src/view/auth/reset_password/index.tsx
 msgid "New password"
 msgstr "新密码"
 
+#: src/view/user/Profile.tsx
+msgid "Newest"
+msgstr ""
+
 #: src/view/image_queue/detail.tsx
 msgid "Next"
-msgstr ""
+msgstr "下一页"
 
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Next disc"
@@ -1029,10 +1090,14 @@ msgstr "下一页"
 
 #: src/view/image_queue/detail.tsx
 msgid "No actions available for this account."
-msgstr ""
+msgstr "此帐户没有可用的操作。"
 
 #: src/view/image_queue/detail.tsx
 msgid "No actions available."
+msgstr "没有可用操作。"
+
+#: src/view/user/Profile.tsx
+msgid "No activity"
 msgstr ""
 
 #: src/view/artist/explore.comp.tsx
@@ -1051,6 +1116,26 @@ msgstr "暂无个人简介。"
 msgid "No changes detected."
 msgstr "未检测到任何更改"
 
+#: src/view/collection/AddToCollectionDialog.tsx
+msgid "No collections available"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "No collections found"
+msgstr ""
+
+#: src/view/search/index.tsx
+msgid "No collections found."
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "No collections match your filters"
+msgstr ""
+
+#: src/view/collection/AddToCollectionDialog.tsx
+msgid "No collections yet."
+msgstr ""
+
 #: src/component/display/release/ReleaseCoverWall.tsx
 #: src/view/Homepage/component/ReleaseCard.tsx
 #: src/view/release/explore/ReleaseItems.tsx
@@ -1061,6 +1146,10 @@ msgstr "没有 cover art"
 #: src/view/Homepage/component/HomeEmptySlot.tsx
 msgid "No data"
 msgstr "无数据"
+
+#: src/view/user/Profile.tsx
+msgid "No description"
+msgstr ""
 
 #: src/view/correction/Detail.tsx
 msgid "No diff data."
@@ -1104,10 +1193,6 @@ msgstr "未找到标签。"
 #: src/view/image_queue/user.tsx
 msgid "No more entries"
 msgstr "没有更多条目"
-
-#: src/view/user/Profile.tsx
-msgid "No recent activity."
-msgstr "暂无最近动态。"
 
 #: src/view/release/explore/list.tsx
 msgid "No releases found"
@@ -1161,7 +1246,10 @@ msgstr ""
 msgid "No users match the current filters."
 msgstr ""
 
-#: src/utils/dateTime.ts
+#: src/view/correction/CorrectionHistorySection.tsx
+#: src/view/correction/Detail.tsx
+#: src/view/correction/Detail.tsx
+#: src/view/correction/Detail.tsx
 msgid "None"
 msgstr "无"
 
@@ -1169,11 +1257,19 @@ msgstr "无"
 msgid "Not handled"
 msgstr "未处理"
 
+#: src/view/collection/AddToCollectionDialog.tsx
+msgid "Note (optional)"
+msgstr ""
+
+#: src/component/toast/index.tsx
+msgid "Notifications ({hotkey})"
+msgstr ""
+
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 msgid "On Tracks"
 msgstr "关联曲目"
 
-#: src/component/ImageCropDialog/utils.ts
+#: src/component/ImageCropDialog/index.tsx
 msgid "Only PNG/JPEG images are supported."
 msgstr "仅支持PNG/JPEG图像。"
 
@@ -1220,31 +1316,9 @@ msgstr "分页"
 msgid "Password"
 msgstr "密码"
 
-#: src/domain/auth/schema.ts
-#: src/domain/auth/schema.ts
-msgid "Password contains invalid or whitespace characters"
-msgstr ""
-
-#: src/domain/auth/schema.ts
-#: src/domain/auth/schema.ts
-msgid "Password mismatch"
-msgstr ""
-
-#: src/domain/auth/schema.ts
-msgid "Password must be at least {USER_PASSWORD_MIN_LENGTH} characters"
-msgstr ""
-
-#: src/domain/auth/schema.ts
-msgid "Password must be at most {USER_PASSWORD_MAX_LENGTH} characters"
-msgstr ""
-
 #: src/view/auth/reset_password/index.tsx
 msgid "Password reset complete"
 msgstr "密码重置完成"
-
-#: src/domain/auth/schema.ts
-msgid "Password too weak"
-msgstr ""
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/manage.tsx
@@ -1255,13 +1329,17 @@ msgstr "待定"
 msgid "PENDING"
 msgstr ""
 
+#: src/view/collection/AddToCollectionDialog.tsx
+msgid "Please sign in to add items to a collection."
+msgstr ""
+
 #: src/component/__legacy/chart/index.tsx
 msgid "Positive:"
 msgstr "阳性："
 
 #: src/view/image_queue/detail.tsx
 msgid "Prev"
-msgstr ""
+msgstr "上一页"
 
 #: src/view/Homepage/component/HomeHero.tsx
 msgid "Preview"
@@ -1278,6 +1356,12 @@ msgstr "上一张光盘"
 #: src/component/Pagination.tsx
 msgid "Previous page"
 msgstr "上一页"
+
+#: src/view/collection/CollectionDetail.tsx
+#: src/view/user/Profile.tsx
+#: src/view/user/Profile.tsx
+msgid "Private"
+msgstr ""
 
 #: src/component/Header/RightSidebar.tsx
 msgid "Profile"
@@ -1296,6 +1380,12 @@ msgstr ""
 #: src/component/form/Location/index.tsx
 msgid "Province"
 msgstr "省"
+
+#: src/view/collection/CollectionDetail.tsx
+#: src/view/user/Profile.tsx
+#: src/view/user/Profile.tsx
+msgid "Public"
+msgstr ""
 
 #: src/view/image_queue/detail.tsx
 msgid "Queued"
@@ -1332,7 +1422,7 @@ msgstr "拒绝"
 
 #: src/view/image_queue/detail.tsx
 msgid "Reject image?"
-msgstr ""
+msgstr "拒绝这张图片？"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/manage.tsx
@@ -1343,18 +1433,6 @@ msgstr "已拒绝"
 msgid "REJECTED"
 msgstr ""
 
-#: src/domain/song/schema.ts
-msgid "Related song not selected"
-msgstr ""
-
-#: src/domain/tag/schema.ts
-msgid "Relation type is required"
-msgstr ""
-
-#: src/domain/song/schema.ts
-msgid "Relation type not selected"
-msgstr ""
-
 #: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/song/Info/index.tsx
 #: src/view/tag/edit/comp/TagRelationsField.tsx
@@ -1362,6 +1440,7 @@ msgid "Relations"
 msgstr "关系"
 
 #: src/component/Header/LeftSidebar.tsx
+#: src/view/collection/CollectionItemCard.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/search/index.tsx
 #: src/view/song/Info/index.tsx
@@ -1372,10 +1451,6 @@ msgstr "发行"
 msgid "Release date"
 msgstr "发行日期"
 
-#: src/domain/release/schema.ts
-msgid "Release must have artists"
-msgstr ""
-
 #: src/view/release/edit/comp/ReleaseTypeField.tsx
 msgid "Release Type"
 msgstr "发行类型"
@@ -1384,15 +1459,21 @@ msgstr "发行类型"
 msgid "Released"
 msgstr "已发行"
 
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
+#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/search/index.tsx
 msgid "Releases"
 msgstr ""
 
+#: src/view/collection/CollectionItemCard.tsx
+#: src/view/collection/CollectionItemCard.tsx
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Remove"
 msgstr "移除"
+
+#: src/view/collection/CollectionItemCard.tsx
+msgid "Remove from collection"
+msgstr ""
 
 #: src/view/artist/edit/comp/Membership/role.tsx
 #: src/view/artist/edit/comp/Membership/role.tsx
@@ -1420,7 +1501,9 @@ msgstr "重复新密码"
 msgid "Repeat password"
 msgstr "重复密码"
 
-#: src/view/auth/reset_password/response.ts
+#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/index.tsx
 msgid "Request failed"
 msgstr ""
 
@@ -1468,6 +1551,7 @@ msgid "Roles"
 msgstr ""
 
 #: src/component/ImageCropDialog/index.tsx
+#: src/view/collection/CollectionFormDialog.tsx
 msgid "Save"
 msgstr "保存"
 
@@ -1475,7 +1559,7 @@ msgstr "保存"
 msgid "Save bio"
 msgstr "保存个人简介"
 
-#: src/view/user/edit_profile/store.ts
+#: src/route/(user)/profile_.edit.tsx
 msgid "Save failed."
 msgstr "保存失败."
 
@@ -1497,6 +1581,11 @@ msgstr "搜索艺人、专辑、歌曲…"
 
 #: src/view/admin/users.tsx
 msgid "Search by username"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+#: src/view/user/Profile.tsx
+msgid "Search collections"
 msgstr ""
 
 #: src/view/artist/edit/comp/Membership/role.tsx
@@ -1547,8 +1636,12 @@ msgstr "搜索..."
 msgid "Searching…"
 msgstr "正在搜索…"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "See conventions and live shows where releases debuted."
+msgstr ""
+
+#: src/view/collection/AddToCollectionDialog.tsx
+msgid "Select a collection"
 msgstr ""
 
 #: src/view/image_upload/EntityImageUploadPage.tsx
@@ -1635,16 +1728,18 @@ msgid "Solo artist"
 msgstr "独奏艺人"
 
 #: src/component/Header/LeftSidebar.tsx
+#: src/view/collection/CollectionItemCard.tsx
 #: src/view/search/index.tsx
 msgid "Song"
 msgstr "歌曲"
 
-#: src/view/correction/entityMap.ts
+#: src/view/correction/Detail.tsx
+#: src/view/list/ListItemCard.tsx
 msgid "Song lyrics"
 msgstr "歌词"
 
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
+#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/search/index.tsx
 msgid "Songs"
 msgstr ""
@@ -1652,6 +1747,10 @@ msgstr ""
 #: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
 msgid "Sort by"
 msgstr "排序方式"
+
+#: src/view/user/Profile.tsx
+msgid "Sort collections"
+msgstr ""
 
 #: src/view/artist/edit/comp/Date.tsx
 #: src/view/event/edit/comp/EventDateFields.tsx
@@ -1685,7 +1784,8 @@ msgstr "提交"
 msgid "Submit corrections and keep metadata clean"
 msgstr "提交更正并保持元数据干净"
 
-#: src/view/image_upload/store.ts
+#: src/route/artist/$id_.image-upload.tsx
+#: src/route/release/$id_.image-upload.tsx
 msgid "Submit failed."
 msgstr "提交失败。"
 
@@ -1706,13 +1806,10 @@ msgid "Sync your contributions across devices"
 msgstr "跨设备同步您的贡献"
 
 #: src/component/Header/LeftSidebar.tsx
+#: src/view/collection/CollectionItemCard.tsx
 #: src/view/search/index.tsx
 msgid "Tag"
 msgstr "标签"
-
-#: src/domain/tag/schema.ts
-msgid "Tag not selected"
-msgstr ""
 
 #: src/view/tag/explore.tsx
 msgid "Tag Tree"
@@ -1723,8 +1820,8 @@ msgid "Tag Type"
 msgstr "标签类型"
 
 #: src/view/entity_tags/EntityTagsSection.tsx
-#: src/view/Homepage/mock.ts
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
+#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/search/index.tsx
 msgid "Tags"
 msgstr ""
@@ -1749,6 +1846,10 @@ msgstr "文本别名"
 msgid "This cannot be undone."
 msgstr "此操作无法撤消。"
 
+#: src/view/collection/CollectionDetail.tsx
+msgid "This collection is empty"
+msgstr ""
+
 #. placeholder {0}: formatMinuteCount(props.resetKeyExpiresMinutes)
 #: src/view/auth/reset_password/index.tsx
 msgid "This is valid for {0}."
@@ -1764,11 +1865,11 @@ msgstr "此用户没有图片队列历史记录。"
 
 #: src/view/image_queue/detail.tsx
 msgid "This will mark the queued image as approved."
-msgstr ""
+msgstr "这会将排队的图片标记为已批准。"
 
 #: src/view/image_queue/detail.tsx
 msgid "This will mark the queued image as rejected."
-msgstr ""
+msgstr "这会将排队的图片标记为已拒绝。"
 
 #: src/view/release/edit/comp/LocalizedTitlesField.tsx
 #: src/view/release/edit/comp/TitleField.tsx
@@ -1778,10 +1879,6 @@ msgstr ""
 #: src/view/song/edit/comp/SongTitleField.tsx
 msgid "Title"
 msgstr "标题"
-
-#: src/domain/song/schema.ts
-msgid "Title is required and must be non-empty"
-msgstr ""
 
 #: src/view/event/explore.tsx
 msgid "To"
@@ -1801,93 +1898,7 @@ msgstr "Touhou Cloud DB 是一个开放的东方同人音乐数据库"
 msgid "Touhou Cloud DB track"
 msgstr ""
 
-#: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
-msgid "Catalog Numbers"
-msgstr ""
-
-#: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
-msgid "Catalog No."
-msgstr ""
-
-#: src/view/release/edit/comp/ReleaseCatalogNumbersField.tsx
-msgid "No label selected"
-msgstr "未选择厂牌"
-
-#. 0: discIndex + 1; 1: withinDisc
-#: src/view/release/edit/comp/ReleaseCreditsField.tsx
-msgid "Disc {0} Track {1}"
-msgstr "碟 {0} 曲目 {1}"
-
-#: src/view/release/edit/comp/ReleaseCreditsField.tsx
-msgid "On Tracks"
-msgstr ""
-
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "No tracks under this disc."
-msgstr "此光盘下没有轨道。"
-
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "Add track"
-msgstr ""
-
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "Previous disc"
-msgstr ""
-
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "Add disc"
-msgstr ""
-
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "Next disc"
-msgstr ""
-
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "Rename disc"
-msgstr ""
-
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "Rename Disc"
-msgstr ""
-
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "Disc name"
-msgstr ""
-
-#: src/component/dialog/AlertDialog.tsx
-#: src/view/release/edit/comp/ReleaseTracksField.tsx
-msgid "Confirm"
-msgstr ""
-
-#: src/view/release/edit/comp/ReleaseEventsField.tsx
-msgid "Events"
-msgstr ""
-
-#: src/component/form/SearchDialog/SongSearchDialog.tsx
-msgid "Search Song"
-msgstr ""
-
-#: src/view/release/edit/comp/ReleaseTypeField.tsx
-msgid "Release Type"
-msgstr ""
-
-#: src/view/release/edit/comp/TrackFieldItem.tsx
-msgid "Track number"
-msgstr "曲目编号"
-
-#: src/view/release/edit/comp/TrackFieldItem.tsx
-msgid "Display title"
-msgstr ""
-
-#: src/view/release/edit/comp/TrackFieldItem.tsx
-msgid "Duration (ms)"
-msgstr ""
-
-#: src/view/release/edit/comp/TrackFieldItem.tsx
-msgid "No song selected"
-msgstr ""
-
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/ExploreCard.tsx
 msgid "Track albums and compilations, link artists and events."
 msgstr ""
 
@@ -1897,13 +1908,13 @@ msgstr "曲目艺人"
 
 #: src/view/release/edit/comp/TrackFieldItem.tsx
 msgid "Track number"
-msgstr ""
+msgstr "曲目编号"
 
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Tracks"
 msgstr "曲目数"
 
-#: src/view/Homepage/mock.ts
+#: src/view/Homepage/component/HomeHero.tsx
 msgid "Tracks & arrangements"
 msgstr ""
 
@@ -1935,11 +1946,13 @@ msgstr "未知"
 msgid "UNKNOWN"
 msgstr ""
 
-#: src/view/Homepage/utils.ts
+#: src/view/Homepage/component/ReleaseCard.tsx
 msgid "Unknown artist"
 msgstr "未知艺人"
 
-#: src/utils/getErrorMessage.ts
+#: src/view/admin/users.tsx
+#: src/view/admin/users.tsx
+#: src/view/admin/users.tsx
 msgid "Unknown error"
 msgstr "未知错误"
 
@@ -1962,7 +1975,7 @@ msgid "Upload cover art"
 msgstr "上传 cover art"
 
 #: src/component/ImageCropDialog/index.tsx
-#: src/view/user/edit_profile/store.ts
+#: src/route/(user)/profile_.edit.tsx
 msgid "Upload failed."
 msgstr "上传失败。"
 
@@ -2003,9 +2016,6 @@ msgstr ""
 msgid "Verification code"
 msgstr "验证码"
 
-#: src/domain/auth/schema.ts
-#: src/domain/auth/schema.ts
-#: src/view/auth/reset_password/index.tsx
 #: src/view/auth/reset_password/index.tsx
 msgid "Verification code must be 6 digits"
 msgstr ""
@@ -2022,10 +2032,10 @@ msgstr "验证邮箱"
 msgid "View"
 msgstr "查看"
 
-#. placeholder {0}: item.id
+#. placeholder {0}: props.item.id
 #: src/view/image_queue/manage.tsx
 msgid "View image queue item #{0}"
-msgstr ""
+msgstr "查看图片队列条目 #{0}"
 
 #: src/view/Homepage/component/NewMusic.tsx
 msgid "View more"
@@ -2037,7 +2047,7 @@ msgstr "投票"
 
 #: src/view/image_queue/detail.tsx
 msgid "Working…"
-msgstr ""
+msgstr "处理中…"
 
 #: src/view/user/edit_profile/index.tsx
 msgid "Write something about you."
@@ -2050,6 +2060,10 @@ msgstr "年"
 #: src/view/auth/reset_password/index.tsx
 msgid "You can now sign in with your new password."
 msgstr "您现在可以使用新密码登录。"
+
+#: src/view/user/Profile.tsx
+msgid "You haven't created any collections yet"
+msgstr ""
 
 #: src/view/auth/reset_password/index.tsx
 msgid "Your password has been updated successfully."
