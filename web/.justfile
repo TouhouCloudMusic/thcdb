@@ -2,7 +2,7 @@ mod i18n '.just/i18n'
 
 import '.just/api.just'
 
-set positional-arguments
+set positional-arguments := true
 
 default:
     @just --list
