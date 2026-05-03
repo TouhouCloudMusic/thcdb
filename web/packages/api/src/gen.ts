@@ -351,6 +351,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/comment/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["delete_comment"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/correction/{id}": {
         parameters: {
             query?: never;
@@ -361,6 +377,22 @@ export type paths = {
         get: operations["get_correction"];
         put?: never;
         post: operations["handle_correction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/correction/{id}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["find_comments"];
+        put?: never;
+        post: operations["create_comment"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1409,7 +1441,30 @@ export type components = {
             catalog_number: string;
             label?: null | components["schemas"]["SimpleLabel"];
         };
-        Correction: {
+        CommentAuthor: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+        };
+        /** @enum {string} */
+        CommentState: "Active" | "Deleted";
+        CorrectionComment: {
+            author: components["schemas"]["CommentAuthor"];
+            content?: string | null;
+            /** Format: int32 */
+            correction_id: number;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: int32 */
+            id: number;
+            /** Format: int32 */
+            parent_id?: number | null;
+            state: components["schemas"]["CommentState"];
+            /** Format: date-time */
+            updated_at: string;
+        };
+        CorrectionDetail: {
+            comments: components["schemas"]["CursorResponse_CorrectionComment"];
             /** Format: date-time */
             created_at: string;
             /** Format: int32 */
@@ -1475,6 +1530,11 @@ export type components = {
             id: number;
             name: string;
         };
+        CreateCorrectionCommentRequest: {
+            content: string;
+            /** Format: int32 */
+            parent_id?: number | null;
+        };
         CreateUserCollectionItemRequest: {
             description?: string | null;
             /** Format: int32 */
@@ -1503,6 +1563,25 @@ export type components = {
             /** Format: date-time */
             uploaded_at: string;
             uploaded_by: components["schemas"]["ImageUploaderSummary"];
+        };
+        CursorResponse_CorrectionComment: {
+            items: {
+                author: components["schemas"]["CommentAuthor"];
+                content?: string | null;
+                /** Format: int32 */
+                correction_id: number;
+                /** Format: date-time */
+                created_at: string;
+                /** Format: int32 */
+                id: number;
+                /** Format: int32 */
+                parent_id?: number | null;
+                state: components["schemas"]["CommentState"];
+                /** Format: date-time */
+                updated_at: string;
+            }[];
+            /** Format: int32 */
+            next_cursor?: number | null;
         };
         CursorResponse_Credit: {
             items: {
@@ -1653,23 +1732,6 @@ export type components = {
             /** Format: int32 */
             next_cursor?: number | null;
         };
-        Data_Correction: {
-            data: {
-                /** Format: date-time */
-                created_at: string;
-                /** Format: int32 */
-                entity_id: number;
-                entity_type: components["schemas"]["EntityType"];
-                /** Format: date-time */
-                handled_at?: string | null;
-                /** Format: int32 */
-                id: number;
-                status: components["schemas"]["CorrectionStatus"];
-                type: components["schemas"]["CorrectionType"];
-            };
-            /** @enum {string} */
-            status: "Ok";
-        };
         Data_CorrectionDiff: {
             data: {
                 /** Format: int32 */
@@ -1742,6 +1804,14 @@ export type components = {
             }[];
             /** @enum {string} */
             status: "Ok";
+        };
+        DataCorrectionComment: {
+            data: components["schemas"]["CorrectionComment"];
+            status: string;
+        };
+        DataCorrectionDetail: {
+            data: components["schemas"]["CorrectionDetail"];
+            status: string;
         };
         DataForgotPasswordResponse: {
             data: components["schemas"]["ForgotPasswordResponse"];
@@ -1829,6 +1899,10 @@ export type components = {
         };
         DataPaginatedAppearance: {
             data: components["schemas"]["CursorResponse_Discography"];
+            status: string;
+        };
+        DataPaginatedCorrectionComment: {
+            data: components["schemas"]["CursorResponse_CorrectionComment"];
             status: string;
         };
         DataPaginatedCredit: {
@@ -2913,7 +2987,10 @@ export type ArtistSummary = components['schemas']['ArtistSummary'];
 export type ArtistType = components['schemas']['ArtistType'];
 export type AuthCredential = components['schemas']['AuthCredential'];
 export type CatalogNumber = components['schemas']['CatalogNumber'];
-export type Correction = components['schemas']['Correction'];
+export type CommentAuthor = components['schemas']['CommentAuthor'];
+export type CommentState = components['schemas']['CommentState'];
+export type CorrectionComment = components['schemas']['CorrectionComment'];
+export type CorrectionDetail = components['schemas']['CorrectionDetail'];
 export type CorrectionDiff = components['schemas']['CorrectionDiff'];
 export type CorrectionDiffEntry = components['schemas']['CorrectionDiffEntry'];
 export type CorrectionHistoryItem = components['schemas']['CorrectionHistoryItem'];
@@ -2923,11 +3000,13 @@ export type CorrectionStatus = components['schemas']['CorrectionStatus'];
 export type CorrectionSubmissionResult = components['schemas']['CorrectionSubmissionResult'];
 export type CorrectionType = components['schemas']['CorrectionType'];
 export type CorrectionUserSummary = components['schemas']['CorrectionUserSummary'];
+export type CreateCorrectionCommentRequest = components['schemas']['CreateCorrectionCommentRequest'];
 export type CreateUserCollectionItemRequest = components['schemas']['CreateUserCollectionItemRequest'];
 export type CreditRole = components['schemas']['CreditRole'];
 export type CreditRoleRef = components['schemas']['CreditRoleRef'];
 export type CreditRoleSummary = components['schemas']['CreditRoleSummary'];
 export type CurrentImageMetadata = components['schemas']['CurrentImageMetadata'];
+export type CursorResponseCorrectionComment = components['schemas']['CursorResponse_CorrectionComment'];
 export type CursorResponseCredit = components['schemas']['CursorResponse_Credit'];
 export type CursorResponseDiscography = components['schemas']['CursorResponse_Discography'];
 export type CursorResponseNotificationItem = components['schemas']['CursorResponse_NotificationItem'];
@@ -2940,7 +3019,6 @@ export type CursorResponseSongRef = components['schemas']['CursorResponse_SongRe
 export type CursorResponseTagAggregate = components['schemas']['CursorResponse_TagAggregate'];
 export type CursorResponseTagRef = components['schemas']['CursorResponse_TagRef'];
 export type CursorResponseUserImageQueueItem = components['schemas']['CursorResponse_UserImageQueueItem'];
-export type DataCorrection = components['schemas']['Data_Correction'];
 export type DataCorrectionDiff = components['schemas']['Data_CorrectionDiff'];
 export type DataCorrectionSubmissionResult = components['schemas']['Data_CorrectionSubmissionResult'];
 export type DataI32 = components['schemas']['Data_i32'];
@@ -2948,6 +3026,8 @@ export type DataOptionCurrentImageMetadata = components['schemas']['Data_Option_
 export type DataOptionI32 = components['schemas']['Data_Option_i32'];
 export type DataVecCorrectionHistoryItem = components['schemas']['Data_Vec_CorrectionHistoryItem'];
 export type DataVecCorrectionRevisionSummary = components['schemas']['Data_Vec_CorrectionRevisionSummary'];
+export type DataCorrectionComment = components['schemas']['DataCorrectionComment'];
+export type DataCorrectionDetail = components['schemas']['DataCorrectionDetail'];
 export type DataForgotPasswordResponse = components['schemas']['DataForgotPasswordResponse'];
 export type DataHomeMetadata = components['schemas']['DataHomeMetadata'];
 export type DataImageQueueDetail = components['schemas']['DataImageQueueDetail'];
@@ -2970,6 +3050,7 @@ export type DataPageUserCollection = components['schemas']['DataPageUserCollecti
 export type DataPageUserCollectionItemDetail = components['schemas']['DataPageUserCollectionItemDetail'];
 export type DataPageUserSummary = components['schemas']['DataPageUserSummary'];
 export type DataPaginatedAppearance = components['schemas']['DataPaginatedAppearance'];
+export type DataPaginatedCorrectionComment = components['schemas']['DataPaginatedCorrectionComment'];
 export type DataPaginatedCredit = components['schemas']['DataPaginatedCredit'];
 export type DataPaginatedDiscography = components['schemas']['DataPaginatedDiscography'];
 export type DataPaginatedNotificationItem = components['schemas']['DataPaginatedNotificationItem'];
@@ -4486,6 +4567,50 @@ export interface operations {
             };
         };
     };
+    delete_comment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Comment id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     get_correction: {
         parameters: {
             query?: never;
@@ -4502,7 +4627,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_Correction"];
+                    "application/json": components["schemas"]["DataCorrectionDetail"];
                 };
             };
             /** @description Too Many Requests */
@@ -4548,6 +4673,101 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    find_comments: {
+        parameters: {
+            query?: {
+                cursor?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Correction id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedCorrectionComment"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    create_comment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Correction id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCorrectionCommentRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataCorrectionComment"];
                 };
             };
             /** @description Too Many Requests */
@@ -8081,9 +8301,12 @@ export enum ApiPaths {
     delete_user_collection_item = "/collection/{id}/items/{item_id}",
     public_user_collections = "/collections/public",
     search_user_collections = "/collections/search",
+    delete_comment = "/comment/{id}",
     compare_corrections = "/correction/{id1}/compare/{id2}",
     get_correction = "/correction/{id}",
     handle_correction = "/correction/{id}",
+    find_comments = "/correction/{id}/comments",
+    create_comment = "/correction/{id}/comments",
     get_correction_diff = "/correction/{id}/diff",
     get_correction_revisions = "/correction/{id}/revisions",
     create_credit_role = "/credit-role",

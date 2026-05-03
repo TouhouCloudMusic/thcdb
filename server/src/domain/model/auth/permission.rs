@@ -17,6 +17,7 @@ macro_rules! permission_markers {
 
 permission_markers! {
     CorrectionManage = "correction.manage";
+    CommentManage = "comment.manage";
     ImageQueueManage = "image.queue.manage";
     AdminUserRead = "admin.user.read";
     AdminWrite = "admin.user.role.write";
@@ -45,6 +46,7 @@ macro_rules! permission_defs {
 
 permission_defs! {
     CorrectionManage => "Manage corrections";
+    CommentManage => "Manage comments";
     ImageQueueManage => "Manage image queue";
     AdminUserRead => "Read users list";
     AdminWrite => "Update user roles";
@@ -67,7 +69,7 @@ macro_rules! default_permissions_for_role {
 }
 
 default_permissions_for_role! {
-    Admin => [CorrectionManage, ImageQueueManage, AdminUserRead, AdminWrite];
-    Moderator => [CorrectionManage, ImageQueueManage];
+    Admin => [CorrectionManage, CommentManage, ImageQueueManage, AdminUserRead, AdminWrite];
+    Moderator => [CorrectionManage, CommentManage, ImageQueueManage];
     User => [];
 }

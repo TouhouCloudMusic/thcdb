@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/solid/macro"
 import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import type {
-	Correction,
+	CorrectionDetail,
 	CorrectionDiff,
 	CorrectionHistoryItem,
 	CorrectionRevisionSummary,
@@ -27,7 +27,7 @@ import { QUERY_CLIENT } from "~/state/tanstack"
 import { CorrectionDetailPage } from "~/view/correction/Detail"
 
 type MockScenarioData = {
-	detail: Correction
+	detail: CorrectionDetail
 	diff: CorrectionDiff
 	revisions: CorrectionRevisionSummary[]
 	history: CorrectionHistoryItem[]

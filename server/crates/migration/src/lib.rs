@@ -58,6 +58,7 @@ migrations![
     m20260401_000000_create_song_relation_history,
     m20260415_000000_fix_tag_alternative_name_fkeys,
     m20260418_000000_add_user_collection_item_position,
+    m20260503_000000_add_correction_comment_constraints_and_indexes,
 ];
 
 macro_rules! migration {

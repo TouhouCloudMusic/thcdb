@@ -16,6 +16,9 @@ import type {
 	CreateArtistData,
 	CreateArtistErrors,
 	CreateArtistResponses,
+	CreateCommentData,
+	CreateCommentErrors,
+	CreateCommentResponses,
 	CreateCreditRoleData,
 	CreateCreditRoleErrors,
 	CreateCreditRoleResponses,
@@ -43,6 +46,9 @@ import type {
 	CreateUserCollectionItemErrors,
 	CreateUserCollectionItemResponses,
 	CreateUserCollectionResponses,
+	DeleteCommentData,
+	DeleteCommentErrors,
+	DeleteCommentResponses,
 	DeleteUserCollectionData,
 	DeleteUserCollectionErrors,
 	DeleteUserCollectionItemData,
@@ -88,6 +94,9 @@ import type {
 	FindArtistDiscographiesInitData,
 	FindArtistDiscographiesInitErrors,
 	FindArtistDiscographiesInitResponses,
+	FindCommentsData,
+	FindCommentsErrors,
+	FindCommentsResponses,
 	FindCreditRoleByIdData,
 	FindCreditRoleByIdErrors,
 	FindCreditRoleByIdResponses,
@@ -662,6 +671,19 @@ export const searchUserCollections = <ThrowOnError extends boolean = false>(
 		ThrowOnError
 	>({ url: "/collections/search", ...options })
 
+export const deleteComment = <ThrowOnError extends boolean = false>(
+	options: Options<DeleteCommentData, ThrowOnError>,
+) =>
+	(options.client ?? client).delete<
+		DeleteCommentResponses,
+		DeleteCommentErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/comment/{id}",
+		...options,
+	})
+
 export const compareCorrections = <ThrowOnError extends boolean = false>(
 	options: Options<CompareCorrectionsData, ThrowOnError>,
 ) =>
@@ -691,6 +713,32 @@ export const handleCorrection = <ThrowOnError extends boolean = false>(
 		security: [{ scheme: "basic", type: "http" }],
 		url: "/correction/{id}",
 		...options,
+	})
+
+export const findComments = <ThrowOnError extends boolean = false>(
+	options: Options<FindCommentsData, ThrowOnError>,
+) =>
+	(options.client ?? client).get<
+		FindCommentsResponses,
+		FindCommentsErrors,
+		ThrowOnError
+	>({ url: "/correction/{id}/comments", ...options })
+
+export const createComment = <ThrowOnError extends boolean = false>(
+	options: Options<CreateCommentData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		CreateCommentResponses,
+		CreateCommentErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/correction/{id}/comments",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
 	})
 
 export const getCorrectionDiff = <ThrowOnError extends boolean = false>(

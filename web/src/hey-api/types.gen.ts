@@ -77,7 +77,25 @@ export type CatalogNumber = {
 	label?: null | SimpleLabel
 }
 
-export type Correction = {
+export type CommentAuthor = {
+	id: number
+	name: string
+}
+
+export type CommentState = "Active" | "Deleted"
+
+export type CorrectionComment = {
+	id: number
+	correction_id: number
+	parent_id?: number | null
+	author: CommentAuthor
+	content?: string | null
+	state: CommentState
+	created_at: string
+	updated_at: string
+}
+
+export type CorrectionDetail = {
 	id: number
 	status: CorrectionStatus
 	type: CorrectionType
@@ -85,6 +103,7 @@ export type Correction = {
 	entity_type: EntityType
 	created_at: string
 	handled_at?: string | null
+	comments: CursorResponseCorrectionComment
 }
 
 export type CorrectionDiff = {
@@ -134,6 +153,11 @@ export type CorrectionUserSummary = {
 	name: string
 }
 
+export type CreateCorrectionCommentRequest = {
+	parent_id?: number | null
+	content: string
+}
+
 export type CreateUserCollectionItemRequest = {
 	entity_id: number
 	entity_type: UserCollectionItemEntityType
@@ -161,6 +185,20 @@ export type CreditRoleSummary = {
 export type CurrentImageMetadata = {
 	uploaded_at: string
 	uploaded_by: ImageUploaderSummary
+}
+
+export type CursorResponseCorrectionComment = {
+	items: Array<{
+		id: number
+		correction_id: number
+		parent_id?: number | null
+		author: CommentAuthor
+		content?: string | null
+		state: CommentState
+		created_at: string
+		updated_at: string
+	}>
+	next_cursor?: number | null
 }
 
 export type CursorResponseCredit = {
@@ -289,6 +327,16 @@ export type CursorResponseUserImageQueueItem = {
 	next_cursor?: number | null
 }
 
+export type DataCorrectionComment = {
+	status: string
+	data: CorrectionComment
+}
+
+export type DataCorrectionDetail = {
+	status: string
+	data: CorrectionDetail
+}
+
 export type DataForgotPasswordResponse = {
 	status: string
 	data: ForgotPasswordResponse
@@ -397,6 +445,11 @@ export type DataPageUserSummary = {
 export type DataPaginatedAppearance = {
 	status: string
 	data: CursorResponseDiscography
+}
+
+export type DataPaginatedCorrectionComment = {
+	status: string
+	data: CursorResponseCorrectionComment
 }
 
 export type DataPaginatedCredit = {
@@ -567,19 +620,6 @@ export type DataVecUserRole = {
 export type DataVerifyResetCodeResponse = {
 	status: string
 	data: VerifyResetCodeResponse
-}
-
-export type DataCorrection = {
-	status: "Ok"
-	data: {
-		id: number
-		status: CorrectionStatus
-		type: CorrectionType
-		entity_id: number
-		entity_type: EntityType
-		created_at: string
-		handled_at?: string | null
-	}
 }
 
 export type DataCorrectionDiff = {
@@ -2360,6 +2400,38 @@ export type SearchUserCollectionsResponses = {
 export type SearchUserCollectionsResponse =
 	SearchUserCollectionsResponses[keyof SearchUserCollectionsResponses]
 
+export type DeleteCommentData = {
+	body?: never
+	path: {
+		/**
+		 * Comment id
+		 */
+		id: number
+	}
+	query?: never
+	url: "/comment/{id}"
+}
+
+export type DeleteCommentErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type DeleteCommentError = DeleteCommentErrors[keyof DeleteCommentErrors]
+
+export type DeleteCommentResponses = {
+	200: Message
+}
+
+export type DeleteCommentResponse =
+	DeleteCommentResponses[keyof DeleteCommentResponses]
+
 export type CompareCorrectionsData = {
 	body?: never
 	path: {
@@ -2414,7 +2486,7 @@ export type GetCorrectionErrors = {
 export type GetCorrectionError = GetCorrectionErrors[keyof GetCorrectionErrors]
 
 export type GetCorrectionResponses = {
-	200: DataCorrection
+	200: DataCorrectionDetail
 }
 
 export type GetCorrectionResponse =
@@ -2451,6 +2523,73 @@ export type HandleCorrectionResponses = {
 
 export type HandleCorrectionResponse =
 	HandleCorrectionResponses[keyof HandleCorrectionResponses]
+
+export type FindCommentsData = {
+	body?: never
+	path: {
+		/**
+		 * Correction id
+		 */
+		id: number
+	}
+	query?: {
+		limit?: number
+		cursor?: number
+	}
+	url: "/correction/{id}/comments"
+}
+
+export type FindCommentsErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type FindCommentsError = FindCommentsErrors[keyof FindCommentsErrors]
+
+export type FindCommentsResponses = {
+	200: DataPaginatedCorrectionComment
+}
+
+export type FindCommentsResponse =
+	FindCommentsResponses[keyof FindCommentsResponses]
+
+export type CreateCommentData = {
+	body: CreateCorrectionCommentRequest
+	path: {
+		/**
+		 * Correction id
+		 */
+		id: number
+	}
+	query?: never
+	url: "/correction/{id}/comments"
+}
+
+export type CreateCommentErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type CreateCommentError = CreateCommentErrors[keyof CreateCommentErrors]
+
+export type CreateCommentResponses = {
+	200: DataCorrectionComment
+}
+
+export type CreateCommentResponse =
+	CreateCommentResponses[keyof CreateCommentResponses]
 
 export type GetCorrectionDiffData = {
 	body?: never
