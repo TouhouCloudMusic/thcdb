@@ -1,22 +1,26 @@
 import { useLingui } from "@lingui/solid/macro"
-import { useQuery } from "@tanstack/solid-query"
+import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import type {
-	Correction,
+	CorrectionComment,
+	CorrectionDetail,
 	CorrectionDiffEntry,
 	CorrectionRevisionSummary,
 	CorrectionStatus,
 } from "@thc/api"
-import { CorrectionQueryOption } from "@thc/query"
-import { createMemo, For, Match, Show, Switch } from "solid-js"
+import { CorrectionMutation, CorrectionQueryOption } from "@thc/query"
+import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
 import { Card } from "~/component/atomic/Card"
 import { INPUT_LIKE_BASE_CLASS } from "~/component/atomic/Input"
 import { Link } from "~/component/atomic/Link"
 import { Select } from "~/component/atomic/form/select"
+import { USER_ROLE_NAMES } from "~/domain/user/constants"
 import { PageLayout } from "~/layout/PageLayout"
+import { useCurrentUser } from "~/state/user"
 import { formatTimestamp } from "~/utils/dateTime"
 
+import { CorrectionComments } from "./CorrectionComments"
 import { CorrectionHistorySection } from "./CorrectionHistorySection"
 import {
 	ENTITY_HISTORY_MAP,
@@ -31,7 +35,7 @@ const STATUS_TONE: Record<CorrectionStatus, string> = {
 }
 
 type CorrectionHeaderProps = {
-	correction: Correction
+	correction: CorrectionDetail
 }
 
 function CorrectionHeader(props: CorrectionHeaderProps) {
@@ -267,9 +271,89 @@ type CorrectionDetailPageProps = {
 
 export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 	const { t } = useLingui()
+	const userCtx = useCurrentUser()
+	const queryClient = useQueryClient()
 	const correctionQuery = useQuery(() =>
 		CorrectionQueryOption.detail(props.correctionId),
 	)
+
+	const createCommentMutation = CorrectionMutation.useCreateCommentMutation()
+	const deleteCommentMutation = CorrectionMutation.useDeleteCommentMutation()
+
+	const [additionalComments, setAdditionalComments] = createSignal<
+		CorrectionComment[]
+	>([])
+	const [deletedIds, setDeletedIds] = createSignal<ReadonlySet<number>>(
+		new Set(),
+	)
+	const [createdComments, setCreatedComments] = createSignal<
+		CorrectionComment[]
+	>([])
+	const [currentNextCursor, setCurrentNextCursor] = createSignal<
+		number | null | undefined
+	>(undefined)
+	const [isLoadingMore, setIsLoadingMore] = createSignal(false)
+
+	const canManage = () =>
+		userCtx.user?.roles?.some(
+			(r) =>
+				r.name === USER_ROLE_NAMES.Admin
+				|| r.name === USER_ROLE_NAMES.Moderator,
+		) ?? false
+
+	const initialComments = () => correctionQuery.data?.comments.items ?? []
+	const initialNextCursor = () =>
+		correctionQuery.data?.comments.next_cursor ?? null
+
+	const allComments = createMemo(() => {
+		const all = [
+			...initialComments(),
+			...additionalComments(),
+			...createdComments(),
+		]
+		const deleted = deletedIds()
+		return all.map((c) => {
+			if (!deleted.has(c.id)) return c
+			return { ...c, state: "Deleted" as const, content: undefined }
+		})
+	})
+
+	const nextCursor = createMemo(() => {
+		const fromSignal = currentNextCursor()
+		if (fromSignal !== undefined) return fromSignal
+		return initialNextCursor()
+	})
+
+	const loadMore = async () => {
+		const cursor = nextCursor()
+		if (cursor == null || isLoadingMore()) return
+		setIsLoadingMore(true)
+		try {
+			const data = await queryClient.fetchQuery(
+				CorrectionQueryOption.comments(props.correctionId, cursor),
+			)
+			setAdditionalComments((prev) => [...prev, ...data.items])
+			setCurrentNextCursor(data.next_cursor)
+		} catch {
+			// ignore load-more errors silently
+		} finally {
+			setIsLoadingMore(false)
+		}
+	}
+
+	const onCreateComment = async (content: string, parentId: number | null) => {
+		const comment = await createCommentMutation.mutateAsync({
+			correctionId: props.correctionId,
+			content,
+			parentId,
+		})
+		setCreatedComments((prev) => [...prev, comment])
+	}
+
+	const onDeleteComment = async (commentId: number) => {
+		await deleteCommentMutation.mutateAsync(commentId)
+		setDeletedIds((prev) => new Set([...prev, commentId]))
+	}
 
 	const activeCompareId = createMemo(() => {
 		const compare = props.compareId
@@ -437,6 +521,17 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 								/>
 							</Card>
 						</div>
+
+						<CorrectionComments
+							comments={allComments()}
+							nextCursor={nextCursor()}
+							isLoadingMore={isLoadingMore()}
+							currentUser={userCtx.user}
+							canManage={canManage()}
+							onLoadMore={() => void loadMore()}
+							onCreateComment={onCreateComment}
+							onDeleteComment={onDeleteComment}
+						/>
 					</div>
 				)}
 			</Show>

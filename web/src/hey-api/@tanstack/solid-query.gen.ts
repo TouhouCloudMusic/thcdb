@@ -11,6 +11,7 @@ import {
 	adminUsers,
 	compareCorrections,
 	createArtist,
+	createComment,
 	createCreditRole,
 	createEvent,
 	createLabel,
@@ -20,6 +21,7 @@ import {
 	createTag,
 	createUserCollection,
 	createUserCollectionItem,
+	deleteComment,
 	deleteUserCollection,
 	deleteUserCollectionItem,
 	deleteVote,
@@ -35,6 +37,7 @@ import {
 	findArtistById,
 	findArtistDiscographiesByType,
 	findArtistDiscographiesInit,
+	findComments,
 	findCreditRoleById,
 	findEventById,
 	findEventByKeyword,
@@ -127,6 +130,9 @@ import type {
 	CreateArtistData,
 	CreateArtistError,
 	CreateArtistResponse,
+	CreateCommentData,
+	CreateCommentError,
+	CreateCommentResponse,
 	CreateCreditRoleData,
 	CreateCreditRoleError,
 	CreateCreditRoleResponse,
@@ -154,6 +160,9 @@ import type {
 	CreateUserCollectionItemError,
 	CreateUserCollectionItemResponse,
 	CreateUserCollectionResponse,
+	DeleteCommentData,
+	DeleteCommentError,
+	DeleteCommentResponse,
 	DeleteUserCollectionData,
 	DeleteUserCollectionError,
 	DeleteUserCollectionItemData,
@@ -198,6 +207,9 @@ import type {
 	FindArtistDiscographiesInitData,
 	FindArtistDiscographiesInitError,
 	FindArtistDiscographiesInitResponse,
+	FindCommentsData,
+	FindCommentsError,
+	FindCommentsResponse,
 	FindCreditRoleByIdData,
 	FindCreditRoleByIdError,
 	FindCreditRoleByIdResponse,
@@ -1463,6 +1475,30 @@ export const searchUserCollectionsInfiniteOptions = (
 		},
 	)
 
+export const deleteCommentMutation = (
+	options?: Partial<Options<DeleteCommentData>>,
+): MutationOptions<
+	DeleteCommentResponse,
+	DeleteCommentError,
+	Options<DeleteCommentData>
+> => {
+	const mutationOptions: MutationOptions<
+		DeleteCommentResponse,
+		DeleteCommentError,
+		Options<DeleteCommentData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await deleteComment({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
 export const compareCorrectionsQueryKey = (
 	options: Options<CompareCorrectionsData>,
 ) => createQueryKey("compareCorrections", options)
@@ -1524,6 +1560,99 @@ export const handleCorrectionMutation = (
 	> = {
 		mutationFn: async (fnOptions) => {
 			const { data } = await handleCorrection({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const findCommentsQueryKey = (options: Options<FindCommentsData>) =>
+	createQueryKey("findComments", options)
+
+export const findCommentsOptions = (options: Options<FindCommentsData>) =>
+	queryOptions<
+		FindCommentsResponse,
+		FindCommentsError,
+		FindCommentsResponse,
+		ReturnType<typeof findCommentsQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await findComments({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: findCommentsQueryKey(options),
+	})
+
+export const findCommentsInfiniteQueryKey = (
+	options: Options<FindCommentsData>,
+): QueryKey<Options<FindCommentsData>> =>
+	createQueryKey("findComments", options, true)
+
+export const findCommentsInfiniteOptions = (
+	options: Options<FindCommentsData>,
+) =>
+	infiniteQueryOptions<
+		FindCommentsResponse,
+		FindCommentsError,
+		InfiniteData<FindCommentsResponse>,
+		QueryKey<Options<FindCommentsData>>,
+		| number
+		| Pick<
+				QueryKey<Options<FindCommentsData>>[0],
+				"body" | "headers" | "path" | "query"
+		  >
+	>(
+		// @ts-ignore
+		{
+			queryFn: async ({ pageParam, queryKey, signal }) => {
+				// @ts-ignore
+				const page: Pick<
+					QueryKey<Options<FindCommentsData>>[0],
+					"body" | "headers" | "path" | "query"
+				> =
+					typeof pageParam === "object"
+						? pageParam
+						: {
+								query: {
+									cursor: pageParam,
+								},
+							}
+				const params = createInfiniteParams(queryKey, page)
+				const { data } = await findComments({
+					...options,
+					...params,
+					signal,
+					throwOnError: true,
+				})
+				return data
+			},
+			queryKey: findCommentsInfiniteQueryKey(options),
+		},
+	)
+
+export const createCommentMutation = (
+	options?: Partial<Options<CreateCommentData>>,
+): MutationOptions<
+	CreateCommentResponse,
+	CreateCommentError,
+	Options<CreateCommentData>
+> => {
+	const mutationOptions: MutationOptions<
+		CreateCommentResponse,
+		CreateCommentError,
+		Options<CreateCommentData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await createComment({
 				...options,
 				...fnOptions,
 				throwOnError: true,

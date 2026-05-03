@@ -88,6 +88,61 @@ export const vAuthCredential = v.object({
 	password: v.string(),
 })
 
+export const vCommentAuthor = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.string(),
+})
+
+export const vCommentState = v.picklist(["Active", "Deleted"])
+
+export const vCorrectionComment = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	correction_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	parent_id: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+	author: vCommentAuthor,
+	content: v.nullish(v.string()),
+	state: vCommentState,
+	created_at: v.pipe(v.string(), v.isoTimestamp()),
+	updated_at: v.pipe(v.string(), v.isoTimestamp()),
+})
+
 export const vCorrectionDiffEntry = v.object({
 	path: v.string(),
 	before: v.nullish(v.string()),
@@ -165,6 +220,24 @@ export const vCorrectionRevisionSummary = v.object({
 	description: v.string(),
 })
 
+export const vCreateCorrectionCommentRequest = v.object({
+	parent_id: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+	content: v.string(),
+})
+
 export const vCreditRole = v.object({
 	id: v.pipe(
 		v.number(),
@@ -205,6 +278,70 @@ export const vCreditRoleSummary = v.object({
 	),
 	name: v.string(),
 	short_description: v.string(),
+})
+
+export const vCursorResponseCorrectionComment = v.object({
+	items: v.array(
+		v.object({
+			id: v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+			correction_id: v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+			parent_id: v.nullish(
+				v.pipe(
+					v.number(),
+					v.integer(),
+					v.minValue(
+						-2147483648,
+						"Invalid value: Expected int32 to be >= -2147483648",
+					),
+					v.maxValue(
+						2147483647,
+						"Invalid value: Expected int32 to be <= 2147483647",
+					),
+				),
+			),
+			author: vCommentAuthor,
+			content: v.nullish(v.string()),
+			state: vCommentState,
+			created_at: v.pipe(v.string(), v.isoTimestamp()),
+			updated_at: v.pipe(v.string(), v.isoTimestamp()),
+		}),
+	),
+	next_cursor: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
 })
 
 export const vCursorResponseNotificationItem = v.object({
@@ -428,9 +565,19 @@ export const vCursorResponseSongRef = v.object({
 	),
 })
 
+export const vDataCorrectionComment = v.object({
+	status: v.string(),
+	data: vCorrectionComment,
+})
+
 export const vDataOptionCreditRole = v.object({
 	status: v.string(),
 	data: v.nullable(vCreditRole),
+})
+
+export const vDataPaginatedCorrectionComment = v.object({
+	status: v.string(),
+	data: vCursorResponseCorrectionComment,
 })
 
 export const vDataPaginatedNotificationItem = v.object({
@@ -641,7 +788,7 @@ export const vEntityType = v.picklist([
 	"CreditRole",
 ])
 
-export const vCorrection = v.object({
+export const vCorrectionDetail = v.object({
 	id: v.pipe(
 		v.number(),
 		v.integer(),
@@ -665,6 +812,7 @@ export const vCorrection = v.object({
 	entity_type: vEntityType,
 	created_at: v.pipe(v.string(), v.isoTimestamp()),
 	handled_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
+	comments: vCursorResponseCorrectionComment,
 })
 
 export const vCorrectionDiff = v.object({
@@ -727,39 +875,9 @@ export const vCorrectionDiff = v.object({
 	changes: v.array(vCorrectionDiffEntry),
 })
 
-export const vDataCorrection = v.object({
-	status: v.picklist(["Ok"]),
-	data: v.object({
-		id: v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-		status: vCorrectionStatus,
-		type: vCorrectionType,
-		entity_id: v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-		entity_type: vEntityType,
-		created_at: v.pipe(v.string(), v.isoTimestamp()),
-		handled_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
-	}),
+export const vDataCorrectionDetail = v.object({
+	status: v.string(),
+	data: vCorrectionDetail,
 })
 
 export const vDataCorrectionDiff = v.object({
@@ -4155,6 +4273,20 @@ export const vSearchUserCollectionsQuery = v.object({
 
 export const vSearchUserCollectionsResponse = vDataPageUserCollection
 
+export const vDeleteCommentPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vDeleteCommentResponse = vMessage
+
 export const vCompareCorrectionsPath = v.object({
 	id1: v.pipe(
 		v.number(),
@@ -4190,7 +4322,7 @@ export const vGetCorrectionPath = v.object({
 	),
 })
 
-export const vGetCorrectionResponse = vDataCorrection
+export const vGetCorrectionResponse = vDataCorrectionDetail
 
 export const vHandleCorrectionPath = v.object({
 	id: v.pipe(
@@ -4209,6 +4341,56 @@ export const vHandleCorrectionQuery = v.object({
 })
 
 export const vHandleCorrectionResponse = vMessage
+
+export const vFindCommentsPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vFindCommentsQuery = v.object({
+	limit: v.optional(
+		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
+	),
+	cursor: v.optional(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+})
+
+export const vFindCommentsResponse = vDataPaginatedCorrectionComment
+
+export const vCreateCommentBody = vCreateCorrectionCommentRequest
+
+export const vCreateCommentPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vCreateCommentResponse = vDataCorrectionComment
 
 export const vGetCorrectionDiffPath = v.object({
 	id: v.pipe(

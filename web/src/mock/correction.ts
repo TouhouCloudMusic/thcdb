@@ -1,5 +1,5 @@
 import type {
-	Correction,
+	CorrectionDetail,
 	CorrectionDiff,
 	CorrectionDiffEntry,
 	CorrectionHistoryItem,
@@ -56,7 +56,7 @@ const AUTHOR_KAZE = createMockUser(7, "Kaze Ito")
 const AUTHOR_RIN = createMockUser(12, "Rin Hoshino")
 const AUTHOR_MIKA = createMockUser(19, "Mika Arisato")
 
-export const MOCK_CORRECTION_DETAIL: Correction = {
+export const MOCK_CORRECTION_DETAIL: CorrectionDetail = {
 	id: MOCK_CORRECTION_ID,
 	status: "Pending",
 	type: "Update",
@@ -64,6 +64,10 @@ export const MOCK_CORRECTION_DETAIL: Correction = {
 	entity_id: MOCK_CORRECTION_ENTITY_ID,
 	created_at: "2025-12-29T09:12:00+08:00",
 	handled_at: null,
+	comments: {
+		items: [],
+		next_cursor: null,
+	},
 }
 
 export const MOCK_CORRECTION_HISTORY: CorrectionHistoryItem[] = [

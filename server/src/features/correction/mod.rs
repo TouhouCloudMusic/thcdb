@@ -1,3 +1,4 @@
+mod comment;
 mod compare;
 mod detail;
 mod diff;

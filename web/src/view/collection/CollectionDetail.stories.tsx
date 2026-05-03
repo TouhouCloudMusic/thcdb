@@ -134,11 +134,13 @@ function StoryRoot(props: StoryRootProps) {
 
 	const itemsFetchState = (): ItemsFetchState => {
 		switch (props.itemsScenario) {
-			case "loading":
+			case "loading": {
 				return { status: "loading" }
-			case "error":
+			}
+			case "error": {
 				return { status: "error", onRetry: () => undefined }
-			case "empty":
+			}
+			case "empty": {
 				return {
 					status: "success",
 					items: [],
@@ -146,7 +148,8 @@ function StoryRoot(props: StoryRootProps) {
 					hasMore: false,
 					onLoadMore: () => undefined,
 				}
-			case "has-more":
+			}
+			case "has-more": {
 				return {
 					status: "success",
 					items: MOCK_ITEMS,
@@ -154,8 +157,8 @@ function StoryRoot(props: StoryRootProps) {
 					hasMore: true,
 					onLoadMore: () => undefined,
 				}
-			case "loaded":
-			default:
+			}
+			case "loaded": {
 				return {
 					status: "success",
 					items: MOCK_ITEMS,
@@ -163,6 +166,10 @@ function StoryRoot(props: StoryRootProps) {
 					hasMore: false,
 					onLoadMore: () => undefined,
 				}
+			}
+			default: {
+				return { status: "loading" }
+			}
 		}
 	}
 

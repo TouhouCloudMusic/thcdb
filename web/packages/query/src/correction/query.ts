@@ -101,3 +101,22 @@ export function history(entityType: CorrectionEntityType, id: number) {
 		throwOnError: true,
 	})
 }
+
+export function comments(correctionId: number, cursor?: number | null) {
+	return queryOptions({
+		queryKey: ["correction::comments", correctionId, cursor],
+		queryFn: async () => {
+			const result = await CorrectionApi.findComments({
+				path: { id: correctionId },
+				query: { cursor: cursor ?? undefined },
+			})
+			return Either.match(result, {
+				onRight: identity,
+				onLeft: (error) => {
+					throw error
+				},
+			})
+		},
+		throwOnError: true,
+	})
+}
