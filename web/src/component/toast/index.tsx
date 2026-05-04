@@ -2,6 +2,7 @@ import * as Toast from "@kobalte/core/toast"
 import { useLingui } from "@lingui/solid/macro"
 import type { JSX } from "solid-js"
 import { Show, splitProps } from "solid-js"
+import type { IconProps } from "solid-radix-icons"
 import {
 	CheckIcon,
 	Cross1Icon,
@@ -26,7 +27,7 @@ type ToastToneStyle = {
 	iconWrapper: string
 	close: string
 	progressFill: string
-	icon: JSX.Element
+	Icon: (props: IconProps) => JSX.Element
 }
 
 const TOAST_TONE_STYLES = {
@@ -36,12 +37,7 @@ const TOAST_TONE_STYLES = {
 		iconWrapper: "bg-slate-100 text-slate-700 ring-slate-200",
 		close: "focus-visible:outline-slate-600",
 		progressFill: "bg-slate-600",
-		icon: (
-			<InfoCircledIcon
-				aria-hidden="true"
-				class="size-4"
-			/>
-		),
+		Icon: InfoCircledIcon,
 	},
 	success: {
 		toast: "border-green-300 focus-visible:ring-green-600",
@@ -49,12 +45,7 @@ const TOAST_TONE_STYLES = {
 		iconWrapper: "bg-green-100 text-green-700 ring-green-200",
 		close: "focus-visible:outline-green-600",
 		progressFill: "bg-green-600",
-		icon: (
-			<CheckIcon
-				aria-hidden="true"
-				class="size-4"
-			/>
-		),
+		Icon: CheckIcon,
 	},
 	error: {
 		toast: "border-reimu-300 focus-visible:ring-reimu-600",
@@ -62,12 +53,7 @@ const TOAST_TONE_STYLES = {
 		iconWrapper: "bg-reimu-100 text-reimu-700 ring-reimu-200",
 		close: "focus-visible:outline-reimu-600",
 		progressFill: "bg-reimu-600",
-		icon: (
-			<ExclamationTriangleIcon
-				aria-hidden="true"
-				class="size-4"
-			/>
-		),
+		Icon: ExclamationTriangleIcon,
 	},
 } satisfies Record<ToastTone, ToastToneStyle>
 
@@ -170,7 +156,10 @@ function ToastIcon(props: { tone: ToastTone }) {
 				styles().iconWrapper,
 			)}
 		>
-			{styles().icon}
+			{styles().Icon({
+				"aria-hidden": "true",
+				class: "size-4",
+			})}
 		</span>
 	)
 }
