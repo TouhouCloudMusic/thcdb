@@ -3,7 +3,11 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use entity::enums::CorrectionStatus;
 use entity::{correction as correction_entity, correction_revision};
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
+use sea_orm::sea_query::NullOrdering;
+use sea_orm::{
+    ColumnTrait, Condition, ConnectionTrait, EntityTrait, Order, QueryFilter,
+    QueryOrder,
+};
 use serde_json::{Map, Value};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
@@ -19,6 +23,40 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
         .with_public(|r| r.routes(routes!(get_correction_diff)))
         .finish()
+}
+
+async fn find_base_correction(
+    db: &impl ConnectionTrait,
+    current: &correction_entity::Model,
+) -> Result<Option<correction_entity::Model>, Error> {
+    let mut query = correction_entity::Entity::find()
+        .filter(correction_entity::Column::EntityId.eq(current.entity_id))
+        .filter(correction_entity::Column::EntityType.eq(current.entity_type))
+        .filter(
+            correction_entity::Column::Status.eq(CorrectionStatus::Approved),
+        )
+        .filter(correction_entity::Column::Id.ne(current.id));
+
+    if let Some(handled_at) = current.handled_at {
+        query = query.filter(
+            Condition::any()
+                .add(correction_entity::Column::HandledAt.lt(handled_at))
+                .add(correction_entity::Column::HandledAt.is_null().and(
+                    correction_entity::Column::CreatedAt.lt(current.created_at),
+                )),
+        );
+    }
+
+    Ok(query
+        .order_by_with_nulls(
+            correction_entity::Column::HandledAt,
+            Order::Desc,
+            NullOrdering::Last,
+        )
+        .order_by_desc(correction_entity::Column::CreatedAt)
+        .order_by_desc(correction_entity::Column::Id)
+        .one(db)
+        .await?)
 }
 
 #[utoipa::path(
@@ -61,26 +99,8 @@ async fn get_correction_diff(
         })
         .map_err(IntoResponse::into_response)?;
 
-    let mut base_query = correction_entity::Entity::find()
-        .filter(correction_entity::Column::EntityId.eq(current.entity_id))
-        .filter(correction_entity::Column::EntityType.eq(current.entity_type))
-        .filter(
-            correction_entity::Column::Status.eq(CorrectionStatus::Approved),
-        )
-        .filter(correction_entity::Column::Id.ne(current.id));
-
-    if let Some(handled_at) = current.handled_at {
-        base_query = base_query
-            .filter(correction_entity::Column::HandledAt.lt(handled_at));
-    }
-
-    let base = base_query
-        .order_by_desc(correction_entity::Column::HandledAt)
-        .order_by_desc(correction_entity::Column::CreatedAt)
-        .order_by_desc(correction_entity::Column::Id)
-        .one(&repo.conn)
+    let base = find_base_correction(&repo.conn, &current)
         .await
-        .map_err(Error::from)
         .map_err(IntoResponse::into_response)?;
 
     let (base_snapshot, base_correction_id, base_history_id) =
