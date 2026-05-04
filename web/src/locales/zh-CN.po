@@ -103,7 +103,7 @@ msgstr "添加标签"
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/AddToUserCollectionButton.tsx
 msgid "Add to Collection"
-msgstr "添加到收藏集"
+msgstr "添加到收藏"
 
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Add track"
@@ -188,7 +188,7 @@ msgstr "已批准"
 
 #: src/view/collection/CollectionDetail.tsx
 msgid "Are you sure you want to delete this collection? This action cannot be undone."
-msgstr "确定要删除此收藏集吗？此操作无法撤销。"
+msgstr "确定要删除此收藏吗？此操作无法撤销。"
 
 #: src/view/artist/edit/index.tsx
 #: src/view/event/edit/index.tsx
@@ -201,7 +201,7 @@ msgstr "您确定要离开此页面吗？您的更改将丢失。"
 
 #: src/view/collection/CollectionItemCard.tsx
 msgid "Are you sure you want to remove this item from the collection?"
-msgstr "确定要从收藏集中移除此条目吗？"
+msgstr "确定要从收藏中移除此条目吗？"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
@@ -309,17 +309,17 @@ msgstr "折叠"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Collection"
-msgstr "收藏集"
+msgstr "收藏"
 
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "Collection created"
-msgstr "收藏集已创建"
+msgstr "收藏已创建"
 
 #: src/component/Header/RightSidebar.tsx
 #: src/view/search/index.tsx
 #: src/view/user/Profile.tsx
 msgid "Collections"
-msgstr "收藏集"
+msgstr "收藏"
 
 #: src/component/dialog/AlertDialog.tsx
 msgid "Confirm"
@@ -385,7 +385,7 @@ msgstr "创建艺人"
 
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "Create Collection"
-msgstr "创建收藏集"
+msgstr "创建收藏"
 
 #: src/view/event/explore.tsx
 msgid "Create event"
@@ -434,13 +434,13 @@ msgstr "创建者"
 #: src/view/correction/Detail.tsx
 #: src/view/list/ListItemCard.tsx
 msgid "Credit role"
-msgstr "署名角色"
+msgstr "署名职能"
 
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 #: src/view/song/edit/comp/SongCreditsField.tsx
 #: src/view/song/Info/index.tsx
 msgid "Credits"
-msgstr "信用"
+msgstr "署名"
 
 #: src/component/ImageCropDialog/index.tsx
 #: src/component/ImageCropDialog/index.tsx
@@ -482,7 +482,7 @@ msgstr "删除"
 
 #: src/view/collection/CollectionDetail.tsx
 msgid "Delete Collection"
-msgstr "删除收藏集"
+msgstr "删除收藏"
 
 #: src/component/feature/entity_explore/OrderBySelect.tsx
 msgid "Descending"
@@ -550,7 +550,7 @@ msgstr "编辑艺人"
 #: src/view/collection/CollectionDetail.tsx
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "Edit Collection"
-msgstr "编辑收藏集"
+msgstr "编辑收藏"
 
 #: src/view/event/edit/index.tsx
 msgid "Edit Event"
@@ -660,15 +660,15 @@ msgstr "探索歌曲"
 
 #: src/route/collection/$id.tsx
 msgid "Failed to load collection details."
-msgstr "加载收藏集详情失败。"
+msgstr "加载收藏详情失败。"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Failed to load collections"
-msgstr "加载收藏集失败"
+msgstr "加载收藏失败"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Failed to load collections."
-msgstr "加载收藏集失败。"
+msgstr "加载收藏失败。"
 
 #: src/view/image_queue/manage.tsx
 msgid "Failed to load image queue."
@@ -700,7 +700,7 @@ msgstr "文件大小"
 
 #: src/view/user/Profile.tsx
 msgid "Filter collections"
-msgstr "筛选收藏集"
+msgstr "筛选收藏"
 
 #: src/view/Homepage/component/ExploreCard.tsx
 msgid "Find tracks by title language, credits, and corrections."
@@ -911,7 +911,7 @@ msgstr "加载更多"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Loading collections..."
-msgstr "正在加载收藏集..."
+msgstr "正在加载收藏..."
 
 #: src/view/correction/EntityContributors.tsx
 msgid "Loading contributors..."
@@ -983,7 +983,7 @@ msgstr "歌词"
 
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "Make this collection public"
-msgstr "公开此收藏集"
+msgstr "公开此收藏"
 
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Manage Tags"
@@ -1061,7 +1061,7 @@ msgstr "新图"
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/user/Profile.tsx
 msgid "New collection"
-msgstr "新建收藏集"
+msgstr "新建收藏"
 
 #: src/view/auth/reset_password/index.tsx
 msgid "New password"
@@ -1113,23 +1113,23 @@ msgstr "未检测到任何更改"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "No collections available"
-msgstr "暂无可用收藏集"
+msgstr "暂无可用收藏"
 
 #: src/view/user/Profile.tsx
 msgid "No collections found"
-msgstr "未找到收藏集"
+msgstr "未找到收藏"
 
 #: src/view/search/index.tsx
 msgid "No collections found."
-msgstr "未找到收藏集。"
+msgstr "未找到收藏。"
 
 #: src/view/user/Profile.tsx
 msgid "No collections match your filters"
-msgstr "没有匹配筛选条件的收藏集"
+msgstr "没有匹配筛选条件的收藏"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "No collections yet."
-msgstr "暂无收藏集。"
+msgstr "暂无收藏。"
 
 #: src/component/display/release/ReleaseCoverWall.tsx
 #: src/view/Homepage/component/ReleaseCard.tsx
@@ -1326,7 +1326,7 @@ msgstr "待处理"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Please sign in to add items to a collection."
-msgstr "请先登录再将条目添加到收藏集。"
+msgstr "请先登录再将条目添加到收藏。"
 
 #: src/component/__legacy/chart/index.tsx
 msgid "Positive:"
@@ -1468,7 +1468,7 @@ msgstr "移除"
 
 #: src/view/collection/CollectionItemCard.tsx
 msgid "Remove from collection"
-msgstr "从收藏集中移除"
+msgstr "从收藏中移除"
 
 #: src/view/artist/edit/comp/Membership/role.tsx
 #: src/view/artist/edit/comp/Membership/role.tsx
@@ -1581,11 +1581,11 @@ msgstr "按用户名搜索"
 #: src/view/user/Profile.tsx
 #: src/view/user/Profile.tsx
 msgid "Search collections"
-msgstr "搜索收藏集"
+msgstr "搜索收藏"
 
 #: src/view/artist/edit/comp/Membership/role.tsx
 msgid "Search credit role"
-msgstr "搜索信用角色"
+msgstr "搜索署名职能"
 
 #: src/component/form/SearchDialog/EventSearchDialog.tsx
 msgid "Search Event"
@@ -1637,7 +1637,7 @@ msgstr "查看发行首次出现的展会与现场活动。"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Select a collection"
-msgstr "选择收藏集"
+msgstr "选择收藏"
 
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Select another image"
@@ -1745,7 +1745,7 @@ msgstr "排序方式"
 
 #: src/view/user/Profile.tsx
 msgid "Sort collections"
-msgstr "排序收藏集"
+msgstr "排序收藏"
 
 #: src/view/artist/edit/comp/Date.tsx
 #: src/view/event/edit/comp/EventDateFields.tsx
@@ -1843,7 +1843,7 @@ msgstr "此操作无法撤消。"
 
 #: src/view/collection/CollectionDetail.tsx
 msgid "This collection is empty"
-msgstr "此收藏集为空"
+msgstr "此收藏为空"
 
 #. placeholder {0}: formatMinuteCount(props.resetKeyExpiresMinutes)
 #: src/view/auth/reset_password/index.tsx
@@ -2058,7 +2058,7 @@ msgstr "现在你可以使用新密码登录。"
 
 #: src/view/user/Profile.tsx
 msgid "You haven't created any collections yet"
-msgstr "你还没有创建任何收藏集"
+msgstr "你还没有创建任何收藏"
 
 #: src/view/auth/reset_password/index.tsx
 msgid "Your password has been updated successfully."

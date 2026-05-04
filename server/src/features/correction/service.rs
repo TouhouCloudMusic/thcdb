@@ -1,5 +1,3 @@
-use entity::enums::CorrectionStatus;
-
 use super::repo;
 use crate::application::correction::Error as CorrectionError;
 use crate::application::error::Unauthorized;
@@ -7,7 +5,7 @@ use crate::domain::correction::{
     CorrectionEntity, CorrectionFilter, NewCorrectionMeta, Repo as _,
     TxRepo as _,
 };
-use crate::domain::model::{CorrectionApprover, UserRoleEnum};
+use crate::domain::model::{CorrectionApprover, CorrectionManage};
 use crate::domain::user::User;
 use crate::infra;
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
@@ -55,31 +53,23 @@ pub async fn upsert<T: CorrectionEntity + Send>(
     repo: &SeaOrmTxRepo,
     meta: NewCorrectionMeta<T>,
 ) -> Result<(), CorrectionError> {
-    let prev_correction = repo
-        .find_one(CorrectionFilter::latest(meta.entity_id, T::entity_type()))
+    let pending_correction = repo
+        .find_one(CorrectionFilter::pending(meta.entity_id, T::entity_type()))
+        .await?;
+
+    if let Some(prev_correction) = pending_correction {
+        let can_update_pending = crate::infra::authz::user_has_permission::<
+            CorrectionManage,
+        >(repo.conn(), meta.author.id)
         .await?
-        .ok_or(CorrectionError::NotFound)?;
+            || repo.is_author(&meta.author, &prev_correction).await?;
 
-    if prev_correction.status == CorrectionStatus::Pending {
-        let is_author_or_admin = if meta
-            .author
-            .has_roles(&[UserRoleEnum::Admin, UserRoleEnum::Moderator])
-        {
-            true
-        } else {
-            repo.is_author(&meta.author, &prev_correction).await?
-        };
-
-        if !is_author_or_admin {
+        if !can_update_pending {
             Err(Unauthorized::new())?;
         }
-
-        let _ = repo.create(meta).await?;
-    } else if prev_correction.status == CorrectionStatus::Approved {
-        return Err(CorrectionError::AlreadyApproved);
-    } else {
-        repo.update(prev_correction.id, meta).await?;
     }
+
+    let _ = repo.create(meta).await?;
 
     Ok(())
 }
