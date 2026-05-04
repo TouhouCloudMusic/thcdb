@@ -13,6 +13,10 @@ msgstr ""
 "Last-Translator: \n"
 "Language-Team: \n"
 
+#: src/view/correction/CorrectionComments.tsx
+msgid "[deleted]"
+msgstr "[deleted]"
+
 #: src/view/artist/discover.tsx
 msgid "[UNIMPLEMENTED] Artist"
 msgstr "[UNIMPLEMENTED] Artist"
@@ -43,18 +47,13 @@ msgid "{count} votes · relevance {relevance}"
 msgstr "{count} votes · relevance {relevance}"
 
 #: src/view/NotFound.tsx
-#: src/view/NotFound.tsx
-#: src/view/NotFound.tsx
 msgid "404 Not Found"
 msgstr "404 Not Found"
 
 #: src/view/error/InternalServerError.tsx
-#: src/view/error/InternalServerError.tsx
-#: src/view/error/InternalServerError.tsx
 msgid "500 Internal Server Error"
 msgstr "500 Internal Server Error"
 
-#: src/route/about.tsx
 #: src/route/about.tsx
 #: src/view/user/Profile.tsx
 msgid "About"
@@ -83,6 +82,10 @@ msgstr "Activity"
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Add"
 msgstr "Add"
+
+#: src/view/correction/CorrectionComments.tsx
+msgid "Add a comment..."
+msgstr "Add a comment..."
 
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Add disc"
@@ -168,10 +171,14 @@ msgstr "An error occurred. Please try again."
 msgid "API-powered UI"
 msgstr "API-powered UI"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Approve"
 msgstr "Approve"
+
+#: src/view/correction/Detail.tsx
+msgid "Approve correction?"
+msgstr "Approve correction?"
 
 #: src/view/image_queue/detail.tsx
 msgid "Approve image?"
@@ -190,6 +197,10 @@ msgstr "APPROVED"
 msgid "Are you sure you want to delete this collection? This action cannot be undone."
 msgstr "Are you sure you want to delete this collection? This action cannot be undone."
 
+#: src/view/correction/CorrectionComments.tsx
+msgid "Are you sure you want to delete this comment?"
+msgstr "Are you sure you want to delete this comment?"
+
 #: src/view/artist/edit/index.tsx
 #: src/view/event/edit/index.tsx
 #: src/view/label/edit/index.tsx
@@ -205,6 +216,7 @@ msgstr "Are you sure you want to remove this item from the collection?"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/Homepage/component/ArtistCard.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/search/index.tsx
@@ -240,7 +252,6 @@ msgid "Back"
 msgstr "Back"
 
 #: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
 msgid "Back to"
 msgstr "Back to"
 
@@ -264,6 +275,8 @@ msgstr "by"
 #: src/component/dialog/AlertDialog.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionFormDialog.tsx
+#: src/view/correction/CorrectionComments.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Cancel"
@@ -321,6 +334,18 @@ msgstr "Collection created"
 msgid "Collections"
 msgstr "Collections"
 
+#: src/view/correction/CorrectionComments.tsx
+msgid "Comment"
+msgstr "Comment"
+
+#: src/view/correction/CorrectionComments.tsx
+msgid "Comments"
+msgstr "Comments"
+
+#: src/view/correction/Detail.tsx
+msgid "Compare"
+msgstr "Compare"
+
 #: src/component/dialog/AlertDialog.tsx
 msgid "Confirm"
 msgstr "Confirm"
@@ -334,7 +359,6 @@ msgid "Contribute touhou music metadata"
 msgstr "Contribute touhou music metadata"
 
 #: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
 msgid "Contribute what’s missing and help keep the database accurate for everyone."
 msgstr "Contribute what’s missing and help keep the database accurate for everyone."
 
@@ -342,8 +366,13 @@ msgstr "Contribute what’s missing and help keep the database accurate for ever
 msgid "Contributors:"
 msgstr "Contributors:"
 
+#: src/view/correction/Detail.tsx
+msgid "Correction approved"
+msgstr "Correction approved"
+
 #: src/view/event/edit/comp/EventFormDesc.tsx
 #: src/view/label/edit/comp/LabelFormDesc.tsx
+#: src/view/release/edit/index.tsx
 #: src/view/tag/edit/comp/TagFormActions.tsx
 msgid "Correction Description"
 msgstr "Correction Description"
@@ -352,9 +381,15 @@ msgstr "Correction Description"
 msgid "Correction mock controls"
 msgstr "Correction mock controls"
 
+#. placeholder {0}: entityTypeText()
+#. placeholder {1}: props.correction.entity_name
 #: src/view/correction/Detail.tsx
-msgid "CORRECTIONS"
-msgstr "CORRECTIONS"
+msgid "Correction of {0} <0>{1}</0>"
+msgstr "Correction of {0} <0>{1}</0>"
+
+#: src/view/correction/Detail.tsx
+msgid "Correction rejected"
+msgstr "Correction rejected"
 
 #: src/component/form/Location/index.tsx
 msgid "Country / Region"
@@ -411,6 +446,7 @@ msgstr "Create song"
 msgid "Create tag"
 msgstr "Create tag"
 
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Created"
 msgstr "Created"
@@ -431,8 +467,9 @@ msgstr "Created At"
 msgid "Created by"
 msgstr "Created by"
 
+#: src/route/credit-role/$id.tsx
+#: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
-#: src/view/list/ListItemCard.tsx
 msgid "Credit role"
 msgstr "Credit role"
 
@@ -443,13 +480,9 @@ msgid "Credits"
 msgstr "Credits"
 
 #: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
 msgid "Crop failed."
 msgstr "Crop failed."
 
-#: src/component/ImageCropDialog/index.tsx
 #: src/component/ImageCropDialog/index.tsx
 msgid "Cropper is not ready yet."
 msgstr "Cropper is not ready yet."
@@ -476,13 +509,17 @@ msgid "Day"
 msgstr "Day"
 
 #: src/view/collection/CollectionDetail.tsx
-#: src/view/collection/CollectionDetail.tsx
+#: src/view/correction/CorrectionComments.tsx
 msgid "Delete"
 msgstr "Delete"
 
 #: src/view/collection/CollectionDetail.tsx
 msgid "Delete Collection"
 msgstr "Delete Collection"
+
+#: src/view/correction/CorrectionComments.tsx
+msgid "Delete comment"
+msgstr "Delete comment"
 
 #: src/component/feature/entity_explore/OrderBySelect.tsx
 msgid "Descending"
@@ -608,6 +645,7 @@ msgstr "Enter your username or email"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/search/index.tsx
 msgid "Event"
 msgstr "Event"
@@ -633,7 +671,6 @@ msgstr "Explore"
 msgid "Explore Artists"
 msgstr "Explore Artists"
 
-#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/Homepage/component/HomeHero.tsx
 msgid "Explore doujin music"
 msgstr "Explore doujin music"
@@ -674,6 +711,10 @@ msgstr "Failed to load collections."
 msgid "Failed to load image queue."
 msgstr "Failed to load image queue."
 
+#: src/view/collection/CollectionDetail.tsx
+msgid "Failed to load items."
+msgstr "Failed to load items."
+
 #: src/view/image_queue/user.tsx
 msgid "Failed to load user image queue."
 msgstr "Failed to load user image queue."
@@ -685,6 +726,10 @@ msgstr "Failed to load users."
 #: src/component/Footer/index.tsx
 msgid "Feedback"
 msgstr "Feedback"
+
+#: src/view/correction/Detail.tsx
+msgid "Field"
+msgstr "Field"
 
 #: src/component/ImageCropDialog/index.tsx
 msgid "File is too large. Maximum is {maximum}."
@@ -854,6 +899,7 @@ msgstr "Join year cannot be the same as previous leave year"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/search/index.tsx
 msgid "Label"
 msgstr "Label"
@@ -905,6 +951,7 @@ msgstr "Links"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/correction/CorrectionComments.tsx
 #: src/view/user/Profile.tsx
 msgid "Load more"
 msgstr "Load more"
@@ -925,10 +972,6 @@ msgstr "Loading diff..."
 msgid "Loading items..."
 msgstr "Loading items..."
 
-#: src/view/correction/Detail.tsx
-msgid "Loading revisions..."
-msgstr "Loading revisions..."
-
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Loading tags..."
 msgstr "Loading tags..."
@@ -936,12 +979,11 @@ msgstr "Loading tags..."
 #: src/route/collection/$id.tsx
 #: src/view/artist/edit/index.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/artist/profile/index.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/correction/CorrectionComments.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
-#: src/view/correction/Detail.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/event/Info/index.tsx
 #: src/view/label/Info/index.tsx
@@ -951,8 +993,6 @@ msgstr "Loading tags..."
 msgid "Loading..."
 msgstr "Loading..."
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Loading…"
 msgstr "Loading…"
@@ -1019,11 +1059,9 @@ msgid "Month"
 msgstr "Month"
 
 #: src/view/collection/CollectionItemCard.tsx
-#: src/view/collection/CollectionItemCard.tsx
 msgid "Move item down"
 msgstr "Move item down"
 
-#: src/view/collection/CollectionItemCard.tsx
 #: src/view/collection/CollectionItemCard.tsx
 msgid "Move item up"
 msgstr "Move item up"
@@ -1131,6 +1169,10 @@ msgstr "No collections match your filters"
 msgid "No collections yet."
 msgstr "No collections yet."
 
+#: src/view/correction/CorrectionComments.tsx
+msgid "No comments yet."
+msgstr "No comments yet."
+
 #: src/component/display/release/ReleaseCoverWall.tsx
 #: src/view/Homepage/component/ReleaseCard.tsx
 #: src/view/release/explore/ReleaseItems.tsx
@@ -1171,7 +1213,6 @@ msgid "No events found."
 msgstr "No events found."
 
 #: src/view/image_queue/detail.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "No image"
 msgstr "No image"
@@ -1243,14 +1284,8 @@ msgstr "No users match the current filters."
 
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/correction/Detail.tsx
-#: src/view/correction/Detail.tsx
-#: src/view/correction/Detail.tsx
 msgid "None"
 msgstr "None"
-
-#: src/view/correction/Detail.tsx
-msgid "Not handled"
-msgstr "Not handled"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Note (optional)"
@@ -1269,17 +1304,11 @@ msgid "Only PNG/JPEG images are supported."
 msgstr "Only PNG/JPEG images are supported."
 
 #: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
 msgid "Open"
 msgstr "Open"
 
 #: src/view/auth/component/AuthForm.tsx
 #: src/view/auth/component/AuthLeftPanel.tsx
-#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/Homepage/component/HomeHero.tsx
 msgid "Open doujin music database"
 msgstr "Open doujin music database"
@@ -1306,7 +1335,6 @@ msgstr "Page {0} of {1}"
 msgid "Pagination"
 msgstr "Pagination"
 
-#: src/view/auth/component/AuthCredentialForm.tsx
 #: src/view/auth/component/AuthCredentialForm.tsx
 msgid "Password"
 msgstr "Password"
@@ -1354,7 +1382,6 @@ msgstr "Previous page"
 
 #: src/view/collection/CollectionDetail.tsx
 #: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
 msgid "Private"
 msgstr "Private"
 
@@ -1377,7 +1404,6 @@ msgid "Province"
 msgstr "Province"
 
 #: src/view/collection/CollectionDetail.tsx
-#: src/view/user/Profile.tsx
 #: src/view/user/Profile.tsx
 msgid "Public"
 msgstr "Public"
@@ -1410,10 +1436,14 @@ msgstr "Recording end"
 msgid "Recording start"
 msgstr "Recording start"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Reject"
 msgstr "Reject"
+
+#: src/view/correction/Detail.tsx
+msgid "Reject correction?"
+msgstr "Reject correction?"
 
 #: src/view/image_queue/detail.tsx
 msgid "Reject image?"
@@ -1436,6 +1466,7 @@ msgstr "Relations"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/search/index.tsx
 #: src/view/song/Info/index.tsx
@@ -1461,7 +1492,6 @@ msgid "Releases"
 msgstr "Releases"
 
 #: src/view/collection/CollectionItemCard.tsx
-#: src/view/collection/CollectionItemCard.tsx
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Remove"
 msgstr "Remove"
@@ -1471,11 +1501,9 @@ msgid "Remove from collection"
 msgstr "Remove from collection"
 
 #: src/view/artist/edit/comp/Membership/role.tsx
-#: src/view/artist/edit/comp/Membership/role.tsx
 msgid "Remove role"
 msgstr "Remove role"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
 #: src/view/artist/edit/comp/Membership/tenure.tsx
 msgid "Remove tenure entry"
 msgstr "Remove tenure entry"
@@ -1496,13 +1524,15 @@ msgstr "Repeat new password"
 msgid "Repeat password"
 msgstr "Repeat password"
 
-#: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
+#: src/view/correction/CorrectionComments.tsx
+msgid "Reply"
+msgstr "Reply"
+
 #: src/view/auth/reset_password/index.tsx
 msgid "Request failed"
 msgstr "Request failed"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Request failed."
 msgstr "Request failed."
@@ -1523,11 +1553,14 @@ msgstr "Reset field?"
 msgid "Reset password"
 msgstr "Reset password"
 
+#: src/view/collection/CollectionDetail.tsx
+msgid "Retry"
+msgstr "Retry"
+
 #: src/view/image_queue/detail.tsx
 msgid "Revert"
 msgstr "Revert"
 
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/manage.tsx
 msgid "Reverted"
@@ -1536,10 +1569,6 @@ msgstr "Reverted"
 #: src/view/image_queue/user.tsx
 msgid "REVERTED"
 msgstr "REVERTED"
-
-#: src/view/correction/Detail.tsx
-msgid "REVISIONS"
-msgstr "REVISIONS"
 
 #: src/view/admin/users.tsx
 msgid "Roles"
@@ -1578,7 +1607,6 @@ msgstr "Search artists, releases, songs…"
 msgid "Search by username"
 msgstr "Search by username"
 
-#: src/view/user/Profile.tsx
 #: src/view/user/Profile.tsx
 msgid "Search collections"
 msgstr "Search collections"
@@ -1688,18 +1716,17 @@ msgid "Short Description"
 msgstr "Short Description"
 
 #: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
 msgid "sign in"
 msgstr "sign in"
 
 #: src/component/route.tsx
 #: src/view/auth/component/AuthForm.tsx
 #: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/correction/CorrectionComments.tsx
 msgid "Sign in"
 msgstr "Sign in"
 
 #: src/component/Header/index.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
 #: src/view/auth/component/AuthCredentialForm.tsx
 msgid "Sign In"
 msgstr "Sign In"
@@ -1714,7 +1741,6 @@ msgstr "Sign Out"
 
 #: src/component/Header/index.tsx
 #: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
 msgid "Sign Up"
 msgstr "Sign Up"
 
@@ -1722,14 +1748,21 @@ msgstr "Sign Up"
 msgid "Solo artist"
 msgstr "Solo artist"
 
+#: src/view/correction/CorrectionComments.tsx
+msgid "Something went wrong"
+msgstr "Something went wrong"
+
 #: src/component/Header/LeftSidebar.tsx
+#: src/route/song-lyrics/$id.tsx
 #: src/view/collection/CollectionItemCard.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/search/index.tsx
 msgid "Song"
 msgstr "Song"
 
+#: src/route/song-lyrics/$id.tsx
+#: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
-#: src/view/list/ListItemCard.tsx
 msgid "Song lyrics"
 msgstr "Song lyrics"
 
@@ -1756,15 +1789,19 @@ msgstr "Start date"
 msgid "Start Location"
 msgstr "Start Location"
 
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/manage.tsx
 msgid "Status"
 msgstr "Status"
 
 #: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/image_queue/user.tsx
 msgid "STATUS"
 msgstr "STATUS"
+
+#: src/view/correction/Detail.tsx
+msgid "Status updated"
+msgstr "Status updated"
 
 #: src/view/auth/component/PasswordField.tsx
 msgid "Strong enough"
@@ -1792,6 +1829,10 @@ msgstr "Submitted by"
 msgid "Submitting"
 msgstr "Submitting"
 
+#: src/view/correction/CorrectionComments.tsx
+msgid "Submitting..."
+msgstr "Submitting..."
+
 #: src/component/Header/RightSidebar.tsx
 msgid "Support"
 msgstr "Support"
@@ -1802,6 +1843,7 @@ msgstr "Sync your contributions across devices"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/search/index.tsx
 msgid "Tag"
 msgstr "Tag"
@@ -1858,6 +1900,14 @@ msgstr "This page requires an authenticated account."
 msgid "This user has no image queue history."
 msgstr "This user has no image queue history."
 
+#: src/view/correction/Detail.tsx
+msgid "This will apply the correction to the target entity."
+msgstr "This will apply the correction to the target entity."
+
+#: src/view/correction/Detail.tsx
+msgid "This will mark the correction as rejected."
+msgstr "This will mark the correction as rejected."
+
 #: src/view/image_queue/detail.tsx
 msgid "This will mark the queued image as approved."
 msgstr "This will mark the queued image as approved."
@@ -1868,9 +1918,7 @@ msgstr "This will mark the queued image as rejected."
 
 #: src/view/release/edit/comp/LocalizedTitlesField.tsx
 #: src/view/release/edit/comp/TitleField.tsx
-#: src/view/release/edit/comp/TitleField.tsx
 #: src/view/song/edit/comp/SongLocalizedTitlesField.tsx
-#: src/view/song/edit/comp/SongTitleField.tsx
 #: src/view/song/edit/comp/SongTitleField.tsx
 msgid "Title"
 msgstr "Title"
@@ -1878,6 +1926,10 @@ msgstr "Title"
 #: src/view/event/explore.tsx
 msgid "To"
 msgstr "To"
+
+#: src/view/correction/CorrectionComments.tsx
+msgid "to comment"
+msgstr "to comment"
 
 #: src/App.tsx
 #: src/component/Footer/index.tsx
@@ -1918,6 +1970,7 @@ msgid "Trending Tags"
 msgstr "Trending Tags"
 
 #: src/view/artist/explore.comp.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/manage.tsx
 #: src/view/release/explore/filter.tsx
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
@@ -1946,8 +1999,6 @@ msgid "Unknown artist"
 msgstr "Unknown artist"
 
 #: src/view/admin/users.tsx
-#: src/view/admin/users.tsx
-#: src/view/admin/users.tsx
 msgid "Unknown error"
 msgstr "Unknown error"
 
@@ -1956,11 +2007,9 @@ msgid "Upcoming Events"
 msgstr "Upcoming Events"
 
 #: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
 msgid "Update avatar"
 msgstr "Update avatar"
 
-#: src/view/user/edit_profile/index.tsx
 #: src/view/user/edit_profile/index.tsx
 msgid "Update banner"
 msgstr "Update banner"
@@ -1975,7 +2024,6 @@ msgid "Upload failed."
 msgstr "Upload failed."
 
 #: src/component/ImageCropDialog/index.tsx
-#: src/view/user/edit_profile/index.tsx
 #: src/view/user/edit_profile/index.tsx
 msgid "Uploading…"
 msgstr "Uploading…"
@@ -2000,8 +2048,6 @@ msgstr "Username"
 msgid "Username / Email"
 msgstr "Username / Email"
 
-#: src/component/Header/LeftSidebar.tsx
-#: src/component/Header/LeftSidebar.tsx
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/admin/users.tsx
 msgid "Users"
@@ -2043,6 +2089,10 @@ msgstr "Votes"
 #: src/view/image_queue/detail.tsx
 msgid "Working…"
 msgstr "Working…"
+
+#: src/view/correction/CorrectionComments.tsx
+msgid "Write a reply..."
+msgstr "Write a reply..."
 
 #: src/view/user/edit_profile/index.tsx
 msgid "Write something about you."

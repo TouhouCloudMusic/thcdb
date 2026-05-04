@@ -51,6 +51,7 @@ import {
 	findReleaseByKeyword,
 	findSongById,
 	findSongByKeyword,
+	findSongLyricsById,
 	findTagById,
 	findTagByKeyword,
 	followUser,
@@ -249,6 +250,9 @@ import type {
 	FindSongByKeywordData,
 	FindSongByKeywordError,
 	FindSongByKeywordResponse,
+	FindSongLyricsByIdData,
+	FindSongLyricsByIdError,
+	FindSongLyricsByIdResponse,
 	FindTagByIdData,
 	FindTagByIdError,
 	FindTagByIdResponse,
@@ -3565,6 +3569,31 @@ export const findManySongLyricsOptions = (
 			return data
 		},
 		queryKey: findManySongLyricsQueryKey(options),
+	})
+
+export const findSongLyricsByIdQueryKey = (
+	options: Options<FindSongLyricsByIdData>,
+) => createQueryKey("findSongLyricsById", options)
+
+export const findSongLyricsByIdOptions = (
+	options: Options<FindSongLyricsByIdData>,
+) =>
+	queryOptions<
+		FindSongLyricsByIdResponse,
+		FindSongLyricsByIdError,
+		FindSongLyricsByIdResponse,
+		ReturnType<typeof findSongLyricsByIdQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await findSongLyricsById({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: findSongLyricsByIdQueryKey(options),
 	})
 
 export const updateSongLyricsMutation = (

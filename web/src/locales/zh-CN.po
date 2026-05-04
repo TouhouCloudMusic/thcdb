@@ -13,6 +13,10 @@ msgstr ""
 "Last-Translator: \n"
 "Language-Team: \n"
 
+#: src/view/correction/CorrectionComments.tsx
+msgid "[deleted]"
+msgstr "[已删除]"
+
 #: src/view/artist/discover.tsx
 msgid "[UNIMPLEMENTED] Artist"
 msgstr "[未实现]艺人"
@@ -43,18 +47,13 @@ msgid "{count} votes · relevance {relevance}"
 msgstr "{count} 票 · 相关度 {relevance}"
 
 #: src/view/NotFound.tsx
-#: src/view/NotFound.tsx
-#: src/view/NotFound.tsx
 msgid "404 Not Found"
 msgstr "404 未找到"
 
 #: src/view/error/InternalServerError.tsx
-#: src/view/error/InternalServerError.tsx
-#: src/view/error/InternalServerError.tsx
 msgid "500 Internal Server Error"
 msgstr "500 内部服务器错误"
 
-#: src/route/about.tsx
 #: src/route/about.tsx
 #: src/view/user/Profile.tsx
 msgid "About"
@@ -83,6 +82,10 @@ msgstr "动态"
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Add"
 msgstr "添加"
+
+#: src/view/correction/CorrectionComments.tsx
+msgid "Add a comment..."
+msgstr "添加评论..."
 
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Add disc"
@@ -168,10 +171,14 @@ msgstr "发生错误，请重试。"
 msgid "API-powered UI"
 msgstr "API驱动的用户界面"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Approve"
 msgstr "批准"
+
+#: src/view/correction/Detail.tsx
+msgid "Approve correction?"
+msgstr "批准此更正？"
 
 #: src/view/image_queue/detail.tsx
 msgid "Approve image?"
@@ -190,6 +197,10 @@ msgstr "已批准"
 msgid "Are you sure you want to delete this collection? This action cannot be undone."
 msgstr "确定要删除此收藏吗？此操作无法撤销。"
 
+#: src/view/correction/CorrectionComments.tsx
+msgid "Are you sure you want to delete this comment?"
+msgstr "确定要删除这条评论吗？"
+
 #: src/view/artist/edit/index.tsx
 #: src/view/event/edit/index.tsx
 #: src/view/label/edit/index.tsx
@@ -205,6 +216,7 @@ msgstr "确定要从收藏中移除此条目吗？"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/Homepage/component/ArtistCard.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/search/index.tsx
@@ -240,7 +252,6 @@ msgid "Back"
 msgstr "返回"
 
 #: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
 msgid "Back to"
 msgstr "返回"
 
@@ -264,6 +275,8 @@ msgstr "由"
 #: src/component/dialog/AlertDialog.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionFormDialog.tsx
+#: src/view/correction/CorrectionComments.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Cancel"
@@ -321,6 +334,18 @@ msgstr "收藏已创建"
 msgid "Collections"
 msgstr "收藏"
 
+#: src/view/correction/CorrectionComments.tsx
+msgid "Comment"
+msgstr "评论"
+
+#: src/view/correction/CorrectionComments.tsx
+msgid "Comments"
+msgstr "评论"
+
+#: src/view/correction/Detail.tsx
+msgid "Compare"
+msgstr "比较"
+
 #: src/component/dialog/AlertDialog.tsx
 msgid "Confirm"
 msgstr "确认"
@@ -334,7 +359,6 @@ msgid "Contribute touhou music metadata"
 msgstr "完善东方同人音乐元数据"
 
 #: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
 msgid "Contribute what’s missing and help keep the database accurate for everyone."
 msgstr "补充缺失内容，帮助所有人维护准确的数据库。"
 
@@ -342,8 +366,13 @@ msgstr "补充缺失内容，帮助所有人维护准确的数据库。"
 msgid "Contributors:"
 msgstr "贡献者："
 
+#: src/view/correction/Detail.tsx
+msgid "Correction approved"
+msgstr "更正已批准"
+
 #: src/view/event/edit/comp/EventFormDesc.tsx
 #: src/view/label/edit/comp/LabelFormDesc.tsx
+#: src/view/release/edit/index.tsx
 #: src/view/tag/edit/comp/TagFormActions.tsx
 msgid "Correction Description"
 msgstr "更正说明"
@@ -352,9 +381,15 @@ msgstr "更正说明"
 msgid "Correction mock controls"
 msgstr "校正模拟控件"
 
+#. placeholder {0}: entityTypeText()
+#. placeholder {1}: props.correction.entity_name
 #: src/view/correction/Detail.tsx
-msgid "CORRECTIONS"
-msgstr "归正"
+msgid "Correction of {0} <0>{1}</0>"
+msgstr "更正对象：{0} <0>{1}</0>"
+
+#: src/view/correction/Detail.tsx
+msgid "Correction rejected"
+msgstr "更正已拒绝"
 
 #: src/component/form/Location/index.tsx
 msgid "Country / Region"
@@ -411,6 +446,7 @@ msgstr "创建歌曲"
 msgid "Create tag"
 msgstr "创建标签"
 
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Created"
 msgstr "已创建"
@@ -431,8 +467,9 @@ msgstr "创建于"
 msgid "Created by"
 msgstr "创建者"
 
+#: src/route/credit-role/$id.tsx
+#: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
-#: src/view/list/ListItemCard.tsx
 msgid "Credit role"
 msgstr "署名职能"
 
@@ -443,13 +480,9 @@ msgid "Credits"
 msgstr "署名"
 
 #: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
-#: src/component/ImageCropDialog/index.tsx
 msgid "Crop failed."
 msgstr "裁剪失败。"
 
-#: src/component/ImageCropDialog/index.tsx
 #: src/component/ImageCropDialog/index.tsx
 msgid "Cropper is not ready yet."
 msgstr "Cropper 尚未准备就绪。"
@@ -476,13 +509,17 @@ msgid "Day"
 msgstr "日"
 
 #: src/view/collection/CollectionDetail.tsx
-#: src/view/collection/CollectionDetail.tsx
+#: src/view/correction/CorrectionComments.tsx
 msgid "Delete"
 msgstr "删除"
 
 #: src/view/collection/CollectionDetail.tsx
 msgid "Delete Collection"
 msgstr "删除收藏"
+
+#: src/view/correction/CorrectionComments.tsx
+msgid "Delete comment"
+msgstr "删除评论"
 
 #: src/component/feature/entity_explore/OrderBySelect.tsx
 msgid "Descending"
@@ -608,6 +645,7 @@ msgstr "输入你的用户名或邮箱"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/search/index.tsx
 msgid "Event"
 msgstr "活动"
@@ -633,7 +671,6 @@ msgstr "浏览"
 msgid "Explore Artists"
 msgstr "浏览艺人"
 
-#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/Homepage/component/HomeHero.tsx
 msgid "Explore doujin music"
 msgstr "探索同人音乐"
@@ -674,6 +711,10 @@ msgstr "加载收藏失败。"
 msgid "Failed to load image queue."
 msgstr "加载图片队列失败。"
 
+#: src/view/collection/CollectionDetail.tsx
+msgid "Failed to load items."
+msgstr ""
+
 #: src/view/image_queue/user.tsx
 msgid "Failed to load user image queue."
 msgstr "加载用户图片队列失败。"
@@ -685,6 +726,10 @@ msgstr "加载用户失败。"
 #: src/component/Footer/index.tsx
 msgid "Feedback"
 msgstr "反馈"
+
+#: src/view/correction/Detail.tsx
+msgid "Field"
+msgstr "字段"
 
 #: src/component/ImageCropDialog/index.tsx
 msgid "File is too large. Maximum is {maximum}."
@@ -854,6 +899,7 @@ msgstr "入职年份不能与上一休假年份相同"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/search/index.tsx
 msgid "Label"
 msgstr "厂牌"
@@ -905,6 +951,7 @@ msgstr "链接"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/correction/CorrectionComments.tsx
 #: src/view/user/Profile.tsx
 msgid "Load more"
 msgstr "加载更多"
@@ -925,10 +972,6 @@ msgstr "加载"
 msgid "Loading items..."
 msgstr "正在加载条目..."
 
-#: src/view/correction/Detail.tsx
-msgid "Loading revisions..."
-msgstr "正在加载修订..."
-
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Loading tags..."
 msgstr "正在加载标签..."
@@ -936,12 +979,11 @@ msgstr "正在加载标签..."
 #: src/route/collection/$id.tsx
 #: src/view/artist/edit/index.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
-#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/artist/profile/index.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/correction/CorrectionComments.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
-#: src/view/correction/Detail.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/event/Info/index.tsx
 #: src/view/label/Info/index.tsx
@@ -951,8 +993,6 @@ msgstr "正在加载标签..."
 msgid "Loading..."
 msgstr "正在載入..."
 
-#: src/view/image_queue/detail.tsx
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Loading…"
 msgstr "加载中…"
@@ -1019,11 +1059,9 @@ msgid "Month"
 msgstr "月"
 
 #: src/view/collection/CollectionItemCard.tsx
-#: src/view/collection/CollectionItemCard.tsx
 msgid "Move item down"
 msgstr "下移项目"
 
-#: src/view/collection/CollectionItemCard.tsx
 #: src/view/collection/CollectionItemCard.tsx
 msgid "Move item up"
 msgstr "上移项目"
@@ -1131,6 +1169,10 @@ msgstr "没有匹配筛选条件的收藏"
 msgid "No collections yet."
 msgstr "暂无收藏。"
 
+#: src/view/correction/CorrectionComments.tsx
+msgid "No comments yet."
+msgstr "暂无评论。"
+
 #: src/component/display/release/ReleaseCoverWall.tsx
 #: src/view/Homepage/component/ReleaseCard.tsx
 #: src/view/release/explore/ReleaseItems.tsx
@@ -1171,7 +1213,6 @@ msgid "No events found."
 msgstr "未找到活动。"
 
 #: src/view/image_queue/detail.tsx
-#: src/view/image_upload/EntityImageUploadPage.tsx
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "No image"
 msgstr "暂无图片"
@@ -1243,14 +1284,8 @@ msgstr "没有用户符合当前筛选条件。"
 
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/correction/Detail.tsx
-#: src/view/correction/Detail.tsx
-#: src/view/correction/Detail.tsx
 msgid "None"
 msgstr "无"
-
-#: src/view/correction/Detail.tsx
-msgid "Not handled"
-msgstr "未处理"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Note (optional)"
@@ -1269,17 +1304,11 @@ msgid "Only PNG/JPEG images are supported."
 msgstr "仅支持PNG/JPEG图像。"
 
 #: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
-#: src/view/search/index.tsx
 msgid "Open"
 msgstr "打开"
 
 #: src/view/auth/component/AuthForm.tsx
 #: src/view/auth/component/AuthLeftPanel.tsx
-#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/Homepage/component/HomeHero.tsx
 msgid "Open doujin music database"
 msgstr "开放的同人音乐数据库"
@@ -1306,7 +1335,6 @@ msgstr "第 {0} / {1} 页"
 msgid "Pagination"
 msgstr "分页"
 
-#: src/view/auth/component/AuthCredentialForm.tsx
 #: src/view/auth/component/AuthCredentialForm.tsx
 msgid "Password"
 msgstr "密码"
@@ -1354,7 +1382,6 @@ msgstr "上一页"
 
 #: src/view/collection/CollectionDetail.tsx
 #: src/view/user/Profile.tsx
-#: src/view/user/Profile.tsx
 msgid "Private"
 msgstr "私有"
 
@@ -1377,7 +1404,6 @@ msgid "Province"
 msgstr "省"
 
 #: src/view/collection/CollectionDetail.tsx
-#: src/view/user/Profile.tsx
 #: src/view/user/Profile.tsx
 msgid "Public"
 msgstr "公开"
@@ -1410,10 +1436,14 @@ msgstr "录制结束"
 msgid "Recording start"
 msgstr "录制开始"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Reject"
 msgstr "拒绝"
+
+#: src/view/correction/Detail.tsx
+msgid "Reject correction?"
+msgstr "拒绝此更正？"
 
 #: src/view/image_queue/detail.tsx
 msgid "Reject image?"
@@ -1436,6 +1466,7 @@ msgstr "关系"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/search/index.tsx
 #: src/view/song/Info/index.tsx
@@ -1461,7 +1492,6 @@ msgid "Releases"
 msgstr "发行"
 
 #: src/view/collection/CollectionItemCard.tsx
-#: src/view/collection/CollectionItemCard.tsx
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Remove"
 msgstr "移除"
@@ -1471,11 +1501,9 @@ msgid "Remove from collection"
 msgstr "从收藏中移除"
 
 #: src/view/artist/edit/comp/Membership/role.tsx
-#: src/view/artist/edit/comp/Membership/role.tsx
 msgid "Remove role"
 msgstr "删除角色"
 
-#: src/view/artist/edit/comp/Membership/tenure.tsx
 #: src/view/artist/edit/comp/Membership/tenure.tsx
 msgid "Remove tenure entry"
 msgstr "删除任期条目"
@@ -1496,13 +1524,15 @@ msgstr "重复新密码"
 msgid "Repeat password"
 msgstr "重复密码"
 
-#: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
+#: src/view/correction/CorrectionComments.tsx
+msgid "Reply"
+msgstr "回复"
+
 #: src/view/auth/reset_password/index.tsx
 msgid "Request failed"
 msgstr "请求失败"
 
-#: src/view/image_queue/detail.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Request failed."
 msgstr "请求失败。"
@@ -1523,11 +1553,14 @@ msgstr "重置数据字段"
 msgid "Reset password"
 msgstr "重置密码"
 
+#: src/view/collection/CollectionDetail.tsx
+msgid "Retry"
+msgstr ""
+
 #: src/view/image_queue/detail.tsx
 msgid "Revert"
 msgstr "撤回"
 
-#: src/view/image_queue/detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/manage.tsx
 msgid "Reverted"
@@ -1536,10 +1569,6 @@ msgstr "已还原"
 #: src/view/image_queue/user.tsx
 msgid "REVERTED"
 msgstr "已撤回"
-
-#: src/view/correction/Detail.tsx
-msgid "REVISIONS"
-msgstr "修订"
 
 #: src/view/admin/users.tsx
 msgid "Roles"
@@ -1578,7 +1607,6 @@ msgstr "搜索艺人、专辑、歌曲…"
 msgid "Search by username"
 msgstr "按用户名搜索"
 
-#: src/view/user/Profile.tsx
 #: src/view/user/Profile.tsx
 msgid "Search collections"
 msgstr "搜索收藏"
@@ -1688,18 +1716,17 @@ msgid "Short Description"
 msgstr "简要说明"
 
 #: src/view/auth/reset_password/index.tsx
-#: src/view/auth/reset_password/index.tsx
 msgid "sign in"
 msgstr "登录"
 
 #: src/component/route.tsx
 #: src/view/auth/component/AuthForm.tsx
 #: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/correction/CorrectionComments.tsx
 msgid "Sign in"
 msgstr "登录"
 
 #: src/component/Header/index.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
 #: src/view/auth/component/AuthCredentialForm.tsx
 msgid "Sign In"
 msgstr "登录"
@@ -1714,7 +1741,6 @@ msgstr "注销"
 
 #: src/component/Header/index.tsx
 #: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
 msgid "Sign Up"
 msgstr "注册"
 
@@ -1722,14 +1748,21 @@ msgstr "注册"
 msgid "Solo artist"
 msgstr "独奏艺人"
 
+#: src/view/correction/CorrectionComments.tsx
+msgid "Something went wrong"
+msgstr "出了点问题"
+
 #: src/component/Header/LeftSidebar.tsx
+#: src/route/song-lyrics/$id.tsx
 #: src/view/collection/CollectionItemCard.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/search/index.tsx
 msgid "Song"
 msgstr "歌曲"
 
+#: src/route/song-lyrics/$id.tsx
+#: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
-#: src/view/list/ListItemCard.tsx
 msgid "Song lyrics"
 msgstr "歌词"
 
@@ -1756,15 +1789,19 @@ msgstr "起始日期"
 msgid "Start Location"
 msgstr "起始地点"
 
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/manage.tsx
 msgid "Status"
 msgstr "状态"
 
 #: src/view/Homepage/component/HomeHero.tsx
-#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/image_queue/user.tsx
 msgid "STATUS"
 msgstr "状态"
+
+#: src/view/correction/Detail.tsx
+msgid "Status updated"
+msgstr "状态已更新"
 
 #: src/view/auth/component/PasswordField.tsx
 msgid "Strong enough"
@@ -1792,6 +1829,10 @@ msgstr "提交人"
 msgid "Submitting"
 msgstr "正在提交"
 
+#: src/view/correction/CorrectionComments.tsx
+msgid "Submitting..."
+msgstr "正在提交..."
+
 #: src/component/Header/RightSidebar.tsx
 msgid "Support"
 msgstr "技术支持"
@@ -1802,6 +1843,7 @@ msgstr "跨设备同步您的贡献"
 
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/search/index.tsx
 msgid "Tag"
 msgstr "标签"
@@ -1858,6 +1900,14 @@ msgstr "此页面需要已登录账号。"
 msgid "This user has no image queue history."
 msgstr "该用户暂无图片队列历史。"
 
+#: src/view/correction/Detail.tsx
+msgid "This will apply the correction to the target entity."
+msgstr "这会将更正应用到目标实体。"
+
+#: src/view/correction/Detail.tsx
+msgid "This will mark the correction as rejected."
+msgstr "这会将更正标记为已拒绝。"
+
 #: src/view/image_queue/detail.tsx
 msgid "This will mark the queued image as approved."
 msgstr "这会将排队的图片标记为已批准。"
@@ -1868,9 +1918,7 @@ msgstr "这会将排队的图片标记为已拒绝。"
 
 #: src/view/release/edit/comp/LocalizedTitlesField.tsx
 #: src/view/release/edit/comp/TitleField.tsx
-#: src/view/release/edit/comp/TitleField.tsx
 #: src/view/song/edit/comp/SongLocalizedTitlesField.tsx
-#: src/view/song/edit/comp/SongTitleField.tsx
 #: src/view/song/edit/comp/SongTitleField.tsx
 msgid "Title"
 msgstr "标题"
@@ -1878,6 +1926,10 @@ msgstr "标题"
 #: src/view/event/explore.tsx
 msgid "To"
 msgstr "到"
+
+#: src/view/correction/CorrectionComments.tsx
+msgid "to comment"
+msgstr "后评论"
 
 #: src/App.tsx
 #: src/component/Footer/index.tsx
@@ -1918,6 +1970,7 @@ msgid "Trending Tags"
 msgstr "热点标签"
 
 #: src/view/artist/explore.comp.tsx
+#: src/view/correction/Detail.tsx
 #: src/view/image_queue/manage.tsx
 #: src/view/release/explore/filter.tsx
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
@@ -1946,8 +1999,6 @@ msgid "Unknown artist"
 msgstr "未知艺人"
 
 #: src/view/admin/users.tsx
-#: src/view/admin/users.tsx
-#: src/view/admin/users.tsx
 msgid "Unknown error"
 msgstr "未知错误"
 
@@ -1956,11 +2007,9 @@ msgid "Upcoming Events"
 msgstr "即将举行的活动"
 
 #: src/view/user/edit_profile/index.tsx
-#: src/view/user/edit_profile/index.tsx
 msgid "Update avatar"
 msgstr "更新头像"
 
-#: src/view/user/edit_profile/index.tsx
 #: src/view/user/edit_profile/index.tsx
 msgid "Update banner"
 msgstr "更新横幅"
@@ -1975,7 +2024,6 @@ msgid "Upload failed."
 msgstr "上传失败。"
 
 #: src/component/ImageCropDialog/index.tsx
-#: src/view/user/edit_profile/index.tsx
 #: src/view/user/edit_profile/index.tsx
 msgid "Uploading…"
 msgstr "上传中…"
@@ -2000,8 +2048,6 @@ msgstr "用户名"
 msgid "Username / Email"
 msgstr "用户名 / 邮箱"
 
-#: src/component/Header/LeftSidebar.tsx
-#: src/component/Header/LeftSidebar.tsx
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/admin/users.tsx
 msgid "Users"
@@ -2043,6 +2089,10 @@ msgstr "投票"
 #: src/view/image_queue/detail.tsx
 msgid "Working…"
 msgstr "处理中…"
+
+#: src/view/correction/CorrectionComments.tsx
+msgid "Write a reply..."
+msgstr "写下回复..."
 
 #: src/view/user/edit_profile/index.tsx
 msgid "Write something about you."

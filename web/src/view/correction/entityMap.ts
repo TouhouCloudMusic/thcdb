@@ -17,6 +17,8 @@ export type EntityDetailType = Exclude<
 
 type EntityDetailRoute = `/${EntityDetailType}/$id`
 
+type CorrectionEntityDetailRoute = `/${CorrectionHistoryEntityType}/$id`
+
 type EntityEditRoute = `/${EntityDetailType}/$id/edit`
 
 type EntityCorrectionsRoute = `/${EntityDetailType}/$id/corrections`
@@ -30,10 +32,6 @@ type EntityRouteSet = {
 type EntityBaseRouteMap = Record<EntityDetailType, EntityDetailRoute>
 
 type EntityDetailLabelMap = Record<EntityDetailType, string>
-type EntityTypeLabels = {
-	songLyrics: string
-	creditRole: string
-}
 
 function buildBaseRouteMap(labels: EntityDetailLabelMap) {
 	// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
@@ -94,15 +92,6 @@ export const ENTITY_ROUTE_MAP = {
 	Song: ENTITY_PAGE_ROUTE_MAP.song.detail,
 	Tag: ENTITY_PAGE_ROUTE_MAP.tag.detail,
 	Event: ENTITY_PAGE_ROUTE_MAP.event.detail,
-	SongLyrics: "/",
-	CreditRole: "/",
-} as const satisfies Record<EntityType, EntityDetailRoute | "/">
-
-export function formatEntityType(
-	entityType: EntityType,
-	labels: EntityTypeLabels,
-) {
-	if (entityType === "SongLyrics") return labels.songLyrics
-	if (entityType === "CreditRole") return labels.creditRole
-	return entityType
-}
+	SongLyrics: "/song-lyrics/$id",
+	CreditRole: "/credit-role/$id",
+} as const satisfies Record<EntityType, CorrectionEntityDetailRoute>

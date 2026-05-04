@@ -1,4 +1,4 @@
-use axum::extract::{Query, State};
+use axum::extract::{Path, Query, State};
 use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
@@ -19,6 +19,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .with_public(|r| {
             r.routes(routes!(find_one_song_lyrics))
                 .routes(routes!(find_many_song_lyrics))
+                .routes(routes!(find_song_lyrics_by_id))
         })
         .finish()
 }
@@ -86,4 +87,21 @@ async fn find_many_song_lyrics(
     Query(query): Query<FindManySongLyricsQuery>,
 ) -> Result<Data<Vec<SongLyrics>>, Error> {
     repo::find_many(&repo, query.into()).await.bimap_into()
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/song-lyrics/{id}",
+    responses(
+        (status = 200, body = DataOptionSongLyrics),
+    ),
+)]
+async fn find_song_lyrics_by_id(
+    State(repo): State<state::SeaOrmRepository>,
+    Path(id): Path<i32>,
+) -> Result<Data<Option<SongLyrics>>, Error> {
+    repo::find_one(&repo, FindOneFilter::Id { id })
+        .await
+        .bimap_into()
 }

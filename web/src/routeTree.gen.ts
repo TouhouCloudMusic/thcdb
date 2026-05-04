@@ -28,6 +28,7 @@ import { Route as TagIdRouteImport } from './route/tag/$id'
 import { Route as SongNewRouteImport } from './route/song/new'
 import { Route as SongExploreRouteImport } from './route/song/explore'
 import { Route as SongIdRouteImport } from './route/song/$id'
+import { Route as SongLyricsIdRouteImport } from './route/song-lyrics/$id'
 import { Route as ReleaseNewRouteImport } from './route/release/new'
 import { Route as ReleaseMockRouteImport } from './route/release/mock'
 import { Route as ReleaseExploreRouteImport } from './route/release/explore'
@@ -40,6 +41,7 @@ import { Route as EventNewRouteImport } from './route/event/new'
 import { Route as EventMockRouteImport } from './route/event/mock'
 import { Route as EventExploreRouteImport } from './route/event/explore'
 import { Route as EventIdRouteImport } from './route/event/$id'
+import { Route as CreditRoleIdRouteImport } from './route/credit-role/$id'
 import { Route as CorrectionMockRouteImport } from './route/correction/mock'
 import { Route as CorrectionIdRouteImport } from './route/correction/$id'
 import { Route as CollectionIdRouteImport } from './route/collection/$id'
@@ -162,6 +164,11 @@ const SongIdRoute = SongIdRouteImport.update({
   path: '/song/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SongLyricsIdRoute = SongLyricsIdRouteImport.update({
+  id: '/song-lyrics/$id',
+  path: '/song-lyrics/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReleaseNewRoute = ReleaseNewRouteImport.update({
   id: '/release/new',
   path: '/release/new',
@@ -220,6 +227,11 @@ const EventExploreRoute = EventExploreRouteImport.update({
 const EventIdRoute = EventIdRouteImport.update({
   id: '/event/$id',
   path: '/event/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreditRoleIdRoute = CreditRoleIdRouteImport.update({
+  id: '/credit-role/$id',
+  path: '/credit-role/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CorrectionMockRoute = CorrectionMockRouteImport.update({
@@ -365,6 +377,7 @@ export interface FileRoutesByFullPath {
   '/collection/$id': typeof CollectionIdRoute
   '/correction/$id': typeof CorrectionIdRoute
   '/correction/mock': typeof CorrectionMockRoute
+  '/credit-role/$id': typeof CreditRoleIdRoute
   '/event/$id': typeof EventIdRoute
   '/event/explore': typeof EventExploreRoute
   '/event/mock': typeof EventMockRoute
@@ -377,6 +390,7 @@ export interface FileRoutesByFullPath {
   '/release/explore': typeof ReleaseExploreRoute
   '/release/mock': typeof ReleaseMockRoute
   '/release/new': typeof ReleaseNewRoute
+  '/song-lyrics/$id': typeof SongLyricsIdRoute
   '/song/$id': typeof SongIdRoute
   '/song/explore': typeof SongExploreRoute
   '/song/new': typeof SongNewRoute
@@ -424,6 +438,7 @@ export interface FileRoutesByTo {
   '/collection/$id': typeof CollectionIdRoute
   '/correction/$id': typeof CorrectionIdRoute
   '/correction/mock': typeof CorrectionMockRoute
+  '/credit-role/$id': typeof CreditRoleIdRoute
   '/event/$id': typeof EventIdRoute
   '/event/explore': typeof EventExploreRoute
   '/event/mock': typeof EventMockRoute
@@ -436,6 +451,7 @@ export interface FileRoutesByTo {
   '/release/explore': typeof ReleaseExploreRoute
   '/release/mock': typeof ReleaseMockRoute
   '/release/new': typeof ReleaseNewRoute
+  '/song-lyrics/$id': typeof SongLyricsIdRoute
   '/song/$id': typeof SongIdRoute
   '/song/explore': typeof SongExploreRoute
   '/song/new': typeof SongNewRoute
@@ -484,6 +500,7 @@ export interface FileRoutesById {
   '/collection/$id': typeof CollectionIdRoute
   '/correction/$id': typeof CorrectionIdRoute
   '/correction/mock': typeof CorrectionMockRoute
+  '/credit-role/$id': typeof CreditRoleIdRoute
   '/event/$id': typeof EventIdRoute
   '/event/explore': typeof EventExploreRoute
   '/event/mock': typeof EventMockRoute
@@ -496,6 +513,7 @@ export interface FileRoutesById {
   '/release/explore': typeof ReleaseExploreRoute
   '/release/mock': typeof ReleaseMockRoute
   '/release/new': typeof ReleaseNewRoute
+  '/song-lyrics/$id': typeof SongLyricsIdRoute
   '/song/$id': typeof SongIdRoute
   '/song/explore': typeof SongExploreRoute
   '/song/new': typeof SongNewRoute
@@ -545,6 +563,7 @@ export interface FileRouteTypes {
     | '/collection/$id'
     | '/correction/$id'
     | '/correction/mock'
+    | '/credit-role/$id'
     | '/event/$id'
     | '/event/explore'
     | '/event/mock'
@@ -557,6 +576,7 @@ export interface FileRouteTypes {
     | '/release/explore'
     | '/release/mock'
     | '/release/new'
+    | '/song-lyrics/$id'
     | '/song/$id'
     | '/song/explore'
     | '/song/new'
@@ -604,6 +624,7 @@ export interface FileRouteTypes {
     | '/collection/$id'
     | '/correction/$id'
     | '/correction/mock'
+    | '/credit-role/$id'
     | '/event/$id'
     | '/event/explore'
     | '/event/mock'
@@ -616,6 +637,7 @@ export interface FileRouteTypes {
     | '/release/explore'
     | '/release/mock'
     | '/release/new'
+    | '/song-lyrics/$id'
     | '/song/$id'
     | '/song/explore'
     | '/song/new'
@@ -663,6 +685,7 @@ export interface FileRouteTypes {
     | '/collection/$id'
     | '/correction/$id'
     | '/correction/mock'
+    | '/credit-role/$id'
     | '/event/$id'
     | '/event/explore'
     | '/event/mock'
@@ -675,6 +698,7 @@ export interface FileRouteTypes {
     | '/release/explore'
     | '/release/mock'
     | '/release/new'
+    | '/song-lyrics/$id'
     | '/song/$id'
     | '/song/explore'
     | '/song/new'
@@ -723,6 +747,7 @@ export interface RootRouteChildren {
   CollectionIdRoute: typeof CollectionIdRoute
   CorrectionIdRoute: typeof CorrectionIdRoute
   CorrectionMockRoute: typeof CorrectionMockRoute
+  CreditRoleIdRoute: typeof CreditRoleIdRoute
   EventIdRoute: typeof EventIdRoute
   EventExploreRoute: typeof EventExploreRoute
   EventMockRoute: typeof EventMockRoute
@@ -735,6 +760,7 @@ export interface RootRouteChildren {
   ReleaseExploreRoute: typeof ReleaseExploreRoute
   ReleaseMockRoute: typeof ReleaseMockRoute
   ReleaseNewRoute: typeof ReleaseNewRoute
+  SongLyricsIdRoute: typeof SongLyricsIdRoute
   SongIdRoute: typeof SongIdRoute
   SongExploreRoute: typeof SongExploreRoute
   SongNewRoute: typeof SongNewRoute
@@ -906,6 +932,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof SongIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/song-lyrics/$id': {
+      id: '/song-lyrics/$id'
+      path: '/song-lyrics/$id'
+      fullPath: '/song-lyrics/$id'
+      preLoaderRoute: typeof SongLyricsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/release/new': {
       id: '/release/new'
       path: '/release/new'
@@ -988,6 +1021,13 @@ declare module '@tanstack/solid-router' {
       path: '/event/$id'
       fullPath: '/event/$id'
       preLoaderRoute: typeof EventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/credit-role/$id': {
+      id: '/credit-role/$id'
+      path: '/credit-role/$id'
+      fullPath: '/credit-role/$id'
+      preLoaderRoute: typeof CreditRoleIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/correction/mock': {
@@ -1187,6 +1227,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollectionIdRoute: CollectionIdRoute,
   CorrectionIdRoute: CorrectionIdRoute,
   CorrectionMockRoute: CorrectionMockRoute,
+  CreditRoleIdRoute: CreditRoleIdRoute,
   EventIdRoute: EventIdRoute,
   EventExploreRoute: EventExploreRoute,
   EventMockRoute: EventMockRoute,
@@ -1199,6 +1240,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReleaseExploreRoute: ReleaseExploreRoute,
   ReleaseMockRoute: ReleaseMockRoute,
   ReleaseNewRoute: ReleaseNewRoute,
+  SongLyricsIdRoute: SongLyricsIdRoute,
   SongIdRoute: SongIdRoute,
   SongExploreRoute: SongExploreRoute,
   SongNewRoute: SongNewRoute,

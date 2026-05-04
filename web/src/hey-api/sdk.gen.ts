@@ -136,6 +136,9 @@ import type {
 	FindSongByKeywordData,
 	FindSongByKeywordErrors,
 	FindSongByKeywordResponses,
+	FindSongLyricsByIdData,
+	FindSongLyricsByIdErrors,
+	FindSongLyricsByIdResponses,
 	FindTagByIdData,
 	FindTagByIdErrors,
 	FindTagByIdResponses,
@@ -1463,6 +1466,15 @@ export const findManySongLyrics = <ThrowOnError extends boolean = false>(
 		FindManySongLyricsErrors,
 		ThrowOnError
 	>({ url: "/song-lyrics/many", ...options })
+
+export const findSongLyricsById = <ThrowOnError extends boolean = false>(
+	options: Options<FindSongLyricsByIdData, ThrowOnError>,
+) =>
+	(options.client ?? client).get<
+		FindSongLyricsByIdResponses,
+		FindSongLyricsByIdErrors,
+		ThrowOnError
+	>({ url: "/song-lyrics/{id}", ...options })
 
 export const updateSongLyrics = <ThrowOnError extends boolean = false>(
 	options: Options<UpdateSongLyricsData, ThrowOnError>,
