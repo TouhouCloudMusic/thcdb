@@ -426,7 +426,6 @@ async fn snapshot_release(
                         .map(|artist| artist.artist_id)
                         .collect::<Vec<_>>();
                     json!({
-                        "id": track.id,
                         "song_id": track.song_id,
                         "track_number": track.track_number,
                         "display_title": track.display_title,
@@ -436,7 +435,6 @@ async fn snapshot_release(
                 })
                 .collect::<Vec<_>>();
             json!({
-                "id": disc.id,
                 "name": disc.name,
                 "tracks": track_values,
             })
