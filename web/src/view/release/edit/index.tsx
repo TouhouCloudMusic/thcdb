@@ -1,4 +1,5 @@
 import {
+	Field,
 	Form,
 	createForm,
 	getAllErrors,
@@ -12,6 +13,7 @@ import type { JSX } from "solid-js"
 import { createEffect, For, Show } from "solid-js"
 
 import { FormComp } from "~/component/atomic/form"
+import { InputField } from "~/component/atomic/form/Input"
 import { FormActionBar } from "~/component/form"
 import { DateWithPrecision } from "~/component/form/DateWithPrecision"
 import { NewReleaseCorrection as NewReleaseCorrectionSchema } from "~/domain/release"
@@ -192,6 +194,26 @@ function FormContent(props: Props) {
 					initCredits={props.type === "edit" ? props.release.credits : []}
 					class="col-span-2 row-start-11"
 				/>
+
+				<Field
+					of={form}
+					path={["description"]}
+				>
+					{(field) => (
+						<InputField.Root class="col-span-3 row-start-12">
+							<InputField.Label>{t`Correction Description`}</InputField.Label>
+							<InputField.Textarea
+								{...field.props}
+								value={field.input ?? ""}
+								class="min-h-32"
+							/>
+
+							<For each={field.errors}>
+								{(error) => <InputField.Error>{error}</InputField.Error>}
+							</For>
+						</InputField.Root>
+					)}
+				</Field>
 				<div></div>
 			</div>
 			<FormActionBar
