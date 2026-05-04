@@ -810,6 +810,7 @@ export const vCorrectionDetail = v.object({
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
 	entity_type: vEntityType,
+	entity_name: v.string(),
 	created_at: v.pipe(v.string(), v.isoTimestamp()),
 	handled_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
 	comments: vCursorResponseCorrectionComment,
@@ -5024,6 +5025,20 @@ export const vFindManySongLyricsQuery = v.object({
 })
 
 export const vFindManySongLyricsResponse = vDataVecSongLyrics
+
+export const vFindSongLyricsByIdPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vFindSongLyricsByIdResponse = vDataOptionSongLyrics
 
 export const vUpdateSongLyricsBody = vNewCorrectionNewSongLyrics
 

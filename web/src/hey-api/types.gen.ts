@@ -101,6 +101,7 @@ export type CorrectionDetail = {
 	type: CorrectionType
 	entity_id: number
 	entity_type: EntityType
+	entity_name: string
 	created_at: string
 	handled_at?: string | null
 	comments: CursorResponseCorrectionComment
@@ -4353,6 +4354,36 @@ export type FindManySongLyricsResponses = {
 
 export type FindManySongLyricsResponse =
 	FindManySongLyricsResponses[keyof FindManySongLyricsResponses]
+
+export type FindSongLyricsByIdData = {
+	body?: never
+	path: {
+		id: number
+	}
+	query?: never
+	url: "/song-lyrics/{id}"
+}
+
+export type FindSongLyricsByIdErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type FindSongLyricsByIdError =
+	FindSongLyricsByIdErrors[keyof FindSongLyricsByIdErrors]
+
+export type FindSongLyricsByIdResponses = {
+	200: DataOptionSongLyrics
+}
+
+export type FindSongLyricsByIdResponse =
+	FindSongLyricsByIdResponses[keyof FindSongLyricsByIdResponses]
 
 export type UpdateSongLyricsData = {
 	body: NewCorrectionNewSongLyrics

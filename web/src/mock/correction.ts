@@ -62,6 +62,7 @@ export const MOCK_CORRECTION_DETAIL: CorrectionDetail = {
 	type: "Update",
 	entity_type: MOCK_CORRECTION_ENTITY_TYPE,
 	entity_id: MOCK_CORRECTION_ENTITY_ID,
+	entity_name: "Kaze no Atelier",
 	created_at: "2025-12-29T09:12:00+08:00",
 	handled_at: null,
 	comments: {

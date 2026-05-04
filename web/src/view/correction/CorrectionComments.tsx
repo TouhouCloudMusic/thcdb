@@ -1,3 +1,4 @@
+import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionComment, UserProfile } from "@thc/api"
 import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
 import { twJoin } from "tailwind-merge"
@@ -6,13 +7,14 @@ import { Card } from "~/component/atomic/Card"
 import { Link } from "~/component/atomic/Link"
 import { Avatar } from "~/component/atomic/avatar"
 import { Button } from "~/component/atomic/button"
+import { AlertDialog } from "~/component/dialog/AlertDialog"
 
 function formatDate(isoString: string): string {
 	return new Date(isoString).toLocaleDateString()
 }
 
-function extractMessage(err: unknown): string {
-	return err instanceof Error ? err.message : "Something went wrong"
+function extractMessage(err: unknown, fallback: string): string {
+	return err instanceof Error ? err.message : fallback
 }
 
 const TEXTAREA_CLASS =
@@ -35,6 +37,7 @@ type ReplyInputProps = {
 }
 
 function ReplyInput(props: ReplyInputProps) {
+	const { t } = useLingui()
 	const [content, setContent] = createSignal("")
 	const [submitting, setSubmitting] = createSignal(false)
 	const [error, setError] = createSignal<string | null>(null)
@@ -47,7 +50,7 @@ function ReplyInput(props: ReplyInputProps) {
 		try {
 			await props.onSubmit(text)
 		} catch (err) {
-			setError(extractMessage(err))
+			setError(extractMessage(err, t`Something went wrong`))
 		} finally {
 			setSubmitting(false)
 		}
@@ -61,7 +64,7 @@ function ReplyInput(props: ReplyInputProps) {
 				onInput={(e) => setContent(e.currentTarget.value)}
 				disabled={submitting()}
 				rows={3}
-				placeholder="Write a reply..."
+				placeholder={t`Write a reply...`}
 			></textarea>
 			<Show when={error()}>
 				<p class="text-xs text-reimu-600">{error()}</p>
@@ -73,7 +76,7 @@ function ReplyInput(props: ReplyInputProps) {
 					disabled={submitting() || !content().trim()}
 					onClick={() => void submit()}
 				>
-					{submitting() ? "Submitting..." : "Reply"}
+					{submitting() ? t`Submitting...` : t`Reply`}
 				</Button>
 				<Button
 					size="Sm"
@@ -81,7 +84,7 @@ function ReplyInput(props: ReplyInputProps) {
 					disabled={submitting()}
 					onClick={props.onCancel}
 				>
-					Cancel
+					{t`Cancel`}
 				</Button>
 			</div>
 		</div>
@@ -102,6 +105,9 @@ type CommentItemProps = {
 }
 
 function CommentItem(props: CommentItemProps) {
+	const { t } = useLingui()
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = createSignal(false)
+
 	return (
 		<li class="py-4">
 			<div class={twJoin("flex gap-3", props.indented && "ml-11")}>
@@ -112,14 +118,20 @@ function CommentItem(props: CommentItemProps) {
 				<div class="min-w-0 flex-1 space-y-2">
 					<Switch>
 						<Match when={props.comment.state === "Deleted"}>
-							<div class="py-1 text-sm text-slate-400 italic">[deleted]</div>
+							<div class="py-1 text-sm text-slate-400 italic">
+								{t`[deleted]`}
+							</div>
 						</Match>
 						<Match when={true}>
 							<div class="space-y-1">
 								<div class="flex flex-wrap items-baseline gap-2">
-									<span class="text-sm font-semibold text-primary">
+									<Link
+										to="/profile/$username"
+										params={{ username: props.comment.author.name }}
+										class="text-sm font-semibold"
+									>
 										{props.comment.author.name}
-									</span>
+									</Link>
 									<Show when={props.replyToName}>
 										<span class="text-xs font-medium text-slate-400">
 											▶ {props.replyToName}
@@ -139,16 +151,30 @@ function CommentItem(props: CommentItemProps) {
 										class="text-xs font-medium text-tertiary transition-colors hover:text-primary"
 										onClick={() => props.onReply()}
 									>
-										Reply
+										{t`Reply`}
 									</button>
 								</Show>
 								<Show when={props.canDelete}>
-									<button
-										class="text-xs font-medium text-tertiary transition-colors hover:text-reimu-600"
-										onClick={() => props.onDelete()}
-									>
-										Delete
-									</button>
+									<AlertDialog
+										open={isDeleteDialogOpen()}
+										onOpenChange={setIsDeleteDialogOpen}
+										title={t`Delete comment`}
+										description={t`Are you sure you want to delete this comment?`}
+										confirmText={t`Delete`}
+										onCancel={() => setIsDeleteDialogOpen(false)}
+										onConfirm={() => {
+											setIsDeleteDialogOpen(false)
+											props.onDelete()
+										}}
+										triggerAs={(triggerProps) => (
+											<button
+												{...triggerProps}
+												class="text-xs font-medium text-tertiary transition-colors hover:text-reimu-600"
+											>
+												{t`Delete`}
+											</button>
+										)}
+									/>
 								</Show>
 							</div>
 						</Match>
@@ -171,6 +197,7 @@ type TopLevelInputProps = {
 }
 
 function TopLevelInput(props: TopLevelInputProps) {
+	const { t } = useLingui()
 	const [content, setContent] = createSignal("")
 	const [submitting, setSubmitting] = createSignal(false)
 	const [error, setError] = createSignal<string | null>(null)
@@ -184,7 +211,7 @@ function TopLevelInput(props: TopLevelInputProps) {
 			await props.onSubmit(text)
 			setContent("")
 		} catch (err) {
-			setError(extractMessage(err))
+			setError(extractMessage(err, t`Something went wrong`))
 		} finally {
 			setSubmitting(false)
 		}
@@ -205,7 +232,7 @@ function TopLevelInput(props: TopLevelInputProps) {
 					onInput={(e) => setContent(e.currentTarget.value)}
 					disabled={submitting()}
 					rows={3}
-					placeholder="Add a comment..."
+					placeholder={t`Add a comment...`}
 				></textarea>
 				<Show when={error()}>
 					<p class="text-xs text-reimu-600">{error()}</p>
@@ -217,7 +244,7 @@ function TopLevelInput(props: TopLevelInputProps) {
 						disabled={submitting() || !content().trim()}
 						onClick={() => void submit()}
 					>
-						{submitting() ? "Submitting..." : "Comment"}
+						{submitting() ? t`Submitting...` : t`Comment`}
 					</Button>
 				</div>
 			</div>
@@ -237,6 +264,7 @@ export type CorrectionCommentsProps = {
 }
 
 export function CorrectionComments(props: CorrectionCommentsProps) {
+	const { t } = useLingui()
 	const [activeReplyId, setActiveReplyId] = createSignal<number | null>(null)
 
 	const commentMap = createMemo(
@@ -263,10 +291,10 @@ export function CorrectionComments(props: CorrectionCommentsProps) {
 		&& (props.currentUser?.name === comment.author.name || props.canManage)
 
 	return (
-		<Card class="overflow-hidden border border-slate-200 p-0 shadow-xs">
-			<div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
+		<Card class="overflow-hidden border border-slate-300 p-0 shadow-xs">
+			<div class="flex items-center justify-between border-b border-slate-300 bg-slate-50 px-4 py-3">
 				<span class="text-xs font-medium tracking-wider text-slate-600 uppercase">
-					Comments
+					{t`Comments`}
 				</span>
 				<span class="font-mono text-xs text-slate-400">
 					{props.comments.length}
@@ -275,10 +303,12 @@ export function CorrectionComments(props: CorrectionCommentsProps) {
 
 			<Switch>
 				<Match when={props.comments.length === 0 && !props.isLoadingMore}>
-					<div class="px-4 py-6 text-sm text-tertiary">No comments yet.</div>
+					<div class="px-4 py-6 text-sm text-tertiary">
+						{t`No comments yet.`}
+					</div>
 				</Match>
 				<Match when={props.comments.length > 0}>
-					<ul class="divide-y divide-slate-100 px-4">
+					<ul class="divide-y divide-slate-200 px-4">
 						<For each={rootComments()}>
 							{(comment) => (
 								<>
@@ -331,19 +361,19 @@ export function CorrectionComments(props: CorrectionCommentsProps) {
 			</Switch>
 
 			<Show when={props.nextCursor != null}>
-				<div class="flex justify-center border-t border-slate-100 px-4 py-3">
+				<div class="flex justify-center border-t border-slate-200 px-4 py-3">
 					<Button
 						variant="Secondary"
 						size="Sm"
 						disabled={props.isLoadingMore}
 						onClick={props.onLoadMore}
 					>
-						{props.isLoadingMore ? "Loading..." : "Load more"}
+						{props.isLoadingMore ? t`Loading...` : t`Load more`}
 					</Button>
 				</div>
 			</Show>
 
-			<div class="border-t border-slate-200 p-4">
+			<div class="border-t border-slate-300 p-4">
 				<Show
 					when={props.currentUser !== undefined}
 					fallback={
@@ -352,9 +382,9 @@ export function CorrectionComments(props: CorrectionCommentsProps) {
 								to="/auth"
 								search={{ type: "sign_in" }}
 							>
-								Sign in
+								{t`Sign in`}
 							</Link>{" "}
-							to comment
+							{t`to comment`}
 						</p>
 					}
 				>

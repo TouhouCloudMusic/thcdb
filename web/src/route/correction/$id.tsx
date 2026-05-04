@@ -27,10 +27,6 @@ export const Route = createFileRoute("/correction/$id")({
 				? CorrectionQueryOption.compare(compareId, parsedId)
 				: CorrectionQueryOption.diff(parsedId),
 		)
-
-		await QUERY_CLIENT.ensureQueryData(
-			CorrectionQueryOption.revisions(parsedId),
-		)
 	},
 })
 

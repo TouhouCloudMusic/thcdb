@@ -1158,7 +1158,7 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["find_song_lyrics_by_id"];
         put?: never;
         post: operations["update_song_lyrics"];
         delete?: never;
@@ -1469,6 +1469,7 @@ export type components = {
             created_at: string;
             /** Format: int32 */
             entity_id: number;
+            entity_name: string;
             entity_type: components["schemas"]["EntityType"];
             /** Format: date-time */
             handled_at?: string | null;
@@ -7471,6 +7472,49 @@ export interface operations {
             };
         };
     };
+    find_song_lyrics_by_id: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataOptionSongLyrics"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     update_song_lyrics: {
         parameters: {
             query?: never;
@@ -8366,6 +8410,7 @@ export enum ApiPaths {
     find_one_song_lyrics = "/song-lyrics",
     create_song_lyrics = "/song-lyrics",
     find_many_song_lyrics = "/song-lyrics/many",
+    find_song_lyrics_by_id = "/song-lyrics/{id}",
     update_song_lyrics = "/song-lyrics/{id}",
     song_relation_types = "/song-relation-types",
     explore_song = "/song/explore",
