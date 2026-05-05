@@ -1,6 +1,6 @@
 import { FetchClient } from "../../http"
 import type { Opt } from "../../shared"
-import { adaptApiResult } from "../../shared"
+import { adaptApiResult, adaptApiResultMessage } from "../../shared"
 
 export async function findOne(options: Opt<"get_correction">) {
 	const res = await FetchClient.GET("/correction/{id}", {
@@ -56,7 +56,7 @@ export async function deleteComment(options: Opt<"delete_comment">) {
 		params: { path: options.path },
 	})
 
-	return adaptApiResult(res as any)
+	return adaptApiResultMessage(res)
 }
 
 export async function findHistory(options: Opt<"entity_corrections">) {
