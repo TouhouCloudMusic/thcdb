@@ -274,18 +274,42 @@ import type {
 	UnfollowUserData,
 	UnfollowUserErrors,
 	UnfollowUserResponses,
+	UpdateArtistPendingCorrectionData,
+	UpdateArtistPendingCorrectionErrors,
+	UpdateArtistPendingCorrectionResponses,
 	UpdateBioData,
 	UpdateBioErrors,
 	UpdateBioResponses,
+	UpdateCreditRolePendingCorrectionData,
+	UpdateCreditRolePendingCorrectionErrors,
+	UpdateCreditRolePendingCorrectionResponses,
+	UpdateEventPendingCorrectionData,
+	UpdateEventPendingCorrectionErrors,
+	UpdateEventPendingCorrectionResponses,
+	UpdateLabelPendingCorrectionData,
+	UpdateLabelPendingCorrectionErrors,
+	UpdateLabelPendingCorrectionResponses,
 	UpdateReleaseData,
 	UpdateReleaseErrors,
+	UpdateReleasePendingCorrectionData,
+	UpdateReleasePendingCorrectionErrors,
+	UpdateReleasePendingCorrectionResponses,
 	UpdateReleaseResponses,
 	UpdateSongData,
 	UpdateSongErrors,
 	UpdateSongLyricsData,
 	UpdateSongLyricsErrors,
+	UpdateSongLyricsPendingCorrectionData,
+	UpdateSongLyricsPendingCorrectionErrors,
+	UpdateSongLyricsPendingCorrectionResponses,
 	UpdateSongLyricsResponses,
+	UpdateSongPendingCorrectionData,
+	UpdateSongPendingCorrectionErrors,
+	UpdateSongPendingCorrectionResponses,
 	UpdateSongResponses,
+	UpdateTagPendingCorrectionData,
+	UpdateTagPendingCorrectionErrors,
+	UpdateTagPendingCorrectionResponses,
 	UpdateUserCollectionData,
 	UpdateUserCollectionErrors,
 	UpdateUserCollectionResponses,
@@ -459,6 +483,25 @@ export const findArtistAppearances = <ThrowOnError extends boolean = false>(
 		FindArtistAppearancesErrors,
 		ThrowOnError
 	>({ url: "/artist/{id}/appearances", ...options })
+
+export const updateArtistPendingCorrection = <
+	ThrowOnError extends boolean = false,
+>(
+	options: Options<UpdateArtistPendingCorrectionData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		UpdateArtistPendingCorrectionResponses,
+		UpdateArtistPendingCorrectionErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/artist/{id}/correction/{correction_id}",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})
 
 export const getArtistCredits = <ThrowOnError extends boolean = false>(
 	options: Options<GetArtistCreditsData, ThrowOnError>,
@@ -818,6 +861,25 @@ export const upsertCreditRoleCorrection = <
 		},
 	})
 
+export const updateCreditRolePendingCorrection = <
+	ThrowOnError extends boolean = false,
+>(
+	options: Options<UpdateCreditRolePendingCorrectionData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		UpdateCreditRolePendingCorrectionResponses,
+		UpdateCreditRolePendingCorrectionErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/credit-role/{id}/correction/{correction_id}",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})
+
 export const editableUserRoles = <ThrowOnError extends boolean = false>(
 	options?: Options<EditableUserRolesData, ThrowOnError>,
 ) =>
@@ -881,6 +943,25 @@ export const upsertEventCorrection = <ThrowOnError extends boolean = false>(
 	>({
 		security: [{ scheme: "basic", type: "http" }],
 		url: "/event/{id}",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})
+
+export const updateEventPendingCorrection = <
+	ThrowOnError extends boolean = false,
+>(
+	options: Options<UpdateEventPendingCorrectionData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		UpdateEventPendingCorrectionResponses,
+		UpdateEventPendingCorrectionErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/event/{id}/correction/{correction_id}",
 		...options,
 		headers: {
 			"Content-Type": "application/json",
@@ -1028,6 +1109,25 @@ export const upsertLabelCorrection = <ThrowOnError extends boolean = false>(
 	>({
 		security: [{ scheme: "basic", type: "http" }],
 		url: "/label/{id}",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})
+
+export const updateLabelPendingCorrection = <
+	ThrowOnError extends boolean = false,
+>(
+	options: Options<UpdateLabelPendingCorrectionData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		UpdateLabelPendingCorrectionResponses,
+		UpdateLabelPendingCorrectionErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/label/{id}/correction/{correction_id}",
 		...options,
 		headers: {
 			"Content-Type": "application/json",
@@ -1234,6 +1334,25 @@ export const updateRelease = <ThrowOnError extends boolean = false>(
 	>({
 		security: [{ scheme: "basic", type: "http" }],
 		url: "/release/{id}",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})
+
+export const updateReleasePendingCorrection = <
+	ThrowOnError extends boolean = false,
+>(
+	options: Options<UpdateReleasePendingCorrectionData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		UpdateReleasePendingCorrectionResponses,
+		UpdateReleasePendingCorrectionErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/release/{id}/correction/{correction_id}",
 		...options,
 		headers: {
 			"Content-Type": "application/json",
@@ -1493,6 +1612,25 @@ export const updateSongLyrics = <ThrowOnError extends boolean = false>(
 		},
 	})
 
+export const updateSongLyricsPendingCorrection = <
+	ThrowOnError extends boolean = false,
+>(
+	options: Options<UpdateSongLyricsPendingCorrectionData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		UpdateSongLyricsPendingCorrectionResponses,
+		UpdateSongLyricsPendingCorrectionErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/song-lyrics/{id}/correction/{correction_id}",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})
+
 export const songRelationTypes = <ThrowOnError extends boolean = false>(
 	options?: Options<SongRelationTypesData, ThrowOnError>,
 ) =>
@@ -1530,6 +1668,25 @@ export const updateSong = <ThrowOnError extends boolean = false>(
 	>({
 		security: [{ scheme: "basic", type: "http" }],
 		url: "/song/{id}",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})
+
+export const updateSongPendingCorrection = <
+	ThrowOnError extends boolean = false,
+>(
+	options: Options<UpdateSongPendingCorrectionData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		UpdateSongPendingCorrectionResponses,
+		UpdateSongPendingCorrectionErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/song/{id}/correction/{correction_id}",
 		...options,
 		headers: {
 			"Content-Type": "application/json",
@@ -1591,6 +1748,25 @@ export const upsertTagCorrection = <ThrowOnError extends boolean = false>(
 	>({
 		security: [{ scheme: "basic", type: "http" }],
 		url: "/tag/{id}",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})
+
+export const updateTagPendingCorrection = <
+	ThrowOnError extends boolean = false,
+>(
+	options: Options<UpdateTagPendingCorrectionData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		UpdateTagPendingCorrectionResponses,
+		UpdateTagPendingCorrectionErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/tag/{id}/correction/{correction_id}",
 		...options,
 		headers: {
 			"Content-Type": "application/json",

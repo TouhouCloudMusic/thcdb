@@ -3,16 +3,10 @@ import type { NewCorrectionNewEvent } from "@thc/api"
 import { EventApi } from "@thc/api"
 import { Either } from "effect"
 
-type Params =
-	| {
-			type: "Create"
-			data: NewCorrectionNewEvent
-	  }
-	| {
-			type: "Update"
-			id: number
-			data: NewCorrectionNewEvent
-	  }
+import type { EntityCorrectionMutationParams } from "../correction/mutation"
+import { toMutationError } from "../shared/error"
+
+type Params = EntityCorrectionMutationParams<NewCorrectionNewEvent>
 
 export const getInstance = () =>
 	useMutation(() => ({
@@ -24,19 +18,28 @@ export const getInstance = () =>
 				return Either.match(result, {
 					onRight: (data) => data,
 					onLeft: (error) => {
-						throw error
+						throw toMutationError(error)
 					},
 				})
 			}
 
-			const result = await EventApi.upsertCorrection({
-				path: { id: params.id },
-				body: params.data,
-			})
+			const result =
+				params.correctionId === undefined
+					? await EventApi.upsertCorrection({
+							path: { id: params.id },
+							body: params.data,
+						})
+					: await EventApi.updatePendingCorrection({
+							path: {
+								id: params.id,
+								correction_id: params.correctionId,
+							},
+							body: params.data,
+						})
 			return Either.match(result, {
 				onRight: (data) => data,
 				onLeft: (error) => {
-					throw error
+					throw toMutationError(error)
 				},
 			})
 		},

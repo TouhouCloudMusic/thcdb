@@ -42,3 +42,14 @@ export async function update(options: Opt<"update_song">) {
 
 	return adaptApiResult(res)
 }
+
+export async function updatePendingCorrection(
+	options: Opt<"update_song_pending_correction">,
+) {
+	const res = await FetchClient.POST("/song/{id}/correction/{correction_id}", {
+		params: { path: options.path },
+		body: options.body,
+	})
+
+	return adaptApiResult(res)
+}

@@ -59,8 +59,9 @@ const meta = {
 		layout: StoryLayout.Padded,
 	},
 	args: {
+		correctionId: 10,
 		comments: [],
-		nextCursor: null,
+		hasMore: false,
 		isLoadingMore: false,
 		currentUser: {
 			name: "alice",
@@ -74,7 +75,7 @@ const meta = {
 	},
 	argTypes: {
 		comments: { control: false },
-		nextCursor: { control: "number" },
+		hasMore: { control: "boolean" },
 		isLoadingMore: { control: "boolean" },
 		currentUser: { control: "object" },
 		canManage: { control: "boolean" },
@@ -109,6 +110,6 @@ export const WithDeletedComment: Story = {
 export const WithNextPage: Story = {
 	args: {
 		comments: MOCK_COMMENTS,
-		nextCursor: 20,
+		hasMore: true,
 	},
 }

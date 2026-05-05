@@ -1,7 +1,7 @@
+use entity::comment as comment_entity;
 use entity::enums::{
     CommentState as DbCommentState, CommentTarget as DbCommentTarget,
 };
-use entity::{comment as comment_entity, correction as correction_entity};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait,
@@ -12,23 +12,6 @@ use super::error::{Error, NotFound};
 use super::model::{CorrectionComment, CreateCorrectionCommentRequest};
 use crate::domain::shared::CursorResponse;
 use crate::infra::database::error::DatabaseResultExt;
-
-pub(super) async fn ensure_correction_exists(
-    conn: &impl ConnectionTrait,
-    correction_id: i32,
-) -> Result<(), Error> {
-    let exists = correction_entity::Entity::find_by_id(correction_id)
-        .one(conn)
-        .await
-        .db_operation("check correction exists for comment")?
-        .is_some();
-
-    if exists {
-        Ok(())
-    } else {
-        Err(Error::NotFound(NotFound::Correction))
-    }
-}
 
 pub(super) async fn load_comments_page(
     conn: &impl ConnectionTrait,

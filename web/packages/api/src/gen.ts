@@ -143,6 +143,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/artist/{id}/correction/{correction_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["update_artist_pending_correction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/artist/{id}/credits": {
         parameters: {
             query?: never;
@@ -479,6 +495,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/credit-role/{id}/correction/{correction_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["update_credit_role_pending_correction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/credit-role/summary": {
         parameters: {
             query?: never;
@@ -537,6 +569,22 @@ export type paths = {
         get: operations["find_event_by_id"];
         put?: never;
         post: operations["upsert_event_correction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/event/{id}/correction/{correction_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["update_event_pending_correction"];
         delete?: never;
         options?: never;
         head?: never;
@@ -681,6 +729,22 @@ export type paths = {
         get: operations["find_label_by_id"];
         put?: never;
         post: operations["upsert_label_correction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/label/{id}/correction/{correction_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["update_label_pending_correction"];
         delete?: never;
         options?: never;
         head?: never;
@@ -889,6 +953,22 @@ export type paths = {
         get: operations["find_release_by_id"];
         put?: never;
         post: operations["update_release"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/release/{id}/correction/{correction_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["update_release_pending_correction"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1167,6 +1247,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/song-lyrics/{id}/correction/{correction_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["update_song_lyrics_pending_correction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/song-lyrics/many": {
         parameters: {
             query?: never;
@@ -1215,6 +1311,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/song/{id}/correction/{correction_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["update_song_pending_correction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/song/explore": {
         parameters: {
             query?: never;
@@ -1257,6 +1369,22 @@ export type paths = {
         get: operations["find_tag_by_id"];
         put?: never;
         post: operations["upsert_tag_correction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tag/{id}/correction/{correction_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["update_tag_pending_correction"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1464,6 +1592,7 @@ export type components = {
             updated_at: string;
         };
         CorrectionDetail: {
+            author: components["schemas"]["CorrectionUserSummary"];
             comments: components["schemas"]["CursorResponse_CorrectionComment"];
             /** Format: date-time */
             created_at: string;
@@ -1518,11 +1647,14 @@ export type components = {
         CorrectionSortField: "created_at" | "handled_at";
         /** @enum {string} */
         CorrectionStatus: "Pending" | "Approved" | "Rejected";
-        CorrectionSubmissionResult: {
+        /** @enum {string} */
+        CorrectionSubmitKind: "Submitted" | "Conflict";
+        CorrectionSubmitResult: {
             /** Format: int32 */
             correction_id: number;
             /** Format: int32 */
             entity_id: number;
+            kind: components["schemas"]["CorrectionSubmitKind"];
         };
         /** @enum {string} */
         CorrectionType: "Create" | "Update" | "Delete";
@@ -1751,12 +1883,13 @@ export type components = {
             /** @enum {string} */
             status: "Ok";
         };
-        Data_CorrectionSubmissionResult: {
+        Data_CorrectionSubmitResult: {
             data: {
                 /** Format: int32 */
                 correction_id: number;
                 /** Format: int32 */
                 entity_id: number;
+                kind: components["schemas"]["CorrectionSubmitKind"];
             };
             /** @enum {string} */
             status: "Ok";
@@ -2998,7 +3131,8 @@ export type CorrectionHistoryItem = components['schemas']['CorrectionHistoryItem
 export type CorrectionRevisionSummary = components['schemas']['CorrectionRevisionSummary'];
 export type CorrectionSortField = components['schemas']['CorrectionSortField'];
 export type CorrectionStatus = components['schemas']['CorrectionStatus'];
-export type CorrectionSubmissionResult = components['schemas']['CorrectionSubmissionResult'];
+export type CorrectionSubmitKind = components['schemas']['CorrectionSubmitKind'];
+export type CorrectionSubmitResult = components['schemas']['CorrectionSubmitResult'];
 export type CorrectionType = components['schemas']['CorrectionType'];
 export type CorrectionUserSummary = components['schemas']['CorrectionUserSummary'];
 export type CreateCorrectionCommentRequest = components['schemas']['CreateCorrectionCommentRequest'];
@@ -3021,7 +3155,7 @@ export type CursorResponseTagAggregate = components['schemas']['CursorResponse_T
 export type CursorResponseTagRef = components['schemas']['CursorResponse_TagRef'];
 export type CursorResponseUserImageQueueItem = components['schemas']['CursorResponse_UserImageQueueItem'];
 export type DataCorrectionDiff = components['schemas']['Data_CorrectionDiff'];
-export type DataCorrectionSubmissionResult = components['schemas']['Data_CorrectionSubmissionResult'];
+export type DataCorrectionSubmitResult = components['schemas']['Data_CorrectionSubmitResult'];
 export type DataI32 = components['schemas']['Data_i32'];
 export type DataOptionCurrentImageMetadata = components['schemas']['Data_Option_CurrentImageMetadata'];
 export type DataOptionI32 = components['schemas']['Data_Option_i32'];
@@ -3599,7 +3733,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -3692,7 +3826,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -3739,6 +3873,56 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DataPaginatedAppearance"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    update_artist_pending_correction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Pending correction id */
+                correction_id: number;
+                /** @description Artist id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCorrection_NewArtist"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -4943,7 +5127,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -5033,7 +5217,57 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    update_credit_role_pending_correction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Pending correction id */
+                correction_id: number;
+                /** @description Credit role id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCorrection_NewCreditRole"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -5205,7 +5439,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -5295,7 +5529,57 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    update_event_pending_correction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Pending correction id */
+                correction_id: number;
+                /** @description Event id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCorrection_NewEvent"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -5755,7 +6039,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -5845,7 +6129,57 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    update_label_pending_correction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Pending correction id */
+                correction_id: number;
+                /** @description Label id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCorrection_NewLabel"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -6476,7 +6810,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -6566,7 +6900,57 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    update_release_pending_correction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Pending correction id */
+                correction_id: number;
+                /** @description Release id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCorrection_NewRelease"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -7356,7 +7740,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -7445,7 +7829,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -7535,7 +7919,57 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    update_song_lyrics_pending_correction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Pending correction id */
+                correction_id: number;
+                /** @description Song lyrics id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCorrection_NewSongLyrics"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -7709,7 +8143,57 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    update_song_pending_correction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Pending correction id */
+                correction_id: number;
+                /** @description Song id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCorrection_NewSong"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -7868,7 +8352,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -7958,7 +8442,57 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Data_CorrectionSubmissionResult"];
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    update_tag_pending_correction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Pending correction id */
+                correction_id: number;
+                /** @description Tag id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCorrection_NewTag"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Data_CorrectionSubmitResult"];
                 };
             };
             /** @description Too Many Requests */
@@ -8329,6 +8863,7 @@ export enum ApiPaths {
     find_artist_by_id = "/artist/{id}",
     upsert_artist_correction = "/artist/{id}",
     find_artist_appearances = "/artist/{id}/appearances",
+    update_artist_pending_correction = "/artist/{id}/correction/{correction_id}",
     get_artist_credits = "/artist/{id}/credits",
     find_artist_discographies_by_type = "/artist/{id}/discographies",
     find_artist_discographies_init = "/artist/{id}/discographies/init",
@@ -8357,12 +8892,14 @@ export enum ApiPaths {
     find_many_credit_roles_summary = "/credit-role/summary",
     find_credit_role_by_id = "/credit-role/{id}",
     upsert_credit_role_correction = "/credit-role/{id}",
+    update_credit_role_pending_correction = "/credit-role/{id}/correction/{correction_id}",
     editable_user_roles = "/editable-user-roles",
     find_event_by_keyword = "/event",
     create_event = "/event",
     explore_event = "/event/explore",
     find_event_by_id = "/event/{id}",
     upsert_event_correction = "/event/{id}",
+    update_event_pending_correction = "/event/{id}/correction/{correction_id}",
     forgot_password = "/forgot-password",
     health_check = "/health_check",
     home_metadata = "/home/metadata",
@@ -8375,6 +8912,7 @@ export enum ApiPaths {
     explore_label = "/label/explore",
     find_label_by_id = "/label/{id}",
     upsert_label_correction = "/label/{id}",
+    update_label_pending_correction = "/label/{id}/correction/{correction_id}",
     language_list = "/languages",
     notification_list = "/notifications",
     notification_read_all = "/notifications/read-all",
@@ -8391,6 +8929,7 @@ export enum ApiPaths {
     explore_release = "/release/explore",
     find_release_by_id = "/release/{id}",
     update_release = "/release/{id}",
+    update_release_pending_correction = "/release/{id}/correction/{correction_id}",
     get_release_cover_art_metadata = "/release/{id}/cover-art",
     upload_release_cover_art = "/release/{id}/cover-art",
     resend_verification_email = "/resend-verification-email",
@@ -8412,15 +8951,18 @@ export enum ApiPaths {
     find_many_song_lyrics = "/song-lyrics/many",
     find_song_lyrics_by_id = "/song-lyrics/{id}",
     update_song_lyrics = "/song-lyrics/{id}",
+    update_song_lyrics_pending_correction = "/song-lyrics/{id}/correction/{correction_id}",
     song_relation_types = "/song-relation-types",
     explore_song = "/song/explore",
     find_song_by_id = "/song/{id}",
     update_song = "/song/{id}",
+    update_song_pending_correction = "/song/{id}/correction/{correction_id}",
     find_tag_by_keyword = "/tag",
     create_tag = "/tag",
     explore_tag = "/tag/explore",
     find_tag_by_id = "/tag/{id}",
     upsert_tag_correction = "/tag/{id}",
+    update_tag_pending_correction = "/tag/{id}/correction/{correction_id}",
     user_roles = "/user-roles",
     user_image_queue = "/user/{id}/image-queue",
     user_collections = "/user/{username}/collections",

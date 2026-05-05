@@ -7,6 +7,7 @@ import { createEffect, Show } from "solid-js"
 import { FormActionBar } from "~/component/form"
 import { NewEventCorrection } from "~/domain/event"
 import { PageLayout } from "~/layout/PageLayout"
+import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
 
 import { EventAlternativeNamesField } from "./comp/EventAlternativeNamesField"
 import { EventDateFields } from "./comp/EventDateFields"
@@ -16,9 +17,17 @@ import { EventLocationField } from "./comp/EventLocationField"
 import { EventNameField } from "./comp/EventNameField"
 import { EventShortDescriptionField } from "./comp/EventShortDescriptionField"
 import { EventFormProvider } from "./context"
-import type { EventFormInitProps as Props } from "./hook/init"
+import type { EventWithLocation } from "./hook/init"
 import { toEventFormInitValue } from "./hook/init"
 import { createEventFormSubmission } from "./hook/submit"
+
+type Props =
+	| { type: "new" }
+	| {
+			type: "edit"
+			event: EventWithLocation
+			pendingCorrectionId?: number
+	  }
 
 export function EditEventPage(props: Props): JSX.Element {
 	return (
@@ -50,7 +59,8 @@ function PageHeader(props: { type: Props["type"] }) {
 function FormContent(props: Props) {
 	const { t } = useLingui()
 	const initialValues = toEventFormInitValue(props)
-	const { handleSubmit, mutation } = createEventFormSubmission(props)
+	const { handleSubmit, mutation, pendingCorrectionId } =
+		createEventFormSubmission(props)
 
 	const form = createForm({
 		schema: NewEventCorrection,
@@ -81,38 +91,40 @@ function FormContent(props: Props) {
 	const isSubmitting = () => mutation.isPending || form.isSubmitting
 
 	return (
-		<EventFormProvider
-			value={{
-				get event() {
-					if (props.type === "edit") {
-						return props.event
-					}
-				},
-				formStore: form,
-			}}
-		>
-			<Form
-				of={form}
-				// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
-				onSubmit={(output, _) => handleSubmit(output)}
+		<PendingCorrectionBoundary correctionId={pendingCorrectionId()}>
+			<EventFormProvider
+				value={{
+					get event() {
+						if (props.type === "edit") {
+							return props.event
+						}
+					},
+					formStore: form,
+				}}
 			>
-				<div class="grid grid-cols-1 space-y-8 gap-x-2 p-8 pb-0 *:col-span-full lg:grid-cols-12">
-					<EventNameField class="lg:col-end-7" />
-					<EventShortDescriptionField class="lg:col-end-7" />
-					<EventDateFields class="lg:col-end-7" />
-					<EventLocationField class="lg:col-end-7" />
-					<EventDescriptionField class="lg:col-end-7" />
-					<EventAlternativeNamesField class="lg:col-end-7" />
-					<EventFormDesc
-						class="lg:col-end-7"
-						mutation={mutation}
+				<Form
+					of={form}
+					// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
+					onSubmit={(output, _) => handleSubmit(output)}
+				>
+					<div class="grid grid-cols-1 space-y-8 gap-x-2 p-8 pb-0 *:col-span-full lg:grid-cols-12">
+						<EventNameField class="lg:col-end-7" />
+						<EventShortDescriptionField class="lg:col-end-7" />
+						<EventDateFields class="lg:col-end-7" />
+						<EventLocationField class="lg:col-end-7" />
+						<EventDescriptionField class="lg:col-end-7" />
+						<EventAlternativeNamesField class="lg:col-end-7" />
+						<EventFormDesc
+							class="lg:col-end-7"
+							mutation={mutation}
+						/>
+					</div>
+					<FormActionBar
+						submitting={isSubmitting()}
+						disabled={isSubmitting()}
 					/>
-				</div>
-				<FormActionBar
-					submitting={isSubmitting()}
-					disabled={isSubmitting()}
-				/>
-			</Form>
-		</EventFormProvider>
+				</Form>
+			</EventFormProvider>
+		</PendingCorrectionBoundary>
 	)
 }

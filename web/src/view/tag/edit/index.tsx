@@ -9,6 +9,7 @@ import { Show } from "solid-js"
 import { FormActionBar } from "~/component/form"
 import { NewTagCorrection } from "~/domain/tag"
 import { PageLayout } from "~/layout/PageLayout"
+import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
 
 import { TagFormAltNamesField } from "./comp/TagAltNames"
 import { TagFormDescriptionField } from "./comp/TagDescription"
@@ -28,6 +29,7 @@ type Props =
 	| {
 			type: "edit"
 			tag: Tag
+			pendingCorrectionId?: number
 	  }
 
 export function EditTagPage(props: Props): JSX.Element {
@@ -60,7 +62,8 @@ function PageHeader(props: { type: Props["type"] }) {
 function FormContent(props: Props) {
 	const { t } = useLingui()
 	const initialValues = toTagFormInitValue(props)
-	const { handleSubmit, mutation } = createTagFormSubmission(props)
+	const { handleSubmit, mutation, pendingCorrectionId } =
+		createTagFormSubmission(props)
 
 	const form = createForm({
 		schema: NewTagCorrection,
@@ -84,38 +87,40 @@ function FormContent(props: Props) {
 	const isSubmitting = () => mutation.isPending || form.isSubmitting
 
 	return (
-		<TagFormProvider
-			value={{
-				get tag() {
-					if (props.type === "edit") {
-						return props.tag
-					}
-				},
-				formStore: form,
-			}}
-		>
-			<Form
-				of={form}
-				// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
-				onSubmit={(output, _) => handleSubmit(output)}
+		<PendingCorrectionBoundary correctionId={pendingCorrectionId()}>
+			<TagFormProvider
+				value={{
+					get tag() {
+						if (props.type === "edit") {
+							return props.tag
+						}
+					},
+					formStore: form,
+				}}
 			>
-				<div class="grid grid-cols-1 space-y-8 gap-x-2 p-8 pb-0 *:col-span-full lg:grid-cols-12">
-					<TagFormNameField class="lg:col-end-6" />
-					<TagFormTypeField class="lg:col-end-4" />
-					<TagFormShortDescriptionField class="lg:col-end-6" />
-					<TagFormDescriptionField class="lg:col-end-6" />
-					<TagFormAltNamesField class="lg:col-end-6" />
-					<TagFormRelationsField class="lg:col-end-6" />
-					<TagFormDesc
-						class=""
-						mutation={mutation}
+				<Form
+					of={form}
+					// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
+					onSubmit={(output, _) => handleSubmit(output)}
+				>
+					<div class="grid grid-cols-1 space-y-8 gap-x-2 p-8 pb-0 *:col-span-full lg:grid-cols-12">
+						<TagFormNameField class="lg:col-end-6" />
+						<TagFormTypeField class="lg:col-end-4" />
+						<TagFormShortDescriptionField class="lg:col-end-6" />
+						<TagFormDescriptionField class="lg:col-end-6" />
+						<TagFormAltNamesField class="lg:col-end-6" />
+						<TagFormRelationsField class="lg:col-end-6" />
+						<TagFormDesc
+							class=""
+							mutation={mutation}
+						/>
+					</div>
+					<FormActionBar
+						submitting={isSubmitting()}
+						disabled={isSubmitting()}
 					/>
-				</div>
-				<FormActionBar
-					submitting={isSubmitting()}
-					disabled={isSubmitting()}
-				/>
-			</Form>
-		</TagFormProvider>
+				</Form>
+			</TagFormProvider>
+		</PendingCorrectionBoundary>
 	)
 }

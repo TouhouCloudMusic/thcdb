@@ -65,6 +65,7 @@ export const MOCK_CORRECTION_DETAIL: CorrectionDetail = {
 	entity_name: "Kaze no Atelier",
 	created_at: "2025-12-29T09:12:00+08:00",
 	handled_at: null,
+	author: AUTHOR_KAZE,
 	comments: {
 		items: [],
 		next_cursor: null,

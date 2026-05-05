@@ -5,6 +5,7 @@ use super::model::{CorrectionComment, CreateCorrectionCommentRequest};
 use super::repo;
 use crate::domain::model::CommentManage;
 use crate::domain::shared::CursorResponse;
+use crate::features::correction::shared;
 use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::shared::http::PaginationQuery;
@@ -24,7 +25,7 @@ impl Service {
         correction_id: i32,
         pagination: PaginationQuery,
     ) -> Result<CursorResponse<CorrectionComment>, Error> {
-        repo::ensure_correction_exists(&self.repo.conn, correction_id).await?;
+        ensure_correction_exists(&self.repo.conn, correction_id).await?;
         repo::load_comments_page(
             &self.repo.conn,
             correction_id,
@@ -48,7 +49,7 @@ impl Service {
             .await
             .db_operation("begin correction comment transaction")?;
         let conn = tx_repo.conn();
-        repo::ensure_correction_exists(conn, correction_id).await?;
+        ensure_correction_exists(conn, correction_id).await?;
         let comment =
             repo::insert_comment(conn, correction_id, author_id, &req).await?;
         let summary = repo::load_comment_summary(conn, comment.id).await?;
@@ -86,5 +87,19 @@ impl Service {
         .await
         .db_operation("check correction comment manage permission")
         .map_err(Into::into)
+    }
+}
+
+async fn ensure_correction_exists(
+    conn: &impl sea_orm::ConnectionTrait,
+    correction_id: i32,
+) -> Result<(), Error> {
+    if shared::repo::correction_exists(conn, correction_id)
+        .await
+        .db_operation("check correction exists for comment")?
+    {
+        Ok(())
+    } else {
+        Err(Error::NotFound(super::error::NotFound::Correction))
     }
 }

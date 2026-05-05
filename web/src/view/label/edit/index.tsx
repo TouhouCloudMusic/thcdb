@@ -2,12 +2,14 @@
 import { Form, createForm } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import { useBlocker } from "@tanstack/solid-router"
+import type { Label } from "@thc/api"
 import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 
 import { FormActionBar } from "~/component/form"
 import { NewLabelCorrection } from "~/domain/label"
 import { PageLayout } from "~/layout/PageLayout"
+import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
 
 import { LabelDateFields } from "./comp/LabelDateFields"
 import { LabelFormDesc } from "./comp/LabelFormDesc"
@@ -15,9 +17,16 @@ import { LabelFoundersField } from "./comp/LabelFoundersField"
 import { LabelLocalizedNamesField } from "./comp/LabelLocalizedNamesField"
 import { LabelNameField } from "./comp/LabelNameField"
 import { LabelFormProvider } from "./context"
-import type { LabelFormInitProps as Props } from "./hook/init"
 import { toLabelFormInitValue } from "./hook/init"
 import { createLabelFormSubmission } from "./hook/submit"
+
+type Props =
+	| { type: "new" }
+	| {
+			type: "edit"
+			label: Label
+			pendingCorrectionId?: number
+	  }
 
 export function EditLabelPage(props: Props): JSX.Element {
 	return (
@@ -49,7 +58,8 @@ function PageHeader(props: { type: Props["type"] }) {
 function FormContent(props: Props) {
 	const { t } = useLingui()
 	const initialValues = toLabelFormInitValue(props)
-	const { handleSubmit, mutation } = createLabelFormSubmission(props)
+	const { handleSubmit, mutation, pendingCorrectionId } =
+		createLabelFormSubmission(props)
 
 	const form = createForm({
 		schema: NewLabelCorrection,
@@ -73,42 +83,44 @@ function FormContent(props: Props) {
 	const isSubmitting = () => mutation.isPending || form.isSubmitting
 
 	return (
-		<LabelFormProvider
-			value={{
-				get label() {
-					if (props.type === "edit") return props.label
-				},
-				formStore: form,
-			}}
-		>
-			<Form
-				of={form}
-				// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
-				onSubmit={(output, _) => handleSubmit(output)}
+		<PendingCorrectionBoundary correctionId={pendingCorrectionId()}>
+			<LabelFormProvider
+				value={{
+					get label() {
+						if (props.type === "edit") return props.label
+					},
+					formStore: form,
+				}}
 			>
-				<div class="grid grid-cols-1 space-y-8 gap-x-2 p-8 pb-0 *:col-span-full lg:grid-cols-12">
-					<LabelNameField class="lg:col-end-7" />
-					<LabelDateFields class="lg:col-end-7" />
-					<LabelLocalizedNamesField
-						class="lg:col-end-7"
-						initLocalizedNames={
-							props.type === "edit" ? props.label.localized_names : undefined
-						}
+				<Form
+					of={form}
+					// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
+					onSubmit={(output, _) => handleSubmit(output)}
+				>
+					<div class="grid grid-cols-1 space-y-8 gap-x-2 p-8 pb-0 *:col-span-full lg:grid-cols-12">
+						<LabelNameField class="lg:col-end-7" />
+						<LabelDateFields class="lg:col-end-7" />
+						<LabelLocalizedNamesField
+							class="lg:col-end-7"
+							initLocalizedNames={
+								props.type === "edit" ? props.label.localized_names : undefined
+							}
+						/>
+						<LabelFoundersField
+							class="lg:col-end-7"
+							initFounderIds={props.type === "edit" ? props.label.founders : []}
+						/>
+						<LabelFormDesc
+							class="lg:col-end-7"
+							mutation={mutation}
+						/>
+					</div>
+					<FormActionBar
+						submitting={isSubmitting()}
+						disabled={isSubmitting()}
 					/>
-					<LabelFoundersField
-						class="lg:col-end-7"
-						initFounderIds={props.type === "edit" ? props.label.founders : []}
-					/>
-					<LabelFormDesc
-						class="lg:col-end-7"
-						mutation={mutation}
-					/>
-				</div>
-				<FormActionBar
-					submitting={isSubmitting()}
-					disabled={isSubmitting()}
-				/>
-			</Form>
-		</LabelFormProvider>
+				</Form>
+			</LabelFormProvider>
+		</PendingCorrectionBoundary>
 	)
 }

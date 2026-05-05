@@ -153,7 +153,10 @@ export const vCorrectionSortField = v.picklist(["created_at", "handled_at"])
 
 export const vCorrectionStatus = v.picklist(["Pending", "Approved", "Rejected"])
 
-export const vCorrectionSubmissionResult = v.object({
+export const vCorrectionSubmitKind = v.picklist(["Submitted", "Conflict"])
+
+export const vCorrectionSubmitResult = v.object({
+	kind: vCorrectionSubmitKind,
 	correction_id: v.pipe(
 		v.number(),
 		v.integer(),
@@ -641,9 +644,10 @@ export const vDataVecCreditRoleSummary = v.object({
 	data: v.array(vCreditRoleSummary),
 })
 
-export const vDataCorrectionSubmissionResult = v.object({
+export const vDataCorrectionSubmitResult = v.object({
 	status: v.picklist(["Ok"]),
 	data: v.object({
+		kind: vCorrectionSubmitKind,
 		correction_id: v.pipe(
 			v.number(),
 			v.integer(),
@@ -813,6 +817,7 @@ export const vCorrectionDetail = v.object({
 	entity_name: v.string(),
 	created_at: v.pipe(v.string(), v.isoTimestamp()),
 	handled_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
+	author: vCorrectionUserSummary,
 	comments: vCursorResponseCorrectionComment,
 })
 
@@ -3883,7 +3888,7 @@ export const vFindManyArtistResponse = vDataVecArtist
 
 export const vCreateArtistBody = vNewCorrectionNewArtist
 
-export const vCreateArtistResponse = vDataCorrectionSubmissionResult
+export const vCreateArtistResponse = vDataCorrectionSubmitResult
 
 export const vExploreArtistQuery = v.object({
 	artist_type: v.nullish(v.array(vArtistType)),
@@ -3952,7 +3957,7 @@ export const vUpsertArtistCorrectionPath = v.object({
 	),
 })
 
-export const vUpsertArtistCorrectionResponse = vDataCorrectionSubmissionResult
+export const vUpsertArtistCorrectionResponse = vDataCorrectionSubmitResult
 
 export const vFindArtistAppearancesPath = v.object({
 	id: v.pipe(
@@ -3985,6 +3990,32 @@ export const vFindArtistAppearancesQuery = v.object({
 })
 
 export const vFindArtistAppearancesResponse = vDataPaginatedAppearance
+
+export const vUpdateArtistPendingCorrectionBody = vNewCorrectionNewArtist
+
+export const vUpdateArtistPendingCorrectionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	correction_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vUpdateArtistPendingCorrectionResponse =
+	vDataCorrectionSubmitResult
 
 export const vGetArtistCreditsPath = v.object({
 	id: v.pipe(
@@ -4423,7 +4454,7 @@ export const vGetCorrectionRevisionsResponse = vDataVecCorrectionRevisionSummary
 
 export const vCreateCreditRoleBody = vNewCorrectionNewCreditRole
 
-export const vCreateCreditRoleResponse = vDataCorrectionSubmissionResult
+export const vCreateCreditRoleResponse = vDataCorrectionSubmitResult
 
 export const vFindManyCreditRolesSummaryQuery = v.object({
 	keyword: v.string(),
@@ -4459,8 +4490,34 @@ export const vUpsertCreditRoleCorrectionPath = v.object({
 	),
 })
 
-export const vUpsertCreditRoleCorrectionResponse =
-	vDataCorrectionSubmissionResult
+export const vUpsertCreditRoleCorrectionResponse = vDataCorrectionSubmitResult
+
+export const vUpdateCreditRolePendingCorrectionBody =
+	vNewCorrectionNewCreditRole
+
+export const vUpdateCreditRolePendingCorrectionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	correction_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vUpdateCreditRolePendingCorrectionResponse =
+	vDataCorrectionSubmitResult
 
 export const vEditableUserRolesResponse = vDataVecEditableUserRole
 
@@ -4472,7 +4529,7 @@ export const vFindEventByKeywordResponse = vDataVecEvent
 
 export const vCreateEventBody = vNewCorrectionNewEvent
 
-export const vCreateEventResponse = vDataCorrectionSubmissionResult
+export const vCreateEventResponse = vDataCorrectionSubmitResult
 
 export const vExploreEventQuery = v.object({
 	start_date_from: v.nullish(v.pipe(v.string(), v.isoDate())),
@@ -4522,7 +4579,32 @@ export const vUpsertEventCorrectionPath = v.object({
 	),
 })
 
-export const vUpsertEventCorrectionResponse = vDataCorrectionSubmissionResult
+export const vUpsertEventCorrectionResponse = vDataCorrectionSubmitResult
+
+export const vUpdateEventPendingCorrectionBody = vNewCorrectionNewEvent
+
+export const vUpdateEventPendingCorrectionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	correction_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vUpdateEventPendingCorrectionResponse = vDataCorrectionSubmitResult
 
 export const vForgotPasswordBody = vForgotPasswordRequest
 
@@ -4596,7 +4678,7 @@ export const vFindLabelByKeywordResponse = vDataVecLabel
 
 export const vCreateLabelBody = vNewCorrectionNewLabel
 
-export const vCreateLabelResponse = vDataCorrectionSubmissionResult
+export const vCreateLabelResponse = vDataCorrectionSubmitResult
 
 export const vExploreLabelQuery = v.object({
 	founded_date_from: v.nullish(v.pipe(v.string(), v.isoDate())),
@@ -4647,7 +4729,32 @@ export const vUpsertLabelCorrectionPath = v.object({
 	),
 })
 
-export const vUpsertLabelCorrectionResponse = vDataCorrectionSubmissionResult
+export const vUpsertLabelCorrectionResponse = vDataCorrectionSubmitResult
+
+export const vUpdateLabelPendingCorrectionBody = vNewCorrectionNewLabel
+
+export const vUpdateLabelPendingCorrectionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	correction_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vUpdateLabelPendingCorrectionResponse = vDataCorrectionSubmitResult
 
 export const vLanguageListResponse = vDataVecLanguage
 
@@ -4727,7 +4834,7 @@ export const vFindReleaseByKeywordResponse = vDataVecRelease
 
 export const vCreateReleaseBody = vNewCorrectionNewRelease
 
-export const vCreateReleaseResponse = vDataCorrectionSubmissionResult
+export const vCreateReleaseResponse = vDataCorrectionSubmitResult
 
 export const vExploreReleaseQuery = v.object({
 	release_type: v.nullish(v.array(vReleaseType)),
@@ -4776,7 +4883,33 @@ export const vUpdateReleasePath = v.object({
 	),
 })
 
-export const vUpdateReleaseResponse = vDataCorrectionSubmissionResult
+export const vUpdateReleaseResponse = vDataCorrectionSubmitResult
+
+export const vUpdateReleasePendingCorrectionBody = vNewCorrectionNewRelease
+
+export const vUpdateReleasePendingCorrectionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	correction_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vUpdateReleasePendingCorrectionResponse =
+	vDataCorrectionSubmitResult
 
 export const vGetReleaseCoverArtMetadataPath = v.object({
 	id: v.pipe(
@@ -4983,7 +5116,7 @@ export const vFindSongByKeywordResponse = vDataVecSong
 
 export const vCreateSongBody = vNewCorrectionNewSong
 
-export const vCreateSongResponse = vDataCorrectionSubmissionResult
+export const vCreateSongResponse = vDataCorrectionSubmitResult
 
 export const vFindOneSongLyricsQuery = v.object({
 	song_id: v.pipe(
@@ -5010,7 +5143,7 @@ export const vFindOneSongLyricsResponse = vDataOptionSongLyrics
 
 export const vCreateSongLyricsBody = vNewCorrectionNewSongLyrics
 
-export const vCreateSongLyricsResponse = vDataCorrectionSubmissionResult
+export const vCreateSongLyricsResponse = vDataCorrectionSubmitResult
 
 export const vFindManySongLyricsQuery = v.object({
 	song_id: v.pipe(
@@ -5054,7 +5187,34 @@ export const vUpdateSongLyricsPath = v.object({
 	),
 })
 
-export const vUpdateSongLyricsResponse = vDataCorrectionSubmissionResult
+export const vUpdateSongLyricsResponse = vDataCorrectionSubmitResult
+
+export const vUpdateSongLyricsPendingCorrectionBody =
+	vNewCorrectionNewSongLyrics
+
+export const vUpdateSongLyricsPendingCorrectionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	correction_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vUpdateSongLyricsPendingCorrectionResponse =
+	vDataCorrectionSubmitResult
 
 export const vSongRelationTypesResponse = vDataVecSongRelationType
 
@@ -5120,7 +5280,32 @@ export const vUpdateSongPath = v.object({
 	),
 })
 
-export const vUpdateSongResponse = vDataCorrectionSubmissionResult
+export const vUpdateSongResponse = vDataCorrectionSubmitResult
+
+export const vUpdateSongPendingCorrectionBody = vNewCorrectionNewSong
+
+export const vUpdateSongPendingCorrectionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	correction_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vUpdateSongPendingCorrectionResponse = vDataCorrectionSubmitResult
 
 export const vFindTagByKeywordQuery = v.object({
 	keyword: v.string(),
@@ -5130,7 +5315,7 @@ export const vFindTagByKeywordResponse = vDataVecTag
 
 export const vCreateTagBody = vNewCorrectionNewTag
 
-export const vCreateTagResponse = vDataCorrectionSubmissionResult
+export const vCreateTagResponse = vDataCorrectionSubmitResult
 
 export const vExploreTagQuery = v.object({
 	tag_type: v.nullish(v.array(vTagType)),
@@ -5179,7 +5364,32 @@ export const vUpsertTagCorrectionPath = v.object({
 	),
 })
 
-export const vUpsertTagCorrectionResponse = vDataCorrectionSubmissionResult
+export const vUpsertTagCorrectionResponse = vDataCorrectionSubmitResult
+
+export const vUpdateTagPendingCorrectionBody = vNewCorrectionNewTag
+
+export const vUpdateTagPendingCorrectionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	correction_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vUpdateTagPendingCorrectionResponse = vDataCorrectionSubmitResult
 
 export const vUserRolesResponse = vDataVecUserRole
 

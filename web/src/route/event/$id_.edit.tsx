@@ -7,11 +7,19 @@ import { createEffect, Show } from "solid-js"
 import { AuthGuard } from "~/component/route"
 import { EntityId_fromStr } from "~/domain/shared"
 import { QUERY_CLIENT } from "~/state/tanstack"
+import {
+	ensurePendingCorrectionEditable,
+	getEditSearchDeps,
+	pendingCorrectionEditSearchSchema,
+	PendingCorrectionBoundary,
+} from "~/view/correction/pendingCorrection"
 import { EditEventPage } from "~/view/event/edit"
 
 export const Route = createFileRoute("/event/$id_/edit")({
 	component: RouteComponent,
-	loader: async ({ params: { id } }) => {
+	validateSearch: pendingCorrectionEditSearchSchema,
+	loaderDeps: getEditSearchDeps,
+	loader: async ({ params: { id }, deps }) => {
 		const parsedId = EntityId_fromStr(id)
 
 		const data = await QUERY_CLIENT.ensureQueryData(
@@ -20,7 +28,18 @@ export const Route = createFileRoute("/event/$id_/edit")({
 		if (O.isNone(data)) {
 			throw notFound()
 		}
-		return data
+
+		const pendingCorrectionGate = await ensurePendingCorrectionEditable(
+			QUERY_CLIENT,
+			"event",
+			parsedId,
+			deps.correctionId,
+		)
+
+		return {
+			data,
+			...pendingCorrectionGate,
+		}
 	},
 })
 
@@ -29,6 +48,9 @@ function RouteComponent() {
 	const id = params().id
 	const parsedId = EntityId_fromStr(id)
 	const query = useQuery(() => EventQueryOption.findById(parsedId))
+	const loaderData = Route.useLoaderData()
+	const editCorrectionId = () => loaderData().editCorrectionId
+	const blockingCorrectionId = () => loaderData().blockingCorrectionId
 
 	const nav = useNavigate()
 	createEffect(() => {
@@ -39,14 +61,17 @@ function RouteComponent() {
 
 	return (
 		<AuthGuard>
-			<Show when={query.data}>
-				{(eventOption) => (
-					<EditEventPage
-						type="edit"
-						event={O.getOrThrow(eventOption())}
-					/>
-				)}
-			</Show>
+			<PendingCorrectionBoundary correctionId={blockingCorrectionId()}>
+				<Show when={query.data}>
+					{(eventOption) => (
+						<EditEventPage
+							type="edit"
+							event={O.getOrThrow(eventOption())}
+							pendingCorrectionId={editCorrectionId()}
+						/>
+					)}
+				</Show>
+			</PendingCorrectionBoundary>
 		</AuthGuard>
 	)
 }

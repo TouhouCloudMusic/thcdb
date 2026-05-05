@@ -98,10 +98,18 @@ import {
 	signUp,
 	songRelationTypes,
 	unfollowUser,
+	updateArtistPendingCorrection,
 	updateBio,
+	updateCreditRolePendingCorrection,
+	updateEventPendingCorrection,
+	updateLabelPendingCorrection,
 	updateRelease,
+	updateReleasePendingCorrection,
 	updateSong,
 	updateSongLyrics,
+	updateSongLyricsPendingCorrection,
+	updateSongPendingCorrection,
+	updateTagPendingCorrection,
 	updateUserCollection,
 	uploadArtistProfileImage,
 	uploadAvatar,
@@ -387,18 +395,42 @@ import type {
 	UnfollowUserData,
 	UnfollowUserError,
 	UnfollowUserResponse,
+	UpdateArtistPendingCorrectionData,
+	UpdateArtistPendingCorrectionError,
+	UpdateArtistPendingCorrectionResponse,
 	UpdateBioData,
 	UpdateBioError,
 	UpdateBioResponse,
+	UpdateCreditRolePendingCorrectionData,
+	UpdateCreditRolePendingCorrectionError,
+	UpdateCreditRolePendingCorrectionResponse,
+	UpdateEventPendingCorrectionData,
+	UpdateEventPendingCorrectionError,
+	UpdateEventPendingCorrectionResponse,
+	UpdateLabelPendingCorrectionData,
+	UpdateLabelPendingCorrectionError,
+	UpdateLabelPendingCorrectionResponse,
 	UpdateReleaseData,
 	UpdateReleaseError,
+	UpdateReleasePendingCorrectionData,
+	UpdateReleasePendingCorrectionError,
+	UpdateReleasePendingCorrectionResponse,
 	UpdateReleaseResponse,
 	UpdateSongData,
 	UpdateSongError,
 	UpdateSongLyricsData,
 	UpdateSongLyricsError,
+	UpdateSongLyricsPendingCorrectionData,
+	UpdateSongLyricsPendingCorrectionError,
+	UpdateSongLyricsPendingCorrectionResponse,
 	UpdateSongLyricsResponse,
+	UpdateSongPendingCorrectionData,
+	UpdateSongPendingCorrectionError,
+	UpdateSongPendingCorrectionResponse,
 	UpdateSongResponse,
+	UpdateTagPendingCorrectionData,
+	UpdateTagPendingCorrectionError,
+	UpdateTagPendingCorrectionResponse,
 	UpdateUserCollectionData,
 	UpdateUserCollectionError,
 	UpdateUserCollectionResponse,
@@ -851,6 +883,30 @@ export const findArtistAppearancesInfiniteOptions = (
 			queryKey: findArtistAppearancesInfiniteQueryKey(options),
 		},
 	)
+
+export const updateArtistPendingCorrectionMutation = (
+	options?: Partial<Options<UpdateArtistPendingCorrectionData>>,
+): MutationOptions<
+	UpdateArtistPendingCorrectionResponse,
+	UpdateArtistPendingCorrectionError,
+	Options<UpdateArtistPendingCorrectionData>
+> => {
+	const mutationOptions: MutationOptions<
+		UpdateArtistPendingCorrectionResponse,
+		UpdateArtistPendingCorrectionError,
+		Options<UpdateArtistPendingCorrectionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await updateArtistPendingCorrection({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
 
 export const getArtistCreditsQueryKey = (
 	options: Options<GetArtistCreditsData>,
@@ -1815,6 +1871,30 @@ export const upsertCreditRoleCorrectionMutation = (
 	return mutationOptions
 }
 
+export const updateCreditRolePendingCorrectionMutation = (
+	options?: Partial<Options<UpdateCreditRolePendingCorrectionData>>,
+): MutationOptions<
+	UpdateCreditRolePendingCorrectionResponse,
+	UpdateCreditRolePendingCorrectionError,
+	Options<UpdateCreditRolePendingCorrectionData>
+> => {
+	const mutationOptions: MutationOptions<
+		UpdateCreditRolePendingCorrectionResponse,
+		UpdateCreditRolePendingCorrectionError,
+		Options<UpdateCreditRolePendingCorrectionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await updateCreditRolePendingCorrection({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
 export const editableUserRolesQueryKey = (
 	options?: Options<EditableUserRolesData>,
 ) => createQueryKey("editableUserRoles", options)
@@ -1994,6 +2074,30 @@ export const upsertEventCorrectionMutation = (
 	> = {
 		mutationFn: async (fnOptions) => {
 			const { data } = await upsertEventCorrection({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const updateEventPendingCorrectionMutation = (
+	options?: Partial<Options<UpdateEventPendingCorrectionData>>,
+): MutationOptions<
+	UpdateEventPendingCorrectionResponse,
+	UpdateEventPendingCorrectionError,
+	Options<UpdateEventPendingCorrectionData>
+> => {
+	const mutationOptions: MutationOptions<
+		UpdateEventPendingCorrectionResponse,
+		UpdateEventPendingCorrectionError,
+		Options<UpdateEventPendingCorrectionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await updateEventPendingCorrection({
 				...options,
 				...fnOptions,
 				throwOnError: true,
@@ -2372,6 +2476,30 @@ export const upsertLabelCorrectionMutation = (
 	> = {
 		mutationFn: async (fnOptions) => {
 			const { data } = await upsertLabelCorrection({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const updateLabelPendingCorrectionMutation = (
+	options?: Partial<Options<UpdateLabelPendingCorrectionData>>,
+): MutationOptions<
+	UpdateLabelPendingCorrectionResponse,
+	UpdateLabelPendingCorrectionError,
+	Options<UpdateLabelPendingCorrectionData>
+> => {
+	const mutationOptions: MutationOptions<
+		UpdateLabelPendingCorrectionResponse,
+		UpdateLabelPendingCorrectionError,
+		Options<UpdateLabelPendingCorrectionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await updateLabelPendingCorrection({
 				...options,
 				...fnOptions,
 				throwOnError: true,
@@ -2845,6 +2973,30 @@ export const updateReleaseMutation = (
 	> = {
 		mutationFn: async (fnOptions) => {
 			const { data } = await updateRelease({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const updateReleasePendingCorrectionMutation = (
+	options?: Partial<Options<UpdateReleasePendingCorrectionData>>,
+): MutationOptions<
+	UpdateReleasePendingCorrectionResponse,
+	UpdateReleasePendingCorrectionError,
+	Options<UpdateReleasePendingCorrectionData>
+> => {
+	const mutationOptions: MutationOptions<
+		UpdateReleasePendingCorrectionResponse,
+		UpdateReleasePendingCorrectionError,
+		Options<UpdateReleasePendingCorrectionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await updateReleasePendingCorrection({
 				...options,
 				...fnOptions,
 				throwOnError: true,
@@ -3620,6 +3772,30 @@ export const updateSongLyricsMutation = (
 	return mutationOptions
 }
 
+export const updateSongLyricsPendingCorrectionMutation = (
+	options?: Partial<Options<UpdateSongLyricsPendingCorrectionData>>,
+): MutationOptions<
+	UpdateSongLyricsPendingCorrectionResponse,
+	UpdateSongLyricsPendingCorrectionError,
+	Options<UpdateSongLyricsPendingCorrectionData>
+> => {
+	const mutationOptions: MutationOptions<
+		UpdateSongLyricsPendingCorrectionResponse,
+		UpdateSongLyricsPendingCorrectionError,
+		Options<UpdateSongLyricsPendingCorrectionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await updateSongLyricsPendingCorrection({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
 export const songRelationTypesQueryKey = (
 	options?: Options<SongRelationTypesData>,
 ) => createQueryKey("songRelationTypes", options)
@@ -3750,6 +3926,30 @@ export const updateSongMutation = (
 	> = {
 		mutationFn: async (fnOptions) => {
 			const { data } = await updateSong({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const updateSongPendingCorrectionMutation = (
+	options?: Partial<Options<UpdateSongPendingCorrectionData>>,
+): MutationOptions<
+	UpdateSongPendingCorrectionResponse,
+	UpdateSongPendingCorrectionError,
+	Options<UpdateSongPendingCorrectionData>
+> => {
+	const mutationOptions: MutationOptions<
+		UpdateSongPendingCorrectionResponse,
+		UpdateSongPendingCorrectionError,
+		Options<UpdateSongPendingCorrectionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await updateSongPendingCorrection({
 				...options,
 				...fnOptions,
 				throwOnError: true,
@@ -3912,6 +4112,30 @@ export const upsertTagCorrectionMutation = (
 	> = {
 		mutationFn: async (fnOptions) => {
 			const { data } = await upsertTagCorrection({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const updateTagPendingCorrectionMutation = (
+	options?: Partial<Options<UpdateTagPendingCorrectionData>>,
+): MutationOptions<
+	UpdateTagPendingCorrectionResponse,
+	UpdateTagPendingCorrectionError,
+	Options<UpdateTagPendingCorrectionData>
+> => {
+	const mutationOptions: MutationOptions<
+		UpdateTagPendingCorrectionResponse,
+		UpdateTagPendingCorrectionError,
+		Options<UpdateTagPendingCorrectionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await updateTagPendingCorrection({
 				...options,
 				...fnOptions,
 				throwOnError: true,

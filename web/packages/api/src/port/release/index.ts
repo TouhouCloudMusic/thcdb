@@ -49,6 +49,20 @@ export async function update(options: Opt<"update_release">) {
 	return adaptApiResult(res)
 }
 
+export async function updatePendingCorrection(
+	options: Opt<"update_release_pending_correction">,
+) {
+	const res = await FetchClient.POST(
+		"/release/{id}/correction/{correction_id}",
+		{
+			params: { path: options.path },
+			body: options.body,
+		},
+	)
+
+	return adaptApiResult(res)
+}
+
 export async function uploadCoverArt(options: {
 	releaseId: number
 	file: File

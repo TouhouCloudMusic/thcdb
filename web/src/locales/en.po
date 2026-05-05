@@ -244,10 +244,12 @@ msgid "AUTH REQUIRED"
 msgstr "AUTH REQUIRED"
 
 #: src/view/correction/CorrectionHistorySection.tsx
+#: src/view/correction/Detail.tsx
 msgid "Author"
 msgstr "Author"
 
 #: src/component/form/FormActionBar.tsx
+#: src/view/correction/pendingCorrection.tsx
 msgid "Back"
 msgstr "Back"
 
@@ -579,6 +581,10 @@ msgstr "Downvote"
 #: src/view/release/edit/comp/TrackFieldItem.tsx
 msgid "Duration (ms)"
 msgstr "Duration (ms)"
+
+#: src/view/correction/Detail.tsx
+msgid "Edit"
+msgstr "Edit"
 
 #: src/view/artist/edit/index.tsx
 msgid "Edit Artist"
@@ -1352,6 +1358,10 @@ msgstr "Pending"
 msgid "PENDING"
 msgstr "PENDING"
 
+#: src/view/correction/pendingCorrection.tsx
+msgid "Pending correction exists"
+msgstr "Pending correction exists"
+
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Please sign in to add items to a collection."
 msgstr "Please sign in to add items to a collection."
@@ -1887,6 +1897,10 @@ msgstr "This cannot be undone."
 msgid "This collection is empty"
 msgstr "This collection is empty"
 
+#: src/view/correction/pendingCorrection.tsx
+msgid "This entity already has a pending correction. You can review that correction or go back."
+msgstr "This entity already has a pending correction. You can review that correction or go back."
+
 #. placeholder {0}: formatMinuteCount(props.resetKeyExpiresMinutes)
 #: src/view/auth/reset_password/index.tsx
 msgid "This is valid for {0}."
@@ -2072,6 +2086,10 @@ msgstr "Verify Email"
 #: src/view/release/explore/filter.tsx
 msgid "View"
 msgstr "View"
+
+#: src/view/correction/pendingCorrection.tsx
+msgid "View correction"
+msgstr "View correction"
 
 #. placeholder {0}: props.item.id
 #: src/view/image_queue/manage.tsx

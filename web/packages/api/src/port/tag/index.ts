@@ -45,3 +45,14 @@ export async function upsertCorrection(options: Opt<"upsert_tag_correction">) {
 
 	return adaptApiResult(res)
 }
+
+export async function updatePendingCorrection(
+	options: Opt<"update_tag_pending_correction">,
+) {
+	const res = await FetchClient.POST("/tag/{id}/correction/{correction_id}", {
+		params: { path: options.path },
+		body: options.body,
+	})
+
+	return adaptApiResult(res)
+}
