@@ -2,7 +2,7 @@ mod i18n '.just/i18n'
 
 import '.just/api.just'
 
-set positional-arguments := true
+set positional-arguments
 
 default:
     @just --list
@@ -10,12 +10,12 @@ default:
 fmt:
     pnpm exec prettier --write \
     --experimental-cli .
-    just --fmt --unstable
+    just --fmt
 
 fmt-check:
     pnpm exec prettier --check \
     --experimental-cli .
-    just --fmt --unstable --check
+    just --fmt --check
 
 eslint +FLAGS="":
     pnpm exec eslint --cache {{ FLAGS }}

@@ -1,7 +1,7 @@
 # set shell := ["bash", "-euo", "pipefail", "-c"]
 
-set dotenv-load := true
-set positional-arguments := true
+set dotenv-load
+set positional-arguments
 
 mod dev
 
@@ -11,7 +11,7 @@ init:
 
 fmt:
     taplo fmt
-    just --fmt --unstable
+    just --fmt
     cd server && just fmt
     cd web && just fmt
 
