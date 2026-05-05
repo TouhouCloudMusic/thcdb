@@ -1,61 +1,25 @@
-import { useNavigate } from "@tanstack/solid-router"
-import type { Song } from "@thc/api"
+import type { NewCorrectionNewSong, Song } from "@thc/api"
 import { SongMutation } from "@thc/query"
-import type { InferOutput } from "valibot"
 
-import type { NewSongCorrection } from "~/domain/song"
+import { createEntityFormSubmit } from "~/view/correction/pendingCorrection"
 
 type Props =
-	| {
-			type: "new"
-	  }
-	| {
-			type: "edit"
-			song: Song
-	  }
+	| { type: "new" }
+	| { type: "edit"; song: Song; pendingCorrectionId?: number }
 
-export function useSongFormSubmission(props: Props) {
-	const navigator = useNavigate()
+export function useSongFormSubmission(input: Props) {
 	const mutation = SongMutation.getInstance()
 
-	const handleSubmit = (output: InferOutput<typeof NewSongCorrection>) => {
-		if (props.type === "new") {
-			mutation.mutate(
-				{ type: "Create", data: output },
-				{
-					onSuccess(result) {
-						void navigator({
-							to: "/correction/$id",
-							params: { id: result.correction_id.toString() },
-						})
+	return createEntityFormSubmit<Song, NewCorrectionNewSong>({
+		entityType: "song",
+		mutation,
+		props:
+			input.type === "new"
+				? input
+				: {
+						type: "edit",
+						entity: input.song,
+						pendingCorrectionId: input.pendingCorrectionId,
 					},
-					onError(error) {
-						if (import.meta.env.DEV) {
-							console.error("Failed to create song:", error)
-						}
-					},
-				},
-			)
-			return
-		}
-
-		mutation.mutate(
-			{ type: "Update", id: props.song.id, data: output },
-			{
-				onSuccess(result) {
-					void navigator({
-						to: "/correction/$id",
-						params: { id: result.correction_id.toString() },
-					})
-				},
-				onError(error) {
-					if (import.meta.env.DEV) {
-						console.error("Failed to update song:", error)
-					}
-				},
-			},
-		)
-	}
-
-	return { handleSubmit }
+	})
 }

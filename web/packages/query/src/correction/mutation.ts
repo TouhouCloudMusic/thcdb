@@ -1,6 +1,18 @@
 import { useMutation } from "@tanstack/solid-query"
+import type { CorrectionSubmitResult as ApiCorrectionSubmitResult } from "@thc/api"
 import { CorrectionApi } from "@thc/api"
 import { Either } from "effect"
+
+export type CorrectionSubmitResult = ApiCorrectionSubmitResult
+
+export type EntityCorrectionMutationParams<TData> =
+	| { type: "Create"; data: TData }
+	| {
+			type: "Update"
+			id: number
+			correctionId?: number
+			data: TData
+	  }
 
 type CreateCommentParams = {
 	correctionId: number

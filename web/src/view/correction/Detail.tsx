@@ -1,14 +1,22 @@
 import { Trans, useLingui } from "@lingui/solid/macro"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/solid-query"
 import { CorrectionMutation, CorrectionQueryOption } from "@thc/query"
+import { ArrExt } from "@thc/toolkit/data"
 import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
 import type { JSX } from "solid-js"
+import { createStore, produce } from "solid-js/store"
 import { twMerge } from "tailwind-merge"
 
 import { Card } from "~/component/atomic/Card"
 import { INPUT_LIKE_BASE_CLASS } from "~/component/atomic/Input"
 import { Link } from "~/component/atomic/Link"
-import { Button } from "~/component/atomic/button"
+import { Avatar } from "~/component/atomic/avatar"
+import { Button, ButtonClass_new } from "~/component/atomic/button"
 import { Select } from "~/component/atomic/form/select"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
 import { showSuccessToast } from "~/component/toast"
@@ -21,13 +29,22 @@ import type {
 	HandleCorrectionMethod,
 } from "~/hey-api"
 import { handleCorrection } from "~/hey-api"
+import {
+	findCommentsInfiniteOptions,
+	findCommentsInfiniteQueryKey,
+} from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout/PageLayout"
 import { useCurrentUser } from "~/state/user"
 import { formatTimestamp } from "~/utils/dateTime"
 import { getErrorMessage } from "~/utils/getErrorMessage"
 
 import { CorrectionComments } from "./CorrectionComments"
-import { ENTITY_HISTORY_MAP, ENTITY_ROUTE_MAP } from "./entityMap"
+import {
+	ENTITY_EDIT_ROUTE_MAP,
+	ENTITY_HISTORY_MAP,
+	ENTITY_ROUTE_MAP,
+} from "./entityMap"
+import { invalidatePendingCorrection } from "./pendingCorrection"
 
 const DETAIL_LABEL_CLASS = "text-sm text-tertiary"
 
@@ -75,6 +92,20 @@ function CorrectionHeader(props: CorrectionHeaderProps) {
 				<div class="space-y-1">
 					<div class={DETAIL_LABEL_CLASS}>{t`Type`}</div>
 					<span>{props.correction.type}</span>
+				</div>
+				<div class="space-y-1">
+					<div class={DETAIL_LABEL_CLASS}>{t`Author`}</div>
+					<Link
+						to="/profile/$username"
+						params={{ username: props.correction.author.name }}
+						class="inline-flex items-center gap-2 text-secondary"
+					>
+						<Avatar
+							user={props.correction.author}
+							class="size-5"
+						/>
+						<span>{props.correction.author.name}</span>
+					</Link>
 				</div>
 				<div class="space-y-1">
 					<div class={DETAIL_LABEL_CLASS}>{t`Created`}</div>
@@ -236,6 +267,7 @@ function ConfirmActionButton(props: ConfirmActionButtonProps) {
 
 type CorrectionActionsProps = {
 	canManage: boolean
+	canEdit: boolean
 	correction: CorrectionDetail
 	isBusy: boolean
 	errorMessage?: string
@@ -246,37 +278,56 @@ type CorrectionActionsProps = {
 function CorrectionActions(props: CorrectionActionsProps) {
 	const { t } = useLingui()
 	const isPending = () => props.correction.status === "Pending"
+	const editRoute = () => {
+		if (!props.canEdit || !isPending()) return
+		return ENTITY_EDIT_ROUTE_MAP[props.correction.entity_type]
+	}
 
 	return (
-		<Show when={props.canManage && isPending()}>
-			<div class="flex flex-col items-end gap-1">
+		<Show when={isPending()}>
+			<div class="flex flex-col items-end gap-2">
 				<div class="flex flex-wrap justify-end gap-2">
-					<ConfirmActionButton
-						title={t`Approve correction?`}
-						description={t({
-							message: "This will apply the correction to the target entity.",
-						})}
-						confirmText={t`Approve`}
-						color="Green"
-						variant="Primary"
-						disabled={props.isBusy || !isPending()}
-						onConfirm={props.onApprove}
-					>
-						{t`Approve`}
-					</ConfirmActionButton>
-					<ConfirmActionButton
-						title={t`Reject correction?`}
-						description={t({
-							message: "This will mark the correction as rejected.",
-						})}
-						confirmText={t`Reject`}
-						color="Reimu"
-						variant="Secondary"
-						disabled={props.isBusy || !isPending()}
-						onConfirm={props.onReject}
-					>
-						{t`Reject`}
-					</ConfirmActionButton>
+					<Show when={editRoute()}>
+						{(route) => (
+							<Link
+								to={route()}
+								params={{ id: props.correction.entity_id.toString() }}
+								search={{ correctionId: props.correction.id }}
+								underline={false}
+								class={ButtonClass_new({ variant: "Secondary", size: "Sm" })}
+							>
+								{t`Edit`}
+							</Link>
+						)}
+					</Show>
+					<Show when={props.canManage}>
+						<ConfirmActionButton
+							title={t`Approve correction?`}
+							description={t({
+								message: "This will apply the correction to the target entity.",
+							})}
+							confirmText={t`Approve`}
+							color="Green"
+							variant="Primary"
+							disabled={props.isBusy || !isPending()}
+							onConfirm={props.onApprove}
+						>
+							{t`Approve`}
+						</ConfirmActionButton>
+						<ConfirmActionButton
+							title={t`Reject correction?`}
+							description={t({
+								message: "This will mark the correction as rejected.",
+							})}
+							confirmText={t`Reject`}
+							color="Reimu"
+							variant="Secondary"
+							disabled={props.isBusy || !isPending()}
+							onConfirm={props.onReject}
+						>
+							{t`Reject`}
+						</ConfirmActionButton>
+					</Show>
 				</div>
 				<Show when={props.errorMessage}>
 					{(message) => <div class="text-xs text-reimu-700">{message()}</div>}
@@ -311,19 +362,45 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 			}),
 	}))
 
-	const [additionalComments, setAdditionalComments] = createSignal<
-		CorrectionComment[]
-	>([])
-	const [deletedIds, setDeletedIds] = createSignal<ReadonlySet<number>>(
-		new Set(),
+	const initialCommentsNextCursor = createMemo(
+		() => correctionQuery.data?.comments.next_cursor,
 	)
-	const [createdComments, setCreatedComments] = createSignal<
-		CorrectionComment[]
-	>([])
-	const [currentNextCursor, setCurrentNextCursor] = createSignal<
-		number | null | undefined
-	>(undefined)
-	const [isLoadingMore, setIsLoadingMore] = createSignal(false)
+	const commentPagesQuery = useInfiniteQuery(() => {
+		const initialCursor = initialCommentsNextCursor()
+		return {
+			...findCommentsInfiniteOptions({
+				path: { id: props.correctionId },
+			}),
+			initialPageParam: initialCursor ?? 0,
+			getNextPageParam: (last) => last.data.next_cursor ?? undefined,
+			enabled: false,
+		}
+	})
+	const [createdCommentsByCorrectionId, setCreatedCommentsByCorrectionId] =
+		createStore<Record<number, CorrectionComment[]>>({})
+	const createdComments = () =>
+		createdCommentsByCorrectionId[props.correctionId] ?? []
+	const addCreatedComment = (comment: CorrectionComment) => {
+		setCreatedCommentsByCorrectionId(
+			produce((state) => {
+				const comments = state[props.correctionId] ?? []
+				state[props.correctionId] = ArrExt.dedupeByKey(
+					[...comments, comment],
+					"id",
+				)
+			}),
+		)
+	}
+	const removeCreatedComment = (commentId: number) => {
+		setCreatedCommentsByCorrectionId(
+			produce((state) => {
+				const comments = state[props.correctionId] ?? []
+				state[props.correctionId] = comments.filter(
+					(comment) => comment.id !== commentId,
+				)
+			}),
+		)
+	}
 
 	const canManage = () =>
 		userCtx.user?.roles?.some(
@@ -331,54 +408,50 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 				r.name === USER_ROLE_NAMES.Admin
 				|| r.name === USER_ROLE_NAMES.Moderator,
 		) ?? false
-
-	const initialComments = () => correctionQuery.data?.comments.items ?? []
-	const initialNextCursor = () =>
-		correctionQuery.data?.comments.next_cursor ?? null
+	const canEdit = () =>
+		canManage() || userCtx.user?.name === correctionQuery.data?.author.name
 
 	const allComments = createMemo(() => {
-		const all = [
-			...initialComments(),
-			...additionalComments(),
-			...createdComments(),
-		]
-		const deleted = deletedIds()
-		return all.map((c) => {
-			if (!deleted.has(c.id)) return c
-			return {
-				id: c.id,
-				correction_id: c.correction_id,
-				parent_id: c.parent_id,
-				author: c.author,
-				state: "Deleted" as const,
-				content: undefined,
-				created_at: c.created_at,
-				updated_at: c.updated_at,
-			}
-		})
+		const commentPages = commentPagesQuery.isSuccess
+			? commentPagesQuery.data.pages.flatMap((page) => page.data.items)
+			: []
+		const comments = ArrExt.dedupeByKey(
+			[
+				...(correctionQuery.data?.comments.items ?? []),
+				...commentPages,
+				...createdComments(),
+			],
+			"id",
+		)
+		return comments
 	})
-
-	const nextCursor = createMemo(() => {
-		const fromSignal = currentNextCursor()
-		if (fromSignal !== undefined) return fromSignal
-		return initialNextCursor()
+	const hasFetchedCommentPages = createMemo(
+		() =>
+			commentPagesQuery.isSuccess && commentPagesQuery.data.pages.length > 0,
+	)
+	const hasMoreComments = createMemo(() => {
+		if (!hasFetchedCommentPages()) {
+			return initialCommentsNextCursor() != null
+		}
+		return commentPagesQuery.hasNextPage
 	})
 
 	const loadMore = async () => {
-		const cursor = nextCursor()
-		if (cursor == null || isLoadingMore()) return
-		setIsLoadingMore(true)
-		try {
-			const data = await queryClient.fetchQuery(
-				CorrectionQueryOption.comments(props.correctionId, cursor),
-			)
-			setAdditionalComments((prev) => [...prev, ...data.items])
-			setCurrentNextCursor(data.next_cursor)
-		} catch {
-			// ignore load-more errors silently
-		} finally {
-			setIsLoadingMore(false)
+		if (!hasMoreComments() || commentPagesQuery.isFetchingNextPage) {
+			return
 		}
+		await commentPagesQuery.fetchNextPage()
+	}
+
+	const invalidateCommentQueries = async () => {
+		await queryClient.invalidateQueries({
+			queryKey: ["correction::detail", props.correctionId],
+		})
+		await queryClient.invalidateQueries({
+			queryKey: findCommentsInfiniteQueryKey({
+				path: { id: props.correctionId },
+			}),
+		})
 	}
 
 	const onCreateComment = async (content: string, parentId: number | null) => {
@@ -387,12 +460,14 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 			content,
 			parentId,
 		})
-		setCreatedComments((prev) => [...prev, comment])
+		addCreatedComment(comment)
+		await invalidateCommentQueries()
 	}
 
 	const onDeleteComment = async (commentId: number) => {
 		await deleteCommentMutation.mutateAsync(commentId)
-		setDeletedIds((prev) => new Set([...prev, commentId]))
+		removeCreatedComment(commentId)
+		await invalidateCommentQueries()
 	}
 
 	const activeCompareId = createMemo(() => {
@@ -442,11 +517,19 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 	}
 
 	const refreshCorrection = () => {
+		const correction = correctionQuery.data
 		void queryClient.invalidateQueries({
 			queryKey: ["correction::detail", props.correctionId],
 		})
 		void queryClient.invalidateQueries({ queryKey: ["correction::diff"] })
 		void queryClient.invalidateQueries({ queryKey: ["correction::history"] })
+		if (correction) {
+			void invalidatePendingCorrection(
+				queryClient,
+				ENTITY_HISTORY_MAP[correction.entity_type],
+				correction.entity_id,
+			)
+		}
 	}
 
 	const handleCorrectionAction = (method: HandleCorrectionMethod) => {
@@ -482,6 +565,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 							actions={
 								<CorrectionActions
 									canManage={canManage()}
+									canEdit={canEdit()}
 									correction={correction()}
 									isBusy={handleCorrectionMutation.isPending}
 									errorMessage={actionErrorMessage()}
@@ -552,16 +636,24 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 							/>
 						</Card>
 
-						<CorrectionComments
-							comments={allComments()}
-							nextCursor={nextCursor()}
-							isLoadingMore={isLoadingMore()}
-							currentUser={userCtx.user}
-							canManage={canManage()}
-							onLoadMore={() => void loadMore()}
-							onCreateComment={onCreateComment}
-							onDeleteComment={onDeleteComment}
-						/>
+						<Show
+							when={props.correctionId}
+							keyed
+						>
+							{(correctionId) => (
+								<CorrectionComments
+									correctionId={correctionId}
+									comments={allComments()}
+									hasMore={hasMoreComments()}
+									isLoadingMore={commentPagesQuery.isFetchingNextPage}
+									currentUser={userCtx.user}
+									canManage={canManage()}
+									onLoadMore={() => void loadMore()}
+									onCreateComment={onCreateComment}
+									onDeleteComment={onDeleteComment}
+								/>
+							)}
+						</Show>
 					</div>
 				)}
 			</Show>

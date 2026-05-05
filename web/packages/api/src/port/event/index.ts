@@ -46,3 +46,14 @@ export async function upsertCorrection(
 
 	return adaptApiResult(res)
 }
+
+export async function updatePendingCorrection(
+	options: Opt<"update_event_pending_correction">,
+) {
+	const res = await FetchClient.POST("/event/{id}/correction/{correction_id}", {
+		params: { path: options.path },
+		body: options.body,
+	})
+
+	return adaptApiResult(res)
+}

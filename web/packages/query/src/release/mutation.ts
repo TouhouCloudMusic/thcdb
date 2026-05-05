@@ -3,11 +3,10 @@ import type { NewCorrectionNewRelease } from "@thc/api"
 import { ReleaseApi } from "@thc/api"
 import { Either } from "effect"
 
+import type { EntityCorrectionMutationParams } from "../correction/mutation"
 import { toMutationError } from "../shared/error"
 
-type Params =
-	| { type: "Create"; data: NewCorrectionNewRelease }
-	| { type: "Update"; id: number; data: NewCorrectionNewRelease }
+type Params = EntityCorrectionMutationParams<NewCorrectionNewRelease>
 
 export const getInstance = () =>
 	useMutation(() => ({
@@ -17,10 +16,18 @@ export const getInstance = () =>
 					? await ReleaseApi.create({
 							body: params.data,
 						})
-					: await ReleaseApi.update({
-							path: { id: params.id },
-							body: params.data,
-						})
+					: params.correctionId === undefined
+						? await ReleaseApi.update({
+								path: { id: params.id },
+								body: params.data,
+							})
+						: await ReleaseApi.updatePendingCorrection({
+								path: {
+									id: params.id,
+									correction_id: params.correctionId,
+								},
+								body: params.data,
+							})
 			return Either.match(result, {
 				onRight: (data) => data,
 				onLeft: (error) => {

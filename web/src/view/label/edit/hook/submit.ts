@@ -1,64 +1,41 @@
 import { useQueryClient } from "@tanstack/solid-query"
-import { useNavigate } from "@tanstack/solid-router"
+import type { Label, NewCorrectionNewLabel } from "@thc/api"
 import { LabelMutation, LabelQueryOption } from "@thc/query"
-import type { InferOutput } from "valibot"
 
-import type { NewLabelCorrection } from "~/domain/label"
+import { createEntityFormSubmit } from "~/view/correction/pendingCorrection"
 
-import type { LabelFormInitProps as Props } from "./init"
+type Props =
+	| { type: "new" }
+	| {
+			type: "edit"
+			label: Label
+			pendingCorrectionId?: number
+	  }
 
-export function createLabelFormSubmission(props: Props) {
-	const navigator = useNavigate()
+export function createLabelFormSubmission(input: Props) {
 	const queryClient = useQueryClient()
 	const mutation = LabelMutation.getInstance()
 
-	const handleSubmit = (output: InferOutput<typeof NewLabelCorrection>) => {
-		if (props.type === "new") {
-			mutation.mutate(
-				{ type: "Create", data: output },
-				{
-					onSuccess(result) {
-						void queryClient.invalidateQueries({
-							queryKey: [LabelQueryOption.QUERY_KEYS.DETAIL_KEYWORD],
-						})
-						void navigator({
-							to: "/correction/$id",
-							params: { id: result.correction_id.toString() },
-						})
-					},
-					onError(error) {
-						if (import.meta.env.DEV) {
-							console.error("Failed to create label:", error)
-						}
-					},
-				},
-			)
-			return
-		}
-
-		mutation.mutate(
-			{ type: "Update", id: props.label.id, data: output },
-			{
-				onSuccess(result) {
-					void queryClient.invalidateQueries({
-						queryKey: [LabelQueryOption.QUERY_KEYS.DETAIL_ID, props.label.id],
-					})
-					void navigator({
-						to: "/correction/$id",
-						params: { id: result.correction_id.toString() },
-					})
-				},
-				onError(error) {
-					if (import.meta.env.DEV) {
-						console.error("Failed to update label:", error)
-					}
-				},
-			},
-		)
-	}
-
-	return {
-		handleSubmit,
+	return createEntityFormSubmit<Label, NewCorrectionNewLabel>({
+		entityType: "label",
 		mutation,
-	}
+		props:
+			input.type === "new"
+				? input
+				: {
+						type: "edit",
+						entity: input.label,
+						pendingCorrectionId: input.pendingCorrectionId,
+					},
+		onCreateSuccess() {
+			void queryClient.invalidateQueries({
+				queryKey: [LabelQueryOption.QUERY_KEYS.DETAIL_KEYWORD],
+			})
+		},
+		onUpdateSuccess(result) {
+			void queryClient.invalidateQueries({
+				queryKey: [LabelQueryOption.QUERY_KEYS.DETAIL_ID, result.entity_id],
+			})
+		},
+	})
 }

@@ -1,83 +1,43 @@
 import { useQueryClient } from "@tanstack/solid-query"
-import { useNavigate } from "@tanstack/solid-router"
+import type { Event, NewCorrectionNewEvent } from "@thc/api"
 import { EventMutation, EventQueryOption } from "@thc/query"
-import type { InferOutput } from "valibot"
 
-import type { NewEventCorrection } from "~/domain/event"
+import { createEntityFormSubmit } from "~/view/correction/pendingCorrection"
 
-import type { EventFormInitProps as Props } from "./init"
+import type { EventWithLocation } from "./init"
 
-export function createEventFormSubmission(props: Props) {
-	const navigator = useNavigate()
+type Props =
+	| { type: "new" }
+	| {
+			type: "edit"
+			event: EventWithLocation
+			pendingCorrectionId?: number
+	  }
+
+export function createEventFormSubmission(input: Props) {
 	const queryClient = useQueryClient()
 	const mutation = EventMutation.getInstance()
 
-	const handleSubmit = (output: InferOutput<typeof NewEventCorrection>) => {
-		const normalizeLocation = () => {
-			const location = output.data.location
-			if (!location) return
-
-			const { country, province, city } = location
-			if (!country && !province && !city) return
-
-			return location
-		}
-
-		const normalizedData = {
-			...output.data,
-			location: normalizeLocation(),
-		}
-
-		if (props.type === "new") {
-			mutation.mutate(
-				{ type: "Create", data: { ...output, data: normalizedData } },
-				{
-					onSuccess(result) {
-						void queryClient.invalidateQueries({
-							queryKey: [EventQueryOption.QUERY_KEYS.DETAIL_KEYWORD],
-						})
-						void navigator({
-							to: "/correction/$id",
-							params: { id: result.correction_id.toString() },
-						})
-					},
-					onError(error) {
-						if (import.meta.env.DEV) {
-							console.error("Failed to create event:", error)
-						}
-					},
-				},
-			)
-			return
-		}
-
-		mutation.mutate(
-			{
-				type: "Update",
-				id: props.event.id,
-				data: { ...output, data: normalizedData },
-			},
-			{
-				onSuccess(result) {
-					void queryClient.invalidateQueries({
-						queryKey: [EventQueryOption.QUERY_KEYS.DETAIL_ID, props.event.id],
-					})
-					void navigator({
-						to: "/correction/$id",
-						params: { id: result.correction_id.toString() },
-					})
-				},
-				onError(error) {
-					if (import.meta.env.DEV) {
-						console.error("Failed to update event:", error)
-					}
-				},
-			},
-		)
-	}
-
-	return {
-		handleSubmit,
+	return createEntityFormSubmit<Event, NewCorrectionNewEvent>({
+		entityType: "event",
 		mutation,
-	}
+		props:
+			input.type === "new"
+				? input
+				: {
+						type: "edit",
+						entity: input.event,
+						pendingCorrectionId: input.pendingCorrectionId,
+					},
+		onCreateSuccess() {
+			void queryClient.invalidateQueries({
+				queryKey: [EventQueryOption.QUERY_KEYS.DETAIL_KEYWORD],
+			})
+		},
+		onUpdateSuccess(result) {
+			void queryClient.invalidateQueries({
+				queryKey: [EventQueryOption.QUERY_KEYS.DETAIL_ID, result.entity_id],
+			})
+		},
+	})
 }

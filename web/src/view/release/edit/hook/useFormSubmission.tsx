@@ -1,61 +1,25 @@
-import { useNavigate } from "@tanstack/solid-router"
-import type { Release } from "@thc/api"
+import type { NewCorrectionNewRelease, Release } from "@thc/api"
 import { ReleaseMutation } from "@thc/query"
-import type { InferOutput } from "valibot"
 
-import type { NewReleaseCorrection } from "~/domain/release"
+import { createEntityFormSubmit } from "~/view/correction/pendingCorrection"
 
 type Props =
-	| {
-			type: "new"
-	  }
-	| {
-			type: "edit"
-			release: Release
-	  }
+	| { type: "new" }
+	| { type: "edit"; release: Release; pendingCorrectionId?: number }
 
-export function useReleaseFormSubmission(props: Props) {
-	const navigator = useNavigate()
+export function useReleaseFormSubmission(input: Props) {
 	const mutation = ReleaseMutation.getInstance()
 
-	// TODO: error handling
-	const handleSubmit = (data: InferOutput<typeof NewReleaseCorrection>) => {
-		if (props.type === "new") {
-			mutation.mutate(
-				{ type: "Create", data },
-				{
-					onSuccess(result) {
-						void navigator({
-							to: "/correction/$id",
-							params: { id: result.correction_id.toString() },
-						})
+	return createEntityFormSubmit<Release, NewCorrectionNewRelease>({
+		entityType: "release",
+		mutation,
+		props:
+			input.type === "new"
+				? input
+				: {
+						type: "edit",
+						entity: input.release,
+						pendingCorrectionId: input.pendingCorrectionId,
 					},
-					onError(error) {
-						if (import.meta.env.DEV) {
-							console.error("Failed to create release:", error)
-						}
-					},
-				},
-			)
-		} else {
-			mutation.mutate(
-				{ type: "Update", id: props.release.id, data },
-				{
-					onSuccess(result) {
-						void navigator({
-							to: "/correction/$id",
-							params: { id: result.correction_id.toString() },
-						})
-					},
-					onError(error) {
-						if (import.meta.env.DEV) {
-							console.error("Failed to update release:", error)
-						}
-					},
-				},
-			)
-		}
-	}
-
-	return { handleSubmit, mutation }
+	})
 }

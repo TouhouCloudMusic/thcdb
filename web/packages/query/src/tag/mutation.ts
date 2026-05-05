@@ -3,9 +3,10 @@ import type { NewCorrectionNewTag } from "@thc/api"
 import { TagApi } from "@thc/api"
 import { Either } from "effect"
 
-type Params =
-	| { type: "Create"; data: NewCorrectionNewTag }
-	| { type: "Update"; id: number; data: NewCorrectionNewTag }
+import type { EntityCorrectionMutationParams } from "../correction/mutation"
+import { toMutationError } from "../shared/error"
+
+type Params = EntityCorrectionMutationParams<NewCorrectionNewTag>
 
 export const getInstance = () =>
 	useMutation(() => ({
@@ -15,14 +16,22 @@ export const getInstance = () =>
 					? await TagApi.create({
 							body: params.data,
 						})
-					: await TagApi.upsertCorrection({
-							path: { id: params.id },
-							body: params.data,
-						})
+					: params.correctionId === undefined
+						? await TagApi.upsertCorrection({
+								path: { id: params.id },
+								body: params.data,
+							})
+						: await TagApi.updatePendingCorrection({
+								path: {
+									id: params.id,
+									correction_id: params.correctionId,
+								},
+								body: params.data,
+							})
 			return Either.match(result, {
 				onRight: (data) => data,
 				onLeft: (error) => {
-					throw error
+					throw toMutationError(error)
 				},
 			})
 		},

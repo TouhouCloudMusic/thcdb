@@ -104,6 +104,7 @@ export type CorrectionDetail = {
 	entity_name: string
 	created_at: string
 	handled_at?: string | null
+	author: CorrectionUserSummary
 	comments: CursorResponseCorrectionComment
 }
 
@@ -142,7 +143,10 @@ export type CorrectionSortField = "created_at" | "handled_at"
 
 export type CorrectionStatus = "Pending" | "Approved" | "Rejected"
 
-export type CorrectionSubmissionResult = {
+export type CorrectionSubmitKind = "Submitted" | "Conflict"
+
+export type CorrectionSubmitResult = {
+	kind: CorrectionSubmitKind
 	correction_id: number
 	entity_id: number
 }
@@ -636,9 +640,10 @@ export type DataCorrectionDiff = {
 	}
 }
 
-export type DataCorrectionSubmissionResult = {
+export type DataCorrectionSubmitResult = {
 	status: "Ok"
 	data: {
+		kind: CorrectionSubmitKind
 		correction_id: number
 		entity_id: number
 	}
@@ -1743,7 +1748,7 @@ export type CreateArtistErrors = {
 export type CreateArtistError = CreateArtistErrors[keyof CreateArtistErrors]
 
 export type CreateArtistResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type CreateArtistResponse =
@@ -1847,7 +1852,7 @@ export type UpsertArtistCorrectionError =
 	UpsertArtistCorrectionErrors[keyof UpsertArtistCorrectionErrors]
 
 export type UpsertArtistCorrectionResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type UpsertArtistCorrectionResponse =
@@ -1885,6 +1890,43 @@ export type FindArtistAppearancesResponses = {
 
 export type FindArtistAppearancesResponse =
 	FindArtistAppearancesResponses[keyof FindArtistAppearancesResponses]
+
+export type UpdateArtistPendingCorrectionData = {
+	body: NewCorrectionNewArtist
+	path: {
+		/**
+		 * Artist id
+		 */
+		id: number
+		/**
+		 * Pending correction id
+		 */
+		correction_id: number
+	}
+	query?: never
+	url: "/artist/{id}/correction/{correction_id}"
+}
+
+export type UpdateArtistPendingCorrectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UpdateArtistPendingCorrectionError =
+	UpdateArtistPendingCorrectionErrors[keyof UpdateArtistPendingCorrectionErrors]
+
+export type UpdateArtistPendingCorrectionResponses = {
+	200: DataCorrectionSubmitResult
+}
+
+export type UpdateArtistPendingCorrectionResponse =
+	UpdateArtistPendingCorrectionResponses[keyof UpdateArtistPendingCorrectionResponses]
 
 export type GetArtistCreditsData = {
 	body?: never
@@ -2674,7 +2716,7 @@ export type CreateCreditRoleError =
 	CreateCreditRoleErrors[keyof CreateCreditRoleErrors]
 
 export type CreateCreditRoleResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type CreateCreditRoleResponse =
@@ -2764,11 +2806,48 @@ export type UpsertCreditRoleCorrectionError =
 	UpsertCreditRoleCorrectionErrors[keyof UpsertCreditRoleCorrectionErrors]
 
 export type UpsertCreditRoleCorrectionResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type UpsertCreditRoleCorrectionResponse =
 	UpsertCreditRoleCorrectionResponses[keyof UpsertCreditRoleCorrectionResponses]
+
+export type UpdateCreditRolePendingCorrectionData = {
+	body: NewCorrectionNewCreditRole
+	path: {
+		/**
+		 * Credit role id
+		 */
+		id: number
+		/**
+		 * Pending correction id
+		 */
+		correction_id: number
+	}
+	query?: never
+	url: "/credit-role/{id}/correction/{correction_id}"
+}
+
+export type UpdateCreditRolePendingCorrectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UpdateCreditRolePendingCorrectionError =
+	UpdateCreditRolePendingCorrectionErrors[keyof UpdateCreditRolePendingCorrectionErrors]
+
+export type UpdateCreditRolePendingCorrectionResponses = {
+	200: DataCorrectionSubmitResult
+}
+
+export type UpdateCreditRolePendingCorrectionResponse =
+	UpdateCreditRolePendingCorrectionResponses[keyof UpdateCreditRolePendingCorrectionResponses]
 
 export type EditableUserRolesData = {
 	body?: never
@@ -2849,7 +2928,7 @@ export type CreateEventErrors = {
 export type CreateEventError = CreateEventErrors[keyof CreateEventErrors]
 
 export type CreateEventResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type CreateEventResponse =
@@ -2950,11 +3029,48 @@ export type UpsertEventCorrectionError =
 	UpsertEventCorrectionErrors[keyof UpsertEventCorrectionErrors]
 
 export type UpsertEventCorrectionResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type UpsertEventCorrectionResponse =
 	UpsertEventCorrectionResponses[keyof UpsertEventCorrectionResponses]
+
+export type UpdateEventPendingCorrectionData = {
+	body: NewCorrectionNewEvent
+	path: {
+		/**
+		 * Event id
+		 */
+		id: number
+		/**
+		 * Pending correction id
+		 */
+		correction_id: number
+	}
+	query?: never
+	url: "/event/{id}/correction/{correction_id}"
+}
+
+export type UpdateEventPendingCorrectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UpdateEventPendingCorrectionError =
+	UpdateEventPendingCorrectionErrors[keyof UpdateEventPendingCorrectionErrors]
+
+export type UpdateEventPendingCorrectionResponses = {
+	200: DataCorrectionSubmitResult
+}
+
+export type UpdateEventPendingCorrectionResponse =
+	UpdateEventPendingCorrectionResponses[keyof UpdateEventPendingCorrectionResponses]
 
 export type ForgotPasswordData = {
 	body: ForgotPasswordRequest
@@ -3209,7 +3325,7 @@ export type CreateLabelErrors = {
 export type CreateLabelError = CreateLabelErrors[keyof CreateLabelErrors]
 
 export type CreateLabelResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type CreateLabelResponse =
@@ -3311,11 +3427,48 @@ export type UpsertLabelCorrectionError =
 	UpsertLabelCorrectionErrors[keyof UpsertLabelCorrectionErrors]
 
 export type UpsertLabelCorrectionResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type UpsertLabelCorrectionResponse =
 	UpsertLabelCorrectionResponses[keyof UpsertLabelCorrectionResponses]
+
+export type UpdateLabelPendingCorrectionData = {
+	body: NewCorrectionNewLabel
+	path: {
+		/**
+		 * Label id
+		 */
+		id: number
+		/**
+		 * Pending correction id
+		 */
+		correction_id: number
+	}
+	query?: never
+	url: "/label/{id}/correction/{correction_id}"
+}
+
+export type UpdateLabelPendingCorrectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UpdateLabelPendingCorrectionError =
+	UpdateLabelPendingCorrectionErrors[keyof UpdateLabelPendingCorrectionErrors]
+
+export type UpdateLabelPendingCorrectionResponses = {
+	200: DataCorrectionSubmitResult
+}
+
+export type UpdateLabelPendingCorrectionResponse =
+	UpdateLabelPendingCorrectionResponses[keyof UpdateLabelPendingCorrectionResponses]
 
 export type LanguageListData = {
 	body?: never
@@ -3679,7 +3832,7 @@ export type CreateReleaseErrors = {
 export type CreateReleaseError = CreateReleaseErrors[keyof CreateReleaseErrors]
 
 export type CreateReleaseResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type CreateReleaseResponse =
@@ -3780,11 +3933,48 @@ export type UpdateReleaseErrors = {
 export type UpdateReleaseError = UpdateReleaseErrors[keyof UpdateReleaseErrors]
 
 export type UpdateReleaseResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type UpdateReleaseResponse =
 	UpdateReleaseResponses[keyof UpdateReleaseResponses]
+
+export type UpdateReleasePendingCorrectionData = {
+	body: NewCorrectionNewRelease
+	path: {
+		/**
+		 * Release id
+		 */
+		id: number
+		/**
+		 * Pending correction id
+		 */
+		correction_id: number
+	}
+	query?: never
+	url: "/release/{id}/correction/{correction_id}"
+}
+
+export type UpdateReleasePendingCorrectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UpdateReleasePendingCorrectionError =
+	UpdateReleasePendingCorrectionErrors[keyof UpdateReleasePendingCorrectionErrors]
+
+export type UpdateReleasePendingCorrectionResponses = {
+	200: DataCorrectionSubmitResult
+}
+
+export type UpdateReleasePendingCorrectionResponse =
+	UpdateReleasePendingCorrectionResponses[keyof UpdateReleasePendingCorrectionResponses]
 
 export type GetReleaseCoverArtMetadataData = {
 	body?: never
@@ -4261,7 +4451,7 @@ export type CreateSongErrors = {
 export type CreateSongError = CreateSongErrors[keyof CreateSongErrors]
 
 export type CreateSongResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type CreateSongResponse = CreateSongResponses[keyof CreateSongResponses]
@@ -4319,7 +4509,7 @@ export type CreateSongLyricsError =
 	CreateSongLyricsErrors[keyof CreateSongLyricsErrors]
 
 export type CreateSongLyricsResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type CreateSongLyricsResponse =
@@ -4409,11 +4599,48 @@ export type UpdateSongLyricsError =
 	UpdateSongLyricsErrors[keyof UpdateSongLyricsErrors]
 
 export type UpdateSongLyricsResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type UpdateSongLyricsResponse =
 	UpdateSongLyricsResponses[keyof UpdateSongLyricsResponses]
+
+export type UpdateSongLyricsPendingCorrectionData = {
+	body: NewCorrectionNewSongLyrics
+	path: {
+		/**
+		 * Song lyrics id
+		 */
+		id: number
+		/**
+		 * Pending correction id
+		 */
+		correction_id: number
+	}
+	query?: never
+	url: "/song-lyrics/{id}/correction/{correction_id}"
+}
+
+export type UpdateSongLyricsPendingCorrectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UpdateSongLyricsPendingCorrectionError =
+	UpdateSongLyricsPendingCorrectionErrors[keyof UpdateSongLyricsPendingCorrectionErrors]
+
+export type UpdateSongLyricsPendingCorrectionResponses = {
+	200: DataCorrectionSubmitResult
+}
+
+export type UpdateSongLyricsPendingCorrectionResponse =
+	UpdateSongLyricsPendingCorrectionResponses[keyof UpdateSongLyricsPendingCorrectionResponses]
 
 export type SongRelationTypesData = {
 	body?: never
@@ -4536,10 +4763,47 @@ export type UpdateSongErrors = {
 export type UpdateSongError = UpdateSongErrors[keyof UpdateSongErrors]
 
 export type UpdateSongResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type UpdateSongResponse = UpdateSongResponses[keyof UpdateSongResponses]
+
+export type UpdateSongPendingCorrectionData = {
+	body: NewCorrectionNewSong
+	path: {
+		/**
+		 * Song id
+		 */
+		id: number
+		/**
+		 * Pending correction id
+		 */
+		correction_id: number
+	}
+	query?: never
+	url: "/song/{id}/correction/{correction_id}"
+}
+
+export type UpdateSongPendingCorrectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UpdateSongPendingCorrectionError =
+	UpdateSongPendingCorrectionErrors[keyof UpdateSongPendingCorrectionErrors]
+
+export type UpdateSongPendingCorrectionResponses = {
+	200: DataCorrectionSubmitResult
+}
+
+export type UpdateSongPendingCorrectionResponse =
+	UpdateSongPendingCorrectionResponses[keyof UpdateSongPendingCorrectionResponses]
 
 export type FindTagByKeywordData = {
 	body?: never
@@ -4592,7 +4856,7 @@ export type CreateTagErrors = {
 export type CreateTagError = CreateTagErrors[keyof CreateTagErrors]
 
 export type CreateTagResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type CreateTagResponse = CreateTagResponses[keyof CreateTagResponses]
@@ -4690,11 +4954,48 @@ export type UpsertTagCorrectionError =
 	UpsertTagCorrectionErrors[keyof UpsertTagCorrectionErrors]
 
 export type UpsertTagCorrectionResponses = {
-	200: DataCorrectionSubmissionResult
+	200: DataCorrectionSubmitResult
 }
 
 export type UpsertTagCorrectionResponse =
 	UpsertTagCorrectionResponses[keyof UpsertTagCorrectionResponses]
+
+export type UpdateTagPendingCorrectionData = {
+	body: NewCorrectionNewTag
+	path: {
+		/**
+		 * Tag id
+		 */
+		id: number
+		/**
+		 * Pending correction id
+		 */
+		correction_id: number
+	}
+	query?: never
+	url: "/tag/{id}/correction/{correction_id}"
+}
+
+export type UpdateTagPendingCorrectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UpdateTagPendingCorrectionError =
+	UpdateTagPendingCorrectionErrors[keyof UpdateTagPendingCorrectionErrors]
+
+export type UpdateTagPendingCorrectionResponses = {
+	200: DataCorrectionSubmitResult
+}
+
+export type UpdateTagPendingCorrectionResponse =
+	UpdateTagPendingCorrectionResponses[keyof UpdateTagPendingCorrectionResponses]
 
 export type UserRolesData = {
 	body?: never

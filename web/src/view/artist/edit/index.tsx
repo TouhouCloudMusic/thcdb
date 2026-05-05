@@ -10,6 +10,7 @@ import { Button } from "~/component/atomic/button"
 import { FormActionBar } from "~/component/form"
 import { NewArtistCorrection } from "~/domain/artist/schema"
 import { PageLayout } from "~/layout/PageLayout"
+import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
 
 import { ArtistFormAliasesField } from "./comp/Aliases"
 import { ArtistFormNameField } from "./comp/ArtistName"
@@ -32,6 +33,7 @@ type Props =
 	| {
 			type: "edit"
 			artist: Artist
+			pendingCorrectionId?: number
 	  }
 
 export function EditArtistPage(props: Props): JSX.Element {
@@ -77,7 +79,8 @@ function PageHeader(props: { type: Props["type"] }) {
 function FormContent(props: Props) {
 	const { t } = useLingui()
 	const initialValues = useArtistFormInitialValues(props)
-	const { handleSubmit, mutation } = useArtistFormSubmission(props)
+	const { handleSubmit, mutation, pendingCorrectionId } =
+		useArtistFormSubmission(props)
 
 	const form = createForm({
 		schema: NewArtistCorrection,
@@ -100,48 +103,50 @@ function FormContent(props: Props) {
 	})
 
 	return (
-		<ArtistFormProvider
-			value={{
-				get artistId() {
-					if (props.type == "edit") {
-						return props.artist.id
-					}
-				},
-				formStore: form,
-			}}
-		>
-			<Form
-				of={form}
-				class="flex grow flex-col"
-				// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
-				onSubmit={(output, _) => handleSubmit(output)}
+		<PendingCorrectionBoundary correctionId={pendingCorrectionId()}>
+			<ArtistFormProvider
+				value={{
+					get artistId() {
+						if (props.type == "edit") {
+							return props.artist.id
+						}
+					},
+					formStore: form,
+				}}
 			>
-				<div class="flex flex-col space-y-8 p-8 pb-0">
-					<ArtistFormNameField />
+				<Form
+					of={form}
+					class="flex grow flex-col"
+					// TODO: Temporary workaround for upstream type defs; refactor once the library fixes its typing bug.
+					onSubmit={(output, _) => handleSubmit(output)}
+				>
+					<div class="flex flex-col space-y-8 p-8 pb-0">
+						<ArtistFormNameField />
 
-					<ArtistFormArtistTypeField />
+						<ArtistFormArtistTypeField />
 
-					<ArtistFormLocalizedNames />
+						<ArtistFormLocalizedNames />
 
-					<ArtistFormAliasesField />
+						<ArtistFormAliasesField />
 
-					<ArtistFormTextAliases />
+						<ArtistFormTextAliases />
 
-					<ArtistFormDateFields />
+						<ArtistFormDateFields />
 
-					<ArtistFormLocationFields />
+						<ArtistFormLocationFields />
 
-					<ArtistFormMembership />
+						<ArtistFormMembership />
 
-					<ArtistFormLinks />
+						<ArtistFormLinks />
 
-					<ArtistFormActions mutation={mutation} />
-				</div>
-				<FormActionBar
-					submitting={isSubmitting()}
-					disabled={isSubmitting()}
-				/>
-			</Form>
-		</ArtistFormProvider>
+						<ArtistFormActions mutation={mutation} />
+					</div>
+					<FormActionBar
+						submitting={isSubmitting()}
+						disabled={isSubmitting()}
+					/>
+				</Form>
+			</ArtistFormProvider>
+		</PendingCorrectionBoundary>
 	)
 }

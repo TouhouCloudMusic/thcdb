@@ -15,6 +15,8 @@ pub enum SubmissionError {
     PermissionDenied,
     #[display("Correction not found")]
     NotFound,
+    #[display("Pending correction #{correction_id} already exists")]
+    PendingCorrectionConflict { correction_id: i32 },
     #[display("{_0}")]
     #[from]
     Database(#[error(source)] DatabaseError),
@@ -34,6 +36,12 @@ impl IntoResponse for SubmissionError {
             }
             SubmissionError::NotFound => {
                 AppError::not_found("Correction not found").into_response()
+            }
+            SubmissionError::PendingCorrectionConflict { correction_id } => {
+                AppError::conflict(format!(
+                    "Pending correction #{correction_id} already exists"
+                ))
+                .into_response()
             }
             SubmissionError::Database(source) => source.into_response(),
             SubmissionError::Internal(source) => source.into_response(),

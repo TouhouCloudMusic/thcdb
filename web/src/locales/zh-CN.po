@@ -244,10 +244,12 @@ msgid "AUTH REQUIRED"
 msgstr "需要登录"
 
 #: src/view/correction/CorrectionHistorySection.tsx
+#: src/view/correction/Detail.tsx
 msgid "Author"
 msgstr "作者"
 
 #: src/component/form/FormActionBar.tsx
+#: src/view/correction/pendingCorrection.tsx
 msgid "Back"
 msgstr "返回"
 
@@ -580,6 +582,10 @@ msgstr "反对"
 msgid "Duration (ms)"
 msgstr "时长（毫秒）"
 
+#: src/view/correction/Detail.tsx
+msgid "Edit"
+msgstr "编辑"
+
 #: src/view/artist/edit/index.tsx
 msgid "Edit Artist"
 msgstr "编辑艺人"
@@ -713,7 +719,7 @@ msgstr "加载图片队列失败。"
 
 #: src/view/collection/CollectionDetail.tsx
 msgid "Failed to load items."
-msgstr ""
+msgstr "加载项目失败。"
 
 #: src/view/image_queue/user.tsx
 msgid "Failed to load user image queue."
@@ -1352,6 +1358,10 @@ msgstr "待定"
 msgid "PENDING"
 msgstr "待处理"
 
+#: src/view/correction/pendingCorrection.tsx
+msgid "Pending correction exists"
+msgstr "存在待处理修正"
+
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Please sign in to add items to a collection."
 msgstr "请先登录再将条目添加到收藏。"
@@ -1555,7 +1565,7 @@ msgstr "重置密码"
 
 #: src/view/collection/CollectionDetail.tsx
 msgid "Retry"
-msgstr ""
+msgstr "重试"
 
 #: src/view/image_queue/detail.tsx
 msgid "Revert"
@@ -1887,6 +1897,10 @@ msgstr "此操作无法撤消。"
 msgid "This collection is empty"
 msgstr "此收藏为空"
 
+#: src/view/correction/pendingCorrection.tsx
+msgid "This entity already has a pending correction. You can review that correction or go back."
+msgstr "此实体已有待处理修正。你可以查看该修正或返回。"
+
 #. placeholder {0}: formatMinuteCount(props.resetKeyExpiresMinutes)
 #: src/view/auth/reset_password/index.tsx
 msgid "This is valid for {0}."
@@ -2072,6 +2086,10 @@ msgstr "验证邮箱"
 #: src/view/release/explore/filter.tsx
 msgid "View"
 msgstr "查看"
+
+#: src/view/correction/pendingCorrection.tsx
+msgid "View correction"
+msgstr "查看修正"
 
 #. placeholder {0}: props.item.id
 #: src/view/image_queue/manage.tsx

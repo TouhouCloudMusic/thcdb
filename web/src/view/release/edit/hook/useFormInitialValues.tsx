@@ -4,12 +4,12 @@ import type { Release } from "@thc/api"
 import type { NewReleaseCorrection } from "~/domain/release"
 import { DateWithPrecision } from "~/domain/shared"
 
-export type EditReleasePageProps =
+export type ReleaseFormInitialValueProps =
 	| { type: "new" }
 	| { type: "edit"; release: Release }
 
 export function useReleaseFormInitialValues(
-	props: EditReleasePageProps,
+	props: ReleaseFormInitialValueProps,
 ): NewReleaseCorrection {
 	return props.type === "new"
 		? {

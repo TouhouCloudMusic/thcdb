@@ -49,6 +49,20 @@ export async function upsertCorrection(
 	return adaptApiResult(res)
 }
 
+export async function updatePendingCorrection(
+	options: Opt<"update_artist_pending_correction">,
+) {
+	const res = await FetchClient.POST(
+		"/artist/{id}/correction/{correction_id}",
+		{
+			params: { path: options.path },
+			body: options.body,
+		},
+	)
+
+	return adaptApiResult(res)
+}
+
 export async function findAppearances(options: Opt<"find_artist_appearances">) {
 	const res = await FetchClient.GET("/artist/{id}/appearances", {
 		params: options,

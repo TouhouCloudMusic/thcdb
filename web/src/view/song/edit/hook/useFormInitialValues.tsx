@@ -2,10 +2,12 @@ import type { Song } from "@thc/api"
 
 import type { NewSongCorrection } from "~/domain/song"
 
-export type EditSongPageProps = { type: "new" } | { type: "edit"; song: Song }
+export type SongFormInitialValueProps =
+	| { type: "new" }
+	| { type: "edit"; song: Song }
 
 export function useSongFormInitialValues(
-	input: EditSongPageProps,
+	input: SongFormInitialValueProps,
 ): NewSongCorrection {
 	return input.type === "new"
 		? {

@@ -1,4 +1,5 @@
-import { useLingui } from "@lingui/solid/macro"
+import { Trans, useLingui } from "@lingui/solid/macro"
+import { useMutation } from "@tanstack/solid-query"
 import type { CorrectionComment, UserProfile } from "@thc/api"
 import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
 import { twJoin } from "tailwind-merge"
@@ -13,78 +14,97 @@ function formatDate(isoString: string): string {
 	return new Date(isoString).toLocaleDateString()
 }
 
-function extractMessage(err: unknown, fallback: string): string {
-	return err instanceof Error ? err.message : fallback
-}
-
 const TEXTAREA_CLASS =
 	"block w-full resize-none rounded border border-slate-300 bg-primary px-3 py-2 text-sm outline-1 outline-transparent -outline-offset-1 focus:outline-reimu-600 disabled:bg-slate-100 disabled:text-slate-400 transition-all duration-100"
 
-function makeReplyHandler(
-	onCreateComment: (content: string, parentId: number | null) => Promise<void>,
-	commentId: number,
-	onClose: () => void,
-): (content: string) => Promise<void> {
-	return async (content) => {
-		await onCreateComment(content, commentId)
-		onClose()
-	}
-}
-
-type ReplyInputProps = {
+function useCommentInputStore(options: {
 	onSubmit: (content: string) => Promise<void>
-	onCancel: () => void
-}
-
-function ReplyInput(props: ReplyInputProps) {
+}) {
 	const { t } = useLingui()
 	const [content, setContent] = createSignal("")
-	const [submitting, setSubmitting] = createSignal(false)
-	const [error, setError] = createSignal<string | null>(null)
+	const [validationError, setValidationError] = createSignal<string>()
+	const submitMutation = useMutation(() => ({
+		mutationFn: options.onSubmit,
+		onSuccess: () => {
+			setContent("")
+		},
+	}))
 
-	const submit = async () => {
-		const text = content().trim()
-		if (!text) return
-		setSubmitting(true)
-		setError(null)
-		try {
-			await props.onSubmit(text)
-		} catch (err) {
-			setError(extractMessage(err, t`Something went wrong`))
-		} finally {
-			setSubmitting(false)
-		}
+	const mutationErrorMessage = () => {
+		const message = submitMutation.error?.message
+		return message && message.length > 0 ? message : undefined
 	}
+	const errorMessage = () => {
+		if (validationError()) return validationError()
+		if (!submitMutation.error) return undefined
+		return mutationErrorMessage() ?? t`Something went wrong`
+	}
+	const setInputContent = (value: string) => {
+		setContent(value)
+		if (value.trim()) setValidationError(undefined)
+	}
+	const submit = () => {
+		const text = content().trim()
+		if (!text) {
+			setValidationError(t`Comment cannot be empty`)
+			return
+		}
+		setValidationError(undefined)
+		submitMutation.mutate(text)
+	}
+
+	return {
+		content,
+		errorMessage,
+		isSubmitting: () => submitMutation.isPending,
+		setContent: setInputContent,
+		submit,
+	}
+}
+
+function ReplyInput(props: {
+	onSubmit: (content: string) => Promise<void>
+	onCancel: () => void
+}) {
+	const { t } = useLingui()
+	const input = useCommentInputStore({
+		onSubmit: (content) => props.onSubmit(content),
+	})
 
 	return (
 		<div class="mt-2 space-y-2">
 			<textarea
 				class={TEXTAREA_CLASS}
-				value={content()}
-				onInput={(e) => setContent(e.currentTarget.value)}
-				disabled={submitting()}
+				value={input.content()}
+				onInput={(e) => input.setContent(e.currentTarget.value)}
+				disabled={input.isSubmitting()}
 				rows={3}
 				placeholder={t`Write a reply...`}
 			></textarea>
-			<Show when={error()}>
-				<p class="text-xs text-reimu-600">{error()}</p>
+			<Show when={input.errorMessage()}>
+				{(message) => <p class="text-xs text-reimu-600">{message()}</p>}
 			</Show>
 			<div class="flex gap-2">
 				<Button
 					size="Sm"
 					variant="Primary"
-					disabled={submitting() || !content().trim()}
-					onClick={() => void submit()}
+					disabled={input.isSubmitting()}
+					onClick={input.submit}
 				>
-					{submitting() ? t`Submitting...` : t`Reply`}
+					<Show
+						when={input.isSubmitting()}
+						fallback={<Trans>Reply</Trans>}
+					>
+						<Trans>Submitting...</Trans>
+					</Show>
 				</Button>
 				<Button
 					size="Sm"
 					variant="Tertiary"
-					disabled={submitting()}
+					disabled={input.isSubmitting()}
 					onClick={props.onCancel}
 				>
-					{t`Cancel`}
+					<Trans>Cancel</Trans>
 				</Button>
 			</div>
 		</div>
@@ -191,31 +211,14 @@ function CommentItem(props: CommentItemProps) {
 	)
 }
 
-type TopLevelInputProps = {
+function TopLevelInput(props: {
 	onSubmit: (content: string) => Promise<void>
 	currentUser: UserProfile | undefined
-}
-
-function TopLevelInput(props: TopLevelInputProps) {
+}) {
 	const { t } = useLingui()
-	const [content, setContent] = createSignal("")
-	const [submitting, setSubmitting] = createSignal(false)
-	const [error, setError] = createSignal<string | null>(null)
-
-	const submit = async () => {
-		const text = content().trim()
-		if (!text) return
-		setSubmitting(true)
-		setError(null)
-		try {
-			await props.onSubmit(text)
-			setContent("")
-		} catch (err) {
-			setError(extractMessage(err, t`Something went wrong`))
-		} finally {
-			setSubmitting(false)
-		}
-	}
+	const input = useCommentInputStore({
+		onSubmit: (content) => props.onSubmit(content),
+	})
 
 	return (
 		<div class="flex gap-3">
@@ -228,23 +231,28 @@ function TopLevelInput(props: TopLevelInputProps) {
 			<div class="min-w-0 flex-1 space-y-2">
 				<textarea
 					class={TEXTAREA_CLASS}
-					value={content()}
-					onInput={(e) => setContent(e.currentTarget.value)}
-					disabled={submitting()}
+					value={input.content()}
+					onInput={(e) => input.setContent(e.currentTarget.value)}
+					disabled={input.isSubmitting()}
 					rows={3}
 					placeholder={t`Add a comment...`}
 				></textarea>
-				<Show when={error()}>
-					<p class="text-xs text-reimu-600">{error()}</p>
+				<Show when={input.errorMessage()}>
+					{(message) => <p class="text-xs text-reimu-600">{message()}</p>}
 				</Show>
 				<div class="flex justify-end">
 					<Button
 						size="Sm"
 						variant="Primary"
-						disabled={submitting() || !content().trim()}
-						onClick={() => void submit()}
+						disabled={input.isSubmitting()}
+						onClick={input.submit}
 					>
-						{submitting() ? t`Submitting...` : t`Comment`}
+						<Show
+							when={input.isSubmitting()}
+							fallback={<Trans>Comment</Trans>}
+						>
+							<Trans>Submitting...</Trans>
+						</Show>
 					</Button>
 				</div>
 			</div>
@@ -253,8 +261,9 @@ function TopLevelInput(props: TopLevelInputProps) {
 }
 
 export type CorrectionCommentsProps = {
+	correctionId: number
 	comments: CorrectionComment[]
-	nextCursor: number | null | undefined
+	hasMore: boolean
 	isLoadingMore: boolean
 	currentUser: UserProfile | undefined
 	canManage: boolean
@@ -266,14 +275,16 @@ export type CorrectionCommentsProps = {
 export function CorrectionComments(props: CorrectionCommentsProps) {
 	const { t } = useLingui()
 	const [activeReplyId, setActiveReplyId] = createSignal<number | null>(null)
-
-	const commentMap = createMemo(
+	const commentById = createMemo(
 		() => new Map(props.comments.map((c) => [c.id, c])),
 	)
+	const closeActiveReplyIfStillOpen = (commentId: number) => {
+		setActiveReplyId((activeId) => (activeId === commentId ? null : activeId))
+	}
 
-	const getRootId = (c: CorrectionComment) => {
-		let curr = c
-		const map = commentMap()
+	const getRootId = (comment: CorrectionComment) => {
+		let curr = comment
+		const map = commentById()
 		while (curr.parent_id != null) {
 			const parent = map.get(curr.parent_id)
 			if (!parent) break
@@ -320,18 +331,19 @@ export function CorrectionComments(props: CorrectionCommentsProps) {
 										onReply={() => setActiveReplyId(comment.id)}
 										onCancelReply={() => setActiveReplyId(null)}
 										onDelete={() => void props.onDeleteComment(comment.id)}
-										onSubmitReply={makeReplyHandler(
-											props.onCreateComment,
-											comment.id,
-											() => setActiveReplyId(null),
-										)}
+										onSubmitReply={(content) => {
+											const commentId = comment.id
+											return props
+												.onCreateComment(content, commentId)
+												.then(() => closeActiveReplyIfStillOpen(commentId))
+										}}
 									/>
 									<For each={repliesFor(comment.id)}>
 										{(reply) => {
 											const replyToName =
 												reply.parent_id === comment.id
 													? undefined
-													: commentMap().get(reply.parent_id!)?.author.name
+													: commentById().get(reply.parent_id!)?.author.name
 
 											return (
 												<CommentItem
@@ -342,11 +354,14 @@ export function CorrectionComments(props: CorrectionCommentsProps) {
 													onReply={() => setActiveReplyId(reply.id)}
 													onCancelReply={() => setActiveReplyId(null)}
 													onDelete={() => void props.onDeleteComment(reply.id)}
-													onSubmitReply={makeReplyHandler(
-														props.onCreateComment,
-														reply.id,
-														() => setActiveReplyId(null),
-													)}
+													onSubmitReply={(content) => {
+														const commentId = reply.id
+														return props
+															.onCreateComment(content, commentId)
+															.then(() =>
+																closeActiveReplyIfStillOpen(commentId),
+															)
+													}}
 													indented
 													replyToName={replyToName}
 												/>
@@ -360,7 +375,7 @@ export function CorrectionComments(props: CorrectionCommentsProps) {
 				</Match>
 			</Switch>
 
-			<Show when={props.nextCursor != null}>
+			<Show when={props.hasMore}>
 				<div class="flex justify-center border-t border-slate-200 px-4 py-3">
 					<Button
 						variant="Secondary"

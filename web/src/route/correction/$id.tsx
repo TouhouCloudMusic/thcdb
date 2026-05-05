@@ -34,11 +34,11 @@ function RouteComponent() {
 	const params = Route.useParams()
 	const search = Route.useSearch()
 	const navigate = Route.useNavigate()
-	const correctionId = EntityId_fromStr(params().id)
+	const correctionId = () => EntityId_fromStr(params().id)
 
 	return (
 		<CorrectionDetailPage
-			correctionId={correctionId}
+			correctionId={correctionId()}
 			compareId={search().compare}
 			onCompareIdChange={(value) =>
 				void navigate({

@@ -3,9 +3,10 @@ import type { NewCorrectionNewLabel } from "@thc/api"
 import { LabelApi } from "@thc/api"
 import { Either } from "effect"
 
-type Params =
-	| { type: "Create"; data: NewCorrectionNewLabel }
-	| { type: "Update"; id: number; data: NewCorrectionNewLabel }
+import type { EntityCorrectionMutationParams } from "../correction/mutation"
+import { toMutationError } from "../shared/error"
+
+type Params = EntityCorrectionMutationParams<NewCorrectionNewLabel>
 
 export const getInstance = () =>
 	useMutation(() => ({
@@ -17,19 +18,28 @@ export const getInstance = () =>
 				return Either.match(result, {
 					onRight: (message) => message,
 					onLeft: (error) => {
-						throw error
+						throw toMutationError(error)
 					},
 				})
 			}
 
-			const result = await LabelApi.upsertCorrection({
-				path: { id: params.id },
-				body: params.data,
-			})
+			const result =
+				params.correctionId === undefined
+					? await LabelApi.upsertCorrection({
+							path: { id: params.id },
+							body: params.data,
+						})
+					: await LabelApi.updatePendingCorrection({
+							path: {
+								id: params.id,
+								correction_id: params.correctionId,
+							},
+							body: params.data,
+						})
 			return Either.match(result, {
 				onRight: (message) => message,
 				onLeft: (error) => {
-					throw error
+					throw toMutationError(error)
 				},
 			})
 		},

@@ -1,28 +1,31 @@
 use std::collections::BTreeSet;
 
-use entity::enums::EntityType;
+use entity::enums::{CorrectionUserType, EntityType};
 use entity::{
-    artist_alias_history, artist_history, artist_link_history,
+    artist, artist_alias_history, artist_history, artist_link_history,
     artist_localized_name_history, artist_membership_history,
     artist_membership_role_history, artist_membership_tenure_history,
-    credit_role_history, credit_role_inheritance_history,
-    event_alternative_name_history, event_history, label_founder_history,
-    label_history, label_localized_name_history, release_artist_history,
-    release_catalog_number_history, release_credit_history,
-    release_disc_history, release_event_history, release_history,
-    release_localized_title_history, release_track_artist_history,
-    release_track_history, song_artist_history, song_credit_history,
-    song_history, song_language_history, song_localized_title_history,
-    song_lyrics_history, song_relation_history, tag_alternative_name_history,
-    tag_history, tag_relation_history,
+    correction as correction_entity, correction_user, credit_role,
+    credit_role_history, credit_role_inheritance_history, event,
+    event_alternative_name_history, event_history, label,
+    label_founder_history, label_history, label_localized_name_history,
+    release, release_artist_history, release_catalog_number_history,
+    release_credit_history, release_disc_history, release_event_history,
+    release_history, release_localized_title_history,
+    release_track_artist_history, release_track_history, song,
+    song_artist_history, song_credit_history, song_history,
+    song_language_history, song_localized_title_history, song_lyrics,
+    song_lyrics_history, song_relation_history, tag,
+    tag_alternative_name_history, tag_history, tag_relation_history, user,
 };
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, EntityTrait, LoaderTrait, QueryFilter,
-    QueryOrder,
+    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, JoinType, LoaderTrait,
+    QueryFilter, QueryOrder, QuerySelect, RelationTrait,
 };
 use serde_json::{Value, json};
 
 use crate::domain::correction::CorrectionDiffEntry;
+use crate::features::correction::model::CorrectionUserSummary;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::error::BrokenEntityReference;
 
@@ -37,12 +40,104 @@ pub enum SnapshotError {
     Database(#[error(source)] DatabaseError),
 }
 
+pub async fn find_correction(
+    conn: &impl ConnectionTrait,
+    correction_id: i32,
+) -> Result<Option<correction_entity::Model>, DbErr> {
+    correction_entity::Entity::find_by_id(correction_id)
+        .one(conn)
+        .await
+}
+
+pub async fn correction_exists(
+    conn: &impl ConnectionTrait,
+    correction_id: i32,
+) -> Result<bool, DbErr> {
+    Ok(find_correction(conn, correction_id).await?.is_some())
+}
+
+pub async fn find_author(
+    conn: &impl ConnectionTrait,
+    correction_id: i32,
+) -> Result<CorrectionUserSummary, DbErr> {
+    let Some((id, name)) = correction_user::Entity::find()
+        .select_only()
+        .column(user::Column::Id)
+        .column(user::Column::Name)
+        .join(JoinType::InnerJoin, correction_user::Relation::User.def())
+        .filter(correction_user::Column::CorrectionId.eq(correction_id))
+        .filter(
+            correction_user::Column::UserType.eq(CorrectionUserType::Author),
+        )
+        .into_tuple::<(i32, String)>()
+        .one(conn)
+        .await?
+    else {
+        return Err(DbErr::Custom(format!(
+            "Correction {correction_id} author not found"
+        )));
+    };
+
+    Ok(CorrectionUserSummary { id, name })
+}
+
+pub async fn find_entity_name(
+    conn: &impl ConnectionTrait,
+    entity_type: EntityType,
+    entity_id: i32,
+) -> Result<String, DbErr> {
+    let name = match entity_type {
+        EntityType::Artist => artist::Entity::find_by_id(entity_id)
+            .one(conn)
+            .await?
+            .map(|model| model.name),
+        EntityType::Label => label::Entity::find_by_id(entity_id)
+            .one(conn)
+            .await?
+            .map(|model| model.name),
+        EntityType::Release => release::Entity::find_by_id(entity_id)
+            .one(conn)
+            .await?
+            .map(|model| model.title),
+        EntityType::Song => song::Entity::find_by_id(entity_id)
+            .one(conn)
+            .await?
+            .map(|model| model.title),
+        EntityType::Tag => tag::Entity::find_by_id(entity_id)
+            .one(conn)
+            .await?
+            .map(|model| model.name),
+        EntityType::Event => event::Entity::find_by_id(entity_id)
+            .one(conn)
+            .await?
+            .map(|model| model.name),
+        EntityType::SongLyrics => {
+            match song_lyrics::Entity::find_by_id(entity_id).one(conn).await? {
+                Some(lyrics) => song::Entity::find_by_id(lyrics.song_id)
+                    .one(conn)
+                    .await?
+                    .map(|model| model.title),
+                None => None,
+            }
+        }
+        EntityType::CreditRole => credit_role::Entity::find_by_id(entity_id)
+            .one(conn)
+            .await?
+            .map(|model| model.name),
+    };
+
+    // TODO: Convert this to a custom error type.
+    name.ok_or_else(|| {
+        DbErr::Custom(format!("{entity_type:?} #{entity_id} not found"))
+    })
+}
+
 pub async fn snapshot_for_history(
     db: &impl ConnectionTrait,
     entity_type: EntityType,
     history_id: i32,
 ) -> Result<Value, SnapshotError> {
-    let snapshot = match entity_type {
+    match entity_type {
         EntityType::Artist => snapshot_artist(db, history_id).await,
         EntityType::Label => snapshot_label(db, history_id).await,
         EntityType::Release => snapshot_release(db, history_id).await,
@@ -52,27 +147,8 @@ pub async fn snapshot_for_history(
         EntityType::SongLyrics => snapshot_song_lyrics(db, history_id).await,
         EntityType::CreditRole => snapshot_credit_role(db, history_id).await,
     }
-    .db_operation("load correction history snapshot")?;
-
-    snapshot.ok_or_else(|| {
-        SnapshotError::BrokenReference(BrokenEntityReference {
-            entity: history_entity_name(entity_type),
-            id: history_id,
-        })
-    })
-}
-
-const fn history_entity_name(entity_type: EntityType) -> &'static str {
-    match entity_type {
-        EntityType::Artist => "artist history",
-        EntityType::Label => "label history",
-        EntityType::Release => "release history",
-        EntityType::Song => "song history",
-        EntityType::Tag => "tag history",
-        EntityType::Event => "event history",
-        EntityType::SongLyrics => "song lyrics history",
-        EntityType::CreditRole => "credit role history",
-    }
+    .db_operation("load correction history snapshot")
+    .map_err(SnapshotError::from)
 }
 
 pub fn diff_snapshots(
@@ -199,25 +275,20 @@ fn location_value(
     }
 }
 
-#[expect(clippy::too_many_lines, reason = "snapshot artist composition")]
 async fn snapshot_artist(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Option<Value>, DatabaseError> {
+) -> Result<Value, DbErr> {
     let history = artist_history::Entity::find_by_id(history_id)
         .one(db)
-        .await
-        .db_operation("load artist history")?;
-    let Some(history) = history else {
-        return Ok(None);
-    };
+        .await?
+        .ok_or_else(|| DbErr::Custom("Artist history not found".to_string()))?;
 
     let aliases = artist_alias_history::Entity::find()
         .filter(artist_alias_history::Column::HistoryId.eq(history_id))
         .order_by_asc(artist_alias_history::Column::AliasId)
         .all(db)
-        .await
-        .db_operation("load artist alias history")?
+        .await?
         .into_iter()
         .map(|model| model.alias_id)
         .collect::<Vec<_>>();
@@ -226,8 +297,7 @@ async fn snapshot_artist(
         .filter(artist_link_history::Column::HistoryId.eq(history_id))
         .order_by_asc(artist_link_history::Column::Id)
         .all(db)
-        .await
-        .db_operation("load artist link history")?
+        .await?
         .into_iter()
         .map(|model| model.url)
         .collect::<Vec<_>>();
@@ -236,8 +306,7 @@ async fn snapshot_artist(
         .filter(artist_localized_name_history::Column::HistoryId.eq(history_id))
         .order_by_asc(artist_localized_name_history::Column::Id)
         .all(db)
-        .await
-        .db_operation("load artist localized name history")?
+        .await?
         .into_iter()
         .map(|model| {
             json!({
@@ -251,17 +320,14 @@ async fn snapshot_artist(
         .filter(artist_membership_history::Column::HistoryId.eq(history_id))
         .order_by_asc(artist_membership_history::Column::Id)
         .all(db)
-        .await
-        .db_operation("load artist membership history")?;
+        .await?;
 
     let roles = memberships
         .load_many(artist_membership_role_history::Entity, db)
-        .await
-        .db_operation("load artist membership role history")?;
+        .await?;
     let tenures = memberships
         .load_many(artist_membership_tenure_history::Entity, db)
-        .await
-        .db_operation("load artist membership tenure history")?;
+        .await?;
 
     let membership_values = memberships
         .iter()
@@ -290,7 +356,7 @@ async fn snapshot_artist(
         })
         .collect::<Vec<_>>();
 
-    Ok(Some(json!({
+    Ok(json!({
         "name": history.name,
         "artist_type": history.artist_type,
         "text_alias": history.text_alias,
@@ -316,27 +382,23 @@ async fn snapshot_artist(
         "aliases": aliases,
         "localized_names": localized_names,
         "memberships": membership_values,
-    })))
+    }))
 }
 
 async fn snapshot_label(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Option<Value>, DatabaseError> {
+) -> Result<Value, DbErr> {
     let history = label_history::Entity::find_by_id(history_id)
         .one(db)
-        .await
-        .db_operation("load label history")?;
-    let Some(history) = history else {
-        return Ok(None);
-    };
+        .await?
+        .ok_or_else(|| DbErr::Custom("Label history not found".to_string()))?;
 
     let founders = label_founder_history::Entity::find()
         .filter(label_founder_history::Column::HistoryId.eq(history_id))
         .order_by_asc(label_founder_history::Column::ArtistId)
         .all(db)
-        .await
-        .db_operation("load label founder history")?
+        .await?
         .into_iter()
         .map(|model| model.artist_id)
         .collect::<Vec<_>>();
@@ -345,8 +407,7 @@ async fn snapshot_label(
         .filter(label_localized_name_history::Column::HistoryId.eq(history_id))
         .order_by_asc(label_localized_name_history::Column::LanguageId)
         .all(db)
-        .await
-        .db_operation("load label localized name history")?
+        .await?
         .into_iter()
         .map(|model| {
             json!({
@@ -356,7 +417,7 @@ async fn snapshot_label(
         })
         .collect::<Vec<_>>();
 
-    Ok(Some(json!({
+    Ok(json!({
         "name": history.name,
         "founded_date": date_with_precision(
             history.founded_date,
@@ -368,28 +429,26 @@ async fn snapshot_label(
         ),
         "founders": founders,
         "localized_names": localized_names,
-    })))
+    }))
 }
 
 #[expect(clippy::too_many_lines, reason = "snapshot release composition")]
 async fn snapshot_release(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Option<Value>, DatabaseError> {
+) -> Result<Value, DbErr> {
     let history = release_history::Entity::find_by_id(history_id)
         .one(db)
-        .await
-        .db_operation("load release history")?;
-    let Some(history) = history else {
-        return Ok(None);
-    };
+        .await?
+        .ok_or_else(|| {
+            DbErr::Custom("Release history not found".to_string())
+        })?;
 
     let artists = release_artist_history::Entity::find()
         .filter(release_artist_history::Column::HistoryId.eq(history_id))
         .order_by_asc(release_artist_history::Column::ArtistId)
         .all(db)
-        .await
-        .db_operation("load release artist history")?
+        .await?
         .into_iter()
         .map(|model| model.artist_id)
         .collect::<Vec<_>>();
@@ -398,8 +457,7 @@ async fn snapshot_release(
         .filter(release_credit_history::Column::HistoryId.eq(history_id))
         .order_by_asc(release_credit_history::Column::Id)
         .all(db)
-        .await
-        .db_operation("load release credit history")?
+        .await?
         .into_iter()
         .map(|model| {
             json!({
@@ -416,8 +474,7 @@ async fn snapshot_release(
         )
         .order_by_asc(release_localized_title_history::Column::LanguageId)
         .all(db)
-        .await
-        .db_operation("load release localized title history")?
+        .await?
         .into_iter()
         .map(|model| {
             json!({
@@ -433,8 +490,7 @@ async fn snapshot_release(
         )
         .order_by_asc(release_catalog_number_history::Column::Id)
         .all(db)
-        .await
-        .db_operation("load release catalog number history")?
+        .await?
         .into_iter()
         .map(|model| model.catalog_number)
         .collect::<Vec<_>>();
@@ -443,21 +499,16 @@ async fn snapshot_release(
         .filter(release_disc_history::Column::HistoryId.eq(history_id))
         .order_by_asc(release_disc_history::Column::Id)
         .all(db)
-        .await
-        .db_operation("load release disc history")?;
+        .await?;
 
-    let tracks = discs
-        .load_many(release_track_history::Entity, db)
-        .await
-        .db_operation("load release track history")?;
+    let tracks = discs.load_many(release_track_history::Entity, db).await?;
 
     let track_lengths = tracks.iter().map(Vec::len).collect::<Vec<_>>();
 
     let flat_tracks = tracks.into_iter().flatten().collect::<Vec<_>>();
     let flat_track_artists = flat_tracks
         .load_many(release_track_artist_history::Entity, db)
-        .await
-        .db_operation("load release track artist history")?;
+        .await?;
 
     let mut track_iter = flat_tracks.into_iter();
     let mut artist_iter = flat_track_artists.into_iter();
@@ -504,13 +555,12 @@ async fn snapshot_release(
         .filter(release_event_history::Column::HistoryId.eq(history_id))
         .order_by_asc(release_event_history::Column::EventId)
         .all(db)
-        .await
-        .db_operation("load release event history")?
+        .await?
         .into_iter()
         .map(|model| model.event_id)
         .collect::<Vec<_>>();
 
-    Ok(Some(json!({
+    Ok(json!({
         "title": history.title,
         "release_type": history.release_type,
         "release_date": date_with_precision(
@@ -531,27 +581,23 @@ async fn snapshot_release(
         "artists": artists,
         "localized_titles": localized_titles,
         "catalog_numbers": catalog_numbers,
-    })))
+    }))
 }
 
 async fn snapshot_song(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Option<Value>, DatabaseError> {
+) -> Result<Value, DbErr> {
     let history = song_history::Entity::find_by_id(history_id)
         .one(db)
-        .await
-        .db_operation("load song history")?;
-    let Some(history) = history else {
-        return Ok(None);
-    };
+        .await?
+        .ok_or_else(|| DbErr::Custom("Song history not found".to_string()))?;
 
     let artists = song_artist_history::Entity::find()
         .filter(song_artist_history::Column::HistoryId.eq(history_id))
         .order_by_asc(song_artist_history::Column::ArtistId)
         .all(db)
-        .await
-        .db_operation("load song artist history")?
+        .await?
         .into_iter()
         .map(|model| model.artist_id)
         .collect::<Vec<_>>();
@@ -560,8 +606,7 @@ async fn snapshot_song(
         .filter(song_credit_history::Column::HistoryId.eq(history_id))
         .order_by_asc(song_credit_history::Column::Id)
         .all(db)
-        .await
-        .db_operation("load song credit history")?
+        .await?
         .into_iter()
         .map(|model| {
             json!({
@@ -575,8 +620,7 @@ async fn snapshot_song(
         .filter(song_localized_title_history::Column::HistoryId.eq(history_id))
         .order_by_asc(song_localized_title_history::Column::Id)
         .all(db)
-        .await
-        .db_operation("load song localized title history")?
+        .await?
         .into_iter()
         .map(|model| {
             json!({
@@ -590,8 +634,7 @@ async fn snapshot_song(
         .filter(song_language_history::Column::HistoryId.eq(history_id))
         .order_by_asc(song_language_history::Column::LanguageId)
         .all(db)
-        .await
-        .db_operation("load song language history")?
+        .await?
         .into_iter()
         .map(|model| model.language_id)
         .collect::<Vec<_>>();
@@ -600,8 +643,7 @@ async fn snapshot_song(
         .filter(song_relation_history::Column::HistoryId.eq(history_id))
         .order_by_asc(song_relation_history::Column::RelatedSongId)
         .all(db)
-        .await
-        .db_operation("load song relation history")?
+        .await?
         .into_iter()
         .map(|model| {
             json!({
@@ -612,34 +654,30 @@ async fn snapshot_song(
         })
         .collect::<Vec<_>>();
 
-    Ok(Some(json!({
+    Ok(json!({
         "title": history.title,
         "artists": artists,
         "credits": credits,
         "localized_titles": localized_titles,
         "languages": language_ids,
         "relations": relations,
-    })))
+    }))
 }
 
 async fn snapshot_tag(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Option<Value>, DatabaseError> {
+) -> Result<Value, DbErr> {
     let history = tag_history::Entity::find_by_id(history_id)
         .one(db)
-        .await
-        .db_operation("load tag history")?;
-    let Some(history) = history else {
-        return Ok(None);
-    };
+        .await?
+        .ok_or_else(|| DbErr::Custom("Tag history not found".to_string()))?;
 
     let alternative_names = tag_alternative_name_history::Entity::find()
         .filter(tag_alternative_name_history::Column::HistoryId.eq(history_id))
         .order_by_asc(tag_alternative_name_history::Column::Id)
         .all(db)
-        .await
-        .db_operation("load tag alternative name history")?
+        .await?
         .into_iter()
         .map(|model| model.name)
         .collect::<Vec<_>>();
@@ -648,8 +686,7 @@ async fn snapshot_tag(
         .filter(tag_relation_history::Column::HistoryId.eq(history_id))
         .order_by_asc(tag_relation_history::Column::RelatedTagId)
         .all(db)
-        .await
-        .db_operation("load tag relation history")?
+        .await?
         .into_iter()
         .map(|model| {
             json!({
@@ -659,27 +696,24 @@ async fn snapshot_tag(
         })
         .collect::<Vec<_>>();
 
-    Ok(Some(json!({
+    Ok(json!({
         "name": history.name,
         "type": history.r#type,
         "short_description": history.short_description,
         "description": history.description,
         "alternative_names": alternative_names,
         "relations": relations,
-    })))
+    }))
 }
 
 async fn snapshot_event(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Option<Value>, DatabaseError> {
+) -> Result<Value, DbErr> {
     let history = event_history::Entity::find_by_id(history_id)
         .one(db)
-        .await
-        .db_operation("load event history")?;
-    let Some(history) = history else {
-        return Ok(None);
-    };
+        .await?
+        .ok_or_else(|| DbErr::Custom("Event history not found".to_string()))?;
 
     let alternative_names = event_alternative_name_history::Entity::find()
         .filter(
@@ -687,13 +721,12 @@ async fn snapshot_event(
         )
         .order_by_asc(event_alternative_name_history::Column::Id)
         .all(db)
-        .await
-        .db_operation("load event alternative name history")?
+        .await?
         .into_iter()
         .map(|model| model.name)
         .collect::<Vec<_>>();
 
-    Ok(Some(json!({
+    Ok(json!({
         "name": history.name,
         "description": history.description,
         "short_description": history.short_description,
@@ -711,39 +744,37 @@ async fn snapshot_event(
             history.location_city.as_deref(),
         ),
         "alternative_names": alternative_names,
-    })))
+    }))
 }
 
 async fn snapshot_song_lyrics(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Option<Value>, DatabaseError> {
+) -> Result<Value, DbErr> {
     let history = song_lyrics_history::Entity::find_by_id(history_id)
         .one(db)
-        .await
-        .db_operation("load song lyrics history")?;
-    let Some(history) = history else {
-        return Ok(None);
-    };
+        .await?
+        .ok_or_else(|| {
+            DbErr::Custom("Song lyrics history not found".to_string())
+        })?;
 
-    Ok(Some(json!({
+    Ok(json!({
         "language_id": history.language_id,
         "content": history.content,
         "is_main": history.is_main,
-    })))
+    }))
 }
 
 async fn snapshot_credit_role(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Option<Value>, DatabaseError> {
+) -> Result<Value, DbErr> {
     let history = credit_role_history::Entity::find_by_id(history_id)
         .one(db)
-        .await
-        .db_operation("load credit role history")?;
-    let Some(history) = history else {
-        return Ok(None);
-    };
+        .await?
+        .ok_or_else(|| {
+            DbErr::Custom("Credit role history not found".to_string())
+        })?;
 
     let inherits = credit_role_inheritance_history::Entity::find()
         .filter(
@@ -751,15 +782,14 @@ async fn snapshot_credit_role(
         )
         .order_by_asc(credit_role_inheritance_history::Column::SuperId)
         .all(db)
-        .await
-        .db_operation("load credit role inheritance history")?
+        .await?
         .into_iter()
         .map(|model| model.super_id)
         .collect::<Vec<_>>();
 
-    Ok(Some(json!({
+    Ok(json!({
         "name": history.name,
         "description": history.description,
         "inherits": inherits,
-    })))
+    }))
 }

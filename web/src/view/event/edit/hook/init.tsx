@@ -2,16 +2,13 @@ import type { Event } from "@thc/api"
 
 import type { NewEventCorrection } from "~/domain/event"
 import { DateWithPrecision } from "~/domain/shared"
-import type { Location } from "~/domain/shared/schema"
-
-type EventLocation = {
-	city?: string | null
-	country?: string | null
-	province?: string | null
-}
 
 export type EventWithLocation = Event & {
-	location?: EventLocation | null
+	location?: {
+		city?: string | null
+		country?: string | null
+		province?: string | null
+	} | null
 }
 
 export type EventFormInitProps =
@@ -22,26 +19,6 @@ export type EventFormInitProps =
 			type: "edit"
 			event: EventWithLocation
 	  }
-
-function toEmptyLocation(): Location {
-	return {
-		country: undefined,
-		province: undefined,
-		city: undefined,
-	}
-}
-
-function normalizeLocation(location?: EventLocation | null): Location {
-	if (!location) {
-		return toEmptyLocation()
-	}
-
-	return {
-		country: location.country ?? undefined,
-		province: location.province ?? undefined,
-		city: location.city ?? undefined,
-	}
-}
 
 export function toEventFormInitValue(
 	input: EventFormInitProps,
@@ -57,7 +34,7 @@ export function toEventFormInitValue(
 				start_date: undefined,
 				end_date: undefined,
 				alternative_names: [],
-				location: toEmptyLocation(),
+				location: undefined,
 			},
 		}
 	}
@@ -73,7 +50,7 @@ export function toEventFormInitValue(
 			end_date: DateWithPrecision.toInput(input.event.end_date),
 			alternative_names:
 				input.event.alternative_names?.map((alt) => alt.name) ?? [],
-			location: normalizeLocation(input.event.location),
+			location: input.event.location ?? undefined,
 		},
 	}
 }

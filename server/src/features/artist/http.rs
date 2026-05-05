@@ -11,13 +11,12 @@ use super::{find, release, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::application::correction::{
-    CorrectionSubmissionResult, NewCorrectionDto,
+    CorrectionSubmitResult, NewCorrectionDto,
 };
 use crate::domain::image::CurrentImageMetadata;
-use crate::features::artist_image::{
-    ArtistProfileImageInput, Error as ImageError,
-};
+use crate::features::artist_image::{self, ArtistProfileImageInput};
 use crate::features::correction::SubmissionError;
+use crate::features::correction::service::CorrectionUpsertMode;
 use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Artist";
@@ -27,6 +26,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .with_private(|r| {
             r.routes(routes!(create_artist))
                 .routes(routes!(upsert_artist_correction))
+                .routes(routes!(update_artist_pending_correction))
                 .routes(routes!(get_artist_profile_image_metadata))
                 .routes(routes!(upload_artist_profile_image))
         })
@@ -44,14 +44,14 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     path = "/artist",
     request_body = NewCorrectionDto<NewArtist>,
     responses(
-        (status = 200, body = Data<CorrectionSubmissionResult>),
+        (status = 200, body = Data<CorrectionSubmitResult>),
     ),
 )]
 async fn create_artist(
     CurrentUser(user): CurrentUser,
     State(repo): State<state::SeaOrmRepository>,
     Json(input): Json<NewCorrectionDto<NewArtist>>,
-) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
+) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service::create(&repo, input.with_author(user)).await?;
     Ok(Data::from(result))
 }
@@ -62,7 +62,7 @@ async fn create_artist(
     path = "/artist/{id}",
     request_body = NewCorrectionDto<NewArtist>,
     responses(
-        (status = 200, body = Data<CorrectionSubmissionResult>),
+        (status = 200, body = Data<CorrectionSubmitResult>),
     ),
 )]
 async fn upsert_artist_correction(
@@ -71,17 +71,65 @@ async fn upsert_artist_correction(
     State(notification): State<state::NotificationService>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewArtist>>,
-) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
+) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let user_id = user.id;
-    let result =
-        service::upsert_correction(&repo, id, dto.with_author(user)).await?;
+    let result = service::upsert_correction(
+        &repo,
+        id,
+        dto.with_author(user),
+        CorrectionUpsertMode::Create,
+    )
+    .await?;
 
-    notification
-        .notify_correction_needs_review_best_effort(
-            result.correction_id,
-            &[user_id],
-        )
-        .await;
+    if let Some(correction_id) = result.submitted_id() {
+        notification
+            .notify_correction_needs_review_best_effort(
+                correction_id,
+                &[user_id],
+            )
+            .await;
+    }
+
+    Ok(Data::from(result))
+}
+
+#[utoipa::path(
+    post,
+    tag = TAG,
+    path = "/artist/{id}/correction/{correction_id}",
+    params(
+        ("id" = i32, Path, description = "Artist id"),
+        ("correction_id" = i32, Path, description = "Pending correction id"),
+    ),
+    request_body = NewCorrectionDto<NewArtist>,
+    responses(
+        (status = 200, body = Data<CorrectionSubmitResult>),
+    ),
+)]
+async fn update_artist_pending_correction(
+    CurrentUser(user): CurrentUser,
+    State(repo): State<state::SeaOrmRepository>,
+    State(notification): State<state::NotificationService>,
+    Path((id, correction_id)): Path<(i32, i32)>,
+    Json(dto): Json<NewCorrectionDto<NewArtist>>,
+) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
+    let user_id = user.id;
+    let result = service::upsert_correction(
+        &repo,
+        id,
+        dto.with_author(user),
+        CorrectionUpsertMode::Update { correction_id },
+    )
+    .await?;
+
+    if let Some(correction_id) = result.submitted_id() {
+        notification
+            .notify_correction_needs_review_best_effort(
+                correction_id,
+                &[user_id],
+            )
+            .await;
+    }
 
     Ok(Data::from(result))
 }
@@ -98,7 +146,7 @@ async fn get_artist_profile_image_metadata(
     CurrentUser(_user): CurrentUser,
     State(service): State<state::ArtistImageService>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<CurrentImageMetadata>>, ImageError> {
+) -> Result<Data<Option<CurrentImageMetadata>>, artist_image::Error> {
     let metadata = service.get_profile_image_metadata(id).await?;
     Ok(Data::from(metadata))
 }
@@ -132,7 +180,7 @@ async fn upload_artist_profile_image(
     State(service): State<state::ArtistImageService>,
     Path(id): Path<i32>,
     TypedMultipart(form): TypedMultipart<ArtistProfileImageFormData>,
-) -> Result<Data<i32>, ImageError> {
+) -> Result<Data<i32>, artist_image::Error> {
     let data = form.data.contents;
     let dto = ArtistProfileImageInput {
         bytes: data,

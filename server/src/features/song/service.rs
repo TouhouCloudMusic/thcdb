@@ -1,32 +1,28 @@
 use entity::enums::CorrectionStatus;
 
-use crate::application::correction::CorrectionSubmissionResult;
-use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
+use crate::application::correction::CorrectionSubmitResult;
+use crate::domain::correction::{NewCorrection, NewCorrectionMeta};
 use crate::features::correction::{
     SubmissionError, service as correction_service,
 };
 use crate::features::song::model::NewSong;
-use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 
 pub async fn create(
     repo: &SeaOrmRepository,
     correction: NewCorrection<NewSong>,
-) -> Result<CorrectionSubmissionResult, SubmissionError> {
+) -> Result<CorrectionSubmitResult, SubmissionError> {
     correction
         .data
         .validate(None)
         .map_err(|source| SubmissionError::Validation(source.to_string()))?;
-    let tx_repo = repo
-        .begin_tx()
-        .await
-        .db_operation("begin song creation correction transaction")?;
+    let tx_repo = repo.begin_tx().await?;
 
     let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;
 
-    correction_service::create(
+    let correction_id = correction_service::create(
         &tx_repo,
         NewCorrectionMeta::<NewSong> {
             author: correction.author,
@@ -39,44 +35,27 @@ pub async fn create(
         },
     )
     .await?;
-
-    let correction_id = correction::Repo::find_one(
-        &tx_repo,
-        correction::CorrectionFilter::latest(
-            entity_id,
-            entity::enums::EntityType::Song,
-        ),
-    )
-    .await?
-    .ok_or(SubmissionError::NotFound)?
-    .id;
-
     tx_repo.commit().await?;
 
-    Ok(CorrectionSubmissionResult {
-        correction_id,
-        entity_id,
-    })
+    Ok(CorrectionSubmitResult::submitted(correction_id, entity_id))
 }
 
 pub async fn upsert_correction(
     repo: &SeaOrmRepository,
     id: i32,
     correction: NewCorrection<NewSong>,
-) -> Result<CorrectionSubmissionResult, SubmissionError> {
+    mode: correction_service::CorrectionUpsertMode,
+) -> Result<CorrectionSubmitResult, SubmissionError> {
     correction
         .data
         .validate(Some(id))
         .map_err(|source| SubmissionError::Validation(source.to_string()))?;
-    let tx_repo = repo
-        .begin_tx()
-        .await
-        .db_operation("begin song update correction transaction")?;
+    let tx_repo = repo.begin_tx().await?;
 
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;
 
-    correction_service::upsert(
+    let result = correction_service::upsert(
         &tx_repo,
         NewCorrectionMeta::<NewSong> {
             author: correction.author,
@@ -87,24 +66,17 @@ pub async fn upsert_correction(
             description: correction.description,
             phantom: std::marker::PhantomData,
         },
+        mode,
     )
     .await?;
-
-    let correction_id = correction::Repo::find_one(
-        &tx_repo,
-        correction::CorrectionFilter::latest(
-            id,
-            entity::enums::EntityType::Song,
-        ),
-    )
-    .await?
-    .ok_or(SubmissionError::NotFound)?
-    .id;
-
     tx_repo.commit().await?;
 
-    Ok(CorrectionSubmissionResult {
-        correction_id,
-        entity_id: id,
+    Ok(match result {
+        correction_service::CorrectionUpsertResult::Submitted {
+            correction_id,
+        } => CorrectionSubmitResult::submitted(correction_id, id),
+        correction_service::CorrectionUpsertResult::Conflict {
+            correction_id,
+        } => CorrectionSubmitResult::conflict(correction_id, id),
     })
 }

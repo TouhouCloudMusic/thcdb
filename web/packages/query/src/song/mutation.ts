@@ -3,9 +3,10 @@ import type { NewCorrectionNewSong } from "@thc/api"
 import { SongApi } from "@thc/api"
 import { Either } from "effect"
 
-type Params =
-	| { type: "Create"; data: NewCorrectionNewSong }
-	| { type: "Update"; id: number; data: NewCorrectionNewSong }
+import type { EntityCorrectionMutationParams } from "../correction/mutation"
+import { toMutationError } from "../shared/error"
+
+type Params = EntityCorrectionMutationParams<NewCorrectionNewSong>
 
 export const getInstance = () =>
 	useMutation(() => ({
@@ -15,14 +16,22 @@ export const getInstance = () =>
 					? await SongApi.create({
 							body: params.data,
 						})
-					: await SongApi.update({
-							path: { id: params.id },
-							body: params.data,
-						})
+					: params.correctionId === undefined
+						? await SongApi.update({
+								path: { id: params.id },
+								body: params.data,
+							})
+						: await SongApi.updatePendingCorrection({
+								path: {
+									id: params.id,
+									correction_id: params.correctionId,
+								},
+								body: params.data,
+							})
 			return Either.match(result, {
 				onRight: (data) => data,
 				onLeft: (error) => {
-					throw error
+					throw toMutationError(error)
 				},
 			})
 		},

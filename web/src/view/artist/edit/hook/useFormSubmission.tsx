@@ -1,54 +1,28 @@
-import { useNavigate } from "@tanstack/solid-router"
-import type { Artist } from "@thc/api"
+import type { Artist, NewCorrectionNewArtist } from "@thc/api"
 import { ArtistMutation } from "@thc/query"
-import type { InferOutput } from "valibot"
 
-import type { NewArtistCorrection } from "~/domain/artist/schema"
+import { createEntityFormSubmit } from "~/view/correction/pendingCorrection"
 
 type Props =
-	| {
-			type: "new"
-	  }
-	| {
-			type: "edit"
-			artist: Artist
-	  }
+	| { type: "new" }
+	| { type: "edit"; artist: Artist; pendingCorrectionId?: number }
 
-export function useArtistFormSubmission(props: Props) {
-	const navigator = useNavigate()
+export function useArtistFormSubmission(input: Props) {
 	const mutation = ArtistMutation.getInstance()
 
-	const handleSubmit = (output: InferOutput<typeof NewArtistCorrection>) => {
-		if (props.type == "new") {
-			mutation.mutate(
-				{ type: "Create", data: output },
-				{
-					onSuccess(result) {
-						void navigator({
-							to: "/correction/$id",
-							params: { id: result.correction_id.toString() },
-						})
-					},
-				},
-			)
-			return
-		}
-
-		mutation.mutate(
-			{ type: "Update", id: props.artist.id, data: output },
-			{
-				onSuccess(result) {
-					void navigator({
-						to: "/correction/$id",
-						params: { id: result.correction_id.toString() },
-					})
-				},
-			},
-		)
-	}
-
-	return {
-		handleSubmit,
+	return createEntityFormSubmit<Artist, NewCorrectionNewArtist>({
+		entityType: "artist",
 		mutation,
-	}
+		props:
+			input.type === "new"
+				? input
+				: {
+						type: "edit",
+						entity: input.artist,
+						pendingCorrectionId: input.pendingCorrectionId,
+					},
+		onError(_error, type) {
+			if (type === "update") return false
+		},
+	})
 }

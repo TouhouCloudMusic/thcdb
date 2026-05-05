@@ -1,19 +1,20 @@
-use axum::extract::{Path, State};
-use entity::enums::EntityType;
-use entity::{
-    artist, correction as correction_entity, credit_role, event, label,
-    release, song, song_lyrics, tag,
-};
-use sea_orm::{DatabaseConnection, EntityTrait};
+use axum::extract::{FromRef, Path, State};
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::model::CorrectionDetail;
-use crate::adapter::inbound::rest::state::{self, ArcAppState};
+use super::service::{FindCorrectionDetailResult, Service};
+use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::correction::{ReadError, comment};
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::shared::http::api_response::Data;
+use crate::shared::http::api_response::{self, Data};
+
+impl FromRef<ArcAppState> for Service {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self::new(input.sea_orm_repo.clone())
+    }
+}
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
@@ -33,94 +34,21 @@ data!(DataCorrectionDetail, CorrectionDetail);
 )]
 async fn get_correction(
     Path(id): Path<i32>,
-    State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<CorrectionDetail>, ReadError> {
-    let Some(model) = correction_entity::Entity::find_by_id(id)
-        .one(&repo.conn)
+    State(service): State<Service>,
+) -> Result<Data<CorrectionDetail>, axum::response::Response> {
+    let result = service
+        .find_correction(id)
         .await
-        .db_operation("find correction detail")?
-    else {
-        return Err(ReadError::NotFound("Correction not found"));
-    };
+        .map_err(IntoResponse::into_response)?;
 
-    let comments = comment::initial_page(&repo.conn, id).await?;
-    let entity_name =
-        find_entity_name(&repo.conn, model.entity_type, model.entity_id)
-            .await
-            .db_operation("find correction entity name")?;
-    let Some(entity_name) = entity_name else {
-        return Err(ReadError::NotFound("Correction entity not found"));
-    };
-
-    Ok(Data::from(CorrectionDetail {
-        id: model.id,
-        status: model.status,
-        r#type: model.r#type,
-        entity_id: model.entity_id,
-        entity_type: model.entity_type,
-        entity_name,
-        created_at: model.created_at,
-        handled_at: model.handled_at,
-        comments,
-    }))
-}
-
-async fn find_entity_name(
-    conn: &DatabaseConnection,
-    entity_type: EntityType,
-    entity_id: i32,
-) -> Result<Option<String>, DatabaseError> {
-    let name = match entity_type {
-        EntityType::Artist => artist::Entity::find_by_id(entity_id)
-            .one(conn)
-            .await
-            .db_operation("load correction artist name")?
-            .map(|model| model.name),
-        EntityType::Label => label::Entity::find_by_id(entity_id)
-            .one(conn)
-            .await
-            .db_operation("load correction label name")?
-            .map(|model| model.name),
-        EntityType::Release => release::Entity::find_by_id(entity_id)
-            .one(conn)
-            .await
-            .db_operation("load correction release title")?
-            .map(|model| model.title),
-        EntityType::Song => song::Entity::find_by_id(entity_id)
-            .one(conn)
-            .await
-            .db_operation("load correction song title")?
-            .map(|model| model.title),
-        EntityType::Tag => tag::Entity::find_by_id(entity_id)
-            .one(conn)
-            .await
-            .db_operation("load correction tag name")?
-            .map(|model| model.name),
-        EntityType::Event => event::Entity::find_by_id(entity_id)
-            .one(conn)
-            .await
-            .db_operation("load correction event name")?
-            .map(|model| model.name),
-        EntityType::SongLyrics => {
-            match song_lyrics::Entity::find_by_id(entity_id)
-                .one(conn)
-                .await
-                .db_operation("load correction song lyrics")?
-            {
-                Some(lyrics) => song::Entity::find_by_id(lyrics.song_id)
-                    .one(conn)
-                    .await
-                    .db_operation("load correction song lyrics song title")?
-                    .map(|model| model.title),
-                None => None,
-            }
+    match result {
+        FindCorrectionDetailResult::Found(detail) => Ok(Data::from(detail)),
+        FindCorrectionDetailResult::CorrectionNotFound => {
+            Err(api_response::Error::new((
+                "Correction not found",
+                StatusCode::NOT_FOUND,
+            ))
+            .into_response())
         }
-        EntityType::CreditRole => credit_role::Entity::find_by_id(entity_id)
-            .one(conn)
-            .await
-            .db_operation("load correction credit role name")?
-            .map(|model| model.name),
-    };
-
-    Ok(name)
+    }
 }

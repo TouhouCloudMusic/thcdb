@@ -1,72 +1,37 @@
 import { useQueryClient } from "@tanstack/solid-query"
-import { useNavigate } from "@tanstack/solid-router"
-import type { Tag } from "@thc/api"
+import type { NewCorrectionNewTag, Tag } from "@thc/api"
 import { TagMutation, TagQueryOption } from "@thc/query"
-import type { InferOutput } from "valibot"
 
-import type { NewTagCorrection } from "~/domain/tag"
+import { createEntityFormSubmit } from "~/view/correction/pendingCorrection"
 
 type Props =
-	| {
-			type: "new"
-	  }
-	| {
-			type: "edit"
-			tag: Tag
-	  }
+	| { type: "new" }
+	| { type: "edit"; tag: Tag; pendingCorrectionId?: number }
 
-export function createTagFormSubmission(props: Props) {
-	const navigator = useNavigate()
+export function createTagFormSubmission(input: Props) {
 	const queryClient = useQueryClient()
 	const mutation = TagMutation.getInstance()
 
-	const handleSubmit = (output: InferOutput<typeof NewTagCorrection>) => {
-		if (props.type === "new") {
-			mutation.mutate(
-				{ type: "Create", data: output },
-				{
-					onSuccess(result) {
-						void queryClient.invalidateQueries({
-							queryKey: [TagQueryOption.QUERY_KEYS.DETAIL_KEYWORD],
-						})
-						void navigator({
-							to: "/correction/$id",
-							params: { id: result.correction_id.toString() },
-						})
-					},
-					onError(error) {
-						if (import.meta.env.DEV) {
-							console.error("Failed to create tag:", error)
-						}
-					},
-				},
-			)
-			return
-		}
-
-		mutation.mutate(
-			{ type: "Update", id: props.tag.id, data: output },
-			{
-				onSuccess(result) {
-					void queryClient.invalidateQueries({
-						queryKey: [TagQueryOption.QUERY_KEYS.DETAIL_ID, props.tag.id],
-					})
-					void navigator({
-						to: "/correction/$id",
-						params: { id: result.correction_id.toString() },
-					})
-				},
-				onError(error) {
-					if (import.meta.env.DEV) {
-						console.error("Failed to update tag:", error)
-					}
-				},
-			},
-		)
-	}
-
-	return {
-		handleSubmit,
+	return createEntityFormSubmit<Tag, NewCorrectionNewTag>({
+		entityType: "tag",
 		mutation,
-	}
+		props:
+			input.type === "new"
+				? input
+				: {
+						type: "edit",
+						entity: input.tag,
+						pendingCorrectionId: input.pendingCorrectionId,
+					},
+		onCreateSuccess() {
+			void queryClient.invalidateQueries({
+				queryKey: [TagQueryOption.QUERY_KEYS.DETAIL_KEYWORD],
+			})
+		},
+		onUpdateSuccess(result) {
+			void queryClient.invalidateQueries({
+				queryKey: [TagQueryOption.QUERY_KEYS.DETAIL_ID, result.entity_id],
+			})
+		},
+	})
 }

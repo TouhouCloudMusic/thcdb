@@ -95,3 +95,14 @@ export const ENTITY_ROUTE_MAP = {
 	SongLyrics: "/song-lyrics/$id",
 	CreditRole: "/credit-role/$id",
 } as const satisfies Record<EntityType, CorrectionEntityDetailRoute>
+
+export const ENTITY_EDIT_ROUTE_MAP = {
+	Artist: ENTITY_PAGE_ROUTE_MAP.artist.edit,
+	Label: ENTITY_PAGE_ROUTE_MAP.label.edit,
+	Release: ENTITY_PAGE_ROUTE_MAP.release.edit,
+	Song: ENTITY_PAGE_ROUTE_MAP.song.edit,
+	Tag: ENTITY_PAGE_ROUTE_MAP.tag.edit,
+	Event: ENTITY_PAGE_ROUTE_MAP.event.edit,
+	SongLyrics: undefined,
+	CreditRole: undefined,
+} as const satisfies Record<EntityType, EntityEditRoute | undefined>

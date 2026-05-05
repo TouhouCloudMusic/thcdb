@@ -8,9 +8,10 @@ use super::{find, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::application::correction::{
-    CorrectionSubmissionResult, NewCorrectionDto,
+    CorrectionSubmitResult, NewCorrectionDto,
 };
 use crate::features::correction::SubmissionError;
+use crate::features::correction::service::CorrectionUpsertMode;
 use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Song Lyrics";
@@ -20,6 +21,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .with_private(|r| {
             r.routes(routes!(create_song_lyrics))
                 .routes(routes!(update_song_lyrics))
+                .routes(routes!(update_song_lyrics_pending_correction))
         })
         .finish();
 
@@ -32,14 +34,14 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     path = "/song-lyrics",
     request_body = NewCorrectionDto<NewSongLyrics>,
     responses(
-		(status = 200, body = Data<CorrectionSubmissionResult>),
+		(status = 200, body = Data<CorrectionSubmitResult>),
     ),
 )]
 async fn create_song_lyrics(
     CurrentUser(user): CurrentUser,
     State(repo): State<state::SeaOrmRepository>,
     Json(dto): Json<NewCorrectionDto<NewSongLyrics>>,
-) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
+) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let result = service::create(&repo, dto.with_author(user)).await?;
 
     Ok(Data::from(result))
@@ -51,7 +53,7 @@ async fn create_song_lyrics(
     path = "/song-lyrics/{id}",
     request_body = NewCorrectionDto<NewSongLyrics>,
     responses(
-		(status = 200, body = Data<CorrectionSubmissionResult>),
+		(status = 200, body = Data<CorrectionSubmitResult>),
     ),
 )]
 async fn update_song_lyrics(
@@ -60,18 +62,65 @@ async fn update_song_lyrics(
     State(notification): State<state::NotificationService>,
     Path(lyrics_id): Path<i32>,
     Json(input): Json<NewCorrectionDto<NewSongLyrics>>,
-) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
+) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
     let user_id = user.id;
-    let result =
-        service::upsert_correction(&repo, lyrics_id, input.with_author(user))
-            .await?;
+    let result = service::upsert_correction(
+        &repo,
+        lyrics_id,
+        input.with_author(user),
+        CorrectionUpsertMode::Create,
+    )
+    .await?;
 
-    notification
-        .notify_correction_needs_review_best_effort(
-            result.correction_id,
-            &[user_id],
-        )
-        .await;
+    if let Some(correction_id) = result.submitted_id() {
+        notification
+            .notify_correction_needs_review_best_effort(
+                correction_id,
+                &[user_id],
+            )
+            .await;
+    }
+
+    Ok(Data::from(result))
+}
+
+#[utoipa::path(
+    post,
+    tag = TAG,
+    path = "/song-lyrics/{id}/correction/{correction_id}",
+    params(
+        ("id" = i32, Path, description = "Song lyrics id"),
+        ("correction_id" = i32, Path, description = "Pending correction id"),
+    ),
+    request_body = NewCorrectionDto<NewSongLyrics>,
+    responses(
+		(status = 200, body = Data<CorrectionSubmitResult>),
+    ),
+)]
+async fn update_song_lyrics_pending_correction(
+    CurrentUser(user): CurrentUser,
+    State(repo): State<state::SeaOrmRepository>,
+    State(notification): State<state::NotificationService>,
+    Path((lyrics_id, correction_id)): Path<(i32, i32)>,
+    Json(input): Json<NewCorrectionDto<NewSongLyrics>>,
+) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
+    let user_id = user.id;
+    let result = service::upsert_correction(
+        &repo,
+        lyrics_id,
+        input.with_author(user),
+        CorrectionUpsertMode::Update { correction_id },
+    )
+    .await?;
+
+    if let Some(correction_id) = result.submitted_id() {
+        notification
+            .notify_correction_needs_review_best_effort(
+                correction_id,
+                &[user_id],
+            )
+            .await;
+    }
 
     Ok(Data::from(result))
 }
