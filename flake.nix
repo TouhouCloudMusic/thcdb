@@ -67,7 +67,11 @@
           '';
         };
       in
-      assert pkgs.playwright-driver.version == webPlaywrightVersion;
+      assert pkgs.playwright-driver.version == webPlaywrightVersion || throw ''
+          Playwright version mismatch:
+          nix: ${pkgs.playwright-driver.version}
+          node: ${webPlaywrightVersion}
+        '';
       {
         devShell = pkgs.mkShell {
           nativeBuildInputs = with pkgs; [
