@@ -1,11 +1,15 @@
-import type { UserProfile } from "@thc/api"
 import type { JSX } from "solid-js"
 import { createSignal, Match, splitProps, Suspense, Switch } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
 import { imgUrl } from "~/utils/adapter/static_file"
 
-const getAvatarText = (user: UserProfile | undefined) => {
+type AvatarUser = {
+	name: string
+	avatar_url?: string | null
+}
+
+const getAvatarText = (user: AvatarUser | undefined) => {
 	const value = user?.name.trim() ?? ""
 	if (value.length === 0) return "?"
 	return value.slice(0, 1).toUpperCase()
@@ -15,7 +19,7 @@ export interface Props extends Omit<
 	JSX.ImgHTMLAttributes<HTMLImageElement>,
 	"src" | "onError"
 > {
-	user?: UserProfile | undefined
+	user?: AvatarUser | undefined
 }
 
 export function Avatar(props: Props) {

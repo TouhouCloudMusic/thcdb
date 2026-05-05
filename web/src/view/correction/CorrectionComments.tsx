@@ -112,7 +112,7 @@ function CommentItem(props: CommentItemProps) {
 		<li class="py-4">
 			<div class={twJoin("flex gap-3", props.indented && "ml-11")}>
 				<Avatar
-					user={props.comment.author as unknown as UserProfile}
+					user={props.comment.author}
 					class="mt-0.5 shrink-0"
 				/>
 				<div class="min-w-0 flex-1 space-y-2">

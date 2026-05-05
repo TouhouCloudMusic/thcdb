@@ -345,7 +345,16 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 		const deleted = deletedIds()
 		return all.map((c) => {
 			if (!deleted.has(c.id)) return c
-			return { ...c, state: "Deleted" as const, content: undefined }
+			return {
+				id: c.id,
+				correction_id: c.correction_id,
+				parent_id: c.parent_id,
+				author: c.author,
+				state: "Deleted" as const,
+				content: undefined,
+				created_at: c.created_at,
+				updated_at: c.updated_at,
+			}
 		})
 	})
 

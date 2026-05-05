@@ -63,11 +63,10 @@ const meta = {
 		nextCursor: null,
 		isLoadingMore: false,
 		currentUser: {
-			id: 1,
 			name: "alice",
 			last_login: new Date().toISOString(),
-			stats: { song_count: 0, series_count: 0, tag_count: 0 },
-		} as unknown as UserProfile,
+			stats: { edit_count: 0, vote_count: 0 },
+		} satisfies UserProfile,
 		canManage: false,
 		onLoadMore: noop,
 		onCreateComment: asyncNoop,
