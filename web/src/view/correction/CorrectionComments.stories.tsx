@@ -1,7 +1,7 @@
 import type { CorrectionComment, UserProfile } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { StoryLayout, withStoryState } from "~/utils/adapter/storybook"
+import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { CorrectionComments } from "./CorrectionComments"
 
@@ -54,7 +54,7 @@ const MOCK_COMMENTS_WITH_DELETED: CorrectionComment[] = MOCK_COMMENTS.map(
 const meta = {
 	title: "View/Correction/CorrectionComments",
 	component: CorrectionComments,
-	decorators: [withStoryState],
+	decorators: [withStoryRouter],
 	parameters: {
 		layout: StoryLayout.Padded,
 	},
