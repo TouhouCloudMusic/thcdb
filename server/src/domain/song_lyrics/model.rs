@@ -1,4 +1,4 @@
-use std::backtrace::Backtrace;
+use std::panic::Location;
 
 use derive_more::Display;
 use entity::enums::EntityType;
@@ -25,18 +25,19 @@ pub struct NewSongLyrics {
     pub is_main: bool,
 }
 
-#[derive(Debug, snafu::Snafu)]
-#[snafu(display("Validation error: {kind}"))]
+#[derive(Debug, Display, derive_more::Error)]
+#[display("Validation error: {kind}")]
 pub struct ValidationError {
     pub kind: ValidationErrorKind,
-    pub backtrace: Backtrace,
+    location: &'static Location<'static>,
 }
 
 impl From<ValidationErrorKind> for ValidationError {
+    #[track_caller]
     fn from(kind: ValidationErrorKind) -> Self {
         Self {
             kind,
-            backtrace: Backtrace::capture(),
+            location: Location::caller(),
         }
     }
 }

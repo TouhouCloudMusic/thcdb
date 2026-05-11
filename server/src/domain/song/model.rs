@@ -104,8 +104,8 @@ pub struct NewSongRelation {
     pub description: String,
 }
 
-#[derive(Debug, snafu::Snafu)]
-#[snafu(display("Validation error: {kind}"))]
+#[derive(Debug, derive_more::Display, derive_more::Error)]
+#[display("Validation error: {kind}")]
 pub struct ValidationError {
     pub kind: ValidationErrorKind,
 }

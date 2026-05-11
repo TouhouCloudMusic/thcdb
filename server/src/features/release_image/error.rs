@@ -1,5 +1,5 @@
 use axum::response::IntoResponse;
-use snafu::Snafu;
+use derive_more::{Display, Error as DeriveError};
 
 use crate::application::error::EntityNotFound;
 use crate::domain::image;
@@ -7,16 +7,28 @@ use crate::infra;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::AppError;
 
-#[derive(Debug, Snafu)]
+#[derive(Debug, Display, DeriveError)]
 pub enum Error {
-    #[snafu(transparent)]
-    Database { source: DatabaseError },
-    #[snafu(transparent)]
-    Infra { source: crate::infra::Error },
-    #[snafu(transparent)]
-    Service { source: image::Error },
-    #[snafu(transparent)]
-    ReleaseNotFound { source: EntityNotFound },
+    #[display("{source}")]
+    Database {
+        #[error(source)]
+        source: DatabaseError,
+    },
+    #[display("{source}")]
+    Infra {
+        #[error(source)]
+        source: crate::infra::Error,
+    },
+    #[display("{source}")]
+    Service {
+        #[error(source)]
+        source: image::Error,
+    },
+    #[display("{source}")]
+    ReleaseNotFound {
+        #[error(source)]
+        source: EntityNotFound,
+    },
 }
 
 impl<T> From<T> for Error
@@ -27,6 +39,24 @@ where
         Self::Infra {
             source: value.into(),
         }
+    }
+}
+
+impl From<DatabaseError> for Error {
+    fn from(source: DatabaseError) -> Self {
+        Self::Database { source }
+    }
+}
+
+impl From<image::Error> for Error {
+    fn from(source: image::Error) -> Self {
+        Self::Service { source }
+    }
+}
+
+impl From<EntityNotFound> for Error {
+    fn from(source: EntityNotFound) -> Self {
+        Self::ReleaseNotFound { source }
     }
 }
 

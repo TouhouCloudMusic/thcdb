@@ -1,13 +1,12 @@
-use std::backtrace::Backtrace;
 use std::borrow::Cow;
+use std::panic::Location;
 use std::sync::LazyLock;
 
 use argon2::Argon2;
 use argon2::password_hash::{self, PasswordHash, PasswordVerifier};
-use derive_more::Display;
+use derive_more::{Display, Error as DeriveError};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use snafu::Snafu;
 use utoipa::ToSchema;
 
 use crate::constant::{
@@ -20,23 +19,28 @@ pub const VERIFICATION_CODE_EXPIRES_MINUTES: i64 = 10;
 pub const VERIFICATION_CODE_RESEND_COOLDOWN_SECONDS: i64 = 60;
 pub const SIGNUP_EXPIRES_HOURS: i64 = 24;
 
-#[derive(Debug, Snafu)]
+#[derive(Debug, Display, DeriveError)]
 pub enum AuthnError {
-    #[snafu(display("Incorrect username or password"))]
+    #[display("Incorrect username or password")]
     AuthenticationFailed {
-        location: &'static std::panic::Location<'static>,
+        location: &'static Location<'static>,
     },
-    #[snafu(transparent)]
-    Infra { source: crate::infra::Error },
-    #[snafu(display("Password hash error: {source}"))]
+    #[display("{source}")]
+    Infra {
+        #[error(source)]
+        source: crate::infra::Error,
+    },
+    #[display("Password hash error: {source}")]
     PasswordHash {
+        #[error(source)]
         source: password_hash::Error,
-        backtrace: Backtrace,
+        location: &'static Location<'static>,
     },
-    #[snafu(display("Join error: {source}"))]
+    #[display("Join error: {source}")]
     Join {
+        #[error(source)]
         source: tokio::task::JoinError,
-        backtrace: Backtrace,
+        location: &'static Location<'static>,
     },
 }
 
@@ -44,41 +48,50 @@ impl AuthnError {
     #[track_caller]
     pub const fn authentication_failed() -> Self {
         Self::AuthenticationFailed {
-            location: std::panic::Location::caller(),
+            location: Location::caller(),
         }
     }
 }
 
 impl From<password_hash::Error> for AuthnError {
+    #[track_caller]
     fn from(source: password_hash::Error) -> Self {
         Self::PasswordHash {
             source,
-            backtrace: Backtrace::capture(),
+            location: Location::caller(),
         }
     }
 }
 
 impl From<tokio::task::JoinError> for AuthnError {
+    #[track_caller]
     fn from(source: tokio::task::JoinError) -> Self {
         Self::Join {
             source,
-            backtrace: Backtrace::capture(),
+            location: Location::caller(),
         }
     }
 }
 
-#[derive(Debug, Snafu)]
-#[snafu(display("{kind}"))]
+impl From<crate::infra::Error> for AuthnError {
+    fn from(source: crate::infra::Error) -> Self {
+        Self::Infra { source }
+    }
+}
+
+#[derive(Debug, Display, DeriveError)]
+#[display("{kind}")]
 pub struct ValidateCredsError {
     pub kind: ValidateCredsErrorKind,
-    pub backtrace: Backtrace,
+    location: &'static Location<'static>,
 }
 
 impl From<ValidateCredsErrorKind> for ValidateCredsError {
+    #[track_caller]
     fn from(kind: ValidateCredsErrorKind) -> Self {
         Self {
             kind,
-            backtrace: Backtrace::capture(),
+            location: Location::caller(),
         }
     }
 }

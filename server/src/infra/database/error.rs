@@ -93,14 +93,7 @@ pub enum FkViolationKind {
     },
 }
 
-#[derive(Debug, snafu::Snafu)]
-#[snafu(display("{}", match &self.kind {
-    FkViolationKind::Auto { entity } => format!("Invalid relation on {entity}"),
-    FkViolationKind::Manual { entity, target } => format!(
-        "Invalid relation between {} {} and {} {}",
-        entity.0, entity.1, target.0, target.1
-    ),
-}))]
+#[derive(Debug, derive_more::Error)]
 pub struct FkViolation<T>
 where
     T: 'static + std::error::Error,
@@ -108,6 +101,24 @@ where
     pub kind: FkViolationKind,
     pub source: T,
     location: &'static Location<'static>,
+}
+
+impl<T> std::fmt::Display for FkViolation<T>
+where
+    T: 'static + std::error::Error,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.kind {
+            FkViolationKind::Auto { entity } => {
+                write!(f, "Invalid relation on {entity}")
+            }
+            FkViolationKind::Manual { entity, target } => write!(
+                f,
+                "Invalid relation between {} {} and {} {}",
+                entity.0, entity.1, target.0, target.1
+            ),
+        }
+    }
 }
 
 impl TryFrom<DbErr> for FkViolation<DbErr> {

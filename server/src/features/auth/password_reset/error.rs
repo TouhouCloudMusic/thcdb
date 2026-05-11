@@ -1,4 +1,5 @@
 use axum::response::IntoResponse;
+use derive_more::{Display, Error as DeriveError};
 use sea_orm::DbErr;
 
 use crate::domain::auth::ValidateCredsError;
@@ -7,14 +8,23 @@ use crate::infra;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::AppError;
 
-#[derive(Debug, snafu::Snafu)]
+#[derive(Debug, Display, DeriveError)]
 pub enum ForgotPasswordError {
-    #[snafu(transparent)]
-    InvalidEmail { source: InvalidEmail },
-    #[snafu(transparent)]
-    Database { source: DatabaseError },
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
+    #[display("{source}")]
+    InvalidEmail {
+        #[error(source)]
+        source: InvalidEmail,
+    },
+    #[display("{source}")]
+    Database {
+        #[error(source)]
+        source: DatabaseError,
+    },
+    #[display("{source}")]
+    Infra {
+        #[error(source)]
+        source: infra::Error,
+    },
 }
 
 impl From<DbErr> for ForgotPasswordError {
@@ -23,6 +33,18 @@ impl From<DbErr> for ForgotPasswordError {
             source: DatabaseError::new(err)
                 .with_operation("forgot password database operation"),
         }
+    }
+}
+
+impl From<InvalidEmail> for ForgotPasswordError {
+    fn from(source: InvalidEmail) -> Self {
+        Self::InvalidEmail { source }
+    }
+}
+
+impl From<DatabaseError> for ForgotPasswordError {
+    fn from(source: DatabaseError) -> Self {
+        Self::Database { source }
     }
 }
 
@@ -55,16 +77,25 @@ impl From<ForgotPasswordError> for AppError {
     }
 }
 
-#[derive(Debug, snafu::Snafu)]
+#[derive(Debug, Display, DeriveError)]
 pub enum VerifyResetCodeError {
-    #[snafu(transparent)]
-    InvalidEmail { source: InvalidEmail },
-    #[snafu(display("Invalid or expired reset code"))]
+    #[display("{source}")]
+    InvalidEmail {
+        #[error(source)]
+        source: InvalidEmail,
+    },
+    #[display("Invalid or expired reset code")]
     InvalidOrExpiredResetCode,
-    #[snafu(transparent)]
-    Database { source: DatabaseError },
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
+    #[display("{source}")]
+    Database {
+        #[error(source)]
+        source: DatabaseError,
+    },
+    #[display("{source}")]
+    Infra {
+        #[error(source)]
+        source: infra::Error,
+    },
 }
 
 impl From<DbErr> for VerifyResetCodeError {
@@ -73,6 +104,18 @@ impl From<DbErr> for VerifyResetCodeError {
             source: DatabaseError::new(err)
                 .with_operation("verify reset code database operation"),
         }
+    }
+}
+
+impl From<InvalidEmail> for VerifyResetCodeError {
+    fn from(source: InvalidEmail) -> Self {
+        Self::InvalidEmail { source }
+    }
+}
+
+impl From<DatabaseError> for VerifyResetCodeError {
+    fn from(source: DatabaseError) -> Self {
+        Self::Database { source }
     }
 }
 
@@ -106,16 +149,25 @@ impl From<VerifyResetCodeError> for AppError {
     }
 }
 
-#[derive(Debug, snafu::Snafu)]
+#[derive(Debug, Display, DeriveError)]
 pub enum ResetPasswordError {
-    #[snafu(display("Invalid or expired reset key"))]
+    #[display("Invalid or expired reset key")]
     InvalidOrExpiredResetKey,
-    #[snafu(transparent)]
-    Database { source: DatabaseError },
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
-    #[snafu(transparent)]
-    Validate { source: ValidateCredsError },
+    #[display("{source}")]
+    Database {
+        #[error(source)]
+        source: DatabaseError,
+    },
+    #[display("{source}")]
+    Infra {
+        #[error(source)]
+        source: infra::Error,
+    },
+    #[display("{source}")]
+    Validate {
+        #[error(source)]
+        source: ValidateCredsError,
+    },
 }
 
 impl From<DbErr> for ResetPasswordError {
@@ -124,6 +176,18 @@ impl From<DbErr> for ResetPasswordError {
             source: DatabaseError::new(err)
                 .with_operation("reset password database operation"),
         }
+    }
+}
+
+impl From<DatabaseError> for ResetPasswordError {
+    fn from(source: DatabaseError) -> Self {
+        Self::Database { source }
+    }
+}
+
+impl From<ValidateCredsError> for ResetPasswordError {
+    fn from(source: ValidateCredsError) -> Self {
+        Self::Validate { source }
     }
 }
 

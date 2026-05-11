@@ -2,8 +2,17 @@ use std::fmt::Debug;
 
 use crate::infra;
 
-#[derive(Debug, snafu::Snafu)]
+#[derive(Debug, derive_more::Display, derive_more::Error)]
 pub enum Error {
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
+    #[display("{source}")]
+    Infra {
+        #[error(source)]
+        source: infra::Error,
+    },
+}
+
+impl From<infra::Error> for Error {
+    fn from(source: infra::Error) -> Self {
+        Self::Infra { source }
+    }
 }

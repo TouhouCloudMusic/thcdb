@@ -1,5 +1,5 @@
-use std::backtrace::Backtrace;
 use std::io;
+use std::panic::Location;
 use std::range::RangeInclusive;
 
 use axum::response::IntoResponse;
@@ -12,80 +12,118 @@ use crate::domain::image::{Image, NewImage};
 use crate::infra::{self};
 use crate::shared::http::api_response::AppError;
 
-// TODO: conv to internal error
-#[derive(Debug, snafu::Snafu)]
-#[snafu(module)]
+#[derive(Debug)]
 pub enum ValidationError {
-    #[snafu(transparent)]
-    InvalidType { source: InvalidForamt },
-    #[snafu(display("Invalid file size: {source}"))]
+    InvalidType {
+        source: InvalidFormat,
+    },
     InvalidFileSize {
         source: InvalidFileSize,
-        backtrace: Backtrace,
+        location: &'static Location<'static>,
     },
-    #[snafu(display("Invalid size: {source}"))]
     InvalidSize {
         source: InvalidSize,
-        backtrace: Backtrace,
+        location: &'static Location<'static>,
     },
-    #[snafu(display("Invalid ratio: {source}"))]
     InvalidRatio {
         source: InvalidRatio,
-        backtrace: Backtrace,
+        location: &'static Location<'static>,
     },
-    #[snafu(display("Internal server error"))]
     Io {
         source: io::Error,
-        backtrace: Backtrace,
+        location: &'static Location<'static>,
     },
-    #[snafu(display("Internal server error"))]
     Image {
         source: ImageError,
-        backtrace: Backtrace,
+        location: &'static Location<'static>,
     },
 }
 
+impl From<InvalidFormat> for ValidationError {
+    fn from(source: InvalidFormat) -> Self {
+        Self::InvalidType { source }
+    }
+}
+
 impl From<InvalidFileSize> for ValidationError {
+    #[track_caller]
     fn from(source: InvalidFileSize) -> Self {
         Self::InvalidFileSize {
             source,
-            backtrace: Backtrace::capture(),
+            location: Location::caller(),
         }
     }
 }
 
 impl From<InvalidSize> for ValidationError {
+    #[track_caller]
     fn from(source: InvalidSize) -> Self {
         Self::InvalidSize {
             source,
-            backtrace: Backtrace::capture(),
+            location: Location::caller(),
         }
     }
 }
 
 impl From<InvalidRatio> for ValidationError {
+    #[track_caller]
     fn from(source: InvalidRatio) -> Self {
         Self::InvalidRatio {
             source,
-            backtrace: Backtrace::capture(),
+            location: Location::caller(),
         }
     }
 }
 
 impl From<io::Error> for ValidationError {
+    #[track_caller]
     fn from(source: io::Error) -> Self {
         Self::Io {
             source,
-            backtrace: Backtrace::capture(),
+            location: Location::caller(),
         }
     }
 }
 
 impl From<ImageError> for ValidationError {
+    #[track_caller]
     fn from(source: ImageError) -> Self {
         Self::Image {
             source,
-            backtrace: Backtrace::capture(),
+            location: Location::caller(),
+        }
+    }
+}
+
+impl std::fmt::Display for ValidationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InvalidType { source } => write!(f, "{source}"),
+            Self::InvalidFileSize { source, .. } => {
+                write!(f, "Invalid file size: {source}")
+            }
+            Self::InvalidSize { source, .. } => {
+                write!(f, "Invalid size: {source}")
+            }
+            Self::InvalidRatio { source, .. } => {
+                write!(f, "Invalid ratio: {source}")
+            }
+            Self::Io { .. } | Self::Image { .. } => {
+                write!(f, "Internal server error")
+            }
+        }
+    }
+}
+
+impl std::error::Error for ValidationError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::InvalidType { source } => Some(source),
+            Self::InvalidFileSize { source, .. } => Some(source),
+            Self::InvalidSize { source, .. } => Some(source),
+            Self::InvalidRatio { source, .. } => Some(source),
+            Self::Io { source, .. } => Some(source),
+            Self::Image { source, .. } => Some(source),
         }
     }
 }
@@ -107,85 +145,124 @@ impl From<ValidationError> for AppError {
     }
 }
 
-#[derive(Debug, snafu::Snafu)]
-#[snafu(display(
-    "Invalid image format, received: {}, expected: {:#?}",
-    received.and_then(|r| r.extensions_str().first().copied()).unwrap_or("unknown or unreadable format"),
-    expected
-))]
-pub struct InvalidForamt {
+#[derive(Debug, derive_more::Error)]
+pub struct InvalidFormat {
     received: Option<ImageFormat>,
     expected: &'static [ImageFormat],
-    backtrace: Backtrace,
+    location: &'static Location<'static>,
 }
 
-impl InvalidForamt {
-    pub fn new(
+impl InvalidFormat {
+    #[track_caller]
+    pub const fn new(
         received: ImageFormat,
         expected: &'static [ImageFormat],
     ) -> Self {
         Self {
             received: Some(received),
             expected,
-            backtrace: Backtrace::capture(),
+            location: Location::caller(),
         }
     }
 
-    pub fn unknown(expected: &'static [ImageFormat]) -> Self {
+    #[track_caller]
+    pub const fn unknown(expected: &'static [ImageFormat]) -> Self {
         Self {
             received: None,
             expected,
-            backtrace: Backtrace::capture(),
+            location: Location::caller(),
         }
     }
 }
 
-#[derive(Debug, snafu::Snafu)]
-#[snafu(display(
-    "{}",
-    if *received < range.start {
-        format!("Image too small, min: {}, received: {}", range.start, received)
-    } else {
-        format!("Image too large, max: {}, received: {}", range.last, received)
+impl std::fmt::Display for InvalidFormat {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let received = self
+            .received
+            .and_then(|r| r.extensions_str().first().copied())
+            .unwrap_or("unknown or unreadable format");
+        write!(
+            f,
+            "Invalid image format, received: {received}, expected: {:#?}",
+            self.expected
+        )
     }
-))]
+}
+
+#[derive(Debug, derive_more::Error)]
 pub struct InvalidFileSize {
     received: ByteSize,
     range: RangeInclusive<ByteSize>,
-    backtrace: Backtrace,
+    location: &'static Location<'static>,
 }
 
-#[derive(Debug, snafu::Snafu)]
-#[snafu(display(
-    "Invalid image size, min: {} x {}, max: {} x {}, received: {} x {}",
-    width_range.start, height_range.start, width_range.last, height_range.last, width, height
-))]
+impl std::fmt::Display for InvalidFileSize {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.received < self.range.start {
+            write!(
+                f,
+                "Image too small, min: {}, received: {}",
+                self.range.start, self.received
+            )
+        } else {
+            write!(
+                f,
+                "Image too large, max: {}, received: {}",
+                self.range.last, self.received
+            )
+        }
+    }
+}
+
+#[derive(Debug, derive_more::Error)]
 pub struct InvalidSize {
     width: u32,
     height: u32,
     width_range: RangeInclusive<u32>,
     height_range: RangeInclusive<u32>,
-    backtrace: Backtrace,
+    location: &'static Location<'static>,
 }
 
-#[derive(Debug, snafu::Snafu)]
-#[snafu(display(
-    "Invalid image ratio, received: {received:.2}, expected: {:.2} to {:.2}",
-    expected.start, expected.last
-))]
+impl std::fmt::Display for InvalidSize {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Invalid image size, min: {} x {}, max: {} x {}, received: {} x {}",
+            self.width_range.start,
+            self.height_range.start,
+            self.width_range.last,
+            self.height_range.last,
+            self.width,
+            self.height
+        )
+    }
+}
+
+#[derive(Debug, derive_more::Error)]
 pub struct InvalidRatio {
     received: f64,
     expected: RangeInclusive<f64>,
-    backtrace: Backtrace,
+    location: &'static Location<'static>,
 }
 
 impl InvalidRatio {
-    pub fn new(received: f64, expected: RangeInclusive<f64>) -> Self {
+    #[track_caller]
+    pub const fn new(received: f64, expected: RangeInclusive<f64>) -> Self {
         Self {
             received,
             expected,
-            backtrace: Backtrace::capture(),
+            location: Location::caller(),
         }
+    }
+}
+
+impl std::fmt::Display for InvalidRatio {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Invalid image ratio, received: {:.2}, expected: {:.2} to {:.2}",
+            self.received, self.expected.start, self.expected.last
+        )
     }
 }
 
@@ -275,7 +352,7 @@ impl Parser {
                 height,
                 width_range,
                 height_range,
-                backtrace: Backtrace::capture(),
+                location: Location::caller(),
             })
         }
     }
@@ -291,7 +368,7 @@ impl Parser {
             Err(InvalidFileSize {
                 received: size,
                 range: *range,
-                backtrace: Backtrace::capture(),
+                location: Location::caller(),
             })
         }
     }
@@ -299,11 +376,11 @@ impl Parser {
     fn validate_format(
         &self,
         format: ImageFormat,
-    ) -> Result<(), InvalidForamt> {
+    ) -> Result<(), InvalidFormat> {
         if self.option.valid_formats.contains(&format) {
             Ok(())
         } else {
-            Err(InvalidForamt::new(format, self.option.valid_formats))
+            Err(InvalidFormat::new(format, self.option.valid_formats))
         }
     }
 
@@ -330,7 +407,7 @@ impl Parser {
             reader
                 .format()
                 .ok_or_else(|| ValidationError::InvalidType {
-                    source: InvalidForamt::unknown(self.option.valid_formats),
+                    source: InvalidFormat::unknown(self.option.valid_formats),
                 })?;
 
         self.validate_format(format)?;
@@ -369,16 +446,25 @@ pub trait AsyncFileStorage: Send + Sync {
     async fn remove(&self, image: Image) -> Result<(), Self::Error>;
 }
 
-#[derive(Debug, snafu::Snafu)]
-
+#[derive(Debug, derive_more::Error)]
 pub enum Error {
-    #[snafu(transparent)]
     Validation {
+        #[error(source)]
         source: ValidationError,
     },
     Infra {
+        #[error(source)]
         source: infra::Error,
     },
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Validation { source } => write!(f, "{source}"),
+            Self::Infra { source } => write!(f, "{source}"),
+        }
+    }
 }
 
 impl From<Error> for AppError {
@@ -393,6 +479,12 @@ impl From<Error> for AppError {
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         AppError::from(self).into_response()
+    }
+}
+
+impl From<ValidationError> for Error {
+    fn from(source: ValidationError) -> Self {
+        Self::Validation { source }
     }
 }
 

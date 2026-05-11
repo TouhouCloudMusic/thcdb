@@ -1,4 +1,5 @@
 use axum::response::IntoResponse;
+use derive_more::{Display, Error as DeriveError};
 use sea_orm::DbErr;
 
 use crate::domain::image::{
@@ -7,16 +8,28 @@ use crate::domain::image::{
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::AppError;
 
-#[derive(Debug, snafu::Snafu)]
+#[derive(Debug, Display, DeriveError)]
 pub enum Error {
-    #[snafu(transparent)]
-    Database { source: DatabaseError },
-    #[snafu(transparent)]
-    Infra { source: crate::infra::Error },
-    #[snafu(transparent)]
-    ImageService { source: image::Error },
-    #[snafu(transparent)]
-    Validate { source: ValidationError },
+    #[display("{source}")]
+    Database {
+        #[error(source)]
+        source: DatabaseError,
+    },
+    #[display("{source}")]
+    Infra {
+        #[error(source)]
+        source: crate::infra::Error,
+    },
+    #[display("{source}")]
+    ImageService {
+        #[error(source)]
+        source: image::Error,
+    },
+    #[display("{source}")]
+    Validate {
+        #[error(source)]
+        source: ValidationError,
+    },
 }
 
 impl From<DbErr> for Error {
@@ -34,6 +47,18 @@ where
 {
     default fn from(err: E) -> Self {
         Self::Infra { source: err.into() }
+    }
+}
+
+impl From<image::Error> for Error {
+    fn from(source: image::Error) -> Self {
+        Self::ImageService { source }
+    }
+}
+
+impl From<ValidationError> for Error {
+    fn from(source: ValidationError) -> Self {
+        Self::Validate { source }
     }
 }
 

@@ -1,13 +1,12 @@
-use snafu::Snafu;
-
 use crate::shared::http;
 
-#[derive(Debug, Snafu)]
-#[snafu(display("Validation error: {source}"))]
+#[derive(Debug, derive_more::Display, derive_more::Error)]
+#[display("Validation error: {source}")]
 pub struct ValidationError<T>
 where
     T: std::error::Error + 'static,
 {
+    #[error(source)]
     pub source: T,
 }
 

@@ -4,18 +4,16 @@ pub use entity::sea_orm_active_enums::ImageQueueStatus;
 use itertools::Itertools;
 use macros::AutoMapper;
 use sea_orm::prelude::DateTimeWithTimeZone;
-use snafu::Snafu;
 
 use crate::domain::image::Image;
 use crate::domain::model::UserRoleEnum;
 use crate::domain::user::User;
 
-#[derive(Debug, Clone, Copy, Snafu)]
-
+#[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
 pub enum Error {
-    #[snafu(display("Invalid operation"))]
+    #[display("Invalid operation")]
     InvalidOperation,
-    #[snafu(display("Permission denied"))]
+    #[display("Permission denied")]
     PermissionDenied,
 }
 

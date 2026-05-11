@@ -49,6 +49,9 @@
 - [x] 继续清理剩余 `ApiError` / `IntoErrorSchema` derive 使用点。
 - [x] 清理 handler 中提前构造 `axum::response::Response`、手写 database error response helper、以及连续 `map_err(...).into_response()` 的同类模式。
 - [x] 移除 `domain::auth::AuthnError` 的 HTTP response 构造，认证错误到 HTTP 的映射收口到 auth feature 边界。
+- [x] runtime/domain/feature 错误已移除 `std::backtrace::Backtrace`，需要诊断位置的错误改为 `#[track_caller]` + `Location`。
+- [x] 普通应用错误已从 `snafu::Snafu` 迁移到显式 `Display` / `Error` / `From`；当前仅启动/CLI `Whatever` 路径继续保留 snafu。
+- [x] 删除 `application::error` 中未使用且只携带 backtrace 的 `InvalidField` / `Unauthorized` 封装。
 
 ## 约束
 
@@ -274,6 +277,32 @@ auth 相关错误通常有清晰恢复语义，不能简单压平。
 - [x] `rg -n "ApiError|IntoErrorSchema|#\\[api_error" server/src` 无结果。
 - [x] `cargo clippy` 不再报告 `crates/proc_macros/src/error/api_error.rs` 的 warning。
 - [x] server 编译通过。
+
+## Phase 7.5: 收敛 SNAFU 和 backtrace
+
+参考原则：运行时错误优先表达调用方动作和诊断上下文，不再默认捕获 backtrace，也不为了 `transparent` forwarding 保留宏封装。
+
+- [x] 移除 runtime/domain/feature 错误中的 `std::backtrace::Backtrace`。
+- [x] 对需要定位创建点的错误使用 `Location<'static>` 字段，并在构造函数或 `From` 实现上使用 `#[track_caller]`。
+- [x] 删除只携带 backtrace、没有调用方动作语义的错误封装：
+  - [x] `application::error::InvalidField`
+  - [x] `application::error::Unauthorized`
+- [x] 迁移领域 validation 错误到 `derive_more::Display` / `derive_more::Error`：
+  - [x] `domain::artist::model::new_artist::ValidationError`
+  - [x] `domain::song::ValidationError`
+  - [x] `domain::song_lyrics::ValidationError`
+  - [x] `domain::markdown::Error`
+  - [x] `shared::error::ValidationError`
+- [x] 迁移 image parsing / storage 错误，保留 `ValidationError` 与 `Error` 的语义边界，去掉 SNAFU forwarding。
+- [x] 迁移 auth/session/password-reset 错误，显式保留登录状态、验证码状态、session backend 失败等可行动语义。
+- [x] 迁移 infra / database / adapter 的 transparent wrapper，显式实现 `Display` / `Error` / `From`。
+- [x] 保留 `snafu::Whatever` / `ResultExt` 在启动和 CLI 路径中的使用；这是一次性启动失败报告，不参与 HTTP/runtime 错误模型。
+
+验收：
+
+- [x] `rg -n "Backtrace|backtrace" server/src -g "*.rs"` 无结果。
+- [x] `rg -n "snafu::Snafu|use snafu::Snafu|derive\\(Debug, Snafu\\)|derive\\(Debug, snafu::Snafu\\)|#\\[snafu" server/src -g "*.rs"` 只剩 `main.rs` / `infra/whatever.rs` 的启动错误报告路径。
+- [x] `cargo clippy` 不出现本阶段新增 warning。
 
 ## Phase 8: 验证和回归
 

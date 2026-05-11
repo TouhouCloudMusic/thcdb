@@ -1,8 +1,8 @@
-use std::backtrace::Backtrace;
+use std::panic::Location;
 use std::sync::LazyLock;
 
 use axum::response::IntoResponse;
-use derive_more::Display;
+use derive_more::{Display, Error as DeriveError};
 use pulldown_cmark::{Event, Options, Parser, TextMergeStream};
 
 use crate::shared::http::api_response::AppError;
@@ -10,18 +10,17 @@ use crate::shared::http::api_response::AppError;
 #[derive(Debug, Clone, Display)]
 pub struct Markdown(String);
 
-#[derive(Debug, snafu::Snafu)]
-#[snafu(display("{kind}"))]
+#[derive(Debug, Display, DeriveError)]
+#[display("Invalid markdown")]
 pub struct Error {
-    pub kind: ErrorKind,
-    pub backtrace: Backtrace,
+    location: &'static Location<'static>,
 }
 
-impl From<ErrorKind> for Error {
-    fn from(kind: ErrorKind) -> Self {
+impl Error {
+    #[track_caller]
+    const fn contains_html() -> Self {
         Self {
-            kind,
-            backtrace: Backtrace::capture(),
+            location: Location::caller(),
         }
     }
 }
@@ -36,12 +35,6 @@ impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         AppError::from(self).into_response()
     }
-}
-
-#[derive(Debug, Display)]
-pub enum ErrorKind {
-    #[display("Invalid markdown")]
-    ContainsHtml,
 }
 
 static OPTIONS: LazyLock<Options> = LazyLock::new(|| {
@@ -61,7 +54,7 @@ impl Markdown {
             for event in stream {
                 match event {
                     Event::Html(_) | Event::InlineHtml(_) => {
-                        return Err(ErrorKind::ContainsHtml.into());
+                        return Err(Error::contains_html());
                     }
                     _ => {}
                 }

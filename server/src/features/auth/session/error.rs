@@ -1,6 +1,7 @@
-use std::backtrace::Backtrace;
+use std::panic::Location;
 
 use axum::response::IntoResponse;
+use derive_more::{Display, Error as DeriveError};
 
 use crate::domain::auth::{AuthnError, ValidateCredsError};
 use crate::infra;
@@ -8,20 +9,32 @@ use crate::infra::database::error::DatabaseError;
 use crate::infra::error::Error;
 use crate::shared::http::api_response::AppError;
 
-#[derive(Debug, snafu::Snafu)]
+#[derive(Debug, Display, DeriveError)]
 pub enum SignInError {
-    #[snafu(display("Already signed in"))]
+    #[display("Already signed in")]
     AlreadySignedIn,
-    #[snafu(display("Email not verified"))]
+    #[display("Email not verified")]
     EmailNotVerified,
-    #[snafu(transparent)]
-    Authn { source: AuthnError },
-    #[snafu(transparent)]
-    Database { source: DatabaseError },
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
-    #[snafu(transparent)]
-    Validate { source: ValidateCredsError },
+    #[display("{source}")]
+    Authn {
+        #[error(source)]
+        source: AuthnError,
+    },
+    #[display("{source}")]
+    Database {
+        #[error(source)]
+        source: DatabaseError,
+    },
+    #[display("{source}")]
+    Infra {
+        #[error(source)]
+        source: infra::Error,
+    },
+    #[display("{source}")]
+    Validate {
+        #[error(source)]
+        source: ValidateCredsError,
+    },
 }
 
 impl IntoResponse for SignInError {
@@ -59,11 +72,30 @@ where
     }
 }
 
-#[derive(Debug, snafu::Snafu)]
-#[snafu(display("Session error: {source}"))]
+impl From<AuthnError> for SignInError {
+    fn from(source: AuthnError) -> Self {
+        Self::Authn { source }
+    }
+}
+
+impl From<DatabaseError> for SignInError {
+    fn from(source: DatabaseError) -> Self {
+        Self::Database { source }
+    }
+}
+
+impl From<ValidateCredsError> for SignInError {
+    fn from(source: ValidateCredsError) -> Self {
+        Self::Validate { source }
+    }
+}
+
+#[derive(Debug, Display, DeriveError)]
+#[display("Session error: {source}")]
 pub struct SessionError {
+    #[error(source)]
     source: axum_login::tower_sessions::session::Error,
-    backtrace: Backtrace,
+    location: &'static Location<'static>,
 }
 
 impl IntoResponse for SessionError {
@@ -73,20 +105,29 @@ impl IntoResponse for SessionError {
 }
 
 impl SessionError {
-    pub fn new(source: axum_login::tower_sessions::session::Error) -> Self {
+    #[track_caller]
+    pub const fn new(
+        source: axum_login::tower_sessions::session::Error,
+    ) -> Self {
         Self {
             source,
-            backtrace: Backtrace::force_capture(),
+            location: Location::caller(),
         }
     }
 }
 
-#[derive(Debug, snafu::Snafu)]
+#[derive(Debug, Display, DeriveError)]
 pub enum SessionBackendError {
-    #[snafu(transparent)]
-    Session { source: SessionError },
-    #[snafu(transparent)]
-    AuthnBackend { source: AuthnBackendError },
+    #[display("{source}")]
+    Session {
+        #[error(source)]
+        source: SessionError,
+    },
+    #[display("{source}")]
+    AuthnBackend {
+        #[error(source)]
+        source: AuthnBackendError,
+    },
 }
 
 impl IntoResponse for SessionBackendError {
@@ -105,16 +146,28 @@ impl From<SessionBackendError> for AppError {
     }
 }
 
-#[derive(Debug, snafu::Snafu)]
+#[derive(Debug, Display, DeriveError)]
 pub enum AuthnBackendError {
-    #[snafu(transparent)]
-    Authn { source: AuthnError },
-    #[snafu(transparent)]
-    SignIn { source: SignInError },
-    #[snafu(transparent)]
-    Database { source: DatabaseError },
-    #[snafu(transparent)]
-    Internal { source: Error },
+    #[display("{source}")]
+    Authn {
+        #[error(source)]
+        source: AuthnError,
+    },
+    #[display("{source}")]
+    SignIn {
+        #[error(source)]
+        source: SignInError,
+    },
+    #[display("{source}")]
+    Database {
+        #[error(source)]
+        source: DatabaseError,
+    },
+    #[display("{source}")]
+    Internal {
+        #[error(source)]
+        source: Error,
+    },
 }
 
 impl IntoResponse for AuthnBackendError {
@@ -134,6 +187,30 @@ impl From<AuthnBackendError> for AppError {
             AuthnBackendError::Database { source } => source.into(),
             AuthnBackendError::Internal { source } => source.into(),
         }
+    }
+}
+
+impl From<AuthnError> for AuthnBackendError {
+    fn from(source: AuthnError) -> Self {
+        Self::Authn { source }
+    }
+}
+
+impl From<SignInError> for AuthnBackendError {
+    fn from(source: SignInError) -> Self {
+        Self::SignIn { source }
+    }
+}
+
+impl From<DatabaseError> for AuthnBackendError {
+    fn from(source: DatabaseError) -> Self {
+        Self::Database { source }
+    }
+}
+
+impl From<Error> for AuthnBackendError {
+    fn from(source: Error) -> Self {
+        Self::Internal { source }
     }
 }
 

@@ -1,6 +1,6 @@
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use derive_more::Display;
+use derive_more::{Display, Error as DeriveError};
 use sea_orm::DbErr;
 
 use crate::domain::auth::ValidateCredsError;
@@ -27,21 +27,32 @@ impl InvalidEmail {
     }
 }
 
-#[derive(Debug, snafu::Snafu)]
-#[snafu(visibility(pub(super)))]
+#[derive(Debug, Display, DeriveError)]
 pub enum SignUpError {
-    #[snafu(display("Username {username} already in use"))]
+    #[display("Username {username} already in use")]
     UsernameAlreadyInUse { username: String },
-    #[snafu(transparent)]
-    InvalidEmail { source: InvalidEmail },
-    #[snafu(display("Email service unavailable"))]
+    #[display("{source}")]
+    InvalidEmail {
+        #[error(source)]
+        source: InvalidEmail,
+    },
+    #[display("Email service unavailable")]
     EmailServiceUnavailable,
-    #[snafu(transparent)]
-    Database { source: DatabaseError },
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
-    #[snafu(transparent)]
-    Validate { source: ValidateCredsError },
+    #[display("{source}")]
+    Database {
+        #[error(source)]
+        source: DatabaseError,
+    },
+    #[display("{source}")]
+    Infra {
+        #[error(source)]
+        source: infra::Error,
+    },
+    #[display("{source}")]
+    Validate {
+        #[error(source)]
+        source: ValidateCredsError,
+    },
 }
 
 impl SignUpError {
@@ -66,6 +77,24 @@ impl From<DbErr> for SignUpError {
             source: DatabaseError::new(err)
                 .with_operation("auth sign-up database operation"),
         }
+    }
+}
+
+impl From<InvalidEmail> for SignUpError {
+    fn from(source: InvalidEmail) -> Self {
+        Self::InvalidEmail { source }
+    }
+}
+
+impl From<DatabaseError> for SignUpError {
+    fn from(source: DatabaseError) -> Self {
+        Self::Database { source }
+    }
+}
+
+impl From<ValidateCredsError> for SignUpError {
+    fn from(source: ValidateCredsError) -> Self {
+        Self::Validate { source }
     }
 }
 
@@ -106,16 +135,25 @@ impl From<SignUpError> for AppError {
     }
 }
 
-#[derive(Debug, snafu::Snafu)]
+#[derive(Debug, Display, DeriveError)]
 pub enum ResendVerificationEmailError {
-    #[snafu(transparent)]
-    InvalidEmail { source: InvalidEmail },
-    #[snafu(display("Email service unavailable"))]
+    #[display("{source}")]
+    InvalidEmail {
+        #[error(source)]
+        source: InvalidEmail,
+    },
+    #[display("Email service unavailable")]
     ResendEmailServiceUnavailable,
-    #[snafu(transparent)]
-    Database { source: DatabaseError },
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
+    #[display("{source}")]
+    Database {
+        #[error(source)]
+        source: DatabaseError,
+    },
+    #[display("{source}")]
+    Infra {
+        #[error(source)]
+        source: infra::Error,
+    },
 }
 
 impl ResendVerificationEmailError {
@@ -144,6 +182,18 @@ impl From<DbErr> for ResendVerificationEmailError {
                 "auth resend verification email database operation",
             ),
         }
+    }
+}
+
+impl From<InvalidEmail> for ResendVerificationEmailError {
+    fn from(source: InvalidEmail) -> Self {
+        Self::InvalidEmail { source }
+    }
+}
+
+impl From<DatabaseError> for ResendVerificationEmailError {
+    fn from(source: DatabaseError) -> Self {
+        Self::Database { source }
     }
 }
 
@@ -178,18 +228,27 @@ impl From<ResendVerificationEmailError> for AppError {
     }
 }
 
-#[derive(Debug, snafu::Snafu)]
+#[derive(Debug, Display, DeriveError)]
 pub enum VerifyEmailError {
-    #[snafu(transparent)]
-    InvalidEmail { source: InvalidEmail },
-    #[snafu(display("Invalid or expired verification code"))]
+    #[display("{source}")]
+    InvalidEmail {
+        #[error(source)]
+        source: InvalidEmail,
+    },
+    #[display("Invalid or expired verification code")]
     InvalidOrExpiredCode,
-    #[snafu(display("Too many attempts, please resend verification code"))]
+    #[display("Too many attempts, please resend verification code")]
     TooManyAttempts,
-    #[snafu(transparent)]
-    Database { source: DatabaseError },
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
+    #[display("{source}")]
+    Database {
+        #[error(source)]
+        source: DatabaseError,
+    },
+    #[display("{source}")]
+    Infra {
+        #[error(source)]
+        source: infra::Error,
+    },
 }
 
 impl VerifyEmailError {
@@ -212,6 +271,18 @@ impl From<DbErr> for VerifyEmailError {
             source: DatabaseError::new(err)
                 .with_operation("auth verify email database operation"),
         }
+    }
+}
+
+impl From<InvalidEmail> for VerifyEmailError {
+    fn from(source: InvalidEmail) -> Self {
+        Self::InvalidEmail { source }
+    }
+}
+
+impl From<DatabaseError> for VerifyEmailError {
+    fn from(source: DatabaseError) -> Self {
+        Self::Database { source }
     }
 }
 
