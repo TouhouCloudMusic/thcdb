@@ -4,8 +4,6 @@ use std::sync::LazyLock;
 
 use argon2::Argon2;
 use argon2::password_hash::{self, PasswordHash, PasswordVerifier};
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use derive_more::Display;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -16,7 +14,6 @@ use crate::constant::{
     USER_NAME_REGEX_STR, USER_PASSWORD_MAX_LENGTH, USER_PASSWORD_MIN_LENGTH,
     USER_PASSWORD_REGEX_STR,
 };
-use crate::shared::http::api_response::Error;
 use crate::shared::secret;
 
 pub const VERIFICATION_CODE_EXPIRES_MINUTES: i64 = 10;
@@ -44,28 +41,11 @@ pub enum AuthnError {
 }
 
 impl AuthnError {
-    pub(crate) const fn status_code(&self) -> StatusCode {
-        match self {
-            AuthnError::AuthenticationFailed { .. } => StatusCode::UNAUTHORIZED,
-            AuthnError::Infra { source } => source.status_code(),
-            AuthnError::PasswordHash { .. } | AuthnError::Join { .. } => {
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
-        }
-    }
-
     #[track_caller]
     pub const fn authentication_failed() -> Self {
         Self::AuthenticationFailed {
             location: std::panic::Location::caller(),
         }
-    }
-}
-
-impl IntoResponse for AuthnError {
-    fn into_response(self) -> axum::response::Response {
-        let status_code = self.status_code();
-        Error::from_err_and_code(&self, status_code).into_response()
     }
 }
 
@@ -100,12 +80,6 @@ impl From<ValidateCredsErrorKind> for ValidateCredsError {
             kind,
             backtrace: Backtrace::capture(),
         }
-    }
-}
-
-impl ValidateCredsError {
-    pub const fn status_code() -> StatusCode {
-        StatusCode::BAD_REQUEST
     }
 }
 

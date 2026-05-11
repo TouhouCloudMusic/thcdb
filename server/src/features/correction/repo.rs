@@ -10,7 +10,6 @@ use sea_orm::{
 
 use super::ModerationError;
 use crate::domain::model::CorrectionApprover;
-use crate::infra;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
 
@@ -88,7 +87,7 @@ pub async fn find_pending_id(
     repo: &SeaOrmRepository,
     entity_id: i32,
     entity_type: EntityType,
-) -> Result<Option<i32>, infra::Error> {
+) -> Result<Option<i32>, DatabaseError> {
     LocalSpan::add_properties(|| {
         [
             ("entity_id", entity_id.to_string()),
@@ -110,7 +109,8 @@ pub async fn find_pending_id(
                 error:? = err;
                 "correction repository operation failed"
             );
-        })?;
+        })
+        .with_operation("find pending correction")?;
 
     Ok(model.map(|model| model.id))
 }

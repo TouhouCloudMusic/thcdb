@@ -23,6 +23,7 @@ use crate::domain::shared::ImageUploaderSummary;
 use crate::features::image_queue::Repo as ImageQueueRepo;
 use crate::features::release::find::repo as release_repo;
 use crate::features::release_image_queue::Repo as ReleaseImageQueueRepo;
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::storage::GenericFileStorage;
 
@@ -63,11 +64,18 @@ impl Service {
             release_id,
         } = dto;
 
-        if !release_repo::exists(&self.repo.conn, release_id).await? {
+        if !release_repo::exists(&self.repo.conn, release_id)
+            .await
+            .with_operation("check release exists for cover art upload")?
+        {
             Err(EntityNotFound::new(release_id, "release"))?;
         }
 
-        let tx_repo = self.repo.begin_tx().await?;
+        let tx_repo = self
+            .repo
+            .begin_tx()
+            .await
+            .with_operation("begin release cover art upload transaction")?;
 
         let image_service =
             image::Service::new(tx_repo.clone(), self.storage.clone());
@@ -108,7 +116,8 @@ impl Service {
             .filter(release_image::Column::Type.eq(ReleaseImageType::Cover))
             .order_by_desc(image_entity::Column::UploadedAt)
             .one(&self.repo.conn)
-            .await?;
+            .await
+            .with_operation("find current release cover art")?;
 
         let Some(image) = image else {
             return Ok(None);
@@ -117,7 +126,8 @@ impl Service {
         let uploader = user_entity::Entity::find_by_id(image.uploaded_by)
             .into_partial_model::<ImageUploaderSummary>()
             .one(&self.repo.conn)
-            .await?
+            .await
+            .with_operation("find release cover art uploader")?
             .unwrap_or_else(|| ImageUploaderSummary {
                 id: image.uploaded_by,
                 name: "Unknown".to_string(),

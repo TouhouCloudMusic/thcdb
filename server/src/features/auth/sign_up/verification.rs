@@ -1,5 +1,6 @@
 use chrono::{Duration, Utc};
 use lettre::message::{Mailbox, Message as EmailMessage};
+use sea_orm::DbErr;
 
 use crate::domain::auth::{
     SIGNUP_EXPIRES_HOURS, VERIFICATION_CODE_EXPIRES_MINUTES,
@@ -8,13 +9,24 @@ use crate::domain::user::User;
 use crate::features::auth::{
     InvalidEmail, ResendVerificationEmailError, SignUpError,
 };
+use crate::infra::database::error::DatabaseError;
 use crate::infra::error::Error;
 
 #[derive(Debug)]
 pub(super) enum SendVerificationEmailError {
+    Database(DatabaseError),
     Infra(Error),
     Unavailable,
     InvalidEmail(InvalidEmail),
+}
+
+impl From<DbErr> for SendVerificationEmailError {
+    fn from(value: DbErr) -> Self {
+        Self::Database(
+            DatabaseError::new(value)
+                .with_operation("send verification email database operation"),
+        )
+    }
 }
 
 impl From<Error> for SendVerificationEmailError {
@@ -26,6 +38,9 @@ impl From<Error> for SendVerificationEmailError {
 impl From<SendVerificationEmailError> for SignUpError {
     fn from(value: SendVerificationEmailError) -> Self {
         match value {
+            SendVerificationEmailError::Database(source) => {
+                SignUpError::Database { source }
+            }
             SendVerificationEmailError::Unavailable => {
                 SignUpError::EmailServiceUnavailable
             }
@@ -42,6 +57,9 @@ impl From<SendVerificationEmailError> for SignUpError {
 impl From<SendVerificationEmailError> for ResendVerificationEmailError {
     fn from(value: SendVerificationEmailError) -> Self {
         match value {
+            SendVerificationEmailError::Database(source) => {
+                ResendVerificationEmailError::Database { source }
+            }
             SendVerificationEmailError::Unavailable => {
                 ResendVerificationEmailError::ResendEmailServiceUnavailable
             }

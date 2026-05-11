@@ -11,8 +11,8 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::infra::error::Error;
-use crate::shared::http::api_response::Data;
+use crate::infra::database::error::DatabaseResultExt;
+use crate::shared::http::api_response::{AppError, Data};
 
 #[derive(Deserialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]
@@ -85,7 +85,7 @@ async fn entity_corrections(
         EntityCorrectionsPath,
     >,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<Vec<CorrectionHistoryItem>>, Error> {
+) -> Result<Data<Vec<CorrectionHistoryItem>>, AppError> {
     let entity_type = entity::enums::EntityType::from(entity_type);
     let corrections = correction_entity::Entity::find()
         .filter(correction_entity::Column::EntityId.eq(id))
@@ -96,7 +96,8 @@ async fn entity_corrections(
         .order_by_desc(correction_entity::Column::HandledAt)
         .order_by_desc(correction_entity::Column::CreatedAt)
         .all(&repo.conn)
-        .await?;
+        .await
+        .with_operation("find correction history")?;
 
     if corrections.is_empty() {
         return Ok(Data::from(Vec::new()));
@@ -113,7 +114,8 @@ async fn entity_corrections(
         .order_by_asc(correction_revision::Column::CorrectionId)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .all(&repo.conn)
-        .await?;
+        .await
+        .with_operation("find correction history revisions")?;
 
     let mut revision_map = HashMap::new();
     for revision in revisions {
@@ -130,7 +132,8 @@ async fn entity_corrections(
     let authors = user::Entity::find()
         .filter(user::Column::Id.is_in(author_ids))
         .all(&repo.conn)
-        .await?;
+        .await
+        .with_operation("find correction history authors")?;
 
     let author_map = authors
         .into_iter()

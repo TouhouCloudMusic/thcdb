@@ -5,10 +5,13 @@ use snafu::Snafu;
 use crate::application::error::EntityNotFound;
 use crate::domain::image;
 use crate::infra;
-use crate::shared::http::api_response::Error as ApiResponseError;
+use crate::infra::database::error::DatabaseError;
+use crate::shared::http::api_response::{AppError, Error as ApiResponseError};
 
 #[derive(Debug, Snafu)]
 pub enum Error {
+    #[snafu(transparent)]
+    Database { source: DatabaseError },
     #[snafu(transparent)]
     Infra { source: infra::Error },
     #[snafu(transparent)]
@@ -20,6 +23,7 @@ pub enum Error {
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
         match self {
+            Self::Database { source } => AppError::from(source).into_response(),
             Self::Infra { source } => source.into_response(),
             Self::Service { source } => source.into_response(),
             Self::ArtistNotFound { source } => {

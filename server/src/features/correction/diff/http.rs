@@ -1,6 +1,4 @@
 use axum::extract::{Path, State};
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use entity::enums::CorrectionStatus;
 use entity::{correction as correction_entity, correction_revision};
 use sea_orm::sea_query::NullOrdering;
@@ -16,8 +14,8 @@ use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::domain::correction::CorrectionDiff;
 use crate::features::correction::shared::repo as correction_diff;
-use crate::infra::error::Error;
-use crate::shared::http::api_response::{self, Data};
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::http::api_response::{AppError, Data};
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
@@ -28,7 +26,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn find_base_correction(
     db: &impl ConnectionTrait,
     current: &correction_entity::Model,
-) -> Result<Option<correction_entity::Model>, Error> {
+) -> Result<Option<correction_entity::Model>, DatabaseError> {
     let mut query = correction_entity::Entity::find()
         .filter(correction_entity::Column::EntityId.eq(current.entity_id))
         .filter(correction_entity::Column::EntityType.eq(current.entity_type))
@@ -47,7 +45,7 @@ async fn find_base_correction(
         );
     }
 
-    Ok(query
+    query
         .order_by_with_nulls(
             correction_entity::Column::HandledAt,
             Order::Desc,
@@ -56,7 +54,8 @@ async fn find_base_correction(
         .order_by_desc(correction_entity::Column::CreatedAt)
         .order_by_desc(correction_entity::Column::Id)
         .one(db)
-        .await?)
+        .await
+        .with_operation("find base correction for diff")
 }
 
 #[utoipa::path(
@@ -70,18 +69,13 @@ async fn find_base_correction(
 async fn get_correction_diff(
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<CorrectionDiff>, impl IntoResponse> {
+) -> Result<Data<CorrectionDiff>, AppError> {
     let Some(current) = correction_entity::Entity::find_by_id(id)
         .one(&repo.conn)
         .await
-        .map_err(Error::from)
-        .map_err(IntoResponse::into_response)?
+        .with_operation("find correction for diff")?
     else {
-        return Err(api_response::Error::new((
-            "Correction not found",
-            StatusCode::NOT_FOUND,
-        ))
-        .into_response());
+        return Err(AppError::not_found("Correction not found"));
     };
 
     let current_revision = correction_revision::Entity::find()
@@ -89,19 +83,10 @@ async fn get_correction_diff(
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(&repo.conn)
         .await
-        .map_err(Error::from)
-        .map_err(IntoResponse::into_response)?
-        .ok_or_else(|| {
-            api_response::Error::new((
-                "Correction revision not found",
-                StatusCode::NOT_FOUND,
-            ))
-        })
-        .map_err(IntoResponse::into_response)?;
+        .with_operation("find current correction revision for diff")?
+        .ok_or_else(|| AppError::not_found("Correction revision not found"))?;
 
-    let base = find_base_correction(&repo.conn, &current)
-        .await
-        .map_err(IntoResponse::into_response)?;
+    let base = find_base_correction(&repo.conn, &current).await?;
 
     let (base_snapshot, base_correction_id, base_history_id) =
         if let Some(base) = base {
@@ -110,15 +95,10 @@ async fn get_correction_diff(
                 .order_by_desc(correction_revision::Column::EntityHistoryId)
                 .one(&repo.conn)
                 .await
-                .map_err(Error::from)
-                .map_err(IntoResponse::into_response)?
+                .with_operation("find base correction revision for diff")?
                 .ok_or_else(|| {
-                    api_response::Error::new((
-                        "Base correction revision not found",
-                        StatusCode::NOT_FOUND,
-                    ))
-                })
-                .map_err(IntoResponse::into_response)?;
+                    AppError::not_found("Base correction revision not found")
+                })?;
 
             let snapshot = correction_diff::snapshot_for_history(
                 &repo.conn,
@@ -126,8 +106,7 @@ async fn get_correction_diff(
                 base_revision.entity_history_id,
             )
             .await
-            .map_err(Error::from)
-            .map_err(IntoResponse::into_response)?;
+            .with_operation("load base correction diff snapshot")?;
 
             (
                 snapshot,
@@ -144,8 +123,7 @@ async fn get_correction_diff(
         current_revision.entity_history_id,
     )
     .await
-    .map_err(Error::from)
-    .map_err(IntoResponse::into_response)?;
+    .with_operation("load target correction diff snapshot")?;
 
     let changes =
         correction_diff::diff_snapshots(&base_snapshot, &target_snapshot);

@@ -1,7 +1,5 @@
 use axum::Json;
 use axum::extract::State;
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -11,7 +9,9 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::domain::auth::AuthCredential;
 use crate::domain::user::UserProfile;
 use crate::features::user_profile::{DataUserProfile, load_profile};
-use crate::shared::http::api_response::{Data, Message};
+use crate::shared::http::api_response::{
+    AppError, AppErrorKind, Data, Message,
+};
 
 pub fn public_router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new().routes(routes!(sign_in))
@@ -34,22 +34,27 @@ async fn sign_in(
     mut auth_session: state::AuthSession,
     State(use_case): State<state::UserProfileService>,
     Json(creds): Json<AuthCredential>,
-) -> Result<Data<UserProfile>, impl IntoResponse> {
+) -> Result<Data<UserProfile>, AppError> {
     if auth_session.user.is_some() {
-        return Err(SignInError::AlreadySignedIn.into_response());
+        return Err(SignInError::AlreadySignedIn.into());
     }
     let user = auth_session
         .authenticate(creds)
         .await
         .map_err(SessionBackendError::from)
-        .map_err(IntoResponse::into_response)?
-        .ok_or_else(|| StatusCode::UNAUTHORIZED.into_response())?;
+        .map_err(AppError::from)?
+        .ok_or_else(|| {
+            AppError::new(
+                AppErrorKind::Unauthorized,
+                "Incorrect username or password",
+            )
+        })?;
 
     auth_session
         .login(&user)
         .await
         .map_err(SessionBackendError::from)
-        .map_err(IntoResponse::into_response)?;
+        .map_err(AppError::from)?;
 
     load_profile(&use_case, &user.name, Some(&user)).await
 }

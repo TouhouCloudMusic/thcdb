@@ -6,7 +6,7 @@ use super::error::{
 use crate::domain::auth::{AuthCredential, AuthnError};
 use crate::domain::user::{self, User};
 use crate::features::auth::{Email, Service, repo};
-use crate::infra::error::Error;
+use crate::infra::database::error::DatabaseResultExt;
 
 impl Service {
     pub async fn sign_in(
@@ -15,10 +15,14 @@ impl Service {
     ) -> Result<User, SignInError> {
         let user = match SignInIdentifier::parse(&creds.username) {
             SignInIdentifier::Email(email) => {
-                repo::find_by_email(&self.repo.conn, &email).await?
+                repo::find_by_email(&self.repo.conn, &email)
+                    .await
+                    .with_operation("find sign-in user by email")?
             }
             SignInIdentifier::Username(username) => {
-                repo::find_by_name(&self.repo.conn, &username).await?
+                repo::find_by_name(&self.repo.conn, &username)
+                    .await
+                    .with_operation("find sign-in user by username")?
             }
         };
 
@@ -92,7 +96,8 @@ impl AuthnBackend for Service {
     ) -> Result<Option<Self::User>, Self::Error> {
         repo::find_by_id(&self.repo.conn, *user_id)
             .await
-            .map_err(|e| Error::from(e).into())
+            .with_operation("find authenticated user by id")
+            .map_err(Into::into)
     }
 }
 

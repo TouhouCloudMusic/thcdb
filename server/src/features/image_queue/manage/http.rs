@@ -14,6 +14,7 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
 use crate::domain::model::ImageQueueManage;
 use crate::domain::shared::CursorResponse;
 use crate::features::image_queue::shared::{UserSummary, load_users};
+use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::PaginationQuery;
 use crate::shared::http::api_response::{AppError, Data, Message};
 
@@ -278,8 +279,7 @@ async fn handle_image_queue(
     let queue = entity::image_queue::Entity::find_by_id(id)
         .one(&repo.conn)
         .await
-        .map_err(crate::infra::error::Error::from)
-        .map_err(AppError::from)?;
+        .with_operation("find image queue entry before handling")?;
 
     let (created_by, image_id) = match queue {
         Some(model) => (model.created_by, model.image_id),

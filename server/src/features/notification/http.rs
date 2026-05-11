@@ -14,7 +14,7 @@ use crate::domain::shared::CursorResponse;
 use crate::features::notification::ws;
 use crate::infra::notification::NotificationHub;
 use crate::shared::http::PaginationQuery;
-use crate::shared::http::api_response::{Data, Message};
+use crate::shared::http::api_response::{AppError, Data, Message};
 
 const TAG: &str = "Notification";
 
@@ -57,13 +57,10 @@ async fn notification_list(
     CurrentUser(user): CurrentUser,
     State(service): State<state::NotificationService>,
     Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<CursorResponse<NotificationItem>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<NotificationItem>>, AppError> {
     let limit = pagination.limit();
     let cursor = pagination.cursor;
-    let paginated = service
-        .list(user.id, limit, cursor)
-        .await
-        .map_err(IntoResponse::into_response)?;
+    let paginated = service.list(user.id, limit, cursor).await?;
 
     let items = paginated.items.into_iter().map(|model| {
         let kind = NotificationKindEnum::from(model.notification_kind_id);
@@ -96,11 +93,8 @@ async fn notification_list(
 async fn notification_unread_count(
     CurrentUser(user): CurrentUser,
     State(service): State<state::NotificationService>,
-) -> Result<Data<u64>, axum::response::Response> {
-    let count = service
-        .unread_count(user.id)
-        .await
-        .map_err(IntoResponse::into_response)?;
+) -> Result<Data<u64>, AppError> {
+    let count = service.unread_count(user.id).await?;
     Ok(Data::from(count))
 }
 
@@ -114,11 +108,8 @@ async fn notification_mark_read(
     CurrentUser(user): CurrentUser,
     Path(id): Path<i32>,
     State(service): State<state::NotificationService>,
-) -> Result<Message, axum::response::Response> {
-    service
-        .mark_read(user.id, id)
-        .await
-        .map_err(IntoResponse::into_response)?;
+) -> Result<Message, AppError> {
+    service.mark_read(user.id, id).await?;
     Ok(Message::ok())
 }
 
@@ -131,11 +122,8 @@ async fn notification_mark_read(
 async fn notification_read_all(
     CurrentUser(user): CurrentUser,
     State(service): State<state::NotificationService>,
-) -> Result<Message, axum::response::Response> {
-    service
-        .read_all(user.id)
-        .await
-        .map_err(IntoResponse::into_response)?;
+) -> Result<Message, AppError> {
+    service.read_all(user.id).await?;
     Ok(Message::ok())
 }
 

@@ -12,8 +12,8 @@ use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::model::{EditableUserRole, UserRoleEnum};
 use crate::domain::shared::Language;
 use crate::domain::song::SongRelationType;
-use crate::infra::error::Error;
-use crate::shared::http::api_response::Data;
+use crate::infra::database::error::DatabaseResultExt;
+use crate::shared::http::api_response::{AppError, Data};
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
@@ -42,10 +42,11 @@ data! {
 )]
 async fn language_list(
     State(state): State<ArcAppState>,
-) -> Result<Data<Vec<Language>>, Error> {
+) -> Result<Data<Vec<Language>>, AppError> {
     let res: Vec<Language> = language::Entity::find()
         .all(&state.database)
-        .await?
+        .await
+        .with_operation("list languages")?
         .fmap_into();
 
     Ok(res.into())
@@ -60,10 +61,11 @@ async fn language_list(
 )]
 async fn user_roles(
     State(state): State<ArcAppState>,
-) -> Result<Data<Vec<UserRoleEnum>>, Error> {
+) -> Result<Data<Vec<UserRoleEnum>>, AppError> {
     Ok(role::Entity::find()
         .all(&state.database)
-        .await?
+        .await
+        .with_operation("list user roles")?
         .iter()
         .filter_map(|model| UserRoleEnum::try_from(model.id).ok())
         .collect_vec()
@@ -79,7 +81,7 @@ async fn user_roles(
 )]
 async fn editable_user_roles(
     State(_state): State<ArcAppState>,
-) -> Result<Data<Vec<EditableUserRole>>, Error> {
+) -> Result<Data<Vec<EditableUserRole>>, AppError> {
     Ok(EditableUserRole::iter().collect_vec().into())
 }
 
@@ -92,11 +94,12 @@ async fn editable_user_roles(
 )]
 async fn song_relation_types(
     State(state): State<ArcAppState>,
-) -> Result<Data<Vec<SongRelationType>>, Error> {
+) -> Result<Data<Vec<SongRelationType>>, AppError> {
     Ok(song_relation_type::Entity::find()
         .order_by_asc(song_relation_type::Column::Id)
         .all(&state.database)
-        .await?
+        .await
+        .with_operation("list song relation types")?
         .into_iter()
         .map(Into::into)
         .collect_vec()

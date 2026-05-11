@@ -1,14 +1,16 @@
-use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use snafu::Snafu;
 
 use crate::application::error::EntityNotFound;
 use crate::domain::image;
 use crate::infra;
-use crate::shared::http::api_response::{self, AppError};
+use crate::infra::database::error::DatabaseError;
+use crate::shared::http::api_response::AppError;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
+    #[snafu(transparent)]
+    Database { source: DatabaseError },
     #[snafu(transparent)]
     Infra { source: crate::infra::Error },
     #[snafu(transparent)]
@@ -31,6 +33,7 @@ where
 impl From<Error> for AppError {
     fn from(err: Error) -> Self {
         match err {
+            Error::Database { source } => source.into(),
             Error::Infra { source } => source.into(),
             Error::Service { source } => source.into(),
             Error::ReleaseNotFound { source } => {
@@ -42,15 +45,6 @@ impl From<Error> for AppError {
 
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        match self {
-            Error::ReleaseNotFound { source } => {
-                api_response::Error::from_err_and_code(
-                    &source,
-                    StatusCode::BAD_REQUEST,
-                )
-                .into_response()
-            }
-            err => AppError::from(err).into_response(),
-        }
+        AppError::from(self).into_response()
     }
 }

@@ -1,5 +1,4 @@
 use axum::extract::{Path, State};
-use axum::response::IntoResponse;
 use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
@@ -9,7 +8,7 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain;
 use crate::domain::user::UserProfile;
 use crate::features::user_profile::FollowResult;
-use crate::shared::http::api_response::{Data, Message};
+use crate::shared::http::api_response::{AppError, Data, Message};
 
 const TAG: &str = "User";
 
@@ -42,7 +41,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn profile(
     CurrentUser(user): CurrentUser,
     State(service): State<state::UserProfileService>,
-) -> Result<Data<UserProfile>, impl IntoResponse> {
+) -> Result<Data<UserProfile>, AppError> {
     load_profile(&service, &user.name, Some(&user)).await
 }
 
@@ -59,17 +58,13 @@ async fn follow_user(
     Path(name): Path<String>,
     State(service): State<state::UserProfileService>,
     State(notification): State<state::NotificationService>,
-) -> Result<Message, axum::response::Response> {
+) -> Result<Message, AppError> {
     let target_user = service
         .find_user_by_name(&name)
-        .await
-        .map_err(IntoResponse::into_response)?
-        .ok_or_else(|| axum::http::StatusCode::NOT_FOUND.into_response())?;
+        .await?
+        .ok_or_else(|| AppError::not_found("User not found"))?;
 
-    let res = service
-        .follow(user.id, target_user.id)
-        .await
-        .map_err(IntoResponse::into_response)?;
+    let res = service.follow(user.id, target_user.id).await?;
 
     if res == FollowResult::AlreadyFollowing {
         return Ok(Message::ok());
@@ -103,17 +98,13 @@ async fn unfollow_user(
     CurrentUser(user): CurrentUser,
     Path(name): Path<String>,
     State(service): State<state::UserProfileService>,
-) -> Result<Message, axum::response::Response> {
+) -> Result<Message, AppError> {
     let target_user = service
         .find_user_by_name(&name)
-        .await
-        .map_err(IntoResponse::into_response)?
-        .ok_or_else(|| axum::http::StatusCode::NOT_FOUND.into_response())?;
+        .await?
+        .ok_or_else(|| AppError::not_found("User not found"))?;
 
-    service
-        .unfollow(user.id, target_user.id)
-        .await
-        .map_err(IntoResponse::into_response)?;
+    service.unfollow(user.id, target_user.id).await?;
 
     Ok(Message::ok())
 }
@@ -130,7 +121,7 @@ async fn profile_with_name(
     session: AuthSession,
     State(service): State<state::UserProfileService>,
     Path(name): Path<String>,
-) -> Result<Data<UserProfile>, impl IntoResponse> {
+) -> Result<Data<UserProfile>, AppError> {
     load_profile(&service, &name, session.user.as_ref()).await
 }
 
@@ -138,21 +129,17 @@ pub async fn load_profile(
     service: &state::UserProfileService,
     name: &str,
     current_user: Option<&domain::user::User>,
-) -> Result<Data<UserProfile>, axum::response::Response> {
+) -> Result<Data<UserProfile>, AppError> {
     let mut profile = service
         .find_by_name(name)
-        .await
-        .map_err(IntoResponse::into_response)?
-        .ok_or_else(|| axum::http::StatusCode::NOT_FOUND.into_response())?;
+        .await?
+        .ok_or_else(|| AppError::not_found("User not found"))?;
 
     if let Some(current_user) = current_user {
         if current_user.name == profile.name {
             profile.settings = Some(current_user.settings.clone());
         } else {
-            service
-                .with_following(&mut profile, current_user)
-                .await
-                .map_err(IntoResponse::into_response)?;
+            service.with_following(&mut profile, current_user).await?;
         }
     }
 

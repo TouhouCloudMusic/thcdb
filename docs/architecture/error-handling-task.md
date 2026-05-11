@@ -45,8 +45,10 @@
 - [x] 删除 `ApiError` / `IntoErrorSchema` derive macro 实现和导出，保留 `proc_macros` crate 中其他宏。
 - [x] server 应用代码已移除 `ApiError` / `IntoErrorSchema` / `#[api_error(...)]` 使用点。
 - [x] OpenAPI 错误响应改为复用默认 `api_response::Error` schema，不再由错误类型 derive。
-- [ ] 删除 legacy `DbErr -> infra::Error` bridge；当前仅为未迁移 slice 保持可编译。
+- [x] 删除 legacy `DbErr -> infra::Error` bridge，剩余数据库调用点通过 `DatabaseError`、slice error 或 `AppError` 显式转换。
 - [x] 继续清理剩余 `ApiError` / `IntoErrorSchema` derive 使用点。
+- [x] 清理 handler 中提前构造 `axum::response::Response`、手写 database error response helper、以及连续 `map_err(...).into_response()` 的同类模式。
+- [x] 移除 `domain::auth::AuthnError` 的 HTTP response 构造，认证错误到 HTTP 的映射收口到 auth feature 边界。
 
 ## 约束
 
@@ -71,7 +73,8 @@
   - [ ] `AppError::internal_boxed`
   - [ ] `AppError::status_code`
 - [x] 移除 `AppError::context(...)`，避免 HTTP 边界对象继续承载业务语义。
-- [ ] 如果新增 `unauthorized`、`too_many_requests`、`service_unavailable`，必须先找到真实调用点。
+- [x] 新增 `AppError::unauthorized`，用于 auth session / extractor 的真实调用点。
+- [ ] 如果新增 `too_many_requests`、`service_unavailable`，必须先找到真实调用点。
 - [ ] 为 `AppError` 增加聚焦测试：
   - [ ] public error 使用传入 message。
   - [x] internal error 响应 message 固定为 `Internal server error`。
@@ -91,27 +94,27 @@
 
 目标是先处理已经手写 HTTP 响应的错误类型，降低迁移风险。
 
-- [ ] 用以下命令列出剩余候选：
-  - [ ] `rg -n "impl IntoResponse for Error|Result<.*Response>|into_response\\(\\)" server/src/features server/src/adapter server/src/domain`
+- [x] 用以下命令列出剩余候选：
+  - [x] `rg -n "impl IntoResponse for Error|Result<.*Response>|into_response\\(\\)" server/src/features server/src/adapter server/src/domain`
 - [ ] 对每个候选判断错误类型是否有业务语义：
   - [ ] 有语义：保留本地 `Error`，实现 `From<Error> for AppError`。
   - [ ] 无语义且只在 HTTP 出口使用：直接返回 `AppError`。
   - [ ] 领域层错误：移除 HTTP 依赖，在 adapter / feature 边界转换。
 - [ ] 迁移优先级：
   - [ ] `features/tag_vote`
-  - [ ] `features/user_profile`
-  - [ ] `features/admin`
-  - [ ] `features/search`
-  - [ ] `features/notification`
-  - [ ] `features/correction/*/http.rs` 中仍返回 `axum::response::Response` 的 handler
-  - [ ] `adapter/inbound/rest/extract/auth.rs`
+  - [x] `features/user_profile`
+  - [x] `features/admin`
+  - [x] `features/search`
+  - [x] `features/notification`
+  - [x] `features/correction/*/http.rs` 中仍返回 `axum::response::Response` 的 handler
+  - [x] `adapter/inbound/rest/extract/auth.rs`
 - [ ] 每迁移一个 slice，同步更新测试中直接调用 `into_response()` 的断言。
 - [ ] 避免在 handler 中出现连续的 `map_err(crate::infra::error::Error::from).map_err(AppError::from)`；这种位置应作为下一步 service/repo 分层候选。
 
 验收：
 
-- [ ] 目标 slice 的 handler 不再直接返回 `axum::response::Response`。
-- [ ] HTTP handler 中没有为了状态码临时拼 `api_response::Error::from_err_and_code(...).into_response()`。
+- [x] 目标 slice 的 handler 不再直接返回 `axum::response::Response`。
+- [x] HTTP handler 中没有为了状态码临时拼 `api_response::Error::from_err_and_code(...).into_response()`。
 - [ ] slice 内错误到 `AppError` 的转换集中在 `error.rs` 或 `mod.rs`。
 
 ## Phase 2.5: 收敛数据库错误路径
@@ -124,21 +127,23 @@
 - [x] 迁移 correction submission / moderation 错误，增加 `Database(DatabaseError)` 分支。
 - [x] 迁移 `image_queue/manage` 的主要 DB 路径，新增 `Database(DatabaseError)` 分支。
 - [x] 迁移 `user_collection`、`correction/comment` 的 slice error，新增 `Database(DatabaseError)` 分支。
-- [ ] 继续迁移旧 slice 中的 `map_err(InfraError::from)` 和 `bimap_into()`：
-  - [ ] `features/admin.rs`
-  - [ ] `features/search/http.rs`
-  - [ ] `features/*/find/http.rs`
-  - [ ] `features/user_profile/service.rs`
-  - [ ] `features/user_image`
-  - [ ] `features/release_image`
-  - [ ] auth 相关 repo/service
-- [ ] 移除 `impl From<DbErr> for infra::Error` 的 legacy bridge。
+- [x] 继续迁移旧 slice 中的 `map_err(InfraError::from)` 和 `bimap_into()` 的数据库错误路径：
+  - [x] `features/admin.rs`
+  - [x] `features/search/http.rs`
+  - [x] `features/*/find/http.rs`
+  - [x] `features/user_profile/service.rs`
+  - [x] `features/user_image`
+  - [x] `features/release_image`
+  - [x] auth 相关 repo/service
+  - [x] correction detail / diff / compare / history / revisions / pending
+  - [x] notification、enum table、home metadata、image queue view/manage handler
+- [x] 移除 `impl From<DbErr> for infra::Error` 的 legacy bridge。
 
 验收：
 
-- [ ] `rg -n "map_err\\(InfraError::from\\)|bimap_into\\(\\)" server/src/features server/src/adapter` 不再命中数据库错误转换路径。
-- [ ] `rg -n "impl From<DbErr> for Error" server/src/infra/error.rs` 无结果。
-- [ ] 未知数据库错误只通过 `AppError::internal(DatabaseError)` 返回统一 500。
+- [x] `rg -n "map_err\\(InfraError::from\\)|bimap_into\\(\\)" server/src/features server/src/adapter` 不再命中数据库错误转换路径；当前剩余 `InfraError::from` 只用于 `SeaOrmTxRepo::commit()` 的 boxed transaction error。
+- [x] `rg -n "impl From<DbErr> for Error" server/src/infra/error.rs` 无结果。
+- [x] 未知数据库错误只通过 `AppError::internal(DatabaseError)` 返回统一 500。
 
 ## Phase 3: 拆分 `image_queue/manage`
 
@@ -177,11 +182,11 @@
 auth 相关错误通常有清晰恢复语义，不能简单压平。
 
 - [ ] 保留以下语义错误类型，但移除手写 HTTP response 重复逻辑：
-  - [ ] `features/auth/error.rs`
-  - [ ] `features/auth/session/error.rs`
-  - [ ] `features/auth/password_reset/error.rs`
-  - [ ] `domain/auth.rs`
-- [ ] 为每个错误类型实现 `From<Error> for AppError`。
+  - [x] `features/auth/error.rs`
+  - [x] `features/auth/session/error.rs`
+  - [x] `features/auth/password_reset/error.rs`
+  - [x] `domain/auth.rs`
+- [x] 为 auth feature 错误类型实现 `From<Error> for AppError`。
 - [ ] handler 返回类型改为 `Result<T, AppError>` 或现有语义错误类型。
 - [ ] 明确区分：
   - [ ] 未登录 / token 无效：`Unauthorized`
@@ -192,9 +197,9 @@ auth 相关错误通常有清晰恢复语义，不能简单压平。
 
 验收：
 
-- [ ] auth handler 中没有直接手写 `api_response::Error::from_err_and_code(...).into_response()`。
-- [ ] auth 错误文案仍与现有 API 行为一致。
-- [ ] 内部 source 只进入 log，不进入 response body。
+- [x] auth handler 中没有直接手写 `api_response::Error::from_err_and_code(...).into_response()`。
+- [x] auth 错误文案仍与现有 API 行为一致。
+- [x] 内部 source 只进入 log，不进入 response body。
 
 ## Phase 5: 迁移 feature error derive macro
 

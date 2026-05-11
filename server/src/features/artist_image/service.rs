@@ -24,6 +24,7 @@ use crate::domain::shared::ImageUploaderSummary;
 use crate::features::artist::find::repo as artist_repo;
 use crate::features::artist_image_queue::Repo as ArtistImageQueueRepo;
 use crate::features::image_queue::Repo as ImageQueueRepo;
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::storage::GenericFileStorage;
 
@@ -66,11 +67,17 @@ impl Service {
             artist_id,
         } = dto;
 
-        if !artist_repo::exists(&self.repo.conn, artist_id).await? {
+        if !artist_repo::exists(&self.repo.conn, artist_id)
+            .await
+            .with_operation("check artist exists for profile image upload")?
+        {
             Err(EntityNotFound::new(artist_id, "artist"))?;
         }
 
-        let tx_repo = self.repo.begin_tx().await?;
+        let tx_repo =
+            self.repo.begin_tx().await.with_operation(
+                "begin artist profile image upload transaction",
+            )?;
 
         let image_service =
             image::Service::new(tx_repo.clone(), self.storage.clone());
@@ -111,7 +118,8 @@ impl Service {
             .filter(artist_image::Column::Type.eq(ArtistImageType::Profile))
             .order_by_desc(image_entity::Column::UploadedAt)
             .one(&self.repo.conn)
-            .await?;
+            .await
+            .with_operation("find current artist profile image")?;
 
         let Some(image) = image else {
             return Ok(None);
@@ -120,7 +128,8 @@ impl Service {
         let uploader = user_entity::Entity::find_by_id(image.uploaded_by)
             .into_partial_model::<ImageUploaderSummary>()
             .one(&self.repo.conn)
-            .await?
+            .await
+            .with_operation("find artist profile image uploader")?
             .unwrap_or_else(|| ImageUploaderSummary {
                 id: image.uploaded_by,
                 name: "Unknown".to_string(),

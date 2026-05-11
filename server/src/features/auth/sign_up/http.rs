@@ -1,6 +1,5 @@
 use axum::Json;
 use axum::extract::State;
-use axum::response::IntoResponse;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -15,7 +14,7 @@ use crate::domain::auth::{
 };
 use crate::domain::user::UserProfile;
 use crate::features::user_profile::{DataUserProfile, load_profile};
-use crate::shared::http::api_response::Data;
+use crate::shared::http::api_response::{AppError, Data};
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
@@ -56,17 +55,14 @@ async fn verify_email(
     State(use_case): State<state::UserProfileService>,
     State(auth_service): State<state::AuthService>,
     Json(req): Json<VerifyEmailRequest>,
-) -> Result<Data<UserProfile>, impl IntoResponse> {
-    let user = auth_service
-        .verify_email(req)
-        .await
-        .map_err(IntoResponse::into_response)?;
+) -> Result<Data<UserProfile>, AppError> {
+    let user = auth_service.verify_email(req).await?;
 
     auth_session
         .login(&user)
         .await
         .map_err(SessionBackendError::from)
-        .map_err(IntoResponse::into_response)?;
+        .map_err(AppError::from)?;
 
     load_profile(&use_case, &user.name, Some(&user)).await
 }

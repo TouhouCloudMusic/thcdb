@@ -10,8 +10,8 @@ use crate::domain::markdown::Markdown;
 use crate::features::user_image::{
     Error as UserImageError, UploadAvatar, UploadProfileBanner,
 };
-use crate::infra::error::Error;
-use crate::shared::http::api_response::{self, Message};
+use crate::infra::database::error::DatabaseResultExt;
+use crate::shared::http::api_response::{self, AppError, Message};
 
 const TAG: &str = "User";
 
@@ -88,12 +88,11 @@ async fn update_bio(
     CurrentUser(user): CurrentUser,
     State(database): State<state::SeaOrmRepository>,
     text: String,
-) -> Result<Message, impl IntoResponse> {
+) -> Result<Message, AppError> {
     use entity::user;
     use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, Set};
 
-    let markdown =
-        Markdown::parse(text).map_err(IntoResponse::into_response)?;
+    let markdown = Markdown::parse(text).map_err(AppError::from)?;
 
     user::Entity::update_many()
         .filter(user::Column::Id.eq(user.id))
@@ -103,6 +102,7 @@ async fn update_bio(
         })
         .exec(&database.conn)
         .await
+        .with_operation("update user bio")
         .map(|_| Message::new("Bio updated successfully"))
-        .map_err(|e| Error::from(e).into_response())
+        .map_err(AppError::from)
 }

@@ -1,5 +1,4 @@
 use axum::extract::{Path, Query, State};
-use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -9,8 +8,8 @@ use super::repo::{self, FindManyFilter, FindOneFilter};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::features::song_lyrics::model::SongLyrics;
-use crate::infra::error::Error;
-use crate::shared::http::api_response::Data;
+use crate::infra::database::error::DatabaseResultExt;
+use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Song Lyrics";
 
@@ -69,8 +68,12 @@ impl From<FindManySongLyricsQuery> for FindManyFilter {
 async fn find_one_song_lyrics(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<FindOneSongLyricsQuery>,
-) -> Result<Data<Option<SongLyrics>>, Error> {
-    repo::find_one(&repo, query.into()).await.bimap_into()
+) -> Result<Data<Option<SongLyrics>>, AppError> {
+    repo::find_one(&repo, query.into())
+        .await
+        .with_operation("find song lyrics")
+        .map(Data::from)
+        .map_err(Into::into)
 }
 
 #[utoipa::path(
@@ -85,8 +88,12 @@ async fn find_one_song_lyrics(
 async fn find_many_song_lyrics(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<FindManySongLyricsQuery>,
-) -> Result<Data<Vec<SongLyrics>>, Error> {
-    repo::find_many(&repo, query.into()).await.bimap_into()
+) -> Result<Data<Vec<SongLyrics>>, AppError> {
+    repo::find_many(&repo, query.into())
+        .await
+        .with_operation("find many song lyrics")
+        .map(Data::from)
+        .map_err(Into::into)
 }
 
 #[utoipa::path(
@@ -100,8 +107,10 @@ async fn find_many_song_lyrics(
 async fn find_song_lyrics_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<SongLyrics>>, Error> {
+) -> Result<Data<Option<SongLyrics>>, AppError> {
     repo::find_one(&repo, FindOneFilter::Id { id })
         .await
-        .bimap_into()
+        .with_operation("find song lyrics by id")
+        .map(Data::from)
+        .map_err(Into::into)
 }

@@ -77,6 +77,11 @@ impl AppError {
     }
 
     #[track_caller]
+    pub fn unauthorized(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::Unauthorized, message)
+    }
+
+    #[track_caller]
     pub fn forbidden(message: impl Into<String>) -> Self {
         Self::new(AppErrorKind::Forbidden, message)
     }

@@ -11,9 +11,11 @@ use serde_json::Value;
 
 use crate::domain::model::{NotificationKindEnum, NotificationTargetTypeEnum};
 use crate::domain::shared::CursorResponse;
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
-use crate::infra::error::Error;
 use crate::infra::notification::NotificationHub;
+use crate::shared::error::InvalidInput;
+use crate::shared::http::api_response::AppError;
 
 #[derive(Clone)]
 pub struct Service {
@@ -56,12 +58,12 @@ impl Service {
         target_type: NotificationTargetTypeEnum,
         target_id: i32,
         payload: NotificationPayload,
-    ) -> Result<notification::Model, Error> {
+    ) -> Result<notification::Model, AppError> {
         let payload_json =
             serde_json::to_string(&payload).map_err(|source| {
-                Error::custom(&format!(
-                    "invalid notification payload: {source}"
-                ))
+                AppError::internal(InvalidInput::new(&format!(
+                    "invalid notification payload: {source}",
+                )))
             })?;
 
         let model = notification::ActiveModel {
@@ -76,7 +78,7 @@ impl Service {
         }
         .insert(&self.repo.conn)
         .await
-        .map_err(Error::from)?;
+        .with_operation("insert notification")?;
 
         if self.should_push(recipient_user_id, kind).await? {
             let evt = WsEvent {
@@ -103,7 +105,7 @@ impl Service {
         user_id: i32,
         limit: u8,
         cursor: Option<i32>,
-    ) -> Result<CursorResponse<notification::Model>, Error> {
+    ) -> Result<CursorResponse<notification::Model>, AppError> {
         let mut select = notification::Entity::find()
             .filter(notification::Column::RecipientUserId.eq(user_id))
             .order_by_desc(notification::Column::Id);
@@ -116,7 +118,7 @@ impl Service {
             .limit(u64::from(limit) + 1)
             .all(&self.repo.conn)
             .await
-            .map_err(Error::from)?;
+            .with_operation("list notifications")?;
 
         let has_next = models.len() > usize::from(limit);
         if has_next {
@@ -135,39 +137,40 @@ impl Service {
         })
     }
 
-    pub async fn unread_count(&self, user_id: i32) -> Result<u64, Error> {
+    pub async fn unread_count(&self, user_id: i32) -> Result<u64, AppError> {
         notification::Entity::find()
             .filter(notification::Column::RecipientUserId.eq(user_id))
             .filter(notification::Column::IsRead.eq(false))
             .count(&self.repo.conn)
             .await
-            .map_err(Error::from)
+            .with_operation("count unread notifications")
+            .map_err(Into::into)
     }
 
     pub async fn mark_read(
         &self,
         user_id: i32,
         notification_id: i32,
-    ) -> Result<(), Error> {
+    ) -> Result<(), AppError> {
         let _ = notification::Entity::update_many()
             .filter(notification::Column::Id.eq(notification_id))
             .filter(notification::Column::RecipientUserId.eq(user_id))
             .col_expr(notification::Column::IsRead, Expr::value(true))
             .exec(&self.repo.conn)
             .await
-            .map_err(Error::from)?;
+            .with_operation("mark notification read")?;
 
         Ok(())
     }
 
-    pub async fn read_all(&self, user_id: i32) -> Result<(), Error> {
+    pub async fn read_all(&self, user_id: i32) -> Result<(), AppError> {
         let _ = notification::Entity::update_many()
             .filter(notification::Column::RecipientUserId.eq(user_id))
             .filter(notification::Column::IsRead.eq(false))
             .col_expr(notification::Column::IsRead, Expr::value(true))
             .exec(&self.repo.conn)
             .await
-            .map_err(Error::from)?;
+            .with_operation("mark all notifications read")?;
 
         Ok(())
     }
@@ -177,7 +180,7 @@ impl Service {
         correction_id: i32,
         kind: NotificationKindEnum,
         summary: Option<String>,
-    ) -> Result<(), Error> {
+    ) -> Result<(), AppError> {
         let author_id = entity::correction_user::Entity::find()
             .filter(
                 entity::correction_user::Column::CorrectionId.eq(correction_id),
@@ -192,8 +195,12 @@ impl Service {
             .into_tuple::<i32>()
             .one(&self.repo.conn)
             .await
-            .map_err(Error::from)?
-            .ok_or_else(|| Error::custom(&"correction author not found"))?;
+            .with_operation("find correction notification author")?
+            .ok_or_else(|| {
+                AppError::internal(InvalidInput::new(
+                    &"correction author not found",
+                ))
+            })?;
 
         let _ = self
             .create(
@@ -235,7 +242,7 @@ impl Service {
         &self,
         correction_id: i32,
         exclude_user_ids: &[i32],
-    ) -> Result<(), Error> {
+    ) -> Result<(), AppError> {
         let reviewer_ids = user_role::Entity::find()
             .filter(user_role::Column::RoleId.is_in([1, 2]))
             .select_only()
@@ -243,7 +250,7 @@ impl Service {
             .into_tuple::<i32>()
             .all(&self.repo.conn)
             .await
-            .map_err(Error::from)?;
+            .with_operation("find correction notification reviewers")?;
 
         for reviewer_id in reviewer_ids {
             if exclude_user_ids.contains(&reviewer_id) {
@@ -290,7 +297,7 @@ impl Service {
         image_id: i32,
         kind: NotificationKindEnum,
         summary: Option<String>,
-    ) -> Result<(), Error> {
+    ) -> Result<(), AppError> {
         let _ = self
             .create(
                 created_by,
@@ -362,13 +369,15 @@ impl Service {
         &self,
         user_id: i32,
         kind: NotificationKindEnum,
-    ) -> Result<bool, Error> {
+    ) -> Result<bool, AppError> {
         let model = user::Entity::find_by_id(user_id)
             .one(&self.repo.conn)
             .await
-            .map_err(Error::from)?;
+            .with_operation("find notification recipient settings")?;
 
-        let model = model.ok_or_else(|| Error::custom(&"user not found"))?;
+        let model = model.ok_or_else(|| {
+            AppError::internal(InvalidInput::new(&"user not found"))
+        })?;
         let notif = model.settings.get("notification");
         let get_bool = |key: &str, default_val: bool| {
             notif
@@ -407,14 +416,14 @@ impl Service {
     pub async fn cleanup_expired(
         &self,
         retention_days: i64,
-    ) -> Result<u64, Error> {
+    ) -> Result<u64, AppError> {
         let cutoff: chrono::DateTime<chrono::FixedOffset> =
             (Utc::now() - chrono::Duration::days(retention_days)).into();
         let res = notification::Entity::delete_many()
             .filter(notification::Column::CreatedAt.lt(cutoff))
             .exec(&self.repo.conn)
             .await
-            .map_err(Error::from)?;
+            .with_operation("cleanup expired notifications")?;
 
         Ok(res.rows_affected)
     }

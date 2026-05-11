@@ -9,8 +9,8 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::infra::error::Error;
-use crate::shared::http::api_response::Data;
+use crate::infra::database::error::DatabaseResultExt;
+use crate::shared::http::api_response::{AppError, Data};
 
 #[derive(Serialize, ToSchema)]
 #[expect(clippy::struct_field_names)]
@@ -40,14 +40,15 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 )]
 async fn home_metadata(
     State(state): State<ArcAppState>,
-) -> Result<Data<HomeMetadata>, Error> {
+) -> Result<Data<HomeMetadata>, AppError> {
     let db = &state.database;
     let (artists_count, releases_count, songs_count, tags_count) = try_join!(
         artist::Entity::find().count(db),
         release::Entity::find().count(db),
         song::Entity::find().count(db),
         tag::Entity::find().count(db),
-    )?;
+    )
+    .with_operation("load home metadata")?;
 
     Ok(HomeMetadata {
         artists_count,

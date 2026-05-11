@@ -1,6 +1,4 @@
 use axum::extract::{Path, State};
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use entity::enums::EntityType;
 use entity::{
     artist, correction as correction_entity, credit_role, event, label,
@@ -14,8 +12,8 @@ use super::model::CorrectionDetail;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::features::correction::comment;
-use crate::infra::error::Error;
-use crate::shared::http::api_response::{self, AppError, Data};
+use crate::infra::database::error::DatabaseResultExt;
+use crate::shared::http::api_response::{AppError, Data};
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
@@ -36,18 +34,13 @@ data!(DataCorrectionDetail, CorrectionDetail);
 async fn get_correction(
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<CorrectionDetail>, axum::response::Response> {
+) -> Result<Data<CorrectionDetail>, AppError> {
     let Some(model) = correction_entity::Entity::find_by_id(id)
         .one(&repo.conn)
         .await
-        .map_err(Error::from)
-        .map_err(IntoResponse::into_response)?
+        .with_operation("find correction detail")?
     else {
-        return Err(api_response::Error::new((
-            "Correction not found",
-            StatusCode::NOT_FOUND,
-        ))
-        .into_response());
+        return Err(AppError::not_found("Correction not found"));
     };
 
     let comments = comment::initial_page(&repo.conn, id)
@@ -56,14 +49,9 @@ async fn get_correction(
     let entity_name =
         find_entity_name(&repo.conn, model.entity_type, model.entity_id)
             .await
-            .map_err(Error::from)
-            .map_err(IntoResponse::into_response)?;
+            .with_operation("find correction entity name")?;
     let Some(entity_name) = entity_name else {
-        return Err(api_response::Error::new((
-            "Correction entity not found",
-            StatusCode::NOT_FOUND,
-        ))
-        .into_response());
+        return Err(AppError::not_found("Correction entity not found"));
     };
 
     Ok(Data::from(CorrectionDetail {

@@ -1,5 +1,4 @@
 use axum::extract::{Path, Query, State};
-use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -10,8 +9,9 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::label::model::Label;
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::error::Error;
-use crate::shared::http::api_response::Data;
+use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Label";
 
@@ -42,8 +42,12 @@ data! {
 async fn find_label_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<Label>>, Error> {
-    super::repo::find_by_id(&repo, id).await.bimap_into()
+) -> Result<Data<Option<Label>>, AppError> {
+    super::repo::find_by_id(&repo, id)
+        .await
+        .with_operation("find label by id")
+        .map(Data::from)
+        .map_err(Into::into)
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -63,10 +67,12 @@ struct KwArgs {
 async fn find_label_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KwArgs>,
-) -> Result<Data<Vec<Label>>, Error> {
+) -> Result<Data<Vec<Label>>, AppError> {
     super::repo::find_by_keyword(&repo, &query.keyword)
         .await
-        .bimap_into()
+        .with_operation("find labels by keyword")
+        .map(Data::from)
+        .map_err(Into::into)
 }
 
 #[utoipa::path(
@@ -83,7 +89,7 @@ async fn explore_label(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<LabelFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Label>>, Error> {
+) -> Result<Data<PageResponse<Label>>, AppError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.label.find.http",
@@ -92,5 +98,7 @@ async fn explore_label(
     );
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
-        .bimap_into()
+        .with_operation("explore labels")
+        .map(Data::from)
+        .map_err(Into::into)
 }

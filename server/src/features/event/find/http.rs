@@ -1,5 +1,4 @@
 use axum::extract::{Path, Query, State};
-use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -10,8 +9,9 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::event::model::Event;
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::error::Error;
-use crate::shared::http::api_response::Data;
+use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Event";
 
@@ -42,8 +42,12 @@ data! {
 async fn find_event_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<Event>>, Error> {
-    super::repo::find_by_id(&repo, id).await.bimap_into()
+) -> Result<Data<Option<Event>>, AppError> {
+    super::repo::find_by_id(&repo, id)
+        .await
+        .with_operation("find event by id")
+        .map(Data::from)
+        .map_err(Into::into)
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -65,10 +69,12 @@ struct KeywordQuery {
 async fn find_event_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KeywordQuery>,
-) -> Result<Data<Vec<Event>>, Error> {
+) -> Result<Data<Vec<Event>>, AppError> {
     super::repo::find_by_keyword(&repo, &query.keyword)
         .await
-        .bimap_into()
+        .with_operation("find events by keyword")
+        .map(Data::from)
+        .map_err(Into::into)
 }
 
 #[utoipa::path(
@@ -85,7 +91,7 @@ async fn explore_event(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<EventFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Event>>, Error> {
+) -> Result<Data<PageResponse<Event>>, AppError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.event.find.http",
@@ -94,5 +100,7 @@ async fn explore_event(
     );
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
-        .bimap_into()
+        .with_operation("explore events")
+        .map(Data::from)
+        .map_err(Into::into)
 }

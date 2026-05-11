@@ -296,7 +296,6 @@ impl Service {
         )
         .await
         .map(|_| ())
-        .map_err(Error::from)
         .map_err(SendVerificationEmailError::from)?;
 
         let send_failure =
@@ -318,7 +317,7 @@ impl Service {
                 &code_hash,
             )
             .await
-            .map_err(Error::from)
+            .map_err(SendVerificationEmailError::from)
             {
                 Ok(true) => {}
                 Ok(false) => {
@@ -332,7 +331,7 @@ impl Service {
                     log::error!(
                         target: "features.auth.sign_up.service",
                         user_id = user.id,
-                        error:% = cleanup_err;
+                        error:? = cleanup_err;
                         "failed to clear verification code after email failure"
                     );
                 }

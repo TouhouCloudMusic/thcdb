@@ -1,5 +1,4 @@
 use axum::extract::{Query, State};
-use axum::response::IntoResponse;
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -15,10 +14,9 @@ use crate::domain::release::SimpleRelease;
 use crate::domain::shared::{CursorResponse, SearchTerm, SearchTermConfig};
 use crate::domain::song::SongRef;
 use crate::domain::tag::TagRef;
-use crate::infra::error::Error as InfraError;
-use crate::shared;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::error::MessageValidationError as ValidationError;
-use crate::shared::http::api_response::Data;
+use crate::shared::http::api_response::{AppError, Data};
 
 #[derive(Clone, Debug, Deserialize, IntoParams)]
 #[serde(deny_unknown_fields)]
@@ -103,16 +101,18 @@ impl SearchResponse {
         search_term: &SearchTerm,
         limit: u32,
         cursor: i32,
-    ) -> Result<Self, InfraError> {
+    ) -> Result<Self, DatabaseError> {
         let search_term = search_term.as_str();
-        let (artists, releases, songs, events, labels, tags) = tokio::try_join!(
-            repo::search_artists(repo, search_term, limit, cursor),
-            repo::search_releases(repo, search_term, limit, cursor),
-            repo::search_songs(repo, search_term, limit, cursor),
-            repo::search_events(repo, search_term, limit, cursor),
-            repo::search_labels(repo, search_term, limit, cursor),
-            repo::search_tags(repo, search_term, limit, cursor),
-        )?;
+        let (artists, releases, songs, events, labels, tags) =
+            tokio::try_join!(
+                repo::search_artists(repo, search_term, limit, cursor),
+                repo::search_releases(repo, search_term, limit, cursor),
+                repo::search_songs(repo, search_term, limit, cursor),
+                repo::search_events(repo, search_term, limit, cursor),
+                repo::search_labels(repo, search_term, limit, cursor),
+                repo::search_tags(repo, search_term, limit, cursor),
+            )
+            .with_operation("search all")?;
 
         Ok(Self {
             artists,
@@ -161,17 +161,17 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn search_all(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchAllQuery>,
-) -> Result<Data<SearchResponse>, axum::response::Response> {
+) -> Result<Data<SearchResponse>, AppError> {
     let ValidSearchQuery { search_term, limit } = query
         .validate()
-        .map_err(|err| shared::http::Error::bad_request(err).into_response())?;
+        .map_err(|err| AppError::bad_request(err.to_string()))?;
 
     let start = std::time::Instant::now();
 
     let response =
         SearchResponse::from_request(&sea_repo, &search_term, limit, 0)
             .await
-            .map_err(IntoResponse::into_response)?;
+            .map_err(AppError::from)?;
 
     log::info!(
         target: "features.search.http",
@@ -198,21 +198,20 @@ async fn search_all(
 async fn search_artist(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SimpleArtist>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<SimpleArtist>>, AppError> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
         cursor,
     } = query
         .validate()
-        .map_err(|err| shared::http::Error::bad_request(err).into_response())?;
+        .map_err(|err| AppError::bad_request(err.to_string()))?;
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
     let response = repo::search_artists(&sea_repo, search_term, limit, cursor)
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .with_operation("search artists")?;
 
     log::info!(
         target: "features.search.http",
@@ -239,21 +238,20 @@ async fn search_artist(
 async fn search_release(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SimpleRelease>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<SimpleRelease>>, AppError> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
         cursor,
     } = query
         .validate()
-        .map_err(|err| shared::http::Error::bad_request(err).into_response())?;
+        .map_err(|err| AppError::bad_request(err.to_string()))?;
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
     let response = repo::search_releases(&sea_repo, search_term, limit, cursor)
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .with_operation("search releases")?;
 
     log::info!(
         target: "features.search.http",
@@ -280,21 +278,20 @@ async fn search_release(
 async fn search_song(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SongRef>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<SongRef>>, AppError> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
         cursor,
     } = query
         .validate()
-        .map_err(|err| shared::http::Error::bad_request(err).into_response())?;
+        .map_err(|err| AppError::bad_request(err.to_string()))?;
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
     let response = repo::search_songs(&sea_repo, search_term, limit, cursor)
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .with_operation("search songs")?;
 
     log::info!(
         target: "features.search.http",
@@ -321,21 +318,20 @@ async fn search_song(
 async fn search_event(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SimpleEvent>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<SimpleEvent>>, AppError> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
         cursor,
     } = query
         .validate()
-        .map_err(|err| shared::http::Error::bad_request(err).into_response())?;
+        .map_err(|err| AppError::bad_request(err.to_string()))?;
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
     let response = repo::search_events(&sea_repo, search_term, limit, cursor)
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .with_operation("search events")?;
 
     log::info!(
         target: "features.search.http",
@@ -362,21 +358,20 @@ async fn search_event(
 async fn search_label(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SimpleLabel>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<SimpleLabel>>, AppError> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
         cursor,
     } = query
         .validate()
-        .map_err(|err| shared::http::Error::bad_request(err).into_response())?;
+        .map_err(|err| AppError::bad_request(err.to_string()))?;
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
     let response = repo::search_labels(&sea_repo, search_term, limit, cursor)
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .with_operation("search labels")?;
 
     log::info!(
         target: "features.search.http",
@@ -403,21 +398,20 @@ async fn search_label(
 async fn search_tag(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<TagRef>>, axum::response::Response> {
+) -> Result<Data<CursorResponse<TagRef>>, AppError> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
         cursor,
     } = query
         .validate()
-        .map_err(|err| shared::http::Error::bad_request(err).into_response())?;
+        .map_err(|err| AppError::bad_request(err.to_string()))?;
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
     let response = repo::search_tags(&sea_repo, search_term, limit, cursor)
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .with_operation("search tags")?;
 
     log::info!(
         target: "features.search.http",
