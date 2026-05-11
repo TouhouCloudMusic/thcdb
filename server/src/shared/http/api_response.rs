@@ -14,6 +14,8 @@ use utoipa::openapi::{
 use utoipa::{PartialSchema, ToSchema, openapi};
 
 use crate::infra::database::error::DatabaseError;
+use crate::infra::error::{Error as InfraError, UserError};
+use crate::shared::error::PermissionDenied;
 use crate::shared::types::BoxedError;
 use crate::utils::openapi::ContentType;
 
@@ -55,20 +57,7 @@ pub struct AppError {
     kind: AppErrorKind,
     message: String,
     source: Option<BoxedError>,
-    context: Vec<AppErrorContext>,
     location: &'static Location<'static>,
-}
-
-#[derive(Debug)]
-struct AppErrorContext {
-    message: String,
-    location: &'static Location<'static>,
-}
-
-impl Display for AppErrorContext {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} at {}", self.message, self.location)
-    }
 }
 
 impl AppError {
@@ -78,7 +67,6 @@ impl AppError {
             kind,
             message: message.into(),
             source: None,
-            context: Vec::new(),
             location: Location::caller(),
         }
     }
@@ -116,18 +104,8 @@ impl AppError {
             kind: AppErrorKind::Internal,
             message: "Internal server error".to_string(),
             source: Some(source),
-            context: Vec::new(),
             location: Location::caller(),
         }
-    }
-
-    #[track_caller]
-    pub fn context(mut self, message: impl Into<String>) -> Self {
-        self.context.push(AppErrorContext {
-            message: message.into(),
-            location: Location::caller(),
-        });
-        self
     }
 
     pub const fn status_code(&self) -> StatusCode {
@@ -152,19 +130,11 @@ impl std::error::Error for AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
         if self.kind == AppErrorKind::Internal {
-            let context = self
-                .context
-                .iter()
-                .map(ToString::to_string)
-                .collect::<Vec<_>>()
-                .join(" | ");
-
             match &self.source {
                 Some(source) => {
                     log::error!(
                         target: "shared.http.app_error",
                         location:% = self.location,
-                        context:% = context,
                         error:? = source;
                         "internal error"
                     );
@@ -172,8 +142,7 @@ impl IntoResponse for AppError {
                 None => {
                     log::error!(
                         target: "shared.http.app_error",
-                        location:% = self.location,
-                        context:% = context;
+                        location:% = self.location;
                         "internal error"
                     );
                 }
@@ -191,31 +160,35 @@ impl From<AppError> for axum::response::Response {
     }
 }
 
-impl From<crate::infra::error::UserError> for AppError {
+impl From<UserError> for AppError {
     #[track_caller]
-    fn from(err: crate::infra::error::UserError) -> Self {
+    fn from(err: UserError) -> Self {
         let message = err.to_string();
         match err {
-            crate::infra::error::UserError::FkViolation { source } => Self {
+            UserError::FkViolation { source } => Self {
                 kind: AppErrorKind::BadRequest,
                 message,
                 source: Some(source),
-                context: Vec::new(),
                 location: Location::caller(),
             },
         }
     }
 }
 
-impl From<crate::infra::error::Error> for AppError {
+impl From<InfraError> for AppError {
     #[track_caller]
-    fn from(err: crate::infra::error::Error) -> Self {
+    fn from(err: InfraError) -> Self {
         match err {
-            crate::infra::error::Error::Internal { source } => {
-                Self::internal_boxed(source).context("infrastructure error")
-            }
-            crate::infra::error::Error::User { source } => source.into(),
+            InfraError::Internal { source } => Self::internal_boxed(source),
+            InfraError::User { source } => source.into(),
         }
+    }
+}
+
+impl From<PermissionDenied> for AppError {
+    #[track_caller]
+    fn from(err: PermissionDenied) -> Self {
+        Self::forbidden(err.to_string())
     }
 }
 
@@ -479,16 +452,14 @@ mod test {
 
     #[tokio::test]
     async fn app_error_internal_response_is_opaque() {
-        let response = AppError::internal(SecretError("database secret"))
-            .context("load private data")
-            .into_response();
+        let response =
+            AppError::internal(SecretError("database secret")).into_response();
 
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
 
         let body = response_body_string(response).await;
         assert!(body.contains(r#""message":"Internal server error""#));
         assert!(!body.contains("database secret"));
-        assert!(!body.contains("load private data"));
     }
 
     #[tokio::test]

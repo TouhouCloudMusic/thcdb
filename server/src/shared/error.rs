@@ -56,6 +56,10 @@ impl ValidationError<MessageError> {
 
 pub type MessageValidationError = ValidationError<MessageError>;
 
+#[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
+#[display("Permission denied")]
+pub struct PermissionDenied;
+
 #[derive(Debug, Clone, derive_more::Display, derive_more::Error)]
 #[display("{message}")]
 pub struct InvalidInput {

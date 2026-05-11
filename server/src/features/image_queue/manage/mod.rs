@@ -66,12 +66,8 @@ impl From<Error> for AppError {
             Error::PublishedNotFound => {
                 AppError::conflict("Published image record not found")
             }
-            Error::Database(err) => {
-                AppError::from(err).context("image queue management operation")
-            }
-            Error::Infra(err) => {
-                AppError::from(err).context("image queue management operation")
-            }
+            Error::Database(err) => err.into(),
+            Error::Infra(err) => err.into(),
         }
     }
 }

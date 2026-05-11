@@ -55,9 +55,7 @@ pub struct SessionError {
 
 impl IntoResponse for SessionError {
     fn into_response(self) -> axum::response::Response {
-        AppError::internal(self)
-            .context("session error")
-            .into_response()
+        AppError::internal(self).into_response()
     }
 }
 

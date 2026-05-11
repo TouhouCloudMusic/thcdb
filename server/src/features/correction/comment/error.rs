@@ -2,6 +2,7 @@ use sea_orm::DbErr;
 
 use crate::infra::database::error::DatabaseError;
 use crate::infra::error::Error as InfraError;
+use crate::shared::error::PermissionDenied;
 use crate::shared::http::api_response::AppError;
 
 #[derive(Debug, Clone, Copy)]
@@ -42,14 +43,10 @@ impl From<DbErr> for Error {
 impl From<Error> for AppError {
     fn from(err: Error) -> Self {
         match err {
-            Error::Database(err) => {
-                AppError::from(err).context("correction comment operation")
-            }
-            Error::Infra(err) => {
-                AppError::from(err).context("correction comment operation")
-            }
+            Error::Database(err) => err.into(),
+            Error::Infra(err) => err.into(),
             Error::NotFound(kind) => AppError::not_found(kind.message()),
-            Error::PermissionDenied => AppError::forbidden("Permission denied"),
+            Error::PermissionDenied => PermissionDenied.into(),
             Error::InvalidRequest(message) => AppError::bad_request(message),
         }
     }

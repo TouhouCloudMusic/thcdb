@@ -2,6 +2,7 @@ use sea_orm::DbErr;
 
 use crate::infra::database::error::DatabaseError;
 use crate::infra::error::Error as InfraError;
+use crate::shared::error::PermissionDenied;
 use crate::shared::http::api_response::{AppError, AppErrorKind};
 use crate::shared::types::BoxedError;
 
@@ -67,16 +68,10 @@ impl From<Error> for AppError {
         }
 
         match err {
-            Error::Database(err) => {
-                AppError::from(err).context("user collection operation")
-            }
-            Error::Infra(err) => {
-                AppError::from(err).context("user collection operation")
-            }
+            Error::Database(err) => err.into(),
+            Error::Infra(err) => err.into(),
             Error::NotFound(kind) => from_not_found(kind),
-            Error::CollectionAccessDenied => {
-                AppError::forbidden("Collection access denied")
-            }
+            Error::CollectionAccessDenied => PermissionDenied.into(),
             Error::InvalidRequest(message) => AppError::bad_request(message),
         }
     }

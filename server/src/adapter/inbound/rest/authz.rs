@@ -3,6 +3,7 @@ use sea_orm::ConnectionTrait;
 use crate::domain::model::PermissionMarker;
 use crate::infra::authz;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::error::PermissionDenied;
 use crate::shared::http::api_response::AppError;
 
 #[derive(Debug, derive_more::From)]
@@ -15,10 +16,8 @@ pub enum Error {
 impl From<Error> for AppError {
     fn from(err: Error) -> Self {
         match err {
-            Error::Database(err) => {
-                AppError::from(err).context("permission check")
-            }
-            Error::PermissionDenied => AppError::forbidden("Permission denied"),
+            Error::Database(err) => err.into(),
+            Error::PermissionDenied => PermissionDenied.into(),
         }
     }
 }

@@ -2,6 +2,7 @@ use sea_orm::DbErr;
 
 use crate::infra;
 use crate::infra::database::error::DatabaseError;
+use crate::shared::error::PermissionDenied;
 use crate::shared::http::api_response::AppError;
 use crate::shared::types::BoxedError;
 
@@ -28,15 +29,9 @@ impl From<SubmissionError> for AppError {
     fn from(err: SubmissionError) -> Self {
         match err {
             SubmissionError::Validation(message) => Self::bad_request(message),
-            SubmissionError::PermissionDenied => {
-                Self::forbidden("Permission denied")
-            }
-            SubmissionError::Database(source) => {
-                AppError::from(source).context("correction submission")
-            }
-            SubmissionError::Infra(source) => {
-                AppError::from(source).context("correction submission")
-            }
+            SubmissionError::PermissionDenied => PermissionDenied.into(),
+            SubmissionError::Database(source) => source.into(),
+            SubmissionError::Infra(source) => source.into(),
         }
     }
 }
@@ -69,12 +64,8 @@ impl From<ModerationError> for AppError {
             ModerationError::AlreadyHandled => {
                 AppError::conflict("Correction already handled")
             }
-            ModerationError::Database(source) => {
-                AppError::from(source).context("correction moderation")
-            }
-            ModerationError::Infra(source) => {
-                AppError::from(source).context("correction moderation")
-            }
+            ModerationError::Database(source) => source.into(),
+            ModerationError::Infra(source) => source.into(),
         }
     }
 }

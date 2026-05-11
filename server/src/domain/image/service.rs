@@ -101,7 +101,7 @@ impl From<ValidationError> for AppError {
                 AppError::bad_request(message)
             }
             ValidationError::Io { .. } | ValidationError::Image { .. } => {
-                AppError::internal(err).context("image validation")
+                AppError::internal(err)
             }
         }
     }
@@ -385,9 +385,7 @@ impl From<Error> for AppError {
     fn from(err: Error) -> Self {
         match err {
             Error::Validation { source } => source.into(),
-            Error::Infra { source } => {
-                AppError::from(source).context("image service")
-            }
+            Error::Infra { source } => source.into(),
         }
     }
 }
