@@ -4,7 +4,7 @@ use derive_more::Display;
 
 use crate::domain::auth::ValidateCredsError;
 use crate::infra;
-use crate::shared::http::api_response::{self, ApiError as ApiErrorTrait};
+use crate::shared::http::api_response;
 
 #[derive(Debug, Display, derive_more::Error)]
 #[display("Invalid email: {email}.\n{source}")]
@@ -41,15 +41,15 @@ pub enum SignUpError {
 }
 
 impl SignUpError {
-    fn status_code(&self) -> StatusCode {
+    const fn status_code(&self) -> StatusCode {
         match self {
             SignUpError::UsernameAlreadyInUse { .. } => StatusCode::CONFLICT,
             SignUpError::InvalidEmail { .. } => StatusCode::BAD_REQUEST,
             SignUpError::EmailServiceUnavailable => {
                 StatusCode::SERVICE_UNAVAILABLE
             }
-            SignUpError::Infra { source } => source.as_status_code(),
-            SignUpError::Validate { source } => source.as_status_code(),
+            SignUpError::Infra { source } => source.status_code(),
+            SignUpError::Validate { .. } => ValidateCredsError::status_code(),
         }
     }
 }
@@ -66,7 +66,7 @@ where
 impl IntoResponse for SignUpError {
     fn into_response(self) -> axum::response::Response {
         let status_code = self.status_code();
-        api_response::Error::from_err_and_code(self, status_code)
+        api_response::Error::from_err_and_code(&self, status_code)
             .into_response()
     }
 }
@@ -82,7 +82,7 @@ pub enum ResendVerificationEmailError {
 }
 
 impl ResendVerificationEmailError {
-    fn status_code(&self) -> StatusCode {
+    const fn status_code(&self) -> StatusCode {
         match self {
             ResendVerificationEmailError::InvalidEmail { .. } => {
                 StatusCode::BAD_REQUEST
@@ -91,7 +91,7 @@ impl ResendVerificationEmailError {
                 StatusCode::SERVICE_UNAVAILABLE
             }
             ResendVerificationEmailError::Infra { source } => {
-                source.as_status_code()
+                source.status_code()
             }
         }
     }
@@ -109,7 +109,7 @@ where
 impl IntoResponse for ResendVerificationEmailError {
     fn into_response(self) -> axum::response::Response {
         let status_code = self.status_code();
-        api_response::Error::from_err_and_code(self, status_code)
+        api_response::Error::from_err_and_code(&self, status_code)
             .into_response()
     }
 }
@@ -127,12 +127,12 @@ pub enum VerifyEmailError {
 }
 
 impl VerifyEmailError {
-    fn status_code(&self) -> StatusCode {
+    const fn status_code(&self) -> StatusCode {
         match self {
             VerifyEmailError::InvalidEmail { .. }
             | VerifyEmailError::InvalidOrExpiredCode => StatusCode::BAD_REQUEST,
             VerifyEmailError::TooManyAttempts => StatusCode::TOO_MANY_REQUESTS,
-            VerifyEmailError::Infra { source } => source.as_status_code(),
+            VerifyEmailError::Infra { source } => source.status_code(),
         }
     }
 }
@@ -149,7 +149,7 @@ where
 impl IntoResponse for VerifyEmailError {
     fn into_response(self) -> axum::response::Response {
         let status_code = self.status_code();
-        api_response::Error::from_err_and_code(self, status_code)
+        api_response::Error::from_err_and_code(&self, status_code)
             .into_response()
     }
 }

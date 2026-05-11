@@ -7,7 +7,6 @@ use argon2::password_hash::{self, PasswordHash, PasswordVerifier};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use derive_more::Display;
-use macros::ApiError;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use snafu::Snafu;
@@ -17,7 +16,7 @@ use crate::constant::{
     USER_NAME_REGEX_STR, USER_PASSWORD_MAX_LENGTH, USER_PASSWORD_MIN_LENGTH,
     USER_PASSWORD_REGEX_STR,
 };
-use crate::shared::http::api_response::{ApiError as ApiErrorTrait, Error};
+use crate::shared::http::api_response::Error;
 use crate::shared::secret;
 
 pub const VERIFICATION_CODE_EXPIRES_MINUTES: i64 = 10;
@@ -45,10 +44,10 @@ pub enum AuthnError {
 }
 
 impl AuthnError {
-    pub(crate) fn status_code(&self) -> StatusCode {
+    pub(crate) const fn status_code(&self) -> StatusCode {
         match self {
             AuthnError::AuthenticationFailed { .. } => StatusCode::UNAUTHORIZED,
-            AuthnError::Infra { source } => source.as_status_code(),
+            AuthnError::Infra { source } => source.status_code(),
             AuthnError::PasswordHash { .. } | AuthnError::Join { .. } => {
                 StatusCode::INTERNAL_SERVER_ERROR
             }
@@ -66,7 +65,7 @@ impl AuthnError {
 impl IntoResponse for AuthnError {
     fn into_response(self) -> axum::response::Response {
         let status_code = self.status_code();
-        Error::from_err_and_code(self, status_code).into_response()
+        Error::from_err_and_code(&self, status_code).into_response()
     }
 }
 
@@ -88,9 +87,8 @@ impl From<tokio::task::JoinError> for AuthnError {
     }
 }
 
-#[derive(Debug, Snafu, ApiError)]
+#[derive(Debug, Snafu)]
 #[snafu(display("{kind}"))]
-#[api_error(status_code = StatusCode::BAD_REQUEST)]
 pub struct ValidateCredsError {
     pub kind: ValidateCredsErrorKind,
     pub backtrace: Backtrace,
@@ -102,6 +100,12 @@ impl From<ValidateCredsErrorKind> for ValidateCredsError {
             kind,
             backtrace: Backtrace::capture(),
         }
+    }
+}
+
+impl ValidateCredsError {
+    pub const fn status_code() -> StatusCode {
+        StatusCode::BAD_REQUEST
     }
 }
 

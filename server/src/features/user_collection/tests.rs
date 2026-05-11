@@ -15,6 +15,7 @@ use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::integration_test::fixture::{MockSong, MockUser};
 use crate::infra::integration_test::test_connection;
 use crate::shared::http::PageQuery;
+use crate::shared::http::api_response::AppError;
 
 fn page_query() -> PageQuery {
     serde_json::from_value(serde_json::json!({
@@ -135,7 +136,9 @@ async fn private_collections_are_visible_only_to_owner() {
         .get_user_collection_detail(private_collection.id, Some(viewer.id))
         .await;
     assert_eq!(
-        private_detail.unwrap_err().into_response().status(),
+        AppError::from(private_detail.unwrap_err())
+            .into_response()
+            .status(),
         StatusCode::NOT_FOUND
     );
 }

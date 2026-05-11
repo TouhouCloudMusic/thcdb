@@ -2,6 +2,7 @@ mod comment;
 mod compare;
 mod detail;
 mod diff;
+mod error;
 mod handle;
 mod history;
 mod http;
@@ -12,5 +13,6 @@ mod revisions;
 pub mod service;
 mod shared;
 
+pub(crate) use error::{ModerationError, SubmissionError};
 pub use http::router;
 pub use model::HandleCorrectionMethod;

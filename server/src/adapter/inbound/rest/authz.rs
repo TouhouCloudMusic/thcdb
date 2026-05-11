@@ -1,37 +1,44 @@
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
 use sea_orm::ConnectionTrait;
 
 use crate::domain::model::PermissionMarker;
 use crate::infra::authz;
-use crate::shared::http::api_response;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::http::api_response::AppError;
+
+#[derive(Debug, derive_more::From)]
+pub enum Error {
+    #[from]
+    Database(DatabaseError),
+    PermissionDenied,
+}
+
+impl From<Error> for AppError {
+    fn from(err: Error) -> Self {
+        match err {
+            Error::Database(err) => {
+                AppError::from(err).context("permission check")
+            }
+            Error::PermissionDenied => AppError::forbidden("Permission denied"),
+        }
+    }
+}
+
+impl From<Error> for axum::response::Response {
+    fn from(err: Error) -> Self {
+        AppError::from(err).into()
+    }
+}
 
 pub async fn ensure_permission<P: PermissionMarker>(
     db: &impl ConnectionTrait,
     user_id: i32,
-) -> Result<(), Response> {
+) -> Result<(), Error> {
     let has_permission = authz::user_has_permission::<P>(db, user_id)
         .await
-        .map_err(|err| {
-            log::error!(
-                target: "adapter.rest.authz",
-                user_id = user_id,
-                error:? = err;
-                "failed to check permission"
-            );
-            api_response::Error::from_err_and_code(
-                "Database Error",
-                StatusCode::INTERNAL_SERVER_ERROR,
-            )
-            .into_response()
-        })?;
+        .with_operation("check user permission")?;
 
     if !has_permission {
-        return Err(api_response::Error::from_err_and_code(
-            "Permission denied",
-            StatusCode::FORBIDDEN,
-        )
-        .into_response());
+        return Err(Error::PermissionDenied);
     }
 
     Ok(())

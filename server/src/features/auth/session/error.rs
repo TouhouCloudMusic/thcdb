@@ -2,12 +2,11 @@ use std::backtrace::Backtrace;
 
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use macros::ApiError;
 
 use crate::domain::auth::{AuthnError, ValidateCredsError};
 use crate::infra;
 use crate::infra::error::Error;
-use crate::shared::http::api_response::{self, ApiError as ApiErrorTrait};
+use crate::shared::http::api_response::{self, AppError};
 
 #[derive(Debug, snafu::Snafu)]
 pub enum SignInError {
@@ -30,10 +29,10 @@ impl IntoResponse for SignInError {
                 StatusCode::BAD_REQUEST
             }
             SignInError::Authn { source } => source.status_code(),
-            SignInError::Infra { source } => source.as_status_code(),
-            SignInError::Validate { source } => source.as_status_code(),
+            SignInError::Infra { source } => source.status_code(),
+            SignInError::Validate { .. } => ValidateCredsError::status_code(),
         };
-        api_response::Error::from_err_and_code(self, status_code)
+        api_response::Error::from_err_and_code(&self, status_code)
             .into_response()
     }
 }
@@ -47,15 +46,19 @@ where
     }
 }
 
-#[derive(Debug, snafu::Snafu, ApiError)]
+#[derive(Debug, snafu::Snafu)]
 #[snafu(display("Session error: {source}"))]
-#[api_error(
-    status_code = StatusCode::INTERNAL_SERVER_ERROR,
-    into_response = self
-)]
 pub struct SessionError {
     source: axum_login::tower_sessions::session::Error,
     backtrace: Backtrace,
+}
+
+impl IntoResponse for SessionError {
+    fn into_response(self) -> axum::response::Response {
+        AppError::internal(self)
+            .context("session error")
+            .into_response()
+    }
 }
 
 impl SessionError {
@@ -102,8 +105,8 @@ impl IntoResponse for AuthnBackendError {
             AuthnBackendError::Authn { source } => source.into_response(),
             AuthnBackendError::SignIn { source } => source.into_response(),
             AuthnBackendError::Internal { source } => {
-                let status_code = source.as_status_code();
-                api_response::Error::from_err_and_code(source, status_code)
+                let status_code = source.status_code();
+                api_response::Error::from_err_and_code(&source, status_code)
                     .into_response()
             }
         }

@@ -1,19 +1,17 @@
 use std::backtrace::Backtrace;
 use std::sync::LazyLock;
 
-use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use derive_more::Display;
-use macros::{ApiError, IntoErrorSchema};
 use pulldown_cmark::{Event, Options, Parser, TextMergeStream};
+
+use crate::shared::http::api_response::AppError;
 
 #[derive(Debug, Clone, Display)]
 pub struct Markdown(String);
 
-#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
+#[derive(Debug, snafu::Snafu)]
 #[snafu(display("{kind}"))]
-#[api_error(
-    status_code = StatusCode::BAD_REQUEST,
-)]
 pub struct Error {
     pub kind: ErrorKind,
     pub backtrace: Backtrace,
@@ -25,6 +23,18 @@ impl From<ErrorKind> for Error {
             kind,
             backtrace: Backtrace::capture(),
         }
+    }
+}
+
+impl From<Error> for AppError {
+    fn from(err: Error) -> Self {
+        AppError::bad_request(err.to_string())
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
     }
 }
 

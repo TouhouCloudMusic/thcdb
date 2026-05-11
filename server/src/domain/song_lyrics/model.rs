@@ -1,9 +1,7 @@
 use std::backtrace::Backtrace;
 
-use axum::http::StatusCode;
 use derive_more::Display;
 use entity::enums::EntityType;
-use macros::ApiError;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -27,11 +25,8 @@ pub struct NewSongLyrics {
     pub is_main: bool,
 }
 
-#[derive(Debug, snafu::Snafu, ApiError)]
+#[derive(Debug, snafu::Snafu)]
 #[snafu(display("Validation error: {kind}"))]
-#[api_error(
-    status_code = StatusCode::BAD_REQUEST
-)]
 pub struct ValidationError {
     pub kind: ValidationErrorKind,
     pub backtrace: Backtrace,

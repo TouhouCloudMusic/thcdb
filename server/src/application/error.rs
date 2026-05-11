@@ -1,12 +1,6 @@
 use std::backtrace::Backtrace;
 
-use axum::http::StatusCode;
-use macros::{ApiError, IntoErrorSchema};
-
-#[derive(Debug, snafu::Snafu, ApiError)]
-#[api_error(
-    status_code = StatusCode::BAD_REQUEST,
-)]
+#[derive(Debug, snafu::Snafu)]
 #[snafu(display(
     "Invalid field: {field}, expected: {expected}, received: {received}."
 ))]
@@ -17,10 +11,7 @@ pub struct InvalidField {
     backtrace: Backtrace,
 }
 
-#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
-#[api_error(
-    status_code = StatusCode::UNAUTHORIZED,
-)]
+#[derive(Debug, snafu::Snafu)]
 #[snafu(display("Unauthorized"))]
 pub struct Unauthorized {
     backtrace: Backtrace,

@@ -6,7 +6,6 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::error::{CreateError, UpsertCorrectionError};
 use super::model::NewRelease;
 use super::{find, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
@@ -16,7 +15,7 @@ use crate::application::correction::{
 };
 use crate::domain::image::CurrentImageMetadata;
 use crate::features::release_image::{self, ReleaseCoverArtInput};
-use crate::shared::http::api_response::Data;
+use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Release";
 
@@ -46,7 +45,7 @@ async fn create_release(
     CurrentUser(user): CurrentUser,
     State(repo): State<state::SeaOrmRepository>,
     Json(dto): Json<NewCorrectionDto<NewRelease>>,
-) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
+) -> Result<Data<CorrectionSubmissionResult>, AppError> {
     let result = service::create(&repo, dto.with_author(user)).await?;
 
     Ok(Data::from(result))
@@ -67,7 +66,7 @@ async fn update_release(
     State(notification): State<state::NotificationService>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewRelease>>,
-) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
+) -> Result<Data<CorrectionSubmissionResult>, AppError> {
     let user_id = user.id;
     let result =
         service::upsert_correction(&repo, id, dto.with_author(user)).await?;

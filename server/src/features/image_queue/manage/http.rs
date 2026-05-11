@@ -1,6 +1,4 @@
 use axum::extract::{Path, Query, State};
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use entity::sea_orm_active_enums::{
     ArtistImageType, ImageQueueStatus, ReleaseImageType,
 };
@@ -17,7 +15,7 @@ use crate::domain::model::ImageQueueManage;
 use crate::domain::shared::CursorResponse;
 use crate::features::image_queue::shared::{UserSummary, load_users};
 use crate::shared::http::PaginationQuery;
-use crate::shared::http::api_response::{self, Data, Message};
+use crate::shared::http::api_response::{AppError, Data, Message};
 
 const TAG: &str = "Image Queue";
 
@@ -116,15 +114,13 @@ async fn pending_image_queue(
     State(repo): State<state::SeaOrmRepository>,
     Query(pagination): Query<PaginationQuery>,
     Query(filter): Query<ImageQueueFilterQuery>,
-) -> Result<Data<CursorResponse<PendingImageQueueItem>>, axum::response::Response>
-{
+) -> Result<Data<CursorResponse<PendingImageQueueItem>>, AppError> {
     let limit = pagination.limit();
     let cursor = pagination.cursor;
 
     let paginated =
         repo::find_pending(&repo, limit, cursor, filter.status, filter.r#type)
-            .await
-            .map_err(IntoResponse::into_response)?;
+            .await?;
 
     let user_ids = paginated
         .items
@@ -166,10 +162,8 @@ async fn pending_image_queue(
 async fn pending_image_queue_count(
     CurrentUser(_user): CurrentUser,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<u64>, axum::response::Response> {
-    let count = repo::count_pending(&repo)
-        .await
-        .map_err(IntoResponse::into_response)?;
+) -> Result<Data<u64>, AppError> {
+    let count = repo::count_pending(&repo).await?;
 
     Ok(Data::from(count))
 }
@@ -186,17 +180,11 @@ async fn image_queue_detail(
     CurrentUser(user): CurrentUser,
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<ImageQueueDetail>, axum::response::Response> {
+) -> Result<Data<ImageQueueDetail>, AppError> {
     let detail = repo::find_detail(&repo, id)
         .await
-        .map_err(IntoResponse::into_response)?
-        .ok_or_else(|| {
-            api_response::Error::from_err_and_code(
-                "Image queue entry not found",
-                StatusCode::NOT_FOUND,
-            )
-            .into_response()
-        })?;
+        .map_err(AppError::from)?
+        .ok_or_else(|| AppError::not_found("Image queue entry not found"))?;
 
     if detail.queue.created_by != user.id {
         authz::ensure_permission::<ImageQueueManage>(&repo.conn, user.id)
@@ -284,28 +272,25 @@ async fn handle_image_queue(
     Query(query): Query<HandleImageQueueQuery>,
     State(repo): State<state::SeaOrmRepository>,
     State(notification): State<state::NotificationService>,
-) -> Result<Message, axum::response::Response> {
+) -> Result<Message, AppError> {
     authz::ensure_permission::<ImageQueueManage>(&repo.conn, user.id).await?;
 
     let queue = entity::image_queue::Entity::find_by_id(id)
         .one(&repo.conn)
         .await
         .map_err(crate::infra::error::Error::from)
-        .map_err(IntoResponse::into_response)?;
+        .map_err(AppError::from)?;
 
     let (created_by, image_id) = match queue {
         Some(model) => (model.created_by, model.image_id),
-        None => return Err(super::Error::NotFound.into_response()),
+        None => return Err(super::Error::NotFound.into()),
     };
 
-    let image_id =
-        image_id.ok_or_else(|| super::Error::InvalidEntry.into_response())?;
+    let image_id = image_id.ok_or(super::Error::InvalidEntry)?;
 
     match query.method {
         HandleImageQueueMethod::Approve => {
-            repo::approve(&repo, user.id, id)
-                .await
-                .map_err(IntoResponse::into_response)?;
+            repo::approve(&repo, user.id, id).await?;
 
             notification
                 .notify_image_status_best_effort(
@@ -319,9 +304,7 @@ async fn handle_image_queue(
             Ok(Message::ok())
         }
         HandleImageQueueMethod::Reject => {
-            repo::reject(&repo, user.id, id)
-                .await
-                .map_err(IntoResponse::into_response)?;
+            repo::reject(&repo, user.id, id).await?;
 
             notification
                 .notify_image_status_best_effort(
@@ -335,9 +318,7 @@ async fn handle_image_queue(
             Ok(Message::ok())
         }
         HandleImageQueueMethod::Revert => {
-            repo::revert(&repo, user.id, id)
-                .await
-                .map_err(IntoResponse::into_response)?;
+            repo::revert(&repo, user.id, id).await?;
 
             notification
                 .notify_image_status_best_effort(

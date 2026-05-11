@@ -6,7 +6,6 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::error::{CreateError, UpsertCorrectionError};
 use super::model::NewArtist;
 use super::{find, release, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
@@ -16,7 +15,7 @@ use crate::application::correction::{
 };
 use crate::domain::image::CurrentImageMetadata;
 use crate::features::artist_image::{self, ArtistProfileImageInput};
-use crate::shared::http::api_response::Data;
+use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Artist";
 
@@ -49,7 +48,7 @@ async fn create_artist(
     CurrentUser(user): CurrentUser,
     State(repo): State<state::SeaOrmRepository>,
     Json(input): Json<NewCorrectionDto<NewArtist>>,
-) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
+) -> Result<Data<CorrectionSubmissionResult>, AppError> {
     let result = service::create(&repo, input.with_author(user)).await?;
     Ok(Data::from(result))
 }
@@ -69,7 +68,7 @@ async fn upsert_artist_correction(
     State(notification): State<state::NotificationService>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewArtist>>,
-) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
+) -> Result<Data<CorrectionSubmissionResult>, AppError> {
     let user_id = user.id;
     let result =
         service::upsert_correction(&repo, id, dto.with_author(user)).await?;

@@ -1,21 +1,18 @@
 use axum::http::StatusCode;
-use macros::{ApiError, IntoErrorSchema};
+use axum::response::IntoResponse;
 use snafu::Snafu;
 
 use crate::application::error::EntityNotFound;
 use crate::domain::image;
 use crate::infra;
+use crate::shared::http::api_response::{self, AppError};
 
-#[derive(Debug, Snafu, ApiError, IntoErrorSchema)]
+#[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(transparent)]
     Infra { source: crate::infra::Error },
     #[snafu(transparent)]
     Service { source: image::Error },
-    #[api_error(
-        status_code = StatusCode::BAD_REQUEST,
-        into_response = self
-    )]
     #[snafu(transparent)]
     ReleaseNotFound { source: EntityNotFound },
 }
@@ -27,6 +24,33 @@ where
     default fn from(value: T) -> Self {
         Self::Infra {
             source: value.into(),
+        }
+    }
+}
+
+impl From<Error> for AppError {
+    fn from(err: Error) -> Self {
+        match err {
+            Error::Infra { source } => source.into(),
+            Error::Service { source } => source.into(),
+            Error::ReleaseNotFound { source } => {
+                AppError::bad_request(source.to_string())
+            }
+        }
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            Error::ReleaseNotFound { source } => {
+                api_response::Error::from_err_and_code(
+                    &source,
+                    StatusCode::BAD_REQUEST,
+                )
+                .into_response()
+            }
+            err => AppError::from(err).into_response(),
         }
     }
 }

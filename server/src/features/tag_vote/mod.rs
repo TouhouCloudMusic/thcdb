@@ -6,7 +6,7 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 pub use http::router;
 
-use crate::shared::http::api_response::Error as ApiError;
+use crate::shared::http::api_response::Error as ApiResponseError;
 
 #[derive(Debug)]
 pub enum Error {
@@ -35,7 +35,7 @@ impl IntoResponse for Error {
             }
             Self::Db(_) => StatusCode::INTERNAL_SERVER_ERROR,
         };
-        ApiError::new((self.to_string(), status)).into_response()
+        ApiResponseError::new((self.to_string(), status)).into_response()
     }
 }
 

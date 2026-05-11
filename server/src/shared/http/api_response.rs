@@ -1,6 +1,7 @@
 #![allow(clippy::option_if_let_else)]
 
 use std::fmt::Display;
+use std::panic::Location;
 
 use axum::Json;
 use axum::http::StatusCode;
@@ -8,11 +9,12 @@ use axum::response::IntoResponse;
 use derive_more::Display;
 use serde::Serialize;
 use utoipa::openapi::{
-    ContentBuilder, ObjectBuilder, RefOr, ResponseBuilder, ResponsesBuilder,
-    Schema,
+    ContentBuilder, ObjectBuilder, RefOr, ResponseBuilder, Schema,
 };
 use utoipa::{PartialSchema, ToSchema, openapi};
 
+use crate::infra::database::error::DatabaseError;
+use crate::shared::types::BoxedError;
 use crate::utils::openapi::ContentType;
 
 #[derive(Debug, Serialize, Display)]
@@ -21,38 +23,207 @@ enum Status {
     Err,
 }
 
-pub trait ApiError {
-    fn as_status_code(&self) -> StatusCode;
-
-    fn all_status_codes() -> impl Iterator<Item = StatusCode>
-    where
-        Self: Sized;
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AppErrorKind {
+    BadRequest,
+    Unauthorized,
+    Forbidden,
+    NotFound,
+    Conflict,
+    TooManyRequests,
+    ServiceUnavailable,
+    Internal,
 }
 
-pub trait ImpledApiError = std::error::Error
-    + ApiError
-    + IntoApiResponse
-    + axum::response::IntoResponse;
-
-pub trait IntoApiResponse {
-    fn into_api_response(self) -> axum::response::Response;
-}
-
-impl<T> IntoApiResponse for T
-where
-    T: ApiError + std::error::Error,
-{
-    default fn into_api_response(self) -> axum::response::Response {
-        default_into_api_response_impl(self)
+impl AppErrorKind {
+    pub const fn status_code(self) -> StatusCode {
+        match self {
+            Self::BadRequest => StatusCode::BAD_REQUEST,
+            Self::Unauthorized => StatusCode::UNAUTHORIZED,
+            Self::Forbidden => StatusCode::FORBIDDEN,
+            Self::NotFound => StatusCode::NOT_FOUND,
+            Self::Conflict => StatusCode::CONFLICT,
+            Self::TooManyRequests => StatusCode::TOO_MANY_REQUESTS,
+            Self::ServiceUnavailable => StatusCode::SERVICE_UNAVAILABLE,
+            Self::Internal => StatusCode::INTERNAL_SERVER_ERROR,
+        }
     }
 }
 
-#[expect(clippy::needless_pass_by_value)]
-pub fn default_into_api_response_impl<T>(x: T) -> axum::response::Response
-where
-    T: ApiError + std::error::Error,
-{
-    Error::from_api_error(&x).into_response()
+#[derive(Debug)]
+pub struct AppError {
+    kind: AppErrorKind,
+    message: String,
+    source: Option<BoxedError>,
+    context: Vec<AppErrorContext>,
+    location: &'static Location<'static>,
+}
+
+#[derive(Debug)]
+struct AppErrorContext {
+    message: String,
+    location: &'static Location<'static>,
+}
+
+impl Display for AppErrorContext {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} at {}", self.message, self.location)
+    }
+}
+
+impl AppError {
+    #[track_caller]
+    pub fn new(kind: AppErrorKind, message: impl Into<String>) -> Self {
+        Self {
+            kind,
+            message: message.into(),
+            source: None,
+            context: Vec::new(),
+            location: Location::caller(),
+        }
+    }
+
+    #[track_caller]
+    pub fn bad_request(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::BadRequest, message)
+    }
+
+    #[track_caller]
+    pub fn forbidden(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::Forbidden, message)
+    }
+
+    #[track_caller]
+    pub fn not_found(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::NotFound, message)
+    }
+
+    #[track_caller]
+    pub fn conflict(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::Conflict, message)
+    }
+
+    #[track_caller]
+    pub fn internal(
+        source: impl std::error::Error + Send + Sync + 'static,
+    ) -> Self {
+        Self::internal_boxed(Box::new(source))
+    }
+
+    #[track_caller]
+    pub fn internal_boxed(source: BoxedError) -> Self {
+        Self {
+            kind: AppErrorKind::Internal,
+            message: "Internal server error".to_string(),
+            source: Some(source),
+            context: Vec::new(),
+            location: Location::caller(),
+        }
+    }
+
+    #[track_caller]
+    pub fn context(mut self, message: impl Into<String>) -> Self {
+        self.context.push(AppErrorContext {
+            message: message.into(),
+            location: Location::caller(),
+        });
+        self
+    }
+
+    pub const fn status_code(&self) -> StatusCode {
+        self.kind.status_code()
+    }
+}
+
+impl std::fmt::Display for AppError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl std::error::Error for AppError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        self.source
+            .as_deref()
+            .map(|err| err as &(dyn std::error::Error + 'static))
+    }
+}
+
+impl IntoResponse for AppError {
+    fn into_response(self) -> axum::response::Response {
+        if self.kind == AppErrorKind::Internal {
+            let context = self
+                .context
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+                .join(" | ");
+
+            match &self.source {
+                Some(source) => {
+                    log::error!(
+                        target: "shared.http.app_error",
+                        location:% = self.location,
+                        context:% = context,
+                        error:? = source;
+                        "internal error"
+                    );
+                }
+                None => {
+                    log::error!(
+                        target: "shared.http.app_error",
+                        location:% = self.location,
+                        context:% = context;
+                        "internal error"
+                    );
+                }
+            }
+        }
+
+        let status_code = self.status_code();
+        Error::from_err_and_code(&self.message, status_code).into_response()
+    }
+}
+
+impl From<AppError> for axum::response::Response {
+    fn from(err: AppError) -> Self {
+        err.into_response()
+    }
+}
+
+impl From<crate::infra::error::UserError> for AppError {
+    #[track_caller]
+    fn from(err: crate::infra::error::UserError) -> Self {
+        let message = err.to_string();
+        match err {
+            crate::infra::error::UserError::FkViolation { source } => Self {
+                kind: AppErrorKind::BadRequest,
+                message,
+                source: Some(source),
+                context: Vec::new(),
+                location: Location::caller(),
+            },
+        }
+    }
+}
+
+impl From<crate::infra::error::Error> for AppError {
+    #[track_caller]
+    fn from(err: crate::infra::error::Error) -> Self {
+        match err {
+            crate::infra::error::Error::Internal { source } => {
+                Self::internal_boxed(source).context("infrastructure error")
+            }
+            crate::infra::error::Error::User { source } => source.into(),
+        }
+    }
+}
+
+impl From<DatabaseError> for AppError {
+    #[track_caller]
+    fn from(err: DatabaseError) -> Self {
+        Self::internal(err)
+    }
 }
 
 #[derive(ToSchema, Serialize)]
@@ -180,19 +351,8 @@ impl Error {
         err.into_error()
     }
 
-    pub fn from_api_error<T>(err: &T) -> Self
-    where
-        T: ApiError + Display,
-    {
-        Self {
-            status: Status::Err,
-            message: err.to_string(),
-            status_code: err.as_status_code(),
-        }
-    }
-
     pub fn from_err_and_code(
-        err: impl ToString,
+        err: &(impl ToString + ?Sized),
         status_code: impl Into<StatusCode>,
     ) -> Self {
         Self {
@@ -210,33 +370,21 @@ impl Error {
             )
             .build()
     }
+
+    pub fn responses(
+        status_codes: impl IntoIterator<Item = StatusCode>,
+    ) -> utoipa::openapi::Responses {
+        utoipa::openapi::ResponsesBuilder::new()
+            .responses_from_iter(status_codes.into_iter().map(|status_code| {
+                (status_code.as_u16().to_string(), Self::response_def())
+            }))
+            .build()
+    }
 }
 
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         (self.status_code, Json(self)).into_response()
-    }
-}
-
-pub trait ErrResponseDef {
-    fn build_err_responses() -> utoipa::openapi::Responses;
-}
-
-impl<T> ErrResponseDef for T
-where
-    T: ApiError,
-{
-    fn build_err_responses() -> utoipa::openapi::Responses {
-        ResponsesBuilder::new()
-            .responses_from_iter(T::all_status_codes().map(|x| {
-                if x == StatusCode::UNAUTHORIZED {
-                    // Won't return body if unauthorized
-                    (x.as_u16().to_string(), ResponseBuilder::new().build())
-                } else {
-                    (x.as_u16().to_string(), Error::response_def())
-                }
-            }))
-            .build()
     }
 }
 
@@ -256,6 +404,7 @@ pub fn status_err_schema() -> impl Into<RefOr<Schema>> {
 
 #[cfg(test)]
 mod test {
+    use axum::body::to_bytes;
     use serde::Serialize;
     use serde_json::json;
 
@@ -308,5 +457,49 @@ mod test {
             format!(r#"{{"status":"{}","message":"error"}}"#, Status::Err,);
 
         assert_eq!(serialized, expected_json);
+    }
+
+    #[derive(Debug)]
+    struct SecretError(&'static str);
+
+    impl std::fmt::Display for SecretError {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "{}", self.0)
+        }
+    }
+
+    impl std::error::Error for SecretError {}
+
+    async fn response_body_string(
+        response: axum::response::Response,
+    ) -> String {
+        let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        String::from_utf8(bytes.to_vec()).unwrap()
+    }
+
+    #[tokio::test]
+    async fn app_error_internal_response_is_opaque() {
+        let response = AppError::internal(SecretError("database secret"))
+            .context("load private data")
+            .into_response();
+
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+
+        let body = response_body_string(response).await;
+        assert!(body.contains(r#""message":"Internal server error""#));
+        assert!(!body.contains("database secret"));
+        assert!(!body.contains("load private data"));
+    }
+
+    #[tokio::test]
+    async fn infra_internal_response_is_opaque() {
+        let response =
+            crate::infra::Error::custom(&"infra secret").into_response();
+
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+
+        let body = response_body_string(response).await;
+        assert!(body.contains(r#""message":"Internal server error""#));
+        assert!(!body.contains("infra secret"));
     }
 }

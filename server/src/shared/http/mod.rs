@@ -48,7 +48,7 @@ where
             "request failed"
         );
         let msg = self.source.to_string();
-        api_response::Error::from_err_and_code(msg, self.status_code)
+        api_response::Error::from_err_and_code(&msg, self.status_code)
             .into_response()
     }
 }

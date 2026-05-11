@@ -1,9 +1,9 @@
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
 use sea_orm::DbErr;
 
+use crate::infra::database::error::DatabaseError;
 use crate::infra::error::Error as InfraError;
-use crate::shared::http::api_response::Error as ApiError;
+use crate::shared::http::api_response::{AppError, AppErrorKind};
+use crate::shared::types::BoxedError;
 
 #[derive(Debug, Clone, Copy)]
 pub(super) enum NotFound {
@@ -23,18 +23,21 @@ impl NotFound {
         }
     }
 
-    const fn status_code(self) -> StatusCode {
+    const fn app_error_kind(self) -> AppErrorKind {
         match self {
             Self::RequestedUser | Self::Collection | Self::CollectionItem => {
-                StatusCode::NOT_FOUND
+                AppErrorKind::NotFound
             }
-            Self::ReferencedEntity => StatusCode::BAD_REQUEST,
+            Self::ReferencedEntity => AppErrorKind::BadRequest,
         }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, derive_more::From)]
 pub(super) enum Error {
+    #[from]
+    Database(DatabaseError),
+    #[from]
     Infra(InfraError),
     NotFound(NotFound),
     CollectionAccessDenied,
@@ -42,42 +45,39 @@ pub(super) enum Error {
 }
 
 impl Error {
-    pub(super) fn internal(
-        err: Box<dyn std::error::Error + Send + Sync>,
-    ) -> Self {
+    pub(super) fn internal(err: BoxedError) -> Self {
         Self::Infra(InfraError::Internal { source: err })
-    }
-}
-
-impl From<InfraError> for Error {
-    fn from(err: InfraError) -> Self {
-        Self::Infra(err)
     }
 }
 
 impl From<DbErr> for Error {
     fn from(err: DbErr) -> Self {
-        Self::Infra(err.into())
+        Self::Database(
+            DatabaseError::new(err)
+                .with_operation("user collection database operation"),
+        )
     }
 }
 
-impl IntoResponse for Error {
-    fn into_response(self) -> Response {
-        match self {
-            Self::Infra(err) => err.into_response(),
-            Self::NotFound(kind) => {
-                ApiError::from_err_and_code(kind.message(), kind.status_code())
-                    .into_response()
+impl From<Error> for AppError {
+    fn from(err: Error) -> Self {
+        #[track_caller]
+        fn from_not_found(kind: NotFound) -> AppError {
+            AppError::new(kind.app_error_kind(), kind.message())
+        }
+
+        match err {
+            Error::Database(err) => {
+                AppError::from(err).context("user collection operation")
             }
-            Self::CollectionAccessDenied => ApiError::from_err_and_code(
-                "Collection access denied",
-                StatusCode::FORBIDDEN,
-            )
-            .into_response(),
-            Self::InvalidRequest(message) => {
-                ApiError::from_err_and_code(message, StatusCode::BAD_REQUEST)
-                    .into_response()
+            Error::Infra(err) => {
+                AppError::from(err).context("user collection operation")
             }
+            Error::NotFound(kind) => from_not_found(kind),
+            Error::CollectionAccessDenied => {
+                AppError::forbidden("Collection access denied")
+            }
+            Error::InvalidRequest(message) => AppError::bad_request(message),
         }
     }
 }

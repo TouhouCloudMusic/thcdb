@@ -15,6 +15,7 @@ use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::integration_test::fixture::{MockSong, MockUser};
 use crate::infra::integration_test::test_connection;
 use crate::shared::http::PaginationQuery;
+use crate::shared::http::api_response::AppError;
 
 fn comment_req(content: &str) -> CreateCorrectionCommentRequest {
     CreateCorrectionCommentRequest {
@@ -120,29 +121,35 @@ async fn create_comment_validates_correction_and_content() {
         .unwrap();
     let correction = create_correction(&conn, "validation").await;
 
-    let missing_correction = service
-        .create_comment(999_999_999, author.id, comment_req("hello"))
-        .await
-        .unwrap_err()
-        .into_response();
+    let missing_correction = AppError::from(
+        service
+            .create_comment(999_999_999, author.id, comment_req("hello"))
+            .await
+            .unwrap_err(),
+    )
+    .into_response();
     assert_eq!(missing_correction.status(), StatusCode::NOT_FOUND);
 
-    let empty_content = service
-        .create_comment(correction.id, author.id, comment_req("   "))
-        .await
-        .unwrap_err()
-        .into_response();
+    let empty_content = AppError::from(
+        service
+            .create_comment(correction.id, author.id, comment_req("   "))
+            .await
+            .unwrap_err(),
+    )
+    .into_response();
     assert_eq!(empty_content.status(), StatusCode::BAD_REQUEST);
 
-    let too_long = service
-        .create_comment(
-            correction.id,
-            author.id,
-            comment_req(&"a".repeat(COMMENT_CONTENT_MAX_LEN + 1)),
-        )
-        .await
-        .unwrap_err()
-        .into_response();
+    let too_long = AppError::from(
+        service
+            .create_comment(
+                correction.id,
+                author.id,
+                comment_req(&"a".repeat(COMMENT_CONTENT_MAX_LEN + 1)),
+            )
+            .await
+            .unwrap_err(),
+    )
+    .into_response();
     assert_eq!(too_long.status(), StatusCode::BAD_REQUEST);
 }
 
@@ -156,11 +163,17 @@ async fn parent_comment_must_exist_and_belong_to_same_correction() {
     let correction = create_correction(&conn, "parent").await;
     let other_correction = create_correction(&conn, "other_parent").await;
 
-    let missing_parent = service
-        .create_comment(correction.id, author.id, reply_req(999_999, "reply"))
-        .await
-        .unwrap_err()
-        .into_response();
+    let missing_parent = AppError::from(
+        service
+            .create_comment(
+                correction.id,
+                author.id,
+                reply_req(999_999, "reply"),
+            )
+            .await
+            .unwrap_err(),
+    )
+    .into_response();
     assert_eq!(missing_parent.status(), StatusCode::BAD_REQUEST);
 
     let other_parent = service
@@ -168,15 +181,17 @@ async fn parent_comment_must_exist_and_belong_to_same_correction() {
         .await
         .unwrap();
 
-    let cross_correction = service
-        .create_comment(
-            correction.id,
-            author.id,
-            reply_req(other_parent.id, "reply"),
-        )
-        .await
-        .unwrap_err()
-        .into_response();
+    let cross_correction = AppError::from(
+        service
+            .create_comment(
+                correction.id,
+                author.id,
+                reply_req(other_parent.id, "reply"),
+            )
+            .await
+            .unwrap_err(),
+    )
+    .into_response();
     assert_eq!(cross_correction.status(), StatusCode::BAD_REQUEST);
 }
 
@@ -220,11 +235,13 @@ async fn delete_comment_checks_author_and_comment_manage_permission() {
         .create_comment(correction.id, author.id, comment_req("denied"))
         .await
         .unwrap();
-    let denied = service
-        .delete_comment(stranger.id, denied_comment.id)
-        .await
-        .unwrap_err()
-        .into_response();
+    let denied = AppError::from(
+        service
+            .delete_comment(stranger.id, denied_comment.id)
+            .await
+            .unwrap_err(),
+    )
+    .into_response();
     assert_eq!(denied.status(), StatusCode::FORBIDDEN);
 }
 
@@ -246,11 +263,13 @@ async fn correction_manage_does_not_allow_comment_delete() {
         .await
         .unwrap();
 
-    let denied = service
-        .delete_comment(reviewer.id, comment.id)
-        .await
-        .unwrap_err()
-        .into_response();
+    let denied = AppError::from(
+        service
+            .delete_comment(reviewer.id, comment.id)
+            .await
+            .unwrap_err(),
+    )
+    .into_response();
     assert_eq!(denied.status(), StatusCode::FORBIDDEN);
 }
 

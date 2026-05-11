@@ -15,7 +15,7 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::features::correction::comment;
 use crate::infra::error::Error;
-use crate::shared::http::api_response::{self, Data};
+use crate::shared::http::api_response::{self, AppError, Data};
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
@@ -52,7 +52,7 @@ async fn get_correction(
 
     let comments = comment::initial_page(&repo.conn, id)
         .await
-        .map_err(IntoResponse::into_response)?;
+        .map_err(AppError::from)?;
     let entity_name =
         find_entity_name(&repo.conn, model.entity_type, model.entity_id)
             .await

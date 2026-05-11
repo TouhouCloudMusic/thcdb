@@ -1,12 +1,9 @@
-use axum::http::StatusCode;
-use macros::ApiError;
 use snafu::Snafu;
 
 use crate::shared::http;
 
-#[derive(Debug, Snafu, ApiError)]
+#[derive(Debug, Snafu)]
 #[snafu(display("Validation error: {source}"))]
-#[api_error(status_code = StatusCode::BAD_REQUEST)]
 pub struct ValidationError<T>
 where
     T: std::error::Error + 'static,

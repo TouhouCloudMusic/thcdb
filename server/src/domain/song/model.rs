@@ -1,10 +1,9 @@
 use std::collections::BTreeSet;
 
-use axum::http::StatusCode;
 use derive_more::Display;
 use entity::enums::EntityType;
 use entity::song_relation_type::Model as DbSongRelationType;
-use macros::{ApiError, AutoMapper};
+use macros::AutoMapper;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -105,11 +104,8 @@ pub struct NewSongRelation {
     pub description: String,
 }
 
-#[derive(Debug, snafu::Snafu, ApiError)]
+#[derive(Debug, snafu::Snafu)]
 #[snafu(display("Validation error: {kind}"))]
-#[api_error(
-    status_code = StatusCode::BAD_REQUEST
-)]
 pub struct ValidationError {
     pub kind: ValidationErrorKind,
 }

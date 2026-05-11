@@ -2,63 +2,43 @@ use std::backtrace::Backtrace;
 use std::io;
 use std::range::RangeInclusive;
 
-use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use bon::Builder;
 use bytesize::ByteSize;
 use entity::enums::StorageBackend;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
-use macros::ApiError;
 
 use crate::domain::image::{Image, NewImage};
 use crate::infra::{self};
+use crate::shared::http::api_response::AppError;
 
 // TODO: conv to internal error
-#[derive(Debug, snafu::Snafu, ApiError)]
+#[derive(Debug, snafu::Snafu)]
 #[snafu(module)]
 pub enum ValidationError {
     #[snafu(transparent)]
     InvalidType { source: InvalidForamt },
     #[snafu(display("Invalid file size: {source}"))]
-    #[api_error(
-        status_code = StatusCode::BAD_REQUEST,
-        into_response = self
-    )]
     InvalidFileSize {
         source: InvalidFileSize,
         backtrace: Backtrace,
     },
     #[snafu(display("Invalid size: {source}"))]
-    #[api_error(
-        status_code = StatusCode::BAD_REQUEST,
-        into_response = self
-    )]
     InvalidSize {
         source: InvalidSize,
         backtrace: Backtrace,
     },
     #[snafu(display("Invalid ratio: {source}"))]
-    #[api_error(
-        status_code = StatusCode::BAD_REQUEST,
-        into_response = self
-    )]
     InvalidRatio {
         source: InvalidRatio,
         backtrace: Backtrace,
     },
     #[snafu(display("Internal server error"))]
-    #[api_error(
-        status_code = StatusCode::INTERNAL_SERVER_ERROR,
-        into_response = self
-    )]
     Io {
         source: io::Error,
         backtrace: Backtrace,
     },
     #[snafu(display("Internal server error"))]
-    #[api_error(
-        status_code = StatusCode::INTERNAL_SERVER_ERROR,
-        into_response = self
-    )]
     Image {
         source: ImageError,
         backtrace: Backtrace,
@@ -110,15 +90,29 @@ impl From<ImageError> for ValidationError {
     }
 }
 
-#[derive(Debug, snafu::Snafu, ApiError)]
+impl From<ValidationError> for AppError {
+    fn from(err: ValidationError) -> Self {
+        match &err {
+            ValidationError::InvalidType { .. }
+            | ValidationError::InvalidFileSize { .. }
+            | ValidationError::InvalidSize { .. }
+            | ValidationError::InvalidRatio { .. } => {
+                let message = err.to_string();
+                AppError::bad_request(message)
+            }
+            ValidationError::Io { .. } | ValidationError::Image { .. } => {
+                AppError::internal(err).context("image validation")
+            }
+        }
+    }
+}
+
+#[derive(Debug, snafu::Snafu)]
 #[snafu(display(
     "Invalid image format, received: {}, expected: {:#?}",
     received.and_then(|r| r.extensions_str().first().copied()).unwrap_or("unknown or unreadable format"),
     expected
 ))]
-#[api_error(
-    status_code = StatusCode::BAD_REQUEST,
-)]
 pub struct InvalidForamt {
     received: Option<ImageFormat>,
     expected: &'static [ImageFormat],
@@ -375,7 +369,7 @@ pub trait AsyncFileStorage: Send + Sync {
     async fn remove(&self, image: Image) -> Result<(), Self::Error>;
 }
 
-#[derive(Debug, snafu::Snafu, ApiError)]
+#[derive(Debug, snafu::Snafu)]
 
 pub enum Error {
     #[snafu(transparent)]
@@ -385,6 +379,23 @@ pub enum Error {
     Infra {
         source: infra::Error,
     },
+}
+
+impl From<Error> for AppError {
+    fn from(err: Error) -> Self {
+        match err {
+            Error::Validation { source } => source.into(),
+            Error::Infra { source } => {
+                AppError::from(source).context("image service")
+            }
+        }
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
+    }
 }
 
 impl<T> From<T> for Error

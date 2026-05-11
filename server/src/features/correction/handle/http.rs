@@ -1,5 +1,4 @@
 use axum::extract::{Path, Query, State};
-use axum::response::IntoResponse;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -10,7 +9,7 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz};
 use crate::domain::model::CorrectionManage;
 use crate::features::correction::model::HandleCorrectionMethod;
 use crate::features::correction::service;
-use crate::shared::http::api_response::Message;
+use crate::shared::http::api_response::{AppError, Message};
 
 #[derive(IntoParams, Deserialize)]
 struct HandleCorrectionQuery {
@@ -40,14 +39,12 @@ async fn handle_correction(
     Query(query): Query<HandleCorrectionQuery>,
     State(repo): State<state::SeaOrmRepository>,
     State(notification): State<state::NotificationService>,
-) -> Result<Message, axum::response::Response> {
+) -> Result<Message, AppError> {
     authz::ensure_permission::<CorrectionManage>(&repo.conn, user.id).await?;
 
     match query.method {
         HandleCorrectionMethod::Approve => {
-            service::approve(&repo, id, user)
-                .await
-                .map_err(IntoResponse::into_response)?;
+            service::approve(&repo, id, user).await?;
 
             notification
                 .notify_correction_status_best_effort(
@@ -60,9 +57,7 @@ async fn handle_correction(
             Ok(Message::ok())
         }
         HandleCorrectionMethod::Reject => {
-            service::reject(&repo, id, user)
-                .await
-                .map_err(IntoResponse::into_response)?;
+            service::reject(&repo, id, user).await?;
 
             notification
                 .notify_correction_status_best_effort(

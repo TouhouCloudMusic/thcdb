@@ -6,7 +6,7 @@ use axum::response::IntoResponse;
 use crate::domain::auth::ValidateCredsError;
 use crate::features::auth::InvalidEmail;
 use crate::infra;
-use crate::shared::http::api_response::{self, ApiError as _};
+use crate::shared::http::api_response;
 
 const INTERNAL_ERROR_MESSAGE: &str = "Internal server error";
 
@@ -38,10 +38,10 @@ pub enum ForgotPasswordError {
 }
 
 impl ForgotPasswordError {
-    fn status_code(&self) -> StatusCode {
+    const fn status_code(&self) -> StatusCode {
         match self {
             ForgotPasswordError::InvalidEmail { .. } => StatusCode::BAD_REQUEST,
-            ForgotPasswordError::Infra { source } => source.as_status_code(),
+            ForgotPasswordError::Infra { source } => source.status_code(),
         }
     }
 }
@@ -66,7 +66,7 @@ impl IntoResponse for ForgotPasswordError {
             ),
             err => {
                 let status_code = err.status_code();
-                api_response::Error::from_err_and_code(err, status_code)
+                api_response::Error::from_err_and_code(&err, status_code)
                     .into_response()
             }
         }
@@ -84,13 +84,13 @@ pub enum VerifyResetCodeError {
 }
 
 impl VerifyResetCodeError {
-    fn status_code(&self) -> StatusCode {
+    const fn status_code(&self) -> StatusCode {
         match self {
             VerifyResetCodeError::InvalidEmail { .. }
             | VerifyResetCodeError::InvalidOrExpiredResetCode => {
                 StatusCode::BAD_REQUEST
             }
-            VerifyResetCodeError::Infra { source } => source.as_status_code(),
+            VerifyResetCodeError::Infra { source } => source.status_code(),
         }
     }
 }
@@ -115,7 +115,7 @@ impl IntoResponse for VerifyResetCodeError {
             ),
             err => {
                 let status_code = err.status_code();
-                api_response::Error::from_err_and_code(err, status_code)
+                api_response::Error::from_err_and_code(&err, status_code)
                     .into_response()
             }
         }
@@ -133,13 +133,15 @@ pub enum ResetPasswordError {
 }
 
 impl ResetPasswordError {
-    fn status_code(&self) -> StatusCode {
+    const fn status_code(&self) -> StatusCode {
         match self {
             ResetPasswordError::InvalidOrExpiredResetKey => {
                 StatusCode::BAD_REQUEST
             }
-            ResetPasswordError::Infra { source } => source.as_status_code(),
-            ResetPasswordError::Validate { source } => source.as_status_code(),
+            ResetPasswordError::Infra { source } => source.status_code(),
+            ResetPasswordError::Validate { .. } => {
+                ValidateCredsError::status_code()
+            }
         }
     }
 }
@@ -164,7 +166,7 @@ impl IntoResponse for ResetPasswordError {
             ),
             err => {
                 let status_code = err.status_code();
-                api_response::Error::from_err_and_code(err, status_code)
+                api_response::Error::from_err_and_code(&err, status_code)
                     .into_response()
             }
         }
