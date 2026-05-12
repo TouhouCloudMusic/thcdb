@@ -60,7 +60,14 @@ impl From<Error> for AppError {
         match err {
             Error::Database { source } => source.into(),
             Error::Infra { source } => source.into(),
-            Error::ImageService { source } => source.into(),
+            Error::ImageService { source } => match source {
+                image::Error::InvalidInput(source) => {
+                    AppError::bad_request(source.to_string())
+                }
+                image::Error::Internal(source) => {
+                    AppError::internal_boxed(source)
+                }
+            },
         }
     }
 }

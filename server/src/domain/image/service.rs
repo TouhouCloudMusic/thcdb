@@ -7,8 +7,6 @@ use entity::enums::StorageBackend;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 
 use crate::domain::image::{Image, NewImage};
-use crate::infra::{self};
-use crate::shared::http::api_response::AppError;
 use crate::shared::types::BoxedError;
 
 #[derive(Debug, derive_more::Display, derive_more::Error)]
@@ -44,12 +42,6 @@ impl From<InvalidSize> for ImageInputError {
 impl From<InvalidRatio> for ImageInputError {
     fn from(source: InvalidRatio) -> Self {
         Self::Ratio(source)
-    }
-}
-
-impl From<ImageInputError> for AppError {
-    fn from(err: ImageInputError) -> Self {
-        AppError::bad_request(err.to_string())
     }
 }
 
@@ -102,17 +94,6 @@ impl From<io::Error> for ImageParseError {
 impl From<ImageError> for ImageParseError {
     fn from(source: ImageError) -> Self {
         Self::Decode(source)
-    }
-}
-
-impl From<ImageParseError> for AppError {
-    fn from(err: ImageParseError) -> Self {
-        match err {
-            ImageParseError::InvalidInput(source) => source.into(),
-            ImageParseError::Read(_) | ImageParseError::Decode(_) => {
-                AppError::internal(err)
-            }
-        }
     }
 }
 
@@ -392,7 +373,7 @@ impl Parser {
 
 pub trait AsyncFileStorage: Send + Sync {
     type File;
-    type Error: Into<infra::Error>;
+    type Error: Into<BoxedError>;
 
     async fn create(&self, image: NewImage) -> Result<Self::File, Self::Error>;
 
@@ -402,35 +383,31 @@ pub trait AsyncFileStorage: Send + Sync {
 #[derive(Debug, derive_more::Display, derive_more::Error)]
 pub enum Error {
     #[display("{_0}")]
-    Parse(#[error(source)] ImageParseError),
+    InvalidInput(#[error(source)] ImageInputError),
     #[display("{_0}")]
-    Infra(#[error(source)] infra::Error),
+    Internal(#[error(source)] BoxedError),
 }
 
-impl From<Error> for AppError {
-    fn from(err: Error) -> Self {
-        match err {
-            Error::Parse(source) => source.into(),
-            Error::Infra(source) => source.into(),
-        }
+impl Error {
+    fn internal(source: impl Into<BoxedError>) -> Self {
+        Self::Internal(source.into())
     }
 }
 
 impl From<ImageParseError> for Error {
     fn from(source: ImageParseError) -> Self {
-        Self::Parse(source)
-    }
-}
-
-impl From<infra::Error> for Error {
-    fn from(source: infra::Error) -> Self {
-        Self::Infra(source)
+        match source {
+            ImageParseError::InvalidInput(source) => Self::InvalidInput(source),
+            ImageParseError::Read(_) | ImageParseError::Decode(_) => {
+                Self::internal(source)
+            }
+        }
     }
 }
 
 impl From<BoxedError> for Error {
     fn from(source: BoxedError) -> Self {
-        Self::Infra(source.into())
+        Self::internal(source)
     }
 }
 
@@ -452,14 +429,17 @@ where
     Storage: AsyncFileStorage,
 {
     pub async fn find_by_id(&self, id: i32) -> Result<Option<Image>, Error> {
-        Ok(self.repo.find_by_id(id).await?)
+        self.repo.find_by_id(id).await.map_err(Error::internal)
     }
 
     pub async fn find_by_filename(
         &self,
         filename: &str,
     ) -> Result<Option<Image>, Error> {
-        Ok(self.repo.find_by_filename(filename).await?)
+        self.repo
+            .find_by_filename(filename)
+            .await
+            .map_err(Error::internal)
     }
 }
 
@@ -486,16 +466,18 @@ where
             NewImage::from_parsed(parsed, meta.uploaded_by, StorageBackend::Fs);
 
         // We use xxhash128, so if the hash is the same, it is the same image.
-        let image = if let Some(image) =
-            tx.find_by_filename(&new_image.filename()).await?
+        let image = if let Some(image) = tx
+            .find_by_filename(&new_image.filename())
+            .await
+            .map_err(Error::internal)?
         {
             image
         } else {
-            let image = tx.create(&new_image).await?;
+            let image = tx.create(&new_image).await.map_err(Error::internal)?;
             self.storage
                 .create(new_image)
                 .await
-                .map_err(|err| Error::Infra(err.into()))?;
+                .map_err(Error::internal)?;
             image
         };
 
@@ -503,12 +485,9 @@ where
     }
 
     async fn delete(&self, image: Image) -> Result<(), Error> {
-        self.repo.delete(image.id).await?;
+        self.repo.delete(image.id).await.map_err(Error::internal)?;
 
-        self.storage
-            .remove(image)
-            .await
-            .map_err(|err| Error::Infra(err.into()))?;
+        self.storage.remove(image).await.map_err(Error::internal)?;
 
         Ok(())
     }
