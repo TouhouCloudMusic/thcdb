@@ -1,19 +1,19 @@
 mod http;
+mod model;
 mod repo;
+mod service;
 
-// TODO: Split this slice into repository and service layers with a dedicated
-// image queue management error, so database failures and queue state errors do
-// not need ad hoc conversions in HTTP handlers.
-
-pub(crate) use http::HandleImageQueueMethod;
 pub use http::router;
+pub(crate) use model::HandleImageQueueMethod;
 use sea_orm::DbErr;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::infra::database::error::DatabaseError;
 use crate::infra::error::Error as InfraError;
+use crate::shared::error::PermissionDenied;
 use crate::shared::http::api_response::AppError;
+use crate::shared::types::BoxedError;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]
@@ -23,17 +23,24 @@ pub(crate) enum ImageQueueType {
 }
 
 #[derive(Debug, derive_more::From)]
-enum Error {
+pub(crate) enum Error {
     NotFound,
     InvalidOperation,
     InvalidEntry,
     UnknownTarget,
     AmbiguousTarget,
     PublishedNotFound,
+    PermissionDenied,
     #[from]
     Database(DatabaseError),
     #[from]
     Infra(InfraError),
+}
+
+impl From<BoxedError> for Error {
+    fn from(source: BoxedError) -> Self {
+        Self::Infra(source.into())
+    }
 }
 
 impl From<DbErr> for Error {
@@ -66,6 +73,7 @@ impl From<Error> for AppError {
             Error::PublishedNotFound => {
                 AppError::conflict("Published image record not found")
             }
+            Error::PermissionDenied => PermissionDenied.into(),
             Error::Database(err) => err.into(),
             Error::Infra(err) => err.into(),
         }

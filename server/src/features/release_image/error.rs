@@ -1,11 +1,11 @@
 use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError};
 
-use crate::application::error::EntityNotFound;
 use crate::domain::image;
 use crate::infra;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::AppError;
+use crate::shared::types::BoxedError;
 
 #[derive(Debug, Display, DeriveError)]
 pub enum Error {
@@ -27,15 +27,18 @@ pub enum Error {
     #[display("{source}")]
     ReleaseNotFound {
         #[error(source)]
-        source: EntityNotFound,
+        source: ReleaseNotFound,
     },
 }
 
-impl<T> From<T> for Error
-where
-    T: Into<infra::Error>,
-{
-    default fn from(value: T) -> Self {
+impl From<infra::Error> for Error {
+    fn from(source: infra::Error) -> Self {
+        Self::Infra { source }
+    }
+}
+
+impl From<BoxedError> for Error {
+    fn from(value: BoxedError) -> Self {
         Self::Infra {
             source: value.into(),
         }
@@ -54,8 +57,8 @@ impl From<image::Error> for Error {
     }
 }
 
-impl From<EntityNotFound> for Error {
-    fn from(source: EntityNotFound) -> Self {
+impl From<ReleaseNotFound> for Error {
+    fn from(source: ReleaseNotFound) -> Self {
         Self::ReleaseNotFound { source }
     }
 }
@@ -76,5 +79,17 @@ impl From<Error> for AppError {
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         AppError::from(self).into_response()
+    }
+}
+
+#[derive(Debug, Clone, Copy, Display, DeriveError)]
+#[display("release #{release_id} not found")]
+pub struct ReleaseNotFound {
+    release_id: i32,
+}
+
+impl ReleaseNotFound {
+    pub const fn new(release_id: i32) -> Self {
+        Self { release_id }
     }
 }

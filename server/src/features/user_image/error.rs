@@ -2,11 +2,10 @@ use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError};
 use sea_orm::DbErr;
 
-use crate::domain::image::{
-    ValidationError, {self},
-};
+use crate::domain::image;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::AppError;
+use crate::shared::types::BoxedError;
 
 #[derive(Debug, Display, DeriveError)]
 pub enum Error {
@@ -25,11 +24,6 @@ pub enum Error {
         #[error(source)]
         source: image::Error,
     },
-    #[display("{source}")]
-    Validate {
-        #[error(source)]
-        source: ValidationError,
-    },
 }
 
 impl From<DbErr> for Error {
@@ -41,12 +35,17 @@ impl From<DbErr> for Error {
     }
 }
 
-impl<E> From<E> for Error
-where
-    E: Into<crate::infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+impl From<crate::infra::Error> for Error {
+    fn from(source: crate::infra::Error) -> Self {
+        Self::Infra { source }
+    }
+}
+
+impl From<BoxedError> for Error {
+    fn from(source: BoxedError) -> Self {
+        Self::Infra {
+            source: source.into(),
+        }
     }
 }
 
@@ -56,19 +55,12 @@ impl From<image::Error> for Error {
     }
 }
 
-impl From<ValidationError> for Error {
-    fn from(source: ValidationError) -> Self {
-        Self::Validate { source }
-    }
-}
-
 impl From<Error> for AppError {
     fn from(err: Error) -> Self {
         match err {
             Error::Database { source } => source.into(),
             Error::Infra { source } => source.into(),
             Error::ImageService { source } => source.into(),
-            Error::Validate { source } => source.into(),
         }
     }
 }

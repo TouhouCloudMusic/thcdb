@@ -6,9 +6,8 @@ use entity::enums::ReleaseImageType;
 use entity::{image as image_entity, release_image, user as user_entity};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
-use super::error::Error;
+use super::error::{Error, ReleaseNotFound};
 use super::model::ReleaseCoverArtInput;
-use crate::application::error::EntityNotFound;
 use crate::constant::{
     RELEASE_COVER_IMAGE_MAX_HEIGHT, RELEASE_COVER_IMAGE_MAX_WIDTH,
     RELEASE_COVER_IMAGE_MIN_HEIGHT, RELEASE_COVER_IMAGE_MIN_WIDTH,
@@ -68,7 +67,7 @@ impl Service {
             .await
             .with_operation("check release exists for cover art upload")?
         {
-            Err(EntityNotFound::new(release_id, "release"))?;
+            Err(ReleaseNotFound::new(release_id))?;
         }
 
         let tx_repo = self

@@ -1,5 +1,3 @@
-use std::panic::Location;
-
 use derive_more::Display;
 use entity::enums::EntityType;
 use serde::{Deserialize, Serialize};
@@ -25,22 +23,8 @@ pub struct NewSongLyrics {
     pub is_main: bool,
 }
 
-#[derive(Debug, Display, derive_more::Error)]
-#[display("Validation error: {kind}")]
-pub struct ValidationError {
-    pub kind: ValidationErrorKind,
-    location: &'static Location<'static>,
-}
-
-impl From<ValidationErrorKind> for ValidationError {
-    #[track_caller]
-    fn from(kind: ValidationErrorKind) -> Self {
-        Self {
-            kind,
-            location: Location::caller(),
-        }
-    }
-}
+pub type ValidationError =
+    crate::shared::error::ValidationError<ValidationErrorKind>;
 
 #[derive(Debug, Display)]
 pub enum ValidationErrorKind {
@@ -51,6 +35,8 @@ pub enum ValidationErrorKind {
     #[display("Invalid Language Id: {_0}")]
     InvalidLanguageId(i32),
 }
+
+impl std::error::Error for ValidationErrorKind {}
 
 use ValidationErrorKind::*;
 

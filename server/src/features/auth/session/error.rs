@@ -1,5 +1,3 @@
-use std::panic::Location;
-
 use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError};
 
@@ -8,6 +6,7 @@ use crate::infra;
 use crate::infra::database::error::DatabaseError;
 use crate::infra::error::Error;
 use crate::shared::http::api_response::AppError;
+use crate::shared::types::BoxedError;
 
 #[derive(Debug, Display, DeriveError)]
 pub enum SignInError {
@@ -63,12 +62,17 @@ impl From<SignInError> for AppError {
     }
 }
 
-impl<E> From<E> for SignInError
-where
-    E: Into<infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+impl From<infra::Error> for SignInError {
+    fn from(source: infra::Error) -> Self {
+        Self::Infra { source }
+    }
+}
+
+impl From<BoxedError> for SignInError {
+    fn from(source: BoxedError) -> Self {
+        Self::Infra {
+            source: source.into(),
+        }
     }
 }
 
@@ -95,7 +99,6 @@ impl From<ValidateCredsError> for SignInError {
 pub struct SessionError {
     #[error(source)]
     source: axum_login::tower_sessions::session::Error,
-    location: &'static Location<'static>,
 }
 
 impl IntoResponse for SessionError {
@@ -105,14 +108,10 @@ impl IntoResponse for SessionError {
 }
 
 impl SessionError {
-    #[track_caller]
     pub const fn new(
         source: axum_login::tower_sessions::session::Error,
     ) -> Self {
-        Self {
-            source,
-            location: Location::caller(),
-        }
+        Self { source }
     }
 }
 
@@ -217,13 +216,8 @@ impl From<Error> for AuthnBackendError {
 fn app_error_from_authn_error(err: AuthnError) -> AppError {
     let message = err.to_string();
     match err {
-        AuthnError::AuthenticationFailed { .. } => {
-            AppError::unauthorized(message)
-        }
-        AuthnError::Infra { source } => source.into(),
-        err @ (AuthnError::PasswordHash { .. } | AuthnError::Join { .. }) => {
-            AppError::internal(err)
-        }
+        AuthnError::AuthenticationFailed => AppError::unauthorized(message),
+        AuthnError::Infra(source) => source.into(),
     }
 }
 
@@ -231,13 +225,13 @@ impl crate::adapter::inbound::rest::AuthRejection for AuthnBackendError {
     fn is_auth_rejection(&self) -> bool {
         match self {
             AuthnBackendError::Authn { source } => {
-                matches!(source, AuthnError::AuthenticationFailed { .. })
+                matches!(source, AuthnError::AuthenticationFailed)
             }
             AuthnBackendError::SignIn { source } => match source {
                 SignInError::EmailNotVerified
                 | SignInError::Validate { .. } => true,
                 SignInError::Authn { source } => {
-                    matches!(source, AuthnError::AuthenticationFailed { .. })
+                    matches!(source, AuthnError::AuthenticationFailed)
                 }
                 SignInError::AlreadySignedIn
                 | SignInError::Database { .. }

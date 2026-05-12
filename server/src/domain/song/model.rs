@@ -104,19 +104,10 @@ pub struct NewSongRelation {
     pub description: String,
 }
 
-#[derive(Debug, derive_more::Display, derive_more::Error)]
-#[display("Validation error: {kind}")]
-pub struct ValidationError {
-    pub kind: ValidationErrorKind,
-}
+pub type ValidationError =
+    crate::shared::error::ValidationError<ValidationErrorKind>;
 
-impl From<ValidationErrorKind> for ValidationError {
-    fn from(kind: ValidationErrorKind) -> Self {
-        Self { kind }
-    }
-}
-
-#[derive(Debug, Display)]
+#[derive(Debug, Display, derive_more::Error)]
 pub enum ValidationErrorKind {
     #[display("Song relation cannot target the same song")]
     SelfRelation,
@@ -298,8 +289,8 @@ mod tests {
     ) -> bool {
         matches!(
             result,
-            Err(ValidationError { kind })
-                if discriminant(&kind) == discriminant(expected)
+            Err(ValidationError { source })
+                if discriminant(&source) == discriminant(expected)
         )
     }
 }

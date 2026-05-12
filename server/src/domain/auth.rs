@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use std::panic::Location;
 use std::sync::LazyLock;
 
 use argon2::Argon2;
@@ -22,60 +21,32 @@ pub const SIGNUP_EXPIRES_HOURS: i64 = 24;
 #[derive(Debug, Display, DeriveError)]
 pub enum AuthnError {
     #[display("Incorrect username or password")]
-    AuthenticationFailed {
-        location: &'static Location<'static>,
-    },
-    #[display("{source}")]
-    Infra {
-        #[error(source)]
-        source: crate::infra::Error,
-    },
-    #[display("Password hash error: {source}")]
-    PasswordHash {
-        #[error(source)]
-        source: password_hash::Error,
-        location: &'static Location<'static>,
-    },
-    #[display("Join error: {source}")]
-    Join {
-        #[error(source)]
-        source: tokio::task::JoinError,
-        location: &'static Location<'static>,
-    },
+    AuthenticationFailed,
+    #[display("{_0}")]
+    Infra(#[error(source)] crate::infra::Error),
 }
 
 impl AuthnError {
-    #[track_caller]
     pub const fn authentication_failed() -> Self {
-        Self::AuthenticationFailed {
-            location: Location::caller(),
-        }
+        Self::AuthenticationFailed
     }
 }
 
 impl From<password_hash::Error> for AuthnError {
-    #[track_caller]
     fn from(source: password_hash::Error) -> Self {
-        Self::PasswordHash {
-            source,
-            location: Location::caller(),
-        }
+        Self::Infra(source.into())
     }
 }
 
 impl From<tokio::task::JoinError> for AuthnError {
-    #[track_caller]
     fn from(source: tokio::task::JoinError) -> Self {
-        Self::Join {
-            source,
-            location: Location::caller(),
-        }
+        Self::Infra(source.into())
     }
 }
 
 impl From<crate::infra::Error> for AuthnError {
     fn from(source: crate::infra::Error) -> Self {
-        Self::Infra { source }
+        Self::Infra(source)
     }
 }
 
@@ -83,16 +54,11 @@ impl From<crate::infra::Error> for AuthnError {
 #[display("{kind}")]
 pub struct ValidateCredsError {
     pub kind: ValidateCredsErrorKind,
-    location: &'static Location<'static>,
 }
 
 impl From<ValidateCredsErrorKind> for ValidateCredsError {
-    #[track_caller]
     fn from(kind: ValidateCredsErrorKind) -> Self {
-        Self {
-            kind,
-            location: Location::caller(),
-        }
+        Self { kind }
     }
 }
 

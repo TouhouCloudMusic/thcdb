@@ -12,19 +12,10 @@ use crate::domain::shared::{
     DateWithPrecision, EntityIdent, Location, NewLocalizedName,
 };
 
-#[derive(Debug, derive_more::Display, derive_more::Error)]
-#[display("Validation error: {kind}")]
-pub struct ValidationError {
-    pub kind: ValidationErrorKind,
-}
+pub type ValidationError =
+    crate::shared::error::ValidationError<ValidationErrorKind>;
 
-impl From<ValidationErrorKind> for ValidationError {
-    fn from(kind: ValidationErrorKind) -> Self {
-        Self { kind }
-    }
-}
-
-#[derive(Debug, Display)]
+#[derive(Debug, Display, derive_more::Error)]
 pub enum ValidationErrorKind {
     #[display("Unknown type artist cannot have members")]
     UnknownTypeArtistHasMembers,

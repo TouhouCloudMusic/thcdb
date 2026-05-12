@@ -1,7 +1,5 @@
-use std::panic::Location;
 use std::sync::LazyLock;
 
-use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError};
 use pulldown_cmark::{Event, Options, Parser, TextMergeStream};
 
@@ -12,28 +10,17 @@ pub struct Markdown(String);
 
 #[derive(Debug, Display, DeriveError)]
 #[display("Invalid markdown")]
-pub struct Error {
-    location: &'static Location<'static>,
-}
+pub struct Error;
 
 impl Error {
-    #[track_caller]
     const fn contains_html() -> Self {
-        Self {
-            location: Location::caller(),
-        }
+        Self
     }
 }
 
 impl From<Error> for AppError {
     fn from(err: Error) -> Self {
         AppError::bad_request(err.to_string())
-    }
-}
-
-impl IntoResponse for Error {
-    fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
     }
 }
 

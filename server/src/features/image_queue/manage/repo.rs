@@ -31,6 +31,24 @@ enum QueueTarget {
     Release(release_image_queue_entity::Model),
 }
 
+pub(crate) struct HandledImageQueue {
+    pub created_by: i32,
+    pub image_id: i32,
+}
+
+impl TryFrom<&image_queue_entity::Model> for HandledImageQueue {
+    type Error = Error;
+
+    fn try_from(
+        model: &image_queue_entity::Model,
+    ) -> Result<Self, Self::Error> {
+        Ok(Self {
+            created_by: model.created_by,
+            image_id: model.image_id.ok_or(Error::InvalidEntry)?,
+        })
+    }
+}
+
 pub async fn find_pending(
     repo: &SeaOrmRepository,
     limit: u8,
@@ -140,7 +158,7 @@ pub async fn approve(
     repo: &SeaOrmRepository,
     user_id: i32,
     id: i32,
-) -> Result<(), Error> {
+) -> Result<HandledImageQueue, Error> {
     let tx_repo = repo
         .begin_tx()
         .await
@@ -152,7 +170,8 @@ pub async fn approve(
         return Err(Error::InvalidOperation);
     }
 
-    let image_id = model.image_id.ok_or(Error::InvalidEntry)?;
+    let handled = HandledImageQueue::try_from(&model)?;
+    let image_id = handled.image_id;
     let target = find_queue_target(&tx_repo, id).await?;
 
     match target {
@@ -192,14 +211,14 @@ pub async fn approve(
 
     tx_repo.commit().await.map_err(InfraError::from)?;
 
-    Ok(())
+    Ok(handled)
 }
 
 pub async fn reject(
     repo: &SeaOrmRepository,
     user_id: i32,
     id: i32,
-) -> Result<(), Error> {
+) -> Result<HandledImageQueue, Error> {
     let tx_repo = repo
         .begin_tx()
         .await
@@ -211,6 +230,7 @@ pub async fn reject(
         return Err(Error::InvalidOperation);
     }
 
+    let handled = HandledImageQueue::try_from(&model)?;
     let now = Utc::now().into();
 
     let mut active = model.into_active_model();
@@ -222,14 +242,14 @@ pub async fn reject(
 
     tx_repo.commit().await.map_err(InfraError::from)?;
 
-    Ok(())
+    Ok(handled)
 }
 
 pub async fn revert(
     repo: &SeaOrmRepository,
     user_id: i32,
     id: i32,
-) -> Result<(), Error> {
+) -> Result<HandledImageQueue, Error> {
     let tx_repo = repo
         .begin_tx()
         .await
@@ -241,7 +261,8 @@ pub async fn revert(
         return Err(Error::InvalidOperation);
     }
 
-    let image_id = model.image_id.ok_or(Error::InvalidEntry)?;
+    let handled = HandledImageQueue::try_from(&model)?;
+    let image_id = handled.image_id;
     let target = find_queue_target(&tx_repo, id).await?;
 
     match target {
@@ -288,7 +309,7 @@ pub async fn revert(
 
     tx_repo.commit().await.map_err(InfraError::from)?;
 
-    Ok(())
+    Ok(handled)
 }
 
 async fn find_queue(

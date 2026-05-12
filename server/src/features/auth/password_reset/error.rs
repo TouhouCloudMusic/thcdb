@@ -7,6 +7,7 @@ use crate::features::auth::InvalidEmail;
 use crate::infra;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::AppError;
+use crate::shared::types::BoxedError;
 
 #[derive(Debug, Display, DeriveError)]
 pub enum ForgotPasswordError {
@@ -48,12 +49,17 @@ impl From<DatabaseError> for ForgotPasswordError {
     }
 }
 
-impl<E> From<E> for ForgotPasswordError
-where
-    E: Into<infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+impl From<infra::Error> for ForgotPasswordError {
+    fn from(source: infra::Error) -> Self {
+        Self::Infra { source }
+    }
+}
+
+impl From<BoxedError> for ForgotPasswordError {
+    fn from(source: BoxedError) -> Self {
+        Self::Infra {
+            source: source.into(),
+        }
     }
 }
 
@@ -119,12 +125,17 @@ impl From<DatabaseError> for VerifyResetCodeError {
     }
 }
 
-impl<E> From<E> for VerifyResetCodeError
-where
-    E: Into<infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+impl From<infra::Error> for VerifyResetCodeError {
+    fn from(source: infra::Error) -> Self {
+        Self::Infra { source }
+    }
+}
+
+impl From<BoxedError> for VerifyResetCodeError {
+    fn from(source: BoxedError) -> Self {
+        Self::Infra {
+            source: source.into(),
+        }
     }
 }
 
@@ -191,12 +202,17 @@ impl From<ValidateCredsError> for ResetPasswordError {
     }
 }
 
-impl<E> From<E> for ResetPasswordError
-where
-    E: Into<infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+impl From<infra::Error> for ResetPasswordError {
+    fn from(source: infra::Error) -> Self {
+        Self::Infra { source }
+    }
+}
+
+impl From<BoxedError> for ResetPasswordError {
+    fn from(source: BoxedError) -> Self {
+        Self::Infra {
+            source: source.into(),
+        }
     }
 }
 

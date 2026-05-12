@@ -1,4 +1,3 @@
-use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError};
 use sea_orm::DbErr;
@@ -7,6 +6,7 @@ use crate::domain::auth::ValidateCredsError;
 use crate::infra;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{AppError, AppErrorKind};
+use crate::shared::types::BoxedError;
 
 #[derive(Debug, Display, derive_more::Error)]
 #[display("Invalid email: {email}.\n{source}")]
@@ -55,22 +55,6 @@ pub enum SignUpError {
     },
 }
 
-impl SignUpError {
-    const fn status_code(&self) -> StatusCode {
-        match self {
-            SignUpError::UsernameAlreadyInUse { .. } => StatusCode::CONFLICT,
-            SignUpError::InvalidEmail { .. } | SignUpError::Validate { .. } => {
-                StatusCode::BAD_REQUEST
-            }
-            SignUpError::EmailServiceUnavailable => {
-                StatusCode::SERVICE_UNAVAILABLE
-            }
-            SignUpError::Database { .. } => StatusCode::INTERNAL_SERVER_ERROR,
-            SignUpError::Infra { source } => source.status_code(),
-        }
-    }
-}
-
 impl From<DbErr> for SignUpError {
     fn from(err: DbErr) -> Self {
         Self::Database {
@@ -98,12 +82,17 @@ impl From<ValidateCredsError> for SignUpError {
     }
 }
 
-impl<E> From<E> for SignUpError
-where
-    E: Into<infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+impl From<infra::Error> for SignUpError {
+    fn from(source: infra::Error) -> Self {
+        Self::Infra { source }
+    }
+}
+
+impl From<BoxedError> for SignUpError {
+    fn from(source: BoxedError) -> Self {
+        Self::Infra {
+            source: source.into(),
+        }
     }
 }
 
@@ -156,25 +145,6 @@ pub enum ResendVerificationEmailError {
     },
 }
 
-impl ResendVerificationEmailError {
-    const fn status_code(&self) -> StatusCode {
-        match self {
-            ResendVerificationEmailError::InvalidEmail { .. } => {
-                StatusCode::BAD_REQUEST
-            }
-            ResendVerificationEmailError::ResendEmailServiceUnavailable => {
-                StatusCode::SERVICE_UNAVAILABLE
-            }
-            ResendVerificationEmailError::Database { .. } => {
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
-            ResendVerificationEmailError::Infra { source } => {
-                source.status_code()
-            }
-        }
-    }
-}
-
 impl From<DbErr> for ResendVerificationEmailError {
     fn from(err: DbErr) -> Self {
         Self::Database {
@@ -197,12 +167,17 @@ impl From<DatabaseError> for ResendVerificationEmailError {
     }
 }
 
-impl<E> From<E> for ResendVerificationEmailError
-where
-    E: Into<infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+impl From<infra::Error> for ResendVerificationEmailError {
+    fn from(source: infra::Error) -> Self {
+        Self::Infra { source }
+    }
+}
+
+impl From<BoxedError> for ResendVerificationEmailError {
+    fn from(source: BoxedError) -> Self {
+        Self::Infra {
+            source: source.into(),
+        }
     }
 }
 
@@ -251,20 +226,6 @@ pub enum VerifyEmailError {
     },
 }
 
-impl VerifyEmailError {
-    const fn status_code(&self) -> StatusCode {
-        match self {
-            VerifyEmailError::InvalidEmail { .. }
-            | VerifyEmailError::InvalidOrExpiredCode => StatusCode::BAD_REQUEST,
-            VerifyEmailError::TooManyAttempts => StatusCode::TOO_MANY_REQUESTS,
-            VerifyEmailError::Database { .. } => {
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
-            VerifyEmailError::Infra { source } => source.status_code(),
-        }
-    }
-}
-
 impl From<DbErr> for VerifyEmailError {
     fn from(err: DbErr) -> Self {
         Self::Database {
@@ -286,12 +247,17 @@ impl From<DatabaseError> for VerifyEmailError {
     }
 }
 
-impl<E> From<E> for VerifyEmailError
-where
-    E: Into<infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+impl From<infra::Error> for VerifyEmailError {
+    fn from(source: infra::Error) -> Self {
+        Self::Infra { source }
+    }
+}
+
+impl From<BoxedError> for VerifyEmailError {
+    fn from(source: BoxedError) -> Self {
+        Self::Infra {
+            source: source.into(),
+        }
     }
 }
 

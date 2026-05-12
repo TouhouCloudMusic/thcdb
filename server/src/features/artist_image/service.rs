@@ -6,9 +6,8 @@ use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{artist_image, image as image_entity, user as user_entity};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
-use super::error::Error;
+use super::error::{ArtistNotFound, Error};
 use super::model::ArtistProfileImageInput;
-use crate::application::error::EntityNotFound;
 use crate::constant::{
     ARTIST_PROFILE_IMAGE_MAX_FILE_SIZE, ARTIST_PROFILE_IMAGE_MAX_HEIGHT,
     ARTIST_PROFILE_IMAGE_MAX_WIDTH, ARTIST_PROFILE_IMAGE_MIN_HEIGHT,
@@ -71,7 +70,7 @@ impl Service {
             .await
             .with_operation("check artist exists for profile image upload")?
         {
-            Err(EntityNotFound::new(artist_id, "artist"))?;
+            Err(ArtistNotFound::new(artist_id))?;
         }
 
         let tx_repo =

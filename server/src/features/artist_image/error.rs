@@ -1,11 +1,11 @@
 use axum::response::{IntoResponse, Response};
 use derive_more::{Display, Error as DeriveError};
 
-use crate::application::error::EntityNotFound;
 use crate::domain::image;
 use crate::infra;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::AppError;
+use crate::shared::types::BoxedError;
 
 #[derive(Debug, Display, DeriveError)]
 pub enum Error {
@@ -27,7 +27,7 @@ pub enum Error {
     #[display("{source}")]
     ArtistNotFound {
         #[error(source)]
-        source: EntityNotFound,
+        source: ArtistNotFound,
     },
 }
 
@@ -37,12 +37,17 @@ impl IntoResponse for Error {
     }
 }
 
-impl<A> From<A> for Error
-where
-    A: Into<infra::Error>,
-{
-    default fn from(err: A) -> Self {
-        Self::Infra { source: err.into() }
+impl From<infra::Error> for Error {
+    fn from(source: infra::Error) -> Self {
+        Self::Infra { source }
+    }
+}
+
+impl From<BoxedError> for Error {
+    fn from(source: BoxedError) -> Self {
+        Self::Infra {
+            source: source.into(),
+        }
     }
 }
 
@@ -58,8 +63,8 @@ impl From<image::Error> for Error {
     }
 }
 
-impl From<EntityNotFound> for Error {
-    fn from(source: EntityNotFound) -> Self {
+impl From<ArtistNotFound> for Error {
+    fn from(source: ArtistNotFound) -> Self {
         Self::ArtistNotFound { source }
     }
 }
@@ -74,5 +79,17 @@ impl From<Error> for AppError {
                 AppError::bad_request(source.to_string())
             }
         }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Display, DeriveError)]
+#[display("artist #{artist_id} not found")]
+pub struct ArtistNotFound {
+    artist_id: i32,
+}
+
+impl ArtistNotFound {
+    pub const fn new(artist_id: i32) -> Self {
+        Self { artist_id }
     }
 }

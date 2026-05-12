@@ -1,8 +1,6 @@
 use std::io;
-use std::panic::Location;
 use std::range::RangeInclusive;
 
-use axum::response::IntoResponse;
 use bon::Builder;
 use bytesize::ByteSize;
 use entity::enums::StorageBackend;
@@ -11,134 +9,107 @@ use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 use crate::domain::image::{Image, NewImage};
 use crate::infra::{self};
 use crate::shared::http::api_response::AppError;
+use crate::shared::types::BoxedError;
 
-#[derive(Debug)]
-pub enum ValidationError {
-    InvalidType {
-        source: InvalidFormat,
-    },
-    InvalidFileSize {
-        source: InvalidFileSize,
-        location: &'static Location<'static>,
-    },
-    InvalidSize {
-        source: InvalidSize,
-        location: &'static Location<'static>,
-    },
-    InvalidRatio {
-        source: InvalidRatio,
-        location: &'static Location<'static>,
-    },
-    Io {
-        source: io::Error,
-        location: &'static Location<'static>,
-    },
-    Image {
-        source: ImageError,
-        location: &'static Location<'static>,
-    },
+#[derive(Debug, derive_more::Display, derive_more::Error)]
+pub enum ImageInputError {
+    #[display("{_0}")]
+    Format(#[error(source)] InvalidFormat),
+    #[display("Invalid file size: {_0}")]
+    FileSize(#[error(source)] InvalidFileSize),
+    #[display("Invalid size: {_0}")]
+    Size(#[error(source)] InvalidSize),
+    #[display("Invalid ratio: {_0}")]
+    Ratio(#[error(source)] InvalidRatio),
 }
 
-impl From<InvalidFormat> for ValidationError {
+impl From<InvalidFormat> for ImageInputError {
     fn from(source: InvalidFormat) -> Self {
-        Self::InvalidType { source }
+        Self::Format(source)
     }
 }
 
-impl From<InvalidFileSize> for ValidationError {
-    #[track_caller]
+impl From<InvalidFileSize> for ImageInputError {
     fn from(source: InvalidFileSize) -> Self {
-        Self::InvalidFileSize {
-            source,
-            location: Location::caller(),
-        }
+        Self::FileSize(source)
     }
 }
 
-impl From<InvalidSize> for ValidationError {
-    #[track_caller]
+impl From<InvalidSize> for ImageInputError {
     fn from(source: InvalidSize) -> Self {
-        Self::InvalidSize {
-            source,
-            location: Location::caller(),
-        }
+        Self::Size(source)
     }
 }
 
-impl From<InvalidRatio> for ValidationError {
-    #[track_caller]
+impl From<InvalidRatio> for ImageInputError {
     fn from(source: InvalidRatio) -> Self {
-        Self::InvalidRatio {
-            source,
-            location: Location::caller(),
-        }
+        Self::Ratio(source)
     }
 }
 
-impl From<io::Error> for ValidationError {
-    #[track_caller]
+impl From<ImageInputError> for AppError {
+    fn from(err: ImageInputError) -> Self {
+        AppError::bad_request(err.to_string())
+    }
+}
+
+#[derive(Debug, derive_more::Display, derive_more::Error)]
+pub enum ImageParseError {
+    #[display("{_0}")]
+    InvalidInput(#[error(source)] ImageInputError),
+    #[display("failed to read image input: {_0}")]
+    Read(#[error(source)] io::Error),
+    #[display("failed to decode image: {_0}")]
+    Decode(#[error(source)] ImageError),
+}
+
+impl From<ImageInputError> for ImageParseError {
+    fn from(source: ImageInputError) -> Self {
+        Self::InvalidInput(source)
+    }
+}
+
+impl From<InvalidFormat> for ImageParseError {
+    fn from(source: InvalidFormat) -> Self {
+        Self::InvalidInput(source.into())
+    }
+}
+
+impl From<InvalidFileSize> for ImageParseError {
+    fn from(source: InvalidFileSize) -> Self {
+        Self::InvalidInput(source.into())
+    }
+}
+
+impl From<InvalidSize> for ImageParseError {
+    fn from(source: InvalidSize) -> Self {
+        Self::InvalidInput(source.into())
+    }
+}
+
+impl From<InvalidRatio> for ImageParseError {
+    fn from(source: InvalidRatio) -> Self {
+        Self::InvalidInput(source.into())
+    }
+}
+
+impl From<io::Error> for ImageParseError {
     fn from(source: io::Error) -> Self {
-        Self::Io {
-            source,
-            location: Location::caller(),
-        }
+        Self::Read(source)
     }
 }
 
-impl From<ImageError> for ValidationError {
-    #[track_caller]
+impl From<ImageError> for ImageParseError {
     fn from(source: ImageError) -> Self {
-        Self::Image {
-            source,
-            location: Location::caller(),
-        }
+        Self::Decode(source)
     }
 }
 
-impl std::fmt::Display for ValidationError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::InvalidType { source } => write!(f, "{source}"),
-            Self::InvalidFileSize { source, .. } => {
-                write!(f, "Invalid file size: {source}")
-            }
-            Self::InvalidSize { source, .. } => {
-                write!(f, "Invalid size: {source}")
-            }
-            Self::InvalidRatio { source, .. } => {
-                write!(f, "Invalid ratio: {source}")
-            }
-            Self::Io { .. } | Self::Image { .. } => {
-                write!(f, "Internal server error")
-            }
-        }
-    }
-}
-
-impl std::error::Error for ValidationError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self {
-            Self::InvalidType { source } => Some(source),
-            Self::InvalidFileSize { source, .. } => Some(source),
-            Self::InvalidSize { source, .. } => Some(source),
-            Self::InvalidRatio { source, .. } => Some(source),
-            Self::Io { source, .. } => Some(source),
-            Self::Image { source, .. } => Some(source),
-        }
-    }
-}
-
-impl From<ValidationError> for AppError {
-    fn from(err: ValidationError) -> Self {
-        match &err {
-            ValidationError::InvalidType { .. }
-            | ValidationError::InvalidFileSize { .. }
-            | ValidationError::InvalidSize { .. }
-            | ValidationError::InvalidRatio { .. } => {
-                let message = err.to_string();
-                AppError::bad_request(message)
-            }
-            ValidationError::Io { .. } | ValidationError::Image { .. } => {
+impl From<ImageParseError> for AppError {
+    fn from(err: ImageParseError) -> Self {
+        match err {
+            ImageParseError::InvalidInput(source) => source.into(),
+            ImageParseError::Read(_) | ImageParseError::Decode(_) => {
                 AppError::internal(err)
             }
         }
@@ -149,11 +120,9 @@ impl From<ValidationError> for AppError {
 pub struct InvalidFormat {
     received: Option<ImageFormat>,
     expected: &'static [ImageFormat],
-    location: &'static Location<'static>,
 }
 
 impl InvalidFormat {
-    #[track_caller]
     pub const fn new(
         received: ImageFormat,
         expected: &'static [ImageFormat],
@@ -161,16 +130,13 @@ impl InvalidFormat {
         Self {
             received: Some(received),
             expected,
-            location: Location::caller(),
         }
     }
 
-    #[track_caller]
     pub const fn unknown(expected: &'static [ImageFormat]) -> Self {
         Self {
             received: None,
             expected,
-            location: Location::caller(),
         }
     }
 }
@@ -193,7 +159,6 @@ impl std::fmt::Display for InvalidFormat {
 pub struct InvalidFileSize {
     received: ByteSize,
     range: RangeInclusive<ByteSize>,
-    location: &'static Location<'static>,
 }
 
 impl std::fmt::Display for InvalidFileSize {
@@ -220,7 +185,6 @@ pub struct InvalidSize {
     height: u32,
     width_range: RangeInclusive<u32>,
     height_range: RangeInclusive<u32>,
-    location: &'static Location<'static>,
 }
 
 impl std::fmt::Display for InvalidSize {
@@ -242,17 +206,11 @@ impl std::fmt::Display for InvalidSize {
 pub struct InvalidRatio {
     received: f64,
     expected: RangeInclusive<f64>,
-    location: &'static Location<'static>,
 }
 
 impl InvalidRatio {
-    #[track_caller]
     pub const fn new(received: f64, expected: RangeInclusive<f64>) -> Self {
-        Self {
-            received,
-            expected,
-            location: Location::caller(),
-        }
+        Self { received, expected }
     }
 }
 
@@ -352,7 +310,6 @@ impl Parser {
                 height,
                 width_range,
                 height_range,
-                location: Location::caller(),
             })
         }
     }
@@ -368,7 +325,6 @@ impl Parser {
             Err(InvalidFileSize {
                 received: size,
                 range: *range,
-                location: Location::caller(),
             })
         }
     }
@@ -394,7 +350,7 @@ impl Parser {
             .ok_or(InvalidRatio::new(ratio, expected))
     }
 
-    pub fn parse(&self, bytes: &[u8]) -> Result<ParsedImage, ValidationError> {
+    pub fn parse(&self, bytes: &[u8]) -> Result<ParsedImage, ImageParseError> {
         self.validate_file_size(ByteSize(
             // We don't use 128-bit computers, so it is safe to unwrap here
             bytes.len().try_into().unwrap(),
@@ -403,12 +359,9 @@ impl Parser {
         let reader =
             ImageReader::new(io::Cursor::new(bytes)).with_guessed_format()?;
 
-        let format =
-            reader
-                .format()
-                .ok_or_else(|| ValidationError::InvalidType {
-                    source: InvalidFormat::unknown(self.option.valid_formats),
-                })?;
+        let format = reader
+            .format()
+            .ok_or_else(|| InvalidFormat::unknown(self.option.valid_formats))?;
 
         self.validate_format(format)?;
 
@@ -446,54 +399,38 @@ pub trait AsyncFileStorage: Send + Sync {
     async fn remove(&self, image: Image) -> Result<(), Self::Error>;
 }
 
-#[derive(Debug, derive_more::Error)]
+#[derive(Debug, derive_more::Display, derive_more::Error)]
 pub enum Error {
-    Validation {
-        #[error(source)]
-        source: ValidationError,
-    },
-    Infra {
-        #[error(source)]
-        source: infra::Error,
-    },
-}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Validation { source } => write!(f, "{source}"),
-            Self::Infra { source } => write!(f, "{source}"),
-        }
-    }
+    #[display("{_0}")]
+    Parse(#[error(source)] ImageParseError),
+    #[display("{_0}")]
+    Infra(#[error(source)] infra::Error),
 }
 
 impl From<Error> for AppError {
     fn from(err: Error) -> Self {
         match err {
-            Error::Validation { source } => source.into(),
-            Error::Infra { source } => source.into(),
+            Error::Parse(source) => source.into(),
+            Error::Infra(source) => source.into(),
         }
     }
 }
 
-impl IntoResponse for Error {
-    fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+impl From<ImageParseError> for Error {
+    fn from(source: ImageParseError) -> Self {
+        Self::Parse(source)
     }
 }
 
-impl From<ValidationError> for Error {
-    fn from(source: ValidationError) -> Self {
-        Self::Validation { source }
+impl From<infra::Error> for Error {
+    fn from(source: infra::Error) -> Self {
+        Self::Infra(source)
     }
 }
 
-impl<T> From<T> for Error
-where
-    T: Into<infra::Error>,
-{
-    fn from(e: T) -> Self {
-        Self::Infra { source: e.into() }
+impl From<BoxedError> for Error {
+    fn from(source: BoxedError) -> Self {
+        Self::Infra(source.into())
     }
 }
 
@@ -555,7 +492,10 @@ where
             image
         } else {
             let image = tx.create(&new_image).await?;
-            self.storage.create(new_image).await?;
+            self.storage
+                .create(new_image)
+                .await
+                .map_err(|err| Error::Infra(err.into()))?;
             image
         };
 
@@ -565,7 +505,10 @@ where
     async fn delete(&self, image: Image) -> Result<(), Error> {
         self.repo.delete(image.id).await?;
 
-        self.storage.remove(image).await?;
+        self.storage
+            .remove(image)
+            .await
+            .map_err(|err| Error::Infra(err.into()))?;
 
         Ok(())
     }

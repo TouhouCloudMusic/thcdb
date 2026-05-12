@@ -6,8 +6,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::adapter::inbound::rest::state;
-use crate::infra::database::error::DatabaseResultExt;
-use crate::shared::http::api_response::AppError;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 #[derive(Clone, Serialize, ToSchema, DerivePartialModel)]
 #[sea_orm(entity = "user_entity::Entity", from_query_result)]
@@ -28,7 +27,7 @@ impl UserSummary {
 pub(crate) async fn load_users(
     repo: &state::SeaOrmRepository,
     user_ids: Vec<i32>,
-) -> Result<HashMap<i32, UserSummary>, AppError> {
+) -> Result<HashMap<i32, UserSummary>, DatabaseError> {
     if user_ids.is_empty() {
         return Ok(HashMap::new());
     }
@@ -38,8 +37,7 @@ pub(crate) async fn load_users(
         .into_partial_model::<UserSummary>()
         .all(&repo.conn)
         .await
-        .with_operation("load image queue users")
-        .map_err(AppError::from)?;
+        .with_operation("load image queue users")?;
 
     Ok(users.into_iter().map(|user| (user.id, user)).collect())
 }

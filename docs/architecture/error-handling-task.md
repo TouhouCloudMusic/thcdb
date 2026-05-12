@@ -37,7 +37,7 @@
 - [x] 新增 ZST `shared::error::PermissionDenied`，统一权限拒绝文案。
 - [x] `infra::Error` 的 HTTP 出口已收口到 `AppError`，避免旧 `IntoApiResponse` 通过 `Display` 暴露内部错误。
 - [x] 新增 `DatabaseError`，作为 `sea_orm::DbErr` 到应用错误之间的数据库诊断类型。
-- [x] correction 提交/审核、authz、image queue manage、user collection、correction comment 的迁移路径已开始使用 `DatabaseError`。
+- [x] correction 提交/审核、authz、image queue manage、user collection、correction comment 的迁移路径已使用 `DatabaseError`。
 - [x] `artist`、`song`、`label`、`tag`、`release`、`event`、`song_lyrics`、`credit_role` 的重复 `CreateError` / `UpsertCorrectionError` 已迁移为 `correction::SubmissionError`。
 - [x] correction 审核路径已迁移为 `correction::ModerationError`。
 - [x] `DatabaseError` 改为 `derive_more::Error`，数据库上下文 API 统一为 `with_operation(...)`。
@@ -52,6 +52,12 @@
 - [x] runtime/domain/feature 错误已移除 `std::backtrace::Backtrace`，需要诊断位置的错误改为 `#[track_caller]` + `Location`。
 - [x] 普通应用错误已从 `snafu::Snafu` 迁移到显式 `Display` / `Error` / `From`；当前仅启动/CLI `Whatever` 路径继续保留 snafu。
 - [x] 删除 `application::error` 中未使用且只携带 backtrace 的 `InvalidField` / `Unauthorized` 封装。
+- [x] 删除 `adapter/inbound/rest/error.rs` 和 `application/error.rs` 这类只转发来源、没有调用方动作语义的 wrapper。
+- [x] `domain::auth::AuthnError` 只保留认证失败语义；password hash / join 等技术失败折叠到 internal/infra 路径。
+- [x] `domain::artist`、`domain::song`、`domain::song_lyrics` validation 已改为共享 `ValidationError<T>` 提供统一前缀，domain kind 只表达具体规则。
+- [x] `domain::image` 已拆分 `ImageInputError` / `ImageParseError` / service `Error`，避免把内部 IO / decode 失败混进 validation。
+- [x] `features/tag_vote` 的 `DbErr` 不再直接进入 response body，统一经 `DatabaseError -> AppError` 脱敏。
+- [x] 清理 feature error 中的宽泛 `default fn from` 转发，避免数据库错误绕过 `DatabaseError`。
 
 ## 约束
 
@@ -104,7 +110,7 @@
   - [ ] 无语义且只在 HTTP 出口使用：直接返回 `AppError`。
   - [ ] 领域层错误：移除 HTTP 依赖，在 adapter / feature 边界转换。
 - [ ] 迁移优先级：
-  - [ ] `features/tag_vote`
+  - [x] `features/tag_vote`
   - [x] `features/user_profile`
   - [x] `features/admin`
   - [x] `features/search`
@@ -118,7 +124,7 @@
 
 - [x] 目标 slice 的 handler 不再直接返回 `axum::response::Response`。
 - [x] HTTP handler 中没有为了状态码临时拼 `api_response::Error::from_err_and_code(...).into_response()`。
-- [ ] slice 内错误到 `AppError` 的转换集中在 `error.rs` 或 `mod.rs`。
+- [x] slice 内错误到 `AppError` 的转换集中在 `error.rs` 或 `mod.rs`。
 
 ## Phase 2.5: 收敛数据库错误路径
 
@@ -137,6 +143,8 @@
   - [x] `features/user_profile/service.rs`
   - [x] `features/user_image`
   - [x] `features/release_image`
+  - [x] `features/artist_image`
+  - [x] `features/tag_vote`
   - [x] auth 相关 repo/service
   - [x] correction detail / diff / compare / history / revisions / pending
   - [x] notification、enum table、home metadata、image queue view/manage handler
@@ -150,35 +158,37 @@
 
 ## Phase 3: 拆分 `image_queue/manage`
 
-当前 `image_queue/manage` 已有 slice 级 TODO。这里应优先完成，因为它暴露了 handler 同时承担 DB 查询、状态判断、业务编排和错误转换的问题。
+`image_queue/manage` 已拆分为 `model.rs`、`repo.rs`、`service.rs` 和 `http.rs`，handler 不再直接承担 DB 查询、状态判断、业务编排和错误转换。
 
-- [ ] 梳理 `server/src/features/image_queue/manage/http.rs` 中每个 handler 的职责。
-- [ ] 在 `server/src/features/image_queue/manage/repo.rs` 中收拢数据库读写：
-  - [ ] 查询 queue entry。
-  - [ ] 查询 target image。
-  - [ ] 执行 approve / reject 需要的 DB 操作。
-- [ ] 新增或扩展 `service.rs`：
-  - [ ] 处理 approve / reject 编排。
-  - [ ] 检查 queue state。
-  - [ ] 处理通知触发的 best-effort 边界。
+- [x] 梳理 `server/src/features/image_queue/manage/http.rs` 中每个 handler 的职责。
+- [x] 在 `server/src/features/image_queue/manage/repo.rs` 中收拢数据库读写：
+  - [x] 查询 queue entry。
+  - [x] 查询 target image。
+  - [x] 执行 approve / reject / revert 需要的 DB 操作。
+- [x] 新增或扩展 `service.rs`：
+  - [x] 处理 approve / reject / revert 编排。
+  - [x] 检查 queue state。
+  - [x] 处理通知触发的 best-effort 边界。
 - [ ] 把 `manage::Error` 调整为面向调用方动作的语义：
-  - [ ] `NotFound`
-  - [ ] `InvalidOperation`
-  - [ ] `InvalidEntry`
-  - [ ] `UnknownTarget`
-  - [ ] `AmbiguousTarget`
-  - [ ] `PublishedNotFound`
-  - [ ] `Infra(InfraError)`
-- [ ] 避免在 HTTP handler 里直接处理 `entity::image_queue::Entity`。
-- [ ] 保留 `From<Error> for AppError` 作为唯一 HTTP 转换点。
-- [ ] 完成后删除 slice 级 TODO。
+  - [x] `NotFound`
+  - [x] `InvalidOperation`
+  - [x] `InvalidEntry`
+  - [x] `UnknownTarget`
+  - [x] `AmbiguousTarget`
+  - [x] `PublishedNotFound`
+  - [x] `PermissionDenied`
+  - [x] `Database(DatabaseError)`
+  - [x] `Infra(InfraError)`
+- [x] 避免在 HTTP handler 里直接处理 `entity::image_queue::Entity`。
+- [x] 保留 `From<Error> for AppError` 作为唯一 HTTP 转换点。
+- [x] 完成后删除 slice 级 TODO。
 
 验收：
 
-- [ ] `http.rs` 只负责 extractor、调用 service、返回 response。
-- [ ] `repo.rs` 不构造 `AppError`。
-- [ ] `service.rs` 不构造 axum response。
-- [ ] `manage::Error` 的每个 variant 都有明确状态码映射。
+- [x] `http.rs` 只负责 extractor、调用 service、返回 response。
+- [x] `repo.rs` 不构造 `AppError`。
+- [x] `service.rs` 不构造 axum response。
+- [x] `manage::Error` 的每个 variant 都有明确状态码映射。
 
 ## Phase 4: 迁移 auth 相关错误
 
@@ -190,7 +200,7 @@ auth 相关错误通常有清晰恢复语义，不能简单压平。
   - [x] `features/auth/password_reset/error.rs`
   - [x] `domain/auth.rs`
 - [x] 为 auth feature 错误类型实现 `From<Error> for AppError`。
-- [ ] handler 返回类型改为 `Result<T, AppError>` 或现有语义错误类型。
+- [x] handler 返回类型改为 `Result<T, AppError>` 或现有语义错误类型。
 - [ ] 明确区分：
   - [ ] 未登录 / token 无效：`Unauthorized`
   - [ ] 已登录但动作不允许：`BadRequest` 或更具体业务错误
@@ -220,7 +230,7 @@ auth 相关错误通常有清晰恢复语义，不能简单压平。
   - [ ] `features/credit_role/error.rs`
   - [ ] `features/song_lyrics/error.rs`
 - [ ] 第二批迁移图片和上传类 feature：
-  - [ ] `features/artist_image/error.rs`
+  - [x] `features/artist_image/error.rs`
   - [x] `features/release_image/error.rs`
   - [x] `features/user_image/error.rs`
   - [x] `domain/image/service.rs`
@@ -283,17 +293,18 @@ auth 相关错误通常有清晰恢复语义，不能简单压平。
 参考原则：运行时错误优先表达调用方动作和诊断上下文，不再默认捕获 backtrace，也不为了 `transparent` forwarding 保留宏封装。
 
 - [x] 移除 runtime/domain/feature 错误中的 `std::backtrace::Backtrace`。
-- [x] 对需要定位创建点的错误使用 `Location<'static>` 字段，并在构造函数或 `From` 实现上使用 `#[track_caller]`。
+- [x] 对需要定位创建点的诊断错误使用 `Location<'static>` 字段；普通 validation / not-found 错误不再机械携带 location。
 - [x] 删除只携带 backtrace、没有调用方动作语义的错误封装：
   - [x] `application::error::InvalidField`
   - [x] `application::error::Unauthorized`
+  - [x] `application::error::EntityNotFound`
 - [x] 迁移领域 validation 错误到 `derive_more::Display` / `derive_more::Error`：
   - [x] `domain::artist::model::new_artist::ValidationError`
   - [x] `domain::song::ValidationError`
   - [x] `domain::song_lyrics::ValidationError`
   - [x] `domain::markdown::Error`
   - [x] `shared::error::ValidationError`
-- [x] 迁移 image parsing / storage 错误，保留 `ValidationError` 与 `Error` 的语义边界，去掉 SNAFU forwarding。
+- [x] 迁移 image parsing / storage 错误，拆分用户输入错误、图片解析内部错误与 service infra 错误，去掉 SNAFU forwarding。
 - [x] 迁移 auth/session/password-reset 错误，显式保留登录状态、验证码状态、session backend 失败等可行动语义。
 - [x] 迁移 infra / database / adapter 的 transparent wrapper，显式实现 `Display` / `Error` / `From`。
 - [x] 保留 `snafu::Whatever` / `ResultExt` 在启动和 CLI 路径中的使用；这是一次性启动失败报告，不参与 HTTP/runtime 错误模型。
@@ -308,13 +319,13 @@ auth 相关错误通常有清晰恢复语义，不能简单压平。
 
 每个小阶段至少运行：
 
-- [ ] `nix develop -c cargo check`
-- [ ] `nix develop -c just fmt`
-- [ ] `nix develop -c cargo clippy`
+- [x] `nix develop -c cargo check`
+- [x] `nix develop -c just fmt`
+- [x] `nix develop -c cargo clippy`
 
 在涉及具体行为的 slice 上补充：
 
-- [ ] 单元测试或现有 handler/service 测试。
+- [x] 单元测试或现有 handler/service 测试。
 - [ ] 关键 HTTP status 和 body 断言。
 - [ ] OpenAPI 生成检查：`nix develop -c cargo run -- --openapi ./openapi.json`。
 
@@ -322,6 +333,7 @@ auth 相关错误通常有清晰恢复语义，不能简单压平。
 
 - `direnv exec . ...` 当前可能受 `.envrc` 信任状态阻塞，优先使用 `nix develop -c ...`。
 - root `just fmt` 可能被 web 侧 Prettier 插件加载问题阻塞；如果本轮只改 server，可先运行 server 目录下的格式化和 clippy，并在结果中说明 root fmt blocker。
+- 本轮 root `nix develop -c just fmt` 仍被 web 侧 `@trivago/prettier-plugin-sort-imports` 加载失败阻塞；server `nix develop -c just fmt` 已通过。
 
 ## 完成定义
 

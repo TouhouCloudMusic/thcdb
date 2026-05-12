@@ -1,5 +1,3 @@
-use crate::shared::http;
-
 #[derive(Debug, derive_more::Display, derive_more::Error)]
 #[display("Validation error: {source}")]
 pub struct ValidationError<T>
@@ -16,15 +14,6 @@ where
 {
     fn from(source: T) -> Self {
         Self { source }
-    }
-}
-
-impl<T> From<ValidationError<T>> for http::Error<ValidationError<T>>
-where
-    T: std::error::Error + 'static,
-{
-    fn from(err: ValidationError<T>) -> Self {
-        http::Error::bad_request(err)
     }
 }
 
