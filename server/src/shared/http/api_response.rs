@@ -15,7 +15,7 @@ use utoipa::{PartialSchema, ToSchema, openapi};
 
 use crate::infra::database::error::DatabaseError;
 use crate::infra::error::{Error as InfraError, UserError};
-use crate::shared::error::PermissionDenied;
+use crate::shared::error::{EntityNotFound, InternalError, PermissionDenied};
 use crate::shared::types::BoxedError;
 use crate::utils::openapi::ContentType;
 
@@ -194,6 +194,20 @@ impl From<PermissionDenied> for AppError {
     #[track_caller]
     fn from(err: PermissionDenied) -> Self {
         Self::forbidden(err.to_string())
+    }
+}
+
+impl From<EntityNotFound> for AppError {
+    #[track_caller]
+    fn from(err: EntityNotFound) -> Self {
+        Self::not_found(err.to_string())
+    }
+}
+
+impl From<InternalError> for AppError {
+    #[track_caller]
+    fn from(err: InternalError) -> Self {
+        Self::internal_boxed(err.0)
     }
 }
 

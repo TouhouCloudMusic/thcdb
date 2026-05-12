@@ -14,7 +14,7 @@ use crate::application::correction::{
     CorrectionSubmissionResult, NewCorrectionDto,
 };
 use crate::domain::image::CurrentImageMetadata;
-use crate::features::release_image::{self, ReleaseCoverArtInput};
+use crate::features::release_image::ReleaseCoverArtInput;
 use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Release";
@@ -93,7 +93,7 @@ async fn get_release_cover_art_metadata(
     CurrentUser(_user): CurrentUser,
     State(service): State<state::ReleaseImageService>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<CurrentImageMetadata>>, release_image::Error> {
+) -> Result<Data<Option<CurrentImageMetadata>>, AppError> {
     let metadata = service.get_cover_art_metadata(id).await?;
     Ok(Data::from(metadata))
 }
@@ -127,7 +127,7 @@ async fn upload_release_cover_art(
     State(service): State<state::ReleaseImageService>,
     Path(id): Path<i32>,
     TypedMultipart(form): TypedMultipart<ReleaseCoverArtFormData>,
-) -> Result<Data<i32>, release_image::Error> {
+) -> Result<Data<i32>, AppError> {
     let dto = ReleaseCoverArtInput {
         bytes: form.data.contents,
         user,

@@ -60,6 +60,19 @@ pub type MessageValidationError = ValidationError<MessageError>;
 #[display("Permission denied")]
 pub struct PermissionDenied;
 
+#[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
+#[display("{entity} #{id} not found")]
+pub struct EntityNotFound {
+    entity: &'static str,
+    id: i32,
+}
+
+impl EntityNotFound {
+    pub const fn new(entity: &'static str, id: i32) -> Self {
+        Self { entity, id }
+    }
+}
+
 #[derive(Debug, Clone, derive_more::Display, derive_more::Error)]
 #[display("{message}")]
 pub struct InvalidInput {

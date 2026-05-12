@@ -6,7 +6,6 @@ use entity::enums::ReleaseImageType;
 use entity::{image as image_entity, release_image, user as user_entity};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
-use super::error::{Error, ReleaseNotFound};
 use super::model::ReleaseCoverArtInput;
 use crate::constant::{
     RELEASE_COVER_IMAGE_MAX_HEIGHT, RELEASE_COVER_IMAGE_MAX_WIDTH,
@@ -25,6 +24,8 @@ use crate::features::release_image_queue::Repo as ReleaseImageQueueRepo;
 use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::storage::GenericFileStorage;
+use crate::shared::error::EntityNotFound;
+use crate::shared::http::api_response::AppError;
 
 static RELEASE_COVER_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
     ParseOption::builder()
@@ -56,7 +57,7 @@ impl Service {
     pub async fn upload_cover_art(
         &self,
         dto: ReleaseCoverArtInput,
-    ) -> Result<i32, Error> {
+    ) -> Result<i32, AppError> {
         let ReleaseCoverArtInput {
             bytes,
             user,
@@ -67,7 +68,7 @@ impl Service {
             .await
             .with_operation("check release exists for cover art upload")?
         {
-            Err(ReleaseNotFound::new(release_id))?;
+            return Err(EntityNotFound::new("release", release_id).into());
         }
 
         let tx_repo = self
@@ -100,7 +101,7 @@ impl Service {
 
         drop(image_service);
 
-        tx_repo.commit().await?;
+        tx_repo.commit().await.map_err(AppError::internal_boxed)?;
 
         Ok(image_queue_entry.id)
     }
@@ -108,7 +109,7 @@ impl Service {
     pub async fn get_cover_art_metadata(
         &self,
         release_id: i32,
-    ) -> Result<Option<CurrentImageMetadata>, Error> {
+    ) -> Result<Option<CurrentImageMetadata>, AppError> {
         let image = image_entity::Entity::find()
             .inner_join(release_image::Entity)
             .filter(release_image::Column::ReleaseId.eq(release_id))

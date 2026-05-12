@@ -14,7 +14,7 @@ use crate::application::correction::{
     CorrectionSubmissionResult, NewCorrectionDto,
 };
 use crate::domain::image::CurrentImageMetadata;
-use crate::features::artist_image::{self, ArtistProfileImageInput};
+use crate::features::artist_image::ArtistProfileImageInput;
 use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Artist";
@@ -95,7 +95,7 @@ async fn get_artist_profile_image_metadata(
     CurrentUser(_user): CurrentUser,
     State(service): State<state::ArtistImageService>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<CurrentImageMetadata>>, artist_image::Error> {
+) -> Result<Data<Option<CurrentImageMetadata>>, AppError> {
     let metadata = service.get_profile_image_metadata(id).await?;
     Ok(Data::from(metadata))
 }
@@ -129,7 +129,7 @@ async fn upload_artist_profile_image(
     State(service): State<state::ArtistImageService>,
     Path(id): Path<i32>,
     TypedMultipart(form): TypedMultipart<ArtistProfileImageFormData>,
-) -> Result<Data<i32>, artist_image::Error> {
+) -> Result<Data<i32>, AppError> {
     let data = form.data.contents;
     let dto = ArtistProfileImageInput {
         bytes: data,

@@ -6,7 +6,6 @@ use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{artist_image, image as image_entity, user as user_entity};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
-use super::error::{ArtistNotFound, Error};
 use super::model::ArtistProfileImageInput;
 use crate::constant::{
     ARTIST_PROFILE_IMAGE_MAX_FILE_SIZE, ARTIST_PROFILE_IMAGE_MAX_HEIGHT,
@@ -26,6 +25,8 @@ use crate::features::image_queue::Repo as ImageQueueRepo;
 use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::storage::GenericFileStorage;
+use crate::shared::error::EntityNotFound;
+use crate::shared::http::api_response::AppError;
 
 static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
     let opt = ParseOption::builder()
@@ -59,7 +60,7 @@ impl Service {
     pub async fn upload_profile_image(
         &self,
         dto: ArtistProfileImageInput,
-    ) -> Result<i32, Error> {
+    ) -> Result<i32, AppError> {
         let ArtistProfileImageInput {
             bytes,
             user,
@@ -70,7 +71,7 @@ impl Service {
             .await
             .with_operation("check artist exists for profile image upload")?
         {
-            Err(ArtistNotFound::new(artist_id))?;
+            return Err(EntityNotFound::new("artist", artist_id).into());
         }
 
         let tx_repo =
@@ -102,7 +103,7 @@ impl Service {
 
         drop(image_service);
 
-        tx_repo.commit().await?;
+        tx_repo.commit().await.map_err(AppError::internal_boxed)?;
 
         Ok(image_queue.id)
     }
@@ -110,7 +111,7 @@ impl Service {
     pub async fn get_profile_image_metadata(
         &self,
         artist_id: i32,
-    ) -> Result<Option<CurrentImageMetadata>, Error> {
+    ) -> Result<Option<CurrentImageMetadata>, AppError> {
         let image = image_entity::Entity::find()
             .inner_join(artist_image::Entity)
             .filter(artist_image::Column::ArtistId.eq(artist_id))

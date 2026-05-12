@@ -7,9 +7,7 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain::markdown::Markdown;
-use crate::features::user_image::{
-    Error as UserImageError, UploadAvatar, UploadProfileBanner,
-};
+use crate::features::user_image::{UploadAvatar, UploadProfileBanner};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::api_response::{self, AppError, Message};
 
@@ -41,7 +39,7 @@ async fn upload_avatar(
     CurrentUser(user): CurrentUser,
     State(service): State<state::UserImageService>,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
-) -> Result<impl IntoResponse, UserImageError> {
+) -> Result<impl IntoResponse, AppError> {
     service
         .upload_avatar(user, &form.data.contents)
         .await
@@ -66,7 +64,7 @@ async fn upload_profile_banner(
     CurrentUser(user): CurrentUser,
     State(service): State<state::UserImageService>,
     TypedMultipart(form): TypedMultipart<UploadProfileBanner>,
-) -> Result<impl IntoResponse, UserImageError> {
+) -> Result<impl IntoResponse, AppError> {
     service
         .upload_banner_image(user, &form.data.contents)
         .await

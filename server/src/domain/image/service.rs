@@ -8,7 +8,7 @@ use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 
 use crate::domain::image::{Image, NewImage};
 use crate::shared::error::InternalError;
-use crate::shared::types::BoxedError;
+use crate::shared::http::api_response::AppError;
 
 #[derive(Debug, derive_more::Display, derive_more::Error)]
 pub enum ImageInputError {
@@ -20,6 +20,8 @@ pub enum ImageInputError {
     Size(#[error(source)] InvalidSize),
     #[display("Invalid ratio: {_0}")]
     Ratio(#[error(source)] InvalidRatio),
+    #[display("Invalid image data: {_0}")]
+    Data(#[error(source)] ImageError),
 }
 
 impl From<InvalidFormat> for ImageInputError {
@@ -43,58 +45,6 @@ impl From<InvalidSize> for ImageInputError {
 impl From<InvalidRatio> for ImageInputError {
     fn from(source: InvalidRatio) -> Self {
         Self::Ratio(source)
-    }
-}
-
-#[derive(Debug, derive_more::Display, derive_more::Error)]
-pub enum ImageParseError {
-    #[display("{_0}")]
-    InvalidInput(#[error(source)] ImageInputError),
-    #[display("failed to read image input: {_0}")]
-    Read(#[error(source)] io::Error),
-    #[display("failed to decode image: {_0}")]
-    Decode(#[error(source)] ImageError),
-}
-
-impl From<ImageInputError> for ImageParseError {
-    fn from(source: ImageInputError) -> Self {
-        Self::InvalidInput(source)
-    }
-}
-
-impl From<InvalidFormat> for ImageParseError {
-    fn from(source: InvalidFormat) -> Self {
-        Self::InvalidInput(source.into())
-    }
-}
-
-impl From<InvalidFileSize> for ImageParseError {
-    fn from(source: InvalidFileSize) -> Self {
-        Self::InvalidInput(source.into())
-    }
-}
-
-impl From<InvalidSize> for ImageParseError {
-    fn from(source: InvalidSize) -> Self {
-        Self::InvalidInput(source.into())
-    }
-}
-
-impl From<InvalidRatio> for ImageParseError {
-    fn from(source: InvalidRatio) -> Self {
-        Self::InvalidInput(source.into())
-    }
-}
-
-impl From<io::Error> for ImageParseError {
-    fn from(source: io::Error) -> Self {
-        Self::Read(source)
-    }
-}
-
-impl From<ImageError> for ImageParseError {
-    fn from(source: ImageError) -> Self {
-        Self::Decode(source)
     }
 }
 
@@ -332,33 +282,42 @@ impl Parser {
             .ok_or(InvalidRatio::new(ratio, expected))
     }
 
-    pub fn parse(&self, bytes: &[u8]) -> Result<ParsedImage, ImageParseError> {
+    pub fn parse(&self, bytes: &[u8]) -> Result<ParsedImage, AppError> {
         self.validate_file_size(ByteSize(
             // We don't use 128-bit computers, so it is safe to unwrap here
             bytes.len().try_into().unwrap(),
-        ))?;
+        ))
+        .map_err(ImageInputError::from)?;
 
-        let reader =
-            ImageReader::new(io::Cursor::new(bytes)).with_guessed_format()?;
+        let reader = ImageReader::new(io::Cursor::new(bytes))
+            .with_guessed_format()
+            .map_err(InternalError::new)?;
 
-        let format = reader
-            .format()
-            .ok_or_else(|| InvalidFormat::unknown(self.option.valid_formats))?;
+        let format = reader.format().ok_or_else(|| {
+            ImageInputError::from(InvalidFormat::unknown(
+                self.option.valid_formats,
+            ))
+        })?;
 
-        self.validate_format(format)?;
+        self.validate_format(format)
+            .map_err(ImageInputError::from)?;
 
         let image = reader.decode()?;
         let (width, height) = image.dimensions();
 
-        self.validate_size(width, height)?;
+        self.validate_size(width, height)
+            .map_err(ImageInputError::from)?;
 
-        self.validate_ratio(f64::from(width) / f64::from(height))?;
+        self.validate_ratio(f64::from(width) / f64::from(height))
+            .map_err(ImageInputError::from)?;
 
         if let Some(convert_to) = self.option.convert_to
             && format != convert_to
         {
             let mut buffer = Vec::new();
-            image.write_to(&mut io::Cursor::new(&mut buffer), convert_to)?;
+            image
+                .write_to(&mut io::Cursor::new(&mut buffer), convert_to)
+                .map_err(InternalError::new)?;
             Ok(ParsedImage {
                 bytes: buffer,
                 extension: convert_to.extensions_str().first().unwrap(),
@@ -374,41 +333,34 @@ impl Parser {
 
 pub trait AsyncFileStorage: Send + Sync {
     type File;
-    type Error: Into<BoxedError>;
 
-    async fn create(&self, image: NewImage) -> Result<Self::File, Self::Error>;
+    async fn create(
+        &self,
+        image: NewImage,
+    ) -> Result<Self::File, InternalError>;
 
-    async fn remove(&self, image: Image) -> Result<(), Self::Error>;
+    async fn remove(&self, image: Image) -> Result<(), InternalError>;
 }
 
-#[derive(Debug, derive_more::Display, derive_more::Error)]
-pub enum Error {
-    #[display("{_0}")]
-    InvalidInput(#[error(source)] ImageInputError),
-    #[display("{_0}")]
-    Internal(#[error(source)] InternalError),
-}
-
-impl Error {
-    fn internal(source: impl Into<BoxedError>) -> Self {
-        Self::Internal(InternalError(source.into()))
+impl From<ImageInputError> for AppError {
+    #[track_caller]
+    fn from(err: ImageInputError) -> Self {
+        AppError::bad_request(err.to_string())
     }
 }
 
-impl From<ImageParseError> for Error {
-    fn from(source: ImageParseError) -> Self {
-        match source {
-            ImageParseError::InvalidInput(source) => Self::InvalidInput(source),
-            ImageParseError::Read(_) | ImageParseError::Decode(_) => {
-                Self::internal(source)
+impl From<ImageError> for AppError {
+    #[track_caller]
+    fn from(err: ImageError) -> Self {
+        match err {
+            ImageError::Decoding(_)
+            | ImageError::IoError(_)
+            | ImageError::Limits(_)
+            | ImageError::Unsupported(_) => ImageInputError::Data(err).into(),
+            ImageError::Encoding(_) | ImageError::Parameter(_) => {
+                InternalError::new(err).into()
             }
         }
-    }
-}
-
-impl From<BoxedError> for Error {
-    fn from(source: BoxedError) -> Self {
-        Self::Internal(InternalError(source))
     }
 }
 
@@ -429,18 +381,15 @@ where
     Repo: super::Repo + Sync,
     Storage: AsyncFileStorage,
 {
-    pub async fn find_by_id(&self, id: i32) -> Result<Option<Image>, Error> {
-        self.repo.find_by_id(id).await.map_err(Error::internal)
+    pub async fn find_by_id(&self, id: i32) -> Result<Option<Image>, AppError> {
+        Ok(self.repo.find_by_id(id).await?)
     }
 
     pub async fn find_by_filename(
         &self,
         filename: &str,
-    ) -> Result<Option<Image>, Error> {
-        self.repo
-            .find_by_filename(filename)
-            .await
-            .map_err(Error::internal)
+    ) -> Result<Option<Image>, AppError> {
+        Ok(self.repo.find_by_filename(filename).await?)
     }
 }
 
@@ -458,7 +407,7 @@ where
         bytes: &[u8],
         parser: &Parser,
         meta: CreateImageMeta,
-    ) -> Result<Image, Error> {
+    ) -> Result<Image, AppError> {
         let tx = &self.repo;
         let parsed = parser.parse(bytes)?;
 
@@ -467,28 +416,23 @@ where
             NewImage::from_parsed(parsed, meta.uploaded_by, StorageBackend::Fs);
 
         // We use xxhash128, so if the hash is the same, it is the same image.
-        let image = if let Some(image) = tx
-            .find_by_filename(&new_image.filename())
-            .await
-            .map_err(Error::internal)?
+        let image = if let Some(image) =
+            tx.find_by_filename(&new_image.filename()).await?
         {
             image
         } else {
-            let image = tx.create(&new_image).await.map_err(Error::internal)?;
-            self.storage
-                .create(new_image)
-                .await
-                .map_err(Error::internal)?;
+            let image = tx.create(&new_image).await?;
+            self.storage.create(new_image).await?;
             image
         };
 
         Ok(image)
     }
 
-    async fn delete(&self, image: Image) -> Result<(), Error> {
-        self.repo.delete(image.id).await.map_err(Error::internal)?;
+    async fn delete(&self, image: Image) -> Result<(), AppError> {
+        self.repo.delete(image.id).await?;
 
-        self.storage.remove(image).await.map_err(Error::internal)?;
+        self.storage.remove(image).await?;
 
         Ok(())
     }

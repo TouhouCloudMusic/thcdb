@@ -1,9 +1,10 @@
-use super::error::Error;
 use crate::domain::image;
 use crate::domain::image::{CreateImageMeta, Parser};
 use crate::domain::user::{self, User};
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::infra::storage::GenericFileStorage;
+use crate::shared::http::api_response::AppError;
 
 mod parser {
     use std::sync::LazyLock;
@@ -67,9 +68,12 @@ impl Service {
         &self,
         user: User,
         buffer: &[u8],
-    ) -> Result<(), Error> {
+    ) -> Result<(), AppError> {
         update_user_image(
-            self.repo.begin_tx().await?,
+            self.repo
+                .begin_tx()
+                .await
+                .with_operation("begin avatar upload transaction")?,
             self.storage.clone(),
             user,
             buffer,
@@ -84,9 +88,12 @@ impl Service {
         &self,
         user: User,
         buffer: &[u8],
-    ) -> Result<User, Error> {
+    ) -> Result<User, AppError> {
         update_user_image(
-            self.repo.begin_tx().await?,
+            self.repo
+                .begin_tx()
+                .await
+                .with_operation("begin profile banner upload transaction")?,
             self.storage.clone(),
             user,
             buffer,
@@ -104,7 +111,7 @@ async fn update_user_image<F>(
     buffer: &[u8],
     parser: &'static Parser,
     get_field_fn: F,
-) -> Result<User, Error>
+) -> Result<User, AppError>
 where
     F: FnOnce(&mut User) -> &mut Option<i32>,
 {
@@ -132,8 +139,10 @@ where
 
     drop(image_service);
 
-    let user = user::TxRepo::update(&tx, user).await?;
-    tx.commit().await?;
+    let user = user::TxRepo::update(&tx, user)
+        .await
+        .map_err(AppError::internal_boxed)?;
+    tx.commit().await.map_err(AppError::internal_boxed)?;
 
     Ok(user)
 }

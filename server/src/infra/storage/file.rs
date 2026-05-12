@@ -7,6 +7,7 @@ use entity::enums::StorageBackend;
 use super::FsStorage;
 use crate::domain::image::{AsyncFileStorage, Image, NewImage};
 use crate::infra::worker::{RemoveFileJob, RemoveFileQueue};
+use crate::shared::error::InternalError;
 use crate::utils::retry_async;
 
 pub const REMOVE_FILE_STREAM_KEY: &str = "storage:remove-file";
@@ -38,17 +39,23 @@ impl GenericFileStorage {
 
 impl AsyncFileStorage for GenericFileStorage {
     type File = tokio::fs::File;
-    type Error = std::io::Error;
 
-    async fn create(&self, image: NewImage) -> Result<Self::File, Self::Error> {
+    async fn create(
+        &self,
+        image: NewImage,
+    ) -> Result<Self::File, InternalError> {
         let full_path = image.full_path();
         let data = image.bytes;
         match image.backend {
-            StorageBackend::Fs => self.fs.create(full_path, &data).await,
+            StorageBackend::Fs => self
+                .fs
+                .create(full_path, &data)
+                .await
+                .map_err(InternalError::new),
         }
     }
 
-    async fn remove(&self, image: Image) -> Result<(), Self::Error> {
+    async fn remove(&self, image: Image) -> Result<(), InternalError> {
         match image.backend {
             StorageBackend::Fs => {
                 match self.fs.remove(image.full_path()).await {
@@ -68,7 +75,7 @@ impl AsyncFileStorage for GenericFileStorage {
                             )
                             .await
                         });
-                        Err(e)
+                        Err(InternalError::new(e))
                     }
                 }
             }
