@@ -4,8 +4,8 @@ use sea_orm::DbErr;
 
 use crate::domain::auth::ValidateCredsError;
 use crate::features::auth::InvalidEmail;
-use crate::infra;
 use crate::infra::database::error::DatabaseError;
+use crate::shared::error::InternalError;
 use crate::shared::http::api_response::AppError;
 use crate::shared::types::BoxedError;
 
@@ -17,23 +17,17 @@ pub enum ForgotPasswordError {
         source: InvalidEmail,
     },
     #[display("{source}")]
-    Database {
+    Internal {
         #[error(source)]
-        source: DatabaseError,
-    },
-    #[display("{source}")]
-    Infra {
-        #[error(source)]
-        source: infra::Error,
+        source: InternalError,
     },
 }
 
 impl From<DbErr> for ForgotPasswordError {
     fn from(err: DbErr) -> Self {
-        Self::Database {
-            source: DatabaseError::new(err)
-                .with_operation("forgot password database operation"),
-        }
+        DatabaseError::new(err)
+            .with_operation("forgot password database operation")
+            .into()
     }
 }
 
@@ -45,21 +39,19 @@ impl From<InvalidEmail> for ForgotPasswordError {
 
 impl From<DatabaseError> for ForgotPasswordError {
     fn from(source: DatabaseError) -> Self {
-        Self::Database { source }
+        InternalError::new(source).into()
     }
 }
 
-impl From<infra::Error> for ForgotPasswordError {
-    fn from(source: infra::Error) -> Self {
-        Self::Infra { source }
+impl From<InternalError> for ForgotPasswordError {
+    fn from(source: InternalError) -> Self {
+        Self::Internal { source }
     }
 }
 
 impl From<BoxedError> for ForgotPasswordError {
     fn from(source: BoxedError) -> Self {
-        Self::Infra {
-            source: source.into(),
-        }
+        InternalError(source).into()
     }
 }
 
@@ -77,8 +69,9 @@ impl From<ForgotPasswordError> for AppError {
             ForgotPasswordError::InvalidEmail { .. } => {
                 Self::bad_request(message)
             }
-            ForgotPasswordError::Database { source } => source.into(),
-            ForgotPasswordError::Infra { source } => source.into(),
+            ForgotPasswordError::Internal { source } => {
+                Self::internal_boxed(source.0)
+            }
         }
     }
 }
@@ -93,23 +86,17 @@ pub enum VerifyResetCodeError {
     #[display("Invalid or expired reset code")]
     InvalidOrExpiredResetCode,
     #[display("{source}")]
-    Database {
+    Internal {
         #[error(source)]
-        source: DatabaseError,
-    },
-    #[display("{source}")]
-    Infra {
-        #[error(source)]
-        source: infra::Error,
+        source: InternalError,
     },
 }
 
 impl From<DbErr> for VerifyResetCodeError {
     fn from(err: DbErr) -> Self {
-        Self::Database {
-            source: DatabaseError::new(err)
-                .with_operation("verify reset code database operation"),
-        }
+        DatabaseError::new(err)
+            .with_operation("verify reset code database operation")
+            .into()
     }
 }
 
@@ -121,21 +108,19 @@ impl From<InvalidEmail> for VerifyResetCodeError {
 
 impl From<DatabaseError> for VerifyResetCodeError {
     fn from(source: DatabaseError) -> Self {
-        Self::Database { source }
+        InternalError::new(source).into()
     }
 }
 
-impl From<infra::Error> for VerifyResetCodeError {
-    fn from(source: infra::Error) -> Self {
-        Self::Infra { source }
+impl From<InternalError> for VerifyResetCodeError {
+    fn from(source: InternalError) -> Self {
+        Self::Internal { source }
     }
 }
 
 impl From<BoxedError> for VerifyResetCodeError {
     fn from(source: BoxedError) -> Self {
-        Self::Infra {
-            source: source.into(),
-        }
+        InternalError(source).into()
     }
 }
 
@@ -154,8 +139,9 @@ impl From<VerifyResetCodeError> for AppError {
             | VerifyResetCodeError::InvalidOrExpiredResetCode => {
                 Self::bad_request(message)
             }
-            VerifyResetCodeError::Database { source } => source.into(),
-            VerifyResetCodeError::Infra { source } => source.into(),
+            VerifyResetCodeError::Internal { source } => {
+                Self::internal_boxed(source.0)
+            }
         }
     }
 }
@@ -165,14 +151,9 @@ pub enum ResetPasswordError {
     #[display("Invalid or expired reset key")]
     InvalidOrExpiredResetKey,
     #[display("{source}")]
-    Database {
+    Internal {
         #[error(source)]
-        source: DatabaseError,
-    },
-    #[display("{source}")]
-    Infra {
-        #[error(source)]
-        source: infra::Error,
+        source: InternalError,
     },
     #[display("{source}")]
     Validate {
@@ -183,16 +164,15 @@ pub enum ResetPasswordError {
 
 impl From<DbErr> for ResetPasswordError {
     fn from(err: DbErr) -> Self {
-        Self::Database {
-            source: DatabaseError::new(err)
-                .with_operation("reset password database operation"),
-        }
+        DatabaseError::new(err)
+            .with_operation("reset password database operation")
+            .into()
     }
 }
 
 impl From<DatabaseError> for ResetPasswordError {
     fn from(source: DatabaseError) -> Self {
-        Self::Database { source }
+        InternalError::new(source).into()
     }
 }
 
@@ -202,17 +182,15 @@ impl From<ValidateCredsError> for ResetPasswordError {
     }
 }
 
-impl From<infra::Error> for ResetPasswordError {
-    fn from(source: infra::Error) -> Self {
-        Self::Infra { source }
+impl From<InternalError> for ResetPasswordError {
+    fn from(source: InternalError) -> Self {
+        Self::Internal { source }
     }
 }
 
 impl From<BoxedError> for ResetPasswordError {
     fn from(source: BoxedError) -> Self {
-        Self::Infra {
-            source: source.into(),
-        }
+        InternalError(source).into()
     }
 }
 
@@ -230,8 +208,9 @@ impl From<ResetPasswordError> for AppError {
             ResetPasswordError::InvalidOrExpiredResetKey => {
                 Self::bad_request(message)
             }
-            ResetPasswordError::Database { source } => source.into(),
-            ResetPasswordError::Infra { source } => source.into(),
+            ResetPasswordError::Internal { source } => {
+                Self::internal_boxed(source.0)
+            }
             ResetPasswordError::Validate { source } => {
                 Self::bad_request(source.to_string())
             }
@@ -245,6 +224,7 @@ mod tests {
     use axum::http::StatusCode;
 
     use super::*;
+    use crate::shared::error::MessageError;
 
     async fn response_body_string(
         response: axum::response::Response,
@@ -255,8 +235,10 @@ mod tests {
 
     #[tokio::test]
     async fn forgot_password_internal_error_is_opaque_to_clients() {
-        let response = ForgotPasswordError::Infra {
-            source: infra::Error::custom(&"forgot-password secret"),
+        let response = ForgotPasswordError::Internal {
+            source: InternalError::new(MessageError::new(
+                "forgot-password secret",
+            )),
         }
         .into_response();
 
@@ -269,8 +251,10 @@ mod tests {
 
     #[tokio::test]
     async fn verify_reset_code_internal_error_is_opaque_to_clients() {
-        let response = VerifyResetCodeError::Infra {
-            source: infra::Error::custom(&"verify-reset-code secret"),
+        let response = VerifyResetCodeError::Internal {
+            source: InternalError::new(MessageError::new(
+                "verify-reset-code secret",
+            )),
         }
         .into_response();
 
@@ -283,8 +267,10 @@ mod tests {
 
     #[tokio::test]
     async fn reset_password_internal_error_is_opaque_to_clients() {
-        let response = ResetPasswordError::Infra {
-            source: infra::Error::custom(&"reset-password secret"),
+        let response = ResetPasswordError::Internal {
+            source: InternalError::new(MessageError::new(
+                "reset-password secret",
+            )),
         }
         .into_response();
 

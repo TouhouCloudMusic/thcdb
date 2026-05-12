@@ -20,8 +20,7 @@ use crate::domain::auth::validate_password;
 use crate::domain::model::VerificationCode;
 use crate::domain::user::User;
 use crate::features::auth::{Email, InvalidEmail, Service, repo};
-use crate::infra::error::Error;
-use crate::shared::error::InvalidInput;
+use crate::shared::error::{InternalError, InvalidInput, MessageError};
 use crate::shared::secret;
 
 const PASSWORD_RESET_CODE_MAX_FAILED_ATTEMPTS: i32 = 10;
@@ -202,14 +201,14 @@ pub(super) struct ResetPasswordCommand {
 }
 
 impl ConsumedPasswordResetKey {
-    fn parse_payload(
-        payload: &str,
-    ) -> Result<Option<Self>, Box<dyn std::error::Error + Send + Sync>> {
+    fn parse_payload(payload: &str) -> Result<Option<Self>, InternalError> {
         if payload.is_empty() {
             return Ok(None);
         }
 
-        serde_json::from_str(payload).map(Some).map_err(Into::into)
+        serde_json::from_str(payload)
+            .map(Some)
+            .map_err(InternalError::new)
     }
 }
 
@@ -220,9 +219,10 @@ struct StoredPasswordResetState {
 }
 
 impl StoredPasswordResetState {
-    fn from_state(state: PasswordResetState) -> Result<Self, Error> {
+    fn from_state(state: PasswordResetState) -> Result<Self, InternalError> {
         Ok(Self {
-            payload: serde_json::to_string(&state).map_err(Error::internal)?,
+            payload: serde_json::to_string(&state)
+                .map_err(InternalError::new)?,
             state,
         })
     }
@@ -351,8 +351,7 @@ impl Service {
                 code_hash,
                 submitted_code.as_ascii_bytes().to_vec(),
             )
-            .await
-            .map_err(Error::from)?;
+            .await?;
             if !is_valid {
                 let incremented = self
                     .increment_password_reset_failed_attempts_if_unmodified(
@@ -472,7 +471,7 @@ impl Service {
     async fn enqueue_password_reset_email(
         &self,
         job: PasswordResetEmailJob,
-    ) -> Result<(), Error> {
+    ) -> Result<(), InternalError> {
         let user_id = job.user_id;
         let mut queue = self.password_reset_email_queue.clone();
         queue.push(job).await.map_err(|err| {
@@ -482,7 +481,7 @@ impl Service {
                 error:? = err;
                 "failed to enqueue password reset email job"
             );
-            Error::internal(err)
+            InternalError::new(err)
         })?;
 
         Ok(())
@@ -500,7 +499,7 @@ impl Service {
     async fn load_password_reset_state(
         &self,
         user_id: i32,
-    ) -> Result<Option<PasswordResetState>, Error> {
+    ) -> Result<Option<PasswordResetState>, InternalError> {
         self.load_stored_password_reset_state(user_id)
             .await
             .map(|state| state.map(|state| state.state))
@@ -509,12 +508,12 @@ impl Service {
     async fn load_stored_password_reset_state(
         &self,
         user_id: i32,
-    ) -> Result<Option<StoredPasswordResetState>, Error> {
+    ) -> Result<Option<StoredPasswordResetState>, InternalError> {
         let payload = self
             .redis_pool
             .get::<Option<String>, _>(password_reset_state_key(user_id))
             .await
-            .map_err(Error::internal)?;
+            .map_err(InternalError::new)?;
 
         payload
             .map(|payload| {
@@ -528,7 +527,7 @@ impl Service {
                             error:? = err;
                             "failed to deserialize password reset state"
                         );
-                        Error::internal(err)
+                        InternalError::new(err)
                     })
             })
             .transpose()
@@ -537,7 +536,7 @@ impl Service {
     async fn consume_password_reset_key(
         &self,
         reset_key_hash: &str,
-    ) -> Result<Option<ConsumedPasswordResetKey>, Error> {
+    ) -> Result<Option<ConsumedPasswordResetKey>, InternalError> {
         let payload: String = self
             .redis_pool
             .eval(
@@ -552,7 +551,7 @@ impl Service {
                     error:? = err;
                     "failed to atomically consume password reset key"
                 );
-                Error::internal(err)
+                InternalError::new(err)
             })?;
 
         ConsumedPasswordResetKey::parse_payload(&payload).map_err(|err| {
@@ -562,7 +561,7 @@ impl Service {
                 error:? = err;
                 "failed to parse consumed password reset key payload"
             );
-            Error::Internal { source: err }
+            err
         })
     }
 
@@ -570,7 +569,7 @@ impl Service {
         &self,
         consumed: ConsumedPasswordResetKey,
         reset_key_hash: &str,
-    ) -> Result<(), Error> {
+    ) -> Result<(), InternalError> {
         let now: DateTime<FixedOffset> = Utc::now().into();
         if consumed.reset_key_expires_at <= now {
             return Ok(());
@@ -604,7 +603,7 @@ impl Service {
         user_id: i32,
         current_state: &StoredPasswordResetState,
         previous_state: Option<&StoredPasswordResetState>,
-    ) -> Result<bool, Error> {
+    ) -> Result<bool, InternalError> {
         match previous_state {
             Some(previous_state) => {
                 self.save_password_reset_state_if_unmodified(
@@ -628,7 +627,7 @@ impl Service {
         &self,
         user_id: i32,
         expected_state: &StoredPasswordResetState,
-    ) -> Result<bool, Error> {
+    ) -> Result<bool, InternalError> {
         let saved: i64 = self
             .redis_pool
             .eval(
@@ -644,7 +643,7 @@ impl Service {
                     error:? = err;
                     "failed to atomically increment password reset failed attempts"
                 );
-                Error::internal(err)
+                InternalError::new(err)
             })?;
 
         Ok(saved == 1)
@@ -654,7 +653,7 @@ impl Service {
         &self,
         user_id: i32,
         state: &PasswordResetState,
-    ) -> Result<(), Error> {
+    ) -> Result<(), InternalError> {
         let previous_state =
             self.load_stored_password_reset_state(user_id).await?;
         let saved = self
@@ -665,9 +664,9 @@ impl Service {
             )
             .await?;
         if !saved {
-            return Err(Error::custom(
-                &"Password reset state changed while saving",
-            ));
+            return Err(InternalError::new(MessageError::new(
+                "Password reset state changed while saving",
+            )));
         }
 
         Ok(())
@@ -678,13 +677,13 @@ impl Service {
         user_id: i32,
         previous_state: Option<&StoredPasswordResetState>,
         next_state: &PasswordResetState,
-    ) -> Result<bool, Error> {
+    ) -> Result<bool, InternalError> {
         let Some(ttl_seconds) = next_state.ttl_seconds(Utc::now().into())
         else {
             return Ok(false);
         };
         let payload =
-            serde_json::to_string(next_state).map_err(Error::internal)?;
+            serde_json::to_string(next_state).map_err(InternalError::new)?;
         let current_index_key = next_state.index_key().unwrap_or_default();
         let previous_index_key = previous_state
             .and_then(|state| state.state.index_key())
@@ -716,7 +715,7 @@ impl Service {
                     error:? = err;
                     "failed to compare-and-swap password reset state"
                 );
-                Error::internal(err)
+                InternalError::new(err)
             })?;
 
         Ok(saved == 1)
@@ -726,7 +725,7 @@ impl Service {
         &self,
         user_id: i32,
         expected_state: &StoredPasswordResetState,
-    ) -> Result<bool, Error> {
+    ) -> Result<bool, InternalError> {
         let index_key = expected_state.state.index_key().unwrap_or_default();
         let cleared: i64 = self
             .redis_pool
@@ -743,7 +742,7 @@ impl Service {
                     error:? = err;
                     "failed to compare-and-clear password reset state"
                 );
-                Error::internal(err)
+                InternalError::new(err)
             })?;
 
         Ok(cleared == 1)

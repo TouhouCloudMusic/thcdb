@@ -65,7 +65,7 @@ impl From<Error> for AppError {
                     AppError::bad_request(source.to_string())
                 }
                 image::Error::Internal(source) => {
-                    AppError::internal_boxed(source)
+                    AppError::internal_boxed(source.0)
                 }
             },
         }

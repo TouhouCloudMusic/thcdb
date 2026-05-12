@@ -19,8 +19,7 @@ use crate::features::auth::{
     Email, InvalidEmail, ResendVerificationEmailError, Service, SignUpError,
     VerifyEmailError, repo,
 };
-use crate::infra::error::Error;
-use crate::shared::error::InvalidInput;
+use crate::shared::error::{InternalError, InvalidInput, MessageError};
 use crate::shared::secret::hash;
 
 const VERIFICATION_CODE_MAX_FAILED_ATTEMPTS: i32 = 10;
@@ -129,7 +128,9 @@ impl Service {
         )
         .await
         .map_err(|err| {
-            Error::custom(&format!("Failed to verify email code: {err}"))
+            InternalError::new(MessageError::new(format!(
+                "Failed to verify email code: {err}"
+            )))
         })?;
         if !ok {
             repo::increment_email_verification_failed_attempts(
@@ -223,10 +224,10 @@ impl Service {
             .await?
             .ok_or_else(|| {
                 // unlikely
-                Error::custom(&format!(
+                InternalError::new(MessageError::new(format!(
                     "User {} not found after update",
                     existing.id
-                ))
+                )))
             })?;
 
         self.create_and_send_email_verification(&user).await?;
@@ -284,7 +285,9 @@ impl Service {
 
         let code = VerificationCode::<6>::new().to_string();
         let code_hash = hash(&code).await.map_err(|err| {
-            Error::custom(&format!("Failed to hash verification code: {err}"))
+            InternalError::new(MessageError::new(format!(
+                "Failed to hash verification code: {err}"
+            )))
         })?;
 
         repo::set_email_verification(

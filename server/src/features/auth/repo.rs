@@ -26,7 +26,6 @@ pub(crate) async fn find_by_id(
     }
 }
 
-// TODO: Use infra::Error
 pub(crate) async fn find_by_name(
     conn: &impl ConnectionTrait,
     name: &str,

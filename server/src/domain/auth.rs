@@ -12,6 +12,7 @@ use crate::constant::{
     USER_NAME_REGEX_STR, USER_PASSWORD_MAX_LENGTH, USER_PASSWORD_MIN_LENGTH,
     USER_PASSWORD_REGEX_STR,
 };
+use crate::shared::error::InternalError;
 use crate::shared::secret;
 
 pub const VERIFICATION_CODE_EXPIRES_MINUTES: i64 = 10;
@@ -23,30 +24,36 @@ pub enum AuthnError {
     #[display("Incorrect username or password")]
     AuthenticationFailed,
     #[display("{_0}")]
-    Infra(#[error(source)] crate::infra::Error),
+    Internal(#[error(source)] InternalError),
 }
 
 impl AuthnError {
     pub const fn authentication_failed() -> Self {
         Self::AuthenticationFailed
     }
+
+    fn internal(
+        source: impl std::error::Error + Send + Sync + 'static,
+    ) -> Self {
+        Self::Internal(InternalError::new(source))
+    }
 }
 
 impl From<password_hash::Error> for AuthnError {
     fn from(source: password_hash::Error) -> Self {
-        Self::Infra(source.into())
+        Self::internal(source)
     }
 }
 
 impl From<tokio::task::JoinError> for AuthnError {
     fn from(source: tokio::task::JoinError) -> Self {
-        Self::Infra(source.into())
+        Self::internal(source)
     }
 }
 
-impl From<crate::infra::Error> for AuthnError {
-    fn from(source: crate::infra::Error) -> Self {
-        Self::Infra(source)
+impl From<InternalError> for AuthnError {
+    fn from(source: InternalError) -> Self {
+        Self::Internal(source)
     }
 }
 
@@ -190,14 +197,11 @@ impl AuthCredential {
 
     pub async fn password_hash(
         &mut self,
-    ) -> Result<HashedPassword<'_>, crate::infra::Error> {
+    ) -> Result<HashedPassword<'_>, InternalError> {
         if self.hash.is_none() {
-            self.hash =
-                Some(secret::hash(&self.password).await.map_err(|err| {
-                    crate::infra::Error::custom(&format!(
-                        "Failed to hash password: {err}"
-                    ))
-                })?);
+            self.hash = Some(
+                secret::hash(&self.password).await.map_err(InternalError)?,
+            );
         }
 
         let hash = self.hash.as_deref().expect("hash set above; qed");
@@ -211,11 +215,9 @@ impl AuthCredential {
     ) -> Result<(), AuthnError> {
         let password_hash = match hash {
             Some(hash) => hash.to_owned(),
-            None => secret::hash("dummy_password").await.map_err(|err| {
-                crate::infra::Error::custom(&format!(
-                    "Failed to hash dummy password: {err}"
-                ))
-            })?,
+            None => secret::hash("dummy_password")
+                .await
+                .map_err(InternalError)?,
         };
 
         verify_password(password_hash, &self.password).await

@@ -2,9 +2,8 @@ use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError};
 
 use crate::domain::auth::{AuthnError, ValidateCredsError};
-use crate::infra;
 use crate::infra::database::error::DatabaseError;
-use crate::infra::error::Error;
+use crate::shared::error::InternalError;
 use crate::shared::http::api_response::AppError;
 use crate::shared::types::BoxedError;
 
@@ -20,14 +19,9 @@ pub enum SignInError {
         source: AuthnError,
     },
     #[display("{source}")]
-    Database {
+    Internal {
         #[error(source)]
-        source: DatabaseError,
-    },
-    #[display("{source}")]
-    Infra {
-        #[error(source)]
-        source: infra::Error,
+        source: InternalError,
     },
     #[display("{source}")]
     Validate {
@@ -53,8 +47,7 @@ impl From<SignInError> for AppError {
                 Self::bad_request("Email not verified")
             }
             SignInError::Authn { source } => app_error_from_authn_error(source),
-            SignInError::Database { source } => source.into(),
-            SignInError::Infra { source } => source.into(),
+            SignInError::Internal { source } => Self::internal_boxed(source.0),
             SignInError::Validate { source } => {
                 Self::bad_request(source.to_string())
             }
@@ -62,16 +55,10 @@ impl From<SignInError> for AppError {
     }
 }
 
-impl From<infra::Error> for SignInError {
-    fn from(source: infra::Error) -> Self {
-        Self::Infra { source }
-    }
-}
-
 impl From<BoxedError> for SignInError {
     fn from(source: BoxedError) -> Self {
-        Self::Infra {
-            source: source.into(),
+        Self::Internal {
+            source: InternalError(source),
         }
     }
 }
@@ -84,7 +71,9 @@ impl From<AuthnError> for SignInError {
 
 impl From<DatabaseError> for SignInError {
     fn from(source: DatabaseError) -> Self {
-        Self::Database { source }
+        Self::Internal {
+            source: InternalError::new(source),
+        }
     }
 }
 
@@ -158,14 +147,9 @@ pub enum AuthnBackendError {
         source: SignInError,
     },
     #[display("{source}")]
-    Database {
-        #[error(source)]
-        source: DatabaseError,
-    },
-    #[display("{source}")]
     Internal {
         #[error(source)]
-        source: Error,
+        source: InternalError,
     },
 }
 
@@ -183,8 +167,9 @@ impl From<AuthnBackendError> for AppError {
                 app_error_from_authn_error(source)
             }
             AuthnBackendError::SignIn { source } => source.into(),
-            AuthnBackendError::Database { source } => source.into(),
-            AuthnBackendError::Internal { source } => source.into(),
+            AuthnBackendError::Internal { source } => {
+                AppError::internal_boxed(source.0)
+            }
         }
     }
 }
@@ -203,21 +188,26 @@ impl From<SignInError> for AuthnBackendError {
 
 impl From<DatabaseError> for AuthnBackendError {
     fn from(source: DatabaseError) -> Self {
-        Self::Database { source }
+        Self::Internal {
+            source: InternalError::new(source),
+        }
     }
 }
 
-impl From<Error> for AuthnBackendError {
-    fn from(source: Error) -> Self {
-        Self::Internal { source }
+impl From<BoxedError> for AuthnBackendError {
+    fn from(source: BoxedError) -> Self {
+        Self::Internal {
+            source: InternalError(source),
+        }
     }
 }
 
 fn app_error_from_authn_error(err: AuthnError) -> AppError {
-    let message = err.to_string();
     match err {
-        AuthnError::AuthenticationFailed => AppError::unauthorized(message),
-        AuthnError::Infra(source) => source.into(),
+        AuthnError::AuthenticationFailed => {
+            AppError::unauthorized(err.to_string())
+        }
+        AuthnError::Internal(source) => AppError::internal_boxed(source.0),
     }
 }
 
@@ -233,12 +223,11 @@ impl crate::adapter::inbound::rest::AuthRejection for AuthnBackendError {
                 SignInError::Authn { source } => {
                     matches!(source, AuthnError::AuthenticationFailed)
                 }
-                SignInError::AlreadySignedIn
-                | SignInError::Database { .. }
-                | SignInError::Infra { .. } => false,
+                SignInError::AlreadySignedIn | SignInError::Internal { .. } => {
+                    false
+                }
             },
-            AuthnBackendError::Database { .. }
-            | AuthnBackendError::Internal { .. } => false,
+            AuthnBackendError::Internal { .. } => false,
         }
     }
 }

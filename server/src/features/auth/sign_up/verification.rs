@@ -10,46 +10,52 @@ use crate::features::auth::{
     InvalidEmail, ResendVerificationEmailError, SignUpError,
 };
 use crate::infra::database::error::DatabaseError;
-use crate::infra::error::Error;
+use crate::shared::error::InternalError;
+use crate::shared::types::BoxedError;
 
 #[derive(Debug)]
 pub(super) enum SendVerificationEmailError {
-    Database(DatabaseError),
-    Infra(Error),
+    Internal(InternalError),
     Unavailable,
     InvalidEmail(InvalidEmail),
 }
 
 impl From<DbErr> for SendVerificationEmailError {
     fn from(value: DbErr) -> Self {
-        Self::Database(
-            DatabaseError::new(value)
-                .with_operation("send verification email database operation"),
-        )
+        DatabaseError::new(value)
+            .with_operation("send verification email database operation")
+            .into()
     }
 }
 
-impl From<Error> for SendVerificationEmailError {
-    fn from(value: Error) -> Self {
-        Self::Infra(value)
+impl From<DatabaseError> for SendVerificationEmailError {
+    fn from(value: DatabaseError) -> Self {
+        Self::Internal(InternalError::new(value))
+    }
+}
+
+impl From<InternalError> for SendVerificationEmailError {
+    fn from(value: InternalError) -> Self {
+        Self::Internal(value)
+    }
+}
+
+impl From<BoxedError> for SendVerificationEmailError {
+    fn from(value: BoxedError) -> Self {
+        Self::Internal(InternalError(value))
     }
 }
 
 impl From<SendVerificationEmailError> for SignUpError {
     fn from(value: SendVerificationEmailError) -> Self {
         match value {
-            SendVerificationEmailError::Database(source) => {
-                SignUpError::Database { source }
-            }
             SendVerificationEmailError::Unavailable => {
                 SignUpError::EmailServiceUnavailable
             }
             SendVerificationEmailError::InvalidEmail(source) => {
                 SignUpError::InvalidEmail { source }
             }
-            SendVerificationEmailError::Infra(source) => {
-                SignUpError::Infra { source }
-            }
+            SendVerificationEmailError::Internal(source) => source.into(),
         }
     }
 }
@@ -57,18 +63,13 @@ impl From<SendVerificationEmailError> for SignUpError {
 impl From<SendVerificationEmailError> for ResendVerificationEmailError {
     fn from(value: SendVerificationEmailError) -> Self {
         match value {
-            SendVerificationEmailError::Database(source) => {
-                ResendVerificationEmailError::Database { source }
-            }
             SendVerificationEmailError::Unavailable => {
                 ResendVerificationEmailError::ResendEmailServiceUnavailable
             }
             SendVerificationEmailError::InvalidEmail(source) => {
                 ResendVerificationEmailError::InvalidEmail { source }
             }
-            SendVerificationEmailError::Infra(source) => {
-                ResendVerificationEmailError::Infra { source }
-            }
+            SendVerificationEmailError::Internal(source) => source.into(),
         }
     }
 }

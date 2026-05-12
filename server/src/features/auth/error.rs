@@ -3,8 +3,8 @@ use derive_more::{Display, Error as DeriveError};
 use sea_orm::DbErr;
 
 use crate::domain::auth::ValidateCredsError;
-use crate::infra;
 use crate::infra::database::error::DatabaseError;
+use crate::shared::error::InternalError;
 use crate::shared::http::api_response::{AppError, AppErrorKind};
 use crate::shared::types::BoxedError;
 
@@ -39,14 +39,9 @@ pub enum SignUpError {
     #[display("Email service unavailable")]
     EmailServiceUnavailable,
     #[display("{source}")]
-    Database {
+    Internal {
         #[error(source)]
-        source: DatabaseError,
-    },
-    #[display("{source}")]
-    Infra {
-        #[error(source)]
-        source: infra::Error,
+        source: InternalError,
     },
     #[display("{source}")]
     Validate {
@@ -57,10 +52,9 @@ pub enum SignUpError {
 
 impl From<DbErr> for SignUpError {
     fn from(err: DbErr) -> Self {
-        Self::Database {
-            source: DatabaseError::new(err)
-                .with_operation("auth sign-up database operation"),
-        }
+        DatabaseError::new(err)
+            .with_operation("auth sign-up database operation")
+            .into()
     }
 }
 
@@ -72,7 +66,7 @@ impl From<InvalidEmail> for SignUpError {
 
 impl From<DatabaseError> for SignUpError {
     fn from(source: DatabaseError) -> Self {
-        Self::Database { source }
+        InternalError::new(source).into()
     }
 }
 
@@ -82,17 +76,15 @@ impl From<ValidateCredsError> for SignUpError {
     }
 }
 
-impl From<infra::Error> for SignUpError {
-    fn from(source: infra::Error) -> Self {
-        Self::Infra { source }
+impl From<InternalError> for SignUpError {
+    fn from(source: InternalError) -> Self {
+        Self::Internal { source }
     }
 }
 
 impl From<BoxedError> for SignUpError {
     fn from(source: BoxedError) -> Self {
-        Self::Infra {
-            source: source.into(),
-        }
+        InternalError(source).into()
     }
 }
 
@@ -115,8 +107,7 @@ impl From<SignUpError> for AppError {
             SignUpError::EmailServiceUnavailable => {
                 Self::new(AppErrorKind::ServiceUnavailable, err.to_string())
             }
-            SignUpError::Database { source } => source.into(),
-            SignUpError::Infra { source } => source.into(),
+            SignUpError::Internal { source } => Self::internal_boxed(source.0),
             SignUpError::Validate { source } => {
                 Self::bad_request(source.to_string())
             }
@@ -134,24 +125,17 @@ pub enum ResendVerificationEmailError {
     #[display("Email service unavailable")]
     ResendEmailServiceUnavailable,
     #[display("{source}")]
-    Database {
+    Internal {
         #[error(source)]
-        source: DatabaseError,
-    },
-    #[display("{source}")]
-    Infra {
-        #[error(source)]
-        source: infra::Error,
+        source: InternalError,
     },
 }
 
 impl From<DbErr> for ResendVerificationEmailError {
     fn from(err: DbErr) -> Self {
-        Self::Database {
-            source: DatabaseError::new(err).with_operation(
-                "auth resend verification email database operation",
-            ),
-        }
+        DatabaseError::new(err)
+            .with_operation("auth resend verification email database operation")
+            .into()
     }
 }
 
@@ -163,21 +147,19 @@ impl From<InvalidEmail> for ResendVerificationEmailError {
 
 impl From<DatabaseError> for ResendVerificationEmailError {
     fn from(source: DatabaseError) -> Self {
-        Self::Database { source }
+        InternalError::new(source).into()
     }
 }
 
-impl From<infra::Error> for ResendVerificationEmailError {
-    fn from(source: infra::Error) -> Self {
-        Self::Infra { source }
+impl From<InternalError> for ResendVerificationEmailError {
+    fn from(source: InternalError) -> Self {
+        Self::Internal { source }
     }
 }
 
 impl From<BoxedError> for ResendVerificationEmailError {
     fn from(source: BoxedError) -> Self {
-        Self::Infra {
-            source: source.into(),
-        }
+        InternalError(source).into()
     }
 }
 
@@ -197,8 +179,9 @@ impl From<ResendVerificationEmailError> for AppError {
             ResendVerificationEmailError::ResendEmailServiceUnavailable => {
                 Self::new(AppErrorKind::ServiceUnavailable, err.to_string())
             }
-            ResendVerificationEmailError::Database { source } => source.into(),
-            ResendVerificationEmailError::Infra { source } => source.into(),
+            ResendVerificationEmailError::Internal { source } => {
+                Self::internal_boxed(source.0)
+            }
         }
     }
 }
@@ -215,23 +198,17 @@ pub enum VerifyEmailError {
     #[display("Too many attempts, please resend verification code")]
     TooManyAttempts,
     #[display("{source}")]
-    Database {
+    Internal {
         #[error(source)]
-        source: DatabaseError,
-    },
-    #[display("{source}")]
-    Infra {
-        #[error(source)]
-        source: infra::Error,
+        source: InternalError,
     },
 }
 
 impl From<DbErr> for VerifyEmailError {
     fn from(err: DbErr) -> Self {
-        Self::Database {
-            source: DatabaseError::new(err)
-                .with_operation("auth verify email database operation"),
-        }
+        DatabaseError::new(err)
+            .with_operation("auth verify email database operation")
+            .into()
     }
 }
 
@@ -243,21 +220,19 @@ impl From<InvalidEmail> for VerifyEmailError {
 
 impl From<DatabaseError> for VerifyEmailError {
     fn from(source: DatabaseError) -> Self {
-        Self::Database { source }
+        InternalError::new(source).into()
     }
 }
 
-impl From<infra::Error> for VerifyEmailError {
-    fn from(source: infra::Error) -> Self {
-        Self::Infra { source }
+impl From<InternalError> for VerifyEmailError {
+    fn from(source: InternalError) -> Self {
+        Self::Internal { source }
     }
 }
 
 impl From<BoxedError> for VerifyEmailError {
     fn from(source: BoxedError) -> Self {
-        Self::Infra {
-            source: source.into(),
-        }
+        InternalError(source).into()
     }
 }
 
@@ -278,8 +253,9 @@ impl From<VerifyEmailError> for AppError {
             VerifyEmailError::TooManyAttempts => {
                 Self::new(AppErrorKind::TooManyRequests, err.to_string())
             }
-            VerifyEmailError::Database { source } => source.into(),
-            VerifyEmailError::Infra { source } => source.into(),
+            VerifyEmailError::Internal { source } => {
+                Self::internal_boxed(source.0)
+            }
         }
     }
 }

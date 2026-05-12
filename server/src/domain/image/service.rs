@@ -7,6 +7,7 @@ use entity::enums::StorageBackend;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 
 use crate::domain::image::{Image, NewImage};
+use crate::shared::error::InternalError;
 use crate::shared::types::BoxedError;
 
 #[derive(Debug, derive_more::Display, derive_more::Error)]
@@ -385,12 +386,12 @@ pub enum Error {
     #[display("{_0}")]
     InvalidInput(#[error(source)] ImageInputError),
     #[display("{_0}")]
-    Internal(#[error(source)] BoxedError),
+    Internal(#[error(source)] InternalError),
 }
 
 impl Error {
     fn internal(source: impl Into<BoxedError>) -> Self {
-        Self::Internal(source.into())
+        Self::Internal(InternalError(source.into()))
     }
 }
 
@@ -407,7 +408,7 @@ impl From<ImageParseError> for Error {
 
 impl From<BoxedError> for Error {
     fn from(source: BoxedError) -> Self {
-        Self::internal(source)
+        Self::Internal(InternalError(source))
     }
 }
 

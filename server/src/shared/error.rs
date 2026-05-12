@@ -1,3 +1,15 @@
+use crate::shared::types::BoxedError;
+
+#[derive(Debug, derive_more::Display, derive_more::Error)]
+#[display("Internal server error")]
+pub struct InternalError(#[error(source)] pub BoxedError);
+
+impl InternalError {
+    pub fn new(source: impl std::error::Error + Send + Sync + 'static) -> Self {
+        Self(Box::new(source))
+    }
+}
+
 #[derive(Debug, derive_more::Display, derive_more::Error)]
 #[display("Validation error: {source}")]
 pub struct ValidationError<T>
