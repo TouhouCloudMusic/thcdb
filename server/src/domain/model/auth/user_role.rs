@@ -2,6 +2,9 @@ use serde::{Deserialize, Serialize};
 use strum::{EnumCount, EnumIter, EnumString, IntoEnumIterator};
 use utoipa::ToSchema;
 
+use crate::infra::database::error::DatabaseError;
+use crate::shared::error::BrokenEntityReference;
+
 #[derive(
     Clone,
     Copy,
@@ -91,11 +94,18 @@ pub struct UserRole {
     pub name: String,
 }
 
-impl From<entity::user_role::Model> for UserRole {
-    fn from(value: entity::user_role::Model) -> Self {
+impl TryFrom<entity::user_role::Model> for UserRole {
+    type Error = DatabaseError;
+
+    fn try_from(value: entity::user_role::Model) -> Result<Self, Self::Error> {
         UserRoleEnum::try_from(value.role_id)
-            .expect("valid user role id from database")
-            .into()
+            .map(Into::into)
+            .map_err(|_| {
+                DatabaseError::from(BrokenEntityReference {
+                    entity: "user_role",
+                    id: value.role_id,
+                })
+            })
     }
 }
 

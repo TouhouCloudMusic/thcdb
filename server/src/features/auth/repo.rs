@@ -7,7 +7,7 @@ use sea_orm::{
     EntityTrait, IntoActiveModel, QueryFilter, QuerySelect,
 };
 
-use crate::domain::model::UserRoleEnum;
+use crate::domain::model::{UserRole, UserRoleEnum};
 use crate::domain::user::{EmailVerification, NewUser, User};
 use crate::features::auth::Email;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
@@ -336,7 +336,10 @@ async fn load_user(
         .await
         .db_operation("load auth user roles")?;
 
-    let roles = roles.into_iter().map(Into::into).collect::<Vec<_>>();
+    let roles = roles
+        .into_iter()
+        .map(UserRole::try_from)
+        .collect::<Result<Vec<_>, _>>()?;
 
     let mut user = User::from(model);
     user.roles = roles;

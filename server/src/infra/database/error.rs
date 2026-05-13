@@ -4,12 +4,22 @@ use frunk::{Coprod, Coproduct};
 use itertools::Itertools;
 use sea_orm::{DbErr, RuntimeErr, sqlx};
 
+use crate::shared::error::BrokenEntityReference;
+
 #[derive(Debug, derive_more::Error)]
 pub struct DatabaseError {
     #[error(source)]
-    source: DbErr,
+    source: DatabaseErrorSource,
     frames: Vec<DatabaseErrorFrame>,
     location: &'static Location<'static>,
+}
+
+#[derive(Debug, derive_more::Display, derive_more::Error)]
+enum DatabaseErrorSource {
+    #[display("{_0}")]
+    Db(#[error(source)] DbErr),
+    #[display("{_0}")]
+    BrokenReference(#[error(source)] BrokenEntityReference),
 }
 
 #[derive(Debug)]
@@ -22,7 +32,7 @@ impl DatabaseError {
     #[track_caller]
     pub const fn new(source: DbErr) -> Self {
         Self {
-            source,
+            source: DatabaseErrorSource::Db(source),
             frames: Vec::new(),
             location: Location::caller(),
         }
@@ -35,6 +45,17 @@ impl DatabaseError {
             location: Location::caller(),
         });
         self
+    }
+}
+
+impl From<BrokenEntityReference> for DatabaseError {
+    #[track_caller]
+    fn from(source: BrokenEntityReference) -> Self {
+        Self {
+            source: DatabaseErrorSource::BrokenReference(source),
+            frames: Vec::new(),
+            location: Location::caller(),
+        }
     }
 }
 

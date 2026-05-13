@@ -13,6 +13,7 @@ use crate::domain::model::{EditableUserRole, UserRoleEnum};
 use crate::domain::shared::Language;
 use crate::domain::song::SongRelationType;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::error::BrokenEntityReference;
 use crate::shared::http::api_response::Data;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
@@ -66,12 +67,16 @@ async fn user_roles(
         .all(&state.database)
         .await
         .db_operation("list user roles")?
-        .iter()
+        .into_iter()
         .map(|model| {
-            UserRoleEnum::try_from(model.id)
-                .expect("valid user role id from database")
+            UserRoleEnum::try_from(model.id).map_err(|_| {
+                DatabaseError::from(BrokenEntityReference {
+                    entity: "role",
+                    id: model.id,
+                })
+            })
         })
-        .collect_vec()
+        .collect::<Result<Vec<_>, _>>()?
         .into())
 }
 

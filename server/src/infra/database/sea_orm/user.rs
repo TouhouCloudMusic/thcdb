@@ -18,7 +18,7 @@ use sea_orm_migration::prelude::Alias;
 
 use super::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::domain;
-use crate::domain::model::UserRoleEnum;
+use crate::domain::model::{UserRole, UserRoleEnum};
 use crate::domain::user::{
     NewUser, User, UserProfile, UserProfileStats, {self},
 };
@@ -107,7 +107,10 @@ impl user::TxRepo for SeaOrmTxRepo {
 
         let mut user = User::from(model);
 
-        user.roles = roles.into_iter().map(Into::into).collect();
+        user.roles = roles
+            .into_iter()
+            .map(UserRole::try_from)
+            .collect::<Result<_, _>>()?;
 
         Ok(user)
     }
@@ -116,17 +119,21 @@ impl user::TxRepo for SeaOrmTxRepo {
 async fn find_many_impl(
     filter: impl IntoCondition,
     conn: &impl sea_orm::ConnectionTrait,
-) -> Result<Vec<User>, DbErr> {
+) -> Result<Vec<User>, DatabaseError> {
     entity::user::Entity::find()
         .find_with_related(entity::user_role::Entity)
         .filter(filter)
         .all(conn)
-        .await?
+        .await
+        .db_operation("find users with roles")?
         .into_iter()
         .map(|(model, roles)| {
             let mut user = User::from(model);
 
-            user.roles = roles.into_iter().map(Into::into).collect();
+            user.roles = roles
+                .into_iter()
+                .map(UserRole::try_from)
+                .collect::<Result<_, _>>()?;
 
             Ok(user)
         })
@@ -313,7 +320,10 @@ impl user::ProfileRepository for SeaOrmRepository {
             last_login: profile.last_login,
             avatar_url,
             banner_url,
-            roles: user_roles.into_iter().map(Into::into).collect(),
+            roles: user_roles
+                .into_iter()
+                .map(UserRole::try_from)
+                .collect::<Result<_, _>>()?,
             is_following: None,
             bio: profile.bio,
             stats,
