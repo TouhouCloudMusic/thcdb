@@ -7,6 +7,7 @@ mod service;
 #[cfg(all(test, feature = "integration-test"))]
 mod tests;
 
+pub(in crate::features::correction) use error::Error;
 pub(super) use http::router;
 pub(super) use model::CorrectionComment;
 use sea_orm::ConnectionTrait;

@@ -1,9 +1,5 @@
-use std::backtrace::Backtrace;
-
-use axum::http::StatusCode;
 use derive_more::Display;
 use entity::enums::EntityType;
-use macros::ApiError;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -27,24 +23,8 @@ pub struct NewSongLyrics {
     pub is_main: bool,
 }
 
-#[derive(Debug, snafu::Snafu, ApiError)]
-#[snafu(display("Validation error: {kind}"))]
-#[api_error(
-    status_code = StatusCode::BAD_REQUEST
-)]
-pub struct ValidationError {
-    pub kind: ValidationErrorKind,
-    pub backtrace: Backtrace,
-}
-
-impl From<ValidationErrorKind> for ValidationError {
-    fn from(kind: ValidationErrorKind) -> Self {
-        Self {
-            kind,
-            backtrace: Backtrace::capture(),
-        }
-    }
-}
+pub type ValidationError =
+    crate::shared::error::ValidationError<ValidationErrorKind>;
 
 #[derive(Debug, Display)]
 pub enum ValidationErrorKind {
@@ -55,6 +35,8 @@ pub enum ValidationErrorKind {
     #[display("Invalid Language Id: {_0}")]
     InvalidLanguageId(i32),
 }
+
+impl std::error::Error for ValidationErrorKind {}
 
 use ValidationErrorKind::*;
 

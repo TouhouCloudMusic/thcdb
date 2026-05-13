@@ -1,10 +1,94 @@
 use std::panic::Location;
 
-use axum::http::StatusCode;
 use frunk::{Coprod, Coproduct};
 use itertools::Itertools;
-use macros::ApiError;
 use sea_orm::{DbErr, RuntimeErr, sqlx};
+
+use crate::shared::error::BrokenEntityReference;
+
+#[derive(Debug, derive_more::Error)]
+pub struct DatabaseError {
+    #[error(source)]
+    source: DatabaseErrorSource,
+    frames: Vec<DatabaseErrorFrame>,
+    location: &'static Location<'static>,
+}
+
+#[derive(Debug, derive_more::Display, derive_more::Error)]
+enum DatabaseErrorSource {
+    #[display("{_0}")]
+    Db(#[error(source)] DbErr),
+    #[display("{_0}")]
+    BrokenReference(#[error(source)] BrokenEntityReference),
+}
+
+#[derive(Debug)]
+struct DatabaseErrorFrame {
+    operation: &'static str,
+    location: &'static Location<'static>,
+}
+
+impl DatabaseError {
+    #[track_caller]
+    pub const fn new(source: DbErr) -> Self {
+        Self {
+            source: DatabaseErrorSource::Db(source),
+            frames: Vec::new(),
+            location: Location::caller(),
+        }
+    }
+
+    #[track_caller]
+    pub fn db_operation(mut self, operation: &'static str) -> Self {
+        self.frames.push(DatabaseErrorFrame {
+            operation,
+            location: Location::caller(),
+        });
+        self
+    }
+}
+
+impl From<BrokenEntityReference> for DatabaseError {
+    #[track_caller]
+    fn from(source: BrokenEntityReference) -> Self {
+        Self {
+            source: DatabaseErrorSource::BrokenReference(source),
+            frames: Vec::new(),
+            location: Location::caller(),
+        }
+    }
+}
+
+impl std::fmt::Display for DatabaseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.frames.last() {
+            Some(frame) => write!(
+                f,
+                "database error while {} at {}",
+                frame.operation, frame.location
+            ),
+            None => write!(f, "database error at {}", self.location),
+        }
+    }
+}
+
+pub trait DatabaseResultExt<T> {
+    fn db_operation(self, operation: &'static str) -> Result<T, DatabaseError>;
+}
+
+impl<T> DatabaseResultExt<T> for Result<T, DbErr> {
+    #[track_caller]
+    fn db_operation(self, operation: &'static str) -> Result<T, DatabaseError> {
+        self.map_err(|err| DatabaseError::new(err).db_operation(operation))
+    }
+}
+
+impl<T> DatabaseResultExt<T> for Result<T, DatabaseError> {
+    #[track_caller]
+    fn db_operation(self, operation: &'static str) -> Result<T, DatabaseError> {
+        self.map_err(|err| err.db_operation(operation))
+    }
+}
 
 #[derive(Debug)]
 pub struct IdOrIds(Coprod!(i32, Vec<i32>));
@@ -31,17 +115,7 @@ pub enum FkViolationKind {
     },
 }
 
-#[derive(Debug, snafu::Snafu, ApiError)]
-#[api_error(
-    status_code = StatusCode::BAD_REQUEST,
-)]
-#[snafu(display("{}", match &self.kind {
-    FkViolationKind::Auto { entity } => format!("Invalid relation on {entity}"),
-    FkViolationKind::Manual { entity, target } => format!(
-        "Invalid relation between {} {} and {} {}",
-        entity.0, entity.1, target.0, target.1
-    ),
-}))]
+#[derive(Debug, derive_more::Error)]
 pub struct FkViolation<T>
 where
     T: 'static + std::error::Error,
@@ -49,6 +123,24 @@ where
     pub kind: FkViolationKind,
     pub source: T,
     location: &'static Location<'static>,
+}
+
+impl<T> std::fmt::Display for FkViolation<T>
+where
+    T: 'static + std::error::Error,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.kind {
+            FkViolationKind::Auto { entity } => {
+                write!(f, "Invalid relation on {entity}")
+            }
+            FkViolationKind::Manual { entity, target } => write!(
+                f,
+                "Invalid relation between {} {} and {} {}",
+                entity.0, entity.1, target.0, target.1
+            ),
+        }
+    }
 }
 
 impl TryFrom<DbErr> for FkViolation<DbErr> {

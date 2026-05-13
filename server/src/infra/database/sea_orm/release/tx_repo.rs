@@ -8,6 +8,9 @@ use sea_orm::{
 use super::impls::*;
 use crate::domain::release::NewRelease;
 use crate::features::release::TxRepo;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::infra::database::sea_orm::ApplyCorrectionError;
+use crate::shared::error::BrokenEntityReference;
 
 pub(crate) async fn create_release_with_relations(
     data: &NewRelease,
@@ -62,7 +65,7 @@ pub(crate) async fn create_release_history_with_relations(
 pub(crate) async fn apply_update(
     correction: entity::correction::Model,
     tx: &DatabaseTransaction,
-) -> Result<(), DbErr> {
+) -> Result<(), ApplyCorrectionError> {
     let revision = entity::correction_revision::Entity::find()
         .filter(
             entity::correction_revision::Column::CorrectionId.eq(correction.id),
@@ -70,16 +73,18 @@ pub(crate) async fn apply_update(
         .order_by_desc(entity::correction_revision::Column::EntityHistoryId)
         .one(tx)
         .await?
-        .ok_or_else(|| {
-            DbErr::Custom("Correction revision not found".to_string())
+        .ok_or(BrokenEntityReference {
+            entity: "correction revision",
+            id: correction.id,
         })?;
 
     let history =
         release_history::Entity::find_by_id(revision.entity_history_id)
             .one(tx)
             .await?
-            .ok_or_else(|| {
-                DbErr::Custom("Release history not found".to_string())
+            .ok_or(BrokenEntityReference {
+                entity: "release history",
+                id: revision.entity_history_id,
             })?;
 
     let update_model = release::ActiveModel {
@@ -109,25 +114,25 @@ pub(crate) async fn apply_update(
 }
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
-    async fn create(
-        &self,
-        data: &NewRelease,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        Ok(create_release_with_relations(data, self.conn()).await?)
+    async fn create(&self, data: &NewRelease) -> Result<i32, DatabaseError> {
+        create_release_with_relations(data, self.conn())
+            .await
+            .db_operation("create release")
     }
 
     async fn create_history(
         &self,
         data: &NewRelease,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        Ok(create_release_history_with_relations(data, self.conn()).await?)
+    ) -> Result<i32, DatabaseError> {
+        create_release_history_with_relations(data, self.conn())
+            .await
+            .db_operation("create release history")
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        apply_update(correction, self.conn()).await?;
-        Ok(())
+    ) -> Result<(), ApplyCorrectionError> {
+        apply_update(correction, self.conn()).await
     }
 }

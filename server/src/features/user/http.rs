@@ -7,13 +7,38 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain::markdown::Markdown;
-use crate::features::user_image::{
-    Error as UserImageError, UploadAvatar, UploadProfileBanner,
-};
-use crate::infra::error::Error;
-use crate::shared::http::api_response::{self, Message};
+use crate::features::user_image::{self, UploadAvatar, UploadProfileBanner};
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::http::api_response::{self, AppError, Message};
 
 const TAG: &str = "User";
+
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+enum Error {
+    #[display("{_0}")]
+    #[from]
+    Image(#[error(source)] user_image::Error),
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
+    #[from]
+    InvalidMarkdown(#[error(source)] crate::domain::markdown::Error),
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            Error::Image(source) => source.into_response(),
+            Error::Database(source) => source.into_response(),
+            Error::InvalidMarkdown(source) => {
+                AppError::bad_request(source.to_string()).into_response()
+            }
+        }
+    }
+}
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
@@ -41,13 +66,9 @@ async fn upload_avatar(
     CurrentUser(user): CurrentUser,
     State(service): State<state::UserImageService>,
     TypedMultipart(form): TypedMultipart<UploadAvatar>,
-) -> Result<impl IntoResponse, UserImageError> {
-    service
-        .upload_avatar(user, &form.data.contents)
-        .await
-        .map(|()| {
-            api_response::Message::new("Upload successful").into_response()
-        })
+) -> Result<Message, Error> {
+    service.upload_avatar(user, &form.data.contents).await?;
+    Ok(Message::new("Upload successful"))
 }
 
 #[utoipa::path(
@@ -66,13 +87,11 @@ async fn upload_profile_banner(
     CurrentUser(user): CurrentUser,
     State(service): State<state::UserImageService>,
     TypedMultipart(form): TypedMultipart<UploadProfileBanner>,
-) -> Result<impl IntoResponse, UserImageError> {
-    service
+) -> Result<Message, Error> {
+    let _ = service
         .upload_banner_image(user, &form.data.contents)
-        .await
-        .map(|_| {
-            api_response::Message::new("Upload successful").into_response()
-        })
+        .await?;
+    Ok(Message::new("Upload successful"))
 }
 
 #[utoipa::path(
@@ -88,12 +107,11 @@ async fn update_bio(
     CurrentUser(user): CurrentUser,
     State(database): State<state::SeaOrmRepository>,
     text: String,
-) -> Result<Message, impl IntoResponse> {
+) -> Result<Message, Error> {
     use entity::user;
     use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, Set};
 
-    let markdown =
-        Markdown::parse(text).map_err(IntoResponse::into_response)?;
+    let markdown = Markdown::parse(text)?;
 
     user::Entity::update_many()
         .filter(user::Column::Id.eq(user.id))
@@ -103,6 +121,7 @@ async fn update_bio(
         })
         .exec(&database.conn)
         .await
+        .db_operation("update user bio")
         .map(|_| Message::new("Bio updated successfully"))
-        .map_err(|e| Error::from(e).into_response())
+        .map_err(Into::into)
 }

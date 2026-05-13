@@ -1,7 +1,7 @@
 use entity::{event, event_alternative_name};
 use itertools::{Itertools, izip};
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, LoaderTrait, QueryFilter,
+    ColumnTrait, ConnectionTrait, EntityTrait, LoaderTrait, QueryFilter,
     QueryOrder,
 };
 use sea_query::extension::postgres::PgBinOper;
@@ -9,23 +9,25 @@ use sea_query::{ExprTrait, Func};
 
 use crate::domain::shared::{DateWithPrecision, Location};
 use crate::features::event::model::{AlternativeName, Event};
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
 
 pub(super) async fn find_by_id(
     repo: &SeaOrmRepository,
     id: i32,
-) -> Result<Option<Event>, DbErr> {
+) -> Result<Option<Event>, DatabaseError> {
     let select = event::Entity::find().filter(event::Column::Id.eq(id));
 
     find_many_impl(select, &repo.conn)
         .await
         .map(|mut events| events.pop())
+        .db_operation("find event by id")
 }
 
 pub(super) async fn find_by_keyword(
     repo: &SeaOrmRepository,
     keyword: &str,
-) -> Result<Vec<Event>, DbErr> {
+) -> Result<Vec<Event>, DatabaseError> {
     let search_term = Func::lower(keyword);
 
     let selector = event::Entity::find()
@@ -38,14 +40,16 @@ pub(super) async fn find_by_keyword(
                 .binary(PgBinOper::SimilarityDistance, search_term),
         );
 
-    find_many_impl(selector, &repo.conn).await
+    find_many_impl(selector, &repo.conn)
+        .await
+        .db_operation("find events by keyword")
 }
 
 pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::EventFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Event>, DbErr> {
+) -> Result<crate::domain::shared::PageResponse<Event>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -56,7 +60,8 @@ pub(super) async fn find_by_filter(
             sort_direction,
             pagination,
         )
-        .await;
+        .await
+        .db_operation("explore events");
     }
 
     let select = filter.into_select();
@@ -68,6 +73,7 @@ pub(super) async fn find_by_filter(
         |select| find_many_impl(select, &repo.conn),
     )
     .await
+    .db_operation("explore events")
 }
 
 async fn find_sorted_by_correction(
@@ -76,7 +82,7 @@ async fn find_sorted_by_correction(
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Event>, DbErr> {
+) -> Result<crate::domain::shared::PageResponse<Event>, DatabaseError> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
@@ -91,7 +97,8 @@ async fn find_sorted_by_correction(
                 SortDirection::Desc => sea_orm::Order::Desc,
             },
         )
-        .await?;
+        .await
+        .db_operation("list correction-sorted event ids")?;
 
     if entity_ids.is_empty() {
         return Ok(utils::page_from_items(vec![], &pagination));
@@ -121,11 +128,13 @@ async fn find_sorted_by_correction(
 async fn find_many_impl(
     selector: sea_orm::Select<event::Entity>,
     db: &impl ConnectionTrait,
-) -> Result<Vec<Event>, sea_orm::DbErr> {
-    let events = selector.all(db).await?;
+) -> Result<Vec<Event>, DatabaseError> {
+    let events = selector.all(db).await.db_operation("load events")?;
 
-    let alt_names =
-        events.load_many(event_alternative_name::Entity, db).await?;
+    let alt_names = events
+        .load_many(event_alternative_name::Entity, db)
+        .await
+        .db_operation("load event alternative names")?;
 
     Ok(izip!(events, alt_names)
         .map(|(event, alt_name)| Event {

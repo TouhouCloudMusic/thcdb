@@ -1,6 +1,7 @@
 #![allow(clippy::option_if_let_else)]
 
 use std::fmt::Display;
+use std::panic::Location;
 
 use axum::Json;
 use axum::http::StatusCode;
@@ -8,11 +9,15 @@ use axum::response::IntoResponse;
 use derive_more::Display;
 use serde::Serialize;
 use utoipa::openapi::{
-    ContentBuilder, ObjectBuilder, RefOr, ResponseBuilder, ResponsesBuilder,
-    Schema,
+    ContentBuilder, ObjectBuilder, RefOr, ResponseBuilder, Schema,
 };
 use utoipa::{PartialSchema, ToSchema, openapi};
 
+use crate::infra::database::error::DatabaseError;
+use crate::shared::error::{
+    BrokenEntityReference, EntityNotFound, InternalError, PermissionDenied,
+};
+use crate::shared::types::BoxedError;
 use crate::utils::openapi::ContentType;
 
 #[derive(Debug, Serialize, Display)]
@@ -21,38 +26,241 @@ enum Status {
     Err,
 }
 
-pub trait ApiError {
-    fn as_status_code(&self) -> StatusCode;
-
-    fn all_status_codes() -> impl Iterator<Item = StatusCode>
-    where
-        Self: Sized;
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum AppErrorKind {
+    BadRequest,
+    Unauthorized,
+    Forbidden,
+    NotFound,
+    Conflict,
+    TooManyRequests,
+    ServiceUnavailable,
+    Internal,
 }
 
-pub trait ImpledApiError = std::error::Error
-    + ApiError
-    + IntoApiResponse
-    + axum::response::IntoResponse;
-
-pub trait IntoApiResponse {
-    fn into_api_response(self) -> axum::response::Response;
-}
-
-impl<T> IntoApiResponse for T
-where
-    T: ApiError + std::error::Error,
-{
-    default fn into_api_response(self) -> axum::response::Response {
-        default_into_api_response_impl(self)
+impl AppErrorKind {
+    const fn status_code(self) -> StatusCode {
+        match self {
+            Self::BadRequest => StatusCode::BAD_REQUEST,
+            Self::Unauthorized => StatusCode::UNAUTHORIZED,
+            Self::Forbidden => StatusCode::FORBIDDEN,
+            Self::NotFound => StatusCode::NOT_FOUND,
+            Self::Conflict => StatusCode::CONFLICT,
+            Self::TooManyRequests => StatusCode::TOO_MANY_REQUESTS,
+            Self::ServiceUnavailable => StatusCode::SERVICE_UNAVAILABLE,
+            Self::Internal => StatusCode::INTERNAL_SERVER_ERROR,
+        }
     }
 }
 
-#[expect(clippy::needless_pass_by_value)]
-pub fn default_into_api_response_impl<T>(x: T) -> axum::response::Response
-where
-    T: ApiError + std::error::Error,
-{
-    Error::from_api_error(&x).into_response()
+#[derive(Debug)]
+pub struct AppError {
+    kind: AppErrorKind,
+    message: String,
+    source: Option<BoxedError>,
+    location: &'static Location<'static>,
+}
+
+impl AppError {
+    #[track_caller]
+    fn new(kind: AppErrorKind, message: impl Into<String>) -> Self {
+        Self {
+            kind,
+            message: message.into(),
+            source: None,
+            location: Location::caller(),
+        }
+    }
+
+    #[track_caller]
+    pub fn bad_request(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::BadRequest, message)
+    }
+
+    #[track_caller]
+    pub fn unauthorized(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::Unauthorized, message)
+    }
+
+    #[track_caller]
+    pub fn forbidden(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::Forbidden, message)
+    }
+
+    #[track_caller]
+    pub fn not_found(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::NotFound, message)
+    }
+
+    #[track_caller]
+    pub fn conflict(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::Conflict, message)
+    }
+
+    #[track_caller]
+    pub fn too_many_requests(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::TooManyRequests, message)
+    }
+
+    #[track_caller]
+    pub fn service_unavailable(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::ServiceUnavailable, message)
+    }
+
+    #[track_caller]
+    pub fn internal(
+        source: impl std::error::Error + Send + Sync + 'static,
+    ) -> Self {
+        Self {
+            kind: AppErrorKind::Internal,
+            message: "Internal server error".to_string(),
+            source: Some(Box::new(source)),
+            location: Location::caller(),
+        }
+    }
+
+    pub const fn status_code(&self) -> StatusCode {
+        self.kind.status_code()
+    }
+}
+
+impl std::fmt::Display for AppError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl std::error::Error for AppError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        self.source
+            .as_deref()
+            .map(|err| err as &(dyn std::error::Error + 'static))
+    }
+}
+
+impl IntoResponse for AppError {
+    fn into_response(self) -> axum::response::Response {
+        if self.kind == AppErrorKind::Internal {
+            log_internal_error(self.source.as_deref(), self.location);
+        }
+
+        let status_code = self.status_code();
+        Error::from_err_and_code(&self.message, status_code).into_response()
+    }
+}
+
+impl From<AppError> for axum::response::Response {
+    fn from(err: AppError) -> Self {
+        err.into_response()
+    }
+}
+
+impl From<PermissionDenied> for AppError {
+    #[track_caller]
+    fn from(err: PermissionDenied) -> Self {
+        Self::forbidden(err.to_string())
+    }
+}
+
+impl From<EntityNotFound> for AppError {
+    #[track_caller]
+    fn from(err: EntityNotFound) -> Self {
+        Self::not_found(err.to_string())
+    }
+}
+
+impl From<BrokenEntityReference> for AppError {
+    #[track_caller]
+    fn from(err: BrokenEntityReference) -> Self {
+        Self::internal(err)
+    }
+}
+
+impl From<InternalError> for AppError {
+    #[track_caller]
+    fn from(err: InternalError) -> Self {
+        Self {
+            kind: AppErrorKind::Internal,
+            message: "Internal server error".to_string(),
+            source: Some(err.0),
+            location: Location::caller(),
+        }
+    }
+}
+
+impl From<DatabaseError> for AppError {
+    #[track_caller]
+    fn from(err: DatabaseError) -> Self {
+        Self::internal(err)
+    }
+}
+
+fn log_internal_error(
+    source: Option<&(dyn std::error::Error + Send + Sync + 'static)>,
+    location: &'static Location<'static>,
+) {
+    match source {
+        Some(source) => {
+            log::error!(
+                target: "shared.http.app_error",
+                location:% = location,
+                error:? = source;
+                "internal error"
+            );
+        }
+        None => {
+            log::error!(
+                target: "shared.http.app_error",
+                location:% = location;
+                "internal error"
+            );
+        }
+    }
+}
+
+fn internal_error_response(
+    source: &(dyn std::error::Error + Send + Sync + 'static),
+    location: &'static Location<'static>,
+) -> axum::response::Response {
+    log_internal_error(Some(source), location);
+    Error::from_err_and_code(
+        "Internal server error",
+        StatusCode::INTERNAL_SERVER_ERROR,
+    )
+    .into_response()
+}
+
+impl IntoResponse for PermissionDenied {
+    fn into_response(self) -> axum::response::Response {
+        Error::from_err_and_code(&self, StatusCode::FORBIDDEN).into_response()
+    }
+}
+
+impl IntoResponse for EntityNotFound {
+    fn into_response(self) -> axum::response::Response {
+        Error::from_err_and_code(&self, StatusCode::NOT_FOUND).into_response()
+    }
+}
+
+impl IntoResponse for BrokenEntityReference {
+    #[track_caller]
+    fn into_response(self) -> axum::response::Response {
+        internal_error_response(&self, Location::caller())
+    }
+}
+
+impl IntoResponse for InternalError {
+    #[track_caller]
+    fn into_response(self) -> axum::response::Response {
+        internal_error_response(self.0.as_ref(), Location::caller())
+    }
+}
+
+impl IntoResponse for DatabaseError {
+    #[track_caller]
+    fn into_response(self) -> axum::response::Response {
+        internal_error_response(&self, Location::caller())
+    }
 }
 
 #[derive(ToSchema, Serialize)]
@@ -180,19 +388,8 @@ impl Error {
         err.into_error()
     }
 
-    pub fn from_api_error<T>(err: &T) -> Self
-    where
-        T: ApiError + Display,
-    {
-        Self {
-            status: Status::Err,
-            message: err.to_string(),
-            status_code: err.as_status_code(),
-        }
-    }
-
     pub fn from_err_and_code(
-        err: impl ToString,
+        err: &(impl ToString + ?Sized),
         status_code: impl Into<StatusCode>,
     ) -> Self {
         Self {
@@ -210,33 +407,30 @@ impl Error {
             )
             .build()
     }
+
+    pub fn responses(
+        status_codes: impl IntoIterator<Item = StatusCode>,
+    ) -> utoipa::openapi::Responses {
+        utoipa::openapi::ResponsesBuilder::new()
+            .responses_from_iter(status_codes.into_iter().map(|status_code| {
+                (status_code.as_u16().to_string(), Self::response_def())
+            }))
+            .build()
+    }
+}
+
+impl utoipa::IntoResponses for Error {
+    fn responses() -> std::collections::BTreeMap<
+        std::string::String,
+        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
+    > {
+        Self::responses([StatusCode::INTERNAL_SERVER_ERROR]).into()
+    }
 }
 
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         (self.status_code, Json(self)).into_response()
-    }
-}
-
-pub trait ErrResponseDef {
-    fn build_err_responses() -> utoipa::openapi::Responses;
-}
-
-impl<T> ErrResponseDef for T
-where
-    T: ApiError,
-{
-    fn build_err_responses() -> utoipa::openapi::Responses {
-        ResponsesBuilder::new()
-            .responses_from_iter(T::all_status_codes().map(|x| {
-                if x == StatusCode::UNAUTHORIZED {
-                    // Won't return body if unauthorized
-                    (x.as_u16().to_string(), ResponseBuilder::new().build())
-                } else {
-                    (x.as_u16().to_string(), Error::response_def())
-                }
-            }))
-            .build()
     }
 }
 
@@ -256,6 +450,7 @@ pub fn status_err_schema() -> impl Into<RefOr<Schema>> {
 
 #[cfg(test)]
 mod test {
+    use axum::body::to_bytes;
     use serde::Serialize;
     use serde_json::json;
 
@@ -308,5 +503,35 @@ mod test {
             format!(r#"{{"status":"{}","message":"error"}}"#, Status::Err,);
 
         assert_eq!(serialized, expected_json);
+    }
+
+    #[derive(Debug)]
+    struct SecretError(&'static str);
+
+    impl std::fmt::Display for SecretError {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "{}", self.0)
+        }
+    }
+
+    impl std::error::Error for SecretError {}
+
+    async fn response_body_string(
+        response: axum::response::Response,
+    ) -> String {
+        let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        String::from_utf8(bytes.to_vec()).unwrap()
+    }
+
+    #[tokio::test]
+    async fn app_error_internal_response_is_opaque() {
+        let response =
+            AppError::internal(SecretError("database secret")).into_response();
+
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+
+        let body = response_body_string(response).await;
+        assert!(body.contains(r#""message":"Internal server error""#));
+        assert!(!body.contains("database secret"));
     }
 }

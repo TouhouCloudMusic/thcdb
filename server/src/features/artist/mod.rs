@@ -1,4 +1,3 @@
-mod error;
 mod http;
 mod model;
 pub(crate) mod repo;

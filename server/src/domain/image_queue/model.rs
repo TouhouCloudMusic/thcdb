@@ -1,28 +1,19 @@
-use axum::http::StatusCode;
 use chrono::Utc;
 use collection_ext::Intersection;
 pub use entity::sea_orm_active_enums::ImageQueueStatus;
 use itertools::Itertools;
-use macros::{ApiError, AutoMapper};
+use macros::AutoMapper;
 use sea_orm::prelude::DateTimeWithTimeZone;
-use snafu::Snafu;
 
 use crate::domain::image::Image;
 use crate::domain::model::UserRoleEnum;
 use crate::domain::user::User;
 
-#[derive(Debug, Clone, Copy, Snafu, ApiError)]
-
+#[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
 pub enum Error {
-    #[snafu(display("Invalid operation"))]
-    #[api_error(
-        status_code = StatusCode::BAD_REQUEST,
-    )]
+    #[display("Invalid operation")]
     InvalidOperation,
-    #[snafu(display("Permission denied"))]
-    #[api_error(
-        status_code = StatusCode::FORBIDDEN,
-    )]
+    #[display("Permission denied")]
     PermissionDenied,
 }
 
@@ -104,11 +95,8 @@ impl ImageQueue {
             return Err(Error::InvalidOperation);
         }
 
-        let user_roles = user
-            .roles
-            .iter()
-            .map(|role| UserRoleEnum::try_from(role.id).unwrap())
-            .collect_vec();
+        let user_roles =
+            user.roles.iter().map(UserRoleEnum::from).collect_vec();
         let required_roles = action.required_roles();
         // Users also can cancel their image uploads
         let has_permission = user_roles.intersects(&required_roles)

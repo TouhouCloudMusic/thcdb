@@ -1,5 +1,4 @@
 use axum::extract::{Path, Query, State};
-use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -11,8 +10,8 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::release::model::Release;
-use crate::infra::error::Error;
-use crate::shared::http::api_response::Data;
+use crate::infra::database::error::DatabaseError;
+use crate::shared::http::api_response::{Data, Error as ApiError};
 
 const TAG: &str = "Release";
 
@@ -43,10 +42,10 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn find_release_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<Release>>, Error> {
+) -> Result<Data<Option<Release>>, DatabaseError> {
     repo::find_one(&repo, FindReleaseFilter::Id(id))
         .await
-        .bimap_into()
+        .map(Data::from)
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -66,10 +65,10 @@ struct KwQuery {
 async fn find_release_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KwQuery>,
-) -> Result<Data<Vec<Release>>, Error> {
+) -> Result<Data<Vec<Release>>, DatabaseError> {
     repo::find_many(&repo, FindReleaseFilter::Keyword(query.keyword))
         .await
-        .bimap_into()
+        .map(Data::from)
 }
 
 #[utoipa::path(
@@ -79,14 +78,14 @@ async fn find_release_by_keyword(
     params(ReleaseFilter, PageQuery),
     responses(
         (status = 200, body = DataPageRelease),
-        Error,
+        ApiError,
     ),
 )]
 async fn explore_release(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<ReleaseFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Release>>, Error> {
+) -> Result<Data<PageResponse<Release>>, DatabaseError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.release.find.http",
@@ -95,5 +94,5 @@ async fn explore_release(
     );
     repo::find_by_filter(&repo, normalized, pagination)
         .await
-        .bimap_into()
+        .map(Data::from)
 }

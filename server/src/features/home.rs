@@ -9,7 +9,7 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::infra::error::Error;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::http::api_response::Data;
 
 #[derive(Serialize, ToSchema)]
@@ -40,14 +40,15 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 )]
 async fn home_metadata(
     State(state): State<ArcAppState>,
-) -> Result<Data<HomeMetadata>, Error> {
+) -> Result<Data<HomeMetadata>, DatabaseError> {
     let db = &state.database;
     let (artists_count, releases_count, songs_count, tags_count) = try_join!(
         artist::Entity::find().count(db),
         release::Entity::find().count(db),
         song::Entity::find().count(db),
         tag::Entity::find().count(db),
-    )?;
+    )
+    .db_operation("load home metadata")?;
 
     Ok(HomeMetadata {
         artists_count,

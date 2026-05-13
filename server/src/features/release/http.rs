@@ -6,7 +6,6 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::error::{CreateError, UpsertCorrectionError};
 use super::model::NewRelease;
 use super::{find, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
@@ -15,7 +14,10 @@ use crate::application::correction::{
     CorrectionSubmissionResult, NewCorrectionDto,
 };
 use crate::domain::image::CurrentImageMetadata;
-use crate::features::release_image::{self, ReleaseCoverArtInput};
+use crate::features::correction::SubmissionError;
+use crate::features::release_image::{
+    Error as ImageError, ReleaseCoverArtInput,
+};
 use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Release";
@@ -46,7 +48,7 @@ async fn create_release(
     CurrentUser(user): CurrentUser,
     State(repo): State<state::SeaOrmRepository>,
     Json(dto): Json<NewCorrectionDto<NewRelease>>,
-) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
+) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
     let result = service::create(&repo, dto.with_author(user)).await?;
 
     Ok(Data::from(result))
@@ -67,7 +69,7 @@ async fn update_release(
     State(notification): State<state::NotificationService>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewRelease>>,
-) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
+) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
     let user_id = user.id;
     let result =
         service::upsert_correction(&repo, id, dto.with_author(user)).await?;
@@ -94,7 +96,7 @@ async fn get_release_cover_art_metadata(
     CurrentUser(_user): CurrentUser,
     State(service): State<state::ReleaseImageService>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<CurrentImageMetadata>>, release_image::Error> {
+) -> Result<Data<Option<CurrentImageMetadata>>, ImageError> {
     let metadata = service.get_cover_art_metadata(id).await?;
     Ok(Data::from(metadata))
 }
@@ -128,7 +130,7 @@ async fn upload_release_cover_art(
     State(service): State<state::ReleaseImageService>,
     Path(id): Path<i32>,
     TypedMultipart(form): TypedMultipart<ReleaseCoverArtFormData>,
-) -> Result<Data<i32>, release_image::Error> {
+) -> Result<Data<i32>, ImageError> {
     let dto = ReleaseCoverArtInput {
         bytes: form.data.contents,
         user,

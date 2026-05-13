@@ -1,107 +1,71 @@
-use std::backtrace::Backtrace;
 use std::borrow::Cow;
 use std::sync::LazyLock;
 
 use argon2::Argon2;
 use argon2::password_hash::{self, PasswordHash, PasswordVerifier};
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
-use derive_more::Display;
-use macros::ApiError;
+use derive_more::{Display, Error as DeriveError};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use snafu::Snafu;
 use utoipa::ToSchema;
 
 use crate::constant::{
     USER_NAME_REGEX_STR, USER_PASSWORD_MAX_LENGTH, USER_PASSWORD_MIN_LENGTH,
     USER_PASSWORD_REGEX_STR,
 };
-use crate::shared::http::api_response::{ApiError as ApiErrorTrait, Error};
+use crate::shared::error::InternalError;
 use crate::shared::secret;
 
 pub const VERIFICATION_CODE_EXPIRES_MINUTES: i64 = 10;
 pub const VERIFICATION_CODE_RESEND_COOLDOWN_SECONDS: i64 = 60;
 pub const SIGNUP_EXPIRES_HOURS: i64 = 24;
 
-#[derive(Debug, Snafu)]
+#[derive(Debug, Display, DeriveError)]
 pub enum AuthnError {
-    #[snafu(display("Incorrect username or password"))]
-    AuthenticationFailed {
-        location: &'static std::panic::Location<'static>,
-    },
-    #[snafu(transparent)]
-    Infra { source: crate::infra::Error },
-    #[snafu(display("Password hash error: {source}"))]
-    PasswordHash {
-        source: password_hash::Error,
-        backtrace: Backtrace,
-    },
-    #[snafu(display("Join error: {source}"))]
-    Join {
-        source: tokio::task::JoinError,
-        backtrace: Backtrace,
-    },
+    #[display("Incorrect username or password")]
+    AuthenticationFailed,
+    #[display("{_0}")]
+    Internal(#[error(source)] InternalError),
 }
 
 impl AuthnError {
-    pub(crate) fn status_code(&self) -> StatusCode {
-        match self {
-            AuthnError::AuthenticationFailed { .. } => StatusCode::UNAUTHORIZED,
-            AuthnError::Infra { source } => source.as_status_code(),
-            AuthnError::PasswordHash { .. } | AuthnError::Join { .. } => {
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
-        }
-    }
-
-    #[track_caller]
     pub const fn authentication_failed() -> Self {
-        Self::AuthenticationFailed {
-            location: std::panic::Location::caller(),
-        }
+        Self::AuthenticationFailed
     }
-}
 
-impl IntoResponse for AuthnError {
-    fn into_response(self) -> axum::response::Response {
-        let status_code = self.status_code();
-        Error::from_err_and_code(self, status_code).into_response()
+    fn internal(
+        source: impl std::error::Error + Send + Sync + 'static,
+    ) -> Self {
+        Self::Internal(InternalError::new(source))
     }
 }
 
 impl From<password_hash::Error> for AuthnError {
     fn from(source: password_hash::Error) -> Self {
-        Self::PasswordHash {
-            source,
-            backtrace: Backtrace::capture(),
-        }
+        Self::internal(source)
     }
 }
 
 impl From<tokio::task::JoinError> for AuthnError {
     fn from(source: tokio::task::JoinError) -> Self {
-        Self::Join {
-            source,
-            backtrace: Backtrace::capture(),
-        }
+        Self::internal(source)
     }
 }
 
-#[derive(Debug, Snafu, ApiError)]
-#[snafu(display("{kind}"))]
-#[api_error(status_code = StatusCode::BAD_REQUEST)]
+impl From<InternalError> for AuthnError {
+    fn from(source: InternalError) -> Self {
+        Self::Internal(source)
+    }
+}
+
+#[derive(Debug, Display, DeriveError)]
+#[display("{kind}")]
 pub struct ValidateCredsError {
     pub kind: ValidateCredsErrorKind,
-    pub backtrace: Backtrace,
 }
 
 impl From<ValidateCredsErrorKind> for ValidateCredsError {
     fn from(kind: ValidateCredsErrorKind) -> Self {
-        Self {
-            kind,
-            backtrace: Backtrace::capture(),
-        }
+        Self { kind }
     }
 }
 
@@ -233,14 +197,11 @@ impl AuthCredential {
 
     pub async fn password_hash(
         &mut self,
-    ) -> Result<HashedPassword<'_>, crate::infra::Error> {
+    ) -> Result<HashedPassword<'_>, InternalError> {
         if self.hash.is_none() {
-            self.hash =
-                Some(secret::hash(&self.password).await.map_err(|err| {
-                    crate::infra::Error::custom(&format!(
-                        "Failed to hash password: {err}"
-                    ))
-                })?);
+            self.hash = Some(
+                secret::hash(&self.password).await.map_err(InternalError)?,
+            );
         }
 
         let hash = self.hash.as_deref().expect("hash set above; qed");
@@ -254,11 +215,9 @@ impl AuthCredential {
     ) -> Result<(), AuthnError> {
         let password_hash = match hash {
             Some(hash) => hash.to_owned(),
-            None => secret::hash("dummy_password").await.map_err(|err| {
-                crate::infra::Error::custom(&format!(
-                    "Failed to hash dummy password: {err}"
-                ))
-            })?,
+            None => secret::hash("dummy_password")
+                .await
+                .map_err(InternalError)?,
         };
 
         verify_password(password_hash, &self.password).await

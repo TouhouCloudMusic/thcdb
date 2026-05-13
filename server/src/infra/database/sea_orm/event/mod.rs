@@ -8,37 +8,36 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityTrait,
     IntoActiveValue, ModelTrait, QueryFilter, QueryOrder, Set,
 };
-use snafu::ResultExt;
 
 use crate::domain::event::NewEvent;
 use crate::features::event::TxRepo;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::infra::database::sea_orm::ApplyCorrectionError;
+use crate::shared::error::BrokenEntityReference;
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
-    async fn create(
-        &self,
-        data: &NewEvent,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+    async fn create(&self, data: &NewEvent) -> Result<i32, DatabaseError> {
         create_event_and_relations(data, self.conn())
             .await
+            .db_operation("create event")
             .map(|x| x.id)
-            .boxed()
     }
 
     async fn create_history(
         &self,
         data: &NewEvent,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<i32, DatabaseError> {
         create_event_history_and_relations(data, self.conn())
             .await
+            .db_operation("create event history")
             .map(|x| x.id)
-            .boxed()
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        apply_correction(correction, self.conn()).await.boxed()
+    ) -> Result<(), ApplyCorrectionError> {
+        apply_correction(correction, self.conn()).await
     }
 }
 
@@ -204,20 +203,24 @@ async fn create_alt_names_history(
 pub(crate) async fn apply_correction(
     correction: entity::correction::Model,
     tx: &DatabaseTransaction,
-) -> Result<(), DbErr> {
+) -> Result<(), ApplyCorrectionError> {
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(tx)
         .await?
-        .ok_or_else(|| {
-            DbErr::Custom("Correction revision not found".to_string())
+        .ok_or(BrokenEntityReference {
+            entity: "correction revision",
+            id: correction.id,
         })?;
 
     let history = event_history::Entity::find_by_id(revision.entity_history_id)
         .one(tx)
         .await?
-        .ok_or_else(|| DbErr::Custom("Event history not found".to_string()))?;
+        .ok_or(BrokenEntityReference {
+            entity: "event history",
+            id: revision.entity_history_id,
+        })?;
 
     // Convert history to ActiveModel
     let active_model = event::ActiveModel {

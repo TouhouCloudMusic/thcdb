@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 
 use axum::extract::{Path, State};
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use entity::{correction as correction_entity, correction_revision, user};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 use serde::Serialize;
@@ -12,8 +10,9 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::infra::error::Error;
-use crate::shared::http::api_response::{self, Data};
+use crate::features::correction::ReadError;
+use crate::infra::database::error::DatabaseResultExt;
+use crate::shared::http::api_response::Data;
 
 #[derive(Clone, Serialize, ToSchema)]
 struct CorrectionUserSummary {
@@ -45,19 +44,14 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn get_correction_revisions(
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<Vec<CorrectionRevisionSummary>>, impl IntoResponse> {
+) -> Result<Data<Vec<CorrectionRevisionSummary>>, ReadError> {
     let exists = correction_entity::Entity::find_by_id(id)
         .one(&repo.conn)
         .await
-        .map_err(Error::from)
-        .map_err(IntoResponse::into_response)?;
+        .db_operation("find correction for revisions")?;
 
     if exists.is_none() {
-        return Err(api_response::Error::new((
-            "Correction not found",
-            StatusCode::NOT_FOUND,
-        ))
-        .into_response());
+        return Err(ReadError::NotFound("Correction not found"));
     }
 
     let revisions = correction_revision::Entity::find()
@@ -65,8 +59,7 @@ async fn get_correction_revisions(
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .all(&repo.conn)
         .await
-        .map_err(Error::from)
-        .map_err(IntoResponse::into_response)?;
+        .db_operation("find correction revisions")?;
 
     let author_ids = revisions
         .iter()
@@ -80,8 +73,7 @@ async fn get_correction_revisions(
             .filter(user::Column::Id.is_in(author_ids))
             .all(&repo.conn)
             .await
-            .map_err(Error::from)
-            .map_err(IntoResponse::into_response)?
+            .db_operation("find correction revision authors")?
     };
 
     let author_map = authors

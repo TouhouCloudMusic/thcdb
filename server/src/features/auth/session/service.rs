@@ -6,7 +6,6 @@ use super::error::{
 use crate::domain::auth::{AuthCredential, AuthnError};
 use crate::domain::user::{self, User};
 use crate::features::auth::{Email, Service, repo};
-use crate::infra::error::Error;
 
 impl Service {
     pub async fn sign_in(
@@ -51,12 +50,10 @@ impl SignInIdentifier {
 impl From<axum_login::Error<Service>> for SessionBackendError {
     fn from(value: axum_login::Error<Service>) -> Self {
         match value {
-            axum_login::Error::Session(err) => Self::Session {
-                source: SessionError::new(err),
-            },
-            axum_login::Error::Backend(err) => {
-                Self::AuthnBackend { source: err }
+            axum_login::Error::Session(err) => {
+                Self::Session(SessionError::new(err))
             }
+            axum_login::Error::Backend(err) => Self::AuthnBackend(err),
         }
     }
 }
@@ -92,7 +89,7 @@ impl AuthnBackend for Service {
     ) -> Result<Option<Self::User>, Self::Error> {
         repo::find_by_id(&self.repo.conn, *user_id)
             .await
-            .map_err(|e| Error::from(e).into())
+            .map_err(Into::into)
     }
 }
 

@@ -4,35 +4,35 @@ use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ColumnTrait, EntityTrait, IntoActiveModel, IntoActiveValue, QueryFilter,
 };
-use snafu::ResultExt;
 
 use crate::domain::image;
 use crate::domain::image::{Image, NewImage};
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
 
 impl image::Repo for SeaOrmRepository {
     async fn find_by_id(
         &self,
         id: i32,
-    ) -> Result<Option<Image>, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<Option<Image>, DatabaseError> {
         entity::image::Entity::find()
             .filter(entity::image::Column::Id.eq(id))
             .one(&self.conn)
             .await
+            .db_operation("find image by id")
             .map(FunctorExt::fmap_into)
-            .boxed()
     }
 
     async fn find_by_filename(
         &self,
         filename: &str,
-    ) -> Result<Option<Image>, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<Option<Image>, DatabaseError> {
         entity::image::Entity::find()
             .filter(entity::image::Column::Filename.eq(filename))
             .one(&self.conn)
             .await
+            .db_operation("find image by filename")
             .map(FunctorExt::fmap_into)
-            .boxed()
     }
 }
 
@@ -40,25 +40,25 @@ impl image::Repo for SeaOrmTxRepo {
     async fn find_by_id(
         &self,
         id: i32,
-    ) -> Result<Option<Image>, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<Option<Image>, DatabaseError> {
         entity::image::Entity::find()
             .filter(entity::image::Column::Id.eq(id))
             .one(self.conn())
             .await
+            .db_operation("find image by id")
             .map(FunctorExt::fmap_into)
-            .boxed()
     }
 
     async fn find_by_filename(
         &self,
         filename: &str,
-    ) -> Result<Option<Image>, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<Option<Image>, DatabaseError> {
         entity::image::Entity::find()
             .filter(entity::image::Column::Filename.eq(filename))
             .one(self.conn())
             .await
+            .db_operation("find image by filename")
             .map(FunctorExt::fmap_into)
-            .boxed()
     }
 }
 
@@ -101,22 +101,19 @@ impl image::TxRepo for SeaOrmTxRepo {
     async fn create(
         &self,
         new_image: &NewImage,
-    ) -> Result<Image, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<Image, DatabaseError> {
         save_impl(self.conn(), new_image.into_active_model())
             .await
+            .db_operation("create image")
             .fmap_into()
-            .boxed()
     }
 
-    async fn delete(
-        &self,
-        id: i32,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn delete(&self, id: i32) -> Result<(), DatabaseError> {
         entity::image::Entity::delete_many()
             .filter(entity::image::Column::Id.eq(id))
             .exec(self.conn())
             .await
+            .db_operation("delete image")
             .map(|_| ())
-            .boxed()
     }
 }

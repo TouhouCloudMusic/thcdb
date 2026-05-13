@@ -32,6 +32,7 @@ use super::model::{
 use crate::domain::artist::SimpleArtist;
 use crate::domain::image::Image as DomainImage;
 use crate::domain::shared::{DateWithPrecision, PageResponse};
+use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::PageQuery;
 
 #[derive(Debug, Clone, FromQueryResult)]
@@ -70,7 +71,7 @@ pub(super) async fn find_requested_user_by_name(
         .filter(user_entity::Column::Name.eq(username))
         .one(conn)
         .await
-        .map_err(Error::from)?
+        .db_operation("find requested collection user")?
         .ok_or(Error::NotFound(NotFound::RequestedUser))
 }
 
@@ -79,7 +80,11 @@ pub(super) async fn load_user_collections_page(
     select: Select<user_collection_entity::Entity>,
     page_query: PageQuery,
 ) -> Result<PageResponse<UserCollection>, Error> {
-    let total_items = select.clone().count(conn).await.map_err(Error::from)?;
+    let total_items = select
+        .clone()
+        .count(conn)
+        .await
+        .db_operation("count user collections")?;
 
     let items = load_user_collection_summaries(
         conn,
@@ -118,7 +123,7 @@ async fn load_user_collection_summaries(
     let rows = UserCollectionSummaryRow::find_by_statement(stmt)
         .all(conn)
         .await
-        .map_err(Error::from)?;
+        .db_operation("load user collection summaries")?;
 
     Ok(rows.into_iter().map(Into::into).collect())
 }
@@ -222,7 +227,11 @@ pub(super) async fn load_user_collection_items_page(
     let select = user_collection_item_entity::Entity::find().filter(
         user_collection_item_entity::Column::UserCollectionId.eq(collection_id),
     );
-    let total_items = select.clone().count(conn).await.map_err(Error::from)?;
+    let total_items = select
+        .clone()
+        .count(conn)
+        .await
+        .db_operation("count user collection items")?;
 
     let items: Vec<UserCollectionItem> = select
         .order_by_asc(user_collection_item_entity::Column::Position)
@@ -231,7 +240,7 @@ pub(super) async fn load_user_collection_items_page(
         .limit(u64::from(page_query.limit()))
         .all(conn)
         .await
-        .map_err(Error::from)?
+        .db_operation("load user collection items page")?
         .into_iter()
         .map(Into::into)
         .collect();
@@ -314,7 +323,7 @@ pub(super) async fn find_visible_user_collection(
     let collection = user_collection_entity::Entity::find_by_id(collection_id)
         .one(conn)
         .await
-        .map_err(Error::from)?
+        .db_operation("find visible user collection")?
         .ok_or(Error::NotFound(NotFound::Collection))?;
 
     if collection.is_public || viewer_id == Some(collection.user_id) {
@@ -332,7 +341,7 @@ pub(super) async fn find_owned_user_collection(
     let collection = user_collection_entity::Entity::find_by_id(collection_id)
         .one(conn)
         .await
-        .map_err(Error::from)?
+        .db_operation("find owned user collection")?
         .ok_or(Error::NotFound(NotFound::Collection))?;
 
     if collection.user_id == owner_id {
@@ -352,7 +361,7 @@ pub(super) async fn lock_owned_user_collection(
         .lock_exclusive()
         .one(conn)
         .await
-        .map_err(Error::from)?;
+        .db_operation("lock owned user collection")?;
 
     if collection.is_some() {
         return Ok(());
@@ -363,7 +372,7 @@ pub(super) async fn lock_owned_user_collection(
     let exists = user_collection_entity::Entity::find_by_id(collection_id)
         .one(conn)
         .await
-        .map_err(Error::from)?
+        .db_operation("check user collection exists after lock miss")?
         .is_some();
 
     if exists {
@@ -389,7 +398,8 @@ pub(super) async fn insert_user_collection(
     )
     .exec_with_returning(conn)
     .await
-    .map_err(Error::from)
+    .db_operation("insert user collection")
+    .map_err(Into::into)
 }
 
 pub(super) async fn update_user_collection(
@@ -401,7 +411,10 @@ pub(super) async fn update_user_collection(
     active.name = Set(String::from(req.name.clone()));
     active.description = Set(req.description.clone());
     active.is_public = Set(req.is_public);
-    active.update(conn).await.map_err(Error::from)?;
+    active
+        .update(conn)
+        .await
+        .db_operation("update user collection")?;
     Ok(())
 }
 
@@ -412,7 +425,7 @@ pub(super) async fn delete_user_collection(
     user_collection_entity::Entity::delete_by_id(collection_id)
         .exec(conn)
         .await
-        .map_err(Error::from)?;
+        .db_operation("delete user collection")?;
     Ok(())
 }
 
@@ -421,7 +434,7 @@ macro_rules! check_entity_exists {
         $entity::Entity::find_by_id($id)
             .one($conn)
             .await
-            .map_err(Error::from)?
+            .db_operation("check user collection referenced entity exists")?
             .is_some()
     };
 }
@@ -472,7 +485,7 @@ pub(super) async fn next_user_collection_item_position(
         .order_by_desc(user_collection_item_entity::Column::Id)
         .one(conn)
         .await
-        .map_err(Error::from)?
+        .db_operation("find next user collection item position")?
         .map_or(0, |item| item.position.saturating_add(1));
 
     Ok(position)
@@ -496,7 +509,8 @@ pub(super) async fn insert_user_collection_item(
     )
     .exec_with_returning(conn)
     .await
-    .map_err(Error::from)
+    .db_operation("insert user collection item")
+    .map_err(Into::into)
 }
 
 // Delete and reorder rewrite positions directly to their final values, so the
@@ -509,7 +523,7 @@ pub(super) async fn defer_user_collection_item_position_constraint(
         r#"SET CONSTRAINTS "user_collection_item_user_collection_id_position_key" DEFERRED"#,
     )
     .await
-    .map_err(Error::from)?;
+    .db_operation("defer user collection item position constraint")?;
     Ok(())
 }
 
@@ -525,13 +539,13 @@ pub(super) async fn delete_user_collection_item(
         )
         .one(conn)
         .await
-        .map_err(Error::from)?
+        .db_operation("find user collection item before delete")?
         .ok_or(Error::NotFound(NotFound::CollectionItem))?;
 
     user_collection_item_entity::Entity::delete_by_id(item.id)
         .exec(conn)
         .await
-        .map_err(Error::from)?;
+        .db_operation("delete user collection item")?;
     Ok(())
 }
 
@@ -548,7 +562,8 @@ pub(super) async fn load_user_collection_items(
         .order_by_asc(user_collection_item_entity::Column::Id)
         .all(conn)
         .await
-        .map_err(Error::from)
+        .db_operation("load user collection items")
+        .map_err(Into::into)
 }
 
 pub(super) async fn update_user_collection_item_positions(
@@ -590,7 +605,7 @@ pub(super) async fn update_user_collection_item_positions(
         )
         .exec(conn)
         .await
-        .map_err(Error::from)?;
+        .db_operation("update user collection item positions")?;
     Ok(())
 }
 
@@ -625,7 +640,7 @@ async fn load_artist_summaries(
         .filter(artist_entity::Column::Id.is_in(ids.iter().copied()))
         .all(conn)
         .await
-        .map_err(Error::from)?;
+        .db_operation("load user collection artist summaries")?;
 
     let profile_images = artist_image_entity::Entity::find()
         .find_also_related(image_entity::Entity)
@@ -636,7 +651,7 @@ async fn load_artist_summaries(
         .order_by_desc(image_entity::Column::UploadedAt)
         .all(conn)
         .await
-        .map_err(Error::from)?;
+        .db_operation("load user collection artist profile images")?;
 
     let mut image_map: HashMap<i32, String> = HashMap::new();
     for (ai, img) in profile_images {
@@ -680,7 +695,7 @@ async fn load_release_summaries(
         .filter(release_entity::Column::Id.is_in(ids.iter().copied()))
         .all(conn)
         .await
-        .map_err(Error::from)?;
+        .db_operation("load user collection release summaries")?;
 
     let artists_per_release = releases
         .load_many_to_many(
@@ -689,7 +704,7 @@ async fn load_release_summaries(
             conn,
         )
         .await
-        .map_err(Error::from)?;
+        .db_operation("load user collection release artists")?;
 
     let cover_images = release_image_entity::Entity::find()
         .find_also_related(image_entity::Entity)
@@ -700,7 +715,7 @@ async fn load_release_summaries(
         .order_by_desc(image_entity::Column::UploadedAt)
         .all(conn)
         .await
-        .map_err(Error::from)?;
+        .db_operation("load user collection release cover images")?;
 
     let mut cover_map: HashMap<i32, String> = HashMap::new();
     for (ri, img) in cover_images {
@@ -758,7 +773,7 @@ async fn load_song_summaries(
         .filter(song_entity::Column::Id.is_in(ids.iter().copied()))
         .all(conn)
         .await
-        .map_err(Error::from)?;
+        .db_operation("load user collection song summaries")?;
 
     let song_artists_per_song = songs
         .load_many_to_many(
@@ -767,14 +782,14 @@ async fn load_song_summaries(
             conn,
         )
         .await
-        .map_err(Error::from)?;
+        .db_operation("load user collection song artists")?;
 
     // Find the first (smallest) release_id per song via release_track
     let release_tracks = release_track_entity::Entity::find()
         .filter(release_track_entity::Column::SongId.is_in(ids.iter().copied()))
         .all(conn)
         .await
-        .map_err(Error::from)?;
+        .db_operation("load user collection song release tracks")?;
 
     let mut first_release_per_song: HashMap<i32, i32> = HashMap::new();
     for track in &release_tracks {
@@ -806,7 +821,7 @@ async fn load_song_summaries(
             .order_by_desc(image_entity::Column::UploadedAt)
             .all(conn)
             .await
-            .map_err(Error::from)?
+            .db_operation("load user collection song cover images")?
     };
 
     let mut release_cover_map: HashMap<i32, String> = HashMap::new();
@@ -861,7 +876,7 @@ async fn load_tag_summaries(
         .filter(tag_entity::Column::Id.is_in(ids.iter().copied()))
         .all(conn)
         .await
-        .map_err(Error::from)?
+        .db_operation("load user collection tag summaries")?
         .into_iter()
         .map(|t| {
             (
@@ -887,7 +902,7 @@ async fn load_event_summaries(
         .filter(event_entity::Column::Id.is_in(ids.iter().copied()))
         .all(conn)
         .await
-        .map_err(Error::from)?
+        .db_operation("load user collection event summaries")?
         .into_iter()
         .map(|e| {
             let start_date = DateWithPrecision::from_option(
@@ -917,7 +932,7 @@ async fn load_label_summaries(
         .filter(label_entity::Column::Id.is_in(ids.iter().copied()))
         .all(conn)
         .await
-        .map_err(Error::from)?
+        .db_operation("load user collection label summaries")?
         .into_iter()
         .map(|l| {
             (

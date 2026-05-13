@@ -1,8 +1,7 @@
-use axum::http::StatusCode;
 use derive_more::Display;
 use entity::enums::EntityType;
 pub use entity::sea_orm_active_enums::ArtistType;
-use macros::{ApiError, IntoErrorSchema, cmp_chain};
+use macros::cmp_chain;
 use serde::Deserialize;
 use url::Url;
 use utoipa::ToSchema;
@@ -13,22 +12,10 @@ use crate::domain::shared::{
     DateWithPrecision, EntityIdent, Location, NewLocalizedName,
 };
 
-#[derive(Debug, snafu::Snafu, ApiError, IntoErrorSchema)]
-#[snafu(display("Validation error: {kind}"))]
-#[api_error(
-    status_code = StatusCode::BAD_REQUEST
-)]
-pub struct ValidationError {
-    pub kind: ValidationErrorKind,
-}
+pub type ValidationError =
+    crate::shared::error::ValidationError<ValidationErrorKind>;
 
-impl From<ValidationErrorKind> for ValidationError {
-    fn from(kind: ValidationErrorKind) -> Self {
-        Self { kind }
-    }
-}
-
-#[derive(Debug, Display)]
+#[derive(Debug, Display, derive_more::Error)]
 pub enum ValidationErrorKind {
     #[display("Unknown type artist cannot have members")]
     UnknownTypeArtistHasMembers,

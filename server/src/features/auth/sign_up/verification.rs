@@ -5,21 +5,36 @@ use crate::domain::auth::{
     SIGNUP_EXPIRES_HOURS, VERIFICATION_CODE_EXPIRES_MINUTES,
 };
 use crate::domain::user::User;
+use crate::features::auth::repo::EmailVerificationMutationError;
 use crate::features::auth::{
     InvalidEmail, ResendVerificationEmailError, SignUpError,
 };
-use crate::infra::error::Error;
+use crate::infra::database::error::DatabaseError;
+use crate::shared::error::InternalError;
 
-#[derive(Debug)]
+#[derive(Debug, derive_more::From)]
 pub(super) enum SendVerificationEmailError {
-    Infra(Error),
+    #[from]
+    Internal(InternalError),
     Unavailable,
+    #[from]
     InvalidEmail(InvalidEmail),
 }
 
-impl From<Error> for SendVerificationEmailError {
-    fn from(value: Error) -> Self {
-        Self::Infra(value)
+impl From<DatabaseError> for SendVerificationEmailError {
+    fn from(value: DatabaseError) -> Self {
+        Self::Internal(InternalError::new(value))
+    }
+}
+
+impl From<EmailVerificationMutationError> for SendVerificationEmailError {
+    fn from(value: EmailVerificationMutationError) -> Self {
+        match value {
+            EmailVerificationMutationError::Database(source) => source.into(),
+            EmailVerificationMutationError::BrokenReference(_) => {
+                InternalError::new(value).into()
+            }
+        }
     }
 }
 
@@ -30,11 +45,9 @@ impl From<SendVerificationEmailError> for SignUpError {
                 SignUpError::EmailServiceUnavailable
             }
             SendVerificationEmailError::InvalidEmail(source) => {
-                SignUpError::InvalidEmail { source }
+                SignUpError::InvalidEmail(source)
             }
-            SendVerificationEmailError::Infra(source) => {
-                SignUpError::Infra { source }
-            }
+            SendVerificationEmailError::Internal(source) => source.into(),
         }
     }
 }
@@ -46,11 +59,9 @@ impl From<SendVerificationEmailError> for ResendVerificationEmailError {
                 ResendVerificationEmailError::ResendEmailServiceUnavailable
             }
             SendVerificationEmailError::InvalidEmail(source) => {
-                ResendVerificationEmailError::InvalidEmail { source }
+                ResendVerificationEmailError::InvalidEmail(source)
             }
-            SendVerificationEmailError::Infra(source) => {
-                ResendVerificationEmailError::Infra { source }
-            }
+            SendVerificationEmailError::Internal(source) => source.into(),
         }
     }
 }

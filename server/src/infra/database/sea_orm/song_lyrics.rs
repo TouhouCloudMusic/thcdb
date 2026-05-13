@@ -4,32 +4,37 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DbErr, EntityTrait,
     ModelTrait, QueryFilter, QueryOrder, QueryTrait,
 };
-use snafu::ResultExt;
 
-use super::SeaOrmTxRepo;
+use super::{ApplyCorrectionError, SeaOrmTxRepo};
 use crate::domain::song_lyrics::NewSongLyrics;
 use crate::features::song_lyrics::TxRepo;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::error::BrokenEntityReference;
 
 impl TxRepo for SeaOrmTxRepo {
     async fn create(
         &self,
         lyrics: &NewSongLyrics,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        create_lyrics_impl(lyrics, self.conn()).await.boxed()
+    ) -> Result<i32, DatabaseError> {
+        create_lyrics_impl(lyrics, self.conn())
+            .await
+            .db_operation("create song lyrics")
     }
 
     async fn create_history(
         &self,
         lyrics: &NewSongLyrics,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        create_history_impl(lyrics, self.conn()).await.boxed()
+    ) -> Result<i32, DatabaseError> {
+        create_history_impl(lyrics, self.conn())
+            .await
+            .db_operation("create song lyrics history")
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        apply_update_impl(correction, self.conn()).await.boxed()
+    ) -> Result<(), ApplyCorrectionError> {
+        apply_update_impl(correction, self.conn()).await
     }
 }
 
@@ -93,15 +98,16 @@ pub(crate) async fn create_history_impl(
 pub(crate) async fn apply_update_impl(
     correction: entity::correction::Model,
     conn: &impl ConnectionTrait,
-) -> Result<(), DbErr> {
+) -> Result<(), ApplyCorrectionError> {
     // Find the latest correction revision
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(conn)
         .await?
-        .ok_or_else(|| {
-            DbErr::Custom("Correction revision not found".to_string())
+        .ok_or(BrokenEntityReference {
+            entity: "correction revision",
+            id: correction.id,
         })?;
 
     // Find the history record
@@ -109,8 +115,9 @@ pub(crate) async fn apply_update_impl(
         song_lyrics_history::Entity::find_by_id(revision.entity_history_id)
             .one(conn)
             .await?
-            .ok_or_else(|| {
-                DbErr::Custom("Song lyrics history not found".to_string())
+            .ok_or(BrokenEntityReference {
+                entity: "song lyrics history",
+                id: revision.entity_history_id,
             })?;
 
     // Check if the song lyrics record already exists
@@ -137,10 +144,10 @@ pub(crate) async fn apply_update_impl(
         };
         model.update(conn).await?;
     } else {
-        Err(DbErr::Custom(
-            "Song lyric update target not found, this should not happen"
-                .to_string(),
-        ))?;
+        Err(BrokenEntityReference {
+            entity: "song lyrics",
+            id: correction.entity_id,
+        })?;
     }
 
     Ok(())

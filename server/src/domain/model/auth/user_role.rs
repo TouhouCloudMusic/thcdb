@@ -1,7 +1,9 @@
-use sea_orm::DbErr;
 use serde::{Deserialize, Serialize};
 use strum::{EnumCount, EnumIter, EnumString, IntoEnumIterator};
 use utoipa::ToSchema;
+
+use crate::infra::database::error::DatabaseError;
+use crate::shared::error::BrokenEntityReference;
 
 #[derive(
     Clone,
@@ -20,6 +22,12 @@ pub enum UserRoleEnum {
     Admin = 1,
     Moderator = 2,
     User = 3,
+}
+
+#[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
+#[display("Invalid user role id: {id}")]
+pub struct InvalidUserRoleId {
+    pub id: i32,
 }
 
 #[derive(
@@ -50,14 +58,14 @@ impl From<UserRoleEnum> for i32 {
 }
 
 impl TryFrom<i32> for UserRoleEnum {
-    type Error = &'static str;
+    type Error = InvalidUserRoleId;
 
     fn try_from(value: i32) -> Result<Self, Self::Error> {
         match value {
             1 => Ok(UserRoleEnum::Admin),
             2 => Ok(UserRoleEnum::Moderator),
             3 => Ok(UserRoleEnum::User),
-            _ => Err("Invalid user role id from database"),
+            _ => Err(InvalidUserRoleId { id: value }),
         }
     }
 }
@@ -87,11 +95,17 @@ pub struct UserRole {
 }
 
 impl TryFrom<entity::user_role::Model> for UserRole {
-    type Error = DbErr;
+    type Error = DatabaseError;
+
     fn try_from(value: entity::user_role::Model) -> Result<Self, Self::Error> {
-        Ok(UserRoleEnum::try_from(value.role_id)
-            .map_err(|str| DbErr::Custom(str.to_owned()))?
-            .into())
+        UserRoleEnum::try_from(value.role_id)
+            .map(Into::into)
+            .map_err(|_| {
+                DatabaseError::from(BrokenEntityReference {
+                    entity: "user_role",
+                    id: value.role_id,
+                })
+            })
     }
 }
 
@@ -112,6 +126,6 @@ impl From<UserRole> for UserRoleEnum {
 
 impl From<&UserRole> for UserRoleEnum {
     fn from(val: &UserRole) -> Self {
-        Self::try_from(val.id).expect("Invalid user role id from database")
+        Self::try_from(val.id).expect("valid user role id from domain model")
     }
 }

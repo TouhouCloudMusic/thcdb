@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 
-use axum::response::IntoResponse;
 use entity::user as user_entity;
 use sea_orm::{ColumnTrait, DerivePartialModel, EntityTrait, QueryFilter};
 use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::adapter::inbound::rest::state;
-use crate::infra::error::Error as InfraError;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 #[derive(Clone, Serialize, ToSchema, DerivePartialModel)]
 #[sea_orm(entity = "user_entity::Entity", from_query_result)]
@@ -28,7 +27,7 @@ impl UserSummary {
 pub(crate) async fn load_users(
     repo: &state::SeaOrmRepository,
     user_ids: Vec<i32>,
-) -> Result<HashMap<i32, UserSummary>, axum::response::Response> {
+) -> Result<HashMap<i32, UserSummary>, DatabaseError> {
     if user_ids.is_empty() {
         return Ok(HashMap::new());
     }
@@ -38,8 +37,7 @@ pub(crate) async fn load_users(
         .into_partial_model::<UserSummary>()
         .all(&repo.conn)
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .db_operation("load image queue users")?;
 
     Ok(users.into_iter().map(|user| (user.id, user)).collect())
 }

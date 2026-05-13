@@ -2,45 +2,28 @@ mod http;
 mod model;
 mod repo;
 
-use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 pub use http::router;
 
-use crate::shared::http::api_response::Error as ApiError;
+use crate::infra::database::error::DatabaseError;
+use crate::shared::error::EntityNotFound;
 
-#[derive(Debug)]
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
 pub enum Error {
-    EntityNotFound(&'static str, i32),
-    TagNotFound(i32),
-    Db(sea_orm::DbErr),
-}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::EntityNotFound(entity, id) => {
-                write!(f, "{entity} with id {id} not found")
-            }
-            Self::TagNotFound(id) => write!(f, "Tag with id {id} not found"),
-            Self::Db(e) => write!(f, "{e}"),
-        }
-    }
+    #[display("{_0}")]
+    NotFound(#[error(source)] EntityNotFound),
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
 }
 
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
-        let status = match &self {
-            Self::EntityNotFound(_, _) | Self::TagNotFound(_) => {
-                StatusCode::NOT_FOUND
-            }
-            Self::Db(_) => StatusCode::INTERNAL_SERVER_ERROR,
-        };
-        ApiError::new((self.to_string(), status)).into_response()
-    }
-}
-
-impl From<sea_orm::DbErr> for Error {
-    fn from(e: sea_orm::DbErr) -> Self {
-        Self::Db(e)
+        match self {
+            Error::NotFound(source) => source.into_response(),
+            Error::Database(source) => source.into_response(),
+        }
     }
 }

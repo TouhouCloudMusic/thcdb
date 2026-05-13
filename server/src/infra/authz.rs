@@ -9,14 +9,21 @@ use sea_orm::{
 use strum::IntoEnumIterator;
 
 use crate::domain::model::{PermissionDef, PermissionMarker, UserRoleEnum};
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
-pub async fn sync_permissions(db: &DatabaseConnection) -> Result<(), DbErr> {
-    let tx = db.begin().await?;
+pub async fn sync_permissions(
+    db: &DatabaseConnection,
+) -> Result<(), DatabaseError> {
+    let tx = db.begin().await.db_operation("begin permission sync")?;
 
-    sync_permission_defs(&tx).await?;
-    sync_role_permissions(&tx).await?;
+    sync_permission_defs(&tx)
+        .await
+        .db_operation("sync permission definitions")?;
+    sync_role_permissions(&tx)
+        .await
+        .db_operation("sync role permissions")?;
 
-    tx.commit().await?;
+    tx.commit().await.db_operation("commit permission sync")?;
     Ok(())
 }
 
@@ -193,11 +200,7 @@ async fn sync_role_permissions(db: &impl ConnectionTrait) -> Result<(), DbErr> {
             let permission_id = permission_ids
                 .get(permission_name)
                 .copied()
-                .ok_or_else(|| {
-                    DbErr::Custom(format!(
-                        "Permission not found after sync: {permission_name}"
-                    ))
-                })?;
+                .expect("permission exists after permission sync");
 
             mappings.push(role_permission::ActiveModel {
                 role_id: Set(role_id),
@@ -237,7 +240,7 @@ async fn permission_fetch_id_map(
 pub async fn user_has_permission<P>(
     db: &impl ConnectionTrait,
     user_id: i32,
-) -> Result<bool, DbErr>
+) -> Result<bool, DatabaseError>
 where
     P: PermissionMarker,
 {
@@ -259,6 +262,7 @@ where
         .limit(1)
         .into_tuple::<(i32,)>()
         .one(db)
-        .await?;
+        .await
+        .db_operation("query user permission")?;
     Ok(exists.is_some())
 }

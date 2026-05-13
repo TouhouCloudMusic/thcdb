@@ -1,16 +1,22 @@
-use axum::http::StatusCode;
-use macros::ApiError;
-use snafu::Snafu;
+use crate::shared::types::BoxedError;
 
-use crate::shared::http;
+#[derive(Debug, derive_more::Display, derive_more::Error)]
+#[display("Internal server error")]
+pub struct InternalError(#[error(source)] pub BoxedError);
 
-#[derive(Debug, Snafu, ApiError)]
-#[snafu(display("Validation error: {source}"))]
-#[api_error(status_code = StatusCode::BAD_REQUEST)]
+impl InternalError {
+    pub fn new(source: impl std::error::Error + Send + Sync + 'static) -> Self {
+        Self(Box::new(source))
+    }
+}
+
+#[derive(Debug, derive_more::Display, derive_more::Error)]
+#[display("Validation error: {source}")]
 pub struct ValidationError<T>
 where
     T: std::error::Error + 'static,
 {
+    #[error(source)]
     pub source: T,
 }
 
@@ -20,15 +26,6 @@ where
 {
     fn from(source: T) -> Self {
         Self { source }
-    }
-}
-
-impl<T> From<ValidationError<T>> for http::Error<ValidationError<T>>
-where
-    T: std::error::Error + 'static,
-{
-    fn from(err: ValidationError<T>) -> Self {
-        http::Error::bad_request(err)
     }
 }
 
@@ -58,6 +55,30 @@ impl ValidationError<MessageError> {
 }
 
 pub type MessageValidationError = ValidationError<MessageError>;
+
+#[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
+#[display("Permission denied")]
+pub struct PermissionDenied;
+
+#[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
+#[display("{entity} #{id} not found")]
+pub struct EntityNotFound {
+    pub entity: &'static str,
+    pub id: i32,
+}
+
+impl EntityNotFound {
+    pub const fn new(entity: &'static str, id: i32) -> Self {
+        Self { entity, id }
+    }
+}
+
+#[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
+#[display("Broken entity reference: {entity} #{id} not found")]
+pub struct BrokenEntityReference {
+    pub entity: &'static str,
+    pub id: i32,
+}
 
 #[derive(Debug, Clone, derive_more::Display, derive_more::Error)]
 #[display("{message}")]

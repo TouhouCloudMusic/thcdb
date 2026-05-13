@@ -1,6 +1,5 @@
 use axum::Json;
 use axum::extract::State;
-use axum::response::IntoResponse;
 use axum_extra::extract::cookie::{Cookie as SetCookie, CookieJar, SameSite};
 use chrono::{DateTime, FixedOffset};
 use cookie::CookieBuilder;
@@ -11,7 +10,9 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::super::shared::TAG;
-use super::error::{ForgotPasswordError, ResetPasswordError};
+use super::error::{
+    ForgotPasswordError, ResetPasswordError, VerifyResetCodeError,
+};
 use super::service::{
     ForgotPasswordCommand, ForgotPasswordResult, ResetPasswordCommand,
     VerifiedResetPasswordSession, VerifyResetCodeCommand,
@@ -159,22 +160,14 @@ async fn verify_reset_code(
     State(auth_service): State<state::AuthService>,
     jar: CookieJar,
     Json(req): Json<VerifyResetCodeRequest>,
-) -> impl IntoResponse {
-    match auth_service.verify_reset_code(req.into()).await {
-        Ok(res) => {
-            let now: chrono::DateTime<chrono::FixedOffset> =
-                chrono::Utc::now().into();
-            let max_age_seconds =
-                (res.key_expires_at - now).num_seconds().max(0);
+) -> Result<(CookieJar, Data<VerifyResetCodeResponse>), VerifyResetCodeError> {
+    let res = auth_service.verify_reset_code(req.into()).await?;
+    let now: chrono::DateTime<chrono::FixedOffset> = chrono::Utc::now().into();
+    let max_age_seconds = (res.key_expires_at - now).num_seconds().max(0);
 
-            let jar =
-                jar.add(build_reset_password_cookie(&res.key, max_age_seconds));
+    let jar = jar.add(build_reset_password_cookie(&res.key, max_age_seconds));
 
-            (jar, Data::new(VerifyResetCodeResponse::from(&res)))
-                .into_response()
-        }
-        Err(err) => err.into_response(),
-    }
+    Ok((jar, Data::new(VerifyResetCodeResponse::from(&res))))
 }
 
 #[utoipa::path(
@@ -190,13 +183,12 @@ async fn reset_password(
     State(auth_service): State<state::AuthService>,
     jar: CookieJar,
     Json(req): Json<ResetPasswordRequest>,
-) -> impl IntoResponse {
+) -> Result<(CookieJar, Message), (CookieJar, ResetPasswordError)> {
     let Some(reset_key) = jar.get(RESET_PASSWORD_COOKIE_NAME) else {
-        return (
+        return Err((
             jar.remove(clear_reset_password_cookie()),
-            ResetPasswordError::InvalidOrExpiredResetKey.into_response(),
-        )
-            .into_response();
+            ResetPasswordError::InvalidOrExpiredResetKey,
+        ));
     };
 
     let req = ResetPasswordCommand {
@@ -205,13 +197,13 @@ async fn reset_password(
     };
 
     match auth_service.reset_password(req).await {
-        Ok(()) => (jar.remove(clear_reset_password_cookie()), Message::ok())
-            .into_response(),
-        Err(err @ ResetPasswordError::InvalidOrExpiredResetKey) => (
+        Ok(()) => {
+            Ok((jar.remove(clear_reset_password_cookie()), Message::ok()))
+        }
+        Err(ResetPasswordError::InvalidOrExpiredResetKey) => Err((
             jar.remove(clear_reset_password_cookie()),
-            err.into_response(),
-        )
-            .into_response(),
-        Err(err) => err.into_response(),
+            ResetPasswordError::InvalidOrExpiredResetKey,
+        )),
+        Err(err) => Err((jar, err)),
     }
 }

@@ -1,14 +1,13 @@
 use std::sync::LazyLock;
 
 use ::image::ImageFormat;
+use axum::response::IntoResponse;
 use bytesize::ByteSize;
 use entity::enums::ReleaseImageType;
 use entity::{image as image_entity, release_image, user as user_entity};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
-use super::error::Error;
 use super::model::ReleaseCoverArtInput;
-use crate::application::error::EntityNotFound;
 use crate::constant::{
     RELEASE_COVER_IMAGE_MAX_HEIGHT, RELEASE_COVER_IMAGE_MAX_WIDTH,
     RELEASE_COVER_IMAGE_MIN_HEIGHT, RELEASE_COVER_IMAGE_MIN_WIDTH,
@@ -23,8 +22,11 @@ use crate::domain::shared::ImageUploaderSummary;
 use crate::features::image_queue::Repo as ImageQueueRepo;
 use crate::features::release::find::repo as release_repo;
 use crate::features::release_image_queue::Repo as ReleaseImageQueueRepo;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::storage::GenericFileStorage;
+use crate::shared::error::{EntityNotFound, InternalError};
+use crate::shared::http::api_response::AppError;
 
 static RELEASE_COVER_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
     ParseOption::builder()
@@ -43,6 +45,41 @@ static RELEASE_COVER_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
 pub struct Service {
     repo: SeaOrmRepository,
     storage: GenericFileStorage,
+}
+
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+pub enum Error {
+    #[display("{_0}")]
+    #[from]
+    Image(#[error(source)] image::Error),
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+    #[display("{_0}")]
+    #[from]
+    NotFound(#[error(source)] EntityNotFound),
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            Error::Image(source) => match source {
+                image::Error::InvalidInput(source) => {
+                    AppError::bad_request(source.to_string()).into_response()
+                }
+                image::Error::Database(source) => source.into_response(),
+                image::Error::Internal(source) => source.into_response(),
+            },
+            Error::Database(source) => source.into_response(),
+            Error::Internal(source) => source.into_response(),
+            Error::NotFound(source) => source.into_response(),
+        }
+    }
 }
 
 impl Service {
@@ -64,10 +101,14 @@ impl Service {
         } = dto;
 
         if !release_repo::exists(&self.repo.conn, release_id).await? {
-            Err(EntityNotFound::new(release_id, "release"))?;
+            return Err(EntityNotFound::new("release", release_id).into());
         }
 
-        let tx_repo = self.repo.begin_tx().await?;
+        let tx_repo = self
+            .repo
+            .begin_tx()
+            .await
+            .db_operation("begin release cover art upload transaction")?;
 
         let image_service =
             image::Service::new(tx_repo.clone(), self.storage.clone());
@@ -108,7 +149,8 @@ impl Service {
             .filter(release_image::Column::Type.eq(ReleaseImageType::Cover))
             .order_by_desc(image_entity::Column::UploadedAt)
             .one(&self.repo.conn)
-            .await?;
+            .await
+            .db_operation("find current release cover art")?;
 
         let Some(image) = image else {
             return Ok(None);
@@ -117,7 +159,8 @@ impl Service {
         let uploader = user_entity::Entity::find_by_id(image.uploaded_by)
             .into_partial_model::<ImageUploaderSummary>()
             .one(&self.repo.conn)
-            .await?
+            .await
+            .db_operation("find release cover art uploader")?
             .unwrap_or_else(|| ImageUploaderSummary {
                 id: image.uploaded_by,
                 name: "Unknown".to_string(),

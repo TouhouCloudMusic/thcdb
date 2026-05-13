@@ -2,7 +2,6 @@ use std::collections::BTreeSet;
 
 use axum::Json;
 use axum::extract::{Path, Query, State};
-use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use chrono::Utc;
 use entity::{user, user_role, user_role_change_audit};
@@ -24,11 +23,41 @@ use crate::domain::model::{
     AdminUserRead, AdminWrite, EditableUserRole, UserRole, UserRoleEnum,
 };
 use crate::domain::shared::PageResponse;
-use crate::infra::error::Error as InfraError;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::error::{EntityNotFound, InternalError};
+use crate::shared::http::PageQuery;
 use crate::shared::http::api_response::Data;
-use crate::shared::http::{PageQuery, api_response};
 
 const TAG: &str = "Admin";
+
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+enum Error {
+    #[display("{_0}")]
+    #[from]
+    Authz(#[error(source)] authz::Error),
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+    #[display("{_0}")]
+    #[from]
+    NotFound(#[error(source)] EntityNotFound),
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            Error::Authz(source) => source.into_response(),
+            Error::Database(source) => source.into_response(),
+            Error::Internal(source) => source.into_response(),
+            Error::NotFound(source) => source.into_response(),
+        }
+    }
+}
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
@@ -73,7 +102,7 @@ async fn admin_users(
     Query(filter): Query<AdminUsersFilter>,
     Query(pagination): Query<PageQuery>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<PageResponse<UserSummary>>, axum::response::Response> {
+) -> Result<Data<PageResponse<UserSummary>>, Error> {
     authz::ensure_permission::<AdminUserRead>(&repo.conn, user.id).await?;
 
     let keyword = filter
@@ -93,8 +122,7 @@ async fn admin_users(
         .clone()
         .count(&repo.conn)
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .db_operation("count admin users")?;
 
     let models = select
         .order_by_asc(user::Column::Id)
@@ -103,26 +131,21 @@ async fn admin_users(
         .find_with_related(user_role::Entity)
         .all(&repo.conn)
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .db_operation("find admin users")?;
 
     let items = models
         .into_iter()
-        .map(|(user, roles)| -> Result<UserSummary, sea_orm::DbErr> {
-            let roles = roles
-                .into_iter()
-                .map(UserRole::try_from)
-                .collect::<Result<Vec<_>, _>>()?;
-
+        .map(|(user, roles)| {
             Ok(UserSummary {
                 id: user.id,
                 name: user.name,
-                roles,
+                roles: roles
+                    .into_iter()
+                    .map(UserRole::try_from)
+                    .collect::<Result<_, _>>()?,
             })
         })
-        .collect::<Result<Vec<_>, sea_orm::DbErr>>()
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .collect::<Result<Vec<_>, Error>>()?;
 
     Ok(Data::new(pagination.to_response(items, total_items)))
 }
@@ -146,40 +169,31 @@ async fn set_user_roles(
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
     Json(req): Json<SetUserRolesRequest>,
-) -> Result<Data<Vec<UserRole>>, axum::response::Response> {
+) -> Result<Data<Vec<UserRole>>, Error> {
     authz::ensure_permission::<AdminWrite>(&repo.conn, actor.id).await?;
 
     let tx_repo = repo
         .begin_tx()
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .db_operation("begin set user roles transaction")?;
 
     let target_user = user::Entity::find_by_id(id)
         .one(tx_repo.conn())
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .db_operation("find user for role update")?;
 
     if target_user.is_none() {
-        return Err(api_response::Error::from_err_and_code(
-            "User not found",
-            StatusCode::NOT_FOUND,
-        )
-        .into_response());
+        return Err(EntityNotFound::new("user", id).into());
     }
 
     let old_roles = user_role::Entity::find()
         .filter(user_role::Column::UserId.eq(id))
         .all(tx_repo.conn())
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?
+        .db_operation("find old user roles")?
         .into_iter()
         .map(UserRole::try_from)
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .collect::<Result<Vec<UserRole>, _>>()?;
 
     user_role::Entity::delete_many()
         .filter(user_role::Column::UserId.eq(id))
@@ -188,8 +202,7 @@ async fn set_user_roles(
         )
         .exec(tx_repo.conn())
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .db_operation("delete old editable user roles")?;
 
     let new_role_models = req
         .roles
@@ -205,21 +218,17 @@ async fn set_user_roles(
         user_role::Entity::insert_many(new_role_models)
             .exec(tx_repo.conn())
             .await
-            .map_err(InfraError::from)
-            .map_err(IntoResponse::into_response)?;
+            .db_operation("insert new user roles")?;
     }
 
     let new_roles = user_role::Entity::find()
         .filter(user_role::Column::UserId.eq(id))
         .all(tx_repo.conn())
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?
+        .db_operation("find new user roles")?
         .into_iter()
         .map(UserRole::try_from)
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .collect::<Result<Vec<UserRole>, _>>()?;
 
     let old_role_names = old_roles.iter().map(|r| r.name.clone()).collect_vec();
     let new_role_names =
@@ -237,14 +246,9 @@ async fn set_user_roles(
     )
     .exec(tx_repo.conn())
     .await
-    .map_err(InfraError::from)
-    .map_err(IntoResponse::into_response)?;
+    .db_operation("insert user role change audit")?;
 
-    tx_repo
-        .commit()
-        .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+    tx_repo.commit().await?;
 
     Ok(Data::new(new_roles))
 }

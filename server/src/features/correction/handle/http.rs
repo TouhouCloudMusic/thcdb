@@ -9,8 +9,29 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz};
 use crate::domain::model::CorrectionManage;
 use crate::features::correction::model::HandleCorrectionMethod;
-use crate::features::correction::service;
+use crate::features::correction::{ModerationError, service};
 use crate::shared::http::api_response::Message;
+
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+enum Error {
+    #[display("{_0}")]
+    #[from]
+    Authz(#[error(source)] authz::Error),
+    #[display("{_0}")]
+    #[from]
+    Moderation(#[error(source)] ModerationError),
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            Error::Authz(source) => source.into_response(),
+            Error::Moderation(source) => source.into_response(),
+        }
+    }
+}
 
 #[derive(IntoParams, Deserialize)]
 struct HandleCorrectionQuery {
@@ -40,14 +61,12 @@ async fn handle_correction(
     Query(query): Query<HandleCorrectionQuery>,
     State(repo): State<state::SeaOrmRepository>,
     State(notification): State<state::NotificationService>,
-) -> Result<Message, axum::response::Response> {
+) -> Result<Message, Error> {
     authz::ensure_permission::<CorrectionManage>(&repo.conn, user.id).await?;
 
     match query.method {
         HandleCorrectionMethod::Approve => {
-            service::approve(&repo, id, user)
-                .await
-                .map_err(IntoResponse::into_response)?;
+            service::approve(&repo, id, user).await?;
 
             notification
                 .notify_correction_status_best_effort(
@@ -60,9 +79,7 @@ async fn handle_correction(
             Ok(Message::ok())
         }
         HandleCorrectionMethod::Reject => {
-            service::reject(&repo, id, user)
-                .await
-                .map_err(IntoResponse::into_response)?;
+            service::reject(&repo, id, user).await?;
 
             notification
                 .notify_correction_status_best_effort(

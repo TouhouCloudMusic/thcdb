@@ -12,7 +12,8 @@ use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::model::{EditableUserRole, UserRoleEnum};
 use crate::domain::shared::Language;
 use crate::domain::song::SongRelationType;
-use crate::infra::error::Error;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::error::BrokenEntityReference;
 use crate::shared::http::api_response::Data;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
@@ -42,10 +43,11 @@ data! {
 )]
 async fn language_list(
     State(state): State<ArcAppState>,
-) -> Result<Data<Vec<Language>>, Error> {
+) -> Result<Data<Vec<Language>>, DatabaseError> {
     let res: Vec<Language> = language::Entity::find()
         .all(&state.database)
-        .await?
+        .await
+        .db_operation("list languages")?
         .fmap_into();
 
     Ok(res.into())
@@ -60,13 +62,21 @@ async fn language_list(
 )]
 async fn user_roles(
     State(state): State<ArcAppState>,
-) -> Result<Data<Vec<UserRoleEnum>>, Error> {
+) -> Result<Data<Vec<UserRoleEnum>>, DatabaseError> {
     Ok(role::Entity::find()
         .all(&state.database)
-        .await?
-        .iter()
-        .filter_map(|model| UserRoleEnum::try_from(model.id).ok())
-        .collect_vec()
+        .await
+        .db_operation("list user roles")?
+        .into_iter()
+        .map(|model| {
+            UserRoleEnum::try_from(model.id).map_err(|_| {
+                DatabaseError::from(BrokenEntityReference {
+                    entity: "role",
+                    id: model.id,
+                })
+            })
+        })
+        .collect::<Result<Vec<_>, _>>()?
         .into())
 }
 
@@ -79,8 +89,8 @@ async fn user_roles(
 )]
 async fn editable_user_roles(
     State(_state): State<ArcAppState>,
-) -> Result<Data<Vec<EditableUserRole>>, Error> {
-    Ok(EditableUserRole::iter().collect_vec().into())
+) -> Data<Vec<EditableUserRole>> {
+    EditableUserRole::iter().collect_vec().into()
 }
 
 #[utoipa::path(
@@ -92,11 +102,12 @@ async fn editable_user_roles(
 )]
 async fn song_relation_types(
     State(state): State<ArcAppState>,
-) -> Result<Data<Vec<SongRelationType>>, Error> {
+) -> Result<Data<Vec<SongRelationType>>, DatabaseError> {
     Ok(song_relation_type::Entity::find()
         .order_by_asc(song_relation_type::Column::Id)
         .all(&state.database)
-        .await?
+        .await
+        .db_operation("list song relation types")?
         .into_iter()
         .map(Into::into)
         .collect_vec()

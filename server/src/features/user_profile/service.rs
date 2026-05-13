@@ -2,9 +2,9 @@ use entity::user_following;
 use sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, Set};
 
 use crate::domain::user::{ProfileRepository, Repository, User, UserProfile};
-use crate::features::user_profile::{FollowResult, UnfollowResult};
+use crate::features::user_profile::{Error, FollowResult, UnfollowResult};
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
-use crate::infra::error::Error;
 
 #[derive(Clone)]
 pub struct Service {
@@ -20,9 +20,9 @@ impl Service {
         &self,
         name: &str,
     ) -> Result<Option<UserProfile>, Error> {
-        ProfileRepository::find_by_name(&self.repo, name)
-            .await
-            .map_err(Error::from)
+        let profile = ProfileRepository::find_by_name(&self.repo, name).await?;
+
+        Ok(profile)
     }
 
     pub async fn with_following(
@@ -30,19 +30,18 @@ impl Service {
         profile: &mut UserProfile,
         current_user: &User,
     ) -> Result<(), Error> {
-        self.repo
-            .with_following(profile, current_user)
-            .await
-            .map_err(Error::from)
+        self.repo.with_following(profile, current_user).await?;
+
+        Ok(())
     }
 
     pub async fn find_user_by_name(
         &self,
         name: &str,
     ) -> Result<Option<User>, Error> {
-        Repository::find_by_name(&self.repo, name)
-            .await
-            .map_err(Error::from)
+        let user = Repository::find_by_name(&self.repo, name).await?;
+
+        Ok(user)
     }
 
     pub async fn follow(
@@ -51,7 +50,7 @@ impl Service {
         target_user_id: i32,
     ) -> Result<FollowResult, Error> {
         if current_user_id == target_user_id {
-            return Err(Error::custom(&"cannot follow yourself"));
+            return Err(Error::CannotFollowSelf);
         }
 
         let exists = user_following::Entity::find()
@@ -59,7 +58,7 @@ impl Service {
             .filter(user_following::Column::FollowingId.eq(target_user_id))
             .count(&self.repo.conn)
             .await
-            .map_err(Error::from)?;
+            .db_operation("check user follow relationship")?;
 
         if exists > 0 {
             return Ok(FollowResult::AlreadyFollowing);
@@ -72,7 +71,7 @@ impl Service {
         })
         .exec(&self.repo.conn)
         .await
-        .map_err(Error::from)?;
+        .db_operation("create user follow relationship")?;
 
         Ok(FollowResult::Followed)
     }
@@ -87,7 +86,7 @@ impl Service {
             .filter(user_following::Column::FollowingId.eq(target_user_id))
             .exec(&self.repo.conn)
             .await
-            .map_err(Error::from)?;
+            .db_operation("delete user follow relationship")?;
 
         if res.rows_affected > 0 {
             Ok(UnfollowResult::Unfollowed)

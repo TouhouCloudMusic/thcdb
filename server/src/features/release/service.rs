@@ -3,24 +3,25 @@ use garde::Validate;
 
 use crate::application::correction::CorrectionSubmissionResult;
 use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
-use crate::features::correction::service as correction_service;
-use crate::features::release::error::{CreateError, UpsertCorrectionError};
+use crate::features::correction::{
+    SubmissionError, service as correction_service,
+};
 use crate::features::release::model::NewRelease;
-use crate::infra;
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 
 pub async fn create(
     repo: &SeaOrmRepository,
     correction: NewCorrection<NewRelease>,
-) -> Result<CorrectionSubmissionResult, CreateError> {
-    correction
-        .data
-        .validate()
-        .map_err(|e| CreateError::Validation {
-            message: e.to_string(),
-        })?;
+) -> Result<CorrectionSubmissionResult, SubmissionError> {
+    correction.data.validate().map_err(|e| {
+        SubmissionError::Validation(format!("Validation error: {e}"))
+    })?;
 
-    let tx_repo = repo.begin_tx().await.map_err(infra::Error::from)?;
+    let tx_repo = repo
+        .begin_tx()
+        .await
+        .db_operation("begin release creation correction transaction")?;
 
     let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
     let history_id =
@@ -47,12 +48,11 @@ pub async fn create(
             entity::enums::EntityType::Release,
         ),
     )
-    .await
-    .map_err(|err| infra::Error::Internal { source: err })?
-    .ok_or_else(|| infra::Error::custom(&"Correction not found"))?
+    .await?
+    .ok_or(SubmissionError::NotFound)?
     .id;
 
-    tx_repo.commit().await.map_err(infra::Error::from)?;
+    tx_repo.commit().await?;
 
     Ok(CorrectionSubmissionResult {
         correction_id,
@@ -64,14 +64,15 @@ pub async fn upsert_correction(
     repo: &SeaOrmRepository,
     id: i32,
     correction: NewCorrection<NewRelease>,
-) -> Result<CorrectionSubmissionResult, UpsertCorrectionError> {
+) -> Result<CorrectionSubmissionResult, SubmissionError> {
     correction.data.validate().map_err(|e| {
-        UpsertCorrectionError::Validation {
-            message: e.to_string(),
-        }
+        SubmissionError::Validation(format!("Validation error: {e}"))
     })?;
 
-    let tx_repo = repo.begin_tx().await.map_err(infra::Error::from)?;
+    let tx_repo = repo
+        .begin_tx()
+        .await
+        .db_operation("begin release update correction transaction")?;
 
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;
@@ -97,12 +98,11 @@ pub async fn upsert_correction(
             entity::enums::EntityType::Release,
         ),
     )
-    .await
-    .map_err(|err| infra::Error::Internal { source: err })?
-    .ok_or_else(|| infra::Error::custom(&"Correction not found"))?
+    .await?
+    .ok_or(SubmissionError::NotFound)?
     .id;
 
-    tx_repo.commit().await.map_err(infra::Error::from)?;
+    tx_repo.commit().await?;
 
     Ok(CorrectionSubmissionResult {
         correction_id,

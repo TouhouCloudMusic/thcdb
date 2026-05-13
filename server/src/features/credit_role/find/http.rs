@@ -1,5 +1,4 @@
 use axum::extract::{Path, Query, State};
-use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -9,7 +8,7 @@ use super::repo::{self, CommonFilter, FindManyFilter};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::features::credit_role::model::{CreditRole, CreditRoleSummary};
-use crate::infra::error::Error;
+use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Credit Role";
@@ -51,10 +50,10 @@ impl From<KwQuery> for FindManyFilter {
 async fn find_many_credit_roles_summary(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KwQuery>,
-) -> Result<Data<Vec<CreditRoleSummary>>, Error> {
+) -> Result<Data<Vec<CreditRoleSummary>>, DatabaseError> {
     repo::find_many_summary(&repo, query.into(), CommonFilter {})
         .await
-        .bimap_into()
+        .map(Data::from)
 }
 
 #[utoipa::path(
@@ -74,6 +73,6 @@ async fn find_credit_role_by_id(
     axum_extra::extract::Query(common): axum_extra::extract::Query<
         CommonFilter,
     >,
-) -> Result<Data<Option<CreditRole>>, Error> {
-    repo::find_one(&repo, id, common).await.bimap_into()
+) -> Result<Data<Option<CreditRole>>, DatabaseError> {
+    repo::find_one(&repo, id, common).await.map(Data::from)
 }

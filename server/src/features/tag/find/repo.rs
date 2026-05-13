@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use entity::tag::Column::Name;
 use entity::{tag, tag_alternative_name, tag_relation};
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, LoaderTrait, QueryFilter,
+    ColumnTrait, ConnectionTrait, EntityTrait, LoaderTrait, QueryFilter,
     QueryOrder,
 };
 use sea_query::extension::postgres::PgBinOper::{
@@ -13,23 +13,25 @@ use sea_query::{ExprTrait, Func};
 
 use crate::domain::tag::{AlternativeName, TagRef, TagRelation};
 use crate::features::tag::model::Tag;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
 
 pub(super) async fn find_by_id(
     repo: &SeaOrmRepository,
     id: i32,
-) -> Result<Option<Tag>, DbErr> {
+) -> Result<Option<Tag>, DatabaseError> {
     let select = tag::Entity::find().filter(tag::Column::Id.eq(id));
 
     find_many_impl(select, &repo.conn)
         .await
         .map(|mut tags| tags.pop())
+        .db_operation("find tag by id")
 }
 
 pub(super) async fn find_by_keyword(
     repo: &SeaOrmRepository,
     keyword: &str,
-) -> Result<Vec<Tag>, DbErr> {
+) -> Result<Vec<Tag>, DatabaseError> {
     let search_term = Func::lower(keyword);
 
     let select = tag::Entity::find()
@@ -42,14 +44,16 @@ pub(super) async fn find_by_keyword(
                 .binary(SimilarityDistance, search_term),
         );
 
-    find_many_impl(select, &repo.conn).await
+    find_many_impl(select, &repo.conn)
+        .await
+        .db_operation("find tags by keyword")
 }
 
 pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::TagFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Tag>, DbErr> {
+) -> Result<crate::domain::shared::PageResponse<Tag>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -60,7 +64,8 @@ pub(super) async fn find_by_filter(
             sort_direction,
             pagination,
         )
-        .await;
+        .await
+        .db_operation("explore tags");
     }
 
     let select = filter.into_select();
@@ -72,6 +77,7 @@ pub(super) async fn find_by_filter(
         |select| find_many_impl(select, &repo.conn),
     )
     .await
+    .db_operation("explore tags")
 }
 
 async fn find_sorted_by_correction(
@@ -80,7 +86,7 @@ async fn find_sorted_by_correction(
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Tag>, DbErr> {
+) -> Result<crate::domain::shared::PageResponse<Tag>, DatabaseError> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
@@ -95,7 +101,8 @@ async fn find_sorted_by_correction(
                 SortDirection::Desc => sea_orm::Order::Desc,
             },
         )
-        .await?;
+        .await
+        .db_operation("list correction-sorted tag ids")?;
 
     if entity_ids.is_empty() {
         return Ok(utils::page_from_items(vec![], &pagination));
@@ -122,9 +129,12 @@ async fn find_sorted_by_correction(
 async fn find_many_impl(
     select: sea_orm::Select<tag::Entity>,
     db: &impl ConnectionTrait,
-) -> Result<Vec<Tag>, sea_orm::DbErr> {
-    let tags = select.all(db).await?;
-    let alt_names = tags.load_many(tag_alternative_name::Entity, db).await?;
+) -> Result<Vec<Tag>, DatabaseError> {
+    let tags = select.all(db).await.db_operation("load tags")?;
+    let alt_names = tags
+        .load_many(tag_alternative_name::Entity, db)
+        .await
+        .db_operation("load tag alternative names")?;
     let tag_relations = load_tag_relations(&tags, db).await?;
 
     Ok(itertools::izip!(tags, alt_names, tag_relations)
@@ -149,13 +159,14 @@ async fn find_many_impl(
 async fn load_tag_relations(
     tags: &[tag::Model],
     db: &impl ConnectionTrait,
-) -> Result<Vec<Vec<TagRelation>>, sea_orm::DbErr> {
+) -> Result<Vec<Vec<TagRelation>>, DatabaseError> {
     let relations = tag_relation::Entity::find()
         .filter(
             tag_relation::Column::TagId.is_in(tags.iter().map(|tag| tag.id)),
         )
         .all(db)
-        .await?;
+        .await
+        .db_operation("load tag relations")?;
 
     let mut grouped_relations: HashMap<i32, Vec<tag_relation::Model>> =
         HashMap::new();
@@ -188,7 +199,8 @@ async fn load_tag_relations(
         tag::Entity::find()
             .filter(tag::Column::Id.is_in(missing_related_tag_ids))
             .all(db)
-            .await?
+            .await
+            .db_operation("load related tags")?
     };
 
     let mut tag_lookup: HashMap<i32, TagRef> =

@@ -2,7 +2,8 @@ use serde::Serialize;
 use serde_json::Value;
 use utoipa::ToSchema;
 
-use super::model::{UserRole, UserRoleEnum};
+use super::model::UserRole;
+use crate::infra::database::error::DatabaseError;
 
 #[serde_with::apply(
     Vec    => #[serde(skip_serializing_if = "Vec::is_empty")],
@@ -75,15 +76,6 @@ pub struct User {
     pub settings: Value,
 }
 
-impl User {
-    pub fn has_roles(&self, expected: &[UserRoleEnum]) -> bool {
-        self.roles.iter().any(|r| {
-            UserRoleEnum::try_from(r.id)
-                .is_ok_and(|role| expected.contains(&role))
-        })
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct NewUser {
     pub name: String,
@@ -94,38 +86,29 @@ pub struct NewUser {
 
 #[trait_variant::make(Send)]
 pub trait Repository {
-    async fn find_by_id(
-        &self,
-        id: i32,
-    ) -> Result<Option<User>, Box<dyn std::error::Error + Send + Sync>>;
+    async fn find_by_id(&self, id: i32) -> Result<Option<User>, DatabaseError>;
 
     async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<User>, Box<dyn std::error::Error + Send + Sync>>;
+    ) -> Result<Option<User>, DatabaseError>;
 }
 
 #[trait_variant::make(Send)]
 pub trait TxRepo {
-    async fn create(
-        &self,
-        user: NewUser,
-    ) -> Result<User, Box<dyn std::error::Error + Send + Sync>>;
-    async fn update(
-        &self,
-        user: User,
-    ) -> Result<User, Box<dyn std::error::Error + Send + Sync>>;
+    async fn create(&self, user: NewUser) -> Result<User, DatabaseError>;
+    async fn update(&self, user: User) -> Result<User, DatabaseError>;
 }
 
 pub trait ProfileRepository {
     async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<UserProfile>, Box<dyn std::error::Error + Send + Sync>>;
+    ) -> Result<Option<UserProfile>, DatabaseError>;
 
     async fn with_following(
         &self,
         profile: &mut UserProfile,
         current_user: &User,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    ) -> Result<(), DatabaseError>;
 }

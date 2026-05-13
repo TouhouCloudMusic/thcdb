@@ -1,5 +1,4 @@
 use axum::extract::{Path, Query, State};
-use axum::response::IntoResponse;
 use entity::image_queue as image_queue_entity;
 use entity::sea_orm_active_enums::ImageQueueStatus;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
@@ -13,7 +12,7 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
 use crate::domain::model::ImageQueueManage;
 use crate::domain::shared::CursorResponse;
 use crate::features::image_queue::shared::{UserSummary, load_users};
-use crate::infra::error::Error as InfraError;
+use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::PaginationQuery;
 use crate::shared::http::api_response::Data;
 
@@ -74,8 +73,7 @@ async fn user_image_queue(
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
     Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<CursorResponse<UserImageQueueItem>>, axum::response::Response>
-{
+) -> Result<Data<CursorResponse<UserImageQueueItem>>, authz::Error> {
     if user.id != id {
         authz::ensure_permission::<ImageQueueManage>(&repo.conn, user.id)
             .await?;
@@ -95,8 +93,7 @@ async fn user_image_queue(
         .limit(u64::from(limit) + 1)
         .all(&repo.conn)
         .await
-        .map_err(InfraError::from)
-        .map_err(IntoResponse::into_response)?;
+        .db_operation("find user image queue")?;
 
     let has_next = models.len() > limit as usize;
     if has_next {

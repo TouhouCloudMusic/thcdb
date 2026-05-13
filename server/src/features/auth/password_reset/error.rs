@@ -1,171 +1,100 @@
-use std::panic::Location;
-
-use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use derive_more::{Display, Error as DeriveError, From};
 
 use crate::domain::auth::ValidateCredsError;
 use crate::features::auth::InvalidEmail;
-use crate::infra;
-use crate::shared::http::api_response::{self, ApiError as _};
+use crate::infra::database::error::DatabaseError;
+use crate::shared::error::InternalError;
+use crate::shared::http::api_response::AppError;
 
-const INTERNAL_ERROR_MESSAGE: &str = "Internal server error";
-
-#[track_caller]
-fn opaque_internal_error_response(
-    source: &(dyn std::error::Error + Send + Sync),
-    operation: &'static str,
-) -> axum::response::Response {
-    log::error!(
-        target: "features.auth.password_reset.error",
-        location:% = Location::caller(),
-        operation = operation,
-        source:? = source;
-        "Password reset auth flow failed with internal error"
-    );
-    api_response::Error::from_err_and_code(
-        INTERNAL_ERROR_MESSAGE,
-        StatusCode::INTERNAL_SERVER_ERROR,
-    )
-    .into_response()
-}
-
-#[derive(Debug, snafu::Snafu)]
+#[derive(Debug, Display, DeriveError, From)]
 pub enum ForgotPasswordError {
-    #[snafu(transparent)]
-    InvalidEmail { source: InvalidEmail },
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
+    #[display("{_0}")]
+    #[from]
+    InvalidEmail(#[error(source)] InvalidEmail),
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
 }
 
-impl ForgotPasswordError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            ForgotPasswordError::InvalidEmail { .. } => StatusCode::BAD_REQUEST,
-            ForgotPasswordError::Infra { source } => source.as_status_code(),
-        }
-    }
-}
-
-impl<E> From<E> for ForgotPasswordError
-where
-    E: Into<infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+impl From<DatabaseError> for ForgotPasswordError {
+    fn from(source: DatabaseError) -> Self {
+        InternalError::new(source).into()
     }
 }
 
 impl IntoResponse for ForgotPasswordError {
     fn into_response(self) -> axum::response::Response {
         match self {
-            ForgotPasswordError::Infra {
-                source: infra::Error::Internal { source },
-            } => opaque_internal_error_response(
-                source.as_ref(),
-                "forgot_password",
-            ),
-            err => {
-                let status_code = err.status_code();
-                api_response::Error::from_err_and_code(err, status_code)
-                    .into_response()
+            ForgotPasswordError::InvalidEmail(source) => {
+                AppError::bad_request(source.to_string()).into_response()
             }
+            ForgotPasswordError::Internal(source) => source.into_response(),
         }
     }
 }
 
-#[derive(Debug, snafu::Snafu)]
+#[derive(Debug, Display, DeriveError, From)]
 pub enum VerifyResetCodeError {
-    #[snafu(transparent)]
-    InvalidEmail { source: InvalidEmail },
-    #[snafu(display("Invalid or expired reset code"))]
+    #[display("{_0}")]
+    #[from]
+    InvalidEmail(#[error(source)] InvalidEmail),
+    #[display("Invalid or expired reset code")]
     InvalidOrExpiredResetCode,
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
 }
 
-impl VerifyResetCodeError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            VerifyResetCodeError::InvalidEmail { .. }
-            | VerifyResetCodeError::InvalidOrExpiredResetCode => {
-                StatusCode::BAD_REQUEST
-            }
-            VerifyResetCodeError::Infra { source } => source.as_status_code(),
-        }
-    }
-}
-
-impl<E> From<E> for VerifyResetCodeError
-where
-    E: Into<infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+impl From<DatabaseError> for VerifyResetCodeError {
+    fn from(source: DatabaseError) -> Self {
+        InternalError::new(source).into()
     }
 }
 
 impl IntoResponse for VerifyResetCodeError {
     fn into_response(self) -> axum::response::Response {
         match self {
-            VerifyResetCodeError::Infra {
-                source: infra::Error::Internal { source },
-            } => opaque_internal_error_response(
-                source.as_ref(),
-                "verify_reset_code",
-            ),
-            err => {
-                let status_code = err.status_code();
-                api_response::Error::from_err_and_code(err, status_code)
+            VerifyResetCodeError::InvalidEmail(source) => {
+                AppError::bad_request(source.to_string()).into_response()
+            }
+            VerifyResetCodeError::InvalidOrExpiredResetCode => {
+                AppError::bad_request("Invalid or expired reset code")
                     .into_response()
             }
+            VerifyResetCodeError::Internal(source) => source.into_response(),
         }
     }
 }
 
-#[derive(Debug, snafu::Snafu)]
+#[derive(Debug, Display, DeriveError, From)]
 pub enum ResetPasswordError {
-    #[snafu(display("Invalid or expired reset key"))]
+    #[display("Invalid or expired reset key")]
     InvalidOrExpiredResetKey,
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
-    #[snafu(transparent)]
-    Validate { source: ValidateCredsError },
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+    #[display("{_0}")]
+    #[from]
+    Validate(#[error(source)] ValidateCredsError),
 }
 
-impl ResetPasswordError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            ResetPasswordError::InvalidOrExpiredResetKey => {
-                StatusCode::BAD_REQUEST
-            }
-            ResetPasswordError::Infra { source } => source.as_status_code(),
-            ResetPasswordError::Validate { source } => source.as_status_code(),
-        }
-    }
-}
-
-impl<E> From<E> for ResetPasswordError
-where
-    E: Into<infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+impl From<DatabaseError> for ResetPasswordError {
+    fn from(source: DatabaseError) -> Self {
+        InternalError::new(source).into()
     }
 }
 
 impl IntoResponse for ResetPasswordError {
     fn into_response(self) -> axum::response::Response {
         match self {
-            ResetPasswordError::Infra {
-                source: infra::Error::Internal { source },
-            } => opaque_internal_error_response(
-                source.as_ref(),
-                "reset_password",
-            ),
-            err => {
-                let status_code = err.status_code();
-                api_response::Error::from_err_and_code(err, status_code)
+            ResetPasswordError::InvalidOrExpiredResetKey => {
+                AppError::bad_request("Invalid or expired reset key")
                     .into_response()
+            }
+            ResetPasswordError::Internal(source) => source.into_response(),
+            ResetPasswordError::Validate(source) => {
+                AppError::bad_request(source.to_string()).into_response()
             }
         }
     }
@@ -174,8 +103,11 @@ impl IntoResponse for ResetPasswordError {
 #[cfg(test)]
 mod tests {
     use axum::body::to_bytes;
+    use axum::http::StatusCode;
+    use axum::response::IntoResponse;
 
     use super::*;
+    use crate::shared::error::MessageError;
 
     async fn response_body_string(
         response: axum::response::Response,
@@ -186,9 +118,9 @@ mod tests {
 
     #[tokio::test]
     async fn forgot_password_internal_error_is_opaque_to_clients() {
-        let response = ForgotPasswordError::Infra {
-            source: infra::Error::custom(&"forgot-password secret"),
-        }
+        let response = ForgotPasswordError::Internal(InternalError::new(
+            MessageError::new("forgot-password secret"),
+        ))
         .into_response();
 
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
@@ -200,9 +132,9 @@ mod tests {
 
     #[tokio::test]
     async fn verify_reset_code_internal_error_is_opaque_to_clients() {
-        let response = VerifyResetCodeError::Infra {
-            source: infra::Error::custom(&"verify-reset-code secret"),
-        }
+        let response = VerifyResetCodeError::Internal(InternalError::new(
+            MessageError::new("verify-reset-code secret"),
+        ))
         .into_response();
 
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
@@ -214,9 +146,9 @@ mod tests {
 
     #[tokio::test]
     async fn reset_password_internal_error_is_opaque_to_clients() {
-        let response = ResetPasswordError::Infra {
-            source: infra::Error::custom(&"reset-password secret"),
-        }
+        let response = ResetPasswordError::Internal(InternalError::new(
+            MessageError::new("reset-password secret"),
+        ))
         .into_response();
 
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);

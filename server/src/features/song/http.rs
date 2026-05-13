@@ -3,7 +3,6 @@ use axum::extract::{Path, State};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::error::{CreateError, UpsertCorrectionError};
 use super::model::NewSong;
 use super::{find, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
@@ -11,6 +10,7 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::application::correction::{
     CorrectionSubmissionResult, NewCorrectionDto,
 };
+use crate::features::correction::SubmissionError;
 use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Song";
@@ -38,7 +38,7 @@ async fn create_song(
     CurrentUser(user): CurrentUser,
     State(repo): State<state::SeaOrmRepository>,
     Json(dto): Json<NewCorrectionDto<NewSong>>,
-) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
+) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
     let result = service::create(&repo, dto.with_author(user)).await?;
 
     Ok(Data::from(result))
@@ -59,7 +59,7 @@ async fn update_song(
     State(notification): State<state::NotificationService>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewSong>>,
-) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
+) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
     let user_id = user.id;
     let result =
         service::upsert_correction(&repo, id, dto.with_author(user)).await?;

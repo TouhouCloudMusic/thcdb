@@ -1,6 +1,4 @@
 use axum::extract::{Path, State};
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use entity::{correction as correction_entity, correction_revision};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 use serde::Deserialize;
@@ -11,9 +9,10 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::domain::correction::CorrectionDiff;
+use crate::features::correction::ReadError;
 use crate::features::correction::shared::repo as correction_diff;
-use crate::infra::error::Error;
-use crate::shared::http::api_response::{self, Data};
+use crate::infra::database::error::DatabaseResultExt;
+use crate::shared::http::api_response::Data;
 
 #[derive(Deserialize, IntoParams)]
 struct CompareCorrectionPath {
@@ -39,41 +38,29 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn compare_corrections(
     Path(CompareCorrectionPath { id1, id2 }): Path<CompareCorrectionPath>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<CorrectionDiff>, impl IntoResponse> {
+) -> Result<Data<CorrectionDiff>, ReadError> {
     let Some(left) = correction_entity::Entity::find_by_id(id1)
         .one(&repo.conn)
         .await
-        .map_err(Error::from)
-        .map_err(IntoResponse::into_response)?
+        .db_operation("find left correction for comparison")?
     else {
-        return Err(api_response::Error::new((
-            "Correction not found",
-            StatusCode::NOT_FOUND,
-        ))
-        .into_response());
+        return Err(ReadError::NotFound("Correction not found"));
     };
 
     let Some(right) = correction_entity::Entity::find_by_id(id2)
         .one(&repo.conn)
         .await
-        .map_err(Error::from)
-        .map_err(IntoResponse::into_response)?
+        .db_operation("find right correction for comparison")?
     else {
-        return Err(api_response::Error::new((
-            "Correction not found",
-            StatusCode::NOT_FOUND,
-        ))
-        .into_response());
+        return Err(ReadError::NotFound("Correction not found"));
     };
 
     if left.entity_id != right.entity_id
         || left.entity_type != right.entity_type
     {
-        return Err(api_response::Error::new((
+        return Err(ReadError::InvalidRequest(
             "Corrections must target the same entity",
-            StatusCode::BAD_REQUEST,
-        ))
-        .into_response());
+        ));
     }
 
     let left_revision = correction_revision::Entity::find()
@@ -81,48 +68,30 @@ async fn compare_corrections(
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(&repo.conn)
         .await
-        .map_err(Error::from)
-        .map_err(IntoResponse::into_response)?
-        .ok_or_else(|| {
-            api_response::Error::new((
-                "Correction revision not found",
-                StatusCode::NOT_FOUND,
-            ))
-        })
-        .map_err(IntoResponse::into_response)?;
+        .db_operation("find left correction revision for comparison")?
+        .ok_or(ReadError::NotFound("Correction revision not found"))?;
 
     let right_revision = correction_revision::Entity::find()
         .filter(correction_revision::Column::CorrectionId.eq(id2))
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(&repo.conn)
         .await
-        .map_err(Error::from)
-        .map_err(IntoResponse::into_response)?
-        .ok_or_else(|| {
-            api_response::Error::new((
-                "Correction revision not found",
-                StatusCode::NOT_FOUND,
-            ))
-        })
-        .map_err(IntoResponse::into_response)?;
+        .db_operation("find right correction revision for comparison")?
+        .ok_or(ReadError::NotFound("Correction revision not found"))?;
 
     let left_snapshot = correction_diff::snapshot_for_history(
         &repo.conn,
         left.entity_type,
         left_revision.entity_history_id,
     )
-    .await
-    .map_err(Error::from)
-    .map_err(IntoResponse::into_response)?;
+    .await?;
 
     let right_snapshot = correction_diff::snapshot_for_history(
         &repo.conn,
         right.entity_type,
         right_revision.entity_history_id,
     )
-    .await
-    .map_err(Error::from)
-    .map_err(IntoResponse::into_response)?;
+    .await?;
 
     let changes =
         correction_diff::diff_snapshots(&left_snapshot, &right_snapshot);

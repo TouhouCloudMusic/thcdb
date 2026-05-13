@@ -28,7 +28,6 @@ use crate::infra::state::AppState;
 use crate::shared::http::{CorrectionSortField, SortDirection, api_response};
 use crate::utils::openapi::ContentType;
 pub(crate) mod authz;
-pub(crate) mod error;
 mod extract;
 pub(crate) mod middleware;
 pub mod state;

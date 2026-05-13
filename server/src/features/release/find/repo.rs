@@ -1,12 +1,13 @@
 use entity::release;
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, PaginatorTrait,
-    QueryFilter, QueryOrder, QuerySelect, Select,
+    ColumnTrait, ConnectionTrait, EntityTrait, PaginatorTrait, QueryFilter,
+    QueryOrder, QuerySelect, Select,
 };
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
 
 use crate::features::release::model::Release;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::release::impls::find_many_impl;
 use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
 
@@ -20,23 +21,26 @@ pub enum FindReleaseFilter {
 pub(crate) async fn find_one(
     repo: &SeaOrmRepository,
     filter: FindReleaseFilter,
-) -> Result<Option<Release>, DbErr> {
+) -> Result<Option<Release>, DatabaseError> {
     find_many_impl(filter_into_select(filter).limit(1), &repo.conn)
         .await
         .map(|mut releases| releases.pop())
+        .db_operation("find release by id")
 }
 
 pub(crate) async fn find_many(
     repo: &SeaOrmRepository,
     filter: FindReleaseFilter,
-) -> Result<Vec<Release>, DbErr> {
-    find_many_impl(filter_into_select(filter), &repo.conn).await
+) -> Result<Vec<Release>, DatabaseError> {
+    find_many_impl(filter_into_select(filter), &repo.conn)
+        .await
+        .db_operation("find releases")
 }
 
 pub(crate) async fn exists(
     db: &impl ConnectionTrait,
     id: i32,
-) -> Result<bool, DbErr> {
+) -> Result<bool, DatabaseError> {
     release::Entity::find()
         .select_only()
         .expr(1)
@@ -44,6 +48,7 @@ pub(crate) async fn exists(
         .count(db)
         .await
         .map(|count: u64| count > 0)
+        .db_operation("check release exists")
 }
 
 fn filter_into_select(filter: FindReleaseFilter) -> Select<release::Entity> {
@@ -74,7 +79,7 @@ pub(crate) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::ReleaseFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Release>, DbErr> {
+) -> Result<crate::domain::shared::PageResponse<Release>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -85,7 +90,8 @@ pub(crate) async fn find_by_filter(
             sort_direction,
             pagination,
         )
-        .await;
+        .await
+        .db_operation("explore releases");
     }
 
     let select = filter.into_select();
@@ -94,9 +100,14 @@ pub(crate) async fn find_by_filter(
         select,
         pagination,
         release::Column::Id,
-        |select| find_many_impl(select, &repo.conn),
+        |select| async {
+            find_many_impl(select, &repo.conn)
+                .await
+                .db_operation("load releases")
+        },
     )
     .await
+    .db_operation("explore releases")
 }
 
 async fn find_sorted_by_correction(
@@ -105,7 +116,7 @@ async fn find_sorted_by_correction(
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Release>, DbErr> {
+) -> Result<crate::domain::shared::PageResponse<Release>, DatabaseError> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
@@ -120,7 +131,8 @@ async fn find_sorted_by_correction(
                 SortDirection::Desc => sea_orm::Order::Desc,
             },
         )
-        .await?;
+        .await
+        .db_operation("list correction-sorted release ids")?;
 
     if entity_ids.is_empty() {
         return Ok(utils::page_from_items(vec![], &pagination));
@@ -134,7 +146,9 @@ async fn find_sorted_by_correction(
             select.filter(release::Column::ReleaseType.is_in(release_types));
     }
 
-    let mut releases = find_many_impl(select, &repo.conn).await?;
+    let mut releases = find_many_impl(select, &repo.conn)
+        .await
+        .db_operation("load releases")?;
 
     releases = crate::infra::database::sea_orm::utils::sort_by_id_list(
         releases,

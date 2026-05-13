@@ -1,9 +1,13 @@
-use super::error::Error;
+use axum::response::IntoResponse;
+
 use crate::domain::image;
 use crate::domain::image::{CreateImageMeta, Parser};
 use crate::domain::user::{self, User};
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::infra::storage::GenericFileStorage;
+use crate::shared::error::InternalError;
+use crate::shared::http::api_response::AppError;
 
 mod parser {
     use std::sync::LazyLock;
@@ -55,6 +59,37 @@ pub struct Service {
     storage: GenericFileStorage,
 }
 
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+pub enum Error {
+    #[display("{_0}")]
+    #[from]
+    Image(#[error(source)] image::Error),
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            Error::Image(source) => match source {
+                image::Error::InvalidInput(source) => {
+                    AppError::bad_request(source.to_string()).into_response()
+                }
+                image::Error::Database(source) => source.into_response(),
+                image::Error::Internal(source) => source.into_response(),
+            },
+            Error::Database(source) => source.into_response(),
+            Error::Internal(source) => source.into_response(),
+        }
+    }
+}
+
 impl Service {
     pub const fn new(
         repo: SeaOrmRepository,
@@ -69,7 +104,10 @@ impl Service {
         buffer: &[u8],
     ) -> Result<(), Error> {
         update_user_image(
-            self.repo.begin_tx().await?,
+            self.repo
+                .begin_tx()
+                .await
+                .db_operation("begin avatar upload transaction")?,
             self.storage.clone(),
             user,
             buffer,
@@ -86,7 +124,10 @@ impl Service {
         buffer: &[u8],
     ) -> Result<User, Error> {
         update_user_image(
-            self.repo.begin_tx().await?,
+            self.repo
+                .begin_tx()
+                .await
+                .db_operation("begin profile banner upload transaction")?,
             self.storage.clone(),
             user,
             buffer,

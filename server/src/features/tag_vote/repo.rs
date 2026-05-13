@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 
-use sea_orm::{
-    ConnectionTrait, DbErr, EntityName, EntityTrait, FromQueryResult,
-};
+use sea_orm::{ConnectionTrait, EntityName, EntityTrait, FromQueryResult};
 use sea_query::{
     Alias, Expr, ExprTrait, Func, OnConflict, Order, Query, SimpleExpr,
 };
@@ -10,7 +8,9 @@ use sea_query::{
 use super::Error;
 use super::model::{EntityType, Score, TagAggregate, TagAggregateVote};
 use crate::domain::shared::CursorResponse;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::SeaOrmRepository;
+use crate::shared::error::EntityNotFound;
 
 #[derive(Debug, Clone, sea_orm::FromQueryResult, macros::FieldEnum)]
 struct TagAggregateRow {
@@ -28,11 +28,11 @@ impl sea_query::Iden for TagAggregateRowFieldName {
     }
 }
 
-pub async fn entity_exists(
+async fn entity_exists(
     repo: &SeaOrmRepository,
     entity_type: EntityType,
     entity_id: i32,
-) -> Result<bool, DbErr> {
+) -> Result<bool, Error> {
     let query = Query::select()
         .expr(Expr::val(1))
         .from(Alias::new(entity_type.entity_table_name()))
@@ -41,19 +41,25 @@ pub async fn entity_exists(
         .to_owned();
     let stmt = repo.conn.get_database_backend().build(&query);
 
-    Ok(repo.conn.query_one(stmt).await?.is_some())
+    repo.conn
+        .query_one(stmt)
+        .await
+        .map(|row| row.is_some())
+        .db_operation("check tagged entity exists")
+        .map_err(Into::into)
 }
 
-pub async fn tag_exists(
+async fn tag_exists(
     repo: &SeaOrmRepository,
     tag_id: i32,
-) -> Result<bool, DbErr> {
+) -> Result<bool, Error> {
     // TODO: use exist after update to sea orm 2.0
-    let exists = entity::tag::Entity::find_by_id(tag_id)
+    entity::tag::Entity::find_by_id(tag_id)
         .one(&repo.conn)
-        .await?
-        .is_some();
-    Ok(exists)
+        .await
+        .map(|tag| tag.is_some())
+        .db_operation("check tag exists")
+        .map_err(Into::into)
 }
 
 pub async fn upsert(
@@ -65,13 +71,13 @@ pub async fn upsert(
     score: Score,
 ) -> Result<(), Error> {
     if !entity_exists(repo, entity_type, entity_id).await? {
-        return Err(Error::EntityNotFound(
+        return Err(Error::NotFound(EntityNotFound::new(
             entity_type.entity_name(),
             entity_id,
-        ));
+        )));
     }
     if !tag_exists(repo, tag_id).await? {
-        return Err(Error::TagNotFound(tag_id));
+        return Err(Error::NotFound(EntityNotFound::new("Tag", tag_id)));
     }
 
     let entity_id_col = Alias::new(entity_type.entity_id_column());
@@ -105,7 +111,10 @@ pub async fn upsert(
         .to_owned();
     let stmt = repo.conn.get_database_backend().build(&query);
 
-    repo.conn.execute(stmt).await?;
+    repo.conn
+        .execute(stmt)
+        .await
+        .db_operation("upsert tag vote")?;
     Ok(())
 }
 
@@ -115,7 +124,7 @@ pub async fn delete(
     entity_id: i32,
     tag_id: i32,
     user_id: i32,
-) -> Result<(), DbErr> {
+) -> Result<(), Error> {
     let query = Query::delete()
         .from_table(Alias::new(entity_type.vote_table_name()))
         .and_where(
@@ -126,7 +135,10 @@ pub async fn delete(
         .to_owned();
     let stmt = repo.conn.get_database_backend().build(&query);
 
-    repo.conn.execute(stmt).await?;
+    repo.conn
+        .execute(stmt)
+        .await
+        .db_operation("delete tag vote")?;
     Ok(())
 }
 
@@ -141,126 +153,137 @@ pub async fn get_tags(
     user_id: Option<i32>,
     cursor: Option<i32>,
     limit: u8,
-) -> Result<CursorResponse<TagAggregate>, DbErr> {
-    // TODO: Remove alias after update sea query to 1.0
-    let vote_table = Alias::new(entity_type.vote_table_name());
-    let entity_id_col = Alias::new(entity_type.entity_id_column());
-    let tag_table = Alias::new("tag");
-    let score_col = Alias::new("score");
-    let tag_id_col = Alias::new("tag_id");
-    let user_id_col = Alias::new("user_id");
-    let id_col = Alias::new("id");
-    let name_col = Alias::new("name");
-    let short_description_col = Alias::new("short_description");
+) -> Result<CursorResponse<TagAggregate>, Error> {
+    let result: Result<CursorResponse<TagAggregate>, DatabaseError> = async {
+        // TODO: Remove alias after update sea query to 1.0
+        let vote_table = Alias::new(entity_type.vote_table_name());
+        let entity_id_col = Alias::new(entity_type.entity_id_column());
+        let tag_table = Alias::new("tag");
+        let score_col = Alias::new("score");
+        let tag_id_col = Alias::new("tag_id");
+        let user_id_col = Alias::new("user_id");
+        let id_col = Alias::new("id");
+        let name_col = Alias::new("name");
+        let short_description_col = Alias::new("short_description");
 
-    let user_vote_expr: SimpleExpr = user_id.map_or_else(
-        || Expr::val(Option::<i16>::None).into(),
-        |uid| {
-            SimpleExpr::SubQuery(
-                None,
-                Box::new(
-                    Query::select()
-                        .column(score_col.clone())
-                        .from(vote_table.clone())
-                        .and_where(
-                            Expr::col(entity_id_col.clone()).eq(entity_id),
-                        )
-                        .and_where(
-                            Expr::col(tag_id_col.clone())
-                                .equals((tag_table.clone(), id_col.clone())),
-                        )
-                        .and_where(Expr::col(user_id_col.clone()).eq(uid))
-                        .limit(1)
-                        .to_owned()
-                        .into_sub_query_statement(),
-                ),
+        let user_vote_expr: SimpleExpr = user_id.map_or_else(
+            || Expr::val(Option::<i16>::None).into(),
+            |uid| {
+                SimpleExpr::SubQuery(
+                    None,
+                    Box::new(
+                        Query::select()
+                            .column(score_col.clone())
+                            .from(vote_table.clone())
+                            .and_where(
+                                Expr::col(entity_id_col.clone()).eq(entity_id),
+                            )
+                            .and_where(
+                                Expr::col(tag_id_col.clone()).equals((
+                                    tag_table.clone(),
+                                    id_col.clone(),
+                                )),
+                            )
+                            .and_where(Expr::col(user_id_col.clone()).eq(uid))
+                            .limit(1)
+                            .to_owned()
+                            .into_sub_query_statement(),
+                    ),
+                )
+            },
+        );
+
+        // relevance = SUM(score) / positive_vote_count
+        // Only return tags with at least one positive vote
+        let score_expr = Expr::col((vote_table.clone(), score_col.clone()));
+        let positive_vote_count_expr: SimpleExpr =
+            Func::sum(Expr::case(score_expr.clone().gt(0), 1).finally(0))
+                .into();
+        let positive_count_filter =
+            Expr::expr(positive_vote_count_expr.clone()).gt(0);
+        let relevance_expr = Expr::expr(Func::sum(score_expr).cast_as("FLOAT"))
+            .div(positive_vote_count_expr.clone());
+
+        let mut query = Query::select()
+            .expr_as(
+                Expr::col((tag_table.clone(), id_col.clone())),
+                TagAggregateRowFieldName::Id,
             )
-        },
-    );
-
-    // relevance = SUM(score) / positive_vote_count
-    // Only return tags with at least one positive vote
-    let score_expr = Expr::col((vote_table.clone(), score_col.clone()));
-    let positive_vote_count_expr: SimpleExpr =
-        Func::sum(Expr::case(score_expr.clone().gt(0), 1).finally(0)).into();
-    let positive_count_filter =
-        Expr::expr(positive_vote_count_expr.clone()).gt(0);
-    let relevance_expr = Expr::expr(Func::sum(score_expr).cast_as("FLOAT"))
-        .div(positive_vote_count_expr.clone());
-
-    let mut query = Query::select()
-        .expr_as(
-            Expr::col((tag_table.clone(), id_col.clone())),
-            TagAggregateRowFieldName::Id,
-        )
-        .expr_as(
-            Expr::col((tag_table.clone(), name_col.clone())),
-            TagAggregateRowFieldName::Name,
-        )
-        .expr_as(
-            Expr::col((tag_table.clone(), short_description_col.clone())),
-            TagAggregateRowFieldName::ShortDescription,
-        )
-        .expr_as(Expr::val(1).count(), TagAggregateRowFieldName::Count)
-        .expr_as(relevance_expr, TagAggregateRowFieldName::Relevance)
-        .expr_as(user_vote_expr, TagAggregateRowFieldName::UserVote)
-        .from(vote_table.clone())
-        .inner_join(
-            tag_table.clone(),
-            Expr::col((vote_table.clone(), tag_id_col))
-                .equals((tag_table.clone(), id_col.clone())),
-        )
-        .and_where(Expr::col((vote_table.clone(), entity_id_col)).eq(entity_id))
-        .group_by_col((tag_table.clone(), id_col.clone()))
-        .group_by_col((tag_table.clone(), name_col.clone()))
-        .group_by_col((tag_table.clone(), short_description_col))
-        .and_having(positive_count_filter)
-        .order_by((tag_table.clone(), id_col.clone()), Order::Asc)
-        .limit(u64::from(limit) + 1)
-        .to_owned();
-
-    if let Some(cursor) = cursor {
-        query = query
-            .and_having(Expr::col((tag_table.clone(), id_col)).gt(cursor))
+            .expr_as(
+                Expr::col((tag_table.clone(), name_col.clone())),
+                TagAggregateRowFieldName::Name,
+            )
+            .expr_as(
+                Expr::col((tag_table.clone(), short_description_col.clone())),
+                TagAggregateRowFieldName::ShortDescription,
+            )
+            .expr_as(Expr::val(1).count(), TagAggregateRowFieldName::Count)
+            .expr_as(relevance_expr, TagAggregateRowFieldName::Relevance)
+            .expr_as(user_vote_expr, TagAggregateRowFieldName::UserVote)
+            .from(vote_table.clone())
+            .inner_join(
+                tag_table.clone(),
+                Expr::col((vote_table.clone(), tag_id_col))
+                    .equals((tag_table.clone(), id_col.clone())),
+            )
+            .and_where(
+                Expr::col((vote_table.clone(), entity_id_col)).eq(entity_id),
+            )
+            .group_by_col((tag_table.clone(), id_col.clone()))
+            .group_by_col((tag_table.clone(), name_col.clone()))
+            .group_by_col((tag_table.clone(), short_description_col))
+            .and_having(positive_count_filter)
+            .order_by((tag_table.clone(), id_col.clone()), Order::Asc)
+            .limit(u64::from(limit) + 1)
             .to_owned();
-    }
 
-    let builder = repo.conn.get_database_backend();
-    let stmt = builder.build(&query);
+        if let Some(cursor) = cursor {
+            query = query
+                .and_having(Expr::col((tag_table.clone(), id_col)).gt(cursor))
+                .to_owned();
+        }
 
-    let mut items = TagAggregateRow::find_by_statement(stmt)
-        .all(&repo.conn)
+        let builder = repo.conn.get_database_backend();
+        let stmt = builder.build(&query);
+
+        let mut items = TagAggregateRow::find_by_statement(stmt)
+            .all(&repo.conn)
+            .await
+            .db_operation("load tag vote aggregates")?;
+
+        let next_cursor = if items.len() > limit as usize {
+            items.pop();
+            items.last().map(|tag| tag.id)
+        } else {
+            None
+        };
+
+        let vote_map = load_tag_votes(
+            repo,
+            entity_type,
+            entity_id,
+            items.iter().map(|tag| tag.id).collect(),
+        )
         .await?;
 
-    let next_cursor = if items.len() > limit as usize {
-        items.pop();
-        items.last().map(|tag| tag.id)
-    } else {
-        None
-    };
+        let items = items
+            .into_iter()
+            .map(|tag| TagAggregate {
+                id: tag.id,
+                name: tag.name,
+                short_description: tag.short_description,
+                count: tag.count,
+                relevance: tag.relevance,
+                user_vote: tag.user_vote,
+                votes: vote_map.get(&tag.id).cloned().unwrap_or_default(),
+            })
+            .collect();
 
-    let vote_map = load_tag_votes(
-        repo,
-        entity_type,
-        entity_id,
-        items.iter().map(|tag| tag.id).collect(),
-    )
-    .await?;
+        Ok(CursorResponse { items, next_cursor })
+    }
+    .await;
 
-    let items = items
-        .into_iter()
-        .map(|tag| TagAggregate {
-            id: tag.id,
-            name: tag.name,
-            short_description: tag.short_description,
-            count: tag.count,
-            relevance: tag.relevance,
-            user_vote: tag.user_vote,
-            votes: vote_map.get(&tag.id).cloned().unwrap_or_default(),
-        })
-        .collect();
-
-    Ok(CursorResponse { items, next_cursor })
+    result.db_operation("get tag votes").map_err(Into::into)
 }
 
 #[derive(Debug, Clone, FromQueryResult)]
@@ -275,7 +298,7 @@ async fn load_tag_votes(
     entity_type: EntityType,
     entity_id: i32,
     tag_ids: Vec<i32>,
-) -> Result<HashMap<i32, Vec<TagAggregateVote>>, DbErr> {
+) -> Result<HashMap<i32, Vec<TagAggregateVote>>, DatabaseError> {
     if tag_ids.is_empty() {
         return Ok(HashMap::new());
     }
@@ -320,7 +343,8 @@ async fn load_tag_votes(
     let stmt = repo.conn.get_database_backend().build(&query);
     let rows = TagAggregateVoteRow::find_by_statement(stmt)
         .all(&repo.conn)
-        .await?;
+        .await
+        .db_operation("load tag aggregate votes")?;
 
     let mut votes = HashMap::<i32, Vec<TagAggregateVote>>::new();
     for row in rows {
@@ -544,10 +568,7 @@ mod tests {
         )
         .await
         .unwrap_err();
-        assert!(matches!(
-            missing_entity,
-            Error::EntityNotFound("Song", id) if id == i32::MAX
-        ));
+        assert_eq!(missing_entity.to_string(), "Song #2147483647 not found");
 
         let missing_tag = upsert(
             &repo,
@@ -559,9 +580,7 @@ mod tests {
         )
         .await
         .unwrap_err();
-        assert!(
-            matches!(missing_tag, Error::TagNotFound(id) if id == i32::MAX)
-        );
+        assert_eq!(missing_tag.to_string(), "Tag #2147483647 not found");
 
         upsert(
             &repo,

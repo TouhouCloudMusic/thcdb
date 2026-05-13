@@ -6,7 +6,6 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::error::{CreateError, UpsertCorrectionError};
 use super::model::NewArtist;
 use super::{find, release, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
@@ -15,7 +14,10 @@ use crate::application::correction::{
     CorrectionSubmissionResult, NewCorrectionDto,
 };
 use crate::domain::image::CurrentImageMetadata;
-use crate::features::artist_image::{self, ArtistProfileImageInput};
+use crate::features::artist_image::{
+    ArtistProfileImageInput, Error as ImageError,
+};
+use crate::features::correction::SubmissionError;
 use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Artist";
@@ -49,7 +51,7 @@ async fn create_artist(
     CurrentUser(user): CurrentUser,
     State(repo): State<state::SeaOrmRepository>,
     Json(input): Json<NewCorrectionDto<NewArtist>>,
-) -> Result<Data<CorrectionSubmissionResult>, CreateError> {
+) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
     let result = service::create(&repo, input.with_author(user)).await?;
     Ok(Data::from(result))
 }
@@ -69,7 +71,7 @@ async fn upsert_artist_correction(
     State(notification): State<state::NotificationService>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewArtist>>,
-) -> Result<Data<CorrectionSubmissionResult>, UpsertCorrectionError> {
+) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
     let user_id = user.id;
     let result =
         service::upsert_correction(&repo, id, dto.with_author(user)).await?;
@@ -96,7 +98,7 @@ async fn get_artist_profile_image_metadata(
     CurrentUser(_user): CurrentUser,
     State(service): State<state::ArtistImageService>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<CurrentImageMetadata>>, artist_image::Error> {
+) -> Result<Data<Option<CurrentImageMetadata>>, ImageError> {
     let metadata = service.get_profile_image_metadata(id).await?;
     Ok(Data::from(metadata))
 }
@@ -130,7 +132,7 @@ async fn upload_artist_profile_image(
     State(service): State<state::ArtistImageService>,
     Path(id): Path<i32>,
     TypedMultipart(form): TypedMultipart<ArtistProfileImageFormData>,
-) -> Result<Data<i32>, artist_image::Error> {
+) -> Result<Data<i32>, ImageError> {
     let data = form.data.contents;
     let dto = ArtistProfileImageInput {
         bytes: data,

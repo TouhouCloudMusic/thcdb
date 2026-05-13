@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use entity::user_role;
 use sea_orm::{DatabaseTransaction, DbErr, TransactionTrait};
-use snafu::ResultExt;
 
-use crate::domain::model::UserRoleEnum;
-use crate::infra::whatever::InfraWhatever;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::error::{
+    BrokenEntityReference, InternalError, MessageError,
+};
 
 pub(crate) mod artist;
 mod artist_image_queue;
@@ -27,6 +27,18 @@ pub(crate) mod tag;
 mod user;
 pub mod utils;
 
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+pub enum ApplyCorrectionError {
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DbErr),
+    #[display("{_0}")]
+    #[from]
+    BrokenReference(#[error(source)] BrokenEntityReference),
+}
+
 /// `DatabaseConnection` is a wrapper of Arc<InnerPool>.
 /// So don't wrap this type in Arc.
 #[derive(Clone)]
@@ -39,8 +51,8 @@ impl SeaOrmRepository {
         Self { conn }
     }
 
-    pub async fn begin_tx(&self) -> Result<SeaOrmTxRepo, DbErr> {
-        let tx = self.conn.begin().await?;
+    pub async fn begin_tx(&self) -> Result<SeaOrmTxRepo, DatabaseError> {
+        let tx = self.conn.begin().await.db_operation("begin transaction")?;
         Ok(SeaOrmTxRepo::new(tx))
     }
 }
@@ -60,36 +72,18 @@ impl SeaOrmTxRepo {
         &self.tx
     }
 
-    pub(crate) async fn commit(
-        self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        Arc::try_unwrap(self.tx)
-            .map_err(|tx| {
-                let wc = Arc::weak_count(&tx);
-                let sc = Arc::strong_count(&tx);
-                let msg = format!(
-                    "Cannot commit transaction: \
+    pub(crate) async fn commit(self) -> Result<(), InternalError> {
+        let tx = Arc::try_unwrap(self.tx).map_err(|tx| {
+            let wc = Arc::weak_count(&tx);
+            let sc = Arc::strong_count(&tx);
+            let msg = format!(
+                "Cannot commit transaction: \
                     multiple references to the transaction exist, \
                     current weak count: {wc}, strong count: {sc}"
-                );
-                InfraWhatever::from(msg)
-            })
-            .boxed()?
-            .commit()
-            .await
-            .boxed()?;
+            );
+            InternalError::new(MessageError::new(msg))
+        })?;
 
-        Ok(())
-    }
-}
-
-// TODO: move to elsewhere
-impl TryFrom<user_role::Model> for UserRoleEnum {
-    type Error = DbErr;
-
-    fn try_from(value: user_role::Model) -> Result<Self, Self::Error> {
-        Self::try_from(value.role_id)
-            .map_err(String::from)
-            .map_err(DbErr::Custom)
+        tx.commit().await.map_err(InternalError::new)
     }
 }

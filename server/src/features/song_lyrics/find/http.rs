@@ -1,5 +1,4 @@
 use axum::extract::{Path, Query, State};
-use libfp::BifunctorExt;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -9,7 +8,7 @@ use super::repo::{self, FindManyFilter, FindOneFilter};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::features::song_lyrics::model::SongLyrics;
-use crate::infra::error::Error;
+use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Song Lyrics";
@@ -69,8 +68,8 @@ impl From<FindManySongLyricsQuery> for FindManyFilter {
 async fn find_one_song_lyrics(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<FindOneSongLyricsQuery>,
-) -> Result<Data<Option<SongLyrics>>, Error> {
-    repo::find_one(&repo, query.into()).await.bimap_into()
+) -> Result<Data<Option<SongLyrics>>, DatabaseError> {
+    repo::find_one(&repo, query.into()).await.map(Data::from)
 }
 
 #[utoipa::path(
@@ -85,8 +84,8 @@ async fn find_one_song_lyrics(
 async fn find_many_song_lyrics(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<FindManySongLyricsQuery>,
-) -> Result<Data<Vec<SongLyrics>>, Error> {
-    repo::find_many(&repo, query.into()).await.bimap_into()
+) -> Result<Data<Vec<SongLyrics>>, DatabaseError> {
+    repo::find_many(&repo, query.into()).await.map(Data::from)
 }
 
 #[utoipa::path(
@@ -100,8 +99,8 @@ async fn find_many_song_lyrics(
 async fn find_song_lyrics_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<SongLyrics>>, Error> {
+) -> Result<Data<Option<SongLyrics>>, DatabaseError> {
     repo::find_one(&repo, FindOneFilter::Id { id })
         .await
-        .bimap_into()
+        .map(Data::from)
 }

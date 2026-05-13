@@ -1,14 +1,12 @@
 use axum::Json;
 use axum::extract::State;
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::super::shared::TAG;
 use super::error::{SessionBackendError, SignInError};
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
-use crate::domain::auth::AuthCredential;
+use crate::domain::auth::{AuthCredential, AuthnError};
 use crate::domain::user::UserProfile;
 use crate::features::user_profile::{DataUserProfile, load_profile};
 use crate::shared::http::api_response::{Data, Message};
@@ -34,24 +32,23 @@ async fn sign_in(
     mut auth_session: state::AuthSession,
     State(use_case): State<state::UserProfileService>,
     Json(creds): Json<AuthCredential>,
-) -> Result<Data<UserProfile>, impl IntoResponse> {
+) -> Result<Data<UserProfile>, super::SignInRouteError> {
     if auth_session.user.is_some() {
-        return Err(SignInError::AlreadySignedIn.into_response());
+        return Err(SignInError::AlreadySignedIn.into());
     }
     let user = auth_session
         .authenticate(creds)
         .await
-        .map_err(SessionBackendError::from)
-        .map_err(IntoResponse::into_response)?
-        .ok_or_else(|| StatusCode::UNAUTHORIZED.into_response())?;
+        .map_err(SessionBackendError::from)?
+        .ok_or_else(AuthnError::authentication_failed)
+        .map_err(SignInError::from)?;
 
     auth_session
         .login(&user)
         .await
-        .map_err(SessionBackendError::from)
-        .map_err(IntoResponse::into_response)?;
+        .map_err(SessionBackendError::from)?;
 
-    load_profile(&use_case, &user.name, Some(&user)).await
+    Ok(load_profile(&use_case, &user.name, Some(&user)).await?)
 }
 
 #[utoipa::path(
@@ -65,5 +62,9 @@ async fn sign_in(
 async fn sign_out(
     mut session: AuthSession,
 ) -> Result<Message, SessionBackendError> {
-    Ok(session.logout().await.map(|_| Message::ok())?)
+    session
+        .logout()
+        .await
+        .map_err(SessionBackendError::from)
+        .map(|_| Message::ok())
 }

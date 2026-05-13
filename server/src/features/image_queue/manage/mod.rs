@@ -1,15 +1,17 @@
 mod http;
+mod model;
 mod repo;
+mod service;
 
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
-pub(crate) use http::HandleImageQueueMethod;
+use axum::response::IntoResponse;
 pub use http::router;
+pub(crate) use model::HandleImageQueueMethod;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::infra::error::Error as InfraError;
-use crate::shared::http::api_response::Error as ApiError;
+use crate::infra::database::error::DatabaseError;
+use crate::shared::error::{InternalError, PermissionDenied};
+use crate::shared::http::api_response::AppError;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]
@@ -18,57 +20,45 @@ pub(crate) enum ImageQueueType {
     Release,
 }
 
-#[derive(Debug)]
-enum Error {
+#[derive(Debug, derive_more::From)]
+pub(crate) enum Error {
     NotFound,
     InvalidOperation,
     InvalidEntry,
     UnknownTarget,
     AmbiguousTarget,
-    PublishedNotFound,
-    Infra(InfraError),
-}
-
-impl From<InfraError> for Error {
-    fn from(err: InfraError) -> Self {
-        Self::Infra(err)
-    }
+    PermissionDenied,
+    #[from]
+    Database(DatabaseError),
+    #[from]
+    Internal(InternalError),
 }
 
 impl IntoResponse for Error {
-    fn into_response(self) -> Response {
+    fn into_response(self) -> axum::response::Response {
         match self {
-            Self::NotFound => ApiError::from_err_and_code(
-                "Image queue entry not found",
-                StatusCode::NOT_FOUND,
-            )
-            .into_response(),
-            Self::InvalidOperation => ApiError::from_err_and_code(
-                "Invalid operation",
-                StatusCode::BAD_REQUEST,
-            )
-            .into_response(),
-            Self::InvalidEntry => ApiError::from_err_and_code(
-                "Invalid image queue entry",
-                StatusCode::BAD_REQUEST,
-            )
-            .into_response(),
-            Self::UnknownTarget => ApiError::from_err_and_code(
-                "Unknown image queue target",
-                StatusCode::BAD_REQUEST,
-            )
-            .into_response(),
-            Self::AmbiguousTarget => ApiError::from_err_and_code(
-                "Ambiguous image queue target",
-                StatusCode::BAD_REQUEST,
-            )
-            .into_response(),
-            Self::PublishedNotFound => ApiError::from_err_and_code(
-                "Published image record not found",
-                StatusCode::CONFLICT,
-            )
-            .into_response(),
-            Self::Infra(err) => err.into_response(),
+            Error::NotFound => {
+                AppError::not_found("Image queue entry not found")
+                    .into_response()
+            }
+            Error::InvalidOperation => {
+                AppError::bad_request("Invalid operation").into_response()
+            }
+            Error::InvalidEntry => {
+                AppError::bad_request("Invalid image queue entry")
+                    .into_response()
+            }
+            Error::UnknownTarget => {
+                AppError::bad_request("Unknown image queue target")
+                    .into_response()
+            }
+            Error::AmbiguousTarget => {
+                AppError::bad_request("Ambiguous image queue target")
+                    .into_response()
+            }
+            Error::PermissionDenied => PermissionDenied.into_response(),
+            Error::Database(err) => err.into_response(),
+            Error::Internal(err) => err.into_response(),
         }
     }
 }

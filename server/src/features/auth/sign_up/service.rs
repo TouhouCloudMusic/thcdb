@@ -19,8 +19,8 @@ use crate::features::auth::{
     Email, InvalidEmail, ResendVerificationEmailError, Service, SignUpError,
     VerifyEmailError, repo,
 };
-use crate::infra::error::Error;
-use crate::shared::error::InvalidInput;
+use crate::infra::database::error::DatabaseResultExt;
+use crate::shared::error::{InternalError, InvalidInput, MessageError};
 use crate::shared::secret::hash;
 
 const VERIFICATION_CODE_MAX_FAILED_ATTEMPTS: i32 = 10;
@@ -34,8 +34,7 @@ impl Service {
             password,
         }: SignUpRequest,
     ) -> Result<SignUpResponse, SignUpError> {
-        let email = Email::parse(&email)
-            .map_err(|source| SignUpError::InvalidEmail { source })?;
+        let email = Email::parse(&email).map_err(SignUpError::from)?;
 
         let mut creds = AuthCredential::try_new(username, password)?;
         let username = creds.username.clone();
@@ -55,7 +54,12 @@ impl Service {
         self.ensure_signup_username_available(&username, None)
             .await?;
 
-        let tx = self.repo.conn.begin().await?;
+        let tx = self
+            .repo
+            .conn
+            .begin()
+            .await
+            .db_operation("begin sign-up transaction")?;
         let res = repo::create_user(
             &tx,
             NewUser {
@@ -69,21 +73,19 @@ impl Service {
 
         match res {
             Ok(user) => {
-                tx.commit().await?;
+                tx.commit()
+                    .await
+                    .db_operation("commit sign-up transaction")?;
                 self.create_and_send_email_verification(&user).await?;
                 Ok(SignUpResponse::default())
             }
             Err(err) => {
                 let _ = tx.rollback().await;
                 match err {
-                    sea_orm::DbErr::Query(sea_orm::RuntimeErr::SqlxError(
-                        err,
-                    )) if let Some(db_err) = err.as_database_error()
-                        && db_err.constraint().is_some() =>
-                    {
+                    repo::CreateUserError::AlreadyExists => {
                         Err(SignUpError::UsernameAlreadyInUse { username })
                     }
-                    err => Err(err.into()),
+                    repo::CreateUserError::Database(err) => Err(err.into()),
                 }
             }
         }
@@ -93,8 +95,7 @@ impl Service {
         &self,
         VerifyEmailRequest { email, code }: VerifyEmailRequest,
     ) -> Result<User, VerifyEmailError> {
-        let email = Email::parse(&email)
-            .map_err(|source| VerifyEmailError::InvalidEmail { source })?;
+        let email = Email::parse(&email).map_err(VerifyEmailError::from)?;
 
         let user = repo::find_by_email(&self.repo.conn, &email)
             .await?
@@ -102,9 +103,14 @@ impl Service {
             .ok_or(VerifyEmailError::InvalidOrExpiredCode)?;
 
         if is_unverified_signup_expired(&user) {
-            let tx = self.repo.conn.begin().await?;
+            let tx =
+                self.repo.conn.begin().await.db_operation(
+                    "begin expired sign-up cleanup transaction",
+                )?;
             repo::delete_user(&tx, user.id).await?;
-            tx.commit().await?;
+            tx.commit()
+                .await
+                .db_operation("commit expired sign-up cleanup transaction")?;
             return Err(VerifyEmailError::InvalidOrExpiredCode);
         }
 
@@ -128,21 +134,34 @@ impl Service {
             code.into_bytes(),
         )
         .await
-        .map_err(|err| {
-            Error::custom(&format!("Failed to verify email code: {err}"))
-        })?;
+        .map_err(InternalError)?;
         if !ok {
             repo::increment_email_verification_failed_attempts(
                 &self.repo.conn,
                 user.id,
             )
-            .await?;
+            .await
+            .map_err(|err| match err {
+                repo::EmailVerificationMutationError::BrokenReference(_) => {
+                    VerifyEmailError::from(InternalError::new(err))
+                }
+                repo::EmailVerificationMutationError::Database(err) => {
+                    err.into()
+                }
+            })?;
             return Err(VerifyEmailError::InvalidOrExpiredCode);
         }
 
-        let tx = self.repo.conn.begin().await?;
+        let tx = self
+            .repo
+            .conn
+            .begin()
+            .await
+            .db_operation("begin verify email transaction")?;
         let user = repo::set_email_verified(&tx, user.id).await?;
-        tx.commit().await?;
+        tx.commit()
+            .await
+            .db_operation("commit verify email transaction")?;
 
         Ok(user)
     }
@@ -152,9 +171,8 @@ impl Service {
         ResendVerificationEmailRequest { email }: ResendVerificationEmailRequest,
     ) -> Result<ResendVerificationEmailResponse, ResendVerificationEmailError>
     {
-        let email = Email::parse(&email).map_err(|source| {
-            ResendVerificationEmailError::InvalidEmail { source }
-        })?;
+        let email =
+            Email::parse(&email).map_err(ResendVerificationEmailError::from)?;
 
         let Some(user) = repo::find_by_email(&self.repo.conn, &email)
             .await?
@@ -164,9 +182,13 @@ impl Service {
         };
 
         if is_unverified_signup_expired(&user) {
-            let tx = self.repo.conn.begin().await?;
+            let tx = self.repo.conn.begin().await.db_operation(
+                "begin resend verification cleanup transaction",
+            )?;
             repo::delete_user(&tx, user.id).await?;
-            tx.commit().await?;
+            tx.commit().await.db_operation(
+                "commit resend verification cleanup transaction",
+            )?;
 
             return Ok(ResendVerificationEmailResponse::default());
         }
@@ -201,9 +223,14 @@ impl Service {
         if is_unverified_signup_expired(&existing) {
             // Remove stale unverified signups (past TTL) so email/username can be reused.
             // Return `None` to let the caller continue handling the request
-            let tx = self.repo.conn.begin().await?;
+            let tx =
+                self.repo.conn.begin().await.db_operation(
+                    "begin existing sign-up cleanup transaction",
+                )?;
             repo::delete_user(&tx, existing.id).await?;
-            tx.commit().await?;
+            tx.commit()
+                .await
+                .db_operation("commit existing sign-up cleanup transaction")?;
             return Ok(None);
         }
 
@@ -217,16 +244,17 @@ impl Service {
             ..Default::default()
         }
         .update(&self.repo.conn)
-        .await?;
+        .await
+        .db_operation("update existing unverified sign-up")?;
 
         let user = repo::find_by_id(&self.repo.conn, existing.id)
             .await?
             .ok_or_else(|| {
                 // unlikely
-                Error::custom(&format!(
+                InternalError::new(MessageError::new(format!(
                     "User {} not found after update",
                     existing.id
-                ))
+                )))
             })?;
 
         self.create_and_send_email_verification(&user).await?;
@@ -255,9 +283,16 @@ impl Service {
             });
         }
 
-        let tx = self.repo.conn.begin().await?;
+        let tx = self
+            .repo
+            .conn
+            .begin()
+            .await
+            .db_operation("begin stale username cleanup transaction")?;
         repo::delete_user(&tx, existing.id).await?;
-        tx.commit().await?;
+        tx.commit()
+            .await
+            .db_operation("commit stale username cleanup transaction")?;
 
         Ok(())
     }
@@ -284,7 +319,9 @@ impl Service {
 
         let code = VerificationCode::<6>::new().to_string();
         let code_hash = hash(&code).await.map_err(|err| {
-            Error::custom(&format!("Failed to hash verification code: {err}"))
+            InternalError::new(MessageError::new(format!(
+                "Failed to hash verification code: {err}"
+            )))
         })?;
 
         repo::set_email_verification(
@@ -296,7 +333,6 @@ impl Service {
         )
         .await
         .map(|_| ())
-        .map_err(Error::from)
         .map_err(SendVerificationEmailError::from)?;
 
         let send_failure =
@@ -318,7 +354,7 @@ impl Service {
                 &code_hash,
             )
             .await
-            .map_err(Error::from)
+            .map_err(SendVerificationEmailError::from)
             {
                 Ok(true) => {}
                 Ok(false) => {
@@ -332,7 +368,7 @@ impl Service {
                     log::error!(
                         target: "features.auth.sign_up.service",
                         user_id = user.id,
-                        error:% = cleanup_err;
+                        error:? = cleanup_err;
                         "failed to clear verification code after email failure"
                     );
                 }

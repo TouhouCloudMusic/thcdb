@@ -1,14 +1,13 @@
 use std::sync::LazyLock;
 
 use ::image::ImageFormat;
+use axum::response::IntoResponse;
 use bytesize::ByteSize;
 use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{artist_image, image as image_entity, user as user_entity};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
-use super::error::Error;
 use super::model::ArtistProfileImageInput;
-use crate::application::error::EntityNotFound;
 use crate::constant::{
     ARTIST_PROFILE_IMAGE_MAX_FILE_SIZE, ARTIST_PROFILE_IMAGE_MAX_HEIGHT,
     ARTIST_PROFILE_IMAGE_MAX_WIDTH, ARTIST_PROFILE_IMAGE_MIN_HEIGHT,
@@ -24,8 +23,11 @@ use crate::domain::shared::ImageUploaderSummary;
 use crate::features::artist::find::repo as artist_repo;
 use crate::features::artist_image_queue::Repo as ArtistImageQueueRepo;
 use crate::features::image_queue::Repo as ImageQueueRepo;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::storage::GenericFileStorage;
+use crate::shared::error::{EntityNotFound, InternalError};
+use crate::shared::http::api_response::AppError;
 
 static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
     let opt = ParseOption::builder()
@@ -48,6 +50,41 @@ pub struct Service {
     storage: GenericFileStorage,
 }
 
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+pub enum Error {
+    #[display("{_0}")]
+    #[from]
+    Image(#[error(source)] image::Error),
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+    #[display("{_0}")]
+    #[from]
+    NotFound(#[error(source)] EntityNotFound),
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            Error::Image(source) => match source {
+                image::Error::InvalidInput(source) => {
+                    AppError::bad_request(source.to_string()).into_response()
+                }
+                image::Error::Database(source) => source.into_response(),
+                image::Error::Internal(source) => source.into_response(),
+            },
+            Error::Database(source) => source.into_response(),
+            Error::Internal(source) => source.into_response(),
+            Error::NotFound(source) => source.into_response(),
+        }
+    }
+}
+
 impl Service {
     pub const fn new(
         repo: SeaOrmRepository,
@@ -67,10 +104,13 @@ impl Service {
         } = dto;
 
         if !artist_repo::exists(&self.repo.conn, artist_id).await? {
-            Err(EntityNotFound::new(artist_id, "artist"))?;
+            return Err(EntityNotFound::new("artist", artist_id).into());
         }
 
-        let tx_repo = self.repo.begin_tx().await?;
+        let tx_repo =
+            self.repo.begin_tx().await.db_operation(
+                "begin artist profile image upload transaction",
+            )?;
 
         let image_service =
             image::Service::new(tx_repo.clone(), self.storage.clone());
@@ -111,7 +151,8 @@ impl Service {
             .filter(artist_image::Column::Type.eq(ArtistImageType::Profile))
             .order_by_desc(image_entity::Column::UploadedAt)
             .one(&self.repo.conn)
-            .await?;
+            .await
+            .db_operation("find current artist profile image")?;
 
         let Some(image) = image else {
             return Ok(None);
@@ -120,7 +161,8 @@ impl Service {
         let uploader = user_entity::Entity::find_by_id(image.uploaded_by)
             .into_partial_model::<ImageUploaderSummary>()
             .one(&self.repo.conn)
-            .await?
+            .await
+            .db_operation("find artist profile image uploader")?
             .unwrap_or_else(|| ImageUploaderSummary {
                 id: image.uploaded_by,
                 name: "Unknown".to_string(),

@@ -1,22 +1,23 @@
-use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use derive_more::Display;
+use derive_more::{Display, Error as DeriveError, From};
 
 use crate::domain::auth::ValidateCredsError;
-use crate::infra;
-use crate::shared::http::api_response::{self, ApiError as ApiErrorTrait};
+use crate::infra::database::error::DatabaseError;
+use crate::shared::error::InternalError;
+use crate::shared::http::api_response::AppError;
+use crate::shared::types::BoxedError;
 
 #[derive(Debug, Display, derive_more::Error)]
 #[display("Invalid email: {email}.\n{source}")]
 pub struct InvalidEmail {
     email: String,
-    source: Box<dyn std::error::Error>,
+    source: BoxedError,
 }
 
 impl InvalidEmail {
     pub fn new(
         email: impl Into<String>,
-        source: impl std::error::Error + 'static,
+        source: impl std::error::Error + Send + Sync + 'static,
     ) -> Self {
         Self {
             email: email.into(),
@@ -25,131 +26,123 @@ impl InvalidEmail {
     }
 }
 
-#[derive(Debug, snafu::Snafu)]
-#[snafu(visibility(pub(super)))]
+#[derive(Debug, Display, DeriveError, From)]
 pub enum SignUpError {
-    #[snafu(display("Username {username} already in use"))]
+    #[display("Username {username} already in use")]
     UsernameAlreadyInUse { username: String },
-    #[snafu(transparent)]
-    InvalidEmail { source: InvalidEmail },
-    #[snafu(display("Email service unavailable"))]
+    #[display("{_0}")]
+    #[from]
+    InvalidEmail(#[error(source)] InvalidEmail),
+    #[display("Email service unavailable")]
     EmailServiceUnavailable,
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
-    #[snafu(transparent)]
-    Validate { source: ValidateCredsError },
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+    #[display("{_0}")]
+    #[from]
+    Validate(#[error(source)] ValidateCredsError),
 }
 
-impl SignUpError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            SignUpError::UsernameAlreadyInUse { .. } => StatusCode::CONFLICT,
-            SignUpError::InvalidEmail { .. } => StatusCode::BAD_REQUEST,
-            SignUpError::EmailServiceUnavailable => {
-                StatusCode::SERVICE_UNAVAILABLE
-            }
-            SignUpError::Infra { source } => source.as_status_code(),
-            SignUpError::Validate { source } => source.as_status_code(),
-        }
-    }
-}
-
-impl<E> From<E> for SignUpError
-where
-    E: Into<infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+impl From<DatabaseError> for SignUpError {
+    fn from(source: DatabaseError) -> Self {
+        InternalError::new(source).into()
     }
 }
 
 impl IntoResponse for SignUpError {
     fn into_response(self) -> axum::response::Response {
-        let status_code = self.status_code();
-        api_response::Error::from_err_and_code(self, status_code)
-            .into_response()
-    }
-}
-
-#[derive(Debug, snafu::Snafu)]
-pub enum ResendVerificationEmailError {
-    #[snafu(transparent)]
-    InvalidEmail { source: InvalidEmail },
-    #[snafu(display("Email service unavailable"))]
-    ResendEmailServiceUnavailable,
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
-}
-
-impl ResendVerificationEmailError {
-    fn status_code(&self) -> StatusCode {
         match self {
-            ResendVerificationEmailError::InvalidEmail { .. } => {
-                StatusCode::BAD_REQUEST
+            SignUpError::UsernameAlreadyInUse { username } => {
+                AppError::conflict(format!(
+                    "Username {username} already in use"
+                ))
+                .into_response()
             }
-            ResendVerificationEmailError::ResendEmailServiceUnavailable => {
-                StatusCode::SERVICE_UNAVAILABLE
+            SignUpError::InvalidEmail(source) => {
+                AppError::bad_request(source.to_string()).into_response()
             }
-            ResendVerificationEmailError::Infra { source } => {
-                source.as_status_code()
+            SignUpError::EmailServiceUnavailable => {
+                AppError::service_unavailable("Email service unavailable")
+                    .into_response()
+            }
+            SignUpError::Internal(source) => source.into_response(),
+            SignUpError::Validate(source) => {
+                AppError::bad_request(source.to_string()).into_response()
             }
         }
     }
 }
 
-impl<E> From<E> for ResendVerificationEmailError
-where
-    E: Into<infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+#[derive(Debug, Display, DeriveError, From)]
+pub enum ResendVerificationEmailError {
+    #[display("{_0}")]
+    #[from]
+    InvalidEmail(#[error(source)] InvalidEmail),
+    #[display("Email service unavailable")]
+    ResendEmailServiceUnavailable,
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+}
+
+impl From<DatabaseError> for ResendVerificationEmailError {
+    fn from(source: DatabaseError) -> Self {
+        InternalError::new(source).into()
     }
 }
 
 impl IntoResponse for ResendVerificationEmailError {
     fn into_response(self) -> axum::response::Response {
-        let status_code = self.status_code();
-        api_response::Error::from_err_and_code(self, status_code)
-            .into_response()
-    }
-}
-
-#[derive(Debug, snafu::Snafu)]
-pub enum VerifyEmailError {
-    #[snafu(transparent)]
-    InvalidEmail { source: InvalidEmail },
-    #[snafu(display("Invalid or expired verification code"))]
-    InvalidOrExpiredCode,
-    #[snafu(display("Too many attempts, please resend verification code"))]
-    TooManyAttempts,
-    #[snafu(transparent)]
-    Infra { source: infra::Error },
-}
-
-impl VerifyEmailError {
-    fn status_code(&self) -> StatusCode {
         match self {
-            VerifyEmailError::InvalidEmail { .. }
-            | VerifyEmailError::InvalidOrExpiredCode => StatusCode::BAD_REQUEST,
-            VerifyEmailError::TooManyAttempts => StatusCode::TOO_MANY_REQUESTS,
-            VerifyEmailError::Infra { source } => source.as_status_code(),
+            ResendVerificationEmailError::InvalidEmail(source) => {
+                AppError::bad_request(source.to_string()).into_response()
+            }
+            ResendVerificationEmailError::ResendEmailServiceUnavailable => {
+                AppError::service_unavailable("Email service unavailable")
+                    .into_response()
+            }
+            ResendVerificationEmailError::Internal(source) => {
+                source.into_response()
+            }
         }
     }
 }
 
-impl<E> From<E> for VerifyEmailError
-where
-    E: Into<infra::Error>,
-{
-    default fn from(err: E) -> Self {
-        Self::Infra { source: err.into() }
+#[derive(Debug, Display, DeriveError, From)]
+pub enum VerifyEmailError {
+    #[display("{_0}")]
+    #[from]
+    InvalidEmail(#[error(source)] InvalidEmail),
+    #[display("Invalid or expired verification code")]
+    InvalidOrExpiredCode,
+    #[display("Too many attempts, please resend verification code")]
+    TooManyAttempts,
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+}
+
+impl From<DatabaseError> for VerifyEmailError {
+    fn from(source: DatabaseError) -> Self {
+        InternalError::new(source).into()
     }
 }
 
 impl IntoResponse for VerifyEmailError {
     fn into_response(self) -> axum::response::Response {
-        let status_code = self.status_code();
-        api_response::Error::from_err_and_code(self, status_code)
-            .into_response()
+        match self {
+            VerifyEmailError::InvalidEmail(source) => {
+                AppError::bad_request(source.to_string()).into_response()
+            }
+            VerifyEmailError::InvalidOrExpiredCode => {
+                AppError::bad_request("Invalid or expired verification code")
+                    .into_response()
+            }
+            VerifyEmailError::TooManyAttempts => AppError::too_many_requests(
+                "Too many attempts, please resend verification code",
+            )
+            .into_response(),
+            VerifyEmailError::Internal(source) => source.into_response(),
+        }
     }
 }

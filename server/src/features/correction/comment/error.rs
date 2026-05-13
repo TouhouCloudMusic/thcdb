@@ -1,12 +1,11 @@
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
-use sea_orm::DbErr;
+use axum::response::IntoResponse;
 
-use crate::infra::error::Error as InfraError;
-use crate::shared::http::api_response::Error as ApiError;
+use crate::infra::database::error::DatabaseError;
+use crate::shared::error::{InternalError, PermissionDenied};
+use crate::shared::http::api_response::AppError;
 
 #[derive(Debug, Clone, Copy)]
-pub(in crate::features::correction) enum NotFound {
+pub(crate) enum NotFound {
     Correction,
     Comment,
 }
@@ -20,43 +19,35 @@ impl NotFound {
     }
 }
 
-#[derive(Debug)]
-pub(in crate::features::correction) enum Error {
-    Infra(InfraError),
-    NotFound(NotFound),
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+pub(crate) enum Error {
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+    #[display("{}", _0.message())]
+    NotFound(#[error(ignore)] NotFound),
+    #[display("Permission denied")]
     PermissionDenied,
-    InvalidRequest(String),
-}
-
-impl From<InfraError> for Error {
-    fn from(err: InfraError) -> Self {
-        Self::Infra(err)
-    }
-}
-
-impl From<DbErr> for Error {
-    fn from(err: DbErr) -> Self {
-        Self::Infra(err.into())
-    }
+    #[display("{_0}")]
+    InvalidRequest(#[error(ignore)] String),
 }
 
 impl IntoResponse for Error {
-    fn into_response(self) -> Response {
+    fn into_response(self) -> axum::response::Response {
         match self {
-            Self::Infra(err) => err.into_response(),
-            Self::NotFound(kind) => ApiError::from_err_and_code(
-                kind.message(),
-                StatusCode::NOT_FOUND,
-            )
-            .into_response(),
-            Self::PermissionDenied => ApiError::from_err_and_code(
-                "Permission denied",
-                StatusCode::FORBIDDEN,
-            )
-            .into_response(),
-            Self::InvalidRequest(message) => {
-                ApiError::from_err_and_code(message, StatusCode::BAD_REQUEST)
-                    .into_response()
+            Error::Database(err) => err.into_response(),
+            Error::Internal(err) => err.into_response(),
+            Error::NotFound(kind) => {
+                AppError::not_found(kind.message()).into_response()
+            }
+            Error::PermissionDenied => PermissionDenied.into_response(),
+            Error::InvalidRequest(message) => {
+                AppError::bad_request(message).into_response()
             }
         }
     }

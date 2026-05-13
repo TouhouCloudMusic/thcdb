@@ -44,27 +44,29 @@ impl CorrectionFilter {
 }
 
 pub trait Repo {
+    type Error;
+
     async fn find_one(
         &self,
         filter: CorrectionFilter,
-    ) -> Result<Option<Correction>, Box<dyn std::error::Error + Send + Sync>>;
+    ) -> Result<Option<Correction>, Self::Error>;
 
     async fn is_author(
         &self,
         user: &User,
         correction: &Correction,
-    ) -> Result<bool, Box<dyn std::error::Error + Send + Sync>>;
+    ) -> Result<bool, Self::Error>;
 }
 
 pub trait TxRepo: Repo {
     async fn create(
         &self,
         meta: NewCorrectionMeta<impl CorrectionEntity>,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
+    ) -> Result<i32, Self::Error>;
 
     async fn update(
         &self,
         id: i32,
         meta: NewCorrectionMeta<impl CorrectionEntity>,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    ) -> Result<(), Self::Error>;
 }

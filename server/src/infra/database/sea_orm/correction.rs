@@ -12,13 +12,15 @@ use crate::domain::correction::{
     Correction, CorrectionEntity, CorrectionFilter, CorrectionFilterStatus,
     NewCorrectionMeta, Repo, TxRepo,
 };
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 impl Repo for SeaOrmRepository {
+    type Error = DatabaseError;
+
     async fn find_one(
         &self,
         filter: CorrectionFilter,
-    ) -> Result<Option<Correction>, Box<dyn std::error::Error + Send + Sync>>
-    {
+    ) -> Result<Option<Correction>, Self::Error> {
         let ret = Entity::find()
             .filter(Column::EntityId.eq(filter.entity_id))
             .filter(Column::EntityType.eq(filter.entity_type))
@@ -32,7 +34,8 @@ impl Repo for SeaOrmRepository {
             })
             .order_by_desc(Column::CreatedAt)
             .one(&self.conn)
-            .await?
+            .await
+            .db_operation("find correction")?
             .map(|model| Correction {
                 id: model.id,
                 status: model.status,
@@ -49,7 +52,7 @@ impl Repo for SeaOrmRepository {
         &self,
         user: &crate::domain::user::User,
         correction: &Correction,
-    ) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<bool, Self::Error> {
         let correction_id = correction.id;
         let count = correction_user::Entity::find()
             .filter(correction_user::Column::CorrectionId.eq(correction_id))
@@ -59,17 +62,19 @@ impl Repo for SeaOrmRepository {
                     .eq(CorrectionUserType::Author),
             )
             .count(&self.conn)
-            .await?;
+            .await
+            .db_operation("check correction author")?;
         Ok(count != 0)
     }
 }
 
 impl Repo for SeaOrmTxRepo {
+    type Error = DatabaseError;
+
     async fn find_one(
         &self,
         filter: CorrectionFilter,
-    ) -> Result<Option<Correction>, Box<dyn std::error::Error + Send + Sync>>
-    {
+    ) -> Result<Option<Correction>, Self::Error> {
         let ret = Entity::find()
             .filter(Column::EntityId.eq(filter.entity_id))
             .filter(Column::EntityType.eq(filter.entity_type))
@@ -83,7 +88,8 @@ impl Repo for SeaOrmTxRepo {
             })
             .order_by_desc(Column::CreatedAt)
             .one(self.conn())
-            .await?
+            .await
+            .db_operation("find correction in transaction")?
             .map(|model| Correction {
                 id: model.id,
                 status: model.status,
@@ -100,7 +106,7 @@ impl Repo for SeaOrmTxRepo {
         &self,
         user: &crate::domain::user::User,
         correction: &Correction,
-    ) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<bool, Self::Error> {
         let correction_id = correction.id;
         let count = correction_user::Entity::find()
             .filter(correction_user::Column::CorrectionId.eq(correction_id))
@@ -110,7 +116,8 @@ impl Repo for SeaOrmTxRepo {
                     .eq(CorrectionUserType::Author),
             )
             .count(self.conn())
-            .await?;
+            .await
+            .db_operation("check correction author in transaction")?;
         Ok(count != 0)
     }
 }
@@ -119,7 +126,7 @@ impl TxRepo for SeaOrmTxRepo {
     async fn create(
         &self,
         meta: NewCorrectionMeta<impl CorrectionEntity>,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<i32, Self::Error> {
         let new_correction = entity::correction::ActiveModel {
             id: NotSet,
             status: Set(meta.status),
@@ -130,7 +137,8 @@ impl TxRepo for SeaOrmTxRepo {
             handled_at: NotSet,
         }
         .insert(self.conn())
-        .await?;
+        .await
+        .db_operation("insert correction")?;
 
         let correction_id = new_correction.id;
 
@@ -142,7 +150,8 @@ impl TxRepo for SeaOrmTxRepo {
         }
         .into_active_model()
         .insert(self.conn())
-        .await?;
+        .await
+        .db_operation("insert correction author")?;
 
         correction_revision::Model {
             correction_id,
@@ -152,7 +161,8 @@ impl TxRepo for SeaOrmTxRepo {
         }
         .into_active_model()
         .insert(self.conn())
-        .await?;
+        .await
+        .db_operation("insert correction revision")?;
 
         Ok(correction_id)
     }
@@ -161,7 +171,7 @@ impl TxRepo for SeaOrmTxRepo {
         &self,
         id: i32,
         meta: NewCorrectionMeta<impl CorrectionEntity>,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<(), Self::Error> {
         correction_revision::Model {
             correction_id: id,
             entity_history_id: meta.history_id,
@@ -170,7 +180,8 @@ impl TxRepo for SeaOrmTxRepo {
         }
         .into_active_model()
         .insert(self.conn())
-        .await?;
+        .await
+        .db_operation("insert correction revision")?;
 
         Ok(())
     }
