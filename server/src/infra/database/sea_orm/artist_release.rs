@@ -8,7 +8,7 @@ use itertools::{Itertools, izip};
 use libfp::FunctorExt;
 use sea_orm::JoinType::*;
 use sea_orm::prelude::*;
-use sea_orm::{ConnectionTrait, DbErr, QuerySelect, QueryTrait};
+use sea_orm::{ConnectionTrait, QuerySelect, QueryTrait};
 use sea_query::{Cond, ExprTrait, IntoCondition, SimpleExpr};
 
 use crate::domain::artist_release::*;
@@ -16,6 +16,7 @@ use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::image::Image;
 use crate::domain::shared::DateWithPrecision;
 use crate::domain::{Cursor, CursorResponse};
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::SeaOrmRepository;
 
 struct ArtistReleaseIR {
@@ -34,7 +35,7 @@ struct CreditIR {
 pub(crate) async fn appearance(
     repo: &SeaOrmRepository,
     query: AppearanceQuery,
-) -> Result<CursorResponse<Appearance>, DbErr> {
+) -> Result<CursorResponse<Appearance>, DatabaseError> {
     find_artist_releases(
         appearance_select(query.artist_id),
         query.pagination,
@@ -47,7 +48,7 @@ pub(crate) async fn appearance(
 pub(crate) async fn credit(
     repo: &SeaOrmRepository,
     query: CreditQuery,
-) -> Result<CursorResponse<Credit>, DbErr> {
+) -> Result<CursorResponse<Credit>, DatabaseError> {
     let releases_and_artists = find_artist_releases(
         credit_select(query.artist_id),
         query.pagination,
@@ -74,7 +75,8 @@ pub(crate) async fn credit(
                 .filter(release_credit::Column::ArtistId.eq(query.artist_id)),
             &repo.conn,
         )
-        .await?;
+        .await
+        .db_operation("load artist release credits")?;
 
     let role_ids = release_credits
         .iter()
@@ -85,7 +87,8 @@ pub(crate) async fn credit(
     let credit_roles = credit_role::Entity::find()
         .filter(credit_role::Column::Id.is_in(role_ids))
         .all(&repo.conn)
-        .await?;
+        .await
+        .db_operation("load artist release credit roles")?;
 
     let credit_irs = izip!(releases, artists, cover_urls, release_credits)
         .map(|(release, artists, cover_url, release_credits)| CreditIR {
@@ -104,7 +107,7 @@ pub(crate) async fn credit(
 pub(crate) async fn discography(
     repo: &SeaOrmRepository,
     query: DiscographyQuery,
-) -> Result<CursorResponse<Discography>, DbErr> {
+) -> Result<CursorResponse<Discography>, DatabaseError> {
     let select = release::Entity::find()
         .filter(release::Column::ReleaseType.eq(query.release_type))
         .filter(release_artist::Column::ArtistId.eq(query.artist_id))
@@ -119,14 +122,17 @@ async fn find_artist_releases(
     select: Select<release::Entity>,
     pagination: Cursor,
     db: &impl ConnectionTrait,
-) -> Result<CursorResponse<ArtistReleaseIR>, DbErr> {
+) -> Result<CursorResponse<ArtistReleaseIR>, DatabaseError> {
     let mut cursor = select.cursor_by(release::Column::Id);
 
     cursor.after(pagination.at);
 
     // Get one more to check if there are more
-    let mut releases =
-        cursor.first((pagination.limit + 1).into()).all(db).await?;
+    let mut releases = cursor
+        .first((pagination.limit + 1).into())
+        .all(db)
+        .await
+        .db_operation("load artist releases")?;
 
     let has_more = releases.len() > pagination.limit.into();
 
@@ -144,7 +150,8 @@ async fn find_artist_releases(
 
     let release_artist = releases
         .load_many_to_many(artist::Entity::find(), release_artist::Entity, db)
-        .await?;
+        .await
+        .db_operation("load artist release artists")?;
 
     let cover_urls = releases
         .load_many_to_many(
@@ -156,7 +163,8 @@ async fn find_artist_releases(
             release_image::Entity,
             db,
         )
-        .await?
+        .await
+        .db_operation("load artist release cover images")?
         .into_iter()
         .map(|x| x.into_iter().next().map(Image::from).map(|x| x.url()))
         .collect_vec();

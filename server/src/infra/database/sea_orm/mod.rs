@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use sea_orm::{DatabaseTransaction, DbErr, TransactionTrait};
 
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::error::{
     BrokenEntityReference, InternalError, MessageError,
 };
@@ -50,8 +51,8 @@ impl SeaOrmRepository {
         Self { conn }
     }
 
-    pub async fn begin_tx(&self) -> Result<SeaOrmTxRepo, DbErr> {
-        let tx = self.conn.begin().await?;
+    pub async fn begin_tx(&self) -> Result<SeaOrmTxRepo, DatabaseError> {
+        let tx = self.conn.begin().await.db_operation("begin transaction")?;
         Ok(SeaOrmTxRepo::new(tx))
     }
 }

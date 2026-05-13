@@ -5,6 +5,7 @@ use strum::IntoEnumIterator;
 
 use crate::domain::model::UserRoleEnum;
 use crate::infra::authz::sync_permissions;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::utils::upsert_admin_acc;
 
 mod user_role;
@@ -16,8 +17,12 @@ enum LookupTableCheckResult<T> {
     Conflict(T),
 }
 
-pub async fn sync_enum_table(db: &DatabaseConnection) -> Result<(), DbErr> {
-    UserRoleEnum::check_and_sync(db).await?;
+pub async fn sync_enum_table(
+    db: &DatabaseConnection,
+) -> Result<(), DatabaseError> {
+    UserRoleEnum::check_and_sync(db)
+        .await
+        .db_operation("sync user role lookup table")?;
     sync_permissions(db).await?;
 
     upsert_admin_acc(db).await;
