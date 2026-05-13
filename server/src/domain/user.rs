@@ -2,7 +2,7 @@ use serde::Serialize;
 use serde_json::Value;
 use utoipa::ToSchema;
 
-use super::model::{UserRole, UserRoleEnum};
+use super::model::UserRole;
 use crate::infra::database::error::DatabaseError;
 
 #[serde_with::apply(
@@ -74,15 +74,6 @@ pub struct User {
     pub roles: Vec<UserRole>,
     pub bio: Option<String>,
     pub settings: Value,
-}
-
-impl User {
-    pub fn has_roles(&self, expected: &[UserRoleEnum]) -> bool {
-        self.roles
-            .iter()
-            .map(UserRoleEnum::from)
-            .any(|role| expected.contains(&role))
-    }
 }
 
 #[derive(Clone, Debug)]
