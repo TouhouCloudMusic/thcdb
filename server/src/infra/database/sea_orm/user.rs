@@ -454,19 +454,17 @@ async fn find_profile_stats(
     let row = UserProfileStatsRow::find_by_statement(stmt)
         .one(conn)
         .await?
-        .ok_or_else(|| {
-            DbErr::Custom("missing user profile stats row".into())
-        })?;
+        .expect("profile stats aggregate query returns exactly one row");
 
     Ok(UserProfileStats {
         edit_count: row
             .edit_count
             .try_into()
-            .map_err(|_| DbErr::Custom("invalid edit_count".into()))?,
+            .expect("COUNT result is non-negative"),
         vote_count: row
             .vote_count
             .try_into()
-            .map_err(|_| DbErr::Custom("invalid vote_count".into()))?,
+            .expect("COUNT result is non-negative"),
     })
 }
 
