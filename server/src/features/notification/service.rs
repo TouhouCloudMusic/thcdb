@@ -78,7 +78,7 @@ impl Service {
         }
         .insert(&self.repo.conn)
         .await
-        .with_operation("insert notification")?;
+        .db_operation("insert notification")?;
 
         if self.should_push(recipient_user_id, kind).await? {
             let evt = WsEvent {
@@ -118,7 +118,7 @@ impl Service {
             .limit(u64::from(limit) + 1)
             .all(&self.repo.conn)
             .await
-            .with_operation("list notifications")?;
+            .db_operation("list notifications")?;
 
         let has_next = models.len() > usize::from(limit);
         if has_next {
@@ -143,7 +143,7 @@ impl Service {
             .filter(notification::Column::IsRead.eq(false))
             .count(&self.repo.conn)
             .await
-            .with_operation("count unread notifications")
+            .db_operation("count unread notifications")
             .map_err(Into::into)
     }
 
@@ -158,7 +158,7 @@ impl Service {
             .col_expr(notification::Column::IsRead, Expr::value(true))
             .exec(&self.repo.conn)
             .await
-            .with_operation("mark notification read")?;
+            .db_operation("mark notification read")?;
 
         Ok(())
     }
@@ -170,7 +170,7 @@ impl Service {
             .col_expr(notification::Column::IsRead, Expr::value(true))
             .exec(&self.repo.conn)
             .await
-            .with_operation("mark all notifications read")?;
+            .db_operation("mark all notifications read")?;
 
         Ok(())
     }
@@ -195,7 +195,7 @@ impl Service {
             .into_tuple::<i32>()
             .one(&self.repo.conn)
             .await
-            .with_operation("find correction notification author")?
+            .db_operation("find correction notification author")?
             .ok_or_else(|| {
                 AppError::internal(MessageError::new(
                     "correction author not found",
@@ -250,7 +250,7 @@ impl Service {
             .into_tuple::<i32>()
             .all(&self.repo.conn)
             .await
-            .with_operation("find correction notification reviewers")?;
+            .db_operation("find correction notification reviewers")?;
 
         for reviewer_id in reviewer_ids {
             if exclude_user_ids.contains(&reviewer_id) {
@@ -373,7 +373,7 @@ impl Service {
         let model = user::Entity::find_by_id(user_id)
             .one(&self.repo.conn)
             .await
-            .with_operation("find notification recipient settings")?;
+            .db_operation("find notification recipient settings")?;
 
         let model = model.ok_or_else(|| {
             AppError::internal(MessageError::new("user not found"))
@@ -423,7 +423,7 @@ impl Service {
             .filter(notification::Column::CreatedAt.lt(cutoff))
             .exec(&self.repo.conn)
             .await
-            .with_operation("cleanup expired notifications")?;
+            .db_operation("cleanup expired notifications")?;
 
         Ok(res.rows_affected)
     }

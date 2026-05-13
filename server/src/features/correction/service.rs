@@ -16,7 +16,7 @@ pub async fn approve(
     let tx_repo = repo
         .begin_tx()
         .await
-        .with_operation("begin approve correction transaction")?;
+        .db_operation("begin approve correction transaction")?;
     repo::approve(&tx_repo, correction_id, CorrectionApprover(user)).await?;
     tx_repo.commit().await?;
     Ok(())
@@ -30,7 +30,7 @@ pub async fn reject(
     let tx_repo = repo
         .begin_tx()
         .await
-        .with_operation("begin reject correction transaction")?;
+        .db_operation("begin reject correction transaction")?;
     repo::reject(&tx_repo, correction_id, CorrectionApprover(user)).await?;
     tx_repo.commit().await?;
     Ok(())
@@ -65,7 +65,7 @@ pub async fn upsert<T: CorrectionEntity + Send>(
             CorrectionManage,
         >(repo.conn(), meta.author.id)
         .await
-        .with_operation("check correction manage permission")?
+        .db_operation("check correction manage permission")?
             || repo.is_author(&meta.author, &prev_correction).await?;
 
         if !can_update_pending {

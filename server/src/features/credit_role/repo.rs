@@ -45,7 +45,7 @@ pub(super) async fn create(
     credit_role_impls::create_credit_role(data, repo.conn())
         .await
         .map(|role| role.id)
-        .with_operation("create credit role")
+        .db_operation("create credit role")
 }
 
 pub(super) async fn create_history(
@@ -55,5 +55,5 @@ pub(super) async fn create_history(
     credit_role_impls::create_credit_role_history(data, repo.conn())
         .await
         .map(|role| role.id)
-        .with_operation("create credit role history")
+        .db_operation("create credit role history")
 }

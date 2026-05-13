@@ -113,7 +113,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(&self, data: &NewRelease) -> Result<i32, DatabaseError> {
         create_release_with_relations(data, self.conn())
             .await
-            .with_operation("create release")
+            .db_operation("create release")
     }
 
     async fn create_history(
@@ -122,7 +122,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     ) -> Result<i32, DatabaseError> {
         create_release_history_with_relations(data, self.conn())
             .await
-            .with_operation("create release history")
+            .db_operation("create release history")
     }
 
     async fn apply_update(
@@ -131,6 +131,6 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     ) -> Result<(), DatabaseError> {
         apply_update(correction, self.conn())
             .await
-            .with_operation("apply release correction")
+            .db_operation("apply release correction")
     }
 }

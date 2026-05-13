@@ -40,7 +40,7 @@ pub async fn snapshot_for_history(
         EntityType::SongLyrics => snapshot_song_lyrics(db, history_id).await,
         EntityType::CreditRole => snapshot_credit_role(db, history_id).await,
     }
-    .with_operation("load correction history snapshot")
+    .db_operation("load correction history snapshot")
 }
 
 pub fn diff_snapshots(

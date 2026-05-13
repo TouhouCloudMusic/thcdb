@@ -33,14 +33,14 @@
 
 - [x] 新增 `AppError` 作为 HTTP 边界通用错误。
 - [x] `AppError` internal 响应统一返回 `Internal server error`，内部 source 不进入 response body。
-- [x] 移除 `AppError::context(...)`，诊断上下文下沉到 `DatabaseError::with_operation(...)` 或具体 slice 错误。
+- [x] 移除 `AppError::context(...)`，诊断上下文下沉到 `DatabaseError::db_operation(...)` 或具体 slice 错误。
 - [x] 新增 ZST `shared::error::PermissionDenied`，统一权限拒绝文案。
 - [x] `infra::Error` 的 HTTP 出口已收口到 `AppError`，避免旧 `IntoApiResponse` 通过 `Display` 暴露内部错误。
 - [x] 新增 `DatabaseError`，作为 `sea_orm::DbErr` 到应用错误之间的数据库诊断类型。
 - [x] correction 提交/审核、authz、image queue manage、user collection、correction comment 的迁移路径已使用 `DatabaseError`。
 - [x] `artist`、`song`、`label`、`tag`、`release`、`event`、`song_lyrics`、`credit_role` 的重复 `CreateError` / `UpsertCorrectionError` 已迁移为 `correction::SubmissionError`。
 - [x] correction 审核路径已迁移为 `correction::ModerationError`。
-- [x] `DatabaseError` 改为 `derive_more::Error`，数据库上下文 API 统一为 `with_operation(...)`。
+- [x] `DatabaseError` 改为 `derive_more::Error`，数据库上下文 API 统一为 `db_operation(...)`。
 - [x] 新增 `shared::types::BoxedError`，替代新错误路径中的本地 boxed error 别名。
 - [x] 删除 `ApiError` / `IntoErrorSchema` derive macro 实现和导出，保留 `proc_macros` crate 中其他宏。
 - [x] server 应用代码已移除 `ApiError` / `IntoErrorSchema` / `#[api_error(...)]` 使用点。
@@ -68,9 +68,9 @@
 - [x] 删除旧 `infra::whatever::InfraWhatever` 封装，事务 commit 的内部诊断消息改用共享 `MessageError -> InternalError`。
 - [x] 删除 `AppError::internal_boxed`，外部只能通过 `AppError::internal(...)` 或 `InternalError -> AppError` 进入。
 - [x] `features/tag_vote::Error` 的 source 转发改为 `derive_more::Error`，移除同类手写样板。
-- [x] 查询类 feature repo 边界不再返回裸 `DbErr`，由 repo 补 `DatabaseError::with_operation(...)` 后交给 HTTP / service。
+- [x] 查询类 feature repo 边界不再返回裸 `DbErr`，由 repo 补 `DatabaseError::db_operation(...)` 后交给 HTTP / service。
 - [x] auth `create_user` 的唯一约束错误收口为 `CreateUserError::AlreadyExists`，service 不再匹配底层 SQLx constraint。
-- [x] 移除 feature slice error 中残留的 `From<DbErr>`，事务开始和 repo DB 调用点改为显式 `with_operation(...)`。
+- [x] 移除 feature slice error 中残留的 `From<DbErr>`，事务开始和 repo DB 调用点改为显式 `db_operation(...)`。
 
 ## 约束
 
@@ -141,9 +141,9 @@
 ## Phase 2.5: 收敛数据库错误路径
 
 - [x] 新增 `infra::database::error::DatabaseError`。
-- [x] 新增 `DatabaseResultExt::with_operation(...)`，用于 `Result<T, sea_orm::DbErr>` 在边界补数据库操作上下文。
+- [x] 新增 `DatabaseResultExt::db_operation(...)`，用于 `Result<T, sea_orm::DbErr>` 在边界补数据库操作上下文。
 - [x] 实现 `DatabaseError -> AppError::internal(...)`，数据库错误统一 500 脱敏。
-- [x] 移除 slice 错误转换中的 `AppError::context(...)`，保留 `DatabaseError::with_operation(...)` 作为数据库诊断上下文来源。
+- [x] 移除 slice 错误转换中的 `AppError::context(...)`，保留 `DatabaseError::db_operation(...)` 作为数据库诊断上下文来源。
 - [x] 迁移 `adapter/inbound/rest/authz.rs`，避免权限检查 DB 错误经过 `infra::Error`。
 - [x] 迁移 correction submission / moderation 错误，增加 `Database(DatabaseError)` 分支。
 - [x] 迁移 `image_queue/manage` 的主要 DB 路径，新增 `Database(DatabaseError)` 分支。

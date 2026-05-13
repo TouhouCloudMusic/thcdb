@@ -20,7 +20,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(&self, data: &NewSong) -> Result<i32, DatabaseError> {
         let song = create_song_and_relations(data, self.conn())
             .await
-            .with_operation("create song")?;
+            .db_operation("create song")?;
 
         Ok(song.id)
     }
@@ -31,7 +31,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     ) -> Result<i32, DatabaseError> {
         create_song_history_and_relations(data, self.conn())
             .await
-            .with_operation("create song history")
+            .db_operation("create song history")
             .map(|x| x.id)
     }
 
@@ -41,7 +41,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     ) -> Result<(), DatabaseError> {
         apply_update(correction, self.conn())
             .await
-            .with_operation("apply song correction")
+            .db_operation("apply song correction")
     }
 }
 

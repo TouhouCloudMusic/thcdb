@@ -25,7 +25,7 @@ pub(crate) async fn find_one(
     find_many_impl(filter_into_select(filter).limit(1), &repo.conn)
         .await
         .map(|mut releases| releases.pop())
-        .with_operation("find release by id")
+        .db_operation("find release by id")
 }
 
 pub(crate) async fn find_many(
@@ -34,7 +34,7 @@ pub(crate) async fn find_many(
 ) -> Result<Vec<Release>, DatabaseError> {
     find_many_impl(filter_into_select(filter), &repo.conn)
         .await
-        .with_operation("find releases")
+        .db_operation("find releases")
 }
 
 pub(crate) async fn exists(
@@ -48,7 +48,7 @@ pub(crate) async fn exists(
         .count(db)
         .await
         .map(|count: u64| count > 0)
-        .with_operation("check release exists")
+        .db_operation("check release exists")
 }
 
 fn filter_into_select(filter: FindReleaseFilter) -> Select<release::Entity> {
@@ -91,7 +91,7 @@ pub(crate) async fn find_by_filter(
             pagination,
         )
         .await
-        .with_operation("explore releases");
+        .db_operation("explore releases");
     }
 
     let select = filter.into_select();
@@ -103,7 +103,7 @@ pub(crate) async fn find_by_filter(
         |select| find_many_impl(select, &repo.conn),
     )
     .await
-    .with_operation("explore releases")
+    .db_operation("explore releases")
 }
 
 async fn find_sorted_by_correction(

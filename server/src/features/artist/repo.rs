@@ -27,7 +27,7 @@ pub(super) async fn create(
     artist_impls::create_artist(data, repo.conn())
         .await
         .map(|artist| artist.id)
-        .with_operation("create artist")
+        .db_operation("create artist")
 }
 
 pub(super) async fn create_history(
@@ -37,5 +37,5 @@ pub(super) async fn create_history(
     artist_impls::create_artist_history(data, repo.conn())
         .await
         .map(|artist| artist.id)
-        .with_operation("create artist history")
+        .db_operation("create artist history")
 }

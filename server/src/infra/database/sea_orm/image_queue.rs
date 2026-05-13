@@ -16,7 +16,7 @@ impl Repo for SeaOrmTxRepo {
         db::Entity::insert(model.into_active_model())
             .exec_with_returning(self.conn())
             .await
-            .with_operation("create image queue")
+            .db_operation("create image queue")
             .fmap_into()
     }
 
@@ -28,7 +28,7 @@ impl Repo for SeaOrmTxRepo {
             .into_active_model()
             .update(self.conn())
             .await
-            .with_operation("update image queue")
+            .db_operation("update image queue")
             .map(Into::into)
     }
 }

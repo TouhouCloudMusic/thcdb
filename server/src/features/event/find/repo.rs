@@ -21,7 +21,7 @@ pub(super) async fn find_by_id(
     find_many_impl(select, &repo.conn)
         .await
         .map(|mut events| events.pop())
-        .with_operation("find event by id")
+        .db_operation("find event by id")
 }
 
 pub(super) async fn find_by_keyword(
@@ -42,7 +42,7 @@ pub(super) async fn find_by_keyword(
 
     find_many_impl(selector, &repo.conn)
         .await
-        .with_operation("find events by keyword")
+        .db_operation("find events by keyword")
 }
 
 pub(super) async fn find_by_filter(
@@ -61,7 +61,7 @@ pub(super) async fn find_by_filter(
             pagination,
         )
         .await
-        .with_operation("explore events");
+        .db_operation("explore events");
     }
 
     let select = filter.into_select();
@@ -73,7 +73,7 @@ pub(super) async fn find_by_filter(
         |select| find_many_impl(select, &repo.conn),
     )
     .await
-    .with_operation("explore events")
+    .db_operation("explore events")
 }
 
 async fn find_sorted_by_correction(

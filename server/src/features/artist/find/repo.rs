@@ -34,7 +34,7 @@ pub(super) async fn find_one(
     find_many_impl(select, &repo.conn)
         .await
         .map(|x| x.into_iter().next())
-        .with_operation("find artist by id")
+        .db_operation("find artist by id")
 }
 
 pub(super) async fn find_many(
@@ -59,7 +59,7 @@ pub(super) async fn find_many(
 
     find_many_impl(select, &repo.conn)
         .await
-        .with_operation("find artists by keyword")
+        .db_operation("find artists by keyword")
 }
 
 pub(crate) async fn exists(
@@ -73,7 +73,7 @@ pub(crate) async fn exists(
         .count(db)
         .await
         .map(|count: u64| count > 0)
-        .with_operation("check artist exists")
+        .db_operation("check artist exists")
 }
 
 #[expect(clippy::too_many_lines, reason = "TODO")]
@@ -299,7 +299,7 @@ pub(super) async fn find_by_filter(
             pagination,
         )
         .await
-        .with_operation("explore artists");
+        .db_operation("explore artists");
     }
 
     let select = filter.into_select();
@@ -311,7 +311,7 @@ pub(super) async fn find_by_filter(
         |select| find_many_impl(select, &repo.conn),
     )
     .await
-    .with_operation("explore artists")
+    .db_operation("explore artists")
 }
 
 async fn find_sorted_by_correction(

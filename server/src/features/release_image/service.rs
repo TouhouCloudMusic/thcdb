@@ -72,7 +72,7 @@ impl Service {
             .repo
             .begin_tx()
             .await
-            .with_operation("begin release cover art upload transaction")?;
+            .db_operation("begin release cover art upload transaction")?;
 
         let image_service =
             image::Service::new(tx_repo.clone(), self.storage.clone());
@@ -114,7 +114,7 @@ impl Service {
             .order_by_desc(image_entity::Column::UploadedAt)
             .one(&self.repo.conn)
             .await
-            .with_operation("find current release cover art")?;
+            .db_operation("find current release cover art")?;
 
         let Some(image) = image else {
             return Ok(None);
@@ -124,7 +124,7 @@ impl Service {
             .into_partial_model::<ImageUploaderSummary>()
             .one(&self.repo.conn)
             .await
-            .with_operation("find release cover art uploader")?
+            .db_operation("find release cover art uploader")?
             .unwrap_or_else(|| ImageUploaderSummary {
                 id: image.uploaded_by,
                 name: "Unknown".to_string(),

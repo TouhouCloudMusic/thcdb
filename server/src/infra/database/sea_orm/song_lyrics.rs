@@ -17,7 +17,7 @@ impl TxRepo for SeaOrmTxRepo {
     ) -> Result<i32, DatabaseError> {
         create_lyrics_impl(lyrics, self.conn())
             .await
-            .with_operation("create song lyrics")
+            .db_operation("create song lyrics")
     }
 
     async fn create_history(
@@ -26,7 +26,7 @@ impl TxRepo for SeaOrmTxRepo {
     ) -> Result<i32, DatabaseError> {
         create_history_impl(lyrics, self.conn())
             .await
-            .with_operation("create song lyrics history")
+            .db_operation("create song lyrics history")
     }
 
     async fn apply_update(
@@ -35,7 +35,7 @@ impl TxRepo for SeaOrmTxRepo {
     ) -> Result<(), DatabaseError> {
         apply_update_impl(correction, self.conn())
             .await
-            .with_operation("apply song lyrics correction")
+            .db_operation("apply song lyrics correction")
     }
 }
 

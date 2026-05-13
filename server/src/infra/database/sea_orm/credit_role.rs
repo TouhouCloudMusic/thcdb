@@ -143,7 +143,7 @@ impl TxRepo for SeaOrmTxRepo {
     async fn create(&self, data: &NewCreditRole) -> Result<i32, DatabaseError> {
         let credit_role = create_credit_role(data, self.conn())
             .await
-            .with_operation("create credit role")?;
+            .db_operation("create credit role")?;
 
         Ok(credit_role.id)
     }
@@ -154,7 +154,7 @@ impl TxRepo for SeaOrmTxRepo {
     ) -> Result<i32, DatabaseError> {
         let credit_role_history = create_credit_role_history(data, self.conn())
             .await
-            .with_operation("create credit role history")?;
+            .db_operation("create credit role history")?;
 
         Ok(credit_role_history.id)
     }
@@ -165,7 +165,7 @@ impl TxRepo for SeaOrmTxRepo {
     ) -> Result<(), DatabaseError> {
         apply_update_impl(correction, self.conn())
             .await
-            .with_operation("apply credit role correction")
+            .db_operation("apply credit role correction")
     }
 }
 

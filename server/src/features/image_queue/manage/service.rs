@@ -85,7 +85,7 @@ impl Service {
                 user_id,
             )
             .await
-            .with_operation("check image queue manage permission")?
+            .db_operation("check image queue manage permission")?
         {
             return Err(Error::PermissionDenied);
         }
@@ -151,7 +151,7 @@ impl Service {
             user_id,
         )
         .await
-        .with_operation("check image queue manage permission")?
+        .db_operation("check image queue manage permission")?
         {
             return Err(Error::PermissionDenied);
         }

@@ -34,7 +34,7 @@ pub async fn ensure_permission<P: PermissionMarker>(
 ) -> Result<(), Error> {
     let has_permission = authz::user_has_permission::<P>(db, user_id)
         .await
-        .with_operation("check user permission")?;
+        .db_operation("check user permission")?;
 
     if !has_permission {
         return Err(Error::PermissionDenied);

@@ -17,7 +17,7 @@ impl Repo for SeaOrmTxRepo {
         )
         .exec_with_returning(self.conn())
         .await
-        .with_operation("create release image queue")
+        .db_operation("create release image queue")
         .fmap_into()
     }
 }

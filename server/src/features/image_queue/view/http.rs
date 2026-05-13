@@ -93,7 +93,7 @@ async fn user_image_queue(
         .limit(u64::from(limit) + 1)
         .all(&repo.conn)
         .await
-        .with_operation("find user image queue")?;
+        .db_operation("find user image queue")?;
 
     let has_next = models.len() > limit as usize;
     if has_next {

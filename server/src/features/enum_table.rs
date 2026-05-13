@@ -46,7 +46,7 @@ async fn language_list(
     let res: Vec<Language> = language::Entity::find()
         .all(&state.database)
         .await
-        .with_operation("list languages")?
+        .db_operation("list languages")?
         .fmap_into();
 
     Ok(res.into())
@@ -65,7 +65,7 @@ async fn user_roles(
     Ok(role::Entity::find()
         .all(&state.database)
         .await
-        .with_operation("list user roles")?
+        .db_operation("list user roles")?
         .iter()
         .filter_map(|model| UserRoleEnum::try_from(model.id).ok())
         .collect_vec()
@@ -99,7 +99,7 @@ async fn song_relation_types(
         .order_by_asc(song_relation_type::Column::Id)
         .all(&state.database)
         .await
-        .with_operation("list song relation types")?
+        .db_operation("list song relation types")?
         .into_iter()
         .map(Into::into)
         .collect_vec()

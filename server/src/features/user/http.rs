@@ -100,7 +100,7 @@ async fn update_bio(
         })
         .exec(&database.conn)
         .await
-        .with_operation("update user bio")
+        .db_operation("update user bio")
         .map(|_| Message::new("Bio updated successfully"))
         .map_err(AppError::from)
 }

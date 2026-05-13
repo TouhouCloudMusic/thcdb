@@ -40,7 +40,7 @@ pub(crate) async fn find_by_id(
     }
     .await;
 
-    result.with_operation("find auth user by id")
+    result.db_operation("find auth user by id")
 }
 
 pub(crate) async fn find_by_name(
@@ -60,7 +60,7 @@ pub(crate) async fn find_by_name(
     }
     .await;
 
-    result.with_operation("find auth user by name")
+    result.db_operation("find auth user by name")
 }
 
 pub(crate) async fn find_by_email(
@@ -83,7 +83,7 @@ pub(crate) async fn find_by_email(
     }
     .await;
 
-    result.with_operation("find auth user by email")
+    result.db_operation("find auth user by email")
 }
 
 pub(crate) async fn create_user(
@@ -115,7 +115,7 @@ pub(crate) async fn create_user(
             Err(CreateUserError::AlreadyExists)
         }
         Err(err) => Err(DatabaseError::new(err)
-            .with_operation("create auth user")
+            .db_operation("create auth user")
             .into()),
     }
 }
@@ -150,7 +150,7 @@ pub(crate) async fn delete_user(
     }
     .await;
 
-    result.with_operation("delete unverified auth user")
+    result.db_operation("delete unverified auth user")
 }
 
 pub(crate) async fn set_email_verification(
@@ -192,7 +192,7 @@ pub(crate) async fn set_email_verification(
     }
     .await;
 
-    result.with_operation("set auth email verification")
+    result.db_operation("set auth email verification")
 }
 
 pub(crate) async fn increment_email_verification_failed_attempts(
@@ -221,7 +221,7 @@ pub(crate) async fn increment_email_verification_failed_attempts(
     }
     .await;
 
-    result.with_operation("increment auth email verification failed attempts")
+    result.db_operation("increment auth email verification failed attempts")
 }
 
 pub(crate) async fn set_email_verified(
@@ -245,7 +245,7 @@ pub(crate) async fn set_email_verified(
     }
     .await;
 
-    result.with_operation("set auth email verified")
+    result.db_operation("set auth email verified")
 }
 
 pub(crate) async fn set_password(
@@ -260,7 +260,7 @@ pub(crate) async fn set_password(
     }
     .update(conn)
     .await
-    .with_operation("set auth user password")?;
+    .db_operation("set auth user password")?;
 
     Ok(())
 }
@@ -272,7 +272,7 @@ pub(crate) async fn clear_email_verification(
     let _ = user_email_verification::Entity::delete_by_id(user_id)
         .exec(conn)
         .await
-        .with_operation("clear auth email verification")?;
+        .db_operation("clear auth email verification")?;
 
     Ok(())
 }
@@ -287,7 +287,7 @@ pub(crate) async fn clear_email_verification_if_hash_matches(
         .filter(user_email_verification::Column::Hash.eq(hash))
         .exec(conn)
         .await
-        .with_operation("clear auth email verification if hash matches")?;
+        .db_operation("clear auth email verification if hash matches")?;
 
     Ok(res.rows_affected != 0)
 }

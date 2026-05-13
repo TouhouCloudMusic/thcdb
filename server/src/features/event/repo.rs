@@ -26,7 +26,7 @@ pub(super) async fn create(
     event_impls::create_event_and_relations(data, repo.conn())
         .await
         .map(|event| event.id)
-        .with_operation("create event")
+        .db_operation("create event")
 }
 
 pub(super) async fn create_history(
@@ -36,5 +36,5 @@ pub(super) async fn create_history(
     event_impls::create_event_history_and_relations(data, repo.conn())
         .await
         .map(|event| event.id)
-        .with_operation("create event history")
+        .db_operation("create event history")
 }

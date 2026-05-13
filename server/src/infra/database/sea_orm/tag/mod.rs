@@ -18,7 +18,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(&self, data: &NewTag) -> Result<i32, DatabaseError> {
         let tag = create_tag_impl(data, self.conn())
             .await
-            .with_operation("create tag")?;
+            .db_operation("create tag")?;
 
         Ok(tag.id)
     }
@@ -29,7 +29,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     ) -> Result<i32, DatabaseError> {
         create_history_impl(data, self.conn())
             .await
-            .with_operation("create tag history")
+            .db_operation("create tag history")
             .map(|x| x.id)
     }
 
@@ -39,7 +39,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     ) -> Result<(), DatabaseError> {
         apply_correction(correction, self.conn())
             .await
-            .with_operation("apply tag correction")
+            .db_operation("apply tag correction")
     }
 }
 

@@ -46,7 +46,7 @@ async fn entity_exists(
         .query_one(stmt)
         .await
         .map(|row| row.is_some())
-        .with_operation("check tagged entity exists")
+        .db_operation("check tagged entity exists")
         .map_err(Into::into)
 }
 
@@ -59,7 +59,7 @@ async fn tag_exists(
         .one(&repo.conn)
         .await
         .map(|tag| tag.is_some())
-        .with_operation("check tag exists")
+        .db_operation("check tag exists")
         .map_err(Into::into)
 }
 
@@ -115,7 +115,7 @@ pub async fn upsert(
     repo.conn
         .execute(stmt)
         .await
-        .with_operation("upsert tag vote")?;
+        .db_operation("upsert tag vote")?;
     Ok(())
 }
 
@@ -139,7 +139,7 @@ pub async fn delete(
     repo.conn
         .execute(stmt)
         .await
-        .with_operation("delete tag vote")?;
+        .db_operation("delete tag vote")?;
     Ok(())
 }
 
@@ -283,7 +283,7 @@ pub async fn get_tags(
     }
     .await;
 
-    result.with_operation("get tag votes").map_err(Into::into)
+    result.db_operation("get tag votes").map_err(Into::into)
 }
 
 #[derive(Debug, Clone, FromQueryResult)]

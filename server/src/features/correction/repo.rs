@@ -28,7 +28,7 @@ async fn find_correction_or_err(
                 "correction repository operation failed"
             );
         })
-        .with_operation("find correction")?;
+        .db_operation("find correction")?;
 
     correction.ok_or(ModerationError::NotFound)
 }
@@ -53,7 +53,7 @@ async fn insert_approver(
             "correction repository operation failed"
         );
     })
-    .with_operation("insert correction approver")?;
+    .db_operation("insert correction approver")?;
 
     Ok(())
 }
@@ -78,7 +78,7 @@ async fn update_correction_status(
                 "correction repository operation failed"
             );
         })
-        .with_operation("update correction status")?;
+        .db_operation("update correction status")?;
 
     Ok(correction)
 }
@@ -110,7 +110,7 @@ pub async fn find_pending_id(
                 "correction repository operation failed"
             );
         })
-        .with_operation("find pending correction")?;
+        .db_operation("find pending correction")?;
 
     Ok(model.map(|model| model.id))
 }
@@ -216,7 +216,7 @@ pub async fn approve(
                 "correction repository operation failed"
             );
         })
-        .with_operation("apply correction update")?;
+        .db_operation("apply correction update")?;
 
     Ok(())
 }

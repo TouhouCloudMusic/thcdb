@@ -37,7 +37,7 @@ pub(crate) async fn load_users(
         .into_partial_model::<UserSummary>()
         .all(&repo.conn)
         .await
-        .with_operation("load image queue users")?;
+        .db_operation("load image queue users")?;
 
     Ok(users.into_iter().map(|user| (user.id, user)).collect())
 }

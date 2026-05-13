@@ -14,7 +14,7 @@ pub(super) async fn appearance(
 ) -> Result<CursorResponse<Appearance>, DatabaseError> {
     infra::appearance(repo, query)
         .await
-        .with_operation("find artist appearances")
+        .db_operation("find artist appearances")
 }
 
 pub(super) async fn credit(
@@ -23,7 +23,7 @@ pub(super) async fn credit(
 ) -> Result<CursorResponse<Credit>, DatabaseError> {
     infra::credit(repo, query)
         .await
-        .with_operation("find artist credits")
+        .db_operation("find artist credits")
 }
 
 pub(super) async fn discography(
@@ -32,5 +32,5 @@ pub(super) async fn discography(
 ) -> Result<CursorResponse<Discography>, DatabaseError> {
     infra::discography(repo, query)
         .await
-        .with_operation("find artist discography")
+        .db_operation("find artist discography")
 }

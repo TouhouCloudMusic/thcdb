@@ -27,7 +27,7 @@ pub(super) async fn find_one(
         .one(&repo.conn)
         .await
         .map(|role| role.map(Into::into))
-        .with_operation("find credit role by id")
+        .db_operation("find credit role by id")
 }
 
 pub(super) async fn find_many_summary(
@@ -60,5 +60,5 @@ pub(super) async fn find_many_summary(
     }
     .await;
 
-    result.with_operation("find credit role summaries")
+    result.db_operation("find credit role summaries")
 }

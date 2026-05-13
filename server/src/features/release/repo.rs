@@ -26,7 +26,7 @@ pub(super) async fn create(
 ) -> Result<i32, DatabaseError> {
     release_tx::create_release_with_relations(data, repo.conn())
         .await
-        .with_operation("create release")
+        .db_operation("create release")
 }
 
 pub(super) async fn create_history(
@@ -35,5 +35,5 @@ pub(super) async fn create_history(
 ) -> Result<i32, DatabaseError> {
     release_tx::create_release_history_with_relations(data, repo.conn())
         .await
-        .with_operation("create release history")
+        .db_operation("create release history")
 }

@@ -55,7 +55,7 @@ async fn find_base_correction(
         .order_by_desc(correction_entity::Column::Id)
         .one(db)
         .await
-        .with_operation("find base correction for diff")
+        .db_operation("find base correction for diff")
 }
 
 #[utoipa::path(
@@ -73,7 +73,7 @@ async fn get_correction_diff(
     let Some(current) = correction_entity::Entity::find_by_id(id)
         .one(&repo.conn)
         .await
-        .with_operation("find correction for diff")?
+        .db_operation("find correction for diff")?
     else {
         return Err(AppError::not_found("Correction not found"));
     };
@@ -83,7 +83,7 @@ async fn get_correction_diff(
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(&repo.conn)
         .await
-        .with_operation("find current correction revision for diff")?
+        .db_operation("find current correction revision for diff")?
         .ok_or_else(|| AppError::not_found("Correction revision not found"))?;
 
     let base = find_base_correction(&repo.conn, &current).await?;
@@ -95,7 +95,7 @@ async fn get_correction_diff(
                 .order_by_desc(correction_revision::Column::EntityHistoryId)
                 .one(&repo.conn)
                 .await
-                .with_operation("find base correction revision for diff")?
+                .db_operation("find base correction revision for diff")?
                 .ok_or_else(|| {
                     AppError::not_found("Base correction revision not found")
                 })?;

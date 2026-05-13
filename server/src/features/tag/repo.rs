@@ -26,7 +26,7 @@ pub(super) async fn create(
     tag_impls::create_tag_impl(data, repo.conn())
         .await
         .map(|tag| tag.id)
-        .with_operation("create tag")
+        .db_operation("create tag")
 }
 
 pub(super) async fn create_history(
@@ -36,5 +36,5 @@ pub(super) async fn create_history(
     tag_impls::create_history_impl(data, repo.conn())
         .await
         .map(|tag| tag.id)
-        .with_operation("create tag history")
+        .db_operation("create tag history")
 }

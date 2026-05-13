@@ -26,7 +26,7 @@ pub(super) async fn create(
     label_impls::save_label_and_link_relations(data, repo.conn())
         .await
         .map(|label| label.id)
-        .with_operation("create label")
+        .db_operation("create label")
 }
 
 pub(super) async fn create_history(
@@ -36,5 +36,5 @@ pub(super) async fn create_history(
     label_impls::save_label_history_and_link_relations(data, repo.conn())
         .await
         .map(|label| label.id)
-        .with_operation("create label history")
+        .db_operation("create label history")
 }

@@ -41,7 +41,7 @@ async fn compare_corrections(
     let Some(left) = correction_entity::Entity::find_by_id(id1)
         .one(&repo.conn)
         .await
-        .with_operation("find left correction for comparison")?
+        .db_operation("find left correction for comparison")?
     else {
         return Err(AppError::not_found("Correction not found"));
     };
@@ -49,7 +49,7 @@ async fn compare_corrections(
     let Some(right) = correction_entity::Entity::find_by_id(id2)
         .one(&repo.conn)
         .await
-        .with_operation("find right correction for comparison")?
+        .db_operation("find right correction for comparison")?
     else {
         return Err(AppError::not_found("Correction not found"));
     };
@@ -67,7 +67,7 @@ async fn compare_corrections(
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(&repo.conn)
         .await
-        .with_operation("find left correction revision for comparison")?
+        .db_operation("find left correction revision for comparison")?
         .ok_or_else(|| AppError::not_found("Correction revision not found"))?;
 
     let right_revision = correction_revision::Entity::find()
@@ -75,7 +75,7 @@ async fn compare_corrections(
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(&repo.conn)
         .await
-        .with_operation("find right correction revision for comparison")?
+        .db_operation("find right correction revision for comparison")?
         .ok_or_else(|| AppError::not_found("Correction revision not found"))?;
 
     let left_snapshot = correction_diff::snapshot_for_history(

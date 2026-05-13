@@ -200,7 +200,7 @@ pub async fn search_artists(
     let items = ArtistRow::find_by_statement(stmt)
         .all(db)
         .await
-        .with_operation("search artists")?
+        .db_operation("search artists")?
         .into_iter()
         .map(|row| SimpleArtist {
             id: row.id,
@@ -258,7 +258,7 @@ pub async fn search_releases(
     let items = ReleaseRow::find_by_statement(stmt)
         .all(db)
         .await
-        .with_operation("search releases")?
+        .db_operation("search releases")?
         .into_iter()
         .map(|row| SimpleRelease {
             id: row.id,
@@ -317,7 +317,7 @@ pub async fn search_songs(
     let items = SongRow::find_by_statement(stmt)
         .all(db)
         .await
-        .with_operation("search songs")?
+        .db_operation("search songs")?
         .into_iter()
         .map(|row| SongRef {
             id: row.id,
@@ -375,7 +375,7 @@ pub async fn search_events(
     let items = EventRow::find_by_statement(stmt)
         .all(db)
         .await
-        .with_operation("search events")?
+        .db_operation("search events")?
         .into_iter()
         .map(|row| SimpleEvent {
             id: row.id,
@@ -433,7 +433,7 @@ pub async fn search_labels(
     let items = LabelRow::find_by_statement(stmt)
         .all(db)
         .await
-        .with_operation("search labels")?
+        .db_operation("search labels")?
         .into_iter()
         .map(|row| SimpleLabel {
             id: row.id,
@@ -496,7 +496,7 @@ pub async fn search_tags(
     let items = TagRow::find_by_statement(stmt)
         .all(db)
         .await
-        .with_operation("search tags")?
+        .db_operation("search tags")?
         .into_iter()
         .map(|row| TagRef {
             id: row.id,

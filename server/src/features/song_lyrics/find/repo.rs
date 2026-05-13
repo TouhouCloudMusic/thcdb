@@ -51,7 +51,7 @@ pub(super) async fn find_one(
     }
     .await;
 
-    result.with_operation("find song lyrics")
+    result.db_operation("find song lyrics")
 }
 
 pub(super) async fn find_many(
@@ -89,7 +89,7 @@ pub(super) async fn find_many(
     }
     .await;
 
-    result.with_operation("find many song lyrics")
+    result.db_operation("find many song lyrics")
 }
 
 fn map_song_lyrics(

@@ -19,7 +19,7 @@ impl image::Repo for SeaOrmRepository {
             .filter(entity::image::Column::Id.eq(id))
             .one(&self.conn)
             .await
-            .with_operation("find image by id")
+            .db_operation("find image by id")
             .map(FunctorExt::fmap_into)
     }
 
@@ -31,7 +31,7 @@ impl image::Repo for SeaOrmRepository {
             .filter(entity::image::Column::Filename.eq(filename))
             .one(&self.conn)
             .await
-            .with_operation("find image by filename")
+            .db_operation("find image by filename")
             .map(FunctorExt::fmap_into)
     }
 }
@@ -45,7 +45,7 @@ impl image::Repo for SeaOrmTxRepo {
             .filter(entity::image::Column::Id.eq(id))
             .one(self.conn())
             .await
-            .with_operation("find image by id")
+            .db_operation("find image by id")
             .map(FunctorExt::fmap_into)
     }
 
@@ -57,7 +57,7 @@ impl image::Repo for SeaOrmTxRepo {
             .filter(entity::image::Column::Filename.eq(filename))
             .one(self.conn())
             .await
-            .with_operation("find image by filename")
+            .db_operation("find image by filename")
             .map(FunctorExt::fmap_into)
     }
 }
@@ -104,7 +104,7 @@ impl image::TxRepo for SeaOrmTxRepo {
     ) -> Result<Image, DatabaseError> {
         save_impl(self.conn(), new_image.into_active_model())
             .await
-            .with_operation("create image")
+            .db_operation("create image")
             .fmap_into()
     }
 
@@ -113,7 +113,7 @@ impl image::TxRepo for SeaOrmTxRepo {
             .filter(entity::image::Column::Id.eq(id))
             .exec(self.conn())
             .await
-            .with_operation("delete image")
+            .db_operation("delete image")
             .map(|_| ())
     }
 }

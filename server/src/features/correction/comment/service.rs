@@ -46,7 +46,7 @@ impl Service {
             .repo
             .begin_tx()
             .await
-            .with_operation("begin correction comment transaction")?;
+            .db_operation("begin correction comment transaction")?;
         let conn = tx_repo.conn();
         repo::ensure_correction_exists(conn, correction_id).await?;
         let comment =
@@ -84,7 +84,7 @@ impl Service {
             user_id,
         )
         .await
-        .with_operation("check correction comment manage permission")
+        .db_operation("check correction comment manage permission")
         .map_err(Into::into)
     }
 }

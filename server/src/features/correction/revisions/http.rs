@@ -47,7 +47,7 @@ async fn get_correction_revisions(
     let exists = correction_entity::Entity::find_by_id(id)
         .one(&repo.conn)
         .await
-        .with_operation("find correction for revisions")?;
+        .db_operation("find correction for revisions")?;
 
     if exists.is_none() {
         return Err(AppError::not_found("Correction not found"));
@@ -58,7 +58,7 @@ async fn get_correction_revisions(
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .all(&repo.conn)
         .await
-        .with_operation("find correction revisions")?;
+        .db_operation("find correction revisions")?;
 
     let author_ids = revisions
         .iter()
@@ -72,7 +72,7 @@ async fn get_correction_revisions(
             .filter(user::Column::Id.is_in(author_ids))
             .all(&repo.conn)
             .await
-            .with_operation("find correction revision authors")?
+            .db_operation("find correction revision authors")?
     };
 
     let author_map = authors

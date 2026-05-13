@@ -16,7 +16,7 @@ pub async fn create(
     let tx_repo = repo
         .begin_tx()
         .await
-        .with_operation("begin label creation correction transaction")?;
+        .db_operation("begin label creation correction transaction")?;
 
     let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
     let history_id =
@@ -52,7 +52,7 @@ pub async fn upsert_correction(
     let tx_repo = repo
         .begin_tx()
         .await
-        .with_operation("begin label update correction transaction")?;
+        .db_operation("begin label update correction transaction")?;
 
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;

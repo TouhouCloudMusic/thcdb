@@ -81,7 +81,7 @@ pub async fn find_pending(
         .limit(u64::from(limit) + 1)
         .all(&repo.conn)
         .await
-        .with_operation("find pending image queue entries")?;
+        .db_operation("find pending image queue entries")?;
 
     let has_next = models.len() > usize::from(limit);
     if has_next {
@@ -109,7 +109,7 @@ pub async fn count_pending(
         )
         .count(&repo.conn)
         .await
-        .with_operation("count pending image queue entries")
+        .db_operation("count pending image queue entries")
 }
 
 pub async fn find_detail(
@@ -119,7 +119,7 @@ pub async fn find_detail(
     let model = image_queue_entity::Entity::find_by_id(id)
         .one(&repo.conn)
         .await
-        .with_operation("find image queue entry detail")?;
+        .db_operation("find image queue entry detail")?;
 
     let Some(queue) = model else {
         return Ok(None);
@@ -129,7 +129,7 @@ pub async fn find_detail(
         Some(image_id) => image_entity::Entity::find_by_id(image_id)
             .one(&repo.conn)
             .await
-            .with_operation("find queued image")?,
+            .db_operation("find queued image")?,
         None => None,
     };
 
@@ -137,13 +137,13 @@ pub async fn find_detail(
         .filter(artist_image_queue_entity::Column::QueueId.eq(id))
         .one(&repo.conn)
         .await
-        .with_operation("find artist image queue target")?;
+        .db_operation("find artist image queue target")?;
 
     let release = release_image_queue_entity::Entity::find()
         .filter(release_image_queue_entity::Column::QueueId.eq(id))
         .one(&repo.conn)
         .await
-        .with_operation("find release image queue target")?;
+        .db_operation("find release image queue target")?;
 
     Ok(Some(ImageQueueDetailModels {
         queue,
@@ -161,7 +161,7 @@ pub async fn approve(
     let tx_repo = repo
         .begin_tx()
         .await
-        .with_operation("begin approve image queue transaction")?;
+        .db_operation("begin approve image queue transaction")?;
 
     let model = find_queue(&tx_repo, id).await?;
 
@@ -184,7 +184,7 @@ pub async fn approve(
             )
             .exec(tx_repo.conn())
             .await
-            .with_operation("publish artist image queue entry")?;
+            .db_operation("publish artist image queue entry")?;
         }
         QueueTarget::Release(target) => {
             release_image_entity::Entity::insert(
@@ -196,7 +196,7 @@ pub async fn approve(
             )
             .exec(tx_repo.conn())
             .await
-            .with_operation("publish release image queue entry")?;
+            .db_operation("publish release image queue entry")?;
         }
     }
 
@@ -209,7 +209,7 @@ pub async fn approve(
     active
         .update(tx_repo.conn())
         .await
-        .with_operation("mark image queue entry approved")?;
+        .db_operation("mark image queue entry approved")?;
 
     tx_repo.commit().await?;
 
@@ -224,7 +224,7 @@ pub async fn reject(
     let tx_repo = repo
         .begin_tx()
         .await
-        .with_operation("begin reject image queue transaction")?;
+        .db_operation("begin reject image queue transaction")?;
 
     let model = find_queue(&tx_repo, id).await?;
 
@@ -243,7 +243,7 @@ pub async fn reject(
     active
         .update(tx_repo.conn())
         .await
-        .with_operation("mark image queue entry rejected")?;
+        .db_operation("mark image queue entry rejected")?;
 
     tx_repo.commit().await?;
 
@@ -258,7 +258,7 @@ pub async fn revert(
     let tx_repo = repo
         .begin_tx()
         .await
-        .with_operation("begin revert image queue transaction")?;
+        .db_operation("begin revert image queue transaction")?;
 
     let model = find_queue(&tx_repo, id).await?;
 
@@ -280,7 +280,7 @@ pub async fn revert(
                 .filter(artist_image_entity::Column::Type.eq(target.r#type))
                 .exec(tx_repo.conn())
                 .await
-                .with_operation("delete published artist image queue entry")?;
+                .db_operation("delete published artist image queue entry")?;
 
             if result.rows_affected == 0 {
                 return Err(Error::PublishedNotFound);
@@ -296,7 +296,7 @@ pub async fn revert(
                 .filter(release_image_entity::Column::Type.eq(target.r#type))
                 .exec(tx_repo.conn())
                 .await
-                .with_operation("delete published release image queue entry")?;
+                .db_operation("delete published release image queue entry")?;
 
             if result.rows_affected == 0 {
                 return Err(Error::PublishedNotFound);
@@ -313,7 +313,7 @@ pub async fn revert(
     active
         .update(tx_repo.conn())
         .await
-        .with_operation("mark image queue entry reverted")?;
+        .db_operation("mark image queue entry reverted")?;
 
     tx_repo.commit().await?;
 
@@ -327,7 +327,7 @@ async fn find_queue(
     let model = image_queue_entity::Entity::find_by_id(id)
         .one(tx_repo.conn())
         .await
-        .with_operation("find image queue entry")?;
+        .db_operation("find image queue entry")?;
 
     model.ok_or(Error::NotFound)
 }
@@ -340,13 +340,13 @@ async fn find_queue_target(
         .filter(artist_image_queue_entity::Column::QueueId.eq(id))
         .one(tx_repo.conn())
         .await
-        .with_operation("find artist image queue target")?;
+        .db_operation("find artist image queue target")?;
 
     let release_queue = release_image_queue_entity::Entity::find()
         .filter(release_image_queue_entity::Column::QueueId.eq(id))
         .one(tx_repo.conn())
         .await
-        .with_operation("find release image queue target")?;
+        .db_operation("find release image queue target")?;
 
     match (artist_queue, release_queue) {
         (Some(artist_queue), None) => Ok(QueueTarget::Artist(artist_queue)),

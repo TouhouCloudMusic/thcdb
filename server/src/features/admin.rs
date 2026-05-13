@@ -91,7 +91,7 @@ async fn admin_users(
         .clone()
         .count(&repo.conn)
         .await
-        .with_operation("count admin users")?;
+        .db_operation("count admin users")?;
 
     let models = select
         .order_by_asc(user::Column::Id)
@@ -100,7 +100,7 @@ async fn admin_users(
         .find_with_related(user_role::Entity)
         .all(&repo.conn)
         .await
-        .with_operation("find admin users")?;
+        .db_operation("find admin users")?;
 
     let items = models
         .into_iter()
@@ -117,7 +117,7 @@ async fn admin_users(
             })
         })
         .collect::<Result<Vec<_>, sea_orm::DbErr>>()
-        .with_operation("build admin user roles")?;
+        .db_operation("build admin user roles")?;
 
     Ok(Data::new(pagination.to_response(items, total_items)))
 }
@@ -147,12 +147,12 @@ async fn set_user_roles(
     let tx_repo = repo
         .begin_tx()
         .await
-        .with_operation("begin set user roles transaction")?;
+        .db_operation("begin set user roles transaction")?;
 
     let target_user = user::Entity::find_by_id(id)
         .one(tx_repo.conn())
         .await
-        .with_operation("find user for role update")?;
+        .db_operation("find user for role update")?;
 
     if target_user.is_none() {
         return Err(AppError::not_found("User not found"));
@@ -162,11 +162,11 @@ async fn set_user_roles(
         .filter(user_role::Column::UserId.eq(id))
         .all(tx_repo.conn())
         .await
-        .with_operation("find old user roles")?
+        .db_operation("find old user roles")?
         .into_iter()
         .map(UserRole::try_from)
         .collect::<Result<Vec<_>, _>>()
-        .with_operation("build old user roles")?;
+        .db_operation("build old user roles")?;
 
     user_role::Entity::delete_many()
         .filter(user_role::Column::UserId.eq(id))
@@ -175,7 +175,7 @@ async fn set_user_roles(
         )
         .exec(tx_repo.conn())
         .await
-        .with_operation("delete old editable user roles")?;
+        .db_operation("delete old editable user roles")?;
 
     let new_role_models = req
         .roles
@@ -191,18 +191,18 @@ async fn set_user_roles(
         user_role::Entity::insert_many(new_role_models)
             .exec(tx_repo.conn())
             .await
-            .with_operation("insert new user roles")?;
+            .db_operation("insert new user roles")?;
     }
 
     let new_roles = user_role::Entity::find()
         .filter(user_role::Column::UserId.eq(id))
         .all(tx_repo.conn())
         .await
-        .with_operation("find new user roles")?
+        .db_operation("find new user roles")?
         .into_iter()
         .map(UserRole::try_from)
         .collect::<Result<Vec<_>, _>>()
-        .with_operation("build new user roles")?;
+        .db_operation("build new user roles")?;
 
     let old_role_names = old_roles.iter().map(|r| r.name.clone()).collect_vec();
     let new_role_names =
@@ -220,7 +220,7 @@ async fn set_user_roles(
     )
     .exec(tx_repo.conn())
     .await
-    .with_operation("insert user role change audit")?;
+    .db_operation("insert user role change audit")?;
 
     tx_repo.commit().await?;
 

@@ -35,7 +35,7 @@ impl Repo for SeaOrmRepository {
             .order_by_desc(Column::CreatedAt)
             .one(&self.conn)
             .await
-            .with_operation("find correction")?
+            .db_operation("find correction")?
             .map(|model| Correction {
                 id: model.id,
                 status: model.status,
@@ -63,7 +63,7 @@ impl Repo for SeaOrmRepository {
             )
             .count(&self.conn)
             .await
-            .with_operation("check correction author")?;
+            .db_operation("check correction author")?;
         Ok(count != 0)
     }
 }
@@ -89,7 +89,7 @@ impl Repo for SeaOrmTxRepo {
             .order_by_desc(Column::CreatedAt)
             .one(self.conn())
             .await
-            .with_operation("find correction in transaction")?
+            .db_operation("find correction in transaction")?
             .map(|model| Correction {
                 id: model.id,
                 status: model.status,
@@ -117,7 +117,7 @@ impl Repo for SeaOrmTxRepo {
             )
             .count(self.conn())
             .await
-            .with_operation("check correction author in transaction")?;
+            .db_operation("check correction author in transaction")?;
         Ok(count != 0)
     }
 }
@@ -138,7 +138,7 @@ impl TxRepo for SeaOrmTxRepo {
         }
         .insert(self.conn())
         .await
-        .with_operation("insert correction")?;
+        .db_operation("insert correction")?;
 
         let correction_id = new_correction.id;
 
@@ -151,7 +151,7 @@ impl TxRepo for SeaOrmTxRepo {
         .into_active_model()
         .insert(self.conn())
         .await
-        .with_operation("insert correction author")?;
+        .db_operation("insert correction author")?;
 
         correction_revision::Model {
             correction_id,
@@ -162,7 +162,7 @@ impl TxRepo for SeaOrmTxRepo {
         .into_active_model()
         .insert(self.conn())
         .await
-        .with_operation("insert correction revision")?;
+        .db_operation("insert correction revision")?;
 
         Ok(correction_id)
     }
@@ -181,7 +181,7 @@ impl TxRepo for SeaOrmTxRepo {
         .into_active_model()
         .insert(self.conn())
         .await
-        .with_operation("insert correction revision")?;
+        .db_operation("insert correction revision")?;
 
         Ok(())
     }

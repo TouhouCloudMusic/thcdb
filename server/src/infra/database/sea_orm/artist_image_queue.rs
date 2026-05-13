@@ -14,7 +14,7 @@ impl Repo for SeaOrmTxRepo {
         db::Entity::insert(db::Model::from(queue).into_active_model())
             .exec_with_returning(self.conn())
             .await
-            .with_operation("create artist image queue")
+            .db_operation("create artist image queue")
             .map(Into::into)
     }
 }

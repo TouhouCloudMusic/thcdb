@@ -34,7 +34,7 @@ pub(super) async fn create(
 ) -> Result<i32, DatabaseError> {
     lyrics_impls::create_lyrics_impl(data, repo.conn())
         .await
-        .with_operation("create song lyrics")
+        .db_operation("create song lyrics")
 }
 
 pub(super) async fn create_history(
@@ -43,5 +43,5 @@ pub(super) async fn create_history(
 ) -> Result<i32, DatabaseError> {
     lyrics_impls::create_history_impl(data, repo.conn())
         .await
-        .with_operation("create song lyrics history")
+        .db_operation("create song lyrics history")
 }

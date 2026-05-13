@@ -54,7 +54,7 @@ pub(super) async fn find_by_id(
     }
     .await;
 
-    result.with_operation("find song by id")
+    result.db_operation("find song by id")
 }
 
 pub(super) async fn find_by_keyword(
@@ -75,7 +75,7 @@ pub(super) async fn find_by_keyword(
 
     find_many_impl(select, &repo.conn)
         .await
-        .with_operation("find songs by keyword")
+        .db_operation("find songs by keyword")
 }
 
 pub(super) async fn find_by_filter(
@@ -94,7 +94,7 @@ pub(super) async fn find_by_filter(
             pagination,
         )
         .await
-        .with_operation("explore songs");
+        .db_operation("explore songs");
     }
 
     let select: Select<song::Entity> = filter.into_select();
@@ -106,7 +106,7 @@ pub(super) async fn find_by_filter(
         |select| find_many_impl(select, &repo.conn),
     )
     .await
-    .with_operation("explore songs")
+    .db_operation("explore songs")
 }
 
 #[expect(clippy::too_many_lines)]

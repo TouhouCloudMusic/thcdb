@@ -26,7 +26,7 @@ pub(super) async fn create(
     song_impls::create_song_and_relations(data, repo.conn())
         .await
         .map(|song| song.id)
-        .with_operation("create song")
+        .db_operation("create song")
 }
 
 pub(super) async fn create_history(
@@ -36,5 +36,5 @@ pub(super) async fn create_history(
     song_impls::create_song_history_and_relations(data, repo.conn())
         .await
         .map(|song| song.id)
-        .with_operation("create song history")
+        .db_operation("create song history")
 }

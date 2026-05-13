@@ -38,7 +38,7 @@ async fn get_correction(
     let Some(model) = correction_entity::Entity::find_by_id(id)
         .one(&repo.conn)
         .await
-        .with_operation("find correction detail")?
+        .db_operation("find correction detail")?
     else {
         return Err(AppError::not_found("Correction not found"));
     };
@@ -49,7 +49,7 @@ async fn get_correction(
     let entity_name =
         find_entity_name(&repo.conn, model.entity_type, model.entity_id)
             .await
-            .with_operation("find correction entity name")?;
+            .db_operation("find correction entity name")?;
     let Some(entity_name) = entity_name else {
         return Err(AppError::not_found("Correction entity not found"));
     };

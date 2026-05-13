@@ -25,7 +25,7 @@ pub(super) async fn find_by_id(
     find_many_impl(select, &repo.conn)
         .await
         .map(|mut tags| tags.pop())
-        .with_operation("find tag by id")
+        .db_operation("find tag by id")
 }
 
 pub(super) async fn find_by_keyword(
@@ -46,7 +46,7 @@ pub(super) async fn find_by_keyword(
 
     find_many_impl(select, &repo.conn)
         .await
-        .with_operation("find tags by keyword")
+        .db_operation("find tags by keyword")
 }
 
 pub(super) async fn find_by_filter(
@@ -65,7 +65,7 @@ pub(super) async fn find_by_filter(
             pagination,
         )
         .await
-        .with_operation("explore tags");
+        .db_operation("explore tags");
     }
 
     let select = filter.into_select();
@@ -77,7 +77,7 @@ pub(super) async fn find_by_filter(
         |select| find_many_impl(select, &repo.conn),
     )
     .await
-    .with_operation("explore tags")
+    .db_operation("explore tags")
 }
 
 async fn find_sorted_by_correction(

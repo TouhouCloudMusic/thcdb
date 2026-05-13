@@ -97,7 +97,7 @@ async fn entity_corrections(
         .order_by_desc(correction_entity::Column::CreatedAt)
         .all(&repo.conn)
         .await
-        .with_operation("find correction history")?;
+        .db_operation("find correction history")?;
 
     if corrections.is_empty() {
         return Ok(Data::from(Vec::new()));
@@ -115,7 +115,7 @@ async fn entity_corrections(
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .all(&repo.conn)
         .await
-        .with_operation("find correction history revisions")?;
+        .db_operation("find correction history revisions")?;
 
     let mut revision_map = HashMap::new();
     for revision in revisions {
@@ -133,7 +133,7 @@ async fn entity_corrections(
         .filter(user::Column::Id.is_in(author_ids))
         .all(&repo.conn)
         .await
-        .with_operation("find correction history authors")?;
+        .db_operation("find correction history authors")?;
 
     let author_map = authors
         .into_iter()

@@ -28,7 +28,7 @@ impl user::Repository for SeaOrmRepository {
     async fn find_by_id(&self, id: i32) -> Result<Option<User>, DatabaseError> {
         let users = find_many_impl(entity::user::Column::Id.eq(id), &self.conn)
             .await
-            .with_operation("find user by id")?;
+            .db_operation("find user by id")?;
 
         Ok(users.into_iter().next())
     }
@@ -40,7 +40,7 @@ impl user::Repository for SeaOrmRepository {
         let users =
             find_many_impl(entity::user::Column::Name.eq(name), &self.conn)
                 .await
-                .with_operation("find user by name")?;
+                .db_operation("find user by name")?;
 
         Ok(users.into_iter().next())
     }
@@ -52,12 +52,12 @@ impl user::TxRepo for SeaOrmTxRepo {
             .conn()
             .begin()
             .await
-            .with_operation("begin create user transaction")?;
+            .db_operation("begin create user transaction")?;
 
         let model = entity::user::Entity::insert(user.into_active_model())
             .exec_with_returning(&tx)
             .await
-            .with_operation("insert user")?;
+            .db_operation("insert user")?;
 
         entity::user_role::Entity::insert(entity::user_role::ActiveModel {
             user_id: Set(model.id),
@@ -65,7 +65,7 @@ impl user::TxRepo for SeaOrmTxRepo {
         })
         .exec(&tx)
         .await
-        .with_operation("insert default user role")?;
+        .db_operation("insert default user role")?;
 
         let mut user = User::from(model);
 
@@ -73,7 +73,7 @@ impl user::TxRepo for SeaOrmTxRepo {
 
         tx.commit()
             .await
-            .with_operation("commit create user transaction")?;
+            .db_operation("commit create user transaction")?;
 
         Ok(user)
     }
@@ -84,7 +84,7 @@ impl user::TxRepo for SeaOrmTxRepo {
         let model = entity::user::Entity::update(user.into_active_model())
             .exec(tx)
             .await
-            .with_operation("update user")?;
+            .db_operation("update user")?;
 
         let roles = user_roles
             .into_iter()
@@ -98,12 +98,12 @@ impl user::TxRepo for SeaOrmTxRepo {
             .filter(entity::user_role::Column::UserId.eq(model.id))
             .exec(tx)
             .await
-            .with_operation("delete user roles")?;
+            .db_operation("delete user roles")?;
 
         let roles = entity::user_role::Entity::insert_many(roles)
             .exec_with_returning_many(tx)
             .await
-            .with_operation("insert user roles")?;
+            .db_operation("insert user roles")?;
 
         let mut user = User::from(model);
 
@@ -111,7 +111,7 @@ impl user::TxRepo for SeaOrmTxRepo {
             .into_iter()
             .map(TryInto::try_into)
             .try_collect()
-            .with_operation("build user roles")?;
+            .db_operation("build user roles")?;
 
         Ok(user)
     }
@@ -272,7 +272,7 @@ impl user::ProfileRepository for SeaOrmRepository {
             .into_model::<UserProfileRaw>()
             .one(&self.conn)
             .await
-            .with_operation("find user profile")?
+            .db_operation("find user profile")?
         else {
             return Ok(None);
         };
@@ -282,10 +282,10 @@ impl user::ProfileRepository for SeaOrmRepository {
             .filter(user_role::Column::UserId.eq(profile.id))
             .all(&self.conn)
             .await
-            .with_operation("find user profile roles")?;
+            .db_operation("find user profile roles")?;
         let stats = find_profile_stats(profile.id, &self.conn)
             .await
-            .with_operation("find user profile stats")?;
+            .db_operation("find user profile stats")?;
 
         let avatar_url = if let Some(dir) = profile.avatar_url_dir
             && let Some(filename) = profile.avatar_url_filename
@@ -322,7 +322,7 @@ impl user::ProfileRepository for SeaOrmRepository {
                 .into_iter()
                 .map(TryInto::try_into)
                 .try_collect()
-                .with_operation("build user profile roles")?,
+                .db_operation("build user profile roles")?,
             is_following: None,
             bio: profile.bio,
             stats,
@@ -352,7 +352,7 @@ impl user::ProfileRepository for SeaOrmRepository {
             .filter(user_following::Column::FollowingId.in_subquery(sub_query))
             .count(&self.conn)
             .await
-            .with_operation("check user profile follow relationship")?;
+            .db_operation("check user profile follow relationship")?;
 
         profile.is_following = Some(res > 0);
 

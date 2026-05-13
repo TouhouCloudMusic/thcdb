@@ -72,7 +72,7 @@ impl Service {
         }
 
         let tx_repo =
-            self.repo.begin_tx().await.with_operation(
+            self.repo.begin_tx().await.db_operation(
                 "begin artist profile image upload transaction",
             )?;
 
@@ -116,7 +116,7 @@ impl Service {
             .order_by_desc(image_entity::Column::UploadedAt)
             .one(&self.repo.conn)
             .await
-            .with_operation("find current artist profile image")?;
+            .db_operation("find current artist profile image")?;
 
         let Some(image) = image else {
             return Ok(None);
@@ -126,7 +126,7 @@ impl Service {
             .into_partial_model::<ImageUploaderSummary>()
             .one(&self.repo.conn)
             .await
-            .with_operation("find artist profile image uploader")?
+            .db_operation("find artist profile image uploader")?
             .unwrap_or_else(|| ImageUploaderSummary {
                 id: image.uploaded_by,
                 name: "Unknown".to_string(),

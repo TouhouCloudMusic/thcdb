@@ -48,7 +48,7 @@ async fn home_metadata(
         song::Entity::find().count(db),
         tag::Entity::find().count(db),
     )
-    .with_operation("load home metadata")?;
+    .db_operation("load home metadata")?;
 
     Ok(HomeMetadata {
         artists_count,

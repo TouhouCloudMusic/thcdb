@@ -18,7 +18,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create(&self, data: &NewLabel) -> Result<i32, DatabaseError> {
         let label = save_label_and_link_relations(data, self.conn())
             .await
-            .with_operation("create label")?;
+            .db_operation("create label")?;
 
         Ok(label.id)
     }
@@ -29,7 +29,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     ) -> Result<i32, DatabaseError> {
         save_label_history_and_link_relations(data, self.conn())
             .await
-            .with_operation("create label history")
+            .db_operation("create label history")
             .map(|x| x.id)
     }
 
@@ -39,7 +39,7 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     ) -> Result<(), DatabaseError> {
         impls::apply_update(correction, self.conn())
             .await
-            .with_operation("apply label correction")
+            .db_operation("apply label correction")
     }
 }
 

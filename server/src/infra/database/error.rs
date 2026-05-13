@@ -29,7 +29,7 @@ impl DatabaseError {
     }
 
     #[track_caller]
-    pub fn with_operation(mut self, operation: &'static str) -> Self {
+    pub fn db_operation(mut self, operation: &'static str) -> Self {
         self.frames.push(DatabaseErrorFrame {
             operation,
             location: Location::caller(),
@@ -52,19 +52,13 @@ impl std::fmt::Display for DatabaseError {
 }
 
 pub trait DatabaseResultExt<T> {
-    fn with_operation(
-        self,
-        operation: &'static str,
-    ) -> Result<T, DatabaseError>;
+    fn db_operation(self, operation: &'static str) -> Result<T, DatabaseError>;
 }
 
 impl<T> DatabaseResultExt<T> for Result<T, DbErr> {
     #[track_caller]
-    fn with_operation(
-        self,
-        operation: &'static str,
-    ) -> Result<T, DatabaseError> {
-        self.map_err(|err| DatabaseError::new(err).with_operation(operation))
+    fn db_operation(self, operation: &'static str) -> Result<T, DatabaseError> {
+        self.map_err(|err| DatabaseError::new(err).db_operation(operation))
     }
 }
 

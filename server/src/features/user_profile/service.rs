@@ -59,7 +59,7 @@ impl Service {
             .filter(user_following::Column::FollowingId.eq(target_user_id))
             .count(&self.repo.conn)
             .await
-            .with_operation("check user follow relationship")?;
+            .db_operation("check user follow relationship")?;
 
         if exists > 0 {
             return Ok(FollowResult::AlreadyFollowing);
@@ -72,7 +72,7 @@ impl Service {
         })
         .exec(&self.repo.conn)
         .await
-        .with_operation("create user follow relationship")?;
+        .db_operation("create user follow relationship")?;
 
         Ok(FollowResult::Followed)
     }
@@ -87,7 +87,7 @@ impl Service {
             .filter(user_following::Column::FollowingId.eq(target_user_id))
             .exec(&self.repo.conn)
             .await
-            .with_operation("delete user follow relationship")?;
+            .db_operation("delete user follow relationship")?;
 
         if res.rows_affected > 0 {
             Ok(UnfollowResult::Unfollowed)
