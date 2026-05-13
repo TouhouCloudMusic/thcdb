@@ -5,6 +5,7 @@ use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use super::error::Error;
 use super::model::{
     CreateUserCollectionItemRequest, ReorderUserCollectionItemsRequest,
     UserCollection, UserCollectionItem, UserCollectionItemDetail,
@@ -17,7 +18,7 @@ use crate::adapter::inbound::rest::state::{
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
 use crate::domain::shared::{NonEmptyString, PageResponse};
 use crate::shared::http::PageQuery;
-use crate::shared::http::api_response::{AppError, Data, Message};
+use crate::shared::http::api_response::{Data, Message};
 
 const TAG: &str = "User Collection";
 
@@ -77,7 +78,7 @@ async fn user_collections(
     Path(username): Path<NonEmptyString>,
     Query(page_query): Query<PageQuery>,
     State(service): State<Service>,
-) -> Result<Data<PageResponse<UserCollection>>, AppError> {
+) -> Result<Data<PageResponse<UserCollection>>, Error> {
     let page = service
         .list_user_collections(username, session.verified_user_id(), page_query)
         .await?;
@@ -99,7 +100,7 @@ async fn user_collection_detail(
     session: AuthSession,
     Path(id): Path<i32>,
     State(service): State<Service>,
-) -> Result<Data<UserCollection>, AppError> {
+) -> Result<Data<UserCollection>, Error> {
     let collection = service
         .get_user_collection_detail(id, session.verified_user_id())
         .await?;
@@ -123,7 +124,7 @@ async fn user_collection_items(
     Path(id): Path<i32>,
     Query(page_query): Query<PageQuery>,
     State(service): State<Service>,
-) -> Result<Data<PageResponse<UserCollectionItemDetail>>, AppError> {
+) -> Result<Data<PageResponse<UserCollectionItemDetail>>, Error> {
     let items = service
         .list_user_collection_items(id, session.verified_user_id(), page_query)
         .await?;
@@ -142,7 +143,7 @@ async fn user_collection_items(
 async fn public_user_collections(
     Query(page_query): Query<PageQuery>,
     State(service): State<Service>,
-) -> Result<Data<PageResponse<UserCollection>>, AppError> {
+) -> Result<Data<PageResponse<UserCollection>>, Error> {
     let page = service.list_public_user_collections(page_query).await?;
     Ok(Data::new(page))
 }
@@ -160,7 +161,7 @@ async fn search_user_collections(
     Query(SearchQuery { keyword }): Query<SearchQuery>,
     Query(page_query): Query<PageQuery>,
     State(service): State<Service>,
-) -> Result<Data<PageResponse<UserCollection>>, AppError> {
+) -> Result<Data<PageResponse<UserCollection>>, Error> {
     let page = service
         .search_public_user_collections(keyword, page_query)
         .await?;
@@ -180,7 +181,7 @@ async fn create_user_collection(
     CurrentUser(user): CurrentUser,
     State(service): State<Service>,
     Json(req): Json<UserCollectionMutationRequest>,
-) -> Result<Data<UserCollection>, AppError> {
+) -> Result<Data<UserCollection>, Error> {
     let collection = service.create_user_collection(user.id, req).await?;
     Ok(Data::new(collection))
 }
@@ -202,7 +203,7 @@ async fn update_user_collection(
     Path(id): Path<i32>,
     State(service): State<Service>,
     Json(req): Json<UserCollectionMutationRequest>,
-) -> Result<Data<UserCollection>, AppError> {
+) -> Result<Data<UserCollection>, Error> {
     let collection = service.update_user_collection(user.id, id, req).await?;
     Ok(Data::new(collection))
 }
@@ -222,7 +223,7 @@ async fn delete_user_collection(
     CurrentUser(user): CurrentUser,
     Path(id): Path<i32>,
     State(service): State<Service>,
-) -> Result<Message, AppError> {
+) -> Result<Message, Error> {
     service.delete_user_collection(user.id, id).await?;
     Ok(Message::ok())
 }
@@ -244,7 +245,7 @@ async fn create_user_collection_item(
     Path(id): Path<i32>,
     State(service): State<Service>,
     Json(req): Json<CreateUserCollectionItemRequest>,
-) -> Result<Data<UserCollectionItem>, AppError> {
+) -> Result<Data<UserCollectionItem>, Error> {
     let item = service
         .create_user_collection_item(user.id, id, req)
         .await?;
@@ -267,7 +268,7 @@ async fn delete_user_collection_item(
     CurrentUser(user): CurrentUser,
     Path((id, item_id)): Path<(i32, i32)>,
     State(service): State<Service>,
-) -> Result<Message, AppError> {
+) -> Result<Message, Error> {
     service
         .delete_user_collection_item(user.id, id, item_id)
         .await?;
@@ -291,7 +292,7 @@ async fn reorder_user_collection_items(
     Path(id): Path<i32>,
     State(service): State<Service>,
     Json(req): Json<ReorderUserCollectionItemsRequest>,
-) -> Result<Message, AppError> {
+) -> Result<Message, Error> {
     service
         .reorder_user_collection_items(user.id, id, req)
         .await?;

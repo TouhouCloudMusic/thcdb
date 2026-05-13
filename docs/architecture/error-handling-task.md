@@ -126,6 +126,7 @@
 - [ ] 迁移优先级：
   - [x] `features/tag_vote`
   - [x] `features/user_profile`
+  - [x] `features/user_collection`
   - [x] `features/admin`
   - [x] `features/search`
   - [x] `features/notification`

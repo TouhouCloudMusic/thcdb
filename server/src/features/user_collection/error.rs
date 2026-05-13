@@ -1,3 +1,5 @@
+use axum::response::IntoResponse;
+
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::http::api_response::AppError;
@@ -50,5 +52,11 @@ impl From<Error> for AppError {
             Error::CollectionAccessDenied => PermissionDenied.into(),
             Error::InvalidRequest(message) => AppError::bad_request(message),
         }
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
     }
 }
