@@ -24,16 +24,14 @@ use serde_json::{Value, json};
 
 use crate::domain::correction::CorrectionDiffEntry;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::error::BrokenEntityReference;
 
 #[derive(
     Debug, derive_more::Display, derive_more::Error, derive_more::From,
 )]
 pub enum SnapshotError {
-    #[display("{entity_type:?} history #{history_id} not found")]
-    HistoryNotFound {
-        entity_type: EntityType,
-        history_id: i32,
-    },
+    #[display("{_0}")]
+    BrokenReference(#[error(source)] BrokenEntityReference),
     #[display("{_0}")]
     #[from]
     Database(#[error(source)] DatabaseError),
@@ -56,10 +54,25 @@ pub async fn snapshot_for_history(
     }
     .db_operation("load correction history snapshot")?;
 
-    snapshot.ok_or(SnapshotError::HistoryNotFound {
-        entity_type,
-        history_id,
+    snapshot.ok_or_else(|| {
+        SnapshotError::BrokenReference(BrokenEntityReference {
+            entity: history_entity_name(entity_type),
+            id: history_id,
+        })
     })
+}
+
+const fn history_entity_name(entity_type: EntityType) -> &'static str {
+    match entity_type {
+        EntityType::Artist => "artist history",
+        EntityType::Label => "label history",
+        EntityType::Release => "release history",
+        EntityType::Song => "song history",
+        EntityType::Tag => "tag history",
+        EntityType::Event => "event history",
+        EntityType::SongLyrics => "song lyrics history",
+        EntityType::CreditRole => "credit role history",
+    }
 }
 
 pub fn diff_snapshots(

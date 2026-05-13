@@ -31,8 +31,7 @@ impl From<EmailVerificationMutationError> for SendVerificationEmailError {
     fn from(value: EmailVerificationMutationError) -> Self {
         match value {
             EmailVerificationMutationError::Database(source) => source.into(),
-            EmailVerificationMutationError::UserNotFound
-            | EmailVerificationMutationError::EmailVerificationNotFound => {
+            EmailVerificationMutationError::BrokenReference(_) => {
                 InternalError::new(value).into()
             }
         }

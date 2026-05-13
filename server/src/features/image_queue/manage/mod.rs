@@ -27,7 +27,6 @@ pub(crate) enum Error {
     InvalidEntry,
     UnknownTarget,
     AmbiguousTarget,
-    PublishedNotFound,
     PermissionDenied,
     #[from]
     Database(DatabaseError),
@@ -52,9 +51,6 @@ impl From<Error> for AppError {
             }
             Error::AmbiguousTarget => {
                 AppError::bad_request("Ambiguous image queue target")
-            }
-            Error::PublishedNotFound => {
-                AppError::conflict("Published image record not found")
             }
             Error::PermissionDenied => PermissionDenied.into(),
             Error::Database(err) => err.into(),

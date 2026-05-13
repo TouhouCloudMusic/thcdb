@@ -12,6 +12,7 @@ use super::model::{EntityType, Score, TagAggregate, TagAggregateVote};
 use crate::domain::shared::CursorResponse;
 use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
+use crate::shared::error::EntityNotFound;
 
 #[derive(Debug, Clone, sea_orm::FromQueryResult, macros::FieldEnum)]
 struct TagAggregateRow {
@@ -72,13 +73,13 @@ pub async fn upsert(
     score: Score,
 ) -> Result<(), Error> {
     if !entity_exists(repo, entity_type, entity_id).await? {
-        return Err(Error::EntityNotFound(
+        return Err(Error::NotFound(EntityNotFound::new(
             entity_type.entity_name(),
             entity_id,
-        ));
+        )));
     }
     if !tag_exists(repo, tag_id).await? {
-        return Err(Error::TagNotFound(tag_id));
+        return Err(Error::NotFound(EntityNotFound::new("Tag", tag_id)));
     }
 
     let entity_id_col = Alias::new(entity_type.entity_id_column());
@@ -567,10 +568,7 @@ mod tests {
         )
         .await
         .unwrap_err();
-        assert!(matches!(
-            missing_entity,
-            Error::EntityNotFound("Song", id) if id == i32::MAX
-        ));
+        assert_eq!(missing_entity.to_string(), "Song #2147483647 not found");
 
         let missing_tag = upsert(
             &repo,
@@ -582,9 +580,7 @@ mod tests {
         )
         .await
         .unwrap_err();
-        assert!(
-            matches!(missing_tag, Error::TagNotFound(id) if id == i32::MAX)
-        );
+        assert_eq!(missing_tag.to_string(), "Tag #2147483647 not found");
 
         upsert(
             &repo,

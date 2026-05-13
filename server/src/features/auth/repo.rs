@@ -11,6 +11,7 @@ use crate::domain::model::UserRoleEnum;
 use crate::domain::user::{EmailVerification, NewUser, User};
 use crate::features::auth::Email;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::error::BrokenEntityReference;
 
 #[derive(
     Debug, derive_more::Display, derive_more::Error, derive_more::From,
@@ -27,10 +28,8 @@ pub(crate) enum CreateUserError {
     Debug, derive_more::Display, derive_more::Error, derive_more::From,
 )]
 pub(crate) enum EmailVerificationMutationError {
-    #[display("auth user not found")]
-    UserNotFound,
-    #[display("email verification not found")]
-    EmailVerificationNotFound,
+    #[display("{_0}")]
+    BrokenReference(#[error(source)] BrokenEntityReference),
     #[display("{_0}")]
     #[from]
     Database(#[error(source)] DatabaseError),
@@ -200,7 +199,14 @@ pub(crate) async fn set_email_verification(
         .one(conn)
         .await
         .db_operation("find auth user after setting email verification")?
-        .ok_or(EmailVerificationMutationError::UserNotFound)?;
+        .ok_or_else(|| {
+            EmailVerificationMutationError::BrokenReference(
+                BrokenEntityReference {
+                    entity: "auth user",
+                    id: user_id,
+                },
+            )
+        })?;
 
     load_user(conn, model)
         .await
@@ -223,7 +229,12 @@ pub(crate) async fn increment_email_verification_failed_attempts(
         .db_operation("increment auth email verification failed attempts")?;
 
     if res.rows_affected == 0 {
-        return Err(EmailVerificationMutationError::EmailVerificationNotFound);
+        return Err(EmailVerificationMutationError::BrokenReference(
+            BrokenEntityReference {
+                entity: "email verification",
+                id: user_id,
+            },
+        ));
     }
 
     Ok(())

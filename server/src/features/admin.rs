@@ -24,7 +24,7 @@ use crate::domain::model::{
 };
 use crate::domain::shared::PageResponse;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::shared::error::InternalError;
+use crate::shared::error::{EntityNotFound, InternalError};
 use crate::shared::http::PageQuery;
 use crate::shared::http::api_response::{AppError, Data};
 
@@ -43,8 +43,9 @@ enum Error {
     #[display("{_0}")]
     #[from]
     Internal(#[error(source)] InternalError),
-    #[display("User not found")]
-    UserNotFound,
+    #[display("{_0}")]
+    #[from]
+    NotFound(#[error(source)] EntityNotFound),
 }
 
 impl From<Error> for AppError {
@@ -53,7 +54,7 @@ impl From<Error> for AppError {
             Error::Authz(source) => source.into(),
             Error::Database(source) => source.into(),
             Error::Internal(source) => source.into(),
-            Error::UserNotFound => AppError::not_found(err.to_string()),
+            Error::NotFound(source) => source.into(),
         }
     }
 }
@@ -191,7 +192,7 @@ async fn set_user_roles(
         .db_operation("find user for role update")?;
 
     if target_user.is_none() {
-        return Err(Error::UserNotFound);
+        return Err(EntityNotFound::new("user", id).into());
     }
 
     let old_roles = user_role::Entity::find()

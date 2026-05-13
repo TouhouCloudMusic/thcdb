@@ -17,6 +17,7 @@ use super::{Error, ImageQueueType};
 use crate::domain::shared::CursorResponse;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
+use crate::shared::error::{BrokenEntityReference, InternalError};
 
 pub struct ImageQueueDetailModels {
     pub queue: image_queue_entity::Model,
@@ -283,7 +284,11 @@ pub async fn revert(
                 .db_operation("delete published artist image queue entry")?;
 
             if result.rows_affected == 0 {
-                return Err(Error::PublishedNotFound);
+                return Err(InternalError::new(BrokenEntityReference {
+                    entity: "published artist image",
+                    id: image_id,
+                })
+                .into());
             }
         }
         QueueTarget::Release(target) => {
@@ -299,7 +304,11 @@ pub async fn revert(
                 .db_operation("delete published release image queue entry")?;
 
             if result.rows_affected == 0 {
-                return Err(Error::PublishedNotFound);
+                return Err(InternalError::new(BrokenEntityReference {
+                    entity: "published release image",
+                    id: image_id,
+                })
+                .into());
             }
         }
     }

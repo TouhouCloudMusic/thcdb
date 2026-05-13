@@ -109,9 +109,9 @@ impl From<ReadError> for AppError {
             ReadError::Database(source) => source.into(),
             ReadError::Comment(source) => source.into(),
             ReadError::Snapshot(source) => match source {
-                err @ shared::repo::SnapshotError::HistoryNotFound {
-                    ..
-                } => AppError::not_found(err.to_string()),
+                err @ shared::repo::SnapshotError::BrokenReference(_) => {
+                    InternalError::new(err).into()
+                }
                 shared::repo::SnapshotError::Database(source) => source.into(),
             },
         }

@@ -15,7 +15,9 @@ use crate::domain::shared::CursorResponse;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::notification::NotificationHub;
-use crate::shared::error::{InternalError, MessageError};
+use crate::shared::error::{
+    BrokenEntityReference, InternalError, MessageError,
+};
 use crate::shared::http::api_response::AppError;
 
 #[derive(
@@ -225,9 +227,10 @@ impl Service {
             .await
             .db_operation("find correction notification author")?
             .ok_or_else(|| {
-                InternalError::new(MessageError::new(
-                    "correction author not found",
-                ))
+                InternalError::new(BrokenEntityReference {
+                    entity: "correction author",
+                    id: correction_id,
+                })
             })?;
 
         let _ = self
@@ -404,7 +407,10 @@ impl Service {
             .db_operation("find notification recipient settings")?;
 
         let model = model.ok_or_else(|| {
-            InternalError::new(MessageError::new("user not found"))
+            InternalError::new(BrokenEntityReference {
+                entity: "user",
+                id: user_id,
+            })
         })?;
         let notif = model.settings.get("notification");
         let get_bool = |key: &str, default_val: bool| {

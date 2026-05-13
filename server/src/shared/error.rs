@@ -63,14 +63,21 @@ pub struct PermissionDenied;
 #[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
 #[display("{entity} #{id} not found")]
 pub struct EntityNotFound {
-    entity: &'static str,
-    id: i32,
+    pub entity: &'static str,
+    pub id: i32,
 }
 
 impl EntityNotFound {
     pub const fn new(entity: &'static str, id: i32) -> Self {
         Self { entity, id }
     }
+}
+
+#[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
+#[display("Broken entity reference: {entity} #{id} not found")]
+pub struct BrokenEntityReference {
+    pub entity: &'static str,
+    pub id: i32,
 }
 
 #[derive(Debug, Clone, derive_more::Display, derive_more::Error)]

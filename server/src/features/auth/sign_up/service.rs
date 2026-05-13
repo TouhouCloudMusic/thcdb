@@ -142,13 +142,12 @@ impl Service {
             )
             .await
             .map_err(|err| match err {
-                repo::EmailVerificationMutationError::EmailVerificationNotFound => {
-                    VerifyEmailError::InvalidOrExpiredCode
+                repo::EmailVerificationMutationError::BrokenReference(_) => {
+                    VerifyEmailError::from(InternalError::new(err))
                 }
-                repo::EmailVerificationMutationError::UserNotFound => {
-                    InternalError::new(err).into()
+                repo::EmailVerificationMutationError::Database(err) => {
+                    err.into()
                 }
-                repo::EmailVerificationMutationError::Database(err) => err.into(),
             })?;
             return Err(VerifyEmailError::InvalidOrExpiredCode);
         }
