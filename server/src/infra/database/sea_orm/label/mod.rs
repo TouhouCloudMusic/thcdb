@@ -11,6 +11,7 @@ use crate::domain::label::NewLabel;
 use crate::domain::shared::NewLocalizedName;
 use crate::features::label::TxRepo;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::infra::database::sea_orm::ApplyCorrectionError;
 
 pub(crate) mod impls;
 
@@ -36,10 +37,8 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), DatabaseError> {
-        impls::apply_update(correction, self.conn())
-            .await
-            .db_operation("apply label correction")
+    ) -> Result<(), ApplyCorrectionError> {
+        impls::apply_update(correction, self.conn()).await
     }
 }
 

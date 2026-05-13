@@ -13,6 +13,7 @@ use crate::domain::shared::NewLocalizedName;
 use crate::domain::song::{NewSong, NewSongCredit, NewSongRelation};
 use crate::features::song::TxRepo;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::infra::database::sea_orm::ApplyCorrectionError;
 
 pub(crate) mod impls;
 
@@ -38,10 +39,8 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), DatabaseError> {
-        apply_update(correction, self.conn())
-            .await
-            .db_operation("apply song correction")
+    ) -> Result<(), ApplyCorrectionError> {
+        apply_update(correction, self.conn()).await
     }
 }
 

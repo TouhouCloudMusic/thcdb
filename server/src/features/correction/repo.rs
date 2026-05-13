@@ -11,7 +11,10 @@ use sea_orm::{
 use super::ModerationError;
 use crate::domain::model::CorrectionApprover;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
+use crate::infra::database::sea_orm::{
+    ApplyCorrectionError, SeaOrmRepository, SeaOrmTxRepo,
+};
+use crate::shared::error::InternalError;
 
 async fn find_correction_or_err(
     tx_repo: &SeaOrmTxRepo,
@@ -115,39 +118,10 @@ pub async fn find_pending_id(
     Ok(model.map(|model| model.id))
 }
 
-pub async fn approve(
+async fn apply_correction_update(
     tx_repo: &SeaOrmTxRepo,
-    correction_id: i32,
-    CorrectionApprover(approver): CorrectionApprover,
+    correction: correction_entity::Model,
 ) -> Result<(), ModerationError> {
-    LocalSpan::add_properties(|| {
-        [
-            ("correction_id", correction_id.to_string()),
-            ("approver_id", approver.id.to_string()),
-        ]
-    });
-
-    let correction = find_correction_or_err(tx_repo, correction_id).await?;
-    if correction.status != CorrectionStatus::Pending {
-        return Err(ModerationError::AlreadyHandled);
-    }
-
-    LocalSpan::add_properties(|| {
-        [
-            ("entity_id", correction.entity_id.to_string()),
-            ("entity_type", format!("{:?}", correction.entity_type)),
-        ]
-    });
-
-    insert_approver(tx_repo, correction_id, approver.id).await?;
-
-    let correction = update_correction_status(
-        tx_repo,
-        correction,
-        CorrectionStatus::Approved,
-    )
-    .await?;
-
     let apply_update_res = match correction.entity_type {
         EntityType::Artist => {
             crate::infra::database::sea_orm::artist::impls::apply_update(
@@ -207,16 +181,65 @@ pub async fn approve(
         }
     };
 
-    apply_update_res
-        .inspect_err(|err| {
+    match apply_update_res {
+        Ok(()) => Ok(()),
+        Err(ApplyCorrectionError::Database(err)) => {
             log::error!(
                 target: "features.correction.repo",
                 operation = "correction.apply_update",
                 error:? = err;
                 "correction repository operation failed"
             );
-        })
-        .db_operation("apply correction update")?;
+            Err(DatabaseError::new(err)
+                .db_operation("apply correction update")
+                .into())
+        }
+        Err(ApplyCorrectionError::BrokenReference(err)) => {
+            log::error!(
+                target: "features.correction.repo",
+                operation = "correction.apply_update",
+                error:? = err;
+                "correction repository operation failed"
+            );
+            Err(InternalError::new(err).into())
+        }
+    }
+}
+
+pub async fn approve(
+    tx_repo: &SeaOrmTxRepo,
+    correction_id: i32,
+    CorrectionApprover(approver): CorrectionApprover,
+) -> Result<(), ModerationError> {
+    LocalSpan::add_properties(|| {
+        [
+            ("correction_id", correction_id.to_string()),
+            ("approver_id", approver.id.to_string()),
+        ]
+    });
+
+    let correction = find_correction_or_err(tx_repo, correction_id).await?;
+    if correction.status != CorrectionStatus::Pending {
+        return Err(ModerationError::AlreadyHandled);
+    }
+
+    LocalSpan::add_properties(|| {
+        [
+            ("entity_id", correction.entity_id.to_string()),
+            ("entity_type", format!("{:?}", correction.entity_type)),
+        ]
+    });
+
+    insert_approver(tx_repo, correction_id, approver.id).await?;
+
+    let correction = update_correction_status(
+        tx_repo,
+        correction,
+        CorrectionStatus::Approved,
+    )
+    .await?;
+
+    apply_correction_update(tx_repo, correction).await?;
 
     Ok(())
 }

@@ -4,7 +4,9 @@ use entity::user_role;
 use sea_orm::{DatabaseTransaction, DbErr, TransactionTrait};
 
 use crate::domain::model::UserRoleEnum;
-use crate::shared::error::{InternalError, MessageError};
+use crate::shared::error::{
+    BrokenEntityReference, InternalError, MessageError,
+};
 
 pub(crate) mod artist;
 mod artist_image_queue;
@@ -25,6 +27,18 @@ pub(crate) mod song_lyrics;
 pub(crate) mod tag;
 mod user;
 pub mod utils;
+
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+pub enum ApplyCorrectionError {
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DbErr),
+    #[display("{_0}")]
+    #[from]
+    BrokenReference(#[error(source)] BrokenEntityReference),
+}
 
 /// `DatabaseConnection` is a wrapper of Arc<InnerPool>.
 /// So don't wrap this type in Arc.

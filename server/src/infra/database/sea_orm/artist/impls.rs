@@ -23,6 +23,8 @@ use crate::domain::artist::{NewArtist, NewMembership, Tenure};
 use crate::domain::shared::{
     DateWithPrecision, EntityIdent, Location, NewLocalizedName,
 };
+use crate::infra::database::sea_orm::ApplyCorrectionError;
+use crate::shared::error::BrokenEntityReference;
 
 pub async fn create_artist(
     data: &NewArtist,
@@ -142,19 +144,25 @@ pub async fn create_artist_history(
 pub async fn apply_update(
     correction: entity::correction::Model,
     db: &DatabaseTransaction,
-) -> Result<(), DbErr> {
+) -> Result<(), ApplyCorrectionError> {
     let revision = correction_revision::Entity::find()
         .filter(correction_revision::Column::CorrectionId.eq(correction.id))
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(db)
         .await?
-        .expect("Correction revision not found, this shouldn't happen");
+        .ok_or(BrokenEntityReference {
+            entity: "correction revision",
+            id: correction.id,
+        })?;
 
     let history =
         artist_history::Entity::find_by_id(revision.entity_history_id)
             .one(db)
             .await?
-            .expect("Artist history not found, this shouldn't happen");
+            .ok_or(BrokenEntityReference {
+                entity: "artist history",
+                id: revision.entity_history_id,
+            })?;
 
     entity::artist::ActiveModel {
         id: Set(correction.entity_id),

@@ -1,7 +1,7 @@
 use crate::features::song_lyrics::model::NewSongLyrics;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::{
-    SeaOrmTxRepo, song_lyrics as lyrics_impls,
+    ApplyCorrectionError, SeaOrmTxRepo, song_lyrics as lyrics_impls,
 };
 
 /// Transaction repository trait for song lyrics operations
@@ -25,7 +25,7 @@ where
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), DatabaseError>;
+    ) -> Result<(), ApplyCorrectionError>;
 }
 
 pub(super) async fn create(

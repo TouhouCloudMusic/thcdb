@@ -1,6 +1,8 @@
 use crate::features::song::model::NewSong;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::{SeaOrmTxRepo, song as song_impls};
+use crate::infra::database::sea_orm::{
+    ApplyCorrectionError, SeaOrmTxRepo, song as song_impls,
+};
 
 pub trait TxRepo
 where
@@ -16,7 +18,7 @@ where
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), DatabaseError>;
+    ) -> Result<(), ApplyCorrectionError>;
 }
 
 pub(super) async fn create(

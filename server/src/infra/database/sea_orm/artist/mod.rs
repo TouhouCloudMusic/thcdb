@@ -2,6 +2,7 @@ use super::SeaOrmTxRepo;
 use crate::domain::artist::NewArtist;
 use crate::features::artist::TxRepo;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::infra::database::sea_orm::ApplyCorrectionError;
 
 pub(crate) mod impls;
 
@@ -28,9 +29,7 @@ impl TxRepo for SeaOrmTxRepo {
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), DatabaseError> {
-        impls::apply_update(correction, self.conn())
-            .await
-            .db_operation("apply artist correction")
+    ) -> Result<(), ApplyCorrectionError> {
+        impls::apply_update(correction, self.conn()).await
     }
 }

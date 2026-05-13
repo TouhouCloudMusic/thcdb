@@ -4,24 +4,30 @@ use sea_orm::{
 };
 
 use super::*;
+use crate::infra::database::sea_orm::ApplyCorrectionError;
+use crate::shared::error::BrokenEntityReference;
 
 pub async fn apply_update(
     correction: entity::correction::Model,
     tx: &DatabaseTransaction,
-) -> Result<(), DbErr> {
+) -> Result<(), ApplyCorrectionError> {
     let revision = correction
         .find_related(correction_revision::Entity)
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(tx)
         .await?
-        .ok_or_else(|| {
-            DbErr::Custom("Correction revision not found".to_string())
+        .ok_or(BrokenEntityReference {
+            entity: "correction revision",
+            id: correction.id,
         })?;
 
     let history = label_history::Entity::find_by_id(revision.entity_history_id)
         .one(tx)
         .await?
-        .ok_or_else(|| DbErr::Custom("Label history not found".to_string()))?;
+        .ok_or(BrokenEntityReference {
+            entity: "label history",
+            id: revision.entity_history_id,
+        })?;
 
     let mut active_model = entity::label::Model {
         id: correction.entity_id,

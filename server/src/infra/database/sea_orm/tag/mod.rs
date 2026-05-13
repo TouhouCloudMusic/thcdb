@@ -10,6 +10,7 @@ use sea_orm::{
 use crate::domain::tag::{NewTag, NewTagRelation};
 use crate::features::tag::TxRepo;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::infra::database::sea_orm::ApplyCorrectionError;
 
 pub(crate) mod impls;
 use impls::*;
@@ -36,10 +37,8 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), DatabaseError> {
-        apply_correction(correction, self.conn())
-            .await
-            .db_operation("apply tag correction")
+    ) -> Result<(), ApplyCorrectionError> {
+        apply_correction(correction, self.conn()).await
     }
 }
 

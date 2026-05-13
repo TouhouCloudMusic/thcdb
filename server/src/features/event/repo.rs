@@ -1,6 +1,8 @@
 use crate::features::event::model::NewEvent;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::{SeaOrmTxRepo, event as event_impls};
+use crate::infra::database::sea_orm::{
+    ApplyCorrectionError, SeaOrmTxRepo, event as event_impls,
+};
 
 pub trait TxRepo
 where
@@ -16,7 +18,7 @@ where
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), DatabaseError>;
+    ) -> Result<(), ApplyCorrectionError>;
 }
 
 pub(super) async fn create(

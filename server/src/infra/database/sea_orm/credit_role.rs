@@ -11,7 +11,8 @@ use sea_orm::{
 use crate::domain::credit_role::NewCreditRole;
 use crate::features::credit_role::TxRepo;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::SeaOrmTxRepo;
+use crate::infra::database::sea_orm::{ApplyCorrectionError, SeaOrmTxRepo};
+use crate::shared::error::BrokenEntityReference;
 
 pub(crate) async fn create_credit_role(
     data: &NewCreditRole,
@@ -96,28 +97,24 @@ pub(crate) async fn create_credit_role_history(
 pub(crate) async fn apply_update_impl(
     correction: entity::correction::Model,
     conn: &impl sea_orm::ConnectionTrait,
-) -> Result<(), DbErr> {
+) -> Result<(), ApplyCorrectionError> {
     let revision = correction_revision::Entity::find()
         .filter(correction_revision::Column::CorrectionId.eq(correction.id))
         .order_by_desc(correction_revision::Column::EntityHistoryId)
         .one(conn)
         .await?
-        .ok_or_else(|| {
-            DbErr::Custom(
-                "Correction revision not found, this shouldn't happen"
-                    .to_string(),
-            )
+        .ok_or(BrokenEntityReference {
+            entity: "correction revision",
+            id: correction.id,
         })?;
 
     let history =
         credit_role_history::Entity::find_by_id(revision.entity_history_id)
             .one(conn)
             .await?
-            .ok_or_else(|| {
-                DbErr::Custom(
-                    "Credit role history not found, this shouldn't happen"
-                        .to_string(),
-                )
+            .ok_or(BrokenEntityReference {
+                entity: "credit role history",
+                id: revision.entity_history_id,
             })?;
 
     credit_role::ActiveModel {
@@ -162,10 +159,8 @@ impl TxRepo for SeaOrmTxRepo {
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), DatabaseError> {
-        apply_update_impl(correction, self.conn())
-            .await
-            .db_operation("apply credit role correction")
+    ) -> Result<(), ApplyCorrectionError> {
+        apply_update_impl(correction, self.conn()).await
     }
 }
 

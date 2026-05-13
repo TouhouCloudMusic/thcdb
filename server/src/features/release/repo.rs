@@ -1,7 +1,7 @@
 use crate::features::release::model::NewRelease;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::SeaOrmTxRepo;
 use crate::infra::database::sea_orm::release::tx_repo as release_tx;
+use crate::infra::database::sea_orm::{ApplyCorrectionError, SeaOrmTxRepo};
 
 pub trait TxRepo
 where
@@ -17,7 +17,7 @@ where
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), DatabaseError>;
+    ) -> Result<(), ApplyCorrectionError>;
 }
 
 pub(super) async fn create(
