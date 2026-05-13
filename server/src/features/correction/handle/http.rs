@@ -10,7 +10,7 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz};
 use crate::domain::model::CorrectionManage;
 use crate::features::correction::model::HandleCorrectionMethod;
 use crate::features::correction::{ModerationError, service};
-use crate::shared::http::api_response::{AppError, Message};
+use crate::shared::http::api_response::Message;
 
 #[derive(
     Debug, derive_more::Display, derive_more::Error, derive_more::From,
@@ -24,18 +24,12 @@ enum Error {
     Moderation(#[error(source)] ModerationError),
 }
 
-impl From<Error> for AppError {
-    fn from(err: Error) -> Self {
-        match err {
-            Error::Authz(source) => source.into(),
-            Error::Moderation(source) => source.into(),
-        }
-    }
-}
-
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            Error::Authz(source) => source.into_response(),
+            Error::Moderation(source) => source.into_response(),
+        }
     }
 }
 

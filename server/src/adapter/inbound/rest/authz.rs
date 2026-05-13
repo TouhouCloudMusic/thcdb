@@ -4,7 +4,6 @@ use crate::domain::model::PermissionMarker;
 use crate::infra::authz;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::error::PermissionDenied;
-use crate::shared::http::api_response::AppError;
 
 #[derive(
     Debug, derive_more::Display, derive_more::Error, derive_more::From,
@@ -17,18 +16,12 @@ pub enum Error {
     PermissionDenied,
 }
 
-impl From<Error> for AppError {
-    fn from(err: Error) -> Self {
-        match err {
-            Error::Database(err) => err.into(),
-            Error::PermissionDenied => PermissionDenied.into(),
-        }
-    }
-}
-
 impl axum::response::IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            Self::Database(err) => err.into_response(),
+            Self::PermissionDenied => PermissionDenied.into_response(),
+        }
     }
 }
 

@@ -49,28 +49,27 @@ impl From<DatabaseError> for SignUpError {
     }
 }
 
-impl From<SignUpError> for AppError {
-    #[track_caller]
-    fn from(err: SignUpError) -> Self {
-        match err {
-            SignUpError::UsernameAlreadyInUse { .. } => {
-                Self::conflict(err.to_string())
-            }
-            SignUpError::InvalidEmail(_) => Self::bad_request(err.to_string()),
-            SignUpError::EmailServiceUnavailable => {
-                Self::service_unavailable(err.to_string())
-            }
-            SignUpError::Internal(source) => source.into(),
-            SignUpError::Validate(source) => {
-                Self::bad_request(source.to_string())
-            }
-        }
-    }
-}
-
 impl IntoResponse for SignUpError {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            SignUpError::UsernameAlreadyInUse { username } => {
+                AppError::conflict(format!(
+                    "Username {username} already in use"
+                ))
+                .into_response()
+            }
+            SignUpError::InvalidEmail(source) => {
+                AppError::bad_request(source.to_string()).into_response()
+            }
+            SignUpError::EmailServiceUnavailable => {
+                AppError::service_unavailable("Email service unavailable")
+                    .into_response()
+            }
+            SignUpError::Internal(source) => source.into_response(),
+            SignUpError::Validate(source) => {
+                AppError::bad_request(source.to_string()).into_response()
+            }
+        }
     }
 }
 
@@ -92,24 +91,20 @@ impl From<DatabaseError> for ResendVerificationEmailError {
     }
 }
 
-impl From<ResendVerificationEmailError> for AppError {
-    #[track_caller]
-    fn from(err: ResendVerificationEmailError) -> Self {
-        match err {
-            ResendVerificationEmailError::InvalidEmail(_) => {
-                Self::bad_request(err.to_string())
-            }
-            ResendVerificationEmailError::ResendEmailServiceUnavailable => {
-                Self::service_unavailable(err.to_string())
-            }
-            ResendVerificationEmailError::Internal(source) => source.into(),
-        }
-    }
-}
-
 impl IntoResponse for ResendVerificationEmailError {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            ResendVerificationEmailError::InvalidEmail(source) => {
+                AppError::bad_request(source.to_string()).into_response()
+            }
+            ResendVerificationEmailError::ResendEmailServiceUnavailable => {
+                AppError::service_unavailable("Email service unavailable")
+                    .into_response()
+            }
+            ResendVerificationEmailError::Internal(source) => {
+                source.into_response()
+            }
+        }
     }
 }
 
@@ -133,24 +128,21 @@ impl From<DatabaseError> for VerifyEmailError {
     }
 }
 
-impl From<VerifyEmailError> for AppError {
-    #[track_caller]
-    fn from(err: VerifyEmailError) -> Self {
-        match err {
-            VerifyEmailError::InvalidEmail(_)
-            | VerifyEmailError::InvalidOrExpiredCode => {
-                Self::bad_request(err.to_string())
-            }
-            VerifyEmailError::TooManyAttempts => {
-                Self::too_many_requests(err.to_string())
-            }
-            VerifyEmailError::Internal(source) => source.into(),
-        }
-    }
-}
-
 impl IntoResponse for VerifyEmailError {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            VerifyEmailError::InvalidEmail(source) => {
+                AppError::bad_request(source.to_string()).into_response()
+            }
+            VerifyEmailError::InvalidOrExpiredCode => {
+                AppError::bad_request("Invalid or expired verification code")
+                    .into_response()
+            }
+            VerifyEmailError::TooManyAttempts => AppError::too_many_requests(
+                "Too many attempts, please resend verification code",
+            )
+            .into_response(),
+            VerifyEmailError::Internal(source) => source.into_response(),
+        }
     }
 }

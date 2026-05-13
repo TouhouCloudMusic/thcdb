@@ -141,23 +141,7 @@ impl std::error::Error for AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
         if self.kind == AppErrorKind::Internal {
-            match &self.source {
-                Some(source) => {
-                    log::error!(
-                        target: "shared.http.app_error",
-                        location:% = self.location,
-                        error:? = source;
-                        "internal error"
-                    );
-                }
-                None => {
-                    log::error!(
-                        target: "shared.http.app_error",
-                        location:% = self.location;
-                        "internal error"
-                    );
-                }
-            }
+            log_internal_error(self.source.as_deref(), self.location);
         }
 
         let status_code = self.status_code();
@@ -211,9 +195,71 @@ impl From<DatabaseError> for AppError {
     }
 }
 
-impl IntoResponse for DatabaseError {
+fn log_internal_error(
+    source: Option<&(dyn std::error::Error + Send + Sync + 'static)>,
+    location: &'static Location<'static>,
+) {
+    match source {
+        Some(source) => {
+            log::error!(
+                target: "shared.http.app_error",
+                location:% = location,
+                error:? = source;
+                "internal error"
+            );
+        }
+        None => {
+            log::error!(
+                target: "shared.http.app_error",
+                location:% = location;
+                "internal error"
+            );
+        }
+    }
+}
+
+fn internal_error_response(
+    source: &(dyn std::error::Error + Send + Sync + 'static),
+    location: &'static Location<'static>,
+) -> axum::response::Response {
+    log_internal_error(Some(source), location);
+    Error::from_err_and_code(
+        "Internal server error",
+        StatusCode::INTERNAL_SERVER_ERROR,
+    )
+    .into_response()
+}
+
+impl IntoResponse for PermissionDenied {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        Error::from_err_and_code(&self, StatusCode::FORBIDDEN).into_response()
+    }
+}
+
+impl IntoResponse for EntityNotFound {
+    fn into_response(self) -> axum::response::Response {
+        Error::from_err_and_code(&self, StatusCode::NOT_FOUND).into_response()
+    }
+}
+
+impl IntoResponse for BrokenEntityReference {
+    #[track_caller]
+    fn into_response(self) -> axum::response::Response {
+        internal_error_response(&self, Location::caller())
+    }
+}
+
+impl IntoResponse for InternalError {
+    #[track_caller]
+    fn into_response(self) -> axum::response::Response {
+        internal_error_response(self.0.as_ref(), Location::caller())
+    }
+}
+
+impl IntoResponse for DatabaseError {
+    #[track_caller]
+    fn into_response(self) -> axum::response::Response {
+        internal_error_response(&self, Location::caller())
     }
 }
 

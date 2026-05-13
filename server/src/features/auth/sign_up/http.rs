@@ -19,7 +19,7 @@ use crate::domain::auth::{
 };
 use crate::domain::user::UserProfile;
 use crate::features::user_profile::{self, DataUserProfile, load_profile};
-use crate::shared::http::api_response::{AppError, Data};
+use crate::shared::http::api_response::Data;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
@@ -41,20 +41,15 @@ enum VerifyEmailRouteError {
     Profile(#[error(source)] user_profile::Error),
 }
 
-impl From<VerifyEmailRouteError> for AppError {
-    #[track_caller]
-    fn from(err: VerifyEmailRouteError) -> Self {
-        match err {
-            VerifyEmailRouteError::VerifyEmail(source) => source.into(),
-            VerifyEmailRouteError::Session(source) => source.into(),
-            VerifyEmailRouteError::Profile(source) => source.into(),
-        }
-    }
-}
-
 impl IntoResponse for VerifyEmailRouteError {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            VerifyEmailRouteError::VerifyEmail(source) => {
+                source.into_response()
+            }
+            VerifyEmailRouteError::Session(source) => source.into_response(),
+            VerifyEmailRouteError::Profile(source) => source.into_response(),
+        }
     }
 }
 

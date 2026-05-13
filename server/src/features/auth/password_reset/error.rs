@@ -23,20 +23,14 @@ impl From<DatabaseError> for ForgotPasswordError {
     }
 }
 
-impl From<ForgotPasswordError> for AppError {
-    #[track_caller]
-    fn from(err: ForgotPasswordError) -> Self {
-        let message = err.to_string();
-        match err {
-            ForgotPasswordError::InvalidEmail(_) => Self::bad_request(message),
-            ForgotPasswordError::Internal(source) => source.into(),
-        }
-    }
-}
-
 impl IntoResponse for ForgotPasswordError {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            ForgotPasswordError::InvalidEmail(source) => {
+                AppError::bad_request(source.to_string()).into_response()
+            }
+            ForgotPasswordError::Internal(source) => source.into_response(),
+        }
     }
 }
 
@@ -58,23 +52,18 @@ impl From<DatabaseError> for VerifyResetCodeError {
     }
 }
 
-impl From<VerifyResetCodeError> for AppError {
-    #[track_caller]
-    fn from(err: VerifyResetCodeError) -> Self {
-        let message = err.to_string();
-        match err {
-            VerifyResetCodeError::InvalidEmail(_)
-            | VerifyResetCodeError::InvalidOrExpiredResetCode => {
-                Self::bad_request(message)
-            }
-            VerifyResetCodeError::Internal(source) => source.into(),
-        }
-    }
-}
-
 impl IntoResponse for VerifyResetCodeError {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            VerifyResetCodeError::InvalidEmail(source) => {
+                AppError::bad_request(source.to_string()).into_response()
+            }
+            VerifyResetCodeError::InvalidOrExpiredResetCode => {
+                AppError::bad_request("Invalid or expired reset code")
+                    .into_response()
+            }
+            VerifyResetCodeError::Internal(source) => source.into_response(),
+        }
     }
 }
 
@@ -96,25 +85,18 @@ impl From<DatabaseError> for ResetPasswordError {
     }
 }
 
-impl From<ResetPasswordError> for AppError {
-    #[track_caller]
-    fn from(err: ResetPasswordError) -> Self {
-        let message = err.to_string();
-        match err {
-            ResetPasswordError::InvalidOrExpiredResetKey => {
-                Self::bad_request(message)
-            }
-            ResetPasswordError::Internal(source) => source.into(),
-            ResetPasswordError::Validate(source) => {
-                Self::bad_request(source.to_string())
-            }
-        }
-    }
-}
-
 impl IntoResponse for ResetPasswordError {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            ResetPasswordError::InvalidOrExpiredResetKey => {
+                AppError::bad_request("Invalid or expired reset key")
+                    .into_response()
+            }
+            ResetPasswordError::Internal(source) => source.into_response(),
+            ResetPasswordError::Validate(source) => {
+                AppError::bad_request(source.to_string()).into_response()
+            }
+        }
     }
 }
 
@@ -136,8 +118,8 @@ mod tests {
 
     #[tokio::test]
     async fn forgot_password_internal_error_is_opaque_to_clients() {
-        let response = AppError::from(ForgotPasswordError::Internal(
-            InternalError::new(MessageError::new("forgot-password secret")),
+        let response = ForgotPasswordError::Internal(InternalError::new(
+            MessageError::new("forgot-password secret"),
         ))
         .into_response();
 
@@ -150,8 +132,8 @@ mod tests {
 
     #[tokio::test]
     async fn verify_reset_code_internal_error_is_opaque_to_clients() {
-        let response = AppError::from(VerifyResetCodeError::Internal(
-            InternalError::new(MessageError::new("verify-reset-code secret")),
+        let response = VerifyResetCodeError::Internal(InternalError::new(
+            MessageError::new("verify-reset-code secret"),
         ))
         .into_response();
 
@@ -164,8 +146,8 @@ mod tests {
 
     #[tokio::test]
     async fn reset_password_internal_error_is_opaque_to_clients() {
-        let response = AppError::from(ResetPasswordError::Internal(
-            InternalError::new(MessageError::new("reset-password secret")),
+        let response = ResetPasswordError::Internal(InternalError::new(
+            MessageError::new("reset-password secret"),
         ))
         .into_response();
 

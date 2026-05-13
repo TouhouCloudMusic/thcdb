@@ -37,20 +37,18 @@ pub(crate) enum Error {
     InvalidRequest(#[error(ignore)] String),
 }
 
-impl From<Error> for AppError {
-    fn from(err: Error) -> Self {
-        match err {
-            Error::Database(err) => err.into(),
-            Error::Internal(err) => err.into(),
-            Error::NotFound(kind) => AppError::not_found(kind.message()),
-            Error::PermissionDenied => PermissionDenied.into(),
-            Error::InvalidRequest(message) => AppError::bad_request(message),
-        }
-    }
-}
-
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            Error::Database(err) => err.into_response(),
+            Error::Internal(err) => err.into_response(),
+            Error::NotFound(kind) => {
+                AppError::not_found(kind.message()).into_response()
+            }
+            Error::PermissionDenied => PermissionDenied.into_response(),
+            Error::InvalidRequest(message) => {
+                AppError::bad_request(message).into_response()
+            }
+        }
     }
 }

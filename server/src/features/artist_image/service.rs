@@ -68,26 +68,20 @@ pub enum Error {
     NotFound(#[error(source)] EntityNotFound),
 }
 
-impl From<Error> for AppError {
-    fn from(err: Error) -> Self {
-        match err {
-            Error::Image(source) => match source {
-                image::Error::InvalidInput(source) => {
-                    AppError::bad_request(source.to_string())
-                }
-                image::Error::Database(source) => source.into(),
-                image::Error::Internal(source) => source.into(),
-            },
-            Error::Database(source) => source.into(),
-            Error::Internal(source) => source.into(),
-            Error::NotFound(source) => source.into(),
-        }
-    }
-}
-
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            Error::Image(source) => match source {
+                image::Error::InvalidInput(source) => {
+                    AppError::bad_request(source.to_string()).into_response()
+                }
+                image::Error::Database(source) => source.into_response(),
+                image::Error::Internal(source) => source.into_response(),
+            },
+            Error::Database(source) => source.into_response(),
+            Error::Internal(source) => source.into_response(),
+            Error::NotFound(source) => source.into_response(),
+        }
     }
 }
 

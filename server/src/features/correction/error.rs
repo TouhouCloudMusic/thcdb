@@ -23,23 +23,21 @@ pub enum SubmissionError {
     Internal(#[error(source)] InternalError),
 }
 
-impl From<SubmissionError> for AppError {
-    fn from(err: SubmissionError) -> Self {
-        match err {
-            SubmissionError::Validation(message) => Self::bad_request(message),
-            SubmissionError::PermissionDenied => PermissionDenied.into(),
-            SubmissionError::NotFound => {
-                AppError::not_found("Correction not found")
-            }
-            SubmissionError::Database(source) => source.into(),
-            SubmissionError::Internal(source) => source.into(),
-        }
-    }
-}
-
 impl IntoResponse for SubmissionError {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            SubmissionError::Validation(message) => {
+                AppError::bad_request(message).into_response()
+            }
+            SubmissionError::PermissionDenied => {
+                PermissionDenied.into_response()
+            }
+            SubmissionError::NotFound => {
+                AppError::not_found("Correction not found").into_response()
+            }
+            SubmissionError::Database(source) => source.into_response(),
+            SubmissionError::Internal(source) => source.into_response(),
+        }
     }
 }
 
@@ -59,24 +57,18 @@ pub enum ModerationError {
     Internal(#[error(source)] InternalError),
 }
 
-impl From<ModerationError> for AppError {
-    fn from(err: ModerationError) -> Self {
-        match err {
-            ModerationError::NotFound => {
-                AppError::not_found("Correction not found")
-            }
-            ModerationError::AlreadyHandled => {
-                AppError::conflict("Correction already handled")
-            }
-            ModerationError::Database(source) => source.into(),
-            ModerationError::Internal(source) => source.into(),
-        }
-    }
-}
-
 impl IntoResponse for ModerationError {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            ModerationError::NotFound => {
+                AppError::not_found("Correction not found").into_response()
+            }
+            ModerationError::AlreadyHandled => {
+                AppError::conflict("Correction already handled").into_response()
+            }
+            ModerationError::Database(source) => source.into_response(),
+            ModerationError::Internal(source) => source.into_response(),
+        }
     }
 }
 
@@ -99,38 +91,36 @@ pub(crate) enum ReadError {
     Snapshot(#[error(source)] shared::repo::SnapshotError),
 }
 
-impl From<ReadError> for AppError {
-    fn from(err: ReadError) -> Self {
-        match err {
-            ReadError::NotFound(message) => AppError::not_found(message),
-            ReadError::InvalidRequest(message) => {
-                AppError::bad_request(message)
-            }
-            ReadError::Database(source) => source.into(),
-            ReadError::Comment(source) => source.into(),
-            ReadError::Snapshot(source) => match source {
-                err @ shared::repo::SnapshotError::BrokenReference(_) => {
-                    InternalError::new(err).into()
-                }
-                shared::repo::SnapshotError::Database(source) => source.into(),
-            },
-        }
-    }
-}
-
 impl IntoResponse for ReadError {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            ReadError::NotFound(message) => {
+                AppError::not_found(message).into_response()
+            }
+            ReadError::InvalidRequest(message) => {
+                AppError::bad_request(message).into_response()
+            }
+            ReadError::Database(source) => source.into_response(),
+            ReadError::Comment(source) => source.into_response(),
+            ReadError::Snapshot(source) => match source {
+                err @ shared::repo::SnapshotError::BrokenReference(_) => {
+                    InternalError::new(err).into_response()
+                }
+                shared::repo::SnapshotError::Database(source) => {
+                    source.into_response()
+                }
+            },
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
+    use axum::response::IntoResponse;
 
     use super::SubmissionError;
     use crate::domain::song::{ValidationError, ValidationErrorKind};
-    use crate::shared::http::api_response::AppError;
 
     #[test]
     fn validation_returns_bad_request() {
@@ -139,6 +129,6 @@ mod tests {
                 .to_string(),
         );
 
-        assert_eq!(AppError::from(err).status_code(), StatusCode::BAD_REQUEST);
+        assert_eq!(err.into_response().status(), StatusCode::BAD_REQUEST);
     }
 }

@@ -28,21 +28,15 @@ enum Error {
     InvalidMarkdown(#[error(source)] crate::domain::markdown::Error),
 }
 
-impl From<Error> for AppError {
-    fn from(err: Error) -> Self {
-        match err {
-            Error::Image(source) => source.into(),
-            Error::Database(source) => source.into(),
-            Error::InvalidMarkdown(source) => {
-                AppError::bad_request(source.to_string())
-            }
-        }
-    }
-}
-
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            Error::Image(source) => source.into_response(),
+            Error::Database(source) => source.into_response(),
+            Error::InvalidMarkdown(source) => {
+                AppError::bad_request(source.to_string()).into_response()
+            }
+        }
     }
 }
 

@@ -21,20 +21,17 @@ pub enum Error {
     Database(#[error(source)] DatabaseError),
 }
 
-impl From<Error> for AppError {
-    #[track_caller]
-    fn from(err: Error) -> Self {
-        match err {
-            Error::NotFound => AppError::not_found(err.to_string()),
-            Error::CannotFollowSelf => AppError::bad_request(err.to_string()),
-            Error::Database(source) => source.into(),
-        }
-    }
-}
-
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            Error::NotFound => {
+                AppError::not_found("User not found").into_response()
+            }
+            Error::CannotFollowSelf => {
+                AppError::bad_request("cannot follow yourself").into_response()
+            }
+            Error::Database(source) => source.into_response(),
+        }
     }
 }
 

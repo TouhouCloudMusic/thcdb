@@ -26,7 +26,7 @@ use crate::domain::shared::PageResponse;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::error::{EntityNotFound, InternalError};
 use crate::shared::http::PageQuery;
-use crate::shared::http::api_response::{AppError, Data};
+use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Admin";
 
@@ -48,20 +48,14 @@ enum Error {
     NotFound(#[error(source)] EntityNotFound),
 }
 
-impl From<Error> for AppError {
-    fn from(err: Error) -> Self {
-        match err {
-            Error::Authz(source) => source.into(),
-            Error::Database(source) => source.into(),
-            Error::Internal(source) => source.into(),
-            Error::NotFound(source) => source.into(),
-        }
-    }
-}
-
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            Error::Authz(source) => source.into_response(),
+            Error::Database(source) => source.into_response(),
+            Error::Internal(source) => source.into_response(),
+            Error::NotFound(source) => source.into_response(),
+        }
     }
 }
 

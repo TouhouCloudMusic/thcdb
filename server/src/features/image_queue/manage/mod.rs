@@ -34,33 +34,31 @@ pub(crate) enum Error {
     Internal(InternalError),
 }
 
-impl From<Error> for AppError {
-    fn from(err: Error) -> Self {
-        match err {
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        match self {
             Error::NotFound => {
                 AppError::not_found("Image queue entry not found")
+                    .into_response()
             }
             Error::InvalidOperation => {
-                AppError::bad_request("Invalid operation")
+                AppError::bad_request("Invalid operation").into_response()
             }
             Error::InvalidEntry => {
                 AppError::bad_request("Invalid image queue entry")
+                    .into_response()
             }
             Error::UnknownTarget => {
                 AppError::bad_request("Unknown image queue target")
+                    .into_response()
             }
             Error::AmbiguousTarget => {
                 AppError::bad_request("Ambiguous image queue target")
+                    .into_response()
             }
-            Error::PermissionDenied => PermissionDenied.into(),
-            Error::Database(err) => err.into(),
-            Error::Internal(err) => err.into(),
+            Error::PermissionDenied => PermissionDenied.into_response(),
+            Error::Database(err) => err.into_response(),
+            Error::Internal(err) => err.into_response(),
         }
-    }
-}
-
-impl IntoResponse for Error {
-    fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
     }
 }

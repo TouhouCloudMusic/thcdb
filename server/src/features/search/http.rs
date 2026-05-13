@@ -31,18 +31,14 @@ enum Error {
     Database(#[error(source)] DatabaseError),
 }
 
-impl From<Error> for AppError {
-    fn from(err: Error) -> Self {
-        match err {
-            Error::Validation(err) => AppError::bad_request(err.to_string()),
-            Error::Database(err) => err.into(),
-        }
-    }
-}
-
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
+        match self {
+            Error::Validation(err) => {
+                AppError::bad_request(err.to_string()).into_response()
+            }
+            Error::Database(err) => err.into_response(),
+        }
     }
 }
 
