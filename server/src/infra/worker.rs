@@ -21,9 +21,9 @@ mod password_reset_email;
 mod remove_file;
 mod unverified_user_cleanup;
 
-pub(crate) use self::remove_file::{RemoveFileJob, RemoveFileQueue};
+pub use self::remove_file::{RemoveFileJob, RemoveFileQueue};
 
-pub(crate) type PasswordResetEmailQueue = RedisStorage<PasswordResetEmailJob>;
+pub type PasswordResetEmailQueue = RedisStorage<PasswordResetEmailJob>;
 
 #[derive(Clone)]
 pub(crate) struct WorkerState {

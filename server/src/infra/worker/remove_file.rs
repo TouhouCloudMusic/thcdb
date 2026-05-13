@@ -6,10 +6,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::infra::worker::{WorkerState, reschedule_job};
 
-pub(crate) type RemoveFileQueue = apalis_redis::RedisStorage<RemoveFileJob>;
+pub type RemoveFileQueue = apalis_redis::RedisStorage<RemoveFileJob>;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct RemoveFileJob {
+pub struct RemoveFileJob {
     pub path: String,
 }
 

@@ -151,7 +151,7 @@ struct ConsumedPasswordResetKey {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct PasswordResetEmailJob {
+pub struct PasswordResetEmailJob {
     pub user_id: i32,
     pub email: String,
     pub code: String,
