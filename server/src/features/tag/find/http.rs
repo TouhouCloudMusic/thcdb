@@ -10,8 +10,7 @@ use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::tag::model::Tag;
 use crate::infra::database::error::DatabaseResultExt;
-use crate::infra::error::Error;
-use crate::shared::http::api_response::{AppError, Data};
+use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
 
 const TAG: &str = "Tag";
 
@@ -82,7 +81,7 @@ async fn find_tag_by_keyword(
     params(TagFilter, PageQuery),
     responses(
         (status = 200, body = DataPageTag),
-        Error,
+        ApiError,
     ),
 )]
 async fn explore_tag(

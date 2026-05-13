@@ -8,6 +8,7 @@ use sea_orm::{
 use super::impls::*;
 use crate::domain::release::NewRelease;
 use crate::features::release::TxRepo;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 pub(crate) async fn create_release_with_relations(
     data: &NewRelease,
@@ -109,25 +110,27 @@ pub(crate) async fn apply_update(
 }
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
-    async fn create(
-        &self,
-        data: &NewRelease,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        Ok(create_release_with_relations(data, self.conn()).await?)
+    async fn create(&self, data: &NewRelease) -> Result<i32, DatabaseError> {
+        create_release_with_relations(data, self.conn())
+            .await
+            .with_operation("create release")
     }
 
     async fn create_history(
         &self,
         data: &NewRelease,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        Ok(create_release_history_with_relations(data, self.conn()).await?)
+    ) -> Result<i32, DatabaseError> {
+        create_release_history_with_relations(data, self.conn())
+            .await
+            .with_operation("create release history")
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        apply_update(correction, self.conn()).await?;
-        Ok(())
+    ) -> Result<(), DatabaseError> {
+        apply_update(correction, self.conn())
+            .await
+            .with_operation("apply release correction")
     }
 }

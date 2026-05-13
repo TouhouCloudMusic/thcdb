@@ -6,20 +6,19 @@ use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, DatabaseTransaction, DbErr, EntityTrait, IntoActiveValue,
 };
-use snafu::ResultExt;
 
 use crate::domain::tag::{NewTag, NewTagRelation};
 use crate::features::tag::TxRepo;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 pub(crate) mod impls;
 use impls::*;
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
-    async fn create(
-        &self,
-        data: &NewTag,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        let tag = create_tag_impl(data, self.conn()).await?;
+    async fn create(&self, data: &NewTag) -> Result<i32, DatabaseError> {
+        let tag = create_tag_impl(data, self.conn())
+            .await
+            .with_operation("create tag")?;
 
         Ok(tag.id)
     }
@@ -27,18 +26,20 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create_history(
         &self,
         data: &NewTag,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<i32, DatabaseError> {
         create_history_impl(data, self.conn())
             .await
+            .with_operation("create tag history")
             .map(|x| x.id)
-            .boxed()
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        apply_correction(correction, self.conn()).await.boxed()
+    ) -> Result<(), DatabaseError> {
+        apply_correction(correction, self.conn())
+            .await
+            .with_operation("apply tag correction")
     }
 }
 

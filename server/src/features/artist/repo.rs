@@ -1,6 +1,7 @@
 use sea_orm::DbErr;
 
 use crate::features::artist::model::NewArtist;
+use crate::infra::database::error::DatabaseError;
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
 use crate::infra::database::sea_orm::artist::impls as artist_impls;
 
@@ -8,20 +9,17 @@ pub trait TxRepo
 where
     Self::apply_update(..): Send,
 {
-    async fn create(
-        &self,
-        data: &NewArtist,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
+    async fn create(&self, data: &NewArtist) -> Result<i32, DatabaseError>;
 
     async fn create_history(
         &self,
         data: &NewArtist,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
+    ) -> Result<i32, DatabaseError>;
 
     async fn apply_update(
         &self,
         data: entity::correction::Model,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    ) -> Result<(), DatabaseError>;
 }
 
 pub(super) async fn create(

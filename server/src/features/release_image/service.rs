@@ -24,7 +24,7 @@ use crate::features::release_image_queue::Repo as ReleaseImageQueueRepo;
 use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::storage::GenericFileStorage;
-use crate::shared::error::{EntityNotFound, InternalError};
+use crate::shared::error::EntityNotFound;
 use crate::shared::http::api_response::AppError;
 
 static RELEASE_COVER_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
@@ -101,7 +101,7 @@ impl Service {
 
         drop(image_service);
 
-        tx_repo.commit().await.map_err(InternalError)?;
+        tx_repo.commit().await?;
 
         Ok(image_queue_entry.id)
     }

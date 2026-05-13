@@ -9,7 +9,6 @@ use crate::features::correction::{
 };
 use crate::features::event::model::NewEvent;
 use crate::infra::database::sea_orm::SeaOrmRepository;
-use crate::shared::error::InternalError;
 
 pub async fn create(
     repo: &SeaOrmRepository,
@@ -41,7 +40,7 @@ pub async fn create(
     )
     .await?;
 
-    tx_repo.commit().await.map_err(InternalError)?;
+    tx_repo.commit().await?;
 
     Ok(CorrectionSubmissionResult {
         correction_id,
@@ -90,7 +89,7 @@ pub async fn upsert_correction(
     .ok_or(SubmissionError::NotFound)?
     .id;
 
-    tx_repo.commit().await.map_err(InternalError)?;
+    tx_repo.commit().await?;
 
     Ok(CorrectionSubmissionResult {
         correction_id,

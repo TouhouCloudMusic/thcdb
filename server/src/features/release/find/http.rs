@@ -11,8 +11,7 @@ use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::release::model::Release;
 use crate::infra::database::error::DatabaseResultExt;
-use crate::infra::error::Error;
-use crate::shared::http::api_response::{AppError, Data};
+use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
 
 const TAG: &str = "Release";
 
@@ -83,7 +82,7 @@ async fn find_release_by_keyword(
     params(ReleaseFilter, PageQuery),
     responses(
         (status = 200, body = DataPageRelease),
-        Error,
+        ApiError,
     ),
 )]
 async fn explore_release(

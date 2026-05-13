@@ -86,7 +86,7 @@ impl AsyncFileStorage for GenericFileStorage {
 async fn enqueue_delete_task(
     queue: &RemoveFileQueue,
     path: &Path,
-) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+) -> Result<(), InternalError> {
     let path_str = path.to_str().expect("Failed to serialize pathbuf");
     let mut queue = queue.clone();
     queue
@@ -95,7 +95,5 @@ async fn enqueue_delete_task(
         })
         .await
         .map(|_task_id| ())
-        .map_err(|err| {
-            Box::new(err) as Box<dyn std::error::Error + Send + Sync>
-        })
+        .map_err(InternalError::new)
 }

@@ -127,11 +127,7 @@ impl Service {
             code.into_bytes(),
         )
         .await
-        .map_err(|err| {
-            InternalError::new(MessageError::new(format!(
-                "Failed to verify email code: {err}"
-            )))
-        })?;
+        .map_err(InternalError)?;
         if !ok {
             repo::increment_email_verification_failed_attempts(
                 &self.repo.conn,

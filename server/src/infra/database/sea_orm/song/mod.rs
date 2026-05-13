@@ -8,20 +8,19 @@ use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, DatabaseTransaction, DbErr, EntityTrait, IntoActiveValue,
 };
-use snafu::ResultExt;
 
 use crate::domain::shared::NewLocalizedName;
 use crate::domain::song::{NewSong, NewSongCredit, NewSongRelation};
 use crate::features::song::TxRepo;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 pub(crate) mod impls;
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
-    async fn create(
-        &self,
-        data: &NewSong,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        let song = create_song_and_relations(data, self.conn()).await?;
+    async fn create(&self, data: &NewSong) -> Result<i32, DatabaseError> {
+        let song = create_song_and_relations(data, self.conn())
+            .await
+            .with_operation("create song")?;
 
         Ok(song.id)
     }
@@ -29,18 +28,20 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create_history(
         &self,
         data: &NewSong,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<i32, DatabaseError> {
         create_song_history_and_relations(data, self.conn())
             .await
+            .with_operation("create song history")
             .map(|x| x.id)
-            .boxed()
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        apply_update(correction, self.conn()).await.boxed()
+    ) -> Result<(), DatabaseError> {
+        apply_update(correction, self.conn())
+            .await
+            .with_operation("apply song correction")
     }
 }
 

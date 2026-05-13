@@ -7,7 +7,6 @@ use crate::domain::model::{CorrectionApprover, CorrectionManage};
 use crate::domain::user::User;
 use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
-use crate::shared::error::InternalError;
 
 pub async fn approve(
     repo: &SeaOrmRepository,
@@ -19,7 +18,7 @@ pub async fn approve(
         .await
         .with_operation("begin approve correction transaction")?;
     repo::approve(&tx_repo, correction_id, CorrectionApprover(user)).await?;
-    tx_repo.commit().await.map_err(InternalError)?;
+    tx_repo.commit().await?;
     Ok(())
 }
 
@@ -33,7 +32,7 @@ pub async fn reject(
         .await
         .with_operation("begin reject correction transaction")?;
     repo::reject(&tx_repo, correction_id, CorrectionApprover(user)).await?;
-    tx_repo.commit().await.map_err(InternalError)?;
+    tx_repo.commit().await?;
     Ok(())
 }
 

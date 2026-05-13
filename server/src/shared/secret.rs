@@ -4,12 +4,11 @@ use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::{PasswordHash, PasswordVerifier, SaltString};
 use argon2::{Argon2, PasswordHasher as _};
 
+use crate::shared::types::BoxedError;
+
 #[track_caller]
 #[expect(clippy::manual_async_fn, reason = "track_caller")]
-pub fn hash(
-    s: &str,
-) -> impl Future<Output = Result<String, Box<dyn std::error::Error + Send + Sync>>>
-{
+pub fn hash(s: &str) -> impl Future<Output = Result<String, BoxedError>> {
     async move {
         let s = s.to_owned();
         let salt = SaltString::generate(&mut OsRng);
@@ -26,7 +25,8 @@ pub fn hash(
                 error:% = e;
                 "hash task failed"
             );
-        })?
+        })
+        .map_err(|err| Box::new(err) as BoxedError)?
         .map_err(|e| {
             log::error!(
                 target: "shared.secret",
@@ -34,7 +34,7 @@ pub fn hash(
                 error:% = e;
                 "hash failed"
             );
-            Box::new(e).into()
+            Box::new(e) as BoxedError
         })
     }
 }
@@ -44,8 +44,7 @@ pub fn hash(
 pub fn verify(
     secret_hash: String,
     bytes: Vec<u8>,
-) -> impl Future<Output = Result<bool, Box<dyn std::error::Error + Send + Sync>>>
-{
+) -> impl Future<Output = Result<bool, BoxedError>> {
     async {
         let verify_result = tokio::task::spawn_blocking(move || {
             let hash = PasswordHash::new(&secret_hash)?;
@@ -59,7 +58,8 @@ pub fn verify(
                 error:% = e;
                 "verify task failed"
             );
-        })?;
+        })
+        .map_err(|err| Box::new(err) as BoxedError)?;
 
         match verify_result {
             Ok(()) => Ok(true),
@@ -71,7 +71,7 @@ pub fn verify(
                     error:% = other;
                     "verify failed"
                 );
-                Err(Box::new(other).into())
+                Err(Box::new(other) as BoxedError)
             }
         }
     }

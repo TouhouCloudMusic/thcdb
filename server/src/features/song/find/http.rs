@@ -10,8 +10,7 @@ use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::song::model::Song;
 use crate::infra::database::error::DatabaseResultExt;
-use crate::infra::error::Error;
-use crate::shared::http::api_response::{AppError, Data};
+use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
 
 const TAG: &str = "Song";
 
@@ -82,7 +81,7 @@ async fn find_song_by_keyword(
     params(SongFilter, PageQuery),
     responses(
         (status = 200, body = DataPageSong),
-        Error
+        ApiError
     ),
 )]
 async fn explore_song(

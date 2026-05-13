@@ -5,7 +5,6 @@ use crate::domain::user::{ProfileRepository, Repository, User, UserProfile};
 use crate::features::user_profile::{FollowResult, UnfollowResult};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
-use crate::shared::error::InternalError;
 use crate::shared::http::api_response::AppError;
 
 #[derive(Clone)]
@@ -22,9 +21,7 @@ impl Service {
         &self,
         name: &str,
     ) -> Result<Option<UserProfile>, AppError> {
-        let profile = ProfileRepository::find_by_name(&self.repo, name)
-            .await
-            .map_err(InternalError)?;
+        let profile = ProfileRepository::find_by_name(&self.repo, name).await?;
 
         Ok(profile)
     }
@@ -34,10 +31,7 @@ impl Service {
         profile: &mut UserProfile,
         current_user: &User,
     ) -> Result<(), AppError> {
-        self.repo
-            .with_following(profile, current_user)
-            .await
-            .map_err(InternalError)?;
+        self.repo.with_following(profile, current_user).await?;
 
         Ok(())
     }
@@ -46,9 +40,7 @@ impl Service {
         &self,
         name: &str,
     ) -> Result<Option<User>, AppError> {
-        let user = Repository::find_by_name(&self.repo, name)
-            .await
-            .map_err(InternalError)?;
+        let user = Repository::find_by_name(&self.repo, name).await?;
 
         Ok(user)
     }

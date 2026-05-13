@@ -6,22 +6,19 @@ use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, DatabaseTransaction, DbErr, EntityTrait, IntoActiveValue,
 };
-use snafu::ResultExt;
 
 use crate::domain::label::NewLabel;
 use crate::domain::shared::NewLocalizedName;
 use crate::features::label::TxRepo;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 pub(crate) mod impls;
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
-    async fn create(
-        &self,
-        data: &NewLabel,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+    async fn create(&self, data: &NewLabel) -> Result<i32, DatabaseError> {
         let label = save_label_and_link_relations(data, self.conn())
             .await
-            .boxed()?;
+            .with_operation("create label")?;
 
         Ok(label.id)
     }
@@ -29,18 +26,20 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
     async fn create_history(
         &self,
         data: &NewLabel,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<i32, DatabaseError> {
         save_label_history_and_link_relations(data, self.conn())
             .await
+            .with_operation("create label history")
             .map(|x| x.id)
-            .boxed()
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        impls::apply_update(correction, self.conn()).await.boxed()
+    ) -> Result<(), DatabaseError> {
+        impls::apply_update(correction, self.conn())
+            .await
+            .with_operation("apply label correction")
     }
 }
 

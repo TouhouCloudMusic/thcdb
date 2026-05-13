@@ -1,6 +1,7 @@
 use sea_orm::DbErr;
 
 use crate::features::song_lyrics::model::NewSongLyrics;
+use crate::infra::database::error::DatabaseError;
 use crate::infra::database::sea_orm::{
     SeaOrmTxRepo, song_lyrics as lyrics_impls,
 };
@@ -14,19 +15,19 @@ where
     async fn create(
         &self,
         lyrics: &NewSongLyrics,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
+    ) -> Result<i32, DatabaseError>;
 
     /// Create history record for song lyrics
     async fn create_history(
         &self,
         lyrics: &NewSongLyrics,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>>;
+    ) -> Result<i32, DatabaseError>;
 
     /// Apply correction update to song lyrics
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    ) -> Result<(), DatabaseError>;
 }
 
 pub(super) async fn create(

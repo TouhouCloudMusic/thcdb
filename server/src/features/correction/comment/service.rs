@@ -6,7 +6,6 @@ use super::repo;
 use crate::domain::model::CommentManage;
 use crate::domain::shared::CursorResponse;
 use crate::infra::database::sea_orm::SeaOrmRepository;
-use crate::shared::error::InternalError;
 use crate::shared::http::PaginationQuery;
 
 #[derive(Clone)]
@@ -48,7 +47,7 @@ impl Service {
         let comment =
             repo::insert_comment(conn, correction_id, author_id, &req).await?;
         let summary = repo::load_comment_summary(conn, comment.id).await?;
-        tx_repo.commit().await.map_err(InternalError)?;
+        tx_repo.commit().await?;
 
         Ok(summary)
     }

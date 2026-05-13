@@ -4,32 +4,38 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DbErr, EntityTrait,
     ModelTrait, QueryFilter, QueryOrder, QueryTrait,
 };
-use snafu::ResultExt;
 
 use super::SeaOrmTxRepo;
 use crate::domain::song_lyrics::NewSongLyrics;
 use crate::features::song_lyrics::TxRepo;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 impl TxRepo for SeaOrmTxRepo {
     async fn create(
         &self,
         lyrics: &NewSongLyrics,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        create_lyrics_impl(lyrics, self.conn()).await.boxed()
+    ) -> Result<i32, DatabaseError> {
+        create_lyrics_impl(lyrics, self.conn())
+            .await
+            .with_operation("create song lyrics")
     }
 
     async fn create_history(
         &self,
         lyrics: &NewSongLyrics,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        create_history_impl(lyrics, self.conn()).await.boxed()
+    ) -> Result<i32, DatabaseError> {
+        create_history_impl(lyrics, self.conn())
+            .await
+            .with_operation("create song lyrics history")
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        apply_update_impl(correction, self.conn()).await.boxed()
+    ) -> Result<(), DatabaseError> {
+        apply_update_impl(correction, self.conn())
+            .await
+            .with_operation("apply song lyrics correction")
     }
 }
 

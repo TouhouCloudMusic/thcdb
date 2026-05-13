@@ -61,6 +61,10 @@
 - [x] correction 提交/更新路径的 `Correction not found` 已从 `infra::Error::custom(...)` 迁移到 `SubmissionError::NotFound`。
 - [x] 清理 correction、auth、image queue manage、user collection 等路径中的宽泛 `BoxedError` 转发；事务提交和 boxed 内部来源显式进入 `InternalError`。
 - [x] 清理 feature/service 层直接 `map_err(AppError::internal_boxed)` 的调用点，内部错误统一先收口到 `InternalError`。
+- [x] 删除 `infra::Error` 模块和顶层 re-export，OpenAPI 错误响应改为直接使用共享默认 error schema。
+- [x] 将 correction 写入类 feature repo trait 与 `domain::user` repo trait 的裸 boxed 返回值迁移为 `DatabaseError`。
+- [x] `SeaOrmTxRepo::commit`、`shared::secret`、storage 删除队列等非 DB 技术失败不再返回裸 boxed，统一进入 `InternalError`。
+- [x] `AppError::internal_boxed` 降为 `shared::http::api_response` 模块内部 API，外部只能通过 `AppError::internal(...)` 或 `InternalError -> AppError` 进入。
 
 ## 约束
 

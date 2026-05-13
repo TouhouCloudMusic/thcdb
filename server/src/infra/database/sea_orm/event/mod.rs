@@ -8,37 +8,36 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityTrait,
     IntoActiveValue, ModelTrait, QueryFilter, QueryOrder, Set,
 };
-use snafu::ResultExt;
 
 use crate::domain::event::NewEvent;
 use crate::features::event::TxRepo;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
-    async fn create(
-        &self,
-        data: &NewEvent,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+    async fn create(&self, data: &NewEvent) -> Result<i32, DatabaseError> {
         create_event_and_relations(data, self.conn())
             .await
+            .with_operation("create event")
             .map(|x| x.id)
-            .boxed()
     }
 
     async fn create_history(
         &self,
         data: &NewEvent,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<i32, DatabaseError> {
         create_event_history_and_relations(data, self.conn())
             .await
+            .with_operation("create event history")
             .map(|x| x.id)
-            .boxed()
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        apply_correction(correction, self.conn()).await.boxed()
+    ) -> Result<(), DatabaseError> {
+        apply_correction(correction, self.conn())
+            .await
+            .with_operation("apply event correction")
     }
 }
 

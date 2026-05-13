@@ -22,67 +22,69 @@ use crate::domain::model::UserRoleEnum;
 use crate::domain::user::{
     NewUser, User, UserProfile, UserProfileStats, {self},
 };
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 impl user::Repository for SeaOrmRepository {
-    async fn find_by_id(
-        &self,
-        id: i32,
-    ) -> Result<Option<User>, Box<dyn std::error::Error + Send + Sync>> {
-        Ok(find_many_impl(entity::user::Column::Id.eq(id), &self.conn)
-            .await?
-            .into_iter()
-            .next())
+    async fn find_by_id(&self, id: i32) -> Result<Option<User>, DatabaseError> {
+        let users = find_many_impl(entity::user::Column::Id.eq(id), &self.conn)
+            .await
+            .with_operation("find user by id")?;
+
+        Ok(users.into_iter().next())
     }
 
     async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<User>, Box<dyn std::error::Error + Send + Sync>> {
-        Ok(
+    ) -> Result<Option<User>, DatabaseError> {
+        let users =
             find_many_impl(entity::user::Column::Name.eq(name), &self.conn)
-                .await?
-                .into_iter()
-                .next(),
-        )
+                .await
+                .with_operation("find user by name")?;
+
+        Ok(users.into_iter().next())
     }
 }
 
 impl user::TxRepo for SeaOrmTxRepo {
-    async fn create(
-        &self,
-        user: NewUser,
-    ) -> Result<User, Box<dyn std::error::Error + Send + Sync>> {
-        let tx = self.conn().begin().await?;
+    async fn create(&self, user: NewUser) -> Result<User, DatabaseError> {
+        let tx = self
+            .conn()
+            .begin()
+            .await
+            .with_operation("begin create user transaction")?;
 
         let model = entity::user::Entity::insert(user.into_active_model())
             .exec_with_returning(&tx)
-            .await?;
+            .await
+            .with_operation("insert user")?;
 
         entity::user_role::Entity::insert(entity::user_role::ActiveModel {
             user_id: Set(model.id),
             role_id: Set(UserRoleEnum::User.into()),
         })
         .exec(&tx)
-        .await?;
+        .await
+        .with_operation("insert default user role")?;
 
         let mut user = User::from(model);
 
         user.roles = vec![UserRoleEnum::User.into()];
 
-        tx.commit().await?;
+        tx.commit()
+            .await
+            .with_operation("commit create user transaction")?;
 
         Ok(user)
     }
 
-    async fn update(
-        &self,
-        user: User,
-    ) -> Result<User, Box<dyn std::error::Error + Send + Sync>> {
+    async fn update(&self, user: User) -> Result<User, DatabaseError> {
         let tx = self.conn();
         let user_roles = user.roles.clone();
         let model = entity::user::Entity::update(user.into_active_model())
             .exec(tx)
-            .await?;
+            .await
+            .with_operation("update user")?;
 
         let roles = user_roles
             .into_iter()
@@ -95,15 +97,21 @@ impl user::TxRepo for SeaOrmTxRepo {
         entity::user_role::Entity::delete_many()
             .filter(entity::user_role::Column::UserId.eq(model.id))
             .exec(tx)
-            .await?;
+            .await
+            .with_operation("delete user roles")?;
 
         let roles = entity::user_role::Entity::insert_many(roles)
             .exec_with_returning_many(tx)
-            .await?;
+            .await
+            .with_operation("insert user roles")?;
 
         let mut user = User::from(model);
 
-        user.roles = roles.into_iter().map(TryInto::try_into).try_collect()?;
+        user.roles = roles
+            .into_iter()
+            .map(TryInto::try_into)
+            .try_collect()
+            .with_operation("build user roles")?;
 
         Ok(user)
     }
@@ -197,8 +205,7 @@ impl user::ProfileRepository for SeaOrmRepository {
     async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<UserProfile>, Box<dyn std::error::Error + Send + Sync>>
-    {
+    ) -> Result<Option<UserProfile>, DatabaseError> {
         use entity::*;
 
         const AVATAR_ALIAS: &str = "a";
@@ -264,7 +271,8 @@ impl user::ProfileRepository for SeaOrmRepository {
             )
             .into_model::<UserProfileRaw>()
             .one(&self.conn)
-            .await?
+            .await
+            .with_operation("find user profile")?
         else {
             return Ok(None);
         };
@@ -273,8 +281,11 @@ impl user::ProfileRepository for SeaOrmRepository {
             .column(user_role::Column::RoleId)
             .filter(user_role::Column::UserId.eq(profile.id))
             .all(&self.conn)
-            .await?;
-        let stats = find_profile_stats(profile.id, &self.conn).await?;
+            .await
+            .with_operation("find user profile roles")?;
+        let stats = find_profile_stats(profile.id, &self.conn)
+            .await
+            .with_operation("find user profile stats")?;
 
         let avatar_url = if let Some(dir) = profile.avatar_url_dir
             && let Some(filename) = profile.avatar_url_filename
@@ -310,7 +321,8 @@ impl user::ProfileRepository for SeaOrmRepository {
             roles: user_roles
                 .into_iter()
                 .map(TryInto::try_into)
-                .try_collect()?,
+                .try_collect()
+                .with_operation("build user profile roles")?,
             is_following: None,
             bio: profile.bio,
             stats,
@@ -322,7 +334,7 @@ impl user::ProfileRepository for SeaOrmRepository {
         &self,
         profile: &mut UserProfile,
         current_user: &domain::user::User,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<(), DatabaseError> {
         if profile.name == current_user.name {
             return Ok(());
         }
@@ -339,7 +351,8 @@ impl user::ProfileRepository for SeaOrmRepository {
             .filter(user_following::Column::UserId.eq(current_user.id))
             .filter(user_following::Column::FollowingId.in_subquery(sub_query))
             .count(&self.conn)
-            .await?;
+            .await
+            .with_operation("check user profile follow relationship")?;
 
         profile.is_following = Some(res > 0);
 

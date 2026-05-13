@@ -10,8 +10,7 @@ use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::event::model::Event;
 use crate::infra::database::error::DatabaseResultExt;
-use crate::infra::error::Error;
-use crate::shared::http::api_response::{AppError, Data};
+use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
 
 const TAG: &str = "Event";
 
@@ -84,7 +83,7 @@ async fn find_event_by_keyword(
     params(EventFilter, PageQuery),
     responses(
         (status = 200, body = DataPageEvent),
-        Error,
+        ApiError,
     ),
 )]
 async fn explore_event(

@@ -14,7 +14,6 @@ use utoipa::openapi::{
 use utoipa::{PartialSchema, ToSchema, openapi};
 
 use crate::infra::database::error::DatabaseError;
-use crate::infra::error::{Error as InfraError, UserError};
 use crate::shared::error::{EntityNotFound, InternalError, PermissionDenied};
 use crate::shared::types::BoxedError;
 use crate::utils::openapi::ContentType;
@@ -104,7 +103,7 @@ impl AppError {
     }
 
     #[track_caller]
-    pub fn internal_boxed(source: BoxedError) -> Self {
+    fn internal_boxed(source: BoxedError) -> Self {
         Self {
             kind: AppErrorKind::Internal,
             message: "Internal server error".to_string(),
@@ -162,31 +161,6 @@ impl IntoResponse for AppError {
 impl From<AppError> for axum::response::Response {
     fn from(err: AppError) -> Self {
         err.into_response()
-    }
-}
-
-impl From<UserError> for AppError {
-    #[track_caller]
-    fn from(err: UserError) -> Self {
-        let message = err.to_string();
-        match err {
-            UserError::FkViolation { source } => Self {
-                kind: AppErrorKind::BadRequest,
-                message,
-                source: Some(source),
-                location: Location::caller(),
-            },
-        }
-    }
-}
-
-impl From<InfraError> for AppError {
-    #[track_caller]
-    fn from(err: InfraError) -> Self {
-        match err {
-            InfraError::Internal { source } => Self::internal_boxed(source),
-            InfraError::User { source } => source.into(),
-        }
     }
 }
 
@@ -374,6 +348,15 @@ impl Error {
     }
 }
 
+impl utoipa::IntoResponses for Error {
+    fn responses() -> std::collections::BTreeMap<
+        std::string::String,
+        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
+    > {
+        Self::responses([StatusCode::INTERNAL_SERVER_ERROR]).into()
+    }
+}
+
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         (self.status_code, Json(self)).into_response()
@@ -479,17 +462,5 @@ mod test {
         let body = response_body_string(response).await;
         assert!(body.contains(r#""message":"Internal server error""#));
         assert!(!body.contains("database secret"));
-    }
-
-    #[tokio::test]
-    async fn infra_internal_response_is_opaque() {
-        let response =
-            crate::infra::Error::custom(&"infra secret").into_response();
-
-        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
-
-        let body = response_body_string(response).await;
-        assert!(body.contains(r#""message":"Internal server error""#));
-        assert!(!body.contains("infra secret"));
     }
 }

@@ -10,6 +10,7 @@ use sea_orm::{
 
 use crate::domain::credit_role::NewCreditRole;
 use crate::features::credit_role::TxRepo;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
 
 pub(crate) async fn create_credit_role(
@@ -139,29 +140,32 @@ pub(crate) async fn apply_update_impl(
 }
 
 impl TxRepo for SeaOrmTxRepo {
-    async fn create(
-        &self,
-        data: &NewCreditRole,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        let credit_role = create_credit_role(data, self.conn()).await?;
+    async fn create(&self, data: &NewCreditRole) -> Result<i32, DatabaseError> {
+        let credit_role = create_credit_role(data, self.conn())
+            .await
+            .with_operation("create credit role")?;
+
         Ok(credit_role.id)
     }
 
     async fn create_history(
         &self,
         data: &NewCreditRole,
-    ) -> Result<i32, Box<dyn std::error::Error + Send + Sync>> {
-        let credit_role_history =
-            create_credit_role_history(data, self.conn()).await?;
+    ) -> Result<i32, DatabaseError> {
+        let credit_role_history = create_credit_role_history(data, self.conn())
+            .await
+            .with_operation("create credit role history")?;
+
         Ok(credit_role_history.id)
     }
 
     async fn apply_update(
         &self,
         correction: entity::correction::Model,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        apply_update_impl(correction, self.conn()).await?;
-        Ok(())
+    ) -> Result<(), DatabaseError> {
+        apply_update_impl(correction, self.conn())
+            .await
+            .with_operation("apply credit role correction")
     }
 }
 

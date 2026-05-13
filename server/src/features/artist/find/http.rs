@@ -10,8 +10,7 @@ use crate::adapter::inbound::rest::{AppRouter, data, state};
 use crate::domain::shared::PageResponse;
 use crate::features::artist::model::Artist;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::error::Error;
-use crate::shared::http::api_response::{AppError, Data};
+use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
 
 const TAG: &str = "Artist";
 
@@ -106,7 +105,7 @@ async fn find_many_artist(
     params(ArtistFilter, PageQuery),
     responses(
         (status = 200, body = DataPageArtist),
-        Error,
+        ApiError,
     ),
 )]
 async fn explore_artist(
