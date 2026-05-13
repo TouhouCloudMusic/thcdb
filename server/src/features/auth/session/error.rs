@@ -1,4 +1,3 @@
-use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError};
 
 use crate::domain::auth::{AuthnError, ValidateCredsError};
@@ -29,12 +28,6 @@ pub enum SignInError {
     },
 }
 
-impl IntoResponse for SignInError {
-    fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
-    }
-}
-
 impl From<SignInError> for AppError {
     #[track_caller]
     fn from(err: SignInError) -> Self {
@@ -45,7 +38,7 @@ impl From<SignInError> for AppError {
             SignInError::EmailNotVerified => {
                 Self::bad_request("Email not verified")
             }
-            SignInError::Authn { source } => app_error_from_authn_error(source),
+            SignInError::Authn { source } => source.into(),
             SignInError::Internal { source } => source.into(),
             SignInError::Validate { source } => {
                 Self::bad_request(source.to_string())
@@ -81,12 +74,6 @@ pub struct SessionError {
     source: axum_login::tower_sessions::session::Error,
 }
 
-impl IntoResponse for SessionError {
-    fn into_response(self) -> axum::response::Response {
-        AppError::internal(self).into_response()
-    }
-}
-
 impl SessionError {
     pub const fn new(
         source: axum_login::tower_sessions::session::Error,
@@ -109,19 +96,20 @@ pub enum SessionBackendError {
     },
 }
 
-impl IntoResponse for SessionBackendError {
-    fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
-    }
-}
-
 impl From<SessionBackendError> for AppError {
     #[track_caller]
     fn from(err: SessionBackendError) -> Self {
         match err {
-            SessionBackendError::Session { source } => Self::internal(source),
+            SessionBackendError::Session { source } => source.into(),
             SessionBackendError::AuthnBackend { source } => source.into(),
         }
+    }
+}
+
+impl From<SessionError> for AppError {
+    #[track_caller]
+    fn from(err: SessionError) -> Self {
+        Self::internal(err)
     }
 }
 
@@ -144,19 +132,11 @@ pub enum AuthnBackendError {
     },
 }
 
-impl IntoResponse for AuthnBackendError {
-    fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
-    }
-}
-
 impl From<AuthnBackendError> for AppError {
     #[track_caller]
     fn from(err: AuthnBackendError) -> Self {
         match err {
-            AuthnBackendError::Authn { source } => {
-                app_error_from_authn_error(source)
-            }
+            AuthnBackendError::Authn { source } => source.into(),
             AuthnBackendError::SignIn { source } => source.into(),
             AuthnBackendError::Internal { source } => source.into(),
         }
@@ -183,12 +163,15 @@ impl From<DatabaseError> for AuthnBackendError {
     }
 }
 
-fn app_error_from_authn_error(err: AuthnError) -> AppError {
-    match err {
-        AuthnError::AuthenticationFailed => {
-            AppError::unauthorized(err.to_string())
+impl From<AuthnError> for AppError {
+    #[track_caller]
+    fn from(err: AuthnError) -> Self {
+        match err {
+            AuthnError::AuthenticationFailed => {
+                AppError::unauthorized(err.to_string())
+            }
+            AuthnError::Internal(source) => source.into(),
         }
-        AuthnError::Internal(source) => source.into(),
     }
 }
 

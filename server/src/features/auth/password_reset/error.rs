@@ -1,4 +1,3 @@
-use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError};
 
 use crate::domain::auth::ValidateCredsError;
@@ -36,12 +35,6 @@ impl From<DatabaseError> for ForgotPasswordError {
 impl From<InternalError> for ForgotPasswordError {
     fn from(source: InternalError) -> Self {
         Self::Internal { source }
-    }
-}
-
-impl IntoResponse for ForgotPasswordError {
-    fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
     }
 }
 
@@ -89,12 +82,6 @@ impl From<DatabaseError> for VerifyResetCodeError {
 impl From<InternalError> for VerifyResetCodeError {
     fn from(source: InternalError) -> Self {
         Self::Internal { source }
-    }
-}
-
-impl IntoResponse for VerifyResetCodeError {
-    fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
     }
 }
 
@@ -146,12 +133,6 @@ impl From<InternalError> for ResetPasswordError {
     }
 }
 
-impl IntoResponse for ResetPasswordError {
-    fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
-    }
-}
-
 impl From<ResetPasswordError> for AppError {
     #[track_caller]
     fn from(err: ResetPasswordError) -> Self {
@@ -172,6 +153,7 @@ impl From<ResetPasswordError> for AppError {
 mod tests {
     use axum::body::to_bytes;
     use axum::http::StatusCode;
+    use axum::response::IntoResponse;
 
     use super::*;
     use crate::shared::error::MessageError;
@@ -185,11 +167,11 @@ mod tests {
 
     #[tokio::test]
     async fn forgot_password_internal_error_is_opaque_to_clients() {
-        let response = ForgotPasswordError::Internal {
+        let response = AppError::from(ForgotPasswordError::Internal {
             source: InternalError::new(MessageError::new(
                 "forgot-password secret",
             )),
-        }
+        })
         .into_response();
 
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
@@ -201,11 +183,11 @@ mod tests {
 
     #[tokio::test]
     async fn verify_reset_code_internal_error_is_opaque_to_clients() {
-        let response = VerifyResetCodeError::Internal {
+        let response = AppError::from(VerifyResetCodeError::Internal {
             source: InternalError::new(MessageError::new(
                 "verify-reset-code secret",
             )),
-        }
+        })
         .into_response();
 
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
@@ -217,11 +199,11 @@ mod tests {
 
     #[tokio::test]
     async fn reset_password_internal_error_is_opaque_to_clients() {
-        let response = ResetPasswordError::Internal {
+        let response = AppError::from(ResetPasswordError::Internal {
             source: InternalError::new(MessageError::new(
                 "reset-password secret",
             )),
-        }
+        })
         .into_response();
 
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);

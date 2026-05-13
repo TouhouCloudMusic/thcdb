@@ -35,7 +35,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn sign_up(
     State(auth_service): State<state::AuthService>,
     Json(req): Json<SignUpRequest>,
-) -> Result<Data<SignUpResponse>, crate::features::auth::SignUpError> {
+) -> Result<Data<SignUpResponse>, AppError> {
     let res = auth_service.sign_up(req).await?;
 
     Ok(Data::new(res))
@@ -79,10 +79,7 @@ async fn verify_email(
 async fn resend_verification_email(
     State(auth_service): State<state::AuthService>,
     Json(req): Json<ResendVerificationEmailRequest>,
-) -> Result<
-    Data<ResendVerificationEmailResponse>,
-    crate::features::auth::ResendVerificationEmailError,
-> {
+) -> Result<Data<ResendVerificationEmailResponse>, AppError> {
     let res = auth_service.resend_verification_email(req).await?;
 
     Ok(Data::new(res))

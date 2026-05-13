@@ -211,19 +211,19 @@
 
 auth 相关错误通常有清晰恢复语义，不能简单压平。
 
-- [ ] 保留以下语义错误类型，但移除手写 HTTP response 重复逻辑：
+- [x] 保留以下语义错误类型，但移除手写 HTTP response 重复逻辑：
   - [x] `features/auth/error.rs`
   - [x] `features/auth/session/error.rs`
   - [x] `features/auth/password_reset/error.rs`
   - [x] `domain/auth.rs`
 - [x] 为 auth feature 错误类型实现 `From<Error> for AppError`。
-- [x] handler 返回类型改为 `Result<T, AppError>` 或现有语义错误类型。
-- [ ] 明确区分：
-  - [ ] 未登录 / token 无效：`Unauthorized`
-  - [ ] 已登录但动作不允许：`BadRequest` 或更具体业务错误
-  - [ ] backend/session 存储失败：`Internal`
-  - [ ] reset key 无效或过期：对用户公开的业务错误
-- [ ] 避免把 session backend source message 直接暴露给用户。
+- [x] handler 返回类型改为 `Result<T, AppError>` 或带 cookie side effect 的 `Result<T, (CookieJar, AppError)>`。
+- [x] 明确区分：
+  - [x] 未登录 / token 无效：`Unauthorized`
+  - [x] 已登录但动作不允许：`BadRequest` 或更具体业务错误
+  - [x] backend/session 存储失败：`Internal`
+  - [x] reset key 无效或过期：对用户公开的业务错误
+- [x] 避免把 session backend source message 直接暴露给用户。
 
 验收：
 

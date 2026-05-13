@@ -39,8 +39,7 @@ async fn sign_in(
     let user = auth_session
         .authenticate(creds)
         .await
-        .map_err(SessionBackendError::from)
-        .map_err(AppError::from)?
+        .map_err(SessionBackendError::from)?
         .ok_or_else(|| {
             AppError::unauthorized("Incorrect username or password")
         })?;
@@ -48,8 +47,7 @@ async fn sign_in(
     auth_session
         .login(&user)
         .await
-        .map_err(SessionBackendError::from)
-        .map_err(AppError::from)?;
+        .map_err(SessionBackendError::from)?;
 
     load_profile(&use_case, &user.name, Some(&user)).await
 }
@@ -62,8 +60,10 @@ async fn sign_in(
         (status = 200, body = Message),
     )
 )]
-async fn sign_out(
-    mut session: AuthSession,
-) -> Result<Message, SessionBackendError> {
-    Ok(session.logout().await.map(|_| Message::ok())?)
+async fn sign_out(mut session: AuthSession) -> Result<Message, AppError> {
+    Ok(session
+        .logout()
+        .await
+        .map_err(SessionBackendError::from)
+        .map(|_| Message::ok())?)
 }

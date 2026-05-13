@@ -1,4 +1,3 @@
-use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError};
 
 use crate::domain::auth::ValidateCredsError;
@@ -73,12 +72,6 @@ impl From<InternalError> for SignUpError {
     }
 }
 
-impl IntoResponse for SignUpError {
-    fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
-    }
-}
-
 impl From<SignUpError> for AppError {
     #[track_caller]
     fn from(err: SignUpError) -> Self {
@@ -134,12 +127,6 @@ impl From<InternalError> for ResendVerificationEmailError {
     }
 }
 
-impl IntoResponse for ResendVerificationEmailError {
-    fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
-    }
-}
-
 impl From<ResendVerificationEmailError> for AppError {
     #[track_caller]
     fn from(err: ResendVerificationEmailError) -> Self {
@@ -188,12 +175,6 @@ impl From<DatabaseError> for VerifyEmailError {
 impl From<InternalError> for VerifyEmailError {
     fn from(source: InternalError) -> Self {
         Self::Internal { source }
-    }
-}
-
-impl IntoResponse for VerifyEmailError {
-    fn into_response(self) -> axum::response::Response {
-        AppError::from(self).into_response()
     }
 }
 
