@@ -7,8 +7,8 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::domain;
 use crate::domain::user::UserProfile;
-use crate::features::user_profile::FollowResult;
-use crate::shared::http::api_response::{AppError, Data, Message};
+use crate::features::user_profile::{Error, FollowResult};
+use crate::shared::http::api_response::{Data, Message};
 
 const TAG: &str = "User";
 
@@ -41,7 +41,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn profile(
     CurrentUser(user): CurrentUser,
     State(service): State<state::UserProfileService>,
-) -> Result<Data<UserProfile>, AppError> {
+) -> Result<Data<UserProfile>, Error> {
     load_profile(&service, &user.name, Some(&user)).await
 }
 
@@ -58,11 +58,11 @@ async fn follow_user(
     Path(name): Path<String>,
     State(service): State<state::UserProfileService>,
     State(notification): State<state::NotificationService>,
-) -> Result<Message, AppError> {
+) -> Result<Message, Error> {
     let target_user = service
         .find_user_by_name(&name)
         .await?
-        .ok_or_else(|| AppError::not_found("User not found"))?;
+        .ok_or(Error::NotFound)?;
 
     let res = service.follow(user.id, target_user.id).await?;
 
@@ -98,11 +98,11 @@ async fn unfollow_user(
     CurrentUser(user): CurrentUser,
     Path(name): Path<String>,
     State(service): State<state::UserProfileService>,
-) -> Result<Message, AppError> {
+) -> Result<Message, Error> {
     let target_user = service
         .find_user_by_name(&name)
         .await?
-        .ok_or_else(|| AppError::not_found("User not found"))?;
+        .ok_or(Error::NotFound)?;
 
     service.unfollow(user.id, target_user.id).await?;
 
@@ -121,7 +121,7 @@ async fn profile_with_name(
     session: AuthSession,
     State(service): State<state::UserProfileService>,
     Path(name): Path<String>,
-) -> Result<Data<UserProfile>, AppError> {
+) -> Result<Data<UserProfile>, Error> {
     load_profile(&service, &name, session.user.as_ref()).await
 }
 
@@ -129,11 +129,9 @@ pub async fn load_profile(
     service: &state::UserProfileService,
     name: &str,
     current_user: Option<&domain::user::User>,
-) -> Result<Data<UserProfile>, AppError> {
-    let mut profile = service
-        .find_by_name(name)
-        .await?
-        .ok_or_else(|| AppError::not_found("User not found"))?;
+) -> Result<Data<UserProfile>, Error> {
+    let mut profile =
+        service.find_by_name(name).await?.ok_or(Error::NotFound)?;
 
     if let Some(current_user) = current_user {
         if current_user.name == profile.name {

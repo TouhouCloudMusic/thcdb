@@ -6,10 +6,10 @@ use utoipa_axum::routes;
 use super::super::shared::TAG;
 use super::error::{SessionBackendError, SignInError};
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
-use crate::domain::auth::AuthCredential;
+use crate::domain::auth::{AuthCredential, AuthnError};
 use crate::domain::user::UserProfile;
 use crate::features::user_profile::{DataUserProfile, load_profile};
-use crate::shared::http::api_response::{AppError, Data, Message};
+use crate::shared::http::api_response::{Data, Message};
 
 pub fn public_router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new().routes(routes!(sign_in))
@@ -32,7 +32,7 @@ async fn sign_in(
     mut auth_session: state::AuthSession,
     State(use_case): State<state::UserProfileService>,
     Json(creds): Json<AuthCredential>,
-) -> Result<Data<UserProfile>, AppError> {
+) -> Result<Data<UserProfile>, super::SignInRouteError> {
     if auth_session.user.is_some() {
         return Err(SignInError::AlreadySignedIn.into());
     }
@@ -40,16 +40,15 @@ async fn sign_in(
         .authenticate(creds)
         .await
         .map_err(SessionBackendError::from)?
-        .ok_or_else(|| {
-            AppError::unauthorized("Incorrect username or password")
-        })?;
+        .ok_or_else(AuthnError::authentication_failed)
+        .map_err(SignInError::from)?;
 
     auth_session
         .login(&user)
         .await
         .map_err(SessionBackendError::from)?;
 
-    load_profile(&use_case, &user.name, Some(&user)).await
+    Ok(load_profile(&use_case, &user.name, Some(&user)).await?)
 }
 
 #[utoipa::path(
@@ -60,10 +59,12 @@ async fn sign_in(
         (status = 200, body = Message),
     )
 )]
-async fn sign_out(mut session: AuthSession) -> Result<Message, AppError> {
-    Ok(session
+async fn sign_out(
+    mut session: AuthSession,
+) -> Result<Message, SessionBackendError> {
+    session
         .logout()
         .await
         .map_err(SessionBackendError::from)
-        .map(|_| Message::ok())?)
+        .map(|_| Message::ok())
 }

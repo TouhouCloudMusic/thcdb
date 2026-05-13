@@ -1,6 +1,8 @@
+use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError};
 
 use crate::domain::auth::{AuthnError, ValidateCredsError};
+use crate::features::user_profile;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;
 use crate::shared::http::api_response::AppError;
@@ -28,6 +30,25 @@ pub enum SignInError {
     },
 }
 
+#[derive(Debug, Display, DeriveError)]
+pub enum SignInRouteError {
+    #[display("{source}")]
+    SignIn {
+        #[error(source)]
+        source: SignInError,
+    },
+    #[display("{source}")]
+    Session {
+        #[error(source)]
+        source: SessionBackendError,
+    },
+    #[display("{source}")]
+    Profile {
+        #[error(source)]
+        source: user_profile::Error,
+    },
+}
+
 impl From<SignInError> for AppError {
     #[track_caller]
     fn from(err: SignInError) -> Self {
@@ -44,6 +65,47 @@ impl From<SignInError> for AppError {
                 Self::bad_request(source.to_string())
             }
         }
+    }
+}
+
+impl IntoResponse for SignInError {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
+    }
+}
+
+impl From<SignInError> for SignInRouteError {
+    fn from(source: SignInError) -> Self {
+        Self::SignIn { source }
+    }
+}
+
+impl From<SessionBackendError> for SignInRouteError {
+    fn from(source: SessionBackendError) -> Self {
+        Self::Session { source }
+    }
+}
+
+impl From<user_profile::Error> for SignInRouteError {
+    fn from(source: user_profile::Error) -> Self {
+        Self::Profile { source }
+    }
+}
+
+impl From<SignInRouteError> for AppError {
+    #[track_caller]
+    fn from(err: SignInRouteError) -> Self {
+        match err {
+            SignInRouteError::SignIn { source } => source.into(),
+            SignInRouteError::Session { source } => source.into(),
+            SignInRouteError::Profile { source } => source.into(),
+        }
+    }
+}
+
+impl IntoResponse for SignInRouteError {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
     }
 }
 
@@ -106,6 +168,12 @@ impl From<SessionBackendError> for AppError {
     }
 }
 
+impl IntoResponse for SessionBackendError {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
+    }
+}
+
 impl From<SessionError> for AppError {
     #[track_caller]
     fn from(err: SessionError) -> Self {
@@ -140,6 +208,12 @@ impl From<AuthnBackendError> for AppError {
             AuthnBackendError::SignIn { source } => source.into(),
             AuthnBackendError::Internal { source } => source.into(),
         }
+    }
+}
+
+impl IntoResponse for AuthnBackendError {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
     }
 }
 

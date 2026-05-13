@@ -1,3 +1,4 @@
+use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError};
 
 use crate::domain::auth::ValidateCredsError;
@@ -51,6 +52,12 @@ impl From<ForgotPasswordError> for AppError {
     }
 }
 
+impl IntoResponse for ForgotPasswordError {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
+    }
+}
+
 #[derive(Debug, Display, DeriveError)]
 pub enum VerifyResetCodeError {
     #[display("{source}")]
@@ -96,6 +103,12 @@ impl From<VerifyResetCodeError> for AppError {
             }
             VerifyResetCodeError::Internal { source } => source.into(),
         }
+    }
+}
+
+impl IntoResponse for VerifyResetCodeError {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
     }
 }
 
@@ -146,6 +159,12 @@ impl From<ResetPasswordError> for AppError {
                 Self::bad_request(source.to_string())
             }
         }
+    }
+}
+
+impl IntoResponse for ResetPasswordError {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
     }
 }
 

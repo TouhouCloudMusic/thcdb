@@ -2,10 +2,9 @@ use entity::user_following;
 use sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, Set};
 
 use crate::domain::user::{ProfileRepository, Repository, User, UserProfile};
-use crate::features::user_profile::{FollowResult, UnfollowResult};
+use crate::features::user_profile::{Error, FollowResult, UnfollowResult};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
-use crate::shared::http::api_response::AppError;
 
 #[derive(Clone)]
 pub struct Service {
@@ -20,7 +19,7 @@ impl Service {
     pub async fn find_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<UserProfile>, AppError> {
+    ) -> Result<Option<UserProfile>, Error> {
         let profile = ProfileRepository::find_by_name(&self.repo, name).await?;
 
         Ok(profile)
@@ -30,7 +29,7 @@ impl Service {
         &self,
         profile: &mut UserProfile,
         current_user: &User,
-    ) -> Result<(), AppError> {
+    ) -> Result<(), Error> {
         self.repo.with_following(profile, current_user).await?;
 
         Ok(())
@@ -39,7 +38,7 @@ impl Service {
     pub async fn find_user_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<User>, AppError> {
+    ) -> Result<Option<User>, Error> {
         let user = Repository::find_by_name(&self.repo, name).await?;
 
         Ok(user)
@@ -49,9 +48,9 @@ impl Service {
         &self,
         current_user_id: i32,
         target_user_id: i32,
-    ) -> Result<FollowResult, AppError> {
+    ) -> Result<FollowResult, Error> {
         if current_user_id == target_user_id {
-            return Err(AppError::bad_request("cannot follow yourself"));
+            return Err(Error::CannotFollowSelf);
         }
 
         let exists = user_following::Entity::find()
@@ -81,7 +80,7 @@ impl Service {
         &self,
         current_user_id: i32,
         target_user_id: i32,
-    ) -> Result<UnfollowResult, AppError> {
+    ) -> Result<UnfollowResult, Error> {
         let res = user_following::Entity::delete_many()
             .filter(user_following::Column::UserId.eq(current_user_id))
             .filter(user_following::Column::FollowingId.eq(target_user_id))

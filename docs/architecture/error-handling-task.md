@@ -120,7 +120,7 @@
 - [x] 用以下命令列出剩余候选：
   - [x] `rg -n "impl IntoResponse for Error|Result<.*Response>|into_response\\(\\)" server/src/features server/src/adapter server/src/domain`
 - [ ] 对每个候选判断错误类型是否有业务语义：
-  - [ ] 有语义：保留本地 `Error`，实现 `From<Error> for AppError`。
+  - [ ] 有语义：保留本地 `Error`，实现 `From<Error> for AppError`；feature slice 的 HTTP 边界错误可保留薄 `IntoResponse` 委托。
   - [ ] 无语义且只在 HTTP 出口使用：直接返回 `AppError`。
   - [ ] 领域层错误：移除 HTTP 依赖，在 adapter / feature 边界转换。
 - [ ] 迁移优先级：
@@ -211,13 +211,13 @@
 
 auth 相关错误通常有清晰恢复语义，不能简单压平。
 
-- [x] 保留以下语义错误类型，但移除手写 HTTP response 重复逻辑：
+- [x] 保留以下语义错误类型；feature slice 的 `IntoResponse` 只薄委托到 `AppError`：
   - [x] `features/auth/error.rs`
   - [x] `features/auth/session/error.rs`
   - [x] `features/auth/password_reset/error.rs`
   - [x] `domain/auth.rs`
 - [x] 为 auth feature 错误类型实现 `From<Error> for AppError`。
-- [x] handler 返回类型改为 `Result<T, AppError>` 或带 cookie side effect 的 `Result<T, (CookieJar, AppError)>`。
+- [x] handler 返回绝对必要最小错误类型：slice 语义错误、route 级组合错误，或带 cookie side effect 的 `Result<T, (CookieJar, SliceError)>`；实际响应生成薄委托给 `AppError`。
 - [x] 明确区分：
   - [x] 未登录 / token 无效：`Unauthorized`
   - [x] 已登录但动作不允许：`BadRequest` 或更具体业务错误

@@ -10,7 +10,9 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::super::shared::TAG;
-use super::error::ResetPasswordError;
+use super::error::{
+    ForgotPasswordError, ResetPasswordError, VerifyResetCodeError,
+};
 use super::service::{
     ForgotPasswordCommand, ForgotPasswordResult, ResetPasswordCommand,
     VerifiedResetPasswordSession, VerifyResetCodeCommand,
@@ -18,7 +20,7 @@ use super::service::{
 use crate::adapter::inbound::rest::data;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::infra::singleton::APP_CONFIG;
-use crate::shared::http::api_response::{AppError, Data, Message};
+use crate::shared::http::api_response::{Data, Message};
 
 const RESET_PASSWORD_COOKIE_NAME: &str = "reset_password_session";
 
@@ -139,7 +141,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn forgot_password(
     State(auth_service): State<state::AuthService>,
     Json(req): Json<ForgotPasswordRequest>,
-) -> Result<Data<ForgotPasswordResponse>, AppError> {
+) -> Result<Data<ForgotPasswordResponse>, ForgotPasswordError> {
     let res = auth_service.forgot_password(req.into()).await?;
 
     Ok(Data::new(res.into()))
@@ -158,7 +160,7 @@ async fn verify_reset_code(
     State(auth_service): State<state::AuthService>,
     jar: CookieJar,
     Json(req): Json<VerifyResetCodeRequest>,
-) -> Result<(CookieJar, Data<VerifyResetCodeResponse>), AppError> {
+) -> Result<(CookieJar, Data<VerifyResetCodeResponse>), VerifyResetCodeError> {
     let res = auth_service.verify_reset_code(req.into()).await?;
     let now: chrono::DateTime<chrono::FixedOffset> = chrono::Utc::now().into();
     let max_age_seconds = (res.key_expires_at - now).num_seconds().max(0);
@@ -181,11 +183,11 @@ async fn reset_password(
     State(auth_service): State<state::AuthService>,
     jar: CookieJar,
     Json(req): Json<ResetPasswordRequest>,
-) -> Result<(CookieJar, Message), (CookieJar, AppError)> {
+) -> Result<(CookieJar, Message), (CookieJar, ResetPasswordError)> {
     let Some(reset_key) = jar.get(RESET_PASSWORD_COOKIE_NAME) else {
         return Err((
             jar.remove(clear_reset_password_cookie()),
-            ResetPasswordError::InvalidOrExpiredResetKey.into(),
+            ResetPasswordError::InvalidOrExpiredResetKey,
         ));
     };
 
@@ -200,8 +202,8 @@ async fn reset_password(
         }
         Err(ResetPasswordError::InvalidOrExpiredResetKey) => Err((
             jar.remove(clear_reset_password_cookie()),
-            ResetPasswordError::InvalidOrExpiredResetKey.into(),
+            ResetPasswordError::InvalidOrExpiredResetKey,
         )),
-        Err(err) => Err((jar, err.into())),
+        Err(err) => Err((jar, err)),
     }
 }
