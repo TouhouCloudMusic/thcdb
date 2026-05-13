@@ -6,8 +6,8 @@ use crate::features::correction::{
     SubmissionError, service as correction_service,
 };
 use crate::features::tag::model::NewTag;
-use crate::infra;
 use crate::infra::database::sea_orm::SeaOrmRepository;
+use crate::shared::error::InternalError;
 
 pub async fn create(
     repo: &SeaOrmRepository,
@@ -41,10 +41,10 @@ pub async fn create(
         ),
     )
     .await?
-    .ok_or_else(|| infra::Error::custom(&"Correction not found"))?
+    .ok_or(SubmissionError::NotFound)?
     .id;
 
-    tx_repo.commit().await?;
+    tx_repo.commit().await.map_err(InternalError)?;
 
     Ok(CorrectionSubmissionResult {
         correction_id,
@@ -84,10 +84,10 @@ pub async fn upsert_correction(
         ),
     )
     .await?
-    .ok_or_else(|| infra::Error::custom(&"Correction not found"))?
+    .ok_or(SubmissionError::NotFound)?
     .id;
 
-    tx_repo.commit().await?;
+    tx_repo.commit().await.map_err(InternalError)?;
 
     Ok(CorrectionSubmissionResult {
         correction_id,

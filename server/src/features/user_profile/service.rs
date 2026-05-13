@@ -5,6 +5,7 @@ use crate::domain::user::{ProfileRepository, Repository, User, UserProfile};
 use crate::features::user_profile::{FollowResult, UnfollowResult};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
+use crate::shared::error::InternalError;
 use crate::shared::http::api_response::AppError;
 
 #[derive(Clone)]
@@ -21,9 +22,11 @@ impl Service {
         &self,
         name: &str,
     ) -> Result<Option<UserProfile>, AppError> {
-        ProfileRepository::find_by_name(&self.repo, name)
+        let profile = ProfileRepository::find_by_name(&self.repo, name)
             .await
-            .map_err(AppError::internal_boxed)
+            .map_err(InternalError)?;
+
+        Ok(profile)
     }
 
     pub async fn with_following(
@@ -34,16 +37,20 @@ impl Service {
         self.repo
             .with_following(profile, current_user)
             .await
-            .map_err(AppError::internal_boxed)
+            .map_err(InternalError)?;
+
+        Ok(())
     }
 
     pub async fn find_user_by_name(
         &self,
         name: &str,
     ) -> Result<Option<User>, AppError> {
-        Repository::find_by_name(&self.repo, name)
+        let user = Repository::find_by_name(&self.repo, name)
             .await
-            .map_err(AppError::internal_boxed)
+            .map_err(InternalError)?;
+
+        Ok(user)
     }
 
     pub async fn follow(

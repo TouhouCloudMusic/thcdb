@@ -5,7 +5,6 @@ use crate::domain::auth::{AuthnError, ValidateCredsError};
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;
 use crate::shared::http::api_response::AppError;
-use crate::shared::types::BoxedError;
 
 #[derive(Debug, Display, DeriveError)]
 pub enum SignInError {
@@ -47,18 +46,10 @@ impl From<SignInError> for AppError {
                 Self::bad_request("Email not verified")
             }
             SignInError::Authn { source } => app_error_from_authn_error(source),
-            SignInError::Internal { source } => Self::internal_boxed(source.0),
+            SignInError::Internal { source } => source.into(),
             SignInError::Validate { source } => {
                 Self::bad_request(source.to_string())
             }
-        }
-    }
-}
-
-impl From<BoxedError> for SignInError {
-    fn from(source: BoxedError) -> Self {
-        Self::Internal {
-            source: InternalError(source),
         }
     }
 }
@@ -167,9 +158,7 @@ impl From<AuthnBackendError> for AppError {
                 app_error_from_authn_error(source)
             }
             AuthnBackendError::SignIn { source } => source.into(),
-            AuthnBackendError::Internal { source } => {
-                AppError::internal_boxed(source.0)
-            }
+            AuthnBackendError::Internal { source } => source.into(),
         }
     }
 }
@@ -194,20 +183,12 @@ impl From<DatabaseError> for AuthnBackendError {
     }
 }
 
-impl From<BoxedError> for AuthnBackendError {
-    fn from(source: BoxedError) -> Self {
-        Self::Internal {
-            source: InternalError(source),
-        }
-    }
-}
-
 fn app_error_from_authn_error(err: AuthnError) -> AppError {
     match err {
         AuthnError::AuthenticationFailed => {
             AppError::unauthorized(err.to_string())
         }
-        AuthnError::Internal(source) => AppError::internal_boxed(source.0),
+        AuthnError::Internal(source) => source.into(),
     }
 }
 

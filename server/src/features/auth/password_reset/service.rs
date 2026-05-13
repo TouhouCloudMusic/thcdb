@@ -239,7 +239,9 @@ impl Service {
         // Keep roughly the same Argon2 work on the "unknown email" and
         // "still cooling down" paths so this endpoint leaks less timing signal.
         let code = VerificationCode::<6>::new();
-        let code_hash = secret::hash(&code.to_string()).await?;
+        let code_hash = secret::hash(&code.to_string())
+            .await
+            .map_err(InternalError)?;
 
         let Some(user) = self.find_verified_user_by_email(&email).await? else {
             return Ok(ForgotPasswordResult::default());
@@ -351,7 +353,8 @@ impl Service {
                 code_hash,
                 submitted_code.as_ascii_bytes().to_vec(),
             )
-            .await?;
+            .await
+            .map_err(InternalError)?;
             if !is_valid {
                 let incremented = self
                     .increment_password_reset_failed_attempts_if_unmodified(
@@ -406,7 +409,8 @@ impl Service {
         }
 
         validate_password(&password)?;
-        let password_hash = secret::hash(&password).await?;
+        let password_hash =
+            secret::hash(&password).await.map_err(InternalError)?;
 
         let reset_key_hash = hash_password_reset_key(&reset_key);
         let consumed = self

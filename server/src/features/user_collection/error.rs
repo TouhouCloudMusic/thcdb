@@ -1,10 +1,8 @@
 use sea_orm::DbErr;
 
 use crate::infra::database::error::DatabaseError;
-use crate::infra::error::Error as InfraError;
-use crate::shared::error::PermissionDenied;
+use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::http::api_response::{AppError, AppErrorKind};
-use crate::shared::types::BoxedError;
 
 #[derive(Debug, Clone, Copy)]
 pub(super) enum NotFound {
@@ -39,16 +37,10 @@ pub(super) enum Error {
     #[from]
     Database(DatabaseError),
     #[from]
-    Infra(InfraError),
+    Internal(InternalError),
     NotFound(NotFound),
     CollectionAccessDenied,
     InvalidRequest(String),
-}
-
-impl Error {
-    pub(super) fn internal(err: BoxedError) -> Self {
-        Self::Infra(InfraError::Internal { source: err })
-    }
 }
 
 impl From<DbErr> for Error {
@@ -69,7 +61,7 @@ impl From<Error> for AppError {
 
         match err {
             Error::Database(err) => err.into(),
-            Error::Infra(err) => err.into(),
+            Error::Internal(err) => err.into(),
             Error::NotFound(kind) => from_not_found(kind),
             Error::CollectionAccessDenied => PermissionDenied.into(),
             Error::InvalidRequest(message) => AppError::bad_request(message),

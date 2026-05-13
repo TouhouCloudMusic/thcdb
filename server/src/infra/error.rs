@@ -51,12 +51,6 @@ impl std::fmt::Display for CustomMsgError {
 
 impl std::error::Error for CustomMsgError {}
 
-impl From<BoxedError> for Error {
-    fn from(source: BoxedError) -> Self {
-        Self::Internal { source }
-    }
-}
-
 impl From<UserError> for Error {
     fn from(source: UserError) -> Self {
         Self::User { source }

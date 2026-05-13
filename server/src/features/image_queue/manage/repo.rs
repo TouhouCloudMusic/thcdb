@@ -17,7 +17,7 @@ use super::{Error, ImageQueueType};
 use crate::domain::shared::CursorResponse;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
-use crate::infra::error::Error as InfraError;
+use crate::shared::error::InternalError;
 
 pub struct ImageQueueDetailModels {
     pub queue: image_queue_entity::Model,
@@ -209,7 +209,7 @@ pub async fn approve(
     active.handled_by = Set(Some(user_id));
     active.update(tx_repo.conn()).await.map_err(Error::from)?;
 
-    tx_repo.commit().await.map_err(InfraError::from)?;
+    tx_repo.commit().await.map_err(InternalError)?;
 
     Ok(handled)
 }
@@ -240,7 +240,7 @@ pub async fn reject(
     active.handled_by = Set(Some(user_id));
     active.update(tx_repo.conn()).await.map_err(Error::from)?;
 
-    tx_repo.commit().await.map_err(InfraError::from)?;
+    tx_repo.commit().await.map_err(InternalError)?;
 
     Ok(handled)
 }
@@ -307,7 +307,7 @@ pub async fn revert(
     active.reverted_by = Set(Some(user_id));
     active.update(tx_repo.conn()).await.map_err(Error::from)?;
 
-    tx_repo.commit().await.map_err(InfraError::from)?;
+    tx_repo.commit().await.map_err(InternalError)?;
 
     Ok(handled)
 }

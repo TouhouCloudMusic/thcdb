@@ -23,6 +23,7 @@ use crate::domain::model::{
 };
 use crate::domain::shared::PageResponse;
 use crate::infra::database::error::DatabaseResultExt;
+use crate::shared::error::InternalError;
 use crate::shared::http::PageQuery;
 use crate::shared::http::api_response::{AppError, Data};
 
@@ -222,7 +223,7 @@ async fn set_user_roles(
     .await
     .with_operation("insert user role change audit")?;
 
-    tx_repo.commit().await.map_err(AppError::internal_boxed)?;
+    tx_repo.commit().await.map_err(InternalError)?;
 
     Ok(Data::new(new_roles))
 }

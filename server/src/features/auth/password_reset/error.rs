@@ -7,7 +7,6 @@ use crate::features::auth::InvalidEmail;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;
 use crate::shared::http::api_response::AppError;
-use crate::shared::types::BoxedError;
 
 #[derive(Debug, Display, DeriveError)]
 pub enum ForgotPasswordError {
@@ -49,12 +48,6 @@ impl From<InternalError> for ForgotPasswordError {
     }
 }
 
-impl From<BoxedError> for ForgotPasswordError {
-    fn from(source: BoxedError) -> Self {
-        InternalError(source).into()
-    }
-}
-
 impl IntoResponse for ForgotPasswordError {
     fn into_response(self) -> axum::response::Response {
         AppError::from(self).into_response()
@@ -69,9 +62,7 @@ impl From<ForgotPasswordError> for AppError {
             ForgotPasswordError::InvalidEmail { .. } => {
                 Self::bad_request(message)
             }
-            ForgotPasswordError::Internal { source } => {
-                Self::internal_boxed(source.0)
-            }
+            ForgotPasswordError::Internal { source } => source.into(),
         }
     }
 }
@@ -118,12 +109,6 @@ impl From<InternalError> for VerifyResetCodeError {
     }
 }
 
-impl From<BoxedError> for VerifyResetCodeError {
-    fn from(source: BoxedError) -> Self {
-        InternalError(source).into()
-    }
-}
-
 impl IntoResponse for VerifyResetCodeError {
     fn into_response(self) -> axum::response::Response {
         AppError::from(self).into_response()
@@ -139,9 +124,7 @@ impl From<VerifyResetCodeError> for AppError {
             | VerifyResetCodeError::InvalidOrExpiredResetCode => {
                 Self::bad_request(message)
             }
-            VerifyResetCodeError::Internal { source } => {
-                Self::internal_boxed(source.0)
-            }
+            VerifyResetCodeError::Internal { source } => source.into(),
         }
     }
 }
@@ -188,12 +171,6 @@ impl From<InternalError> for ResetPasswordError {
     }
 }
 
-impl From<BoxedError> for ResetPasswordError {
-    fn from(source: BoxedError) -> Self {
-        InternalError(source).into()
-    }
-}
-
 impl IntoResponse for ResetPasswordError {
     fn into_response(self) -> axum::response::Response {
         AppError::from(self).into_response()
@@ -208,9 +185,7 @@ impl From<ResetPasswordError> for AppError {
             ResetPasswordError::InvalidOrExpiredResetKey => {
                 Self::bad_request(message)
             }
-            ResetPasswordError::Internal { source } => {
-                Self::internal_boxed(source.0)
-            }
+            ResetPasswordError::Internal { source } => source.into(),
             ResetPasswordError::Validate { source } => {
                 Self::bad_request(source.to_string())
             }

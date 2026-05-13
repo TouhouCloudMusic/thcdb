@@ -11,7 +11,6 @@ use crate::features::auth::{
 };
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;
-use crate::shared::types::BoxedError;
 
 #[derive(Debug)]
 pub(super) enum SendVerificationEmailError {
@@ -37,12 +36,6 @@ impl From<DatabaseError> for SendVerificationEmailError {
 impl From<InternalError> for SendVerificationEmailError {
     fn from(value: InternalError) -> Self {
         Self::Internal(value)
-    }
-}
-
-impl From<BoxedError> for SendVerificationEmailError {
-    fn from(value: BoxedError) -> Self {
-        Self::Internal(InternalError(value))
     }
 }
 

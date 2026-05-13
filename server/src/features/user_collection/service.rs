@@ -16,6 +16,7 @@ use super::model::{
 use super::repo;
 use crate::domain::shared::{NonEmptyString, PageResponse};
 use crate::infra::database::sea_orm::SeaOrmRepository;
+use crate::shared::error::InternalError;
 use crate::shared::http::PageQuery;
 
 #[derive(Clone)]
@@ -191,7 +192,7 @@ impl Service {
         )
         .await?;
 
-        tx_repo.commit().await.map_err(Error::internal)?;
+        tx_repo.commit().await.map_err(InternalError)?;
 
         Ok(item.into())
     }
@@ -210,7 +211,7 @@ impl Service {
         repo::resequence_user_collection_item_positions(conn, collection_id)
             .await?;
 
-        tx_repo.commit().await.map_err(Error::internal)?;
+        tx_repo.commit().await.map_err(InternalError)?;
 
         Ok(())
     }
@@ -239,7 +240,7 @@ impl Service {
         )
         .await?;
 
-        tx_repo.commit().await.map_err(Error::internal)?;
+        tx_repo.commit().await.map_err(InternalError)?;
 
         Ok(())
     }

@@ -14,7 +14,7 @@ use crate::domain::shared::CursorResponse;
 use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::notification::NotificationHub;
-use crate::shared::error::InvalidInput;
+use crate::shared::error::MessageError;
 use crate::shared::http::api_response::AppError;
 
 #[derive(Clone)]
@@ -61,7 +61,7 @@ impl Service {
     ) -> Result<notification::Model, AppError> {
         let payload_json =
             serde_json::to_string(&payload).map_err(|source| {
-                AppError::internal(InvalidInput::new(&format!(
+                AppError::internal(MessageError::new(format!(
                     "invalid notification payload: {source}",
                 )))
             })?;
@@ -197,8 +197,8 @@ impl Service {
             .await
             .with_operation("find correction notification author")?
             .ok_or_else(|| {
-                AppError::internal(InvalidInput::new(
-                    &"correction author not found",
+                AppError::internal(MessageError::new(
+                    "correction author not found",
                 ))
             })?;
 
@@ -376,7 +376,7 @@ impl Service {
             .with_operation("find notification recipient settings")?;
 
         let model = model.ok_or_else(|| {
-            AppError::internal(InvalidInput::new(&"user not found"))
+            AppError::internal(MessageError::new("user not found"))
         })?;
         let notif = model.settings.get("notification");
         let get_bool = |key: &str, default_val: bool| {

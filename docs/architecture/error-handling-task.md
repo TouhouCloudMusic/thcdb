@@ -55,9 +55,12 @@
 - [x] 删除 `adapter/inbound/rest/error.rs` 和 `application/error.rs` 这类只转发来源、没有调用方动作语义的 wrapper。
 - [x] `domain::auth::AuthnError` 只保留认证失败语义；password hash / join 等技术失败折叠到 internal/infra 路径。
 - [x] `domain::artist`、`domain::song`、`domain::song_lyrics` validation 已改为共享 `ValidationError<T>` 提供统一前缀，domain kind 只表达具体规则。
-- [x] `domain::image` 已拆分 `ImageInputError` / `ImageParseError` / service `Error`，避免把内部 IO / decode 失败混进 validation。
+- [x] `domain::image` 已收口到 `ImageInputError` + `AppError` 边界，图片上传输入错误、读取头部内部错误和服务端转换错误按语义分流。
 - [x] `features/tag_vote` 的 `DbErr` 不再直接进入 response body，统一经 `DatabaseError -> AppError` 脱敏。
 - [x] 清理 feature error 中的宽泛 `default fn from` 转发，避免数据库错误绕过 `DatabaseError`。
+- [x] correction 提交/更新路径的 `Correction not found` 已从 `infra::Error::custom(...)` 迁移到 `SubmissionError::NotFound`。
+- [x] 清理 correction、auth、image queue manage、user collection 等路径中的宽泛 `BoxedError` 转发；事务提交和 boxed 内部来源显式进入 `InternalError`。
+- [x] 清理 feature/service 层直接 `map_err(AppError::internal_boxed)` 的调用点，内部错误统一先收口到 `InternalError`。
 
 ## 约束
 
@@ -218,38 +221,38 @@ auth 相关错误通常有清晰恢复语义，不能简单压平。
 
 这一步按 feature 小批量迁移，避免一次性改完整个 server。
 
-- [ ] 用以下命令列出 `ApiError` / `IntoErrorSchema` 使用点：
-  - [ ] `rg -n "derive\\(.*ApiError|ApiError|IntoErrorSchema|#\\[api_error" server/src -g "*.rs"`
-- [ ] 第一批迁移低复杂度查询类 feature：
-  - [ ] `features/artist/error.rs`
-  - [ ] `features/release/error.rs`
-  - [ ] `features/song/error.rs`
-  - [ ] `features/event/error.rs`
-  - [ ] `features/label/error.rs`
-  - [ ] `features/tag/error.rs`
-  - [ ] `features/credit_role/error.rs`
-  - [ ] `features/song_lyrics/error.rs`
-- [ ] 第二批迁移图片和上传类 feature：
+- [x] 用以下命令列出 `ApiError` / `IntoErrorSchema` 使用点：
+  - [x] `rg -n "derive\\(.*ApiError|ApiError|IntoErrorSchema|#\\[api_error" server/src -g "*.rs"`
+- [x] 第一批迁移低复杂度查询类 feature：
+  - [x] `features/artist/error.rs`
+  - [x] `features/release/error.rs`
+  - [x] `features/song/error.rs`
+  - [x] `features/event/error.rs`
+  - [x] `features/label/error.rs`
+  - [x] `features/tag/error.rs`
+  - [x] `features/credit_role/error.rs`
+  - [x] `features/song_lyrics/error.rs`
+- [x] 第二批迁移图片和上传类 feature：
   - [x] `features/artist_image/error.rs`
   - [x] `features/release_image/error.rs`
   - [x] `features/user_image/error.rs`
   - [x] `domain/image/service.rs`
   - [x] `domain/image_queue/model.rs`
-- [ ] 第三批迁移 correction / application 层：
+- [x] 第三批迁移 correction / application 层：
   - [x] `application/error.rs`
-  - [ ] `application/correction/mod.rs`
+  - [x] `application/correction/mod.rs`
   - [x] `adapter/inbound/rest/error.rs`
-- [ ] 每个错误类型迁移时做三件事：
-  - [ ] 手写 `Display` 或继续使用 `snafu::Snafu` 的 display。
-  - [ ] 手写 `From<Error> for AppError`。
-  - [ ] 移除 `ApiError` / `IntoErrorSchema` derive 和 `#[api_error(...)]` attribute。
-- [ ] 如果错误类型本质只是 validation，优先改为清晰的语义 variant，例如 `InvalidRequest(String)`。
+- [x] 每个错误类型迁移时做三件事：
+  - [x] 手写 `Display` 或使用 `derive_more::Display`。
+  - [x] 手写 `From<Error> for AppError`。
+  - [x] 移除 `ApiError` / `IntoErrorSchema` derive 和 `#[api_error(...)]` attribute。
+- [x] 如果错误类型本质只是 validation，优先改为清晰的语义 variant，例如 `InvalidRequest(String)`。
 
 验收：
 
-- [ ] 每批迁移后 `cargo clippy` 通过。
-- [ ] 不再为了状态码保留 `ApiError` trait impl。
-- [ ] feature 错误不依赖 axum response，只在转换为 `AppError` 时知道 HTTP status。
+- [x] 每批迁移后 `cargo clippy` 通过。
+- [x] 不再为了状态码保留 `ApiError` trait impl。
+- [x] feature 错误不依赖 axum response，只在转换为 `AppError` 时知道 HTTP status。
 
 ## Phase 6: 处理 OpenAPI 错误响应
 

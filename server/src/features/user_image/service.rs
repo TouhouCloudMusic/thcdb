@@ -4,6 +4,7 @@ use crate::domain::user::{self, User};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::infra::storage::GenericFileStorage;
+use crate::shared::error::InternalError;
 use crate::shared::http::api_response::AppError;
 
 mod parser {
@@ -141,8 +142,8 @@ where
 
     let user = user::TxRepo::update(&tx, user)
         .await
-        .map_err(AppError::internal_boxed)?;
-    tx.commit().await.map_err(AppError::internal_boxed)?;
+        .map_err(InternalError)?;
+    tx.commit().await.map_err(InternalError)?;
 
     Ok(user)
 }

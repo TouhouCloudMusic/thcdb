@@ -1,19 +1,18 @@
 use sea_orm::DbErr;
 
-use crate::infra;
 use crate::infra::database::error::DatabaseError;
-use crate::shared::error::PermissionDenied;
+use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::http::api_response::AppError;
-use crate::shared::types::BoxedError;
 
 #[derive(Debug, derive_more::From)]
 pub enum SubmissionError {
     Validation(String),
     PermissionDenied,
+    NotFound,
     #[from]
     Database(DatabaseError),
-    #[from(infra::Error, BoxedError)]
-    Infra(infra::Error),
+    #[from]
+    Internal(InternalError),
 }
 
 impl From<DbErr> for SubmissionError {
@@ -30,8 +29,11 @@ impl From<SubmissionError> for AppError {
         match err {
             SubmissionError::Validation(message) => Self::bad_request(message),
             SubmissionError::PermissionDenied => PermissionDenied.into(),
+            SubmissionError::NotFound => {
+                AppError::not_found("Correction not found")
+            }
             SubmissionError::Database(source) => source.into(),
-            SubmissionError::Infra(source) => source.into(),
+            SubmissionError::Internal(source) => source.into(),
         }
     }
 }
@@ -42,8 +44,8 @@ pub enum ModerationError {
     AlreadyHandled,
     #[from]
     Database(DatabaseError),
-    #[from(infra::Error, BoxedError)]
-    Infra(infra::Error),
+    #[from]
+    Internal(InternalError),
 }
 
 impl From<DbErr> for ModerationError {
@@ -65,7 +67,7 @@ impl From<ModerationError> for AppError {
                 AppError::conflict("Correction already handled")
             }
             ModerationError::Database(source) => source.into(),
-            ModerationError::Infra(source) => source.into(),
+            ModerationError::Internal(source) => source.into(),
         }
     }
 }

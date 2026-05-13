@@ -10,10 +10,8 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::infra::database::error::DatabaseError;
-use crate::infra::error::Error as InfraError;
-use crate::shared::error::PermissionDenied;
+use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::http::api_response::AppError;
-use crate::shared::types::BoxedError;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]
@@ -34,13 +32,7 @@ pub(crate) enum Error {
     #[from]
     Database(DatabaseError),
     #[from]
-    Infra(InfraError),
-}
-
-impl From<BoxedError> for Error {
-    fn from(source: BoxedError) -> Self {
-        Self::Infra(source.into())
-    }
+    Internal(InternalError),
 }
 
 impl From<DbErr> for Error {
@@ -75,7 +67,7 @@ impl From<Error> for AppError {
             }
             Error::PermissionDenied => PermissionDenied.into(),
             Error::Database(err) => err.into(),
-            Error::Infra(err) => err.into(),
+            Error::Internal(err) => err.into(),
         }
     }
 }

@@ -25,7 +25,7 @@ use crate::features::image_queue::Repo as ImageQueueRepo;
 use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::storage::GenericFileStorage;
-use crate::shared::error::EntityNotFound;
+use crate::shared::error::{EntityNotFound, InternalError};
 use crate::shared::http::api_response::AppError;
 
 static ARTIST_PROFILE_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
@@ -103,7 +103,7 @@ impl Service {
 
         drop(image_service);
 
-        tx_repo.commit().await.map_err(AppError::internal_boxed)?;
+        tx_repo.commit().await.map_err(InternalError)?;
 
         Ok(image_queue.id)
     }

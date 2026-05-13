@@ -6,7 +6,6 @@ use crate::domain::auth::ValidateCredsError;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;
 use crate::shared::http::api_response::{AppError, AppErrorKind};
-use crate::shared::types::BoxedError;
 
 #[derive(Debug, Display, derive_more::Error)]
 #[display("Invalid email: {email}.\n{source}")]
@@ -82,12 +81,6 @@ impl From<InternalError> for SignUpError {
     }
 }
 
-impl From<BoxedError> for SignUpError {
-    fn from(source: BoxedError) -> Self {
-        InternalError(source).into()
-    }
-}
-
 impl IntoResponse for SignUpError {
     fn into_response(self) -> axum::response::Response {
         AppError::from(self).into_response()
@@ -107,7 +100,7 @@ impl From<SignUpError> for AppError {
             SignUpError::EmailServiceUnavailable => {
                 Self::new(AppErrorKind::ServiceUnavailable, err.to_string())
             }
-            SignUpError::Internal { source } => Self::internal_boxed(source.0),
+            SignUpError::Internal { source } => source.into(),
             SignUpError::Validate { source } => {
                 Self::bad_request(source.to_string())
             }
@@ -157,12 +150,6 @@ impl From<InternalError> for ResendVerificationEmailError {
     }
 }
 
-impl From<BoxedError> for ResendVerificationEmailError {
-    fn from(source: BoxedError) -> Self {
-        InternalError(source).into()
-    }
-}
-
 impl IntoResponse for ResendVerificationEmailError {
     fn into_response(self) -> axum::response::Response {
         AppError::from(self).into_response()
@@ -179,9 +166,7 @@ impl From<ResendVerificationEmailError> for AppError {
             ResendVerificationEmailError::ResendEmailServiceUnavailable => {
                 Self::new(AppErrorKind::ServiceUnavailable, err.to_string())
             }
-            ResendVerificationEmailError::Internal { source } => {
-                Self::internal_boxed(source.0)
-            }
+            ResendVerificationEmailError::Internal { source } => source.into(),
         }
     }
 }
@@ -230,12 +215,6 @@ impl From<InternalError> for VerifyEmailError {
     }
 }
 
-impl From<BoxedError> for VerifyEmailError {
-    fn from(source: BoxedError) -> Self {
-        InternalError(source).into()
-    }
-}
-
 impl IntoResponse for VerifyEmailError {
     fn into_response(self) -> axum::response::Response {
         AppError::from(self).into_response()
@@ -253,9 +232,7 @@ impl From<VerifyEmailError> for AppError {
             VerifyEmailError::TooManyAttempts => {
                 Self::new(AppErrorKind::TooManyRequests, err.to_string())
             }
-            VerifyEmailError::Internal { source } => {
-                Self::internal_boxed(source.0)
-            }
+            VerifyEmailError::Internal { source } => source.into(),
         }
     }
 }
