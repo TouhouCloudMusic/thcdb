@@ -9,9 +9,7 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::domain::auth::AuthCredential;
 use crate::domain::user::UserProfile;
 use crate::features::user_profile::{DataUserProfile, load_profile};
-use crate::shared::http::api_response::{
-    AppError, AppErrorKind, Data, Message,
-};
+use crate::shared::http::api_response::{AppError, Data, Message};
 
 pub fn public_router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new().routes(routes!(sign_in))
@@ -44,10 +42,7 @@ async fn sign_in(
         .map_err(SessionBackendError::from)
         .map_err(AppError::from)?
         .ok_or_else(|| {
-            AppError::new(
-                AppErrorKind::Unauthorized,
-                "Incorrect username or password",
-            )
+            AppError::unauthorized("Incorrect username or password")
         })?;
 
     auth_session

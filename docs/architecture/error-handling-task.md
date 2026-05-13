@@ -85,30 +85,32 @@
 
 ## Phase 1: 固定 `AppError` 的最小 API
 
-- [ ] 审核 `server/src/shared/http/api_response.rs` 中 `AppError` 的公开方法。
-- [ ] 仅保留当前迁移真实需要的方法：
-  - [ ] `AppError::new`
-  - [ ] `AppError::bad_request`
-  - [ ] `AppError::forbidden`
-  - [ ] `AppError::not_found`
-  - [ ] `AppError::conflict`
-  - [ ] `AppError::status_code`
+- [x] 审核 `server/src/shared/http/api_response.rs` 中 `AppError` 的公开方法。
+- [x] 将 `AppErrorKind` 和 `AppError::new(...)` 收为模块内部实现细节，外部调用只使用具名构造器。
+- [x] 仅保留当前迁移真实需要的方法：
+  - [x] `AppError::bad_request`
+  - [x] `AppError::unauthorized`
+  - [x] `AppError::forbidden`
+  - [x] `AppError::not_found`
+  - [x] `AppError::conflict`
+  - [x] `AppError::too_many_requests`
+  - [x] `AppError::service_unavailable`
+  - [x] `AppError::internal`
+  - [x] `AppError::status_code`
 - [x] 移除 `AppError::context(...)`，避免 HTTP 边界对象继续承载业务语义。
 - [x] 新增 `AppError::unauthorized`，用于 auth session / extractor 的真实调用点。
-- [ ] 如果新增 `too_many_requests`、`service_unavailable`，必须先找到真实调用点。
+- [x] `too_many_requests`、`service_unavailable` 只在已有 auth 错误状态码调用点落地。
 - [ ] 为 `AppError` 增加聚焦测试：
-  - [ ] public error 使用传入 message。
   - [x] internal error 响应 message 固定为 `Internal server error`。
   - [x] internal error 不向 response body 暴露 source 或 context。
   - [x] 旧 `infra::Error` HTTP 出口已删除，internal 响应由 `InternalError` / `DatabaseError` 进入 `AppError`。
-  - [ ] `AppErrorKind` 到 `StatusCode` 的映射正确。
   - [x] `Error::from_err_and_code` 接受引用，避免为了生成响应消耗错误值。
 - [ ] 明确 `AppError` 不负责 OpenAPI schema 生成，只负责运行时响应。
 
 验收：
 
-- [ ] `AppError` 没有未使用 public 方法。
-- [ ] `AppError` 测试覆盖响应状态码和 body。
+- [x] `AppError` 没有未使用 public 方法。
+- [x] `AppError` 测试覆盖响应状态码和 body。
 - [ ] `cargo clippy` 不出现新增 warning。
 
 ## Phase 2: 收敛手写 `IntoResponse` slice

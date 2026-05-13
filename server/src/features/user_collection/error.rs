@@ -1,6 +1,6 @@
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{InternalError, PermissionDenied};
-use crate::shared::http::api_response::{AppError, AppErrorKind};
+use crate::shared::http::api_response::AppError;
 
 #[derive(Debug, Clone, Copy)]
 pub(super) enum NotFound {
@@ -20,12 +20,12 @@ impl NotFound {
         }
     }
 
-    const fn app_error_kind(self) -> AppErrorKind {
+    fn into_app_error(self) -> AppError {
         match self {
             Self::RequestedUser | Self::Collection | Self::CollectionItem => {
-                AppErrorKind::NotFound
+                AppError::not_found(self.message())
             }
-            Self::ReferencedEntity => AppErrorKind::BadRequest,
+            Self::ReferencedEntity => AppError::bad_request(self.message()),
         }
     }
 }
@@ -43,15 +43,10 @@ pub(super) enum Error {
 
 impl From<Error> for AppError {
     fn from(err: Error) -> Self {
-        #[track_caller]
-        fn from_not_found(kind: NotFound) -> AppError {
-            AppError::new(kind.app_error_kind(), kind.message())
-        }
-
         match err {
             Error::Database(err) => err.into(),
             Error::Internal(err) => err.into(),
-            Error::NotFound(kind) => from_not_found(kind),
+            Error::NotFound(kind) => kind.into_app_error(),
             Error::CollectionAccessDenied => PermissionDenied.into(),
             Error::InvalidRequest(message) => AppError::bad_request(message),
         }

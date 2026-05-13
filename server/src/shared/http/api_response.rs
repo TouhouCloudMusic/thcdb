@@ -25,7 +25,7 @@ enum Status {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AppErrorKind {
+enum AppErrorKind {
     BadRequest,
     Unauthorized,
     Forbidden,
@@ -37,7 +37,7 @@ pub enum AppErrorKind {
 }
 
 impl AppErrorKind {
-    pub const fn status_code(self) -> StatusCode {
+    const fn status_code(self) -> StatusCode {
         match self {
             Self::BadRequest => StatusCode::BAD_REQUEST,
             Self::Unauthorized => StatusCode::UNAUTHORIZED,
@@ -61,7 +61,7 @@ pub struct AppError {
 
 impl AppError {
     #[track_caller]
-    pub fn new(kind: AppErrorKind, message: impl Into<String>) -> Self {
+    fn new(kind: AppErrorKind, message: impl Into<String>) -> Self {
         Self {
             kind,
             message: message.into(),
@@ -93,6 +93,16 @@ impl AppError {
     #[track_caller]
     pub fn conflict(message: impl Into<String>) -> Self {
         Self::new(AppErrorKind::Conflict, message)
+    }
+
+    #[track_caller]
+    pub fn too_many_requests(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::TooManyRequests, message)
+    }
+
+    #[track_caller]
+    pub fn service_unavailable(message: impl Into<String>) -> Self {
+        Self::new(AppErrorKind::ServiceUnavailable, message)
     }
 
     #[track_caller]

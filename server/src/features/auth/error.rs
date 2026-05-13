@@ -4,7 +4,7 @@ use derive_more::{Display, Error as DeriveError};
 use crate::domain::auth::ValidateCredsError;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;
-use crate::shared::http::api_response::{AppError, AppErrorKind};
+use crate::shared::http::api_response::AppError;
 use crate::shared::types::BoxedError;
 
 #[derive(Debug, Display, derive_more::Error)]
@@ -90,7 +90,7 @@ impl From<SignUpError> for AppError {
                 Self::bad_request(err.to_string())
             }
             SignUpError::EmailServiceUnavailable => {
-                Self::new(AppErrorKind::ServiceUnavailable, err.to_string())
+                Self::service_unavailable(err.to_string())
             }
             SignUpError::Internal { source } => source.into(),
             SignUpError::Validate { source } => {
@@ -148,7 +148,7 @@ impl From<ResendVerificationEmailError> for AppError {
                 Self::bad_request(err.to_string())
             }
             ResendVerificationEmailError::ResendEmailServiceUnavailable => {
-                Self::new(AppErrorKind::ServiceUnavailable, err.to_string())
+                Self::service_unavailable(err.to_string())
             }
             ResendVerificationEmailError::Internal { source } => source.into(),
         }
@@ -206,7 +206,7 @@ impl From<VerifyEmailError> for AppError {
                 Self::bad_request(err.to_string())
             }
             VerifyEmailError::TooManyAttempts => {
-                Self::new(AppErrorKind::TooManyRequests, err.to_string())
+                Self::too_many_requests(err.to_string())
             }
             VerifyEmailError::Internal { source } => source.into(),
         }
