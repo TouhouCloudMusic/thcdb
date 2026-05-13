@@ -34,8 +34,7 @@ impl Service {
             password,
         }: SignUpRequest,
     ) -> Result<SignUpResponse, SignUpError> {
-        let email = Email::parse(&email)
-            .map_err(|source| SignUpError::InvalidEmail { source })?;
+        let email = Email::parse(&email).map_err(SignUpError::from)?;
 
         let mut creds = AuthCredential::try_new(username, password)?;
         let username = creds.username.clone();
@@ -96,8 +95,7 @@ impl Service {
         &self,
         VerifyEmailRequest { email, code }: VerifyEmailRequest,
     ) -> Result<User, VerifyEmailError> {
-        let email = Email::parse(&email)
-            .map_err(|source| VerifyEmailError::InvalidEmail { source })?;
+        let email = Email::parse(&email).map_err(VerifyEmailError::from)?;
 
         let user = repo::find_by_email(&self.repo.conn, &email)
             .await?
@@ -165,9 +163,8 @@ impl Service {
         ResendVerificationEmailRequest { email }: ResendVerificationEmailRequest,
     ) -> Result<ResendVerificationEmailResponse, ResendVerificationEmailError>
     {
-        let email = Email::parse(&email).map_err(|source| {
-            ResendVerificationEmailError::InvalidEmail { source }
-        })?;
+        let email =
+            Email::parse(&email).map_err(ResendVerificationEmailError::from)?;
 
         let Some(user) = repo::find_by_email(&self.repo.conn, &email)
             .await?

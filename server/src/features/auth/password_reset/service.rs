@@ -233,8 +233,7 @@ impl Service {
         &self,
         ForgotPasswordCommand { email }: ForgotPasswordCommand,
     ) -> Result<ForgotPasswordResult, ForgotPasswordError> {
-        let email = Email::parse(&email)
-            .map_err(|source| ForgotPasswordError::InvalidEmail { source })?;
+        let email = Email::parse(&email).map_err(ForgotPasswordError::from)?;
 
         // Keep roughly the same Argon2 work on the "unknown email" and
         // "still cooling down" paths so this endpoint leaks less timing signal.
@@ -323,8 +322,7 @@ impl Service {
         &self,
         VerifyResetCodeCommand { email, code }: VerifyResetCodeCommand,
     ) -> Result<VerifiedResetPasswordSession, VerifyResetCodeError> {
-        let email = Email::parse(&email)
-            .map_err(|source| VerifyResetCodeError::InvalidEmail { source })?;
+        let email = Email::parse(&email).map_err(VerifyResetCodeError::from)?;
 
         let user = self
             .find_verified_user_by_email(&email)

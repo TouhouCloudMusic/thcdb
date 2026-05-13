@@ -11,22 +11,18 @@ use crate::features::auth::{
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;
 
-#[derive(Debug)]
+#[derive(Debug, derive_more::From)]
 pub(super) enum SendVerificationEmailError {
+    #[from]
     Internal(InternalError),
     Unavailable,
+    #[from]
     InvalidEmail(InvalidEmail),
 }
 
 impl From<DatabaseError> for SendVerificationEmailError {
     fn from(value: DatabaseError) -> Self {
         Self::Internal(InternalError::new(value))
-    }
-}
-
-impl From<InternalError> for SendVerificationEmailError {
-    fn from(value: InternalError) -> Self {
-        Self::Internal(value)
     }
 }
 
@@ -37,7 +33,7 @@ impl From<SendVerificationEmailError> for SignUpError {
                 SignUpError::EmailServiceUnavailable
             }
             SendVerificationEmailError::InvalidEmail(source) => {
-                SignUpError::InvalidEmail { source }
+                SignUpError::InvalidEmail(source)
             }
             SendVerificationEmailError::Internal(source) => source.into(),
         }
@@ -51,7 +47,7 @@ impl From<SendVerificationEmailError> for ResendVerificationEmailError {
                 ResendVerificationEmailError::ResendEmailServiceUnavailable
             }
             SendVerificationEmailError::InvalidEmail(source) => {
-                ResendVerificationEmailError::InvalidEmail { source }
+                ResendVerificationEmailError::InvalidEmail(source)
             }
             SendVerificationEmailError::Internal(source) => source.into(),
         }

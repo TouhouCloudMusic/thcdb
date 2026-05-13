@@ -1,7 +1,7 @@
 use axum::Json;
 use axum::extract::State;
 use axum::response::IntoResponse;
-use derive_more::{Display, Error as DeriveError};
+use derive_more::{Display, Error as DeriveError, From};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -28,50 +28,26 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(resend_verification_email))
 }
 
-#[derive(Debug, Display, DeriveError)]
+#[derive(Debug, Display, DeriveError, From)]
 enum VerifyEmailRouteError {
-    #[display("{source}")]
-    VerifyEmail {
-        #[error(source)]
-        source: VerifyEmailError,
-    },
-    #[display("{source}")]
-    Session {
-        #[error(source)]
-        source: SessionBackendError,
-    },
-    #[display("{source}")]
-    Profile {
-        #[error(source)]
-        source: user_profile::Error,
-    },
-}
-
-impl From<VerifyEmailError> for VerifyEmailRouteError {
-    fn from(source: VerifyEmailError) -> Self {
-        Self::VerifyEmail { source }
-    }
-}
-
-impl From<SessionBackendError> for VerifyEmailRouteError {
-    fn from(source: SessionBackendError) -> Self {
-        Self::Session { source }
-    }
-}
-
-impl From<user_profile::Error> for VerifyEmailRouteError {
-    fn from(source: user_profile::Error) -> Self {
-        Self::Profile { source }
-    }
+    #[display("{_0}")]
+    #[from]
+    VerifyEmail(#[error(source)] VerifyEmailError),
+    #[display("{_0}")]
+    #[from]
+    Session(#[error(source)] SessionBackendError),
+    #[display("{_0}")]
+    #[from]
+    Profile(#[error(source)] user_profile::Error),
 }
 
 impl From<VerifyEmailRouteError> for AppError {
     #[track_caller]
     fn from(err: VerifyEmailRouteError) -> Self {
         match err {
-            VerifyEmailRouteError::VerifyEmail { source } => source.into(),
-            VerifyEmailRouteError::Session { source } => source.into(),
-            VerifyEmailRouteError::Profile { source } => source.into(),
+            VerifyEmailRouteError::VerifyEmail(source) => source.into(),
+            VerifyEmailRouteError::Session(source) => source.into(),
+            VerifyEmailRouteError::Profile(source) => source.into(),
         }
     }
 }

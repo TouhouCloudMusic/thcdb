@@ -50,12 +50,10 @@ impl SignInIdentifier {
 impl From<axum_login::Error<Service>> for SessionBackendError {
     fn from(value: axum_login::Error<Service>) -> Self {
         match value {
-            axum_login::Error::Session(err) => Self::Session {
-                source: SessionError::new(err),
-            },
-            axum_login::Error::Backend(err) => {
-                Self::AuthnBackend { source: err }
+            axum_login::Error::Session(err) => {
+                Self::Session(SessionError::new(err))
             }
+            axum_login::Error::Backend(err) => Self::AuthnBackend(err),
         }
     }
 }

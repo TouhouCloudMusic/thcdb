@@ -1,5 +1,5 @@
 use axum::response::IntoResponse;
-use derive_more::{Display, Error as DeriveError};
+use derive_more::{Display, Error as DeriveError, From};
 
 use crate::domain::auth::ValidateCredsError;
 use crate::infra::database::error::DatabaseError;
@@ -26,50 +26,26 @@ impl InvalidEmail {
     }
 }
 
-#[derive(Debug, Display, DeriveError)]
+#[derive(Debug, Display, DeriveError, From)]
 pub enum SignUpError {
     #[display("Username {username} already in use")]
     UsernameAlreadyInUse { username: String },
-    #[display("{source}")]
-    InvalidEmail {
-        #[error(source)]
-        source: InvalidEmail,
-    },
+    #[display("{_0}")]
+    #[from]
+    InvalidEmail(#[error(source)] InvalidEmail),
     #[display("Email service unavailable")]
     EmailServiceUnavailable,
-    #[display("{source}")]
-    Internal {
-        #[error(source)]
-        source: InternalError,
-    },
-    #[display("{source}")]
-    Validate {
-        #[error(source)]
-        source: ValidateCredsError,
-    },
-}
-
-impl From<InvalidEmail> for SignUpError {
-    fn from(source: InvalidEmail) -> Self {
-        Self::InvalidEmail { source }
-    }
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+    #[display("{_0}")]
+    #[from]
+    Validate(#[error(source)] ValidateCredsError),
 }
 
 impl From<DatabaseError> for SignUpError {
     fn from(source: DatabaseError) -> Self {
         InternalError::new(source).into()
-    }
-}
-
-impl From<ValidateCredsError> for SignUpError {
-    fn from(source: ValidateCredsError) -> Self {
-        Self::Validate { source }
-    }
-}
-
-impl From<InternalError> for SignUpError {
-    fn from(source: InternalError) -> Self {
-        Self::Internal { source }
     }
 }
 
@@ -80,14 +56,12 @@ impl From<SignUpError> for AppError {
             SignUpError::UsernameAlreadyInUse { .. } => {
                 Self::conflict(err.to_string())
             }
-            SignUpError::InvalidEmail { .. } => {
-                Self::bad_request(err.to_string())
-            }
+            SignUpError::InvalidEmail(_) => Self::bad_request(err.to_string()),
             SignUpError::EmailServiceUnavailable => {
                 Self::service_unavailable(err.to_string())
             }
-            SignUpError::Internal { source } => source.into(),
-            SignUpError::Validate { source } => {
+            SignUpError::Internal(source) => source.into(),
+            SignUpError::Validate(source) => {
                 Self::bad_request(source.to_string())
             }
         }
@@ -100,26 +74,16 @@ impl IntoResponse for SignUpError {
     }
 }
 
-#[derive(Debug, Display, DeriveError)]
+#[derive(Debug, Display, DeriveError, From)]
 pub enum ResendVerificationEmailError {
-    #[display("{source}")]
-    InvalidEmail {
-        #[error(source)]
-        source: InvalidEmail,
-    },
+    #[display("{_0}")]
+    #[from]
+    InvalidEmail(#[error(source)] InvalidEmail),
     #[display("Email service unavailable")]
     ResendEmailServiceUnavailable,
-    #[display("{source}")]
-    Internal {
-        #[error(source)]
-        source: InternalError,
-    },
-}
-
-impl From<InvalidEmail> for ResendVerificationEmailError {
-    fn from(source: InvalidEmail) -> Self {
-        Self::InvalidEmail { source }
-    }
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
 }
 
 impl From<DatabaseError> for ResendVerificationEmailError {
@@ -128,23 +92,17 @@ impl From<DatabaseError> for ResendVerificationEmailError {
     }
 }
 
-impl From<InternalError> for ResendVerificationEmailError {
-    fn from(source: InternalError) -> Self {
-        Self::Internal { source }
-    }
-}
-
 impl From<ResendVerificationEmailError> for AppError {
     #[track_caller]
     fn from(err: ResendVerificationEmailError) -> Self {
         match err {
-            ResendVerificationEmailError::InvalidEmail { .. } => {
+            ResendVerificationEmailError::InvalidEmail(_) => {
                 Self::bad_request(err.to_string())
             }
             ResendVerificationEmailError::ResendEmailServiceUnavailable => {
                 Self::service_unavailable(err.to_string())
             }
-            ResendVerificationEmailError::Internal { source } => source.into(),
+            ResendVerificationEmailError::Internal(source) => source.into(),
         }
     }
 }
@@ -155,28 +113,18 @@ impl IntoResponse for ResendVerificationEmailError {
     }
 }
 
-#[derive(Debug, Display, DeriveError)]
+#[derive(Debug, Display, DeriveError, From)]
 pub enum VerifyEmailError {
-    #[display("{source}")]
-    InvalidEmail {
-        #[error(source)]
-        source: InvalidEmail,
-    },
+    #[display("{_0}")]
+    #[from]
+    InvalidEmail(#[error(source)] InvalidEmail),
     #[display("Invalid or expired verification code")]
     InvalidOrExpiredCode,
     #[display("Too many attempts, please resend verification code")]
     TooManyAttempts,
-    #[display("{source}")]
-    Internal {
-        #[error(source)]
-        source: InternalError,
-    },
-}
-
-impl From<InvalidEmail> for VerifyEmailError {
-    fn from(source: InvalidEmail) -> Self {
-        Self::InvalidEmail { source }
-    }
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
 }
 
 impl From<DatabaseError> for VerifyEmailError {
@@ -185,24 +133,18 @@ impl From<DatabaseError> for VerifyEmailError {
     }
 }
 
-impl From<InternalError> for VerifyEmailError {
-    fn from(source: InternalError) -> Self {
-        Self::Internal { source }
-    }
-}
-
 impl From<VerifyEmailError> for AppError {
     #[track_caller]
     fn from(err: VerifyEmailError) -> Self {
         match err {
-            VerifyEmailError::InvalidEmail { .. }
+            VerifyEmailError::InvalidEmail(_)
             | VerifyEmailError::InvalidOrExpiredCode => {
                 Self::bad_request(err.to_string())
             }
             VerifyEmailError::TooManyAttempts => {
                 Self::too_many_requests(err.to_string())
             }
-            VerifyEmailError::Internal { source } => source.into(),
+            VerifyEmailError::Internal(source) => source.into(),
         }
     }
 }
