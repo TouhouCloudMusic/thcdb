@@ -95,11 +95,8 @@ impl ImageQueue {
             return Err(Error::InvalidOperation);
         }
 
-        let user_roles = user
-            .roles
-            .iter()
-            .map(|role| UserRoleEnum::try_from(role.id).unwrap())
-            .collect_vec();
+        let user_roles =
+            user.roles.iter().map(UserRoleEnum::from).collect_vec();
         let required_roles = action.required_roles();
         // Users also can cancel their image uploads
         let has_permission = user_roles.intersects(&required_roles)

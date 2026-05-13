@@ -1,9 +1,7 @@
 use std::sync::Arc;
 
-use entity::user_role;
 use sea_orm::{DatabaseTransaction, DbErr, TransactionTrait};
 
-use crate::domain::model::UserRoleEnum;
 use crate::shared::error::{
     BrokenEntityReference, InternalError, MessageError,
 };
@@ -86,16 +84,5 @@ impl SeaOrmTxRepo {
         })?;
 
         tx.commit().await.map_err(InternalError::new)
-    }
-}
-
-// TODO: move to elsewhere
-impl TryFrom<user_role::Model> for UserRoleEnum {
-    type Error = DbErr;
-
-    fn try_from(value: user_role::Model) -> Result<Self, Self::Error> {
-        Self::try_from(value.role_id)
-            .map_err(String::from)
-            .map_err(DbErr::Custom)
     }
 }

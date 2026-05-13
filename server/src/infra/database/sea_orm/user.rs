@@ -107,11 +107,7 @@ impl user::TxRepo for SeaOrmTxRepo {
 
         let mut user = User::from(model);
 
-        user.roles = roles
-            .into_iter()
-            .map(TryInto::try_into)
-            .try_collect()
-            .db_operation("build user roles")?;
+        user.roles = roles.into_iter().map(Into::into).collect();
 
         Ok(user)
     }
@@ -130,8 +126,7 @@ async fn find_many_impl(
         .map(|(model, roles)| {
             let mut user = User::from(model);
 
-            user.roles =
-                roles.into_iter().map(TryInto::try_into).try_collect()?;
+            user.roles = roles.into_iter().map(Into::into).collect();
 
             Ok(user)
         })
@@ -318,11 +313,7 @@ impl user::ProfileRepository for SeaOrmRepository {
             last_login: profile.last_login,
             avatar_url,
             banner_url,
-            roles: user_roles
-                .into_iter()
-                .map(TryInto::try_into)
-                .try_collect()
-                .db_operation("build user profile roles")?,
+            roles: user_roles.into_iter().map(Into::into).collect(),
             is_following: None,
             bio: profile.bio,
             stats,

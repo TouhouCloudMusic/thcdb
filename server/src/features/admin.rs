@@ -141,20 +141,12 @@ async fn admin_users(
 
     let items = models
         .into_iter()
-        .map(|(user, roles)| -> Result<UserSummary, sea_orm::DbErr> {
-            let roles = roles
-                .into_iter()
-                .map(UserRole::try_from)
-                .collect::<Result<Vec<_>, _>>()?;
-
-            Ok(UserSummary {
-                id: user.id,
-                name: user.name,
-                roles,
-            })
+        .map(|(user, roles)| UserSummary {
+            id: user.id,
+            name: user.name,
+            roles: roles.into_iter().map(Into::into).collect(),
         })
-        .collect::<Result<Vec<_>, sea_orm::DbErr>>()
-        .db_operation("build admin user roles")?;
+        .collect::<Vec<_>>();
 
     Ok(Data::new(pagination.to_response(items, total_items)))
 }
@@ -201,9 +193,8 @@ async fn set_user_roles(
         .await
         .db_operation("find old user roles")?
         .into_iter()
-        .map(UserRole::try_from)
-        .collect::<Result<Vec<_>, _>>()
-        .db_operation("build old user roles")?;
+        .map(Into::into)
+        .collect::<Vec<UserRole>>();
 
     user_role::Entity::delete_many()
         .filter(user_role::Column::UserId.eq(id))
@@ -237,9 +228,8 @@ async fn set_user_roles(
         .await
         .db_operation("find new user roles")?
         .into_iter()
-        .map(UserRole::try_from)
-        .collect::<Result<Vec<_>, _>>()
-        .db_operation("build new user roles")?;
+        .map(Into::into)
+        .collect::<Vec<UserRole>>();
 
     let old_role_names = old_roles.iter().map(|r| r.name.clone()).collect_vec();
     let new_role_names =

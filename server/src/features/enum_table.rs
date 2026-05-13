@@ -67,7 +67,10 @@ async fn user_roles(
         .await
         .db_operation("list user roles")?
         .iter()
-        .filter_map(|model| UserRoleEnum::try_from(model.id).ok())
+        .map(|model| {
+            UserRoleEnum::try_from(model.id)
+                .expect("valid user role id from database")
+        })
         .collect_vec()
         .into())
 }

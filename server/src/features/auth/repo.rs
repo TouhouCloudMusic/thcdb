@@ -328,10 +328,7 @@ async fn load_user(
         .all(conn)
         .await?;
 
-    let roles = roles
-        .into_iter()
-        .map(TryInto::try_into)
-        .collect::<Result<Vec<_>, _>>()?;
+    let roles = roles.into_iter().map(Into::into).collect::<Vec<_>>();
 
     let mut user = User::from(model);
     user.roles = roles;

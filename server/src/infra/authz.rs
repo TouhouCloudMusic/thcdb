@@ -193,11 +193,7 @@ async fn sync_role_permissions(db: &impl ConnectionTrait) -> Result<(), DbErr> {
             let permission_id = permission_ids
                 .get(permission_name)
                 .copied()
-                .ok_or_else(|| {
-                    DbErr::Custom(format!(
-                        "Permission not found after sync: {permission_name}"
-                    ))
-                })?;
+                .expect("permission exists after permission sync");
 
             mappings.push(role_permission::ActiveModel {
                 role_id: Set(role_id),

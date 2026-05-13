@@ -34,7 +34,7 @@ impl From<UserRoleEnum> for role::ActiveModel {
 
 impl From<&role::Model> for UserRoleEnum {
     fn from(val: &role::Model) -> Self {
-        Self::try_from(val.id).expect("Invalid user role id from database")
+        Self::try_from(val.id).expect("valid user role id from database")
     }
 }
 
