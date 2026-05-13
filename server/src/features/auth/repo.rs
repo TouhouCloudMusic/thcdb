@@ -39,11 +39,12 @@ pub(crate) async fn find_by_id(
     conn: &impl ConnectionTrait,
     id: i32,
 ) -> Result<Option<User>, DatabaseError> {
-    let result: Result<Option<User>, DbErr> = async {
+    let result: Result<Option<User>, DatabaseError> = async {
         let model = user::Entity::find()
             .filter(user::Column::Id.eq(id))
             .one(conn)
-            .await?;
+            .await
+            .db_operation("load auth user by id")?;
 
         match model {
             Some(model) => Ok(Some(load_user(conn, model).await?)),
@@ -59,11 +60,12 @@ pub(crate) async fn find_by_name(
     conn: &impl ConnectionTrait,
     name: &str,
 ) -> Result<Option<User>, DatabaseError> {
-    let result: Result<Option<User>, DbErr> = async {
+    let result: Result<Option<User>, DatabaseError> = async {
         let model = user::Entity::find()
             .filter(user::Column::Name.eq(name))
             .one(conn)
-            .await?;
+            .await
+            .db_operation("load auth user by name")?;
 
         match model {
             Some(model) => Ok(Some(load_user(conn, model).await?)),
@@ -79,14 +81,15 @@ pub(crate) async fn find_by_email(
     conn: &impl ConnectionTrait,
     email: &Email,
 ) -> Result<Option<User>, DatabaseError> {
-    let result: Result<Option<User>, DbErr> = async {
+    let result: Result<Option<User>, DatabaseError> = async {
         let model = user::Entity::find()
             .filter(
                 Expr::expr(Func::lower(user::Column::Email.into_expr()))
                     .eq(email.as_str()),
             )
             .one(conn)
-            .await?;
+            .await
+            .db_operation("load auth user by email")?;
 
         match model {
             Some(model) => Ok(Some(load_user(conn, model).await?)),
@@ -136,7 +139,7 @@ pub(crate) async fn delete_user(
     tx: &DatabaseTransaction,
     user_id: i32,
 ) -> Result<(), DatabaseError> {
-    let result: Result<(), DbErr> = async {
+    let result: Result<(), DatabaseError> = async {
         // TODO: exists
         let deletable = user::Entity::find()
             .select_only()
@@ -145,7 +148,8 @@ pub(crate) async fn delete_user(
             .filter(user::Column::EmailVerified.eq(false))
             .into_tuple::<i32>()
             .one(tx)
-            .await?
+            .await
+            .db_operation("check unverified auth user is deletable")?
             .is_some();
 
         if !deletable {
@@ -156,7 +160,8 @@ pub(crate) async fn delete_user(
             .filter(user::Column::Id.eq(user_id))
             .filter(user::Column::EmailVerified.eq(false))
             .exec(tx)
-            .await?;
+            .await
+            .db_operation("delete unverified auth user row")?;
 
         Ok(())
     }
@@ -244,18 +249,20 @@ pub(crate) async fn set_email_verified(
     tx: &DatabaseTransaction,
     user_id: i32,
 ) -> Result<User, DatabaseError> {
-    let result: Result<User, DbErr> = async {
+    let result: Result<User, DatabaseError> = async {
         let model = user::ActiveModel {
             id: Set(user_id),
             email_verified: Set(true),
             ..Default::default()
         }
         .update(tx)
-        .await?;
+        .await
+        .db_operation("update auth user email verified")?;
 
         let _ = user_email_verification::Entity::delete_by_id(user_id)
             .exec(tx)
-            .await?;
+            .await
+            .db_operation("delete auth email verification after verify")?;
 
         load_user(tx, model).await
     }
@@ -322,11 +329,12 @@ fn is_unique_constraint_error(err: &DbErr) -> bool {
 async fn load_user(
     conn: &impl ConnectionTrait,
     model: user::Model,
-) -> Result<User, DbErr> {
+) -> Result<User, DatabaseError> {
     let roles = user_role::Entity::find()
         .filter(user_role::Column::UserId.eq(model.id))
         .all(conn)
-        .await?;
+        .await
+        .db_operation("load auth user roles")?;
 
     let roles = roles.into_iter().map(Into::into).collect::<Vec<_>>();
 
@@ -335,7 +343,8 @@ async fn load_user(
 
     if let Some(v) = user_email_verification::Entity::find_by_id(user.id)
         .one(conn)
-        .await?
+        .await
+        .db_operation("load auth user email verification")?
     {
         user.email_verification = Some(EmailVerification {
             hash: v.hash,

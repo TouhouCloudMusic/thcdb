@@ -1,7 +1,7 @@
 use entity::{label, label_founder, label_localized_name, language};
 use itertools::{Itertools, izip};
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, LoaderTrait, QueryFilter,
+    ColumnTrait, ConnectionTrait, EntityTrait, LoaderTrait, QueryFilter,
     QueryOrder,
 };
 use sea_query::extension::postgres::PgBinOper;
@@ -82,7 +82,7 @@ async fn find_sorted_by_correction(
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Label>, DbErr> {
+) -> Result<crate::domain::shared::PageResponse<Label>, DatabaseError> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
@@ -97,7 +97,8 @@ async fn find_sorted_by_correction(
                 SortDirection::Desc => sea_orm::Order::Desc,
             },
         )
-        .await?;
+        .await
+        .db_operation("list correction-sorted label ids")?;
 
     if entity_ids.is_empty() {
         return Ok(utils::page_from_items(vec![], &pagination));
@@ -135,13 +136,18 @@ async fn find_sorted_by_correction(
 async fn find_many_impl(
     select: sea_orm::Select<label::Entity>,
     db: &impl ConnectionTrait,
-) -> Result<Vec<Label>, sea_orm::DbErr> {
-    let labels = select.all(db).await?;
+) -> Result<Vec<Label>, DatabaseError> {
+    let labels = select.all(db).await.db_operation("load labels")?;
 
-    let founders = labels.load_many(label_founder::Entity, db).await?;
+    let founders = labels
+        .load_many(label_founder::Entity, db)
+        .await
+        .db_operation("load label founders")?;
 
-    let localized_names =
-        labels.load_many(label_localized_name::Entity, db).await?;
+    let localized_names = labels
+        .load_many(label_localized_name::Entity, db)
+        .await
+        .db_operation("load label localized names")?;
 
     let langs = language::Entity::find()
         .filter(
@@ -152,7 +158,8 @@ async fn find_many_impl(
             ),
         )
         .all(db)
-        .await?;
+        .await
+        .db_operation("load label localized name languages")?;
 
     Ok(izip!(labels, founders, localized_names)
         .map(|(label, founders, names)| {

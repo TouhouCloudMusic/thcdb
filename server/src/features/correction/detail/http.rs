@@ -12,7 +12,7 @@ use super::model::CorrectionDetail;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::features::correction::{ReadError, comment};
-use crate::infra::database::error::DatabaseResultExt;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::http::api_response::Data;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
@@ -69,44 +69,56 @@ async fn find_entity_name(
     conn: &DatabaseConnection,
     entity_type: EntityType,
     entity_id: i32,
-) -> Result<Option<String>, sea_orm::DbErr> {
+) -> Result<Option<String>, DatabaseError> {
     let name = match entity_type {
         EntityType::Artist => artist::Entity::find_by_id(entity_id)
             .one(conn)
-            .await?
+            .await
+            .db_operation("load correction artist name")?
             .map(|model| model.name),
         EntityType::Label => label::Entity::find_by_id(entity_id)
             .one(conn)
-            .await?
+            .await
+            .db_operation("load correction label name")?
             .map(|model| model.name),
         EntityType::Release => release::Entity::find_by_id(entity_id)
             .one(conn)
-            .await?
+            .await
+            .db_operation("load correction release title")?
             .map(|model| model.title),
         EntityType::Song => song::Entity::find_by_id(entity_id)
             .one(conn)
-            .await?
+            .await
+            .db_operation("load correction song title")?
             .map(|model| model.title),
         EntityType::Tag => tag::Entity::find_by_id(entity_id)
             .one(conn)
-            .await?
+            .await
+            .db_operation("load correction tag name")?
             .map(|model| model.name),
         EntityType::Event => event::Entity::find_by_id(entity_id)
             .one(conn)
-            .await?
+            .await
+            .db_operation("load correction event name")?
             .map(|model| model.name),
         EntityType::SongLyrics => {
-            match song_lyrics::Entity::find_by_id(entity_id).one(conn).await? {
+            match song_lyrics::Entity::find_by_id(entity_id)
+                .one(conn)
+                .await
+                .db_operation("load correction song lyrics")?
+            {
                 Some(lyrics) => song::Entity::find_by_id(lyrics.song_id)
                     .one(conn)
-                    .await?
+                    .await
+                    .db_operation("load correction song lyrics song title")?
                     .map(|model| model.title),
                 None => None,
             }
         }
         EntityType::CreditRole => credit_role::Entity::find_by_id(entity_id)
             .one(conn)
-            .await?
+            .await
+            .db_operation("load correction credit role name")?
             .map(|model| model.name),
     };
 

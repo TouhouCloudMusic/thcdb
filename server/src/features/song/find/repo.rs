@@ -11,7 +11,7 @@ use entity::{
 use itertools::{Itertools, izip};
 use libfp::FunctorExt;
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, JoinType, LoaderTrait,
+    ColumnTrait, ConnectionTrait, EntityTrait, JoinType, LoaderTrait,
     QueryFilter, QueryOrder, QuerySelect, RelationTrait, Select,
 };
 use sea_query::extension::postgres::PgBinOper::{
@@ -40,7 +40,7 @@ pub(super) async fn find_by_id(
     repo: &SeaOrmRepository,
     id: i32,
 ) -> Result<Option<Song>, DatabaseError> {
-    let result: Result<Option<Song>, DbErr> = async {
+    let result: Result<Option<Song>, DatabaseError> = async {
         let select = song::Entity::find().filter(Id.eq(id));
 
         let mut songs = find_many_impl(select, &repo.conn).await?;
@@ -48,7 +48,9 @@ pub(super) async fn find_by_id(
             return Ok(None);
         };
 
-        song.relations = load_song_relations(song.id, &repo.conn).await?;
+        song.relations = load_song_relations(song.id, &repo.conn)
+            .await
+            .db_operation("load song relations")?;
 
         Ok(Some(song))
     }
@@ -113,8 +115,8 @@ pub(super) async fn find_by_filter(
 async fn find_many_impl(
     select: sea_orm::Select<song::Entity>,
     db: &impl ConnectionTrait,
-) -> Result<Vec<Song>, sea_orm::DbErr> {
-    let songs = select.all(db).await?;
+) -> Result<Vec<Song>, DatabaseError> {
+    let songs = select.all(db).await.db_operation("load songs")?;
     if songs.is_empty() {
         return Ok(vec![]);
     }
@@ -139,7 +141,8 @@ async fn find_many_impl(
         ),
         songs.load_many(release_track::Entity, db),
         songs.load_many(song_lyrics::Entity, db),
-    )?;
+    )
+    .db_operation("load song associations")?;
 
     let (song_credits_artist_ids, song_credits_role_ids): (Vec<_>, Vec<_>) =
         song_credits_list
@@ -152,7 +155,12 @@ async fn find_many_impl(
     let (song_credits_artist_map, credit_roles_map, lang_cache) = try_join!(
         load_credit_artists(&song_credits_artist_ids, db),
         load_credit_roles(&song_credits_role_ids, db),
-        LANGUAGE_CACHE.get_or_init(db),
+        async {
+            LANGUAGE_CACHE
+                .get_or_init(db)
+                .await
+                .db_operation("load language cache")
+        },
     )?;
 
     let song_release_ids: Vec<_> = song_releases_list
@@ -162,7 +170,9 @@ async fn find_many_impl(
         .collect();
 
     let release_cover_art_urls =
-        load_release_cover_art_urls(&song_release_ids, db).await?;
+        load_release_cover_art_urls(&song_release_ids, db)
+            .await
+            .db_operation("load release cover art urls")?;
 
     Ok(izip!(
         songs,
@@ -259,7 +269,7 @@ async fn find_many_impl(
 async fn load_credit_roles(
     role_ids: &[Option<i32>],
     db: &impl ConnectionTrait,
-) -> Result<HashMap<i32, CreditRoleRef>, sea_orm::DbErr> {
+) -> Result<HashMap<i32, CreditRoleRef>, DatabaseError> {
     use entity::credit_role;
 
     if role_ids.is_empty() {
@@ -272,7 +282,8 @@ async fn load_credit_roles(
                 .is_in(role_ids.iter().flatten().unique().copied()),
         )
         .all(db)
-        .await?;
+        .await
+        .db_operation("load song credit roles")?;
 
     Ok(roles
         .into_iter()
@@ -291,7 +302,7 @@ async fn load_credit_roles(
 async fn load_release_cover_art_urls(
     release_ids: &[i32],
     db: &impl ConnectionTrait,
-) -> Result<HashMap<i32, String>, sea_orm::DbErr> {
+) -> Result<HashMap<i32, String>, DatabaseError> {
     if release_ids.is_empty() {
         return Ok(HashMap::new());
     }
@@ -299,7 +310,8 @@ async fn load_release_cover_art_urls(
     let cover_art_urls_map = load_release_cover_art_urls_query(release_ids)
         .into_tuple::<(i32, String, String, StorageBackend)>()
         .all(db)
-        .await?
+        .await
+        .db_operation("load release cover art image rows")?
         .into_iter()
         .map(|(release_id, directory, filename, backend)| {
             (
@@ -331,7 +343,7 @@ fn load_release_cover_art_urls_query(
 async fn load_credit_artists(
     artist_ids: &[i32],
     db: &impl ConnectionTrait,
-) -> Result<HashMap<i32, SimpleArtist>, sea_orm::DbErr> {
+) -> Result<HashMap<i32, SimpleArtist>, DatabaseError> {
     if artist_ids.is_empty() {
         return Ok(HashMap::new());
     }
@@ -339,7 +351,8 @@ async fn load_credit_artists(
     let artists = artist::Entity::find()
         .filter(artist::Column::Id.is_in(artist_ids.iter().copied()))
         .all(db)
-        .await?;
+        .await
+        .db_operation("load song credit artists")?;
 
     Ok(artists
         .into_iter()
@@ -350,7 +363,7 @@ async fn load_credit_artists(
 async fn load_relation_artists(
     related_song_ids: &[i32],
     db: &impl ConnectionTrait,
-) -> Result<HashMap<i32, SimpleArtist>, DbErr> {
+) -> Result<HashMap<i32, SimpleArtist>, DatabaseError> {
     if related_song_ids.is_empty() {
         return Ok(HashMap::new());
     }
@@ -362,7 +375,8 @@ async fn load_relation_artists(
         .order_by_asc(song_artist::Column::SongId)
         .order_by_asc(song_artist::Column::ArtistId)
         .all(db)
-        .await?
+        .await
+        .db_operation("load song relation artist links")?
         .into_iter()
         .fold(HashMap::new(), |mut map, song_artist| {
             map.entry(song_artist.song_id)
@@ -428,7 +442,7 @@ fn build_song_lyrics(
 async fn load_song_relations(
     song_id: i32,
     db: &impl ConnectionTrait,
-) -> Result<Vec<SongRelation>, DbErr> {
+) -> Result<Vec<SongRelation>, DatabaseError> {
     let relations = song_relation::Entity::find()
         .filter(
             song_relation::Column::FirstId
@@ -438,7 +452,8 @@ async fn load_song_relations(
         .order_by_asc(song_relation::Column::FirstId)
         .order_by_asc(song_relation::Column::SecondId)
         .all(db)
-        .await?;
+        .await
+        .db_operation("load song relation rows")?;
 
     if relations.is_empty() {
         return Ok(vec![]);
@@ -461,7 +476,8 @@ async fn load_song_relations(
                     song::Column::Id.is_in(related_song_ids.iter().copied()),
                 )
                 .all(db)
-                .await?
+                .await
+                .db_operation("load related songs")?
                 .into_iter()
                 .map(|song| {
                     (
@@ -482,7 +498,8 @@ async fn load_song_relations(
                         .is_in(relation_type_ids.iter().copied()),
                 )
                 .all(db)
-                .await?
+                .await
+                .db_operation("load song relation types")?
                 .into_iter()
                 .map(|relation_type| (relation_type.id, relation_type.into()))
                 .collect::<HashMap<i32, SongRelationType>>())
@@ -537,7 +554,7 @@ async fn find_sorted_by_correction(
     sort_field: CorrectionSortField,
     sort_direction: SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Song>, DbErr> {
+) -> Result<crate::domain::shared::PageResponse<Song>, DatabaseError> {
     use entity::enums::EntityType;
 
     let entity_ids =
@@ -550,7 +567,8 @@ async fn find_sorted_by_correction(
                 SortDirection::Desc => sea_orm::Order::Desc,
             },
         )
-        .await?;
+        .await
+        .db_operation("list correction-sorted song ids")?;
 
     if entity_ids.is_empty() {
         return Ok(utils::page_from_items(vec![], &pagination));

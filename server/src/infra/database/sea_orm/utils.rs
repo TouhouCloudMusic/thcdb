@@ -6,7 +6,7 @@ use entity::{user, user_role};
 use sea_orm::ActiveValue::*;
 use sea_orm::prelude::Expr;
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DatabaseConnection, DbErr, EntityTrait,
+    ColumnTrait, ConnectionTrait, DatabaseConnection, EntityTrait,
     IntoActiveModel, PaginatorTrait, QueryFilter, QueryOrder, Select,
     TransactionTrait,
 };
@@ -14,6 +14,7 @@ use sea_orm::{
 use crate::constant::ADMIN_USERNAME;
 use crate::domain::model::UserRoleEnum;
 use crate::domain::shared::{CursorResponse, PageResponse};
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::http::{CorrectionSortField, PageQuery, PaginationQuery};
 use crate::shared::secret::hash;
 
@@ -22,7 +23,7 @@ pub async fn correction_sorted_entity_ids(
     entity_type: entity::enums::EntityType,
     sort_field: CorrectionSortField,
     sort_direction: sea_orm::Order,
-) -> Result<Vec<i32>, DbErr> {
+) -> Result<Vec<i32>, DatabaseError> {
     use entity::correction::Column;
     let sort_column = match sort_field {
         CorrectionSortField::CreatedAt => Column::CreatedAt,
@@ -34,7 +35,8 @@ pub async fn correction_sorted_entity_ids(
             .filter(Column::EntityType.eq(entity_type))
             .order_by(sort_column, sort_direction.clone())
             .all(db)
-            .await?;
+            .await
+            .db_operation("load correction sort rows")?;
 
     let entity_ids = if matches!(sort_direction, sea_orm::Order::Asc) {
         // models are sorted oldest -> newest, order entities by their last occurrence.
@@ -202,11 +204,11 @@ pub async fn find_many_paginated<E, D, Fut>(
     id_column: E::Column,
     fetch: impl FnOnce(Select<E>) -> Fut,
     get_id: impl Fn(&D) -> i32,
-) -> Result<CursorResponse<D>, DbErr>
+) -> Result<CursorResponse<D>, DatabaseError>
 where
     E: EntityTrait,
     E::Column: ColumnTrait,
-    Fut: Future<Output = Result<Vec<D>, DbErr>>,
+    Fut: Future<Output = Result<Vec<D>, DatabaseError>>,
 {
     use sea_orm::{QueryFilter, QueryOrder, QuerySelect};
 
@@ -220,7 +222,9 @@ where
     select = select.order_by_asc(id_column);
     select = select.limit(u64::from(limit) + 1);
 
-    let mut items = fetch(select).await?;
+    let mut items = fetch(select)
+        .await
+        .db_operation("fetch cursor page items")?;
 
     let has_next = items.len() > limit as usize;
     if has_next {
@@ -242,16 +246,20 @@ pub async fn find_many_page<E, D, Fut>(
     pagination: PageQuery,
     id_column: E::Column,
     fetch: impl FnOnce(Select<E>) -> Fut,
-) -> Result<PageResponse<D>, DbErr>
+) -> Result<PageResponse<D>, DatabaseError>
 where
     E: EntityTrait,
     E::Model: sea_orm::FromQueryResult + Send + Sync + 'static,
     E::Column: ColumnTrait,
-    Fut: Future<Output = Result<Vec<D>, DbErr>>,
+    Fut: Future<Output = Result<Vec<D>, DatabaseError>>,
 {
     use sea_orm::{QueryOrder, QuerySelect};
 
-    let total_items = select.clone().count(db).await?;
+    let total_items = select
+        .clone()
+        .count(db)
+        .await
+        .db_operation("count page items")?;
 
     // Ensure stable ordering for offset pagination.
     select = select.order_by_asc(id_column);
@@ -260,7 +268,7 @@ where
         .offset(pagination.offset())
         .limit(u64::from(pagination.limit()));
 
-    let items = fetch(select).await?;
+    let items = fetch(select).await.db_operation("fetch page items")?;
 
     Ok(pagination.to_response(items, total_items))
 }

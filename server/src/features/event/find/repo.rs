@@ -1,7 +1,7 @@
 use entity::{event, event_alternative_name};
 use itertools::{Itertools, izip};
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DbErr, EntityTrait, LoaderTrait, QueryFilter,
+    ColumnTrait, ConnectionTrait, EntityTrait, LoaderTrait, QueryFilter,
     QueryOrder,
 };
 use sea_query::extension::postgres::PgBinOper;
@@ -82,7 +82,7 @@ async fn find_sorted_by_correction(
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Event>, DbErr> {
+) -> Result<crate::domain::shared::PageResponse<Event>, DatabaseError> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
@@ -97,7 +97,8 @@ async fn find_sorted_by_correction(
                 SortDirection::Desc => sea_orm::Order::Desc,
             },
         )
-        .await?;
+        .await
+        .db_operation("list correction-sorted event ids")?;
 
     if entity_ids.is_empty() {
         return Ok(utils::page_from_items(vec![], &pagination));
@@ -127,11 +128,13 @@ async fn find_sorted_by_correction(
 async fn find_many_impl(
     selector: sea_orm::Select<event::Entity>,
     db: &impl ConnectionTrait,
-) -> Result<Vec<Event>, sea_orm::DbErr> {
-    let events = selector.all(db).await?;
+) -> Result<Vec<Event>, DatabaseError> {
+    let events = selector.all(db).await.db_operation("load events")?;
 
-    let alt_names =
-        events.load_many(event_alternative_name::Entity, db).await?;
+    let alt_names = events
+        .load_many(event_alternative_name::Entity, db)
+        .await
+        .db_operation("load event alternative names")?;
 
     Ok(izip!(events, alt_names)
         .map(|(event, alt_name)| Event {

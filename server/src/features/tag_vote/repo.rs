@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 
-use sea_orm::{
-    ConnectionTrait, DbErr, EntityName, EntityTrait, FromQueryResult,
-};
+use sea_orm::{ConnectionTrait, EntityName, EntityTrait, FromQueryResult};
 use sea_query::{
     Alias, Expr, ExprTrait, Func, OnConflict, Order, Query, SimpleExpr,
 };
@@ -10,7 +8,7 @@ use sea_query::{
 use super::Error;
 use super::model::{EntityType, Score, TagAggregate, TagAggregateVote};
 use crate::domain::shared::CursorResponse;
-use crate::infra::database::error::DatabaseResultExt;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::shared::error::EntityNotFound;
 
@@ -156,7 +154,7 @@ pub async fn get_tags(
     cursor: Option<i32>,
     limit: u8,
 ) -> Result<CursorResponse<TagAggregate>, Error> {
-    let result: Result<CursorResponse<TagAggregate>, DbErr> = async {
+    let result: Result<CursorResponse<TagAggregate>, DatabaseError> = async {
         // TODO: Remove alias after update sea query to 1.0
         let vote_table = Alias::new(entity_type.vote_table_name());
         let entity_id_col = Alias::new(entity_type.entity_id_column());
@@ -250,7 +248,8 @@ pub async fn get_tags(
 
         let mut items = TagAggregateRow::find_by_statement(stmt)
             .all(&repo.conn)
-            .await?;
+            .await
+            .db_operation("load tag vote aggregates")?;
 
         let next_cursor = if items.len() > limit as usize {
             items.pop();
@@ -299,7 +298,7 @@ async fn load_tag_votes(
     entity_type: EntityType,
     entity_id: i32,
     tag_ids: Vec<i32>,
-) -> Result<HashMap<i32, Vec<TagAggregateVote>>, DbErr> {
+) -> Result<HashMap<i32, Vec<TagAggregateVote>>, DatabaseError> {
     if tag_ids.is_empty() {
         return Ok(HashMap::new());
     }
@@ -344,7 +343,8 @@ async fn load_tag_votes(
     let stmt = repo.conn.get_database_backend().build(&query);
     let rows = TagAggregateVoteRow::find_by_statement(stmt)
         .all(&repo.conn)
-        .await?;
+        .await
+        .db_operation("load tag aggregate votes")?;
 
     let mut votes = HashMap::<i32, Vec<TagAggregateVote>>::new();
     for row in rows {

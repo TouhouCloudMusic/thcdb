@@ -8,7 +8,7 @@ use entity::{
 };
 use itertools::{Itertools, izip};
 use sea_orm::{
-    ColumnTrait, Condition, ConnectionTrait, DbErr, EntityTrait, LoaderTrait,
+    ColumnTrait, Condition, ConnectionTrait, EntityTrait, LoaderTrait,
     PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Select,
 };
 use sea_query::extension::postgres::PgBinOper;
@@ -80,8 +80,8 @@ pub(crate) async fn exists(
 async fn find_many_impl(
     select: Select<artist::Entity>,
     db: &impl ConnectionTrait,
-) -> Result<Vec<Artist>, DbErr> {
-    let artists = select.all(db).await?;
+) -> Result<Vec<Artist>, DatabaseError> {
+    let artists = select.all(db).await.db_operation("load artists")?;
 
     let ids = artists.iter().map(|x| x.id).unique().collect_vec();
 
@@ -96,14 +96,16 @@ async fn find_many_impl(
                 .add(artist_alias::Column::SecondId.is_in(ids.iter().copied())),
         )
         .all(db)
-        .await?;
+        .await
+        .db_operation("load artist aliases")?;
 
     let artist_images = artist_image::Entity::find()
         .filter(artist_image::Column::ArtistId.is_in(ids.iter().copied()))
         .find_also_related(image::Entity)
         .order_by_desc(image::Column::UploadedAt)
         .all(db)
-        .await?;
+        .await
+        .db_operation("load artist images")?;
 
     let mut images_map: HashMap<i32, Vec<_>> = artist_images.into_iter().fold(
         HashMap::new(),
@@ -128,9 +130,14 @@ async fn find_many_impl(
         })
         .unzip();
 
-    let links = artists.load_many(artist_link::Entity, db).await?;
-    let localized_names =
-        artists.load_many(artist_localized_name::Entity, db).await?;
+    let links = artists
+        .load_many(artist_link::Entity, db)
+        .await
+        .db_operation("load artist links")?;
+    let localized_names = artists
+        .load_many(artist_localized_name::Entity, db)
+        .await
+        .db_operation("load artist localized names")?;
 
     let artist_memberships = artist_membership::Entity::find()
         .filter(
@@ -142,7 +149,8 @@ async fn find_many_impl(
                 .add(artist_membership::Column::GroupId.is_in(ids)),
         )
         .all(db)
-        .await?;
+        .await
+        .db_operation("load artist memberships")?;
 
     let roles = artist_memberships
         .load_many_to_many(
@@ -150,11 +158,13 @@ async fn find_many_impl(
             artist_membership_role::Entity,
             db,
         )
-        .await?;
+        .await
+        .db_operation("load artist membership roles")?;
 
     let join_leaves = artist_memberships
         .load_many(artist_membership_tenure::Entity, db)
-        .await?;
+        .await
+        .db_operation("load artist membership tenures")?;
 
     let group_association =
         izip!(artist_memberships, roles, join_leaves).collect_vec();
@@ -168,7 +178,8 @@ async fn find_many_impl(
             ),
         )
         .all(db)
-        .await?;
+        .await
+        .db_operation("load artist localized name languages")?;
 
     let ret = izip!(artists, links, localized_names, images)
         .map(|(artist, links, localized_names, image)| {
@@ -320,7 +331,7 @@ async fn find_sorted_by_correction(
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Artist>, DbErr> {
+) -> Result<crate::domain::shared::PageResponse<Artist>, DatabaseError> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
@@ -335,7 +346,8 @@ async fn find_sorted_by_correction(
                 SortDirection::Desc => sea_orm::Order::Desc,
             },
         )
-        .await?;
+        .await
+        .db_operation("list correction-sorted artist ids")?;
 
     if entity_ids.is_empty() {
         return Ok(utils::page_from_items(vec![], &pagination));

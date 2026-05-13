@@ -26,7 +26,7 @@ pub(super) async fn find_one(
     repo: &SeaOrmRepository,
     filter: FindOneFilter,
 ) -> Result<Option<SongLyrics>, DatabaseError> {
-    let result: Result<Option<SongLyrics>, sea_orm::DbErr> = async {
+    let result: Result<Option<SongLyrics>, DatabaseError> = async {
         let condition = match filter {
             FindOneFilter::Id { id } => song_lyrics::Column::Id.eq(id),
             FindOneFilter::SongAndLang {
@@ -40,10 +40,14 @@ pub(super) async fn find_one(
         let model = song_lyrics::Entity::find()
             .filter(condition)
             .one(&repo.conn)
-            .await?;
+            .await
+            .db_operation("load song lyrics")?;
 
         if let Some(model) = model {
-            let lang_cache = LANGUAGE_CACHE.get_or_init(&repo.conn).await?;
+            let lang_cache = LANGUAGE_CACHE
+                .get_or_init(&repo.conn)
+                .await
+                .db_operation("load languages for song lyrics")?;
             Ok(Some(map_song_lyrics(model, lang_cache)))
         } else {
             Ok(None)
@@ -58,7 +62,7 @@ pub(super) async fn find_many(
     repo: &SeaOrmRepository,
     filter: FindManyFilter,
 ) -> Result<Vec<SongLyrics>, DatabaseError> {
-    let result: Result<Vec<SongLyrics>, sea_orm::DbErr> = async {
+    let result: Result<Vec<SongLyrics>, DatabaseError> = async {
         let condition = match filter {
             FindManyFilter::Song { song_id } => {
                 song_lyrics::Column::SongId.eq(song_id)
@@ -74,13 +78,17 @@ pub(super) async fn find_many(
         let models = song_lyrics::Entity::find()
             .filter(condition)
             .all(&repo.conn)
-            .await?;
+            .await
+            .db_operation("load song lyrics list")?;
 
         if models.is_empty() {
             return Ok(vec![]);
         }
 
-        let lang_cache = LANGUAGE_CACHE.get_or_init(&repo.conn).await?;
+        let lang_cache = LANGUAGE_CACHE
+            .get_or_init(&repo.conn)
+            .await
+            .db_operation("load languages for song lyrics")?;
 
         Ok(models
             .into_iter()

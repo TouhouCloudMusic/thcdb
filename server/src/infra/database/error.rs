@@ -62,6 +62,13 @@ impl<T> DatabaseResultExt<T> for Result<T, DbErr> {
     }
 }
 
+impl<T> DatabaseResultExt<T> for Result<T, DatabaseError> {
+    #[track_caller]
+    fn db_operation(self, operation: &'static str) -> Result<T, DatabaseError> {
+        self.map_err(|err| err.db_operation(operation))
+    }
+}
+
 #[derive(Debug)]
 pub struct IdOrIds(Coprod!(i32, Vec<i32>));
 

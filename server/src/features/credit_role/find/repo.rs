@@ -1,5 +1,5 @@
 use entity::credit_role;
-use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter, QueryOrder};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
 use serde::Deserialize;
@@ -35,7 +35,7 @@ pub(super) async fn find_many_summary(
     filter: FindManyFilter,
     common: CommonFilter,
 ) -> Result<Vec<CreditRoleSummary>, DatabaseError> {
-    let result: Result<Vec<CreditRoleSummary>, DbErr> = async {
+    let result: Result<Vec<CreditRoleSummary>, DatabaseError> = async {
         let _ = common;
 
         let roles = match filter {
@@ -52,7 +52,8 @@ pub(super) async fn find_many_summary(
                             .binary(PgBinOper::SimilarityDistance, search_term),
                     )
                     .all(&repo.conn)
-                    .await?
+                    .await
+                    .db_operation("load credit role summaries")?
             }
         };
 
