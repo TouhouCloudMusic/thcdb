@@ -9,7 +9,6 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::tag::model::Tag;
-use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
 
 const TAG: &str = "Tag";
@@ -44,7 +43,6 @@ async fn find_tag_by_id(
 ) -> Result<Data<Option<Tag>>, AppError> {
     super::repo::find_by_id(&repo, id)
         .await
-        .with_operation("find tag by id")
         .map(Data::from)
         .map_err(Into::into)
 }
@@ -69,7 +67,6 @@ async fn find_tag_by_keyword(
 ) -> Result<Data<Vec<Tag>>, AppError> {
     super::repo::find_by_keyword(&repo, &query.keyword)
         .await
-        .with_operation("find tags by keyword")
         .map(Data::from)
         .map_err(Into::into)
 }
@@ -97,7 +94,6 @@ async fn explore_tag(
     );
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
-        .with_operation("explore tags")
         .map(Data::from)
         .map_err(Into::into)
 }

@@ -1,7 +1,5 @@
-use sea_orm::DbErr;
-
 use crate::features::song_lyrics::model::NewSongLyrics;
-use crate::infra::database::error::DatabaseError;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::{
     SeaOrmTxRepo, song_lyrics as lyrics_impls,
 };
@@ -33,13 +31,17 @@ where
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,
     data: &NewSongLyrics,
-) -> Result<i32, DbErr> {
-    lyrics_impls::create_lyrics_impl(data, repo.conn()).await
+) -> Result<i32, DatabaseError> {
+    lyrics_impls::create_lyrics_impl(data, repo.conn())
+        .await
+        .with_operation("create song lyrics")
 }
 
 pub(super) async fn create_history(
     repo: &SeaOrmTxRepo,
     data: &NewSongLyrics,
-) -> Result<i32, DbErr> {
-    lyrics_impls::create_history_impl(data, repo.conn()).await
+) -> Result<i32, DatabaseError> {
+    lyrics_impls::create_history_impl(data, repo.conn())
+        .await
+        .with_operation("create song lyrics history")
 }

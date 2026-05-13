@@ -14,7 +14,7 @@ use crate::domain::release::SimpleRelease;
 use crate::domain::shared::{CursorResponse, SearchTerm, SearchTermConfig};
 use crate::domain::song::SongRef;
 use crate::domain::tag::TagRef;
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::infra::database::error::DatabaseError;
 use crate::shared::error::MessageValidationError as ValidationError;
 use crate::shared::http::api_response::{AppError, Data};
 
@@ -103,16 +103,14 @@ impl SearchResponse {
         cursor: i32,
     ) -> Result<Self, DatabaseError> {
         let search_term = search_term.as_str();
-        let (artists, releases, songs, events, labels, tags) =
-            tokio::try_join!(
-                repo::search_artists(repo, search_term, limit, cursor),
-                repo::search_releases(repo, search_term, limit, cursor),
-                repo::search_songs(repo, search_term, limit, cursor),
-                repo::search_events(repo, search_term, limit, cursor),
-                repo::search_labels(repo, search_term, limit, cursor),
-                repo::search_tags(repo, search_term, limit, cursor),
-            )
-            .with_operation("search all")?;
+        let (artists, releases, songs, events, labels, tags) = tokio::try_join!(
+            repo::search_artists(repo, search_term, limit, cursor),
+            repo::search_releases(repo, search_term, limit, cursor),
+            repo::search_songs(repo, search_term, limit, cursor),
+            repo::search_events(repo, search_term, limit, cursor),
+            repo::search_labels(repo, search_term, limit, cursor),
+            repo::search_tags(repo, search_term, limit, cursor),
+        )?;
 
         Ok(Self {
             artists,
@@ -209,9 +207,8 @@ async fn search_artist(
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
-    let response = repo::search_artists(&sea_repo, search_term, limit, cursor)
-        .await
-        .with_operation("search artists")?;
+    let response =
+        repo::search_artists(&sea_repo, search_term, limit, cursor).await?;
 
     log::info!(
         target: "features.search.http",
@@ -249,9 +246,8 @@ async fn search_release(
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
-    let response = repo::search_releases(&sea_repo, search_term, limit, cursor)
-        .await
-        .with_operation("search releases")?;
+    let response =
+        repo::search_releases(&sea_repo, search_term, limit, cursor).await?;
 
     log::info!(
         target: "features.search.http",
@@ -289,9 +285,8 @@ async fn search_song(
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
-    let response = repo::search_songs(&sea_repo, search_term, limit, cursor)
-        .await
-        .with_operation("search songs")?;
+    let response =
+        repo::search_songs(&sea_repo, search_term, limit, cursor).await?;
 
     log::info!(
         target: "features.search.http",
@@ -329,9 +324,8 @@ async fn search_event(
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
-    let response = repo::search_events(&sea_repo, search_term, limit, cursor)
-        .await
-        .with_operation("search events")?;
+    let response =
+        repo::search_events(&sea_repo, search_term, limit, cursor).await?;
 
     log::info!(
         target: "features.search.http",
@@ -369,9 +363,8 @@ async fn search_label(
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
-    let response = repo::search_labels(&sea_repo, search_term, limit, cursor)
-        .await
-        .with_operation("search labels")?;
+    let response =
+        repo::search_labels(&sea_repo, search_term, limit, cursor).await?;
 
     log::info!(
         target: "features.search.http",
@@ -409,9 +402,8 @@ async fn search_tag(
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
-    let response = repo::search_tags(&sea_repo, search_term, limit, cursor)
-        .await
-        .with_operation("search tags")?;
+    let response =
+        repo::search_tags(&sea_repo, search_term, limit, cursor).await?;
 
     log::info!(
         target: "features.search.http",

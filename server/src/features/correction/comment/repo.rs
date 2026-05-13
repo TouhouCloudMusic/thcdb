@@ -11,6 +11,7 @@ use sea_orm::{
 use super::error::{Error, NotFound};
 use super::model::{CorrectionComment, CreateCorrectionCommentRequest};
 use crate::domain::shared::CursorResponse;
+use crate::infra::database::error::DatabaseResultExt;
 
 pub(super) async fn ensure_correction_exists(
     conn: &impl ConnectionTrait,
@@ -19,7 +20,7 @@ pub(super) async fn ensure_correction_exists(
     let exists = correction_entity::Entity::find_by_id(correction_id)
         .one(conn)
         .await
-        .map_err(Error::from)?
+        .with_operation("check correction exists for comment")?
         .is_some();
 
     if exists {
@@ -49,7 +50,7 @@ pub(super) async fn load_comments_page(
         .find_also_related(entity::user::Entity)
         .all(conn)
         .await
-        .map_err(Error::from)?;
+        .with_operation("load correction comments")?;
 
     let has_next = rows.len() > usize::try_from(limit).unwrap_or(usize::MAX);
     let items = rows
@@ -91,7 +92,8 @@ pub(super) async fn insert_comment(
     })
     .exec_with_returning(conn)
     .await
-    .map_err(Error::from)
+    .with_operation("insert correction comment")
+    .map_err(Into::into)
 }
 
 pub(super) async fn find_comment(
@@ -101,7 +103,7 @@ pub(super) async fn find_comment(
     comment_entity::Entity::find_by_id(comment_id)
         .one(conn)
         .await
-        .map_err(Error::from)?
+        .with_operation("find correction comment")?
         .ok_or(Error::NotFound(NotFound::Comment))
 }
 
@@ -113,7 +115,7 @@ pub(super) async fn load_comment_summary(
         .find_also_related(entity::user::Entity)
         .one(conn)
         .await
-        .map_err(Error::from)?
+        .with_operation("load correction comment summary")?
         .ok_or(Error::NotFound(NotFound::Comment))?;
 
     let author = author.ok_or_else(|| {
@@ -133,7 +135,10 @@ pub(super) async fn soft_delete_comment(
 
     let mut active = comment.into_active_model();
     active.state = Set(DbCommentState::Deleted);
-    active.update(conn).await.map_err(Error::from)?;
+    active
+        .update(conn)
+        .await
+        .with_operation("soft delete correction comment")?;
 
     Ok(())
 }
@@ -150,7 +155,7 @@ async fn validate_parent(
     let parent = comment_entity::Entity::find_by_id(parent_id)
         .one(conn)
         .await
-        .map_err(Error::from)?
+        .with_operation("validate correction comment parent")?
         .ok_or_else(|| {
             Error::InvalidRequest("Parent comment not found".to_string())
         })?;

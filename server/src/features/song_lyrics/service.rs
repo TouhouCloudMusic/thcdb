@@ -6,6 +6,7 @@ use crate::features::correction::{
     SubmissionError, service as correction_service,
 };
 use crate::features::song_lyrics::model::NewSongLyrics;
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 
 pub async fn create(
@@ -17,7 +18,10 @@ pub async fn create(
         .validate()
         .map_err(|source| SubmissionError::Validation(source.to_string()))?;
 
-    let tx_repo = repo.begin_tx().await?;
+    let tx_repo = repo
+        .begin_tx()
+        .await
+        .with_operation("begin song lyrics creation correction transaction")?;
 
     let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
     let history_id =
@@ -66,7 +70,10 @@ pub async fn upsert_correction(
         .validate()
         .map_err(|source| SubmissionError::Validation(source.to_string()))?;
 
-    let tx_repo = repo.begin_tx().await?;
+    let tx_repo = repo
+        .begin_tx()
+        .await
+        .with_operation("begin song lyrics update correction transaction")?;
 
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;

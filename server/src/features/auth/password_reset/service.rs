@@ -7,7 +7,6 @@ use chrono::{DateTime, Duration, FixedOffset, Utc};
 use fred::prelude::{KeysInterface, LuaInterface};
 use lettre::message::Mailbox;
 use rand::Rng;
-use sea_orm::DbErr;
 use serde::{Deserialize, Serialize};
 
 use super::error::{
@@ -20,6 +19,7 @@ use crate::domain::auth::validate_password;
 use crate::domain::model::VerificationCode;
 use crate::domain::user::User;
 use crate::features::auth::{Email, InvalidEmail, Service, repo};
+use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{InternalError, InvalidInput, MessageError};
 use crate::shared::secret;
 
@@ -466,7 +466,7 @@ impl Service {
     async fn find_verified_user_by_email(
         &self,
         email: &Email,
-    ) -> Result<Option<User>, DbErr> {
+    ) -> Result<Option<User>, DatabaseError> {
         Ok(repo::find_by_email(&self.repo.conn, email)
             .await?
             .filter(|user| user.email_verified))
@@ -494,7 +494,7 @@ impl Service {
     async fn find_verified_user_by_id(
         &self,
         user_id: i32,
-    ) -> Result<Option<User>, DbErr> {
+    ) -> Result<Option<User>, DatabaseError> {
         Ok(repo::find_by_id(&self.repo.conn, user_id)
             .await?
             .filter(|user| user.email_verified))

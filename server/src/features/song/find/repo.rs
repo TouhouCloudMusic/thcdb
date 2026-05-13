@@ -31,6 +31,7 @@ use crate::domain::song::{
 };
 use crate::domain::song_lyrics::SongLyrics;
 use crate::features::song::model::Song;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::cache::LANGUAGE_CACHE;
 use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
 use crate::shared::http::{CorrectionSortField, SortDirection};
@@ -38,23 +39,28 @@ use crate::shared::http::{CorrectionSortField, SortDirection};
 pub(super) async fn find_by_id(
     repo: &SeaOrmRepository,
     id: i32,
-) -> Result<Option<Song>, DbErr> {
-    let select = song::Entity::find().filter(Id.eq(id));
+) -> Result<Option<Song>, DatabaseError> {
+    let result: Result<Option<Song>, DbErr> = async {
+        let select = song::Entity::find().filter(Id.eq(id));
 
-    let mut songs = find_many_impl(select, &repo.conn).await?;
-    let Some(mut song) = songs.pop() else {
-        return Ok(None);
-    };
+        let mut songs = find_many_impl(select, &repo.conn).await?;
+        let Some(mut song) = songs.pop() else {
+            return Ok(None);
+        };
 
-    song.relations = load_song_relations(song.id, &repo.conn).await?;
+        song.relations = load_song_relations(song.id, &repo.conn).await?;
 
-    Ok(Some(song))
+        Ok(Some(song))
+    }
+    .await;
+
+    result.with_operation("find song by id")
 }
 
 pub(super) async fn find_by_keyword(
     repo: &SeaOrmRepository,
     keyword: &str,
-) -> Result<Vec<Song>, DbErr> {
+) -> Result<Vec<Song>, DatabaseError> {
     let search_term = Func::lower(keyword);
 
     let select = song::Entity::find()
@@ -67,14 +73,16 @@ pub(super) async fn find_by_keyword(
                 .binary(SimilarityDistance, search_term),
         );
 
-    find_many_impl(select, &repo.conn).await
+    find_many_impl(select, &repo.conn)
+        .await
+        .with_operation("find songs by keyword")
 }
 
 pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: SongFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Song>, DbErr> {
+) -> Result<crate::domain::shared::PageResponse<Song>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -85,7 +93,8 @@ pub(super) async fn find_by_filter(
             sort_direction,
             pagination,
         )
-        .await;
+        .await
+        .with_operation("explore songs");
     }
 
     let select: Select<song::Entity> = filter.into_select();
@@ -97,6 +106,7 @@ pub(super) async fn find_by_filter(
         |select| find_many_impl(select, &repo.conn),
     )
     .await
+    .with_operation("explore songs")
 }
 
 #[expect(clippy::too_many_lines)]

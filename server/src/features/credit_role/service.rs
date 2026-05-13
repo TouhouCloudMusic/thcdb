@@ -6,13 +6,17 @@ use crate::features::correction::{
     SubmissionError, service as correction_service,
 };
 use crate::features::credit_role::model::NewCreditRole;
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 
 pub async fn create(
     repo: &SeaOrmRepository,
     correction: NewCorrection<NewCreditRole>,
 ) -> Result<CorrectionSubmissionResult, SubmissionError> {
-    let tx_repo = repo.begin_tx().await?;
+    let tx_repo = repo
+        .begin_tx()
+        .await
+        .with_operation("begin credit role creation correction transaction")?;
 
     let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
 
@@ -46,7 +50,10 @@ pub async fn upsert_correction(
     id: i32,
     correction: NewCorrection<NewCreditRole>,
 ) -> Result<CorrectionSubmissionResult, SubmissionError> {
-    let tx_repo = repo.begin_tx().await?;
+    let tx_repo = repo
+        .begin_tx()
+        .await
+        .with_operation("begin credit role update correction transaction")?;
 
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;

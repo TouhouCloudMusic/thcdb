@@ -5,6 +5,7 @@ use super::model::{CorrectionComment, CreateCorrectionCommentRequest};
 use super::repo;
 use crate::domain::model::CommentManage;
 use crate::domain::shared::CursorResponse;
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::shared::http::PaginationQuery;
 
@@ -41,7 +42,11 @@ impl Service {
     ) -> Result<CorrectionComment, Error> {
         req.validate().map_err(Error::InvalidRequest)?;
 
-        let tx_repo = self.repo.begin_tx().await.map_err(Error::from)?;
+        let tx_repo = self
+            .repo
+            .begin_tx()
+            .await
+            .with_operation("begin correction comment transaction")?;
         let conn = tx_repo.conn();
         repo::ensure_correction_exists(conn, correction_id).await?;
         let comment =
@@ -79,6 +84,7 @@ impl Service {
             user_id,
         )
         .await
-        .map_err(Error::from)
+        .with_operation("check correction comment manage permission")
+        .map_err(Into::into)
     }
 }

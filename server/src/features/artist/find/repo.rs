@@ -19,13 +19,14 @@ use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::image::Image;
 use crate::domain::shared::{LocalizedName, Location};
 use crate::features::artist::model::{Artist, Membership, Tenure};
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
 
 pub(super) async fn find_one(
     repo: &SeaOrmRepository,
     id: i32,
     common: CommonFilter,
-) -> Result<Option<Artist>, DbErr> {
+) -> Result<Option<Artist>, DatabaseError> {
     let select = artist::Entity::find()
         .filter(artist::Column::Id.eq(id))
         .filter(SimpleExpr::from(common));
@@ -33,13 +34,14 @@ pub(super) async fn find_one(
     find_many_impl(select, &repo.conn)
         .await
         .map(|x| x.into_iter().next())
+        .with_operation("find artist by id")
 }
 
 pub(super) async fn find_many(
     repo: &SeaOrmRepository,
     filter: FindManyFilter,
     common: CommonFilter,
-) -> Result<Vec<Artist>, DbErr> {
+) -> Result<Vec<Artist>, DatabaseError> {
     let FindManyFilter::Keyword(keyword) = &filter;
 
     let search_term = Func::lower(keyword);
@@ -55,13 +57,15 @@ pub(super) async fn find_many(
                 .binary(PgBinOper::SimilarityDistance, search_term),
         );
 
-    find_many_impl(select, &repo.conn).await
+    find_many_impl(select, &repo.conn)
+        .await
+        .with_operation("find artists by keyword")
 }
 
 pub(crate) async fn exists(
     db: &impl ConnectionTrait,
     id: i32,
-) -> Result<bool, DbErr> {
+) -> Result<bool, DatabaseError> {
     artist::Entity::find()
         .select_only()
         .expr(1)
@@ -69,6 +73,7 @@ pub(crate) async fn exists(
         .count(db)
         .await
         .map(|count: u64| count > 0)
+        .with_operation("check artist exists")
 }
 
 #[expect(clippy::too_many_lines, reason = "TODO")]
@@ -282,7 +287,7 @@ pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::ArtistFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Artist>, DbErr> {
+) -> Result<crate::domain::shared::PageResponse<Artist>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -293,7 +298,8 @@ pub(super) async fn find_by_filter(
             sort_direction,
             pagination,
         )
-        .await;
+        .await
+        .with_operation("explore artists");
     }
 
     let select = filter.into_select();
@@ -305,6 +311,7 @@ pub(super) async fn find_by_filter(
         |select| find_many_impl(select, &repo.conn),
     )
     .await
+    .with_operation("explore artists")
 }
 
 async fn find_sorted_by_correction(

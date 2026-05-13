@@ -1,5 +1,3 @@
-use sea_orm::DbErr;
-
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::http::api_response::{AppError, AppErrorKind};
@@ -41,15 +39,6 @@ pub(super) enum Error {
     NotFound(NotFound),
     CollectionAccessDenied,
     InvalidRequest(String),
-}
-
-impl From<DbErr> for Error {
-    fn from(err: DbErr) -> Self {
-        Self::Database(
-            DatabaseError::new(err)
-                .with_operation("user collection database operation"),
-        )
-    }
 }
 
 impl From<Error> for AppError {

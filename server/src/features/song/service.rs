@@ -6,6 +6,7 @@ use crate::features::correction::{
     SubmissionError, service as correction_service,
 };
 use crate::features::song::model::NewSong;
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 
 pub async fn create(
@@ -16,7 +17,10 @@ pub async fn create(
         .data
         .validate(None)
         .map_err(|source| SubmissionError::Validation(source.to_string()))?;
-    let tx_repo = repo.begin_tx().await?;
+    let tx_repo = repo
+        .begin_tx()
+        .await
+        .with_operation("begin song creation correction transaction")?;
 
     let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
     let history_id =
@@ -64,7 +68,10 @@ pub async fn upsert_correction(
         .data
         .validate(Some(id))
         .map_err(|source| SubmissionError::Validation(source.to_string()))?;
-    let tx_repo = repo.begin_tx().await?;
+    let tx_repo = repo
+        .begin_tx()
+        .await
+        .with_operation("begin song update correction transaction")?;
 
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;

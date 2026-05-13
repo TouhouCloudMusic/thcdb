@@ -12,7 +12,6 @@ use crate::features::artist::model::{
     Appearance, AppearanceQuery, Credit, CreditQuery, Discography,
     DiscographyQuery,
 };
-use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Artist";
@@ -70,7 +69,6 @@ async fn find_artist_appearances(
 ) -> Result<Data<CursorResponse<Appearance>>, AppError> {
     super::repo::appearance(&repo, dto.into_query(id))
         .await
-        .with_operation("find artist appearances")
         .map(Data::from)
         .map_err(Into::into)
 }
@@ -111,7 +109,6 @@ async fn get_artist_credits(
 ) -> Result<Data<CursorResponse<Credit>>, AppError> {
     super::repo::credit(&repo, dto.into_query(id))
         .await
-        .with_operation("find artist credits")
         .map(Data::from)
         .map_err(Into::into)
 }
@@ -154,7 +151,6 @@ async fn find_artist_discographies_by_type(
 ) -> Result<Data<CursorResponse<Discography>>, AppError> {
     super::repo::discography(&repo, dto.into_query(id))
         .await
-        .with_operation("find artist discography by type")
         .map(Data::from)
         .map_err(Into::into)
 }
@@ -221,8 +217,7 @@ async fn find_artist_discographies_init(
         super::repo::discography(&repo, dto.to_query(id, ReleaseType::Single)),
         super::repo::discography(&repo, dto.to_query(id, ReleaseType::Demo)),
         super::repo::discography(&repo, dto.to_query(id, ReleaseType::Other)),
-    )
-    .with_operation("find initial artist discographies")?;
+    )?;
 
     Ok(Data::new(InitDiscography {
         album,

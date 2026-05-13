@@ -1,5 +1,3 @@
-use sea_orm::DbErr;
-
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::http::api_response::AppError;
@@ -13,15 +11,6 @@ pub enum SubmissionError {
     Database(DatabaseError),
     #[from]
     Internal(InternalError),
-}
-
-impl From<DbErr> for SubmissionError {
-    fn from(err: DbErr) -> Self {
-        Self::Database(
-            DatabaseError::new(err)
-                .with_operation("correction submission database operation"),
-        )
-    }
 }
 
 impl From<SubmissionError> for AppError {
@@ -46,15 +35,6 @@ pub enum ModerationError {
     Database(DatabaseError),
     #[from]
     Internal(InternalError),
-}
-
-impl From<DbErr> for ModerationError {
-    fn from(err: DbErr) -> Self {
-        Self::Database(
-            DatabaseError::new(err)
-                .with_operation("correction moderation database operation"),
-        )
-    }
 }
 
 impl From<ModerationError> for AppError {

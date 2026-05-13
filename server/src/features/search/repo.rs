@@ -3,7 +3,7 @@ use entity::{
     label_localized_name, release, release_localized_title, song,
     song_localized_title, tag, tag_alternative_name,
 };
-use sea_orm::{ColumnTrait, ConnectionTrait, DbErr, FromQueryResult};
+use sea_orm::{ColumnTrait, ConnectionTrait, FromQueryResult};
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{
     Alias, Expr, ExprTrait, Func, IntoTableRef, Order, Query, SelectStatement,
@@ -17,6 +17,7 @@ use crate::domain::release::SimpleRelease;
 use crate::domain::shared::CursorResponse;
 use crate::domain::song::SongRef;
 use crate::domain::tag::TagRef;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::SeaOrmRepository;
 
 #[derive(Clone, Copy)]
@@ -157,7 +158,7 @@ pub async fn search_artists(
     search_term: &str,
     limit: u32,
     cursor: i32,
-) -> Result<CursorResponse<SimpleArtist>, DbErr> {
+) -> Result<CursorResponse<SimpleArtist>, DatabaseError> {
     let db = &repo.conn;
     let ranked_alias = Alias::new(SEARCH_ALIAS_RANKED);
     let id_alias = Alias::new(SEARCH_ALIAS_ID);
@@ -198,7 +199,8 @@ pub async fn search_artists(
     let stmt = db.get_database_backend().build(&query);
     let items = ArtistRow::find_by_statement(stmt)
         .all(db)
-        .await?
+        .await
+        .with_operation("search artists")?
         .into_iter()
         .map(|row| SimpleArtist {
             id: row.id,
@@ -214,7 +216,7 @@ pub async fn search_releases(
     search_term: &str,
     limit: u32,
     cursor: i32,
-) -> Result<CursorResponse<SimpleRelease>, DbErr> {
+) -> Result<CursorResponse<SimpleRelease>, DatabaseError> {
     let db = &repo.conn;
     let ranked_alias = Alias::new(SEARCH_ALIAS_RANKED);
     let id_alias = Alias::new(SEARCH_ALIAS_ID);
@@ -255,7 +257,8 @@ pub async fn search_releases(
     let stmt = db.get_database_backend().build(&query);
     let items = ReleaseRow::find_by_statement(stmt)
         .all(db)
-        .await?
+        .await
+        .with_operation("search releases")?
         .into_iter()
         .map(|row| SimpleRelease {
             id: row.id,
@@ -272,7 +275,7 @@ pub async fn search_songs(
     search_term: &str,
     limit: u32,
     cursor: i32,
-) -> Result<CursorResponse<SongRef>, DbErr> {
+) -> Result<CursorResponse<SongRef>, DatabaseError> {
     let db = &repo.conn;
     let ranked_alias = Alias::new(SEARCH_ALIAS_RANKED);
     let id_alias = Alias::new(SEARCH_ALIAS_ID);
@@ -313,7 +316,8 @@ pub async fn search_songs(
     let stmt = db.get_database_backend().build(&query);
     let items = SongRow::find_by_statement(stmt)
         .all(db)
-        .await?
+        .await
+        .with_operation("search songs")?
         .into_iter()
         .map(|row| SongRef {
             id: row.id,
@@ -329,7 +333,7 @@ pub async fn search_events(
     search_term: &str,
     limit: u32,
     cursor: i32,
-) -> Result<CursorResponse<SimpleEvent>, DbErr> {
+) -> Result<CursorResponse<SimpleEvent>, DatabaseError> {
     let db = &repo.conn;
     let ranked_alias = Alias::new(SEARCH_ALIAS_RANKED);
     let id_alias = Alias::new(SEARCH_ALIAS_ID);
@@ -370,7 +374,8 @@ pub async fn search_events(
     let stmt = db.get_database_backend().build(&query);
     let items = EventRow::find_by_statement(stmt)
         .all(db)
-        .await?
+        .await
+        .with_operation("search events")?
         .into_iter()
         .map(|row| SimpleEvent {
             id: row.id,
@@ -386,7 +391,7 @@ pub async fn search_labels(
     search_term: &str,
     limit: u32,
     cursor: i32,
-) -> Result<CursorResponse<SimpleLabel>, DbErr> {
+) -> Result<CursorResponse<SimpleLabel>, DatabaseError> {
     let db = &repo.conn;
     let ranked_alias = Alias::new(SEARCH_ALIAS_RANKED);
     let id_alias = Alias::new(SEARCH_ALIAS_ID);
@@ -427,7 +432,8 @@ pub async fn search_labels(
     let stmt = db.get_database_backend().build(&query);
     let items = LabelRow::find_by_statement(stmt)
         .all(db)
-        .await?
+        .await
+        .with_operation("search labels")?
         .into_iter()
         .map(|row| SimpleLabel {
             id: row.id,
@@ -443,7 +449,7 @@ pub async fn search_tags(
     search_term: &str,
     limit: u32,
     cursor: i32,
-) -> Result<CursorResponse<TagRef>, DbErr> {
+) -> Result<CursorResponse<TagRef>, DatabaseError> {
     let db = &repo.conn;
     let ranked_alias = Alias::new(SEARCH_ALIAS_RANKED);
     let id_alias = Alias::new(SEARCH_ALIAS_ID);
@@ -489,7 +495,8 @@ pub async fn search_tags(
     let stmt = db.get_database_backend().build(&query);
     let items = TagRow::find_by_statement(stmt)
         .all(db)
-        .await?
+        .await
+        .with_operation("search tags")?
         .into_iter()
         .map(|row| TagRef {
             id: row.id,

@@ -83,16 +83,14 @@ async fn compare_corrections(
         left.entity_type,
         left_revision.entity_history_id,
     )
-    .await
-    .with_operation("load left correction comparison snapshot")?;
+    .await?;
 
     let right_snapshot = correction_diff::snapshot_for_history(
         &repo.conn,
         right.entity_type,
         right_revision.entity_history_id,
     )
-    .await
-    .with_operation("load right correction comparison snapshot")?;
+    .await?;
 
     let changes =
         correction_diff::diff_snapshots(&left_snapshot, &right_snapshot);

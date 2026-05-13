@@ -1,9 +1,8 @@
 use entity::credit_role::Model as DbCreditRole;
-use sea_orm::DbErr;
 
 use crate::domain::shared::query_kind;
 use crate::features::credit_role::model::NewCreditRole;
-use crate::infra::database::error::DatabaseError;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::{
     SeaOrmTxRepo, credit_role as credit_role_impls,
 };
@@ -42,19 +41,19 @@ where
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,
     data: &NewCreditRole,
-) -> Result<i32, DbErr> {
-    Ok(credit_role_impls::create_credit_role(data, repo.conn())
-        .await?
-        .id)
+) -> Result<i32, DatabaseError> {
+    credit_role_impls::create_credit_role(data, repo.conn())
+        .await
+        .map(|role| role.id)
+        .with_operation("create credit role")
 }
 
 pub(super) async fn create_history(
     repo: &SeaOrmTxRepo,
     data: &NewCreditRole,
-) -> Result<i32, DbErr> {
-    Ok(
-        credit_role_impls::create_credit_role_history(data, repo.conn())
-            .await?
-            .id,
-    )
+) -> Result<i32, DatabaseError> {
+    credit_role_impls::create_credit_role_history(data, repo.conn())
+        .await
+        .map(|role| role.id)
+        .with_operation("create credit role history")
 }

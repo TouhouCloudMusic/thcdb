@@ -1,5 +1,3 @@
-use sea_orm::DbErr;
-
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::http::api_response::AppError;
@@ -28,15 +26,6 @@ pub(in crate::features::correction) enum Error {
     NotFound(NotFound),
     PermissionDenied,
     InvalidRequest(String),
-}
-
-impl From<DbErr> for Error {
-    fn from(err: DbErr) -> Self {
-        Self::Database(
-            DatabaseError::new(err)
-                .with_operation("correction comment database operation"),
-        )
-    }
 }
 
 impl From<Error> for AppError {

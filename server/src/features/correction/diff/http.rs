@@ -105,8 +105,7 @@ async fn get_correction_diff(
                 current.entity_type,
                 base_revision.entity_history_id,
             )
-            .await
-            .with_operation("load base correction diff snapshot")?;
+            .await?;
 
             (
                 snapshot,
@@ -122,8 +121,7 @@ async fn get_correction_diff(
         current.entity_type,
         current_revision.entity_history_id,
     )
-    .await
-    .with_operation("load target correction diff snapshot")?;
+    .await?;
 
     let changes =
         correction_diff::diff_snapshots(&base_snapshot, &target_snapshot);

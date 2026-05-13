@@ -64,10 +64,7 @@ impl Service {
             release_id,
         } = dto;
 
-        if !release_repo::exists(&self.repo.conn, release_id)
-            .await
-            .with_operation("check release exists for cover art upload")?
-        {
+        if !release_repo::exists(&self.repo.conn, release_id).await? {
             return Err(EntityNotFound::new("release", release_id).into());
         }
 

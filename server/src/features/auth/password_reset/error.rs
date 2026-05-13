@@ -1,6 +1,5 @@
 use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError};
-use sea_orm::DbErr;
 
 use crate::domain::auth::ValidateCredsError;
 use crate::features::auth::InvalidEmail;
@@ -20,14 +19,6 @@ pub enum ForgotPasswordError {
         #[error(source)]
         source: InternalError,
     },
-}
-
-impl From<DbErr> for ForgotPasswordError {
-    fn from(err: DbErr) -> Self {
-        DatabaseError::new(err)
-            .with_operation("forgot password database operation")
-            .into()
-    }
 }
 
 impl From<InvalidEmail> for ForgotPasswordError {
@@ -83,14 +74,6 @@ pub enum VerifyResetCodeError {
     },
 }
 
-impl From<DbErr> for VerifyResetCodeError {
-    fn from(err: DbErr) -> Self {
-        DatabaseError::new(err)
-            .with_operation("verify reset code database operation")
-            .into()
-    }
-}
-
 impl From<InvalidEmail> for VerifyResetCodeError {
     fn from(source: InvalidEmail) -> Self {
         Self::InvalidEmail { source }
@@ -143,14 +126,6 @@ pub enum ResetPasswordError {
         #[error(source)]
         source: ValidateCredsError,
     },
-}
-
-impl From<DbErr> for ResetPasswordError {
-    fn from(err: DbErr) -> Self {
-        DatabaseError::new(err)
-            .with_operation("reset password database operation")
-            .into()
-    }
 }
 
 impl From<DatabaseError> for ResetPasswordError {

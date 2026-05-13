@@ -9,7 +9,6 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::event::model::Event;
-use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
 
 const TAG: &str = "Event";
@@ -44,7 +43,6 @@ async fn find_event_by_id(
 ) -> Result<Data<Option<Event>>, AppError> {
     super::repo::find_by_id(&repo, id)
         .await
-        .with_operation("find event by id")
         .map(Data::from)
         .map_err(Into::into)
 }
@@ -71,7 +69,6 @@ async fn find_event_by_keyword(
 ) -> Result<Data<Vec<Event>>, AppError> {
     super::repo::find_by_keyword(&repo, &query.keyword)
         .await
-        .with_operation("find events by keyword")
         .map(Data::from)
         .map_err(Into::into)
 }
@@ -99,7 +96,6 @@ async fn explore_event(
     );
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
-        .with_operation("explore events")
         .map(Data::from)
         .map_err(Into::into)
 }

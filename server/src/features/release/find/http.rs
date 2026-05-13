@@ -10,7 +10,6 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::release::model::Release;
-use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
 
 const TAG: &str = "Release";
@@ -45,7 +44,6 @@ async fn find_release_by_id(
 ) -> Result<Data<Option<Release>>, AppError> {
     repo::find_one(&repo, FindReleaseFilter::Id(id))
         .await
-        .with_operation("find release by id")
         .map(Data::from)
         .map_err(Into::into)
 }
@@ -70,7 +68,6 @@ async fn find_release_by_keyword(
 ) -> Result<Data<Vec<Release>>, AppError> {
     repo::find_many(&repo, FindReleaseFilter::Keyword(query.keyword))
         .await
-        .with_operation("find releases by keyword")
         .map(Data::from)
         .map_err(Into::into)
 }
@@ -98,7 +95,6 @@ async fn explore_release(
     );
     repo::find_by_filter(&repo, normalized, pagination)
         .await
-        .with_operation("explore releases")
         .map(Data::from)
         .map_err(Into::into)
 }

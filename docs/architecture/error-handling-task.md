@@ -68,6 +68,9 @@
 - [x] 删除旧 `infra::whatever::InfraWhatever` 封装，事务 commit 的内部诊断消息改用共享 `MessageError -> InternalError`。
 - [x] 删除 `AppError::internal_boxed`，外部只能通过 `AppError::internal(...)` 或 `InternalError -> AppError` 进入。
 - [x] `features/tag_vote::Error` 的 source 转发改为 `derive_more::Error`，移除同类手写样板。
+- [x] 查询类 feature repo 边界不再返回裸 `DbErr`，由 repo 补 `DatabaseError::with_operation(...)` 后交给 HTTP / service。
+- [x] auth `create_user` 的唯一约束错误收口为 `CreateUserError::AlreadyExists`，service 不再匹配底层 SQLx constraint。
+- [x] 移除 feature slice error 中残留的 `From<DbErr>`，事务开始和 repo DB 调用点改为显式 `with_operation(...)`。
 
 ## 约束
 
@@ -157,6 +160,9 @@
   - [x] auth 相关 repo/service
   - [x] correction detail / diff / compare / history / revisions / pending
   - [x] notification、enum table、home metadata、image queue view/manage handler
+- [x] 迁移 find/search/artist-release/tag-vote/auth repo 边界，避免 HTTP 或 service 继续接收裸 `DbErr`。
+- [x] 迁移 correction submission、correction comment、user collection 的 repo / service DB 边界，避免 slice error 继续宽泛接收 `DbErr`。
+- [x] correction diff snapshot repo 返回 `DatabaseError`，snapshot 调用方不再在 HTTP 层补 DB operation。
 - [x] 移除 `impl From<DbErr> for infra::Error` 的 legacy bridge。
 
 验收：

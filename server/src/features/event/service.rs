@@ -8,6 +8,7 @@ use crate::features::correction::{
     SubmissionError, service as correction_service,
 };
 use crate::features::event::model::NewEvent;
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 
 pub async fn create(
@@ -20,7 +21,10 @@ pub async fn create(
         .map_err(ValidationError::from)
         .map_err(|source| SubmissionError::Validation(source.to_string()))?;
 
-    let tx_repo = repo.begin_tx().await?;
+    let tx_repo = repo
+        .begin_tx()
+        .await
+        .with_operation("begin event creation correction transaction")?;
 
     let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
     let history_id =
@@ -59,7 +63,10 @@ pub async fn upsert_correction(
         .map_err(ValidationError::from)
         .map_err(|source| SubmissionError::Validation(source.to_string()))?;
 
-    let tx_repo = repo.begin_tx().await?;
+    let tx_repo = repo
+        .begin_tx()
+        .await
+        .with_operation("begin event update correction transaction")?;
 
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;

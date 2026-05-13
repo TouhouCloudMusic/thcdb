@@ -1,7 +1,5 @@
-use sea_orm::DbErr;
-
 use crate::features::release::model::NewRelease;
-use crate::infra::database::error::DatabaseError;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::SeaOrmTxRepo;
 use crate::infra::database::sea_orm::release::tx_repo as release_tx;
 
@@ -25,13 +23,17 @@ where
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,
     data: &NewRelease,
-) -> Result<i32, DbErr> {
-    release_tx::create_release_with_relations(data, repo.conn()).await
+) -> Result<i32, DatabaseError> {
+    release_tx::create_release_with_relations(data, repo.conn())
+        .await
+        .with_operation("create release")
 }
 
 pub(super) async fn create_history(
     repo: &SeaOrmTxRepo,
     data: &NewRelease,
-) -> Result<i32, DbErr> {
-    release_tx::create_release_history_with_relations(data, repo.conn()).await
+) -> Result<i32, DatabaseError> {
+    release_tx::create_release_history_with_relations(data, repo.conn())
+        .await
+        .with_operation("create release history")
 }

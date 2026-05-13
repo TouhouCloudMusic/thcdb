@@ -8,7 +8,6 @@ use super::repo::{self, CommonFilter, FindManyFilter};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::features::credit_role::model::{CreditRole, CreditRoleSummary};
-use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Credit Role";
@@ -53,7 +52,6 @@ async fn find_many_credit_roles_summary(
 ) -> Result<Data<Vec<CreditRoleSummary>>, AppError> {
     repo::find_many_summary(&repo, query.into(), CommonFilter {})
         .await
-        .with_operation("find credit role summaries")
         .map(Data::from)
         .map_err(Into::into)
 }
@@ -78,7 +76,6 @@ async fn find_credit_role_by_id(
 ) -> Result<Data<Option<CreditRole>>, AppError> {
     repo::find_one(&repo, id, common)
         .await
-        .with_operation("find credit role by id")
         .map(Data::from)
         .map_err(Into::into)
 }

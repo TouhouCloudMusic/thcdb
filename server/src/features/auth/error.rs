@@ -1,6 +1,5 @@
 use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError};
-use sea_orm::DbErr;
 
 use crate::domain::auth::ValidateCredsError;
 use crate::infra::database::error::DatabaseError;
@@ -48,14 +47,6 @@ pub enum SignUpError {
         #[error(source)]
         source: ValidateCredsError,
     },
-}
-
-impl From<DbErr> for SignUpError {
-    fn from(err: DbErr) -> Self {
-        DatabaseError::new(err)
-            .with_operation("auth sign-up database operation")
-            .into()
-    }
 }
 
 impl From<InvalidEmail> for SignUpError {
@@ -125,14 +116,6 @@ pub enum ResendVerificationEmailError {
     },
 }
 
-impl From<DbErr> for ResendVerificationEmailError {
-    fn from(err: DbErr) -> Self {
-        DatabaseError::new(err)
-            .with_operation("auth resend verification email database operation")
-            .into()
-    }
-}
-
 impl From<InvalidEmail> for ResendVerificationEmailError {
     fn from(source: InvalidEmail) -> Self {
         Self::InvalidEmail { source }
@@ -188,14 +171,6 @@ pub enum VerifyEmailError {
         #[error(source)]
         source: InternalError,
     },
-}
-
-impl From<DbErr> for VerifyEmailError {
-    fn from(err: DbErr) -> Self {
-        DatabaseError::new(err)
-            .with_operation("auth verify email database operation")
-            .into()
-    }
 }
 
 impl From<InvalidEmail> for VerifyEmailError {

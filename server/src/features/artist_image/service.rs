@@ -67,10 +67,7 @@ impl Service {
             artist_id,
         } = dto;
 
-        if !artist_repo::exists(&self.repo.conn, artist_id)
-            .await
-            .with_operation("check artist exists for profile image upload")?
-        {
+        if !artist_repo::exists(&self.repo.conn, artist_id).await? {
             return Err(EntityNotFound::new("artist", artist_id).into());
         }
 

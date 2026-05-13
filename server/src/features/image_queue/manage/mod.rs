@@ -5,7 +5,6 @@ mod service;
 
 pub use http::router;
 pub(crate) use model::HandleImageQueueMethod;
-use sea_orm::DbErr;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -33,15 +32,6 @@ pub(crate) enum Error {
     Database(DatabaseError),
     #[from]
     Internal(InternalError),
-}
-
-impl From<DbErr> for Error {
-    fn from(err: DbErr) -> Self {
-        Self::Database(
-            DatabaseError::new(err)
-                .with_operation("image queue management database operation"),
-        )
-    }
 }
 
 impl From<Error> for AppError {

@@ -15,6 +15,7 @@ use super::model::{
 };
 use super::repo;
 use crate::domain::shared::{NonEmptyString, PageResponse};
+use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::shared::http::PageQuery;
 
@@ -170,7 +171,10 @@ impl Service {
         collection_id: i32,
         req: CreateUserCollectionItemRequest,
     ) -> Result<UserCollectionItem, Error> {
-        let tx_repo = self.repo.begin_tx().await.map_err(Error::from)?;
+        let tx_repo =
+            self.repo.begin_tx().await.with_operation(
+                "begin create user collection item transaction",
+            )?;
         let conn = tx_repo.conn();
         repo::lock_owned_user_collection(conn, collection_id, owner_id).await?;
         repo::ensure_referenced_entity_exists(
@@ -202,7 +206,10 @@ impl Service {
         collection_id: i32,
         item_id: i32,
     ) -> Result<(), Error> {
-        let tx_repo = self.repo.begin_tx().await.map_err(Error::from)?;
+        let tx_repo =
+            self.repo.begin_tx().await.with_operation(
+                "begin delete user collection item transaction",
+            )?;
         let conn = tx_repo.conn();
         repo::lock_owned_user_collection(conn, collection_id, owner_id).await?;
         repo::defer_user_collection_item_position_constraint(conn).await?;
@@ -221,7 +228,9 @@ impl Service {
         collection_id: i32,
         req: ReorderUserCollectionItemsRequest,
     ) -> Result<(), Error> {
-        let tx_repo = self.repo.begin_tx().await.map_err(Error::from)?;
+        let tx_repo = self.repo.begin_tx().await.with_operation(
+            "begin reorder user collection items transaction",
+        )?;
         let conn = tx_repo.conn();
         repo::lock_owned_user_collection(conn, collection_id, owner_id).await?;
         repo::defer_user_collection_item_position_constraint(conn).await?;

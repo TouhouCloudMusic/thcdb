@@ -1,6 +1,5 @@
 use chrono::{Duration, Utc};
 use lettre::message::{Mailbox, Message as EmailMessage};
-use sea_orm::DbErr;
 
 use crate::domain::auth::{
     SIGNUP_EXPIRES_HOURS, VERIFICATION_CODE_EXPIRES_MINUTES,
@@ -17,14 +16,6 @@ pub(super) enum SendVerificationEmailError {
     Internal(InternalError),
     Unavailable,
     InvalidEmail(InvalidEmail),
-}
-
-impl From<DbErr> for SendVerificationEmailError {
-    fn from(value: DbErr) -> Self {
-        DatabaseError::new(value)
-            .with_operation("send verification email database operation")
-            .into()
-    }
 }
 
 impl From<DatabaseError> for SendVerificationEmailError {

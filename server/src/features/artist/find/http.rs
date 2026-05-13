@@ -9,14 +9,9 @@ use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data, state};
 use crate::domain::shared::PageResponse;
 use crate::features::artist::model::Artist;
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
 
 const TAG: &str = "Artist";
-
-fn database_error(err: DatabaseError) -> AppError {
-    err.into()
-}
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
@@ -54,9 +49,8 @@ async fn find_artist_by_id(
 ) -> Result<Data<Option<Artist>>, AppError> {
     repo::find_one(&repo, id, common)
         .await
-        .with_operation("find artist by id")
         .map(Data::from)
-        .map_err(database_error)
+        .map_err(Into::into)
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -93,9 +87,8 @@ async fn find_many_artist(
 ) -> Result<Data<Vec<Artist>>, AppError> {
     repo::find_many(&repo, query.into(), common)
         .await
-        .with_operation("find artists by keyword")
         .map(Data::from)
-        .map_err(database_error)
+        .map_err(Into::into)
 }
 
 #[utoipa::path(
@@ -121,7 +114,6 @@ async fn explore_artist(
     );
     repo::find_by_filter(&repo, normalized, pagination)
         .await
-        .with_operation("explore artists")
         .map(Data::from)
-        .map_err(database_error)
+        .map_err(Into::into)
 }

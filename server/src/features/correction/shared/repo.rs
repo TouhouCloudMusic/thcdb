@@ -23,12 +23,13 @@ use sea_orm::{
 use serde_json::{Value, json};
 
 use crate::domain::correction::CorrectionDiffEntry;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 pub async fn snapshot_for_history(
     db: &impl ConnectionTrait,
     entity_type: EntityType,
     history_id: i32,
-) -> Result<Value, DbErr> {
+) -> Result<Value, DatabaseError> {
     match entity_type {
         EntityType::Artist => snapshot_artist(db, history_id).await,
         EntityType::Label => snapshot_label(db, history_id).await,
@@ -39,6 +40,7 @@ pub async fn snapshot_for_history(
         EntityType::SongLyrics => snapshot_song_lyrics(db, history_id).await,
         EntityType::CreditRole => snapshot_credit_role(db, history_id).await,
     }
+    .with_operation("load correction history snapshot")
 }
 
 pub fn diff_snapshots(
