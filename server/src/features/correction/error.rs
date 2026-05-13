@@ -1,6 +1,6 @@
 use axum::response::IntoResponse;
 
-use super::comment;
+use super::{comment, shared};
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::http::api_response::AppError;
@@ -94,6 +94,9 @@ pub(crate) enum ReadError {
     #[display("{_0}")]
     #[from]
     Comment(#[error(source)] comment::Error),
+    #[display("{_0}")]
+    #[from]
+    Snapshot(#[error(source)] shared::repo::SnapshotError),
 }
 
 impl From<ReadError> for AppError {
@@ -105,6 +108,12 @@ impl From<ReadError> for AppError {
             }
             ReadError::Database(source) => source.into(),
             ReadError::Comment(source) => source.into(),
+            ReadError::Snapshot(source) => match source {
+                err @ shared::repo::SnapshotError::HistoryNotFound {
+                    ..
+                } => AppError::not_found(err.to_string()),
+                shared::repo::SnapshotError::Database(source) => source.into(),
+            },
         }
     }
 }

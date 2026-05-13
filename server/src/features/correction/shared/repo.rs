@@ -25,12 +25,26 @@ use serde_json::{Value, json};
 use crate::domain::correction::CorrectionDiffEntry;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+pub enum SnapshotError {
+    #[display("{entity_type:?} history #{history_id} not found")]
+    HistoryNotFound {
+        entity_type: EntityType,
+        history_id: i32,
+    },
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+}
+
 pub async fn snapshot_for_history(
     db: &impl ConnectionTrait,
     entity_type: EntityType,
     history_id: i32,
-) -> Result<Value, DatabaseError> {
-    match entity_type {
+) -> Result<Value, SnapshotError> {
+    let snapshot = match entity_type {
         EntityType::Artist => snapshot_artist(db, history_id).await,
         EntityType::Label => snapshot_label(db, history_id).await,
         EntityType::Release => snapshot_release(db, history_id).await,
@@ -40,7 +54,12 @@ pub async fn snapshot_for_history(
         EntityType::SongLyrics => snapshot_song_lyrics(db, history_id).await,
         EntityType::CreditRole => snapshot_credit_role(db, history_id).await,
     }
-    .db_operation("load correction history snapshot")
+    .db_operation("load correction history snapshot")?;
+
+    snapshot.ok_or(SnapshotError::HistoryNotFound {
+        entity_type,
+        history_id,
+    })
 }
 
 pub fn diff_snapshots(
@@ -167,14 +186,17 @@ fn location_value(
     }
 }
 
+#[expect(clippy::too_many_lines, reason = "snapshot artist composition")]
 async fn snapshot_artist(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Value, DbErr> {
+) -> Result<Option<Value>, DbErr> {
     let history = artist_history::Entity::find_by_id(history_id)
         .one(db)
-        .await?
-        .ok_or_else(|| DbErr::Custom("Artist history not found".to_string()))?;
+        .await?;
+    let Some(history) = history else {
+        return Ok(None);
+    };
 
     let aliases = artist_alias_history::Entity::find()
         .filter(artist_alias_history::Column::HistoryId.eq(history_id))
@@ -248,7 +270,7 @@ async fn snapshot_artist(
         })
         .collect::<Vec<_>>();
 
-    Ok(json!({
+    Ok(Some(json!({
         "name": history.name,
         "artist_type": history.artist_type,
         "text_alias": history.text_alias,
@@ -274,17 +296,19 @@ async fn snapshot_artist(
         "aliases": aliases,
         "localized_names": localized_names,
         "memberships": membership_values,
-    }))
+    })))
 }
 
 async fn snapshot_label(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Value, DbErr> {
+) -> Result<Option<Value>, DbErr> {
     let history = label_history::Entity::find_by_id(history_id)
         .one(db)
-        .await?
-        .ok_or_else(|| DbErr::Custom("Label history not found".to_string()))?;
+        .await?;
+    let Some(history) = history else {
+        return Ok(None);
+    };
 
     let founders = label_founder_history::Entity::find()
         .filter(label_founder_history::Column::HistoryId.eq(history_id))
@@ -309,7 +333,7 @@ async fn snapshot_label(
         })
         .collect::<Vec<_>>();
 
-    Ok(json!({
+    Ok(Some(json!({
         "name": history.name,
         "founded_date": date_with_precision(
             history.founded_date,
@@ -321,20 +345,20 @@ async fn snapshot_label(
         ),
         "founders": founders,
         "localized_names": localized_names,
-    }))
+    })))
 }
 
 #[expect(clippy::too_many_lines, reason = "snapshot release composition")]
 async fn snapshot_release(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Value, DbErr> {
+) -> Result<Option<Value>, DbErr> {
     let history = release_history::Entity::find_by_id(history_id)
         .one(db)
-        .await?
-        .ok_or_else(|| {
-            DbErr::Custom("Release history not found".to_string())
-        })?;
+        .await?;
+    let Some(history) = history else {
+        return Ok(None);
+    };
 
     let artists = release_artist_history::Entity::find()
         .filter(release_artist_history::Column::HistoryId.eq(history_id))
@@ -452,7 +476,7 @@ async fn snapshot_release(
         .map(|model| model.event_id)
         .collect::<Vec<_>>();
 
-    Ok(json!({
+    Ok(Some(json!({
         "title": history.title,
         "release_type": history.release_type,
         "release_date": date_with_precision(
@@ -473,17 +497,17 @@ async fn snapshot_release(
         "artists": artists,
         "localized_titles": localized_titles,
         "catalog_numbers": catalog_numbers,
-    }))
+    })))
 }
 
 async fn snapshot_song(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Value, DbErr> {
-    let history = song_history::Entity::find_by_id(history_id)
-        .one(db)
-        .await?
-        .ok_or_else(|| DbErr::Custom("Song history not found".to_string()))?;
+) -> Result<Option<Value>, DbErr> {
+    let history = song_history::Entity::find_by_id(history_id).one(db).await?;
+    let Some(history) = history else {
+        return Ok(None);
+    };
 
     let artists = song_artist_history::Entity::find()
         .filter(song_artist_history::Column::HistoryId.eq(history_id))
@@ -546,24 +570,24 @@ async fn snapshot_song(
         })
         .collect::<Vec<_>>();
 
-    Ok(json!({
+    Ok(Some(json!({
         "title": history.title,
         "artists": artists,
         "credits": credits,
         "localized_titles": localized_titles,
         "languages": language_ids,
         "relations": relations,
-    }))
+    })))
 }
 
 async fn snapshot_tag(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Value, DbErr> {
-    let history = tag_history::Entity::find_by_id(history_id)
-        .one(db)
-        .await?
-        .ok_or_else(|| DbErr::Custom("Tag history not found".to_string()))?;
+) -> Result<Option<Value>, DbErr> {
+    let history = tag_history::Entity::find_by_id(history_id).one(db).await?;
+    let Some(history) = history else {
+        return Ok(None);
+    };
 
     let alternative_names = tag_alternative_name_history::Entity::find()
         .filter(tag_alternative_name_history::Column::HistoryId.eq(history_id))
@@ -588,24 +612,26 @@ async fn snapshot_tag(
         })
         .collect::<Vec<_>>();
 
-    Ok(json!({
+    Ok(Some(json!({
         "name": history.name,
         "type": history.r#type,
         "short_description": history.short_description,
         "description": history.description,
         "alternative_names": alternative_names,
         "relations": relations,
-    }))
+    })))
 }
 
 async fn snapshot_event(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Value, DbErr> {
+) -> Result<Option<Value>, DbErr> {
     let history = event_history::Entity::find_by_id(history_id)
         .one(db)
-        .await?
-        .ok_or_else(|| DbErr::Custom("Event history not found".to_string()))?;
+        .await?;
+    let Some(history) = history else {
+        return Ok(None);
+    };
 
     let alternative_names = event_alternative_name_history::Entity::find()
         .filter(
@@ -618,7 +644,7 @@ async fn snapshot_event(
         .map(|model| model.name)
         .collect::<Vec<_>>();
 
-    Ok(json!({
+    Ok(Some(json!({
         "name": history.name,
         "description": history.description,
         "short_description": history.short_description,
@@ -636,37 +662,37 @@ async fn snapshot_event(
             history.location_city.as_deref(),
         ),
         "alternative_names": alternative_names,
-    }))
+    })))
 }
 
 async fn snapshot_song_lyrics(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Value, DbErr> {
+) -> Result<Option<Value>, DbErr> {
     let history = song_lyrics_history::Entity::find_by_id(history_id)
         .one(db)
-        .await?
-        .ok_or_else(|| {
-            DbErr::Custom("Song lyrics history not found".to_string())
-        })?;
+        .await?;
+    let Some(history) = history else {
+        return Ok(None);
+    };
 
-    Ok(json!({
+    Ok(Some(json!({
         "language_id": history.language_id,
         "content": history.content,
         "is_main": history.is_main,
-    }))
+    })))
 }
 
 async fn snapshot_credit_role(
     db: &impl ConnectionTrait,
     history_id: i32,
-) -> Result<Value, DbErr> {
+) -> Result<Option<Value>, DbErr> {
     let history = credit_role_history::Entity::find_by_id(history_id)
         .one(db)
-        .await?
-        .ok_or_else(|| {
-            DbErr::Custom("Credit role history not found".to_string())
-        })?;
+        .await?;
+    let Some(history) = history else {
+        return Ok(None);
+    };
 
     let inherits = credit_role_inheritance_history::Entity::find()
         .filter(
@@ -679,9 +705,9 @@ async fn snapshot_credit_role(
         .map(|model| model.super_id)
         .collect::<Vec<_>>();
 
-    Ok(json!({
+    Ok(Some(json!({
         "name": history.name,
         "description": history.description,
         "inherits": inherits,
-    }))
+    })))
 }

@@ -23,6 +23,19 @@ pub(crate) enum CreateUserError {
     Database(#[error(source)] DatabaseError),
 }
 
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+pub(crate) enum EmailVerificationMutationError {
+    #[display("auth user not found")]
+    UserNotFound,
+    #[display("email verification not found")]
+    EmailVerificationNotFound,
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+}
+
 pub(crate) async fn find_by_id(
     conn: &impl ConnectionTrait,
     id: i32,
@@ -159,69 +172,61 @@ pub(crate) async fn set_email_verification(
     hash: String,
     expires_at: chrono::DateTime<chrono::FixedOffset>,
     sent_at: chrono::DateTime<chrono::FixedOffset>,
-) -> Result<User, DatabaseError> {
-    let result: Result<User, DbErr> = async {
-        user_email_verification::Entity::insert(
-            user_email_verification::ActiveModel {
-                user_id: Set(user_id),
-                hash: Set(hash),
-                expires_at: Set(expires_at),
-                sent_at: Set(sent_at),
-                failed_attempts: Set(0),
-            },
-        )
-        .on_conflict(
-            OnConflict::column(user_email_verification::Column::UserId)
-                .update_columns([
-                    user_email_verification::Column::Hash,
-                    user_email_verification::Column::ExpiresAt,
-                    user_email_verification::Column::SentAt,
-                    user_email_verification::Column::FailedAttempts,
-                ])
-                .to_owned(),
-        )
-        .exec(conn)
-        .await?;
+) -> Result<User, EmailVerificationMutationError> {
+    user_email_verification::Entity::insert(
+        user_email_verification::ActiveModel {
+            user_id: Set(user_id),
+            hash: Set(hash),
+            expires_at: Set(expires_at),
+            sent_at: Set(sent_at),
+            failed_attempts: Set(0),
+        },
+    )
+    .on_conflict(
+        OnConflict::column(user_email_verification::Column::UserId)
+            .update_columns([
+                user_email_verification::Column::Hash,
+                user_email_verification::Column::ExpiresAt,
+                user_email_verification::Column::SentAt,
+                user_email_verification::Column::FailedAttempts,
+            ])
+            .to_owned(),
+    )
+    .exec(conn)
+    .await
+    .db_operation("set auth email verification")?;
 
-        let model = user::Entity::find_by_id(user_id)
-            .one(conn)
-            .await?
-            .ok_or_else(|| DbErr::Custom("user not found".to_string()))?;
+    let model = user::Entity::find_by_id(user_id)
+        .one(conn)
+        .await
+        .db_operation("find auth user after setting email verification")?
+        .ok_or(EmailVerificationMutationError::UserNotFound)?;
 
-        load_user(conn, model).await
-    }
-    .await;
-
-    result.db_operation("set auth email verification")
+    load_user(conn, model)
+        .await
+        .db_operation("load auth user after setting email verification")
+        .map_err(Into::into)
 }
 
 pub(crate) async fn increment_email_verification_failed_attempts(
     conn: &impl ConnectionTrait,
     user_id: i32,
-) -> Result<(), DatabaseError> {
-    let result: Result<(), DbErr> = async {
-        let res = user_email_verification::Entity::update_many()
-            .col_expr(
-                user_email_verification::Column::FailedAttempts,
-                Expr::col(user_email_verification::Column::FailedAttempts)
-                    .add(1),
-            )
-            .filter(user_email_verification::Column::UserId.eq(user_id))
-            .exec(conn)
-            .await?;
+) -> Result<(), EmailVerificationMutationError> {
+    let res = user_email_verification::Entity::update_many()
+        .col_expr(
+            user_email_verification::Column::FailedAttempts,
+            Expr::col(user_email_verification::Column::FailedAttempts).add(1),
+        )
+        .filter(user_email_verification::Column::UserId.eq(user_id))
+        .exec(conn)
+        .await
+        .db_operation("increment auth email verification failed attempts")?;
 
-        if res.rows_affected == 0 {
-            // TODO: better error
-            return Err(DbErr::RecordNotFound(
-                "email verification not found".to_string(),
-            ));
-        }
-
-        Ok(())
+    if res.rows_affected == 0 {
+        return Err(EmailVerificationMutationError::EmailVerificationNotFound);
     }
-    .await;
 
-    result.db_operation("increment auth email verification failed attempts")
+    Ok(())
 }
 
 pub(crate) async fn set_email_verified(

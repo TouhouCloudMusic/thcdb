@@ -5,6 +5,7 @@ use crate::domain::auth::{
     SIGNUP_EXPIRES_HOURS, VERIFICATION_CODE_EXPIRES_MINUTES,
 };
 use crate::domain::user::User;
+use crate::features::auth::repo::EmailVerificationMutationError;
 use crate::features::auth::{
     InvalidEmail, ResendVerificationEmailError, SignUpError,
 };
@@ -23,6 +24,18 @@ pub(super) enum SendVerificationEmailError {
 impl From<DatabaseError> for SendVerificationEmailError {
     fn from(value: DatabaseError) -> Self {
         Self::Internal(InternalError::new(value))
+    }
+}
+
+impl From<EmailVerificationMutationError> for SendVerificationEmailError {
+    fn from(value: EmailVerificationMutationError) -> Self {
+        match value {
+            EmailVerificationMutationError::Database(source) => source.into(),
+            EmailVerificationMutationError::UserNotFound
+            | EmailVerificationMutationError::EmailVerificationNotFound => {
+                InternalError::new(value).into()
+            }
+        }
     }
 }
 
