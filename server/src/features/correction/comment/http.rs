@@ -3,13 +3,14 @@ use axum::extract::{FromRef, Path, Query, State};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use super::error::Error;
 use super::model::{CorrectionComment, CreateCorrectionCommentRequest};
 use super::service::Service;
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
 use crate::domain::shared::CursorResponse;
 use crate::shared::http::PaginationQuery;
-use crate::shared::http::api_response::{AppError, Data, Message};
+use crate::shared::http::api_response::{Data, Message};
 
 const TAG: &str = "Correction";
 
@@ -50,7 +51,7 @@ async fn find_comments(
     Path(id): Path<i32>,
     Query(pagination): Query<PaginationQuery>,
     State(service): State<Service>,
-) -> Result<Data<CursorResponse<CorrectionComment>>, AppError> {
+) -> Result<Data<CursorResponse<CorrectionComment>>, Error> {
     let comments = service.list_comments(id, pagination).await?;
     Ok(Data::new(comments))
 }
@@ -72,7 +73,7 @@ async fn create_comment(
     Path(id): Path<i32>,
     State(service): State<Service>,
     Json(req): Json<CreateCorrectionCommentRequest>,
-) -> Result<Data<CorrectionComment>, AppError> {
+) -> Result<Data<CorrectionComment>, Error> {
     let comment = service.create_comment(id, user.id, req).await?;
     Ok(Data::new(comment))
 }
@@ -92,7 +93,7 @@ async fn delete_comment(
     CurrentUser(user): CurrentUser,
     Path(id): Path<i32>,
     State(service): State<Service>,
-) -> Result<Message, AppError> {
+) -> Result<Message, Error> {
     service.delete_comment(user.id, id).await?;
     Ok(Message::ok())
 }

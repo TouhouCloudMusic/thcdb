@@ -9,7 +9,8 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::label::model::Label;
-use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
+use crate::infra::database::error::DatabaseError;
+use crate::shared::http::api_response::{Data, Error as ApiError};
 
 const TAG: &str = "Label";
 
@@ -40,11 +41,8 @@ data! {
 async fn find_label_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<Label>>, AppError> {
-    super::repo::find_by_id(&repo, id)
-        .await
-        .map(Data::from)
-        .map_err(Into::into)
+) -> Result<Data<Option<Label>>, DatabaseError> {
+    super::repo::find_by_id(&repo, id).await.map(Data::from)
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -64,11 +62,10 @@ struct KwArgs {
 async fn find_label_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KwArgs>,
-) -> Result<Data<Vec<Label>>, AppError> {
+) -> Result<Data<Vec<Label>>, DatabaseError> {
     super::repo::find_by_keyword(&repo, &query.keyword)
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }
 
 #[utoipa::path(
@@ -85,7 +82,7 @@ async fn explore_label(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<LabelFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Label>>, AppError> {
+) -> Result<Data<PageResponse<Label>>, DatabaseError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.label.find.http",
@@ -95,5 +92,4 @@ async fn explore_label(
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }

@@ -13,9 +13,10 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::domain::correction::CorrectionDiff;
+use crate::features::correction::ReadError;
 use crate::features::correction::shared::repo as correction_diff;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::shared::http::api_response::{AppError, Data};
+use crate::shared::http::api_response::Data;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
@@ -69,13 +70,13 @@ async fn find_base_correction(
 async fn get_correction_diff(
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<CorrectionDiff>, AppError> {
+) -> Result<Data<CorrectionDiff>, ReadError> {
     let Some(current) = correction_entity::Entity::find_by_id(id)
         .one(&repo.conn)
         .await
         .db_operation("find correction for diff")?
     else {
-        return Err(AppError::not_found("Correction not found"));
+        return Err(ReadError::NotFound("Correction not found"));
     };
 
     let current_revision = correction_revision::Entity::find()
@@ -84,7 +85,7 @@ async fn get_correction_diff(
         .one(&repo.conn)
         .await
         .db_operation("find current correction revision for diff")?
-        .ok_or_else(|| AppError::not_found("Correction revision not found"))?;
+        .ok_or(ReadError::NotFound("Correction revision not found"))?;
 
     let base = find_base_correction(&repo.conn, &current).await?;
 
@@ -96,9 +97,9 @@ async fn get_correction_diff(
                 .one(&repo.conn)
                 .await
                 .db_operation("find base correction revision for diff")?
-                .ok_or_else(|| {
-                    AppError::not_found("Base correction revision not found")
-                })?;
+                .ok_or(ReadError::NotFound(
+                    "Base correction revision not found",
+                ))?;
 
             let snapshot = correction_diff::snapshot_for_history(
                 &repo.conn,

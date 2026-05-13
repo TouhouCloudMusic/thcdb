@@ -9,7 +9,8 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::song::model::Song;
-use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
+use crate::infra::database::error::DatabaseError;
+use crate::shared::http::api_response::{Data, Error as ApiError};
 
 const TAG: &str = "Song";
 
@@ -40,11 +41,8 @@ data! {
 async fn find_song_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<Song>>, AppError> {
-    super::repo::find_by_id(&repo, id)
-        .await
-        .map(Data::from)
-        .map_err(Into::into)
+) -> Result<Data<Option<Song>>, DatabaseError> {
+    super::repo::find_by_id(&repo, id).await.map(Data::from)
 }
 
 #[derive(Deserialize, ToSchema, IntoParams)]
@@ -64,11 +62,10 @@ struct KwQuery {
 async fn find_song_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KwQuery>,
-) -> Result<Data<Vec<Song>>, AppError> {
+) -> Result<Data<Vec<Song>>, DatabaseError> {
     super::repo::find_by_keyword(&repo, &query.keyword)
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }
 
 #[utoipa::path(
@@ -85,7 +82,7 @@ async fn explore_song(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<SongFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Song>>, AppError> {
+) -> Result<Data<PageResponse<Song>>, DatabaseError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.song.find.http",
@@ -95,5 +92,4 @@ async fn explore_song(
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }

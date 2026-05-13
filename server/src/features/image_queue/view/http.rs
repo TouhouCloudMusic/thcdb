@@ -1,4 +1,5 @@
 use axum::extract::{Path, Query, State};
+use axum::response::IntoResponse;
 use entity::image_queue as image_queue_entity;
 use entity::sea_orm_active_enums::ImageQueueStatus;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
@@ -12,11 +13,38 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
 use crate::domain::model::ImageQueueManage;
 use crate::domain::shared::CursorResponse;
 use crate::features::image_queue::shared::{UserSummary, load_users};
-use crate::infra::database::error::DatabaseResultExt;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::http::PaginationQuery;
 use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Image Queue";
+
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+enum Error {
+    #[display("{_0}")]
+    #[from]
+    Authz(#[error(source)] authz::Error),
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+}
+
+impl From<Error> for AppError {
+    fn from(err: Error) -> Self {
+        match err {
+            Error::Authz(source) => source.into(),
+            Error::Database(source) => source.into(),
+        }
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
+    }
+}
 
 data! {
     DataPaginatedUserImageQueueItem, CursorResponse<UserImageQueueItem>
@@ -73,7 +101,7 @@ async fn user_image_queue(
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
     Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<CursorResponse<UserImageQueueItem>>, AppError> {
+) -> Result<Data<CursorResponse<UserImageQueueItem>>, Error> {
     if user.id != id {
         authz::ensure_permission::<ImageQueueManage>(&repo.conn, user.id)
             .await?;

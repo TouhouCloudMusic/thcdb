@@ -13,6 +13,6 @@ mod revisions;
 pub mod service;
 mod shared;
 
-pub(crate) use error::{ModerationError, SubmissionError};
+pub(crate) use error::{ModerationError, ReadError, SubmissionError};
 pub use http::router;
 pub use model::HandleCorrectionMethod;

@@ -12,7 +12,8 @@
 
 这次重构的目标不是消灭所有具体错误类型，而是让错误类型按用途分层：
 
-- HTTP 边界使用足够通用的 `AppError`，保持响应格式稳定。
+- HTTP 最终响应使用足够通用的 `AppError`，保持响应格式稳定。
+- handler 返回绝对必要的最小具体错误类型；slice error 可以实现薄 `IntoResponse`，但实际响应映射委托给 `AppError`。
 - 需要表达业务语义、恢复策略或调用方动作的错误，保留独立 enum / struct。
 - 独立错误类型只在边界转换为 `AppError`。
 - 不再为“错误来源”堆叠一层层大 enum，也不为了 OpenAPI 或状态码继续依赖难维护的 derive macro。
@@ -23,7 +24,7 @@
 
 最终状态：
 
-- handler 优先返回 `Result<T, AppError>` 或 `Result<T, SliceError>`，其中 `SliceError: Into<AppError>`。
+- handler 优先返回 `Result<T, SliceError>`、`Result<T, DatabaseError>` 或其他最小具体错误类型；`AppError` 只作为最终 HTTP 映射层。
 - feature / domain 内只保留有语义价值的错误类型，例如 validation、authz、queue state、sign in state。
 - 基础设施错误不直接暴露给用户，统一转换为 internal `AppError` 并记录 source。
 - OpenAPI 错误响应不再要求每个错误 enum derive `IntoErrorSchema`。
@@ -55,7 +56,8 @@
 - [x] 删除 `adapter/inbound/rest/error.rs` 和 `application/error.rs` 这类只转发来源、没有调用方动作语义的 wrapper。
 - [x] `domain::auth::AuthnError` 只保留认证失败语义；password hash / join 等技术失败折叠到 internal/infra 路径。
 - [x] `domain::artist`、`domain::song`、`domain::song_lyrics` validation 已改为共享 `ValidationError<T>` 提供统一前缀，domain kind 只表达具体规则。
-- [x] `domain::image` 已收口到 `ImageInputError` + `AppError` 边界，图片上传输入错误、读取头部内部错误和服务端转换错误按语义分流。
+- [x] `domain::image` 已收口到 `image::Error`，不再依赖 HTTP `AppError`；图片输入错误、DB 错误和内部错误由 image slice 在 HTTP 边界映射。
+- [x] `domain::markdown` 不再依赖 HTTP `AppError`，由 user feature 将 markdown 解析错误映射为 bad request。
 - [x] `features/tag_vote` 的 `DbErr` 不再直接进入 response body，统一经 `DatabaseError -> AppError` 脱敏。
 - [x] 清理 feature error 中的宽泛 `default fn from` 转发，避免数据库错误绕过 `DatabaseError`。
 - [x] correction 提交/更新路径的 `Correction not found` 已从 `infra::Error::custom(...)` 迁移到 `SubmissionError::NotFound`。
@@ -71,6 +73,7 @@
 - [x] 查询类 feature repo 边界不再返回裸 `DbErr`，由 repo 补 `DatabaseError::db_operation(...)` 后交给 HTTP / service。
 - [x] auth `create_user` 的唯一约束错误收口为 `CreateUserError::AlreadyExists`，service 不再匹配底层 SQLx constraint。
 - [x] 移除 feature slice error 中残留的 `From<DbErr>`，事务开始和 repo DB 调用点改为显式 `db_operation(...)`。
+- [x] admin、search、notification、correction read/handle、artist/release/user image、artist release 等 handler 已从宽泛 `AppError` 返回值迁移到最小 slice error 或 `DatabaseError`。
 
 ## 约束
 
@@ -119,10 +122,10 @@
 
 - [x] 用以下命令列出剩余候选：
   - [x] `rg -n "impl IntoResponse for Error|Result<.*Response>|into_response\\(\\)" server/src/features server/src/adapter server/src/domain`
-- [ ] 对每个候选判断错误类型是否有业务语义：
-  - [ ] 有语义：保留本地 `Error`，实现 `From<Error> for AppError`；feature slice 的 HTTP 边界错误可保留薄 `IntoResponse` 委托。
-  - [ ] 无语义且只在 HTTP 出口使用：直接返回 `AppError`。
-  - [ ] 领域层错误：移除 HTTP 依赖，在 adapter / feature 边界转换。
+- [x] 对每个候选判断错误类型是否有业务语义：
+  - [x] 有语义：保留本地 `Error`，实现 `From<Error> for AppError`；feature slice 的 HTTP 边界错误可保留薄 `IntoResponse` 委托。
+  - [x] 无语义且只在 HTTP 出口使用：直接返回更小的具体错误类型，例如 `DatabaseError`。
+  - [x] 领域层错误：移除 HTTP 依赖，在 adapter / feature 边界转换。
 - [ ] 迁移优先级：
   - [x] `features/tag_vote`
   - [x] `features/user_profile`

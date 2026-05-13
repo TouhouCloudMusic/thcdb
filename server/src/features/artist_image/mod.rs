@@ -2,4 +2,4 @@ mod model;
 mod service;
 
 pub use model::ArtistProfileImageInput;
-pub use service::Service;
+pub use service::{Error, Service};

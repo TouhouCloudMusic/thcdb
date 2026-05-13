@@ -7,8 +7,8 @@ use entity::enums::StorageBackend;
 use image::{GenericImageView, ImageError, ImageFormat, ImageReader};
 
 use crate::domain::image::{Image, NewImage};
+use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;
-use crate::shared::http::api_response::AppError;
 
 #[derive(Debug, derive_more::Display, derive_more::Error)]
 pub enum ImageInputError {
@@ -45,6 +45,37 @@ impl From<InvalidSize> for ImageInputError {
 impl From<InvalidRatio> for ImageInputError {
     fn from(source: InvalidRatio) -> Self {
         Self::Ratio(source)
+    }
+}
+
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+pub enum Error {
+    #[display("{_0}")]
+    #[from]
+    InvalidInput(#[error(source)] ImageInputError),
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+}
+
+impl From<ImageError> for Error {
+    fn from(source: ImageError) -> Self {
+        match source {
+            ImageError::Decoding(_)
+            | ImageError::IoError(_)
+            | ImageError::Limits(_)
+            | ImageError::Unsupported(_) => {
+                ImageInputError::Data(source).into()
+            }
+            ImageError::Encoding(_) | ImageError::Parameter(_) => {
+                InternalError::new(source).into()
+            }
+        }
     }
 }
 
@@ -282,7 +313,7 @@ impl Parser {
             .ok_or(InvalidRatio::new(ratio, expected))
     }
 
-    pub fn parse(&self, bytes: &[u8]) -> Result<ParsedImage, AppError> {
+    pub fn parse(&self, bytes: &[u8]) -> Result<ParsedImage, Error> {
         self.validate_file_size(ByteSize(
             // We don't use 128-bit computers, so it is safe to unwrap here
             bytes.len().try_into().unwrap(),
@@ -342,28 +373,6 @@ pub trait AsyncFileStorage: Send + Sync {
     async fn remove(&self, image: Image) -> Result<(), InternalError>;
 }
 
-impl From<ImageInputError> for AppError {
-    #[track_caller]
-    fn from(err: ImageInputError) -> Self {
-        AppError::bad_request(err.to_string())
-    }
-}
-
-impl From<ImageError> for AppError {
-    #[track_caller]
-    fn from(err: ImageError) -> Self {
-        match err {
-            ImageError::Decoding(_)
-            | ImageError::IoError(_)
-            | ImageError::Limits(_)
-            | ImageError::Unsupported(_) => ImageInputError::Data(err).into(),
-            ImageError::Encoding(_) | ImageError::Parameter(_) => {
-                InternalError::new(err).into()
-            }
-        }
-    }
-}
-
 #[derive(Clone, bon::Builder)]
 pub struct Service<R, S> {
     repo: R,
@@ -381,14 +390,14 @@ where
     Repo: super::Repo + Sync,
     Storage: AsyncFileStorage,
 {
-    pub async fn find_by_id(&self, id: i32) -> Result<Option<Image>, AppError> {
+    pub async fn find_by_id(&self, id: i32) -> Result<Option<Image>, Error> {
         Ok(self.repo.find_by_id(id).await?)
     }
 
     pub async fn find_by_filename(
         &self,
         filename: &str,
-    ) -> Result<Option<Image>, AppError> {
+    ) -> Result<Option<Image>, Error> {
         Ok(self.repo.find_by_filename(filename).await?)
     }
 }
@@ -407,7 +416,7 @@ where
         bytes: &[u8],
         parser: &Parser,
         meta: CreateImageMeta,
-    ) -> Result<Image, AppError> {
+    ) -> Result<Image, Error> {
         let tx = &self.repo;
         let parsed = parser.parse(bytes)?;
 
@@ -429,7 +438,7 @@ where
         Ok(image)
     }
 
-    async fn delete(&self, image: Image) -> Result<(), AppError> {
+    async fn delete(&self, image: Image) -> Result<(), Error> {
         self.repo.delete(image.id).await?;
 
         self.storage.remove(image).await?;

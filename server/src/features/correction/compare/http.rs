@@ -9,9 +9,10 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::domain::correction::CorrectionDiff;
+use crate::features::correction::ReadError;
 use crate::features::correction::shared::repo as correction_diff;
 use crate::infra::database::error::DatabaseResultExt;
-use crate::shared::http::api_response::{AppError, Data};
+use crate::shared::http::api_response::Data;
 
 #[derive(Deserialize, IntoParams)]
 struct CompareCorrectionPath {
@@ -37,13 +38,13 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn compare_corrections(
     Path(CompareCorrectionPath { id1, id2 }): Path<CompareCorrectionPath>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<CorrectionDiff>, AppError> {
+) -> Result<Data<CorrectionDiff>, ReadError> {
     let Some(left) = correction_entity::Entity::find_by_id(id1)
         .one(&repo.conn)
         .await
         .db_operation("find left correction for comparison")?
     else {
-        return Err(AppError::not_found("Correction not found"));
+        return Err(ReadError::NotFound("Correction not found"));
     };
 
     let Some(right) = correction_entity::Entity::find_by_id(id2)
@@ -51,13 +52,13 @@ async fn compare_corrections(
         .await
         .db_operation("find right correction for comparison")?
     else {
-        return Err(AppError::not_found("Correction not found"));
+        return Err(ReadError::NotFound("Correction not found"));
     };
 
     if left.entity_id != right.entity_id
         || left.entity_type != right.entity_type
     {
-        return Err(AppError::bad_request(
+        return Err(ReadError::InvalidRequest(
             "Corrections must target the same entity",
         ));
     }
@@ -68,7 +69,7 @@ async fn compare_corrections(
         .one(&repo.conn)
         .await
         .db_operation("find left correction revision for comparison")?
-        .ok_or_else(|| AppError::not_found("Correction revision not found"))?;
+        .ok_or(ReadError::NotFound("Correction revision not found"))?;
 
     let right_revision = correction_revision::Entity::find()
         .filter(correction_revision::Column::CorrectionId.eq(id2))
@@ -76,7 +77,7 @@ async fn compare_corrections(
         .one(&repo.conn)
         .await
         .db_operation("find right correction revision for comparison")?
-        .ok_or_else(|| AppError::not_found("Correction revision not found"))?;
+        .ok_or(ReadError::NotFound("Correction revision not found"))?;
 
     let left_snapshot = correction_diff::snapshot_for_history(
         &repo.conn,

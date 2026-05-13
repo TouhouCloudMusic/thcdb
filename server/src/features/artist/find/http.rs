@@ -9,7 +9,8 @@ use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data, state};
 use crate::domain::shared::PageResponse;
 use crate::features::artist::model::Artist;
-use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
+use crate::infra::database::error::DatabaseError;
+use crate::shared::http::api_response::{Data, Error as ApiError};
 
 const TAG: &str = "Artist";
 
@@ -46,11 +47,8 @@ async fn find_artist_by_id(
     axum_extra::extract::Query(common): axum_extra::extract::Query<
         CommonFilter,
     >,
-) -> Result<Data<Option<Artist>>, AppError> {
-    repo::find_one(&repo, id, common)
-        .await
-        .map(Data::from)
-        .map_err(Into::into)
+) -> Result<Data<Option<Artist>>, DatabaseError> {
+    repo::find_one(&repo, id, common).await.map(Data::from)
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -84,11 +82,10 @@ async fn find_many_artist(
     axum_extra::extract::Query(common): axum_extra::extract::Query<
         CommonFilter,
     >,
-) -> Result<Data<Vec<Artist>>, AppError> {
+) -> Result<Data<Vec<Artist>>, DatabaseError> {
     repo::find_many(&repo, query.into(), common)
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }
 
 #[utoipa::path(
@@ -105,7 +102,7 @@ async fn explore_artist(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<ArtistFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Artist>>, AppError> {
+) -> Result<Data<PageResponse<Artist>>, DatabaseError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.artist.find.http",
@@ -115,5 +112,4 @@ async fn explore_artist(
     repo::find_by_filter(&repo, normalized, pagination)
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }

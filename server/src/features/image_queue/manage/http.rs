@@ -2,6 +2,7 @@ use axum::extract::{FromRef, Path, Query, State};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use super::Error;
 use super::model::{
     HandleImageQueueQuery, ImageQueueDetail, ImageQueueFilterQuery,
     PendingImageQueueItem,
@@ -12,7 +13,7 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
 use crate::domain::shared::CursorResponse;
 use crate::features::notification;
 use crate::shared::http::PaginationQuery;
-use crate::shared::http::api_response::{AppError, Data, Message};
+use crate::shared::http::api_response::{Data, Message};
 
 const TAG: &str = "Image Queue";
 
@@ -59,7 +60,7 @@ async fn pending_image_queue(
     State(service): State<Service>,
     Query(pagination): Query<PaginationQuery>,
     Query(filter): Query<ImageQueueFilterQuery>,
-) -> Result<Data<CursorResponse<PendingImageQueueItem>>, AppError> {
+) -> Result<Data<CursorResponse<PendingImageQueueItem>>, Error> {
     Ok(Data::from(
         service.pending_image_queue(pagination, filter).await?,
     ))
@@ -76,7 +77,7 @@ async fn pending_image_queue(
 async fn pending_image_queue_count(
     CurrentUser(_user): CurrentUser,
     State(service): State<Service>,
-) -> Result<Data<u64>, AppError> {
+) -> Result<Data<u64>, Error> {
     Ok(Data::from(service.pending_image_queue_count().await?))
 }
 
@@ -92,7 +93,7 @@ async fn image_queue_detail(
     CurrentUser(user): CurrentUser,
     Path(id): Path<i32>,
     State(service): State<Service>,
-) -> Result<Data<ImageQueueDetail>, AppError> {
+) -> Result<Data<ImageQueueDetail>, Error> {
     Ok(Data::from(service.image_queue_detail(user.id, id).await?))
 }
 
@@ -112,7 +113,7 @@ async fn handle_image_queue(
     Path(id): Path<i32>,
     Query(query): Query<HandleImageQueueQuery>,
     State(service): State<Service>,
-) -> Result<Message, AppError> {
+) -> Result<Message, Error> {
     service
         .handle_image_queue(user.id, id, query.method)
         .await?;

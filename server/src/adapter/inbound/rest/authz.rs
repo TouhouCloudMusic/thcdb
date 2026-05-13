@@ -6,10 +6,14 @@ use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::error::PermissionDenied;
 use crate::shared::http::api_response::AppError;
 
-#[derive(Debug, derive_more::From)]
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
 pub enum Error {
+    #[display("{_0}")]
     #[from]
-    Database(DatabaseError),
+    Database(#[error(source)] DatabaseError),
+    #[display("Permission denied")]
     PermissionDenied,
 }
 

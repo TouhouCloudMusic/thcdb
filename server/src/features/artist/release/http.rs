@@ -12,7 +12,8 @@ use crate::features::artist::model::{
     Appearance, AppearanceQuery, Credit, CreditQuery, Discography,
     DiscographyQuery,
 };
-use crate::shared::http::api_response::{AppError, Data};
+use crate::infra::database::error::DatabaseError;
+use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Artist";
 
@@ -66,11 +67,10 @@ async fn find_artist_appearances(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<AppearanceQueryDto>,
-) -> Result<Data<CursorResponse<Appearance>>, AppError> {
+) -> Result<Data<CursorResponse<Appearance>>, DatabaseError> {
     super::repo::appearance(&repo, dto.into_query(id))
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }
 
 #[derive(Deserialize, IntoParams, ToSchema)]
@@ -106,11 +106,10 @@ async fn get_artist_credits(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<CreditQueryDto>,
-) -> Result<Data<CursorResponse<Credit>>, AppError> {
+) -> Result<Data<CursorResponse<Credit>>, DatabaseError> {
     super::repo::credit(&repo, dto.into_query(id))
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -148,11 +147,10 @@ async fn find_artist_discographies_by_type(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<DiscographyQueryDto>,
-) -> Result<Data<CursorResponse<Discography>>, AppError> {
+) -> Result<Data<CursorResponse<Discography>>, DatabaseError> {
     super::repo::discography(&repo, dto.into_query(id))
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -206,7 +204,7 @@ async fn find_artist_discographies_init(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
     Query(dto): Query<InitDiscographyQueryDto>,
-) -> Result<Data<InitDiscography>, AppError> {
+) -> Result<Data<InitDiscography>, DatabaseError> {
     let (album, ep, compilation, single, demo, other) = tokio::try_join!(
         super::repo::discography(&repo, dto.to_query(id, ReleaseType::Album)),
         super::repo::discography(&repo, dto.to_query(id, ReleaseType::Ep)),

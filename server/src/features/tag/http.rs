@@ -10,7 +10,8 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::application::correction::{
     CorrectionSubmissionResult, NewCorrectionDto,
 };
-use crate::shared::http::api_response::{AppError, Data};
+use crate::features::correction::SubmissionError;
+use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Tag";
 
@@ -38,7 +39,7 @@ async fn create_tag(
     CurrentUser(user): CurrentUser,
     State(repo): State<state::SeaOrmRepository>,
     Json(dto): Json<NewCorrectionDto<NewTag>>,
-) -> Result<Data<CorrectionSubmissionResult>, AppError> {
+) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
     let result = service::create(&repo, dto.with_author(user)).await?;
     Ok(Data::from(result))
 }
@@ -58,7 +59,7 @@ async fn upsert_tag_correction(
     State(notification): State<state::NotificationService>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewTag>>,
-) -> Result<Data<CorrectionSubmissionResult>, AppError> {
+) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
     let user_id = user.id;
     let result =
         service::upsert_correction(&repo, id, dto.with_author(user)).await?;

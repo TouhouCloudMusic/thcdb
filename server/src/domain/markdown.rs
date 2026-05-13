@@ -3,8 +3,6 @@ use std::sync::LazyLock;
 use derive_more::{Display, Error as DeriveError};
 use pulldown_cmark::{Event, Options, Parser, TextMergeStream};
 
-use crate::shared::http::api_response::AppError;
-
 #[derive(Debug, Clone, Display)]
 pub struct Markdown(String);
 
@@ -15,12 +13,6 @@ pub struct Error;
 impl Error {
     const fn contains_html() -> Self {
         Self
-    }
-}
-
-impl From<Error> for AppError {
-    fn from(err: Error) -> Self {
-        AppError::bad_request(err.to_string())
     }
 }
 

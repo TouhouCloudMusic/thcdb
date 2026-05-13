@@ -10,7 +10,8 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::release::model::Release;
-use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
+use crate::infra::database::error::DatabaseError;
+use crate::shared::http::api_response::{Data, Error as ApiError};
 
 const TAG: &str = "Release";
 
@@ -41,11 +42,10 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn find_release_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<Release>>, AppError> {
+) -> Result<Data<Option<Release>>, DatabaseError> {
     repo::find_one(&repo, FindReleaseFilter::Id(id))
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -65,11 +65,10 @@ struct KwQuery {
 async fn find_release_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KwQuery>,
-) -> Result<Data<Vec<Release>>, AppError> {
+) -> Result<Data<Vec<Release>>, DatabaseError> {
     repo::find_many(&repo, FindReleaseFilter::Keyword(query.keyword))
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }
 
 #[utoipa::path(
@@ -86,7 +85,7 @@ async fn explore_release(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<ReleaseFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Release>>, AppError> {
+) -> Result<Data<PageResponse<Release>>, DatabaseError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.release.find.http",
@@ -96,5 +95,4 @@ async fn explore_release(
     repo::find_by_filter(&repo, normalized, pagination)
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }

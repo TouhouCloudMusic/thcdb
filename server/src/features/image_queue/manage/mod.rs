@@ -3,6 +3,7 @@ mod model;
 mod repo;
 mod service;
 
+use axum::response::IntoResponse;
 pub use http::router;
 pub(crate) use model::HandleImageQueueMethod;
 use serde::{Deserialize, Serialize};
@@ -59,5 +60,11 @@ impl From<Error> for AppError {
             Error::Database(err) => err.into(),
             Error::Internal(err) => err.into(),
         }
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
     }
 }

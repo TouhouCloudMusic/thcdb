@@ -1,16 +1,26 @@
+use axum::response::IntoResponse;
+
+use super::comment;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::http::api_response::AppError;
 
-#[derive(Debug, derive_more::From)]
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
 pub enum SubmissionError {
-    Validation(String),
+    #[display("{_0}")]
+    Validation(#[error(ignore)] String),
+    #[display("Permission denied")]
     PermissionDenied,
+    #[display("Correction not found")]
     NotFound,
+    #[display("{_0}")]
     #[from]
-    Database(DatabaseError),
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
     #[from]
-    Internal(InternalError),
+    Internal(#[error(source)] InternalError),
 }
 
 impl From<SubmissionError> for AppError {
@@ -27,14 +37,26 @@ impl From<SubmissionError> for AppError {
     }
 }
 
-#[derive(Debug, derive_more::From)]
+impl IntoResponse for SubmissionError {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
+    }
+}
+
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
 pub enum ModerationError {
+    #[display("Correction not found")]
     NotFound,
+    #[display("Correction already handled")]
     AlreadyHandled,
+    #[display("{_0}")]
     #[from]
-    Database(DatabaseError),
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
     #[from]
-    Internal(InternalError),
+    Internal(#[error(source)] InternalError),
 }
 
 impl From<ModerationError> for AppError {
@@ -49,6 +71,47 @@ impl From<ModerationError> for AppError {
             ModerationError::Database(source) => source.into(),
             ModerationError::Internal(source) => source.into(),
         }
+    }
+}
+
+impl IntoResponse for ModerationError {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
+    }
+}
+
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+pub(crate) enum ReadError {
+    #[display("{_0}")]
+    NotFound(#[error(ignore)] &'static str),
+    #[display("{_0}")]
+    InvalidRequest(#[error(ignore)] &'static str),
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
+    #[from]
+    Comment(#[error(source)] comment::Error),
+}
+
+impl From<ReadError> for AppError {
+    fn from(err: ReadError) -> Self {
+        match err {
+            ReadError::NotFound(message) => AppError::not_found(message),
+            ReadError::InvalidRequest(message) => {
+                AppError::bad_request(message)
+            }
+            ReadError::Database(source) => source.into(),
+            ReadError::Comment(source) => source.into(),
+        }
+    }
+}
+
+impl IntoResponse for ReadError {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
     }
 }
 

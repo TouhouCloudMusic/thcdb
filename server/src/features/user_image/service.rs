@@ -1,9 +1,12 @@
+use axum::response::IntoResponse;
+
 use crate::domain::image;
 use crate::domain::image::{CreateImageMeta, Parser};
 use crate::domain::user::{self, User};
-use crate::infra::database::error::DatabaseResultExt;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::infra::storage::GenericFileStorage;
+use crate::shared::error::InternalError;
 use crate::shared::http::api_response::AppError;
 
 mod parser {
@@ -56,6 +59,43 @@ pub struct Service {
     storage: GenericFileStorage,
 }
 
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+pub enum Error {
+    #[display("{_0}")]
+    #[from]
+    Image(#[error(source)] image::Error),
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+}
+
+impl From<Error> for AppError {
+    fn from(err: Error) -> Self {
+        match err {
+            Error::Image(source) => match source {
+                image::Error::InvalidInput(source) => {
+                    AppError::bad_request(source.to_string())
+                }
+                image::Error::Database(source) => source.into(),
+                image::Error::Internal(source) => source.into(),
+            },
+            Error::Database(source) => source.into(),
+            Error::Internal(source) => source.into(),
+        }
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
+    }
+}
+
 impl Service {
     pub const fn new(
         repo: SeaOrmRepository,
@@ -68,7 +108,7 @@ impl Service {
         &self,
         user: User,
         buffer: &[u8],
-    ) -> Result<(), AppError> {
+    ) -> Result<(), Error> {
         update_user_image(
             self.repo
                 .begin_tx()
@@ -88,7 +128,7 @@ impl Service {
         &self,
         user: User,
         buffer: &[u8],
-    ) -> Result<User, AppError> {
+    ) -> Result<User, Error> {
         update_user_image(
             self.repo
                 .begin_tx()
@@ -111,7 +151,7 @@ async fn update_user_image<F>(
     buffer: &[u8],
     parser: &'static Parser,
     get_field_fn: F,
-) -> Result<User, AppError>
+) -> Result<User, Error>
 where
     F: FnOnce(&mut User) -> &mut Option<i32>,
 {

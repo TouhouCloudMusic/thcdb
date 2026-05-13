@@ -10,7 +10,8 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::application::correction::{
     CorrectionSubmissionResult, NewCorrectionDto,
 };
-use crate::shared::http::api_response::{AppError, Data};
+use crate::features::correction::SubmissionError;
+use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Song Lyrics";
 
@@ -38,7 +39,7 @@ async fn create_song_lyrics(
     CurrentUser(user): CurrentUser,
     State(repo): State<state::SeaOrmRepository>,
     Json(dto): Json<NewCorrectionDto<NewSongLyrics>>,
-) -> Result<Data<CorrectionSubmissionResult>, AppError> {
+) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
     let result = service::create(&repo, dto.with_author(user)).await?;
 
     Ok(Data::from(result))
@@ -59,7 +60,7 @@ async fn update_song_lyrics(
     State(notification): State<state::NotificationService>,
     Path(lyrics_id): Path<i32>,
     Json(input): Json<NewCorrectionDto<NewSongLyrics>>,
-) -> Result<Data<CorrectionSubmissionResult>, AppError> {
+) -> Result<Data<CorrectionSubmissionResult>, SubmissionError> {
     let user_id = user.id;
     let result =
         service::upsert_correction(&repo, lyrics_id, input.with_author(user))

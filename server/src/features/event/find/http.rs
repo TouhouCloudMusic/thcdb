@@ -9,7 +9,8 @@ use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::shared::PageResponse;
 use crate::features::event::model::Event;
-use crate::shared::http::api_response::{AppError, Data, Error as ApiError};
+use crate::infra::database::error::DatabaseError;
+use crate::shared::http::api_response::{Data, Error as ApiError};
 
 const TAG: &str = "Event";
 
@@ -40,11 +41,8 @@ data! {
 async fn find_event_by_id(
     State(repo): State<state::SeaOrmRepository>,
     Path(id): Path<i32>,
-) -> Result<Data<Option<Event>>, AppError> {
-    super::repo::find_by_id(&repo, id)
-        .await
-        .map(Data::from)
-        .map_err(Into::into)
+) -> Result<Data<Option<Event>>, DatabaseError> {
+    super::repo::find_by_id(&repo, id).await.map(Data::from)
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -66,11 +64,10 @@ struct KeywordQuery {
 async fn find_event_by_keyword(
     State(repo): State<state::SeaOrmRepository>,
     Query(query): Query<KeywordQuery>,
-) -> Result<Data<Vec<Event>>, AppError> {
+) -> Result<Data<Vec<Event>>, DatabaseError> {
     super::repo::find_by_keyword(&repo, &query.keyword)
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }
 
 #[utoipa::path(
@@ -87,7 +84,7 @@ async fn explore_event(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<EventFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Event>>, AppError> {
+) -> Result<Data<PageResponse<Event>>, DatabaseError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.event.find.http",
@@ -97,5 +94,4 @@ async fn explore_event(
     super::repo::find_by_filter(&repo, normalized, pagination)
         .await
         .map(Data::from)
-        .map_err(Into::into)
 }

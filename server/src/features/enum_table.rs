@@ -12,8 +12,8 @@ use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::domain::model::{EditableUserRole, UserRoleEnum};
 use crate::domain::shared::Language;
 use crate::domain::song::SongRelationType;
-use crate::infra::database::error::DatabaseResultExt;
-use crate::shared::http::api_response::{AppError, Data};
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::http::api_response::Data;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
@@ -42,7 +42,7 @@ data! {
 )]
 async fn language_list(
     State(state): State<ArcAppState>,
-) -> Result<Data<Vec<Language>>, AppError> {
+) -> Result<Data<Vec<Language>>, DatabaseError> {
     let res: Vec<Language> = language::Entity::find()
         .all(&state.database)
         .await
@@ -61,7 +61,7 @@ async fn language_list(
 )]
 async fn user_roles(
     State(state): State<ArcAppState>,
-) -> Result<Data<Vec<UserRoleEnum>>, AppError> {
+) -> Result<Data<Vec<UserRoleEnum>>, DatabaseError> {
     Ok(role::Entity::find()
         .all(&state.database)
         .await
@@ -81,8 +81,8 @@ async fn user_roles(
 )]
 async fn editable_user_roles(
     State(_state): State<ArcAppState>,
-) -> Result<Data<Vec<EditableUserRole>>, AppError> {
-    Ok(EditableUserRole::iter().collect_vec().into())
+) -> Data<Vec<EditableUserRole>> {
+    EditableUserRole::iter().collect_vec().into()
 }
 
 #[utoipa::path(
@@ -94,7 +94,7 @@ async fn editable_user_roles(
 )]
 async fn song_relation_types(
     State(state): State<ArcAppState>,
-) -> Result<Data<Vec<SongRelationType>>, AppError> {
+) -> Result<Data<Vec<SongRelationType>>, DatabaseError> {
     Ok(song_relation_type::Entity::find()
         .order_by_asc(song_relation_type::Column::Id)
         .all(&state.database)

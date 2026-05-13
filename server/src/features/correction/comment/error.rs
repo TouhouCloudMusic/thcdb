@@ -1,9 +1,11 @@
+use axum::response::IntoResponse;
+
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::http::api_response::AppError;
 
 #[derive(Debug, Clone, Copy)]
-pub(in crate::features::correction) enum NotFound {
+pub(crate) enum NotFound {
     Correction,
     Comment,
 }
@@ -17,15 +19,22 @@ impl NotFound {
     }
 }
 
-#[derive(Debug, derive_more::From)]
-pub(in crate::features::correction) enum Error {
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+pub(crate) enum Error {
+    #[display("{_0}")]
     #[from]
-    Database(DatabaseError),
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
     #[from]
-    Internal(InternalError),
-    NotFound(NotFound),
+    Internal(#[error(source)] InternalError),
+    #[display("{}", _0.message())]
+    NotFound(#[error(ignore)] NotFound),
+    #[display("Permission denied")]
     PermissionDenied,
-    InvalidRequest(String),
+    #[display("{_0}")]
+    InvalidRequest(#[error(ignore)] String),
 }
 
 impl From<Error> for AppError {
@@ -37,5 +46,11 @@ impl From<Error> for AppError {
             Error::PermissionDenied => PermissionDenied.into(),
             Error::InvalidRequest(message) => AppError::bad_request(message),
         }
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
     }
 }

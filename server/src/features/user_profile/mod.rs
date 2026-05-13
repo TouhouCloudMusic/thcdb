@@ -8,23 +8,17 @@ pub use service::Service;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::AppError;
 
-#[derive(Debug, derive_more::Display, derive_more::Error)]
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
 pub enum Error {
     #[display("User not found")]
     NotFound,
     #[display("cannot follow yourself")]
     CannotFollowSelf,
-    #[display("{source}")]
-    Database {
-        #[error(source)]
-        source: DatabaseError,
-    },
-}
-
-impl From<DatabaseError> for Error {
-    fn from(source: DatabaseError) -> Self {
-        Self::Database { source }
-    }
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
 }
 
 impl From<Error> for AppError {
@@ -33,7 +27,7 @@ impl From<Error> for AppError {
         match err {
             Error::NotFound => AppError::not_found(err.to_string()),
             Error::CannotFollowSelf => AppError::bad_request(err.to_string()),
-            Error::Database { source } => source.into(),
+            Error::Database(source) => source.into(),
         }
     }
 }

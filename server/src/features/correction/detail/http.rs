@@ -11,9 +11,9 @@ use utoipa_axum::routes;
 use super::model::CorrectionDetail;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::correction::comment;
+use crate::features::correction::{ReadError, comment};
 use crate::infra::database::error::DatabaseResultExt;
-use crate::shared::http::api_response::{AppError, Data};
+use crate::shared::http::api_response::Data;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
@@ -34,24 +34,22 @@ data!(DataCorrectionDetail, CorrectionDetail);
 async fn get_correction(
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<CorrectionDetail>, AppError> {
+) -> Result<Data<CorrectionDetail>, ReadError> {
     let Some(model) = correction_entity::Entity::find_by_id(id)
         .one(&repo.conn)
         .await
         .db_operation("find correction detail")?
     else {
-        return Err(AppError::not_found("Correction not found"));
+        return Err(ReadError::NotFound("Correction not found"));
     };
 
-    let comments = comment::initial_page(&repo.conn, id)
-        .await
-        .map_err(AppError::from)?;
+    let comments = comment::initial_page(&repo.conn, id).await?;
     let entity_name =
         find_entity_name(&repo.conn, model.entity_type, model.entity_id)
             .await
             .db_operation("find correction entity name")?;
     let Some(entity_name) = entity_name else {
-        return Err(AppError::not_found("Correction entity not found"));
+        return Err(ReadError::NotFound("Correction entity not found"));
     };
 
     Ok(Data::from(CorrectionDetail {

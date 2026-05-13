@@ -10,8 +10,9 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
+use crate::features::correction::ReadError;
 use crate::infra::database::error::DatabaseResultExt;
-use crate::shared::http::api_response::{AppError, Data};
+use crate::shared::http::api_response::Data;
 
 #[derive(Clone, Serialize, ToSchema)]
 struct CorrectionUserSummary {
@@ -43,14 +44,14 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn get_correction_revisions(
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<Vec<CorrectionRevisionSummary>>, AppError> {
+) -> Result<Data<Vec<CorrectionRevisionSummary>>, ReadError> {
     let exists = correction_entity::Entity::find_by_id(id)
         .one(&repo.conn)
         .await
         .db_operation("find correction for revisions")?;
 
     if exists.is_none() {
-        return Err(AppError::not_found("Correction not found"));
+        return Err(ReadError::NotFound("Correction not found"));
     }
 
     let revisions = correction_revision::Entity::find()

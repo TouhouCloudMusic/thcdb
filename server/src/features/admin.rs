@@ -2,6 +2,7 @@ use std::collections::BTreeSet;
 
 use axum::Json;
 use axum::extract::{Path, Query, State};
+use axum::response::IntoResponse;
 use chrono::Utc;
 use entity::{user, user_role, user_role_change_audit};
 use itertools::Itertools;
@@ -22,11 +23,46 @@ use crate::domain::model::{
     AdminUserRead, AdminWrite, EditableUserRole, UserRole, UserRoleEnum,
 };
 use crate::domain::shared::PageResponse;
-use crate::infra::database::error::DatabaseResultExt;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::error::InternalError;
 use crate::shared::http::PageQuery;
 use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Admin";
+
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+enum Error {
+    #[display("{_0}")]
+    #[from]
+    Authz(#[error(source)] authz::Error),
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+    #[display("User not found")]
+    UserNotFound,
+}
+
+impl From<Error> for AppError {
+    fn from(err: Error) -> Self {
+        match err {
+            Error::Authz(source) => source.into(),
+            Error::Database(source) => source.into(),
+            Error::Internal(source) => source.into(),
+            Error::UserNotFound => AppError::not_found(err.to_string()),
+        }
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
+    }
+}
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
@@ -71,7 +107,7 @@ async fn admin_users(
     Query(filter): Query<AdminUsersFilter>,
     Query(pagination): Query<PageQuery>,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<PageResponse<UserSummary>>, AppError> {
+) -> Result<Data<PageResponse<UserSummary>>, Error> {
     authz::ensure_permission::<AdminUserRead>(&repo.conn, user.id).await?;
 
     let keyword = filter
@@ -141,7 +177,7 @@ async fn set_user_roles(
     Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
     Json(req): Json<SetUserRolesRequest>,
-) -> Result<Data<Vec<UserRole>>, AppError> {
+) -> Result<Data<Vec<UserRole>>, Error> {
     authz::ensure_permission::<AdminWrite>(&repo.conn, actor.id).await?;
 
     let tx_repo = repo
@@ -155,7 +191,7 @@ async fn set_user_roles(
         .db_operation("find user for role update")?;
 
     if target_user.is_none() {
-        return Err(AppError::not_found("User not found"));
+        return Err(Error::UserNotFound);
     }
 
     let old_roles = user_role::Entity::find()

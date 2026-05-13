@@ -1,4 +1,5 @@
 use axum::extract::{Query, State};
+use axum::response::IntoResponse;
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -17,6 +18,33 @@ use crate::domain::tag::TagRef;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::MessageValidationError as ValidationError;
 use crate::shared::http::api_response::{AppError, Data};
+
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+enum Error {
+    #[display("{_0}")]
+    #[from]
+    Validation(#[error(source)] ValidationError),
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+}
+
+impl From<Error> for AppError {
+    fn from(err: Error) -> Self {
+        match err {
+            Error::Validation(err) => AppError::bad_request(err.to_string()),
+            Error::Database(err) => err.into(),
+        }
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
+    }
+}
 
 #[derive(Clone, Debug, Deserialize, IntoParams)]
 #[serde(deny_unknown_fields)]
@@ -159,17 +187,13 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn search_all(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchAllQuery>,
-) -> Result<Data<SearchResponse>, AppError> {
-    let ValidSearchQuery { search_term, limit } = query
-        .validate()
-        .map_err(|err| AppError::bad_request(err.to_string()))?;
+) -> Result<Data<SearchResponse>, Error> {
+    let ValidSearchQuery { search_term, limit } = query.validate()?;
 
     let start = std::time::Instant::now();
 
     let response =
-        SearchResponse::from_request(&sea_repo, &search_term, limit, 0)
-            .await
-            .map_err(AppError::from)?;
+        SearchResponse::from_request(&sea_repo, &search_term, limit, 0).await?;
 
     log::info!(
         target: "features.search.http",
@@ -196,14 +220,12 @@ async fn search_all(
 async fn search_artist(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SimpleArtist>>, AppError> {
+) -> Result<Data<CursorResponse<SimpleArtist>>, Error> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
         cursor,
-    } = query
-        .validate()
-        .map_err(|err| AppError::bad_request(err.to_string()))?;
+    } = query.validate()?;
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
@@ -235,14 +257,12 @@ async fn search_artist(
 async fn search_release(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SimpleRelease>>, AppError> {
+) -> Result<Data<CursorResponse<SimpleRelease>>, Error> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
         cursor,
-    } = query
-        .validate()
-        .map_err(|err| AppError::bad_request(err.to_string()))?;
+    } = query.validate()?;
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
@@ -274,14 +294,12 @@ async fn search_release(
 async fn search_song(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SongRef>>, AppError> {
+) -> Result<Data<CursorResponse<SongRef>>, Error> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
         cursor,
-    } = query
-        .validate()
-        .map_err(|err| AppError::bad_request(err.to_string()))?;
+    } = query.validate()?;
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
@@ -313,14 +331,12 @@ async fn search_song(
 async fn search_event(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SimpleEvent>>, AppError> {
+) -> Result<Data<CursorResponse<SimpleEvent>>, Error> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
         cursor,
-    } = query
-        .validate()
-        .map_err(|err| AppError::bad_request(err.to_string()))?;
+    } = query.validate()?;
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
@@ -352,14 +368,12 @@ async fn search_event(
 async fn search_label(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SimpleLabel>>, AppError> {
+) -> Result<Data<CursorResponse<SimpleLabel>>, Error> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
         cursor,
-    } = query
-        .validate()
-        .map_err(|err| AppError::bad_request(err.to_string()))?;
+    } = query.validate()?;
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();
@@ -391,14 +405,12 @@ async fn search_label(
 async fn search_tag(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<TagRef>>, AppError> {
+) -> Result<Data<CursorResponse<TagRef>>, Error> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
         cursor,
-    } = query
-        .validate()
-        .map_err(|err| AppError::bad_request(err.to_string()))?;
+    } = query.validate()?;
 
     let start = std::time::Instant::now();
     let search_term = search_term.as_str();

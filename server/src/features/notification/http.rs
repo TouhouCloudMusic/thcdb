@@ -6,7 +6,7 @@ use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::service::Service;
+use super::service::{Error, Service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
 use crate::domain::model::{NotificationKindEnum, NotificationTargetTypeEnum};
@@ -14,7 +14,7 @@ use crate::domain::shared::CursorResponse;
 use crate::features::notification::ws;
 use crate::infra::notification::NotificationHub;
 use crate::shared::http::PaginationQuery;
-use crate::shared::http::api_response::{AppError, Data, Message};
+use crate::shared::http::api_response::{Data, Message};
 
 const TAG: &str = "Notification";
 
@@ -57,7 +57,7 @@ async fn notification_list(
     CurrentUser(user): CurrentUser,
     State(service): State<state::NotificationService>,
     Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<CursorResponse<NotificationItem>>, AppError> {
+) -> Result<Data<CursorResponse<NotificationItem>>, Error> {
     let limit = pagination.limit();
     let cursor = pagination.cursor;
     let paginated = service.list(user.id, limit, cursor).await?;
@@ -93,7 +93,7 @@ async fn notification_list(
 async fn notification_unread_count(
     CurrentUser(user): CurrentUser,
     State(service): State<state::NotificationService>,
-) -> Result<Data<u64>, AppError> {
+) -> Result<Data<u64>, Error> {
     let count = service.unread_count(user.id).await?;
     Ok(Data::from(count))
 }
@@ -108,7 +108,7 @@ async fn notification_mark_read(
     CurrentUser(user): CurrentUser,
     Path(id): Path<i32>,
     State(service): State<state::NotificationService>,
-) -> Result<Message, AppError> {
+) -> Result<Message, Error> {
     service.mark_read(user.id, id).await?;
     Ok(Message::ok())
 }
@@ -122,7 +122,7 @@ async fn notification_mark_read(
 async fn notification_read_all(
     CurrentUser(user): CurrentUser,
     State(service): State<state::NotificationService>,
-) -> Result<Message, AppError> {
+) -> Result<Message, Error> {
     service.read_all(user.id).await?;
     Ok(Message::ok())
 }

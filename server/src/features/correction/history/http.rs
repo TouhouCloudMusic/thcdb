@@ -11,8 +11,8 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::infra::database::error::DatabaseResultExt;
-use crate::shared::http::api_response::{AppError, Data};
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::shared::http::api_response::Data;
 
 #[derive(Deserialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]
@@ -85,7 +85,7 @@ async fn entity_corrections(
         EntityCorrectionsPath,
     >,
     State(repo): State<state::SeaOrmRepository>,
-) -> Result<Data<Vec<CorrectionHistoryItem>>, AppError> {
+) -> Result<Data<Vec<CorrectionHistoryItem>>, DatabaseError> {
     let entity_type = entity::enums::EntityType::from(entity_type);
     let corrections = correction_entity::Entity::find()
         .filter(correction_entity::Column::EntityId.eq(id))

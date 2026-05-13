@@ -202,6 +202,12 @@ impl From<DatabaseError> for AppError {
     }
 }
 
+impl IntoResponse for DatabaseError {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
+    }
+}
+
 #[derive(ToSchema, Serialize)]
 pub struct Data<T> {
     #[schema(

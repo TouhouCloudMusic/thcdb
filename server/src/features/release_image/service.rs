@@ -1,6 +1,7 @@
 use std::sync::LazyLock;
 
 use ::image::ImageFormat;
+use axum::response::IntoResponse;
 use bytesize::ByteSize;
 use entity::enums::ReleaseImageType;
 use entity::{image as image_entity, release_image, user as user_entity};
@@ -21,10 +22,10 @@ use crate::domain::shared::ImageUploaderSummary;
 use crate::features::image_queue::Repo as ImageQueueRepo;
 use crate::features::release::find::repo as release_repo;
 use crate::features::release_image_queue::Repo as ReleaseImageQueueRepo;
-use crate::infra::database::error::DatabaseResultExt;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::storage::GenericFileStorage;
-use crate::shared::error::EntityNotFound;
+use crate::shared::error::{EntityNotFound, InternalError};
 use crate::shared::http::api_response::AppError;
 
 static RELEASE_COVER_IMAGE_PARSER: LazyLock<Parser> = LazyLock::new(|| {
@@ -46,6 +47,47 @@ pub struct Service {
     storage: GenericFileStorage,
 }
 
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
+pub enum Error {
+    #[display("{_0}")]
+    #[from]
+    Image(#[error(source)] image::Error),
+    #[display("{_0}")]
+    #[from]
+    Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
+    #[display("{_0}")]
+    #[from]
+    NotFound(#[error(source)] EntityNotFound),
+}
+
+impl From<Error> for AppError {
+    fn from(err: Error) -> Self {
+        match err {
+            Error::Image(source) => match source {
+                image::Error::InvalidInput(source) => {
+                    AppError::bad_request(source.to_string())
+                }
+                image::Error::Database(source) => source.into(),
+                image::Error::Internal(source) => source.into(),
+            },
+            Error::Database(source) => source.into(),
+            Error::Internal(source) => source.into(),
+            Error::NotFound(source) => source.into(),
+        }
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
+    }
+}
+
 impl Service {
     pub const fn new(
         repo: SeaOrmRepository,
@@ -57,7 +99,7 @@ impl Service {
     pub async fn upload_cover_art(
         &self,
         dto: ReleaseCoverArtInput,
-    ) -> Result<i32, AppError> {
+    ) -> Result<i32, Error> {
         let ReleaseCoverArtInput {
             bytes,
             user,
@@ -106,7 +148,7 @@ impl Service {
     pub async fn get_cover_art_metadata(
         &self,
         release_id: i32,
-    ) -> Result<Option<CurrentImageMetadata>, AppError> {
+    ) -> Result<Option<CurrentImageMetadata>, Error> {
         let image = image_entity::Entity::find()
             .inner_join(release_image::Entity)
             .filter(release_image::Column::ReleaseId.eq(release_id))
