@@ -63,8 +63,11 @@
 - [x] 清理 feature/service 层直接 `map_err(AppError::internal_boxed)` 的调用点，内部错误统一先收口到 `InternalError`。
 - [x] 删除 `infra::Error` 模块和顶层 re-export，OpenAPI 错误响应改为直接使用共享默认 error schema。
 - [x] 将 correction 写入类 feature repo trait 与 `domain::user` repo trait 的裸 boxed 返回值迁移为 `DatabaseError`。
-- [x] `SeaOrmTxRepo::commit`、`shared::secret`、storage 删除队列等非 DB 技术失败不再返回裸 boxed，统一进入 `InternalError`。
-- [x] `AppError::internal_boxed` 降为 `shared::http::api_response` 模块内部 API，外部只能通过 `AppError::internal(...)` 或 `InternalError -> AppError` 进入。
+- [x] `SeaOrmTxRepo::commit`、storage 删除队列等非 DB 技术失败不再返回裸 boxed，统一进入 `InternalError`。
+- [x] `shared::secret` 保持返回 `BoxedError`，避免共享 util 泄露应用层 `InternalError` 语义，调用边界显式转换。
+- [x] 删除旧 `infra::whatever::InfraWhatever` 封装，事务 commit 的内部诊断消息改用共享 `MessageError -> InternalError`。
+- [x] 删除 `AppError::internal_boxed`，外部只能通过 `AppError::internal(...)` 或 `InternalError -> AppError` 进入。
+- [x] `features/tag_vote::Error` 的 source 转发改为 `derive_more::Error`，移除同类手写样板。
 
 ## 约束
 
@@ -86,7 +89,6 @@
   - [ ] `AppError::forbidden`
   - [ ] `AppError::not_found`
   - [ ] `AppError::conflict`
-  - [ ] `AppError::internal_boxed`
   - [ ] `AppError::status_code`
 - [x] 移除 `AppError::context(...)`，避免 HTTP 边界对象继续承载业务语义。
 - [x] 新增 `AppError::unauthorized`，用于 auth session / extractor 的真实调用点。
@@ -95,7 +97,7 @@
   - [ ] public error 使用传入 message。
   - [x] internal error 响应 message 固定为 `Internal server error`。
   - [x] internal error 不向 response body 暴露 source 或 context。
-  - [x] `infra::Error` 直接作为 HTTP response 时也统一 500 脱敏。
+  - [x] 旧 `infra::Error` HTTP 出口已删除，internal 响应由 `InternalError` / `DatabaseError` 进入 `AppError`。
   - [ ] `AppErrorKind` 到 `StatusCode` 的映射正确。
   - [x] `Error::from_err_and_code` 接受引用，避免为了生成响应消耗错误值。
 - [ ] 明确 `AppError` 不负责 OpenAPI schema 生成，只负责运行时响应。
@@ -125,7 +127,7 @@
   - [x] `features/correction/*/http.rs` 中仍返回 `axum::response::Response` 的 handler
   - [x] `adapter/inbound/rest/extract/auth.rs`
 - [ ] 每迁移一个 slice，同步更新测试中直接调用 `into_response()` 的断言。
-- [ ] 避免在 handler 中出现连续的 `map_err(crate::infra::error::Error::from).map_err(AppError::from)`；这种位置应作为下一步 service/repo 分层候选。
+- [x] 避免在 handler 中出现连续的 `map_err(crate::infra::error::Error::from).map_err(AppError::from)`。
 
 验收：
 
@@ -159,7 +161,7 @@
 
 验收：
 
-- [x] `rg -n "map_err\\(InfraError::from\\)|bimap_into\\(\\)" server/src/features server/src/adapter` 不再命中数据库错误转换路径；当前剩余 `InfraError::from` 只用于 `SeaOrmTxRepo::commit()` 的 boxed transaction error。
+- [x] `rg -n "map_err\\(InfraError::from\\)|bimap_into\\(\\)" server/src/features server/src/adapter` 不再命中数据库错误转换路径。
 - [x] `rg -n "impl From<DbErr> for Error" server/src/infra/error.rs` 无结果。
 - [x] 未知数据库错误只通过 `AppError::internal(DatabaseError)` 返回统一 500。
 
@@ -185,7 +187,7 @@
   - [x] `PublishedNotFound`
   - [x] `PermissionDenied`
   - [x] `Database(DatabaseError)`
-  - [x] `Infra(InfraError)`
+  - [x] `Internal(InternalError)`
 - [x] 避免在 HTTP handler 里直接处理 `entity::image_queue::Entity`。
 - [x] 保留 `From<Error> for AppError` 作为唯一 HTTP 转换点。
 - [x] 完成后删除 slice 级 TODO。
@@ -319,7 +321,7 @@ auth 相关错误通常有清晰恢复语义，不能简单压平。
 验收：
 
 - [x] `rg -n "Backtrace|backtrace" server/src -g "*.rs"` 无结果。
-- [x] `rg -n "snafu::Snafu|use snafu::Snafu|derive\\(Debug, Snafu\\)|derive\\(Debug, snafu::Snafu\\)|#\\[snafu" server/src -g "*.rs"` 只剩 `main.rs` / `infra/whatever.rs` 的启动错误报告路径。
+- [x] `rg -n "snafu::Snafu|use snafu::Snafu|derive\\(Debug, Snafu\\)|derive\\(Debug, snafu::Snafu\\)|#\\[snafu" server/src -g "*.rs"` 不再命中 runtime/domain/feature 错误；`snafu::Whatever` 只保留在启动和 CLI 路径。
 - [x] `cargo clippy` 不出现本阶段新增 warning。
 
 ## Phase 8: 验证和回归

@@ -4,8 +4,7 @@ use entity::user_role;
 use sea_orm::{DatabaseTransaction, DbErr, TransactionTrait};
 
 use crate::domain::model::UserRoleEnum;
-use crate::infra::whatever::InfraWhatever;
-use crate::shared::error::InternalError;
+use crate::shared::error::{InternalError, MessageError};
 
 pub(crate) mod artist;
 mod artist_image_queue;
@@ -69,7 +68,7 @@ impl SeaOrmTxRepo {
                     multiple references to the transaction exist, \
                     current weak count: {wc}, strong count: {sc}"
             );
-            InternalError::new(InfraWhatever::from(msg))
+            InternalError::new(MessageError::new(msg))
         })?;
 
         tx.commit().await.map_err(InternalError::new)

@@ -11,5 +11,4 @@ pub mod redis;
 pub mod singleton;
 pub mod state;
 pub mod storage;
-pub(crate) mod whatever;
 pub mod worker;

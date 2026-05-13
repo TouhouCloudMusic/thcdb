@@ -99,15 +99,10 @@ impl AppError {
     pub fn internal(
         source: impl std::error::Error + Send + Sync + 'static,
     ) -> Self {
-        Self::internal_boxed(Box::new(source))
-    }
-
-    #[track_caller]
-    fn internal_boxed(source: BoxedError) -> Self {
         Self {
             kind: AppErrorKind::Internal,
             message: "Internal server error".to_string(),
-            source: Some(source),
+            source: Some(Box::new(source)),
             location: Location::caller(),
         }
     }
@@ -181,7 +176,12 @@ impl From<EntityNotFound> for AppError {
 impl From<InternalError> for AppError {
     #[track_caller]
     fn from(err: InternalError) -> Self {
-        Self::internal_boxed(err.0)
+        Self {
+            kind: AppErrorKind::Internal,
+            message: "Internal server error".to_string(),
+            source: Some(err.0),
+            location: Location::caller(),
+        }
     }
 }
 

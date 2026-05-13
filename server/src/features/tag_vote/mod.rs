@@ -9,23 +9,14 @@ use sea_orm::DbErr;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::AppError;
 
-#[derive(Debug, derive_more::Display)]
+#[derive(Debug, derive_more::Display, derive_more::Error)]
 pub enum Error {
     #[display("{_0} with id {_1} not found")]
-    EntityNotFound(&'static str, i32),
+    EntityNotFound(#[error(ignore)] &'static str, #[error(ignore)] i32),
     #[display("Tag with id {_0} not found")]
-    TagNotFound(i32),
+    TagNotFound(#[error(ignore)] i32),
     #[display("{_0}")]
-    Database(DatabaseError),
-}
-
-impl std::error::Error for Error {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self {
-            Self::Database(source) => Some(source),
-            Self::EntityNotFound(_, _) | Self::TagNotFound(_) => None,
-        }
-    }
+    Database(#[error(source)] DatabaseError),
 }
 
 impl IntoResponse for Error {

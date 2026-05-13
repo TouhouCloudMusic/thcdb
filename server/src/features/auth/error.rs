@@ -6,18 +6,19 @@ use crate::domain::auth::ValidateCredsError;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;
 use crate::shared::http::api_response::{AppError, AppErrorKind};
+use crate::shared::types::BoxedError;
 
 #[derive(Debug, Display, derive_more::Error)]
 #[display("Invalid email: {email}.\n{source}")]
 pub struct InvalidEmail {
     email: String,
-    source: Box<dyn std::error::Error>,
+    source: BoxedError,
 }
 
 impl InvalidEmail {
     pub fn new(
         email: impl Into<String>,
-        source: impl std::error::Error + 'static,
+        source: impl std::error::Error + Send + Sync + 'static,
     ) -> Self {
         Self {
             email: email.into(),
