@@ -26,9 +26,9 @@ impl From<Error> for AppError {
     }
 }
 
-impl From<Error> for axum::response::Response {
-    fn from(err: Error) -> Self {
-        AppError::from(err).into()
+impl axum::response::IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        AppError::from(self).into_response()
     }
 }
 
