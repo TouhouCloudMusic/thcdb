@@ -1,6 +1,6 @@
 use axum::response::IntoResponse;
 
-use super::{comment, shared};
+use super::comment;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::http::api_response::AppError;
@@ -94,9 +94,6 @@ pub(crate) enum ReadError {
     #[display("{_0}")]
     #[from]
     Comment(#[error(source)] comment::Error),
-    #[display("{_0}")]
-    #[from]
-    Snapshot(#[error(source)] shared::repo::SnapshotError),
 }
 
 impl IntoResponse for ReadError {
@@ -110,14 +107,6 @@ impl IntoResponse for ReadError {
             }
             ReadError::Database(source) => source.into_response(),
             ReadError::Comment(source) => source.into_response(),
-            ReadError::Snapshot(source) => match source {
-                err @ shared::repo::SnapshotError::BrokenReference(_) => {
-                    InternalError::new(err).into_response()
-                }
-                shared::repo::SnapshotError::Database(source) => {
-                    source.into_response()
-                }
-            },
         }
     }
 }

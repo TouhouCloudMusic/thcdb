@@ -27,18 +27,6 @@ use serde_json::{Value, json};
 use crate::domain::correction::CorrectionDiffEntry;
 use crate::features::correction::model::CorrectionUserSummary;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::shared::error::BrokenEntityReference;
-
-#[derive(
-    Debug, derive_more::Display, derive_more::Error, derive_more::From,
-)]
-pub enum SnapshotError {
-    #[display("{_0}")]
-    BrokenReference(#[error(source)] BrokenEntityReference),
-    #[display("{_0}")]
-    #[from]
-    Database(#[error(source)] DatabaseError),
-}
 
 pub async fn find_correction(
     conn: &impl ConnectionTrait,
@@ -136,7 +124,7 @@ pub async fn snapshot_for_history(
     db: &impl ConnectionTrait,
     entity_type: EntityType,
     history_id: i32,
-) -> Result<Value, SnapshotError> {
+) -> Result<Value, DatabaseError> {
     match entity_type {
         EntityType::Artist => snapshot_artist(db, history_id).await,
         EntityType::Label => snapshot_label(db, history_id).await,
@@ -148,7 +136,6 @@ pub async fn snapshot_for_history(
         EntityType::CreditRole => snapshot_credit_role(db, history_id).await,
     }
     .db_operation("load correction history snapshot")
-    .map_err(SnapshotError::from)
 }
 
 pub fn diff_snapshots(
