@@ -221,7 +221,7 @@ snafu.workspace = true
 strum = { version = "0.27", features = [
     "derive",
 ] }
-mimalloc = { version = "0.1.43", optional = true, features = [ "v3" ] }
+mimalloc = { version = "0.1.50", optional = true }
 tokio.workspace = true
 tower = { version = "0.5.2", features = [
     "limit",
