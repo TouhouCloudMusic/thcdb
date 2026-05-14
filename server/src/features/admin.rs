@@ -20,7 +20,7 @@ use utoipa_axum::routes;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
 use crate::domain::model::{
-    AdminUserRead, AdminWrite, EditableUserRole, UserRole, UserRoleEnum,
+    EditableUserRole, PermissionName, UserRole, UserRoleEnum,
 };
 use crate::domain::shared::PageResponse;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
@@ -103,7 +103,12 @@ async fn admin_users(
     Query(pagination): Query<PageQuery>,
     State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Data<PageResponse<UserSummary>>, Error> {
-    authz::ensure_permission::<AdminUserRead>(&repo.conn, user.id).await?;
+    authz::ensure_permission(
+        &repo.conn,
+        user.id,
+        PermissionName::AdminUserRead,
+    )
+    .await?;
 
     let keyword = filter
         .keyword
@@ -170,7 +175,8 @@ async fn set_user_roles(
     State(repo): State<state::SeaOrmRepository>,
     Json(req): Json<SetUserRolesRequest>,
 ) -> Result<Data<Vec<UserRole>>, Error> {
-    authz::ensure_permission::<AdminWrite>(&repo.conn, actor.id).await?;
+    authz::ensure_permission(&repo.conn, actor.id, PermissionName::AdminWrite)
+        .await?;
 
     let tx_repo = repo
         .begin_tx()

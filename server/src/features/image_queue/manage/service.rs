@@ -3,7 +3,7 @@ use super::model::{
     ImageSummary, PendingImageQueueItem,
 };
 use super::{Error, repo};
-use crate::domain::model::{ImageQueueManage, NotificationKindEnum};
+use crate::domain::model::{NotificationKindEnum, PermissionName};
 use crate::domain::shared::CursorResponse;
 use crate::features::image_queue::shared::{UserSummary, load_users};
 use crate::features::notification;
@@ -80,9 +80,10 @@ impl Service {
             .ok_or(Error::NotFound)?;
 
         if detail.queue.created_by != user_id
-            && !authz::user_has_permission::<ImageQueueManage>(
+            && !authz::user_has_permission(
                 &self.repo.conn,
                 user_id,
+                PermissionName::ImageQueueManage,
             )
             .await
             .db_operation("check image queue manage permission")?
@@ -146,9 +147,10 @@ impl Service {
         id: i32,
         method: HandleImageQueueMethod,
     ) -> Result<(), Error> {
-        if !authz::user_has_permission::<ImageQueueManage>(
+        if !authz::user_has_permission(
             &self.repo.conn,
             user_id,
+            PermissionName::ImageQueueManage,
         )
         .await
         .db_operation("check image queue manage permission")?

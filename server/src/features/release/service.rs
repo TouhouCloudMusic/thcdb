@@ -55,6 +55,15 @@ pub async fn upsert_correction(
 
     let tx_repo = repo.begin_tx().await?;
 
+    if let Some(correction_id) =
+        correction_service::find_create_conflict_for_mode::<NewRelease>(
+            &tx_repo, id, &mode,
+        )
+        .await?
+    {
+        return Ok(CorrectionSubmitResult::conflict(correction_id, id));
+    }
+
     let history_id =
         super::repo::create_history(&tx_repo, &correction.data).await?;
 
@@ -72,14 +81,16 @@ pub async fn upsert_correction(
         mode,
     )
     .await?;
-    tx_repo.commit().await?;
 
-    Ok(match result {
+    match result {
         correction_service::CorrectionUpsertResult::Submitted {
             correction_id,
-        } => CorrectionSubmitResult::submitted(correction_id, id),
+        } => {
+            tx_repo.commit().await?;
+            Ok(CorrectionSubmitResult::submitted(correction_id, id))
+        }
         correction_service::CorrectionUpsertResult::Conflict {
             correction_id,
-        } => CorrectionSubmitResult::conflict(correction_id, id),
-    })
+        } => Ok(CorrectionSubmitResult::conflict(correction_id, id)),
+    }
 }

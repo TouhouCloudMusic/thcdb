@@ -223,7 +223,7 @@ export const vCorrectionRevisionSummary = v.object({
 	description: v.string(),
 })
 
-export const vCreateCorrectionCommentRequest = v.object({
+export const vCreateEntityCommentRequest = v.object({
 	parent_id: v.nullish(
 		v.pipe(
 			v.number(),
@@ -778,6 +778,83 @@ export const vDataVecEditableUserRole = v.object({
 	status: v.string(),
 	data: v.array(vEditableUserRole),
 })
+
+export const vEntityComment = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	parent_id: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+	author: vCommentAuthor,
+	content: v.nullish(v.string()),
+	state: vCommentState,
+	created_at: v.pipe(v.string(), v.isoTimestamp()),
+	updated_at: v.pipe(v.string(), v.isoTimestamp()),
+})
+
+export const vDataEntityComment = v.object({
+	status: v.string(),
+	data: vEntityComment,
+})
+
+export const vEntityCommentPage = v.object({
+	items: v.array(vEntityComment),
+	next_cursor: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+	active_count: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+})
+
+export const vDataPaginatedEntityComment = v.object({
+	status: v.string(),
+	data: vEntityCommentPage,
+})
+
+export const vEntityCommentTarget = v.picklist([
+	"artist",
+	"release",
+	"song",
+	"label",
+	"event",
+	"tag",
+])
 
 export const vEntityIdent = v.string()
 
@@ -1806,6 +1883,14 @@ export const vDataPageLabel = v.object({
 	status: v.string(),
 	data: vPageResponseLabel,
 })
+
+export const vPermissionName = v.picklist([
+	"correction.manage",
+	"comment.manage",
+	"image.queue.manage",
+	"admin.user.read",
+	"admin.user.role.write",
+])
 
 export const vReleaseArtist = v.object({
 	id: v.pipe(
@@ -3592,6 +3677,7 @@ export const vUserProfile = v.object({
 	banner_url: v.nullish(v.string()),
 	last_login: v.pipe(v.string(), v.isoTimestamp()),
 	roles: v.optional(v.array(vUserRole)),
+	permissions: v.optional(v.array(vPermissionName)),
 	is_following: v.nullish(v.boolean()),
 	bio: v.nullish(v.string()),
 	stats: vUserProfileStats,
@@ -4408,7 +4494,7 @@ export const vFindCommentsQuery = v.object({
 
 export const vFindCommentsResponse = vDataPaginatedCorrectionComment
 
-export const vCreateCommentBody = vCreateCorrectionCommentRequest
+export const vCreateCommentBody = vCreateEntityCommentRequest
 
 export const vCreateCommentPath = v.object({
 	id: v.pipe(
@@ -5572,3 +5658,55 @@ export const vGetTagsQuery = v.object({
 })
 
 export const vGetTagsResponse = vDataPaginatedTagAggregate
+
+export const vFindEntityCommentsPath = v.object({
+	target_type: vEntityCommentTarget,
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vFindEntityCommentsQuery = v.object({
+	limit: v.optional(
+		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
+	),
+	cursor: v.optional(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+})
+
+export const vFindEntityCommentsResponse = vDataPaginatedEntityComment
+
+export const vCreateEntityCommentBody = vCreateEntityCommentRequest
+
+export const vCreateEntityCommentPath = v.object({
+	target_type: vEntityCommentTarget,
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vCreateEntityCommentResponse = vDataEntityComment

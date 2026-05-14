@@ -3,6 +3,7 @@ pub mod artist;
 pub mod artist_image;
 pub(crate) mod artist_image_queue;
 pub mod auth;
+pub mod comment;
 pub mod correction;
 pub mod credit_role;
 pub mod enum_table;
@@ -34,6 +35,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .merge(admin::router())
         .merge(artist::router())
         .merge(auth::router())
+        .merge(comment::router())
         .merge(correction::router())
         .merge(credit_role::router())
         .merge(enum_table::router())

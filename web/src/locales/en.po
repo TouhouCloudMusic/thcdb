@@ -13,7 +13,7 @@ msgstr ""
 "Last-Translator: \n"
 "Language-Team: \n"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "[deleted]"
 msgstr "[deleted]"
 
@@ -83,7 +83,7 @@ msgstr "Activity"
 msgid "Add"
 msgstr "Add"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Add a comment..."
 msgstr "Add a comment..."
 
@@ -197,7 +197,7 @@ msgstr "APPROVED"
 msgid "Are you sure you want to delete this collection? This action cannot be undone."
 msgstr "Are you sure you want to delete this collection? This action cannot be undone."
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Are you sure you want to delete this comment?"
 msgstr "Are you sure you want to delete this comment?"
 
@@ -277,7 +277,7 @@ msgstr "by"
 #: src/component/dialog/AlertDialog.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionFormDialog.tsx
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
@@ -336,10 +336,15 @@ msgstr "Collection created"
 msgid "Collections"
 msgstr "Collections"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Comment"
 msgstr "Comment"
 
+#: src/view/comment/CommentThread.tsx
+msgid "Comment cannot be empty"
+msgstr "Comment cannot be empty"
+
+#: src/view/comment/EntityCommentsTabTrigger.tsx
 #: src/view/correction/CorrectionComments.tsx
 msgid "Comments"
 msgstr "Comments"
@@ -511,7 +516,7 @@ msgid "Day"
 msgstr "Day"
 
 #: src/view/collection/CollectionDetail.tsx
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Delete"
 msgstr "Delete"
 
@@ -519,7 +524,7 @@ msgstr "Delete"
 msgid "Delete Collection"
 msgstr "Delete Collection"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Delete comment"
 msgstr "Delete comment"
 
@@ -531,8 +536,10 @@ msgstr "Descending"
 #: src/view/collection/CollectionFormDialog.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/event/edit/comp/EventDescriptionField.tsx
+#: src/view/event/Info/index.tsx
 #: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/tag/edit/comp/TagDescription.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Description"
 msgstr "Description"
 
@@ -957,7 +964,7 @@ msgstr "Links"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 #: src/view/user/Profile.tsx
 msgid "Load more"
 msgstr "Load more"
@@ -965,6 +972,10 @@ msgstr "Load more"
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Loading collections..."
 msgstr "Loading collections..."
+
+#: src/view/comment/CommentThread.tsx
+msgid "Loading comments..."
+msgstr "Loading comments..."
 
 #: src/view/correction/EntityContributors.tsx
 msgid "Loading contributors..."
@@ -988,7 +999,7 @@ msgstr "Loading tags..."
 #: src/view/artist/profile/index.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/event/Info/index.tsx
@@ -1174,6 +1185,10 @@ msgstr "No collections match your filters"
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "No collections yet."
 msgstr "No collections yet."
+
+#: src/view/comment/EntityComments.tsx
+msgid "No comments yet"
+msgstr "No comments yet"
 
 #: src/view/correction/CorrectionComments.tsx
 msgid "No comments yet."
@@ -1471,6 +1486,7 @@ msgstr "REJECTED"
 #: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/song/Info/index.tsx
 #: src/view/tag/edit/comp/TagRelationsField.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Relations"
 msgstr "Relations"
 
@@ -1534,7 +1550,7 @@ msgstr "Repeat new password"
 msgid "Repeat password"
 msgstr "Repeat password"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Reply"
 msgstr "Reply"
 
@@ -1732,6 +1748,7 @@ msgstr "sign in"
 #: src/component/route.tsx
 #: src/view/auth/component/AuthForm.tsx
 #: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/comment/EntityComments.tsx
 #: src/view/correction/CorrectionComments.tsx
 msgid "Sign in"
 msgstr "Sign in"
@@ -1758,7 +1775,7 @@ msgstr "Sign Up"
 msgid "Solo artist"
 msgstr "Solo artist"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Something went wrong"
 msgstr "Something went wrong"
 
@@ -1839,7 +1856,7 @@ msgstr "Submitted by"
 msgid "Submitting"
 msgstr "Submitting"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Submitting..."
 msgstr "Submitting..."
 
@@ -1941,6 +1958,7 @@ msgstr "Title"
 msgid "To"
 msgstr "To"
 
+#: src/view/comment/EntityComments.tsx
 #: src/view/correction/CorrectionComments.tsx
 msgid "to comment"
 msgstr "to comment"
@@ -2108,7 +2126,7 @@ msgstr "Votes"
 msgid "Working…"
 msgstr "Working…"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Write a reply..."
 msgstr "Write a reply..."
 

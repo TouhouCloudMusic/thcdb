@@ -2,7 +2,7 @@ use serde::Serialize;
 use serde_json::Value;
 use utoipa::ToSchema;
 
-use super::model::UserRole;
+use super::model::{PermissionName, UserRole};
 use crate::infra::database::error::DatabaseError;
 
 #[serde_with::apply(
@@ -20,6 +20,7 @@ pub struct UserProfile {
     pub banner_url: Option<String>,
     pub last_login: chrono::DateTime<chrono::FixedOffset>,
     pub roles: Vec<UserRole>,
+    pub permissions: Vec<PermissionName>,
 
     /// Whether the querist follows the user. Return `None` if querist is not signed in or it's querist's own profile
     pub is_following: Option<bool>,
@@ -31,10 +32,6 @@ pub struct UserProfile {
     pub settings: Option<Value>,
 }
 
-#[expect(
-    clippy::struct_field_names,
-    reason = "API payload uses explicit *_count field names"
-)]
 #[derive(Clone, ToSchema, Serialize)]
 pub struct UserProfileStats {
     pub edit_count: u64,

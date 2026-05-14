@@ -13,7 +13,7 @@ msgstr ""
 "Last-Translator: \n"
 "Language-Team: \n"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "[deleted]"
 msgstr "[已删除]"
 
@@ -83,7 +83,7 @@ msgstr "动态"
 msgid "Add"
 msgstr "添加"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Add a comment..."
 msgstr "添加评论..."
 
@@ -197,7 +197,7 @@ msgstr "已批准"
 msgid "Are you sure you want to delete this collection? This action cannot be undone."
 msgstr "确定要删除此收藏吗？此操作无法撤销。"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Are you sure you want to delete this comment?"
 msgstr "确定要删除这条评论吗？"
 
@@ -277,7 +277,7 @@ msgstr "由"
 #: src/component/dialog/AlertDialog.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionFormDialog.tsx
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
@@ -336,10 +336,15 @@ msgstr "收藏已创建"
 msgid "Collections"
 msgstr "收藏"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Comment"
 msgstr "评论"
 
+#: src/view/comment/CommentThread.tsx
+msgid "Comment cannot be empty"
+msgstr "评论不能为空"
+
+#: src/view/comment/EntityCommentsTabTrigger.tsx
 #: src/view/correction/CorrectionComments.tsx
 msgid "Comments"
 msgstr "评论"
@@ -511,7 +516,7 @@ msgid "Day"
 msgstr "日"
 
 #: src/view/collection/CollectionDetail.tsx
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Delete"
 msgstr "删除"
 
@@ -519,7 +524,7 @@ msgstr "删除"
 msgid "Delete Collection"
 msgstr "删除收藏"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Delete comment"
 msgstr "删除评论"
 
@@ -531,8 +536,10 @@ msgstr "降序"
 #: src/view/collection/CollectionFormDialog.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/event/edit/comp/EventDescriptionField.tsx
+#: src/view/event/Info/index.tsx
 #: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/tag/edit/comp/TagDescription.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Description"
 msgstr "描述"
 
@@ -957,7 +964,7 @@ msgstr "链接"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 #: src/view/user/Profile.tsx
 msgid "Load more"
 msgstr "加载更多"
@@ -965,6 +972,10 @@ msgstr "加载更多"
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Loading collections..."
 msgstr "正在加载收藏..."
+
+#: src/view/comment/CommentThread.tsx
+msgid "Loading comments..."
+msgstr "正在加载评论..."
 
 #: src/view/correction/EntityContributors.tsx
 msgid "Loading contributors..."
@@ -988,7 +999,7 @@ msgstr "正在加载标签..."
 #: src/view/artist/profile/index.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/event/Info/index.tsx
@@ -1174,6 +1185,10 @@ msgstr "没有匹配筛选条件的收藏"
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "No collections yet."
 msgstr "暂无收藏。"
+
+#: src/view/comment/EntityComments.tsx
+msgid "No comments yet"
+msgstr "暂无评论"
 
 #: src/view/correction/CorrectionComments.tsx
 msgid "No comments yet."
@@ -1471,6 +1486,7 @@ msgstr "已拒绝"
 #: src/view/song/edit/comp/SongRelationsField.tsx
 #: src/view/song/Info/index.tsx
 #: src/view/tag/edit/comp/TagRelationsField.tsx
+#: src/view/tag/Info/index.tsx
 msgid "Relations"
 msgstr "关系"
 
@@ -1534,7 +1550,7 @@ msgstr "重复新密码"
 msgid "Repeat password"
 msgstr "重复密码"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Reply"
 msgstr "回复"
 
@@ -1732,6 +1748,7 @@ msgstr "登录"
 #: src/component/route.tsx
 #: src/view/auth/component/AuthForm.tsx
 #: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/comment/EntityComments.tsx
 #: src/view/correction/CorrectionComments.tsx
 msgid "Sign in"
 msgstr "登录"
@@ -1758,7 +1775,7 @@ msgstr "注册"
 msgid "Solo artist"
 msgstr "独奏艺人"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Something went wrong"
 msgstr "出了点问题"
 
@@ -1839,7 +1856,7 @@ msgstr "提交人"
 msgid "Submitting"
 msgstr "正在提交"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Submitting..."
 msgstr "正在提交..."
 
@@ -1941,6 +1958,7 @@ msgstr "标题"
 msgid "To"
 msgstr "到"
 
+#: src/view/comment/EntityComments.tsx
 #: src/view/correction/CorrectionComments.tsx
 msgid "to comment"
 msgstr "后评论"
@@ -2108,7 +2126,7 @@ msgstr "投票"
 msgid "Working…"
 msgstr "处理中…"
 
-#: src/view/correction/CorrectionComments.tsx
+#: src/view/comment/CommentThread.tsx
 msgid "Write a reply..."
 msgstr "写下回复..."
 

@@ -22,6 +22,9 @@ import type {
 	CreateCreditRoleData,
 	CreateCreditRoleErrors,
 	CreateCreditRoleResponses,
+	CreateEntityCommentData,
+	CreateEntityCommentErrors,
+	CreateEntityCommentResponses,
 	CreateEventData,
 	CreateEventErrors,
 	CreateEventResponses,
@@ -100,6 +103,9 @@ import type {
 	FindCreditRoleByIdData,
 	FindCreditRoleByIdErrors,
 	FindCreditRoleByIdResponses,
+	FindEntityCommentsData,
+	FindEntityCommentsErrors,
+	FindEntityCommentsResponses,
 	FindEventByIdData,
 	FindEventByIdErrors,
 	FindEventByIdResponses,
@@ -1906,3 +1912,29 @@ export const getTags = <ThrowOnError extends boolean = false>(
 	(options.client ?? client).get<GetTagsResponses, GetTagsErrors, ThrowOnError>(
 		{ url: "/{entity_type}/{id}/tags", ...options },
 	)
+
+export const findEntityComments = <ThrowOnError extends boolean = false>(
+	options: Options<FindEntityCommentsData, ThrowOnError>,
+) =>
+	(options.client ?? client).get<
+		FindEntityCommentsResponses,
+		FindEntityCommentsErrors,
+		ThrowOnError
+	>({ url: "/{target_type}/{id}/comments", ...options })
+
+export const createEntityComment = <ThrowOnError extends boolean = false>(
+	options: Options<CreateEntityCommentData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		CreateEntityCommentResponses,
+		CreateEntityCommentErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/{target_type}/{id}/comments",
+		...options,
+		headers: {
+			"Content-Type": "application/json",
+			...options.headers,
+		},
+	})

@@ -63,6 +63,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/{target_type}/{id}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["find_entity_comments"];
+        put?: never;
+        post: operations["create_entity_comment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/user/{id}/roles": {
         parameters: {
             query?: never;
@@ -1663,7 +1679,7 @@ export type components = {
             id: number;
             name: string;
         };
-        CreateCorrectionCommentRequest: {
+        CreateEntityCommentRequest: {
             content: string;
             /** Format: int32 */
             parent_id?: number | null;
@@ -1947,6 +1963,10 @@ export type components = {
             data: components["schemas"]["CorrectionDetail"];
             status: string;
         };
+        DataEntityComment: {
+            data: components["schemas"]["EntityComment"];
+            status: string;
+        };
         DataForgotPasswordResponse: {
             data: components["schemas"]["ForgotPasswordResponse"];
             status: string;
@@ -2045,6 +2065,10 @@ export type components = {
         };
         DataPaginatedDiscography: {
             data: components["schemas"]["CursorResponse_Discography"];
+            status: string;
+        };
+        DataPaginatedEntityComment: {
+            data: components["schemas"]["EntityCommentPage"];
             status: string;
         };
         DataPaginatedNotificationItem: {
@@ -2190,6 +2214,28 @@ export type components = {
         };
         /** @enum {string} */
         EditableUserRole: "Moderator";
+        EntityComment: {
+            author: components["schemas"]["CommentAuthor"];
+            content?: string | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: int32 */
+            id: number;
+            /** Format: int32 */
+            parent_id?: number | null;
+            state: components["schemas"]["CommentState"];
+            /** Format: date-time */
+            updated_at: string;
+        };
+        EntityCommentPage: {
+            /** Format: int64 */
+            active_count: number;
+            items: components["schemas"]["EntityComment"][];
+            /** Format: int32 */
+            next_cursor?: number | null;
+        };
+        /** @enum {string} */
+        EntityCommentTarget: "artist" | "release" | "song" | "label" | "event" | "tag";
         EntityIdent: string;
         /** @description Discriminated union of entity summaries, tagged by `entity_type`. */
         EntitySummary: (components["schemas"]["ArtistSummary"] & {
@@ -2788,6 +2834,8 @@ export type components = {
             /** Format: int64 */
             total_pages: number;
         };
+        /** @enum {string} */
+        PermissionName: "correction.manage" | "comment.manage" | "image.queue.manage" | "admin.user.read" | "admin.user.role.write";
         Release: {
             artists?: components["schemas"]["ReleaseArtist"][];
             catalog_nums?: components["schemas"]["CatalogNumber"][];
@@ -3062,6 +3110,7 @@ export type components = {
             /** Format: date-time */
             last_login: string;
             name: string;
+            permissions?: components["schemas"]["PermissionName"][];
             roles?: components["schemas"]["UserRole"][];
             settings?: unknown;
             stats: components["schemas"]["UserProfileStats"];
@@ -3135,7 +3184,7 @@ export type CorrectionSubmitKind = components['schemas']['CorrectionSubmitKind']
 export type CorrectionSubmitResult = components['schemas']['CorrectionSubmitResult'];
 export type CorrectionType = components['schemas']['CorrectionType'];
 export type CorrectionUserSummary = components['schemas']['CorrectionUserSummary'];
-export type CreateCorrectionCommentRequest = components['schemas']['CreateCorrectionCommentRequest'];
+export type CreateEntityCommentRequest = components['schemas']['CreateEntityCommentRequest'];
 export type CreateUserCollectionItemRequest = components['schemas']['CreateUserCollectionItemRequest'];
 export type CreditRole = components['schemas']['CreditRole'];
 export type CreditRoleRef = components['schemas']['CreditRoleRef'];
@@ -3163,6 +3212,7 @@ export type DataVecCorrectionHistoryItem = components['schemas']['Data_Vec_Corre
 export type DataVecCorrectionRevisionSummary = components['schemas']['Data_Vec_CorrectionRevisionSummary'];
 export type DataCorrectionComment = components['schemas']['DataCorrectionComment'];
 export type DataCorrectionDetail = components['schemas']['DataCorrectionDetail'];
+export type DataEntityComment = components['schemas']['DataEntityComment'];
 export type DataForgotPasswordResponse = components['schemas']['DataForgotPasswordResponse'];
 export type DataHomeMetadata = components['schemas']['DataHomeMetadata'];
 export type DataImageQueueDetail = components['schemas']['DataImageQueueDetail'];
@@ -3188,6 +3238,7 @@ export type DataPaginatedAppearance = components['schemas']['DataPaginatedAppear
 export type DataPaginatedCorrectionComment = components['schemas']['DataPaginatedCorrectionComment'];
 export type DataPaginatedCredit = components['schemas']['DataPaginatedCredit'];
 export type DataPaginatedDiscography = components['schemas']['DataPaginatedDiscography'];
+export type DataPaginatedEntityComment = components['schemas']['DataPaginatedEntityComment'];
 export type DataPaginatedNotificationItem = components['schemas']['DataPaginatedNotificationItem'];
 export type DataPaginatedPendingImageQueueItem = components['schemas']['DataPaginatedPendingImageQueueItem'];
 export type DataPaginatedSimpleArtist = components['schemas']['DataPaginatedSimpleArtist'];
@@ -3224,6 +3275,9 @@ export type DatePrecision = components['schemas']['DatePrecision'];
 export type DateWithPrecision = components['schemas']['DateWithPrecision'];
 export type DeleteVoteBody = components['schemas']['DeleteVoteBody'];
 export type EditableUserRole = components['schemas']['EditableUserRole'];
+export type EntityComment = components['schemas']['EntityComment'];
+export type EntityCommentPage = components['schemas']['EntityCommentPage'];
+export type EntityCommentTarget = components['schemas']['EntityCommentTarget'];
 export type EntityIdent = components['schemas']['EntityIdent'];
 export type EntitySummary = components['schemas']['EntitySummary'];
 export type EntityType = components['schemas']['EntityType'];
@@ -3285,6 +3339,7 @@ export type PageResponseTag = components['schemas']['PageResponse_Tag'];
 export type PageResponseUserCollection = components['schemas']['PageResponse_UserCollection'];
 export type PageResponseUserCollectionItemDetail = components['schemas']['PageResponse_UserCollectionItemDetail'];
 export type PageResponseUserSummary = components['schemas']['PageResponse_UserSummary'];
+export type PermissionName = components['schemas']['PermissionName'];
 export type Release = components['schemas']['Release'];
 export type ReleaseArtist = components['schemas']['ReleaseArtist'];
 export type ReleaseCoverArtFormData = components['schemas']['ReleaseCoverArtFormData'];
@@ -3552,6 +3607,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DataPaginatedTagAggregate"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    find_entity_comments: {
+        parameters: {
+            query?: {
+                cursor?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Target id */
+                id: number;
+                /** @description Comment target type */
+                target_type: components["schemas"]["EntityCommentTarget"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedEntityComment"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    create_entity_comment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Target id */
+                id: number;
+                /** @description Comment target type */
+                target_type: components["schemas"]["EntityCommentTarget"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEntityCommentRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataEntityComment"];
                 };
             };
             /** @description Too Many Requests */
@@ -4198,18 +4352,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DataPageArtist"];
-                };
-            };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
                 };
             };
             /** @description Too Many Requests */
@@ -4943,7 +5085,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateCorrectionCommentRequest"];
+                "application/json": components["schemas"]["CreateEntityCommentRequest"];
             };
         };
         responses: {
@@ -5630,18 +5772,6 @@ export interface operations {
                     "application/json": components["schemas"]["DataPageEvent"];
                 };
             };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                };
-            };
             /** @description Too Many Requests */
             429: {
                 headers: {
@@ -6229,18 +6359,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DataPageLabel"];
-                };
-            };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
                 };
             };
             /** @description Too Many Requests */
@@ -7088,18 +7206,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DataPageRelease"];
-                };
-            };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
                 };
             };
             /** @description Too Many Requests */
@@ -8243,18 +8349,6 @@ export interface operations {
                     "application/json": components["schemas"]["DataPageSong"];
                 };
             };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                };
-            };
             /** @description Too Many Requests */
             429: {
                 headers: {
@@ -8540,18 +8634,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DataPageTag"];
-                };
-            };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
                 };
             };
             /** @description Too Many Requests */
@@ -8973,5 +9055,7 @@ export enum ApiPaths {
     pending_correction = "/{entity_type}/{id}/pending-correction",
     vote_tag = "/{entity_type}/{id}/tag-vote",
     delete_vote = "/{entity_type}/{id}/tag-vote",
-    get_tags = "/{entity_type}/{id}/tags"
+    get_tags = "/{entity_type}/{id}/tags",
+    find_entity_comments = "/{target_type}/{id}/comments",
+    create_entity_comment = "/{target_type}/{id}/comments"
 }

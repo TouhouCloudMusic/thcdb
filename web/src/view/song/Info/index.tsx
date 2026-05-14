@@ -1,11 +1,14 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Song } from "@thc/api"
-import { createContext, Show } from "solid-js"
+import { createContext, createSignal, Show } from "solid-js"
 
 import { Tab } from "~/component/atomic"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
+import { EntityComments } from "~/view/comment/EntityComments"
+import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
+import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 import { EntityTagsSectionContainer } from "~/view/entity_tags/EntityTagsSection"
 
@@ -74,6 +77,7 @@ export function SongInfoPage(props: SongInfoPageProps) {
 //
 
 const TRIGGER_CLASS = "py-4"
+
 function SongInfoTabs() {
 	const { t } = useLingui()
 	const ctx = assertContext(SongInfoPageContext)
@@ -82,8 +86,17 @@ function SongInfoTabs() {
 	const hasLyrics = () => Boolean(ctx.song.lyrics && ctx.song.lyrics.length > 0)
 	const hasRelations = () =>
 		Boolean(ctx.song.relations && ctx.song.relations.length > 0)
+	const [activeTab, setActiveTab] = createSignal("Release")
+	const comments = createEntityCommentsController(() => ({
+		entityType: "song",
+		entityId: ctx.song.id,
+		listEnabled: activeTab() === "Comments",
+	}))
 	return (
-		<Tab.Root>
+		<Tab.Root
+			value={activeTab()}
+			onChange={setActiveTab}
+		>
 			<Tab.List class="mx-4 gap-12 border-b border-slate-200">
 				<Tab.Trigger
 					value="Release"
@@ -115,6 +128,10 @@ function SongInfoTabs() {
 						{t`Relations`}
 					</Tab.Trigger>
 				</Show>
+				<EntityCommentsTabTrigger
+					count={comments.activeCommentCount()}
+					class={TRIGGER_CLASS}
+				/>
 				<Tab.Indicator />
 			</Tab.List>
 			<Tab.Content value="Release">
@@ -135,6 +152,9 @@ function SongInfoTabs() {
 					<SongInfoRelations relations={ctx.song.relations ?? []} />
 				</Tab.Content>
 			</Show>
+			<Tab.Content value="Comments">
+				<EntityComments controller={comments} />
+			</Tab.Content>
 		</Tab.Root>
 	)
 }

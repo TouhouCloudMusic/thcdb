@@ -24,12 +24,15 @@ import { Button } from "~/component/atomic/button"
 import { RELEASE_TYPES } from "~/domain/release"
 import { DateWithPrecision } from "~/domain/shared"
 import { assertContext } from "~/utils/solid/assertContext"
+import { EntityComments } from "~/view/comment/EntityComments"
+import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
+import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 
 import { ArtistContext } from ".."
 
 // TODO: Add links after other pages are completed
 
-const TABS = ["Discography", "Appearance", "Credit"] as const
+const TABS = ["Discography", "Appearance", "Credit", "Comments"] as const
 
 export function ArtistReleaseInfo() {
 	const { t } = useLingui()
@@ -55,33 +58,56 @@ export function ArtistReleaseInfo() {
 
 function Inner() {
 	const context = assertContext(ArtistContext)
+	const visibleTabs = createMemo(() =>
+		TABS.filter((tab) => {
+			switch (tab) {
+				case "Discography": {
+					return true
+				}
+				case "Appearance": {
+					return context.appearances.data.length > 0
+				}
+				case "Credit": {
+					return context.credits.data.length > 0
+				}
+				case "Comments": {
+					return true
+				}
+			}
+		}),
+	)
+	const [activeTab, setActiveTab] = createSignal("Discography")
+	const comments = createEntityCommentsController(() => ({
+		entityType: "artist",
+		entityId: context.artist.id,
+		listEnabled: activeTab() === "Comments",
+	}))
 	return (
 		// https://github.com/kobaltedev/kobalte/issues/222
-		<Tab.Root>
-			<Tab.List class="grid w-fit grid-cols-3">
-				<For
-					each={TABS.filter((tab) => {
-						switch (tab) {
-							case "Discography": {
-								return true
-							}
-							case "Appearance": {
-								return context.appearances.data.length > 0
-							}
-							case "Credit": {
-								return context.credits.data.length > 0
-							}
-						}
-					})}
-				>
+		<Tab.Root
+			value={activeTab()}
+			onChange={setActiveTab}
+		>
+			<Tab.List class="w-fit">
+				<For each={visibleTabs()}>
 					{(tabType) => (
 						<li>
-							<Tab.Trigger
-								class="text-md size-full px-4 py-2.5 text-slate-800"
-								value={tabType}
+							<Show
+								when={tabType === "Comments"}
+								fallback={
+									<Tab.Trigger
+										class="text-md size-full px-4 py-2.5 text-slate-800"
+										value={tabType}
+									>
+										{tabType}
+									</Tab.Trigger>
+								}
 							>
-								{tabType}
-							</Tab.Trigger>
+								<EntityCommentsTabTrigger
+									count={comments.activeCommentCount()}
+									class="text-md size-full px-4 py-2.5 text-slate-800"
+								/>
+							</Show>
 						</li>
 					)}
 				</For>
@@ -123,6 +149,12 @@ function Inner() {
 				>
 					{(props) => <CreditItem {...props} />}
 				</ArtistReleaseList>
+			</Tab.Content>
+			<Tab.Content
+				value="Comments"
+				class="w-full border-t border-slate-300 p-4"
+			>
+				<EntityComments controller={comments} />
 			</Tab.Content>
 		</Tab.Root>
 	)

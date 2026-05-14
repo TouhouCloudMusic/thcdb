@@ -73,7 +73,7 @@ pub async fn find_entity_name(
     conn: &impl ConnectionTrait,
     entity_type: EntityType,
     entity_id: i32,
-) -> Result<String, DbErr> {
+) -> Result<Option<String>, DbErr> {
     let name = match entity_type {
         EntityType::Artist => artist::Entity::find_by_id(entity_id)
             .one(conn)
@@ -114,10 +114,7 @@ pub async fn find_entity_name(
             .map(|model| model.name),
     };
 
-    // TODO: Convert this to a custom error type.
-    name.ok_or_else(|| {
-        DbErr::Custom(format!("{entity_type:?} #{entity_id} not found"))
-    })
+    Ok(name)
 }
 
 pub async fn snapshot_for_history(

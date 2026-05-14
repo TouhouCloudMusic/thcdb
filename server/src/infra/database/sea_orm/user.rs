@@ -11,14 +11,14 @@ use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{Func, IntoCondition, Query, SimpleExpr, UnionType};
 use sea_orm::{
     ColumnTrait, ConnectionTrait, DbErr, EntityTrait, FromQueryResult,
-    IntoActiveModel, JoinType, PaginatorTrait, QueryFilter, QuerySelect,
-    QueryTrait, RelationTrait, TransactionTrait,
+    IntoActiveModel, JoinType, PaginatorTrait, QueryFilter, QueryOrder,
+    QuerySelect, QueryTrait, RelationTrait, TransactionTrait,
 };
 use sea_orm_migration::prelude::Alias;
 
 use super::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::domain;
-use crate::domain::model::{UserRole, UserRoleEnum};
+use crate::domain::model::{PermissionName, UserRole, UserRoleEnum};
 use crate::domain::user::{
     NewUser, User, UserProfile, UserProfileStats, {self},
 };
@@ -285,6 +285,9 @@ impl user::ProfileRepository for SeaOrmRepository {
             .all(&self.conn)
             .await
             .db_operation("find user profile roles")?;
+        let permissions = find_user_permission_names(profile.id, &self.conn)
+            .await
+            .db_operation("find user profile permissions")?;
         let stats = find_profile_stats(profile.id, &self.conn)
             .await
             .db_operation("find user profile stats")?;
@@ -324,6 +327,7 @@ impl user::ProfileRepository for SeaOrmRepository {
                 .into_iter()
                 .map(UserRole::try_from)
                 .collect::<Result<_, _>>()?,
+            permissions,
             is_following: None,
             bio: profile.bio,
             stats,
@@ -359,6 +363,37 @@ impl user::ProfileRepository for SeaOrmRepository {
 
         Ok(())
     }
+}
+
+async fn find_user_permission_names(
+    user_id: i32,
+    conn: &impl ConnectionTrait,
+) -> Result<Vec<PermissionName>, DbErr> {
+    use entity::{permission, role_permission, user_role};
+
+    let names = user_role::Entity::find()
+        .select_only()
+        .column(permission::Column::Name)
+        .filter(user_role::Column::UserId.eq(user_id))
+        .join(JoinType::InnerJoin, user_role::Relation::Role.def())
+        .join(
+            JoinType::InnerJoin,
+            role_permission::Relation::Role.def().rev(),
+        )
+        .join(
+            JoinType::InnerJoin,
+            role_permission::Relation::Permission.def(),
+        )
+        .order_by_asc(permission::Column::Name)
+        .distinct()
+        .into_tuple::<String>()
+        .all(conn)
+        .await?;
+
+    names
+        .into_iter()
+        .map(|name| PermissionName::try_from(name).map_err(DbErr::Custom))
+        .collect()
 }
 
 async fn find_profile_stats(
