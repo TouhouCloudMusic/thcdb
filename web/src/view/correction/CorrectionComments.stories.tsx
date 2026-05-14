@@ -1,6 +1,6 @@
-import type { CorrectionComment, UserProfile } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
+import type { CorrectionComment, UserProfile } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { CorrectionComments } from "./CorrectionComments"
@@ -59,10 +59,11 @@ const meta = {
 		layout: StoryLayout.Padded,
 	},
 	args: {
-		correctionId: 10,
 		comments: [],
 		hasMore: false,
+		isInitialLoading: false,
 		isLoadingMore: false,
+		errorMessage: undefined,
 		currentUser: {
 			name: "alice",
 			last_login: new Date().toISOString(),
@@ -76,7 +77,9 @@ const meta = {
 	argTypes: {
 		comments: { control: false },
 		hasMore: { control: "boolean" },
+		isInitialLoading: { control: "boolean" },
 		isLoadingMore: { control: "boolean" },
+		errorMessage: { control: "text" },
 		currentUser: { control: "object" },
 		canManage: { control: "boolean" },
 		onLoadMore: { control: false },
@@ -92,6 +95,20 @@ type Story = StoryObj<typeof meta>
 export const Empty: Story = {
 	args: {
 		comments: [],
+	},
+}
+
+export const Loading: Story = {
+	args: {
+		comments: [],
+		isInitialLoading: true,
+	},
+}
+
+export const Error: Story = {
+	args: {
+		comments: [],
+		errorMessage: "Failed to load comments",
 	},
 }
 

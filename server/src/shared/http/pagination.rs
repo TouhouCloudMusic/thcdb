@@ -2,7 +2,7 @@ use serde::Deserialize;
 use utoipa::IntoParams;
 
 use crate::domain::shared::{
-    DEFAULT_LIMIT, MAX_LIMIT, MAX_PAGE, PageResponse, total_pages,
+    Cursor, DEFAULT_LIMIT, MAX_LIMIT, MAX_PAGE, PageResponse, total_pages,
 };
 
 #[derive(Debug, Clone, Deserialize, IntoParams)]
@@ -16,6 +16,15 @@ pub struct PaginationQuery {
 impl PaginationQuery {
     pub fn limit(&self) -> u8 {
         self.limit.unwrap_or(DEFAULT_LIMIT).clamp(1, MAX_LIMIT)
+    }
+}
+
+impl From<PaginationQuery> for Cursor {
+    fn from(value: PaginationQuery) -> Self {
+        Self {
+            at: value.cursor.unwrap_or(0),
+            limit: value.limit(),
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Event } from "@thc/api"
-import { Show, Suspense } from "solid-js"
+import { createSignal, Show, Suspense } from "solid-js"
 
 import { Tab } from "~/component/atomic"
 import { Intersperse } from "~/component/data/Intersperse"
@@ -8,6 +8,9 @@ import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
+import { EntityComments } from "~/view/comment/EntityComments"
+import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
+import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { EventInfoPageContext } from "./context"
@@ -101,30 +104,54 @@ function EventInfoHeader() {
 const TRIGGER_CLASS = "py-4"
 
 function EventInfoTabs() {
+	const { t } = useLingui()
 	const ctx = assertContext(EventInfoPageContext)
+	const [activeTab, setActiveTab] = createSignal(
+		ctx.event.description ? "Description" : "Comments",
+	)
+	const comments = createEntityCommentsController(() => ({
+		entityType: "event",
+		entityId: ctx.event.id,
+		listEnabled: activeTab() === "Comments",
+	}))
 	const hasDescription = () => Boolean(ctx.event.description)
 	return (
-		<Show when={hasDescription()}>
-			<Tab.Root>
-				<div class="border-b border-slate-300 px-4">
-					<Tab.List class="grid-cols-1 gap-12">
+		<Tab.Root
+			value={activeTab()}
+			onChange={setActiveTab}
+		>
+			<div class="border-b border-slate-300 px-4">
+				<Tab.List class="gap-12">
+					<Show when={hasDescription()}>
 						<Tab.Trigger
 							value="Description"
 							class={TRIGGER_CLASS}
 						>
-							Description
+							{t`Description`}
 						</Tab.Trigger>
-						<Tab.Indicator />
-					</Tab.List>
-				</div>
+					</Show>
+					<EntityCommentsTabTrigger
+						count={comments.activeCommentCount()}
+						class={TRIGGER_CLASS}
+					/>
+					<Tab.Indicator />
+				</Tab.List>
+			</div>
+			<Show when={hasDescription()}>
 				<Tab.Content
 					value="Description"
 					class="p-4"
 				>
 					<EventInfoDescription />
 				</Tab.Content>
-			</Tab.Root>
-		</Show>
+			</Show>
+			<Tab.Content
+				value="Comments"
+				class="p-4"
+			>
+				<EntityComments controller={comments} />
+			</Tab.Content>
+		</Tab.Root>
 	)
 }
 

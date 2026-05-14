@@ -9,7 +9,7 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
-use crate::domain::model::ImageQueueManage;
+use crate::domain::model::PermissionName;
 use crate::domain::shared::CursorResponse;
 use crate::features::image_queue::shared::{UserSummary, load_users};
 use crate::infra::database::error::DatabaseResultExt;
@@ -75,8 +75,12 @@ async fn user_image_queue(
     Query(pagination): Query<PaginationQuery>,
 ) -> Result<Data<CursorResponse<UserImageQueueItem>>, authz::Error> {
     if user.id != id {
-        authz::ensure_permission::<ImageQueueManage>(&repo.conn, user.id)
-            .await?;
+        authz::ensure_permission(
+            &repo.conn,
+            user.id,
+            PermissionName::ImageQueueManage,
+        )
+        .await?;
     }
 
     let limit = pagination.limit();

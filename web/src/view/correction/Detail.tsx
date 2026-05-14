@@ -5,6 +5,7 @@ import {
 	useQuery,
 	useQueryClient,
 } from "@tanstack/solid-query"
+import type { InfiniteData } from "@tanstack/solid-query"
 import { CorrectionMutation, CorrectionQueryOption } from "@thc/query"
 import { ArrExt } from "@thc/toolkit/data"
 import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
@@ -20,12 +21,16 @@ import { Button, ButtonClass_new } from "~/component/atomic/button"
 import { Select } from "~/component/atomic/form/select"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
 import { showSuccessToast } from "~/component/toast"
-import { USER_ROLE_NAMES } from "~/domain/user/constants"
+import {
+	hasUserPermission,
+	USER_PERMISSION_NAMES,
+} from "~/domain/user/constants"
 import type {
 	CorrectionComment,
 	CorrectionDetail,
 	CorrectionDiffEntry,
 	EntityType,
+	FindCommentsResponse,
 	HandleCorrectionMethod,
 } from "~/hey-api"
 import { handleCorrection } from "~/hey-api"
@@ -47,6 +52,47 @@ import {
 import { invalidatePendingCorrection } from "./pendingCorrection"
 
 const DETAIL_LABEL_CLASS = "text-sm text-tertiary"
+
+function markCorrectionDetailCommentDeleted(
+	data: CorrectionDetail | undefined,
+	commentId: number,
+): CorrectionDetail | undefined {
+	if (!data) return data
+
+	return {
+		...data,
+		comments: {
+			...data.comments,
+			items: data.comments.items.map((comment) =>
+				comment.id === commentId
+					? { ...comment, state: "Deleted" as const, content: undefined }
+					: comment,
+			),
+		},
+	}
+}
+
+function markCorrectionCommentPageDeleted(
+	oldData: InfiniteData<FindCommentsResponse> | undefined,
+	commentId: number,
+): InfiniteData<FindCommentsResponse> | undefined {
+	if (!oldData) return oldData
+
+	return {
+		...oldData,
+		pages: oldData.pages.map((page) => ({
+			...page,
+			data: {
+				...page.data,
+				items: page.data.items.map((comment) =>
+					comment.id === commentId
+						? { ...comment, state: "Deleted" as const, content: undefined }
+						: comment,
+				),
+			},
+		})),
+	}
+}
 
 type CorrectionHeaderProps = {
 	correction: CorrectionDetail
@@ -159,16 +205,8 @@ function DiffEntries(props: DiffEntriesProps) {
 	const entries = () => props.changes ?? []
 
 	return (
-		<Switch>
-			<Match when={props.isLoading}>
-				<div class="px-4 py-3 text-sm text-tertiary">{t`Loading diff...`}</div>
-			</Match>
-			<Match when={entries().length === 0}>
-				<div class="px-4 py-3 text-sm text-tertiary">
-					{t`No changes detected.`}
-				</div>
-			</Match>
-			<Match when={true}>
+		<Switch
+			fallback={
 				<div>
 					<div class="hidden border-b border-slate-200 md:grid md:grid-cols-[12rem_1fr_1fr] md:gap-3 md:px-4 md:py-2">
 						<div class="text-xs font-medium tracking-wide text-tertiary">
@@ -207,6 +245,15 @@ function DiffEntries(props: DiffEntriesProps) {
 							)}
 						</For>
 					</ul>
+				</div>
+			}
+		>
+			<Match when={props.isLoading}>
+				<div class="px-4 py-3 text-sm text-tertiary">{t`Loading diff...`}</div>
+			</Match>
+			<Match when={entries().length === 0}>
+				<div class="px-4 py-3 text-sm text-tertiary">
+					{t`No changes detected.`}
 				</div>
 			</Match>
 		</Switch>
@@ -403,11 +450,9 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 	}
 
 	const canManage = () =>
-		userCtx.user?.roles?.some(
-			(r) =>
-				r.name === USER_ROLE_NAMES.Admin
-				|| r.name === USER_ROLE_NAMES.Moderator,
-		) ?? false
+		hasUserPermission(userCtx.user, USER_PERMISSION_NAMES.CorrectionManage)
+	const canManageComments = () =>
+		hasUserPermission(userCtx.user, USER_PERMISSION_NAMES.CommentManage)
 	const canEdit = () =>
 		canManage() || userCtx.user?.name === correctionQuery.data?.author.name
 
@@ -467,6 +512,16 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 	const onDeleteComment = async (commentId: number) => {
 		await deleteCommentMutation.mutateAsync(commentId)
 		removeCreatedComment(commentId)
+		queryClient.setQueryData<CorrectionDetail>(
+			["correction::detail", props.correctionId],
+			(data) => markCorrectionDetailCommentDeleted(data, commentId),
+		)
+		queryClient.setQueryData<InfiniteData<FindCommentsResponse>>(
+			findCommentsInfiniteQueryKey({
+				path: { id: props.correctionId },
+			}),
+			(data) => markCorrectionCommentPageDeleted(data, commentId),
+		)
 		await invalidateCommentQueries()
 	}
 
@@ -640,14 +695,19 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 							when={props.correctionId}
 							keyed
 						>
-							{(correctionId) => (
+							{(_correctionId) => (
 								<CorrectionComments
-									correctionId={correctionId}
 									comments={allComments()}
 									hasMore={hasMoreComments()}
+									isInitialLoading={false}
 									isLoadingMore={commentPagesQuery.isFetchingNextPage}
+									errorMessage={
+										commentPagesQuery.isError
+											? getErrorMessage(commentPagesQuery.error)
+											: undefined
+									}
 									currentUser={userCtx.user}
-									canManage={canManage()}
+									canManage={canManageComments()}
 									onLoadMore={() => void loadMore()}
 									onCreateComment={onCreateComment}
 									onDeleteComment={onDeleteComment}

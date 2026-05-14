@@ -1,19 +1,20 @@
 use axum::response::IntoResponse;
 
+use super::model::CommentTarget;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::http::api_response::AppError;
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum NotFound {
-    Correction,
+    Target(CommentTarget),
     Comment,
 }
 
 impl NotFound {
     const fn message(self) -> &'static str {
         match self {
-            Self::Correction => "Correction not found",
+            Self::Target(target) => target.not_found_message(),
             Self::Comment => "Comment not found",
         }
     }
@@ -35,6 +36,12 @@ pub(crate) enum Error {
     PermissionDenied,
     #[display("{_0}")]
     InvalidRequest(#[error(ignore)] String),
+}
+
+impl Error {
+    pub(crate) const fn target_not_found(target: CommentTarget) -> Self {
+        Self::NotFound(NotFound::Target(target))
+    }
 }
 
 impl IntoResponse for Error {

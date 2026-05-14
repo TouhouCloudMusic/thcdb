@@ -46,6 +46,29 @@ pub struct Cursor {
     pub limit: u8,
 }
 
+impl Cursor {
+    pub fn offset(self) -> u64 {
+        u64::try_from(self.at).unwrap_or(0)
+    }
+
+    pub fn into_offset_response<T>(
+        self,
+        mut items: Vec<T>,
+    ) -> CursorResponse<T> {
+        let cursor = self.at.max(0);
+        let limit = usize::from(self.limit);
+        let has_next = items.len() > limit;
+        if has_next {
+            items.truncate(limit);
+        }
+
+        CursorResponse {
+            items,
+            next_cursor: has_next.then_some(cursor + i32::from(self.limit)),
+        }
+    }
+}
+
 pub const DEFAULT_LIMIT: u8 = 20;
 pub const MAX_LIMIT: u8 = 100;
 pub const MAX_PAGE: u64 = 10_000;

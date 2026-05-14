@@ -158,7 +158,7 @@ export type CorrectionUserSummary = {
 	name: string
 }
 
-export type CreateCorrectionCommentRequest = {
+export type CreateEntityCommentRequest = {
 	parent_id?: number | null
 	content: string
 }
@@ -342,6 +342,11 @@ export type DataCorrectionDetail = {
 	data: CorrectionDetail
 }
 
+export type DataEntityComment = {
+	status: string
+	data: EntityComment
+}
+
 export type DataForgotPasswordResponse = {
 	status: string
 	data: ForgotPasswordResponse
@@ -465,6 +470,11 @@ export type DataPaginatedCredit = {
 export type DataPaginatedDiscography = {
 	status: string
 	data: CursorResponseDiscography
+}
+
+export type DataPaginatedEntityComment = {
+	status: string
+	data: EntityCommentPage
 }
 
 export type DataPaginatedNotificationItem = {
@@ -700,6 +710,30 @@ export type DeleteVoteBody = {
 }
 
 export type EditableUserRole = "Moderator"
+
+export type EntityComment = {
+	id: number
+	parent_id?: number | null
+	author: CommentAuthor
+	content?: string | null
+	state: CommentState
+	created_at: string
+	updated_at: string
+}
+
+export type EntityCommentPage = {
+	items: Array<EntityComment>
+	next_cursor?: number | null
+	active_count: number
+}
+
+export type EntityCommentTarget =
+	| "artist"
+	| "release"
+	| "song"
+	| "label"
+	| "event"
+	| "tag"
 
 export type EntityIdent = string
 
@@ -1302,6 +1336,13 @@ export type PageResponseUserSummary = {
 	total_pages: number
 }
 
+export type PermissionName =
+	| "correction.manage"
+	| "comment.manage"
+	| "image.queue.manage"
+	| "admin.user.read"
+	| "admin.user.role.write"
+
 export type Release = {
 	id: number
 	title: string
@@ -1590,6 +1631,7 @@ export type UserProfile = {
 	banner_url?: string | null
 	last_login: string
 	roles?: Array<UserRole>
+	permissions?: Array<PermissionName>
 	/**
 	 * Whether the querist follows the user. Return `None` if querist is not signed in or it's querist's own profile
 	 */
@@ -1768,10 +1810,6 @@ export type ExploreArtistData = {
 }
 
 export type ExploreArtistErrors = {
-	400: {
-		status: "Err"
-		message: string
-	}
 	/**
 	 * Too Many Requests
 	 */
@@ -2603,7 +2641,7 @@ export type FindCommentsResponse =
 	FindCommentsResponses[keyof FindCommentsResponses]
 
 export type CreateCommentData = {
-	body: CreateCorrectionCommentRequest
+	body: CreateEntityCommentRequest
 	path: {
 		/**
 		 * Correction id
@@ -2949,10 +2987,6 @@ export type ExploreEventData = {
 }
 
 export type ExploreEventErrors = {
-	400: {
-		status: "Err"
-		message: string
-	}
 	/**
 	 * Too Many Requests
 	 */
@@ -3347,10 +3381,6 @@ export type ExploreLabelData = {
 }
 
 export type ExploreLabelErrors = {
-	400: {
-		status: "Err"
-		message: string
-	}
 	/**
 	 * Too Many Requests
 	 */
@@ -3852,10 +3882,6 @@ export type ExploreReleaseData = {
 }
 
 export type ExploreReleaseErrors = {
-	400: {
-		status: "Err"
-		message: string
-	}
 	/**
 	 * Too Many Requests
 	 */
@@ -4684,10 +4710,6 @@ export type ExploreSongData = {
 }
 
 export type ExploreSongErrors = {
-	400: {
-		status: "Err"
-		message: string
-	}
 	/**
 	 * Too Many Requests
 	 */
@@ -4875,10 +4897,6 @@ export type ExploreTagData = {
 }
 
 export type ExploreTagErrors = {
-	400: {
-		status: "Err"
-		message: string
-	}
 	/**
 	 * Too Many Requests
 	 */
@@ -5347,3 +5365,80 @@ export type GetTagsResponses = {
 }
 
 export type GetTagsResponse = GetTagsResponses[keyof GetTagsResponses]
+
+export type FindEntityCommentsData = {
+	body?: never
+	path: {
+		/**
+		 * Comment target type
+		 */
+		target_type: EntityCommentTarget
+		/**
+		 * Target id
+		 */
+		id: number
+	}
+	query?: {
+		limit?: number
+		cursor?: number
+	}
+	url: "/{target_type}/{id}/comments"
+}
+
+export type FindEntityCommentsErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type FindEntityCommentsError =
+	FindEntityCommentsErrors[keyof FindEntityCommentsErrors]
+
+export type FindEntityCommentsResponses = {
+	200: DataPaginatedEntityComment
+}
+
+export type FindEntityCommentsResponse =
+	FindEntityCommentsResponses[keyof FindEntityCommentsResponses]
+
+export type CreateEntityCommentData = {
+	body: CreateEntityCommentRequest
+	path: {
+		/**
+		 * Comment target type
+		 */
+		target_type: EntityCommentTarget
+		/**
+		 * Target id
+		 */
+		id: number
+	}
+	query?: never
+	url: "/{target_type}/{id}/comments"
+}
+
+export type CreateEntityCommentErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type CreateEntityCommentError =
+	CreateEntityCommentErrors[keyof CreateEntityCommentErrors]
+
+export type CreateEntityCommentResponses = {
+	200: DataEntityComment
+}
+
+export type CreateEntityCommentResponse =
+	CreateEntityCommentResponses[keyof CreateEntityCommentResponses]

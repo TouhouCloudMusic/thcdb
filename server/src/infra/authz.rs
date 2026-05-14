@@ -8,7 +8,7 @@ use sea_orm::{
 };
 use strum::IntoEnumIterator;
 
-use crate::domain::model::{PermissionDef, PermissionMarker, UserRoleEnum};
+use crate::domain::model::{PermissionDef, PermissionName, UserRoleEnum};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 pub async fn sync_permissions(
@@ -31,7 +31,7 @@ async fn sync_permission_defs(db: &impl ConnectionTrait) -> Result<(), DbErr> {
     let expected = PermissionDef::ALL;
     let expected_by_name = expected
         .iter()
-        .map(|def| (def.name, *def))
+        .map(|def| (def.name.as_str(), *def))
         .collect::<HashMap<_, _>>();
 
     let existing = permission::Entity::find().all(db).await?;
@@ -76,23 +76,26 @@ async fn sync_permission_defs(db: &impl ConnectionTrait) -> Result<(), DbErr> {
 
     let missing_names = expected
         .iter()
-        .filter(|def| !existing_names.contains(def.name))
+        .filter(|def| !existing_names.contains(def.name.as_str()))
         .map(|def| def.name)
         .collect::<Vec<_>>();
 
     if !missing_names.is_empty() {
         log::info!(
             target: "infra.authz",
-            permissions:? = missing_names;
+            permissions:? = missing_names
+                .iter()
+                .map(|name| name.as_str())
+                .collect::<Vec<_>>();
             "inserting missing permissions"
         );
 
         let missing = missing_names
             .iter()
-            .filter_map(|name| expected_by_name.get(name).copied())
+            .filter_map(|name| expected_by_name.get(name.as_str()).copied())
             .map(|def| permission::ActiveModel {
                 id: NotSet,
-                name: Set(def.name.to_owned()),
+                name: Set(def.name.as_str().to_owned()),
                 description: Set(def.description.map(str::to_owned)),
             });
 
@@ -143,7 +146,8 @@ async fn sync_role_permissions(db: &impl ConnectionTrait) -> Result<(), DbErr> {
     let permission_ids = permission_fetch_id_map(db).await?;
 
     let role_ids = UserRoleEnum::iter().map(i32::from).collect::<Vec<_>>();
-    let permission_names = PermissionDef::ALL.iter().map(|def| def.name);
+    let permission_names =
+        PermissionDef::ALL.iter().map(|def| def.name.as_str());
 
     let existing = role_permission::Entity::find()
         .select_only()
@@ -172,8 +176,10 @@ async fn sync_role_permissions(db: &impl ConnectionTrait) -> Result<(), DbErr> {
         let role_id: i32 = role.into();
 
         let default_permissions = role.default_permissions();
-        let expected_set =
-            default_permissions.iter().copied().collect::<HashSet<_>>();
+        let expected_set = default_permissions
+            .iter()
+            .map(|name| name.as_str())
+            .collect::<HashSet<_>>();
 
         let existing_set = existing_by_role.get(&role_id);
 
@@ -192,7 +198,8 @@ async fn sync_role_permissions(db: &impl ConnectionTrait) -> Result<(), DbErr> {
             );
         }
 
-        for &permission_name in default_permissions {
+        for permission_name in default_permissions {
+            let permission_name = permission_name.as_str();
             if existing_set.is_some_and(|set| set.contains(permission_name)) {
                 continue;
             }
@@ -223,7 +230,7 @@ async fn sync_role_permissions(db: &impl ConnectionTrait) -> Result<(), DbErr> {
 async fn permission_fetch_id_map(
     db: &impl ConnectionTrait,
 ) -> Result<HashMap<String, i32>, DbErr> {
-    let names = PermissionDef::ALL.iter().map(|def| def.name);
+    let names = PermissionDef::ALL.iter().map(|def| def.name.as_str());
 
     let models = permission::Entity::find()
         .select_only()
@@ -237,13 +244,11 @@ async fn permission_fetch_id_map(
     Ok(models.into_iter().map(|(id, name)| (name, id)).collect())
 }
 
-pub async fn user_has_permission<P>(
+pub async fn user_has_permission(
     db: &impl ConnectionTrait,
     user_id: i32,
-) -> Result<bool, DatabaseError>
-where
-    P: PermissionMarker,
-{
+    permission_name: PermissionName,
+) -> Result<bool, DatabaseError> {
     // TODO: Replace this with exists after update sea orm to 2.0
     let exists = user_role::Entity::find()
         .select_only()
@@ -258,7 +263,7 @@ where
             JoinType::InnerJoin,
             role_permission::Relation::Permission.def(),
         )
-        .filter(permission::Column::Name.eq(P::NAME))
+        .filter(permission::Column::Name.eq(permission_name.as_str()))
         .limit(1)
         .into_tuple::<(i32,)>()
         .one(db)

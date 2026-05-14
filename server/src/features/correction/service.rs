@@ -3,7 +3,7 @@ use crate::domain::correction::{
     CorrectionEntity, CorrectionFilter, NewCorrectionMeta, Repo as _,
     TxRepo as _,
 };
-use crate::domain::model::{CorrectionApprover, CorrectionManage};
+use crate::domain::model::{CorrectionApprover, PermissionName};
 use crate::domain::user::User;
 use crate::infra::database::error::DatabaseResultExt;
 use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
@@ -54,28 +54,47 @@ pub enum CorrectionUpsertResult {
     Conflict { correction_id: i32 },
 }
 
+pub async fn find_create_conflict<T: CorrectionEntity + Send + Sync>(
+    repo: &SeaOrmTxRepo,
+    entity_id: i32,
+) -> Result<Option<i32>, SubmissionError> {
+    let _ = repo
+        .find_one(CorrectionFilter::latest(entity_id, T::entity_type()))
+        .await?
+        .ok_or(SubmissionError::NotFound)?;
+
+    Ok(repo
+        .find_one(CorrectionFilter::pending(entity_id, T::entity_type()))
+        .await?
+        .map(|pending_correction| pending_correction.id))
+}
+
+pub async fn find_create_conflict_for_mode<
+    T: CorrectionEntity + Send + Sync,
+>(
+    repo: &SeaOrmTxRepo,
+    entity_id: i32,
+    mode: &CorrectionUpsertMode,
+) -> Result<Option<i32>, SubmissionError> {
+    match mode {
+        CorrectionUpsertMode::Create => {
+            find_create_conflict::<T>(repo, entity_id).await
+        }
+        CorrectionUpsertMode::Update { .. } => Ok(None),
+    }
+}
+
 pub async fn upsert<T: CorrectionEntity + Send + Sync>(
     repo: &SeaOrmTxRepo,
     meta: NewCorrectionMeta<T>,
     mode: CorrectionUpsertMode,
 ) -> Result<CorrectionUpsertResult, SubmissionError> {
-    // Guard: ensure the entity was created through the correction system
-    // (at least one prior correction must exist for this entity)
-    let _ = repo
-        .find_one(CorrectionFilter::latest(meta.entity_id, T::entity_type()))
-        .await?
-        .ok_or(SubmissionError::NotFound)?;
-
-    let pending_correction = repo
-        .find_one(CorrectionFilter::pending(meta.entity_id, T::entity_type()))
-        .await?;
-
     let result = match mode {
         CorrectionUpsertMode::Create => {
-            if let Some(pending_correction) = pending_correction {
-                return Ok(CorrectionUpsertResult::Conflict {
-                    correction_id: pending_correction.id,
-                });
+            if let Some(correction_id) =
+                find_create_conflict::<T>(repo, meta.entity_id).await?
+            {
+                return Ok(CorrectionUpsertResult::Conflict { correction_id });
             }
 
             CorrectionUpsertResult::Submitted {
@@ -83,6 +102,23 @@ pub async fn upsert<T: CorrectionEntity + Send + Sync>(
             }
         }
         CorrectionUpsertMode::Update { correction_id } => {
+            // Guard: ensure the entity was created through the correction system
+            // (at least one prior correction must exist for this entity)
+            let _ = repo
+                .find_one(CorrectionFilter::latest(
+                    meta.entity_id,
+                    T::entity_type(),
+                ))
+                .await?
+                .ok_or(SubmissionError::NotFound)?;
+
+            let pending_correction = repo
+                .find_one(CorrectionFilter::pending(
+                    meta.entity_id,
+                    T::entity_type(),
+                ))
+                .await?;
+
             let Some(pending_correction) = pending_correction else {
                 return Err(SubmissionError::PendingCorrectionConflict {
                     correction_id,
@@ -95,9 +131,11 @@ pub async fn upsert<T: CorrectionEntity + Send + Sync>(
                 });
             }
 
-            let can_update = crate::infra::authz::user_has_permission::<
-                CorrectionManage,
-            >(repo.conn(), meta.author.id)
+            let can_update = crate::infra::authz::user_has_permission(
+                repo.conn(),
+                meta.author.id,
+                PermissionName::CorrectionManage,
+            )
             .await
             .db_operation("check correction manage permission")?
                 || repo.is_author(&meta.author, &pending_correction).await?;

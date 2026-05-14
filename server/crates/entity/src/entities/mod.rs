@@ -19,6 +19,8 @@ pub mod artist_membership_tenure_history;
 pub mod artist_tag_vote;
 pub mod comment;
 pub mod comment_revision;
+pub mod comment_target;
+pub mod comment_thread;
 pub mod correction;
 pub mod correction_revision;
 pub mod correction_user;

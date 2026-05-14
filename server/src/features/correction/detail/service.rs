@@ -36,7 +36,8 @@ impl Service {
             model.entity_id,
         )
         .await
-        .db_operation("find correction entity name")?;
+        .db_operation("find correction entity name")?
+        .ok_or(ReadError::NotFound("Correction not found"))?;
 
         let author = repo::find_author(&self.repo.conn, correction_id)
             .await

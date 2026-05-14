@@ -7,7 +7,7 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz};
-use crate::domain::model::CorrectionManage;
+use crate::domain::model::PermissionName;
 use crate::features::correction::model::HandleCorrectionMethod;
 use crate::features::correction::{ModerationError, service};
 use crate::shared::http::api_response::Message;
@@ -62,7 +62,12 @@ async fn handle_correction(
     State(repo): State<state::SeaOrmRepository>,
     State(notification): State<state::NotificationService>,
 ) -> Result<Message, Error> {
-    authz::ensure_permission::<CorrectionManage>(&repo.conn, user.id).await?;
+    authz::ensure_permission(
+        &repo.conn,
+        user.id,
+        PermissionName::CorrectionManage,
+    )
+    .await?;
 
     match query.method {
         HandleCorrectionMethod::Approve => {

@@ -1,12 +1,15 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Tag } from "@thc/api"
-import { Show, Suspense } from "solid-js"
+import { createSignal, Show, Suspense } from "solid-js"
 
 import { Link, Tab } from "~/component/atomic"
 import { Intersperse } from "~/component/data/Intersperse"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
+import { EntityComments } from "~/view/comment/EntityComments"
+import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
+import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { TagInfoPageContext } from "./context"
@@ -90,20 +93,32 @@ function TagInfoDetails() {
 const TRIGGER_CLASS = "py-4"
 
 function TagInfoTabs() {
+	const { t } = useLingui()
 	const ctx = assertContext(TagInfoPageContext)
 	const hasDesc = () => Boolean(ctx.tag.description)
 	const hasRelations = () =>
 		Boolean(ctx.tag.relations && ctx.tag.relations.length > 0)
+	const [activeTab, setActiveTab] = createSignal(
+		hasDesc() ? "Description" : hasRelations() ? "Relations" : "Comments",
+	)
+	const comments = createEntityCommentsController(() => ({
+		entityType: "tag",
+		entityId: ctx.tag.id,
+		listEnabled: activeTab() === "Comments",
+	}))
 	return (
-		<Tab.Root>
+		<Tab.Root
+			value={activeTab()}
+			onChange={setActiveTab}
+		>
 			<div class="border-b border-slate-300 px-4">
-				<Tab.List class="grid-cols-2 gap-12">
+				<Tab.List class="gap-12">
 					<Show when={hasDesc()}>
 						<Tab.Trigger
 							value="Description"
 							class={TRIGGER_CLASS}
 						>
-							Description
+							{t`Description`}
 						</Tab.Trigger>
 					</Show>
 					<Show when={hasRelations()}>
@@ -111,9 +126,13 @@ function TagInfoTabs() {
 							value="Relations"
 							class={TRIGGER_CLASS}
 						>
-							Relations
+							{t`Relations`}
 						</Tab.Trigger>
 					</Show>
+					<EntityCommentsTabTrigger
+						count={comments.activeCommentCount()}
+						class={TRIGGER_CLASS}
+					/>
 					<Tab.Indicator />
 				</Tab.List>
 			</div>
@@ -133,6 +152,12 @@ function TagInfoTabs() {
 					<TagInfoRelations />
 				</Tab.Content>
 			</Show>
+			<Tab.Content
+				value="Comments"
+				class="p-4"
+			>
+				<EntityComments controller={comments} />
+			</Tab.Content>
 		</Tab.Root>
 	)
 }

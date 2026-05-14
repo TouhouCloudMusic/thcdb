@@ -3,7 +3,7 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use super::sea_orm_active_enums::{CommentState, CommentTarget};
+use super::sea_orm_active_enums::CommentState;
 
 #[derive(
     Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
@@ -16,8 +16,7 @@ pub struct Model {
     pub content: String,
     pub state: CommentState,
     pub author_id: i32,
-    pub target: CommentTarget,
-    pub target_id: i32,
+    pub thread_id: i32,
     pub parent_id: Option<i32>,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
@@ -36,6 +35,14 @@ pub enum Relation {
     #[sea_orm(has_many = "super::comment_revision::Entity")]
     CommentRevision,
     #[sea_orm(
+        belongs_to = "super::comment_thread::Entity",
+        from = "Column::ThreadId",
+        to = "super::comment_thread::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    CommentThread,
+    #[sea_orm(
         belongs_to = "super::user::Entity",
         from = "Column::AuthorId",
         to = "super::user::Column::Id",
@@ -48,6 +55,12 @@ pub enum Relation {
 impl Related<super::comment_revision::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::CommentRevision.def()
+    }
+}
+
+impl Related<super::comment_thread::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::CommentThread.def()
     }
 }
 

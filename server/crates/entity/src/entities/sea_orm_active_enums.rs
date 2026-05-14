@@ -113,6 +113,7 @@ pub enum CommentState {
     utoipa :: ToSchema,
 )]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "CommentTarget")]
+#[serde(rename_all = "kebab-case")]
 #[enumset(no_super_impls)]
 #[enumset(serialize_repr = "list")]
 pub enum CommentTarget {

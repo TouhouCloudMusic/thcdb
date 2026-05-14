@@ -1,12 +1,16 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Label } from "@thc/api"
-import { Show, Suspense } from "solid-js"
+import { createSignal, Show, Suspense } from "solid-js"
 
+import { Tab } from "~/component/atomic"
 import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
+import { EntityComments } from "~/view/comment/EntityComments"
+import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
+import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { LabelInfoPageContext } from "./context"
@@ -36,6 +40,7 @@ export function LabelInfoPage(props: Props) {
 							entityType="Label"
 							entityId={props.label.id}
 						/>
+						<LabelInfoComments />
 						<EntityCorrectionMetadataSection
 							entityType="label"
 							entityId={props.label.id}
@@ -104,5 +109,38 @@ function LabelInfoDetails() {
 				</ul>
 			</Show>
 		</div>
+	)
+}
+
+function LabelInfoComments() {
+	const ctx = assertContext(LabelInfoPageContext)
+	const [activeTab, setActiveTab] = createSignal("Comments")
+	const comments = createEntityCommentsController(() => ({
+		entityType: "label",
+		entityId: ctx.label.id,
+		listEnabled: activeTab() === "Comments",
+	}))
+
+	return (
+		<Tab.Root
+			value={activeTab()}
+			onChange={setActiveTab}
+		>
+			<div class="border-b border-slate-300 px-4">
+				<Tab.List class="gap-12">
+					<EntityCommentsTabTrigger
+						count={comments.activeCommentCount()}
+						class="py-4"
+					/>
+					<Tab.Indicator />
+				</Tab.List>
+			</div>
+			<Tab.Content
+				value="Comments"
+				class="p-4"
+			>
+				<EntityComments controller={comments} />
+			</Tab.Content>
+		</Tab.Root>
 	)
 }

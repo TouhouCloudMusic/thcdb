@@ -66,9 +66,11 @@
 
 **实现要点**:
 - `Comment` 域模型，支持线程化回复
-- `CommentState` 枚举: Active, Hidden, Deleted, Pending
-- `CommentTarget` 枚举: Artist, Release, Song, Event, Tag, Correction, User
+- `CommentThread` 域模型，统一承载目标实体，移除每条评论重复保存的 target / target_id
+- `CommentState` 枚举: Active, Deleted
+- `CommentTarget` 枚举: Artist, Release, Song, Label, Event, Tag, Correction
 - 评论修订历史追踪
+- 统一早期 `comment.target` / `comment.target_id` 行模型与 `comment_thread` 模型的不一致
 
 ---
 

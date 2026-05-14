@@ -13,6 +13,7 @@ import {
 	createArtist,
 	createComment,
 	createCreditRole,
+	createEntityComment,
 	createEvent,
 	createLabel,
 	createRelease,
@@ -39,6 +40,7 @@ import {
 	findArtistDiscographiesInit,
 	findComments,
 	findCreditRoleById,
+	findEntityComments,
 	findEventById,
 	findEventByKeyword,
 	findLabelById,
@@ -145,6 +147,9 @@ import type {
 	CreateCreditRoleData,
 	CreateCreditRoleError,
 	CreateCreditRoleResponse,
+	CreateEntityCommentData,
+	CreateEntityCommentError,
+	CreateEntityCommentResponse,
 	CreateEventData,
 	CreateEventError,
 	CreateEventResponse,
@@ -222,6 +227,9 @@ import type {
 	FindCreditRoleByIdData,
 	FindCreditRoleByIdError,
 	FindCreditRoleByIdResponse,
+	FindEntityCommentsData,
+	FindEntityCommentsError,
+	FindEntityCommentsResponse,
 	FindEventByIdData,
 	FindEventByIdError,
 	FindEventByIdResponse,
@@ -4532,3 +4540,99 @@ export const getTagsInfiniteOptions = (options: Options<GetTagsData>) =>
 			queryKey: getTagsInfiniteQueryKey(options),
 		},
 	)
+
+export const findEntityCommentsQueryKey = (
+	options: Options<FindEntityCommentsData>,
+) => createQueryKey("findEntityComments", options)
+
+export const findEntityCommentsOptions = (
+	options: Options<FindEntityCommentsData>,
+) =>
+	queryOptions<
+		FindEntityCommentsResponse,
+		FindEntityCommentsError,
+		FindEntityCommentsResponse,
+		ReturnType<typeof findEntityCommentsQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await findEntityComments({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: findEntityCommentsQueryKey(options),
+	})
+
+export const findEntityCommentsInfiniteQueryKey = (
+	options: Options<FindEntityCommentsData>,
+): QueryKey<Options<FindEntityCommentsData>> =>
+	createQueryKey("findEntityComments", options, true)
+
+export const findEntityCommentsInfiniteOptions = (
+	options: Options<FindEntityCommentsData>,
+) =>
+	infiniteQueryOptions<
+		FindEntityCommentsResponse,
+		FindEntityCommentsError,
+		InfiniteData<FindEntityCommentsResponse>,
+		QueryKey<Options<FindEntityCommentsData>>,
+		| number
+		| Pick<
+				QueryKey<Options<FindEntityCommentsData>>[0],
+				"body" | "headers" | "path" | "query"
+		  >
+	>(
+		// @ts-ignore
+		{
+			queryFn: async ({ pageParam, queryKey, signal }) => {
+				// @ts-ignore
+				const page: Pick<
+					QueryKey<Options<FindEntityCommentsData>>[0],
+					"body" | "headers" | "path" | "query"
+				> =
+					typeof pageParam === "object"
+						? pageParam
+						: {
+								query: {
+									cursor: pageParam,
+								},
+							}
+				const params = createInfiniteParams(queryKey, page)
+				const { data } = await findEntityComments({
+					...options,
+					...params,
+					signal,
+					throwOnError: true,
+				})
+				return data
+			},
+			queryKey: findEntityCommentsInfiniteQueryKey(options),
+		},
+	)
+
+export const createEntityCommentMutation = (
+	options?: Partial<Options<CreateEntityCommentData>>,
+): MutationOptions<
+	CreateEntityCommentResponse,
+	CreateEntityCommentError,
+	Options<CreateEntityCommentData>
+> => {
+	const mutationOptions: MutationOptions<
+		CreateEntityCommentResponse,
+		CreateEntityCommentError,
+		Options<CreateEntityCommentData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await createEntityComment({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
