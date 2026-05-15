@@ -3,5 +3,8 @@ edition = "2024"
 name    = "macros"
 version = "0.1.0"
 
+[lints]
+workspace = true
+
 [dependencies]
 proc_macros.workspace = true

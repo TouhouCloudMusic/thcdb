@@ -3,6 +3,9 @@ edition = "2024"
 name    = "fast-lrc"
 version = "0.1.0"
 
+[lints]
+workspace = true
+
 [dependencies]
 atoi_simd = "0.18.0"
 memchr = "2.7.5"

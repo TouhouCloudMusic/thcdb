@@ -15,7 +15,7 @@ stages         = [ "pre-push" ]
 [[repos.hooks]]
 id             = "server-cargo-clippy"
 name           = "server cargo clippy"
-entry          = "cargo clippy --all-targets --all-features -- -A warnings"
+entry          = "cargo clippy --all-targets --all-features"
 language       = "system"
 pass_filenames = false
 types          = [ "rust" ]

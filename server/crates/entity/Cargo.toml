@@ -4,6 +4,9 @@ name    = "entity"
 publish = false
 version = "0.1.0"
 
+[lints]
+workspace = true
+
 [lib]
 name = "entity"
 path = "src/lib.rs"

@@ -3,4 +3,7 @@ edition = "2024"
 name    = "libfp"
 version = "0.1.0"
 
+[lints]
+workspace = true
+
 [dependencies]
