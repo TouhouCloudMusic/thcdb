@@ -4,6 +4,9 @@ name    = "migration"
 publish = false
 version = "0.1.0"
 
+[lints]
+workspace = true
+
 [lib]
 name = "migration"
 path = "src/lib.rs"
