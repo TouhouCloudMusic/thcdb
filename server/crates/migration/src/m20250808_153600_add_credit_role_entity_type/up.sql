@@ -5,19 +5,15 @@ $$
 BEGIN
 -- Check if CreditRole already exists in EntityType enum
 IF NOT EXISTS (
-  SELECT
-    1
-  FROM
-    pg_enum e
+  SELECT 1
+  FROM pg_enum e
     JOIN pg_type t ON e.enumtypid = t.oid
-  WHERE
-    t.typname = 'EntityType'
+  WHERE t.typname = 'EntityType'
     AND e.enumlabel = 'CreditRole'
 ) THEN
 -- Add CreditRole to the EntityType enum
 ALTER TYPE "public"."EntityType"
-ADD
-  VALUE 'CreditRole';
+ADD VALUE 'CreditRole';
 
 END IF;
 

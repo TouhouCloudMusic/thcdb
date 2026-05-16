@@ -1,5 +1,4 @@
-ALTER TABLE
-  image
+ALTER TABLE image
   DROP COLUMN backend;
 
 DROP TYPE storage_backend;

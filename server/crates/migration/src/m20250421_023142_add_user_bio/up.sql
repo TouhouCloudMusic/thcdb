@@ -1,4 +1,2 @@
-ALTER TABLE
-  "public"."user"
-ADD
-  COLUMN "bio" TEXT NULL;
+ALTER TABLE "public"."user"
+  ADD COLUMN "bio" TEXT NULL;

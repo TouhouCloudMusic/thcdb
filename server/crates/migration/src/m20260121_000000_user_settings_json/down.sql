@@ -49,9 +49,9 @@ SELECT
     )::boolean,
     FALSE
   )
-FROM
-  "public"."user" u ON CONFLICT ("user_id") DO NOTHING;
+FROM "public"."user" u
+ON CONFLICT ("user_id") DO NOTHING
+;
 
-ALTER TABLE
-  "public"."user"
+ALTER TABLE "public"."user"
   DROP COLUMN IF EXISTS "settings";

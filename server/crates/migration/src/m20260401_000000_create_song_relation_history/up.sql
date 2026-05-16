@@ -5,8 +5,7 @@ CREATE TABLE "public"."song_relation_type" (
   UNIQUE ("name")
 );
 
-INSERT INTO
-  "public"."song_relation_type" ("id", "name")
+INSERT INTO "public"."song_relation_type" ("id", "name")
 VALUES
   (1, 'Original'),
   (2, 'Arrange'),
@@ -15,14 +14,12 @@ VALUES
   (5, 'Live'),
   (6, 'Instrumental');
 
-ALTER TABLE
-  "public"."song_relation"
+ALTER TABLE "public"."song_relation"
   DROP COLUMN "relation_type";
 
 ALTER TABLE
   "public"."song_relation"
-ADD
-  COLUMN "relation_type_id" INTEGER NOT NULL REFERENCES "public"."song_relation_type" ("id");
+  ADD COLUMN "relation_type_id" INTEGER NOT NULL REFERENCES "public"."song_relation_type" ("id");
 
 CREATE INDEX idx_song_relation_relation_type_id ON "public"."song_relation" ("relation_type_id");
 

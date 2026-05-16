@@ -12,7 +12,6 @@
 -- 2. Update all affected tables/columns to use EntityType_new
 -- 3. DROP TYPE "EntityType";
 -- 4. ALTER TYPE "EntityType_new" RENAME TO "EntityType";
-SELECT
-  1;
+SELECT 1;
 
 -- Placeholder to make this a valid SQL file
