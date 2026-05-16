@@ -1,5 +1,4 @@
-INSERT INTO
-  language (id, name, code)
+INSERT INTO language (id, name, code)
 VALUES
   (1, 'Cantonese', 'yue'),
   (2, 'Chinese', 'zho'),
@@ -17,4 +16,6 @@ VALUES
   (14, 'Russian', 'rus'),
   (15, 'Spanish', 'spa'),
   (16, 'Swedish', 'swe'),
-  (17, 'Conlang', 'n/a') ON CONFLICT DO NOTHING;
+  (17, 'Conlang', 'n/a')
+ON CONFLICT DO NOTHING
+;

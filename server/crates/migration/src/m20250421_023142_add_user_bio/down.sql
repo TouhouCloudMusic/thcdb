@@ -1,3 +1,2 @@
-ALTER TABLE
-  "public"."user"
+ALTER TABLE "public"."user"
   DROP COLUMN "bio";

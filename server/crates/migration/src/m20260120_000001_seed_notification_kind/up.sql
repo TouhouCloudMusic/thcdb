@@ -1,5 +1,4 @@
-INSERT INTO
-  notification_kind (id, name)
+INSERT INTO notification_kind (id, name)
 VALUES
   (1, 'CommentReply'),
   (2, 'CommentMention'),

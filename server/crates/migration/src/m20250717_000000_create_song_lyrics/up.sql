@@ -3,24 +3,19 @@ DO
 $$
 BEGIN
 IF NOT EXISTS (
-  SELECT
-    1
-  FROM
-    pg_enum
+  SELECT 1
+  FROM pg_enum
     JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
-  WHERE
-    pg_type.typname = 'EntityType'
+  WHERE pg_type.typname = 'EntityType'
     AND pg_enum.enumlabel = 'SongLyrics'
 ) THEN
 ALTER TYPE "public"."EntityType"
-ADD
-  VALUE 'SongLyrics';
+ADD VALUE 'SongLyrics';
 
 END IF;
 
 END
-$$
-;
+$$;
 
 -- Create "song_lyrics" table
 CREATE TABLE "public"."song_lyrics" (
@@ -37,8 +32,7 @@ CREATE TABLE "public"."song_lyrics" (
 
 -- Ensure at most one main lyrics per song
 CREATE UNIQUE INDEX "uniq_song_lyrics_main_per_song" ON "public"."song_lyrics" ("song_id")
-WHERE
-  is_main = TRUE;
+WHERE is_main = TRUE;
 
 -- Create "song_lyrics_history" table
 CREATE TABLE "public"."song_lyrics_history" (

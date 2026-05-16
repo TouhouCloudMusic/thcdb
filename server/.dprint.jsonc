@@ -2,14 +2,15 @@
   "excludes": [],
   "includes": ["crates/migration/src/**/*.sql"],
   "sql": {
+    "dialect": "postgresql",
     "linesBetweenQueries": 2,
     "uppercase": true,
     // https://github.com/shssoichiro/sqlformat-rs/issues/84
     // "maxInlineArguments": 3,
-    "maxInlineTopLevel": 3
+    "maxInlineTopLevel": 80
   },
   "plugins": [
     // "https://plugins.dprint.dev/sql-0.2.0.wasm"
-    "https://github.com/Huliiiiii/dprint-plugin-sql/releases/download/20250721/plugin.wasm"
+    "https://github.com/Huliiiiii/dprint-plugin-sql/releases/download/20260515/plugin.wasm"
   ]
 }

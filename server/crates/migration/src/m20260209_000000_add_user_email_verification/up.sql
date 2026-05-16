@@ -1,11 +1,8 @@
 ALTER TABLE
   "public"."user"
-ADD
-  COLUMN "email" TEXT NOT NULL,
-ADD
-  COLUMN "email_verified" BOOLEAN NOT NULL DEFAULT FALSE,
-ADD
-  COLUMN "created_at" timestamptz NOT NULL DEFAULT NOW();
+  ADD COLUMN "email" TEXT NOT NULL,
+  ADD COLUMN "email_verified" BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN "created_at" timestamptz NOT NULL DEFAULT NOW();
 
 CREATE UNIQUE INDEX "uniq_user_email_lower" ON "public"."user" (lower("email"));
 
