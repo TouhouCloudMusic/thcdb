@@ -1,6 +1,7 @@
 {
 	"name": "@touhouclouddb/web",
 	"type": "module",
+	"packageManager": "pnpm@11.1.2",
 	"scripts": {
 		"start": "vite",
 		"dev": "vite",
@@ -108,10 +109,5 @@
 	"trustedDependencies": [
 		"@tailwindcss/oxide",
 		"esbuild"
-	],
-	"pnpm": {
-		"overrides": {
-			"@huliiiiii/lingui-solid>@lingui/core": "6.0.0-next.4"
-		}
-	}
+	]
 }

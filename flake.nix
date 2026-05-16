@@ -41,7 +41,6 @@
             doInstallCheck = false;
           });
         };
-
         pkgs = import nixpkgs {
           inherit system;
           overlays = [
@@ -99,7 +98,7 @@
             just
             just-lsp
             nodejs_22
-            pnpm
+            pnpm_11
             prek
             sea-orm-cli
             typescript-go

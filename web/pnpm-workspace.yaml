@@ -1,6 +1,11 @@
-onlyBuiltDependencies:
-  - "@tailwindcss/oxide"
-  - esbuild
+allowBuilds:
+  "@parcel/watcher": false
+  "@tailwindcss/oxide": true
+  esbuild: true
+  msgpackr-extract: false
+  msw: false
+overrides:
+  "@huliiiiii/lingui-solid>@lingui/core": 6.0.0-next.4
 packages:
   - "packages/*"
   - "."
