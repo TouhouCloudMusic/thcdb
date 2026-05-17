@@ -26,6 +26,7 @@ import { DateWithPrecision } from "~/domain/shared"
 import { assertContext } from "~/utils/solid/assertContext"
 import { EntityComments } from "~/view/comment/EntityComments"
 import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
+import type { EntityCommentsController } from "~/view/comment/EntityCommentsController"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 
 import { ArtistContext } from ".."
@@ -33,6 +34,12 @@ import { ArtistContext } from ".."
 // TODO: Add links after other pages are completed
 
 const TABS = ["Discography", "Appearance", "Credit", "Comments"] as const
+
+type ArtistReleaseInfoViewProps = {
+	activeTab: string
+	comments: EntityCommentsController
+	onActiveTabChange: (value: string) => void
+}
 
 export function ArtistReleaseInfo() {
 	const { t } = useLingui()
@@ -58,6 +65,24 @@ export function ArtistReleaseInfo() {
 
 function Inner() {
 	const context = assertContext(ArtistContext)
+	const [activeTab, setActiveTab] = createSignal("Discography")
+	const comments = createEntityCommentsController(() => ({
+		entityType: "artist",
+		entityId: context.artist.id,
+		listEnabled: activeTab() === "Comments",
+	}))
+
+	return (
+		<ArtistReleaseInfoView
+			activeTab={activeTab()}
+			comments={comments}
+			onActiveTabChange={setActiveTab}
+		/>
+	)
+}
+
+export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
+	const context = assertContext(ArtistContext)
 	const visibleTabs = createMemo(() =>
 		TABS.filter((tab) => {
 			switch (tab) {
@@ -76,17 +101,12 @@ function Inner() {
 			}
 		}),
 	)
-	const [activeTab, setActiveTab] = createSignal("Discography")
-	const comments = createEntityCommentsController(() => ({
-		entityType: "artist",
-		entityId: context.artist.id,
-		listEnabled: activeTab() === "Comments",
-	}))
+
 	return (
 		// https://github.com/kobaltedev/kobalte/issues/222
 		<Tab.Root
-			value={activeTab()}
-			onChange={setActiveTab}
+			value={props.activeTab}
+			onChange={props.onActiveTabChange}
 		>
 			<Tab.List class="w-fit">
 				<For each={visibleTabs()}>
@@ -104,7 +124,7 @@ function Inner() {
 								}
 							>
 								<EntityCommentsTabTrigger
-									count={comments.activeCommentCount()}
+									count={props.comments.activeCommentCount()}
 									class="text-md size-full px-4 py-2.5 text-slate-800"
 								/>
 							</Show>
@@ -132,7 +152,7 @@ function Inner() {
 						void context.appearances.next()
 					}}
 				>
-					{(props) => <DiscographyItem {...props} />}
+					{(itemProps) => <DiscographyItem {...itemProps} />}
 				</ArtistReleaseList>
 			</Tab.Content>
 			<Tab.Content
@@ -147,14 +167,14 @@ function Inner() {
 						void context.credits.next()
 					}}
 				>
-					{(props) => <CreditItem {...props} />}
+					{(itemProps) => <CreditItem {...itemProps} />}
 				</ArtistReleaseList>
 			</Tab.Content>
 			<Tab.Content
 				value="Comments"
 				class="w-full border-t border-slate-300 p-4"
 			>
-				<EntityComments controller={comments} />
+				<EntityComments controller={props.comments} />
 			</Tab.Content>
 		</Tab.Root>
 	)
