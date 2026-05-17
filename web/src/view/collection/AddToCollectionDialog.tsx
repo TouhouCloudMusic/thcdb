@@ -4,7 +4,7 @@ import type {
 	InfiniteData,
 	UseInfiniteQueryResult,
 } from "@tanstack/solid-query"
-import { createSignal, For, Show } from "solid-js"
+import { createSignal, createUniqueId, For, Show } from "solid-js"
 import type { Accessor } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 import { PlusIcon } from "solid-radix-icons"
@@ -62,6 +62,7 @@ type CollectionFieldProps = {
 
 function CollectionField(props: CollectionFieldProps) {
 	const { t } = useLingui()
+	const selectId = createUniqueId()
 	const isInitialCollectionsLoading = () =>
 		props.collectionsQuery.isFetching && !props.collectionsQuery.isSuccess
 	const canSelectCollection = () =>
@@ -76,7 +77,12 @@ function CollectionField(props: CollectionFieldProps) {
 	return (
 		<div class="flex flex-col gap-1">
 			<div class="mb-1 flex items-center justify-between gap-3">
-				<label class="text-sm font-medium text-slate-700">{t`Collection`}</label>
+				<label
+					for={selectId}
+					class="text-sm font-medium text-slate-700"
+				>
+					{t`Collection`}
+				</label>
 				<Button
 					type="button"
 					variant="SecondaryV2"
@@ -90,6 +96,7 @@ function CollectionField(props: CollectionFieldProps) {
 				</Button>
 			</div>
 			<select
+				id={selectId}
 				value={props.selectedCollectionId?.toString() ?? ""}
 				onChange={(e) => {
 					const value = e.currentTarget.value
@@ -156,12 +163,18 @@ type NoteFieldProps = {
 
 function NoteField(props: NoteFieldProps) {
 	const { t } = useLingui()
+	const noteId = createUniqueId()
 	return (
 		<div class="flex flex-col gap-1">
-			<label class="mb-1 text-sm font-medium text-slate-700">
+			<label
+				for={noteId}
+				class="mb-1 text-sm font-medium text-slate-700"
+			>
 				{t`Note (optional)`}
 			</label>
 			<textarea
+				id={noteId}
+				aria-label={t`Note (optional)`}
 				value={props.description}
 				onInput={(e) => props.onDescriptionInput(e.currentTarget.value)}
 				class={`${FIELD_CLASS} h-24 resize-none`}

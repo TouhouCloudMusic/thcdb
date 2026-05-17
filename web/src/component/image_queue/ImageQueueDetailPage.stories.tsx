@@ -272,7 +272,7 @@ function getInitialEntryId(status: StoryStatus) {
 }
 
 function parseEntryId(pathname: string, fallback: number) {
-	const match = /^\/image-queue\/(\d+)$/.exec(pathname)
+	const match = /^\/image-queue\/(\d+)$/u.exec(pathname)
 	if (!match) return fallback
 
 	const value = Number(match[1])

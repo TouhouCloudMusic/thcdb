@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { toSongInfoRelationItemData } from "./SongInfoRelations.data"
 
-describe(toSongInfoRelationItemData, () => {
+describe("song relation item data mapping", () => {
 	it("maps relation artist when available", () => {
 		expect(
 			toSongInfoRelationItemData({
@@ -11,7 +11,7 @@ describe(toSongInfoRelationItemData, () => {
 				type: { id: 1, name: "Original" },
 				description: "Primary melodic source for this arrangement.",
 			}),
-		).toEqual({
+		).toStrictEqual({
 			songId: "100",
 			songTitle: "U.N. Owen Was Her?",
 			artist: {
@@ -30,7 +30,7 @@ describe(toSongInfoRelationItemData, () => {
 				type: { id: 2, name: "Remix" },
 				description: "",
 			}),
-		).toEqual({
+		).toStrictEqual({
 			songId: "101",
 			songTitle: "Locked Girl",
 			artist: undefined,

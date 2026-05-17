@@ -25,6 +25,7 @@ type ReleaseExploreQuery = {
 }
 
 // typescript cannot infer return type of use search
+// oxlint-disable-next-line no-underscore-dangle
 const _use_search_result = () => route.useSearch()
 type ReleaseExploreStoreDeps = {
 	search: ReturnType<typeof _use_search_result>

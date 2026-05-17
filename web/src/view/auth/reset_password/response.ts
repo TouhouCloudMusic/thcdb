@@ -78,6 +78,7 @@ export function getApiErrorMessage(
 	}
 
 	const result = Schema.decodeUnknownEither(ApiErrorBodySchema)(input)
+	// oxlint-disable-next-line no-underscore-dangle
 	if (result._tag === "Left") return requestFailedMessage
 
 	const message = result.right.message.trim()
@@ -88,6 +89,7 @@ export function getResetPasswordErrorMessage(
 	error: ResetPasswordFlowError,
 	requestFailedMessage: string,
 ) {
+	// oxlint-disable-next-line no-underscore-dangle
 	if (error._tag === "ResponseStatusError") return error.message
 	return requestFailedMessage
 }

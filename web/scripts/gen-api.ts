@@ -73,6 +73,7 @@ function prepareSchema(
 	fs: FileSystem.FileSystem,
 	path: Path.Path,
 ) {
+	// oxlint-disable-next-line no-underscore-dangle
 	switch (schemaSource._tag) {
 		case "server": {
 			return runServerOpenapi()

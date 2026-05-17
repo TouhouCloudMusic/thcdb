@@ -53,7 +53,7 @@ export function VerificationCodeField(props: VerificationCodeFieldProps) {
 				onInput={(e) => {
 					setIsEditing(true)
 					const el = e.currentTarget
-					const next = el.value.replaceAll(/\D/g, "").slice(0, 6)
+					const next = el.value.replaceAll(/\D/gu, "").slice(0, 6)
 					if (el.value !== next) el.value = next
 					callHandlerUnion(e, props.field.props.onInput)
 					props.onInput?.(e)

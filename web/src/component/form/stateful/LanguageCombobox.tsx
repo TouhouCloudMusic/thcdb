@@ -9,13 +9,22 @@ import { Combobox } from "~/component/atomic/Combobox"
 const useLang = () => useQuery(LanguagesQuery.findAll)
 let langs: ReturnType<typeof useLang> | undefined
 
+function useLangSingleton() {
+	const query = langs
+	if (query !== undefined) return query
+
+	const newQuery = useLang()
+	langs = newQuery
+	return newQuery
+}
+
 export function LanguageCombobox(props: {
 	onChange: (v: Language | null) => void
 	placeholder?: string
 	value?: Language
 	filter?: (lang: Language) => boolean
 }) {
-	const langQuery = langs ?? (langs = useLang())
+	const langQuery = useLangSingleton()
 
 	return (
 		<Combobox.Root

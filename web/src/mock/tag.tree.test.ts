@@ -17,8 +17,8 @@ function getMaxDepth(nodes: TagTreeNode[]): number {
 	return maxDepth
 }
 
-const suite = () => {
-	const testDepth = () => {
+describe("mock tag tree", () => {
+	it("caps depth", () => {
 		const maxDepth = 2
 		const tree = createMockTagTree({
 			rootCount: 1,
@@ -28,9 +28,9 @@ const suite = () => {
 		})
 
 		expect(getMaxDepth(tree)).toBe(maxDepth)
-	}
+	})
 
-	const testRootCount = () => {
+	it("creates roots", () => {
 		const tree = createMockTagTree({
 			rootCount: 3,
 			maxDepth: 0,
@@ -38,11 +38,6 @@ const suite = () => {
 			startId: 10,
 		})
 
-		expect(tree.length).toBe(3)
-	}
-
-	it("caps depth", testDepth)
-	it("creates roots", testRootCount)
-}
-
-describe(createMockTagTree, suite)
+		expect(tree).toHaveLength(3)
+	})
+})

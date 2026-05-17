@@ -3,19 +3,23 @@ import { describe, expect, it } from "vitest"
 import { toEventFormInitValue } from "./init"
 import type { EventWithLocation } from "./init"
 
-describe(toEventFormInitValue, () => {
+describe("event form initialization", () => {
 	it("returns default values for new form", () => {
 		const result = toEventFormInitValue({ type: "new" })
 
-		expect(result.type).toBe("Create")
-		expect(result.description).toBe("")
-		expect(result.data.name).toBe("")
-		expect(result.data.short_description).toBeUndefined()
-		expect(result.data.description).toBeUndefined()
-		expect(result.data.start_date).toBeUndefined()
-		expect(result.data.end_date).toBeUndefined()
-		expect(result.data.alternative_names).toEqual([])
-		expect(result.data.location).toBeUndefined()
+		expect(result).toStrictEqual({
+			type: "Create",
+			description: "",
+			data: {
+				name: "",
+				short_description: undefined,
+				description: undefined,
+				start_date: undefined,
+				end_date: undefined,
+				alternative_names: [],
+				location: undefined,
+			},
+		})
 	})
 
 	it("maps event fields for edit form", () => {
@@ -39,22 +43,38 @@ describe(toEventFormInitValue, () => {
 
 		const result = toEventFormInitValue({ type: "edit", event })
 
-		expect(result.type).toBe("Update")
-		expect(result.description).toBe("")
-		expect(result.data.name).toBe(event.name)
-		expect(result.data.short_description).toBe(event.short_description)
-		expect(result.data.description).toBe(event.description)
-		expect(result.data.alternative_names).toEqual(["例大祭", "博麗神社例大祭"])
-		expect(result.data.location).toEqual({
-			country: "Japan",
-			province: null,
-			city: "Tokyo",
+		expect({
+			type: result.type,
+			description: result.description,
+			name: result.data.name,
+			shortDescription: result.data.short_description,
+			descriptionInput: result.data.description,
+			alternativeNames: result.data.alternative_names,
+			location: result.data.location,
+			startDatePrecision: result.data.start_date?.precision,
+			startDateYear: result.data.start_date?.value.getUTCFullYear(),
+			startDateMonth: result.data.start_date?.value.getUTCMonth(),
+			startDateDay: result.data.start_date?.value.getUTCDate(),
+			endDatePrecision: result.data.end_date?.precision,
+			endDateDay: result.data.end_date?.value.getUTCDate(),
+		}).toStrictEqual({
+			type: "Update",
+			description: "",
+			name: event.name,
+			shortDescription: event.short_description,
+			descriptionInput: event.description,
+			alternativeNames: ["例大祭", "博麗神社例大祭"],
+			location: {
+				country: "Japan",
+				province: null,
+				city: "Tokyo",
+			},
+			startDatePrecision: "Day",
+			startDateYear: 2023,
+			startDateMonth: 4,
+			startDateDay: 1,
+			endDatePrecision: "Day",
+			endDateDay: 3,
 		})
-		expect(result.data.start_date?.precision).toBe("Day")
-		expect(result.data.start_date?.value.getUTCFullYear()).toBe(2023)
-		expect(result.data.start_date?.value.getUTCMonth()).toBe(4)
-		expect(result.data.start_date?.value.getUTCDate()).toBe(1)
-		expect(result.data.end_date?.precision).toBe("Day")
-		expect(result.data.end_date?.value.getUTCDate()).toBe(3)
 	})
 })

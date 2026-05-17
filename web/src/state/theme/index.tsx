@@ -15,19 +15,19 @@ export class ThemeStore {
 		this.signal = createSignal(theme)
 	}
 
-	public get theme(): AppTheme {
+	get theme(): AppTheme {
 		return this.signal[0]()
 	}
 
-	public static new(theme: AppTheme) {
+	static new(theme: AppTheme) {
 		return new ThemeStore(theme)
 	}
 
-	public static default() {
+	static default() {
 		return new ThemeStore(AppTheme.Light)
 	}
 
-	public set(theme: AppTheme): void {
+	set(theme: AppTheme): void {
 		this.signal[1](theme)
 		this.setDocumentTheme()
 	}

@@ -282,6 +282,7 @@ function TagTreeItem(props: TagTreeItemProps) {
 			ref={(element) => setItemRef(element)}
 			role="treeitem"
 			tabIndex={tabIndex()}
+			aria-label={props.node.name}
 			aria-level={props.depth + 1}
 			aria-posinset={props.posInSet}
 			aria-setsize={props.setSize}

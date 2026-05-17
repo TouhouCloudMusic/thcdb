@@ -1,13 +1,12 @@
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
 import { playwright } from "@vitest/browser-playwright"
 import path from "node:path"
-import { fileURLToPath } from "node:url"
 import { defineConfig, loadEnv } from "vite"
 import { defineProject } from "vitest/config"
 
 import { createAppPlugins } from "./vite.shared"
 
-const dirname = path.dirname(fileURLToPath(import.meta.url))
+const dirname = import.meta.dirname
 const isHttps = (url: string | undefined) => {
 	if (!url) {
 		return false
@@ -36,7 +35,7 @@ export default defineConfig(({ mode }) => {
 					target: SERVER_URL,
 					changeOrigin: true,
 					secure: isHttps(SERVER_URL),
-					rewrite: (url) => url.replace(/^\/api/, ""),
+					rewrite: (url) => url.replace(/^\/api/u, ""),
 				},
 			},
 			forwardConsole: true,

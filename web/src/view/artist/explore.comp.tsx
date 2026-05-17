@@ -152,7 +152,6 @@ type ArtistExploreFilterBarProps = {
 
 export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 	const { t } = useLingui()
-	const typeOptions = () => ["", ...ARTIST_TYPES]
 
 	return (
 		<StickyFilterBar scrollDirection={props.scrollDirection}>
@@ -160,7 +159,7 @@ export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 				<div class="flex items-center gap-2">
 					<span class="text-sm text-slate-500">{t`Type`}</span>
 					<Select.Root<string>
-						options={typeOptions()}
+						options={["", ...ARTIST_TYPES]}
 						value={props.artistTypeValue}
 						onChange={(value) => props.onArtistTypeChange(value ?? "")}
 						itemComponent={(optionProps) => (

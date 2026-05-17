@@ -62,7 +62,7 @@ function formatDateTime(value: string | null | undefined) {
 function imagePath(detail: ImageQueueDetail) {
 	const image = detail.image
 	if (!image) return
-	const dir = image.directory.replaceAll(/\/+$/g, "")
+	const dir = image.directory.replaceAll(/\/+$/gu, "")
 	if (!dir) return image.filename
 	return `${dir}/${image.filename}`
 }

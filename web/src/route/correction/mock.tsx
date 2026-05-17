@@ -333,8 +333,7 @@ function RouteComponent() {
 	return (
 		<>
 			<div class="fixed right-4 bottom-4 z-50 max-w-[calc(100vw-2rem)]">
-				<div
-					role="region"
+				<section
 					aria-label={t`Correction mock controls`}
 					class="flex max-w-[420px] flex-col gap-3 rounded-md border border-slate-300 bg-white/85 p-3 shadow-[0_30px_80px_-50px_rgba(0,0,0,0.35)] ring-1 ring-slate-200/60 backdrop-blur-md ring-inset"
 				>
@@ -407,6 +406,7 @@ function RouteComponent() {
 									</div>
 									<input
 										type="number"
+										aria-label={t`Compare ID`}
 										inputmode="numeric"
 										class={twMerge(
 											INPUT_LIKE_BASE_CLASS,
@@ -472,7 +472,7 @@ function RouteComponent() {
 							</div>
 						</div>
 					</Show>
-				</div>
+				</section>
 			</div>
 
 			<CorrectionDetailPage

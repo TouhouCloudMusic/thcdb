@@ -145,6 +145,7 @@ function CommentInput(props: CommentInputProps) {
 			<textarea
 				class={TEXTAREA_CLASS}
 				value={input.content()}
+				aria-label={props.placeholder}
 				onInput={(e) => input.setContent(e.currentTarget.value)}
 				disabled={input.isSubmitting()}
 				rows={3}
