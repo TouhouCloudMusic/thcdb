@@ -61,17 +61,34 @@ type CommentRenderGroup = {
 	replies: CommentRenderReply[]
 }
 
-function flattenCommentReplies(node: CommentRenderNode): CommentRenderReply[] {
+function CommentRenderNode_shouldRender(node: CommentRenderNode): boolean {
+	if (node.comment.state !== "Deleted") return true
+	return node.replies.some(CommentRenderNode_shouldRender)
+}
+
+function CommentRenderNode_flattenReplies(
+	node: CommentRenderNode,
+): CommentRenderReply[] {
 	const replies: CommentRenderReply[] = []
 	for (const reply of node.replies) {
+		if (!CommentRenderNode_shouldRender(reply)) continue
 		replies.push({
 			comment: reply.comment,
 			replyToName:
 				node.comment.parent_id == null ? undefined : node.comment.author.name,
 		})
-		replies.push(...flattenCommentReplies(reply))
+		replies.push(...CommentRenderNode_flattenReplies(reply))
 	}
 	return replies
+}
+
+function CommentRenderNode_toRenderGroup(
+	node: CommentRenderNode,
+): CommentRenderGroup {
+	return {
+		comment: node.comment,
+		replies: CommentRenderNode_flattenReplies(node),
+	}
 }
 
 function formatDate(isoString: string): string {
@@ -431,10 +448,9 @@ export function CommentThreadList(props: CommentThreadListProps) {
 			}
 		}
 
-		const groups: CommentRenderGroup[] = rootNodes.map((node) => ({
-			comment: node.comment,
-			replies: flattenCommentReplies(node),
-		}))
+		const groups: CommentRenderGroup[] = rootNodes
+			.filter(CommentRenderNode_shouldRender)
+			.map(CommentRenderNode_toRenderGroup)
 
 		return groups
 	})
@@ -448,10 +464,10 @@ export function CommentThreadList(props: CommentThreadListProps) {
 				<Match when={props.errorMessage && props.comments.length === 0}>
 					{(message) => <div class={props.statusClass}>{message()}</div>}
 				</Match>
-				<Match when={props.comments.length === 0}>
+				<Match when={commentGroups().length === 0}>
 					<div class={props.statusClass}>{props.emptyText}</div>
 				</Match>
-				<Match when={props.comments.length > 0}>
+				<Match when={commentGroups().length > 0}>
 					<>
 						<Show when={props.errorMessage}>
 							{(message) => <div class={props.statusClass}>{message()}</div>}
