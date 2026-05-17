@@ -90,7 +90,7 @@ msgstr "操作"
 
 #: src/view/label/explore.comp.tsx
 msgid "Active"
-msgstr "存续"
+msgstr "活动"
 
 #: src/view/user/Profile.tsx
 msgid "Activity"
@@ -599,7 +599,7 @@ msgstr "显示标题"
 #: src/view/label/explore.comp.tsx
 #: src/view/label/Info/index.tsx
 msgid "Dissolved"
-msgstr "溶解"
+msgstr "解散"
 
 #: src/view/label/edit/comp/LabelDateFields.tsx
 msgid "Dissolved date"
