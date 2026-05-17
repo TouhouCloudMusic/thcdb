@@ -9,7 +9,7 @@ describe("formatDuration", () => {
 		expect(format(undefined)).toBeUndefined()
 	})
 
-	it("should format duration of 0 ", () => {
+	it("should format duration of 0", () => {
 		expect(format(0)).toBe("0:00")
 		expect(format(0, { precision: Precision.Min })).toBe("0")
 		expect(format(0, { precision: Precision.Sec })).toBe("0:00")

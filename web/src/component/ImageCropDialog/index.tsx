@@ -287,7 +287,7 @@ export function Root(props: RootProps) {
 		const outputType = state.inputFileType
 		const outputExt = outputType === "image/jpeg" ? "jpg" : "png"
 
-		let blob: Blob | null = null
+		let blob: Blob | null
 		try {
 			blob = await new Promise<Blob | null>((resolve, reject) => {
 				try {

@@ -1,6 +1,6 @@
 import type { Artist } from "@thc/api"
 import * as fc from "fast-check"
-import { describe, it, expect } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { useArtistFormInitialValues } from "./useFormInitialValues"
 
@@ -71,11 +71,11 @@ const artistArb: fc.Arbitrary<Artist> = fc.record({
 	memberships: opt(fc.array(membershipArb)),
 })
 
-describe(useArtistFormInitialValues, () => {
+describe("artist form initialization", () => {
 	it("returns correct initial values for new artist", () => {
 		const result = useArtistFormInitialValues({ type: "new" })
 
-		expect(result).toEqual({
+		expect(result).toStrictEqual({
 			type: "Create",
 			description: "",
 			data: {
@@ -90,6 +90,7 @@ describe(useArtistFormInitialValues, () => {
 		})
 	})
 
+	// oxlint-disable-next-line vitest/prefer-expect-assertions
 	it("converts arrays to non-null arrays", () => {
 		fc.assert(
 			fc.property(artistArb, (artist) => {
@@ -104,37 +105,30 @@ describe(useArtistFormInitialValues, () => {
 		)
 	})
 
+	// oxlint-disable-next-line vitest/prefer-expect-assertions
 	it("preserves array lengths when arrays exist", () => {
 		fc.assert(
 			fc.property(artistArb, (artist) => {
 				const result = useArtistFormInitialValues({ type: "edit", artist })
 
-				if (artist.localized_names) {
-					expect(result.data.localized_names).toHaveLength(
-						artist.localized_names.length,
-					)
-				}
-				if (artist.aliases) {
-					expect(result.data.aliases).toHaveLength(artist.aliases.length)
-				}
-				if (artist.text_aliases) {
-					expect(result.data.text_aliases).toHaveLength(
-						artist.text_aliases.length,
-					)
-				}
-				if (artist.links) {
-					expect(result.data.links).toHaveLength(artist.links.length)
-				}
-				if (artist.memberships) {
-					expect(result.data.memberships).toHaveLength(
-						artist.memberships.length,
-					)
-				}
+				expect(result.data.localized_names).toHaveLength(
+					artist.localized_names?.length ?? 0,
+				)
+				expect(result.data.aliases).toHaveLength(artist.aliases?.length ?? 0)
+				expect(result.data.text_aliases).toHaveLength(
+					artist.text_aliases?.length ?? 0,
+				)
+				expect(result.data.links).toHaveLength(artist.links?.length ?? 0)
+				expect(result.data.memberships).toHaveLength(
+					artist.memberships?.length ?? 0,
+				)
 			}),
 		)
 	})
 
+	// oxlint-disable-next-line vitest/prefer-expect-assertions
 	it("converts date strings to Date objects when dates exist", () => {
+		// oxlint-disable vitest/no-conditional-expect
 		fc.assert(
 			fc.property(artistArb, (artist) => {
 				const result = useArtistFormInitialValues({ type: "edit", artist })
@@ -160,14 +154,17 @@ describe(useArtistFormInitialValues, () => {
 		)
 	})
 
+	// oxlint-disable-next-line vitest/prefer-expect-assertions
 	it("maintains data integrity - no information loss for reversible transformations", () => {
 		fc.assert(
 			fc.property(artistArb, (artist) => {
 				const result = useArtistFormInitialValues({ type: "edit", artist })
 
-				expect(result.data.aliases).toEqual(artist.aliases ?? [])
-				expect(result.data.text_aliases).toEqual(artist.text_aliases ?? [])
-				expect(result.data.links).toEqual(artist.links ?? [])
+				expect(result.data.aliases).toStrictEqual(artist.aliases ?? [])
+				expect(result.data.text_aliases).toStrictEqual(
+					artist.text_aliases ?? [],
+				)
+				expect(result.data.links).toStrictEqual(artist.links ?? [])
 			}),
 		)
 	})

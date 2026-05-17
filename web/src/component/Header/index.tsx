@@ -146,7 +146,6 @@ function SearchBar() {
 	return (
 		<form
 			class="ml-36 w-fit"
-			role="search"
 			onSubmit={submit}
 		>
 			<div
@@ -163,6 +162,7 @@ function SearchBar() {
 						inputRef = el
 					}}
 					type="search"
+					aria-label={t`Search artists, releases, songs`}
 					placeholder={t`Search artists, releases, songs…`}
 					class="mr-auto h-7 w-full rounded-xs bg-slate-100 pl-7 outline-transparent duration-200 hover:outline hover:outline-reimu-600 focus:bg-white focus:outline-[1.5px] focus:outline-reimu-600"
 				/>

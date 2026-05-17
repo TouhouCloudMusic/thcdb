@@ -203,6 +203,7 @@ function ReleaseCreditTracks(props: {
 							onChange={(e) => updateInput(trackIdx, e)}
 							class="h-4 w-4"
 							type="checkbox"
+							aria-label={renderTrackLabel(trackIdx)}
 						/>
 						<span>{renderTrackLabel(trackIdx)}</span>
 					</label>

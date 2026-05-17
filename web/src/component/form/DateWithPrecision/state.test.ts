@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import type { Store } from "./state"
 import { setDay, setMonth, setYear } from "./state"
 
-describe("DateWithPrecision state", () => {
+describe("date with precision state", () => {
 	it("limits year input to 4 digits", () => {
 		let s: Store = {}
 		s = setYear(s, "123456")

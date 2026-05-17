@@ -35,7 +35,10 @@ export function NewMusic() {
 										{t`幻想乡音乐人`}
 									</p>
 								</div>
-								<button class="hover:text-rose-600 p-2 text-tertiary">
+								<button
+									class="hover:text-rose-600 p-2 text-tertiary"
+									aria-label={t`Play track`}
+								>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
 										class="h-5 w-5"

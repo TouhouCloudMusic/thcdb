@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest"
 
 import { useSongFormInitialValues } from "./useFormInitialValues"
 
-describe(useSongFormInitialValues, () => {
+describe("song form initialization", () => {
 	it("returns correct initial values for new song", () => {
 		const result = useSongFormInitialValues({ type: "new" })
 
-		expect(result).toEqual({
+		expect(result).toStrictEqual({
 			type: "Create",
 			description: "",
 			data: {
@@ -53,7 +53,7 @@ describe(useSongFormInitialValues, () => {
 			song: songLike,
 		})
 
-		expect(result).toEqual({
+		expect(result).toStrictEqual({
 			type: "Update",
 			description: "",
 			data: {

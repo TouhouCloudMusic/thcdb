@@ -11,7 +11,7 @@ const THIS_YEAR = new Date().getFullYear()
 function createNumericInputSchema(maxDigits: number) {
 	return v.pipe(
 		v.string(),
-		v.regex(/^\d*$/),
+		v.regex(/^\d*$/u),
 		v.transform((value) => value.slice(0, maxDigits)),
 		v.transform((value) =>
 			value === "" ? undefined : Number.parseInt(value, 10),

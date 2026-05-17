@@ -23,11 +23,11 @@ const VerificationCode = v.pipe(
 	v.string(),
 	v.minLength(6, "Verification code must be 6 digits"),
 	v.maxLength(6, "Verification code must be 6 digits"),
-	v.regex(/^\d{6}$/, "Invalid verification code"),
+	v.regex(/^\d{6}$/u, "Invalid verification code"),
 )
 
-const PASSWORD_REGEX = new RegExp(USER_PASSWORD_REGEX_STR)
-const PASSWORD_WHITESPACE_REGEX = /[\s\u0000-\u001F\u007F]/
+const PASSWORD_REGEX = new RegExp(USER_PASSWORD_REGEX_STR, "u")
+const PASSWORD_WHITESPACE_REGEX = /[\s\u0000-\u001F\u007F]/u
 const Password = v.pipe(
 	v.string(),
 	v.minLength(

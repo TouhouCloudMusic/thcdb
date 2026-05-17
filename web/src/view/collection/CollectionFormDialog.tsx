@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
 import { useMutation } from "@tanstack/solid-query"
-import { createSignal, Show, untrack } from "solid-js"
+import { createSignal, createUniqueId, Show, untrack } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { Dialog } from "~/component/dialog"
@@ -21,6 +21,10 @@ type Props = {
 
 export function CollectionFormDialog(props: Props) {
 	const { t } = useLingui()
+	const formId = createUniqueId()
+	const nameId = `${formId}-name`
+	const descriptionId = `${formId}-description`
+	const isPublicId = `${formId}-is-public`
 	const [name, setName] = createSignal(
 		untrack(() => props.collection?.name ?? ""),
 	)
@@ -101,11 +105,16 @@ export function CollectionFormDialog(props: Props) {
 						class="flex flex-col gap-4"
 					>
 						<div class="flex flex-col gap-1">
-							<label class="mb-1 text-sm font-medium text-slate-700">
+							<label
+								for={nameId}
+								class="mb-1 text-sm font-medium text-slate-700"
+							>
 								{t`Name`}
 							</label>
 							<input
+								id={nameId}
 								type="text"
+								aria-label={t`Name`}
 								value={name()}
 								onInput={(e) => setName(e.currentTarget.value)}
 								class="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
@@ -115,10 +124,15 @@ export function CollectionFormDialog(props: Props) {
 						</div>
 
 						<div class="flex flex-col gap-1">
-							<label class="mb-1 text-sm font-medium text-slate-700">
+							<label
+								for={descriptionId}
+								class="mb-1 text-sm font-medium text-slate-700"
+							>
 								{t`Description`}
 							</label>
 							<textarea
+								id={descriptionId}
+								aria-label={t`Description`}
 								value={description()}
 								onInput={(e) => setDescription(e.currentTarget.value)}
 								class="h-24 resize-none rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
@@ -129,13 +143,14 @@ export function CollectionFormDialog(props: Props) {
 						<div class="mt-2 flex items-center gap-2">
 							<input
 								type="checkbox"
-								id="isPublic"
+								id={isPublicId}
+								aria-label={t`Make this collection public`}
 								checked={isPublic()}
 								onChange={(e) => setIsPublic(e.currentTarget.checked)}
 								class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
 							/>
 							<label
-								for="isPublic"
+								for={isPublicId}
 								class="text-sm text-slate-700"
 							>
 								{t`Make this collection public`}

@@ -102,4 +102,6 @@ type IsOk = Eq<
 		f: number[]
 	}
 >
+// TODO: 类型测试
+// oxlint-disable-next-line no-underscore-dangle
 const _isOk: IsOk = true

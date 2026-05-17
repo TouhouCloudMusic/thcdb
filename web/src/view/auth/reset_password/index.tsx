@@ -96,7 +96,7 @@ function createResetPasswordCodeSchema(
 		string(),
 		minLength(6, messages.length),
 		maxLength(6, messages.length),
-		regex(/^\d{6}$/, messages.invalid),
+		regex(/^\d{6}$/u, messages.invalid),
 	)
 }
 

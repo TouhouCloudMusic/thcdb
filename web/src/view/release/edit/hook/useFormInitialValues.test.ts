@@ -1,12 +1,12 @@
-import { describe, it, expect } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { useReleaseFormInitialValues } from "./useFormInitialValues"
 
-describe(useReleaseFormInitialValues, () => {
+describe("release form initialization", () => {
 	it("returns correct initial values for new release", () => {
 		const result = useReleaseFormInitialValues({ type: "new" })
 
-		expect(result).toEqual({
+		expect(result).toStrictEqual({
 			type: "Create",
 			description: "",
 			data: {
@@ -91,55 +91,50 @@ describe(useReleaseFormInitialValues, () => {
 			release: releaseLike,
 		})
 
-		// Dates are converted to Date objects with same precision
 		expect(result.data.release_date?.value).toBeInstanceOf(Date)
 		expect(result.data.release_date?.precision).toBe("Day")
 		expect(result.data.recording_date_start?.value).toBeInstanceOf(Date)
 		expect(result.data.recording_date_end?.value).toBeInstanceOf(Date)
 
-		// Localized titles map to language_id + title, preserving length
-		expect(result.data.localized_titles).toHaveLength(2)
-		expect(result.data.localized_titles[0]?.language_id).toBe(1)
-		expect(result.data.localized_titles[1]?.language_id).toBe(2)
-
-		// Artists become ids array
-		expect(result.data.artists).toEqual([10, 20])
-
-		// Events become ids array
-		expect(result.data.events).toEqual([1000, 2000])
-
-		// Catalog numbers pass through
-		expect(result.data.catalog_nums).toEqual([
-			{ catalog_number: "CAT-001", label_id: 1 },
-			{ catalog_number: "CAT-002", label_id: undefined },
-		])
-
-		// Credits are normalized to ids
-		expect(result.data.credits).toEqual([
-			{ artist_id: 10, role_id: 100, on: [1, 2] },
-		])
-
-		// Discs mapped to name shape
-		expect(result.data.discs).toEqual([{ name: "Disc A" }, { name: undefined }])
-
-		// Tracks normalized correctly
-		expect(result.data.tracks).toEqual([
-			{
-				artists: [10, 20],
-				disc_index: 1, // disc_id 2 -> index 1
-				display_title: undefined,
-				duration: 123000,
-				song_id: 1001,
-				track_number: "A1",
-			},
-			{
-				artists: [20],
-				disc_index: 0, // disc_id 1 -> index 0
-				display_title: undefined,
-				duration: undefined,
-				song_id: 1002,
-				track_number: undefined,
-			},
-		])
+		expect({
+			localizedTitles: result.data.localized_titles,
+			artists: result.data.artists,
+			events: result.data.events,
+			catalogNums: result.data.catalog_nums,
+			credits: result.data.credits,
+			discs: result.data.discs,
+			tracks: result.data.tracks,
+		}).toStrictEqual({
+			localizedTitles: [
+				{ language_id: 1, title: "EN" },
+				{ language_id: 2, title: "JP" },
+			],
+			artists: [10, 20],
+			events: [1000, 2000],
+			catalogNums: [
+				{ catalog_number: "CAT-001", label_id: 1 },
+				{ catalog_number: "CAT-002", label_id: undefined },
+			],
+			credits: [{ artist_id: 10, role_id: 100, on: [1, 2] }],
+			discs: [{ name: "Disc A" }, { name: undefined }],
+			tracks: [
+				{
+					artists: [10, 20],
+					disc_index: 1,
+					display_title: undefined,
+					duration: 123000,
+					song_id: 1001,
+					track_number: "A1",
+				},
+				{
+					artists: [20],
+					disc_index: 0,
+					display_title: undefined,
+					duration: undefined,
+					song_id: 1002,
+					track_number: undefined,
+				},
+			],
+		})
 	})
 })

@@ -359,6 +359,7 @@ export function AdminUsersPage() {
 								value.value = search().keyword ?? ""
 							}}
 							type="search"
+							aria-label={t`Search by username`}
 							name="keyword"
 							placeholder={t`Search by username`}
 							class="min-w-72 flex-1 rounded-sm border border-slate-300 bg-primary px-3 py-2 text-sm text-primary outline-none transition-colors focus:border-slate-400"
@@ -573,6 +574,7 @@ function RoleEditorDialog(props: RoleEditorDialogProps) {
 												<label class={roleEditorOptionClass(selected())}>
 													<input
 														type="checkbox"
+														aria-label={role}
 														class="mt-0.5 size-4 shrink-0 rounded-sm border-slate-300 accent-marisa-700"
 														checked={selected()}
 														disabled={props.dialog.isSaving}

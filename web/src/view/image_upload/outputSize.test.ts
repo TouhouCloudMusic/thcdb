@@ -29,7 +29,8 @@ function createDimensionRangeArb() {
 		}))
 }
 
-describe(computeOutputSize, () => {
+describe("output size computation", () => {
+	// oxlint-disable-next-line vitest/prefer-expect-assertions
 	it("keeps dimensions unchanged when they are already valid", () => {
 		const validInputArb = createDimensionRangeArb().chain((range) =>
 			fc.record({
@@ -47,7 +48,7 @@ describe(computeOutputSize, () => {
 
 		fc.assert(
 			fc.property(validInputArb, ({ rawWidth, rawHeight, range }) => {
-				expect(computeOutputSize(rawWidth, rawHeight, range)).toEqual({
+				expect(computeOutputSize(rawWidth, rawHeight, range)).toStrictEqual({
 					width: rawWidth,
 					height: rawHeight,
 				})
@@ -55,6 +56,7 @@ describe(computeOutputSize, () => {
 		)
 	})
 
+	// oxlint-disable-next-line vitest/prefer-expect-assertions
 	it("scales down proportionally instead of distorting", () => {
 		const exactDownscaleCaseArb = fc
 			.record({
@@ -87,7 +89,7 @@ describe(computeOutputSize, () => {
 			fc.property(
 				exactDownscaleCaseArb,
 				({ rawWidth, rawHeight, range, expected }) => {
-					expect(computeOutputSize(rawWidth, rawHeight, range)).toEqual(
+					expect(computeOutputSize(rawWidth, rawHeight, range)).toStrictEqual(
 						expected,
 					)
 				},
@@ -95,6 +97,7 @@ describe(computeOutputSize, () => {
 		)
 	})
 
+	// oxlint-disable-next-line vitest/prefer-expect-assertions
 	it("scales up proportionally to satisfy minimum dimensions", () => {
 		const exactUpscaleCaseArb = fc
 			.record({
@@ -132,7 +135,7 @@ describe(computeOutputSize, () => {
 			fc.property(
 				exactUpscaleCaseArb,
 				({ rawWidth, rawHeight, range, expected }) => {
-					expect(computeOutputSize(rawWidth, rawHeight, range)).toEqual(
+					expect(computeOutputSize(rawWidth, rawHeight, range)).toStrictEqual(
 						expected,
 					)
 				},
@@ -155,7 +158,7 @@ describe(computeOutputSize, () => {
 				width: { min: 333, max: 333 },
 				height: { min: 333, max: 333 },
 			}),
-		).toEqual({
+		).toStrictEqual({
 			width: 333,
 			height: 333,
 		})
@@ -167,12 +170,13 @@ describe(computeOutputSize, () => {
 				width: { min: 256, max: 4096 },
 				height: { min: 256, max: 4096 },
 			}),
-		).toEqual({
+		).toStrictEqual({
 			width: 256,
 			height: 4096,
 		})
 	})
 
+	// oxlint-disable-next-line vitest/prefer-expect-assertions
 	it("returns sizes within bounds whenever it succeeds", () => {
 		const positiveIntArb = createPositiveIntArb()
 		const dimensionRangeArb = createDimensionRangeArb()

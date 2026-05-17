@@ -79,6 +79,7 @@ const colors: Color[] = [
 	},
 ]
 
+// oxlint-disable-next-line no-underscore-dangle
 const _cssOverride = colors
 	.flatMap((color) =>
 		color.colors.map((hex, index) => ({

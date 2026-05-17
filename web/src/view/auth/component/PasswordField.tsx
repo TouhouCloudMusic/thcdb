@@ -15,12 +15,13 @@ import { callHandlerUnion } from "~/utils/dom/event"
 
 import { FieldLayout } from "./FieldLayout"
 
-const WHITESPACE_REGEX = /\s/
+const WHITESPACE_REGEX = /\s/u
 const PASSWORD_ALLOWED_CHARS_REGEX = new RegExp(
-	USER_PASSWORD_REGEX_STR.replace(/\{\d+,\d+\}/, "*"),
+	USER_PASSWORD_REGEX_STR.replace(/\{\d+,\d+\}/u, "*"),
+	"u",
 )
 const PASSWORD_ALLOWED_SYMBOLS = (() => {
-	const m = /^\^\[([^\]]+)\]/.exec(USER_PASSWORD_REGEX_STR)
+	const m = /^\^\[([^\]]+)\]/u.exec(USER_PASSWORD_REGEX_STR)
 	if (!m) return "`~!@#$%^&*()-_=+"
 
 	const charset = m[1]

@@ -1,4 +1,3 @@
-// oxlint-disable no-non-null-asserted-nullish-coalescing
 // oxlint-disable complexity
 export * as ObjExt from "./object"
 export * as StrExt from "./string"

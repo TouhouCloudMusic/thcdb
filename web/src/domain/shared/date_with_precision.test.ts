@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { DateWithPrecision } from "~/domain/shared"
 
-describe("DateWithPrecision.toInput", () => {
+describe("date with precision to input", () => {
 	it("returns undefined for nil", () => {
 		expect(DateWithPrecision.toInput(undefined)).toBeUndefined()
 	})
