@@ -67,7 +67,7 @@ function EventInfoHeader() {
 					{ctx.event.name}
 				</h1>
 				<p class="tracking-wide text-tertiary">
-					{ctx.event.short_description ?? "Short description is not provided"}
+					{ctx.event.short_description ?? t`Short description is not provided`}
 				</p>
 			</header>
 			<div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">

@@ -13,6 +13,23 @@ msgstr ""
 "Last-Translator: \n"
 "Language-Team: \n"
 
+#: src/view/artist/edit/comp/ArtistType.tsx
+msgid "-- Please select artist type --"
+msgstr "-- Please select artist type --"
+
+#: src/view/release/edit/comp/ReleaseTypeField.tsx
+msgid "-- Please select release type --"
+msgstr "-- Please select release type --"
+
+#: src/view/tag/edit/comp/TagTypeField.tsx
+msgid "-- Please Select Type --"
+msgstr "-- Please Select Type --"
+
+#: src/view/song/edit/comp/SongRelationsField.tsx
+#: src/view/tag/edit/comp/TagRelationsField.tsx
+msgid "-- Select relation type --"
+msgstr "-- Select relation type --"
+
 #: src/view/comment/CommentThread.tsx
 msgid "[deleted]"
 msgstr "[deleted]"
@@ -103,6 +120,10 @@ msgstr "Add tag"
 msgid "Add Tag"
 msgstr "Add Tag"
 
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Add Tenure"
+msgstr "Add Tenure"
+
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/AddToUserCollectionButton.tsx
 msgid "Add to Collection"
@@ -144,6 +165,7 @@ msgstr "Aliases"
 
 #: src/view/artist/explore.comp.tsx
 #: src/view/image_queue/manage.tsx
+#: src/view/release/explore/filter.tsx
 #: src/view/song/explore.tsx
 #: src/view/user/Profile.tsx
 msgid "All"
@@ -217,6 +239,7 @@ msgstr "Are you sure you want to remove this item from the collection?"
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/Homepage/component/ArtistCard.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/search/index.tsx
@@ -317,7 +340,6 @@ msgstr "Circles & solo creators"
 msgid "City"
 msgstr "City"
 
-#: src/route/correction/mock.tsx
 #: src/view/tag/TagTree.tsx
 msgid "Collapse"
 msgstr "Collapse"
@@ -384,10 +406,6 @@ msgstr "Correction approved"
 msgid "Correction Description"
 msgstr "Correction Description"
 
-#: src/route/correction/mock.tsx
-msgid "Correction mock controls"
-msgstr "Correction mock controls"
-
 #. placeholder {0}: entityTypeText()
 #. placeholder {1}: props.correction.entity_name
 #: src/view/correction/Detail.tsx
@@ -397,6 +415,11 @@ msgstr "Correction of {0} <0>{1}</0>"
 #: src/view/correction/Detail.tsx
 msgid "Correction rejected"
 msgstr "Correction rejected"
+
+#. placeholder {0}: correctionHistory().length
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
+msgid "Corrections · {0}"
+msgstr "Corrections · {0}"
 
 #: src/component/form/Location/index.tsx
 msgid "Country / Region"
@@ -424,6 +447,10 @@ msgstr "Create an account to continue."
 #: src/view/artist/explore.tsx
 msgid "Create artist"
 msgstr "Create artist"
+
+#: src/view/artist/edit/index.tsx
+msgid "Create Artist"
+msgstr "Create Artist"
 
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "Create Collection"
@@ -481,6 +508,7 @@ msgid "Credit role"
 msgstr "Credit role"
 
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
+#: src/view/release/Info/ReleaseInfoTabs.tsx
 #: src/view/song/edit/comp/SongCreditsField.tsx
 #: src/view/song/Info/index.tsx
 msgid "Credits"
@@ -659,6 +687,7 @@ msgstr "Enter your username or email"
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/search/index.tsx
 msgid "Event"
 msgstr "Event"
@@ -669,7 +698,6 @@ msgstr "Event"
 msgid "Events"
 msgstr "Events"
 
-#: src/route/correction/mock.tsx
 #: src/view/tag/TagTree.tsx
 msgid "Expand"
 msgstr "Expand"
@@ -707,6 +735,10 @@ msgstr "Explore Releases"
 #: src/view/song/explore.tsx
 msgid "Explore Songs"
 msgstr "Explore Songs"
+
+#: src/view/comment/CommentThread.tsx
+msgid "Failed to delete comment"
+msgstr "Failed to delete comment"
 
 #: src/route/collection/$id.tsx
 msgid "Failed to load collection details."
@@ -755,6 +787,10 @@ msgstr "File is too small. Minimum is {minimum}."
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "File size"
 msgstr "File size"
+
+#: src/component/Header/index.tsx
+msgid "Filter"
+msgstr "Filter"
 
 #: src/view/user/Profile.tsx
 msgid "Filter collections"
@@ -833,6 +869,10 @@ msgstr "HANDLED / REVERTED"
 #: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
 msgid "Handled At"
 msgstr "Handled At"
+
+#: src/view/NotFound.tsx
+msgid "Hey you, lost one. why you are here? <0>You should go back...</0>"
+msgstr "Hey you, lost one. why you are here? <0>You should go back...</0>"
 
 #: src/view/entity_tags/EntityTagAddDialog.tsx
 #: src/view/entity_tags/EntityTagsSection.tsx
@@ -913,6 +953,7 @@ msgstr "Join year cannot be the same as previous leave year"
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/search/index.tsx
 msgid "Label"
 msgstr "Label"
@@ -968,6 +1009,10 @@ msgstr "Links"
 #: src/view/user/Profile.tsx
 msgid "Load more"
 msgstr "Load more"
+
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
+msgid "Load More"
+msgstr "Load More"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Loading collections..."
@@ -1251,6 +1296,10 @@ msgstr "No labels found."
 msgid "No more entries"
 msgstr "No more entries"
 
+#: src/view/search/index.tsx
+msgid "No more results"
+msgstr "No more results"
+
 #: src/view/release/explore/list.tsx
 msgid "No releases found"
 msgstr "No releases found"
@@ -1294,6 +1343,10 @@ msgstr "No tags found."
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "No tags yet"
 msgstr "No tags yet"
+
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "No tracks under this disc."
+msgstr "No tracks under this disc."
 
 #: src/view/admin/users.tsx
 msgid "No users found"
@@ -1377,6 +1430,10 @@ msgstr "PENDING"
 msgid "Pending correction exists"
 msgstr "Pending correction exists"
 
+#: src/view/Homepage/component/NewMusic.tsx
+msgid "Play track"
+msgstr "Play track"
+
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Please sign in to add items to a collection."
 msgstr "Please sign in to add items to a collection."
@@ -1384,6 +1441,11 @@ msgstr "Please sign in to add items to a collection."
 #: src/component/__legacy/chart/index.tsx
 msgid "Positive:"
 msgstr "Positive:"
+
+#: src/view/artist/explore.comp.tsx
+#: src/view/label/explore.comp.tsx
+msgid "Present"
+msgstr "Present"
 
 #: src/view/image_queue/detail.tsx
 msgid "Prev"
@@ -1493,6 +1555,7 @@ msgstr "Relations"
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/search/index.tsx
 #: src/view/song/Info/index.tsx
@@ -1613,6 +1676,10 @@ msgstr "Save bio"
 msgid "Save failed."
 msgstr "Save failed."
 
+#: src/component/form/ImageCropper.tsx
+msgid "Save Image"
+msgstr "Save Image"
+
 #: src/view/admin/users.tsx
 msgid "Save roles"
 msgstr "Save roles"
@@ -1624,6 +1691,10 @@ msgstr "Saving…"
 #: src/component/form/SearchDialog/ArtistSearchDialog.tsx
 msgid "Search Artist"
 msgstr "Search Artist"
+
+#: src/component/Header/index.tsx
+msgid "Search artists, releases, songs"
+msgstr "Search artists, releases, songs"
 
 #: src/component/Header/index.tsx
 msgid "Search artists, releases, songs…"
@@ -1706,6 +1777,10 @@ msgstr "Select artist"
 msgid "Select image"
 msgstr "Select image"
 
+#: src/component/form/stateful/LanguageCombobox.tsx
+msgid "Select language"
+msgstr "Select language"
+
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 #: src/view/song/edit/comp/SongCreditsField.tsx
 msgid "Select role"
@@ -1740,6 +1815,10 @@ msgstr "Settings"
 #: src/view/tag/edit/comp/TagShortDescription.tsx
 msgid "Short Description"
 msgstr "Short Description"
+
+#: src/view/event/Info/index.tsx
+msgid "Short description is not provided"
+msgstr "Short description is not provided"
 
 #: src/view/auth/reset_password/index.tsx
 msgid "sign in"
@@ -1783,6 +1862,7 @@ msgstr "Something went wrong"
 #: src/route/song-lyrics/$id.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/search/index.tsx
 msgid "Song"
 msgstr "Song"
@@ -1871,6 +1951,7 @@ msgstr "Sync your contributions across devices"
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/search/index.tsx
 msgid "Tag"
 msgstr "Tag"
@@ -1905,6 +1986,14 @@ msgstr "Tenures"
 #: src/view/artist/edit/comp/TextAliases.tsx
 msgid "Text Aliases"
 msgstr "Text Aliases"
+
+#: src/view/NotFound.tsx
+msgid "The page you are looking for does not exist."
+msgstr "The page you are looking for does not exist."
+
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
+msgid "This Artist has no releases yet, you can upload them on <0>Upload New Release</0>"
+msgstr "This Artist has no releases yet, you can upload them on <0>Upload New Release</0>"
 
 #: src/component/dialog/ResetFieldDialog.tsx
 msgid "This cannot be undone."
@@ -1990,6 +2079,7 @@ msgid "Track number"
 msgstr "Track number"
 
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
+#: src/view/release/Info/ReleaseInfoTabs.tsx
 msgid "Tracks"
 msgstr "Tracks"
 
@@ -2000,6 +2090,10 @@ msgstr "Tracks & arrangements"
 #: src/view/Homepage/component/TrendingTagsCard.tsx
 msgid "Trending Tags"
 msgstr "Trending Tags"
+
+#: src/component/feature/entity_explore/EmptyExplorePlaceholder.tsx
+msgid "Try adjusting the filters, or <0>create</0> the first one."
+msgstr "Try adjusting the filters, or <0>create</0> the first one."
 
 #: src/view/artist/explore.comp.tsx
 #: src/view/correction/Detail.tsx
@@ -2018,7 +2112,9 @@ msgstr "Type a keyword to search."
 msgid "Unfollow"
 msgstr "Unfollow"
 
+#: src/view/artist/explore.comp.tsx
 #: src/view/image_queue/detail.tsx
+#: src/view/label/explore.comp.tsx
 msgid "Unknown"
 msgstr "Unknown"
 
@@ -2037,6 +2133,11 @@ msgstr "Unknown error"
 #: src/view/Homepage/component/UpcomingEventsCard.tsx
 msgid "Upcoming Events"
 msgstr "Upcoming Events"
+
+#. placeholder {0}: entityLabel()
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
+msgid "Update {0}"
+msgstr "Update {0}"
 
 #: src/view/user/edit_profile/index.tsx
 msgid "Update avatar"

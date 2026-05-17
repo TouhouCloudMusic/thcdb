@@ -178,7 +178,7 @@ function RelationRow(props: RelationRowProps) {
 	])
 	const relationTypeLabel = (value: string) => {
 		const label = relationTypeNameById().get(value) ?? value
-		return label === "" ? "-- Select relation type --" : label
+		return label === "" ? t`-- Select relation type --` : label
 	}
 
 	return (

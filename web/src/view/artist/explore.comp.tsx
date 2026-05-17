@@ -24,9 +24,12 @@ const getArtistAvatarText = (artist: Artist) => {
 	return value.slice(0, 1).toUpperCase()
 }
 
-const formatArtistDateRange = (artist: Artist) => {
-	const start = DateWithPrecision.display(artist.start_date) ?? "Unknown"
-	const end = DateWithPrecision.display(artist.end_date) ?? "Present"
+const formatArtistDateRange = (
+	artist: Artist,
+	fallback: { unknown: string; present: string },
+) => {
+	const start = DateWithPrecision.display(artist.start_date) ?? fallback.unknown
+	const end = DateWithPrecision.display(artist.end_date) ?? fallback.present
 	return `${start} - ${end}`
 }
 
@@ -57,6 +60,7 @@ type ArtistItemProps = {
 }
 
 export const ArtistItem: Component<ArtistItemProps> = (props) => {
+	const { t } = useLingui()
 	const i18n = useI18N()
 	const profileImageUrl = () => imgUrl(props.artist.profile_image_url)
 
@@ -120,7 +124,12 @@ export const ArtistItem: Component<ArtistItemProps> = (props) => {
 					</div>
 
 					<div class="mt-1 text-sm text-slate-500">
-						<span>{formatArtistDateRange(props.artist)}</span>
+						<span>
+							{formatArtistDateRange(props.artist, {
+								unknown: t`Unknown`,
+								present: t`Present`,
+							})}
+						</span>
 					</div>
 				</div>
 			</div>

@@ -1,4 +1,3 @@
-import { useLingui } from "@lingui/solid/macro"
 import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import type {
 	CorrectionDetail,
@@ -260,7 +259,6 @@ function seedCorrectionQueries(scenarioKey?: ScenarioKey) {
 }
 
 function RouteComponent() {
-	const { t } = useLingui()
 	const search = Route.useSearch()
 	const navigate = useNavigate()
 	const [collapsed, setCollapsed] = createSignal(false)
@@ -334,7 +332,7 @@ function RouteComponent() {
 		<>
 			<div class="fixed right-4 bottom-4 z-50 max-w-[calc(100vw-2rem)]">
 				<section
-					aria-label={t`Correction mock controls`}
+					aria-label="Correction mock controls"
 					class="flex max-w-[420px] flex-col gap-3 rounded-md border border-slate-300 bg-white/85 p-3 shadow-[0_30px_80px_-50px_rgba(0,0,0,0.35)] ring-1 ring-slate-200/60 backdrop-blur-md ring-inset"
 				>
 					<div class="flex items-center justify-between gap-3">
@@ -360,7 +358,7 @@ function RouteComponent() {
 							aria-expanded={!collapsed()}
 							onClick={toggleCollapsed}
 						>
-							{collapsed() ? t`Expand` : t`Collapse`}
+							{collapsed() ? "Expand" : "Collapse"}
 						</Button>
 					</div>
 
@@ -406,7 +404,7 @@ function RouteComponent() {
 									</div>
 									<input
 										type="number"
-										aria-label={t`Compare ID`}
+										aria-label="Compare ID"
 										inputmode="numeric"
 										class={twMerge(
 											INPUT_LIKE_BASE_CLASS,

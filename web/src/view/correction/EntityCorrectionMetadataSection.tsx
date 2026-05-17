@@ -1,3 +1,4 @@
+import { Trans, useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { CorrectionHistoryItem } from "@thc/api"
 import { CorrectionQueryOption } from "@thc/query"
@@ -11,7 +12,7 @@ import { Link } from "~/component/atomic/Link"
 import { ButtonClass_new } from "~/component/atomic/button"
 
 import { EntityContributors } from "./EntityContributors"
-import { ENTITY_LABEL_MAP, ENTITY_PAGE_ROUTE_MAP } from "./entityMap"
+import { ENTITY_PAGE_ROUTE_MAP } from "./entityMap"
 import type { EntityDetailType } from "./entityMap"
 
 const LINK_CLASS = twMerge(
@@ -31,6 +32,7 @@ type EntityCorrectionMetadataSectionProps = {
 export function EntityCorrectionMetadataSection(
 	props: EntityCorrectionMetadataSectionProps,
 ) {
+	const { t } = useLingui()
 	const providedCorrectionHistory = untrack(() => props.correctionHistory)
 	const correctionHistoryQuery = providedCorrectionHistory
 		? undefined
@@ -40,7 +42,28 @@ export function EntityCorrectionMetadataSection(
 	const correctionsRoute = () =>
 		ENTITY_PAGE_ROUTE_MAP[props.entityType].corrections
 	const editRoute = () => ENTITY_PAGE_ROUTE_MAP[props.entityType].edit
-	const entityLabel = () => ENTITY_LABEL_MAP[props.entityType]
+	const entityLabel = () => {
+		switch (props.entityType) {
+			case "artist": {
+				return t`Artist`
+			}
+			case "label": {
+				return t`Label`
+			}
+			case "release": {
+				return t`Release`
+			}
+			case "song": {
+				return t`Song`
+			}
+			case "tag": {
+				return t`Tag`
+			}
+			case "event": {
+				return t`Event`
+			}
+		}
+	}
 	const correctionHistory = () =>
 		providedCorrectionHistory ?? correctionHistoryQuery?.data ?? []
 
@@ -61,7 +84,7 @@ export function EntityCorrectionMetadataSection(
 					class={LINK_CLASS}
 					underline={false}
 				>
-					Corrections · {correctionHistory().length}
+					<Trans>Corrections · {correctionHistory().length}</Trans>
 				</Link>
 				<Link
 					to={editRoute()}
@@ -69,7 +92,7 @@ export function EntityCorrectionMetadataSection(
 					class={LINK_CLASS}
 					underline={false}
 				>
-					Update {entityLabel()}
+					{t`Update ${entityLabel()}`}
 				</Link>
 				{props.trailingAction}
 			</div>

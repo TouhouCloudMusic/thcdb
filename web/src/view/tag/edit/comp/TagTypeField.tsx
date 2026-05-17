@@ -1,5 +1,5 @@
 import { Field } from "@formisch/solid"
-import { useLingui } from "@lingui/solid/macro"
+import { Trans, useLingui } from "@lingui/solid/macro"
 import type { TagType } from "@thc/api"
 import { For } from "solid-js"
 import { twMerge } from "tailwind-merge"
@@ -11,9 +11,6 @@ import { useTagForm } from "../context"
 const TAG_TYPES: TagType[] = ["Descriptor", "Genre", "Movement", "Scene"]
 
 const TAG_TYPE_VALUE_OPTIONS: ("" | TagType)[] = ["", ...TAG_TYPES]
-
-const getTypeLabel = (value: string) =>
-	value === "" ? "-- Please Select Type --" : value
 
 type Props = {
 	class?: string
@@ -30,7 +27,9 @@ export function TagFormTypeField(props: Props) {
 		>
 			{(field) => (
 				<div class={twMerge("flex flex-col", props.class)}>
-					<FormComp.Label>{t`Tag Type`}</FormComp.Label>
+					<FormComp.Label>
+						<Trans>Tag Type</Trans>
+					</FormComp.Label>
 					<Select.Root<"" | TagType>
 						name={field.props.name}
 						value={field.input ?? ""}
@@ -41,7 +40,9 @@ export function TagFormTypeField(props: Props) {
 						options={TAG_TYPE_VALUE_OPTIONS}
 						itemComponent={(itemProps) => (
 							<Select.Item item={itemProps.item}>
-								{getTypeLabel(itemProps.item.rawValue)}
+								{itemProps.item.rawValue === ""
+									? t`-- Please Select Type --`
+									: itemProps.item.rawValue}
 							</Select.Item>
 						)}
 					>
@@ -53,7 +54,12 @@ export function TagFormTypeField(props: Props) {
 						/>
 						<Select.Trigger>
 							<Select.Value<string>>
-								{(state) => getTypeLabel(state.selectedOption())}
+								{(state) => {
+									const selectedOption = state.selectedOption()
+									return selectedOption === ""
+										? t`-- Please Select Type --`
+										: selectedOption
+								}}
 							</Select.Value>
 							<Select.Icon />
 						</Select.Trigger>

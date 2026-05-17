@@ -23,6 +23,7 @@ export default defineConfig({
 				"**/*.stories.ts",
 				"**/*.stories.tsx",
 				"src/hey-api/**",
+				"src/route/correction/mock.tsx",
 			],
 		},
 	],

@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/solid/macro"
 import type { Component } from "solid-js"
 import { Show } from "solid-js"
 
@@ -46,14 +47,16 @@ export const EmptyExplorePlaceholder: Component<Props> = (props) => {
 						<Show when={props.action}>
 							{(action) => (
 								<p class="mt-1 text-sm text-secondary">
-									Try adjusting the filters, or{" "}
-									<Link
-										to={action().to}
-										class="underline"
-									>
-										create
-									</Link>{" "}
-									the first one.
+									<Trans>
+										Try adjusting the filters, or{" "}
+										<Link
+											to={action().to}
+											class="underline"
+										>
+											create
+										</Link>{" "}
+										the first one.
+									</Trans>
 								</p>
 							)}
 						</Show>

@@ -34,9 +34,6 @@ const TAG_RELATION_TYPE_OPTIONS: ("" | TagRelationType)[] = [
 	...TAG_RELATION_TYPES,
 ]
 
-const getRelationTypeLabel = (value: string) =>
-	value === "" ? "-- Select relation type --" : value
-
 export function TagFormRelationsField(props: Props) {
 	const { t } = useLingui()
 	const { formStore, tag } = useTagForm()
@@ -181,7 +178,9 @@ function RelationRow(props: RelationRowProps) {
 							options={TAG_RELATION_TYPE_OPTIONS}
 							itemComponent={(itemProps) => (
 								<Select.Item item={itemProps.item}>
-									{getRelationTypeLabel(itemProps.item.rawValue)}
+									{itemProps.item.rawValue === ""
+										? t`-- Select relation type --`
+										: itemProps.item.rawValue}
 								</Select.Item>
 							)}
 						>
@@ -193,7 +192,12 @@ function RelationRow(props: RelationRowProps) {
 							/>
 							<Select.Trigger class="w-full">
 								<Select.Value<"" | TagRelationType>>
-									{(state) => getRelationTypeLabel(state.selectedOption())}
+									{(state) => {
+										const selectedOption = state.selectedOption()
+										return selectedOption === ""
+											? t`-- Select relation type --`
+											: selectedOption
+									}}
 								</Select.Value>
 								<Select.Icon />
 							</Select.Trigger>

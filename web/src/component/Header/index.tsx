@@ -1,5 +1,5 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
-import { useLingui } from "@lingui/solid/macro"
+import { Trans, useLingui } from "@lingui/solid/macro"
 import { Link, useNavigate } from "@tanstack/solid-router"
 import type { UserProfile } from "@thc/api"
 import {
@@ -172,7 +172,7 @@ function SearchBar() {
 					<div class="absolute left-0 top-full z-50 mt-2 w-full rounded-sm border border-slate-200 bg-white p-2 shadow-md">
 						<div class="flex items-center justify-between gap-3">
 							<div class="text-[11px] font-medium tracking-[0.18em] text-slate-500">
-								FILTER
+								<Trans>Filter</Trans>
 							</div>
 							<Select.Root
 								options={ENTITY_FILTER_OPTIONS}

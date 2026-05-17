@@ -13,13 +13,30 @@ msgstr ""
 "Last-Translator: \n"
 "Language-Team: \n"
 
+#: src/view/artist/edit/comp/ArtistType.tsx
+msgid "-- Please select artist type --"
+msgstr "-- 请选择艺术家类型 --"
+
+#: src/view/release/edit/comp/ReleaseTypeField.tsx
+msgid "-- Please select release type --"
+msgstr "-- 请选择发行类型 --"
+
+#: src/view/tag/edit/comp/TagTypeField.tsx
+msgid "-- Please Select Type --"
+msgstr "-- 请选择类型 --"
+
+#: src/view/song/edit/comp/SongRelationsField.tsx
+#: src/view/tag/edit/comp/TagRelationsField.tsx
+msgid "-- Select relation type --"
+msgstr "-- 选择关系类型 --"
+
 #: src/view/comment/CommentThread.tsx
 msgid "[deleted]"
 msgstr "[已删除]"
 
 #: src/view/artist/discover.tsx
 msgid "[UNIMPLEMENTED] Artist"
-msgstr "[未实现]艺人"
+msgstr "[未实现]艺术家"
 
 #: src/view/chart/discover.tsx
 msgid "[UNIMPLEMENTED] Chart"
@@ -93,7 +110,7 @@ msgstr "添加光盘"
 
 #: src/view/auth/component/AuthLeftPanel.tsx
 msgid "Add missing entries (artists, releases, songs, events)"
-msgstr "添加缺少的条目（艺人、发行、歌曲、活动）"
+msgstr "添加缺少的条目（艺术家、发行、歌曲、活动）"
 
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Add tag"
@@ -102,6 +119,10 @@ msgstr "添加标签"
 #: src/view/entity_tags/EntityTagAddDialog.tsx
 msgid "Add Tag"
 msgstr "添加标签"
+
+#: src/view/artist/edit/comp/Membership/tenure.tsx
+msgid "Add Tenure"
+msgstr "添加任期"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/AddToUserCollectionButton.tsx
@@ -144,6 +165,7 @@ msgstr "别名"
 
 #: src/view/artist/explore.comp.tsx
 #: src/view/image_queue/manage.tsx
+#: src/view/release/explore/filter.tsx
 #: src/view/song/explore.tsx
 #: src/view/user/Profile.tsx
 msgid "All"
@@ -217,15 +239,16 @@ msgstr "确定要从收藏中移除此条目吗？"
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/Homepage/component/ArtistCard.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/search/index.tsx
 msgid "Artist"
-msgstr "艺人"
+msgstr "艺术家"
 
 #: src/view/artist/edit/comp/ArtistType.tsx
 msgid "Artist Type"
-msgstr "艺人类型"
+msgstr "艺术家类型"
 
 #: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/Homepage/component/HomeHero.tsx
@@ -233,7 +256,7 @@ msgstr "艺人类型"
 #: src/view/search/index.tsx
 #: src/view/song/edit/comp/SongArtistsField.tsx
 msgid "Artists"
-msgstr "艺人"
+msgstr "艺术家"
 
 #: src/component/feature/entity_explore/OrderBySelect.tsx
 msgid "Ascending"
@@ -317,7 +340,6 @@ msgstr "社团与个人创作者"
 msgid "City"
 msgstr "城市"
 
-#: src/route/correction/mock.tsx
 #: src/view/tag/TagTree.tsx
 msgid "Collapse"
 msgstr "折叠"
@@ -384,10 +406,6 @@ msgstr "更正已批准"
 msgid "Correction Description"
 msgstr "更正说明"
 
-#: src/route/correction/mock.tsx
-msgid "Correction mock controls"
-msgstr "校正模拟控件"
-
 #. placeholder {0}: entityTypeText()
 #. placeholder {1}: props.correction.entity_name
 #: src/view/correction/Detail.tsx
@@ -397,6 +415,11 @@ msgstr "更正对象：{0} <0>{1}</0>"
 #: src/view/correction/Detail.tsx
 msgid "Correction rejected"
 msgstr "更正已拒绝"
+
+#. placeholder {0}: correctionHistory().length
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
+msgid "Corrections · {0}"
+msgstr "更正 · {0}"
 
 #: src/component/form/Location/index.tsx
 msgid "Country / Region"
@@ -423,7 +446,11 @@ msgstr "创建账号以继续。"
 
 #: src/view/artist/explore.tsx
 msgid "Create artist"
-msgstr "创建艺人"
+msgstr "创建艺术家"
+
+#: src/view/artist/edit/index.tsx
+msgid "Create Artist"
+msgstr "创建艺术家"
 
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "Create Collection"
@@ -481,6 +508,7 @@ msgid "Credit role"
 msgstr "署名职能"
 
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
+#: src/view/release/Info/ReleaseInfoTabs.tsx
 #: src/view/song/edit/comp/SongCreditsField.tsx
 #: src/view/song/Info/index.tsx
 msgid "Credits"
@@ -595,7 +623,7 @@ msgstr "编辑"
 
 #: src/view/artist/edit/index.tsx
 msgid "Edit Artist"
-msgstr "编辑艺人"
+msgstr "编辑艺术家"
 
 #: src/view/collection/CollectionDetail.tsx
 #: src/view/collection/CollectionFormDialog.tsx
@@ -624,7 +652,7 @@ msgstr "编辑歌曲"
 
 #: src/view/tag/edit/index.tsx
 msgid "Edit Tag"
-msgstr "修改标签"
+msgstr "编辑标签"
 
 #: src/view/user/Profile.tsx
 msgid "Edits"
@@ -659,6 +687,7 @@ msgstr "输入你的用户名或邮箱"
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/search/index.tsx
 msgid "Event"
 msgstr "活动"
@@ -669,7 +698,6 @@ msgstr "活动"
 msgid "Events"
 msgstr "活动"
 
-#: src/route/correction/mock.tsx
 #: src/view/tag/TagTree.tsx
 msgid "Expand"
 msgstr "展开"
@@ -682,7 +710,7 @@ msgstr "浏览"
 
 #: src/view/artist/explore.tsx
 msgid "Explore Artists"
-msgstr "浏览艺人"
+msgstr "浏览艺术家"
 
 #: src/view/Homepage/component/HomeHero.tsx
 msgid "Explore doujin music"
@@ -707,6 +735,10 @@ msgstr "浏览发行"
 #: src/view/song/explore.tsx
 msgid "Explore Songs"
 msgstr "探索歌曲"
+
+#: src/view/comment/CommentThread.tsx
+msgid "Failed to delete comment"
+msgstr "删除评论失败"
 
 #: src/route/collection/$id.tsx
 msgid "Failed to load collection details."
@@ -755,6 +787,10 @@ msgstr "文件太小。最小为 {minimum}。"
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "File size"
 msgstr "文件大小"
+
+#: src/component/Header/index.tsx
+msgid "Filter"
+msgstr "筛选"
 
 #: src/view/user/Profile.tsx
 msgid "Filter collections"
@@ -833,6 +869,10 @@ msgstr "已处理 / 已还原"
 #: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
 msgid "Handled At"
 msgstr "处理时间"
+
+#: src/view/NotFound.tsx
+msgid "Hey you, lost one. why you are here? <0>You should go back...</0>"
+msgstr "迷路了吗？<0>返回首页...</0>"
 
 #: src/view/entity_tags/EntityTagAddDialog.tsx
 #: src/view/entity_tags/EntityTagsSection.tsx
@@ -913,6 +953,7 @@ msgstr "入职年份不能与上一休假年份相同"
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/search/index.tsx
 msgid "Label"
 msgstr "厂牌"
@@ -939,7 +980,7 @@ msgstr "最后一页"
 
 #: src/view/Homepage/component/LatestArtistsCard.tsx
 msgid "Latest Artists"
-msgstr "最新艺人"
+msgstr "最新艺术家"
 
 #: src/view/Homepage/index.tsx
 msgid "Latest Releases"
@@ -967,6 +1008,10 @@ msgstr "链接"
 #: src/view/comment/CommentThread.tsx
 #: src/view/user/Profile.tsx
 msgid "Load more"
+msgstr "加载更多"
+
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
+msgid "Load More"
 msgstr "加载更多"
 
 #: src/view/collection/AddToCollectionDialog.tsx
@@ -1152,11 +1197,11 @@ msgstr "暂无动态"
 
 #: src/view/artist/explore.comp.tsx
 msgid "No artists found"
-msgstr "未找到艺人。"
+msgstr "未找到艺术家。"
 
 #: src/view/search/index.tsx
 msgid "No artists found."
-msgstr "未找到艺人。"
+msgstr "未找到艺术家。"
 
 #: src/view/user/Profile.tsx
 msgid "No biography provided."
@@ -1199,7 +1244,7 @@ msgstr "暂无评论。"
 #: src/view/release/explore/ReleaseItems.tsx
 #: src/view/release/Info/comp/ReleaseInfoCoverImage.tsx
 msgid "No cover art"
-msgstr "没有 cover art"
+msgstr "没有封面图"
 
 #: src/view/Homepage/component/HomeEmptySlot.tsx
 msgid "No data"
@@ -1251,6 +1296,10 @@ msgstr "未找到标签。"
 msgid "No more entries"
 msgstr "没有更多条目了"
 
+#: src/view/search/index.tsx
+msgid "No more results"
+msgstr "没有更多结果"
+
 #: src/view/release/explore/list.tsx
 msgid "No releases found"
 msgstr "未找到发行"
@@ -1294,6 +1343,10 @@ msgstr "未找到标签。"
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "No tags yet"
 msgstr "暂无标签"
+
+#: src/view/release/edit/comp/ReleaseTracksField.tsx
+msgid "No tracks under this disc."
+msgstr "此光盘下没有曲目。"
 
 #: src/view/admin/users.tsx
 msgid "No users found"
@@ -1375,7 +1428,11 @@ msgstr "待处理"
 
 #: src/view/correction/pendingCorrection.tsx
 msgid "Pending correction exists"
-msgstr "存在待处理修正"
+msgstr "存在待处理更正"
+
+#: src/view/Homepage/component/NewMusic.tsx
+msgid "Play track"
+msgstr "播放曲目"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Please sign in to add items to a collection."
@@ -1384,6 +1441,11 @@ msgstr "请先登录再将条目添加到收藏。"
 #: src/component/__legacy/chart/index.tsx
 msgid "Positive:"
 msgstr "正向："
+
+#: src/view/artist/explore.comp.tsx
+#: src/view/label/explore.comp.tsx
+msgid "Present"
+msgstr "现在"
 
 #: src/view/image_queue/detail.tsx
 msgid "Prev"
@@ -1493,6 +1555,7 @@ msgstr "关系"
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/search/index.tsx
 #: src/view/song/Info/index.tsx
@@ -1611,7 +1674,11 @@ msgstr "保存个人简介"
 
 #: src/route/(user)/profile_.edit.tsx
 msgid "Save failed."
-msgstr "保存失败."
+msgstr "保存失败。"
+
+#: src/component/form/ImageCropper.tsx
+msgid "Save Image"
+msgstr "保存图片"
 
 #: src/view/admin/users.tsx
 msgid "Save roles"
@@ -1623,11 +1690,15 @@ msgstr "正在保存…"
 
 #: src/component/form/SearchDialog/ArtistSearchDialog.tsx
 msgid "Search Artist"
-msgstr "搜索艺人"
+msgstr "搜索艺术家"
+
+#: src/component/Header/index.tsx
+msgid "Search artists, releases, songs"
+msgstr "搜索艺术家、发行、歌曲"
 
 #: src/component/Header/index.tsx
 msgid "Search artists, releases, songs…"
-msgstr "搜索艺人、专辑、歌曲…"
+msgstr "搜索艺术家、发行、歌曲…"
 
 #: src/view/admin/users.tsx
 msgid "Search by username"
@@ -1700,11 +1771,15 @@ msgstr "选择另一张图片"
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 #: src/view/song/edit/comp/SongCreditsField.tsx
 msgid "Select artist"
-msgstr "选择艺人"
+msgstr "选择艺术家"
 
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Select image"
 msgstr "选择图片"
+
+#: src/component/form/stateful/LanguageCombobox.tsx
+msgid "Select language"
+msgstr "选择语言"
 
 #: src/view/release/edit/comp/ReleaseCreditsField.tsx
 #: src/view/song/edit/comp/SongCreditsField.tsx
@@ -1741,6 +1816,10 @@ msgstr "设置"
 msgid "Short Description"
 msgstr "简要说明"
 
+#: src/view/event/Info/index.tsx
+msgid "Short description is not provided"
+msgstr "暂无短描述"
+
 #: src/view/auth/reset_password/index.tsx
 msgid "sign in"
 msgstr "登录"
@@ -1773,7 +1852,7 @@ msgstr "注册"
 
 #: src/view/Homepage/component/ArtistCard.tsx
 msgid "Solo artist"
-msgstr "独奏艺人"
+msgstr "独奏艺术家"
 
 #: src/view/comment/CommentThread.tsx
 msgid "Something went wrong"
@@ -1783,6 +1862,7 @@ msgstr "出了点问题"
 #: src/route/song-lyrics/$id.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/search/index.tsx
 msgid "Song"
 msgstr "歌曲"
@@ -1871,6 +1951,7 @@ msgstr "跨设备同步您的贡献"
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/search/index.tsx
 msgid "Tag"
 msgstr "标签"
@@ -1906,6 +1987,14 @@ msgstr "任期"
 msgid "Text Aliases"
 msgstr "文本别名"
 
+#: src/view/NotFound.tsx
+msgid "The page you are looking for does not exist."
+msgstr "你要找的页面不存在。"
+
+#: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
+msgid "This Artist has no releases yet, you can upload them on <0>Upload New Release</0>"
+msgstr "该艺术家还没有发行，你可以在<0>上传新发行</0>中添加。"
+
 #: src/component/dialog/ResetFieldDialog.tsx
 msgid "This cannot be undone."
 msgstr "此操作无法撤消。"
@@ -1916,7 +2005,7 @@ msgstr "此收藏为空"
 
 #: src/view/correction/pendingCorrection.tsx
 msgid "This entity already has a pending correction. You can review that correction or go back."
-msgstr "此实体已有待处理修正。你可以查看该修正或返回。"
+msgstr "此实体已有待处理更正。你可以查看该更正或返回。"
 
 #. placeholder {0}: formatMinuteCount(props.resetKeyExpiresMinutes)
 #: src/view/auth/reset_password/index.tsx
@@ -1979,19 +2068,20 @@ msgstr "Touhou Cloud DB 曲目"
 
 #: src/view/Homepage/component/ExploreCard.tsx
 msgid "Track albums and compilations, link artists and events."
-msgstr "整理专辑与合辑，并关联艺人和活动。"
+msgstr "整理专辑与合辑，并关联艺术家和活动。"
 
 #: src/view/release/edit/comp/TrackFieldItem.tsx
 msgid "Track Artists"
-msgstr "曲目艺人"
+msgstr "曲目艺术家"
 
 #: src/view/release/edit/comp/TrackFieldItem.tsx
 msgid "Track number"
 msgstr "曲目编号"
 
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
+#: src/view/release/Info/ReleaseInfoTabs.tsx
 msgid "Tracks"
-msgstr "曲目数"
+msgstr "曲目"
 
 #: src/view/Homepage/component/HomeHero.tsx
 msgid "Tracks & arrangements"
@@ -2000,6 +2090,10 @@ msgstr "曲目与编曲"
 #: src/view/Homepage/component/TrendingTagsCard.tsx
 msgid "Trending Tags"
 msgstr "热点标签"
+
+#: src/component/feature/entity_explore/EmptyExplorePlaceholder.tsx
+msgid "Try adjusting the filters, or <0>create</0> the first one."
+msgstr "调整筛选条件，或<0>创建</0>第一个条目。"
 
 #: src/view/artist/explore.comp.tsx
 #: src/view/correction/Detail.tsx
@@ -2018,7 +2112,9 @@ msgstr "输入关键字搜索。"
 msgid "Unfollow"
 msgstr "取消关注"
 
+#: src/view/artist/explore.comp.tsx
 #: src/view/image_queue/detail.tsx
+#: src/view/label/explore.comp.tsx
 msgid "Unknown"
 msgstr "未知"
 
@@ -2028,7 +2124,7 @@ msgstr "未知"
 
 #: src/view/Homepage/component/ReleaseCard.tsx
 msgid "Unknown artist"
-msgstr "未知艺人"
+msgstr "未知艺术家"
 
 #: src/view/admin/users.tsx
 msgid "Unknown error"
@@ -2037,6 +2133,11 @@ msgstr "未知错误"
 #: src/view/Homepage/component/UpcomingEventsCard.tsx
 msgid "Upcoming Events"
 msgstr "即将举行的活动"
+
+#. placeholder {0}: entityLabel()
+#: src/view/correction/EntityCorrectionMetadataSection.tsx
+msgid "Update {0}"
+msgstr "更新{0}"
 
 #: src/view/user/edit_profile/index.tsx
 msgid "Update avatar"
@@ -2107,7 +2208,7 @@ msgstr "查看"
 
 #: src/view/correction/pendingCorrection.tsx
 msgid "View correction"
-msgstr "查看修正"
+msgstr "查看更正"
 
 #. placeholder {0}: props.item.id
 #: src/view/image_queue/manage.tsx

@@ -1,5 +1,5 @@
 import { Field } from "@formisch/solid"
-import { useLingui } from "@lingui/solid/macro"
+import { Trans, useLingui } from "@lingui/solid/macro"
 import { For } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
@@ -8,10 +8,6 @@ import { Select } from "~/component/atomic/form/select"
 import { RELEASE_TYPES } from "~/domain/release"
 
 import type { ReleaseFormStore } from "./types"
-
-function getTypeLabel(value: string) {
-	return value === "" ? "-- Please select release type --" : value
-}
 
 export function ReleaseTypeField(props: {
 	of: ReleaseFormStore
@@ -27,7 +23,9 @@ export function ReleaseTypeField(props: {
 		>
 			{(field) => (
 				<div class={twMerge("flex flex-col", props.class)}>
-					<FormComp.Label>{t`Release Type`}</FormComp.Label>
+					<FormComp.Label>
+						<Trans>Release Type</Trans>
+					</FormComp.Label>
 					<Select.Root<(typeof typeOptions)[number]>
 						name={field.props.name}
 						value={field.input ?? ""}
@@ -37,7 +35,9 @@ export function ReleaseTypeField(props: {
 						options={typeOptions}
 						itemComponent={(itemProps) => (
 							<Select.Item item={itemProps.item}>
-								{getTypeLabel(itemProps.item.rawValue)}
+								{itemProps.item.rawValue === ""
+									? t`-- Please select release type --`
+									: itemProps.item.rawValue}
 							</Select.Item>
 						)}
 					>
@@ -49,7 +49,12 @@ export function ReleaseTypeField(props: {
 						/>
 						<Select.Trigger class="h-auto min-h-9 rounded border border-slate-400 px-2 py-1 text-lg font-light">
 							<Select.Value<string>>
-								{(state) => getTypeLabel(state.selectedOption())}
+								{(state) => {
+									const selectedOption = state.selectedOption()
+									return selectedOption === ""
+										? t`-- Please select release type --`
+										: selectedOption
+								}}
 							</Select.Value>
 							<Select.Icon />
 						</Select.Trigger>
