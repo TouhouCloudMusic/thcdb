@@ -856,7 +856,7 @@ msgstr "流派、主题、参与信息"
 #: src/view/artist/explore.comp.tsx
 #: src/view/Homepage/component/ArtistCard.tsx
 msgid "Group"
-msgstr "组别"
+msgstr "团体"
 
 #: src/view/image_queue/detail.tsx
 msgid "Handled"
@@ -1850,6 +1850,7 @@ msgstr "注销"
 msgid "Sign Up"
 msgstr "注册"
 
+#: src/view/artist/explore.comp.tsx
 #: src/view/Homepage/component/ArtistCard.tsx
 msgid "Solo artist"
 msgstr "独奏艺术家"
