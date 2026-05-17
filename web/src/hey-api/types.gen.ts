@@ -80,6 +80,7 @@ export type CatalogNumber = {
 export type CommentAuthor = {
 	id: number
 	name: string
+	avatar_url?: string | null
 }
 
 export type CommentState = "Active" | "Deleted"

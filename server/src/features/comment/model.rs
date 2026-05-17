@@ -1,9 +1,12 @@
 use chrono::{DateTime, FixedOffset};
 use entity::enums::CommentState as DbCommentState;
-use entity::{comment as comment_entity, user as user_entity};
+use entity::{
+    comment as comment_entity, image as image_entity, user as user_entity,
+};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
+use crate::domain::image::Image;
 use crate::domain::shared::CursorResponse;
 
 pub(crate) const COMMENT_CONTENT_MAX_LEN: usize = 5000;
@@ -43,6 +46,8 @@ pub(crate) enum CommentState {
 pub(crate) struct CommentAuthor {
     pub id: i32,
     pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub avatar_url: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema, PartialEq, Eq)]
@@ -74,12 +79,21 @@ impl EntityComment {
             name,
             ..
         }: user_entity::Model,
+        avatar: Option<&image_entity::Model>,
     ) -> Self {
         let state = if matches!(db_state, DbCommentState::Visable) {
             CommentState::Active
         } else {
             CommentState::Deleted
         };
+        let avatar_url = avatar.map(
+            |image_entity::Model {
+                 backend,
+                 directory,
+                 filename,
+                 ..
+             }| Image::format_url(*backend, directory, filename),
+        );
 
         Self {
             id,
@@ -87,6 +101,7 @@ impl EntityComment {
             author: CommentAuthor {
                 id: author_id,
                 name,
+                avatar_url,
             },
             content: (state == CommentState::Active).then_some(content),
             state,
