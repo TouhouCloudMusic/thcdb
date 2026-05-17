@@ -69,6 +69,7 @@ function SongExploreFilterBar(props: SongExploreFilterBarProps) {
 						options={languageOptions()}
 						value={props.languageId}
 						onChange={(value) => props.onLanguageChange(value ?? "")}
+						placeholder={t`All`}
 						itemComponent={(optionProps) => (
 							<Select.Item item={optionProps.item}>
 								{languageLabel(optionProps.item.rawValue)}
