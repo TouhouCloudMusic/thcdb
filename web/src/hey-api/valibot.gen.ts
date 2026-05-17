@@ -150,7 +150,7 @@ export const vCorrectionDiffEntry = v.object({
 	after: v.nullish(v.string()),
 })
 
-export const vCorrectionSortField = v.picklist(["created_at", "handled_at"])
+export const vCorrectionSortField = v.picklist(["created_at", "updated_at"])
 
 export const vCorrectionStatus = v.picklist(["Pending", "Approved", "Rejected"])
 
@@ -1958,6 +1958,12 @@ export const vReleaseImageQueueTarget = v.object({
 	),
 	type: vReleaseImageType,
 })
+
+export const vReleaseSortField = v.picklist([
+	"release_date",
+	"created_at",
+	"updated_at",
+])
 
 export const vReleaseType = v.picklist([
 	"Album",
@@ -4925,7 +4931,7 @@ export const vCreateReleaseResponse = vDataCorrectionSubmitResult
 
 export const vExploreReleaseQuery = v.object({
 	release_type: v.nullish(v.array(vReleaseType)),
-	sort_field: v.nullish(vCorrectionSortField),
+	sort_field: v.nullish(vReleaseSortField),
 	sort_direction: v.nullish(vSortDirection),
 	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),

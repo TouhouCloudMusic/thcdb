@@ -164,8 +164,8 @@ type ArtistExploreFilterBarProps = {
 	scrollDirection: () => ScrollDirection
 	artistTypeValue: "" | ArtistType
 	onArtistTypeChange: (value: "" | ArtistType) => void
-	sortBy: "created_at" | "handled_at" | undefined
-	onSortByChange: (value: "created_at" | "handled_at") => void
+	sortBy: "created_at" | "updated_at" | undefined
+	onSortByChange: (value: "created_at" | "updated_at") => void
 	orderBy: "asc" | "desc" | undefined
 	onOrderByChange: (value: "asc" | "desc") => void
 }

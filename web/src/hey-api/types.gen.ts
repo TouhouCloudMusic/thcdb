@@ -140,7 +140,7 @@ export type CorrectionRevisionSummary = {
 	description: string
 }
 
-export type CorrectionSortField = "created_at" | "handled_at"
+export type CorrectionSortField = "created_at" | "updated_at"
 
 export type CorrectionStatus = "Pending" | "Approved" | "Rejected"
 
@@ -1387,6 +1387,8 @@ export type ReleaseImageQueueTarget = {
 }
 
 export type ReleaseImageType = "Cover"
+
+export type ReleaseSortField = "release_date" | "created_at" | "updated_at"
 
 export type ReleaseSummary = {
 	id: number
@@ -3874,7 +3876,7 @@ export type ExploreReleaseData = {
 	path?: never
 	query?: {
 		release_type?: Array<ReleaseType> | null
-		sort_field?: null | CorrectionSortField
+		sort_field?: null | ReleaseSortField
 		sort_direction?: null | SortDirection
 		limit?: number
 		page?: number

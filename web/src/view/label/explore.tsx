@@ -14,7 +14,7 @@ import {
 const route = getRouteApi("/label/explore")
 
 type LabelExploreSearch = {
-	sort_by?: "created_at" | "handled_at"
+	sort_by?: "created_at" | "updated_at"
 	order_by?: "asc" | "desc"
 	limit: number
 	page: number

@@ -49,7 +49,7 @@ function createReleaseExploreStores(
 			return search().release_type
 		},
 		get sortBy() {
-			return search().sort_by
+			return search().sort_by ?? "release_date"
 		},
 		get orderBy() {
 			return search().order_by
@@ -153,7 +153,7 @@ export function ReleaseExplore() {
 						release_type: snapshot.release_type
 							? [snapshot.release_type]
 							: undefined,
-						sort_field: snapshot.sort_by,
+						sort_field: snapshot.sort_by ?? "release_date",
 						sort_direction: snapshot.order_by,
 					},
 				}),

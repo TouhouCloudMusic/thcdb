@@ -17,7 +17,7 @@ const route = getRouteApi("/artist/explore")
 
 type ArtistExploreSearch = {
 	artist_type?: ArtistType[]
-	sort_by?: "created_at" | "handled_at"
+	sort_by?: "created_at" | "updated_at"
 	order_by?: "asc" | "desc"
 	limit: number
 	page: number

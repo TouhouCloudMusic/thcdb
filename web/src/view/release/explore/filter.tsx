@@ -2,7 +2,6 @@ import { useLingui } from "@lingui/solid/macro"
 import type { ReleaseType } from "@thc/api"
 
 import {
-	CorrectionSortFieldSelect,
 	ExploreFilter,
 	OrderBySelect,
 	StickyFilterBar,
@@ -11,6 +10,7 @@ import { RELEASE_TYPES } from "~/domain/release/constants"
 import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 
 export type DisplayType = "wall" | "list"
+export type ReleaseSortField = "release_date" | "created_at" | "updated_at"
 
 type ReleaseExploreViewPickerProps = {
 	displayType: DisplayType
@@ -55,11 +55,11 @@ function ReleaseExploreViewPicker(props: ReleaseExploreViewPickerProps) {
 
 export type ReleaseExploreFilterStore = {
 	releaseType: ReleaseType | undefined
-	sortBy: "created_at" | "handled_at" | undefined
+	sortBy: ReleaseSortField
 	orderBy: "asc" | "desc" | undefined
 	displayType: DisplayType
 	setReleaseType: (value: ReleaseType | undefined) => void
-	setSortBy: (value: "created_at" | "handled_at") => void
+	setSortBy: (value: ReleaseSortField) => void
 	setOrderBy: (value: "asc" | "desc") => void
 	setDisplayType: (value: DisplayType) => void
 }
@@ -75,7 +75,7 @@ export function ReleaseExploreFilterBar(props: ReleaseExploreFilterBarProps) {
 			<div class="flex flex-wrap items-center gap-4">
 				<ReleaseTypeSelect store={props.store} />
 
-				<CorrectionSortFieldSelect
+				<ReleaseSortFieldSelect
 					value={props.store.sortBy}
 					onChange={props.store.setSortBy}
 				/>
@@ -91,6 +91,26 @@ export function ReleaseExploreFilterBar(props: ReleaseExploreFilterBarProps) {
 				/>
 			</div>
 		</StickyFilterBar>
+	)
+}
+
+function ReleaseSortFieldSelect(props: {
+	value: ReleaseSortField
+	onChange: (value: ReleaseSortField) => void
+}) {
+	const { t } = useLingui()
+	return (
+		<ExploreFilter
+			label={t`Sort by`}
+			value={props.value}
+			defaultValue="release_date"
+			onChange={props.onChange}
+			options={[
+				{ value: "release_date", label: t`Release date` },
+				{ value: "created_at", label: t`Created At` },
+				{ value: "updated_at", label: t`Updated At` },
+			]}
+		/>
 	)
 }
 

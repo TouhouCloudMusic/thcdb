@@ -72,7 +72,7 @@ type ExploreParams = {
 	limit: number
 	cursor: number
 	artist_type?: Artist["artist_type"][]
-	sort_field?: "created_at" | "handled_at"
+	sort_field?: "created_at" | "updated_at"
 	sort_direction?: "asc" | "desc"
 }
 

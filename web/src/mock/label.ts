@@ -44,7 +44,7 @@ type ExploreParams = {
 	founded_date_from?: string
 	founded_date_to?: string
 	is_dissolved?: boolean
-	sort_field?: "created_at" | "handled_at"
+	sort_field?: "created_at" | "updated_at"
 	sort_direction?: "asc" | "desc"
 }
 

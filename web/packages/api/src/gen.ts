@@ -1661,7 +1661,7 @@ export type components = {
             entity_history_id: number;
         };
         /** @enum {string} */
-        CorrectionSortField: "created_at" | "handled_at";
+        CorrectionSortField: "created_at" | "updated_at";
         /** @enum {string} */
         CorrectionStatus: "Pending" | "Approved" | "Rejected";
         /** @enum {string} */
@@ -2880,6 +2880,8 @@ export type components = {
         };
         /** @enum {string} */
         ReleaseImageType: "Cover";
+        /** @enum {string} */
+        ReleaseSortField: "release_date" | "created_at" | "updated_at";
         ReleaseSummary: {
             artists?: components["schemas"]["SimpleArtist"][];
             cover_art_url?: string | null;
@@ -3348,6 +3350,7 @@ export type ReleaseCredit = components['schemas']['ReleaseCredit'];
 export type ReleaseDisc = components['schemas']['ReleaseDisc'];
 export type ReleaseImageQueueTarget = components['schemas']['ReleaseImageQueueTarget'];
 export type ReleaseImageType = components['schemas']['ReleaseImageType'];
+export type ReleaseSortField = components['schemas']['ReleaseSortField'];
 export type ReleaseSummary = components['schemas']['ReleaseSummary'];
 export type ReleaseTrack = components['schemas']['ReleaseTrack'];
 export type ReleaseType = components['schemas']['ReleaseType'];
@@ -7193,7 +7196,7 @@ export interface operations {
                 page?: number;
                 release_type?: components["schemas"]["ReleaseType"][] | null;
                 sort_direction?: null | components["schemas"]["SortDirection"];
-                sort_field?: null | components["schemas"]["CorrectionSortField"];
+                sort_field?: null | components["schemas"]["ReleaseSortField"];
             };
             header?: never;
             path?: never;

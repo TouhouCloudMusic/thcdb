@@ -1,11 +1,19 @@
 use entity::release;
 use entity::sea_orm_active_enums::ReleaseType;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, Select};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_with::{OneOrMany, serde_as};
 use utoipa::{IntoParams, ToSchema};
 
-pub use crate::shared::http::{CorrectionSortField, PageQuery, SortDirection};
+pub use crate::shared::http::{PageQuery, SortDirection};
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ReleaseSortField {
+    ReleaseDate,
+    CreatedAt,
+    UpdatedAt,
+}
 
 #[serde_as]
 #[derive(Clone, Debug, Default, Deserialize, ToSchema, IntoParams)]
@@ -16,7 +24,7 @@ pub struct ReleaseFilter {
     pub release_types: Option<Vec<ReleaseType>>,
 
     #[serde(default)]
-    pub sort_field: Option<CorrectionSortField>,
+    pub sort_field: Option<ReleaseSortField>,
 
     #[serde(default)]
     pub sort_direction: Option<SortDirection>,
@@ -24,15 +32,15 @@ pub struct ReleaseFilter {
 
 impl ReleaseFilter {
     pub const fn with_sort_defaults(mut self) -> Self {
-        crate::shared::http::apply_sort_defaults(
-            &mut self.sort_field,
-            &mut self.sort_direction,
-        );
+        if self.sort_field.is_none() {
+            self.sort_field = Some(ReleaseSortField::ReleaseDate);
+        }
+        if self.sort_direction.is_none() {
+            self.sort_direction = Some(SortDirection::Desc);
+        }
         self
     }
-}
 
-impl ReleaseFilter {
     pub fn into_select(self) -> Select<release::Entity> {
         let mut select = release::Entity::find();
 

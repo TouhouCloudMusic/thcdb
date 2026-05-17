@@ -8,7 +8,7 @@ const DEFAULT_LIMIT = 10
 const exploreSearch = v.object({
 	page: v.fallback(v.pipe(v.number(), v.minValue(1)), 1),
 	limit: v.fallback(v.pipe(v.number(), v.minValue(1)), DEFAULT_LIMIT),
-	sort_by: v.optional(v.picklist(["created_at", "handled_at"])),
+	sort_by: v.optional(v.picklist(["created_at", "updated_at"])),
 	order_by: v.optional(v.picklist(["asc", "desc"])),
 })
 

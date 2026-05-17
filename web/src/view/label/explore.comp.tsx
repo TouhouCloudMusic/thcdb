@@ -110,8 +110,8 @@ function LabelStatusText(props: { label: Label }) {
 
 type LabelExploreFilterBarProps = {
 	scrollDirection: () => ScrollDirection
-	sortBy: "created_at" | "handled_at" | undefined
-	onSortByChange: (value: "created_at" | "handled_at") => void
+	sortBy: "created_at" | "updated_at" | undefined
+	onSortByChange: (value: "created_at" | "updated_at") => void
 	orderBy: "asc" | "desc" | undefined
 	onOrderByChange: (value: "asc" | "desc") => void
 }

@@ -682,6 +682,7 @@ export type {
 	ReleaseDisc,
 	ReleaseImageQueueTarget,
 	ReleaseImageType,
+	ReleaseSortField,
 	ReleaseSummary,
 	ReleaseTrack,
 	ReleaseType,
