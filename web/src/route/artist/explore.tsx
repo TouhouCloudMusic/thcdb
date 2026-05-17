@@ -10,7 +10,7 @@ const exploreSearch = v.object({
 	page: v.fallback(v.pipe(v.number(), v.minValue(1)), 1),
 	limit: v.fallback(v.pipe(v.number(), v.minValue(1)), DEFAULT_LIMIT),
 	artist_type: v.optional(v.array(v.picklist(ARTIST_TYPES))),
-	sort_by: v.optional(v.picklist(["created_at", "handled_at"])),
+	sort_by: v.optional(v.picklist(["created_at", "updated_at"])),
 	order_by: v.optional(v.picklist(["asc", "desc"])),
 })
 

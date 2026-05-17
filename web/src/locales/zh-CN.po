@@ -494,6 +494,7 @@ msgid "Created at"
 msgstr "创建时间"
 
 #: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
+#: src/view/release/explore/filter.tsx
 msgid "Created At"
 msgstr "创建于"
 
@@ -865,10 +866,6 @@ msgstr "子程序"
 #: src/view/image_queue/user.tsx
 msgid "HANDLED / REVERTED"
 msgstr "已处理 / 已还原"
-
-#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
-msgid "Handled At"
-msgstr "处理时间"
 
 #: src/view/NotFound.tsx
 msgid "Hey you, lost one. why you are here? <0>You should go back...</0>"
@@ -1563,6 +1560,7 @@ msgid "Release"
 msgstr "发行"
 
 #: src/view/release/edit/index.tsx
+#: src/view/release/explore/filter.tsx
 msgid "Release date"
 msgstr "发行日期"
 
@@ -1881,6 +1879,7 @@ msgid "Songs"
 msgstr "歌曲"
 
 #: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
+#: src/view/release/explore/filter.tsx
 msgid "Sort by"
 msgstr "排序方式"
 
@@ -2147,6 +2146,11 @@ msgstr "更新头像"
 #: src/view/user/edit_profile/index.tsx
 msgid "Update banner"
 msgstr "更新横幅"
+
+#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
+#: src/view/release/explore/filter.tsx
+msgid "Updated At"
+msgstr "更新时间"
 
 #: src/view/release/Info/index.tsx
 msgid "Upload cover art"

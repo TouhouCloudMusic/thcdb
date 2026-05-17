@@ -27,7 +27,7 @@ pub async fn correction_sorted_entity_ids(
     use entity::correction::Column;
     let sort_column = match sort_field {
         CorrectionSortField::CreatedAt => Column::CreatedAt,
-        CorrectionSortField::HandledAt => Column::HandledAt,
+        CorrectionSortField::UpdatedAt => Column::HandledAt,
     };
 
     let models: Vec<entity::correction::Model> =

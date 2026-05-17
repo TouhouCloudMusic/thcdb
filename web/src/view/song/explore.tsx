@@ -38,10 +38,10 @@ const SongItemSkeleton: Component = () => (
 type SongExploreFilterBarProps = {
 	scrollDirection: () => ScrollDirection
 	languageId: string
-	sortBy: "created_at" | "handled_at" | undefined
+	sortBy: "created_at" | "updated_at" | undefined
 	orderBy: "asc" | "desc" | undefined
 	onLanguageChange: (value: string) => void
-	onSortByChange: (value: "created_at" | "handled_at") => void
+	onSortByChange: (value: "created_at" | "updated_at") => void
 	onOrderByChange: (value: "asc" | "desc") => void
 }
 
@@ -225,7 +225,7 @@ export const SongExplore = () => {
 		updateFilter("order_by", value)
 	}
 
-	const setSortBy = (value: "created_at" | "handled_at") => {
+	const setSortBy = (value: "created_at" | "updated_at") => {
 		updateFilter("sort_by", value)
 	}
 

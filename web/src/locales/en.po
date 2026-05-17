@@ -494,6 +494,7 @@ msgid "Created at"
 msgstr "Created at"
 
 #: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
+#: src/view/release/explore/filter.tsx
 msgid "Created At"
 msgstr "Created At"
 
@@ -865,10 +866,6 @@ msgstr "Handled"
 #: src/view/image_queue/user.tsx
 msgid "HANDLED / REVERTED"
 msgstr "HANDLED / REVERTED"
-
-#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
-msgid "Handled At"
-msgstr "Handled At"
 
 #: src/view/NotFound.tsx
 msgid "Hey you, lost one. why you are here? <0>You should go back...</0>"
@@ -1563,6 +1560,7 @@ msgid "Release"
 msgstr "Release"
 
 #: src/view/release/edit/index.tsx
+#: src/view/release/explore/filter.tsx
 msgid "Release date"
 msgstr "Release date"
 
@@ -1881,6 +1879,7 @@ msgid "Songs"
 msgstr "Songs"
 
 #: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
+#: src/view/release/explore/filter.tsx
 msgid "Sort by"
 msgstr "Sort by"
 
@@ -2147,6 +2146,11 @@ msgstr "Update avatar"
 #: src/view/user/edit_profile/index.tsx
 msgid "Update banner"
 msgstr "Update banner"
+
+#: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
+#: src/view/release/explore/filter.tsx
+msgid "Updated At"
+msgstr "Updated At"
 
 #: src/view/release/Info/index.tsx
 msgid "Upload cover art"

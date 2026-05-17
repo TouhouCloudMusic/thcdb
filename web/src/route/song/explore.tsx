@@ -10,7 +10,7 @@ const exploreSearch = v.object({
 	limit: v.fallback(v.pipe(v.number(), v.minValue(1)), DEFAULT_LIMIT),
 	language_id: v.optional(v.array(v.number())),
 	sort_by: v.fallback(
-		v.optional(v.picklist(["created_at", "handled_at"])),
+		v.optional(v.picklist(["created_at", "updated_at"])),
 		undefined,
 	),
 	order_by: v.fallback(v.optional(v.picklist(["asc", "desc"])), undefined),

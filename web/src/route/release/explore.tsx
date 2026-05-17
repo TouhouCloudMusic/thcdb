@@ -11,8 +11,8 @@ const exploreSearch = v.object({
 	limit: v.fallback(v.pipe(v.number(), v.minValue(1)), DEFAULT_LIMIT),
 	release_type: v.fallback(v.optional(v.picklist(RELEASE_TYPES)), undefined),
 	sort_by: v.fallback(
-		v.optional(v.picklist(["created_at", "handled_at"])),
-		undefined,
+		v.optional(v.picklist(["release_date", "created_at", "updated_at"])),
+		"release_date",
 	),
 	order_by: v.fallback(v.optional(v.picklist(["asc", "desc"])), undefined),
 	display_type: v.fallback(v.picklist(["wall", "list"]), "wall"),

@@ -8,11 +8,20 @@ pub enum SortDirection {
     Desc,
 }
 
+impl From<SortDirection> for sea_orm::Order {
+    fn from(value: SortDirection) -> Self {
+        match value {
+            SortDirection::Asc => Self::Asc,
+            SortDirection::Desc => Self::Desc,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum CorrectionSortField {
     CreatedAt,
-    HandledAt,
+    UpdatedAt,
 }
 
 pub const fn apply_sort_defaults(

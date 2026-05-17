@@ -177,6 +177,7 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
         entity::sea_orm_active_enums::ImageQueueStatus,
         ArtistCommonFilter,
         CorrectionSortField,
+        features::release::find::ReleaseSortField,
         SortDirection,
         crate::domain::shared::NonEmptyString,
 
@@ -204,6 +205,7 @@ fn basic_security_requirement() -> utoipa::openapi::security::SecurityRequiremen
         entity::sea_orm_active_enums::ImageQueueStatus,
         ArtistCommonFilter,
         CorrectionSortField,
+        features::release::find::ReleaseSortField,
         SortDirection,
         crate::domain::shared::NonEmptyString,
 

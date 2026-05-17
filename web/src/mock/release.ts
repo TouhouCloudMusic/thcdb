@@ -108,8 +108,36 @@ type ExploreParams = {
 	limit: number
 	cursor: number
 	release_type?: Release["release_type"][]
-	sort_field?: "created_at" | "handled_at"
+	sort_field?: "release_date" | "created_at" | "updated_at"
 	sort_direction?: "asc" | "desc"
+}
+
+function compareReleases(
+	a: Release,
+	b: Release,
+	sort_field: ExploreParams["sort_field"],
+	sort_direction: ExploreParams["sort_direction"],
+) {
+	if (sort_field === "release_date") {
+		if (!a.release_date && !b.release_date) {
+			return a.id - b.id
+		}
+		if (!a.release_date) {
+			return 1
+		}
+		if (!b.release_date) {
+			return -1
+		}
+
+		const value = a.release_date.value.localeCompare(b.release_date.value)
+		if (value !== 0) {
+			return sort_direction === "desc" ? -value : value
+		}
+		return a.id - b.id
+	}
+
+	const value = a.id - b.id
+	return sort_direction === "desc" ? -value : value
 }
 
 export const createMockPaginatedReleases = (
@@ -127,11 +155,9 @@ export const createMockPaginatedReleases = (
 	}
 
 	if (sort_field) {
-		allReleases.sort((a, b) => {
-			const aValue = a.id
-			const bValue = b.id
-			return sort_direction === "desc" ? bValue - aValue : aValue - bValue
-		})
+		allReleases.sort((a, b) =>
+			compareReleases(a, b, sort_field, sort_direction),
+		)
 	}
 
 	const startIdx = cursor

@@ -70,7 +70,7 @@ type ExploreParams = {
 	limit: number
 	cursor: number
 	language_id?: number[]
-	sort_field?: "created_at" | "handled_at"
+	sort_field?: "created_at" | "updated_at"
 	sort_direction?: "asc" | "desc"
 }
 
@@ -92,7 +92,7 @@ export const createMockPaginatedSongs = (
 	// Sort if needed
 	if (sort_field) {
 		allSongs.sort((a, b) => {
-			// Use id as proxy for created_at/handled_at since mock data doesn't have dates
+			// Use id as proxy for created_at/updated_at since mock data doesn't have dates
 			const aValue = a.id
 			const bValue = b.id
 			return sort_direction === "desc" ? bValue - aValue : aValue - bValue
