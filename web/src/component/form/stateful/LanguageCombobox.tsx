@@ -1,3 +1,4 @@
+import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Language } from "@thc/api"
 import { LanguagesQuery } from "@thc/query"
@@ -24,11 +25,12 @@ export function LanguageCombobox(props: {
 	value?: Language
 	filter?: (lang: Language) => boolean
 }) {
+	const { t } = useLingui()
 	const langQuery = useLangSingleton()
 
 	return (
 		<Combobox.Root
-			placeholder={props.placeholder ?? "Select language"}
+			placeholder={props.placeholder ?? t`Select language`}
 			options={
 				langQuery.isSuccess
 					? props.filter

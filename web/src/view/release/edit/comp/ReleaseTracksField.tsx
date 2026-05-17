@@ -24,6 +24,7 @@ export function ReleaseTracksField(props: {
 	initTracks?: ReleaseTrack[]
 	class?: string
 }) {
+	const { t } = useLingui()
 	const [selectedDisc, setSelectedDisc] = createSignal(0)
 
 	return (
@@ -56,7 +57,7 @@ export function ReleaseTracksField(props: {
 								each={visibleTrackIndices()}
 								fallback={
 									<li class="flex h-32 items-center justify-center rounded text-secondary">
-										No tracks under this disc.
+										{t`No tracks under this disc.`}
 									</li>
 								}
 							>

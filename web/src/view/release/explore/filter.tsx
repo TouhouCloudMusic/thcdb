@@ -94,20 +94,20 @@ export function ReleaseExploreFilterBar(props: ReleaseExploreFilterBarProps) {
 	)
 }
 
-const SELECT_OPTIONS: { value: ReleaseType | "All"; label: string }[] = [
-	{ value: "All", label: "All" },
-	...RELEASE_TYPES.map((value) => ({
-		value,
-		label: value,
-	})),
-]
-
 function ReleaseTypeSelect(props: { store: ReleaseExploreFilterStore }) {
 	const { t } = useLingui()
+	const selectOptions: { value: ReleaseType | "All"; label: string }[] = [
+		{ value: "All", label: t`All` },
+		...RELEASE_TYPES.map((value) => ({
+			value,
+			label: value,
+		})),
+	]
+
 	return (
 		<ExploreFilter
 			label={t`Type`}
-			options={SELECT_OPTIONS}
+			options={selectOptions}
 			value={props.store.releaseType ?? "All"}
 			defaultValue="All"
 			triggerClass="w-32"

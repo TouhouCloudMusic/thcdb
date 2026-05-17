@@ -1,5 +1,5 @@
 /* @refresh skip */
-import { useLingui } from "@lingui/solid/macro"
+import { Trans, useLingui } from "@lingui/solid/macro"
 import type {
 	ArtistCredit,
 	CreditRoleRef,
@@ -205,13 +205,15 @@ function DiscographyTab() {
 			when={selectedType()}
 			fallback={
 				<div class="m-auto flex min-h-16 items-center place-self-center pl-4 whitespace-pre text-secondary">
-					This Artist has no releases yet, you can upload them on{" "}
-					<a
-						href="TODO"
-						class="text-blue-600"
-					>
-						Upload New Release
-					</a>
+					<Trans>
+						This Artist has no releases yet, you can upload them on{" "}
+						<a
+							href="TODO"
+							class="text-blue-600"
+						>
+							Upload New Release
+						</a>
+					</Trans>
 				</div>
 			}
 		>
@@ -259,6 +261,8 @@ function ArtistReleaseList<T extends Discography | CreditRoleRef>(props: {
 	class?: string
 	children: (props: { item: T }) => JSX.Element
 }) {
+	const { t } = useLingui()
+
 	return (
 		<ul class={twJoin("space-y-4", props.class)}>
 			<For each={props.data}>
@@ -272,7 +276,7 @@ function ArtistReleaseList<T extends Discography | CreditRoleRef>(props: {
 						onClick={() => props.next()}
 						class="px-16 font-normal"
 					>
-						Load More
+						{t`Load More`}
 					</Button>
 				</div>
 			</Show>

@@ -50,7 +50,7 @@ export function TenureFieldArray(props: { index: number }): JSX.Element {
 					class="font-light text-primary"
 					onClick={tenures.add}
 				>
-					Add Tenure
+					{t`Add Tenure`}
 				</Button>
 			</div>
 
@@ -96,12 +96,8 @@ function TenureEntry(props: {
 	const errorMessages = () => ({
 		leaveBeforeJoin: t`Leave year cannot be earlier than join year`,
 		leaveSameAsJoin: t`Leave year cannot be the same as join year`,
-		joinBeforePreviousLeave: t({
-			message: "Join year cannot be earlier than previous leave year",
-		}),
-		joinSameAsPreviousLeave: t({
-			message: "Join year cannot be the same as previous leave year",
-		}),
+		joinBeforePreviousLeave: t`Join year cannot be earlier than previous leave year`,
+		joinSameAsPreviousLeave: t`Join year cannot be the same as previous leave year`,
 	})
 
 	const errors = () =>

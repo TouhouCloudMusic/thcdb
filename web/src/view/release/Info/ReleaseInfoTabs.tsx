@@ -1,3 +1,4 @@
+import { useLingui } from "@lingui/solid/macro"
 import type { Release } from "@thc/api"
 import { createSignal, Show } from "solid-js"
 
@@ -46,6 +47,7 @@ export function ReleaseInfoTabs(props: ReleaseInfoTabsProps) {
 }
 
 export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
+	const { t } = useLingui()
 	const hasTracks = () => (props.release.tracks?.length ?? 0) > 0
 	const hasCredits = () => (props.release.credits?.length ?? 0) > 0
 
@@ -61,7 +63,7 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 							value="Tracks"
 							class={TRIGGER_CLASS}
 						>
-							Tracks
+							{t`Tracks`}
 						</Tab.Trigger>
 					</Show>
 					<Show when={hasCredits()}>
@@ -69,7 +71,7 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 							value="Credits"
 							class={TRIGGER_CLASS}
 						>
-							Credits
+							{t`Credits`}
 						</Tab.Trigger>
 					</Show>
 					<EntityCommentsTabTrigger

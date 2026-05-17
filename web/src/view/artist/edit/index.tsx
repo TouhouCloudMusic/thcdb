@@ -68,7 +68,7 @@ function PageHeader(props: { type: Props["type"] }) {
 						when={props.type === "new"}
 						fallback={t`Edit Artist`}
 					>
-						Create Artist
+						{t`Create Artist`}
 					</Show>
 				</h1>
 			</div>

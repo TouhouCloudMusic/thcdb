@@ -178,6 +178,8 @@ type DiffValueProps = {
 }
 
 function DiffValue(props: DiffValueProps) {
+	const { t } = useLingui()
+
 	return (
 		<div class="space-y-1">
 			<div class="text-xs font-medium tracking-wide text-tertiary md:hidden">
@@ -189,7 +191,7 @@ function DiffValue(props: DiffValueProps) {
 					DIFF_TONE[props.variant],
 				)}
 			>
-				{props.value ?? "None"}
+				{props.value ?? t`None`}
 			</pre>
 		</div>
 	)

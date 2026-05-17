@@ -1,5 +1,5 @@
 import { Field } from "@formisch/solid"
-import { useLingui } from "@lingui/solid/macro"
+import { Trans, useLingui } from "@lingui/solid/macro"
 import type { ArtistType } from "@thc/api"
 
 import { FormComp } from "~/component/atomic/form"
@@ -14,9 +14,6 @@ const ARTIST_TYPE_OPTIONS: ("" | ArtistType)[] = [
 	"Unknown",
 ]
 
-const getArtistTypeLabel = (value: string) =>
-	value === "" ? "-- Please select artist type --" : value
-
 export function ArtistFormArtistTypeField() {
 	const { t } = useLingui()
 	const { formStore } = useArtistForm()
@@ -28,7 +25,9 @@ export function ArtistFormArtistTypeField() {
 		>
 			{(field) => (
 				<div class="flex flex-col">
-					<FormComp.Label>{t`Artist Type`}</FormComp.Label>
+					<FormComp.Label>
+						<Trans>Artist Type</Trans>
+					</FormComp.Label>
 					<div class="w-fit rounded-sm border border-slate-300 font-light">
 						<Select.Root<"" | ArtistType>
 							name={field.props.name}
@@ -40,7 +39,9 @@ export function ArtistFormArtistTypeField() {
 							options={ARTIST_TYPE_OPTIONS}
 							itemComponent={(props) => (
 								<Select.Item item={props.item}>
-									{getArtistTypeLabel(props.item.rawValue)}
+									{props.item.rawValue === ""
+										? t`-- Please select artist type --`
+										: props.item.rawValue}
 								</Select.Item>
 							)}
 						>
@@ -52,7 +53,12 @@ export function ArtistFormArtistTypeField() {
 							/>
 							<Select.Trigger class="box-border h-8 w-full min-w-max rounded px-1 whitespace-nowrap focus:outline-2 focus:outline-reimu-600">
 								<Select.Value<"" | ArtistType>>
-									{(state) => getArtistTypeLabel(state.selectedOption())}
+									{(state) => {
+										const selectedOption = state.selectedOption()
+										return selectedOption === ""
+											? t`-- Please select artist type --`
+											: selectedOption
+									}}
 								</Select.Value>
 								<Select.Icon />
 							</Select.Trigger>

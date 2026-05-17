@@ -20,9 +20,14 @@ const getLabelAvatarText = (label: Label) => {
 	return value.slice(0, 1).toUpperCase()
 }
 
-const getLabelDateLine = (label: Label) => {
-	const founded = DateWithPrecision.display(label.founded_date) ?? "Unknown"
-	const dissolved = DateWithPrecision.display(label.dissolved_date) ?? "Present"
+const getLabelDateLine = (
+	label: Label,
+	fallback: { unknown: string; present: string },
+) => {
+	const founded =
+		DateWithPrecision.display(label.founded_date) ?? fallback.unknown
+	const dissolved =
+		DateWithPrecision.display(label.dissolved_date) ?? fallback.present
 	return `${founded} - ${dissolved}`
 }
 
@@ -54,7 +59,12 @@ type LabelItemProps = {
 }
 
 export const LabelItem: Component<LabelItemProps> = (props) => {
-	const dateLine = () => getLabelDateLine(props.label)
+	const { t } = useLingui()
+	const dateLine = () =>
+		getLabelDateLine(props.label, {
+			unknown: t`Unknown`,
+			present: t`Present`,
+		})
 
 	return (
 		<div class="border-b border-slate-200 py-4 last:border-b-0">

@@ -519,6 +519,8 @@ type ResultListProps<T> = {
 }
 
 function ResultList<T>(props: ResultListProps<T>) {
+	const { t } = useLingui()
+
 	return (
 		<div class="mt-5 flex flex-col gap-3">
 			<Show when={!props.isLoading && props.items.length === 0}>
@@ -552,7 +554,7 @@ function ResultList<T>(props: ResultListProps<T>) {
 
 			<Show when={!props.hasNextPage && props.items.length > 0}>
 				<div class="flex justify-center py-4 text-sm text-slate-400">
-					No more results
+					{t`No more results`}
 				</div>
 			</Show>
 		</div>
