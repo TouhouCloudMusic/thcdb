@@ -1850,6 +1850,7 @@ msgstr "Sign Out"
 msgid "Sign Up"
 msgstr "Sign Up"
 
+#: src/view/artist/explore.comp.tsx
 #: src/view/Homepage/component/ArtistCard.tsx
 msgid "Solo artist"
 msgstr "Solo artist"

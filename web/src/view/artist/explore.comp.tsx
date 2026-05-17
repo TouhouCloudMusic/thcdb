@@ -1,5 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
-import type { Artist } from "@thc/api"
+import type { Artist, ArtistType } from "@thc/api"
 import type { Component } from "solid-js"
 import { For, Show } from "solid-js"
 
@@ -137,13 +137,24 @@ export const ArtistItem: Component<ArtistItemProps> = (props) => {
 	)
 }
 
-function ArtistTypeLabel(props: { value: string }) {
+function ArtistTypeLabel(props: { value: "" | ArtistType }) {
 	const { t } = useLingui()
 
 	const label = () => {
-		if (props.value === "") return t`All`
-		if (props.value === "Multiple") return t`Group`
-		return props.value
+		switch (props.value) {
+			case "": {
+				return t`All`
+			}
+			case "Solo": {
+				return t`Solo artist`
+			}
+			case "Multiple": {
+				return t`Group`
+			}
+			case "Unknown": {
+				return t`Unknown`
+			}
+		}
 	}
 
 	return <>{label()}</>
@@ -151,8 +162,8 @@ function ArtistTypeLabel(props: { value: string }) {
 
 type ArtistExploreFilterBarProps = {
 	scrollDirection: () => ScrollDirection
-	artistTypeValue: string
-	onArtistTypeChange: (value: string) => void
+	artistTypeValue: "" | ArtistType
+	onArtistTypeChange: (value: "" | ArtistType) => void
 	sortBy: "created_at" | "handled_at" | undefined
 	onSortByChange: (value: "created_at" | "handled_at") => void
 	orderBy: "asc" | "desc" | undefined
@@ -167,10 +178,11 @@ export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 			<div class="flex flex-wrap items-center gap-4">
 				<div class="flex items-center gap-2">
 					<span class="text-sm text-slate-500">{t`Type`}</span>
-					<Select.Root<string>
+					<Select.Root<"" | ArtistType>
 						options={["", ...ARTIST_TYPES]}
 						value={props.artistTypeValue}
 						onChange={(value) => props.onArtistTypeChange(value ?? "")}
+						placeholder={t`All`}
 						itemComponent={(optionProps) => (
 							<Select.Item item={optionProps.item}>
 								<ArtistTypeLabel value={optionProps.item.rawValue} />
@@ -178,7 +190,7 @@ export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 						)}
 					>
 						<Select.Trigger>
-							<Select.Value<string>>
+							<Select.Value<"" | ArtistType>>
 								{(state) => <ArtistTypeLabel value={state.selectedOption()} />}
 							</Select.Value>
 							<Select.Icon />
