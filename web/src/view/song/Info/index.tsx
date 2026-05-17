@@ -8,6 +8,7 @@ import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityComments } from "~/view/comment/EntityComments"
 import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
+import type { EntityCommentsController } from "~/view/comment/EntityCommentsController"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 import { EntityTagsSectionContainer } from "~/view/entity_tags/EntityTagsSection"
@@ -31,7 +32,32 @@ type SongInfoPageProps = {
 	correctionHistory: CorrectionHistoryItem[]
 }
 
+type SongInfoPageViewProps = SongInfoPageProps & {
+	activeTab: string
+	comments: EntityCommentsController
+	onActiveTabChange: (value: string) => void
+}
+
 export function SongInfoPage(props: SongInfoPageProps) {
+	const [activeTab, setActiveTab] = createSignal("Release")
+	const comments = createEntityCommentsController(() => ({
+		entityType: "song",
+		entityId: props.song.id,
+		listEnabled: activeTab() === "Comments",
+	}))
+
+	return (
+		<SongInfoPageView
+			song={props.song}
+			correctionHistory={props.correctionHistory}
+			activeTab={activeTab()}
+			comments={comments}
+			onActiveTabChange={setActiveTab}
+		/>
+	)
+}
+
+export function SongInfoPageView(props: SongInfoPageViewProps) {
 	const contextValue: SongInfoPageContext = {
 		get song() {
 			return props.song
@@ -58,7 +84,11 @@ export function SongInfoPage(props: SongInfoPageProps) {
 						</div>
 					</div>
 					<div class="col-span-full flex flex-col gap-8">
-						<SongInfoTabs />
+						<SongInfoTabsView
+							activeTab={props.activeTab}
+							comments={props.comments}
+							onActiveTabChange={props.onActiveTabChange}
+						/>
 						<EntityCorrectionMetadataSection
 							entityType="song"
 							entityId={props.song.id}
@@ -78,7 +108,13 @@ export function SongInfoPage(props: SongInfoPageProps) {
 
 const TRIGGER_CLASS = "py-4"
 
-function SongInfoTabs() {
+type SongInfoTabsViewProps = {
+	activeTab: string
+	comments: EntityCommentsController
+	onActiveTabChange: (value: string) => void
+}
+
+export function SongInfoTabsView(props: SongInfoTabsViewProps) {
 	const { t } = useLingui()
 	const ctx = assertContext(SongInfoPageContext)
 	const hasCredits = () =>
@@ -86,16 +122,11 @@ function SongInfoTabs() {
 	const hasLyrics = () => Boolean(ctx.song.lyrics && ctx.song.lyrics.length > 0)
 	const hasRelations = () =>
 		Boolean(ctx.song.relations && ctx.song.relations.length > 0)
-	const [activeTab, setActiveTab] = createSignal("Release")
-	const comments = createEntityCommentsController(() => ({
-		entityType: "song",
-		entityId: ctx.song.id,
-		listEnabled: activeTab() === "Comments",
-	}))
+
 	return (
 		<Tab.Root
-			value={activeTab()}
-			onChange={setActiveTab}
+			value={props.activeTab}
+			onChange={props.onActiveTabChange}
 		>
 			<Tab.List class="mx-4 gap-12 border-b border-slate-200">
 				<Tab.Trigger
@@ -129,7 +160,7 @@ function SongInfoTabs() {
 					</Tab.Trigger>
 				</Show>
 				<EntityCommentsTabTrigger
-					count={comments.activeCommentCount()}
+					count={props.comments.activeCommentCount()}
 					class={TRIGGER_CLASS}
 				/>
 				<Tab.Indicator />
@@ -153,7 +184,7 @@ function SongInfoTabs() {
 				</Tab.Content>
 			</Show>
 			<Tab.Content value="Comments">
-				<EntityComments controller={comments} />
+				<EntityComments controller={props.comments} />
 			</Tab.Content>
 		</Tab.Root>
 	)

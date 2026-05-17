@@ -15,11 +15,7 @@ describe(toEventFormInitValue, () => {
 		expect(result.data.start_date).toBeUndefined()
 		expect(result.data.end_date).toBeUndefined()
 		expect(result.data.alternative_names).toEqual([])
-		expect(result.data.location).toEqual({
-			country: undefined,
-			province: undefined,
-			city: undefined,
-		})
+		expect(result.data.location).toBeUndefined()
 	})
 
 	it("maps event fields for edit form", () => {
@@ -51,7 +47,7 @@ describe(toEventFormInitValue, () => {
 		expect(result.data.alternative_names).toEqual(["例大祭", "博麗神社例大祭"])
 		expect(result.data.location).toEqual({
 			country: "Japan",
-			province: undefined,
+			province: null,
 			city: "Tokyo",
 		})
 		expect(result.data.start_date?.precision).toBe("Day")

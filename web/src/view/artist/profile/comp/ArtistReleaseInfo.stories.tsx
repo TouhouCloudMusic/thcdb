@@ -4,9 +4,10 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 import { createMockArtist } from "~/mock/artist"
 import type { InfiniteQuery } from "~/type/query"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
+import { createMockEntityCommentsController } from "~/view/comment/storybook"
 
 import { ArtistContext } from ".."
-import { ArtistReleaseInfo } from "./ArtistReleaseInfo"
+import { ArtistReleaseInfoView } from "./ArtistReleaseInfo"
 
 async function noop() {
 	await Promise.resolve()
@@ -117,7 +118,11 @@ function StoryRoot(props: StoryRootProps) {
 	return (
 		<div class="w-[960px] border border-slate-200 bg-white">
 			<ArtistContext.Provider value={contextValue}>
-				<ArtistReleaseInfo />
+				<ArtistReleaseInfoView
+					activeTab="Discography"
+					comments={createMockEntityCommentsController()}
+					onActiveTabChange={() => undefined}
+				/>
 			</ArtistContext.Provider>
 		</div>
 	)

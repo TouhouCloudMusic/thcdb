@@ -3,17 +3,24 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { createMockRelease } from "~/mock/release"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
+import { createMockEntityCommentsController } from "~/view/comment/storybook"
 
-import { ReleaseInfoTabs } from "./ReleaseInfoTabs"
+import { ReleaseInfoTabsView } from "./ReleaseInfoTabs"
 
 type StoryRootProps = {
 	release: Release
+	activeTab: string
 }
 
 function StoryRoot(props: StoryRootProps) {
 	return (
 		<div class="w-[960px] border border-slate-200 bg-white">
-			<ReleaseInfoTabs release={props.release} />
+			<ReleaseInfoTabsView
+				release={props.release}
+				activeTab={props.activeTab}
+				comments={createMockEntityCommentsController()}
+				onActiveTabChange={() => undefined}
+			/>
 		</div>
 	)
 }
@@ -27,6 +34,7 @@ const meta = {
 	},
 	argTypes: {
 		release: { control: false },
+		activeTab: { control: false },
 	},
 } satisfies Meta<typeof StoryRoot>
 
@@ -36,6 +44,7 @@ type Story = StoryObj<typeof meta>
 
 export const WithTracksAndCredits: Story = {
 	args: {
+		activeTab: "Tracks",
 		release: createMockRelease(22, {
 			title: "Scarlet Archive",
 			release_type: "Album",
@@ -95,6 +104,7 @@ export const WithTracksAndCredits: Story = {
 
 export const TracksOnly: Story = {
 	args: {
+		activeTab: "Tracks",
 		release: createMockRelease(24, {
 			title: "Transient Signal",
 			release_type: "Ep",
@@ -117,6 +127,7 @@ export const TracksOnly: Story = {
 
 export const CreditsOnly: Story = {
 	args: {
+		activeTab: "Credits",
 		release: createMockRelease(23, {
 			title: "Live At Hakurei Shrine",
 			release_type: "Single",
@@ -134,6 +145,7 @@ export const CreditsOnly: Story = {
 
 export const Empty: Story = {
 	args: {
+		activeTab: "Comments",
 		release: createMockRelease(25, {
 			title: "Blank Archive",
 			release_type: "Other",

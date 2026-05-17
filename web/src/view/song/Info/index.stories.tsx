@@ -3,7 +3,8 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { ENGLISH_LANGUAGE } from "~/storybook/fixtures"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
-import { SongInfoPage } from "~/view/song/Info"
+import { createMockEntityCommentsController } from "~/view/comment/storybook"
+import { SongInfoPageView } from "~/view/song/Info"
 
 const FULL_SONG: Song = {
 	id: 42,
@@ -146,9 +147,12 @@ function StoryRoot(props: StoryRootProps) {
 
 	return (
 		<div class="min-h-[900px] bg-slate-100 p-6">
-			<SongInfoPage
+			<SongInfoPageView
 				song={song()}
 				correctionHistory={correctionHistory()}
+				activeTab="Release"
+				comments={createMockEntityCommentsController()}
+				onActiveTabChange={() => undefined}
 			/>
 		</div>
 	)

@@ -4,6 +4,7 @@ import { createSignal, Show } from "solid-js"
 import { Tab } from "~/component/atomic"
 import { EntityComments } from "~/view/comment/EntityComments"
 import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
+import type { EntityCommentsController } from "~/view/comment/EntityCommentsController"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 
 import { ReleaseInfoCredits } from "./comp/ReleaseInfoCredits"
@@ -11,6 +12,13 @@ import { ReleaseInfoTracks } from "./comp/ReleaseInfoTracks"
 
 type ReleaseInfoTabsProps = {
 	release: Release
+}
+
+type ReleaseInfoTabsViewProps = {
+	release: Release
+	activeTab: string
+	comments: EntityCommentsController
+	onActiveTabChange: (value: string) => void
 }
 
 const TRIGGER_CLASS = "py-4"
@@ -28,9 +36,23 @@ export function ReleaseInfoTabs(props: ReleaseInfoTabsProps) {
 	}))
 
 	return (
+		<ReleaseInfoTabsView
+			release={props.release}
+			activeTab={activeTab()}
+			comments={comments}
+			onActiveTabChange={setActiveTab}
+		/>
+	)
+}
+
+export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
+	const hasTracks = () => (props.release.tracks?.length ?? 0) > 0
+	const hasCredits = () => (props.release.credits?.length ?? 0) > 0
+
+	return (
 		<Tab.Root
-			value={activeTab()}
-			onChange={setActiveTab}
+			value={props.activeTab}
+			onChange={props.onActiveTabChange}
 		>
 			<div class="border-b border-slate-300 px-4">
 				<Tab.List class="gap-12">
@@ -51,7 +73,7 @@ export function ReleaseInfoTabs(props: ReleaseInfoTabsProps) {
 						</Tab.Trigger>
 					</Show>
 					<EntityCommentsTabTrigger
-						count={comments.activeCommentCount()}
+						count={props.comments.activeCommentCount()}
 						class={TRIGGER_CLASS}
 					/>
 					<Tab.Indicator />
@@ -80,7 +102,7 @@ export function ReleaseInfoTabs(props: ReleaseInfoTabsProps) {
 				value="Comments"
 				class="p-4"
 			>
-				<EntityComments controller={comments} />
+				<EntityComments controller={props.comments} />
 			</Tab.Content>
 		</Tab.Root>
 	)
