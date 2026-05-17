@@ -99,6 +99,7 @@ export const vCommentAuthor = v.object({
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
 	name: v.string(),
+	avatar_url: v.nullish(v.string()),
 })
 
 export const vCommentState = v.picklist(["Active", "Deleted"])

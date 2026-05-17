@@ -1,9 +1,11 @@
+use std::collections::HashSet;
+
 use entity::enums::CommentState as DbCommentState;
 use entity::{
     artist as artist_entity, comment as comment_entity, comment_target,
     comment_thread, correction as correction_entity, event as event_entity,
-    label as label_entity, release as release_entity, song as song_entity,
-    tag as tag_entity,
+    image as image_entity, label as label_entity, release as release_entity,
+    song as song_entity, tag as tag_entity,
 };
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::sea_query::OnConflict;
@@ -219,7 +221,7 @@ async fn load_comments_page(
         .db_operation("load comments")?;
 
     let page = cursor.into_offset_response(rows);
-    let items = page
+    let rows = page
         .items
         .into_iter()
         .map(|(comment, author)| {
@@ -228,9 +230,23 @@ async fn load_comments_page(
                     "Comment author no longer exists".to_string(),
                 )
             })?;
-            Ok(EntityComment::from_models(comment, author))
+            Ok((comment, author))
         })
         .collect::<Result<Vec<_>, Error>>()?;
+    let avatar_ids = rows
+        .iter()
+        .filter_map(|(_, author)| author.avatar_id)
+        .collect::<HashSet<_>>();
+    let avatars = load_author_avatars(conn, avatar_ids).await?;
+    let items = rows
+        .into_iter()
+        .map(|(comment, author)| {
+            let avatar = author.avatar_id.and_then(|avatar_id| {
+                avatars.iter().find(|avatar| avatar.id == avatar_id)
+            });
+            EntityComment::from_models(comment, author, avatar)
+        })
+        .collect();
     let active_count = comment_entity::Entity::find()
         .filter(comment_entity::Column::ThreadId.eq(thread_id))
         .filter(comment_entity::Column::State.eq(DbCommentState::Visable))
@@ -243,6 +259,22 @@ async fn load_comments_page(
         next_cursor: page.next_cursor,
         active_count,
     })
+}
+
+async fn load_author_avatars(
+    conn: &impl ConnectionTrait,
+    avatar_ids: HashSet<i32>,
+) -> Result<Vec<image_entity::Model>, Error> {
+    if avatar_ids.is_empty() {
+        return Ok(Vec::default());
+    }
+
+    image_entity::Entity::find()
+        .filter(image_entity::Column::Id.is_in(avatar_ids))
+        .all(conn)
+        .await
+        .db_operation("load comment author avatars")
+        .map_err(Into::into)
 }
 
 pub(super) async fn insert_comment(
@@ -309,8 +341,15 @@ pub(super) async fn load_comment_summary(
     let author = author.ok_or_else(|| {
         Error::InvalidRequest("Comment author no longer exists".to_string())
     })?;
+    let avatar = match author.avatar_id {
+        Some(avatar_id) => image_entity::Entity::find_by_id(avatar_id)
+            .one(conn)
+            .await
+            .db_operation("load comment author avatar")?,
+        None => None,
+    };
 
-    Ok(EntityComment::from_models(comment, author))
+    Ok(EntityComment::from_models(comment, author, avatar.as_ref()))
 }
 
 pub(super) async fn soft_delete_comment(

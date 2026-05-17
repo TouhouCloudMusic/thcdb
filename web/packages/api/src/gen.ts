@@ -1586,6 +1586,7 @@ export type components = {
             label?: null | components["schemas"]["SimpleLabel"];
         };
         CommentAuthor: {
+            avatar_url?: string | null;
             /** Format: int32 */
             id: number;
             name: string;
