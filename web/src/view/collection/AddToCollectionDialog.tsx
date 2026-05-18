@@ -301,64 +301,55 @@ export function AddToCollectionDialog(props: Props) {
 							{t`Add to Collection`}
 						</Dialog.Title>
 
-						<Show
-							when={userCtx.is_signed_in}
-							fallback={
-								<div class="text-sm text-slate-500">
-									{t`Please sign in to add items to a collection.`}
-								</div>
-							}
+						<form
+							onSubmit={handleSubmit}
+							class="flex flex-col gap-4"
 						>
-							<form
-								onSubmit={handleSubmit}
-								class="flex flex-col gap-4"
-							>
-								<CollectionField
-									collectionsQuery={collectionsQuery}
-									collections={collections}
-									selectedCollectionId={formStore.selectedCollectionId}
-									onSelectedCollectionIdChange={setSelectedCollectionId}
-									onCreateCollection={() => setCreateCollectionOpen(true)}
-								/>
+							<CollectionField
+								collectionsQuery={collectionsQuery}
+								collections={collections}
+								selectedCollectionId={formStore.selectedCollectionId}
+								onSelectedCollectionIdChange={setSelectedCollectionId}
+								onCreateCollection={() => setCreateCollectionOpen(true)}
+							/>
 
-								<NoteField
-									description={formStore.description}
-									onDescriptionInput={setDescription}
-								/>
+							<NoteField
+								description={formStore.description}
+								onDescriptionInput={setDescription}
+							/>
 
-								<Show when={mutation.error}>
-									<div class="text-sm text-red-500">
-										{mutation.error?.message
-											?? t`An error occurred. Please try again.`}
-									</div>
-								</Show>
-
-								<div class="grid w-full grid-cols-2 gap-3 self-end sm:w-56">
-									<Button
-										type="button"
-										variant="Secondary"
-										size="Md"
-										class="px-2"
-										onClick={() => props.onOpenChange(false)}
-										disabled={mutation.isPending}
-									>
-										{t`Cancel`}
-									</Button>
-									<Button
-										type="submit"
-										variant="Primary"
-										size="Md"
-										class="px-2"
-										disabled={
-											mutation.isPending
-											|| formStore.selectedCollectionId === undefined
-										}
-									>
-										{t`Add`}
-									</Button>
+							<Show when={mutation.error}>
+								<div class="text-sm text-red-500">
+									{mutation.error?.message
+										?? t`An error occurred. Please try again.`}
 								</div>
-							</form>
-						</Show>
+							</Show>
+
+							<div class="grid w-full grid-cols-2 gap-3 self-end sm:w-56">
+								<Button
+									type="button"
+									variant="Secondary"
+									size="Md"
+									class="px-2"
+									onClick={() => props.onOpenChange(false)}
+									disabled={mutation.isPending}
+								>
+									{t`Cancel`}
+								</Button>
+								<Button
+									type="submit"
+									variant="Primary"
+									size="Md"
+									class="px-2"
+									disabled={
+										mutation.isPending
+										|| formStore.selectedCollectionId === undefined
+									}
+								>
+									{t`Add`}
+								</Button>
+							</div>
+						</form>
 						<Dialog.CloseButton />
 					</Dialog.Content>
 				</Dialog.Portal>

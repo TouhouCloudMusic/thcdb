@@ -1431,10 +1431,6 @@ msgstr "Pending correction exists"
 msgid "Play track"
 msgstr "Play track"
 
-#: src/view/collection/AddToCollectionDialog.tsx
-msgid "Please sign in to add items to a collection."
-msgstr "Please sign in to add items to a collection."
-
 #: src/component/__legacy/chart/index.tsx
 msgid "Positive:"
 msgstr "Positive:"

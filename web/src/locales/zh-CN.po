@@ -1431,10 +1431,6 @@ msgstr "存在待处理更正"
 msgid "Play track"
 msgstr "播放曲目"
 
-#: src/view/collection/AddToCollectionDialog.tsx
-msgid "Please sign in to add items to a collection."
-msgstr "请先登录再将条目添加到收藏。"
-
 #: src/component/__legacy/chart/index.tsx
 msgid "Positive:"
 msgstr "正向："
