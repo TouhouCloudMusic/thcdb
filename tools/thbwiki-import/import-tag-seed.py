@@ -24,6 +24,11 @@ from urllib.parse import urlsplit, urlunsplit
 import httpx
 from dotenv import dotenv_values
 
+from import_rate_limit import (
+    build_import_rate_limit_config,
+    raise_import_rate_limit_token_error,
+)
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_SEED = SCRIPT_DIR / "seed.tag.static.json"
 DEFAULT_ENV = (SCRIPT_DIR / "../../.env").resolve()
@@ -136,6 +141,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Admin password (overrides .env)",
     )
     parser.add_argument(
+        "--import-token",
+        default=None,
+        help="Import rate-limit bypass token (default: IMPORT_BYPASS_TOKEN)",
+    )
+    parser.add_argument(
         "--concurrency",
         type=positive_int,
         default=DEFAULT_CONCURRENCY,
@@ -152,6 +162,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     args.api_base = args.api_base.rstrip("/")
     args.api_base_explicit = any(
         arg == "--api-base" or arg.startswith("--api-base=") for arg in argv
+    )
+    args.req_per_sec_explicit = any(
+        arg == "--req-per-sec" or arg.startswith("--req-per-sec=") for arg in argv
     )
     return args
 
@@ -384,7 +397,7 @@ def parse_retry_delay_seconds(
 
 async def request_json(
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     method: str,
     endpoint: str,
     params: dict[str, Any] | None = None,
@@ -404,7 +417,8 @@ async def request_json(
 
     max_attempts = len(RETRY_DELAYS_SECONDS) + 1
     for attempt in range(max_attempts):
-        await limiter.acquire()
+        if limiter is not None:
+            await limiter.acquire()
         try:
             response = await client.request(
                 method,
@@ -426,13 +440,18 @@ async def request_json(
         text = response.text
         parsed = try_parse_json(text) if text else None
         if response.is_error:
+            if response.status_code == 429 and limiter is None:
+                raise_import_rate_limit_token_error(endpoint)
             if response.status_code in retryable_status_codes and attempt < len(
                 RETRY_DELAYS_SECONDS
             ):
                 delay = RETRY_DELAYS_SECONDS[attempt]
                 if response.status_code == 429:
                     delay = parse_retry_delay_seconds(response, text, delay)
-                    await limiter.backoff(delay)
+                    if limiter is not None:
+                        await limiter.backoff(delay)
+                    else:
+                        await asyncio.sleep(delay)
                 else:
                     await asyncio.sleep(delay)
                 log_info(
@@ -450,7 +469,7 @@ async def request_json(
 
 async def get_json(
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     endpoint: str,
     params: dict[str, Any] | None = None,
 ) -> Any:
@@ -459,7 +478,7 @@ async def get_json(
 
 async def post_json(
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     endpoint: str,
     payload: dict[str, Any],
     auth_header: str,
@@ -483,7 +502,7 @@ def normalize_relation_name(relation: dict[str, Any]) -> str:
 
 async def find_existing_tag_id(
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     tag_name: str,
     tag_type: str,
 ) -> int | None:
@@ -645,7 +664,7 @@ def resolve_relation_ids(
 async def process_tag_create(
     tag: dict[str, Any],
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     auth_header: str,
     relation_ids: list[int],
 ) -> ImportTaskResult:
@@ -747,7 +766,7 @@ def count_results(results: list[ImportTaskResult]) -> tuple[int, int, int]:
 async def collect_existing_tag_ids(
     seed_tags: list[dict[str, Any]],
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
 ) -> tuple[dict[str, int], list[ImportTaskResult]]:
     tag_id_by_name: dict[str, int] = {}
     results: list[ImportTaskResult] = []
@@ -837,7 +856,7 @@ def plan_tag_imports(
 async def import_tags(
     seed_tags: list[dict[str, Any]],
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     auth_header: str,
     concurrency: int,
     existing_tag_ids: dict[str, int],
@@ -910,6 +929,13 @@ async def async_main(argv: list[str]) -> int:
         options.api_base = apply_server_port(options.api_base, server_port)
     admin_user = options.admin_user or env_from_file.get("ADMIN_USERNAME") or "Admin"
     admin_pass = options.admin_pass or env_from_file.get("ADMIN_PASSWORD")
+    rate_limit_config = build_import_rate_limit_config(
+        options.import_token,
+        env_from_file,
+        options.req_per_sec,
+        options.req_per_sec_explicit,
+        AsyncRateLimiter,
+    )
 
     dry_run = not options.run_mode
     if not dry_run and not admin_pass:
@@ -927,10 +953,11 @@ async def async_main(argv: list[str]) -> int:
         f"api_base={options.api_base} "
         f"seed={DEFAULT_SEED} "
         f"concurrency={options.concurrency} "
-        f"req_per_sec={options.req_per_sec:g}"
+        f"req_per_sec={rate_limit_config.req_per_sec_label} "
+        f"rate_limit_token={rate_limit_config.enabled_label}"
     )
 
-    limiter = AsyncRateLimiter(options.req_per_sec)
+    limiter = rate_limit_config.limiter
     limits = httpx.Limits(
         max_connections=options.concurrency,
         max_keepalive_connections=options.concurrency,
@@ -940,6 +967,7 @@ async def async_main(argv: list[str]) -> int:
         base_url=options.api_base,
         timeout=REQUEST_TIMEOUT_SECONDS,
         limits=limits,
+        headers=rate_limit_config.headers,
     ) as client:
         existing_tag_ids, existing_results = await collect_existing_tag_ids(
             seed_tags, client, limiter
