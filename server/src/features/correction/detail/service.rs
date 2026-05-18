@@ -1,8 +1,9 @@
+use infra_db::SeaOrmRepository;
+
 use super::model::CorrectionDetail;
 use crate::features::correction::shared::repo;
 use crate::features::correction::{ReadError, comment};
 use crate::infra::database::error::DatabaseResultExt;
-use crate::infra::database::sea_orm::SeaOrmRepository;
 
 #[derive(Clone)]
 pub(super) struct Service {

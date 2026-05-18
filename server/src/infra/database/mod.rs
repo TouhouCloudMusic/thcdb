@@ -1,35 +1,25 @@
-use ::sea_orm::{ConnectOptions, Database, DatabaseConnection};
-use sea_orm_migration::MigratorTrait;
+use ::sea_orm::DatabaseConnection;
 use tokio::sync::OnceCell;
 
-use self::sea_orm::enum_table::sync_enum_table;
+use crate::features::auth::sync_startup_data;
 
+pub(crate) mod cache;
 pub mod error;
-pub mod sea_orm;
+pub mod utils;
+
+pub use infra_db::{get_connection, run_migrations};
 
 static DATABASE_INIT: OnceCell<()> = OnceCell::const_new();
-
-pub async fn get_connection(url: &str) -> DatabaseConnection {
-    let opt = ConnectOptions::new(url)
-        .sqlx_logging(false)
-        .min_connections(1)
-        .to_owned();
-
-    Database::connect(opt).await.unwrap()
-}
 
 pub async fn init_database(conn: &DatabaseConnection) {
     let conn = conn.clone();
     DATABASE_INIT
         .get_or_init(|| async {
-            migration::Migrator::up(&conn, None)
-                .await
-                .inspect_err(|x| println!("Failed to run migration:\n{x}"))
-                .unwrap();
+            run_migrations(&conn).await;
 
-            sync_enum_table(&conn)
+            sync_startup_data(&conn)
                 .await
-                .expect("Failed to sync enum tables");
+                .expect("Failed to sync startup data");
         })
         .await;
 }

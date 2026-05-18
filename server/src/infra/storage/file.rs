@@ -1,21 +1,17 @@
-use std::path::{Path, PathBuf};
-use std::time::Duration;
+use std::path::PathBuf;
 
-use apalis::prelude::Storage;
+use domain::image::Image;
 use entity::enums::StorageBackend;
+use infra_storage::FsStorage;
+use infra_storage_worker::{RemoveFileDeferredDelete, RemoveFileQueue};
 
-use super::FsStorage;
-use crate::domain::image::{AsyncFileStorage, Image, NewImage};
-use crate::infra::worker::{RemoveFileJob, RemoveFileQueue};
+use crate::features::image_upload::{AsyncFileStorage, NewImage};
 use crate::shared::error::InternalError;
-use crate::utils::retry_async;
-
-pub const REMOVE_FILE_STREAM_KEY: &str = "storage:remove-file";
 
 #[derive(Clone)]
 pub struct GenericFileStorage {
     fs: FsStorage,
-    remove_file_queue: RemoveFileQueue,
+    deferred_delete: RemoveFileDeferredDelete,
 }
 
 pub struct GenericFileStorageConfig {
@@ -32,7 +28,7 @@ impl GenericFileStorage {
     ) -> Self {
         Self {
             fs: FsStorage::new(fs_base_path),
-            remove_file_queue,
+            deferred_delete: RemoveFileDeferredDelete::new(remove_file_queue),
         }
     }
 }
@@ -57,43 +53,11 @@ impl AsyncFileStorage for GenericFileStorage {
 
     async fn remove(&self, image: Image) -> Result<(), InternalError> {
         match image.backend {
-            StorageBackend::Fs => {
-                match self.fs.remove(image.full_path()).await {
-                    Ok(()) => Ok(()),
-                    Err(e) => {
-                        let final_path =
-                            self.fs.prepend_prefix(image.full_path());
-                        let queue = self.remove_file_queue.clone();
-                        tokio::spawn(async move {
-                            retry_async(
-                                Duration::from_millis(500),
-                                5,
-                                async move || {
-                                    enqueue_delete_task(&queue, &final_path)
-                                        .await
-                                },
-                            )
-                            .await
-                        });
-                        Err(InternalError::new(e))
-                    }
-                }
-            }
+            StorageBackend::Fs => self
+                .fs
+                .remove_or_defer(image.full_path(), &self.deferred_delete)
+                .await
+                .map_err(InternalError::new),
         }
     }
-}
-
-async fn enqueue_delete_task(
-    queue: &RemoveFileQueue,
-    path: &Path,
-) -> Result<(), InternalError> {
-    let path_str = path.to_str().expect("Failed to serialize pathbuf");
-    let mut queue = queue.clone();
-    queue
-        .push(RemoveFileJob {
-            path: path_str.to_string(),
-        })
-        .await
-        .map(|_task_id| ())
-        .map_err(InternalError::new)
 }

@@ -1,6 +1,6 @@
 use sea_orm::ConnectionTrait;
 
-use crate::domain::model::PermissionName;
+use crate::features::auth::PermissionName;
 use crate::infra::authz;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::error::PermissionDenied;

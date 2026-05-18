@@ -5,26 +5,26 @@ use axum::response::IntoResponse;
 use bytesize::ByteSize;
 use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{artist_image, image as image_entity, user as user_entity};
+use infra_db::SeaOrmRepository;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
-use super::model::ArtistProfileImageInput;
+use super::model::{ArtistImageQueue, ArtistProfileImageInput};
+use super::repo;
 use crate::constant::{
     ARTIST_PROFILE_IMAGE_MAX_FILE_SIZE, ARTIST_PROFILE_IMAGE_MAX_HEIGHT,
     ARTIST_PROFILE_IMAGE_MAX_WIDTH, ARTIST_PROFILE_IMAGE_MIN_HEIGHT,
     ARTIST_PROFILE_IMAGE_MIN_WIDTH,
 };
-use crate::domain::artist_image_queue::ArtistImageQueue;
-use crate::domain::image;
-use crate::domain::image::{
-    CreateImageMeta, CurrentImageMetadata, ParseOption, Parser,
-};
-use crate::domain::image_queue::NewImageQueue;
-use crate::domain::shared::ImageUploaderSummary;
 use crate::features::artist::find::repo as artist_repo;
-use crate::features::artist_image_queue::Repo as ArtistImageQueueRepo;
-use crate::features::image_queue::Repo as ImageQueueRepo;
+use crate::features::image_metadata::{
+    CurrentImageMetadata, ImageUploaderSummary,
+};
+use crate::features::image_queue::repo::{
+    self as image_queue_repo, NewImageQueue,
+};
+use crate::features::image_upload;
+use crate::features::image_upload::{CreateImageMeta, ParseOption, Parser};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::storage::GenericFileStorage;
 use crate::shared::error::{EntityNotFound, InternalError};
 use crate::shared::http::api_response::AppError;
@@ -56,7 +56,7 @@ pub struct Service {
 pub enum Error {
     #[display("{_0}")]
     #[from]
-    Image(#[error(source)] image::Error),
+    Image(#[error(source)] image_upload::Error),
     #[display("{_0}")]
     #[from]
     Database(#[error(source)] DatabaseError),
@@ -72,11 +72,11 @@ impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         match self {
             Error::Image(source) => match source {
-                image::Error::InvalidInput(source) => {
+                image_upload::Error::InvalidInput(source) => {
                     AppError::bad_request(source.to_string()).into_response()
                 }
-                image::Error::Database(source) => source.into_response(),
-                image::Error::Internal(source) => source.into_response(),
+                image_upload::Error::Database(source) => source.into_response(),
+                image_upload::Error::Internal(source) => source.into_response(),
             },
             Error::Database(source) => source.into_response(),
             Error::Internal(source) => source.into_response(),
@@ -113,7 +113,7 @@ impl Service {
             )?;
 
         let image_service =
-            image::Service::new(tx_repo.clone(), self.storage.clone());
+            image_upload::Service::new(tx_repo.clone(), self.storage.clone());
         let image = image_service
             .create(
                 &bytes,
@@ -127,16 +127,19 @@ impl Service {
         let new_image_queue = NewImageQueue::new(&user, &image);
 
         let image_queue =
-            ImageQueueRepo::create(&tx_repo, new_image_queue).await?;
+            image_queue_repo::create(&tx_repo, new_image_queue).await?;
 
         let artist_image_queue =
             ArtistImageQueue::profile(artist_id, image_queue.id);
 
-        ArtistImageQueueRepo::create(&tx_repo, artist_image_queue).await?;
+        repo::create(&tx_repo, artist_image_queue).await?;
 
         drop(image_service);
 
-        tx_repo.commit().await?;
+        tx_repo
+            .commit()
+            .await
+            .map_err(crate::infra::database::error::DatabaseError::from)?;
 
         Ok(image_queue.id)
     }

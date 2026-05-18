@@ -7,18 +7,15 @@ use super::verification::{
     SendVerificationEmailError, build_verification_email_message,
     is_unverified_signup_expired,
 };
-use crate::domain::auth::{
-    AuthCredential, HashedPassword, ResendVerificationEmailRequest,
-    ResendVerificationEmailResponse, SignUpRequest, SignUpResponse,
-    VERIFICATION_CODE_EXPIRES_MINUTES,
-    VERIFICATION_CODE_RESEND_COOLDOWN_SECONDS, VerifyEmailRequest,
-};
-use crate::domain::model::VerificationCode;
-use crate::domain::user::{NewUser, User};
 use crate::features::auth::{
-    Email, InvalidEmail, ResendVerificationEmailError, Service, SignUpError,
-    VerifyEmailError, repo,
+    AuthCredential, Email, HashedPassword, InvalidEmail,
+    ResendVerificationEmailError, ResendVerificationEmailRequest,
+    ResendVerificationEmailResponse, Service, SignUpError, SignUpRequest,
+    SignUpResponse, VERIFICATION_CODE_EXPIRES_MINUTES,
+    VERIFICATION_CODE_RESEND_COOLDOWN_SECONDS, VerificationCode,
+    VerifyEmailError, VerifyEmailRequest, repo,
 };
+use crate::features::user::{NewUser, User};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::error::{InternalError, InvalidInput, MessageError};
 use crate::shared::secret::hash;

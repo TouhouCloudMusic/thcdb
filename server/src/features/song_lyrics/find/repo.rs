@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
+use domain::shared::Language;
 use entity::song_lyrics;
+use infra_db::SeaOrmRepository;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 
-use crate::domain::shared::Language;
 use crate::features::song_lyrics::model::SongLyrics;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::SeaOrmRepository;
 
 #[derive(Clone, Debug)]
 pub enum FindOneFilter {
@@ -20,7 +20,7 @@ pub enum FindManyFilter {
     Language { language_id: i32 },
     Songs { song_ids: Vec<i32> },
 }
-use crate::infra::database::sea_orm::cache::LANGUAGE_CACHE;
+use crate::infra::database::cache::LANGUAGE_CACHE;
 
 pub(super) async fn find_one(
     repo: &SeaOrmRepository,

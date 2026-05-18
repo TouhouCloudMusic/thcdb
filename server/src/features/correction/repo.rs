@@ -1,20 +1,137 @@
 use chrono::Utc;
+use entity::correction::{Column, Entity};
 use entity::enums::{CorrectionStatus, CorrectionUserType, EntityType};
-use entity::{correction as correction_entity, correction_user};
+use entity::{
+    correction as correction_entity, correction_revision, correction_user,
+};
 use fastrace::prelude::LocalSpan;
-use sea_orm::ActiveValue::Set;
+use infra_db::{SeaOrmRepository, SeaOrmTxRepo};
+use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter,
-    QueryOrder,
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait,
+    IntoActiveModel, PaginatorTrait, QueryFilter, QueryOrder, QueryTrait,
 };
 
 use super::ModerationError;
-use crate::domain::model::CorrectionApprover;
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::{
-    ApplyCorrectionError, SeaOrmRepository, SeaOrmTxRepo,
+use crate::features::correction::{
+    Correction, CorrectionEntity, CorrectionFilter, CorrectionFilterStatus,
+    NewCorrectionMeta,
 };
-use crate::shared::error::InternalError;
+use crate::features::user::User;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+
+pub(super) struct CorrectionApprover(pub User);
+
+pub async fn find_one(
+    db: &impl ConnectionTrait,
+    filter: CorrectionFilter,
+) -> Result<Option<Correction>, DatabaseError> {
+    let ret = Entity::find()
+        .filter(Column::EntityId.eq(filter.entity_id))
+        .filter(Column::EntityType.eq(filter.entity_type))
+        .apply_if(filter.status, |query, status| match status {
+            CorrectionFilterStatus::Many(many) => {
+                query.filter(Column::Status.is_in(many))
+            }
+            CorrectionFilterStatus::One(one) => {
+                query.filter(Column::Status.eq(one))
+            }
+        })
+        .order_by_desc(Column::CreatedAt)
+        .one(db)
+        .await
+        .db_operation("find correction")?
+        .map(|model| Correction {
+            id: model.id,
+            status: model.status,
+            r#type: model.r#type,
+            entity_id: model.entity_id,
+            entity_type: model.entity_type,
+            created_at: model.created_at,
+            handled_at: model.handled_at,
+        });
+    Ok(ret)
+}
+
+pub async fn is_author(
+    db: &impl ConnectionTrait,
+    user: &User,
+    correction: &Correction,
+) -> Result<bool, DatabaseError> {
+    let count = correction_user::Entity::find()
+        .filter(correction_user::Column::CorrectionId.eq(correction.id))
+        .filter(correction_user::Column::UserId.eq(user.id))
+        .filter(
+            correction_user::Column::UserType.eq(CorrectionUserType::Author),
+        )
+        .count(db)
+        .await
+        .db_operation("check correction author")?;
+    Ok(count != 0)
+}
+
+pub async fn create(
+    tx_repo: &SeaOrmTxRepo,
+    meta: NewCorrectionMeta<impl CorrectionEntity>,
+) -> Result<i32, DatabaseError> {
+    let new_correction = entity::correction::ActiveModel {
+        id: NotSet,
+        status: Set(meta.status),
+        r#type: Set(meta.r#type),
+        entity_type: Set(meta.entity_type()),
+        entity_id: Set(meta.entity_id),
+        created_at: NotSet,
+        handled_at: NotSet,
+    }
+    .insert(tx_repo.conn())
+    .await
+    .db_operation("insert correction")?;
+
+    let correction_id = new_correction.id;
+
+    // TODO: remove dupelicate correction user table
+    entity::correction_user::Model {
+        correction_id,
+        user_id: meta.author.id,
+        user_type: CorrectionUserType::Author,
+    }
+    .into_active_model()
+    .insert(tx_repo.conn())
+    .await
+    .db_operation("insert correction author")?;
+
+    correction_revision::Model {
+        correction_id,
+        entity_history_id: meta.history_id,
+        description: meta.description,
+        author_id: meta.author.id,
+    }
+    .into_active_model()
+    .insert(tx_repo.conn())
+    .await
+    .db_operation("insert correction revision")?;
+
+    Ok(correction_id)
+}
+
+pub async fn update(
+    tx_repo: &SeaOrmTxRepo,
+    id: i32,
+    meta: NewCorrectionMeta<impl CorrectionEntity>,
+) -> Result<(), DatabaseError> {
+    correction_revision::Model {
+        correction_id: id,
+        entity_history_id: meta.history_id,
+        description: meta.description,
+        author_id: meta.author.id,
+    }
+    .into_active_model()
+    .insert(tx_repo.conn())
+    .await
+    .db_operation("insert correction revision")?;
+
+    Ok(())
+}
 
 async fn find_correction_or_err(
     tx_repo: &SeaOrmTxRepo,
@@ -124,56 +241,53 @@ async fn apply_correction_update(
 ) -> Result<(), ModerationError> {
     let apply_update_res = match correction.entity_type {
         EntityType::Artist => {
-            crate::infra::database::sea_orm::artist::impls::apply_update(
+            crate::features::artist::repo::apply_update(
                 correction,
                 tx_repo.conn(),
             )
             .await
         }
         EntityType::Label => {
-            crate::infra::database::sea_orm::label::impls::apply_update(
+            crate::features::label::repo::apply_update(
                 correction,
                 tx_repo.conn(),
             )
             .await
         }
         EntityType::Release => {
-            crate::infra::database::sea_orm::release::tx_repo::apply_update(
+            crate::features::release::repo::apply_update(
                 correction,
                 tx_repo.conn(),
             )
             .await
         }
         EntityType::Song => {
-            crate::infra::database::sea_orm::song::impls::apply_update(
+            crate::features::song::repo::apply_update(
                 correction,
                 tx_repo.conn(),
             )
             .await
         }
         EntityType::Tag => {
-            crate::infra::database::sea_orm::tag::impls::apply_correction(
-                correction,
-                tx_repo.conn(),
-            )
-            .await
+            crate::features::tag::repo::apply_update(correction, tx_repo.conn())
+                .await
         }
         EntityType::Event => {
-            crate::infra::database::sea_orm::event::apply_correction(
+            crate::features::event::repo::apply_update(
                 correction,
                 tx_repo.conn(),
             )
             .await
         }
         EntityType::SongLyrics => {
-            crate::infra::database::sea_orm::song_lyrics::apply_update_impl(
+            crate::features::song_lyrics::repo::apply_update(
                 correction,
                 tx_repo.conn(),
             )
             .await
         }
         EntityType::CreditRole => {
-            crate::infra::database::sea_orm::credit_role::apply_update_impl(
+            crate::features::credit_role::repo::apply_update(
                 correction,
                 tx_repo.conn(),
             )
@@ -181,29 +295,8 @@ async fn apply_correction_update(
         }
     };
 
-    match apply_update_res {
-        Ok(()) => Ok(()),
-        Err(ApplyCorrectionError::Database(err)) => {
-            log::error!(
-                target: "features.correction.repo",
-                operation = "correction.apply_update",
-                error:? = err;
-                "correction repository operation failed"
-            );
-            Err(DatabaseError::new(err)
-                .db_operation("apply correction update")
-                .into())
-        }
-        Err(ApplyCorrectionError::BrokenReference(err)) => {
-            log::error!(
-                target: "features.correction.repo",
-                operation = "correction.apply_update",
-                error:? = err;
-                "correction repository operation failed"
-            );
-            Err(InternalError::new(err).into())
-        }
-    }
+    apply_update_res.db_operation("apply correction update")?;
+    Ok(())
 }
 
 pub async fn approve(

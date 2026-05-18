@@ -1,18 +1,20 @@
 use entity::enums::CorrectionStatus;
+use infra_db::SeaOrmRepository;
 
-use crate::application::correction::CorrectionSubmitResult;
-use crate::domain::correction::{NewCorrection, NewCorrectionMeta};
 use crate::features::correction::{
-    SubmissionError, service as correction_service,
+    CorrectionSubmitResult, NewCorrection, NewCorrectionMeta, SubmissionError,
+    service as correction_service,
 };
 use crate::features::credit_role::model::NewCreditRole;
-use crate::infra::database::sea_orm::SeaOrmRepository;
 
 pub async fn create(
     repo: &SeaOrmRepository,
     correction: NewCorrection<NewCreditRole>,
 ) -> Result<CorrectionSubmitResult, SubmissionError> {
-    let tx_repo = repo.begin_tx().await?;
+    let tx_repo = repo
+        .begin_tx()
+        .await
+        .map_err(crate::infra::database::error::DatabaseError::from)?;
 
     let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
 
@@ -33,7 +35,10 @@ pub async fn create(
     )
     .await?;
 
-    tx_repo.commit().await?;
+    tx_repo
+        .commit()
+        .await
+        .map_err(crate::infra::database::error::DatabaseError::from)?;
 
     Ok(CorrectionSubmitResult::submitted(correction_id, entity_id))
 }
@@ -44,7 +49,10 @@ pub async fn upsert_correction(
     correction: NewCorrection<NewCreditRole>,
     mode: correction_service::CorrectionUpsertMode,
 ) -> Result<CorrectionSubmitResult, SubmissionError> {
-    let tx_repo = repo.begin_tx().await?;
+    let tx_repo = repo
+        .begin_tx()
+        .await
+        .map_err(crate::infra::database::error::DatabaseError::from)?;
 
     if let Some(correction_id) =
         correction_service::find_create_conflict_for_mode::<NewCreditRole>(
@@ -77,7 +85,10 @@ pub async fn upsert_correction(
         correction_service::CorrectionUpsertResult::Submitted {
             correction_id,
         } => {
-            tx_repo.commit().await?;
+            tx_repo
+                .commit()
+                .await
+                .map_err(crate::infra::database::error::DatabaseError::from)?;
             Ok(CorrectionSubmitResult::submitted(correction_id, id))
         }
         correction_service::CorrectionUpsertResult::Conflict {

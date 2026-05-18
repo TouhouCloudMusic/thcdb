@@ -24,7 +24,7 @@ use sea_orm::{
 };
 use serde_json::{Value, json};
 
-use crate::domain::correction::CorrectionDiffEntry;
+use crate::features::correction::CorrectionDiffEntry;
 use crate::features::correction::model::CorrectionUserSummary;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 

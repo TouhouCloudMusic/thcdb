@@ -179,7 +179,7 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
         CorrectionSortField,
         features::release::find::ReleaseSortField,
         SortDirection,
-        crate::domain::shared::NonEmptyString,
+        domain::shared::NonEmptyString,
 
         api_response::Error,
     )),
@@ -207,7 +207,7 @@ fn basic_security_requirement() -> utoipa::openapi::security::SecurityRequiremen
         CorrectionSortField,
         features::release::find::ReleaseSortField,
         SortDirection,
-        crate::domain::shared::NonEmptyString,
+        domain::shared::NonEmptyString,
 
         api_response::Error,
     )),

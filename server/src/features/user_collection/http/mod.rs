@@ -1,5 +1,6 @@
 use axum::Json;
 use axum::extract::{FromRef, Path, Query, State};
+use domain::shared::{NonEmptyString, PageResponse};
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -16,7 +17,6 @@ use crate::adapter::inbound::rest::state::{
     ArcAppState, AuthSession, AuthSessionExt,
 };
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
-use crate::domain::shared::{NonEmptyString, PageResponse};
 use crate::shared::http::PageQuery;
 use crate::shared::http::api_response::{Data, Message};
 

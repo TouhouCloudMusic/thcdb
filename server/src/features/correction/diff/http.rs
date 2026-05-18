@@ -12,9 +12,8 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::domain::correction::CorrectionDiff;
-use crate::features::correction::ReadError;
 use crate::features::correction::shared::repo as correction_diff;
+use crate::features::correction::{CorrectionDiff, ReadError};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::http::api_response::Data;
 

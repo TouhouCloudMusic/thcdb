@@ -1,13 +1,18 @@
 use std::panic::Location;
 
-use apalis::prelude::Storage;
+use auth_core::password_reset::{
+    PASSWORD_RESET_CODE_EXPIRES_MINUTES,
+    PASSWORD_RESET_CODE_RESEND_COOLDOWN_SECONDS, PasswordResetEmailJob,
+    PasswordResetState, password_reset_key_index_key, password_reset_state_key,
+};
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use chrono::{DateTime, Duration, FixedOffset, Utc};
 use fred::prelude::{KeysInterface, LuaInterface};
+use infra_worker::Storage;
 use lettre::message::Mailbox;
 use rand::Rng;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use super::error::{
     ForgotPasswordError, ResetPasswordError, VerifyResetCodeError,
@@ -15,115 +20,17 @@ use super::error::{
 use super::verification::{
     SendPasswordResetEmailError, build_password_reset_email_message,
 };
-use crate::domain::auth::validate_password;
-use crate::domain::model::VerificationCode;
-use crate::domain::user::User;
-use crate::features::auth::{Email, InvalidEmail, Service, repo};
+use crate::features::auth::{
+    Email, InvalidEmail, Service, VerificationCode, repo, validate_password,
+};
+use crate::features::user::User;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{InternalError, InvalidInput, MessageError};
 use crate::shared::secret;
 
-const PASSWORD_RESET_CODE_MAX_FAILED_ATTEMPTS: i32 = 10;
-pub(super) const PASSWORD_RESET_CODE_EXPIRES_MINUTES: i64 = 10;
-const PASSWORD_RESET_CODE_RESEND_COOLDOWN_SECONDS: i64 = 60;
 const PASSWORD_RESET_KEY_RANDOM_BYTES_LEN: usize = 24;
 const PASSWORD_RESET_KEY_MAX_LEN: usize = 64;
 const PASSWORD_RESET_KEY_EXPIRES_MINUTES: i64 = 5;
-pub(crate) const PASSWORD_RESET_EMAIL_KEY: &str = "auth:password-reset:email";
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-enum PasswordResetState {
-    AwaitingCode {
-        code_hash: String,
-        code_expires_at: DateTime<FixedOffset>,
-        code_sent_at: DateTime<FixedOffset>,
-        failed_attempts: i32,
-    },
-    AwaitingPassword {
-        reset_key_hash: String,
-        reset_key_expires_at: DateTime<FixedOffset>,
-    },
-}
-
-impl PasswordResetState {
-    fn awaiting_code(
-        code_hash: String,
-        code_sent_at: DateTime<FixedOffset>,
-    ) -> Self {
-        Self::AwaitingCode {
-            code_hash,
-            code_expires_at: code_sent_at
-                + Duration::minutes(PASSWORD_RESET_CODE_EXPIRES_MINUTES),
-            code_sent_at,
-            failed_attempts: 0,
-        }
-    }
-
-    fn is_in_code_resend_cooldown(&self, now: DateTime<FixedOffset>) -> bool {
-        let Self::AwaitingCode { code_sent_at, .. } = self else {
-            return false;
-        };
-
-        now - *code_sent_at
-            < Duration::seconds(PASSWORD_RESET_CODE_RESEND_COOLDOWN_SECONDS)
-    }
-
-    /// Returns the stored reset-code hash only while the state is still
-    /// awaiting code verification, the code has not expired, and the caller
-    /// has not exceeded the failed-attempt limit.
-    fn verifiable_code_hash(&self, now: DateTime<FixedOffset>) -> Option<&str> {
-        let Self::AwaitingCode {
-            code_hash,
-            code_expires_at,
-            failed_attempts,
-            ..
-        } = self
-        else {
-            return None;
-        };
-
-        if *failed_attempts >= PASSWORD_RESET_CODE_MAX_FAILED_ATTEMPTS {
-            return None;
-        }
-
-        (now <= *code_expires_at).then_some(code_hash.as_str())
-    }
-
-    const fn increment_failed_attempts(mut self) -> Self {
-        if let Self::AwaitingCode {
-            failed_attempts, ..
-        } = &mut self
-        {
-            *failed_attempts += 1;
-        }
-
-        self
-    }
-
-    fn index_key(&self) -> Option<String> {
-        match self {
-            Self::AwaitingCode { .. } => None,
-            Self::AwaitingPassword { reset_key_hash, .. } => {
-                Some(password_reset_key_index_key(reset_key_hash))
-            }
-        }
-    }
-
-    fn ttl_seconds(&self, now: DateTime<FixedOffset>) -> Option<i64> {
-        let expires_at = match self {
-            Self::AwaitingCode {
-                code_expires_at, ..
-            } => code_expires_at,
-            Self::AwaitingPassword {
-                reset_key_expires_at,
-                ..
-            } => reset_key_expires_at,
-        };
-        let ttl_seconds = (*expires_at - now).num_seconds();
-
-        (ttl_seconds > 0).then_some(ttl_seconds)
-    }
-}
 
 fn generate_password_reset_token(random_bytes_len: usize) -> String {
     let mut rng = rand::rng();
@@ -136,27 +43,10 @@ fn hash_password_reset_key(reset_key: &str) -> String {
     BASE64_URL_SAFE_NO_PAD.encode(blake3::hash(reset_key.as_bytes()).as_bytes())
 }
 
-fn password_reset_state_key(user_id: i32) -> String {
-    format!("auth:password-reset:user:{user_id}")
-}
-
-fn password_reset_key_index_key(reset_key_hash: &str) -> String {
-    format!("auth:password-reset:key:{reset_key_hash}")
-}
-
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 struct ConsumedPasswordResetKey {
     user_id: i32,
     reset_key_expires_at: DateTime<FixedOffset>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct PasswordResetEmailJob {
-    pub user_id: i32,
-    pub email: String,
-    pub code: String,
-    pub code_hash: String,
-    pub code_expires_at: DateTime<FixedOffset>,
 }
 
 #[derive(Clone, Debug)]
@@ -221,8 +111,7 @@ struct StoredPasswordResetState {
 impl StoredPasswordResetState {
     fn from_state(state: PasswordResetState) -> Result<Self, InternalError> {
         Ok(Self {
-            payload: serde_json::to_string(&state)
-                .map_err(InternalError::new)?,
+            payload: state.to_payload().map_err(InternalError::new)?,
             state,
         })
     }
@@ -519,7 +408,7 @@ impl Service {
 
         payload
             .map(|payload| {
-                serde_json::from_str(&payload)
+                PasswordResetState::from_payload(&payload)
                     .map(|state| StoredPasswordResetState { payload, state })
                     .map_err(|err| {
                         log::error!(
@@ -684,8 +573,7 @@ impl Service {
         else {
             return Ok(false);
         };
-        let payload =
-            serde_json::to_string(next_state).map_err(InternalError::new)?;
+        let payload = next_state.to_payload().map_err(InternalError::new)?;
         let current_index_key = next_state.index_key().unwrap_or_default();
         let previous_index_key = previous_state
             .and_then(|state| state.state.index_key())
@@ -791,58 +679,6 @@ impl Service {
     }
 }
 
-pub(crate) async fn password_reset_email_job_is_current(
-    redis_pool: &fred::prelude::Pool,
-    job: &PasswordResetEmailJob,
-) -> bool {
-    let payload = match redis_pool
-        .get::<Option<String>, _>(password_reset_state_key(job.user_id))
-        .await
-    {
-        Ok(payload) => payload,
-        Err(err) => {
-            log::error!(
-                target: "features.auth.password_reset.service",
-                user_id = job.user_id,
-                error:? = err;
-                "failed to load password reset state while processing email job"
-            );
-            return false;
-        }
-    };
-
-    let Some(payload) = payload else {
-        return false;
-    };
-
-    let state = match serde_json::from_str::<PasswordResetState>(&payload) {
-        Ok(state) => state,
-        Err(err) => {
-            log::error!(
-                target: "features.auth.password_reset.service",
-                user_id = job.user_id,
-                error:? = err;
-                "failed to deserialize password reset state while processing email job"
-            );
-            return false;
-        }
-    };
-
-    let PasswordResetState::AwaitingCode {
-        code_hash,
-        code_expires_at,
-        ..
-    } = state
-    else {
-        return false;
-    };
-
-    code_hash == job.code_hash && code_expires_at == job.code_expires_at && {
-        let now: DateTime<FixedOffset> = Utc::now().into();
-        now <= code_expires_at
-    }
-}
-
 #[cfg(test)]
 mod unit_tests {
     use super::*;
@@ -892,13 +728,14 @@ mod unit_tests {
 mod tests {
     use std::sync::Arc;
 
+    use auth_core::password_reset::PASSWORD_RESET_CODE_MAX_FAILED_ATTEMPTS;
+    use infra_db::SeaOrmRepository;
     use lettre::{AsyncSmtpTransport, Tokio1Executor};
     use sea_orm::TransactionTrait;
     use tokio::sync::Barrier;
 
     use super::*;
-    use crate::domain::user::NewUser;
-    use crate::infra::database::sea_orm::SeaOrmRepository;
+    use crate::features::user::NewUser;
     use crate::infra::email::Mailer;
     use crate::infra::integration_test::{test_connection, test_redis_url};
     use crate::infra::redis::Pool as RedisPool;
@@ -916,7 +753,7 @@ mod tests {
 
     async fn create_verified_user(
         conn: &sea_orm::DatabaseConnection,
-    ) -> crate::domain::user::User {
+    ) -> crate::features::user::User {
         let suffix = Utc::now().timestamp_nanos_opt().unwrap_or_default();
         let name = format!("alice_{suffix}");
         let email = format!("alice_{suffix}@example.com");
@@ -941,10 +778,9 @@ mod tests {
         let repo = SeaOrmRepository::new(conn.clone());
         let redis_url = test_redis_url();
         let redis_pool = RedisPool::init(&redis_url).await.inner;
-        let queue =
-            crate::infra::worker::password_reset_email_queue(&redis_url)
-                .await
-                .unwrap();
+        let queue = auth_worker::password_reset_email::queue(&redis_url)
+            .await
+            .unwrap();
         Service::new(repo, build_failing_mailer(), redis_pool, queue)
     }
 

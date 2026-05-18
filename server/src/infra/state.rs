@@ -1,3 +1,8 @@
+use auth_worker::password_reset_email::{
+    PasswordResetEmailQueue, queue as password_reset_email_queue,
+};
+use infra_db::SeaOrmRepository;
+use infra_storage_worker::{RemoveFileQueue, queue as remove_file_queue};
 use lettre::message::Mailbox;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{AsyncSmtpTransport, Tokio1Executor};
@@ -5,15 +10,10 @@ use sea_orm::DatabaseConnection;
 use snafu::{FromString, ResultExt, Whatever};
 
 use super::config::{Config, EmailSecurity};
-use super::database::sea_orm::SeaOrmRepository;
 use super::database::{get_connection, init_database};
 use super::email::Mailer;
 use super::notification::NotificationHub;
 use super::redis::Pool;
-use super::worker::{
-    PasswordResetEmailQueue, RemoveFileQueue, password_reset_email_queue,
-    remove_file_queue,
-};
 
 #[derive(Clone)]
 pub struct AppState {

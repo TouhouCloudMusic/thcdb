@@ -1,4 +1,5 @@
 use entity::release;
+use infra_db::SeaOrmRepository;
 use sea_orm::sea_query::NullOrdering;
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityTrait, PaginatorTrait, QueryFilter,
@@ -9,9 +10,9 @@ use sea_query::{ExprTrait, Func};
 
 use super::filter::ReleaseSortField;
 use crate::features::release::model::Release;
+use crate::features::release::repo::find_many_impl;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::release::impls::find_many_impl;
-use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
+use crate::infra::database::utils;
 use crate::shared::http::CorrectionSortField;
 
 #[derive(Clone, Debug)]
@@ -82,7 +83,7 @@ pub(crate) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::ReleaseFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Release>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<Release>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -141,7 +142,7 @@ async fn find_sorted_by_release_date(
     filter: super::ReleaseFilter,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Release>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<Release>, DatabaseError> {
     let select = filter.into_select().order_by_with_nulls(
         release::Column::ReleaseDate,
         sort_direction.into(),
@@ -168,11 +169,11 @@ async fn find_sorted_by_correction(
     sort_field: CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Release>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<Release>, DatabaseError> {
     use entity::enums::EntityType;
 
     let entity_ids =
-        crate::infra::database::sea_orm::utils::correction_sorted_entity_ids(
+        crate::infra::database::utils::correction_sorted_entity_ids(
             &repo.conn,
             EntityType::Release,
             sort_field,
@@ -197,7 +198,7 @@ async fn find_sorted_by_correction(
         .await
         .db_operation("load releases")?;
 
-    releases = crate::infra::database::sea_orm::utils::sort_by_id_list(
+    releases = crate::infra::database::utils::sort_by_id_list(
         releases,
         &entity_ids,
         |release| release.id,

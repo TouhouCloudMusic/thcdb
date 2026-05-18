@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use domain::image::Image as DomainImage;
+use domain::shared::{DateWithPrecision, PageResponse, SimpleArtist};
 use entity::enums::EntityType;
 use entity::sea_orm_active_enums::{ArtistImageType, ReleaseImageType};
 use entity::{
@@ -29,9 +31,6 @@ use super::model::{
     UserCollectionItemEntityType, UserCollectionMutationRequest,
     UserCollectionOwner,
 };
-use crate::domain::artist::SimpleArtist;
-use crate::domain::image::Image as DomainImage;
-use crate::domain::shared::{DateWithPrecision, PageResponse};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::PageQuery;
 

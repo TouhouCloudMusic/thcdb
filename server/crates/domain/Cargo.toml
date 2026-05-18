@@ -1,0 +1,27 @@
+[package]
+edition = "2024"
+name    = "thcdb-domain"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "domain"
+path = "src/lib.rs"
+
+[dependencies]
+entity.workspace = true
+libfp.workspace = true
+macros.workspace = true
+bon.workspace = true
+chrono.workspace = true
+derive_more.workspace = true
+pulldown-cmark = { version = "0.13.0", default-features = false, features = [
+    "html",
+    "simd",
+] }
+serde.workspace = true
+serde_with.workspace = true
+utoipa.workspace = true

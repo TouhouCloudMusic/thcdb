@@ -7,9 +7,8 @@ use sea_orm::{
     EntityTrait, IntoActiveModel, QueryFilter, QuerySelect,
 };
 
-use crate::domain::model::{UserRole, UserRoleEnum};
-use crate::domain::user::{EmailVerification, NewUser, User};
-use crate::features::auth::Email;
+use crate::features::auth::{Email, UserRole, UserRoleEnum};
+use crate::features::user::{EmailVerification, NewUser, User};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::error::BrokenEntityReference;
 

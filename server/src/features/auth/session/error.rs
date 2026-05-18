@@ -1,7 +1,7 @@
 use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError, From};
 
-use crate::domain::auth::{AuthnError, ValidateCredsError};
+use crate::features::auth::{AuthnError, ValidateCredsError};
 use crate::features::user_profile;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;

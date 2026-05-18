@@ -7,14 +7,13 @@
 )]
 
 mod adapter;
-mod application;
 mod cli;
 mod constant;
-mod domain;
 mod features;
 mod infra;
 mod shared;
 mod utils;
+mod worker;
 
 use std::fs;
 use std::sync::Arc;
@@ -24,7 +23,7 @@ use infra::singleton::APP_CONFIG;
 use infra::state::AppState;
 use snafu::{ResultExt, Whatever};
 
-use self::infra::worker::Worker;
+use self::worker::Worker;
 use crate::cli::CliArgs;
 
 #[cfg(all(feature = "release", unix))]

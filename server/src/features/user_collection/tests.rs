@@ -2,6 +2,8 @@ use std::sync::Arc;
 
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use domain::shared::NonEmptyString;
+use infra_db::SeaOrmRepository;
 use tokio::sync::Barrier;
 
 use super::model::{
@@ -10,8 +12,6 @@ use super::model::{
     UserCollectionMutationRequest,
 };
 use super::service::Service;
-use crate::domain::shared::NonEmptyString;
-use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::integration_test::fixture::{MockSong, MockUser};
 use crate::infra::integration_test::test_connection;
 use crate::shared::http::PageQuery;

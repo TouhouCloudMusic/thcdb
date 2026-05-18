@@ -1,5 +1,6 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
+use domain::shared::CursorResponse;
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -9,7 +10,6 @@ use super::model::{EntityType, Score, TagAggregate};
 use super::{Error, repo};
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
-use crate::domain::shared::CursorResponse;
 use crate::shared::http::PaginationQuery;
 use crate::shared::http::api_response::Data;
 

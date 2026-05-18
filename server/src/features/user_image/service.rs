@@ -1,10 +1,10 @@
 use axum::response::IntoResponse;
+use infra_db::{SeaOrmRepository, SeaOrmTxRepo};
 
-use crate::domain::image;
-use crate::domain::image::{CreateImageMeta, Parser};
-use crate::domain::user::{self, User};
+use crate::features::image_upload;
+use crate::features::image_upload::{CreateImageMeta, Parser};
+use crate::features::user::User;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::infra::storage::GenericFileStorage;
 use crate::shared::error::InternalError;
 use crate::shared::http::api_response::AppError;
@@ -20,7 +20,7 @@ mod parser {
         USER_PROFILE_BANNER_MAX_HEIGHT, USER_PROFILE_BANNER_MAX_WIDTH,
         USER_PROFILE_BANNER_MIN_HEIGHT, USER_PROFILE_BANNER_MIN_WIDTH,
     };
-    use crate::domain::image::{ParseOption, Parser};
+    use crate::features::image_upload::{ParseOption, Parser};
 
     pub static AVATAR: LazyLock<Parser> = LazyLock::new(|| {
         ParseOption::builder()
@@ -65,7 +65,7 @@ pub struct Service {
 pub enum Error {
     #[display("{_0}")]
     #[from]
-    Image(#[error(source)] image::Error),
+    Image(#[error(source)] image_upload::Error),
     #[display("{_0}")]
     #[from]
     Database(#[error(source)] DatabaseError),
@@ -78,11 +78,11 @@ impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         match self {
             Error::Image(source) => match source {
-                image::Error::InvalidInput(source) => {
+                image_upload::Error::InvalidInput(source) => {
                     AppError::bad_request(source.to_string()).into_response()
                 }
-                image::Error::Database(source) => source.into_response(),
-                image::Error::Internal(source) => source.into_response(),
+                image_upload::Error::Database(source) => source.into_response(),
+                image_upload::Error::Internal(source) => source.into_response(),
             },
             Error::Database(source) => source.into_response(),
             Error::Internal(source) => source.into_response(),
@@ -149,7 +149,7 @@ async fn update_user_image<F>(
 where
     F: FnOnce(&mut User) -> &mut Option<i32>,
 {
-    let image_service = image::Service::new(tx.clone(), storage);
+    let image_service = image_upload::Service::new(tx.clone(), storage);
 
     let new_image = image_service
         .create(
@@ -173,8 +173,10 @@ where
 
     drop(image_service);
 
-    let user = user::TxRepo::update(&tx, user).await?;
-    tx.commit().await?;
+    let user = crate::features::user::repo::update(&tx, user).await?;
+    tx.commit()
+        .await
+        .map_err(crate::infra::database::error::DatabaseError::from)?;
 
     Ok(user)
 }

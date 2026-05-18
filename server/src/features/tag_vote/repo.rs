@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use domain::shared::CursorResponse;
+use infra_db::SeaOrmRepository;
 use sea_orm::{ConnectionTrait, EntityName, EntityTrait, FromQueryResult};
 use sea_query::{
     Alias, Expr, ExprTrait, Func, OnConflict, Order, Query, SimpleExpr,
@@ -7,9 +9,7 @@ use sea_query::{
 
 use super::Error;
 use super::model::{EntityType, Score, TagAggregate, TagAggregateVote};
-use crate::domain::shared::CursorResponse;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::shared::error::EntityNotFound;
 
 #[derive(Debug, Clone, sea_orm::FromQueryResult, macros::FieldEnum)]
@@ -359,10 +359,11 @@ async fn load_tag_votes(
 
 #[cfg(all(test, feature = "integration-test"))]
 mod tests {
+    use infra_db::SeaOrmRepository;
+
     use super::{delete, get_tags, upsert};
     use crate::features::tag_vote::Error;
     use crate::features::tag_vote::model::{EntityType, Score};
-    use crate::infra::database::sea_orm::SeaOrmRepository;
     use crate::infra::integration_test::fixture::{
         MockArtist, MockRelease, MockSong, MockTag, MockUser,
     };

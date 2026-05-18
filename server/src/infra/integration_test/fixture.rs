@@ -4,7 +4,7 @@ use fake::{Dummy, Fake, Faker};
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{ConnectionTrait, DbErr, EntityTrait, IntoActiveModel};
 
-use crate::domain::model::UserRoleEnum;
+use crate::features::auth::UserRoleEnum;
 
 async fn insert_fixture<E, F>(
     conn: &impl ConnectionTrait,

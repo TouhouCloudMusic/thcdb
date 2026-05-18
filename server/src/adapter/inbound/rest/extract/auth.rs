@@ -6,8 +6,8 @@ use headers::Authorization;
 use headers::authorization::Basic;
 
 use crate::adapter::inbound::rest::{AuthRejection, state};
-use crate::domain::auth::AuthCredential;
-use crate::domain::user::User;
+use crate::features::auth::AuthCredential;
+use crate::features::user::User;
 use crate::shared::error::MessageError;
 use crate::shared::http::api_response::AppError;
 

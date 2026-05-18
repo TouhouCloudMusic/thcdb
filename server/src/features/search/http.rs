@@ -1,5 +1,6 @@
 use axum::extract::{Query, State};
 use axum::response::IntoResponse;
+use domain::shared::{CursorResponse, SimpleArtist, SimpleEvent, SimpleLabel};
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -8,13 +9,9 @@ use utoipa_axum::routes;
 use super::repo;
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::domain::artist::SimpleArtist;
-use crate::domain::event::SimpleEvent;
-use crate::domain::label::SimpleLabel;
-use crate::domain::release::SimpleRelease;
-use crate::domain::shared::{CursorResponse, SearchTerm, SearchTermConfig};
-use crate::domain::song::SongRef;
-use crate::domain::tag::TagRef;
+use crate::features::release::model::SimpleRelease;
+use crate::features::song::model::SongRef;
+use crate::features::tag::model::TagRef;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::MessageValidationError as ValidationError;
 use crate::shared::http::api_response::{AppError, Data};
@@ -76,6 +73,51 @@ struct ValidSearchSingleQuery {
     cursor: i32,
 }
 
+#[derive(Clone, Copy, Debug)]
+struct SearchTermConfig {
+    min_len: usize,
+    max_len: usize,
+}
+
+impl SearchTermConfig {
+    const DEFAULT: Self = Self {
+        min_len: 1,
+        max_len: 256,
+    };
+
+    fn validate(&self, value: &str) -> Result<String, ValidationError> {
+        let trimmed = value.trim();
+        let len = trimmed.chars().take(self.max_len + 1).count();
+        if len < self.min_len {
+            return Err(ValidationError::new(format!(
+                "keyword must be at least {} characters",
+                self.min_len
+            )));
+        }
+        if len > self.max_len {
+            return Err(ValidationError::new("keyword is too long"));
+        }
+        Ok(trimmed.to_owned())
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct SearchTerm(String);
+
+impl SearchTerm {
+    fn try_new(
+        value: impl Into<String>,
+        config: SearchTermConfig,
+    ) -> Result<Self, ValidationError> {
+        let validated = config.validate(&value.into())?;
+        Ok(Self(validated))
+    }
+
+    fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
 impl SearchAllQuery {
     fn validate(self) -> Result<ValidSearchQuery, ValidationError> {
         let search_term =
@@ -120,7 +162,7 @@ pub struct SearchResponse {
 
 impl SearchResponse {
     #[inline]
-    pub async fn from_request(
+    async fn from_request(
         repo: &state::SeaOrmRepository,
         search_term: &SearchTerm,
         limit: u32,

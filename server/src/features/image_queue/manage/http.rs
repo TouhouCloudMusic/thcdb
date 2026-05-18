@@ -1,4 +1,5 @@
 use axum::extract::{FromRef, Path, Query, State};
+use domain::shared::CursorResponse;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -10,7 +11,6 @@ use super::model::{
 use super::service::Service;
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
-use crate::domain::shared::CursorResponse;
 use crate::features::notification;
 use crate::shared::http::PaginationQuery;
 use crate::shared::http::api_response::{Data, Message};

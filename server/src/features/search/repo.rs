@@ -1,8 +1,10 @@
+use domain::shared::{CursorResponse, SimpleArtist, SimpleEvent, SimpleLabel};
 use entity::{
     artist, artist_localized_name, event, event_alternative_name, label,
     label_localized_name, release, release_localized_title, song,
     song_localized_title, tag, tag_alternative_name,
 };
+use infra_db::SeaOrmRepository;
 use sea_orm::{ColumnTrait, ConnectionTrait, FromQueryResult};
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{
@@ -10,15 +12,10 @@ use sea_query::{
     UnionType,
 };
 
-use crate::domain::artist::SimpleArtist;
-use crate::domain::event::SimpleEvent;
-use crate::domain::label::SimpleLabel;
-use crate::domain::release::SimpleRelease;
-use crate::domain::shared::CursorResponse;
-use crate::domain::song::SongRef;
-use crate::domain::tag::TagRef;
+use crate::features::release::model::SimpleRelease;
+use crate::features::song::model::SongRef;
+use crate::features::tag::model::TagRef;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::SeaOrmRepository;
 
 #[derive(Clone, Copy)]
 enum MatchMode {

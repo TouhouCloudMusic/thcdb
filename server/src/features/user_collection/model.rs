@@ -1,11 +1,9 @@
+use domain::shared::{DateWithPrecision, NonEmptyString, SimpleArtist};
 use entity::enums::EntityType;
 use entity::sea_orm_active_enums::{ArtistType, ReleaseType, TagType};
 use entity::user_collection_item;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
-
-use crate::domain::artist::SimpleArtist;
-use crate::domain::shared::{DateWithPrecision, NonEmptyString};
 
 #[derive(Clone, Debug, Serialize, ToSchema)]
 pub struct UserCollectionOwner {

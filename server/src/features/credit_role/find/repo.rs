@@ -1,4 +1,5 @@
 use entity::credit_role;
+use infra_db::SeaOrmRepository;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
@@ -7,7 +8,6 @@ use utoipa::{IntoParams, ToSchema};
 
 use crate::features::credit_role::model::{CreditRole, CreditRoleSummary};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::SeaOrmRepository;
 
 #[derive(Clone, Debug, Default, Deserialize, ToSchema, IntoParams)]
 pub struct CommonFilter {}

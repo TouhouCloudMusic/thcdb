@@ -1,4 +1,5 @@
 use axum::extract::{Path, Query, State};
+use domain::shared::PageResponse;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::router::OpenApiRouter;
@@ -8,7 +9,6 @@ use super::repo::{self, FindReleaseFilter};
 use super::{PageQuery, ReleaseFilter};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::domain::shared::PageResponse;
 use crate::features::release::model::Release;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{Data, Error as ApiError};

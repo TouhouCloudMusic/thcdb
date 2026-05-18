@@ -1,6 +1,7 @@
-use crate::infra::database::sea_orm::SeaOrmRepository;
+use auth_worker::password_reset_email::PasswordResetEmailQueue;
+use infra_db::SeaOrmRepository;
+
 use crate::infra::email::Mailer;
-use crate::infra::worker::PasswordResetEmailQueue;
 
 #[derive(Clone)]
 pub struct Service {

@@ -5,9 +5,7 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
-use crate::domain;
-use crate::domain::user::UserProfile;
-use crate::features::user_profile::{Error, FollowResult};
+use crate::features::user_profile::{Error, FollowResult, UserProfile};
 use crate::shared::http::api_response::{Data, Message};
 
 const TAG: &str = "User";
@@ -73,8 +71,8 @@ async fn follow_user(
     notification
         .create_best_effort(
             target_user.id,
-            crate::domain::model::NotificationKindEnum::NewFollower,
-            crate::domain::model::NotificationTargetTypeEnum::User,
+            crate::features::notification::NotificationKindEnum::NewFollower,
+            crate::features::notification::NotificationTargetTypeEnum::User,
             user.id,
             crate::features::notification::NotificationPayload {
                 summary: Some(format!("{} started following you", user.name)),
@@ -128,7 +126,7 @@ async fn profile_with_name(
 pub async fn load_profile(
     service: &state::UserProfileService,
     name: &str,
-    current_user: Option<&domain::user::User>,
+    current_user: Option<&crate::features::user::User>,
 ) -> Result<Data<UserProfile>, Error> {
     let mut profile =
         service.find_by_name(name).await?.ok_or(Error::NotFound)?;

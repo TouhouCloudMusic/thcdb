@@ -8,7 +8,7 @@ use sea_orm::{
 };
 use strum::IntoEnumIterator;
 
-use crate::domain::model::{PermissionDef, PermissionName, UserRoleEnum};
+use crate::features::auth::{PermissionDef, PermissionName, UserRoleEnum};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 pub async fn sync_permissions(

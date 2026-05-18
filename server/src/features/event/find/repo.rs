@@ -1,4 +1,6 @@
+use domain::shared::{DateWithPrecision, Location};
 use entity::{event, event_alternative_name};
+use infra_db::SeaOrmRepository;
 use itertools::{Itertools, izip};
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityTrait, LoaderTrait, QueryFilter,
@@ -7,10 +9,9 @@ use sea_orm::{
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
 
-use crate::domain::shared::{DateWithPrecision, Location};
 use crate::features::event::model::{AlternativeName, Event};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
+use crate::infra::database::utils;
 
 pub(super) async fn find_by_id(
     repo: &SeaOrmRepository,
@@ -49,7 +50,7 @@ pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::EventFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Event>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<Event>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -82,13 +83,13 @@ async fn find_sorted_by_correction(
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Event>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<Event>, DatabaseError> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
 
     let entity_ids =
-        crate::infra::database::sea_orm::utils::correction_sorted_entity_ids(
+        crate::infra::database::utils::correction_sorted_entity_ids(
             &repo.conn,
             EntityType::Event,
             sort_field,
@@ -116,7 +117,7 @@ async fn find_sorted_by_correction(
 
     let mut events = find_many_impl(select, &repo.conn).await?;
 
-    events = crate::infra::database::sea_orm::utils::sort_by_id_list(
+    events = crate::infra::database::utils::sort_by_id_list(
         events,
         &entity_ids,
         |event| event.id,

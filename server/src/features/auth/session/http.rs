@@ -6,9 +6,10 @@ use utoipa_axum::routes;
 use super::super::shared::TAG;
 use super::error::{SessionBackendError, SignInError};
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
-use crate::domain::auth::{AuthCredential, AuthnError};
-use crate::domain::user::UserProfile;
-use crate::features::user_profile::{DataUserProfile, load_profile};
+use crate::features::auth::{AuthCredential, AuthnError};
+use crate::features::user_profile::{
+    DataUserProfile, UserProfile, load_profile,
+};
 use crate::shared::http::api_response::{Data, Message};
 
 pub fn public_router() -> OpenApiRouter<ArcAppState> {

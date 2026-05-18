@@ -1,12 +1,13 @@
+use infra_db::{SeaOrmRepository, SeaOrmTxRepo};
+
 use super::{ModerationError, SubmissionError, repo};
-use crate::domain::correction::{
-    CorrectionEntity, CorrectionFilter, NewCorrectionMeta, Repo as _,
-    TxRepo as _,
+use crate::features::auth::PermissionName;
+use crate::features::correction::repo::CorrectionApprover;
+use crate::features::correction::{
+    CorrectionEntity, CorrectionFilter, NewCorrectionMeta,
 };
-use crate::domain::model::{CorrectionApprover, PermissionName};
-use crate::domain::user::User;
+use crate::features::user::User;
 use crate::infra::database::error::DatabaseResultExt;
-use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
 
 pub async fn approve(
     repo: &SeaOrmRepository,
@@ -18,7 +19,10 @@ pub async fn approve(
         .await
         .db_operation("begin approve correction transaction")?;
     repo::approve(&tx_repo, correction_id, CorrectionApprover(user)).await?;
-    tx_repo.commit().await?;
+    tx_repo
+        .commit()
+        .await
+        .map_err(crate::infra::database::error::DatabaseError::from)?;
     Ok(())
 }
 
@@ -32,7 +36,10 @@ pub async fn reject(
         .await
         .db_operation("begin reject correction transaction")?;
     repo::reject(&tx_repo, correction_id, CorrectionApprover(user)).await?;
-    tx_repo.commit().await?;
+    tx_repo
+        .commit()
+        .await
+        .map_err(crate::infra::database::error::DatabaseError::from)?;
     Ok(())
 }
 
@@ -40,7 +47,7 @@ pub async fn create<T: CorrectionEntity + Send>(
     repo: &SeaOrmTxRepo,
     meta: impl Into<NewCorrectionMeta<T>> + Send,
 ) -> Result<i32, SubmissionError> {
-    let correction_id = repo.create(meta.into()).await?;
+    let correction_id = repo::create(repo, meta.into()).await?;
     Ok(correction_id)
 }
 
@@ -58,15 +65,19 @@ pub async fn find_create_conflict<T: CorrectionEntity + Send + Sync>(
     repo: &SeaOrmTxRepo,
     entity_id: i32,
 ) -> Result<Option<i32>, SubmissionError> {
-    let _ = repo
-        .find_one(CorrectionFilter::latest(entity_id, T::entity_type()))
-        .await?
-        .ok_or(SubmissionError::NotFound)?;
+    let _ = repo::find_one(
+        repo.conn(),
+        CorrectionFilter::latest(entity_id, T::entity_type()),
+    )
+    .await?
+    .ok_or(SubmissionError::NotFound)?;
 
-    Ok(repo
-        .find_one(CorrectionFilter::pending(entity_id, T::entity_type()))
-        .await?
-        .map(|pending_correction| pending_correction.id))
+    Ok(repo::find_one(
+        repo.conn(),
+        CorrectionFilter::pending(entity_id, T::entity_type()),
+    )
+    .await?
+    .map(|pending_correction| pending_correction.id))
 }
 
 pub async fn find_create_conflict_for_mode<
@@ -98,26 +109,24 @@ pub async fn upsert<T: CorrectionEntity + Send + Sync>(
             }
 
             CorrectionUpsertResult::Submitted {
-                correction_id: repo.create(meta).await?,
+                correction_id: repo::create(repo, meta).await?,
             }
         }
         CorrectionUpsertMode::Update { correction_id } => {
             // Guard: ensure the entity was created through the correction system
             // (at least one prior correction must exist for this entity)
-            let _ = repo
-                .find_one(CorrectionFilter::latest(
-                    meta.entity_id,
-                    T::entity_type(),
-                ))
-                .await?
-                .ok_or(SubmissionError::NotFound)?;
+            let _ = repo::find_one(
+                repo.conn(),
+                CorrectionFilter::latest(meta.entity_id, T::entity_type()),
+            )
+            .await?
+            .ok_or(SubmissionError::NotFound)?;
 
-            let pending_correction = repo
-                .find_one(CorrectionFilter::pending(
-                    meta.entity_id,
-                    T::entity_type(),
-                ))
-                .await?;
+            let pending_correction = repo::find_one(
+                repo.conn(),
+                CorrectionFilter::pending(meta.entity_id, T::entity_type()),
+            )
+            .await?;
 
             let Some(pending_correction) = pending_correction else {
                 return Err(SubmissionError::PendingCorrectionConflict {
@@ -138,13 +147,18 @@ pub async fn upsert<T: CorrectionEntity + Send + Sync>(
             )
             .await
             .db_operation("check correction manage permission")?
-                || repo.is_author(&meta.author, &pending_correction).await?;
+                || repo::is_author(
+                    repo.conn(),
+                    &meta.author,
+                    &pending_correction,
+                )
+                .await?;
 
             if !can_update {
                 return Err(SubmissionError::PermissionDenied);
             }
 
-            repo.update(correction_id, meta).await?;
+            repo::update(repo, correction_id, meta).await?;
             CorrectionUpsertResult::Submitted { correction_id }
         }
     };

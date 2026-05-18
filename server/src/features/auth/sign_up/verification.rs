@@ -1,14 +1,12 @@
 use chrono::{Duration, Utc};
 use lettre::message::{Mailbox, Message as EmailMessage};
 
-use crate::domain::auth::{
-    SIGNUP_EXPIRES_HOURS, VERIFICATION_CODE_EXPIRES_MINUTES,
-};
-use crate::domain::user::User;
 use crate::features::auth::repo::EmailVerificationMutationError;
 use crate::features::auth::{
-    InvalidEmail, ResendVerificationEmailError, SignUpError,
+    InvalidEmail, ResendVerificationEmailError, SIGNUP_EXPIRES_HOURS,
+    SignUpError, VERIFICATION_CODE_EXPIRES_MINUTES,
 };
+use crate::features::user::User;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;
 

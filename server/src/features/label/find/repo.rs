@@ -1,4 +1,6 @@
+use domain::shared::{DateWithPrecision, LocalizedName};
 use entity::{label, label_founder, label_localized_name, language};
+use infra_db::SeaOrmRepository;
 use itertools::{Itertools, izip};
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityTrait, LoaderTrait, QueryFilter,
@@ -7,10 +9,9 @@ use sea_orm::{
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
 
-use crate::domain::shared::{DateWithPrecision, LocalizedName};
 use crate::features::label::model::Label;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
+use crate::infra::database::utils;
 
 pub(super) async fn find_by_id(
     repo: &SeaOrmRepository,
@@ -49,7 +50,7 @@ pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::LabelFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Label>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<Label>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -82,13 +83,13 @@ async fn find_sorted_by_correction(
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Label>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<Label>, DatabaseError> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
 
     let entity_ids =
-        crate::infra::database::sea_orm::utils::correction_sorted_entity_ids(
+        crate::infra::database::utils::correction_sorted_entity_ids(
             &repo.conn,
             EntityType::Label,
             sort_field,
@@ -124,7 +125,7 @@ async fn find_sorted_by_correction(
 
     let mut labels = find_many_impl(select, &repo.conn).await?;
 
-    labels = crate::infra::database::sea_orm::utils::sort_by_id_list(
+    labels = crate::infra::database::utils::sort_by_id_list(
         labels,
         &entity_ids,
         |label| label.id,

@@ -7,6 +7,7 @@ mod service;
 #[cfg(all(test, feature = "integration-test"))]
 mod tests;
 
+use domain::shared::{Cursor, CursorResponse};
 pub(crate) use error::Error;
 pub(crate) use http::EntityCommentTarget;
 pub use http::router;
@@ -16,8 +17,6 @@ pub(crate) use model::{
 };
 use sea_orm::ConnectionTrait;
 pub(crate) use service::Service;
-
-use crate::domain::shared::{Cursor, CursorResponse};
 
 pub(crate) async fn initial_page(
     conn: &impl ConnectionTrait,

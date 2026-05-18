@@ -1,15 +1,16 @@
+use domain::shared::CursorResponse;
+use infra_db::SeaOrmRepository;
+
 use super::model::{
     HandleImageQueueMethod, ImageQueueDetail, ImageQueueFilterQuery,
     ImageSummary, PendingImageQueueItem,
 };
 use super::{Error, repo};
-use crate::domain::model::{NotificationKindEnum, PermissionName};
-use crate::domain::shared::CursorResponse;
+use crate::features::auth::PermissionName;
 use crate::features::image_queue::shared::{UserSummary, load_users};
-use crate::features::notification;
+use crate::features::notification::{self, NotificationKindEnum};
 use crate::infra::authz;
 use crate::infra::database::error::DatabaseResultExt;
-use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::shared::http::PaginationQuery;
 
 #[derive(Clone)]

@@ -1,16 +1,16 @@
 use axum::extract::ws::WebSocketUpgrade;
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
+use domain::shared::CursorResponse;
 use serde::Serialize;
 use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use super::model::{NotificationKindEnum, NotificationTargetTypeEnum};
 use super::service::{Error, Service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
-use crate::domain::model::{NotificationKindEnum, NotificationTargetTypeEnum};
-use crate::domain::shared::CursorResponse;
 use crate::features::notification::ws;
 use crate::infra::notification::NotificationHub;
 use crate::shared::http::PaginationQuery;

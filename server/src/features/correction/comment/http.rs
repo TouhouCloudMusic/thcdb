@@ -1,11 +1,11 @@
 use axum::Json;
 use axum::extract::{Path, Query, State};
+use domain::shared::CursorResponse;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
-use crate::domain::shared::CursorResponse;
 use crate::features::comment::{
     CommentTarget, CorrectionComment, CreateEntityCommentRequest, Error,
     Service,
