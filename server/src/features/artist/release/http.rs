@@ -1,4 +1,5 @@
 use axum::extract::{Path, Query, State};
+use domain::shared::{Cursor, CursorResponse};
 use entity::enums::ReleaseType;
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
@@ -7,7 +8,6 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::domain::{Cursor, CursorResponse};
 use crate::features::artist::model::{
     Appearance, AppearanceQuery, Credit, CreditQuery, Discography,
     DiscographyQuery,

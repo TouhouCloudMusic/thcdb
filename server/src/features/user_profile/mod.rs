@@ -1,8 +1,11 @@
 mod http;
+mod model;
+mod repo;
 mod service;
 
 use axum::response::IntoResponse;
 pub use http::{DataUserProfile, load_profile, router};
+pub use model::{UserProfile, UserProfileStats};
 pub use service::Service;
 
 use crate::infra::database::error::DatabaseError;

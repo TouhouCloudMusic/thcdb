@@ -2,8 +2,16 @@
 members = [
     ".",
     "crates/collection_ext",
+    "crates/domain",
     "crates/entity",
+    "crates/features/auth/core",
+    "crates/features/auth/worker",
+    "crates/features/notification/worker",
     "crates/flow",
+    "crates/infra/db",
+    "crates/infra/storage",
+    "crates/infra/storage/worker",
+    "crates/infra/worker",
     "crates/libfp",
     "crates/macros",
     "crates/migration",
@@ -12,15 +20,30 @@ members = [
 ]
 
 [workspace.dependencies]
-collection_ext = { path = "crates/collection_ext" }
-entity         = { path = "crates/entity" }
-fast-lrc       = { path = "crates/fast_lrc" }
-flow           = { path = "crates/flow" }
-libfp          = { path = "crates/libfp" }
-macros         = { path = "crates/macros" }
-migration      = { path = "crates/migration" }
-proc_macros    = { path = "crates/proc_macros" }
+collection_ext       = { path = "crates/collection_ext" }
+domain               = { package = "thcdb-domain", path = "crates/domain" }
+entity               = { path = "crates/entity" }
+fast-lrc             = { path = "crates/fast_lrc" }
+flow                 = { path = "crates/flow" }
+infra_db             = { package = "thcdb-infra-db", path = "crates/infra/db" }
+infra_storage        = { package = "thcdb-infra-storage", path = "crates/infra/storage" }
+infra_storage_worker = { package = "thcdb-infra-storage-worker", path = "crates/infra/storage/worker" }
+infra_worker         = { package = "thcdb-infra-worker", path = "crates/infra/worker" }
+libfp                = { path = "crates/libfp" }
+macros               = { path = "crates/macros" }
+migration            = { path = "crates/migration" }
+auth_core            = { package = "thcdb-feature-auth-core", path = "crates/features/auth/core" }
+auth_worker          = { package = "thcdb-feature-auth-worker", path = "crates/features/auth/worker" }
+notification_worker  = { package = "thcdb-feature-notification-worker", path = "crates/features/notification/worker" }
+proc_macros          = { path = "crates/proc_macros" }
 # external
+apalis = { version = "0.7.4", features = [
+    "limit",
+    "retry",
+    "tracing",
+], default-features = false }
+apalis-cron = "0.7.4"
+apalis-redis = "0.7.4"
 argon2 = "0.5"
 axum = { version = "0.8", features = [
     "macros",
@@ -28,13 +51,30 @@ axum = { version = "0.8", features = [
     "ws",
 ] }
 axum-login = { version = "0.18" }
+bon = { version = "3.0", features = [
+    "implied-bounds",
+] }
 chrono = "0.4"
+derive_more = { version = "2.0.1", features = [
+    "display",
+    "error",
+    "from",
+    "into",
+] }
 dotenvy = "0.15"
 enumset = { version = "1.1.7", features = [
     "alloc",
     "serde",
 ] }
+fred = { version = "10.0", features = [ "i-scripts" ] }
 itertools = "0.14"
+lettre = { version = "0.11.14", default-features = false, features = [
+    "builder",
+    "hostname",
+    "pool",
+    "smtp-transport",
+    "tokio1-rustls-tls",
+] }
 log = "0.4"
 quote = "1.0.38"
 rand = "0.9.0"
@@ -75,6 +115,10 @@ sea-query = "0.32.6"
 serde = { version = "1", features = [
     "derive",
 ] }
+serde_json = "1.0"
+serde_with = { version = "3.12.0", features = [
+    "chrono_0_4",
+] }
 snafu = "0.8"
 syn = { version = "2.0.98", features = [
     "full",
@@ -85,6 +129,9 @@ tokio = { version = "1", features = [
 tracing = { version = "0.1", features = [ "log" ] }
 tracing-subscriber = { version = "0.3", default-features = false, features = [
     "registry",
+] }
+strum = { version = "0.27", features = [
+    "derive",
 ] }
 utoipa = { version = "5", features = [
     "axum_extras",
@@ -132,21 +179,22 @@ version = "0.1.0"
 workspace = true
 
 [dependencies]
-collection_ext.workspace = true
-entity.workspace         = true
-flow.workspace           = true
-libfp.workspace          = true
-macros.workspace         = true
-migration.workspace      = true
+auth_core.workspace            = true
+collection_ext.workspace       = true
+domain.workspace               = true
+entity.workspace               = true
+flow.workspace                 = true
+libfp.workspace                = true
+infra_db.workspace             = true
+infra_storage.workspace        = true
+infra_storage_worker.workspace = true
+infra_worker.workspace         = true
+macros.workspace               = true
+migration.workspace            = true
+auth_worker.workspace          = true
+notification_worker.workspace  = true
 #
 ammonia = "4.0.0"
-apalis = { version = "0.7.4", features = [
-    "limit",
-    "retry",
-    "tracing",
-], default-features = false }
-apalis-cron = "0.7.4"
-apalis-redis = "0.7.4"
 argon2.features = [
     "std",
 ]
@@ -161,9 +209,7 @@ axum-extra = { version = "0.12.0", features = [
 axum-login.workspace = true
 axum_typed_multipart = "0.16"
 base64 = "0.22"
-bon = { version = "3.0", features = [
-    "implied-bounds",
-] }
+bon.workspace = true
 bytes = "1.10.1"
 bytesize = { version = "2.0.1", features = [
     "serde",
@@ -176,22 +222,14 @@ config = { version = "0.15.8", features = [
     "convert-case",
 ], default-features = false }
 dashmap = "6.1.0"
-derive_more = { version = "2.0.1", features = [
-    "display",
-    "error",
-    "from",
-    "into",
-] }
+derive_more.workspace = true
 dotenvy.workspace = true
 enumset.workspace = true
 fastrace.workspace = true
 fastrace-axum.workspace = true
 fastrace-opentelemetry.workspace = true
 fastrace-tracing.workspace = true
-fred = { version = "10.0", features = [ "i-scripts" ] }
-frunk = { version = "0.4.3", features = [
-    "std",
-] }
+fred.workspace = true
 futures-util = "0.3"
 garde = { version = "0.22.0", features = [
     "full",
@@ -204,13 +242,7 @@ iso8601-duration = { version = "0.2", features = [
     "chrono",
 ] }
 itertools.workspace = true
-lettre = { version = "0.11.14", default-features = false, features = [
-    "builder",
-    "hostname",
-    "pool",
-    "smtp-transport",
-    "tokio1-rustls-tls",
-] }
+lettre.workspace = true
 maud = { version = "0.27.0", features = [
     "axum",
 ] }
@@ -237,17 +269,13 @@ sea-orm.workspace = true
 sea-orm-migration.workspace = true
 sea-query.workspace = true
 serde.workspace = true
-serde_json = "1.0"
+serde_json.workspace = true
 blake3 = "1"
 serde_repr = "0.1"
-serde_with = { version = "3.12.0", features = [
-    "chrono_0_4",
-] }
+serde_with.workspace = true
 smart-default = "0.7.1"
 snafu.workspace = true
-strum = { version = "0.27", features = [
-    "derive",
-] }
+strum.workspace = true
 mimalloc = { version = "0.1.50", optional = true }
 tokio.workspace = true
 tower = { version = "0.5.2", features = [

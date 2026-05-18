@@ -1,11 +1,14 @@
 use std::collections::HashMap;
 
+use domain::image::Image;
+use domain::shared::{LocalizedName, Location};
 use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{
     artist, artist_alias, artist_image, artist_link, artist_localized_name,
     artist_membership, artist_membership_role, artist_membership_tenure,
     credit_role, image, language,
 };
+use infra_db::SeaOrmRepository;
 use itertools::{Itertools, izip};
 use sea_orm::{
     ColumnTrait, Condition, ConnectionTrait, EntityTrait, LoaderTrait,
@@ -15,12 +18,10 @@ use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func, SimpleExpr};
 
 use super::{CommonFilter, FindManyFilter};
-use crate::domain::credit_role::CreditRoleRef;
-use crate::domain::image::Image;
-use crate::domain::shared::{LocalizedName, Location};
 use crate::features::artist::model::{Artist, Membership, Tenure};
+use crate::features::credit_role::CreditRoleRef;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
+use crate::infra::database::utils;
 
 pub(super) async fn find_one(
     repo: &SeaOrmRepository,
@@ -262,7 +263,7 @@ async fn find_many_impl(
                 .find(|(image_type, _)| *image_type == ArtistImageType::Profile)
                 .map(|(_, image)| Image::from(image.clone()));
             let profile_image_url =
-                profile_image.as_ref().map(crate::domain::image::Image::url);
+                profile_image.as_ref().map(domain::image::Image::url);
 
             Artist {
                 id: artist.id,
@@ -298,7 +299,7 @@ pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::ArtistFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Artist>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<Artist>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -331,13 +332,13 @@ async fn find_sorted_by_correction(
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Artist>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<Artist>, DatabaseError> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
 
     let entity_ids =
-        crate::infra::database::sea_orm::utils::correction_sorted_entity_ids(
+        crate::infra::database::utils::correction_sorted_entity_ids(
             &repo.conn,
             EntityType::Artist,
             sort_field,
@@ -362,7 +363,7 @@ async fn find_sorted_by_correction(
 
     let mut artists = find_many_impl(select, &repo.conn).await?;
 
-    artists = crate::infra::database::sea_orm::utils::sort_by_id_list(
+    artists = crate::infra::database::utils::sort_by_id_list(
         artists,
         &entity_ids,
         |artist| artist.id,

@@ -1,0 +1,18 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-auth-core"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "auth_core"
+path = "src/lib.rs"
+
+[dependencies]
+chrono.workspace     = true
+lettre.workspace     = true
+serde.workspace      = true
+serde_json.workspace = true

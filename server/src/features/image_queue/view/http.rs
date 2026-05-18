@@ -1,4 +1,5 @@
 use axum::extract::{Path, Query, State};
+use domain::shared::CursorResponse;
 use entity::image_queue as image_queue_entity;
 use entity::sea_orm_active_enums::ImageQueueStatus;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
@@ -9,8 +10,7 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
-use crate::domain::model::PermissionName;
-use crate::domain::shared::CursorResponse;
+use crate::features::auth::PermissionName;
 use crate::features::image_queue::shared::{UserSummary, load_users};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::PaginationQuery;

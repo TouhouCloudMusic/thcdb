@@ -1,4 +1,5 @@
 use chrono::Utc;
+use domain::shared::CursorResponse;
 use entity::sea_orm_active_enums::ImageQueueStatus;
 use entity::{
     artist_image as artist_image_entity,
@@ -6,6 +7,7 @@ use entity::{
     image_queue as image_queue_entity, release_image as release_image_entity,
     release_image_queue as release_image_queue_entity,
 };
+use infra_db::{SeaOrmRepository, SeaOrmTxRepo};
 use sea_orm::ActiveValue::Set;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, JoinType,
@@ -14,9 +16,7 @@ use sea_orm::{
 };
 
 use super::{Error, ImageQueueType};
-use crate::domain::shared::CursorResponse;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::{SeaOrmRepository, SeaOrmTxRepo};
 use crate::shared::error::{BrokenEntityReference, InternalError};
 
 pub struct ImageQueueDetailModels {
@@ -212,7 +212,10 @@ pub async fn approve(
         .await
         .db_operation("mark image queue entry approved")?;
 
-    tx_repo.commit().await?;
+    tx_repo
+        .commit()
+        .await
+        .map_err(crate::infra::database::error::DatabaseError::from)?;
 
     Ok(handled)
 }
@@ -246,7 +249,10 @@ pub async fn reject(
         .await
         .db_operation("mark image queue entry rejected")?;
 
-    tx_repo.commit().await?;
+    tx_repo
+        .commit()
+        .await
+        .map_err(crate::infra::database::error::DatabaseError::from)?;
 
     Ok(handled)
 }
@@ -324,7 +330,10 @@ pub async fn revert(
         .await
         .db_operation("mark image queue entry reverted")?;
 
-    tx_repo.commit().await?;
+    tx_repo
+        .commit()
+        .await
+        .map_err(crate::infra::database::error::DatabaseError::from)?;
 
     Ok(handled)
 }

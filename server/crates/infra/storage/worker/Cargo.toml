@@ -1,0 +1,19 @@
+[package]
+edition = "2024"
+name    = "thcdb-infra-storage-worker"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "infra_storage_worker"
+path = "src/lib.rs"
+
+[dependencies]
+infra_storage.workspace = true
+infra_worker.workspace  = true
+log                     = { workspace = true, features = [ "kv" ] }
+serde.workspace         = true
+tokio.workspace         = true

@@ -13,12 +13,13 @@ use super::super::{
     ResendVerificationEmailError, SignUpError, VerifyEmailError,
 };
 use crate::adapter::inbound::rest::state::{self, ArcAppState, AuthSession};
-use crate::domain::auth::{
+use crate::features::auth::{
     ResendVerificationEmailRequest, ResendVerificationEmailResponse,
     SignUpRequest, SignUpResponse, VerifyEmailRequest,
 };
-use crate::domain::user::UserProfile;
-use crate::features::user_profile::{self, DataUserProfile, load_profile};
+use crate::features::user_profile::{
+    self, DataUserProfile, UserProfile, load_profile,
+};
 use crate::shared::http::api_response::Data;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {

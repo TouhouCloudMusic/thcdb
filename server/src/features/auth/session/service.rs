@@ -3,9 +3,8 @@ use axum_login::{AuthUser, AuthnBackend, UserId};
 use super::error::{
     AuthnBackendError, SessionBackendError, SessionError, SignInError,
 };
-use crate::domain::auth::{AuthCredential, AuthnError};
-use crate::domain::user::{self, User};
-use crate::features::auth::{Email, Service, repo};
+use crate::features::auth::{AuthCredential, AuthnError, Email, Service, repo};
+use crate::features::user::User;
 
 impl Service {
     pub async fn sign_in(
@@ -58,7 +57,7 @@ impl From<axum_login::Error<Service>> for SessionBackendError {
     }
 }
 
-impl AuthUser for user::User {
+impl AuthUser for User {
     type Id = i32;
 
     fn id(&self) -> Self::Id {
@@ -71,7 +70,7 @@ impl AuthUser for user::User {
 }
 
 impl AuthnBackend for Service {
-    type User = user::User;
+    type User = User;
     type Credentials = AuthCredential;
     type Error = AuthnBackendError;
 

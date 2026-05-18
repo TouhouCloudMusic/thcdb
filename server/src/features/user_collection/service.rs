@@ -1,9 +1,11 @@
 use std::collections::HashSet;
 
+use domain::shared::{NonEmptyString, PageResponse};
 use entity::{
     user_collection as user_collection_entity,
     user_collection_item as user_collection_item_entity,
 };
+use infra_db::SeaOrmRepository;
 use sea_orm::sea_query::{ExprTrait, Func};
 use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter};
 
@@ -14,9 +16,7 @@ use super::model::{
     UserCollectionMutationRequest,
 };
 use super::repo;
-use crate::domain::shared::{NonEmptyString, PageResponse};
 use crate::infra::database::error::DatabaseResultExt;
-use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::shared::http::PageQuery;
 
 #[derive(Clone)]
@@ -195,7 +195,10 @@ impl Service {
         )
         .await?;
 
-        tx_repo.commit().await?;
+        tx_repo
+            .commit()
+            .await
+            .map_err(crate::infra::database::error::DatabaseError::from)?;
 
         Ok(item.into())
     }
@@ -217,7 +220,10 @@ impl Service {
         repo::resequence_user_collection_item_positions(conn, collection_id)
             .await?;
 
-        tx_repo.commit().await?;
+        tx_repo
+            .commit()
+            .await
+            .map_err(crate::infra::database::error::DatabaseError::from)?;
 
         Ok(())
     }
@@ -249,7 +255,10 @@ impl Service {
         )
         .await?;
 
-        tx_repo.commit().await?;
+        tx_repo
+            .commit()
+            .await
+            .map_err(crate::infra::database::error::DatabaseError::from)?;
 
         Ok(())
     }

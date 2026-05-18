@@ -1,6 +1,8 @@
 use axum::response::IntoResponse;
-use chrono::{DateTime, FixedOffset, Utc};
+use chrono::{DateTime, FixedOffset};
+use domain::shared::CursorResponse;
 use entity::{notification, user, user_role};
+use infra_db::SeaOrmRepository;
 use sea_orm::ActiveValue::Set;
 use sea_orm::prelude::Expr;
 use sea_orm::{
@@ -10,10 +12,8 @@ use sea_orm::{
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::domain::model::{NotificationKindEnum, NotificationTargetTypeEnum};
-use crate::domain::shared::CursorResponse;
+use super::model::{NotificationKindEnum, NotificationTargetTypeEnum};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::notification::NotificationHub;
 use crate::shared::error::{
     BrokenEntityReference, InternalError, MessageError,
@@ -438,20 +438,5 @@ impl Service {
         };
 
         Ok(enabled)
-    }
-
-    pub async fn cleanup_expired(
-        &self,
-        retention_days: i64,
-    ) -> Result<u64, Error> {
-        let cutoff: chrono::DateTime<chrono::FixedOffset> =
-            (Utc::now() - chrono::Duration::days(retention_days)).into();
-        let res = notification::Entity::delete_many()
-            .filter(notification::Column::CreatedAt.lt(cutoff))
-            .exec(&self.repo.conn)
-            .await
-            .db_operation("cleanup expired notifications")?;
-
-        Ok(res.rows_affected)
     }
 }

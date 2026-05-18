@@ -1,0 +1,23 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-auth-worker"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "auth_worker"
+path = "src/lib.rs"
+
+[dependencies]
+auth_core.workspace    = true
+chrono.workspace       = true
+entity.workspace       = true
+fred.workspace         = true
+infra_db.workspace     = true
+infra_worker.workspace = true
+lettre.workspace       = true
+log                    = { workspace = true, features = [ "kv" ] }
+sea-orm.workspace      = true

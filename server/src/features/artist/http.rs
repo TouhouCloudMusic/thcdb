@@ -10,13 +10,12 @@ use super::model::NewArtist;
 use super::{find, release, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
-use crate::application::correction::{
-    CorrectionSubmitResult, NewCorrectionDto,
-};
-use crate::domain::image::CurrentImageMetadata;
 use crate::features::artist_image::{self, ArtistProfileImageInput};
-use crate::features::correction::SubmissionError;
 use crate::features::correction::service::CorrectionUpsertMode;
+use crate::features::correction::{
+    CorrectionSubmitResult, NewCorrectionDto, SubmissionError,
+};
+use crate::features::image_metadata::CurrentImageMetadata;
 use crate::shared::http::api_response::Data;
 
 const TAG: &str = "Artist";

@@ -1,13 +1,12 @@
 use chrono::{DateTime, FixedOffset};
+use domain::image::Image;
+use domain::shared::CursorResponse;
 use entity::enums::CommentState as DbCommentState;
 use entity::{
     comment as comment_entity, image as image_entity, user as user_entity,
 };
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
-
-use crate::domain::image::Image;
-use crate::domain::shared::CursorResponse;
 
 pub(crate) const COMMENT_CONTENT_MAX_LEN: usize = 5000;
 

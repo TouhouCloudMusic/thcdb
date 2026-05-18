@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use domain::shared::Cursor;
 use entity::enums::CommentState as DbCommentState;
 use entity::{
     artist as artist_entity, comment as comment_entity, comment_target,
@@ -18,7 +19,6 @@ use super::error::{Error, NotFound};
 use super::model::{
     CommentTarget, CreateEntityCommentRequest, EntityComment, EntityCommentPage,
 };
-use crate::domain::shared::Cursor;
 use crate::infra::database::error::DatabaseResultExt;
 
 impl CommentTarget {

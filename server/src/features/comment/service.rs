@@ -1,14 +1,14 @@
+use domain::shared::Cursor;
 use entity::comment as comment_entity;
+use infra_db::SeaOrmRepository;
 
 use super::error::Error;
 use super::model::{
     CommentTarget, CreateEntityCommentRequest, EntityComment, EntityCommentPage,
 };
 use super::repo;
-use crate::domain::model::PermissionName;
-use crate::domain::shared::Cursor;
+use crate::features::auth::PermissionName;
 use crate::infra::database::error::DatabaseResultExt;
-use crate::infra::database::sea_orm::SeaOrmRepository;
 
 #[derive(Clone)]
 pub(crate) struct Service {
@@ -59,7 +59,10 @@ impl Service {
         let comment =
             repo::insert_comment(conn, thread.id, author_id, &req).await?;
         let summary = repo::load_comment_summary(conn, comment.id).await?;
-        tx_repo.commit().await?;
+        tx_repo
+            .commit()
+            .await
+            .map_err(crate::infra::database::error::DatabaseError::from)?;
 
         Ok(summary)
     }

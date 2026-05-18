@@ -5944,13 +5944,108 @@ dependencies = [
 ]
 
 [[package]]
+name = "thcdb-domain"
+version = "0.1.0"
+dependencies = [
+ "bon",
+ "chrono",
+ "derive_more",
+ "entity",
+ "libfp",
+ "macros",
+ "pulldown-cmark",
+ "serde",
+ "serde_with",
+ "utoipa",
+]
+
+[[package]]
+name = "thcdb-feature-auth-core"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "lettre",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "thcdb-feature-auth-worker"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "entity",
+ "fred",
+ "lettre",
+ "log",
+ "sea-orm",
+ "thcdb-feature-auth-core",
+ "thcdb-infra-db",
+ "thcdb-infra-worker",
+]
+
+[[package]]
+name = "thcdb-feature-notification-worker"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "entity",
+ "log",
+ "sea-orm",
+ "thcdb-infra-db",
+ "thcdb-infra-worker",
+]
+
+[[package]]
+name = "thcdb-infra-db"
+version = "0.1.0"
+dependencies = [
+ "derive_more",
+ "frunk",
+ "itertools 0.14.0",
+ "migration",
+ "sea-orm",
+ "sea-orm-migration",
+ "sea-query",
+ "strum 0.27.2",
+]
+
+[[package]]
+name = "thcdb-infra-storage"
+version = "0.1.0"
+dependencies = [
+ "log",
+ "tokio",
+]
+
+[[package]]
+name = "thcdb-infra-storage-worker"
+version = "0.1.0"
+dependencies = [
+ "log",
+ "serde",
+ "thcdb-infra-storage",
+ "thcdb-infra-worker",
+ "tokio",
+]
+
+[[package]]
+name = "thcdb-infra-worker"
+version = "0.1.0"
+dependencies = [
+ "apalis",
+ "apalis-cron",
+ "apalis-redis",
+ "log",
+ "serde",
+ "tokio",
+]
+
+[[package]]
 name = "thcdb_rs"
 version = "0.1.0"
 dependencies = [
  "ammonia",
- "apalis",
- "apalis-cron",
- "apalis-redis",
  "argon2",
  "async-trait",
  "axum",
@@ -5979,7 +6074,6 @@ dependencies = [
  "fastrace-tracing",
  "flow",
  "fred",
- "frunk",
  "futures-util",
  "garde",
  "governor",
@@ -6019,6 +6113,14 @@ dependencies = [
  "snafu",
  "strum 0.27.2",
  "syn 2.0.117",
+ "thcdb-domain",
+ "thcdb-feature-auth-core",
+ "thcdb-feature-auth-worker",
+ "thcdb-feature-notification-worker",
+ "thcdb-infra-db",
+ "thcdb-infra-storage",
+ "thcdb-infra-storage-worker",
+ "thcdb-infra-worker",
  "tokio",
  "tower",
  "tower-http",

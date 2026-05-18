@@ -1,0 +1,20 @@
+[package]
+edition = "2024"
+name    = "thcdb-infra-worker"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "infra_worker"
+path = "src/lib.rs"
+
+[dependencies]
+apalis.workspace       = true
+apalis-cron.workspace  = true
+apalis-redis.workspace = true
+log.workspace          = true
+serde.workspace        = true
+tokio.workspace        = true

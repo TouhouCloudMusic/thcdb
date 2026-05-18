@@ -1,8 +1,8 @@
 mod http;
+use domain::shared::{CursorResponse, DEFAULT_LIMIT};
 pub(super) use http::router;
 use sea_orm::ConnectionTrait;
 
-use crate::domain::shared::{CursorResponse, DEFAULT_LIMIT};
 pub(super) use crate::features::comment::CorrectionComment;
 pub(in crate::features::correction) use crate::features::comment::Error;
 use crate::features::comment::{self, CommentTarget};

@@ -1,4 +1,5 @@
 use axum::extract::State;
+use domain::shared::Language;
 use entity::{language, role, song_relation_type};
 use itertools::Itertools;
 use libfp::FunctorExt;
@@ -9,9 +10,8 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::domain::model::{EditableUserRole, UserRoleEnum};
-use crate::domain::shared::Language;
-use crate::domain::song::SongRelationType;
+use crate::features::auth::{EditableUserRole, UserRoleEnum};
+use crate::features::song::model::SongRelationType;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::error::BrokenEntityReference;
 use crate::shared::http::api_response::Data;

@@ -7,4 +7,3 @@ pub mod find;
 mod release;
 
 pub use http::router;
-pub(crate) use repo::TxRepo;

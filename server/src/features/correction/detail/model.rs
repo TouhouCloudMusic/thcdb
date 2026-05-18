@@ -1,7 +1,7 @@
+use domain::shared::CursorResponse;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::domain::shared::CursorResponse;
 use crate::features::correction::comment::CorrectionComment;
 use crate::features::correction::model::CorrectionUserSummary;
 

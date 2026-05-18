@@ -7,7 +7,7 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz};
-use crate::domain::model::PermissionName;
+use crate::features::auth::PermissionName;
 use crate::features::correction::model::HandleCorrectionMethod;
 use crate::features::correction::{ModerationError, service};
 use crate::shared::http::api_response::Message;
@@ -76,7 +76,7 @@ async fn handle_correction(
             notification
                 .notify_correction_status_best_effort(
                     id,
-                    crate::domain::model::NotificationKindEnum::CorrectionApproved,
+                    crate::features::notification::NotificationKindEnum::CorrectionApproved,
                     Some("Your correction was approved".to_owned()),
                 )
                 .await;
@@ -89,7 +89,7 @@ async fn handle_correction(
             notification
                 .notify_correction_status_best_effort(
                     id,
-                    crate::domain::model::NotificationKindEnum::CorrectionRejected,
+                    crate::features::notification::NotificationKindEnum::CorrectionRejected,
                     Some("Your correction was rejected".to_owned()),
                 )
                 .await;

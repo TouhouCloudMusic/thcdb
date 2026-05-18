@@ -15,4 +15,8 @@ mod shared;
 
 pub(crate) use error::{ModerationError, ReadError, SubmissionError};
 pub use http::router;
-pub use model::HandleCorrectionMethod;
+pub use model::{
+    Correction, CorrectionDiff, CorrectionDiffEntry, CorrectionEntity,
+    CorrectionFilter, CorrectionFilterStatus, CorrectionSubmitResult,
+    HandleCorrectionMethod, NewCorrection, NewCorrectionDto, NewCorrectionMeta,
+};

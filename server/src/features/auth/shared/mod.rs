@@ -1,5 +1,5 @@
 use crate::adapter::inbound::rest::data;
-use crate::domain::auth::{ResendVerificationEmailResponse, SignUpResponse};
+use crate::features::auth::{ResendVerificationEmailResponse, SignUpResponse};
 
 pub(super) const TAG: &str = "Auth";
 

@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use entity::tag::Column::Name;
 use entity::{tag, tag_alternative_name, tag_relation};
+use infra_db::SeaOrmRepository;
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityTrait, LoaderTrait, QueryFilter,
     QueryOrder,
@@ -11,10 +12,9 @@ use sea_query::extension::postgres::PgBinOper::{
 };
 use sea_query::{ExprTrait, Func};
 
-use crate::domain::tag::{AlternativeName, TagRef, TagRelation};
-use crate::features::tag::model::Tag;
+use crate::features::tag::model::{AlternativeName, Tag, TagRef, TagRelation};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
+use crate::infra::database::utils;
 
 pub(super) async fn find_by_id(
     repo: &SeaOrmRepository,
@@ -53,7 +53,7 @@ pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::TagFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Tag>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<Tag>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -86,13 +86,13 @@ async fn find_sorted_by_correction(
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Tag>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<Tag>, DatabaseError> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
 
     let entity_ids =
-        crate::infra::database::sea_orm::utils::correction_sorted_entity_ids(
+        crate::infra::database::utils::correction_sorted_entity_ids(
             &repo.conn,
             EntityType::Tag,
             sort_field,
@@ -117,7 +117,7 @@ async fn find_sorted_by_correction(
 
     let mut tags = find_many_impl(select, &repo.conn).await?;
 
-    tags = crate::infra::database::sea_orm::utils::sort_by_id_list(
+    tags = crate::infra::database::utils::sort_by_id_list(
         tags,
         &entity_ids,
         |tag| tag.id,

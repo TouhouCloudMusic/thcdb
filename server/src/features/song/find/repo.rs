@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use domain::image::Image;
+use domain::shared::{Language, SimpleArtist};
 use entity::enums::StorageBackend;
 use entity::sea_orm_active_enums::ReleaseImageType;
 use entity::song::Column::{Id, Title};
@@ -8,6 +10,7 @@ use entity::{
     song_credit, song_language, song_localized_title, song_lyrics,
     song_relation, song_relation_type,
 };
+use infra_db::SeaOrmRepository;
 use itertools::{Itertools, izip};
 use libfp::FunctorExt;
 use sea_orm::{
@@ -21,19 +24,15 @@ use sea_query::{ExprTrait, Func};
 use tokio::try_join;
 
 use super::filter::SongFilter;
-use crate::domain::artist::SimpleArtist;
-use crate::domain::credit_role::CreditRoleRef;
-use crate::domain::image::Image;
-use crate::domain::shared::Language;
-use crate::domain::song::{
-    LocalizedTitle, SongCredit, SongRef, SongRelation, SongRelationType,
+use crate::features::credit_role::CreditRoleRef;
+use crate::features::song::model::{
+    LocalizedTitle, Song, SongCredit, SongRef, SongRelation, SongRelationType,
     SongRelease,
 };
-use crate::domain::song_lyrics::SongLyrics;
-use crate::features::song::model::Song;
+use crate::features::song_lyrics::model::SongLyrics;
+use crate::infra::database::cache::LANGUAGE_CACHE;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::cache::LANGUAGE_CACHE;
-use crate::infra::database::sea_orm::{SeaOrmRepository, utils};
+use crate::infra::database::utils;
 use crate::shared::http::{CorrectionSortField, SortDirection};
 
 pub(super) async fn find_by_id(
@@ -84,7 +83,7 @@ pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: SongFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Song>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<Song>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -554,11 +553,11 @@ async fn find_sorted_by_correction(
     sort_field: CorrectionSortField,
     sort_direction: SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<crate::domain::shared::PageResponse<Song>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<Song>, DatabaseError> {
     use entity::enums::EntityType;
 
     let entity_ids =
-        crate::infra::database::sea_orm::utils::correction_sorted_entity_ids(
+        crate::infra::database::utils::correction_sorted_entity_ids(
             &repo.conn,
             EntityType::Song,
             sort_field,
@@ -580,7 +579,7 @@ async fn find_sorted_by_correction(
 
     let mut songs = find_many_impl(select, &repo.conn).await?;
 
-    songs = crate::infra::database::sea_orm::utils::sort_by_id_list(
+    songs = crate::infra::database::utils::sort_by_id_list(
         songs,
         &entity_ids,
         |song| song.id,
@@ -591,10 +590,10 @@ async fn find_sorted_by_correction(
 
 #[cfg(test)]
 mod tests {
+    use domain::shared::SimpleArtist;
     use sea_orm::QueryTrait;
 
     use super::*;
-    use crate::domain::artist::SimpleArtist;
 
     #[test]
     fn test_load_release_cover_art_urls_query() {

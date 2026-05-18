@@ -1,9 +1,8 @@
-use serde::Deserialize;
-use utoipa::IntoParams;
-
-use crate::domain::shared::{
+use domain::shared::{
     Cursor, DEFAULT_LIMIT, MAX_LIMIT, MAX_PAGE, PageResponse, total_pages,
 };
+use serde::Deserialize;
+use utoipa::IntoParams;
 
 #[derive(Debug, Clone, Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]

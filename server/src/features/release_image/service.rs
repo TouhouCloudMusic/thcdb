@@ -5,25 +5,25 @@ use axum::response::IntoResponse;
 use bytesize::ByteSize;
 use entity::enums::ReleaseImageType;
 use entity::{image as image_entity, release_image, user as user_entity};
+use infra_db::SeaOrmRepository;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
-use super::model::ReleaseCoverArtInput;
+use super::model::{ReleaseCoverArtInput, ReleaseImageQueue};
+use super::repo;
 use crate::constant::{
     RELEASE_COVER_IMAGE_MAX_HEIGHT, RELEASE_COVER_IMAGE_MAX_WIDTH,
     RELEASE_COVER_IMAGE_MIN_HEIGHT, RELEASE_COVER_IMAGE_MIN_WIDTH,
 };
-use crate::domain::image;
-use crate::domain::image::{
-    CreateImageMeta, CurrentImageMetadata, ParseOption, Parser,
+use crate::features::image_metadata::{
+    CurrentImageMetadata, ImageUploaderSummary,
 };
-use crate::domain::image_queue::NewImageQueue;
-use crate::domain::release_image_queue::ReleaseImageQueue;
-use crate::domain::shared::ImageUploaderSummary;
-use crate::features::image_queue::Repo as ImageQueueRepo;
+use crate::features::image_queue::repo::{
+    self as image_queue_repo, NewImageQueue,
+};
+use crate::features::image_upload;
+use crate::features::image_upload::{CreateImageMeta, ParseOption, Parser};
 use crate::features::release::find::repo as release_repo;
-use crate::features::release_image_queue::Repo as ReleaseImageQueueRepo;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::storage::GenericFileStorage;
 use crate::shared::error::{EntityNotFound, InternalError};
 use crate::shared::http::api_response::AppError;
@@ -53,7 +53,7 @@ pub struct Service {
 pub enum Error {
     #[display("{_0}")]
     #[from]
-    Image(#[error(source)] image::Error),
+    Image(#[error(source)] image_upload::Error),
     #[display("{_0}")]
     #[from]
     Database(#[error(source)] DatabaseError),
@@ -69,11 +69,11 @@ impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         match self {
             Error::Image(source) => match source {
-                image::Error::InvalidInput(source) => {
+                image_upload::Error::InvalidInput(source) => {
                     AppError::bad_request(source.to_string()).into_response()
                 }
-                image::Error::Database(source) => source.into_response(),
-                image::Error::Internal(source) => source.into_response(),
+                image_upload::Error::Database(source) => source.into_response(),
+                image_upload::Error::Internal(source) => source.into_response(),
             },
             Error::Database(source) => source.into_response(),
             Error::Internal(source) => source.into_response(),
@@ -111,7 +111,7 @@ impl Service {
             .db_operation("begin release cover art upload transaction")?;
 
         let image_service =
-            image::Service::new(tx_repo.clone(), self.storage.clone());
+            image_upload::Service::new(tx_repo.clone(), self.storage.clone());
 
         let created_image = image_service
             .create(
@@ -125,16 +125,21 @@ impl Service {
 
         let new_image_queue = NewImageQueue::new(&user, &created_image);
         let image_queue_entry =
-            ImageQueueRepo::create(&tx_repo, new_image_queue).await?;
+            image_queue_repo::create(&tx_repo, new_image_queue).await?;
 
-        let release_image_queue_entry =
-            ReleaseImageQueue::cover(release_id, image_queue_entry.id);
-        ReleaseImageQueueRepo::create(&tx_repo, release_image_queue_entry)
-            .await?;
+        let release_image_queue_entry = ReleaseImageQueue {
+            release_id,
+            queue_id: image_queue_entry.id,
+            r#type: entity::sea_orm_active_enums::ReleaseImageType::Cover,
+        };
+        repo::create(&tx_repo, release_image_queue_entry).await?;
 
         drop(image_service);
 
-        tx_repo.commit().await?;
+        tx_repo
+            .commit()
+            .await
+            .map_err(crate::infra::database::error::DatabaseError::from)?;
 
         Ok(image_queue_entry.id)
     }

@@ -117,7 +117,7 @@ mod tests {
     use axum::response::IntoResponse;
 
     use super::SubmissionError;
-    use crate::domain::song::{ValidationError, ValidationErrorKind};
+    use crate::features::song::model::{ValidationError, ValidationErrorKind};
 
     #[test]
     fn validation_returns_bad_request() {

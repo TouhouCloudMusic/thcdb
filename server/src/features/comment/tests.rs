@@ -1,5 +1,6 @@
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use domain::shared::Cursor;
 use entity::enums::{
     CorrectionStatus, CorrectionType, DatePrecision, EntityType,
 };
@@ -8,6 +9,7 @@ use entity::{
     event as event_entity, label as label_entity, permission, role,
     role_permission, tag as tag_entity, user_role,
 };
+use infra_db::SeaOrmRepository;
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter, QueryOrder,
@@ -20,9 +22,7 @@ use super::model::{
     CreateEntityCommentRequest,
 };
 use super::service::Service;
-use crate::domain::model::{PermissionName, UserRoleEnum};
-use crate::domain::shared::Cursor;
-use crate::infra::database::sea_orm::SeaOrmRepository;
+use crate::features::auth::{PermissionName, UserRoleEnum};
 use crate::infra::integration_test::fixture::{
     MockArtist, MockRelease, MockSong, MockTag, MockUser,
 };

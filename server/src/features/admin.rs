@@ -4,6 +4,7 @@ use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use chrono::Utc;
+use domain::shared::PageResponse;
 use entity::{user, user_role, user_role_change_audit};
 use itertools::Itertools;
 use sea_orm::ActiveValue::{NotSet, Set};
@@ -19,10 +20,9 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
-use crate::domain::model::{
+use crate::features::auth::{
     EditableUserRole, PermissionName, UserRole, UserRoleEnum,
 };
-use crate::domain::shared::PageResponse;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::error::{EntityNotFound, InternalError};
 use crate::shared::http::PageQuery;
@@ -254,7 +254,10 @@ async fn set_user_roles(
     .await
     .db_operation("insert user role change audit")?;
 
-    tx_repo.commit().await?;
+    tx_repo
+        .commit()
+        .await
+        .map_err(crate::infra::database::error::DatabaseError::from)?;
 
     Ok(Data::new(new_roles))
 }

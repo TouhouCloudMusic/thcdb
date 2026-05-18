@@ -2,8 +2,8 @@ use std::ops::Deref;
 use std::sync::Arc;
 
 use axum::extract::FromRef;
+pub(crate) use infra_db::SeaOrmRepository;
 
-pub(crate) use crate::infra::database::sea_orm::SeaOrmRepository;
 use crate::infra::notification::NotificationHub;
 use crate::infra::singleton::FS_IMAGE_BASE_PATH;
 use crate::infra::state::AppState;

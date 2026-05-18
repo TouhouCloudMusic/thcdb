@@ -1,10 +1,13 @@
 use entity::user_following;
+use infra_db::SeaOrmRepository;
 use sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, Set};
 
-use crate::domain::user::{ProfileRepository, Repository, User, UserProfile};
-use crate::features::user_profile::{Error, FollowResult, UnfollowResult};
+use crate::features::auth;
+use crate::features::user::User;
+use crate::features::user_profile::{
+    Error, FollowResult, UnfollowResult, UserProfile, repo,
+};
 use crate::infra::database::error::DatabaseResultExt;
-use crate::infra::database::sea_orm::SeaOrmRepository;
 
 #[derive(Clone)]
 pub struct Service {
@@ -20,7 +23,7 @@ impl Service {
         &self,
         name: &str,
     ) -> Result<Option<UserProfile>, Error> {
-        let profile = ProfileRepository::find_by_name(&self.repo, name).await?;
+        let profile = repo::find_by_name(&self.repo, name).await?;
 
         Ok(profile)
     }
@@ -30,7 +33,7 @@ impl Service {
         profile: &mut UserProfile,
         current_user: &User,
     ) -> Result<(), Error> {
-        self.repo.with_following(profile, current_user).await?;
+        repo::with_following(&self.repo, profile, current_user).await?;
 
         Ok(())
     }
@@ -39,7 +42,7 @@ impl Service {
         &self,
         name: &str,
     ) -> Result<Option<User>, Error> {
-        let user = Repository::find_by_name(&self.repo, name).await?;
+        let user = auth::repo::find_by_name(&self.repo.conn, name).await?;
 
         Ok(user)
     }
