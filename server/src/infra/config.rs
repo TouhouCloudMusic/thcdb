@@ -14,6 +14,8 @@ nest! {
     pub struct Config {
         pub database_url: String,
         pub redis_url: String,
+        #[serde(default)]
+        pub import_bypass_token: Option<String>,
         pub app: pub struct App {
             pub port: u16,
         },

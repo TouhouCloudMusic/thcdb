@@ -25,6 +25,11 @@ from urllib.parse import urlsplit, urlunsplit
 import httpx
 from dotenv import dotenv_values
 
+from import_rate_limit import (
+    build_import_rate_limit_config,
+    raise_import_rate_limit_token_error,
+)
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_SEED = SCRIPT_DIR / "seed.static.json"
 DEFAULT_ENV = (SCRIPT_DIR / "../../.env").resolve()
@@ -135,6 +140,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Admin password (overrides .env)",
     )
     parser.add_argument(
+        "--import-token",
+        default=None,
+        help="Import rate-limit bypass token (default: IMPORT_BYPASS_TOKEN)",
+    )
+    parser.add_argument(
         "--concurrency",
         type=positive_int,
         default=DEFAULT_CONCURRENCY,
@@ -151,6 +161,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     args.api_base = args.api_base.rstrip("/")
     args.api_base_explicit = any(
         arg == "--api-base" or arg.startswith("--api-base=") for arg in argv
+    )
+    args.req_per_sec_explicit = any(
+        arg == "--req-per-sec" or arg.startswith("--req-per-sec=") for arg in argv
     )
     return args
 
@@ -291,9 +304,7 @@ def validate_seed(seed: Any) -> None:
 
         title = release.get("title")
         if not isinstance(title, str) or not title.strip():
-            raise RuntimeError(
-                f"invalid release title for thb_album_id={thb_album_id}"
-            )
+            raise RuntimeError(f"invalid release title for thb_album_id={thb_album_id}")
 
         resolve_release_type(release)
         build_release_date_payload(release)
@@ -416,9 +427,7 @@ def build_release_payload(
             "localized_titles": [],
             "tracks": mapped_tracks,
         },
-        "description": (
-            f"seed:thb_album_id={release['thb_album_id']};source=THBWiki"
-        ),
+        "description": (f"seed:thb_album_id={release['thb_album_id']};source=THBWiki"),
         "type": "Create",
     }
 
@@ -486,9 +495,7 @@ def build_release_payload_plan(
             "localized_titles": [],
             "tracks": mapped_tracks,
         },
-        "description": (
-            f"seed:thb_album_id={release['thb_album_id']};source=THBWiki"
-        ),
+        "description": (f"seed:thb_album_id={release['thb_album_id']};source=THBWiki"),
         "type": "Create",
     }
 
@@ -544,7 +551,7 @@ def parse_retry_delay_seconds(
 
 async def request_json(
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     method: str,
     endpoint: str,
     params: dict[str, Any] | None = None,
@@ -564,7 +571,8 @@ async def request_json(
 
     max_attempts = len(RETRY_DELAYS_SECONDS) + 1
     for attempt in range(max_attempts):
-        await limiter.acquire()
+        if limiter is not None:
+            await limiter.acquire()
         try:
             response = await client.request(
                 method,
@@ -586,20 +594,27 @@ async def request_json(
         text = response.text
         parsed = try_parse_json(text) if text else None
         if response.is_error:
+            if response.status_code == 429 and limiter is None:
+                raise_import_rate_limit_token_error(endpoint)
             if response.status_code in retryable_status_codes and attempt < len(
                 RETRY_DELAYS_SECONDS
             ):
                 delay = RETRY_DELAYS_SECONDS[attempt]
                 if response.status_code == 429:
                     delay = parse_retry_delay_seconds(response, text, delay)
-                    await limiter.backoff(delay)
+                    if limiter is not None:
+                        await limiter.backoff(delay)
+                    else:
+                        await asyncio.sleep(delay)
                 else:
                     await asyncio.sleep(delay)
                 log_info(
                     f"[retry] method={method} endpoint={endpoint} status={response.status_code} attempt={attempt + 1} delay={delay}s"
                 )
                 continue
-            message = json.dumps(parsed, ensure_ascii=False) if parsed is not None else text
+            message = (
+                json.dumps(parsed, ensure_ascii=False) if parsed is not None else text
+            )
             raise RuntimeError(
                 f"HTTP {response.status_code} {response.reason_phrase} at {endpoint}: {message}"
             )
@@ -610,7 +625,7 @@ async def request_json(
 
 async def get_json(
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     endpoint: str,
     params: dict[str, Any] | None = None,
 ) -> Any:
@@ -619,7 +634,7 @@ async def get_json(
 
 async def post_json(
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     endpoint: str,
     payload: dict[str, Any],
     auth_header: str,
@@ -690,10 +705,12 @@ def build_song_expected_release_keys(
 
 async def find_existing_artist_id(
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     artist_name: str,
 ) -> int | None:
-    response_data = await get_json(client, limiter, "/artist", params={"keyword": artist_name})
+    response_data = await get_json(
+        client, limiter, "/artist", params={"keyword": artist_name}
+    )
     if not isinstance(response_data, list):
         return None
 
@@ -718,11 +735,13 @@ async def find_existing_artist_id(
 
 async def find_existing_song_id(
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     song_title: str,
     expected_release_keys: set[tuple[str, str | None]],
 ) -> int | None:
-    response_data = await get_json(client, limiter, "/song", params={"keyword": song_title})
+    response_data = await get_json(
+        client, limiter, "/song", params={"keyword": song_title}
+    )
     if not isinstance(response_data, list):
         return None
 
@@ -967,14 +986,16 @@ def release_existing_title_signature(
 
 async def find_existing_release_id(
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     release: dict[str, Any],
     song_id_by_thb_song_id: dict[int, int],
     song_title_by_thb_song_id: dict[int, str],
     artist_id_by_name: dict[str, int],
 ) -> int | None:
     title = release["title"]
-    response_data = await get_json(client, limiter, "/release", params={"keyword": title})
+    response_data = await get_json(
+        client, limiter, "/release", params={"keyword": title}
+    )
     if not isinstance(response_data, list):
         return None
 
@@ -1044,7 +1065,7 @@ def serialize_plan(method: str, url: str, body: dict[str, Any]) -> str:
 async def process_artist(
     artist: dict[str, Any],
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     api_base: str,
     dry_run: bool,
     auth_header: str,
@@ -1095,7 +1116,7 @@ async def process_artist(
 async def process_song(
     song: dict[str, Any],
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     api_base: str,
     dry_run: bool,
     auth_header: str,
@@ -1160,7 +1181,7 @@ async def process_song(
 async def process_release(
     release: dict[str, Any],
     client: httpx.AsyncClient,
-    limiter: AsyncRateLimiter,
+    limiter: AsyncRateLimiter | None,
     api_base: str,
     dry_run: bool,
     auth_header: str,
@@ -1308,10 +1329,19 @@ async def async_main(argv: list[str]) -> int:
         options.api_base = apply_server_port(options.api_base, server_port)
     admin_user = options.admin_user or env_from_file.get("ADMIN_USERNAME") or "Admin"
     admin_pass = options.admin_pass or env_from_file.get("ADMIN_PASSWORD")
+    rate_limit_config = build_import_rate_limit_config(
+        options.import_token,
+        env_from_file,
+        options.req_per_sec,
+        options.req_per_sec_explicit,
+        AsyncRateLimiter,
+    )
 
     dry_run = not options.run_mode
     if not dry_run and not admin_pass:
-        raise RuntimeError("ADMIN_PASSWORD not found. Set it in .env or pass --admin-pass")
+        raise RuntimeError(
+            "ADMIN_PASSWORD not found. Set it in .env or pass --admin-pass"
+        )
 
     auth_header = ""
     if not dry_run:
@@ -1329,10 +1359,11 @@ async def async_main(argv: list[str]) -> int:
         f"api_base={options.api_base} "
         f"seed={DEFAULT_SEED} "
         f"concurrency={options.concurrency} "
-        f"req_per_sec={options.req_per_sec:g}"
+        f"req_per_sec={rate_limit_config.req_per_sec_label} "
+        f"rate_limit_token={rate_limit_config.enabled_label}"
     )
 
-    limiter = AsyncRateLimiter(options.req_per_sec)
+    limiter = rate_limit_config.limiter
     limits = httpx.Limits(
         max_connections=options.concurrency,
         max_keepalive_connections=options.concurrency,
@@ -1342,6 +1373,7 @@ async def async_main(argv: list[str]) -> int:
         base_url=options.api_base,
         timeout=REQUEST_TIMEOUT_SECONDS,
         limits=limits,
+        headers=rate_limit_config.headers,
     ) as client:
         artist_results = await run_stage(
             seed["artists"],
@@ -1391,7 +1423,9 @@ async def async_main(argv: list[str]) -> int:
             ),
             lambda release: normalize_lookup_text(release["title"]),
         )
-        release_created, release_skipped, release_failed = count_results(release_results)
+        release_created, release_skipped, release_failed = count_results(
+            release_results
+        )
 
     if dry_run:
         print(

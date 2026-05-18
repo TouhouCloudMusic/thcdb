@@ -39,6 +39,7 @@ where
     let limit_layer = limit_layer()
         .req_per_sec(conf.req_per_sec)
         .burst_size(conf.burst_size)
+        .maybe_bypass_token(APP_CONFIG.import_bypass_token.clone())
         .call();
 
     router.layer(
