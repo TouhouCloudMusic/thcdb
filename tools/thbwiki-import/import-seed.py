@@ -507,7 +507,7 @@ def unwrap_api_data(payload: Any) -> Any:
 
 
 def log_info(message: str) -> None:
-    print(f"[info] {message}", file=sys.stderr)
+    print(f"[info] {message}")
 
 
 def parse_retry_delay_seconds(
@@ -779,13 +779,9 @@ async def find_existing_song_id(
 
         if len(by_release_keys) == 1:
             return by_release_keys[0][0]
-        if len(by_release_keys) > 1:
-            raise RuntimeError(
-                f"ambiguous song match for title={song_title} with release relation"
-            )
 
     if len(matched_ids) > 1:
-        raise RuntimeError(f"ambiguous song match for title={song_title}")
+        return None
     return None
 
 
@@ -1061,17 +1057,17 @@ async def process_artist(
                 status="skipped",
                 item_key=name,
                 entity_id=existing_id,
-                stderr_text=f"[info] [artist][skip] circle={name} artist_id={existing_id}",
+                stdout_text=f"[info] [artist][skip] circle={name} artist_id={existing_id}",
             )
 
         if dry_run:
+            plan = serialize_plan(
+                "POST", f"{api_base}/artist", build_artist_payload(name)
+            )
             return ImportTaskResult(
                 status="created",
                 item_key=name,
-                stdout_text=serialize_plan(
-                    "POST", f"{api_base}/artist", build_artist_payload(name)
-                ),
-                stderr_text=f"[info] [artist][plan] circle={name}",
+                stdout_text=f"[info] [artist][plan] circle={name}\n{plan}",
             )
 
         response_body = await post_json(
@@ -1086,7 +1082,7 @@ async def process_artist(
             status="created",
             item_key=name,
             entity_id=entity_id,
-            stderr_text=f"[info] [artist][created] circle={name} artist_id={entity_id}",
+            stdout_text=f"[info] [artist][created] circle={name} artist_id={entity_id}",
         )
     except Exception as err:
         return ImportTaskResult(
@@ -1116,21 +1112,20 @@ async def process_song(
                 status="skipped",
                 item_key=thb_song_id,
                 entity_id=existing_id,
-                stderr_text=(
+                stdout_text=(
                     f"[info] [song][skip] thb_song_id={thb_song_id} "
                     f"title={title} song_id={existing_id}"
                 ),
             )
 
         if dry_run:
+            plan = serialize_plan("POST", f"{api_base}/song", build_song_payload(song))
             return ImportTaskResult(
                 status="created",
                 item_key=thb_song_id,
-                stdout_text=serialize_plan(
-                    "POST", f"{api_base}/song", build_song_payload(song)
-                ),
-                stderr_text=(
-                    f"[info] [song][plan] thb_song_id={thb_song_id} title={title}"
+                stdout_text=(
+                    f"[info] [song][plan] thb_song_id={thb_song_id} "
+                    f"title={title}\n{plan}"
                 ),
             )
 
@@ -1147,7 +1142,7 @@ async def process_song(
             status="created",
             item_key=thb_song_id,
             entity_id=entity_id,
-            stderr_text=(
+            stdout_text=(
                 f"[info] [song][created] thb_song_id={thb_song_id} "
                 f"title={title} song_id={entity_id}"
             ),
@@ -1189,25 +1184,26 @@ async def process_release(
                 status="skipped",
                 item_key=thb_album_id,
                 entity_id=existing_id,
-                stderr_text=(
+                stdout_text=(
                     f"[info] [release][skip] thb_album_id={thb_album_id} "
                     f"title={title} release_id={existing_id}"
                 ),
             )
 
         if dry_run:
+            plan = serialize_plan(
+                "POST",
+                f"{api_base}/release",
+                build_release_payload_plan(
+                    release, song_id_by_thb_song_id, artist_id_by_name
+                ),
+            )
             return ImportTaskResult(
                 status="created",
                 item_key=thb_album_id,
-                stdout_text=serialize_plan(
-                    "POST",
-                    f"{api_base}/release",
-                    build_release_payload_plan(
-                        release, song_id_by_thb_song_id, artist_id_by_name
-                    ),
-                ),
-                stderr_text=(
-                    f"[info] [release][plan] thb_album_id={thb_album_id} title={title}"
+                stdout_text=(
+                    f"[info] [release][plan] thb_album_id={thb_album_id} "
+                    f"title={title}\n{plan}"
                 ),
             )
 
@@ -1228,7 +1224,7 @@ async def process_release(
             status="created",
             item_key=thb_album_id,
             entity_id=entity_id,
-            stderr_text=(
+            stdout_text=(
                 f"[info] [release][created] thb_album_id={thb_album_id} "
                 f"title={title} release_id={entity_id}"
             ),
@@ -1400,17 +1396,14 @@ async def async_main(argv: list[str]) -> int:
     if dry_run:
         print(
             f"artists create={artist_created} skip={artist_skipped} failed={artist_failed}",
-            file=sys.stderr,
         )
         print(
             f"songs total={len(seed['songs'])} create={song_created} skip={song_skipped} failed={song_failed}",
-            file=sys.stderr,
         )
         print(
             f"releases total={len(seed['releases'])} create={release_created} skip={release_skipped} failed={release_failed}",
-            file=sys.stderr,
         )
-        print(f"seed: {DEFAULT_SEED}", file=sys.stderr)
+        print(f"seed: {DEFAULT_SEED}")
         return 0
 
     print(
