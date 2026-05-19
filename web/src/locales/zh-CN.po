@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: touhou-cloud-db\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-18 14:21\n"
+"PO-Revision-Date: 2026-05-19 14:25\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "X-Crowdin-Project: touhou-cloud-db\n"
@@ -1434,10 +1434,6 @@ msgstr ""
 
 #: src/view/Homepage/component/NewMusic.tsx
 msgid "Play track"
-msgstr ""
-
-#: src/view/collection/AddToCollectionDialog.tsx
-msgid "Please sign in to add items to a collection."
 msgstr ""
 
 #: src/component/__legacy/chart/index.tsx
