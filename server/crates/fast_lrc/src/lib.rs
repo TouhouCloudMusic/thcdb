@@ -16,7 +16,7 @@ enum TypedLine<'a> {
 }
 
 impl<'a> TypedLine<'a> {
-    #[allow(dead_code, reason = "Used in tests")]
+    #[expect(dead_code, reason = "Used in tests")]
     fn meta(self) -> Option<(&'a str, &'a str)> {
         match self {
             TypedLine::Meta { key, value } => Some((key, value)),
@@ -24,7 +24,7 @@ impl<'a> TypedLine<'a> {
         }
     }
 
-    #[allow(dead_code, reason = "Used in tests")]
+    #[expect(dead_code, reason = "Used in tests")]
     fn lyric(self) -> Option<LineRef<'a>> {
         match self {
             TypedLine::Lyric(x) => Some(x),
@@ -52,7 +52,8 @@ pub enum CowLine<'a> {
     Borrowed(LineRef<'a>),
 }
 
-impl<'a> CowLine<'a> {
+impl CowLine<'_> {
+    #[must_use]
     pub fn timestamps(&self) -> &[usize] {
         match self {
             CowLine::Owned(x) => &x.timestamps,
@@ -60,6 +61,7 @@ impl<'a> CowLine<'a> {
         }
     }
 
+    #[must_use]
     pub fn text(&self) -> &str {
         match self {
             CowLine::Owned(x) => &x.text,
@@ -87,7 +89,8 @@ pub struct Lyrics<'a> {
 }
 
 impl<'a> Lyrics<'a> {
-    pub fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
             metadata: BTreeMap::new(),
             lines: Vec::new(),
@@ -157,7 +160,7 @@ fn parse_lrc(content: &'_ str) -> Result<Lyrics<'_>, Error> {
                 TypedLine::Lyric(line) => {
                     in_metadata = false;
 
-                    lines.push(line.into())
+                    lines.push(line.into());
                 }
             }
         }

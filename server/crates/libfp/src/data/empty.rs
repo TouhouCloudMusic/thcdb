@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::hash::BuildHasher;
 
 pub trait Empty {
     fn is_empty(&self) -> bool;
@@ -34,13 +35,13 @@ impl<T> Empty for [T] {
     }
 }
 
-impl<T> Empty for HashSet<T> {
+impl<T, S: BuildHasher> Empty for HashSet<T, S> {
     fn is_empty(&self) -> bool {
         self.is_empty()
     }
 }
 
-impl<K, V> Empty for HashMap<K, V> {
+impl<K, V, S: BuildHasher> Empty for HashMap<K, V, S> {
     fn is_empty(&self) -> bool {
         self.is_empty()
     }

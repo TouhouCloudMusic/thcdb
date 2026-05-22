@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
+use std::hash::BuildHasher;
 
-#[allow(clippy::len_without_is_empty)]
+#[expect(clippy::len_without_is_empty)]
 pub trait Len {
     type Unit;
     fn len(&self) -> Self::Unit;
@@ -30,7 +31,7 @@ impl<T> Len for &[T] {
     }
 }
 
-impl<K, V> Len for HashMap<K, V> {
+impl<K, V, S: BuildHasher> Len for HashMap<K, V, S> {
     type Unit = usize;
     #[inline]
     fn len(&self) -> Self::Unit {
@@ -38,7 +39,7 @@ impl<K, V> Len for HashMap<K, V> {
     }
 }
 
-impl<V> Len for HashSet<V> {
+impl<V, S: BuildHasher> Len for HashSet<V, S> {
     type Unit = usize;
     #[inline]
     fn len(&self) -> Self::Unit {

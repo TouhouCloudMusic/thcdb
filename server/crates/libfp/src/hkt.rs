@@ -10,7 +10,7 @@ impl<A> HKT1 for Option<A> {
     type Apply<B> = Option<B>;
 }
 
-impl<A> HKT1 for Vec<A> {
+impl<T> HKT1 for Vec<T> {
     type Apply<B> = Vec<B>;
 }
 

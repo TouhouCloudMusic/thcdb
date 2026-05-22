@@ -14,8 +14,9 @@ pub struct Error {
 }
 
 impl Error {
-    pub fn new(kind: ErrorKind, line: usize) -> Self {
-        Self { kind, line }
+    #[must_use]
+    pub const fn new(kind: ErrorKind, line: usize) -> Self {
+        Self { line, kind }
     }
 }
 

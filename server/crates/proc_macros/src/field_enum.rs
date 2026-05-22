@@ -23,12 +23,12 @@ struct FieldAttr {
     skip: bool,
 }
 
-pub fn derive_impl(input: DeriveInput) -> syn::Result<TokenStream> {
-    let data = Metadata::from_derive_input(&input)?;
+pub fn derive_impl(input: &DeriveInput) -> syn::Result<TokenStream> {
+    let data = Metadata::from_derive_input(input)?;
 
     let mut output = TokenStream::new();
     if data.name {
-        output.extend(gen_names(&data)?);
+        output.extend(gen_names(&data));
     }
     if data.r#type {
         output.extend(gen_types(&data)?);
@@ -37,7 +37,7 @@ pub fn derive_impl(input: DeriveInput) -> syn::Result<TokenStream> {
     Ok(output)
 }
 
-fn gen_names(metadata: &Metadata) -> syn::Result<TokenStream> {
+fn gen_names(metadata: &Metadata) -> TokenStream {
     let enum_name = format_ident!("{}FieldName", metadata.ident);
 
     let mut variants = Vec::new();
@@ -86,7 +86,7 @@ fn gen_names(metadata: &Metadata) -> syn::Result<TokenStream> {
         }
     };
 
-    Ok(output)
+    output
 }
 
 fn gen_types(_metadata: &Metadata) -> syn::Result<TokenStream> {
@@ -98,26 +98,24 @@ fn pascal_case(s: impl AsRef<str>) -> String {
         .split('_')
         .map(|word| {
             let mut chars = word.chars();
-            match chars.next() {
-                Some(first) => first.to_uppercase().chain(chars).collect(),
-                None => String::new(),
-            }
+            chars.next().map_or_else(String::new, |first| {
+                first.to_uppercase().chain(chars).collect()
+            })
         })
         .collect()
 }
 
 fn get_field_and_variant_names(field: &FieldAttr) -> (String, Ident) {
-    let field_name = if let Some(rename) = &field.rename {
-        rename.clone()
-    } else {
-        field.ident.as_ref().unwrap().to_string()
-    };
+    let field_name = field.rename.as_ref().map_or_else(
+        || field.ident.as_ref().unwrap().to_string(),
+        Clone::clone,
+    );
     let variant_name = format_ident!("{}", pascal_case(&field_name));
 
     (field_name, variant_name)
 }
 
-fn ret_true() -> bool {
+const fn ret_true() -> bool {
     true
 }
 
