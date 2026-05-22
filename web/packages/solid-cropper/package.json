@@ -6,6 +6,6 @@
 	"author": "",
 	"license": "MIT",
 	"dependencies": {
-		"cropperjs": "*"
+		"cropperjs": "^2.1.1"
 	}
 }
