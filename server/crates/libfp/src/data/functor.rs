@@ -10,8 +10,8 @@ impl<A> Functor<A> for Option<A> {
     }
 }
 
-impl<A> Functor<A> for Vec<A> {
-    fn fmap<B>(self, f: impl FnMut(A) -> B) -> Self::Apply<B> {
+impl<T> Functor<T> for Vec<T> {
+    fn fmap<B>(self, f: impl FnMut(T) -> B) -> Self::Apply<B> {
         self.into_iter().map(f).collect()
     }
 }

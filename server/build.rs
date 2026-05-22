@@ -1,3 +1,4 @@
+use std::fmt::Write;
 use std::fs;
 use std::path::PathBuf;
 
@@ -97,13 +98,14 @@ fn main() -> Result<(), Whatever> {
     content.push_str(
         "pub static TS_CONSTANTS: LazyLock<String> = LazyLock::new(||{\n",
     );
-    content.push_str(&format!(
-        r#"    let mut tmp = String::from("// {comment_msg}");{}"#,
-        "\n"
-    ));
-    ts_content.iter().for_each(|str| {
-        content.push_str(&format!("    tmp.push_str(({str}).as_ref());\n"));
-    });
+    writeln!(
+        content,
+        r#"    let mut tmp = String::from("// {comment_msg}");"#
+    )
+    .unwrap();
+    for str in &ts_content {
+        writeln!(content, "    tmp.push_str(({str}).as_ref());").unwrap();
+    }
     content.push_str("tmp\n});");
 
     content.push_str("\n\n");
@@ -111,13 +113,11 @@ fn main() -> Result<(), Whatever> {
     content.push_str(
         "pub static KT_CONSTANTS: LazyLock<String> = LazyLock::new(||{\n",
     );
-    content.push_str(&format!(
-        r#"    let mut tmp = String::from("{kt_header}");{}"#,
-        "\n"
-    ));
-    kt_content.iter().for_each(|str| {
-        content.push_str(&format!("    tmp.push_str(({str}).as_ref());\n"));
-    });
+    writeln!(content, r#"    let mut tmp = String::from("{kt_header}");"#)
+        .unwrap();
+    for str in &kt_content {
+        writeln!(content, "    tmp.push_str(({str}).as_ref());").unwrap();
+    }
     content.push_str("tmp\n});");
 
     content.push('\n');
@@ -141,8 +141,10 @@ fn main() -> Result<(), Whatever> {
             format!("Failed to create {}", parent.display())
         })?;
         let mut ts_file = String::new();
-        ts_file.push_str(&format!("// {comment_msg}"));
-        ts_file_lines.iter().for_each(|line| ts_file.push_str(line));
+        write!(ts_file, "// {comment_msg}").unwrap();
+        for line in &ts_file_lines {
+            ts_file.push_str(line);
+        }
         fs::write(&web_ts_path, ts_file).with_whatever_context(|_| {
             format!("Failed to write {}", web_ts_path.display())
         })?;

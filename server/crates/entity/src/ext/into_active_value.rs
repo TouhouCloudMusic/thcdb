@@ -28,9 +28,6 @@ impl_into_active_value!(
 
 impl IntoActiveValue<DatePrecision> for Option<DatePrecision> {
     fn into_active_value(self) -> ActiveValue<DatePrecision> {
-        match self {
-            Some(v) => Set(v),
-            None => NotSet,
-        }
+        self.map_or(NotSet, Set)
     }
 }

@@ -500,7 +500,7 @@ mod test {
             .expect("Failed to serialize response");
 
         let expected_json =
-            format!(r#"{{"status":"{}","message":"error"}}"#, Status::Err,);
+            format!(r#"{{"status":"{}","message":"error"}}"#, Status::Err);
 
         assert_eq!(serialized, expected_json);
     }

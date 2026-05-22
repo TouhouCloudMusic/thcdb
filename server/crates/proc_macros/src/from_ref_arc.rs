@@ -19,9 +19,9 @@ pub struct InputField {
 }
 
 pub fn derive_from_ref_arc_impl(
-    input: DeriveInput,
+    input: &DeriveInput,
 ) -> syn::Result<proc_macro2::TokenStream> {
-    let data = InputStruct::from_derive_input(&input)?;
+    let data = InputStruct::from_derive_input(input)?;
     let ident = data.ident;
     let fields = match data.data {
         darling::ast::Data::Struct(fields) => fields,

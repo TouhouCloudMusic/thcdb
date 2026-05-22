@@ -362,7 +362,6 @@ mod tests {
     use infra_db::SeaOrmRepository;
 
     use super::{delete, get_tags, upsert};
-    use crate::features::tag_vote::Error;
     use crate::features::tag_vote::model::{EntityType, Score};
     use crate::infra::integration_test::fixture::{
         MockArtist, MockRelease, MockSong, MockTag, MockUser,

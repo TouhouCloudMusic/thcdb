@@ -111,9 +111,8 @@ impl<'de> Deserialize<'de> for NonEmptyString {
     }
 }
 
-#[derive(AutoMapper, Clone, Debug, Serialize, ToSchema)]
+#[derive(AutoMapper, Clone, Debug, Eq, PartialEq, Serialize, ToSchema)]
 #[mapper(from(DbLanguage))]
-#[cfg_attr(test, derive(PartialEq, Eq))]
 pub struct Language {
     pub id: i32,
     pub code: String,
@@ -132,30 +131,26 @@ pub struct NewLocalizedName {
     pub name: String,
 }
 
-#[derive(Clone, Debug, Serialize, ToSchema)]
-#[cfg_attr(test, derive(PartialEq, Eq))]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, ToSchema)]
 pub struct LocalizedTitle {
     pub language: Language,
     pub title: String,
 }
 
-#[derive(Clone, Debug, Serialize, ToSchema, AutoMapper)]
-#[cfg_attr(test, derive(PartialEq, Eq))]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, ToSchema, AutoMapper)]
 #[mapper(from(entity::artist::Model))]
 pub struct SimpleArtist {
     pub id: i32,
     pub name: String,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, ToSchema)]
-#[cfg_attr(test, derive(PartialEq, Eq))]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, ToSchema)]
 pub struct SimpleLabel {
     pub id: i32,
     pub name: String,
 }
 
-#[derive(Clone, Debug, Serialize, ToSchema)]
-#[cfg_attr(test, derive(PartialEq, Eq))]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, ToSchema)]
 pub struct SimpleEvent {
     pub id: i32,
     pub name: String,

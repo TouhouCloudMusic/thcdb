@@ -1,5 +1,5 @@
 pub mod r#gen {
-    #[allow(unused_imports)]
+    #[expect(unused_imports)]
     use super::*;
 
     include!(concat!(env!("OUT_DIR"), "/constant_gen.rs"));

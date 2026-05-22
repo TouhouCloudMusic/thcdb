@@ -287,5 +287,8 @@ async fn concurrent_create_user_collection_items_keep_positions_unique() {
         .map(|(_, position)| position)
         .collect::<Vec<_>>();
 
-    assert_eq!(positions, (0_i32..task_count as i32).collect::<Vec<_>>());
+    let expected_positions = (0..task_count)
+        .map(|position| i32::try_from(position).unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(positions, expected_positions);
 }

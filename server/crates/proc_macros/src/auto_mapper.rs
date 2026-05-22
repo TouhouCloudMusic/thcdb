@@ -32,10 +32,12 @@ struct ConvEntry {
 
 impl FromMeta for ConvEntry {
     fn from_list(items: &[darling::ast::NestedMeta]) -> darling::Result<Self> {
+        const DEFAULT: &str = "default";
+        const MAP: &str = "map";
+
         let mut errors = darling::Error::accumulator();
-        let path = match parse_type_def(&items[0]) {
-            Some(s) => Some(s),
-            None => {
+        let path = parse_type_def(&items[0]).map_or_else(
+            || {
                 errors.push(
                     darling::Error::custom(
                         "Failed to parse ConvEntry. Expected path or ty = \"ty\" as first argument.",
@@ -43,12 +45,11 @@ impl FromMeta for ConvEntry {
                     .with_span(&items[0]),
                 );
                 None
-            }
-        };
+            },
+            Some,
+        );
         let mut map = None;
-        const MAP: &str = "map";
         let mut default = None;
-        const DEFAULT: &str = "default";
 
         for item in &items[1..] {
             match *item {
@@ -126,11 +127,19 @@ struct OnEntry {
 }
 
 impl FromMeta for OnEntry {
+    #[expect(
+        clippy::too_many_lines,
+        reason = "attribute parsing keeps each field branch explicit"
+    )]
     fn from_list(items: &[darling::ast::NestedMeta]) -> darling::Result<Self> {
+        const MAP: &str = "map";
+        const RENAME: &str = "rename";
+        const SKIP: &str = "skip";
+        const WITH: &str = "with";
+
         let mut errors = darling::Error::accumulator();
-        let ty = match parse_type_def(&items[0]) {
-            Some(s) => Some(s),
-            None => {
+        let ty = parse_type_def(&items[0]).map_or_else(
+            || {
                 errors.push(
                     darling::Error::custom(
                         "Failed to parse OnEntry. Expected path or ty = \"ty\" as first argument.",
@@ -138,17 +147,14 @@ impl FromMeta for OnEntry {
                     .with_span(&items[0]),
                 );
                 None
-            }
-        };
+            },
+            Some,
+        );
 
         let mut map = None;
-        const MAP: &str = "map";
         let mut with = None;
-        const WITH: &str = "with";
         let mut rename = None;
-        const RENAME: &str = "rename";
         let mut skip = None;
-        const SKIP: &str = "skip";
 
         for item in &items[1..] {
             match *item {
@@ -162,7 +168,7 @@ impl FromMeta for OnEntry {
                                         "{MAP} are conflicting with {WITH}"
                                     ))
                                     .with_span(&inner),
-                                )
+                                );
                             } else if map.is_none() {
                                 map = errors.handle(
                                     darling::FromMeta::from_meta(inner)
@@ -184,7 +190,7 @@ impl FromMeta for OnEntry {
                                         "{WITH} are conflicting with {MAP}"
                                     ))
                                     .with_span(&inner),
-                                )
+                                );
                             } else if with.is_none() {
                                 with = errors.handle(
                                     darling::FromMeta::from_meta(inner)
@@ -261,8 +267,12 @@ impl FromMeta for OnEntry {
     }
 }
 
+#[expect(
+    clippy::too_many_lines,
+    reason = "token generation for both From and Into impls is kept together"
+)]
 pub fn derive_impl(
-    input: DeriveInput,
+    input: &DeriveInput,
 ) -> syn::Result<proc_macro2::TokenStream> {
     let AutoMapperReceiver {
         ident,
@@ -270,8 +280,8 @@ pub fn derive_impl(
         data,
         from: from_list,
         into: into_list,
-    } = AutoMapperReceiver::from_derive_input(&input)
-        .map_err(|e| syn::Error::new_spanned(&input, e.to_string()))?;
+    } = AutoMapperReceiver::from_derive_input(input)
+        .map_err(|e| syn::Error::new_spanned(input, e.to_string()))?;
 
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
@@ -285,28 +295,35 @@ pub fn derive_impl(
                     .map(|field| {
                         let on = get_on(&field.on, &from.ty);
                         let field_name = field.ident.as_ref().unwrap();
-                        let rename = on
-                            .and_then(|x| x.rename.as_ref())
-                            .map(|s| format_ident!("{s}"))
-                            .unwrap_or(field_name.clone());
+                        let rename =
+                            on.and_then(|x| x.rename.as_ref()).map_or_else(
+                                || field_name.clone(),
+                                |s| format_ident!("{s}"),
+                            );
 
                         let is_ref = matches!(&from.ty, Type::Reference(_));
 
-                        let right_hand_expr = if let Some(on) = on {
-                            on.map
-                                .as_ref()
-                                .map(|ref map| quote! { #map(value.#rename) })
-                                .or_else(|| {
-                                    on.with
+                        let right_hand_expr = on
+                            .map_or_else(
+                                || {
+                                    from.map.as_ref().map(|map| {
+                                        quote! { #map(value.#rename) }
+                                    })
+                                },
+                                |on| {
+                                    on.map
                                         .as_ref()
-                                        .map(|value| quote! { #value })
-                                })
-                        } else {
-                            from.map
-                                .as_ref()
-                                .map(|map| quote! { #map(value.#rename) })
-                        }
-                        .unwrap_or_else(|| quote! { value.#rename });
+                                        .map(|map| {
+                                            quote! { #map(value.#rename) }
+                                        })
+                                        .or_else(|| {
+                                            on.with
+                                                .as_ref()
+                                                .map(|value| quote! { #value })
+                                        })
+                                },
+                            )
+                            .unwrap_or_else(|| quote! { value.#rename });
 
                         let right_hand_expr = if is_ref {
                             right_hand_expr
@@ -322,7 +339,7 @@ pub fn derive_impl(
                     })
                     .collect_vec();
 
-                let default_block = if let Some(true) = from.default {
+                let default_block = if from.default == Some(true) {
                     Some(quote! {
                         ..Default::default()
                     })
@@ -351,14 +368,15 @@ pub fn derive_impl(
                     .iter()
                     .filter_map(|field| {
                         let on = get_on(&field.on, &into.ty);
-                        if let Some(true) = on.and_then(|x| x.skip) {
+                        if on.and_then(|x| x.skip) == Some(true) {
                             return None;
                         }
                         let field_name = field.ident.as_ref().unwrap();
-                        let rename = on
-                            .and_then(|x| x.rename.as_ref())
-                            .map(|s| format_ident!("{s}"))
-                            .unwrap_or(field_name.clone());
+                        let rename =
+                            on.and_then(|x| x.rename.as_ref()).map_or_else(
+                                || field_name.clone(),
+                                |s| format_ident!("{s}"),
+                            );
 
                         let right_hand_expr = if let Some(on) = on
                             && let Some(map) = &on.map
@@ -380,7 +398,7 @@ pub fn derive_impl(
                     })
                     .collect_vec();
 
-                let default_block = if let Some(true) = into.default {
+                let default_block = if into.default == Some(true) {
                     Some(quote! {
                         ..Default::default()
                     })

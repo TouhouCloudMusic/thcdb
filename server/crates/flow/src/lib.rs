@@ -13,6 +13,7 @@ pub trait Tap
 where
     Self: Sized,
 {
+    #[must_use]
     fn tap(self, f: impl FnOnce(&Self)) -> Self {
         f(&self);
         self
@@ -25,6 +26,7 @@ pub trait TapMut
 where
     Self: Sized,
 {
+    #[must_use]
     fn tap_mut(mut self, f: impl FnOnce(&mut Self)) -> Self {
         f(&mut self);
         self
