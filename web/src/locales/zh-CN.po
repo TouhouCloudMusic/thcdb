@@ -175,6 +175,10 @@ msgstr "全部"
 msgid "Alpha"
 msgstr "早期版本"
 
+#: src/view/user/Profile.tsx
+msgid "Alphabetical"
+msgstr "字母顺序"
+
 #: src/view/auth/component/VerifyEmailForm.tsx
 msgid "Already have an account?"
 msgstr "已经有账号了？"
@@ -352,6 +356,10 @@ msgstr "收藏"
 msgid "Collection created"
 msgstr "收藏已创建"
 
+#: src/view/user/Profile.tsx
+msgid "Collection type"
+msgstr "收藏类型"
+
 #: src/component/Header/RightSidebar.tsx
 #: src/view/search/index.tsx
 #: src/view/user/Profile.tsx
@@ -501,6 +509,10 @@ msgstr "创建于"
 #: src/view/collection/CollectionDetail.tsx
 msgid "Created by"
 msgstr "创建者"
+
+#: src/view/user/Profile.tsx
+msgid "Created time"
+msgstr "创建时间"
 
 #: src/route/credit-role/$id.tsx
 #: src/view/collection/CollectionItemCard.tsx
@@ -805,9 +817,18 @@ msgstr "按标题语言、参与信息和更正记录查找曲目。"
 msgid "First page"
 msgstr "第一页"
 
+#: src/view/collection/CollectionDetail.tsx
 #: src/view/user/Profile.tsx
 msgid "Follow"
 msgstr "关注"
+
+#: src/view/user/Profile.tsx
+msgid "Followed"
+msgstr "关注"
+
+#: src/view/user/Profile.tsx
+msgid "Followed time"
+msgstr "关注时间"
 
 #: src/view/user/Profile.tsx
 msgid "Following"
@@ -1139,7 +1160,6 @@ msgstr "无"
 #: src/view/label/edit/comp/LabelNameField.tsx
 #: src/view/tag/edit/comp/TagAltNames.tsx
 #: src/view/tag/edit/comp/TagName.tsx
-#: src/view/user/Profile.tsx
 msgid "Name"
 msgstr "名称"
 
@@ -1163,10 +1183,6 @@ msgstr "新建收藏"
 #: src/view/auth/reset_password/index.tsx
 msgid "New password"
 msgstr "新密码"
-
-#: src/view/user/Profile.tsx
-msgid "Newest"
-msgstr "最新"
 
 #: src/view/image_queue/detail.tsx
 msgid "Next"
@@ -1396,6 +1412,10 @@ msgstr "或"
 msgid "Order"
 msgstr "顺序"
 
+#: src/view/user/Profile.tsx
+msgid "Own"
+msgstr "我的"
+
 #. placeholder {0}: props.search.page
 #. placeholder {1}: props.list.totalPages
 #: src/view/admin/users.tsx
@@ -1615,6 +1635,7 @@ msgstr "回复"
 msgid "Request failed"
 msgstr "请求失败"
 
+#: src/route/collection/$id.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Request failed."
@@ -1874,6 +1895,10 @@ msgstr "歌词"
 msgid "Songs"
 msgstr "歌曲"
 
+#: src/view/user/Profile.tsx
+msgid "Sort"
+msgstr "排序"
+
 #: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
 #: src/view/release/explore/filter.tsx
 msgid "Sort by"
@@ -1882,6 +1907,22 @@ msgstr "排序方式"
 #: src/view/user/Profile.tsx
 msgid "Sort collections"
 msgstr "排序收藏"
+
+#: src/view/user/Profile.tsx
+msgid "Sort: Alphabetical"
+msgstr "排序：字母顺序"
+
+#: src/view/user/Profile.tsx
+msgid "Sort: Created time"
+msgstr "排序：创建时间"
+
+#: src/view/user/Profile.tsx
+msgid "Sort: Followed time"
+msgstr "排序：关注时间"
+
+#: src/view/user/Profile.tsx
+msgid "Sort: Item count"
+msgstr "排序：条目数"
 
 #: src/view/artist/edit/comp/Date.tsx
 #: src/view/event/edit/comp/EventDateFields.tsx
@@ -2097,6 +2138,7 @@ msgstr "调整筛选条件，或<0>创建</0>第一个条目。"
 #: src/view/release/explore/filter.tsx
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
 #: src/view/tag/Info/index.tsx
+#: src/view/user/Profile.tsx
 msgid "Type"
 msgstr "类型"
 
@@ -2104,6 +2146,15 @@ msgstr "类型"
 msgid "Type a keyword to search."
 msgstr "输入关键字搜索。"
 
+#: src/view/user/Profile.tsx
+msgid "Type: Followed"
+msgstr "类型：关注"
+
+#: src/view/user/Profile.tsx
+msgid "Type: Own"
+msgstr "类型：我的"
+
+#: src/view/collection/CollectionDetail.tsx
 #: src/view/user/Profile.tsx
 msgid "Unfollow"
 msgstr "取消关注"
@@ -2221,6 +2272,22 @@ msgid "View more"
 msgstr "查看更多"
 
 #: src/view/user/Profile.tsx
+msgid "Visibility"
+msgstr "可见性"
+
+#: src/view/user/Profile.tsx
+msgid "Visibility: All"
+msgstr "可见性：全部"
+
+#: src/view/user/Profile.tsx
+msgid "Visibility: Private"
+msgstr "可见性：私有"
+
+#: src/view/user/Profile.tsx
+msgid "Visibility: Public"
+msgstr "可见性：公开"
+
+#: src/view/user/Profile.tsx
 msgid "Votes"
 msgstr "投票"
 
@@ -2247,6 +2314,10 @@ msgstr "现在你可以使用新密码登录。"
 #: src/view/user/Profile.tsx
 msgid "You haven't created any collections yet"
 msgstr "你还没有创建任何收藏"
+
+#: src/view/user/Profile.tsx
+msgid "You haven't followed any collections yet"
+msgstr "你还没有关注任何收藏"
 
 #: src/view/auth/reset_password/index.tsx
 msgid "Your password has been updated successfully."

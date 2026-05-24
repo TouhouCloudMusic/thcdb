@@ -418,6 +418,11 @@ export type DataPageEvent = {
 	data: PageResponseEvent
 }
 
+export type DataPageFollowedUserCollection = {
+	status: string
+	data: PageResponseFollowedUserCollection
+}
+
 export type DataPageLabel = {
 	status: string
 	data: PageResponseLabel
@@ -1223,6 +1228,17 @@ export type PageResponseEvent = {
 	total_pages: number
 }
 
+export type PageResponseFollowedUserCollection = {
+	items: Array<{
+		followed_at: string
+		collection: UserCollection
+	}>
+	page: number
+	page_size: number
+	total_items: number
+	total_pages: number
+}
+
 export type PageResponseLabel = {
 	items: Array<{
 		id: number
@@ -1303,6 +1319,9 @@ export type PageResponseUserCollection = {
 		description: string
 		is_public: boolean
 		item_count: number
+		follower_count: number
+		is_following?: boolean | null
+		followed_at?: string | null
 	}>
 	page: number
 	page_size: number
@@ -1593,6 +1612,9 @@ export type UserCollection = {
 	description: string
 	is_public: boolean
 	item_count: number
+	follower_count: number
+	is_following?: boolean | null
+	followed_at?: string | null
 }
 
 export type UserCollectionItem = {
@@ -1620,6 +1642,7 @@ export type UserCollectionMutationRequest = {
 export type UserCollectionOwner = {
 	id: number
 	name: string
+	avatar_url?: string | null
 }
 
 export type UserProfile = {
@@ -3727,6 +3750,37 @@ export type UpdateBioResponses = {
 
 export type UpdateBioResponse = UpdateBioResponses[keyof UpdateBioResponses]
 
+export type FollowedUserCollectionsData = {
+	body?: never
+	path?: never
+	query?: {
+		limit?: number
+		page?: number
+	}
+	url: "/profile/followed-collections"
+}
+
+export type FollowedUserCollectionsErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type FollowedUserCollectionsError =
+	FollowedUserCollectionsErrors[keyof FollowedUserCollectionsErrors]
+
+export type FollowedUserCollectionsResponses = {
+	200: DataPageFollowedUserCollection
+}
+
+export type FollowedUserCollectionsResponse =
+	FollowedUserCollectionsResponses[keyof FollowedUserCollectionsResponses]
+
 export type ProfileWithNameData = {
 	body?: never
 	path: {
@@ -5017,6 +5071,72 @@ export type UpdateTagPendingCorrectionResponses = {
 
 export type UpdateTagPendingCorrectionResponse =
 	UpdateTagPendingCorrectionResponses[keyof UpdateTagPendingCorrectionResponses]
+
+export type UnfollowUserCollectionData = {
+	body?: never
+	path: {
+		/**
+		 * Collection id
+		 */
+		id: number
+	}
+	query?: never
+	url: "/user-collections/{id}/follow"
+}
+
+export type UnfollowUserCollectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UnfollowUserCollectionError =
+	UnfollowUserCollectionErrors[keyof UnfollowUserCollectionErrors]
+
+export type UnfollowUserCollectionResponses = {
+	200: Message
+}
+
+export type UnfollowUserCollectionResponse =
+	UnfollowUserCollectionResponses[keyof UnfollowUserCollectionResponses]
+
+export type FollowUserCollectionData = {
+	body?: never
+	path: {
+		/**
+		 * Collection id
+		 */
+		id: number
+	}
+	query?: never
+	url: "/user-collections/{id}/follow"
+}
+
+export type FollowUserCollectionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type FollowUserCollectionError =
+	FollowUserCollectionErrors[keyof FollowUserCollectionErrors]
+
+export type FollowUserCollectionResponses = {
+	200: Message
+}
+
+export type FollowUserCollectionResponse =
+	FollowUserCollectionResponses[keyof FollowUserCollectionResponses]
 
 export type UserRolesData = {
 	body?: never

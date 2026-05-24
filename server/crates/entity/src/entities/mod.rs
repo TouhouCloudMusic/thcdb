@@ -95,6 +95,7 @@ pub mod user;
 pub mod user_email_verification;
 pub mod user_following;
 pub mod user_collection;
+pub mod user_collection_follow;
 pub mod user_collection_item;
 pub mod user_role;
 pub mod user_role_change_audit;

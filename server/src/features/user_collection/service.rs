@@ -11,9 +11,9 @@ use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter};
 
 use super::error::{Error, NotFound};
 use super::model::{
-    CreateUserCollectionItemRequest, ReorderUserCollectionItemsRequest,
-    UserCollection, UserCollectionItem, UserCollectionItemDetail,
-    UserCollectionMutationRequest,
+    CreateUserCollectionItemRequest, FollowedUserCollection,
+    ReorderUserCollectionItemsRequest, UserCollection, UserCollectionItem,
+    UserCollectionItemDetail, UserCollectionMutationRequest,
 };
 use super::repo;
 use crate::infra::database::error::DatabaseResultExt;
@@ -47,8 +47,13 @@ impl Service {
                 .filter(user_collection_entity::Column::IsPublic.eq(true));
         }
 
-        repo::load_user_collections_page(&self.repo.conn, select, page_query)
-            .await
+        repo::load_user_collections_page(
+            &self.repo.conn,
+            select,
+            viewer_id,
+            page_query,
+        )
+        .await
     }
 
     pub(super) async fn get_user_collection_detail(
@@ -56,9 +61,12 @@ impl Service {
         collection_id: i32,
         viewer_id: Option<i32>,
     ) -> Result<UserCollection, Error> {
-        let collection =
-            repo::load_user_collection_detail(&self.repo.conn, collection_id)
-                .await?;
+        let collection = repo::load_user_collection_detail(
+            &self.repo.conn,
+            collection_id,
+            viewer_id,
+        )
+        .await?;
         if !collection.is_public && viewer_id != Some(collection.owner.id) {
             return Err(Error::NotFound(NotFound::Collection));
         }
@@ -87,17 +95,24 @@ impl Service {
 
     pub(super) async fn list_public_user_collections(
         &self,
+        viewer_id: Option<i32>,
         page_query: PageQuery,
     ) -> Result<PageResponse<UserCollection>, Error> {
         let select = user_collection_entity::Entity::find()
             .filter(user_collection_entity::Column::IsPublic.eq(true));
-        repo::load_user_collections_page(&self.repo.conn, select, page_query)
-            .await
+        repo::load_user_collections_page(
+            &self.repo.conn,
+            select,
+            viewer_id,
+            page_query,
+        )
+        .await
     }
 
     pub(super) async fn search_public_user_collections(
         &self,
         keyword: NonEmptyString,
+        viewer_id: Option<i32>,
         page_query: PageQuery,
     ) -> Result<PageResponse<UserCollection>, Error> {
         let pattern = format!("%{}%", keyword.to_lowercase());
@@ -120,8 +135,13 @@ impl Service {
                     ),
             );
 
-        repo::load_user_collections_page(&self.repo.conn, select, page_query)
-            .await
+        repo::load_user_collections_page(
+            &self.repo.conn,
+            select,
+            viewer_id,
+            page_query,
+        )
+        .await
     }
 
     pub(super) async fn create_user_collection(
@@ -132,7 +152,12 @@ impl Service {
         let model =
             repo::insert_user_collection(&self.repo.conn, owner_id, &req)
                 .await?;
-        repo::load_user_collection_detail(&self.repo.conn, model.id).await
+        repo::load_user_collection_detail(
+            &self.repo.conn,
+            model.id,
+            Some(owner_id),
+        )
+        .await
     }
 
     pub(super) async fn update_user_collection(
@@ -148,7 +173,12 @@ impl Service {
         )
         .await?;
         repo::update_user_collection(&self.repo.conn, model, &req).await?;
-        repo::load_user_collection_detail(&self.repo.conn, collection_id).await
+        repo::load_user_collection_detail(
+            &self.repo.conn,
+            collection_id,
+            Some(owner_id),
+        )
+        .await
     }
 
     pub(super) async fn delete_user_collection(
@@ -261,6 +291,53 @@ impl Service {
             .map_err(crate::infra::database::error::DatabaseError::from)?;
 
         Ok(())
+    }
+
+    pub(super) async fn follow_user_collection(
+        &self,
+        user_id: i32,
+        collection_id: i32,
+    ) -> Result<(), Error> {
+        let collection = repo::find_visible_user_collection(
+            &self.repo.conn,
+            collection_id,
+            Some(user_id),
+        )
+        .await?;
+
+        if !collection.is_public {
+            return Err(Error::NotFound(NotFound::Collection));
+        }
+        if collection.user_id == user_id {
+            return Err(Error::InvalidRequest(
+                "Cannot follow your own collection".to_string(),
+            ));
+        }
+
+        repo::follow_user_collection(&self.repo.conn, user_id, collection_id)
+            .await
+    }
+
+    pub(super) async fn unfollow_user_collection(
+        &self,
+        user_id: i32,
+        collection_id: i32,
+    ) -> Result<(), Error> {
+        repo::unfollow_user_collection(&self.repo.conn, user_id, collection_id)
+            .await
+    }
+
+    pub(super) async fn list_followed_user_collections(
+        &self,
+        user_id: i32,
+        page_query: PageQuery,
+    ) -> Result<PageResponse<FollowedUserCollection>, Error> {
+        repo::load_followed_user_collections_page(
+            &self.repo.conn,
+            user_id,
+            page_query,
+        )
+        .await
     }
 }
 

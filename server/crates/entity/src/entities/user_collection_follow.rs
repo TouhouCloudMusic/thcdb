@@ -6,16 +6,13 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize,
 )]
-#[sea_orm(table_name = "user_collection")]
+#[sea_orm(table_name = "user_collection_follow")]
 pub struct Model {
-    #[sea_orm(primary_key)]
-    pub id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub user_id: i32,
-    #[sea_orm(column_type = "Text")]
-    pub name: String,
-    #[sea_orm(column_type = "Text")]
-    pub description: String,
-    pub is_public: bool,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub collection_id: i32,
+    pub followed_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -25,13 +22,17 @@ pub enum Relation {
         from = "Column::UserId",
         to = "super::user::Column::Id",
         on_update = "Cascade",
-        on_delete = "NoAction"
+        on_delete = "Cascade"
     )]
     User,
-    #[sea_orm(has_many = "super::user_collection_follow::Entity")]
-    UserCollectionFollow,
-    #[sea_orm(has_many = "super::user_collection_item::Entity")]
-    UserCollectionItem,
+    #[sea_orm(
+        belongs_to = "super::user_collection::Entity",
+        from = "Column::CollectionId",
+        to = "super::user_collection::Column::Id",
+        on_update = "Cascade",
+        on_delete = "Cascade"
+    )]
+    UserCollection,
 }
 
 impl Related<super::user::Entity> for Entity {
@@ -40,15 +41,9 @@ impl Related<super::user::Entity> for Entity {
     }
 }
 
-impl Related<super::user_collection_item::Entity> for Entity {
+impl Related<super::user_collection::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::UserCollectionItem.def()
-    }
-}
-
-impl Related<super::user_collection_follow::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::UserCollectionFollow.def()
+        Relation::UserCollection.def()
     }
 }
 

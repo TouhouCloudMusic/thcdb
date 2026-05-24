@@ -8,9 +8,9 @@ use utoipa_axum::routes;
 
 use super::error::Error;
 use super::model::{
-    CreateUserCollectionItemRequest, ReorderUserCollectionItemsRequest,
-    UserCollection, UserCollectionItem, UserCollectionItemDetail,
-    UserCollectionMutationRequest,
+    CreateUserCollectionItemRequest, FollowedUserCollection,
+    ReorderUserCollectionItemsRequest, UserCollection, UserCollectionItem,
+    UserCollectionItemDetail, UserCollectionMutationRequest,
 };
 use super::service::Service;
 use crate::adapter::inbound::rest::state::{
@@ -44,6 +44,9 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
                 .routes(routes!(create_user_collection_item))
                 .routes(routes!(delete_user_collection_item))
                 .routes(routes!(reorder_user_collection_items))
+                .routes(routes!(follow_user_collection))
+                .routes(routes!(unfollow_user_collection))
+                .routes(routes!(followed_user_collections))
         })
         .finish()
 }
@@ -51,6 +54,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 data! {
     DataPageUserCollection, PageResponse<UserCollection>
     DataUserCollection, UserCollection
+    DataPageFollowedUserCollection, PageResponse<FollowedUserCollection>
     DataPageUserCollectionItemDetail, PageResponse<UserCollectionItemDetail>
     DataUserCollectionItem, UserCollectionItem
 }
@@ -141,10 +145,13 @@ async fn user_collection_items(
     ),
 )]
 async fn public_user_collections(
+    session: AuthSession,
     Query(page_query): Query<PageQuery>,
     State(service): State<Service>,
 ) -> Result<Data<PageResponse<UserCollection>>, Error> {
-    let page = service.list_public_user_collections(page_query).await?;
+    let page = service
+        .list_public_user_collections(session.verified_user_id(), page_query)
+        .await?;
     Ok(Data::new(page))
 }
 
@@ -158,12 +165,77 @@ async fn public_user_collections(
     ),
 )]
 async fn search_user_collections(
+    session: AuthSession,
     Query(SearchQuery { keyword }): Query<SearchQuery>,
     Query(page_query): Query<PageQuery>,
     State(service): State<Service>,
 ) -> Result<Data<PageResponse<UserCollection>>, Error> {
     let page = service
-        .search_public_user_collections(keyword, page_query)
+        .search_public_user_collections(
+            keyword,
+            session.verified_user_id(),
+            page_query,
+        )
+        .await?;
+    Ok(Data::new(page))
+}
+
+#[utoipa::path(
+    post,
+    tag = TAG,
+    path = "/user-collections/{id}/follow",
+    params(
+        ("id" = i32, Path, description = "Collection id"),
+    ),
+    responses(
+        (status = 200, body = Message),
+    ),
+)]
+async fn follow_user_collection(
+    CurrentUser(user): CurrentUser,
+    Path(id): Path<i32>,
+    State(service): State<Service>,
+) -> Result<Message, Error> {
+    service.follow_user_collection(user.id, id).await?;
+    Ok(Message::ok())
+}
+
+#[utoipa::path(
+    delete,
+    tag = TAG,
+    path = "/user-collections/{id}/follow",
+    params(
+        ("id" = i32, Path, description = "Collection id"),
+    ),
+    responses(
+        (status = 200, body = Message),
+    ),
+)]
+async fn unfollow_user_collection(
+    CurrentUser(user): CurrentUser,
+    Path(id): Path<i32>,
+    State(service): State<Service>,
+) -> Result<Message, Error> {
+    service.unfollow_user_collection(user.id, id).await?;
+    Ok(Message::ok())
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/profile/followed-collections",
+    params(PageQuery),
+    responses(
+        (status = 200, body = DataPageFollowedUserCollection),
+    ),
+)]
+async fn followed_user_collections(
+    CurrentUser(user): CurrentUser,
+    Query(page_query): Query<PageQuery>,
+    State(service): State<Service>,
+) -> Result<Data<PageResponse<FollowedUserCollection>>, Error> {
+    let page = service
+        .list_followed_user_collections(user.id, page_query)
         .await?;
     Ok(Data::new(page))
 }

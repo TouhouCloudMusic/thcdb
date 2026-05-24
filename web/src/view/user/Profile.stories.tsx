@@ -1,8 +1,9 @@
 import type { UserProfile, UserProfileStats } from "@thc/api"
-import { createMemo } from "solid-js"
+import { createMemo, createSignal } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import baka from "~/component/atomic/avatar/baka.jpg"
+import type { UserCollection } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import type { ActivityItem, PinItem } from "./Profile"
@@ -138,6 +139,84 @@ const DEFAULT_ARGS: StoryRootProps = {
 	highlightsPreset: "many",
 	activityPreset: "many",
 }
+
+const OWNER = {
+	id: 1,
+	name: "Hakurei Reimu",
+}
+
+const OWN_COLLECTIONS: readonly UserCollection[] = [
+	{
+		id: 101,
+		owner: OWNER,
+		name: "Touhou essentials",
+		description: "Core releases, songs, and circles for quick checks.",
+		is_public: true,
+		item_count: 24,
+		follower_count: 8,
+		is_following: null,
+	},
+	{
+		id: 102,
+		owner: OWNER,
+		name: "Private cleanup queue",
+		description: "Draft links and items that still need review.",
+		is_public: false,
+		item_count: 7,
+		follower_count: 0,
+		is_following: null,
+	},
+	{
+		id: 103,
+		owner: OWNER,
+		name: "Vocal arrangement notes",
+		description: "Songs with vocalist aliases and role normalization notes.",
+		is_public: true,
+		item_count: 16,
+		follower_count: 5,
+		is_following: null,
+	},
+]
+
+const FOLLOWED_COLLECTIONS = [
+	{
+		followed_at: "2026-05-20T12:00:00.000Z",
+		collection: {
+			id: 201,
+			owner: {
+				id: 2,
+				name: "Kirisame Marisa",
+			},
+			name: "Arrangement references",
+			description: "Public collections followed from another profile.",
+			is_public: true,
+			item_count: 31,
+			follower_count: 12,
+			is_following: true,
+			followed_at: "2026-05-20T12:00:00.000Z",
+		},
+	},
+	{
+		followed_at: "2026-05-18T09:20:00.000Z",
+		collection: {
+			id: 202,
+			owner: {
+				id: 3,
+				name: "Patchouli Knowledge",
+			},
+			name: "Library listening shelf",
+			description: "Release and song references for metadata passes.",
+			is_public: true,
+			item_count: 14,
+			follower_count: 4,
+			is_following: true,
+			followed_at: "2026-05-18T09:20:00.000Z",
+		},
+	},
+] satisfies readonly {
+	followed_at: string
+	collection: UserCollection
+}[]
 
 function assetUrl(path: string) {
 	return new URL(path, ORIGIN).href
@@ -379,6 +458,7 @@ function buildStoryState(options: StoryRootProps): {
 }
 
 function StoryRoot(props: StoryRootProps) {
+	const [tab, setTab] = createSignal<"activity" | "collections">("collections")
 	const state = createMemo(() =>
 		buildStoryState({
 			scenario: props.scenario,
@@ -394,10 +474,18 @@ function StoryRoot(props: StoryRootProps) {
 
 	return (
 		<Profile
-			collections={[]}
+			collections={OWN_COLLECTIONS}
 			hasMoreCollections={false}
 			isFetchingMoreCollections={false}
 			onLoadMoreCollections={() => undefined}
+			followedCollections={FOLLOWED_COLLECTIONS}
+			hasMoreFollowedCollections={false}
+			isFetchingMoreFollowedCollections={false}
+			onLoadMoreFollowedCollections={() => undefined}
+			tab={{
+				value: tab(),
+				onChange: setTab,
+			}}
 			data={state().data}
 			isCurrentUser={state().isCurrentUser}
 			pins={state().pins}

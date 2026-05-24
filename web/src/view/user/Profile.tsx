@@ -10,6 +10,7 @@ import { Badge } from "~/component/atomic/Badge"
 import { Link } from "~/component/atomic/Link"
 import { Avatar } from "~/component/atomic/avatar"
 import { Button } from "~/component/atomic/button"
+import { Select } from "~/component/atomic/form/select"
 import { Markdown } from "~/component/markdown"
 import { USER_ROLE_NAMES } from "~/domain/user/constants"
 import type { UserCollection } from "~/hey-api"
@@ -34,6 +35,13 @@ type Props = {
 	hasMoreCollections: boolean
 	isFetchingMoreCollections: boolean
 	onLoadMoreCollections: () => void
+	followedCollections?: readonly {
+		followed_at: string
+		collection: UserCollection
+	}[]
+	hasMoreFollowedCollections?: boolean
+	isFetchingMoreFollowedCollections?: boolean
+	onLoadMoreFollowedCollections?: () => void
 }
 
 const enum UserType {
@@ -49,6 +57,7 @@ type Metric = {
 
 type CollectionVisibilityFilter = "all" | "public" | "private"
 type CollectionSortValue = "newest" | "name" | "items"
+type CollectionType = "own" | "followed"
 
 export type ActivityItem = {
 	at: string
@@ -114,7 +123,11 @@ const COLLECTION_SORT_OPTIONS = [
 ]
 
 const COLLECTION_TOOL_CONTROL_CLASS =
-	"h-9 rounded-md border border-slate-400 bg-primary px-3 text-sm text-primary outline-none transition-colors placeholder:text-secondary hover:border-slate-500 focus:border-slate-500 focus:ring-1 focus:ring-slate-400"
+	"h-9 rounded-sm border border-slate-400 bg-primary text-sm text-primary outline-1 outline-transparent -outline-offset-1 transition-colors placeholder:text-secondary hover:border-slate-500 focus-visible:outline-slate-500"
+
+const COLLECTION_TOOL_INPUT_CLASS = `${COLLECTION_TOOL_CONTROL_CLASS} px-3`
+
+const COLLECTION_TOOL_SELECT_CLASS = `${COLLECTION_TOOL_CONTROL_CLASS} gap-1 pl-3 pr-2 font-normal sm:grid-cols-[auto_auto]`
 
 export function Profile(props: Props) {
 	const { t } = useLingui()
@@ -220,6 +233,12 @@ export function Profile(props: Props) {
 						hasMoreCollections={props.hasMoreCollections}
 						isFetchingMoreCollections={props.isFetchingMoreCollections}
 						onLoadMoreCollections={props.onLoadMoreCollections}
+						followedCollections={props.followedCollections}
+						hasMoreFollowedCollections={props.hasMoreFollowedCollections}
+						isFetchingMoreFollowedCollections={
+							props.isFetchingMoreFollowedCollections
+						}
+						onLoadMoreFollowedCollections={props.onLoadMoreFollowedCollections}
 						isCurrentUser={props.isCurrentUser}
 						activity={props.activity}
 					/>
@@ -434,6 +453,13 @@ function CollectionsAndActivitySection(props: {
 	hasMoreCollections: boolean
 	isFetchingMoreCollections: boolean
 	onLoadMoreCollections: () => void
+	followedCollections?: readonly {
+		followed_at: string
+		collection: UserCollection
+	}[]
+	hasMoreFollowedCollections?: boolean
+	isFetchingMoreFollowedCollections?: boolean
+	onLoadMoreFollowedCollections?: () => void
 	isCurrentUser: boolean
 	activity: readonly ActivityItem[]
 }) {
@@ -480,6 +506,12 @@ function CollectionsAndActivitySection(props: {
 						hasMoreItems={props.hasMoreCollections}
 						isFetchingMoreItems={props.isFetchingMoreCollections}
 						onLoadMore={props.onLoadMoreCollections}
+						followedItems={props.followedCollections}
+						hasMoreFollowedItems={props.hasMoreFollowedCollections}
+						isFetchingMoreFollowedItems={
+							props.isFetchingMoreFollowedCollections
+						}
+						onLoadMoreFollowedItems={props.onLoadMoreFollowedCollections}
 						isCurrentUser={props.isCurrentUser}
 					/>
 				</Tabs.Content>
@@ -573,26 +605,167 @@ function RoleBadge(props: { role: UserRoleEnum }) {
 	)
 }
 
+type CollectionToolbarSelectOption<T extends string> = {
+	value: T
+	label: string
+	itemLabel: string
+}
+
+function CollectionToolbarSelect<T extends string>(props: {
+	options: CollectionToolbarSelectOption<T>[]
+	value: T
+	placeholder: string
+	ariaLabel: string
+	class?: string
+	onChange: (value: T) => void
+}) {
+	const selectedOption = () =>
+		props.options.find((option) => option.value === props.value)
+
+	return (
+		<Select.Root<CollectionToolbarSelectOption<T>>
+			options={props.options}
+			optionValue="value"
+			optionTextValue="itemLabel"
+			value={selectedOption()}
+			placeholder={props.placeholder}
+			onChange={(option) => {
+				if (option === null) return
+				props.onChange(option.value)
+			}}
+			itemComponent={(itemProps) => (
+				<Select.Item item={itemProps.item}>
+					{itemProps.item.rawValue.itemLabel}
+				</Select.Item>
+			)}
+		>
+			<Select.Trigger
+				aria-label={props.ariaLabel}
+				class={twMerge(COLLECTION_TOOL_SELECT_CLASS, props.class)}
+			>
+				<Select.Value<CollectionToolbarSelectOption<T>> class="truncate">
+					{(state) => state.selectedOption().label}
+				</Select.Value>
+				<Select.Icon />
+			</Select.Trigger>
+			<Select.Portal>
+				<Select.Content>
+					<Select.Listbox />
+				</Select.Content>
+			</Select.Portal>
+		</Select.Root>
+	)
+}
+
 function CollectionsPanel(props: {
 	items: readonly UserCollection[]
 	hasMoreItems: boolean
 	isFetchingMoreItems: boolean
 	onLoadMore: () => void
 	isCurrentUser: boolean
+	followedItems?: readonly {
+		followed_at: string
+		collection: UserCollection
+	}[]
+	hasMoreFollowedItems?: boolean
+	isFetchingMoreFollowedItems?: boolean
+	onLoadMoreFollowedItems?: () => void
 }) {
 	const { t } = useLingui()
 	const [collectionFormOpen, setCollectionFormOpen] = createSignal(false)
 	const [searchQuery, setSearchQuery] = createSignal("")
+	const [collectionType, setCollectionType] =
+		createSignal<CollectionType>("own")
 	const [visibilityFilter, setVisibilityFilter] =
 		createSignal<CollectionVisibilityFilter>("all")
 	const [sortValue, setSortValue] = createSignal<CollectionSortValue>("newest")
+	const collectionTypeOptions =
+		(): CollectionToolbarSelectOption<CollectionType>[] => [
+			{
+				value: "own",
+				label: t`Type: Own`,
+				itemLabel: t`Own`,
+			},
+			{
+				value: "followed",
+				label: t`Type: Followed`,
+				itemLabel: t`Followed`,
+			},
+		]
+	const visibilityOptions =
+		(): CollectionToolbarSelectOption<CollectionVisibilityFilter>[] =>
+			COLLECTION_VISIBILITY_FILTERS.map((option) => {
+				switch (option.value) {
+					case "all": {
+						return {
+							value: option.value,
+							label: t`Visibility: All`,
+							itemLabel: t`All`,
+						}
+					}
+					case "public": {
+						return {
+							value: option.value,
+							label: t`Visibility: Public`,
+							itemLabel: t`Public`,
+						}
+					}
+					case "private": {
+						return {
+							value: option.value,
+							label: t`Visibility: Private`,
+							itemLabel: t`Private`,
+						}
+					}
+				}
+			})
+	const sortOptions =
+		(): CollectionToolbarSelectOption<CollectionSortValue>[] =>
+			COLLECTION_SORT_OPTIONS.map((option) => {
+				switch (option.value) {
+					case "newest": {
+						if (collectionType() === "followed") {
+							return {
+								value: option.value,
+								label: t`Sort: Followed time`,
+								itemLabel: t`Followed time`,
+							}
+						}
+						return {
+							value: option.value,
+							label: t`Sort: Created time`,
+							itemLabel: t`Created time`,
+						}
+					}
+					case "name": {
+						return {
+							value: option.value,
+							label: t`Sort: Alphabetical`,
+							itemLabel: t`Alphabetical`,
+						}
+					}
+					case "items": {
+						return {
+							value: option.value,
+							label: t`Sort: Item count`,
+							itemLabel: t`Item count`,
+						}
+					}
+				}
+			})
 
 	const visibleItems = createMemo(() => {
 		const keyword = searchQuery().trim().toLocaleLowerCase()
 		const visibility = visibilityFilter()
 		const sort = sortValue()
+		const type = collectionType()
 
-		const items = props.items
+		const sourceItems =
+			type === "own"
+				? props.items
+				: (props.followedItems?.map((item) => item.collection) ?? [])
+
+		const items = sourceItems
 			.filter((item) => {
 				if (visibility === "public") return item.is_public
 				if (visibility === "private") return !item.is_public
@@ -608,62 +781,80 @@ function CollectionsPanel(props: {
 		return [...items].sort((a, b) => compareCollections(a, b, sort))
 	})
 
+	const currentHasMoreItems = createMemo(() => {
+		if (collectionType() === "own") return props.hasMoreItems
+		return props.hasMoreFollowedItems ?? false
+	})
+
+	const currentIsFetchingMoreItems = createMemo(() => {
+		if (collectionType() === "own") return props.isFetchingMoreItems
+		return props.isFetchingMoreFollowedItems ?? false
+	})
+
+	const currentOnLoadMore = () => {
+		if (collectionType() === "own") {
+			props.onLoadMore()
+		} else {
+			props.onLoadMoreFollowedItems?.()
+		}
+	}
+
 	const emptyMessage = createMemo(() => {
-		if (props.items.length > 0) return t`No collections match your filters`
-		if (props.isCurrentUser) return t`You haven't created any collections yet`
+		if (collectionType() === "own") {
+			if (props.items.length > 0) return t`No collections match your filters`
+			if (props.isCurrentUser) return t`You haven't created any collections yet`
+		} else {
+			if ((props.followedItems?.length ?? 0) > 0)
+				return t`No collections match your filters`
+			return t`You haven't followed any collections yet`
+		}
 		return t`No collections found`
 	})
 
 	return (
 		<div class="flex flex-col gap-5">
-			<div class="flex flex-col gap-3 border-b border-slate-200 pb-4 lg:flex-row lg:items-center lg:justify-between">
-				<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+			<div class="flex flex-col gap-3 border-b border-slate-200 pb-4 xl:flex-row xl:items-center xl:justify-between">
+				<div class="flex flex-col gap-2 flex-1 min-w-0 sm:flex-row sm:items-center">
 					<input
 						type="search"
 						value={searchQuery()}
 						placeholder={t`Search collections`}
 						aria-label={t`Search collections`}
 						onInput={(e) => setSearchQuery(e.currentTarget.value)}
-						class={twMerge(COLLECTION_TOOL_CONTROL_CLASS, "w-full sm:w-56")}
+						class={twMerge(
+							COLLECTION_TOOL_INPUT_CLASS,
+							"w-full flex-1 min-w-[200px]",
+						)}
 					/>
-				</div>
 
-				<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-					<select
+					<Show when={props.isCurrentUser}>
+						<CollectionToolbarSelect
+							options={collectionTypeOptions()}
+							value={collectionType()}
+							placeholder={t`Type`}
+							ariaLabel={t`Collection type`}
+							onChange={setCollectionType}
+							class="w-full sm:w-auto"
+						/>
+					</Show>
+
+					<CollectionToolbarSelect
+						options={visibilityOptions()}
 						value={visibilityFilter()}
-						aria-label={t`Filter collections`}
-						onChange={(e) =>
-							setVisibilityFilter(
-								toCollectionVisibilityFilter(e.currentTarget.value),
-							)
-						}
-						class={twMerge(COLLECTION_TOOL_CONTROL_CLASS, "sm:w-36")}
-					>
-						<For each={COLLECTION_VISIBILITY_FILTERS}>
-							{(option) => (
-								<option value={option.value}>
-									<CollectionVisibilityFilterLabel value={option.value} />
-								</option>
-							)}
-						</For>
-					</select>
+						placeholder={t`Visibility`}
+						ariaLabel={t`Filter collections`}
+						onChange={setVisibilityFilter}
+						class="w-full sm:w-auto"
+					/>
 
-					<select
+					<CollectionToolbarSelect
+						options={sortOptions()}
 						value={sortValue()}
-						aria-label={t`Sort collections`}
-						onChange={(e) =>
-							setSortValue(toCollectionSortValue(e.currentTarget.value))
-						}
-						class={twMerge(COLLECTION_TOOL_CONTROL_CLASS, "sm:w-40")}
-					>
-						<For each={COLLECTION_SORT_OPTIONS}>
-							{(option) => (
-								<option value={option.value}>
-									<CollectionSortLabel value={option.value} />
-								</option>
-							)}
-						</For>
-					</select>
+						placeholder={t`Sort`}
+						ariaLabel={t`Sort collections`}
+						onChange={setSortValue}
+						class="w-full sm:w-auto"
+					/>
 
 					<Show when={props.isCurrentUser}>
 						<Button
@@ -685,21 +876,28 @@ function CollectionsPanel(props: {
 			>
 				<ul class="divide-y divide-slate-100 border-y border-slate-200">
 					<For each={visibleItems()}>
-						{(item) => <CollectionRow item={item} />}
+						{(item) => (
+							<Show
+								when={collectionType() === "followed"}
+								fallback={<CollectionRow item={item} />}
+							>
+								<FollowedCollectionRow item={item} />
+							</Show>
+						)}
 					</For>
 				</ul>
 			</Show>
 
-			<Show when={props.hasMoreItems || props.isFetchingMoreItems}>
+			<Show when={currentHasMoreItems() || currentIsFetchingMoreItems()}>
 				<div class="flex justify-center">
 					<Button
 						variant="SecondaryV2"
 						color="Slate"
 						size="Sm"
-						disabled={props.isFetchingMoreItems}
-						onClick={props.onLoadMore}
+						disabled={currentIsFetchingMoreItems()}
+						onClick={currentOnLoadMore}
 					>
-						{props.isFetchingMoreItems ? t`Loading...` : t`Load more`}
+						{currentIsFetchingMoreItems() ? t`Loading...` : t`Load more`}
 					</Button>
 				</div>
 			</Show>
@@ -712,78 +910,6 @@ function CollectionsPanel(props: {
 			</Show>
 		</div>
 	)
-}
-
-function CollectionVisibilityFilterLabel(props: {
-	value: CollectionVisibilityFilter
-}) {
-	const { t } = useLingui()
-
-	const label = () => {
-		switch (props.value) {
-			case "all": {
-				return t`All`
-			}
-			case "public": {
-				return t`Public`
-			}
-			case "private": {
-				return t`Private`
-			}
-		}
-	}
-
-	return <>{label()}</>
-}
-
-function CollectionSortLabel(props: { value: CollectionSortValue }) {
-	const { t } = useLingui()
-
-	const label = () => {
-		switch (props.value) {
-			case "newest": {
-				return t`Newest`
-			}
-			case "name": {
-				return t`Name`
-			}
-			case "items": {
-				return t`Item count`
-			}
-		}
-	}
-
-	return <>{label()}</>
-}
-
-function toCollectionVisibilityFilter(
-	value: string,
-): CollectionVisibilityFilter {
-	switch (value) {
-		case "public": {
-			return "public"
-		}
-		case "private": {
-			return "private"
-		}
-		default: {
-			return "all"
-		}
-	}
-}
-
-function toCollectionSortValue(value: string): CollectionSortValue {
-	switch (value) {
-		case "name": {
-			return "name"
-		}
-		case "items": {
-			return "items"
-		}
-		default: {
-			return "newest"
-		}
-	}
 }
 
 function compareCollections(
@@ -799,9 +925,20 @@ function compareCollections(
 			return b.item_count - a.item_count
 		}
 		case "newest": {
-			return b.id - a.id
+			return compareCollectionTime(a, b)
 		}
 	}
+}
+
+function compareCollectionTime(a: UserCollection, b: UserCollection) {
+	const followedAtA = a.followed_at
+	const followedAtB = b.followed_at
+
+	if (followedAtA != null && followedAtB != null) {
+		return followedAtB.localeCompare(followedAtA)
+	}
+
+	return b.id - a.id
 }
 
 function ActivityPanel(props: { items: readonly ActivityItem[] }) {
@@ -825,7 +962,7 @@ function ActivityPanel(props: { items: readonly ActivityItem[] }) {
 	)
 }
 
-function CollectionRow(props: { item: UserCollection }) {
+export function CollectionRow(props: { item: UserCollection }) {
 	const { t } = useLingui()
 	return (
 		<li>
@@ -842,6 +979,51 @@ function CollectionRow(props: { item: UserCollection }) {
 						</h3>
 						<span class="text-xs text-tertiary">
 							{props.item.is_public ? t`Public` : t`Private`}
+						</span>
+					</div>
+					<p class="mt-1 line-clamp-1 text-sm text-slate-500">
+						{props.item.description || t`No description`}
+					</p>
+				</div>
+
+				<div class="flex items-center gap-4 text-xs text-slate-500 sm:justify-end">
+					<span class="tabular-nums">
+						{props.item.item_count}{" "}
+						{props.item.item_count === 1 ? t`item` : t`items`}
+					</span>
+					<span class="text-slate-300 transition-colors group-hover:text-slate-500">
+						&gt;
+					</span>
+				</div>
+			</Link>
+		</li>
+	)
+}
+
+export function FollowedCollectionRow(props: { item: UserCollection }) {
+	const { t } = useLingui()
+	return (
+		<li>
+			<Link
+				to="/collection/$id"
+				params={{ id: props.item.id.toString() }}
+				underline={false}
+				class="group grid gap-3 px-1 py-4 no-underline outline-none transition-colors hover:bg-slate-50 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-3"
+			>
+				<div class="min-w-0">
+					<div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+						<h3 class="truncate text-[15px] font-medium text-slate-900 transition-colors group-hover:text-sky-700">
+							{props.item.name}
+						</h3>
+						<span class="inline-flex min-w-0 items-center gap-1.5 text-xs font-medium text-slate-600">
+							<Avatar
+								user={{
+									name: props.item.owner.name,
+									avatar_url: props.item.owner.avatar_url,
+								}}
+								class="size-4 shrink-0 [&>div]:text-xs [&>div]:leading-none"
+							/>
+							<span class="truncate">{props.item.owner.name}</span>
 						</span>
 					</div>
 					<p class="mt-1 line-clamp-1 text-sm text-slate-500">

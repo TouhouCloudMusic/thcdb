@@ -56,7 +56,9 @@ import {
 	findSongLyricsById,
 	findTagById,
 	findTagByKeyword,
+	followedUserCollections,
 	followUser,
+	followUserCollection,
 	forgotPassword,
 	getArtistCredits,
 	getArtistProfileImageMetadata,
@@ -100,6 +102,7 @@ import {
 	signUp,
 	songRelationTypes,
 	unfollowUser,
+	unfollowUserCollection,
 	updateArtistPendingCorrection,
 	updateBio,
 	updateCreditRolePendingCorrection,
@@ -275,6 +278,12 @@ import type {
 	FindTagByKeywordData,
 	FindTagByKeywordError,
 	FindTagByKeywordResponse,
+	FollowedUserCollectionsData,
+	FollowedUserCollectionsError,
+	FollowedUserCollectionsResponse,
+	FollowUserCollectionData,
+	FollowUserCollectionError,
+	FollowUserCollectionResponse,
 	FollowUserData,
 	FollowUserError,
 	FollowUserResponse,
@@ -400,6 +409,9 @@ import type {
 	SongRelationTypesData,
 	SongRelationTypesError,
 	SongRelationTypesResponse,
+	UnfollowUserCollectionData,
+	UnfollowUserCollectionError,
+	UnfollowUserCollectionResponse,
 	UnfollowUserData,
 	UnfollowUserError,
 	UnfollowUserResponse,
@@ -2755,6 +2767,78 @@ export const updateBioMutation = (
 	return mutationOptions
 }
 
+export const followedUserCollectionsQueryKey = (
+	options?: Options<FollowedUserCollectionsData>,
+) => createQueryKey("followedUserCollections", options)
+
+export const followedUserCollectionsOptions = (
+	options?: Options<FollowedUserCollectionsData>,
+) =>
+	queryOptions<
+		FollowedUserCollectionsResponse,
+		FollowedUserCollectionsError,
+		FollowedUserCollectionsResponse,
+		ReturnType<typeof followedUserCollectionsQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await followedUserCollections({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: followedUserCollectionsQueryKey(options),
+	})
+
+export const followedUserCollectionsInfiniteQueryKey = (
+	options?: Options<FollowedUserCollectionsData>,
+): QueryKey<Options<FollowedUserCollectionsData>> =>
+	createQueryKey("followedUserCollections", options, true)
+
+export const followedUserCollectionsInfiniteOptions = (
+	options?: Options<FollowedUserCollectionsData>,
+) =>
+	infiniteQueryOptions<
+		FollowedUserCollectionsResponse,
+		FollowedUserCollectionsError,
+		InfiniteData<FollowedUserCollectionsResponse>,
+		QueryKey<Options<FollowedUserCollectionsData>>,
+		| number
+		| Pick<
+				QueryKey<Options<FollowedUserCollectionsData>>[0],
+				"body" | "headers" | "path" | "query"
+		  >
+	>(
+		// @ts-ignore
+		{
+			queryFn: async ({ pageParam, queryKey, signal }) => {
+				// @ts-ignore
+				const page: Pick<
+					QueryKey<Options<FollowedUserCollectionsData>>[0],
+					"body" | "headers" | "path" | "query"
+				> =
+					typeof pageParam === "object"
+						? pageParam
+						: {
+								query: {
+									page: pageParam,
+								},
+							}
+				const params = createInfiniteParams(queryKey, page)
+				const { data } = await followedUserCollections({
+					...options,
+					...params,
+					signal,
+					throwOnError: true,
+				})
+				return data
+			},
+			queryKey: followedUserCollectionsInfiniteQueryKey(options),
+		},
+	)
+
 export const profileWithNameQueryKey = (
 	options: Options<ProfileWithNameData>,
 ) => createQueryKey("profileWithName", options)
@@ -4144,6 +4228,54 @@ export const updateTagPendingCorrectionMutation = (
 	> = {
 		mutationFn: async (fnOptions) => {
 			const { data } = await updateTagPendingCorrection({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const unfollowUserCollectionMutation = (
+	options?: Partial<Options<UnfollowUserCollectionData>>,
+): MutationOptions<
+	UnfollowUserCollectionResponse,
+	UnfollowUserCollectionError,
+	Options<UnfollowUserCollectionData>
+> => {
+	const mutationOptions: MutationOptions<
+		UnfollowUserCollectionResponse,
+		UnfollowUserCollectionError,
+		Options<UnfollowUserCollectionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await unfollowUserCollection({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const followUserCollectionMutation = (
+	options?: Partial<Options<FollowUserCollectionData>>,
+): MutationOptions<
+	FollowUserCollectionResponse,
+	FollowUserCollectionError,
+	Options<FollowUserCollectionData>
+> => {
+	const mutationOptions: MutationOptions<
+		FollowUserCollectionResponse,
+		FollowUserCollectionError,
+		Options<FollowUserCollectionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await followUserCollection({
 				...options,
 				...fnOptions,
 				throwOnError: true,

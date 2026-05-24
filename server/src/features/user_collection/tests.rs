@@ -1,11 +1,10 @@
 use std::sync::Arc;
 
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use domain::shared::NonEmptyString;
 use infra_db::SeaOrmRepository;
 use tokio::sync::Barrier;
 
+use super::error::{Error, NotFound};
 use super::model::{
     CreateUserCollectionItemRequest, ReorderUserCollectionItemsRequest,
     UserCollection, UserCollectionItem, UserCollectionItemEntityType,
@@ -130,14 +129,105 @@ async fn private_collections_are_visible_only_to_owner() {
         .unwrap();
     assert_eq!(viewer_page.items.len(), 1);
     assert_eq!(viewer_page.items[0].id, public_collection.id);
+    assert_eq!(viewer_page.items[0].follower_count, 0);
+    assert_eq!(viewer_page.items[0].is_following, Some(false));
 
     let private_detail = service
         .get_user_collection_detail(private_collection.id, Some(viewer.id))
         .await;
-    assert_eq!(
-        private_detail.unwrap_err().into_response().status(),
-        StatusCode::NOT_FOUND
-    );
+    assert!(matches!(
+        private_detail,
+        Err(Error::NotFound(NotFound::Collection))
+    ));
+}
+
+#[tokio::test]
+async fn follow_user_collection_is_idempotent_and_updates_summary() {
+    let (conn, service) = test_service().await;
+    let owner = MockUser::with_label("user_collection_follow_owner")
+        .insert(&conn)
+        .await
+        .unwrap();
+    let viewer = MockUser::with_label("user_collection_follow_viewer")
+        .insert(&conn)
+        .await
+        .unwrap();
+    let collection =
+        create_user_collection(&service, owner.id, "public", true).await;
+
+    service
+        .follow_user_collection(viewer.id, collection.id)
+        .await
+        .unwrap();
+    service
+        .follow_user_collection(viewer.id, collection.id)
+        .await
+        .unwrap();
+
+    let detail = service
+        .get_user_collection_detail(collection.id, Some(viewer.id))
+        .await
+        .unwrap();
+    assert_eq!(detail.follower_count, 1);
+    assert_eq!(detail.is_following, Some(true));
+
+    let followed = service
+        .list_followed_user_collections(viewer.id, page_query())
+        .await
+        .unwrap();
+    assert_eq!(followed.items.len(), 1);
+    assert_eq!(followed.items[0].collection.id, collection.id);
+    assert!(followed.items[0].collection.followed_at.is_some());
+
+    service
+        .unfollow_user_collection(viewer.id, collection.id)
+        .await
+        .unwrap();
+    service
+        .unfollow_user_collection(viewer.id, collection.id)
+        .await
+        .unwrap();
+
+    let detail = service
+        .get_user_collection_detail(collection.id, Some(viewer.id))
+        .await
+        .unwrap();
+    assert_eq!(detail.follower_count, 0);
+    assert_eq!(detail.is_following, Some(false));
+}
+
+#[tokio::test]
+async fn follow_rejects_private_and_own_collections() {
+    let (conn, service) = test_service().await;
+    let owner = MockUser::with_label("user_collection_follow_reject_owner")
+        .insert(&conn)
+        .await
+        .unwrap();
+    let viewer = MockUser::with_label("user_collection_follow_reject_viewer")
+        .insert(&conn)
+        .await
+        .unwrap();
+    let private_collection =
+        create_user_collection(&service, owner.id, "private", false).await;
+    let own_collection =
+        create_user_collection(&service, viewer.id, "own", true).await;
+
+    let private_follow = service
+        .follow_user_collection(viewer.id, private_collection.id)
+        .await;
+    assert!(matches!(
+        private_follow,
+        Err(Error::NotFound(NotFound::Collection))
+    ));
+
+    let own_follow = service
+        .follow_user_collection(viewer.id, own_collection.id)
+        .await;
+    assert!(matches!(
+        own_follow,
+        Err(Error::InvalidRequest(message))
+            if message == "Cannot follow your own collection"
+    ));
 }
 
 #[tokio::test]

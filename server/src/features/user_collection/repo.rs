@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use chrono::{DateTime, FixedOffset};
 use domain::image::Image as DomainImage;
 use domain::shared::{DateWithPrecision, PageResponse, SimpleArtist};
 use entity::enums::EntityType;
@@ -12,11 +13,14 @@ use entity::{
     release_track as release_track_entity, song as song_entity,
     song_artist as song_artist_entity, tag as tag_entity, user as user_entity,
     user_collection as user_collection_entity,
+    user_collection_follow as user_collection_follow_entity,
     user_collection_item as user_collection_item_entity,
 };
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::prelude::Expr;
-use sea_orm::sea_query::{Alias, Order, Query, SelectStatement};
+use sea_orm::sea_query::{
+    Alias, ExprTrait, Func, JoinType, OnConflict, Order, Query, SelectStatement,
+};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait,
     FromQueryResult, IntoActiveModel, LoaderTrait, PaginatorTrait, QueryFilter,
@@ -26,10 +30,10 @@ use sea_orm::{
 use super::error::{Error, NotFound};
 use super::model::{
     ArtistSummary, CreateUserCollectionItemRequest, EntitySummary,
-    EventSummary, LabelSummary, ReleaseSummary, SongSummary, TagSummary,
-    UserCollection, UserCollectionItem, UserCollectionItemDetail,
-    UserCollectionItemEntityType, UserCollectionMutationRequest,
-    UserCollectionOwner,
+    EventSummary, FollowedUserCollection, LabelSummary, ReleaseSummary,
+    SongSummary, TagSummary, UserCollection, UserCollectionItem,
+    UserCollectionItemDetail, UserCollectionItemEntityType,
+    UserCollectionMutationRequest, UserCollectionOwner,
 };
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::PageQuery;
@@ -37,27 +41,49 @@ use crate::shared::http::PageQuery;
 #[derive(Debug, Clone, FromQueryResult)]
 struct UserCollectionSummaryRow {
     id: i32,
-    user_id: i32,
     name: String,
     description: String,
     is_public: bool,
     owner_id: i32,
     owner_name: String,
+    owner_avatar_url_dir: Option<String>,
+    owner_avatar_url_filename: Option<String>,
     item_count: i64,
+    follower_count: i64,
+    is_following: Option<bool>,
+    followed_at: Option<DateTime<FixedOffset>>,
 }
 
 impl From<UserCollectionSummaryRow> for UserCollection {
     fn from(row: UserCollectionSummaryRow) -> Self {
+        let avatar_url = if let Some(dir) = row.owner_avatar_url_dir
+            && let Some(filename) = row.owner_avatar_url_filename
+        {
+            Some(
+                std::path::PathBuf::from(dir)
+                    .join(filename)
+                    .to_string_lossy()
+                    .to_string(),
+            )
+        } else {
+            None
+        };
+
         Self {
             id: row.id,
             owner: UserCollectionOwner {
                 id: row.owner_id,
                 name: row.owner_name,
+                avatar_url,
             },
             name: row.name,
             description: row.description,
             is_public: row.is_public,
             item_count: u64::try_from(row.item_count).unwrap_or(u64::MAX),
+            follower_count: u64::try_from(row.follower_count)
+                .unwrap_or(u64::MAX),
+            is_following: row.is_following,
+            followed_at: row.followed_at,
         }
     }
 }
@@ -77,6 +103,7 @@ pub(super) async fn find_requested_user_by_name(
 pub(super) async fn load_user_collections_page(
     conn: &impl ConnectionTrait,
     select: Select<user_collection_entity::Entity>,
+    viewer_id: Option<i32>,
     page_query: PageQuery,
 ) -> Result<PageResponse<UserCollection>, Error> {
     let total_items = select
@@ -91,6 +118,7 @@ pub(super) async fn load_user_collections_page(
             .order_by_desc(user_collection_entity::Column::Id)
             .offset(page_query.offset())
             .limit(u64::from(page_query.limit())),
+        viewer_id,
     )
     .await?;
 
@@ -100,11 +128,13 @@ pub(super) async fn load_user_collections_page(
 pub(super) async fn load_user_collection_detail(
     conn: &impl ConnectionTrait,
     collection_id: i32,
+    viewer_id: Option<i32>,
 ) -> Result<UserCollection, Error> {
     load_user_collection_summaries(
         conn,
         user_collection_entity::Entity::find()
             .filter(user_collection_entity::Column::Id.eq(collection_id)),
+        viewer_id,
     )
     .await?
     .into_iter()
@@ -115,10 +145,11 @@ pub(super) async fn load_user_collection_detail(
 async fn load_user_collection_summaries(
     conn: &impl ConnectionTrait,
     select: Select<user_collection_entity::Entity>,
+    viewer_id: Option<i32>,
 ) -> Result<Vec<UserCollection>, Error> {
     let stmt = conn
         .get_database_backend()
-        .build(&build_user_collection_summary_query(select));
+        .build(&build_user_collection_summary_query(select, viewer_id));
     let rows = UserCollectionSummaryRow::find_by_statement(stmt)
         .all(conn)
         .await
@@ -129,17 +160,36 @@ async fn load_user_collection_summaries(
 
 fn build_user_collection_summary_query(
     select: Select<user_collection_entity::Entity>,
+    viewer_id: Option<i32>,
 ) -> SelectStatement {
     let collections_alias = Alias::new("user_collections");
+    let mut query = Query::select();
 
-    Query::select()
+    select_user_collection_summary_fields(&mut query, &collections_alias);
+    query.from_subquery(select.into_query(), collections_alias.clone());
+    join_user_collection_summary_tables(&mut query, &collections_alias);
+    group_user_collection_summary(&mut query, &collections_alias);
+    select_viewer_follow_state(&mut query, &collections_alias, viewer_id);
+    query.order_by(
+        (
+            collections_alias.clone(),
+            user_collection_entity::Column::Id,
+        ),
+        Order::Desc,
+    );
+
+    query.clone()
+}
+
+fn select_user_collection_summary_fields(
+    query: &mut SelectStatement,
+    collections_alias: &Alias,
+) {
+    let avatar_alias = Alias::new("avatar_image");
+    query
         .expr(Expr::col((
             collections_alias.clone(),
             user_collection_entity::Column::Id,
-        )))
-        .expr(Expr::col((
-            collections_alias.clone(),
-            user_collection_entity::Column::UserId,
         )))
         .expr(Expr::col((
             collections_alias.clone(),
@@ -162,14 +212,56 @@ fn build_user_collection_summary_query(
             Alias::new("owner_name"),
         )
         .expr_as(
+            Expr::col((avatar_alias.clone(), image_entity::Column::Directory)),
+            Alias::new("owner_avatar_url_dir"),
+        )
+        .expr_as(
+            Expr::col((avatar_alias, image_entity::Column::Filename)),
+            Alias::new("owner_avatar_url_filename"),
+        )
+        .expr_as(
             Expr::col((
                 user_collection_item_entity::Entity,
                 user_collection_item_entity::Column::Id,
             ))
-            .count(),
+            .count_distinct(),
             Alias::new("item_count"),
         )
-        .from_subquery(select.into_query(), collections_alias.clone())
+        .expr_as(
+            visible_follower_count_expr(collections_alias),
+            Alias::new("follower_count"),
+        );
+}
+
+fn visible_follower_count_expr(
+    collections_alias: &Alias,
+) -> sea_orm::sea_query::SimpleExpr {
+    Func::coalesce([
+        Expr::case(
+            Expr::col((
+                collections_alias.clone(),
+                user_collection_entity::Column::IsPublic,
+            ))
+            .eq(true),
+            Expr::col((
+                user_collection_follow_entity::Entity,
+                user_collection_follow_entity::Column::UserId,
+            ))
+            .count_distinct(),
+        )
+        .finally(0)
+        .cast_as("bigint"),
+        Expr::val(0_i64).into(),
+    ])
+    .into()
+}
+
+fn join_user_collection_summary_tables(
+    query: &mut SelectStatement,
+    collections_alias: &Alias,
+) {
+    let avatar_alias = Alias::new("avatar_image");
+    query
         .inner_join(
             user_entity::Entity,
             Expr::col((
@@ -177,6 +269,13 @@ fn build_user_collection_summary_query(
                 user_collection_entity::Column::UserId,
             ))
             .equals((user_entity::Entity, user_entity::Column::Id)),
+        )
+        .join_as(
+            JoinType::LeftJoin,
+            image_entity::Entity,
+            avatar_alias.clone(),
+            Expr::col((user_entity::Entity, user_entity::Column::AvatarId))
+                .equals((avatar_alias, image_entity::Column::Id)),
         )
         .left_join(
             user_collection_item_entity::Entity,
@@ -189,33 +288,214 @@ fn build_user_collection_summary_query(
                 user_collection_item_entity::Column::UserCollectionId,
             )),
         )
-        .group_by_col((
+        .left_join(
+            user_collection_follow_entity::Entity,
+            Expr::col((
+                collections_alias.clone(),
+                user_collection_entity::Column::Id,
+            ))
+            .equals((
+                user_collection_follow_entity::Entity,
+                user_collection_follow_entity::Column::CollectionId,
+            )),
+        );
+}
+
+fn group_user_collection_summary(
+    query: &mut SelectStatement,
+    collections_alias: &Alias,
+) {
+    let avatar_alias = Alias::new("avatar_image");
+    query.add_group_by([
+        Expr::col((
             collections_alias.clone(),
             user_collection_entity::Column::Id,
         ))
-        .group_by_col((
+        .into(),
+        Expr::col((
             collections_alias.clone(),
             user_collection_entity::Column::UserId,
         ))
-        .group_by_col((
+        .into(),
+        Expr::col((
             collections_alias.clone(),
             user_collection_entity::Column::Name,
         ))
-        .group_by_col((
+        .into(),
+        Expr::col((
             collections_alias.clone(),
             user_collection_entity::Column::Description,
         ))
-        .group_by_col((
+        .into(),
+        Expr::col((
             collections_alias.clone(),
             user_collection_entity::Column::IsPublic,
         ))
-        .group_by_col((user_entity::Entity, user_entity::Column::Id))
-        .group_by_col((user_entity::Entity, user_entity::Column::Name))
-        .order_by(
-            (collections_alias, user_collection_entity::Column::Id),
-            Order::Desc,
+        .into(),
+        Expr::col((user_entity::Entity, user_entity::Column::Id)).into(),
+        Expr::col((user_entity::Entity, user_entity::Column::Name)).into(),
+        Expr::col((avatar_alias.clone(), image_entity::Column::Directory))
+            .into(),
+        Expr::col((avatar_alias, image_entity::Column::Filename)).into(),
+    ]);
+}
+
+fn select_viewer_follow_state(
+    query: &mut SelectStatement,
+    collections_alias: &Alias,
+    viewer_id: Option<i32>,
+) {
+    let Some(viewer_id) = viewer_id else {
+        query
+            .expr_as(
+                Expr::val(Option::<bool>::None),
+                Alias::new("is_following"),
+            )
+            .expr_as(
+                Expr::val(Option::<DateTime<FixedOffset>>::None),
+                Alias::new("followed_at"),
+            );
+        return;
+    };
+
+    let followed_by_viewer_alias = Alias::new("followed_by_viewer");
+    query
+        .expr_as(
+            Expr::col((
+                followed_by_viewer_alias.clone(),
+                user_collection_follow_entity::Column::UserId,
+            ))
+            .count_distinct()
+            .gt(0),
+            Alias::new("is_following"),
         )
-        .to_owned()
+        .expr_as(
+            Expr::col((
+                followed_by_viewer_alias.clone(),
+                user_collection_follow_entity::Column::FollowedAt,
+            ))
+            .max(),
+            Alias::new("followed_at"),
+        )
+        .join_as(
+            JoinType::LeftJoin,
+            user_collection_follow_entity::Entity,
+            followed_by_viewer_alias.clone(),
+            Expr::col((
+                collections_alias.clone(),
+                user_collection_entity::Column::Id,
+            ))
+            .equals((
+                followed_by_viewer_alias.clone(),
+                user_collection_follow_entity::Column::CollectionId,
+            ))
+            .and(
+                Expr::col((
+                    followed_by_viewer_alias,
+                    user_collection_follow_entity::Column::UserId,
+                ))
+                .eq(viewer_id),
+            ),
+        );
+}
+
+pub(super) async fn follow_user_collection(
+    conn: &impl ConnectionTrait,
+    user_id: i32,
+    collection_id: i32,
+) -> Result<(), Error> {
+    user_collection_follow_entity::Entity::insert(
+        user_collection_follow_entity::ActiveModel {
+            user_id: Set(user_id),
+            collection_id: Set(collection_id),
+            followed_at: NotSet,
+        },
+    )
+    .on_conflict(
+        OnConflict::columns([
+            user_collection_follow_entity::Column::UserId,
+            user_collection_follow_entity::Column::CollectionId,
+        ])
+        .do_nothing()
+        .to_owned(),
+    )
+    .exec_without_returning(conn)
+    .await
+    .db_operation("follow user collection")?;
+    Ok(())
+}
+
+pub(super) async fn unfollow_user_collection(
+    conn: &impl ConnectionTrait,
+    user_id: i32,
+    collection_id: i32,
+) -> Result<(), Error> {
+    user_collection_follow_entity::Entity::delete_many()
+        .filter(user_collection_follow_entity::Column::UserId.eq(user_id))
+        .filter(
+            user_collection_follow_entity::Column::CollectionId
+                .eq(collection_id),
+        )
+        .exec(conn)
+        .await
+        .db_operation("unfollow user collection")?;
+    Ok(())
+}
+
+pub(super) async fn load_followed_user_collections_page(
+    conn: &impl ConnectionTrait,
+    user_id: i32,
+    page_query: PageQuery,
+) -> Result<PageResponse<FollowedUserCollection>, Error> {
+    let base_select = user_collection_entity::Entity::find()
+        .inner_join(user_collection_follow_entity::Entity)
+        .filter(user_collection_follow_entity::Column::UserId.eq(user_id))
+        .filter(user_collection_entity::Column::IsPublic.eq(true));
+
+    let total_items = base_select
+        .clone()
+        .count(conn)
+        .await
+        .db_operation("count followed user collections")?;
+
+    let followed = user_collection_follow_entity::Entity::find()
+        .inner_join(user_collection_entity::Entity)
+        .filter(user_collection_follow_entity::Column::UserId.eq(user_id))
+        .filter(user_collection_entity::Column::IsPublic.eq(true))
+        .order_by_desc(user_collection_follow_entity::Column::FollowedAt)
+        .offset(page_query.offset())
+        .limit(u64::from(page_query.limit()))
+        .all(conn)
+        .await
+        .db_operation("load followed user collection ids")?;
+    let collection_ids: Vec<i32> =
+        followed.iter().map(|follow| follow.collection_id).collect();
+
+    let collections = load_user_collection_summaries(
+        conn,
+        user_collection_entity::Entity::find()
+            .filter(user_collection_entity::Column::Id.is_in(collection_ids)),
+        Some(user_id),
+    )
+    .await?
+    .into_iter()
+    .map(|collection| (collection.id, collection))
+    .collect::<HashMap<_, _>>();
+
+    let items = followed
+        .into_iter()
+        .filter_map(|follow| {
+            collections
+                .get(&follow.collection_id)
+                .cloned()
+                .map(|collection| FollowedUserCollection {
+                    followed_at: follow.followed_at,
+                    collection,
+                })
+        })
+        .collect();
+
+    Ok(page_query.to_response(items, total_items))
 }
 
 pub(super) async fn load_user_collection_items_page(
