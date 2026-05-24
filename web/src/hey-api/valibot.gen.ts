@@ -3471,6 +3471,7 @@ export const vUserCollectionOwner = v.object({
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
 	name: v.string(),
+	avatar_url: v.nullish(v.string()),
 })
 
 export const vPageResponseUserCollection = v.object({
@@ -3501,6 +3502,17 @@ export const vPageResponseUserCollection = v.object({
 					"Invalid value: Expected int64 to be <= 9223372036854775807",
 				),
 			),
+			follower_count: v.pipe(
+				v.union([v.number(), v.string(), v.bigint()]),
+				v.transform((x) => BigInt(x)),
+				v.minValue(BigInt(0)),
+				v.maxValue(
+					BigInt("9223372036854775807"),
+					"Invalid value: Expected int64 to be <= 9223372036854775807",
+				),
+			),
+			is_following: v.nullish(v.boolean()),
+			followed_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
 		}),
 	),
 	page: v.pipe(
@@ -3566,11 +3578,69 @@ export const vUserCollection = v.object({
 			"Invalid value: Expected int64 to be <= 9223372036854775807",
 		),
 	),
+	follower_count: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	is_following: v.nullish(v.boolean()),
+	followed_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
 })
 
 export const vDataUserCollection = v.object({
 	status: v.string(),
 	data: vUserCollection,
+})
+
+export const vPageResponseFollowedUserCollection = v.object({
+	items: v.array(
+		v.object({
+			followed_at: v.pipe(v.string(), v.isoTimestamp()),
+			collection: vUserCollection,
+		}),
+	),
+	page: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	page_size: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(0),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	total_items: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	total_pages: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+})
+
+export const vDataPageFollowedUserCollection = v.object({
+	status: v.string(),
+	data: vPageResponseFollowedUserCollection,
 })
 
 export const vUserProfileStats = v.object({
@@ -4901,6 +4971,22 @@ export const vUpdateBioBody = v.string()
 
 export const vUpdateBioResponse = vMessage
 
+export const vFollowedUserCollectionsQuery = v.object({
+	limit: v.optional(
+		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
+	),
+	page: v.optional(
+		v.pipe(
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
+		),
+	),
+})
+
+export const vFollowedUserCollectionsResponse = vDataPageFollowedUserCollection
+
 export const vProfileWithNamePath = v.object({
 	name: v.string(),
 })
@@ -5483,6 +5569,34 @@ export const vUpdateTagPendingCorrectionPath = v.object({
 })
 
 export const vUpdateTagPendingCorrectionResponse = vDataCorrectionSubmitResult
+
+export const vUnfollowUserCollectionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vUnfollowUserCollectionResponse = vMessage
+
+export const vFollowUserCollectionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vFollowUserCollectionResponse = vMessage
 
 export const vUserRolesResponse = vDataVecUserRole
 

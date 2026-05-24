@@ -1,23 +1,15 @@
-import { createEffect } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import type { UserCollection, UserProfile } from "~/hey-api"
-import { useCurrentUser } from "~/state/user"
+import type { UserCollection } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
-import type { ItemsFetchState } from "~/view/collection/CollectionDetail"
+import type {
+	CollectionDetailController,
+	CollectionDetailModel,
+} from "~/view/collection/CollectionDetail"
 import { CollectionDetailPage } from "~/view/collection/CollectionDetail"
 import type { UserCollectionItemDetail } from "~/view/collection/CollectionItemCard"
 
 const MOCK_OWNER_NAME = "Hakurei Reimu"
-
-const MOCK_OWNER_USER: UserProfile = {
-	name: MOCK_OWNER_NAME,
-	last_login: "2026-01-01T00:00:00.000Z",
-	stats: {
-		edit_count: 42,
-		vote_count: 17,
-	},
-}
 
 const MOCK_LIST: UserCollection = {
 	id: 1,
@@ -25,6 +17,7 @@ const MOCK_LIST: UserCollection = {
 	description: "A curated collection of my favorite items in the database.",
 	is_public: true,
 	item_count: 6,
+	follower_count: 3,
 	owner: { id: 1, name: MOCK_OWNER_NAME },
 }
 
@@ -119,26 +112,53 @@ type StoryRootProps = {
 	isDeletingCollection: boolean
 	isDeletingItem: boolean
 	isReorderingItems: boolean
+	isFollowingCollection: boolean
+	isFollowingCollectionPending: boolean
+}
+
+function noopControllerAction() {
+	return undefined
+}
+
+const COLLECTION_DETAIL_CONTROLLER: CollectionDetailController = {
+	retryItems: noopControllerAction,
+	loadMoreItems: noopControllerAction,
+	deleteCollection: noopControllerAction,
+	deleteItem: noopControllerAction,
+	reorderItems: noopControllerAction,
+	toggleFollow: noopControllerAction,
 }
 
 function StoryRoot(props: StoryRootProps) {
-	const userCtx = useCurrentUser()
-
-	createEffect(() => {
-		if (props.scenario === "owner") {
-			userCtx.sign_in({ user: MOCK_OWNER_USER })
-		} else {
-			userCtx.sign_in(undefined)
-		}
+	const collection = () => ({
+		...MOCK_LIST,
+		is_following:
+			props.scenario === "visitor" ? props.isFollowingCollection : undefined,
 	})
+	const viewer = (): CollectionDetailModel["viewer"] => {
+		if (props.scenario === "owner") {
+			return {
+				role: "owner",
+				isDeletingCollection: props.isDeletingCollection,
+				isDeletingItem: props.isDeletingItem,
+				isReorderingItems: props.isReorderingItems,
+			}
+		}
 
-	const itemsFetchState = (): ItemsFetchState => {
+		return {
+			role: "visitor",
+			isFollowing: props.isFollowingCollection,
+			isTogglingFollow: props.isFollowingCollectionPending,
+		}
+	}
+
+	const itemsFetchState = (): CollectionDetailModel["items"] => {
 		switch (props.itemsScenario) {
 			case "loading": {
 				return { status: "loading" }
 			}
 			case "error": {
-				return { status: "error", onRetry: () => undefined }
+				return { status: "error" }
 			}
 			case "empty": {
 				return {
@@ -146,7 +166,6 @@ function StoryRoot(props: StoryRootProps) {
 					items: [],
 					isFetchingMore: false,
 					hasMore: false,
-					onLoadMore: () => undefined,
 				}
 			}
 			case "has-more": {
@@ -155,7 +174,6 @@ function StoryRoot(props: StoryRootProps) {
 					items: MOCK_ITEMS,
 					isFetchingMore: false,
 					hasMore: true,
-					onLoadMore: () => undefined,
 				}
 			}
 			case "loaded": {
@@ -164,7 +182,6 @@ function StoryRoot(props: StoryRootProps) {
 					items: MOCK_ITEMS,
 					isFetchingMore: false,
 					hasMore: false,
-					onLoadMore: () => undefined,
 				}
 			}
 			default: {
@@ -172,19 +189,18 @@ function StoryRoot(props: StoryRootProps) {
 			}
 		}
 	}
+	const model = (): CollectionDetailModel => ({
+		collection: collection(),
+		items: itemsFetchState(),
+		viewer: viewer(),
+	})
 
 	return (
 		<div class="size-full bg-slate-100">
 			<div class="mx-auto h-full max-w-6xl border-x border-slate-300 bg-white p-8 pt-6 2xl:max-w-7xl">
 				<CollectionDetailPage
-					collection={MOCK_LIST}
-					itemsFetchState={itemsFetchState()}
-					isDeletingCollection={props.isDeletingCollection}
-					isDeletingItem={props.isDeletingItem}
-					isReorderingItems={props.isReorderingItems}
-					onDeleteCollection={() => undefined}
-					onDeleteItem={() => undefined}
-					onReorderItems={() => undefined}
+					model={model()}
+					controller={COLLECTION_DETAIL_CONTROLLER}
 				/>
 			</div>
 		</div>
@@ -197,6 +213,8 @@ const DEFAULT_ARGS: StoryRootProps = {
 	isDeletingCollection: false,
 	isDeletingItem: false,
 	isReorderingItems: false,
+	isFollowingCollection: false,
+	isFollowingCollectionPending: false,
 }
 
 const meta = {
@@ -234,6 +252,8 @@ const meta = {
 		isDeletingCollection: { control: { type: "boolean" } },
 		isDeletingItem: { control: { type: "boolean" } },
 		isReorderingItems: { control: { type: "boolean" } },
+		isFollowingCollection: { control: { type: "boolean" } },
+		isFollowingCollectionPending: { control: { type: "boolean" } },
 	},
 	args: DEFAULT_ARGS,
 } satisfies Meta<typeof StoryRoot>

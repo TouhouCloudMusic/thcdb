@@ -1,3 +1,4 @@
+use chrono::{DateTime, FixedOffset};
 use domain::shared::{DateWithPrecision, NonEmptyString, SimpleArtist};
 use entity::enums::EntityType;
 use entity::sea_orm_active_enums::{ArtistType, ReleaseType, TagType};
@@ -9,6 +10,8 @@ use utoipa::ToSchema;
 pub struct UserCollectionOwner {
     pub id: i32,
     pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub avatar_url: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]
@@ -19,6 +22,17 @@ pub struct UserCollection {
     pub description: String,
     pub is_public: bool,
     pub item_count: u64,
+    pub follower_count: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_following: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub followed_at: Option<DateTime<FixedOffset>>,
+}
+
+#[derive(Clone, Debug, Serialize, ToSchema)]
+pub struct FollowedUserCollection {
+    pub followed_at: DateTime<FixedOffset>,
+    pub collection: UserCollection,
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]

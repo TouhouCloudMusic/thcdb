@@ -6,7 +6,10 @@ import { Show } from "solid-js"
 import * as v from "valibot"
 
 import { AuthGuard } from "~/component/route"
-import { userCollectionsInfiniteOptions } from "~/hey-api/@tanstack/solid-query.gen"
+import {
+	followedUserCollectionsInfiniteOptions,
+	userCollectionsInfiniteOptions,
+} from "~/hey-api/@tanstack/solid-query.gen"
 import { useCurrentUser } from "~/state/user"
 import { getNextPageParam } from "~/utils/query"
 import { Profile } from "~/view/user/Profile"
@@ -52,6 +55,19 @@ function RouteComponent() {
 		}
 	})
 
+	const followedCollectionsQuery = useInfiniteQuery(() => {
+		const username = profileQuery.data?.name
+
+		return {
+			...followedUserCollectionsInfiniteOptions({
+				query: { limit: 100 },
+			}),
+			initialPageParam: 1,
+			getNextPageParam,
+			enabled: username !== undefined,
+		}
+	})
+
 	return (
 		<AuthGuard>
 			<Show when={profileQuery.data}>
@@ -73,6 +89,20 @@ function RouteComponent() {
 							isFetchingMoreCollections={collectionsQuery.isFetchingNextPage}
 							onLoadMoreCollections={() => {
 								void collectionsQuery.fetchNextPage()
+							}}
+							followedCollections={
+								followedCollectionsQuery.isSuccess
+									? followedCollectionsQuery.data.pages.flatMap(
+											(page) => page.data.items,
+										)
+									: []
+							}
+							hasMoreFollowedCollections={followedCollectionsQuery.hasNextPage}
+							isFetchingMoreFollowedCollections={
+								followedCollectionsQuery.isFetchingNextPage
+							}
+							onLoadMoreFollowedCollections={() => {
+								void followedCollectionsQuery.fetchNextPage()
 							}}
 							tab={{
 								value: search().tab ?? "activity",

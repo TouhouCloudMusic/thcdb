@@ -151,6 +151,12 @@ import type {
 	FindTagByKeywordData,
 	FindTagByKeywordErrors,
 	FindTagByKeywordResponses,
+	FollowedUserCollectionsData,
+	FollowedUserCollectionsErrors,
+	FollowedUserCollectionsResponses,
+	FollowUserCollectionData,
+	FollowUserCollectionErrors,
+	FollowUserCollectionResponses,
 	FollowUserData,
 	FollowUserErrors,
 	FollowUserResponses,
@@ -277,6 +283,9 @@ import type {
 	SongRelationTypesData,
 	SongRelationTypesErrors,
 	SongRelationTypesResponses,
+	UnfollowUserCollectionData,
+	UnfollowUserCollectionErrors,
+	UnfollowUserCollectionResponses,
 	UnfollowUserData,
 	UnfollowUserErrors,
 	UnfollowUserResponses,
@@ -1251,6 +1260,19 @@ export const updateBio = <ThrowOnError extends boolean = false>(
 		},
 	})
 
+export const followedUserCollections = <ThrowOnError extends boolean = false>(
+	options?: Options<FollowedUserCollectionsData, ThrowOnError>,
+) =>
+	(options?.client ?? client).get<
+		FollowedUserCollectionsResponses,
+		FollowedUserCollectionsErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/profile/followed-collections",
+		...options,
+	})
+
 export const profileWithName = <ThrowOnError extends boolean = false>(
 	options: Options<ProfileWithNameData, ThrowOnError>,
 ) =>
@@ -1778,6 +1800,32 @@ export const updateTagPendingCorrection = <
 			"Content-Type": "application/json",
 			...options.headers,
 		},
+	})
+
+export const unfollowUserCollection = <ThrowOnError extends boolean = false>(
+	options: Options<UnfollowUserCollectionData, ThrowOnError>,
+) =>
+	(options.client ?? client).delete<
+		UnfollowUserCollectionResponses,
+		UnfollowUserCollectionErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/user-collections/{id}/follow",
+		...options,
+	})
+
+export const followUserCollection = <ThrowOnError extends boolean = false>(
+	options: Options<FollowUserCollectionData, ThrowOnError>,
+) =>
+	(options.client ?? client).post<
+		FollowUserCollectionResponses,
+		FollowUserCollectionErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/user-collections/{id}/follow",
+		...options,
 	})
 
 export const userRoles = <ThrowOnError extends boolean = false>(

@@ -943,6 +943,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/profile/followed-collections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["followed_user_collections"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/release": {
         parameters: {
             query?: never;
@@ -1418,6 +1434,22 @@ export type paths = {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/user-collections/{id}/follow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["follow_user_collection"];
+        delete: operations["unfollow_user_collection"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2022,6 +2054,10 @@ export type components = {
         };
         DataPageEvent: {
             data: components["schemas"]["PageResponse_Event"];
+            status: string;
+        };
+        DataPageFollowedUserCollection: {
+            data: components["schemas"]["PageResponse_FollowedUserCollection"];
             status: string;
         };
         DataPageLabel: {
@@ -2690,6 +2726,21 @@ export type components = {
             /** Format: int64 */
             total_pages: number;
         };
+        PageResponse_FollowedUserCollection: {
+            items: {
+                collection: components["schemas"]["UserCollection"];
+                /** Format: date-time */
+                followed_at: string;
+            }[];
+            /** Format: int64 */
+            page: number;
+            /** Format: int32 */
+            page_size: number;
+            /** Format: int64 */
+            total_items: number;
+            /** Format: int64 */
+            total_pages: number;
+        };
         PageResponse_Label: {
             items: {
                 dissolved_date?: null | components["schemas"]["DateWithPrecision"];
@@ -2781,8 +2832,13 @@ export type components = {
         PageResponse_UserCollection: {
             items: {
                 description: string;
+                /** Format: date-time */
+                followed_at?: string | null;
+                /** Format: int64 */
+                follower_count: number;
                 /** Format: int32 */
                 id: number;
+                is_following?: boolean | null;
                 is_public: boolean;
                 /** Format: int64 */
                 item_count: number;
@@ -3072,8 +3128,13 @@ export type components = {
         };
         UserCollection: {
             description: string;
+            /** Format: date-time */
+            followed_at?: string | null;
+            /** Format: int64 */
+            follower_count: number;
             /** Format: int32 */
             id: number;
+            is_following?: boolean | null;
             is_public: boolean;
             /** Format: int64 */
             item_count: number;
@@ -3098,6 +3159,7 @@ export type components = {
             name: components["schemas"]["NonEmptyString"];
         };
         UserCollectionOwner: {
+            avatar_url?: string | null;
             /** Format: int32 */
             id: number;
             name: string;
@@ -3230,6 +3292,7 @@ export type DataOptionSongLyrics = components['schemas']['DataOptionSongLyrics']
 export type DataOptionTag = components['schemas']['DataOptionTag'];
 export type DataPageArtist = components['schemas']['DataPageArtist'];
 export type DataPageEvent = components['schemas']['DataPageEvent'];
+export type DataPageFollowedUserCollection = components['schemas']['DataPageFollowedUserCollection'];
 export type DataPageLabel = components['schemas']['DataPageLabel'];
 export type DataPageRelease = components['schemas']['DataPageRelease'];
 export type DataPageSong = components['schemas']['DataPageSong'];
@@ -3335,6 +3398,7 @@ export type NewTrack = components['schemas']['NewTrack'];
 export type NonEmptyString = components['schemas']['NonEmptyString'];
 export type PageResponseArtist = components['schemas']['PageResponse_Artist'];
 export type PageResponseEvent = components['schemas']['PageResponse_Event'];
+export type PageResponseFollowedUserCollection = components['schemas']['PageResponse_FollowedUserCollection'];
 export type PageResponseLabel = components['schemas']['PageResponse_Label'];
 export type PageResponseRelease = components['schemas']['PageResponse_Release'];
 export type PageResponseSong = components['schemas']['PageResponse_Song'];
@@ -6871,6 +6935,50 @@ export interface operations {
             };
         };
     };
+    followed_user_collections: {
+        parameters: {
+            query?: {
+                limit?: number;
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPageFollowedUserCollection"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     find_release_by_keyword: {
         parameters: {
             query: {
@@ -8676,6 +8784,94 @@ export interface operations {
             };
         };
     };
+    follow_user_collection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Collection id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    unfollow_user_collection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Collection id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     user_roles: {
         parameters: {
             query?: never;
@@ -9007,6 +9203,7 @@ export enum ApiPaths {
     profile = "/profile",
     upload_profile_banner = "/profile-banner",
     update_bio = "/profile/bio",
+    followed_user_collections = "/profile/followed-collections",
     profile_with_name = "/profile/{name}",
     follow_user = "/profile/{name}/follow",
     unfollow_user = "/profile/{name}/follow",
@@ -9049,6 +9246,8 @@ export enum ApiPaths {
     find_tag_by_id = "/tag/{id}",
     upsert_tag_correction = "/tag/{id}",
     update_tag_pending_correction = "/tag/{id}/correction/{correction_id}",
+    follow_user_collection = "/user-collections/{id}/follow",
+    unfollow_user_collection = "/user-collections/{id}/follow",
     user_roles = "/user-roles",
     user_image_queue = "/user/{id}/image-queue",
     user_collections = "/user/{username}/collections",

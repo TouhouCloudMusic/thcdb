@@ -175,6 +175,10 @@ msgstr "All"
 msgid "Alpha"
 msgstr "Alpha"
 
+#: src/view/user/Profile.tsx
+msgid "Alphabetical"
+msgstr "Alphabetical"
+
 #: src/view/auth/component/VerifyEmailForm.tsx
 msgid "Already have an account?"
 msgstr "Already have an account?"
@@ -352,6 +356,10 @@ msgstr "Collection"
 msgid "Collection created"
 msgstr "Collection created"
 
+#: src/view/user/Profile.tsx
+msgid "Collection type"
+msgstr "Collection type"
+
 #: src/component/Header/RightSidebar.tsx
 #: src/view/search/index.tsx
 #: src/view/user/Profile.tsx
@@ -501,6 +509,10 @@ msgstr "Created At"
 #: src/view/collection/CollectionDetail.tsx
 msgid "Created by"
 msgstr "Created by"
+
+#: src/view/user/Profile.tsx
+msgid "Created time"
+msgstr "Created time"
 
 #: src/route/credit-role/$id.tsx
 #: src/view/collection/CollectionItemCard.tsx
@@ -805,9 +817,18 @@ msgstr "Find tracks by title language, credits, and corrections."
 msgid "First page"
 msgstr "First page"
 
+#: src/view/collection/CollectionDetail.tsx
 #: src/view/user/Profile.tsx
 msgid "Follow"
 msgstr "Follow"
+
+#: src/view/user/Profile.tsx
+msgid "Followed"
+msgstr "Followed"
+
+#: src/view/user/Profile.tsx
+msgid "Followed time"
+msgstr "Followed time"
 
 #: src/view/user/Profile.tsx
 msgid "Following"
@@ -1139,7 +1160,6 @@ msgstr "N/A"
 #: src/view/label/edit/comp/LabelNameField.tsx
 #: src/view/tag/edit/comp/TagAltNames.tsx
 #: src/view/tag/edit/comp/TagName.tsx
-#: src/view/user/Profile.tsx
 msgid "Name"
 msgstr "Name"
 
@@ -1163,10 +1183,6 @@ msgstr "New collection"
 #: src/view/auth/reset_password/index.tsx
 msgid "New password"
 msgstr "New password"
-
-#: src/view/user/Profile.tsx
-msgid "Newest"
-msgstr "Newest"
 
 #: src/view/image_queue/detail.tsx
 msgid "Next"
@@ -1396,6 +1412,10 @@ msgstr "OR"
 msgid "Order"
 msgstr "Order"
 
+#: src/view/user/Profile.tsx
+msgid "Own"
+msgstr "Own"
+
 #. placeholder {0}: props.search.page
 #. placeholder {1}: props.list.totalPages
 #: src/view/admin/users.tsx
@@ -1615,6 +1635,7 @@ msgstr "Reply"
 msgid "Request failed"
 msgstr "Request failed"
 
+#: src/route/collection/$id.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Request failed."
@@ -1874,6 +1895,10 @@ msgstr "Song lyrics"
 msgid "Songs"
 msgstr "Songs"
 
+#: src/view/user/Profile.tsx
+msgid "Sort"
+msgstr "Sort"
+
 #: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
 #: src/view/release/explore/filter.tsx
 msgid "Sort by"
@@ -1882,6 +1907,22 @@ msgstr "Sort by"
 #: src/view/user/Profile.tsx
 msgid "Sort collections"
 msgstr "Sort collections"
+
+#: src/view/user/Profile.tsx
+msgid "Sort: Alphabetical"
+msgstr "Sort: Alphabetical"
+
+#: src/view/user/Profile.tsx
+msgid "Sort: Created time"
+msgstr "Sort: Created time"
+
+#: src/view/user/Profile.tsx
+msgid "Sort: Followed time"
+msgstr "Sort: Followed time"
+
+#: src/view/user/Profile.tsx
+msgid "Sort: Item count"
+msgstr "Sort: Item count"
 
 #: src/view/artist/edit/comp/Date.tsx
 #: src/view/event/edit/comp/EventDateFields.tsx
@@ -2097,6 +2138,7 @@ msgstr "Try adjusting the filters, or <0>create</0> the first one."
 #: src/view/release/explore/filter.tsx
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
 #: src/view/tag/Info/index.tsx
+#: src/view/user/Profile.tsx
 msgid "Type"
 msgstr "Type"
 
@@ -2104,6 +2146,15 @@ msgstr "Type"
 msgid "Type a keyword to search."
 msgstr "Type a keyword to search."
 
+#: src/view/user/Profile.tsx
+msgid "Type: Followed"
+msgstr "Type: Followed"
+
+#: src/view/user/Profile.tsx
+msgid "Type: Own"
+msgstr "Type: Own"
+
+#: src/view/collection/CollectionDetail.tsx
 #: src/view/user/Profile.tsx
 msgid "Unfollow"
 msgstr "Unfollow"
@@ -2221,6 +2272,22 @@ msgid "View more"
 msgstr "View more"
 
 #: src/view/user/Profile.tsx
+msgid "Visibility"
+msgstr "Visibility"
+
+#: src/view/user/Profile.tsx
+msgid "Visibility: All"
+msgstr "Visibility: All"
+
+#: src/view/user/Profile.tsx
+msgid "Visibility: Private"
+msgstr "Visibility: Private"
+
+#: src/view/user/Profile.tsx
+msgid "Visibility: Public"
+msgstr "Visibility: Public"
+
+#: src/view/user/Profile.tsx
 msgid "Votes"
 msgstr "Votes"
 
@@ -2247,6 +2314,10 @@ msgstr "You can now sign in with your new password."
 #: src/view/user/Profile.tsx
 msgid "You haven't created any collections yet"
 msgstr "You haven't created any collections yet"
+
+#: src/view/user/Profile.tsx
+msgid "You haven't followed any collections yet"
+msgstr "You haven't followed any collections yet"
 
 #: src/view/auth/reset_password/index.tsx
 msgid "Your password has been updated successfully."

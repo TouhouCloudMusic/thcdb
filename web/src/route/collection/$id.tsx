@@ -6,9 +6,14 @@ import { Match, Switch } from "solid-js"
 import {
 	deleteUserCollection,
 	deleteUserCollectionItem,
+	followUserCollection,
 	reorderUserCollectionItems,
+	unfollowUserCollection,
 } from "~/hey-api"
+import type { UserCollection } from "~/hey-api"
 import {
+	followedUserCollectionsQueryKey,
+	publicUserCollectionsQueryKey,
 	userCollectionDetailOptions,
 	userCollectionDetailQueryKey,
 	userCollectionItemsInfiniteOptions,
@@ -17,9 +22,16 @@ import {
 } from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout/PageLayout"
 import { QUERY_CLIENT } from "~/state/tanstack"
+import { useCurrentUser } from "~/state/user"
+import { getErrorMessage } from "~/utils/getErrorMessage"
 import { getNextPageParam } from "~/utils/query"
-import type { ItemsFetchState } from "~/view/collection/CollectionDetail"
+import type {
+	CollectionDetailController,
+	CollectionDetailModel,
+} from "~/view/collection/CollectionDetail"
 import { CollectionDetailPage } from "~/view/collection/CollectionDetail"
+
+type CollectionFollowCommand = "follow" | "unfollow"
 
 export const Route = createFileRoute("/collection/$id")({
 	component: RouteComponent,
@@ -29,6 +41,7 @@ function RouteComponent() {
 	const { t } = useLingui()
 	const params = Route.useParams()
 	const navigate = useNavigate()
+	const userCtx = useCurrentUser()
 	const id = () => Number(params().id)
 
 	const collectionQuery = useQuery(() =>
@@ -45,9 +58,9 @@ function RouteComponent() {
 		initialPageParam: 1,
 		getNextPageParam,
 	}))
-	const itemsFetchState = (): ItemsFetchState => {
+	const itemsFetchState = (): CollectionDetailModel["items"] => {
 		if (itemsQuery.isError && !itemsQuery.isFetching) {
-			return { status: "error", onRetry: () => void itemsQuery.refetch() }
+			return { status: "error" }
 		}
 		if (itemsQuery.isSuccess) {
 			return {
@@ -55,7 +68,6 @@ function RouteComponent() {
 				items: itemsQuery.data.pages.flatMap((page) => page.data.items),
 				isFetchingMore: itemsQuery.isFetchingNextPage,
 				hasMore: itemsQuery.hasNextPage,
-				onLoadMore: () => void itemsQuery.fetchNextPage(),
 			}
 		}
 		return { status: "loading" }
@@ -130,6 +142,110 @@ function RouteComponent() {
 		},
 	}))
 
+	const invalidateCollectionFollowQueries = () => {
+		const collection = collectionQuery.data?.data
+
+		void QUERY_CLIENT.invalidateQueries({
+			queryKey: userCollectionDetailQueryKey({
+				path: { id: id() },
+			}),
+		})
+		void QUERY_CLIENT.invalidateQueries({
+			queryKey: followedUserCollectionsQueryKey(),
+		})
+		void QUERY_CLIENT.invalidateQueries({
+			queryKey: publicUserCollectionsQueryKey(),
+		})
+		if (collection) {
+			void QUERY_CLIENT.invalidateQueries({
+				queryKey: userCollectionsQueryKey({
+					path: { username: collection.owner.name },
+				}),
+			})
+		}
+	}
+
+	const followMutation = useMutation(() => ({
+		mutationFn: async (command: CollectionFollowCommand) => {
+			const options = {
+				path: { id: id() },
+				throwOnError: true,
+			} as const
+
+			if (command === "follow") {
+				return followUserCollection(options)
+			}
+			return unfollowUserCollection(options)
+		},
+		onSuccess: invalidateCollectionFollowQueries,
+	}))
+
+	const followMutationErrorMessage = () =>
+		followMutation.isError
+			? getErrorMessage(followMutation.error, t`Request failed.`)
+			: undefined
+	const collectionViewer = (
+		collection: UserCollection,
+	): CollectionDetailModel["viewer"] => {
+		if (userCtx.user?.name === collection.owner.name) {
+			return {
+				role: "owner",
+				isDeletingCollection: deleteMutation.isPending,
+				isDeletingItem: deleteItemMutation.isPending,
+				isReorderingItems: reorderItemsMutation.isPending,
+			}
+		}
+
+		if (
+			collection.is_following === undefined
+			|| collection.is_following === null
+		) {
+			return { role: "readonly" }
+		}
+
+		return {
+			role: "visitor",
+			isFollowing: collection.is_following,
+			isTogglingFollow: followMutation.isPending,
+			followErrorMessage: followMutationErrorMessage(),
+		}
+	}
+	const collectionDetailModel = (
+		collection: UserCollection,
+	): CollectionDetailModel => ({
+		collection,
+		items: itemsFetchState(),
+		viewer: collectionViewer(collection),
+	})
+	const collectionDetailController: CollectionDetailController = {
+		retryItems: () => {
+			void itemsQuery.refetch()
+		},
+		loadMoreItems: () => {
+			void itemsQuery.fetchNextPage()
+		},
+		deleteCollection: () => {
+			deleteMutation.mutate()
+		},
+		deleteItem: (itemId) => {
+			deleteItemMutation.mutate(itemId)
+		},
+		reorderItems: (itemIds) => {
+			reorderItemsMutation.mutate(itemIds)
+		},
+		toggleFollow: () => {
+			const collection = collectionQuery.data?.data
+			if (
+				collection?.is_following === undefined
+				|| collection.is_following === null
+			) {
+				return
+			}
+
+			followMutation.mutate(collection.is_following ? "unfollow" : "follow")
+		},
+	}
+
 	return (
 		<PageLayout class="p-8 pt-6">
 			<Switch>
@@ -152,16 +268,8 @@ function RouteComponent() {
 				<Match when={collectionQuery.data}>
 					{(collection) => (
 						<CollectionDetailPage
-							collection={collection().data}
-							itemsFetchState={itemsFetchState()}
-							isDeletingCollection={deleteMutation.isPending}
-							isDeletingItem={deleteItemMutation.isPending}
-							isReorderingItems={reorderItemsMutation.isPending}
-							onDeleteCollection={() => deleteMutation.mutate()}
-							onDeleteItem={(itemId) => deleteItemMutation.mutate(itemId)}
-							onReorderItems={(itemIds) => {
-								reorderItemsMutation.mutate(itemIds)
-							}}
+							model={collectionDetailModel(collection().data)}
+							controller={collectionDetailController}
 						/>
 					)}
 				</Match>

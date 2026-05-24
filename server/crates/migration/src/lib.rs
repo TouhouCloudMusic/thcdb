@@ -60,6 +60,7 @@ migrations![
     m20260418_000000_add_user_collection_item_position,
     m20260503_000000_add_correction_comment_constraints_and_indexes,
     m20260514_000001_move_comments_to_threads,
+    m20260523_000000_create_user_collection_follow,
 ];
 
 macro_rules! migration {
