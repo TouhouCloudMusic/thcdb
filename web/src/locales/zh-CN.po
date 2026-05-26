@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: touhou-cloud-db\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-19 14:25\n"
+"PO-Revision-Date: 2026-05-26 10:42\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "X-Crowdin-Project: touhou-cloud-db\n"
@@ -178,6 +178,10 @@ msgstr "全部"
 
 #: src/view/Homepage/component/HomeHero.tsx
 msgid "Alpha"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "Alphabetical"
 msgstr ""
 
 #: src/view/auth/component/VerifyEmailForm.tsx
@@ -357,6 +361,10 @@ msgstr ""
 msgid "Collection created"
 msgstr ""
 
+#: src/view/user/Profile.tsx
+msgid "Collection type"
+msgstr ""
+
 #: src/component/Header/RightSidebar.tsx
 #: src/view/search/index.tsx
 #: src/view/user/Profile.tsx
@@ -505,6 +513,10 @@ msgstr "创建于"
 
 #: src/view/collection/CollectionDetail.tsx
 msgid "Created by"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "Created time"
 msgstr ""
 
 #: src/route/credit-role/$id.tsx
@@ -810,9 +822,18 @@ msgstr ""
 msgid "First page"
 msgstr "第一页"
 
+#: src/view/collection/CollectionDetail.tsx
 #: src/view/user/Profile.tsx
 msgid "Follow"
 msgstr "关注"
+
+#: src/view/user/Profile.tsx
+msgid "Followed"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "Followed time"
+msgstr ""
 
 #: src/view/user/Profile.tsx
 msgid "Following"
@@ -1144,7 +1165,6 @@ msgstr "无"
 #: src/view/label/edit/comp/LabelNameField.tsx
 #: src/view/tag/edit/comp/TagAltNames.tsx
 #: src/view/tag/edit/comp/TagName.tsx
-#: src/view/user/Profile.tsx
 msgid "Name"
 msgstr "名称"
 
@@ -1168,10 +1188,6 @@ msgstr ""
 #: src/view/auth/reset_password/index.tsx
 msgid "New password"
 msgstr "新密码"
-
-#: src/view/user/Profile.tsx
-msgid "Newest"
-msgstr ""
 
 #: src/view/image_queue/detail.tsx
 msgid "Next"
@@ -1401,6 +1417,10 @@ msgstr ""
 msgid "Order"
 msgstr "顺序"
 
+#: src/view/user/Profile.tsx
+msgid "Own"
+msgstr ""
+
 #. placeholder {0}: props.search.page
 #. placeholder {1}: props.list.totalPages
 #: src/view/admin/users.tsx
@@ -1620,6 +1640,7 @@ msgstr ""
 msgid "Request failed"
 msgstr ""
 
+#: src/route/collection/$id.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Request failed."
@@ -1879,6 +1900,10 @@ msgstr "歌词"
 msgid "Songs"
 msgstr ""
 
+#: src/view/user/Profile.tsx
+msgid "Sort"
+msgstr ""
+
 #: src/component/feature/entity_explore/CorrectionSortFieldSelect.tsx
 #: src/view/release/explore/filter.tsx
 msgid "Sort by"
@@ -1886,6 +1911,22 @@ msgstr "排序方式"
 
 #: src/view/user/Profile.tsx
 msgid "Sort collections"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "Sort: Alphabetical"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "Sort: Created time"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "Sort: Followed time"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "Sort: Item count"
 msgstr ""
 
 #: src/view/artist/edit/comp/Date.tsx
@@ -2102,6 +2143,7 @@ msgstr ""
 #: src/view/release/explore/filter.tsx
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
 #: src/view/tag/Info/index.tsx
+#: src/view/user/Profile.tsx
 msgid "Type"
 msgstr "类型"
 
@@ -2109,6 +2151,15 @@ msgstr "类型"
 msgid "Type a keyword to search."
 msgstr "输入关键字搜索。"
 
+#: src/view/user/Profile.tsx
+msgid "Type: Followed"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "Type: Own"
+msgstr ""
+
+#: src/view/collection/CollectionDetail.tsx
 #: src/view/user/Profile.tsx
 msgid "Unfollow"
 msgstr "取消关注"
@@ -2226,6 +2277,22 @@ msgid "View more"
 msgstr ""
 
 #: src/view/user/Profile.tsx
+msgid "Visibility"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "Visibility: All"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "Visibility: Private"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "Visibility: Public"
+msgstr ""
+
+#: src/view/user/Profile.tsx
 msgid "Votes"
 msgstr "投票"
 
@@ -2251,6 +2318,10 @@ msgstr "您现在可以使用新密码登录。"
 
 #: src/view/user/Profile.tsx
 msgid "You haven't created any collections yet"
+msgstr ""
+
+#: src/view/user/Profile.tsx
+msgid "You haven't followed any collections yet"
 msgstr ""
 
 #: src/view/auth/reset_password/index.tsx
