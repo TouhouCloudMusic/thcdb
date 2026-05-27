@@ -52,7 +52,9 @@
         webPackage = builtins.fromJSON (builtins.readFile ./web/package.json);
         webPlaywrightVersion = webPackage.devDependencies.playwright;
 
-        python = pkgs.python3;
+        python = pkgs.python3.withPackages (pythonPkgs: [
+          pythonPkgs.bashlex
+        ]);
         schemathesis = pkgs.buildFHSEnv {
           name = "schemathesis";
           targetPkgs =
@@ -102,8 +104,10 @@
             prek
             sea-orm-cli
             typescript-go
+            ty
             uv
             python
+            ruff
           ];
           shellHook = ''
             export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
