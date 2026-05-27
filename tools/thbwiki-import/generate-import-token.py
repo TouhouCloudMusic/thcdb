@@ -1,10 +1,4 @@
-#!/usr/bin/env -S uv run --script
-# /// script
-# requires-python = ">=3.11"
-# dependencies = [
-#   "python-dotenv>=1.0,<2",
-# ]
-# ///
+#!/usr/bin/env -S uv run
 
 from __future__ import annotations
 

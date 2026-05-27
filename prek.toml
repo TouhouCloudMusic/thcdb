@@ -25,6 +25,33 @@ stages         = [ "pre-push" ]
 types          = [ "toml" ]
 
 [[repos.hooks]]
+id             = "python-ruff-format-check"
+name           = "python ruff format check"
+entry          = "ruff format --check"
+language       = "system"
+pass_filenames = false
+stages         = [ "pre-push" ]
+types          = [ "python" ]
+
+[[repos.hooks]]
+id             = "python-ruff-check"
+name           = "python ruff check"
+entry          = "ruff check"
+language       = "system"
+pass_filenames = false
+stages         = [ "pre-push" ]
+types          = [ "python" ]
+
+[[repos.hooks]]
+id             = "python-ty-check"
+name           = "python ty check"
+entry          = "ty check"
+language       = "system"
+pass_filenames = false
+stages         = [ "pre-push" ]
+types          = [ "python" ]
+
+[[repos.hooks]]
 id             = "github-actions-actionlint"
 name           = "github actions actionlint"
 entry          = "actionlint"

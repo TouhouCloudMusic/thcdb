@@ -1,11 +1,4 @@
-#!/usr/bin/env -S uv run --script
-# /// script
-# requires-python = ">=3.11"
-# dependencies = [
-#   "httpx>=0.27,<1",
-#   "python-dotenv>=1.0,<2",
-# ]
-# ///
+#!/usr/bin/env -S uv run
 
 from __future__ import annotations
 
@@ -16,14 +9,14 @@ import json
 import os
 import re
 import sys
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Literal
+from typing import Any, Literal, TypeGuard
 from urllib.parse import urlsplit, urlunsplit
 
 import httpx
 from dotenv import dotenv_values
-
 from import_rate_limit import (
     build_import_rate_limit_config,
     raise_import_rate_limit_token_error,
@@ -89,7 +82,7 @@ class AsyncRateLimiter:
             self._next_ready = max(self._next_ready, self._cooldown_until)
 
 
-def is_int(value: Any) -> bool:
+def is_int(value: Any) -> TypeGuard[int]:
     return type(value) is int
 
 
@@ -326,8 +319,12 @@ def validate_seed(seed: Any) -> None:
             seen_relations: set[tuple[str, str]] = set()
             for relation in relations:
                 if not isinstance(relation, dict):
-                    raise RuntimeError(f"tag relation must be an object for name={name}")
-                related_tag_name = normalize_optional_text(relation.get("related_tag_name"))
+                    raise RuntimeError(
+                        f"tag relation must be an object for name={name}"
+                    )
+                related_tag_name = normalize_optional_text(
+                    relation.get("related_tag_name")
+                )
                 if related_tag_name is None:
                     raise RuntimeError(
                         f"relation.related_tag_name must be a non-empty string for name={name}"
@@ -458,7 +455,9 @@ async def request_json(
                     f"[retry] method={method} endpoint={endpoint} status={response.status_code} attempt={attempt + 1} delay={delay}s"
                 )
                 continue
-            message = json.dumps(parsed, ensure_ascii=False) if parsed is not None else text
+            message = (
+                json.dumps(parsed, ensure_ascii=False) if parsed is not None else text
+            )
             raise RuntimeError(
                 f"HTTP {response.status_code} {response.reason_phrase} at {endpoint}: {message}"
             )
@@ -506,7 +505,9 @@ async def find_existing_tag_id(
     tag_name: str,
     tag_type: str,
 ) -> int | None:
-    response_data = await get_json(client, limiter, "/tag", params={"keyword": tag_name})
+    response_data = await get_json(
+        client, limiter, "/tag", params={"keyword": tag_name}
+    )
     if not isinstance(response_data, list):
         return None
 
@@ -578,7 +579,9 @@ def build_tag_payload(
                     "related_tag_id": related_tag_id,
                     "type": relation["type"],
                 }
-                for relation, related_tag_id in zip(relations, relation_ids, strict=True)
+                for relation, related_tag_id in zip(
+                    relations, relation_ids, strict=True
+                )
             ]
             or None,
         },
@@ -726,9 +729,8 @@ async def run_stage(
             item_lock = asyncio.Lock()
             keyed_locks[key] = item_lock
 
-        async with item_lock:
-            async with semaphore:
-                return await worker(item)
+        async with item_lock, semaphore:
+            return await worker(item)
 
     tasks = [asyncio.create_task(run_one(item)) for item in items]
     results: list[ImportTaskResult] = []
@@ -863,9 +865,7 @@ async def import_tags(
 ) -> list[ImportTaskResult]:
     results: list[ImportTaskResult] = []
     pending_tags = [
-        tag
-        for tag in seed_tags
-        if normalize_tag_name(tag) not in existing_tag_ids
+        tag for tag in seed_tags if normalize_tag_name(tag) not in existing_tag_ids
     ]
     tag_id_by_name = dict(existing_tag_ids)
 
@@ -910,7 +910,9 @@ async def import_tags(
 
         for result in stage_results:
             if is_int(result.entity_id) and isinstance(result.item_key, str):
-                tag_id_by_name[normalize_lookup_text(result.item_key)] = result.entity_id
+                tag_id_by_name[normalize_lookup_text(result.item_key)] = (
+                    result.entity_id
+                )
 
         pending_tags = blocked_tags
 
@@ -939,7 +941,9 @@ async def async_main(argv: list[str]) -> int:
 
     dry_run = not options.run_mode
     if not dry_run and not admin_pass:
-        raise RuntimeError("ADMIN_PASSWORD not found. Set it in .env or pass --admin-pass")
+        raise RuntimeError(
+            "ADMIN_PASSWORD not found. Set it in .env or pass --admin-pass"
+        )
 
     auth_header = ""
     if not dry_run:
@@ -1024,4 +1028,4 @@ if __name__ == "__main__":
         raise SystemExit(main(sys.argv[1:]))
     except Exception as err:
         print(err, file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(1) from err
