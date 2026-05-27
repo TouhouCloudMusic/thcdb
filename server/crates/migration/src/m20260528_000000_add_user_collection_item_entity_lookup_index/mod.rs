@@ -1,0 +1,1 @@
+super::migration!(m20260528_000000_add_user_collection_item_entity_lookup_index);
