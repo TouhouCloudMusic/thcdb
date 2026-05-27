@@ -52,9 +52,7 @@
         webPackage = builtins.fromJSON (builtins.readFile ./web/package.json);
         webPlaywrightVersion = webPackage.devDependencies.playwright;
 
-        python = pkgs.python3.withPackages (pythonPkgs: [
-          pythonPkgs.bashlex
-        ]);
+        python = pkgs.python3;
         schemathesis = pkgs.buildFHSEnv {
           name = "schemathesis";
           targetPkgs =
@@ -68,7 +66,9 @@
           '';
         };
       in
-      assert pkgs.playwright-driver.version == webPlaywrightVersion || throw ''
+      assert
+        pkgs.playwright-driver.version == webPlaywrightVersion
+        || throw ''
           Playwright version mismatch:
           nix: ${pkgs.playwright-driver.version}
           node: ${webPlaywrightVersion}

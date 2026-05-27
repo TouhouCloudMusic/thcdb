@@ -7,11 +7,13 @@ mod dev
 
 init:
     prek install
+    uv sync
     cd web && pnpm install
 
 fmt:
     taplo fmt
     just --fmt
+    ruff format
     cd server && just fmt
     cd web && just fmt
 

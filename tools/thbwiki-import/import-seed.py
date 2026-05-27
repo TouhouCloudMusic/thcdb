@@ -1,11 +1,4 @@
-#!/usr/bin/env -S uv run --script
-# /// script
-# requires-python = ">=3.11"
-# dependencies = [
-#   "httpx>=0.27,<1",
-#   "python-dotenv>=1.0,<2",
-# ]
-# ///
+#!/usr/bin/env -S uv run
 
 from __future__ import annotations
 
@@ -16,15 +9,15 @@ import json
 import os
 import re
 import sys
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Literal
+from typing import Any, Literal, TypeGuard, cast
 from urllib.parse import urlsplit, urlunsplit
 
 import httpx
 from dotenv import dotenv_values
-
 from import_rate_limit import (
     build_import_rate_limit_config,
     raise_import_rate_limit_token_error,
@@ -88,7 +81,7 @@ class AsyncRateLimiter:
             self._next_ready = max(self._next_ready, self._cooldown_until)
 
 
-def is_int(value: Any) -> bool:
+def is_int(value: Any) -> TypeGuard[int]:
     return type(value) is int
 
 
@@ -902,7 +895,8 @@ def release_existing_signature(
     for idx, disc in enumerate(discs):
         if not isinstance(disc, dict):
             return None
-        disc_id = disc.get("id")
+        disc_data = cast(dict[str, Any], disc)
+        disc_id = disc_data.get("id")
         if not is_int(disc_id):
             return None
         disc_index_by_id[disc_id] = idx
@@ -953,7 +947,8 @@ def release_existing_title_signature(
     for idx, disc in enumerate(discs):
         if not isinstance(disc, dict):
             return None
-        disc_id = disc.get("id")
+        disc_data = cast(dict[str, Any], disc)
+        disc_id = disc_data.get("id")
         if not is_int(disc_id):
             return None
         disc_index_by_id[disc_id] = idx
@@ -1280,9 +1275,8 @@ async def run_stage(
             item_lock = asyncio.Lock()
             keyed_locks[key] = item_lock
 
-        async with item_lock:
-            async with semaphore:
-                return await worker(item)
+        async with item_lock, semaphore:
+            return await worker(item)
 
     tasks = [asyncio.create_task(run_one(item)) for item in items]
     results: list[ImportTaskResult] = []
@@ -1466,4 +1460,4 @@ if __name__ == "__main__":
         raise SystemExit(main(sys.argv[1:]))
     except Exception as err:
         print(err, file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(1) from err
