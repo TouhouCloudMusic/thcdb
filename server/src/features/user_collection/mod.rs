@@ -8,6 +8,9 @@ mod model;
 mod repo;
 mod service;
 
+pub(crate) use http::EntityUserCollectionTarget;
+pub(crate) use model::EntityUserCollectionSort;
+
 #[cfg(all(test, feature = "integration-test"))]
 mod tests;
 

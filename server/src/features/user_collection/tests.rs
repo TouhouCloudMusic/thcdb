@@ -1,14 +1,15 @@
 use std::sync::Arc;
 
 use domain::shared::NonEmptyString;
+use entity::enums::EntityType;
 use infra_db::SeaOrmRepository;
 use tokio::sync::Barrier;
 
 use super::error::{Error, NotFound};
 use super::model::{
-    CreateUserCollectionItemRequest, ReorderUserCollectionItemsRequest,
-    UserCollection, UserCollectionItem, UserCollectionItemEntityType,
-    UserCollectionMutationRequest,
+    CreateUserCollectionItemRequest, EntityUserCollectionSort,
+    ReorderUserCollectionItemsRequest, UserCollection, UserCollectionItem,
+    UserCollectionItemEntityType, UserCollectionMutationRequest,
 };
 use super::service::Service;
 use crate::infra::integration_test::fixture::{MockSong, MockUser};
@@ -228,6 +229,176 @@ async fn follow_rejects_private_and_own_collections() {
         Err(Error::InvalidRequest(message))
             if message == "Cannot follow your own collection"
     ));
+}
+
+#[tokio::test]
+async fn entity_collections_include_public_collections_for_target_entity() {
+    let (conn, service) = test_service().await;
+    let owner = MockUser::with_label("entity_collection_owner")
+        .insert(&conn)
+        .await
+        .unwrap();
+    let viewer = MockUser::with_label("entity_collection_viewer")
+        .insert(&conn)
+        .await
+        .unwrap();
+    let song = MockSong::titled("entity-collection-song")
+        .insert(&conn)
+        .await
+        .unwrap();
+    let other_song = MockSong::titled("entity-collection-other-song")
+        .insert(&conn)
+        .await
+        .unwrap();
+    let public_collection =
+        create_user_collection(&service, owner.id, "public", true).await;
+    let private_collection =
+        create_user_collection(&service, owner.id, "private", false).await;
+    let unrelated_collection =
+        create_user_collection(&service, owner.id, "unrelated", true).await;
+
+    create_song_item(
+        &service,
+        owner.id,
+        public_collection.id,
+        song.id,
+        "public",
+    )
+    .await;
+    create_song_item(
+        &service,
+        owner.id,
+        private_collection.id,
+        song.id,
+        "private",
+    )
+    .await;
+    create_song_item(
+        &service,
+        owner.id,
+        unrelated_collection.id,
+        other_song.id,
+        "other",
+    )
+    .await;
+
+    let page = service
+        .list_entity_user_collections(
+            EntityType::Song,
+            song.id,
+            Some(viewer.id),
+            EntityUserCollectionSort::CollectedAt,
+            page_query(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(page.total_items, 1);
+    assert_eq!(page.items.len(), 1);
+    assert_eq!(page.items[0].id, public_collection.id);
+
+    let owner_page = service
+        .list_entity_user_collections(
+            EntityType::Song,
+            song.id,
+            Some(owner.id),
+            EntityUserCollectionSort::CollectedAt,
+            page_query(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(owner_page.total_items, 2);
+    assert_eq!(
+        owner_page
+            .items
+            .iter()
+            .map(|collection| collection.id)
+            .collect::<Vec<_>>(),
+        vec![private_collection.id, public_collection.id]
+    );
+}
+
+#[tokio::test]
+async fn entity_collections_sort_by_collected_at_and_follower_count() {
+    let (conn, service) = test_service().await;
+    let owner = MockUser::with_label("entity_collection_sort_owner")
+        .insert(&conn)
+        .await
+        .unwrap();
+    let first_follower =
+        MockUser::with_label("entity_collection_sort_follower_one")
+            .insert(&conn)
+            .await
+            .unwrap();
+    let second_follower =
+        MockUser::with_label("entity_collection_sort_follower_two")
+            .insert(&conn)
+            .await
+            .unwrap();
+    let song = MockSong::titled("entity-collection-sort-song")
+        .insert(&conn)
+        .await
+        .unwrap();
+    let older_collection =
+        create_user_collection(&service, owner.id, "older", true).await;
+    let newer_collection =
+        create_user_collection(&service, owner.id, "newer", true).await;
+
+    create_song_item(&service, owner.id, older_collection.id, song.id, "older")
+        .await;
+    create_song_item(&service, owner.id, newer_collection.id, song.id, "newer")
+        .await;
+    service
+        .follow_user_collection(first_follower.id, older_collection.id)
+        .await
+        .unwrap();
+    service
+        .follow_user_collection(first_follower.id, newer_collection.id)
+        .await
+        .unwrap();
+    service
+        .follow_user_collection(second_follower.id, older_collection.id)
+        .await
+        .unwrap();
+
+    let by_collected_at = service
+        .list_entity_user_collections(
+            EntityType::Song,
+            song.id,
+            Some(first_follower.id),
+            EntityUserCollectionSort::CollectedAt,
+            page_query(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        by_collected_at
+            .items
+            .iter()
+            .map(|collection| collection.id)
+            .collect::<Vec<_>>(),
+        vec![newer_collection.id, older_collection.id]
+    );
+
+    let by_follower_count = service
+        .list_entity_user_collections(
+            EntityType::Song,
+            song.id,
+            Some(first_follower.id),
+            EntityUserCollectionSort::FollowerCount,
+            page_query(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        by_follower_count
+            .items
+            .iter()
+            .map(|collection| collection.id)
+            .collect::<Vec<_>>(),
+        vec![older_collection.id, newer_collection.id]
+    );
 }
 
 #[tokio::test]

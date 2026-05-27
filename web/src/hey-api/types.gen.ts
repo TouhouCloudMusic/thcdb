@@ -776,6 +776,16 @@ export type EntityType =
 	| "SongLyrics"
 	| "CreditRole"
 
+export type EntityUserCollectionSort = "collected_at" | "follower_count"
+
+export type EntityUserCollectionTarget =
+	| "artist"
+	| "label"
+	| "release"
+	| "song"
+	| "tag"
+	| "event"
+
 export type Error = {
 	status: "Err"
 	message: string
@@ -5314,6 +5324,47 @@ export type NotificationWsResponses = {
 
 export type NotificationWsResponse =
 	NotificationWsResponses[keyof NotificationWsResponses]
+
+export type EntityUserCollectionsData = {
+	body?: never
+	path: {
+		/**
+		 * Entity type
+		 */
+		entity_type: EntityUserCollectionTarget
+		/**
+		 * Entity id
+		 */
+		id: number
+	}
+	query?: {
+		sort_by?: EntityUserCollectionSort
+		limit?: number
+		page?: number
+	}
+	url: "/{entity_type}/{id}/collections"
+}
+
+export type EntityUserCollectionsErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type EntityUserCollectionsError =
+	EntityUserCollectionsErrors[keyof EntityUserCollectionsErrors]
+
+export type EntityUserCollectionsResponses = {
+	200: DataPageUserCollection
+}
+
+export type EntityUserCollectionsResponse =
+	EntityUserCollectionsResponses[keyof EntityUserCollectionsResponses]
 
 export type EntityCorrectionsData = {
 	body?: never

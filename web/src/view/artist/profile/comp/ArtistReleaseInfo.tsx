@@ -24,6 +24,7 @@ import { Button } from "~/component/atomic/button"
 import { RELEASE_TYPES } from "~/domain/release"
 import { DateWithPrecision } from "~/domain/shared"
 import { assertContext } from "~/utils/solid/assertContext"
+import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
 import type { EntityCommentsController } from "~/view/comment/EntityCommentsController"
@@ -33,7 +34,13 @@ import { ArtistContext } from ".."
 
 // TODO: Add links after other pages are completed
 
-const TABS = ["Discography", "Appearance", "Credit", "Comments"] as const
+const TABS = [
+	"Discography",
+	"Appearance",
+	"Credit",
+	"Comments",
+	"Collections",
+] as const
 
 type ArtistReleaseInfoViewProps = {
 	activeTab: string
@@ -96,6 +103,9 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 					return context.credits.data.length > 0
 				}
 				case "Comments": {
+					return true
+				}
+				case "Collections": {
 					return true
 				}
 			}
@@ -175,6 +185,16 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 				class="w-full border-t border-slate-300 p-4"
 			>
 				<EntityComments controller={props.comments} />
+			</Tab.Content>
+			<Tab.Content
+				value="Collections"
+				class="w-full border-t border-slate-300 p-4"
+			>
+				<EntityCollectionsTab
+					entityType="artist"
+					entityId={context.artist.id}
+					enabled={props.activeTab === "Collections"}
+				/>
 			</Tab.Content>
 		</Tab.Root>
 	)

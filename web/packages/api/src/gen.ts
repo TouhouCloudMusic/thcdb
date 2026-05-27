@@ -1,4 +1,20 @@
 export type paths = {
+    "/{entity_type}/{id}/collections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["entity_user_collections"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/{entity_type}/{id}/corrections": {
         parameters: {
             query?: never;
@@ -2296,6 +2312,10 @@ export type components = {
         });
         /** @enum {string} */
         EntityType: "Artist" | "Label" | "Release" | "Song" | "Tag" | "Event" | "SongLyrics" | "CreditRole";
+        /** @enum {string} */
+        EntityUserCollectionSort: "collected_at" | "follower_count";
+        /** @enum {string} */
+        EntityUserCollectionTarget: "artist" | "label" | "release" | "song" | "tag" | "event";
         Error: {
             message: string;
             /** @enum {string} */
@@ -3347,6 +3367,8 @@ export type EntityCommentTarget = components['schemas']['EntityCommentTarget'];
 export type EntityIdent = components['schemas']['EntityIdent'];
 export type EntitySummary = components['schemas']['EntitySummary'];
 export type EntityType = components['schemas']['EntityType'];
+export type EntityUserCollectionSort = components['schemas']['EntityUserCollectionSort'];
+export type EntityUserCollectionTarget = components['schemas']['EntityUserCollectionTarget'];
 export type Error = components['schemas']['Error'];
 export type Event = components['schemas']['Event'];
 export type EventSummary = components['schemas']['EventSummary'];
@@ -3465,6 +3487,56 @@ export type VerifyResetCodeResponse = components['schemas']['VerifyResetCodeResp
 export type VoteBody = components['schemas']['VoteBody'];
 export type $defs = Record<string, never>;
 export interface operations {
+    entity_user_collections: {
+        parameters: {
+            query?: {
+                limit?: number;
+                page?: number;
+                sort_by?: components["schemas"]["EntityUserCollectionSort"];
+            };
+            header?: never;
+            path: {
+                /** @description Entity type */
+                entity_type: components["schemas"]["EntityUserCollectionTarget"];
+                /** @description Entity id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPageUserCollection"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     entity_corrections: {
         parameters: {
             query?: never;
@@ -9254,6 +9326,7 @@ export enum ApiPaths {
     verify_email = "/verify-email",
     verify_reset_code = "/verify-reset-code",
     notification_ws = "/ws/notifications",
+    entity_user_collections = "/{entity_type}/{id}/collections",
     entity_corrections = "/{entity_type}/{id}/corrections",
     pending_correction = "/{entity_type}/{id}/pending-correction",
     vote_tag = "/{entity_type}/{id}/tag-vote",

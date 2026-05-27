@@ -28,6 +28,7 @@ import {
 	deleteVote,
 	editableUserRoles,
 	entityCorrections,
+	entityUserCollections,
 	exploreArtist,
 	exploreEvent,
 	exploreLabel,
@@ -194,6 +195,9 @@ import type {
 	EntityCorrectionsData,
 	EntityCorrectionsError,
 	EntityCorrectionsResponse,
+	EntityUserCollectionsData,
+	EntityUserCollectionsError,
+	EntityUserCollectionsResponse,
 	ExploreArtistData,
 	ExploreArtistError,
 	ExploreArtistResponse,
@@ -4516,6 +4520,79 @@ export const notificationWsOptions = (options?: Options<NotificationWsData>) =>
 		},
 		queryKey: notificationWsQueryKey(options),
 	})
+
+export const entityUserCollectionsQueryKey = (
+	options: Options<EntityUserCollectionsData>,
+) => createQueryKey("entityUserCollections", options)
+
+export const entityUserCollectionsOptions = (
+	options: Options<EntityUserCollectionsData>,
+) =>
+	queryOptions<
+		EntityUserCollectionsResponse,
+		EntityUserCollectionsError,
+		EntityUserCollectionsResponse,
+		ReturnType<typeof entityUserCollectionsQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await entityUserCollections({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: entityUserCollectionsQueryKey(options),
+	})
+
+export const entityUserCollectionsInfiniteQueryKey = (
+	options: Options<EntityUserCollectionsData>,
+): QueryKey<Options<EntityUserCollectionsData>> =>
+	createQueryKey("entityUserCollections", options, true)
+
+export const entityUserCollectionsInfiniteOptions = (
+	options: Options<EntityUserCollectionsData>,
+) =>
+	infiniteQueryOptions<
+		EntityUserCollectionsResponse,
+		EntityUserCollectionsError,
+		InfiniteData<EntityUserCollectionsResponse>,
+		QueryKey<Options<EntityUserCollectionsData>>,
+		| number
+		| Pick<
+				QueryKey<Options<EntityUserCollectionsData>>[0],
+				"body" | "headers" | "path" | "query"
+		  >
+	>(
+		// @ts-ignore
+		{
+			queryFn: async ({ pageParam, queryKey, signal }) => {
+				// @ts-ignore
+				const page: Pick<
+					QueryKey<Options<EntityUserCollectionsData>>[0],
+					"body" | "headers" | "path" | "query"
+				> =
+					typeof pageParam === "object"
+						? pageParam
+						: {
+								query: {
+									page: pageParam,
+								},
+							}
+				const params = createInfiniteParams(queryKey, page)
+				const { data } = await entityUserCollections({
+					...options,
+					...params,
+					signal,
+					throwOnError: true,
+				})
+				return data
+			},
+			queryKey: entityUserCollectionsInfiniteQueryKey(options),
+			placeholderData: (x) => x,
+		},
+	)
 
 export const entityCorrectionsQueryKey = (
 	options: Options<EntityCorrectionsData>,

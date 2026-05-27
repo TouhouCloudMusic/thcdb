@@ -67,6 +67,9 @@ import type {
 	EntityCorrectionsData,
 	EntityCorrectionsErrors,
 	EntityCorrectionsResponses,
+	EntityUserCollectionsData,
+	EntityUserCollectionsErrors,
+	EntityUserCollectionsResponses,
 	ExploreArtistData,
 	ExploreArtistErrors,
 	ExploreArtistResponses,
@@ -1903,6 +1906,15 @@ export const notificationWs = <ThrowOnError extends boolean = false>(
 		url: "/ws/notifications",
 		...options,
 	})
+
+export const entityUserCollections = <ThrowOnError extends boolean = false>(
+	options: Options<EntityUserCollectionsData, ThrowOnError>,
+) =>
+	(options.client ?? client).get<
+		EntityUserCollectionsResponses,
+		EntityUserCollectionsErrors,
+		ThrowOnError
+	>({ url: "/{entity_type}/{id}/collections", ...options })
 
 export const entityCorrections = <ThrowOnError extends boolean = false>(
 	options: Options<EntityCorrectionsData, ThrowOnError>,
