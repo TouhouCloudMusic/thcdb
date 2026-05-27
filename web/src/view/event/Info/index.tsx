@@ -8,6 +8,7 @@ import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
+import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
@@ -134,6 +135,12 @@ function EventInfoTabs() {
 						count={comments.activeCommentCount()}
 						class={TRIGGER_CLASS}
 					/>
+					<Tab.Trigger
+						value="Collections"
+						class={TRIGGER_CLASS}
+					>
+						{t`Collections`}
+					</Tab.Trigger>
 					<Tab.Indicator />
 				</Tab.List>
 			</div>
@@ -150,6 +157,16 @@ function EventInfoTabs() {
 				class="p-4"
 			>
 				<EntityComments controller={comments} />
+			</Tab.Content>
+			<Tab.Content
+				value="Collections"
+				class="p-4"
+			>
+				<EntityCollectionsTab
+					entityType="event"
+					entityId={ctx.event.id}
+					enabled={activeTab() === "Collections"}
+				/>
 			</Tab.Content>
 		</Tab.Root>
 	)

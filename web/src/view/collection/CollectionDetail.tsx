@@ -9,6 +9,7 @@ import type { UserCollection } from "~/hey-api"
 import { CollectionFormDialog } from "./CollectionFormDialog"
 import { CollectionItemCard } from "./CollectionItemCard"
 import type { UserCollectionItemDetail } from "./CollectionItemCard"
+import { CollectionLoadMore } from "./CollectionLoadMore"
 
 type LoadingItemsFetchState = { status: "loading" }
 
@@ -400,18 +401,13 @@ function CollectionItems(props: CollectionItemsProps) {
 									)}
 								</Match>
 							</Switch>
-							<Show when={state().hasMore || state().isFetchingMore}>
-								<div class="flex justify-center pt-2">
-									<Button
-										variant="SecondaryV2"
-										size="Sm"
-										disabled={state().isFetchingMore}
-										onClick={props.controller.loadMoreItems}
-									>
-										{state().isFetchingMore ? t`Loading...` : t`Load more`}
-									</Button>
-								</div>
-							</Show>
+							<div class="pt-2">
+								<CollectionLoadMore
+									when={state().hasMore || state().isFetchingMore}
+									isLoading={state().isFetchingMore}
+									onLoadMore={props.controller.loadMoreItems}
+								/>
+							</div>
 						</>
 					)}
 				</Match>

@@ -19,10 +19,11 @@ use entity::{
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::{
-    Alias, ExprTrait, Func, JoinType, OnConflict, Order, Query, SelectStatement,
+    Alias, Cond, ExprTrait, Func, JoinType, OnConflict, Order, Query,
+    SelectStatement,
 };
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait,
+    ActiveEnum, ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait,
     FromQueryResult, IntoActiveModel, LoaderTrait, PaginatorTrait, QueryFilter,
     QueryOrder, QuerySelect, QueryTrait, Select,
 };
@@ -30,9 +31,9 @@ use sea_orm::{
 use super::error::{Error, NotFound};
 use super::model::{
     ArtistSummary, CreateUserCollectionItemRequest, EntitySummary,
-    EventSummary, FollowedUserCollection, LabelSummary, ReleaseSummary,
-    SongSummary, TagSummary, UserCollection, UserCollectionItem,
-    UserCollectionItemDetail, UserCollectionItemEntityType,
+    EntityUserCollectionSort, EventSummary, FollowedUserCollection,
+    LabelSummary, ReleaseSummary, SongSummary, TagSummary, UserCollection,
+    UserCollectionItem, UserCollectionItemDetail, UserCollectionItemEntityType,
     UserCollectionMutationRequest, UserCollectionOwner,
 };
 use crate::infra::database::error::DatabaseResultExt;
@@ -52,6 +53,16 @@ struct UserCollectionSummaryRow {
     follower_count: i64,
     is_following: Option<bool>,
     followed_at: Option<DateTime<FixedOffset>>,
+}
+
+#[derive(Debug, FromQueryResult)]
+struct CountRow {
+    count: i64,
+}
+
+#[derive(Debug, FromQueryResult)]
+struct CollectionIdRow {
+    id: i32,
 }
 
 impl From<UserCollectionSummaryRow> for UserCollection {
@@ -140,6 +151,223 @@ pub(super) async fn load_user_collection_detail(
     .into_iter()
     .next()
     .ok_or(Error::NotFound(NotFound::Collection))
+}
+
+pub(super) async fn load_entity_user_collections_page(
+    conn: &impl ConnectionTrait,
+    entity_type: EntityType,
+    entity_id: i32,
+    viewer_id: Option<i32>,
+    sort: EntityUserCollectionSort,
+    page_query: PageQuery,
+) -> Result<PageResponse<UserCollection>, Error> {
+    let total_items =
+        count_entity_user_collections(conn, entity_type, entity_id, viewer_id)
+            .await?;
+    let ids = load_entity_user_collection_ids(
+        conn,
+        entity_type,
+        entity_id,
+        viewer_id,
+        sort,
+        &page_query,
+    )
+    .await?;
+
+    let collections = load_user_collection_summaries(
+        conn,
+        user_collection_entity::Entity::find()
+            .filter(user_collection_entity::Column::Id.is_in(ids.clone())),
+        viewer_id,
+    )
+    .await?
+    .into_iter()
+    .map(|collection| (collection.id, collection))
+    .collect::<HashMap<_, _>>();
+
+    let items = ids
+        .into_iter()
+        .filter_map(|id| collections.get(&id).cloned())
+        .collect();
+
+    Ok(page_query.to_response(items, total_items))
+}
+
+async fn count_entity_user_collections(
+    conn: &impl ConnectionTrait,
+    entity_type: EntityType,
+    entity_id: i32,
+    viewer_id: Option<i32>,
+) -> Result<u64, Error> {
+    let mut query = Query::select();
+    query
+        .expr_as(
+            Expr::col((
+                user_collection_item_entity::Entity,
+                user_collection_item_entity::Column::UserCollectionId,
+            ))
+            .count_distinct(),
+            Alias::new("count"),
+        )
+        .from(user_collection_item_entity::Entity)
+        .inner_join(
+            user_collection_entity::Entity,
+            Expr::col((
+                user_collection_item_entity::Entity,
+                user_collection_item_entity::Column::UserCollectionId,
+            ))
+            .equals((
+                user_collection_entity::Entity,
+                user_collection_entity::Column::Id,
+            )),
+        )
+        .and_where(
+            Expr::col((
+                user_collection_item_entity::Entity,
+                user_collection_item_entity::Column::EntityType,
+            ))
+            .eq(<EntityType as ActiveEnum>::as_enum(&entity_type)),
+        )
+        .and_where(
+            Expr::col((
+                user_collection_item_entity::Entity,
+                user_collection_item_entity::Column::EntityId,
+            ))
+            .eq(entity_id),
+        );
+    query.cond_where(visible_user_collection_condition(viewer_id));
+
+    let stmt = conn.get_database_backend().build(&query);
+    let count = CountRow::find_by_statement(stmt)
+        .one(conn)
+        .await
+        .db_operation("count entity user collections")?
+        .map(|row| row.count)
+        .unwrap_or_default();
+
+    Ok(u64::try_from(count).unwrap_or(u64::MAX))
+}
+
+async fn load_entity_user_collection_ids(
+    conn: &impl ConnectionTrait,
+    entity_type: EntityType,
+    entity_id: i32,
+    viewer_id: Option<i32>,
+    sort: EntityUserCollectionSort,
+    page_query: &PageQuery,
+) -> Result<Vec<i32>, Error> {
+    let mut query = Query::select();
+    query
+        .expr(Expr::col((
+            user_collection_entity::Entity,
+            user_collection_entity::Column::Id,
+        )))
+        .from(user_collection_entity::Entity)
+        .inner_join(
+            user_collection_item_entity::Entity,
+            Expr::col((
+                user_collection_entity::Entity,
+                user_collection_entity::Column::Id,
+            ))
+            .equals((
+                user_collection_item_entity::Entity,
+                user_collection_item_entity::Column::UserCollectionId,
+            )),
+        )
+        .left_join(
+            user_collection_follow_entity::Entity,
+            Expr::col((
+                user_collection_entity::Entity,
+                user_collection_entity::Column::Id,
+            ))
+            .equals((
+                user_collection_follow_entity::Entity,
+                user_collection_follow_entity::Column::CollectionId,
+            )),
+        )
+        .and_where(
+            Expr::col((
+                user_collection_item_entity::Entity,
+                user_collection_item_entity::Column::EntityType,
+            ))
+            .eq(<EntityType as ActiveEnum>::as_enum(&entity_type)),
+        )
+        .and_where(
+            Expr::col((
+                user_collection_item_entity::Entity,
+                user_collection_item_entity::Column::EntityId,
+            ))
+            .eq(entity_id),
+        )
+        .group_by_col((
+            user_collection_entity::Entity,
+            user_collection_entity::Column::Id,
+        ));
+    query.cond_where(visible_user_collection_condition(viewer_id));
+
+    match sort {
+        EntityUserCollectionSort::CollectedAt => {
+            query.order_by_expr(
+                Expr::col((
+                    user_collection_item_entity::Entity,
+                    user_collection_item_entity::Column::Id,
+                ))
+                .max(),
+                Order::Desc,
+            );
+        }
+        EntityUserCollectionSort::FollowerCount => {
+            query.order_by_expr(
+                Expr::col((
+                    user_collection_follow_entity::Entity,
+                    user_collection_follow_entity::Column::UserId,
+                ))
+                .count_distinct(),
+                Order::Desc,
+            );
+        }
+    }
+
+    query
+        .order_by(
+            (
+                user_collection_entity::Entity,
+                user_collection_entity::Column::Id,
+            ),
+            Order::Desc,
+        )
+        .offset(page_query.offset())
+        .limit(u64::from(page_query.limit()));
+
+    let stmt = conn.get_database_backend().build(&query);
+    let rows = CollectionIdRow::find_by_statement(stmt)
+        .all(conn)
+        .await
+        .db_operation("load entity user collection ids")?;
+
+    Ok(rows.into_iter().map(|row| row.id).collect())
+}
+
+fn visible_user_collection_condition(
+    viewer_id: Option<i32>,
+) -> sea_orm::sea_query::Condition {
+    let public_collection = Expr::col((
+        user_collection_entity::Entity,
+        user_collection_entity::Column::IsPublic,
+    ))
+    .eq(true);
+
+    let Some(viewer_id) = viewer_id else {
+        return Cond::all().add(public_collection);
+    };
+
+    Cond::any().add(public_collection).add(
+        Expr::col((
+            user_collection_entity::Entity,
+            user_collection_entity::Column::UserId,
+        ))
+        .eq(viewer_id),
+    )
 }
 
 async fn load_user_collection_summaries(

@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use domain::shared::{NonEmptyString, PageResponse};
+use entity::enums::EntityType;
 use entity::{
     user_collection as user_collection_entity,
     user_collection_item as user_collection_item_entity,
@@ -11,9 +12,10 @@ use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter};
 
 use super::error::{Error, NotFound};
 use super::model::{
-    CreateUserCollectionItemRequest, FollowedUserCollection,
-    ReorderUserCollectionItemsRequest, UserCollection, UserCollectionItem,
-    UserCollectionItemDetail, UserCollectionMutationRequest,
+    CreateUserCollectionItemRequest, EntityUserCollectionSort,
+    FollowedUserCollection, ReorderUserCollectionItemsRequest, UserCollection,
+    UserCollectionItem, UserCollectionItemDetail,
+    UserCollectionMutationRequest,
 };
 use super::repo;
 use crate::infra::database::error::DatabaseResultExt;
@@ -104,6 +106,25 @@ impl Service {
             &self.repo.conn,
             select,
             viewer_id,
+            page_query,
+        )
+        .await
+    }
+
+    pub(super) async fn list_entity_user_collections(
+        &self,
+        entity_type: EntityType,
+        entity_id: i32,
+        viewer_id: Option<i32>,
+        sort: EntityUserCollectionSort,
+        page_query: PageQuery,
+    ) -> Result<PageResponse<UserCollection>, Error> {
+        repo::load_entity_user_collections_page(
+            &self.repo.conn,
+            entity_type,
+            entity_id,
+            viewer_id,
+            sort,
             page_query,
         )
         .await

@@ -6,6 +6,7 @@ import { Tab } from "~/component/atomic"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
+import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
 import type { EntityCommentsController } from "~/view/comment/EntityCommentsController"
@@ -163,6 +164,12 @@ export function SongInfoTabsView(props: SongInfoTabsViewProps) {
 					count={props.comments.activeCommentCount()}
 					class={TRIGGER_CLASS}
 				/>
+				<Tab.Trigger
+					value="Collections"
+					class={TRIGGER_CLASS}
+				>
+					{t`Collections`}
+				</Tab.Trigger>
 				<Tab.Indicator />
 			</Tab.List>
 			<Tab.Content value="Release">
@@ -185,6 +192,16 @@ export function SongInfoTabsView(props: SongInfoTabsViewProps) {
 			</Show>
 			<Tab.Content value="Comments">
 				<EntityComments controller={props.comments} />
+			</Tab.Content>
+			<Tab.Content
+				value="Collections"
+				class="p-4"
+			>
+				<EntityCollectionsTab
+					entityType="song"
+					entityId={ctx.song.id}
+					enabled={props.activeTab === "Collections"}
+				/>
 			</Tab.Content>
 		</Tab.Root>
 	)

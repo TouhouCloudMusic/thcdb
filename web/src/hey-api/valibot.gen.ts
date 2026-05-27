@@ -1036,6 +1036,20 @@ export const vDataCorrectionDiff = v.object({
 	}),
 })
 
+export const vEntityUserCollectionSort = v.picklist([
+	"collected_at",
+	"follower_count",
+])
+
+export const vEntityUserCollectionTarget = v.picklist([
+	"artist",
+	"label",
+	"release",
+	"song",
+	"tag",
+	"event",
+])
+
 export const vError = v.object({
 	status: v.picklist(["Err"]),
 	message: v.string(),
@@ -5666,6 +5680,36 @@ export const vNotificationWsResponse = v.object({
 	status: v.picklist(["Err"]),
 	message: v.string(),
 })
+
+export const vEntityUserCollectionsPath = v.object({
+	entity_type: vEntityUserCollectionTarget,
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vEntityUserCollectionsQuery = v.object({
+	sort_by: v.optional(vEntityUserCollectionSort),
+	limit: v.optional(
+		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
+	),
+	page: v.optional(
+		v.pipe(
+			v.union([v.number(), v.string(), v.bigint()]),
+			v.transform((x) => BigInt(x)),
+			v.minValue(BigInt(1)),
+			v.maxValue(BigInt(10000)),
+		),
+	),
+})
+
+export const vEntityUserCollectionsResponse = vDataPageUserCollection
 
 export const vEntityCorrectionsPath = v.object({
 	entity_type: v.picklist([

@@ -348,6 +348,10 @@ msgstr "城市"
 msgid "Collapse"
 msgstr "折叠"
 
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "Collected time"
+msgstr "收藏时间"
+
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Collection"
 msgstr "收藏"
@@ -361,7 +365,12 @@ msgid "Collection type"
 msgstr "收藏类型"
 
 #: src/component/Header/RightSidebar.tsx
+#: src/view/event/Info/index.tsx
+#: src/view/label/Info/index.tsx
+#: src/view/release/Info/ReleaseInfoTabs.tsx
 #: src/view/search/index.tsx
+#: src/view/song/Info/index.tsx
+#: src/view/tag/Info/index.tsx
 #: src/view/user/Profile.tsx
 msgid "Collections"
 msgstr "收藏"
@@ -758,6 +767,7 @@ msgid "Failed to load collection details."
 msgstr "加载收藏详情失败。"
 
 #: src/view/collection/AddToCollectionDialog.tsx
+#: src/view/collection/EntityCollectionsTab.tsx
 msgid "Failed to load collections"
 msgstr "加载收藏失败"
 
@@ -821,6 +831,10 @@ msgstr "第一页"
 #: src/view/user/Profile.tsx
 msgid "Follow"
 msgstr "关注"
+
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "Follow count"
+msgstr "关注数"
 
 #: src/view/user/Profile.tsx
 msgid "Followed"
@@ -1023,6 +1037,7 @@ msgstr "链接"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/comment/CommentThread.tsx
 #: src/view/user/Profile.tsx
 msgid "Load more"
@@ -1062,6 +1077,7 @@ msgstr "正在加载标签..."
 #: src/view/artist/profile/index.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/comment/CommentThread.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/correction/Detail.tsx
@@ -1223,6 +1239,10 @@ msgstr "暂无个人简介。"
 #: src/view/correction/Detail.tsx
 msgid "No changes detected."
 msgstr "未检测到任何更改"
+
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "No collections"
+msgstr "暂无收藏"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "No collections available"
@@ -1895,6 +1915,7 @@ msgstr "歌词"
 msgid "Songs"
 msgstr "歌曲"
 
+#: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/user/Profile.tsx
 msgid "Sort"
 msgstr "排序"
@@ -1904,6 +1925,7 @@ msgstr "排序"
 msgid "Sort by"
 msgstr "排序方式"
 
+#: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/user/Profile.tsx
 msgid "Sort collections"
 msgstr "排序收藏"
@@ -1912,9 +1934,17 @@ msgstr "排序收藏"
 msgid "Sort: Alphabetical"
 msgstr "排序：字母顺序"
 
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "Sort: Collected time"
+msgstr "排序：收藏时间"
+
 #: src/view/user/Profile.tsx
 msgid "Sort: Created time"
 msgstr "排序：创建时间"
+
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "Sort: Follow count"
+msgstr "排序：关注数"
 
 #: src/view/user/Profile.tsx
 msgid "Sort: Followed time"

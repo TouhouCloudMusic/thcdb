@@ -3,6 +3,7 @@ import type { Release } from "@thc/api"
 import { createSignal, Show } from "solid-js"
 
 import { Tab } from "~/component/atomic"
+import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
 import type { EntityCommentsController } from "~/view/comment/EntityCommentsController"
@@ -78,6 +79,12 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 						count={props.comments.activeCommentCount()}
 						class={TRIGGER_CLASS}
 					/>
+					<Tab.Trigger
+						value="Collections"
+						class={TRIGGER_CLASS}
+					>
+						{t`Collections`}
+					</Tab.Trigger>
 					<Tab.Indicator />
 				</Tab.List>
 			</div>
@@ -105,6 +112,16 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 				class="p-4"
 			>
 				<EntityComments controller={props.comments} />
+			</Tab.Content>
+			<Tab.Content
+				value="Collections"
+				class="p-4"
+			>
+				<EntityCollectionsTab
+					entityType="release"
+					entityId={props.release.id}
+					enabled={props.activeTab === "Collections"}
+				/>
 			</Tab.Content>
 		</Tab.Root>
 	)

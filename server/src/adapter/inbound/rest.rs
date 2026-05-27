@@ -172,6 +172,8 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
     components(schemas(
         features::correction::HandleCorrectionMethod,
         features::comment::EntityCommentTarget,
+        features::user_collection::EntityUserCollectionSort,
+        features::user_collection::EntityUserCollectionTarget,
         features::image_queue::HandleImageQueueMethod,
         features::image_queue::ImageQueueType,
         entity::sea_orm_active_enums::ImageQueueStatus,
@@ -200,6 +202,8 @@ fn basic_security_requirement() -> utoipa::openapi::security::SecurityRequiremen
     components(schemas(
         features::correction::HandleCorrectionMethod,
         features::comment::EntityCommentTarget,
+        features::user_collection::EntityUserCollectionSort,
+        features::user_collection::EntityUserCollectionTarget,
         features::image_queue::HandleImageQueueMethod,
         features::image_queue::ImageQueueType,
         entity::sea_orm_active_enums::ImageQueueStatus,

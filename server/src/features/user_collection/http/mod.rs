@@ -1,16 +1,18 @@
 use axum::Json;
 use axum::extract::{FromRef, Path, Query, State};
 use domain::shared::{NonEmptyString, PageResponse};
+use entity::enums::EntityType;
 use serde::Deserialize;
-use utoipa::IntoParams;
+use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::error::Error;
 use super::model::{
-    CreateUserCollectionItemRequest, FollowedUserCollection,
-    ReorderUserCollectionItemsRequest, UserCollection, UserCollectionItem,
-    UserCollectionItemDetail, UserCollectionMutationRequest,
+    CreateUserCollectionItemRequest, EntityUserCollectionSort,
+    FollowedUserCollection, ReorderUserCollectionItemsRequest, UserCollection,
+    UserCollectionItem, UserCollectionItemDetail,
+    UserCollectionMutationRequest,
 };
 use super::service::Service;
 use crate::adapter::inbound::rest::state::{
@@ -35,6 +37,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
                 .routes(routes!(user_collection_detail))
                 .routes(routes!(user_collection_items))
                 .routes(routes!(public_user_collections))
+                .routes(routes!(entity_user_collections))
                 .routes(routes!(search_user_collections))
         })
         .with_private(|r| {
@@ -63,6 +66,41 @@ data! {
 #[into_params(parameter_in = Query)]
 struct SearchQuery {
     keyword: NonEmptyString,
+}
+
+#[derive(Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
+struct EntityCollectionsQuery {
+    #[serde(default = "default_entity_collection_sort")]
+    sort_by: EntityUserCollectionSort,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, ToSchema)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum EntityUserCollectionTarget {
+    Artist,
+    Label,
+    Release,
+    Song,
+    Tag,
+    Event,
+}
+
+impl From<EntityUserCollectionTarget> for EntityType {
+    fn from(value: EntityUserCollectionTarget) -> Self {
+        match value {
+            EntityUserCollectionTarget::Artist => Self::Artist,
+            EntityUserCollectionTarget::Label => Self::Label,
+            EntityUserCollectionTarget::Release => Self::Release,
+            EntityUserCollectionTarget::Song => Self::Song,
+            EntityUserCollectionTarget::Tag => Self::Tag,
+            EntityUserCollectionTarget::Event => Self::Event,
+        }
+    }
+}
+
+const fn default_entity_collection_sort() -> EntityUserCollectionSort {
+    EntityUserCollectionSort::CollectedAt
 }
 
 #[utoipa::path(
@@ -151,6 +189,39 @@ async fn public_user_collections(
 ) -> Result<Data<PageResponse<UserCollection>>, Error> {
     let page = service
         .list_public_user_collections(session.verified_user_id(), page_query)
+        .await?;
+    Ok(Data::new(page))
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/{entity_type}/{id}/collections",
+    params(
+        ("entity_type" = EntityUserCollectionTarget, Path, description = "Entity type"),
+        ("id" = i32, Path, description = "Entity id"),
+        EntityCollectionsQuery,
+        PageQuery
+    ),
+    responses(
+        (status = 200, body = DataPageUserCollection),
+    ),
+)]
+async fn entity_user_collections(
+    session: AuthSession,
+    Path((entity_type, id)): Path<(EntityUserCollectionTarget, i32)>,
+    Query(EntityCollectionsQuery { sort_by }): Query<EntityCollectionsQuery>,
+    Query(page_query): Query<PageQuery>,
+    State(service): State<Service>,
+) -> Result<Data<PageResponse<UserCollection>>, Error> {
+    let page = service
+        .list_entity_user_collections(
+            entity_type.into(),
+            id,
+            session.verified_user_id(),
+            sort_by,
+            page_query,
+        )
         .await?;
     Ok(Data::new(page))
 }

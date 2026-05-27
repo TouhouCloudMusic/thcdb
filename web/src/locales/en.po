@@ -348,6 +348,10 @@ msgstr "City"
 msgid "Collapse"
 msgstr "Collapse"
 
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "Collected time"
+msgstr "Collected time"
+
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Collection"
 msgstr "Collection"
@@ -361,7 +365,12 @@ msgid "Collection type"
 msgstr "Collection type"
 
 #: src/component/Header/RightSidebar.tsx
+#: src/view/event/Info/index.tsx
+#: src/view/label/Info/index.tsx
+#: src/view/release/Info/ReleaseInfoTabs.tsx
 #: src/view/search/index.tsx
+#: src/view/song/Info/index.tsx
+#: src/view/tag/Info/index.tsx
 #: src/view/user/Profile.tsx
 msgid "Collections"
 msgstr "Collections"
@@ -758,6 +767,7 @@ msgid "Failed to load collection details."
 msgstr "Failed to load collection details."
 
 #: src/view/collection/AddToCollectionDialog.tsx
+#: src/view/collection/EntityCollectionsTab.tsx
 msgid "Failed to load collections"
 msgstr "Failed to load collections"
 
@@ -821,6 +831,10 @@ msgstr "First page"
 #: src/view/user/Profile.tsx
 msgid "Follow"
 msgstr "Follow"
+
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "Follow count"
+msgstr "Follow count"
 
 #: src/view/user/Profile.tsx
 msgid "Followed"
@@ -1023,6 +1037,7 @@ msgstr "Links"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/comment/CommentThread.tsx
 #: src/view/user/Profile.tsx
 msgid "Load more"
@@ -1062,6 +1077,7 @@ msgstr "Loading tags..."
 #: src/view/artist/profile/index.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/comment/CommentThread.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/correction/Detail.tsx
@@ -1223,6 +1239,10 @@ msgstr "No biography provided."
 #: src/view/correction/Detail.tsx
 msgid "No changes detected."
 msgstr "No changes detected."
+
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "No collections"
+msgstr "No collections"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "No collections available"
@@ -1895,6 +1915,7 @@ msgstr "Song lyrics"
 msgid "Songs"
 msgstr "Songs"
 
+#: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/user/Profile.tsx
 msgid "Sort"
 msgstr "Sort"
@@ -1904,6 +1925,7 @@ msgstr "Sort"
 msgid "Sort by"
 msgstr "Sort by"
 
+#: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/user/Profile.tsx
 msgid "Sort collections"
 msgstr "Sort collections"
@@ -1912,9 +1934,17 @@ msgstr "Sort collections"
 msgid "Sort: Alphabetical"
 msgstr "Sort: Alphabetical"
 
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "Sort: Collected time"
+msgstr "Sort: Collected time"
+
 #: src/view/user/Profile.tsx
 msgid "Sort: Created time"
 msgstr "Sort: Created time"
+
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "Sort: Follow count"
+msgstr "Sort: Follow count"
 
 #: src/view/user/Profile.tsx
 msgid "Sort: Followed time"

@@ -2,8 +2,9 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import type { UserCollection } from "~/hey-api"
 import { withStoryRouter } from "~/utils/adapter/storybook"
+import { FollowedCollectionRow } from "~/view/collection/FollowedCollectionRow"
 
-import { CollectionRow, FollowedCollectionRow } from "./Profile"
+import { CollectionRow } from "./Profile"
 
 const COLLECTION_ITEM: UserCollection = {
 	id: 301,

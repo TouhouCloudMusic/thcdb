@@ -35,6 +35,13 @@ pub struct FollowedUserCollection {
     pub collection: UserCollection,
 }
 
+#[derive(Clone, Copy, Debug, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum EntityUserCollectionSort {
+    CollectedAt,
+    FollowerCount,
+}
+
 #[derive(Clone, Debug, Serialize, ToSchema)]
 pub struct UserCollectionItem {
     pub id: i32,

@@ -10,13 +10,19 @@ import { Badge } from "~/component/atomic/Badge"
 import { Link } from "~/component/atomic/Link"
 import { Avatar } from "~/component/atomic/avatar"
 import { Button } from "~/component/atomic/button"
-import { Select } from "~/component/atomic/form/select"
 import { Markdown } from "~/component/markdown"
 import { USER_ROLE_NAMES } from "~/domain/user/constants"
 import type { UserCollection } from "~/hey-api"
 import { PageLayout } from "~/layout/PageLayout"
 import { imgUrl } from "~/utils/adapter/static_file"
 import { CollectionFormDialog } from "~/view/collection/CollectionFormDialog"
+import { CollectionLoadMore } from "~/view/collection/CollectionLoadMore"
+import type { CollectionToolbarSelectOption } from "~/view/collection/CollectionToolbarSelect"
+import {
+	COLLECTION_TOOL_INPUT_CLASS,
+	CollectionToolbarSelect,
+} from "~/view/collection/CollectionToolbarSelect"
+import { FollowedCollectionRow } from "~/view/collection/FollowedCollectionRow"
 
 type ProfileTabValue = "collections" | "activity"
 type ProfileTabState = {
@@ -121,13 +127,6 @@ const COLLECTION_SORT_OPTIONS = [
 		value: "items" as const,
 	},
 ]
-
-const COLLECTION_TOOL_CONTROL_CLASS =
-	"h-9 rounded-sm border border-slate-400 bg-primary text-sm text-primary outline-1 outline-transparent -outline-offset-1 transition-colors placeholder:text-secondary hover:border-slate-500 focus-visible:outline-slate-500"
-
-const COLLECTION_TOOL_INPUT_CLASS = `${COLLECTION_TOOL_CONTROL_CLASS} px-3`
-
-const COLLECTION_TOOL_SELECT_CLASS = `${COLLECTION_TOOL_CONTROL_CLASS} gap-1 pl-3 pr-2 font-normal sm:grid-cols-[auto_auto]`
 
 export function Profile(props: Props) {
 	const { t } = useLingui()
@@ -605,58 +604,6 @@ function RoleBadge(props: { role: UserRoleEnum }) {
 	)
 }
 
-type CollectionToolbarSelectOption<T extends string> = {
-	value: T
-	label: string
-	itemLabel: string
-}
-
-function CollectionToolbarSelect<T extends string>(props: {
-	options: CollectionToolbarSelectOption<T>[]
-	value: T
-	placeholder: string
-	ariaLabel: string
-	class?: string
-	onChange: (value: T) => void
-}) {
-	const selectedOption = () =>
-		props.options.find((option) => option.value === props.value)
-
-	return (
-		<Select.Root<CollectionToolbarSelectOption<T>>
-			options={props.options}
-			optionValue="value"
-			optionTextValue="itemLabel"
-			value={selectedOption()}
-			placeholder={props.placeholder}
-			onChange={(option) => {
-				if (option === null) return
-				props.onChange(option.value)
-			}}
-			itemComponent={(itemProps) => (
-				<Select.Item item={itemProps.item}>
-					{itemProps.item.rawValue.itemLabel}
-				</Select.Item>
-			)}
-		>
-			<Select.Trigger
-				aria-label={props.ariaLabel}
-				class={twMerge(COLLECTION_TOOL_SELECT_CLASS, props.class)}
-			>
-				<Select.Value<CollectionToolbarSelectOption<T>> class="truncate">
-					{(state) => state.selectedOption().label}
-				</Select.Value>
-				<Select.Icon />
-			</Select.Trigger>
-			<Select.Portal>
-				<Select.Content>
-					<Select.Listbox />
-				</Select.Content>
-			</Select.Portal>
-		</Select.Root>
-	)
-}
-
 function CollectionsPanel(props: {
 	items: readonly UserCollection[]
 	hasMoreItems: boolean
@@ -888,19 +835,13 @@ function CollectionsPanel(props: {
 				</ul>
 			</Show>
 
-			<Show when={currentHasMoreItems() || currentIsFetchingMoreItems()}>
-				<div class="flex justify-center">
-					<Button
-						variant="SecondaryV2"
-						color="Slate"
-						size="Sm"
-						disabled={currentIsFetchingMoreItems()}
-						onClick={currentOnLoadMore}
-					>
-						{currentIsFetchingMoreItems() ? t`Loading...` : t`Load more`}
-					</Button>
-				</div>
-			</Show>
+			<div>
+				<CollectionLoadMore
+					when={currentHasMoreItems() || currentIsFetchingMoreItems()}
+					isLoading={currentIsFetchingMoreItems()}
+					onLoadMore={currentOnLoadMore}
+				/>
+			</div>
 
 			<Show when={collectionFormOpen()}>
 				<CollectionFormDialog
@@ -979,51 +920,6 @@ export function CollectionRow(props: { item: UserCollection }) {
 						</h3>
 						<span class="text-xs text-tertiary">
 							{props.item.is_public ? t`Public` : t`Private`}
-						</span>
-					</div>
-					<p class="mt-1 line-clamp-1 text-sm text-slate-500">
-						{props.item.description || t`No description`}
-					</p>
-				</div>
-
-				<div class="flex items-center gap-4 text-xs text-slate-500 sm:justify-end">
-					<span class="tabular-nums">
-						{props.item.item_count}{" "}
-						{props.item.item_count === 1 ? t`item` : t`items`}
-					</span>
-					<span class="text-slate-300 transition-colors group-hover:text-slate-500">
-						&gt;
-					</span>
-				</div>
-			</Link>
-		</li>
-	)
-}
-
-export function FollowedCollectionRow(props: { item: UserCollection }) {
-	const { t } = useLingui()
-	return (
-		<li>
-			<Link
-				to="/collection/$id"
-				params={{ id: props.item.id.toString() }}
-				underline={false}
-				class="group grid gap-3 px-1 py-4 no-underline outline-none transition-colors hover:bg-slate-50 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-3"
-			>
-				<div class="min-w-0">
-					<div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-						<h3 class="truncate text-[15px] font-medium text-slate-900 transition-colors group-hover:text-sky-700">
-							{props.item.name}
-						</h3>
-						<span class="inline-flex min-w-0 items-center gap-1.5 text-xs font-medium text-slate-600">
-							<Avatar
-								user={{
-									name: props.item.owner.name,
-									avatar_url: props.item.owner.avatar_url,
-								}}
-								class="size-4 shrink-0 [&>div]:text-xs [&>div]:leading-none"
-							/>
-							<span class="truncate">{props.item.owner.name}</span>
 						</span>
 					</div>
 					<p class="mt-1 line-clamp-1 text-sm text-slate-500">

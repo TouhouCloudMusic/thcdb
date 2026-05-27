@@ -29,6 +29,7 @@ import { useCurrentUser } from "~/state/user"
 import { getNextPageParam } from "~/utils/query"
 
 import { CollectionFormDialog } from "./CollectionFormDialog"
+import { CollectionLoadMore } from "./CollectionLoadMore"
 
 type Props = {
 	open: boolean
@@ -131,27 +132,17 @@ function CollectionField(props: CollectionFieldProps) {
 			<Show when={props.collectionsQuery.isError}>
 				<p class="text-xs text-red-500">{t`Failed to load collections.`}</p>
 			</Show>
-			<Show
+			<CollectionLoadMore
 				when={
 					props.collectionsQuery.hasNextPage
 					|| props.collectionsQuery.isFetchingNextPage
 				}
-			>
-				<Button
-					type="button"
-					variant="Secondary"
-					size="Sm"
-					class="w-fit px-3"
-					disabled={props.collectionsQuery.isFetchingNextPage}
-					onClick={() => {
-						void props.collectionsQuery.fetchNextPage()
-					}}
-				>
-					{props.collectionsQuery.isFetchingNextPage
-						? t`Loading...`
-						: t`Load more`}
-				</Button>
-			</Show>
+				isLoading={props.collectionsQuery.isFetchingNextPage}
+				variant="Secondary"
+				onLoadMore={() => {
+					void props.collectionsQuery.fetchNextPage()
+				}}
+			/>
 		</div>
 	)
 }
