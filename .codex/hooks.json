@@ -1,0 +1,17 @@
+{
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "uv run --script ./.codex/hooks/pre_tool_use_policy.py",
+                        "timeout": 10,
+                        "statusMessage": "Checking shell command policy"
+                    }
+                ]
+            }
+        ]
+    }
+}
