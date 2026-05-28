@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: touhou-cloud-db\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-26 10:42\n"
+"PO-Revision-Date: 2026-05-28 12:22\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "X-Crowdin-Project: touhou-cloud-db\n"
@@ -353,6 +353,10 @@ msgstr "城市"
 msgid "Collapse"
 msgstr "折叠"
 
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "Collected time"
+msgstr ""
+
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "Collection"
 msgstr ""
@@ -366,7 +370,12 @@ msgid "Collection type"
 msgstr ""
 
 #: src/component/Header/RightSidebar.tsx
+#: src/view/event/Info/index.tsx
+#: src/view/label/Info/index.tsx
+#: src/view/release/Info/ReleaseInfoTabs.tsx
 #: src/view/search/index.tsx
+#: src/view/song/Info/index.tsx
+#: src/view/tag/Info/index.tsx
 #: src/view/user/Profile.tsx
 msgid "Collections"
 msgstr "收藏集"
@@ -763,6 +772,7 @@ msgid "Failed to load collection details."
 msgstr ""
 
 #: src/view/collection/AddToCollectionDialog.tsx
+#: src/view/collection/EntityCollectionsTab.tsx
 msgid "Failed to load collections"
 msgstr ""
 
@@ -826,6 +836,10 @@ msgstr "第一页"
 #: src/view/user/Profile.tsx
 msgid "Follow"
 msgstr "关注"
+
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "Follow count"
+msgstr ""
 
 #: src/view/user/Profile.tsx
 msgid "Followed"
@@ -1028,6 +1042,7 @@ msgstr "链接"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/comment/CommentThread.tsx
 #: src/view/user/Profile.tsx
 msgid "Load more"
@@ -1067,6 +1082,7 @@ msgstr ""
 #: src/view/artist/profile/index.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/comment/CommentThread.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/correction/Detail.tsx
@@ -1228,6 +1244,10 @@ msgstr "暂无个人简介。"
 #: src/view/correction/Detail.tsx
 msgid "No changes detected."
 msgstr "未检测到任何更改"
+
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "No collections"
+msgstr ""
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "No collections available"
@@ -1900,6 +1920,7 @@ msgstr "歌词"
 msgid "Songs"
 msgstr ""
 
+#: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/user/Profile.tsx
 msgid "Sort"
 msgstr ""
@@ -1909,6 +1930,7 @@ msgstr ""
 msgid "Sort by"
 msgstr "排序方式"
 
+#: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/user/Profile.tsx
 msgid "Sort collections"
 msgstr ""
@@ -1917,8 +1939,16 @@ msgstr ""
 msgid "Sort: Alphabetical"
 msgstr ""
 
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "Sort: Collected time"
+msgstr ""
+
 #: src/view/user/Profile.tsx
 msgid "Sort: Created time"
+msgstr ""
+
+#: src/view/collection/EntityCollectionsTab.tsx
+msgid "Sort: Follow count"
 msgstr ""
 
 #: src/view/user/Profile.tsx
