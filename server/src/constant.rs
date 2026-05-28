@@ -16,6 +16,8 @@ pub use share::*;
 mod share {
     // TODO: Parse use in build.rs
 
+    pub const REQUEST_BODY_MAX_SIZE: usize = 26 * 1024 * 1024;
+
     pub const ENTITY_IDENT_MIN_LEN: usize = 1;
     pub const ENTITY_IDENT_MAX_LEN: usize = 128;
 
@@ -25,7 +27,7 @@ mod share {
     pub const ARTIST_PROFILE_IMAGE_MAX_WIDTH: u32 = 4096;
     pub const ARTIST_PROFILE_IMAGE_MIN_HEIGHT: u32 = 256;
     pub const ARTIST_PROFILE_IMAGE_MAX_HEIGHT: u32 = 4096;
-    pub const ARTIST_PROFILE_IMAGE_MAX_FILE_SIZE: u64 = 100 * 1024 * 1024;
+    pub const ARTIST_PROFILE_IMAGE_MAX_FILE_SIZE: u64 = 25 * 1024 * 1024;
 
     // Release
     pub const RELEASE_COVER_IMAGE_MIN_WIDTH: u32 = 256;

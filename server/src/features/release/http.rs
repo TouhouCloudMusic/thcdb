@@ -1,6 +1,6 @@
 use axum::Json;
 use axum::body::Bytes;
-use axum::extract::{Path, State};
+use axum::extract::{DefaultBodyLimit, Path, State};
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
@@ -10,6 +10,7 @@ use super::model::NewRelease;
 use super::{find, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
+use crate::constant::REQUEST_BODY_MAX_SIZE;
 use crate::features::correction::service::CorrectionUpsertMode;
 use crate::features::correction::{
     CorrectionSubmitResult, NewCorrectionDto, SubmissionError,
@@ -21,13 +22,17 @@ use crate::shared::http::api_response::Data;
 const TAG: &str = "Release";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
+    let upload_routes = OpenApiRouter::new()
+        .routes(routes!(upload_release_cover_art))
+        .route_layer(DefaultBodyLimit::max(REQUEST_BODY_MAX_SIZE));
+
     let private = AppRouter::new()
         .with_private(|r| {
             r.routes(routes!(create_release))
                 .routes(routes!(update_release))
                 .routes(routes!(update_release_pending_correction))
                 .routes(routes!(get_release_cover_art_metadata))
-                .routes(routes!(upload_release_cover_art))
+                .merge(upload_routes)
         })
         .finish();
 

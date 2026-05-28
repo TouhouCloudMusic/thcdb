@@ -10593,7 +10593,7 @@
           "data": {
             "type": "string",
             "format": "binary",
-            "maximum": 104857600,
+            "maximum": 26214400,
             "minimum": 1024
           }
         }

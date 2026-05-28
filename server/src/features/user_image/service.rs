@@ -40,7 +40,7 @@ mod parser {
             / f64::from(USER_PROFILE_BANNER_MAX_HEIGHT);
         ParseOption::builder()
             .valid_formats(&[ImageFormat::Png, ImageFormat::Jpeg])
-            .file_size_range(ByteSize::kib(10)..=ByteSize::mib(100))
+            .file_size_range(ByteSize::kib(10)..=ByteSize::mib(25))
             .width_range(
                 USER_PROFILE_BANNER_MIN_WIDTH..=USER_PROFILE_BANNER_MAX_WIDTH,
             )
