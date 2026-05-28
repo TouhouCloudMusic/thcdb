@@ -1,5 +1,5 @@
 use axum::Json;
-use axum::extract::{Path, State};
+use axum::extract::{DefaultBodyLimit, Path, State};
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
 use bytes::Bytes;
 use utoipa::ToSchema;
@@ -10,6 +10,7 @@ use super::model::NewArtist;
 use super::{find, release, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
+use crate::constant::REQUEST_BODY_MAX_SIZE;
 use crate::features::artist_image::{self, ArtistProfileImageInput};
 use crate::features::correction::service::CorrectionUpsertMode;
 use crate::features::correction::{
@@ -21,13 +22,17 @@ use crate::shared::http::api_response::Data;
 const TAG: &str = "Artist";
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
+    let upload_routes = OpenApiRouter::new()
+        .routes(routes!(upload_artist_profile_image))
+        .route_layer(DefaultBodyLimit::max(REQUEST_BODY_MAX_SIZE));
+
     let private = AppRouter::new()
         .with_private(|r| {
             r.routes(routes!(create_artist))
                 .routes(routes!(upsert_artist_correction))
                 .routes(routes!(update_artist_pending_correction))
                 .routes(routes!(get_artist_profile_image_metadata))
-                .routes(routes!(upload_artist_profile_image))
+                .merge(upload_routes)
         })
         .finish();
 
@@ -152,11 +157,11 @@ async fn get_artist_profile_image_metadata(
 
 #[derive(Debug, ToSchema, TryFromMultipart)]
 pub struct ArtistProfileImageFormData {
-    #[form_data(limit = "100MiB")]
+    #[form_data(limit = "25MiB")]
     #[schema(
         value_type = String,
         format = Binary,
-        maximum = 104857600,
+        maximum = 26214400,
         minimum = 1024
     )]
     pub data: FieldData<Bytes>,

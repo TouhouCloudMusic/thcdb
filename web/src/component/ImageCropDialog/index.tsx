@@ -18,7 +18,11 @@ import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
 import { Dialog } from "~/component/dialog"
-import { AVATAR_MAX_FILE_SIZE, AVATAR_MIN_FILE_SIZE } from "~/constant/server"
+import {
+	AVATAR_MAX_FILE_SIZE,
+	AVATAR_MIN_FILE_SIZE,
+	REQUEST_BODY_MAX_SIZE,
+} from "~/constant/server"
 import { assertContext } from "~/utils/solid/assertContext"
 
 import { getImageBounds, getImageScale } from "./cropperImageUtils"
@@ -115,7 +119,13 @@ export function Root(props: RootProps) {
 	const { t } = useLingui()
 	const [cropperRoot, setCropperRoot] = createSignal<HTMLDivElement>()
 	const [isSelectionReady, setSelectionReady] = createSignal(false)
-	const fileSizeRange = () => props.fileSizeRange ?? DEFAULT_FILE_SIZE_RANGE
+	const fileSizeRange = () => {
+		const range = props.fileSizeRange ?? DEFAULT_FILE_SIZE_RANGE
+		return {
+			min: range.min,
+			max: Math.min(range.max, REQUEST_BODY_MAX_SIZE),
+		}
+	}
 
 	let lastObjectUrl: string | undefined
 	let isClampQueued = false
