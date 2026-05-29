@@ -3,15 +3,15 @@ use std::sync::LazyLock;
 
 use argon2::Argon2;
 use argon2::password_hash::{self, PasswordHash, PasswordVerifier};
+use constants::{
+    USER_NAME_REGEX_STR, USER_PASSWORD_MAX_LENGTH, USER_PASSWORD_MIN_LENGTH,
+    USER_PASSWORD_REGEX_STR,
+};
 use derive_more::{Display, Error as DeriveError};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::constant::{
-    USER_NAME_REGEX_STR, USER_PASSWORD_MAX_LENGTH, USER_PASSWORD_MIN_LENGTH,
-    USER_PASSWORD_REGEX_STR,
-};
 use crate::shared::error::InternalError;
 use crate::shared::secret;
 

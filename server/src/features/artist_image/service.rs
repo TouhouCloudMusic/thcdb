@@ -3,6 +3,11 @@ use std::sync::LazyLock;
 use ::image::ImageFormat;
 use axum::response::IntoResponse;
 use bytesize::ByteSize;
+use constants::{
+    ARTIST_PROFILE_IMAGE_MAX_FILE_SIZE, ARTIST_PROFILE_IMAGE_MAX_HEIGHT,
+    ARTIST_PROFILE_IMAGE_MAX_WIDTH, ARTIST_PROFILE_IMAGE_MIN_HEIGHT,
+    ARTIST_PROFILE_IMAGE_MIN_WIDTH,
+};
 use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{artist_image, image as image_entity, user as user_entity};
 use infra_db::SeaOrmRepository;
@@ -10,11 +15,6 @@ use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
 use super::model::{ArtistImageQueue, ArtistProfileImageInput};
 use super::repo;
-use crate::constant::{
-    ARTIST_PROFILE_IMAGE_MAX_FILE_SIZE, ARTIST_PROFILE_IMAGE_MAX_HEIGHT,
-    ARTIST_PROFILE_IMAGE_MAX_WIDTH, ARTIST_PROFILE_IMAGE_MIN_HEIGHT,
-    ARTIST_PROFILE_IMAGE_MIN_WIDTH,
-};
 use crate::features::artist::find::repo as artist_repo;
 use crate::features::image_metadata::{
     CurrentImageMetadata, ImageUploaderSummary,

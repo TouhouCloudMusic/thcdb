@@ -14,12 +14,12 @@ mod parser {
 
     use ::image::ImageFormat;
     use bytesize::ByteSize;
-
-    use crate::constant::{
+    use constants::{
         AVATAR_MAX_FILE_SIZE, AVATAR_MIN_FILE_SIZE,
         USER_PROFILE_BANNER_MAX_HEIGHT, USER_PROFILE_BANNER_MAX_WIDTH,
         USER_PROFILE_BANNER_MIN_HEIGHT, USER_PROFILE_BANNER_MIN_WIDTH,
     };
+
     use crate::features::image_upload::{ParseOption, Parser};
 
     pub static AVATAR: LazyLock<Parser> = LazyLock::new(|| {

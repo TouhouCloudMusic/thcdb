@@ -5944,6 +5944,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "thcdb-constants"
+version = "0.1.0"
+
+[[package]]
 name = "thcdb-domain"
 version = "0.1.0"
 dependencies = [
@@ -6098,7 +6102,6 @@ dependencies = [
  "pico-args",
  "proptest",
  "pulldown-cmark",
- "quote",
  "rand 0.9.4",
  "rapidhash",
  "regex",
@@ -6112,7 +6115,7 @@ dependencies = [
  "smart-default",
  "snafu",
  "strum 0.27.2",
- "syn 2.0.117",
+ "thcdb-constants",
  "thcdb-domain",
  "thcdb-feature-auth-core",
  "thcdb-feature-auth-worker",

@@ -1,13 +1,13 @@
 use axum::extract::{DefaultBodyLimit, State};
 use axum::response::IntoResponse;
 use axum_typed_multipart::TypedMultipart;
+use constants::REQUEST_BODY_MAX_SIZE;
 use domain::markdown::Markdown;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
-use crate::constant::REQUEST_BODY_MAX_SIZE;
 use crate::features::user_image::{self, UploadAvatar, UploadProfileBanner};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::http::api_response::{self, AppError, Message};
