@@ -3,6 +3,10 @@ use std::sync::LazyLock;
 use ::image::ImageFormat;
 use axum::response::IntoResponse;
 use bytesize::ByteSize;
+use constants::{
+    RELEASE_COVER_IMAGE_MAX_HEIGHT, RELEASE_COVER_IMAGE_MAX_WIDTH,
+    RELEASE_COVER_IMAGE_MIN_HEIGHT, RELEASE_COVER_IMAGE_MIN_WIDTH,
+};
 use entity::enums::ReleaseImageType;
 use entity::{image as image_entity, release_image, user as user_entity};
 use infra_db::SeaOrmRepository;
@@ -10,10 +14,6 @@ use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
 
 use super::model::{ReleaseCoverArtInput, ReleaseImageQueue};
 use super::repo;
-use crate::constant::{
-    RELEASE_COVER_IMAGE_MAX_HEIGHT, RELEASE_COVER_IMAGE_MAX_WIDTH,
-    RELEASE_COVER_IMAGE_MIN_HEIGHT, RELEASE_COVER_IMAGE_MIN_WIDTH,
-};
 use crate::features::image_metadata::{
     CurrentImageMetadata, ImageUploaderSummary,
 };

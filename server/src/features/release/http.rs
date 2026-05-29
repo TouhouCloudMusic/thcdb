@@ -2,6 +2,7 @@ use axum::Json;
 use axum::body::Bytes;
 use axum::extract::{DefaultBodyLimit, Path, State};
 use axum_typed_multipart::{FieldData, TryFromMultipart, TypedMultipart};
+use constants::REQUEST_BODY_MAX_SIZE;
 use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
@@ -10,7 +11,6 @@ use super::model::NewRelease;
 use super::{find, service};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
-use crate::constant::REQUEST_BODY_MAX_SIZE;
 use crate::features::correction::service::CorrectionUpsertMode;
 use crate::features::correction::{
     CorrectionSubmitResult, NewCorrectionDto, SubmissionError,

@@ -2,6 +2,7 @@
 members = [
     ".",
     "crates/collection_ext",
+    "crates/constants",
     "crates/domain",
     "crates/entity",
     "crates/features/auth/core",
@@ -21,6 +22,7 @@ members = [
 
 [workspace.dependencies]
 collection_ext       = { path = "crates/collection_ext" }
+constants            = { package = "thcdb-constants", path = "crates/constants" }
 domain               = { package = "thcdb-domain", path = "crates/domain" }
 entity               = { path = "crates/entity" }
 fast-lrc             = { path = "crates/fast_lrc" }
@@ -165,10 +167,8 @@ use_self                      = "allow"
 wildcard_imports              = "allow"
 
 [build-dependencies]
-dotenvy.workspace = true
-quote.workspace   = true
-snafu.workspace   = true
-syn.workspace     = true
+constants.workspace = true
+snafu.workspace     = true
 
 [package]
 edition = "2024"
@@ -181,6 +181,7 @@ workspace = true
 [dependencies]
 auth_core.workspace            = true
 collection_ext.workspace       = true
+constants.workspace            = true
 domain.workspace               = true
 entity.workspace               = true
 flow.workspace                 = true

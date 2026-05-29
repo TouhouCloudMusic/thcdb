@@ -421,8 +421,8 @@ fn static_dir() -> Router<ArcAppState> {
 
 fn constant_files<S: Clone + Send + Sync + 'static>() -> Router<S> {
     Router::<S>::new()
-        .route("/constant.ts", get(async || TS_CONSTANTS.clone()))
-        .route("/constant.kt", get(async || KT_CONSTANTS.clone()))
+        .route("/constant.ts", get(async || TS_CONSTANTS))
+        .route("/constant.kt", get(async || KT_CONSTANTS))
 }
 
 #[utoipa::path(

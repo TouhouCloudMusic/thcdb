@@ -1,0 +1,9 @@
+[package]
+edition = "2024"
+name    = "thcdb-constants"
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[dependencies]
