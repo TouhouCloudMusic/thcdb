@@ -1,7 +1,7 @@
 import { Field, getInput, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { Artist, ArtistCommonFilter } from "@thc/api"
-import { createMemo } from "solid-js"
+import { createMemo, untrack } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 
@@ -14,11 +14,17 @@ import { ArtistSearchDialog } from "~/component/form/SearchDialog"
 
 import { useArtistForm } from "../context"
 
-export const ArtistFormAliasesField = () => {
-	const { t } = useLingui()
-	const [aliases, setAliases] = createStore<Artist[]>([])
+type ArtistRef = Pick<Artist, "id" | "name">
 
-	const { formStore } = useArtistForm()
+export function ArtistFormAliasesField(props: { initAliasIds?: number[] }) {
+	const { t } = useLingui()
+	const context = useArtistForm()
+	const { formStore } = context
+	const [aliases, setAliases] = createStore<ArtistRef[]>(
+		untrack(() =>
+			(props.initAliasIds ?? []).map((id) => ({ id, name: `#${id}` })),
+		),
+	)
 
 	const handleSelect = (artist: Artist) => {
 		if (aliases.some((x) => x.id == artist.id)) return
@@ -43,6 +49,9 @@ export const ArtistFormAliasesField = () => {
 
 	const filter = createMemo<ArtistCommonFilter>(() => {
 		const exclusion = aliases.map((x) => x.id)
+		if (context.artistId !== undefined) {
+			exclusion.push(context.artistId)
+		}
 		const ty = getInput(formStore, { path: ["data", "artist_type"] })
 		const artist_type = ty ? [ty] : undefined
 		return {
@@ -85,10 +94,10 @@ export const ArtistFormAliasesField = () => {
 type AliasListItemProps = {
 	index: number
 	onRemove: () => void
-	artist: Artist
+	artist: ArtistRef
 }
 
-const AliasListItem = (props: AliasListItemProps) => {
+function AliasListItem(props: AliasListItemProps) {
 	const { formStore } = useArtistForm()
 
 	return (

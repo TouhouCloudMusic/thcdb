@@ -38,6 +38,7 @@ export function ArtistSearchDialog(
 	const artistsQuery = useQuery(() => ({
 		...ArtistQueryOption.findByKeyword(searchTerm()!, {
 			artist_type: props.queryFilter?.artist_type,
+			exclusion: props.queryFilter?.exclusion,
 		}),
 		placeholderData: (artist) => {
 			if (!artist) return

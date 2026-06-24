@@ -127,7 +127,9 @@ function FormContent(props: Props) {
 
 						<ArtistFormLocalizedNames />
 
-						<ArtistFormAliasesField />
+						<ArtistFormAliasesField
+							initAliasIds={props.type === "edit" ? props.artist.aliases : []}
+						/>
 
 						<ArtistFormTextAliases />
 
@@ -135,7 +137,11 @@ function FormContent(props: Props) {
 
 						<ArtistFormLocationFields />
 
-						<ArtistFormMembership />
+						<ArtistFormMembership
+							initMemberships={
+								props.type === "edit" ? props.artist.memberships : []
+							}
+						/>
 
 						<ArtistFormLinks />
 

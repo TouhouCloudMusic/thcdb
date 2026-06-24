@@ -2,10 +2,10 @@
 import { Field, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
-import type { CreditRoleSummary } from "@thc/api"
+import type { CreditRoleRef } from "@thc/api"
 import { CreditRoleQueryOption } from "@thc/query"
 import { debounce, id } from "@thc/toolkit"
-import { createMemo, createSignal, For, Suspense } from "solid-js"
+import { createMemo, createSignal, For, Suspense, untrack } from "solid-js"
 import type { JSX } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 import { CheckIcon, Cross1Icon } from "solid-radix-icons"
@@ -14,7 +14,10 @@ import { Combobox } from "~/component/atomic/Combobox"
 
 import { useArtistForm } from "../../context"
 
-export function MembershipRoleField(props: { index: number }): JSX.Element {
+export function MembershipRoleField(props: {
+	index: number
+	initialRoles?: CreditRoleRef[]
+}): JSX.Element {
 	const { t } = useLingui()
 	const SEARCH_DEBOUNCE_MS = 300
 	const { formStore } = useArtistForm()
@@ -30,7 +33,9 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 		setSearchTerm(val),
 	)
 
-	const [roles, setRoles] = createStore<CreditRoleSummary[]>([])
+	const [roles, setRoles] = createStore<CreditRoleRef[]>(
+		untrack(() => [...(props.initialRoles ?? [])]),
+	)
 
 	const rolesQuery = useQuery(() => ({
 		...CreditRoleQueryOption.findByKeyword(searchTermTrimmed()!),
@@ -44,7 +49,7 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 		return data.filter((role) => !roles.some((x) => x.id === role.id))
 	})
 
-	const addRole = (role: CreditRoleSummary) => {
+	const addRole = (role: CreditRoleRef) => {
 		setRoles(
 			produce((prev) => {
 				prev.push(role)
@@ -129,7 +134,7 @@ export function MembershipRoleField(props: { index: number }): JSX.Element {
 function RoleBadge(props: {
 	membershipIndex: number
 	index: number
-	role: CreditRoleSummary
+	role: CreditRoleRef
 	removeRole: () => void
 }) {
 	const { t } = useLingui()
