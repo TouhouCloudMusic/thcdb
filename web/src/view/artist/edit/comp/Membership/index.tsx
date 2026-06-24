@@ -1,8 +1,8 @@
 /* @refresh reload */
 import { Field, getInput, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
-import type { Artist, ArtistCommonFilter } from "@thc/api"
-import { createMemo } from "solid-js"
+import type { Artist, ArtistCommonFilter, CreditRoleRef } from "@thc/api"
+import { createMemo, untrack } from "solid-js"
 import type { JSX } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 import { Cross1Icon, PlusIcon } from "solid-radix-icons"
@@ -18,24 +18,30 @@ import { useArtistForm } from "../../context"
 import { MembershipRoleField } from "./role"
 import { TenureFieldArray } from "./tenure"
 
-function createMembershipStore() {
-	const [membershipStore, setMembershipStore] = createStore([] as Artist[])
+type MembershipItem = Pick<Artist, "id" | "name"> & {
+	roles: CreditRoleRef[]
+}
+
+type ArtistMembership = NonNullable<Artist["memberships"]>[number]
+
+function createMembershipStore(initial: MembershipItem[]) {
+	const [membershipStore, setMembershipStore] =
+		createStore<MembershipItem[]>(initial)
+
+	const has = (artistId: number) =>
+		membershipStore.some((membership) => membership.id === artistId)
 
 	return {
 		get inner() {
 			return membershipStore
 		},
+		has,
 		push: (artist: Artist): void => {
-			const exist = membershipStore.some(
-				(membership) => membership.id === artist.id,
+			setMembershipStore(
+				produce((s) => {
+					s.push({ id: artist.id, name: artist.name, roles: [] })
+				}),
 			)
-			if (!exist) {
-				setMembershipStore(
-					produce((s) => {
-						s.push(artist)
-					}),
-				)
-			}
 		},
 		remove: (idx: number): void => {
 			setMembershipStore(
@@ -47,12 +53,22 @@ function createMembershipStore() {
 	}
 }
 
-export function ArtistFormMembership(): JSX.Element {
+export function ArtistFormMembership(props: {
+	initMemberships?: ArtistMembership[]
+}): JSX.Element {
 	const { t } = useLingui()
 	const context = useArtistForm()
 	const { formStore } = context
 
-	const membership = createMembershipStore()
+	const membership = createMembershipStore(
+		untrack(() =>
+			(props.initMemberships ?? []).map((m) => ({
+				id: m.artist_id,
+				name: `#${m.artist_id}`,
+				roles: m.roles ?? [],
+			})),
+		),
+	)
 	const type = createMemo(() =>
 		getInput(formStore, { path: ["data", "artist_type"] }),
 	)
@@ -63,7 +79,7 @@ export function ArtistFormMembership(): JSX.Element {
 
 	const exclusion = createMemo(() => {
 		const arr = membership.inner.map((x) => x.id)
-		if (context.artistId) {
+		if (context.artistId !== undefined) {
 			arr.push(context.artistId)
 		}
 		return arr
@@ -78,6 +94,8 @@ export function ArtistFormMembership(): JSX.Element {
 	})
 
 	const addMembership = (artist: Artist) => {
+		if (membership.has(artist.id)) return
+
 		membership.push(artist)
 		insert(formStore, {
 			path: ["data", "memberships"],
@@ -98,9 +116,7 @@ export function ArtistFormMembership(): JSX.Element {
 					onSelect={addMembership}
 					disabled={isDisabled()}
 					queryFilter={filter()}
-					dataFilter={(artist) =>
-						!membership.inner.some((m) => m.id === artist.id)
-					}
+					dataFilter={(artist) => !membership.has(artist.id)}
 					icon={<PlusIcon class="size-4 text-slate-600" />}
 				/>
 			</div>
@@ -139,7 +155,7 @@ export function ArtistFormMembership(): JSX.Element {
 type MembershipListItemProps = {
 	index: number
 	onRemove: () => void
-	artist: Artist
+	artist: MembershipItem
 }
 
 function MembershipListItem(props: MembershipListItemProps) {
@@ -173,7 +189,10 @@ function MembershipListItem(props: MembershipListItemProps) {
 				)}
 			</Field>
 
-			<MembershipRoleField index={props.index} />
+			<MembershipRoleField
+				index={props.index}
+				initialRoles={props.artist.roles}
+			/>
 
 			<TenureFieldArray index={props.index} />
 		</li>

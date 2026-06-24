@@ -42,7 +42,7 @@ export async function upsertCorrection(
 	options: Opt<"upsert_artist_correction">,
 ) {
 	const res = await FetchClient.POST("/artist/{id}", {
-		params: options,
+		params: { path: options.path },
 		body: options.body,
 	})
 
