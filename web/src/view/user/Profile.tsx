@@ -7,6 +7,7 @@ import { twMerge } from "tailwind-merge"
 
 import type { AppColor } from "~/component"
 import { Badge } from "~/component/atomic/Badge"
+import { Input } from "~/component/atomic/Input"
 import { Link } from "~/component/atomic/Link"
 import { Avatar } from "~/component/atomic/avatar"
 import { Button } from "~/component/atomic/button"
@@ -19,7 +20,7 @@ import { CollectionFormDialog } from "~/view/collection/CollectionFormDialog"
 import { CollectionLoadMore } from "~/view/collection/CollectionLoadMore"
 import type { CollectionToolbarSelectOption } from "~/view/collection/CollectionToolbarSelect"
 import {
-	COLLECTION_TOOL_INPUT_CLASS,
+	COLLECTION_TOOL_CONTROL_CLASS,
 	CollectionToolbarSelect,
 } from "~/view/collection/CollectionToolbarSelect"
 import { FollowedCollectionRow } from "~/view/collection/FollowedCollectionRow"
@@ -701,18 +702,18 @@ function CollectionsPanel(props: {
 				}
 			})
 
+	const collections = createMemo(() =>
+		collectionType() === "own"
+			? props.items
+			: (props.followedItems?.map((item) => item.collection) ?? []),
+	)
+
 	const visibleItems = createMemo(() => {
 		const keyword = searchQuery().trim().toLocaleLowerCase()
 		const visibility = visibilityFilter()
 		const sort = sortValue()
-		const type = collectionType()
 
-		const sourceItems =
-			type === "own"
-				? props.items
-				: (props.followedItems?.map((item) => item.collection) ?? [])
-
-		const items = sourceItems
+		const items = collections()
 			.filter((item) => {
 				if (visibility === "public") return item.is_public
 				if (visibility === "private") return !item.is_public
@@ -747,14 +748,10 @@ function CollectionsPanel(props: {
 	}
 
 	const emptyMessage = createMemo(() => {
-		if (collectionType() === "own") {
-			if (props.items.length > 0) return t`No collections match your filters`
-			if (props.isCurrentUser) return t`You haven't created any collections yet`
-		} else {
-			if ((props.followedItems?.length ?? 0) > 0)
-				return t`No collections match your filters`
+		if (collections().length > 0) return t`No collections match the filters`
+		if (collectionType() === "followed")
 			return t`You haven't followed any collections yet`
-		}
+		if (props.isCurrentUser) return t`You haven't created any collections yet`
 		return t`No collections found`
 	})
 
@@ -762,15 +759,15 @@ function CollectionsPanel(props: {
 		<div class="flex flex-col gap-5">
 			<div class="flex flex-col gap-3 border-b border-slate-200 pb-4 xl:flex-row xl:items-center xl:justify-between">
 				<div class="flex flex-col gap-2 flex-1 min-w-0 sm:flex-row sm:items-center">
-					<input
+					<Input
 						type="search"
 						value={searchQuery()}
 						placeholder={t`Search collections`}
 						aria-label={t`Search collections`}
 						onInput={(e) => setSearchQuery(e.currentTarget.value)}
 						class={twMerge(
-							COLLECTION_TOOL_INPUT_CLASS,
-							"w-full flex-1 min-w-[200px]",
+							COLLECTION_TOOL_CONTROL_CLASS,
+							"w-full min-w-[200px] flex-1 px-3 text-primary placeholder:text-secondary",
 						)}
 					/>
 
@@ -808,10 +805,14 @@ function CollectionsPanel(props: {
 							variant="SecondaryV2"
 							color="Slate"
 							size="Sm"
-							class="h-9 px-3"
+							aria-label={t`New collection`}
+							class={twMerge(
+								COLLECTION_TOOL_CONTROL_CLASS,
+								"px-3 shadow-none hover:shadow-none",
+							)}
 							onClick={() => setCollectionFormOpen(true)}
 						>
-							{t`New collection`}
+							{t({ message: "New", context: "Collection action" })}
 						</Button>
 					</Show>
 				</div>

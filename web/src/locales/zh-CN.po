@@ -957,6 +957,7 @@ msgid "It is now available on your profile"
 msgstr "它现在会显示在你的个人主页"
 
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/FollowedCollectionRow.tsx
 #: src/view/user/Profile.tsx
 msgid "item"
 msgstr "个条目"
@@ -966,6 +967,7 @@ msgid "Item count"
 msgstr "条目数"
 
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/FollowedCollectionRow.tsx
 #: src/view/user/Profile.tsx
 msgid "items"
 msgstr "个条目"
@@ -1035,11 +1037,8 @@ msgstr "请假年份不能与加入年份相同"
 msgid "Links"
 msgstr "链接"
 
-#: src/view/collection/AddToCollectionDialog.tsx
-#: src/view/collection/CollectionDetail.tsx
-#: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/collection/CollectionLoadMore.tsx
 #: src/view/comment/CommentThread.tsx
-#: src/view/user/Profile.tsx
 msgid "Load more"
 msgstr "加载更多"
 
@@ -1075,8 +1074,8 @@ msgstr "正在加载标签..."
 #: src/view/artist/edit/index.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/artist/profile/index.tsx
-#: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/CollectionLoadMore.tsx
 #: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/comment/CommentThread.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
@@ -1085,7 +1084,6 @@ msgstr "正在加载标签..."
 #: src/view/label/Info/index.tsx
 #: src/view/release/Info/index.tsx
 #: src/view/tag/Info/index.tsx
-#: src/view/user/Profile.tsx
 msgid "Loading..."
 msgstr "正在載入..."
 
@@ -1191,6 +1189,11 @@ msgstr "负向："
 msgid "New"
 msgstr "新图"
 
+#: src/view/user/Profile.tsx
+msgctxt "Collection action"
+msgid "New"
+msgstr "新建"
+
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/user/Profile.tsx
 msgid "New collection"
@@ -1257,7 +1260,7 @@ msgid "No collections found."
 msgstr "未找到收藏。"
 
 #: src/view/user/Profile.tsx
-msgid "No collections match your filters"
+msgid "No collections match the filters"
 msgstr "没有匹配筛选条件的收藏"
 
 #: src/view/collection/AddToCollectionDialog.tsx
@@ -1283,6 +1286,7 @@ msgstr "没有封面图"
 msgid "No data"
 msgstr "暂无数据"
 
+#: src/view/collection/FollowedCollectionRow.tsx
 #: src/view/user/Profile.tsx
 msgid "No description"
 msgstr "暂无描述"

@@ -957,6 +957,7 @@ msgid "It is now available on your profile"
 msgstr "It is now available on your profile"
 
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/FollowedCollectionRow.tsx
 #: src/view/user/Profile.tsx
 msgid "item"
 msgstr "item"
@@ -966,6 +967,7 @@ msgid "Item count"
 msgstr "Item count"
 
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/FollowedCollectionRow.tsx
 #: src/view/user/Profile.tsx
 msgid "items"
 msgstr "items"
@@ -1035,11 +1037,8 @@ msgstr "Leave year cannot be the same as join year"
 msgid "Links"
 msgstr "Links"
 
-#: src/view/collection/AddToCollectionDialog.tsx
-#: src/view/collection/CollectionDetail.tsx
-#: src/view/collection/EntityCollectionsTab.tsx
+#: src/view/collection/CollectionLoadMore.tsx
 #: src/view/comment/CommentThread.tsx
-#: src/view/user/Profile.tsx
 msgid "Load more"
 msgstr "Load more"
 
@@ -1075,8 +1074,8 @@ msgstr "Loading tags..."
 #: src/view/artist/edit/index.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
 #: src/view/artist/profile/index.tsx
-#: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/CollectionLoadMore.tsx
 #: src/view/collection/EntityCollectionsTab.tsx
 #: src/view/comment/CommentThread.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
@@ -1085,7 +1084,6 @@ msgstr "Loading tags..."
 #: src/view/label/Info/index.tsx
 #: src/view/release/Info/index.tsx
 #: src/view/tag/Info/index.tsx
-#: src/view/user/Profile.tsx
 msgid "Loading..."
 msgstr "Loading..."
 
@@ -1191,6 +1189,11 @@ msgstr "Negative:"
 msgid "New"
 msgstr "New"
 
+#: src/view/user/Profile.tsx
+msgctxt "Collection action"
+msgid "New"
+msgstr "New"
+
 #: src/view/collection/AddToCollectionDialog.tsx
 #: src/view/user/Profile.tsx
 msgid "New collection"
@@ -1257,8 +1260,8 @@ msgid "No collections found."
 msgstr "No collections found."
 
 #: src/view/user/Profile.tsx
-msgid "No collections match your filters"
-msgstr "No collections match your filters"
+msgid "No collections match the filters"
+msgstr "No collections match the filters"
 
 #: src/view/collection/AddToCollectionDialog.tsx
 msgid "No collections yet."
@@ -1283,6 +1286,7 @@ msgstr "No cover art"
 msgid "No data"
 msgstr "No data"
 
+#: src/view/collection/FollowedCollectionRow.tsx
 #: src/view/user/Profile.tsx
 msgid "No description"
 msgstr "No description"
