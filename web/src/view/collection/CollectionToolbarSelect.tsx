@@ -8,12 +8,13 @@ export type CollectionToolbarSelectOption<T extends string> = {
 	itemLabel: string
 }
 
-const COLLECTION_TOOL_CONTROL_CLASS =
-	"h-9 rounded-sm border border-slate-400 text-sm text-primary outline-1 outline-transparent -outline-offset-1 hover:border-slate-500 focus-visible:outline-slate-500"
+export const COLLECTION_TOOL_CONTROL_CLASS =
+	"h-9 rounded-sm border-slate-400 text-sm outline-none outline-offset-0 transition-colors hover:border-slate-500 focus-visible:border-slate-500"
 
-export const COLLECTION_TOOL_INPUT_CLASS = `${COLLECTION_TOOL_CONTROL_CLASS} bg-primary px-3 transition-colors placeholder:text-secondary`
-
-const COLLECTION_TOOL_SELECT_CLASS = `${COLLECTION_TOOL_CONTROL_CLASS} gap-1 pl-3 pr-2 font-normal sm:grid-cols-[auto_auto]`
+const COLLECTION_TOOL_SELECT_CLASS = twMerge(
+	COLLECTION_TOOL_CONTROL_CLASS,
+	"gap-1 pl-3 pr-2 font-normal text-primary sm:grid-cols-[auto_auto]",
+)
 
 export function CollectionToolbarSelect<T extends string>(props: {
 	options: CollectionToolbarSelectOption<T>[]
