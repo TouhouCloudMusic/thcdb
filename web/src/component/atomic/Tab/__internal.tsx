@@ -59,7 +59,7 @@ export function List(props: PolymorphicProps<"ul", K_Tab.TabsListProps<"ul">>) {
 const TRIGGER_CLASS = tw(
 	`
 	px-2 rounded-none
-	text-sm font-medium tracking-widest text-tertiary uppercase
+	text-sm font-light tracking-wide text-tertiary uppercase
 	transition-all duration-150
 	hover:text-primary
 	data-[selected]:text-primary`,
