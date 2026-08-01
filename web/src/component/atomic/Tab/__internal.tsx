@@ -98,6 +98,7 @@ export type IndicatorProps = PolymorphicProps<
 
 export function Indicator(props: IndicatorProps) {
 	const context = assertContext(Context)
+
 	const finalProps = mergeProps(props, {
 		get class() {
 			const positionClass = () => {
@@ -123,9 +124,10 @@ export function Indicator(props: IndicatorProps) {
 				return ""
 			}
 
+			// TODO: Kobalte computes the initial indicator position after mount, so a non-first default tab transitions from the first tab. Revisit this when upstream exposes an initialized state or positions the indicator before paint.
 			return twMerge(
 				positionClass(),
-				"absolute bg-reimu-600 duration-150 rounded-full",
+				"absolute rounded-full bg-reimu-600 transition-all duration-150 ease-in-out data-[resizing=true]:transition-none motion-reduce:transition-none",
 				props.class,
 			)
 		},
