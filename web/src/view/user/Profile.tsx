@@ -1,4 +1,3 @@
-import { Tabs } from "@kobalte/core/tabs"
 import { useLingui } from "@lingui/solid/macro"
 import type { UserProfile, UserRoleEnum } from "@thc/api"
 import type { ComponentProps } from "solid-js"
@@ -9,6 +8,7 @@ import type { AppColor } from "~/component"
 import { Badge } from "~/component/atomic/Badge"
 import { Input } from "~/component/atomic/Input"
 import { Link } from "~/component/atomic/Link"
+import { Tab } from "~/component/atomic/Tab"
 import { Avatar } from "~/component/atomic/avatar"
 import { Button } from "~/component/atomic/button"
 import { Markdown } from "~/component/markdown"
@@ -225,7 +225,7 @@ export function Profile(props: Props) {
 				</aside>
 
 				{/* Main content */}
-				<main class="flex-1 min-w-0 flex flex-col gap-14 lg:mt-8">
+				<main class="mt-2 flex min-w-0 flex-1 flex-col gap-14">
 					<CollectionsAndActivitySection
 						defaultValue={props.tab?.value ?? "activity"}
 						tab={props.tab}
@@ -469,38 +469,31 @@ function CollectionsAndActivitySection(props: {
 
 	return (
 		<section>
-			<Tabs
+			<Tab.Root
 				defaultValue={props.defaultValue}
 				value={props.tab?.value}
 				onChange={props.tab === undefined ? undefined : onTabChange}
 				class="flex flex-col gap-5"
 			>
-				<Tabs.List class="relative grid w-full grid-cols-2 rounded-xl bg-secondary p-1 ring-1 ring-slate-200 sm:w-[320px]">
+				<Tab.List class="inline-grid w-fit grid-cols-2 border-b border-slate-200">
 					<For each={PROFILE_TAB_ITEMS}>
 						{(item) => (
-							<Tabs.Trigger
-								as="button"
+							<Tab.Trigger
 								value={item.value}
-								class="relative z-10 flex min-w-0 items-center justify-center rounded-lg px-4 py-2.5 text-sm text-tertiary outline-none transition-colors duration-150 hover:text-primary focus-visible:outline focus-visible:outline-reimu-600 data-selected:text-primary"
+								class="w-full py-3"
 							>
 								<ProfileTabLabel value={item.value} />
-							</Tabs.Trigger>
+							</Tab.Trigger>
 						)}
 					</For>
-					<Tabs.Indicator class="absolute inset-y-1 rounded-lg bg-primary shadow-xs ring-1 ring-slate-200 transition-all duration-200" />
-				</Tabs.List>
+					<Tab.Indicator />
+				</Tab.List>
 
-				<Tabs.Content
-					value="activity"
-					class="outline-none"
-				>
+				<Tab.Content value="activity">
 					<ActivityPanel items={props.activity} />
-				</Tabs.Content>
+				</Tab.Content>
 
-				<Tabs.Content
-					value="collections"
-					class="outline-none"
-				>
+				<Tab.Content value="collections">
 					<CollectionsPanel
 						items={props.collections}
 						hasMoreItems={props.hasMoreCollections}
@@ -514,8 +507,8 @@ function CollectionsAndActivitySection(props: {
 						onLoadMoreFollowedItems={props.onLoadMoreFollowedCollections}
 						isCurrentUser={props.isCurrentUser}
 					/>
-				</Tabs.Content>
-			</Tabs>
+				</Tab.Content>
+			</Tab.Root>
 		</section>
 	)
 }
