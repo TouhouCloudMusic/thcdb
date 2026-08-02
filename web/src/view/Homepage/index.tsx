@@ -16,90 +16,70 @@ import { UpcomingEventsCard } from "~/view/Homepage/component/UpcomingEventsCard
 
 const RELEASES_LIMIT = 6
 
-type ReleaseCardSkeletonProps = {
-	isLoading?: boolean
-}
-
-function ReleaseCardSkeleton(props: ReleaseCardSkeletonProps) {
-	const pulse = () =>
-		props.isLoading ? "animate-pulse motion-reduce:animate-none" : ""
-
+function ReleaseCardSkeleton() {
 	return (
-		<Card
-			class={`flex h-full flex-col overflow-hidden rounded-none border border-slate-300 p-0 shadow-xs ${pulse()}`}
-		>
-			<div class="aspect-4/3 w-full bg-slate-100 ring-1 ring-slate-200 ring-inset"></div>
-			<div class="flex flex-1 flex-col gap-2 p-4">
-				<div class="flex items-start justify-between gap-3">
-					<div class="min-w-0 flex-1">
-						<div class="h-4 w-3/4 rounded bg-slate-200"></div>
-						<div class="mt-2 h-3 w-1/2 rounded bg-slate-100"></div>
-					</div>
+		<Card class="flex aspect-[1/1.309] flex-col overflow-hidden rounded-none p-0 shadow-none animate-pulse motion-reduce:animate-none">
+			<div class="aspect-square w-full shrink-0 bg-slate-100"></div>
+			<div class="grid min-h-0 flex-1 grid-rows-2 p-1">
+				<div class="flex items-center justify-between gap-2">
+					<div class="h-5 w-3/4 rounded bg-slate-200"></div>
 					<div class="h-3 w-10 rounded bg-slate-100"></div>
 				</div>
 
-				<div class="mt-auto h-5 w-16 rounded-full bg-slate-100 ring-1 ring-slate-200 ring-inset"></div>
+				<div class="flex items-center justify-between gap-3 self-end">
+					<div class="h-3 w-1/2 rounded bg-slate-100"></div>
+					<div class="h-3 w-12 rounded bg-slate-100"></div>
+				</div>
 			</div>
 		</Card>
 	)
 }
 
-function LatestReleasesEmpty() {
-	return <HomeEmptySlot class="h-56" />
-}
+const LATEST_RELEASES_GRID_CLASS = "grid gap-0.5 sm:grid-cols-2 xl:grid-cols-3"
 
 function LatestReleasesGridSkeleton() {
 	return (
-		<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+		<div class={LATEST_RELEASES_GRID_CLASS}>
 			<For each={Array.from({ length: RELEASES_LIMIT })}>
-				{() => <ReleaseCardSkeleton isLoading />}
+				{() => <ReleaseCardSkeleton />}
 			</For>
 		</div>
 	)
 }
 
 function LatestReleasesGrid() {
-	function Content() {
-		const releasesQuery = useQuery(() => ({
-			queryKey: ["home::latest-releases", RELEASES_LIMIT],
-			queryFn: async () => {
-				const res = await ReleaseApi.explore({
-					query: {
-						page: 1,
-						limit: RELEASES_LIMIT,
-						sort_field: "created_at",
-						sort_direction: "desc",
-					},
-				})
-				const paginated = Either.getOrThrowWith(res, (error) => {
-					throw error
-				})
-				return paginated.items
-			},
-		}))
+	const releasesQuery = useQuery(() => ({
+		queryKey: ["home::latest-releases", RELEASES_LIMIT],
+		queryFn: async () => {
+			const res = await ReleaseApi.explore({
+				query: {
+					page: 1,
+					limit: RELEASES_LIMIT,
+					sort_field: "created_at",
+					sort_direction: "desc",
+				},
+			})
+			const paginated = Either.getOrThrowWith(res, (error) => {
+				throw error
+			})
+			return paginated.items
+		},
+	}))
 
-		const releases = () => releasesQuery.data ?? []
-		const visibleReleases = () => releases().slice(0, RELEASES_LIMIT)
-		const hasReleases = () => visibleReleases().length > 0
-
-		return (
-			<Show
-				when={hasReleases()}
-				fallback={<LatestReleasesEmpty />}
-			>
-				<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-					<For each={visibleReleases()}>
-						{(release) => <ReleaseCard release={release} />}
-					</For>
-				</div>
-			</Show>
-		)
-	}
+	const visibleReleases = () =>
+		(releasesQuery.data ?? []).slice(0, RELEASES_LIMIT)
 
 	return (
-		<Suspense fallback={<LatestReleasesGridSkeleton />}>
-			<Content />
-		</Suspense>
+		<Show
+			when={visibleReleases().length > 0}
+			fallback={<HomeEmptySlot class="h-56" />}
+		>
+			<div class={LATEST_RELEASES_GRID_CLASS}>
+				<For each={visibleReleases()}>
+					{(release) => <ReleaseCard release={release} />}
+				</For>
+			</div>
+		</Show>
 	)
 }
 
@@ -114,7 +94,9 @@ export function HomePage() {
 					title={t`Latest Releases`}
 					to="/release/explore"
 				>
-					<LatestReleasesGrid />
+					<Suspense fallback={<LatestReleasesGridSkeleton />}>
+						<LatestReleasesGrid />
+					</Suspense>
 					<LatestArtistsCard />
 				</ExploreSection>
 
