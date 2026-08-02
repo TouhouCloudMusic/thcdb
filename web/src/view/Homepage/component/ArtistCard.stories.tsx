@@ -10,6 +10,11 @@ const DEFAULT_ARTIST = createMockArtist(4, {
 	name: "SOUND HOLIC",
 	artist_type: "Multiple",
 	profile_image_url: "/avatar.png",
+	current_location: {
+		country: "Japan",
+		province: null,
+		city: null,
+	},
 })
 
 const NO_IMAGE_ARTIST: Artist = {
@@ -18,6 +23,8 @@ const NO_IMAGE_ARTIST: Artist = {
 	name: "ZUN",
 	artist_type: "Solo",
 	profile_image_url: null,
+	current_location: undefined,
+	start_location: undefined,
 }
 
 type StoryRootProps = {
