@@ -9,22 +9,15 @@ import { Link } from "~/component/atomic/Link"
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 
-const MAX_VISIBLE_TAGS = 14
+const MAX_VISIBLE_TAGS = 6
+const TRENDING_TAGS_LIST_CLASS = "divide-y divide-slate-300"
 
-type TagChipSkeletonProps = {
-	isLoading?: boolean
-}
-
-function TagChipSkeleton(props: TagChipSkeletonProps) {
-	const pulse = () =>
-		props.isLoading ? "animate-pulse motion-reduce:animate-none" : ""
-
+function TagRowSkeleton() {
 	return (
-		<div
-			class={`rounded-full bg-slate-100 px-3 py-1 text-xs ring-1 ring-slate-200 ring-inset ${pulse()}`}
-		>
-			<div class="h-3 w-16 rounded bg-slate-200"></div>
-		</div>
+		<li class="py-3 first:pt-0 last:pb-0 animate-pulse motion-reduce:animate-none">
+			<div class="h-4 w-1/3 rounded bg-slate-200"></div>
+			<div class="mt-1.5 h-3.5 w-4/5 rounded bg-slate-100"></div>
+		</li>
 	)
 }
 
@@ -32,17 +25,17 @@ function TrendingTagsEmpty() {
 	return <HomeEmptySlot class="h-24" />
 }
 
-function TrendingTagsChipsSkeleton() {
+function TrendingTagsListSkeleton() {
 	return (
-		<div class="flex flex-wrap gap-2">
+		<ul class={TRENDING_TAGS_LIST_CLASS}>
 			<For each={Array.from({ length: MAX_VISIBLE_TAGS })}>
-				{() => <TagChipSkeleton isLoading />}
+				{() => <TagRowSkeleton />}
 			</For>
-		</div>
+		</ul>
 	)
 }
 
-function TrendingTagsChips() {
+function TrendingTagsList() {
 	const trendingTagsQuery = useQuery(() => ({
 		queryKey: ["home::trending-tags", MAX_VISIBLE_TAGS],
 		queryFn: async () => {
@@ -61,28 +54,32 @@ function TrendingTagsChips() {
 		},
 	}))
 
-	const tags = () => trendingTagsQuery.data ?? []
-	const visibleTags = () => tags().slice(0, MAX_VISIBLE_TAGS)
-	const hasTags = () => visibleTags().length > 0
+	const visibleTags = () =>
+		(trendingTagsQuery.data ?? []).slice(0, MAX_VISIBLE_TAGS)
 
 	return (
 		<Show
-			when={hasTags()}
+			when={visibleTags().length > 0}
 			fallback={<TrendingTagsEmpty />}
 		>
-			<div class="flex flex-wrap gap-2">
+			<ul class={TRENDING_TAGS_LIST_CLASS}>
 				<For each={visibleTags()}>
 					{(tag) => (
-						<Link
-							to="/tag/$id"
-							params={{ id: tag.id.toString() }}
-							class="rounded-full bg-slate-100 px-3 py-1 text-xs text-secondary no-underline ring-1 ring-slate-200 transition-colors duration-150 ring-inset hover:bg-slate-200 hover:no-underline motion-reduce:transition-none"
-						>
-							#{tag.name}
-						</Link>
+						<li class="py-3 first:pt-0 last:pb-0">
+							<Link
+								to="/tag/$id"
+								params={{ id: tag.id.toString() }}
+								class="block truncate text-base font-light tracking-normal text-primary"
+							>
+								{tag.name}
+							</Link>
+							<div class="mt-1 line-clamp-2 text-sm leading-snug font-light text-tertiary">
+								{tag.short_description}
+							</div>
+						</li>
 					)}
 				</For>
-			</div>
+			</ul>
 		</Show>
 	)
 }
@@ -90,13 +87,13 @@ function TrendingTagsChips() {
 export function TrendingTagsCard() {
 	const { t } = useLingui()
 	return (
-		<Card class="p-5 shadow-none">
+		<Card class="p-0 shadow-none">
 			<ExploreSection
 				title={t`Trending Tags`}
 				to="/tag/explore"
 			>
-				<Suspense fallback={<TrendingTagsChipsSkeleton />}>
-					<TrendingTagsChips />
+				<Suspense fallback={<TrendingTagsListSkeleton />}>
+					<TrendingTagsList />
 				</Suspense>
 			</ExploreSection>
 		</Card>

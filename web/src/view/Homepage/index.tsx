@@ -8,7 +8,7 @@ import { Card } from "~/component/atomic/Card"
 import { PageLayout } from "~/layout/PageLayout"
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
-import { HomeHero } from "~/view/Homepage/component/HomeHero"
+import { HomeStats } from "~/view/Homepage/component/HomeStats"
 import { LatestArtistsCard } from "~/view/Homepage/component/LatestArtistsCard"
 import { ReleaseCard } from "~/view/Homepage/component/ReleaseCard"
 import { TrendingTagsCard } from "~/view/Homepage/component/TrendingTagsCard"
@@ -106,27 +106,23 @@ function LatestReleasesGrid() {
 export function HomePage() {
 	const { t } = useLingui()
 	return (
-		<PageLayout class="p-8">
-			<div class="flex flex-col gap-10">
-				<HomeHero />
+		<PageLayout class="max-w-360 2xl:max-w-360">
+			<HomeStats />
 
-				<section class="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-					<ExploreSection
-						title={t`Latest Releases`}
-						to="/release/explore"
-					>
-						<LatestReleasesGrid />
-						<LatestArtistsCard />
-					</ExploreSection>
+			<section class="grid gap-x-8 gap-y-6 px-8 pt-4 pb-8 lg:grid-cols-[1.35fr_0.65fr]">
+				<ExploreSection
+					title={t`Latest Releases`}
+					to="/release/explore"
+				>
+					<LatestReleasesGrid />
+					<LatestArtistsCard />
+				</ExploreSection>
 
-					<div class="flex flex-col gap-4">
-						<div class="-mt-5">
-							<TrendingTagsCard />
-						</div>
-						<UpcomingEventsCard />
-					</div>
-				</section>
-			</div>
+				<div class="flex flex-col gap-8">
+					<UpcomingEventsCard />
+					<TrendingTagsCard />
+				</div>
+			</section>
 		</PageLayout>
 	)
 }

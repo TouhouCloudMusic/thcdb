@@ -1,3 +1,4 @@
+import { useLingui } from "@lingui/solid/macro"
 import type { Event } from "@thc/api"
 import { Show } from "solid-js"
 
@@ -30,8 +31,8 @@ function formatEventLocation(event: Event) {
 }
 
 export function EventItem(props: EventItemProps) {
+	const { t } = useLingui()
 	const dateRange = () => formatEventDateRange(props.event)
-	const location = () => formatEventLocation(props.event)
 
 	return (
 		<div class="border-b border-slate-200 py-4 last:border-b-0">
@@ -46,16 +47,18 @@ export function EventItem(props: EventItemProps) {
 					</Link>
 
 					<div class="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
-						<Show when={dateRange()}>{(range) => <span>{range()}</span>}</Show>
-
-						<Show when={location()}>
-							{(text) => (
+						<Show when={dateRange()}>
+							{(range) => (
 								<>
+									<span>{range()}</span>
 									<span class="text-slate-300">·</span>
-									<span class="truncate">{text()}</span>
 								</>
 							)}
 						</Show>
+
+						<span class="truncate">
+							{formatEventLocation(props.event) ?? t`Unknown location`}
+						</span>
 					</div>
 
 					<Show when={props.event.short_description}>

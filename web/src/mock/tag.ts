@@ -31,7 +31,13 @@ export const createMockTag = (id: number, override?: Partial<Tag>): Tag => {
 }
 
 export const createMockTags = (count: number, startId = 1): Tag[] => {
-	return Array.from({ length: count }, (_, i) => createMockTag(startId + i))
+	return Array.from({ length: count }, (_, index) => {
+		const baseName = TAG_NAMES[index % TAG_NAMES.length] ?? "Tag"
+		const sequence = Math.floor(index / TAG_NAMES.length)
+		const name = sequence === 0 ? baseName : `${baseName} ${sequence + 1}`
+
+		return createMockTag(startId + index, { name })
+	})
 }
 
 type ExploreParams = {
