@@ -1,5 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { JSX } from "solid-js"
+import { ArrowRightIcon } from "solid-radix-icons"
 
 import { Link } from "~/component/atomic/Link"
 import type { LinkProps } from "~/component/atomic/Link"
@@ -14,15 +15,17 @@ export function ExploreSection(props: ExploreSectionProps) {
 	const { t } = useLingui()
 	return (
 		<div class="flex flex-col gap-4">
-			<div class="flex items-center justify-between">
+			<div class="flex items-baseline justify-between">
 				<h2 class="text-xl font-light tracking-tight text-primary">
 					{props.title}
 				</h2>
 				<Link
 					to={props.to}
-					class="text-sm text-tertiary no-underline hover:text-primary hover:no-underline"
+					underline={false}
+					class="inline-flex items-center text-sm font-light tracking-tight text-tertiary hover:text-primary"
 				>
-					{t`Explore`} →
+					{t`Explore`}
+					<ArrowRightIcon class="mx-1 size-3.5" />
 				</Link>
 			</div>
 

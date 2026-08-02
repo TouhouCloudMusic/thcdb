@@ -1,30 +1,5 @@
 export type HomeAccent = "Reimu" | "Marisa" | "Blue" | "Green" | "Slate"
 
-export type HomeMetricKey =
-	| "artists_count"
-	| "releases_count"
-	| "songs_count"
-	| "tags_count"
-
-export type HomeMetric = {
-	key: HomeMetricKey
-}
-
-export const HOME_METRICS: HomeMetric[] = [
-	{
-		key: "artists_count",
-	},
-	{
-		key: "releases_count",
-	},
-	{
-		key: "songs_count",
-	},
-	{
-		key: "tags_count",
-	},
-]
-
 export type HomeNavItem = {
 	to:
 		| "/artist/explore"

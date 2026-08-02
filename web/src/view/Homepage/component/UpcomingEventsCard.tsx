@@ -12,62 +12,58 @@ import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 import { displayEventDate, formatEventLocation } from "~/view/Homepage/utils"
 
-const MAX_VISIBLE_EVENTS = 4
+const MAX_VISIBLE_EVENTS = 6
 const UPCOMING_EVENTS_QUERY_LIMIT = 20
+const UPCOMING_EVENTS_LIST_CLASS = "divide-y divide-slate-300"
 
 type EventRowProps = {
 	event: Event
 }
 
 function EventRow(props: EventRowProps) {
-	const dateLabel = () => displayEventDate(props.event)
-	const locationLabel = () => formatEventLocation(props.event)
-	const eventId = () => props.event.id.toString()
+	const { t } = useLingui()
 
 	return (
-		<li class="flex flex-col first:pt-0 py-2">
-			<Link
-				to="/event/$id"
-				params={{ id: eventId() }}
-				class="block truncate font-light text-primary  hover:underline"
-			>
-				{props.event.name}
-			</Link>
-			<div class="flex justify-between align-center text-sm text-tertiary ">
-				<Show when={dateLabel()}>{(date) => <span>{date()}</span>}</Show>
-				<Show when={locationLabel()}>{(label) => <span>{label()}</span>}</Show>
+		<li class="py-3 first:pt-0 last:pb-0">
+			<div class="flex min-w-0 items-baseline justify-between gap-3">
+				<Link
+					to="/event/$id"
+					params={{ id: props.event.id.toString() }}
+					class="min-w-0 truncate text-base font-light tracking-normal text-primary"
+				>
+					{props.event.name}
+				</Link>
+				<Show when={displayEventDate(props.event)}>
+					{(date) => (
+						<span class="shrink-0 text-xs font-light tabular-nums text-tertiary">
+							{date()}
+						</span>
+					)}
+				</Show>
+			</div>
+			<div class="mt-1 truncate text-sm font-light text-tertiary">
+				{formatEventLocation(props.event) ?? t`Unknown location`}
 			</div>
 		</li>
 	)
 }
 
-type EventRowSkeletonProps = {
-	isLoading?: boolean
-}
-
-function EventRowSkeleton(props: EventRowSkeletonProps) {
-	const pulse = () =>
-		props.isLoading ? "animate-pulse motion-reduce:animate-none" : ""
-
+function EventRowSkeleton() {
 	return (
-		<li class={`flex flex-col first:pt-0 py-2 ${pulse()}`}>
-			<div class="h-4 w-2/3 rounded bg-slate-200"></div>
-			<div class="mt-2 flex justify-between align-center">
-				<div class="h-3 w-20 rounded bg-slate-100"></div>
-				<div class="h-3 w-28 rounded bg-slate-100"></div>
+		<li class="py-3 first:pt-0 last:pb-0 animate-pulse motion-reduce:animate-none">
+			<div class="flex items-center justify-between gap-3">
+				<div class="h-4 w-2/3 rounded bg-slate-200"></div>
+				<div class="h-3 w-16 rounded bg-slate-100"></div>
 			</div>
+			<div class="mt-1.5 h-3.5 w-1/2 rounded bg-slate-100"></div>
 		</li>
 	)
-}
-
-function UpcomingEventsListEmpty() {
-	return <HomeEmptySlot class="h-44" />
 }
 
 export function UpcomingEventsCard() {
 	const { t } = useLingui()
 	return (
-		<Card class="p-5 shadow-none">
+		<Card class="p-0 shadow-none">
 			<ExploreSection
 				title={t`Upcoming Events`}
 				to="/event/explore"
@@ -82,9 +78,9 @@ export function UpcomingEventsCard() {
 
 function UpcomingEventsListSkeleton() {
 	return (
-		<ul class="flex flex-col divide-y gap-2 divide-slate-200 overflow-hidden  bg-white/60">
+		<ul class={UPCOMING_EVENTS_LIST_CLASS}>
 			<For each={Array.from({ length: MAX_VISIBLE_EVENTS })}>
-				{() => <EventRowSkeleton isLoading />}
+				{() => <EventRowSkeleton />}
 			</For>
 		</ul>
 	)
@@ -115,18 +111,14 @@ function UpcomingEventsList() {
 	}))
 
 	const events = () => upcomingEventsQuery.data ?? []
-	const visibleEvents = () => events().slice(0, MAX_VISIBLE_EVENTS)
-	const hasEvents = () => visibleEvents().length > 0
 
 	return (
 		<Show
-			when={hasEvents()}
-			fallback={<UpcomingEventsListEmpty />}
+			when={events().length > 0}
+			fallback={<HomeEmptySlot class="h-44" />}
 		>
-			<ul class="flex flex-col divide-y gap-2 divide-slate-200 overflow-hidden  bg-white/60">
-				<For each={visibleEvents()}>
-					{(event) => <EventRow event={event} />}
-				</For>
+			<ul class={UPCOMING_EVENTS_LIST_CLASS}>
+				<For each={events()}>{(event) => <EventRow event={event} />}</For>
 			</ul>
 		</Show>
 	)
