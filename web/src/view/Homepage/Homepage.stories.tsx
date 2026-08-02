@@ -26,6 +26,10 @@ function createHomeStoryQueryClient() {
 		},
 	})
 	const today = dayjs().format("YYYY-MM-DD")
+	const releases = createMockReleases(RELEASES_LIMIT, 101)
+	for (const release of releases.slice(RELEASES_LIMIT / 2)) {
+		release.cover_art_url = null
+	}
 	const events = Array.from({ length: EVENTS_LIMIT }, (_, index) =>
 		createMockEvent(201 + index, {
 			start_date: {
@@ -44,10 +48,7 @@ function createHomeStoryQueryClient() {
 		songs_count: 186_730,
 		tags_count: 2_406,
 	})
-	queryClient.setQueryData(
-		["home::latest-releases", RELEASES_LIMIT],
-		createMockReleases(RELEASES_LIMIT, 101),
-	)
+	queryClient.setQueryData(["home::latest-releases", RELEASES_LIMIT], releases)
 	queryClient.setQueryData(
 		["home::latest-artists", ARTISTS_LIMIT],
 		createMockArtists(ARTISTS_LIMIT, 101),
