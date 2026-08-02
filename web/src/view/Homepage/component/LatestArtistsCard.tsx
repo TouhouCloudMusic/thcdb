@@ -10,39 +10,26 @@ import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 
 const MAX_VISIBLE_ARTISTS = 6
+const LATEST_ARTISTS_GRID_CLASS = "grid grid-cols-3 gap-0.5"
 
-function ArtistTileSkeleton(props: { isLoading?: boolean }) {
-	const pulse = () =>
-		props.isLoading ? "animate-pulse motion-reduce:animate-none" : ""
-
+function ArtistTileSkeleton() {
 	return (
-		<Card
-			class={`flex h-full flex-col gap-3 rounded-none border border-slate-300 bg-white p-3 shadow-none ${pulse()}`}
-		>
-			<div class="w-full overflow-hidden rounded-full border border-slate-200 bg-slate-100">
-				<div class="aspect-square w-full rounded-full bg-slate-100"></div>
-			</div>
+		<Card class="flex flex-col rounded-none p-3 shadow-none animate-pulse motion-reduce:animate-none">
+			<div class="aspect-square w-full rounded-full bg-slate-100"></div>
 
-			<div class="flex w-full flex-col gap-1">
+			<div class="flex flex-1 flex-col justify-between gap-1 pt-2">
 				<div class="h-3.5 w-4/5 rounded bg-slate-200"></div>
-				<div class="flex items-center gap-1.5">
-					<div class="h-1 w-1 rounded-full bg-slate-200"></div>
-					<div class="h-2.5 w-2/5 rounded bg-slate-100"></div>
-				</div>
+				<div class="h-3 w-2/5 rounded bg-slate-100"></div>
 			</div>
 		</Card>
 	)
 }
 
-function LatestArtistsGridEmpty() {
-	return <HomeEmptySlot class="h-36" />
-}
-
 function LatestArtistsGridSkeleton() {
 	return (
-		<div class="grid grid-cols-3 gap-3">
+		<div class={LATEST_ARTISTS_GRID_CLASS}>
 			<For each={Array.from({ length: MAX_VISIBLE_ARTISTS })}>
-				{() => <ArtistTileSkeleton isLoading />}
+				{() => <ArtistTileSkeleton />}
 			</For>
 		</div>
 	)
@@ -67,16 +54,15 @@ function LatestArtistsGrid() {
 		},
 	}))
 
-	const artists = () => latestArtistsQuery.data ?? []
-	const visibleArtists = () => artists().slice(0, MAX_VISIBLE_ARTISTS)
-	const hasArtists = () => visibleArtists().length > 0
+	const visibleArtists = () =>
+		(latestArtistsQuery.data ?? []).slice(0, MAX_VISIBLE_ARTISTS)
 
 	return (
 		<Show
-			when={hasArtists()}
-			fallback={<LatestArtistsGridEmpty />}
+			when={visibleArtists().length > 0}
+			fallback={<HomeEmptySlot class="h-36" />}
 		>
-			<div class="grid grid-cols-3 gap-3">
+			<div class={LATEST_ARTISTS_GRID_CLASS}>
 				<For each={visibleArtists()}>
 					{(artist) => <ArtistCard artist={artist} />}
 				</For>
@@ -88,15 +74,13 @@ function LatestArtistsGrid() {
 export function LatestArtistsCard() {
 	const { t } = useLingui()
 	return (
-		<Card class="relative overflow-hidden bg-transparent p-0 shadow-none">
-			<ExploreSection
-				title={t`Latest Artists`}
-				to="/artist/explore"
-			>
-				<Suspense fallback={<LatestArtistsGridSkeleton />}>
-					<LatestArtistsGrid />
-				</Suspense>
-			</ExploreSection>
-		</Card>
+		<ExploreSection
+			title={t`Latest Artists`}
+			to="/artist/explore"
+		>
+			<Suspense fallback={<LatestArtistsGridSkeleton />}>
+				<LatestArtistsGrid />
+			</Suspense>
+		</ExploreSection>
 	)
 }
