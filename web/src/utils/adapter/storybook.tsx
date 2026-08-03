@@ -1,14 +1,12 @@
-import { QueryClient } from "@tanstack/solid-query"
 import {
 	createMemoryHistory,
+	createRootRoute,
 	createRouter,
 	RouterContextProvider,
 } from "@tanstack/solid-router"
 import { createJSXDecorator } from "storybook-solidjs-vite"
 
-import { routeTree } from "~/routeTree.gen"
-import { StateProvider } from "~/state"
-import { I18NProvider } from "~/state/i18n"
+export { withStoryI18N, withStoryState } from "~/utils/adapter/storybook-state"
 
 export const enum StoryLayout {
 	Centered = "centered",
@@ -22,44 +20,14 @@ type StoryRouterParameters = {
 	}
 }
 
-function createStoryQueryClient() {
-	return new QueryClient({
-		defaultOptions: {
-			queries: {
-				retry: false,
-				staleTime: Number.POSITIVE_INFINITY,
-			},
-			mutations: {
-				retry: false,
-			},
-		},
-	})
-}
-
-function createStoryRouter(initialEntries = ["/"]) {
+export function createStoryRouter(initialEntries = ["/"]) {
 	return createRouter({
-		routeTree,
+		routeTree: createRootRoute(),
 		history: createMemoryHistory({
 			initialEntries,
 		}),
-		context: {
-			queryClient: createStoryQueryClient(),
-		},
-		defaultPreloadStaleTime: 0,
 	})
 }
-
-export const withStoryI18N = createJSXDecorator((Story) => (
-	<I18NProvider initialLocale="en">
-		<Story />
-	</I18NProvider>
-))
-
-export const withStoryState = createJSXDecorator((Story) => (
-	<StateProvider initialLocale="en">
-		<Story />
-	</StateProvider>
-))
 
 export const withStoryRouter = createJSXDecorator((Story, context) => {
 	const initialEntry =

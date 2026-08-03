@@ -1,16 +1,10 @@
 import { useLingui } from "@lingui/solid/macro"
-import { useQuery } from "@tanstack/solid-query"
 import type { HomeMetadata } from "@thc/api"
-import { HomeQueryOption } from "@thc/query"
-import { ErrorBoundary, For, Suspense } from "solid-js"
+import { For } from "solid-js"
 
 import { formatCount } from "~/view/Homepage/utils"
 
-type HomeStatsGridProps = {
-	metadata?: HomeMetadata
-}
-
-function HomeStatsGrid(props: HomeStatsGridProps) {
+function HomeStatsGrid(props: { metadata?: HomeMetadata }) {
 	const { t } = useLingui()
 	const stats = () =>
 		[
@@ -38,23 +32,14 @@ function HomeStatsGrid(props: HomeStatsGridProps) {
 	)
 }
 
-function HomeStatsContent() {
-	const metadataQuery = useQuery(() => HomeQueryOption.metadata())
-	return <HomeStatsGrid metadata={metadataQuery.data} />
-}
-
-export function HomeStats() {
+export function HomeStats(props: { metadata?: HomeMetadata }) {
 	const { t } = useLingui()
 	return (
 		<section
 			aria-label={t`Database statistics`}
 			class="border-b border-slate-300 bg-primary"
 		>
-			<Suspense fallback={<HomeStatsGrid />}>
-				<ErrorBoundary fallback={() => <HomeStatsGrid />}>
-					<HomeStatsContent />
-				</ErrorBoundary>
-			</Suspense>
+			<HomeStatsGrid metadata={props.metadata} />
 		</section>
 	)
 }

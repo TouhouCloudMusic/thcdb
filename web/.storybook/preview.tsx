@@ -4,7 +4,7 @@ import { definePreview } from "storybook-solidjs-vite"
 
 import "../src/index.css"
 import { loadLocale } from "../src/state/i18n/runtime"
-import { withStoryState } from "../src/utils/adapter/storybook"
+import { withStoryState } from "../src/utils/adapter/storybook-state"
 
 await loadLocale("en")
 
