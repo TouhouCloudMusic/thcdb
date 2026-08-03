@@ -7,6 +7,7 @@ import { Footer } from "~/component/Footer"
 import { Header } from "~/component/Header"
 import { Devtools } from "~/component/devtools"
 import { AppToastRegion } from "~/component/toast"
+import { useCurrentUser } from "~/state/user"
 import { getErrorMessage } from "~/utils/getErrorMessage"
 import { NotFound } from "~/view/NotFound"
 import { InternalServerError } from "~/view/error/InternalServerError"
@@ -42,6 +43,7 @@ function RouteTree() {
 }
 
 function Layout(props: ParentProps) {
+	const currentUser = useCurrentUser()
 	// TODO: Need fix, transition bettwen language change
 	// const layoutStyle = createMemo(() =>
 	//   useI18N().duringTransition() ?
@@ -60,7 +62,11 @@ function Layout(props: ParentProps) {
 				href="/logo.svg"
 				type="image/x-icon"
 			/>
-			<Header />
+			<Header
+				user={currentUser.user}
+				notificationState={currentUser.notification_state}
+				onSignOut={() => void currentUser.sign_out()}
+			/>
 			<main>{props.children}</main>
 			<Footer />
 		</div>

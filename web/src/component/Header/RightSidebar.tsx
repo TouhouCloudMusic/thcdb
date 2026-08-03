@@ -1,4 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
+import type { UserProfile } from "@thc/api"
 import type { Ref } from "solid-js"
 import {
 	BookmarkIcon,
@@ -11,20 +12,20 @@ import {
 } from "solid-radix-icons"
 
 import { ListItem, Sidebar } from "~/component/Sidebar"
-import { useCurrentUser } from "~/state/user"
 
 import { Divider } from "../atomic/Divider"
 import { Avatar } from "../atomic/avatar"
 import { Button } from "../atomic/button"
 
 export type Props = {
+	user: UserProfile
 	onClose: VoidFunction
+	onSignOut?: VoidFunction
 	ref?: Ref<HTMLDivElement>
 }
 
 export function RightSidebar(props: Props) {
 	const { t } = useLingui()
-	const userCtx = useCurrentUser()
 
 	return (
 		<>
@@ -33,8 +34,8 @@ export function RightSidebar(props: Props) {
 				class="relative right-0 flex h-full flex-col gap-2 p-3"
 			>
 				<div class="flex pl-1">
-					<Avatar user={userCtx.user} />
-					<div class="mx-2 text-sm font-medium">{userCtx.user?.name}</div>
+					<Avatar user={props.user} />
+					<div class="mx-2 text-sm font-medium">{props.user.name}</div>
 					<Button
 						variant="Tertiary"
 						class="mr-1 ml-auto size-fit self-center p-1"
@@ -77,11 +78,7 @@ export function RightSidebar(props: Props) {
 						<GearIcon />
 						<span>{t`Settings`}</span>
 					</ListItem>
-					<ListItem
-						onClick={() => {
-							void userCtx.sign_out()
-						}}
-					>
+					<ListItem onClick={props.onSignOut}>
 						<ExitIcon />
 						<span>{t`Sign Out`}</span>
 					</ListItem>

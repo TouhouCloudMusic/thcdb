@@ -8,12 +8,12 @@ import {
 	BellSlashIcon,
 } from "@thc/icons/heroicons/24/outline"
 import { StrExt } from "@thc/toolkit/data"
-import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
+import { createSignal, Match, Show, Switch } from "solid-js"
 import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
 
 import { Button } from "~/component/atomic/button"
 import { Select } from "~/component/atomic/form/select"
-import { NotificationState, useCurrentUser } from "~/state/user"
+import { NotificationState } from "~/state/user"
 import { createClickOutside } from "~/utils/solid/createClickOutside"
 
 import { Divider } from "../atomic/Divider"
@@ -43,7 +43,13 @@ const ENTITY_FILTER_OPTIONS: EntityFilter[] = [
 	"tag",
 ] as const
 
-export function Header() {
+type HeaderProps = {
+	user?: UserProfile
+	notificationState?: NotificationState
+	onSignOut?: VoidFunction
+}
+
+export function Header(props: HeaderProps) {
 	return (
 		<header class="box-content content-center items-center border-b-1 border-slate-300 bg-primary px-4 py-2">
 			<div class="my-auto flex h-8 items-center justify-between">
@@ -60,7 +66,7 @@ export function Header() {
 						<Dialog.Portal>
 							<Dialog.Overlay />
 							<K_Dialog.Content class="fixed inset-0 z-50 w-fit">
-								<LeftSidebar />
+								<LeftSidebar user={props.user} />
 							</K_Dialog.Content>
 						</Dialog.Portal>
 					</Dialog.Root>
@@ -80,10 +86,18 @@ export function Header() {
 						class="h-6"
 					/>
 					<Show
-						when={useCurrentUser().user}
+						when={props.user}
 						fallback={<UnauthenticatedButtons />}
 					>
-						{(user) => <AuthenticatedContent user={user()} />}
+						{(user) => (
+							<AuthenticatedContent
+								user={user()}
+								notificationState={
+									props.notificationState ?? NotificationState.None
+								}
+								onSignOut={props.onSignOut}
+							/>
+						)}
 					</Show>
 				</div>
 			</div>
@@ -91,13 +105,19 @@ export function Header() {
 	)
 }
 
-function AuthenticatedContent(props: { user: UserProfile }) {
+type AuthenticatedContentProps = {
+	user: UserProfile
+	notificationState: NotificationState
+	onSignOut?: VoidFunction
+}
+
+function AuthenticatedContent(props: AuthenticatedContentProps) {
 	const [show, setShow, setRef] = createClickOutside()
 	const close = () => setShow(false)
 	return (
 		<>
 			<div class="grid h-8 w-8 place-items-center">
-				<NotificationButton />
+				<NotificationButton state={props.notificationState} />
 			</div>
 			<button onClick={() => setShow(!show())}>
 				<Avatar user={props.user} />
@@ -111,7 +131,9 @@ function AuthenticatedContent(props: { user: UserProfile }) {
 					<K_Dialog.Content class="fixed inset-0 z-50">
 						<RightSidebar
 							ref={setRef}
+							user={props.user}
 							onClose={() => setShow(false)}
+							onSignOut={props.onSignOut}
 						/>
 					</K_Dialog.Content>
 				</Dialog.Portal>
@@ -207,23 +229,20 @@ function SearchBar() {
 	)
 }
 
-function NotificationButton() {
-	const notification_state = createMemo(
-		() => useCurrentUser().notification_state,
-	)
+function NotificationButton(props: { state: NotificationState }) {
 	return (
 		<Button
 			variant="Tertiary"
 			class={HEADER_BTN_CLASS}
 		>
 			<Switch>
-				<Match when={notification_state() === NotificationState.None}>
+				<Match when={props.state === NotificationState.None}>
 					<BellIcon class={"m-auto size-4"} />
 				</Match>
-				<Match when={notification_state() === NotificationState.Unread}>
+				<Match when={props.state === NotificationState.Unread}>
 					<BellAlertIcon class={"m-auto size-4"} />
 				</Match>
-				<Match when={notification_state() === NotificationState.Muted}>
+				<Match when={props.state === NotificationState.Muted}>
 					<BellSlashIcon class={"m-auto size-4"} />
 				</Match>
 			</Switch>
