@@ -186,7 +186,7 @@ function SearchBar() {
 					type="search"
 					aria-label={t`Search artists, releases, songs`}
 					placeholder={t`Search artists, releases, songs…`}
-					class="mr-auto h-7 w-full rounded-xs bg-slate-100 pl-7 outline-transparent duration-200 hover:outline hover:outline-reimu-600 focus:bg-white focus:outline-[1.5px] focus:outline-reimu-600"
+					class="mr-auto h-7 w-full rounded-xs bg-slate-100 pl-7 placeholder:font-light outline-transparent duration-200 hover:outline hover:outline-reimu-600 focus:bg-white focus:outline-[1.5px] focus:outline-reimu-600"
 				/>
 				<MagnifyingGlassIcon class="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
 
