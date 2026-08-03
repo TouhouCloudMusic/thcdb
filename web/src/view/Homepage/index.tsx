@@ -1,20 +1,23 @@
 import { useLingui } from "@lingui/solid/macro"
-import { useQuery } from "@tanstack/solid-query"
-import { ReleaseApi } from "@thc/api"
-import { Either } from "effect"
-import { For, Show, Suspense } from "solid-js"
+import type { Artist, Event, HomeMetadata, Release, Tag } from "@thc/api"
+import { ErrorBoundary, For, Show, Suspense } from "solid-js"
 
 import { Card } from "~/component/atomic/Card"
 import { PageLayout } from "~/layout/PageLayout"
+import {
+	ArtistsCard,
+	ArtistsCardSkeleton,
+} from "~/view/Homepage/component/ArtistsCard"
+import {
+	EventsCard,
+	EventsCardSkeleton,
+} from "~/view/Homepage/component/EventsCard"
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 import { HomeStats } from "~/view/Homepage/component/HomeStats"
-import { LatestArtistsCard } from "~/view/Homepage/component/LatestArtistsCard"
 import { ReleaseCard } from "~/view/Homepage/component/ReleaseCard"
-import { TrendingTagsCard } from "~/view/Homepage/component/TrendingTagsCard"
-import { UpcomingEventsCard } from "~/view/Homepage/component/UpcomingEventsCard"
-
-const RELEASES_LIMIT = 6
+import { TagsCard, TagsCardSkeleton } from "~/view/Homepage/component/TagsCard"
+import { RELEASES_LIMIT } from "~/view/Homepage/constants"
 
 function ReleaseCardSkeleton() {
 	return (
@@ -35,11 +38,11 @@ function ReleaseCardSkeleton() {
 	)
 }
 
-const LATEST_RELEASES_GRID_CLASS = "grid gap-0.5 sm:grid-cols-2 xl:grid-cols-3"
+const RELEASES_GRID_CLASS = "grid gap-0.5 sm:grid-cols-2 xl:grid-cols-3"
 
-function LatestReleasesGridSkeleton() {
+function ReleasesGridSkeleton() {
 	return (
-		<div class={LATEST_RELEASES_GRID_CLASS}>
+		<div class={RELEASES_GRID_CLASS}>
 			<For each={Array.from({ length: RELEASES_LIMIT })}>
 				{() => <ReleaseCardSkeleton />}
 			</For>
@@ -47,35 +50,14 @@ function LatestReleasesGridSkeleton() {
 	)
 }
 
-function LatestReleasesGrid() {
-	const releasesQuery = useQuery(() => ({
-		queryKey: ["home::latest-releases", RELEASES_LIMIT],
-		queryFn: async () => {
-			const res = await ReleaseApi.explore({
-				query: {
-					page: 1,
-					limit: RELEASES_LIMIT,
-					sort_field: "created_at",
-					sort_direction: "desc",
-				},
-			})
-			const paginated = Either.getOrThrowWith(res, (error) => {
-				throw error
-			})
-			return paginated.items
-		},
-	}))
-
-	const visibleReleases = () =>
-		(releasesQuery.data ?? []).slice(0, RELEASES_LIMIT)
-
+function ReleasesGrid(props: { releases: Release[] }) {
 	return (
 		<Show
-			when={visibleReleases().length > 0}
+			when={props.releases.length > 0}
 			fallback={<HomeEmptySlot class="h-56" />}
 		>
-			<div class={LATEST_RELEASES_GRID_CLASS}>
-				<For each={visibleReleases()}>
+			<div class={RELEASES_GRID_CLASS}>
+				<For each={props.releases}>
 					{(release) => <ReleaseCard release={release} />}
 				</For>
 			</div>
@@ -83,26 +65,44 @@ function LatestReleasesGrid() {
 	)
 }
 
-export function HomePage() {
+type HomePageProps = {
+	metadata?: HomeMetadata
+	releases: Release[]
+	artists: Artist[]
+	events: Event[]
+	tags: Tag[]
+}
+
+export function HomePage(props: HomePageProps) {
 	const { t } = useLingui()
 	return (
 		<PageLayout class="max-w-360 2xl:max-w-360">
-			<HomeStats />
+			<Suspense fallback={<HomeStats />}>
+				<ErrorBoundary fallback={() => <HomeStats />}>
+					<HomeStats metadata={props.metadata} />
+				</ErrorBoundary>
+			</Suspense>
 
 			<section class="grid gap-x-8 gap-y-6 px-8 pt-4 pb-8 lg:grid-cols-[1.35fr_0.65fr]">
 				<ExploreSection
 					title={t`Latest Releases`}
 					to="/release/explore"
 				>
-					<Suspense fallback={<LatestReleasesGridSkeleton />}>
-						<LatestReleasesGrid />
+					<Suspense fallback={<ReleasesGridSkeleton />}>
+						<ReleasesGrid releases={props.releases} />
 					</Suspense>
-					<LatestArtistsCard />
+					<Suspense fallback={<ArtistsCardSkeleton />}>
+						<ArtistsCard artists={props.artists} />
+					</Suspense>
 				</ExploreSection>
 
 				<div class="flex flex-col gap-8">
-					<UpcomingEventsCard />
-					<TrendingTagsCard />
+					<Suspense fallback={<EventsCardSkeleton />}>
+						<EventsCard events={props.events} />
+					</Suspense>
+					<Suspense fallback={<TagsCardSkeleton />}>
+						<TagsCard tags={props.tags} />
+					</Suspense>
 				</div>
 			</section>
 		</PageLayout>

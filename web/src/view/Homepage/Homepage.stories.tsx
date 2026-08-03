@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/solid-query"
+import { RouterContextProvider } from "@tanstack/solid-router"
 import dayjs from "dayjs"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
@@ -7,25 +7,18 @@ import { createMockArtists } from "~/mock/artist"
 import { createMockEvent } from "~/mock/event"
 import { createMockReleases } from "~/mock/release"
 import { createMockTags } from "~/mock/tag"
-import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
+import { createStoryRouter } from "~/utils/adapter/storybook"
+import { HomePage } from "~/view/Homepage"
+import {
+	ARTISTS_LIMIT,
+	EVENTS_LIMIT,
+	RELEASES_LIMIT,
+	TAGS_LIMIT,
+} from "~/view/Homepage/constants"
 
-import { HomePage } from "."
+const STORY_ROUTER = createStoryRouter()
 
-const RELEASES_LIMIT = 6
-const ARTISTS_LIMIT = 6
-const TAGS_LIMIT = 14
-const EVENTS_LIMIT = 6
-
-function createHomeStoryQueryClient() {
-	const queryClient = new QueryClient({
-		defaultOptions: {
-			queries: {
-				retry: false,
-				staleTime: Number.POSITIVE_INFINITY,
-			},
-		},
-	})
-	const today = dayjs().format("YYYY-MM-DD")
+function createHomeStoryData() {
 	const releases = createMockReleases(RELEASES_LIMIT, 101)
 	for (const release of releases.slice(RELEASES_LIMIT / 2)) {
 		release.cover_art_url = null
@@ -42,48 +35,40 @@ function createHomeStoryQueryClient() {
 		}),
 	)
 
-	queryClient.setQueryData(["home::metadata"], {
-		artists_count: 12_480,
-		releases_count: 38_912,
-		songs_count: 186_730,
-		tags_count: 2_406,
-	})
-	queryClient.setQueryData(["home::latest-releases", RELEASES_LIMIT], releases)
-	queryClient.setQueryData(
-		["home::latest-artists", ARTISTS_LIMIT],
-		createMockArtists(ARTISTS_LIMIT, 101),
-	)
-	queryClient.setQueryData(
-		["home::trending-tags", TAGS_LIMIT],
-		createMockTags(TAGS_LIMIT, 101),
-	)
-	queryClient.setQueryData(
-		["home::upcoming-events", today, EVENTS_LIMIT],
+	return {
+		metadata: {
+			artists_count: 12_480,
+			releases_count: 38_912,
+			songs_count: 186_730,
+			tags_count: 2_406,
+		},
+		releases,
+		artists: createMockArtists(ARTISTS_LIMIT, 101),
+		tags: createMockTags(TAGS_LIMIT, 101),
 		events,
-	)
-
-	return queryClient
+	}
 }
 
-const STORY_QUERY_CLIENT = createHomeStoryQueryClient()
+const STORY_DATA = createHomeStoryData()
 
 function StoryRoot() {
 	return (
-		<QueryClientProvider client={STORY_QUERY_CLIENT}>
-			<div class="min-h-dvh bg-slate-100">
-				<Header />
-				<HomePage />
-			</div>
-		</QueryClientProvider>
+		<RouterContextProvider router={STORY_ROUTER}>
+			{() => (
+				<div class="min-h-dvh bg-slate-100">
+					<Header />
+					<HomePage {...STORY_DATA} />
+				</div>
+			)}
+		</RouterContextProvider>
 	)
 }
 
 const meta = {
 	title: "View/Homepage",
 	component: StoryRoot,
-	decorators: [withStoryRouter],
 	parameters: {
-		layout: StoryLayout.FullScreen,
+		layout: "fullscreen",
 		backgrounds: {
 			grid: {
 				disable: true,

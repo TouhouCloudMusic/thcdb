@@ -1,13 +1,8 @@
-import {
-	createRouter,
-	RouterContextProvider,
-	createMemoryHistory,
-} from "@tanstack/solid-router"
+import { RouterContextProvider } from "@tanstack/solid-router"
 import { onMount } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { routeTree } from "~/routeTree.gen"
-import { QUERY_CLIENT } from "~/state/tanstack"
+import { createStoryRouter } from "~/utils/adapter/storybook"
 import { logImage } from "~/utils/log"
 import type { EntityImageUploadPageProps } from "~/view/image_upload/EntityImageUploadPage"
 import {
@@ -61,16 +56,7 @@ async function fileToDataUrl(file: File) {
 	return dataUrl
 }
 
-const router = createRouter({
-	routeTree,
-	history: createMemoryHistory({
-		initialEntries: ["/"],
-	}),
-	context: {
-		queryClient: QUERY_CLIENT,
-	},
-	defaultPreloadStaleTime: 0,
-})
+const router = createStoryRouter()
 
 function StoryRoot(props: StoryRootProps) {
 	const store = createEntityImageUploadStore({

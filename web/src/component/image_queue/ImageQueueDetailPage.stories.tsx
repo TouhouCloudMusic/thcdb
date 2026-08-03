@@ -1,9 +1,4 @@
-import { QueryClient } from "@tanstack/solid-query"
-import {
-	createMemoryHistory,
-	createRouter,
-	RouterContextProvider,
-} from "@tanstack/solid-router"
+import { RouterContextProvider } from "@tanstack/solid-router"
 import type { Artist, ImageQueueDetail, Release, UserSummary } from "@thc/api"
 import {
 	createMemo,
@@ -15,9 +10,8 @@ import {
 } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { routeTree } from "~/routeTree.gen"
 import { imgUrl } from "~/utils/adapter/static_file"
-import { StoryLayout } from "~/utils/adapter/storybook"
+import { createStoryRouter, StoryLayout } from "~/utils/adapter/storybook"
 import { ImageQueueDetailPageContent } from "~/view/image_queue/detail"
 
 const STORY_REVIEWER: UserSummary = {
@@ -223,33 +217,6 @@ function createStoryEntry(seed: StoryEntrySeed): StoryEntry {
 	}
 }
 
-function createStoryQueryClient() {
-	return new QueryClient({
-		defaultOptions: {
-			queries: {
-				staleTime: Number.POSITIVE_INFINITY,
-				retry: false,
-			},
-			mutations: {
-				retry: false,
-			},
-		},
-	})
-}
-
-function createStoryRouter(queryClient: QueryClient, initialEntryId: number) {
-	return createRouter({
-		routeTree,
-		history: createMemoryHistory({
-			initialEntries: [`/image-queue/${initialEntryId}`],
-		}),
-		context: {
-			queryClient,
-		},
-		defaultPreloadStaleTime: 0,
-	})
-}
-
 function createStoryState() {
 	return structuredClone(STORY_ENTRIES)
 }
@@ -370,9 +337,8 @@ function StoryRoot(props: StoryRootProps) {
 }
 
 function StoryScene(props: StoryRootProps) {
-	const queryClient = createStoryQueryClient()
 	const initialEntryId = untrack(() => getInitialEntryId(props.status))
-	const router = createStoryRouter(queryClient, initialEntryId)
+	const router = createStoryRouter([`/image-queue/${initialEntryId}`])
 	const [storyEntries, setStoryEntries] = createSignal(createStoryState())
 
 	const currentEntryId = createMemo(() =>
