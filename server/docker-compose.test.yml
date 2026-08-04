@@ -16,7 +16,7 @@ services:
       timeout: 5s
       retries: 12
     tmpfs:
-      - /var/lib/postgresql/data
+      - /var/lib/postgresql
     ports:
       - "${TEST_DB_PORT:-55432}:5432"
     networks:

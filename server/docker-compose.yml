@@ -9,7 +9,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
     ports:
       - "5432:5432"
     networks:
