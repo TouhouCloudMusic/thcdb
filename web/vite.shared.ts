@@ -14,19 +14,25 @@ function compactPlugins(
 	})
 }
 
-export function createAppPlugins(): PluginOption[] {
+export function createSharedPlugins(): PluginOption[] {
 	return compactPlugins([
-		devtools(),
 		lingui(),
-		tanstackRouter({
-			target: "solid",
-			autoCodeSplitting: true,
-			routesDirectory: "src/route",
-		}),
 		babel({
 			presets: [linguiTransformerBabelPreset()],
 		}),
 		solidPlugin(),
 		tailwindcss(),
+	])
+}
+
+export function createAppPlugins(): PluginOption[] {
+	return compactPlugins([
+		devtools(),
+		tanstackRouter({
+			target: "solid",
+			autoCodeSplitting: true,
+			routesDirectory: "src/route",
+		}),
+		...createSharedPlugins(),
 	])
 }

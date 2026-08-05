@@ -1,12 +1,7 @@
-import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
-import { playwright } from "@vitest/browser-playwright"
-import path from "node:path"
 import { defineConfig, loadEnv } from "vite"
-import { defineProject } from "vitest/config"
 
 import { createAppPlugins } from "./vite.shared"
 
-const dirname = import.meta.dirname
 const isHttps = (url: string | undefined) => {
 	if (!url) {
 		return false
@@ -19,7 +14,6 @@ export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd())
 
 	const SERVER_URL = env["VITE_SERVER_URL"]
-	const testPlugins = createAppPlugins()
 
 	return {
 		plugins: createAppPlugins(),
@@ -54,47 +48,6 @@ export default defineConfig(({ mode }) => {
 					lazyBarrel: true,
 				},
 			},
-		},
-		test: {
-			projects: [
-				defineProject({
-					plugins: testPlugins,
-					resolve: {
-						tsconfigPaths: true,
-					},
-					test: {
-						name: "unit",
-						globals: true,
-						include: ["./src/**/*.test.{ts,tsx}"],
-						setupFiles: ["./src/test/vitest.setup.ts"],
-					},
-				}),
-				defineProject({
-					plugins: [
-						...testPlugins,
-						// The plugin will run tests for the stories defined in your Storybook config
-						// See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
-						storybookTest({
-							configDir: path.join(dirname, ".storybook"),
-						}),
-					],
-					resolve: {
-						tsconfigPaths: true,
-					},
-					test: {
-						name: "storybook",
-						exclude: ["src/component/__legacy/**"],
-						browser: {
-							// Enable browser-based testing for UI components
-							enabled: true,
-							headless: true,
-							provider: playwright(),
-							instances: [{ browser: "chromium" }],
-						},
-						setupFiles: ["./src/test/vitest.setup.ts"],
-					},
-				}),
-			],
 		},
 	}
 })
