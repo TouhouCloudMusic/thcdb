@@ -45,7 +45,7 @@
 		"solid-js": "^1.9.12",
 		"solid-radix-icons": "^1.0.0",
 		"tailwind-merge": "^3.4.0",
-		"valibot": "1.2.0",
+		"valibot": "1.4.2",
 		"zxcvbn": "^4.4.2"
 	},
 	"devDependencies": {
