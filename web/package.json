@@ -71,7 +71,7 @@
 		"@tanstack/devtools-vite": "^0.6.0",
 		"@tanstack/eslint-plugin-query": "^5.91.5",
 		"@tanstack/router-plugin": "^1.153.2",
-		"@tanstack/solid-devtools": "^0.7.24",
+		"@tanstack/solid-devtools": "^0.8.0",
 		"@tanstack/solid-query-devtools": "^5.91.3",
 		"@tanstack/solid-router-devtools": "^1.153.2",
 		"@testing-library/jest-dom": "^6.9.1",
