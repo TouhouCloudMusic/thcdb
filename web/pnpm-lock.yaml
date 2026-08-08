@@ -175,8 +175,8 @@ importers:
         specifier: ^1.153.2
         version: 1.153.2(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.8(@types/node@25.0.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.8(@types/node@25.0.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))
       '@tanstack/solid-devtools':
-        specifier: ^0.7.24
-        version: 0.7.24(csstype@3.2.3)(solid-js@1.9.12)
+        specifier: ^0.8.0
+        version: 0.8.9(csstype@3.2.3)(solid-js@1.9.12)
       '@tanstack/solid-query-devtools':
         specifier: ^5.91.3
         version: 5.91.3(@tanstack/solid-query@5.90.23(solid-js@1.9.12))(solid-js@1.9.12)
@@ -1880,24 +1880,20 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7
 
-  '@tanstack/devtools-client@0.0.5':
-    resolution: {integrity: sha512-hsNDE3iu4frt9cC2ppn1mNRnLKo2uc1/1hXAyY9z4UYb+o40M2clFAhiFoo4HngjfGJDV3x18KVVIq7W4Un+zA==}
-    engines: {node: '>=18'}
-
   '@tanstack/devtools-client@0.0.6':
     resolution: {integrity: sha512-f85ZJXJnDIFOoykG/BFIixuAevJovCvJF391LPs6YjBAPhGYC50NWlx1y4iF/UmK5/cCMx+/JqI5SBOz7FanQQ==}
     engines: {node: '>=18'}
 
-  '@tanstack/devtools-event-bus@0.4.0':
-    resolution: {integrity: sha512-1t+/csFuDzi+miDxAOh6Xv7VDE80gJEItkTcAZLjV5MRulbO/W8ocjHLI2Do/p2r2/FBU0eKCRTpdqvXaYoHpQ==}
+  '@tanstack/devtools-client@0.0.8':
+    resolution: {integrity: sha512-cG3iZkGWCwN330bLBKa8+9r4Of2AXNoz2zUqcsy/4XsD3105ghVBx78cGyvJj9fSclNomPxoqAnDGXXhg1WLvA==}
     engines: {node: '>=18'}
 
   '@tanstack/devtools-event-bus@0.4.1':
     resolution: {integrity: sha512-cNnJ89Q021Zf883rlbBTfsaxTfi2r73/qejGtyTa7ksErF3hyDyAq1aTbo5crK9dAL7zSHh9viKY1BtMls1QOA==}
     engines: {node: '>=18'}
 
-  '@tanstack/devtools-event-client@0.4.0':
-    resolution: {integrity: sha512-RPfGuk2bDZgcu9bAJodvO2lnZeHuz4/71HjZ0bGb/SPg8+lyTA+RLSKQvo7fSmPSi8/vcH3aKQ8EM9ywf1olaw==}
+  '@tanstack/devtools-event-bus@0.4.2':
+    resolution: {integrity: sha512-2LHzhwBFlKHCcklsQrGe8TeyjHd4XAF8nuCO6wHmva5fePUkJUULbu6CsCNAlGlCi0KkEsMXZSvRdR4HgMq4yA==}
     engines: {node: '>=18'}
 
   '@tanstack/devtools-event-client@0.4.3':
@@ -1905,8 +1901,13 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@tanstack/devtools-ui@0.4.4':
-    resolution: {integrity: sha512-5xHXFyX3nom0UaNfiOM92o6ziaHjGo3mcSGe2HD5Xs8dWRZNpdZ0Smd0B9ddEhy0oB+gXyMzZgUJb9DmrZV0Mg==}
+  '@tanstack/devtools-event-client@0.5.0':
+    resolution: {integrity: sha512-H+OH3zC6Vhu/K0NaVfQKknEKawc/+2PT+D3SB3Ox0V8SiMlTo0abbmH2rH0721R2aNYbjdMXA1oENOd8E2UVoA==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  '@tanstack/devtools-ui@0.6.0':
+    resolution: {integrity: sha512-CVaM6rT6Nl5ijo83vJYFa2SjofvpuOl/uOvbYGhBrRgUhhelNHhx8zZX+hnZCHmIr0/lzM65hsocnZ72592Rvg==}
     engines: {node: '>=18'}
     peerDependencies:
       solid-js: '>=1.9.7'
@@ -1918,9 +1919,10 @@ packages:
     peerDependencies:
       vite: ^6.0.0 || ^7.0.0 || ^8.0.0
 
-  '@tanstack/devtools@0.10.5':
-    resolution: {integrity: sha512-aptV4sMcdEn/zB8zqNqKSKi8pLzfB7BhdP2MuVmyfWgBDYNchqJjhviaxEXW3tJTolbWwc30o+jszwqxOIcIaA==}
+  '@tanstack/devtools@0.13.0':
+    resolution: {integrity: sha512-p/nOH9bS/OO/u3402zPjoGu+Mz6Fzi/iRqJuYghuuYRUY32kZt+C0/d+pP/bi6/2JTi1FdT6oEXI2lWlA5tXxw==}
     engines: {node: '>=18'}
+    hasBin: true
     peerDependencies:
       solid-js: '>=1.9.7'
 
@@ -1986,8 +1988,8 @@ packages:
     resolution: {integrity: sha512-N24G4LpfyK8dOlnP8BvNdkuxg1xQljkyl6PcrdiPSA301pOjatRT1y8wuCCJZKVVD8gkd0MpCZ0VEjRMGILOtA==}
     engines: {node: '>=12'}
 
-  '@tanstack/solid-devtools@0.7.24':
-    resolution: {integrity: sha512-qpuT5gUxSQdeK1Rv/ZpbV5chwzwMGYiu8XGDKecyhh6K4JIYxX1Pb3wRW5pKQio1m2duVGbx3gXxlvC1utxVjg==}
+  '@tanstack/solid-devtools@0.8.9':
+    resolution: {integrity: sha512-0Mu8zkId46vK0fC+bmbUi3RwQS957hwERWRAQLZeqYCD0Hme9xd8ywo29TzQzpugtZjfNjizYQxXSVGNxfmUpQ==}
     engines: {node: '>=18'}
     peerDependencies:
       solid-js: '>=1.9.7'
@@ -6394,20 +6396,13 @@ snapshots:
       tailwindcss: 4.1.18
       vite: 8.0.8(@types/node@25.0.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
 
-  '@tanstack/devtools-client@0.0.5':
-    dependencies:
-      '@tanstack/devtools-event-client': 0.4.0
-
   '@tanstack/devtools-client@0.0.6':
     dependencies:
       '@tanstack/devtools-event-client': 0.4.3
 
-  '@tanstack/devtools-event-bus@0.4.0':
+  '@tanstack/devtools-client@0.0.8':
     dependencies:
-      ws: 8.20.1
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
+      '@tanstack/devtools-event-client': 0.5.0
 
   '@tanstack/devtools-event-bus@0.4.1':
     dependencies:
@@ -6416,13 +6411,21 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@tanstack/devtools-event-client@0.4.0': {}
+  '@tanstack/devtools-event-bus@0.4.2':
+    dependencies:
+      ws: 8.20.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   '@tanstack/devtools-event-client@0.4.3': {}
 
-  '@tanstack/devtools-ui@0.4.4(csstype@3.2.3)(solid-js@1.9.12)':
+  '@tanstack/devtools-event-client@0.5.0': {}
+
+  '@tanstack/devtools-ui@0.6.0(csstype@3.2.3)(solid-js@1.9.12)':
     dependencies:
       clsx: 2.1.1
+      dayjs: 1.11.20
       goober: 2.1.18(csstype@3.2.3)
       solid-js: 1.9.12
     transitivePeerDependencies:
@@ -6446,14 +6449,14 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@tanstack/devtools@0.10.5(csstype@3.2.3)(solid-js@1.9.12)':
+  '@tanstack/devtools@0.13.0(csstype@3.2.3)(solid-js@1.9.12)':
     dependencies:
       '@solid-primitives/event-listener': 2.4.3(solid-js@1.9.12)
       '@solid-primitives/keyboard': 1.3.3(solid-js@1.9.12)
       '@solid-primitives/resize-observer': 2.1.3(solid-js@1.9.12)
-      '@tanstack/devtools-client': 0.0.5
-      '@tanstack/devtools-event-bus': 0.4.0
-      '@tanstack/devtools-ui': 0.4.4(csstype@3.2.3)(solid-js@1.9.12)
+      '@tanstack/devtools-client': 0.0.8
+      '@tanstack/devtools-event-bus': 0.4.2
+      '@tanstack/devtools-ui': 0.6.0(csstype@3.2.3)(solid-js@1.9.12)
       clsx: 2.1.1
       goober: 2.1.18(csstype@3.2.3)
       solid-js: 1.9.12
@@ -6543,9 +6546,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/solid-devtools@0.7.24(csstype@3.2.3)(solid-js@1.9.12)':
+  '@tanstack/solid-devtools@0.8.9(csstype@3.2.3)(solid-js@1.9.12)':
     dependencies:
-      '@tanstack/devtools': 0.10.5(csstype@3.2.3)(solid-js@1.9.12)
+      '@tanstack/devtools': 0.13.0(csstype@3.2.3)(solid-js@1.9.12)
       solid-js: 1.9.12
     transitivePeerDependencies:
       - bufferutil
