@@ -28,7 +28,7 @@
 		"@thc/query": "workspace:*",
 		"@thc/toolkit": "workspace:*",
 		"@typescript/native-preview": "beta",
-		"@vitest/coverage-v8": "4.1.4",
+		"@vitest/coverage-v8": "4.1.10",
 		"arktype": "^2.2.0",
 		"cropperjs": "^2.1.1",
 		"dayjs": "^1.11.20",
