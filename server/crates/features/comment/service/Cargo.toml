@@ -1,0 +1,28 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-comment-service"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "comment_service"
+path = "src/lib.rs"
+
+[dependencies]
+auth_core.workspace               = true
+chrono.workspace                  = true
+comment_notification.workspace    = true
+comment_repo.workspace            = true
+correction_subscription.workspace = true
+domain.workspace                  = true
+derive_more.workspace             = true
+entity.workspace                  = true
+image_queue_core.workspace        = true
+infra_db.workspace                = true
+notification_core.workspace       = true
+sea-orm.workspace                 = true
+serde.workspace                   = true
+utoipa.workspace                  = true

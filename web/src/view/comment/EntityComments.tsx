@@ -33,22 +33,11 @@ export function EntityComments(props: EntityCommentsProps) {
 			</div>
 
 			<CommentThreadList
-				comments={props.controller.comments()}
-				hasMore={props.controller.hasMore()}
-				isInitialLoading={props.controller.isInitialLoading()}
-				isLoadingMore={props.controller.isLoadingMore()}
-				errorMessage={props.controller.errorMessage()}
-				currentUser={props.controller.currentUser()}
-				canManage={props.controller.canManage()}
+				controller={props.controller}
 				emptyText={t`No comments yet`}
 				listClass="divide-y divide-slate-100"
 				statusClass="py-6 text-center text-sm text-tertiary"
 				loadMoreClass="mt-4 flex justify-center py-4"
-				onLoadMore={() => {
-					void props.controller.loadMore()
-				}}
-				onCreateComment={props.controller.createComment}
-				onDeleteComment={props.controller.deleteComment}
 			/>
 		</div>
 	)
