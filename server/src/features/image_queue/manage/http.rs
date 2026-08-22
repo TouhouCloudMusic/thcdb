@@ -9,7 +9,7 @@ use super::model::{
     PendingImageQueueItem,
 };
 use super::service::Service;
-use crate::adapter::inbound::rest::state::ArcAppState;
+use crate::adapter::inbound::rest::state::{ArcAppState, AuthSession};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
 use crate::shared::http::PaginationQuery;
 use crate::shared::http::api_response::{Data, Message};
@@ -30,12 +30,12 @@ data! {
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
-        .with_private(|r| {
+        .with_public(|r| {
             r.routes(routes!(pending_image_queue))
                 .routes(routes!(pending_image_queue_count))
                 .routes(routes!(image_queue_detail))
-                .routes(routes!(moderate_image_queue))
         })
+        .with_private(|r| r.routes(routes!(moderate_image_queue)))
         .finish()
 }
 
@@ -49,7 +49,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
     ),
 )]
 async fn pending_image_queue(
-    CurrentUser(_user): CurrentUser,
     State(service): State<Service>,
     Query(pagination): Query<PaginationQuery>,
     Query(filter): Query<ImageQueueFilterQuery>,
@@ -68,7 +67,6 @@ async fn pending_image_queue(
     ),
 )]
 async fn pending_image_queue_count(
-    CurrentUser(_user): CurrentUser,
     State(service): State<Service>,
 ) -> Result<Data<u64>, Error> {
     Ok(Data::from(service.pending_image_queue_count().await?))
@@ -83,11 +81,15 @@ async fn pending_image_queue_count(
     ),
 )]
 async fn image_queue_detail(
-    CurrentUser(user): CurrentUser,
+    session: AuthSession,
     Path(id): Path<i32>,
     State(service): State<Service>,
 ) -> Result<Data<ImageQueueDetail>, Error> {
-    Ok(Data::from(service.image_queue_detail(user.id, id).await?))
+    Ok(Data::from(
+        service
+            .image_queue_detail(session.user.map(|user| user.id), id)
+            .await?,
+    ))
 }
 
 #[utoipa::path(

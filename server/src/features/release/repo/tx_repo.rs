@@ -7,8 +7,7 @@ use sea_orm::{
 
 use super::impls::*;
 use crate::features::release::model::NewRelease;
-use crate::infra::database::error::DatabaseError;
-use crate::shared::error::BrokenEntityReference;
+use crate::infra::database::error::{BrokenEntityReference, DatabaseError};
 
 pub(crate) async fn create_release_with_relations(
     data: &NewRelease,

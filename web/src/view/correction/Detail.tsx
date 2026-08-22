@@ -1,16 +1,8 @@
 import { Trans, useLingui } from "@lingui/solid/macro"
-import {
-	useInfiniteQuery,
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/solid-query"
-import type { InfiniteData } from "@tanstack/solid-query"
-import { CorrectionMutation, CorrectionQueryOption } from "@thc/query"
-import { ArrExt } from "@thc/toolkit/data"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
+import { CorrectionQueryOption } from "@thc/query"
 import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
 import type { JSX } from "solid-js"
-import { createStore, produce } from "solid-js/store"
 import { twMerge } from "tailwind-merge"
 
 import { Card } from "~/component/atomic/Card"
@@ -20,28 +12,24 @@ import { Avatar } from "~/component/atomic/avatar"
 import { Button, ButtonClass_new } from "~/component/atomic/button"
 import { Select } from "~/component/atomic/form/select"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
-import { showSuccessToast } from "~/component/toast"
-import {
-	hasUserPermission,
-	USER_PERMISSION_NAMES,
-} from "~/domain/user/constants"
+import { showErrorToast, showSuccessToast } from "~/component/toast"
+import { hasUserPermission } from "~/domain/user/authorization"
+import { USER_PERMISSION_NAMES } from "~/domain/user/constants"
 import type {
-	CorrectionComment,
+	CorrectionDecision,
 	CorrectionDetail,
 	CorrectionDiffEntry,
 	EntityType,
-	FindCommentsResponse,
-	HandleCorrectionMethod,
 } from "~/hey-api"
-import { handleCorrection } from "~/hey-api"
 import {
-	findCommentsInfiniteOptions,
-	findCommentsInfiniteQueryKey,
+	moderateCorrectionMutation,
+	setCorrectionSubscriptionMutation,
 } from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout/PageLayout"
 import { useCurrentUser } from "~/state/user"
 import { formatTimestamp } from "~/utils/dateTime"
 import { getErrorMessage } from "~/utils/getErrorMessage"
+import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
 
 import { CorrectionComments } from "./CorrectionComments"
 import {
@@ -52,47 +40,6 @@ import {
 import { invalidatePendingCorrection } from "./pendingCorrection"
 
 const DETAIL_LABEL_CLASS = "text-sm text-tertiary"
-
-function markCorrectionDetailCommentDeleted(
-	data: CorrectionDetail | undefined,
-	commentId: number,
-): CorrectionDetail | undefined {
-	if (!data) return data
-
-	return {
-		...data,
-		comments: {
-			...data.comments,
-			items: data.comments.items.map((comment) =>
-				comment.id === commentId
-					? { ...comment, state: "Deleted" as const, content: undefined }
-					: comment,
-			),
-		},
-	}
-}
-
-function markCorrectionCommentPageDeleted(
-	oldData: InfiniteData<FindCommentsResponse> | undefined,
-	commentId: number,
-): InfiniteData<FindCommentsResponse> | undefined {
-	if (!oldData) return oldData
-
-	return {
-		...oldData,
-		pages: oldData.pages.map((page) => ({
-			...page,
-			data: {
-				...page.data,
-				items: page.data.items.map((comment) =>
-					comment.id === commentId
-						? { ...comment, state: "Deleted" as const, content: undefined }
-						: comment,
-				),
-			},
-		})),
-	}
-}
 
 type CorrectionHeaderProps = {
 	correction: CorrectionDetail
@@ -386,6 +333,58 @@ function CorrectionActions(props: CorrectionActionsProps) {
 	)
 }
 
+type CorrectionSubscribeButtonProps = {
+	correctionId: number
+	isSubscribed: boolean
+}
+
+function CorrectionSubscribeButton(props: CorrectionSubscribeButtonProps) {
+	const { t } = useLingui()
+	const queryClient = useQueryClient()
+	const userCtx = useCurrentUser()
+	const mutation = useMutation(setCorrectionSubscriptionMutation)
+
+	const toggle = () => {
+		const correctionId = props.correctionId
+		void mutation
+			.mutateAsync({
+				path: { id: correctionId },
+				query: { subscribed: !props.isSubscribed },
+			})
+			.then(
+				userCtx.bindCurrentSession((response) => {
+					queryClient.setQueryData<CorrectionDetail>(
+						["correction::detail", correctionId],
+						(detail) =>
+							detail
+								? {
+										...detail,
+										is_subscribed: response.data.subscribed,
+									}
+								: detail,
+					)
+				}),
+				userCtx.bindCurrentSession(() => {
+					showErrorToast({ title: t`Failed to update subscription` })
+				}),
+			)
+	}
+
+	return (
+		<Button
+			variant="Secondary"
+			color="Reimu"
+			size="Sm"
+			onClick={toggle}
+			disabled={
+				mutation.isPending || userCtx.session.status !== "authenticated"
+			}
+		>
+			{props.isSubscribed ? t`Unsubscribe` : t`Subscribe`}
+		</Button>
+	)
+}
+
 type CorrectionDetailPageProps = {
 	correctionId: number
 	compareId?: number | null
@@ -394,138 +393,54 @@ type CorrectionDetailPageProps = {
 
 export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 	const { t } = useLingui()
-	const userCtx = useCurrentUser()
 	const queryClient = useQueryClient()
+	const userCtx = useCurrentUser()
 	const correctionQuery = useQuery(() =>
 		CorrectionQueryOption.detail(props.correctionId),
 	)
 
-	const createCommentMutation = CorrectionMutation.useCreateCommentMutation()
-	const deleteCommentMutation = CorrectionMutation.useDeleteCommentMutation()
-	const handleCorrectionMutation = useMutation(() => ({
-		mutationFn: (method: HandleCorrectionMethod) =>
-			handleCorrection({
-				path: { id: props.correctionId },
-				query: { method },
-				throwOnError: true,
-			}),
+	const moderateMutation = useMutation(() => ({
+		...moderateCorrectionMutation(),
+		onMutate: () => {
+			const correction = correctionQuery.data
+			if (!correction) return
+
+			return {
+				entityType: ENTITY_HISTORY_MAP[correction.entity_type],
+				entityId: correction.entity_id,
+			}
+		},
+		onSuccess: (_response, variables, entity) => {
+			void queryClient.invalidateQueries({
+				queryKey: ["correction::detail", variables.path.id],
+			})
+			void queryClient.invalidateQueries({ queryKey: ["correction::diff"] })
+			void queryClient.invalidateQueries({ queryKey: ["correction::history"] })
+			if (entity) {
+				void invalidatePendingCorrection(
+					queryClient,
+					entity.entityType,
+					entity.entityId,
+				)
+			}
+
+			showSuccessToast({
+				title:
+					variables.query.decision === "Approve"
+						? t`Correction approved`
+						: t`Correction rejected`,
+				description: t`Status updated`,
+			})
+		},
 	}))
 
-	const initialCommentsNextCursor = createMemo(
-		() => correctionQuery.data?.comments.next_cursor,
-	)
-	const commentPagesQuery = useInfiniteQuery(() => {
-		const initialCursor = initialCommentsNextCursor()
-		return {
-			...findCommentsInfiniteOptions({
-				path: { id: props.correctionId },
-			}),
-			initialPageParam: initialCursor ?? 0,
-			getNextPageParam: (last) => last.data.next_cursor ?? undefined,
-			enabled: false,
-		}
-	})
-	const [createdCommentsByCorrectionId, setCreatedCommentsByCorrectionId] =
-		createStore<Record<number, CorrectionComment[]>>({})
-	const createdComments = () =>
-		createdCommentsByCorrectionId[props.correctionId] ?? []
-	const addCreatedComment = (comment: CorrectionComment) => {
-		setCreatedCommentsByCorrectionId(
-			produce((state) => {
-				const comments = state[props.correctionId] ?? []
-				state[props.correctionId] = ArrExt.dedupeByKey(
-					[...comments, comment],
-					"id",
-				)
-			}),
-		)
-	}
-	const removeCreatedComment = (commentId: number) => {
-		setCreatedCommentsByCorrectionId(
-			produce((state) => {
-				const comments = state[props.correctionId] ?? []
-				state[props.correctionId] = comments.filter(
-					(comment) => comment.id !== commentId,
-				)
-			}),
-		)
-	}
-
 	const canManage = () =>
-		hasUserPermission(userCtx.user, USER_PERMISSION_NAMES.CorrectionManage)
-	const canManageComments = () =>
-		hasUserPermission(userCtx.user, USER_PERMISSION_NAMES.CommentManage)
+		hasUserPermission(
+			userCtx.authorization,
+			USER_PERMISSION_NAMES.CorrectionManage,
+		)
 	const canEdit = () =>
-		canManage() || userCtx.user?.name === correctionQuery.data?.author.name
-
-	const allComments = createMemo(() => {
-		const commentPages = commentPagesQuery.isSuccess
-			? commentPagesQuery.data.pages.flatMap((page) => page.data.items)
-			: []
-		const comments = ArrExt.dedupeByKey(
-			[
-				...(correctionQuery.data?.comments.items ?? []),
-				...commentPages,
-				...createdComments(),
-			],
-			"id",
-		)
-		return comments
-	})
-	const hasFetchedCommentPages = createMemo(
-		() =>
-			commentPagesQuery.isSuccess && commentPagesQuery.data.pages.length > 0,
-	)
-	const hasMoreComments = createMemo(() => {
-		if (!hasFetchedCommentPages()) {
-			return initialCommentsNextCursor() != null
-		}
-		return commentPagesQuery.hasNextPage
-	})
-
-	const loadMore = async () => {
-		if (!hasMoreComments() || commentPagesQuery.isFetchingNextPage) {
-			return
-		}
-		await commentPagesQuery.fetchNextPage()
-	}
-
-	const invalidateCommentQueries = async () => {
-		await queryClient.invalidateQueries({
-			queryKey: ["correction::detail", props.correctionId],
-		})
-		await queryClient.invalidateQueries({
-			queryKey: findCommentsInfiniteQueryKey({
-				path: { id: props.correctionId },
-			}),
-		})
-	}
-
-	const onCreateComment = async (content: string, parentId: number | null) => {
-		const comment = await createCommentMutation.mutateAsync({
-			correctionId: props.correctionId,
-			content,
-			parentId,
-		})
-		addCreatedComment(comment)
-		await invalidateCommentQueries()
-	}
-
-	const onDeleteComment = async (commentId: number) => {
-		await deleteCommentMutation.mutateAsync(commentId)
-		removeCreatedComment(commentId)
-		queryClient.setQueryData<CorrectionDetail>(
-			["correction::detail", props.correctionId],
-			(data) => markCorrectionDetailCommentDeleted(data, commentId),
-		)
-		queryClient.setQueryData<InfiniteData<FindCommentsResponse>>(
-			findCommentsInfiniteQueryKey({
-				path: { id: props.correctionId },
-			}),
-			(data) => markCorrectionCommentPageDeleted(data, commentId),
-		)
-		await invalidateCommentQueries()
-	}
+		canManage() || userCtx.profile?.name === correctionQuery.data?.author.name
 
 	const activeCompareId = createMemo(() => {
 		const compare = props.compareId
@@ -573,40 +488,16 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 		return `#${target.id} ${target.type} (${formatTimestamp(target.handled_at ?? target.created_at, t`None`)})`
 	}
 
-	const refreshCorrection = () => {
-		const correction = correctionQuery.data
-		void queryClient.invalidateQueries({
-			queryKey: ["correction::detail", props.correctionId],
-		})
-		void queryClient.invalidateQueries({ queryKey: ["correction::diff"] })
-		void queryClient.invalidateQueries({ queryKey: ["correction::history"] })
-		if (correction) {
-			void invalidatePendingCorrection(
-				queryClient,
-				ENTITY_HISTORY_MAP[correction.entity_type],
-				correction.entity_id,
-			)
-		}
-	}
-
-	const handleCorrectionAction = (method: HandleCorrectionMethod) => {
-		handleCorrectionMutation.mutate(method, {
-			onSuccess: () => {
-				refreshCorrection()
-				showSuccessToast({
-					title:
-						method === "Approve"
-							? t`Correction approved`
-							: t`Correction rejected`,
-					description: t`Status updated`,
-				})
-			},
+	const submitCorrectionDecision = (decision: CorrectionDecision) => {
+		moderateMutation.mutate({
+			path: { id: props.correctionId },
+			query: { decision },
 		})
 	}
 
 	const actionErrorMessage = createMemo(() => {
-		if (!handleCorrectionMutation.isError) return
-		return getErrorMessage(handleCorrectionMutation.error, t`Request failed.`)
+		if (!moderateMutation.isError) return
+		return getErrorMessage(moderateMutation.error, t`Request failed.`)
 	})
 
 	return (
@@ -620,15 +511,23 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 						<CorrectionHeader
 							correction={correction()}
 							actions={
-								<CorrectionActions
-									canManage={canManage()}
-									canEdit={canEdit()}
-									correction={correction()}
-									isBusy={handleCorrectionMutation.isPending}
-									errorMessage={actionErrorMessage()}
-									onApprove={() => handleCorrectionAction("Approve")}
-									onReject={() => handleCorrectionAction("Reject")}
-								/>
+								<>
+									<Show when={correction().is_subscribed != null}>
+										<CorrectionSubscribeButton
+											correctionId={correction().id}
+											isSubscribed={correction().is_subscribed ?? false}
+										/>
+									</Show>
+									<CorrectionActions
+										canManage={canManage()}
+										canEdit={canEdit()}
+										correction={correction()}
+										isBusy={moderateMutation.isPending}
+										errorMessage={actionErrorMessage()}
+										onApprove={() => submitCorrectionDecision("Approve")}
+										onReject={() => submitCorrectionDecision("Reject")}
+									/>
+								</>
 							}
 						/>
 						<Card class={SECTION_CARD_CLASS}>
@@ -694,27 +593,21 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 						</Card>
 
 						<Show
-							when={props.correctionId}
+							when={correction().id}
 							keyed
 						>
-							{(_correctionId) => (
-								<CorrectionComments
-									comments={allComments()}
-									hasMore={hasMoreComments()}
-									isInitialLoading={false}
-									isLoadingMore={commentPagesQuery.isFetchingNextPage}
-									errorMessage={
-										commentPagesQuery.isError
-											? getErrorMessage(commentPagesQuery.error)
-											: undefined
-									}
-									currentUser={userCtx.user}
-									canManage={canManageComments()}
-									onLoadMore={() => void loadMore()}
-									onCreateComment={onCreateComment}
-									onDeleteComment={onDeleteComment}
-								/>
-							)}
+							{(correctionId) => {
+								const controller = createEntityCommentsController(() => ({
+									entityType: "correction",
+									entityId: correctionId,
+									initialPage: {
+										data: correction().comments,
+										updatedAt: correctionQuery.dataUpdatedAt,
+									},
+								}))
+
+								return <CorrectionComments controller={controller} />
+							}}
 						</Show>
 					</div>
 				)}

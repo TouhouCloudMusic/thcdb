@@ -20,7 +20,7 @@ export function AddToUserCollectionButton(props: Props) {
 	const [open, setOpen] = createSignal(false)
 
 	return (
-		<Show when={userCtx.is_signed_in}>
+		<Show when={!userCtx.profile}>
 			<Button
 				variant="SecondaryV2"
 				size="Sm"

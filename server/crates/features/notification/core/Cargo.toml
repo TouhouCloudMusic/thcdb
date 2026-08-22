@@ -1,0 +1,30 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-notification-core"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "notification_core"
+path = "src/lib.rs"
+
+[dependencies]
+chrono.workspace      = true
+derive_more.workspace = true
+entity.workspace      = true
+enumset.workspace     = true
+infra_db.workspace    = true
+sea-orm.workspace     = true
+sea-query.workspace   = true
+serde.workspace       = true
+sorted-vec.workspace  = true
+strum.workspace       = true
+utoipa.workspace      = true
+
+[dev-dependencies]
+anyhow.workspace        = true
+infra_testing.workspace = true
+tokio.workspace         = true

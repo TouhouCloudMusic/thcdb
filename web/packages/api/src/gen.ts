@@ -424,23 +424,7 @@ export type paths = {
         };
         get: operations["get_correction"];
         put?: never;
-        post: operations["handle_correction"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/correction/{id}/comments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["find_comments"];
-        put?: never;
-        post: operations["create_comment"];
+        post: operations["moderate_correction"];
         delete?: never;
         options?: never;
         head?: never;
@@ -473,6 +457,22 @@ export type paths = {
         get: operations["get_correction_revisions"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/correction/{id}/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["set_correction_subscription"];
         delete?: never;
         options?: never;
         head?: never;
@@ -712,7 +712,39 @@ export type paths = {
         };
         get: operations["image_queue_detail"];
         put?: never;
-        post: operations["handle_image_queue"];
+        post: operations["moderate_image_queue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/image-queue/{id}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["find_image_queue_comments"];
+        put?: never;
+        post: operations["create_image_queue_comment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/image-queue/{id}/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["set_image_queue_subscription"];
         delete?: never;
         options?: never;
         head?: never;
@@ -822,7 +854,7 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        get: operations["notification_list"];
+        get: operations["list_notifications"];
         put?: never;
         post?: never;
         delete?: never;
@@ -831,7 +863,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/notifications/{id}/read": {
+    "/notifications/{notification_id}/read": {
         parameters: {
             query?: never;
             header?: never;
@@ -840,7 +872,39 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        post: operations["notification_mark_read"];
+        post: operations["mark_read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/{notification_id}/saved": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["save_notification"];
+        post?: never;
+        delete: operations["unsave_notification"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/{notification_id}/unread": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["mark_unread"];
         delete?: never;
         options?: never;
         head?: never;
@@ -856,7 +920,7 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        post: operations["notification_read_all"];
+        post: operations["read_all"];
         delete?: never;
         options?: never;
         head?: never;
@@ -870,7 +934,7 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        get: operations["notification_unread_count"];
+        get: operations["unread_count"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1471,6 +1535,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/user-events/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["stream_user_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/user-roles": {
         parameters: {
             query?: never;
@@ -1551,22 +1631,6 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/ws/notifications": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["notification_ws"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 };
 export type webhooks = Record<string, never>;
 export type components = {
@@ -1633,32 +1697,68 @@ export type components = {
             catalog_number: string;
             label?: null | components["schemas"]["SimpleLabel"];
         };
+        CollectionReference: {
+            /** Format: int32 */
+            id: number;
+            /** @enum {string} */
+            state: "Available";
+            title: string;
+        } | {
+            /** @enum {string} */
+            state: "Deleted";
+        } | {
+            /** @enum {string} */
+            state: "Restricted";
+        };
+        Comment: {
+            author: components["schemas"]["CommentAuthor"];
+            content?: string | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: int32 */
+            id: number;
+            /** Format: int32 */
+            in_reply_to_comment_id?: number | null;
+            state: components["schemas"]["CommentState"];
+            /** Format: date-time */
+            updated_at: string;
+        };
         CommentAuthor: {
             avatar_url?: string | null;
             /** Format: int32 */
             id: number;
             name: string;
         };
-        /** @enum {string} */
-        CommentState: "Active" | "Deleted";
-        CorrectionComment: {
-            author: components["schemas"]["CommentAuthor"];
-            content?: string | null;
+        CommentPage: {
+            /** Format: int64 */
+            active_count: number;
+            items: components["schemas"]["Comment"][];
             /** Format: int32 */
-            correction_id: number;
+            next_cursor?: number | null;
+        };
+        CommentPreview: {
+            actor: components["schemas"]["UserSummary"];
+            content: string;
             /** Format: date-time */
             created_at: string;
             /** Format: int32 */
             id: number;
-            /** Format: int32 */
-            parent_id?: number | null;
-            state: components["schemas"]["CommentState"];
+            /** @enum {string} */
+            state: "Visible";
+        } | {
+            actor: components["schemas"]["UserSummary"];
             /** Format: date-time */
-            updated_at: string;
+            created_at: string;
+            /** @enum {string} */
+            state: "Deleted";
         };
+        /** @enum {string} */
+        CommentState: "Active" | "Deleted";
+        /** @enum {string} */
+        CorrectionDecision: "Approve" | "Reject";
         CorrectionDetail: {
-            author: components["schemas"]["CorrectionUserSummary"];
-            comments: components["schemas"]["CursorResponse_CorrectionComment"];
+            author: components["schemas"]["UserSummary"];
+            comments: components["schemas"]["CommentPage"];
             /** Format: date-time */
             created_at: string;
             /** Format: int32 */
@@ -1669,6 +1769,8 @@ export type components = {
             handled_at?: string | null;
             /** Format: int32 */
             id: number;
+            /** @description Whether the querist subscribes to this correction. `None` if querist is not signed in. */
+            is_subscribed?: boolean | null;
             status: components["schemas"]["CorrectionStatus"];
             type: components["schemas"]["CorrectionType"];
         };
@@ -1692,7 +1794,7 @@ export type components = {
             path: string;
         };
         CorrectionHistoryItem: {
-            author: components["schemas"]["CorrectionUserSummary"];
+            author: components["schemas"]["UserSummary"];
             /** Format: date-time */
             created_at: string;
             description: string;
@@ -1702,8 +1804,10 @@ export type components = {
             id: number;
             type: components["schemas"]["CorrectionType"];
         };
+        /** @enum {string} */
+        CorrectionModerationAction: "Approved" | "Rejected";
         CorrectionRevisionSummary: {
-            author: components["schemas"]["CorrectionUserSummary"];
+            author: components["schemas"]["UserSummary"];
             description: string;
             /** Format: int32 */
             entity_history_id: number;
@@ -1723,15 +1827,12 @@ export type components = {
         };
         /** @enum {string} */
         CorrectionType: "Create" | "Update" | "Delete";
-        CorrectionUserSummary: {
-            /** Format: int32 */
-            id: number;
-            name: string;
-        };
         CreateEntityCommentRequest: {
             content: string;
             /** Format: int32 */
-            parent_id?: number | null;
+            in_reply_to_comment_id?: number | null;
+            /** Format: int32 */
+            read_through_comment_id?: number | null;
         };
         CreateUserCollectionItemRequest: {
             description?: string | null;
@@ -1760,26 +1861,7 @@ export type components = {
         CurrentImageMetadata: {
             /** Format: date-time */
             uploaded_at: string;
-            uploaded_by: components["schemas"]["ImageUploaderSummary"];
-        };
-        CursorResponse_CorrectionComment: {
-            items: {
-                author: components["schemas"]["CommentAuthor"];
-                content?: string | null;
-                /** Format: int32 */
-                correction_id: number;
-                /** Format: date-time */
-                created_at: string;
-                /** Format: int32 */
-                id: number;
-                /** Format: int32 */
-                parent_id?: number | null;
-                state: components["schemas"]["CommentState"];
-                /** Format: date-time */
-                updated_at: string;
-            }[];
-            /** Format: int32 */
-            next_cursor?: number | null;
+            uploaded_by: components["schemas"]["UserSummary"];
         };
         CursorResponse_Credit: {
             items: {
@@ -1804,22 +1886,6 @@ export type components = {
                 release_id: number;
                 release_type: components["schemas"]["ReleaseType"];
                 title: string;
-            }[];
-            /** Format: int32 */
-            next_cursor?: number | null;
-        };
-        CursorResponse_NotificationItem: {
-            items: {
-                /** Format: date-time */
-                created_at: string;
-                /** Format: int32 */
-                id: number;
-                is_read: boolean;
-                notification_kind: string;
-                payload: unknown;
-                /** Format: int32 */
-                target_id: number;
-                target_type: string;
             }[];
             /** Format: int32 */
             next_cursor?: number | null;
@@ -1969,7 +2035,7 @@ export type components = {
             data: null | {
                 /** Format: date-time */
                 uploaded_at: string;
-                uploaded_by: components["schemas"]["ImageUploaderSummary"];
+                uploaded_by: components["schemas"]["UserSummary"];
             };
             /** @enum {string} */
             status: "Ok";
@@ -1981,7 +2047,7 @@ export type components = {
         };
         Data_Vec_CorrectionHistoryItem: {
             data: {
-                author: components["schemas"]["CorrectionUserSummary"];
+                author: components["schemas"]["UserSummary"];
                 /** Format: date-time */
                 created_at: string;
                 description: string;
@@ -1996,7 +2062,7 @@ export type components = {
         };
         Data_Vec_CorrectionRevisionSummary: {
             data: {
-                author: components["schemas"]["CorrectionUserSummary"];
+                author: components["schemas"]["UserSummary"];
                 description: string;
                 /** Format: int32 */
                 entity_history_id: number;
@@ -2004,16 +2070,16 @@ export type components = {
             /** @enum {string} */
             status: "Ok";
         };
-        DataCorrectionComment: {
-            data: components["schemas"]["CorrectionComment"];
+        DataComment: {
+            data: components["schemas"]["Comment"];
+            status: string;
+        };
+        DataCommentPage: {
+            data: components["schemas"]["CommentPage"];
             status: string;
         };
         DataCorrectionDetail: {
             data: components["schemas"]["CorrectionDetail"];
-            status: string;
-        };
-        DataEntityComment: {
-            data: components["schemas"]["EntityComment"];
             status: string;
         };
         DataForgotPasswordResponse: {
@@ -2030,6 +2096,10 @@ export type components = {
         };
         DataInitDiscography: {
             data: components["schemas"]["InitDiscography"];
+            status: string;
+        };
+        DataNotificationPage: {
+            data: components["schemas"]["NotificationPage"];
             status: string;
         };
         DataOptionArtist: {
@@ -2108,24 +2178,12 @@ export type components = {
             data: components["schemas"]["CursorResponse_Discography"];
             status: string;
         };
-        DataPaginatedCorrectionComment: {
-            data: components["schemas"]["CursorResponse_CorrectionComment"];
-            status: string;
-        };
         DataPaginatedCredit: {
             data: components["schemas"]["CursorResponse_Credit"];
             status: string;
         };
         DataPaginatedDiscography: {
             data: components["schemas"]["CursorResponse_Discography"];
-            status: string;
-        };
-        DataPaginatedEntityComment: {
-            data: components["schemas"]["EntityCommentPage"];
-            status: string;
-        };
-        DataPaginatedNotificationItem: {
-            data: components["schemas"]["CursorResponse_NotificationItem"];
             status: string;
         };
         DataPaginatedPendingImageQueueItem: {
@@ -2181,9 +2239,12 @@ export type components = {
             data: components["schemas"]["SignUpResponse"];
             status: string;
         };
+        DataSubscriptionStatus: {
+            data: components["schemas"]["SubscriptionStatus"];
+            status: string;
+        };
         DataUnreadCount: {
-            /** Format: int64 */
-            data: number;
+            data: components["schemas"]["UnreadCount"];
             status: string;
         };
         DataUserCollection: {
@@ -2267,29 +2328,15 @@ export type components = {
         };
         /** @enum {string} */
         EditableUserRole: "Moderator";
-        EntityComment: {
-            author: components["schemas"]["CommentAuthor"];
-            content?: string | null;
-            /** Format: date-time */
-            created_at: string;
+        /** @enum {string} */
+        EntityCommentTarget: "artist" | "release" | "song" | "label" | "event" | "tag" | "correction";
+        EntityIdent: string;
+        EntityMeta: {
             /** Format: int32 */
             id: number;
-            /** Format: int32 */
-            parent_id?: number | null;
-            state: components["schemas"]["CommentState"];
-            /** Format: date-time */
-            updated_at: string;
+            kind: components["schemas"]["NotificationEntityKind"];
+            name: string;
         };
-        EntityCommentPage: {
-            /** Format: int64 */
-            active_count: number;
-            items: components["schemas"]["EntityComment"][];
-            /** Format: int32 */
-            next_cursor?: number | null;
-        };
-        /** @enum {string} */
-        EntityCommentTarget: "artist" | "release" | "song" | "label" | "event" | "tag";
-        EntityIdent: string;
         /** @description Discriminated union of entity summaries, tagged by `entity_type`. */
         EntitySummary: (components["schemas"]["ArtistSummary"] & {
             /** @enum {string} */
@@ -2347,10 +2394,6 @@ export type components = {
             /** Format: int64 */
             verification_code_expires_minutes: number;
         };
-        /** @enum {string} */
-        HandleCorrectionMethod: "Approve" | "Reject";
-        /** @enum {string} */
-        HandleImageQueueMethod: "Approve" | "Reject" | "Revert";
         HomeMetadata: {
             /** Format: int64 */
             artists_count: number;
@@ -2361,6 +2404,8 @@ export type components = {
             /** Format: int64 */
             tags_count: number;
         };
+        /** @enum {string} */
+        ImageQueueAction: "Approve" | "Reject" | "Revert";
         ImageQueueDetail: {
             artist?: null | components["schemas"]["ArtistImageQueueTarget"];
             /** Format: date-time */
@@ -2374,12 +2419,15 @@ export type components = {
             image?: null | components["schemas"]["ImageSummary"];
             /** Format: int32 */
             image_id?: number | null;
+            is_subscribed: boolean;
             release?: null | components["schemas"]["ReleaseImageQueueTarget"];
             /** Format: date-time */
             reverted_at?: string | null;
             reverted_by?: null | components["schemas"]["UserSummary"];
             status: components["schemas"]["ImageQueueStatus"];
         };
+        /** @enum {string} */
+        ImageQueueModerationAction: "Approved" | "Rejected" | "Reverted";
         /** @enum {string} */
         ImageQueueStatus: "Pending" | "Approved" | "Rejected" | "Cancelled" | "Reverted";
         /** @enum {string} */
@@ -2392,11 +2440,6 @@ export type components = {
             /** Format: date-time */
             uploaded_at: string;
             uploaded_by: components["schemas"]["UserSummary"];
-        };
-        ImageUploaderSummary: {
-            /** Format: int32 */
-            id: number;
-            name: string;
         };
         InitDiscography: {
             album: components["schemas"]["CursorResponse_Discography"];
@@ -2438,6 +2481,12 @@ export type components = {
             city?: string | null;
             country?: string | null;
             province?: string | null;
+        };
+        MarkReadRequest: {
+            through_seq: string;
+        };
+        MarkUnreadRequest: {
+            from_seq: string;
         };
         Membership: {
             /** Format: int32 */
@@ -2695,6 +2744,100 @@ export type components = {
             track_number?: string | null;
         };
         NonEmptyString: string;
+        NotificationBody: {
+            actor: components["schemas"]["UserSummary"];
+            correction: components["schemas"]["EntityMeta"];
+            /** @enum {string} */
+            kind: "CorrectionReviewRequested";
+        } | {
+            actor: components["schemas"]["UserSummary"];
+            correction: components["schemas"]["EntityMeta"];
+            /** @enum {string} */
+            kind: "CorrectionUpdated";
+        } | {
+            action: components["schemas"]["CorrectionModerationAction"];
+            actor: components["schemas"]["UserSummary"];
+            correction: components["schemas"]["EntityMeta"];
+            /** @enum {string} */
+            kind: "CorrectionModerated";
+        } | {
+            /** Format: int32 */
+            additional_commenter_count: number;
+            commenters: [
+            ] | [
+                components["schemas"]["UserSummary"]
+            ] | [
+                components["schemas"]["UserSummary"],
+                components["schemas"]["UserSummary"]
+            ];
+            container?: null | components["schemas"]["EntityMeta"];
+            /** @enum {string} */
+            kind: "CommentThreadUpdated";
+            latest: components["schemas"]["CommentPreview"];
+        } | {
+            container?: null | components["schemas"]["EntityMeta"];
+            /** @enum {string} */
+            kind: "CommentReplied";
+            reply: components["schemas"]["CommentPreview"];
+        } | {
+            actor: components["schemas"]["UserSummary"];
+            /** @enum {string} */
+            kind: "UserFollowed";
+        } | {
+            actor: components["schemas"]["UserSummary"];
+            collection: components["schemas"]["CollectionReference"];
+            /** @enum {string} */
+            kind: "CollectionFollowed";
+        } | {
+            actor: components["schemas"]["UserSummary"];
+            collection: components["schemas"]["CollectionReference"];
+            /** @enum {string} */
+            kind: "CollectionItemAdded";
+        } | {
+            action: components["schemas"]["ImageQueueModerationAction"];
+            actor: components["schemas"]["UserSummary"];
+            image_queue: components["schemas"]["EntityMeta"];
+            image_type: components["schemas"]["NotificationImageType"];
+            /** @enum {string} */
+            kind: "ImageQueueModerated";
+        } | {
+            actor: components["schemas"]["UserSummary"];
+            /** @enum {string} */
+            kind: "AccountRoleChanged";
+            new_roles: string[];
+        };
+        /**
+         * @description Category for frontend filtering of notifications.
+         * @enum {string}
+         */
+        NotificationCategory: "Correction" | "Comment" | "Social" | "Collection" | "ImageQueue" | "Account";
+        NotificationCursor: {
+            before_inbox_seq: string;
+            snapshot_inbox_seq: string;
+        };
+        /** @enum {string} */
+        NotificationEntityKind: "Artist" | "Release" | "Song" | "Label" | "Event" | "Tag" | "Correction" | "ImageQueue";
+        /** @enum {string} */
+        NotificationImageType: "Profile" | "Cover";
+        NotificationItem: {
+            body: components["schemas"]["NotificationBody"];
+            /** Format: date-time */
+            created_at: string;
+            id: string;
+            is_unread: boolean;
+            /** Format: date-time */
+            last_activity_at: string;
+            /** Format: date-time */
+            saved_at?: string | null;
+            through_seq: string;
+        };
+        NotificationPage: {
+            items: components["schemas"]["NotificationItem"][];
+            next_cursor?: null | components["schemas"]["NotificationCursor"];
+            snapshot_inbox_seq: string;
+        };
+        /** @enum {string} */
+        NotificationState: "inbox" | "unread" | "saved";
         PageResponse_Artist: {
             items: {
                 /** @description List of id of artist aliases */
@@ -2883,8 +3026,6 @@ export type components = {
                 entity_type: components["schemas"]["EntityType"];
                 /** Format: int32 */
                 id: number;
-                /** Format: int32 */
-                position: number;
             }[];
             /** Format: int64 */
             page: number;
@@ -2912,7 +3053,10 @@ export type components = {
             total_pages: number;
         };
         /** @enum {string} */
-        PermissionName: "correction.manage" | "comment.manage" | "image.queue.manage" | "admin.user.read" | "admin.user.role.write";
+        Permission: "correction.manage" | "comment.manage" | "image.queue.manage" | "admin.user.read" | "admin.user.role.write";
+        ReadAllRequest: {
+            snapshot_inbox_seq: string;
+        };
         Release: {
             artists?: components["schemas"]["ReleaseArtist"][];
             catalog_nums?: components["schemas"]["CatalogNumber"][];
@@ -3097,6 +3241,9 @@ export type components = {
         };
         /** @enum {string} */
         SortDirection: "asc" | "desc";
+        SubscriptionStatus: {
+            subscribed: boolean;
+        };
         Tag: {
             alt_names?: components["schemas"]["AlternativeName"][];
             description: string;
@@ -3138,6 +3285,10 @@ export type components = {
             /** Format: int32 */
             leave_year?: number | null;
         };
+        UnreadCount: {
+            /** Format: int32 */
+            count: number;
+        };
         UploadAvatar: {
             /** Format: binary */
             data: string;
@@ -3168,8 +3319,6 @@ export type components = {
             entity_type: components["schemas"]["EntityType"];
             /** Format: int32 */
             id: number;
-            /** Format: int32 */
-            position: number;
         };
         /** @enum {string} */
         UserCollectionItemEntityType: "Artist" | "Label" | "Release" | "Song" | "Tag" | "Event";
@@ -3190,12 +3339,14 @@ export type components = {
             /** @description Banner url with sub directory, eg. ab/cd/abcd..xyz.jpg */
             banner_url?: string | null;
             bio?: string | null;
+            /** Format: int32 */
+            id: number;
             /** @description Whether the querist follows the user. Return `None` if querist is not signed in or it's querist's own profile */
             is_following?: boolean | null;
             /** Format: date-time */
             last_login: string;
             name: string;
-            permissions?: components["schemas"]["PermissionName"][];
+            permissions?: components["schemas"]["Permission"][];
             roles?: components["schemas"]["UserRole"][];
             settings?: unknown;
             stats: components["schemas"]["UserProfileStats"];
@@ -3255,30 +3406,32 @@ export type ArtistSummary = components['schemas']['ArtistSummary'];
 export type ArtistType = components['schemas']['ArtistType'];
 export type AuthCredential = components['schemas']['AuthCredential'];
 export type CatalogNumber = components['schemas']['CatalogNumber'];
+export type CollectionReference = components['schemas']['CollectionReference'];
+export type Comment = components['schemas']['Comment'];
 export type CommentAuthor = components['schemas']['CommentAuthor'];
+export type CommentPage = components['schemas']['CommentPage'];
+export type CommentPreview = components['schemas']['CommentPreview'];
 export type CommentState = components['schemas']['CommentState'];
-export type CorrectionComment = components['schemas']['CorrectionComment'];
+export type CorrectionDecision = components['schemas']['CorrectionDecision'];
 export type CorrectionDetail = components['schemas']['CorrectionDetail'];
 export type CorrectionDiff = components['schemas']['CorrectionDiff'];
 export type CorrectionDiffEntry = components['schemas']['CorrectionDiffEntry'];
 export type CorrectionHistoryItem = components['schemas']['CorrectionHistoryItem'];
+export type CorrectionModerationAction = components['schemas']['CorrectionModerationAction'];
 export type CorrectionRevisionSummary = components['schemas']['CorrectionRevisionSummary'];
 export type CorrectionSortField = components['schemas']['CorrectionSortField'];
 export type CorrectionStatus = components['schemas']['CorrectionStatus'];
 export type CorrectionSubmitKind = components['schemas']['CorrectionSubmitKind'];
 export type CorrectionSubmitResult = components['schemas']['CorrectionSubmitResult'];
 export type CorrectionType = components['schemas']['CorrectionType'];
-export type CorrectionUserSummary = components['schemas']['CorrectionUserSummary'];
 export type CreateEntityCommentRequest = components['schemas']['CreateEntityCommentRequest'];
 export type CreateUserCollectionItemRequest = components['schemas']['CreateUserCollectionItemRequest'];
 export type CreditRole = components['schemas']['CreditRole'];
 export type CreditRoleRef = components['schemas']['CreditRoleRef'];
 export type CreditRoleSummary = components['schemas']['CreditRoleSummary'];
 export type CurrentImageMetadata = components['schemas']['CurrentImageMetadata'];
-export type CursorResponseCorrectionComment = components['schemas']['CursorResponse_CorrectionComment'];
 export type CursorResponseCredit = components['schemas']['CursorResponse_Credit'];
 export type CursorResponseDiscography = components['schemas']['CursorResponse_Discography'];
-export type CursorResponseNotificationItem = components['schemas']['CursorResponse_NotificationItem'];
 export type CursorResponsePendingImageQueueItem = components['schemas']['CursorResponse_PendingImageQueueItem'];
 export type CursorResponseSimpleArtist = components['schemas']['CursorResponse_SimpleArtist'];
 export type CursorResponseSimpleEvent = components['schemas']['CursorResponse_SimpleEvent'];
@@ -3295,13 +3448,14 @@ export type DataOptionCurrentImageMetadata = components['schemas']['Data_Option_
 export type DataOptionI32 = components['schemas']['Data_Option_i32'];
 export type DataVecCorrectionHistoryItem = components['schemas']['Data_Vec_CorrectionHistoryItem'];
 export type DataVecCorrectionRevisionSummary = components['schemas']['Data_Vec_CorrectionRevisionSummary'];
-export type DataCorrectionComment = components['schemas']['DataCorrectionComment'];
+export type DataComment = components['schemas']['DataComment'];
+export type DataCommentPage = components['schemas']['DataCommentPage'];
 export type DataCorrectionDetail = components['schemas']['DataCorrectionDetail'];
-export type DataEntityComment = components['schemas']['DataEntityComment'];
 export type DataForgotPasswordResponse = components['schemas']['DataForgotPasswordResponse'];
 export type DataHomeMetadata = components['schemas']['DataHomeMetadata'];
 export type DataImageQueueDetail = components['schemas']['DataImageQueueDetail'];
 export type DataInitDiscography = components['schemas']['DataInitDiscography'];
+export type DataNotificationPage = components['schemas']['DataNotificationPage'];
 export type DataOptionArtist = components['schemas']['DataOptionArtist'];
 export type DataOptionCreditRole = components['schemas']['DataOptionCreditRole'];
 export type DataOptionEvent = components['schemas']['DataOptionEvent'];
@@ -3321,11 +3475,8 @@ export type DataPageUserCollection = components['schemas']['DataPageUserCollecti
 export type DataPageUserCollectionItemDetail = components['schemas']['DataPageUserCollectionItemDetail'];
 export type DataPageUserSummary = components['schemas']['DataPageUserSummary'];
 export type DataPaginatedAppearance = components['schemas']['DataPaginatedAppearance'];
-export type DataPaginatedCorrectionComment = components['schemas']['DataPaginatedCorrectionComment'];
 export type DataPaginatedCredit = components['schemas']['DataPaginatedCredit'];
 export type DataPaginatedDiscography = components['schemas']['DataPaginatedDiscography'];
-export type DataPaginatedEntityComment = components['schemas']['DataPaginatedEntityComment'];
-export type DataPaginatedNotificationItem = components['schemas']['DataPaginatedNotificationItem'];
 export type DataPaginatedPendingImageQueueItem = components['schemas']['DataPaginatedPendingImageQueueItem'];
 export type DataPaginatedSimpleArtist = components['schemas']['DataPaginatedSimpleArtist'];
 export type DataPaginatedSimpleEvent = components['schemas']['DataPaginatedSimpleEvent'];
@@ -3339,6 +3490,7 @@ export type DataPendingImageQueueCount = components['schemas']['DataPendingImage
 export type DataResendVerificationEmailResponse = components['schemas']['DataResendVerificationEmailResponse'];
 export type DataSearchResponse = components['schemas']['DataSearchResponse'];
 export type DataSignUpResponse = components['schemas']['DataSignUpResponse'];
+export type DataSubscriptionStatus = components['schemas']['DataSubscriptionStatus'];
 export type DataUnreadCount = components['schemas']['DataUnreadCount'];
 export type DataUserCollection = components['schemas']['DataUserCollection'];
 export type DataUserCollectionItem = components['schemas']['DataUserCollectionItem'];
@@ -3361,10 +3513,9 @@ export type DatePrecision = components['schemas']['DatePrecision'];
 export type DateWithPrecision = components['schemas']['DateWithPrecision'];
 export type DeleteVoteBody = components['schemas']['DeleteVoteBody'];
 export type EditableUserRole = components['schemas']['EditableUserRole'];
-export type EntityComment = components['schemas']['EntityComment'];
-export type EntityCommentPage = components['schemas']['EntityCommentPage'];
 export type EntityCommentTarget = components['schemas']['EntityCommentTarget'];
 export type EntityIdent = components['schemas']['EntityIdent'];
+export type EntityMeta = components['schemas']['EntityMeta'];
 export type EntitySummary = components['schemas']['EntitySummary'];
 export type EntityType = components['schemas']['EntityType'];
 export type EntityUserCollectionSort = components['schemas']['EntityUserCollectionSort'];
@@ -3374,14 +3525,13 @@ export type Event = components['schemas']['Event'];
 export type EventSummary = components['schemas']['EventSummary'];
 export type ForgotPasswordRequest = components['schemas']['ForgotPasswordRequest'];
 export type ForgotPasswordResponse = components['schemas']['ForgotPasswordResponse'];
-export type HandleCorrectionMethod = components['schemas']['HandleCorrectionMethod'];
-export type HandleImageQueueMethod = components['schemas']['HandleImageQueueMethod'];
 export type HomeMetadata = components['schemas']['HomeMetadata'];
+export type ImageQueueAction = components['schemas']['ImageQueueAction'];
 export type ImageQueueDetail = components['schemas']['ImageQueueDetail'];
+export type ImageQueueModerationAction = components['schemas']['ImageQueueModerationAction'];
 export type ImageQueueStatus = components['schemas']['ImageQueueStatus'];
 export type ImageQueueType = components['schemas']['ImageQueueType'];
 export type ImageSummary = components['schemas']['ImageSummary'];
-export type ImageUploaderSummary = components['schemas']['ImageUploaderSummary'];
 export type InitDiscography = components['schemas']['InitDiscography'];
 export type Label = components['schemas']['Label'];
 export type LabelSummary = components['schemas']['LabelSummary'];
@@ -3389,6 +3539,8 @@ export type Language = components['schemas']['Language'];
 export type LocalizedName = components['schemas']['LocalizedName'];
 export type LocalizedTitle = components['schemas']['LocalizedTitle'];
 export type Location = components['schemas']['Location'];
+export type MarkReadRequest = components['schemas']['MarkReadRequest'];
+export type MarkUnreadRequest = components['schemas']['MarkUnreadRequest'];
 export type Membership = components['schemas']['Membership'];
 export type Message = components['schemas']['Message'];
 export type NewArtist = components['schemas']['NewArtist'];
@@ -3418,6 +3570,14 @@ export type NewTag = components['schemas']['NewTag'];
 export type NewTagRelation = components['schemas']['NewTagRelation'];
 export type NewTrack = components['schemas']['NewTrack'];
 export type NonEmptyString = components['schemas']['NonEmptyString'];
+export type NotificationBody = components['schemas']['NotificationBody'];
+export type NotificationCategory = components['schemas']['NotificationCategory'];
+export type NotificationCursor = components['schemas']['NotificationCursor'];
+export type NotificationEntityKind = components['schemas']['NotificationEntityKind'];
+export type NotificationImageType = components['schemas']['NotificationImageType'];
+export type NotificationItem = components['schemas']['NotificationItem'];
+export type NotificationPage = components['schemas']['NotificationPage'];
+export type NotificationState = components['schemas']['NotificationState'];
 export type PageResponseArtist = components['schemas']['PageResponse_Artist'];
 export type PageResponseEvent = components['schemas']['PageResponse_Event'];
 export type PageResponseFollowedUserCollection = components['schemas']['PageResponse_FollowedUserCollection'];
@@ -3428,7 +3588,8 @@ export type PageResponseTag = components['schemas']['PageResponse_Tag'];
 export type PageResponseUserCollection = components['schemas']['PageResponse_UserCollection'];
 export type PageResponseUserCollectionItemDetail = components['schemas']['PageResponse_UserCollectionItemDetail'];
 export type PageResponseUserSummary = components['schemas']['PageResponse_UserSummary'];
-export type PermissionName = components['schemas']['PermissionName'];
+export type Permission = components['schemas']['Permission'];
+export type ReadAllRequest = components['schemas']['ReadAllRequest'];
 export type Release = components['schemas']['Release'];
 export type ReleaseArtist = components['schemas']['ReleaseArtist'];
 export type ReleaseCoverArtFormData = components['schemas']['ReleaseCoverArtFormData'];
@@ -3461,6 +3622,7 @@ export type SongRelationType = components['schemas']['SongRelationType'];
 export type SongRelease = components['schemas']['SongRelease'];
 export type SongSummary = components['schemas']['SongSummary'];
 export type SortDirection = components['schemas']['SortDirection'];
+export type SubscriptionStatus = components['schemas']['SubscriptionStatus'];
 export type Tag = components['schemas']['Tag'];
 export type TagAggregateVote = components['schemas']['TagAggregateVote'];
 export type TagRef = components['schemas']['TagRef'];
@@ -3469,6 +3631,7 @@ export type TagRelationType = components['schemas']['TagRelationType'];
 export type TagSummary = components['schemas']['TagSummary'];
 export type TagType = components['schemas']['TagType'];
 export type Tenure = components['schemas']['Tenure'];
+export type UnreadCount = components['schemas']['UnreadCount'];
 export type UploadAvatar = components['schemas']['UploadAvatar'];
 export type UploadProfileBanner = components['schemas']['UploadProfileBanner'];
 export type UserCollection = components['schemas']['UserCollection'];
@@ -3795,7 +3958,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataPaginatedEntityComment"];
+                    "application/json": components["schemas"]["DataCommentPage"];
                 };
             };
             /** @description Too Many Requests */
@@ -3845,7 +4008,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataEntityComment"];
+                    "application/json": components["schemas"]["DataComment"];
                 };
             };
             /** @description Too Many Requests */
@@ -5121,10 +5284,10 @@ export interface operations {
             };
         };
     };
-    handle_correction: {
+    moderate_correction: {
         parameters: {
             query: {
-                method: components["schemas"]["HandleCorrectionMethod"];
+                decision: components["schemas"]["CorrectionDecision"];
             };
             header?: never;
             path: {
@@ -5140,101 +5303,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Message"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
-    find_comments: {
-        parameters: {
-            query?: {
-                cursor?: number;
-                limit?: number;
-            };
-            header?: never;
-            path: {
-                /** @description Correction id */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataPaginatedCorrectionComment"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
-    create_comment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Correction id */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateEntityCommentRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataCorrectionComment"];
                 };
             };
             /** @description Too Many Requests */
@@ -5321,6 +5389,52 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Data_Vec_CorrectionRevisionSummary"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    set_correction_subscription: {
+        parameters: {
+            query: {
+                subscribed: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Correction id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataSubscriptionStatus"];
                 };
             };
             /** @description Too Many Requests */
@@ -6162,10 +6276,10 @@ export interface operations {
             };
         };
     };
-    handle_image_queue: {
+    moderate_image_queue: {
         parameters: {
             query: {
-                method: components["schemas"]["HandleImageQueueMethod"];
+                action: components["schemas"]["ImageQueueAction"];
             };
             header?: never;
             path: {
@@ -6181,6 +6295,147 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    find_image_queue_comments: {
+        parameters: {
+            query?: {
+                cursor?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Image queue id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataCommentPage"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    create_image_queue_comment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Image queue id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEntityCommentRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataComment"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    set_image_queue_subscription: {
+        parameters: {
+            query: {
+                subscribed: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Image queue id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataSubscriptionStatus"];
                 };
             };
             /** @description Too Many Requests */
@@ -6578,11 +6833,14 @@ export interface operations {
             };
         };
     };
-    notification_list: {
+    list_notifications: {
         parameters: {
             query?: {
-                cursor?: number;
+                category?: components["schemas"]["NotificationCategory"];
+                cursor_before_inbox_seq?: string;
+                cursor_snapshot_inbox_seq?: string;
                 limit?: number;
+                state?: components["schemas"]["NotificationState"];
             };
             header?: never;
             path?: never;
@@ -6595,7 +6853,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataPaginatedNotificationItem"];
+                    "application/json": components["schemas"]["DataNotificationPage"];
                 };
             };
             /** @description Too Many Requests */
@@ -6622,12 +6880,61 @@ export interface operations {
             };
         };
     };
-    notification_mark_read: {
+    mark_read: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                /** @description Notification id */
+                notification_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkReadRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    save_notification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Notification id */
+                notification_id: string;
             };
             cookie?: never;
         };
@@ -6665,14 +6972,110 @@ export interface operations {
             };
         };
     };
-    notification_read_all: {
+    unsave_notification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Notification id */
+                notification_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    mark_unread: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Notification id */
+                notification_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkUnreadRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    read_all: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReadAllRequest"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -6706,7 +7109,7 @@ export interface operations {
             };
         };
     };
-    notification_unread_count: {
+    unread_count: {
         parameters: {
             query?: never;
             header?: never;
@@ -8944,6 +9347,47 @@ export interface operations {
             };
         };
     };
+    stream_user_events: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": string;
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     user_roles: {
         parameters: {
             query?: never;
@@ -9168,45 +9612,6 @@ export interface operations {
             };
         };
     };
-    notification_ws: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            101: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
 }
 export enum ApiPaths {
     set_user_roles = "/admin/user/{id}/roles",
@@ -9237,11 +9642,10 @@ export enum ApiPaths {
     delete_comment = "/comment/{id}",
     compare_corrections = "/correction/{id1}/compare/{id2}",
     get_correction = "/correction/{id}",
-    handle_correction = "/correction/{id}",
-    find_comments = "/correction/{id}/comments",
-    create_comment = "/correction/{id}/comments",
+    moderate_correction = "/correction/{id}",
     get_correction_diff = "/correction/{id}/diff",
     get_correction_revisions = "/correction/{id}/revisions",
+    set_correction_subscription = "/correction/{id}/subscription",
     create_credit_role = "/credit-role",
     find_many_credit_roles_summary = "/credit-role/summary",
     find_credit_role_by_id = "/credit-role/{id}",
@@ -9260,7 +9664,10 @@ export enum ApiPaths {
     pending_image_queue = "/image-queue",
     pending_image_queue_count = "/image-queue/pending-count",
     image_queue_detail = "/image-queue/{id}",
-    handle_image_queue = "/image-queue/{id}",
+    moderate_image_queue = "/image-queue/{id}",
+    find_image_queue_comments = "/image-queue/{id}/comments",
+    create_image_queue_comment = "/image-queue/{id}/comments",
+    set_image_queue_subscription = "/image-queue/{id}/subscription",
     find_label_by_keyword = "/label",
     create_label = "/label",
     explore_label = "/label/explore",
@@ -9268,10 +9675,13 @@ export enum ApiPaths {
     upsert_label_correction = "/label/{id}",
     update_label_pending_correction = "/label/{id}/correction/{correction_id}",
     language_list = "/languages",
-    notification_list = "/notifications",
-    notification_read_all = "/notifications/read-all",
-    notification_unread_count = "/notifications/unread-count",
-    notification_mark_read = "/notifications/{id}/read",
+    list_notifications = "/notifications",
+    read_all = "/notifications/read-all",
+    unread_count = "/notifications/unread-count",
+    mark_read = "/notifications/{notification_id}/read",
+    save_notification = "/notifications/{notification_id}/saved",
+    unsave_notification = "/notifications/{notification_id}/saved",
+    mark_unread = "/notifications/{notification_id}/unread",
     profile = "/profile",
     upload_profile_banner = "/profile-banner",
     update_bio = "/profile/bio",
@@ -9320,12 +9730,12 @@ export enum ApiPaths {
     update_tag_pending_correction = "/tag/{id}/correction/{correction_id}",
     follow_user_collection = "/user-collections/{id}/follow",
     unfollow_user_collection = "/user-collections/{id}/follow",
+    stream_user_events = "/user-events/stream",
     user_roles = "/user-roles",
     user_image_queue = "/user/{id}/image-queue",
     user_collections = "/user/{username}/collections",
     verify_email = "/verify-email",
     verify_reset_code = "/verify-reset-code",
-    notification_ws = "/ws/notifications",
     entity_user_collections = "/{entity_type}/{id}/collections",
     entity_corrections = "/{entity_type}/{id}/corrections",
     pending_correction = "/{entity_type}/{id}/pending-correction",

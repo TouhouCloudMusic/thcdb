@@ -12,8 +12,9 @@ use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::features::auth::{EditableUserRole, UserRoleEnum};
 use crate::features::song::model::SongRelationType;
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::shared::error::BrokenEntityReference;
+use crate::infra::database::error::{
+    BrokenEntityReference, DatabaseError, DatabaseResultExt,
+};
 use crate::shared::http::api_response::Data;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {

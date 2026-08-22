@@ -1,20 +1,21 @@
 use std::path::PathBuf;
 
+use auth_core::permission::Permission;
 use entity::enums::{CorrectionStatus, CorrectionType, CorrectionUserType};
 use entity::relation::UserRelationExt;
 use entity::user_following;
 use infra_db::SeaOrmRepository;
 use macros::FieldEnum;
 use sea_orm::prelude::Expr;
-use sea_orm::sea_query::{Func, Query, SimpleExpr, UnionType};
 use sea_orm::{
     ColumnTrait, ConnectionTrait, DbErr, EntityTrait, FromQueryResult,
     JoinType, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, QueryTrait,
     RelationTrait,
 };
 use sea_orm_migration::prelude::Alias;
+use sea_query::{Func, Query, SimpleExpr, UnionType};
 
-use crate::features::auth::{PermissionName, UserRole};
+use crate::features::auth::UserRole;
 use crate::features::user::User;
 use crate::features::user_profile::{UserProfile, UserProfileStats};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
@@ -132,6 +133,7 @@ pub(crate) async fn find_by_name(
     };
 
     Ok(Some(UserProfile {
+        id: profile.id,
         name: profile.name,
         last_login: profile.last_login,
         avatar_url,
@@ -180,7 +182,7 @@ pub(crate) async fn with_following(
 async fn find_user_permission_names(
     user_id: i32,
     conn: &impl ConnectionTrait,
-) -> Result<Vec<PermissionName>, DbErr> {
+) -> Result<Vec<Permission>, DbErr> {
     use entity::{permission, role_permission, user_role};
 
     let names = user_role::Entity::find()
@@ -204,7 +206,7 @@ async fn find_user_permission_names(
 
     names
         .into_iter()
-        .map(|name| PermissionName::try_from(name).map_err(DbErr::Custom))
+        .map(|name| Permission::try_from(name).map_err(DbErr::Custom))
         .collect()
 }
 

@@ -77,24 +77,12 @@ impl Service {
 
     pub(crate) async fn image_queue_detail(
         &self,
-        user_id: i32,
+        user_id: Option<i32>,
         id: i32,
     ) -> Result<ImageQueueDetail, Error> {
         let detail = repo::find_detail(&self.repo, id)
             .await?
             .ok_or(Error::NotFound)?;
-
-        if detail.queue.created_by != user_id
-            && !user_has_permission(
-                &self.repo.conn,
-                user_id,
-                Permission::ImageQueueManage,
-            )
-            .await
-            .db_operation("check image queue manage permission")?
-        {
-            return Err(Error::PermissionDenied);
-        }
 
         let queue = detail.queue;
         let image = detail.image;
@@ -137,13 +125,17 @@ impl Service {
                 .unwrap_or_else(|| UserSummary::unknown(user_id))
         });
 
-        let is_subscribed = image_queue_subscription::Entity::find()
-            .filter(image_queue_subscription::Column::UserId.eq(user_id))
-            .filter(image_queue_subscription::Column::ImageQueueId.eq(id))
-            .one(&self.repo.conn)
-            .await
-            .db_operation("check image queue subscription")?
-            .is_some();
+        let is_subscribed = if let Some(user_id) = user_id {
+            image_queue_subscription::Entity::find()
+                .filter(image_queue_subscription::Column::UserId.eq(user_id))
+                .filter(image_queue_subscription::Column::ImageQueueId.eq(id))
+                .one(&self.repo.conn)
+                .await
+                .db_operation("check image queue subscription")?
+                .is_some()
+        } else {
+            false
+        };
 
         Ok(ImageQueueDetail {
             id: queue.id,

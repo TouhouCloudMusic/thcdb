@@ -26,7 +26,7 @@ const TAG: &str = "User Collection";
 
 impl FromRef<ArcAppState> for Service {
     fn from_ref(input: &ArcAppState) -> Self {
-        Self::new(input.sea_orm_repo.clone())
+        Self::new(input.sea_orm_repo.clone(), input.user_events.clone())
     }
 }
 

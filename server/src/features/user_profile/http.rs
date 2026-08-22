@@ -55,7 +55,6 @@ async fn follow_user(
     CurrentUser(user): CurrentUser,
     Path(name): Path<String>,
     State(service): State<state::UserProfileService>,
-    State(notification): State<state::NotificationService>,
 ) -> Result<Message, Error> {
     let target_user = service
         .find_user_by_name(&name)
@@ -67,19 +66,6 @@ async fn follow_user(
     if res == FollowResult::AlreadyFollowing {
         return Ok(Message::ok());
     }
-
-    notification
-        .create_best_effort(
-            target_user.id,
-            crate::features::notification::NotificationKindEnum::NewFollower,
-            crate::features::notification::NotificationTargetTypeEnum::User,
-            user.id,
-            crate::features::notification::NotificationPayload {
-                summary: Some(format!("{} started following you", user.name)),
-                target_url: Some(format!("/profile/{}", user.name)),
-            },
-        )
-        .await;
 
     Ok(Message::ok())
 }

@@ -9,8 +9,14 @@ import { i18n, loadLocale } from "./runtime"
 
 export type AppLocale = "en" | "zh-CN"
 
+const LIST_SEPARATOR_BY_LOCALE = {
+	en: ", ",
+	"zh-CN": "、",
+} as const satisfies Record<AppLocale, string>
+
 type I18nStore = {
 	locale: () => AppLocale
+	listSeparator: () => string
 	isSwitchingLocale: () => boolean
 	setLocale: (lang: AppLocale) => Promise<void>
 }
@@ -19,6 +25,7 @@ const I18nContext = createContext<I18nStore>()
 export function I18NProvider(props: ParentProps<{ initialLocale: AppLocale }>) {
 	const [locale, setLocale] = createSignal<AppLocale>(props.initialLocale)
 	const [isSwitchingLocale, setIsSwitchingLocale] = createSignal(false)
+	const listSeparator = () => LIST_SEPARATOR_BY_LOCALE[locale()]
 
 	async function setLocaleValue(next: AppLocale) {
 		if (locale() === next || isSwitchingLocale()) return
@@ -41,6 +48,7 @@ export function I18NProvider(props: ParentProps<{ initialLocale: AppLocale }>) {
 			<I18nContext.Provider
 				value={{
 					locale,
+					listSeparator,
 					isSwitchingLocale,
 					setLocale: setLocaleValue,
 				}}

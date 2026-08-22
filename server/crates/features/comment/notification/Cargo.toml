@@ -1,0 +1,19 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-comment-notification"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "comment_notification"
+path = "src/lib.rs"
+
+[dependencies]
+comment_repo.workspace      = true
+entity.workspace            = true
+infra_db.workspace          = true
+notification_core.workspace = true
+sea-orm.workspace           = true

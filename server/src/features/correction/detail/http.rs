@@ -5,8 +5,8 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use super::model::CorrectionDetail;
-use super::service::{FindCorrectionDetailResult, Service};
-use crate::adapter::inbound::rest::state::ArcAppState;
+use super::service::Service;
+use crate::adapter::inbound::rest::state::{ArcAppState, AuthSession};
 use crate::adapter::inbound::rest::{AppRouter, data};
 use crate::shared::http::api_response::{self, Data};
 
@@ -33,22 +33,22 @@ data!(DataCorrectionDetail, CorrectionDetail);
     ),
 )]
 async fn get_correction(
+    session: AuthSession,
     Path(id): Path<i32>,
     State(service): State<Service>,
 ) -> Result<Data<CorrectionDetail>, axum::response::Response> {
     let result = service
-        .find_correction(id)
+        .find_correction(id, session.user.as_ref().map(|user| user.id))
         .await
         .map_err(IntoResponse::into_response)?;
 
-    match result {
-        FindCorrectionDetailResult::Found(detail) => Ok(Data::from(detail)),
-        FindCorrectionDetailResult::CorrectionNotFound => {
-            Err(api_response::Error::new((
+    result
+        .ok_or_else(|| {
+            api_response::Error::new((
                 "Correction not found",
                 StatusCode::NOT_FOUND,
             ))
-            .into_response())
-        }
-    }
+        })
+        .map(Data::from)
+        .map_err(IntoResponse::into_response)
 }

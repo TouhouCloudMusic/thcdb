@@ -1,0 +1,1 @@
+super::migration!(m20260822_000000_rename_notification_user_columns);

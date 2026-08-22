@@ -120,7 +120,7 @@ export function EntityTagsSectionContainer(
 		<EntityTagsSection
 			class={props.class}
 			tags={tags()}
-			isSignedIn={userCtx.is_signed_in}
+			isSignedIn={userCtx.profile !== undefined}
 			isLoading={tagsQuery.isLoading}
 			dataFilter={dataFilter()}
 			pendingKey={pendingKey()}

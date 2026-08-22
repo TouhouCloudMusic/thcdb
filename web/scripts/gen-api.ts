@@ -5,7 +5,7 @@ import * as NodeRuntime from "@effect/platform-node/NodeRuntime"
 import * as Command from "@effect/platform/Command"
 import * as FileSystem from "@effect/platform/FileSystem"
 import * as Path from "@effect/platform/Path"
-import { createClient } from "@hey-api/openapi-ts"
+import { createClient, defaultPaginationKeywords } from "@hey-api/openapi-ts"
 import { Effect } from "effect"
 import { pipe } from "effect/Function"
 import openapiTS, { astToString } from "openapi-typescript"
@@ -111,6 +111,7 @@ function downloadSchema(schemaUrl: string, fs: FileSystem.FileSystem) {
 		Effect.tryPromise({
 			try: async () => {
 				const response = await fetch(schemaUrl)
+
 				if (!response.ok) {
 					throw new Error(
 						`Failed to download OpenAPI schema: ${response.status} ${response.statusText}`,
@@ -176,6 +177,14 @@ function generateHeyApiOutput() {
 				createClient({
 					input: SCHEMA_PATH,
 					output: HEY_API_OUTPUT,
+					parser: {
+						pagination: {
+							keywords: [
+								...defaultPaginationKeywords,
+								"cursor_before_inbox_seq",
+							],
+						},
+					},
 					plugins: [
 						"@hey-api/typescript",
 						{
@@ -186,7 +195,11 @@ function generateHeyApiOutput() {
 							name: "@hey-api/sdk",
 							responseStyle: "fields",
 						},
-						"@tanstack/solid-query",
+						{
+							infiniteQueryKeys: { tags: true },
+							name: "@tanstack/solid-query",
+							queryKeys: { tags: true },
+						},
 						"valibot",
 					],
 				}),

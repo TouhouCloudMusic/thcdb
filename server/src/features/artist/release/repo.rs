@@ -12,7 +12,7 @@ use libfp::FunctorExt;
 use sea_orm::JoinType::*;
 use sea_orm::prelude::*;
 use sea_orm::{ConnectionTrait, QuerySelect, QueryTrait};
-use sea_query::{Cond, ExprTrait, IntoCondition, SimpleExpr};
+use sea_query::{ExprTrait, IntoCondition, SimpleExpr, all};
 
 use super::super::model::{
     Appearance, AppearanceQuery, ArtistReleaseArtist, Credit, CreditQuery,
@@ -283,11 +283,10 @@ fn appearance_select(artist_id: i32) -> Select<release::Entity> {
         ))
         .filter(release_track_artist::Column::ArtistId.eq(artist_id));
 
-    release::Entity::find().filter(
-        Cond::all()
-            .add(not_release_artist(artist_id))
-            .add(Expr::exists(release_track_artist_subquery.into_query())),
-    )
+    release::Entity::find().filter(all![
+        not_release_artist(artist_id),
+        Expr::exists(release_track_artist_subquery.into_query()),
+    ])
 }
 
 fn credit_select(artist_id: i32) -> Select<release::Entity> {

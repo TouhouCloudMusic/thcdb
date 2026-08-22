@@ -40,7 +40,14 @@ pub(super) enum Error {
     Internal(InternalError),
     NotFound(NotFound),
     CollectionAccessDenied,
+    CannotFollowOwnCollection,
     InvalidRequest(String),
+}
+
+impl From<infra_db::error::DatabaseError> for Error {
+    fn from(source: infra_db::error::DatabaseError) -> Self {
+        Self::Database(source.into())
+    }
 }
 
 impl IntoResponse for Error {
@@ -50,6 +57,10 @@ impl IntoResponse for Error {
             Error::Internal(err) => err.into_response(),
             Error::NotFound(kind) => kind.into_app_error().into_response(),
             Error::CollectionAccessDenied => PermissionDenied.into_response(),
+            Error::CannotFollowOwnCollection => {
+                AppError::bad_request("Cannot follow your own collection")
+                    .into_response()
+            }
             Error::InvalidRequest(message) => {
                 AppError::bad_request(message).into_response()
             }

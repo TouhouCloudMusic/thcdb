@@ -2,7 +2,7 @@ import { ObjExt } from "@thc/toolkit/data"
 import { Either as E } from "effect"
 
 import type {
-	HandleImageQueueMethod,
+	ImageQueueAction,
 	ImageQueueDetail,
 	ImageQueueStatus,
 	ImageQueueType,
@@ -186,12 +186,12 @@ export async function detail(options: {
 	return result
 }
 
-export async function handle(options: {
+export async function moderate(options: {
 	path: {
 		id: number
 	}
 	query: {
-		method: HandleImageQueueMethod
+		action: ImageQueueAction
 	}
 }): Promise<ApiResult<string>> {
 	const result = await postMessage(

@@ -77,24 +77,58 @@ export type CatalogNumber = {
 	label?: null | SimpleLabel
 }
 
-export type CommentAuthor = {
-	id: number
-	name: string
-	avatar_url?: string | null
-}
+export type CollectionReference =
+	| {
+			id: number
+			title: string
+			state: "Available"
+	  }
+	| {
+			state: "Deleted"
+	  }
+	| {
+			state: "Restricted"
+	  }
 
-export type CommentState = "Active" | "Deleted"
-
-export type CorrectionComment = {
+export type Comment = {
 	id: number
-	correction_id: number
-	parent_id?: number | null
+	in_reply_to_comment_id?: number | null
 	author: CommentAuthor
 	content?: string | null
 	state: CommentState
 	created_at: string
 	updated_at: string
 }
+
+export type CommentAuthor = {
+	id: number
+	name: string
+	avatar_url?: string | null
+}
+
+export type CommentPage = {
+	items: Array<Comment>
+	next_cursor?: number | null
+	active_count: number
+}
+
+export type CommentPreview =
+	| {
+			id: number
+			actor: UserSummary
+			content: string
+			created_at: string
+			state: "Visible"
+	  }
+	| {
+			actor: UserSummary
+			created_at: string
+			state: "Deleted"
+	  }
+
+export type CommentState = "Active" | "Deleted"
+
+export type CorrectionDecision = "Approve" | "Reject"
 
 export type CorrectionDetail = {
 	id: number
@@ -105,8 +139,12 @@ export type CorrectionDetail = {
 	entity_name: string
 	created_at: string
 	handled_at?: string | null
-	author: CorrectionUserSummary
-	comments: CursorResponseCorrectionComment
+	author: UserSummary
+	comments: CommentPage
+	/**
+	 * Whether the querist subscribes to this correction. `None` if querist is not signed in.
+	 */
+	is_subscribed?: boolean | null
 }
 
 export type CorrectionDiff = {
@@ -130,13 +168,15 @@ export type CorrectionHistoryItem = {
 	type: CorrectionType
 	created_at: string
 	handled_at?: string | null
-	author: CorrectionUserSummary
+	author: UserSummary
 	description: string
 }
 
+export type CorrectionModerationAction = "Approved" | "Rejected"
+
 export type CorrectionRevisionSummary = {
 	entity_history_id: number
-	author: CorrectionUserSummary
+	author: UserSummary
 	description: string
 }
 
@@ -154,14 +194,10 @@ export type CorrectionSubmitResult = {
 
 export type CorrectionType = "Create" | "Update" | "Delete"
 
-export type CorrectionUserSummary = {
-	id: number
-	name: string
-}
-
 export type CreateEntityCommentRequest = {
-	parent_id?: number | null
+	in_reply_to_comment_id?: number | null
 	content: string
+	read_through_comment_id?: number | null
 }
 
 export type CreateUserCollectionItemRequest = {
@@ -190,21 +226,7 @@ export type CreditRoleSummary = {
 
 export type CurrentImageMetadata = {
 	uploaded_at: string
-	uploaded_by: ImageUploaderSummary
-}
-
-export type CursorResponseCorrectionComment = {
-	items: Array<{
-		id: number
-		correction_id: number
-		parent_id?: number | null
-		author: CommentAuthor
-		content?: string | null
-		state: CommentState
-		created_at: string
-		updated_at: string
-	}>
-	next_cursor?: number | null
+	uploaded_by: UserSummary
 }
 
 export type CursorResponseCredit = {
@@ -228,19 +250,6 @@ export type CursorResponseDiscography = {
 		artist: Array<ArtistReleaseArtist>
 		release_date?: null | DateWithPrecision
 		release_type: ReleaseType
-	}>
-	next_cursor?: number | null
-}
-
-export type CursorResponseNotificationItem = {
-	items: Array<{
-		id: number
-		notification_kind: string
-		target_type: string
-		target_id: number
-		payload: unknown
-		is_read: boolean
-		created_at: string
 	}>
 	next_cursor?: number | null
 }
@@ -333,19 +342,19 @@ export type CursorResponseUserImageQueueItem = {
 	next_cursor?: number | null
 }
 
-export type DataCorrectionComment = {
+export type DataComment = {
 	status: string
-	data: CorrectionComment
+	data: Comment
+}
+
+export type DataCommentPage = {
+	status: string
+	data: CommentPage
 }
 
 export type DataCorrectionDetail = {
 	status: string
 	data: CorrectionDetail
-}
-
-export type DataEntityComment = {
-	status: string
-	data: EntityComment
 }
 
 export type DataForgotPasswordResponse = {
@@ -366,6 +375,11 @@ export type DataImageQueueDetail = {
 export type DataInitDiscography = {
 	status: string
 	data: InitDiscography
+}
+
+export type DataNotificationPage = {
+	status: string
+	data: NotificationPage
 }
 
 export type DataOptionArtist = {
@@ -463,11 +477,6 @@ export type DataPaginatedAppearance = {
 	data: CursorResponseDiscography
 }
 
-export type DataPaginatedCorrectionComment = {
-	status: string
-	data: CursorResponseCorrectionComment
-}
-
 export type DataPaginatedCredit = {
 	status: string
 	data: CursorResponseCredit
@@ -476,16 +485,6 @@ export type DataPaginatedCredit = {
 export type DataPaginatedDiscography = {
 	status: string
 	data: CursorResponseDiscography
-}
-
-export type DataPaginatedEntityComment = {
-	status: string
-	data: EntityCommentPage
-}
-
-export type DataPaginatedNotificationItem = {
-	status: string
-	data: CursorResponseNotificationItem
 }
 
 export type DataPaginatedPendingImageQueueItem = {
@@ -553,9 +552,14 @@ export type DataSignUpResponse = {
 	data: SignUpResponse
 }
 
+export type DataSubscriptionStatus = {
+	status: string
+	data: SubscriptionStatus
+}
+
 export type DataUnreadCount = {
 	status: string
-	data: number
+	data: UnreadCount
 }
 
 export type DataUserCollection = {
@@ -669,7 +673,7 @@ export type DataOptionCurrentImageMetadata = {
 	status: "Ok"
 	data: null | {
 		uploaded_at: string
-		uploaded_by: ImageUploaderSummary
+		uploaded_by: UserSummary
 	}
 }
 
@@ -685,7 +689,7 @@ export type DataVecCorrectionHistoryItem = {
 		type: CorrectionType
 		created_at: string
 		handled_at?: string | null
-		author: CorrectionUserSummary
+		author: UserSummary
 		description: string
 	}>
 }
@@ -694,7 +698,7 @@ export type DataVecCorrectionRevisionSummary = {
 	status: "Ok"
 	data: Array<{
 		entity_history_id: number
-		author: CorrectionUserSummary
+		author: UserSummary
 		description: string
 	}>
 }
@@ -717,22 +721,6 @@ export type DeleteVoteBody = {
 
 export type EditableUserRole = "Moderator"
 
-export type EntityComment = {
-	id: number
-	parent_id?: number | null
-	author: CommentAuthor
-	content?: string | null
-	state: CommentState
-	created_at: string
-	updated_at: string
-}
-
-export type EntityCommentPage = {
-	items: Array<EntityComment>
-	next_cursor?: number | null
-	active_count: number
-}
-
 export type EntityCommentTarget =
 	| "artist"
 	| "release"
@@ -740,8 +728,15 @@ export type EntityCommentTarget =
 	| "label"
 	| "event"
 	| "tag"
+	| "correction"
 
 export type EntityIdent = string
+
+export type EntityMeta = {
+	kind: NotificationEntityKind
+	id: number
+	name: string
+}
 
 /**
  * Discriminated union of entity summaries, tagged by `entity_type`.
@@ -817,16 +812,14 @@ export type ForgotPasswordResponse = {
 	resend_cooldown_seconds: number
 }
 
-export type HandleCorrectionMethod = "Approve" | "Reject"
-
-export type HandleImageQueueMethod = "Approve" | "Reject" | "Revert"
-
 export type HomeMetadata = {
 	artists_count: number
 	releases_count: number
 	songs_count: number
 	tags_count: number
 }
+
+export type ImageQueueAction = "Approve" | "Reject" | "Revert"
 
 export type ImageQueueDetail = {
 	id: number
@@ -841,7 +834,10 @@ export type ImageQueueDetail = {
 	image?: null | ImageSummary
 	artist?: null | ArtistImageQueueTarget
 	release?: null | ReleaseImageQueueTarget
+	is_subscribed: boolean
 }
+
+export type ImageQueueModerationAction = "Approved" | "Rejected" | "Reverted"
 
 export type ImageQueueStatus =
 	| "Pending"
@@ -858,11 +854,6 @@ export type ImageSummary = {
 	directory: string
 	uploaded_at: string
 	uploaded_by: UserSummary
-}
-
-export type ImageUploaderSummary = {
-	id: number
-	name: string
 }
 
 export type InitDiscography = {
@@ -908,6 +899,14 @@ export type Location = {
 	country?: string | null
 	province?: string | null
 	city?: string | null
+}
+
+export type MarkReadRequest = {
+	through_seq: string
+}
+
+export type MarkUnreadRequest = {
+	from_seq: string
 }
 
 export type Membership = {
@@ -1187,6 +1186,108 @@ export type NewTrack = {
 
 export type NonEmptyString = string
 
+export type NotificationBody =
+	| {
+			actor: UserSummary
+			correction: EntityMeta
+			kind: "CorrectionReviewRequested"
+	  }
+	| {
+			actor: UserSummary
+			correction: EntityMeta
+			kind: "CorrectionUpdated"
+	  }
+	| {
+			actor: UserSummary
+			correction: EntityMeta
+			action: CorrectionModerationAction
+			kind: "CorrectionModerated"
+	  }
+	| {
+			container?: null | EntityMeta
+			commenters: Array<UserSummary>
+			additional_commenter_count: number
+			latest: CommentPreview
+			kind: "CommentThreadUpdated"
+	  }
+	| {
+			container?: null | EntityMeta
+			reply: CommentPreview
+			kind: "CommentReplied"
+	  }
+	| {
+			actor: UserSummary
+			kind: "UserFollowed"
+	  }
+	| {
+			actor: UserSummary
+			collection: CollectionReference
+			kind: "CollectionFollowed"
+	  }
+	| {
+			actor: UserSummary
+			collection: CollectionReference
+			kind: "CollectionItemAdded"
+	  }
+	| {
+			actor: UserSummary
+			image_queue: EntityMeta
+			image_type: NotificationImageType
+			action: ImageQueueModerationAction
+			kind: "ImageQueueModerated"
+	  }
+	| {
+			actor: UserSummary
+			new_roles: Array<string>
+			kind: "AccountRoleChanged"
+	  }
+
+/**
+ * Category for frontend filtering of notifications.
+ */
+export type NotificationCategory =
+	| "Correction"
+	| "Comment"
+	| "Social"
+	| "Collection"
+	| "ImageQueue"
+	| "Account"
+
+export type NotificationCursor = {
+	snapshot_inbox_seq: string
+	before_inbox_seq: string
+}
+
+export type NotificationEntityKind =
+	| "Artist"
+	| "Release"
+	| "Song"
+	| "Label"
+	| "Event"
+	| "Tag"
+	| "Correction"
+	| "ImageQueue"
+
+export type NotificationImageType = "Profile" | "Cover"
+
+export type NotificationItem = {
+	id: string
+	body: NotificationBody
+	is_unread: boolean
+	through_seq: string
+	saved_at?: string | null
+	created_at: string
+	last_activity_at: string
+}
+
+export type NotificationPage = {
+	items: Array<NotificationItem>
+	next_cursor?: null | NotificationCursor
+	snapshot_inbox_seq: string
+}
+
+export type NotificationState = "inbox" | "unread" | "saved"
+
 export type PageResponseArtist = {
 	items: Array<{
 		id: number
@@ -1345,7 +1446,6 @@ export type PageResponseUserCollectionItemDetail = {
 		entity_id?: number | null
 		entity_type: EntityType
 		description?: string | null
-		position: number
 		entity?: null | EntitySummary
 	}>
 	page: number
@@ -1366,12 +1466,16 @@ export type PageResponseUserSummary = {
 	total_pages: number
 }
 
-export type PermissionName =
+export type Permission =
 	| "correction.manage"
 	| "comment.manage"
 	| "image.queue.manage"
 	| "admin.user.read"
 	| "admin.user.role.write"
+
+export type ReadAllRequest = {
+	snapshot_inbox_seq: string
+}
 
 export type Release = {
 	id: number
@@ -1566,6 +1670,10 @@ export type SongSummary = {
 
 export type SortDirection = "asc" | "desc"
 
+export type SubscriptionStatus = {
+	subscribed: boolean
+}
+
 export type Tag = {
 	id: number
 	name: string
@@ -1607,6 +1715,10 @@ export type Tenure = {
 	leave_year?: number | null
 }
 
+export type UnreadCount = {
+	count: number
+}
+
 export type UploadAvatar = {
 	data: Blob | File
 }
@@ -1632,7 +1744,6 @@ export type UserCollectionItem = {
 	entity_id?: number | null
 	entity_type: EntityType
 	description?: string | null
-	position: number
 }
 
 export type UserCollectionItemEntityType =
@@ -1656,6 +1767,7 @@ export type UserCollectionOwner = {
 }
 
 export type UserProfile = {
+	id: number
 	name: string
 	/**
 	 * Avatar url with sub directory, eg. ab/cd/abcd..xyz.jpg
@@ -1667,7 +1779,7 @@ export type UserProfile = {
 	banner_url?: string | null
 	last_login: string
 	roles?: Array<UserRole>
-	permissions?: Array<PermissionName>
+	permissions?: Array<Permission>
 	/**
 	 * Whether the querist follows the user. Return `None` if querist is not signed in or it's querist's own profile
 	 */
@@ -2609,18 +2721,18 @@ export type GetCorrectionResponses = {
 export type GetCorrectionResponse =
 	GetCorrectionResponses[keyof GetCorrectionResponses]
 
-export type HandleCorrectionData = {
+export type ModerateCorrectionData = {
 	body?: never
 	path: {
 		id: number
 	}
 	query: {
-		method: HandleCorrectionMethod
+		decision: CorrectionDecision
 	}
 	url: "/correction/{id}"
 }
 
-export type HandleCorrectionErrors = {
+export type ModerateCorrectionErrors = {
 	/**
 	 * Too Many Requests
 	 */
@@ -2631,82 +2743,15 @@ export type HandleCorrectionErrors = {
 	}
 }
 
-export type HandleCorrectionError =
-	HandleCorrectionErrors[keyof HandleCorrectionErrors]
+export type ModerateCorrectionError =
+	ModerateCorrectionErrors[keyof ModerateCorrectionErrors]
 
-export type HandleCorrectionResponses = {
+export type ModerateCorrectionResponses = {
 	200: Message
 }
 
-export type HandleCorrectionResponse =
-	HandleCorrectionResponses[keyof HandleCorrectionResponses]
-
-export type FindCommentsData = {
-	body?: never
-	path: {
-		/**
-		 * Correction id
-		 */
-		id: number
-	}
-	query?: {
-		limit?: number
-		cursor?: number
-	}
-	url: "/correction/{id}/comments"
-}
-
-export type FindCommentsErrors = {
-	/**
-	 * Too Many Requests
-	 */
-	429: string
-	default: {
-		status: "Err"
-		message: string
-	}
-}
-
-export type FindCommentsError = FindCommentsErrors[keyof FindCommentsErrors]
-
-export type FindCommentsResponses = {
-	200: DataPaginatedCorrectionComment
-}
-
-export type FindCommentsResponse =
-	FindCommentsResponses[keyof FindCommentsResponses]
-
-export type CreateCommentData = {
-	body: CreateEntityCommentRequest
-	path: {
-		/**
-		 * Correction id
-		 */
-		id: number
-	}
-	query?: never
-	url: "/correction/{id}/comments"
-}
-
-export type CreateCommentErrors = {
-	/**
-	 * Too Many Requests
-	 */
-	429: string
-	default: {
-		status: "Err"
-		message: string
-	}
-}
-
-export type CreateCommentError = CreateCommentErrors[keyof CreateCommentErrors]
-
-export type CreateCommentResponses = {
-	200: DataCorrectionComment
-}
-
-export type CreateCommentResponse =
-	CreateCommentResponses[keyof CreateCommentResponses]
+export type ModerateCorrectionResponse =
+	ModerateCorrectionResponses[keyof ModerateCorrectionResponses]
 
 export type GetCorrectionDiffData = {
 	body?: never
@@ -2767,6 +2812,41 @@ export type GetCorrectionRevisionsResponses = {
 
 export type GetCorrectionRevisionsResponse =
 	GetCorrectionRevisionsResponses[keyof GetCorrectionRevisionsResponses]
+
+export type SetCorrectionSubscriptionData = {
+	body?: never
+	path: {
+		/**
+		 * Correction id
+		 */
+		id: number
+	}
+	query: {
+		subscribed: boolean
+	}
+	url: "/correction/{id}/subscription"
+}
+
+export type SetCorrectionSubscriptionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type SetCorrectionSubscriptionError =
+	SetCorrectionSubscriptionErrors[keyof SetCorrectionSubscriptionErrors]
+
+export type SetCorrectionSubscriptionResponses = {
+	200: DataSubscriptionStatus
+}
+
+export type SetCorrectionSubscriptionResponse =
+	SetCorrectionSubscriptionResponses[keyof SetCorrectionSubscriptionResponses]
 
 export type CreateCreditRoleData = {
 	body: NewCorrectionNewCreditRole
@@ -3312,18 +3392,18 @@ export type ImageQueueDetailResponses = {
 export type ImageQueueDetailResponse =
 	ImageQueueDetailResponses[keyof ImageQueueDetailResponses]
 
-export type HandleImageQueueData = {
+export type ModerateImageQueueData = {
 	body?: never
 	path: {
 		id: number
 	}
 	query: {
-		method: HandleImageQueueMethod
+		action: ImageQueueAction
 	}
 	url: "/image-queue/{id}"
 }
 
-export type HandleImageQueueErrors = {
+export type ModerateImageQueueErrors = {
 	/**
 	 * Too Many Requests
 	 */
@@ -3334,15 +3414,119 @@ export type HandleImageQueueErrors = {
 	}
 }
 
-export type HandleImageQueueError =
-	HandleImageQueueErrors[keyof HandleImageQueueErrors]
+export type ModerateImageQueueError =
+	ModerateImageQueueErrors[keyof ModerateImageQueueErrors]
 
-export type HandleImageQueueResponses = {
+export type ModerateImageQueueResponses = {
 	200: Message
 }
 
-export type HandleImageQueueResponse =
-	HandleImageQueueResponses[keyof HandleImageQueueResponses]
+export type ModerateImageQueueResponse =
+	ModerateImageQueueResponses[keyof ModerateImageQueueResponses]
+
+export type FindImageQueueCommentsData = {
+	body?: never
+	path: {
+		/**
+		 * Image queue id
+		 */
+		id: number
+	}
+	query?: {
+		limit?: number
+		cursor?: number
+	}
+	url: "/image-queue/{id}/comments"
+}
+
+export type FindImageQueueCommentsErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type FindImageQueueCommentsError =
+	FindImageQueueCommentsErrors[keyof FindImageQueueCommentsErrors]
+
+export type FindImageQueueCommentsResponses = {
+	200: DataCommentPage
+}
+
+export type FindImageQueueCommentsResponse =
+	FindImageQueueCommentsResponses[keyof FindImageQueueCommentsResponses]
+
+export type CreateImageQueueCommentData = {
+	body: CreateEntityCommentRequest
+	path: {
+		/**
+		 * Image queue id
+		 */
+		id: number
+	}
+	query?: never
+	url: "/image-queue/{id}/comments"
+}
+
+export type CreateImageQueueCommentErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type CreateImageQueueCommentError =
+	CreateImageQueueCommentErrors[keyof CreateImageQueueCommentErrors]
+
+export type CreateImageQueueCommentResponses = {
+	200: DataComment
+}
+
+export type CreateImageQueueCommentResponse =
+	CreateImageQueueCommentResponses[keyof CreateImageQueueCommentResponses]
+
+export type SetImageQueueSubscriptionData = {
+	body?: never
+	path: {
+		/**
+		 * Image queue id
+		 */
+		id: number
+	}
+	query: {
+		subscribed: boolean
+	}
+	url: "/image-queue/{id}/subscription"
+}
+
+export type SetImageQueueSubscriptionErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type SetImageQueueSubscriptionError =
+	SetImageQueueSubscriptionErrors[keyof SetImageQueueSubscriptionErrors]
+
+export type SetImageQueueSubscriptionResponses = {
+	200: DataSubscriptionStatus
+}
+
+export type SetImageQueueSubscriptionResponse =
+	SetImageQueueSubscriptionResponses[keyof SetImageQueueSubscriptionResponses]
 
 export type FindLabelByKeywordData = {
 	body?: never
@@ -3563,17 +3747,20 @@ export type LanguageListResponses = {
 export type LanguageListResponse =
 	LanguageListResponses[keyof LanguageListResponses]
 
-export type NotificationListData = {
+export type ListNotificationsData = {
 	body?: never
 	path?: never
 	query?: {
 		limit?: number
-		cursor?: number
+		cursor_snapshot_inbox_seq?: string
+		cursor_before_inbox_seq?: string
+		state?: NotificationState
+		category?: NotificationCategory
 	}
 	url: "/notifications"
 }
 
-export type NotificationListErrors = {
+export type ListNotificationsErrors = {
 	/**
 	 * Too Many Requests
 	 */
@@ -3584,24 +3771,24 @@ export type NotificationListErrors = {
 	}
 }
 
-export type NotificationListError =
-	NotificationListErrors[keyof NotificationListErrors]
+export type ListNotificationsError =
+	ListNotificationsErrors[keyof ListNotificationsErrors]
 
-export type NotificationListResponses = {
-	200: DataPaginatedNotificationItem
+export type ListNotificationsResponses = {
+	200: DataNotificationPage
 }
 
-export type NotificationListResponse =
-	NotificationListResponses[keyof NotificationListResponses]
+export type ListNotificationsResponse =
+	ListNotificationsResponses[keyof ListNotificationsResponses]
 
-export type NotificationReadAllData = {
-	body?: never
+export type ReadAllData = {
+	body: ReadAllRequest
 	path?: never
 	query?: never
 	url: "/notifications/read-all"
 }
 
-export type NotificationReadAllErrors = {
+export type ReadAllErrors = {
 	/**
 	 * Too Many Requests
 	 */
@@ -3612,24 +3799,22 @@ export type NotificationReadAllErrors = {
 	}
 }
 
-export type NotificationReadAllError =
-	NotificationReadAllErrors[keyof NotificationReadAllErrors]
+export type ReadAllError = ReadAllErrors[keyof ReadAllErrors]
 
-export type NotificationReadAllResponses = {
+export type ReadAllResponses = {
 	200: Message
 }
 
-export type NotificationReadAllResponse =
-	NotificationReadAllResponses[keyof NotificationReadAllResponses]
+export type ReadAllResponse = ReadAllResponses[keyof ReadAllResponses]
 
-export type NotificationUnreadCountData = {
+export type UnreadCountData = {
 	body?: never
 	path?: never
 	query?: never
 	url: "/notifications/unread-count"
 }
 
-export type NotificationUnreadCountErrors = {
+export type UnreadCountErrors = {
 	/**
 	 * Too Many Requests
 	 */
@@ -3640,26 +3825,28 @@ export type NotificationUnreadCountErrors = {
 	}
 }
 
-export type NotificationUnreadCountError =
-	NotificationUnreadCountErrors[keyof NotificationUnreadCountErrors]
+export type UnreadCountError = UnreadCountErrors[keyof UnreadCountErrors]
 
-export type NotificationUnreadCountResponses = {
+export type UnreadCountResponses = {
 	200: DataUnreadCount
 }
 
-export type NotificationUnreadCountResponse =
-	NotificationUnreadCountResponses[keyof NotificationUnreadCountResponses]
+export type UnreadCountResponse =
+	UnreadCountResponses[keyof UnreadCountResponses]
 
-export type NotificationMarkReadData = {
-	body?: never
+export type MarkReadData = {
+	body: MarkReadRequest
 	path: {
-		id: number
+		/**
+		 * Notification id
+		 */
+		notification_id: string
 	}
 	query?: never
-	url: "/notifications/{id}/read"
+	url: "/notifications/{notification_id}/read"
 }
 
-export type NotificationMarkReadErrors = {
+export type MarkReadErrors = {
 	/**
 	 * Too Many Requests
 	 */
@@ -3670,15 +3857,110 @@ export type NotificationMarkReadErrors = {
 	}
 }
 
-export type NotificationMarkReadError =
-	NotificationMarkReadErrors[keyof NotificationMarkReadErrors]
+export type MarkReadError = MarkReadErrors[keyof MarkReadErrors]
 
-export type NotificationMarkReadResponses = {
+export type MarkReadResponses = {
 	200: Message
 }
 
-export type NotificationMarkReadResponse =
-	NotificationMarkReadResponses[keyof NotificationMarkReadResponses]
+export type MarkReadResponse = MarkReadResponses[keyof MarkReadResponses]
+
+export type UnsaveNotificationData = {
+	body?: never
+	path: {
+		/**
+		 * Notification id
+		 */
+		notification_id: string
+	}
+	query?: never
+	url: "/notifications/{notification_id}/saved"
+}
+
+export type UnsaveNotificationErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type UnsaveNotificationError =
+	UnsaveNotificationErrors[keyof UnsaveNotificationErrors]
+
+export type UnsaveNotificationResponses = {
+	200: Message
+}
+
+export type UnsaveNotificationResponse =
+	UnsaveNotificationResponses[keyof UnsaveNotificationResponses]
+
+export type SaveNotificationData = {
+	body?: never
+	path: {
+		/**
+		 * Notification id
+		 */
+		notification_id: string
+	}
+	query?: never
+	url: "/notifications/{notification_id}/saved"
+}
+
+export type SaveNotificationErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type SaveNotificationError =
+	SaveNotificationErrors[keyof SaveNotificationErrors]
+
+export type SaveNotificationResponses = {
+	200: Message
+}
+
+export type SaveNotificationResponse =
+	SaveNotificationResponses[keyof SaveNotificationResponses]
+
+export type MarkUnreadData = {
+	body: MarkUnreadRequest
+	path: {
+		/**
+		 * Notification id
+		 */
+		notification_id: string
+	}
+	query?: never
+	url: "/notifications/{notification_id}/unread"
+}
+
+export type MarkUnreadErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type MarkUnreadError = MarkUnreadErrors[keyof MarkUnreadErrors]
+
+export type MarkUnreadResponses = {
+	200: Message
+}
+
+export type MarkUnreadResponse = MarkUnreadResponses[keyof MarkUnreadResponses]
 
 export type ProfileData = {
 	body?: never
@@ -5148,6 +5430,34 @@ export type FollowUserCollectionResponses = {
 export type FollowUserCollectionResponse =
 	FollowUserCollectionResponses[keyof FollowUserCollectionResponses]
 
+export type StreamUserEventsData = {
+	body?: never
+	path?: never
+	query?: never
+	url: "/user-events/stream"
+}
+
+export type StreamUserEventsErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type StreamUserEventsError =
+	StreamUserEventsErrors[keyof StreamUserEventsErrors]
+
+export type StreamUserEventsResponses = {
+	200: string
+}
+
+export type StreamUserEventsResponse =
+	StreamUserEventsResponses[keyof StreamUserEventsResponses]
+
 export type UserRolesData = {
 	body?: never
 	path?: never
@@ -5297,33 +5607,6 @@ export type VerifyResetCodeResponses = {
 
 export type VerifyResetCodeResponse2 =
 	VerifyResetCodeResponses[keyof VerifyResetCodeResponses]
-
-export type NotificationWsData = {
-	body?: never
-	path?: never
-	query?: never
-	url: "/ws/notifications"
-}
-
-export type NotificationWsErrors = {
-	/**
-	 * Too Many Requests
-	 */
-	429: string
-}
-
-export type NotificationWsError =
-	NotificationWsErrors[keyof NotificationWsErrors]
-
-export type NotificationWsResponses = {
-	default: {
-		status: "Err"
-		message: string
-	}
-}
-
-export type NotificationWsResponse =
-	NotificationWsResponses[keyof NotificationWsResponses]
 
 export type EntityUserCollectionsData = {
 	body?: never
@@ -5574,7 +5857,7 @@ export type FindEntityCommentsError =
 	FindEntityCommentsErrors[keyof FindEntityCommentsErrors]
 
 export type FindEntityCommentsResponses = {
-	200: DataPaginatedEntityComment
+	200: DataCommentPage
 }
 
 export type FindEntityCommentsResponse =
@@ -5611,7 +5894,7 @@ export type CreateEntityCommentError =
 	CreateEntityCommentErrors[keyof CreateEntityCommentErrors]
 
 export type CreateEntityCommentResponses = {
-	200: DataEntityComment
+	200: DataComment
 }
 
 export type CreateEntityCommentResponse =

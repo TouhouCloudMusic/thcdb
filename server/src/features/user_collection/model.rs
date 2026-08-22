@@ -48,7 +48,6 @@ pub struct UserCollectionItem {
     pub entity_id: Option<i32>,
     pub entity_type: EntityType,
     pub description: Option<String>,
-    pub position: i32,
 }
 
 impl From<user_collection_item::Model> for UserCollectionItem {
@@ -58,7 +57,6 @@ impl From<user_collection_item::Model> for UserCollectionItem {
             entity_id: model.entity_id,
             entity_type: model.entity_type,
             description: model.description,
-            position: model.position,
         }
     }
 }
@@ -145,7 +143,6 @@ pub struct UserCollectionItemDetail {
     pub entity_id: Option<i32>,
     pub entity_type: EntityType,
     pub description: Option<String>,
-    pub position: i32,
     /// Resolved entity summary. `None` when `entity_id` is `None` or the
     /// referenced entity could not be found.
     pub entity: Option<EntitySummary>,

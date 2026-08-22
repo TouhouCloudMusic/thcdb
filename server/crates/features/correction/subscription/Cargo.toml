@@ -1,0 +1,18 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-correction-subscription"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "correction_subscription"
+path = "src/lib.rs"
+
+[dependencies]
+entity.workspace    = true
+infra_db.workspace  = true
+sea-orm.workspace   = true
+sea-query.workspace = true

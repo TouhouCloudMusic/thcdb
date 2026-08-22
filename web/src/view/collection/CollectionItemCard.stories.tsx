@@ -17,6 +17,7 @@ const meta = {
 		canMoveDown: { control: "boolean" },
 	},
 	args: {
+		number: 1,
 		isEditing: false,
 		isDeleting: false,
 		isReordering: false,
@@ -33,11 +34,11 @@ type Story = StoryObj<typeof meta>
 
 export const ArtistItem: Story = {
 	args: {
+		number: 1,
 		isEditing: true,
 		canMoveDown: true,
 		item: {
 			id: 1,
-			position: 0,
 			entity_type: "Artist",
 			entity_id: 1,
 			description: "One of my favorite artists.",
@@ -54,9 +55,9 @@ export const ArtistItem: Story = {
 
 export const ReleaseItem: Story = {
 	args: {
+		number: 2,
 		item: {
 			id: 2,
-			position: 1,
 			entity_type: "Release",
 			entity_id: 2,
 			description: "A classic album.",
@@ -75,12 +76,12 @@ export const ReleaseItem: Story = {
 
 export const SongItem: Story = {
 	args: {
+		number: 3,
 		isEditing: true,
 		canMoveUp: true,
 		canMoveDown: true,
 		item: {
 			id: 3,
-			position: 2,
 			entity_type: "Song",
 			entity_id: 3,
 			description: null,
@@ -97,11 +98,11 @@ export const SongItem: Story = {
 
 export const EventItem: Story = {
 	args: {
+		number: 4,
 		isEditing: true,
 		canMoveUp: true,
 		item: {
 			id: 4,
-			position: 3,
 			entity_type: "Event",
 			entity_id: 4,
 			description: "Awesome event",
@@ -117,9 +118,9 @@ export const EventItem: Story = {
 
 export const TagItem: Story = {
 	args: {
+		number: 5,
 		item: {
 			id: 5,
-			position: 4,
 			entity_type: "Tag",
 			entity_id: 5,
 			description: null,
@@ -135,9 +136,9 @@ export const TagItem: Story = {
 
 export const LabelItem: Story = {
 	args: {
+		number: 6,
 		item: {
 			id: 6,
-			position: 5,
 			entity_type: "Label",
 			entity_id: 6,
 			description: null,

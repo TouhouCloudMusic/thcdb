@@ -1,6 +1,6 @@
 # User (用户) 模块
 
-> **实现状态**: ⚠️ 部分完成（基础权限系统已实现，关注系统待实现） | [查看路线图](../ROADMAP.md#permission)
+> **实现状态**: ⚠️ 部分完成（基础权限系统及关注关系已实现，关注列表、粉丝列表和活动流待实现） | [查看路线图](../ROADMAP.md#permission)
 
 用户实体，代表系统中的注册用户账户和个人资料。包含权限管理和关注系统。
 
@@ -54,14 +54,7 @@
 
 ## 关注系统
 
-用户可以通过 `user_following` 关注其他用户：
-
-### 关注功能
-
-- **关注用户** - 跟踪其他用户的活动
-- **粉丝系统** - 查看谁关注了自己
-- **活动流** - 查看关注用户的最新活动
-- **推荐系统** - 基于关注关系的内容推荐
+用户可以通过 `user_following` 关注和取消关注其他用户。个人资料接口返回当前用户的关注状态。关注列表、粉丝列表、活动流和推荐系统尚未实现。
 
 ## 隐私和安全
 
@@ -100,13 +93,13 @@
 | `/admin/user/{id}/roles` | PUT | ✅ | 修改角色（`roles`: `user`/`moderator`/`admin`） |
 | `/roles` | GET | ❌ | 可用角色列表 |
 
-### 关注系统 (待实现)
+### 关注系统
 
 | 端点 | 方法 | 状态 | 说明 |
 |------|------|------|------|
-| `/user/{id}/follow` | POST | ❌ | 关注用户 |
-| `/user/{id}/unfollow` | POST | ❌ | 取消关注 |
-| `/user/{id}/following` | GET | ❌ | 关注列表 |
-| `/user/{id}/followers` | GET | ❌ | 粉丝列表 |
-| `/user/{id}/follow-status` | GET | ❌ | 关注状态 |
+| `/profile/{name}/follow` | POST | ✅ | 关注用户 |
+| `/profile/{name}/follow` | DELETE | ✅ | 取消关注 |
+| `/profile/{name}` | GET | ✅ | 个人资料和当前用户的关注状态 |
+| `/profile/{name}/following` | GET | ❌ | 关注列表 |
+| `/profile/{name}/followers` | GET | ❌ | 粉丝列表 |
 | `/feed` | GET | ❌ | 活动流 |

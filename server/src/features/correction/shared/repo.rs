@@ -23,9 +23,9 @@ use sea_orm::{
     QueryFilter, QueryOrder, QuerySelect, RelationTrait,
 };
 use serde_json::{Value, json};
+use user_core::UserSummary;
 
 use crate::features::correction::CorrectionDiffEntry;
-use crate::features::correction::model::CorrectionUserSummary;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 
 pub async fn find_correction(
@@ -47,7 +47,7 @@ pub async fn correction_exists(
 pub async fn find_author(
     conn: &impl ConnectionTrait,
     correction_id: i32,
-) -> Result<CorrectionUserSummary, DbErr> {
+) -> Result<UserSummary, DbErr> {
     let Some((id, name)) = correction_user::Entity::find()
         .select_only()
         .column(user::Column::Id)
@@ -66,7 +66,7 @@ pub async fn find_author(
         )));
     };
 
-    Ok(CorrectionUserSummary { id, name })
+    Ok(UserSummary { id, name })
 }
 
 pub async fn find_entity_name(

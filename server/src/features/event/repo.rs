@@ -11,8 +11,9 @@ use sea_orm::{
 };
 
 use crate::features::event::model::NewEvent;
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::shared::error::BrokenEntityReference;
+use crate::infra::database::error::{
+    BrokenEntityReference, DatabaseError, DatabaseResultExt,
+};
 
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,

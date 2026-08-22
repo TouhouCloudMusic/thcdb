@@ -1,22 +1,22 @@
-mod comment;
 mod compare;
 mod detail;
 mod diff;
 mod error;
-mod handle;
 mod history;
 mod http;
 mod model;
+mod moderation;
 mod pending;
 mod repo;
 mod revisions;
 pub mod service;
 mod shared;
+pub(crate) mod subscription;
 
 pub(crate) use error::{ModerationError, ReadError, SubmissionError};
 pub use http::router;
 pub use model::{
-    Correction, CorrectionDiff, CorrectionDiffEntry, CorrectionEntity,
-    CorrectionFilter, CorrectionFilterStatus, CorrectionSubmitResult,
-    HandleCorrectionMethod, NewCorrection, NewCorrectionDto, NewCorrectionMeta,
+    Correction, CorrectionDecision, CorrectionDiff, CorrectionDiffEntry,
+    CorrectionEntity, CorrectionFilter, CorrectionFilterStatus,
+    CorrectionSubmitResult, NewCorrection, NewCorrectionDto, NewCorrectionMeta,
 };

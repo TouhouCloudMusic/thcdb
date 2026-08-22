@@ -40,20 +40,22 @@
 
 ## 功能完成状态
 
-### 已完成
+### 已实现功能
 
-| 模块 | 功能 | 架构 |
-|------|------|------|
-| Artist | 查询、创建、更新、图片上传 | 垂直切片 |
-| Release | 查询、创建、更新、封面上传 | 垂直切片 |
-| Song | 查询、创建、更新 | 垂直切片 |
-| Event | 查询 | 垂直切片 |
-| Label | 查询 | 垂直切片 |
-| Tag | 查询、投票 | 垂直切片 |
-| Credit Role | 查询 | 整洁架构 |
-| Song Lyrics | 查询 | 整洁架构 |
-| User | 注册、登录、登出、资料管理、角色/权限（基础） | 整洁架构 |
-| Correction | 创建、查看、批准、拒绝、修订历史（列表） | 整洁架构 |
+| 模块        | 功能                                          | 架构     |
+| ----------- | --------------------------------------------- | -------- |
+| Artist      | 查询、创建、更新、图片上传                    | 垂直切片 |
+| Release     | 查询、创建、更新、封面上传                    | 垂直切片 |
+| Song        | 查询、创建、更新                              | 垂直切片 |
+| Event       | 查询                                          | 垂直切片 |
+| Label       | 查询                                          | 垂直切片 |
+| Tag         | 查询、投票                                    | 垂直切片 |
+| Credit Role | 查询                                          | 整洁架构 |
+| Song Lyrics | 查询                                          | 整洁架构 |
+| User        | 注册、登录、登出、资料管理、角色/权限（基础） | 整洁架构 |
+| Comment     | 线程评论、回复、删除、target APIs            | 垂直切片 |
+| Correction  | 创建、查看、批准、拒绝、修订历史（列表）      | 整洁架构 |
+| Image Queue | 队列列表、详情、审核、用户队列与管理页面      | 垂直切片 |
 
 ---
 
@@ -61,16 +63,17 @@
 
 ### 1.1 评论系统 {#comment}
 
-**优先级**: 高 | **状态**: 完全缺失 | **设计文档**: [comment](./comment/design.md)
+**优先级**: 高 | **状态**: 部分实现（线程评论、回复、删除与 target APIs 已实现） | **设计文档**: [comment](./comment/design.md)
 
+**已实现**:
 
-**实现要点**:
-- `Comment` 域模型，支持线程化回复
-- `CommentThread` 域模型，统一承载目标实体，移除每条评论重复保存的 target / target_id
-- `CommentState` 枚举: Active, Deleted
-- `CommentTarget` 枚举: Artist, Release, Song, Label, Event, Tag, Correction
-- 评论修订历史追踪
-- 统一早期 `comment.target` / `comment.target_id` 行模型与 `comment_thread` 模型的不一致
+- ✅ 线程评论与回复
+- ✅ 评论删除
+- ✅ Artist、Release、Song、Label、Event、Tag、Correction 与 Image Queue target APIs
+
+**待实现**:
+
+- ⏳ 评论修订历史
 
 ---
 
@@ -78,8 +81,8 @@
 
 **优先级**: 高 | **状态**: 完全缺失 | **设计文档**: [search](./search/design.md)
 
-
 **实现要点**:
+
 - 跨语言搜索（中/日/英）
 - 罗马化支持（日语假名、中文拼音）
 - 模糊匹配
@@ -91,13 +94,16 @@
 
 **优先级**: 高 | **状态**: 部分实现（已支持拒绝与统一处理接口） | **设计文档**: [correction](./correction/design.md)
 
+**已实现**:
 
-**实现要点**:
-- ✅ 拒绝功能（通过 `POST /correction/{id}?method=Reject`）
+- ✅ 创建、查看、批准、拒绝与修订历史列表
+- ✅ 统一处理接口 `POST /correction/{id}?method=Approve|Reject`
 - ✅ 权限控制：审批/拒绝需要 `correction.manage`（默认 Admin/Moderator）
+
+**待实现**:
+
 - ⏳ 审核员分配
 - ⏳ Merge 类型支持
-- 依赖: 通知系统
 
 ---
 
@@ -105,8 +111,8 @@
 
 **优先级**: 高 | **状态**: 完全缺失 | **设计文档**: [like-and-favorite](./like-and-favorite/design.md)
 
-
 **实现要点**:
+
 - `user_like` 数据库表
 - `LikeableEntityType` 枚举: Song, Release, Artist, Event
 
@@ -116,8 +122,8 @@
 
 **优先级**: 高 | **状态**: 部分实现（基础 RBAC + 管理 API 已实现） | **设计文档**: [user](./user/design.md)
 
-
 **实现要点**:
+
 - ✅ 权限/角色表：`permission`、`role_permission`、`user_role`
 - ✅ 启动时同步默认权限映射（与 `UserRoleEnum` 一致）
 - ✅ 权限检查：`ensure_permission::<P>`
@@ -131,8 +137,16 @@
 
 ### 2.1 用户关注系统 {#following}
 
-**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [user](./user/design.md)
+**优先级**: 中 | **状态**: 部分实现 | **设计文档**: [user](./user/design.md)
 
+**已实现**:
+
+- 关注、取消关注和个人资料中的关注状态
+- 用户关注通知
+
+**未实现范围**:
+
+- 关注列表、粉丝列表和活动流
 
 ---
 
@@ -140,20 +154,25 @@
 
 **优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [user-lists](./user-lists/design.md)
 
-
 **使用场景**: 播放列表、收藏夹、愿望清单、主题收藏
 
 ---
 
 ### 2.3 通知系统 {#notification}
 
-**优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [notification](./notification/design.md)
+**优先级**: 中 | **状态**: 部分实现 | **设计文档**: [notification](./notification/design.md)
 
+**已实现**:
 
-**通知类型**:
-- 评论: 被回复、被提及、审核结果
-- 修正: 批准、拒绝、需要审核
-- 社交: 被关注、关注用户新动态
+- 数据库持久化的站内 Inbox、未读计数、分类过滤与 keyset pagination
+- 独立的 `CommentReplied` 与聚合 `CommentThreadUpdated` notification，以及统一 read cursor
+- 修正、评论、用户关注、collection、图片队列审核和账号角色变更通知
+- 单条标记已读、全 Inbox Mark all read、Saved、SSE 失效通知和保留期清理
+
+**未实现范围**:
+
+- 用户通知偏好
+- 邮件、push notification 等外部投递通道
 
 ---
 
@@ -161,15 +180,16 @@
 
 ### 3.1 图片队列系统 {#image-queue}
 
-**优先级**: 中 | **状态**: 部分实现（管理 API + 页面已实现） | **设计文档**: [image](./image/design.md)
+**优先级**: 中 | **状态**: 已实现 | **设计文档**: [image](./image/design.md)
 
+**已实现**:
 
-**实现要点**:
 - ✅ 管理端：队列列表 `GET /image-queue`、待处理数量 `GET /image-queue/pending-count`
 - ✅ 管理端：详情 `GET /image-queue/{id}`、处理 `POST /image-queue/{id}?method=...`
 - ✅ 用户侧：`GET /user/{id}/image-queue`（本人可看；他人需 `image.queue.manage`）
 - ✅ 权限控制：详情允许上传者本人查看；处理仍需要 `image.queue.manage`（默认 Admin/Moderator）
-- ⏳ 通知：审核结果通知上传者（依赖通知系统）
+- ✅ 通知：审核结果通知上传者
+- ✅ 前端管理列表、详情处理与用户队列页面
 
 ---
 
@@ -177,15 +197,14 @@
 
 **优先级**: 中 | **状态**: 部分实现 | **设计文档**: [tag](./tag/design.md)
 
-
 ---
 
 ### 3.3 Credit Role Tree {#credit-role-tree}
 
 **优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [credit-role](./credit-role/design.md)
 
-
 **实现要点**:
+
 - Credit Role 层级树结构（parent_id 字段）
 - 树形浏览 API (`GET /credit-role/tree`)
 - 角色路径查询（面包屑导航）
@@ -198,8 +217,8 @@
 
 **优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [statistics](./statistics/design.md)
 
-
 **实现要点**:
+
 - `entity_view_count` 表
 - `user_contribution_stats` 表
 - 后台定时任务更新统计
@@ -210,8 +229,8 @@
 
 **优先级**: 中 | **状态**: 完全缺失 | **设计文档**: [recommendation](./recommendation/design.md)
 
-
 **实现要点**:
+
 - 基于标签的 Jaccard 相似度
 - Redis 缓存 (TTL: 1小时)
 - 依赖: 标签系统扩展
@@ -224,8 +243,8 @@
 
 **优先级**: 低 | **状态**: 完全缺失 | **设计文档**: [history-tracking](./history-tracking/design.md)
 
-
 **实现要点**:
+
 - 基于 Correction 系统
 - 通过 `correction_revision.entity_history_id` 获取快照
 - 差异计算算法
@@ -251,6 +270,7 @@
 新功能应使用**垂直切片架构**，放在 `src/feature/` 目录下。
 
 每个功能切片应包含：
+
 ```
 feature/{功能名}/
 ├── mod.rs      # 模块定义和路由

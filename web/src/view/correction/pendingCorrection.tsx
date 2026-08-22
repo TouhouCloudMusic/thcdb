@@ -57,8 +57,10 @@ export async function fetchLatestPendingCorrectionId(
 	entityId: number,
 ) {
 	const query = pendingCorrectionQuery(entityType, entityId)
+
 	await invalidatePendingCorrection(queryClient, entityType, entityId)
 	const response = await queryClient.fetchQuery(query)
+
 	return response.data
 }
 
@@ -107,6 +109,7 @@ export async function ensurePendingCorrectionEditable(
 			entityId,
 			revisionCorrectionId,
 		)
+
 	if (isInvalidRevision) {
 		throw notFound()
 	}

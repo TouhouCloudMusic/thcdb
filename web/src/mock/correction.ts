@@ -5,8 +5,8 @@ import type {
 	CorrectionHistoryItem,
 	CorrectionRevisionSummary,
 	CorrectionType,
-	CorrectionUserSummary,
 	EntityType,
+	UserSummary,
 } from "@thc/api"
 
 export const MOCK_CORRECTION_ID = 104
@@ -14,7 +14,7 @@ export const MOCK_CORRECTION_ENTITY_ID = 24
 export const MOCK_CORRECTION_ENTITY_TYPE: EntityType = "Artist"
 export const MOCK_CORRECTION_HISTORY_ENTITY_TYPE = "artist"
 
-function createMockUser(id: number, name: string): CorrectionUserSummary {
+function createMockUser(id: number, name: string): UserSummary {
 	return {
 		id,
 		name,
@@ -28,7 +28,7 @@ function createMockHistoryItem(
 	createdAt: string,
 	handledAt: string | null,
 	description: string,
-	author: CorrectionUserSummary,
+	author: UserSummary,
 ): CorrectionHistoryItem {
 	return {
 		id,
@@ -69,6 +69,7 @@ export const MOCK_CORRECTION_DETAIL: CorrectionDetail = {
 	comments: {
 		items: [],
 		next_cursor: null,
+		active_count: 0,
 	},
 }
 

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './route/__root'
 import { Route as SearchRouteImport } from './route/search'
+import { Route as NotificationsRouteImport } from './route/notifications'
 import { Route as AboutRouteImport } from './route/about'
 import { Route as IndexRouteImport } from './route/index'
 import { Route as TagIndexRouteImport } from './route/tag/index'
@@ -72,6 +73,11 @@ import { Route as userProfileUsernameRouteImport } from './route/(user)/profile_
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -368,6 +374,7 @@ const userProfileUsernameRoute = userProfileUsernameRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/profile': typeof userProfileRoute
   '/admin/users': typeof AdminUsersRoute
@@ -429,6 +436,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/profile': typeof userProfileRoute
   '/admin/users': typeof AdminUsersRoute
@@ -491,6 +499,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/(user)/profile': typeof userProfileRoute
   '/admin/users': typeof AdminUsersRoute
@@ -554,6 +563,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/notifications'
     | '/search'
     | '/profile'
     | '/admin/users'
@@ -615,6 +625,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/notifications'
     | '/search'
     | '/profile'
     | '/admin/users'
@@ -676,6 +687,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/notifications'
     | '/search'
     | '/(user)/profile'
     | '/admin/users'
@@ -738,6 +750,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  NotificationsRoute: typeof NotificationsRoute
   SearchRoute: typeof SearchRoute
   userProfileRoute: typeof userProfileRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -804,6 +817,13 @@ declare module '@tanstack/solid-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -1218,6 +1238,7 @@ declare module '@tanstack/solid-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  NotificationsRoute: NotificationsRoute,
   SearchRoute: SearchRoute,
   userProfileRoute: userProfileRoute,
   AdminUsersRoute: AdminUsersRoute,

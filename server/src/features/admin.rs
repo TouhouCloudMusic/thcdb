@@ -1,18 +1,13 @@
 use std::collections::BTreeSet;
 
+mod repo;
+mod service;
+
+use auth_core::permission::Permission;
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
-use chrono::Utc;
 use domain::shared::PageResponse;
-use entity::{user, user_role, user_role_change_audit};
-use itertools::Itertools;
-use sea_orm::ActiveValue::{NotSet, Set};
-use sea_orm::sea_query::{ExprTrait, Func};
-use sea_orm::{
-    ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder,
-    QuerySelect,
-};
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
@@ -20,10 +15,8 @@ use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
-use crate::features::auth::{
-    EditableUserRole, PermissionName, UserRole, UserRoleEnum,
-};
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
+use crate::features::auth::{EditableUserRole, UserRole};
+use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{EntityNotFound, InternalError};
 use crate::shared::http::PageQuery;
 use crate::shared::http::api_response::Data;
@@ -46,6 +39,12 @@ enum Error {
     #[display("{_0}")]
     #[from]
     NotFound(#[error(source)] EntityNotFound),
+}
+
+impl From<infra_db::error::DatabaseError> for Error {
+    fn from(source: infra_db::error::DatabaseError) -> Self {
+        Self::Database(source.into())
+    }
 }
 
 impl IntoResponse for Error {
@@ -103,42 +102,24 @@ async fn admin_users(
     Query(pagination): Query<PageQuery>,
     State(repo): State<state::SeaOrmRepository>,
 ) -> Result<Data<PageResponse<UserSummary>>, Error> {
-    authz::ensure_permission(
-        &repo.conn,
-        user.id,
-        PermissionName::AdminUserRead,
-    )
-    .await?;
+    authz::ensure_permission(&repo.conn, user.id, Permission::ListUsers)
+        .await?;
 
     let keyword = filter
         .keyword
         .as_deref()
         .filter(|s| !s.is_empty())
         .map(str::to_lowercase);
-    let mut select = user::Entity::find();
+    let page = repo::list_users(
+        &repo.conn,
+        keyword,
+        pagination.offset(),
+        u64::from(pagination.limit()),
+    )
+    .await?;
 
-    if let Some(keyword) = keyword {
-        let pattern = format!("%{keyword}%");
-        select = select
-            .filter(Func::lower(user::Column::Name.into_expr()).like(pattern));
-    }
-
-    let total_items = select
-        .clone()
-        .count(&repo.conn)
-        .await
-        .db_operation("count admin users")?;
-
-    let models = select
-        .order_by_asc(user::Column::Id)
-        .offset(pagination.offset())
-        .limit(u64::from(pagination.limit()))
-        .find_with_related(user_role::Entity)
-        .all(&repo.conn)
-        .await
-        .db_operation("find admin users")?;
-
-    let items = models
+    let items = page
+        .users
         .into_iter()
         .map(|(user, roles)| {
             Ok(UserSummary {
@@ -152,7 +133,7 @@ async fn admin_users(
         })
         .collect::<Result<Vec<_>, Error>>()?;
 
-    Ok(Data::new(pagination.to_response(items, total_items)))
+    Ok(Data::new(pagination.to_response(items, page.total_items)))
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -172,92 +153,21 @@ pub struct SetUserRolesRequest {
 async fn set_user_roles(
     CurrentUser(actor): CurrentUser,
     Path(id): Path<i32>,
-    State(repo): State<state::SeaOrmRepository>,
+    State(app_state): State<ArcAppState>,
     Json(req): Json<SetUserRolesRequest>,
 ) -> Result<Data<Vec<UserRole>>, Error> {
-    authz::ensure_permission(&repo.conn, actor.id, PermissionName::AdminWrite)
-        .await?;
-
-    let tx_repo = repo
-        .begin_tx()
-        .await
-        .db_operation("begin set user roles transaction")?;
-
-    let target_user = user::Entity::find_by_id(id)
-        .one(tx_repo.conn())
-        .await
-        .db_operation("find user for role update")?;
-
-    if target_user.is_none() {
-        return Err(EntityNotFound::new("user", id).into());
-    }
-
-    let old_roles = user_role::Entity::find()
-        .filter(user_role::Column::UserId.eq(id))
-        .all(tx_repo.conn())
-        .await
-        .db_operation("find old user roles")?
-        .into_iter()
-        .map(UserRole::try_from)
-        .collect::<Result<Vec<UserRole>, _>>()?;
-
-    user_role::Entity::delete_many()
-        .filter(user_role::Column::UserId.eq(id))
-        .filter(
-            user_role::Column::RoleId.is_in(EditableUserRole::all_role_ids()),
-        )
-        .exec(tx_repo.conn())
-        .await
-        .db_operation("delete old editable user roles")?;
-
-    let new_role_models = req
-        .roles
-        .iter()
-        .copied()
-        .map(|role| user_role::ActiveModel {
-            user_id: Set(id),
-            role_id: Set(UserRoleEnum::from(role).into()),
-        })
-        .collect_vec();
-
-    if !new_role_models.is_empty() {
-        user_role::Entity::insert_many(new_role_models)
-            .exec(tx_repo.conn())
-            .await
-            .db_operation("insert new user roles")?;
-    }
-
-    let new_roles = user_role::Entity::find()
-        .filter(user_role::Column::UserId.eq(id))
-        .all(tx_repo.conn())
-        .await
-        .db_operation("find new user roles")?
-        .into_iter()
-        .map(UserRole::try_from)
-        .collect::<Result<Vec<UserRole>, _>>()?;
-
-    let old_role_names = old_roles.iter().map(|r| r.name.clone()).collect_vec();
-    let new_role_names =
-        new_roles.iter().map(|role| role.name.clone()).collect();
-
-    user_role_change_audit::Entity::insert(
-        user_role_change_audit::ActiveModel {
-            id: NotSet,
-            actor_user_id: Set(actor.id),
-            target_user_id: Set(id),
-            old_roles: Set(old_role_names),
-            new_roles: Set(new_role_names),
-            created_at: Set(Utc::now().into()),
-        },
+    authz::ensure_permission(
+        &app_state.sea_orm_repo.conn,
+        actor.id,
+        Permission::ManageUserRoles,
     )
-    .exec(tx_repo.conn())
-    .await
-    .db_operation("insert user role change audit")?;
+    .await?;
 
-    tx_repo
-        .commit()
-        .await
-        .map_err(crate::infra::database::error::DatabaseError::from)?;
+    let service = service::Service {
+        repo: app_state.sea_orm_repo.clone(),
+        user_events: app_state.user_events.clone(),
+    };
+    let new_roles = service.set_user_roles(actor.id, id, &req.roles).await?;
 
     Ok(Data::new(new_roles))
 }

@@ -1,12 +1,11 @@
 use entity::release;
 use infra_db::SeaOrmRepository;
-use sea_orm::sea_query::NullOrdering;
 use sea_orm::{
     ColumnTrait, ConnectionTrait, EntityTrait, PaginatorTrait, QueryFilter,
     QueryOrder, QuerySelect, Select,
 };
 use sea_query::extension::postgres::PgBinOper;
-use sea_query::{ExprTrait, Func};
+use sea_query::{ExprTrait, Func, NullOrdering};
 
 use super::filter::ReleaseSortField;
 use crate::features::release::model::Release;

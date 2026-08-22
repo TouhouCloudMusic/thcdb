@@ -11,12 +11,11 @@ use entity::enums::ReleaseImageType;
 use entity::{image as image_entity, release_image, user as user_entity};
 use infra_db::SeaOrmRepository;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
+use user_core::UserSummary;
 
 use super::model::{ReleaseCoverArtInput, ReleaseImageQueue};
 use super::repo;
-use crate::features::image_metadata::{
-    CurrentImageMetadata, ImageUploaderSummary,
-};
+use crate::features::image_metadata::CurrentImageMetadata;
 use crate::features::image_queue::repo::{
     self as image_queue_repo, NewImageQueue,
 };
@@ -162,14 +161,11 @@ impl Service {
         };
 
         let uploader = user_entity::Entity::find_by_id(image.uploaded_by)
-            .into_partial_model::<ImageUploaderSummary>()
+            .into_partial_model::<UserSummary>()
             .one(&self.repo.conn)
             .await
             .db_operation("find release cover art uploader")?
-            .unwrap_or_else(|| ImageUploaderSummary {
-                id: image.uploaded_by,
-                name: "Unknown".to_string(),
-            });
+            .unwrap_or_else(|| UserSummary::unknown(image.uploaded_by));
 
         Ok(Some(CurrentImageMetadata {
             uploaded_at: image.uploaded_at,

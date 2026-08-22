@@ -1,6 +1,5 @@
 use axum::response::IntoResponse;
 
-use super::comment;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::{InternalError, PermissionDenied};
 use crate::shared::http::api_response::AppError;
@@ -15,14 +14,18 @@ pub enum SubmissionError {
     PermissionDenied,
     #[display("Correction not found")]
     NotFound,
-    #[display("Pending correction #{correction_id} already exists")]
-    PendingCorrectionConflict { correction_id: i32 },
     #[display("{_0}")]
     #[from]
     Database(#[error(source)] DatabaseError),
     #[display("{_0}")]
     #[from]
     Internal(#[error(source)] InternalError),
+}
+
+impl From<infra_db::error::DatabaseError> for SubmissionError {
+    fn from(source: infra_db::error::DatabaseError) -> Self {
+        Self::Database(source.into())
+    }
 }
 
 impl IntoResponse for SubmissionError {
@@ -36,12 +39,6 @@ impl IntoResponse for SubmissionError {
             }
             SubmissionError::NotFound => {
                 AppError::not_found("Correction not found").into_response()
-            }
-            SubmissionError::PendingCorrectionConflict { correction_id } => {
-                AppError::conflict(format!(
-                    "Pending correction #{correction_id} already exists"
-                ))
-                .into_response()
             }
             SubmissionError::Database(source) => source.into_response(),
             SubmissionError::Internal(source) => source.into_response(),
@@ -63,6 +60,12 @@ pub enum ModerationError {
     #[display("{_0}")]
     #[from]
     Internal(#[error(source)] InternalError),
+}
+
+impl From<infra_db::error::DatabaseError> for ModerationError {
+    fn from(source: infra_db::error::DatabaseError) -> Self {
+        Self::Database(source.into())
+    }
 }
 
 impl IntoResponse for ModerationError {
@@ -93,7 +96,7 @@ pub(crate) enum ReadError {
     Database(#[error(source)] DatabaseError),
     #[display("{_0}")]
     #[from]
-    Comment(#[error(source)] comment::Error),
+    Comment(#[error(source)] comment_service::Error),
 }
 
 impl IntoResponse for ReadError {
@@ -106,7 +109,9 @@ impl IntoResponse for ReadError {
                 AppError::bad_request(message).into_response()
             }
             ReadError::Database(source) => source.into_response(),
-            ReadError::Comment(source) => source.into_response(),
+            ReadError::Comment(source) => {
+                AppError::from(source).into_response()
+            }
         }
     }
 }

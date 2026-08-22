@@ -1,6 +1,7 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Song } from "@thc/api"
 import { createContext, createSignal, Show } from "solid-js"
+import { twJoin } from "tailwind-merge"
 
 import { Tab } from "~/component/atomic"
 import { PageLayout } from "~/layout/PageLayout"
@@ -129,7 +130,7 @@ export function SongInfoTabsView(props: SongInfoTabsViewProps) {
 			value={props.activeTab}
 			onChange={props.onActiveTabChange}
 		>
-			<Tab.List class="mx-4 gap-12 border-b border-slate-200">
+			<Tab.List class={twJoin(Tab.CONTAINER_CLASS, "mx-4 gap-12")}>
 				<Tab.Trigger
 					value="Release"
 					class={TRIGGER_CLASS}

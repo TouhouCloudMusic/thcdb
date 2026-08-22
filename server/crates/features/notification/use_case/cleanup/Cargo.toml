@@ -1,0 +1,20 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-notification-use-case-cleanup"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "notification_cleanup"
+path = "src/lib.rs"
+
+[dependencies]
+chrono.workspace    = true
+entity.workspace    = true
+infra_db.workspace  = true
+log                 = { workspace = true, features = [ "kv" ] }
+sea-orm.workspace   = true
+sea-query.workspace = true

@@ -1,19 +1,17 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
 import { Trans, useLingui } from "@lingui/solid/macro"
+import { useQuery } from "@tanstack/solid-query"
 import { Link, useNavigate } from "@tanstack/solid-router"
-import type { UserProfile } from "@thc/api"
-import {
-	BellAlertIcon,
-	BellIcon,
-	BellSlashIcon,
-} from "@thc/icons/heroicons/24/outline"
+import { BellIcon } from "@thc/icons/heroicons/24/outline"
 import { StrExt } from "@thc/toolkit/data"
 import { createSignal, Match, Show, Switch } from "solid-js"
 import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
 
 import { Button } from "~/component/atomic/button"
 import { Select } from "~/component/atomic/form/select"
-import { NotificationState } from "~/state/user"
+import { unreadCountOptions } from "~/hey-api/@tanstack/solid-query.gen"
+import type { SessionProfile } from "~/state/user"
+import { useCurrentUser } from "~/state/user"
 import { createClickOutside } from "~/utils/solid/createClickOutside"
 
 import { Divider } from "../atomic/Divider"
@@ -43,15 +41,32 @@ const ENTITY_FILTER_OPTIONS: EntityFilter[] = [
 	"tag",
 ] as const
 
-type HeaderProps = {
-	user?: UserProfile
-	notificationState?: NotificationState
-	onSignOut?: VoidFunction
+function HeaderSkeleton() {
+	return (
+		<>
+			<div
+				class="grid size-8 place-items-center"
+				aria-hidden="true"
+			>
+				<div class="size-4 animate-pulse rounded-full bg-slate-200"></div>
+			</div>
+			<div
+				class="size-8 animate-pulse rounded-full bg-slate-200"
+				aria-hidden="true"
+			></div>
+		</>
+	)
 }
 
-export function Header(props: HeaderProps) {
+export function Header() {
+	const currentUser = useCurrentUser()
+	const unread = useQuery(() => ({
+		...unreadCountOptions(),
+		enabled: currentUser.session.status === "authenticated",
+	}))
+
 	return (
-		<header class="box-content content-center items-center border-b-1 border-slate-300 bg-primary px-4 py-2">
+		<header class="box-content content-center items-center border-b border-slate-300 bg-primary px-4 py-2">
 			<div class="my-auto flex h-8 items-center justify-between">
 				{/* Left */}
 				<div class="flex items-center gap-3">
@@ -66,7 +81,7 @@ export function Header(props: HeaderProps) {
 						<Dialog.Portal>
 							<Dialog.Overlay />
 							<K_Dialog.Content class="fixed inset-0 z-50 w-fit">
-								<LeftSidebar user={props.user} />
+								<LeftSidebar />
 							</K_Dialog.Content>
 						</Dialog.Portal>
 					</Dialog.Root>
@@ -85,20 +100,22 @@ export function Header(props: HeaderProps) {
 						vertical
 						class="h-6"
 					/>
-					<Show
-						when={props.user}
-						fallback={<UnauthenticatedButtons />}
-					>
-						{(user) => (
-							<AuthenticatedContent
-								user={user()}
-								notificationState={
-									props.notificationState ?? NotificationState.None
-								}
-								onSignOut={props.onSignOut}
-							/>
-						)}
-					</Show>
+					<Switch>
+						<Match when={currentUser.session.status === "loading"}>
+							<HeaderSkeleton />
+						</Match>
+						<Match when={currentUser.profile}>
+							{(user) => (
+								<AuthenticatedContent
+									user={user()}
+									unreadCount={unread.data?.data.count ?? 0}
+								/>
+							)}
+						</Match>
+						<Match when={currentUser.session.status === "anonymous"}>
+							<UnauthenticatedButtons />
+						</Match>
+					</Switch>
 				</div>
 			</div>
 		</header>
@@ -106,9 +123,8 @@ export function Header(props: HeaderProps) {
 }
 
 type AuthenticatedContentProps = {
-	user: UserProfile
-	notificationState: NotificationState
-	onSignOut?: VoidFunction
+	user: SessionProfile
+	unreadCount: number
 }
 
 function AuthenticatedContent(props: AuthenticatedContentProps) {
@@ -117,7 +133,7 @@ function AuthenticatedContent(props: AuthenticatedContentProps) {
 	return (
 		<>
 			<div class="grid h-8 w-8 place-items-center">
-				<NotificationButton state={props.notificationState} />
+				<BellButton unreadCount={props.unreadCount} />
 			</div>
 			<button onClick={() => setShow(!show())}>
 				<Avatar user={props.user} />
@@ -131,9 +147,7 @@ function AuthenticatedContent(props: AuthenticatedContentProps) {
 					<K_Dialog.Content class="fixed inset-0 z-50">
 						<RightSidebar
 							ref={setRef}
-							user={props.user}
 							onClose={() => setShow(false)}
-							onSignOut={props.onSignOut}
 						/>
 					</K_Dialog.Content>
 				</Dialog.Portal>
@@ -186,7 +200,7 @@ function SearchBar() {
 					type="search"
 					aria-label={t`Search artists, releases, songs`}
 					placeholder={t`Search artists, releases, songs…`}
-					class="mr-auto h-7 w-full rounded-xs bg-slate-100 pl-7 placeholder:font-light outline-transparent duration-200 hover:outline hover:outline-reimu-600 focus:bg-white focus:outline-[1.5px] focus:outline-reimu-600"
+					class="mr-auto h-7 w-full rounded-xs bg-slate-100 pl-7 outline-transparent duration-200 hover:outline hover:outline-reimu-600 focus:bg-white focus:outline-[1.5px] focus:outline-reimu-600"
 				/>
 				<MagnifyingGlassIcon class="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
 
@@ -229,24 +243,23 @@ function SearchBar() {
 	)
 }
 
-function NotificationButton(props: { state: NotificationState }) {
+function BellButton(props: { unreadCount: number }) {
+	const { t } = useLingui()
+
 	return (
-		<Button
-			variant="Tertiary"
-			class={HEADER_BTN_CLASS}
+		<Link
+			to="/notifications"
+			search={{ state: "inbox" }}
+			aria-label={t`Notifications`}
+			class="relative grid place-items-center p-1"
 		>
-			<Switch>
-				<Match when={props.state === NotificationState.None}>
-					<BellIcon class={"m-auto size-4"} />
-				</Match>
-				<Match when={props.state === NotificationState.Unread}>
-					<BellAlertIcon class={"m-auto size-4"} />
-				</Match>
-				<Match when={props.state === NotificationState.Muted}>
-					<BellSlashIcon class={"m-auto size-4"} />
-				</Match>
-			</Switch>
-		</Button>
+			<BellIcon class="m-auto size-4" />
+			<Show when={props.unreadCount > 0}>
+				<span class="absolute -right-1.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-reimu-600 px-1 text-xs leading-none text-white">
+					{props.unreadCount > 99 ? "99+" : props.unreadCount}
+				</span>
+			</Show>
+		</Link>
 	)
 }
 

@@ -1,11 +1,10 @@
 use serde::Serialize;
+use user_core::UserSummary;
 use utoipa::ToSchema;
-
-use crate::features::correction::model::CorrectionUserSummary;
 
 #[derive(Serialize, ToSchema)]
 pub(super) struct CorrectionRevisionSummary {
     pub(super) entity_history_id: i32,
-    pub(super) author: CorrectionUserSummary,
+    pub(super) author: UserSummary,
     pub(super) description: String,
 }

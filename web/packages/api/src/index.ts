@@ -5,7 +5,7 @@ export type * from "./type"
 export type {
 	ArtistImageQueueTarget,
 	ArtistImageType,
-	HandleImageQueueMethod,
+	ImageQueueAction,
 	ImageQueueDetail,
 	ImageQueueStatus,
 	ImageQueueType,

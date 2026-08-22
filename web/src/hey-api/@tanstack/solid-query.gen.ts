@@ -11,10 +11,10 @@ import {
 	adminUsers,
 	compareCorrections,
 	createArtist,
-	createComment,
 	createCreditRole,
 	createEntityComment,
 	createEvent,
+	createImageQueueComment,
 	createLabel,
 	createRelease,
 	createSong,
@@ -39,11 +39,11 @@ import {
 	findArtistById,
 	findArtistDiscographiesByType,
 	findArtistDiscographiesInit,
-	findComments,
 	findCreditRoleById,
 	findEntityComments,
 	findEventById,
 	findEventByKeyword,
+	findImageQueueComments,
 	findLabelById,
 	findLabelByKeyword,
 	findManyArtist,
@@ -68,17 +68,15 @@ import {
 	getCorrectionRevisions,
 	getReleaseCoverArtMetadata,
 	getTags,
-	handleCorrection,
-	handleImageQueue,
 	healthCheck,
 	homeMetadata,
 	imageQueueDetail,
 	languageList,
-	notificationList,
-	notificationMarkRead,
-	notificationReadAll,
-	notificationUnreadCount,
-	notificationWs,
+	listNotifications,
+	markRead,
+	markUnread,
+	moderateCorrection,
+	moderateImageQueue,
 	type Options,
 	pendingCorrection,
 	pendingImageQueue,
@@ -86,9 +84,11 @@ import {
 	profile,
 	profileWithName,
 	publicUserCollections,
+	readAll,
 	reorderUserCollectionItems,
 	resendVerificationEmail,
 	resetPassword,
+	saveNotification,
 	searchAll,
 	searchArtist,
 	searchEvent,
@@ -97,6 +97,8 @@ import {
 	searchSong,
 	searchTag,
 	searchUserCollections,
+	setCorrectionSubscription,
+	setImageQueueSubscription,
 	setUserRoles,
 	signIn,
 	signOut,
@@ -104,6 +106,8 @@ import {
 	songRelationTypes,
 	unfollowUser,
 	unfollowUserCollection,
+	unreadCount,
+	unsaveNotification,
 	updateArtistPendingCorrection,
 	updateBio,
 	updateCreditRolePendingCorrection,
@@ -145,9 +149,6 @@ import type {
 	CreateArtistData,
 	CreateArtistError,
 	CreateArtistResponse,
-	CreateCommentData,
-	CreateCommentError,
-	CreateCommentResponse,
 	CreateCreditRoleData,
 	CreateCreditRoleError,
 	CreateCreditRoleResponse,
@@ -157,6 +158,9 @@ import type {
 	CreateEventData,
 	CreateEventError,
 	CreateEventResponse,
+	CreateImageQueueCommentData,
+	CreateImageQueueCommentError,
+	CreateImageQueueCommentResponse,
 	CreateLabelData,
 	CreateLabelError,
 	CreateLabelResponse,
@@ -228,9 +232,6 @@ import type {
 	FindArtistDiscographiesInitData,
 	FindArtistDiscographiesInitError,
 	FindArtistDiscographiesInitResponse,
-	FindCommentsData,
-	FindCommentsError,
-	FindCommentsResponse,
 	FindCreditRoleByIdData,
 	FindCreditRoleByIdError,
 	FindCreditRoleByIdResponse,
@@ -243,6 +244,9 @@ import type {
 	FindEventByKeywordData,
 	FindEventByKeywordError,
 	FindEventByKeywordResponse,
+	FindImageQueueCommentsData,
+	FindImageQueueCommentsError,
+	FindImageQueueCommentsResponse,
 	FindLabelByIdData,
 	FindLabelByIdError,
 	FindLabelByIdResponse,
@@ -315,12 +319,6 @@ import type {
 	GetTagsData,
 	GetTagsError,
 	GetTagsResponse,
-	HandleCorrectionData,
-	HandleCorrectionError,
-	HandleCorrectionResponse,
-	HandleImageQueueData,
-	HandleImageQueueError,
-	HandleImageQueueResponse,
 	HealthCheckData,
 	HealthCheckError,
 	HomeMetadataData,
@@ -332,21 +330,21 @@ import type {
 	LanguageListData,
 	LanguageListError,
 	LanguageListResponse,
-	NotificationListData,
-	NotificationListError,
-	NotificationListResponse,
-	NotificationMarkReadData,
-	NotificationMarkReadError,
-	NotificationMarkReadResponse,
-	NotificationReadAllData,
-	NotificationReadAllError,
-	NotificationReadAllResponse,
-	NotificationUnreadCountData,
-	NotificationUnreadCountError,
-	NotificationUnreadCountResponse,
-	NotificationWsData,
-	NotificationWsError,
-	NotificationWsResponse,
+	ListNotificationsData,
+	ListNotificationsError,
+	ListNotificationsResponse,
+	MarkReadData,
+	MarkReadError,
+	MarkReadResponse,
+	MarkUnreadData,
+	MarkUnreadError,
+	MarkUnreadResponse,
+	ModerateCorrectionData,
+	ModerateCorrectionError,
+	ModerateCorrectionResponse,
+	ModerateImageQueueData,
+	ModerateImageQueueError,
+	ModerateImageQueueResponse,
 	PendingCorrectionData,
 	PendingCorrectionError,
 	PendingCorrectionResponse,
@@ -365,6 +363,9 @@ import type {
 	PublicUserCollectionsData,
 	PublicUserCollectionsError,
 	PublicUserCollectionsResponse,
+	ReadAllData,
+	ReadAllError,
+	ReadAllResponse,
 	ReorderUserCollectionItemsData,
 	ReorderUserCollectionItemsError,
 	ReorderUserCollectionItemsResponse,
@@ -374,6 +375,9 @@ import type {
 	ResetPasswordData,
 	ResetPasswordError,
 	ResetPasswordResponse,
+	SaveNotificationData,
+	SaveNotificationError,
+	SaveNotificationResponse,
 	SearchAllData,
 	SearchAllError,
 	SearchAllResponse,
@@ -398,6 +402,12 @@ import type {
 	SearchUserCollectionsData,
 	SearchUserCollectionsError,
 	SearchUserCollectionsResponse,
+	SetCorrectionSubscriptionData,
+	SetCorrectionSubscriptionError,
+	SetCorrectionSubscriptionResponse,
+	SetImageQueueSubscriptionData,
+	SetImageQueueSubscriptionError,
+	SetImageQueueSubscriptionResponse,
 	SetUserRolesData,
 	SetUserRolesError,
 	SetUserRolesResponse,
@@ -419,6 +429,12 @@ import type {
 	UnfollowUserData,
 	UnfollowUserError,
 	UnfollowUserResponse,
+	UnreadCountData,
+	UnreadCountError,
+	UnreadCountResponse,
+	UnsaveNotificationData,
+	UnsaveNotificationError,
+	UnsaveNotificationResponse,
 	UpdateArtistPendingCorrectionData,
 	UpdateArtistPendingCorrectionError,
 	UpdateArtistPendingCorrectionResponse,
@@ -575,7 +591,7 @@ const createQueryKey = <TOptions extends Options>(
 }
 
 export const adminUsersQueryKey = (options?: Options<AdminUsersData>) =>
-	createQueryKey("adminUsers", options)
+	createQueryKey("adminUsers", options, false, ["Admin"])
 
 export const adminUsersOptions = (options?: Options<AdminUsersData>) =>
 	queryOptions<
@@ -633,10 +649,12 @@ const createInfiniteParams = <
 export const adminUsersInfiniteQueryKey = (
 	options?: Options<AdminUsersData>,
 ): QueryKey<Options<AdminUsersData>> =>
-	createQueryKey("adminUsers", options, true)
+	createQueryKey("adminUsers", options, true, ["Admin"])
 
-export const adminUsersInfiniteOptions = (options?: Options<AdminUsersData>) =>
-	infiniteQueryOptions<
+export const adminUsersInfiniteOptions = (
+	options?: Options<AdminUsersData>,
+) => {
+	const opts = infiniteQueryOptions<
 		AdminUsersResponse,
 		AdminUsersError,
 		InfiniteData<AdminUsersResponse>,
@@ -674,9 +692,11 @@ export const adminUsersInfiniteOptions = (options?: Options<AdminUsersData>) =>
 			queryKey: adminUsersInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const findManyArtistQueryKey = (options: Options<FindManyArtistData>) =>
-	createQueryKey("findManyArtist", options)
+	createQueryKey("findManyArtist", options, false, ["Artist"])
 
 export const findManyArtistOptions = (options: Options<FindManyArtistData>) =>
 	queryOptions<
@@ -722,7 +742,7 @@ export const createArtistMutation = (
 }
 
 export const exploreArtistQueryKey = (options?: Options<ExploreArtistData>) =>
-	createQueryKey("exploreArtist", options)
+	createQueryKey("exploreArtist", options, false, ["Artist"])
 
 export const exploreArtistOptions = (options?: Options<ExploreArtistData>) =>
 	queryOptions<
@@ -746,12 +766,12 @@ export const exploreArtistOptions = (options?: Options<ExploreArtistData>) =>
 export const exploreArtistInfiniteQueryKey = (
 	options?: Options<ExploreArtistData>,
 ): QueryKey<Options<ExploreArtistData>> =>
-	createQueryKey("exploreArtist", options, true)
+	createQueryKey("exploreArtist", options, true, ["Artist"])
 
 export const exploreArtistInfiniteOptions = (
 	options?: Options<ExploreArtistData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		ExploreArtistResponse,
 		ExploreArtistError,
 		InfiniteData<ExploreArtistResponse>,
@@ -789,9 +809,11 @@ export const exploreArtistInfiniteOptions = (
 			queryKey: exploreArtistInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const findArtistByIdQueryKey = (options: Options<FindArtistByIdData>) =>
-	createQueryKey("findArtistById", options)
+	createQueryKey("findArtistById", options, false, ["Artist"])
 
 export const findArtistByIdOptions = (options: Options<FindArtistByIdData>) =>
 	queryOptions<
@@ -838,7 +860,7 @@ export const upsertArtistCorrectionMutation = (
 
 export const findArtistAppearancesQueryKey = (
 	options: Options<FindArtistAppearancesData>,
-) => createQueryKey("findArtistAppearances", options)
+) => createQueryKey("findArtistAppearances", options, false, ["Artist"])
 
 export const findArtistAppearancesOptions = (
 	options: Options<FindArtistAppearancesData>,
@@ -864,12 +886,12 @@ export const findArtistAppearancesOptions = (
 export const findArtistAppearancesInfiniteQueryKey = (
 	options: Options<FindArtistAppearancesData>,
 ): QueryKey<Options<FindArtistAppearancesData>> =>
-	createQueryKey("findArtistAppearances", options, true)
+	createQueryKey("findArtistAppearances", options, true, ["Artist"])
 
 export const findArtistAppearancesInfiniteOptions = (
 	options: Options<FindArtistAppearancesData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		FindArtistAppearancesResponse,
 		FindArtistAppearancesError,
 		InfiniteData<FindArtistAppearancesResponse>,
@@ -907,6 +929,8 @@ export const findArtistAppearancesInfiniteOptions = (
 			queryKey: findArtistAppearancesInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const updateArtistPendingCorrectionMutation = (
 	options?: Partial<Options<UpdateArtistPendingCorrectionData>>,
@@ -934,7 +958,7 @@ export const updateArtistPendingCorrectionMutation = (
 
 export const getArtistCreditsQueryKey = (
 	options: Options<GetArtistCreditsData>,
-) => createQueryKey("getArtistCredits", options)
+) => createQueryKey("getArtistCredits", options, false, ["Artist"])
 
 export const getArtistCreditsOptions = (
 	options: Options<GetArtistCreditsData>,
@@ -960,12 +984,12 @@ export const getArtistCreditsOptions = (
 export const getArtistCreditsInfiniteQueryKey = (
 	options: Options<GetArtistCreditsData>,
 ): QueryKey<Options<GetArtistCreditsData>> =>
-	createQueryKey("getArtistCredits", options, true)
+	createQueryKey("getArtistCredits", options, true, ["Artist"])
 
 export const getArtistCreditsInfiniteOptions = (
 	options: Options<GetArtistCreditsData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		GetArtistCreditsResponse,
 		GetArtistCreditsError,
 		InfiniteData<GetArtistCreditsResponse>,
@@ -1003,10 +1027,12 @@ export const getArtistCreditsInfiniteOptions = (
 			queryKey: getArtistCreditsInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const findArtistDiscographiesByTypeQueryKey = (
 	options: Options<FindArtistDiscographiesByTypeData>,
-) => createQueryKey("findArtistDiscographiesByType", options)
+) => createQueryKey("findArtistDiscographiesByType", options, false, ["Artist"])
 
 export const findArtistDiscographiesByTypeOptions = (
 	options: Options<FindArtistDiscographiesByTypeData>,
@@ -1032,12 +1058,12 @@ export const findArtistDiscographiesByTypeOptions = (
 export const findArtistDiscographiesByTypeInfiniteQueryKey = (
 	options: Options<FindArtistDiscographiesByTypeData>,
 ): QueryKey<Options<FindArtistDiscographiesByTypeData>> =>
-	createQueryKey("findArtistDiscographiesByType", options, true)
+	createQueryKey("findArtistDiscographiesByType", options, true, ["Artist"])
 
 export const findArtistDiscographiesByTypeInfiniteOptions = (
 	options: Options<FindArtistDiscographiesByTypeData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		FindArtistDiscographiesByTypeResponse,
 		FindArtistDiscographiesByTypeError,
 		InfiniteData<FindArtistDiscographiesByTypeResponse>,
@@ -1075,10 +1101,12 @@ export const findArtistDiscographiesByTypeInfiniteOptions = (
 			queryKey: findArtistDiscographiesByTypeInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const findArtistDiscographiesInitQueryKey = (
 	options: Options<FindArtistDiscographiesInitData>,
-) => createQueryKey("findArtistDiscographiesInit", options)
+) => createQueryKey("findArtistDiscographiesInit", options, false, ["Artist"])
 
 export const findArtistDiscographiesInitOptions = (
 	options: Options<FindArtistDiscographiesInitData>,
@@ -1103,7 +1131,7 @@ export const findArtistDiscographiesInitOptions = (
 
 export const getArtistProfileImageMetadataQueryKey = (
 	options: Options<GetArtistProfileImageMetadataData>,
-) => createQueryKey("getArtistProfileImageMetadata", options)
+) => createQueryKey("getArtistProfileImageMetadata", options, false, ["Artist"])
 
 export const getArtistProfileImageMetadataOptions = (
 	options: Options<GetArtistProfileImageMetadataData>,
@@ -1224,7 +1252,7 @@ export const deleteUserCollectionMutation = (
 
 export const userCollectionDetailQueryKey = (
 	options: Options<UserCollectionDetailData>,
-) => createQueryKey("userCollectionDetail", options)
+) => createQueryKey("userCollectionDetail", options, false, ["User Collection"])
 
 export const userCollectionDetailOptions = (
 	options: Options<UserCollectionDetailData>,
@@ -1273,7 +1301,7 @@ export const updateUserCollectionMutation = (
 
 export const userCollectionItemsQueryKey = (
 	options: Options<UserCollectionItemsData>,
-) => createQueryKey("userCollectionItems", options)
+) => createQueryKey("userCollectionItems", options, false, ["User Collection"])
 
 export const userCollectionItemsOptions = (
 	options: Options<UserCollectionItemsData>,
@@ -1299,12 +1327,12 @@ export const userCollectionItemsOptions = (
 export const userCollectionItemsInfiniteQueryKey = (
 	options: Options<UserCollectionItemsData>,
 ): QueryKey<Options<UserCollectionItemsData>> =>
-	createQueryKey("userCollectionItems", options, true)
+	createQueryKey("userCollectionItems", options, true, ["User Collection"])
 
 export const userCollectionItemsInfiniteOptions = (
 	options: Options<UserCollectionItemsData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		UserCollectionItemsResponse,
 		UserCollectionItemsError,
 		InfiniteData<UserCollectionItemsResponse>,
@@ -1342,6 +1370,8 @@ export const userCollectionItemsInfiniteOptions = (
 			queryKey: userCollectionItemsInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const createUserCollectionItemMutation = (
 	options?: Partial<Options<CreateUserCollectionItemData>>,
@@ -1417,7 +1447,8 @@ export const deleteUserCollectionItemMutation = (
 
 export const publicUserCollectionsQueryKey = (
 	options?: Options<PublicUserCollectionsData>,
-) => createQueryKey("publicUserCollections", options)
+) =>
+	createQueryKey("publicUserCollections", options, false, ["User Collection"])
 
 export const publicUserCollectionsOptions = (
 	options?: Options<PublicUserCollectionsData>,
@@ -1443,12 +1474,12 @@ export const publicUserCollectionsOptions = (
 export const publicUserCollectionsInfiniteQueryKey = (
 	options?: Options<PublicUserCollectionsData>,
 ): QueryKey<Options<PublicUserCollectionsData>> =>
-	createQueryKey("publicUserCollections", options, true)
+	createQueryKey("publicUserCollections", options, true, ["User Collection"])
 
 export const publicUserCollectionsInfiniteOptions = (
 	options?: Options<PublicUserCollectionsData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		PublicUserCollectionsResponse,
 		PublicUserCollectionsError,
 		InfiniteData<PublicUserCollectionsResponse>,
@@ -1486,10 +1517,13 @@ export const publicUserCollectionsInfiniteOptions = (
 			queryKey: publicUserCollectionsInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const searchUserCollectionsQueryKey = (
 	options: Options<SearchUserCollectionsData>,
-) => createQueryKey("searchUserCollections", options)
+) =>
+	createQueryKey("searchUserCollections", options, false, ["User Collection"])
 
 export const searchUserCollectionsOptions = (
 	options: Options<SearchUserCollectionsData>,
@@ -1515,12 +1549,12 @@ export const searchUserCollectionsOptions = (
 export const searchUserCollectionsInfiniteQueryKey = (
 	options: Options<SearchUserCollectionsData>,
 ): QueryKey<Options<SearchUserCollectionsData>> =>
-	createQueryKey("searchUserCollections", options, true)
+	createQueryKey("searchUserCollections", options, true, ["User Collection"])
 
 export const searchUserCollectionsInfiniteOptions = (
 	options: Options<SearchUserCollectionsData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		SearchUserCollectionsResponse,
 		SearchUserCollectionsError,
 		InfiniteData<SearchUserCollectionsResponse>,
@@ -1558,6 +1592,8 @@ export const searchUserCollectionsInfiniteOptions = (
 			queryKey: searchUserCollectionsInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const deleteCommentMutation = (
 	options?: Partial<Options<DeleteCommentData>>,
@@ -1585,7 +1621,7 @@ export const deleteCommentMutation = (
 
 export const compareCorrectionsQueryKey = (
 	options: Options<CompareCorrectionsData>,
-) => createQueryKey("compareCorrections", options)
+) => createQueryKey("compareCorrections", options, false, ["Correction"])
 
 export const compareCorrectionsOptions = (
 	options: Options<CompareCorrectionsData>,
@@ -1609,7 +1645,7 @@ export const compareCorrectionsOptions = (
 	})
 
 export const getCorrectionQueryKey = (options: Options<GetCorrectionData>) =>
-	createQueryKey("getCorrection", options)
+	createQueryKey("getCorrection", options, false, ["Correction"])
 
 export const getCorrectionOptions = (options: Options<GetCorrectionData>) =>
 	queryOptions<
@@ -1630,113 +1666,20 @@ export const getCorrectionOptions = (options: Options<GetCorrectionData>) =>
 		queryKey: getCorrectionQueryKey(options),
 	})
 
-export const handleCorrectionMutation = (
-	options?: Partial<Options<HandleCorrectionData>>,
+export const moderateCorrectionMutation = (
+	options?: Partial<Options<ModerateCorrectionData>>,
 ): MutationOptions<
-	HandleCorrectionResponse,
-	HandleCorrectionError,
-	Options<HandleCorrectionData>
+	ModerateCorrectionResponse,
+	ModerateCorrectionError,
+	Options<ModerateCorrectionData>
 > => {
 	const mutationOptions: MutationOptions<
-		HandleCorrectionResponse,
-		HandleCorrectionError,
-		Options<HandleCorrectionData>
+		ModerateCorrectionResponse,
+		ModerateCorrectionError,
+		Options<ModerateCorrectionData>
 	> = {
 		mutationFn: async (fnOptions) => {
-			const { data } = await handleCorrection({
-				...options,
-				...fnOptions,
-				throwOnError: true,
-			})
-			return data
-		},
-	}
-	return mutationOptions
-}
-
-export const findCommentsQueryKey = (options: Options<FindCommentsData>) =>
-	createQueryKey("findComments", options)
-
-export const findCommentsOptions = (options: Options<FindCommentsData>) =>
-	queryOptions<
-		FindCommentsResponse,
-		FindCommentsError,
-		FindCommentsResponse,
-		ReturnType<typeof findCommentsQueryKey>
-	>({
-		queryFn: async ({ queryKey, signal }) => {
-			const { data } = await findComments({
-				...options,
-				...queryKey[0],
-				signal,
-				throwOnError: true,
-			})
-			return data
-		},
-		queryKey: findCommentsQueryKey(options),
-	})
-
-export const findCommentsInfiniteQueryKey = (
-	options: Options<FindCommentsData>,
-): QueryKey<Options<FindCommentsData>> =>
-	createQueryKey("findComments", options, true)
-
-export const findCommentsInfiniteOptions = (
-	options: Options<FindCommentsData>,
-) =>
-	infiniteQueryOptions<
-		FindCommentsResponse,
-		FindCommentsError,
-		InfiniteData<FindCommentsResponse>,
-		QueryKey<Options<FindCommentsData>>,
-		| number
-		| Pick<
-				QueryKey<Options<FindCommentsData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
-	>(
-		// @ts-ignore
-		{
-			queryFn: async ({ pageParam, queryKey, signal }) => {
-				// @ts-ignore
-				const page: Pick<
-					QueryKey<Options<FindCommentsData>>[0],
-					"body" | "headers" | "path" | "query"
-				> =
-					typeof pageParam === "object"
-						? pageParam
-						: {
-								query: {
-									cursor: pageParam,
-								},
-							}
-				const params = createInfiniteParams(queryKey, page)
-				const { data } = await findComments({
-					...options,
-					...params,
-					signal,
-					throwOnError: true,
-				})
-				return data
-			},
-			queryKey: findCommentsInfiniteQueryKey(options),
-		},
-	)
-
-export const createCommentMutation = (
-	options?: Partial<Options<CreateCommentData>>,
-): MutationOptions<
-	CreateCommentResponse,
-	CreateCommentError,
-	Options<CreateCommentData>
-> => {
-	const mutationOptions: MutationOptions<
-		CreateCommentResponse,
-		CreateCommentError,
-		Options<CreateCommentData>
-	> = {
-		mutationFn: async (fnOptions) => {
-			const { data } = await createComment({
+			const { data } = await moderateCorrection({
 				...options,
 				...fnOptions,
 				throwOnError: true,
@@ -1749,7 +1692,7 @@ export const createCommentMutation = (
 
 export const getCorrectionDiffQueryKey = (
 	options: Options<GetCorrectionDiffData>,
-) => createQueryKey("getCorrectionDiff", options)
+) => createQueryKey("getCorrectionDiff", options, false, ["Correction"])
 
 export const getCorrectionDiffOptions = (
 	options: Options<GetCorrectionDiffData>,
@@ -1774,7 +1717,7 @@ export const getCorrectionDiffOptions = (
 
 export const getCorrectionRevisionsQueryKey = (
 	options: Options<GetCorrectionRevisionsData>,
-) => createQueryKey("getCorrectionRevisions", options)
+) => createQueryKey("getCorrectionRevisions", options, false, ["Correction"])
 
 export const getCorrectionRevisionsOptions = (
 	options: Options<GetCorrectionRevisionsData>,
@@ -1796,6 +1739,30 @@ export const getCorrectionRevisionsOptions = (
 		},
 		queryKey: getCorrectionRevisionsQueryKey(options),
 	})
+
+export const setCorrectionSubscriptionMutation = (
+	options?: Partial<Options<SetCorrectionSubscriptionData>>,
+): MutationOptions<
+	SetCorrectionSubscriptionResponse,
+	SetCorrectionSubscriptionError,
+	Options<SetCorrectionSubscriptionData>
+> => {
+	const mutationOptions: MutationOptions<
+		SetCorrectionSubscriptionResponse,
+		SetCorrectionSubscriptionError,
+		Options<SetCorrectionSubscriptionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await setCorrectionSubscription({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
 
 export const createCreditRoleMutation = (
 	options?: Partial<Options<CreateCreditRoleData>>,
@@ -1823,7 +1790,8 @@ export const createCreditRoleMutation = (
 
 export const findManyCreditRolesSummaryQueryKey = (
 	options: Options<FindManyCreditRolesSummaryData>,
-) => createQueryKey("findManyCreditRolesSummary", options)
+) =>
+	createQueryKey("findManyCreditRolesSummary", options, false, ["Credit Role"])
 
 export const findManyCreditRolesSummaryOptions = (
 	options: Options<FindManyCreditRolesSummaryData>,
@@ -1848,7 +1816,7 @@ export const findManyCreditRolesSummaryOptions = (
 
 export const findCreditRoleByIdQueryKey = (
 	options: Options<FindCreditRoleByIdData>,
-) => createQueryKey("findCreditRoleById", options)
+) => createQueryKey("findCreditRoleById", options, false, ["Credit Role"])
 
 export const findCreditRoleByIdOptions = (
 	options: Options<FindCreditRoleByIdData>,
@@ -1946,7 +1914,7 @@ export const editableUserRolesOptions = (
 
 export const findEventByKeywordQueryKey = (
 	options: Options<FindEventByKeywordData>,
-) => createQueryKey("findEventByKeyword", options)
+) => createQueryKey("findEventByKeyword", options, false, ["Event"])
 
 export const findEventByKeywordOptions = (
 	options: Options<FindEventByKeywordData>,
@@ -1994,7 +1962,7 @@ export const createEventMutation = (
 }
 
 export const exploreEventQueryKey = (options?: Options<ExploreEventData>) =>
-	createQueryKey("exploreEvent", options)
+	createQueryKey("exploreEvent", options, false, ["Event"])
 
 export const exploreEventOptions = (options?: Options<ExploreEventData>) =>
 	queryOptions<
@@ -2018,12 +1986,12 @@ export const exploreEventOptions = (options?: Options<ExploreEventData>) =>
 export const exploreEventInfiniteQueryKey = (
 	options?: Options<ExploreEventData>,
 ): QueryKey<Options<ExploreEventData>> =>
-	createQueryKey("exploreEvent", options, true)
+	createQueryKey("exploreEvent", options, true, ["Event"])
 
 export const exploreEventInfiniteOptions = (
 	options?: Options<ExploreEventData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		ExploreEventResponse,
 		ExploreEventError,
 		InfiniteData<ExploreEventResponse>,
@@ -2061,9 +2029,11 @@ export const exploreEventInfiniteOptions = (
 			queryKey: exploreEventInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const findEventByIdQueryKey = (options: Options<FindEventByIdData>) =>
-	createQueryKey("findEventById", options)
+	createQueryKey("findEventById", options, false, ["Event"])
 
 export const findEventByIdOptions = (options: Options<FindEventByIdData>) =>
 	queryOptions<
@@ -2202,7 +2172,7 @@ export const homeMetadataOptions = (options?: Options<HomeMetadataData>) =>
 
 export const pendingImageQueueQueryKey = (
 	options?: Options<PendingImageQueueData>,
-) => createQueryKey("pendingImageQueue", options)
+) => createQueryKey("pendingImageQueue", options, false, ["Image Queue"])
 
 export const pendingImageQueueOptions = (
 	options?: Options<PendingImageQueueData>,
@@ -2228,12 +2198,12 @@ export const pendingImageQueueOptions = (
 export const pendingImageQueueInfiniteQueryKey = (
 	options?: Options<PendingImageQueueData>,
 ): QueryKey<Options<PendingImageQueueData>> =>
-	createQueryKey("pendingImageQueue", options, true)
+	createQueryKey("pendingImageQueue", options, true, ["Image Queue"])
 
 export const pendingImageQueueInfiniteOptions = (
 	options?: Options<PendingImageQueueData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		PendingImageQueueResponse,
 		PendingImageQueueError,
 		InfiniteData<PendingImageQueueResponse>,
@@ -2271,10 +2241,12 @@ export const pendingImageQueueInfiniteOptions = (
 			queryKey: pendingImageQueueInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const pendingImageQueueCountQueryKey = (
 	options?: Options<PendingImageQueueCountData>,
-) => createQueryKey("pendingImageQueueCount", options)
+) => createQueryKey("pendingImageQueueCount", options, false, ["Image Queue"])
 
 export const pendingImageQueueCountOptions = (
 	options?: Options<PendingImageQueueCountData>,
@@ -2299,7 +2271,7 @@ export const pendingImageQueueCountOptions = (
 
 export const imageQueueDetailQueryKey = (
 	options: Options<ImageQueueDetailData>,
-) => createQueryKey("imageQueueDetail", options)
+) => createQueryKey("imageQueueDetail", options, false, ["Image Queue"])
 
 export const imageQueueDetailOptions = (
 	options: Options<ImageQueueDetailData>,
@@ -2322,20 +2294,142 @@ export const imageQueueDetailOptions = (
 		queryKey: imageQueueDetailQueryKey(options),
 	})
 
-export const handleImageQueueMutation = (
-	options?: Partial<Options<HandleImageQueueData>>,
+export const moderateImageQueueMutation = (
+	options?: Partial<Options<ModerateImageQueueData>>,
 ): MutationOptions<
-	HandleImageQueueResponse,
-	HandleImageQueueError,
-	Options<HandleImageQueueData>
+	ModerateImageQueueResponse,
+	ModerateImageQueueError,
+	Options<ModerateImageQueueData>
 > => {
 	const mutationOptions: MutationOptions<
-		HandleImageQueueResponse,
-		HandleImageQueueError,
-		Options<HandleImageQueueData>
+		ModerateImageQueueResponse,
+		ModerateImageQueueError,
+		Options<ModerateImageQueueData>
 	> = {
 		mutationFn: async (fnOptions) => {
-			const { data } = await handleImageQueue({
+			const { data } = await moderateImageQueue({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const findImageQueueCommentsQueryKey = (
+	options: Options<FindImageQueueCommentsData>,
+) => createQueryKey("findImageQueueComments", options, false, ["Comment"])
+
+export const findImageQueueCommentsOptions = (
+	options: Options<FindImageQueueCommentsData>,
+) =>
+	queryOptions<
+		FindImageQueueCommentsResponse,
+		FindImageQueueCommentsError,
+		FindImageQueueCommentsResponse,
+		ReturnType<typeof findImageQueueCommentsQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await findImageQueueComments({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: findImageQueueCommentsQueryKey(options),
+	})
+
+export const findImageQueueCommentsInfiniteQueryKey = (
+	options: Options<FindImageQueueCommentsData>,
+): QueryKey<Options<FindImageQueueCommentsData>> =>
+	createQueryKey("findImageQueueComments", options, true, ["Comment"])
+
+export const findImageQueueCommentsInfiniteOptions = (
+	options: Options<FindImageQueueCommentsData>,
+) => {
+	const opts = infiniteQueryOptions<
+		FindImageQueueCommentsResponse,
+		FindImageQueueCommentsError,
+		InfiniteData<FindImageQueueCommentsResponse>,
+		QueryKey<Options<FindImageQueueCommentsData>>,
+		| number
+		| Pick<
+				QueryKey<Options<FindImageQueueCommentsData>>[0],
+				"body" | "headers" | "path" | "query"
+		  >
+	>(
+		// @ts-ignore
+		{
+			queryFn: async ({ pageParam, queryKey, signal }) => {
+				// @ts-ignore
+				const page: Pick<
+					QueryKey<Options<FindImageQueueCommentsData>>[0],
+					"body" | "headers" | "path" | "query"
+				> =
+					typeof pageParam === "object"
+						? pageParam
+						: {
+								query: {
+									cursor: pageParam,
+								},
+							}
+				const params = createInfiniteParams(queryKey, page)
+				const { data } = await findImageQueueComments({
+					...options,
+					...params,
+					signal,
+					throwOnError: true,
+				})
+				return data
+			},
+			queryKey: findImageQueueCommentsInfiniteQueryKey(options),
+		},
+	)
+	return opts as Omit<typeof opts, "initialData">
+}
+
+export const createImageQueueCommentMutation = (
+	options?: Partial<Options<CreateImageQueueCommentData>>,
+): MutationOptions<
+	CreateImageQueueCommentResponse,
+	CreateImageQueueCommentError,
+	Options<CreateImageQueueCommentData>
+> => {
+	const mutationOptions: MutationOptions<
+		CreateImageQueueCommentResponse,
+		CreateImageQueueCommentError,
+		Options<CreateImageQueueCommentData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await createImageQueueComment({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const setImageQueueSubscriptionMutation = (
+	options?: Partial<Options<SetImageQueueSubscriptionData>>,
+): MutationOptions<
+	SetImageQueueSubscriptionResponse,
+	SetImageQueueSubscriptionError,
+	Options<SetImageQueueSubscriptionData>
+> => {
+	const mutationOptions: MutationOptions<
+		SetImageQueueSubscriptionResponse,
+		SetImageQueueSubscriptionError,
+		Options<SetImageQueueSubscriptionData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await setImageQueueSubscription({
 				...options,
 				...fnOptions,
 				throwOnError: true,
@@ -2348,7 +2442,7 @@ export const handleImageQueueMutation = (
 
 export const findLabelByKeywordQueryKey = (
 	options: Options<FindLabelByKeywordData>,
-) => createQueryKey("findLabelByKeyword", options)
+) => createQueryKey("findLabelByKeyword", options, false, ["Label"])
 
 export const findLabelByKeywordOptions = (
 	options: Options<FindLabelByKeywordData>,
@@ -2396,7 +2490,7 @@ export const createLabelMutation = (
 }
 
 export const exploreLabelQueryKey = (options?: Options<ExploreLabelData>) =>
-	createQueryKey("exploreLabel", options)
+	createQueryKey("exploreLabel", options, false, ["Label"])
 
 export const exploreLabelOptions = (options?: Options<ExploreLabelData>) =>
 	queryOptions<
@@ -2420,12 +2514,12 @@ export const exploreLabelOptions = (options?: Options<ExploreLabelData>) =>
 export const exploreLabelInfiniteQueryKey = (
 	options?: Options<ExploreLabelData>,
 ): QueryKey<Options<ExploreLabelData>> =>
-	createQueryKey("exploreLabel", options, true)
+	createQueryKey("exploreLabel", options, true, ["Label"])
 
 export const exploreLabelInfiniteOptions = (
 	options?: Options<ExploreLabelData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		ExploreLabelResponse,
 		ExploreLabelError,
 		InfiniteData<ExploreLabelResponse>,
@@ -2463,9 +2557,11 @@ export const exploreLabelInfiniteOptions = (
 			queryKey: exploreLabelInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const findLabelByIdQueryKey = (options: Options<FindLabelByIdData>) =>
-	createQueryKey("findLabelById", options)
+	createQueryKey("findLabelById", options, false, ["Label"])
 
 export const findLabelByIdOptions = (options: Options<FindLabelByIdData>) =>
 	queryOptions<
@@ -2556,21 +2652,21 @@ export const languageListOptions = (options?: Options<LanguageListData>) =>
 		queryKey: languageListQueryKey(options),
 	})
 
-export const notificationListQueryKey = (
-	options?: Options<NotificationListData>,
-) => createQueryKey("notificationList", options)
+export const listNotificationsQueryKey = (
+	options?: Options<ListNotificationsData>,
+) => createQueryKey("listNotifications", options, false, ["Notification"])
 
-export const notificationListOptions = (
-	options?: Options<NotificationListData>,
+export const listNotificationsOptions = (
+	options?: Options<ListNotificationsData>,
 ) =>
 	queryOptions<
-		NotificationListResponse,
-		NotificationListError,
-		NotificationListResponse,
-		ReturnType<typeof notificationListQueryKey>
+		ListNotificationsResponse,
+		ListNotificationsError,
+		ListNotificationsResponse,
+		ReturnType<typeof listNotificationsQueryKey>
 	>({
 		queryFn: async ({ queryKey, signal }) => {
-			const { data } = await notificationList({
+			const { data } = await listNotifications({
 				...options,
 				...queryKey[0],
 				signal,
@@ -2578,25 +2674,25 @@ export const notificationListOptions = (
 			})
 			return data
 		},
-		queryKey: notificationListQueryKey(options),
+		queryKey: listNotificationsQueryKey(options),
 	})
 
-export const notificationListInfiniteQueryKey = (
-	options?: Options<NotificationListData>,
-): QueryKey<Options<NotificationListData>> =>
-	createQueryKey("notificationList", options, true)
+export const listNotificationsInfiniteQueryKey = (
+	options?: Options<ListNotificationsData>,
+): QueryKey<Options<ListNotificationsData>> =>
+	createQueryKey("listNotifications", options, true, ["Notification"])
 
-export const notificationListInfiniteOptions = (
-	options?: Options<NotificationListData>,
-) =>
-	infiniteQueryOptions<
-		NotificationListResponse,
-		NotificationListError,
-		InfiniteData<NotificationListResponse>,
-		QueryKey<Options<NotificationListData>>,
-		| number
+export const listNotificationsInfiniteOptions = (
+	options?: Options<ListNotificationsData>,
+) => {
+	const opts = infiniteQueryOptions<
+		ListNotificationsResponse,
+		ListNotificationsError,
+		InfiniteData<ListNotificationsResponse>,
+		QueryKey<Options<ListNotificationsData>>,
+		| string
 		| Pick<
-				QueryKey<Options<NotificationListData>>[0],
+				QueryKey<Options<ListNotificationsData>>[0],
 				"body" | "headers" | "path" | "query"
 		  >
 	>(
@@ -2605,18 +2701,18 @@ export const notificationListInfiniteOptions = (
 			queryFn: async ({ pageParam, queryKey, signal }) => {
 				// @ts-ignore
 				const page: Pick<
-					QueryKey<Options<NotificationListData>>[0],
+					QueryKey<Options<ListNotificationsData>>[0],
 					"body" | "headers" | "path" | "query"
 				> =
 					typeof pageParam === "object"
 						? pageParam
 						: {
 								query: {
-									cursor: pageParam,
+									cursor_before_inbox_seq: pageParam,
 								},
 							}
 				const params = createInfiniteParams(queryKey, page)
-				const { data } = await notificationList({
+				const { data } = await listNotifications({
 					...options,
 					...params,
 					signal,
@@ -2624,24 +2720,22 @@ export const notificationListInfiniteOptions = (
 				})
 				return data
 			},
-			queryKey: notificationListInfiniteQueryKey(options),
+			queryKey: listNotificationsInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
-export const notificationReadAllMutation = (
-	options?: Partial<Options<NotificationReadAllData>>,
-): MutationOptions<
-	NotificationReadAllResponse,
-	NotificationReadAllError,
-	Options<NotificationReadAllData>
-> => {
+export const readAllMutation = (
+	options?: Partial<Options<ReadAllData>>,
+): MutationOptions<ReadAllResponse, ReadAllError, Options<ReadAllData>> => {
 	const mutationOptions: MutationOptions<
-		NotificationReadAllResponse,
-		NotificationReadAllError,
-		Options<NotificationReadAllData>
+		ReadAllResponse,
+		ReadAllError,
+		Options<ReadAllData>
 	> = {
 		mutationFn: async (fnOptions) => {
-			const { data } = await notificationReadAll({
+			const { data } = await readAll({
 				...options,
 				...fnOptions,
 				throwOnError: true,
@@ -2652,21 +2746,18 @@ export const notificationReadAllMutation = (
 	return mutationOptions
 }
 
-export const notificationUnreadCountQueryKey = (
-	options?: Options<NotificationUnreadCountData>,
-) => createQueryKey("notificationUnreadCount", options)
+export const unreadCountQueryKey = (options?: Options<UnreadCountData>) =>
+	createQueryKey("unreadCount", options, false, ["Notification"])
 
-export const notificationUnreadCountOptions = (
-	options?: Options<NotificationUnreadCountData>,
-) =>
+export const unreadCountOptions = (options?: Options<UnreadCountData>) =>
 	queryOptions<
-		NotificationUnreadCountResponse,
-		NotificationUnreadCountError,
-		NotificationUnreadCountResponse,
-		ReturnType<typeof notificationUnreadCountQueryKey>
+		UnreadCountResponse,
+		UnreadCountError,
+		UnreadCountResponse,
+		ReturnType<typeof unreadCountQueryKey>
 	>({
 		queryFn: async ({ queryKey, signal }) => {
-			const { data } = await notificationUnreadCount({
+			const { data } = await unreadCount({
 				...options,
 				...queryKey[0],
 				signal,
@@ -2674,23 +2765,91 @@ export const notificationUnreadCountOptions = (
 			})
 			return data
 		},
-		queryKey: notificationUnreadCountQueryKey(options),
+		queryKey: unreadCountQueryKey(options),
 	})
 
-export const notificationMarkReadMutation = (
-	options?: Partial<Options<NotificationMarkReadData>>,
-): MutationOptions<
-	NotificationMarkReadResponse,
-	NotificationMarkReadError,
-	Options<NotificationMarkReadData>
-> => {
+export const markReadMutation = (
+	options?: Partial<Options<MarkReadData>>,
+): MutationOptions<MarkReadResponse, MarkReadError, Options<MarkReadData>> => {
 	const mutationOptions: MutationOptions<
-		NotificationMarkReadResponse,
-		NotificationMarkReadError,
-		Options<NotificationMarkReadData>
+		MarkReadResponse,
+		MarkReadError,
+		Options<MarkReadData>
 	> = {
 		mutationFn: async (fnOptions) => {
-			const { data } = await notificationMarkRead({
+			const { data } = await markRead({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const unsaveNotificationMutation = (
+	options?: Partial<Options<UnsaveNotificationData>>,
+): MutationOptions<
+	UnsaveNotificationResponse,
+	UnsaveNotificationError,
+	Options<UnsaveNotificationData>
+> => {
+	const mutationOptions: MutationOptions<
+		UnsaveNotificationResponse,
+		UnsaveNotificationError,
+		Options<UnsaveNotificationData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await unsaveNotification({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const saveNotificationMutation = (
+	options?: Partial<Options<SaveNotificationData>>,
+): MutationOptions<
+	SaveNotificationResponse,
+	SaveNotificationError,
+	Options<SaveNotificationData>
+> => {
+	const mutationOptions: MutationOptions<
+		SaveNotificationResponse,
+		SaveNotificationError,
+		Options<SaveNotificationData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await saveNotification({
+				...options,
+				...fnOptions,
+				throwOnError: true,
+			})
+			return data
+		},
+	}
+	return mutationOptions
+}
+
+export const markUnreadMutation = (
+	options?: Partial<Options<MarkUnreadData>>,
+): MutationOptions<
+	MarkUnreadResponse,
+	MarkUnreadError,
+	Options<MarkUnreadData>
+> => {
+	const mutationOptions: MutationOptions<
+		MarkUnreadResponse,
+		MarkUnreadError,
+		Options<MarkUnreadData>
+	> = {
+		mutationFn: async (fnOptions) => {
+			const { data } = await markUnread({
 				...options,
 				...fnOptions,
 				throwOnError: true,
@@ -2702,7 +2861,7 @@ export const notificationMarkReadMutation = (
 }
 
 export const profileQueryKey = (options?: Options<ProfileData>) =>
-	createQueryKey("profile", options)
+	createQueryKey("profile", options, false, ["User"])
 
 export const profileOptions = (options?: Options<ProfileData>) =>
 	queryOptions<
@@ -2773,7 +2932,8 @@ export const updateBioMutation = (
 
 export const followedUserCollectionsQueryKey = (
 	options?: Options<FollowedUserCollectionsData>,
-) => createQueryKey("followedUserCollections", options)
+) =>
+	createQueryKey("followedUserCollections", options, false, ["User Collection"])
 
 export const followedUserCollectionsOptions = (
 	options?: Options<FollowedUserCollectionsData>,
@@ -2799,12 +2959,12 @@ export const followedUserCollectionsOptions = (
 export const followedUserCollectionsInfiniteQueryKey = (
 	options?: Options<FollowedUserCollectionsData>,
 ): QueryKey<Options<FollowedUserCollectionsData>> =>
-	createQueryKey("followedUserCollections", options, true)
+	createQueryKey("followedUserCollections", options, true, ["User Collection"])
 
 export const followedUserCollectionsInfiniteOptions = (
 	options?: Options<FollowedUserCollectionsData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		FollowedUserCollectionsResponse,
 		FollowedUserCollectionsError,
 		InfiniteData<FollowedUserCollectionsResponse>,
@@ -2842,10 +3002,12 @@ export const followedUserCollectionsInfiniteOptions = (
 			queryKey: followedUserCollectionsInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const profileWithNameQueryKey = (
 	options: Options<ProfileWithNameData>,
-) => createQueryKey("profileWithName", options)
+) => createQueryKey("profileWithName", options, false, ["User"])
 
 export const profileWithNameOptions = (options: Options<ProfileWithNameData>) =>
 	queryOptions<
@@ -2916,7 +3078,7 @@ export const followUserMutation = (
 
 export const findReleaseByKeywordQueryKey = (
 	options: Options<FindReleaseByKeywordData>,
-) => createQueryKey("findReleaseByKeyword", options)
+) => createQueryKey("findReleaseByKeyword", options, false, ["Release"])
 
 export const findReleaseByKeywordOptions = (
 	options: Options<FindReleaseByKeywordData>,
@@ -2964,7 +3126,7 @@ export const createReleaseMutation = (
 }
 
 export const exploreReleaseQueryKey = (options?: Options<ExploreReleaseData>) =>
-	createQueryKey("exploreRelease", options)
+	createQueryKey("exploreRelease", options, false, ["Release"])
 
 export const exploreReleaseOptions = (options?: Options<ExploreReleaseData>) =>
 	queryOptions<
@@ -2988,12 +3150,12 @@ export const exploreReleaseOptions = (options?: Options<ExploreReleaseData>) =>
 export const exploreReleaseInfiniteQueryKey = (
 	options?: Options<ExploreReleaseData>,
 ): QueryKey<Options<ExploreReleaseData>> =>
-	createQueryKey("exploreRelease", options, true)
+	createQueryKey("exploreRelease", options, true, ["Release"])
 
 export const exploreReleaseInfiniteOptions = (
 	options?: Options<ExploreReleaseData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		ExploreReleaseResponse,
 		ExploreReleaseError,
 		InfiniteData<ExploreReleaseResponse>,
@@ -3031,10 +3193,12 @@ export const exploreReleaseInfiniteOptions = (
 			queryKey: exploreReleaseInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const findReleaseByIdQueryKey = (
 	options: Options<FindReleaseByIdData>,
-) => createQueryKey("findReleaseById", options)
+) => createQueryKey("findReleaseById", options, false, ["Release"])
 
 export const findReleaseByIdOptions = (options: Options<FindReleaseByIdData>) =>
 	queryOptions<
@@ -3105,7 +3269,7 @@ export const updateReleasePendingCorrectionMutation = (
 
 export const getReleaseCoverArtMetadataQueryKey = (
 	options: Options<GetReleaseCoverArtMetadataData>,
-) => createQueryKey("getReleaseCoverArtMetadata", options)
+) => createQueryKey("getReleaseCoverArtMetadata", options, false, ["Release"])
 
 export const getReleaseCoverArtMetadataOptions = (
 	options: Options<GetReleaseCoverArtMetadataData>,
@@ -3201,7 +3365,7 @@ export const resetPasswordMutation = (
 }
 
 export const searchAllQueryKey = (options: Options<SearchAllData>) =>
-	createQueryKey("searchAll", options)
+	createQueryKey("searchAll", options, false, ["Search"])
 
 export const searchAllOptions = (options: Options<SearchAllData>) =>
 	queryOptions<
@@ -3223,7 +3387,7 @@ export const searchAllOptions = (options: Options<SearchAllData>) =>
 	})
 
 export const searchArtistQueryKey = (options: Options<SearchArtistData>) =>
-	createQueryKey("searchArtist", options)
+	createQueryKey("searchArtist", options, false, ["Search"])
 
 export const searchArtistOptions = (options: Options<SearchArtistData>) =>
 	queryOptions<
@@ -3247,12 +3411,12 @@ export const searchArtistOptions = (options: Options<SearchArtistData>) =>
 export const searchArtistInfiniteQueryKey = (
 	options: Options<SearchArtistData>,
 ): QueryKey<Options<SearchArtistData>> =>
-	createQueryKey("searchArtist", options, true)
+	createQueryKey("searchArtist", options, true, ["Search"])
 
 export const searchArtistInfiniteOptions = (
 	options: Options<SearchArtistData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		SearchArtistResponse,
 		SearchArtistError,
 		InfiniteData<SearchArtistResponse>,
@@ -3291,9 +3455,11 @@ export const searchArtistInfiniteOptions = (
 			queryKey: searchArtistInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const searchEventQueryKey = (options: Options<SearchEventData>) =>
-	createQueryKey("searchEvent", options)
+	createQueryKey("searchEvent", options, false, ["Search"])
 
 export const searchEventOptions = (options: Options<SearchEventData>) =>
 	queryOptions<
@@ -3317,10 +3483,12 @@ export const searchEventOptions = (options: Options<SearchEventData>) =>
 export const searchEventInfiniteQueryKey = (
 	options: Options<SearchEventData>,
 ): QueryKey<Options<SearchEventData>> =>
-	createQueryKey("searchEvent", options, true)
+	createQueryKey("searchEvent", options, true, ["Search"])
 
-export const searchEventInfiniteOptions = (options: Options<SearchEventData>) =>
-	infiniteQueryOptions<
+export const searchEventInfiniteOptions = (
+	options: Options<SearchEventData>,
+) => {
+	const opts = infiniteQueryOptions<
 		SearchEventResponse,
 		SearchEventError,
 		InfiniteData<SearchEventResponse>,
@@ -3359,9 +3527,11 @@ export const searchEventInfiniteOptions = (options: Options<SearchEventData>) =>
 			queryKey: searchEventInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const searchLabelQueryKey = (options: Options<SearchLabelData>) =>
-	createQueryKey("searchLabel", options)
+	createQueryKey("searchLabel", options, false, ["Search"])
 
 export const searchLabelOptions = (options: Options<SearchLabelData>) =>
 	queryOptions<
@@ -3385,10 +3555,12 @@ export const searchLabelOptions = (options: Options<SearchLabelData>) =>
 export const searchLabelInfiniteQueryKey = (
 	options: Options<SearchLabelData>,
 ): QueryKey<Options<SearchLabelData>> =>
-	createQueryKey("searchLabel", options, true)
+	createQueryKey("searchLabel", options, true, ["Search"])
 
-export const searchLabelInfiniteOptions = (options: Options<SearchLabelData>) =>
-	infiniteQueryOptions<
+export const searchLabelInfiniteOptions = (
+	options: Options<SearchLabelData>,
+) => {
+	const opts = infiniteQueryOptions<
 		SearchLabelResponse,
 		SearchLabelError,
 		InfiniteData<SearchLabelResponse>,
@@ -3427,9 +3599,11 @@ export const searchLabelInfiniteOptions = (options: Options<SearchLabelData>) =>
 			queryKey: searchLabelInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const searchReleaseQueryKey = (options: Options<SearchReleaseData>) =>
-	createQueryKey("searchRelease", options)
+	createQueryKey("searchRelease", options, false, ["Search"])
 
 export const searchReleaseOptions = (options: Options<SearchReleaseData>) =>
 	queryOptions<
@@ -3453,12 +3627,12 @@ export const searchReleaseOptions = (options: Options<SearchReleaseData>) =>
 export const searchReleaseInfiniteQueryKey = (
 	options: Options<SearchReleaseData>,
 ): QueryKey<Options<SearchReleaseData>> =>
-	createQueryKey("searchRelease", options, true)
+	createQueryKey("searchRelease", options, true, ["Search"])
 
 export const searchReleaseInfiniteOptions = (
 	options: Options<SearchReleaseData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		SearchReleaseResponse,
 		SearchReleaseError,
 		InfiniteData<SearchReleaseResponse>,
@@ -3497,9 +3671,11 @@ export const searchReleaseInfiniteOptions = (
 			queryKey: searchReleaseInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const searchSongQueryKey = (options: Options<SearchSongData>) =>
-	createQueryKey("searchSong", options)
+	createQueryKey("searchSong", options, false, ["Search"])
 
 export const searchSongOptions = (options: Options<SearchSongData>) =>
 	queryOptions<
@@ -3523,10 +3699,10 @@ export const searchSongOptions = (options: Options<SearchSongData>) =>
 export const searchSongInfiniteQueryKey = (
 	options: Options<SearchSongData>,
 ): QueryKey<Options<SearchSongData>> =>
-	createQueryKey("searchSong", options, true)
+	createQueryKey("searchSong", options, true, ["Search"])
 
-export const searchSongInfiniteOptions = (options: Options<SearchSongData>) =>
-	infiniteQueryOptions<
+export const searchSongInfiniteOptions = (options: Options<SearchSongData>) => {
+	const opts = infiniteQueryOptions<
 		SearchSongResponse,
 		SearchSongError,
 		InfiniteData<SearchSongResponse>,
@@ -3565,9 +3741,11 @@ export const searchSongInfiniteOptions = (options: Options<SearchSongData>) =>
 			queryKey: searchSongInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const searchTagQueryKey = (options: Options<SearchTagData>) =>
-	createQueryKey("searchTag", options)
+	createQueryKey("searchTag", options, false, ["Search"])
 
 export const searchTagOptions = (options: Options<SearchTagData>) =>
 	queryOptions<
@@ -3591,10 +3769,10 @@ export const searchTagOptions = (options: Options<SearchTagData>) =>
 export const searchTagInfiniteQueryKey = (
 	options: Options<SearchTagData>,
 ): QueryKey<Options<SearchTagData>> =>
-	createQueryKey("searchTag", options, true)
+	createQueryKey("searchTag", options, true, ["Search"])
 
-export const searchTagInfiniteOptions = (options: Options<SearchTagData>) =>
-	infiniteQueryOptions<
+export const searchTagInfiniteOptions = (options: Options<SearchTagData>) => {
+	const opts = infiniteQueryOptions<
 		SearchTagResponse,
 		SearchTagError,
 		InfiniteData<SearchTagResponse>,
@@ -3633,6 +3811,8 @@ export const searchTagInfiniteOptions = (options: Options<SearchTagData>) =>
 			queryKey: searchTagInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const signInMutation = (
 	options?: Partial<Options<SignInData>>,
@@ -3655,7 +3835,7 @@ export const signInMutation = (
 }
 
 export const signOutQueryKey = (options?: Options<SignOutData>) =>
-	createQueryKey("signOut", options)
+	createQueryKey("signOut", options, false, ["Auth"])
 
 export const signOutOptions = (options?: Options<SignOutData>) =>
 	queryOptions<
@@ -3698,7 +3878,7 @@ export const signUpMutation = (
 
 export const findSongByKeywordQueryKey = (
 	options: Options<FindSongByKeywordData>,
-) => createQueryKey("findSongByKeyword", options)
+) => createQueryKey("findSongByKeyword", options, false, ["Song"])
 
 export const findSongByKeywordOptions = (
 	options: Options<FindSongByKeywordData>,
@@ -3747,7 +3927,7 @@ export const createSongMutation = (
 
 export const findOneSongLyricsQueryKey = (
 	options: Options<FindOneSongLyricsData>,
-) => createQueryKey("findOneSongLyrics", options)
+) => createQueryKey("findOneSongLyrics", options, false, ["Song Lyrics"])
 
 export const findOneSongLyricsOptions = (
 	options: Options<FindOneSongLyricsData>,
@@ -3796,7 +3976,7 @@ export const createSongLyricsMutation = (
 
 export const findManySongLyricsQueryKey = (
 	options: Options<FindManySongLyricsData>,
-) => createQueryKey("findManySongLyrics", options)
+) => createQueryKey("findManySongLyrics", options, false, ["Song Lyrics"])
 
 export const findManySongLyricsOptions = (
 	options: Options<FindManySongLyricsData>,
@@ -3821,7 +4001,7 @@ export const findManySongLyricsOptions = (
 
 export const findSongLyricsByIdQueryKey = (
 	options: Options<FindSongLyricsByIdData>,
-) => createQueryKey("findSongLyricsById", options)
+) => createQueryKey("findSongLyricsById", options, false, ["Song Lyrics"])
 
 export const findSongLyricsByIdOptions = (
 	options: Options<FindSongLyricsByIdData>,
@@ -3918,7 +4098,7 @@ export const songRelationTypesOptions = (
 	})
 
 export const exploreSongQueryKey = (options?: Options<ExploreSongData>) =>
-	createQueryKey("exploreSong", options)
+	createQueryKey("exploreSong", options, false, ["Song"])
 
 export const exploreSongOptions = (options?: Options<ExploreSongData>) =>
 	queryOptions<
@@ -3942,12 +4122,12 @@ export const exploreSongOptions = (options?: Options<ExploreSongData>) =>
 export const exploreSongInfiniteQueryKey = (
 	options?: Options<ExploreSongData>,
 ): QueryKey<Options<ExploreSongData>> =>
-	createQueryKey("exploreSong", options, true)
+	createQueryKey("exploreSong", options, true, ["Song"])
 
 export const exploreSongInfiniteOptions = (
 	options?: Options<ExploreSongData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		ExploreSongResponse,
 		ExploreSongError,
 		InfiniteData<ExploreSongResponse>,
@@ -3985,9 +4165,11 @@ export const exploreSongInfiniteOptions = (
 			queryKey: exploreSongInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const findSongByIdQueryKey = (options: Options<FindSongByIdData>) =>
-	createQueryKey("findSongById", options)
+	createQueryKey("findSongById", options, false, ["Song"])
 
 export const findSongByIdOptions = (options: Options<FindSongByIdData>) =>
 	queryOptions<
@@ -4058,7 +4240,7 @@ export const updateSongPendingCorrectionMutation = (
 
 export const findTagByKeywordQueryKey = (
 	options: Options<FindTagByKeywordData>,
-) => createQueryKey("findTagByKeyword", options)
+) => createQueryKey("findTagByKeyword", options, false, ["Tag"])
 
 export const findTagByKeywordOptions = (
 	options: Options<FindTagByKeywordData>,
@@ -4106,7 +4288,7 @@ export const createTagMutation = (
 }
 
 export const exploreTagQueryKey = (options?: Options<ExploreTagData>) =>
-	createQueryKey("exploreTag", options)
+	createQueryKey("exploreTag", options, false, ["Tag"])
 
 export const exploreTagOptions = (options?: Options<ExploreTagData>) =>
 	queryOptions<
@@ -4130,10 +4312,12 @@ export const exploreTagOptions = (options?: Options<ExploreTagData>) =>
 export const exploreTagInfiniteQueryKey = (
 	options?: Options<ExploreTagData>,
 ): QueryKey<Options<ExploreTagData>> =>
-	createQueryKey("exploreTag", options, true)
+	createQueryKey("exploreTag", options, true, ["Tag"])
 
-export const exploreTagInfiniteOptions = (options?: Options<ExploreTagData>) =>
-	infiniteQueryOptions<
+export const exploreTagInfiniteOptions = (
+	options?: Options<ExploreTagData>,
+) => {
+	const opts = infiniteQueryOptions<
 		ExploreTagResponse,
 		ExploreTagError,
 		InfiniteData<ExploreTagResponse>,
@@ -4171,9 +4355,11 @@ export const exploreTagInfiniteOptions = (options?: Options<ExploreTagData>) =>
 			queryKey: exploreTagInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const findTagByIdQueryKey = (options: Options<FindTagByIdData>) =>
-	createQueryKey("findTagById", options)
+	createQueryKey("findTagById", options, false, ["Tag"])
 
 export const findTagByIdOptions = (options: Options<FindTagByIdData>) =>
 	queryOptions<
@@ -4313,7 +4499,7 @@ export const userRolesOptions = (options?: Options<UserRolesData>) =>
 	})
 
 export const userImageQueueQueryKey = (options: Options<UserImageQueueData>) =>
-	createQueryKey("userImageQueue", options)
+	createQueryKey("userImageQueue", options, false, ["Image Queue"])
 
 export const userImageQueueOptions = (options: Options<UserImageQueueData>) =>
 	queryOptions<
@@ -4337,12 +4523,12 @@ export const userImageQueueOptions = (options: Options<UserImageQueueData>) =>
 export const userImageQueueInfiniteQueryKey = (
 	options: Options<UserImageQueueData>,
 ): QueryKey<Options<UserImageQueueData>> =>
-	createQueryKey("userImageQueue", options, true)
+	createQueryKey("userImageQueue", options, true, ["Image Queue"])
 
 export const userImageQueueInfiniteOptions = (
 	options: Options<UserImageQueueData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		UserImageQueueResponse,
 		UserImageQueueError,
 		InfiniteData<UserImageQueueResponse>,
@@ -4380,10 +4566,12 @@ export const userImageQueueInfiniteOptions = (
 			queryKey: userImageQueueInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const userCollectionsQueryKey = (
 	options: Options<UserCollectionsData>,
-) => createQueryKey("userCollections", options)
+) => createQueryKey("userCollections", options, false, ["User Collection"])
 
 export const userCollectionsOptions = (options: Options<UserCollectionsData>) =>
 	queryOptions<
@@ -4407,12 +4595,12 @@ export const userCollectionsOptions = (options: Options<UserCollectionsData>) =>
 export const userCollectionsInfiniteQueryKey = (
 	options: Options<UserCollectionsData>,
 ): QueryKey<Options<UserCollectionsData>> =>
-	createQueryKey("userCollections", options, true)
+	createQueryKey("userCollections", options, true, ["User Collection"])
 
 export const userCollectionsInfiniteOptions = (
 	options: Options<UserCollectionsData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		UserCollectionsResponse,
 		UserCollectionsError,
 		InfiniteData<UserCollectionsResponse>,
@@ -4450,6 +4638,8 @@ export const userCollectionsInfiniteOptions = (
 			queryKey: userCollectionsInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const verifyEmailMutation = (
 	options?: Partial<Options<VerifyEmailData>>,
@@ -4499,31 +4689,10 @@ export const verifyResetCodeMutation = (
 	return mutationOptions
 }
 
-export const notificationWsQueryKey = (options?: Options<NotificationWsData>) =>
-	createQueryKey("notificationWs", options)
-
-export const notificationWsOptions = (options?: Options<NotificationWsData>) =>
-	queryOptions<
-		NotificationWsResponse,
-		NotificationWsError,
-		NotificationWsResponse,
-		ReturnType<typeof notificationWsQueryKey>
-	>({
-		queryFn: async ({ queryKey, signal }) => {
-			const { data } = await notificationWs({
-				...options,
-				...queryKey[0],
-				signal,
-				throwOnError: true,
-			})
-			return data
-		},
-		queryKey: notificationWsQueryKey(options),
-	})
-
 export const entityUserCollectionsQueryKey = (
 	options: Options<EntityUserCollectionsData>,
-) => createQueryKey("entityUserCollections", options)
+) =>
+	createQueryKey("entityUserCollections", options, false, ["User Collection"])
 
 export const entityUserCollectionsOptions = (
 	options: Options<EntityUserCollectionsData>,
@@ -4549,12 +4718,12 @@ export const entityUserCollectionsOptions = (
 export const entityUserCollectionsInfiniteQueryKey = (
 	options: Options<EntityUserCollectionsData>,
 ): QueryKey<Options<EntityUserCollectionsData>> =>
-	createQueryKey("entityUserCollections", options, true)
+	createQueryKey("entityUserCollections", options, true, ["User Collection"])
 
 export const entityUserCollectionsInfiniteOptions = (
 	options: Options<EntityUserCollectionsData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		EntityUserCollectionsResponse,
 		EntityUserCollectionsError,
 		InfiniteData<EntityUserCollectionsResponse>,
@@ -4590,13 +4759,14 @@ export const entityUserCollectionsInfiniteOptions = (
 				return data
 			},
 			queryKey: entityUserCollectionsInfiniteQueryKey(options),
-			placeholderData: (x) => x,
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const entityCorrectionsQueryKey = (
 	options: Options<EntityCorrectionsData>,
-) => createQueryKey("entityCorrections", options)
+) => createQueryKey("entityCorrections", options, false, ["Correction"])
 
 export const entityCorrectionsOptions = (
 	options: Options<EntityCorrectionsData>,
@@ -4621,7 +4791,7 @@ export const entityCorrectionsOptions = (
 
 export const pendingCorrectionQueryKey = (
 	options: Options<PendingCorrectionData>,
-) => createQueryKey("pendingCorrection", options)
+) => createQueryKey("pendingCorrection", options, false, ["Correction"])
 
 export const pendingCorrectionOptions = (
 	options: Options<PendingCorrectionData>,
@@ -4685,7 +4855,7 @@ export const voteTagMutation = (
 }
 
 export const getTagsQueryKey = (options: Options<GetTagsData>) =>
-	createQueryKey("getTags", options)
+	createQueryKey("getTags", options, false, ["TagVote"])
 
 export const getTagsOptions = (options: Options<GetTagsData>) =>
 	queryOptions<
@@ -4708,10 +4878,11 @@ export const getTagsOptions = (options: Options<GetTagsData>) =>
 
 export const getTagsInfiniteQueryKey = (
 	options: Options<GetTagsData>,
-): QueryKey<Options<GetTagsData>> => createQueryKey("getTags", options, true)
+): QueryKey<Options<GetTagsData>> =>
+	createQueryKey("getTags", options, true, ["TagVote"])
 
-export const getTagsInfiniteOptions = (options: Options<GetTagsData>) =>
-	infiniteQueryOptions<
+export const getTagsInfiniteOptions = (options: Options<GetTagsData>) => {
+	const opts = infiniteQueryOptions<
 		GetTagsResponse,
 		GetTagsError,
 		InfiniteData<GetTagsResponse>,
@@ -4749,10 +4920,12 @@ export const getTagsInfiniteOptions = (options: Options<GetTagsData>) =>
 			queryKey: getTagsInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const findEntityCommentsQueryKey = (
 	options: Options<FindEntityCommentsData>,
-) => createQueryKey("findEntityComments", options)
+) => createQueryKey("findEntityComments", options, false, ["Comment"])
 
 export const findEntityCommentsOptions = (
 	options: Options<FindEntityCommentsData>,
@@ -4778,12 +4951,12 @@ export const findEntityCommentsOptions = (
 export const findEntityCommentsInfiniteQueryKey = (
 	options: Options<FindEntityCommentsData>,
 ): QueryKey<Options<FindEntityCommentsData>> =>
-	createQueryKey("findEntityComments", options, true)
+	createQueryKey("findEntityComments", options, true, ["Comment"])
 
 export const findEntityCommentsInfiniteOptions = (
 	options: Options<FindEntityCommentsData>,
-) =>
-	infiniteQueryOptions<
+) => {
+	const opts = infiniteQueryOptions<
 		FindEntityCommentsResponse,
 		FindEntityCommentsError,
 		InfiniteData<FindEntityCommentsResponse>,
@@ -4821,6 +4994,8 @@ export const findEntityCommentsInfiniteOptions = (
 			queryKey: findEntityCommentsInfiniteQueryKey(options),
 		},
 	)
+	return opts as Omit<typeof opts, "initialData">
+}
 
 export const createEntityCommentMutation = (
 	options?: Partial<Options<CreateEntityCommentData>>,

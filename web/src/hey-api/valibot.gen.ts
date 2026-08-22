@@ -88,6 +88,31 @@ export const vAuthCredential = v.object({
 	password: v.string(),
 })
 
+export const vCollectionReference = v.union([
+	v.object({
+		id: v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+		title: v.string(),
+		state: v.picklist(["Available"]),
+	}),
+	v.object({
+		state: v.picklist(["Deleted"]),
+	}),
+	v.object({
+		state: v.picklist(["Restricted"]),
+	}),
+])
+
 export const vCommentAuthor = v.object({
 	id: v.pipe(
 		v.number(),
@@ -104,7 +129,7 @@ export const vCommentAuthor = v.object({
 
 export const vCommentState = v.picklist(["Active", "Deleted"])
 
-export const vCorrectionComment = v.object({
+export const vComment = v.object({
 	id: v.pipe(
 		v.number(),
 		v.integer(),
@@ -114,16 +139,7 @@ export const vCorrectionComment = v.object({
 		),
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
-	correction_id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	parent_id: v.nullish(
+	in_reply_to_comment_id: v.nullish(
 		v.pipe(
 			v.number(),
 			v.integer(),
@@ -144,11 +160,42 @@ export const vCorrectionComment = v.object({
 	updated_at: v.pipe(v.string(), v.isoTimestamp()),
 })
 
+export const vCommentPage = v.object({
+	items: v.array(vComment),
+	next_cursor: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+	active_count: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+})
+
+export const vCorrectionDecision = v.picklist(["Approve", "Reject"])
+
 export const vCorrectionDiffEntry = v.object({
 	path: v.string(),
 	before: v.nullish(v.string()),
 	after: v.nullish(v.string()),
 })
+
+export const vCorrectionModerationAction = v.picklist(["Approved", "Rejected"])
 
 export const vCorrectionSortField = v.picklist(["created_at", "updated_at"])
 
@@ -180,52 +227,8 @@ export const vCorrectionSubmitResult = v.object({
 
 export const vCorrectionType = v.picklist(["Create", "Update", "Delete"])
 
-export const vCorrectionUserSummary = v.object({
-	id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	name: v.string(),
-})
-
-export const vCorrectionHistoryItem = v.object({
-	id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	type: vCorrectionType,
-	created_at: v.pipe(v.string(), v.isoTimestamp()),
-	handled_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
-	author: vCorrectionUserSummary,
-	description: v.string(),
-})
-
-export const vCorrectionRevisionSummary = v.object({
-	entity_history_id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	author: vCorrectionUserSummary,
-	description: v.string(),
-})
-
 export const vCreateEntityCommentRequest = v.object({
-	parent_id: v.nullish(
+	in_reply_to_comment_id: v.nullish(
 		v.pipe(
 			v.number(),
 			v.integer(),
@@ -240,6 +243,20 @@ export const vCreateEntityCommentRequest = v.object({
 		),
 	),
 	content: v.string(),
+	read_through_comment_id: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
 })
 
 export const vCreditRole = v.object({
@@ -282,120 +299,6 @@ export const vCreditRoleSummary = v.object({
 	),
 	name: v.string(),
 	short_description: v.string(),
-})
-
-export const vCursorResponseCorrectionComment = v.object({
-	items: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			correction_id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			parent_id: v.nullish(
-				v.pipe(
-					v.number(),
-					v.integer(),
-					v.minValue(
-						-2147483648,
-						"Invalid value: Expected int32 to be >= -2147483648",
-					),
-					v.maxValue(
-						2147483647,
-						"Invalid value: Expected int32 to be <= 2147483647",
-					),
-				),
-			),
-			author: vCommentAuthor,
-			content: v.nullish(v.string()),
-			state: vCommentState,
-			created_at: v.pipe(v.string(), v.isoTimestamp()),
-			updated_at: v.pipe(v.string(), v.isoTimestamp()),
-		}),
-	),
-	next_cursor: v.nullish(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-})
-
-export const vCursorResponseNotificationItem = v.object({
-	items: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			notification_kind: v.string(),
-			target_type: v.string(),
-			target_id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			payload: v.unknown(),
-			is_read: v.boolean(),
-			created_at: v.pipe(v.string(), v.isoTimestamp()),
-		}),
-	),
-	next_cursor: v.nullish(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
 })
 
 export const vCursorResponseSimpleArtist = v.object({
@@ -569,24 +472,19 @@ export const vCursorResponseSongRef = v.object({
 	),
 })
 
-export const vDataCorrectionComment = v.object({
+export const vDataComment = v.object({
 	status: v.string(),
-	data: vCorrectionComment,
+	data: vComment,
+})
+
+export const vDataCommentPage = v.object({
+	status: v.string(),
+	data: vCommentPage,
 })
 
 export const vDataOptionCreditRole = v.object({
 	status: v.string(),
 	data: v.nullable(vCreditRole),
-})
-
-export const vDataPaginatedCorrectionComment = v.object({
-	status: v.string(),
-	data: vCursorResponseCorrectionComment,
-})
-
-export const vDataPaginatedNotificationItem = v.object({
-	status: v.string(),
-	data: vCursorResponseNotificationItem,
 })
 
 export const vDataPaginatedSimpleArtist = v.object({
@@ -615,19 +513,6 @@ export const vDataPaginatedSongRef = v.object({
 })
 
 export const vDataPendingImageQueueCount = v.object({
-	status: v.string(),
-	data: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-})
-
-export const vDataUnreadCount = v.object({
 	status: v.string(),
 	data: v.pipe(
 		v.union([v.number(), v.string(), v.bigint()]),
@@ -694,53 +579,6 @@ export const vDataOptionI32 = v.object({
 	),
 })
 
-export const vDataVecCorrectionHistoryItem = v.object({
-	status: v.picklist(["Ok"]),
-	data: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			type: vCorrectionType,
-			created_at: v.pipe(v.string(), v.isoTimestamp()),
-			handled_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
-			author: vCorrectionUserSummary,
-			description: v.string(),
-		}),
-	),
-})
-
-export const vDataVecCorrectionRevisionSummary = v.object({
-	status: v.picklist(["Ok"]),
-	data: v.array(
-		v.object({
-			entity_history_id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			author: vCorrectionUserSummary,
-			description: v.string(),
-		}),
-	),
-})
-
 export const vDataI32 = v.object({
 	status: v.picklist(["Ok"]),
 	data: v.pipe(
@@ -780,74 +618,6 @@ export const vDataVecEditableUserRole = v.object({
 	data: v.array(vEditableUserRole),
 })
 
-export const vEntityComment = v.object({
-	id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	parent_id: v.nullish(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-	author: vCommentAuthor,
-	content: v.nullish(v.string()),
-	state: vCommentState,
-	created_at: v.pipe(v.string(), v.isoTimestamp()),
-	updated_at: v.pipe(v.string(), v.isoTimestamp()),
-})
-
-export const vDataEntityComment = v.object({
-	status: v.string(),
-	data: vEntityComment,
-})
-
-export const vEntityCommentPage = v.object({
-	items: v.array(vEntityComment),
-	next_cursor: v.nullish(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-	active_count: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-})
-
-export const vDataPaginatedEntityComment = v.object({
-	status: v.string(),
-	data: vEntityCommentPage,
-})
-
 export const vEntityCommentTarget = v.picklist([
 	"artist",
 	"release",
@@ -855,6 +625,7 @@ export const vEntityCommentTarget = v.picklist([
 	"label",
 	"event",
 	"tag",
+	"correction",
 ])
 
 export const vEntityIdent = v.string()
@@ -869,35 +640,6 @@ export const vEntityType = v.picklist([
 	"SongLyrics",
 	"CreditRole",
 ])
-
-export const vCorrectionDetail = v.object({
-	id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	status: vCorrectionStatus,
-	type: vCorrectionType,
-	entity_id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	entity_type: vEntityType,
-	entity_name: v.string(),
-	created_at: v.pipe(v.string(), v.isoTimestamp()),
-	handled_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
-	author: vCorrectionUserSummary,
-	comments: vCursorResponseCorrectionComment,
-})
 
 export const vCorrectionDiff = v.object({
 	entity_id: v.pipe(
@@ -957,11 +699,6 @@ export const vCorrectionDiff = v.object({
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
 	changes: v.array(vCorrectionDiffEntry),
-})
-
-export const vDataCorrectionDetail = v.object({
-	status: v.string(),
-	data: vCorrectionDetail,
 })
 
 export const vDataCorrectionDiff = v.object({
@@ -1105,14 +842,6 @@ export const vDataForgotPasswordResponse = v.object({
 	data: vForgotPasswordResponse,
 })
 
-export const vHandleCorrectionMethod = v.picklist(["Approve", "Reject"])
-
-export const vHandleImageQueueMethod = v.picklist([
-	"Approve",
-	"Reject",
-	"Revert",
-])
-
 export const vHomeMetadata = v.object({
 	artists_count: v.pipe(
 		v.union([v.number(), v.string(), v.bigint()]),
@@ -1157,6 +886,14 @@ export const vDataHomeMetadata = v.object({
 	data: vHomeMetadata,
 })
 
+export const vImageQueueAction = v.picklist(["Approve", "Reject", "Revert"])
+
+export const vImageQueueModerationAction = v.picklist([
+	"Approved",
+	"Rejected",
+	"Reverted",
+])
+
 export const vImageQueueStatus = v.picklist([
 	"Pending",
 	"Approved",
@@ -1166,34 +903,6 @@ export const vImageQueueStatus = v.picklist([
 ])
 
 export const vImageQueueType = v.picklist(["artist", "release"])
-
-export const vImageUploaderSummary = v.object({
-	id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	name: v.string(),
-})
-
-export const vCurrentImageMetadata = v.object({
-	uploaded_at: v.pipe(v.string(), v.isoTimestamp()),
-	uploaded_by: vImageUploaderSummary,
-})
-
-export const vDataOptionCurrentImageMetadata = v.object({
-	status: v.picklist(["Ok"]),
-	data: v.nullable(
-		v.object({
-			uploaded_at: v.pipe(v.string(), v.isoTimestamp()),
-			uploaded_by: vImageUploaderSummary,
-		}),
-	),
-})
 
 export const vLabelSummary = v.object({
 	id: v.pipe(
@@ -1310,6 +1019,14 @@ export const vDataOptionEvent = v.object({
 export const vDataVecEvent = v.object({
 	status: v.string(),
 	data: v.array(vEvent),
+})
+
+export const vMarkReadRequest = v.object({
+	through_seq: v.string(),
+})
+
+export const vMarkUnreadRequest = v.object({
+	from_seq: v.string(),
 })
 
 export const vMessage = v.object({
@@ -1760,6 +1477,52 @@ export const vNewTrack = v.object({
 
 export const vNonEmptyString = v.pipe(v.string(), v.regex(/^.+$/))
 
+/**
+ * Category for frontend filtering of notifications.
+ */
+export const vNotificationCategory = v.picklist([
+	"Correction",
+	"Comment",
+	"Social",
+	"Collection",
+	"ImageQueue",
+	"Account",
+])
+
+export const vNotificationCursor = v.object({
+	snapshot_inbox_seq: v.string(),
+	before_inbox_seq: v.string(),
+})
+
+export const vNotificationEntityKind = v.picklist([
+	"Artist",
+	"Release",
+	"Song",
+	"Label",
+	"Event",
+	"Tag",
+	"Correction",
+	"ImageQueue",
+])
+
+export const vEntityMeta = v.object({
+	kind: vNotificationEntityKind,
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.string(),
+})
+
+export const vNotificationImageType = v.picklist(["Profile", "Cover"])
+
+export const vNotificationState = v.picklist(["inbox", "unread", "saved"])
+
 export const vPageResponseEvent = v.object({
 	items: v.array(
 		v.object({
@@ -1899,13 +1662,17 @@ export const vDataPageLabel = v.object({
 	data: vPageResponseLabel,
 })
 
-export const vPermissionName = v.picklist([
+export const vPermission = v.picklist([
 	"correction.manage",
 	"comment.manage",
 	"image.queue.manage",
 	"admin.user.read",
 	"admin.user.role.write",
 ])
+
+export const vReadAllRequest = v.object({
+	snapshot_inbox_seq: v.string(),
+})
 
 export const vReleaseArtist = v.object({
 	id: v.pipe(
@@ -2702,6 +2469,15 @@ export const vSongSummary = v.object({
 
 export const vSortDirection = v.picklist(["asc", "desc"])
 
+export const vSubscriptionStatus = v.object({
+	subscribed: v.boolean(),
+})
+
+export const vDataSubscriptionStatus = v.object({
+	status: v.string(),
+	data: vSubscriptionStatus,
+})
+
 export const vTagAggregateVote = v.object({
 	user_name: v.string(),
 	score: v.pipe(
@@ -3073,18 +2849,6 @@ export const vPageResponseUserCollectionItemDetail = v.object({
 			),
 			entity_type: vEntityType,
 			description: v.nullish(v.string()),
-			position: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
 			entity: v.nullish(vEntitySummary),
 		}),
 	),
@@ -3395,6 +3159,20 @@ export const vDataPageArtist = v.object({
 	data: vPageResponseArtist,
 })
 
+export const vUnreadCount = v.object({
+	count: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(0),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vDataUnreadCount = v.object({
+	status: v.string(),
+	data: vUnreadCount,
+})
+
 export const vUploadAvatar = v.object({
 	data: v.string(),
 })
@@ -3429,15 +3207,6 @@ export const vUserCollectionItem = v.object({
 	),
 	entity_type: vEntityType,
 	description: v.nullish(v.string()),
-	position: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
 })
 
 export const vDataUserCollectionItem = v.object({
@@ -3763,12 +3532,21 @@ export const vDataPageUserSummary = v.object({
 })
 
 export const vUserProfile = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
 	name: v.string(),
 	avatar_url: v.nullish(v.string()),
 	banner_url: v.nullish(v.string()),
 	last_login: v.pipe(v.string(), v.isoTimestamp()),
 	roles: v.optional(v.array(vUserRole)),
-	permissions: v.optional(v.array(vPermissionName)),
+	permissions: v.optional(v.array(vPermission)),
 	is_following: v.nullish(v.boolean()),
 	bio: v.nullish(v.string()),
 	stats: vUserProfileStats,
@@ -3791,6 +3569,98 @@ export const vUserSummary = v.object({
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
 	name: v.string(),
+})
+
+export const vCommentPreview = v.union([
+	v.object({
+		id: v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+		actor: vUserSummary,
+		content: v.string(),
+		created_at: v.pipe(v.string(), v.isoTimestamp()),
+		state: v.picklist(["Visible"]),
+	}),
+	v.object({
+		actor: vUserSummary,
+		created_at: v.pipe(v.string(), v.isoTimestamp()),
+		state: v.picklist(["Deleted"]),
+	}),
+])
+
+export const vCorrectionDetail = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	status: vCorrectionStatus,
+	type: vCorrectionType,
+	entity_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	entity_type: vEntityType,
+	entity_name: v.string(),
+	created_at: v.pipe(v.string(), v.isoTimestamp()),
+	handled_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
+	author: vUserSummary,
+	comments: vCommentPage,
+	is_subscribed: v.nullish(v.boolean()),
+})
+
+export const vCorrectionHistoryItem = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	type: vCorrectionType,
+	created_at: v.pipe(v.string(), v.isoTimestamp()),
+	handled_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
+	author: vUserSummary,
+	description: v.string(),
+})
+
+export const vCorrectionRevisionSummary = v.object({
+	entity_history_id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	author: vUserSummary,
+	description: v.string(),
+})
+
+export const vCurrentImageMetadata = v.object({
+	uploaded_at: v.pipe(v.string(), v.isoTimestamp()),
+	uploaded_by: vUserSummary,
 })
 
 export const vCursorResponsePendingImageQueueItem = v.object({
@@ -3896,6 +3766,11 @@ export const vCursorResponseUserImageQueueItem = v.object({
 	),
 })
 
+export const vDataCorrectionDetail = v.object({
+	status: v.string(),
+	data: vCorrectionDetail,
+})
+
 export const vDataPaginatedPendingImageQueueItem = v.object({
 	status: v.string(),
 	data: vCursorResponsePendingImageQueueItem,
@@ -3904,6 +3779,63 @@ export const vDataPaginatedPendingImageQueueItem = v.object({
 export const vDataPaginatedUserImageQueueItem = v.object({
 	status: v.string(),
 	data: vCursorResponseUserImageQueueItem,
+})
+
+export const vDataOptionCurrentImageMetadata = v.object({
+	status: v.picklist(["Ok"]),
+	data: v.nullable(
+		v.object({
+			uploaded_at: v.pipe(v.string(), v.isoTimestamp()),
+			uploaded_by: vUserSummary,
+		}),
+	),
+})
+
+export const vDataVecCorrectionHistoryItem = v.object({
+	status: v.picklist(["Ok"]),
+	data: v.array(
+		v.object({
+			id: v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+			type: vCorrectionType,
+			created_at: v.pipe(v.string(), v.isoTimestamp()),
+			handled_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
+			author: vUserSummary,
+			description: v.string(),
+		}),
+	),
+})
+
+export const vDataVecCorrectionRevisionSummary = v.object({
+	status: v.picklist(["Ok"]),
+	data: v.array(
+		v.object({
+			entity_history_id: v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+			author: vUserSummary,
+			description: v.string(),
+		}),
+	),
 })
 
 export const vImageSummary = v.object({
@@ -3956,11 +3888,98 @@ export const vImageQueueDetail = v.object({
 	image: v.nullish(vImageSummary),
 	artist: v.nullish(vArtistImageQueueTarget),
 	release: v.nullish(vReleaseImageQueueTarget),
+	is_subscribed: v.boolean(),
 })
 
 export const vDataImageQueueDetail = v.object({
 	status: v.string(),
 	data: vImageQueueDetail,
+})
+
+export const vNotificationBody = v.union([
+	v.object({
+		actor: vUserSummary,
+		correction: vEntityMeta,
+		kind: v.picklist(["CorrectionReviewRequested"]),
+	}),
+	v.object({
+		actor: vUserSummary,
+		correction: vEntityMeta,
+		kind: v.picklist(["CorrectionUpdated"]),
+	}),
+	v.object({
+		actor: vUserSummary,
+		correction: vEntityMeta,
+		action: vCorrectionModerationAction,
+		kind: v.picklist(["CorrectionModerated"]),
+	}),
+	v.object({
+		container: v.nullish(vEntityMeta),
+		commenters: v.pipe(v.array(vUserSummary), v.minLength(1), v.maxLength(3)),
+		additional_commenter_count: v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(0),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+		latest: vCommentPreview,
+		kind: v.picklist(["CommentThreadUpdated"]),
+	}),
+	v.object({
+		container: v.nullish(vEntityMeta),
+		reply: vCommentPreview,
+		kind: v.picklist(["CommentReplied"]),
+	}),
+	v.object({
+		actor: vUserSummary,
+		kind: v.picklist(["UserFollowed"]),
+	}),
+	v.object({
+		actor: vUserSummary,
+		collection: vCollectionReference,
+		kind: v.picklist(["CollectionFollowed"]),
+	}),
+	v.object({
+		actor: vUserSummary,
+		collection: vCollectionReference,
+		kind: v.picklist(["CollectionItemAdded"]),
+	}),
+	v.object({
+		actor: vUserSummary,
+		image_queue: vEntityMeta,
+		image_type: vNotificationImageType,
+		action: vImageQueueModerationAction,
+		kind: v.picklist(["ImageQueueModerated"]),
+	}),
+	v.object({
+		actor: vUserSummary,
+		new_roles: v.array(v.string()),
+		kind: v.picklist(["AccountRoleChanged"]),
+	}),
+])
+
+export const vNotificationItem = v.object({
+	id: v.string(),
+	body: vNotificationBody,
+	is_unread: v.boolean(),
+	through_seq: v.string(),
+	saved_at: v.nullish(v.pipe(v.string(), v.isoTimestamp())),
+	created_at: v.pipe(v.string(), v.isoTimestamp()),
+	last_activity_at: v.pipe(v.string(), v.isoTimestamp()),
+})
+
+export const vNotificationPage = v.object({
+	items: v.array(vNotificationItem),
+	next_cursor: v.nullish(vNotificationCursor),
+	snapshot_inbox_seq: v.string(),
+})
+
+export const vDataNotificationPage = v.object({
+	status: v.string(),
+	data: vNotificationPage,
 })
 
 export const vVerifyEmailRequest = v.object({
@@ -4533,7 +4552,7 @@ export const vGetCorrectionPath = v.object({
 
 export const vGetCorrectionResponse = vDataCorrectionDetail
 
-export const vHandleCorrectionPath = v.object({
+export const vModerateCorrectionPath = v.object({
 	id: v.pipe(
 		v.number(),
 		v.integer(),
@@ -4545,61 +4564,11 @@ export const vHandleCorrectionPath = v.object({
 	),
 })
 
-export const vHandleCorrectionQuery = v.object({
-	method: vHandleCorrectionMethod,
+export const vModerateCorrectionQuery = v.object({
+	decision: vCorrectionDecision,
 })
 
-export const vHandleCorrectionResponse = vMessage
-
-export const vFindCommentsPath = v.object({
-	id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-})
-
-export const vFindCommentsQuery = v.object({
-	limit: v.optional(
-		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
-	),
-	cursor: v.optional(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-})
-
-export const vFindCommentsResponse = vDataPaginatedCorrectionComment
-
-export const vCreateCommentBody = vCreateEntityCommentRequest
-
-export const vCreateCommentPath = v.object({
-	id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-})
-
-export const vCreateCommentResponse = vDataCorrectionComment
+export const vModerateCorrectionResponse = vMessage
 
 export const vGetCorrectionDiffPath = v.object({
 	id: v.pipe(
@@ -4628,6 +4597,24 @@ export const vGetCorrectionRevisionsPath = v.object({
 })
 
 export const vGetCorrectionRevisionsResponse = vDataVecCorrectionRevisionSummary
+
+export const vSetCorrectionSubscriptionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vSetCorrectionSubscriptionQuery = v.object({
+	subscribed: v.boolean(),
+})
+
+export const vSetCorrectionSubscriptionResponse = vDataSubscriptionStatus
 
 export const vCreateCreditRoleBody = vNewCorrectionNewCreditRole
 
@@ -4829,7 +4816,7 @@ export const vImageQueueDetailPath = v.object({
 
 export const vImageQueueDetailResponse = vDataImageQueueDetail
 
-export const vHandleImageQueuePath = v.object({
+export const vModerateImageQueuePath = v.object({
 	id: v.pipe(
 		v.number(),
 		v.integer(),
@@ -4841,11 +4828,79 @@ export const vHandleImageQueuePath = v.object({
 	),
 })
 
-export const vHandleImageQueueQuery = v.object({
-	method: vHandleImageQueueMethod,
+export const vModerateImageQueueQuery = v.object({
+	action: vImageQueueAction,
 })
 
-export const vHandleImageQueueResponse = vMessage
+export const vModerateImageQueueResponse = vMessage
+
+export const vFindImageQueueCommentsPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vFindImageQueueCommentsQuery = v.object({
+	limit: v.optional(
+		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
+	),
+	cursor: v.optional(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+})
+
+export const vFindImageQueueCommentsResponse = vDataCommentPage
+
+export const vCreateImageQueueCommentBody = vCreateEntityCommentRequest
+
+export const vCreateImageQueueCommentPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vCreateImageQueueCommentResponse = vDataComment
+
+export const vSetImageQueueSubscriptionPath = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+})
+
+export const vSetImageQueueSubscriptionQuery = v.object({
+	subscribed: v.boolean(),
+})
+
+export const vSetImageQueueSubscriptionResponse = vDataSubscriptionStatus
 
 export const vFindLabelByKeywordQuery = v.object({
 	keyword: v.string(),
@@ -4935,45 +4990,51 @@ export const vUpdateLabelPendingCorrectionResponse = vDataCorrectionSubmitResult
 
 export const vLanguageListResponse = vDataVecLanguage
 
-export const vNotificationListQuery = v.object({
+export const vListNotificationsQuery = v.object({
 	limit: v.optional(
 		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
 	),
-	cursor: v.optional(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
+	cursor_snapshot_inbox_seq: v.optional(v.string()),
+	cursor_before_inbox_seq: v.optional(v.string()),
+	state: v.optional(vNotificationState, "inbox"),
+	category: v.optional(vNotificationCategory),
 })
 
-export const vNotificationListResponse = vDataPaginatedNotificationItem
+export const vListNotificationsResponse = vDataNotificationPage
 
-export const vNotificationReadAllResponse = vMessage
+export const vReadAllBody = vReadAllRequest
 
-export const vNotificationUnreadCountResponse = vDataUnreadCount
+export const vReadAllResponse = vMessage
 
-export const vNotificationMarkReadPath = v.object({
-	id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
+export const vUnreadCountResponse = vDataUnreadCount
+
+export const vMarkReadBody = vMarkReadRequest
+
+export const vMarkReadPath = v.object({
+	notification_id: v.string(),
 })
 
-export const vNotificationMarkReadResponse = vMessage
+export const vMarkReadResponse = vMessage
+
+export const vUnsaveNotificationPath = v.object({
+	notification_id: v.string(),
+})
+
+export const vUnsaveNotificationResponse = vMessage
+
+export const vSaveNotificationPath = v.object({
+	notification_id: v.string(),
+})
+
+export const vSaveNotificationResponse = vMessage
+
+export const vMarkUnreadBody = vMarkUnreadRequest
+
+export const vMarkUnreadPath = v.object({
+	notification_id: v.string(),
+})
+
+export const vMarkUnreadResponse = vMessage
 
 export const vProfileResponse = vDataUserProfile
 
@@ -5612,6 +5673,8 @@ export const vFollowUserCollectionPath = v.object({
 
 export const vFollowUserCollectionResponse = vMessage
 
+export const vStreamUserEventsResponse = v.string()
+
 export const vUserRolesResponse = vDataVecUserRole
 
 export const vUserImageQueuePath = v.object({
@@ -5675,11 +5738,6 @@ export const vVerifyEmailResponse = vDataUserProfile
 export const vVerifyResetCodeBody = vVerifyResetCodeRequest
 
 export const vVerifyResetCodeResponse2 = vDataVerifyResetCodeResponse
-
-export const vNotificationWsResponse = v.object({
-	status: v.picklist(["Err"]),
-	message: v.string(),
-})
 
 export const vEntityUserCollectionsPath = v.object({
 	entity_type: vEntityUserCollectionTarget,
@@ -5857,7 +5915,7 @@ export const vFindEntityCommentsQuery = v.object({
 	),
 })
 
-export const vFindEntityCommentsResponse = vDataPaginatedEntityComment
+export const vFindEntityCommentsResponse = vDataCommentPage
 
 export const vCreateEntityCommentBody = vCreateEntityCommentRequest
 
@@ -5874,4 +5932,4 @@ export const vCreateEntityCommentPath = v.object({
 	),
 })
 
-export const vCreateEntityCommentResponse = vDataEntityComment
+export const vCreateEntityCommentResponse = vDataComment

@@ -9,6 +9,7 @@ pub use model::{UserProfile, UserProfileStats};
 pub use service::Service;
 
 use crate::infra::database::error::DatabaseError;
+use crate::shared::error::InternalError;
 use crate::shared::http::api_response::AppError;
 
 #[derive(
@@ -22,6 +23,9 @@ pub enum Error {
     #[display("{_0}")]
     #[from]
     Database(#[error(source)] DatabaseError),
+    #[display("{_0}")]
+    #[from]
+    Internal(#[error(source)] InternalError),
 }
 
 impl IntoResponse for Error {
@@ -34,6 +38,7 @@ impl IntoResponse for Error {
                 AppError::bad_request("cannot follow yourself").into_response()
             }
             Error::Database(source) => source.into_response(),
+            Error::Internal(source) => source.into_response(),
         }
     }
 }

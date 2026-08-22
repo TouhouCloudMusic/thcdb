@@ -3,9 +3,9 @@ use sea_orm::{
     ColumnTrait, ConnectionTrait, DbErr, EntityTrait, JoinType, QueryFilter,
     QueryOrder, QuerySelect, RelationTrait,
 };
+use user_core::UserSummary;
 
 use super::model::CorrectionRevisionSummary;
-use crate::features::correction::model::CorrectionUserSummary;
 
 pub(super) async fn list_revisions(
     conn: &impl ConnectionTrait,
@@ -30,7 +30,7 @@ pub(super) async fn list_revisions(
         .map(|(entity_history_id, description, author_id, author_name)| {
             CorrectionRevisionSummary {
                 entity_history_id,
-                author: CorrectionUserSummary {
+                author: UserSummary {
                     id: author_id,
                     name: author_name,
                 },

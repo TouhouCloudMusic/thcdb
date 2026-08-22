@@ -59,6 +59,54 @@ msgstr "[UNIMPLEMENTED] Release"
 msgid "{0} users"
 msgstr "{0} users"
 
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} changed your roles to {roles}."
+msgstr "{actor} changed your roles to {roles}."
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} changed your roles."
+msgstr "{actor} changed your roles."
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} followed you."
+msgstr "{actor} followed you."
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} followed your collection {collection}."
+msgstr "{actor} followed your collection {collection}."
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} replied to your comment under [deleted]."
+msgstr "{actor} replied to your comment under [deleted]."
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} replied to your comment under {target}."
+msgstr "{actor} replied to your comment under {target}."
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} requested your review on the correction to {target}."
+msgstr "{actor} requested your review on the correction to {target}."
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} updated the correction to {target}."
+msgstr "{actor} updated the correction to {target}."
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor}'s list {collection} was updated."
+msgstr "{actor}'s list {collection} was updated."
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{additionalCount, plural, one {one other} other {# others}}"
+msgstr "{additionalCount, plural, one {one other} other {# others}}"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{commenters} commented on {target}."
+msgstr "{commenters} commented on {target}."
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{commenters} replied to [deleted]."
+msgstr "{commenters} replied to [deleted]."
+
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "{count} votes · relevance {relevance}"
 msgstr "{count} votes · relevance {relevance}"
@@ -79,6 +127,10 @@ msgstr "About"
 #: src/view/admin/users.tsx
 msgid "Access moderation tools and review queues."
 msgstr "Access moderation tools and review queues."
+
+#: src/view/notification/InboxPage.tsx
+msgid "Account"
+msgstr "Account"
 
 #: src/view/admin/users.tsx
 msgid "Action"
@@ -154,10 +206,6 @@ msgstr "After"
 msgid "AKAs"
 msgstr "AKAs"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Albums, EPs, singles"
-msgstr "Albums, EPs, singles"
-
 #: src/view/artist/edit/comp/Aliases.tsx
 #: src/view/artist/profile/comp/ArtistInfo.tsx
 msgid "Aliases"
@@ -171,9 +219,9 @@ msgstr "Aliases"
 msgid "All"
 msgstr "All"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Alpha"
-msgstr "Alpha"
+#: src/view/notification/InboxPage.tsx
+msgid "All categories"
+msgstr "All categories"
 
 #: src/view/user/Profile.tsx
 msgid "Alphabetical"
@@ -193,10 +241,6 @@ msgstr "Alternative Names"
 msgid "An error occurred. Please try again."
 msgstr "An error occurred. Please try again."
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "API-powered UI"
-msgstr "API-powered UI"
-
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Approve"
@@ -209,6 +253,10 @@ msgstr "Approve correction?"
 #: src/view/image_queue/detail.tsx
 msgid "Approve image?"
 msgstr "Approve image?"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "approved"
+msgstr "approved"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/manage.tsx
@@ -244,7 +292,6 @@ msgstr "Are you sure you want to remove this item from the collection?"
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
-#: src/view/Homepage/component/ArtistCard.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/search/index.tsx
 msgid "Artist"
@@ -255,7 +302,7 @@ msgid "Artist Type"
 msgstr "Artist Type"
 
 #: src/view/Homepage/component/ExploreCard.tsx
-#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeStats.tsx
 #: src/view/release/edit/comp/ReleaseArtistsField.tsx
 #: src/view/search/index.tsx
 #: src/view/song/edit/comp/SongArtistsField.tsx
@@ -336,10 +383,6 @@ msgstr "Catalog Nums"
 msgid "Checking session…"
 msgstr "Checking session…"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Circles & solo creators"
-msgstr "Circles & solo creators"
-
 #: src/component/form/Location/index.tsx
 msgid "City"
 msgstr "City"
@@ -353,6 +396,7 @@ msgid "Collected time"
 msgstr "Collected time"
 
 #: src/view/collection/AddToCollectionDialog.tsx
+#: src/view/notification/InboxPage.tsx
 msgid "Collection"
 msgstr "Collection"
 
@@ -376,6 +420,7 @@ msgid "Collections"
 msgstr "Collections"
 
 #: src/view/comment/CommentThread.tsx
+#: src/view/notification/InboxPage.tsx
 msgid "Comment"
 msgstr "Comment"
 
@@ -404,13 +449,13 @@ msgstr "Continue"
 msgid "Contribute touhou music metadata"
 msgstr "Contribute touhou music metadata"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Contribute what’s missing and help keep the database accurate for everyone."
-msgstr "Contribute what’s missing and help keep the database accurate for everyone."
-
 #: src/view/correction/EntityContributors.tsx
 msgid "Contributors:"
 msgstr "Contributors:"
+
+#: src/view/notification/InboxPage.tsx
+msgid "Correction"
+msgstr "Correction"
 
 #: src/view/correction/Detail.tsx
 msgid "Correction approved"
@@ -445,6 +490,7 @@ msgstr "Country / Region"
 #: src/route/release/$id_.image-upload.tsx
 #: src/view/Homepage/component/NewMusic.tsx
 #: src/view/image_queue/detail.tsx
+#: src/view/notification/NotificationCard.tsx
 msgid "cover art"
 msgstr "cover art"
 
@@ -557,6 +603,10 @@ msgstr "Current Location"
 msgid "Current target image"
 msgstr "Current target image"
 
+#: src/view/Homepage/component/HomeStats.tsx
+msgid "Database statistics"
+msgstr "Database statistics"
+
 #: src/view/event/Info/index.tsx
 msgid "Date"
 msgstr "Date"
@@ -577,6 +627,14 @@ msgstr "Delete Collection"
 #: src/view/comment/CommentThread.tsx
 msgid "Delete comment"
 msgstr "Delete comment"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "deleted collection"
+msgstr "deleted collection"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "deleted comment"
+msgstr "deleted comment"
 
 #: src/component/feature/entity_explore/OrderBySelect.tsx
 msgid "Descending"
@@ -734,10 +792,6 @@ msgstr "Explore"
 msgid "Explore Artists"
 msgstr "Explore Artists"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Explore doujin music"
-msgstr "Explore doujin music"
-
 #: src/view/event/explore.tsx
 msgid "Explore Events"
 msgstr "Explore Events"
@@ -783,6 +837,14 @@ msgstr "Failed to load image queue."
 msgid "Failed to load items."
 msgstr "Failed to load items."
 
+#: src/view/notification/InboxPage.tsx
+msgid "Failed to load more notifications."
+msgstr "Failed to load more notifications."
+
+#: src/view/notification/InboxPage.tsx
+msgid "Failed to load notifications."
+msgstr "Failed to load notifications."
+
 #: src/view/image_queue/user.tsx
 msgid "Failed to load user image queue."
 msgstr "Failed to load user image queue."
@@ -790,6 +852,31 @@ msgstr "Failed to load user image queue."
 #: src/view/admin/users.tsx
 msgid "Failed to load users."
 msgstr "Failed to load users."
+
+#: src/route/notifications.tsx
+msgid "Failed to mark all notifications read"
+msgstr "Failed to mark all notifications read"
+
+#: src/route/notifications.tsx
+msgid "Failed to mark notification read"
+msgstr "Failed to mark notification read"
+
+#: src/route/notifications.tsx
+msgid "Failed to mark notification unread"
+msgstr "Failed to mark notification unread"
+
+#: src/route/notifications.tsx
+msgid "Failed to refresh notifications"
+msgstr "Failed to refresh notifications"
+
+#: src/route/notifications.tsx
+msgid "Failed to update saved notification"
+msgstr "Failed to update saved notification"
+
+#: src/view/correction/Detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Failed to update subscription"
+msgstr "Failed to update subscription"
 
 #: src/component/Footer/index.tsx
 msgid "Feedback"
@@ -814,6 +901,10 @@ msgstr "File size"
 #: src/component/Header/index.tsx
 msgid "Filter"
 msgstr "Filter"
+
+#: src/view/notification/InboxPage.tsx
+msgid "Filter by category"
+msgstr "Filter by category"
 
 #: src/view/user/Profile.tsx
 msgid "Filter collections"
@@ -885,12 +976,7 @@ msgstr "Founders"
 msgid "From"
 msgstr "From"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Genres, themes, credits"
-msgstr "Genres, themes, credits"
-
 #: src/view/artist/explore.comp.tsx
-#: src/view/Homepage/component/ArtistCard.tsx
 msgid "Group"
 msgstr "Group"
 
@@ -920,7 +1006,7 @@ msgstr "Home"
 msgid "ID"
 msgstr "ID"
 
-#: src/view/auth/store/index.ts
+#: src/view/auth/useAuthForm.ts
 msgid "If eligible, a verification code has been sent."
 msgstr "If eligible, a verification code has been sent."
 
@@ -933,12 +1019,17 @@ msgid "Image Cropper Placeholder"
 msgstr "Image Cropper Placeholder"
 
 #: src/view/image_queue/detail.tsx
+#: src/view/notification/InboxPage.tsx
 msgid "Image queue"
 msgstr "Image queue"
 
 #: src/view/image_queue/manage.tsx
 msgid "Image Queue"
 msgstr "Image Queue"
+
+#: src/view/notification/InboxPage.tsx
+msgid "Inbox"
+msgstr "Inbox"
 
 #: src/view/auth/reset_password/index.tsx
 msgid "Invalid email"
@@ -984,6 +1075,10 @@ msgstr "Join year cannot be earlier than previous leave year"
 msgid "Join year cannot be the same as previous leave year"
 msgstr "Join year cannot be the same as previous leave year"
 
+#: src/view/notification/NotificationCard.tsx
+msgid "Just now"
+msgstr "Just now"
+
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
@@ -1012,7 +1107,7 @@ msgstr "Languages"
 msgid "Last page"
 msgstr "Last page"
 
-#: src/view/Homepage/component/LatestArtistsCard.tsx
+#: src/view/Homepage/component/ArtistsCard.tsx
 msgid "Latest Artists"
 msgstr "Latest Artists"
 
@@ -1088,6 +1183,7 @@ msgid "Loading..."
 msgstr "Loading..."
 
 #: src/view/image_queue/detail.tsx
+#: src/view/notification/InboxPage.tsx
 msgid "Loading…"
 msgstr "Loading…"
 
@@ -1123,6 +1219,18 @@ msgstr "Make this collection public"
 msgid "Manage Tags"
 msgstr "Manage Tags"
 
+#: src/view/notification/InboxPage.tsx
+msgid "Mark all read"
+msgstr "Mark all read"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "Mark read"
+msgstr "Mark read"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "Mark unread"
+msgstr "Mark unread"
+
 #: src/view/entity_tags/EntityTagAddDialog.tsx
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Medium"
@@ -1140,7 +1248,7 @@ msgstr "Members"
 msgid "Membership"
 msgstr "Membership"
 
-#: src/view/auth/store/index.ts
+#: src/view/auth/useAuthForm.ts
 msgid "Missing sign-up email. Create the account again."
 msgstr "Missing sign-up email. Create the account again."
 
@@ -1276,7 +1384,6 @@ msgid "No comments yet."
 msgstr "No comments yet."
 
 #: src/component/display/release/ReleaseCoverWall.tsx
-#: src/view/Homepage/component/ReleaseCard.tsx
 #: src/view/release/explore/ReleaseItems.tsx
 #: src/view/release/Info/comp/ReleaseInfoCoverImage.tsx
 msgid "No cover art"
@@ -1336,6 +1443,10 @@ msgstr "No more entries"
 #: src/view/search/index.tsx
 msgid "No more results"
 msgstr "No more results"
+
+#: src/view/notification/InboxPage.tsx
+msgid "No notifications."
+msgstr "No notifications."
 
 #: src/view/release/explore/list.tsx
 msgid "No releases found"
@@ -1402,6 +1513,11 @@ msgstr "None"
 msgid "Note (optional)"
 msgstr "Note (optional)"
 
+#: src/component/Header/index.tsx
+#: src/view/notification/InboxPage.tsx
+msgid "Notifications"
+msgstr "Notifications"
+
 #: src/component/toast/index.tsx
 msgid "Notifications ({hotkey})"
 msgstr "Notifications ({hotkey})"
@@ -1420,7 +1536,6 @@ msgstr "Open"
 
 #: src/view/auth/component/AuthForm.tsx
 #: src/view/auth/component/AuthLeftPanel.tsx
-#: src/view/Homepage/component/HomeHero.tsx
 msgid "Open doujin music database"
 msgstr "Open doujin music database"
 
@@ -1488,10 +1603,6 @@ msgstr "Present"
 msgid "Prev"
 msgstr "Prev"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Preview"
-msgstr "Preview"
-
 #: src/view/correction/Detail.tsx
 msgid "Previous approved baseline"
 msgstr "Previous approved baseline"
@@ -1520,6 +1631,7 @@ msgstr "Profile banner"
 
 #: src/route/artist/$id_.image-upload.tsx
 #: src/view/image_queue/detail.tsx
+#: src/view/notification/NotificationCard.tsx
 msgid "profile image"
 msgstr "profile image"
 
@@ -1573,6 +1685,10 @@ msgstr "Reject correction?"
 msgid "Reject image?"
 msgstr "Reject image?"
 
+#: src/view/notification/NotificationCard.tsx
+msgid "rejected"
+msgstr "rejected"
+
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/manage.tsx
 msgid "Rejected"
@@ -1613,7 +1729,7 @@ msgid "Released"
 msgstr "Released"
 
 #: src/view/Homepage/component/ExploreCard.tsx
-#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeStats.tsx
 #: src/view/search/index.tsx
 msgid "Releases"
 msgstr "Releases"
@@ -1681,13 +1797,22 @@ msgstr "Reset field?"
 msgid "Reset password"
 msgstr "Reset password"
 
+#: src/view/notification/NotificationCard.tsx
+msgid "restricted collection"
+msgstr "restricted collection"
+
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/notification/InboxPage.tsx
 msgid "Retry"
 msgstr "Retry"
 
 #: src/view/image_queue/detail.tsx
 msgid "Revert"
 msgstr "Revert"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "reverted"
+msgstr "reverted"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/manage.tsx
@@ -1704,6 +1829,7 @@ msgstr "Roles"
 
 #: src/component/ImageCropDialog/index.tsx
 #: src/view/collection/CollectionFormDialog.tsx
+#: src/view/notification/NotificationCard.tsx
 msgid "Save"
 msgstr "Save"
 
@@ -1722,6 +1848,10 @@ msgstr "Save Image"
 #: src/view/admin/users.tsx
 msgid "Save roles"
 msgstr "Save roles"
+
+#: src/view/notification/InboxPage.tsx
+msgid "Saved"
+msgstr "Saved"
 
 #: src/view/user/edit_profile/index.tsx
 msgid "Saving…"
@@ -1889,8 +2019,11 @@ msgstr "Sign Out"
 msgid "Sign Up"
 msgstr "Sign Up"
 
+#: src/view/notification/InboxPage.tsx
+msgid "Social"
+msgstr "Social"
+
 #: src/view/artist/explore.comp.tsx
-#: src/view/Homepage/component/ArtistCard.tsx
 msgid "Solo artist"
 msgstr "Solo artist"
 
@@ -1914,7 +2047,7 @@ msgid "Song lyrics"
 msgstr "Song lyrics"
 
 #: src/view/Homepage/component/ExploreCard.tsx
-#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeStats.tsx
 #: src/view/search/index.tsx
 msgid "Songs"
 msgstr "Songs"
@@ -1972,7 +2105,6 @@ msgstr "Start Location"
 msgid "Status"
 msgstr "Status"
 
-#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/image_queue/user.tsx
 msgid "STATUS"
 msgstr "STATUS"
@@ -2011,6 +2143,11 @@ msgstr "Submitting"
 msgid "Submitting..."
 msgstr "Submitting..."
 
+#: src/view/correction/Detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Subscribe"
+msgstr "Subscribe"
+
 #: src/component/Header/RightSidebar.tsx
 msgid "Support"
 msgstr "Support"
@@ -2037,7 +2174,7 @@ msgstr "Tag Type"
 
 #: src/view/entity_tags/EntityTagsSection.tsx
 #: src/view/Homepage/component/ExploreCard.tsx
-#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeStats.tsx
 #: src/view/search/index.tsx
 msgid "Tags"
 msgstr "Tags"
@@ -2057,6 +2194,10 @@ msgstr "Tenures"
 #: src/view/artist/edit/comp/TextAliases.tsx
 msgid "Text Aliases"
 msgstr "Text Aliases"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "The {imageTypeText} change to {target} was {actionText}."
+msgstr "The {imageTypeText} change to {target} was {actionText}."
 
 #: src/view/NotFound.tsx
 msgid "The page you are looking for does not exist."
@@ -2154,11 +2295,7 @@ msgstr "Track number"
 msgid "Tracks"
 msgstr "Tracks"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Tracks & arrangements"
-msgstr "Tracks & arrangements"
-
-#: src/view/Homepage/component/TrendingTagsCard.tsx
+#: src/view/Homepage/component/TagsCard.tsx
 msgid "Trending Tags"
 msgstr "Trending Tags"
 
@@ -2211,7 +2348,25 @@ msgstr "Unknown artist"
 msgid "Unknown error"
 msgstr "Unknown error"
 
-#: src/view/Homepage/component/UpcomingEventsCard.tsx
+#: src/view/event/EventItem.tsx
+#: src/view/Homepage/component/EventsCard.tsx
+msgid "Unknown location"
+msgstr "Unknown location"
+
+#: src/view/notification/InboxPage.tsx
+msgid "Unread"
+msgstr "Unread"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "Unsave"
+msgstr "Unsave"
+
+#: src/view/correction/Detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Unsubscribe"
+msgstr "Unsubscribe"
+
+#: src/view/Homepage/component/EventsCard.tsx
 msgid "Upcoming Events"
 msgstr "Upcoming Events"
 
@@ -2352,6 +2507,10 @@ msgstr "You haven't created any collections yet"
 #: src/view/user/Profile.tsx
 msgid "You haven't followed any collections yet"
 msgstr "You haven't followed any collections yet"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "Your correction to {target} was {actionText}."
+msgstr "Your correction to {target} was {actionText}."
 
 #: src/view/auth/reset_password/index.tsx
 msgid "Your password has been updated successfully."

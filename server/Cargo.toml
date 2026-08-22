@@ -5,11 +5,27 @@ members = [
     "crates/constants",
     "crates/domain",
     "crates/entity",
+    "crates/features/user/core",
     "crates/features/auth/core",
     "crates/features/auth/worker",
+    "crates/features/account/notification",
+    "crates/features/comment/notification",
+    "crates/features/comment/repo",
+    "crates/features/comment/service",
+    "crates/features/correction/subscription",
+    "crates/features/correction/notification",
+    "crates/features/image_queue/core",
+    "crates/features/image_queue/notification",
+    "crates/features/notification/core",
+    "crates/features/notification/service",
+    "crates/features/notification/use_case/cleanup",
     "crates/features/notification/worker",
+    "crates/features/user_collection/notification",
+    "crates/features/user_profile/notification",
     "crates/flow",
     "crates/infra/db",
+    "crates/infra/email",
+    "crates/infra/testing",
     "crates/infra/storage",
     "crates/infra/storage/worker",
     "crates/infra/worker",
@@ -21,24 +37,41 @@ members = [
 ]
 
 [workspace.dependencies]
-collection_ext       = { path = "crates/collection_ext" }
-constants            = { package = "thcdb-constants", path = "crates/constants" }
-domain               = { package = "thcdb-domain", path = "crates/domain" }
-entity               = { path = "crates/entity" }
-fast-lrc             = { path = "crates/fast_lrc" }
-flow                 = { path = "crates/flow" }
-infra_db             = { package = "thcdb-infra-db", path = "crates/infra/db" }
-infra_storage        = { package = "thcdb-infra-storage", path = "crates/infra/storage" }
-infra_storage_worker = { package = "thcdb-infra-storage-worker", path = "crates/infra/storage/worker" }
-infra_worker         = { package = "thcdb-infra-worker", path = "crates/infra/worker" }
-libfp                = { path = "crates/libfp" }
-macros               = { path = "crates/macros" }
-migration            = { path = "crates/migration" }
-auth_core            = { package = "thcdb-feature-auth-core", path = "crates/features/auth/core" }
-auth_worker          = { package = "thcdb-feature-auth-worker", path = "crates/features/auth/worker" }
-notification_worker  = { package = "thcdb-feature-notification-worker", path = "crates/features/notification/worker" }
-proc_macros          = { path = "crates/proc_macros" }
+collection_ext               = { path = "crates/collection_ext" }
+constants                    = { package = "thcdb-constants", path = "crates/constants" }
+domain                       = { package = "thcdb-domain", path = "crates/domain" }
+entity                       = { path = "crates/entity" }
+fast-lrc                     = { path = "crates/fast_lrc" }
+flow                         = { path = "crates/flow" }
+infra_db                     = { package = "thcdb-infra-db", path = "crates/infra/db" }
+infra_email                  = { package = "thcdb-infra-email", path = "crates/infra/email" }
+infra_testing                = { package = "thcdb-infra-testing", path = "crates/infra/testing" }
+infra_storage                = { package = "thcdb-infra-storage", path = "crates/infra/storage" }
+infra_storage_worker         = { package = "thcdb-infra-storage-worker", path = "crates/infra/storage/worker" }
+infra_worker                 = { package = "thcdb-infra-worker", path = "crates/infra/worker" }
+libfp                        = { path = "crates/libfp" }
+macros                       = { path = "crates/macros" }
+migration                    = { path = "crates/migration" }
+user_core                    = { package = "thcdb-feature-user-core", path = "crates/features/user/core" }
+auth_core                    = { package = "thcdb-feature-auth-core", path = "crates/features/auth/core" }
+auth_worker                  = { package = "thcdb-feature-auth-worker", path = "crates/features/auth/worker" }
+account_notification         = { package = "thcdb-feature-account-notification", path = "crates/features/account/notification" }
+comment_notification         = { package = "thcdb-feature-comment-notification", path = "crates/features/comment/notification" }
+comment_repo                 = { package = "thcdb-feature-comment-repo", path = "crates/features/comment/repo" }
+comment_service              = { package = "thcdb-feature-comment-service", path = "crates/features/comment/service" }
+correction_subscription      = { package = "thcdb-feature-correction-subscription", path = "crates/features/correction/subscription" }
+correction_notification      = { package = "thcdb-feature-correction-notification", path = "crates/features/correction/notification" }
+image_queue_core             = { package = "thcdb-feature-image-queue-core", path = "crates/features/image_queue/core" }
+image_queue_notification     = { package = "thcdb-feature-image-queue-notification", path = "crates/features/image_queue/notification" }
+notification_core            = { package = "thcdb-feature-notification-core", path = "crates/features/notification/core" }
+notification_service         = { package = "thcdb-feature-notification-service", path = "crates/features/notification/service" }
+notification_cleanup         = { package = "thcdb-feature-notification-use-case-cleanup", path = "crates/features/notification/use_case/cleanup" }
+notification_worker          = { package = "thcdb-feature-notification-worker", path = "crates/features/notification/worker" }
+user_collection_notification = { package = "thcdb-feature-user-collection-notification", path = "crates/features/user_collection/notification" }
+user_profile_notification    = { package = "thcdb-feature-user-profile-notification", path = "crates/features/user_profile/notification" }
+proc_macros                  = { path = "crates/proc_macros" }
 # external
+anyhow = "1.0.104"
 apalis = { version = "0.7.4", features = [
     "limit",
     "retry",
@@ -47,6 +80,7 @@ apalis = { version = "0.7.4", features = [
 apalis-cron = "0.7.4"
 apalis-redis = "0.7.4"
 argon2 = "0.5"
+async-stream = "0.3"
 axum = { version = "0.8", features = [
     "macros",
     "multipart",
@@ -69,6 +103,7 @@ enumset = { version = "1.1.7", features = [
     "serde",
 ] }
 fred = { version = "10.0", features = [ "i-scripts" ] }
+garde = { version = "0.22.0", features = [ "full" ] }
 itertools = "0.14"
 lettre = { version = "0.11.14", default-features = false, features = [
     "builder",
@@ -78,6 +113,7 @@ lettre = { version = "0.11.14", default-features = false, features = [
     "tokio1-rustls-tls",
 ] }
 log = "0.4"
+macroweave = "0.1.0"
 quote = "1.0.38"
 rand = "0.9.0"
 fastrace = { version = "0.7", features = [ "enable" ] }
@@ -122,6 +158,7 @@ serde_with = { version = "3.12.0", features = [
     "chrono_0_4",
 ] }
 snafu = "0.8"
+sorted-vec = { version = "0.8.11", default-features = false }
 syn = { version = "2.0.98", features = [
     "full",
 ] }
@@ -155,8 +192,12 @@ cargo_common_metadata         = "allow"
 clone_on_copy                 = "deny"
 cognitive_complexity          = "allow"
 enum_glob_use                 = "allow"
+implicit_hasher               = "allow"
 iter_on_single_items          = "allow"
 missing_docs_in_private_items = "allow"
+missing_errors_doc            = "allow"
+missing_panics_doc            = "allow"
+must_use_candidate            = "allow"
 multiple_crate_versions       = "allow"
 nursery                       = { level = "warn", priority = -1 }
 pedantic                      = { level = "warn", priority = -1 }
@@ -179,27 +220,41 @@ version = "0.1.0"
 workspace = true
 
 [dependencies]
-auth_core.workspace            = true
-collection_ext.workspace       = true
-constants.workspace            = true
-domain.workspace               = true
-entity.workspace               = true
-flow.workspace                 = true
-libfp.workspace                = true
-infra_db.workspace             = true
-infra_storage.workspace        = true
-infra_storage_worker.workspace = true
-infra_worker.workspace         = true
-macros.workspace               = true
-migration.workspace            = true
-auth_worker.workspace          = true
-notification_worker.workspace  = true
+user_core.workspace                    = true
+auth_core.workspace                    = true
+account_notification.workspace         = true
+collection_ext.workspace               = true
+constants.workspace                    = true
+domain.workspace                       = true
+entity.workspace                       = true
+flow.workspace                         = true
+libfp.workspace                        = true
+infra_db.workspace                     = true
+infra_email.workspace                  = true
+infra_storage.workspace                = true
+infra_storage_worker.workspace         = true
+infra_worker.workspace                 = true
+macros.workspace                       = true
+migration.workspace                    = true
+notification_core.workspace            = true
+notification_service.workspace         = true
+notification_worker.workspace          = true
+comment_notification.workspace         = true
+comment_service.workspace              = true
+correction_subscription.workspace      = true
+correction_notification.workspace      = true
+image_queue_core.workspace             = true
+image_queue_notification.workspace     = true
+user_collection_notification.workspace = true
+user_profile_notification.workspace    = true
+auth_worker.workspace                  = true
 #
 ammonia = "4.0.0"
 argon2.features = [
     "std",
 ]
 argon2.workspace = true
+async-stream.workspace = true
 async-trait = { version = "0.1" }
 axum.workspace = true
 axum-extra = { version = "0.12.0", features = [
@@ -232,9 +287,7 @@ fastrace-opentelemetry.workspace = true
 fastrace-tracing.workspace = true
 fred.workspace = true
 futures-util = "0.3"
-garde = { version = "0.22.0", features = [
-    "full",
-] }
+garde.workspace = true
 governor = "0.10.0"
 headers = "0.4"
 image = "0.25"
@@ -276,6 +329,7 @@ serde_repr = "0.1"
 serde_with.workspace = true
 smart-default = "0.7.1"
 snafu.workspace = true
+sorted-vec.workspace = true
 strum.workspace = true
 mimalloc = { version = "0.1.50", optional = true }
 tokio.workspace = true
@@ -308,8 +362,10 @@ zxcvbn = "3.1"
 exn = "0.3.0"
 
 [dev-dependencies]
-fake     = { version = "5.1.0", features = [ "derive" ] }
-proptest = "1"
+anyhow.workspace        = true
+fake                    = { version = "5.1.0", features = [ "derive" ] }
+infra_testing.workspace = true
+proptest                = "1"
 
 # https://doc.rust-lang.org/cargo/reference/profiles.html
 [profile.dev]
