@@ -1,17 +1,18 @@
+use auth_core::permission::Permission;
 use axum::extract::{Path, Query, State};
 use domain::shared::CursorResponse;
 use entity::image_queue as image_queue_entity;
 use entity::sea_orm_active_enums::ImageQueueStatus;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use serde::Serialize;
+use user_core::load_users;
 use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
-use crate::features::auth::PermissionName;
-use crate::features::image_queue::shared::{UserSummary, load_users};
+use crate::features::image_queue::shared::UserSummary;
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::PaginationQuery;
 use crate::shared::http::api_response::Data;
@@ -78,7 +79,7 @@ async fn user_image_queue(
         authz::ensure_permission(
             &repo.conn,
             user.id,
-            PermissionName::ImageQueueManage,
+            Permission::ImageQueueManage,
         )
         .await?;
     }
@@ -115,7 +116,9 @@ async fn user_image_queue(
         .flat_map(|model| [model.handled_by, model.reverted_by])
         .flatten()
         .collect::<Vec<_>>();
-    let users = load_users(&repo, user_ids).await?;
+    let users = load_users(&repo.conn, user_ids)
+        .await
+        .db_operation("load image queue users")?;
 
     let items: Vec<UserImageQueueItem> = models
         .into_iter()

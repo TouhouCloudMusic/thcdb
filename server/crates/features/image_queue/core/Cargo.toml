@@ -1,0 +1,19 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-image-queue-core"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "image_queue_core"
+path = "src/lib.rs"
+
+[dependencies]
+auth_core.workspace = true
+entity.workspace    = true
+infra_db.workspace  = true
+sea-orm.workspace   = true
+sea-query.workspace = true

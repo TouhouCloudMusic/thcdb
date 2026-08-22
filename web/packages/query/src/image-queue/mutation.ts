@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/solid-query"
-import type { HandleImageQueueMethod } from "@thc/api"
+import type { ImageQueueAction } from "@thc/api"
 import { ImageQueueApi } from "@thc/api"
 import { Either } from "effect"
 
@@ -7,16 +7,16 @@ import { toMutationError } from "../shared/error"
 
 type Params = {
 	id: number
-	method: HandleImageQueueMethod
+	action: ImageQueueAction
 }
 
-export const getHandleInstance = () =>
+export const useModerateImageQueueMutation = () =>
 	useMutation(() => ({
-		mutationKey: ["image-queue::handle"],
+		mutationKey: ["image-queue::moderate"],
 		mutationFn: async (params: Params) => {
-			const result = await ImageQueueApi.handle({
+			const result = await ImageQueueApi.moderate({
 				path: { id: params.id },
-				query: { method: params.method },
+				query: { action: params.action },
 			})
 
 			return Either.match(result, {

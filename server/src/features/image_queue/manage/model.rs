@@ -14,15 +14,15 @@ pub(crate) struct ImageQueueFilterQuery {
 }
 
 #[derive(Deserialize, ToSchema)]
-pub(crate) enum HandleImageQueueMethod {
+pub(crate) enum ImageQueueAction {
     Approve,
     Reject,
     Revert,
 }
 
 #[derive(IntoParams, Deserialize)]
-pub(crate) struct HandleImageQueueQuery {
-    pub(crate) method: HandleImageQueueMethod,
+pub(crate) struct ImageQueueModerationQuery {
+    pub(crate) action: ImageQueueAction,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -119,51 +119,17 @@ impl From<entity::release_image_queue::Model> for ReleaseImageQueueTarget {
 
 #[derive(Serialize, ToSchema)]
 pub(crate) struct ImageQueueDetail {
-    id: i32,
-    image_id: Option<i32>,
-    status: ImageQueueStatus,
-    created_at: chrono::DateTime<chrono::FixedOffset>,
-    created_by: UserSummary,
-    handled_at: Option<chrono::DateTime<chrono::FixedOffset>>,
-    handled_by: Option<UserSummary>,
-    reverted_at: Option<chrono::DateTime<chrono::FixedOffset>>,
-    reverted_by: Option<UserSummary>,
-    image: Option<ImageSummary>,
-    artist: Option<ArtistImageQueueTarget>,
-    release: Option<ReleaseImageQueueTarget>,
-}
-
-impl ImageQueueDetail {
-    pub(crate) const fn new(
-        &entity::image_queue::Model {
-            id,
-            image_id,
-            status,
-            created_at,
-            handled_at,
-            reverted_at,
-            ..
-        }: &entity::image_queue::Model,
-        created_by: UserSummary,
-        handled_by: Option<UserSummary>,
-        reverted_by: Option<UserSummary>,
-        image: Option<ImageSummary>,
-        artist: Option<ArtistImageQueueTarget>,
-        release: Option<ReleaseImageQueueTarget>,
-    ) -> Self {
-        Self {
-            id,
-            image_id,
-            status,
-            created_at,
-            created_by,
-            handled_at,
-            handled_by,
-            reverted_at,
-            reverted_by,
-            image,
-            artist,
-            release,
-        }
-    }
+    pub(crate) id: i32,
+    pub(crate) image_id: Option<i32>,
+    pub(crate) status: ImageQueueStatus,
+    pub(crate) created_at: chrono::DateTime<chrono::FixedOffset>,
+    pub(crate) created_by: UserSummary,
+    pub(crate) handled_at: Option<chrono::DateTime<chrono::FixedOffset>>,
+    pub(crate) handled_by: Option<UserSummary>,
+    pub(crate) reverted_at: Option<chrono::DateTime<chrono::FixedOffset>>,
+    pub(crate) reverted_by: Option<UserSummary>,
+    pub(crate) image: Option<ImageSummary>,
+    pub(crate) artist: Option<ArtistImageQueueTarget>,
+    pub(crate) release: Option<ReleaseImageQueueTarget>,
+    pub(crate) is_subscribed: bool,
 }

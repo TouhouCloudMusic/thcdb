@@ -5,13 +5,12 @@ use utoipa_axum::routes;
 
 use super::Error;
 use super::model::{
-    HandleImageQueueQuery, ImageQueueDetail, ImageQueueFilterQuery,
+    ImageQueueDetail, ImageQueueFilterQuery, ImageQueueModerationQuery,
     PendingImageQueueItem,
 };
 use super::service::Service;
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
-use crate::features::notification;
 use crate::shared::http::PaginationQuery;
 use crate::shared::http::api_response::{Data, Message};
 
@@ -19,13 +18,7 @@ const TAG: &str = "Image Queue";
 
 impl FromRef<ArcAppState> for Service {
     fn from_ref(input: &ArcAppState) -> Self {
-        Self::new(
-            input.sea_orm_repo.clone(),
-            notification::Service::new(
-                input.sea_orm_repo.clone(),
-                input.notification_hub.clone(),
-            ),
-        )
+        Self::new(input.sea_orm_repo.clone(), input.user_events.clone())
     }
 }
 
@@ -41,7 +34,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
             r.routes(routes!(pending_image_queue))
                 .routes(routes!(pending_image_queue_count))
                 .routes(routes!(image_queue_detail))
-                .routes(routes!(handle_image_queue))
+                .routes(routes!(moderate_image_queue))
         })
         .finish()
 }
@@ -102,20 +95,20 @@ async fn image_queue_detail(
     tag = TAG,
     path = "/image-queue/{id}",
     params(
-        HandleImageQueueQuery
+        ImageQueueModerationQuery
     ),
     responses(
         (status = 200, body = Message),
     ),
 )]
-async fn handle_image_queue(
+async fn moderate_image_queue(
     CurrentUser(user): CurrentUser,
     Path(id): Path<i32>,
-    Query(query): Query<HandleImageQueueQuery>,
+    Query(query): Query<ImageQueueModerationQuery>,
     State(service): State<Service>,
 ) -> Result<Message, Error> {
     service
-        .handle_image_queue(user.id, id, query.method)
+        .moderate_image_queue(user.id, id, query.action)
         .await?;
 
     Ok(Message::ok())

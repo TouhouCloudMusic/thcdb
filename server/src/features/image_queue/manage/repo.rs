@@ -8,6 +8,7 @@ use entity::{
     release_image_queue as release_image_queue_entity,
 };
 use infra_db::{SeaOrmRepository, SeaOrmTxRepo};
+use notification_core::{ImageQueueModerationAction, NotificationRecipients};
 use sea_orm::ActiveValue::Set;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, JoinType,
@@ -16,8 +17,10 @@ use sea_orm::{
 };
 
 use super::{Error, ImageQueueType};
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::shared::error::{BrokenEntityReference, InternalError};
+use crate::infra::database::error::{
+    BrokenEntityReference, DatabaseError, DatabaseResultExt,
+};
+use crate::shared::error::InternalError;
 
 pub struct ImageQueueDetailModels {
     pub queue: image_queue_entity::Model,
@@ -29,24 +32,6 @@ pub struct ImageQueueDetailModels {
 enum QueueTarget {
     Artist(artist_image_queue_entity::Model),
     Release(release_image_queue_entity::Model),
-}
-
-pub(crate) struct HandledImageQueue {
-    pub created_by: i32,
-    pub image_id: i32,
-}
-
-impl TryFrom<&image_queue_entity::Model> for HandledImageQueue {
-    type Error = Error;
-
-    fn try_from(
-        model: &image_queue_entity::Model,
-    ) -> Result<Self, Self::Error> {
-        Ok(Self {
-            created_by: model.created_by,
-            image_id: model.image_id.ok_or(Error::InvalidEntry)?,
-        })
-    }
 }
 
 pub async fn find_pending(
@@ -158,20 +143,19 @@ pub async fn approve(
     repo: &SeaOrmRepository,
     user_id: i32,
     id: i32,
-) -> Result<HandledImageQueue, Error> {
+) -> Result<NotificationRecipients, Error> {
     let tx_repo = repo
         .begin_tx()
         .await
         .db_operation("begin approve image queue transaction")?;
 
-    let model = find_queue(&tx_repo, id).await?;
+    let model = lock_queue(&tx_repo, id).await?;
 
     if model.status != ImageQueueStatus::Pending {
         return Err(Error::InvalidOperation);
     }
 
-    let handled = HandledImageQueue::try_from(&model)?;
-    let image_id = handled.image_id;
+    let image_id = model.image_id.ok_or(Error::InvalidEntry)?;
     let target = find_queue_target(&tx_repo, id).await?;
 
     match target {
@@ -212,31 +196,40 @@ pub async fn approve(
         .await
         .db_operation("mark image queue entry approved")?;
 
+    let notification_recipients =
+        image_queue_notification::create_moderated_notification(
+            tx_repo.conn(),
+            user_id,
+            id,
+            ImageQueueModerationAction::Approved,
+        )
+        .await?;
+
     tx_repo
         .commit()
         .await
         .map_err(crate::infra::database::error::DatabaseError::from)?;
 
-    Ok(handled)
+    Ok(notification_recipients)
 }
 
 pub async fn reject(
     repo: &SeaOrmRepository,
     user_id: i32,
     id: i32,
-) -> Result<HandledImageQueue, Error> {
+) -> Result<NotificationRecipients, Error> {
     let tx_repo = repo
         .begin_tx()
         .await
         .db_operation("begin reject image queue transaction")?;
 
-    let model = find_queue(&tx_repo, id).await?;
+    let model = lock_queue(&tx_repo, id).await?;
 
     if model.status != ImageQueueStatus::Pending {
         return Err(Error::InvalidOperation);
     }
 
-    let handled = HandledImageQueue::try_from(&model)?;
+    model.image_id.ok_or(Error::InvalidEntry)?;
     let now = Utc::now().into();
 
     let mut active = model.into_active_model();
@@ -249,32 +242,40 @@ pub async fn reject(
         .await
         .db_operation("mark image queue entry rejected")?;
 
+    let notification_recipients =
+        image_queue_notification::create_moderated_notification(
+            tx_repo.conn(),
+            user_id,
+            id,
+            ImageQueueModerationAction::Rejected,
+        )
+        .await?;
+
     tx_repo
         .commit()
         .await
         .map_err(crate::infra::database::error::DatabaseError::from)?;
 
-    Ok(handled)
+    Ok(notification_recipients)
 }
 
 pub async fn revert(
     repo: &SeaOrmRepository,
     user_id: i32,
     id: i32,
-) -> Result<HandledImageQueue, Error> {
+) -> Result<NotificationRecipients, Error> {
     let tx_repo = repo
         .begin_tx()
         .await
         .db_operation("begin revert image queue transaction")?;
 
-    let model = find_queue(&tx_repo, id).await?;
+    let model = lock_queue(&tx_repo, id).await?;
 
     if model.status != ImageQueueStatus::Approved {
         return Err(Error::InvalidOperation);
     }
 
-    let handled = HandledImageQueue::try_from(&model)?;
-    let image_id = handled.image_id;
+    let image_id = model.image_id.ok_or(Error::InvalidEntry)?;
     let target = find_queue_target(&tx_repo, id).await?;
 
     match target {
@@ -330,22 +331,32 @@ pub async fn revert(
         .await
         .db_operation("mark image queue entry reverted")?;
 
+    let notification_recipients =
+        image_queue_notification::create_moderated_notification(
+            tx_repo.conn(),
+            user_id,
+            id,
+            ImageQueueModerationAction::Reverted,
+        )
+        .await?;
+
     tx_repo
         .commit()
         .await
         .map_err(crate::infra::database::error::DatabaseError::from)?;
 
-    Ok(handled)
+    Ok(notification_recipients)
 }
 
-async fn find_queue(
+async fn lock_queue(
     tx_repo: &SeaOrmTxRepo,
     id: i32,
 ) -> Result<image_queue_entity::Model, Error> {
     let model = image_queue_entity::Entity::find_by_id(id)
+        .lock_exclusive()
         .one(tx_repo.conn())
         .await
-        .db_operation("find image queue entry")?;
+        .db_operation("lock image queue entry")?;
 
     model.ok_or(Error::NotFound)
 }

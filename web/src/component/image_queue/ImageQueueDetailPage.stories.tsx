@@ -1,17 +1,10 @@
-import { RouterContextProvider } from "@tanstack/solid-router"
+import { useRouterState } from "@tanstack/solid-router"
 import type { Artist, ImageQueueDetail, Release, UserSummary } from "@thc/api"
-import {
-	createMemo,
-	createSignal,
-	Match,
-	Show,
-	Switch,
-	untrack,
-} from "solid-js"
+import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { imgUrl } from "~/utils/adapter/static_file"
-import { createStoryRouter, StoryLayout } from "~/utils/adapter/storybook"
+import { StoryLayout, StoryRouterProvider } from "~/utils/adapter/storybook"
 import { ImageQueueDetailPageContent } from "~/view/image_queue/detail"
 
 const STORY_REVIEWER: UserSummary = {
@@ -211,6 +204,7 @@ function createStoryEntry(seed: StoryEntrySeed): StoryEntry {
 			image: seed.image,
 			artist: seed.artist ?? null,
 			release: seed.release ?? null,
+			is_subscribed: false,
 		},
 		targetArtist: seed.targetArtist,
 		targetRelease: seed.targetRelease,
@@ -273,12 +267,12 @@ function getCachedNeighbor(entries: StoryEntry[], entryId: number) {
 
 function updateStoryEntry(
 	entry: StoryEntry,
-	method: "Approve" | "Reject" | "Revert",
+	action: "Approve" | "Reject" | "Revert",
 ): StoryEntry {
 	const handledAt = "2026-03-17T09:30:00.000Z"
 	const revertedAt = "2026-03-17T09:45:00.000Z"
 
-	switch (method) {
+	switch (action) {
 		case "Approve": {
 			return {
 				...entry,
@@ -318,10 +312,10 @@ function updateStoryEntry(
 function updateStoryEntries(
 	entries: StoryEntry[],
 	entryId: number,
-	method: "Approve" | "Reject" | "Revert",
+	action: "Approve" | "Reject" | "Revert",
 ) {
 	return entries.map((entry) =>
-		entry.detail.id === entryId ? updateStoryEntry(entry, method) : entry,
+		entry.detail.id === entryId ? updateStoryEntry(entry, action) : entry,
 	)
 }
 
@@ -331,65 +325,69 @@ function StoryRoot(props: StoryRootProps) {
 			when={props.status}
 			keyed
 		>
-			{(status) => <StoryScene status={status} />}
+			{(status) => {
+				const initialEntryId = getInitialEntryId(status)
+				return (
+					<StoryRouterProvider initialEntry={`/image-queue/${initialEntryId}`}>
+						<StoryScene initialEntryId={initialEntryId} />
+					</StoryRouterProvider>
+				)
+			}}
 		</Show>
 	)
 }
 
-function StoryScene(props: StoryRootProps) {
-	const initialEntryId = untrack(() => getInitialEntryId(props.status))
-	const router = createStoryRouter([`/image-queue/${initialEntryId}`])
+function StoryScene(props: { initialEntryId: number }) {
+	const pathname = useRouterState({
+		select: (state) => state.location.pathname,
+	})
 	const [storyEntries, setStoryEntries] = createSignal(createStoryState())
 
 	const currentEntryId = createMemo(() =>
-		parseEntryId(router.state.location.pathname, initialEntryId),
+		parseEntryId(pathname(), props.initialEntryId),
 	)
 	const currentEntry = createMemo(() =>
 		findEntry(storyEntries(), currentEntryId()),
 	)
 
-	const updateCurrentEntry = (method: "Approve" | "Reject" | "Revert") => {
+	const updateCurrentEntry = (action: "Approve" | "Reject" | "Revert") => {
 		setStoryEntries((entries) =>
-			updateStoryEntries(entries, currentEntryId(), method),
+			updateStoryEntries(entries, currentEntryId(), action),
 		)
 	}
 
 	return (
-		<RouterContextProvider router={router}>
-			{() => (
-				<Switch>
-					<Match when={currentEntry()}>
-						{(entry) => (
-							<ImageQueueDetailPageContent
-								detail={entry().detail}
-								isLoading={false}
-								isError={false}
-								canManage={true}
-								isBusy={false}
-								backLink={{
-									to: "/image-queue",
-									search: { status: "pending" },
-								}}
-								onApprove={() => updateCurrentEntry("Approve")}
-								onReject={() => updateCurrentEntry("Reject")}
-								onRevert={() => updateCurrentEntry("Revert")}
-								cachedNeighbor={getCachedNeighbor(
-									storyEntries(),
-									entry().detail.id,
-								)}
-								targetName={getTargetName(entry())}
-								currentSrc={getCurrentImageSrc(entry())}
-								currentLoading={false}
-								currentError={false}
-							/>
+		<Switch>
+			<Match when={currentEntry()}>
+				{(entry) => (
+					<ImageQueueDetailPageContent
+						detail={entry().detail}
+						isLoading={false}
+						isError={false}
+						canManage={true}
+						isBusy={false}
+						backLink={{
+							to: "/image-queue",
+							search: { status: "pending" },
+						}}
+						onApprove={() => updateCurrentEntry("Approve")}
+						onReject={() => updateCurrentEntry("Reject")}
+						onRevert={() => updateCurrentEntry("Revert")}
+						cachedNeighbor={getCachedNeighbor(
+							storyEntries(),
+							entry().detail.id,
 						)}
-					</Match>
-					<Match when={true}>
-						<div class="p-8 text-sm text-slate-500">Story entry not found.</div>
-					</Match>
-				</Switch>
-			)}
-		</RouterContextProvider>
+						targetName={getTargetName(entry())}
+						currentSrc={getCurrentImageSrc(entry())}
+						currentLoading={false}
+						currentError={false}
+					/>
+				)}
+			</Match>
+			<Match when={true}>
+				<div class="p-8 text-sm text-slate-500">Story entry not found.</div>
+			</Match>
+		</Switch>
 	)
 }
 
