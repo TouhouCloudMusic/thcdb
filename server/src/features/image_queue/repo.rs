@@ -26,10 +26,14 @@ pub(crate) async fn create(
     repo: &SeaOrmTxRepo,
     queue: NewImageQueue,
 ) -> Result<db::Model, DatabaseError> {
-    db::Entity::insert(queue.into_active_model())
+    let model = db::Entity::insert(queue.into_active_model())
         .exec_with_returning(repo.conn())
         .await
-        .db_operation("create image queue")
+        .db_operation("create image queue")?;
+    image_queue_core::subscribe(repo.conn(), model.created_by, model.id)
+        .await
+        .db_operation("subscribe image queue creator")?;
+    Ok(model)
 }
 
 impl IntoActiveModel<db::ActiveModel> for NewImageQueue {

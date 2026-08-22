@@ -9,7 +9,7 @@ import { Badge } from "~/component/atomic/Badge"
 import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { PageLayout } from "~/layout"
-import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
+import { createInfiniteScroll } from "~/utils/solid/createInfiniteScroll"
 
 const DATE_TIME = new Intl.DateTimeFormat(undefined, {
 	dateStyle: "medium",
@@ -61,9 +61,9 @@ export function UserImageQueuePage(props: Props) {
 
 	const items = () => listQuery.data?.pages.flatMap((p) => p.items) ?? []
 
-	const setSentinelRef = useIntersectionSentinel<HTMLDivElement>({
+	const setSentinelRef = createInfiniteScroll({
 		enabled: () => listQuery.hasNextPage && !listQuery.isFetchingNextPage,
-		onIntersect: () => {
+		onLoadMore: () => {
 			void listQuery.fetchNextPage()
 		},
 	})

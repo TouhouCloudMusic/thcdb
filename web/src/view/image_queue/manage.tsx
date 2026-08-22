@@ -15,7 +15,7 @@ import { Link } from "~/component/atomic/Link"
 import { Select } from "~/component/atomic/form/select"
 import { StickyFilterBar } from "~/component/feature/entity_explore"
 import { PageLayout } from "~/layout"
-import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
+import { createInfiniteScroll } from "~/utils/solid/createInfiniteScroll"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 
 const route = getRouteApi("/image-queue/")
@@ -100,9 +100,9 @@ export function ImageQueueManagePageContent(
 			label: StrExt.capitalize("release"),
 		},
 	])
-	const setSentinelRef = useIntersectionSentinel<HTMLDivElement>({
+	const setSentinelRef = createInfiniteScroll({
 		enabled: () => props.hasNextPage && !props.isFetchingNextPage,
-		onIntersect: () => props.onLoadNextPage(),
+		onLoadMore: () => props.onLoadNextPage(),
 	})
 
 	return (

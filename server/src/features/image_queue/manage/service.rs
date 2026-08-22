@@ -1,30 +1,32 @@
+use auth_core::permission::{Permission, user_has_permission};
 use domain::shared::CursorResponse;
+use entity::image_queue_subscription;
 use infra_db::SeaOrmRepository;
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
+use user_core::load_users;
 
 use super::model::{
-    HandleImageQueueMethod, ImageQueueDetail, ImageQueueFilterQuery,
-    ImageSummary, PendingImageQueueItem,
+    ImageQueueAction, ImageQueueDetail, ImageQueueFilterQuery, ImageSummary,
+    PendingImageQueueItem,
 };
 use super::{Error, repo};
-use crate::features::auth::PermissionName;
-use crate::features::image_queue::shared::{UserSummary, load_users};
-use crate::features::notification::{self, NotificationKindEnum};
-use crate::infra::authz;
+use crate::features::image_queue::shared::UserSummary;
+use crate::features::user_event::{UserEvent, UserEventSender};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::PaginationQuery;
 
 #[derive(Clone)]
 pub(crate) struct Service {
     repo: SeaOrmRepository,
-    notification: notification::Service,
+    user_events: UserEventSender,
 }
 
 impl Service {
     pub(crate) const fn new(
         repo: SeaOrmRepository,
-        notification: notification::Service,
+        user_events: UserEventSender,
     ) -> Self {
-        Self { repo, notification }
+        Self { repo, user_events }
     }
 
     pub(crate) async fn pending_image_queue(
@@ -46,7 +48,9 @@ impl Service {
             .iter()
             .map(|model| model.created_by)
             .collect::<Vec<_>>();
-        let users = load_users(&self.repo, user_ids).await?;
+        let users = load_users(&self.repo.conn, user_ids)
+            .await
+            .db_operation("load image queue users")?;
 
         let items = paginated
             .items
@@ -81,10 +85,10 @@ impl Service {
             .ok_or(Error::NotFound)?;
 
         if detail.queue.created_by != user_id
-            && !authz::user_has_permission(
+            && !user_has_permission(
                 &self.repo.conn,
                 user_id,
-                PermissionName::ImageQueueManage,
+                Permission::ImageQueueManage,
             )
             .await
             .db_operation("check image queue manage permission")?
@@ -103,7 +107,9 @@ impl Service {
         .into_iter()
         .flatten()
         .collect::<Vec<_>>();
-        let users = load_users(&self.repo, user_ids).await?;
+        let users = load_users(&self.repo.conn, user_ids)
+            .await
+            .db_operation("load image queue users")?;
 
         let image = image.map(|image| {
             let uploaded_by = users
@@ -131,27 +137,41 @@ impl Service {
                 .unwrap_or_else(|| UserSummary::unknown(user_id))
         });
 
-        Ok(ImageQueueDetail::new(
-            &queue,
+        let is_subscribed = image_queue_subscription::Entity::find()
+            .filter(image_queue_subscription::Column::UserId.eq(user_id))
+            .filter(image_queue_subscription::Column::ImageQueueId.eq(id))
+            .one(&self.repo.conn)
+            .await
+            .db_operation("check image queue subscription")?
+            .is_some();
+
+        Ok(ImageQueueDetail {
+            id: queue.id,
+            image_id: queue.image_id,
+            status: queue.status,
+            created_at: queue.created_at,
             created_by,
+            handled_at: queue.handled_at,
             handled_by,
+            reverted_at: queue.reverted_at,
             reverted_by,
             image,
-            detail.artist.map(Into::into),
-            detail.release.map(Into::into),
-        ))
+            artist: detail.artist.map(Into::into),
+            release: detail.release.map(Into::into),
+            is_subscribed,
+        })
     }
 
-    pub(crate) async fn handle_image_queue(
+    pub(crate) async fn moderate_image_queue(
         &self,
         user_id: i32,
         id: i32,
-        method: HandleImageQueueMethod,
+        action: ImageQueueAction,
     ) -> Result<(), Error> {
-        if !authz::user_has_permission(
+        if !user_has_permission(
             &self.repo.conn,
             user_id,
-            PermissionName::ImageQueueManage,
+            Permission::ImageQueueManage,
         )
         .await
         .db_operation("check image queue manage permission")?
@@ -159,52 +179,22 @@ impl Service {
             return Err(Error::PermissionDenied);
         }
 
-        match method {
-            HandleImageQueueMethod::Approve => {
-                let handled = repo::approve(&self.repo, user_id, id).await?;
-                self.notify_status(
-                    &handled,
-                    NotificationKindEnum::ImageApproved,
-                    "Your image was approved",
-                )
-                .await;
+        let notification_recipients = match action {
+            ImageQueueAction::Approve => {
+                repo::approve(&self.repo, user_id, id).await
             }
-            HandleImageQueueMethod::Reject => {
-                let handled = repo::reject(&self.repo, user_id, id).await?;
-                self.notify_status(
-                    &handled,
-                    NotificationKindEnum::ImageRejected,
-                    "Your image was rejected",
-                )
-                .await;
+            ImageQueueAction::Reject => {
+                repo::reject(&self.repo, user_id, id).await
             }
-            HandleImageQueueMethod::Revert => {
-                let handled = repo::revert(&self.repo, user_id, id).await?;
-                self.notify_status(
-                    &handled,
-                    NotificationKindEnum::ImageReverted,
-                    "Your image was reverted",
-                )
-                .await;
+            ImageQueueAction::Revert => {
+                repo::revert(&self.repo, user_id, id).await
             }
-        }
+        }?;
+        self.user_events.publish(
+            UserEvent::NotificationInboxUpdated,
+            notification_recipients.user_ids,
+        );
 
         Ok(())
-    }
-
-    async fn notify_status(
-        &self,
-        handled: &repo::HandledImageQueue,
-        kind: NotificationKindEnum,
-        message: &'static str,
-    ) {
-        self.notification
-            .notify_image_status_best_effort(
-                handled.created_by,
-                handled.image_id,
-                kind,
-                Some(message.to_owned()),
-            )
-            .await;
     }
 }

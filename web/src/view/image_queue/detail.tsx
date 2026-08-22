@@ -1,5 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
-import { useQuery, useQueryClient } from "@tanstack/solid-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import type { ImageQueueDetail, ImageQueueStatus } from "@thc/api"
 import {
 	ArtistQueryOption,
@@ -17,7 +17,10 @@ import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
 import { Image } from "~/component/image"
-import { USER_ROLE_NAMES } from "~/domain/user/constants"
+import { showErrorToast } from "~/component/toast"
+import { hasUserPermission } from "~/domain/user/authorization"
+import { USER_PERMISSION_NAMES } from "~/domain/user/constants"
+import { setImageQueueSubscriptionMutation } from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout"
 import { useCurrentUser } from "~/state/user"
 import { imgUrl } from "~/utils/adapter/static_file"
@@ -87,18 +90,6 @@ function getTargetMeta(detail: ImageQueueDetail) {
 	}
 }
 
-function hasImageQueueManagePermission(
-	roles: { name: string }[] | null | undefined,
-) {
-	return (
-		roles?.some(
-			(role) =>
-				role.name === USER_ROLE_NAMES.Admin
-				|| role.name === USER_ROLE_NAMES.Moderator,
-		) ?? false
-	)
-}
-
 type Props = {
 	entryId: number
 }
@@ -161,9 +152,12 @@ export function ImageQueueDetailPage(props: Props) {
 	const detailQuery = useQuery(() =>
 		ImageQueueQueryOption.detail(props.entryId),
 	)
-	const mutation = ImageQueueMutation.getHandleInstance()
+	const mutation = ImageQueueMutation.useModerateImageQueueMutation()
 	const canManage = createMemo(() =>
-		hasImageQueueManagePermission(userCtx.user?.roles),
+		hasUserPermission(
+			userCtx.authorization,
+			USER_PERMISSION_NAMES.ImageQueueManage,
+		),
 	)
 
 	const detail = createMemo(() => detailQuery.data)
@@ -183,37 +177,41 @@ export function ImageQueueDetailPage(props: Props) {
 		},
 	)
 
-	const refresh = () => {
-		void queryClient.invalidateQueries({ queryKey: ["image-queue::detail"] })
-		void queryClient.invalidateQueries({ queryKey: ["image-queue::list"] })
-		void queryClient.invalidateQueries({
-			queryKey: ["image-queue::pending-count"],
-		})
-		void queryClient.invalidateQueries({ queryKey: ["image-queue::user"] })
+	const moderate = (action: "Approve" | "Reject" | "Revert") => {
+		const currentDetail = detail()
 
-		const artistId = detail()?.artist?.artist_id
-		if (artistId !== undefined) {
-			void queryClient.invalidateQueries({
-				queryKey: ["artist::profile", artistId],
-			})
-		}
+		void mutation.mutateAsync({ id: props.entryId, action }).then(
+			() => {
+				void queryClient.invalidateQueries({
+					queryKey: ["image-queue::detail"],
+				})
+				void queryClient.invalidateQueries({
+					queryKey: ["image-queue::list"],
+				})
+				void queryClient.invalidateQueries({
+					queryKey: ["image-queue::pending-count"],
+				})
+				void queryClient.invalidateQueries({
+					queryKey: ["image-queue::user"],
+				})
 
-		const releaseId = detail()?.release?.release_id
-		if (releaseId !== undefined) {
-			void queryClient.invalidateQueries({
-				queryKey: ["release::info", releaseId],
-			})
-		}
-	}
+				const artistId = currentDetail?.artist?.artist_id
+				if (artistId !== undefined) {
+					void queryClient.invalidateQueries({
+						queryKey: ["artist::profile", artistId],
+					})
+				}
 
-	const handle = (method: "Approve" | "Reject" | "Revert") => {
-		mutation.mutate(
-			{ id: props.entryId, method },
-			{
-				onSuccess: () => {
-					refresh()
-				},
+				const releaseId = currentDetail?.release?.release_id
+				if (releaseId !== undefined) {
+					void queryClient.invalidateQueries({
+						queryKey: ["release::info", releaseId],
+					})
+				}
+
+				return undefined
 			},
+			() => undefined,
 		)
 	}
 
@@ -255,9 +253,9 @@ export function ImageQueueDetailPage(props: Props) {
 			isBusy={mutation.isPending}
 			mutationErrorMessage={mutationErrorMessage()}
 			backLink={backLink()}
-			onApprove={() => handle("Approve")}
-			onReject={() => handle("Reject")}
-			onRevert={() => handle("Revert")}
+			onApprove={() => moderate("Approve")}
+			onReject={() => moderate("Reject")}
+			onRevert={() => moderate("Revert")}
 			cachedNeighbor={cachedNeighbor()}
 			targetName={targetInfo.name()}
 			currentSrc={targetInfo.currentSrc()}
@@ -385,6 +383,10 @@ export function ImageQueueDetailPageContent(
 												onReject={props.onReject}
 												onRevert={props.onRevert}
 												errorMessage={props.mutationErrorMessage}
+											/>
+											<ImageQueueSubscribeButton
+												entryId={data().id}
+												isSubscribed={data().is_subscribed}
 											/>
 											<div class="grid gap-y-2">
 												<InfoField label={t`Submitted by`}>
@@ -811,5 +813,56 @@ function ActionPanel(props: {
 				</div>
 			</Show>
 		</section>
+	)
+}
+
+function ImageQueueSubscribeButton(props: {
+	entryId: number
+	isSubscribed: boolean
+}) {
+	const { t } = useLingui()
+	const queryClient = useQueryClient()
+	const userCtx = useCurrentUser()
+	const mutation = useMutation(setImageQueueSubscriptionMutation)
+
+	const toggle = () => {
+		const entryId = props.entryId
+		void mutation
+			.mutateAsync({
+				path: { id: entryId },
+				query: { subscribed: !props.isSubscribed },
+			})
+			.then(
+				userCtx.bindCurrentSession((response) => {
+					queryClient.setQueryData<ImageQueueDetail>(
+						["image-queue::detail", entryId],
+						(detail) =>
+							detail
+								? {
+										...detail,
+										is_subscribed: response.data.subscribed,
+									}
+								: detail,
+					)
+				}),
+				userCtx.bindCurrentSession(() => {
+					showErrorToast({ title: t`Failed to update subscription` })
+				}),
+			)
+	}
+
+	return (
+		<Button
+			variant="Secondary"
+			color="Reimu"
+			size="Sm"
+			class="w-full"
+			onClick={toggle}
+			disabled={
+				mutation.isPending || userCtx.session.status !== "authenticated"
+			}
+		>
+			{props.isSubscribed ? t`Unsubscribe` : t`Subscribe`}
+		</Button>
 	)
 }

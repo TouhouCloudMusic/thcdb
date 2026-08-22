@@ -5,7 +5,7 @@ mod service;
 
 use axum::response::IntoResponse;
 pub use http::router;
-pub(crate) use model::HandleImageQueueMethod;
+pub(crate) use model::ImageQueueAction;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -32,6 +32,12 @@ pub(crate) enum Error {
     Database(DatabaseError),
     #[from]
     Internal(InternalError),
+}
+
+impl From<infra_db::error::DatabaseError> for Error {
+    fn from(source: infra_db::error::DatabaseError) -> Self {
+        Self::Database(source.into())
+    }
 }
 
 impl IntoResponse for Error {
