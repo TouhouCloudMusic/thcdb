@@ -1,0 +1,17 @@
+[package]
+edition = "2024"
+name    = "thcdb-infra-email"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "infra_email"
+path = "src/lib.rs"
+
+[dependencies]
+derive_more.workspace = true
+domain.workspace      = true
+lettre.workspace      = true

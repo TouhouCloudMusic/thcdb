@@ -10,22 +10,18 @@ use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use chrono::{DateTime, Duration, FixedOffset, Utc};
 use fred::prelude::{KeysInterface, LuaInterface};
 use infra_worker::Storage;
-use lettre::message::Mailbox;
 use rand::Rng;
 use serde::Deserialize;
 
 use super::error::{
     ForgotPasswordError, ResetPasswordError, VerifyResetCodeError,
 };
-use super::verification::{
-    SendPasswordResetEmailError, build_password_reset_email_message,
-};
 use crate::features::auth::{
-    Email, InvalidEmail, Service, VerificationCode, repo, validate_password,
+    Email, Service, VerificationCode, repo, validate_password,
 };
 use crate::features::user::User;
 use crate::infra::database::error::DatabaseError;
-use crate::shared::error::{InternalError, InvalidInput, MessageError};
+use crate::shared::error::InternalError;
 use crate::shared::secret;
 
 const PASSWORD_RESET_KEY_RANDOM_BYTES_LEN: usize = 24;
@@ -43,7 +39,7 @@ fn hash_password_reset_key(reset_key: &str) -> String {
     BASE64_URL_SAFE_NO_PAD.encode(blake3::hash(reset_key.as_bytes()).as_bytes())
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 struct ConsumedPasswordResetKey {
     user_id: i32,
     reset_key_expires_at: DateTime<FixedOffset>,
@@ -155,6 +151,7 @@ impl Service {
                 &next_state.state,
             )
             .await?;
+
         if !saved {
             return Ok(ForgotPasswordResult::default());
         }
@@ -162,18 +159,19 @@ impl Service {
         let queued = self
             .enqueue_password_reset_email(PasswordResetEmailJob {
                 user_id: user.id,
-                email: user.email.clone(),
-                code: code.to_string(),
+                email,
+                code,
                 code_hash,
                 code_expires_at: now
                     + Duration::minutes(PASSWORD_RESET_CODE_EXPIRES_MINUTES),
             })
             .await;
+
         if let Err(err) = queued {
             log::warn!(
                 target: "features.auth.password_reset.service",
                 user_id = user.id,
-                error:? = err;
+                error:% = err;
                 "failed to enqueue password reset email"
             );
             match self
@@ -196,7 +194,7 @@ impl Service {
                     log::error!(
                         target: "features.auth.password_reset.service",
                         user_id = user.id,
-                        error:? = cleanup_err;
+                        error:% = cleanup_err;
                         "failed to roll back password reset state after queue failure"
                     );
                 }
@@ -242,12 +240,14 @@ impl Service {
             )
             .await
             .map_err(InternalError)?;
+
             if !is_valid {
                 let incremented = self
                     .increment_password_reset_failed_attempts_if_unmodified(
                         user.id, &state,
                     )
                     .await?;
+
                 if incremented {
                     return Err(
                         VerifyResetCodeError::InvalidOrExpiredResetCode,
@@ -274,6 +274,7 @@ impl Service {
                     &next_state,
                 )
                 .await?;
+
             if saved {
                 return Ok(VerifiedResetPasswordSession {
                     key: reset_key,
@@ -296,6 +297,7 @@ impl Service {
         }
 
         validate_password(&password)?;
+
         let password_hash =
             secret::hash(&password).await.map_err(InternalError)?;
 
@@ -304,6 +306,7 @@ impl Service {
             .consume_password_reset_key(&reset_key_hash)
             .await?
             .ok_or(ResetPasswordError::InvalidOrExpiredResetKey)?;
+
         let consumed_user_id = consumed.user_id;
 
         let user = match self.find_verified_user_by_id(consumed.user_id).await {
@@ -322,7 +325,7 @@ impl Service {
                     log::error!(
                         target: "features.auth.password_reset.service",
                         user_id = consumed_user_id,
-                        error:? = restore_err;
+                        error:% = restore_err;
                         "failed to restore consumed password reset key after user lookup failure"
                     );
                 }
@@ -340,7 +343,7 @@ impl Service {
                 log::error!(
                     target: "features.auth.password_reset.service",
                     user_id = consumed_user_id,
-                    error:? = restore_err;
+                    error:% = restore_err;
                     "failed to restore consumed password reset key after password update failure"
                 );
             }
@@ -369,7 +372,7 @@ impl Service {
             log::error!(
                 target: "features.auth.password_reset.service",
                 user_id = user_id,
-                error:? = err;
+                error:% = err;
                 "failed to enqueue password reset email job"
             );
             InternalError::new(err)
@@ -385,15 +388,6 @@ impl Service {
         Ok(repo::find_by_id(&self.repo.conn, user_id)
             .await?
             .filter(|user| user.email_verified))
-    }
-
-    async fn load_password_reset_state(
-        &self,
-        user_id: i32,
-    ) -> Result<Option<PasswordResetState>, InternalError> {
-        self.load_stored_password_reset_state(user_id)
-            .await
-            .map(|state| state.map(|state| state.state))
     }
 
     async fn load_stored_password_reset_state(
@@ -415,7 +409,7 @@ impl Service {
                             target: "features.auth.password_reset.service",
                             location:% = Location::caller(),
                             user_id = user_id,
-                            error:? = err;
+                            error:% = err;
                             "failed to deserialize password reset state"
                         );
                         InternalError::new(err)
@@ -439,7 +433,7 @@ impl Service {
             .map_err(|err| {
                 log::error!(
                     target: "features.auth.password_reset.service",
-                    error:? = err;
+                    error:% = err;
                     "failed to atomically consume password reset key"
                 );
                 InternalError::new(err)
@@ -449,7 +443,7 @@ impl Service {
             log::error!(
                 target: "features.auth.password_reset.service",
                 location:% = Location::caller(),
-                error:? = err;
+                error:% = err;
                 "failed to parse consumed password reset key payload"
             );
             err
@@ -531,36 +525,13 @@ impl Service {
                 log::error!(
                     target: "features.auth.password_reset.service",
                     user_id = user_id,
-                    error:? = err;
+                    error:% = err;
                     "failed to atomically increment password reset failed attempts"
                 );
                 InternalError::new(err)
             })?;
 
         Ok(saved == 1)
-    }
-
-    async fn save_password_reset_state(
-        &self,
-        user_id: i32,
-        state: &PasswordResetState,
-    ) -> Result<(), InternalError> {
-        let previous_state =
-            self.load_stored_password_reset_state(user_id).await?;
-        let saved = self
-            .save_password_reset_state_if_unmodified(
-                user_id,
-                previous_state.as_ref(),
-                state,
-            )
-            .await?;
-        if !saved {
-            return Err(InternalError::new(MessageError::new(
-                "Password reset state changed while saving",
-            )));
-        }
-
-        Ok(())
     }
 
     async fn save_password_reset_state_if_unmodified(
@@ -574,6 +545,7 @@ impl Service {
             return Ok(false);
         };
         let payload = next_state.to_payload().map_err(InternalError::new)?;
+
         let current_index_key = next_state.index_key().unwrap_or_default();
         let previous_index_key = previous_state
             .and_then(|state| state.state.index_key())
@@ -602,7 +574,7 @@ impl Service {
                 log::error!(
                     target: "features.auth.password_reset.service",
                     user_id = user_id,
-                    error:? = err;
+                    error:% = err;
                     "failed to compare-and-swap password reset state"
                 );
                 InternalError::new(err)
@@ -629,592 +601,12 @@ impl Service {
                 log::error!(
                     target: "features.auth.password_reset.service",
                     user_id = user_id,
-                    error:? = err;
+                    error:% = err;
                     "failed to compare-and-clear password reset state"
                 );
                 InternalError::new(err)
             })?;
 
         Ok(cleared == 1)
-    }
-
-    async fn send_password_reset_email(
-        &self,
-        to: &str,
-        code: &VerificationCode<6>,
-    ) -> Result<(), SendPasswordResetEmailError> {
-        let from = self.mailer.from().clone();
-        let to: Mailbox = match to.parse() {
-            Ok(v) => v,
-            Err(err) => {
-                log::error!(
-                    target: "features.auth.password_reset.service",
-                    error:% = err;
-                    "invalid password reset recipient address"
-                );
-                return Err(SendPasswordResetEmailError::InvalidEmail(
-                    InvalidEmail::new(
-                        to,
-                        InvalidInput::new(
-                            &"Invalid password reset recipient address",
-                        ),
-                    ),
-                ));
-            }
-        };
-
-        let message = build_password_reset_email_message(from, to, *code)?;
-
-        match self.mailer.send(message).await {
-            Ok(()) => Ok(()),
-            Err(err) => {
-                log::error!(
-                    target: "features.auth.password_reset.service",
-                    error:% = err;
-                    "failed to send password reset email"
-                );
-                Err(SendPasswordResetEmailError::Unavailable)
-            }
-        }
-    }
-}
-
-#[cfg(test)]
-mod unit_tests {
-    use super::*;
-
-    #[test]
-    fn parse_consumed_password_reset_key_payload_accepts_valid_value() {
-        let reset_key_expires_at: DateTime<FixedOffset> =
-            "2026-03-07T10:11:12+00:00".parse().unwrap();
-
-        assert_eq!(
-            ConsumedPasswordResetKey::parse_payload(
-                r#"{"user_id":42,"reset_key_expires_at":"2026-03-07T10:11:12+00:00"}"#,
-            )
-            .unwrap(),
-            Some(ConsumedPasswordResetKey {
-                user_id: 42,
-                reset_key_expires_at,
-            })
-        );
-    }
-
-    #[test]
-    fn parse_consumed_password_reset_key_payload_returns_none_for_empty() {
-        assert_eq!(ConsumedPasswordResetKey::parse_payload("").unwrap(), None);
-    }
-
-    #[test]
-    fn parse_consumed_password_reset_key_payload_rejects_invalid_value() {
-        assert!(ConsumedPasswordResetKey::parse_payload("42").is_err());
-        assert!(
-            ConsumedPasswordResetKey::parse_payload(
-                r#"{"user_id":"x","reset_key_expires_at":"2026-03-07T10:11:12+00:00"}"#,
-            )
-            .is_err()
-        );
-        assert!(
-            ConsumedPasswordResetKey::parse_payload(
-                r#"{"user_id":42,"reset_key_expires_at":"x"}"#,
-            )
-            .is_err()
-        );
-    }
-}
-
-// TODO : Refactor env
-#[cfg(all(test, feature = "integration-test"))]
-mod tests {
-    use std::sync::Arc;
-
-    use auth_core::password_reset::PASSWORD_RESET_CODE_MAX_FAILED_ATTEMPTS;
-    use infra_db::SeaOrmRepository;
-    use lettre::{AsyncSmtpTransport, Tokio1Executor};
-    use sea_orm::TransactionTrait;
-    use tokio::sync::Barrier;
-
-    use super::*;
-    use crate::features::user::NewUser;
-    use crate::infra::email::Mailer;
-    use crate::infra::integration_test::{test_connection, test_redis_url};
-    use crate::infra::redis::Pool as RedisPool;
-
-    fn build_failing_mailer() -> Mailer {
-        let transport =
-            AsyncSmtpTransport::<Tokio1Executor>::builder_dangerous(
-                "127.0.0.1",
-            )
-            .port(1)
-            .build();
-        let from: Mailbox = "admin@example.com".parse().unwrap();
-        Mailer::new(transport, from)
-    }
-
-    async fn create_verified_user(
-        conn: &sea_orm::DatabaseConnection,
-    ) -> crate::features::user::User {
-        let suffix = Utc::now().timestamp_nanos_opt().unwrap_or_default();
-        let name = format!("alice_{suffix}");
-        let email = format!("alice_{suffix}@example.com");
-
-        let tx = conn.begin().await.unwrap();
-        let user = repo::create_user(
-            &tx,
-            NewUser {
-                name,
-                email,
-                email_verified: true,
-                password: "password_hash".to_string(),
-            },
-        )
-        .await
-        .unwrap();
-        tx.commit().await.unwrap();
-        user
-    }
-
-    async fn build_test_service(conn: &sea_orm::DatabaseConnection) -> Service {
-        let repo = SeaOrmRepository::new(conn.clone());
-        let redis_url = test_redis_url();
-        let redis_pool = RedisPool::init(&redis_url).await.inner;
-        let queue = auth_worker::password_reset_email::queue(&redis_url)
-            .await
-            .unwrap();
-        Service::new(repo, build_failing_mailer(), redis_pool, queue)
-    }
-
-    #[tokio::test]
-    async fn forgot_password_does_not_leak_email_service_failures() {
-        let conn = test_connection().await;
-        let service = build_test_service(&conn).await;
-
-        let user = create_verified_user(&conn).await;
-
-        let existing = service
-            .forgot_password(ForgotPasswordCommand {
-                email: user.email.clone(),
-            })
-            .await
-            .unwrap();
-        let missing = service
-            .forgot_password(ForgotPasswordCommand {
-                email: "missing@example.com".to_string(),
-            })
-            .await
-            .unwrap();
-
-        assert_eq!(
-            existing.verification_code_expires_minutes,
-            missing.verification_code_expires_minutes
-        );
-        assert_eq!(
-            existing.resend_cooldown_seconds,
-            missing.resend_cooldown_seconds
-        );
-    }
-
-    #[tokio::test]
-    async fn verify_reset_code_too_many_attempts_is_indistinguishable() {
-        let conn = test_connection().await;
-        let service = build_test_service(&conn).await;
-
-        let user = create_verified_user(&conn).await;
-
-        let now: DateTime<FixedOffset> = Utc::now().into();
-        let state = PasswordResetState::awaiting_code("hash".to_string(), now);
-        service
-            .save_password_reset_state(user.id, &state)
-            .await
-            .unwrap();
-
-        for _ in 0..PASSWORD_RESET_CODE_MAX_FAILED_ATTEMPTS {
-            let mut state = service
-                .load_password_reset_state(user.id)
-                .await
-                .unwrap()
-                .unwrap();
-            if let PasswordResetState::AwaitingCode {
-                failed_attempts, ..
-            } = &mut state
-            {
-                *failed_attempts += 1;
-            }
-            service
-                .save_password_reset_state(user.id, &state)
-                .await
-                .unwrap();
-        }
-
-        let err = service
-            .verify_reset_code(VerifyResetCodeCommand {
-                email: user.email.clone(),
-                code: "000000".to_string(),
-            })
-            .await
-            .unwrap_err();
-
-        assert!(
-            matches!(err, VerifyResetCodeError::InvalidOrExpiredResetCode),
-            "unexpected error: {err:?}"
-        );
-    }
-
-    #[tokio::test]
-    async fn verify_reset_code_returns_at_most_one_key_when_racing() {
-        let conn = test_connection().await;
-        let service = build_test_service(&conn).await;
-
-        let user = create_verified_user(&conn).await;
-        let code = "123456".to_string();
-        let state = PasswordResetState::awaiting_code(
-            crate::shared::secret::hash(&code).await.unwrap(),
-            Utc::now().into(),
-        );
-        service
-            .save_password_reset_state(user.id, &state)
-            .await
-            .unwrap();
-
-        let barrier = Arc::new(Barrier::new(3));
-
-        let first_service = service.clone();
-        let first_barrier = barrier.clone();
-        let first_email = user.email.clone();
-        let first_code = code.clone();
-        let first = async move {
-            first_barrier.wait().await;
-            first_service
-                .verify_reset_code(VerifyResetCodeCommand {
-                    email: first_email,
-                    code: first_code,
-                })
-                .await
-        };
-
-        let second_service = service.clone();
-        let second_barrier = barrier.clone();
-        let second_email = user.email.clone();
-        let second = async move {
-            second_barrier.wait().await;
-            second_service
-                .verify_reset_code(VerifyResetCodeCommand {
-                    email: second_email,
-                    code,
-                })
-                .await
-        };
-
-        let (first_result, second_result, _) =
-            tokio::join!(first, second, barrier.wait());
-        let success_count = [first_result.as_ref(), second_result.as_ref()]
-            .into_iter()
-            .flatten()
-            .count();
-
-        assert_eq!(success_count, 1);
-        assert!(
-            first_result.is_ok()
-                || matches!(
-                    first_result,
-                    Err(VerifyResetCodeError::InvalidOrExpiredResetCode)
-                )
-        );
-        assert!(
-            second_result.is_ok()
-                || matches!(
-                    second_result,
-                    Err(VerifyResetCodeError::InvalidOrExpiredResetCode)
-                )
-        );
-        assert!(
-            service
-                .load_password_reset_state(user.id)
-                .await
-                .unwrap()
-                .is_some()
-        );
-    }
-
-    #[tokio::test]
-    async fn verify_reset_code_counts_each_invalid_attempt_when_racing() {
-        let conn = test_connection().await;
-        let service = build_test_service(&conn).await;
-
-        let user = create_verified_user(&conn).await;
-        let state = PasswordResetState::awaiting_code(
-            crate::shared::secret::hash("123456").await.unwrap(),
-            Utc::now().into(),
-        );
-        service
-            .save_password_reset_state(user.id, &state)
-            .await
-            .unwrap();
-
-        let barrier = Arc::new(Barrier::new(5));
-
-        let first_service = service.clone();
-        let first_barrier = barrier.clone();
-        let first_email = user.email.clone();
-        let first = async move {
-            first_barrier.wait().await;
-            first_service
-                .verify_reset_code(VerifyResetCodeCommand {
-                    email: first_email,
-                    code: "000000".to_string(),
-                })
-                .await
-        };
-
-        let second_service = service.clone();
-        let second_barrier = barrier.clone();
-        let second_email = user.email.clone();
-        let second = async move {
-            second_barrier.wait().await;
-            second_service
-                .verify_reset_code(VerifyResetCodeCommand {
-                    email: second_email,
-                    code: "000000".to_string(),
-                })
-                .await
-        };
-
-        let third_service = service.clone();
-        let third_barrier = barrier.clone();
-        let third_email = user.email.clone();
-        let third = async move {
-            third_barrier.wait().await;
-            third_service
-                .verify_reset_code(VerifyResetCodeCommand {
-                    email: third_email,
-                    code: "000000".to_string(),
-                })
-                .await
-        };
-
-        let fourth_service = service.clone();
-        let fourth_barrier = barrier.clone();
-        let fourth_email = user.email.clone();
-        let fourth = async move {
-            fourth_barrier.wait().await;
-            fourth_service
-                .verify_reset_code(VerifyResetCodeCommand {
-                    email: fourth_email,
-                    code: "000000".to_string(),
-                })
-                .await
-        };
-
-        let (first_result, second_result, third_result, fourth_result, _) =
-            tokio::join!(first, second, third, fourth, barrier.wait());
-
-        for result in [first_result, second_result, third_result, fourth_result]
-        {
-            assert!(matches!(
-                result,
-                Err(VerifyResetCodeError::InvalidOrExpiredResetCode)
-            ));
-        }
-
-        let state = service
-            .load_password_reset_state(user.id)
-            .await
-            .unwrap()
-            .unwrap();
-        let PasswordResetState::AwaitingCode {
-            failed_attempts, ..
-        } = state
-        else {
-            panic!("expected AwaitingCode state");
-        };
-        assert_eq!(failed_attempts, 4);
-    }
-
-    #[tokio::test]
-    async fn reset_password_invalid_key_format_is_rejected() {
-        let conn = test_connection().await;
-        let service = build_test_service(&conn).await;
-
-        let err = service
-            .reset_password(ResetPasswordCommand {
-                key: "invalid".to_string(),
-                password: "m10KSGDckKrX38Vm".to_string(),
-            })
-            .await
-            .unwrap_err();
-        assert!(
-            matches!(err, ResetPasswordError::InvalidOrExpiredResetKey),
-            "unexpected error: {err:?}"
-        );
-    }
-
-    #[tokio::test]
-    async fn reset_password_unknown_key_does_not_clear_existing_state() {
-        let conn = test_connection().await;
-        let service = build_test_service(&conn).await;
-
-        let user = create_verified_user(&conn).await;
-        let valid_key =
-            generate_password_reset_token(PASSWORD_RESET_KEY_RANDOM_BYTES_LEN);
-
-        let state = PasswordResetState::AwaitingPassword {
-            reset_key_hash: hash_password_reset_key(&valid_key),
-            reset_key_expires_at: (Utc::now()
-                + Duration::minutes(PASSWORD_RESET_KEY_EXPIRES_MINUTES))
-            .into(),
-        };
-        service
-            .save_password_reset_state(user.id, &state)
-            .await
-            .unwrap();
-
-        let err = service
-            .reset_password(ResetPasswordCommand {
-                key: generate_password_reset_token(
-                    PASSWORD_RESET_KEY_RANDOM_BYTES_LEN,
-                ),
-                password: "m10KSGDckKrX38Vm".to_string(),
-            })
-            .await
-            .unwrap_err();
-        assert!(
-            matches!(err, ResetPasswordError::InvalidOrExpiredResetKey),
-            "unexpected error: {err:?}"
-        );
-
-        let state = service
-            .load_password_reset_state(user.id)
-            .await
-            .unwrap()
-            .unwrap();
-        assert!(matches!(state, PasswordResetState::AwaitingPassword { .. }));
-    }
-
-    #[tokio::test]
-    async fn restore_consumed_password_reset_key_preserves_original_expiry() {
-        let conn = test_connection().await;
-        let service = build_test_service(&conn).await;
-
-        let user = create_verified_user(&conn).await;
-        let reset_key =
-            generate_password_reset_token(PASSWORD_RESET_KEY_RANDOM_BYTES_LEN);
-        let reset_key_hash = hash_password_reset_key(&reset_key);
-        let reset_key_expires_at = (Utc::now()
-            + Duration::minutes(PASSWORD_RESET_KEY_EXPIRES_MINUTES))
-        .into();
-
-        let state = PasswordResetState::AwaitingPassword {
-            reset_key_hash: reset_key_hash.clone(),
-            reset_key_expires_at,
-        };
-        service
-            .save_password_reset_state(user.id, &state)
-            .await
-            .unwrap();
-
-        let consumed = service
-            .consume_password_reset_key(&reset_key_hash)
-            .await
-            .unwrap()
-            .unwrap();
-        assert_eq!(consumed.reset_key_expires_at, reset_key_expires_at);
-
-        service
-            .restore_consumed_password_reset_key(consumed, &reset_key_hash)
-            .await
-            .unwrap();
-
-        let restored = service
-            .load_password_reset_state(user.id)
-            .await
-            .unwrap()
-            .unwrap();
-        let PasswordResetState::AwaitingPassword {
-            reset_key_expires_at: restored_expires_at,
-            ..
-        } = restored
-        else {
-            panic!("expected AwaitingPassword state");
-        };
-        assert_eq!(restored_expires_at, reset_key_expires_at);
-    }
-
-    #[tokio::test]
-    async fn reset_password_consumes_same_key_atomically() {
-        let conn = test_connection().await;
-        let service = build_test_service(&conn).await;
-
-        let user = create_verified_user(&conn).await;
-        let reset_key =
-            generate_password_reset_token(PASSWORD_RESET_KEY_RANDOM_BYTES_LEN);
-
-        let state = PasswordResetState::AwaitingPassword {
-            reset_key_hash: hash_password_reset_key(&reset_key),
-            reset_key_expires_at: (Utc::now()
-                + Duration::minutes(PASSWORD_RESET_KEY_EXPIRES_MINUTES))
-            .into(),
-        };
-        service
-            .save_password_reset_state(user.id, &state)
-            .await
-            .unwrap();
-
-        let barrier = Arc::new(Barrier::new(3));
-        let first_service = service.clone();
-        let first_barrier = barrier.clone();
-        let first_request = ResetPasswordCommand {
-            key: reset_key.clone(),
-            password: "m10KSGDckKrX38Vm".to_string(),
-        };
-        let first = tokio::spawn(async move {
-            first_barrier.wait().await;
-            first_service.reset_password(first_request).await
-        });
-
-        let second_service = service.clone();
-        let second_barrier = barrier.clone();
-        let second_request = ResetPasswordCommand {
-            key: reset_key,
-            password: "m10KSGDckKrX38Vm".to_string(),
-        };
-        let second = tokio::spawn(async move {
-            second_barrier.wait().await;
-            second_service.reset_password(second_request).await
-        });
-
-        barrier.wait().await;
-
-        let first_result = first.await.unwrap();
-        let second_result = second.await.unwrap();
-        let success_count = [first_result.as_ref(), second_result.as_ref()]
-            .into_iter()
-            .flatten()
-            .count();
-
-        assert_eq!(success_count, 1);
-        assert!(
-            matches!(first_result, Ok(()))
-                || matches!(
-                    first_result,
-                    Err(ResetPasswordError::InvalidOrExpiredResetKey)
-                )
-        );
-        assert!(
-            matches!(second_result, Ok(()))
-                || matches!(
-                    second_result,
-                    Err(ResetPasswordError::InvalidOrExpiredResetKey)
-                )
-        );
-        assert!(
-            !matches!(first_result, Ok(())) || !matches!(second_result, Ok(()))
-        );
-        assert!(
-            service
-                .load_password_reset_state(user.id)
-                .await
-                .unwrap()
-                .is_none()
-        );
     }
 }

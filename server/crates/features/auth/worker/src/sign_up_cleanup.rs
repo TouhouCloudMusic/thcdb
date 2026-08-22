@@ -2,64 +2,40 @@ use std::str::FromStr;
 
 use chrono::Utc;
 use infra_db::SeaOrmRepository;
-use infra_worker::{Data, Schedule};
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QuerySelect};
+use infra_worker::{
+    CronStream, Data, Monitor, Schedule, WorkerBuilder, WorkerBuilderExt,
+    WorkerFactoryFn,
+};
 
-#[derive(Clone, Debug, Default)]
-pub struct UnverifiedUserCleanupJob;
+mod repo;
 
-#[derive(Clone)]
-pub struct WorkerState {
-    pub repo: SeaOrmRepository,
+pub(super) fn register_worker(
+    monitor: Monitor,
+    repository: SeaOrmRepository,
+) -> Monitor {
+    monitor.register(
+        WorkerBuilder::new("unverified_user_cleanup")
+            .data(repository)
+            .enable_tracing()
+            .backend(CronStream::new(
+                Schedule::from_str("0 0 * * * *")
+                    .expect("unverified user cleanup schedule"),
+            ))
+            .build_fn(handle),
+    )
 }
 
-#[expect(
-    clippy::missing_panics_doc,
-    reason = "static cron expression is validated during worker startup"
-)]
-pub fn schedule() -> Schedule {
-    Schedule::from_str("0 0 * * * *")
-        .expect("unverified user cleanup schedule must be valid")
-}
-
-pub async fn handle(_job: UnverifiedUserCleanupJob, state: Data<WorkerState>) {
+async fn handle(_job: (), repository: Data<SeaOrmRepository>) {
     let cutoff: chrono::DateTime<chrono::FixedOffset> =
         (Utc::now() - chrono::Duration::hours(24)).into();
 
-    let user_ids = match entity::user::Entity::find()
-        .select_only()
-        .column(entity::user::Column::Id)
-        .filter(entity::user::Column::EmailVerified.eq(false))
-        .filter(entity::user::Column::CreatedAt.lt(cutoff))
-        .into_tuple::<i32>()
-        .all(&state.repo.conn)
-        .await
+    match repo::delete_expired_unverified_users(&repository.conn, cutoff).await
     {
-        Ok(user_ids) => user_ids,
-        Err(err) => {
-            log::error!(
-                target: "features.auth.sign_up.cleanup",
-                error:? = err;
-                "failed to query expired unverified users"
-            );
-            return;
-        }
-    };
-
-    if user_ids.is_empty() {
-        return;
-    }
-
-    match entity::user::Entity::delete_many()
-        .filter(entity::user::Column::Id.is_in(user_ids))
-        .exec(&state.repo.conn)
-        .await
-    {
-        Ok(res) => {
-            if res.rows_affected > 0 {
+        Ok(deleted) => {
+            if deleted > 0 {
                 log::info!(
                     target: "features.auth.sign_up.cleanup",
-                    deleted = res.rows_affected;
+                    deleted;
                     "expired unverified users deleted"
                 );
             }
@@ -67,7 +43,7 @@ pub async fn handle(_job: UnverifiedUserCleanupJob, state: Data<WorkerState>) {
         Err(err) => {
             log::error!(
                 target: "features.auth.sign_up.cleanup",
-                error:? = err;
+                error:% = err;
                 "failed to delete expired unverified users"
             );
         }

@@ -1,6 +1,6 @@
 use std::env;
 
-use entity::{role, user, user_role};
+use entity::{user, user_role};
 use infra_db::lookup_table::ValidateLookupTable;
 use sea_orm::ActiveValue::*;
 use sea_orm::prelude::Expr;
@@ -26,66 +26,6 @@ pub(crate) async fn sync_startup_data(
     upsert_admin_acc(db).await;
 
     Ok(())
-}
-
-pub struct UserRoleConflict {
-    id: i32,
-    db_name: String,
-    enum_name: String,
-}
-
-impl PartialEq<role::Model> for UserRoleEnum {
-    fn eq(&self, other: &role::Model) -> bool {
-        i32::from(*self) == other.id && self.to_string() == other.name
-    }
-}
-
-impl From<UserRoleEnum> for role::ActiveModel {
-    fn from(val: UserRoleEnum) -> Self {
-        Self {
-            id: Set(val.into()),
-            name: Set(val.to_string()),
-        }
-    }
-}
-
-impl ValidateLookupTable for UserRoleEnum {
-    type ConflictData = UserRoleConflict;
-
-    type Entity = role::Entity;
-
-    fn try_from_model(
-        model: &<Self::Entity as EntityTrait>::Model,
-    ) -> Result<Self, ()> {
-        Self::try_from(model.id).map_err(|_| ())
-    }
-
-    fn new_conflict_data(
-        self,
-        model: &<Self::Entity as EntityTrait>::Model,
-    ) -> Self::ConflictData {
-        Self::ConflictData {
-            id: model.id,
-            db_name: model.name.clone(),
-            enum_name: self.to_string(),
-        }
-    }
-
-    fn display_conflict(
-        UserRoleConflict {
-            id,
-            db_name,
-            enum_name,
-        }: UserRoleConflict,
-    ) -> String {
-        format!(
-            "User role definition conflicts with database records.\n\
-            On:\n\
-            - ID: {id}\n\
-            - Database value: '{db_name}'\n\
-            - Enum value: '{enum_name}'"
-        )
-    }
 }
 
 async fn upsert_admin_acc(db: &DatabaseConnection) {

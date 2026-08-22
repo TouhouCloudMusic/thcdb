@@ -1,16 +1,17 @@
 use entity::{user, user_email_verification, user_role};
 use sea_orm::ActiveValue::Set;
 use sea_orm::prelude::Expr;
-use sea_orm::sea_query::{Func, OnConflict};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
     EntityTrait, IntoActiveModel, QueryFilter, QuerySelect,
 };
+use sea_query::{Func, OnConflict};
 
 use crate::features::auth::{Email, UserRole, UserRoleEnum};
 use crate::features::user::{EmailVerification, NewUser, User};
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::shared::error::BrokenEntityReference;
+use crate::infra::database::error::{
+    BrokenEntityReference, DatabaseError, DatabaseResultExt,
+};
 
 #[derive(
     Debug, derive_more::Display, derive_more::Error, derive_more::From,

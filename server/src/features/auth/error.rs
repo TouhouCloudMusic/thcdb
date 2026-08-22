@@ -1,31 +1,11 @@
 use axum::response::IntoResponse;
 use derive_more::{Display, Error as DeriveError, From};
+use domain::email::InvalidEmail;
 
 use crate::features::auth::ValidateCredsError;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;
 use crate::shared::http::api_response::AppError;
-use crate::shared::types::BoxedError;
-
-#[derive(Debug, Display, derive_more::Error)]
-#[display("Invalid email: {email}.\n{source}")]
-pub struct InvalidEmail {
-    email: String,
-    source: BoxedError,
-}
-
-impl InvalidEmail {
-    pub fn new(
-        email: impl Into<String>,
-        source: impl std::error::Error + Send + Sync + 'static,
-    ) -> Self {
-        Self {
-            email: email.into(),
-            source: Box::new(source),
-        }
-    }
-}
-
 #[derive(Debug, Display, DeriveError, From)]
 pub enum SignUpError {
     #[display("Username {username} already in use")]

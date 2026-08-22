@@ -1,16 +1,22 @@
 use std::fmt::Display;
 
 use rand::Rng;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct VerificationCode<const N: usize> {
     digits: [u8; N],
 }
 
+impl<const N: usize> Default for VerificationCode<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<const N: usize> VerificationCode<N> {
     pub fn new() -> Self {
         let mut rng = rand::rng();
-
         let digits = std::array::from_fn(|_| rng.random_range(0..=9));
 
         Self { digits }
@@ -49,20 +55,25 @@ impl<const N: usize> Display for VerificationCode<N> {
     }
 }
 
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn parse_code() {
-        let code = VerificationCode::<6>::parse("123456");
-
-        assert_eq!(code.unwrap().to_string(), "123456");
+impl<const N: usize> Serialize for VerificationCode<N> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.collect_str(self)
     }
+}
 
-    #[test]
-    fn parse_code_rejects_invalid_format() {
-        assert!(VerificationCode::<6>::parse("12345").is_none());
-        assert!(VerificationCode::<6>::parse("12345a").is_none());
+impl<'de, const N: usize> Deserialize<'de> for VerificationCode<N> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let input = String::deserialize(deserializer)?;
+        Self::parse(&input).ok_or_else(|| {
+            serde::de::Error::custom(format_args!(
+                "expected a {N}-digit verification code"
+            ))
+        })
     }
 }

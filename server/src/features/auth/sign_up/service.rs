@@ -1,4 +1,5 @@
 use chrono::{Duration, Utc};
+use domain::shared::MessageError;
 use lettre::message::Mailbox;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{ActiveModelTrait, TransactionTrait};
@@ -17,7 +18,7 @@ use crate::features::auth::{
 };
 use crate::features::user::{NewUser, User};
 use crate::infra::database::error::DatabaseResultExt;
-use crate::shared::error::{InternalError, InvalidInput, MessageError};
+use crate::shared::error::{InternalError, InvalidInput};
 use crate::shared::secret::hash;
 
 const VERIFICATION_CODE_MAX_FAILED_ATTEMPTS: i32 = 10;
@@ -365,7 +366,7 @@ impl Service {
                     log::error!(
                         target: "features.auth.sign_up.service",
                         user_id = user.id,
-                        error:? = cleanup_err;
+                        error:% = cleanup_err;
                         "failed to clear verification code after email failure"
                     );
                 }

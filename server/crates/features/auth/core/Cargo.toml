@@ -12,7 +12,16 @@ name = "auth_core"
 path = "src/lib.rs"
 
 [dependencies]
-chrono.workspace     = true
-lettre.workspace     = true
-serde.workspace      = true
-serde_json.workspace = true
+chrono.workspace      = true
+derive_more.workspace = true
+domain.workspace      = true
+entity.workspace      = true
+infra_db.workspace    = true
+infra_email.workspace = true
+macroweave.workspace  = true
+rand.workspace        = true
+sea-orm.workspace     = true
+serde.workspace       = true
+serde_json.workspace  = true
+strum.workspace       = true
+utoipa.workspace      = true

@@ -2,13 +2,13 @@ use axum::extract::FromRequestParts;
 use axum::http::header;
 use axum::http::request::Parts;
 use axum_extra::typed_header::TypedHeader;
+use domain::shared::MessageError;
 use headers::Authorization;
 use headers::authorization::Basic;
 
 use crate::adapter::inbound::rest::{AuthRejection, state};
 use crate::features::auth::AuthCredential;
 use crate::features::user::User;
-use crate::shared::error::MessageError;
 use crate::shared::http::api_response::AppError;
 
 #[derive(Clone)]
@@ -90,7 +90,7 @@ where
                 } else {
                     log::error!(
                         target: "adapter.rest.extract.auth",
-                        error:? = err;
+                        error:% = err;
                         "basic authentication failed"
                     );
                     Err(AppError::internal(err))

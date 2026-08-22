@@ -1,8 +1,11 @@
-use std::fmt::Display;
+use std::future::Future;
 
 use chrono::{DateTime, Duration, FixedOffset};
-use lettre::message::{Mailbox, Message as EmailMessage};
+use domain::email::Email;
+use infra_email::DeliveryFailure;
 use serde::{Deserialize, Serialize};
+
+use crate::verification_code::VerificationCode;
 
 pub const PASSWORD_RESET_EMAIL_KEY: &str = "auth:password-reset:email";
 pub const PASSWORD_RESET_CODE_MAX_FAILED_ATTEMPTS: i32 = 10;
@@ -12,10 +15,18 @@ pub const PASSWORD_RESET_CODE_RESEND_COOLDOWN_SECONDS: i64 = 60;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PasswordResetEmailJob {
     pub user_id: i32,
-    pub email: String,
-    pub code: String,
+    pub email: Email,
+    pub code: VerificationCode<6>,
     pub code_hash: String,
     pub code_expires_at: DateTime<FixedOffset>,
+}
+
+pub trait EmailSender: Clone + Send + Sync + Unpin + 'static {
+    fn send(
+        &self,
+        recipient: Email,
+        code: VerificationCode<6>,
+    ) -> impl Future<Output = Result<(), DeliveryFailure>> + Send + '_;
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -130,22 +141,4 @@ pub fn password_reset_state_key(user_id: i32) -> String {
 
 pub fn password_reset_key_index_key(reset_key_hash: &str) -> String {
     format!("auth:password-reset:key:{reset_key_hash}")
-}
-
-pub fn is_password_reset_code(input: &str) -> bool {
-    input.len() == 6 && input.bytes().all(|byte| byte.is_ascii_digit())
-}
-
-pub fn build_password_reset_email_message(
-    from: Mailbox,
-    to: Mailbox,
-    code: impl Display,
-) -> Result<EmailMessage, lettre::error::Error> {
-    EmailMessage::builder()
-        .from(from)
-        .to(to)
-        .subject("Reset your password")
-        .body(format!(
-            "Your password reset code is {code}. It expires in {PASSWORD_RESET_CODE_EXPIRES_MINUTES} minutes."
-        ))
 }
