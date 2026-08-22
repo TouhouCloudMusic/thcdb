@@ -1,5 +1,7 @@
+mod error;
 mod model;
 mod pagination;
+pub use error::MessageError;
 pub use model::*;
 pub use pagination::*;
 

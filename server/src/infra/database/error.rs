@@ -1,6 +1,5 @@
 use ::sea_orm::DbErr;
-
-use crate::shared::error::BrokenEntityReference;
+pub use infra_db::error::BrokenEntityReference;
 
 #[derive(Debug, derive_more::Error)]
 pub struct DatabaseError(#[error(source)] infra_db::error::DatabaseError);

@@ -12,6 +12,7 @@ name = "infra_storage_worker"
 path = "src/lib.rs"
 
 [dependencies]
+apalis.workspace        = true
 infra_storage.workspace = true
 infra_worker.workspace  = true
 log                     = { workspace = true, features = [ "kv" ] }

@@ -14,9 +14,7 @@ use utoipa::openapi::{
 use utoipa::{PartialSchema, ToSchema, openapi};
 
 use crate::infra::database::error::DatabaseError;
-use crate::shared::error::{
-    BrokenEntityReference, EntityNotFound, InternalError, PermissionDenied,
-};
+use crate::shared::error::{EntityNotFound, InternalError, PermissionDenied};
 use crate::shared::types::BoxedError;
 use crate::utils::openapi::ContentType;
 
@@ -169,13 +167,6 @@ impl From<EntityNotFound> for AppError {
     }
 }
 
-impl From<BrokenEntityReference> for AppError {
-    #[track_caller]
-    fn from(err: BrokenEntityReference) -> Self {
-        Self::internal(err)
-    }
-}
-
 impl From<InternalError> for AppError {
     #[track_caller]
     fn from(err: InternalError) -> Self {
@@ -195,6 +186,13 @@ impl From<DatabaseError> for AppError {
     }
 }
 
+impl From<infra_db::error::DatabaseError> for AppError {
+    #[track_caller]
+    fn from(err: infra_db::error::DatabaseError) -> Self {
+        DatabaseError::from(err).into()
+    }
+}
+
 fn log_internal_error(
     source: Option<&(dyn std::error::Error + Send + Sync + 'static)>,
     location: &'static Location<'static>,
@@ -204,7 +202,7 @@ fn log_internal_error(
             log::error!(
                 target: "shared.http.app_error",
                 location:% = location,
-                error:? = source;
+                error:% = source;
                 "internal error"
             );
         }
@@ -239,13 +237,6 @@ impl IntoResponse for PermissionDenied {
 impl IntoResponse for EntityNotFound {
     fn into_response(self) -> axum::response::Response {
         Error::from_err_and_code(&self, StatusCode::NOT_FOUND).into_response()
-    }
-}
-
-impl IntoResponse for BrokenEntityReference {
-    #[track_caller]
-    fn into_response(self) -> axum::response::Response {
-        internal_error_response(&self, Location::caller())
     }
 }
 

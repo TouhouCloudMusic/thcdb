@@ -6,7 +6,7 @@ use ::sea_orm::{
     Identity, ModelTrait, QueryFilter, Related, RelationType, Select,
 };
 use sea_query::{
-    ColumnRef, Expr, IntoColumnRef, SimpleExpr, TableRef, ValueTuple,
+    ColumnRef, Expr, IntoColumnRef, SimpleExpr, TableRef, ValueTuple, all,
 };
 
 use super::query_error;
@@ -195,30 +195,30 @@ fn prepare_condition(
     match col {
         Identity::Unary(column_a) => {
             let column_a = table_column(table, column_a);
-            Condition::all()
-                .add(Expr::col(column_a).is_in(keys.into_iter().flatten()))
+            all![Expr::col(column_a).is_in(keys.into_iter().flatten())]
         }
-        Identity::Binary(column_a, column_b) => Condition::all().add(
+        Identity::Binary(column_a, column_b) => all![
             Expr::tuple([
                 SimpleExpr::Column(table_column(table, column_a)),
                 SimpleExpr::Column(table_column(table, column_b)),
             ])
-            .in_tuples(keys),
-        ),
-        Identity::Ternary(column_a, column_b, column_c) => Condition::all()
-            .add(
+            .in_tuples(keys)
+        ],
+        Identity::Ternary(column_a, column_b, column_c) => {
+            all![
                 Expr::tuple([
                     SimpleExpr::Column(table_column(table, column_a)),
                     SimpleExpr::Column(table_column(table, column_b)),
                     SimpleExpr::Column(table_column(table, column_c)),
                 ])
-                .in_tuples(keys),
-            ),
+                .in_tuples(keys)
+            ]
+        }
         Identity::Many(cols) => {
             let columns = cols
                 .iter()
                 .map(|col| SimpleExpr::Column(table_column(table, col)));
-            Condition::all().add(Expr::tuple(columns).in_tuples(keys))
+            all![Expr::tuple(columns).in_tuples(keys)]
         }
     }
 }

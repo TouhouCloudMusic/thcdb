@@ -146,7 +146,7 @@ fn parse_num_atoi(b: &[u8]) -> Option<usize> {
 
 #[inline]
 fn parse_num_atoi_simd(b: &[u8]) -> Option<usize> {
-    atoi_simd::parse::<usize>(b).ok()
+    atoi_simd::parse::<usize, false, false>(b).ok()
 }
 
 #[inline]

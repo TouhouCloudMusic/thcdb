@@ -6,6 +6,13 @@ use sea_orm::{DbErr, RuntimeErr, sqlx};
 
 type BoxedError = Box<dyn std::error::Error + Send + Sync + 'static>;
 
+#[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
+#[display("Broken entity reference: {entity} #{id} not found")]
+pub struct BrokenEntityReference {
+    pub entity: &'static str,
+    pub id: i32,
+}
+
 #[derive(Debug, derive_more::Error)]
 pub struct DatabaseError {
     #[error(source)]
@@ -78,15 +85,26 @@ impl From<DbErr> for DatabaseError {
     }
 }
 
+impl From<BrokenEntityReference> for DatabaseError {
+    #[track_caller]
+    fn from(source: BrokenEntityReference) -> Self {
+        Self::broken_reference(source)
+    }
+}
+
 impl std::fmt::Display for DatabaseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.frames.last() {
             Some(frame) => write!(
                 f,
-                "database error while {} at {}",
-                frame.operation, frame.location
+                "database error while {} at {}: {}",
+                frame.operation, frame.location, self.source
             ),
-            None => write!(f, "database error at {}", self.location),
+            None => write!(
+                f,
+                "database error at {}: {}",
+                self.location, self.source
+            ),
         }
     }
 }
