@@ -1,19 +1,15 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import type { EntityComment, UserProfile } from "~/hey-api"
+import type { Comment, UserProfile } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { EntityComments } from "./EntityComments"
-import type { EntityCommentsController } from "./EntityCommentsController"
+import { createMockEntityCommentsController } from "./storybook"
 
-async function asyncNoop() {
-	await Promise.resolve()
-}
-
-const MOCK_COMMENTS: EntityComment[] = [
+const MOCK_COMMENTS: Comment[] = [
 	{
 		id: 1,
-		parent_id: null,
+		in_reply_to_comment_id: null,
 		author: { id: 1, name: "alice" },
 		content: "Could you clarify the source?",
 		state: "Active",
@@ -22,7 +18,7 @@ const MOCK_COMMENTS: EntityComment[] = [
 	},
 	{
 		id: 2,
-		parent_id: 1,
+		in_reply_to_comment_id: 1,
 		author: { id: 2, name: "bob" },
 		content: "The source is listed in the liner notes.",
 		state: "Active",
@@ -31,7 +27,7 @@ const MOCK_COMMENTS: EntityComment[] = [
 	},
 	{
 		id: 3,
-		parent_id: null,
+		in_reply_to_comment_id: null,
 		author: { id: 3, name: "carol" },
 		content: "Approved, looks good.",
 		state: "Active",
@@ -40,52 +36,19 @@ const MOCK_COMMENTS: EntityComment[] = [
 	},
 ]
 
-const MOCK_COMMENTS_WITH_DELETED: EntityComment[] = MOCK_COMMENTS.map((item) =>
+const MOCK_COMMENTS_WITH_DELETED: Comment[] = MOCK_COMMENTS.map((item) =>
 	item.id === 2 ? { ...item, state: "Deleted", content: undefined } : item,
 )
 
-type MockControllerOptions = {
-	comments: EntityComment[]
-	hasMore: boolean
-	isInitialLoading: boolean
-	isLoadingMore: boolean
-	errorMessage?: string
-	currentUser: UserProfile | undefined
-	canManage: boolean
-}
-
 const CURRENT_USER = {
+	id: 1,
 	name: "alice",
 	last_login: new Date().toISOString(),
 	stats: { edit_count: 0, vote_count: 0 },
 } satisfies UserProfile
 
-function mockController(
-	options: MockControllerOptions,
-): EntityCommentsController {
-	return {
-		activeCommentCount: () =>
-			options.comments.filter((comment) => comment.state !== "Deleted").length,
-		canManage: () => options.canManage,
-		comments: () => options.comments,
-		createComment: asyncNoop,
-		currentUser: () => options.currentUser,
-		deleteComment: asyncNoop,
-		errorMessage: () => options.errorMessage,
-		hasMore: () => options.hasMore,
-		isInitialLoading: () => options.isInitialLoading,
-		isLoadingMore: () => options.isLoadingMore,
-		loadMore: asyncNoop,
-	}
-}
-
-const EMPTY_CONTROLLER = mockController({
-	comments: [],
-	hasMore: false,
-	isInitialLoading: false,
-	isLoadingMore: false,
+const EMPTY_CONTROLLER = createMockEntityCommentsController({
 	currentUser: CURRENT_USER,
-	canManage: false,
 })
 
 const meta = {
@@ -115,66 +78,46 @@ export const Empty: Story = {
 
 export const Loading: Story = {
 	args: {
-		controller: mockController({
-			comments: [],
-			hasMore: false,
+		controller: createMockEntityCommentsController({
 			isInitialLoading: true,
-			isLoadingMore: false,
 			currentUser: CURRENT_USER,
-			canManage: false,
 		}),
 	},
 }
 
 export const Error: Story = {
 	args: {
-		controller: mockController({
-			comments: [],
-			hasMore: false,
-			isInitialLoading: false,
-			isLoadingMore: false,
+		controller: createMockEntityCommentsController({
 			errorMessage: "Failed to load comments",
 			currentUser: CURRENT_USER,
-			canManage: false,
 		}),
 	},
 }
 
 export const WithComments: Story = {
 	args: {
-		controller: mockController({
+		controller: createMockEntityCommentsController({
 			comments: MOCK_COMMENTS,
-			hasMore: false,
-			isInitialLoading: false,
-			isLoadingMore: false,
 			currentUser: CURRENT_USER,
-			canManage: false,
 		}),
 	},
 }
 
 export const WithDeletedComment: Story = {
 	args: {
-		controller: mockController({
+		controller: createMockEntityCommentsController({
 			comments: MOCK_COMMENTS_WITH_DELETED,
-			hasMore: false,
-			isInitialLoading: false,
-			isLoadingMore: false,
 			currentUser: CURRENT_USER,
-			canManage: false,
 		}),
 	},
 }
 
 export const WithNextPage: Story = {
 	args: {
-		controller: mockController({
+		controller: createMockEntityCommentsController({
 			comments: MOCK_COMMENTS,
 			hasMore: true,
-			isInitialLoading: false,
-			isLoadingMore: false,
 			currentUser: CURRENT_USER,
-			canManage: false,
 		}),
 	},
 }

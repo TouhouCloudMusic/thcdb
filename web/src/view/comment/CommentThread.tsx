@@ -8,56 +8,22 @@ import { Link } from "~/component/atomic/Link"
 import { Avatar } from "~/component/atomic/avatar"
 import { Button } from "~/component/atomic/button"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
-import type { CommentState, UserProfile } from "~/hey-api"
+import type { Comment, UserProfile } from "~/hey-api"
 
-export type CommentThreadComment = {
-	id: number
-	parent_id?: number | null
-	author: {
-		id: number
-		name: string
-	}
-	content?: string | null
-	state: CommentState
-	created_at: string
-	updated_at: string
-}
-
-export type CommentComposerProps = {
-	onSubmit: (content: string) => Promise<void>
-	currentUser: UserProfile | undefined
-	signedOutFallback: JSX.Element
-}
-
-export type CommentThreadListProps = {
-	comments: CommentThreadComment[]
-	hasMore: boolean
-	isInitialLoading: boolean
-	isLoadingMore: boolean
-	errorMessage?: string
-	currentUser: UserProfile | undefined
-	canManage: boolean
-	emptyText: JSX.Element
-	listClass: string
-	statusClass: string
-	loadMoreClass: string
-	onLoadMore: () => void
-	onCreateComment: (content: string, parentId: number | null) => Promise<void>
-	onDeleteComment: (commentId: number) => Promise<void>
-}
+import type { EntityCommentsController } from "./EntityCommentsController"
 
 type CommentRenderNode = {
-	comment: CommentThreadComment
+	comment: Comment
 	replies: CommentRenderNode[]
 }
 
 type CommentRenderReply = {
-	comment: CommentThreadComment
+	comment: Comment
 	replyToName?: string
 }
 
 type CommentRenderGroup = {
-	comment: CommentThreadComment
+	comment: Comment
 	replies: CommentRenderReply[]
 }
 
@@ -75,7 +41,9 @@ function CommentRenderNode_flattenReplies(
 		replies.push({
 			comment: reply.comment,
 			replyToName:
-				node.comment.parent_id == null ? undefined : node.comment.author.name,
+				node.comment.in_reply_to_comment_id == null
+					? undefined
+					: node.comment.author.name,
 		})
 		replies.push(...CommentRenderNode_flattenReplies(reply))
 	}
@@ -221,7 +189,7 @@ function ReplyInput(props: {
 }
 
 type CommentItemProps = {
-	comment: CommentThreadComment
+	comment: Comment
 	currentUser: UserProfile | undefined
 	canDelete: boolean
 	isReplyOpen: boolean
@@ -331,13 +299,16 @@ function CommentItem(props: CommentItemProps) {
 }
 
 type CommentThreadListItemProps = {
-	comment: CommentThreadComment
+	comment: Comment
 	currentUser: UserProfile | undefined
 	canManage: boolean
 	activeReplyId: Accessor<number | null>
 	onReply: (commentId: number) => void
 	onCancelReply: () => void
-	onCreateComment: (content: string, parentId: number | null) => Promise<void>
+	onCreateComment: (
+		content: string,
+		inReplyToCommentId: number | null,
+	) => Promise<void>
 	onDeleteComment: (commentId: number) => Promise<void>
 	onReplySubmitted: (commentId: number) => void
 	indented?: boolean
@@ -401,6 +372,12 @@ function TopLevelInput(props: {
 	)
 }
 
+type CommentComposerProps = {
+	onSubmit: (content: string) => Promise<void>
+	currentUser: UserProfile | undefined
+	signedOutFallback: JSX.Element
+}
+
 export function CommentComposer(props: CommentComposerProps) {
 	return (
 		<Show
@@ -415,6 +392,14 @@ export function CommentComposer(props: CommentComposerProps) {
 	)
 }
 
+type CommentThreadListProps = {
+	controller: EntityCommentsController
+	emptyText: JSX.Element
+	listClass: string
+	statusClass: string
+	loadMoreClass: string
+}
+
 export function CommentThreadList(props: CommentThreadListProps) {
 	const { t } = useLingui()
 	const [activeReplyId, setActiveReplyId] = createSignal<number | null>(null)
@@ -426,7 +411,7 @@ export function CommentThreadList(props: CommentThreadListProps) {
 		const nodeById = new Map<number, CommentRenderNode>()
 		const rootNodes: CommentRenderNode[] = []
 
-		for (const comment of props.comments) {
+		for (const comment of props.controller.comments()) {
 			nodeById.set(comment.id, {
 				comment,
 				replies: [],
@@ -434,15 +419,15 @@ export function CommentThreadList(props: CommentThreadListProps) {
 		}
 
 		for (const node of nodeById.values()) {
-			const parentId = node.comment.parent_id
-			if (parentId == null) {
+			const inReplyToCommentId = node.comment.in_reply_to_comment_id
+			if (inReplyToCommentId == null) {
 				rootNodes.push(node)
 				continue
 			}
 
-			const parent = nodeById.get(parentId)
-			if (parent) {
-				parent.replies.push(node)
+			const inReplyToComment = nodeById.get(inReplyToCommentId)
+			if (inReplyToComment) {
+				inReplyToComment.replies.push(node)
 			} else {
 				rootNodes.push(node)
 			}
@@ -458,10 +443,15 @@ export function CommentThreadList(props: CommentThreadListProps) {
 	return (
 		<>
 			<Switch>
-				<Match when={props.isInitialLoading}>
+				<Match when={props.controller.isInitialLoading()}>
 					<div class={props.statusClass}>{t`Loading comments...`}</div>
 				</Match>
-				<Match when={props.errorMessage && props.comments.length === 0}>
+				<Match
+					when={
+						props.controller.errorMessage()
+						&& props.controller.comments().length === 0
+					}
+				>
 					{(message) => <div class={props.statusClass}>{message()}</div>}
 				</Match>
 				<Match when={commentGroups().length === 0}>
@@ -469,7 +459,7 @@ export function CommentThreadList(props: CommentThreadListProps) {
 				</Match>
 				<Match when={commentGroups().length > 0}>
 					<>
-						<Show when={props.errorMessage}>
+						<Show when={props.controller.errorMessage()}>
 							{(message) => <div class={props.statusClass}>{message()}</div>}
 						</Show>
 						<ul class={props.listClass}>
@@ -478,26 +468,26 @@ export function CommentThreadList(props: CommentThreadListProps) {
 									<>
 										<CommentThreadListItem
 											comment={root.comment}
-											currentUser={props.currentUser}
-											canManage={props.canManage}
+											currentUser={props.controller.currentUser()}
+											canManage={props.controller.canManage()}
 											activeReplyId={activeReplyId}
 											onReply={setActiveReplyId}
 											onCancelReply={() => setActiveReplyId(null)}
-											onCreateComment={props.onCreateComment}
-											onDeleteComment={props.onDeleteComment}
+											onCreateComment={props.controller.createComment}
+											onDeleteComment={props.controller.deleteComment}
 											onReplySubmitted={closeActiveReplyIfStillOpen}
 										/>
 										<For each={root.replies}>
 											{(reply) => (
 												<CommentThreadListItem
 													comment={reply.comment}
-													currentUser={props.currentUser}
-													canManage={props.canManage}
+													currentUser={props.controller.currentUser()}
+													canManage={props.controller.canManage()}
 													activeReplyId={activeReplyId}
 													onReply={setActiveReplyId}
 													onCancelReply={() => setActiveReplyId(null)}
-													onCreateComment={props.onCreateComment}
-													onDeleteComment={props.onDeleteComment}
+													onCreateComment={props.controller.createComment}
+													onDeleteComment={props.controller.deleteComment}
 													onReplySubmitted={closeActiveReplyIfStillOpen}
 													indented
 													replyToName={reply.replyToName}
@@ -512,15 +502,17 @@ export function CommentThreadList(props: CommentThreadListProps) {
 				</Match>
 			</Switch>
 
-			<Show when={props.hasMore}>
+			<Show when={props.controller.hasMore()}>
 				<div class={props.loadMoreClass}>
 					<Button
 						variant="Secondary"
 						size="Sm"
-						disabled={props.isLoadingMore}
-						onClick={props.onLoadMore}
+						disabled={props.controller.isLoadingMore()}
+						onClick={() => {
+							void props.controller.loadMore()
+						}}
 					>
-						{props.isLoadingMore ? t`Loading...` : t`Load more`}
+						{props.controller.isLoadingMore() ? t`Loading...` : t`Load more`}
 					</Button>
 				</div>
 			</Show>

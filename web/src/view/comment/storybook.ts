@@ -1,11 +1,11 @@
-import type { EntityComment, UserProfile } from "~/hey-api"
+import type { Comment, UserProfile } from "~/hey-api"
 
 import type { EntityCommentsController } from "./EntityCommentsController"
 
 type MockEntityCommentsControllerOptions = {
 	activeCommentCount?: number
 	canManage?: boolean
-	comments?: EntityComment[]
+	comments?: Comment[]
 	currentUser?: UserProfile
 	errorMessage?: string
 	hasMore?: boolean

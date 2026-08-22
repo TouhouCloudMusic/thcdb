@@ -72,11 +72,11 @@
 
 ### 回复结构
 
-评论通过 `thread_id` 和 `parent_id` 字段支持层次化线程：
+评论通过 `thread_id` 和 `in_reply_to_comment_id` 字段表达回复关系：
 
-- **顶级评论**: `parent_id` 为 `NULL`
-- **回复**: `parent_id` 引用同一 `thread_id` 下的父评论
-- **嵌套回复**: 可以回复回复，创建线程
+- **顶级评论**: `in_reply_to_comment_id` 为 `NULL`
+- **回复**: `in_reply_to_comment_id` 引用同一 `thread_id` 下被回复的评论
+- **嵌套回复**: 可以回复已有回复，并由回复关系构建层次化展示
 
 ## 审核功能
 
