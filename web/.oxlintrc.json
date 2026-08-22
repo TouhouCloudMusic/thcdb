@@ -292,6 +292,7 @@
 				"vitest/no-conditional-in-test": "off",
 				"vitest/require-test-timeout": "off",
 				"vitest/no-importing-vitest-globals": "off",
+				"vitest/prefer-called-once": "off",
 				"vitest/prefer-expect-assertions": [
 					"warn",
 					{
@@ -300,6 +301,7 @@
 						"onlyFunctionsWithExpectInCallback": true
 					}
 				],
+				"vitest/prefer-to-be-falsy": "off",
 				"vitest/prefer-to-be-truthy": "off"
 			}
 		}

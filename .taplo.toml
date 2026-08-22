@@ -2,6 +2,7 @@ include = [
     "**/*.toml",
 ]
 exclude = [
+    ".direnv/**",
     "node_modules/**",
 ]
 

@@ -37,4 +37,4 @@ test:
     pnpm exec vitest
 
 check *files:
-    pnpm exec oxlint --type-aware --type-check --report-unused-disable-directives "$@"
+    pnpm exec oxlint --type-aware --type-check --report-unused-disable-directives --no-error-on-unmatched-pattern "$@"
