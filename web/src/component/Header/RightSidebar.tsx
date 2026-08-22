@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
-import type { UserProfile } from "@thc/api"
 import type { Ref } from "solid-js"
+import { Show } from "solid-js"
 import {
 	BookmarkIcon,
 	Cross1Icon,
@@ -12,19 +12,41 @@ import {
 } from "solid-radix-icons"
 
 import { ListItem, Sidebar } from "~/component/Sidebar"
+import type { SessionProfile } from "~/state/user"
+import { useCurrentUser } from "~/state/user"
 
 import { Divider } from "../atomic/Divider"
 import { Avatar } from "../atomic/avatar"
 import { Button } from "../atomic/button"
 
-export type Props = {
-	user: UserProfile
+export function RightSidebar(props: {
 	onClose: VoidFunction
-	onSignOut?: VoidFunction
 	ref?: Ref<HTMLDivElement>
+}) {
+	const currentUser = useCurrentUser()
+
+	return (
+		<Show when={currentUser.profile}>
+			{(user) => (
+				<RightSidebarView
+					ref={props.ref}
+					user={user()}
+					onClose={props.onClose}
+					onSignOut={() => {
+						void currentUser.signOut()
+					}}
+				/>
+			)}
+		</Show>
+	)
 }
 
-export function RightSidebar(props: Props) {
+export function RightSidebarView(props: {
+	user: SessionProfile
+	onClose: VoidFunction
+	onSignOut: VoidFunction
+	ref?: Ref<HTMLDivElement>
+}) {
 	const { t } = useLingui()
 
 	return (

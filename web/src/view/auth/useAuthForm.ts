@@ -14,9 +14,9 @@ import {
 	clearVerificationEmail,
 	getVerificationEmail,
 	saveVerificationEmail,
-} from "../verify_email/session"
-import { updateVerifyEmailState } from "../verify_email/state"
-import type { VerifyEmailState } from "../verify_email/state"
+} from "./verify_email/session"
+import { updateVerifyEmailState } from "./verify_email/state"
+import type { VerifyEmailState } from "./verify_email/state"
 
 export type AuthFormMode = "sign_in" | "sign_up" | "verify_email"
 
@@ -27,39 +27,11 @@ type OnAuthError = (message: string) => void
 type EitherRight<T> =
 	T extends Either.Either<infer Right, unknown> ? Right : never
 
-type SignInData = NonNullable<
-	EitherRight<Awaited<ReturnType<typeof AuthApi.signin>>>
->
 type SignUpData = EitherRight<Awaited<ReturnType<typeof AuthApi.signup>>>
-type VerifyEmailData = NonNullable<
-	EitherRight<Awaited<ReturnType<typeof AuthApi.verifyEmail>>>
->
 
 function resolveAuthFormMode(value: string | undefined): AuthFormMode {
 	if (value === "sign_up" || value === "verify_email") return value
 	return "sign_in"
-}
-
-async function executeSignIn(params: {
-	values: v.InferOutput<typeof AuthSchema.SignIn>
-	onError: OnAuthError
-	onSuccess: (data: SignInData) => void | Promise<void>
-}) {
-	const result = await AuthApi.signin({
-		body: {
-			username: params.values.identifier,
-			password: params.values.password,
-		},
-	})
-
-	return Either.match(result, {
-		onLeft: (error) => {
-			params.onError(error.error)
-		},
-		onRight: async (data) => {
-			await params.onSuccess(data)
-		},
-	})
 }
 
 async function executeSignUp(params: {
@@ -79,32 +51,7 @@ async function executeSignUp(params: {
 		onLeft: (error) => {
 			params.onError(error.error)
 		},
-		onRight: async (data) => {
-			await params.onSuccess(data, params.values.email)
-		},
-	})
-}
-
-async function executeVerifyEmail(params: {
-	values: v.InferOutput<typeof AuthSchema.VerifyEmail>
-	email: string
-	onError: OnAuthError
-	onSuccess: (data: VerifyEmailData) => void | Promise<void>
-}) {
-	const result = await AuthApi.verifyEmail({
-		body: {
-			email: params.email,
-			code: params.values.code,
-		},
-	})
-
-	return Either.match(result, {
-		onLeft: (error) => {
-			params.onError(error.error)
-		},
-		onRight: async (data) => {
-			await params.onSuccess(data)
-		},
+		onRight: (data) => params.onSuccess(data, params.values.email),
 	})
 }
 
@@ -183,26 +130,28 @@ export function useAuthForm() {
 		t`If eligible, a verification code has been sent.`
 
 	async function handleSignIn(values: v.InferOutput<typeof AuthSchema.SignIn>) {
-		await executeSignIn({
-			values,
-			onError(message) {
-				setSubmitError(message)
-			},
-			onSuccess: async (data) => {
-				clearVerificationEmail()
-				userCtx.sign_in({ user: data })
-				await nav({ to: "/" })
-			},
+		await userCtx.run(async () => {
+			const result = await AuthApi.signin({
+				body: {
+					username: values.identifier,
+					password: values.password,
+				},
+			})
+			if (Either.isLeft(result)) {
+				setSubmitError(result.left.error)
+				throw result.left
+			}
 		})
+
+		clearVerificationEmail()
+		await nav({ to: "/" })
 	}
 
 	async function handleSignUp(values: v.InferOutput<typeof AuthSchema.SignUp>) {
 		await executeSignUp({
 			values,
-			onError(message) {
-				setSubmitError(message)
-			},
-			onSuccess: async (data, email) => {
+			onError: setSubmitError,
+			onSuccess: (data, email) => {
 				saveVerificationEmail(email)
 				setVerifyEmailState((state) =>
 					updateVerifyEmailState(state, {
@@ -211,7 +160,7 @@ export function useAuthForm() {
 						cooldownSeconds: data.resend_cooldown_seconds,
 					}),
 				)
-				await nav({
+				return nav({
 					to: "/auth",
 					search: {
 						type: "verify_email",
@@ -230,18 +179,21 @@ export function useAuthForm() {
 			return
 		}
 
-		await executeVerifyEmail({
-			values,
-			email,
-			onError(message) {
-				setSubmitError(message)
-			},
-			onSuccess: async (data) => {
-				clearVerificationEmail()
-				userCtx.sign_in({ user: data })
-				await nav({ to: "/" })
-			},
+		await userCtx.run(async () => {
+			const result = await AuthApi.verifyEmail({
+				body: {
+					email,
+					code: values.code,
+				},
+			})
+			if (Either.isLeft(result)) {
+				setSubmitError(result.left.error)
+				throw result.left
+			}
 		})
+
+		clearVerificationEmail()
+		await nav({ to: "/" })
 	}
 
 	const handleResendVerificationEmail = async () => {

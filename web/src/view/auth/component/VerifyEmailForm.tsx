@@ -6,7 +6,7 @@ import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 
-import type { useAuthForm } from "../store"
+import type { useAuthForm } from "../useAuthForm"
 import { VerificationCodeField } from "./VerificationCodeField"
 
 type AuthFormState = ReturnType<typeof useAuthForm>

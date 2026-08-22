@@ -5,30 +5,32 @@ import {
 } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import { UserApi } from "@thc/api"
-import type { UserProfile } from "@thc/api"
 import { UserQuery } from "@thc/query"
 import { Either } from "effect"
 import { Show, createSignal } from "solid-js"
 
 import { userCollectionsInfiniteOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import { QUERY_CLIENT } from "~/state/tanstack"
-import { ensureCurrentUser, useCurrentUser } from "~/state/user"
+import { useCurrentUser } from "~/state/user"
 import { getNextPageParam } from "~/utils/query"
 import { Profile } from "~/view/user/Profile"
 
 export const Route = createFileRoute("/(user)/profile_/$username")({
 	component: RouteComponent,
-	loader: async ({ params: { username } }) => {
-		const viewer = await ensureCurrentUser()
-		const currentUserProfile = resolveCurrentUserProfile(viewer, username)
+	loader: async ({ context, params: { username } }) => {
+		const currentUser = context.currentUser
+		if (
+			currentUser.session.status === "loading"
+			|| currentUser.isCurrentUser(username)
+		) {
+			return
+		}
+
 		await QUERY_CLIENT.ensureQueryData(
 			UserQuery.profileOption({
 				"params.username": username,
-				current_user: currentUserProfile,
-				viewer_name: viewer?.name,
 			}),
 		)
-		return null
 	},
 })
 
@@ -36,23 +38,26 @@ function RouteComponent() {
 	const queryClient = useQueryClient()
 	const userCtx = useCurrentUser()
 	const params = Route.useParams()
-	const viewer = () => userCtx.user
 	const username = () => params().username
-	const currentUserProfile = () =>
-		resolveCurrentUserProfile(viewer(), username())
+	const isSessionResolved = () => userCtx.session.status !== "loading"
+	const isCurrentUser = () => userCtx.isCurrentUser(username())
 	const [pendingAction, setPendingAction] = createSignal<
 		"follow" | "unfollow" | undefined
 	>(undefined)
 	const [actionError, setActionError] = createSignal<string | undefined>()
-	const profileQuery = useQuery(() =>
-		UserQuery.profileOption({
+	const profileQuery = useQuery(() => ({
+		...UserQuery.profileOption({
 			"params.username": username(),
-			current_user: currentUserProfile(),
-			viewer_name: viewer()?.name,
 		}),
-	)
+		enabled: isSessionResolved() && !isCurrentUser(),
+	}))
+	const displayedProfile = () => {
+		if (!isSessionResolved()) return
+
+		return isCurrentUser() ? userCtx.profile : profileQuery.data
+	}
 	const collectionsQuery = useInfiniteQuery(() => {
-		const name = profileQuery.data?.name
+		const name = displayedProfile()?.name
 
 		return {
 			...userCollectionsInfiniteOptions({
@@ -65,8 +70,8 @@ function RouteComponent() {
 		}
 	})
 
-	const isCurrentUser = () => currentUserProfile() !== undefined
-	const canFollow = () => viewer() !== undefined && !isCurrentUser()
+	const canFollow = () =>
+		userCtx.profile !== undefined && !userCtx.isCurrentUser(username())
 	const submit = async (action: "follow" | "unfollow") => {
 		if (pendingAction() || !canFollow()) {
 			return
@@ -88,8 +93,6 @@ function RouteComponent() {
 				void queryClient.invalidateQueries({
 					queryKey: UserQuery.profileQueryKey({
 						"params.username": username(),
-						current_user: currentUserProfile(),
-						viewer_name: viewer()?.name,
 					}),
 				})
 			},
@@ -100,50 +103,44 @@ function RouteComponent() {
 	}
 
 	return (
-		<Show when={profileQuery.data}>
-			{(profile) => {
-				const data: UserProfile = profile()
-
-				return (
-					<Profile
-						isCurrentUser={isCurrentUser()}
-						data={data}
-						collections={
-							collectionsQuery.isSuccess
-								? collectionsQuery.data.pages.flatMap((page) => page.data.items)
-								: []
-						}
-						hasMoreCollections={collectionsQuery.hasNextPage}
-						isFetchingMoreCollections={collectionsQuery.isFetchingNextPage}
-						onLoadMoreCollections={() => {
-							void collectionsQuery.fetchNextPage()
-						}}
-						pins={[]}
-						activity={[]}
-						action={
-							canFollow()
-								? {
-										pendingAction: pendingAction(),
-										errorMessage: actionError(),
-										onFollow: () => {
-											void submit("follow")
-										},
-										onUnfollow: () => {
-											void submit("unfollow")
-										},
-									}
-								: undefined
-						}
-					/>
-				)
-			}}
+		<Show when={displayedProfile()}>
+			{(profile) => (
+				<Profile
+					isCurrentUser={userCtx.isCurrentUser(username())}
+					data={profile()}
+					roles={
+						userCtx.isCurrentUser(username())
+							? userCtx.authorization?.roles
+							: profileQuery.data?.roles
+					}
+					collections={
+						collectionsQuery.isSuccess
+							? collectionsQuery.data.pages.flatMap((page) => page.data.items)
+							: []
+					}
+					hasMoreCollections={collectionsQuery.hasNextPage}
+					isFetchingMoreCollections={collectionsQuery.isFetchingNextPage}
+					onLoadMoreCollections={() => {
+						void collectionsQuery.fetchNextPage()
+					}}
+					pins={[]}
+					activity={[]}
+					action={
+						canFollow()
+							? {
+									pendingAction: pendingAction(),
+									errorMessage: actionError(),
+									onFollow: () => {
+										void submit("follow")
+									},
+									onUnfollow: () => {
+										void submit("unfollow")
+									},
+								}
+							: undefined
+					}
+				/>
+			)}
 		</Show>
 	)
-}
-
-function resolveCurrentUserProfile(
-	viewer: UserProfile | undefined,
-	username: string,
-): UserProfile | undefined {
-	return viewer?.name === username ? viewer : undefined
 }

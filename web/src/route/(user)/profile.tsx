@@ -1,7 +1,5 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
+import { useInfiniteQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
-import type { UserProfile } from "@thc/api"
-import { UserQuery } from "@thc/query"
 import { Show } from "solid-js"
 import * as v from "valibot"
 
@@ -30,19 +28,9 @@ function RouteComponent() {
 	const userCtx = useCurrentUser()
 	const search = Route.useSearch()
 	const navigate = Route.useNavigate()
-	const profileQuery = useQuery(() => {
-		const base = UserQuery.profileOption({
-			"params.username": undefined,
-			current_user: userCtx.user,
-		})
-		return {
-			...base,
-			enabled: userCtx.user !== undefined,
-		}
-	})
 
 	const collectionsQuery = useInfiniteQuery(() => {
-		const username = profileQuery.data?.name
+		const username = userCtx.profile?.name
 
 		return {
 			...userCollectionsInfiniteOptions({
@@ -56,7 +44,7 @@ function RouteComponent() {
 	})
 
 	const followedCollectionsQuery = useInfiniteQuery(() => {
-		const username = profileQuery.data?.name
+		const username = userCtx.profile?.name
 
 		return {
 			...followedUserCollectionsInfiniteOptions({
@@ -70,56 +58,51 @@ function RouteComponent() {
 
 	return (
 		<AuthGuard>
-			<Show when={profileQuery.data}>
-				{(profile) => {
-					const data: UserProfile = profile()
-
-					return (
-						<Profile
-							isCurrentUser
-							data={data}
-							collections={
-								collectionsQuery.isSuccess
-									? collectionsQuery.data.pages.flatMap(
-											(page) => page.data.items,
-										)
-									: []
-							}
-							hasMoreCollections={collectionsQuery.hasNextPage}
-							isFetchingMoreCollections={collectionsQuery.isFetchingNextPage}
-							onLoadMoreCollections={() => {
-								void collectionsQuery.fetchNextPage()
-							}}
-							followedCollections={
-								followedCollectionsQuery.isSuccess
-									? followedCollectionsQuery.data.pages.flatMap(
-											(page) => page.data.items,
-										)
-									: []
-							}
-							hasMoreFollowedCollections={followedCollectionsQuery.hasNextPage}
-							isFetchingMoreFollowedCollections={
-								followedCollectionsQuery.isFetchingNextPage
-							}
-							onLoadMoreFollowedCollections={() => {
-								void followedCollectionsQuery.fetchNextPage()
-							}}
-							tab={{
-								value: search().tab ?? "activity",
-								onChange: (tab) => {
-									void navigate({
-										search: (prev) => ({
-											...prev,
-											tab,
-										}),
-									})
-								},
-							}}
-							pins={[]}
-							activity={[]}
-						/>
-					)
-				}}
+			<Show when={userCtx.profile}>
+				{(profile) => (
+					<Profile
+						isCurrentUser
+						data={profile()}
+						roles={userCtx.authorization?.roles}
+						collections={
+							collectionsQuery.isSuccess
+								? collectionsQuery.data.pages.flatMap((page) => page.data.items)
+								: []
+						}
+						hasMoreCollections={collectionsQuery.hasNextPage}
+						isFetchingMoreCollections={collectionsQuery.isFetchingNextPage}
+						onLoadMoreCollections={() => {
+							void collectionsQuery.fetchNextPage()
+						}}
+						followedCollections={
+							followedCollectionsQuery.isSuccess
+								? followedCollectionsQuery.data.pages.flatMap(
+										(page) => page.data.items,
+									)
+								: []
+						}
+						hasMoreFollowedCollections={followedCollectionsQuery.hasNextPage}
+						isFetchingMoreFollowedCollections={
+							followedCollectionsQuery.isFetchingNextPage
+						}
+						onLoadMoreFollowedCollections={() => {
+							void followedCollectionsQuery.fetchNextPage()
+						}}
+						tab={{
+							value: search().tab ?? "activity",
+							onChange: (tab) => {
+								void navigate({
+									search: (prev) => ({
+										...prev,
+										tab,
+									}),
+								})
+							},
+						}}
+						pins={[]}
+						activity={[]}
+					/>
+				)}
 			</Show>
 		</AuthGuard>
 	)

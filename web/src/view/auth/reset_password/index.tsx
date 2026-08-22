@@ -31,6 +31,7 @@ import {
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
+import { SessionLoading } from "~/component/route"
 import {
 	ResetPassword as ResetPasswordSchema,
 	VerifyResetCode as VerifyResetCodeSchema,
@@ -649,34 +650,39 @@ export function ResetPasswordPage(props: Props) {
 		isResetStep() && activeResetSession() === undefined
 
 	return (
-		<Show
-			when={!userStore.is_signed_in}
-			fallback={<Navigate to="/" />}
-		>
-			<Switch>
-				<Match when={shouldShowSuccessView()}>
-					<ResetPasswordSuccessView />
-				</Match>
-				<Match
-					when={shouldShowResetView() && activeResetSession() !== undefined}
-				>
-					<ResetPasswordWithKeyView
-						resetKeyExpiresMinutes={activeResetSession()!.keyExpiresMinutes}
-						expiresAtMs={activeResetSession()!.expiresAtMs}
-						uiStore={uiStore}
-					/>
-				</Match>
-				<Match when={true}>
-					<ForgotPasswordVerifyView
-						sessionWarning={
-							shouldShowResetSessionWarning()
-								? t`Your reset session is no longer valid. Verify a new code to continue.`
-								: undefined
-						}
-						uiStore={uiStore}
-					/>
-				</Match>
-			</Switch>
-		</Show>
+		<Switch>
+			<Match when={userStore.session.status === "loading"}>
+				<SessionLoading />
+			</Match>
+			<Match when={userStore.session.status === "authenticated"}>
+				<Navigate to="/" />
+			</Match>
+			<Match when={userStore.session.status === "anonymous"}>
+				<Switch>
+					<Match when={shouldShowSuccessView()}>
+						<ResetPasswordSuccessView />
+					</Match>
+					<Match
+						when={shouldShowResetView() && activeResetSession() !== undefined}
+					>
+						<ResetPasswordWithKeyView
+							resetKeyExpiresMinutes={activeResetSession()!.keyExpiresMinutes}
+							expiresAtMs={activeResetSession()!.expiresAtMs}
+							uiStore={uiStore}
+						/>
+					</Match>
+					<Match when={true}>
+						<ForgotPasswordVerifyView
+							sessionWarning={
+								shouldShowResetSessionWarning()
+									? t`Your reset session is no longer valid. Verify a new code to continue.`
+									: undefined
+							}
+							uiStore={uiStore}
+						/>
+					</Match>
+				</Switch>
+			</Match>
+		</Switch>
 	)
 }

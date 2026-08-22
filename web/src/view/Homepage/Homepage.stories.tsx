@@ -1,13 +1,18 @@
-import { RouterContextProvider } from "@tanstack/solid-router"
+import { Dialog as K_Dialog } from "@kobalte/core"
+import { Link } from "@tanstack/solid-router"
 import dayjs from "dayjs"
+import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { Header } from "~/component/Header"
+import { LeftSidebarView } from "~/component/Header/LeftSidebar"
+import { Divider } from "~/component/atomic/Divider"
+import { Button } from "~/component/atomic/button"
+import { Dialog } from "~/component/dialog"
 import { createMockArtists } from "~/mock/artist"
 import { createMockEvent } from "~/mock/event"
 import { createMockReleases } from "~/mock/release"
 import { createMockTags } from "~/mock/tag"
-import { createStoryRouter } from "~/utils/adapter/storybook"
+import { StoryRouterProvider } from "~/utils/adapter/storybook"
 import { HomePage } from "~/view/Homepage"
 import {
 	ARTISTS_LIMIT,
@@ -15,8 +20,6 @@ import {
 	RELEASES_LIMIT,
 	TAGS_LIMIT,
 } from "~/view/Homepage/constants"
-
-const STORY_ROUTER = createStoryRouter()
 
 function createHomeStoryData() {
 	const releases = createMockReleases(RELEASES_LIMIT, 101)
@@ -51,16 +54,88 @@ function createHomeStoryData() {
 
 const STORY_DATA = createHomeStoryData()
 
+function StoryHeader() {
+	return (
+		<header class="box-content content-center items-center border-b-1 border-slate-300 bg-primary px-4 py-2">
+			<div class="my-auto flex h-8 items-center justify-between">
+				<div class="flex items-center gap-3">
+					<Dialog.Root>
+						<K_Dialog.Trigger
+							variant="Tertiary"
+							class="m-auto size-fit p-1"
+							as={Button}
+						>
+							<HamburgerMenuIcon class="m-auto size-5 text-slate-400" />
+						</K_Dialog.Trigger>
+						<Dialog.Portal>
+							<Dialog.Overlay />
+							<K_Dialog.Content class="fixed inset-0 z-50 w-fit">
+								<LeftSidebarView />
+							</K_Dialog.Content>
+						</Dialog.Portal>
+					</Dialog.Root>
+
+					<Divider
+						vertical
+						class="h-6"
+					/>
+				</div>
+
+				<div class="relative ml-36 grid w-96 items-center">
+					<input
+						type="search"
+						aria-label="Search artists, releases, songs"
+						placeholder="Search artists, releases, songs…"
+						class="mr-auto h-7 w-full rounded-xs bg-slate-100 pl-7 outline-transparent"
+					/>
+					<MagnifyingGlassIcon class="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
+				</div>
+
+				<div class="flex h-full shrink place-content-center items-center gap-3">
+					<Divider
+						vertical
+						class="h-6"
+					/>
+					<div class="grid grid-cols-2 gap-3">
+						<Button
+							variant="Tertiary"
+							class="px-3 py-1 text-sm text-slate-900"
+							type="button"
+						>
+							<Link
+								to="/auth"
+								search={{ type: "sign_in" }}
+							>
+								Sign In
+							</Link>
+						</Button>
+						<Button
+							variant="Primary"
+							class="px-3 py-1 text-sm"
+							type="button"
+						>
+							<Link
+								to="/auth"
+								search={{ type: "sign_up" }}
+							>
+								Sign Up
+							</Link>
+						</Button>
+					</div>
+				</div>
+			</div>
+		</header>
+	)
+}
+
 function StoryRoot() {
 	return (
-		<RouterContextProvider router={STORY_ROUTER}>
-			{() => (
-				<div class="min-h-dvh bg-slate-100">
-					<Header />
-					<HomePage {...STORY_DATA} />
-				</div>
-			)}
-		</RouterContextProvider>
+		<StoryRouterProvider>
+			<div class="min-h-dvh bg-slate-100">
+				<StoryHeader />
+				<HomePage {...STORY_DATA} />
+			</div>
+		</StoryRouterProvider>
 	)
 }
 

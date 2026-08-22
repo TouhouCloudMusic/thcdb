@@ -1,21 +1,14 @@
 import { useLingui } from "@lingui/solid/macro"
 import { Navigate } from "@tanstack/solid-router"
 import type { ParentProps } from "solid-js"
-import { Show } from "solid-js"
+import { Match, Switch } from "solid-js"
 
 import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
-import { USER_ROLE_NAMES } from "~/domain/user/constants"
-import type { UserRole } from "~/hey-api"
+import { hasAdminRole } from "~/domain/user/authorization"
 import { useCurrentUser } from "~/state/user"
 
-export function hasAdminRole(
-	roles: readonly UserRole[] | null | undefined,
-): boolean {
-	return roles?.some((role) => role.name === USER_ROLE_NAMES.Admin) ?? false
-}
-
-function SessionLoading() {
+export function SessionLoading() {
 	const { t } = useLingui()
 	return (
 		<div class="grid min-h-[60vh] place-items-center px-6 py-14">
@@ -76,17 +69,14 @@ export function AuthGuard(props: ParentProps) {
 	const userCtx = useCurrentUser()
 
 	return (
-		<Show
-			when={!userCtx.is_loading}
-			fallback={<SessionLoading />}
-		>
-			<Show
-				when={userCtx.user}
-				fallback={<AuthRequired />}
-			>
+		<Switch fallback={<AuthRequired />}>
+			<Match when={userCtx.session.status === "loading"}>
+				<SessionLoading />
+			</Match>
+			<Match when={userCtx.session.status === "authenticated"}>
 				{props.children}
-			</Show>
-		</Show>
+			</Match>
+		</Switch>
 	)
 }
 
@@ -94,16 +84,11 @@ export function AdminGuard(props: ParentProps) {
 	const userCtx = useCurrentUser()
 
 	return (
-		<Show
-			when={!userCtx.is_loading}
-			fallback={<SessionLoading />}
-		>
-			<Show
-				when={userCtx.user && hasAdminRole(userCtx.user.roles)}
-				fallback={<Navigate to="/" />}
-			>
-				{props.children}
-			</Show>
-		</Show>
+		<Switch fallback={<Navigate to="/" />}>
+			<Match when={userCtx.session.status === "loading"}>
+				<SessionLoading />
+			</Match>
+			<Match when={hasAdminRole(userCtx.authorization)}>{props.children}</Match>
+		</Switch>
 	)
 }
