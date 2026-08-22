@@ -18,6 +18,7 @@ macros.workspace = true
 bon.workspace = true
 chrono.workspace = true
 derive_more.workspace = true
+garde.workspace = true
 pulldown-cmark = { version = "0.13.0", default-features = false, features = [
     "html",
     "simd",

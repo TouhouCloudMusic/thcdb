@@ -1,24 +1,21 @@
 mod bootstrap;
-mod email;
 mod error;
 mod http;
 mod model;
 pub(crate) mod password_reset;
-mod permission;
 pub(crate) mod repo;
 mod service;
 mod session;
 mod shared;
 pub(crate) mod sign_up;
 mod user_role;
-mod verification_code;
 
+pub(crate) use auth_core::verification_code::VerificationCode;
 pub(crate) use bootstrap::sync_startup_data;
-pub(crate) use email::Email;
+pub(crate) use domain::email::Email;
+pub use domain::email::InvalidEmail;
 pub use error::*;
 pub use http::router;
 pub(crate) use model::*;
-pub(crate) use permission::*;
 pub use service::Service;
 pub(crate) use user_role::*;
-pub(crate) use verification_code::*;

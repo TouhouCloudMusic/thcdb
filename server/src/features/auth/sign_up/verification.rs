@@ -10,13 +10,18 @@ use crate::features::user::User;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::InternalError;
 
-#[derive(Debug, derive_more::From)]
+#[derive(
+    Debug, derive_more::Display, derive_more::Error, derive_more::From,
+)]
 pub(super) enum SendVerificationEmailError {
+    #[display("{_0}")]
     #[from]
-    Internal(InternalError),
+    Internal(#[error(source)] InternalError),
+    #[display("Email service unavailable")]
     Unavailable,
+    #[display("{_0}")]
     #[from]
-    InvalidEmail(InvalidEmail),
+    InvalidEmail(#[error(source)] InvalidEmail),
 }
 
 impl From<DatabaseError> for SendVerificationEmailError {

@@ -11,13 +11,28 @@ workspace = true
 name = "auth_worker"
 path = "src/lib.rs"
 
+[features]
+integration-test = [  ]
+
 [dependencies]
+apalis.workspace       = true
 auth_core.workspace    = true
 chrono.workspace       = true
+domain.workspace       = true
 entity.workspace       = true
 fred.workspace         = true
 infra_db.workspace     = true
+infra_email.workspace  = true
 infra_worker.workspace = true
-lettre.workspace       = true
 log                    = { workspace = true, features = [ "kv" ] }
 sea-orm.workspace      = true
+
+[dev-dependencies]
+anyhow.workspace        = true
+infra_testing.workspace = true
+tokio.workspace         = true
+
+[[test]]
+name              = "password_reset_email"
+path              = "tests/password_reset_email.rs"
+required-features = [ "integration-test" ]

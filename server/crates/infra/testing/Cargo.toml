@@ -1,0 +1,28 @@
+[package]
+edition = "2024"
+name    = "thcdb-infra-testing"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "infra_testing"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow.workspace            = true
+auth_core.workspace         = true
+chrono.workspace            = true
+domain.workspace            = true
+entity.workspace            = true
+infra_db.workspace          = true
+infra_email.workspace       = true
+migration.workspace         = true
+sea-orm.workspace           = true
+sea-orm-migration.workspace = true
+sea-query.workspace         = true
+serde_json.workspace        = true
+tokio.workspace             = true
+url                         = "2.5.4"

@@ -1,7 +1,6 @@
+use auth_core::permission::{Permission, user_has_permission};
 use sea_orm::ConnectionTrait;
 
-use crate::features::auth::PermissionName;
-use crate::infra::authz;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::error::PermissionDenied;
 
@@ -28,12 +27,11 @@ impl axum::response::IntoResponse for Error {
 pub async fn ensure_permission(
     db: &impl ConnectionTrait,
     user_id: i32,
-    permission_name: PermissionName,
+    permission_name: Permission,
 ) -> Result<(), Error> {
-    let has_permission =
-        authz::user_has_permission(db, user_id, permission_name)
-            .await
-            .db_operation("check user permission")?;
+    let has_permission = user_has_permission(db, user_id, permission_name)
+        .await
+        .db_operation("check user permission")?;
 
     if !has_permission {
         return Err(Error::PermissionDenied);

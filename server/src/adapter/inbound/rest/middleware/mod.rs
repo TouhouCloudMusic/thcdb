@@ -79,7 +79,7 @@ fn cors_layer() -> CorsLayer {
         "http://localhost:3000".parse().unwrap(),
     ];
 
-    let methods = [Method::GET, Method::POST];
+    let methods = [Method::GET, Method::POST, Method::PUT, Method::DELETE];
 
     CorsLayer::new()
         .allow_origin(origins)

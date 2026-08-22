@@ -30,7 +30,7 @@ struct ForgotPasswordRequest {
 }
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
-struct ForgotPasswordResponse {
+pub(super) struct ForgotPasswordResponse {
     verification_code_expires_minutes: i64,
     resend_cooldown_seconds: i64,
 }
@@ -67,6 +67,12 @@ impl From<ForgotPasswordResult> for ForgotPasswordResponse {
                 .verification_code_expires_minutes,
             resend_cooldown_seconds: res.resend_cooldown_seconds,
         }
+    }
+}
+
+impl Default for ForgotPasswordResponse {
+    fn default() -> Self {
+        ForgotPasswordResult::default().into()
     }
 }
 
