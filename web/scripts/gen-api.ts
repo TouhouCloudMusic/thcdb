@@ -103,7 +103,7 @@ function copySchemaFile(
 		return fs.access(toPath, { readable: true })
 	}
 
-	return fs.copy(fromPath, toPath)
+	return fs.copy(fromPath, toPath, { overwrite: true })
 }
 
 function downloadSchema(schemaUrl: string, fs: FileSystem.FileSystem) {

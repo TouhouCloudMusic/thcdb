@@ -18,7 +18,7 @@ RUN apt-get update \
 
 RUN cargo install --locked cargo-chef
 
-RUN rustup component add --toolchain nightly rustc-codegen-cranelift-preview
+RUN rustup component add rustc-codegen-cranelift-preview
 
 FROM rust-builder AS wild-linker-builder
 RUN cargo install --locked wild-linker

@@ -6,7 +6,6 @@ mod test-env '.just/test-env.just'
 
 fmt:
     taplo fmt
-    dprint fmt
     cargo fmt
 
 fix:
@@ -15,15 +14,17 @@ fix:
 
 check:
     taplo fmt --check
-    dprint check
     cargo fmt --check
-    cargo clippy
-    cargo test
+    cargo clippy --workspace
+    cargo test --workspace
 
 integration-test:
-    just test-env
-    cargo test --features integration-test
-    just test-env down
+    #!/usr/bin/env bash
+    set -e
+
+    trap 'just test-env down' EXIT
+    just test-env fresh
+    cargo test --workspace --features integration-test
 
 pre-push: check
 
