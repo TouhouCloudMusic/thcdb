@@ -12,13 +12,12 @@ use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{artist_image, image as image_entity, user as user_entity};
 use infra_db::SeaOrmRepository;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder};
+use user_core::UserSummary;
 
 use super::model::{ArtistImageQueue, ArtistProfileImageInput};
 use super::repo;
 use crate::features::artist::find::repo as artist_repo;
-use crate::features::image_metadata::{
-    CurrentImageMetadata, ImageUploaderSummary,
-};
+use crate::features::image_metadata::CurrentImageMetadata;
 use crate::features::image_queue::repo::{
     self as image_queue_repo, NewImageQueue,
 };
@@ -162,14 +161,11 @@ impl Service {
         };
 
         let uploader = user_entity::Entity::find_by_id(image.uploaded_by)
-            .into_partial_model::<ImageUploaderSummary>()
+            .into_partial_model::<UserSummary>()
             .one(&self.repo.conn)
             .await
             .db_operation("find artist profile image uploader")?
-            .unwrap_or_else(|| ImageUploaderSummary {
-                id: image.uploaded_by,
-                name: "Unknown".to_string(),
-            });
+            .unwrap_or_else(|| UserSummary::unknown(image.uploaded_by));
 
         Ok(Some(CurrentImageMetadata {
             uploaded_at: image.uploaded_at,

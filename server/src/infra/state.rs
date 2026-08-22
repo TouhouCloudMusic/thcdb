@@ -1,7 +1,8 @@
 use auth_worker::password_reset_email::{
-    PasswordResetEmailQueue, queue as password_reset_email_queue,
+    Queue, queue as password_reset_email_queue,
 };
 use infra_db::SeaOrmRepository;
+use infra_email::Mailer;
 use infra_storage_worker::{RemoveFileQueue, queue as remove_file_queue};
 use lettre::message::Mailbox;
 use lettre::transport::smtp::authentication::Credentials;
@@ -11,9 +12,8 @@ use snafu::{FromString, ResultExt, Whatever};
 
 use super::config::{Config, EmailSecurity};
 use super::database::{get_connection, init_database};
-use super::email::Mailer;
-use super::notification::NotificationHub;
 use super::redis::Pool;
+use crate::features::user_event::UserEventSender;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -25,18 +25,20 @@ pub struct AppState {
 
     pub sea_orm_repo: SeaOrmRepository,
 
-    pub notification_hub: NotificationHub,
-
-    pub password_reset_email_queue: PasswordResetEmailQueue,
+    pub password_reset_email_queue: Queue,
 
     pub remove_file_queue: RemoveFileQueue,
+
+    pub(crate) user_events: UserEventSender,
 }
 
 impl AppState {
     pub async fn init(config: &Config) -> Result<Self, Whatever> {
         let conn = get_connection(&config.database_url).await;
         init_database(&conn).await;
+
         let redis_pool = Pool::init(&config.redis_url).await.inner;
+
         let password_reset_email_queue =
             password_reset_email_queue(&config.redis_url)
                 .await
@@ -45,12 +47,14 @@ impl AppState {
                         "Failed to initialize password reset queue: {err}"
                     ))
                 })?;
+
         let remove_file_queue =
             remove_file_queue(&config.redis_url).await.map_err(|err| {
                 Whatever::without_source(format!(
                     "Failed to initialize remove file queue: {err}"
                 ))
             })?;
+
         let smtp_conf = &config.email;
 
         if smtp_conf.port == 0 {
@@ -92,14 +96,16 @@ impl AppState {
         };
         let transport = builder.port(smtp_conf.port).credentials(creds).build();
 
+        let user_events = UserEventSender::new(256);
+
         Ok(Self {
             database: conn.clone(),
             redis_pool,
             mailer: Mailer::new(transport, from),
             sea_orm_repo: SeaOrmRepository::new(conn.clone()),
-            notification_hub: NotificationHub::new(),
             password_reset_email_queue,
             remove_file_queue,
+            user_events,
         })
     }
 }

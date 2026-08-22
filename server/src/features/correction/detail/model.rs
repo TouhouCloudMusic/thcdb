@@ -1,9 +1,8 @@
-use domain::shared::CursorResponse;
 use serde::Serialize;
+use user_core::UserSummary;
 use utoipa::ToSchema;
 
-use crate::features::correction::comment::CorrectionComment;
-use crate::features::correction::model::CorrectionUserSummary;
+use crate::features::comment::CommentPage;
 
 #[derive(Serialize, ToSchema)]
 pub struct CorrectionDetail {
@@ -15,6 +14,8 @@ pub struct CorrectionDetail {
     pub entity_name: String,
     pub created_at: chrono::DateTime<chrono::FixedOffset>,
     pub handled_at: Option<chrono::DateTime<chrono::FixedOffset>>,
-    pub author: CorrectionUserSummary,
-    pub comments: CursorResponse<CorrectionComment>,
+    pub author: UserSummary,
+    pub comments: CommentPage,
+    /// Whether the querist subscribes to this correction. `None` if querist is not signed in.
+    pub is_subscribed: Option<bool>,
 }

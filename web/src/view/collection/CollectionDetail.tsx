@@ -292,6 +292,7 @@ function OwnerItemsList(props: OwnerItemsListProps) {
 				{(item, index) => (
 					<CollectionItemCard
 						item={item}
+						number={index() + 1}
 						isEditing={props.isEditingItems}
 						isDeleting={props.owner.isDeletingItem}
 						isReordering={props.owner.isReorderingItems}
@@ -359,9 +360,10 @@ function CollectionItems(props: CollectionItemsProps) {
 								fallback={
 									<ul class="flex flex-col gap-3">
 										<For each={state().items}>
-											{(item) => (
+											{(item, index) => (
 												<CollectionItemCard
 													item={item}
+													number={index() + 1}
 													isEditing={false}
 													isDeleting={false}
 													isReordering={false}

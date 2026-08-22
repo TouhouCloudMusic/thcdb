@@ -209,7 +209,7 @@ export function AddToCollectionDialog(props: Props) {
 	const [createCollectionOpen, setCreateCollectionOpen] = createSignal(false)
 
 	const collectionsQuery = useInfiniteQuery(() => {
-		const username = userCtx.user?.name
+		const username = userCtx.profile?.name
 
 		return {
 			...userCollectionsInfiniteOptions({
@@ -262,7 +262,7 @@ export function AddToCollectionDialog(props: Props) {
 			const collectionId = formStore.selectedCollectionId
 			if (collectionId === undefined) return
 
-			invalidateUserCollectionQueries(collectionId, userCtx.user?.name)
+			invalidateUserCollectionQueries(collectionId, userCtx.profile?.name)
 			props.onOpenChange(false)
 			setFormStore(
 				produce((draft) => {

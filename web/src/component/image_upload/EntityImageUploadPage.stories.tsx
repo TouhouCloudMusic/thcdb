@@ -1,8 +1,7 @@
-import { RouterContextProvider } from "@tanstack/solid-router"
 import { onMount } from "solid-js"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { createStoryRouter } from "~/utils/adapter/storybook"
+import { withStoryRouter } from "~/utils/adapter/storybook"
 import { logImage } from "~/utils/log"
 import type { EntityImageUploadPageProps } from "~/view/image_upload/EntityImageUploadPage"
 import {
@@ -56,28 +55,22 @@ async function fileToDataUrl(file: File) {
 	return dataUrl
 }
 
-const router = createStoryRouter()
-
 function StoryRoot(props: StoryRootProps) {
 	const store = createEntityImageUploadStore({
 		onUpload: (file) => props.onUpload(file),
 	})
 
 	return (
-		<RouterContextProvider router={router}>
-			{() => (
-				<EntityImageUploadPage
-					entityLabel={props.entityLabel}
-					entityId={props.entityId}
-					entityName={props.entityName}
-					imageLabel={props.imageLabel}
-					imageUrl={props.imageUrl}
-					dimensionRange={props.dimensionRange}
-					fileSizeRange={props.fileSizeRange}
-					store={store}
-				/>
-			)}
-		</RouterContextProvider>
+		<EntityImageUploadPage
+			entityLabel={props.entityLabel}
+			entityId={props.entityId}
+			entityName={props.entityName}
+			imageLabel={props.imageLabel}
+			imageUrl={props.imageUrl}
+			dimensionRange={props.dimensionRange}
+			fileSizeRange={props.fileSizeRange}
+			store={store}
+		/>
 	)
 }
 
@@ -88,20 +81,16 @@ function DiffStoryRoot(props: Omit<EntityImageUploadPageProps, "store">) {
 	})
 
 	return (
-		<RouterContextProvider router={router}>
-			{() => (
-				<EntityImageUploadPage
-					entityLabel={props.entityLabel}
-					entityId={props.entityId}
-					entityName={props.entityName}
-					imageLabel={props.imageLabel}
-					imageUrl={props.imageUrl}
-					dimensionRange={props.dimensionRange}
-					fileSizeRange={props.fileSizeRange}
-					store={store}
-				/>
-			)}
-		</RouterContextProvider>
+		<EntityImageUploadPage
+			entityLabel={props.entityLabel}
+			entityId={props.entityId}
+			entityName={props.entityName}
+			imageLabel={props.imageLabel}
+			imageUrl={props.imageUrl}
+			dimensionRange={props.dimensionRange}
+			fileSizeRange={props.fileSizeRange}
+			store={store}
+		/>
 	)
 }
 
@@ -116,20 +105,16 @@ function UploadingStoryRoot(props: Omit<EntityImageUploadPageProps, "store">) {
 	})
 
 	return (
-		<RouterContextProvider router={router}>
-			{() => (
-				<EntityImageUploadPage
-					entityLabel={props.entityLabel}
-					entityId={props.entityId}
-					entityName={props.entityName}
-					imageLabel={props.imageLabel}
-					imageUrl={props.imageUrl}
-					dimensionRange={props.dimensionRange}
-					fileSizeRange={props.fileSizeRange}
-					store={store}
-				/>
-			)}
-		</RouterContextProvider>
+		<EntityImageUploadPage
+			entityLabel={props.entityLabel}
+			entityId={props.entityId}
+			entityName={props.entityName}
+			imageLabel={props.imageLabel}
+			imageUrl={props.imageUrl}
+			dimensionRange={props.dimensionRange}
+			fileSizeRange={props.fileSizeRange}
+			store={store}
+		/>
 	)
 }
 
@@ -144,6 +129,7 @@ async function onUploadPendingStoryStub() {
 const meta = {
 	title: "Page/EntityImageUploadPage",
 	component: StoryRoot,
+	decorators: [withStoryRouter],
 	parameters: {
 		layout: "fullscreen",
 	},

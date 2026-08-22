@@ -1,0 +1,50 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-notification-service"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "notification_service"
+path = "src/lib.rs"
+
+[features]
+integration-test = [  ]
+
+[dependencies]
+user_core.workspace         = true
+chrono.workspace            = true
+comment_repo.workspace      = true
+derive_more.workspace       = true
+domain.workspace            = true
+entity.workspace            = true
+image_queue_core.workspace  = true
+infra_db.workspace          = true
+log                         = { workspace = true, features = [ "kv" ] }
+notification_core.workspace = true
+sea-orm.workspace           = true
+sea-query.workspace         = true
+serde.workspace             = true
+serde_with.workspace        = true
+utoipa.workspace            = true
+
+[dev-dependencies]
+account_notification.workspace = true
+anyhow.workspace               = true
+comment_service.workspace      = true
+infra_testing.workspace        = true
+notification_cleanup.workspace = true
+tokio.workspace                = true
+
+[[test]]
+name              = "read_state"
+path              = "tests/read_state.rs"
+required-features = [ "integration-test" ]
+
+[[test]]
+name              = "cleanup"
+path              = "tests/cleanup.rs"
+required-features = [ "integration-test" ]

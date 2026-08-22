@@ -10,6 +10,8 @@ export type RootProps = PolymorphicProps<"div", K_Tab.TabsRootProps<"div">> & {
 	orientation?: "horizontal" | "vertical"
 }
 
+export const CONTAINER_CLASS = "border-b border-slate-300"
+
 type IndicatorPosition = "bottom" | "top" | "left" | "right"
 
 type Context =

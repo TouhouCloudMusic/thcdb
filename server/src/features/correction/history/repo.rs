@@ -6,12 +6,11 @@ use sea_orm::{
     ColumnTrait, ConnectionTrait, DbErr, EntityTrait, JoinType, QueryFilter,
     QueryOrder, QuerySelect, RelationTrait,
 };
-
-use crate::features::correction::model::CorrectionUserSummary;
+use user_core::UserSummary;
 
 #[derive(Clone)]
 pub(super) struct CorrectionRevisionAuthor {
-    pub(super) author: CorrectionUserSummary,
+    pub(super) author: UserSummary,
     pub(super) description: String,
 }
 
@@ -58,7 +57,7 @@ pub(super) async fn load_latest_revision_authors(
         revision_map
             .entry(correction_id)
             .or_insert(CorrectionRevisionAuthor {
-                author: CorrectionUserSummary {
+                author: UserSummary {
                     id: author_id,
                     name: author_name,
                 },

@@ -23,6 +23,7 @@ pub mod tag;
 mod tag_vote;
 pub mod user;
 pub mod user_collection;
+pub(crate) mod user_event;
 pub mod user_image;
 pub mod user_profile;
 
@@ -52,5 +53,6 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .merge(tag_vote::router())
         .merge(user::router())
         .merge(user_collection::router())
+        .merge(user_event::router())
         .merge(user_profile::router())
 }

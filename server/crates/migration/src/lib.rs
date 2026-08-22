@@ -62,6 +62,16 @@ migrations![
     m20260514_000001_move_comments_to_threads,
     m20260523_000000_create_user_collection_follow,
     m20260528_000000_add_user_collection_item_entity_lookup_index,
+    m20260530_000000_drop_notification_tables,
+    m20260531_000000_create_notification_inbox,
+    m20260603_000000_create_subscriptions,
+    m20260604_000000_add_image_queue_to_comment_target,
+    m20260604_000001_add_pending_correction_unique_index,
+    m20260728_000000_drop_user_role_change_audit,
+    m20260728_000001_drop_permission_description,
+    m20260730_000000_rename_user_collection_item_position_to_sort_key,
+    m20260820_000000_rename_comment_reply_relation,
+    m20260822_000000_rename_notification_user_columns,
 ];
 
 macro_rules! migration {

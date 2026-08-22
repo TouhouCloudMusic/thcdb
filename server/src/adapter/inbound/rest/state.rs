@@ -4,7 +4,6 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 pub(crate) use infra_db::SeaOrmRepository;
 
-use crate::infra::notification::NotificationHub;
 use crate::infra::singleton::FS_IMAGE_BASE_PATH;
 use crate::infra::state::AppState;
 use crate::infra::storage::{GenericFileStorage, GenericFileStorageConfig};
@@ -57,7 +56,6 @@ pub(crate) type ReleaseImageService = crate::features::release_image::Service;
 
 pub(crate) type UserImageService = crate::features::user_image::Service;
 pub(crate) type UserProfileService = crate::features::user_profile::Service;
-pub(crate) type NotificationService = crate::features::notification::Service;
 
 impl FromRef<ArcAppState> for SeaOrmRepository {
     fn from_ref(input: &ArcAppState) -> Self {
@@ -67,7 +65,10 @@ impl FromRef<ArcAppState> for SeaOrmRepository {
 
 impl FromRef<ArcAppState> for UserProfileService {
     fn from_ref(input: &ArcAppState) -> Self {
-        Self::new(input.sea_orm_repo.clone())
+        Self {
+            repo: input.sea_orm_repo.clone(),
+            user_events: input.user_events.clone(),
+        }
     }
 }
 
@@ -97,17 +98,5 @@ impl FromRef<ArcAppState> for ArtistImageService {
 impl FromRef<ArcAppState> for UserImageService {
     fn from_ref(input: &ArcAppState) -> Self {
         Self::new(input.sea_orm_repo.clone(), input.into())
-    }
-}
-
-impl FromRef<ArcAppState> for NotificationHub {
-    fn from_ref(input: &ArcAppState) -> Self {
-        input.notification_hub.clone()
-    }
-}
-
-impl FromRef<ArcAppState> for NotificationService {
-    fn from_ref(input: &ArcAppState) -> Self {
-        Self::new(input.sea_orm_repo.clone(), input.notification_hub.clone())
     }
 }

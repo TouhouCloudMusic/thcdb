@@ -6,6 +6,7 @@ import { I18NProvider } from "./i18n"
 import { TanStackProvider as QueryProvider } from "./tanstack"
 import { ThemeProvider } from "./theme"
 import { UserContextProvider } from "./user"
+import { UserEventStream } from "./userEvent"
 
 export function StateProvider(
 	props: ParentProps<{ initialLocale: AppLocale }>,
@@ -15,6 +16,7 @@ export function StateProvider(
 			<QueryProvider>
 				<I18NProvider initialLocale={props.initialLocale}>
 					<UserContextProvider>
+						<UserEventStream />
 						<ThemeProvider>{props.children}</ThemeProvider>
 					</UserContextProvider>
 				</I18NProvider>

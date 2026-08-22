@@ -1,6 +1,7 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Tag } from "@thc/api"
 import { createSignal, Show, Suspense } from "solid-js"
+import { twJoin } from "tailwind-merge"
 
 import { Link, Tab } from "~/component/atomic"
 import { Intersperse } from "~/component/data/Intersperse"
@@ -112,7 +113,7 @@ function TagInfoTabs() {
 			value={activeTab()}
 			onChange={setActiveTab}
 		>
-			<div class="border-b border-slate-300 px-4">
+			<div class={twJoin(Tab.CONTAINER_CLASS, "px-4")}>
 				<Tab.List class="gap-12">
 					<Show when={hasDesc()}>
 						<Tab.Trigger

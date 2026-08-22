@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
+use user_core::UserSummary;
 use utoipa::{IntoParams, ToSchema};
-
-use crate::features::correction::model::CorrectionUserSummary;
 
 #[derive(Deserialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]
@@ -44,6 +43,6 @@ pub(super) struct CorrectionHistoryItem {
     pub(super) r#type: entity::enums::CorrectionType,
     pub(super) created_at: chrono::DateTime<chrono::FixedOffset>,
     pub(super) handled_at: Option<chrono::DateTime<chrono::FixedOffset>>,
-    pub(super) author: CorrectionUserSummary,
+    pub(super) author: UserSummary,
     pub(super) description: String,
 }

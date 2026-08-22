@@ -12,9 +12,6 @@ name = "notification_worker"
 path = "src/lib.rs"
 
 [dependencies]
-chrono.workspace       = true
-entity.workspace       = true
-infra_db.workspace     = true
-infra_worker.workspace = true
-log                    = { workspace = true, features = [ "kv" ] }
-sea-orm.workspace      = true
+infra_db.workspace             = true
+infra_worker.workspace         = true
+notification_cleanup.workspace = true

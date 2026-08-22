@@ -1,7 +1,7 @@
 mod http;
-mod model;
+pub(crate) mod model;
 pub(crate) mod repo;
-mod service;
+pub(crate) mod service;
 
 pub mod find;
 mod release;

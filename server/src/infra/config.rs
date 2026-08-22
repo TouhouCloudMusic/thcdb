@@ -1,3 +1,5 @@
+use std::num::NonZeroU16;
+
 use flow::Pipe;
 use nestify::nest;
 use serde::Deserialize;
@@ -21,7 +23,7 @@ nest! {
         },
         pub notification: pub struct Notification {
             #[serde(default = "default_notification_retention_days")]
-            pub retention_days: i64,
+            pub retention_days: NonZeroU16,
         },
         pub email: pub struct Email {
             pub creds: pub struct EmailCreds {
@@ -48,8 +50,8 @@ nest! {
 
 impl Copy for LimitMiddleware {}
 
-const fn default_notification_retention_days() -> i64 {
-    90
+const fn default_notification_retention_days() -> NonZeroU16 {
+    NonZeroU16::new(90).unwrap()
 }
 
 const fn default_email_port() -> u16 {

@@ -7,8 +7,8 @@ use entity::{
     user_collection_item as user_collection_item_entity,
 };
 use infra_db::SeaOrmRepository;
-use sea_orm::sea_query::{ExprTrait, Func};
-use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
+use sea_query::{ExprTrait, Func, all, any};
 
 use super::error::{Error, NotFound};
 use super::model::{
@@ -18,17 +18,22 @@ use super::model::{
     UserCollectionMutationRequest,
 };
 use super::repo;
+use crate::features::user_event::{UserEvent, UserEventSender};
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::PageQuery;
 
 #[derive(Clone)]
 pub(super) struct Service {
     repo: SeaOrmRepository,
+    user_events: UserEventSender,
 }
 
 impl Service {
-    pub(super) const fn new(repo: SeaOrmRepository) -> Self {
-        Self { repo }
+    pub(super) const fn new(
+        repo: SeaOrmRepository,
+        user_events: UserEventSender,
+    ) -> Self {
+        Self { repo, user_events }
     }
 
     pub(super) async fn list_user_collections(
@@ -137,24 +142,17 @@ impl Service {
         page_query: PageQuery,
     ) -> Result<PageResponse<UserCollection>, Error> {
         let pattern = format!("%{}%", keyword.to_lowercase());
-        let select = user_collection_entity::Entity::find()
-            .filter(user_collection_entity::Column::IsPublic.eq(true))
-            .filter(
-                Condition::any()
-                    .add(
-                        Func::lower(
-                            user_collection_entity::Column::Name.into_expr(),
-                        )
-                        .like(pattern.clone()),
-                    )
-                    .add(
-                        Func::lower(
-                            user_collection_entity::Column::Description
-                                .into_expr(),
-                        )
-                        .like(pattern),
-                    ),
-            );
+        let select = user_collection_entity::Entity::find().filter(all![
+            user_collection_entity::Column::IsPublic.eq(true),
+            any![
+                Func::lower(user_collection_entity::Column::Name.into_expr(),)
+                    .like(pattern.clone()),
+                Func::lower(
+                    user_collection_entity::Column::Description.into_expr(),
+                )
+                .like(pattern),
+            ],
+        ]);
 
         repo::load_user_collections_page(
             &self.repo.conn,
@@ -187,19 +185,31 @@ impl Service {
         collection_id: i32,
         req: UserCollectionMutationRequest,
     ) -> Result<UserCollection, Error> {
-        let model = repo::find_owned_user_collection(
-            &self.repo.conn,
-            collection_id,
-            owner_id,
-        )
-        .await?;
-        repo::update_user_collection(&self.repo.conn, model, &req).await?;
-        repo::load_user_collection_detail(
-            &self.repo.conn,
+        let tx_repo = self
+            .repo
+            .begin_tx()
+            .await
+            .db_operation("begin update user collection transaction")?;
+        let conn = tx_repo.conn();
+
+        let model = repo::lock_user_collection(conn, collection_id).await?;
+        model.ensure_owned_by(owner_id)?;
+
+        repo::update_user_collection(conn, model, &req).await?;
+
+        let collection = repo::load_user_collection_detail(
+            conn,
             collection_id,
             Some(owner_id),
         )
-        .await
+        .await?;
+
+        tx_repo
+            .commit()
+            .await
+            .map_err(crate::infra::database::error::DatabaseError::from)?;
+
+        Ok(collection)
     }
 
     pub(super) async fn delete_user_collection(
@@ -207,13 +217,25 @@ impl Service {
         owner_id: i32,
         collection_id: i32,
     ) -> Result<(), Error> {
-        repo::find_owned_user_collection(
-            &self.repo.conn,
-            collection_id,
-            owner_id,
-        )
-        .await?;
-        repo::delete_user_collection(&self.repo.conn, collection_id).await
+        let tx_repo = self
+            .repo
+            .begin_tx()
+            .await
+            .db_operation("begin delete user collection transaction")?;
+        let conn = tx_repo.conn();
+
+        let collection =
+            repo::lock_user_collection(conn, collection_id).await?;
+        collection.ensure_owned_by(owner_id)?;
+
+        repo::delete_user_collection(conn, collection_id).await?;
+
+        tx_repo
+            .commit()
+            .await
+            .map_err(crate::infra::database::error::DatabaseError::from)?;
+
+        Ok(())
     }
 
     pub(super) async fn create_user_collection_item(
@@ -227,7 +249,11 @@ impl Service {
                 "begin create user collection item transaction",
             )?;
         let conn = tx_repo.conn();
-        repo::lock_owned_user_collection(conn, collection_id, owner_id).await?;
+
+        let collection =
+            repo::lock_user_collection(conn, collection_id).await?;
+        collection.ensure_owned_by(owner_id)?;
+
         repo::ensure_referenced_entity_exists(
             conn,
             req.entity_type,
@@ -235,21 +261,34 @@ impl Service {
         )
         .await?;
 
-        let position =
-            repo::next_user_collection_item_position(conn, collection_id)
-                .await?;
-        let item = repo::insert_user_collection_item(
-            conn,
-            collection_id,
-            &req,
-            position,
-        )
-        .await?;
+        let item = repo::insert_user_collection_item(conn, collection_id, &req)
+            .await?;
+
+        let notification_recipients = if collection.is_public {
+            Some(
+                user_collection_notification::create_collection_item_added_notification(
+                    conn,
+                    owner_id,
+                    collection_id,
+                    item.id,
+                )
+                .await?,
+            )
+        } else {
+            None
+        };
 
         tx_repo
             .commit()
             .await
             .map_err(crate::infra::database::error::DatabaseError::from)?;
+
+        if let Some(notification_recipients) = notification_recipients {
+            self.user_events.publish(
+                UserEvent::NotificationInboxUpdated,
+                notification_recipients.user_ids,
+            );
+        }
 
         Ok(item.into())
     }
@@ -265,11 +304,12 @@ impl Service {
                 "begin delete user collection item transaction",
             )?;
         let conn = tx_repo.conn();
-        repo::lock_owned_user_collection(conn, collection_id, owner_id).await?;
-        repo::defer_user_collection_item_position_constraint(conn).await?;
+
+        let collection =
+            repo::lock_user_collection(conn, collection_id).await?;
+        collection.ensure_owned_by(owner_id)?;
+
         repo::delete_user_collection_item(conn, collection_id, item_id).await?;
-        repo::resequence_user_collection_item_positions(conn, collection_id)
-            .await?;
 
         tx_repo
             .commit()
@@ -290,19 +330,19 @@ impl Service {
                 "begin reorder user collection items transaction",
             )?;
         let conn = tx_repo.conn();
-        repo::lock_owned_user_collection(conn, collection_id, owner_id).await?;
-        repo::defer_user_collection_item_position_constraint(conn).await?;
+
+        let collection =
+            repo::lock_user_collection(conn, collection_id).await?;
+        collection.ensure_owned_by(owner_id)?;
 
         let items =
             repo::load_user_collection_items(conn, collection_id).await?;
         validate_reordered_item_ids(&items, &req.item_ids)?;
 
-        let final_positions: Vec<(i32, i32)> =
-            req.item_ids.iter().copied().zip(0_i32..).collect();
-        repo::update_user_collection_item_positions(
+        repo::update_user_collection_item_order(
             conn,
             collection_id,
-            &final_positions,
+            &req.item_ids,
         )
         .await?;
 
@@ -319,24 +359,51 @@ impl Service {
         user_id: i32,
         collection_id: i32,
     ) -> Result<(), Error> {
-        let collection = repo::find_visible_user_collection(
-            &self.repo.conn,
-            collection_id,
-            Some(user_id),
-        )
-        .await?;
+        let tx_repo = self
+            .repo
+            .begin_tx()
+            .await
+            .db_operation("begin follow user collection transaction")?;
+        let conn = tx_repo.conn();
+
+        let collection =
+            repo::lock_user_collection(conn, collection_id).await?;
 
         if !collection.is_public {
             return Err(Error::NotFound(NotFound::Collection));
         }
         if collection.user_id == user_id {
-            return Err(Error::InvalidRequest(
-                "Cannot follow your own collection".to_string(),
-            ));
+            return Err(Error::CannotFollowOwnCollection);
         }
 
-        repo::follow_user_collection(&self.repo.conn, user_id, collection_id)
+        let inserted =
+            repo::follow_user_collection(conn, user_id, collection_id).await?;
+        let notification_recipients = if inserted {
+            Some(
+                user_collection_notification::create_collection_followed_notification(
+                    conn,
+                    user_id,
+                    collection_id,
+                )
+                .await?,
+            )
+        } else {
+            None
+        };
+
+        tx_repo
+            .commit()
             .await
+            .map_err(crate::infra::database::error::DatabaseError::from)?;
+
+        if let Some(notification_recipients) = notification_recipients {
+            self.user_events.publish(
+                UserEvent::NotificationInboxUpdated,
+                notification_recipients.user_ids,
+            );
+        }
+
+        Ok(())
     }
 
     pub(super) async fn unfollow_user_collection(
@@ -359,6 +426,20 @@ impl Service {
             page_query,
         )
         .await
+    }
+}
+
+trait UserCollectionOwnershipExt {
+    fn ensure_owned_by(&self, user_id: i32) -> Result<(), Error>;
+}
+
+impl UserCollectionOwnershipExt for user_collection_entity::Model {
+    fn ensure_owned_by(&self, user_id: i32) -> Result<(), Error> {
+        if self.user_id == user_id {
+            Ok(())
+        } else {
+            Err(Error::CollectionAccessDenied)
+        }
     }
 }
 

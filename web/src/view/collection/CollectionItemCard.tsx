@@ -24,6 +24,7 @@ export type UserCollectionItemDetail =
 
 type Props = {
 	item: UserCollectionItemDetail
+	number: number
 	isEditing: boolean
 	isDeleting: boolean
 	isReordering: boolean
@@ -308,9 +309,8 @@ export function CollectionItemCard(props: Props) {
 		<li class="flex flex-col gap-3 rounded-sm border border-slate-300 bg-primary p-4 shadow-xs transition-shadow hover:shadow-md">
 			<div class="flex flex-col gap-3 w-full">
 				<div class="flex items-center gap-3">
-					{/* Position indicator */}
 					<span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-tertiary">
-						{props.item.position + 1}
+						{props.number}
 					</span>
 					{/* Entity type label */}
 					<span class="text-xs text-tertiary">{entityTypeLabel()}</span>

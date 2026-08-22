@@ -1,18 +1,19 @@
 use utoipa_axum::router::OpenApiRouter;
 
 use super::{
-    comment, compare, detail, diff, handle, history, pending, revisions,
+    compare, detail, diff, history, moderation, pending, revisions,
+    subscription,
 };
 use crate::adapter::inbound::rest::state::ArcAppState;
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new()
         .merge(compare::router())
-        .merge(comment::router())
         .merge(detail::router())
         .merge(diff::router())
-        .merge(handle::router())
+        .merge(moderation::router())
         .merge(pending::router())
         .merge(history::router())
         .merge(revisions::router())
+        .merge(subscription::router())
 }

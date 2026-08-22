@@ -1,11 +1,10 @@
 use axum::extract::{Path, State};
 use entity::enums::CorrectionStatus;
 use entity::{correction as correction_entity, correction_revision};
-use sea_orm::sea_query::NullOrdering;
 use sea_orm::{
-    ColumnTrait, Condition, ConnectionTrait, EntityTrait, Order, QueryFilter,
-    QueryOrder,
+    ColumnTrait, ConnectionTrait, EntityTrait, Order, QueryFilter, QueryOrder,
 };
+use sea_query::{NullOrdering, all, any};
 use serde_json::{Map, Value};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
@@ -27,22 +26,20 @@ async fn find_base_correction(
     db: &impl ConnectionTrait,
     current: &correction_entity::Model,
 ) -> Result<Option<correction_entity::Model>, DatabaseError> {
-    let mut query = correction_entity::Entity::find()
-        .filter(correction_entity::Column::EntityId.eq(current.entity_id))
-        .filter(correction_entity::Column::EntityType.eq(current.entity_type))
-        .filter(
-            correction_entity::Column::Status.eq(CorrectionStatus::Approved),
-        )
-        .filter(correction_entity::Column::Id.ne(current.id));
+    let mut query = correction_entity::Entity::find().filter(all![
+        correction_entity::Column::EntityId.eq(current.entity_id),
+        correction_entity::Column::EntityType.eq(current.entity_type),
+        correction_entity::Column::Status.eq(CorrectionStatus::Approved),
+        correction_entity::Column::Id.ne(current.id),
+    ]);
 
     if let Some(handled_at) = current.handled_at {
-        query = query.filter(
-            Condition::any()
-                .add(correction_entity::Column::HandledAt.lt(handled_at))
-                .add(correction_entity::Column::HandledAt.is_null().and(
-                    correction_entity::Column::CreatedAt.lt(current.created_at),
-                )),
-        );
+        query = query.filter(any![
+            correction_entity::Column::HandledAt.lt(handled_at),
+            correction_entity::Column::HandledAt.is_null().and(
+                correction_entity::Column::CreatedAt.lt(current.created_at),
+            ),
+        ]);
     }
 
     query

@@ -94,7 +94,7 @@ impl Service {
 
         subscribe(conn, target, author_id).await?;
 
-        let notification_recipients =
+        let mut notification_recipients =
             comment_notification::create_comment_notifications(conn, &created)
                 .await?;
 
@@ -106,14 +106,19 @@ impl Service {
             )
             .await?
         {
-            notification_core::mark_comment_thread_read_through(
-                conn,
-                author_id,
-                read_boundary.thread_id,
-                read_boundary.id,
-            )
-            .await
-            .db_operation("mark comment thread read through")?;
+            let read_boundary_advanced =
+                notification_core::mark_comment_thread_read_through(
+                    conn,
+                    author_id,
+                    read_boundary.thread_id,
+                    read_boundary.id,
+                )
+                .await
+                .db_operation("mark comment thread read through")?;
+
+            if read_boundary_advanced {
+                notification_recipients.user_ids.find_or_insert(author_id);
+            }
         }
 
         let summary = comment_repo::load_comment(conn, created.comment().id)

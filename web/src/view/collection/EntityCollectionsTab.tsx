@@ -2,6 +2,8 @@ import { useLingui } from "@lingui/solid/macro"
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/solid-query"
 import { createMemo, createSignal, For, Match, Switch } from "solid-js"
 
+import type { ToolbarSelectOption } from "~/component/atomic/form/ToolbarSelect"
+import { ToolbarSelect } from "~/component/atomic/form/ToolbarSelect"
 import type {
 	EntityUserCollectionSort,
 	EntityUserCollectionTarget,
@@ -10,8 +12,6 @@ import { entityUserCollectionsInfiniteOptions } from "~/hey-api/@tanstack/solid-
 import { getNextPageParam } from "~/utils/query"
 import { CollectionLoadMore } from "~/view/collection/CollectionLoadMore"
 import { CollectionStatusMessage } from "~/view/collection/CollectionStatusMessage"
-import type { CollectionToolbarSelectOption } from "~/view/collection/CollectionToolbarSelect"
-import { CollectionToolbarSelect } from "~/view/collection/CollectionToolbarSelect"
 import { FollowedCollectionRow } from "~/view/collection/FollowedCollectionRow"
 
 const PAGE_LIMIT = 20
@@ -27,7 +27,7 @@ export function EntityCollectionsTab(props: {
 		createSignal<EntityUserCollectionSort>("collected_at")
 
 	const sortOptions = createMemo<
-		CollectionToolbarSelectOption<EntityUserCollectionSort>[]
+		ToolbarSelectOption<EntityUserCollectionSort>[]
 	>(() => [
 		{
 			value: "collected_at",
@@ -67,7 +67,7 @@ export function EntityCollectionsTab(props: {
 	return (
 		<div class="flex flex-col gap-4">
 			<div class="flex justify-end">
-				<CollectionToolbarSelect
+				<ToolbarSelect
 					options={sortOptions()}
 					value={sortBy()}
 					placeholder={t`Sort`}

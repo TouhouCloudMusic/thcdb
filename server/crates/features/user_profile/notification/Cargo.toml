@@ -1,0 +1,17 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-user-profile-notification"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "user_profile_notification"
+path = "src/lib.rs"
+
+[dependencies]
+infra_db.workspace          = true
+notification_core.workspace = true
+sea-orm.workspace           = true

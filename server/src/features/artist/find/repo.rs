@@ -11,11 +11,11 @@ use entity::{
 use infra_db::SeaOrmRepository;
 use itertools::{Itertools, izip};
 use sea_orm::{
-    ColumnTrait, Condition, ConnectionTrait, EntityTrait, LoaderTrait,
-    PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Select,
+    ColumnTrait, ConnectionTrait, EntityTrait, LoaderTrait, PaginatorTrait,
+    QueryFilter, QueryOrder, QuerySelect, Select,
 };
 use sea_query::extension::postgres::PgBinOper;
-use sea_query::{ExprTrait, Func, SimpleExpr};
+use sea_query::{ExprTrait, Func, SimpleExpr, any};
 
 use super::{CommonFilter, FindManyFilter};
 use crate::features::artist::model::{Artist, Membership, Tenure};
@@ -91,11 +91,10 @@ async fn find_many_impl(
     }
 
     let aliases = artist_alias::Entity::find()
-        .filter(
-            Condition::any()
-                .add(artist_alias::Column::FirstId.is_in(ids.iter().copied()))
-                .add(artist_alias::Column::SecondId.is_in(ids.iter().copied())),
-        )
+        .filter(any![
+            artist_alias::Column::FirstId.is_in(ids.iter().copied()),
+            artist_alias::Column::SecondId.is_in(ids.iter().copied()),
+        ])
         .all(db)
         .await
         .db_operation("load artist aliases")?;
@@ -141,14 +140,10 @@ async fn find_many_impl(
         .db_operation("load artist localized names")?;
 
     let artist_memberships = artist_membership::Entity::find()
-        .filter(
-            Condition::any()
-                .add(
-                    artist_membership::Column::MemberId
-                        .is_in(ids.iter().copied()),
-                )
-                .add(artist_membership::Column::GroupId.is_in(ids)),
-        )
+        .filter(any![
+            artist_membership::Column::MemberId.is_in(ids.iter().copied()),
+            artist_membership::Column::GroupId.is_in(ids),
+        ])
         .all(db)
         .await
         .db_operation("load artist memberships")?;

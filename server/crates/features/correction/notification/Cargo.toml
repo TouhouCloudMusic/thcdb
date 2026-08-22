@@ -1,0 +1,32 @@
+[package]
+edition = "2024"
+name    = "thcdb-feature-correction-notification"
+publish = false
+version = "0.1.0"
+
+[lints]
+workspace = true
+
+[lib]
+name = "correction_notification"
+path = "src/lib.rs"
+
+[features]
+integration-test = [  ]
+
+[dependencies]
+auth_core.workspace         = true
+entity.workspace            = true
+infra_db.workspace          = true
+notification_core.workspace = true
+sea-orm.workspace           = true
+
+[dev-dependencies]
+anyhow.workspace        = true
+infra_testing.workspace = true
+tokio.workspace         = true
+
+[[test]]
+name              = "recipients"
+path              = "tests/recipients.rs"
+required-features = [ "integration-test" ]

@@ -34,26 +34,26 @@ architecture/
 
 ## 模块状态概览
 
-| 模块 | 状态 | 说明 |
-|------|------|------|
-| [Artist](./artist/) | ✅ 已完成 | 查询、创建、更新、图片上传 |
-| [Release](./release/) | ✅ 已完成 | 查询、创建、更新、封面上传 |
-| [Song](./song/) | ✅ 已完成 | 查询、创建、更新 |
-| [Event](./event/) | ⚠️ 部分完成 | 仅查询 |
-| [Label](./label/) | ⚠️ 部分完成 | 仅查询 |
-| [Tag](./tag/) | ⚠️ 部分完成 | 查询、投票 |
-| [User](./user/) | ⚠️ 部分完成 | 基础功能，权限管理待实现 |
-| [User Lists](./user-lists/) | ❌ 未实现 | |
-| [Comment](./comment/) | ❌ 未实现 | |
-| [Correction](./correction/) | ⚠️ 部分完成 | 创建、批准，拒绝待实现 |
-| [Image](./image/) | ⚠️ 部分完成 | 上传完成，队列管理待实现 |
-| [Like & Favorite](./like-and-favorite/) | ❌ 未实现 | |
-| [Search](./search/) | ❌ 未实现 | |
-| [Notification](./notification/) | ❌ 未实现 | |
-| [Statistics](./statistics/) | ❌ 未实现 | |
-| [Recommendation](./recommendation/) | ❌ 未实现 | |
-| [History Tracking](./history-tracking/) | ⚠️ 部分完成 | 数据层完成，API 待实现 |
-| [Localization](./localization/) | ✅ 已完成 | 数据层完成 |
+| 模块                                    | 状态        | 说明                                                                         |
+| --------------------------------------- | ----------- | ---------------------------------------------------------------------------- |
+| [Artist](./artist/)                     | ✅ 已完成   | 查询、创建、更新、图片上传                                                   |
+| [Release](./release/)                   | ✅ 已完成   | 查询、创建、更新、封面上传                                                   |
+| [Song](./song/)                         | ✅ 已完成   | 查询、创建、更新                                                             |
+| [Event](./event/)                       | ⚠️ 部分完成 | 仅查询                                                                       |
+| [Label](./label/)                       | ⚠️ 部分完成 | 仅查询                                                                       |
+| [Tag](./tag/)                           | ⚠️ 部分完成 | 查询、投票                                                                   |
+| [User](./user/)                         | ⚠️ 部分完成 | 基础功能、RBAC、角色管理及关注关系已实现；关注列表、粉丝列表与活动流待实现   |
+| [User Lists](./user-lists/)             | ❌ 未实现   |                                                                              |
+| [Comment](./comment/)                   | ⚠️ 部分完成 | 线程评论、回复、删除与 target APIs 已实现；评论修订历史待实现                      |
+| [Correction](./correction/)             | ⚠️ 部分完成 | 创建、查看、批准、拒绝与修订历史列表已实现                                     |
+| [Image](./image/)                       | ⚠️ 部分完成 | 图片上传与图片队列管理 API/页面已实现                                          |
+| [Like & Favorite](./like-and-favorite/) | ❌ 未实现   |                                                                              |
+| [Search](./search/)                     | ❌ 未实现   |                                                                              |
+| [Notification](./notification/)         | ⚠️ 部分完成 | 站内 Inbox、已读游标、SSE 失效通知与清理任务已实现；通知偏好和外部通道未实现 |
+| [Statistics](./statistics/)             | ❌ 未实现   |                                                                              |
+| [Recommendation](./recommendation/)     | ❌ 未实现   |                                                                              |
+| [History Tracking](./history-tracking/) | ⚠️ 部分完成 | 数据层完成，API 待实现                                                       |
+| [Localization](./localization/)         | ✅ 已完成   | 数据层完成                                                                   |
 
 ## 架构原则
 

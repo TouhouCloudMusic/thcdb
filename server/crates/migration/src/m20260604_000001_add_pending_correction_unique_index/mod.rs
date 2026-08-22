@@ -1,0 +1,1 @@
+super::migration!(m20260604_000001_add_pending_correction_unique_index);

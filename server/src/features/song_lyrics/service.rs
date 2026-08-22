@@ -1,106 +1,126 @@
-use entity::enums::CorrectionStatus;
+use axum::extract::FromRef;
 use infra_db::SeaOrmRepository;
 
+use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::features::correction::{
     CorrectionSubmitResult, NewCorrection, NewCorrectionMeta, SubmissionError,
     service as correction_service,
 };
 use crate::features::song_lyrics::model::NewSongLyrics;
+use crate::features::user_event::{UserEvent, UserEventSender};
 
-pub async fn create(
-    repo: &SeaOrmRepository,
-    correction: NewCorrection<NewSongLyrics>,
-) -> Result<CorrectionSubmitResult, SubmissionError> {
-    correction
-        .data
-        .validate()
-        .map_err(|source| SubmissionError::Validation(source.to_string()))?;
-
-    let tx_repo = repo
-        .begin_tx()
-        .await
-        .map_err(crate::infra::database::error::DatabaseError::from)?;
-
-    let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
-    let history_id =
-        super::repo::create_history(&tx_repo, &correction.data).await?;
-
-    let correction_id = correction_service::create(
-        &tx_repo,
-        NewCorrectionMeta::<NewSongLyrics> {
-            author: correction.author,
-            r#type: correction.r#type,
-            status: CorrectionStatus::Approved,
-            entity_id,
-            history_id,
-            description: correction.description,
-            phantom: std::marker::PhantomData,
-        },
-    )
-    .await?;
-    tx_repo
-        .commit()
-        .await
-        .map_err(crate::infra::database::error::DatabaseError::from)?;
-
-    Ok(CorrectionSubmitResult::submitted(correction_id, entity_id))
+#[derive(Clone)]
+pub struct Service {
+    repo: SeaOrmRepository,
+    user_events: UserEventSender,
 }
 
-pub async fn upsert_correction(
-    repo: &SeaOrmRepository,
-    lyrics_id: i32,
-    correction: NewCorrection<NewSongLyrics>,
-    mode: correction_service::CorrectionUpsertMode,
-) -> Result<CorrectionSubmitResult, SubmissionError> {
-    correction
-        .data
-        .validate()
-        .map_err(|source| SubmissionError::Validation(source.to_string()))?;
+impl FromRef<ArcAppState> for Service {
+    fn from_ref(input: &ArcAppState) -> Self {
+        Self {
+            repo: input.sea_orm_repo.clone(),
+            user_events: input.user_events.clone(),
+        }
+    }
+}
 
-    let tx_repo = repo
-        .begin_tx()
-        .await
-        .map_err(crate::infra::database::error::DatabaseError::from)?;
+impl Service {
+    pub async fn create(
+        &self,
+        correction: NewCorrection<NewSongLyrics>,
+    ) -> Result<CorrectionSubmitResult, SubmissionError> {
+        correction.data.validate().map_err(|source| {
+            SubmissionError::Validation(source.to_string())
+        })?;
 
-    if let Some(correction_id) =
-        correction_service::find_create_conflict_for_mode::<NewSongLyrics>(
-            &tx_repo, lyrics_id, &mode,
+        let tx_repo = self
+            .repo
+            .begin_tx()
+            .await
+            .map_err(crate::infra::database::error::DatabaseError::from)?;
+
+        let entity_id = super::repo::create(&tx_repo, &correction.data).await?;
+        let history_id =
+            super::repo::create_history(&tx_repo, &correction.data).await?;
+
+        let correction_id = correction_service::create(
+            &tx_repo,
+            NewCorrectionMeta::<NewSongLyrics> {
+                author: correction.author,
+                r#type: correction.r#type,
+                entity_id,
+                history_id,
+                description: correction.description,
+                phantom: std::marker::PhantomData,
+            },
         )
-        .await?
-    {
-        return Ok(CorrectionSubmitResult::conflict(correction_id, lyrics_id));
+        .await?;
+
+        tx_repo
+            .commit()
+            .await
+            .map_err(crate::infra::database::error::DatabaseError::from)?;
+
+        Ok(CorrectionSubmitResult::submitted(correction_id, entity_id))
     }
 
-    let history_id =
-        super::repo::create_history(&tx_repo, &correction.data).await?;
+    pub async fn upsert_correction(
+        &self,
+        lyrics_id: i32,
+        correction: NewCorrection<NewSongLyrics>,
+        mode: correction_service::CorrectionUpsertMode,
+    ) -> Result<CorrectionSubmitResult, SubmissionError> {
+        correction.data.validate().map_err(|source| {
+            SubmissionError::Validation(source.to_string())
+        })?;
 
-    let result = correction_service::upsert(
-        &tx_repo,
-        NewCorrectionMeta::<NewSongLyrics> {
-            author: correction.author,
-            r#type: correction.r#type,
-            status: CorrectionStatus::Pending,
-            entity_id: lyrics_id,
-            history_id,
-            description: correction.description,
-            phantom: std::marker::PhantomData,
-        },
-        mode,
-    )
-    .await?;
+        let tx_repo = self
+            .repo
+            .begin_tx()
+            .await
+            .map_err(crate::infra::database::error::DatabaseError::from)?;
 
-    match result {
-        correction_service::CorrectionUpsertResult::Submitted {
-            correction_id,
-        } => {
-            tx_repo
-                .commit()
-                .await
-                .map_err(crate::infra::database::error::DatabaseError::from)?;
-            Ok(CorrectionSubmitResult::submitted(correction_id, lyrics_id))
+        let history_id =
+            super::repo::create_history(&tx_repo, &correction.data).await?;
+
+        let result = correction_service::upsert(
+            &tx_repo,
+            NewCorrectionMeta::<NewSongLyrics> {
+                author: correction.author,
+                r#type: correction.r#type,
+                entity_id: lyrics_id,
+                history_id,
+                description: correction.description,
+                phantom: std::marker::PhantomData,
+            },
+            mode,
+        )
+        .await?;
+
+        match result {
+            correction_service::CorrectionUpsertResult::Submitted {
+                correction_id,
+                notification_recipients,
+            } => {
+                tx_repo.commit().await.map_err(
+                    crate::infra::database::error::DatabaseError::from,
+                )?;
+                self.user_events.publish(
+                    UserEvent::NotificationInboxUpdated,
+                    notification_recipients.user_ids,
+                );
+
+                Ok(CorrectionSubmitResult::submitted(correction_id, lyrics_id))
+            }
+            correction_service::CorrectionUpsertResult::Conflict {
+                correction_id,
+            } => {
+                tx_repo.rollback().await.map_err(
+                    crate::infra::database::error::DatabaseError::from,
+                )?;
+
+                Ok(CorrectionSubmitResult::conflict(correction_id, lyrics_id))
+            }
         }
-        correction_service::CorrectionUpsertResult::Conflict {
-            correction_id,
-        } => Ok(CorrectionSubmitResult::conflict(correction_id, lyrics_id)),
     }
 }

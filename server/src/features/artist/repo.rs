@@ -17,15 +17,16 @@ use sea_orm::ActiveValue::{
     NotSet, Set, {self},
 };
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, Condition, ConnectionTrait,
-    DatabaseTransaction, DbErr, EntityTrait, LoaderTrait, QueryFilter,
-    QueryOrder, TryInsertResult,
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
+    EntityTrait, LoaderTrait, QueryFilter, QueryOrder, TryInsertResult,
 };
+use sea_query::any;
 use url::Url;
 
 use crate::features::artist::model::{NewArtist, NewMembership};
-use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
-use crate::shared::error::BrokenEntityReference;
+use crate::infra::database::error::{
+    BrokenEntityReference, DatabaseError, DatabaseResultExt,
+};
 
 pub(super) async fn create(
     repo: &SeaOrmTxRepo,
@@ -504,11 +505,10 @@ async fn update_artist_aliases(
     db: &DatabaseTransaction,
 ) -> Result<(), DbErr> {
     artist_alias::Entity::delete_many()
-        .filter(
-            Condition::any()
-                .add(artist_alias::Column::FirstId.eq(artist_id))
-                .add(artist_alias::Column::SecondId.eq(artist_id)),
-        )
+        .filter(any![
+            artist_alias::Column::FirstId.eq(artist_id),
+            artist_alias::Column::SecondId.eq(artist_id),
+        ])
         .exec(db)
         .await?;
 
@@ -601,11 +601,10 @@ async fn update_artist_artist_membership(
 ) -> Result<(), DbErr> {
     // artist_membership_role and artist_membership_tenure are deleted by database cascade
     artist_membership::Entity::delete_many()
-        .filter(
-            Condition::any()
-                .add(artist_membership::Column::MemberId.eq(artist_id))
-                .add(artist_membership::Column::GroupId.eq(artist_id)),
-        )
+        .filter(any![
+            artist_membership::Column::MemberId.eq(artist_id),
+            artist_membership::Column::GroupId.eq(artist_id),
+        ])
         .exec(db)
         .await?;
 

@@ -59,6 +59,54 @@ msgstr "[未实现]发行"
 msgid "{0} users"
 msgstr "{0} 位用户"
 
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} changed your roles to {roles}."
+msgstr "{actor} 将你的角色更改为 {roles}。"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} changed your roles."
+msgstr "{actor} 更改了你的角色。"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} followed you."
+msgstr "{actor} 关注了你。"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} followed your collection {collection}."
+msgstr "{actor} 关注了你的收藏 {collection}。"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} replied to your comment under [deleted]."
+msgstr "{actor} 回复了你于 [已删除] 下的评论。"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} replied to your comment under {target}."
+msgstr "{actor} 回复了你于 {target} 下的评论。"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} requested your review on the correction to {target}."
+msgstr "{actor} 请求你审核对 {target} 的更正。"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor} updated the correction to {target}."
+msgstr "{actor} 更新了对 {target} 的更正。"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{actor}'s list {collection} was updated."
+msgstr "{actor} 的列表 {collection} 更新了。"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{additionalCount, plural, one {one other} other {# others}}"
+msgstr "{additionalCount, plural, one {另外一人} other {另外 # 人}}"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{commenters} commented on {target}."
+msgstr "{commenters}评论了{target}。"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "{commenters} replied to [deleted]."
+msgstr "{commenters} 回复了 [已删除]。"
+
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "{count} votes · relevance {relevance}"
 msgstr "{count} 票 · 相关度 {relevance}"
@@ -79,6 +127,10 @@ msgstr "软件简介"
 #: src/view/admin/users.tsx
 msgid "Access moderation tools and review queues."
 msgstr "可访问审核工具和队列。"
+
+#: src/view/notification/InboxPage.tsx
+msgid "Account"
+msgstr "账户"
 
 #: src/view/admin/users.tsx
 msgid "Action"
@@ -154,10 +206,6 @@ msgstr "之后"
 msgid "AKAs"
 msgstr "AKA"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Albums, EPs, singles"
-msgstr "专辑、EP、单曲"
-
 #: src/view/artist/edit/comp/Aliases.tsx
 #: src/view/artist/profile/comp/ArtistInfo.tsx
 msgid "Aliases"
@@ -171,9 +219,9 @@ msgstr "别名"
 msgid "All"
 msgstr "全部"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Alpha"
-msgstr "早期版本"
+#: src/view/notification/InboxPage.tsx
+msgid "All categories"
+msgstr "全部分类"
 
 #: src/view/user/Profile.tsx
 msgid "Alphabetical"
@@ -193,10 +241,6 @@ msgstr "替代名称"
 msgid "An error occurred. Please try again."
 msgstr "发生错误，请重试。"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "API-powered UI"
-msgstr "API驱动的用户界面"
-
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
 msgid "Approve"
@@ -209,6 +253,10 @@ msgstr "批准此更正？"
 #: src/view/image_queue/detail.tsx
 msgid "Approve image?"
 msgstr "批准这张图片？"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "approved"
+msgstr "批准"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/manage.tsx
@@ -244,7 +292,6 @@ msgstr "确定要从收藏中移除此条目吗？"
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
-#: src/view/Homepage/component/ArtistCard.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/search/index.tsx
 msgid "Artist"
@@ -255,7 +302,7 @@ msgid "Artist Type"
 msgstr "艺术家类型"
 
 #: src/view/Homepage/component/ExploreCard.tsx
-#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeStats.tsx
 #: src/view/release/edit/comp/ReleaseArtistsField.tsx
 #: src/view/search/index.tsx
 #: src/view/song/edit/comp/SongArtistsField.tsx
@@ -336,10 +383,6 @@ msgstr "目录号"
 msgid "Checking session…"
 msgstr "正在检查会话…"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Circles & solo creators"
-msgstr "社团与个人创作者"
-
 #: src/component/form/Location/index.tsx
 msgid "City"
 msgstr "城市"
@@ -353,6 +396,7 @@ msgid "Collected time"
 msgstr "收藏时间"
 
 #: src/view/collection/AddToCollectionDialog.tsx
+#: src/view/notification/InboxPage.tsx
 msgid "Collection"
 msgstr "收藏"
 
@@ -376,6 +420,7 @@ msgid "Collections"
 msgstr "收藏"
 
 #: src/view/comment/CommentThread.tsx
+#: src/view/notification/InboxPage.tsx
 msgid "Comment"
 msgstr "评论"
 
@@ -404,13 +449,13 @@ msgstr "继续"
 msgid "Contribute touhou music metadata"
 msgstr "完善东方同人音乐元数据"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Contribute what’s missing and help keep the database accurate for everyone."
-msgstr "补充缺失内容，帮助所有人维护准确的数据库。"
-
 #: src/view/correction/EntityContributors.tsx
 msgid "Contributors:"
 msgstr "贡献者："
+
+#: src/view/notification/InboxPage.tsx
+msgid "Correction"
+msgstr "修订"
 
 #: src/view/correction/Detail.tsx
 msgid "Correction approved"
@@ -445,6 +490,7 @@ msgstr "国家 / 地区"
 #: src/route/release/$id_.image-upload.tsx
 #: src/view/Homepage/component/NewMusic.tsx
 #: src/view/image_queue/detail.tsx
+#: src/view/notification/NotificationCard.tsx
 msgid "cover art"
 msgstr "封面图"
 
@@ -557,6 +603,10 @@ msgstr "当前位置"
 msgid "Current target image"
 msgstr "当前目标图片"
 
+#: src/view/Homepage/component/HomeStats.tsx
+msgid "Database statistics"
+msgstr ""
+
 #: src/view/event/Info/index.tsx
 msgid "Date"
 msgstr "日期"
@@ -577,6 +627,14 @@ msgstr "删除收藏"
 #: src/view/comment/CommentThread.tsx
 msgid "Delete comment"
 msgstr "删除评论"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "deleted collection"
+msgstr "收藏已删除"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "deleted comment"
+msgstr "评论已删除"
 
 #: src/component/feature/entity_explore/OrderBySelect.tsx
 msgid "Descending"
@@ -734,10 +792,6 @@ msgstr "浏览"
 msgid "Explore Artists"
 msgstr "浏览艺术家"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Explore doujin music"
-msgstr "探索同人音乐"
-
 #: src/view/event/explore.tsx
 msgid "Explore Events"
 msgstr "浏览活动"
@@ -783,6 +837,14 @@ msgstr "加载图片队列失败。"
 msgid "Failed to load items."
 msgstr "加载项目失败。"
 
+#: src/view/notification/InboxPage.tsx
+msgid "Failed to load more notifications."
+msgstr ""
+
+#: src/view/notification/InboxPage.tsx
+msgid "Failed to load notifications."
+msgstr "通知加载失败。"
+
 #: src/view/image_queue/user.tsx
 msgid "Failed to load user image queue."
 msgstr "加载用户图片队列失败。"
@@ -790,6 +852,31 @@ msgstr "加载用户图片队列失败。"
 #: src/view/admin/users.tsx
 msgid "Failed to load users."
 msgstr "加载用户失败。"
+
+#: src/route/notifications.tsx
+msgid "Failed to mark all notifications read"
+msgstr "将所有通知标为已读失败"
+
+#: src/route/notifications.tsx
+msgid "Failed to mark notification read"
+msgstr "标记通知为已读失败"
+
+#: src/route/notifications.tsx
+msgid "Failed to mark notification unread"
+msgstr "标记通知为未读失败"
+
+#: src/route/notifications.tsx
+msgid "Failed to refresh notifications"
+msgstr "刷新通知失败"
+
+#: src/route/notifications.tsx
+msgid "Failed to update saved notification"
+msgstr "更新通知的保存状态失败"
+
+#: src/view/correction/Detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Failed to update subscription"
+msgstr "更新订阅失败"
 
 #: src/component/Footer/index.tsx
 msgid "Feedback"
@@ -814,6 +901,10 @@ msgstr "文件大小"
 #: src/component/Header/index.tsx
 msgid "Filter"
 msgstr "筛选"
+
+#: src/view/notification/InboxPage.tsx
+msgid "Filter by category"
+msgstr "按分类筛选"
 
 #: src/view/user/Profile.tsx
 msgid "Filter collections"
@@ -885,12 +976,7 @@ msgstr "创始人"
 msgid "From"
 msgstr "从"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Genres, themes, credits"
-msgstr "流派、主题、参与信息"
-
 #: src/view/artist/explore.comp.tsx
-#: src/view/Homepage/component/ArtistCard.tsx
 msgid "Group"
 msgstr "团体"
 
@@ -920,7 +1006,7 @@ msgstr "首页"
 msgid "ID"
 msgstr "编号"
 
-#: src/view/auth/store/index.ts
+#: src/view/auth/useAuthForm.ts
 msgid "If eligible, a verification code has been sent."
 msgstr "如果条件满足，验证码已发送。"
 
@@ -933,12 +1019,17 @@ msgid "Image Cropper Placeholder"
 msgstr "图片裁剪器占位符"
 
 #: src/view/image_queue/detail.tsx
+#: src/view/notification/InboxPage.tsx
 msgid "Image queue"
 msgstr "图片队列"
 
 #: src/view/image_queue/manage.tsx
 msgid "Image Queue"
 msgstr "图片队列"
+
+#: src/view/notification/InboxPage.tsx
+msgid "Inbox"
+msgstr "收件箱"
 
 #: src/view/auth/reset_password/index.tsx
 msgid "Invalid email"
@@ -984,6 +1075,10 @@ msgstr "入职年份不能早于上一休假年份"
 msgid "Join year cannot be the same as previous leave year"
 msgstr "入职年份不能与上一休假年份相同"
 
+#: src/view/notification/NotificationCard.tsx
+msgid "Just now"
+msgstr "刚刚"
+
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
@@ -1012,7 +1107,7 @@ msgstr "语言"
 msgid "Last page"
 msgstr "最后一页"
 
-#: src/view/Homepage/component/LatestArtistsCard.tsx
+#: src/view/Homepage/component/ArtistsCard.tsx
 msgid "Latest Artists"
 msgstr "最新艺术家"
 
@@ -1088,6 +1183,7 @@ msgid "Loading..."
 msgstr "正在載入..."
 
 #: src/view/image_queue/detail.tsx
+#: src/view/notification/InboxPage.tsx
 msgid "Loading…"
 msgstr "加载中…"
 
@@ -1123,6 +1219,18 @@ msgstr "公开此收藏"
 msgid "Manage Tags"
 msgstr "管理标签"
 
+#: src/view/notification/InboxPage.tsx
+msgid "Mark all read"
+msgstr "全部标为已读"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "Mark read"
+msgstr "标为已读"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "Mark unread"
+msgstr "标为未读"
+
 #: src/view/entity_tags/EntityTagAddDialog.tsx
 #: src/view/entity_tags/EntityTagsSection.tsx
 msgid "Medium"
@@ -1140,7 +1248,7 @@ msgstr "成员"
 msgid "Membership"
 msgstr "成员关系"
 
-#: src/view/auth/store/index.ts
+#: src/view/auth/useAuthForm.ts
 msgid "Missing sign-up email. Create the account again."
 msgstr "缺少注册邮箱，请重新创建账号。"
 
@@ -1276,7 +1384,6 @@ msgid "No comments yet."
 msgstr "暂无评论。"
 
 #: src/component/display/release/ReleaseCoverWall.tsx
-#: src/view/Homepage/component/ReleaseCard.tsx
 #: src/view/release/explore/ReleaseItems.tsx
 #: src/view/release/Info/comp/ReleaseInfoCoverImage.tsx
 msgid "No cover art"
@@ -1336,6 +1443,10 @@ msgstr "没有更多条目了"
 #: src/view/search/index.tsx
 msgid "No more results"
 msgstr "没有更多结果"
+
+#: src/view/notification/InboxPage.tsx
+msgid "No notifications."
+msgstr "暂无通知。"
 
 #: src/view/release/explore/list.tsx
 msgid "No releases found"
@@ -1402,6 +1513,11 @@ msgstr "无"
 msgid "Note (optional)"
 msgstr "备注（可选）"
 
+#: src/component/Header/index.tsx
+#: src/view/notification/InboxPage.tsx
+msgid "Notifications"
+msgstr "通知"
+
 #: src/component/toast/index.tsx
 msgid "Notifications ({hotkey})"
 msgstr "通知（{hotkey}）"
@@ -1420,7 +1536,6 @@ msgstr "打开"
 
 #: src/view/auth/component/AuthForm.tsx
 #: src/view/auth/component/AuthLeftPanel.tsx
-#: src/view/Homepage/component/HomeHero.tsx
 msgid "Open doujin music database"
 msgstr "开放的同人音乐数据库"
 
@@ -1488,10 +1603,6 @@ msgstr "现在"
 msgid "Prev"
 msgstr "上一页"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Preview"
-msgstr "预览版"
-
 #: src/view/correction/Detail.tsx
 msgid "Previous approved baseline"
 msgstr "先前批准的基线"
@@ -1520,6 +1631,7 @@ msgstr "个人资料横幅"
 
 #: src/route/artist/$id_.image-upload.tsx
 #: src/view/image_queue/detail.tsx
+#: src/view/notification/NotificationCard.tsx
 msgid "profile image"
 msgstr "头像图"
 
@@ -1573,6 +1685,10 @@ msgstr "拒绝此更正？"
 msgid "Reject image?"
 msgstr "拒绝这张图片？"
 
+#: src/view/notification/NotificationCard.tsx
+msgid "rejected"
+msgstr "拒绝"
+
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/manage.tsx
 msgid "Rejected"
@@ -1613,7 +1729,7 @@ msgid "Released"
 msgstr "已发行"
 
 #: src/view/Homepage/component/ExploreCard.tsx
-#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeStats.tsx
 #: src/view/search/index.tsx
 msgid "Releases"
 msgstr "发行"
@@ -1681,13 +1797,22 @@ msgstr "重置数据字段"
 msgid "Reset password"
 msgstr "重置密码"
 
+#: src/view/notification/NotificationCard.tsx
+msgid "restricted collection"
+msgstr "收藏不可访问"
+
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/notification/InboxPage.tsx
 msgid "Retry"
 msgstr "重试"
 
 #: src/view/image_queue/detail.tsx
 msgid "Revert"
 msgstr "撤回"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "reverted"
+msgstr "还原"
 
 #: src/view/image_queue/detail.tsx
 #: src/view/image_queue/manage.tsx
@@ -1704,6 +1829,7 @@ msgstr "角色"
 
 #: src/component/ImageCropDialog/index.tsx
 #: src/view/collection/CollectionFormDialog.tsx
+#: src/view/notification/NotificationCard.tsx
 msgid "Save"
 msgstr "保存"
 
@@ -1722,6 +1848,10 @@ msgstr "保存图片"
 #: src/view/admin/users.tsx
 msgid "Save roles"
 msgstr "保存角色"
+
+#: src/view/notification/InboxPage.tsx
+msgid "Saved"
+msgstr "已保存"
 
 #: src/view/user/edit_profile/index.tsx
 msgid "Saving…"
@@ -1889,8 +2019,11 @@ msgstr "注销"
 msgid "Sign Up"
 msgstr "注册"
 
+#: src/view/notification/InboxPage.tsx
+msgid "Social"
+msgstr "社交"
+
 #: src/view/artist/explore.comp.tsx
-#: src/view/Homepage/component/ArtistCard.tsx
 msgid "Solo artist"
 msgstr "独奏艺术家"
 
@@ -1914,7 +2047,7 @@ msgid "Song lyrics"
 msgstr "歌词"
 
 #: src/view/Homepage/component/ExploreCard.tsx
-#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeStats.tsx
 #: src/view/search/index.tsx
 msgid "Songs"
 msgstr "歌曲"
@@ -1972,7 +2105,6 @@ msgstr "起始地点"
 msgid "Status"
 msgstr "状态"
 
-#: src/view/Homepage/component/HomeHero.tsx
 #: src/view/image_queue/user.tsx
 msgid "STATUS"
 msgstr "状态"
@@ -2011,6 +2143,11 @@ msgstr "正在提交"
 msgid "Submitting..."
 msgstr "正在提交..."
 
+#: src/view/correction/Detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Subscribe"
+msgstr "订阅"
+
 #: src/component/Header/RightSidebar.tsx
 msgid "Support"
 msgstr "技术支持"
@@ -2037,7 +2174,7 @@ msgstr "标签类型"
 
 #: src/view/entity_tags/EntityTagsSection.tsx
 #: src/view/Homepage/component/ExploreCard.tsx
-#: src/view/Homepage/component/HomeHero.tsx
+#: src/view/Homepage/component/HomeStats.tsx
 #: src/view/search/index.tsx
 msgid "Tags"
 msgstr "标签"
@@ -2057,6 +2194,10 @@ msgstr "任期"
 #: src/view/artist/edit/comp/TextAliases.tsx
 msgid "Text Aliases"
 msgstr "文本别名"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "The {imageTypeText} change to {target} was {actionText}."
+msgstr ""
 
 #: src/view/NotFound.tsx
 msgid "The page you are looking for does not exist."
@@ -2154,11 +2295,7 @@ msgstr "曲目编号"
 msgid "Tracks"
 msgstr "曲目"
 
-#: src/view/Homepage/component/HomeHero.tsx
-msgid "Tracks & arrangements"
-msgstr "曲目与编曲"
-
-#: src/view/Homepage/component/TrendingTagsCard.tsx
+#: src/view/Homepage/component/TagsCard.tsx
 msgid "Trending Tags"
 msgstr "热点标签"
 
@@ -2211,7 +2348,25 @@ msgstr "未知艺术家"
 msgid "Unknown error"
 msgstr "未知错误"
 
-#: src/view/Homepage/component/UpcomingEventsCard.tsx
+#: src/view/event/EventItem.tsx
+#: src/view/Homepage/component/EventsCard.tsx
+msgid "Unknown location"
+msgstr ""
+
+#: src/view/notification/InboxPage.tsx
+msgid "Unread"
+msgstr "未读"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "Unsave"
+msgstr "取消保存"
+
+#: src/view/correction/Detail.tsx
+#: src/view/image_queue/detail.tsx
+msgid "Unsubscribe"
+msgstr "取消订阅"
+
+#: src/view/Homepage/component/EventsCard.tsx
 msgid "Upcoming Events"
 msgstr "即将举行的活动"
 
@@ -2352,6 +2507,10 @@ msgstr "你还没有创建任何收藏"
 #: src/view/user/Profile.tsx
 msgid "You haven't followed any collections yet"
 msgstr "你还没有关注任何收藏"
+
+#: src/view/notification/NotificationCard.tsx
+msgid "Your correction to {target} was {actionText}."
+msgstr "你对 {target} 的更正已被{actionText}。"
 
 #: src/view/auth/reset_password/index.tsx
 msgid "Your password has been updated successfully."

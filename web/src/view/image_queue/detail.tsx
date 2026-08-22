@@ -123,6 +123,11 @@ export type ImageQueueDetailPageContentProps = {
 	currentError: boolean
 }
 
+const IMAGE_QUEUE_LIST_LINK = {
+	to: "/image-queue",
+	search: { status: "pending" },
+} as const satisfies ImageQueueDetailPageContentProps["backLink"]
+
 function extractInfiniteQueryIds(data: unknown): number[] {
 	if (!ObjExt.isRecord(data)) return []
 
@@ -162,20 +167,6 @@ export function ImageQueueDetailPage(props: Props) {
 
 	const detail = createMemo(() => detailQuery.data)
 	const targetInfo = useTargetInfo(() => detail())
-
-	const backLink = createMemo<ImageQueueDetailPageContentProps["backLink"]>(
-		() => {
-			const userId = detail()?.created_by.id
-			if (!canManage() && userId !== undefined) {
-				return {
-					to: "/user/$id/image-queue",
-					params: { id: userId.toString() },
-				}
-			}
-
-			return { to: "/image-queue", search: { status: "pending" } }
-		},
-	)
 
 	const moderate = (action: "Approve" | "Reject" | "Revert") => {
 		const currentDetail = detail()
@@ -252,7 +243,7 @@ export function ImageQueueDetailPage(props: Props) {
 			canManage={canManage()}
 			isBusy={mutation.isPending}
 			mutationErrorMessage={mutationErrorMessage()}
-			backLink={backLink()}
+			backLink={IMAGE_QUEUE_LIST_LINK}
 			onApprove={() => moderate("Approve")}
 			onReject={() => moderate("Reject")}
 			onRevert={() => moderate("Revert")}

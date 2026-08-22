@@ -170,12 +170,14 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
     ),
     // https://github.com/juhaku/utoipa/issues/1165
     components(schemas(
-        features::correction::HandleCorrectionMethod,
+        features::correction::CorrectionDecision,
         features::comment::EntityCommentTarget,
         features::user_collection::EntityUserCollectionSort,
         features::user_collection::EntityUserCollectionTarget,
-        features::image_queue::HandleImageQueueMethod,
+        features::image_queue::ImageQueueAction,
         features::image_queue::ImageQueueType,
+        notification_service::NotificationState,
+        notification_core::NotificationCategory,
         entity::sea_orm_active_enums::ImageQueueStatus,
         ArtistCommonFilter,
         CorrectionSortField,
@@ -200,12 +202,14 @@ fn basic_security_requirement() -> utoipa::openapi::security::SecurityRequiremen
 #[derive(OpenApi)]
 #[openapi(
     components(schemas(
-        features::correction::HandleCorrectionMethod,
+        features::correction::CorrectionDecision,
         features::comment::EntityCommentTarget,
         features::user_collection::EntityUserCollectionSort,
         features::user_collection::EntityUserCollectionTarget,
-        features::image_queue::HandleImageQueueMethod,
+        features::image_queue::ImageQueueAction,
         features::image_queue::ImageQueueType,
+        notification_service::NotificationState,
+        notification_core::NotificationCategory,
         entity::sea_orm_active_enums::ImageQueueStatus,
         ArtistCommonFilter,
         CorrectionSortField,

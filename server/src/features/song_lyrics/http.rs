@@ -5,7 +5,7 @@ use utoipa_axum::routes;
 
 use super::model::NewSongLyrics;
 use super::{find, service};
-use crate::adapter::inbound::rest::state::{self, ArcAppState};
+use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, CurrentUser};
 use crate::features::correction::service::CorrectionUpsertMode;
 use crate::features::correction::{
@@ -38,10 +38,10 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 )]
 async fn create_song_lyrics(
     CurrentUser(user): CurrentUser,
-    State(repo): State<state::SeaOrmRepository>,
+    State(service): State<service::Service>,
     Json(dto): Json<NewCorrectionDto<NewSongLyrics>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
-    let result = service::create(&repo, dto.with_author(user)).await?;
+    let result = service.create(dto.with_author(user)).await?;
 
     Ok(Data::from(result))
 }
@@ -57,28 +57,17 @@ async fn create_song_lyrics(
 )]
 async fn update_song_lyrics(
     CurrentUser(user): CurrentUser,
-    State(repo): State<state::SeaOrmRepository>,
-    State(notification): State<state::NotificationService>,
+    State(service): State<service::Service>,
     Path(lyrics_id): Path<i32>,
     Json(input): Json<NewCorrectionDto<NewSongLyrics>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
-    let user_id = user.id;
-    let result = service::upsert_correction(
-        &repo,
-        lyrics_id,
-        input.with_author(user),
-        CorrectionUpsertMode::Create,
-    )
-    .await?;
-
-    if let Some(correction_id) = result.submitted_id() {
-        notification
-            .notify_correction_needs_review_best_effort(
-                correction_id,
-                &[user_id],
-            )
-            .await;
-    }
+    let result = service
+        .upsert_correction(
+            lyrics_id,
+            input.with_author(user),
+            CorrectionUpsertMode::Create,
+        )
+        .await?;
 
     Ok(Data::from(result))
 }
@@ -93,33 +82,22 @@ async fn update_song_lyrics(
     ),
     request_body = NewCorrectionDto<NewSongLyrics>,
     responses(
-		(status = 200, body = Data<CorrectionSubmitResult>),
+        (status = 200, body = Data<CorrectionSubmitResult>),
     ),
 )]
 async fn update_song_lyrics_pending_correction(
     CurrentUser(user): CurrentUser,
-    State(repo): State<state::SeaOrmRepository>,
-    State(notification): State<state::NotificationService>,
+    State(service): State<service::Service>,
     Path((lyrics_id, correction_id)): Path<(i32, i32)>,
     Json(input): Json<NewCorrectionDto<NewSongLyrics>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
-    let user_id = user.id;
-    let result = service::upsert_correction(
-        &repo,
-        lyrics_id,
-        input.with_author(user),
-        CorrectionUpsertMode::Update { correction_id },
-    )
-    .await?;
-
-    if let Some(correction_id) = result.submitted_id() {
-        notification
-            .notify_correction_needs_review_best_effort(
-                correction_id,
-                &[user_id],
-            )
-            .await;
-    }
+    let result = service
+        .upsert_correction(
+            lyrics_id,
+            input.with_author(user),
+            CorrectionUpsertMode::Update { correction_id },
+        )
+        .await?;
 
     Ok(Data::from(result))
 }

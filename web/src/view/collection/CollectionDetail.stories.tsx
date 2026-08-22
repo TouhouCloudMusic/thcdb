@@ -26,7 +26,6 @@ const MOCK_ITEMS: UserCollectionItemDetail[] = [
 		id: 1,
 		entity_id: 12,
 		entity_type: "Artist",
-		position: 0,
 		description: "My favorite circle — incredible arrangement style.",
 		entity: {
 			entity_type: "Artist",
@@ -40,7 +39,6 @@ const MOCK_ITEMS: UserCollectionItemDetail[] = [
 		id: 2,
 		entity_id: 35,
 		entity_type: "Label",
-		position: 1,
 		entity: {
 			entity_type: "Label",
 			id: 35,
@@ -51,7 +49,6 @@ const MOCK_ITEMS: UserCollectionItemDetail[] = [
 		id: 3,
 		entity_id: 78,
 		entity_type: "Release",
-		position: 2,
 		description:
 			"Amazing album, highly recommended to anyone new to the genre.",
 		entity: {
@@ -68,7 +65,6 @@ const MOCK_ITEMS: UserCollectionItemDetail[] = [
 		id: 4,
 		entity_id: 204,
 		entity_type: "Song",
-		position: 3,
 		entity: {
 			entity_type: "Song",
 			id: 204,
@@ -81,7 +77,6 @@ const MOCK_ITEMS: UserCollectionItemDetail[] = [
 		id: 5,
 		entity_id: 9,
 		entity_type: "Tag",
-		position: 4,
 		description: "Genre I keep coming back to.",
 		entity: {
 			entity_type: "Tag",
@@ -94,7 +89,6 @@ const MOCK_ITEMS: UserCollectionItemDetail[] = [
 		id: 6,
 		entity_id: 52,
 		entity_type: "Event",
-		position: 5,
 		entity: {
 			entity_type: "Event",
 			id: 52,

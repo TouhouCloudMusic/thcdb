@@ -66,17 +66,32 @@ impl SeaOrmTxRepo {
     }
 
     pub async fn commit(self) -> Result<(), DatabaseError> {
-        let tx = Arc::try_unwrap(self.tx).map_err(|tx| {
+        self.into_transaction("commit transaction")?
+            .commit()
+            .await
+            .db_operation("commit transaction")
+    }
+
+    pub async fn rollback(self) -> Result<(), DatabaseError> {
+        self.into_transaction("rollback transaction")?
+            .rollback()
+            .await
+            .db_operation("rollback transaction")
+    }
+
+    fn into_transaction(
+        self,
+        operation: &'static str,
+    ) -> Result<DatabaseTransaction, DatabaseError> {
+        Arc::try_unwrap(self.tx).map_err(|tx| {
             let wc = Arc::weak_count(&tx);
             let sc = Arc::strong_count(&tx);
             let msg = format!(
-                "Cannot commit transaction: \
+                "Cannot {operation}: \
                     multiple references to the transaction exist, \
                     current weak count: {wc}, strong count: {sc}"
             );
-            DatabaseError::internal(msg).db_operation("commit transaction")
-        })?;
-
-        tx.commit().await.db_operation("commit transaction")
+            DatabaseError::internal(msg).db_operation(operation)
+        })
     }
 }

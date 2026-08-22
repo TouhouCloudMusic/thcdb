@@ -147,9 +147,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.102"
+version = "1.0.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
+checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
 name = "apalis"
@@ -236,7 +236,7 @@ checksum = "0ae92a5119aa49cdbcf6b9f893fe4e1d98b04ccbf82ee0584ad948a44a734dea"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -302,7 +302,7 @@ checksum = "c7c24de15d275a1ecfd47a380fb4d5ec9bfe0933f309ed5e705b775596a3574d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -313,7 +313,7 @@ checksum = "9035ad2d096bed7955a320ee7e2230574d28fd3c3a0f186cbea1ff3c7eed5dbb"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -510,7 +510,7 @@ checksum = "7aa268c23bfbbd2c4363b9cd302a4f504fb2a9dfe7e3451d66f35dd392e20aca"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -544,7 +544,7 @@ dependencies = [
  "heck 0.5.0",
  "proc-macro-error2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
  "ubyte",
 ]
 
@@ -703,7 +703,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rustversion",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -727,7 +727,7 @@ dependencies = [
  "proc-macro-crate",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -939,7 +939,7 @@ dependencies = [
  "heck 0.5.0",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1266,7 +1266,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13b588ba4ac1a99f7f2964d24b3d896ddc6bf847ee3855dbd4366f058cfcd331"
 dependencies = [
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1310,7 +1310,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "strsim",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1323,7 +1323,7 @@ dependencies = [
  "ident_case",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1336,7 +1336,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "strsim",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1347,7 +1347,7 @@ checksum = "fc34b93ccb385b40dc71c6fceac4b2ad23662c7eeb248cf10d529b7e055b6ead"
 dependencies = [
  "darling_core 0.20.11",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1358,7 +1358,7 @@ checksum = "d38308df82d1080de0afee5d069fa14b0326a88c14f15c5ccda35b4a6c414c81"
 dependencies = [
  "darling_core 0.21.3",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1369,7 +1369,7 @@ checksum = "ac3984ec7bd6cfa798e62b4a642426a5be0e68f9401cfc2a01e3fa9ea2fcdb8d"
 dependencies = [
  "darling_core 0.23.0",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1437,7 +1437,7 @@ dependencies = [
  "darling 0.20.11",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1447,7 +1447,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab63b0e2bf4d5928aff72e83a7dace85d7bba5fe12dcc3c5a572d78caffd3f3c"
 dependencies = [
  "derive_builder_core",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1469,7 +1469,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rustc_version",
- "syn 2.0.117",
+ "syn 2.0.118",
  "unicode-xid",
 ]
 
@@ -1499,7 +1499,7 @@ checksum = "97369cbbc041bc366949bc74d34658d6cda5621039731c6310521892a3a20ae0"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1532,7 +1532,7 @@ dependencies = [
  "darling 0.20.11",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1550,7 +1550,7 @@ dependencies = [
  "enum-ordinalize",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1627,7 +1627,7 @@ checksum = "8ca9601fb2d62598ee17836250842873a413586e5d7ed88b356e38ddbb0ec631"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1649,7 +1649,7 @@ dependencies = [
  "darling 0.21.3",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1669,7 +1669,7 @@ checksum = "44f23cf4b44bfce11a86ace86f8a73ffdec849c9fd00a386a53d278bd9e81fb3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1837,7 +1837,7 @@ dependencies = [
  "proc-macro-error2",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -1889,7 +1889,7 @@ checksum = "a0aca10fb742cb43f9e7bb8467c91aa9bcb8e3ffbc6a6f7389bb93ffc920577d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -2012,7 +2012,7 @@ checksum = "1458c6e22d36d61507034d5afecc64f105c1d39712b7ac6ec3b352c423f715cc"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -2044,7 +2044,7 @@ checksum = "a0b4095fc99e1d858e5b8c7125d2638372ec85aa0fe6c807105cf10b0265ca6c"
 dependencies = [
  "frunk_proc_macro_helpers",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -2056,7 +2056,7 @@ dependencies = [
  "frunk_core",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -2068,7 +2068,7 @@ dependencies = [
  "frunk_core",
  "frunk_proc_macro_helpers",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -2154,7 +2154,7 @@ checksum = "e835b70203e41293343137df5c0664546da5745f82ec9b84d40be8336958447b"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -2220,7 +2220,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "regex",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -2823,7 +2823,7 @@ checksum = "c727f80bfa4a6c6e2508d2f05b6f4bfce242030bd88ed15ae5331c5b5d30fba7"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -2834,7 +2834,7 @@ checksum = "c34819042dc3d3971c46c2190835914dfbe0c3c13f61449b2997f4e9722dfa60"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -2909,7 +2909,7 @@ checksum = "2a8c8b344124222efd714b73bb41f8b5120b27a7cc1c75593a6ff768d9d05aa4"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -3306,6 +3306,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "macroweave"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "50ab787669b4105aad23153b64c43ba63499e90b3e9df0d5643cda24382d3dfe"
+dependencies = [
+ "proc-macro2",
+ "syn 2.0.118",
+]
+
+[[package]]
 name = "maplit"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3330,7 +3340,7 @@ checksum = "ac84fd3f360fcc43dc5f5d186f02a94192761a080e8bc58621ad4d12296a58cf"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -3369,7 +3379,7 @@ dependencies = [
  "proc-macro2",
  "proc-macro2-diagnostics",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -3523,7 +3533,7 @@ dependencies = [
  "proc-macro-error",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -3631,7 +3641,7 @@ checksum = "ed3955f1a9c7c0c15e092f9c887db08b1fc683305fdf6eb6684f22555355e202"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -3803,7 +3813,7 @@ dependencies = [
  "proc-macro2",
  "proc-macro2-diagnostics",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -3938,7 +3948,7 @@ dependencies = [
  "phf_shared",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -3993,7 +4003,7 @@ checksum = "d9b20ed30f105399776b9c883e68e536ef602a16ae6f596d2c473591d6ad64c6"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -4147,7 +4157,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "479ca8adacdd7ce8f1fb39ce9ecccbfe93a3f1344b3d0d97f20bc0196208f62b"
 dependencies = [
  "proc-macro2",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -4202,7 +4212,7 @@ dependencies = [
  "proc-macro-error-attr2",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -4222,7 +4232,7 @@ checksum = "af066a9c399a26e020ada66a034357a868728e72cd426f3adcd35f80d88d88c8"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
  "version_check",
  "yansi",
 ]
@@ -4235,7 +4245,7 @@ dependencies = [
  "itertools 0.14.0",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -4254,7 +4264,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "52717f9a02b6965224f95ca2a81e2e0c5c43baacd28ca057577988930b6c3d5b"
 dependencies = [
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -4296,7 +4306,7 @@ dependencies = [
  "itertools 0.14.0",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -4668,7 +4678,7 @@ checksum = "b7186006dcb21920990093f30e3dea63b7d6e977bf1256be20c3563a5db070da"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -4982,7 +4992,7 @@ dependencies = [
  "proc-macro-error2",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -5045,7 +5055,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "sea-bae",
- "syn 2.0.117",
+ "syn 2.0.118",
  "unicode-ident",
 ]
 
@@ -5108,7 +5118,7 @@ dependencies = [
  "heck 0.4.1",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
  "thiserror 2.0.18",
 ]
 
@@ -5134,7 +5144,7 @@ dependencies = [
  "heck 0.4.1",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -5185,7 +5195,7 @@ checksum = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -5242,7 +5252,7 @@ checksum = "175ee3e80ae9982737ca543e96133087cbd9a485eecc3bc4de9c1a37b47ea59c"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -5294,7 +5304,7 @@ dependencies = [
  "darling 0.23.0",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -5416,7 +5426,7 @@ checksum = "0eb01866308440fc64d6c44d9e86c5cc17adfe33c4d6eed55da9145044d0ffc1"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -5437,7 +5447,7 @@ dependencies = [
  "heck 0.5.0",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -5459,6 +5469,12 @@ dependencies = [
  "libc",
  "windows-sys 0.61.2",
 ]
+
+[[package]]
+name = "sorted-vec"
+version = "0.8.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "238653bedf881fede50103cb7838b029e2b73d3d3d8e70d36f0a96be32a65c7b"
 
 [[package]]
 name = "spin"
@@ -5552,7 +5568,7 @@ dependencies = [
  "quote",
  "sqlx-core",
  "sqlx-macros-core",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -5575,7 +5591,7 @@ dependencies = [
  "sqlx-mysql",
  "sqlx-postgres",
  "sqlx-sqlite",
- "syn 2.0.117",
+ "syn 2.0.118",
  "tokio",
  "url",
 ]
@@ -5775,7 +5791,7 @@ dependencies = [
  "heck 0.5.0",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -5875,9 +5891,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.117"
+version = "2.0.118"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e665b8803e7b1d2a727f4023456bbbbe74da67099c585258af0ad9c5013b9b99"
+checksum = "1b9ae57f904213ebb649ce6895b8a66c66f0203b9319718f69a5612a065b1422"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5898,7 +5914,7 @@ checksum = "728a70f3dbaf5bab7f0c4b1ac8d7ae5ea60a4b5549c8a5914361c99147a709d2"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -5955,6 +5971,7 @@ dependencies = [
  "chrono",
  "derive_more",
  "entity",
+ "garde",
  "libfp",
  "macros",
  "pulldown-cmark",
@@ -5964,40 +5981,239 @@ dependencies = [
 ]
 
 [[package]]
+name = "thcdb-feature-account-notification"
+version = "0.1.0"
+dependencies = [
+ "sea-orm",
+ "thcdb-feature-notification-core",
+ "thcdb-infra-db",
+]
+
+[[package]]
 name = "thcdb-feature-auth-core"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "lettre",
+ "derive_more",
+ "entity",
+ "macroweave",
+ "rand 0.9.4",
+ "sea-orm",
  "serde",
  "serde_json",
+ "strum 0.27.2",
+ "thcdb-domain",
+ "thcdb-infra-db",
+ "thcdb-infra-email",
+ "utoipa",
 ]
 
 [[package]]
 name = "thcdb-feature-auth-worker"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "apalis",
  "chrono",
  "entity",
  "fred",
- "lettre",
  "log",
  "sea-orm",
+ "thcdb-domain",
  "thcdb-feature-auth-core",
  "thcdb-infra-db",
+ "thcdb-infra-email",
+ "thcdb-infra-testing",
  "thcdb-infra-worker",
+ "tokio",
 ]
 
 [[package]]
-name = "thcdb-feature-notification-worker"
+name = "thcdb-feature-comment-notification"
+version = "0.1.0"
+dependencies = [
+ "entity",
+ "sea-orm",
+ "thcdb-feature-comment-repo",
+ "thcdb-feature-notification-core",
+ "thcdb-infra-db",
+]
+
+[[package]]
+name = "thcdb-feature-comment-repo"
+version = "0.1.0"
+dependencies = [
+ "derive_more",
+ "entity",
+ "log",
+ "sea-orm",
+ "sea-query",
+ "strum 0.27.2",
+ "thcdb-domain",
+ "thcdb-infra-db",
+]
+
+[[package]]
+name = "thcdb-feature-comment-service"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "derive_more",
+ "entity",
+ "sea-orm",
+ "serde",
+ "thcdb-domain",
+ "thcdb-feature-auth-core",
+ "thcdb-feature-comment-notification",
+ "thcdb-feature-comment-repo",
+ "thcdb-feature-correction-subscription",
+ "thcdb-feature-image-queue-core",
+ "thcdb-feature-notification-core",
+ "thcdb-infra-db",
+ "utoipa",
+]
+
+[[package]]
+name = "thcdb-feature-correction-notification"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "entity",
+ "sea-orm",
+ "thcdb-feature-auth-core",
+ "thcdb-feature-notification-core",
+ "thcdb-infra-db",
+ "thcdb-infra-testing",
+ "tokio",
+]
+
+[[package]]
+name = "thcdb-feature-correction-subscription"
+version = "0.1.0"
+dependencies = [
+ "entity",
+ "sea-orm",
+ "sea-query",
+ "thcdb-infra-db",
+]
+
+[[package]]
+name = "thcdb-feature-image-queue-core"
+version = "0.1.0"
+dependencies = [
+ "entity",
+ "sea-orm",
+ "sea-query",
+ "thcdb-feature-auth-core",
+ "thcdb-infra-db",
+]
+
+[[package]]
+name = "thcdb-feature-image-queue-notification"
+version = "0.1.0"
+dependencies = [
+ "entity",
+ "sea-orm",
+ "thcdb-feature-notification-core",
+ "thcdb-infra-db",
+]
+
+[[package]]
+name = "thcdb-feature-notification-core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "derive_more",
+ "entity",
+ "enumset",
+ "sea-orm",
+ "sea-query",
+ "serde",
+ "sorted-vec",
+ "strum 0.27.2",
+ "thcdb-infra-db",
+ "thcdb-infra-testing",
+ "tokio",
+ "utoipa",
+]
+
+[[package]]
+name = "thcdb-feature-notification-service"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "derive_more",
+ "entity",
+ "log",
+ "sea-orm",
+ "sea-query",
+ "serde",
+ "serde_with",
+ "thcdb-domain",
+ "thcdb-feature-account-notification",
+ "thcdb-feature-comment-repo",
+ "thcdb-feature-comment-service",
+ "thcdb-feature-image-queue-core",
+ "thcdb-feature-notification-core",
+ "thcdb-feature-notification-use-case-cleanup",
+ "thcdb-feature-user-core",
+ "thcdb-infra-db",
+ "thcdb-infra-testing",
+ "tokio",
+ "utoipa",
+]
+
+[[package]]
+name = "thcdb-feature-notification-use-case-cleanup"
 version = "0.1.0"
 dependencies = [
  "chrono",
  "entity",
  "log",
  "sea-orm",
+ "sea-query",
+ "thcdb-infra-db",
+]
+
+[[package]]
+name = "thcdb-feature-notification-worker"
+version = "0.1.0"
+dependencies = [
+ "thcdb-feature-notification-use-case-cleanup",
  "thcdb-infra-db",
  "thcdb-infra-worker",
+]
+
+[[package]]
+name = "thcdb-feature-user-collection-notification"
+version = "0.1.0"
+dependencies = [
+ "entity",
+ "sea-orm",
+ "thcdb-feature-notification-core",
+ "thcdb-infra-db",
+]
+
+[[package]]
+name = "thcdb-feature-user-core"
+version = "0.1.0"
+dependencies = [
+ "entity",
+ "sea-orm",
+ "serde",
+ "thcdb-infra-db",
+ "utoipa",
+]
+
+[[package]]
+name = "thcdb-feature-user-profile-notification"
+version = "0.1.0"
+dependencies = [
+ "sea-orm",
+ "thcdb-feature-notification-core",
+ "thcdb-infra-db",
 ]
 
 [[package]]
@@ -6015,6 +6231,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "thcdb-infra-email"
+version = "0.1.0"
+dependencies = [
+ "derive_more",
+ "lettre",
+ "thcdb-domain",
+]
+
+[[package]]
 name = "thcdb-infra-storage"
 version = "0.1.0"
 dependencies = [
@@ -6026,11 +6251,32 @@ dependencies = [
 name = "thcdb-infra-storage-worker"
 version = "0.1.0"
 dependencies = [
+ "apalis",
  "log",
  "serde",
  "thcdb-infra-storage",
  "thcdb-infra-worker",
  "tokio",
+]
+
+[[package]]
+name = "thcdb-infra-testing"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "entity",
+ "migration",
+ "sea-orm",
+ "sea-orm-migration",
+ "sea-query",
+ "serde_json",
+ "thcdb-domain",
+ "thcdb-feature-auth-core",
+ "thcdb-infra-db",
+ "thcdb-infra-email",
+ "tokio",
+ "url",
 ]
 
 [[package]]
@@ -6040,6 +6286,7 @@ dependencies = [
  "apalis",
  "apalis-cron",
  "apalis-redis",
+ "derive_more",
  "log",
  "serde",
  "tokio",
@@ -6050,7 +6297,9 @@ name = "thcdb_rs"
 version = "0.1.0"
 dependencies = [
  "ammonia",
+ "anyhow",
  "argon2",
+ "async-stream",
  "async-trait",
  "axum",
  "axum-extra",
@@ -6114,15 +6363,30 @@ dependencies = [
  "serde_with",
  "smart-default",
  "snafu",
+ "sorted-vec",
  "strum 0.27.2",
  "thcdb-constants",
  "thcdb-domain",
+ "thcdb-feature-account-notification",
  "thcdb-feature-auth-core",
  "thcdb-feature-auth-worker",
+ "thcdb-feature-comment-notification",
+ "thcdb-feature-comment-service",
+ "thcdb-feature-correction-notification",
+ "thcdb-feature-correction-subscription",
+ "thcdb-feature-image-queue-core",
+ "thcdb-feature-image-queue-notification",
+ "thcdb-feature-notification-core",
+ "thcdb-feature-notification-service",
  "thcdb-feature-notification-worker",
+ "thcdb-feature-user-collection-notification",
+ "thcdb-feature-user-core",
+ "thcdb-feature-user-profile-notification",
  "thcdb-infra-db",
+ "thcdb-infra-email",
  "thcdb-infra-storage",
  "thcdb-infra-storage-worker",
+ "thcdb-infra-testing",
  "thcdb-infra-worker",
  "tokio",
  "tower",
@@ -6167,7 +6431,7 @@ checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -6178,7 +6442,7 @@ checksum = "ebc4ee7f67670e9b64d05fa4253e753e016c6c95ff35b89b7941d6b856dec1d5"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -6295,7 +6559,7 @@ checksum = "385a6cb71ab9ab790c5fe8d67f1645e6c450a7ce006a33de03daa956cf70a496"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -6588,7 +6852,7 @@ checksum = "7490cfa5ec963746568740651ac6781f701c9c5ea257c58e057f3ba8cf69e8da"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -6633,7 +6897,7 @@ checksum = "70977707304198400eb4835a78f6a9f928bf41bba420deb8fdb175cd965d77a7"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -6814,7 +7078,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "regex",
- "syn 2.0.117",
+ "syn 2.0.118",
  "url",
 ]
 
@@ -7005,7 +7269,7 @@ dependencies = [
  "bumpalo",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
  "wasm-bindgen-shared",
 ]
 
@@ -7170,7 +7434,7 @@ checksum = "053e2e040ab57b9dc951b72c264860db7eb3b0200ba345b4e4c3b14f67855ddf"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -7181,7 +7445,7 @@ checksum = "3f316c4a2570ba26bbec722032c4099d8c8bc095efccdc15688708623367e358"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -7404,7 +7668,7 @@ dependencies = [
  "heck 0.5.0",
  "indexmap 2.14.0",
  "prettyplease",
- "syn 2.0.117",
+ "syn 2.0.118",
  "wasm-metadata",
  "wit-bindgen-core",
  "wit-component",
@@ -7420,7 +7684,7 @@ dependencies = [
  "prettyplease",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
  "wit-bindgen-core",
  "wit-bindgen-rust",
 ]
@@ -7514,7 +7778,7 @@ checksum = "de844c262c8848816172cef550288e7dc6c7b7814b4ee56b3e1553f275f1858e"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
  "synstructure",
 ]
 
@@ -7535,7 +7799,7 @@ checksum = "70e3cd084b1788766f53af483dd21f93881ff30d7320490ec3ef7526d203bad4"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]
@@ -7555,7 +7819,7 @@ checksum = "11532158c46691caf0f2593ea8358fed6bbf68a0315e80aae9bd41fbade684a1"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
  "synstructure",
 ]
 
@@ -7595,7 +7859,7 @@ checksum = "625dc425cab0dca6dc3c3319506e6593dcb08a9f387ea3b284dbd52a92c40555"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 2.0.118",
 ]
 
 [[package]]

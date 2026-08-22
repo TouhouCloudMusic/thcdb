@@ -50,10 +50,10 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 )]
 async fn create_release(
     CurrentUser(user): CurrentUser,
-    State(repo): State<state::SeaOrmRepository>,
+    State(service): State<service::Service>,
     Json(dto): Json<NewCorrectionDto<NewRelease>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
-    let result = service::create(&repo, dto.with_author(user)).await?;
+    let result = service.create(dto.with_author(user)).await?;
 
     Ok(Data::from(result))
 }
@@ -69,28 +69,17 @@ async fn create_release(
 )]
 async fn update_release(
     CurrentUser(user): CurrentUser,
-    State(repo): State<state::SeaOrmRepository>,
-    State(notification): State<state::NotificationService>,
+    State(service): State<service::Service>,
     Path(id): Path<i32>,
     Json(dto): Json<NewCorrectionDto<NewRelease>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
-    let user_id = user.id;
-    let result = service::upsert_correction(
-        &repo,
-        id,
-        dto.with_author(user),
-        CorrectionUpsertMode::Create,
-    )
-    .await?;
-
-    if let Some(correction_id) = result.submitted_id() {
-        notification
-            .notify_correction_needs_review_best_effort(
-                correction_id,
-                &[user_id],
-            )
-            .await;
-    }
+    let result = service
+        .upsert_correction(
+            id,
+            dto.with_author(user),
+            CorrectionUpsertMode::Create,
+        )
+        .await?;
 
     Ok(Data::from(result))
 }
@@ -110,28 +99,17 @@ async fn update_release(
 )]
 async fn update_release_pending_correction(
     CurrentUser(user): CurrentUser,
-    State(repo): State<state::SeaOrmRepository>,
-    State(notification): State<state::NotificationService>,
+    State(service): State<service::Service>,
     Path((id, correction_id)): Path<(i32, i32)>,
     Json(dto): Json<NewCorrectionDto<NewRelease>>,
 ) -> Result<Data<CorrectionSubmitResult>, SubmissionError> {
-    let user_id = user.id;
-    let result = service::upsert_correction(
-        &repo,
-        id,
-        dto.with_author(user),
-        CorrectionUpsertMode::Update { correction_id },
-    )
-    .await?;
-
-    if let Some(correction_id) = result.submitted_id() {
-        notification
-            .notify_correction_needs_review_best_effort(
-                correction_id,
-                &[user_id],
-            )
-            .await;
-    }
+    let result = service
+        .upsert_correction(
+            id,
+            dto.with_author(user),
+            CorrectionUpsertMode::Update { correction_id },
+        )
+        .await?;
 
     Ok(Data::from(result))
 }

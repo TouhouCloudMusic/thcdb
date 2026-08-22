@@ -11,9 +11,6 @@ mod service;
 pub(crate) use http::EntityUserCollectionTarget;
 pub(crate) use model::EntityUserCollectionSort;
 
-#[cfg(all(test, feature = "integration-test"))]
-mod tests;
-
 pub fn router() -> OpenApiRouter<ArcAppState> {
     OpenApiRouter::new().merge(http::router())
 }

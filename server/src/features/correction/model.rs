@@ -22,6 +22,20 @@ pub struct Correction {
     pub handled_at: Option<DateTime<FixedOffset>>,
 }
 
+impl From<entity::correction::Model> for Correction {
+    fn from(model: entity::correction::Model) -> Self {
+        Self {
+            id: model.id,
+            status: model.status,
+            r#type: model.r#type,
+            entity_id: model.entity_id,
+            entity_type: model.entity_type,
+            created_at: model.created_at,
+            handled_at: model.handled_at,
+        }
+    }
+}
+
 pub struct CorrectionFilter {
     pub entity_id: i32,
     pub entity_type: EntityType,
@@ -75,7 +89,6 @@ pub struct NewCorrectionMeta<T> {
     pub entity_id: i32,
     pub history_id: i32,
     pub description: String,
-    pub status: CorrectionStatus,
     pub phantom: std::marker::PhantomData<T>,
 }
 
@@ -183,13 +196,7 @@ where
 }
 
 #[derive(Deserialize, ToSchema)]
-pub enum HandleCorrectionMethod {
+pub enum CorrectionDecision {
     Approve,
     Reject,
-}
-
-#[derive(Clone, Serialize, ToSchema)]
-pub struct CorrectionUserSummary {
-    pub id: i32,
-    pub name: String,
 }

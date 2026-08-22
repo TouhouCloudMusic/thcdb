@@ -187,7 +187,7 @@ function RouteComponent() {
 	const collectionViewer = (
 		collection: UserCollection,
 	): CollectionDetailModel["viewer"] => {
-		if (userCtx.user?.name === collection.owner.name) {
+		if (userCtx.profile?.name === collection.owner.name) {
 			return {
 				role: "owner",
 				isDeletingCollection: deleteMutation.isPending,

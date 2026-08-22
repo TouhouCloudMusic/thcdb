@@ -13,12 +13,13 @@ import type {
 import { SearchQueryOption } from "@thc/query"
 import { createMemo, For, Show } from "solid-js"
 import type { JSX } from "solid-js"
+import { twJoin } from "tailwind-merge"
 
 import { Tab } from "~/component/atomic"
 import { Link } from "~/component/atomic/Link"
 import { PageLayout } from "~/layout/PageLayout"
 import { imgUrl } from "~/utils/adapter/static_file"
-import { useIntersectionSentinel } from "~/utils/solid/useIntersectionSentinel"
+import { createInfiniteScroll } from "~/utils/solid/createInfiniteScroll"
 
 type SearchTab =
 	| "artist"
@@ -226,77 +227,75 @@ function SearchResults(props: {
 		return visible[0]
 	})
 
-	const setArtistsSentinelRef = useIntersectionSentinel<HTMLDivElement>({
+	const setArtistsSentinelRef = createInfiniteScroll({
 		enabled: () =>
 			activeTab() === "artist"
 			&& artistsQuery.hasNextPage
 			&& !artistsQuery.isFetchingNextPage,
-		onIntersect: () => {
+		onLoadMore: () => {
 			void artistsQuery.fetchNextPage()
 		},
 	})
 
-	const setReleasesSentinelRef = useIntersectionSentinel<HTMLDivElement>({
+	const setReleasesSentinelRef = createInfiniteScroll({
 		enabled: () =>
 			activeTab() === "release"
 			&& releasesQuery.hasNextPage
 			&& !releasesQuery.isFetchingNextPage,
-		onIntersect: () => {
+		onLoadMore: () => {
 			void releasesQuery.fetchNextPage()
 		},
 	})
 
-	const setSongsSentinelRef = useIntersectionSentinel<HTMLDivElement>({
+	const setSongsSentinelRef = createInfiniteScroll({
 		enabled: () =>
 			activeTab() === "song"
 			&& songsQuery.hasNextPage
 			&& !songsQuery.isFetchingNextPage,
-		onIntersect: () => {
+		onLoadMore: () => {
 			void songsQuery.fetchNextPage()
 		},
 	})
 
-	const setEventsSentinelRef = useIntersectionSentinel<HTMLDivElement>({
+	const setEventsSentinelRef = createInfiniteScroll({
 		enabled: () =>
 			activeTab() === "event"
 			&& eventsQuery.hasNextPage
 			&& !eventsQuery.isFetchingNextPage,
-		onIntersect: () => {
+		onLoadMore: () => {
 			void eventsQuery.fetchNextPage()
 		},
 	})
 
-	const setLabelsSentinelRef = useIntersectionSentinel<HTMLDivElement>({
+	const setLabelsSentinelRef = createInfiniteScroll({
 		enabled: () =>
 			activeTab() === "label"
 			&& labelsQuery.hasNextPage
 			&& !labelsQuery.isFetchingNextPage,
-		onIntersect: () => {
+		onLoadMore: () => {
 			void labelsQuery.fetchNextPage()
 		},
 	})
 
-	const setTagsSentinelRef = useIntersectionSentinel<HTMLDivElement>({
+	const setTagsSentinelRef = createInfiniteScroll({
 		enabled: () =>
 			activeTab() === "tag"
 			&& tagsQuery.hasNextPage
 			&& !tagsQuery.isFetchingNextPage,
-		onIntersect: () => {
+		onLoadMore: () => {
 			void tagsQuery.fetchNextPage()
 		},
 	})
 
-	const setUserCollectionsSentinelRef = useIntersectionSentinel<HTMLDivElement>(
-		{
-			enabled: () =>
-				activeTab() === "user_collection"
-				&& userCollectionsQuery.hasNextPage
-				&& !userCollectionsQuery.isFetchingNextPage,
-			onIntersect: () => {
-				void userCollectionsQuery.fetchNextPage()
-			},
+	const setUserCollectionsSentinelRef = createInfiniteScroll({
+		enabled: () =>
+			activeTab() === "user_collection"
+			&& userCollectionsQuery.hasNextPage
+			&& !userCollectionsQuery.isFetchingNextPage,
+		onLoadMore: () => {
+			void userCollectionsQuery.fetchNextPage()
 		},
-	)
+	})
 
 	return (
 		<Show
@@ -326,7 +325,9 @@ function SearchResults(props: {
 					props.onTabChange(value)
 				}}
 			>
-				<Tab.List class="flex flex-wrap gap-x-6 gap-y-2 border-b border-slate-200">
+				<Tab.List
+					class={twJoin(Tab.CONTAINER_CLASS, "flex flex-wrap gap-x-6 gap-y-2")}
+				>
 					<For each={visibleTabs()}>
 						{(tab) => (
 							<TabTrigger

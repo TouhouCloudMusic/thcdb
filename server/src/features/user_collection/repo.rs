@@ -18,14 +18,14 @@ use entity::{
 };
 use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::prelude::Expr;
-use sea_orm::sea_query::{
-    Alias, Cond, ExprTrait, Func, JoinType, OnConflict, Order, Query,
-    SelectStatement,
-};
 use sea_orm::{
     ActiveEnum, ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait,
     FromQueryResult, IntoActiveModel, LoaderTrait, PaginatorTrait, QueryFilter,
-    QueryOrder, QuerySelect, QueryTrait, Select,
+    QueryOrder, QuerySelect, QueryTrait, Select, TryInsert, TryInsertResult,
+};
+use sea_query::{
+    Alias, ExprTrait, Func, JoinType, OnConflict, Order, Query,
+    SelectStatement, all, any,
 };
 
 use super::error::{Error, NotFound};
@@ -36,7 +36,7 @@ use super::model::{
     UserCollectionItem, UserCollectionItemDetail, UserCollectionItemEntityType,
     UserCollectionMutationRequest, UserCollectionOwner,
 };
-use crate::infra::database::error::DatabaseResultExt;
+use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::shared::http::PageQuery;
 
 #[derive(Debug, Clone, FromQueryResult)]
@@ -350,7 +350,7 @@ async fn load_entity_user_collection_ids(
 
 fn visible_user_collection_condition(
     viewer_id: Option<i32>,
-) -> sea_orm::sea_query::Condition {
+) -> sea_query::Condition {
     let public_collection = Expr::col((
         user_collection_entity::Entity,
         user_collection_entity::Column::IsPublic,
@@ -358,16 +358,17 @@ fn visible_user_collection_condition(
     .eq(true);
 
     let Some(viewer_id) = viewer_id else {
-        return Cond::all().add(public_collection);
+        return all![public_collection];
     };
 
-    Cond::any().add(public_collection).add(
+    any![
+        public_collection,
         Expr::col((
             user_collection_entity::Entity,
             user_collection_entity::Column::UserId,
         ))
         .eq(viewer_id),
-    )
+    ]
 }
 
 async fn load_user_collection_summaries(
@@ -463,7 +464,7 @@ fn select_user_collection_summary_fields(
 
 fn visible_follower_count_expr(
     collections_alias: &Alias,
-) -> sea_orm::sea_query::SimpleExpr {
+) -> sea_query::SimpleExpr {
     Func::coalesce([
         Expr::case(
             Expr::col((
@@ -631,14 +632,12 @@ pub(super) async fn follow_user_collection(
     conn: &impl ConnectionTrait,
     user_id: i32,
     collection_id: i32,
-) -> Result<(), Error> {
-    user_collection_follow_entity::Entity::insert(
-        user_collection_follow_entity::ActiveModel {
-            user_id: Set(user_id),
-            collection_id: Set(collection_id),
-            followed_at: NotSet,
-        },
-    )
+) -> Result<bool, Error> {
+    let result = TryInsert::one(user_collection_follow_entity::ActiveModel {
+        user_id: Set(user_id),
+        collection_id: Set(collection_id),
+        followed_at: NotSet,
+    })
     .on_conflict(
         OnConflict::columns([
             user_collection_follow_entity::Column::UserId,
@@ -647,10 +646,17 @@ pub(super) async fn follow_user_collection(
         .do_nothing()
         .to_owned(),
     )
-    .exec_without_returning(conn)
+    .exec(conn)
     .await
     .db_operation("follow user collection")?;
-    Ok(())
+
+    match result {
+        TryInsertResult::Inserted(_) => Ok(true),
+        TryInsertResult::Conflicted => Ok(false),
+        TryInsertResult::Empty => Err(Error::InvalidRequest(
+            "Follow user collection insert was empty".to_string(),
+        )),
+    }
 }
 
 pub(super) async fn unfollow_user_collection(
@@ -659,11 +665,11 @@ pub(super) async fn unfollow_user_collection(
     collection_id: i32,
 ) -> Result<(), Error> {
     user_collection_follow_entity::Entity::delete_many()
-        .filter(user_collection_follow_entity::Column::UserId.eq(user_id))
-        .filter(
+        .filter(all![
+            user_collection_follow_entity::Column::UserId.eq(user_id),
             user_collection_follow_entity::Column::CollectionId
                 .eq(collection_id),
-        )
+        ])
         .exec(conn)
         .await
         .db_operation("unfollow user collection")?;
@@ -677,8 +683,10 @@ pub(super) async fn load_followed_user_collections_page(
 ) -> Result<PageResponse<FollowedUserCollection>, Error> {
     let base_select = user_collection_entity::Entity::find()
         .inner_join(user_collection_follow_entity::Entity)
-        .filter(user_collection_follow_entity::Column::UserId.eq(user_id))
-        .filter(user_collection_entity::Column::IsPublic.eq(true));
+        .filter(all![
+            user_collection_follow_entity::Column::UserId.eq(user_id),
+            user_collection_entity::Column::IsPublic.eq(true),
+        ]);
 
     let total_items = base_select
         .clone()
@@ -688,14 +696,17 @@ pub(super) async fn load_followed_user_collections_page(
 
     let followed = user_collection_follow_entity::Entity::find()
         .inner_join(user_collection_entity::Entity)
-        .filter(user_collection_follow_entity::Column::UserId.eq(user_id))
-        .filter(user_collection_entity::Column::IsPublic.eq(true))
+        .filter(all![
+            user_collection_follow_entity::Column::UserId.eq(user_id),
+            user_collection_entity::Column::IsPublic.eq(true),
+        ])
         .order_by_desc(user_collection_follow_entity::Column::FollowedAt)
         .offset(page_query.offset())
         .limit(u64::from(page_query.limit()))
         .all(conn)
         .await
         .db_operation("load followed user collection ids")?;
+
     let collection_ids: Vec<i32> =
         followed.iter().map(|follow| follow.collection_id).collect();
 
@@ -741,7 +752,7 @@ pub(super) async fn load_user_collection_items_page(
         .db_operation("count user collection items")?;
 
     let items: Vec<UserCollectionItem> = select
-        .order_by_asc(user_collection_item_entity::Column::Position)
+        .order_by_asc(user_collection_item_entity::Column::SortKey)
         .order_by_asc(user_collection_item_entity::Column::Id)
         .offset(page_query.offset())
         .limit(u64::from(page_query.limit()))
@@ -813,7 +824,6 @@ pub(super) async fn load_user_collection_items_page(
                 entity_id: item.entity_id,
                 entity_type: item.entity_type,
                 description: item.description,
-                position: item.position,
                 entity,
             }
         })
@@ -858,35 +868,16 @@ pub(super) async fn find_owned_user_collection(
     }
 }
 
-pub(super) async fn lock_owned_user_collection(
+pub(super) async fn lock_user_collection(
     conn: &impl ConnectionTrait,
     collection_id: i32,
-    owner_id: i32,
-) -> Result<(), Error> {
-    let collection = user_collection_entity::Entity::find_by_id(collection_id)
-        .filter(user_collection_entity::Column::UserId.eq(owner_id))
+) -> Result<user_collection_entity::Model, Error> {
+    user_collection_entity::Entity::find_by_id(collection_id)
         .lock_exclusive()
         .one(conn)
         .await
-        .db_operation("lock owned user collection")?;
-
-    if collection.is_some() {
-        return Ok(());
-    }
-
-    // The lock query filtered by owner_id, so a miss could mean either the
-    // collection doesn't exist at all or it belongs to a different user. Check which.
-    let exists = user_collection_entity::Entity::find_by_id(collection_id)
-        .one(conn)
-        .await
-        .db_operation("check user collection exists after lock miss")?
-        .is_some();
-
-    if exists {
-        Err(Error::CollectionAccessDenied)
-    } else {
-        Err(Error::NotFound(NotFound::Collection))
-    }
+        .db_operation("lock user collection")?
+        .ok_or(Error::NotFound(NotFound::Collection))
 }
 
 pub(super) async fn insert_user_collection(
@@ -979,31 +970,31 @@ pub(super) async fn ensure_referenced_entity_exists(
     }
 }
 
-pub(super) async fn next_user_collection_item_position(
-    conn: &impl ConnectionTrait,
-    collection_id: i32,
-) -> Result<i32, Error> {
-    let position = user_collection_item_entity::Entity::find()
-        .filter(
-            user_collection_item_entity::Column::UserCollectionId
-                .eq(collection_id),
-        )
-        .order_by_desc(user_collection_item_entity::Column::Position)
-        .order_by_desc(user_collection_item_entity::Column::Id)
-        .one(conn)
-        .await
-        .db_operation("find next user collection item position")?
-        .map_or(0, |item| item.position.saturating_add(1));
-
-    Ok(position)
-}
-
 pub(super) async fn insert_user_collection_item(
     conn: &impl ConnectionTrait,
     collection_id: i32,
     req: &CreateUserCollectionItemRequest,
-    position: i32,
 ) -> Result<user_collection_item_entity::Model, Error> {
+    let last_item = user_collection_item_entity::Entity::find()
+        .filter(
+            user_collection_item_entity::Column::UserCollectionId
+                .eq(collection_id),
+        )
+        .order_by_desc(user_collection_item_entity::Column::SortKey)
+        .order_by_desc(user_collection_item_entity::Column::Id)
+        .one(conn)
+        .await
+        .db_operation("find last user collection item")?;
+
+    let sort_key = match last_item {
+        None => 0,
+        Some(item) => item.sort_key.checked_add(1).ok_or_else(|| {
+            DatabaseError::internal(
+                "user collection item sort key is exhausted",
+            )
+        })?,
+    };
+
     user_collection_item_entity::Entity::insert(
         user_collection_item_entity::ActiveModel {
             id: NotSet,
@@ -1011,27 +1002,13 @@ pub(super) async fn insert_user_collection_item(
             entity_id: Set(Some(req.entity_id)),
             entity_type: Set(req.entity_type.into()),
             description: Set(req.description.clone()),
-            position: Set(position),
+            sort_key: Set(sort_key),
         },
     )
     .exec_with_returning(conn)
     .await
     .db_operation("insert user collection item")
     .map_err(Into::into)
-}
-
-// Delete and reorder rewrite positions directly to their final values, so the
-// surrounding transaction must defer the unique constraint before those bulk
-// updates run.
-pub(super) async fn defer_user_collection_item_position_constraint(
-    conn: &impl ConnectionTrait,
-) -> Result<(), Error> {
-    conn.execute_unprepared(
-        r#"SET CONSTRAINTS "user_collection_item_user_collection_id_position_key" DEFERRED"#,
-    )
-    .await
-    .db_operation("defer user collection item position constraint")?;
-    Ok(())
 }
 
 pub(super) async fn delete_user_collection_item(
@@ -1065,7 +1042,7 @@ pub(super) async fn load_user_collection_items(
             user_collection_item_entity::Column::UserCollectionId
                 .eq(collection_id),
         )
-        .order_by_asc(user_collection_item_entity::Column::Position)
+        .order_by_asc(user_collection_item_entity::Column::SortKey)
         .order_by_asc(user_collection_item_entity::Column::Id)
         .all(conn)
         .await
@@ -1073,66 +1050,50 @@ pub(super) async fn load_user_collection_items(
         .map_err(Into::into)
 }
 
-pub(super) async fn update_user_collection_item_positions(
+pub(super) async fn update_user_collection_item_order(
     conn: &impl ConnectionTrait,
     collection_id: i32,
-    positions: &[(i32, i32)],
+    item_ids: &[i32],
 ) -> Result<(), Error> {
-    let Some(&(first_item_id, first_position)) = positions.first() else {
+    let mut ordered_items = item_ids.iter().copied().enumerate();
+    let Some((_, first_item_id)) = ordered_items.next() else {
         return Ok(());
     };
 
-    let mut position_expr = Expr::case(
+    let mut sort_key_expr = Expr::case(
         Expr::col(user_collection_item_entity::Column::Id).eq(first_item_id),
-        first_position,
+        0,
     );
 
-    for &(item_id, position) in &positions[1..] {
-        position_expr = position_expr.case(
+    for (sort_key, item_id) in ordered_items {
+        let sort_key = i32::try_from(sort_key).map_err(|_| {
+            DatabaseError::internal("user collection contains too many items")
+        })?;
+        sort_key_expr = sort_key_expr.case(
             Expr::col(user_collection_item_entity::Column::Id).eq(item_id),
-            position,
+            sort_key,
         );
     }
 
-    let item_ids: Vec<i32> = positions.iter().map(|(id, _)| *id).collect();
-
     user_collection_item_entity::Entity::update_many()
-        .filter(
+        .filter(all![
             user_collection_item_entity::Column::UserCollectionId
                 .eq(collection_id),
-        )
-        .filter(user_collection_item_entity::Column::Id.is_in(item_ids))
+            user_collection_item_entity::Column::Id
+                .is_in(item_ids.iter().copied()),
+        ])
         .col_expr(
-            user_collection_item_entity::Column::Position,
-            position_expr
+            user_collection_item_entity::Column::SortKey,
+            sort_key_expr
                 .finally(Expr::col(
-                    user_collection_item_entity::Column::Position,
+                    user_collection_item_entity::Column::SortKey,
                 ))
                 .into(),
         )
         .exec(conn)
         .await
-        .db_operation("update user collection item positions")?;
+        .db_operation("update user collection item order")?;
     Ok(())
-}
-
-// Keep collection item positions contiguous after deletes or other operations that
-// can leave gaps like 0, 2, 3. `load_user_collection_items` already returns items in
-// display order, so we walk that order from 0 upward and rewrite only the rows
-// whose stored position is out of sync.
-pub(super) async fn resequence_user_collection_item_positions(
-    conn: &impl ConnectionTrait,
-    collection_id: i32,
-) -> Result<(), Error> {
-    let items = load_user_collection_items(conn, collection_id).await?;
-    let updates: Vec<(i32, i32)> = (0_i32..)
-        .zip(items)
-        .filter_map(|(expected, item)| {
-            (item.position != expected).then_some((item.id, expected))
-        })
-        .collect();
-
-    update_user_collection_item_positions(conn, collection_id, &updates).await
 }
 
 async fn load_artist_summaries(
@@ -1151,10 +1112,10 @@ async fn load_artist_summaries(
 
     let profile_images = artist_image_entity::Entity::find()
         .find_also_related(image_entity::Entity)
-        .filter(
+        .filter(all![
             artist_image_entity::Column::ArtistId.is_in(ids.iter().copied()),
-        )
-        .filter(artist_image_entity::Column::Type.eq(ArtistImageType::Profile))
+            artist_image_entity::Column::Type.eq(ArtistImageType::Profile),
+        ])
         .order_by_desc(image_entity::Column::UploadedAt)
         .all(conn)
         .await
@@ -1215,10 +1176,10 @@ async fn load_release_summaries(
 
     let cover_images = release_image_entity::Entity::find()
         .find_also_related(image_entity::Entity)
-        .filter(
+        .filter(all![
             release_image_entity::Column::ReleaseId.is_in(ids.iter().copied()),
-        )
-        .filter(release_image_entity::Column::Type.eq(ReleaseImageType::Cover))
+            release_image_entity::Column::Type.eq(ReleaseImageType::Cover),
+        ])
         .order_by_desc(image_entity::Column::UploadedAt)
         .all(conn)
         .await
@@ -1318,13 +1279,11 @@ async fn load_song_summaries(
     } else {
         release_image_entity::Entity::find()
             .find_also_related(image_entity::Entity)
-            .filter(
+            .filter(all![
                 release_image_entity::Column::ReleaseId
                     .is_in(first_release_ids),
-            )
-            .filter(
                 release_image_entity::Column::Type.eq(ReleaseImageType::Cover),
-            )
+            ])
             .order_by_desc(image_entity::Column::UploadedAt)
             .all(conn)
             .await
