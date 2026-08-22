@@ -1,7 +1,4 @@
 #![expect(
-    clippy::missing_errors_doc,
-    clippy::missing_panics_doc,
-    clippy::must_use_candidate,
     clippy::result_unit_err,
     reason = "crate split preserves the existing DB infrastructure API"
 )]

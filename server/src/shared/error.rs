@@ -1,3 +1,5 @@
+use domain::shared::MessageError;
+
 use crate::shared::types::BoxedError;
 
 #[derive(Debug, derive_more::Display, derive_more::Error)]
@@ -29,23 +31,6 @@ where
     }
 }
 
-#[derive(Debug)]
-pub struct MessageError(String);
-
-impl MessageError {
-    pub fn new(message: impl Into<String>) -> Self {
-        Self(message.into())
-    }
-}
-
-impl std::fmt::Display for MessageError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl std::error::Error for MessageError {}
-
 impl ValidationError<MessageError> {
     pub fn new(message: impl Into<String>) -> Self {
         Self {
@@ -71,13 +56,6 @@ impl EntityNotFound {
     pub const fn new(entity: &'static str, id: i32) -> Self {
         Self { entity, id }
     }
-}
-
-#[derive(Debug, Clone, Copy, derive_more::Display, derive_more::Error)]
-#[display("Broken entity reference: {entity} #{id} not found")]
-pub struct BrokenEntityReference {
-    pub entity: &'static str,
-    pub id: i32,
 }
 
 #[derive(Debug, Clone, derive_more::Display, derive_more::Error)]

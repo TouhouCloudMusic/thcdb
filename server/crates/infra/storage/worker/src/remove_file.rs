@@ -1,10 +1,14 @@
+use std::io::{self, ErrorKind};
 use std::path::Path;
 use std::time::Duration;
 
+use apalis::layers::retry::backoff::{ExponentialBackoffMaker, MakeBackoff};
+use apalis::layers::retry::{HasherRng, RetryPolicy};
 use infra_storage::DeferredDelete;
 use infra_worker::{
-    Attempt, Data, RedisContext, RedisQueue, RedisQueueConfig, Storage, TaskId,
-    WorkerError, reschedule_job,
+    Error, Monitor, RedisQueue, RedisQueueConfig, Storage, WorkerBuilder,
+    WorkerBuilderExt, WorkerError, WorkerFactoryFn, permanent_error,
+    retryable_error,
 };
 use serde::{Deserialize, Serialize};
 
@@ -20,11 +24,6 @@ pub struct RemoveFileJob {
 }
 
 #[derive(Clone)]
-pub struct WorkerState {
-    pub queue: RemoveFileQueue,
-}
-
-#[derive(Clone)]
 pub struct RemoveFileDeferredDelete {
     queue: RemoveFileQueue,
 }
@@ -37,12 +36,10 @@ impl RemoveFileDeferredDelete {
 }
 
 impl DeferredDelete for RemoveFileDeferredDelete {
-    async fn defer_delete(&self, path: &Path) -> Result<(), std::io::Error> {
+    async fn defer_delete(&self, path: &Path) -> Result<(), io::Error> {
         let path = path
             .to_str()
-            .ok_or_else(|| {
-                std::io::Error::other("Failed to serialize pathbuf")
-            })?
+            .ok_or_else(|| io::Error::other("Failed to serialize pathbuf"))?
             .to_string();
         let queue = self.queue.clone();
         tokio::spawn(async move {
@@ -72,7 +69,7 @@ async fn retry_enqueue_delete(
     queue: RemoveFileQueue,
     path: String,
     retries: u32,
-) -> Result<(), std::io::Error> {
+) -> Result<(), io::Error> {
     let job = RemoveFileJob { path };
     let mut attempt = 0;
 
@@ -83,7 +80,7 @@ async fn retry_enqueue_delete(
             Err(err) => {
                 attempt += 1;
                 if attempt > retries {
-                    return Err(std::io::Error::other(err.to_string()));
+                    return Err(io::Error::other(err.to_string()));
                 }
                 tokio::time::sleep(DEFERRED_DELETE_DELAY).await;
             }
@@ -91,13 +88,7 @@ async fn retry_enqueue_delete(
     }
 }
 
-pub async fn handle(
-    job: RemoveFileJob,
-    state: Data<WorkerState>,
-    task_id: TaskId,
-    attempt: Attempt,
-    context: RedisContext,
-) -> Result<(), std::io::Error> {
+pub async fn handle(job: RemoveFileJob) -> Result<(), Error> {
     log::info!(
         target: "infra.storage.remove_file_worker",
         path = job.path.as_str();
@@ -105,7 +96,7 @@ pub async fn handle(
     );
     match tokio::fs::remove_file(&job.path).await {
         Ok(()) => Ok(()),
-        Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(err) if err.kind() == ErrorKind::NotFound => Ok(()),
         Err(err) => {
             log::error!(
                 target: "infra.storage.remove_file_worker",
@@ -113,26 +104,42 @@ pub async fn handle(
                 error:% = err;
                 "failed to delete file"
             );
-            let path = job.path.clone();
-            let mut queue = state.queue.clone();
-            reschedule_job(
-                &mut queue,
-                job,
-                task_id,
-                attempt,
-                context,
-                Duration::from_secs(1),
-            )
-            .await
-            .map_err(|push_err| {
-                log::error!(
-                    target: "infra.storage.remove_file_worker",
-                    path = path.as_str(),
-                    error:? = push_err;
-                    "failed to reschedule remove file job"
-                );
-                std::io::Error::other(push_err.to_string())
-            })
+            Err(classify_failure(err))
         }
     }
+}
+
+fn classify_failure(error: io::Error) -> Error {
+    if matches!(
+        error.kind(),
+        ErrorKind::PermissionDenied
+            | ErrorKind::InvalidInput
+            | ErrorKind::IsADirectory
+            | ErrorKind::NotADirectory
+            | ErrorKind::ReadOnlyFilesystem
+            | ErrorKind::Unsupported
+    ) {
+        permanent_error(error)
+    } else {
+        retryable_error(error)
+    }
+}
+
+pub fn register_workers(monitor: Monitor, queue: RemoveFileQueue) -> Monitor {
+    let retry_backoff = ExponentialBackoffMaker::new(
+        Duration::from_secs(1),
+        Duration::from_secs(30),
+        0.5,
+        HasherRng::default(),
+    )
+    .expect("remove file retry backoff")
+    .make_backoff();
+
+    monitor.register(
+        WorkerBuilder::new("remove_file")
+            .retry(RetryPolicy::retries(4).with_backoff(retry_backoff))
+            .enable_tracing()
+            .backend(queue)
+            .build_fn(handle),
+    )
 }

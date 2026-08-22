@@ -6,6 +6,6 @@
 mod remove_file;
 
 pub use remove_file::{
-    RemoveFileDeferredDelete, RemoveFileJob, RemoveFileQueue, WorkerState,
-    handle, queue,
+    RemoveFileDeferredDelete, RemoveFileJob, RemoveFileQueue, handle, queue,
+    register_workers,
 };
