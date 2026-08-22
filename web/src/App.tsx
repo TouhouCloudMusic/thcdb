@@ -3,26 +3,29 @@ import { useLingui } from "@lingui/solid/macro"
 import { Meta, Title } from "@solidjs/meta"
 import { createRouter, RouterProvider } from "@tanstack/solid-router"
 
+import type { RouteContext } from "~/route/__root"
 import type { AppLocale } from "~/state/i18n"
+import { useCurrentUser } from "~/state/user"
 
 import { routeTree } from "./routeTree.gen"
 import { StateProvider } from "./state"
-import { QUERY_CLIENT } from "./state/tanstack"
 import { NotFound } from "./view/NotFound"
 
-const router = createRouter({
-	routeTree,
-	context: {
-		queryClient: QUERY_CLIENT,
-	},
-	// We use tanstack query, so we don't need the built-in cache of tanstack router
-	defaultPreloadStaleTime: 0,
-	defaultNotFoundComponent: () => <NotFound />,
-})
+function createAppRouter(context: RouteContext) {
+	return createRouter({
+		routeTree,
+		context,
+		// We use tanstack query, so we don't need the built-in cache of tanstack router
+		defaultPreloadStaleTime: 0,
+		defaultNotFoundComponent: () => <NotFound />,
+	})
+}
+
+type AppRouter = ReturnType<typeof createAppRouter>
 
 declare module "@tanstack/solid-router" {
 	interface Register {
-		router: typeof router
+		router: AppRouter
 	}
 }
 
@@ -54,5 +57,9 @@ function Metas() {
 }
 
 function Routes() {
+	const router = createAppRouter({
+		currentUser: useCurrentUser(),
+	})
+
 	return <RouterProvider router={router} />
 }

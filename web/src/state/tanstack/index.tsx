@@ -1,5 +1,11 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/solid-query"
+import {
+	partialMatchKey,
+	QueryClient,
+	QueryClientProvider,
+} from "@tanstack/solid-query"
 import type { ParentProps } from "solid-js"
+
+export const SESSION_QUERY_KEY = ["session"] as const
 
 export const QUERY_CLIENT = new QueryClient({
 	defaultOptions: {
@@ -10,6 +16,17 @@ export const QUERY_CLIENT = new QueryClient({
 		},
 	},
 })
+
+export async function resetSessionQueries() {
+	QUERY_CLIENT.getMutationCache().clear()
+	await QUERY_CLIENT.resetQueries()
+}
+
+export async function resetAuthorizationQueries() {
+	await QUERY_CLIENT.resetQueries({
+		predicate: (query) => !partialMatchKey(query.queryKey, SESSION_QUERY_KEY),
+	})
+}
 
 export function TanStackProvider(props: ParentProps) {
 	return (

@@ -9,7 +9,7 @@ import { Pagination } from "~/component/Pagination"
 import { Button } from "~/component/atomic/button"
 import { Dialog } from "~/component/dialog"
 import { RoleBadge } from "~/component/features/user/RoleBadge"
-import { hasAdminRole } from "~/component/route"
+import { hasAdminRole } from "~/domain/user/authorization"
 import { setUserRoles } from "~/hey-api"
 import type { EditableUserRole, PageResponseUserSummary } from "~/hey-api"
 import {
@@ -219,8 +219,11 @@ function useAdminUsersRoleEditor(users: Accessor<AdminUserItem[]>) {
 
 				reset()
 
-				await userCtx.flush()
-				if (!userCtx.user || !hasAdminRole(userCtx.user.roles)) {
+				if (user.name === userCtx.profile?.name) {
+					await userCtx.refreshAuthorization()
+				}
+
+				if (!hasAdminRole(userCtx.authorization)) {
 					return
 				}
 

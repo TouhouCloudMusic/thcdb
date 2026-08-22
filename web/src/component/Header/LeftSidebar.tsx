@@ -1,6 +1,5 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { LinkComponentProps } from "@tanstack/solid-router"
-import type { UserProfile } from "@thc/api"
 import type { IconProps } from "@thc/icons"
 import type { JSX } from "solid-js"
 import { For, Show } from "solid-js"
@@ -17,7 +16,9 @@ import {
 
 import { LocaleSelect } from "~/component/Header/LocaleSelect"
 import { ListItem, Sidebar } from "~/component/Sidebar"
-import { hasAdminRole } from "~/component/route"
+import type { UserAuthorization } from "~/domain/user/authorization"
+import { hasAdminRole } from "~/domain/user/authorization"
+import { useCurrentUser } from "~/state/user"
 
 type ListItemContent = {
 	icon: (props: IconProps) => JSX.Element
@@ -25,7 +26,13 @@ type ListItemContent = {
 	to: LinkComponentProps["to"]
 }
 
-export function LeftSidebar(props: { user?: UserProfile }) {
+export function LeftSidebar() {
+	const currentUser = useCurrentUser()
+
+	return <LeftSidebarView authorization={currentUser.authorization} />
+}
+
+export function LeftSidebarView(props: { authorization?: UserAuthorization }) {
 	const { t } = useLingui()
 
 	// TODO: Icons
@@ -118,7 +125,7 @@ export function LeftSidebar(props: { user?: UserProfile }) {
 				</For>
 			</ul>
 
-			<Show when={hasAdminRole(props.user?.roles)}>
+			<Show when={hasAdminRole(props.authorization)}>
 				<div class="space-y-1 pr-2">
 					<h3 class="ml-2 text-sm text-secondary">{t`Admin`}</h3>
 					<ListItem

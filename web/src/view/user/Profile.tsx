@@ -2,7 +2,7 @@ import { useLingui } from "@lingui/solid/macro"
 import type { UserProfile, UserRoleEnum } from "@thc/api"
 import type { ComponentProps } from "solid-js"
 import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
-import { twMerge } from "tailwind-merge"
+import { twJoin, twMerge } from "tailwind-merge"
 
 import type { AppColor } from "~/component"
 import { Badge } from "~/component/atomic/Badge"
@@ -11,6 +11,11 @@ import { Link } from "~/component/atomic/Link"
 import { Tab } from "~/component/atomic/Tab"
 import { Avatar } from "~/component/atomic/avatar"
 import { Button } from "~/component/atomic/button"
+import type { ToolbarSelectOption } from "~/component/atomic/form/ToolbarSelect"
+import {
+	TOOLBAR_CONTROL_CLASS,
+	ToolbarSelect,
+} from "~/component/atomic/form/ToolbarSelect"
 import { Markdown } from "~/component/markdown"
 import { USER_ROLE_NAMES } from "~/domain/user/constants"
 import type { UserCollection } from "~/hey-api"
@@ -18,11 +23,6 @@ import { PageLayout } from "~/layout/PageLayout"
 import { imgUrl } from "~/utils/adapter/static_file"
 import { CollectionFormDialog } from "~/view/collection/CollectionFormDialog"
 import { CollectionLoadMore } from "~/view/collection/CollectionLoadMore"
-import type { CollectionToolbarSelectOption } from "~/view/collection/CollectionToolbarSelect"
-import {
-	COLLECTION_TOOL_CONTROL_CLASS,
-	CollectionToolbarSelect,
-} from "~/view/collection/CollectionToolbarSelect"
 import { FollowedCollectionRow } from "~/view/collection/FollowedCollectionRow"
 
 type ProfileTabValue = "collections" | "activity"
@@ -31,8 +31,14 @@ type ProfileTabState = {
 	onChange: (value: ProfileTabValue) => void
 }
 
+export type ProfileData = Pick<
+	UserProfile,
+	"name" | "avatar_url" | "banner_url" | "is_following" | "bio" | "stats"
+>
+
 type Props = {
-	data: UserProfile
+	data: ProfileData
+	roles: UserProfile["roles"]
 	isCurrentUser: boolean
 	pins: readonly PinItem[]
 	activity: readonly ActivityItem[]
@@ -156,7 +162,7 @@ export function Profile(props: Props) {
 
 	const bannerUrl = createMemo(() => imgUrl(props.data.banner_url))
 	const topRole = createMemo<UserRoleEnum | null>(() => {
-		const roles = props.data.roles ?? []
+		const roles = props.roles ?? []
 		if (roles.length === 0) return null
 		if (roles.some((role) => role.name === USER_ROLE_NAMES.Admin)) {
 			return USER_ROLE_NAMES.Admin
@@ -331,7 +337,7 @@ function ProfileActionButton(props: ProfileActionButtonProps) {
 	)
 }
 
-function AboutSection(props: { user: UserProfile }) {
+function AboutSection(props: { user: Pick<ProfileData, "bio"> }) {
 	const { t } = useLingui()
 	const [mdParsing, setMdParsing] = createSignal(true)
 	const bio = createMemo(() => props.user.bio)
@@ -475,7 +481,9 @@ function CollectionsAndActivitySection(props: {
 				onChange={props.tab === undefined ? undefined : onTabChange}
 				class="flex flex-col gap-5"
 			>
-				<Tab.List class="inline-grid w-fit grid-cols-2 border-b border-slate-200">
+				<Tab.List
+					class={twJoin(Tab.CONTAINER_CLASS, "inline-grid w-fit grid-cols-2")}
+				>
 					<For each={PROFILE_TAB_ITEMS}>
 						{(item) => (
 							<Tab.Trigger
@@ -620,21 +628,20 @@ function CollectionsPanel(props: {
 	const [visibilityFilter, setVisibilityFilter] =
 		createSignal<CollectionVisibilityFilter>("all")
 	const [sortValue, setSortValue] = createSignal<CollectionSortValue>("newest")
-	const collectionTypeOptions =
-		(): CollectionToolbarSelectOption<CollectionType>[] => [
-			{
-				value: "own",
-				label: t`Type: Own`,
-				itemLabel: t`Own`,
-			},
-			{
-				value: "followed",
-				label: t`Type: Followed`,
-				itemLabel: t`Followed`,
-			},
-		]
+	const collectionTypeOptions = (): ToolbarSelectOption<CollectionType>[] => [
+		{
+			value: "own",
+			label: t`Type: Own`,
+			itemLabel: t`Own`,
+		},
+		{
+			value: "followed",
+			label: t`Type: Followed`,
+			itemLabel: t`Followed`,
+		},
+	]
 	const visibilityOptions =
-		(): CollectionToolbarSelectOption<CollectionVisibilityFilter>[] =>
+		(): ToolbarSelectOption<CollectionVisibilityFilter>[] =>
 			COLLECTION_VISIBILITY_FILTERS.map((option) => {
 				switch (option.value) {
 					case "all": {
@@ -660,40 +667,39 @@ function CollectionsPanel(props: {
 					}
 				}
 			})
-	const sortOptions =
-		(): CollectionToolbarSelectOption<CollectionSortValue>[] =>
-			COLLECTION_SORT_OPTIONS.map((option) => {
-				switch (option.value) {
-					case "newest": {
-						if (collectionType() === "followed") {
-							return {
-								value: option.value,
-								label: t`Sort: Followed time`,
-								itemLabel: t`Followed time`,
-							}
-						}
+	const sortOptions = (): ToolbarSelectOption<CollectionSortValue>[] =>
+		COLLECTION_SORT_OPTIONS.map((option) => {
+			switch (option.value) {
+				case "newest": {
+					if (collectionType() === "followed") {
 						return {
 							value: option.value,
-							label: t`Sort: Created time`,
-							itemLabel: t`Created time`,
+							label: t`Sort: Followed time`,
+							itemLabel: t`Followed time`,
 						}
 					}
-					case "name": {
-						return {
-							value: option.value,
-							label: t`Sort: Alphabetical`,
-							itemLabel: t`Alphabetical`,
-						}
-					}
-					case "items": {
-						return {
-							value: option.value,
-							label: t`Sort: Item count`,
-							itemLabel: t`Item count`,
-						}
+					return {
+						value: option.value,
+						label: t`Sort: Created time`,
+						itemLabel: t`Created time`,
 					}
 				}
-			})
+				case "name": {
+					return {
+						value: option.value,
+						label: t`Sort: Alphabetical`,
+						itemLabel: t`Alphabetical`,
+					}
+				}
+				case "items": {
+					return {
+						value: option.value,
+						label: t`Sort: Item count`,
+						itemLabel: t`Item count`,
+					}
+				}
+			}
+		})
 
 	const collections = createMemo(() =>
 		collectionType() === "own"
@@ -759,13 +765,13 @@ function CollectionsPanel(props: {
 						aria-label={t`Search collections`}
 						onInput={(e) => setSearchQuery(e.currentTarget.value)}
 						class={twMerge(
-							COLLECTION_TOOL_CONTROL_CLASS,
+							TOOLBAR_CONTROL_CLASS,
 							"w-full min-w-[200px] flex-1 px-3 text-primary placeholder:text-secondary",
 						)}
 					/>
 
 					<Show when={props.isCurrentUser}>
-						<CollectionToolbarSelect
+						<ToolbarSelect
 							options={collectionTypeOptions()}
 							value={collectionType()}
 							placeholder={t`Type`}
@@ -775,7 +781,7 @@ function CollectionsPanel(props: {
 						/>
 					</Show>
 
-					<CollectionToolbarSelect
+					<ToolbarSelect
 						options={visibilityOptions()}
 						value={visibilityFilter()}
 						placeholder={t`Visibility`}
@@ -784,7 +790,7 @@ function CollectionsPanel(props: {
 						class="w-full sm:w-auto"
 					/>
 
-					<CollectionToolbarSelect
+					<ToolbarSelect
 						options={sortOptions()}
 						value={sortValue()}
 						placeholder={t`Sort`}
@@ -800,7 +806,7 @@ function CollectionsPanel(props: {
 							size="Sm"
 							aria-label={t`New collection`}
 							class={twMerge(
-								COLLECTION_TOOL_CONTROL_CLASS,
+								TOOLBAR_CONTROL_CLASS,
 								"px-3 shadow-none hover:shadow-none",
 							)}
 							onClick={() => setCollectionFormOpen(true)}

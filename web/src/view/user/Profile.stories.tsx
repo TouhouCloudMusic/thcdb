@@ -6,7 +6,7 @@ import baka from "~/component/atomic/avatar/baka.jpg"
 import type { UserCollection } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
-import type { ActivityItem, PinItem } from "./Profile"
+import type { ActivityItem, PinItem, ProfileData } from "./Profile"
 import { Profile } from "./Profile"
 
 const ORIGIN = globalThis.location.origin
@@ -224,6 +224,7 @@ function assetUrl(path: string) {
 
 function createOwnerProfile(): UserProfile {
 	return {
+		id: 1,
 		name: "Hakurei Reimu",
 		last_login: "2026-03-28T09:30:00.000Z",
 		avatar_url: assetUrl(baka),
@@ -250,6 +251,7 @@ function createOwnerProfile(): UserProfile {
 
 function createVisitorProfile(isFollowing: boolean): UserProfile {
 	return {
+		id: isFollowing ? 2 : 3,
 		name: isFollowing ? "Kirisame Marisa" : "Usami Sumireko",
 		last_login: isFollowing
 			? "2026-03-27T14:05:00.000Z"
@@ -274,6 +276,7 @@ function createVisitorProfile(isFollowing: boolean): UserProfile {
 
 function createEmptyProfile(): UserProfile {
 	return {
+		id: 4,
 		name: "No Data User",
 		last_login: "2026-03-26T08:00:00.000Z",
 		avatar_url: undefined,
@@ -416,7 +419,8 @@ function selectActivity(preset: FeedPreset): readonly ActivityItem[] {
 }
 
 function buildStoryState(options: StoryRootProps): {
-	data: UserProfile
+	data: ProfileData
+	roles: UserProfile["roles"]
 	isCurrentUser: boolean
 	pins: readonly PinItem[]
 	activity: readonly ActivityItem[]
@@ -433,18 +437,19 @@ function buildStoryState(options: StoryRootProps): {
 
 	return {
 		data: {
-			...profile,
+			name: profile.name,
+			avatar_url: profile.avatar_url,
 			banner_url: options.hasBanner
 				? (profile.banner_url ?? assetUrl("/img/cover/release/1.png"))
 				: undefined,
 			bio: options.hasBio
 				? (profile.bio ?? createFallbackBio(options.scenario))
 				: undefined,
-			roles: options.hasRoles ? createFallbackRoles(options.scenario) : [],
 			is_following:
 				isCurrentUser || options.isSignedIn ? profile.is_following : undefined,
 			stats: selectStats(options.scenario, options.statsPreset),
 		},
+		roles: options.hasRoles ? createFallbackRoles(options.scenario) : [],
 		isCurrentUser,
 		pins: selectPins(options.highlightsPreset),
 		activity: selectActivity(options.activityPreset),
@@ -487,6 +492,7 @@ function StoryRoot(props: StoryRootProps) {
 				onChange: setTab,
 			}}
 			data={state().data}
+			roles={state().roles}
 			isCurrentUser={state().isCurrentUser}
 			pins={state().pins}
 			activity={state().activity}

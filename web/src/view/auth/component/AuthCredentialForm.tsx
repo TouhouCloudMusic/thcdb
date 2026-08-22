@@ -7,7 +7,7 @@ import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
 
-import type { AuthFormMode, useAuthForm } from "../store"
+import type { AuthFormMode, useAuthForm } from "../useAuthForm"
 import { EmailField } from "./EmailField"
 import { PasswordField } from "./PasswordField"
 import { SignInIdentifierField } from "./SignInIdentifierField"

@@ -1,5 +1,4 @@
 import * as meta from "@solidjs/meta"
-import type { QueryClient } from "@tanstack/solid-query"
 import { createRootRouteWithContext, Outlet } from "@tanstack/solid-router"
 import type { ParentProps } from "solid-js"
 
@@ -7,13 +6,13 @@ import { Footer } from "~/component/Footer"
 import { Header } from "~/component/Header"
 import { Devtools } from "~/component/devtools"
 import { AppToastRegion } from "~/component/toast"
-import { useCurrentUser } from "~/state/user"
+import type { UserStore } from "~/state/user"
 import { getErrorMessage } from "~/utils/getErrorMessage"
 import { NotFound } from "~/view/NotFound"
 import { InternalServerError } from "~/view/error/InternalServerError"
 
-type RouteContext = {
-	queryClient: QueryClient
+export type RouteContext = {
+	currentUser: UserStore
 }
 
 export const Route = createRootRouteWithContext<RouteContext>()({
@@ -43,7 +42,6 @@ function RouteTree() {
 }
 
 function Layout(props: ParentProps) {
-	const currentUser = useCurrentUser()
 	// TODO: Need fix, transition bettwen language change
 	// const layoutStyle = createMemo(() =>
 	//   useI18N().duringTransition() ?
@@ -62,11 +60,7 @@ function Layout(props: ParentProps) {
 				href="/logo.svg"
 				type="image/x-icon"
 			/>
-			<Header
-				user={currentUser.user}
-				notificationState={currentUser.notification_state}
-				onSignOut={() => void currentUser.sign_out()}
-			/>
+			<Header />
 			<main>{props.children}</main>
 			<Footer />
 		</div>

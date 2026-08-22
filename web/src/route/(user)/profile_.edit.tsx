@@ -1,8 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
-import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import { UserApi } from "@thc/api"
-import { UserQuery } from "@thc/query"
 import { Either as E } from "effect"
 import { Show } from "solid-js"
 
@@ -18,16 +16,30 @@ export const Route = createFileRoute("/(user)/profile_/edit")({
 })
 
 function RouteComponent() {
+	const userCtx = useCurrentUser()
+
+	return (
+		<AuthGuard>
+			<Show
+				when={userCtx.profile?.name}
+				keyed
+			>
+				<EditProfilePage />
+			</Show>
+		</AuthGuard>
+	)
+}
+
+function EditProfilePage() {
 	const { t } = useLingui()
 	const userCtx = useCurrentUser()
-	const query = useQuery(() =>
-		UserQuery.profileOption({
-			"params.username": undefined,
-			current_user: userCtx.user,
-		}),
-	)
 
-	const baseBio = () => query.data?.bio ?? ""
+	const baseBio = () => userCtx.profile?.bio ?? ""
+	const updateBio = userCtx.bindCurrentSession((bio: string) => {
+		userCtx.updateProfile((profile) => ({ ...profile, bio }))
+	})
+	const refreshProfile = userCtx.bindCurrentSession(userCtx.refreshProfile)
+
 	const store = createEditProfileStore({
 		baseBio,
 		uploadFailedMessage: t`Upload failed.`,
@@ -38,34 +50,34 @@ function RouteComponent() {
 				throw new Error(result.left.error)
 			}
 
-			userCtx.updateUser((user) => ({ ...user, bio: next }))
+			updateBio(next)
 		},
 		uploadAvatar: async (file) => {
 			const result = await UserApi.uploadAvatar(file)
 			if (E.isLeft(result)) {
 				throw new Error(result.left.error)
 			}
-			await userCtx.flush()
+
+			await refreshProfile()
 		},
 		uploadBanner: async (file) => {
 			const result = await UserApi.uploadProfileBanner(file)
 			if (E.isLeft(result)) {
 				throw new Error(result.left.error)
 			}
-			await userCtx.flush()
+
+			await refreshProfile()
 		},
 	})
 
 	return (
-		<AuthGuard>
-			<Show when={query.data}>
-				{(user) => (
-					<EditProfileView
-						user={user()}
-						store={store}
-					/>
-				)}
-			</Show>
-		</AuthGuard>
+		<Show when={userCtx.profile}>
+			{(profile) => (
+				<EditProfileView
+					user={profile()}
+					store={store}
+				/>
+			)}
+		</Show>
 	)
 }
