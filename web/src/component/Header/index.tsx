@@ -20,7 +20,7 @@ import { Dialog } from "../dialog"
 import { LeftSidebar } from "./LeftSidebar"
 import { RightSidebar } from "./RightSidebar"
 
-const HEADER_BTN_CLASS = "size-fit p-1 m-auto"
+const HEADER_BTN_CLASS = "m-auto size-fit cursor-pointer p-1"
 
 type EntityFilter =
 	| "all"
@@ -59,6 +59,7 @@ function HeaderSkeleton() {
 }
 
 export function Header() {
+	const { t } = useLingui()
 	const currentUser = useCurrentUser()
 	const unread = useQuery(() => ({
 		...unreadCountOptions(),
@@ -74,6 +75,7 @@ export function Header() {
 						<K_Dialog.Trigger
 							variant="Tertiary"
 							class={HEADER_BTN_CLASS}
+							aria-label={t`Open navigation menu`}
 							as={Button}
 						>
 							<HamburgerMenuIcon class={"m-auto size-5 text-slate-400"} />
@@ -128,20 +130,27 @@ type AuthenticatedContentProps = {
 }
 
 function AuthenticatedContent(props: AuthenticatedContentProps) {
+	const { t } = useLingui()
 	const [show, setShow, setRef] = createClickOutside()
 	const close = () => setShow(false)
+
 	return (
 		<>
 			<div class="grid h-8 w-8 place-items-center">
 				<BellButton unreadCount={props.unreadCount} />
 			</div>
-			<button onClick={() => setShow(!show())}>
-				<Avatar user={props.user} />
-			</button>
 			<Dialog.Root
 				open={show()}
-				onOpenChange={close}
+				onOpenChange={setShow}
 			>
+				<K_Dialog.Trigger
+					as={Button}
+					variant="Tertiary"
+					class="size-fit cursor-pointer rounded-full p-0"
+					aria-label={t`Open user menu`}
+				>
+					<Avatar user={props.user} />
+				</K_Dialog.Trigger>
 				<Dialog.Portal>
 					<Dialog.Overlay onClick={close} />
 					<K_Dialog.Content class="fixed inset-0 z-50">
