@@ -13,7 +13,7 @@ import type { EntityCommentsModel } from "~/view/comment/EntityComments"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
 import { useEntityComments } from "~/view/comment/useEntityComments"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
-import { EntityTagsSectionContainer } from "~/view/entity_tags/EntityTagsSection"
+import { EntityTags } from "~/view/entity_tags/EntityTags"
 
 import { SongInfoCoverImage } from "./comp/SongInfoCoverImage"
 import { SongInfoCredit } from "./comp/SongInfoCredit"
@@ -74,7 +74,7 @@ export function SongInfoPageView(props: SongInfoPageViewProps) {
 					<div class="flex flex-col gap-y-4">
 						<SongInfoTitleAndCreditName />
 						<SongInfoLanguages />
-						<EntityTagsSectionContainer
+						<EntityTags
 							entityType="song"
 							entityId={props.song.id}
 						/>
