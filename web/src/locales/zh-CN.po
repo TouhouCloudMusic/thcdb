@@ -481,7 +481,7 @@ msgstr "更正已拒绝"
 #. placeholder {0}: correctionHistory().length
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
 msgid "Corrections · {0}"
-msgstr "更正 · {0}"
+msgstr "编辑历史 · {0}"
 
 #: src/component/form/Location/index.tsx
 msgid "Country / Region"
@@ -2373,7 +2373,7 @@ msgstr "即将举行的活动"
 #. placeholder {0}: entityLabel()
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
 msgid "Update {0}"
-msgstr "更新{0}"
+msgstr "编辑信息"
 
 #: src/view/user/edit_profile/index.tsx
 msgid "Update avatar"
@@ -2390,7 +2390,7 @@ msgstr "更新时间"
 
 #: src/view/release/Info/index.tsx
 msgid "Upload cover art"
-msgstr "上传封面图"
+msgstr "更新图片"
 
 #: src/component/ImageCropDialog/index.tsx
 #: src/route/(user)/profile_.edit.tsx
