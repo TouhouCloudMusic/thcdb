@@ -6,7 +6,7 @@ import { createMemo, Show, For } from "solid-js"
 
 import { DateWithPrecision } from "~/domain/shared"
 import { assertContext } from "~/utils/solid/assertContext"
-import { EntityTagsSectionContainer } from "~/view/entity_tags/EntityTagsSection"
+import { EntityTags } from "~/view/entity_tags/EntityTags"
 
 import { ArtistContext } from ".."
 
@@ -34,7 +34,7 @@ export function ArtistInfo() {
 				<Aliases />
 				<Membership />
 				<Links />
-				<EntityTagsSectionContainer
+				<EntityTags
 					entityType="artist"
 					entityId={context.artist.id}
 				/>

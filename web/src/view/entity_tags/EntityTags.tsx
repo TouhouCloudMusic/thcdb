@@ -2,13 +2,15 @@ import { useLingui } from "@lingui/solid/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import type { Tag } from "@thc/api"
 import type { JSX } from "solid-js"
-import { For, Show, createMemo, createSignal } from "solid-js"
+import { For, Match, Show, Switch, createMemo, createSignal } from "solid-js"
 import { Cross1Icon, Pencil1Icon, PlusIcon } from "solid-radix-icons"
-import { twMerge } from "tailwind-merge"
+import { twMerge, twJoin } from "tailwind-merge"
 
 import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
+import { Intersperse } from "~/component/data/Intersperse"
 import { Dialog } from "~/component/dialog"
+import { PRIMARY_TAG_RELEVANCE_THRESHOLD } from "~/domain/tag/constants"
 import {
 	deleteVoteMutation,
 	getTagsOptions,
@@ -30,7 +32,7 @@ import type {
 	EntityTaggableType,
 } from "./model"
 
-type EntityTagsSectionContainerProps = {
+type EntityTagsProps = {
 	class?: string
 	entityType: EntityTaggableType
 	entityId: number
@@ -56,9 +58,7 @@ type EntityTagRowProps = {
 	onRemoveVote: (tagId: number) => Promise<void>
 }
 
-export function EntityTagsSectionContainer(
-	props: EntityTagsSectionContainerProps,
-) {
+export function EntityTags(props: EntityTagsProps) {
 	const userCtx = useCurrentUser()
 	const queryClient = useQueryClient()
 	const [pendingKey, setPendingKey] = createSignal<string>()
@@ -117,7 +117,7 @@ export function EntityTagsSectionContainer(
 	}
 
 	return (
-		<EntityTagsSection
+		<EntityTagsView
 			class={props.class}
 			tags={tags()}
 			isSignedIn={userCtx.profile !== undefined}
@@ -130,7 +130,7 @@ export function EntityTagsSectionContainer(
 	)
 }
 
-export type EntityTagsSectionProps = {
+export type EntityTagsViewProps = {
 	class?: string
 	tags: EntityTagAggregate[]
 	isSignedIn: boolean
@@ -141,75 +141,106 @@ export type EntityTagsSectionProps = {
 	onRemoveVote: (tagId: number) => Promise<void>
 }
 
-export function EntityTagsSection(props: EntityTagsSectionProps) {
+export function EntityTagsView(props: EntityTagsViewProps) {
 	const { t } = useLingui()
+	const tags = createMemo(() => {
+		const primaryTags: EntityTagAggregate[] = []
+		const secondaryTags: EntityTagAggregate[] = []
+
+		for (const tag of props.tags) {
+			if (tag.relevance > PRIMARY_TAG_RELEVANCE_THRESHOLD) {
+				primaryTags.push(tag)
+			} else {
+				secondaryTags.push(tag)
+			}
+		}
+
+		return { primaryTags, secondaryTags }
+	})
+	const primaryTags = () => tags().primaryTags
+	const secondaryTags = () => tags().secondaryTags
+
 	return (
-		<div class={props.class ?? "flex items-baseline gap-4 text-sm"}>
-			<div class="shrink-0 text-tertiary">{t`Tags`}</div>
-			<Show
-				when={!props.isLoading}
-				fallback={<div class="text-tertiary">{t`Loading tags...`}</div>}
-			>
-				<Show
-					when={props.tags.length}
-					fallback={
-						<div class="flex items-center gap-3">
-							<div class="text-xs text-tertiary">{t`No tags yet`}</div>
-							<Show when={props.isSignedIn}>
-								<ManageTagsDialog
-									tags={props.tags}
-									isSignedIn={props.isSignedIn}
-									dataFilter={props.dataFilter}
-									pendingKey={props.pendingKey}
-									onVote={props.onVote}
-									onRemoveVote={props.onRemoveVote}
-									trigger={
-										<Dialog.Trigger
-											as={Button}
-											variant="Tertiary"
-											class="flex h-8 w-8 items-center justify-center p-0"
-										>
-											<PlusIcon class="size-4" />
-										</Dialog.Trigger>
-									}
-								/>
-							</Show>
-						</div>
-					}
-				>
-					<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-						<For each={props.tags}>
-							{(tag) => (
-								<Link
-									to="/tag/$id"
-									params={{ id: tag.id.toString() }}
-									class="text-primary underline-offset-4 transition-colors hover:underline"
+		<div
+			class={twMerge(
+				"grid min-h-6 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4",
+				props.class,
+			)}
+		>
+			<div class="text-sm text-tertiary">{t`Tags`}</div>
+			<Switch>
+				<Match when={props.isLoading}>
+					<div>
+						<span class="text-xs text-tertiary">{t`Loading...`}</span>
+					</div>
+				</Match>
+				<Match when={props.tags.length === 0}>
+					<div class="text-xs text-tertiary">{t`No tags yet`}</div>
+				</Match>
+				<Match when={props.tags.length > 0}>
+					<div class="flex min-w-0 flex-col gap-1">
+						<Show when={primaryTags().length > 0}>
+							<div class="text-sm text-primary">
+								<Intersperse
+									of={primaryTags()}
+									with=", "
 								>
-									{tag.name}
-								</Link>
-							)}
-						</For>
-						<Show when={props.isSignedIn}>
-							<ManageTagsDialog
-								tags={props.tags}
-								isSignedIn={props.isSignedIn}
-								dataFilter={props.dataFilter}
-								pendingKey={props.pendingKey}
-								onVote={props.onVote}
-								onRemoveVote={props.onRemoveVote}
-								trigger={
-									<Dialog.Trigger
-										as={Button}
-										variant="Tertiary"
-										class="flex h-8 w-8 items-center justify-center p-0"
-									>
-										<Pencil1Icon class="size-4" />
-									</Dialog.Trigger>
-								}
-							/>
+									{(tag) => (
+										<Link
+											to="/tag/$id"
+											params={{ id: tag.id.toString() }}
+										>
+											{tag.name}
+										</Link>
+									)}
+								</Intersperse>
+							</div>
+						</Show>
+
+						<Show when={secondaryTags().length > 0}>
+							<div
+								class={twJoin(
+									primaryTags().length > 0 ? "text-xs" : "text-sm",
+									"text-tertiary",
+								)}
+							>
+								<Intersperse
+									of={secondaryTags()}
+									with=", "
+								>
+									{(tag) => (
+										<Link
+											to="/tag/$id"
+											params={{ id: tag.id.toString() }}
+											class="text-tertiary"
+										>
+											{tag.name}
+										</Link>
+									)}
+								</Intersperse>
+							</div>
 						</Show>
 					</div>
-				</Show>
+				</Match>
+			</Switch>
+			<Show when={!props.isLoading && props.isSignedIn}>
+				<ManageTagsDialog
+					tags={props.tags}
+					isSignedIn={props.isSignedIn}
+					dataFilter={props.dataFilter}
+					pendingKey={props.pendingKey}
+					onVote={props.onVote}
+					onRemoveVote={props.onRemoveVote}
+					trigger={
+						<Dialog.Trigger
+							as={Button}
+							variant="Tertiary"
+							class="size-6"
+						>
+							{props.tags.length ? <Pencil1Icon /> : <PlusIcon />}
+						</Dialog.Trigger>
+					}
+				/>
 			</Show>
 		</div>
 	)
