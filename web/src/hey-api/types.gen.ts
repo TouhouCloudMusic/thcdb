@@ -824,6 +824,8 @@ export type ImageQueueAction = "Approve" | "Reject" | "Revert"
 
 export type ImageQueueDetail = {
 	id: number
+	previous_id?: number | null
+	next_id?: number | null
 	image_id?: number | null
 	status: ImageQueueStatus
 	created_at: string
@@ -4005,6 +4007,37 @@ export type FollowedUserCollectionsResponses = {
 export type FollowedUserCollectionsResponse =
 	FollowedUserCollectionsResponses[keyof FollowedUserCollectionsResponses]
 
+export type ProfileImageQueueData = {
+	body?: never
+	path?: never
+	query?: {
+		limit?: number
+		cursor?: number
+	}
+	url: "/profile/image-queue"
+}
+
+export type ProfileImageQueueErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type ProfileImageQueueError =
+	ProfileImageQueueErrors[keyof ProfileImageQueueErrors]
+
+export type ProfileImageQueueResponses = {
+	200: DataPaginatedUserImageQueueItem
+}
+
+export type ProfileImageQueueResponse =
+	ProfileImageQueueResponses[keyof ProfileImageQueueResponses]
+
 export type ProfileWithNameData = {
 	body?: never
 	path: {
@@ -4091,6 +4124,39 @@ export type FollowUserResponses = {
 }
 
 export type FollowUserResponse = FollowUserResponses[keyof FollowUserResponses]
+
+export type ProfileImageQueueWithNameData = {
+	body?: never
+	path: {
+		name: string
+	}
+	query?: {
+		limit?: number
+		cursor?: number
+	}
+	url: "/profile/{name}/image-queue"
+}
+
+export type ProfileImageQueueWithNameErrors = {
+	/**
+	 * Too Many Requests
+	 */
+	429: string
+	default: {
+		status: "Err"
+		message: string
+	}
+}
+
+export type ProfileImageQueueWithNameError =
+	ProfileImageQueueWithNameErrors[keyof ProfileImageQueueWithNameErrors]
+
+export type ProfileImageQueueWithNameResponses = {
+	200: DataPaginatedUserImageQueueItem
+}
+
+export type ProfileImageQueueWithNameResponse =
+	ProfileImageQueueWithNameResponses[keyof ProfileImageQueueWithNameResponses]
 
 export type FindReleaseByKeywordData = {
 	body?: never
@@ -5415,39 +5481,6 @@ export type UserRolesResponses = {
 }
 
 export type UserRolesResponse = UserRolesResponses[keyof UserRolesResponses]
-
-export type UserImageQueueData = {
-	body?: never
-	path: {
-		id: number
-	}
-	query?: {
-		limit?: number
-		cursor?: number
-	}
-	url: "/user/{id}/image-queue"
-}
-
-export type UserImageQueueErrors = {
-	/**
-	 * Too Many Requests
-	 */
-	429: string
-	default: {
-		status: "Err"
-		message: string
-	}
-}
-
-export type UserImageQueueError =
-	UserImageQueueErrors[keyof UserImageQueueErrors]
-
-export type UserImageQueueResponses = {
-	200: DataPaginatedUserImageQueueItem
-}
-
-export type UserImageQueueResponse =
-	UserImageQueueResponses[keyof UserImageQueueResponses]
 
 export type UserCollectionsData = {
 	body?: never

@@ -80,6 +80,8 @@ import {
 	pendingImageQueue,
 	pendingImageQueueCount,
 	profile,
+	profileImageQueue,
+	profileImageQueueWithName,
 	profileWithName,
 	publicUserCollections,
 	readAll,
@@ -131,7 +133,6 @@ import {
 	userCollectionDetail,
 	userCollectionItems,
 	userCollections,
-	userImageQueue,
 	userRoles,
 	verifyEmail,
 	verifyResetCode,
@@ -348,6 +349,12 @@ import type {
 	PendingImageQueueResponse,
 	ProfileData,
 	ProfileError,
+	ProfileImageQueueData,
+	ProfileImageQueueError,
+	ProfileImageQueueResponse,
+	ProfileImageQueueWithNameData,
+	ProfileImageQueueWithNameError,
+	ProfileImageQueueWithNameResponse,
 	ProfileResponse,
 	ProfileWithNameData,
 	ProfileWithNameError,
@@ -502,9 +509,6 @@ import type {
 	UserCollectionsData,
 	UserCollectionsError,
 	UserCollectionsResponse,
-	UserImageQueueData,
-	UserImageQueueError,
-	UserImageQueueResponse,
 	UserRolesData,
 	UserRolesError,
 	UserRolesResponse,
@@ -2899,6 +2903,80 @@ export const followedUserCollectionsInfiniteOptions = (
 	return opts as Omit<typeof opts, "initialData">
 }
 
+export const profileImageQueueQueryKey = (
+	options?: Options<ProfileImageQueueData>,
+) => createQueryKey("profileImageQueue", options, false, ["Image Queue"])
+
+export const profileImageQueueOptions = (
+	options?: Options<ProfileImageQueueData>,
+) =>
+	queryOptions<
+		ProfileImageQueueResponse,
+		ProfileImageQueueError,
+		ProfileImageQueueResponse,
+		ReturnType<typeof profileImageQueueQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await profileImageQueue({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: profileImageQueueQueryKey(options),
+	})
+
+export const profileImageQueueInfiniteQueryKey = (
+	options?: Options<ProfileImageQueueData>,
+): QueryKey<Options<ProfileImageQueueData>> =>
+	createQueryKey("profileImageQueue", options, true, ["Image Queue"])
+
+export const profileImageQueueInfiniteOptions = (
+	options?: Options<ProfileImageQueueData>,
+) => {
+	const opts = infiniteQueryOptions<
+		ProfileImageQueueResponse,
+		ProfileImageQueueError,
+		InfiniteData<ProfileImageQueueResponse>,
+		QueryKey<Options<ProfileImageQueueData>>,
+		| number
+		| Pick<
+				QueryKey<Options<ProfileImageQueueData>>[0],
+				"body" | "headers" | "path" | "query"
+		  >
+	>(
+		// @ts-ignore
+		{
+			queryFn: async ({ pageParam, queryKey, signal }) => {
+				// @ts-ignore
+				const page: Pick<
+					QueryKey<Options<ProfileImageQueueData>>[0],
+					"body" | "headers" | "path" | "query"
+				> =
+					typeof pageParam === "object"
+						? pageParam
+						: {
+								query: {
+									cursor: pageParam,
+								},
+							}
+				const params = createInfiniteParams(queryKey, page)
+				const { data } = await profileImageQueue({
+					...options,
+					...params,
+					signal,
+					throwOnError: true,
+				})
+				return data
+			},
+			queryKey: profileImageQueueInfiniteQueryKey(options),
+		},
+	)
+	return opts as Omit<typeof opts, "initialData">
+}
+
 export const profileWithNameQueryKey = (
 	options: Options<ProfileWithNameData>,
 ) => createQueryKey("profileWithName", options, false, ["User"])
@@ -2968,6 +3046,81 @@ export const followUserMutation = (
 		},
 	}
 	return mutationOptions
+}
+
+export const profileImageQueueWithNameQueryKey = (
+	options: Options<ProfileImageQueueWithNameData>,
+) =>
+	createQueryKey("profileImageQueueWithName", options, false, ["Image Queue"])
+
+export const profileImageQueueWithNameOptions = (
+	options: Options<ProfileImageQueueWithNameData>,
+) =>
+	queryOptions<
+		ProfileImageQueueWithNameResponse,
+		ProfileImageQueueWithNameError,
+		ProfileImageQueueWithNameResponse,
+		ReturnType<typeof profileImageQueueWithNameQueryKey>
+	>({
+		queryFn: async ({ queryKey, signal }) => {
+			const { data } = await profileImageQueueWithName({
+				...options,
+				...queryKey[0],
+				signal,
+				throwOnError: true,
+			})
+			return data
+		},
+		queryKey: profileImageQueueWithNameQueryKey(options),
+	})
+
+export const profileImageQueueWithNameInfiniteQueryKey = (
+	options: Options<ProfileImageQueueWithNameData>,
+): QueryKey<Options<ProfileImageQueueWithNameData>> =>
+	createQueryKey("profileImageQueueWithName", options, true, ["Image Queue"])
+
+export const profileImageQueueWithNameInfiniteOptions = (
+	options: Options<ProfileImageQueueWithNameData>,
+) => {
+	const opts = infiniteQueryOptions<
+		ProfileImageQueueWithNameResponse,
+		ProfileImageQueueWithNameError,
+		InfiniteData<ProfileImageQueueWithNameResponse>,
+		QueryKey<Options<ProfileImageQueueWithNameData>>,
+		| number
+		| Pick<
+				QueryKey<Options<ProfileImageQueueWithNameData>>[0],
+				"body" | "headers" | "path" | "query"
+		  >
+	>(
+		// @ts-ignore
+		{
+			queryFn: async ({ pageParam, queryKey, signal }) => {
+				// @ts-ignore
+				const page: Pick<
+					QueryKey<Options<ProfileImageQueueWithNameData>>[0],
+					"body" | "headers" | "path" | "query"
+				> =
+					typeof pageParam === "object"
+						? pageParam
+						: {
+								query: {
+									cursor: pageParam,
+								},
+							}
+				const params = createInfiniteParams(queryKey, page)
+				const { data } = await profileImageQueueWithName({
+					...options,
+					...params,
+					signal,
+					throwOnError: true,
+				})
+				return data
+			},
+			queryKey: profileImageQueueWithNameInfiniteQueryKey(options),
+		},
+	)
+	return opts as Omit<typeof opts, "initialData">
 }
 
 export const findReleaseByKeywordQueryKey = (
@@ -4391,77 +4544,6 @@ export const userRolesOptions = (options?: Options<UserRolesData>) =>
 		},
 		queryKey: userRolesQueryKey(options),
 	})
-
-export const userImageQueueQueryKey = (options: Options<UserImageQueueData>) =>
-	createQueryKey("userImageQueue", options, false, ["Image Queue"])
-
-export const userImageQueueOptions = (options: Options<UserImageQueueData>) =>
-	queryOptions<
-		UserImageQueueResponse,
-		UserImageQueueError,
-		UserImageQueueResponse,
-		ReturnType<typeof userImageQueueQueryKey>
-	>({
-		queryFn: async ({ queryKey, signal }) => {
-			const { data } = await userImageQueue({
-				...options,
-				...queryKey[0],
-				signal,
-				throwOnError: true,
-			})
-			return data
-		},
-		queryKey: userImageQueueQueryKey(options),
-	})
-
-export const userImageQueueInfiniteQueryKey = (
-	options: Options<UserImageQueueData>,
-): QueryKey<Options<UserImageQueueData>> =>
-	createQueryKey("userImageQueue", options, true, ["Image Queue"])
-
-export const userImageQueueInfiniteOptions = (
-	options: Options<UserImageQueueData>,
-) => {
-	const opts = infiniteQueryOptions<
-		UserImageQueueResponse,
-		UserImageQueueError,
-		InfiniteData<UserImageQueueResponse>,
-		QueryKey<Options<UserImageQueueData>>,
-		| number
-		| Pick<
-				QueryKey<Options<UserImageQueueData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
-	>(
-		// @ts-ignore
-		{
-			queryFn: async ({ pageParam, queryKey, signal }) => {
-				// @ts-ignore
-				const page: Pick<
-					QueryKey<Options<UserImageQueueData>>[0],
-					"body" | "headers" | "path" | "query"
-				> =
-					typeof pageParam === "object"
-						? pageParam
-						: {
-								query: {
-									cursor: pageParam,
-								},
-							}
-				const params = createInfiniteParams(queryKey, page)
-				const { data } = await userImageQueue({
-					...options,
-					...params,
-					signal,
-					throwOnError: true,
-				})
-				return data
-			},
-			queryKey: userImageQueueInfiniteQueryKey(options),
-		},
-	)
-	return opts as Omit<typeof opts, "initialData">
-}
 
 export const userCollectionsQueryKey = (
 	options: Options<UserCollectionsData>,

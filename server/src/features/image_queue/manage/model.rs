@@ -120,6 +120,8 @@ impl From<entity::release_image_queue::Model> for ReleaseImageQueueTarget {
 #[derive(Serialize, ToSchema)]
 pub(crate) struct ImageQueueDetail {
     pub(crate) id: i32,
+    pub(crate) previous_id: Option<i32>,
+    pub(crate) next_id: Option<i32>,
     pub(crate) image_id: Option<i32>,
     pub(crate) status: ImageQueueStatus,
     pub(crate) created_at: chrono::DateTime<chrono::FixedOffset>,

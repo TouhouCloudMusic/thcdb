@@ -1,13 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
-import type { ImageQueueDetail, ImageQueueStatus } from "@thc/api"
-import {
-	ArtistQueryOption,
-	ImageQueueMutation,
-	ImageQueueQueryOption,
-	ReleaseQueryOption,
-} from "@thc/query"
-import { ObjExt } from "@thc/toolkit/data"
+import { ArtistQueryOption, ReleaseQueryOption } from "@thc/query"
 import { Option as O } from "effect"
 import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
 import type { JSX } from "solid-js"
@@ -20,7 +13,22 @@ import { Image } from "~/component/image"
 import { showErrorToast } from "~/component/toast"
 import { hasUserPermission } from "~/domain/user/authorization"
 import { USER_PERMISSION_NAMES } from "~/domain/user/constants"
-import { setImageQueueSubscriptionMutation } from "~/hey-api/@tanstack/solid-query.gen"
+import type {
+	DataImageQueueDetail,
+	ImageQueueAction,
+	ImageQueueDetail,
+	ImageQueueStatus,
+} from "~/hey-api"
+import {
+	imageQueueDetailOptions,
+	imageQueueDetailQueryKey,
+	moderateImageQueueMutation,
+	pendingImageQueueCountQueryKey,
+	pendingImageQueueInfiniteQueryKey,
+	profileImageQueueInfiniteQueryKey,
+	profileImageQueueWithNameInfiniteQueryKey,
+	setImageQueueSubscriptionMutation,
+} from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout"
 import { useCurrentUser } from "~/state/user"
 import { imgUrl } from "~/utils/adapter/static_file"
@@ -34,6 +42,9 @@ const DATE_TIME = new Intl.DateTimeFormat(undefined, {
 })
 
 const LABEL_CLASS = "text-xs text-tertiary"
+
+const SURFACE_CARD_CLASS =
+	"rounded-sm border border-slate-300 bg-primary shadow-xs"
 
 function statusTone(status: ImageQueueStatus) {
 	switch (status) {
@@ -97,193 +108,103 @@ type Props = {
 	entryId: number
 }
 
-export type ImageQueueDetailPageContentProps = {
-	detail?: ImageQueueDetail
-	isLoading: boolean
-	isError: boolean
-	canManage: boolean
-	isBusy: boolean
-	mutationErrorMessage?: string
-	backLink:
-		| {
-				to: "/image-queue"
-				search: { status: "pending" }
-		  }
-		| {
-				to: "/user/$id/image-queue"
-				params: { id: string }
-		  }
-	onApprove: () => void
-	onReject: () => void
-	onRevert: () => void
-	cachedNeighbor?: {
-		prev?: number
-		next?: number
-	}
+export type ImageQueueDetailViewProps = {
+	detail: ImageQueueDetail
+	canModerate: boolean
+	isModerating: boolean
+	moderationErrorMessage?: string
+	onModerate: (action: ImageQueueAction) => void
 	targetName?: string
-	currentSrc?: string
-	currentLoading: boolean
-	currentError: boolean
+	targetImageSrc?: string
+	targetImageLoading: boolean
+	targetImageError: boolean
 	comments: EntityCommentsModel
 }
 
 const IMAGE_QUEUE_LIST_LINK = {
 	to: "/image-queue",
 	search: { status: "pending" },
-} as const satisfies ImageQueueDetailPageContentProps["backLink"]
-
-function extractInfiniteQueryIds(data: unknown): number[] {
-	if (!ObjExt.isRecord(data)) return []
-
-	const pages = data["pages"]
-	if (!Array.isArray(pages)) return []
-
-	const ids: number[] = []
-	for (const page of pages) {
-		if (!ObjExt.isRecord(page)) continue
-		const items = page["items"]
-		if (!Array.isArray(items)) continue
-
-		for (const item of items) {
-			if (!ObjExt.isRecord(item)) continue
-			const id = item["id"]
-			if (typeof id === "number") ids.push(id)
-		}
-	}
-
-	return ids
-}
+} as const
 
 export function ImageQueueDetailPage(props: Props) {
-	const { t } = useLingui()
 	const queryClient = useQueryClient()
 	const userCtx = useCurrentUser()
 	const detailQuery = useQuery(() =>
-		ImageQueueQueryOption.detail(props.entryId),
+		imageQueueDetailOptions({ path: { id: props.entryId } }),
 	)
-	const mutation = ImageQueueMutation.useModerateImageQueueMutation()
+	const moderationMutation = useMutation(() => moderateImageQueueMutation())
 	const comments = useEntityComments(() => ({
 		entityType: "image-queue",
 		entityId: props.entryId,
 	}))
-	const canManage = createMemo(() =>
+	const canModerate = createMemo(() =>
 		hasUserPermission(
 			userCtx.authorization,
 			USER_PERMISSION_NAMES.ImageQueueManage,
 		),
 	)
 
-	const detail = createMemo(() => detailQuery.data)
-	const targetInfo = useTargetInfo(() => detail())
+	const entry = createMemo(() => detailQuery.data?.data)
+	const targetPreview = useTargetPreview(() => entry())
 
-	const moderate = (action: "Approve" | "Reject" | "Revert") => {
-		const currentDetail = detail()
+	const moderate = (
+		currentDetail: ImageQueueDetail,
+		action: ImageQueueAction,
+	) => {
+		const entryId = currentDetail.id
 
-		void mutation.mutateAsync({ id: props.entryId, action }).then(
-			() => {
-				void queryClient.invalidateQueries({
-					queryKey: ["image-queue::detail"],
-				})
-				void queryClient.invalidateQueries({
-					queryKey: ["image-queue::list"],
-				})
-				void queryClient.invalidateQueries({
-					queryKey: ["image-queue::pending-count"],
-				})
-				void queryClient.invalidateQueries({
-					queryKey: ["image-queue::user"],
-				})
-
-				const artistId = currentDetail?.artist?.artist_id
-				if (artistId !== undefined) {
+		moderationMutation.mutate(
+			{ path: { id: entryId }, query: { action } },
+			{
+				onSuccess: () => {
 					void queryClient.invalidateQueries({
-						queryKey: ["artist::profile", artistId],
+						queryKey: imageQueueDetailQueryKey({
+							path: { id: entryId },
+						}),
 					})
-				}
-
-				const releaseId = currentDetail?.release?.release_id
-				if (releaseId !== undefined) {
 					void queryClient.invalidateQueries({
-						queryKey: ["release::info", releaseId],
+						queryKey: pendingImageQueueInfiniteQueryKey(),
 					})
-				}
+					void queryClient.invalidateQueries({
+						queryKey: pendingImageQueueCountQueryKey(),
+					})
+					void queryClient.invalidateQueries({
+						queryKey: profileImageQueueInfiniteQueryKey(),
+					})
 
-				return undefined
+					void queryClient.invalidateQueries({
+						queryKey: profileImageQueueWithNameInfiniteQueryKey({
+							path: { name: currentDetail.created_by.name },
+						}),
+					})
+
+					if (currentDetail.artist?.artist_id !== undefined) {
+						void queryClient.invalidateQueries({
+							queryKey: ["artist::profile", currentDetail.artist.artist_id],
+						})
+					}
+
+					if (currentDetail.release?.release_id !== undefined) {
+						void queryClient.invalidateQueries({
+							queryKey: ["release::info", currentDetail.release.release_id],
+						})
+					}
+				},
 			},
-			() => undefined,
 		)
 	}
 
-	const mutationErrorMessage = createMemo(() => {
-		if (!mutation.isError) return
-		const error = mutation.error
-		if (error instanceof Error) {
-			return error.message || t`Request failed.`
-		}
-		return t`Request failed.`
+	const moderationErrorMessage = createMemo(() => {
+		if (!moderationMutation.isError) return
+		const error = moderationMutation.error
+		return typeof error === "string" ? error : error.message
 	})
-
-	const cachedNeighbor = createMemo(() => {
-		const ids = [
-			...queryClient
-				.getQueriesData({ queryKey: ["image-queue::list"] })
-				.flatMap(([, data]) => extractInfiniteQueryIds(data)),
-			...queryClient
-				.getQueriesData({ queryKey: ["image-queue::user"] })
-				.flatMap(([, data]) => extractInfiniteQueryIds(data)),
-		]
-
-		const unique = Array.from(new Set(ids)).toSorted((a, b) => b - a)
-		const index = unique.indexOf(props.entryId)
-		if (index === -1) return
-
-		return {
-			prev: unique[index - 1],
-			next: unique[index + 1],
-		}
-	})
-
-	return (
-		<ImageQueueDetailPageContent
-			detail={detail()}
-			isLoading={detailQuery.isLoading}
-			isError={detailQuery.isError}
-			canManage={canManage()}
-			isBusy={mutation.isPending}
-			mutationErrorMessage={mutationErrorMessage()}
-			backLink={IMAGE_QUEUE_LIST_LINK}
-			onApprove={() => moderate("Approve")}
-			onReject={() => moderate("Reject")}
-			onRevert={() => moderate("Revert")}
-			cachedNeighbor={cachedNeighbor()}
-			targetName={targetInfo.name()}
-			currentSrc={targetInfo.currentSrc()}
-			currentLoading={targetInfo.currentLoading()}
-			currentError={targetInfo.currentError()}
-			comments={comments}
-		/>
-	)
-}
-
-export function ImageQueueDetailPageContent(
-	props: ImageQueueDetailPageContentProps,
-) {
-	const { t } = useLingui()
-	const surfaceCardClass =
-		"rounded-sm border border-slate-300 bg-primary shadow-xs"
-	const tone = () =>
-		props.detail
-			? statusTone(props.detail.status)
-			: statusTone(
-					// @wc-ignore
-					"Pending",
-				)
 
 	return (
 		<PageLayout class="flex flex-col gap-2 p-8">
 			<div class="flex flex-wrap items-center gap-2">
 				<Link
-					{...props.backLink}
+					{...IMAGE_QUEUE_LIST_LINK}
 					underline={false}
 					class="inline-flex items-center text-sm text-secondary hover:text-primary"
 				>
@@ -295,207 +216,255 @@ export function ImageQueueDetailPageContent(
 			</div>
 
 			<Switch>
-				<Match when={props.isLoading}>
-					<div class={`${surfaceCardClass} p-6 text-sm text-secondary`}>
+				<Match when={detailQuery.isLoading}>
+					<div class={`${SURFACE_CARD_CLASS} p-6 text-sm text-secondary`}>
 						Loading…
 					</div>
 				</Match>
 
-				<Match when={props.isError}>
-					<div class={`${surfaceCardClass} p-6 text-sm text-reimu-700`}>
+				<Match when={detailQuery.isError}>
+					<div class={`${SURFACE_CARD_CLASS} p-6 text-sm text-reimu-700`}>
 						Failed to load image queue entry.
 					</div>
 				</Match>
 
-				<Match when={props.detail}>
-					{(data) => {
-						const queuedPath = imagePath(data())
-						const queuedSrc = queuedPath ? imgUrl(queuedPath) : undefined
-
-						return (
-							<div class="grid grid-cols-[minmax(0,1fr)_16rem] gap-4">
-								<header class="grid grid-cols-[auto_minmax(0,1fr)_16rem] gap-2 col-span-2 items-baseline">
-									<Badge
-										color={tone().color}
-										class="self-baseline-last text-sm"
-									>
-										<ImageQueueStatusLabel status={data().status} />
-									</Badge>
-									<h1 class="text-2xl font-light tracking-tight text-primary">
-										<Show
-											when={getTargetMeta(data())}
-											fallback={t`Image queue`}
-										>
-											{(target) => (
-												<>
-													Update request for{" "}
-													<Link
-														to={target().to}
-														params={{ id: target().id.toString() }}
-													>
-														{props.targetName ?? (
-															<>
-																<TargetEntityLabel entity={target().entity} /> #
-																{target().id}
-															</>
-														)}
-													</Link>
-													&apos;s <TargetImageLabel entity={target().entity} />
-												</>
-											)}
-										</Show>
-									</h1>
-									<nav class="flex justify-between gap-4 text-xs text-secondary items-baseline">
-										<NeighborLink
-											entryId={props.cachedNeighbor?.prev}
-											direction="prev"
-										/>
-										<NeighborLink
-											entryId={props.cachedNeighbor?.next}
-											direction="next"
-										/>
-									</nav>
-								</header>
-								<div class="grid gap-4 md:contents">
-									<section class="grid content-start gap-2">
-										<div class="grid gap-2 grid-cols-2">
-											<DiffImageCard
-												title={t`Current`}
-												src={props.currentSrc}
-												alt={t`Current target image`}
-												loading={props.currentLoading}
-												error={props.currentError}
-											/>
-											<DiffImageCard
-												title={t`Queued`}
-												src={queuedSrc}
-												alt={t`Queued upload preview`}
-											/>
-										</div>
-									</section>
-									<aside class="grid content-start gap-2">
-										<div class="flex flex-col gap-2">
-											<ActionPanel
-												canManage={props.canManage}
-												detail={data()}
-												isBusy={props.isBusy}
-												onApprove={props.onApprove}
-												onReject={props.onReject}
-												onRevert={props.onRevert}
-												errorMessage={props.mutationErrorMessage}
-											/>
-											<ImageQueueSubscribeButton
-												entryId={data().id}
-												isSubscribed={data().is_subscribed}
-											/>
-											<div class="grid gap-y-2">
-												<InfoField label={t`Submitted by`}>
-													<Link
-														to="/user/$id/image-queue"
-														params={{ id: data().created_by.id.toString() }}
-														class="text-sm"
-													>
-														{data().created_by.name}
-													</Link>
-												</InfoField>
-												<InfoField label={t`Created`}>
-													<div class="text-primary text-sm">
-														{formatDateTime(data().created_at)}
-													</div>
-												</InfoField>
-												<Show when={data().handled_by ?? data().handled_at}>
-													<InfoField label={t`Handled`}>
-														<Show when={data().handled_by}>
-															{(user) => (
-																<Link
-																	to="/user/$id/image-queue"
-																	params={{ id: user().id.toString() }}
-																	class="text-sm"
-																>
-																	{user().name}
-																</Link>
-															)}
-														</Show>
-														<Show when={data().handled_at}>
-															<div class="text-primary text-sm">
-																{formatDateTime(data().handled_at)}
-															</div>
-														</Show>
-													</InfoField>
-												</Show>
-												<Show when={data().reverted_by ?? data().reverted_at}>
-													<InfoField label={t`Reverted`}>
-														<Show when={data().reverted_by}>
-															{(user) => (
-																<Link
-																	to="/user/$id/image-queue"
-																	params={{ id: user().id.toString() }}
-																	class="text-sm"
-																>
-																	{user().name}
-																</Link>
-															)}
-														</Show>
-														<Show when={data().reverted_at}>
-															<div class="text-primary text-sm">
-																{formatDateTime(data().reverted_at)}
-															</div>
-														</Show>
-													</InfoField>
-												</Show>
-											</div>
-										</div>
-									</aside>
-								</div>
-								<section class={`${surfaceCardClass} col-span-2 p-4`}>
-									<EntityComments model={props.comments} />
-								</section>
-							</div>
-						)
-					}}
+				<Match when={entry()}>
+					{(detail) => (
+						<ImageQueueDetailView
+							detail={detail()}
+							canModerate={canModerate()}
+							isModerating={moderationMutation.isPending}
+							moderationErrorMessage={moderationErrorMessage()}
+							onModerate={(action) => moderate(detail(), action)}
+							targetName={targetPreview.name()}
+							targetImageSrc={targetPreview.targetImageSrc()}
+							targetImageLoading={targetPreview.targetImageLoading()}
+							targetImageError={targetPreview.targetImageError()}
+							comments={comments}
+						/>
+					)}
 				</Match>
 			</Switch>
 		</PageLayout>
 	)
 }
 
-function NeighborLink(props: { entryId?: number; direction: "prev" | "next" }) {
+export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 	const { t } = useLingui()
-	const isPrev = () => props.direction === "prev"
-	const content = () => (
-		<>
-			<Show when={isPrev()}>
-				<span aria-hidden="true">&lt; </span>
-			</Show>
-			<span class="underline-offset-4 group-hover:underline">
-				{isPrev() ? t`Prev` : t`Next`}
-			</span>
-			<Show when={!isPrev()}>
-				<span aria-hidden="true"> &gt;</span>
-			</Show>
-		</>
-	)
+	const queuedImageSrc = () => {
+		const queuedPath = imagePath(props.detail)
+		return queuedPath ? imgUrl(queuedPath) : undefined
+	}
+	const tone = () => statusTone(props.detail.status)
 
 	return (
-		<Show
-			when={props.entryId}
-			fallback={<span class="text-tertiary">{content()}</span>}
-		>
-			{(id) => (
-				<Link
-					to="/image-queue/$id"
-					params={{ id: id().toString() }}
-					underline={false}
-					class="text-center h-full group text-secondary hover:text-primary"
+		<div class="grid grid-cols-[minmax(0,1fr)_16rem] gap-4">
+			<header class="grid grid-cols-[auto_minmax(0,1fr)_16rem] gap-2 col-span-2 items-baseline">
+				<Badge
+					color={tone().color}
+					class="self-baseline-last text-sm"
 				>
-					{content()}
-				</Link>
-			)}
-		</Show>
+					<ImageQueueStatusLabel status={props.detail.status} />
+				</Badge>
+				<h1 class="text-2xl font-light tracking-tight text-primary">
+					<Show
+						when={getTargetMeta(props.detail)}
+						fallback={t`Image queue`}
+					>
+						{(target) => (
+							<>
+								Update request for{" "}
+								<Link
+									to={target().to}
+									params={{ id: target().id.toString() }}
+								>
+									{props.targetName ?? (
+										<>
+											<TargetEntityLabel entity={target().entity} /> #
+											{target().id}
+										</>
+									)}
+								</Link>
+								&apos;s <TargetImageLabel entity={target().entity} />
+							</>
+						)}
+					</Show>
+				</h1>
+				<ImageQueueNavigation
+					previousId={props.detail.previous_id}
+					nextId={props.detail.next_id}
+				/>
+			</header>
+			<div class="grid gap-4 md:contents">
+				<section class="grid content-start gap-2">
+					<div class="grid gap-2 grid-cols-2">
+						<ComparisonImage
+							title={t`Current`}
+							src={props.targetImageSrc}
+							alt={t`Current target image`}
+							loading={props.targetImageLoading}
+							error={props.targetImageError}
+						/>
+						<ComparisonImage
+							title={t`Queued`}
+							src={queuedImageSrc()}
+							alt={t`Queued upload preview`}
+						/>
+					</div>
+				</section>
+				<aside class="grid content-start gap-2">
+					<div class="flex flex-col gap-2">
+						<ModerationControls
+							canModerate={props.canModerate}
+							detail={props.detail}
+							isModerating={props.isModerating}
+							onModerate={props.onModerate}
+							errorMessage={props.moderationErrorMessage}
+						/>
+						<ImageQueueSubscribeButton
+							entryId={props.detail.id}
+							isSubscribed={props.detail.is_subscribed}
+						/>
+						<div class="grid gap-y-2">
+							<InfoField label={t`Submitted by`}>
+								<Link
+									to="/profile/$username/image-queue"
+									params={{ username: props.detail.created_by.name }}
+									class="text-sm"
+								>
+									{props.detail.created_by.name}
+								</Link>
+							</InfoField>
+							<InfoField label={t`Created`}>
+								<div class="text-primary text-sm">
+									{formatDateTime(props.detail.created_at)}
+								</div>
+							</InfoField>
+							<Show when={props.detail.handled_by ?? props.detail.handled_at}>
+								<InfoField label={t`Handled`}>
+									<Show when={props.detail.handled_by}>
+										{(user) => (
+											<Link
+												to="/profile/$username/image-queue"
+												params={{ username: user().name }}
+												class="text-sm"
+											>
+												{user().name}
+											</Link>
+										)}
+									</Show>
+									<Show when={props.detail.handled_at}>
+										<div class="text-primary text-sm">
+											{formatDateTime(props.detail.handled_at)}
+										</div>
+									</Show>
+								</InfoField>
+							</Show>
+							<Show when={props.detail.reverted_by ?? props.detail.reverted_at}>
+								<InfoField label={t`Reverted`}>
+									<Show when={props.detail.reverted_by}>
+										{(user) => (
+											<Link
+												to="/profile/$username/image-queue"
+												params={{ username: user().name }}
+												class="text-sm"
+											>
+												{user().name}
+											</Link>
+										)}
+									</Show>
+									<Show when={props.detail.reverted_at}>
+										<div class="text-primary text-sm">
+											{formatDateTime(props.detail.reverted_at)}
+										</div>
+									</Show>
+								</InfoField>
+							</Show>
+						</div>
+					</div>
+				</aside>
+			</div>
+			<section class={`${SURFACE_CARD_CLASS} col-span-2 p-4`}>
+				<EntityComments model={props.comments} />
+			</section>
+		</div>
 	)
 }
 
-function useTargetInfo(detail: () => ImageQueueDetail | undefined) {
+function ImageQueueNavigation(props: {
+	previousId?: number | null
+	nextId?: number | null
+}) {
+	const { t } = useLingui()
+
+	return (
+		<nav
+			aria-label={t`Image queue navigation`}
+			class="grid grid-cols-2 gap-4 text-xs"
+		>
+			<Show
+				when={props.previousId}
+				fallback={
+					<button
+						type="button"
+						disabled
+						class="inline-flex items-center gap-1 justify-self-start text-tertiary"
+					>
+						<span aria-hidden="true">←</span>
+						{t`Previous`}
+					</button>
+				}
+			>
+				{(id) => (
+					<Link
+						to="/image-queue/$id"
+						params={{ id: id().toString() }}
+						rel="prev"
+						aria-label={t`Previous image queue entry`}
+						underline={false}
+						class="inline-flex items-center gap-1 justify-self-start group text-secondary hover:text-primary"
+					>
+						<span aria-hidden="true">←</span>
+						<span class="underline-offset-4 group-hover:underline">
+							{t`Previous`}
+						</span>
+					</Link>
+				)}
+			</Show>
+			<Show
+				when={props.nextId}
+				fallback={
+					<button
+						type="button"
+						disabled
+						class="inline-flex items-center gap-1 justify-self-end text-tertiary"
+					>
+						{t`Next`}
+						<span aria-hidden="true">→</span>
+					</button>
+				}
+			>
+				{(id) => (
+					<Link
+						to="/image-queue/$id"
+						params={{ id: id().toString() }}
+						rel="next"
+						aria-label={t`Next image queue entry`}
+						underline={false}
+						class="inline-flex items-center gap-1 justify-self-end group text-secondary hover:text-primary"
+					>
+						<span class="underline-offset-4 group-hover:underline">
+							{t`Next`}
+						</span>
+						<span aria-hidden="true">→</span>
+					</Link>
+				)}
+			</Show>
+		</nav>
+	)
+}
+
+function useTargetPreview(detail: () => ImageQueueDetail | undefined) {
 	const artistId = createMemo(() => detail()?.artist?.artist_id)
 	const releaseId = createMemo(() => detail()?.release?.release_id)
 
@@ -531,7 +500,7 @@ function useTargetInfo(detail: () => ImageQueueDetail | undefined) {
 		}
 	})
 
-	const currentSrc = createMemo(() => {
+	const targetImageSrc = createMemo(() => {
 		if (artistId() !== undefined) {
 			const artist = artistQuery.data
 				? O.getOrUndefined(artistQuery.data)
@@ -547,22 +516,22 @@ function useTargetInfo(detail: () => ImageQueueDetail | undefined) {
 		}
 	})
 
-	const currentLoading = createMemo(() => {
+	const targetImageLoading = createMemo(() => {
 		if (artistId() !== undefined) return artistQuery.isLoading
 		if (releaseId() !== undefined) return releaseQuery.isLoading
 		return false
 	})
 
-	const currentError = createMemo(() => {
+	const targetImageError = createMemo(() => {
 		if (artistId() !== undefined) return artistQuery.isError
 		if (releaseId() !== undefined) return releaseQuery.isError
 		return false
 	})
 
-	return { name, currentSrc, currentLoading, currentError }
+	return { name, targetImageSrc, targetImageLoading, targetImageError }
 }
 
-function DiffImageCard(props: {
+function ComparisonImage(props: {
 	title: string
 	headerRight?: JSX.Element
 	src: string | undefined
@@ -730,13 +699,11 @@ function ConfirmActionButton(props: ConfirmActionButtonProps) {
 	)
 }
 
-function ActionPanel(props: {
-	canManage: boolean
+function ModerationControls(props: {
+	canModerate: boolean
 	detail: ImageQueueDetail
-	isBusy: boolean
-	onApprove: () => void
-	onReject: () => void
-	onRevert: () => void
+	isModerating: boolean
+	onModerate: (action: ImageQueueAction) => void
 	errorMessage?: string
 }) {
 	const { t } = useLingui()
@@ -754,13 +721,13 @@ function ActionPanel(props: {
 		<section class="grid gap-2">
 			<div class="flex items-center justify-between gap-3">
 				<div class={LABEL_CLASS}>{t`Actions`}</div>
-				<Show when={props.isBusy}>
+				<Show when={props.isModerating}>
 					<div class="text-xs text-secondary">{t`Working…`}</div>
 				</Show>
 			</div>
 
 			<Switch>
-				<Match when={!props.canManage}>
+				<Match when={!props.canModerate}>
 					<div class="text-sm text-secondary">
 						{t`No actions available for this account.`}
 					</div>
@@ -774,8 +741,8 @@ function ActionPanel(props: {
 							})}
 							confirmText={t`Approve`}
 							color="Green"
-							disabled={props.isBusy || !isPending()}
-							onConfirm={props.onApprove}
+							disabled={props.isModerating || !isPending()}
+							onConfirm={() => props.onModerate("Approve")}
 						>
 							{t`Approve`}
 						</ConfirmActionButton>
@@ -786,8 +753,8 @@ function ActionPanel(props: {
 							})}
 							confirmText={t`Reject`}
 							color="Reimu"
-							disabled={props.isBusy || !isPending()}
-							onConfirm={props.onReject}
+							disabled={props.isModerating || !isPending()}
+							onConfirm={() => props.onModerate("Reject")}
 						>
 							{t`Reject`}
 						</ConfirmActionButton>
@@ -798,9 +765,9 @@ function ActionPanel(props: {
 						variant="Primary"
 						color="Blue"
 						size="Sm"
-						disabled={props.isBusy || !isApproved()}
+						disabled={props.isModerating || !isApproved()}
 						class="w-full"
-						onClick={() => props.onRevert()}
+						onClick={() => props.onModerate("Revert")}
 					>
 						{t`Revert`}
 					</Button>
@@ -837,13 +804,16 @@ function ImageQueueSubscribeButton(props: {
 			})
 			.then(
 				userCtx.bindCurrentSession((response) => {
-					queryClient.setQueryData<ImageQueueDetail>(
-						["image-queue::detail", entryId],
+					queryClient.setQueryData<DataImageQueueDetail>(
+						imageQueueDetailQueryKey({ path: { id: entryId } }),
 						(detail) =>
 							detail
 								? {
 										...detail,
-										is_subscribed: response.data.subscribed,
+										data: {
+											...detail.data,
+											is_subscribed: response.data.subscribed,
+										},
 									}
 								: detail,
 					)

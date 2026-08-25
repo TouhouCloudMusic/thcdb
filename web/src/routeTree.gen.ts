@@ -52,7 +52,6 @@ import { Route as ArtistExploreRouteImport } from './route/artist/explore'
 import { Route as AdminUsersRouteImport } from './route/admin/users'
 import { Route as userProfileRouteImport } from './route/(user)/profile'
 import { Route as ArtistIdIndexRouteImport } from './route/artist/$id.index'
-import { Route as UserIdImageQueueRouteImport } from './route/user/$id.image-queue'
 import { Route as TagIdEditRouteImport } from './route/tag/$id_.edit'
 import { Route as TagIdCorrectionsRouteImport } from './route/tag/$id_.corrections'
 import { Route as SongIdEditRouteImport } from './route/song/$id_.edit'
@@ -67,8 +66,10 @@ import { Route as EventIdCorrectionsRouteImport } from './route/event/$id_.corre
 import { Route as ArtistIdImageUploadRouteImport } from './route/artist/$id_.image-upload'
 import { Route as ArtistIdEditRouteImport } from './route/artist/$id_.edit'
 import { Route as ArtistIdCorrectionsRouteImport } from './route/artist/$id_.corrections'
+import { Route as userProfileImageQueueRouteImport } from './route/(user)/profile_.image-queue'
 import { Route as userProfileEditRouteImport } from './route/(user)/profile_.edit'
 import { Route as userProfileUsernameRouteImport } from './route/(user)/profile_.$username'
+import { Route as userProfileUsernameImageQueueRouteImport } from './route/(user)/profile_.$username.image-queue'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -285,11 +286,6 @@ const ArtistIdIndexRoute = ArtistIdIndexRouteImport.update({
   path: '/artist/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UserIdImageQueueRoute = UserIdImageQueueRouteImport.update({
-  id: '/user/$id/image-queue',
-  path: '/user/$id/image-queue',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TagIdEditRoute = TagIdEditRouteImport.update({
   id: '/tag/$id_/edit',
   path: '/tag/$id/edit',
@@ -360,6 +356,11 @@ const ArtistIdCorrectionsRoute = ArtistIdCorrectionsRouteImport.update({
   path: '/artist/$id/corrections',
   getParentRoute: () => rootRouteImport,
 } as any)
+const userProfileImageQueueRoute = userProfileImageQueueRouteImport.update({
+  id: '/(user)/profile_/image-queue',
+  path: '/profile/image-queue',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const userProfileEditRoute = userProfileEditRouteImport.update({
   id: '/(user)/profile_/edit',
   path: '/profile/edit',
@@ -370,6 +371,12 @@ const userProfileUsernameRoute = userProfileUsernameRouteImport.update({
   path: '/profile/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const userProfileUsernameImageQueueRoute =
+  userProfileUsernameImageQueueRouteImport.update({
+    id: '/image-queue',
+    path: '/image-queue',
+    getParentRoute: () => userProfileUsernameRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -414,8 +421,9 @@ export interface FileRoutesByFullPath {
   '/recommendation/': typeof RecommendationIndexRoute
   '/release/': typeof ReleaseIndexRoute
   '/tag/': typeof TagIndexRoute
-  '/profile/$username': typeof userProfileUsernameRoute
+  '/profile/$username': typeof userProfileUsernameRouteWithChildren
   '/profile/edit': typeof userProfileEditRoute
+  '/profile/image-queue': typeof userProfileImageQueueRoute
   '/artist/$id/corrections': typeof ArtistIdCorrectionsRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
   '/artist/$id/image-upload': typeof ArtistIdImageUploadRoute
@@ -430,8 +438,8 @@ export interface FileRoutesByFullPath {
   '/song/$id/edit': typeof SongIdEditRoute
   '/tag/$id/corrections': typeof TagIdCorrectionsRoute
   '/tag/$id/edit': typeof TagIdEditRoute
-  '/user/$id/image-queue': typeof UserIdImageQueueRoute
   '/artist/$id/': typeof ArtistIdIndexRoute
+  '/profile/$username/image-queue': typeof userProfileUsernameImageQueueRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -476,8 +484,9 @@ export interface FileRoutesByTo {
   '/recommendation': typeof RecommendationIndexRoute
   '/release': typeof ReleaseIndexRoute
   '/tag': typeof TagIndexRoute
-  '/profile/$username': typeof userProfileUsernameRoute
+  '/profile/$username': typeof userProfileUsernameRouteWithChildren
   '/profile/edit': typeof userProfileEditRoute
+  '/profile/image-queue': typeof userProfileImageQueueRoute
   '/artist/$id/corrections': typeof ArtistIdCorrectionsRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
   '/artist/$id/image-upload': typeof ArtistIdImageUploadRoute
@@ -492,8 +501,8 @@ export interface FileRoutesByTo {
   '/song/$id/edit': typeof SongIdEditRoute
   '/tag/$id/corrections': typeof TagIdCorrectionsRoute
   '/tag/$id/edit': typeof TagIdEditRoute
-  '/user/$id/image-queue': typeof UserIdImageQueueRoute
   '/artist/$id': typeof ArtistIdIndexRoute
+  '/profile/$username/image-queue': typeof userProfileUsernameImageQueueRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -539,8 +548,9 @@ export interface FileRoutesById {
   '/recommendation/': typeof RecommendationIndexRoute
   '/release/': typeof ReleaseIndexRoute
   '/tag/': typeof TagIndexRoute
-  '/(user)/profile_/$username': typeof userProfileUsernameRoute
+  '/(user)/profile_/$username': typeof userProfileUsernameRouteWithChildren
   '/(user)/profile_/edit': typeof userProfileEditRoute
+  '/(user)/profile_/image-queue': typeof userProfileImageQueueRoute
   '/artist/$id_/corrections': typeof ArtistIdCorrectionsRoute
   '/artist/$id_/edit': typeof ArtistIdEditRoute
   '/artist/$id_/image-upload': typeof ArtistIdImageUploadRoute
@@ -555,8 +565,8 @@ export interface FileRoutesById {
   '/song/$id_/edit': typeof SongIdEditRoute
   '/tag/$id_/corrections': typeof TagIdCorrectionsRoute
   '/tag/$id_/edit': typeof TagIdEditRoute
-  '/user/$id/image-queue': typeof UserIdImageQueueRoute
   '/artist/$id/': typeof ArtistIdIndexRoute
+  '/(user)/profile_/$username/image-queue': typeof userProfileUsernameImageQueueRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -605,6 +615,7 @@ export interface FileRouteTypes {
     | '/tag/'
     | '/profile/$username'
     | '/profile/edit'
+    | '/profile/image-queue'
     | '/artist/$id/corrections'
     | '/artist/$id/edit'
     | '/artist/$id/image-upload'
@@ -619,8 +630,8 @@ export interface FileRouteTypes {
     | '/song/$id/edit'
     | '/tag/$id/corrections'
     | '/tag/$id/edit'
-    | '/user/$id/image-queue'
     | '/artist/$id/'
+    | '/profile/$username/image-queue'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -667,6 +678,7 @@ export interface FileRouteTypes {
     | '/tag'
     | '/profile/$username'
     | '/profile/edit'
+    | '/profile/image-queue'
     | '/artist/$id/corrections'
     | '/artist/$id/edit'
     | '/artist/$id/image-upload'
@@ -681,8 +693,8 @@ export interface FileRouteTypes {
     | '/song/$id/edit'
     | '/tag/$id/corrections'
     | '/tag/$id/edit'
-    | '/user/$id/image-queue'
     | '/artist/$id'
+    | '/profile/$username/image-queue'
   id:
     | '__root__'
     | '/'
@@ -729,6 +741,7 @@ export interface FileRouteTypes {
     | '/tag/'
     | '/(user)/profile_/$username'
     | '/(user)/profile_/edit'
+    | '/(user)/profile_/image-queue'
     | '/artist/$id_/corrections'
     | '/artist/$id_/edit'
     | '/artist/$id_/image-upload'
@@ -743,8 +756,8 @@ export interface FileRouteTypes {
     | '/song/$id_/edit'
     | '/tag/$id_/corrections'
     | '/tag/$id_/edit'
-    | '/user/$id/image-queue'
     | '/artist/$id/'
+    | '/(user)/profile_/$username/image-queue'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -790,8 +803,9 @@ export interface RootRouteChildren {
   RecommendationIndexRoute: typeof RecommendationIndexRoute
   ReleaseIndexRoute: typeof ReleaseIndexRoute
   TagIndexRoute: typeof TagIndexRoute
-  userProfileUsernameRoute: typeof userProfileUsernameRoute
+  userProfileUsernameRoute: typeof userProfileUsernameRouteWithChildren
   userProfileEditRoute: typeof userProfileEditRoute
+  userProfileImageQueueRoute: typeof userProfileImageQueueRoute
   ArtistIdCorrectionsRoute: typeof ArtistIdCorrectionsRoute
   ArtistIdEditRoute: typeof ArtistIdEditRoute
   ArtistIdImageUploadRoute: typeof ArtistIdImageUploadRoute
@@ -806,7 +820,6 @@ export interface RootRouteChildren {
   SongIdEditRoute: typeof SongIdEditRoute
   TagIdCorrectionsRoute: typeof TagIdCorrectionsRoute
   TagIdEditRoute: typeof TagIdEditRoute
-  UserIdImageQueueRoute: typeof UserIdImageQueueRoute
   ArtistIdIndexRoute: typeof ArtistIdIndexRoute
 }
 
@@ -1113,13 +1126,6 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof ArtistIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/user/$id/image-queue': {
-      id: '/user/$id/image-queue'
-      path: '/user/$id/image-queue'
-      fullPath: '/user/$id/image-queue'
-      preLoaderRoute: typeof UserIdImageQueueRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/tag/$id_/edit': {
       id: '/tag/$id_/edit'
       path: '/tag/$id/edit'
@@ -1218,6 +1224,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof ArtistIdCorrectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(user)/profile_/image-queue': {
+      id: '/(user)/profile_/image-queue'
+      path: '/profile/image-queue'
+      fullPath: '/profile/image-queue'
+      preLoaderRoute: typeof userProfileImageQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(user)/profile_/edit': {
       id: '/(user)/profile_/edit'
       path: '/profile/edit'
@@ -1232,8 +1245,26 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof userProfileUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(user)/profile_/$username/image-queue': {
+      id: '/(user)/profile_/$username/image-queue'
+      path: '/image-queue'
+      fullPath: '/profile/$username/image-queue'
+      preLoaderRoute: typeof userProfileUsernameImageQueueRouteImport
+      parentRoute: typeof userProfileUsernameRoute
+    }
   }
 }
+
+interface userProfileUsernameRouteChildren {
+  userProfileUsernameImageQueueRoute: typeof userProfileUsernameImageQueueRoute
+}
+
+const userProfileUsernameRouteChildren: userProfileUsernameRouteChildren = {
+  userProfileUsernameImageQueueRoute: userProfileUsernameImageQueueRoute,
+}
+
+const userProfileUsernameRouteWithChildren =
+  userProfileUsernameRoute._addFileChildren(userProfileUsernameRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -1278,8 +1309,9 @@ const rootRouteChildren: RootRouteChildren = {
   RecommendationIndexRoute: RecommendationIndexRoute,
   ReleaseIndexRoute: ReleaseIndexRoute,
   TagIndexRoute: TagIndexRoute,
-  userProfileUsernameRoute: userProfileUsernameRoute,
+  userProfileUsernameRoute: userProfileUsernameRouteWithChildren,
   userProfileEditRoute: userProfileEditRoute,
+  userProfileImageQueueRoute: userProfileImageQueueRoute,
   ArtistIdCorrectionsRoute: ArtistIdCorrectionsRoute,
   ArtistIdEditRoute: ArtistIdEditRoute,
   ArtistIdImageUploadRoute: ArtistIdImageUploadRoute,
@@ -1294,7 +1326,6 @@ const rootRouteChildren: RootRouteChildren = {
   SongIdEditRoute: SongIdEditRoute,
   TagIdCorrectionsRoute: TagIdCorrectionsRoute,
   TagIdEditRoute: TagIdEditRoute,
-  UserIdImageQueueRoute: UserIdImageQueueRoute,
   ArtistIdIndexRoute: ArtistIdIndexRoute,
 }
 export const routeTree = rootRouteImport

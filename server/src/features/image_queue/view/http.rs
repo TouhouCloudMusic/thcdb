@@ -1,17 +1,17 @@
-use auth_core::permission::Permission;
 use axum::extract::{Path, Query, State};
+use axum::response::{IntoResponse, Response};
 use domain::shared::CursorResponse;
 use entity::image_queue as image_queue_entity;
 use entity::sea_orm_active_enums::ImageQueueStatus;
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use serde::Serialize;
 use user_core::load_users;
 use utoipa::ToSchema;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use super::repo::{self, UserFilter};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
-use crate::adapter::inbound::rest::{AppRouter, CurrentUser, authz, data};
+use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
 use crate::features::image_queue::shared::UserSummary;
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::PaginationQuery;
@@ -56,71 +56,68 @@ impl UserImageQueueItem {
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
     AppRouter::new()
-        .with_private(|r| r.routes(routes!(user_image_queue)))
+        .with_public(|r| r.routes(routes!(profile_image_queue_with_name)))
+        .with_private(|r| r.routes(routes!(profile_image_queue)))
         .finish()
 }
 
 #[utoipa::path(
     get,
     tag = TAG,
-    path = "/user/{id}/image-queue",
+    path = "/profile/image-queue",
     params(PaginationQuery),
     responses(
         (status = 200, body = DataPaginatedUserImageQueueItem),
     ),
 )]
-async fn user_image_queue(
+async fn profile_image_queue(
     CurrentUser(user): CurrentUser,
-    Path(id): Path<i32>,
     State(repo): State<state::SeaOrmRepository>,
     Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<CursorResponse<UserImageQueueItem>>, authz::Error> {
-    if user.id != id {
-        authz::ensure_permission(
-            &repo.conn,
-            user.id,
-            Permission::ImageQueueManage,
-        )
-        .await?;
-    }
+) -> Result<Data<CursorResponse<UserImageQueueItem>>, Response> {
+    load_user_image_queue(&repo, UserFilter::Id(user.id), pagination).await
+}
 
-    let limit = pagination.limit();
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/profile/{name}/image-queue",
+    params(PaginationQuery),
+    responses(
+        (status = 200, body = DataPaginatedUserImageQueueItem),
+    ),
+)]
+async fn profile_image_queue_with_name(
+    Path(name): Path<String>,
+    State(repo): State<state::SeaOrmRepository>,
+    Query(pagination): Query<PaginationQuery>,
+) -> Result<Data<CursorResponse<UserImageQueueItem>>, Response> {
+    load_user_image_queue(&repo, UserFilter::Name(name), pagination).await
+}
 
-    let mut select = image_queue_entity::Entity::find()
-        .filter(image_queue_entity::Column::CreatedBy.eq(id))
-        .order_by_desc(image_queue_entity::Column::Id);
+async fn load_user_image_queue(
+    repo: &state::SeaOrmRepository,
+    filter: UserFilter,
+    pagination: PaginationQuery,
+) -> Result<Data<CursorResponse<UserImageQueueItem>>, Response> {
+    let paginated =
+        repo::find_by_user(repo, filter, pagination.limit(), pagination.cursor)
+            .await
+            .map_err(IntoResponse::into_response)?;
 
-    if let Some(cursor) = pagination.cursor {
-        select = select.filter(image_queue_entity::Column::Id.lt(cursor));
-    }
-
-    let mut models = select
-        .limit(u64::from(limit) + 1)
-        .all(&repo.conn)
-        .await
-        .db_operation("find user image queue")?;
-
-    let has_next = models.len() > limit as usize;
-    if has_next {
-        models.truncate(limit as usize);
-    }
-
-    let next_cursor = if has_next {
-        models.last().map(|m| m.id)
-    } else {
-        None
-    };
-
-    let user_ids = models
+    let user_ids = paginated
+        .items
         .iter()
         .flat_map(|model| [model.handled_by, model.reverted_by])
         .flatten()
         .collect::<Vec<_>>();
     let users = load_users(&repo.conn, user_ids)
         .await
-        .db_operation("load image queue users")?;
+        .db_operation("load image queue users")
+        .map_err(IntoResponse::into_response)?;
 
-    let items: Vec<UserImageQueueItem> = models
+    let items: Vec<UserImageQueueItem> = paginated
+        .items
         .into_iter()
         .map(|model| {
             let resolve_user = |user_id| {
@@ -136,5 +133,8 @@ async fn user_image_queue(
         })
         .collect();
 
-    Ok(Data::from(CursorResponse { items, next_cursor }))
+    Ok(Data::from(CursorResponse {
+        items,
+        next_cursor: paginated.next_cursor,
+    }))
 }

@@ -222,6 +222,12 @@ import type {
 	PendingImageQueueResponses,
 	ProfileData,
 	ProfileErrors,
+	ProfileImageQueueData,
+	ProfileImageQueueErrors,
+	ProfileImageQueueResponses,
+	ProfileImageQueueWithNameData,
+	ProfileImageQueueWithNameErrors,
+	ProfileImageQueueWithNameResponses,
 	ProfileResponses,
 	ProfileWithNameData,
 	ProfileWithNameErrors,
@@ -380,9 +386,6 @@ import type {
 	UserCollectionsData,
 	UserCollectionsErrors,
 	UserCollectionsResponses,
-	UserImageQueueData,
-	UserImageQueueErrors,
-	UserImageQueueResponses,
 	UserRolesData,
 	UserRolesErrors,
 	UserRolesResponses,
@@ -1508,6 +1511,23 @@ export const followedUserCollections = <ThrowOnError extends boolean = false>(
 		...options,
 	})
 
+export const profileImageQueue = <ThrowOnError extends boolean = false>(
+	options?: Options<ProfileImageQueueData, ThrowOnError>,
+): RequestResult<
+	ProfileImageQueueResponses,
+	ProfileImageQueueErrors,
+	ThrowOnError
+> =>
+	(options?.client ?? client).get<
+		ProfileImageQueueResponses,
+		ProfileImageQueueErrors,
+		ThrowOnError
+	>({
+		security: [{ scheme: "basic", type: "http" }],
+		url: "/profile/image-queue",
+		...options,
+	})
+
 export const profileWithName = <ThrowOnError extends boolean = false>(
 	options: Options<ProfileWithNameData, ThrowOnError>,
 ): RequestResult<
@@ -1546,6 +1566,19 @@ export const followUser = <ThrowOnError extends boolean = false>(
 		url: "/profile/{name}/follow",
 		...options,
 	})
+
+export const profileImageQueueWithName = <ThrowOnError extends boolean = false>(
+	options: Options<ProfileImageQueueWithNameData, ThrowOnError>,
+): RequestResult<
+	ProfileImageQueueWithNameResponses,
+	ProfileImageQueueWithNameErrors,
+	ThrowOnError
+> =>
+	(options.client ?? client).get<
+		ProfileImageQueueWithNameResponses,
+		ProfileImageQueueWithNameErrors,
+		ThrowOnError
+	>({ url: "/profile/{name}/image-queue", ...options })
 
 export const findReleaseByKeyword = <ThrowOnError extends boolean = false>(
 	options: Options<FindReleaseByKeywordData, ThrowOnError>,
@@ -2172,19 +2205,6 @@ export const userRoles = <ThrowOnError extends boolean = false>(
 		UserRolesErrors,
 		ThrowOnError
 	>({ url: "/user-roles", ...options })
-
-export const userImageQueue = <ThrowOnError extends boolean = false>(
-	options: Options<UserImageQueueData, ThrowOnError>,
-): RequestResult<UserImageQueueResponses, UserImageQueueErrors, ThrowOnError> =>
-	(options.client ?? client).get<
-		UserImageQueueResponses,
-		UserImageQueueErrors,
-		ThrowOnError
-	>({
-		security: [{ scheme: "basic", type: "http" }],
-		url: "/user/{id}/image-queue",
-		...options,
-	})
 
 export const userCollections = <ThrowOnError extends boolean = false>(
 	options: Options<UserCollectionsData, ThrowOnError>,

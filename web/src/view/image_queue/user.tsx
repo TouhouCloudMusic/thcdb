@@ -1,13 +1,14 @@
 import { useLingui } from "@lingui/solid/macro"
-import { useInfiniteQuery } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
-import type { ImageQueueStatus, UserImageQueueItem } from "@thc/api"
-import { ImageQueueQueryOption } from "@thc/query"
 import { For, Match, Show, Switch } from "solid-js"
 
 import { Badge } from "~/component/atomic/Badge"
 import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
+import type {
+	CursorResponseUserImageQueueItem,
+	ImageQueueStatus,
+} from "~/hey-api"
 import { PageLayout } from "~/layout"
 import { createInfiniteScroll } from "~/utils/solid/createInfiniteScroll"
 
@@ -16,7 +17,7 @@ const DATE_TIME = new Intl.DateTimeFormat(undefined, {
 	timeStyle: "short",
 })
 
-const PAGE_SIZE = 20
+export const USER_IMAGE_QUEUE_PAGE_SIZE = 20
 
 const statusTone = (status: ImageQueueStatus) => {
 	switch (status) {
@@ -49,23 +50,21 @@ const formatDateTime = (value: string | null | undefined) => {
 }
 
 type Props = {
-	userId: number
+	items: UserImageQueueItem[]
+	isLoading: boolean
+	isError: boolean
+	hasNextPage: boolean
+	isFetchingNextPage: boolean
+	onLoadMore: () => void
 }
 
 export function UserImageQueuePage(props: Props) {
 	const { t } = useLingui()
 	const navigate = useNavigate()
-	const listQuery = useInfiniteQuery(() =>
-		ImageQueueQueryOption.userQueue(props.userId, PAGE_SIZE),
-	)
-
-	const items = () => listQuery.data?.pages.flatMap((p) => p.items) ?? []
 
 	const setSentinelRef = createInfiniteScroll({
-		enabled: () => listQuery.hasNextPage && !listQuery.isFetchingNextPage,
-		onLoadMore: () => {
-			void listQuery.fetchNextPage()
-		},
+		enabled: () => props.hasNextPage && !props.isFetchingNextPage,
+		onLoadMore: () => props.onLoadMore(),
 	})
 
 	return (
@@ -108,21 +107,21 @@ export function UserImageQueuePage(props: Props) {
 					</div>
 
 					<Switch>
-						<Match when={listQuery.isLoading}>
+						<Match when={props.isLoading}>
 							<div class="divide-y divide-slate-100">
-								<For each={Array.from({ length: PAGE_SIZE })}>
+								<For each={Array.from({ length: USER_IMAGE_QUEUE_PAGE_SIZE })}>
 									{() => <RowSkeleton />}
 								</For>
 							</div>
 						</Match>
 
-						<Match when={listQuery.isError}>
+						<Match when={props.isError}>
 							<div class="p-6 text-sm text-reimu-700">
 								{t`Failed to load user image queue.`}
 							</div>
 						</Match>
 
-						<Match when={items().length === 0}>
+						<Match when={props.items.length === 0}>
 							<div class="p-10">
 								<div class="text-sm font-medium text-slate-900">
 									{t`No entries yet`}
@@ -135,7 +134,7 @@ export function UserImageQueuePage(props: Props) {
 
 						<Match when={true}>
 							<div class="divide-y divide-slate-100">
-								<For each={items()}>
+								<For each={props.items}>
 									{(item) => <UserQueueRow item={item} />}
 								</For>
 							</div>
@@ -147,15 +146,19 @@ export function UserImageQueuePage(props: Props) {
 						class="h-1"
 					></div>
 
-					<Show when={listQuery.isFetchingNextPage}>
+					<Show when={props.isFetchingNextPage}>
 						<div class="divide-y divide-slate-100 border-t border-slate-100">
-							<For each={Array.from({ length: Math.min(10, PAGE_SIZE) })}>
+							<For
+								each={Array.from({
+									length: Math.min(10, USER_IMAGE_QUEUE_PAGE_SIZE),
+								})}
+							>
 								{() => <RowSkeleton />}
 							</For>
 						</div>
 					</Show>
 
-					<Show when={!listQuery.hasNextPage && items().length > 0}>
+					<Show when={!props.hasNextPage && props.items.length > 0}>
 						<div class="border-t border-slate-100 px-4 py-4 text-center text-sm text-slate-400">
 							{t`No more entries`}
 						</div>
@@ -165,6 +168,8 @@ export function UserImageQueuePage(props: Props) {
 		</PageLayout>
 	)
 }
+
+type UserImageQueueItem = CursorResponseUserImageQueueItem["items"][number]
 
 function UserQueueRow(props: { item: UserImageQueueItem }) {
 	const tone = () => statusTone(props.item.status)

@@ -3865,6 +3865,34 @@ export const vImageQueueDetail = v.object({
 		),
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
+	previous_id: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+	next_id: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
 	image_id: v.nullish(
 		v.pipe(
 			v.number(),
@@ -5013,6 +5041,28 @@ export const vFollowedUserCollectionsQuery = v.object({
 
 export const vFollowedUserCollectionsResponse = vDataPageFollowedUserCollection
 
+export const vProfileImageQueueQuery = v.object({
+	limit: v.optional(
+		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
+	),
+	cursor: v.optional(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+})
+
+export const vProfileImageQueueResponse = vDataPaginatedUserImageQueueItem
+
 export const vProfileWithNamePath = v.object({
 	name: v.string(),
 })
@@ -5030,6 +5080,33 @@ export const vFollowUserPath = v.object({
 })
 
 export const vFollowUserResponse = vMessage
+
+export const vProfileImageQueueWithNamePath = v.object({
+	name: v.string(),
+})
+
+export const vProfileImageQueueWithNameQuery = v.object({
+	limit: v.optional(
+		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
+	),
+	cursor: v.optional(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+})
+
+export const vProfileImageQueueWithNameResponse =
+	vDataPaginatedUserImageQueueItem
 
 export const vFindReleaseByKeywordQuery = v.object({
 	keyword: v.string(),
@@ -5627,40 +5704,6 @@ export const vFollowUserCollectionResponse = vMessage
 export const vStreamUserEventsResponse = v.string()
 
 export const vUserRolesResponse = vDataVecUserRole
-
-export const vUserImageQueuePath = v.object({
-	id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-})
-
-export const vUserImageQueueQuery = v.object({
-	limit: v.optional(
-		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
-	),
-	cursor: v.optional(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-})
-
-export const vUserImageQueueResponse = vDataPaginatedUserImageQueueItem
 
 export const vUserCollectionsPath = v.object({
 	username: vNonEmptyString,

@@ -6,7 +6,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 import { imgUrl } from "~/utils/adapter/static_file"
 import { StoryLayout, StoryRouterProvider } from "~/utils/adapter/storybook"
 import { createMockEntityComments } from "~/view/comment/storybook"
-import { ImageQueueDetailPageContent } from "~/view/image_queue/detail"
+import { ImageQueueDetailView } from "~/view/image_queue/detail"
 
 const STORY_REVIEWER: UserSummary = {
 	id: 9001,
@@ -18,6 +18,7 @@ const COMMENTS = createMockEntityComments()
 const STORY_ENTRIES = [
 	createStoryEntry({
 		id: 205,
+		nextId: 204,
 		status: "Pending",
 		createdAt: "2026-03-16T09:15:00.000Z",
 		createdBy: {
@@ -47,6 +48,8 @@ const STORY_ENTRIES = [
 	}),
 	createStoryEntry({
 		id: 204,
+		previousId: 205,
+		nextId: 203,
 		status: "Reverted",
 		createdAt: "2026-03-14T02:10:00.000Z",
 		createdBy: {
@@ -80,6 +83,8 @@ const STORY_ENTRIES = [
 	}),
 	createStoryEntry({
 		id: 203,
+		previousId: 204,
+		nextId: 202,
 		status: "Pending",
 		createdAt: "2026-03-15T12:20:00.000Z",
 		createdBy: {
@@ -109,6 +114,8 @@ const STORY_ENTRIES = [
 	}),
 	createStoryEntry({
 		id: 202,
+		previousId: 203,
+		nextId: 201,
 		status: "Approved",
 		createdAt: "2026-03-13T17:00:00.000Z",
 		createdBy: {
@@ -140,6 +147,7 @@ const STORY_ENTRIES = [
 	}),
 	createStoryEntry({
 		id: 201,
+		previousId: 202,
 		status: "Rejected",
 		createdAt: "2026-03-12T05:40:00.000Z",
 		createdBy: {
@@ -174,6 +182,8 @@ type StoryEntry = {
 
 type StoryEntrySeed = {
 	id: number
+	previousId?: number
+	nextId?: number
 	status: ImageQueueDetail["status"]
 	createdAt: string
 	createdBy: UserSummary
@@ -196,6 +206,8 @@ function createStoryEntry(seed: StoryEntrySeed): StoryEntry {
 	return {
 		detail: {
 			id: seed.id,
+			previous_id: seed.previousId ?? null,
+			next_id: seed.nextId ?? null,
 			image_id: seed.image?.id ?? null,
 			status: seed.status,
 			created_at: seed.createdAt,
@@ -251,21 +263,10 @@ function getTargetName(entry: StoryEntry) {
 	return entry.targetArtist?.name ?? entry.targetRelease?.title
 }
 
-function getCurrentImageSrc(entry: StoryEntry) {
+function getTargetImageSrc(entry: StoryEntry) {
 	const url =
 		entry.targetArtist?.profile_image_url ?? entry.targetRelease?.cover_art_url
 	return imgUrl(url)
-}
-
-function getCachedNeighbor(entries: StoryEntry[], entryId: number) {
-	const ids = entries.map((entry) => entry.detail.id).toSorted((a, b) => b - a)
-	const index = ids.indexOf(entryId)
-	if (index === -1) return
-
-	return {
-		prev: ids[index - 1],
-		next: ids[index + 1],
-	}
 }
 
 function updateStoryEntry(
@@ -363,27 +364,15 @@ function StoryScene(props: { initialEntryId: number }) {
 		<Switch>
 			<Match when={currentEntry()}>
 				{(entry) => (
-					<ImageQueueDetailPageContent
+					<ImageQueueDetailView
 						detail={entry().detail}
-						isLoading={false}
-						isError={false}
-						canManage={true}
-						isBusy={false}
-						backLink={{
-							to: "/image-queue",
-							search: { status: "pending" },
-						}}
-						onApprove={() => updateCurrentEntry("Approve")}
-						onReject={() => updateCurrentEntry("Reject")}
-						onRevert={() => updateCurrentEntry("Revert")}
-						cachedNeighbor={getCachedNeighbor(
-							storyEntries(),
-							entry().detail.id,
-						)}
+						canModerate={true}
+						isModerating={false}
+						onModerate={updateCurrentEntry}
 						targetName={getTargetName(entry())}
-						currentSrc={getCurrentImageSrc(entry())}
-						currentLoading={false}
-						currentError={false}
+						targetImageSrc={getTargetImageSrc(entry())}
+						targetImageLoading={false}
+						targetImageError={false}
 						comments={COMMENTS}
 					/>
 				)}

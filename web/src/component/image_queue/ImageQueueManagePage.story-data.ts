@@ -1,8 +1,11 @@
 import type {
+	CursorResponsePendingImageQueueItem,
 	ImageQueueStatus,
 	ImageQueueType,
-	PendingImageQueueItem,
-} from "@thc/api"
+} from "~/hey-api"
+
+type PendingImageQueueItem =
+	CursorResponsePendingImageQueueItem["items"][number]
 
 export type StoryEntry = {
 	type: ImageQueueType
