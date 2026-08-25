@@ -10,10 +10,11 @@ use entity::{
 use infra_db::{SeaOrmRepository, SeaOrmTxRepo};
 use notification_core::{ImageQueueModerationAction, NotificationRecipients};
 use sea_orm::ActiveValue::Set;
+use sea_orm::sea_query::{Expr, Query, SimpleExpr};
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, JoinType,
-    PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, QueryTrait,
-    RelationTrait,
+    ActiveModelTrait, ColumnTrait, EntityTrait, FromQueryResult,
+    IntoActiveModel, JoinType, PaginatorTrait, QueryFilter, QueryOrder,
+    QuerySelect, QueryTrait, RelationTrait,
 };
 
 use super::{Error, ImageQueueType};
@@ -24,9 +25,19 @@ use crate::shared::error::InternalError;
 
 pub struct ImageQueueDetailModels {
     pub queue: image_queue_entity::Model,
+    pub previous_id: Option<i32>,
+    pub next_id: Option<i32>,
     pub image: Option<image_entity::Model>,
     pub artist: Option<artist_image_queue_entity::Model>,
     pub release: Option<release_image_queue_entity::Model>,
+}
+
+#[derive(FromQueryResult)]
+struct ImageQueueDetailRow {
+    #[sea_orm(nested)]
+    queue: image_queue_entity::Model,
+    previous_id: Option<i32>,
+    next_id: Option<i32>,
 }
 
 enum QueueTarget {
@@ -102,12 +113,41 @@ pub async fn find_detail(
     repo: &SeaOrmRepository,
     id: i32,
 ) -> Result<Option<ImageQueueDetailModels>, DatabaseError> {
-    let model = image_queue_entity::Entity::find_by_id(id)
+    let previous_id_query = Query::select()
+        .expr(Expr::col(image_queue_entity::Column::Id).min())
+        .from(image_queue_entity::Entity)
+        .and_where(Expr::col(image_queue_entity::Column::Id).gt(id))
+        .to_owned();
+    let next_id_query = Query::select()
+        .expr(Expr::col(image_queue_entity::Column::Id).max())
+        .from(image_queue_entity::Entity)
+        .and_where(Expr::col(image_queue_entity::Column::Id).lt(id))
+        .to_owned();
+
+    let Some(ImageQueueDetailRow {
+        queue,
+        previous_id,
+        next_id,
+    }) = image_queue_entity::Entity::find_by_id(id)
+        .expr_as(
+            SimpleExpr::SubQuery(
+                None,
+                Box::new(previous_id_query.into_sub_query_statement()),
+            ),
+            "previous_id",
+        )
+        .expr_as(
+            SimpleExpr::SubQuery(
+                None,
+                Box::new(next_id_query.into_sub_query_statement()),
+            ),
+            "next_id",
+        )
+        .into_model::<ImageQueueDetailRow>()
         .one(&repo.conn)
         .await
-        .db_operation("find image queue entry detail")?;
-
-    let Some(queue) = model else {
+        .db_operation("find image queue entry detail")?
+    else {
         return Ok(None);
     };
 
@@ -133,6 +173,8 @@ pub async fn find_detail(
 
     Ok(Some(ImageQueueDetailModels {
         queue,
+        previous_id,
+        next_id,
         image,
         artist,
         release,

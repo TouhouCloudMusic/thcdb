@@ -15,6 +15,11 @@ import {
 	AVATAR_MIN_FILE_SIZE,
 } from "~/constant/server"
 import { EntityId_fromStr } from "~/domain/shared"
+import {
+	pendingImageQueueCountQueryKey,
+	pendingImageQueueInfiniteQueryKey,
+	profileImageQueueInfiniteQueryKey,
+} from "~/hey-api/@tanstack/solid-query.gen"
 import { QUERY_CLIENT } from "~/state/tanstack"
 import {
 	createEntityImageUploadStore,
@@ -52,11 +57,15 @@ function RouteComponent() {
 			void queryClient.invalidateQueries({
 				queryKey: ["artist::profile", artistId],
 			})
-			void queryClient.invalidateQueries({ queryKey: ["image-queue::list"] })
 			void queryClient.invalidateQueries({
-				queryKey: ["image-queue::pending-count"],
+				queryKey: pendingImageQueueInfiniteQueryKey(),
 			})
-			void queryClient.invalidateQueries({ queryKey: ["image-queue::user"] })
+			void queryClient.invalidateQueries({
+				queryKey: pendingImageQueueCountQueryKey(),
+			})
+			void queryClient.invalidateQueries({
+				queryKey: profileImageQueueInfiniteQueryKey(),
+			})
 
 			await navigate({
 				to: "/image-queue/$id",

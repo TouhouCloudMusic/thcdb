@@ -991,6 +991,22 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/profile/{name}/image-queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["profile_image_queue_with_name"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/profile/bio": {
         parameters: {
             query?: never;
@@ -1015,6 +1031,22 @@ export type paths = {
             cookie?: never;
         };
         get: operations["followed_user_collections"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/image-queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["profile_image_queue"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1543,22 +1575,6 @@ export type paths = {
             cookie?: never;
         };
         get: operations["user_roles"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/user/{id}/image-queue": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["user_image_queue"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2404,6 +2420,10 @@ export type components = {
             /** Format: int32 */
             image_id?: number | null;
             is_subscribed: boolean;
+            /** Format: int32 */
+            next_id?: number | null;
+            /** Format: int32 */
+            previous_id?: number | null;
             release?: null | components["schemas"]["ReleaseImageQueueTarget"];
             /** Format: date-time */
             reverted_at?: string | null;
@@ -7254,6 +7274,52 @@ export interface operations {
             };
         };
     };
+    profile_image_queue_with_name: {
+        parameters: {
+            query?: {
+                cursor?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedUserImageQueueItem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
     update_bio: {
         parameters: {
             query?: never;
@@ -7317,6 +7383,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DataPageFollowedUserCollection"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** @enum {string} */
+                        status: "Err";
+                    };
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    profile_image_queue: {
+        parameters: {
+            query?: {
+                cursor?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataPaginatedUserImageQueueItem"];
                 };
             };
             /** @description Too Many Requests */
@@ -9318,52 +9428,6 @@ export interface operations {
             };
         };
     };
-    user_image_queue: {
-        parameters: {
-            query?: {
-                cursor?: number;
-                limit?: number;
-            };
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataPaginatedUserImageQueueItem"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
     user_collections: {
         parameters: {
             query?: {
@@ -9573,9 +9637,11 @@ export enum ApiPaths {
     upload_profile_banner = "/profile-banner",
     update_bio = "/profile/bio",
     followed_user_collections = "/profile/followed-collections",
+    profile_image_queue = "/profile/image-queue",
     profile_with_name = "/profile/{name}",
     follow_user = "/profile/{name}/follow",
     unfollow_user = "/profile/{name}/follow",
+    profile_image_queue_with_name = "/profile/{name}/image-queue",
     find_release_by_keyword = "/release",
     create_release = "/release",
     explore_release = "/release/explore",
@@ -9619,7 +9685,6 @@ export enum ApiPaths {
     unfollow_user_collection = "/user-collections/{id}/follow",
     stream_user_events = "/user-events/stream",
     user_roles = "/user-roles",
-    user_image_queue = "/user/{id}/image-queue",
     user_collections = "/user/{username}/collections",
     verify_email = "/verify-email",
     verify_reset_code = "/verify-reset-code",

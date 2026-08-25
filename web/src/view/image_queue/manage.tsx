@@ -1,12 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
 import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
-import type {
-	ImageQueueStatus,
-	ImageQueueType,
-	PendingImageQueueItem,
-} from "@thc/api"
-import { ImageQueueQueryOption } from "@thc/query"
 import { StrExt } from "@thc/toolkit/data"
 import { createMemo, For, Match, Show, Switch } from "solid-js"
 
@@ -14,6 +8,16 @@ import { Badge } from "~/component/atomic/Badge"
 import { Link } from "~/component/atomic/Link"
 import { Select } from "~/component/atomic/form/select"
 import { StickyFilterBar } from "~/component/feature/entity_explore"
+import type {
+	CursorResponsePendingImageQueueItem,
+	ImageQueueStatus,
+	ImageQueueType,
+	PendingImageQueueData,
+} from "~/hey-api"
+import {
+	pendingImageQueueCountOptions,
+	pendingImageQueueInfiniteOptions,
+} from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout"
 import { createInfiniteScroll } from "~/utils/solid/createInfiniteScroll"
 import { useScrollDirection } from "~/utils/solid/useScrollDirection"
@@ -66,6 +70,9 @@ export type ManageFilters = {
 	type?: ImageQueueType
 	status: StatusFilterKind
 }
+
+type PendingImageQueueItem =
+	CursorResponsePendingImageQueueItem["items"][number]
 
 export type ImageQueueManagePageContentProps = {
 	filters: ManageFilters
@@ -255,25 +262,34 @@ export function ImageQueueManagePage() {
 		status: search().status,
 	}))
 
-	const pendingCountQuery = useQuery(() => ImageQueueQueryOption.pendingCount())
+	const pendingCountQuery = useQuery(() => pendingImageQueueCountOptions())
 
-	const listQuery = useInfiniteQuery(() =>
-		ImageQueueQueryOption.list({
-			limit: PAGE_SIZE,
-			type: filters().type,
-			status:
-				filters().status === "pending"
-					? // @wc-ignore
-						"Pending"
-					: undefined,
-		}),
+	const listQuery = useInfiniteQuery(() => {
+		const filter_ = filters()
+		const request = {
+			query: {
+				limit: PAGE_SIZE,
+				type: filter_.type,
+				status: filter_.status === "pending" ? ("Pending" as const) : undefined,
+			},
+		}
+
+		return {
+			...pendingImageQueueInfiniteOptions(request),
+			initialPageParam: request,
+			getNextPageParam: ({ data: { next_cursor } }) => next_cursor,
+		}
+	})
+
+	const items = createMemo(
+		() => listQuery.data?.pages.flatMap((page) => page.data.items) ?? [],
 	)
 
 	return (
 		<ImageQueueManagePageContent
 			filters={filters()}
-			pendingCount={pendingCountQuery.data}
-			items={listQuery.data?.pages.flatMap((page) => page.items) ?? []}
+			pendingCount={pendingCountQuery.data?.data}
+			items={items()}
 			isListLoading={listQuery.isLoading}
 			isListError={listQuery.isError}
 			isFetchingNextPage={listQuery.isFetchingNextPage}
@@ -338,8 +354,8 @@ function QueueRow(props: { item: PendingImageQueueItem }) {
 					</div>
 
 					<Link
-						to="/user/$id/image-queue"
-						params={{ id: props.item.created_by.id.toString() }}
+						to="/profile/$username/image-queue"
+						params={{ username: props.item.created_by.name }}
 						class="pointer-events-auto relative z-10 truncate text-sm text-secondary size-fit"
 					>
 						{props.item.created_by.name}

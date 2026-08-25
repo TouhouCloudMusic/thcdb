@@ -139,6 +139,8 @@ impl Service {
 
         Ok(ImageQueueDetail {
             id: queue.id,
+            previous_id: detail.previous_id,
+            next_id: detail.next_id,
             image_id: queue.image_id,
             status: queue.status,
             created_at: queue.created_at,
