@@ -719,22 +719,6 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/image-queue/{id}/comments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["find_image_queue_comments"];
-        put?: never;
-        post: operations["create_image_queue_comment"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/image-queue/{id}/subscription": {
         parameters: {
             query?: never;
@@ -2329,7 +2313,7 @@ export type components = {
         /** @enum {string} */
         EditableUserRole: "Moderator";
         /** @enum {string} */
-        EntityCommentTarget: "artist" | "release" | "song" | "label" | "event" | "tag" | "correction";
+        EntityCommentTarget: "artist" | "release" | "song" | "label" | "event" | "tag" | "correction" | "image-queue";
         EntityIdent: string;
         EntityMeta: {
             /** Format: int32 */
@@ -6321,101 +6305,6 @@ export interface operations {
             };
         };
     };
-    find_image_queue_comments: {
-        parameters: {
-            query?: {
-                cursor?: number;
-                limit?: number;
-            };
-            header?: never;
-            path: {
-                /** @description Image queue id */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataCommentPage"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
-    create_image_queue_comment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Image queue id */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateEntityCommentRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataComment"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "text/plain": string;
-                };
-            };
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        message: string;
-                        /** @enum {string} */
-                        status: "Err";
-                    };
-                    "text/plain": string;
-                };
-            };
-        };
-    };
     set_image_queue_subscription: {
         parameters: {
             query: {
@@ -9665,8 +9554,6 @@ export enum ApiPaths {
     pending_image_queue_count = "/image-queue/pending-count",
     image_queue_detail = "/image-queue/{id}",
     moderate_image_queue = "/image-queue/{id}",
-    find_image_queue_comments = "/image-queue/{id}/comments",
-    create_image_queue_comment = "/image-queue/{id}/comments",
     set_image_queue_subscription = "/image-queue/{id}/subscription",
     find_label_by_keyword = "/label",
     create_label = "/label",

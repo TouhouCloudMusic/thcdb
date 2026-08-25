@@ -626,6 +626,7 @@ export const vEntityCommentTarget = v.picklist([
 	"event",
 	"tag",
 	"correction",
+	"image-queue",
 ])
 
 export const vEntityIdent = v.string()
@@ -4833,56 +4834,6 @@ export const vModerateImageQueueQuery = v.object({
 })
 
 export const vModerateImageQueueResponse = vMessage
-
-export const vFindImageQueueCommentsPath = v.object({
-	id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-})
-
-export const vFindImageQueueCommentsQuery = v.object({
-	limit: v.optional(
-		v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
-	),
-	cursor: v.optional(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-})
-
-export const vFindImageQueueCommentsResponse = vDataCommentPage
-
-export const vCreateImageQueueCommentBody = vCreateEntityCommentRequest
-
-export const vCreateImageQueueCommentPath = v.object({
-	id: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(
-			-2147483648,
-			"Invalid value: Expected int32 to be >= -2147483648",
-		),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-})
-
-export const vCreateImageQueueCommentResponse = vDataComment
 
 export const vSetImageQueueSubscriptionPath = v.object({
 	id: v.pipe(

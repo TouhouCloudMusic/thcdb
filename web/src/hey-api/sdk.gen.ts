@@ -28,9 +28,6 @@ import type {
 	CreateEventData,
 	CreateEventErrors,
 	CreateEventResponses,
-	CreateImageQueueCommentData,
-	CreateImageQueueCommentErrors,
-	CreateImageQueueCommentResponses,
 	CreateLabelData,
 	CreateLabelErrors,
 	CreateLabelResponses,
@@ -115,9 +112,6 @@ import type {
 	FindEventByKeywordData,
 	FindEventByKeywordErrors,
 	FindEventByKeywordResponses,
-	FindImageQueueCommentsData,
-	FindImageQueueCommentsErrors,
-	FindImageQueueCommentsResponses,
 	FindLabelByIdData,
 	FindLabelByIdErrors,
 	FindLabelByIdResponses,
@@ -1209,40 +1203,6 @@ export const moderateImageQueue = <ThrowOnError extends boolean = false>(
 		security: [{ scheme: "basic", type: "http" }],
 		url: "/image-queue/{id}",
 		...options,
-	})
-
-export const findImageQueueComments = <ThrowOnError extends boolean = false>(
-	options: Options<FindImageQueueCommentsData, ThrowOnError>,
-): RequestResult<
-	FindImageQueueCommentsResponses,
-	FindImageQueueCommentsErrors,
-	ThrowOnError
-> =>
-	(options.client ?? client).get<
-		FindImageQueueCommentsResponses,
-		FindImageQueueCommentsErrors,
-		ThrowOnError
-	>({ url: "/image-queue/{id}/comments", ...options })
-
-export const createImageQueueComment = <ThrowOnError extends boolean = false>(
-	options: Options<CreateImageQueueCommentData, ThrowOnError>,
-): RequestResult<
-	CreateImageQueueCommentResponses,
-	CreateImageQueueCommentErrors,
-	ThrowOnError
-> =>
-	(options.client ?? client).post<
-		CreateImageQueueCommentResponses,
-		CreateImageQueueCommentErrors,
-		ThrowOnError
-	>({
-		security: [{ scheme: "basic", type: "http" }],
-		url: "/image-queue/{id}/comments",
-		...options,
-		headers: {
-			"Content-Type": "application/json",
-			...options.headers,
-		},
 	})
 
 export const setImageQueueSubscription = <ThrowOnError extends boolean = false>(
