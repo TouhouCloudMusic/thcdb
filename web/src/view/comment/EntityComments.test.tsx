@@ -210,7 +210,7 @@ describe("entity comments", () => {
 		)
 		const user = userEvent.setup()
 
-		await user.click(view.getByRole("button", { name: "Load more" }))
+		await user.click(await view.findByRole("button", { name: "Load more" }))
 		await waitFor(() => {
 			expect(view.getByText("Failed to load more comments")).toBeInTheDocument()
 		})

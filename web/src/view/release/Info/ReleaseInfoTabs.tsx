@@ -6,9 +6,9 @@ import { twJoin } from "tailwind-merge"
 import { Tab } from "~/component/atomic"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
-import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
-import type { EntityCommentsController } from "~/view/comment/EntityCommentsController"
+import type { EntityCommentsModel } from "~/view/comment/EntityComments"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
+import { useEntityComments } from "~/view/comment/useEntityComments"
 
 import { ReleaseInfoCredits } from "./comp/ReleaseInfoCredits"
 import { ReleaseInfoTracks } from "./comp/ReleaseInfoTracks"
@@ -20,7 +20,7 @@ type ReleaseInfoTabsProps = {
 type ReleaseInfoTabsViewProps = {
 	release: Release
 	activeTab: string
-	comments: EntityCommentsController
+	comments: EntityCommentsModel
 	onActiveTabChange: (value: string) => void
 }
 
@@ -32,7 +32,7 @@ export function ReleaseInfoTabs(props: ReleaseInfoTabsProps) {
 	const [activeTab, setActiveTab] = createSignal(
 		hasTracks() ? "Tracks" : hasCredits() ? "Credits" : "Comments",
 	)
-	const comments = createEntityCommentsController(() => ({
+	const comments = useEntityComments(() => ({
 		entityType: "release",
 		entityId: props.release.id,
 		listEnabled: activeTab() === "Comments",
@@ -112,7 +112,7 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 				value="Comments"
 				class="p-4"
 			>
-				<EntityComments controller={props.comments} />
+				<EntityComments model={props.comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"

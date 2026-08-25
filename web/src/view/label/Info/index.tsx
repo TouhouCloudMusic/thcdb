@@ -11,8 +11,8 @@ import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
-import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
+import { useEntityComments } from "~/view/comment/useEntityComments"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { LabelInfoPageContext } from "./context"
@@ -118,7 +118,7 @@ function LabelInfoComments() {
 	const { t } = useLingui()
 	const ctx = assertContext(LabelInfoPageContext)
 	const [activeTab, setActiveTab] = createSignal("Comments")
-	const comments = createEntityCommentsController(() => ({
+	const comments = useEntityComments(() => ({
 		entityType: "label",
 		entityId: ctx.label.id,
 		listEnabled: activeTab() === "Comments",
@@ -148,7 +148,7 @@ function LabelInfoComments() {
 				value="Comments"
 				class="p-4"
 			>
-				<EntityComments controller={comments} />
+				<EntityComments model={comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"

@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { createMockRelease } from "~/mock/release"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
-import { createMockEntityCommentsController } from "~/view/comment/storybook"
+import { createMockEntityComments } from "~/view/comment/storybook"
 
 import { ReleaseInfoTabsView } from "./ReleaseInfoTabs"
 
@@ -18,7 +18,7 @@ function StoryRoot(props: StoryRootProps) {
 			<ReleaseInfoTabsView
 				release={props.release}
 				activeTab={props.activeTab}
-				comments={createMockEntityCommentsController()}
+				comments={createMockEntityComments()}
 				onActiveTabChange={() => undefined}
 			/>
 		</div>

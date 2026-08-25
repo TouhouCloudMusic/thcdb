@@ -26,9 +26,9 @@ import { DateWithPrecision } from "~/domain/shared"
 import { assertContext } from "~/utils/solid/assertContext"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
-import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
-import type { EntityCommentsController } from "~/view/comment/EntityCommentsController"
+import type { EntityCommentsModel } from "~/view/comment/EntityComments"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
+import { useEntityComments } from "~/view/comment/useEntityComments"
 
 import { ArtistContext } from ".."
 
@@ -44,7 +44,7 @@ const TABS = [
 
 type ArtistReleaseInfoViewProps = {
 	activeTab: string
-	comments: EntityCommentsController
+	comments: EntityCommentsModel
 	onActiveTabChange: (value: string) => void
 }
 
@@ -73,7 +73,7 @@ export function ArtistReleaseInfo() {
 function Inner() {
 	const context = assertContext(ArtistContext)
 	const [activeTab, setActiveTab] = createSignal("Discography")
-	const comments = createEntityCommentsController(() => ({
+	const comments = useEntityComments(() => ({
 		entityType: "artist",
 		entityId: context.artist.id,
 		listEnabled: activeTab() === "Comments",
@@ -184,7 +184,7 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 				value="Comments"
 				class="w-full border-t border-slate-300 p-4"
 			>
-				<EntityComments controller={props.comments} />
+				<EntityComments model={props.comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"

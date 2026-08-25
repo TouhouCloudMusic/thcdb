@@ -1,17 +1,22 @@
 import { useLingui } from "@lingui/solid/macro"
+import { Suspense } from "solid-js"
 
 import { Card } from "~/component/atomic/Card"
 import { Link } from "~/component/atomic/Link"
+import { useCurrentUser } from "~/state/user"
 import {
 	CommentComposer,
 	CommentThreadList,
 } from "~/view/comment/CommentThread"
-import type { EntityCommentsController } from "~/view/comment/EntityCommentsController"
+import type { CommentThreadModel } from "~/view/comment/CommentThread"
 
-export function CorrectionComments(props: {
-	controller: EntityCommentsController
-}) {
+type CorrectionCommentsProps = {
+	model: CommentThreadModel
+}
+
+export function CorrectionComments(props: CorrectionCommentsProps) {
 	const { t } = useLingui()
+	const userCtx = useCurrentUser()
 
 	return (
 		<Card class="overflow-hidden border border-slate-300 p-0 shadow-xs">
@@ -20,12 +25,13 @@ export function CorrectionComments(props: {
 					{t`Comments`}
 				</span>
 				<span class="font-mono text-xs text-slate-400">
-					{props.controller.comments().length}
+					<Suspense>{props.model.comments().length}</Suspense>
 				</span>
 			</div>
 
 			<CommentThreadList
-				controller={props.controller}
+				model={props.model}
+				currentUser={userCtx.profile}
 				emptyText={t`No comments yet.`}
 				listClass="divide-y divide-slate-200 px-4"
 				statusClass="px-4 py-6 text-sm text-tertiary"
@@ -34,8 +40,8 @@ export function CorrectionComments(props: {
 
 			<div class="border-t border-slate-300 p-4">
 				<CommentComposer
-					onSubmit={(content) => props.controller.createComment(content, null)}
-					currentUser={props.controller.currentUser()}
+					onSubmit={(content) => props.model.createComment(content, null)}
+					currentUser={userCtx.profile}
 					signedOutFallback={
 						<p class="text-sm text-tertiary">
 							<Link

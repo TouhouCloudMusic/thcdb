@@ -1,15 +1,11 @@
-import type { Comment, UserProfile } from "~/hey-api"
+import type { Comment } from "~/hey-api"
 
-import type { EntityCommentsController } from "./EntityCommentsController"
-
-type MockEntityCommentsControllerOptions = {
+type MockEntityCommentsOptions = {
 	activeCommentCount?: number
 	canManage?: boolean
 	comments?: Comment[]
-	currentUser?: UserProfile
 	errorMessage?: string
 	hasMore?: boolean
-	isInitialLoading?: boolean
 	isLoadingMore?: boolean
 }
 
@@ -17,9 +13,9 @@ async function asyncNoop() {
 	await Promise.resolve()
 }
 
-export function createMockEntityCommentsController(
-	options: MockEntityCommentsControllerOptions = {},
-): EntityCommentsController {
+export function createMockEntityComments(
+	options: MockEntityCommentsOptions = {},
+) {
 	return {
 		activeCommentCount: () =>
 			options.activeCommentCount
@@ -29,11 +25,9 @@ export function createMockEntityCommentsController(
 		canManage: () => options.canManage ?? false,
 		comments: () => options.comments ?? [],
 		createComment: asyncNoop,
-		currentUser: () => options.currentUser,
 		deleteComment: asyncNoop,
 		errorMessage: () => options.errorMessage,
 		hasMore: () => options.hasMore ?? false,
-		isInitialLoading: () => options.isInitialLoading ?? false,
 		isLoadingMore: () => options.isLoadingMore ?? false,
 		loadMore: asyncNoop,
 	}

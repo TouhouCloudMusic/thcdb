@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 import { createMockArtist } from "~/mock/artist"
 import type { InfiniteQuery } from "~/type/query"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
-import { createMockEntityCommentsController } from "~/view/comment/storybook"
+import { createMockEntityComments } from "~/view/comment/storybook"
 
 import { ArtistContext } from ".."
 import { ArtistReleaseInfoView } from "./ArtistReleaseInfo"
@@ -120,7 +120,7 @@ function StoryRoot(props: StoryRootProps) {
 			<ArtistContext.Provider value={contextValue}>
 				<ArtistReleaseInfoView
 					activeTab="Discography"
-					comments={createMockEntityCommentsController()}
+					comments={createMockEntityComments()}
 					onActiveTabChange={() => undefined}
 				/>
 			</ArtistContext.Provider>
