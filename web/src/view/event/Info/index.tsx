@@ -11,8 +11,8 @@ import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
-import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
+import { useEntityComments } from "~/view/comment/useEntityComments"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { EventInfoPageContext } from "./context"
@@ -111,7 +111,7 @@ function EventInfoTabs() {
 	const [activeTab, setActiveTab] = createSignal(
 		ctx.event.description ? "Description" : "Comments",
 	)
-	const comments = createEntityCommentsController(() => ({
+	const comments = useEntityComments(() => ({
 		entityType: "event",
 		entityId: ctx.event.id,
 		listEnabled: activeTab() === "Comments",
@@ -157,7 +157,7 @@ function EventInfoTabs() {
 				value="Comments"
 				class="p-4"
 			>
-				<EntityComments controller={comments} />
+				<EntityComments model={comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"

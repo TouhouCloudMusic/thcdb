@@ -1,6 +1,14 @@
 import { Trans, useLingui } from "@lingui/solid/macro"
 import { useMutation } from "@tanstack/solid-query"
-import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
+import {
+	createMemo,
+	createSignal,
+	For,
+	Match,
+	Show,
+	Suspense,
+	Switch,
+} from "solid-js"
 import type { Accessor, JSX } from "solid-js"
 import { twJoin } from "tailwind-merge"
 
@@ -9,8 +17,6 @@ import { Avatar } from "~/component/atomic/avatar"
 import { Button } from "~/component/atomic/button"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
 import type { Comment, UserProfile } from "~/hey-api"
-
-import type { EntityCommentsController } from "./EntityCommentsController"
 
 type CommentRenderNode = {
 	comment: Comment
@@ -392,8 +398,23 @@ export function CommentComposer(props: CommentComposerProps) {
 	)
 }
 
+export type CommentThreadModel = {
+	canManage: Accessor<boolean>
+	comments: Accessor<Comment[]>
+	createComment: (
+		content: string,
+		inReplyToCommentId: number | null,
+	) => Promise<void>
+	deleteComment: (commentId: number) => Promise<void>
+	errorMessage: Accessor<string | undefined>
+	hasMore: Accessor<boolean | undefined>
+	isLoadingMore: Accessor<boolean>
+	loadMore: () => Promise<void>
+}
+
 type CommentThreadListProps = {
-	controller: EntityCommentsController
+	model: CommentThreadModel
+	currentUser: UserProfile | undefined
 	emptyText: JSX.Element
 	listClass: string
 	statusClass: string
@@ -401,6 +422,25 @@ type CommentThreadListProps = {
 }
 
 export function CommentThreadList(props: CommentThreadListProps) {
+	const { t } = useLingui()
+
+	return (
+		<Suspense
+			fallback={<div class={props.statusClass}>{t`Loading comments...`}</div>}
+		>
+			<CommentThreadListContent
+				model={props.model}
+				currentUser={props.currentUser}
+				emptyText={props.emptyText}
+				listClass={props.listClass}
+				statusClass={props.statusClass}
+				loadMoreClass={props.loadMoreClass}
+			/>
+		</Suspense>
+	)
+}
+
+function CommentThreadListContent(props: CommentThreadListProps) {
 	const { t } = useLingui()
 	const [activeReplyId, setActiveReplyId] = createSignal<number | null>(null)
 	const closeActiveReplyIfStillOpen = (commentId: number) => {
@@ -411,7 +451,7 @@ export function CommentThreadList(props: CommentThreadListProps) {
 		const nodeById = new Map<number, CommentRenderNode>()
 		const rootNodes: CommentRenderNode[] = []
 
-		for (const comment of props.controller.comments()) {
+		for (const comment of props.model.comments()) {
 			nodeById.set(comment.id, {
 				comment,
 				replies: [],
@@ -443,13 +483,11 @@ export function CommentThreadList(props: CommentThreadListProps) {
 	return (
 		<>
 			<Switch>
-				<Match when={props.controller.isInitialLoading()}>
-					<div class={props.statusClass}>{t`Loading comments...`}</div>
-				</Match>
 				<Match
 					when={
-						props.controller.errorMessage()
-						&& props.controller.comments().length === 0
+						commentGroups().length === 0
+							? props.model.errorMessage()
+							: undefined
 					}
 				>
 					{(message) => <div class={props.statusClass}>{message()}</div>}
@@ -459,7 +497,7 @@ export function CommentThreadList(props: CommentThreadListProps) {
 				</Match>
 				<Match when={commentGroups().length > 0}>
 					<>
-						<Show when={props.controller.errorMessage()}>
+						<Show when={props.model.errorMessage()}>
 							{(message) => <div class={props.statusClass}>{message()}</div>}
 						</Show>
 						<ul class={props.listClass}>
@@ -468,26 +506,26 @@ export function CommentThreadList(props: CommentThreadListProps) {
 									<>
 										<CommentThreadListItem
 											comment={root.comment}
-											currentUser={props.controller.currentUser()}
-											canManage={props.controller.canManage()}
+											currentUser={props.currentUser}
+											canManage={props.model.canManage()}
 											activeReplyId={activeReplyId}
 											onReply={setActiveReplyId}
 											onCancelReply={() => setActiveReplyId(null)}
-											onCreateComment={props.controller.createComment}
-											onDeleteComment={props.controller.deleteComment}
+											onCreateComment={props.model.createComment}
+											onDeleteComment={props.model.deleteComment}
 											onReplySubmitted={closeActiveReplyIfStillOpen}
 										/>
 										<For each={root.replies}>
 											{(reply) => (
 												<CommentThreadListItem
 													comment={reply.comment}
-													currentUser={props.controller.currentUser()}
-													canManage={props.controller.canManage()}
+													currentUser={props.currentUser}
+													canManage={props.model.canManage()}
 													activeReplyId={activeReplyId}
 													onReply={setActiveReplyId}
 													onCancelReply={() => setActiveReplyId(null)}
-													onCreateComment={props.controller.createComment}
-													onDeleteComment={props.controller.deleteComment}
+													onCreateComment={props.model.createComment}
+													onDeleteComment={props.model.deleteComment}
 													onReplySubmitted={closeActiveReplyIfStillOpen}
 													indented
 													replyToName={reply.replyToName}
@@ -502,17 +540,17 @@ export function CommentThreadList(props: CommentThreadListProps) {
 				</Match>
 			</Switch>
 
-			<Show when={props.controller.hasMore()}>
+			<Show when={props.model.hasMore()}>
 				<div class={props.loadMoreClass}>
 					<Button
 						variant="Secondary"
 						size="Sm"
-						disabled={props.controller.isLoadingMore()}
+						disabled={props.model.isLoadingMore()}
 						onClick={() => {
-							void props.controller.loadMore()
+							void props.model.loadMore()
 						}}
 					>
-						{props.controller.isLoadingMore() ? t`Loading...` : t`Load more`}
+						{props.model.isLoadingMore() ? t`Loading...` : t`Load more`}
 					</Button>
 				</div>
 			</Show>

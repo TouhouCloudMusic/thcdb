@@ -10,8 +10,8 @@ import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
-import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
+import { useEntityComments } from "~/view/comment/useEntityComments"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { TagInfoPageContext } from "./context"
@@ -103,7 +103,7 @@ function TagInfoTabs() {
 	const [activeTab, setActiveTab] = createSignal(
 		hasDesc() ? "Description" : hasRelations() ? "Relations" : "Comments",
 	)
-	const comments = createEntityCommentsController(() => ({
+	const comments = useEntityComments(() => ({
 		entityType: "tag",
 		entityId: ctx.tag.id,
 		listEnabled: activeTab() === "Comments",
@@ -164,7 +164,7 @@ function TagInfoTabs() {
 				value="Comments"
 				class="p-4"
 			>
-				<EntityComments controller={comments} />
+				<EntityComments model={comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"

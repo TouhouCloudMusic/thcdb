@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import type { Comment, UserProfile } from "~/hey-api"
+import type { Comment } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
 import { EntityComments } from "./EntityComments"
-import { createMockEntityCommentsController } from "./storybook"
+import { createMockEntityComments } from "./storybook"
 
 const MOCK_COMMENTS: Comment[] = [
 	{
@@ -40,16 +40,7 @@ const MOCK_COMMENTS_WITH_DELETED: Comment[] = MOCK_COMMENTS.map((item) =>
 	item.id === 2 ? { ...item, state: "Deleted", content: undefined } : item,
 )
 
-const CURRENT_USER = {
-	id: 1,
-	name: "alice",
-	last_login: new Date().toISOString(),
-	stats: { edit_count: 0, vote_count: 0 },
-} satisfies UserProfile
-
-const EMPTY_CONTROLLER = createMockEntityCommentsController({
-	currentUser: CURRENT_USER,
-})
+const EMPTY_MODEL = createMockEntityComments()
 
 const meta = {
 	title: "View/Comment/EntityComments",
@@ -59,10 +50,10 @@ const meta = {
 		layout: StoryLayout.Padded,
 	},
 	args: {
-		controller: EMPTY_CONTROLLER,
+		model: EMPTY_MODEL,
 	},
 	argTypes: {
-		controller: { control: false },
+		model: { control: false },
 	},
 } satisfies Meta<typeof EntityComments>
 
@@ -72,52 +63,39 @@ type Story = StoryObj<typeof meta>
 
 export const Empty: Story = {
 	args: {
-		controller: EMPTY_CONTROLLER,
-	},
-}
-
-export const Loading: Story = {
-	args: {
-		controller: createMockEntityCommentsController({
-			isInitialLoading: true,
-			currentUser: CURRENT_USER,
-		}),
+		model: EMPTY_MODEL,
 	},
 }
 
 export const Error: Story = {
 	args: {
-		controller: createMockEntityCommentsController({
+		model: createMockEntityComments({
 			errorMessage: "Failed to load comments",
-			currentUser: CURRENT_USER,
 		}),
 	},
 }
 
 export const WithComments: Story = {
 	args: {
-		controller: createMockEntityCommentsController({
+		model: createMockEntityComments({
 			comments: MOCK_COMMENTS,
-			currentUser: CURRENT_USER,
 		}),
 	},
 }
 
 export const WithDeletedComment: Story = {
 	args: {
-		controller: createMockEntityCommentsController({
+		model: createMockEntityComments({
 			comments: MOCK_COMMENTS_WITH_DELETED,
-			currentUser: CURRENT_USER,
 		}),
 	},
 }
 
 export const WithNextPage: Story = {
 	args: {
-		controller: createMockEntityCommentsController({
+		model: createMockEntityComments({
 			comments: MOCK_COMMENTS,
 			hasMore: true,
-			currentUser: CURRENT_USER,
 		}),
 	},
 }

@@ -29,7 +29,7 @@ import { PageLayout } from "~/layout/PageLayout"
 import { useCurrentUser } from "~/state/user"
 import { formatTimestamp } from "~/utils/dateTime"
 import { getErrorMessage } from "~/utils/getErrorMessage"
-import { createEntityCommentsController } from "~/view/comment/EntityCommentsController"
+import { useEntityComments } from "~/view/comment/useEntityComments"
 
 import { CorrectionComments } from "./CorrectionComments"
 import {
@@ -597,7 +597,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 							keyed
 						>
 							{(correctionId) => {
-								const controller = createEntityCommentsController(() => ({
+								const model = useEntityComments(() => ({
 									entityType: "correction",
 									entityId: correctionId,
 									initialPage: {
@@ -606,7 +606,7 @@ export function CorrectionDetailPage(props: CorrectionDetailPageProps) {
 									},
 								}))
 
-								return <CorrectionComments controller={controller} />
+								return <CorrectionComments model={model} />
 							}}
 						</Show>
 					</div>
