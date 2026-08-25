@@ -24,6 +24,9 @@ import { setImageQueueSubscriptionMutation } from "~/hey-api/@tanstack/solid-que
 import { PageLayout } from "~/layout"
 import { useCurrentUser } from "~/state/user"
 import { imgUrl } from "~/utils/adapter/static_file"
+import { EntityComments } from "~/view/comment/EntityComments"
+import type { EntityCommentsModel } from "~/view/comment/EntityComments"
+import { useEntityComments } from "~/view/comment/useEntityComments"
 
 const DATE_TIME = new Intl.DateTimeFormat(undefined, {
 	dateStyle: "medium",
@@ -121,6 +124,7 @@ export type ImageQueueDetailPageContentProps = {
 	currentSrc?: string
 	currentLoading: boolean
 	currentError: boolean
+	comments: EntityCommentsModel
 }
 
 const IMAGE_QUEUE_LIST_LINK = {
@@ -158,6 +162,10 @@ export function ImageQueueDetailPage(props: Props) {
 		ImageQueueQueryOption.detail(props.entryId),
 	)
 	const mutation = ImageQueueMutation.useModerateImageQueueMutation()
+	const comments = useEntityComments(() => ({
+		entityType: "image-queue",
+		entityId: props.entryId,
+	}))
 	const canManage = createMemo(() =>
 		hasUserPermission(
 			userCtx.authorization,
@@ -252,6 +260,7 @@ export function ImageQueueDetailPage(props: Props) {
 			currentSrc={targetInfo.currentSrc()}
 			currentLoading={targetInfo.currentLoading()}
 			currentError={targetInfo.currentError()}
+			comments={comments}
 		/>
 	)
 }
@@ -438,6 +447,9 @@ export function ImageQueueDetailPageContent(
 										</div>
 									</aside>
 								</div>
+								<section class={`${surfaceCardClass} col-span-2 p-4`}>
+									<EntityComments model={props.comments} />
+								</section>
 							</div>
 						)
 					}}

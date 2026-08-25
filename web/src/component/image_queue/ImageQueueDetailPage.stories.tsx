@@ -5,12 +5,15 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { imgUrl } from "~/utils/adapter/static_file"
 import { StoryLayout, StoryRouterProvider } from "~/utils/adapter/storybook"
+import { createMockEntityComments } from "~/view/comment/storybook"
 import { ImageQueueDetailPageContent } from "~/view/image_queue/detail"
 
 const STORY_REVIEWER: UserSummary = {
 	id: 9001,
 	name: "Aya Shameimaru",
 }
+
+const COMMENTS = createMockEntityComments()
 
 const STORY_ENTRIES = [
 	createStoryEntry({
@@ -381,6 +384,7 @@ function StoryScene(props: { initialEntryId: number }) {
 						currentSrc={getCurrentImageSrc(entry())}
 						currentLoading={false}
 						currentError={false}
+						comments={COMMENTS}
 					/>
 				)}
 			</Match>

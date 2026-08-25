@@ -729,6 +729,7 @@ export type EntityCommentTarget =
 	| "event"
 	| "tag"
 	| "correction"
+	| "image-queue"
 
 export type EntityIdent = string
 
@@ -3423,75 +3424,6 @@ export type ModerateImageQueueResponses = {
 
 export type ModerateImageQueueResponse =
 	ModerateImageQueueResponses[keyof ModerateImageQueueResponses]
-
-export type FindImageQueueCommentsData = {
-	body?: never
-	path: {
-		/**
-		 * Image queue id
-		 */
-		id: number
-	}
-	query?: {
-		limit?: number
-		cursor?: number
-	}
-	url: "/image-queue/{id}/comments"
-}
-
-export type FindImageQueueCommentsErrors = {
-	/**
-	 * Too Many Requests
-	 */
-	429: string
-	default: {
-		status: "Err"
-		message: string
-	}
-}
-
-export type FindImageQueueCommentsError =
-	FindImageQueueCommentsErrors[keyof FindImageQueueCommentsErrors]
-
-export type FindImageQueueCommentsResponses = {
-	200: DataCommentPage
-}
-
-export type FindImageQueueCommentsResponse =
-	FindImageQueueCommentsResponses[keyof FindImageQueueCommentsResponses]
-
-export type CreateImageQueueCommentData = {
-	body: CreateEntityCommentRequest
-	path: {
-		/**
-		 * Image queue id
-		 */
-		id: number
-	}
-	query?: never
-	url: "/image-queue/{id}/comments"
-}
-
-export type CreateImageQueueCommentErrors = {
-	/**
-	 * Too Many Requests
-	 */
-	429: string
-	default: {
-		status: "Err"
-		message: string
-	}
-}
-
-export type CreateImageQueueCommentError =
-	CreateImageQueueCommentErrors[keyof CreateImageQueueCommentErrors]
-
-export type CreateImageQueueCommentResponses = {
-	200: DataComment
-}
-
-export type CreateImageQueueCommentResponse =
-	CreateImageQueueCommentResponses[keyof CreateImageQueueCommentResponses]
 
 export type SetImageQueueSubscriptionData = {
 	body?: never

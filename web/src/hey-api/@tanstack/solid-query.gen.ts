@@ -14,7 +14,6 @@ import {
 	createCreditRole,
 	createEntityComment,
 	createEvent,
-	createImageQueueComment,
 	createLabel,
 	createRelease,
 	createSong,
@@ -43,7 +42,6 @@ import {
 	findEntityComments,
 	findEventById,
 	findEventByKeyword,
-	findImageQueueComments,
 	findLabelById,
 	findLabelByKeyword,
 	findManyArtist,
@@ -158,9 +156,6 @@ import type {
 	CreateEventData,
 	CreateEventError,
 	CreateEventResponse,
-	CreateImageQueueCommentData,
-	CreateImageQueueCommentError,
-	CreateImageQueueCommentResponse,
 	CreateLabelData,
 	CreateLabelError,
 	CreateLabelResponse,
@@ -244,9 +239,6 @@ import type {
 	FindEventByKeywordData,
 	FindEventByKeywordError,
 	FindEventByKeywordResponse,
-	FindImageQueueCommentsData,
-	FindImageQueueCommentsError,
-	FindImageQueueCommentsResponse,
 	FindLabelByIdData,
 	FindLabelByIdError,
 	FindLabelByIdResponse,
@@ -2308,104 +2300,6 @@ export const moderateImageQueueMutation = (
 	> = {
 		mutationFn: async (fnOptions) => {
 			const { data } = await moderateImageQueue({
-				...options,
-				...fnOptions,
-				throwOnError: true,
-			})
-			return data
-		},
-	}
-	return mutationOptions
-}
-
-export const findImageQueueCommentsQueryKey = (
-	options: Options<FindImageQueueCommentsData>,
-) => createQueryKey("findImageQueueComments", options, false, ["Comment"])
-
-export const findImageQueueCommentsOptions = (
-	options: Options<FindImageQueueCommentsData>,
-) =>
-	queryOptions<
-		FindImageQueueCommentsResponse,
-		FindImageQueueCommentsError,
-		FindImageQueueCommentsResponse,
-		ReturnType<typeof findImageQueueCommentsQueryKey>
-	>({
-		queryFn: async ({ queryKey, signal }) => {
-			const { data } = await findImageQueueComments({
-				...options,
-				...queryKey[0],
-				signal,
-				throwOnError: true,
-			})
-			return data
-		},
-		queryKey: findImageQueueCommentsQueryKey(options),
-	})
-
-export const findImageQueueCommentsInfiniteQueryKey = (
-	options: Options<FindImageQueueCommentsData>,
-): QueryKey<Options<FindImageQueueCommentsData>> =>
-	createQueryKey("findImageQueueComments", options, true, ["Comment"])
-
-export const findImageQueueCommentsInfiniteOptions = (
-	options: Options<FindImageQueueCommentsData>,
-) => {
-	const opts = infiniteQueryOptions<
-		FindImageQueueCommentsResponse,
-		FindImageQueueCommentsError,
-		InfiniteData<FindImageQueueCommentsResponse>,
-		QueryKey<Options<FindImageQueueCommentsData>>,
-		| number
-		| Pick<
-				QueryKey<Options<FindImageQueueCommentsData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
-	>(
-		// @ts-ignore
-		{
-			queryFn: async ({ pageParam, queryKey, signal }) => {
-				// @ts-ignore
-				const page: Pick<
-					QueryKey<Options<FindImageQueueCommentsData>>[0],
-					"body" | "headers" | "path" | "query"
-				> =
-					typeof pageParam === "object"
-						? pageParam
-						: {
-								query: {
-									cursor: pageParam,
-								},
-							}
-				const params = createInfiniteParams(queryKey, page)
-				const { data } = await findImageQueueComments({
-					...options,
-					...params,
-					signal,
-					throwOnError: true,
-				})
-				return data
-			},
-			queryKey: findImageQueueCommentsInfiniteQueryKey(options),
-		},
-	)
-	return opts as Omit<typeof opts, "initialData">
-}
-
-export const createImageQueueCommentMutation = (
-	options?: Partial<Options<CreateImageQueueCommentData>>,
-): MutationOptions<
-	CreateImageQueueCommentResponse,
-	CreateImageQueueCommentError,
-	Options<CreateImageQueueCommentData>
-> => {
-	const mutationOptions: MutationOptions<
-		CreateImageQueueCommentResponse,
-		CreateImageQueueCommentError,
-		Options<CreateImageQueueCommentData>
-	> = {
-		mutationFn: async (fnOptions) => {
-			const { data } = await createImageQueueComment({
 				...options,
 				...fnOptions,
 				throwOnError: true,
