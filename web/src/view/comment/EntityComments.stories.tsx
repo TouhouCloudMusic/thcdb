@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import type { Comment } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
+import { withStoryState } from "~/utils/adapter/storybook-state"
 
 import { EntityComments } from "./EntityComments"
 import { createMockEntityComments } from "./storybook"
@@ -45,7 +46,7 @@ const EMPTY_MODEL = createMockEntityComments()
 const meta = {
 	title: "View/Comment/EntityComments",
 	component: EntityComments,
-	decorators: [withStoryRouter],
+	decorators: [withStoryState, withStoryRouter],
 	parameters: {
 		layout: StoryLayout.Padded,
 	},

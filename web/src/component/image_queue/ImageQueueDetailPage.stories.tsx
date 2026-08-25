@@ -5,6 +5,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { imgUrl } from "~/utils/adapter/static_file"
 import { StoryLayout, StoryRouterProvider } from "~/utils/adapter/storybook"
+import { withStoryState } from "~/utils/adapter/storybook-state"
 import { createMockEntityComments } from "~/view/comment/storybook"
 import { ImageQueueDetailView } from "~/view/image_queue/detail"
 
@@ -387,6 +388,7 @@ function StoryScene(props: { initialEntryId: number }) {
 const meta = {
 	title: "Page/ImageQueueDetailPage",
 	component: StoryRoot,
+	decorators: [withStoryState],
 	parameters: {
 		layout: StoryLayout.FullScreen,
 	},

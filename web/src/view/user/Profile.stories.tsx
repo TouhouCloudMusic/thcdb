@@ -5,6 +5,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 import baka from "~/component/atomic/avatar/baka.jpg"
 import type { UserCollection } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
+import { withStoryState } from "~/utils/adapter/storybook-state"
 
 import type { ActivityItem, PinItem, ProfileData } from "./Profile"
 import { Profile } from "./Profile"
@@ -504,7 +505,7 @@ function StoryRoot(props: StoryRootProps) {
 const meta = {
 	title: "View/User/Profile",
 	component: StoryRoot,
-	decorators: [withStoryRouter],
+	decorators: [withStoryState, withStoryRouter],
 	parameters: {
 		layout: StoryLayout.FullScreen,
 		backgrounds: {

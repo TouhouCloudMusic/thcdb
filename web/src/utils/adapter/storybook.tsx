@@ -1,15 +1,11 @@
 import {
 	createMemoryHistory,
+	createRootRoute,
 	createRouter,
 	RouterContextProvider,
 } from "@tanstack/solid-router"
 import type { ParentProps } from "solid-js"
 import { createJSXDecorator } from "storybook-solidjs-vite"
-
-import { routeTree } from "~/routeTree.gen"
-import { useCurrentUser } from "~/state/user"
-
-export { withStoryI18N, withStoryState } from "~/utils/adapter/storybook-state"
 
 export const enum StoryLayout {
 	Centered = "centered",
@@ -27,14 +23,10 @@ export function StoryRouterProvider(
 	props: ParentProps<{ initialEntry?: string }>,
 ) {
 	const router = createRouter({
-		routeTree,
+		routeTree: createRootRoute(),
 		history: createMemoryHistory({
 			initialEntries: [props.initialEntry ?? "/"],
 		}),
-		context: {
-			currentUser: useCurrentUser(),
-		},
-		defaultPreloadStaleTime: 0,
 	})
 
 	return (

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import type { UserCollection } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
+import { withStoryState } from "~/utils/adapter/storybook-state"
 import type {
 	CollectionDetailController,
 	CollectionDetailModel,
@@ -214,7 +215,7 @@ const DEFAULT_ARGS: StoryRootProps = {
 const meta = {
 	title: "View/Collection/CollectionDetail",
 	component: StoryRoot,
-	decorators: [withStoryRouter],
+	decorators: [withStoryState, withStoryRouter],
 	parameters: {
 		layout: StoryLayout.FullScreen,
 		backgrounds: {
