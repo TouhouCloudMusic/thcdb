@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { createMockRelease } from "~/mock/release"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
+import { withStoryState } from "~/utils/adapter/storybook-state"
 import { createMockEntityComments } from "~/view/comment/storybook"
 
 import { ReleaseInfoTabsView } from "./ReleaseInfoTabs"
@@ -28,7 +29,7 @@ function StoryRoot(props: StoryRootProps) {
 const meta = {
 	title: "View/Release/InfoTabs",
 	component: StoryRoot,
-	decorators: [withStoryRouter],
+	decorators: [withStoryState, withStoryRouter],
 	parameters: {
 		layout: StoryLayout.Padded,
 	},

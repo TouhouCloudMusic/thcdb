@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { PRIMARY_TAG_RELEVANCE_THRESHOLD } from "~/domain/tag/constants"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
+import { withStoryState } from "~/utils/adapter/storybook-state"
 
 import { EntityTagsView } from "./EntityTags"
 import type { EntityTagsViewProps } from "./EntityTags"
@@ -116,7 +117,7 @@ function StoryRoot(props: {
 const meta = {
 	title: "View/EntityTags",
 	component: StoryRoot,
-	decorators: [withStoryRouter],
+	decorators: [withStoryState, withStoryRouter],
 	parameters: {
 		layout: StoryLayout.Padded,
 	},

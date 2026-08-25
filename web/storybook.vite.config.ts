@@ -7,6 +7,9 @@ export default defineConfig({
 	resolve: {
 		tsconfigPaths: true,
 	},
+	optimizeDeps: {
+		include: ["solid-radix-icons"],
+	},
 	define: {
 		"process.env": {},
 	},

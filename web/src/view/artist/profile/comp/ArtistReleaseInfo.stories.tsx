@@ -4,6 +4,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 import { createMockArtist } from "~/mock/artist"
 import type { InfiniteQuery } from "~/type/query"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
+import { withStoryState } from "~/utils/adapter/storybook-state"
 import { createMockEntityComments } from "~/view/comment/storybook"
 
 import { ArtistContext } from ".."
@@ -131,7 +132,7 @@ function StoryRoot(props: StoryRootProps) {
 const meta = {
 	title: "View/Artist/ReleaseInfoTabs",
 	component: StoryRoot,
-	decorators: [withStoryRouter],
+	decorators: [withStoryState, withStoryRouter],
 	parameters: {
 		layout: StoryLayout.Padded,
 	},

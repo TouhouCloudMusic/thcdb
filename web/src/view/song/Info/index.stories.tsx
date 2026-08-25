@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { ENGLISH_LANGUAGE } from "~/storybook/fixtures"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
+import { withStoryState } from "~/utils/adapter/storybook-state"
 import { createMockEntityComments } from "~/view/comment/storybook"
 import { SongInfoPageView } from "~/view/song/Info"
 
@@ -161,7 +162,7 @@ function StoryRoot(props: StoryRootProps) {
 const meta = {
 	title: "View/Song/Info",
 	component: StoryRoot,
-	decorators: [withStoryRouter],
+	decorators: [withStoryState, withStoryRouter],
 	parameters: {
 		layout: StoryLayout.FullScreen,
 		backgrounds: {

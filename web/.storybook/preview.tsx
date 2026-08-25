@@ -1,16 +1,22 @@
 import addonA11y from "@storybook/addon-a11y"
 import addonDocs from "@storybook/addon-docs"
-import { definePreview } from "storybook-solidjs-vite"
+import { createJSXDecorator, definePreview } from "storybook-solidjs-vite"
 
 import "../src/index.css"
+import { I18NProvider } from "../src/state/i18n"
 import { loadLocale } from "../src/state/i18n/runtime"
-import { withStoryState } from "../src/utils/adapter/storybook-state"
 
 await loadLocale("en")
 
 export default definePreview({
 	addons: [addonDocs(), addonA11y()],
-	decorators: [withStoryState],
+	decorators: [
+		createJSXDecorator((Story) => (
+			<I18NProvider initialLocale="en">
+				<Story />
+			</I18NProvider>
+		)),
+	],
 	parameters: {
 		// automatically create action args for all props that start with 'on'
 		actions: {
