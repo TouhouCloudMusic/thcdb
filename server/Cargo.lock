@@ -170,8 +170,7 @@ dependencies = [
 [[package]]
 name = "apalis-core"
 version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3948d2051795c769e6a44a46549879af39d5e8e4fb113e0011cf99f7cd21b657"
+source = "git+https://github.com/Huliiiiii/apalis.git?rev=5866341937123ab1e1eee57aeeef23fd8fc10119#5866341937123ab1e1eee57aeeef23fd8fc10119"
 dependencies = [
  "futures",
  "futures-timer",
@@ -200,8 +199,7 @@ dependencies = [
 [[package]]
 name = "apalis-redis"
 version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "871367e3dfff2accda824ccc6e4f46f8f155c865065a450c466a7f2835541d55"
+source = "git+https://github.com/Huliiiiii/apalis.git?rev=5866341937123ab1e1eee57aeeef23fd8fc10119#5866341937123ab1e1eee57aeeef23fd8fc10119"
 dependencies = [
  "apalis-core",
  "chrono",
@@ -2607,7 +2605,7 @@ dependencies = [
  "hyper",
  "libc",
  "pin-project-lite",
- "socket2 0.6.3",
+ "socket2 0.5.10",
  "tokio",
  "tower-service",
  "tracing",
@@ -5444,7 +5442,7 @@ version = "0.8.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c1c97747dbf44bb1ca44a561ece23508e99cb592e862f22222dcf42f51d1e451"
 dependencies = [
- "heck 0.5.0",
+ "heck 0.4.1",
  "proc-macro2",
  "quote",
  "syn 2.0.118",
