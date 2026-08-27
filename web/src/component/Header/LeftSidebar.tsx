@@ -104,7 +104,7 @@ export function LeftSidebarView(props: { authorization?: UserAuthorization }) {
 	]
 
 	return (
-		<Sidebar class="flex w-64 flex-col gap-2 p-4">
+		<Sidebar class="flex max-w-64 flex-col gap-2 p-4">
 			<h3 class="ml-2 text-sm text-secondary ">{t`Explore`}</h3>
 
 			<ul class="space-y-1 pr-2">

@@ -2,8 +2,8 @@ import { useLingui } from "@lingui/solid/macro"
 import type { Artist, Event, HomeMetadata, Release, Tag } from "@thc/api"
 import { ErrorBoundary, For, Show, Suspense } from "solid-js"
 
-import { Card } from "~/component/atomic/Card"
 import { PageLayout } from "~/layout/PageLayout"
+import { tw } from "~/utils"
 import {
 	ArtistsCard,
 	ArtistsCardSkeleton,
@@ -15,30 +15,17 @@ import {
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 import { HomeStats } from "~/view/Homepage/component/HomeStats"
-import { ReleaseCard } from "~/view/Homepage/component/ReleaseCard"
+import {
+	ReleaseCard,
+	ReleaseCardSkeleton,
+} from "~/view/Homepage/component/ReleaseCard"
 import { TagsCard, TagsCardSkeleton } from "~/view/Homepage/component/TagsCard"
 import { RELEASES_LIMIT } from "~/view/Homepage/constants"
 
-function ReleaseCardSkeleton() {
-	return (
-		<Card class="flex aspect-[1/1.309] flex-col overflow-hidden rounded-none p-0 shadow-none animate-pulse motion-reduce:animate-none">
-			<div class="aspect-square w-full shrink-0 bg-slate-100"></div>
-			<div class="grid min-h-0 flex-1 grid-rows-2 p-1">
-				<div class="flex items-center justify-between gap-2">
-					<div class="h-5 w-3/4 rounded bg-slate-200"></div>
-					<div class="h-3 w-10 rounded bg-slate-100"></div>
-				</div>
-
-				<div class="flex items-center justify-between gap-3 self-end">
-					<div class="h-3 w-1/2 rounded bg-slate-100"></div>
-					<div class="h-3 w-12 rounded bg-slate-100"></div>
-				</div>
-			</div>
-		</Card>
-	)
-}
-
-const RELEASES_GRID_CLASS = "grid gap-0.5 sm:grid-cols-2 xl:grid-cols-3"
+const RELEASES_GRID_CLASS = tw(`
+	grid grid-cols-2 gap-0.5
+	md:grid-cols-3
+`)
 
 function ReleasesGridSkeleton() {
 	return (
@@ -83,7 +70,11 @@ export function HomePage(props: HomePageProps) {
 				</ErrorBoundary>
 			</Suspense>
 
-			<section class="grid gap-x-8 gap-y-6 px-8 pt-4 pb-8 lg:grid-cols-[1.35fr_0.65fr]">
+			<section
+				class="grid gap-x-8 gap-y-6 px-4 pt-4 pb-8
+					sm:px-6
+					lg:grid-cols-[1.35fr_0.65fr] lg:px-8"
+			>
 				<ExploreSection
 					title={t`Latest Releases`}
 					to="/release/explore"
@@ -96,7 +87,11 @@ export function HomePage(props: HomePageProps) {
 					</Suspense>
 				</ExploreSection>
 
-				<div class="flex flex-col gap-8">
+				<div
+					class="flex min-w-0 flex-col gap-8
+						md:grid md:grid-cols-2
+						lg:flex lg:flex-col"
+				>
 					<Suspense fallback={<EventsCardSkeleton />}>
 						<EventsCard events={props.events} />
 					</Suspense>

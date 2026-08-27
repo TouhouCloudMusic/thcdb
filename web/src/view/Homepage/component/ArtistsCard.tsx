@@ -3,12 +3,16 @@ import type { Artist } from "@thc/api"
 import { For, Show } from "solid-js"
 
 import { Card } from "~/component/atomic/Card"
+import { tw } from "~/utils"
 import { ArtistCard } from "~/view/Homepage/component/ArtistCard"
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 import { ARTISTS_LIMIT } from "~/view/Homepage/constants"
 
-const ARTISTS_GRID_CLASS = "grid grid-cols-3 gap-0.5"
+const ARTISTS_GRID_CLASS = tw(`
+	grid grid-cols-2 gap-0.5
+	sm:grid-cols-3
+`)
 
 function ArtistTileSkeleton() {
 	return (
