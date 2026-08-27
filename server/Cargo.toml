@@ -361,6 +361,10 @@ xxhash-rust = { version = "0.8", features = [
 zxcvbn = "3.1"
 exn = "0.3.0"
 
+[patch.crates-io]
+apalis-core  = { git = "https://github.com/Huliiiiii/apalis.git", rev = "5866341937123ab1e1eee57aeeef23fd8fc10119" }
+apalis-redis = { git = "https://github.com/Huliiiiii/apalis.git", rev = "5866341937123ab1e1eee57aeeef23fd8fc10119" }
+
 [dev-dependencies]
 anyhow.workspace        = true
 fake                    = { version = "5.1.0", features = [ "derive" ] }
