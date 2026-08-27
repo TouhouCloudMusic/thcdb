@@ -15,10 +15,16 @@ function HomeStatsGrid(props: { metadata?: HomeMetadata }) {
 		] satisfies { key: keyof HomeMetadata; label: string }[]
 
 	return (
-		<div class="grid w-fit max-w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+		<div
+			class="grid w-full grid-cols-2
+				md:w-fit md:grid-cols-4"
+		>
 			<For each={stats()}>
 				{(stat) => (
-					<div class="min-w-44 px-8 py-3">
+					<div
+						class="px-4 py-3
+						  md:min-w-44 md:px-8"
+					>
 						<div class="text-3xl font-extralight tracking-tight text-primary tabular-nums">
 							{formatCount(props.metadata?.[stat.key])}
 						</div>

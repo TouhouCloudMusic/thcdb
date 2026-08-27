@@ -18,7 +18,7 @@ export function Sidebar(
 			ref={props.ref}
 			tabindex={-1}
 			class={twMerge(
-				"ml-auto flex h-full w-60 overflow-auto border-t border-t-reimu-600 bg-primary",
+				"ml-auto flex h-full w-screen max-w-60 overflow-auto border-t border-t-reimu-600 bg-primary",
 				props.class,
 			)}
 		>

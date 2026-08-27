@@ -56,8 +56,11 @@ const STORY_DATA = createHomeStoryData()
 
 function StoryHeader() {
 	return (
-		<header class="box-content content-center items-center border-b-1 border-slate-300 bg-primary px-4 py-2">
-			<div class="my-auto flex h-8 items-center justify-between">
+		<header class="border-b border-slate-300 bg-primary px-4 py-2">
+			<div
+				class="grid min-h-8 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-y-2
+					xl:flex xl:justify-between"
+			>
 				<div class="flex items-center gap-3">
 					<Dialog.Root>
 						<K_Dialog.Trigger
@@ -81,7 +84,11 @@ function StoryHeader() {
 					/>
 				</div>
 
-				<div class="relative ml-36 grid w-96 items-center">
+				<div
+					class="relative col-span-3 col-start-1 row-start-2 grid items-center
+						sm:col-span-1 sm:col-start-2 sm:row-start-1 sm:w-full sm:max-w-96 sm:justify-self-center
+						xl:ml-36"
+				>
 					<input
 						type="search"
 						aria-label="Search artists, releases, songs"
@@ -91,7 +98,7 @@ function StoryHeader() {
 					<MagnifyingGlassIcon class="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
 				</div>
 
-				<div class="flex h-full shrink place-content-center items-center gap-3">
+				<div class="col-start-3 row-start-1 flex h-full shrink place-content-center items-center gap-3">
 					<Divider
 						vertical
 						class="h-6"
