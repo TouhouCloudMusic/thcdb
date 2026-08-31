@@ -87,11 +87,7 @@ export function HomePage(props: HomePageProps) {
 					</Suspense>
 				</ExploreSection>
 
-				<div
-					class="flex min-w-0 flex-col gap-8
-						md:grid md:grid-cols-2
-						lg:flex lg:flex-col"
-				>
+				<div class="grid min-w-0 content-start grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))] gap-8">
 					<Suspense fallback={<EventsCardSkeleton />}>
 						<EventsCard events={props.events} />
 					</Suspense>
