@@ -3,7 +3,6 @@ import type { Artist, Event, HomeMetadata, Release, Tag } from "@thc/api"
 import { ErrorBoundary, For, Show, Suspense } from "solid-js"
 
 import { PageLayout } from "~/layout/PageLayout"
-import { tw } from "~/utils"
 import {
 	ArtistsCard,
 	ArtistsCardSkeleton,
@@ -20,16 +19,14 @@ import {
 	ReleaseCardSkeleton,
 } from "~/view/Homepage/component/ReleaseCard"
 import { TagsCard, TagsCardSkeleton } from "~/view/Homepage/component/TagsCard"
-import { RELEASES_LIMIT } from "~/view/Homepage/constants"
-
-const RELEASES_GRID_CLASS = tw(`
-	grid grid-cols-2 gap-0.5
-	md:grid-cols-3
-`)
+import {
+	HOME_ENTITY_GRID_CLASS,
+	RELEASES_LIMIT,
+} from "~/view/Homepage/constants"
 
 function ReleasesGridSkeleton() {
 	return (
-		<div class={RELEASES_GRID_CLASS}>
+		<div class={HOME_ENTITY_GRID_CLASS}>
 			<For each={Array.from({ length: RELEASES_LIMIT })}>
 				{() => <ReleaseCardSkeleton />}
 			</For>
@@ -43,7 +40,7 @@ function ReleasesGrid(props: { releases: Release[] }) {
 			when={props.releases.length > 0}
 			fallback={<HomeEmptySlot class="h-56" />}
 		>
-			<div class={RELEASES_GRID_CLASS}>
+			<div class={HOME_ENTITY_GRID_CLASS}>
 				<For each={props.releases}>
 					{(release) => <ReleaseCard release={release} />}
 				</For>
@@ -87,7 +84,7 @@ export function HomePage(props: HomePageProps) {
 					</Suspense>
 				</ExploreSection>
 
-				<div class="grid min-w-0 content-start grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))] gap-8">
+				<div class="grid min-w-0 content-start grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-8">
 					<Suspense fallback={<EventsCardSkeleton />}>
 						<EventsCard events={props.events} />
 					</Suspense>
