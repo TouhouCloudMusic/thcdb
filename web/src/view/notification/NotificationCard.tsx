@@ -1,14 +1,14 @@
 import { Plural, Trans, useLingui } from "@lingui/solid/macro"
 import type { LinkComponentProps } from "@tanstack/solid-router"
 import { Link } from "@tanstack/solid-router"
-import type { JSX } from "solid-js"
-import { Match, Show, Switch } from "solid-js"
 import {
 	BookmarkFilledIcon,
 	BookmarkIcon,
 	EnvelopeClosedIcon,
 	EnvelopeOpenIcon,
-} from "solid-radix-icons"
+} from "@thc/icons/radix"
+import type { JSX } from "solid-js"
+import { Match, Show, Switch } from "solid-js"
 import { twJoin } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"

@@ -1,11 +1,11 @@
 import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Label } from "@thc/api"
+import { PlusIcon } from "@thc/icons/radix"
 import { LabelQueryOption } from "@thc/query"
 import { debounce, id } from "@thc/toolkit"
 import { createSignal, createMemo } from "solid-js"
 import type { JSX } from "solid-js"
-import { PlusIcon } from "solid-radix-icons"
 
 import { Button } from "~/component/atomic/button"
 import { Dialog } from "~/component/dialog"

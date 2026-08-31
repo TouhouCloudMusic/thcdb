@@ -39,7 +39,6 @@ export default defineConfig(({ mode }) => {
 		},
 		optimizeDeps: {
 			exclude: ["@lingui/core/macro", "@lingui/solid/macro"],
-			include: ["solid-radix-icons"],
 		},
 		build: {
 			target: "esnext",

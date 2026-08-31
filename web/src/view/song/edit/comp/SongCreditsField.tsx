@@ -1,9 +1,9 @@
 import { Field, getErrors, insert, remove, setInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { CreditRoleRef, SimpleArtist, SongCredit } from "@thc/api"
+import { Cross1Icon, PlusIcon, Pencil1Icon } from "@thc/icons/radix"
 import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
-import { Cross1Icon, PlusIcon, Pencil1Icon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"

@@ -4,10 +4,10 @@ import type {
 	InfiniteData,
 	UseInfiniteQueryResult,
 } from "@tanstack/solid-query"
+import { PlusIcon } from "@thc/icons/radix"
 import { createSignal, createUniqueId, For, Show } from "solid-js"
 import type { Accessor } from "solid-js"
 import { createStore, produce } from "solid-js/store"
-import { PlusIcon } from "solid-radix-icons"
 
 import { Button } from "~/component/atomic/button"
 import { Dialog } from "~/component/dialog"

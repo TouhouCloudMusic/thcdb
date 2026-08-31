@@ -1,14 +1,14 @@
 import * as Toast from "@kobalte/core/toast"
 import { useLingui } from "@lingui/solid/macro"
-import type { JSX } from "solid-js"
-import { Show, splitProps } from "solid-js"
-import type { IconProps } from "solid-radix-icons"
+import type { IconProps } from "@thc/icons"
 import {
 	CheckIcon,
 	Cross1Icon,
 	InfoCircledIcon,
 	ExclamationTriangleIcon,
-} from "solid-radix-icons"
+} from "@thc/icons/radix"
+import type { JSX } from "solid-js"
+import { Show, splitProps } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
 type ToastTone = "notification" | "success" | "error"

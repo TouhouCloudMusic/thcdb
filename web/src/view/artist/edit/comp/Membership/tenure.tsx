@@ -1,10 +1,10 @@
 /* @refresh reload */
 import { Field, FieldArray, getInput, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import { Cross1Icon } from "@thc/icons/radix"
 import { ObjExt } from "@thc/toolkit/data"
 import type { JSX } from "solid-js"
 import { For } from "solid-js"
-import { Cross1Icon } from "solid-radix-icons"
 
 import { FormComp } from "~/component/atomic"
 import { Button } from "~/component/atomic/button"

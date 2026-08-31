@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
+import { PlusIcon } from "@thc/icons/radix"
 import { createSignal, Show } from "solid-js"
-import { PlusIcon } from "solid-radix-icons"
 
 import { Button } from "~/component/atomic/button"
 import type { UserCollectionItemEntityType } from "~/hey-api"

@@ -1,6 +1,6 @@
+import { MagnifyingGlassIcon } from "@thc/icons/radix"
 import type { JSX, ParentProps } from "solid-js"
 import { mergeProps } from "solid-js"
-import { MagnifyingGlassIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 
 import { Dialog } from "~/component/dialog"

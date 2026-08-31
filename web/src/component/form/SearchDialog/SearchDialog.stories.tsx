@@ -1,4 +1,4 @@
-import { Cross2Icon, PlusIcon } from "solid-radix-icons"
+import { Cross2Icon, PlusIcon } from "@thc/icons/radix"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { Button } from "~/component/atomic/button"

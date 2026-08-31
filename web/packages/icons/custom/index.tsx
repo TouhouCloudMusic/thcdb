@@ -1,6 +1,6 @@
-import type { IconProps } from "solid-radix-icons"
+import type { IconProps } from "../index"
 
-// Custom MusicNoteIcon since solid-radix-icons doesn't have one
+// Custom MusicNoteIcon since Radix Icons doesn't have one
 export const MusicNoteIcon = (props: { class?: string }) => (
 	<svg
 		xmlns="http://www.w3.org/2000/svg"

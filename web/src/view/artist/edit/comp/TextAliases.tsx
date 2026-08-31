@@ -1,7 +1,7 @@
 import { Field, FieldArray, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
 import { For } from "solid-js"
-import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 
 import { Divider } from "~/component/atomic/Divider"
 import { Button } from "~/component/atomic/button"

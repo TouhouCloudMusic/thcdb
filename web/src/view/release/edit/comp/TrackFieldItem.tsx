@@ -1,9 +1,9 @@
 import { Field, remove, setInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { ReleaseTrack, SimpleArtist, Song } from "@thc/api"
+import { Cross1Icon, Pencil1Icon, PlusIcon } from "@thc/icons/radix"
 import { For, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
-import { Cross1Icon, Pencil1Icon, PlusIcon } from "solid-radix-icons"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"

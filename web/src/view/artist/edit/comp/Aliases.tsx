@@ -1,9 +1,9 @@
 import { Field, getInput, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { Artist, ArtistCommonFilter } from "@thc/api"
+import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
 import { createMemo, untrack } from "solid-js"
 import { createStore, produce } from "solid-js/store"
-import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 
 import { Divider } from "~/component/atomic/Divider"
 import { Button } from "~/component/atomic/button"

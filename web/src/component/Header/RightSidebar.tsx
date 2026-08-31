@@ -1,6 +1,4 @@
 import { useLingui } from "@lingui/solid/macro"
-import type { Ref } from "solid-js"
-import { Show } from "solid-js"
 import {
 	BookmarkIcon,
 	Cross1Icon,
@@ -9,7 +7,9 @@ import {
 	GearIcon,
 	Pencil2Icon,
 	PersonIcon,
-} from "solid-radix-icons"
+} from "@thc/icons/radix"
+import type { Ref } from "solid-js"
+import { Show } from "solid-js"
 
 import { ListItem, Sidebar } from "~/component/Sidebar"
 import type { SessionProfile } from "~/state/user"

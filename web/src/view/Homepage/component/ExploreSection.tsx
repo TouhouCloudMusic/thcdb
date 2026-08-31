@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
+import { ArrowRightIcon } from "@thc/icons/radix"
 import type { JSX } from "solid-js"
-import { ArrowRightIcon } from "solid-radix-icons"
 
 import { Link } from "~/component/atomic/Link"
 import type { LinkProps } from "~/component/atomic/Link"

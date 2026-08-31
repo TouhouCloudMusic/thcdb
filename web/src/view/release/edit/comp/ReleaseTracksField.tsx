@@ -1,13 +1,13 @@
 import { FieldArray, getInput, insert, setInput } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { ReleaseTrack } from "@thc/api"
-import { For, createMemo, createSignal } from "solid-js"
 import {
 	PlusIcon,
 	Pencil1Icon,
 	ArrowLeftIcon,
 	ArrowRightIcon,
-} from "solid-radix-icons"
+} from "@thc/icons/radix"
+import { For, createMemo, createSignal } from "solid-js"
 import { twJoin } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"
