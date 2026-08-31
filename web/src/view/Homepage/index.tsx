@@ -3,6 +3,7 @@ import type { Artist, Event, HomeMetadata, Release, Tag } from "@thc/api"
 import { ErrorBoundary, For, Show, Suspense } from "solid-js"
 
 import { PageLayout } from "~/layout/PageLayout"
+import { tw } from "~/utils"
 import {
 	ArtistsCard,
 	ArtistsCardSkeleton,
@@ -19,14 +20,15 @@ import {
 	ReleaseCardSkeleton,
 } from "~/view/Homepage/component/ReleaseCard"
 import { TagsCard, TagsCardSkeleton } from "~/view/Homepage/component/TagsCard"
-import {
-	HOME_ENTITY_GRID_CLASS,
-	RELEASES_LIMIT,
-} from "~/view/Homepage/constants"
+import { RELEASES_LIMIT } from "~/view/Homepage/constants"
+
+const RELEASES_GRID_CLASS = tw(`
+	grid grid-cols-[repeat(auto-fit,minmax(min(100%,max(10rem,25%)),1fr))] gap-0.5
+`)
 
 function ReleasesGridSkeleton() {
 	return (
-		<div class={HOME_ENTITY_GRID_CLASS}>
+		<div class={RELEASES_GRID_CLASS}>
 			<For each={Array.from({ length: RELEASES_LIMIT })}>
 				{() => <ReleaseCardSkeleton />}
 			</For>
@@ -40,7 +42,7 @@ function ReleasesGrid(props: { releases: Release[] }) {
 			when={props.releases.length > 0}
 			fallback={<HomeEmptySlot class="h-56" />}
 		>
-			<div class={HOME_ENTITY_GRID_CLASS}>
+			<div class={RELEASES_GRID_CLASS}>
 				<For each={props.releases}>
 					{(release) => <ReleaseCard release={release} />}
 				</For>
