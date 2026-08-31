@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
+import { ArrowDownIcon, ArrowUpIcon } from "@thc/icons/radix"
 import { Match, Show, Switch } from "solid-js"
-import { ArrowDownIcon, ArrowUpIcon } from "solid-radix-icons"
 
 import { Link } from "~/component/atomic/Link"
 import { AlertDialog } from "~/component/dialog/AlertDialog"

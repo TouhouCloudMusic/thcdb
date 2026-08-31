@@ -2,9 +2,9 @@
 import { Field, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { SimpleEvent } from "@thc/api"
+import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
 import { For, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
-import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"

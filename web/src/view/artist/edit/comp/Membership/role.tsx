@@ -3,12 +3,12 @@ import { Field, insert, remove } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { CreditRoleRef } from "@thc/api"
+import { CheckIcon, Cross1Icon } from "@thc/icons/radix"
 import { CreditRoleQueryOption } from "@thc/query"
 import { debounce, id } from "@thc/toolkit"
 import { createMemo, createSignal, For, Suspense, untrack } from "solid-js"
 import type { JSX } from "solid-js"
 import { createStore, produce } from "solid-js/store"
-import { CheckIcon, Cross1Icon } from "solid-radix-icons"
 
 import { Combobox } from "~/component/atomic/Combobox"
 

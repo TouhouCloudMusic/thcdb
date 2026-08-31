@@ -23,7 +23,6 @@ export default defineConfig({
 				optimizeDeps: {
 					entries: ["src/**/*.test.{ts,tsx}"],
 					exclude: LINGUI_MACROS,
-					include: ["solid-radix-icons"],
 				},
 				test: {
 					name: "unit",
@@ -50,7 +49,6 @@ export default defineConfig({
 					include: [
 						"@solid-primitives/memo",
 						"@tanstack/solid-devtools",
-						"solid-radix-icons",
 						"zxcvbn",
 					],
 				},

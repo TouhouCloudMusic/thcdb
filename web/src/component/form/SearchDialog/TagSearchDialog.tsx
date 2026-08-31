@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { Tag } from "@thc/api"
+import { PlusIcon } from "@thc/icons/radix"
 import type { JSX } from "solid-js"
-import { PlusIcon } from "solid-radix-icons"
 
 import { EntitySearchDialog } from "./EntitySearchDialog"
 import { useTagSearch } from "./useTagSearch"

@@ -1,8 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { LinkComponentProps } from "@tanstack/solid-router"
 import type { IconProps } from "@thc/icons"
-import type { JSX } from "solid-js"
-import { For, Show } from "solid-js"
 import {
 	CardStackIcon,
 	BookmarkIcon,
@@ -12,7 +10,9 @@ import {
 	CrumpledPaperIcon,
 	HomeIcon,
 	PersonIcon,
-} from "solid-radix-icons"
+} from "@thc/icons/radix"
+import type { JSX } from "solid-js"
+import { For, Show } from "solid-js"
 
 import { LocaleSelect } from "~/component/Header/LocaleSelect"
 import { ListItem, Sidebar } from "~/component/Sidebar"

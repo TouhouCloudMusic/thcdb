@@ -1,8 +1,8 @@
 import type { FieldElementProps } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
+import { CheckIcon, Cross1Icon } from "@thc/icons/radix"
 import type { JSX } from "solid-js"
 import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
-import { CheckIcon, Cross1Icon } from "solid-radix-icons"
 
 import { InputField } from "~/component/atomic/form/Input"
 import {

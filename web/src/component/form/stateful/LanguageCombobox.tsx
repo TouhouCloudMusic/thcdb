@@ -1,8 +1,8 @@
 import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Language } from "@thc/api"
+import { CheckIcon } from "@thc/icons/radix"
 import { LanguagesQuery } from "@thc/query"
-import { CheckIcon } from "solid-radix-icons"
 
 import { Combobox } from "~/component/atomic/Combobox"
 

@@ -9,8 +9,8 @@ import {
 } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
 import type { Language } from "@thc/api"
+import { Cross1Icon, PlusIcon } from "@thc/icons/radix"
 import { createMemo, For } from "solid-js"
-import { Cross1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 
 import { Button } from "~/component/atomic/button"

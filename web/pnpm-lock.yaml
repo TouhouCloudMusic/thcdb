@@ -101,9 +101,6 @@ importers:
       solid-js:
         specifier: ^1.9.12
         version: 1.9.12
-      solid-radix-icons:
-        specifier: ^1.0.0
-        version: 1.0.0(solid-js@1.9.12)
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.6.0
@@ -4391,11 +4388,6 @@ packages:
     resolution: {integrity: sha512-KplGPX2GHiWJLZ6AXYRql4M127PdYzfwvLJJXMkO+CMb8Np4VxqDAg5S8jLdwlEuBis/ia9DKw2M8dFx5u8Mhw==}
     peerDependencies:
       solid-js: ^1.8
-
-  solid-radix-icons@1.0.0:
-    resolution: {integrity: sha512-3SsUeYuasp5y+XDDaA4Pb7ZYS7ieSQa2GY4p2YZ/i6Ces4RR6vjkAWvDXcBkCT6CyAkAC6Y1hLmRT+6kr3ArnA==}
-    peerDependencies:
-      solid-js: ^1.6.11
 
   solid-refresh@0.6.3:
     resolution: {integrity: sha512-F3aPsX6hVw9ttm5LYlth8Q15x6MlI/J3Dn+o3EQyRTtTxidepSTwAYdozt01/YA+7ObcciagGEyXIopGZzQtbA==}
@@ -9254,10 +9246,6 @@ snapshots:
   solid-prevent-scroll@0.1.10(solid-js@1.9.12):
     dependencies:
       '@corvu/utils': 0.4.2(solid-js@1.9.12)
-      solid-js: 1.9.12
-
-  solid-radix-icons@1.0.0(solid-js@1.9.12):
-    dependencies:
       solid-js: 1.9.12
 
   solid-refresh@0.6.3(solid-js@1.9.12):

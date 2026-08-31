@@ -1,7 +1,7 @@
 import * as K_Select from "@kobalte/core/select"
+import { CaretSortIcon } from "@thc/icons/radix"
 import type { ComponentProps, JSX } from "solid-js"
 import { mergeProps } from "solid-js"
-import { CaretSortIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 
 import { INPUT_CLASSNAME } from "../../Input"

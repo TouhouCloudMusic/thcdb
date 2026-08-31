@@ -1,9 +1,9 @@
 import { Combobox } from "@kobalte/core"
 import type { ComboboxContentProps } from "@kobalte/core/combobox"
 import type { PolymorphicProps } from "@kobalte/core/polymorphic"
+import { CaretSortIcon } from "@thc/icons/radix"
 import { createSignal, mergeProps, createEffect, onCleanup } from "solid-js"
 import type { ComponentProps, JSX, ValidComponent } from "solid-js"
-import { CaretSortIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 
 import { tw } from "~/utils"

@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/solid/macro"
+import { PlusIcon } from "@thc/icons/radix"
 import type { Accessor, JSX } from "solid-js"
 import { createMemo, For, Show, splitProps } from "solid-js"
-import { PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 
 import type { Props as CardProps } from "../common/Card"

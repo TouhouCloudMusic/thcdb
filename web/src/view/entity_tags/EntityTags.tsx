@@ -1,9 +1,9 @@
 import { useLingui } from "@lingui/solid/macro"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import type { Tag } from "@thc/api"
+import { Cross1Icon, Pencil1Icon, PlusIcon } from "@thc/icons/radix"
 import type { JSX } from "solid-js"
 import { For, Match, Show, Switch, createMemo, createSignal } from "solid-js"
-import { Cross1Icon, Pencil1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge, twJoin } from "tailwind-merge"
 
 import { Link } from "~/component/atomic/Link"

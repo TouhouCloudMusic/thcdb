@@ -9,9 +9,9 @@ import {
 import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import type { Song, SongRef, SongRelation } from "@thc/api"
+import { Cross1Icon, Pencil1Icon, PlusIcon } from "@thc/icons/radix"
 import { For, Show, createMemo, untrack } from "solid-js"
 import { createStore } from "solid-js/store"
-import { Cross1Icon, Pencil1Icon, PlusIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 
 import { FormComp, Select } from "~/component/atomic"

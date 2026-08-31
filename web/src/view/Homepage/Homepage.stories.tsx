@@ -1,7 +1,7 @@
 import { Dialog as K_Dialog } from "@kobalte/core"
 import { Link } from "@tanstack/solid-router"
+import { HamburgerMenuIcon, MagnifyingGlassIcon } from "@thc/icons/radix"
 import dayjs from "dayjs"
-import { HamburgerMenuIcon, MagnifyingGlassIcon } from "solid-radix-icons"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import { LeftSidebarView } from "~/component/Header/LeftSidebar"

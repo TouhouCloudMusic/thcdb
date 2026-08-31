@@ -1,6 +1,6 @@
+import { MoonIcon, SunIcon } from "@thc/icons/radix"
 import { createMemo, Match, Switch } from "solid-js"
 import type { ComponentProps } from "solid-js"
-import { MoonIcon, SunIcon } from "solid-radix-icons"
 import { twMerge } from "tailwind-merge"
 
 import { AppTheme, useTheme } from "~/state/theme"
