@@ -3,13 +3,15 @@ import type { Artist } from "@thc/api"
 import { For, Show } from "solid-js"
 
 import { Card } from "~/component/atomic/Card"
+import { tw } from "~/utils"
 import { ArtistCard } from "~/view/Homepage/component/ArtistCard"
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
-import {
-	ARTISTS_LIMIT,
-	HOME_ENTITY_GRID_CLASS,
-} from "~/view/Homepage/constants"
+import { ARTISTS_LIMIT } from "~/view/Homepage/constants"
+
+const ARTISTS_GRID_CLASS = tw(`
+	grid grid-cols-[repeat(auto-fit,minmax(min(100%,max(10rem,25%)),1fr))] gap-0.5
+`)
 
 function ArtistTileSkeleton() {
 	return (
@@ -26,7 +28,7 @@ function ArtistTileSkeleton() {
 
 function ArtistsGridSkeleton() {
 	return (
-		<div class={HOME_ENTITY_GRID_CLASS}>
+		<div class={ARTISTS_GRID_CLASS}>
 			<For each={Array.from({ length: ARTISTS_LIMIT })}>
 				{() => <ArtistTileSkeleton />}
 			</For>
@@ -40,7 +42,7 @@ function ArtistsGrid(props: { artists: Artist[] }) {
 			when={props.artists.length > 0}
 			fallback={<HomeEmptySlot class="h-36" />}
 		>
-			<div class={HOME_ENTITY_GRID_CLASS}>
+			<div class={ARTISTS_GRID_CLASS}>
 				<For each={props.artists}>
 					{(artist) => <ArtistCard artist={artist} />}
 				</For>
