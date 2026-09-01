@@ -16,15 +16,12 @@ function HomeStatsGrid(props: { metadata?: HomeMetadata }) {
 
 	return (
 		<div
-			class="grid w-full grid-cols-2
-				md:w-fit md:grid-cols-4"
+			class="grid w-full grid-cols-2 gap-x-8 gap-y-6
+				md:w-fit md:grid-cols-4 md:gap-x-16"
 		>
 			<For each={stats()}>
 				{(stat) => (
-					<div
-						class="px-4 py-3
-						  md:min-w-44 md:px-8"
-					>
+					<div class="md:min-w-28">
 						<div class="text-3xl font-extralight tracking-tight text-primary tabular-nums">
 							{formatCount(props.metadata?.[stat.key])}
 						</div>
@@ -43,7 +40,7 @@ export function HomeStats(props: { metadata?: HomeMetadata }) {
 	return (
 		<section
 			aria-label={t`Database statistics`}
-			class="border-b border-slate-300 bg-primary"
+			class="border-b border-slate-300 bg-primary px-4 py-3 sm:px-6 lg:px-8"
 		>
 			<HomeStatsGrid metadata={props.metadata} />
 		</section>

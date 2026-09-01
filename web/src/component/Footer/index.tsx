@@ -5,7 +5,6 @@ const GITHUB_REPO_URL = "https://github.com/TouhouCloudMusic/thcdb"
 const ZULIP_URL = "https://touhoucloud.zulipchat.com/"
 const GITHUB_ISSUES_URL = `${GITHUB_REPO_URL}/issues`
 const CURRENT_YEAR = new Date().getFullYear()
-const COLUMN_CLASS = "px-2 my-2"
 const LINK_CLASS =
 	"transition-colors hover:text-white hover:underline underline-offset-4"
 
@@ -28,14 +27,14 @@ function BrandColumn() {
 	]
 
 	return (
-		<div class={COLUMN_CLASS}>
+		<div class="grid grid-rows-[repeat(4,20px)] items-center gap-y-2">
 			<div class="text-sm font-semibold tracking-wide">
 				{t`Touhou Cloud DB`}
 			</div>
-			<p class="mt-2 max-w-prose text-xs leading-relaxed text-slate-400">
+			<p class="max-w-prose text-xs leading-relaxed text-slate-400">
 				{t`Touhou Cloud DB is an open doujin music database`}
 			</p>
-			<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-300">
+			<div class="flex items-center gap-x-4 text-xs text-slate-300">
 				<For each={brandLinks}>
 					{(item) => (
 						<a
@@ -49,7 +48,7 @@ function BrandColumn() {
 					)}
 				</For>
 			</div>
-			<div class="mt-3 text-xs text-slate-500">
+			<div class="text-xs text-slate-500">
 				<span>© {CURRENT_YEAR} THCDB</span>
 			</div>
 		</div>
@@ -58,10 +57,12 @@ function BrandColumn() {
 
 export function Footer() {
 	return (
-		<footer class="min-h-48 bg-slate-900 text-slate-200 py-6 px-12">
-			<div class=" h-full divide-x divide-slate-700">
-				<BrandColumn />
-			</div>
+		<footer
+			class="bg-slate-900 px-4 pt-4 pb-8 text-slate-200
+				sm:px-6 sm:pt-8 sm:pb-12
+				lg:px-[clamp(2rem,calc(5vw-2.5rem),3.5rem)]"
+		>
+			<BrandColumn />
 		</footer>
 	)
 }

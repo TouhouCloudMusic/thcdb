@@ -4,6 +4,7 @@ import { HamburgerMenuIcon, MagnifyingGlassIcon } from "@thc/icons/radix"
 import dayjs from "dayjs"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
+import { Footer } from "~/component/Footer"
 import { LeftSidebarView } from "~/component/Header/LeftSidebar"
 import { Divider } from "~/component/atomic/Divider"
 import { Button } from "~/component/atomic/button"
@@ -138,9 +139,12 @@ function StoryHeader() {
 function StoryRoot() {
 	return (
 		<StoryRouterProvider>
-			<div class="min-h-dvh bg-slate-100">
+			<div class="grid min-h-dvh grid-rows-[auto_1fr_auto] bg-slate-100">
 				<StoryHeader />
-				<HomePage {...STORY_DATA} />
+				<main>
+					<HomePage {...STORY_DATA} />
+				</main>
+				<Footer />
 			</div>
 		</StoryRouterProvider>
 	)
