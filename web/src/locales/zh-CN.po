@@ -34,25 +34,13 @@ msgstr "-- 选择关系类型 --"
 msgid "[deleted]"
 msgstr "[已删除]"
 
-#: src/view/artist/discover.tsx
-msgid "[UNIMPLEMENTED] Artist"
-msgstr "[未实现]艺术家"
-
 #: src/view/chart/discover.tsx
 msgid "[UNIMPLEMENTED] Chart"
 msgstr "[未实现]图表"
 
-#: src/view/event/discover.tsx
-msgid "[UNIMPLEMENTED] Event"
-msgstr "[未实现]活动"
-
 #: src/view/recommendation/discover.tsx
 msgid "[UNIMPLEMENTED] Recommendation"
 msgstr "[未实现]推荐"
-
-#: src/view/release/discover.tsx
-msgid "[UNIMPLEMENTED] Release"
-msgstr "[未实现]发行"
 
 #. placeholder {0}: props.list.totalItems
 #: src/view/admin/users.tsx
@@ -525,10 +513,6 @@ msgstr "创建事件"
 
 #: src/view/label/explore.tsx
 msgid "Create label"
-msgstr "创建厂牌"
-
-#: src/view/label/List/index.tsx
-msgid "Create Label"
 msgstr "创建厂牌"
 
 #: src/view/release/explore/index.tsx
@@ -1088,7 +1072,6 @@ msgid "Label"
 msgstr "厂牌"
 
 #: src/view/Homepage/component/ExploreCard.tsx
-#: src/view/label/List/index.tsx
 #: src/view/search/index.tsx
 msgid "Labels"
 msgstr "厂牌"
@@ -1455,10 +1438,6 @@ msgstr "未找到发行"
 #: src/view/search/index.tsx
 msgid "No releases found."
 msgstr "未找到发行。"
-
-#: src/view/label/List/index.tsx
-msgid "No results"
-msgstr "没有结果"
 
 #: src/view/search/index.tsx
 msgid "No results found."
@@ -1888,10 +1867,6 @@ msgstr "搜索活动"
 #: src/component/form/SearchDialog/LabelSearchDialog.tsx
 msgid "Search Label"
 msgstr "搜索厂牌"
-
-#: src/view/label/List/index.tsx
-msgid "Search label..."
-msgstr "搜索厂牌..."
 
 #: src/view/search/index.tsx
 msgid "Search result of"

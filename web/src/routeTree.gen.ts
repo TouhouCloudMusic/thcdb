@@ -13,15 +13,10 @@ import { Route as SearchRouteImport } from './route/search'
 import { Route as NotificationsRouteImport } from './route/notifications'
 import { Route as AboutRouteImport } from './route/about'
 import { Route as IndexRouteImport } from './route/index'
-import { Route as TagIndexRouteImport } from './route/tag/index'
-import { Route as ReleaseIndexRouteImport } from './route/release/index'
 import { Route as RecommendationIndexRouteImport } from './route/recommendation/index'
-import { Route as LabelIndexRouteImport } from './route/label/index'
 import { Route as ImageQueueIndexRouteImport } from './route/image-queue/index'
-import { Route as EventIndexRouteImport } from './route/event/index'
 import { Route as ChartIndexRouteImport } from './route/chart/index'
 import { Route as AuthIndexRouteImport } from './route/auth/index'
-import { Route as ArtistIndexRouteImport } from './route/artist/index'
 import { Route as TagNewRouteImport } from './route/tag/new'
 import { Route as TagMockRouteImport } from './route/tag/mock'
 import { Route as TagExploreRouteImport } from './route/tag/explore'
@@ -91,34 +86,14 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TagIndexRoute = TagIndexRouteImport.update({
-  id: '/tag/',
-  path: '/tag/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReleaseIndexRoute = ReleaseIndexRouteImport.update({
-  id: '/release/',
-  path: '/release/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RecommendationIndexRoute = RecommendationIndexRouteImport.update({
   id: '/recommendation/',
   path: '/recommendation/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LabelIndexRoute = LabelIndexRouteImport.update({
-  id: '/label/',
-  path: '/label/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ImageQueueIndexRoute = ImageQueueIndexRouteImport.update({
   id: '/image-queue/',
   path: '/image-queue/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EventIndexRoute = EventIndexRouteImport.update({
-  id: '/event/',
-  path: '/event/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChartIndexRoute = ChartIndexRouteImport.update({
@@ -129,11 +104,6 @@ const ChartIndexRoute = ChartIndexRouteImport.update({
 const AuthIndexRoute = AuthIndexRouteImport.update({
   id: '/auth/',
   path: '/auth/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ArtistIndexRoute = ArtistIndexRouteImport.update({
-  id: '/artist/',
-  path: '/artist/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TagNewRoute = TagNewRouteImport.update({
@@ -412,15 +382,10 @@ export interface FileRoutesByFullPath {
   '/tag/explore': typeof TagExploreRoute
   '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
-  '/artist/': typeof ArtistIndexRoute
   '/auth/': typeof AuthIndexRoute
   '/chart/': typeof ChartIndexRoute
-  '/event/': typeof EventIndexRoute
   '/image-queue/': typeof ImageQueueIndexRoute
-  '/label/': typeof LabelIndexRoute
   '/recommendation/': typeof RecommendationIndexRoute
-  '/release/': typeof ReleaseIndexRoute
-  '/tag/': typeof TagIndexRoute
   '/profile/$username': typeof userProfileUsernameRouteWithChildren
   '/profile/edit': typeof userProfileEditRoute
   '/profile/image-queue': typeof userProfileImageQueueRoute
@@ -475,15 +440,10 @@ export interface FileRoutesByTo {
   '/tag/explore': typeof TagExploreRoute
   '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
-  '/artist': typeof ArtistIndexRoute
   '/auth': typeof AuthIndexRoute
   '/chart': typeof ChartIndexRoute
-  '/event': typeof EventIndexRoute
   '/image-queue': typeof ImageQueueIndexRoute
-  '/label': typeof LabelIndexRoute
   '/recommendation': typeof RecommendationIndexRoute
-  '/release': typeof ReleaseIndexRoute
-  '/tag': typeof TagIndexRoute
   '/profile/$username': typeof userProfileUsernameRouteWithChildren
   '/profile/edit': typeof userProfileEditRoute
   '/profile/image-queue': typeof userProfileImageQueueRoute
@@ -539,15 +499,10 @@ export interface FileRoutesById {
   '/tag/explore': typeof TagExploreRoute
   '/tag/mock': typeof TagMockRoute
   '/tag/new': typeof TagNewRoute
-  '/artist/': typeof ArtistIndexRoute
   '/auth/': typeof AuthIndexRoute
   '/chart/': typeof ChartIndexRoute
-  '/event/': typeof EventIndexRoute
   '/image-queue/': typeof ImageQueueIndexRoute
-  '/label/': typeof LabelIndexRoute
   '/recommendation/': typeof RecommendationIndexRoute
-  '/release/': typeof ReleaseIndexRoute
-  '/tag/': typeof TagIndexRoute
   '/(user)/profile_/$username': typeof userProfileUsernameRouteWithChildren
   '/(user)/profile_/edit': typeof userProfileEditRoute
   '/(user)/profile_/image-queue': typeof userProfileImageQueueRoute
@@ -604,15 +559,10 @@ export interface FileRouteTypes {
     | '/tag/explore'
     | '/tag/mock'
     | '/tag/new'
-    | '/artist/'
     | '/auth/'
     | '/chart/'
-    | '/event/'
     | '/image-queue/'
-    | '/label/'
     | '/recommendation/'
-    | '/release/'
-    | '/tag/'
     | '/profile/$username'
     | '/profile/edit'
     | '/profile/image-queue'
@@ -667,15 +617,10 @@ export interface FileRouteTypes {
     | '/tag/explore'
     | '/tag/mock'
     | '/tag/new'
-    | '/artist'
     | '/auth'
     | '/chart'
-    | '/event'
     | '/image-queue'
-    | '/label'
     | '/recommendation'
-    | '/release'
-    | '/tag'
     | '/profile/$username'
     | '/profile/edit'
     | '/profile/image-queue'
@@ -730,15 +675,10 @@ export interface FileRouteTypes {
     | '/tag/explore'
     | '/tag/mock'
     | '/tag/new'
-    | '/artist/'
     | '/auth/'
     | '/chart/'
-    | '/event/'
     | '/image-queue/'
-    | '/label/'
     | '/recommendation/'
-    | '/release/'
-    | '/tag/'
     | '/(user)/profile_/$username'
     | '/(user)/profile_/edit'
     | '/(user)/profile_/image-queue'
@@ -794,15 +734,10 @@ export interface RootRouteChildren {
   TagExploreRoute: typeof TagExploreRoute
   TagMockRoute: typeof TagMockRoute
   TagNewRoute: typeof TagNewRoute
-  ArtistIndexRoute: typeof ArtistIndexRoute
   AuthIndexRoute: typeof AuthIndexRoute
   ChartIndexRoute: typeof ChartIndexRoute
-  EventIndexRoute: typeof EventIndexRoute
   ImageQueueIndexRoute: typeof ImageQueueIndexRoute
-  LabelIndexRoute: typeof LabelIndexRoute
   RecommendationIndexRoute: typeof RecommendationIndexRoute
-  ReleaseIndexRoute: typeof ReleaseIndexRoute
-  TagIndexRoute: typeof TagIndexRoute
   userProfileUsernameRoute: typeof userProfileUsernameRouteWithChildren
   userProfileEditRoute: typeof userProfileEditRoute
   userProfileImageQueueRoute: typeof userProfileImageQueueRoute
@@ -853,20 +788,6 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tag/': {
-      id: '/tag/'
-      path: '/tag'
-      fullPath: '/tag/'
-      preLoaderRoute: typeof TagIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/release/': {
-      id: '/release/'
-      path: '/release'
-      fullPath: '/release/'
-      preLoaderRoute: typeof ReleaseIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/recommendation/': {
       id: '/recommendation/'
       path: '/recommendation'
@@ -874,25 +795,11 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof RecommendationIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/label/': {
-      id: '/label/'
-      path: '/label'
-      fullPath: '/label/'
-      preLoaderRoute: typeof LabelIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/image-queue/': {
       id: '/image-queue/'
       path: '/image-queue'
       fullPath: '/image-queue/'
       preLoaderRoute: typeof ImageQueueIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/event/': {
-      id: '/event/'
-      path: '/event'
-      fullPath: '/event/'
-      preLoaderRoute: typeof EventIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chart/': {
@@ -907,13 +814,6 @@ declare module '@tanstack/solid-router' {
       path: '/auth'
       fullPath: '/auth/'
       preLoaderRoute: typeof AuthIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/artist/': {
-      id: '/artist/'
-      path: '/artist'
-      fullPath: '/artist/'
-      preLoaderRoute: typeof ArtistIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tag/new': {
@@ -1300,15 +1200,10 @@ const rootRouteChildren: RootRouteChildren = {
   TagExploreRoute: TagExploreRoute,
   TagMockRoute: TagMockRoute,
   TagNewRoute: TagNewRoute,
-  ArtistIndexRoute: ArtistIndexRoute,
   AuthIndexRoute: AuthIndexRoute,
   ChartIndexRoute: ChartIndexRoute,
-  EventIndexRoute: EventIndexRoute,
   ImageQueueIndexRoute: ImageQueueIndexRoute,
-  LabelIndexRoute: LabelIndexRoute,
   RecommendationIndexRoute: RecommendationIndexRoute,
-  ReleaseIndexRoute: ReleaseIndexRoute,
-  TagIndexRoute: TagIndexRoute,
   userProfileUsernameRoute: userProfileUsernameRouteWithChildren,
   userProfileEditRoute: userProfileEditRoute,
   userProfileImageQueueRoute: userProfileImageQueueRoute,
