@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
 	return {
 		plugins: createAppPlugins(),
 		experimental: {
-			// bundledDev: true,
+			bundledDev: true,
 		},
 		server: {
 			port: 3000,
@@ -36,9 +36,6 @@ export default defineConfig(({ mode }) => {
 		},
 		resolve: {
 			tsconfigPaths: true,
-		},
-		optimizeDeps: {
-			exclude: ["@lingui/core/macro", "@lingui/solid/macro"],
 		},
 		build: {
 			target: "esnext",
