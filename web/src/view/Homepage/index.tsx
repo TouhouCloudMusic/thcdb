@@ -23,8 +23,7 @@ import { TagsCard, TagsCardSkeleton } from "~/view/Homepage/component/TagsCard"
 import { RELEASES_LIMIT } from "~/view/Homepage/constants"
 
 const RELEASES_GRID_CLASS = tw(`
-	grid grid-cols-2 gap-0.5
-	md:grid-cols-3
+	grid grid-cols-[repeat(auto-fit,minmax(min(100%,max(8.75rem,25%)),1fr))] gap-0.5
 `)
 
 function ReleasesGridSkeleton() {
@@ -87,11 +86,7 @@ export function HomePage(props: HomePageProps) {
 					</Suspense>
 				</ExploreSection>
 
-				<div
-					class="flex min-w-0 flex-col gap-8
-						md:grid md:grid-cols-2
-						lg:flex lg:flex-col"
-				>
+				<div class="grid min-w-0 content-start grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-8">
 					<Suspense fallback={<EventsCardSkeleton />}>
 						<EventsCard events={props.events} />
 					</Suspense>

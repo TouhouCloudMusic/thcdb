@@ -10,8 +10,7 @@ import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 import { ARTISTS_LIMIT } from "~/view/Homepage/constants"
 
 const ARTISTS_GRID_CLASS = tw(`
-	grid grid-cols-2 gap-0.5
-	sm:grid-cols-3
+	grid grid-cols-[repeat(auto-fit,minmax(min(100%,max(8.75rem,25%)),1fr))] gap-0.5
 `)
 
 function ArtistTileSkeleton() {
