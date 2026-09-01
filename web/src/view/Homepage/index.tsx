@@ -23,7 +23,7 @@ import { TagsCard, TagsCardSkeleton } from "~/view/Homepage/component/TagsCard"
 import { RELEASES_LIMIT } from "~/view/Homepage/constants"
 
 const RELEASES_GRID_CLASS = tw(`
-	grid grid-cols-[repeat(auto-fit,minmax(min(100%,max(10rem,25%)),1fr))] gap-0.5
+	grid grid-cols-[repeat(auto-fit,minmax(min(100%,max(8.75rem,25%)),1fr))] gap-0.5
 `)
 
 function ReleasesGridSkeleton() {
