@@ -34,25 +34,13 @@ msgstr "-- Select relation type --"
 msgid "[deleted]"
 msgstr "[deleted]"
 
-#: src/view/artist/discover.tsx
-msgid "[UNIMPLEMENTED] Artist"
-msgstr "[UNIMPLEMENTED] Artist"
-
 #: src/view/chart/discover.tsx
 msgid "[UNIMPLEMENTED] Chart"
 msgstr "[UNIMPLEMENTED] Chart"
 
-#: src/view/event/discover.tsx
-msgid "[UNIMPLEMENTED] Event"
-msgstr "[UNIMPLEMENTED] Event"
-
 #: src/view/recommendation/discover.tsx
 msgid "[UNIMPLEMENTED] Recommendation"
 msgstr "[UNIMPLEMENTED] Recommendation"
-
-#: src/view/release/discover.tsx
-msgid "[UNIMPLEMENTED] Release"
-msgstr "[UNIMPLEMENTED] Release"
 
 #. placeholder {0}: props.list.totalItems
 #: src/view/admin/users.tsx
@@ -526,10 +514,6 @@ msgstr "Create event"
 #: src/view/label/explore.tsx
 msgid "Create label"
 msgstr "Create label"
-
-#: src/view/label/List/index.tsx
-msgid "Create Label"
-msgstr "Create Label"
 
 #: src/view/release/explore/index.tsx
 msgid "Create release"
@@ -1088,7 +1072,6 @@ msgid "Label"
 msgstr "Label"
 
 #: src/view/Homepage/component/ExploreCard.tsx
-#: src/view/label/List/index.tsx
 #: src/view/search/index.tsx
 msgid "Labels"
 msgstr "Labels"
@@ -1455,10 +1438,6 @@ msgstr "No releases found"
 #: src/view/search/index.tsx
 msgid "No releases found."
 msgstr "No releases found."
-
-#: src/view/label/List/index.tsx
-msgid "No results"
-msgstr "No results"
 
 #: src/view/search/index.tsx
 msgid "No results found."
@@ -1888,10 +1867,6 @@ msgstr "Search Event"
 #: src/component/form/SearchDialog/LabelSearchDialog.tsx
 msgid "Search Label"
 msgstr "Search Label"
-
-#: src/view/label/List/index.tsx
-msgid "Search label..."
-msgstr "Search label..."
 
 #: src/view/search/index.tsx
 msgid "Search result of"
