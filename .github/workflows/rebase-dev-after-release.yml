@@ -1,0 +1,68 @@
+name: Rebase dev after release
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+concurrency:
+  group: rebase-dev-after-release
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  rebase_dev:
+    name: Rebase dev onto main
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.ref == 'dev' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Rebase dev onto main
+        env:
+          MERGED_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          for attempt in 1 2 3; do
+            git fetch --no-tags origin \
+              +refs/heads/main:refs/remotes/origin/main \
+              +refs/heads/dev:refs/remotes/origin/dev
+
+            main_sha=$(git rev-parse refs/remotes/origin/main)
+            dev_sha=$(git rev-parse refs/remotes/origin/dev)
+
+            if ! git merge-base --is-ancestor "$MERGED_SHA" "$main_sha"; then
+              echo "main does not contain merged pull request commit $MERGED_SHA" >&2
+              exit 1
+            fi
+
+            git switch --detach "$dev_sha"
+            if ! git rebase "$main_sha"; then
+              git rebase --abort
+              exit 1
+            fi
+
+            if git push \
+              --force-with-lease="refs/heads/dev:$dev_sha" \
+              origin HEAD:refs/heads/dev; then
+              exit 0
+            fi
+
+            echo "dev changed during synchronization ($attempt/3)" >&2
+          done
+
+          echo "dev kept changing during synchronization" >&2
+          exit 1

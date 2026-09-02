@@ -1,0 +1,88 @@
+name: Prepare release
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: prepare-release
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  prepare_release_pr:
+    name: Prepare release pull request
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Open or reuse release pull request
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const base = "main";
+            const head = "dev";
+            const { owner, repo } = context.repo;
+
+            const openPulls = await github.paginate(github.rest.pulls.list, {
+              owner,
+              repo,
+              state: "open",
+              base,
+              head: `${owner}:${head}`,
+              per_page: 100,
+            });
+
+            if (openPulls.length > 1) {
+              core.setFailed(
+                `Found ${openPulls.length} open ${head} to ${base} pull requests; close duplicates before retrying.`,
+              );
+              return;
+            }
+
+            let comparison;
+            try {
+              comparison = await github.rest.repos.compareCommitsWithBasehead({
+                owner,
+                repo,
+                basehead: `${base}...${head}`,
+              });
+            } catch (error) {
+              if (error.status === 404) {
+                core.setFailed(
+                  `The ${head} branch does not exist. Create it from ${base} before running this workflow.`,
+                );
+                return;
+              }
+
+              throw error;
+            }
+
+            if (comparison.data.ahead_by === 0) {
+              core.info(`${head} has no commits to merge into ${base}.`);
+              return;
+            }
+
+            let pull = openPulls[0];
+            if (pull) {
+              core.info(`Reusing pull request #${pull.number}.`);
+            } else {
+              const created = await github.rest.pulls.create({
+                owner,
+                repo,
+                base,
+                head,
+                title: `Release ${head} to ${base}`,
+                body: [
+                  "Merge this pull request manually with Rebase and merge.",
+                  "",
+                  "After the merge, the Rebase dev after release workflow rebases dev onto main.",
+                ].join("\n"),
+              });
+              pull = created.data;
+              core.info(`Created pull request #${pull.number}.`);
+            }
