@@ -4,8 +4,8 @@
 	},
 	// formatter
 	"[json][jsonc][typescript][typescriptreact]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode",
-		// Prettier will insert new line so we don't
+		"editor.defaultFormatter": "oxc.oxc-vscode",
+		// Oxfmt inserts the final newline, so VS Code does not.
 		"files.insertFinalNewline": false
 	},
 	"typescript.preferences.importModuleSpecifierEnding": "minimal",

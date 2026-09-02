@@ -42,7 +42,9 @@ export type Replace<T, A, B> = If<
 	ReplaceInIntersection<T, A, B>
 >
 
-type ReplaceInIntersection<T, From, To> = T extends infer U & From ? U & To : T
+type ReplaceInIntersection<T, From, To> = T extends (infer U) & From
+	? U & To
+	: T
 
 // TODO: type test
 type ReplaceTest1 = Replace<{ a: 1 }, 1, 2>

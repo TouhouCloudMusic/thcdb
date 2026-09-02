@@ -4,9 +4,9 @@ fail_fast = true
 repo = "local"
 
 [[repos.hooks]]
-id = "web-prettier"
-name = "web prettier"
-entry = "pnpm exec prettier --check --ignore-unknown --experimental-cli"
+id = "web-oxfmt"
+name = "web oxfmt"
+entry = "pnpm exec oxfmt --check --no-error-on-unmatched-pattern"
 language = "system"
 types_or = [
     "css",

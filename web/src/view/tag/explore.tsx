@@ -27,15 +27,13 @@ export function TagExplore() {
 				throw error
 			})
 
-			return paginated.items.map(
-				(tag): TagTreeNode => ({
-					id: tag.id,
-					name: tag.name,
-					type: tag.type,
-					short_description: tag.short_description,
-					children: [],
-				}),
-			)
+			return paginated.items.map((tag): TagTreeNode => ({
+				id: tag.id,
+				name: tag.name,
+				type: tag.type,
+				short_description: tag.short_description,
+				children: [],
+			}))
 		},
 	}))
 
