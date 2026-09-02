@@ -247,7 +247,7 @@ function RouteComponent() {
 	}
 
 	return (
-		<PageLayout class="p-8 pt-6">
+		<PageLayout class="p-4 @xl:p-8 @xl:pt-6">
 			<Switch>
 				<Match when={collectionQuery.isLoading}>
 					<div class="grid min-h-[50vh] place-items-center">

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
 import type { UserCollection } from "~/hey-api"
+import { PageLayout } from "~/layout/PageLayout"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import { withStoryState } from "~/utils/adapter/storybook-state"
 import type {
@@ -191,14 +192,12 @@ function StoryRoot(props: StoryRootProps) {
 	})
 
 	return (
-		<div class="size-full bg-slate-100">
-			<div class="mx-auto h-full max-w-6xl border-x border-slate-300 bg-white p-8 pt-6 2xl:max-w-7xl">
-				<CollectionDetailPage
-					model={model()}
-					controller={COLLECTION_DETAIL_CONTROLLER}
-				/>
-			</div>
-		</div>
+		<PageLayout class="p-4 @xl:p-8 @xl:pt-6">
+			<CollectionDetailPage
+				model={model()}
+				controller={COLLECTION_DETAIL_CONTROLLER}
+			/>
+		</PageLayout>
 	)
 }
 
