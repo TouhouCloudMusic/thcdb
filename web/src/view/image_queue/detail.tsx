@@ -41,10 +41,9 @@ const DATE_TIME = new Intl.DateTimeFormat(undefined, {
 	timeStyle: "short",
 })
 
-const LABEL_CLASS = "text-xs text-tertiary"
+const LABEL_CLASS = "text-xs font-medium text-secondary"
 
-const SURFACE_CARD_CLASS =
-	"rounded-sm border border-slate-300 bg-primary shadow-xs"
+const SURFACE_CARD_CLASS = "rounded-sm border border-slate-300 bg-primary"
 
 function statusTone(status: ImageQueueStatus) {
 	switch (status) {
@@ -201,8 +200,8 @@ export function ImageQueueDetailPage(props: Props) {
 	})
 
 	return (
-		<PageLayout class="flex flex-col gap-2 p-8">
-			<div class="flex flex-wrap items-center gap-2">
+		<PageLayout class="flex flex-col gap-3 p-4">
+			<div class="flex items-center gap-2">
 				<Link
 					{...IMAGE_QUEUE_LIST_LINK}
 					underline={false}
@@ -210,7 +209,7 @@ export function ImageQueueDetailPage(props: Props) {
 				>
 					<span aria-hidden="true">←</span>
 				</Link>
-				<div class="text-xs font-medium tracking-wider text-tertiary">
+				<div class="text-xs font-medium tracking-wider text-secondary">
 					IMAGE QUEUE
 				</div>
 			</div>
@@ -258,15 +257,15 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 	const tone = () => statusTone(props.detail.status)
 
 	return (
-		<div class="grid grid-cols-[minmax(0,1fr)_16rem] gap-4">
-			<header class="grid grid-cols-[auto_minmax(0,1fr)_16rem] gap-2 col-span-2 items-baseline">
+		<div class="@container grid gap-5">
+			<header class="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-3 border-b border-slate-200 pb-5 @4xl:grid-cols-[auto_minmax(0,1fr)_auto] @4xl:items-center">
 				<Badge
 					color={tone().color}
-					class="self-baseline-last text-sm"
+					class="col-start-1 row-start-1 self-center text-sm"
 				>
 					<ImageQueueStatusLabel status={props.detail.status} />
 				</Badge>
-				<h1 class="text-2xl font-light tracking-tight text-primary">
+				<h1 class="col-span-2 row-start-2 text-xl font-light tracking-tight text-primary @4xl:col-span-1 @4xl:col-start-2 @4xl:row-start-1 @4xl:text-2xl">
 					<Show
 						when={getTargetMeta(props.detail)}
 						fallback={t`Image queue`}
@@ -295,96 +294,90 @@ export function ImageQueueDetailView(props: ImageQueueDetailViewProps) {
 					nextId={props.detail.next_id}
 				/>
 			</header>
-			<div class="grid gap-4 md:contents">
-				<section class="grid content-start gap-2">
-					<div class="grid gap-2 grid-cols-2">
-						<ComparisonImage
-							title={t`Current`}
-							src={props.targetImageSrc}
-							alt={t`Current target image`}
-							loading={props.targetImageLoading}
-							error={props.targetImageError}
-						/>
-						<ComparisonImage
-							title={t`Queued`}
-							src={queuedImageSrc()}
-							alt={t`Queued upload preview`}
-						/>
-					</div>
+			<div class="grid gap-4 @4xl:grid-cols-[minmax(0,1fr)_16rem] @4xl:items-start">
+				<section class="grid grid-cols-2 divide-x divide-slate-300 overflow-hidden rounded-sm border border-slate-300 bg-primary">
+					<ComparisonImage
+						title={t`Current`}
+						src={props.targetImageSrc}
+						alt={t`Current target image`}
+						loading={props.targetImageLoading}
+						error={props.targetImageError}
+					/>
+					<ComparisonImage
+						title={t`Queued`}
+						src={queuedImageSrc()}
+						alt={t`Queued upload preview`}
+					/>
 				</section>
-				<aside class="grid content-start gap-2">
-					<div class="flex flex-col gap-2">
-						<ModerationControls
-							canModerate={props.canModerate}
-							detail={props.detail}
-							isModerating={props.isModerating}
-							onModerate={props.onModerate}
-							errorMessage={props.moderationErrorMessage}
-						/>
-						<ImageQueueSubscribeButton
-							entryId={props.detail.id}
-							isSubscribed={props.detail.is_subscribed}
-						/>
-						<div class="grid gap-y-2">
-							<InfoField label={t`Submitted by`}>
-								<Link
-									to="/profile/$username/image-queue"
-									params={{ username: props.detail.created_by.name }}
-									class="text-sm"
-								>
-									{props.detail.created_by.name}
-								</Link>
+				<aside class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] items-start gap-4 border-t border-slate-200 pt-5 @4xl:border-t-0 @4xl:pt-0">
+					<div class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-x-8 gap-y-4">
+						<InfoField label={t`Submitted by`}>
+							<Link
+								to="/profile/$username/image-queue"
+								params={{ username: props.detail.created_by.name }}
+								class="text-sm"
+							>
+								{props.detail.created_by.name}
+							</Link>
+						</InfoField>
+						<InfoField label={t`Created`}>
+							<div class="text-primary text-sm">
+								{formatDateTime(props.detail.created_at)}
+							</div>
+						</InfoField>
+						<Show when={props.detail.handled_by ?? props.detail.handled_at}>
+							<InfoField label={t`Handled`}>
+								<Show when={props.detail.handled_by}>
+									{(user) => (
+										<Link
+											to="/profile/$username/image-queue"
+											params={{ username: user().name }}
+											class="text-sm"
+										>
+											{user().name}
+										</Link>
+									)}
+								</Show>
+								<Show when={props.detail.handled_at}>
+									<div class="text-primary text-sm">
+										{formatDateTime(props.detail.handled_at)}
+									</div>
+								</Show>
 							</InfoField>
-							<InfoField label={t`Created`}>
-								<div class="text-primary text-sm">
-									{formatDateTime(props.detail.created_at)}
-								</div>
+						</Show>
+						<Show when={props.detail.reverted_by ?? props.detail.reverted_at}>
+							<InfoField label={t`Reverted`}>
+								<Show when={props.detail.reverted_by}>
+									{(user) => (
+										<Link
+											to="/profile/$username/image-queue"
+											params={{ username: user().name }}
+											class="text-sm"
+										>
+											{user().name}
+										</Link>
+									)}
+								</Show>
+								<Show when={props.detail.reverted_at}>
+									<div class="text-primary text-sm">
+										{formatDateTime(props.detail.reverted_at)}
+									</div>
+								</Show>
 							</InfoField>
-							<Show when={props.detail.handled_by ?? props.detail.handled_at}>
-								<InfoField label={t`Handled`}>
-									<Show when={props.detail.handled_by}>
-										{(user) => (
-											<Link
-												to="/profile/$username/image-queue"
-												params={{ username: user().name }}
-												class="text-sm"
-											>
-												{user().name}
-											</Link>
-										)}
-									</Show>
-									<Show when={props.detail.handled_at}>
-										<div class="text-primary text-sm">
-											{formatDateTime(props.detail.handled_at)}
-										</div>
-									</Show>
-								</InfoField>
-							</Show>
-							<Show when={props.detail.reverted_by ?? props.detail.reverted_at}>
-								<InfoField label={t`Reverted`}>
-									<Show when={props.detail.reverted_by}>
-										{(user) => (
-											<Link
-												to="/profile/$username/image-queue"
-												params={{ username: user().name }}
-												class="text-sm"
-											>
-												{user().name}
-											</Link>
-										)}
-									</Show>
-									<Show when={props.detail.reverted_at}>
-										<div class="text-primary text-sm">
-											{formatDateTime(props.detail.reverted_at)}
-										</div>
-									</Show>
-								</InfoField>
-							</Show>
-						</div>
+						</Show>
 					</div>
+					<ImageQueueActions
+						canModerate={props.canModerate}
+						detail={props.detail}
+						isModerating={props.isModerating}
+						onModerate={props.onModerate}
+						errorMessage={props.moderationErrorMessage}
+						entryId={props.detail.id}
+						isSubscribed={props.detail.is_subscribed}
+					/>
 				</aside>
 			</div>
-			<section class={`${SURFACE_CARD_CLASS} col-span-2 p-4`}>
+			<section class={`${SURFACE_CARD_CLASS} p-4`}>
 				<EntityComments model={props.comments} />
 			</section>
 		</div>
@@ -400,7 +393,7 @@ function ImageQueueNavigation(props: {
 	return (
 		<nav
 			aria-label={t`Image queue navigation`}
-			class="grid grid-cols-2 gap-4 text-xs"
+			class="col-start-2 row-start-1 grid grid-cols-2 gap-1 text-xs @4xl:col-start-3"
 		>
 			<Show
 				when={props.previousId}
@@ -408,7 +401,7 @@ function ImageQueueNavigation(props: {
 					<button
 						type="button"
 						disabled
-						class="inline-flex items-center gap-1 justify-self-start text-tertiary"
+						class="inline-flex min-h-8 items-center gap-1 justify-self-start rounded-sm px-2 text-tertiary"
 					>
 						<span aria-hidden="true">←</span>
 						{t`Previous`}
@@ -422,7 +415,7 @@ function ImageQueueNavigation(props: {
 						rel="prev"
 						aria-label={t`Previous image queue entry`}
 						underline={false}
-						class="inline-flex items-center gap-1 justify-self-start group text-secondary hover:text-primary"
+						class="group inline-flex min-h-8 items-center gap-1 justify-self-start rounded-sm px-2 text-secondary hover:bg-secondary hover:text-primary"
 					>
 						<span aria-hidden="true">←</span>
 						<span class="underline-offset-4 group-hover:underline">
@@ -437,7 +430,7 @@ function ImageQueueNavigation(props: {
 					<button
 						type="button"
 						disabled
-						class="inline-flex items-center gap-1 justify-self-end text-tertiary"
+						class="inline-flex min-h-8 items-center gap-1 justify-self-end rounded-sm px-2 text-tertiary"
 					>
 						{t`Next`}
 						<span aria-hidden="true">→</span>
@@ -451,7 +444,7 @@ function ImageQueueNavigation(props: {
 						rel="next"
 						aria-label={t`Next image queue entry`}
 						underline={false}
-						class="inline-flex items-center gap-1 justify-self-end group text-secondary hover:text-primary"
+						class="group inline-flex min-h-8 items-center gap-1 justify-self-end rounded-sm px-2 text-secondary hover:bg-secondary hover:text-primary"
 					>
 						<span class="underline-offset-4 group-hover:underline">
 							{t`Next`}
@@ -541,8 +534,8 @@ function ComparisonImage(props: {
 }) {
 	const { t } = useLingui()
 	return (
-		<section class="grid gap-2">
-			<header class="flex items-center justify-between gap-3">
+		<section class="grid min-w-0 grid-rows-[auto_1fr]">
+			<header class="flex items-center justify-between gap-3 border-b border-slate-200 bg-secondary px-3 py-2">
 				<h2 class={LABEL_CLASS}>{props.title}</h2>
 				{props.headerRight}
 				<Show when={props.loading}>
@@ -551,7 +544,7 @@ function ComparisonImage(props: {
 			</header>
 
 			<Image.Root>
-				<div class="relative aspect-4/3 overflow-hidden rounded-sm border border-slate-200 bg-secondary">
+				<div class="relative aspect-4/3 max-h-80 overflow-hidden bg-secondary">
 					<Image.Fallback>
 						{(state) => (
 							<div class="absolute inset-0 grid place-items-center text-sm text-tertiary">
@@ -569,7 +562,7 @@ function ComparisonImage(props: {
 					<Image.Img
 						src={props.src}
 						alt={props.alt}
-						class="size-full object-contain"
+						class="size-full object-contain p-3"
 					/>
 				</div>
 			</Image.Root>
@@ -684,7 +677,11 @@ function ConfirmActionButton(props: ConfirmActionButtonProps) {
 					color={props.color}
 					size="Sm"
 					disabled={props.disabled}
-					class="w-full"
+					class={
+						props.color === "Reimu"
+							? "h-7 w-full bg-reimu-700 hover:bg-reimu-800 active:bg-reimu-900"
+							: "h-7 w-full"
+					}
 				>
 					{props.children}
 				</Button>
@@ -699,12 +696,14 @@ function ConfirmActionButton(props: ConfirmActionButtonProps) {
 	)
 }
 
-function ModerationControls(props: {
+function ImageQueueActions(props: {
 	canModerate: boolean
 	detail: ImageQueueDetail
 	isModerating: boolean
 	onModerate: (action: ImageQueueAction) => void
 	errorMessage?: string
+	entryId: number
+	isSubscribed: boolean
 }) {
 	const { t } = useLingui()
 	const status = () => props.detail.status
@@ -733,7 +732,7 @@ function ModerationControls(props: {
 					</div>
 				</Match>
 				<Match when={isPending()}>
-					<div class="grid grid-cols-2 gap-2">
+					<>
 						<ConfirmActionButton
 							title={t`Approve image?`}
 							description={t({
@@ -758,7 +757,7 @@ function ModerationControls(props: {
 						>
 							{t`Reject`}
 						</ConfirmActionButton>
-					</div>
+					</>
 				</Match>
 				<Match when={isApproved()}>
 					<Button
@@ -766,7 +765,7 @@ function ModerationControls(props: {
 						color="Blue"
 						size="Sm"
 						disabled={props.isModerating || !isApproved()}
-						class="w-full"
+						class="h-7 w-full"
 						onClick={() => props.onModerate("Revert")}
 					>
 						{t`Revert`}
@@ -782,6 +781,11 @@ function ModerationControls(props: {
 					{props.errorMessage}
 				</div>
 			</Show>
+
+			<ImageQueueSubscribeButton
+				entryId={props.entryId}
+				isSubscribed={props.isSubscribed}
+			/>
 		</section>
 	)
 }
@@ -826,10 +830,10 @@ function ImageQueueSubscribeButton(props: {
 
 	return (
 		<Button
-			variant="Secondary"
-			color="Reimu"
+			variant="SecondaryV2"
+			color="Gray"
 			size="Sm"
-			class="w-full"
+			class="h-7 w-full"
 			onClick={toggle}
 			disabled={
 				mutation.isPending || userCtx.session.status !== "authenticated"
