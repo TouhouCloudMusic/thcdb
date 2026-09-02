@@ -8,13 +8,11 @@ default:
     @just --list
 
 fmt:
-    pnpm exec prettier --write \
-    --experimental-cli .
+    pnpm exec oxfmt --write .
     just --fmt
 
 fmt-check:
-    pnpm exec prettier --check \
-    --experimental-cli .
+    pnpm exec oxfmt --check .
     just --fmt --check
 
 eslint +FLAGS="":

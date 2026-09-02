@@ -150,7 +150,7 @@
 		"no-unused-vars": "warn",
 		"no-void": "off",
 		"prefer-destructuring": "off",
-		"sort-imports": "off", // We use prettier plugin
+		"sort-imports": "off", // Oxfmt sorts imports
 		"sort-keys": "off",
 		"import/exports-last": "off",
 		"import/group-exports": "off",
