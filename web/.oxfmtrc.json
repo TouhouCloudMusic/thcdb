@@ -1,0 +1,65 @@
+{
+	"$schema": "./node_modules/oxfmt/configuration_schema.json",
+	"semi": false,
+	"singleAttributePerLine": true,
+	"useTabs": true,
+	"experimentalOperatorPosition": "start",
+	"printWidth": 80,
+	"sortPackageJson": false,
+	"ignorePatterns": [
+		".husky",
+		".storybook",
+		"dist",
+		"node_modules",
+		"public",
+		"src/assets",
+		"src/routeTree.gen.ts",
+		"src/style/shadow/shadow_default.css",
+		"src/style/shadow/shadow_oklab.css",
+		"src/locale",
+		"**/*.toml",
+		"*lock.yaml",
+		"**/gen.ts"
+	],
+	"overrides": [
+		{
+			"files": ["*.yaml"],
+			"options": {
+				"tabWidth": 2
+			}
+		}
+	],
+	"sortImports": {
+		"customGroups": [
+			{
+				"groupName": "project",
+				"elementNamePattern": ["~/**", "/**"]
+			},
+			{
+				"groupName": "relative",
+				"elementNamePattern": [".", "..", "./**", "../**"]
+			}
+		],
+		"groups": [
+			[
+				"builtin",
+				"external",
+				"subpath",
+				"side_effect",
+				"side_effect_style",
+				"unknown"
+			],
+			{
+				"newlinesBetween": true
+			},
+			"project",
+			{
+				"newlinesBetween": true
+			},
+			"relative"
+		],
+		"ignoreCase": false,
+		"newlinesBetween": false,
+		"sortSideEffects": true
+	}
+}

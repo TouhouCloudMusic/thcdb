@@ -19,10 +19,10 @@ export type ADTEnum<
 					Record<Exclude<AllKeys, keyof Head>, never>
 				> extends infer Result
 				? // flatten
-						| {
-								[Key in keyof Result]: Result[Key]
-						  }
-						| ADTEnum<Tail, AllKeys>
+					| {
+							[Key in keyof Result]: Result[Key]
+					  }
+					| ADTEnum<Tail, AllKeys>
 				: never
 			: never
 		: never
