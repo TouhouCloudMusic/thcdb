@@ -7,7 +7,7 @@ import { Button } from "../atomic/button"
 
 export type AlertDialogProps = Exclude<Dialog.RootProps, "children"> & {
 	title: string
-	triggerAs: (props: TriggerAsProps) => JSX.Element
+	triggerAs?: (props: TriggerAsProps) => JSX.Element
 	description: string
 	onCancel: () => void
 	onConfirm: () => void
@@ -38,15 +38,15 @@ export function AlertDialog(props: AlertDialogProps) {
 		"hideCancel",
 		"dismissible",
 	])
-	const TriggerRenderer = (triggerProps: Dialog.TriggerRenderProps) =>
-		// @ts-expect-error
-		local.triggerAs(triggerProps)
-
 	return (
 		<Dialog.Root {...root_props}>
-			<Dialog.Trigger
-				as={TriggerRenderer as ComponentProps<typeof Dialog.Trigger>["as"]}
-			/>
+			<Show when={local.triggerAs}>
+				{(triggerAs) => (
+					<Dialog.Trigger
+						as={triggerAs() as ComponentProps<typeof Dialog.Trigger>["as"]}
+					/>
+				)}
+			</Show>
 			<Dialog.Portal>
 				<Dialog.Overlay />
 				<Dialog.Content

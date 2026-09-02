@@ -57,8 +57,8 @@ function ArtistCard(props: { id: number; summary: ArtistSummary }) {
 					</Show>
 				</Image.Root>
 			</div>
-			<div class="flex flex-col">
-				<span class="font-medium text-slate-900 group-hover:text-blue-600">
+			<div class="flex min-w-0 flex-col">
+				<span class="truncate font-medium text-slate-900 group-hover:text-blue-600">
 					{props.summary.name}
 				</span>
 				<span class="text-xs text-slate-500">{props.summary.artist_type}</span>
@@ -89,8 +89,8 @@ function ReleaseCard(props: { id: number; summary: ReleaseSummary }) {
 					</Show>
 				</Image.Root>
 			</div>
-			<div class="flex flex-col">
-				<span class="font-medium text-slate-900 group-hover:text-blue-600">
+			<div class="flex min-w-0 flex-col">
+				<span class="truncate font-medium text-slate-900 group-hover:text-blue-600">
 					{props.summary.title}
 				</span>
 				<Show when={artistNames()}>
@@ -132,8 +132,8 @@ function SongCard(props: { id: number; summary: SongSummary }) {
 					</Show>
 				</Image.Root>
 			</div>
-			<div class="flex flex-col">
-				<span class="font-medium text-slate-900 group-hover:text-blue-600">
+			<div class="flex min-w-0 flex-col">
+				<span class="truncate font-medium text-slate-900 group-hover:text-blue-600">
 					{props.summary.title}
 				</span>
 				<Show when={artistNames()}>
@@ -151,10 +151,10 @@ function TagCard(props: { id: number; summary: TagSummary }) {
 		<Link
 			to="/tag/$id"
 			params={{ id: props.id.toString() }}
-			class="flex items-center gap-4 no-underline hover:underline group"
+			class="block no-underline hover:underline group"
 		>
 			<div class="flex flex-col">
-				<span class="font-medium text-slate-900 group-hover:text-blue-600">
+				<span class="wrap-break-word font-medium text-slate-900 group-hover:text-blue-600">
 					{props.summary.name}
 				</span>
 				<span class="text-xs text-slate-500">{props.summary.tag_type}</span>
@@ -168,10 +168,10 @@ function EventCard(props: { id: number; summary: EventSummary }) {
 		<Link
 			to="/event/$id"
 			params={{ id: props.id.toString() }}
-			class="flex items-center gap-4 no-underline hover:underline group"
+			class="block no-underline hover:underline group"
 		>
 			<div class="flex flex-col">
-				<span class="font-medium text-slate-900 group-hover:text-blue-600">
+				<span class="wrap-break-word font-medium text-slate-900 group-hover:text-blue-600">
 					{props.summary.name}
 				</span>
 				<Show when={props.summary.start_date}>
@@ -191,9 +191,9 @@ function LabelCard(props: { id: number; summary: LabelSummary }) {
 		<Link
 			to="/label/$id"
 			params={{ id: props.id.toString() }}
-			class="flex items-center gap-4 no-underline hover:underline group"
+			class="block no-underline hover:underline group"
 		>
-			<span class="font-medium text-slate-900 group-hover:text-blue-600">
+			<span class="wrap-break-word font-medium text-slate-900 group-hover:text-blue-600">
 				{props.summary.name}
 			</span>
 		</Link>
@@ -306,8 +306,8 @@ export function CollectionItemCard(props: Props) {
 		}
 	}
 	return (
-		<li class="flex flex-col gap-3 rounded-sm border border-slate-300 bg-primary p-4 shadow-xs transition-shadow hover:shadow-md">
-			<div class="flex flex-col gap-3 w-full">
+		<li class="rounded-sm border border-slate-300 bg-primary p-4 shadow-xs transition-shadow hover:shadow-md">
+			<div class="flex flex-col gap-3">
 				<div class="flex items-center gap-3">
 					<span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-tertiary">
 						{props.number}
@@ -352,9 +352,11 @@ export function CollectionItemCard(props: Props) {
 
 					{/* Description + Remove row */}
 					<Show when={props.item.description || props.isEditing}>
-						<div class="mt-3 flex items-start gap-4 border-t border-slate-100 pt-3">
+						<div class="mt-3 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-slate-100 pt-3">
 							<Show when={props.item.description}>
-								<p class="text-sm text-secondary">{props.item.description}</p>
+								<p class="min-w-0 flex-1 basis-64 wrap-break-word text-sm text-secondary">
+									{props.item.description}
+								</p>
 							</Show>
 
 							<Show when={props.isEditing}>

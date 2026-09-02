@@ -20,7 +20,7 @@ export function PageLayout(props: ParentProps<ComponentProps<"div">>) {
 	})
 
 	return (
-		<div class="size-full bg-slate-100">
+		<div class="@container size-full bg-slate-100">
 			<div {...final_props}></div>
 		</div>
 	)
