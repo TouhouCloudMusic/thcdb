@@ -1,6 +1,8 @@
 import { useLingui } from "@lingui/solid/macro"
+import { DotsHorizontalIcon } from "@thc/icons/radix"
 import { createSignal, For, Match, Show, Switch } from "solid-js"
 
+import { DropdownMenu } from "~/component/atomic"
 import { Link } from "~/component/atomic/Link"
 import { Button } from "~/component/atomic/button"
 import { AlertDialog } from "~/component/dialog/AlertDialog"
@@ -70,42 +72,54 @@ type OwnerCollectionActionsProps = {
 
 function OwnerCollectionActions(props: OwnerCollectionActionsProps) {
 	const { t } = useLingui()
+	const [deleteDialogOpen, setDeleteDialogOpen] = createSignal(false)
+	const closeDeleteDialog = () => setDeleteDialogOpen(false)
 
 	return (
-		<div class="flex items-center gap-2">
-			<Button
-				variant="SecondaryV2"
-				size="Sm"
-				onClick={props.onEditCollection}
+		<>
+			<DropdownMenu.Root
+				placement="bottom-end"
+				gutter={6}
 			>
-				{t`Edit Collection`}
-			</Button>
-			<Button
-				variant="SecondaryV2"
-				size="Sm"
-				disabled={props.owner.isDeletingItem || props.owner.isReorderingItems}
-				onClick={props.onToggleEditingItems}
-			>
-				{props.isEditingItems ? t`Done` : t`Edit items`}
-			</Button>
+				<DropdownMenu.Trigger aria-label={t`Collection actions`}>
+					<DropdownMenu.Icon>
+						<DotsHorizontalIcon class="size-4" />
+					</DropdownMenu.Icon>
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Portal>
+					<DropdownMenu.Content>
+						<DropdownMenu.Item onSelect={props.onEditCollection}>
+							{t`Edit Collection`}
+						</DropdownMenu.Item>
+						<DropdownMenu.Item
+							disabled={
+								props.owner.isDeletingItem || props.owner.isReorderingItems
+							}
+							onSelect={props.onToggleEditingItems}
+						>
+							{props.isEditingItems ? t`Done` : t`Edit items`}
+						</DropdownMenu.Item>
+						<DropdownMenu.Separator />
+						<DropdownMenu.Item
+							class="text-red-700 data-[highlighted]:bg-red-50"
+							disabled={props.owner.isDeletingCollection}
+							onSelect={() => setDeleteDialogOpen(true)}
+						>
+							{t`Delete`}
+						</DropdownMenu.Item>
+					</DropdownMenu.Content>
+				</DropdownMenu.Portal>
+			</DropdownMenu.Root>
 			<AlertDialog
+				open={deleteDialogOpen()}
+				onOpenChange={setDeleteDialogOpen}
 				title={t`Delete Collection`}
 				description={t`Are you sure you want to delete this collection? This action cannot be undone.`}
 				confirmText={t`Delete`}
-				onCancel={() => undefined}
+				onCancel={closeDeleteDialog}
 				onConfirm={props.controller.deleteCollection}
-				triggerAs={(triggerProps) => (
-					<Button
-						{...triggerProps}
-						variant="SecondaryV2"
-						size="Sm"
-						disabled={props.owner.isDeletingCollection}
-					>
-						{t`Delete`}
-					</Button>
-				)}
 			/>
-		</div>
+		</>
 	)
 }
 
@@ -122,16 +136,14 @@ function VisitorCollectionActions(props: VisitorCollectionActionsProps) {
 	}
 
 	return (
-		<div class="flex items-center gap-2">
-			<Button
-				variant="SecondaryV2"
-				size="Sm"
-				disabled={props.visitor.isTogglingFollow}
-				onClick={props.controller.toggleFollow}
-			>
-				{followButtonText(props.visitor)}
-			</Button>
-		</div>
+		<Button
+			variant="SecondaryV2"
+			size="Sm"
+			disabled={props.visitor.isTogglingFollow}
+			onClick={props.controller.toggleFollow}
+		>
+			{followButtonText(props.visitor)}
+		</Button>
 	)
 }
 
@@ -173,8 +185,8 @@ function CollectionMetadata(props: { collection: UserCollection }) {
 	const { t } = useLingui()
 
 	return (
-		<div class="flex items-center text-sm text-tertiary">
-			<span>
+		<div class="flex flex-wrap items-center gap-y-1 text-sm text-tertiary">
+			<span class="min-w-0 wrap-break-word">
 				{t`Created by`}{" "}
 				<Link
 					to="/profile/$username"
@@ -223,7 +235,7 @@ function CollectionDetailHeader(props: CollectionDetailHeaderProps) {
 	return (
 		<header class="flex flex-col gap-4 border-b border-slate-300 pb-6">
 			<div class="flex items-start justify-between gap-4">
-				<h1 class="text-3xl font-light tracking-tight text-primary">
+				<h1 class="min-w-0 wrap-break-word text-3xl font-light tracking-tight text-primary">
 					{props.model.collection.name}
 				</h1>
 				<CollectionHeaderActions
@@ -238,7 +250,7 @@ function CollectionDetailHeader(props: CollectionDetailHeaderProps) {
 			<CollectionMetadata collection={props.model.collection} />
 
 			<Show when={props.model.collection.description}>
-				<p class="mt-2 whitespace-pre-wrap text-secondary">
+				<p class="mt-2 whitespace-pre-wrap wrap-break-word text-secondary">
 					{props.model.collection.description}
 				</p>
 			</Show>
@@ -428,7 +440,7 @@ export function CollectionDetailPage(props: Props) {
 	const [isEditingItems, setIsEditingItems] = createSignal(false)
 
 	return (
-		<div class="flex w-full flex-col gap-6">
+		<div class="flex flex-col gap-6">
 			<CollectionDetailHeader
 				model={props.model}
 				controller={props.controller}
