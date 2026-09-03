@@ -39,7 +39,7 @@
 		"marked": "^17.0.6",
 		"marked-footnote": "^1.4.0",
 		"marked-shiki": "^1.2.1",
-		"openapi-fetch": "^0.15.2",
+		"openapi-fetch": "^0.17.0",
 		"shiki": "^3.21.0",
 		"solid-cropper": "workspace:*",
 		"solid-js": "^1.9.12",
