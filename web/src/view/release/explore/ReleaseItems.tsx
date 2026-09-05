@@ -84,12 +84,12 @@ function ReleaseMeta(props: { release: Release }) {
 	)
 }
 
-type ReleaseWallItemProps = {
+type ReleaseGridItemProps = {
 	release: Release
 	locale: string
 }
 
-export function ReleaseWallItem(props: ReleaseWallItemProps) {
+export function ReleaseGridItem(props: ReleaseGridItemProps) {
 	const { t } = useLingui()
 	const displayTitle = () =>
 		getLocalizedTitle(props.release.localized_titles, props.locale)

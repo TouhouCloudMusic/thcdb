@@ -8,7 +8,6 @@ import { Suspense } from "solid-js"
 
 import { ExplorePageLayout } from "~/component/feature/entity_explore"
 import { useI18N } from "~/state/i18n"
-import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 import { ReleaseExploreFilterBar } from "~/view/release/explore/filter"
 import type { ReleaseExploreFilterStore } from "~/view/release/explore/filter"
 import {
@@ -129,7 +128,6 @@ function createReleaseExploreStores(
 
 export function ReleaseExplore() {
 	const { t } = useLingui()
-	const scrollDirection = useScrollDirection()
 	const i18n = useI18N()
 
 	const search = route.useSearch()
@@ -176,10 +174,7 @@ export function ReleaseExplore() {
 			title={t`Explore Releases`}
 			action={{ to: "/release/new", label: t`Create release` }}
 		>
-			<ReleaseExploreFilterBar
-				scrollDirection={scrollDirection}
-				store={filterStore}
-			/>
+			<ReleaseExploreFilterBar store={filterStore} />
 
 			{/** TODO: Move skeleton to each type of view */}
 			<Suspense

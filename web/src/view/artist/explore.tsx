@@ -7,7 +7,6 @@ import { Either } from "effect"
 
 import { ExplorePageLayout } from "~/component/feature/entity_explore"
 import { ARTIST_TYPES } from "~/domain/artist/constants"
-import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 import {
 	ArtistExploreFilterBar,
 	ArtistExploreList,
@@ -64,7 +63,6 @@ const createArtistExploreQueryOptions = (
 export const ArtistExplore = () => {
 	const { t } = useLingui()
 	const search = route.useSearch()
-	const scrollDirection = useScrollDirection()
 	const navigate = useNavigate({ from: "/artist/explore" })
 
 	const applyFilterPatch = (patch: Partial<ArtistExploreSearch>) => {
@@ -94,7 +92,6 @@ export const ArtistExplore = () => {
 			action={{ to: "/artist/new", label: t`Create artist` }}
 		>
 			<ArtistExploreFilterBar
-				scrollDirection={scrollDirection}
 				artistTypeValue={artistTypeValue()}
 				onArtistTypeChange={(value) => {
 					applyFilterPatch({
