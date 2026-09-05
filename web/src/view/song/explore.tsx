@@ -12,13 +12,12 @@ import { Select } from "~/component/atomic/form/select"
 import {
 	CorrectionSortFieldSelect,
 	EmptyExplorePlaceholder,
+	ExploreFilterBar,
+	ExploreFilterField,
 	ExplorePageLayout,
 	OrderBySelect,
-	StickyFilterBar,
 } from "~/component/feature/entity_explore"
 import { useI18N } from "~/state/i18n"
-import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
-import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 import { SongItem } from "~/view/song/SongItem"
 
 const route = getRouteApi("/song/explore")
@@ -36,7 +35,6 @@ const SongItemSkeleton: Component = () => (
 )
 
 type SongExploreFilterBarProps = {
-	scrollDirection: () => ScrollDirection
 	languageId: string
 	sortBy: "created_at" | "updated_at" | undefined
 	orderBy: "asc" | "desc" | undefined
@@ -61,46 +59,43 @@ function SongExploreFilterBar(props: SongExploreFilterBarProps) {
 	}
 
 	return (
-		<StickyFilterBar scrollDirection={props.scrollDirection}>
-			<div class="flex items-center gap-4">
-				<div class="flex items-center gap-2">
-					<span class="text-sm text-slate-500">{t`Language`}</span>
-					<Select.Root<string>
-						options={languageOptions()}
-						value={props.languageId}
-						onChange={(value) => props.onLanguageChange(value ?? "")}
-						placeholder={t`All`}
-						itemComponent={(optionProps) => (
-							<Select.Item item={optionProps.item}>
-								{languageLabel(optionProps.item.rawValue)}
-							</Select.Item>
-						)}
-					>
-						<Select.Trigger>
-							<Select.Value<string>>
-								{(state) => languageLabel(state.selectedOption())}
-							</Select.Value>
-							<Select.Icon />
-						</Select.Trigger>
-						<Select.Portal>
-							<Select.Content>
-								<Select.Listbox />
-							</Select.Content>
-						</Select.Portal>
-					</Select.Root>
-				</div>
+		<ExploreFilterBar>
+			<ExploreFilterField label={t`Language`}>
+				<Select.Root<string>
+					options={languageOptions()}
+					value={props.languageId}
+					onChange={(value) => props.onLanguageChange(value ?? "")}
+					placeholder={t`All`}
+					itemComponent={(optionProps) => (
+						<Select.Item item={optionProps.item}>
+							{languageLabel(optionProps.item.rawValue)}
+						</Select.Item>
+					)}
+				>
+					<Select.Trigger class="h-10 w-full">
+						<Select.Value<string>>
+							{(state) => languageLabel(state.selectedOption())}
+						</Select.Value>
+						<Select.Icon />
+					</Select.Trigger>
+					<Select.Portal>
+						<Select.Content>
+							<Select.Listbox />
+						</Select.Content>
+					</Select.Portal>
+				</Select.Root>
+			</ExploreFilterField>
 
-				<CorrectionSortFieldSelect
-					value={props.sortBy}
-					onChange={props.onSortByChange}
-				/>
+			<CorrectionSortFieldSelect
+				value={props.sortBy}
+				onChange={props.onSortByChange}
+			/>
 
-				<OrderBySelect
-					value={props.orderBy}
-					onChange={props.onOrderByChange}
-				/>
-			</div>
-		</StickyFilterBar>
+			<OrderBySelect
+				value={props.orderBy}
+				onChange={props.onOrderByChange}
+			/>
+		</ExploreFilterBar>
 	)
 }
 
@@ -161,7 +156,6 @@ function SongExploreList(props: SongExploreListProps) {
 export const SongExplore = () => {
 	const { t } = useLingui()
 	const search = route.useSearch()
-	const scrollDirection = useScrollDirection()
 
 	const i18n = useI18N()
 
@@ -247,7 +241,6 @@ export const SongExplore = () => {
 			action={{ to: "/song/new", label: t`Create song` }}
 		>
 			<SongExploreFilterBar
-				scrollDirection={scrollDirection}
 				languageId={search().language_id?.[0]?.toString() ?? ""}
 				sortBy={search().sort_by}
 				orderBy={search().order_by}
