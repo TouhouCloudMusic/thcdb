@@ -15,7 +15,7 @@ const exploreSearch = v.object({
 		"release_date",
 	),
 	order_by: v.fallback(v.optional(v.picklist(["asc", "desc"])), undefined),
-	display_type: v.fallback(v.picklist(["wall", "list"]), "wall"),
+	display_type: v.fallback(v.picklist(["grid", "list"]), "grid"),
 })
 
 export const Route = createFileRoute("/release/explore")({

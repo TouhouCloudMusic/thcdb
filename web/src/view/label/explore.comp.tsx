@@ -8,11 +8,10 @@ import { Link } from "~/component/atomic"
 import {
 	CorrectionSortFieldSelect,
 	EmptyExplorePlaceholder,
+	ExploreFilterBar,
 	OrderBySelect,
-	StickyFilterBar,
 } from "~/component/feature/entity_explore"
 import { DateWithPrecision } from "~/domain/shared"
-import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 
 const getLabelAvatarText = (label: Label) => {
 	const value = label.name.trim()
@@ -109,7 +108,6 @@ function LabelStatusText(props: { label: Label }) {
 }
 
 type LabelExploreFilterBarProps = {
-	scrollDirection: () => ScrollDirection
 	sortBy: "created_at" | "updated_at" | undefined
 	onSortByChange: (value: "created_at" | "updated_at") => void
 	orderBy: "asc" | "desc" | undefined
@@ -120,19 +118,17 @@ export const LabelExploreFilterBar: Component<LabelExploreFilterBarProps> = (
 	props,
 ) => {
 	return (
-		<StickyFilterBar scrollDirection={props.scrollDirection}>
-			<div class="flex flex-wrap items-center gap-4">
-				<CorrectionSortFieldSelect
-					value={props.sortBy}
-					onChange={props.onSortByChange}
-				/>
+		<ExploreFilterBar>
+			<CorrectionSortFieldSelect
+				value={props.sortBy}
+				onChange={props.onSortByChange}
+			/>
 
-				<OrderBySelect
-					value={props.orderBy}
-					onChange={props.onOrderByChange}
-				/>
-			</div>
-		</StickyFilterBar>
+			<OrderBySelect
+				value={props.orderBy}
+				onChange={props.onOrderByChange}
+			/>
+		</ExploreFilterBar>
 	)
 }
 

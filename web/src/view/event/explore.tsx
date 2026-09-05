@@ -11,12 +11,11 @@ import { Pagination } from "~/component/Pagination"
 import { Input } from "~/component/atomic/Input"
 import {
 	EmptyExplorePlaceholder,
+	ExploreFilterBar,
+	ExploreFilterField,
 	ExplorePageLayout,
 	OrderBySelect,
-	StickyFilterBar,
 } from "~/component/feature/entity_explore"
-import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
-import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 import { EventItem } from "~/view/event/EventItem"
 
 const route = getRouteApi("/event/explore")
@@ -33,7 +32,6 @@ const EventItemSkeleton: Component = () => (
 )
 
 type EventExploreFilterBarProps = {
-	scrollDirection: () => ScrollDirection
 	startDateFrom: string | undefined
 	startDateTo: string | undefined
 	orderBy: "asc" | "desc" | undefined
@@ -47,36 +45,34 @@ type EventExploreFilterBarProps = {
 function EventExploreFilterBar(props: EventExploreFilterBarProps) {
 	const { t } = useLingui()
 	return (
-		<StickyFilterBar scrollDirection={props.scrollDirection}>
-			<div class="flex flex-wrap items-center gap-4">
-				<div class="flex items-center gap-2">
-					<span class="text-sm text-slate-500">{t`From`}</span>
-					<Input
-						type="date"
-						value={props.startDateFrom ?? ""}
-						onChange={(e) =>
-							props.onChangeStartDate("start_date_from", e.currentTarget.value)
-						}
-					/>
-				</div>
-
-				<div class="flex items-center gap-2">
-					<span class="text-sm text-slate-500">{t`To`}</span>
-					<Input
-						type="date"
-						value={props.startDateTo ?? ""}
-						onChange={(e) =>
-							props.onChangeStartDate("start_date_to", e.currentTarget.value)
-						}
-					/>
-				</div>
-
-				<OrderBySelect
-					value={props.orderBy}
-					onChange={props.onChangeOrderBy}
+		<ExploreFilterBar>
+			<ExploreFilterField label={t`From`}>
+				<Input
+					class="h-10 w-full"
+					type="date"
+					value={props.startDateFrom ?? ""}
+					onChange={(e) =>
+						props.onChangeStartDate("start_date_from", e.currentTarget.value)
+					}
 				/>
-			</div>
-		</StickyFilterBar>
+			</ExploreFilterField>
+
+			<ExploreFilterField label={t`To`}>
+				<Input
+					class="h-10 w-full"
+					type="date"
+					value={props.startDateTo ?? ""}
+					onChange={(e) =>
+						props.onChangeStartDate("start_date_to", e.currentTarget.value)
+					}
+				/>
+			</ExploreFilterField>
+
+			<OrderBySelect
+				value={props.orderBy}
+				onChange={props.onChangeOrderBy}
+			/>
+		</ExploreFilterBar>
 	)
 }
 
@@ -129,7 +125,6 @@ function EventExploreList(props: EventExploreListProps) {
 export const EventExplore = () => {
 	const { t } = useLingui()
 	const search = route.useSearch()
-	const scrollDirection = useScrollDirection()
 
 	const navigate = useNavigate({ from: "/event/explore" })
 
@@ -207,7 +202,6 @@ export const EventExplore = () => {
 			action={{ to: "/event/new", label: t`Create event` }}
 		>
 			<EventExploreFilterBar
-				scrollDirection={scrollDirection}
 				startDateFrom={search().start_date_from}
 				startDateTo={search().start_date_to}
 				orderBy={search().order_by}

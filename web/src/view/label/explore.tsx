@@ -5,7 +5,6 @@ import { LabelApi } from "@thc/api"
 import { Either } from "effect"
 
 import { ExplorePageLayout } from "~/component/feature/entity_explore"
-import { useScrollDirection } from "~/utils/solid/useScrollDirection"
 import {
 	LabelExploreFilterBar,
 	LabelExploreList,
@@ -49,7 +48,6 @@ const createLabelExploreQueryOptions = (search: () => LabelExploreSearch) => ({
 export const LabelExplore = () => {
 	const { t } = useLingui()
 	const search = route.useSearch()
-	const scrollDirection = useScrollDirection()
 
 	const navigate = useNavigate({ from: "/label/explore" })
 
@@ -78,7 +76,6 @@ export const LabelExplore = () => {
 			action={{ to: "/label/new", label: t`Create label` }}
 		>
 			<LabelExploreFilterBar
-				scrollDirection={scrollDirection}
 				sortBy={search().sort_by}
 				onSortByChange={(value) => applyFilterPatch({ sort_by: value })}
 				orderBy={search().order_by}

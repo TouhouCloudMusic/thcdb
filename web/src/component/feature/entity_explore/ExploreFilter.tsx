@@ -1,4 +1,5 @@
 import { Select } from "~/component/atomic/form/select"
+import { ExploreFilterField } from "~/component/feature/entity_explore/ExploreFilterField"
 
 type ExploreFilterOption<T extends string> = {
 	value: T
@@ -9,7 +10,6 @@ type ExploreFilterProps<T extends string> = {
 	label: string
 	value: T | undefined
 	defaultValue: T
-	triggerClass?: string
 	options: ExploreFilterOption<T>[]
 	onChange: (value: T) => void
 }
@@ -28,8 +28,7 @@ export function ExploreFilter<T extends string>(props: ExploreFilterProps<T>) {
 	}
 
 	return (
-		<div class="flex items-center gap-2">
-			<span class="text-sm text-tertiary">{props.label}</span>
+		<ExploreFilterField label={props.label}>
 			<Select.Root
 				options={props.options}
 				optionValue="value"
@@ -45,7 +44,7 @@ export function ExploreFilter<T extends string>(props: ExploreFilterProps<T>) {
 					</Select.Item>
 				)}
 			>
-				<Select.Trigger class={props.triggerClass}>
+				<Select.Trigger class="h-10 w-full">
 					<Select.Value<ExploreFilterOption<T>>>
 						{() => selectedOption()?.label ?? ""}
 					</Select.Value>
@@ -57,6 +56,6 @@ export function ExploreFilter<T extends string>(props: ExploreFilterProps<T>) {
 					</Select.Content>
 				</Select.Portal>
 			</Select.Root>
-		</div>
+		</ExploreFilterField>
 	)
 }
