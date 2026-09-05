@@ -5,8 +5,8 @@ import { createMockRelease } from "~/mock/release"
 import { ENGLISH_LANGUAGE } from "~/storybook/fixtures"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import {
+	ReleaseGridItem,
 	ReleaseItem,
-	ReleaseWallItem,
 } from "~/view/release/explore/ReleaseItems"
 
 const EXPLORE_PAGE_PADDING_CLASS = "px-8"
@@ -53,7 +53,7 @@ const LIST_RELEASE = createMockRelease(31, {
 	],
 })
 
-const WALL_RELEASE = createMockRelease(32, {
+const GRID_RELEASE = createMockRelease(32, {
 	title: "月面シフト",
 	localized_titles: [
 		{
@@ -88,10 +88,10 @@ function ReleaseListStoryRoot(props: StoryRootProps) {
 	)
 }
 
-function ReleaseWallStoryRoot(props: StoryRootProps) {
+function ReleaseGridStoryRoot(props: StoryRootProps) {
 	return (
 		<div class={`w-52 bg-primary py-8 ${EXPLORE_PAGE_PADDING_CLASS}`}>
-			<ReleaseWallItem
+			<ReleaseGridItem
 				release={props.release}
 				locale={STORY_LOCALE}
 			/>
@@ -134,9 +134,9 @@ export const List: Story = {
 	render: ReleaseListStoryRoot,
 }
 
-export const Wall: Story = {
+export const Grid: Story = {
 	args: {
-		release: WALL_RELEASE,
+		release: GRID_RELEASE,
 	},
-	render: ReleaseWallStoryRoot,
+	render: ReleaseGridStoryRoot,
 }

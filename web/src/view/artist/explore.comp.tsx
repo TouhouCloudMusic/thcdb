@@ -9,14 +9,14 @@ import { Select } from "~/component/atomic/form/select"
 import {
 	CorrectionSortFieldSelect,
 	EmptyExplorePlaceholder,
+	ExploreFilterBar,
+	ExploreFilterField,
 	OrderBySelect,
-	StickyFilterBar,
 } from "~/component/feature/entity_explore"
 import { ARTIST_TYPES } from "~/domain/artist/constants"
 import { DateWithPrecision } from "~/domain/shared"
 import { useI18N } from "~/state/i18n"
 import { imgUrl } from "~/utils/adapter/static_file"
-import type { ScrollDirection } from "~/utils/solid/useScrollDirection"
 
 const getArtistAvatarText = (artist: Artist) => {
 	const value = artist.name.trim()
@@ -161,7 +161,6 @@ function ArtistTypeLabel(props: { value: "" | ArtistType }) {
 }
 
 type ArtistExploreFilterBarProps = {
-	scrollDirection: () => ScrollDirection
 	artistTypeValue: "" | ArtistType
 	onArtistTypeChange: (value: "" | ArtistType) => void
 	sortBy: "created_at" | "updated_at" | undefined
@@ -174,46 +173,43 @@ export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 	const { t } = useLingui()
 
 	return (
-		<StickyFilterBar scrollDirection={props.scrollDirection}>
-			<div class="flex flex-wrap items-center gap-4">
-				<div class="flex items-center gap-2">
-					<span class="text-sm text-slate-500">{t`Type`}</span>
-					<Select.Root<"" | ArtistType>
-						options={["", ...ARTIST_TYPES]}
-						value={props.artistTypeValue}
-						onChange={(value) => props.onArtistTypeChange(value ?? "")}
-						placeholder={t`All`}
-						itemComponent={(optionProps) => (
-							<Select.Item item={optionProps.item}>
-								<ArtistTypeLabel value={optionProps.item.rawValue} />
-							</Select.Item>
-						)}
-					>
-						<Select.Trigger>
-							<Select.Value<"" | ArtistType>>
-								{(state) => <ArtistTypeLabel value={state.selectedOption()} />}
-							</Select.Value>
-							<Select.Icon />
-						</Select.Trigger>
-						<Select.Portal>
-							<Select.Content>
-								<Select.Listbox />
-							</Select.Content>
-						</Select.Portal>
-					</Select.Root>
-				</div>
+		<ExploreFilterBar>
+			<ExploreFilterField label={t`Type`}>
+				<Select.Root<"" | ArtistType>
+					options={["", ...ARTIST_TYPES]}
+					value={props.artistTypeValue}
+					onChange={(value) => props.onArtistTypeChange(value ?? "")}
+					placeholder={t`All`}
+					itemComponent={(optionProps) => (
+						<Select.Item item={optionProps.item}>
+							<ArtistTypeLabel value={optionProps.item.rawValue} />
+						</Select.Item>
+					)}
+				>
+					<Select.Trigger class="h-10 w-full">
+						<Select.Value<"" | ArtistType>>
+							{(state) => <ArtistTypeLabel value={state.selectedOption()} />}
+						</Select.Value>
+						<Select.Icon />
+					</Select.Trigger>
+					<Select.Portal>
+						<Select.Content>
+							<Select.Listbox />
+						</Select.Content>
+					</Select.Portal>
+				</Select.Root>
+			</ExploreFilterField>
 
-				<CorrectionSortFieldSelect
-					value={props.sortBy}
-					onChange={props.onSortByChange}
-				/>
+			<CorrectionSortFieldSelect
+				value={props.sortBy}
+				onChange={props.onSortByChange}
+			/>
 
-				<OrderBySelect
-					value={props.orderBy}
-					onChange={props.onOrderByChange}
-				/>
-			</div>
-		</StickyFilterBar>
+			<OrderBySelect
+				value={props.orderBy}
+				onChange={props.onOrderByChange}
+			/>
+		</ExploreFilterBar>
 	)
 }
 

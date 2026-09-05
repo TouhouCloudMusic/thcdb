@@ -4,14 +4,13 @@ import { For, Match, Show, Switch } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
 import { EmptyExplorePlaceholder } from "~/component/feature/entity_explore"
+import type { ViewMode } from "~/component/feature/entity_explore"
 import {
+	ReleaseGridItem,
 	ReleaseItem,
-	ReleaseWallItem,
 } from "~/view/release/explore/ReleaseItems"
 
-export type DisplayType = "wall" | "list"
-
-const WALL_CONTAINER_CLASS =
+const GRID_CONTAINER_CLASS =
 	"grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5"
 
 function ReleaseItemSkeleton() {
@@ -28,7 +27,7 @@ function ReleaseItemSkeleton() {
 	)
 }
 
-function ReleaseWallItemSkeleton() {
+function ReleaseGridItemSkeleton() {
 	return (
 		<div class="animate-pulse">
 			<div class="aspect-square w-full rounded-md border border-slate-200 bg-slate-100"></div>
@@ -40,7 +39,7 @@ function ReleaseWallItemSkeleton() {
 
 export type ReleaseExploreListSkeletonProps = {
 	limit: number
-	displayType: DisplayType
+	displayType: ViewMode
 }
 
 export function ReleaseExploreListSkeleton(
@@ -55,10 +54,10 @@ export function ReleaseExploreListSkeleton(
 					</For>
 				</div>
 			</Match>
-			<Match when={props.displayType === "wall"}>
-				<div class={WALL_CONTAINER_CLASS}>
+			<Match when={props.displayType === "grid"}>
+				<div class={GRID_CONTAINER_CLASS}>
 					<For each={Array.from({ length: props.limit })}>
-						{() => <ReleaseWallItemSkeleton />}
+						{() => <ReleaseGridItemSkeleton />}
 					</For>
 				</div>
 			</Match>
@@ -72,7 +71,7 @@ export type ReleaseExploreListStore = {
 	isLoading: boolean
 	limit: number
 	page: number
-	displayType: DisplayType
+	displayType: ViewMode
 	totalPages: number
 	setPage: (page: number) => void
 }
@@ -105,11 +104,11 @@ export function ReleaseExploreList(props: ReleaseExploreListProps) {
 						</For>
 					</div>
 				</Match>
-				<Match when={props.store.displayType === "wall"}>
-					<div class={WALL_CONTAINER_CLASS}>
+				<Match when={props.store.displayType === "grid"}>
+					<div class={GRID_CONTAINER_CLASS}>
 						<For each={props.store.releases}>
 							{(release) => (
-								<ReleaseWallItem
+								<ReleaseGridItem
 									release={release}
 									locale={props.store.locale}
 								/>

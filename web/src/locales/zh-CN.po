@@ -960,6 +960,10 @@ msgstr "创始人"
 msgid "From"
 msgstr "从"
 
+#: src/component/feature/entity_explore/GridListViewPicker.tsx
+msgid "Grid view"
+msgstr "网格视图"
+
 #: src/view/artist/explore.comp.tsx
 msgid "Group"
 msgstr "团体"
@@ -1114,6 +1118,10 @@ msgstr "请假年份不能与加入年份相同"
 #: src/view/artist/profile/comp/ArtistInfo.tsx
 msgid "Links"
 msgstr "链接"
+
+#: src/component/feature/entity_explore/GridListViewPicker.tsx
+msgid "List view"
+msgstr "列表视图"
 
 #: src/view/collection/CollectionLoadMore.tsx
 #: src/view/comment/CommentThread.tsx
@@ -2418,7 +2426,7 @@ msgstr "验证邮箱"
 msgid "Verify Email"
 msgstr "验证邮箱"
 
-#: src/view/release/explore/filter.tsx
+#: src/component/feature/entity_explore/GridListViewPicker.tsx
 msgid "View"
 msgstr "查看"
 
