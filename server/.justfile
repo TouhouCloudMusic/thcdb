@@ -1,12 +1,12 @@
 set windows-shell := ["sh.exe", "-c"]
-set dotenv-load := true
-set positional-arguments := true
+set dotenv-load
+set positional-arguments
 
 mod test-env '.just/test-env.just'
 
 fmt:
     taplo fmt
-    cargo fmt
+    cargo fmt --all
 
 fix:
     cargo fix          --workspace --allow-dirty --allow-staged
@@ -14,7 +14,7 @@ fix:
 
 check:
     taplo fmt --check
-    cargo fmt --check
+    cargo fmt --all -- --check
     cargo clippy --workspace
     cargo test --workspace
 

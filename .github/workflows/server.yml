@@ -51,16 +51,16 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('server/Cargo.lock') }}
 
       - name: Check format
-        run: cargo fmt --check
+        run: cargo fmt --all -- --check
 
       - name: Clippy
-        run: cargo clippy --quiet
+        run: cargo clippy --workspace --quiet
 
       - name: Build test
-        run: cargo test --no-run
+        run: cargo test --workspace --no-run
 
       - name: Run test
-        run: cargo test --quiet
+        run: cargo test --workspace --quiet
 
   integration-test:
     name: Integration Test
@@ -113,4 +113,4 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('server/Cargo.lock') }}
 
       - name: Run integration test
-        run: cargo test --quiet --features integration-test
+        run: cargo test --workspace --quiet --features integration-test
