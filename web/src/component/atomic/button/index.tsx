@@ -221,7 +221,7 @@ const SecondaryColor: Record<AppColor, string> = {
 		// @tw
 		`
 		bg-primary
-		ring-2 ring-inset ring-slate-200
+		shadow-none
 		text-slate-700	hover:bg-slate-200 active:bg-slate-300 disabled:bg-slate-400
 		dark:hover:bg-slate-100/90 dark:active:bg-slate-100/80
 		focus-visible:outline-slate-500

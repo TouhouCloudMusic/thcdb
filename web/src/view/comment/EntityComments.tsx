@@ -27,13 +27,7 @@ export function EntityComments(props: EntityCommentsProps) {
 					currentUser={userCtx.profile}
 					signedOutFallback={
 						<div class="rounded bg-slate-50 p-4 text-center text-sm text-tertiary">
-							<Link
-								to="/auth"
-								search={{ type: "sign_in" }}
-							>
-								{t`Sign in`}
-							</Link>{" "}
-							{t`to comment`}
+							<Link to="/auth/sign-in">{t`Sign in`}</Link> {t`to comment`}
 						</div>
 					}
 				/>

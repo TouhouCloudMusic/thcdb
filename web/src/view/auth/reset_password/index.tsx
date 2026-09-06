@@ -1,491 +1,46 @@
-import {
-	Field,
-	Form,
-	createForm,
-	getInput,
-	setErrors,
-	setInput,
-} from "@formisch/solid"
+import { Field, Form, createForm } from "@formisch/solid"
 import { useLingui } from "@lingui/solid/macro"
-import { Link, Navigate, useNavigate } from "@tanstack/solid-router"
-import type { JSX } from "solid-js"
-import {
-	createSignal,
-	Match,
-	onCleanup,
-	onMount,
-	Show,
-	Switch,
-	untrack,
-} from "solid-js"
+import { Navigate, useNavigate } from "@tanstack/solid-router"
+import { onCleanup, onMount } from "solid-js"
 import type * as v from "valibot"
-import {
-	email as emailSchema,
-	maxLength,
-	minLength,
-	pipe,
-	regex,
-	safeParse,
-	string,
-} from "valibot"
 
 import { Button } from "~/component/atomic/button"
 import { FormComp } from "~/component/atomic/form"
-import { SessionLoading } from "~/component/route"
-import {
-	ResetPassword as ResetPasswordSchema,
-	VerifyResetCode as VerifyResetCodeSchema,
-} from "~/domain/auth/schema"
-import { useCurrentUser } from "~/state/user"
+import { ResetPassword as ResetPasswordSchema } from "~/domain/auth/schema"
 
-import { AuthLeftPanel } from "../component/AuthLeftPanel"
-import { EmailField } from "../component/EmailField"
 import { PasswordField } from "../component/PasswordField"
-import { VerificationCodeField } from "../component/VerificationCodeField"
 import {
-	requestForgotPassword,
-	requestResetPassword,
-	requestVerifyResetCode,
-} from "./request"
+	AUTH_DESCRIPTION_CLASS,
+	AUTH_HEADER_CLASS,
+	AUTH_TITLE_CLASS,
+} from "../styles"
+import { requestResetPassword } from "./request"
 import { resetPasswordByKey } from "./reset_password_by_key"
-import { sendResetCode } from "./send_reset_code"
 import {
-	clearResetPasswordEmail,
-	clearResetPasswordSuccess,
-	getResetPasswordEmail,
 	clearResetPasswordSession,
+	clearResetPasswordSuccess,
 	getResetPasswordSession,
-	hasResetPasswordSuccess,
+	markResetPasswordSessionInvalid,
 	markResetPasswordSuccess,
-	saveResetPasswordEmail,
-	saveResetPasswordSession,
 } from "./session"
 import { createResetPasswordUiStore } from "./store"
-import { verifyResetCode } from "./verify_reset_code"
 
-type ResetPasswordStep = "reset" | "success"
-
-type Props = {
-	step?: ResetPasswordStep
-}
-
-type VerifyResetCodeValues = v.InferOutput<typeof VerifyResetCodeSchema>
 type ResetPasswordValues = v.InferOutput<typeof ResetPasswordSchema>
-type ResetPasswordEmailSchemaMessages = {
-	required: string
-	invalid: string
-}
-type ResetPasswordCodeSchemaMessages = {
-	length: string
-	invalid: string
-}
-
-function createResetPasswordEmailSchema(
-	messages: ResetPasswordEmailSchemaMessages,
-) {
-	return pipe(
-		string(),
-		minLength(1, messages.required),
-		emailSchema(messages.invalid),
-	)
-}
-
-function createResetPasswordCodeSchema(
-	messages: ResetPasswordCodeSchemaMessages,
-) {
-	return pipe(
-		string(),
-		minLength(6, messages.length),
-		maxLength(6, messages.length),
-		regex(/^\d{6}$/u, messages.invalid),
-	)
-}
 
 function formatMinuteCount(minutes: number) {
 	return `${minutes} minute${minutes === 1 ? "" : "s"}`
 }
 
-function getEmailErrors(
-	input: string,
-	messages: ResetPasswordEmailSchemaMessages,
-): [string, ...string[]] | null {
-	const result = safeParse(
-		createResetPasswordEmailSchema(messages),
-		input.trim(),
-	)
-	if (result.success) return null
-	const issue = result.issues[0]
-	return [issue.message]
-}
-
-function getCodeErrors(
-	input: string,
-	messages: ResetPasswordCodeSchemaMessages,
-): [string, ...string[]] | null {
-	const result = safeParse(createResetPasswordCodeSchema(messages), input)
-	if (result.success) return null
-	const issue = result.issues[0]
-	return [issue.message]
-}
-
-function buildAuthLayout(props: {
-	title: string
-	description?: JSX.Element
-	body: JSX.Element
-}) {
-	return (
-		<div class="h-full relative overflow-hidden bg-linear-to-br from-reimu-100 via-primary to-marisa-100">
-			<div class="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.65)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.65)_1px,transparent_1px)] bg-size-[22px_22px] opacity-55"></div>
-			<div class="grid h-full w-full items-stretch lg:grid-cols-[1.05fr_0.95fr]">
-				<AuthLeftPanel />
-
-				<div class="flex flex-col justify-center border-t border-slate-300 bg-primary/70 px-4 py-12 backdrop-blur-sm sm:px-8 lg:border-l lg:border-t-0 xl:px-14">
-					<div class="mx-auto w-full max-w-[420px]">
-						<div class="mb-4 space-y-1">
-							<div class="text-primary text-3xl font-light tracking-tight">
-								{props.title}
-							</div>
-							<Show when={props.description !== undefined}>
-								<div class="text-sm text-tertiary">{props.description}</div>
-							</Show>
-						</div>
-
-						{props.body}
-					</div>
-				</div>
-			</div>
-		</div>
-	)
-}
-
-function VerifyStepHeader(props: {
-	email: string
-	isSendingCode: boolean
-	onChangeEmail(): void
-}) {
-	return (
-		<div class="mb-4 flex items-center justify-between gap-3 rounded-md border border-slate-300/80 bg-primary/80 px-3 py-2.5">
-			<div class="min-w-0 flex-1">
-				<div class="wrap-break-word text-sm font-medium text-primary">
-					{props.email}
-				</div>
-			</div>
-			<Show when={!props.isSendingCode}>
-				<Button
-					type="button"
-					variant="Tertiary"
-					size="Xs"
-					class="h-7 shrink-0 self-center px-2"
-					onClick={() => props.onChangeEmail()}
-				>
-					Change
-				</Button>
-			</Show>
-		</div>
-	)
-}
-
-function ForgotPasswordVerifyView(props: {
-	sessionWarning?: string
-	uiStore: ReturnType<typeof createResetPasswordUiStore>
-}) {
-	const { t } = useLingui()
-	onMount(() => {
-		clearResetPasswordSession()
-		clearResetPasswordSuccess()
-	})
-
-	const nav = useNavigate()
-	const [isCodeEditing, setIsCodeEditing] = createSignal(false)
-	const form = createForm({
-		schema: VerifyResetCodeSchema,
-		validate: "submit",
-		revalidate: "input",
-		initialInput: {
-			email: untrack(() => getResetPasswordEmail() ?? ""),
-			code: "",
-		},
-	})
-
-	const emailValue = () => getInput(form).email
-	const codeValue = () => getInput(form).code ?? ""
-	const trimmedEmailValue = () => emailValue()?.trim() ?? ""
-	const emailSchemaMessages = () => ({
-		required: t`Email is required`,
-		invalid: t`Invalid email`,
-	})
-	const codeSchemaMessages = () => ({
-		length: t`Verification code must be 6 digits`,
-		invalid: t`Invalid verification code`,
-	})
-	const emailErrors = () =>
-		getEmailErrors(trimmedEmailValue(), emailSchemaMessages())
-	const codeErrors = () => getCodeErrors(codeValue(), codeSchemaMessages())
-	const isEmailValid = () => emailErrors() === null
-	const isCodeValid = () => codeErrors() === null
-	const isVerifyStep = () =>
-		props.uiStore.state.isSendingCode || props.uiStore.state.hasSentCode
-	const isSubmitDisabled = () =>
-		form.isSubmitting
-		|| props.uiStore.state.isSendingCode
-		|| props.uiStore.state.isVerifyingCode
-		|| (!isVerifyStep() && !isEmailValid())
-		|| (isVerifyStep() && !isCodeValid())
-	const continueButtonType = () => (isVerifyStep() ? "submit" : "button")
-
-	const handleEmailChange = () => {
-		setErrors(form, {
-			path: ["email"],
-			errors: emailErrors(),
-		})
+export function ResetPasswordPage() {
+	const resetSession = getResetPasswordSession()
+	if (resetSession === undefined) {
+		markResetPasswordSessionInvalid()
+		return <Navigate to="/auth/forgot-password" />
 	}
 
-	const handleEmailKeyDown = (e: KeyboardEvent) => {
-		if (e.key !== "Enter" || isVerifyStep()) return
-		e.preventDefault()
-		if (isSubmitDisabled()) return
-		void handleSendCode()
-	}
-
-	const handleCodeInput = () => {
-		setErrors(form, {
-			path: ["code"],
-			errors: codeErrors(),
-		})
-	}
-
-	let cooldownTimer: ReturnType<typeof globalThis.setInterval> | undefined
-
-	const clearCooldownTimer = () => {
-		if (cooldownTimer === undefined) return
-		globalThis.clearInterval(cooldownTimer)
-		cooldownTimer = undefined
-	}
-
-	onCleanup(clearCooldownTimer)
-
-	const startCooldown = (seconds: number) => {
-		props.uiStore.setCooldown(seconds)
-
-		if (cooldownTimer !== undefined) {
-			clearCooldownTimer()
-		}
-
-		if (seconds <= 0) return
-
-		const tickCooldown = props.uiStore.tickCooldown
-		const isCoolingDown = props.uiStore.isCoolingDown
-		cooldownTimer = globalThis.setInterval(() => {
-			tickCooldown()
-			if (!isCoolingDown() && cooldownTimer !== undefined) {
-				clearCooldownTimer()
-			}
-		}, 1000)
-	}
-
-	const resetSendCodeFlow = () => {
-		clearCooldownTimer()
-		props.uiStore.resetSendCodeFlow()
-		setInput(form, {
-			input: {
-				email: getInput(form).email ?? "",
-				code: "",
-			},
-		})
-	}
-
-	const handleSendCode = async () => {
-		if (props.uiStore.state.isSendingCode || props.uiStore.isCoolingDown()) {
-			return
-		}
-
-		const email = trimmedEmailValue()
-		if (email.length === 0) return
-		saveResetPasswordEmail(email)
-
-		await sendResetCode({
-			email,
-			forgotPassword: requestForgotPassword,
-			startCooldown,
-			uiStore: props.uiStore,
-			requestFailedMessage: t`Request failed`,
-		})
-	}
-
-	const handleVerifyCode = async (values: VerifyResetCodeValues) => {
-		const email = values.email.trim()
-
-		await verifyResetCode({
-			email,
-			code: values.code,
-			verifyResetCode: requestVerifyResetCode,
-			requestFailedMessage: t`Request failed`,
-			onSuccess: async (session) => {
-				saveResetPasswordEmail(email)
-				saveResetPasswordSession(session)
-				await nav({
-					to: "/auth/forgot-password",
-					search: {
-						step: "reset",
-					},
-				})
-			},
-			uiStore: props.uiStore,
-		})
-	}
-
-	const handleSubmit = async (values: VerifyResetCodeValues) => {
-		if (isVerifyStep()) {
-			await handleVerifyCode(values)
-			return
-		}
-
-		await handleSendCode()
-	}
-
-	return buildAuthLayout({
-		title: t`Forgot password`,
-		body: (
-			<Form
-				of={form}
-				onSubmit={handleSubmit}
-				class="w-full"
-			>
-				<Show when={props.sessionWarning !== undefined}>
-					<div class="mb-4 text-sm text-tertiary">{props.sessionWarning}</div>
-				</Show>
-
-				<Switch>
-					<Match when={isVerifyStep() && isEmailValid()}>
-						<>
-							<VerifyStepHeader
-								email={trimmedEmailValue()}
-								isSendingCode={props.uiStore.state.isSendingCode}
-								onChangeEmail={resetSendCodeFlow}
-							/>
-							<Field
-								of={form}
-								path={["code"]}
-							>
-								{(field) => (
-									<>
-										<div class="mt-4 flex items-start gap-2">
-											<div class="grow">
-												<VerificationCodeField
-													field={field}
-													onInput={handleCodeInput}
-													onFocus={() => {
-														setIsCodeEditing(true)
-													}}
-													onBlur={() => {
-														setIsCodeEditing(false)
-													}}
-													hideError
-												/>
-											</div>
-											<Button
-												type="button"
-												variant="SecondaryV2"
-												size="Sm"
-												class="h-9 self-end"
-												disabled={
-													form.isSubmitting
-													|| props.uiStore.state.isSendingCode
-													|| props.uiStore.isCoolingDown()
-												}
-												onClick={() => {
-													void handleSendCode()
-												}}
-											>
-												{props.uiStore.state.isSendingCode
-													? t`Sending...`
-													: props.uiStore.isCoolingDown()
-														? `Resend (${props.uiStore.state.cooldownSeconds}s)`
-														: t`Resend code`}
-											</Button>
-										</div>
-										<FormComp.ErrorMessage>
-											{isCodeEditing() ? undefined : field.errors?.[0]}
-										</FormComp.ErrorMessage>
-									</>
-								)}
-							</Field>
-						</>
-					</Match>
-					<Match when={true}>
-						<Field
-							of={form}
-							path={["email"]}
-						>
-							{(field) => (
-								<EmailField
-									field={field}
-									disabled={props.uiStore.state.isSendingCode}
-									onChange={handleEmailChange}
-									onKeyDown={handleEmailKeyDown}
-								/>
-							)}
-						</Field>
-					</Match>
-				</Switch>
-
-				<Show
-					when={
-						props.uiStore.state.verificationCodeExpiresMinutes !== undefined
-					}
-				>
-					<div class="my-2 text-sm text-tertiary">
-						Codes expire in {props.uiStore.state.verificationCodeExpiresMinutes}{" "}
-						minutes.
-					</div>
-				</Show>
-
-				<FormComp.ErrorMessage>
-					{props.uiStore.state.sendCodeError}
-				</FormComp.ErrorMessage>
-				<FormComp.ErrorMessage>
-					{props.uiStore.state.verifyCodeError}
-				</FormComp.ErrorMessage>
-
-				<Button
-					type={continueButtonType()}
-					variant="Primary"
-					color="Reimu"
-					size="Sm"
-					class="mt-4 h-9 w-full"
-					disabled={isSubmitDisabled()}
-					onClick={() => {
-						if (!isVerifyStep()) {
-							void handleSendCode()
-						}
-					}}
-				>
-					{t`Continue`}
-				</Button>
-
-				<div class="text-sm text-tertiary mt-4">
-					{t`Back to`}{" "}
-					<Link
-						to="/auth"
-						search={{ type: "sign_in" }}
-						class="text-secondary underline underline-offset-2"
-					>
-						{t`sign in`}
-					</Link>
-					.
-				</div>
-			</Form>
-		),
-	})
-}
-
-function ResetPasswordWithKeyView(props: {
-	resetKeyExpiresMinutes: number
-	expiresAtMs: number
-	uiStore: ReturnType<typeof createResetPasswordUiStore>
-}) {
 	const { t } = useLingui()
 	const nav = useNavigate()
+	const uiStore = createResetPasswordUiStore()
 	let expiryTimer: ReturnType<typeof globalThis.setTimeout> | undefined
 	const form = createForm({
 		schema: ResetPasswordSchema,
@@ -501,61 +56,53 @@ function ResetPasswordWithKeyView(props: {
 		expiryTimer = undefined
 	}
 
-	onCleanup(clearExpiryTimer)
-
-	const redirectToSignIn = async () => {
+	const redirectToForgotPassword = async () => {
 		clearExpiryTimer()
 		clearResetPasswordSession()
-		clearResetPasswordEmail()
 		clearResetPasswordSuccess()
-		await nav({
-			to: "/auth",
-			search: { type: "sign_in" },
-		})
+		markResetPasswordSessionInvalid()
+		await nav({ to: "/auth/forgot-password" })
 	}
 
+	onCleanup(clearExpiryTimer)
+
 	onMount(() => {
-		const remainingMs = props.expiresAtMs - Date.now()
+		const remainingMs = resetSession.expiresAtMs - Date.now()
 
 		if (remainingMs <= 0) {
-			void redirectToSignIn()
+			void redirectToForgotPassword()
 			return
 		}
 
 		expiryTimer = globalThis.setTimeout(() => {
-			void redirectToSignIn()
+			void redirectToForgotPassword()
 		}, remainingMs)
 	})
 
 	const handleSubmit = async (values: ResetPasswordValues) => {
 		await resetPasswordByKey({
 			password: values.password,
-			onInvalidResetKey() {
-				clearResetPasswordSession()
-				clearResetPasswordSuccess()
-			},
+			onInvalidResetKey: redirectToForgotPassword,
 			resetPasswordByKey: requestResetPassword,
 			requestFailedMessage: t`Request failed`,
 			invalidOrExpiredResetKeyMessage: t`Invalid or expired reset key`,
 			onSuccess: async () => {
+				clearExpiryTimer()
 				markResetPasswordSuccess()
-				await nav({
-					to: "/auth/forgot-password",
-					search: {
-						step: "success",
-					},
-				})
+				await nav({ to: "/auth/reset-password/success" })
 			},
-			uiStore: props.uiStore,
+			uiStore,
 		})
 	}
 
-	return buildAuthLayout({
-		title: t`Set a new password`,
-		description: (
-			<>{t`This is valid for ${formatMinuteCount(props.resetKeyExpiresMinutes)}.`}</>
-		),
-		body: (
+	return (
+		<>
+			<header class={AUTH_HEADER_CLASS}>
+				<h1 class={AUTH_TITLE_CLASS}>{t`Set a new password`}</h1>
+				<p
+					class={AUTH_DESCRIPTION_CLASS}
+				>{t`This is valid for ${formatMinuteCount(resetSession.keyExpiresMinutes)}.`}</p>
+			</header>
 			<Form
 				of={form}
 				onSubmit={handleSubmit}
@@ -588,7 +135,7 @@ function ResetPasswordWithKeyView(props: {
 				</Field>
 
 				<FormComp.ErrorMessage>
-					{props.uiStore.state.resetPasswordError}
+					{uiStore.state.resetPasswordError}
 				</FormComp.ErrorMessage>
 
 				<Button
@@ -596,93 +143,12 @@ function ResetPasswordWithKeyView(props: {
 					variant="Primary"
 					color="Reimu"
 					size="Sm"
-					class="h-9 w-full mt-8"
+					class="mt-6 h-9 w-full"
 					disabled={form.isSubmitting}
 				>
 					{t`Reset password`}
 				</Button>
 			</Form>
-		),
-	})
-}
-
-function ResetPasswordSuccessView() {
-	const { t } = useLingui()
-	onMount(() => {
-		clearResetPasswordSession()
-	})
-
-	return buildAuthLayout({
-		title: t`Password reset complete`,
-		description: <>{t`Your password has been updated successfully.`}</>,
-		body: (
-			<div class="space-y-4">
-				<div class="text-sm text-tertiary">
-					{t`You can now sign in with your new password.`}
-				</div>
-				<div class="text-sm text-tertiary">
-					{t`Back to`}{" "}
-					<Link
-						to="/auth"
-						search={{ type: "sign_in" }}
-						class="text-secondary underline underline-offset-2"
-					>
-						{t`sign in`}
-					</Link>
-					.
-				</div>
-			</div>
-		),
-	})
-}
-
-export function ResetPasswordPage(props: Props) {
-	const { t } = useLingui()
-	const userStore = useCurrentUser()
-	const uiStore = createResetPasswordUiStore()
-	const isResetStep = () => props.step === "reset"
-	const shouldShowSuccessView = () =>
-		props.step === "success" && hasResetPasswordSuccess()
-	const activeResetSession = () =>
-		isResetStep() ? getResetPasswordSession() : undefined
-	const shouldShowResetView = () => activeResetSession() !== undefined
-	const shouldShowResetSessionWarning = () =>
-		isResetStep() && activeResetSession() === undefined
-
-	return (
-		<Switch>
-			<Match when={userStore.session.status === "loading"}>
-				<SessionLoading />
-			</Match>
-			<Match when={userStore.session.status === "authenticated"}>
-				<Navigate to="/" />
-			</Match>
-			<Match when={userStore.session.status === "anonymous"}>
-				<Switch>
-					<Match when={shouldShowSuccessView()}>
-						<ResetPasswordSuccessView />
-					</Match>
-					<Match
-						when={shouldShowResetView() && activeResetSession() !== undefined}
-					>
-						<ResetPasswordWithKeyView
-							resetKeyExpiresMinutes={activeResetSession()!.keyExpiresMinutes}
-							expiresAtMs={activeResetSession()!.expiresAtMs}
-							uiStore={uiStore}
-						/>
-					</Match>
-					<Match when={true}>
-						<ForgotPasswordVerifyView
-							sessionWarning={
-								shouldShowResetSessionWarning()
-									? t`Your reset session is no longer valid. Verify a new code to continue.`
-									: undefined
-							}
-							uiStore={uiStore}
-						/>
-					</Match>
-				</Switch>
-			</Match>
-		</Switch>
+		</>
 	)
 }

@@ -3,6 +3,8 @@ import { Show } from "solid-js"
 
 import { InputField } from "~/component/atomic/form/Input"
 
+import { AUTH_FIELD_LABEL_CLASS } from "../styles"
+
 type FieldLayoutProps = ParentProps<{
 	label: string
 	error?: string
@@ -13,7 +15,7 @@ type FieldLayoutProps = ParentProps<{
 export function FieldLayout(props: FieldLayoutProps) {
 	return (
 		<InputField.Root class={props.class}>
-			<InputField.Label class="text-sm text-tertiary">
+			<InputField.Label class={AUTH_FIELD_LABEL_CLASS}>
 				{props.label}
 			</InputField.Label>
 			{props.children}

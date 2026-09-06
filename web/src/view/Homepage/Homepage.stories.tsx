@@ -110,24 +110,14 @@ function StoryHeader() {
 							class="px-3 py-1 text-sm text-slate-900"
 							type="button"
 						>
-							<Link
-								to="/auth"
-								search={{ type: "sign_in" }}
-							>
-								Sign In
-							</Link>
+							<Link to="/auth/sign-in">Sign In</Link>
 						</Button>
 						<Button
 							variant="Primary"
 							class="px-3 py-1 text-sm"
 							type="button"
 						>
-							<Link
-								to="/auth"
-								search={{ type: "sign_up" }}
-							>
-								Sign Up
-							</Link>
+							<Link to="/auth/sign-up">Sign Up</Link>
 						</Button>
 					</div>
 				</div>
