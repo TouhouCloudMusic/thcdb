@@ -37,7 +37,7 @@ RUN --mount=type=cache,id=server_cargo_registry,target=/usr/local/cargo/registry
   --mount=type=cache,id=server_cargo_git,target=/usr/local/cargo/git \
   --mount=type=cache,id=server_target_release,target=/app/target \
   cargo build --release --features release \
-  && install -Dm755 /app/target/release/thcdb_rs /out/thcdb_rs
+  && install -Dm755 /app/target/release/thcdb-rs /out/thcdb-rs
 
 FROM debian:${DEBIAN_VERSION}-slim AS runtime
 WORKDIR /app
@@ -53,7 +53,7 @@ RUN apt-get update \
 RUN groupadd -r app \
   && useradd -r -g app -u 10001 app
 
-COPY --from=builder /out/thcdb_rs /app/thcdb_rs
+COPY --from=builder /out/thcdb-rs /app/thcdb-rs
 COPY ./config.toml /app/config.toml
 
 RUN mkdir -p /app/public/image \
@@ -63,4 +63,4 @@ USER app
 EXPOSE 12345
 
 ENV RUST_LOG=info
-ENTRYPOINT ["/app/thcdb_rs"]
+ENTRYPOINT ["/app/thcdb-rs"]

@@ -15,7 +15,6 @@ path = "src/lib.rs"
 apalis.workspace       = true
 apalis-cron.workspace  = true
 apalis-redis.workspace = true
-derive_more.workspace  = true
 log.workspace          = true
 serde.workspace        = true
 tokio.workspace        = true

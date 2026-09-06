@@ -65,10 +65,10 @@ mod test {
         fn f(x: i32) -> String {
             x.to_string()
         }
-        fn g(x: String) -> i32 {
-            x.parse::<i32>().unwrap()
+        fn g(x: String) -> Vec<u8> {
+            x.into_bytes()
         }
         let h = f.compose(g);
-        assert_eq!(h(1), 1)
+        assert_eq!(h(1), b"1");
     }
 }

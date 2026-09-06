@@ -1,13 +1,15 @@
+use std::fmt::Write;
+use std::hint::black_box;
+
 use criterion::{
-    BenchmarkId, Criterion, Throughput, black_box, criterion_group,
-    criterion_main,
+    BenchmarkId, Criterion, Throughput, criterion_group, criterion_main,
 };
 use fast_lrc::Lyrics as FastLyrics;
 use lrc::Lyrics as LrcLyrics;
 use rand::Rng;
 
 // Sample LRC content for benchmarking
-const SMALL_LRC: &str = r#"
+const SMALL_LRC: &str = r"
 [ar:艺术家]
 [ti:歌曲标题]
 [al:专辑]
@@ -19,9 +21,9 @@ const SMALL_LRC: &str = r#"
 [01:30.12]第三行歌词
 [02:45.89]第四行歌词
 [03:15.23]第五行歌词
-"#;
+";
 
-const MEDIUM_LRC: &str = r#"
+const MEDIUM_LRC: &str = r"
 [ar:东方Project]
 [ti:幻想郷 ～ Lotus Land Story]
 [al:蓮台野夜行]
@@ -48,7 +50,7 @@ const MEDIUM_LRC: &str = r#"
 [04:15.09]愛の詩
 [04:30.42]夢の続き
 [04:45.75]永遠に
-"#;
+";
 
 // Generate a large LRC content for stress testing
 fn generate_large_lrc() -> String {
@@ -76,20 +78,22 @@ fn generate_large_lrc() -> String {
         let timestamps = match ts_len {
             2 => format!("{str}{str}"),
             3 => format!("{str}{str}{str}"),
-            _ => str.to_string(),
+            _ => str,
         };
 
-        content.push_str(&format!(
-            "{timestamps}这是第{}行测试歌词，包含一些中文字符和数字\n",
+        writeln!(
+            &mut content,
+            "{timestamps}这是第{}行测试歌词，包含一些中文字符和数字",
             i + 1
-        ));
+        )
+        .expect("writing to a String cannot fail");
     }
 
     content
 }
 
 // Invalid LRC content for error handling benchmarks
-const INVALID_LRC: &str = r#"
+const INVALID_LRC: &str = r"
 [ar:艺术家]
 [ti:歌曲标题]
 invalid line without brackets
@@ -100,7 +104,7 @@ another invalid line
 [00:30.45]正常歌词
 malformed [bracket
 [00:45.67]最后一行
-"#;
+";
 
 // Comparison benchmarks with throughput measurement
 fn bench_comparison(c: &mut Criterion) {
@@ -115,7 +119,7 @@ fn bench_comparison(c: &mut Criterion) {
             b.iter(|| {
                 let lyrics = LrcLyrics::from_str(black_box(content)).unwrap();
                 black_box(lyrics);
-            })
+            });
         },
     );
     group.bench_with_input(
@@ -125,7 +129,7 @@ fn bench_comparison(c: &mut Criterion) {
             b.iter(|| {
                 let lyrics = FastLyrics::parse(black_box(content)).unwrap();
                 black_box(lyrics);
-            })
+            });
         },
     );
 
@@ -138,7 +142,7 @@ fn bench_comparison(c: &mut Criterion) {
             b.iter(|| {
                 let lyrics = LrcLyrics::from_str(black_box(content)).unwrap();
                 black_box(lyrics);
-            })
+            });
         },
     );
     group.bench_with_input(
@@ -148,7 +152,7 @@ fn bench_comparison(c: &mut Criterion) {
             b.iter(|| {
                 let lyrics = FastLyrics::parse(black_box(content)).unwrap();
                 black_box(lyrics);
-            })
+            });
         },
     );
 
@@ -162,7 +166,7 @@ fn bench_comparison(c: &mut Criterion) {
             b.iter(|| {
                 let lyrics = LrcLyrics::from_str(black_box(content)).unwrap();
                 black_box(lyrics);
-            })
+            });
         },
     );
     group.bench_with_input(
@@ -172,7 +176,7 @@ fn bench_comparison(c: &mut Criterion) {
             b.iter(|| {
                 let lyrics = FastLyrics::parse(black_box(content)).unwrap();
                 black_box(lyrics);
-            })
+            });
         },
     );
 
@@ -181,9 +185,7 @@ fn bench_comparison(c: &mut Criterion) {
 
 // Metadata-heavy comparison
 fn bench_metadata_heavy(c: &mut Criterion) {
-    let mut group = c.benchmark_group("Metadata");
-
-    const METADATA_HEAVY: &str = r#"
+    const METADATA_HEAVY: &str = r"
 [ar:艺术家名称]
 [ti:歌曲标题]
 [al:专辑名称]
@@ -203,7 +205,9 @@ fn bench_metadata_heavy(c: &mut Criterion) {
 [00:12.34]第一行歌词
 [00:25.67]第二行歌词
 [01:30.12]第三行歌词
-"#;
+";
+
+    let mut group = c.benchmark_group("Metadata");
 
     group.throughput(Throughput::Bytes(METADATA_HEAVY.len() as u64));
 
@@ -212,14 +216,14 @@ fn bench_metadata_heavy(c: &mut Criterion) {
             let lyrics =
                 LrcLyrics::from_str(black_box(METADATA_HEAVY)).unwrap();
             black_box(lyrics);
-        })
+        });
     });
 
     group.bench_function("fast_lrc", |b| {
         b.iter(|| {
             let lyrics = FastLyrics::parse(black_box(METADATA_HEAVY)).unwrap();
             black_box(lyrics);
-        })
+        });
     });
 
     group.finish();
@@ -234,13 +238,13 @@ fn bench_error_handling(c: &mut Criterion) {
     group.bench_function("lrc", |b| {
         b.iter(|| {
             let _ = LrcLyrics::from_str(black_box(INVALID_LRC));
-        })
+        });
     });
 
     group.bench_function("fast_lrc", |b| {
         b.iter(|| {
             let _ = FastLyrics::parse(black_box(INVALID_LRC));
-        })
+        });
     });
 
     group.finish();
