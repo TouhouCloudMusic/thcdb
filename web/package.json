@@ -90,7 +90,7 @@
 		"oxlint": "^1.65.0",
 		"oxlint-tsgolint": "^0.25.0",
 		"oxfmt": "^0.65.0",
-		"playwright": "1.59.1",
+		"playwright": "1.61.1",
 		"solid-devtools": "^0.34.5",
 		"storybook": "10.3.5",
 		"storybook-solidjs-vite": "10.0.12",
