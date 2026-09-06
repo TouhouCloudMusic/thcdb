@@ -95,7 +95,7 @@ msgstr "{commenters} commented on {target}."
 msgid "{commenters} replied to [deleted]."
 msgstr "{commenters} replied to [deleted]."
 
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "{count} votes · relevance {relevance}"
 msgstr "{count} votes · relevance {relevance}"
 
@@ -148,11 +148,7 @@ msgstr "Add a comment..."
 msgid "Add disc"
 msgstr "Add disc"
 
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Add missing entries (artists, releases, songs, events)"
-msgstr "Add missing entries (artists, releases, songs, events)"
-
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "Add tag"
 msgstr "Add tag"
 
@@ -172,10 +168,6 @@ msgstr "Add to Collection"
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Add track"
 msgstr "Add track"
-
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Add what is missing and keep entries consistent across the database."
-msgstr "Add what is missing and keep entries consistent across the database."
 
 #: src/component/Header/LeftSidebar.tsx
 msgid "Admin"
@@ -215,6 +207,7 @@ msgstr "All categories"
 msgid "Alphabetical"
 msgstr "Alphabetical"
 
+#: src/view/auth/component/AuthCredentialForm.tsx
 #: src/view/auth/component/VerifyEmailForm.tsx
 msgid "Already have an account?"
 msgstr "Already have an account?"
@@ -388,6 +381,10 @@ msgstr "Collected time"
 msgid "Collection"
 msgstr "Collection"
 
+#: src/view/collection/CollectionDetail.tsx
+msgid "Collection actions"
+msgstr "Collection actions"
+
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "Collection created"
 msgstr "Collection created"
@@ -432,10 +429,6 @@ msgstr "Confirm"
 #: src/view/auth/reset_password/index.tsx
 msgid "Continue"
 msgstr "Continue"
-
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Contribute touhou music metadata"
-msgstr "Contribute touhou music metadata"
 
 #: src/view/correction/EntityContributors.tsx
 msgid "Contributors:"
@@ -490,10 +483,6 @@ msgstr "Create"
 #: src/view/auth/component/AuthForm.tsx
 msgid "Create account"
 msgstr "Create account"
-
-#: src/view/auth/component/AuthForm.tsx
-msgid "Create an account to continue."
-msgstr "Create an account to continue."
 
 #: src/view/artist/explore.tsx
 msgid "Create artist"
@@ -668,12 +657,16 @@ msgstr "Dissolved"
 msgid "Dissolved date"
 msgstr "Dissolved date"
 
+#: src/view/auth/component/AuthCredentialForm.tsx
+msgid "Don't have an account?"
+msgstr "Don't have an account?"
+
 #: src/view/collection/CollectionDetail.tsx
 msgid "Done"
 msgstr "Done"
 
 #: src/view/entity_tags/EntityTagAddDialog.tsx
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "Downvote"
 msgstr "Downvote"
 
@@ -977,7 +970,7 @@ msgid "Hey you, lost one. why you are here? <0>You should go back...</0>"
 msgstr "Hey you, lost one. why you are here? <0>You should go back...</0>"
 
 #: src/view/entity_tags/EntityTagAddDialog.tsx
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "High"
 msgstr "High"
 
@@ -1010,6 +1003,10 @@ msgstr "Image queue"
 #: src/view/image_queue/manage.tsx
 msgid "Image Queue"
 msgstr "Image Queue"
+
+#: src/view/image_queue/detail.tsx
+msgid "Image queue navigation"
+msgstr "Image queue navigation"
 
 #: src/view/notification/InboxPage.tsx
 msgid "Inbox"
@@ -1144,10 +1141,6 @@ msgstr "Loading diff..."
 msgid "Loading items..."
 msgstr "Loading items..."
 
-#: src/view/entity_tags/EntityTagsSection.tsx
-msgid "Loading tags..."
-msgstr "Loading tags..."
-
 #: src/route/collection/$id.tsx
 #: src/view/artist/edit/index.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
@@ -1158,6 +1151,7 @@ msgstr "Loading tags..."
 #: src/view/comment/CommentThread.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/entity_tags/EntityTags.tsx
 #: src/view/event/Info/index.tsx
 #: src/view/label/Info/index.tsx
 #: src/view/release/Info/index.tsx
@@ -1186,7 +1180,7 @@ msgid "Location"
 msgstr "Location"
 
 #: src/view/entity_tags/EntityTagAddDialog.tsx
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "Low"
 msgstr "Low"
 
@@ -1198,7 +1192,7 @@ msgstr "Lyrics"
 msgid "Make this collection public"
 msgstr "Make this collection public"
 
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "Manage Tags"
 msgstr "Manage Tags"
 
@@ -1215,7 +1209,7 @@ msgid "Mark unread"
 msgstr "Mark unread"
 
 #: src/view/entity_tags/EntityTagAddDialog.tsx
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "Medium"
 msgstr "Medium"
 
@@ -1301,6 +1295,10 @@ msgstr "Next"
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Next disc"
 msgstr "Next disc"
+
+#: src/view/image_queue/detail.tsx
+msgid "Next image queue entry"
+msgstr "Next image queue entry"
 
 #: src/component/Pagination.tsx
 msgid "Next page"
@@ -1467,7 +1465,7 @@ msgstr "No tags found"
 msgid "No tags found."
 msgstr "No tags found."
 
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "No tags yet"
 msgstr "No tags yet"
 
@@ -1513,14 +1511,17 @@ msgstr "Only PNG/JPEG images are supported."
 msgid "Open"
 msgstr "Open"
 
-#: src/view/auth/component/AuthForm.tsx
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Open doujin music database"
-msgstr "Open doujin music database"
-
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Open image queue"
 msgstr "Open image queue"
+
+#: src/component/Header/index.tsx
+msgid "Open navigation menu"
+msgstr "Open navigation menu"
+
+#: src/component/Header/index.tsx
+msgid "Open user menu"
+msgstr "Open user menu"
 
 #: src/component/__legacy/chart/index.tsx
 msgid "OR"
@@ -1579,8 +1580,8 @@ msgid "Present"
 msgstr "Present"
 
 #: src/view/image_queue/detail.tsx
-msgid "Prev"
-msgstr "Prev"
+msgid "Previous"
+msgstr "Previous"
 
 #: src/view/correction/Detail.tsx
 msgid "Previous approved baseline"
@@ -1589,6 +1590,10 @@ msgstr "Previous approved baseline"
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Previous disc"
 msgstr "Previous disc"
+
+#: src/view/image_queue/detail.tsx
+msgid "Previous image queue entry"
+msgstr "Previous image queue entry"
 
 #: src/component/Pagination.tsx
 msgid "Previous page"
@@ -1714,7 +1719,7 @@ msgid "Releases"
 msgstr "Releases"
 
 #: src/view/collection/CollectionItemCard.tsx
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "Remove"
 msgstr "Remove"
 
@@ -1756,7 +1761,6 @@ msgstr "Request failed"
 
 #: src/route/collection/$id.tsx
 #: src/view/correction/Detail.tsx
-#: src/view/image_queue/detail.tsx
 msgid "Request failed."
 msgstr "Request failed."
 
@@ -1969,6 +1973,7 @@ msgid "sign in"
 msgstr "sign in"
 
 #: src/component/route.tsx
+#: src/view/auth/component/AuthCredentialForm.tsx
 #: src/view/auth/component/AuthForm.tsx
 #: src/view/auth/component/VerifyEmailForm.tsx
 #: src/view/comment/EntityComments.tsx
@@ -2097,10 +2102,6 @@ msgstr "Strong enough"
 msgid "Submit"
 msgstr "Submit"
 
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Submit corrections and keep metadata clean"
-msgstr "Submit corrections and keep metadata clean"
-
 #: src/route/artist/$id_.image-upload.tsx
 #: src/route/release/$id_.image-upload.tsx
 msgid "Submit failed."
@@ -2127,10 +2128,6 @@ msgstr "Subscribe"
 msgid "Support"
 msgstr "Support"
 
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Sync your contributions across devices"
-msgstr "Sync your contributions across devices"
-
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
@@ -2147,7 +2144,7 @@ msgstr "Tag Tree"
 msgid "Tag Type"
 msgstr "Tag Type"
 
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 #: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/Homepage/component/HomeStats.tsx
 #: src/view/search/index.tsx
@@ -2380,10 +2377,6 @@ msgstr "Uploading…"
 #: src/view/artist/edit/comp/Links.tsx
 msgid "Url"
 msgstr "Url"
-
-#: src/view/auth/component/AuthForm.tsx
-msgid "Use your account to continue."
-msgstr "Use your account to continue."
 
 #: src/view/admin/users.tsx
 msgid "User"

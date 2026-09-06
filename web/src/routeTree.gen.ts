@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './route/__root'
 import { Route as SearchRouteImport } from './route/search'
 import { Route as NotificationsRouteImport } from './route/notifications'
+import { Route as AuthRouteImport } from './route/auth'
 import { Route as AboutRouteImport } from './route/about'
 import { Route as IndexRouteImport } from './route/index'
 import { Route as RecommendationIndexRouteImport } from './route/recommendation/index'
@@ -41,11 +42,15 @@ import { Route as CreditRoleIdRouteImport } from './route/credit-role/$id'
 import { Route as CorrectionMockRouteImport } from './route/correction/mock'
 import { Route as CorrectionIdRouteImport } from './route/correction/$id'
 import { Route as CollectionIdRouteImport } from './route/collection/$id'
+import { Route as AuthVerifyEmailRouteImport } from './route/auth/verify-email'
+import { Route as AuthSignUpRouteImport } from './route/auth/sign-up'
+import { Route as AuthSignInRouteImport } from './route/auth/sign-in'
 import { Route as AuthForgotPasswordRouteImport } from './route/auth/forgot-password'
 import { Route as ArtistNewRouteImport } from './route/artist/new'
 import { Route as ArtistExploreRouteImport } from './route/artist/explore'
 import { Route as AdminUsersRouteImport } from './route/admin/users'
 import { Route as userProfileRouteImport } from './route/(user)/profile'
+import { Route as AuthResetPasswordIndexRouteImport } from './route/auth/reset-password/index'
 import { Route as ArtistIdIndexRouteImport } from './route/artist/$id.index'
 import { Route as TagIdEditRouteImport } from './route/tag/$id_.edit'
 import { Route as TagIdCorrectionsRouteImport } from './route/tag/$id_.corrections'
@@ -58,6 +63,7 @@ import { Route as LabelIdEditRouteImport } from './route/label/$id_.edit'
 import { Route as LabelIdCorrectionsRouteImport } from './route/label/$id_.corrections'
 import { Route as EventIdEditRouteImport } from './route/event/$id_.edit'
 import { Route as EventIdCorrectionsRouteImport } from './route/event/$id_.corrections'
+import { Route as AuthResetPasswordSuccessRouteImport } from './route/auth/reset-password/success'
 import { Route as ArtistIdImageUploadRouteImport } from './route/artist/$id_.image-upload'
 import { Route as ArtistIdEditRouteImport } from './route/artist/$id_.edit'
 import { Route as ArtistIdCorrectionsRouteImport } from './route/artist/$id_.corrections'
@@ -74,6 +80,11 @@ const SearchRoute = SearchRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -102,9 +113,9 @@ const ChartIndexRoute = ChartIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthIndexRoute = AuthIndexRouteImport.update({
-  id: '/auth/',
-  path: '/auth/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthRoute,
 } as any)
 const TagNewRoute = TagNewRouteImport.update({
   id: '/tag/new',
@@ -226,10 +237,25 @@ const CollectionIdRoute = CollectionIdRouteImport.update({
   path: '/collection/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthVerifyEmailRoute = AuthVerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthSignUpRoute = AuthSignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthSignInRoute = AuthSignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
-  id: '/auth/forgot-password',
-  path: '/auth/forgot-password',
-  getParentRoute: () => rootRouteImport,
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => AuthRoute,
 } as any)
 const ArtistNewRoute = ArtistNewRouteImport.update({
   id: '/artist/new',
@@ -250,6 +276,11 @@ const userProfileRoute = userProfileRouteImport.update({
   id: '/(user)/profile',
   path: '/profile',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthResetPasswordIndexRoute = AuthResetPasswordIndexRouteImport.update({
+  id: '/reset-password/',
+  path: '/reset-password/',
+  getParentRoute: () => AuthRoute,
 } as any)
 const ArtistIdIndexRoute = ArtistIdIndexRouteImport.update({
   id: '/artist/$id/',
@@ -311,6 +342,12 @@ const EventIdCorrectionsRoute = EventIdCorrectionsRouteImport.update({
   path: '/event/$id/corrections',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthResetPasswordSuccessRoute =
+  AuthResetPasswordSuccessRouteImport.update({
+    id: '/reset-password/success',
+    path: '/reset-password/success',
+    getParentRoute: () => AuthRoute,
+  } as any)
 const ArtistIdImageUploadRoute = ArtistIdImageUploadRouteImport.update({
   id: '/artist/$id_/image-upload',
   path: '/artist/$id/image-upload',
@@ -351,6 +388,7 @@ const userProfileUsernameImageQueueRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/profile': typeof userProfileRoute
@@ -358,6 +396,9 @@ export interface FileRoutesByFullPath {
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/sign-up': typeof AuthSignUpRoute
+  '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/collection/$id': typeof CollectionIdRoute
   '/correction/$id': typeof CorrectionIdRoute
   '/correction/mock': typeof CorrectionMockRoute
@@ -392,6 +433,7 @@ export interface FileRoutesByFullPath {
   '/artist/$id/corrections': typeof ArtistIdCorrectionsRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
   '/artist/$id/image-upload': typeof ArtistIdImageUploadRoute
+  '/auth/reset-password/success': typeof AuthResetPasswordSuccessRoute
   '/event/$id/corrections': typeof EventIdCorrectionsRoute
   '/event/$id/edit': typeof EventIdEditRoute
   '/label/$id/corrections': typeof LabelIdCorrectionsRoute
@@ -404,6 +446,7 @@ export interface FileRoutesByFullPath {
   '/tag/$id/corrections': typeof TagIdCorrectionsRoute
   '/tag/$id/edit': typeof TagIdEditRoute
   '/artist/$id/': typeof ArtistIdIndexRoute
+  '/auth/reset-password/': typeof AuthResetPasswordIndexRoute
   '/profile/$username/image-queue': typeof userProfileUsernameImageQueueRoute
 }
 export interface FileRoutesByTo {
@@ -416,6 +459,9 @@ export interface FileRoutesByTo {
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/sign-up': typeof AuthSignUpRoute
+  '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/collection/$id': typeof CollectionIdRoute
   '/correction/$id': typeof CorrectionIdRoute
   '/correction/mock': typeof CorrectionMockRoute
@@ -450,6 +496,7 @@ export interface FileRoutesByTo {
   '/artist/$id/corrections': typeof ArtistIdCorrectionsRoute
   '/artist/$id/edit': typeof ArtistIdEditRoute
   '/artist/$id/image-upload': typeof ArtistIdImageUploadRoute
+  '/auth/reset-password/success': typeof AuthResetPasswordSuccessRoute
   '/event/$id/corrections': typeof EventIdCorrectionsRoute
   '/event/$id/edit': typeof EventIdEditRoute
   '/label/$id/corrections': typeof LabelIdCorrectionsRoute
@@ -462,12 +509,14 @@ export interface FileRoutesByTo {
   '/tag/$id/corrections': typeof TagIdCorrectionsRoute
   '/tag/$id/edit': typeof TagIdEditRoute
   '/artist/$id': typeof ArtistIdIndexRoute
+  '/auth/reset-password': typeof AuthResetPasswordIndexRoute
   '/profile/$username/image-queue': typeof userProfileUsernameImageQueueRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
   '/(user)/profile': typeof userProfileRoute
@@ -475,6 +524,9 @@ export interface FileRoutesById {
   '/artist/explore': typeof ArtistExploreRoute
   '/artist/new': typeof ArtistNewRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/sign-up': typeof AuthSignUpRoute
+  '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/collection/$id': typeof CollectionIdRoute
   '/correction/$id': typeof CorrectionIdRoute
   '/correction/mock': typeof CorrectionMockRoute
@@ -509,6 +561,7 @@ export interface FileRoutesById {
   '/artist/$id_/corrections': typeof ArtistIdCorrectionsRoute
   '/artist/$id_/edit': typeof ArtistIdEditRoute
   '/artist/$id_/image-upload': typeof ArtistIdImageUploadRoute
+  '/auth/reset-password/success': typeof AuthResetPasswordSuccessRoute
   '/event/$id_/corrections': typeof EventIdCorrectionsRoute
   '/event/$id_/edit': typeof EventIdEditRoute
   '/label/$id_/corrections': typeof LabelIdCorrectionsRoute
@@ -521,6 +574,7 @@ export interface FileRoutesById {
   '/tag/$id_/corrections': typeof TagIdCorrectionsRoute
   '/tag/$id_/edit': typeof TagIdEditRoute
   '/artist/$id/': typeof ArtistIdIndexRoute
+  '/auth/reset-password/': typeof AuthResetPasswordIndexRoute
   '/(user)/profile_/$username/image-queue': typeof userProfileUsernameImageQueueRoute
 }
 export interface FileRouteTypes {
@@ -528,6 +582,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/auth'
     | '/notifications'
     | '/search'
     | '/profile'
@@ -535,6 +590,9 @@ export interface FileRouteTypes {
     | '/artist/explore'
     | '/artist/new'
     | '/auth/forgot-password'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
+    | '/auth/verify-email'
     | '/collection/$id'
     | '/correction/$id'
     | '/correction/mock'
@@ -569,6 +627,7 @@ export interface FileRouteTypes {
     | '/artist/$id/corrections'
     | '/artist/$id/edit'
     | '/artist/$id/image-upload'
+    | '/auth/reset-password/success'
     | '/event/$id/corrections'
     | '/event/$id/edit'
     | '/label/$id/corrections'
@@ -581,6 +640,7 @@ export interface FileRouteTypes {
     | '/tag/$id/corrections'
     | '/tag/$id/edit'
     | '/artist/$id/'
+    | '/auth/reset-password/'
     | '/profile/$username/image-queue'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -593,6 +653,9 @@ export interface FileRouteTypes {
     | '/artist/explore'
     | '/artist/new'
     | '/auth/forgot-password'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
+    | '/auth/verify-email'
     | '/collection/$id'
     | '/correction/$id'
     | '/correction/mock'
@@ -627,6 +690,7 @@ export interface FileRouteTypes {
     | '/artist/$id/corrections'
     | '/artist/$id/edit'
     | '/artist/$id/image-upload'
+    | '/auth/reset-password/success'
     | '/event/$id/corrections'
     | '/event/$id/edit'
     | '/label/$id/corrections'
@@ -639,11 +703,13 @@ export interface FileRouteTypes {
     | '/tag/$id/corrections'
     | '/tag/$id/edit'
     | '/artist/$id'
+    | '/auth/reset-password'
     | '/profile/$username/image-queue'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/auth'
     | '/notifications'
     | '/search'
     | '/(user)/profile'
@@ -651,6 +717,9 @@ export interface FileRouteTypes {
     | '/artist/explore'
     | '/artist/new'
     | '/auth/forgot-password'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
+    | '/auth/verify-email'
     | '/collection/$id'
     | '/correction/$id'
     | '/correction/mock'
@@ -685,6 +754,7 @@ export interface FileRouteTypes {
     | '/artist/$id_/corrections'
     | '/artist/$id_/edit'
     | '/artist/$id_/image-upload'
+    | '/auth/reset-password/success'
     | '/event/$id_/corrections'
     | '/event/$id_/edit'
     | '/label/$id_/corrections'
@@ -697,19 +767,20 @@ export interface FileRouteTypes {
     | '/tag/$id_/corrections'
     | '/tag/$id_/edit'
     | '/artist/$id/'
+    | '/auth/reset-password/'
     | '/(user)/profile_/$username/image-queue'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AuthRoute: typeof AuthRouteWithChildren
   NotificationsRoute: typeof NotificationsRoute
   SearchRoute: typeof SearchRoute
   userProfileRoute: typeof userProfileRoute
   AdminUsersRoute: typeof AdminUsersRoute
   ArtistExploreRoute: typeof ArtistExploreRoute
   ArtistNewRoute: typeof ArtistNewRoute
-  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   CollectionIdRoute: typeof CollectionIdRoute
   CorrectionIdRoute: typeof CorrectionIdRoute
   CorrectionMockRoute: typeof CorrectionMockRoute
@@ -734,7 +805,6 @@ export interface RootRouteChildren {
   TagExploreRoute: typeof TagExploreRoute
   TagMockRoute: typeof TagMockRoute
   TagNewRoute: typeof TagNewRoute
-  AuthIndexRoute: typeof AuthIndexRoute
   ChartIndexRoute: typeof ChartIndexRoute
   ImageQueueIndexRoute: typeof ImageQueueIndexRoute
   RecommendationIndexRoute: typeof RecommendationIndexRoute
@@ -774,6 +844,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -811,10 +888,10 @@ declare module '@tanstack/solid-router' {
     }
     '/auth/': {
       id: '/auth/'
-      path: '/auth'
+      path: '/'
       fullPath: '/auth/'
       preLoaderRoute: typeof AuthIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/tag/new': {
       id: '/tag/new'
@@ -984,12 +1061,33 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof CollectionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/verify-email': {
+      id: '/auth/verify-email'
+      path: '/verify-email'
+      fullPath: '/auth/verify-email'
+      preLoaderRoute: typeof AuthVerifyEmailRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/sign-up': {
+      id: '/auth/sign-up'
+      path: '/sign-up'
+      fullPath: '/auth/sign-up'
+      preLoaderRoute: typeof AuthSignUpRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/sign-in': {
+      id: '/auth/sign-in'
+      path: '/sign-in'
+      fullPath: '/auth/sign-in'
+      preLoaderRoute: typeof AuthSignInRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/auth/forgot-password': {
       id: '/auth/forgot-password'
-      path: '/auth/forgot-password'
+      path: '/forgot-password'
       fullPath: '/auth/forgot-password'
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/artist/new': {
       id: '/artist/new'
@@ -1018,6 +1116,13 @@ declare module '@tanstack/solid-router' {
       fullPath: '/profile'
       preLoaderRoute: typeof userProfileRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/auth/reset-password/': {
+      id: '/auth/reset-password/'
+      path: '/reset-password'
+      fullPath: '/auth/reset-password/'
+      preLoaderRoute: typeof AuthResetPasswordIndexRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/artist/$id/': {
       id: '/artist/$id/'
@@ -1103,6 +1208,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof EventIdCorrectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/reset-password/success': {
+      id: '/auth/reset-password/success'
+      path: '/reset-password/success'
+      fullPath: '/auth/reset-password/success'
+      preLoaderRoute: typeof AuthResetPasswordSuccessRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/artist/$id_/image-upload': {
       id: '/artist/$id_/image-upload'
       path: '/artist/$id/image-upload'
@@ -1155,6 +1267,28 @@ declare module '@tanstack/solid-router' {
   }
 }
 
+interface AuthRouteChildren {
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
+  AuthSignInRoute: typeof AuthSignInRoute
+  AuthSignUpRoute: typeof AuthSignUpRoute
+  AuthVerifyEmailRoute: typeof AuthVerifyEmailRoute
+  AuthIndexRoute: typeof AuthIndexRoute
+  AuthResetPasswordSuccessRoute: typeof AuthResetPasswordSuccessRoute
+  AuthResetPasswordIndexRoute: typeof AuthResetPasswordIndexRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
+  AuthSignInRoute: AuthSignInRoute,
+  AuthSignUpRoute: AuthSignUpRoute,
+  AuthVerifyEmailRoute: AuthVerifyEmailRoute,
+  AuthIndexRoute: AuthIndexRoute,
+  AuthResetPasswordSuccessRoute: AuthResetPasswordSuccessRoute,
+  AuthResetPasswordIndexRoute: AuthResetPasswordIndexRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 interface userProfileUsernameRouteChildren {
   userProfileUsernameImageQueueRoute: typeof userProfileUsernameImageQueueRoute
 }
@@ -1169,13 +1303,13 @@ const userProfileUsernameRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AuthRoute: AuthRouteWithChildren,
   NotificationsRoute: NotificationsRoute,
   SearchRoute: SearchRoute,
   userProfileRoute: userProfileRoute,
   AdminUsersRoute: AdminUsersRoute,
   ArtistExploreRoute: ArtistExploreRoute,
   ArtistNewRoute: ArtistNewRoute,
-  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   CollectionIdRoute: CollectionIdRoute,
   CorrectionIdRoute: CorrectionIdRoute,
   CorrectionMockRoute: CorrectionMockRoute,
@@ -1200,7 +1334,6 @@ const rootRouteChildren: RootRouteChildren = {
   TagExploreRoute: TagExploreRoute,
   TagMockRoute: TagMockRoute,
   TagNewRoute: TagNewRoute,
-  AuthIndexRoute: AuthIndexRoute,
   ChartIndexRoute: ChartIndexRoute,
   ImageQueueIndexRoute: ImageQueueIndexRoute,
   RecommendationIndexRoute: RecommendationIndexRoute,

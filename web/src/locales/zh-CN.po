@@ -95,7 +95,7 @@ msgstr "{commenters}评论了{target}。"
 msgid "{commenters} replied to [deleted]."
 msgstr "{commenters} 回复了 [已删除]。"
 
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "{count} votes · relevance {relevance}"
 msgstr "{count} 票 · 相关度 {relevance}"
 
@@ -148,11 +148,7 @@ msgstr "添加评论..."
 msgid "Add disc"
 msgstr "添加光盘"
 
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Add missing entries (artists, releases, songs, events)"
-msgstr "添加缺少的条目（艺术家、发行、歌曲、活动）"
-
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "Add tag"
 msgstr "添加标签"
 
@@ -172,10 +168,6 @@ msgstr "添加到收藏"
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Add track"
 msgstr "添加曲目"
-
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Add what is missing and keep entries consistent across the database."
-msgstr "补充缺失内容，并保持数据库条目一致。"
 
 #: src/component/Header/LeftSidebar.tsx
 msgid "Admin"
@@ -215,6 +207,7 @@ msgstr "全部分类"
 msgid "Alphabetical"
 msgstr "字母顺序"
 
+#: src/view/auth/component/AuthCredentialForm.tsx
 #: src/view/auth/component/VerifyEmailForm.tsx
 msgid "Already have an account?"
 msgstr "已经有账号了？"
@@ -388,6 +381,10 @@ msgstr "收藏时间"
 msgid "Collection"
 msgstr "收藏"
 
+#: src/view/collection/CollectionDetail.tsx
+msgid "Collection actions"
+msgstr ""
+
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "Collection created"
 msgstr "收藏已创建"
@@ -432,10 +429,6 @@ msgstr "确认"
 #: src/view/auth/reset_password/index.tsx
 msgid "Continue"
 msgstr "继续"
-
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Contribute touhou music metadata"
-msgstr "完善东方同人音乐元数据"
 
 #: src/view/correction/EntityContributors.tsx
 msgid "Contributors:"
@@ -490,10 +483,6 @@ msgstr "新建"
 #: src/view/auth/component/AuthForm.tsx
 msgid "Create account"
 msgstr "创建账号"
-
-#: src/view/auth/component/AuthForm.tsx
-msgid "Create an account to continue."
-msgstr "创建账号以继续。"
 
 #: src/view/artist/explore.tsx
 msgid "Create artist"
@@ -668,12 +657,16 @@ msgstr "解散"
 msgid "Dissolved date"
 msgstr "解散日期"
 
+#: src/view/auth/component/AuthCredentialForm.tsx
+msgid "Don't have an account?"
+msgstr "还没有账号？"
+
 #: src/view/collection/CollectionDetail.tsx
 msgid "Done"
 msgstr "完成"
 
 #: src/view/entity_tags/EntityTagAddDialog.tsx
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "Downvote"
 msgstr "反对"
 
@@ -977,7 +970,7 @@ msgid "Hey you, lost one. why you are here? <0>You should go back...</0>"
 msgstr "迷路了吗？<0>返回首页...</0>"
 
 #: src/view/entity_tags/EntityTagAddDialog.tsx
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "High"
 msgstr "高"
 
@@ -1010,6 +1003,10 @@ msgstr "图片队列"
 #: src/view/image_queue/manage.tsx
 msgid "Image Queue"
 msgstr "图片队列"
+
+#: src/view/image_queue/detail.tsx
+msgid "Image queue navigation"
+msgstr ""
 
 #: src/view/notification/InboxPage.tsx
 msgid "Inbox"
@@ -1144,10 +1141,6 @@ msgstr "加载"
 msgid "Loading items..."
 msgstr "正在加载条目..."
 
-#: src/view/entity_tags/EntityTagsSection.tsx
-msgid "Loading tags..."
-msgstr "正在加载标签..."
-
 #: src/route/collection/$id.tsx
 #: src/view/artist/edit/index.tsx
 #: src/view/artist/profile/comp/ArtistReleaseInfo.tsx
@@ -1158,6 +1151,7 @@ msgstr "正在加载标签..."
 #: src/view/comment/CommentThread.tsx
 #: src/view/correction/CorrectionHistorySection.tsx
 #: src/view/correction/Detail.tsx
+#: src/view/entity_tags/EntityTags.tsx
 #: src/view/event/Info/index.tsx
 #: src/view/label/Info/index.tsx
 #: src/view/release/Info/index.tsx
@@ -1186,7 +1180,7 @@ msgid "Location"
 msgstr "位置"
 
 #: src/view/entity_tags/EntityTagAddDialog.tsx
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "Low"
 msgstr "低"
 
@@ -1198,7 +1192,7 @@ msgstr "歌词"
 msgid "Make this collection public"
 msgstr "公开此收藏"
 
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "Manage Tags"
 msgstr "管理标签"
 
@@ -1215,7 +1209,7 @@ msgid "Mark unread"
 msgstr "标为未读"
 
 #: src/view/entity_tags/EntityTagAddDialog.tsx
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "Medium"
 msgstr "中"
 
@@ -1301,6 +1295,10 @@ msgstr "下一页"
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Next disc"
 msgstr "下一张光盘"
+
+#: src/view/image_queue/detail.tsx
+msgid "Next image queue entry"
+msgstr ""
 
 #: src/component/Pagination.tsx
 msgid "Next page"
@@ -1467,7 +1465,7 @@ msgstr "未找到标签。"
 msgid "No tags found."
 msgstr "未找到标签。"
 
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "No tags yet"
 msgstr "暂无标签"
 
@@ -1513,14 +1511,17 @@ msgstr "仅支持PNG/JPEG图像。"
 msgid "Open"
 msgstr "打开"
 
-#: src/view/auth/component/AuthForm.tsx
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Open doujin music database"
-msgstr "开放的同人音乐数据库"
-
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Open image queue"
 msgstr "打开图片队列"
+
+#: src/component/Header/index.tsx
+msgid "Open navigation menu"
+msgstr ""
+
+#: src/component/Header/index.tsx
+msgid "Open user menu"
+msgstr ""
 
 #: src/component/__legacy/chart/index.tsx
 msgid "OR"
@@ -1579,8 +1580,8 @@ msgid "Present"
 msgstr "现在"
 
 #: src/view/image_queue/detail.tsx
-msgid "Prev"
-msgstr "上一页"
+msgid "Previous"
+msgstr ""
 
 #: src/view/correction/Detail.tsx
 msgid "Previous approved baseline"
@@ -1589,6 +1590,10 @@ msgstr "先前批准的基线"
 #: src/view/release/edit/comp/ReleaseTracksField.tsx
 msgid "Previous disc"
 msgstr "上一张光盘"
+
+#: src/view/image_queue/detail.tsx
+msgid "Previous image queue entry"
+msgstr ""
 
 #: src/component/Pagination.tsx
 msgid "Previous page"
@@ -1714,7 +1719,7 @@ msgid "Releases"
 msgstr "发行"
 
 #: src/view/collection/CollectionItemCard.tsx
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 msgid "Remove"
 msgstr "移除"
 
@@ -1756,7 +1761,6 @@ msgstr "请求失败"
 
 #: src/route/collection/$id.tsx
 #: src/view/correction/Detail.tsx
-#: src/view/image_queue/detail.tsx
 msgid "Request failed."
 msgstr "请求失败。"
 
@@ -1969,6 +1973,7 @@ msgid "sign in"
 msgstr "登录"
 
 #: src/component/route.tsx
+#: src/view/auth/component/AuthCredentialForm.tsx
 #: src/view/auth/component/AuthForm.tsx
 #: src/view/auth/component/VerifyEmailForm.tsx
 #: src/view/comment/EntityComments.tsx
@@ -2097,10 +2102,6 @@ msgstr "强度足够"
 msgid "Submit"
 msgstr "提交"
 
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Submit corrections and keep metadata clean"
-msgstr "提交更正并保持元数据干净"
-
 #: src/route/artist/$id_.image-upload.tsx
 #: src/route/release/$id_.image-upload.tsx
 msgid "Submit failed."
@@ -2127,10 +2128,6 @@ msgstr "订阅"
 msgid "Support"
 msgstr "技术支持"
 
-#: src/view/auth/component/AuthLeftPanel.tsx
-msgid "Sync your contributions across devices"
-msgstr "跨设备同步您的贡献"
-
 #: src/component/Header/LeftSidebar.tsx
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
@@ -2147,7 +2144,7 @@ msgstr "标签树"
 msgid "Tag Type"
 msgstr "标签类型"
 
-#: src/view/entity_tags/EntityTagsSection.tsx
+#: src/view/entity_tags/EntityTags.tsx
 #: src/view/Homepage/component/ExploreCard.tsx
 #: src/view/Homepage/component/HomeStats.tsx
 #: src/view/search/index.tsx
@@ -2380,10 +2377,6 @@ msgstr "上传中…"
 #: src/view/artist/edit/comp/Links.tsx
 msgid "Url"
 msgstr "URL"
-
-#: src/view/auth/component/AuthForm.tsx
-msgid "Use your account to continue."
-msgstr "使用你的账号继续。"
 
 #: src/view/admin/users.tsx
 msgid "User"
