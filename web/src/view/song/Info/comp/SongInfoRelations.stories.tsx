@@ -20,7 +20,7 @@ const MOCK_RELATIONS: Song["relations"] = [
 ]
 
 const meta = {
-	title: "View/Song/Info/Relations",
+	title: "View/Song/Relations",
 	component: SongInfoRelations,
 	decorators: [withStoryRouter],
 } satisfies Meta<typeof SongInfoRelations>

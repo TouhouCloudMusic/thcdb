@@ -1,35 +1,41 @@
 import type { CorrectionHistoryItem, Song } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { ENGLISH_LANGUAGE } from "~/storybook/fixtures"
+import { withEntityDetailStoryState } from "~/storybook/entityDetail"
+import {
+	DAYBREAK_COVER_URL,
+	ENGLISH_LANGUAGE,
+	TOHOHUM_COVER_URL,
+	YABBA_RAGGA_TOHO_3_COVER_URL,
+} from "~/storybook/fixtures"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
-import { withStoryState } from "~/utils/adapter/storybook-state"
-import { createMockEntityComments } from "~/view/comment/storybook"
-import { SongInfoPageView } from "~/view/song/Info"
+import { SongInfoPage } from "~/view/song/Info"
 
 const FULL_SONG: Song = {
 	id: 42,
-	title: "幻想郷の夜明け",
+	title: "Island Girl",
 	artists: [
-		{ id: 1, name: "ZUN" },
-		{ id: 2, name: "Alstroemeria Records" },
-		{ id: 3, name: "IOSYS" },
+		{ id: 18, name: "Rolling Contact" },
+		{ id: 41, name: "天音" },
 	],
 	releases: [
 		{
-			id: 1,
-			title: "東方紅魔郷 ～ the Embodiment of Scarlet Devil",
-			cover_art_url: "https://picsum.photos/400/400?random=31",
+			id: 101,
+			title: "Yabba Ragga Toho 3",
+			track_number: "01",
+			cover_art_url: YABBA_RAGGA_TOHO_3_COVER_URL,
 		},
 		{
-			id: 2,
-			title: "東方妖々夢 ～ Perfect Cherry Blossom",
-			cover_art_url: "https://picsum.photos/400/400?random=32",
+			id: 103,
+			title: "TOHOHUM",
+			track_number: "07",
+			cover_art_url: TOHOHUM_COVER_URL,
 		},
 		{
-			id: 3,
-			title: "東方永夜抄 ～ Imperishable Night",
-			cover_art_url: "https://picsum.photos/400/400?random=33",
+			id: 102,
+			title: "Daybreak",
+			track_number: "12",
+			cover_art_url: DAYBREAK_COVER_URL,
 		},
 	],
 	credits: [
@@ -38,43 +44,43 @@ const FULL_SONG: Song = {
 			role: { id: 1, name: "Original Composer" },
 		},
 		{
-			artist: { id: 2, name: "Alstroemeria Records" },
+			artist: { id: 41, name: "天音" },
 			role: { id: 2, name: "Arranger" },
 		},
 		{
-			artist: { id: 3, name: "IOSYS" },
-			role: { id: 3, name: "Vocal Arranger" },
+			artist: { id: 18, name: "Rolling Contact" },
+			role: { id: 3, name: "Production" },
 		},
 	],
 	languages: [{ id: 1, code: "ja", name: "Japanese" }, ENGLISH_LANGUAGE],
 	localized_titles: [
 		{
 			language: { id: 1, code: "ja", name: "Japanese" },
-			title: "幻想郷の夜明け",
+			title: "アイランド・ガール",
 		},
 		{
 			language: ENGLISH_LANGUAGE,
-			title: "Dawn of Gensokyo",
+			title: "Island Girl",
 		},
 	],
 	lyrics: [
 		{
 			id: 1,
 			song_id: 42,
-			content: `東の空に光が差して
-長い夜は終わりを告げる
-霧の向こうで目覚める世界
-新しい旋律が始まる`,
+			content: `月明かりを追い越して
+遠い幻想の向こうへ
+重なる鼓動を聴きながら
+夜明けまで踊り続ける`,
 			is_main: true,
 			language: { id: 1, code: "ja", name: "Japanese" },
 		},
 		{
 			id: 2,
 			song_id: 42,
-			content: `The eastern sky begins to glow
-The long night gives way
-Across the mist a world awakens
-And a new melody begins`,
+			content: `Outrunning the moonlight
+Beyond the distant fantasy
+Listening to our rhythms converge
+We keep dancing until dawn`,
 			is_main: false,
 			language: ENGLISH_LANGUAGE,
 		},
@@ -88,7 +94,7 @@ And a new melody begins`,
 		},
 		{
 			song: { id: 101, title: "Locked Girl" },
-			artist: { id: 4, name: "dBu music" },
+			artist: { id: 52, name: "Higan Daybreak" },
 			type: { id: 2, name: "Remix" },
 			description: "",
 		},
@@ -153,21 +159,18 @@ function StoryRoot(props: StoryRootProps) {
 
 	return (
 		<div class="min-h-[900px] bg-slate-100 p-6">
-			<SongInfoPageView
+			<SongInfoPage
 				song={song()}
 				correctionHistory={correctionHistory()}
-				activeTab="Release"
-				comments={createMockEntityComments()}
-				onActiveTabChange={() => undefined}
 			/>
 		</div>
 	)
 }
 
 const meta = {
-	title: "View/Song/Info",
+	title: "View/Song",
 	component: StoryRoot,
-	decorators: [withStoryState, withStoryRouter],
+	decorators: [withEntityDetailStoryState, withStoryRouter],
 	parameters: {
 		layout: StoryLayout.FullScreen,
 		backgrounds: {

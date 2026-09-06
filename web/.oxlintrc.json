@@ -242,6 +242,7 @@
 		"unicorn/no-useless-undefined": "off",
 		"unicorn/numeric-separators-style": "off",
 		"unicorn/prefer-default-parameters": "off",
+		"unicorn/prefer-dom-node-dataset": "off",
 		"unicorn/prefer-spread": "off",
 		"jsx-a11y/label-has-associated-control": [
 			"error",

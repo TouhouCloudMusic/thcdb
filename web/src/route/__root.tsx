@@ -61,7 +61,7 @@ function Layout(props: ParentProps) {
 				type="image/x-icon"
 			/>
 			<Header />
-			<main>{props.children}</main>
+			<main class="min-w-0">{props.children}</main>
 			<Footer />
 		</div>
 	)

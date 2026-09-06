@@ -15,7 +15,7 @@ type StoryRootProps = {
 
 function StoryRoot(props: StoryRootProps) {
 	return (
-		<div class="w-[960px] border border-slate-200 bg-white">
+		<div class="w-full max-w-[960px] border border-slate-200 bg-white">
 			<ReleaseInfoTabsView
 				release={props.release}
 				activeTab={props.activeTab}

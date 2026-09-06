@@ -13,7 +13,7 @@ export function ReleaseInfoCoverImage() {
 
 	return (
 		<Image.Root>
-			<div class="isolate size-64 overflow-hidden bg-secondary">
+			<div class="isolate aspect-square w-full overflow-hidden bg-secondary sm:max-w-64">
 				<Image.Fallback>
 					{(state) => (
 						<div class="flex size-full items-center justify-center bg-slate-100">

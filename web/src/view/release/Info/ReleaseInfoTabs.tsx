@@ -1,7 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { Release } from "@thc/api"
 import { createSignal, Show } from "solid-js"
-import { twJoin } from "tailwind-merge"
 
 import { Tab } from "~/component/atomic"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
@@ -24,7 +23,7 @@ type ReleaseInfoTabsViewProps = {
 	onActiveTabChange: (value: string) => void
 }
 
-const TRIGGER_CLASS = "py-4"
+const TRIGGER_CLASS = "py-3"
 
 export function ReleaseInfoTabs(props: ReleaseInfoTabsProps) {
 	const hasTracks = () => (props.release.tracks?.length ?? 0) > 0
@@ -58,8 +57,8 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 			value={props.activeTab}
 			onChange={props.onActiveTabChange}
 		>
-			<div class={twJoin(Tab.CONTAINER_CLASS, "px-4")}>
-				<Tab.List class="gap-12">
+			<Tab.ScrollArea>
+				<Tab.List class={Tab.CONTAINER_CLASS}>
 					<Show when={hasTracks()}>
 						<Tab.Trigger
 							value="Tracks"
@@ -88,7 +87,7 @@ export function ReleaseInfoTabsView(props: ReleaseInfoTabsViewProps) {
 					</Tab.Trigger>
 					<Tab.Indicator />
 				</Tab.List>
-			</div>
+			</Tab.ScrollArea>
 			<Show when={hasTracks()}>
 				<Tab.Content
 					value="Tracks"

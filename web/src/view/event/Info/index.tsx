@@ -1,7 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Event } from "@thc/api"
 import { createSignal, Show, Suspense } from "solid-js"
-import { twJoin } from "tailwind-merge"
 
 import { Tab } from "~/component/atomic"
 import { ExternalLinks } from "~/component/data/ExternalLinks"
@@ -9,7 +8,10 @@ import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
-import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
+import {
+	ADD_TO_COLLECTION_ACTIONS_CLASS,
+	AddToUserCollectionButton,
+} from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
@@ -33,16 +35,18 @@ export function EventInfoPage(props: EventInfoPageProps) {
 	}
 
 	return (
-		<PageLayout class="p-8">
+		<PageLayout class="p-[clamp(1rem,4vw,2rem)]">
 			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<EventInfoPageContext.Provider value={contextValue}>
 					<div class="flex flex-col gap-y-6">
 						<div class="flex flex-col gap-y-4">
 							<EventInfoHeader />
-							<AddToUserCollectionButton
-								entityType="Event"
-								entityId={props.event.id}
-							/>
+							<div class={ADD_TO_COLLECTION_ACTIONS_CLASS}>
+								<AddToUserCollectionButton
+									entityType="Event"
+									entityId={props.event.id}
+								/>
+							</div>
 						</div>
 						<EventInfoTabs />
 						<EntityCorrectionMetadataSection
@@ -109,7 +113,7 @@ function EventInfoHeader() {
 	)
 }
 
-const TRIGGER_CLASS = "py-4"
+const TRIGGER_CLASS = "py-3"
 
 function EventInfoTabs() {
 	const { t } = useLingui()
@@ -128,8 +132,8 @@ function EventInfoTabs() {
 			value={activeTab()}
 			onChange={setActiveTab}
 		>
-			<div class={twJoin(Tab.CONTAINER_CLASS, "px-4")}>
-				<Tab.List class="gap-12">
+			<Tab.ScrollArea>
+				<Tab.List class={Tab.CONTAINER_CLASS}>
 					<Show when={hasDescription()}>
 						<Tab.Trigger
 							value="Description"
@@ -150,7 +154,7 @@ function EventInfoTabs() {
 					</Tab.Trigger>
 					<Tab.Indicator />
 				</Tab.List>
-			</div>
+			</Tab.ScrollArea>
 			<Show when={hasDescription()}>
 				<Tab.Content
 					value="Description"
