@@ -178,6 +178,9 @@ utoipa = { version = "5", features = [
     "preserve_order",
     "url",
 ] }
+url = { version = "2.5.4", features = [
+    "serde",
+] }
 
 [workspace.lints.rust]
 async_fn_in_trait       = "allow"
@@ -345,9 +348,6 @@ tower_governor = "0.8.0"
 tracing.workspace = true
 tracing-subscriber.workspace = true
 trait-variant = "0.1.2"
-url = { version = "2.5.4", features = [
-    "serde",
-] }
 utoipa.workspace = true
 utoipa-axum = "0.2"
 utoipa-scalar = { version = "0.3", features = [

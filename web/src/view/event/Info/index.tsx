@@ -4,6 +4,7 @@ import { createSignal, Show, Suspense } from "solid-js"
 import { twJoin } from "tailwind-merge"
 
 import { Tab } from "~/component/atomic"
+import { ExternalLinks } from "~/component/data/ExternalLinks"
 import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
@@ -98,6 +99,11 @@ function EventInfoHeader() {
 						</Intersperse>
 					</ul>
 				</Show>
+				<ExternalLinks
+					links={ctx.event.links}
+					class="contents"
+					labelClass="text-tertiary"
+				/>
 			</div>
 		</>
 	)

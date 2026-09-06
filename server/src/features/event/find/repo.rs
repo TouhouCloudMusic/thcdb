@@ -1,5 +1,5 @@
 use domain::shared::{DateWithPrecision, Location};
-use entity::{event, event_alternative_name};
+use entity::{event, event_alternative_name, event_link};
 use infra_db::SeaOrmRepository;
 use itertools::{Itertools, izip};
 use sea_orm::{
@@ -137,8 +137,13 @@ async fn find_many_impl(
         .await
         .db_operation("load event alternative names")?;
 
-    Ok(izip!(events, alt_names)
-        .map(|(event, alt_name)| Event {
+    let links = events
+        .load_many(event_link::Entity, db)
+        .await
+        .db_operation("load event links")?;
+
+    Ok(izip!(events, alt_names, links)
+        .map(|(event, alt_name, links)| Event {
             id: event.id,
             name: event.name,
             short_description: event.short_description,
@@ -169,6 +174,7 @@ async fn find_many_impl(
                     name: name.name,
                 })
                 .collect_vec(),
+            links: links.into_iter().map(|link| link.url).collect(),
         })
         .collect())
 }

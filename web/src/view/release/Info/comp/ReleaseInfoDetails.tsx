@@ -1,6 +1,7 @@
 import { useLingui } from "@lingui/solid/macro"
 import { Show } from "solid-js"
 
+import { ExternalLinks } from "~/component/data/ExternalLinks"
 import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { assertContext } from "~/utils/solid/assertContext"
@@ -58,6 +59,12 @@ export function ReleaseInfoDetails() {
 					</Intersperse>
 				</ul>
 			</Show>
+
+			<ExternalLinks
+				links={ctx.release.links}
+				class="contents"
+				labelClass="text-tertiary"
+			/>
 		</div>
 	)
 }

@@ -20,6 +20,7 @@ pub(crate) async fn create_release_with_relations(
         create_release_catalog_number(release.id, &data.catalog_nums, tx),
         create_release_credit(release.id, &data.credits, tx),
         create_release_event(release.id, &data.events, tx),
+        create_release_link(release.id, &data.links, tx),
         create_release_localized_title(release.id, &data.localized_titles, tx)
     )?;
 
@@ -44,6 +45,7 @@ pub(crate) async fn create_release_history_with_relations(
         ),
         create_release_credit_history(history.id, &data.credits, tx),
         create_release_event_history(history.id, &data.events, tx),
+        create_release_link_history(history.id, &data.links, tx),
         create_release_localized_title_history(
             history.id,
             &data.localized_titles,
@@ -103,6 +105,7 @@ pub(crate) async fn apply_update(
         update_release_catalog_number(correction.entity_id, history.id, tx),
         update_release_credit(correction.entity_id, history.id, tx),
         update_release_event(correction.entity_id, history.id, tx),
+        update_release_link(correction.entity_id, history.id, tx),
         update_release_localized_title(correction.entity_id, history.id, tx),
         update_release_track_and_disc(correction.entity_id, history.id, tx),
     )?;

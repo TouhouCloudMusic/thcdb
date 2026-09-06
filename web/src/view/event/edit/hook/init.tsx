@@ -35,6 +35,7 @@ export function toEventFormInitValue(
 				end_date: undefined,
 				alternative_names: [],
 				location: undefined,
+				links: [],
 			},
 		}
 	}
@@ -51,6 +52,7 @@ export function toEventFormInitValue(
 			alternative_names:
 				input.event.alternative_names?.map((alt) => alt.name) ?? [],
 			location: input.event.location ?? undefined,
+			links: input.event.links ?? [],
 		},
 	}
 }

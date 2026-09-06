@@ -4,6 +4,7 @@ import { DateWithPrecision } from "../shared"
 import {
 	EntityId,
 	EntityIdent,
+	HttpUrl,
 	Location,
 	Year,
 	NewLocalizedName,
@@ -36,7 +37,7 @@ export const NewArtist = v.object({
 	text_aliases: v.nullish(v.array(EntityIdent)),
 	start_date: v.nullish(DateWithPrecision.Schema),
 	end_date: v.nullish(DateWithPrecision.Schema),
-	links: v.nullish(v.array(v.pipe(v.string(), v.url()))),
+	links: v.nullish(v.array(HttpUrl)),
 	start_location: v.nullish(Location),
 	current_location: v.nullish(Location),
 	memberships: v.nullish(v.array(NewMembership)),

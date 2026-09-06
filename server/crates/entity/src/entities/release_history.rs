@@ -37,6 +37,8 @@ pub enum Relation {
     ReleaseEventHistory,
     #[sea_orm(has_many = "super::release_localized_title_history::Entity")]
     ReleaseLocalizedTitleHistory,
+    #[sea_orm(has_many = "super::release_link_history::Entity")]
+    ReleaseLinkHistory,
     #[sea_orm(has_many = "super::release_track_history::Entity")]
     ReleaseTrackHistory,
 }
@@ -74,6 +76,12 @@ impl Related<super::release_event_history::Entity> for Entity {
 impl Related<super::release_localized_title_history::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ReleaseLocalizedTitleHistory.def()
+    }
+}
+
+impl Related<super::release_link_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseLinkHistory.def()
     }
 }
 

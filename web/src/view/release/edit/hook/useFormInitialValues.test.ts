@@ -22,6 +22,7 @@ describe("release form initialization", () => {
 				credits: [],
 				discs: [{ name: "" }],
 				tracks: [],
+				links: [],
 			},
 		})
 	})
@@ -83,6 +84,7 @@ describe("release form initialization", () => {
 					on: [1, 2],
 				},
 			],
+			links: ["https://example.com/releases/1"],
 		}
 
 		const result = useReleaseFormInitialValues({
@@ -104,6 +106,7 @@ describe("release form initialization", () => {
 			credits: result.data.credits,
 			discs: result.data.discs,
 			tracks: result.data.tracks,
+			links: result.data.links,
 		}).toStrictEqual({
 			localizedTitles: [
 				{ language_id: 1, title: "EN" },
@@ -135,6 +138,7 @@ describe("release form initialization", () => {
 					track_number: undefined,
 				},
 			],
+			links: ["https://example.com/releases/1"],
 		})
 	})
 })

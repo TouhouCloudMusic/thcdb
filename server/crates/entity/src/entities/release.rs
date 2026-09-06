@@ -43,6 +43,8 @@ pub enum Relation {
     ReleaseImageQueue,
     #[sea_orm(has_many = "super::release_localized_title::Entity")]
     ReleaseLocalizedTitle,
+    #[sea_orm(has_many = "super::release_link::Entity")]
+    ReleaseLink,
     #[sea_orm(has_many = "super::release_tag_vote::Entity")]
     ReleaseTagVote,
     #[sea_orm(has_many = "super::release_track::Entity")]
@@ -100,6 +102,12 @@ impl Related<super::release_image_queue::Entity> for Entity {
 impl Related<super::release_localized_title::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ReleaseLocalizedTitle.def()
+    }
+}
+
+impl Related<super::release_link::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ReleaseLink.def()
     }
 }
 

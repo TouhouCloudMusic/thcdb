@@ -34,11 +34,19 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::event_alternative_name_history::Entity")]
     EventAlternativeNameHistory,
+    #[sea_orm(has_many = "super::event_link_history::Entity")]
+    EventLinkHistory,
 }
 
 impl Related<super::event_alternative_name_history::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::EventAlternativeNameHistory.def()
+    }
+}
+
+impl Related<super::event_link_history::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::EventLinkHistory.def()
     }
 }
 

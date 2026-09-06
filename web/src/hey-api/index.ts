@@ -563,6 +563,7 @@ export type {
 	HomeMetadataErrors,
 	HomeMetadataResponse,
 	HomeMetadataResponses,
+	HttpUrl,
 	ImageQueueAction,
 	ImageQueueDetail,
 	ImageQueueDetailData,

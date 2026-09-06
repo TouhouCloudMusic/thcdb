@@ -20,6 +20,12 @@ export const EntityIdent = v.pipe(
 	v.maxLength(ENTITY_IDENT_MAX_LEN),
 )
 
+export const HttpUrl = v.pipe(
+	v.string(),
+	v.url(),
+	v.regex(/^[Hh][Tt][Tt][Pp][Ss]?:\/\//u, "URL must use HTTP or HTTPS"),
+)
+
 const locationField = v.nullish(v.pipe(v.string(), v.nonEmpty()))
 export const Location = v.object({
 	country: locationField,

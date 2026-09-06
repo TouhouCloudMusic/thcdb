@@ -7,6 +7,7 @@ import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 
 import { FormActionBar } from "~/component/form"
+import { ExternalLinksField } from "~/component/form/ExternalLinksField"
 import { NewLabelCorrection } from "~/domain/label"
 import { PageLayout } from "~/layout/PageLayout"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
@@ -109,6 +110,10 @@ function FormContent(props: Props) {
 						<LabelFoundersField
 							class="lg:col-end-7"
 							initFounderIds={props.type === "edit" ? props.label.founders : []}
+						/>
+						<ExternalLinksField
+							of={form}
+							class="lg:col-end-7"
 						/>
 						<LabelFormDesc
 							class="lg:col-end-7"

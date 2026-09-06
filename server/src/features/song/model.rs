@@ -1,7 +1,9 @@
 use std::collections::BTreeSet;
 
 use derive_more::Display;
-use domain::shared::{EntityIdent, Language, NewLocalizedName, SimpleArtist};
+use domain::shared::{
+    EntityIdent, HttpUrl, Language, NewLocalizedName, SimpleArtist,
+};
 use entity::enums::EntityType;
 use entity::song_relation_type::Model as DbSongRelationType;
 use macros::AutoMapper;
@@ -24,6 +26,7 @@ pub struct Song {
     pub credits: Vec<SongCredit>,
     pub languages: Vec<Language>,
     pub localized_titles: Vec<LocalizedTitle>,
+    pub links: Vec<String>,
     pub relations: Vec<SongRelation>,
     pub lyrics: Vec<SongLyrics>,
 }
@@ -86,6 +89,7 @@ pub struct NewSong {
     pub credits: Option<Vec<NewSongCredit>>,
     pub languages: Option<Vec<i32>>,
     pub localized_titles: Option<Vec<NewLocalizedName>>,
+    pub links: Option<Vec<HttpUrl>>,
     pub relations: Option<Vec<NewSongRelation>>,
 }
 
@@ -271,6 +275,7 @@ mod tests {
             languages: None,
             localized_titles: None,
             relations,
+            links: None,
         }
     }
 

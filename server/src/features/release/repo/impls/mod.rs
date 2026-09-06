@@ -11,6 +11,7 @@ mod conv;
 mod credit;
 mod disc;
 mod event;
+mod link;
 mod loader;
 mod localized_title;
 mod track;
@@ -19,6 +20,7 @@ pub(super) use catalog_number::*;
 pub(super) use credit::*;
 pub(super) use disc::*;
 pub(super) use event::*;
+pub(super) use link::*;
 pub(super) use localized_title::*;
 pub(super) use track::*;
 

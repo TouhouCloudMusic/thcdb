@@ -29,6 +29,7 @@ export function useReleaseFormInitialValues(
 					credits: [],
 					discs: [{ name: "" }],
 					tracks: [],
+					links: [],
 				},
 			}
 		: {
@@ -82,6 +83,7 @@ export function useReleaseFormInitialValues(
 								track_number: t.track_number ?? undefined,
 							}))
 						})() ?? [],
+					links: props.release.links ?? [],
 				},
 			}
 }
