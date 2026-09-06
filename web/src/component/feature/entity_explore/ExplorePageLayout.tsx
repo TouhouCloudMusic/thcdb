@@ -19,11 +19,11 @@ type ExplorePageLayoutProps = ParentProps<{
 
 export function ExplorePageLayout(props: ExplorePageLayoutProps) {
 	return (
-		<PageLayout class="flex flex-col gap-6 p-8">
-			<div class="flex items-center justify-between gap-4">
+		<PageLayout class="flex flex-col gap-6 p-4 sm:p-8">
+			<div class="flex flex-wrap items-center justify-between gap-4">
 				<h1
 					id={props.titleId}
-					class={"text-2xl font-light tracking-tighter text-slate-900"}
+					class={"text-2xl font-light wrap-anywhere text-slate-900"}
 				>
 					{props.title}
 				</h1>
@@ -32,7 +32,7 @@ export function ExplorePageLayout(props: ExplorePageLayoutProps) {
 					{(action) => (
 						<Link
 							to={action().to}
-							class="text-sm font-light text-primary"
+							class="text-sm font-light"
 						>
 							{action().label}
 						</Link>

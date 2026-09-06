@@ -1,9 +1,9 @@
 import { useLingui } from "@lingui/solid/macro"
-import type { Tag } from "@thc/api"
 import { For, Show } from "solid-js"
 
 import { Card } from "~/component/atomic/Card"
 import { Link } from "~/component/atomic/Link"
+import type { TagListItem } from "~/hey-api"
 import { ExploreSection } from "~/view/Homepage/component/ExploreSection"
 import { HomeEmptySlot } from "~/view/Homepage/component/HomeEmptySlot"
 import { TAGS_LIMIT } from "~/view/Homepage/constants"
@@ -29,7 +29,7 @@ function TagsListSkeleton() {
 	)
 }
 
-function TagsList(props: { tags: Tag[] }) {
+function TagsList(props: { tags: TagListItem[] }) {
 	return (
 		<Show
 			when={props.tags.length > 0}
@@ -71,7 +71,7 @@ export function TagsCardSkeleton() {
 	)
 }
 
-export function TagsCard(props: { tags: Tag[] }) {
+export function TagsCard(props: { tags: TagListItem[] }) {
 	const { t } = useLingui()
 	return (
 		<Card class="p-0 shadow-none">

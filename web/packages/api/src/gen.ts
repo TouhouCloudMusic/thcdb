@@ -1671,6 +1671,14 @@ export type components = {
         };
         /** @enum {string} */
         ArtistImageType: "Profile";
+        ArtistListItem: {
+            artist_type: components["schemas"]["ArtistType"];
+            current_location: components["schemas"]["Location"];
+            /** Format: int32 */
+            id: number;
+            name: string;
+            profile_image_url?: string | null;
+        };
         ArtistProfileImageFormData: {
             /** Format: binary */
             data: string;
@@ -1904,48 +1912,95 @@ export type components = {
             /** Format: int32 */
             next_cursor?: number | null;
         };
-        CursorResponse_SimpleArtist: {
+        CursorResponse_SearchResult_ArtistListItem: {
             items: {
-                /** Format: int32 */
-                id: number;
-                name: string;
+                item: {
+                    artist_type: components["schemas"]["ArtistType"];
+                    current_location: components["schemas"]["Location"];
+                    /** Format: int32 */
+                    id: number;
+                    name: string;
+                    profile_image_url?: string | null;
+                };
+                matched_name?: string | null;
             }[];
             /** Format: int32 */
             next_cursor?: number | null;
         };
-        CursorResponse_SimpleEvent: {
+        CursorResponse_SearchResult_EventListItem: {
             items: {
-                /** Format: int32 */
-                id: number;
-                name: string;
+                item: {
+                    end_date?: null | components["schemas"]["DateWithPrecision"];
+                    /** Format: int32 */
+                    id: number;
+                    location: components["schemas"]["Location"];
+                    name: string;
+                    short_description: string;
+                    start_date?: null | components["schemas"]["DateWithPrecision"];
+                };
+                matched_name?: string | null;
             }[];
             /** Format: int32 */
             next_cursor?: number | null;
         };
-        CursorResponse_SimpleLabel: {
+        CursorResponse_SearchResult_LabelListItem: {
             items: {
-                /** Format: int32 */
-                id: number;
-                name: string;
+                item: {
+                    founded_date?: null | components["schemas"]["DateWithPrecision"];
+                    founders: components["schemas"]["SimpleArtist"][];
+                    /** Format: int32 */
+                    id: number;
+                    localized_names: components["schemas"]["LocalizedName"][];
+                    name: string;
+                };
+                matched_name?: string | null;
             }[];
             /** Format: int32 */
             next_cursor?: number | null;
         };
-        CursorResponse_SimpleRelease: {
+        CursorResponse_SearchResult_ReleaseListItem: {
             items: {
-                cover_art_url?: string | null;
-                /** Format: int32 */
-                id: number;
-                title: string;
+                item: {
+                    artists: components["schemas"]["SimpleArtist"][];
+                    catalog_numbers: string[];
+                    cover_art_url?: string | null;
+                    /** Format: int32 */
+                    id: number;
+                    release_date?: null | components["schemas"]["DateWithPrecision"];
+                    release_type: components["schemas"]["ReleaseType"];
+                    title: string;
+                };
+                matched_name?: string | null;
             }[];
             /** Format: int32 */
             next_cursor?: number | null;
         };
-        CursorResponse_SongRef: {
+        CursorResponse_SearchResult_SongListItem: {
             items: {
-                /** Format: int32 */
-                id: number;
-                title: string;
+                item: {
+                    artists: components["schemas"]["SimpleArtist"][];
+                    cover_art_url?: string | null;
+                    /** Format: int32 */
+                    id: number;
+                    releases: components["schemas"]["ReleaseRef"][];
+                    title: string;
+                };
+                matched_name?: string | null;
+            }[];
+            /** Format: int32 */
+            next_cursor?: number | null;
+        };
+        CursorResponse_SearchResult_TagListItem: {
+            items: {
+                item: {
+                    /** Format: int32 */
+                    id: number;
+                    name: string;
+                    parents: components["schemas"]["TagRef"][];
+                    short_description: string;
+                    type: components["schemas"]["TagType"];
+                };
+                matched_name?: string | null;
             }[];
             /** Format: int32 */
             next_cursor?: number | null;
@@ -1963,16 +2018,6 @@ export type components = {
                 /** Format: int32 */
                 user_vote?: number | null;
                 votes?: components["schemas"]["TagAggregateVote"][];
-            }[];
-            /** Format: int32 */
-            next_cursor?: number | null;
-        };
-        CursorResponse_TagRef: {
-            items: {
-                /** Format: int32 */
-                id: number;
-                name: string;
-                type: components["schemas"]["TagType"];
             }[];
             /** Format: int32 */
             next_cursor?: number | null;
@@ -2135,11 +2180,11 @@ export type components = {
             status: string;
         };
         DataPageArtist: {
-            data: components["schemas"]["PageResponse_Artist"];
+            data: components["schemas"]["PageResponse_ArtistListItem"];
             status: string;
         };
         DataPageEvent: {
-            data: components["schemas"]["PageResponse_Event"];
+            data: components["schemas"]["PageResponse_EventListItem"];
             status: string;
         };
         DataPageFollowedUserCollection: {
@@ -2147,19 +2192,19 @@ export type components = {
             status: string;
         };
         DataPageLabel: {
-            data: components["schemas"]["PageResponse_Label"];
+            data: components["schemas"]["PageResponse_LabelListItem"];
             status: string;
         };
         DataPageRelease: {
-            data: components["schemas"]["PageResponse_Release"];
+            data: components["schemas"]["PageResponse_ReleaseListItem"];
             status: string;
         };
         DataPageSong: {
-            data: components["schemas"]["PageResponse_Song"];
+            data: components["schemas"]["PageResponse_SongListItem"];
             status: string;
         };
         DataPageTag: {
-            data: components["schemas"]["PageResponse_Tag"];
+            data: components["schemas"]["PageResponse_TagListItem"];
             status: string;
         };
         DataPageUserCollection: {
@@ -2190,32 +2235,8 @@ export type components = {
             data: components["schemas"]["CursorResponse_PendingImageQueueItem"];
             status: string;
         };
-        DataPaginatedSimpleArtist: {
-            data: components["schemas"]["CursorResponse_SimpleArtist"];
-            status: string;
-        };
-        DataPaginatedSimpleEvent: {
-            data: components["schemas"]["CursorResponse_SimpleEvent"];
-            status: string;
-        };
-        DataPaginatedSimpleLabel: {
-            data: components["schemas"]["CursorResponse_SimpleLabel"];
-            status: string;
-        };
-        DataPaginatedSimpleRelease: {
-            data: components["schemas"]["CursorResponse_SimpleRelease"];
-            status: string;
-        };
-        DataPaginatedSongRef: {
-            data: components["schemas"]["CursorResponse_SongRef"];
-            status: string;
-        };
         DataPaginatedTagAggregate: {
             data: components["schemas"]["CursorResponse_TagAggregate"];
-            status: string;
-        };
-        DataPaginatedTagRef: {
-            data: components["schemas"]["CursorResponse_TagRef"];
             status: string;
         };
         DataPaginatedUserImageQueueItem: {
@@ -2231,8 +2252,32 @@ export type components = {
             data: components["schemas"]["ResendVerificationEmailResponse"];
             status: string;
         };
+        DataSearchArtistPage: {
+            data: components["schemas"]["CursorResponse_SearchResult_ArtistListItem"];
+            status: string;
+        };
+        DataSearchEventPage: {
+            data: components["schemas"]["CursorResponse_SearchResult_EventListItem"];
+            status: string;
+        };
+        DataSearchLabelPage: {
+            data: components["schemas"]["CursorResponse_SearchResult_LabelListItem"];
+            status: string;
+        };
+        DataSearchReleasePage: {
+            data: components["schemas"]["CursorResponse_SearchResult_ReleaseListItem"];
+            status: string;
+        };
         DataSearchResponse: {
             data: components["schemas"]["SearchResponse"];
+            status: string;
+        };
+        DataSearchSongPage: {
+            data: components["schemas"]["CursorResponse_SearchResult_SongListItem"];
+            status: string;
+        };
+        DataSearchTagPage: {
+            data: components["schemas"]["CursorResponse_SearchResult_TagListItem"];
             status: string;
         };
         DataSignUpResponse: {
@@ -2380,6 +2425,15 @@ export type components = {
             short_description?: string;
             start_date?: null | components["schemas"]["DateWithPrecision"];
         };
+        EventListItem: {
+            end_date?: null | components["schemas"]["DateWithPrecision"];
+            /** Format: int32 */
+            id: number;
+            location: components["schemas"]["Location"];
+            name: string;
+            short_description: string;
+            start_date?: null | components["schemas"]["DateWithPrecision"];
+        };
         EventSummary: {
             /** Format: int32 */
             id: number;
@@ -2466,6 +2520,14 @@ export type components = {
             /** Format: int32 */
             id: number;
             links: string[];
+            localized_names: components["schemas"]["LocalizedName"][];
+            name: string;
+        };
+        LabelListItem: {
+            founded_date?: null | components["schemas"]["DateWithPrecision"];
+            founders: components["schemas"]["SimpleArtist"][];
+            /** Format: int32 */
+            id: number;
             localized_names: components["schemas"]["LocalizedName"][];
             name: string;
         };
@@ -2857,26 +2919,14 @@ export type components = {
         };
         /** @enum {string} */
         NotificationState: "inbox" | "unread" | "saved";
-        PageResponse_Artist: {
+        PageResponse_ArtistListItem: {
             items: {
-                /** @description List of id of artist aliases */
-                aliases?: number[];
                 artist_type: components["schemas"]["ArtistType"];
-                current_location?: components["schemas"]["Location"];
-                end_date?: null | components["schemas"]["DateWithPrecision"];
+                current_location: components["schemas"]["Location"];
                 /** Format: int32 */
                 id: number;
-                links?: string[];
-                localized_names?: components["schemas"]["LocalizedName"][];
-                /** @description Groups list for individuals, member list for groups, */
-                memberships?: components["schemas"]["Membership"][];
                 name: string;
-                /** @description Profile image of artist */
                 profile_image_url?: string | null;
-                start_date?: null | components["schemas"]["DateWithPrecision"];
-                start_location?: components["schemas"]["Location"];
-                /** @description Aliases without own page */
-                text_aliases?: string[] | null;
             }[];
             /** Format: int64 */
             page: number;
@@ -2887,17 +2937,14 @@ export type components = {
             /** Format: int64 */
             total_pages: number;
         };
-        PageResponse_Event: {
+        PageResponse_EventListItem: {
             items: {
-                alternative_names?: components["schemas"]["AlternativeName"][];
-                description?: string;
                 end_date?: null | components["schemas"]["DateWithPrecision"];
                 /** Format: int32 */
                 id: number;
-                links?: string[];
-                location?: components["schemas"]["Location"];
+                location: components["schemas"]["Location"];
                 name: string;
-                short_description?: string;
+                short_description: string;
                 start_date?: null | components["schemas"]["DateWithPrecision"];
             }[];
             /** Format: int64 */
@@ -2924,14 +2971,12 @@ export type components = {
             /** Format: int64 */
             total_pages: number;
         };
-        PageResponse_Label: {
+        PageResponse_LabelListItem: {
             items: {
-                dissolved_date?: null | components["schemas"]["DateWithPrecision"];
                 founded_date?: null | components["schemas"]["DateWithPrecision"];
-                founders: number[];
+                founders: components["schemas"]["SimpleArtist"][];
                 /** Format: int32 */
                 id: number;
-                links: string[];
                 localized_names: components["schemas"]["LocalizedName"][];
                 name: string;
             }[];
@@ -2944,24 +2989,16 @@ export type components = {
             /** Format: int64 */
             total_pages: number;
         };
-        PageResponse_Release: {
+        PageResponse_ReleaseListItem: {
             items: {
-                artists?: components["schemas"]["ReleaseArtist"][];
-                catalog_nums?: components["schemas"]["CatalogNumber"][];
+                artists: components["schemas"]["SimpleArtist"][];
+                catalog_numbers: string[];
                 cover_art_url?: string | null;
-                credits?: components["schemas"]["ReleaseCredit"][];
-                discs?: components["schemas"]["ReleaseDisc"][];
-                events?: components["schemas"]["SimpleEvent"][];
                 /** Format: int32 */
                 id: number;
-                links?: string[];
-                localized_titles?: components["schemas"]["LocalizedTitle"][];
-                recording_date_end?: null | components["schemas"]["DateWithPrecision"];
-                recording_date_start?: null | components["schemas"]["DateWithPrecision"];
                 release_date?: null | components["schemas"]["DateWithPrecision"];
                 release_type: components["schemas"]["ReleaseType"];
                 title: string;
-                tracks?: components["schemas"]["ReleaseTrack"][];
             }[];
             /** Format: int64 */
             page: number;
@@ -2972,18 +3009,13 @@ export type components = {
             /** Format: int64 */
             total_pages: number;
         };
-        PageResponse_Song: {
+        PageResponse_SongListItem: {
             items: {
-                artists?: components["schemas"]["SimpleArtist"][];
-                credits?: components["schemas"]["SongCredit"][];
+                artists: components["schemas"]["SimpleArtist"][];
+                cover_art_url?: string | null;
                 /** Format: int32 */
                 id: number;
-                languages?: components["schemas"]["Language"][];
-                links?: string[];
-                localized_titles?: components["schemas"]["LocalizedTitle"][];
-                lyrics?: components["schemas"]["SongLyrics"][];
-                relations?: components["schemas"]["SongRelation"][];
-                releases?: components["schemas"]["SongRelease"][];
+                releases: components["schemas"]["ReleaseRef"][];
                 title: string;
             }[];
             /** Format: int64 */
@@ -2995,14 +3027,12 @@ export type components = {
             /** Format: int64 */
             total_pages: number;
         };
-        PageResponse_Tag: {
+        PageResponse_TagListItem: {
             items: {
-                alt_names?: components["schemas"]["AlternativeName"][];
-                description: string;
                 /** Format: int32 */
                 id: number;
                 name: string;
-                relations?: components["schemas"]["TagRelation"][];
+                parents: components["schemas"]["TagRef"][];
                 short_description: string;
                 type: components["schemas"]["TagType"];
             }[];
@@ -3124,6 +3154,21 @@ export type components = {
         };
         /** @enum {string} */
         ReleaseImageType: "Cover";
+        ReleaseListItem: {
+            artists: components["schemas"]["SimpleArtist"][];
+            catalog_numbers: string[];
+            cover_art_url?: string | null;
+            /** Format: int32 */
+            id: number;
+            release_date?: null | components["schemas"]["DateWithPrecision"];
+            release_type: components["schemas"]["ReleaseType"];
+            title: string;
+        };
+        ReleaseRef: {
+            /** Format: int32 */
+            id: number;
+            title: string;
+        };
         /** @enum {string} */
         ReleaseSortField: "release_date" | "created_at" | "updated_at";
         ReleaseSummary: {
@@ -3170,12 +3215,12 @@ export type components = {
         /** @enum {string} */
         Score: "Veto" | "Low" | "Medium" | "High";
         SearchResponse: {
-            artists: components["schemas"]["CursorResponse_SimpleArtist"];
-            events: components["schemas"]["CursorResponse_SimpleEvent"];
-            labels: components["schemas"]["CursorResponse_SimpleLabel"];
-            releases: components["schemas"]["CursorResponse_SimpleRelease"];
-            songs: components["schemas"]["CursorResponse_SongRef"];
-            tags: components["schemas"]["CursorResponse_TagRef"];
+            artists: components["schemas"]["CursorResponse_SearchResult_ArtistListItem"];
+            events: components["schemas"]["CursorResponse_SearchResult_EventListItem"];
+            labels: components["schemas"]["CursorResponse_SearchResult_LabelListItem"];
+            releases: components["schemas"]["CursorResponse_SearchResult_ReleaseListItem"];
+            songs: components["schemas"]["CursorResponse_SearchResult_SongListItem"];
+            tags: components["schemas"]["CursorResponse_SearchResult_TagListItem"];
         };
         SetUserRolesRequest: {
             roles: components["schemas"]["EditableUserRole"][];
@@ -3224,6 +3269,14 @@ export type components = {
         SongCredit: {
             artist: components["schemas"]["SimpleArtist"];
             role?: null | components["schemas"]["CreditRoleRef"];
+        };
+        SongListItem: {
+            artists: components["schemas"]["SimpleArtist"][];
+            cover_art_url?: string | null;
+            /** Format: int32 */
+            id: number;
+            releases: components["schemas"]["ReleaseRef"][];
+            title: string;
         };
         SongLyrics: {
             content: string;
@@ -3283,6 +3336,14 @@ export type components = {
             /** Format: int32 */
             score: number;
             user_name: string;
+        };
+        TagListItem: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            parents: components["schemas"]["TagRef"][];
+            short_description: string;
+            type: components["schemas"]["TagType"];
         };
         TagRef: {
             /** Format: int32 */
@@ -3425,6 +3486,7 @@ export type Artist = components['schemas']['Artist'];
 export type ArtistCommonFilter = components['schemas']['ArtistCommonFilter'];
 export type ArtistImageQueueTarget = components['schemas']['ArtistImageQueueTarget'];
 export type ArtistImageType = components['schemas']['ArtistImageType'];
+export type ArtistListItem = components['schemas']['ArtistListItem'];
 export type ArtistProfileImageFormData = components['schemas']['ArtistProfileImageFormData'];
 export type ArtistReleaseArtist = components['schemas']['ArtistReleaseArtist'];
 export type ArtistSummary = components['schemas']['ArtistSummary'];
@@ -3458,13 +3520,13 @@ export type CurrentImageMetadata = components['schemas']['CurrentImageMetadata']
 export type CursorResponseCredit = components['schemas']['CursorResponse_Credit'];
 export type CursorResponseDiscography = components['schemas']['CursorResponse_Discography'];
 export type CursorResponsePendingImageQueueItem = components['schemas']['CursorResponse_PendingImageQueueItem'];
-export type CursorResponseSimpleArtist = components['schemas']['CursorResponse_SimpleArtist'];
-export type CursorResponseSimpleEvent = components['schemas']['CursorResponse_SimpleEvent'];
-export type CursorResponseSimpleLabel = components['schemas']['CursorResponse_SimpleLabel'];
-export type CursorResponseSimpleRelease = components['schemas']['CursorResponse_SimpleRelease'];
-export type CursorResponseSongRef = components['schemas']['CursorResponse_SongRef'];
+export type CursorResponseSearchResultArtistListItem = components['schemas']['CursorResponse_SearchResult_ArtistListItem'];
+export type CursorResponseSearchResultEventListItem = components['schemas']['CursorResponse_SearchResult_EventListItem'];
+export type CursorResponseSearchResultLabelListItem = components['schemas']['CursorResponse_SearchResult_LabelListItem'];
+export type CursorResponseSearchResultReleaseListItem = components['schemas']['CursorResponse_SearchResult_ReleaseListItem'];
+export type CursorResponseSearchResultSongListItem = components['schemas']['CursorResponse_SearchResult_SongListItem'];
+export type CursorResponseSearchResultTagListItem = components['schemas']['CursorResponse_SearchResult_TagListItem'];
 export type CursorResponseTagAggregate = components['schemas']['CursorResponse_TagAggregate'];
-export type CursorResponseTagRef = components['schemas']['CursorResponse_TagRef'];
 export type CursorResponseUserImageQueueItem = components['schemas']['CursorResponse_UserImageQueueItem'];
 export type DataCorrectionDiff = components['schemas']['Data_CorrectionDiff'];
 export type DataCorrectionSubmitResult = components['schemas']['Data_CorrectionSubmitResult'];
@@ -3503,17 +3565,17 @@ export type DataPaginatedAppearance = components['schemas']['DataPaginatedAppear
 export type DataPaginatedCredit = components['schemas']['DataPaginatedCredit'];
 export type DataPaginatedDiscography = components['schemas']['DataPaginatedDiscography'];
 export type DataPaginatedPendingImageQueueItem = components['schemas']['DataPaginatedPendingImageQueueItem'];
-export type DataPaginatedSimpleArtist = components['schemas']['DataPaginatedSimpleArtist'];
-export type DataPaginatedSimpleEvent = components['schemas']['DataPaginatedSimpleEvent'];
-export type DataPaginatedSimpleLabel = components['schemas']['DataPaginatedSimpleLabel'];
-export type DataPaginatedSimpleRelease = components['schemas']['DataPaginatedSimpleRelease'];
-export type DataPaginatedSongRef = components['schemas']['DataPaginatedSongRef'];
 export type DataPaginatedTagAggregate = components['schemas']['DataPaginatedTagAggregate'];
-export type DataPaginatedTagRef = components['schemas']['DataPaginatedTagRef'];
 export type DataPaginatedUserImageQueueItem = components['schemas']['DataPaginatedUserImageQueueItem'];
 export type DataPendingImageQueueCount = components['schemas']['DataPendingImageQueueCount'];
 export type DataResendVerificationEmailResponse = components['schemas']['DataResendVerificationEmailResponse'];
+export type DataSearchArtistPage = components['schemas']['DataSearchArtistPage'];
+export type DataSearchEventPage = components['schemas']['DataSearchEventPage'];
+export type DataSearchLabelPage = components['schemas']['DataSearchLabelPage'];
+export type DataSearchReleasePage = components['schemas']['DataSearchReleasePage'];
 export type DataSearchResponse = components['schemas']['DataSearchResponse'];
+export type DataSearchSongPage = components['schemas']['DataSearchSongPage'];
+export type DataSearchTagPage = components['schemas']['DataSearchTagPage'];
 export type DataSignUpResponse = components['schemas']['DataSignUpResponse'];
 export type DataSubscriptionStatus = components['schemas']['DataSubscriptionStatus'];
 export type DataUnreadCount = components['schemas']['DataUnreadCount'];
@@ -3547,6 +3609,7 @@ export type EntityUserCollectionSort = components['schemas']['EntityUserCollecti
 export type EntityUserCollectionTarget = components['schemas']['EntityUserCollectionTarget'];
 export type Error = components['schemas']['Error'];
 export type Event = components['schemas']['Event'];
+export type EventListItem = components['schemas']['EventListItem'];
 export type EventSummary = components['schemas']['EventSummary'];
 export type ForgotPasswordRequest = components['schemas']['ForgotPasswordRequest'];
 export type ForgotPasswordResponse = components['schemas']['ForgotPasswordResponse'];
@@ -3560,6 +3623,7 @@ export type ImageQueueType = components['schemas']['ImageQueueType'];
 export type ImageSummary = components['schemas']['ImageSummary'];
 export type InitDiscography = components['schemas']['InitDiscography'];
 export type Label = components['schemas']['Label'];
+export type LabelListItem = components['schemas']['LabelListItem'];
 export type LabelSummary = components['schemas']['LabelSummary'];
 export type Language = components['schemas']['Language'];
 export type LocalizedName = components['schemas']['LocalizedName'];
@@ -3604,13 +3668,13 @@ export type NotificationImageType = components['schemas']['NotificationImageType
 export type NotificationItem = components['schemas']['NotificationItem'];
 export type NotificationPage = components['schemas']['NotificationPage'];
 export type NotificationState = components['schemas']['NotificationState'];
-export type PageResponseArtist = components['schemas']['PageResponse_Artist'];
-export type PageResponseEvent = components['schemas']['PageResponse_Event'];
+export type PageResponseArtistListItem = components['schemas']['PageResponse_ArtistListItem'];
+export type PageResponseEventListItem = components['schemas']['PageResponse_EventListItem'];
 export type PageResponseFollowedUserCollection = components['schemas']['PageResponse_FollowedUserCollection'];
-export type PageResponseLabel = components['schemas']['PageResponse_Label'];
-export type PageResponseRelease = components['schemas']['PageResponse_Release'];
-export type PageResponseSong = components['schemas']['PageResponse_Song'];
-export type PageResponseTag = components['schemas']['PageResponse_Tag'];
+export type PageResponseLabelListItem = components['schemas']['PageResponse_LabelListItem'];
+export type PageResponseReleaseListItem = components['schemas']['PageResponse_ReleaseListItem'];
+export type PageResponseSongListItem = components['schemas']['PageResponse_SongListItem'];
+export type PageResponseTagListItem = components['schemas']['PageResponse_TagListItem'];
 export type PageResponseUserCollection = components['schemas']['PageResponse_UserCollection'];
 export type PageResponseUserCollectionItemDetail = components['schemas']['PageResponse_UserCollectionItemDetail'];
 export type PageResponseUserSummary = components['schemas']['PageResponse_UserSummary'];
@@ -3623,6 +3687,8 @@ export type ReleaseCredit = components['schemas']['ReleaseCredit'];
 export type ReleaseDisc = components['schemas']['ReleaseDisc'];
 export type ReleaseImageQueueTarget = components['schemas']['ReleaseImageQueueTarget'];
 export type ReleaseImageType = components['schemas']['ReleaseImageType'];
+export type ReleaseListItem = components['schemas']['ReleaseListItem'];
+export type ReleaseRef = components['schemas']['ReleaseRef'];
 export type ReleaseSortField = components['schemas']['ReleaseSortField'];
 export type ReleaseSummary = components['schemas']['ReleaseSummary'];
 export type ReleaseTrack = components['schemas']['ReleaseTrack'];
@@ -3641,6 +3707,7 @@ export type SimpleEvent = components['schemas']['SimpleEvent'];
 export type SimpleLabel = components['schemas']['SimpleLabel'];
 export type Song = components['schemas']['Song'];
 export type SongCredit = components['schemas']['SongCredit'];
+export type SongListItem = components['schemas']['SongListItem'];
 export type SongLyrics = components['schemas']['SongLyrics'];
 export type SongRef = components['schemas']['SongRef'];
 export type SongRelation = components['schemas']['SongRelation'];
@@ -3651,6 +3718,7 @@ export type SortDirection = components['schemas']['SortDirection'];
 export type SubscriptionStatus = components['schemas']['SubscriptionStatus'];
 export type Tag = components['schemas']['Tag'];
 export type TagAggregateVote = components['schemas']['TagAggregateVote'];
+export type TagListItem = components['schemas']['TagListItem'];
 export type TagRef = components['schemas']['TagRef'];
 export type TagRelation = components['schemas']['TagRelation'];
 export type TagRelationType = components['schemas']['TagRelationType'];
@@ -8005,7 +8073,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataPaginatedSimpleArtist"];
+                    "application/json": components["schemas"]["DataSearchArtistPage"];
                 };
             };
             /** @description Too Many Requests */
@@ -8051,7 +8119,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataPaginatedSimpleEvent"];
+                    "application/json": components["schemas"]["DataSearchEventPage"];
                 };
             };
             /** @description Too Many Requests */
@@ -8097,7 +8165,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataPaginatedSimpleLabel"];
+                    "application/json": components["schemas"]["DataSearchLabelPage"];
                 };
             };
             /** @description Too Many Requests */
@@ -8143,7 +8211,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataPaginatedSimpleRelease"];
+                    "application/json": components["schemas"]["DataSearchReleasePage"];
                 };
             };
             /** @description Too Many Requests */
@@ -8189,7 +8257,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataPaginatedSongRef"];
+                    "application/json": components["schemas"]["DataSearchSongPage"];
                 };
             };
             /** @description Too Many Requests */
@@ -8235,7 +8303,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DataPaginatedTagRef"];
+                    "application/json": components["schemas"]["DataSearchTagPage"];
                 };
             };
             /** @description Too Many Requests */

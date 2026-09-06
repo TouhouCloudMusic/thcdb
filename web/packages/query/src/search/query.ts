@@ -1,12 +1,5 @@
 import { infiniteQueryOptions } from "@tanstack/solid-query"
-import type {
-	SimpleArtist,
-	SimpleEvent,
-	SimpleLabel,
-	SongRelease,
-	SongRef,
-	TagRef,
-} from "@thc/api"
+import type { SearchResponse } from "@thc/api"
 import { SearchApi } from "@thc/api"
 import { Either, identity } from "effect"
 
@@ -210,9 +203,4 @@ export function userCollections(
 }
 
 export type SearchResultItem =
-	| SimpleArtist
-	| SongRelease
-	| SongRef
-	| SimpleEvent
-	| SimpleLabel
-	| TagRef
+	SearchResponse[keyof SearchResponse]["items"][number]

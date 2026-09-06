@@ -128,10 +128,6 @@ msgstr "Action"
 msgid "Actions"
 msgstr "Actions"
 
-#: src/view/label/explore.comp.tsx
-msgid "Active"
-msgstr "Active"
-
 #: src/view/user/Profile.tsx
 msgid "Activity"
 msgstr "Activity"
@@ -191,10 +187,12 @@ msgstr "AKAs"
 msgid "Aliases"
 msgstr "Aliases"
 
+#: src/view/artist/ArtistTypeLabel.tsx
 #: src/view/artist/explore.comp.tsx
 #: src/view/image_queue/manage.tsx
 #: src/view/release/explore/filter.tsx
 #: src/view/song/explore.tsx
+#: src/view/tag/explore.tsx
 #: src/view/user/Profile.tsx
 msgid "All"
 msgstr "All"
@@ -207,8 +205,8 @@ msgstr "All categories"
 msgid "Alphabetical"
 msgstr "Alphabetical"
 
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/auth/sign_up.tsx
+#: src/view/auth/verify_email/index.tsx
 msgid "Already have an account?"
 msgstr "Already have an account?"
 
@@ -221,6 +219,10 @@ msgstr "Alternative Names"
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "An error occurred. Please try again."
 msgstr "An error occurred. Please try again."
+
+#: src/view/song/SongItem.tsx
+msgid "Appears on"
+msgstr "Appears on"
 
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
@@ -274,7 +276,6 @@ msgstr "Are you sure you want to remove this item from the collection?"
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/search/index.tsx
 msgid "Artist"
 msgstr "Artist"
 
@@ -308,7 +309,8 @@ msgstr "Author"
 msgid "Back"
 msgstr "Back"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
+#: src/view/auth/reset_password/success.tsx
 msgid "Back to"
 msgstr "Back to"
 
@@ -328,6 +330,12 @@ msgstr "Browse circles and solo creators with filters and sorting."
 #: src/view/release/Info/comp/ReleaseInfoTitleAndArtist.tsx
 msgid "by"
 msgstr "by"
+
+#: src/view/collection/CollectionListItem.tsx
+#: src/view/release/ReleaseItems.tsx
+#: src/view/song/SongItem.tsx
+msgid "By"
+msgstr "By"
 
 #: src/component/dialog/AlertDialog.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
@@ -426,7 +434,7 @@ msgstr "Compare"
 msgid "Confirm"
 msgstr "Confirm"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Continue"
 msgstr "Continue"
 
@@ -480,7 +488,7 @@ msgid "Create"
 msgstr "Create"
 
 #: src/component/route.tsx
-#: src/view/auth/component/AuthForm.tsx
+#: src/view/auth/sign_up.tsx
 msgid "Create account"
 msgstr "Create account"
 
@@ -648,7 +656,6 @@ msgstr "Disc name"
 msgid "Display title"
 msgstr "Display title"
 
-#: src/view/label/explore.comp.tsx
 #: src/view/label/Info/index.tsx
 msgid "Dissolved"
 msgstr "Dissolved"
@@ -657,7 +664,7 @@ msgstr "Dissolved"
 msgid "Dissolved date"
 msgstr "Dissolved date"
 
-#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/sign_in.tsx
 msgid "Don't have an account?"
 msgstr "Don't have an account?"
 
@@ -719,7 +726,7 @@ msgstr "Edits"
 msgid "Email"
 msgstr "Email"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Email is required"
 msgstr "Email is required"
 
@@ -728,12 +735,12 @@ msgstr "Email is required"
 msgid "End date"
 msgstr "End date"
 
-#: src/view/auth/component/AuthForm.tsx
+#: src/view/auth/verify_email/index.tsx
 msgid "Enter the 6-digit code sent to your email."
 msgstr "Enter the 6-digit code sent to your email."
 
 #. placeholder {0}: email()
-#: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/auth/verify_email/index.tsx
 msgid "Enter the code for {0}. If you did not receive one, use Resend."
 msgstr "Enter the code for {0}. If you did not receive one, use Resend."
 
@@ -745,7 +752,6 @@ msgstr "Enter your username or email"
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
-#: src/view/search/index.tsx
 msgid "Event"
 msgstr "Event"
 
@@ -788,6 +794,10 @@ msgstr "Explore Releases"
 #: src/view/song/explore.tsx
 msgid "Explore Songs"
 msgstr "Explore Songs"
+
+#: src/view/tag/explore.tsx
+msgid "Explore Tags"
+msgstr "Explore Tags"
 
 #: src/view/comment/CommentThread.tsx
 msgid "Failed to delete comment"
@@ -920,11 +930,11 @@ msgstr "Following"
 msgid "Following..."
 msgstr "Following..."
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Forgot password"
 msgstr "Forgot password"
 
-#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/sign_in.tsx
 msgid "Forgot password?"
 msgstr "Forgot password?"
 
@@ -957,7 +967,7 @@ msgstr "From"
 msgid "Grid view"
 msgstr "Grid view"
 
-#: src/view/artist/explore.comp.tsx
+#: src/view/artist/ArtistTypeLabel.tsx
 msgid "Group"
 msgstr "Group"
 
@@ -987,7 +997,7 @@ msgstr "Home"
 msgid "ID"
 msgstr "ID"
 
-#: src/view/auth/useAuthForm.ts
+#: src/view/auth/verify_email/index.tsx
 msgid "If eligible, a verification code has been sent."
 msgstr "If eligible, a verification code has been sent."
 
@@ -1016,7 +1026,7 @@ msgstr "Image queue navigation"
 msgid "Inbox"
 msgstr "Inbox"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Invalid email"
 msgstr "Invalid email"
 
@@ -1024,7 +1034,7 @@ msgstr "Invalid email"
 msgid "Invalid or expired reset key"
 msgstr "Invalid or expired reset key"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Invalid verification code"
 msgstr "Invalid verification code"
 
@@ -1033,6 +1043,7 @@ msgid "It is now available on your profile"
 msgstr "It is now available on your profile"
 
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/CollectionListItem.tsx
 #: src/view/collection/FollowedCollectionRow.tsx
 #: src/view/user/Profile.tsx
 msgid "item"
@@ -1043,6 +1054,7 @@ msgid "Item count"
 msgstr "Item count"
 
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/CollectionListItem.tsx
 #: src/view/collection/FollowedCollectionRow.tsx
 #: src/view/user/Profile.tsx
 msgid "items"
@@ -1068,7 +1080,6 @@ msgstr "Just now"
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
-#: src/view/search/index.tsx
 msgid "Label"
 msgstr "Label"
 
@@ -1111,8 +1122,8 @@ msgstr "Leave year cannot be earlier than join year"
 msgid "Leave year cannot be the same as join year"
 msgstr "Leave year cannot be the same as join year"
 
-#: src/view/artist/edit/comp/Links.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
+#: src/component/data/ExternalLinks.tsx
+#: src/component/form/ExternalLinksField.tsx
 msgid "Links"
 msgstr "Links"
 
@@ -1167,6 +1178,7 @@ msgstr "Loading items..."
 msgid "Loading..."
 msgstr "Loading..."
 
+#: src/view/auth/component/Guard.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/notification/InboxPage.tsx
 msgid "Loading…"
@@ -1232,10 +1244,6 @@ msgstr "Members"
 #: src/view/artist/edit/comp/Membership/index.tsx
 msgid "Membership"
 msgstr "Membership"
-
-#: src/view/auth/useAuthForm.ts
-msgid "Missing sign-up email. Create the account again."
-msgstr "Missing sign-up email. Create the account again."
 
 #: src/view/image_queue/manage.tsx
 msgid "MODERATION"
@@ -1373,7 +1381,6 @@ msgid "No comments yet."
 msgstr "No comments yet."
 
 #: src/component/display/release/ReleaseCoverWall.tsx
-#: src/view/release/explore/ReleaseItems.tsx
 #: src/view/release/Info/comp/ReleaseInfoCoverImage.tsx
 msgid "No cover art"
 msgstr "No cover art"
@@ -1515,10 +1522,6 @@ msgstr "On Tracks"
 msgid "Only PNG/JPEG images are supported."
 msgstr "Only PNG/JPEG images are supported."
 
-#: src/view/search/index.tsx
-msgid "Open"
-msgstr "Open"
-
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Open image queue"
 msgstr "Open image queue"
@@ -1553,11 +1556,12 @@ msgstr "Page {0} of {1}"
 msgid "Pagination"
 msgstr "Pagination"
 
-#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/sign_in.tsx
+#: src/view/auth/sign_up.tsx
 msgid "Password"
 msgstr "Password"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/success.tsx
 msgid "Password reset complete"
 msgstr "Password reset complete"
 
@@ -1581,11 +1585,6 @@ msgstr "Play track"
 #: src/component/__legacy/chart/index.tsx
 msgid "Positive:"
 msgstr "Positive:"
-
-#: src/view/artist/explore.comp.tsx
-#: src/view/label/explore.comp.tsx
-msgid "Present"
-msgstr "Present"
 
 #: src/view/image_queue/detail.tsx
 msgid "Previous"
@@ -1702,7 +1701,6 @@ msgstr "Relations"
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/search/index.tsx
 #: src/view/song/Info/index.tsx
 msgid "Release"
 msgstr "Release"
@@ -1755,7 +1753,7 @@ msgstr "Rename Disc"
 msgid "Repeat new password"
 msgstr "Repeat new password"
 
-#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/sign_up.tsx
 msgid "Repeat password"
 msgstr "Repeat password"
 
@@ -1763,6 +1761,7 @@ msgstr "Repeat password"
 msgid "Reply"
 msgstr "Reply"
 
+#: src/view/auth/reset_password/forgot_password.tsx
 #: src/view/auth/reset_password/index.tsx
 msgid "Request failed"
 msgstr "Request failed"
@@ -1772,11 +1771,11 @@ msgstr "Request failed"
 msgid "Request failed."
 msgstr "Request failed."
 
-#: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/auth/verify_email/index.tsx
 msgid "Resend"
 msgstr "Resend"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Resend code"
 msgstr "Resend code"
 
@@ -1954,7 +1953,7 @@ msgstr "Select tag"
 msgid "Selected crop cannot satisfy the required dimensions. Adjust the crop area."
 msgstr "Selected crop cannot satisfy the required dimensions. Adjust the crop area."
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Sending..."
 msgstr "Sending..."
 
@@ -1976,21 +1975,22 @@ msgstr "Short Description"
 msgid "Short description is not provided"
 msgstr "Short description is not provided"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
+#: src/view/auth/reset_password/success.tsx
 msgid "sign in"
 msgstr "sign in"
 
 #: src/component/route.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthForm.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/auth/sign_in.tsx
+#: src/view/auth/sign_up.tsx
+#: src/view/auth/verify_email/index.tsx
 #: src/view/comment/EntityComments.tsx
 #: src/view/correction/CorrectionComments.tsx
 msgid "Sign in"
 msgstr "Sign in"
 
 #: src/component/Header/index.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/sign_in.tsx
 msgid "Sign In"
 msgstr "Sign In"
 
@@ -2003,7 +2003,8 @@ msgid "Sign Out"
 msgstr "Sign Out"
 
 #: src/component/Header/index.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/sign_in.tsx
+#: src/view/auth/sign_up.tsx
 msgid "Sign Up"
 msgstr "Sign Up"
 
@@ -2011,9 +2012,9 @@ msgstr "Sign Up"
 msgid "Social"
 msgstr "Social"
 
-#: src/view/artist/explore.comp.tsx
-msgid "Solo artist"
-msgstr "Solo artist"
+#: src/view/artist/ArtistTypeLabel.tsx
+msgid "Solo Artist"
+msgstr "Solo Artist"
 
 #: src/view/comment/CommentThread.tsx
 msgid "Something went wrong"
@@ -2024,7 +2025,6 @@ msgstr "Something went wrong"
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
-#: src/view/search/index.tsx
 msgid "Song"
 msgstr "Song"
 
@@ -2140,13 +2140,8 @@ msgstr "Support"
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
-#: src/view/search/index.tsx
 msgid "Tag"
 msgstr "Tag"
-
-#: src/view/tag/explore.tsx
-msgid "Tag Tree"
-msgstr "Tag Tree"
 
 #: src/view/tag/edit/comp/TagTypeField.tsx
 msgid "Tag Type"
@@ -2199,7 +2194,7 @@ msgstr "This collection is empty"
 msgid "This entity already has a pending correction. You can review that correction or go back."
 msgstr "This entity already has a pending correction. You can review that correction or go back."
 
-#. placeholder {0}: formatMinuteCount(props.resetKeyExpiresMinutes)
+#. placeholder {0}: formatMinuteCount(resetSession.keyExpiresMinutes)
 #: src/view/auth/reset_password/index.tsx
 msgid "This is valid for {0}."
 msgstr "This is valid for {0}."
@@ -2288,6 +2283,7 @@ msgstr "Try adjusting the filters, or <0>create</0> the first one."
 #: src/view/image_queue/manage.tsx
 #: src/view/release/explore/filter.tsx
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
+#: src/view/tag/explore.tsx
 #: src/view/tag/Info/index.tsx
 #: src/view/user/Profile.tsx
 msgid "Type"
@@ -2310,9 +2306,8 @@ msgstr "Type: Own"
 msgid "Unfollow"
 msgstr "Unfollow"
 
-#: src/view/artist/explore.comp.tsx
+#: src/view/artist/ArtistTypeLabel.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/label/explore.comp.tsx
 msgid "Unknown"
 msgstr "Unknown"
 
@@ -2327,6 +2322,10 @@ msgstr "Unknown artist"
 #: src/view/admin/users.tsx
 msgid "Unknown error"
 msgstr "Unknown error"
+
+#: src/view/event/EventItem.tsx
+msgid "Unknown event date"
+msgstr "Unknown event date"
 
 #: src/view/event/EventItem.tsx
 #: src/view/Homepage/component/EventsCard.tsx
@@ -2382,9 +2381,9 @@ msgstr "Upload failed."
 msgid "Uploading…"
 msgstr "Uploading…"
 
-#: src/view/artist/edit/comp/Links.tsx
-msgid "Url"
-msgstr "Url"
+#: src/component/form/ExternalLinksField.tsx
+msgid "URL"
+msgstr "URL"
 
 #: src/view/admin/users.tsx
 msgid "User"
@@ -2407,15 +2406,15 @@ msgstr "Users"
 msgid "Verification code"
 msgstr "Verification code"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Verification code must be 6 digits"
 msgstr "Verification code must be 6 digits"
 
-#: src/view/auth/component/AuthForm.tsx
+#: src/view/auth/verify_email/index.tsx
 msgid "Verify email"
 msgstr "Verify email"
 
-#: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/auth/verify_email/index.tsx
 msgid "Verify Email"
 msgstr "Verify Email"
 
@@ -2472,7 +2471,7 @@ msgstr "Write something about you."
 msgid "Year"
 msgstr "Year"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/success.tsx
 msgid "You can now sign in with your new password."
 msgstr "You can now sign in with your new password."
 
@@ -2488,11 +2487,11 @@ msgstr "You haven't followed any collections yet"
 msgid "Your correction to {target} was {actionText}."
 msgstr "Your correction to {target} was {actionText}."
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/success.tsx
 msgid "Your password has been updated successfully."
 msgstr "Your password has been updated successfully."
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Your reset session is no longer valid. Verify a new code to continue."
 msgstr "Your reset session is no longer valid. Verify a new code to continue."
 

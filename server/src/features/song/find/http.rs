@@ -8,6 +8,7 @@ use utoipa_axum::routes;
 use super::{PageQuery, SongFilter};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
+use crate::features::song::list::SongListItem;
 use crate::features::song::model::Song;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{Data, Error as ApiError};
@@ -27,7 +28,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 data! {
     DataOptionSong, Option<Song>
     DataVecSong, Vec<Song>
-    DataPageSong, PageResponse<Song>
+    DataPageSong, PageResponse<SongListItem>
 }
 
 #[utoipa::path(
@@ -82,7 +83,7 @@ async fn explore_song(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<SongFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Song>>, DatabaseError> {
+) -> Result<Data<PageResponse<SongListItem>>, DatabaseError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.song.find.http",

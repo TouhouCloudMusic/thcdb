@@ -49,6 +49,14 @@ export type ArtistImageQueueTarget = {
 
 export type ArtistImageType = "Profile"
 
+export type ArtistListItem = {
+	id: number
+	name: string
+	artist_type: ArtistType
+	profile_image_url?: string | null
+	current_location: Location
+}
+
 export type ArtistProfileImageFormData = {
 	data: Blob | File
 }
@@ -265,43 +273,89 @@ export type CursorResponsePendingImageQueueItem = {
 	next_cursor?: number | null
 }
 
-export type CursorResponseSimpleArtist = {
+export type CursorResponseSearchResultArtistListItem = {
 	items: Array<{
-		id: number
-		name: string
+		item: {
+			id: number
+			name: string
+			artist_type: ArtistType
+			profile_image_url?: string | null
+			current_location: Location
+		}
+		matched_name?: string | null
 	}>
 	next_cursor?: number | null
 }
 
-export type CursorResponseSimpleEvent = {
+export type CursorResponseSearchResultEventListItem = {
 	items: Array<{
-		id: number
-		name: string
+		item: {
+			id: number
+			name: string
+			start_date?: null | DateWithPrecision
+			end_date?: null | DateWithPrecision
+			location: Location
+			short_description: string
+		}
+		matched_name?: string | null
 	}>
 	next_cursor?: number | null
 }
 
-export type CursorResponseSimpleLabel = {
+export type CursorResponseSearchResultLabelListItem = {
 	items: Array<{
-		id: number
-		name: string
+		item: {
+			id: number
+			name: string
+			localized_names: Array<LocalizedName>
+			founders: Array<SimpleArtist>
+			founded_date?: null | DateWithPrecision
+		}
+		matched_name?: string | null
 	}>
 	next_cursor?: number | null
 }
 
-export type CursorResponseSimpleRelease = {
+export type CursorResponseSearchResultReleaseListItem = {
 	items: Array<{
-		id: number
-		title: string
-		cover_art_url?: string | null
+		item: {
+			id: number
+			title: string
+			cover_art_url?: string | null
+			artists: Array<SimpleArtist>
+			release_type: ReleaseType
+			release_date?: null | DateWithPrecision
+			catalog_numbers: Array<string>
+		}
+		matched_name?: string | null
 	}>
 	next_cursor?: number | null
 }
 
-export type CursorResponseSongRef = {
+export type CursorResponseSearchResultSongListItem = {
 	items: Array<{
-		id: number
-		title: string
+		item: {
+			id: number
+			title: string
+			cover_art_url?: string | null
+			artists: Array<SimpleArtist>
+			releases: Array<ReleaseRef>
+		}
+		matched_name?: string | null
+	}>
+	next_cursor?: number | null
+}
+
+export type CursorResponseSearchResultTagListItem = {
+	items: Array<{
+		item: {
+			id: number
+			name: string
+			type: TagType
+			short_description: string
+			parents: Array<TagRef>
+		}
+		matched_name?: string | null
 	}>
 	next_cursor?: number | null
 }
@@ -315,15 +369,6 @@ export type CursorResponseTagAggregate = {
 		relevance: number
 		user_vote?: number | null
 		votes?: Array<TagAggregateVote>
-	}>
-	next_cursor?: number | null
-}
-
-export type CursorResponseTagRef = {
-	items: Array<{
-		id: number
-		name: string
-		type: TagType
 	}>
 	next_cursor?: number | null
 }
@@ -424,12 +469,12 @@ export type DataOptionTag = {
 
 export type DataPageArtist = {
 	status: string
-	data: PageResponseArtist
+	data: PageResponseArtistListItem
 }
 
 export type DataPageEvent = {
 	status: string
-	data: PageResponseEvent
+	data: PageResponseEventListItem
 }
 
 export type DataPageFollowedUserCollection = {
@@ -439,22 +484,22 @@ export type DataPageFollowedUserCollection = {
 
 export type DataPageLabel = {
 	status: string
-	data: PageResponseLabel
+	data: PageResponseLabelListItem
 }
 
 export type DataPageRelease = {
 	status: string
-	data: PageResponseRelease
+	data: PageResponseReleaseListItem
 }
 
 export type DataPageSong = {
 	status: string
-	data: PageResponseSong
+	data: PageResponseSongListItem
 }
 
 export type DataPageTag = {
 	status: string
-	data: PageResponseTag
+	data: PageResponseTagListItem
 }
 
 export type DataPageUserCollection = {
@@ -492,39 +537,9 @@ export type DataPaginatedPendingImageQueueItem = {
 	data: CursorResponsePendingImageQueueItem
 }
 
-export type DataPaginatedSimpleArtist = {
-	status: string
-	data: CursorResponseSimpleArtist
-}
-
-export type DataPaginatedSimpleEvent = {
-	status: string
-	data: CursorResponseSimpleEvent
-}
-
-export type DataPaginatedSimpleLabel = {
-	status: string
-	data: CursorResponseSimpleLabel
-}
-
-export type DataPaginatedSimpleRelease = {
-	status: string
-	data: CursorResponseSimpleRelease
-}
-
-export type DataPaginatedSongRef = {
-	status: string
-	data: CursorResponseSongRef
-}
-
 export type DataPaginatedTagAggregate = {
 	status: string
 	data: CursorResponseTagAggregate
-}
-
-export type DataPaginatedTagRef = {
-	status: string
-	data: CursorResponseTagRef
 }
 
 export type DataPaginatedUserImageQueueItem = {
@@ -542,9 +557,39 @@ export type DataResendVerificationEmailResponse = {
 	data: ResendVerificationEmailResponse
 }
 
+export type DataSearchArtistPage = {
+	status: string
+	data: CursorResponseSearchResultArtistListItem
+}
+
+export type DataSearchEventPage = {
+	status: string
+	data: CursorResponseSearchResultEventListItem
+}
+
+export type DataSearchLabelPage = {
+	status: string
+	data: CursorResponseSearchResultLabelListItem
+}
+
+export type DataSearchReleasePage = {
+	status: string
+	data: CursorResponseSearchResultReleaseListItem
+}
+
 export type DataSearchResponse = {
 	status: string
 	data: SearchResponse
+}
+
+export type DataSearchSongPage = {
+	status: string
+	data: CursorResponseSearchResultSongListItem
+}
+
+export type DataSearchTagPage = {
+	status: string
+	data: CursorResponseSearchResultTagListItem
 }
 
 export type DataSignUpResponse = {
@@ -799,6 +844,15 @@ export type Event = {
 	links?: Array<string>
 }
 
+export type EventListItem = {
+	id: number
+	name: string
+	start_date?: null | DateWithPrecision
+	end_date?: null | DateWithPrecision
+	location: Location
+	short_description: string
+}
+
 export type EventSummary = {
 	id: number
 	name: string
@@ -882,6 +936,14 @@ export type Label = {
 	founders: Array<number>
 	localized_names: Array<LocalizedName>
 	links: Array<string>
+}
+
+export type LabelListItem = {
+	id: number
+	name: string
+	localized_names: Array<LocalizedName>
+	founders: Array<SimpleArtist>
+	founded_date?: null | DateWithPrecision
 }
 
 export type LabelSummary = {
@@ -1306,33 +1368,13 @@ export type NotificationPage = {
 
 export type NotificationState = "inbox" | "unread" | "saved"
 
-export type PageResponseArtist = {
+export type PageResponseArtistListItem = {
 	items: Array<{
 		id: number
 		name: string
 		artist_type: ArtistType
-		/**
-		 * Aliases without own page
-		 */
-		text_aliases?: Array<string> | null
-		start_date?: null | DateWithPrecision
-		end_date?: null | DateWithPrecision
-		/**
-		 * Profile image of artist
-		 */
 		profile_image_url?: string | null
-		/**
-		 * List of id of artist aliases
-		 */
-		aliases?: Array<number>
-		links?: Array<string>
-		localized_names?: Array<LocalizedName>
-		start_location?: Location
-		current_location?: Location
-		/**
-		 * Groups list for individuals, member list for groups,
-		 */
-		memberships?: Array<Membership>
+		current_location: Location
 	}>
 	page: number
 	page_size: number
@@ -1340,17 +1382,14 @@ export type PageResponseArtist = {
 	total_pages: number
 }
 
-export type PageResponseEvent = {
+export type PageResponseEventListItem = {
 	items: Array<{
 		id: number
 		name: string
-		short_description?: string
-		description?: string
-		location?: Location
 		start_date?: null | DateWithPrecision
 		end_date?: null | DateWithPrecision
-		alternative_names?: Array<AlternativeName>
-		links?: Array<string>
+		location: Location
+		short_description: string
 	}>
 	page: number
 	page_size: number
@@ -1369,15 +1408,13 @@ export type PageResponseFollowedUserCollection = {
 	total_pages: number
 }
 
-export type PageResponseLabel = {
+export type PageResponseLabelListItem = {
 	items: Array<{
 		id: number
 		name: string
-		founded_date?: null | DateWithPrecision
-		dissolved_date?: null | DateWithPrecision
-		founders: Array<number>
 		localized_names: Array<LocalizedName>
-		links: Array<string>
+		founders: Array<SimpleArtist>
+		founded_date?: null | DateWithPrecision
 	}>
 	page: number
 	page_size: number
@@ -1385,23 +1422,15 @@ export type PageResponseLabel = {
 	total_pages: number
 }
 
-export type PageResponseRelease = {
+export type PageResponseReleaseListItem = {
 	items: Array<{
 		id: number
 		title: string
+		cover_art_url?: string | null
+		artists: Array<SimpleArtist>
 		release_type: ReleaseType
 		release_date?: null | DateWithPrecision
-		recording_date_start?: null | DateWithPrecision
-		recording_date_end?: null | DateWithPrecision
-		cover_art_url?: string | null
-		links?: Array<string>
-		artists?: Array<ReleaseArtist>
-		credits?: Array<ReleaseCredit>
-		catalog_nums?: Array<CatalogNumber>
-		localized_titles?: Array<LocalizedTitle>
-		discs?: Array<ReleaseDisc>
-		tracks?: Array<ReleaseTrack>
-		events?: Array<SimpleEvent>
+		catalog_numbers: Array<string>
 	}>
 	page: number
 	page_size: number
@@ -1409,18 +1438,13 @@ export type PageResponseRelease = {
 	total_pages: number
 }
 
-export type PageResponseSong = {
+export type PageResponseSongListItem = {
 	items: Array<{
 		id: number
 		title: string
-		artists?: Array<SimpleArtist>
-		releases?: Array<SongRelease>
-		credits?: Array<SongCredit>
-		languages?: Array<Language>
-		localized_titles?: Array<LocalizedTitle>
-		links?: Array<string>
-		relations?: Array<SongRelation>
-		lyrics?: Array<SongLyrics>
+		cover_art_url?: string | null
+		artists: Array<SimpleArtist>
+		releases: Array<ReleaseRef>
 	}>
 	page: number
 	page_size: number
@@ -1428,15 +1452,13 @@ export type PageResponseSong = {
 	total_pages: number
 }
 
-export type PageResponseTag = {
+export type PageResponseTagListItem = {
 	items: Array<{
 		id: number
 		name: string
 		type: TagType
 		short_description: string
-		description: string
-		alt_names?: Array<AlternativeName>
-		relations?: Array<TagRelation>
+		parents: Array<TagRef>
 	}>
 	page: number
 	page_size: number
@@ -1544,6 +1566,21 @@ export type ReleaseImageQueueTarget = {
 
 export type ReleaseImageType = "Cover"
 
+export type ReleaseListItem = {
+	id: number
+	title: string
+	cover_art_url?: string | null
+	artists: Array<SimpleArtist>
+	release_type: ReleaseType
+	release_date?: null | DateWithPrecision
+	catalog_numbers: Array<string>
+}
+
+export type ReleaseRef = {
+	id: number
+	title: string
+}
+
 export type ReleaseSortField = "release_date" | "created_at" | "updated_at"
 
 export type ReleaseSummary = {
@@ -1596,12 +1633,12 @@ export type ResetPasswordRequest = {
 export type Score = "Veto" | "Low" | "Medium" | "High"
 
 export type SearchResponse = {
-	artists: CursorResponseSimpleArtist
-	releases: CursorResponseSimpleRelease
-	songs: CursorResponseSongRef
-	events: CursorResponseSimpleEvent
-	labels: CursorResponseSimpleLabel
-	tags: CursorResponseTagRef
+	artists: CursorResponseSearchResultArtistListItem
+	releases: CursorResponseSearchResultReleaseListItem
+	songs: CursorResponseSearchResultSongListItem
+	events: CursorResponseSearchResultEventListItem
+	labels: CursorResponseSearchResultLabelListItem
+	tags: CursorResponseSearchResultTagListItem
 }
 
 export type SetUserRolesRequest = {
@@ -1651,6 +1688,14 @@ export type Song = {
 export type SongCredit = {
 	artist: SimpleArtist
 	role?: null | CreditRoleRef
+}
+
+export type SongListItem = {
+	id: number
+	title: string
+	cover_art_url?: string | null
+	artists: Array<SimpleArtist>
+	releases: Array<ReleaseRef>
 }
 
 export type SongLyrics = {
@@ -1711,6 +1756,14 @@ export type Tag = {
 export type TagAggregateVote = {
 	user_name: string
 	score: number
+}
+
+export type TagListItem = {
+	id: number
+	name: string
+	type: TagType
+	short_description: string
+	parents: Array<TagRef>
 }
 
 export type TagRef = {
@@ -4542,7 +4595,7 @@ export type SearchArtistErrors = {
 export type SearchArtistError = SearchArtistErrors[keyof SearchArtistErrors]
 
 export type SearchArtistResponses = {
-	200: DataPaginatedSimpleArtist
+	200: DataSearchArtistPage
 }
 
 export type SearchArtistResponse =
@@ -4576,7 +4629,7 @@ export type SearchEventErrors = {
 export type SearchEventError = SearchEventErrors[keyof SearchEventErrors]
 
 export type SearchEventResponses = {
-	200: DataPaginatedSimpleEvent
+	200: DataSearchEventPage
 }
 
 export type SearchEventResponse =
@@ -4610,7 +4663,7 @@ export type SearchLabelErrors = {
 export type SearchLabelError = SearchLabelErrors[keyof SearchLabelErrors]
 
 export type SearchLabelResponses = {
-	200: DataPaginatedSimpleLabel
+	200: DataSearchLabelPage
 }
 
 export type SearchLabelResponse =
@@ -4644,7 +4697,7 @@ export type SearchReleaseErrors = {
 export type SearchReleaseError = SearchReleaseErrors[keyof SearchReleaseErrors]
 
 export type SearchReleaseResponses = {
-	200: DataPaginatedSimpleRelease
+	200: DataSearchReleasePage
 }
 
 export type SearchReleaseResponse =
@@ -4678,7 +4731,7 @@ export type SearchSongErrors = {
 export type SearchSongError = SearchSongErrors[keyof SearchSongErrors]
 
 export type SearchSongResponses = {
-	200: DataPaginatedSongRef
+	200: DataSearchSongPage
 }
 
 export type SearchSongResponse = SearchSongResponses[keyof SearchSongResponses]
@@ -4711,7 +4764,7 @@ export type SearchTagErrors = {
 export type SearchTagError = SearchTagErrors[keyof SearchTagErrors]
 
 export type SearchTagResponses = {
-	200: DataPaginatedTagRef
+	200: DataSearchTagPage
 }
 
 export type SearchTagResponse = SearchTagResponses[keyof SearchTagResponses]

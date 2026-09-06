@@ -8,6 +8,7 @@ use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func, NullOrdering};
 
 use super::filter::ReleaseSortField;
+use crate::features::release::list::{self, ReleaseListItem};
 use crate::features::release::model::Release;
 use crate::features::release::repo::find_many_impl;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
@@ -82,7 +83,7 @@ pub(crate) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::ReleaseFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<Release>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<ReleaseListItem>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -127,7 +128,7 @@ pub(crate) async fn find_by_filter(
         pagination,
         release::Column::Id,
         |select| async {
-            find_many_impl(select, &repo.conn)
+            list::load(select, &repo.conn)
                 .await
                 .db_operation("load releases")
         },
@@ -141,7 +142,7 @@ async fn find_sorted_by_release_date(
     filter: super::ReleaseFilter,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<Release>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<ReleaseListItem>, DatabaseError> {
     let select = filter.into_select().order_by_with_nulls(
         release::Column::ReleaseDate,
         sort_direction.into(),
@@ -154,7 +155,7 @@ async fn find_sorted_by_release_date(
         pagination,
         release::Column::Id,
         |select| async {
-            find_many_impl(select, &repo.conn)
+            list::load(select, &repo.conn)
                 .await
                 .db_operation("load releases")
         },
@@ -168,7 +169,7 @@ async fn find_sorted_by_correction(
     sort_field: CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<Release>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<ReleaseListItem>, DatabaseError> {
     use entity::enums::EntityType;
 
     let entity_ids =
@@ -193,7 +194,7 @@ async fn find_sorted_by_correction(
             select.filter(release::Column::ReleaseType.is_in(release_types));
     }
 
-    let mut releases = find_many_impl(select, &repo.conn)
+    let mut releases = list::load(select, &repo.conn)
         .await
         .db_operation("load releases")?;
 

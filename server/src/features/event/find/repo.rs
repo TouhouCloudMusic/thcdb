@@ -9,6 +9,7 @@ use sea_orm::{
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
 
+use crate::features::event::list::{self, EventListItem};
 use crate::features::event::model::{AlternativeName, Event};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::utils;
@@ -50,7 +51,7 @@ pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::EventFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<Event>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<EventListItem>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -71,7 +72,7 @@ pub(super) async fn find_by_filter(
         select,
         pagination,
         event::Column::Id,
-        |select| find_many_impl(select, &repo.conn),
+        |select| list::load(select, &repo.conn),
     )
     .await
     .db_operation("explore events")
@@ -83,7 +84,7 @@ async fn find_sorted_by_correction(
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<Event>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<EventListItem>, DatabaseError> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
@@ -115,7 +116,7 @@ async fn find_sorted_by_correction(
         select = select.filter(event::Column::StartDate.lte(start_date_to));
     }
 
-    let mut events = find_many_impl(select, &repo.conn).await?;
+    let mut events = list::load(select, &repo.conn).await?;
 
     events = crate::infra::database::utils::sort_by_id_list(
         events,

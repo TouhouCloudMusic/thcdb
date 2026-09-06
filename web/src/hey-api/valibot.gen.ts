@@ -302,177 +302,6 @@ export const vCreditRoleSummary = v.object({
 	short_description: v.string(),
 })
 
-export const vCursorResponseSimpleArtist = v.object({
-	items: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			name: v.string(),
-		}),
-	),
-	next_cursor: v.nullish(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-})
-
-export const vCursorResponseSimpleEvent = v.object({
-	items: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			name: v.string(),
-		}),
-	),
-	next_cursor: v.nullish(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-})
-
-export const vCursorResponseSimpleLabel = v.object({
-	items: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			name: v.string(),
-		}),
-	),
-	next_cursor: v.nullish(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-})
-
-export const vCursorResponseSimpleRelease = v.object({
-	items: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			title: v.string(),
-			cover_art_url: v.nullish(v.string()),
-		}),
-	),
-	next_cursor: v.nullish(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-})
-
-export const vCursorResponseSongRef = v.object({
-	items: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			title: v.string(),
-		}),
-	),
-	next_cursor: v.nullish(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-})
-
 export const vDataComment = v.object({
 	status: v.string(),
 	data: vComment,
@@ -486,31 +315,6 @@ export const vDataCommentPage = v.object({
 export const vDataOptionCreditRole = v.object({
 	status: v.string(),
 	data: v.nullable(vCreditRole),
-})
-
-export const vDataPaginatedSimpleArtist = v.object({
-	status: v.string(),
-	data: vCursorResponseSimpleArtist,
-})
-
-export const vDataPaginatedSimpleEvent = v.object({
-	status: v.string(),
-	data: vCursorResponseSimpleEvent,
-})
-
-export const vDataPaginatedSimpleLabel = v.object({
-	status: v.string(),
-	data: vCursorResponseSimpleLabel,
-})
-
-export const vDataPaginatedSimpleRelease = v.object({
-	status: v.string(),
-	data: vCursorResponseSimpleRelease,
-})
-
-export const vDataPaginatedSongRef = v.object({
-	status: v.string(),
-	data: vCursorResponseSongRef,
 })
 
 export const vDataPendingImageQueueCount = v.object({
@@ -1000,6 +804,113 @@ export const vLocation = v.object({
 	city: v.nullish(v.string()),
 })
 
+export const vArtistListItem = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.string(),
+	artist_type: vArtistType,
+	profile_image_url: v.nullish(v.string()),
+	current_location: vLocation,
+})
+
+export const vCursorResponseSearchResultArtistListItem = v.object({
+	items: v.array(
+		v.object({
+			item: v.object({
+				id: v.pipe(
+					v.number(),
+					v.integer(),
+					v.minValue(
+						-2147483648,
+						"Invalid value: Expected int32 to be >= -2147483648",
+					),
+					v.maxValue(
+						2147483647,
+						"Invalid value: Expected int32 to be <= 2147483647",
+					),
+				),
+				name: v.string(),
+				artist_type: vArtistType,
+				profile_image_url: v.nullish(v.string()),
+				current_location: vLocation,
+			}),
+			matched_name: v.nullish(v.string()),
+		}),
+	),
+	next_cursor: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+})
+
+export const vCursorResponseSearchResultEventListItem = v.object({
+	items: v.array(
+		v.object({
+			item: v.object({
+				id: v.pipe(
+					v.number(),
+					v.integer(),
+					v.minValue(
+						-2147483648,
+						"Invalid value: Expected int32 to be >= -2147483648",
+					),
+					v.maxValue(
+						2147483647,
+						"Invalid value: Expected int32 to be <= 2147483647",
+					),
+				),
+				name: v.string(),
+				start_date: v.nullish(vDateWithPrecision),
+				end_date: v.nullish(vDateWithPrecision),
+				location: vLocation,
+				short_description: v.string(),
+			}),
+			matched_name: v.nullish(v.string()),
+		}),
+	),
+	next_cursor: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+})
+
+export const vDataSearchArtistPage = v.object({
+	status: v.string(),
+	data: vCursorResponseSearchResultArtistListItem,
+})
+
+export const vDataSearchEventPage = v.object({
+	status: v.string(),
+	data: vCursorResponseSearchResultEventListItem,
+})
+
 export const vEvent = v.object({
 	id: v.pipe(
 		v.number(),
@@ -1028,6 +939,23 @@ export const vDataOptionEvent = v.object({
 export const vDataVecEvent = v.object({
 	status: v.string(),
 	data: v.array(vEvent),
+})
+
+export const vEventListItem = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.string(),
+	start_date: v.nullish(vDateWithPrecision),
+	end_date: v.nullish(vDateWithPrecision),
+	location: vLocation,
+	short_description: v.string(),
 })
 
 export const vMarkReadRequest = v.object({
@@ -1538,7 +1466,7 @@ export const vNotificationImageType = v.picklist(["Profile", "Cover"])
 
 export const vNotificationState = v.picklist(["inbox", "unread", "saved"])
 
-export const vPageResponseEvent = v.object({
+export const vPageResponseArtistListItem = v.object({
 	items: v.array(
 		v.object({
 			id: v.pipe(
@@ -1554,13 +1482,71 @@ export const vPageResponseEvent = v.object({
 				),
 			),
 			name: v.string(),
-			short_description: v.optional(v.string()),
-			description: v.optional(v.string()),
-			location: v.optional(vLocation),
+			artist_type: vArtistType,
+			profile_image_url: v.nullish(v.string()),
+			current_location: vLocation,
+		}),
+	),
+	page: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	page_size: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(0),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	total_items: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	total_pages: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+})
+
+export const vDataPageArtist = v.object({
+	status: v.string(),
+	data: vPageResponseArtistListItem,
+})
+
+export const vPageResponseEventListItem = v.object({
+	items: v.array(
+		v.object({
+			id: v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+			name: v.string(),
 			start_date: v.nullish(vDateWithPrecision),
 			end_date: v.nullish(vDateWithPrecision),
-			alternative_names: v.optional(v.array(vAlternativeName)),
-			links: v.optional(v.array(v.string())),
+			location: vLocation,
+			short_description: v.string(),
 		}),
 	),
 	page: v.pipe(
@@ -1600,83 +1586,7 @@ export const vPageResponseEvent = v.object({
 
 export const vDataPageEvent = v.object({
 	status: v.string(),
-	data: vPageResponseEvent,
-})
-
-export const vPageResponseLabel = v.object({
-	items: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			name: v.string(),
-			founded_date: v.nullish(vDateWithPrecision),
-			dissolved_date: v.nullish(vDateWithPrecision),
-			founders: v.array(
-				v.pipe(
-					v.number(),
-					v.integer(),
-					v.minValue(
-						-2147483648,
-						"Invalid value: Expected int32 to be >= -2147483648",
-					),
-					v.maxValue(
-						2147483647,
-						"Invalid value: Expected int32 to be <= 2147483647",
-					),
-				),
-			),
-			localized_names: v.array(vLocalizedName),
-			links: v.array(v.string()),
-		}),
-	),
-	page: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-	page_size: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	total_items: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-	total_pages: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-})
-
-export const vDataPageLabel = v.object({
-	status: v.string(),
-	data: vPageResponseLabel,
+	data: vPageResponseEventListItem,
 })
 
 export const vPermission = v.picklist([
@@ -1755,6 +1665,19 @@ export const vReleaseImageQueueTarget = v.object({
 		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
 	),
 	type: vReleaseImageType,
+})
+
+export const vReleaseRef = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	title: v.string(),
 })
 
 export const vReleaseSortField = v.picklist([
@@ -2092,6 +2015,362 @@ export const vSimpleArtist = v.object({
 	name: v.string(),
 })
 
+export const vCursorResponseSearchResultLabelListItem = v.object({
+	items: v.array(
+		v.object({
+			item: v.object({
+				id: v.pipe(
+					v.number(),
+					v.integer(),
+					v.minValue(
+						-2147483648,
+						"Invalid value: Expected int32 to be >= -2147483648",
+					),
+					v.maxValue(
+						2147483647,
+						"Invalid value: Expected int32 to be <= 2147483647",
+					),
+				),
+				name: v.string(),
+				localized_names: v.array(vLocalizedName),
+				founders: v.array(vSimpleArtist),
+				founded_date: v.nullish(vDateWithPrecision),
+			}),
+			matched_name: v.nullish(v.string()),
+		}),
+	),
+	next_cursor: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+})
+
+export const vCursorResponseSearchResultReleaseListItem = v.object({
+	items: v.array(
+		v.object({
+			item: v.object({
+				id: v.pipe(
+					v.number(),
+					v.integer(),
+					v.minValue(
+						-2147483648,
+						"Invalid value: Expected int32 to be >= -2147483648",
+					),
+					v.maxValue(
+						2147483647,
+						"Invalid value: Expected int32 to be <= 2147483647",
+					),
+				),
+				title: v.string(),
+				cover_art_url: v.nullish(v.string()),
+				artists: v.array(vSimpleArtist),
+				release_type: vReleaseType,
+				release_date: v.nullish(vDateWithPrecision),
+				catalog_numbers: v.array(v.string()),
+			}),
+			matched_name: v.nullish(v.string()),
+		}),
+	),
+	next_cursor: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+})
+
+export const vCursorResponseSearchResultSongListItem = v.object({
+	items: v.array(
+		v.object({
+			item: v.object({
+				id: v.pipe(
+					v.number(),
+					v.integer(),
+					v.minValue(
+						-2147483648,
+						"Invalid value: Expected int32 to be >= -2147483648",
+					),
+					v.maxValue(
+						2147483647,
+						"Invalid value: Expected int32 to be <= 2147483647",
+					),
+				),
+				title: v.string(),
+				cover_art_url: v.nullish(v.string()),
+				artists: v.array(vSimpleArtist),
+				releases: v.array(vReleaseRef),
+			}),
+			matched_name: v.nullish(v.string()),
+		}),
+	),
+	next_cursor: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
+})
+
+export const vDataSearchLabelPage = v.object({
+	status: v.string(),
+	data: vCursorResponseSearchResultLabelListItem,
+})
+
+export const vDataSearchReleasePage = v.object({
+	status: v.string(),
+	data: vCursorResponseSearchResultReleaseListItem,
+})
+
+export const vDataSearchSongPage = v.object({
+	status: v.string(),
+	data: vCursorResponseSearchResultSongListItem,
+})
+
+export const vLabelListItem = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.string(),
+	localized_names: v.array(vLocalizedName),
+	founders: v.array(vSimpleArtist),
+	founded_date: v.nullish(vDateWithPrecision),
+})
+
+export const vPageResponseLabelListItem = v.object({
+	items: v.array(
+		v.object({
+			id: v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+			name: v.string(),
+			localized_names: v.array(vLocalizedName),
+			founders: v.array(vSimpleArtist),
+			founded_date: v.nullish(vDateWithPrecision),
+		}),
+	),
+	page: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	page_size: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(0),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	total_items: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	total_pages: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+})
+
+export const vDataPageLabel = v.object({
+	status: v.string(),
+	data: vPageResponseLabelListItem,
+})
+
+export const vPageResponseReleaseListItem = v.object({
+	items: v.array(
+		v.object({
+			id: v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+			title: v.string(),
+			cover_art_url: v.nullish(v.string()),
+			artists: v.array(vSimpleArtist),
+			release_type: vReleaseType,
+			release_date: v.nullish(vDateWithPrecision),
+			catalog_numbers: v.array(v.string()),
+		}),
+	),
+	page: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	page_size: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(0),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	total_items: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	total_pages: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+})
+
+export const vDataPageRelease = v.object({
+	status: v.string(),
+	data: vPageResponseReleaseListItem,
+})
+
+export const vPageResponseSongListItem = v.object({
+	items: v.array(
+		v.object({
+			id: v.pipe(
+				v.number(),
+				v.integer(),
+				v.minValue(
+					-2147483648,
+					"Invalid value: Expected int32 to be >= -2147483648",
+				),
+				v.maxValue(
+					2147483647,
+					"Invalid value: Expected int32 to be <= 2147483647",
+				),
+			),
+			title: v.string(),
+			cover_art_url: v.nullish(v.string()),
+			artists: v.array(vSimpleArtist),
+			releases: v.array(vReleaseRef),
+		}),
+	),
+	page: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	page_size: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(0),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	total_items: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+	total_pages: v.pipe(
+		v.union([v.number(), v.string(), v.bigint()]),
+		v.transform((x) => BigInt(x)),
+		v.minValue(BigInt(0)),
+		v.maxValue(
+			BigInt("9223372036854775807"),
+			"Invalid value: Expected int64 to be <= 9223372036854775807",
+		),
+	),
+})
+
+export const vDataPageSong = v.object({
+	status: v.string(),
+	data: vPageResponseSongListItem,
+})
+
+export const vReleaseListItem = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	title: v.string(),
+	cover_art_url: v.nullish(v.string()),
+	artists: v.array(vSimpleArtist),
+	release_type: vReleaseType,
+	release_date: v.nullish(vDateWithPrecision),
+	catalog_numbers: v.array(v.string()),
+})
+
 export const vReleaseSummary = v.object({
 	id: v.pipe(
 		v.number(),
@@ -2143,6 +2422,22 @@ export const vCatalogNumber = v.object({
 export const vSongCredit = v.object({
 	artist: vSimpleArtist,
 	role: v.nullish(vCreditRoleRef),
+})
+
+export const vSongListItem = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	title: v.string(),
+	cover_art_url: v.nullish(v.string()),
+	artists: v.array(vSimpleArtist),
+	releases: v.array(vReleaseRef),
 })
 
 export const vSongLyrics = v.object({
@@ -2231,77 +2526,6 @@ export const vReleaseTrack = v.object({
 	artists: v.optional(v.array(vReleaseArtist)),
 })
 
-export const vPageResponseRelease = v.object({
-	items: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			title: v.string(),
-			release_type: vReleaseType,
-			release_date: v.nullish(vDateWithPrecision),
-			recording_date_start: v.nullish(vDateWithPrecision),
-			recording_date_end: v.nullish(vDateWithPrecision),
-			cover_art_url: v.nullish(v.string()),
-			links: v.optional(v.array(v.string())),
-			artists: v.optional(v.array(vReleaseArtist)),
-			credits: v.optional(v.array(vReleaseCredit)),
-			catalog_nums: v.optional(v.array(vCatalogNumber)),
-			localized_titles: v.optional(v.array(vLocalizedTitle)),
-			discs: v.optional(v.array(vReleaseDisc)),
-			tracks: v.optional(v.array(vReleaseTrack)),
-			events: v.optional(v.array(vSimpleEvent)),
-		}),
-	),
-	page: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-	page_size: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	total_items: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-	total_pages: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-})
-
-export const vDataPageRelease = v.object({
-	status: v.string(),
-	data: vPageResponseRelease,
-})
-
 export const vRelease = v.object({
 	id: v.pipe(
 		v.number(),
@@ -2376,72 +2600,6 @@ export const vSongRelease = v.object({
 	title: v.string(),
 	track_number: v.nullish(v.string()),
 	cover_art_url: v.nullish(v.string()),
-})
-
-export const vPageResponseSong = v.object({
-	items: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			title: v.string(),
-			artists: v.optional(v.array(vSimpleArtist)),
-			releases: v.optional(v.array(vSongRelease)),
-			credits: v.optional(v.array(vSongCredit)),
-			languages: v.optional(v.array(vLanguage)),
-			localized_titles: v.optional(v.array(vLocalizedTitle)),
-			links: v.optional(v.array(v.string())),
-			relations: v.optional(v.array(vSongRelation)),
-			lyrics: v.optional(v.array(vSongLyrics)),
-		}),
-	),
-	page: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-	page_size: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	total_items: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-	total_pages: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-})
-
-export const vDataPageSong = v.object({
-	status: v.string(),
-	data: vPageResponseSong,
 })
 
 export const vSong = v.object({
@@ -2599,46 +2757,6 @@ export const vNewTagRelation = v.object({
 
 export const vTagType = v.picklist(["Descriptor", "Genre", "Movement", "Scene"])
 
-export const vCursorResponseTagRef = v.object({
-	items: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			name: v.string(),
-			type: vTagType,
-		}),
-	),
-	next_cursor: v.nullish(
-		v.pipe(
-			v.number(),
-			v.integer(),
-			v.minValue(
-				-2147483648,
-				"Invalid value: Expected int32 to be >= -2147483648",
-			),
-			v.maxValue(
-				2147483647,
-				"Invalid value: Expected int32 to be <= 2147483647",
-			),
-		),
-	),
-})
-
-export const vDataPaginatedTagRef = v.object({
-	status: v.string(),
-	data: vCursorResponseTagRef,
-})
-
 export const vNewCorrectionNewTag = v.object({
 	data: v.object({
 		name: vEntityIdent,
@@ -2661,20 +2779,6 @@ export const vNewTag = v.object({
 	relations: v.nullish(v.array(vNewTagRelation)),
 })
 
-export const vSearchResponse = v.object({
-	artists: vCursorResponseSimpleArtist,
-	releases: vCursorResponseSimpleRelease,
-	songs: vCursorResponseSongRef,
-	events: vCursorResponseSimpleEvent,
-	labels: vCursorResponseSimpleLabel,
-	tags: vCursorResponseTagRef,
-})
-
-export const vDataSearchResponse = v.object({
-	status: v.string(),
-	data: vSearchResponse,
-})
-
 export const vTagRef = v.object({
 	id: v.pipe(
 		v.number(),
@@ -2689,12 +2793,52 @@ export const vTagRef = v.object({
 	type: vTagType,
 })
 
-export const vTagRelation = v.object({
-	tag: vTagRef,
-	type: vTagRelationType,
+export const vCursorResponseSearchResultTagListItem = v.object({
+	items: v.array(
+		v.object({
+			item: v.object({
+				id: v.pipe(
+					v.number(),
+					v.integer(),
+					v.minValue(
+						-2147483648,
+						"Invalid value: Expected int32 to be >= -2147483648",
+					),
+					v.maxValue(
+						2147483647,
+						"Invalid value: Expected int32 to be <= 2147483647",
+					),
+				),
+				name: v.string(),
+				type: vTagType,
+				short_description: v.string(),
+				parents: v.array(vTagRef),
+			}),
+			matched_name: v.nullish(v.string()),
+		}),
+	),
+	next_cursor: v.nullish(
+		v.pipe(
+			v.number(),
+			v.integer(),
+			v.minValue(
+				-2147483648,
+				"Invalid value: Expected int32 to be >= -2147483648",
+			),
+			v.maxValue(
+				2147483647,
+				"Invalid value: Expected int32 to be <= 2147483647",
+			),
+		),
+	),
 })
 
-export const vPageResponseTag = v.object({
+export const vDataSearchTagPage = v.object({
+	status: v.string(),
+	data: vCursorResponseSearchResultTagListItem,
+})
+
+export const vPageResponseTagListItem = v.object({
 	items: v.array(
 		v.object({
 			id: v.pipe(
@@ -2712,9 +2856,7 @@ export const vPageResponseTag = v.object({
 			name: v.string(),
 			type: vTagType,
 			short_description: v.string(),
-			description: v.string(),
-			alt_names: v.optional(v.array(vAlternativeName)),
-			relations: v.optional(v.array(vTagRelation)),
+			parents: v.array(vTagRef),
 		}),
 	),
 	page: v.pipe(
@@ -2754,7 +2896,42 @@ export const vPageResponseTag = v.object({
 
 export const vDataPageTag = v.object({
 	status: v.string(),
-	data: vPageResponseTag,
+	data: vPageResponseTagListItem,
+})
+
+export const vSearchResponse = v.object({
+	artists: vCursorResponseSearchResultArtistListItem,
+	releases: vCursorResponseSearchResultReleaseListItem,
+	songs: vCursorResponseSearchResultSongListItem,
+	events: vCursorResponseSearchResultEventListItem,
+	labels: vCursorResponseSearchResultLabelListItem,
+	tags: vCursorResponseSearchResultTagListItem,
+})
+
+export const vDataSearchResponse = v.object({
+	status: v.string(),
+	data: vSearchResponse,
+})
+
+export const vTagListItem = v.object({
+	id: v.pipe(
+		v.number(),
+		v.integer(),
+		v.minValue(
+			-2147483648,
+			"Invalid value: Expected int32 to be >= -2147483648",
+		),
+		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
+	),
+	name: v.string(),
+	type: vTagType,
+	short_description: v.string(),
+	parents: v.array(vTagRef),
+})
+
+export const vTagRelation = v.object({
+	tag: vTagRef,
+	type: vTagRelationType,
 })
 
 export const vTag = v.object({
@@ -3096,90 +3273,6 @@ export const vNewCorrectionNewArtist = v.object({
 	}),
 	description: v.string(),
 	type: vCorrectionType,
-})
-
-export const vPageResponseArtist = v.object({
-	items: v.array(
-		v.object({
-			id: v.pipe(
-				v.number(),
-				v.integer(),
-				v.minValue(
-					-2147483648,
-					"Invalid value: Expected int32 to be >= -2147483648",
-				),
-				v.maxValue(
-					2147483647,
-					"Invalid value: Expected int32 to be <= 2147483647",
-				),
-			),
-			name: v.string(),
-			artist_type: vArtistType,
-			text_aliases: v.nullish(v.array(v.string())),
-			start_date: v.nullish(vDateWithPrecision),
-			end_date: v.nullish(vDateWithPrecision),
-			profile_image_url: v.nullish(v.string()),
-			aliases: v.optional(
-				v.array(
-					v.pipe(
-						v.number(),
-						v.integer(),
-						v.minValue(
-							-2147483648,
-							"Invalid value: Expected int32 to be >= -2147483648",
-						),
-						v.maxValue(
-							2147483647,
-							"Invalid value: Expected int32 to be <= 2147483647",
-						),
-					),
-				),
-			),
-			links: v.optional(v.array(v.string())),
-			localized_names: v.optional(v.array(vLocalizedName)),
-			start_location: v.optional(vLocation),
-			current_location: v.optional(vLocation),
-			memberships: v.optional(v.array(vMembership)),
-		}),
-	),
-	page: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-	page_size: v.pipe(
-		v.number(),
-		v.integer(),
-		v.minValue(0),
-		v.maxValue(2147483647, "Invalid value: Expected int32 to be <= 2147483647"),
-	),
-	total_items: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-	total_pages: v.pipe(
-		v.union([v.number(), v.string(), v.bigint()]),
-		v.transform((x) => BigInt(x)),
-		v.minValue(BigInt(0)),
-		v.maxValue(
-			BigInt("9223372036854775807"),
-			"Invalid value: Expected int64 to be <= 9223372036854775807",
-		),
-	),
-})
-
-export const vDataPageArtist = v.object({
-	status: v.string(),
-	data: vPageResponseArtist,
 })
 
 export const vUnreadCount = v.object({
@@ -5285,7 +5378,7 @@ export const vSearchArtistQuery = v.object({
 	),
 })
 
-export const vSearchArtistResponse = vDataPaginatedSimpleArtist
+export const vSearchArtistResponse = vDataSearchArtistPage
 
 export const vSearchEventQuery = v.object({
 	search_term: v.string(),
@@ -5308,7 +5401,7 @@ export const vSearchEventQuery = v.object({
 	),
 })
 
-export const vSearchEventResponse = vDataPaginatedSimpleEvent
+export const vSearchEventResponse = vDataSearchEventPage
 
 export const vSearchLabelQuery = v.object({
 	search_term: v.string(),
@@ -5331,7 +5424,7 @@ export const vSearchLabelQuery = v.object({
 	),
 })
 
-export const vSearchLabelResponse = vDataPaginatedSimpleLabel
+export const vSearchLabelResponse = vDataSearchLabelPage
 
 export const vSearchReleaseQuery = v.object({
 	search_term: v.string(),
@@ -5354,7 +5447,7 @@ export const vSearchReleaseQuery = v.object({
 	),
 })
 
-export const vSearchReleaseResponse = vDataPaginatedSimpleRelease
+export const vSearchReleaseResponse = vDataSearchReleasePage
 
 export const vSearchSongQuery = v.object({
 	search_term: v.string(),
@@ -5377,7 +5470,7 @@ export const vSearchSongQuery = v.object({
 	),
 })
 
-export const vSearchSongResponse = vDataPaginatedSongRef
+export const vSearchSongResponse = vDataSearchSongPage
 
 export const vSearchTagQuery = v.object({
 	search_term: v.string(),
@@ -5400,7 +5493,7 @@ export const vSearchTagQuery = v.object({
 	),
 })
 
-export const vSearchTagResponse = vDataPaginatedTagRef
+export const vSearchTagResponse = vDataSearchTagPage
 
 export const vSignInBody = vAuthCredential
 

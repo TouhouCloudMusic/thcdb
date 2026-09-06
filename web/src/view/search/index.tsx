@@ -1,25 +1,31 @@
 import { useLingui } from "@lingui/solid/macro"
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
-import type {
-	SimpleArtist,
-	SimpleEvent,
-	SimpleLabel,
-	SongRelease,
-	SongRef,
-	TagRef,
-	UserCollection,
-} from "@thc/api"
-import { SearchQueryOption } from "@thc/query"
 import { createMemo, For, Show } from "solid-js"
 import type { JSX } from "solid-js"
 import { twJoin } from "tailwind-merge"
 
 import { Tab } from "~/component/atomic"
-import { Link } from "~/component/atomic/Link"
+import { Divider } from "~/component/atomic/Divider"
+import { Intersperse } from "~/component/data/Intersperse"
+import {
+	searchArtistInfiniteOptions,
+	searchEventInfiniteOptions,
+	searchLabelInfiniteOptions,
+	searchReleaseInfiniteOptions,
+	searchSongInfiniteOptions,
+	searchTagInfiniteOptions,
+	searchUserCollectionsInfiniteOptions,
+} from "~/hey-api/@tanstack/solid-query.gen"
 import { PageLayout } from "~/layout/PageLayout"
-import { imgUrl } from "~/utils/adapter/static_file"
 import { createInfiniteScroll } from "~/utils/solid/createInfiniteScroll"
+import { ArtistItem } from "~/view/artist/ArtistItem"
+import { CollectionListItem } from "~/view/collection/CollectionListItem"
+import { EventItem } from "~/view/event/EventItem"
+import { LabelItem } from "~/view/label/LabelItem"
+import { ReleaseItem } from "~/view/release/ReleaseItems"
+import { SongItem } from "~/view/song/SongItem"
+import { TagItem } from "~/view/tag/TagItem"
 
 type SearchTab =
 	| "artist"
@@ -34,7 +40,7 @@ type SearchEntity = "all" | SearchTab
 const route = getRouteApi("/search")
 const LIMIT = 20
 
-const isSearchTab = (value: string): value is SearchTab => {
+function isSearchTab(value: string): value is SearchTab {
 	return (
 		value === "artist"
 		|| value === "release"
@@ -52,12 +58,7 @@ export function SearchPage() {
 	const navigate = useNavigate({ from: "/search" })
 
 	const term = createMemo(() => (search().q ?? "").trim())
-	const entity = createMemo<SearchEntity>(() => {
-		const value = search().entity
-		if (value === "all") return value
-		if (value && isSearchTab(value)) return value
-		return "all"
-	})
+	const entity = createMemo(() => search().entity ?? "all")
 	const requestedTab = createMemo<SearchTab | undefined>(() => search().tab)
 
 	const patchSearch = (patch: { tab?: SearchTab }) => {
@@ -70,7 +71,7 @@ export function SearchPage() {
 	const enabled = () => term().length > 0
 
 	return (
-		<PageLayout class="p-8 pt-6">
+		<PageLayout class="p-4 sm:p-8">
 			<div class="flex h-full flex-col gap-6">
 				<SearchHeader
 					enabled={enabled()}
@@ -102,11 +103,9 @@ function SearchHeader(props: { enabled: boolean; term: string }) {
 	return (
 		<div class="flex flex-col border-b border-slate-200 pb-4">
 			<Show when={props.enabled}>
-				<div class="text-3xl leading-tight font-extralight tracking-tighter text-primary">
-					{t`Search result of`} &quot;
-					<span class="tracking-tight">{props.term}</span>
-					&quot;
-				</div>
+				<h1 class="text-2xl font-light wrap-anywhere text-primary">
+					{t`Search result of`} <span class="text-secondary">{props.term}</span>
+				</h1>
 			</Show>
 		</div>
 	)
@@ -127,40 +126,84 @@ function SearchResults(props: {
 		return props.entity() === tab
 	}
 
-	const artistsQuery = useInfiniteQuery(() =>
-		SearchQueryOption.artists(props.term(), LIMIT, isEnabledTab("artist")),
-	)
-	const eventsQuery = useInfiniteQuery(() =>
-		SearchQueryOption.events(props.term(), LIMIT, isEnabledTab("event")),
-	)
-	const labelsQuery = useInfiniteQuery(() =>
-		SearchQueryOption.labels(props.term(), LIMIT, isEnabledTab("label")),
-	)
-	const releasesQuery = useInfiniteQuery(() =>
-		SearchQueryOption.releases(props.term(), LIMIT, isEnabledTab("release")),
-	)
-	const songsQuery = useInfiniteQuery(() =>
-		SearchQueryOption.songs(props.term(), LIMIT, isEnabledTab("song")),
-	)
-	const tagsQuery = useInfiniteQuery(() =>
-		SearchQueryOption.tags(props.term(), LIMIT, isEnabledTab("tag")),
-	)
-	const userCollectionsQuery = useInfiniteQuery(() =>
-		SearchQueryOption.userCollections(
-			props.term(),
-			LIMIT,
-			isEnabledTab("user_collection"),
-		),
-	)
-
-	const artists = () => artistsQuery.data?.pages.flatMap((p) => p.items) ?? []
-	const events = () => eventsQuery.data?.pages.flatMap((p) => p.items) ?? []
-	const labels = () => labelsQuery.data?.pages.flatMap((p) => p.items) ?? []
-	const releases = () => releasesQuery.data?.pages.flatMap((p) => p.items) ?? []
-	const songs = () => songsQuery.data?.pages.flatMap((p) => p.items) ?? []
-	const tags = () => tagsQuery.data?.pages.flatMap((p) => p.items) ?? []
-	const userCollections = (): UserCollection[] =>
-		userCollectionsQuery.data?.pages.flatMap((p) => p.items) ?? []
+	const artistsQuery = useInfiniteQuery(() => ({
+		...searchArtistInfiniteOptions({
+			query: { search_term: props.term(), limit: LIMIT },
+		}),
+		initialPageParam: 0,
+		getNextPageParam: (last) => last.data.next_cursor,
+		enabled: isEnabledTab("artist"),
+		throwOnError: true,
+	}))
+	const eventsQuery = useInfiniteQuery(() => ({
+		...searchEventInfiniteOptions({
+			query: { search_term: props.term(), limit: LIMIT },
+		}),
+		initialPageParam: 0,
+		getNextPageParam: (last) => last.data.next_cursor,
+		enabled: isEnabledTab("event"),
+		throwOnError: true,
+	}))
+	const labelsQuery = useInfiniteQuery(() => ({
+		...searchLabelInfiniteOptions({
+			query: { search_term: props.term(), limit: LIMIT },
+		}),
+		initialPageParam: 0,
+		getNextPageParam: (last) => last.data.next_cursor,
+		enabled: isEnabledTab("label"),
+		throwOnError: true,
+	}))
+	const releasesQuery = useInfiniteQuery(() => ({
+		...searchReleaseInfiniteOptions({
+			query: { search_term: props.term(), limit: LIMIT },
+		}),
+		initialPageParam: 0,
+		getNextPageParam: (last) => last.data.next_cursor,
+		enabled: isEnabledTab("release"),
+		throwOnError: true,
+	}))
+	const songsQuery = useInfiniteQuery(() => ({
+		...searchSongInfiniteOptions({
+			query: { search_term: props.term(), limit: LIMIT },
+		}),
+		initialPageParam: 0,
+		getNextPageParam: (last) => last.data.next_cursor,
+		enabled: isEnabledTab("song"),
+		throwOnError: true,
+	}))
+	const tagsQuery = useInfiniteQuery(() => ({
+		...searchTagInfiniteOptions({
+			query: { search_term: props.term(), limit: LIMIT },
+		}),
+		initialPageParam: 0,
+		getNextPageParam: (last) => last.data.next_cursor,
+		enabled: isEnabledTab("tag"),
+		throwOnError: true,
+	}))
+	const userCollectionsQuery = useInfiniteQuery(() => ({
+		...searchUserCollectionsInfiniteOptions({
+			query: { keyword: props.term(), limit: LIMIT },
+		}),
+		initialPageParam: 1,
+		getNextPageParam: (last) =>
+			last.data.page < last.data.total_pages ? last.data.page + 1 : undefined,
+		enabled: isEnabledTab("user_collection"),
+		throwOnError: true,
+	}))
+	const artists = () =>
+		artistsQuery.data?.pages.flatMap((page) => page.data.items) ?? []
+	const events = () =>
+		eventsQuery.data?.pages.flatMap((page) => page.data.items) ?? []
+	const labels = () =>
+		labelsQuery.data?.pages.flatMap((page) => page.data.items) ?? []
+	const releases = () =>
+		releasesQuery.data?.pages.flatMap((page) => page.data.items) ?? []
+	const songs = () =>
+		songsQuery.data?.pages.flatMap((page) => page.data.items) ?? []
+	const tags = () =>
+		tagsQuery.data?.pages.flatMap((page) => page.data.items) ?? []
+	const userCollections = () =>
+		userCollectionsQuery.data?.pages.flatMap((page) => page.data.items) ?? []
 
 	const itemCount = (tab: SearchTab) => {
 		if (tab === "artist") return artists().length
@@ -197,7 +240,6 @@ function SearchResults(props: {
 	const visibleTabs = createMemo<SearchTab[]>(() => {
 		const currentEntity = props.entity()
 		if (currentEntity !== "all") {
-			if (!isSearchTab(currentEntity)) return []
 			if (itemCount(currentEntity) > 0) return [currentEntity]
 			if (isLoadingTab(currentEntity)) return [currentEntity]
 			return []
@@ -325,19 +367,19 @@ function SearchResults(props: {
 					props.onTabChange(value)
 				}}
 			>
-				<Tab.List
-					class={twJoin(Tab.CONTAINER_CLASS, "flex flex-wrap gap-x-6 gap-y-2")}
-				>
-					<For each={visibleTabs()}>
-						{(tab) => (
-							<TabTrigger
-								tab={tab}
-								count={itemCount(tab)}
-							/>
-						)}
-					</For>
-					<Tab.Indicator />
-				</Tab.List>
+				<div class="overflow-x-auto">
+					<Tab.List class={twJoin(Tab.CONTAINER_CLASS, "min-w-max")}>
+						<For each={visibleTabs()}>
+							{(tab) => (
+								<TabTrigger
+									tab={tab}
+									count={itemCount(tab)}
+								/>
+							)}
+						</For>
+						<Tab.Indicator />
+					</Tab.List>
+				</div>
 
 				<Tab.Content value="artist">
 					<ResultList
@@ -348,7 +390,7 @@ function SearchResults(props: {
 						limit={LIMIT}
 						setSentinelRef={setArtistsSentinelRef}
 						emptyText={t`No artists found.`}
-						renderItem={(item) => <ArtistRow artist={item} />}
+						renderItem={(result) => <ArtistItem artist={result.item} />}
 					/>
 				</Tab.Content>
 
@@ -361,7 +403,7 @@ function SearchResults(props: {
 						limit={LIMIT}
 						setSentinelRef={setEventsSentinelRef}
 						emptyText={t`No events found.`}
-						renderItem={(item) => <EventRow event={item} />}
+						renderItem={(result) => <EventItem event={result.item} />}
 					/>
 				</Tab.Content>
 
@@ -374,7 +416,7 @@ function SearchResults(props: {
 						limit={LIMIT}
 						setSentinelRef={setLabelsSentinelRef}
 						emptyText={t`No labels found.`}
-						renderItem={(item) => <LabelRow label={item} />}
+						renderItem={(result) => <LabelItem label={result.item} />}
 					/>
 				</Tab.Content>
 
@@ -387,7 +429,7 @@ function SearchResults(props: {
 						limit={LIMIT}
 						setSentinelRef={setReleasesSentinelRef}
 						emptyText={t`No releases found.`}
-						renderItem={(item) => <ReleaseRow release={item} />}
+						renderItem={(result) => <ReleaseItem release={result.item} />}
 					/>
 				</Tab.Content>
 
@@ -400,7 +442,7 @@ function SearchResults(props: {
 						limit={LIMIT}
 						setSentinelRef={setSongsSentinelRef}
 						emptyText={t`No songs found.`}
-						renderItem={(item) => <SongRow song={item} />}
+						renderItem={(result) => <SongItem song={result.item} />}
 					/>
 				</Tab.Content>
 
@@ -413,7 +455,7 @@ function SearchResults(props: {
 						limit={LIMIT}
 						setSentinelRef={setTagsSentinelRef}
 						emptyText={t`No tags found.`}
-						renderItem={(item) => <TagRow tag={item} />}
+						renderItem={(result) => <TagItem tag={result.item} />}
 					/>
 				</Tab.Content>
 
@@ -426,15 +468,8 @@ function SearchResults(props: {
 						limit={LIMIT}
 						setSentinelRef={setUserCollectionsSentinelRef}
 						emptyText={t`No collections found.`}
-						renderItem={(item) => (
-							<Link
-								to="/collection/$id"
-								params={{ id: String(item.id) }}
-								underline={false}
-								class="flex flex-col gap-1 border-b border-slate-100 px-4 py-3 last:border-0 hover:bg-slate-50"
-							>
-								<span class="font-medium text-slate-900">{item.name}</span>
-							</Link>
+						renderItem={(collection) => (
+							<CollectionListItem collection={collection} />
 						)}
 					/>
 				</Tab.Content>
@@ -454,9 +489,7 @@ function EmptyState(props: { text: string; variant?: EmptyStateVariant }) {
 	}
 
 	return (
-		<div
-			class={`rounded-md border border-dashed border-slate-200 bg-white text-center text-sm text-slate-500 ${variant()}`}
-		>
+		<div class={`text-center text-sm text-tertiary ${variant()}`}>
 			{props.text}
 		</div>
 	)
@@ -469,9 +502,7 @@ function TabTrigger(props: { tab: SearchTab; count: number }) {
 			class="flex items-center gap-2 py-3"
 		>
 			<SearchTabLabel tab={props.tab} />
-			<span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-700 ring-1 ring-slate-200 ring-inset">
-				{props.count}
-			</span>
+			<span class="text-sm tabular-nums text-tertiary">{props.count}</span>
 		</Tab.Trigger>
 	)
 }
@@ -523,231 +554,54 @@ function ResultList<T>(props: ResultListProps<T>) {
 	const { t } = useLingui()
 
 	return (
-		<div class="mt-5 flex flex-col gap-3">
+		<div class="relative flex flex-col gap-2 p-4">
 			<Show when={!props.isLoading && props.items.length === 0}>
-				<div class="max-h-40 overflow-auto rounded-md border border-dashed border-slate-200 bg-white/60 px-4 py-8 text-center text-sm text-slate-500">
+				<div class="py-8 text-center text-sm text-tertiary">
 					{props.emptyText}
 				</div>
 			</Show>
 
-			<Show when={props.items.length > 0}>
-				<div class="overflow-hidden rounded-md border border-slate-200 bg-white shadow-xs">
-					<div class="divide-y divide-slate-100">
-						<For each={props.items}>{(item) => props.renderItem(item)}</For>
+			<Intersperse
+				of={props.items}
+				with={<Divider horizontal />}
+			>
+				{(item) => props.renderItem(item)}
+			</Intersperse>
+
+			<Show when={props.items.length > 0 && !props.hasNextPage}>
+				<div class="flex flex-col">
+					<Divider horizontal />
+					<div class="flex h-16 items-center justify-center text-sm text-slate-500">
+						{t`No more results`}
 					</div>
 				</div>
+			</Show>
+
+			<Show when={props.isFetchingNextPage || props.isLoading}>
+				<Show when={props.items.length > 0}>
+					<Divider horizontal />
+				</Show>
+				<Intersperse
+					of={Array.from({ length: props.limit })}
+					with={<Divider horizontal />}
+				>
+					{() => <RowSkeleton />}
+				</Intersperse>
 			</Show>
 
 			<div
 				ref={props.setSentinelRef}
-				class="h-1"
+				class="absolute inset-x-0 bottom-0 h-1"
 			></div>
-
-			<Show when={props.isFetchingNextPage || props.isLoading}>
-				<div class="overflow-hidden rounded-md border border-slate-200 bg-white shadow-xs">
-					<div class="divide-y divide-slate-100">
-						<For each={Array.from({ length: props.limit })}>
-							{() => <RowSkeleton />}
-						</For>
-					</div>
-				</div>
-			</Show>
-
-			<Show when={!props.hasNextPage && props.items.length > 0}>
-				<div class="flex justify-center py-4 text-sm text-slate-400">
-					{t`No more results`}
-				</div>
-			</Show>
 		</div>
 	)
 }
 
 function RowSkeleton() {
 	return (
-		<div class="flex animate-pulse items-center gap-3 px-4 py-3">
-			<div class="size-9 shrink-0 rounded-full bg-slate-200"></div>
-			<div class="min-w-0 flex-1">
-				<div class="h-4 w-2/5 rounded bg-slate-200"></div>
-				<div class="mt-2 h-3 w-1/4 rounded bg-slate-100"></div>
-			</div>
-			<div class="h-3 w-10 rounded bg-slate-100"></div>
+		<div class="motion-safe:animate-pulse min-w-0">
+			<div class="h-4 w-2/5 rounded bg-slate-200"></div>
+			<div class="mt-2 h-3 w-1/4 rounded bg-slate-100"></div>
 		</div>
-	)
-}
-
-function ArtistRow(props: { artist: SimpleArtist }) {
-	const { t } = useLingui()
-	return (
-		<Link
-			to="/artist/$id"
-			params={{ id: props.artist.id.toString() }}
-			class="group flex items-center gap-3 px-4 py-3 no-underline hover:bg-slate-50 hover:no-underline"
-		>
-			<div class="grid size-9 place-items-center rounded-full bg-reimu-100 text-xs font-semibold text-reimu-800 ring-1 ring-reimu-200 ring-inset">
-				A
-			</div>
-			<div class="min-w-0 flex-1">
-				<div class="truncate text-sm font-medium text-slate-900">
-					{props.artist.name}
-				</div>
-				<div class="mt-0.5 text-xs text-slate-500">
-					{t`Artist`} · {props.artist.id}
-				</div>
-			</div>
-			<div class="text-xs text-slate-400 transition-colors duration-150 group-hover:text-slate-700 motion-reduce:transition-none">
-				{t`Open`} →
-			</div>
-		</Link>
-	)
-}
-
-function ReleaseRow(props: { release: SongRelease }) {
-	const { t } = useLingui()
-	const coverUrl = () => imgUrl(props.release.cover_art_url)
-
-	return (
-		<Link
-			to="/release/$id"
-			params={{ id: props.release.id.toString() }}
-			class="group flex items-center gap-3 px-4 py-3 no-underline hover:bg-slate-50 hover:no-underline"
-		>
-			<Show
-				when={coverUrl()}
-				fallback={
-					<div class="grid size-9 shrink-0 place-items-center rounded-sm bg-marisa-100 text-xs font-semibold text-marisa-800 ring-1 ring-marisa-200 ring-inset">
-						R
-					</div>
-				}
-			>
-				{(src) => (
-					<img
-						src={src()}
-						alt=""
-						class="size-9 shrink-0 rounded-sm bg-slate-100 object-cover ring-1 ring-marisa-200 ring-inset"
-						loading="lazy"
-					/>
-				)}
-			</Show>
-			<div class="min-w-0 flex-1">
-				<div class="truncate text-sm font-medium text-slate-900">
-					{props.release.title}
-				</div>
-				<div class="mt-0.5 text-xs text-slate-500">
-					{t`Release`} · {props.release.id}
-				</div>
-			</div>
-			<div class="text-xs text-slate-400 transition-colors duration-150 group-hover:text-slate-700 motion-reduce:transition-none">
-				{t`Open`} →
-			</div>
-		</Link>
-	)
-}
-
-function SongRow(props: { song: SongRef }) {
-	const { t } = useLingui()
-	return (
-		<Link
-			to="/song/$id"
-			params={{ id: props.song.id.toString() }}
-			class="group flex items-center gap-3 px-4 py-3 no-underline hover:bg-slate-50 hover:no-underline"
-		>
-			<div class="grid size-9 place-items-center rounded-full bg-blue-100 text-xs font-semibold text-blue-800 ring-1 ring-blue-200 ring-inset">
-				♪
-			</div>
-			<div class="min-w-0 flex-1">
-				<div class="truncate text-sm font-medium text-slate-900">
-					{props.song.title}
-				</div>
-				<div class="mt-0.5 text-xs text-slate-500">
-					{t`Song`} · {props.song.id}
-				</div>
-			</div>
-			<div class="text-xs text-slate-400 transition-colors duration-150 group-hover:text-slate-700 motion-reduce:transition-none">
-				{t`Open`} →
-			</div>
-		</Link>
-	)
-}
-
-function EventRow(props: { event: SimpleEvent }) {
-	const { t } = useLingui()
-	return (
-		<Link
-			to="/event/$id"
-			params={{ id: props.event.id.toString() }}
-			class="group flex items-center gap-3 px-4 py-3 no-underline hover:bg-slate-50 hover:no-underline"
-		>
-			<div class="grid size-9 place-items-center rounded-full bg-green-100 text-xs font-semibold text-green-800 ring-1 ring-green-200 ring-inset">
-				E
-			</div>
-			<div class="min-w-0 flex-1">
-				<div class="truncate text-sm font-medium text-slate-900">
-					{props.event.name}
-				</div>
-				<div class="mt-0.5 text-xs text-slate-500">
-					{t`Event`} · {props.event.id}
-				</div>
-			</div>
-			<div class="text-xs text-slate-400 transition-colors duration-150 group-hover:text-slate-700 motion-reduce:transition-none">
-				{t`Open`} →
-			</div>
-		</Link>
-	)
-}
-
-function LabelRow(props: { label: SimpleLabel }) {
-	const { t } = useLingui()
-	return (
-		<Link
-			to="/label/$id"
-			params={{ id: props.label.id.toString() }}
-			class="group flex items-center gap-3 px-4 py-3 no-underline hover:bg-slate-50 hover:no-underline"
-		>
-			<div class="grid size-9 place-items-center rounded-full bg-slate-100 text-xs font-semibold text-slate-800 ring-1 ring-slate-200 ring-inset">
-				L
-			</div>
-			<div class="min-w-0 flex-1">
-				<div class="truncate text-sm font-medium text-slate-900">
-					{props.label.name}
-				</div>
-				<div class="mt-0.5 text-xs text-slate-500">
-					{t`Label`} · {props.label.id}
-				</div>
-			</div>
-			<div class="text-xs text-slate-400 transition-colors duration-150 group-hover:text-slate-700 motion-reduce:transition-none">
-				{t`Open`} →
-			</div>
-		</Link>
-	)
-}
-
-function TagRow(props: { tag: TagRef }) {
-	const { t } = useLingui()
-	return (
-		<Link
-			to="/tag/$id"
-			params={{ id: props.tag.id.toString() }}
-			class="group flex items-center gap-3 px-4 py-3 no-underline hover:bg-slate-50 hover:no-underline"
-		>
-			<div class="grid size-9 place-items-center rounded-full bg-slate-100 text-xs font-semibold text-slate-800 ring-1 ring-slate-200 ring-inset">
-				#
-			</div>
-			<div class="min-w-0 flex-1">
-				<div class="flex min-w-0 items-center gap-2">
-					<div class="truncate text-sm font-medium text-slate-900">
-						{props.tag.name}
-					</div>
-					<div class="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-700 ring-1 ring-slate-200 ring-inset">
-						{props.tag.type}
-					</div>
-				</div>
-				<div class="mt-0.5 text-xs text-slate-500">
-					{t`Tag`} · {props.tag.id}
-				</div>
-			</div>
-			<div class="text-xs text-slate-400 transition-colors duration-150 group-hover:text-slate-700 motion-reduce:transition-none">
-				{t`Open`} →
-			</div>
-		</Link>
 	)
 }

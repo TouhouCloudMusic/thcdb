@@ -14,7 +14,7 @@ export function StickyFilterBar(
 
 	const wrapperClass = () =>
 		twMerge(
-			"sticky top-0 z-10 -mx-8 border-b border-slate-100 bg-white px-8 py-4 transition-transform duration-200",
+			"sticky top-0 z-10 -mx-4 border-b border-slate-200 bg-primary px-4 py-4 motion-safe:transition-transform motion-safe:duration-200 sm:-mx-8 sm:px-8",
 			translateClass(),
 			props.class,
 		)

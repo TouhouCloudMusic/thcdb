@@ -8,6 +8,7 @@ use utoipa_axum::routes;
 use super::{LabelFilter, PageQuery};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
+use crate::features::label::list::LabelListItem;
 use crate::features::label::model::Label;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{Data, Error as ApiError};
@@ -27,7 +28,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 data! {
     DataOptionLabel, Option<Label>
     DataVecLabel, Vec<Label>
-    DataPageLabel, PageResponse<Label>
+    DataPageLabel, PageResponse<LabelListItem>
 }
 
 #[utoipa::path(
@@ -82,7 +83,7 @@ async fn explore_label(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<LabelFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Label>>, DatabaseError> {
+) -> Result<Data<PageResponse<LabelListItem>>, DatabaseError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.label.find.http",
