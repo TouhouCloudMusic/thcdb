@@ -19,15 +19,17 @@ export function ReleaseInfoTitleAndArtist() {
 	return (
 		<div class="space-y-2">
 			<div>
-				<h1 class="text-2xl text-primary">{ctx.release.title}</h1>
+				<h1 class="wrap-break-word text-2xl text-primary">
+					{ctx.release.title}
+				</h1>
 
 				<Show when={preferredLocalizedTitle()}>
-					<p class="text-lg text-tertiary">
+					<p class="wrap-break-word text-lg text-tertiary">
 						{preferredLocalizedTitle()!.title}
 					</p>
 				</Show>
 			</div>
-			<div class="flex items-center">
+			<div class="flex flex-wrap items-center">
 				<span class="mr-2 text-tertiary">{t`by`}</span>
 				<Intersperse
 					of={ctx.release.artists}

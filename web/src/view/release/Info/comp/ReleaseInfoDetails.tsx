@@ -29,7 +29,7 @@ export function ReleaseInfoDetails() {
 				}
 			>
 				<span class="text-tertiary">{t`Recorded`}</span>
-				<div class="flex items-center">
+				<div class="flex flex-wrap items-center">
 					<Show when={ctx.release.recording_date_start}>
 						<span>
 							{DateWithPrecision.display(ctx.release.recording_date_start)}
@@ -48,7 +48,7 @@ export function ReleaseInfoDetails() {
 				when={ctx.release.catalog_nums && ctx.release.catalog_nums.length > 0}
 			>
 				<span class="text-tertiary">{t`Catalog Nums`}</span>
-				<ul class="flex items-baseline">
+				<ul class="flex flex-wrap items-baseline">
 					<Intersperse
 						of={ctx.release.catalog_nums}
 						with={<span class="whitespace-pre"> / </span>}

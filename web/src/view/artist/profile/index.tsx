@@ -15,7 +15,10 @@ import { Image } from "~/component/image"
 import { PageLayout } from "~/layout/PageLayout"
 import type { InfiniteQuery } from "~/type/query"
 import { imgUrl } from "~/utils/adapter/static_file"
-import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
+import {
+	ADD_TO_COLLECTION_ACTIONS_CLASS,
+	AddToUserCollectionButton,
+} from "~/view/collection/AddToUserCollectionButton"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 
 import { ArtistInfo } from "./comp/ArtistInfo"
@@ -71,13 +74,13 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 		},
 	}
 	return (
-		<PageLayout class="p-9">
+		<PageLayout class="p-[clamp(1rem,4vw,2rem)]">
 			{/* TODO: fallback */}
 			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<ArtistContext.Provider value={contextValue}>
-					<div class="flex flex-col space-y-8">
-						<div class="grid h-fit grid-cols-[auto_1fr] space-x-8">
-							<div class="size-64 shrink-0 overflow-hidden rounded bg-slate-100">
+					<div class="flex flex-col gap-8">
+						<div class="flex flex-wrap items-start justify-center gap-6">
+							<div class="aspect-square w-full overflow-hidden rounded bg-slate-100 sm:max-w-64">
 								<Image.Root>
 									<Image.Fallback>
 										{(state) =>
@@ -94,33 +97,29 @@ export function ArtistProfilePage(props: ArtistProfilePageProps) {
 									/>
 								</Image.Root>
 							</div>
-							<div class="flex flex-col gap-4">
+							<div class="flex min-w-0 flex-1 basis-72 flex-col gap-4">
 								<ArtistInfo />
-								<div class="border-t border-slate-200 pt-4">
+								<div class={ADD_TO_COLLECTION_ACTIONS_CLASS}>
 									<AddToUserCollectionButton
 										entityType="Artist"
 										entityId={props.artist.id}
 									/>
+									<Link
+										to="/artist/$id/image-upload"
+										params={{ id: props.artist.id.toString() }}
+										class={UPLOAD_LINK_CLASS}
+										underline={false}
+									>
+										Upload image
+									</Link>
 								</div>
 							</div>
 						</div>
-						<div>
-							<ArtistReleaseInfo />
-						</div>
+						<ArtistReleaseInfo />
 						<EntityCorrectionMetadataSection
 							entityType="artist"
 							entityId={props.artist.id}
 							correctionHistory={props.correctionHistory}
-							trailingAction={
-								<Link
-									to="/artist/$id/image-upload"
-									params={{ id: props.artist.id.toString() }}
-									class={UPLOAD_LINK_CLASS}
-									underline={false}
-								>
-									Upload image
-								</Link>
-							}
 						/>
 					</div>
 					{/* <div class="max-w-full wrap-anywhere">

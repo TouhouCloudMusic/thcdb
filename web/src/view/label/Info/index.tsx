@@ -1,7 +1,6 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Label } from "@thc/api"
 import { createSignal, Show, Suspense } from "solid-js"
-import { twJoin } from "tailwind-merge"
 
 import { Tab } from "~/component/atomic"
 import { ExternalLinks } from "~/component/data/ExternalLinks"
@@ -9,7 +8,10 @@ import { Intersperse } from "~/component/data/Intersperse"
 import { DateWithPrecision } from "~/domain/shared"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
-import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
+import {
+	ADD_TO_COLLECTION_ACTIONS_CLASS,
+	AddToUserCollectionButton,
+} from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
@@ -33,16 +35,18 @@ export function LabelInfoPage(props: Props) {
 	}
 
 	return (
-		<PageLayout class="p-8">
+		<PageLayout class="p-[clamp(1rem,4vw,2rem)]">
 			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<LabelInfoPageContext.Provider value={contextValue}>
 					<div class="flex flex-col gap-y-6">
 						<LabelInfoHeader />
 						<LabelInfoDetails />
-						<AddToUserCollectionButton
-							entityType="Label"
-							entityId={props.label.id}
-						/>
+						<div class={ADD_TO_COLLECTION_ACTIONS_CLASS}>
+							<AddToUserCollectionButton
+								entityType="Label"
+								entityId={props.label.id}
+							/>
+						</div>
 						<LabelInfoComments />
 						<EntityCorrectionMetadataSection
 							entityType="label"
@@ -135,21 +139,21 @@ function LabelInfoComments() {
 			value={activeTab()}
 			onChange={setActiveTab}
 		>
-			<div class={twJoin(Tab.CONTAINER_CLASS, "px-4")}>
-				<Tab.List class="gap-12">
+			<Tab.ScrollArea>
+				<Tab.List class={Tab.CONTAINER_CLASS}>
 					<EntityCommentsTabTrigger
 						count={comments.activeCommentCount()}
-						class="py-4"
+						class="py-3"
 					/>
 					<Tab.Trigger
 						value="Collections"
-						class="py-4"
+						class="py-3"
 					>
 						{t`Collections`}
 					</Tab.Trigger>
 					<Tab.Indicator />
 				</Tab.List>
-			</div>
+			</Tab.ScrollArea>
 			<Tab.Content
 				value="Comments"
 				class="p-4"

@@ -5,7 +5,10 @@ import { Suspense } from "solid-js"
 import { Link } from "~/component/atomic/Link"
 import { ButtonClass_new } from "~/component/atomic/button"
 import { PageLayout } from "~/layout/PageLayout"
-import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
+import {
+	ADD_TO_COLLECTION_ACTIONS_CLASS,
+	AddToUserCollectionButton,
+} from "~/view/collection/AddToUserCollectionButton"
 import { EntityCorrectionMetadataSection } from "~/view/correction/EntityCorrectionMetadataSection"
 import { EntityTags } from "~/view/entity_tags/EntityTags"
 
@@ -34,35 +37,27 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 	}
 
 	return (
-		<PageLayout class="p-8">
+		<PageLayout class="p-[clamp(1rem,4vw,2rem)]">
 			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<ReleaseInfoPageContext.Provider value={contextValue}>
-					<div class="grid grid-cols-[auto_1fr] gap-8">
-						<ReleaseInfoCoverImage />
-						<div class="flex flex-col gap-y-4">
-							<ReleaseInfoTitleAndArtist />
-							<div class="grid items-baseline grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">
-								<ReleaseInfoDetails />
-								<EntityTags
-									class="col-span-full"
-									entityType="release"
-									entityId={props.release.id}
-								/>
-							</div>
-							<div class="border-t border-slate-200 pt-4">
-								<AddToUserCollectionButton
-									entityType="Release"
-									entityId={props.release.id}
-								/>
-							</div>
-						</div>
-						<div class="col-span-full">
-							<ReleaseInfoTabs release={props.release} />
-							<EntityCorrectionMetadataSection
-								entityType="release"
-								entityId={props.release.id}
-								correctionHistory={props.correctionHistory}
-								trailingAction={
+					<div class="flex flex-col gap-8">
+						<div class="flex flex-wrap items-start justify-center gap-6">
+							<ReleaseInfoCoverImage />
+							<div class="flex min-w-0 flex-1 basis-72 flex-col gap-y-4">
+								<ReleaseInfoTitleAndArtist />
+								<div class="grid items-baseline grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm">
+									<ReleaseInfoDetails />
+									<EntityTags
+										class="col-span-full"
+										entityType="release"
+										entityId={props.release.id}
+									/>
+								</div>
+								<div class={ADD_TO_COLLECTION_ACTIONS_CLASS}>
+									<AddToUserCollectionButton
+										entityType="Release"
+										entityId={props.release.id}
+									/>
 									<Link
 										to="/release/$id/image-upload"
 										params={{ id: props.release.id.toString() }}
@@ -71,7 +66,15 @@ export function ReleaseInfoPage(props: ReleaseInfoPageProps) {
 									>
 										{t`Upload cover art`}
 									</Link>
-								}
+								</div>
+							</div>
+						</div>
+						<div>
+							<ReleaseInfoTabs release={props.release} />
+							<EntityCorrectionMetadataSection
+								entityType="release"
+								entityId={props.release.id}
+								correctionHistory={props.correctionHistory}
 							/>
 						</div>
 					</div>

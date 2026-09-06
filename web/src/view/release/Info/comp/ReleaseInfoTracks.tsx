@@ -21,7 +21,7 @@ function TrackItem(props: { track: ReleaseTrack }) {
 				</Link>
 				<Show when={props.track.artists && props.track.artists.length > 0}>
 					<span class="whitespace-pre"> - </span>
-					<div class="text-gray-600 text-sm">
+					<div class="wrap-break-word text-sm text-gray-600">
 						{props.track
 							.artists!.map((artist: ReleaseArtist) => artist.name)
 							.join(", ")}
@@ -42,7 +42,7 @@ function TrackItem(props: { track: ReleaseTrack }) {
 function TrackList(props: { tracks?: ReleaseTrack[] }) {
 	return (
 		<Show when={props.tracks}>
-			<ul class="grid grid-cols-[auto_1fr_auto] gap-y-1 font-light">
+			<ul class="grid grid-cols-[auto_minmax(0,1fr)_auto] gap-y-1 font-light">
 				<Intersperse
 					of={props.tracks}
 					with={
