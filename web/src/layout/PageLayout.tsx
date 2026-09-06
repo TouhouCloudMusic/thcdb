@@ -4,15 +4,18 @@ import { twMerge } from "tailwind-merge"
 
 import { tw } from "~/utils"
 
-export function PageLayout(props: ParentProps<ComponentProps<"div">>) {
-	const CLASS = tw(`
+const CLASS = tw(`
     bg-primary
     h-full
-    max-w-6xl
-	  2xl:max-w-7xl
+    [--page-width:var(--container-6xl)]
+    2xl:[--page-width:var(--container-7xl)]
+    max-w-(--page-width)
     mx-auto
-    border-x-1 border-slate-300
+    border-slate-300
+    border-x-[clamp(0px,100cqw_-_var(--page-width),1px)]
     `)
+
+export function PageLayout(props: ParentProps<ComponentProps<"div">>) {
 	const final_props = mergeProps(props, {
 		get class() {
 			return twMerge(CLASS, props.class)

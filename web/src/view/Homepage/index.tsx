@@ -62,7 +62,7 @@ type HomePageProps = {
 export function HomePage(props: HomePageProps) {
 	const { t } = useLingui()
 	return (
-		<PageLayout class="max-w-360 2xl:max-w-360">
+		<PageLayout style={{ "--page-width": "90rem" }}>
 			<Suspense fallback={<HomeStats />}>
 				<ErrorBoundary fallback={() => <HomeStats />}>
 					<HomeStats metadata={props.metadata} />
