@@ -1,9 +1,10 @@
+use std::collections::HashMap;
+
 use domain::image::Image;
 use domain::shared::{
     DateWithPrecision, LocalizedTitle, SimpleEvent, SimpleLabel,
 };
 use entity::release;
-use itertools::Itertools;
 
 use super::RelatedEntities;
 use crate::features::credit_role::CreditRoleRef;
@@ -56,7 +57,6 @@ pub(super) fn conv_to_domain_model(
             &related.tracks[index],
             &related.track_songs,
             &related.track_artists,
-            &related.track_artist_ids[index],
         ),
         credits: conv_credits(
             &related.credits[index],
@@ -166,31 +166,15 @@ fn conv_credits(
 fn conv_tracks(
     tracks: &[entity::release_track::Model],
     songs: &[entity::song::Model],
-    all_track_artists: &[entity::artist::Model],
-    track_artist_ids_mapping: &[Vec<i32>],
+    track_artists: &HashMap<i32, Vec<ReleaseArtist>>,
 ) -> Vec<ReleaseTrack> {
     tracks
         .iter()
-        .zip(track_artist_ids_mapping)
-        .map(|(track, artist_ids)| {
+        .map(|track| {
             let song = songs
                 .iter()
                 .find(|s| s.id == track.song_id)
                 .expect("Song should exist for track");
-
-            let artists = artist_ids
-                .iter()
-                .map(|&artist_id| {
-                    all_track_artists
-                        .iter()
-                        .find(|artist| artist.id == artist_id)
-                        .map(|artist| ReleaseArtist {
-                            id: artist.id,
-                            name: artist.name.clone(),
-                        })
-                        .expect("Artist should exist for track")
-                })
-                .collect_vec();
 
             ReleaseTrack {
                 id: track.id,
@@ -202,7 +186,7 @@ fn conv_tracks(
                     id: song.id,
                     title: song.title.clone(),
                 },
-                artists,
+                artists: track_artists[&track.id].clone(),
             }
         })
         .collect()
