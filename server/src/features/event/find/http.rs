@@ -8,6 +8,7 @@ use utoipa_axum::routes;
 use super::{EventFilter, PageQuery};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
+use crate::features::event::list::EventListItem;
 use crate::features::event::model::Event;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{Data, Error as ApiError};
@@ -27,7 +28,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 data! {
     DataOptionEvent, Option<Event>
     DataVecEvent, Vec<Event>
-    DataPageEvent, PageResponse<Event>
+    DataPageEvent, PageResponse<EventListItem>
 }
 
 #[utoipa::path(
@@ -84,7 +85,7 @@ async fn explore_event(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<EventFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Event>>, DatabaseError> {
+) -> Result<Data<PageResponse<EventListItem>>, DatabaseError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.event.find.http",

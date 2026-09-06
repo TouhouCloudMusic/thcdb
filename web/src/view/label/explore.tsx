@@ -1,10 +1,9 @@
 import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
-import { LabelApi } from "@thc/api"
-import { Either } from "effect"
 
 import { ExplorePageLayout } from "~/component/feature/entity_explore"
+import { exploreLabelOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import {
 	LabelExploreFilterBar,
 	LabelExploreList,
@@ -19,32 +18,6 @@ type LabelExploreSearch = {
 	page: number
 }
 
-const createLabelExploreQueryOptions = (search: () => LabelExploreSearch) => ({
-	queryKey: [
-		"label::explore",
-		search().page,
-		search().sort_by,
-		search().order_by,
-		search().limit,
-	],
-	queryFn: async () => {
-		const snapshot = search()
-		return Either.getOrThrowWith(
-			await LabelApi.explore({
-				query: {
-					limit: snapshot.limit,
-					page: snapshot.page,
-					sort_field: snapshot.sort_by,
-					sort_direction: snapshot.order_by,
-				},
-			}),
-			(error) => {
-				throw error
-			},
-		)
-	},
-})
-
 export const LabelExplore = () => {
 	const { t } = useLingui()
 	const search = route.useSearch()
@@ -58,10 +31,20 @@ export const LabelExplore = () => {
 		})
 	}
 
-	const labelsQuery = useQuery(() => createLabelExploreQueryOptions(search))
+	const labelsQuery = useQuery(() => {
+		const snapshot = search()
+		return exploreLabelOptions({
+			query: {
+				limit: snapshot.limit,
+				page: snapshot.page,
+				sort_field: snapshot.sort_by,
+				sort_direction: snapshot.order_by,
+			},
+		})
+	})
 
-	const labels = () => labelsQuery.data?.items ?? []
-	const totalPages = () => labelsQuery.data?.total_pages ?? 0
+	const labels = () => labelsQuery.data?.data.items ?? []
+	const totalPages = () => labelsQuery.data?.data.total_pages ?? 0
 
 	const setPage = (page: number) => {
 		void navigate({

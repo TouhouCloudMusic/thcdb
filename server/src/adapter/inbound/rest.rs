@@ -170,6 +170,12 @@ impl utoipa::Modify for DefaultErrorResponseModifier {
     ),
     // https://github.com/juhaku/utoipa/issues/1165
     components(schemas(
+        features::artist::list::ArtistListItem,
+        features::event::list::EventListItem,
+        features::label::list::LabelListItem,
+        features::release::list::ReleaseListItem,
+        features::song::list::SongListItem,
+        features::tag::list::TagListItem,
         features::correction::CorrectionDecision,
         features::comment::EntityCommentTarget,
         features::user_collection::EntityUserCollectionSort,
@@ -202,6 +208,12 @@ fn basic_security_requirement() -> utoipa::openapi::security::SecurityRequiremen
 #[derive(OpenApi)]
 #[openapi(
     components(schemas(
+        features::artist::list::ArtistListItem,
+        features::event::list::EventListItem,
+        features::label::list::LabelListItem,
+        features::release::list::ReleaseListItem,
+        features::song::list::SongListItem,
+        features::tag::list::TagListItem,
         features::correction::CorrectionDecision,
         features::comment::EntityCommentTarget,
         features::user_collection::EntityUserCollectionSort,

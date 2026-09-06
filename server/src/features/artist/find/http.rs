@@ -8,6 +8,7 @@ use utoipa_axum::routes;
 use super::{ArtistFilter, CommonFilter, FindManyFilter, PageQuery, repo};
 use crate::adapter::inbound::rest::state::ArcAppState;
 use crate::adapter::inbound::rest::{AppRouter, data, state};
+use crate::features::artist::list::ArtistListItem;
 use crate::features::artist::model::Artist;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{Data, Error as ApiError};
@@ -27,7 +28,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 data!(
     DataOptionArtist, Option<Artist>
     DataVecArtist, Vec<Artist>
-    DataPageArtist, PageResponse<Artist>
+    DataPageArtist, PageResponse<ArtistListItem>
 );
 
 #[utoipa::path(
@@ -102,7 +103,7 @@ async fn explore_artist(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<ArtistFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Artist>>, DatabaseError> {
+) -> Result<Data<PageResponse<ArtistListItem>>, DatabaseError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.artist.find.http",

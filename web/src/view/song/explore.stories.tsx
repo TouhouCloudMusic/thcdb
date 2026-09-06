@@ -1,45 +1,63 @@
-import type { Song } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { createMockSong } from "~/mock/song"
-import { ENGLISH_LANGUAGE } from "~/storybook/fixtures"
+import { Divider } from "~/component/atomic/Divider"
+import { Intersperse } from "~/component/data/Intersperse"
+import type { SongListItem } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import { SongItem } from "~/view/song/SongItem"
 
-const EXPLORE_PAGE_PADDING_CLASS = "px-8"
-const STORY_LOCALE = "en"
-
-const DEFAULT_SONG = createMockSong(33, {
-	title: "月まで届け、不死の煙",
-	localized_titles: [
-		{
-			language: ENGLISH_LANGUAGE,
-			title: "Reach for the Moon, Immortal Smoke",
-		},
-	],
-	artists: [
-		{ id: 1, name: "Demetori" },
-		{ id: 2, name: "ZUN" },
-	],
-})
-
-const ORIGINAL_ONLY_SONG: Song = {
-	...DEFAULT_SONG,
-	id: 34,
-	localized_titles: [],
-}
+const SONGS: SongListItem[] = [
+	{
+		id: 33,
+		title: "月まで届け、不死の煙",
+		cover_art_url: "/img/cover/release/1.png",
+		artists: [
+			{ id: 1, name: "Demetori" },
+			{ id: 2, name: "ZUN" },
+		],
+		releases: [{ id: 81, title: "Il Mondo dove e finito il Tempo" }],
+	},
+	{
+		id: 34,
+		title: "Reincarnation ～ 幻想郷の二ッ岩による幻想的な弾幕音楽 Long Version",
+		cover_art_url: null,
+		artists: [
+			{ id: 3, name: "凋叶棕" },
+			{ id: 4, name: "RD-Sounds" },
+			{ id: 5, name: "めらみぽっぷ" },
+		],
+		releases: [
+			{ id: 82, title: "屠" },
+			{ id: 83, title: "幻想音楽祭 Complete Archive" },
+		],
+	},
+	{
+		id: 35,
+		title: "U.N.オーエンは彼女なのか？",
+		cover_art_url: null,
+		artists: [{ id: 2, name: "ZUN" }],
+		releases: [],
+	},
+]
 
 type StoryRootProps = {
-	song: Song
+	songs: SongListItem[]
+	width: "full" | "narrow"
 }
 
 function StoryRoot(props: StoryRootProps) {
 	return (
-		<div class={`w-[520px] bg-primary ${EXPLORE_PAGE_PADDING_CLASS}`}>
-			<SongItem
-				song={props.song}
-				locale={STORY_LOCALE}
-			/>
+		<div
+			class={`mx-auto w-full bg-primary ${props.width === "narrow" ? "max-w-sm" : "max-w-3xl"}`}
+		>
+			<div class="flex flex-col gap-2 p-4">
+				<Intersperse
+					of={props.songs}
+					with={<Divider horizontal />}
+				>
+					{(song) => <SongItem song={song} />}
+				</Intersperse>
+			</div>
 		</div>
 	)
 }
@@ -49,7 +67,7 @@ const meta = {
 	component: StoryRoot,
 	decorators: [withStoryRouter],
 	parameters: {
-		layout: StoryLayout.Centered,
+		layout: StoryLayout.FullScreen,
 		backgrounds: {
 			grid: {
 				disable: true,
@@ -61,9 +79,15 @@ const meta = {
 			value: "studio",
 		},
 	},
+	args: {
+		songs: SONGS,
+		width: "full",
+	},
 	argTypes: {
-		song: {
-			control: false,
+		songs: { control: false },
+		width: {
+			control: "select",
+			options: ["full", "narrow"],
 		},
 	},
 } satisfies Meta<typeof StoryRoot>
@@ -72,14 +96,8 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Item: Story = {
-	args: {
-		song: DEFAULT_SONG,
-	},
-}
+export const List: Story = {}
 
-export const OriginalOnly: Story = {
-	args: {
-		song: ORIGINAL_ONLY_SONG,
-	},
+export const Narrow: Story = {
+	args: { width: "narrow" },
 }

@@ -1,13 +1,11 @@
 import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi } from "@tanstack/solid-router"
-import { ReleaseApi } from "@thc/api"
-import type { Release } from "@thc/api"
-import { Either } from "effect"
 import { Suspense } from "solid-js"
 
 import { ExplorePageLayout } from "~/component/feature/entity_explore"
-import { useI18N } from "~/state/i18n"
+import type { DataPageRelease } from "~/hey-api"
+import { exploreReleaseOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import { ReleaseExploreFilterBar } from "~/view/release/explore/filter"
 import type { ReleaseExploreFilterStore } from "~/view/release/explore/filter"
 import {
@@ -19,7 +17,7 @@ import type { ReleaseExploreListStore } from "~/view/release/explore/list"
 const route = getRouteApi("/release/explore")
 
 type ReleaseExploreQuery = {
-	data: { items?: Release[]; total_pages?: number } | undefined
+	data: DataPageRelease | undefined
 	isLoading: boolean
 }
 
@@ -29,7 +27,6 @@ const _use_search_result = () => route.useSearch()
 type ReleaseExploreStoreDeps = {
 	search: ReturnType<typeof _use_search_result>
 	navigate: ReturnType<typeof route.useNavigate>
-	i18n: ReturnType<typeof useI18N>
 	releasesQuery: ReleaseExploreQuery
 }
 
@@ -41,7 +38,7 @@ type ReleaseExploreStores = {
 function createReleaseExploreStores(
 	deps: ReleaseExploreStoreDeps,
 ): ReleaseExploreStores {
-	const { search, navigate, i18n, releasesQuery } = deps
+	const { search, navigate, releasesQuery } = deps
 
 	const filterStore: ReleaseExploreFilterStore = {
 		get releaseType() {
@@ -96,10 +93,7 @@ function createReleaseExploreStores(
 
 	const listStore: ReleaseExploreListStore = {
 		get releases() {
-			return releasesQuery.data?.items ?? []
-		},
-		get locale() {
-			return i18n.locale()
+			return releasesQuery.data?.data.items ?? []
 		},
 		get isLoading() {
 			return releasesQuery.isLoading
@@ -119,7 +113,7 @@ function createReleaseExploreStores(
 			return search().display_type
 		},
 		get totalPages() {
-			return releasesQuery.data?.total_pages ?? 0
+			return releasesQuery.data?.data.total_pages ?? 0
 		},
 	}
 
@@ -128,44 +122,27 @@ function createReleaseExploreStores(
 
 export function ReleaseExplore() {
 	const { t } = useLingui()
-	const i18n = useI18N()
 
 	const search = route.useSearch()
 	const navigate = route.useNavigate()
-	const releasesQuery = useQuery(() => ({
-		queryKey: [
-			"release::explore",
-			search().page,
-			search().release_type,
-			search().sort_by,
-			search().order_by,
-			search().limit,
-		],
-		queryFn: async () => {
-			const snapshot = search()
-			return Either.getOrThrowWith(
-				await ReleaseApi.explore({
-					query: {
-						limit: snapshot.limit,
-						page: snapshot.page,
-						release_type: snapshot.release_type
-							? [snapshot.release_type]
-							: undefined,
-						sort_field: snapshot.sort_by ?? "release_date",
-						sort_direction: snapshot.order_by,
-					},
-				}),
-				(error) => {
-					throw error
-				},
-			)
-		},
-	}))
+	const releasesQuery = useQuery(() => {
+		const snapshot = search()
+		return exploreReleaseOptions({
+			query: {
+				limit: snapshot.limit,
+				page: snapshot.page,
+				release_type: snapshot.release_type
+					? [snapshot.release_type]
+					: undefined,
+				sort_field: snapshot.sort_by ?? "release_date",
+				sort_direction: snapshot.order_by,
+			},
+		})
+	})
 
 	const { filterStore, listStore } = createReleaseExploreStores({
 		search,
 		navigate,
-		i18n,
 		releasesQuery,
 	})
 

@@ -18,6 +18,7 @@ use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func, SimpleExpr, any};
 
 use super::{CommonFilter, FindManyFilter};
+use crate::features::artist::list::{self, ArtistListItem};
 use crate::features::artist::model::{Artist, Membership, Tenure};
 use crate::features::credit_role::CreditRoleRef;
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
@@ -294,7 +295,7 @@ pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::ArtistFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<Artist>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<ArtistListItem>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -315,7 +316,7 @@ pub(super) async fn find_by_filter(
         select,
         pagination,
         artist::Column::Id,
-        |select| find_many_impl(select, &repo.conn),
+        |select| list::load(select, &repo.conn),
     )
     .await
     .db_operation("explore artists")
@@ -327,7 +328,7 @@ async fn find_sorted_by_correction(
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<Artist>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<ArtistListItem>, DatabaseError> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
@@ -356,7 +357,7 @@ async fn find_sorted_by_correction(
         select = select.filter(artist::Column::ArtistType.is_in(artist_types));
     }
 
-    let mut artists = find_many_impl(select, &repo.conn).await?;
+    let mut artists = list::load(select, &repo.conn).await?;
 
     artists = crate::infra::database::utils::sort_by_id_list(
         artists,

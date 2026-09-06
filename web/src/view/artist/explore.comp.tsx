@@ -1,11 +1,10 @@
 import { useLingui } from "@lingui/solid/macro"
-import type { Artist, ArtistType } from "@thc/api"
-import type { Component } from "solid-js"
-import { For, Show } from "solid-js"
+import { Show } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
-import { Link } from "~/component/atomic"
+import { Divider } from "~/component/atomic/Divider"
 import { Select } from "~/component/atomic/form/select"
+import { Intersperse } from "~/component/data/Intersperse"
 import {
 	CorrectionSortFieldSelect,
 	EmptyExplorePlaceholder,
@@ -14,155 +13,26 @@ import {
 	OrderBySelect,
 } from "~/component/feature/entity_explore"
 import { ARTIST_TYPES } from "~/domain/artist/constants"
-import { DateWithPrecision } from "~/domain/shared"
-import { useI18N } from "~/state/i18n"
-import { imgUrl } from "~/utils/adapter/static_file"
+import type { ArtistListItem } from "~/hey-api"
 
-const getArtistAvatarText = (artist: Artist) => {
-	const value = artist.name.trim()
-	if (!value) return "?"
-	return value.slice(0, 1).toUpperCase()
-}
+import { ArtistItem } from "./ArtistItem"
+import { ArtistTypeLabel } from "./ArtistTypeLabel"
 
-const formatArtistDateRange = (
-	artist: Artist,
-	fallback: { unknown: string; present: string },
-) => {
-	const start = DateWithPrecision.display(artist.start_date) ?? fallback.unknown
-	const end = DateWithPrecision.display(artist.end_date) ?? fallback.present
-	return `${start} - ${end}`
-}
-
-export const ArtistItemSkeleton: Component = () => (
-	<div class="animate-pulse border-b border-slate-200 py-4">
-		<div class="flex gap-3">
-			<div class="h-12 w-12 shrink-0 rounded-full bg-slate-200"></div>
-			<div class="min-w-0 flex-1">
-				<div class="mb-2 flex items-center gap-2">
-					<div class="h-5 w-1/3 rounded bg-slate-200"></div>
-					<div class="h-5 w-16 rounded bg-slate-100"></div>
-				</div>
-				<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-					<div class="h-4 w-36 rounded bg-slate-100"></div>
-					<div class="h-4 w-32 rounded bg-slate-100"></div>
-				</div>
-				<div class="mt-2 flex flex-wrap items-center gap-1">
-					<div class="h-4 w-24 rounded bg-slate-100"></div>
-					<div class="h-4 w-28 rounded bg-slate-100"></div>
-				</div>
-			</div>
-		</div>
-	</div>
-)
-
-type ArtistItemProps = {
-	artist: Artist
-}
-
-export const ArtistItem: Component<ArtistItemProps> = (props) => {
-	const { t } = useLingui()
-	const i18n = useI18N()
-	const profileImageUrl = () => imgUrl(props.artist.profile_image_url)
-
-	const preferredLanguageCode = () => {
-		const locale = i18n.locale()
-		return locale.split("-")[0] ?? locale
-	}
-	const preferredLocalizedName = () => {
-		const list = props.artist.localized_names ?? []
-		const target = preferredLanguageCode()
-		const match = list.find((x) => x.language.code === target)
-		const value = match?.name
-		if (!value) return
-		if (value === props.artist.name) return
-		return value
-	}
-
+export function ArtistItemSkeleton() {
 	return (
-		<div class="border-b border-slate-200 py-4 last:border-b-0">
-			<div class="flex gap-3">
-				<Link
-					to="/artist/$id"
-					params={{ id: props.artist.id.toString() }}
-					class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100 text-sm font-medium text-slate-700 no-underline hover:border-slate-300 hover:no-underline focus-visible:ring-2 focus-visible:ring-slate-200"
-				>
-					<Show when={profileImageUrl()}>
-						{(src) => (
-							<img
-								src={src()}
-								alt=""
-								class="h-full w-full object-cover"
-								loading="lazy"
-							/>
-						)}
-					</Show>
-					<Show when={!profileImageUrl()}>
-						{getArtistAvatarText(props.artist)}
-					</Show>
-				</Link>
-
-				<div class="min-w-0 flex-1">
-					<div class="flex min-w-0 items-baseline justify-between gap-3">
-						<div class="flex min-w-0 items-baseline gap-2">
-							<Link
-								to="/artist/$id"
-								params={{ id: props.artist.id.toString() }}
-								class="truncate text-slate-900 no-underline decoration-slate-300 underline-offset-2 hover:underline"
-							>
-								{props.artist.name}
-							</Link>
-							<Show when={preferredLocalizedName()}>
-								{(value) => (
-									<span class="truncate text-sm text-slate-500">{value()}</span>
-								)}
-							</Show>
-						</div>
-
-						<div class="shrink-0 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-600">
-							<ArtistTypeLabel value={props.artist.artist_type} />
-						</div>
-					</div>
-
-					<div class="mt-1 text-sm text-slate-500">
-						<span>
-							{formatArtistDateRange(props.artist, {
-								unknown: t`Unknown`,
-								present: t`Present`,
-							})}
-						</span>
-					</div>
-				</div>
+		<div class="animate-pulse grid grid-cols-[3lh_minmax(0,1fr)] items-start gap-3 leading-6">
+			<div class="aspect-square rounded-full bg-slate-200"></div>
+			<div class="flex flex-col justify-between gap-2 self-stretch">
+				<div class="h-5 w-1/2 rounded bg-slate-200"></div>
+				<div class="h-4 w-2/3 rounded bg-secondary"></div>
 			</div>
 		</div>
 	)
 }
 
-function ArtistTypeLabel(props: { value: "" | ArtistType }) {
-	const { t } = useLingui()
-
-	const label = () => {
-		switch (props.value) {
-			case "": {
-				return t`All`
-			}
-			case "Solo": {
-				return t`Solo artist`
-			}
-			case "Multiple": {
-				return t`Group`
-			}
-			case "Unknown": {
-				return t`Unknown`
-			}
-		}
-	}
-
-	return <>{label()}</>
-}
-
 type ArtistExploreFilterBarProps = {
-	artistTypeValue: "" | ArtistType
-	onArtistTypeChange: (value: "" | ArtistType) => void
+	artistTypeValue: "" | ArtistListItem["artist_type"]
+	onArtistTypeChange: (value: "" | ArtistListItem["artist_type"]) => void
 	sortBy: "created_at" | "updated_at" | undefined
 	onSortByChange: (value: "created_at" | "updated_at") => void
 	orderBy: "asc" | "desc" | undefined
@@ -175,7 +45,7 @@ export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 	return (
 		<ExploreFilterBar>
 			<ExploreFilterField label={t`Type`}>
-				<Select.Root<"" | ArtistType>
+				<Select.Root<"" | ArtistListItem["artist_type"]>
 					options={["", ...ARTIST_TYPES]}
 					value={props.artistTypeValue}
 					onChange={(value) => props.onArtistTypeChange(value ?? "")}
@@ -187,7 +57,7 @@ export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 					)}
 				>
 					<Select.Trigger class="h-10 w-full">
-						<Select.Value<"" | ArtistType>>
+						<Select.Value<"" | ArtistListItem["artist_type"]>>
 							{(state) => <ArtistTypeLabel value={state.selectedOption()} />}
 						</Select.Value>
 						<Select.Icon />
@@ -214,7 +84,7 @@ export function ArtistExploreFilterBar(props: ArtistExploreFilterBarProps) {
 }
 
 type ArtistExploreListProps = {
-	artists: Artist[]
+	artists: ArtistListItem[]
 	isLoading: boolean
 	isFetching: boolean
 	limit: number
@@ -223,7 +93,7 @@ type ArtistExploreListProps = {
 	onPageChange: (page: number) => void
 }
 
-export const ArtistExploreList: Component<ArtistExploreListProps> = (props) => {
+export function ArtistExploreList(props: ArtistExploreListProps) {
 	const { t } = useLingui()
 	return (
 		<>
@@ -234,17 +104,27 @@ export const ArtistExploreList: Component<ArtistExploreListProps> = (props) => {
 				/>
 			</Show>
 
-			<div class="flex flex-col">
-				<For each={props.artists}>
-					{(artist) => <ArtistItem artist={artist} />}
-				</For>
-			</div>
-
-			<Show when={props.isFetching || props.isLoading}>
-				<div class="flex flex-col">
-					<For each={Array.from({ length: props.limit })}>
-						{() => <ArtistItemSkeleton />}
-					</For>
+			<Show
+				when={props.artists.length > 0 || props.isFetching || props.isLoading}
+			>
+				<div class="flex flex-col gap-2 p-4">
+					<Intersperse
+						of={props.artists}
+						with={<Divider horizontal />}
+					>
+						{(artist) => <ArtistItem artist={artist} />}
+					</Intersperse>
+					<Show when={props.isFetching || props.isLoading}>
+						<Show when={props.artists.length > 0}>
+							<Divider horizontal />
+						</Show>
+						<Intersperse
+							of={Array.from({ length: props.limit })}
+							with={<Divider horizontal />}
+						>
+							{() => <ArtistItemSkeleton />}
+						</Intersperse>
+					</Show>
 				</div>
 			</Show>
 

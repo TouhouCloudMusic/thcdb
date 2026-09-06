@@ -1,12 +1,11 @@
 import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
-import { ArtistApi } from "@thc/api"
-import type { ArtistType } from "@thc/api"
-import { Either } from "effect"
 
 import { ExplorePageLayout } from "~/component/feature/entity_explore"
 import { ARTIST_TYPES } from "~/domain/artist/constants"
+import type { ArtistListItem } from "~/hey-api"
+import { exploreArtistOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import {
 	ArtistExploreFilterBar,
 	ArtistExploreList,
@@ -15,50 +14,22 @@ import {
 const route = getRouteApi("/artist/explore")
 
 type ArtistExploreSearch = {
-	artist_type?: ArtistType[]
+	artist_type?: ArtistListItem["artist_type"][]
 	sort_by?: "created_at" | "updated_at"
 	order_by?: "asc" | "desc"
 	limit: number
 	page: number
 }
 
-const isArtistType = (value: string): value is ArtistType => {
+const isArtistType = (
+	value: string,
+): value is ArtistListItem["artist_type"] => {
 	return ARTIST_TYPES.some((artistType) => artistType === value)
 }
 
 const parseArtistTypeFilterValue = (value: string) => {
 	if (isArtistType(value)) return [value]
 }
-
-const createArtistExploreQueryOptions = (
-	search: () => ArtistExploreSearch,
-) => ({
-	queryKey: [
-		"artist::explore",
-		search().page,
-		search().artist_type,
-		search().sort_by,
-		search().order_by,
-		search().limit,
-	],
-	queryFn: async () => {
-		const snapshot = search()
-		return Either.getOrThrowWith(
-			await ArtistApi.explore({
-				query: {
-					limit: snapshot.limit,
-					page: snapshot.page,
-					artist_type: snapshot.artist_type,
-					sort_field: snapshot.sort_by,
-					sort_direction: snapshot.order_by,
-				},
-			}),
-			(error) => {
-				throw error
-			},
-		)
-	},
-})
 
 export const ArtistExplore = () => {
 	const { t } = useLingui()
@@ -74,10 +45,21 @@ export const ArtistExplore = () => {
 
 	const artistTypeValue = () => search().artist_type?.[0] ?? ""
 
-	const artistsQuery = useQuery(() => createArtistExploreQueryOptions(search))
+	const artistsQuery = useQuery(() => {
+		const snapshot = search()
+		return exploreArtistOptions({
+			query: {
+				limit: snapshot.limit,
+				page: snapshot.page,
+				artist_type: snapshot.artist_type,
+				sort_field: snapshot.sort_by,
+				sort_direction: snapshot.order_by,
+			},
+		})
+	})
 
-	const artists = () => artistsQuery.data?.items ?? []
-	const totalPages = () => artistsQuery.data?.total_pages ?? 0
+	const artists = () => artistsQuery.data?.data.items ?? []
+	const totalPages = () => artistsQuery.data?.data.total_pages ?? 0
 
 	const setPage = (page: number) => {
 		void navigate({

@@ -25,6 +25,7 @@ use tokio::try_join;
 
 use super::filter::SongFilter;
 use crate::features::credit_role::CreditRoleRef;
+use crate::features::song::list::{self, SongListItem};
 use crate::features::song::model::{
     LocalizedTitle, Song, SongCredit, SongRef, SongRelation, SongRelationType,
     SongRelease,
@@ -83,7 +84,7 @@ pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: SongFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<Song>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<SongListItem>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -104,7 +105,7 @@ pub(super) async fn find_by_filter(
         select,
         pagination,
         song::Column::Id,
-        |select| find_many_impl(select, &repo.conn),
+        |select| list::load(select, &repo.conn),
     )
     .await
     .db_operation("explore songs")
@@ -558,7 +559,7 @@ async fn find_sorted_by_correction(
     sort_field: CorrectionSortField,
     sort_direction: SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<Song>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<SongListItem>, DatabaseError> {
     use entity::enums::EntityType;
 
     let entity_ids =
@@ -582,7 +583,7 @@ async fn find_sorted_by_correction(
         .into_select()
         .filter(song::Column::Id.is_in(entity_ids.clone()));
 
-    let mut songs = find_many_impl(select, &repo.conn).await?;
+    let mut songs = list::load(select, &repo.conn).await?;
 
     songs = crate::infra::database::utils::sort_by_id_list(
         songs,

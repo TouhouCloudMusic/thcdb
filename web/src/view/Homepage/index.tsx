@@ -1,7 +1,8 @@
 import { useLingui } from "@lingui/solid/macro"
-import type { Artist, Event, HomeMetadata, Release, Tag } from "@thc/api"
+import type { Artist, Event, HomeMetadata, Release } from "@thc/api"
 import { ErrorBoundary, For, Show, Suspense } from "solid-js"
 
+import type { TagListItem } from "~/hey-api"
 import { PageLayout } from "~/layout/PageLayout"
 import { tw } from "~/utils"
 import {
@@ -56,7 +57,7 @@ type HomePageProps = {
 	releases: Release[]
 	artists: Artist[]
 	events: Event[]
-	tags: Tag[]
+	tags: TagListItem[]
 }
 
 export function HomePage(props: HomePageProps) {

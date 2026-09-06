@@ -1,8 +1,4 @@
-import type {
-	CursorResponseDiscography,
-	CursorResponseSimpleRelease,
-} from "../gen"
+import type { CursorResponseDiscography } from "../gen"
 
 export type * from "./artist"
 export type Discography = CursorResponseDiscography["items"][number]
-export type SimpleRelease = CursorResponseSimpleRelease["items"][number]

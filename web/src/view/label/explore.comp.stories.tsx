@@ -1,30 +1,63 @@
-import type { Label } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { createMockLabel } from "~/mock/label"
+import { Divider } from "~/component/atomic/Divider"
+import { Intersperse } from "~/component/data/Intersperse"
+import type { LabelListItem } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 
-import { LabelItem } from "./explore.comp"
+import { LabelItem } from "./LabelItem"
 
-const EXPLORE_PAGE_PADDING_CLASS = "px-8"
+const ENGLISH = { id: 1, code: "en", name: "English" }
+const JAPANESE = { id: 2, code: "ja", name: "日本語" }
 
-const DEFAULT_LABEL = createMockLabel(35, {
-	name: "THCDB Records",
-	founded_date: {
-		precision: "Year",
-		value: "2011-01-01",
+const LABELS: LabelListItem[] = [
+	{
+		id: 35,
+		name: "SOUND HOLIC",
+		localized_names: [
+			{ language: JAPANESE, name: "サウンドホリック" },
+			{ language: ENGLISH, name: "Sound Holic" },
+		],
+		founders: [
+			{ id: 51, name: "GUCCI" },
+			{ id: 52, name: "Nana Takahashi" },
+		],
+		founded_date: { precision: "Year", value: "2006-01-01" },
 	},
-	dissolved_date: undefined,
-})
+	{
+		id: 36,
+		name: "上海アリス幻樂団 — Team Shanghai Alice Music Publishing",
+		localized_names: [{ language: ENGLISH, name: "Team Shanghai Alice" }],
+		founders: [{ id: 32, name: "ZUN" }],
+		founded_date: { precision: "Year", value: "1995-01-01" },
+	},
+	{
+		id: 37,
+		name: "A-One",
+		localized_names: [],
+		founders: [],
+		founded_date: null,
+	},
+]
 
 type StoryRootProps = {
-	label: Label
+	labels: LabelListItem[]
+	width: "full" | "narrow"
 }
 
 function StoryRoot(props: StoryRootProps) {
 	return (
-		<div class={`w-[560px] bg-primary ${EXPLORE_PAGE_PADDING_CLASS}`}>
-			<LabelItem label={props.label} />
+		<div
+			class={`mx-auto w-full bg-primary ${props.width === "narrow" ? "max-w-sm" : "max-w-3xl"}`}
+		>
+			<div class="flex flex-col gap-2 p-4">
+				<Intersperse
+					of={props.labels}
+					with={<Divider horizontal />}
+				>
+					{(label) => <LabelItem label={label} />}
+				</Intersperse>
+			</div>
 		</div>
 	)
 }
@@ -34,7 +67,7 @@ const meta = {
 	component: StoryRoot,
 	decorators: [withStoryRouter],
 	parameters: {
-		layout: StoryLayout.Centered,
+		layout: StoryLayout.FullScreen,
 		backgrounds: {
 			grid: {
 				disable: true,
@@ -46,9 +79,15 @@ const meta = {
 			value: "studio",
 		},
 	},
+	args: {
+		labels: LABELS,
+		width: "full",
+	},
 	argTypes: {
-		label: {
-			control: false,
+		labels: { control: false },
+		width: {
+			control: "select",
+			options: ["full", "narrow"],
 		},
 	},
 } satisfies Meta<typeof StoryRoot>
@@ -57,8 +96,8 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Item: Story = {
-	args: {
-		label: DEFAULT_LABEL,
-	},
+export const List: Story = {}
+
+export const Narrow: Story = {
+	args: { width: "narrow" },
 }

@@ -1,14 +1,13 @@
 import { useLingui } from "@lingui/solid/macro"
 import { useQuery } from "@tanstack/solid-query"
 import { getRouteApi, useNavigate } from "@tanstack/solid-router"
-import { EventApi } from "@thc/api"
-import type { Event } from "@thc/api"
-import { Either } from "effect"
-import { For, Show } from "solid-js"
+import { Show } from "solid-js"
 import type { Component } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
+import { Divider } from "~/component/atomic/Divider"
 import { Input } from "~/component/atomic/Input"
+import { Intersperse } from "~/component/data/Intersperse"
 import {
 	EmptyExplorePlaceholder,
 	ExploreFilterBar,
@@ -16,12 +15,14 @@ import {
 	ExplorePageLayout,
 	OrderBySelect,
 } from "~/component/feature/entity_explore"
+import type { EventListItem } from "~/hey-api"
+import { exploreEventOptions } from "~/hey-api/@tanstack/solid-query.gen"
 import { EventItem } from "~/view/event/EventItem"
 
 const route = getRouteApi("/event/explore")
 
 const EventItemSkeleton: Component = () => (
-	<div class="animate-pulse border-b border-slate-200 py-4">
+	<div class="animate-pulse">
 		<div class="mb-2 h-5 w-2/3 rounded bg-slate-200"></div>
 		<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 			<div class="h-4 w-28 rounded bg-slate-100"></div>
@@ -77,7 +78,7 @@ function EventExploreFilterBar(props: EventExploreFilterBarProps) {
 }
 
 type EventExploreListProps = {
-	events: Event[]
+	events: EventListItem[]
 	isLoading: boolean
 	isFetching: boolean
 	limit: number
@@ -97,15 +98,27 @@ function EventExploreList(props: EventExploreListProps) {
 				/>
 			</Show>
 
-			<div class="flex flex-col">
-				<For each={props.events}>{(event) => <EventItem event={event} />}</For>
-			</div>
-
-			<Show when={props.isFetching || props.isLoading}>
-				<div class="flex flex-col">
-					<For each={Array.from({ length: props.limit })}>
-						{() => <EventItemSkeleton />}
-					</For>
+			<Show
+				when={props.events.length > 0 || props.isFetching || props.isLoading}
+			>
+				<div class="flex flex-col gap-2 p-4">
+					<Intersperse
+						of={props.events}
+						with={<Divider horizontal />}
+					>
+						{(event) => <EventItem event={event} />}
+					</Intersperse>
+					<Show when={props.isFetching || props.isLoading}>
+						<Show when={props.events.length > 0}>
+							<Divider horizontal />
+						</Show>
+						<Intersperse
+							of={Array.from({ length: props.limit })}
+							with={<Divider horizontal />}
+						>
+							{() => <EventItemSkeleton />}
+						</Intersperse>
+					</Show>
 				</div>
 			</Show>
 
@@ -128,35 +141,21 @@ export const EventExplore = () => {
 
 	const navigate = useNavigate({ from: "/event/explore" })
 
-	const eventsQuery = useQuery(() => ({
-		queryKey: [
-			"event::explore",
-			search().page,
-			search().start_date_from,
-			search().start_date_to,
-			search().order_by,
-			search().limit,
-		],
-		queryFn: async () => {
-			return Either.getOrThrowWith(
-				await EventApi.explore({
-					query: {
-						limit: search().limit,
-						page: search().page,
-						start_date_from: search().start_date_from,
-						start_date_to: search().start_date_to,
-						sort_direction: search().order_by,
-					},
-				}),
-				(error) => {
-					throw error
-				},
-			)
-		},
-	}))
+	const eventsQuery = useQuery(() => {
+		const snapshot = search()
+		return exploreEventOptions({
+			query: {
+				limit: snapshot.limit,
+				page: snapshot.page,
+				start_date_from: snapshot.start_date_from,
+				start_date_to: snapshot.start_date_to,
+				sort_direction: snapshot.order_by,
+			},
+		})
+	})
 
-	const events = () => eventsQuery.data?.items ?? []
-	const totalPages = () => eventsQuery.data?.total_pages ?? 0
+	const events = () => eventsQuery.data?.data.items ?? []
+	const totalPages = () => eventsQuery.data?.data.total_pages ?? 0
 
 	const setPage = (page: number) => {
 		void navigate({

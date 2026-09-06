@@ -1,39 +1,66 @@
-import type { Event } from "@thc/api"
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { createMockEvent } from "~/mock/event"
+import { Divider } from "~/component/atomic/Divider"
+import { Intersperse } from "~/component/data/Intersperse"
+import type { EventListItem } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
 import { EventItem } from "~/view/event/EventItem"
 
-const EXPLORE_PAGE_PADDING_CLASS = "px-8"
-
-const DEFAULT_EVENT = createMockEvent(34, {
-	name: "Hakurei Jinja Reitaisai",
-	start_date: {
-		precision: "Day",
-		value: "2026-05-05",
+const EVENTS: EventListItem[] = [
+	{
+		id: 34,
+		name: "Hakurei Jinja Reitaisai 23",
+		start_date: { precision: "Day", value: "2026-05-05" },
+		end_date: { precision: "Day", value: "2026-05-06" },
+		short_description:
+			"Flagship fan event with new doujin music releases and live performances.",
+		location: {
+			country: "Japan",
+			province: "Tokyo",
+			city: "Tokyo Big Sight",
+		},
 	},
-	end_date: {
-		precision: "Day",
-		value: "2026-05-06",
+	{
+		id: 35,
+		name: "M3-2026 Spring Doujin Music Exhibition and Live Performance Showcase",
+		start_date: { precision: "Day", value: "2026-04-26" },
+		end_date: null,
+		short_description:
+			"Independent circles present new albums, arrange collections, and live performances throughout the day.",
+		location: {
+			country: "Japan",
+			province: "Tokyo",
+			city: "Tokyo Ryutsu Center",
+		},
 	},
-	short_description:
-		"Flagship fan event with new doujin music releases and live performances.",
-	location: {
-		country: "Japan",
-		province: "Tokyo",
-		city: "Tokyo Big Sight",
+	{
+		id: 36,
+		name: "Comic Market 106",
+		start_date: null,
+		end_date: null,
+		short_description: "",
+		location: {},
 	},
-})
+]
 
 type StoryRootProps = {
-	event: Event
+	events: EventListItem[]
+	width: "full" | "narrow"
 }
 
 function StoryRoot(props: StoryRootProps) {
 	return (
-		<div class={`w-[560px] bg-primary ${EXPLORE_PAGE_PADDING_CLASS}`}>
-			<EventItem event={props.event} />
+		<div
+			class={`mx-auto w-full bg-primary ${props.width === "narrow" ? "max-w-sm" : "max-w-3xl"}`}
+		>
+			<div class="flex flex-col gap-2 p-4">
+				<Intersperse
+					of={props.events}
+					with={<Divider horizontal />}
+				>
+					{(event) => <EventItem event={event} />}
+				</Intersperse>
+			</div>
 		</div>
 	)
 }
@@ -43,7 +70,7 @@ const meta = {
 	component: StoryRoot,
 	decorators: [withStoryRouter],
 	parameters: {
-		layout: StoryLayout.Centered,
+		layout: StoryLayout.FullScreen,
 		backgrounds: {
 			grid: {
 				disable: true,
@@ -55,9 +82,15 @@ const meta = {
 			value: "studio",
 		},
 	},
+	args: {
+		events: EVENTS,
+		width: "full",
+	},
 	argTypes: {
-		event: {
-			control: false,
+		events: { control: false },
+		width: {
+			control: "select",
+			options: ["full", "narrow"],
 		},
 	},
 } satisfies Meta<typeof StoryRoot>
@@ -66,8 +99,8 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Item: Story = {
-	args: {
-		event: DEFAULT_EVENT,
-	},
+export const List: Story = {}
+
+export const Narrow: Story = {
+	args: { width: "narrow" },
 }
