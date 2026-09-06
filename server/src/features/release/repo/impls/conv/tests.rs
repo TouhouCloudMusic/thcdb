@@ -4,17 +4,15 @@ use domain::shared::{Language, LocalizedTitle, SimpleLabel};
 use entity::sea_orm_active_enums::DatePrecision;
 use entity::{
     artist, credit_role, label as label_entity, release_catalog_number,
-    release_credit, release_localized_title, release_track, song,
+    release_credit, release_localized_title,
 };
 
 use super::{
     conv_artists, conv_catalog_numbers, conv_credits, conv_localized_titles,
-    conv_tracks,
 };
 use crate::features::release::model::{
-    CatalogNumber, ReleaseArtist, ReleaseCredit, ReleaseTrack,
+    CatalogNumber, ReleaseArtist, ReleaseCredit,
 };
-use crate::features::song::model::SongRef;
 
 #[test]
 fn test_conv_artists() {
@@ -256,127 +254,6 @@ fn test_conv_credits() {
     ];
 
     let result = conv_credits(&credits, &credit_artists, &credit_roles);
-
-    assert_eq!(result, expected);
-}
-
-#[expect(clippy::too_many_lines)]
-#[test]
-fn test_conv_tracks() {
-    let tracks = vec![
-        release_track::Model {
-            id: 1,
-            release_id: 1,
-            song_id: 1,
-            disc_id: 1,
-            track_number: Some("1".to_string()),
-            display_title: Some("Track 1".to_string()),
-            duration: Some(180),
-        },
-        release_track::Model {
-            id: 2,
-            release_id: 1,
-            song_id: 2,
-            disc_id: 1,
-            track_number: Some("2".to_string()),
-            display_title: Some("Track 2".to_string()),
-            duration: None,
-        },
-    ];
-
-    let songs = vec![
-        song::Model {
-            id: 1,
-            title: "Song 1".to_string(),
-        },
-        song::Model {
-            id: 2,
-            title: "Song 2".to_string(),
-        },
-    ];
-
-    let all_track_artists = vec![
-        artist::Model {
-            id: 1,
-            name: "Artist 1".to_string(),
-            artist_type: entity::sea_orm_active_enums::ArtistType::Solo,
-            text_alias: None,
-            start_date: None,
-            start_date_precision: None,
-            end_date: None,
-            end_date_precision: None,
-            current_location_country: None,
-            current_location_province: None,
-            current_location_city: None,
-            start_location_country: None,
-            start_location_province: None,
-            start_location_city: None,
-        },
-        artist::Model {
-            id: 2,
-            name: "Artist 2".to_string(),
-            artist_type: entity::sea_orm_active_enums::ArtistType::Solo,
-            text_alias: None,
-            start_date: None,
-            start_date_precision: None,
-            end_date: None,
-            end_date_precision: None,
-            current_location_country: None,
-            current_location_province: None,
-            current_location_city: None,
-            start_location_country: None,
-            start_location_province: None,
-            start_location_city: None,
-        },
-    ];
-
-    let track_artist_ids_mapping = vec![vec![1], vec![1, 2]];
-
-    let expected = vec![
-        ReleaseTrack {
-            id: 1,
-            track_number: Some("1".to_string()),
-            disc_id: 1,
-            display_title: Some("Track 1".to_string()),
-            duration: Some(180),
-            song: SongRef {
-                id: 1,
-                title: "Song 1".to_string(),
-            },
-            artists: vec![ReleaseArtist {
-                id: 1,
-                name: "Artist 1".to_string(),
-            }],
-        },
-        ReleaseTrack {
-            id: 2,
-            track_number: Some("2".to_string()),
-            disc_id: 1,
-            display_title: Some("Track 2".to_string()),
-            duration: None,
-            song: SongRef {
-                id: 2,
-                title: "Song 2".to_string(),
-            },
-            artists: vec![
-                ReleaseArtist {
-                    id: 1,
-                    name: "Artist 1".to_string(),
-                },
-                ReleaseArtist {
-                    id: 2,
-                    name: "Artist 2".to_string(),
-                },
-            ],
-        },
-    ];
-
-    let result = conv_tracks(
-        &tracks,
-        &songs,
-        &all_track_artists,
-        &track_artist_ids_mapping,
-    );
 
     assert_eq!(result, expected);
 }

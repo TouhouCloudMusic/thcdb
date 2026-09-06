@@ -8,6 +8,7 @@ use sea_orm::{
     QueryOrder,
 };
 
+use crate::features::release::model::ReleaseArtist;
 use crate::infra::database::cache::{LANGUAGE_CACHE, LanguageCacheMap};
 
 pub(super) struct RelatedEntities {
@@ -20,8 +21,7 @@ pub(super) struct RelatedEntities {
     pub(super) discs: Vec<Vec<entity::release_disc::Model>>,
     pub(super) tracks: Vec<Vec<entity::release_track::Model>>,
     pub(super) track_songs: Vec<entity::song::Model>,
-    pub(super) track_artists: Vec<entity::artist::Model>,
-    pub(super) track_artist_ids: Vec<Vec<Vec<i32>>>,
+    pub(super) track_artists: HashMap<i32, Vec<ReleaseArtist>>,
     pub(super) credits: Vec<Vec<entity::release_credit::Model>>,
     pub(super) credit_artists: Vec<entity::artist::Model>,
     pub(super) credit_roles: Vec<entity::credit_role::Model>,
@@ -43,8 +43,7 @@ struct BaseEntities {
 
 struct TrackDetails {
     songs: Vec<entity::song::Model>,
-    artists: Vec<entity::artist::Model>,
-    artist_ids: Vec<Vec<Vec<i32>>>,
+    artists: HashMap<i32, Vec<ReleaseArtist>>,
 }
 
 impl RelatedEntities {
@@ -67,7 +66,6 @@ impl RelatedEntities {
         let TrackDetails {
             songs: track_songs,
             artists: track_artists,
-            artist_ids: track_artist_ids,
         } = Self::load_track_details(&tracks, db).await?;
         let cover_arts = Self::load_cover_arts(releases, db).await?;
         let languages = LANGUAGE_CACHE.get_or_init(db).await?;
@@ -94,7 +92,6 @@ impl RelatedEntities {
             tracks,
             track_songs,
             track_artists,
-            track_artist_ids,
             credits,
             credit_artists,
             credit_roles,
@@ -212,47 +209,24 @@ impl RelatedEntities {
             )
             .await?;
 
-        let artists = artists_per_track
-            .iter()
-            .flatten()
-            .unique_by(|a| a.id)
-            .cloned()
-            .collect_vec();
+        let artists = flatten_tracks
+            .into_iter()
+            .zip_eq(artists_per_track)
+            .map(|(track, artists)| {
+                (
+                    track.id,
+                    artists
+                        .into_iter()
+                        .map(|artist| ReleaseArtist {
+                            id: artist.id,
+                            name: artist.name,
+                        })
+                        .collect(),
+                )
+            })
+            .collect();
 
-        let artist_ids: Vec<Vec<Vec<_>>> = {
-            let artist_ids_per_track = artists_per_track
-                .into_iter()
-                .map(|artists| artists.into_iter().map(|a| a.id).collect_vec())
-                .collect_vec();
-
-            let tracks_lens: Vec<usize> = tracks.iter().map(Vec::len).collect();
-            let track_count: usize = tracks_lens.iter().sum();
-
-            assert!(
-                artist_ids_per_track.len() == track_count,
-                "artists_per_track length {} does not match total track slots {track_count}",
-                artist_ids_per_track.len()
-            );
-
-            tracks_lens
-                .into_iter()
-                .enumerate()
-                .map(|(i, len)| {
-                    if artist_ids_per_track.is_empty() {
-                        Vec::new()
-                    } else {
-                        let slice = &artist_ids_per_track[i..(i + len)];
-                        slice.to_vec()
-                    }
-                })
-                .collect()
-        };
-
-        Ok(TrackDetails {
-            songs,
-            artists,
-            artist_ids,
-        })
+        Ok(TrackDetails { songs, artists })
     }
 
     async fn load_cover_arts(
