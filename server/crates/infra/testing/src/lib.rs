@@ -14,11 +14,14 @@ static FIXTURE_SUFFIX: AtomicU64 = AtomicU64::new(1);
 
 #[must_use]
 pub fn test_database_url() -> String {
-    std::env::var("TEST_DATABASE_URL").ok().unwrap_or_else(|| {
-        let port = std::env::var("TEST_DB_PORT")
-            .unwrap_or_else(|_| "55432".to_string());
-        format!("postgres://testuser:testpass@127.0.0.1:{port}/testdb")
-    })
+    std::env::var("TEST_DATABASE_URL")
+        .ok()
+        .or_else(|| std::env::var("DATABASE_URL").ok())
+        .unwrap_or_else(|| {
+            let port = std::env::var("TEST_DB_PORT")
+                .unwrap_or_else(|_| "55432".to_string());
+            format!("postgres://testuser:testpass@127.0.0.1:{port}/testdb")
+        })
 }
 
 #[must_use]

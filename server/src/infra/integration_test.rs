@@ -1,19 +1,8 @@
 use sea_orm::DatabaseConnection;
 
-use crate::infra::database::{get_connection, init_database};
+use crate::features::auth::sync_startup_data;
 
 pub(crate) mod fixture;
-
-pub fn test_database_url() -> String {
-    std::env::var("TEST_DATABASE_URL")
-        .ok()
-        .or_else(|| std::env::var("DATABASE_URL").ok())
-        .unwrap_or_else(|| {
-            let port = std::env::var("TEST_DB_PORT")
-                .unwrap_or_else(|_| "55432".to_string());
-            format!("postgres://testuser:testpass@127.0.0.1:{port}/testdb")
-        })
-}
 
 pub fn test_redis_url() -> String {
     std::env::var("TEST_REDIS_URL")
@@ -26,8 +15,12 @@ pub fn test_redis_url() -> String {
         })
 }
 
-pub async fn test_connection() -> DatabaseConnection {
-    let conn = get_connection(&test_database_url()).await;
-    init_database(&conn).await;
-    conn
+pub async fn test_connection() -> anyhow::Result<DatabaseConnection> {
+    let conn = infra_testing::test_connection().await;
+    static STARTUP_DATA: tokio::sync::OnceCell<()> =
+        tokio::sync::OnceCell::const_new();
+    STARTUP_DATA
+        .get_or_try_init(|| async { sync_startup_data(&conn).await })
+        .await?;
+    Ok(conn)
 }

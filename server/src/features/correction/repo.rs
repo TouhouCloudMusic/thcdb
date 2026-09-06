@@ -614,7 +614,7 @@ mod tests {
     #[tokio::test]
     async fn create_pending_holds_conflicting_row_lock_until_transaction_ends()
     -> Result<()> {
-        let conn = test_connection().await;
+        let conn = test_connection().await?;
         let author = MockUser::with_label("correction_race_author")
             .insert(&conn)
             .await?;
@@ -712,7 +712,7 @@ mod tests {
     #[tokio::test]
     async fn create_pending_creates_new_correction_after_moderation_commits()
     -> Result<()> {
-        let conn = test_connection().await;
+        let conn = test_connection().await?;
         let author = MockUser::with_label("correction_reverse_race_author")
             .insert(&conn)
             .await?;

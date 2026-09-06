@@ -373,8 +373,9 @@ mod tests {
         reason = "integration scenario keeps DB setup serial"
     )]
     #[tokio::test]
-    async fn tag_vote_repo_supports_upsert_delete_and_filtering() {
-        let conn = test_connection().await;
+    async fn tag_vote_repo_supports_upsert_delete_and_filtering()
+    -> anyhow::Result<()> {
+        let conn = test_connection().await?;
         let repo = SeaOrmRepository::new(conn.clone());
         let song = MockSong::titled("tag vote song")
             .insert(&conn)
@@ -605,5 +606,7 @@ mod tests {
         .unwrap();
 
         assert!(tags.items.is_empty());
+
+        Ok(())
     }
 }
