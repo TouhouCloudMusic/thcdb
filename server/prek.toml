@@ -15,7 +15,7 @@ stages         = [ "pre-push" ]
 [[repos.hooks]]
 id             = "server-cargo-clippy"
 name           = "server cargo clippy"
-entry          = "cargo clippy --all-targets --all-features"
+entry          = "cargo clippy --workspace --all-targets --all-features"
 language       = "system"
 pass_filenames = false
 types          = [ "rust" ]
@@ -24,7 +24,7 @@ stages         = [ "pre-push" ]
 [[repos.hooks]]
 id             = "server-cargo-test"
 name           = "server cargo test"
-entry          = "cargo test --quiet"
+entry          = "cargo test --workspace --quiet"
 language       = "system"
 pass_filenames = false
 types          = [ "rust" ]
