@@ -36,8 +36,7 @@ function AuthRequired() {
 
 				<div class="mt-5 flex flex-wrap gap-3">
 					<Link
-						to="/auth"
-						search={{ type: "sign_in" }}
+						to="/auth/sign-in"
 						class="no-underline hover:no-underline"
 					>
 						<Button
@@ -48,8 +47,7 @@ function AuthRequired() {
 						</Button>
 					</Link>
 					<Link
-						to="/auth"
-						search={{ type: "sign_up" }}
+						to="/auth/sign-up"
 						class="no-underline hover:no-underline"
 					>
 						<Button

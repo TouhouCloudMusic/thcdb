@@ -68,12 +68,9 @@ export function Header() {
 
 	return (
 		<header class="border-b border-slate-300 bg-primary px-4 py-2">
-			<div
-				class="min-h-8 grid grid-cols-[auto_minmax(0,1fr)_auto] gap-y-2 items-center
-					xl:flex xl:justify-between"
-			>
+			<div class="min-h-8 grid grid-cols-[auto_minmax(0,1fr)_auto] gap-y-2 items-center sm:grid-cols-3">
 				{/* Left */}
-				<div class="flex items-center gap-3">
+				<div class="flex items-center justify-self-start gap-3">
 					<Dialog.Root>
 						<K_Dialog.Trigger
 							variant="Tertiary"
@@ -100,7 +97,7 @@ export function Header() {
 
 				{/* Right	*/}
 
-				<div class="col-start-3 row-start-1 flex h-full shrink place-content-center items-center gap-3">
+				<div class="col-start-3 row-start-1 flex h-full items-center justify-self-end gap-3">
 					<Divider
 						vertical
 						class="h-6"
@@ -194,8 +191,7 @@ function SearchBar() {
 	return (
 		<form
 			class="col-span-3 col-start-1 row-start-2 w-full
-				sm:col-span-1 sm:col-start-2 sm:row-start-1 sm:max-w-96 sm:justify-self-center
-				xl:ml-36"
+				sm:col-span-1 sm:col-start-2 sm:row-start-1 sm:max-w-96 sm:justify-self-center"
 			onSubmit={submit}
 		>
 			<div
@@ -289,28 +285,14 @@ function UnauthenticatedButtons() {
 				class={BTN_CLASS.concat(" ", "text-slate-900")}
 				type="button"
 			>
-				<Link
-					to="/auth"
-					search={{
-						type: "sign_in",
-					}}
-				>
-					{t`Sign In`}
-				</Link>
+				<Link to="/auth/sign-in">{t`Sign In`}</Link>
 			</Button>
 			<Button
 				variant="Primary"
 				class={BTN_CLASS}
 				type="button"
 			>
-				<Link
-					to="/auth"
-					search={{
-						type: "sign_up",
-					}}
-				>
-					{t`Sign Up`}
-				</Link>
+				<Link to="/auth/sign-up">{t`Sign Up`}</Link>
 			</Button>
 		</div>
 	)

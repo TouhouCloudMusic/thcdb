@@ -44,13 +44,7 @@ export function CorrectionComments(props: CorrectionCommentsProps) {
 					currentUser={userCtx.profile}
 					signedOutFallback={
 						<p class="text-sm text-tertiary">
-							<Link
-								to="/auth"
-								search={{ type: "sign_in" }}
-							>
-								{t`Sign in`}
-							</Link>{" "}
-							{t`to comment`}
+							<Link to="/auth/sign-in">{t`Sign in`}</Link> {t`to comment`}
 						</p>
 					}
 				/>

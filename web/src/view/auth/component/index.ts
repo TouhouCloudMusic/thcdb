@@ -1,6 +1,4 @@
 export * from "./Guard"
-export * from "./AuthForm"
-export * from "./AuthLeftPanel"
 export * from "./EmailField"
 export * from "./FieldLayout"
 export * from "./PasswordField"

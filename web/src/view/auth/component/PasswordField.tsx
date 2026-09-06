@@ -13,6 +13,7 @@ import {
 import { isPasswordStrongEnough } from "~/domain/auth/password_strength"
 import { callHandlerUnion } from "~/utils/dom/event"
 
+import { AUTH_INPUT_CLASS } from "../styles"
 import { FieldLayout } from "./FieldLayout"
 
 const WHITESPACE_REGEX = /\s/u
@@ -138,7 +139,7 @@ export function PasswordField(props: PasswordFieldProps) {
 			<div class="relative">
 				<InputField.Input
 					{...props.field.props}
-					class="h-9 w-full"
+					class={AUTH_INPUT_CLASS}
 					type="password"
 					id={id()}
 					value={props.field.input ?? ""}

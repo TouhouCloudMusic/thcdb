@@ -82,6 +82,8 @@ const [resetPasswordSession, setResetPasswordSession] = createSignal<
 	ResetPasswordSession | undefined
 >(storedResetPasswordSession)
 const [resetPasswordSuccess, setResetPasswordSuccess] = createSignal(false)
+const [resetPasswordSessionWarning, setResetPasswordSessionWarning] =
+	createSignal(false)
 
 export function clearResetPasswordEmail() {
 	saveStoredString(RESET_PASSWORD_EMAIL_KEY, undefined)
@@ -142,4 +144,16 @@ export function markResetPasswordSuccess() {
 	clearResetPasswordSession()
 	clearResetPasswordEmail()
 	setResetPasswordSuccess(true)
+}
+
+export function clearResetPasswordSessionWarning() {
+	setResetPasswordSessionWarning(false)
+}
+
+export function hasResetPasswordSessionWarning() {
+	return resetPasswordSessionWarning()
+}
+
+export function markResetPasswordSessionInvalid() {
+	setResetPasswordSessionWarning(true)
 }
