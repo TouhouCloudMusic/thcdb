@@ -1,6 +1,4 @@
 use axum::extract::{FromRef, Path, State};
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -8,7 +6,8 @@ use super::model::CorrectionRevisionSummary;
 use super::service::Service;
 use crate::adapter::inbound::rest::AppRouter;
 use crate::adapter::inbound::rest::state::ArcAppState;
-use crate::shared::http::api_response::{self, Data};
+use crate::features::correction::ReadError;
+use crate::shared::http::api_response::Data;
 
 impl FromRef<ArcAppState> for Service {
     fn from_ref(input: &ArcAppState) -> Self {
@@ -33,17 +32,9 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 async fn get_correction_revisions(
     Path(id): Path<i32>,
     State(service): State<Service>,
-) -> Result<Data<Vec<CorrectionRevisionSummary>>, axum::response::Response> {
-    let Some(summaries) = service
-        .list_revisions(id)
-        .await
-        .map_err(IntoResponse::into_response)?
-    else {
-        return Err(api_response::Error::new((
-            "Correction not found",
-            StatusCode::NOT_FOUND,
-        ))
-        .into_response());
+) -> Result<Data<Vec<CorrectionRevisionSummary>>, ReadError> {
+    let Some(summaries) = service.list_revisions(id).await? else {
+        return Err(ReadError::NotFound("Correction not found"));
     };
 
     Ok(Data::from(summaries))

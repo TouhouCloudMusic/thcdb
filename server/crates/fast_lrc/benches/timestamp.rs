@@ -8,39 +8,43 @@ criterion_group!(benches, find_colon_bench, parse_num_bench);
 criterion_main!(benches);
 
 fn find_colon_bench(c: &mut Criterion) {
-    const VALID_COLON_INPUT: &[u8] = "01:10.12".as_bytes();
-    const INVALID_COLON_INPUT: &[u8] = " ab.cde".as_bytes();
-    let mut group = c.benchmark_group("find_colon_valid");
+    const VALID_COLON_INPUT: &[u8] = b"01:10.12";
+    const INVALID_COLON_INPUT: &[u8] = b" ab.cde";
+    {
+        let mut group = c.benchmark_group("find_colon_valid");
 
-    group.bench_function("iter", |b| {
-        b.iter(|| find_colon_iter(black_box(VALID_COLON_INPUT)))
-    });
+        group.bench_function("iter", |b| {
+            b.iter(|| find_colon_iter(black_box(VALID_COLON_INPUT)));
+        });
 
-    group.bench_function("while", |b| {
-        b.iter(|| find_colon_while(black_box(VALID_COLON_INPUT)))
-    });
+        group.bench_function("while", |b| {
+            b.iter(|| find_colon_while(black_box(VALID_COLON_INPUT)));
+        });
 
-    group.bench_function("memchr", |b| {
-        b.iter(|| find_colon_index_simd(black_box(VALID_COLON_INPUT)))
-    });
+        group.bench_function("memchr", |b| {
+            b.iter(|| find_colon_index_simd(black_box(VALID_COLON_INPUT)));
+        });
 
-    group.finish();
+        group.finish();
+    }
 
-    let mut group = c.benchmark_group("find_colon_invalid");
+    {
+        let mut group = c.benchmark_group("find_colon_invalid");
 
-    group.bench_function("iter", |b| {
-        b.iter(|| find_colon_iter(black_box(VALID_COLON_INPUT)))
-    });
+        group.bench_function("iter", |b| {
+            b.iter(|| find_colon_iter(black_box(VALID_COLON_INPUT)));
+        });
 
-    group.bench_function("while", |b| {
-        b.iter(|| find_colon_while(black_box(INVALID_COLON_INPUT)))
-    });
+        group.bench_function("while", |b| {
+            b.iter(|| find_colon_while(black_box(INVALID_COLON_INPUT)));
+        });
 
-    group.bench_function("memchr", |b| {
-        b.iter(|| find_colon_index_simd(black_box(INVALID_COLON_INPUT)))
-    });
+        group.bench_function("memchr", |b| {
+            b.iter(|| find_colon_index_simd(black_box(INVALID_COLON_INPUT)));
+        });
 
-    group.finish();
+        group.finish();
+    }
 }
 
 #[inline]
@@ -49,7 +53,7 @@ fn find_colon_iter(input: &[u8]) -> Option<usize> {
 }
 
 #[inline]
-fn find_colon_while(input: &[u8]) -> Option<usize> {
+const fn find_colon_while(input: &[u8]) -> Option<usize> {
     let mut i = 0;
 
     while i < input.len() {
@@ -74,49 +78,59 @@ fn parse_num_bench(c: &mut Criterion) {
 
     let bytes = INPUT.as_bytes();
 
-    let mut group = c.benchmark_group("parse_num");
+    {
+        let mut group = c.benchmark_group("parse_num");
 
-    group.bench_function("std", |b| b.iter(|| parse_num_std(black_box(INPUT))));
+        group.bench_function("std", |b| {
+            b.iter(|| parse_num_std(black_box(INPUT)));
+        });
 
-    group.bench_function("while", |b| b.iter(|| parse_num(black_box(bytes))));
+        group.bench_function("while", |b| {
+            b.iter(|| parse_num(black_box(bytes)));
+        });
 
-    group.bench_function("atoi", |b| {
-        b.iter(|| parse_num_atoi(black_box(bytes)))
-    });
+        group.bench_function("atoi", |b| {
+            b.iter(|| parse_num_atoi(black_box(bytes)));
+        });
 
-    group.bench_function("atoi_simd", |b| {
-        b.iter(|| parse_num_atoi_simd(black_box(bytes)))
-    });
+        group.bench_function("atoi_simd", |b| {
+            b.iter(|| parse_num_atoi_simd(black_box(bytes)));
+        });
 
-    group.bench_function("lexical", |b| {
-        b.iter(|| parse_num_lexical(black_box(bytes)))
-    });
+        group.bench_function("lexical", |b| {
+            b.iter(|| parse_num_lexical(black_box(bytes)));
+        });
 
-    group.finish();
+        group.finish();
+    }
 
     let bytes: &[u8] = INVALID_INPUT.as_bytes();
 
-    let mut group = c.benchmark_group("parse_num_invalid");
+    {
+        let mut group = c.benchmark_group("parse_num_invalid");
 
-    group.bench_function("std", |b| {
-        b.iter(|| parse_num_std(black_box(INVALID_INPUT)))
-    });
+        group.bench_function("std", |b| {
+            b.iter(|| parse_num_std(black_box(INVALID_INPUT)));
+        });
 
-    group.bench_function("while", |b| b.iter(|| parse_num(black_box(bytes))));
+        group.bench_function("while", |b| {
+            b.iter(|| parse_num(black_box(bytes)));
+        });
 
-    group.bench_function("atoi", |b| {
-        b.iter(|| parse_num_atoi(black_box(bytes)))
-    });
+        group.bench_function("atoi", |b| {
+            b.iter(|| parse_num_atoi(black_box(bytes)));
+        });
 
-    group.bench_function("atoi_simd", |b| {
-        b.iter(|| parse_num_atoi_simd(black_box(bytes)))
-    });
+        group.bench_function("atoi_simd", |b| {
+            b.iter(|| parse_num_atoi_simd(black_box(bytes)));
+        });
 
-    group.bench_function("lexical", |b| {
-        b.iter(|| parse_num_lexical(black_box(bytes)))
-    });
+        group.bench_function("lexical", |b| {
+            b.iter(|| parse_num_lexical(black_box(bytes)));
+        });
 
-    group.finish();
+        group.finish();
+    }
 }
 
 #[inline]

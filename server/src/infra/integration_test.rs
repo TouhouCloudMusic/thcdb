@@ -16,9 +16,9 @@ pub fn test_redis_url() -> String {
 }
 
 pub async fn test_connection() -> anyhow::Result<DatabaseConnection> {
-    let conn = infra_testing::test_connection().await;
     static STARTUP_DATA: tokio::sync::OnceCell<()> =
         tokio::sync::OnceCell::const_new();
+    let conn = infra_testing::test_connection().await;
     STARTUP_DATA
         .get_or_try_init(|| async { sync_startup_data(&conn).await })
         .await?;

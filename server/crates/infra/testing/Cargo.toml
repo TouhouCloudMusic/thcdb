@@ -12,7 +12,6 @@ name = "infra_testing"
 path = "src/lib.rs"
 
 [dependencies]
-anyhow.workspace            = true
 auth_core.workspace         = true
 chrono.workspace            = true
 domain.workspace            = true

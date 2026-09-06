@@ -37,11 +37,9 @@ members = [
 ]
 
 [workspace.dependencies]
-collection_ext               = { path = "crates/collection_ext" }
 constants                    = { package = "thcdb-constants", path = "crates/constants" }
 domain                       = { package = "thcdb-domain", path = "crates/domain" }
 entity                       = { path = "crates/entity" }
-fast-lrc                     = { path = "crates/fast_lrc" }
 flow                         = { path = "crates/flow" }
 infra_db                     = { package = "thcdb-infra-db", path = "crates/infra/db" }
 infra_email                  = { package = "thcdb-infra-email", path = "crates/infra/email" }
@@ -216,7 +214,7 @@ snafu.workspace     = true
 
 [package]
 edition = "2024"
-name    = "thcdb_rs"
+name    = "thcdb-rs"
 version = "0.1.0"
 
 [lints]
@@ -226,7 +224,6 @@ workspace = true
 user_core.workspace                    = true
 auth_core.workspace                    = true
 account_notification.workspace         = true
-collection_ext.workspace               = true
 constants.workspace                    = true
 domain.workspace                       = true
 entity.workspace                       = true
@@ -252,7 +249,6 @@ user_collection_notification.workspace = true
 user_profile_notification.workspace    = true
 auth_worker.workspace                  = true
 #
-ammonia = "4.0.0"
 argon2.features = [
     "std",
 ]
@@ -294,17 +290,10 @@ garde.workspace = true
 governor = "0.10.0"
 headers = "0.4"
 image = "0.25"
-inventory = "0.3.19"
-iso8601-duration = { version = "0.2", features = [
-    "chrono",
-] }
 itertools.workspace = true
 lettre.workspace = true
 maud = { version = "0.27.0", features = [
     "axum",
-] }
-moka = { version = "0.12", features = [
-    "future",
 ] }
 nestify = "0.3.3"
 log.workspace = true
@@ -320,7 +309,6 @@ pulldown-cmark = { version = "0.13.0", default-features = false, features = [
     "simd",
 ] }
 rand.workspace = true
-rapidhash = "4"
 regex = "1.11"
 sea-orm.workspace = true
 sea-orm-migration.workspace = true
@@ -328,9 +316,7 @@ sea-query.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 blake3 = "1"
-serde_repr = "0.1"
 serde_with.workspace = true
-smart-default = "0.7.1"
 snafu.workspace = true
 sorted-vec.workspace = true
 strum.workspace = true
@@ -359,8 +345,6 @@ xxhash-rust = { version = "0.8", features = [
     "xxh3",
 ] }
 zxcvbn = "3.1"
-exn = "0.3.0"
-
 [patch.crates-io]
 apalis-core  = { git = "https://github.com/Huliiiiii/apalis.git", rev = "5866341937123ab1e1eee57aeeef23fd8fc10119" }
 apalis-redis = { git = "https://github.com/Huliiiiii/apalis.git", rev = "5866341937123ab1e1eee57aeeef23fd8fc10119" }

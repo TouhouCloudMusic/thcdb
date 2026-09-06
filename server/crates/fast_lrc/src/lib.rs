@@ -15,20 +15,19 @@ enum TypedLine<'a> {
     Lyric(LineRef<'a>),
 }
 
+#[cfg(test)]
 impl<'a> TypedLine<'a> {
-    #[expect(dead_code, reason = "Used in tests")]
     fn meta(self) -> Option<(&'a str, &'a str)> {
         match self {
             TypedLine::Meta { key, value } => Some((key, value)),
-            _ => None,
+            TypedLine::Lyric(_) => None,
         }
     }
 
-    #[expect(dead_code, reason = "Used in tests")]
     fn lyric(self) -> Option<LineRef<'a>> {
         match self {
             TypedLine::Lyric(x) => Some(x),
-            _ => None,
+            TypedLine::Meta { .. } => None,
         }
     }
 }

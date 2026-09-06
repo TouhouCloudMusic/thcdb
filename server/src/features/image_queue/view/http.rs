@@ -1,5 +1,4 @@
 use axum::extract::{Path, Query, State};
-use axum::response::{IntoResponse, Response};
 use domain::shared::CursorResponse;
 use entity::image_queue as image_queue_entity;
 use entity::sea_orm_active_enums::ImageQueueStatus;
@@ -15,7 +14,7 @@ use crate::adapter::inbound::rest::{AppRouter, CurrentUser, data};
 use crate::features::image_queue::shared::UserSummary;
 use crate::infra::database::error::DatabaseResultExt;
 use crate::shared::http::PaginationQuery;
-use crate::shared::http::api_response::Data;
+use crate::shared::http::api_response::{AppError, Data};
 
 const TAG: &str = "Image Queue";
 
@@ -74,7 +73,7 @@ async fn profile_image_queue(
     CurrentUser(user): CurrentUser,
     State(repo): State<state::SeaOrmRepository>,
     Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<CursorResponse<UserImageQueueItem>>, Response> {
+) -> Result<Data<CursorResponse<UserImageQueueItem>>, AppError> {
     load_user_image_queue(&repo, UserFilter::Id(user.id), pagination).await
 }
 
@@ -91,7 +90,7 @@ async fn profile_image_queue_with_name(
     Path(name): Path<String>,
     State(repo): State<state::SeaOrmRepository>,
     Query(pagination): Query<PaginationQuery>,
-) -> Result<Data<CursorResponse<UserImageQueueItem>>, Response> {
+) -> Result<Data<CursorResponse<UserImageQueueItem>>, AppError> {
     load_user_image_queue(&repo, UserFilter::Name(name), pagination).await
 }
 
@@ -99,11 +98,10 @@ async fn load_user_image_queue(
     repo: &state::SeaOrmRepository,
     filter: UserFilter,
     pagination: PaginationQuery,
-) -> Result<Data<CursorResponse<UserImageQueueItem>>, Response> {
+) -> Result<Data<CursorResponse<UserImageQueueItem>>, AppError> {
     let paginated =
         repo::find_by_user(repo, filter, pagination.limit(), pagination.cursor)
-            .await
-            .map_err(IntoResponse::into_response)?;
+            .await?;
 
     let user_ids = paginated
         .items
@@ -113,8 +111,7 @@ async fn load_user_image_queue(
         .collect::<Vec<_>>();
     let users = load_users(&repo.conn, user_ids)
         .await
-        .db_operation("load image queue users")
-        .map_err(IntoResponse::into_response)?;
+        .db_operation("load image queue users")?;
 
     let items: Vec<UserImageQueueItem> = paginated
         .items
