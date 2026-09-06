@@ -4,6 +4,7 @@ import { createContext, createSignal, Show } from "solid-js"
 import { twJoin } from "tailwind-merge"
 
 import { Tab } from "~/component/atomic"
+import { ExternalLinks } from "~/component/data/ExternalLinks"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
 import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
@@ -74,6 +75,7 @@ export function SongInfoPageView(props: SongInfoPageViewProps) {
 					<div class="flex flex-col gap-y-4">
 						<SongInfoTitleAndCreditName />
 						<SongInfoLanguages />
+						<ExternalLinks links={props.song.links} />
 						<EntityTags
 							entityType="song"
 							entityId={props.song.id}

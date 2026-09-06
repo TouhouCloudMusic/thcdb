@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
 use domain::shared::{
-    DateWithPrecision, EntityIdent, Location, NewLocalizedName,
+    DateWithPrecision, EntityIdent, HttpUrl, Location, NewLocalizedName,
 };
 use entity::enums::{ArtistType, DatePrecision};
 use entity::{
@@ -20,8 +20,7 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
     EntityTrait, LoaderTrait, QueryFilter, QueryOrder, TryInsertResult,
 };
-use sea_query::any;
-use url::Url;
+use sea_query::{OnConflict, any};
 
 use crate::features::artist::model::{NewArtist, NewMembership};
 use crate::infra::database::error::{
@@ -273,7 +272,7 @@ async fn create_artist_alias_history(
 
 async fn create_artist_link(
     artist_id: i32,
-    links: Option<&[Url]>,
+    links: Option<&[HttpUrl]>,
     db: &impl ConnectionTrait,
 ) -> Result<(), DbErr> {
     if let Some(links) = links {
@@ -284,8 +283,16 @@ async fn create_artist_link(
         });
 
         artist_link::Entity::insert_many(model)
+            .on_conflict(
+                OnConflict::columns([
+                    artist_link::Column::ArtistId,
+                    artist_link::Column::Url,
+                ])
+                .do_nothing()
+                .to_owned(),
+            )
             .on_empty_do_nothing()
-            .exec(db)
+            .exec_without_returning(db)
             .await?;
     }
 
@@ -294,7 +301,7 @@ async fn create_artist_link(
 
 async fn create_artist_link_history(
     history_id: i32,
-    links: Option<&[Url]>,
+    links: Option<&[HttpUrl]>,
     db: &impl ConnectionTrait,
 ) -> Result<(), DbErr> {
     if let Some(links) = links {
@@ -305,8 +312,16 @@ async fn create_artist_link_history(
         });
 
         artist_link_history::Entity::insert_many(model)
+            .on_conflict(
+                OnConflict::columns([
+                    artist_link_history::Column::HistoryId,
+                    artist_link_history::Column::Url,
+                ])
+                .do_nothing()
+                .to_owned(),
+            )
             .on_empty_do_nothing()
-            .exec(db)
+            .exec_without_returning(db)
             .await?;
     }
 
@@ -545,6 +560,10 @@ async fn update_artist_links(
         .filter(artist_link_history::Column::HistoryId.eq(history_id))
         .all(db)
         .await?;
+
+    if links.is_empty() {
+        return Ok(());
+    }
 
     let model = links
         .into_iter()

@@ -1,7 +1,9 @@
+use domain::shared::HttpUrl;
 use entity::sea_orm_active_enums::AlternativeNameType;
 use entity::{
     correction_revision, event, event_alternative_name,
-    event_alternative_name_history, event_history,
+    event_alternative_name_history, event_history, event_link,
+    event_link_history,
 };
 use infra_db::SeaOrmTxRepo;
 use sea_orm::ActiveValue::{NotSet, Set};
@@ -9,6 +11,7 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DbErr, EntityTrait,
     IntoActiveValue, ModelTrait, QueryFilter, QueryOrder,
 };
+use sea_query::OnConflict;
 
 use crate::features::event::model::NewEvent;
 use crate::infra::database::error::{
@@ -44,6 +47,7 @@ async fn create_event_and_relations(
     if let Some(alt_names) = &data.alternative_names {
         create_alt_names(event.id, alt_names, conn).await?;
     }
+    create_links(event.id, data.links.as_deref(), conn).await?;
 
     Ok(event)
 }
@@ -57,6 +61,7 @@ async fn create_event_history_and_relations(
     if let Some(alt_names) = &data.alternative_names {
         create_alt_names_history(history.id, alt_names, conn).await?;
     }
+    create_link_histories(history.id, data.links.as_deref(), conn).await?;
 
     Ok(history)
 }
@@ -186,6 +191,68 @@ async fn create_alt_names_history(
     Ok(())
 }
 
+async fn create_links(
+    event_id: i32,
+    links: Option<&[HttpUrl]>,
+    conn: &impl ConnectionTrait,
+) -> Result<(), DbErr> {
+    let Some(links) = links.filter(|links| !links.is_empty()) else {
+        return Ok(());
+    };
+
+    let models = links.iter().map(|link| event_link::ActiveModel {
+        id: NotSet,
+        event_id: Set(event_id),
+        url: Set(link.to_string()),
+    });
+
+    event_link::Entity::insert_many(models)
+        .on_conflict(
+            OnConflict::columns([
+                event_link::Column::EventId,
+                event_link::Column::Url,
+            ])
+            .do_nothing()
+            .to_owned(),
+        )
+        .on_empty_do_nothing()
+        .exec_without_returning(conn)
+        .await?;
+
+    Ok(())
+}
+
+async fn create_link_histories(
+    history_id: i32,
+    links: Option<&[HttpUrl]>,
+    conn: &impl ConnectionTrait,
+) -> Result<(), DbErr> {
+    let Some(links) = links.filter(|links| !links.is_empty()) else {
+        return Ok(());
+    };
+
+    let models = links.iter().map(|link| event_link_history::ActiveModel {
+        id: NotSet,
+        history_id: Set(history_id),
+        url: Set(link.to_string()),
+    });
+
+    event_link_history::Entity::insert_many(models)
+        .on_conflict(
+            OnConflict::columns([
+                event_link_history::Column::HistoryId,
+                event_link_history::Column::Url,
+            ])
+            .do_nothing()
+            .to_owned(),
+        )
+        .on_empty_do_nothing()
+        .exec_without_returning(conn)
+        .await?;
+
+    Ok(())
+}
+
 pub(crate) async fn apply_update(
     correction: entity::correction::Model,
     conn: &impl ConnectionTrait,
@@ -224,6 +291,8 @@ pub(crate) async fn apply_update(
 
     active_model.update(conn).await?;
     update_alt_names(correction.entity_id, revision.entity_history_id, conn)
+        .await?;
+    update_links(correction.entity_id, revision.entity_history_id, conn)
         .await?;
 
     Ok(())
@@ -264,6 +333,36 @@ async fn update_alt_names(
     event_alternative_name::Entity::insert_many(models)
         .exec(conn)
         .await?;
+
+    Ok(())
+}
+
+async fn update_links(
+    event_id: i32,
+    history_id: i32,
+    conn: &impl ConnectionTrait,
+) -> Result<(), DbErr> {
+    event_link::Entity::delete_many()
+        .filter(event_link::Column::EventId.eq(event_id))
+        .exec(conn)
+        .await?;
+
+    let links = event_link_history::Entity::find()
+        .filter(event_link_history::Column::HistoryId.eq(history_id))
+        .all(conn)
+        .await?;
+
+    if links.is_empty() {
+        return Ok(());
+    }
+
+    let models = links.into_iter().map(|link| event_link::ActiveModel {
+        id: NotSet,
+        event_id: Set(event_id),
+        url: Set(link.url),
+    });
+
+    event_link::Entity::insert_many(models).exec(conn).await?;
 
     Ok(())
 }

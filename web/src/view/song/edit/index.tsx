@@ -6,6 +6,7 @@ import type { JSX } from "solid-js"
 import { createEffect, Show } from "solid-js"
 
 import { FormActionBar } from "~/component/form"
+import { ExternalLinksField } from "~/component/form/ExternalLinksField"
 import { NewSongCorrection } from "~/domain/song"
 import { PageLayout } from "~/layout/PageLayout"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
@@ -127,13 +128,18 @@ function FormContent(props: Props) {
 						class="col-span-2 row-start-5"
 					/>
 
+					<ExternalLinksField
+						of={form}
+						class="col-span-2 row-start-6"
+					/>
+
 					<SongRelationsField
 						of={form}
 						currentSongId={props.type === "edit" ? props.song.id : undefined}
 						initRelations={
 							props.type === "edit" ? (props.song.relations ?? []) : []
 						}
-						class="col-span-3 row-start-2 row-span-4"
+						class="col-span-3 row-start-2 row-span-5"
 					/>
 				</div>
 				<FormActionBar

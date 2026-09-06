@@ -2374,6 +2374,7 @@ export type components = {
             end_date?: null | components["schemas"]["DateWithPrecision"];
             /** Format: int32 */
             id: number;
+            links?: string[];
             location?: components["schemas"]["Location"];
             name: string;
             short_description?: string;
@@ -2404,6 +2405,11 @@ export type components = {
             /** Format: int64 */
             tags_count: number;
         };
+        /**
+         * Format: uri
+         * @description An HTTP or HTTPS URL.
+         */
+        HttpUrl: string;
         /** @enum {string} */
         ImageQueueAction: "Approve" | "Reject" | "Revert";
         ImageQueueDetail: {
@@ -2459,6 +2465,7 @@ export type components = {
             founders: number[];
             /** Format: int32 */
             id: number;
+            links: string[];
             localized_names: components["schemas"]["LocalizedName"][];
             name: string;
         };
@@ -2509,7 +2516,7 @@ export type components = {
             artist_type: components["schemas"]["ArtistType"];
             current_location?: null | components["schemas"]["Location"];
             end_date?: null | components["schemas"]["DateWithPrecision"];
-            links?: string[] | null;
+            links?: components["schemas"]["HttpUrl"][] | null;
             localized_names?: components["schemas"]["NewLocalizedName"][] | null;
             /** @description Groups list for individuals, member list for groups, */
             memberships?: components["schemas"]["NewMembership"][] | null;
@@ -2531,7 +2538,7 @@ export type components = {
                 artist_type: components["schemas"]["ArtistType"];
                 current_location?: null | components["schemas"]["Location"];
                 end_date?: null | components["schemas"]["DateWithPrecision"];
-                links?: string[] | null;
+                links?: components["schemas"]["HttpUrl"][] | null;
                 localized_names?: components["schemas"]["NewLocalizedName"][] | null;
                 /** @description Groups list for individuals, member list for groups, */
                 memberships?: components["schemas"]["NewMembership"][] | null;
@@ -2559,6 +2566,7 @@ export type components = {
                 alternative_names?: string[] | null;
                 description?: string | null;
                 end_date?: null | components["schemas"]["DateWithPrecision"];
+                links?: components["schemas"]["HttpUrl"][] | null;
                 location?: null | components["schemas"]["Location"];
                 name: components["schemas"]["EntityIdent"];
                 short_description?: string | null;
@@ -2572,6 +2580,7 @@ export type components = {
                 dissolved_date?: null | components["schemas"]["DateWithPrecision"];
                 founded_date?: null | components["schemas"]["DateWithPrecision"];
                 founders?: number[] | null;
+                links?: components["schemas"]["HttpUrl"][] | null;
                 localized_names?: components["schemas"]["NewLocalizedName"][] | null;
                 name: components["schemas"]["EntityIdent"];
             };
@@ -2585,6 +2594,7 @@ export type components = {
                 credits: components["schemas"]["NewCredit"][];
                 discs: components["schemas"]["NewDisc"][];
                 events: number[];
+                links: components["schemas"]["HttpUrl"][];
                 localized_titles: components["schemas"]["NewLocalizedTitle"][];
                 recording_date_end?: null | components["schemas"]["DateWithPrecision"];
                 recording_date_start?: null | components["schemas"]["DateWithPrecision"];
@@ -2601,6 +2611,7 @@ export type components = {
                 artists?: number[] | null;
                 credits?: components["schemas"]["NewSongCredit"][] | null;
                 languages?: number[] | null;
+                links?: components["schemas"]["HttpUrl"][] | null;
                 localized_titles?: components["schemas"]["NewLocalizedName"][] | null;
                 relations?: components["schemas"]["NewSongRelation"][] | null;
                 title: components["schemas"]["EntityIdent"];
@@ -2652,6 +2663,7 @@ export type components = {
             alternative_names?: string[] | null;
             description?: string | null;
             end_date?: null | components["schemas"]["DateWithPrecision"];
+            links?: components["schemas"]["HttpUrl"][] | null;
             location?: null | components["schemas"]["Location"];
             name: components["schemas"]["EntityIdent"];
             short_description?: string | null;
@@ -2661,6 +2673,7 @@ export type components = {
             dissolved_date?: null | components["schemas"]["DateWithPrecision"];
             founded_date?: null | components["schemas"]["DateWithPrecision"];
             founders?: number[] | null;
+            links?: components["schemas"]["HttpUrl"][] | null;
             localized_names?: components["schemas"]["NewLocalizedName"][] | null;
             name: components["schemas"]["EntityIdent"];
         };
@@ -2686,6 +2699,7 @@ export type components = {
             credits: components["schemas"]["NewCredit"][];
             discs: components["schemas"]["NewDisc"][];
             events: number[];
+            links: components["schemas"]["HttpUrl"][];
             localized_titles: components["schemas"]["NewLocalizedTitle"][];
             recording_date_end?: null | components["schemas"]["DateWithPrecision"];
             recording_date_start?: null | components["schemas"]["DateWithPrecision"];
@@ -2698,6 +2712,7 @@ export type components = {
             artists?: number[] | null;
             credits?: components["schemas"]["NewSongCredit"][] | null;
             languages?: number[] | null;
+            links?: components["schemas"]["HttpUrl"][] | null;
             localized_titles?: components["schemas"]["NewLocalizedName"][] | null;
             relations?: components["schemas"]["NewSongRelation"][] | null;
             title: components["schemas"]["EntityIdent"];
@@ -2879,6 +2894,7 @@ export type components = {
                 end_date?: null | components["schemas"]["DateWithPrecision"];
                 /** Format: int32 */
                 id: number;
+                links?: string[];
                 location?: components["schemas"]["Location"];
                 name: string;
                 short_description?: string;
@@ -2915,6 +2931,7 @@ export type components = {
                 founders: number[];
                 /** Format: int32 */
                 id: number;
+                links: string[];
                 localized_names: components["schemas"]["LocalizedName"][];
                 name: string;
             }[];
@@ -2937,6 +2954,7 @@ export type components = {
                 events?: components["schemas"]["SimpleEvent"][];
                 /** Format: int32 */
                 id: number;
+                links?: string[];
                 localized_titles?: components["schemas"]["LocalizedTitle"][];
                 recording_date_end?: null | components["schemas"]["DateWithPrecision"];
                 recording_date_start?: null | components["schemas"]["DateWithPrecision"];
@@ -2961,6 +2979,7 @@ export type components = {
                 /** Format: int32 */
                 id: number;
                 languages?: components["schemas"]["Language"][];
+                links?: string[];
                 localized_titles?: components["schemas"]["LocalizedTitle"][];
                 lyrics?: components["schemas"]["SongLyrics"][];
                 relations?: components["schemas"]["SongRelation"][];
@@ -3070,6 +3089,7 @@ export type components = {
             events?: components["schemas"]["SimpleEvent"][];
             /** Format: int32 */
             id: number;
+            links?: string[];
             localized_titles?: components["schemas"]["LocalizedTitle"][];
             recording_date_end?: null | components["schemas"]["DateWithPrecision"];
             recording_date_start?: null | components["schemas"]["DateWithPrecision"];
@@ -3194,6 +3214,7 @@ export type components = {
             /** Format: int32 */
             id: number;
             languages?: components["schemas"]["Language"][];
+            links?: string[];
             localized_titles?: components["schemas"]["LocalizedTitle"][];
             lyrics?: components["schemas"]["SongLyrics"][];
             relations?: components["schemas"]["SongRelation"][];
@@ -3530,6 +3551,7 @@ export type EventSummary = components['schemas']['EventSummary'];
 export type ForgotPasswordRequest = components['schemas']['ForgotPasswordRequest'];
 export type ForgotPasswordResponse = components['schemas']['ForgotPasswordResponse'];
 export type HomeMetadata = components['schemas']['HomeMetadata'];
+export type HttpUrl = components['schemas']['HttpUrl'];
 export type ImageQueueAction = components['schemas']['ImageQueueAction'];
 export type ImageQueueDetail = components['schemas']['ImageQueueDetail'];
 export type ImageQueueModerationAction = components['schemas']['ImageQueueModerationAction'];

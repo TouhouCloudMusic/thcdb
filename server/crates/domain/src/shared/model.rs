@@ -3,6 +3,7 @@ use derive_more::{Display, Into};
 use entity::language::Model as DbLanguage;
 use macros::AutoMapper;
 use serde::{Deserialize, Serialize};
+use url::Url;
 use utoipa::ToSchema;
 
 mod pub_use_below {}
@@ -11,6 +12,26 @@ use libfp::Len;
 
 use crate::constant::{ENTITY_IDENT_MAX_LEN, ENTITY_IDENT_MIN_LEN};
 use crate::validation::{InvalidLen, LenCheck};
+
+#[derive(Clone, Debug, Display, Deserialize, Eq, PartialEq, ToSchema)]
+#[serde(try_from = "Url")]
+#[schema(
+    value_type = String,
+    format = Uri,
+    description = "An HTTP or HTTPS URL."
+)]
+pub struct HttpUrl(Url);
+
+impl TryFrom<Url> for HttpUrl {
+    type Error = &'static str;
+
+    fn try_from(value: Url) -> Result<Self, Self::Error> {
+        match value.scheme() {
+            "http" | "https" => Ok(Self(value)),
+            _ => Err("URL scheme must be http or https"),
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, ToSchema)]
 pub struct DateWithPrecision {
@@ -66,9 +87,22 @@ impl LenCheck for EntityIdent {
     const MAX: Self::Unit = ENTITY_IDENT_MAX_LEN;
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, ToSchema)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, ToSchema)]
+#[serde(try_from = "String")]
 #[schema(value_type = String, pattern = "^.+$")]
 pub struct NonEmptyString(String);
+
+impl TryFrom<String> for NonEmptyString {
+    type Error = &'static str;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        if value.is_empty() {
+            return Err("must not be empty");
+        }
+
+        Ok(Self(value))
+    }
+}
 
 impl NonEmptyString {
     pub fn as_str(&self) -> &str {
@@ -93,21 +127,6 @@ impl AsRef<str> for NonEmptyString {
 impl From<NonEmptyString> for String {
     fn from(s: NonEmptyString) -> Self {
         s.0
-    }
-}
-
-impl<'de> Deserialize<'de> for NonEmptyString {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = String::deserialize(deserializer)?;
-
-        if value.is_empty() {
-            return Err(serde::de::Error::custom("must not be empty"));
-        }
-
-        Ok(Self(value))
     }
 }
 

@@ -38,32 +38,34 @@ pub(super) fn conv_to_domain_model(
             release_model.recording_date_end,
             release_model.recording_date_end_precision,
         ),
-        artists: conv_artists(related.artists.get(index).map_or(&[], |v| v)),
+        artists: conv_artists(&related.artists[index]),
         catalog_nums: conv_catalog_numbers(
-            related.catalog_numbers.get(index).map_or(&[], |v| v),
+            &related.catalog_numbers[index],
             &related.labels,
         ),
         localized_titles: conv_localized_titles(
-            related.localized_titles.get(index).map_or(&[], |v| v),
+            &related.localized_titles[index],
             related.languages,
         ),
-        discs: conv_discs(related.discs.get(index).map_or(&[], |v| v)),
+        links: related.links[index]
+            .iter()
+            .map(|link| link.url.clone())
+            .collect(),
+        discs: conv_discs(&related.discs[index]),
         tracks: conv_tracks(
-            related.tracks.get(index).map_or(&[], |v| v),
+            &related.tracks[index],
             &related.track_songs,
             &related.track_artists,
-            related.track_artist_ids.get(index).map_or(&[], |v| v),
+            &related.track_artist_ids[index],
         ),
         credits: conv_credits(
-            related.credits.get(index).map_or(&[], |v| v),
+            &related.credits[index],
             &related.credit_artists,
             &related.credit_roles,
         ),
-        events: conv_events(related.events.get(index).map_or(&[], |v| v)),
-        cover_art_url: related
-            .cover_arts
-            .get(index)
-            .and_then(Clone::clone)
+        events: conv_events(&related.events[index]),
+        cover_art_url: related.cover_arts[index]
+            .clone()
             .map(Image::from)
             .map(|image| image.url()),
     }
@@ -110,12 +112,10 @@ fn conv_localized_titles(
         .iter()
         .map(|lt| {
             let language = languages
-                .iter()
-                .find(|l| *l.0 == lt.language_id)
+                .get(&lt.language_id)
                 .unwrap_or_else(|| {
                     panic!("Language with id {} not found", lt.language_id)
                 })
-                .1
                 .clone();
 
             LocalizedTitle {

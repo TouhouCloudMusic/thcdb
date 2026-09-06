@@ -1,7 +1,12 @@
 import * as v from "valibot"
 
 import { DateWithPrecision } from "~/domain/shared"
-import { EntityId, EntityIdent, NewCorrection } from "~/domain/shared/schema"
+import {
+	EntityId,
+	EntityIdent,
+	HttpUrl,
+	NewCorrection,
+} from "~/domain/shared/schema"
 
 import { RELEASE_TYPES } from "./constants"
 
@@ -58,6 +63,7 @@ export const NewRelease = v.object({
 	credits: v.array(NewCredit),
 	discs: v.array(NewDisc),
 	tracks: v.array(NewTrack),
+	links: v.array(HttpUrl),
 })
 export type NewRelease = v.InferInput<typeof NewRelease>
 

@@ -36,6 +36,8 @@ pub enum Relation {
     CommentTarget,
     #[sea_orm(has_many = "super::event_alternative_name::Entity")]
     EventAlternativeName,
+    #[sea_orm(has_many = "super::event_link::Entity")]
+    EventLink,
     #[sea_orm(has_many = "super::release_event::Entity")]
     ReleaseEvent,
     #[sea_orm(has_many = "super::release_event_history::Entity")]
@@ -51,6 +53,12 @@ impl Related<super::comment_target::Entity> for Entity {
 impl Related<super::event_alternative_name::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::EventAlternativeName.def()
+    }
+}
+
+impl Related<super::event_link::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::EventLink.def()
     }
 }
 

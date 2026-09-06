@@ -26,3 +26,4 @@ pulldown-cmark = { version = "0.13.0", default-features = false, features = [
 serde.workspace = true
 serde_with.workspace = true
 utoipa.workspace = true
+url.workspace = true

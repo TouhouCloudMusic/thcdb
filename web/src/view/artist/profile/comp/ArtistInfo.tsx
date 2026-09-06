@@ -2,8 +2,9 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { Artist } from "@thc/api"
 import type { ParentProps } from "solid-js"
-import { createMemo, Show, For } from "solid-js"
+import { createMemo, For, Show } from "solid-js"
 
+import { ExternalLinks } from "~/component/data/ExternalLinks"
 import { DateWithPrecision } from "~/domain/shared"
 import { assertContext } from "~/utils/solid/assertContext"
 import { EntityTags } from "~/view/entity_tags/EntityTags"
@@ -33,7 +34,7 @@ export function ArtistInfo() {
 				<Location location={context.artist.current_location} />
 				<Aliases />
 				<Membership />
-				<Links />
+				<ExternalLinks links={context.artist.links} />
 				<EntityTags
 					entityType="artist"
 					entityId={context.artist.id}
@@ -113,32 +114,6 @@ function Membership() {
 				<ul>
 					<For each={context.artist.memberships}>
 						{(membership) => <li>{membership.artist_id}</li>}
-					</For>
-				</ul>
-			</div>
-		</Show>
-	)
-}
-
-function Links() {
-	const { t } = useLingui()
-	const context = assertContext(ArtistContext)
-	return (
-		<Show when={context.artist.links?.length}>
-			<div>
-				<InfoLabel>{t`Links`}</InfoLabel>
-				<ul>
-					<For each={context.artist.links}>
-						{(link) => (
-							<li>
-								<a
-									class="text-blue-600"
-									href={link}
-								>
-									{link}
-								</a>
-							</li>
-						)}
 					</For>
 				</ul>
 			</div>

@@ -1,5 +1,7 @@
 use domain::shared::{DateWithPrecision, LocalizedName};
-use entity::{label, label_founder, label_localized_name, language};
+use entity::{
+    label, label_founder, label_link, label_localized_name, language,
+};
 use infra_db::SeaOrmRepository;
 use itertools::{Itertools, izip};
 use sea_orm::{
@@ -150,6 +152,11 @@ async fn find_many_impl(
         .await
         .db_operation("load label localized names")?;
 
+    let links = labels
+        .load_many(label_link::Entity, db)
+        .await
+        .db_operation("load label links")?;
+
     let langs = language::Entity::find()
         .filter(
             language::Column::Id.is_in(
@@ -162,8 +169,8 @@ async fn find_many_impl(
         .await
         .db_operation("load label localized name languages")?;
 
-    Ok(izip!(labels, founders, localized_names)
-        .map(|(label, founders, names)| {
+    Ok(izip!(labels, founders, localized_names, links)
+        .map(|(label, founders, names, links)| {
             let founded_date =
                 match (label.founded_date, label.founded_date_precision) {
                     (Some(date), precision) => Some(DateWithPrecision {
@@ -204,6 +211,7 @@ async fn find_many_impl(
                 dissolved_date,
                 founders,
                 localized_names,
+                links: links.into_iter().map(|link| link.url).collect(),
             }
         })
         .collect_vec())
