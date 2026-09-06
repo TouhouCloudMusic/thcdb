@@ -363,8 +363,8 @@ mod tests {
     )]
     #[tokio::test]
     async fn find_by_name_includes_profile_stats_from_approved_edits_and_votes()
-    {
-        let conn = test_connection().await;
+    -> anyhow::Result<()> {
+        let conn = test_connection().await?;
         let repo = SeaOrmRepository::new(conn.clone());
 
         let user = MockUser::with_label("profile_stats_user")
@@ -516,5 +516,7 @@ mod tests {
 
         assert_eq!(profile.stats.edit_count, 2);
         assert_eq!(profile.stats.vote_count, 3);
+
+        Ok(())
     }
 }

@@ -4,6 +4,9 @@ codegen-backend = true
 [profile.dev]
 codegen-backend = "cranelift"
 
+[profile.test]
+codegen-backend = "llvm"
+
 [profile.ra]
 codegen-backend = "llvm"
 
