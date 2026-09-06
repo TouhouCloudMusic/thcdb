@@ -16,6 +16,7 @@ describe("song form initialization", () => {
 				localized_titles: [],
 				credits: [],
 				relations: [],
+				links: [],
 			},
 		})
 	})
@@ -46,6 +47,7 @@ describe("song form initialization", () => {
 					description: "Shared motif",
 				},
 			],
+			links: ["https://example.com/songs/1"],
 		}
 
 		const result = useSongFormInitialValues({
@@ -74,6 +76,7 @@ describe("song form initialization", () => {
 						description: "Shared motif",
 					},
 				],
+				links: ["https://example.com/songs/1"],
 			},
 		})
 	})

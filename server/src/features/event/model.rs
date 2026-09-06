@@ -1,4 +1,4 @@
-use domain::shared::{DateWithPrecision, EntityIdent, Location};
+use domain::shared::{DateWithPrecision, EntityIdent, HttpUrl, Location};
 use entity::enums::EntityType;
 use garde::Validate;
 use serde::{Deserialize, Serialize};
@@ -22,6 +22,8 @@ pub struct NewEvent {
     pub end_date: Option<DateWithPrecision>,
     #[garde(skip)]
     pub alternative_names: Option<Vec<String>>,
+    #[garde(skip)]
+    pub links: Option<Vec<HttpUrl>>,
 }
 
 impl CorrectionEntity for NewEvent {
@@ -65,6 +67,7 @@ pub struct Event {
     pub start_date: Option<DateWithPrecision>,
     pub end_date: Option<DateWithPrecision>,
     pub alternative_names: Vec<AlternativeName>,
+    pub links: Vec<String>,
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]

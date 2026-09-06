@@ -17,6 +17,7 @@ import { FormComp } from "~/component/atomic/form"
 import { InputField } from "~/component/atomic/form/Input"
 import { FormActionBar } from "~/component/form"
 import { DateWithPrecision } from "~/component/form/DateWithPrecision"
+import { ExternalLinksField } from "~/component/form/ExternalLinksField"
 import { NewReleaseCorrection as NewReleaseCorrectionSchema } from "~/domain/release"
 import { PageLayout } from "~/layout/PageLayout"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
@@ -205,12 +206,17 @@ function FormContent(props: Props) {
 						class="col-span-2 row-start-11"
 					/>
 
+					<ExternalLinksField
+						of={form}
+						class="col-span-2 row-start-12"
+					/>
+
 					<Field
 						of={form}
 						path={["description"]}
 					>
 						{(field) => (
-							<InputField.Root class="col-span-3 row-start-12">
+							<InputField.Root class="col-span-3 row-start-13">
 								<InputField.Label>{t`Correction Description`}</InputField.Label>
 								<InputField.Textarea
 									{...field.props}

@@ -1,5 +1,5 @@
 use domain::shared::{
-    DateWithPrecision, EntityIdent, LocalizedName, NewLocalizedName,
+    DateWithPrecision, EntityIdent, HttpUrl, LocalizedName, NewLocalizedName,
 };
 use entity::enums::EntityType;
 use serde::{Deserialize, Serialize};
@@ -15,6 +15,7 @@ pub struct Label {
     pub dissolved_date: Option<DateWithPrecision>,
     pub founders: Vec<i32>,
     pub localized_names: Vec<LocalizedName>,
+    pub links: Vec<String>,
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -24,6 +25,7 @@ pub struct NewLabel {
     pub dissolved_date: Option<DateWithPrecision>,
     pub founders: Option<Vec<i32>>,
     pub localized_names: Option<Vec<NewLocalizedName>>,
+    pub links: Option<Vec<HttpUrl>>,
 }
 
 impl CorrectionEntity for NewLabel {

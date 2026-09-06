@@ -1,7 +1,12 @@
 import * as v from "valibot"
 
 import { DateWithPrecision } from "~/domain/shared"
-import { EntityIdent, Location, NewCorrection } from "~/domain/shared/schema"
+import {
+	EntityIdent,
+	HttpUrl,
+	Location,
+	NewCorrection,
+} from "~/domain/shared/schema"
 
 export const NewEvent = v.object({
 	name: v.message(EntityIdent, "Name is required and must be non-empty"),
@@ -13,6 +18,7 @@ export const NewEvent = v.object({
 		v.array(v.message(EntityIdent, "Name is required and must be non-empty")),
 	),
 	location: v.nullish(Location),
+	links: v.nullish(v.array(HttpUrl)),
 })
 export type NewEvent = v.InferInput<typeof NewEvent>
 

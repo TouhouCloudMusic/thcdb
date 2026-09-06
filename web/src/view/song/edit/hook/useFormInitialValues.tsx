@@ -20,6 +20,7 @@ export function useSongFormInitialValues(
 					localized_titles: [],
 					credits: [],
 					relations: [],
+					links: [],
 				},
 			}
 		: {
@@ -45,6 +46,7 @@ export function useSongFormInitialValues(
 							relation_type_id: relation.type.id,
 							description: relation.description,
 						})) ?? [],
+					links: input.song.links ?? [],
 				},
 			}
 }

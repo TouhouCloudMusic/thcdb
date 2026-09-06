@@ -5,6 +5,7 @@ import type { JSX } from "solid-js"
 import { createEffect, Show } from "solid-js"
 
 import { FormActionBar } from "~/component/form"
+import { ExternalLinksField } from "~/component/form/ExternalLinksField"
 import { NewEventCorrection } from "~/domain/event"
 import { PageLayout } from "~/layout/PageLayout"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
@@ -114,6 +115,10 @@ function FormContent(props: Props) {
 						<EventLocationField class="lg:col-end-7" />
 						<EventDescriptionField class="lg:col-end-7" />
 						<EventAlternativeNamesField class="lg:col-end-7" />
+						<ExternalLinksField
+							of={form}
+							class="lg:col-end-7"
+						/>
 						<EventFormDesc
 							class="lg:col-end-7"
 							mutation={mutation}

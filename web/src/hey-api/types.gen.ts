@@ -796,6 +796,7 @@ export type Event = {
 	start_date?: null | DateWithPrecision
 	end_date?: null | DateWithPrecision
 	alternative_names?: Array<AlternativeName>
+	links?: Array<string>
 }
 
 export type EventSummary = {
@@ -819,6 +820,11 @@ export type HomeMetadata = {
 	songs_count: number
 	tags_count: number
 }
+
+/**
+ * An HTTP or HTTPS URL.
+ */
+export type HttpUrl = string
 
 export type ImageQueueAction = "Approve" | "Reject" | "Revert"
 
@@ -875,6 +881,7 @@ export type Label = {
 	dissolved_date?: null | DateWithPrecision
 	founders: Array<number>
 	localized_names: Array<LocalizedName>
+	links: Array<string>
 }
 
 export type LabelSummary = {
@@ -936,7 +943,7 @@ export type NewArtist = {
 	text_aliases?: Array<EntityIdent> | null
 	start_date?: null | DateWithPrecision
 	end_date?: null | DateWithPrecision
-	links?: Array<string> | null
+	links?: Array<HttpUrl> | null
 	localized_names?: Array<NewLocalizedName> | null
 	start_location?: null | Location
 	current_location?: null | Location
@@ -965,7 +972,7 @@ export type NewCorrectionNewArtist = {
 		text_aliases?: Array<EntityIdent> | null
 		start_date?: null | DateWithPrecision
 		end_date?: null | DateWithPrecision
-		links?: Array<string> | null
+		links?: Array<HttpUrl> | null
 		localized_names?: Array<NewLocalizedName> | null
 		start_location?: null | Location
 		current_location?: null | Location
@@ -998,6 +1005,7 @@ export type NewCorrectionNewEvent = {
 		start_date?: null | DateWithPrecision
 		end_date?: null | DateWithPrecision
 		alternative_names?: Array<string> | null
+		links?: Array<HttpUrl> | null
 	}
 	description: string
 	type: CorrectionType
@@ -1010,6 +1018,7 @@ export type NewCorrectionNewLabel = {
 		dissolved_date?: null | DateWithPrecision
 		founders?: Array<number> | null
 		localized_names?: Array<NewLocalizedName> | null
+		links?: Array<HttpUrl> | null
 	}
 	description: string
 	type: CorrectionType
@@ -1028,6 +1037,7 @@ export type NewCorrectionNewRelease = {
 		discs: Array<NewDisc>
 		events: Array<number>
 		localized_titles: Array<NewLocalizedTitle>
+		links: Array<HttpUrl>
 		tracks: Array<NewTrack>
 	}
 	description: string
@@ -1041,6 +1051,7 @@ export type NewCorrectionNewSong = {
 		credits?: Array<NewSongCredit> | null
 		languages?: Array<number> | null
 		localized_titles?: Array<NewLocalizedName> | null
+		links?: Array<HttpUrl> | null
 		relations?: Array<NewSongRelation> | null
 	}
 	description: string
@@ -1096,6 +1107,7 @@ export type NewEvent = {
 	start_date?: null | DateWithPrecision
 	end_date?: null | DateWithPrecision
 	alternative_names?: Array<string> | null
+	links?: Array<HttpUrl> | null
 }
 
 export type NewLabel = {
@@ -1104,6 +1116,7 @@ export type NewLabel = {
 	dissolved_date?: null | DateWithPrecision
 	founders?: Array<number> | null
 	localized_names?: Array<NewLocalizedName> | null
+	links?: Array<HttpUrl> | null
 }
 
 export type NewLocalizedName = {
@@ -1134,6 +1147,7 @@ export type NewRelease = {
 	discs: Array<NewDisc>
 	events: Array<number>
 	localized_titles: Array<NewLocalizedTitle>
+	links: Array<HttpUrl>
 	tracks: Array<NewTrack>
 }
 
@@ -1143,6 +1157,7 @@ export type NewSong = {
 	credits?: Array<NewSongCredit> | null
 	languages?: Array<number> | null
 	localized_titles?: Array<NewLocalizedName> | null
+	links?: Array<HttpUrl> | null
 	relations?: Array<NewSongRelation> | null
 }
 
@@ -1335,6 +1350,7 @@ export type PageResponseEvent = {
 		start_date?: null | DateWithPrecision
 		end_date?: null | DateWithPrecision
 		alternative_names?: Array<AlternativeName>
+		links?: Array<string>
 	}>
 	page: number
 	page_size: number
@@ -1361,6 +1377,7 @@ export type PageResponseLabel = {
 		dissolved_date?: null | DateWithPrecision
 		founders: Array<number>
 		localized_names: Array<LocalizedName>
+		links: Array<string>
 	}>
 	page: number
 	page_size: number
@@ -1377,6 +1394,7 @@ export type PageResponseRelease = {
 		recording_date_start?: null | DateWithPrecision
 		recording_date_end?: null | DateWithPrecision
 		cover_art_url?: string | null
+		links?: Array<string>
 		artists?: Array<ReleaseArtist>
 		credits?: Array<ReleaseCredit>
 		catalog_nums?: Array<CatalogNumber>
@@ -1400,6 +1418,7 @@ export type PageResponseSong = {
 		credits?: Array<SongCredit>
 		languages?: Array<Language>
 		localized_titles?: Array<LocalizedTitle>
+		links?: Array<string>
 		relations?: Array<SongRelation>
 		lyrics?: Array<SongLyrics>
 	}>
@@ -1488,6 +1507,7 @@ export type Release = {
 	recording_date_start?: null | DateWithPrecision
 	recording_date_end?: null | DateWithPrecision
 	cover_art_url?: string | null
+	links?: Array<string>
 	artists?: Array<ReleaseArtist>
 	credits?: Array<ReleaseCredit>
 	catalog_nums?: Array<CatalogNumber>
@@ -1623,6 +1643,7 @@ export type Song = {
 	credits?: Array<SongCredit>
 	languages?: Array<Language>
 	localized_titles?: Array<LocalizedTitle>
+	links?: Array<string>
 	relations?: Array<SongRelation>
 	lyrics?: Array<SongLyrics>
 }

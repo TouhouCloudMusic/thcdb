@@ -25,6 +25,7 @@ export function toLabelFormInitValue(
 				founded_date: undefined,
 				dissolved_date: undefined,
 				founders: [],
+				links: [],
 			},
 		}
 	}
@@ -41,6 +42,7 @@ export function toLabelFormInitValue(
 			founded_date: DateWithPrecision.toInput(input.label.founded_date),
 			dissolved_date: DateWithPrecision.toInput(input.label.dissolved_date),
 			founders: input.label.founders,
+			links: input.label.links,
 		},
 	}
 }

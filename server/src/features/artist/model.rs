@@ -1,13 +1,12 @@
 use derive_more::Display;
 use domain::shared::{
-    Cursor, DateWithPrecision, EntityIdent, LocalizedName, Location,
+    Cursor, DateWithPrecision, EntityIdent, HttpUrl, LocalizedName, Location,
     NewLocalizedName,
 };
 use entity::enums::{EntityType, ReleaseType};
 pub use entity::sea_orm_active_enums::ArtistType;
 use macros::cmp_chain;
 use serde::{Deserialize, Serialize};
-use url::Url;
 use utoipa::ToSchema;
 
 use crate::features::correction::CorrectionEntity;
@@ -95,7 +94,7 @@ pub struct NewArtist {
     /// Death date for individuals, disbandment date for groups
     pub end_date: Option<DateWithPrecision>,
 
-    pub links: Option<Vec<Url>>,
+    pub links: Option<Vec<HttpUrl>>,
     pub localized_names: Option<Vec<NewLocalizedName>>,
 
     pub start_location: Option<Location>,

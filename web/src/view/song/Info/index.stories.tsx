@@ -93,6 +93,10 @@ And a new melody begins`,
 			description: "",
 		},
 	],
+	links: [
+		"https://example.com/songs/42",
+		"https://archive.example.com/tracks/42",
+	],
 }
 
 const SPARSE_SONG: Song = {
@@ -106,6 +110,7 @@ const SPARSE_SONG: Song = {
 	localized_titles: [],
 	lyrics: [],
 	relations: [],
+	links: [],
 }
 
 const CORRECTION_HISTORY: CorrectionHistoryItem[] = [

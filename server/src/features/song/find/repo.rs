@@ -7,7 +7,7 @@ use entity::sea_orm_active_enums::ReleaseImageType;
 use entity::song::Column::{Id, Title};
 use entity::{
     artist, image, release_image, release_track, song, song_artist,
-    song_credit, song_language, song_localized_title, song_lyrics,
+    song_credit, song_language, song_link, song_localized_title, song_lyrics,
     song_relation, song_relation_type,
 };
 use infra_db::SeaOrmRepository;
@@ -128,6 +128,7 @@ async fn find_many_impl(
         song_releases_list,
         song_release_tracks_list,
         song_lyrics_list,
+        song_links_list,
     ) = try_join!(
         songs.load_many_to_many(artist::Entity, song_artist::Entity, db),
         songs.load_many(song_credit::Entity, db),
@@ -140,6 +141,7 @@ async fn find_many_impl(
         ),
         songs.load_many(release_track::Entity, db),
         songs.load_many(song_lyrics::Entity, db),
+        songs.load_many(song_link::Entity, db),
     )
     .db_operation("load song associations")?;
 
@@ -182,6 +184,7 @@ async fn find_many_impl(
         song_releases_list,
         song_release_tracks_list,
         song_lyrics_list,
+        song_links_list,
     )
     .map(
         |(
@@ -193,6 +196,7 @@ async fn find_many_impl(
             song_releases,
             song_release_tracks,
             lyrics,
+            links,
         )| {
             let artists = song_artists.fmap_into();
 
@@ -256,6 +260,7 @@ async fn find_many_impl(
                 credits,
                 languages,
                 localized_titles,
+                links: links.into_iter().map(|link| link.url).collect(),
                 releases,
                 relations: vec![],
                 lyrics,

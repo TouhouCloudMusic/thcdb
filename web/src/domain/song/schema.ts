@@ -3,6 +3,7 @@ import * as v from "valibot"
 import {
 	EntityId,
 	EntityIdent,
+	HttpUrl,
 	NewCorrection,
 	NewLocalizedName,
 } from "~/domain/shared/schema"
@@ -39,6 +40,7 @@ export const NewSong = v.object({
 	localized_titles: v.array(NewLocalizedName),
 	credits: v.array(NewSongCredit),
 	relations: SongRelations,
+	links: v.nullish(v.array(HttpUrl)),
 })
 export type NewSong = v.InferInput<typeof NewSong>
 

@@ -1,7 +1,8 @@
-use domain::shared::NewLocalizedName;
+use domain::shared::{HttpUrl, NewLocalizedName};
 use entity::{
     correction_revision, label, label_founder, label_founder_history,
-    label_history, label_localized_name, label_localized_name_history,
+    label_history, label_link, label_link_history, label_localized_name,
+    label_localized_name_history,
 };
 use infra_db::SeaOrmTxRepo;
 use sea_orm::ActiveValue::{NotSet, Set};
@@ -9,6 +10,7 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DbErr, EntityTrait,
     IntoActiveValue, ModelTrait, QueryFilter, QueryOrder,
 };
+use sea_query::OnConflict;
 
 use crate::features::label::model::NewLabel;
 use crate::infra::database::error::{
@@ -48,6 +50,7 @@ async fn save_label_and_link_relations(
     if let Some(names) = &data.localized_names {
         create_localized_names(label.id, names, conn).await?;
     }
+    create_links(label.id, data.links.as_deref(), conn).await?;
 
     Ok(label)
 }
@@ -65,6 +68,7 @@ async fn save_label_history_and_link_relations(
     if let Some(names) = &data.localized_names {
         create_localized_name_histories(history.id, names, conn).await?;
     }
+    create_link_histories(history.id, data.links.as_deref(), conn).await?;
 
     Ok(history)
 }
@@ -213,6 +217,68 @@ async fn create_localized_name_histories(
     Ok(())
 }
 
+async fn create_links(
+    label_id: i32,
+    links: Option<&[HttpUrl]>,
+    conn: &impl ConnectionTrait,
+) -> Result<(), DbErr> {
+    let Some(links) = links.filter(|links| !links.is_empty()) else {
+        return Ok(());
+    };
+
+    let models = links.iter().map(|link| label_link::ActiveModel {
+        id: NotSet,
+        label_id: Set(label_id),
+        url: Set(link.to_string()),
+    });
+
+    label_link::Entity::insert_many(models)
+        .on_conflict(
+            OnConflict::columns([
+                label_link::Column::LabelId,
+                label_link::Column::Url,
+            ])
+            .do_nothing()
+            .to_owned(),
+        )
+        .on_empty_do_nothing()
+        .exec_without_returning(conn)
+        .await?;
+
+    Ok(())
+}
+
+async fn create_link_histories(
+    history_id: i32,
+    links: Option<&[HttpUrl]>,
+    conn: &impl ConnectionTrait,
+) -> Result<(), DbErr> {
+    let Some(links) = links.filter(|links| !links.is_empty()) else {
+        return Ok(());
+    };
+
+    let models = links.iter().map(|link| label_link_history::ActiveModel {
+        id: NotSet,
+        history_id: Set(history_id),
+        url: Set(link.to_string()),
+    });
+
+    label_link_history::Entity::insert_many(models)
+        .on_conflict(
+            OnConflict::columns([
+                label_link_history::Column::HistoryId,
+                label_link_history::Column::Url,
+            ])
+            .do_nothing()
+            .to_owned(),
+        )
+        .on_empty_do_nothing()
+        .exec_without_returning(conn)
+        .await?;
+
+    Ok(())
+}
+
 pub(crate) async fn apply_update(
     correction: entity::correction::Model,
     conn: &impl ConnectionTrait,
@@ -253,6 +319,8 @@ pub(crate) async fn apply_update(
         conn,
     )
     .await?;
+    update_links(correction.entity_id, revision.entity_history_id, conn)
+        .await?;
 
     Ok(())
 }
@@ -312,6 +380,36 @@ async fn update_localized_names(
         })
         .collect::<Vec<_>>();
     create_localized_names(label_id, &names, conn).await?;
+
+    Ok(())
+}
+
+async fn update_links(
+    label_id: i32,
+    history_id: i32,
+    conn: &impl ConnectionTrait,
+) -> Result<(), DbErr> {
+    label_link::Entity::delete_many()
+        .filter(label_link::Column::LabelId.eq(label_id))
+        .exec(conn)
+        .await?;
+
+    let links = label_link_history::Entity::find()
+        .filter(label_link_history::Column::HistoryId.eq(history_id))
+        .all(conn)
+        .await?;
+
+    if links.is_empty() {
+        return Ok(());
+    }
+
+    let models = links.into_iter().map(|link| label_link::ActiveModel {
+        id: NotSet,
+        label_id: Set(label_id),
+        url: Set(link.url),
+    });
+
+    label_link::Entity::insert_many(models).exec(conn).await?;
 
     Ok(())
 }

@@ -26,6 +26,7 @@ export const createMockLabel = (
 		name: faker.company.name(),
 		localized_names: [{ language: LANG_JA, name: faker.company.name() }],
 		founders: [faker.number.int({ min: 1, max: 1000 })],
+		links: [],
 		founded_date: { precision: "Day", value: foundedDateValue },
 		dissolved_date: dissolvedDateValue
 			? { precision: "Day", value: dissolvedDateValue }

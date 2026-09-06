@@ -5975,6 +5975,7 @@ dependencies = [
  "pulldown-cmark",
  "serde",
  "serde_with",
+ "url",
  "utoipa",
 ]
 
@@ -6394,7 +6395,6 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "trait-variant",
- "url",
  "utoipa",
  "utoipa-axum",
  "utoipa-scalar",

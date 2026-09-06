@@ -7,15 +7,16 @@ use entity::{
     artist_membership_role_history, artist_membership_tenure_history,
     correction as correction_entity, correction_user, credit_role,
     credit_role_history, credit_role_inheritance_history, event,
-    event_alternative_name_history, event_history, label,
-    label_founder_history, label_history, label_localized_name_history,
-    release, release_artist_history, release_catalog_number_history,
-    release_credit_history, release_disc_history, release_event_history,
-    release_history, release_localized_title_history,
+    event_alternative_name_history, event_history, event_link_history, label,
+    label_founder_history, label_history, label_link_history,
+    label_localized_name_history, release, release_artist_history,
+    release_catalog_number_history, release_credit_history,
+    release_disc_history, release_event_history, release_history,
+    release_link_history, release_localized_title_history,
     release_track_artist_history, release_track_history, song,
     song_artist_history, song_credit_history, song_history,
-    song_language_history, song_localized_title_history, song_lyrics,
-    song_lyrics_history, song_relation_history, tag,
+    song_language_history, song_link_history, song_localized_title_history,
+    song_lyrics, song_lyrics_history, song_relation_history, tag,
     tag_alternative_name_history, tag_history, tag_relation_history, user,
 };
 use sea_orm::{
@@ -279,7 +280,6 @@ async fn snapshot_artist(
 
     let links = artist_link_history::Entity::find()
         .filter(artist_link_history::Column::HistoryId.eq(history_id))
-        .order_by_asc(artist_link_history::Column::Id)
         .all(db)
         .await?
         .into_iter()
@@ -401,6 +401,14 @@ async fn snapshot_label(
         })
         .collect::<Vec<_>>();
 
+    let links = label_link_history::Entity::find()
+        .filter(label_link_history::Column::HistoryId.eq(history_id))
+        .all(db)
+        .await?
+        .into_iter()
+        .map(|model| model.url)
+        .collect::<Vec<_>>();
+
     Ok(json!({
         "name": history.name,
         "founded_date": date_with_precision(
@@ -413,6 +421,7 @@ async fn snapshot_label(
         ),
         "founders": founders,
         "localized_names": localized_names,
+        "links": links,
     }))
 }
 
@@ -544,6 +553,14 @@ async fn snapshot_release(
         .map(|model| model.event_id)
         .collect::<Vec<_>>();
 
+    let links = release_link_history::Entity::find()
+        .filter(release_link_history::Column::HistoryId.eq(history_id))
+        .all(db)
+        .await?
+        .into_iter()
+        .map(|model| model.url)
+        .collect::<Vec<_>>();
+
     Ok(json!({
         "title": history.title,
         "release_type": history.release_type,
@@ -564,6 +581,7 @@ async fn snapshot_release(
         "credits": credits,
         "artists": artists,
         "localized_titles": localized_titles,
+        "links": links,
         "catalog_numbers": catalog_numbers,
     }))
 }
@@ -638,12 +656,21 @@ async fn snapshot_song(
         })
         .collect::<Vec<_>>();
 
+    let links = song_link_history::Entity::find()
+        .filter(song_link_history::Column::HistoryId.eq(history_id))
+        .all(db)
+        .await?
+        .into_iter()
+        .map(|model| model.url)
+        .collect::<Vec<_>>();
+
     Ok(json!({
         "title": history.title,
         "artists": artists,
         "credits": credits,
         "localized_titles": localized_titles,
         "languages": language_ids,
+        "links": links,
         "relations": relations,
     }))
 }
@@ -710,6 +737,14 @@ async fn snapshot_event(
         .map(|model| model.name)
         .collect::<Vec<_>>();
 
+    let links = event_link_history::Entity::find()
+        .filter(event_link_history::Column::HistoryId.eq(history_id))
+        .all(db)
+        .await?
+        .into_iter()
+        .map(|model| model.url)
+        .collect::<Vec<_>>();
+
     Ok(json!({
         "name": history.name,
         "description": history.description,
@@ -728,6 +763,7 @@ async fn snapshot_event(
             history.location_city.as_deref(),
         ),
         "alternative_names": alternative_names,
+        "links": links,
     }))
 }
 

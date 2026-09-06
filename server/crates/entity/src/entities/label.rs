@@ -28,6 +28,8 @@ pub enum Relation {
     LabelFounder,
     #[sea_orm(has_many = "super::label_localized_name::Entity")]
     LabelLocalizedName,
+    #[sea_orm(has_many = "super::label_link::Entity")]
+    LabelLink,
     #[sea_orm(has_many = "super::release_catalog_number::Entity")]
     ReleaseCatalogNumber,
     #[sea_orm(has_many = "super::release_catalog_number_history::Entity")]
@@ -49,6 +51,12 @@ impl Related<super::label_founder::Entity> for Entity {
 impl Related<super::label_localized_name::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::LabelLocalizedName.def()
+    }
+}
+
+impl Related<super::label_link::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::LabelLink.def()
     }
 }
 

@@ -1,9 +1,9 @@
-use domain::shared::NewLocalizedName;
+use domain::shared::{HttpUrl, NewLocalizedName};
 use entity::{
     correction_revision, song, song_artist, song_artist_history, song_credit,
     song_credit_history, song_history, song_language, song_language_history,
-    song_localized_title, song_localized_title_history, song_relation,
-    song_relation_history,
+    song_link, song_link_history, song_localized_title,
+    song_localized_title_history, song_relation, song_relation_history,
 };
 use futures_util::try_join;
 use infra_db::SeaOrmTxRepo;
@@ -12,6 +12,7 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, DatabaseTransaction, DbErr, EntityTrait,
     IntoActiveValue, ModelTrait, QueryFilter, QueryOrder,
 };
+use sea_query::OnConflict;
 
 use crate::features::song::model::{NewSong, NewSongCredit, NewSongRelation};
 use crate::infra::database::error::{
@@ -75,6 +76,7 @@ pub(crate) async fn apply_update(
         update_credits(song_id, history_id, tx),
         update_languages(song_id, history_id, tx),
         update_localized_titles(song_id, history_id, tx),
+        update_links(song_id, history_id, tx),
         update_relations(song_id, history_id, tx),
     )?;
 
@@ -246,6 +248,36 @@ async fn update_relations(
     Ok(())
 }
 
+async fn update_links(
+    song_id: i32,
+    history_id: i32,
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    song_link::Entity::delete_many()
+        .filter(song_link::Column::SongId.eq(song_id))
+        .exec(tx)
+        .await?;
+
+    let links = song_link_history::Entity::find()
+        .filter(song_link_history::Column::HistoryId.eq(history_id))
+        .all(tx)
+        .await?;
+
+    if links.is_empty() {
+        return Ok(());
+    }
+
+    let models = links.into_iter().map(|link| song_link::ActiveModel {
+        id: NotSet,
+        song_id: Set(song_id),
+        url: Set(link.url),
+    });
+
+    song_link::Entity::insert_many(models).exec(tx).await?;
+
+    Ok(())
+}
+
 async fn create_song_and_relations(
     data: &NewSong,
     tx: &DatabaseTransaction,
@@ -262,6 +294,7 @@ async fn create_song_and_relations(
         create_credits(song.id, data.credits.as_deref(), tx),
         create_languages(song.id, data.languages.as_deref(), tx),
         create_localized_titles(song.id, data.localized_titles.as_deref(), tx),
+        create_links(song.id, data.links.as_deref(), tx),
         create_relations(song.id, data.relations.as_deref(), tx),
     )?;
 
@@ -288,6 +321,7 @@ async fn create_song_history_and_relations(
             data.localized_titles.as_deref(),
             tx
         ),
+        create_link_histories(history.id, data.links.as_deref(), tx),
         create_relation_histories(history.id, data.relations.as_deref(), tx),
     )?;
 
@@ -568,6 +602,68 @@ async fn create_relation_histories(
 
     song_relation_history::Entity::insert_many(models)
         .exec(tx)
+        .await?;
+
+    Ok(())
+}
+
+async fn create_links(
+    song_id: i32,
+    links: Option<&[HttpUrl]>,
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let Some(links) = links.filter(|links| !links.is_empty()) else {
+        return Ok(());
+    };
+
+    let models = links.iter().map(|link| song_link::ActiveModel {
+        id: NotSet,
+        song_id: Set(song_id),
+        url: Set(link.to_string()),
+    });
+
+    song_link::Entity::insert_many(models)
+        .on_conflict(
+            OnConflict::columns([
+                song_link::Column::SongId,
+                song_link::Column::Url,
+            ])
+            .do_nothing()
+            .to_owned(),
+        )
+        .on_empty_do_nothing()
+        .exec_without_returning(tx)
+        .await?;
+
+    Ok(())
+}
+
+async fn create_link_histories(
+    history_id: i32,
+    links: Option<&[HttpUrl]>,
+    tx: &DatabaseTransaction,
+) -> Result<(), DbErr> {
+    let Some(links) = links.filter(|links| !links.is_empty()) else {
+        return Ok(());
+    };
+
+    let models = links.iter().map(|link| song_link_history::ActiveModel {
+        id: NotSet,
+        history_id: Set(history_id),
+        url: Set(link.to_string()),
+    });
+
+    song_link_history::Entity::insert_many(models)
+        .on_conflict(
+            OnConflict::columns([
+                song_link_history::Column::HistoryId,
+                song_link_history::Column::Url,
+            ])
+            .do_nothing()
+            .to_owned(),
+        )
+        .on_empty_do_nothing()
+        .exec_without_returning(tx)
         .await?;
 
     Ok(())

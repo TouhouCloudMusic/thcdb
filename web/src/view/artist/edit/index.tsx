@@ -8,6 +8,7 @@ import { Show, Suspense } from "solid-js"
 
 import { Button } from "~/component/atomic/button"
 import { FormActionBar } from "~/component/form"
+import { ExternalLinksField } from "~/component/form/ExternalLinksField"
 import { NewArtistCorrection } from "~/domain/artist/schema"
 import { PageLayout } from "~/layout/PageLayout"
 import { PendingCorrectionBoundary } from "~/view/correction/pendingCorrection"
@@ -17,7 +18,6 @@ import { ArtistFormNameField } from "./comp/ArtistName"
 import { ArtistFormArtistTypeField } from "./comp/ArtistType"
 import { ArtistFormDateFields } from "./comp/Date"
 import { ArtistFormActions } from "./comp/FormActions"
-import { ArtistFormLinks } from "./comp/Links"
 import { ArtistFormLocalizedNames } from "./comp/LocalizedNames"
 import { ArtistFormLocationFields } from "./comp/Locations"
 import { ArtistFormMembership } from "./comp/Membership"
@@ -143,7 +143,10 @@ function FormContent(props: Props) {
 							}
 						/>
 
-						<ArtistFormLinks />
+						<ExternalLinksField
+							of={form}
+							class="w-96"
+						/>
 
 						<ArtistFormActions mutation={mutation} />
 					</div>

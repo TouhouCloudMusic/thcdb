@@ -1,5 +1,5 @@
 use domain::shared::{
-    DateWithPrecision, LocalizedTitle, NewLocalizedTitle, SimpleEvent,
+    DateWithPrecision, HttpUrl, LocalizedTitle, NewLocalizedTitle, SimpleEvent,
     SimpleLabel,
 };
 use entity::sea_orm_active_enums::ReleaseType;
@@ -35,6 +35,8 @@ pub struct NewRelease {
     pub events: Vec<i32>,
     #[garde(skip)]
     pub localized_titles: Vec<NewLocalizedTitle>,
+    #[garde(skip)]
+    pub links: Vec<HttpUrl>,
     #[garde(custom(is_valid_track_list(&self.discs)))]
     pub tracks: Vec<NewTrack>,
 }
@@ -106,6 +108,7 @@ pub struct Release {
     pub recording_date_start: Option<DateWithPrecision>,
     pub recording_date_end: Option<DateWithPrecision>,
     pub cover_art_url: Option<String>,
+    pub links: Vec<String>,
     pub artists: Vec<ReleaseArtist>,
     pub credits: Vec<ReleaseCredit>,
     pub catalog_nums: Vec<CatalogNumber>,

@@ -18,6 +18,7 @@ describe("event form initialization", () => {
 				end_date: undefined,
 				alternative_names: [],
 				location: undefined,
+				links: [],
 			},
 		})
 	})
@@ -39,6 +40,7 @@ describe("event form initialization", () => {
 				province: null,
 				city: "Tokyo",
 			},
+			links: ["https://example.com/events/1"],
 		}
 
 		const result = toEventFormInitValue({ type: "edit", event })
@@ -57,6 +59,7 @@ describe("event form initialization", () => {
 			startDateDay: result.data.start_date?.value.getUTCDate(),
 			endDatePrecision: result.data.end_date?.precision,
 			endDateDay: result.data.end_date?.value.getUTCDate(),
+			links: result.data.links,
 		}).toStrictEqual({
 			type: "Update",
 			description: "",
@@ -75,6 +78,7 @@ describe("event form initialization", () => {
 			startDateDay: 1,
 			endDatePrecision: "Day",
 			endDateDay: 3,
+			links: ["https://example.com/events/1"],
 		})
 	})
 })
