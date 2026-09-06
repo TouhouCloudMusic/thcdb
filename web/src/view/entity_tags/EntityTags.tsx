@@ -175,7 +175,9 @@ export function EntityTagsView(props: EntityTagsViewProps) {
 					</div>
 				</Match>
 				<Match when={props.tags.length === 0}>
-					<div class="text-xs text-tertiary">{t`No tags yet`}</div>
+					<div>
+						<span class="text-xs text-tertiary">{t`No tags yet`}</span>
+					</div>
 				</Match>
 				<Match when={props.tags.length > 0}>
 					<div class="flex min-w-0 flex-col gap-1">

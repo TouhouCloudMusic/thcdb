@@ -41,6 +41,21 @@ const STORY_ARTIST: Artist = createMockArtist(18, {
 	artist_type: "Multiple",
 })
 
+function createDiscographyItem(
+	releaseId: number,
+	title: string,
+	releaseType: ReleaseType,
+): Discography {
+	return {
+		release_id: releaseId,
+		title,
+		release_type: releaseType,
+		release_date: null,
+		artist: [{ id: STORY_ARTIST.id, name: STORY_ARTIST.name }],
+		cover_url: null,
+	}
+}
+
 const DISCOGRAPHY_ITEMS: Discography[] = [
 	{
 		release_id: 101,
@@ -117,7 +132,7 @@ function StoryRoot(props: StoryRootProps) {
 	}
 
 	return (
-		<div class="w-[960px] border border-slate-200 bg-white">
+		<div class="w-full max-w-[960px] border border-slate-200 bg-white">
 			<ArtistContext.Provider value={contextValue}>
 				<ArtistReleaseInfoView
 					activeTab="Discography"
@@ -153,6 +168,10 @@ export const WithAllTabs: Story = {
 		artist: STORY_ARTIST,
 		discographies: createDiscographyRecord({
 			Album: DISCOGRAPHY_ITEMS,
+			Compilation: [
+				createDiscographyItem(104, "Scarlet Archive", "Compilation"),
+			],
+			Demo: [createDiscographyItem(105, "Demo 2019", "Demo")],
 			Ep: [
 				{
 					release_id: 103,
@@ -163,6 +182,8 @@ export const WithAllTabs: Story = {
 					cover_url: null,
 				},
 			],
+			Other: [createDiscographyItem(106, "Live Session", "Other")],
+			Single: [createDiscographyItem(107, "Moonlit Signal", "Single")],
 		}),
 		appearances: APPEARANCE_ITEMS,
 		credits: CREDIT_ITEMS,

@@ -1,13 +1,15 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Song } from "@thc/api"
 import { createContext, createSignal, Show } from "solid-js"
-import { twJoin } from "tailwind-merge"
 
 import { Tab } from "~/component/atomic"
 import { ExternalLinks } from "~/component/data/ExternalLinks"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
-import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
+import {
+	ADD_TO_COLLECTION_ACTIONS_CLASS,
+	AddToUserCollectionButton,
+} from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import type { EntityCommentsModel } from "~/view/comment/EntityComments"
@@ -68,49 +70,46 @@ export function SongInfoPageView(props: SongInfoPageViewProps) {
 	}
 
 	return (
-		<PageLayout class="p-8">
+		<PageLayout class="p-[clamp(1rem,4vw,2rem)]">
 			<SongInfoPageContext.Provider value={contextValue}>
-				<div class="grid grid-cols-[auto_1fr] gap-8">
-					<SongInfoCoverImage />
-					<div class="flex flex-col gap-y-4">
-						<SongInfoTitleAndCreditName />
-						<SongInfoLanguages />
-						<ExternalLinks links={props.song.links} />
-						<EntityTags
-							entityType="song"
-							entityId={props.song.id}
-						/>
-						<div class="border-t border-slate-200 pt-4">
-							<AddToUserCollectionButton
-								entityType="Song"
+				<div class="flex flex-col gap-8">
+					<div class="flex flex-wrap items-start justify-center gap-6">
+						<SongInfoCoverImage />
+						<div class="flex min-w-0 flex-1 basis-72 flex-col gap-y-4">
+							<SongInfoTitleAndCreditName />
+							<SongInfoLanguages />
+							<ExternalLinks links={props.song.links} />
+							<EntityTags
+								entityType="song"
 								entityId={props.song.id}
 							/>
+							<div class={ADD_TO_COLLECTION_ACTIONS_CLASS}>
+								<AddToUserCollectionButton
+									entityType="Song"
+									entityId={props.song.id}
+								/>
+							</div>
 						</div>
 					</div>
-					<div class="col-span-full flex flex-col gap-8">
-						<SongInfoTabsView
-							activeTab={props.activeTab}
-							comments={props.comments}
-							onActiveTabChange={props.onActiveTabChange}
-						/>
-						<EntityCorrectionMetadataSection
-							entityType="song"
-							entityId={props.song.id}
-							correctionHistory={props.correctionHistory}
-						/>
-					</div>
+					<SongInfoTabsView
+						activeTab={props.activeTab}
+						comments={props.comments}
+						onActiveTabChange={props.onActiveTabChange}
+					/>
+					<EntityCorrectionMetadataSection
+						entityType="song"
+						entityId={props.song.id}
+						correctionHistory={props.correctionHistory}
+					/>
 				</div>
 			</SongInfoPageContext.Provider>
 		</PageLayout>
 	)
 }
 
-// TODO:
-// - sync tabs style for other info page
-// - fix primary color
-//
+// TODO: Fix primary color.
 
-const TRIGGER_CLASS = "py-4"
+const TRIGGER_CLASS = "py-3"
 
 type SongInfoTabsViewProps = {
 	activeTab: string
@@ -132,49 +131,51 @@ export function SongInfoTabsView(props: SongInfoTabsViewProps) {
 			value={props.activeTab}
 			onChange={props.onActiveTabChange}
 		>
-			<Tab.List class={twJoin(Tab.CONTAINER_CLASS, "mx-4 gap-12")}>
-				<Tab.Trigger
-					value="Release"
-					class={TRIGGER_CLASS}
-				>
-					{t`Release`}
-				</Tab.Trigger>
-				<Show when={hasCredits()}>
+			<Tab.ScrollArea>
+				<Tab.List class={Tab.CONTAINER_CLASS}>
 					<Tab.Trigger
-						value="Credits"
+						value="Release"
 						class={TRIGGER_CLASS}
 					>
-						{t`Credits`}
+						{t`Release`}
 					</Tab.Trigger>
-				</Show>
-				<Show when={hasLyrics()}>
+					<Show when={hasCredits()}>
+						<Tab.Trigger
+							value="Credits"
+							class={TRIGGER_CLASS}
+						>
+							{t`Credits`}
+						</Tab.Trigger>
+					</Show>
+					<Show when={hasLyrics()}>
+						<Tab.Trigger
+							value="Lyrics"
+							class={TRIGGER_CLASS}
+						>
+							{t`Lyrics`}
+						</Tab.Trigger>
+					</Show>
+					<Show when={hasRelations()}>
+						<Tab.Trigger
+							value="Relations"
+							class={TRIGGER_CLASS}
+						>
+							{t`Relations`}
+						</Tab.Trigger>
+					</Show>
+					<EntityCommentsTabTrigger
+						count={props.comments.activeCommentCount()}
+						class={TRIGGER_CLASS}
+					/>
 					<Tab.Trigger
-						value="Lyrics"
+						value="Collections"
 						class={TRIGGER_CLASS}
 					>
-						{t`Lyrics`}
+						{t`Collections`}
 					</Tab.Trigger>
-				</Show>
-				<Show when={hasRelations()}>
-					<Tab.Trigger
-						value="Relations"
-						class={TRIGGER_CLASS}
-					>
-						{t`Relations`}
-					</Tab.Trigger>
-				</Show>
-				<EntityCommentsTabTrigger
-					count={props.comments.activeCommentCount()}
-					class={TRIGGER_CLASS}
-				/>
-				<Tab.Trigger
-					value="Collections"
-					class={TRIGGER_CLASS}
-				>
-					{t`Collections`}
-				</Tab.Trigger>
-				<Tab.Indicator />
-			</Tab.List>
+					<Tab.Indicator />
+				</Tab.List>
+			</Tab.ScrollArea>
 			<Tab.Content value="Release">
 				<SongInfoRelease />
 			</Tab.Content>
@@ -193,7 +194,10 @@ export function SongInfoTabsView(props: SongInfoTabsViewProps) {
 					<SongInfoRelations relations={ctx.song.relations ?? []} />
 				</Tab.Content>
 			</Show>
-			<Tab.Content value="Comments">
+			<Tab.Content
+				value="Comments"
+				class="p-4"
+			>
 				<EntityComments model={props.comments} />
 			</Tab.Content>
 			<Tab.Content

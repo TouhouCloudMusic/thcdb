@@ -5,7 +5,6 @@ import { CorrectionQueryOption } from "@thc/query"
 import { pipe } from "@thc/toolkit"
 import { ArrExt } from "@thc/toolkit/data"
 import { untrack } from "solid-js"
-import type { JSX } from "solid-js"
 import { twMerge } from "tailwind-merge"
 
 import { Link } from "~/component/atomic/Link"
@@ -26,7 +25,6 @@ type EntityCorrectionMetadataSectionProps = {
 	entityType: EntityDetailType
 	entityId: number
 	correctionHistory?: CorrectionHistoryItem[]
-	trailingAction?: JSX.Element
 }
 
 export function EntityCorrectionMetadataSection(
@@ -77,7 +75,7 @@ export function EntityCorrectionMetadataSection(
 				)}
 			/>
 			{/* TODO: Improve button style */}
-			<div class="flex w-fit items-center gap-1">
+			<div class="flex flex-wrap items-center gap-1">
 				<Link
 					to={correctionsRoute()}
 					params={{ id: props.entityId.toString() }}
@@ -94,7 +92,6 @@ export function EntityCorrectionMetadataSection(
 				>
 					{t`Update ${entityLabel()}`}
 				</Link>
-				{props.trailingAction}
 			</div>
 		</div>
 	)

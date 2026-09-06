@@ -16,7 +16,9 @@ export function ArtistInfo() {
 	const context = assertContext(ArtistContext)
 	return (
 		<div class="flex flex-col">
-			<h1 class="text-xl font-semibold">{context.artist.name}</h1>
+			<h1 class="wrap-break-word text-xl font-semibold">
+				{context.artist.name}
+			</h1>
 			<div class="mt-4 space-y-2">
 				<Show when={context.artist.artist_type !== "Unknown"}>
 					<DateInfo
@@ -34,7 +36,10 @@ export function ArtistInfo() {
 				<Location location={context.artist.current_location} />
 				<Aliases />
 				<Membership />
-				<ExternalLinks links={context.artist.links} />
+				<ExternalLinks
+					links={context.artist.links}
+					class="[&_a]:wrap-anywhere"
+				/>
 				<EntityTags
 					entityType="artist"
 					entityId={context.artist.id}
@@ -52,7 +57,7 @@ function Aliases() {
 		<Show when={aliases().length > 0}>
 			<div>
 				<InfoLabel>{t`Aliases`}</InfoLabel>
-				<ul class="flex flex-row gap-1">
+				<ul class="flex flex-wrap gap-1">
 					<For each={aliases()}>
 						{(alias, index) => (
 							<>

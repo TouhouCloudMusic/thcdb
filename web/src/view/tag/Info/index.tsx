@@ -1,13 +1,15 @@
 import { useLingui } from "@lingui/solid/macro"
 import type { CorrectionHistoryItem, Tag } from "@thc/api"
 import { createSignal, Show, Suspense } from "solid-js"
-import { twJoin } from "tailwind-merge"
 
 import { Link, Tab } from "~/component/atomic"
 import { Intersperse } from "~/component/data/Intersperse"
 import { PageLayout } from "~/layout/PageLayout"
 import { assertContext } from "~/utils/solid/assertContext"
-import { AddToUserCollectionButton } from "~/view/collection/AddToUserCollectionButton"
+import {
+	ADD_TO_COLLECTION_ACTIONS_CLASS,
+	AddToUserCollectionButton,
+} from "~/view/collection/AddToUserCollectionButton"
 import { EntityCollectionsTab } from "~/view/collection/EntityCollectionsTab"
 import { EntityComments } from "~/view/comment/EntityComments"
 import { EntityCommentsTabTrigger } from "~/view/comment/EntityCommentsTabTrigger"
@@ -31,16 +33,18 @@ export function TagInfoPage(props: Props) {
 	}
 
 	return (
-		<PageLayout class="p-8">
+		<PageLayout class="p-[clamp(1rem,4vw,2rem)]">
 			<Suspense fallback={<div>{t`Loading...`}</div>}>
 				<TagInfoPageContext.Provider value={contextValue}>
 					<div class="flex flex-col gap-y-6">
 						<TagInfoHeader />
 						<TagInfoDetails />
-						<AddToUserCollectionButton
-							entityType="Tag"
-							entityId={props.tag.id}
-						/>
+						<div class={ADD_TO_COLLECTION_ACTIONS_CLASS}>
+							<AddToUserCollectionButton
+								entityType="Tag"
+								entityId={props.tag.id}
+							/>
+						</div>
 						<TagInfoTabs />
 						<EntityCorrectionMetadataSection
 							entityType="tag"
@@ -92,7 +96,7 @@ function TagInfoDetails() {
 	)
 }
 
-const TRIGGER_CLASS = "py-4"
+const TRIGGER_CLASS = "py-3"
 
 function TagInfoTabs() {
 	const { t } = useLingui()
@@ -113,8 +117,8 @@ function TagInfoTabs() {
 			value={activeTab()}
 			onChange={setActiveTab}
 		>
-			<div class={twJoin(Tab.CONTAINER_CLASS, "px-4")}>
-				<Tab.List class="gap-12">
+			<Tab.ScrollArea>
+				<Tab.List class={Tab.CONTAINER_CLASS}>
 					<Show when={hasDesc()}>
 						<Tab.Trigger
 							value="Description"
@@ -143,7 +147,7 @@ function TagInfoTabs() {
 					</Tab.Trigger>
 					<Tab.Indicator />
 				</Tab.List>
-			</div>
+			</Tab.ScrollArea>
 			<Show when={hasDesc()}>
 				<Tab.Content
 					value="Description"

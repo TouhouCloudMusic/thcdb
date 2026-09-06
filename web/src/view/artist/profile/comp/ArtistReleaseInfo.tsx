@@ -118,44 +118,40 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 			value={props.activeTab}
 			onChange={props.onActiveTabChange}
 		>
-			<Tab.List class="w-fit">
-				<For each={visibleTabs()}>
-					{(tabType) => (
-						<li>
-							<Show
-								when={tabType === "Comments"}
-								fallback={
-									<Tab.Trigger
-										class="text-md size-full px-4 py-2.5 text-slate-800"
-										value={tabType}
-									>
-										{tabType}
-									</Tab.Trigger>
-								}
-							>
-								<EntityCommentsTabTrigger
-									count={props.comments.activeCommentCount()}
-									class="text-md size-full px-4 py-2.5 text-slate-800"
-								/>
-							</Show>
-						</li>
-					)}
-				</For>
-				<Tab.Indicator />
-			</Tab.List>
+			<Tab.ScrollArea>
+				<Tab.List class={Tab.CONTAINER_CLASS}>
+					<For each={visibleTabs()}>
+						{(tabType) => (
+							<li>
+								<Show
+									when={tabType === "Comments"}
+									fallback={
+										<Tab.Trigger
+											class="px-3 py-3 text-slate-800"
+											value={tabType}
+										>
+											{tabType}
+										</Tab.Trigger>
+									}
+								>
+									<EntityCommentsTabTrigger
+										count={props.comments.activeCommentCount()}
+										class="px-3 py-3 text-slate-800"
+									/>
+								</Show>
+							</li>
+						)}
+					</For>
+					<Tab.Indicator />
+				</Tab.List>
+			</Tab.ScrollArea>
 
-			<Tab.Content
-				value="Discography"
-				class="w-full border-t border-slate-300"
-			>
+			<Tab.Content value="Discography">
 				<DiscographyTab />
 			</Tab.Content>
-			<Tab.Content
-				value="Appearance"
-				class="w-full border-t border-slate-300"
-			>
+			<Tab.Content value="Appearance">
 				<ArtistReleaseList
-					class="p-6"
+					class="p-[clamp(1rem,3vw,1.5rem)]"
 					data={context.appearances.data}
 					hasNext={context.appearances.hasNext}
 					next={() => {
@@ -165,12 +161,9 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 					{(itemProps) => <DiscographyItem {...itemProps} />}
 				</ArtistReleaseList>
 			</Tab.Content>
-			<Tab.Content
-				value="Credit"
-				class="w-full border-t border-slate-300"
-			>
+			<Tab.Content value="Credit">
 				<ArtistReleaseList
-					class="p-6"
+					class="p-[clamp(1rem,3vw,1.5rem)]"
 					data={context.credits.data}
 					hasNext={context.credits.hasNext}
 					next={() => {
@@ -182,13 +175,13 @@ export function ArtistReleaseInfoView(props: ArtistReleaseInfoViewProps) {
 			</Tab.Content>
 			<Tab.Content
 				value="Comments"
-				class="w-full border-t border-slate-300 p-4"
+				class="p-4"
 			>
 				<EntityComments model={props.comments} />
 			</Tab.Content>
 			<Tab.Content
 				value="Collections"
-				class="w-full border-t border-slate-300 p-4"
+				class="p-4"
 			>
 				<EntityCollectionsTab
 					entityType="artist"
@@ -224,7 +217,7 @@ function DiscographyTab() {
 		<Show
 			when={selectedType()}
 			fallback={
-				<div class="m-auto flex min-h-16 items-center place-self-center pl-4 whitespace-pre text-secondary">
+				<p class="m-auto min-h-16 place-self-center px-4 py-5 text-center text-secondary">
 					<Trans>
 						This Artist has no releases yet, you can upload them on{" "}
 						<a
@@ -234,32 +227,29 @@ function DiscographyTab() {
 							Upload New Release
 						</a>
 					</Trans>
-				</div>
+				</p>
 			}
 		>
 			{(type) => (
-				<div class="grid grid-cols-[auto_1fr]">
-					<Tab.Root
-						orientation="vertical"
-						value={type()}
-						onChange={setSelectedTypeInput}
-					>
-						<Tab.List class="space-y-2 px-2 pt-6">
-							<For each={existingTypes()}>
-								{(releaseType) => (
-									<Tab.Trigger
-										value={releaseType}
-										class="flex h-10 items-center justify-center rounded-md px-2 text-center font-normal text-secondary outline-2 outline-offset-2 outline-transparent focus-visible:outline-slate-300 data-selected:bg-slate-100"
-									>
-										{releaseType}
-									</Tab.Trigger>
-								)}
-							</For>
-						</Tab.List>
-					</Tab.Root>
+				<Tab.Root
+					value={type()}
+					onChange={setSelectedTypeInput}
+				>
+					<Tab.List class="flex-wrap gap-2 px-2 pt-4">
+						<For each={existingTypes()}>
+							{(releaseType) => (
+								<Tab.Trigger
+									value={releaseType}
+									class="flex h-10 items-center justify-center rounded-md px-3 text-center font-normal text-secondary outline-2 outline-offset-2 outline-transparent focus-visible:outline-slate-300 data-selected:bg-slate-100"
+								>
+									{releaseType}
+								</Tab.Trigger>
+							)}
+						</For>
+					</Tab.List>
 
 					<ArtistReleaseList
-						class="p-6"
+						class="p-[clamp(1rem,3vw,1.5rem)]"
 						data={context.discographies.data[type()]}
 						hasNext={context.discographies.hasNext(type())}
 						next={() => {
@@ -268,7 +258,7 @@ function DiscographyTab() {
 					>
 						{(props) => <DiscographyItem {...props} />}
 					</ArtistReleaseList>
-				</div>
+				</Tab.Root>
 			)}
 		</Show>
 	)
@@ -341,10 +331,10 @@ function DiscographyItem(props: { item: Discography }) {
 function CreditItem(props: { item: ArtistCredit }) {
 	return (
 		<ItemLayout releaseId={props.item.release_id}>
-			<div class="flex whitespace-pre">
+			<div class="flex flex-wrap">
 				<ItemTitle>{props.item.title}</ItemTitle>
 				{" · "}
-				<ul class="flex items-baseline-last whitespace-pre">
+				<ul class="flex flex-wrap items-baseline-last">
 					<For each={props.item.artist}>
 						{(artist, index) => (
 							<li class={"text-normal leading-6 text-secondary"}>
@@ -362,7 +352,7 @@ function CreditItem(props: { item: ArtistCredit }) {
 			</Show>
 			<ItemSubTitle
 				as="ul"
-				class="flex whitespace-pre"
+				class="flex flex-wrap"
 			>
 				<For each={props.item.roles}>
 					{(role, index) => (
@@ -381,7 +371,7 @@ function ItemLayout(props: ParentProps<{ releaseId: number }>) {
 	const content = () => (
 		<>
 			<div class="size-16 rounded bg-secondary"></div>
-			<div class="grid grid-rows-2 items-center">{props.children}</div>
+			<div class="grid min-w-0 grid-rows-2 items-center">{props.children}</div>
 		</>
 	)
 
@@ -400,7 +390,11 @@ function ItemLayout(props: ParentProps<{ releaseId: number }>) {
 }
 
 function ItemTitle(props: ParentProps) {
-	return <div class="font-semibold text-slate-900">{props.children}</div>
+	return (
+		<div class="wrap-break-word font-semibold text-slate-900">
+			{props.children}
+		</div>
+	)
 }
 
 const SUBTITLE_CLASS = "text-sm text-secondary"
