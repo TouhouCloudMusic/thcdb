@@ -1,17 +1,20 @@
 use axum::extract::{Query, State};
 use axum::response::IntoResponse;
-use domain::shared::{CursorResponse, SimpleArtist, SimpleEvent, SimpleLabel};
+use domain::shared::CursorResponse;
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use super::repo;
+use super::{SearchResult, repo};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
-use crate::features::release::model::SimpleRelease;
-use crate::features::song::model::SongRef;
-use crate::features::tag::model::TagRef;
+use crate::features::artist::list::ArtistListItem;
+use crate::features::event::list::EventListItem;
+use crate::features::label::list::LabelListItem;
+use crate::features::release::list::ReleaseListItem;
+use crate::features::song::list::SongListItem;
+use crate::features::tag::list::TagListItem;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::error::MessageValidationError as ValidationError;
 use crate::shared::http::api_response::{AppError, Data};
@@ -152,12 +155,12 @@ fn normalize_limit(limit: Option<u32>) -> u32 {
 
 #[derive(Serialize, ToSchema)]
 pub struct SearchResponse {
-    pub artists: CursorResponse<SimpleArtist>,
-    pub releases: CursorResponse<SimpleRelease>,
-    pub songs: CursorResponse<SongRef>,
-    pub events: CursorResponse<SimpleEvent>,
-    pub labels: CursorResponse<SimpleLabel>,
-    pub tags: CursorResponse<TagRef>,
+    pub artists: CursorResponse<SearchResult<ArtistListItem>>,
+    pub releases: CursorResponse<SearchResult<ReleaseListItem>>,
+    pub songs: CursorResponse<SearchResult<SongListItem>>,
+    pub events: CursorResponse<SearchResult<EventListItem>>,
+    pub labels: CursorResponse<SearchResult<LabelListItem>>,
+    pub tags: CursorResponse<SearchResult<TagListItem>>,
 }
 
 impl SearchResponse {
@@ -191,12 +194,12 @@ impl SearchResponse {
 
 data! {
     DataSearchResponse, SearchResponse
-    DataPaginatedSimpleArtist, CursorResponse<SimpleArtist>
-    DataPaginatedSimpleRelease, CursorResponse<SimpleRelease>
-    DataPaginatedSongRef, CursorResponse<SongRef>
-    DataPaginatedSimpleEvent, CursorResponse<SimpleEvent>
-    DataPaginatedSimpleLabel, CursorResponse<SimpleLabel>
-    DataPaginatedTagRef, CursorResponse<TagRef>
+    DataSearchArtistPage, CursorResponse<SearchResult<ArtistListItem>>
+    DataSearchReleasePage, CursorResponse<SearchResult<ReleaseListItem>>
+    DataSearchSongPage, CursorResponse<SearchResult<SongListItem>>
+    DataSearchEventPage, CursorResponse<SearchResult<EventListItem>>
+    DataSearchLabelPage, CursorResponse<SearchResult<LabelListItem>>
+    DataSearchTagPage, CursorResponse<SearchResult<TagListItem>>
 }
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
@@ -230,8 +233,13 @@ async fn search_all(
 
     let start = std::time::Instant::now();
 
-    let response =
-        SearchResponse::from_request(&sea_repo, &search_term, limit, 0).await?;
+    let response = Box::pin(SearchResponse::from_request(
+        &sea_repo,
+        &search_term,
+        limit,
+        0,
+    ))
+    .await?;
 
     log::info!(
         target: "features.search.http",
@@ -252,13 +260,13 @@ async fn search_all(
     path = "/search/artist",
     params(SearchSingleQuery),
     responses(
-        (status = 200, body = DataPaginatedSimpleArtist),
+        (status = 200, body = DataSearchArtistPage),
     ),
 )]
 async fn search_artist(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SimpleArtist>>, Error> {
+) -> Result<Data<CursorResponse<SearchResult<ArtistListItem>>>, Error> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
@@ -289,13 +297,13 @@ async fn search_artist(
     path = "/search/release",
     params(SearchSingleQuery),
     responses(
-        (status = 200, body = DataPaginatedSimpleRelease),
+        (status = 200, body = DataSearchReleasePage),
     ),
 )]
 async fn search_release(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SimpleRelease>>, Error> {
+) -> Result<Data<CursorResponse<SearchResult<ReleaseListItem>>>, Error> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
@@ -326,13 +334,13 @@ async fn search_release(
     path = "/search/song",
     params(SearchSingleQuery),
     responses(
-        (status = 200, body = DataPaginatedSongRef),
+        (status = 200, body = DataSearchSongPage),
     ),
 )]
 async fn search_song(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SongRef>>, Error> {
+) -> Result<Data<CursorResponse<SearchResult<SongListItem>>>, Error> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
@@ -363,13 +371,13 @@ async fn search_song(
     path = "/search/event",
     params(SearchSingleQuery),
     responses(
-        (status = 200, body = DataPaginatedSimpleEvent),
+        (status = 200, body = DataSearchEventPage),
     ),
 )]
 async fn search_event(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SimpleEvent>>, Error> {
+) -> Result<Data<CursorResponse<SearchResult<EventListItem>>>, Error> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
@@ -400,13 +408,13 @@ async fn search_event(
     path = "/search/label",
     params(SearchSingleQuery),
     responses(
-        (status = 200, body = DataPaginatedSimpleLabel),
+        (status = 200, body = DataSearchLabelPage),
     ),
 )]
 async fn search_label(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<SimpleLabel>>, Error> {
+) -> Result<Data<CursorResponse<SearchResult<LabelListItem>>>, Error> {
     let ValidSearchSingleQuery {
         search_term,
         limit,
@@ -437,13 +445,13 @@ async fn search_label(
     path = "/search/tag",
     params(SearchSingleQuery),
     responses(
-        (status = 200, body = DataPaginatedTagRef),
+        (status = 200, body = DataSearchTagPage),
     ),
 )]
 async fn search_tag(
     State(sea_repo): State<state::SeaOrmRepository>,
     Query(query): Query<SearchSingleQuery>,
-) -> Result<Data<CursorResponse<TagRef>>, Error> {
+) -> Result<Data<CursorResponse<SearchResult<TagListItem>>>, Error> {
     let ValidSearchSingleQuery {
         search_term,
         limit,

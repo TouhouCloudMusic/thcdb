@@ -12,6 +12,7 @@ use sea_query::extension::postgres::PgBinOper::{
 };
 use sea_query::{ExprTrait, Func};
 
+use crate::features::tag::list::{self, TagListItem};
 use crate::features::tag::model::{AlternativeName, Tag, TagRef, TagRelation};
 use crate::infra::database::error::{DatabaseError, DatabaseResultExt};
 use crate::infra::database::utils;
@@ -53,7 +54,7 @@ pub(super) async fn find_by_filter(
     repo: &SeaOrmRepository,
     filter: super::TagFilter,
     pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<Tag>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<TagListItem>, DatabaseError> {
     if let (Some(sort_field), Some(sort_direction)) =
         (filter.sort_field, filter.sort_direction)
     {
@@ -74,7 +75,7 @@ pub(super) async fn find_by_filter(
         select,
         pagination,
         tag::Column::Id,
-        |select| find_many_impl(select, &repo.conn),
+        |select| list::load(select, &repo.conn),
     )
     .await
     .db_operation("explore tags")
@@ -86,7 +87,7 @@ async fn find_sorted_by_correction(
     sort_field: crate::shared::http::CorrectionSortField,
     sort_direction: crate::shared::http::SortDirection,
     pagination: crate::shared::http::PageQuery,
-) -> Result<domain::shared::PageResponse<Tag>, DatabaseError> {
+) -> Result<domain::shared::PageResponse<TagListItem>, DatabaseError> {
     use entity::enums::EntityType;
 
     use crate::shared::http::SortDirection;
@@ -115,7 +116,7 @@ async fn find_sorted_by_correction(
         select = select.filter(tag::Column::Type.is_in(tag_types));
     }
 
-    let mut tags = find_many_impl(select, &repo.conn).await?;
+    let mut tags = list::load(select, &repo.conn).await?;
 
     tags = crate::infra::database::utils::sort_by_id_list(
         tags,

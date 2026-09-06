@@ -1,27 +1,24 @@
 import { useLingui } from "@lingui/solid/macro"
-import type { Release } from "@thc/api"
 import { For, Match, Show, Switch } from "solid-js"
 
 import { Pagination } from "~/component/Pagination"
+import { Divider } from "~/component/atomic/Divider"
+import { Intersperse } from "~/component/data/Intersperse"
 import { EmptyExplorePlaceholder } from "~/component/feature/entity_explore"
 import type { ViewMode } from "~/component/feature/entity_explore"
-import {
-	ReleaseGridItem,
-	ReleaseItem,
-} from "~/view/release/explore/ReleaseItems"
+import type { ReleaseListItem } from "~/hey-api"
+import { ReleaseGridItem, ReleaseItem } from "~/view/release/ReleaseItems"
 
 const GRID_CONTAINER_CLASS =
-	"grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5"
+	"grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5"
 
 function ReleaseItemSkeleton() {
 	return (
-		<div class="animate-pulse border-b border-slate-200 py-4">
-			<div class="flex gap-3">
-				<div class="size-[4.5rem] shrink-0 rounded-md border border-slate-200 bg-slate-100"></div>
-				<div class="min-w-0 flex-1">
-					<div class="mb-2 h-5 w-2/3 rounded bg-slate-200"></div>
-					<div class="h-4 w-1/2 rounded bg-slate-100"></div>
-				</div>
+		<div class="animate-pulse grid grid-cols-[3lh_minmax(0,1fr)] items-start gap-3 leading-6">
+			<div class="aspect-square rounded-sm bg-secondary"></div>
+			<div>
+				<div class="mb-2 h-5 w-2/3 rounded bg-slate-200"></div>
+				<div class="h-4 w-1/2 rounded bg-slate-100"></div>
 			</div>
 		</div>
 	)
@@ -30,7 +27,7 @@ function ReleaseItemSkeleton() {
 function ReleaseGridItemSkeleton() {
 	return (
 		<div class="animate-pulse">
-			<div class="aspect-square w-full rounded-md border border-slate-200 bg-slate-100"></div>
+			<div class="aspect-square rounded-md border border-slate-200 bg-slate-100"></div>
 			<div class="mt-2 h-4 w-3/4 rounded bg-slate-200"></div>
 			<div class="mt-1 h-3 w-1/2 rounded bg-slate-100"></div>
 		</div>
@@ -48,10 +45,13 @@ export function ReleaseExploreListSkeleton(
 	return (
 		<Switch>
 			<Match when={props.displayType === "list"}>
-				<div class="flex flex-col">
-					<For each={Array.from({ length: props.limit })}>
+				<div class="flex flex-col gap-2 p-4">
+					<Intersperse
+						of={Array.from({ length: props.limit })}
+						with={<Divider horizontal />}
+					>
 						{() => <ReleaseItemSkeleton />}
-					</For>
+					</Intersperse>
 				</div>
 			</Match>
 			<Match when={props.displayType === "grid"}>
@@ -66,8 +66,7 @@ export function ReleaseExploreListSkeleton(
 }
 
 export type ReleaseExploreListStore = {
-	releases: Release[]
-	locale: string
+	releases: ReleaseListItem[]
 	isLoading: boolean
 	limit: number
 	page: number
@@ -93,32 +92,38 @@ export function ReleaseExploreList(props: ReleaseExploreListProps) {
 
 			<Switch>
 				<Match when={props.store.displayType === "list"}>
-					<div class="flex flex-col">
-						<For each={props.store.releases}>
-							{(release) => (
-								<ReleaseItem
-									release={release}
-									locale={props.store.locale}
-								/>
-							)}
-						</For>
-					</div>
+					<Show when={props.store.releases.length > 0 || props.store.isLoading}>
+						<div class="flex flex-col gap-2 p-4">
+							<Intersperse
+								of={props.store.releases}
+								with={<Divider horizontal />}
+							>
+								{(release) => <ReleaseItem release={release} />}
+							</Intersperse>
+							<Show when={props.store.isLoading}>
+								<Show when={props.store.releases.length > 0}>
+									<Divider horizontal />
+								</Show>
+								<Intersperse
+									of={Array.from({ length: props.store.limit })}
+									with={<Divider horizontal />}
+								>
+									{() => <ReleaseItemSkeleton />}
+								</Intersperse>
+							</Show>
+						</div>
+					</Show>
 				</Match>
 				<Match when={props.store.displayType === "grid"}>
 					<div class={GRID_CONTAINER_CLASS}>
 						<For each={props.store.releases}>
-							{(release) => (
-								<ReleaseGridItem
-									release={release}
-									locale={props.store.locale}
-								/>
-							)}
+							{(release) => <ReleaseGridItem release={release} />}
 						</For>
 					</div>
 				</Match>
 			</Switch>
 
-			<Show when={props.store.isLoading}>
+			<Show when={props.store.isLoading && props.store.displayType === "grid"}>
 				<ReleaseExploreListSkeleton
 					limit={props.store.limit}
 					displayType={props.store.displayType}

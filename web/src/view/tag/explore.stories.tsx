@@ -1,38 +1,67 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite"
 
-import { createMockTagTree } from "~/mock/tag"
+import { Divider } from "~/component/atomic/Divider"
+import { Intersperse } from "~/component/data/Intersperse"
+import { ExplorePageLayout } from "~/component/feature/entity_explore"
+import type { TagListItem } from "~/hey-api"
 import { StoryLayout, withStoryRouter } from "~/utils/adapter/storybook"
-import { TagTree } from "~/view/tag/TagTree"
-import type { TagTreeNode } from "~/view/tag/TagTree"
+import { TagItem } from "~/view/tag/TagItem"
 
-const TAG_TREE_HEADING_ID = "tag-tree-title"
-const TAG_TREE_PADDING_CLASS = "px-3"
-
-const DEFAULT_TREE = createMockTagTree({
-	rootCount: 2,
-	maxDepth: 3,
-	childCountRange: [1, 2],
-})
+const TAGS: TagListItem[] = [
+	{
+		id: 3,
+		name: "Progressive metal",
+		type: "Genre",
+		short_description:
+			"Metal arrangements built around extended forms and changing time signatures.",
+		parents: [
+			{ id: 2, name: "Progressive rock", type: "Genre" },
+			{ id: 1, name: "Rock", type: "Genre" },
+		],
+	},
+	{
+		id: 7,
+		name: "Instrumental arrangement — piano, orchestra and acoustic ensembles",
+		type: "Descriptor",
+		short_description:
+			"Arrangements presented without a lead vocal performance.",
+		parents: [
+			{ id: 5, name: "東方アレンジ", type: "Descriptor" },
+			{ id: 6, name: "Instrumental arrangement", type: "Descriptor" },
+		],
+	},
+	{
+		id: 8,
+		name: "Live recording",
+		type: "Descriptor",
+		short_description: "",
+		parents: [],
+	},
+]
 
 type StoryRootProps = {
-	nodes: TagTreeNode[]
+	tags: TagListItem[]
+	width: "full" | "narrow"
 }
 
 function StoryRoot(props: StoryRootProps) {
 	return (
-		<div class={`${TAG_TREE_PADDING_CLASS} bg-primary`}>
-			<div class="w-[560px]">
-				<h2
-					id={TAG_TREE_HEADING_ID}
-					class="mb-3 text-lg font-medium"
-				>
-					Tag Tree
-				</h2>
-				<TagTree
-					nodes={props.nodes}
-					headingId={TAG_TREE_HEADING_ID}
-				/>
-			</div>
+		<div
+			class={`mx-auto w-full ${props.width === "narrow" ? "max-w-sm" : "max-w-3xl"}`}
+		>
+			<ExplorePageLayout
+				title="Explore Tags"
+				action={{ to: "/tag/new", label: "Create tag" }}
+			>
+				<div class="flex flex-col gap-2 p-4">
+					<Intersperse
+						of={props.tags}
+						with={<Divider horizontal />}
+					>
+						{(tag) => <TagItem tag={tag} />}
+					</Intersperse>
+				</div>
+			</ExplorePageLayout>
 		</div>
 	)
 }
@@ -42,7 +71,7 @@ const meta = {
 	component: StoryRoot,
 	decorators: [withStoryRouter],
 	parameters: {
-		layout: StoryLayout.Centered,
+		layout: StoryLayout.FullScreen,
 		backgrounds: {
 			grid: {
 				disable: true,
@@ -54,9 +83,15 @@ const meta = {
 			value: "studio",
 		},
 	},
+	args: {
+		tags: TAGS,
+		width: "full",
+	},
 	argTypes: {
-		nodes: {
-			control: false,
+		tags: { control: false },
+		width: {
+			control: "select",
+			options: ["full", "narrow"],
 		},
 	},
 } satisfies Meta<typeof StoryRoot>
@@ -65,8 +100,8 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Default: Story = {
-	args: {
-		nodes: DEFAULT_TREE,
-	},
+export const List: Story = {}
+
+export const Narrow: Story = {
+	args: { width: "narrow" },
 }

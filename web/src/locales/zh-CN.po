@@ -128,10 +128,6 @@ msgstr "操作"
 msgid "Actions"
 msgstr "操作"
 
-#: src/view/label/explore.comp.tsx
-msgid "Active"
-msgstr "活动"
-
 #: src/view/user/Profile.tsx
 msgid "Activity"
 msgstr "动态"
@@ -191,10 +187,12 @@ msgstr "AKA"
 msgid "Aliases"
 msgstr "别名"
 
+#: src/view/artist/ArtistTypeLabel.tsx
 #: src/view/artist/explore.comp.tsx
 #: src/view/image_queue/manage.tsx
 #: src/view/release/explore/filter.tsx
 #: src/view/song/explore.tsx
+#: src/view/tag/explore.tsx
 #: src/view/user/Profile.tsx
 msgid "All"
 msgstr "全部"
@@ -207,8 +205,8 @@ msgstr "全部分类"
 msgid "Alphabetical"
 msgstr "字母顺序"
 
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/auth/sign_up.tsx
+#: src/view/auth/verify_email/index.tsx
 msgid "Already have an account?"
 msgstr "已经有账号了？"
 
@@ -221,6 +219,10 @@ msgstr "替代名称"
 #: src/view/collection/CollectionFormDialog.tsx
 msgid "An error occurred. Please try again."
 msgstr "发生错误，请重试。"
+
+#: src/view/song/SongItem.tsx
+msgid "Appears on"
+msgstr "收录于"
 
 #: src/view/correction/Detail.tsx
 #: src/view/image_queue/detail.tsx
@@ -274,7 +276,6 @@ msgstr "确定要从收藏中移除此条目吗？"
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/search/index.tsx
 msgid "Artist"
 msgstr "艺术家"
 
@@ -308,7 +309,8 @@ msgstr "作者"
 msgid "Back"
 msgstr "返回"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
+#: src/view/auth/reset_password/success.tsx
 msgid "Back to"
 msgstr "返回"
 
@@ -328,6 +330,12 @@ msgstr "浏览社团与个人创作者，并支持筛选和排序。"
 #: src/view/release/Info/comp/ReleaseInfoTitleAndArtist.tsx
 msgid "by"
 msgstr "由"
+
+#: src/view/collection/CollectionListItem.tsx
+#: src/view/release/ReleaseItems.tsx
+#: src/view/song/SongItem.tsx
+msgid "By"
+msgstr "作者："
 
 #: src/component/dialog/AlertDialog.tsx
 #: src/view/collection/AddToCollectionDialog.tsx
@@ -426,7 +434,7 @@ msgstr "比较"
 msgid "Confirm"
 msgstr "确认"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Continue"
 msgstr "继续"
 
@@ -480,7 +488,7 @@ msgid "Create"
 msgstr "新建"
 
 #: src/component/route.tsx
-#: src/view/auth/component/AuthForm.tsx
+#: src/view/auth/sign_up.tsx
 msgid "Create account"
 msgstr "创建账号"
 
@@ -648,7 +656,6 @@ msgstr "光盘名称"
 msgid "Display title"
 msgstr "显示标题"
 
-#: src/view/label/explore.comp.tsx
 #: src/view/label/Info/index.tsx
 msgid "Dissolved"
 msgstr "解散"
@@ -657,7 +664,7 @@ msgstr "解散"
 msgid "Dissolved date"
 msgstr "解散日期"
 
-#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/sign_in.tsx
 msgid "Don't have an account?"
 msgstr "还没有账号？"
 
@@ -719,7 +726,7 @@ msgstr "编辑"
 msgid "Email"
 msgstr "电子邮箱"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Email is required"
 msgstr "邮箱为必填项"
 
@@ -728,12 +735,12 @@ msgstr "邮箱为必填项"
 msgid "End date"
 msgstr "结束日期"
 
-#: src/view/auth/component/AuthForm.tsx
+#: src/view/auth/verify_email/index.tsx
 msgid "Enter the 6-digit code sent to your email."
 msgstr "输入发送到你邮箱的 6 位验证码。"
 
 #. placeholder {0}: email()
-#: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/auth/verify_email/index.tsx
 msgid "Enter the code for {0}. If you did not receive one, use Resend."
 msgstr "输入发送到 {0} 的验证码。如果没有收到，请使用“重新发送”。"
 
@@ -745,7 +752,6 @@ msgstr "输入你的用户名或邮箱"
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
-#: src/view/search/index.tsx
 msgid "Event"
 msgstr "活动"
 
@@ -788,6 +794,10 @@ msgstr "浏览发行"
 #: src/view/song/explore.tsx
 msgid "Explore Songs"
 msgstr "探索歌曲"
+
+#: src/view/tag/explore.tsx
+msgid "Explore Tags"
+msgstr "浏览标签"
 
 #: src/view/comment/CommentThread.tsx
 msgid "Failed to delete comment"
@@ -920,11 +930,11 @@ msgstr "已关注"
 msgid "Following..."
 msgstr "关注中..."
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Forgot password"
 msgstr "忘记密码"
 
-#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/sign_in.tsx
 msgid "Forgot password?"
 msgstr "忘记密码？"
 
@@ -957,7 +967,7 @@ msgstr "从"
 msgid "Grid view"
 msgstr "网格视图"
 
-#: src/view/artist/explore.comp.tsx
+#: src/view/artist/ArtistTypeLabel.tsx
 msgid "Group"
 msgstr "团体"
 
@@ -987,7 +997,7 @@ msgstr "首页"
 msgid "ID"
 msgstr "编号"
 
-#: src/view/auth/useAuthForm.ts
+#: src/view/auth/verify_email/index.tsx
 msgid "If eligible, a verification code has been sent."
 msgstr "如果条件满足，验证码已发送。"
 
@@ -1016,7 +1026,7 @@ msgstr ""
 msgid "Inbox"
 msgstr "收件箱"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Invalid email"
 msgstr "邮箱格式无效"
 
@@ -1024,7 +1034,7 @@ msgstr "邮箱格式无效"
 msgid "Invalid or expired reset key"
 msgstr "重置密钥无效或已过期"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Invalid verification code"
 msgstr "验证码无效"
 
@@ -1033,6 +1043,7 @@ msgid "It is now available on your profile"
 msgstr "它现在会显示在你的个人主页"
 
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/CollectionListItem.tsx
 #: src/view/collection/FollowedCollectionRow.tsx
 #: src/view/user/Profile.tsx
 msgid "item"
@@ -1043,6 +1054,7 @@ msgid "Item count"
 msgstr "条目数"
 
 #: src/view/collection/CollectionDetail.tsx
+#: src/view/collection/CollectionListItem.tsx
 #: src/view/collection/FollowedCollectionRow.tsx
 #: src/view/user/Profile.tsx
 msgid "items"
@@ -1068,7 +1080,6 @@ msgstr "刚刚"
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
-#: src/view/search/index.tsx
 msgid "Label"
 msgstr "厂牌"
 
@@ -1111,8 +1122,8 @@ msgstr "请假年份不能早于加入年份"
 msgid "Leave year cannot be the same as join year"
 msgstr "请假年份不能与加入年份相同"
 
-#: src/view/artist/edit/comp/Links.tsx
-#: src/view/artist/profile/comp/ArtistInfo.tsx
+#: src/component/data/ExternalLinks.tsx
+#: src/component/form/ExternalLinksField.tsx
 msgid "Links"
 msgstr "链接"
 
@@ -1167,6 +1178,7 @@ msgstr "正在加载条目..."
 msgid "Loading..."
 msgstr "正在載入..."
 
+#: src/view/auth/component/Guard.tsx
 #: src/view/image_queue/detail.tsx
 #: src/view/notification/InboxPage.tsx
 msgid "Loading…"
@@ -1232,10 +1244,6 @@ msgstr "成员"
 #: src/view/artist/edit/comp/Membership/index.tsx
 msgid "Membership"
 msgstr "成员关系"
-
-#: src/view/auth/useAuthForm.ts
-msgid "Missing sign-up email. Create the account again."
-msgstr "缺少注册邮箱，请重新创建账号。"
 
 #: src/view/image_queue/manage.tsx
 msgid "MODERATION"
@@ -1373,7 +1381,6 @@ msgid "No comments yet."
 msgstr "暂无评论。"
 
 #: src/component/display/release/ReleaseCoverWall.tsx
-#: src/view/release/explore/ReleaseItems.tsx
 #: src/view/release/Info/comp/ReleaseInfoCoverImage.tsx
 msgid "No cover art"
 msgstr "没有封面图"
@@ -1515,10 +1522,6 @@ msgstr "关联曲目"
 msgid "Only PNG/JPEG images are supported."
 msgstr "仅支持PNG/JPEG图像。"
 
-#: src/view/search/index.tsx
-msgid "Open"
-msgstr "打开"
-
 #: src/view/image_upload/EntityImageUploadPage.tsx
 msgid "Open image queue"
 msgstr "打开图片队列"
@@ -1553,11 +1556,12 @@ msgstr "第 {0} / {1} 页"
 msgid "Pagination"
 msgstr "分页"
 
-#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/sign_in.tsx
+#: src/view/auth/sign_up.tsx
 msgid "Password"
 msgstr "密码"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/success.tsx
 msgid "Password reset complete"
 msgstr "密码重置完成"
 
@@ -1581,11 +1585,6 @@ msgstr "播放曲目"
 #: src/component/__legacy/chart/index.tsx
 msgid "Positive:"
 msgstr "正向："
-
-#: src/view/artist/explore.comp.tsx
-#: src/view/label/explore.comp.tsx
-msgid "Present"
-msgstr "现在"
 
 #: src/view/image_queue/detail.tsx
 msgid "Previous"
@@ -1702,7 +1701,6 @@ msgstr "关系"
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/search/index.tsx
 #: src/view/song/Info/index.tsx
 msgid "Release"
 msgstr "发行"
@@ -1755,7 +1753,7 @@ msgstr "重命名光盘"
 msgid "Repeat new password"
 msgstr "重复新密码"
 
-#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/sign_up.tsx
 msgid "Repeat password"
 msgstr "重复密码"
 
@@ -1763,6 +1761,7 @@ msgstr "重复密码"
 msgid "Reply"
 msgstr "回复"
 
+#: src/view/auth/reset_password/forgot_password.tsx
 #: src/view/auth/reset_password/index.tsx
 msgid "Request failed"
 msgstr "请求失败"
@@ -1772,11 +1771,11 @@ msgstr "请求失败"
 msgid "Request failed."
 msgstr "请求失败。"
 
-#: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/auth/verify_email/index.tsx
 msgid "Resend"
 msgstr "重新发送"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Resend code"
 msgstr "重新发送代码"
 
@@ -1954,7 +1953,7 @@ msgstr "选择标签"
 msgid "Selected crop cannot satisfy the required dimensions. Adjust the crop area."
 msgstr "所选裁剪无法满足所需的尺寸。调整裁剪区域。"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Sending..."
 msgstr "发送中……"
 
@@ -1976,21 +1975,22 @@ msgstr "简要说明"
 msgid "Short description is not provided"
 msgstr "暂无短描述"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
+#: src/view/auth/reset_password/success.tsx
 msgid "sign in"
 msgstr "登录"
 
 #: src/component/route.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
-#: src/view/auth/component/AuthForm.tsx
-#: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/auth/sign_in.tsx
+#: src/view/auth/sign_up.tsx
+#: src/view/auth/verify_email/index.tsx
 #: src/view/comment/EntityComments.tsx
 #: src/view/correction/CorrectionComments.tsx
 msgid "Sign in"
 msgstr "登录"
 
 #: src/component/Header/index.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/sign_in.tsx
 msgid "Sign In"
 msgstr "登录"
 
@@ -2003,7 +2003,8 @@ msgid "Sign Out"
 msgstr "注销"
 
 #: src/component/Header/index.tsx
-#: src/view/auth/component/AuthCredentialForm.tsx
+#: src/view/auth/sign_in.tsx
+#: src/view/auth/sign_up.tsx
 msgid "Sign Up"
 msgstr "注册"
 
@@ -2011,8 +2012,8 @@ msgstr "注册"
 msgid "Social"
 msgstr "社交"
 
-#: src/view/artist/explore.comp.tsx
-msgid "Solo artist"
+#: src/view/artist/ArtistTypeLabel.tsx
+msgid "Solo Artist"
 msgstr "独奏艺术家"
 
 #: src/view/comment/CommentThread.tsx
@@ -2024,7 +2025,6 @@ msgstr "出了点问题"
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
-#: src/view/search/index.tsx
 msgid "Song"
 msgstr "歌曲"
 
@@ -2140,13 +2140,8 @@ msgstr "技术支持"
 #: src/view/collection/CollectionItemCard.tsx
 #: src/view/correction/Detail.tsx
 #: src/view/correction/EntityCorrectionMetadataSection.tsx
-#: src/view/search/index.tsx
 msgid "Tag"
 msgstr "标签"
-
-#: src/view/tag/explore.tsx
-msgid "Tag Tree"
-msgstr "标签树"
 
 #: src/view/tag/edit/comp/TagTypeField.tsx
 msgid "Tag Type"
@@ -2199,7 +2194,7 @@ msgstr "此收藏为空"
 msgid "This entity already has a pending correction. You can review that correction or go back."
 msgstr "此实体已有待处理更正。你可以查看该更正或返回。"
 
-#. placeholder {0}: formatMinuteCount(props.resetKeyExpiresMinutes)
+#. placeholder {0}: formatMinuteCount(resetSession.keyExpiresMinutes)
 #: src/view/auth/reset_password/index.tsx
 msgid "This is valid for {0}."
 msgstr "有效期为 {0}。"
@@ -2288,6 +2283,7 @@ msgstr "调整筛选条件，或<0>创建</0>第一个条目。"
 #: src/view/image_queue/manage.tsx
 #: src/view/release/explore/filter.tsx
 #: src/view/release/Info/comp/ReleaseInfoDetails.tsx
+#: src/view/tag/explore.tsx
 #: src/view/tag/Info/index.tsx
 #: src/view/user/Profile.tsx
 msgid "Type"
@@ -2310,9 +2306,8 @@ msgstr "类型：我的"
 msgid "Unfollow"
 msgstr "取消关注"
 
-#: src/view/artist/explore.comp.tsx
+#: src/view/artist/ArtistTypeLabel.tsx
 #: src/view/image_queue/detail.tsx
-#: src/view/label/explore.comp.tsx
 msgid "Unknown"
 msgstr "未知"
 
@@ -2329,9 +2324,13 @@ msgid "Unknown error"
 msgstr "未知错误"
 
 #: src/view/event/EventItem.tsx
+msgid "Unknown event date"
+msgstr "举办时间未知"
+
+#: src/view/event/EventItem.tsx
 #: src/view/Homepage/component/EventsCard.tsx
 msgid "Unknown location"
-msgstr ""
+msgstr "地点未知"
 
 #: src/view/notification/InboxPage.tsx
 msgid "Unread"
@@ -2382,9 +2381,9 @@ msgstr "上传失败。"
 msgid "Uploading…"
 msgstr "上传中…"
 
-#: src/view/artist/edit/comp/Links.tsx
-msgid "Url"
-msgstr "URL"
+#: src/component/form/ExternalLinksField.tsx
+msgid "URL"
+msgstr ""
 
 #: src/view/admin/users.tsx
 msgid "User"
@@ -2407,15 +2406,15 @@ msgstr "用户"
 msgid "Verification code"
 msgstr "验证码"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Verification code must be 6 digits"
 msgstr "验证码必须为 6 位数字"
 
-#: src/view/auth/component/AuthForm.tsx
+#: src/view/auth/verify_email/index.tsx
 msgid "Verify email"
 msgstr "验证邮箱"
 
-#: src/view/auth/component/VerifyEmailForm.tsx
+#: src/view/auth/verify_email/index.tsx
 msgid "Verify Email"
 msgstr "验证邮箱"
 
@@ -2472,7 +2471,7 @@ msgstr "介绍一下自己吧！"
 msgid "Year"
 msgstr "年"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/success.tsx
 msgid "You can now sign in with your new password."
 msgstr "现在你可以使用新密码登录。"
 
@@ -2488,11 +2487,11 @@ msgstr "你还没有关注任何收藏"
 msgid "Your correction to {target} was {actionText}."
 msgstr "你对 {target} 的更正已被{actionText}。"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/success.tsx
 msgid "Your password has been updated successfully."
 msgstr "您的密码已成功更新"
 
-#: src/view/auth/reset_password/index.tsx
+#: src/view/auth/reset_password/forgot_password.tsx
 msgid "Your reset session is no longer valid. Verify a new code to continue."
 msgstr "当前重置会话已失效，请重新验证验证码后继续。"
 

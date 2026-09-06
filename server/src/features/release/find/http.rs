@@ -9,6 +9,7 @@ use super::repo::{self, FindReleaseFilter};
 use super::{PageQuery, ReleaseFilter};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
+use crate::features::release::list::ReleaseListItem;
 use crate::features::release::model::Release;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{Data, Error as ApiError};
@@ -18,7 +19,7 @@ const TAG: &str = "Release";
 data!(
     DataOptionRelease, Option<Release>
     DataVecRelease, Vec<Release>
-    DataPageRelease, PageResponse<Release>
+    DataPageRelease, PageResponse<ReleaseListItem>
 );
 
 pub fn router() -> OpenApiRouter<ArcAppState> {
@@ -85,7 +86,7 @@ async fn explore_release(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<ReleaseFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Release>>, DatabaseError> {
+) -> Result<Data<PageResponse<ReleaseListItem>>, DatabaseError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.release.find.http",

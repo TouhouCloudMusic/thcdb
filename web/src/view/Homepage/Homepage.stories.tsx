@@ -48,7 +48,18 @@ function createHomeStoryData() {
 		},
 		releases,
 		artists: createMockArtists(ARTISTS_LIMIT, 101),
-		tags: createMockTags(TAGS_LIMIT, 101),
+		tags: createMockTags(TAGS_LIMIT, 101).map(
+			({ id, name, type, short_description, relations }) => ({
+				id,
+				name,
+				type,
+				short_description,
+				parents:
+					relations
+						?.filter((relation) => relation.type === "Inherit")
+						.map((relation) => relation.tag) ?? [],
+			}),
+		),
 		events,
 	}
 }

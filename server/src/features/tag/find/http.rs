@@ -8,6 +8,7 @@ use utoipa_axum::routes;
 use super::{PageQuery, TagFilter};
 use crate::adapter::inbound::rest::state::{self, ArcAppState};
 use crate::adapter::inbound::rest::{AppRouter, data};
+use crate::features::tag::list::TagListItem;
 use crate::features::tag::model::Tag;
 use crate::infra::database::error::DatabaseError;
 use crate::shared::http::api_response::{Data, Error as ApiError};
@@ -27,7 +28,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
 data! {
     DataOptionTag, Option<Tag>
     DataVecTag, Vec<Tag>
-    DataPageTag, PageResponse<Tag>
+    DataPageTag, PageResponse<TagListItem>
 }
 
 #[utoipa::path(
@@ -82,7 +83,7 @@ async fn explore_tag(
     State(repo): State<state::SeaOrmRepository>,
     Query(filter): Query<TagFilter>,
     Query(pagination): Query<PageQuery>,
-) -> Result<Data<PageResponse<Tag>>, DatabaseError> {
+) -> Result<Data<PageResponse<TagListItem>>, DatabaseError> {
     let normalized = filter.with_sort_defaults();
     log::info!(
         target: "features.tag.find.http",
