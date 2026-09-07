@@ -1,5 +1,6 @@
 import { lingui, linguiTransformerBabelPreset } from "@lingui/vite-plugin"
 import babel from "@rolldown/plugin-babel"
+import stylex from "@stylexjs/unplugin/vite"
 import tailwindcss from "@tailwindcss/vite"
 import { devtools } from "@tanstack/devtools-vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
@@ -20,6 +21,7 @@ export function createSharedPlugins(): PluginOption[] {
 		babel({
 			presets: [linguiTransformerBabelPreset()],
 		}),
+		stylex(),
 		solidPlugin(),
 		tailwindcss(),
 	])

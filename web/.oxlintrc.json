@@ -24,7 +24,7 @@
 		"nursery": "warn"
 	},
 	"plugins": ["import", "jsx-a11y", "oxc", "promise", "typescript", "unicorn"],
-	"jsPlugins": ["eslint-plugin-solid"],
+	"jsPlugins": ["eslint-plugin-solid", "@stylexjs/eslint-plugin"],
 	"settings": {
 		"jsx-a11y": {
 			"attributes": {
@@ -34,6 +34,7 @@
 		}
 	},
 	"rules": {
+		"@stylexjs/valid-styles": "error",
 		// Temporary off
 		"import/no-relative-parent-imports": "off",
 		// In practice, we rarely mutate function inputs.
